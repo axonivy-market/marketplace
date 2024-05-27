@@ -1,4 +1,5 @@
-name: SonarQube analysis
+name: SonarQube Build
+run-name: Analyze and upload reports to Octopus-Sonar by ${{github.actor}}
 
 on:
   push:
