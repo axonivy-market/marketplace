@@ -20,5 +20,26 @@ jobs:
         distribution: 'temurin'
         cache: maven
     - name: Build with Maven
-      run: mvn -B package --file pom.xml
+      run: mvn clean package -DskipTests
 
+    - name: Prepare deployment directory
+      run: mkdir -p deployment && cp target/*.war deployment/
+    - name: Copy WAR to Tomcat server
+      env:
+          TOMCAT_USER: ${{ secrets.TOMCAT_USER }}
+          TOMCAT_PASSWORD: ${{ secrets.TOMCAT_PASSWORD }}
+          TOMCAT_HOST: ${{ secrets.TOMCAT_HOST }}
+          REMOTE_PATH: ${{ secrets.REMOTE_PATH }}
+      run: |
+          scp -o StrictHostKeyChecking=no deployment/*.war $TOMCAT_USER@$TOMCAT_HOST:$REMOTE_PATH/marketplace-server.war
+
+    - name: Restart Tomcat server
+      env:
+          TOMCAT_USER: ${{ secrets.TOMCAT_USER }}
+          TOMCAT_PASSWORD: ${{ secrets.TOMCAT_PASSWORD }}
+          TOMCAT_HOST: ${{ secrets.TOMCAT_HOST }}
+      run: |
+          ssh -o StrictHostKeyChecking=no $TOMCAT_USER@$TOMCAT_HOST << EOF
+            systemctl stop tomcat
+            systemctl start tomcat
+          EOF
