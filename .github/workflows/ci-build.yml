@@ -23,8 +23,8 @@ jobs:
         with:
           java-version: '17'
           distribution: 'temurin'
-      - name: Build with Maven
-        run: mvn clean install
+      - name: Build and test with Maven
+        run: mvn clean test
       - uses: sonarsource/sonarqube-scan-action@master
         env:
           SONAR_TOKEN: ${{ env.SONAR_TOKEN }}
