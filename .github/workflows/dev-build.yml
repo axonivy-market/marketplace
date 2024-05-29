@@ -21,14 +21,11 @@ jobs:
         cache: maven
     - name: Build with Maven
       run: mvn clean package -DskipTests
-
-     - name: Prepare deployment directory
-       run: mkdir -p deployment && cp target/*.war deployment/
-
-     - name: Copy WAR to Tomcat server
-       run: sudo cp deployment/*.war /opt/tomcat/webapps/marketplace-server.war
-
-     - name: Restart Tomcat server
-       run: |
+    - name: Prepare deployment directory
+      run: mkdir -p deployment && cp target/*.war deployment/
+    - name: Copy WAR to Tomcat server
+      run: sudo cp deployment/*.war /opt/tomcat/webapps/marketplace-server.war
+    - name: Restart Tomcat server
+      run: |
           sudo systemctl stop tomcat
           sudo systemctl start tomcat
