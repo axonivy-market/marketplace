@@ -27,8 +27,9 @@ The following guides illustrate how to use some features concretely:
 * You can change the configuration in file “application.properties“
 
 ### In case of using eclipse you should install manually Lombok .
-* Download lombok here Download
-* run command java -jar lombok.jar and restart the eclipse then you can access file “eclipse.ini“ in eclipse folder where you install → there is a text like this:  -javaagent:C:\Users\tvtphuc\eclipse\jee-2024-032\eclipse\lombok.jar → it means you are successful
+* Download lombok here https://projectlombok.org/download
+* run command "java -jar lombok.jar" then you can access file “eclipse.ini“ in eclipse folder where you install → there is a text like this:  -javaagent:C:\Users\tvtphuc\eclipse\jee-2024-032\eclipse\lombok.jar → it means you are successful
+* Start eclipse
 * Import the project then in the eclipse , you should run the command “mvn clean install“
 * After that you go to class MarketplaceServiceApplication → right click to main method → click run as → choose Java Application
 * Then you can send a request in postman :)
