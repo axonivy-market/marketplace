@@ -10,7 +10,7 @@ jobs:
     name: Sonarqube analysis
     runs-on: self-hosted
     env:
-      SONAR_PROJECT_KEY: "AxonIvy-Market-Service"
+      SONAR_PROJECT_KEY: ${{ secrets.SONAR_PROJECT_KEY }}
       SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
       SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
 
