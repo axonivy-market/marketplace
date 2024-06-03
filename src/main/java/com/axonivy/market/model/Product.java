@@ -2,6 +2,8 @@ package com.axonivy.market.model;
 
 import java.util.List;
 
+import com.axonivy.market.github.model.MavenArtifact;
+
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -33,4 +35,5 @@ public class Product {
   private Boolean validate;
   private Boolean contactUs;
   private Integer installationCount;
+  private List<MavenArtifact> mavenArtifacts;
 }

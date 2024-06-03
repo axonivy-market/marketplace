@@ -13,7 +13,10 @@ import com.axonivy.market.model.Product;
 import com.axonivy.market.repository.ProductRepository;
 import com.axonivy.market.service.ProductService;
 
+import lombok.extern.log4j.Log4j2;
+
 @Service
+@Log4j2
 public class ProductServiceImpl implements ProductService {
 
   private final ProductRepository repo;
@@ -31,13 +34,13 @@ public class ProductServiceImpl implements ProductService {
   @Override
   public List<Product> fetchAll(String type, String sort) {
     List<Product> products = new ArrayList<Product>();
-    switch (FilterType.of(type)) {
-    case ALL -> products.addAll(repo.findAll());
-    case CONNECTORS, UTILITIES, SOLUTIONS -> {
-      products.addAll(repo.findByType(type));
-    }
-    default -> throw new IllegalArgumentException("Unexpected value: " + type);
-    }
+    // switch (FilterType.of(type)) {
+    // case ALL -> products.addAll(repo.findAll());
+    // case CONNECTORS, UTILITIES, SOLUTIONS -> {
+    //   products.addAll(repo.findByType(type));
+    // }
+    // default -> throw new IllegalArgumentException("Unexpected value: " + type);
+    // }
 
     if (CollectionUtils.isEmpty(products)) {
       // Find on GH
@@ -58,7 +61,7 @@ public class ProductServiceImpl implements ProductService {
       }
       products.add(product);
     }
-    return List.of();
+    return products;
   }
 
   private void syncGHDataToDB(List<Product> products) {
@@ -70,6 +73,12 @@ public class ProductServiceImpl implements ProductService {
   public Product findByKey(String key) {
     // TODO Auto-generated method stub
     return null;
+  }
+
+  @Override
+  public List<String> getVersions(String artifactID) {
+    // TODO Auto-generated method stub
+    throw new UnsupportedOperationException("Unimplemented method 'getVersions'");
   }
 
 }

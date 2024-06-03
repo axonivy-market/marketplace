@@ -43,6 +43,7 @@ public class ProductFactory {
     if (meta == null) {
       return product;
     }
+    // log.warn(meta);
     product.setKey(meta.getId());
     product.setName(meta.getName());
     product.setListed(meta.getListed());
@@ -59,6 +60,7 @@ public class ProductFactory {
     product.setStatusBadgeUrl(meta.getStatusBadgeUrl());
     product.setLanguage(meta.getLanguage());
     product.setIndustry(meta.getIndustry());
+    product.setMavenArtifacts(meta.getMavenArtifacts());
     // TODO mapping default data
     // product.setCost() = ghContent->cost ?? 'Free';
     // product.setCompatibility(meta.get) = ghContent->compatibility ?? '';
@@ -69,8 +71,22 @@ public class ProductFactory {
 
   public static Meta jsonDecode(GHContent ghContent) throws StreamReadException, DatabindException, IOException {
     if (ghContent != null) {
+      log.warn(ghContent.getContent());
       return MAPPER.readValue(ghContent.read().readAllBytes(), Meta.class);
     }
     return null;
   }
+
+  // public String getVersion()
+  // {
+  //   // if (empty($this->version)) {
+  //   //   if ($this->getMavenProductInfo() != null) {
+  //   //     $this->version = $this->getMavenProductInfo()->getNewestVersion() ?? '';
+  //   //   }
+  //   // }
+  //   // return $this->version;
+  //   if(StringUtils.isBlank(this.getVersion())) {
+
+  //   }
+  // }
 }

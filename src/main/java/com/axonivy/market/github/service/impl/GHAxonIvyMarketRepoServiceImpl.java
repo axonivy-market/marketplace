@@ -23,9 +23,12 @@ public class GHAxonIvyMarketRepoServiceImpl extends AbstractGithubService implem
     Map<String, List<GHContent>> ghContentMap = new HashMap<String, List<GHContent>>();
     try {
       var marketOrg = getOrganization("axonivy-market");
-      var directoryContent = getDirectoryContent(marketOrg.getRepository("market"), "market");
+      var directoryContent = getDirectoryContent(marketOrg.getRepository("market"), "market/connector");
       for (var content : directoryContent) {
-        extractFileOfContent(content, ghContentMap);
+        if (content.getName().equals("adobe-acrobat-sign-connector")) {
+          log.warn(content.getName());
+          extractFileOfContent(content, ghContentMap);
+        }
       }
     } catch (Exception e) {
       log.error("Cannot fetch GH Content", e);
@@ -36,6 +39,7 @@ public class GHAxonIvyMarketRepoServiceImpl extends AbstractGithubService implem
   private void extractFileOfContent(GHContent content, Map<String, List<GHContent>> ghContentMap) throws IOException {
     if (content.isDirectory()) {
       var listOfContent = content.listDirectoryContent();
+      log.warn("found nha");
       for (var childContent : listOfContent.toList()) {
         if (childContent.isFile()) {
           var contents = ghContentMap.getOrDefault(content.getPath(), new ArrayList<GHContent>());

@@ -8,4 +8,6 @@ public interface ProductService {
   List<Product> fetchAll(String type, String sort);
 
   Product findByKey(String key);
+
+  List<String> getVersions(String artifactID);
 }

@@ -1,7 +1,5 @@
 package com.axonivy.market.github.model;
 
-import java.util.List;
-
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 
@@ -16,11 +14,8 @@ import lombok.Setter;
 @AllArgsConstructor
 @JsonInclude(JsonInclude.Include.NON_EMPTY)
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class MavenArtifact {
-  private String repoUrl;
-  private String name;
+public class ArchivedArtifact {
+  private String lastVersion;
   private String groupId;
   private String artifactId;
-  private String type;
-  private List<MavenArtifact> archivedArtifacts;
 }
