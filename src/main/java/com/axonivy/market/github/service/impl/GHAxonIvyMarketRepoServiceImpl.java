@@ -7,6 +7,8 @@ import java.util.List;
 import java.util.Map;
 
 import org.kohsuke.github.GHContent;
+import org.kohsuke.github.GHOrganization;
+import org.kohsuke.github.GHRepository;
 import org.springframework.stereotype.Service;
 
 import com.axonivy.market.github.service.AbstractGithubService;
@@ -17,13 +19,15 @@ import lombok.extern.log4j.Log4j2;
 @Log4j2
 @Service
 public class GHAxonIvyMarketRepoServiceImpl extends AbstractGithubService implements GHAxonIvyMarketRepoService {
+  
+  private GHOrganization organization;
+  private GHRepository repository;
 
   @Override
   public Map<String, List<GHContent>> fetchAllMarketItems() {
     Map<String, List<GHContent>> ghContentMap = new HashMap<String, List<GHContent>>();
     try {
-      var marketOrg = getOrganization("axonivy-market");
-      var directoryContent = getDirectoryContent(marketOrg.getRepository("market"), "market");
+      var directoryContent = getDirectoryContent(getRepository(), "market");
       for (var content : directoryContent) {
         extractFileOfContent(content, ghContentMap);
       }
@@ -46,5 +50,31 @@ public class GHAxonIvyMarketRepoServiceImpl extends AbstractGithubService implem
         }
       }
     }
+  }
+
+  @Override
+  public String getLastCommit() {
+    // TODO Auto-generated method stub
+    try {
+      getRepository().queryCommits().since(null);
+    } catch (IOException e) {
+      // TODO Auto-generated catch block
+      e.printStackTrace();
+    }
+    return null;
+  }
+
+  public GHOrganization getOrganization() throws IOException {
+    if (organization == null) {
+      organization = getOrganization("axonivy-market");
+    }
+    return organization;
+  }
+
+  public GHRepository getRepository() throws IOException {
+    if (repository == null) {
+      repository = getOrganization().getRepository("market");
+    }
+    return repository;
   }
 }

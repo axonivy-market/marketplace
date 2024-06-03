@@ -8,4 +8,6 @@ import org.kohsuke.github.GHContent;
 public interface GHAxonIvyMarketRepoService {
 
   Map<String, List<GHContent>> fetchAllMarketItems();
+
+  String getLastCommit();
 }

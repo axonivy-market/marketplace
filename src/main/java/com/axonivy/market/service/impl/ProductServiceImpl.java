@@ -29,7 +29,7 @@ public class ProductServiceImpl implements ProductService {
     TODO When we must refresh data
   **/
   @Override
-  public List<Product> fetchAll(String type, String sort) {
+  public List<Product> fetchAll(String type, String sort, int page, int pageSize) {
     List<Product> products = new ArrayList<Product>();
     switch (FilterType.of(type)) {
     case ALL -> products.addAll(repo.findAll());
@@ -39,6 +39,9 @@ public class ProductServiceImpl implements ProductService {
     default -> throw new IllegalArgumentException("Unexpected value: " + type);
     }
 
+    //TODO check last commit
+    githubService.getLastCommit();
+    
     if (CollectionUtils.isEmpty(products)) {
       // Find on GH
       products = findProductsFromGithubRepo();
