@@ -1,0 +1,45 @@
+
+{
+    "$schema": "https://json-schema.axonivy.com/market/10.0.0/meta.json",
+    "id": "adobe-acrobat-connector",
+    "name": "Adobe Acrobat Connector",
+    "description": "Use this connector to send, sign, track, and manage signature processes in Axon Ivy.",
+    "type": "connector",
+    "platformReview": "4.5",
+    "sourceUrl": "https://github.com/axonivy-market/adobe-acrobat-sign-connector",
+    "statusBadgeUrl": "https://github.com/axonivy-market/adobe-acrobat-sign-connector/actions/workflows/ci.yml/badge.svg",
+    "language": "English",
+    "industry": "Cross-Industry",
+    "tags": [ "e-signature" ],
+    "mavenArtifacts": [
+        {
+            "repoUrl": "https://maven.axonivy.com",
+            "name": "Adobe Acrobat Sign Connector",
+            "groupId": "com.axonivy.connector.adobe.acrobat.sign",
+            "artifactId": "adobe-acrobat-sign-connector-product",
+            "type": "zip"
+        },
+        {
+            "name": "Adobe Acrobat Sign Connector",
+            "groupId": "com.axonivy.connector.adobe.acrobat.sign",
+            "artifactId": "adobe-acrobat-sign-connector",
+            "archivedArtifacts": [
+                {
+                    "lastVersion": "10.0.15",
+                    "groupId":"com.axonivy.connector.adobe.esign",
+                    "artifactId": "adobe-esign-connector"
+                },
+                {
+                    "lastVersion": "10.0.16",
+                    "groupId": "com.axonivy.connector.adobe.acrobat.sign",
+                    "artifactId": "adobe-acrobat-sign-connector"
+                },
+                {
+                    "lastVersion": "10.0.17",
+                    "groupId": "com.axonivy.connector.adobe",
+                    "artifactId": "adobe-acrobat-sign-connector"
+                }
+            ]
+        }
+    ]
+}
