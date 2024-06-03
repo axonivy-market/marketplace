@@ -1,7 +1,6 @@
 package com.axonivy.market.service.impl;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
@@ -76,9 +75,10 @@ public class ProductServiceImpl implements ProductService {
   }
 
   @Override
-  public List<String> getVersions(String artifactID) {
-    // TODO Auto-generated method stub
-    throw new UnsupportedOperationException("Unimplemented method 'getVersions'");
+  public List<String> getVersions(String productId) {
+    List<String> result = Collections.emptyList();
+    Product products = findProductsFromGithubRepo().stream().filter(product -> product.getKey().equalsIgnoreCase(productId)).findAny().orElse(null);
+    return Optional.ofNullable(products).map(Product::getVersions).orElse(result);
   }
 
 }

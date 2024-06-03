@@ -35,5 +35,7 @@ public class Product {
   private Boolean validate;
   private Boolean contactUs;
   private Integer installationCount;
+  private List<String> versions;
   private List<MavenArtifact> mavenArtifacts;
+  private String repoUrl;
 }

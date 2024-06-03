@@ -45,4 +45,14 @@ public class ProductController {
     }
     return ResponseEntity.ok(results);
   }
+
+  @GetMapping("/{productId}/versions")
+  public ResponseEntity<List<String>> fetchAllProducts1(@PathVariable(required = true) String productId) {
+    log.warn("product id {}",productId);
+    var results = service.getVersions(productId);
+    if (CollectionUtils.isEmpty(results)) {
+      return ResponseEntity.noContent().build();
+    }
+    return ResponseEntity.ok(results);
+  }
 }
