@@ -1,15 +1,18 @@
 package com.axonivy.market.service.impl;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
+import com.axonivy.market.entity.GithubRepoMeta;
 import com.axonivy.market.enums.FilterType;
 import com.axonivy.market.factory.ProductFactory;
 import com.axonivy.market.github.service.GHAxonIvyMarketRepoService;
 import com.axonivy.market.model.Product;
+import com.axonivy.market.repository.GithubRepoMetaRepository;
 import com.axonivy.market.repository.ProductRepository;
 import com.axonivy.market.service.ProductService;
 
@@ -18,10 +21,12 @@ public class ProductServiceImpl implements ProductService {
 
   private final ProductRepository repo;
   private final GHAxonIvyMarketRepoService githubService;
+  private final GithubRepoMetaRepository repoMetaRepository;
 
-  public ProductServiceImpl(ProductRepository repo, GHAxonIvyMarketRepoService githubService) {
+  public ProductServiceImpl(ProductRepository repo, GHAxonIvyMarketRepoService githubService, GithubRepoMetaRepository repoMetaRepository) {
     this.repo = repo;
     this.githubService = githubService;
+    this.repoMetaRepository = repoMetaRepository;
   }
 
   /**
@@ -30,6 +35,7 @@ public class ProductServiceImpl implements ProductService {
   **/
   @Override
   public List<Product> fetchAll(String type, String sort, int page, int pageSize) {
+    boolean hasChanged = false;
     List<Product> products = new ArrayList<Product>();
     switch (FilterType.of(type)) {
     case ALL -> products.addAll(repo.findAll());
@@ -40,13 +46,31 @@ public class ProductServiceImpl implements ProductService {
     }
 
     //TODO check last commit
-    githubService.getLastCommit();
+    var lastCommit = githubService.getLastCommit();
+    if (lastCommit == null) {
+      return products;
+    }
+    var repoMeta = repoMetaRepository.findById("market").orElse(null);
+    if (repoMeta == null) {
+      repoMeta = new GithubRepoMeta();
+      repoMeta.setRepoName("market");
+      try {
+        repoMeta.setLastChange(lastCommit.getCommitDate().getTime());
+      } catch (IOException e) {
+        // TODO Auto-generated catch block
+        e.printStackTrace();
+      }
+    }
+    repoMetaRepository.save(repoMeta);
     
     if (CollectionUtils.isEmpty(products)) {
       // Find on GH
       products = findProductsFromGithubRepo();
-      // Sync to DB
-      // syncGHDataToDB(products);
+      hasChanged = true;
+    }
+    // TODO Sync to DB
+    if (hasChanged) {
+     syncGHDataToDB(products);
     }
     return products;
   }
@@ -61,7 +85,7 @@ public class ProductServiceImpl implements ProductService {
       }
       products.add(product);
     }
-    return List.of();
+    return products;
   }
 
   private void syncGHDataToDB(List<Product> products) {

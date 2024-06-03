@@ -1,27 +1,38 @@
 package com.axonivy.market.github.service.impl;
 
 import java.io.IOException;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.kohsuke.github.GHCommit;
 import org.kohsuke.github.GHContent;
 import org.kohsuke.github.GHOrganization;
 import org.kohsuke.github.GHRepository;
 import org.springframework.stereotype.Service;
+import org.springframework.util.CollectionUtils;
 
 import com.axonivy.market.github.service.AbstractGithubService;
 import com.axonivy.market.github.service.GHAxonIvyMarketRepoService;
+import com.axonivy.market.repository.GithubRepoMetaRepository;
 
 import lombok.extern.log4j.Log4j2;
 
 @Log4j2
 @Service
 public class GHAxonIvyMarketRepoServiceImpl extends AbstractGithubService implements GHAxonIvyMarketRepoService {
-  
+
   private GHOrganization organization;
   private GHRepository repository;
+  private final GithubRepoMetaRepository repoMetaRepository;
+
+  public GHAxonIvyMarketRepoServiceImpl(GithubRepoMetaRepository repoMetaRepository) {
+    this.repoMetaRepository = repoMetaRepository;
+  }
 
   @Override
   public Map<String, List<GHContent>> fetchAllMarketItems() {
@@ -53,15 +64,27 @@ public class GHAxonIvyMarketRepoServiceImpl extends AbstractGithubService implem
   }
 
   @Override
-  public String getLastCommit() {
-    // TODO Auto-generated method stub
+  public GHCommit getLastCommit() {
+    GHCommit lastCommit = null;
+    long lastChange = 0l;
+
+    var marketRepoMetaData = repoMetaRepository.findById("market");
+    if (marketRepoMetaData.isEmpty()) {
+      LocalDateTime now = LocalDateTime.of(2024, 5, 17, 0, 0);
+      ZonedDateTime zdt = now.atZone(ZoneId.systemDefault());
+      lastChange = zdt.toEpochSecond();
+    } else {
+      lastChange = marketRepoMetaData.get().getLastChange();
+    }
+
     try {
-      getRepository().queryCommits().since(null);
-    } catch (IOException e) {
-      // TODO Auto-generated catch block
+      var lastCommits = getRepository().queryCommits().since(lastChange).list().toList();
+      lastCommit = CollectionUtils.firstElement(lastCommits);
+      log.warn("Last Commits {}", lastCommit);
+    } catch (Exception e) {
       e.printStackTrace();
     }
-    return null;
+    return lastCommit;
   }
 
   public GHOrganization getOrganization() throws IOException {
