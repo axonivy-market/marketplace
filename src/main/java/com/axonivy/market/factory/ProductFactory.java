@@ -1,5 +1,6 @@
 package com.axonivy.market.factory;
 
+import com.axonivy.market.constants.MavenConstants;
 import com.axonivy.market.github.model.MavenArtifact;
 import com.axonivy.market.github.model.Meta;
 import com.axonivy.market.model.Product;
@@ -20,6 +21,7 @@ public class ProductFactory {
 
     public static final String META_FILE = "meta.json";
     public static final String LOGO_FILE = "logo.png";
+
 
     private static final ObjectMapper MAPPER = new ObjectMapper();
 
@@ -99,14 +101,13 @@ public class ProductFactory {
         if (StringUtils.isAnyBlank(groupId, artifactID)) {
             return StringUtils.EMPTY;
         }
-        final String MAVEN_METADATA_URL_FORMAT = "%s/%s/%s/maven-metadata.xml";
-        repoUrl = Optional.ofNullable(repoUrl).orElse("https://maven.axonivy.com");
-        groupId = groupId.replace(".", "/");
-        return String.format(MAVEN_METADATA_URL_FORMAT, repoUrl, groupId, artifactID);
+        repoUrl = Optional.ofNullable(repoUrl).orElse(MavenConstants.DEFAULT_IVY_MAVEN_BASE_URL);
+        groupId = groupId.replace(MavenConstants.GROUP_ID_SEPARATOR, MavenConstants.GROUP_ID_URL_SEPARATOR);
+        return String.format(MavenConstants.METADATA_URL_FORMAT, repoUrl, groupId, artifactID);
     }
 
     public static List<MavenArtifact> getMavenArtifacts(List<MavenArtifact> artifacts) {
-        return Optional.ofNullable(artifacts).orElse(Collections.emptyList()).stream().filter(product -> !product.getArtifactId().endsWith("-product")).toList();
+        return Optional.ofNullable(artifacts).orElse(Collections.emptyList()).stream().filter(product -> !product.getArtifactId().endsWith(MavenConstants.PRODUCT_ARTIFACT_POSTFIX)).toList();
     }
 
     private static List<String> getVersionFromArtifactInfo(String repoUrl, String groupId, String artifactID) {
@@ -123,18 +124,18 @@ public class ProductFactory {
     }
 
     private static boolean isSprintVersion(String version) {
-        return version.contains("-m");
+        return version.contains(MavenConstants.SPRINT_RELEASE_POSTFIX);
     }
 
     private static boolean isSnapshotVersion(String version) {
-        return version.endsWith("-SNAPSHOT");
+        return version.endsWith(MavenConstants.SNAPSHOT_RELEASE_POSTFIX);
     }
 
     private static boolean isReleasedVersionOrUnReleaseDevVersion(List<String> versions, String version) {
         if (isSnapshotVersion(version)) {
-            return !versions.contains(version.replace("-SNAPSHOT", StringUtils.EMPTY));
+            return !versions.contains(version.replace(MavenConstants.SNAPSHOT_RELEASE_POSTFIX, StringUtils.EMPTY));
         } else if (isSprintVersion(version)) {
-            return !versions.contains(version.split("-m")[0]);
+            return !versions.contains(version.split(MavenConstants.SPRINT_RELEASE_POSTFIX)[0]);
         }
         return true;
     }
