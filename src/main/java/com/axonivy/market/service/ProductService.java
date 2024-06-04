@@ -1,13 +1,12 @@
 package com.axonivy.market.service;
 
-import java.util.List;
-
 import com.axonivy.market.entity.Product;
 
+import java.util.List;
+
 public interface ProductService {
-  List<Product> fetchAll(String type, String sort, int page, int pageSize);
+    List<Product> fetchAll(String type, String sort, int page, int pageSize);
 
-  Product findByKey(String key);
+    Product findByKey(String key);
 
-  List<String> getVersions(String artifactID);
 }

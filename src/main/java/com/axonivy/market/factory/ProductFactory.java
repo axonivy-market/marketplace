@@ -1,24 +1,13 @@
 package com.axonivy.market.factory;
 
-import com.axonivy.market.constants.MavenConstants;
-import com.axonivy.market.github.model.MavenArtifact;
-import com.axonivy.market.github.model.Meta;
 import com.axonivy.market.entity.Product;
-import com.axonivy.market.utils.LatestVersionComparator;
-import com.axonivy.market.utils.XmlReader;
+import com.axonivy.market.github.model.Meta;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.lang3.StringUtils;
 import org.kohsuke.github.GHContent;
 
 import java.io.IOException;
-import java.util.*;
-import java.util.stream.Stream;
-import com.axonivy.market.entity.Product;
-import com.axonivy.market.github.model.Meta;
-import com.fasterxml.jackson.core.exc.StreamReadException;
-import com.fasterxml.jackson.databind.DatabindException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 
 
 @Log4j2
@@ -70,7 +59,6 @@ public class ProductFactory {
         product.setLanguage(meta.getLanguage());
         product.setIndustry(meta.getIndustry());
         product.setMavenArtifacts(meta.getMavenArtifacts());
-        product.setVersions(getVersionFromMaven(product, true));
         // TODO mapping default data
         // product.setCost() = ghContent->cost ?? 'Free';
         // product.setCompatibility(meta.get) = ghContent->compatibility ?? '';
@@ -86,62 +74,5 @@ public class ProductFactory {
         return null;
     }
 
-    public static List<String> getVersionFromMaven(Product product, boolean isShowDevVersion) {
-        List<MavenArtifact> productArtifact = getMavenArtifacts(product.getMavenArtifacts());
-        Set<String> versions = new HashSet<>();
-        for (MavenArtifact artifact : productArtifact) {
-            versions.addAll(getVersionFromArtifactInfo(artifact.getRepoUrl(), artifact.getGroupId(), artifact.getArtifactId()));
-            Optional.ofNullable(artifact.getArchivedArtifacts()).orElse(Collections.emptyList()).forEach(archivedArtifact -> versions.addAll(getVersionFromArtifactInfo(artifact.getRepoUrl(), archivedArtifact.getGroupId(), archivedArtifact.getArtifactId())));
-        }
-        List<String> versionList = new ArrayList<>(versions);
-        versionList.sort(new LatestVersionComparator());
-        Stream<String> versionStream = versionList.stream();
-        if (isShowDevVersion) {
-            return versionStream.filter(version -> isReleasedVersionOrUnReleaseDevVersion(versionList, version)).sorted(new LatestVersionComparator()).toList();
-        }
-        return versionStream.filter(ProductFactory::isReleaseVersion).sorted(new LatestVersionComparator()).toList();
-    }
 
-    private static String buildMavenMetadataUrlFromArtifact(String repoUrl, String groupId, String artifactID) {
-        if (StringUtils.isAnyBlank(groupId, artifactID)) {
-            return StringUtils.EMPTY;
-        }
-        repoUrl = Optional.ofNullable(repoUrl).orElse(MavenConstants.DEFAULT_IVY_MAVEN_BASE_URL);
-        groupId = groupId.replace(MavenConstants.GROUP_ID_SEPARATOR, MavenConstants.GROUP_ID_URL_SEPARATOR);
-        return String.format(MavenConstants.METADATA_URL_FORMAT, repoUrl, groupId, artifactID);
-    }
-
-    public static List<MavenArtifact> getMavenArtifacts(List<MavenArtifact> artifacts) {
-        return Optional.ofNullable(artifacts).orElse(Collections.emptyList()).stream().filter(product -> !product.getArtifactId().endsWith(MavenConstants.PRODUCT_ARTIFACT_POSTFIX)).toList();
-    }
-
-    private static List<String> getVersionFromArtifactInfo(String repoUrl, String groupId, String artifactID) {
-        List<String> versions = new ArrayList<>();
-        String baseUrl = buildMavenMetadataUrlFromArtifact(repoUrl, groupId, artifactID);
-        if (StringUtils.isNotBlank(baseUrl)) {
-            versions.addAll(XmlReader.readXMLFromUrl(baseUrl));
-        }
-        return versions;
-    }
-
-    private static boolean isReleaseVersion(String version) {
-        return !(isSprintVersion(version) || isSnapshotVersion(version));
-    }
-
-    private static boolean isSprintVersion(String version) {
-        return version.contains(MavenConstants.SPRINT_RELEASE_POSTFIX);
-    }
-
-    private static boolean isSnapshotVersion(String version) {
-        return version.endsWith(MavenConstants.SNAPSHOT_RELEASE_POSTFIX);
-    }
-
-    private static boolean isReleasedVersionOrUnReleaseDevVersion(List<String> versions, String version) {
-        if (isSnapshotVersion(version)) {
-            return !versions.contains(version.replace(MavenConstants.SNAPSHOT_RELEASE_POSTFIX, StringUtils.EMPTY));
-        } else if (isSprintVersion(version)) {
-            return !versions.contains(version.split(MavenConstants.SPRINT_RELEASE_POSTFIX)[0]);
-        }
-        return true;
-    }
 }
