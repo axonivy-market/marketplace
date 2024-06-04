@@ -23,9 +23,9 @@ public class GHAxonIvyMarketRepoServiceImpl extends AbstractGithubService implem
     Map<String, List<GHContent>> ghContentMap = new HashMap<String, List<GHContent>>();
     try {
       var marketOrg = getOrganization("axonivy-market");
-      var directoryContent = getDirectoryContent(marketOrg.getRepository("market"), "market/connector");
+      var directoryContent = getDirectoryContent(marketOrg.getRepository("market"), "market");
       for (var content : directoryContent) {
-        if (content.getName().equals("adobe-acrobat-sign-connector")) {
+        if (content.getName().equals("portal")) {
           log.warn(content.getName());
           extractFileOfContent(content, ghContentMap);
         }
