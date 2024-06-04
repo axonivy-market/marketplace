@@ -80,9 +80,17 @@ public class ProductController {
   public ResponseEntity<List<String>> fetchAllProducts1(@PathVariable(required = true) String productId) {
     log.warn("product id {}",productId);
     var results = service.getVersions(productId);
-    if (CollectionUtils.isEmpty(results)) {
-      return ResponseEntity.noContent().build();
+
+    List<ProductModel> productResource = new ArrayList<>();
+    for (var product : results) {
+      productResource.add(assembler.toModel(product));
     }
-    return ResponseEntity.ok(results);
+
+    Link self = linkTo(methodOn(ProductController.class).fetchAllProducts(type, sort, page, size)).withSelfRel();
+    if (items.size() > 0) {
+      links.addAll(items);
+    }
+    links.add(self);
+    return new ResponseEntity<CollectionModel<ProductModel>>(CollectionModel.of(productResource), HttpStatus.OK);
   }
 }
