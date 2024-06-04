@@ -2,14 +2,13 @@ package com.axonivy.market.controller;
 
 import static com.axonivy.market.constants.CommonConstants.INITIAL_PAGE;
 import static com.axonivy.market.constants.CommonConstants.INITIAL_PAGE_SIZE;
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 
 import java.util.ArrayList;
 import java.util.List;
 
-import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
-import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 import org.springframework.hateoas.CollectionModel;
-import org.springframework.hateoas.EntityModel;
 import org.springframework.hateoas.Link;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -20,7 +19,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.axonivy.market.model.Product;
+import com.axonivy.market.assembler.ProductModelAssembler;
+import com.axonivy.market.model.ProductModel;
 import com.axonivy.market.service.ProductService;
 
 import lombok.extern.log4j.Log4j2;
@@ -31,9 +31,11 @@ import lombok.extern.log4j.Log4j2;
 public class ProductController {
 
   private final ProductService service;
+  private final ProductModelAssembler assembler;
 
-  public ProductController(ProductService service) {
+  public ProductController(ProductService service, ProductModelAssembler assembler) {
     this.service = service;
+    this.assembler = assembler;
   }
 
   @GetMapping()
@@ -46,8 +48,7 @@ public class ProductController {
    * {type} is all, connector, utils, solution
    **/
   @GetMapping("/{type}")
-  public ResponseEntity<CollectionModel<EntityModel<Product>>> fetchAllProducts(
-      @PathVariable(required = false) String type,
+  public ResponseEntity<CollectionModel<ProductModel>> fetchAllProducts(@PathVariable(required = false) String type,
       @RequestParam(required = false, defaultValue = "popularity") String sort,
       @RequestParam(value = "page", required = false) Integer page,
       @RequestParam(value = "size", required = false) Integer size) {
@@ -59,18 +60,12 @@ public class ProductController {
 
     var results = service.fetchAll(type, sort, evalPage, evalPageSize);
     if (CollectionUtils.isEmpty(results)) {
-      return new ResponseEntity<CollectionModel<EntityModel<Product>>>(HttpStatus.NO_CONTENT);
+      return new ResponseEntity<CollectionModel<ProductModel>>(HttpStatus.NO_CONTENT);
     }
 
-    List<EntityModel<Product>> productResource = new ArrayList<>();
+    List<ProductModel> productResource = new ArrayList<>();
     for (var product : results) {
-      Link activityLink = linkTo(
-          methodOn(ProductDetailsController.class).findProduct(product.getKey(), product.getType())).withRel("product");
-
-      Link item = linkTo(methodOn(ProductDetailsController.class).findProduct(product.getKey(), product.getType()))
-          .withRel("item");
-      items.add(item);
-      productResource.add(EntityModel.of(product, activityLink));
+      productResource.add(assembler.toModel(product));
     }
 
     Link self = linkTo(methodOn(ProductController.class).fetchAllProducts(type, sort, page, size)).withSelfRel();
@@ -78,8 +73,6 @@ public class ProductController {
       links.addAll(items);
     }
     links.add(self);
-    return new ResponseEntity<CollectionModel<EntityModel<Product>>>(CollectionModel.of(productResource, links),
-        HttpStatus.OK);
+    return new ResponseEntity<CollectionModel<ProductModel>>(CollectionModel.of(productResource), HttpStatus.OK);
   }
-
 }

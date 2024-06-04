@@ -8,14 +8,17 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
 import com.axonivy.market.entity.GithubRepoMeta;
+import com.axonivy.market.entity.Product;
 import com.axonivy.market.enums.FilterType;
 import com.axonivy.market.factory.ProductFactory;
 import com.axonivy.market.github.service.GHAxonIvyMarketRepoService;
-import com.axonivy.market.model.Product;
 import com.axonivy.market.repository.GithubRepoMetaRepository;
 import com.axonivy.market.repository.ProductRepository;
 import com.axonivy.market.service.ProductService;
 
+import lombok.extern.log4j.Log4j2;
+
+@Log4j2
 @Service
 public class ProductServiceImpl implements ProductService {
 
@@ -45,25 +48,7 @@ public class ProductServiceImpl implements ProductService {
     default -> throw new IllegalArgumentException("Unexpected value: " + type);
     }
 
-    //TODO check last commit
-    var lastCommit = githubService.getLastCommit();
-    if (lastCommit == null) {
-      return products;
-    }
-    var repoMeta = repoMetaRepository.findById("market").orElse(null);
-    if (repoMeta == null) {
-      repoMeta = new GithubRepoMeta();
-      repoMeta.setRepoName("market");
-      try {
-        repoMeta.setLastChange(lastCommit.getCommitDate().getTime());
-      } catch (IOException e) {
-        // TODO Auto-generated catch block
-        e.printStackTrace();
-      }
-    }
-    repoMetaRepository.save(repoMeta);
-    
-    if (CollectionUtils.isEmpty(products)) {
+    if (CollectionUtils.isEmpty(products) || !checkGithubLastCommit()) {
       // Find on GH
       products = findProductsFromGithubRepo();
       hasChanged = true;
@@ -73,6 +58,32 @@ public class ProductServiceImpl implements ProductService {
      syncGHDataToDB(products);
     }
     return products;
+  }
+
+  private boolean checkGithubLastCommit() {
+    // TODO check last commit
+    boolean isLastCommitCovered;
+    long lastCommitTime = 0l;
+    var lastCommit = githubService.getLastCommit();
+    if (lastCommit != null) {
+      try {
+        lastCommitTime = lastCommit.getCommitDate().getTime();
+      } catch (IOException e) {
+        log.error("Check last commit failed", e);
+      }
+    }
+
+    var repoMeta = repoMetaRepository.findByRepoName("market");
+    if (repoMeta != null && repoMeta.getLastChange() == lastCommitTime) {
+      isLastCommitCovered = true;
+    } else {
+      isLastCommitCovered = false;
+      repoMeta = new GithubRepoMeta();
+      repoMeta.setRepoName("market");
+      repoMeta.setLastChange(lastCommitTime);
+      repoMetaRepository.save(repoMeta);
+    }
+    return isLastCommitCovered;
   }
 
   private List<Product> findProductsFromGithubRepo() {

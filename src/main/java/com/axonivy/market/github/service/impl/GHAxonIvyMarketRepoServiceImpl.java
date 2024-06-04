@@ -3,7 +3,6 @@ package com.axonivy.market.github.service.impl;
 import java.io.IOException;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
-import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -68,19 +67,20 @@ public class GHAxonIvyMarketRepoServiceImpl extends AbstractGithubService implem
     GHCommit lastCommit = null;
     long lastChange = 0l;
 
-    var marketRepoMetaData = repoMetaRepository.findById("market");
-    if (marketRepoMetaData.isEmpty()) {
-      LocalDateTime now = LocalDateTime.of(2024, 5, 17, 0, 0);
-      ZonedDateTime zdt = now.atZone(ZoneId.systemDefault());
-      lastChange = zdt.toEpochSecond();
+    var marketRepoMetaData = repoMetaRepository.findByRepoName("market");
+    if (marketRepoMetaData == null || marketRepoMetaData.getLastChange() == 0l) {
+      // Initial commit
+      LocalDateTime now = LocalDateTime.of(2020, 10, 30, 0, 0);
+      lastChange = now.atZone(ZoneId.systemDefault()).toEpochSecond();
     } else {
-      lastChange = marketRepoMetaData.get().getLastChange();
+      lastChange = marketRepoMetaData.getLastChange();
     }
 
     try {
       var lastCommits = getRepository().queryCommits().since(lastChange).list().toList();
+      // Pick top-one
       lastCommit = CollectionUtils.firstElement(lastCommits);
-      log.warn("Last Commits {}", lastCommit);
+      log.warn("Last Commits {}", lastCommit.getCommitDate());
     } catch (Exception e) {
       e.printStackTrace();
     }

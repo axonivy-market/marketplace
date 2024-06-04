@@ -5,8 +5,8 @@ import java.io.IOException;
 import org.apache.commons.lang3.StringUtils;
 import org.kohsuke.github.GHContent;
 
+import com.axonivy.market.entity.Product;
 import com.axonivy.market.github.model.Meta;
-import com.axonivy.market.model.Product;
 import com.fasterxml.jackson.core.exc.StreamReadException;
 import com.fasterxml.jackson.databind.DatabindException;
 import com.fasterxml.jackson.databind.ObjectMapper;
