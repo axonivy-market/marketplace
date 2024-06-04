@@ -14,6 +14,11 @@ import org.kohsuke.github.GHContent;
 import java.io.IOException;
 import java.util.*;
 import java.util.stream.Stream;
+import com.axonivy.market.entity.Product;
+import com.axonivy.market.github.model.Meta;
+import com.fasterxml.jackson.core.exc.StreamReadException;
+import com.fasterxml.jackson.databind.DatabindException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 
 @Log4j2
@@ -139,9 +144,4 @@ public class ProductFactory {
         }
         return true;
     }
-
-    private boolean isDevVersionNotRelease(List<String> versions, String version) {
-        return true;
-    }
-
 }
