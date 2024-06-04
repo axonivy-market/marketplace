@@ -9,4 +9,5 @@ public interface ProductService {
 
     Product findByKey(String key);
 
+    List<Product> findProductsFromGithubRepo();
 }

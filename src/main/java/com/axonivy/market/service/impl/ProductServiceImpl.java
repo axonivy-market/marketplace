@@ -83,7 +83,7 @@ public class ProductServiceImpl implements ProductService {
         return isLastCommitCovered;
     }
 
-    private List<Product> findProductsFromGithubRepo() {
+    public List<Product> findProductsFromGithubRepo() {
         var githubContentMap = githubService.fetchAllMarketItems();
         List<Product> products = new ArrayList<Product>();
         for (var contentKey : githubContentMap.keySet()) {

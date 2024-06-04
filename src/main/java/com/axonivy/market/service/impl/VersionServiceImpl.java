@@ -3,15 +3,23 @@ package com.axonivy.market.service.impl;
 import com.axonivy.market.constants.MavenConstants;
 import com.axonivy.market.entity.Product;
 import com.axonivy.market.github.model.MavenArtifact;
+import com.axonivy.market.service.ProductService;
 import com.axonivy.market.service.VersionService;
 import com.axonivy.market.utils.LatestVersionComparator;
 import com.axonivy.market.utils.XmlReader;
+import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.StringUtils;
 
 import java.util.*;
 import java.util.stream.Stream;
 
 public class VersionServiceImpl implements VersionService {
+    private final ProductService productService;
+
+    public VersionServiceImpl(ProductService productService) {
+        this.productService = productService;
+    }
+
     public static List<MavenArtifact> getMavenArtifacts(List<MavenArtifact> artifacts) {
         return Optional.ofNullable(artifacts).orElse(Collections.emptyList()).stream().filter(product -> !product.getArtifactId().endsWith(MavenConstants.PRODUCT_ARTIFACT_POSTFIX)).toList();
     }
@@ -52,20 +60,33 @@ public class VersionServiceImpl implements VersionService {
     }
 
     @Override
-    public List<String> getVersionFromMaven(Product product, boolean isShowDevVersion, String designerVersion) {
+    public List<String> getVersionsFromMaven(Product product, Boolean isShowDevVersion, String designerVersion) {
+        List<String> versions = getVersionListFromProduct(product);
+        Stream<String> versionStream = versions.stream();
+        if (BooleanUtils.isTrue(isShowDevVersion)) {
+            return versionStream.filter(version -> isReleasedVersionOrUnReleaseDevVersion(versions, version)).sorted(new LatestVersionComparator()).toList();
+        }
+        if (StringUtils.isNotBlank(designerVersion)) {
+            return versionStream.filter(version -> isMatchWithDesignerVersion(version, designerVersion)).toList();
+        }
+
+        return versionStream.filter(this::isReleasedVersion).sorted(new LatestVersionComparator()).toList();
+    }
+
+    private List<String> getVersionListFromProduct(Product product) {
         List<MavenArtifact> productArtifact = getMavenArtifacts(product.getMavenArtifacts());
         Set<String> versions = new HashSet<>();
         for (MavenArtifact artifact : productArtifact) {
             versions.addAll(getVersionsFromArtifactInfo(artifact.getRepoUrl(), artifact.getGroupId(), artifact.getArtifactId()));
-            Optional.ofNullable(artifact.getArchivedArtifacts()).orElse(Collections.emptyList()).forEach(archivedArtifact -> versions.addAll(getVersionFromArtifactInfo(artifact.getRepoUrl(), archivedArtifact.getGroupId(), archivedArtifact.getArtifactId())));
+            Optional.ofNullable(artifact.getArchivedArtifacts()).orElse(Collections.emptyList()).forEach(archivedArtifact -> versions.addAll(getVersionsFromArtifactInfo(artifact.getRepoUrl(), archivedArtifact.getGroupId(), archivedArtifact.getArtifactId())));
         }
         List<String> versionList = new ArrayList<>(versions);
         versionList.sort(new LatestVersionComparator());
-        Stream<String> versionStream = versionList.stream();
-        if (isShowDevVersion) {
-            return versionStream.filter(version -> isReleasedVersionOrUnReleaseDevVersion(versionList, version)).sorted(new LatestVersionComparator()).toList();
-        }
-        return versionStream.filter(this::isReleasedVersion).sorted(new LatestVersionComparator()).toList();
+        return versionList;
+    }
+
+    private boolean isMatchWithDesignerVersion(String version, String designerVersion) {
+        return isReleasedVersion(version) && version.startsWith(designerVersion);
     }
 
     @Override
@@ -79,12 +100,9 @@ public class VersionServiceImpl implements VersionService {
     }
 
     @Override
-    public List<String> getVersionFromArtifactInfo(String repoUrl, String groupId, String artifactID) {
-        List<String> versions = new ArrayList<>();
-        String baseUrl = buildMavenMetadataUrlFromArtifact(repoUrl, groupId, artifactID);
-        if (StringUtils.isNotBlank(baseUrl)) {
-            versions.addAll(XmlReader.readXMLFromUrl(baseUrl));
-        }
-        return versions;
+    public List<String> getVersionsToDisplay(String productId, boolean isShowDevVersion, String designerVersion) {
+        List<String> result = Collections.emptyList();
+        Product targetProduct = productService.findProductsFromGithubRepo().stream().filter(product -> product.getKey().equalsIgnoreCase(productId)).findAny().orElse(null);
+        return Optional.ofNullable(targetProduct).map(product -> getVersionsFromMaven(product, isShowDevVersion, designerVersion)).orElse(result);
     }
 }

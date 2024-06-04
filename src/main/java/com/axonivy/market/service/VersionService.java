@@ -15,9 +15,9 @@ public interface VersionService {
 
     List<String> getVersionsFromArtifactInfo(String repoUrl, String groupId, String artifactID);
 
-    List<String> getVersionFromMaven(Product product, boolean isShowDevVersion, String designerVersion);
+    List<String> getVersionsFromMaven(Product product, Boolean isShowDevVersion, String designerVersion);
 
     String buildMavenMetadataUrlFromArtifact(String repoUrl, String groupId, String artifactID);
 
-    List<String> getVersionFromArtifactInfo(String repoUrl, String groupId, String artifactID);
+    List<String> getVersionsToDisplay(String productId, boolean isShowDevVersion, String designerVersion);
 }
