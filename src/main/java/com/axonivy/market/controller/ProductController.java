@@ -79,18 +79,7 @@ public class ProductController {
   @GetMapping("/{productId}/versions")
   public ResponseEntity<List<String>> fetchAllProducts1(@PathVariable(required = true) String productId) {
     log.warn("product id {}",productId);
-    var results = service.getVersions(productId);
-
-    List<ProductModel> productResource = new ArrayList<>();
-    for (var product : results) {
-      productResource.add(assembler.toModel(product));
-    }
-
-    Link self = linkTo(methodOn(ProductController.class).fetchAllProducts(type, sort, page, size)).withSelfRel();
-    if (items.size() > 0) {
-      links.addAll(items);
-    }
-    links.add(self);
-    return new ResponseEntity<CollectionModel<ProductModel>>(CollectionModel.of(productResource), HttpStatus.OK);
+    service.getVersions(productId);
+    return new ResponseEntity<List<String>>(service.getVersions(productId), HttpStatus.OK);
   }
 }
