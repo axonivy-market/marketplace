@@ -3,7 +3,7 @@ package com.axonivy.market.factory;
 import com.axonivy.market.constants.MavenConstants;
 import com.axonivy.market.github.model.MavenArtifact;
 import com.axonivy.market.github.model.Meta;
-import com.axonivy.market.model.Product;
+import com.axonivy.market.entity.Product;
 import com.axonivy.market.utils.LatestVersionComparator;
 import com.axonivy.market.utils.XmlReader;
 import com.fasterxml.jackson.databind.ObjectMapper;
