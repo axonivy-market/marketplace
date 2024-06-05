@@ -2,6 +2,8 @@ package com.axonivy.market.enums;
 
 import org.apache.commons.lang3.StringUtils;
 
+import com.axonivy.market.exceptions.NotFoundException;
+
 import lombok.Getter;
 
 @Getter
@@ -21,6 +23,6 @@ public enum FilterType {
         return filter;
       }
     }
-    return ALL;
+    throw new NotFoundException("Not filter: " + type);
   }
 }

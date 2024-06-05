@@ -8,6 +8,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import com.axonivy.market.constants.GitHubConstants;
 import org.kohsuke.github.GHCommit;
 import org.kohsuke.github.GHContent;
 import org.kohsuke.github.GHOrganization;
@@ -37,7 +38,7 @@ public class GHAxonIvyMarketRepoServiceImpl extends AbstractGithubService implem
   public Map<String, List<GHContent>> fetchAllMarketItems() {
     Map<String, List<GHContent>> ghContentMap = new HashMap<String, List<GHContent>>();
     try {
-      var directoryContent = getDirectoryContent(getRepository(), "market");
+      var directoryContent = getDirectoryContent(getRepository(), GitHubConstants.AXON_IVY_MARKET_PLACE_PATH);
       for (var content : directoryContent) {
         if (content.getName().equals("portal")) {
           log.warn(content.getName());
@@ -71,7 +72,7 @@ public class GHAxonIvyMarketRepoServiceImpl extends AbstractGithubService implem
     GHCommit lastCommit = null;
     long lastChange = 0l;
 
-    var marketRepoMetaData = repoMetaRepository.findByRepoName("market");
+    var marketRepoMetaData = repoMetaRepository.findByRepoName(GitHubConstants.AXON_IVY_MARKET_PLACE_REPO_NAME);
     if (marketRepoMetaData == null || marketRepoMetaData.getLastChange() == 0l) {
       // Initial commit
       LocalDateTime now = LocalDateTime.of(2020, 10, 30, 0, 0);
@@ -93,15 +94,24 @@ public class GHAxonIvyMarketRepoServiceImpl extends AbstractGithubService implem
 
   public GHOrganization getOrganization() throws IOException {
     if (organization == null) {
-      organization = getOrganization("axonivy-market");
+      organization = getOrganization(GitHubConstants.AXON_IVY_MARKET_ORGANIZATION_NAME);
     }
     return organization;
   }
 
   public GHRepository getRepository() throws IOException {
     if (repository == null) {
-      repository = getOrganization().getRepository("market");
+      repository = getOrganization().getRepository(GitHubConstants.AXON_IVY_MARKET_PLACE_REPO_NAME);
     }
     return repository;
+  }
+@Override
+  public GHContent getContentFromGHRepoAndTag(String repoName,String filePath, String tagVersion) {
+    try {
+        return getOrganization().getRepository(repoName).getFileContent(filePath, tagVersion);
+    } catch (IOException e) {
+        log.error("Cannot Get Content From File Directory",e);
+        return null;
+    }
   }
 }

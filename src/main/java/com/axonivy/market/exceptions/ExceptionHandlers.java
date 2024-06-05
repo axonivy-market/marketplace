@@ -6,14 +6,22 @@ import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
 
-import com.axonivy.market.model.ApiError;
+import com.axonivy.market.model.Message;
 
 @ControllerAdvice
 public class ExceptionHandlers extends ResponseEntityExceptionHandler {
 
   @ExceptionHandler(MissingHeaderException.class)
   protected ResponseEntity<Object> handleMissingServletRequestParameter(MissingHeaderException missingHeaderException) {
-    ApiError apiError = new ApiError(HttpStatus.BAD_REQUEST, missingHeaderException.getMessage());
-    return new ResponseEntity<>(apiError, apiError.getStatus());
+    var errorMessage = new Message();
+    errorMessage.setMessage(missingHeaderException.getMessage());
+    return new ResponseEntity<>(errorMessage, HttpStatus.BAD_REQUEST);
+  }
+
+  @ExceptionHandler(NotFoundException.class)
+  protected ResponseEntity<Object> handleNotFoundException(NotFoundException notFoundException) {
+    var errorMessage = new Message();
+    errorMessage.setErrorCode(notFoundException.getMessage());
+    return new ResponseEntity<>(errorMessage, HttpStatus.NOT_FOUND);
   }
 }

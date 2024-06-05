@@ -11,4 +11,6 @@ public interface GHAxonIvyMarketRepoService {
   Map<String, List<GHContent>> fetchAllMarketItems();
 
   GHCommit getLastCommit();
+
+  GHContent getContentFromGHRepoAndTag(String repoName,String filePath, String tagVersion);
 }
