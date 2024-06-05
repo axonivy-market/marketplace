@@ -109,6 +109,16 @@ public class GHAxonIvyMarketRepoServiceImpl extends AbstractGithubService implem
     }
 
     @Override
+    public GHContent getContentFromGHRepo(String repoName, String filePath) {
+        try {
+            return getOrganization().getRepository(repoName).getFileContent(filePath);
+        } catch (IOException e) {
+            log.error("Cannot Get Content From File Directory", e);
+            return null;
+        }
+    }
+
+    @Override
     public List<GHTag> getTagsFromRepoName(String repoName) {
         try {
             return getOrganization().getRepository(repoName).listTags().toList();
