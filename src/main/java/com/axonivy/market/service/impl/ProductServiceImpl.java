@@ -43,6 +43,11 @@ public class ProductServiceImpl implements ProductService {
   }
 
     @Override
+    public List<Product> fetchAll(String type, String sort, int page, int pageSize) {
+        return null;
+    }
+
+    @Override
     public Product findByKey(String key) {
         return null;
     }
@@ -73,7 +78,7 @@ public class ProductServiceImpl implements ProductService {
     }
     return products;
   }
-
+ 
         if (CollectionUtils.isEmpty(products) || !checkGithubLastCommit()) {
             // Find on GH
             products = findProductsFromGithubRepo();
@@ -86,31 +91,31 @@ public class ProductServiceImpl implements ProductService {
         return products;
     }
 
-    private boolean checkGithubLastCommit() {
-        // TODO check last commit
-        boolean isLastCommitCovered;
-        long lastCommitTime = 0L;
-        var lastCommit = githubService.getLastCommit();
-        if (lastCommit != null) {
-            try {
-                lastCommitTime = lastCommit.getCommitDate().getTime();
-            } catch (IOException e) {
-                log.error("Check last commit failed", e);
-            }
+private boolean checkGithubLastCommit() {
+    // TODO check last commit
+    boolean isLastCommitCovered;
+    long lastCommitTime = 0l;
+    var lastCommit = githubService.getLastCommit();
+    if (lastCommit != null) {
+        try {
+            lastCommitTime = lastCommit.getCommitDate().getTime();
+        } catch (IOException e) {
+            log.error("Check last commit failed", e);
         }
-
-        var repoMeta = repoMetaRepository.findByRepoName("market");
-        if (repoMeta != null && repoMeta.getLastChange() == lastCommitTime) {
-            isLastCommitCovered = true;
-        } else {
-            isLastCommitCovered = false;
-            repoMeta = new GithubRepoMeta();
-            repoMeta.setRepoName("market");
-            repoMeta.setLastChange(lastCommitTime);
-            repoMetaRepository.save(repoMeta);
-        }
-        return isLastCommitCovered;
     }
+
+    var repoMeta = repoMetaRepository.findByRepoName("market");
+    if (repoMeta != null && repoMeta.getLastChange() == lastCommitTime) {
+        isLastCommitCovered = true;
+    } else {
+        isLastCommitCovered = false;
+        repoMeta = new GithubRepoMeta();
+        repoMeta.setRepoName("market");
+        repoMeta.setLastChange(lastCommitTime);
+        repoMetaRepository.save(repoMeta);
+    }
+    return isLastCommitCovered;
+}
 
   private Page<Product> findProductsFromGithubRepo() {
     var githubContentMap = githubService.fetchAllMarketItems();
@@ -122,8 +127,10 @@ public class ProductServiceImpl implements ProductService {
       }
       products.and(product);
     }
+      return products;
+  }
 
-  private void syncGHDataToDB(List< ProductModel > products) {
+  private void syncGHDataToDB(List<Product> products) {
     List<Product> modifiedProducts = new ArrayList<>();
     List<Product> deletedProducts = new ArrayList<>();
     var existingData = repo.findAll();
@@ -151,4 +158,16 @@ public class ProductServiceImpl implements ProductService {
       repo.deleteAll(deletedProducts);
     }
   }
+
+@Override
+public Product findByKey(String key) {
+    // TODO Auto-generated method stub
+    return null;
+}
+
+@Override
+public List<Product> fetchAll(String type, String sort, int page, int pageSize) {
+    // TODO Auto-generated method stub
+    return null;
+}
 }

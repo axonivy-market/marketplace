@@ -16,7 +16,6 @@ public class ProductFactory {
     public static final String META_FILE = "meta.json";
     public static final String LOGO_FILE = "logo.png";
 
-
     private static final ObjectMapper MAPPER = new ObjectMapper();
 
     public static Product mappingByGHContent(Product product, GHContent content) {
@@ -58,7 +57,6 @@ public class ProductFactory {
         product.setStatusBadgeUrl(meta.getStatusBadgeUrl());
         product.setLanguage(meta.getLanguage());
         product.setIndustry(meta.getIndustry());
-        product.setMavenArtifacts(meta.getMavenArtifacts());
         // TODO mapping default data
         // product.setCost() = ghContent->cost ?? 'Free';
         // product.setCompatibility(meta.get) = ghContent->compatibility ?? '';
