@@ -3,7 +3,10 @@ package com.axonivy.market.service.impl;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
@@ -26,36 +29,36 @@ public class ProductServiceImpl implements ProductService {
   private final GHAxonIvyMarketRepoService githubService;
   private final GithubRepoMetaRepository repoMetaRepository;
 
-  public ProductServiceImpl(ProductRepository repo, GHAxonIvyMarketRepoService githubService, GithubRepoMetaRepository repoMetaRepository) {
+  public ProductServiceImpl(ProductRepository repo, GHAxonIvyMarketRepoService githubService,
+      GithubRepoMetaRepository repoMetaRepository) {
     this.repo = repo;
     this.githubService = githubService;
     this.repoMetaRepository = repoMetaRepository;
   }
 
   /**
-    Find in DB first, if no call GH API
-    TODO When we must refresh data
-  **/
+   * Find in DB first, if no call GH API TODO When we must refresh data
+   * 
+   * @throws Exception
+   **/
   @Override
-  public List<Product> fetchAll(String type, String sort, int page, int pageSize) {
+  public Page<Product> fetchAll(String type, Pageable pageable) {
     boolean hasChanged = false;
-    List<Product> products = new ArrayList<Product>();
+    Page<Product> products = Page.empty();
     switch (FilterType.of(type)) {
-    case ALL -> products.addAll(repo.findAll());
+    case ALL -> products = repo.findAll(pageable);
     case CONNECTORS, UTILITIES, SOLUTIONS -> {
-      products.addAll(repo.findByType(type));
+      products = repo.findByType(type, pageable);
     }
-    default -> throw new IllegalArgumentException("Unexpected value: " + type);
+    default -> products = Page.empty();
     }
 
-    if (CollectionUtils.isEmpty(products) || !checkGithubLastCommit()) {
-      // Find on GH
+    if (products.isEmpty() || !checkGithubLastCommit()) {
       products = findProductsFromGithubRepo();
       hasChanged = true;
     }
-    // TODO Sync to DB
     if (hasChanged) {
-     syncGHDataToDB(products);
+      syncGHDataToDB(products.toList());
     }
     return products;
   }
@@ -86,26 +89,56 @@ public class ProductServiceImpl implements ProductService {
     return isLastCommitCovered;
   }
 
-  private List<Product> findProductsFromGithubRepo() {
+  private Page<Product> findProductsFromGithubRepo() {
     var githubContentMap = githubService.fetchAllMarketItems();
-    List<Product> products = new ArrayList<Product>();
+    Page<Product> products = Page.empty();
     for (var contentKey : githubContentMap.keySet()) {
       Product product = new Product();
       for (var content : githubContentMap.get(contentKey)) {
         ProductFactory.mappingByGHContent(product, content);
       }
-      products.add(product);
+      products.and(product);
     }
     return products;
   }
 
   private void syncGHDataToDB(List<Product> products) {
-    // TODO Store to MongoDB
-    repo.saveAll(products);
+    List<Product> modifiedProducts = new ArrayList<>();
+    List<Product> deletedProducts = new ArrayList<>();
+    var existingData = repo.findAll();
+    for (var product : existingData) {
+      var modifiedProduct = products.stream().filter(ghProduct -> product.getKey().equals(ghProduct.getKey())).findAny()
+          .orElse(null);
+      if (modifiedProduct == null) {
+        deletedProducts.add(product);
+      } else {
+        modifiedProducts.add(modifiedProduct);
+      }
+    }
+    var newProducts = products.stream().filter(ghProduct -> !modifiedProducts.contains(ghProduct))
+        .collect(Collectors.toList());
+    // Update existing products
+    if (!CollectionUtils.isEmpty(modifiedProducts)) {
+      repo.saveAll(modifiedProducts);
+    }
+    // Insert new products
+    if (!CollectionUtils.isEmpty(newProducts)) {
+      repo.saveAll(newProducts);
+    }
+    // Delete obsoleted products
+    if (!CollectionUtils.isEmpty(deletedProducts)) {
+      repo.deleteAll(deletedProducts);
+    }
   }
 
   @Override
   public Product findByKey(String key) {
+    // TODO Auto-generated method stub
+    return null;
+  }
+
+  @Override
+  public List<Product> fetchAll(String type, String sort, int page, int pageSize) {
     // TODO Auto-generated method stub
     return null;
   }

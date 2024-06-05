@@ -1,6 +1,10 @@
 package com.axonivy.market.entity;
 
+import java.io.Serializable;
 import java.util.List;
+
+import org.apache.commons.lang3.builder.EqualsBuilder;
+import org.apache.commons.lang3.builder.HashCodeBuilder;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -11,7 +15,9 @@ import lombok.Setter;
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
-public class Product {
+public class Product implements Serializable {
+
+  private static final long serialVersionUID = -8770801877877277258L;
   private String key;
   private String name;
   private String version;
@@ -33,4 +39,22 @@ public class Product {
   private Boolean validate;
   private Boolean contactUs;
   private Integer installationCount;
+
+  @Override
+  public int hashCode() {
+    HashCodeBuilder builder = new HashCodeBuilder();
+    builder.append(key);
+    return builder.hashCode();
+  }
+
+  @Override
+  public boolean equals(Object obj) {
+    if (obj == null) {
+      return false;
+    }
+    EqualsBuilder builder = new EqualsBuilder();
+    builder.append(key, ((Product) obj).getKey());
+    return builder.isEquals();
+  }
+
 }
