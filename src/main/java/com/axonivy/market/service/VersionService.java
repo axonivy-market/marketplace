@@ -3,6 +3,7 @@ package com.axonivy.market.service;
 import com.axonivy.market.entity.Product;
 
 import java.util.List;
+import java.util.Map;
 
 public interface VersionService {
     boolean isReleasedVersionOrUnReleaseDevVersion(List<String> versions, String version);
@@ -15,9 +16,11 @@ public interface VersionService {
 
     List<String> getVersionsFromArtifactInfo(String repoUrl, String groupId, String artifactID);
 
-    List<String> getVersionsFromMaven(Product product, Boolean isShowDevVersion, String designerVersion);
+    List<String> getVersionsFromProduct(Product product, Boolean isShowDevVersion, String designerVersion);
 
     String buildMavenMetadataUrlFromArtifact(String repoUrl, String groupId, String artifactID);
 
     List<String> getVersionsToDisplay(String productId, boolean isShowDevVersion, String designerVersion);
+
+    Map<String, List<String>> getArtifactsToDisplay(String productId);
 }

@@ -6,6 +6,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/product-details")
@@ -23,9 +24,14 @@ public class ProductDetailsController {
     }
 
     @GetMapping("/{productId}/versions")
-    public ResponseEntity<List<String>> fetchAllProducts1(@PathVariable(required = true) String productId,
+    public ResponseEntity<List<String>> fecthAllVersionFromProduct(@PathVariable(required = true) String productId,
                                                           @RequestParam(required = false, value = "showDevVersion") Boolean isDevVersionsDisplayed,
                                                           @RequestParam(required = false, value = "designerVersion") String designerVersion) {
         return new ResponseEntity<>(service.getVersionsToDisplay(productId, isDevVersionsDisplayed, designerVersion), HttpStatus.OK);
+    }
+
+    @GetMapping("/{productId}/artifacts")
+    public ResponseEntity<Map<String, List<String>>> fetchAllArtifactsFromProduct(@PathVariable(required = true) String productId){
+        return new ResponseEntity<>(service.getArtifactsToDisplay(productId), HttpStatus.OK);
     }
 }
