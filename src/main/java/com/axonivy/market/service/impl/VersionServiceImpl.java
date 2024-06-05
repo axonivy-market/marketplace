@@ -13,12 +13,17 @@ import org.springframework.stereotype.Service;
 
 import java.util.*;
 import java.util.stream.Stream;
+
 @Service
 public class VersionServiceImpl implements VersionService {
     private final ProductService productService;
 
     public VersionServiceImpl(ProductService productService) {
         this.productService = productService;
+    }
+
+    public static List<MavenArtifact> getMavenArtifacts(List<MavenArtifact> artifacts) {
+        return Optional.ofNullable(artifacts).orElse(Collections.emptyList()).stream().filter(product -> !product.getArtifactId().endsWith(MavenConstants.PRODUCT_ARTIFACT_POSTFIX)).toList();
     }
 
     //TODO: need to rework this method
@@ -44,7 +49,7 @@ public class VersionServiceImpl implements VersionService {
     }
 
     private List<String> getVersionsFromMaven(Product product) {
-        List<MavenArtifact> productArtifact = getMavenArtifacts(product.getMavenArtifacts());
+        List<MavenArtifact> productArtifact = Collections.emptyList();
         Set<String> versions = new HashSet<>();
         for (MavenArtifact artifact : productArtifact) {
             versions.addAll(getVersionsFromArtifactInfo(artifact.getRepoUrl(), artifact.getGroupId(), artifact.getArtifactId()));
@@ -53,10 +58,6 @@ public class VersionServiceImpl implements VersionService {
         List<String> versionList = new ArrayList<>(versions);
         versionList.sort(new LatestVersionComparator());
         return versionList;
-    }
-
-    public static List<MavenArtifact> getMavenArtifacts(List<MavenArtifact> artifacts) {
-        return Optional.ofNullable(artifacts).orElse(Collections.emptyList()).stream().filter(product -> !product.getArtifactId().endsWith(MavenConstants.PRODUCT_ARTIFACT_POSTFIX)).toList();
     }
 
     @Override
@@ -113,7 +114,7 @@ public class VersionServiceImpl implements VersionService {
         Map<String, List<String>> artifactMap = Collections.emptyMap();
         Product targetProduct = productService.findProductsFromGithubRepo().stream().filter(product -> product.getKey().equalsIgnoreCase(productId)).findAny().orElse(null);
 
-        if(Objects.isNull(targetProduct)){
+        if (Objects.isNull(targetProduct)) {
             return artifactMap;
         }
 
