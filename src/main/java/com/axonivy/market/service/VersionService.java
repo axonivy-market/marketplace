@@ -16,11 +16,12 @@ public interface VersionService {
 
     List<String> getVersionsFromArtifactInfo(String repoUrl, String groupId, String artifactID);
 
+    //TODO: need to rework this method
+    List<String> getVersionsToDisplay(String productId, Boolean isShowDevVersion, String designerVersion);
+
     List<String> getVersionsFromProduct(Product product, Boolean isShowDevVersion, String designerVersion);
 
     String buildMavenMetadataUrlFromArtifact(String repoUrl, String groupId, String artifactID);
-
-    List<String> getVersionsToDisplay(String productId, boolean isShowDevVersion, String designerVersion);
-
+    
     Map<String, List<String>> getArtifactsToDisplay(String productId);
 }

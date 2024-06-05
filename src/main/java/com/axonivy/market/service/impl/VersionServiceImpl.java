@@ -3,12 +3,13 @@ package com.axonivy.market.service.impl;
 import com.axonivy.market.constants.MavenConstants;
 import com.axonivy.market.entity.Product;
 import com.axonivy.market.github.model.MavenArtifact;
-import com.axonivy.market.service.ProductService;
+import com.axonivy.market.github.service.GHAxonIvyMarketRepoService;
 import com.axonivy.market.service.VersionService;
 import com.axonivy.market.utils.LatestVersionComparator;
 import com.axonivy.market.utils.XmlReader;
 import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.kohsuke.github.GHTag;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
@@ -16,10 +17,10 @@ import java.util.stream.Stream;
 
 @Service
 public class VersionServiceImpl implements VersionService {
-    private final ProductService productService;
+    private final GHAxonIvyMarketRepoService gitHubService;
 
-    public VersionServiceImpl(ProductService productService) {
-        this.productService = productService;
+    public VersionServiceImpl(GHAxonIvyMarketRepoService gitHubService) {
+        this.gitHubService = gitHubService;
     }
 
     public static List<MavenArtifact> getMavenArtifacts(List<MavenArtifact> artifacts) {
@@ -28,11 +29,16 @@ public class VersionServiceImpl implements VersionService {
 
     //TODO: need to rework this method
     @Override
-    public List<String> getVersionsToDisplay(String productId, boolean isShowDevVersion, String designerVersion) {
-//        List<String> result = Collections.emptyList();
-//        Product targetProduct = productService.findProductsFromGithubRepo().stream().filter(product -> product.getKey().equalsIgnoreCase(productId)).findAny().orElse(null);
-//        return Optional.ofNullable(targetProduct).map(product -> getVersionsFromProduct(product, isShowDevVersion, designerVersion)).orElse(result);
-        return null;
+    public List<String> getVersionsToDisplay(String productId, Boolean isShowDevVersion, String designerVersion) {
+        if (BooleanUtils.isTrue(isShowDevVersion)) {
+            //TODO: hanlde dev version
+        }
+        List<String> versions = gitHubService.getTagsFromRepoName(productId).stream().map(GHTag::getName).toList();
+        if (StringUtils.isNotBlank(designerVersion)) {
+            //TODO: handle it please
+            return versions.stream().filter(version -> version.contains(designerVersion)).toList();
+        }
+        return versions;
     }
 
     @Override
@@ -112,16 +118,8 @@ public class VersionServiceImpl implements VersionService {
 
     @Override
     public Map<String, List<String>> getArtifactsToDisplay(String productId) {
-//        Map<String, List<String>> artifactMap = Collections.emptyMap();
-//        Product targetProduct = productService.findProductsFromGithubRepo().stream().filter(product -> product.getKey().equalsIgnoreCase(productId)).findAny().orElse(null);
-//
-//        if (Objects.isNull(targetProduct)) {
-//            return artifactMap;
-//        }
-//
-//        MavenArtifact productArtifact = targetProduct.getMavenArtifacts().stream().filter(artifact -> artifact.getName().endsWith(MavenConstants.PRODUCT_ARTIFACT_POSTFIX)).findAny().orElse(null);
-//        List<MavenArtifact> additionalArtifacts = targetProduct.getMavenArtifacts().stream().filter(artifact -> !artifact.getName().endsWith(MavenConstants.PRODUCT_ARTIFACT_POSTFIX)).toList();
-//        return artifactMap;
+        List<String> versions = gitHubService.getTagsFromRepoName(productId).stream().map(GHTag::getName).toList();
+
         return null;
     }
 }
