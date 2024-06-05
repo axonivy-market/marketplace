@@ -29,9 +29,10 @@ public class VersionServiceImpl implements VersionService {
     //TODO: need to rework this method
     @Override
     public List<String> getVersionsToDisplay(String productId, boolean isShowDevVersion, String designerVersion) {
-        List<String> result = Collections.emptyList();
-        Product targetProduct = productService.findProductsFromGithubRepo().stream().filter(product -> product.getKey().equalsIgnoreCase(productId)).findAny().orElse(null);
-        return Optional.ofNullable(targetProduct).map(product -> getVersionsFromProduct(product, isShowDevVersion, designerVersion)).orElse(result);
+//        List<String> result = Collections.emptyList();
+//        Product targetProduct = productService.findProductsFromGithubRepo().stream().filter(product -> product.getKey().equalsIgnoreCase(productId)).findAny().orElse(null);
+//        return Optional.ofNullable(targetProduct).map(product -> getVersionsFromProduct(product, isShowDevVersion, designerVersion)).orElse(result);
+        return null;
     }
 
     @Override
@@ -111,15 +112,16 @@ public class VersionServiceImpl implements VersionService {
 
     @Override
     public Map<String, List<String>> getArtifactsToDisplay(String productId) {
-        Map<String, List<String>> artifactMap = Collections.emptyMap();
-        Product targetProduct = productService.findProductsFromGithubRepo().stream().filter(product -> product.getKey().equalsIgnoreCase(productId)).findAny().orElse(null);
-
-        if (Objects.isNull(targetProduct)) {
-            return artifactMap;
-        }
-
-        MavenArtifact productArtifact = targetProduct.getMavenArtifacts().stream().filter(artifact -> artifact.getName().endsWith(MavenConstants.PRODUCT_ARTIFACT_POSTFIX)).findAny().orElse(null);
-        List<MavenArtifact> additionalArtifacts = targetProduct.getMavenArtifacts().stream().filter(artifact -> !artifact.getName().endsWith(MavenConstants.PRODUCT_ARTIFACT_POSTFIX)).toList();
-        return artifactMap;
+//        Map<String, List<String>> artifactMap = Collections.emptyMap();
+//        Product targetProduct = productService.findProductsFromGithubRepo().stream().filter(product -> product.getKey().equalsIgnoreCase(productId)).findAny().orElse(null);
+//
+//        if (Objects.isNull(targetProduct)) {
+//            return artifactMap;
+//        }
+//
+//        MavenArtifact productArtifact = targetProduct.getMavenArtifacts().stream().filter(artifact -> artifact.getName().endsWith(MavenConstants.PRODUCT_ARTIFACT_POSTFIX)).findAny().orElse(null);
+//        List<MavenArtifact> additionalArtifacts = targetProduct.getMavenArtifacts().stream().filter(artifact -> !artifact.getName().endsWith(MavenConstants.PRODUCT_ARTIFACT_POSTFIX)).toList();
+//        return artifactMap;
+        return null;
     }
 }
