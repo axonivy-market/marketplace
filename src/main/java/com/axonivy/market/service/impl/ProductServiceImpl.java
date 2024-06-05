@@ -6,7 +6,6 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import com.axonivy.market.enums.FilterType;
-import com.axonivy.market.model.ProductModel;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -20,12 +19,7 @@ import com.axonivy.market.repository.GithubRepoMetaRepository;
 import com.axonivy.market.repository.ProductRepository;
 import com.axonivy.market.service.ProductService;
 import lombok.extern.log4j.Log4j2;
-import org.springframework.stereotype.Service;
-import org.springframework.util.CollectionUtils;
 
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
 
 @Service
 @Log4j2
@@ -41,16 +35,6 @@ public class ProductServiceImpl implements ProductService {
     this.githubService = githubService;
     this.repoMetaRepository = repoMetaRepository;
   }
-
-    @Override
-    public List<Product> fetchAll(String type, String sort, int page, int pageSize) {
-        return null;
-    }
-
-    @Override
-    public Product findByKey(String key) {
-        return null;
-    }
 
     /**
    * Find in DB first, if no call GH API TODO When we must refresh data
@@ -78,18 +62,6 @@ public class ProductServiceImpl implements ProductService {
     }
     return products;
   }
- 
-        if (CollectionUtils.isEmpty(products) || !checkGithubLastCommit()) {
-            // Find on GH
-            products = findProductsFromGithubRepo();
-            hasChanged = true;
-        }
-        // TODO Sync to DB
-        if (hasChanged) {
-            syncGHDataToDB(products);
-        }
-        return products;
-    }
 
 private boolean checkGithubLastCommit() {
     // TODO check last commit
