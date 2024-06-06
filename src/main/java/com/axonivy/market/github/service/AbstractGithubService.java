@@ -12,8 +12,7 @@ import com.axonivy.market.github.GitHubProvider;
 public abstract class AbstractGithubService {
 
   protected GHOrganization getOrganization(String orgName) throws IOException {
-    var github = GitHubProvider.get();
-    return github.getOrganization(orgName);
+    return GitHubProvider.get().getOrganization(orgName);
   }
 
   protected List<GHContent> getDirectoryContent(GHRepository ghRepository, String path) throws IOException {
@@ -22,4 +21,5 @@ public abstract class AbstractGithubService {
     }
     return null;
   }
+
 }
