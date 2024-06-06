@@ -8,21 +8,23 @@ import lombok.Getter;
 
 @Getter
 public enum FilterType {
-  ALL("all"), CONNECTORS("connectors"), UTILITIES("utilities"), SOLUTIONS("solutions");
+  ALL("all", ""), CONNECTORS("connectors", "connector"), UTILITIES("utilities", "util"), SOLUTIONS("solutions", "solution");
 
-  private String type;
+  private String option;
+  private String code;
 
-  private FilterType(String type) {
-    this.type = type;
+  private FilterType(String option, String code) {
+    this.option = option;
+    this.code = code;
   }
 
-  public static FilterType of(String type) {
-    type = StringUtils.isBlank(type) ? type : type.trim();
+  public static FilterType of(String option) {
+    option = StringUtils.isBlank(option) ? option : option.trim();
     for (var filter : values()) {
-      if (StringUtils.equalsIgnoreCase(filter.type, type)) {
+      if (StringUtils.equalsIgnoreCase(filter.option, option)) {
         return filter;
       }
     }
-    throw new NotFoundException("Not filter: " + type);
+    throw new NotFoundException("Not found filter option: " + option);
   }
 }

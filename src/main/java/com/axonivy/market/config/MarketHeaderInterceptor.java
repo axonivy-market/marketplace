@@ -8,16 +8,17 @@ import com.axonivy.market.exceptions.MissingHeaderException;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import static com.axonivy.market.constants.CommonConstants.*;
 
 @Component
-public class HeaderInterceptor implements HandlerInterceptor {
+public class MarketHeaderInterceptor implements HandlerInterceptor {
 
   @Value("${request.header}")
   private String requestHeader;
 
   @Override
   public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
-    if (!requestHeader.equals(request.getHeader("X-Requested-By"))) {
+    if (!requestHeader.equals(request.getHeader(REQUESTED_BY))) {
       throw new MissingHeaderException();
     }
     return true;

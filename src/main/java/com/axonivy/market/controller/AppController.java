@@ -1,5 +1,7 @@
 package com.axonivy.market.controller;
 
+import static com.axonivy.market.constants.RequestMappingConstants.ROOT;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -9,7 +11,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.axonivy.market.model.Message;
 
 @RestController
-@RequestMapping("/")
+@RequestMapping(ROOT)
 public class AppController {
 
   @GetMapping

@@ -6,13 +6,18 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.domain.Sort.Order;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
 import com.axonivy.market.entity.GithubRepoMeta;
 import com.axonivy.market.entity.Product;
 import com.axonivy.market.enums.FilterType;
+import com.axonivy.market.enums.SortOption;
 import com.axonivy.market.factory.ProductFactory;
 import com.axonivy.market.github.service.GHAxonIvyMarketRepoService;
 import com.axonivy.market.repository.GithubRepoMetaRepository;
@@ -36,23 +41,19 @@ public class ProductServiceImpl implements ProductService {
     this.repoMetaRepository = repoMetaRepository;
   }
 
-  /**
-   * Find in DB first, if no call GH API TODO When we must refresh data
-   * 
-   * @throws Exception
-   **/
   @Override
-  public Page<Product> fetchAll(String type, Pageable pageable) {
-    boolean hasChanged = false;
+  public Page<Product> findProductsByType(String type, Pageable pageable) {
+    final FilterType filterType = FilterType.of(type);
+    Pageable unifiedPageabe = refinePagination(pageable);
     Page<Product> products = Page.empty();
-    switch (FilterType.of(type)) {
-    case ALL -> products = repo.findAll(pageable);
+    switch (filterType) {
+    case ALL -> products = repo.findAll(unifiedPageabe);
     case CONNECTORS, UTILITIES, SOLUTIONS -> {
-      products = repo.findByType(type, pageable);
+      products = repo.findByType(filterType.getCode(), pageable);
     }
     default -> products = Page.empty();
     }
-
+    boolean hasChanged = false;
     if (products.isEmpty() || !checkGithubLastCommit()) {
       products = findProductsFromGithubRepo();
       hasChanged = true;
@@ -61,6 +62,20 @@ public class ProductServiceImpl implements ProductService {
       syncGHDataToDB(products.toList());
     }
     return products;
+  }
+
+  private Pageable refinePagination(Pageable pageable) {
+    PageRequest pageRequest = (PageRequest) pageable;
+    if (pageable != null && pageable.getSort() != null) {
+      List<Order> orders = new ArrayList<Sort.Order>();
+      for (var sort : pageable.getSort()) {
+        final SortOption sortOption = SortOption.of(sort.getProperty());
+        Order order = new Order(sort.getDirection(), sortOption.getCode());
+        orders.add(order);
+      }
+      pageRequest = PageRequest.of(pageable.getPageNumber(), pageable.getPageSize(), Sort.by(orders));
+    }
+    return pageRequest;
   }
 
   private boolean checkGithubLastCommit() {
@@ -82,6 +97,7 @@ public class ProductServiceImpl implements ProductService {
     } else {
       isLastCommitCovered = false;
       repoMeta = new GithubRepoMeta();
+      repoMeta.setRepoURL(lastCommit.getOwner().getUrl().getPath());
       repoMeta.setRepoName("market");
       repoMeta.setLastChange(lastCommitTime);
       repoMetaRepository.save(repoMeta);
@@ -91,15 +107,15 @@ public class ProductServiceImpl implements ProductService {
 
   private Page<Product> findProductsFromGithubRepo() {
     var githubContentMap = githubService.fetchAllMarketItems();
-    Page<Product> products = Page.empty();
+    List<Product> products = new ArrayList<>();
     for (var contentKey : githubContentMap.keySet()) {
       Product product = new Product();
       for (var content : githubContentMap.get(contentKey)) {
         ProductFactory.mappingByGHContent(product, content);
       }
-      products.and(product);
+      products.add(product);
     }
-    return products;
+    return new PageImpl<Product>(products);
   }
 
   private void syncGHDataToDB(List<Product> products) {
