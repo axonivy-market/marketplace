@@ -5,8 +5,10 @@ import java.io.IOException;
 import org.apache.commons.lang3.StringUtils;
 import org.kohsuke.github.GHContent;
 
+import com.axonivy.market.constants.GitHubConstants;
 import com.axonivy.market.entity.Product;
 import com.axonivy.market.github.model.Meta;
+import com.axonivy.market.github.util.GithubUtils;
 import com.fasterxml.jackson.core.exc.StreamReadException;
 import com.fasterxml.jackson.databind.DatabindException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -29,10 +31,10 @@ public class ProductFactory {
       }
 
       if (contentName.endsWith(LOGO_FILE)) {
-        product.setLogoUrl(content.getDownloadUrl());
+        product.setLogoUrl(GithubUtils.getDownloadUrl(content));
       }
-    } catch (IOException e) {
-      log.warn("Mapping from GHContent failed", e);
+    } catch (Exception e) {
+      log.error("Mapping from GHContent failed", e);
     }
     return product;
   }
@@ -45,26 +47,33 @@ public class ProductFactory {
     }
     product.setKey(meta.getId());
     product.setName(meta.getName());
+    product.setMarketDirectory(ghContent.getPath().replace(ghContent.getName(), ""));
     product.setListed(meta.getListed());
     product.setType(meta.getType());
     product.setTags(meta.getTags());
     product.setVersion(meta.getVersion());
-    product.setShortDescript(meta.getDescription());
-    product.setVendor(StringUtils.isBlank(meta.getVendor()) ? "Axon Ivy AG" : meta.getVendor());
-    product.setVendorImage(
-        StringUtils.isBlank(meta.getVendorImage()) ? "/images/misc/axonivy-logo-black.svg" : meta.getVendor());
-    product.setVendorUrl(StringUtils.isBlank(meta.getVendorUrl()) ? "https://www.axonivy.com" : meta.getVendorUrl());
-    product.setPlatformReview(StringUtils.isBlank(meta.getPlatformReview()) ? "4.0" : meta.getPlatformReview());
-    product.setSourceUrl(meta.getSourceUrl());
+    product.setShortDescription(meta.getDescription());
+    product.setVendor(meta.getVendor());
+    product.setVendorImage(meta.getVendorImage());
+    product.setVendorUrl(meta.getVendorUrl());
+    product.setPlatformReview(meta.getPlatformReview());
     product.setStatusBadgeUrl(meta.getStatusBadgeUrl());
     product.setLanguage(meta.getLanguage());
     product.setIndustry(meta.getIndustry());
-    // TODO mapping default data
-    // product.setCost() = ghContent->cost ?? 'Free';
-    // product.setCompatibility(meta.get) = ghContent->compatibility ?? '';
-    // product.setValidate(meta.get) = ghContent->validate ?? false;
-    // product.setContactUs(meta) = ghContent->contactUs ?? false;
+    extractSourceUrl(product, meta);
     return product;
+  }
+
+  private static void extractSourceUrl(Product product, Meta meta) {
+    var sourceUrl = meta.getSourceUrl();
+    if (StringUtils.isBlank(sourceUrl)) {
+      return;
+    }
+    var urlLength = sourceUrl.length();
+    var orgIndex = sourceUrl.indexOf(GitHubConstants.AXONIVY_MARKET_ORGANIZATION_NAME);
+    var repositoryPath = StringUtils.substring(sourceUrl, orgIndex, urlLength);
+    product.setRepositoryName(repositoryPath);
+    product.setSourceUrl(sourceUrl);
   }
 
   public static Meta jsonDecode(GHContent ghContent) throws StreamReadException, DatabindException, IOException {

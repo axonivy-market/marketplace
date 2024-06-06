@@ -16,4 +16,5 @@ public class GithubRepoMeta {
   private String repoURL;
   private String repoName;
   private Long lastChange;
+  private String lastSHA1;
 }

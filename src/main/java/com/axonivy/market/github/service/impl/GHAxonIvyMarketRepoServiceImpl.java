@@ -13,30 +13,26 @@ import org.kohsuke.github.GHContent;
 import org.kohsuke.github.GHOrganization;
 import org.kohsuke.github.GHRepository;
 import org.springframework.stereotype.Service;
-import org.springframework.util.CollectionUtils;
 
 import com.axonivy.market.constants.GitHubConstants;
+import com.axonivy.market.enums.FileStatus;
+import com.axonivy.market.enums.FileType;
+import com.axonivy.market.github.model.GitHubFile;
 import com.axonivy.market.github.service.AbstractGithubService;
 import com.axonivy.market.github.service.GHAxonIvyMarketRepoService;
-import com.axonivy.market.repository.GithubRepoMetaRepository;
 
 import lombok.extern.log4j.Log4j2;
 
 @Log4j2
 @Service
 public class GHAxonIvyMarketRepoServiceImpl extends AbstractGithubService implements GHAxonIvyMarketRepoService {
-
+  private static final String DEFAULT_BRANCH = "master";
+  private static final LocalDateTime INITIAL_COMMIT_DATE = LocalDateTime.of(2020, 10, 30, 0, 0);
   private GHOrganization organization;
   private GHRepository repository;
-  private final GithubRepoMetaRepository repoMetaRepository;
-
-  public GHAxonIvyMarketRepoServiceImpl(GithubRepoMetaRepository repoMetaRepository) {
-    this.repoMetaRepository = repoMetaRepository;
-  }
 
   @Override
   public Map<String, List<GHContent>> fetchAllMarketItems() {
-    // TODO
     Map<String, List<GHContent>> ghContentMap = new HashMap<String, List<GHContent>>();
     try {
       var directoryContent = getDirectoryContent(getRepository(), GitHubConstants.AXONIVY_MARKETPLACE_PATH);
@@ -44,7 +40,7 @@ public class GHAxonIvyMarketRepoServiceImpl extends AbstractGithubService implem
         extractFileOfContent(content, ghContentMap);
       }
     } catch (Exception e) {
-      log.error("Cannot fetch GH Content", e);
+      log.error("Cannot fetch GHContent", e);
     }
     return ghContentMap;
   }
@@ -65,26 +61,18 @@ public class GHAxonIvyMarketRepoServiceImpl extends AbstractGithubService implem
   }
 
   @Override
-  public GHCommit getLastCommit() {
+  public GHCommit getLastCommit(long lastCommitTime) {
     GHCommit lastCommit = null;
-    long lastChange = 0l;
-
-    var marketRepoMetaData = repoMetaRepository.findByRepoName(GitHubConstants.AXONIVY_MARKETPLACE_REPO_NAME);
-    if (marketRepoMetaData == null || marketRepoMetaData.getLastChange() == 0l) {
-      // Initial commit
-      LocalDateTime now = LocalDateTime.of(2020, 10, 30, 0, 0);
-      lastChange = now.atZone(ZoneId.systemDefault()).toEpochSecond();
-    } else {
-      lastChange = marketRepoMetaData.getLastChange();
+    if (lastCommitTime == 0l) {
+      lastCommitTime = INITIAL_COMMIT_DATE.atZone(ZoneId.systemDefault()).toEpochSecond();
     }
-
     try {
-      var lastCommits = getRepository().queryCommits().since(lastChange).from("master").list().toList();
-      // Pick top-one
-      lastCommit = CollectionUtils.firstElement(lastCommits);
-      log.warn("Last Commits {}", lastCommit.getCommitDate());
+      var lastCommits = getRepository().queryCommits().since(lastCommitTime).from(DEFAULT_BRANCH).list().iterator();
+      if (lastCommits.hasNext()) {
+        lastCommit = lastCommits.next();
+      }
     } catch (Exception e) {
-      e.printStackTrace();
+      log.error("Cannot query GHCommit: ", e);
     }
     return lastCommit;
   }
@@ -101,6 +89,42 @@ public class GHAxonIvyMarketRepoServiceImpl extends AbstractGithubService implem
       repository = getOrganization().getRepository(GitHubConstants.AXONIVY_MARKETPLACE_REPO_NAME);
     }
     return repository;
+  }
+
+  @Override
+  public List<GitHubFile> fetchMarketItemsBySHA1Range(String fromSHA1, String toSHA1) {
+    Map<String, GitHubFile> githubFileMap = new HashMap<>();
+    try {
+      var compareResult = getRepository().getCompare(fromSHA1, toSHA1);
+      for (var commit : compareResult.listCommits()) {
+        for (var file : commit.listFiles()) {
+          var fullPathName = file.getFileName();
+          if (FileType.of(fullPathName) == null) {
+            continue;
+          }
+          var githubFile = new GitHubFile();
+          githubFile.setFileName(fullPathName);
+          githubFile.setPath(file.getRawUrl().getPath());
+          githubFile.setStatus(FileStatus.of(file.getStatus()));
+          githubFile.setType(FileType.of(fullPathName));
+          githubFile.setPreviousFilename(file.getPreviousFilename());
+          githubFileMap.put(fullPathName, githubFile);
+        }
+      }
+    } catch (IOException e) {
+      log.error("Cannot get GH compare: ", e);
+    }
+    return new ArrayList<>(githubFileMap.values());
+  }
+
+  @Override
+  public GHContent getGHContent(String path) {
+    try {
+      return getRepository().getFileContent(path);
+    } catch (IOException e) {
+      log.error("Cannot get GHContent by path {}: {}", path, e);
+    }
+    return null;
   }
 
 }
