@@ -1,19 +1,5 @@
 package com.axonivy.market.service.impl;
 
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.stream.Collectors;
-
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
-import org.springframework.data.domain.Sort.Order;
-import org.springframework.stereotype.Service;
-import org.springframework.util.CollectionUtils;
-
 import com.axonivy.market.entity.GithubRepoMeta;
 import com.axonivy.market.entity.Product;
 import com.axonivy.market.enums.FilterType;
@@ -24,8 +10,8 @@ import com.axonivy.market.repository.GithubRepoMetaRepository;
 import com.axonivy.market.repository.ProductRepository;
 import com.axonivy.market.service.ProductService;
 import lombok.extern.log4j.Log4j2;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.*;
+import org.springframework.data.domain.Sort.Order;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
@@ -43,101 +29,88 @@ public class ProductServiceImpl implements ProductService {
     private final GHAxonIvyMarketRepoService githubService;
     private final GithubRepoMetaRepository repoMetaRepository;
 
-  public ProductServiceImpl(ProductRepository repo, GHAxonIvyMarketRepoService githubService,
-      GithubRepoMetaRepository repoMetaRepository) {
-    this.repo = repo;
-    this.githubService = githubService;
-    this.repoMetaRepository = repoMetaRepository;
-  }
-
-  @Override
-  public Page<Product> findProductsByType(String type, Pageable pageable) {
-    final FilterType filterType = FilterType.of(type);
-    Pageable unifiedPageabe = refinePagination(pageable);
-    Page<Product> products = Page.empty();
-    switch (filterType) {
-    case ALL -> products = repo.findAll(unifiedPageabe);
-    case CONNECTORS, UTILITIES, SOLUTIONS -> {
-      products = repo.findByType(filterType.getCode(), pageable);
-    }
-    default -> products = Page.empty();
-    }
-    boolean hasChanged = false;
-    if (products.isEmpty() || !checkGithubLastCommit()) {
-      products = findProductsFromGithubRepo();
-      hasChanged = true;
-    }
-    if (hasChanged) {
-      syncGHDataToDB(products.toList());
-    }
-    return products;
-  }
-
-  private Pageable refinePagination(Pageable pageable) {
-    PageRequest pageRequest = (PageRequest) pageable;
-    if (pageable != null && pageable.getSort() != null) {
-      List<Order> orders = new ArrayList<Sort.Order>();
-      for (var sort : pageable.getSort()) {
-        final SortOption sortOption = SortOption.of(sort.getProperty());
-        Order order = new Order(sort.getDirection(), sortOption.getCode());
-        orders.add(order);
-      }
-      pageRequest = PageRequest.of(pageable.getPageNumber(), pageable.getPageSize(), Sort.by(orders));
-    }
-    return pageRequest;
-  }
-
-  private boolean checkGithubLastCommit() {
-    // TODO check last commit
-    boolean isLastCommitCovered;
-    long lastCommitTime = 0l;
-    var lastCommit = githubService.getLastCommit();
-    if (lastCommit != null) {
-      try {
-        lastCommitTime = lastCommit.getCommitDate().getTime();
-      } catch (IOException e) {
-        log.error("Check last commit failed", e);
-      }
+    public ProductServiceImpl(ProductRepository repo, GHAxonIvyMarketRepoService githubService,
+                              GithubRepoMetaRepository repoMetaRepository) {
+        this.repo = repo;
+        this.githubService = githubService;
+        this.repoMetaRepository = repoMetaRepository;
     }
 
-    var repoMeta = repoMetaRepository.findByRepoName("market");
-    if (repoMeta != null && repoMeta.getLastChange() == lastCommitTime) {
-      isLastCommitCovered = true;
-    } else {
-      isLastCommitCovered = false;
-      repoMeta = new GithubRepoMeta();
-      repoMeta.setRepoURL(lastCommit.getOwner().getUrl().getPath());
-      repoMeta.setRepoName("market");
-      repoMeta.setLastChange(lastCommitTime);
-      repoMetaRepository.save(repoMeta);
-    }
-    return isLastCommitCovered;
-  }
-
-  private Page<Product> findProductsFromGithubRepo() {
-    var githubContentMap = githubService.fetchAllMarketItems();
-    List<Product> products = new ArrayList<>();
-    for (var contentKey : githubContentMap.keySet()) {
-      Product product = new Product();
-      for (var content : githubContentMap.get(contentKey)) {
-        ProductFactory.mappingByGHContent(product, content);
-      }
-      products.add(product);
-    }
-    return new PageImpl<Product>(products);
-  }
-
-    public Page<Product> findProductsFromGithubRepo() {
-        var githubContentMap = githubService.fetchAllMarketItems();
+    @Override
+    public Page<Product> findProductsByType(String type, Pageable pageable) {
+        final FilterType filterType = FilterType.of(type);
+        Pageable unifiedPageabe = refinePagination(pageable);
         Page<Product> products = Page.empty();
+        switch (filterType) {
+            case ALL -> products = repo.findAll(unifiedPageabe);
+            case CONNECTORS, UTILITIES, SOLUTIONS -> {
+                products = repo.findByType(filterType.getCode(), pageable);
+            }
+            default -> products = Page.empty();
+        }
+        boolean hasChanged = false;
+        if (products.isEmpty() || !checkGithubLastCommit()) {
+            products = findProductsFromGithubRepo();
+            hasChanged = true;
+        }
+        if (hasChanged) {
+            syncGHDataToDB(products.toList());
+        }
+        return products;
+    }
+
+    private Pageable refinePagination(Pageable pageable) {
+        PageRequest pageRequest = (PageRequest) pageable;
+        if (pageable != null && pageable.getSort() != null) {
+            List<Order> orders = new ArrayList<Sort.Order>();
+            for (var sort : pageable.getSort()) {
+                final SortOption sortOption = SortOption.of(sort.getProperty());
+                Order order = new Order(sort.getDirection(), sortOption.getCode());
+                orders.add(order);
+            }
+            pageRequest = PageRequest.of(pageable.getPageNumber(), pageable.getPageSize(), Sort.by(orders));
+        }
+        return pageRequest;
+    }
+
+    private boolean checkGithubLastCommit() {
+        // TODO check last commit
+        boolean isLastCommitCovered;
+        long lastCommitTime = 0L;
+        var lastCommit = githubService.getLastCommit();
+        if (lastCommit != null) {
+            try {
+                lastCommitTime = lastCommit.getCommitDate().getTime();
+            } catch (IOException e) {
+                log.error("Check last commit failed", e);
+            }
+        }
+
+        var repoMeta = repoMetaRepository.findByRepoName("market");
+        if (repoMeta != null && repoMeta.getLastChange() == lastCommitTime) {
+            isLastCommitCovered = true;
+        } else {
+            isLastCommitCovered = false;
+            repoMeta = new GithubRepoMeta();
+            repoMeta.setRepoURL(lastCommit.getOwner().getUrl().getPath());
+            repoMeta.setRepoName("market");
+            repoMeta.setLastChange(lastCommitTime);
+            repoMetaRepository.save(repoMeta);
+        }
+        return isLastCommitCovered;
+    }
+
+    private Page<Product> findProductsFromGithubRepo() {
+        var githubContentMap = githubService.fetchAllMarketItems();
+        List<Product> products = new ArrayList<>();
         for (var contentKey : githubContentMap.keySet()) {
             Product product = new Product();
             for (var content : githubContentMap.get(contentKey)) {
                 ProductFactory.mappingByGHContent(product, content);
             }
-            products.and(product);
+            products.add(product);
         }
-        return products;
+        return new PageImpl<Product>(products);
     }
 
     private void syncGHDataToDB(List<Product> products) {

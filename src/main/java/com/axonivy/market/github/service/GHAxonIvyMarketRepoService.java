@@ -1,5 +1,6 @@
 package com.axonivy.market.github.service;
 
+import org.kohsuke.github.GHCommit;
 import org.kohsuke.github.GHContent;
 import org.kohsuke.github.GHTag;
 
@@ -14,4 +15,6 @@ public interface GHAxonIvyMarketRepoService {
     GHContent getContentFromGHRepo(String repoName, String filePath);
 
     List<GHTag> getTagsFromRepoName(String repoName);
+
+    GHCommit getLastCommit();
 }

@@ -5,13 +5,13 @@ import com.axonivy.market.github.service.AbstractGithubService;
 import com.axonivy.market.github.service.GHAxonIvyMarketRepoService;
 import com.axonivy.market.repository.GithubRepoMetaRepository;
 import lombok.extern.log4j.Log4j2;
-import org.kohsuke.github.GHContent;
-import org.kohsuke.github.GHOrganization;
-import org.kohsuke.github.GHRepository;
-import org.kohsuke.github.GHTag;
+import org.kohsuke.github.*;
 import org.springframework.stereotype.Service;
+import org.springframework.util.CollectionUtils;
 
 import java.io.IOException;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.*;
 
 @Log4j2
@@ -54,6 +54,31 @@ public class GHAxonIvyMarketRepoServiceImpl extends AbstractGithubService implem
                 }
             }
         }
+    }
+
+    @Override
+    public GHCommit getLastCommit() {
+        GHCommit lastCommit = null;
+        long lastChange = 0L;
+
+        var marketRepoMetaData = repoMetaRepository.findByRepoName(GitHubConstants.AXONIVY_MARKETPLACE_REPO_NAME);
+        if (marketRepoMetaData == null || marketRepoMetaData.getLastChange() == 0L) {
+            // Initial commit
+            LocalDateTime now = LocalDateTime.of(2020, 10, 30, 0, 0);
+            lastChange = now.atZone(ZoneId.systemDefault()).toEpochSecond();
+        } else {
+            lastChange = marketRepoMetaData.getLastChange();
+        }
+
+        try {
+            var lastCommits = getRepository().queryCommits().since(lastChange).from("master").list().toList();
+            // Pick top-one
+            lastCommit = CollectionUtils.firstElement(lastCommits);
+            log.warn("Last Commits {}", lastCommit.getCommitDate());
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return lastCommit;
     }
 
     public GHOrganization getOrganization() throws IOException {
