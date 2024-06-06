@@ -18,4 +18,5 @@ public interface GHAxonIvyMarketRepoService {
     GHContent getContentFromGHRepo(String repoName, String filePath);
 
     List<GHTag> getTagsFromRepoName(String repoName);
+
 }

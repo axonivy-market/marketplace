@@ -11,5 +11,5 @@ public interface ProductService {
 
     Product findByKey(String key);
 
-    Page<Product> fetchAll(String type, Pageable pageable);
+  Page<Product> findProductsByType(String type, Pageable pageable);
 }

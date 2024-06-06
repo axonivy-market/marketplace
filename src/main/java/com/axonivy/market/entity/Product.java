@@ -1,10 +1,15 @@
 package com.axonivy.market.entity;
 
+import static com.axonivy.market.constants.EntityConstants.PRODUCT;
+
 import java.io.Serializable;
+import java.sql.Date;
 import java.util.List;
 
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
+import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.mapping.Document;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -15,9 +20,11 @@ import lombok.Setter;
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
+@Document(PRODUCT)
 public class Product implements Serializable {
 
   private static final long serialVersionUID = -8770801877877277258L;
+  @Id
   private String key;
   private String name;
   private String version;
@@ -39,6 +46,8 @@ public class Product implements Serializable {
   private Boolean validate;
   private Boolean contactUs;
   private Integer installationCount;
+  private Integer priority;
+  private Date publishDate;
 
   @Override
   public int hashCode() {

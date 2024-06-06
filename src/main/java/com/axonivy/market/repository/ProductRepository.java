@@ -11,5 +11,5 @@ import com.axonivy.market.entity.Product;
 public interface ProductRepository extends MongoRepository<Product, String> {
 
   Page<Product> findByType(String type, Pageable pageable);
-//  List<Product> findByTypeOrderBy(String type, String orderBy);
+
 }

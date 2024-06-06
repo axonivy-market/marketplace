@@ -3,6 +3,7 @@ package com.axonivy.market.assembler;
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 
+import org.springframework.hateoas.CollectionModel;
 import org.springframework.hateoas.server.mvc.RepresentationModelAssemblerSupport;
 import org.springframework.stereotype.Component;
 
@@ -20,9 +21,15 @@ public class ProductModelAssembler extends RepresentationModelAssemblerSupport<P
   @Override
   public ProductModel toModel(Product product) {
     ProductModel resource = new ProductModel();
-    resource.add(linkTo(methodOn(ProductDetailsController.class).findProduct(product.getKey(), product.getType()))
+    resource.add(linkTo(methodOn(ProductDetailsController.class)
+        .findProduct(product.getKey(), product.getType()))
         .withSelfRel());
     return createResource(resource, product);
+  }
+
+  @Override
+  public CollectionModel<ProductModel> toCollectionModel(Iterable<? extends Product> entities) {
+    return super.toCollectionModel(entities);
   }
 
   private ProductModel createResource(ProductModel model, Product product) {

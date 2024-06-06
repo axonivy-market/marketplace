@@ -1,6 +1,8 @@
 package com.axonivy.market.controller;
 
 import com.axonivy.market.service.VersionService;
+import static com.axonivy.market.constants.RequestMappingConstants.PRODUCT_DETAILS;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -9,18 +11,12 @@ import java.util.List;
 import java.util.Map;
 
 @RestController
-@RequestMapping("/api/product-details")
+@RequestMapping(PRODUCT_DETAILS)
 public class ProductDetailsController {
     private final VersionService service;
 
     public ProductDetailsController(VersionService service) {
         this.service = service;
-    }
-
-    @GetMapping("/{productKey}")
-    public Object findProduct(@PathVariable("productKey") String productKey,
-                              @RequestParam(name = "type", required = false) String type) {
-        return new ResponseEntity<Object>(HttpStatus.NOT_FOUND);
     }
 
     @GetMapping("/{productId}/versions")
@@ -34,4 +30,9 @@ public class ProductDetailsController {
     public ResponseEntity<Map<String, List<String>>> fetchAllArtifactsFromProduct(@PathVariable(required = true) String productId){
         return new ResponseEntity<>(service.getArtifactsToDisplay(productId), HttpStatus.OK);
     }
+  @GetMapping("/{key}")
+  public Object findProduct(@PathVariable("key") String key,
+      @RequestParam(name = "type", required = false) String type) {
+    return new ResponseEntity<Object>(HttpStatus.NOT_FOUND);
+  }
 }

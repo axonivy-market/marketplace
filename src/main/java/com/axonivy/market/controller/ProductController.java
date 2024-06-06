@@ -1,5 +1,7 @@
 package com.axonivy.market.controller;
 
+import static com.axonivy.market.constants.RequestMappingConstants.PRODUCT;
+
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PagedResourcesAssembler;
 import org.springframework.hateoas.PagedModel;
@@ -12,12 +14,13 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.axonivy.market.assembler.ProductModelAssembler;
 import com.axonivy.market.entity.Product;
-import com.axonivy.market.model.Message;
 import com.axonivy.market.model.ProductModel;
 import com.axonivy.market.service.ProductService;
 
+import io.swagger.v3.oas.annotations.Operation;
+
 @RestController
-@RequestMapping("/api/product")
+@RequestMapping(PRODUCT)
 public class ProductController {
 
   private final ProductService service;
@@ -31,17 +34,11 @@ public class ProductController {
     this.pagedResourcesAssembler = pagedResourcesAssembler;
   }
 
-  @GetMapping()
-  public ResponseEntity<Message> init() {
-    var message = new Message();
-    message.setMessage("Marketplace product apis");
-    return new ResponseEntity<Message>(message, HttpStatus.OK);
-  }
-
+  @Operation(summary = "Find all products by type", description = "Be default system will finds product by type as 'all'")
   @GetMapping("/{type}")
   public ResponseEntity<PagedModel<ProductModel>> fetchAllProducts(@PathVariable(required = false) String type,
       Pageable pageable) {
-    var results = service.fetchAll(type, pageable);
+    var results = service.findProductsByType(type, pageable);
     if (results.isEmpty()) {
       return new ResponseEntity<>(PagedModel.empty(), HttpStatus.NO_CONTENT);
     }
