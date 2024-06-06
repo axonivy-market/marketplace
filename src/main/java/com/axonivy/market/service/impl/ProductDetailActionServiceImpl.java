@@ -35,7 +35,7 @@ public class ProductDetailActionServiceImpl implements ProductDetailActionServic
     }
 
     public String getProductModuleFromRepoNameAndVersion(String repoName, String Version) {
-        GHContent content = gitHubService.getContentFromGHRepo(GitHubConstants.AXON_IVY_MARKET_PLACE_REPO_NAME, "portal/meta.json");
+        GHContent content = gitHubService.getContentFromGHRepo(GitHubConstants.AXONIVY_MARKETPLACE_REPO_NAME, "portal/meta.json");
         try {
             Meta metaFile = ProductFactory.jsonDecode(content);
 
@@ -46,7 +46,7 @@ public class ProductDetailActionServiceImpl implements ProductDetailActionServic
     }
 
     public List<MavenArtifact> getArtifactFromRepoName(String repoName) {
-        GHContent content = gitHubService.getContentFromGHRepo(GitHubConstants.AXON_IVY_MARKET_PLACE_REPO_NAME, "portal/meta.json");
+        GHContent content = gitHubService.getContentFromGHRepo(GitHubConstants.AXONIVY_MARKETPLACE_REPO_NAME, "portal/meta.json");
         List<MavenArtifact> artifacts = new ArrayList<>();
         try {
             Meta metaFile = ProductFactory.jsonDecode(content);

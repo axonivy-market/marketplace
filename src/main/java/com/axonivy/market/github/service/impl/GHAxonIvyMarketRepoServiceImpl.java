@@ -56,6 +56,19 @@ public class GHAxonIvyMarketRepoServiceImpl extends AbstractGithubService implem
     } catch (Exception e) {
       log.error("Cannot fetch GH Content", e);
     }
+      return ghContentMap;
+  }
+
+    private void extractFileOfContent(GHContent content, Map<String, List<GHContent>> ghContentMap) throws IOException {
+        if (content.isDirectory()) {
+            var listOfContent = content.listDirectoryContent();
+            for (var childContent : listOfContent.toList()) {
+                if (childContent.isFile()) {
+                    var contents = ghContentMap.getOrDefault(content.getPath(), new ArrayList<GHContent>());
+                    contents.add(childContent);
+                    ghContentMap.putIfAbsent(content.getPath(), contents);
+                } else {
+                    extractFileOfContent(childContent, ghContentMap);}}}}
 
     @Override
     public Map<String, List<GHContent>> fetchAllMarketItems() {
@@ -97,6 +110,8 @@ public class GHAxonIvyMarketRepoServiceImpl extends AbstractGithubService implem
     } catch (Exception e) {
       e.printStackTrace();
     }
+      return lastCommit;
+  }
 
     @Override
     public GHCommit getLastCommit() {
