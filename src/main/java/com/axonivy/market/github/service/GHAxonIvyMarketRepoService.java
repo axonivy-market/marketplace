@@ -7,6 +7,11 @@ import org.kohsuke.github.GHTag;
 import java.util.List;
 import java.util.Map;
 
+import org.kohsuke.github.GHCommit;
+import org.kohsuke.github.GHContent;
+
+import com.axonivy.market.github.model.GitHubFile;
+
 public interface GHAxonIvyMarketRepoService {
 
     Map<String, List<GHContent>> fetchAllMarketItems();
@@ -14,7 +19,5 @@ public interface GHAxonIvyMarketRepoService {
 
     GHContent getContentFromGHRepo(String repoName, String filePath);
 
-    List<GHTag> getTagsFromRepoName(String repoName);
-
-    GHCommit getLastCommit();
+  GHContent getGHContent(String path);
 }

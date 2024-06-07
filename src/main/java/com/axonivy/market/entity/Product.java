@@ -26,9 +26,10 @@ public class Product implements Serializable {
   private static final long serialVersionUID = -8770801877877277258L;
   @Id
   private String key;
+  private String marketDirectory;
   private String name;
   private String version;
-  private String shortDescript;
+  private String shortDescription;
   private String logoUrl;
   private Boolean listed;
   private String type;
@@ -38,6 +39,7 @@ public class Product implements Serializable {
   private String vendorUrl;
   private String platformReview;
   private String cost;
+  private String repositoryName;
   private String sourceUrl;
   private String statusBadgeUrl;
   private String language;
