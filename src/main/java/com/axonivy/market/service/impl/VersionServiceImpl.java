@@ -3,7 +3,7 @@ package com.axonivy.market.service.impl;
 import com.axonivy.market.constants.MavenConstants;
 import com.axonivy.market.entity.Product;
 import com.axonivy.market.github.model.MavenArtifact;
-import com.axonivy.market.github.service.GHAxonIvyMarketRepoService;
+import com.axonivy.market.github.service.GHAxonIvyProductRepoService;
 import com.axonivy.market.service.VersionService;
 import com.axonivy.market.utils.LatestVersionComparator;
 import com.axonivy.market.utils.XmlReader;
@@ -12,14 +12,15 @@ import org.apache.commons.lang3.StringUtils;
 import org.kohsuke.github.GHTag;
 import org.springframework.stereotype.Service;
 
+import java.io.IOException;
 import java.util.*;
 import java.util.stream.Stream;
 
 @Service
 public class VersionServiceImpl implements VersionService {
-    private final GHAxonIvyMarketRepoService gitHubService;
+    private final GHAxonIvyProductRepoService gitHubService;
 
-    public VersionServiceImpl(GHAxonIvyMarketRepoService gitHubService) {
+    public VersionServiceImpl(GHAxonIvyProductRepoService gitHubService) {
         this.gitHubService = gitHubService;
     }
 
@@ -29,11 +30,11 @@ public class VersionServiceImpl implements VersionService {
 
     //TODO: need to rework this method
     @Override
-    public List<String> getVersionsToDisplay(String productId, Boolean isShowDevVersion, String designerVersion) {
+    public List<String> getVersionsToDisplay(String productId, Boolean isShowDevVersion, String designerVersion) throws IOException {
         if (BooleanUtils.isTrue(isShowDevVersion)) {
             //TODO: hanlde dev version
         }
-        List<String> versions = gitHubService.getTagsFromRepoName(productId).stream().map(GHTag::getName).toList();
+        List<String> versions = gitHubService.getAllTagsFromRepoName(productId).stream().map(GHTag::getName).toList();
         if (StringUtils.isNotBlank(designerVersion)) {
             //TODO: handle it please
             return versions.stream().filter(version -> version.contains(designerVersion)).toList();
@@ -117,8 +118,8 @@ public class VersionServiceImpl implements VersionService {
     }
 
     @Override
-    public Map<String, List<String>> getArtifactsToDisplay(String productId) {
-        List<String> versions = gitHubService.getTagsFromRepoName(productId).stream().map(GHTag::getName).toList();
+    public Map<String, List<String>> getArtifactsToDisplay(String productId) throws IOException {
+        List<String> versions = gitHubService.getAllTagsFromRepoName(productId).stream().map(GHTag::getName).toList();
 
         return null;
     }

@@ -6,6 +6,7 @@ import com.axonivy.market.service.ProductDetailActionService;
 import com.axonivy.market.service.VersionService;
 import lombok.extern.log4j.Log4j2;
 
+import java.io.IOException;
 import java.util.List;
 
 @Log4j2
@@ -19,7 +20,7 @@ public class ProductDetailActionServiceImpl implements ProductDetailActionServic
     }
 
     @Override
-    public ProductDetailArtifactModel getArtifacts(String productId, Boolean isShowDevVersion, String designerVersion) {
+    public ProductDetailArtifactModel getArtifacts(String productId, Boolean isShowDevVersion, String designerVersion) throws IOException {
         List<String> versions = versionService.getVersionsToDisplay(productId, isShowDevVersion, designerVersion);
         for (String version : versions) {
 
