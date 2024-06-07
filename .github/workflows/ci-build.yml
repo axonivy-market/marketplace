@@ -6,8 +6,23 @@ on:
   workflow_dispatch:
 
 jobs:
+  build:
+    name: Executes Tests
+    runs-on: self-hosted
+
+    steps:
+    - uses: actions/checkout@v4
+    - name: Set up JDK 17
+      uses: actions/setup-java@v3
+      with:
+        java-version: '17'
+        distribution: 'temurin'
+        cache: maven
+    - name: Tests with Maven
+      run: mvn clean test
   analysis:
     name: Sonarqube analysis
+    needs: build
     runs-on: self-hosted
     env:
       SONAR_PROJECT_KEY: ${{ secrets.SONAR_PROJECT_KEY }}
@@ -23,16 +38,14 @@ jobs:
         with:
           java-version: '17'
           distribution: 'temurin'
-      - name: Build and test with Maven
-        run: mvn clean test
-      - uses: sonarsource/sonarqube-scan-action@master
-        env:
-          SONAR_TOKEN: ${{ env.SONAR_TOKEN }}
-          SONAR_HOST_URL: ${{ env.SONAR_HOST_URL }}
-        with:
-          args:
-            -Dsonar.projectKey=${{ env.SONAR_PROJECT_KEY }}
-            -Dsonar.java.binaries=target/classes
+      - name: Run maven clean install
+        run: mvn clean install
+      - name: Run SonarQube Scanner
+        run: |
+            mvn org.sonarsource.scanner.maven:sonar-maven-plugin:sonar \
+                -Dsonar.projectKey=${{ env.SONAR_PROJECT_KEY }} \
+                -Dsonar.host.url=${{ env.SONAR_HOST_URL }} \
+                -Dsonar.token=${{ env.SONAR_TOKEN }} \
       - name: SonarQube Quality Gate check
         id: sonarqube-quality-gate-check
         uses: sonarsource/sonarqube-quality-gate-action@master
@@ -41,19 +54,10 @@ jobs:
           SONAR_TOKEN: ${{ env.SONAR_TOKEN }}
           SONAR_HOST_URL: ${{ env.SONAR_HOST_URL }}
         with:
-          args:
-            -Dsonar.projectKey=${{ env.SONAR_PROJECT_KEY }}
-  build:
-    name: Executes Tests
-    runs-on: self-hosted
-
-    steps:
-    - uses: actions/checkout@v4
-    - name: Set up JDK 17
-      uses: actions/setup-java@v3
-      with:
-        java-version: '17'
-        distribution: 'temurin'
-        cache: maven
-    - name: Tests with Maven
-      run: mvn -B test --file pom.xml
+          scanMetadataReportFile: target/sonar/report-task.txt
+          args:  -Dsonar.projectKey=${{ env.SONAR_PROJECT_KEY }}
+      - name: "Example show SonarQube Quality Gate Status value"
+        run: echo "The Quality Gate status is ${{ steps.sonarqube-quality-gate-check.outputs.quality-gate-status }}"
+      - name: Fail build if quality gate fails
+        if: steps.sonarqube-quality-gate-check.outputs.quality-gate-status != 'PASS'
+        run: exit 1
