@@ -42,7 +42,7 @@ jobs:
         run: mvn clean install
       - name: Run SonarQube Scanner
         run: |
-            mvn org.sonarsource.scanner.maven:sonar-maven-plugin:sonar \
+            mvn sonar:sonar \
                 -Dsonar.projectKey=${{ env.SONAR_PROJECT_KEY }} \
                 -Dsonar.host.url=${{ env.SONAR_HOST_URL }} \
                 -Dsonar.token=${{ env.SONAR_TOKEN }} \
@@ -56,6 +56,7 @@ jobs:
           SONAR_HOST_URL: ${{ env.SONAR_HOST_URL }}
         with:
           scanMetadataReportFile: target/sonar/report-task.txt
-          args:  -Dsonar.projectKey=${{ env.SONAR_PROJECT_KEY }}
+          args:
+            -Dsonar.projectKey=${{ env.SONAR_PROJECT_KEY }}
       - name: "Example show SonarQube Quality Gate Status value"
         run: echo "The Quality Gate status is ${{ steps.sonarqube-quality-gate-check.outputs.quality-gate-status }}"
