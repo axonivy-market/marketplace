@@ -6,8 +6,23 @@ on:
   workflow_dispatch:
 
 jobs:
+  build:
+    name: Executes Tests
+    runs-on: self-hosted
+
+    steps:
+    - uses: actions/checkout@v4
+    - name: Set up JDK 17
+      uses: actions/setup-java@v3
+      with:
+        java-version: '17'
+        distribution: 'temurin'
+        cache: maven
+    - name: Tests with Maven
+      run: mvn -B test --file pom.xml
   analysis:
     name: Sonarqube analysis
+    needs: build
     runs-on: self-hosted
     env:
       SONAR_PROJECT_KEY: ${{ secrets.SONAR_PROJECT_KEY }}
@@ -24,9 +39,7 @@ jobs:
           java-version: '17'
           distribution: 'temurin'
       - name: Build and run sonar coverage
-        run: |
-            mvn clean test
-            mvn sonar:sonar -Pcoverage
+        run: mvn sonar:sonar -Pcoverage
       - uses: sonarsource/sonarqube-scan-action@master
         env:
           SONAR_TOKEN: ${{ env.SONAR_TOKEN }}
@@ -45,17 +58,3 @@ jobs:
         with:
           args:
             -Dsonar.projectKey=${{ env.SONAR_PROJECT_KEY }}
-  build:
-    name: Executes Tests
-    runs-on: self-hosted
-
-    steps:
-    - uses: actions/checkout@v4
-    - name: Set up JDK 17
-      uses: actions/setup-java@v3
-      with:
-        java-version: '17'
-        distribution: 'temurin'
-        cache: maven
-    - name: Tests with Maven
-      run: mvn -B test --file pom.xml
