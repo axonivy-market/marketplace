@@ -41,10 +41,11 @@ public class ProductController {
   public ResponseEntity<PagedModel<ProductModel>> fetchAllProducts(@PathVariable(required = false) String type,
       Pageable pageable) {
     var results = service.findProductsByType(type, pageable);
+    var pageResources = pagedResourcesAssembler.toModel(results, assembler);
     if (results.isEmpty()) {
-      return new ResponseEntity<>(PagedModel.empty(), HttpStatus.NO_CONTENT);
+      return new ResponseEntity<>(pageResources, HttpStatus.NO_CONTENT);
     }
-    return new ResponseEntity<>(pagedResourcesAssembler.toModel(results, assembler), HttpStatus.OK);
+    return new ResponseEntity<>(pageResources, HttpStatus.OK);
   }
 
   @Operation(summary = "Search products by keyword", description = "Be default system will search product by name or description")
@@ -52,9 +53,10 @@ public class ProductController {
   public ResponseEntity<RepresentationModel<?>> searchProducts(@RequestParam(required = false) String keyword,
       Pageable pageable) {
     var results = service.searchProducts(keyword, pageable);
+    var pagedResources = pagedResourcesAssembler.toModel(results, assembler);
     if (results.isEmpty()) {
-      return new ResponseEntity<>(PagedModel.empty(), HttpStatus.NO_CONTENT);
+      return new ResponseEntity<>(pagedResources, HttpStatus.NO_CONTENT);
     }
-    return new ResponseEntity<>(pagedResourcesAssembler.toModel(results, assembler), HttpStatus.OK);
+    return new ResponseEntity<>(pagedResources, HttpStatus.OK);
   }
 }

@@ -55,11 +55,7 @@ public class ProductServiceImpl implements ProductService {
       } else {
         updateLatestChangeToProductsFromGithubRepo();
       }
-      marketRepoMeta.setRepoURL(lastGHCommit.getOwner().getUrl().getPath());
-      marketRepoMeta.setRepoName(GitHubConstants.AXONIVY_MARKETPLACE_REPO_NAME);
-      marketRepoMeta.setLastSHA1(lastGHCommit.getSHA1());
-      marketRepoMeta.setLastChange(GithubUtils.getGHCommitDate(lastGHCommit));
-      repoMetaRepository.save(marketRepoMeta);
+      syncRepoMetaDataStatus();
     }
 
     final FilterType filterType = FilterType.of(type);
@@ -70,6 +66,18 @@ public class ProductServiceImpl implements ProductService {
     case CONNECTORS, UTILITIES, SOLUTIONS -> productRepo.findByType(filterType.getCode(), pageable);
     default -> Page.empty();
     };
+  }
+
+  private void syncRepoMetaDataStatus() {
+    if (marketRepoMeta == null || lastGHCommit == null) {
+      return;
+    }
+    marketRepoMeta.setRepoURL(lastGHCommit.getOwner().getUrl().getPath());
+    marketRepoMeta.setRepoName(GitHubConstants.AXONIVY_MARKETPLACE_REPO_NAME);
+    marketRepoMeta.setLastSHA1(lastGHCommit.getSHA1());
+    marketRepoMeta.setLastChange(GithubUtils.getGHCommitDate(lastGHCommit));
+    repoMetaRepository.save(marketRepoMeta);
+    marketRepoMeta = null;
   }
 
   private void updateLatestChangeToProductsFromGithubRepo() {
@@ -111,11 +119,13 @@ public class ProductServiceImpl implements ProductService {
         result.setLogoUrl(GithubUtils.getDownloadUrl(fileContent));
         productRepo.save(result);
       }
+      break;
     case REMOVED:
       result = productRepo.findByLogoUrl(product.getLogoUrl());
       if (result != null) {
         productRepo.deleteById(result.getKey());
       }
+      break;
     default:
       break;
     }
@@ -125,8 +135,10 @@ public class ProductServiceImpl implements ProductService {
     switch (file.getStatus()) {
     case MODIFIED, ADDED:
       productRepo.save(product);
+    break;
     case REMOVED:
       productRepo.deleteById(product.getKey());
+      break;
     default:
       break;
     }

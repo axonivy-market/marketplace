@@ -3,7 +3,7 @@ package com.axonivy.market.entity;
 import static com.axonivy.market.constants.EntityConstants.PRODUCT;
 
 import java.io.Serializable;
-import java.sql.Date;
+import java.util.Date;
 import java.util.List;
 
 import org.apache.commons.lang3.builder.EqualsBuilder;
@@ -48,8 +48,8 @@ public class Product implements Serializable {
   private Boolean validate;
   private Boolean contactUs;
   private Integer installationCount;
-  private Integer priority;
-  private Date publishDate;
+  private Date newestPublishDate;
+  private String newestReleaseVersion;
 
   @Override
   public int hashCode() {
