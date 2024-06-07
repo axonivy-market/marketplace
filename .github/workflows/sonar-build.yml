@@ -1,4 +1,5 @@
-name: Build
+name: Sonar Build
+run-name: This build execute Sonar scan
 
 on:
   push:
