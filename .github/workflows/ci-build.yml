@@ -30,23 +30,9 @@ jobs:
       SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
 
     steps:
-      - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-      - name: Set up JDK 17
-        uses: actions/setup-java@v3
-        with:
-          java-version: '17'
-          distribution: 'temurin'
-      - name: Run maven clean install
-        run: mvn clean install
       - name: Run SonarQube Scanner
         run: |
-            mvn sonar:sonar \
-                -Dsonar.projectKey=${{ env.SONAR_PROJECT_KEY }} \
-                -Dsonar.host.url=${{ env.SONAR_HOST_URL }} \
-                -Dsonar.token=${{ env.SONAR_TOKEN }} \
-                -Dsonar.projectName='AxonIvy Marketplace Service' \
+            mvn sonar:sonar -Dsonar.projectKey=${{ env.SONAR_PROJECT_KEY }} -Dsonar.host.url=${{ env.SONAR_HOST_URL }} -Dsonar.token=${{ env.SONAR_TOKEN }} -Dsonar.projectName='AxonIvy Marketplace Service'
       - name: SonarQube Quality Gate check
         id: sonarqube-quality-gate-check
         uses: sonarsource/sonarqube-quality-gate-action@master
