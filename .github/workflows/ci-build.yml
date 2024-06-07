@@ -38,14 +38,12 @@ jobs:
         with:
           java-version: '17'
           distribution: 'temurin'
-      - name: Run tests
+      - name: Run clean build
         run: mvn clean install
-      - name: Run SonarQube Scanner
-        run: |
-              mvn sonar:sonar \
-                -Dsonar.projectKey=${{ env.SONAR_PROJECT_KEY }} \
-                -Dsonar.host.url=${{ env.SONAR_HOST_URL }} \
-                -Dsonar.token=${{ env.SONAR_TOKEN }} \
+      - uses: sonarsource/sonarqube-scan-action@master
+        env:
+          SONAR_TOKEN: ${{ env.SONAR_TOKEN }}
+          SONAR_HOST_URL: ${{ env.SONAR_HOST_URL }}
       - name: SonarQube Quality Gate check
         id: sonarqube-quality-gate-check
         uses: sonarsource/sonarqube-quality-gate-action@master
