@@ -32,7 +32,11 @@ jobs:
     steps:
       - name: Run SonarQube Scanner
         run: |
-            mvn sonar:sonar -Dsonar.projectKey=${{ env.SONAR_PROJECT_KEY }} -Dsonar.host.url=${{ env.SONAR_HOST_URL }} -Dsonar.token=${{ env.SONAR_TOKEN }} -Dsonar.projectName='AxonIvy Marketplace Service'
+            mvn sonar:sonar \
+            -Dsonar.projectKey=${{ env.SONAR_PROJECT_KEY }} \
+            -Dsonar.host.url=${{ env.SONAR_HOST_URL }} \
+            -Dsonar.token=${{ env.SONAR_TOKEN }} \
+            -Dsonar.projectName='AxonIvy Marketplace Service' \
       - name: SonarQube Quality Gate check
         id: sonarqube-quality-gate-check
         uses: sonarsource/sonarqube-quality-gate-action@master
