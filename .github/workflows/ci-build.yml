@@ -19,7 +19,7 @@ jobs:
         distribution: 'temurin'
         cache: maven
     - name: Tests with Maven
-      run: mvn -B test --file pom.xml
+      run: mvn clean install
   analysis:
     name: Sonarqube analysis
     needs: build
@@ -38,8 +38,8 @@ jobs:
         with:
           java-version: '17'
           distribution: 'temurin'
-      - name: Build and run sonar coverage
-        run: mvn sonar:sonar -Pcoverage
+      - name: Run tests
+        run: mvn clean test
       - uses: sonarsource/sonarqube-scan-action@master
         env:
           SONAR_TOKEN: ${{ env.SONAR_TOKEN }}
