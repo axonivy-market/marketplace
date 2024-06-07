@@ -1,16 +1,15 @@
 package com.axonivy.market.factory;
 
-import java.io.IOException;
+import static org.apache.commons.lang3.StringUtils.EMPTY;
 
 import org.apache.commons.lang3.StringUtils;
 import org.kohsuke.github.GHContent;
+import org.springframework.util.CollectionUtils;
 
 import com.axonivy.market.constants.GitHubConstants;
 import com.axonivy.market.entity.Product;
 import com.axonivy.market.github.model.Meta;
 import com.axonivy.market.github.util.GithubUtils;
-import com.fasterxml.jackson.core.exc.StreamReadException;
-import com.fasterxml.jackson.databind.DatabindException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import lombok.extern.log4j.Log4j2;
@@ -25,29 +24,27 @@ public class ProductFactory {
 
   public static Product mappingByGHContent(Product product, GHContent content) {
     var contentName = content.getName();
-    try {
-      if (contentName.endsWith(META_FILE)) {
-        ProductFactory.mappingByMetaJson(product, content);
-      }
-
-      if (contentName.endsWith(LOGO_FILE)) {
-        product.setLogoUrl(GithubUtils.getDownloadUrl(content));
-      }
-    } catch (Exception e) {
-      log.error("Mapping from GHContent failed", e);
+    if (contentName.endsWith(META_FILE)) {
+      ProductFactory.mappingByMetaJson(product, content);
+    }
+    if (contentName.endsWith(LOGO_FILE)) {
+      product.setLogoUrl(GithubUtils.getDownloadUrl(content));
     }
     return product;
   }
 
-  public static Product mappingByMetaJson(Product product, GHContent ghContent)
-      throws StreamReadException, DatabindException, IOException {
-    var meta = jsonDecode(ghContent);
-    if (meta == null) {
+  public static Product mappingByMetaJson(Product product, GHContent ghContent) {
+    Meta meta = null;
+    try {
+      meta = jsonDecode(ghContent);
+    } catch (Exception e) {
+      log.error("Mapping from Meta file by GHContent failed", e);
       return product;
     }
+
     product.setKey(meta.getId());
     product.setName(meta.getName());
-    product.setMarketDirectory(ghContent.getPath().replace(ghContent.getName(), ""));
+    product.setMarketDirectory(extractParentDirectory(ghContent));
     product.setListed(meta.getListed());
     product.setType(meta.getType());
     product.setTags(meta.getTags());
@@ -61,7 +58,26 @@ public class ProductFactory {
     product.setLanguage(meta.getLanguage());
     product.setIndustry(meta.getIndustry());
     extractSourceUrl(product, meta);
+    updateLatestReleaseDateForProduct(product);
     return product;
+  }
+
+  private static void updateLatestReleaseDateForProduct(Product product) {
+    if (StringUtils.isBlank(product.getRepositoryName())) {
+      return;
+    }
+    try {
+      var productRepo = GithubUtils.getGHRepoByPath(product.getRepositoryName());
+      var lastTag = CollectionUtils.firstElement(productRepo.listTags().toList());
+      product.setNewestPublishDate(lastTag.getCommit().getCommitDate());
+      product.setNewestReleaseVersion(lastTag.getName());
+    } catch (Exception e) {
+      log.error("Cannot find repository by path {} {}", product.getRepositoryName(), e);
+    }
+  }
+
+  private static String extractParentDirectory(GHContent ghContent) {
+    return ghContent.getPath().replace(ghContent.getName(), EMPTY);
   }
 
   private static void extractSourceUrl(Product product, Meta meta) {
@@ -76,10 +92,7 @@ public class ProductFactory {
     product.setSourceUrl(sourceUrl);
   }
 
-  public static Meta jsonDecode(GHContent ghContent) throws StreamReadException, DatabindException, IOException {
-    if (ghContent != null) {
-      return MAPPER.readValue(ghContent.read().readAllBytes(), Meta.class);
-    }
-    return null;
+  private static Meta jsonDecode(GHContent ghContent) throws Exception {
+    return MAPPER.readValue(ghContent.read().readAllBytes(), Meta.class);
   }
 }
