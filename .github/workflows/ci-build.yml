@@ -39,15 +39,13 @@ jobs:
           java-version: '17'
           distribution: 'temurin'
       - name: Run tests
-        run: mvn clean test
-      - uses: sonarsource/sonarqube-scan-action@master
-        env:
-          SONAR_TOKEN: ${{ env.SONAR_TOKEN }}
-          SONAR_HOST_URL: ${{ env.SONAR_HOST_URL }}
-        with:
-          args:
-            -Dsonar.projectKey=${{ env.SONAR_PROJECT_KEY }}
-            -Dsonar.java.binaries=target/classes
+        run: mvn clean install
+      - name: Run SonarQube Scanner
+        run: |
+              mvn sonar:sonar \
+                -Dsonar.projectKey=${{ env.SONAR_PROJECT_KEY }} \
+                -Dsonar.host.url=${{ env.SONAR_HOST_URL }} \
+                -Dsonar.login=${{ env.SONAR_TOKEN }} \
       - name: SonarQube Quality Gate check
         id: sonarqube-quality-gate-check
         uses: sonarsource/sonarqube-quality-gate-action@master
