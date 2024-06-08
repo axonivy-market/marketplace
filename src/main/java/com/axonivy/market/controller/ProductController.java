@@ -2,10 +2,10 @@ package com.axonivy.market.controller;
 
 import static com.axonivy.market.constants.RequestMappingConstants.PRODUCT;
 
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PagedResourcesAssembler;
 import org.springframework.hateoas.PagedModel;
-import org.springframework.hateoas.RepresentationModel;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -43,20 +43,27 @@ public class ProductController {
     var results = service.findProductsByType(type, pageable);
     var pageResources = pagedResourcesAssembler.toModel(results, assembler);
     if (results.isEmpty()) {
-      return new ResponseEntity<>(pageResources, HttpStatus.NO_CONTENT);
+      return generateEmptyPagedModel();
     }
     return new ResponseEntity<>(pageResources, HttpStatus.OK);
   }
 
   @Operation(summary = "Search products by keyword", description = "Be default system will search product by name or description")
   @GetMapping("/search")
-  public ResponseEntity<RepresentationModel<?>> searchProducts(@RequestParam(required = false) String keyword,
+  public ResponseEntity<PagedModel<ProductModel>> searchProducts(@RequestParam(required = false) String keyword,
       Pageable pageable) {
     var results = service.searchProducts(keyword, pageable);
-    var pagedResources = pagedResourcesAssembler.toModel(results, assembler);
     if (results.isEmpty()) {
-      return new ResponseEntity<>(pagedResources, HttpStatus.NO_CONTENT);
+      return generateEmptyPagedModel();
     }
-    return new ResponseEntity<>(pagedResources, HttpStatus.OK);
+    var pagedModel = pagedResourcesAssembler.toModel(results, assembler);
+    return new ResponseEntity<>(pagedModel, HttpStatus.OK);
+  }
+
+  @SuppressWarnings("unchecked")
+  private ResponseEntity<PagedModel<ProductModel>> generateEmptyPagedModel() {
+    PagedModel<ProductModel> emptyPagedModel = (PagedModel<ProductModel>) pagedResourcesAssembler
+        .toEmptyModel(Page.empty(), ProductModel.class);
+    return new ResponseEntity<>(emptyPagedModel, HttpStatus.OK);
   }
 }
