@@ -22,7 +22,4 @@ public class UserServiceImpl implements UserService {
     return userRepository.findAll();
   }
 
-  public void newmethod() {
-    var nouse = userRepository.findAll();
-  }
 }
