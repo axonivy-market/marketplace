@@ -35,10 +35,11 @@ jobs:
           distribution: 'temurin'
       - name: Run SonarQube Scanner
         run: |
-            mvn sonar:sonar \
+            mvn -B verify sonar:sonar \
                 -Dsonar.host.url=${{ env.SONAR_HOST_URL }} \
+                -Dsonar.projectKey=AxonIvy-Market-Service \
+                -Dsonar.projectName="AxonIvy Market Service" \
                 -Dsonar.token=${{ env.SONAR_TOKEN }} \
-                -Dsonar.projectName='AxonIvy Marketplace Service' \
       - name: SonarQube Quality Gate check
         id: sonarqube-quality-gate-check
         uses: sonarsource/sonarqube-quality-gate-action@master
