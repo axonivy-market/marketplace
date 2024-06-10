@@ -1,6 +1,7 @@
 package com.axonivy.market.controller;
 
 import com.axonivy.market.service.VersionService;
+import lombok.extern.log4j.Log4j2;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -11,6 +12,7 @@ import java.util.Map;
 
 import static com.axonivy.market.constants.RequestMappingConstants.PRODUCT_DETAILS;
 
+@Log4j2
 @RestController
 @RequestMapping(PRODUCT_DETAILS)
 public class ProductDetailsController {
@@ -24,6 +26,7 @@ public class ProductDetailsController {
     public ResponseEntity<List<String>> fecthAllVersionFromProduct(@PathVariable(required = true) String productId,
                                                                    @RequestParam(required = false, value = "showDevVersion") Boolean isDevVersionsDisplayed,
                                                                    @RequestParam(required = false, value = "designerVersion") String designerVersion) throws IOException {
+        log.warn(productId);
         return new ResponseEntity<>(service.getVersionsToDisplay(productId, isDevVersionsDisplayed, designerVersion), HttpStatus.OK);
     }
 

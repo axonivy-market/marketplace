@@ -31,10 +31,12 @@ public class VersionServiceImpl implements VersionService {
     //TODO: need to rework this method
     @Override
     public List<String> getVersionsToDisplay(String productId, Boolean isShowDevVersion, String designerVersion) throws IOException {
+        //TODO: convert productId to repo name
+        String repoName = "portal";
         if (BooleanUtils.isTrue(isShowDevVersion)) {
             //TODO: hanlde dev version
         }
-        List<String> versions = gitHubService.getAllTagsFromRepoName(productId).stream().map(GHTag::getName).toList();
+        List<String> versions = gitHubService.getAllTagsFromRepoName(repoName).stream().map(GHTag::getName).toList();
         if (StringUtils.isNotBlank(designerVersion)) {
             //TODO: handle it please
             return versions.stream().filter(version -> version.contains(designerVersion)).toList();
@@ -123,5 +125,6 @@ public class VersionServiceImpl implements VersionService {
 
         return null;
     }
+
 
 }
