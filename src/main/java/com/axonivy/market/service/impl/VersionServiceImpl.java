@@ -9,6 +9,7 @@ import com.axonivy.market.utils.LatestVersionComparator;
 import com.axonivy.market.utils.XmlReader;
 import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.kohsuke.github.GHContent;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
@@ -27,14 +28,8 @@ public class VersionServiceImpl implements VersionService {
         return Optional.ofNullable(artifacts).orElse(Collections.emptyList()).stream().filter(product -> !product.getArtifactId().endsWith(MavenConstants.PRODUCT_ARTIFACT_POSTFIX)).toList();
     }
 
-    //TODO: need to rework this method
     @Override
-    public List<String> getVersionsToDisplay(String productId, Boolean isShowDevVersion, String designerVersion) throws IOException {
-        //TODO: convert productId to repo name
-        String repoName = "portal";
-
-        //TODO: get artifact from meta
-        List<MavenArtifact> artifacts = Collections.emptyList();
+    public List<String> getVersionsToDisplay(List<MavenArtifact> artifacts, Boolean isShowDevVersion, String designerVersion) throws IOException {
         List<String> versions = getVersionsFromMavenArtifacts(artifacts);
         Stream<String> versionStream = versions.stream();
         if (BooleanUtils.isTrue(isShowDevVersion)) {
@@ -104,10 +99,48 @@ public class VersionServiceImpl implements VersionService {
 
     //    @Override
     public Map<String, List<MavenArtifactModel>> getArtifactsAndVersionToDisplay(String productId, Boolean isShowDevVersion, String designerVersion) throws IOException {
-        List<String> versionsToDisplay = getVersionsToDisplay(productId, isShowDevVersion, designerVersion);
+        //TODO  convert productID to reponame;
+        String repoName = productId;
+
+        //TODO: get mavent artifact from meta.json
+
+
+        List<MavenArtifact> artifactsFromMeta = Collections.emptyList();
+        List<String> versionsToDisplay = getVersionsToDisplay(artifactsFromMeta, isShowDevVersion, designerVersion);
+        Map<String, List<MavenArtifactModel>> result = new HashMap<>();
+        List<MavenArtifactModel> additionalArtifacts = new ArrayList<>();
         for (String version : versionsToDisplay) {
-//            List<MavenArtifactModel>
+            List<MavenArtifactModel> models = new ArrayList<>();
+            List<MavenArtifact> artifacts = getProductJsonByVersion(repoName, version);
+            models.addAll(convertMavenArtifactsToModels(artifacts, version));
+            models.addAll(additionalArtifacts);
+            result.put(version, models);
         }
-        return Map.of();
+        return result;
     }
+
+    private List<MavenArtifact> getProductJsonByVersion(String repoName, String version) throws IOException {
+        String productJsonFilePath = repoName + "-product/product.json";
+        GHContent productJsonContent = gitHubService.getContentFromGHRepoAndTag(repoName, productJsonFilePath, version);
+        return gitHubService.convertProductJsonToMavenProductInfo(productJsonContent);
+    }
+
+    private List<MavenArtifactModel> convertMavenArtifactsToModels(List<MavenArtifact> artifacts, String version) {
+        List<MavenArtifactModel> result = new ArrayList<>();
+        for (MavenArtifact artifact : artifacts) {
+            result.add(convertMavenArtifactToModel(artifact, version));
+        }
+        return result;
+    }
+
+    private MavenArtifactModel convertMavenArtifactToModel(MavenArtifact artifact, String version) {
+        return new MavenArtifactModel(artifact.getName(), buildDownloadUrlFromArtifactAndVersion(artifact, version));
+    }
+
+    private String buildDownloadUrlFromArtifactAndVersion(MavenArtifact artifact, String version) {
+        String repoUrl = Optional.ofNullable(artifact.getRepoUrl()).orElse(MavenConstants.DEFAULT_IVY_MAVEN_BASE_URL);
+        String groupId = artifact.getGroupId().replace(MavenConstants.GROUP_ID_SEPARATOR, MavenConstants.GROUP_ID_URL_SEPARATOR);
+        return String.format(MavenConstants.ARTIFACT_DOWNLOAD_URL_FORMAT, repoUrl, groupId, artifact.getArtifactId(), version, artifact.getArtifactId(), version, artifact.getType());
+    }
+
 }

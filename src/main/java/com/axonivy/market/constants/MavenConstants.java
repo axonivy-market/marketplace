@@ -10,4 +10,6 @@ public class MavenConstants {
     public static final String GROUP_ID_URL_SEPARATOR = "/";
     public static final String ARTIFACT_ID_SEPARATOR = "-";
     public static final String ARTIFACT_NAME_SEPARATOR = " ";
+    public static final String ARTIFACT_DOWNLOAD_URL_FORMAT = "%s/%s/%s/%s/%s-%s.%s";
+
 }

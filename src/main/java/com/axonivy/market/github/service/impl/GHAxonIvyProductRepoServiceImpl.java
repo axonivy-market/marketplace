@@ -4,10 +4,8 @@ import com.axonivy.market.constants.GitHubConstants;
 import com.axonivy.market.constants.MavenConstants;
 import com.axonivy.market.constants.ProductJsonConstants;
 import com.axonivy.market.github.model.MavenArtifact;
-import com.axonivy.market.github.model.MavenProductInfo;
 import com.axonivy.market.github.service.AbstractGithubService;
 import com.axonivy.market.github.service.GHAxonIvyProductRepoService;
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.log4j.Log4j2;
@@ -27,10 +25,10 @@ public class GHAxonIvyProductRepoServiceImpl extends AbstractGithubService imple
     ObjectMapper mapper = new ObjectMapper();
     private GHOrganization organization;
 
-
-    private MavenProductInfo convertProductJsonToMavenProductInfo(String json) throws JsonProcessingException {
+    @Override
+    public List<MavenArtifact> convertProductJsonToMavenProductInfo(GHContent content) throws IOException {
         List<Map<String, Object>> installers = mapper.readValue(
-                mapper.readTree(json).get(ProductJsonConstants.INSTALLERS).toString(),
+                content.read().readAllBytes(),
                 new TypeReference<List<Map<String, Object>>>() {
                 }
         );
@@ -68,7 +66,7 @@ public class GHAxonIvyProductRepoServiceImpl extends AbstractGithubService imple
             }
         }
 
-        return new MavenProductInfo("product-id", artifacts);
+        return artifacts;
     }
 
     @Override
