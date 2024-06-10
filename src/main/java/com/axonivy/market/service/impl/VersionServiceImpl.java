@@ -1,12 +1,16 @@
 package com.axonivy.market.service.impl;
 
 import com.axonivy.market.constants.MavenConstants;
+import com.axonivy.market.factory.ProductFactory;
 import com.axonivy.market.github.model.MavenArtifact;
+import com.axonivy.market.github.model.Meta;
+import com.axonivy.market.github.service.GHAxonIvyMarketRepoService;
 import com.axonivy.market.github.service.GHAxonIvyProductRepoService;
 import com.axonivy.market.model.MavenArtifactModel;
 import com.axonivy.market.service.VersionService;
 import com.axonivy.market.utils.LatestVersionComparator;
 import com.axonivy.market.utils.XmlReader;
+import lombok.extern.log4j.Log4j2;
 import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.kohsuke.github.GHContent;
@@ -16,12 +20,15 @@ import java.io.IOException;
 import java.util.*;
 import java.util.stream.Stream;
 
+@Log4j2
 @Service
 public class VersionServiceImpl implements VersionService {
     private final GHAxonIvyProductRepoService gitHubService;
+    private final GHAxonIvyMarketRepoService marketRepoService;
 
-    public VersionServiceImpl(GHAxonIvyProductRepoService gitHubService) {
+    public VersionServiceImpl(GHAxonIvyProductRepoService gitHubService, GHAxonIvyMarketRepoService marketRepoService) {
         this.gitHubService = gitHubService;
+        this.marketRepoService = marketRepoService;
     }
 
     public static List<MavenArtifact> getMavenArtifacts(List<MavenArtifact> artifacts) {
@@ -98,30 +105,38 @@ public class VersionServiceImpl implements VersionService {
     }
 
     //    @Override
-    public Map<String, List<MavenArtifactModel>> getArtifactsAndVersionToDisplay(String productId, Boolean isShowDevVersion, String designerVersion) throws IOException {
+    public Map<String, List<MavenArtifactModel>> getArtifactsAndVersionToDisplay(String productId, Boolean isShowDevVersion, String designerVersion) {
         //TODO  convert productID to reponame;
         String repoName = productId;
-
-        //TODO: get mavent artifact from meta.json
-
-
-        List<MavenArtifact> artifactsFromMeta = Collections.emptyList();
-        List<String> versionsToDisplay = getVersionsToDisplay(artifactsFromMeta, isShowDevVersion, designerVersion);
+        var contents = marketRepoService.fetchAllMarketItems();
+        GHContent metaJsonContent = contents.get("market/utils/process-analyzer").stream().filter(content -> content.getName().equals("meta.json")).findAny().orElse(null);
         Map<String, List<MavenArtifactModel>> result = new HashMap<>();
-        List<MavenArtifactModel> additionalArtifacts = new ArrayList<>();
-        for (String version : versionsToDisplay) {
-            List<MavenArtifactModel> models = new ArrayList<>();
-            List<MavenArtifact> artifacts = getProductJsonByVersion(repoName, version);
-            models.addAll(convertMavenArtifactsToModels(artifacts, version));
-            models.addAll(additionalArtifacts);
-            result.put(version, models);
+
+        Meta metaFile = null;
+        try {
+            metaFile = ProductFactory.jsonDecode(metaJsonContent);
+            //TODO: get mavent artifact from meta.json
+
+
+            List<MavenArtifact> artifactsFromMeta = metaFile.getMavenArtifacts();
+            List<String> versionsToDisplay = getVersionsToDisplay(artifactsFromMeta, isShowDevVersion, designerVersion);
+            List<MavenArtifact> additionalArtifacts = artifactsFromMeta.stream().filter(artifact -> !artifact.getArtifactId().endsWith(MavenConstants.PRODUCT_ARTIFACT_POSTFIX)).toList();
+            for (String version : versionsToDisplay) {
+                List<MavenArtifactModel> models = new ArrayList<>();
+                List<MavenArtifact> artifacts = getProductJsonByVersion(repoName, version);
+                models.addAll(convertMavenArtifactsToModels(artifacts, version));
+                models.addAll(convertMavenArtifactsToModels(additionalArtifacts, version));
+                result.put(version, models);
+            }
+        } catch (Exception e) {
+            log.error(e.getMessage());
         }
         return result;
     }
 
     private List<MavenArtifact> getProductJsonByVersion(String repoName, String version) throws IOException {
         String productJsonFilePath = repoName + "-product/product.json";
-        GHContent productJsonContent = gitHubService.getContentFromGHRepoAndTag(repoName, productJsonFilePath, version);
+        GHContent productJsonContent = gitHubService.getContentFromGHRepoAndTag(repoName, productJsonFilePath, "v" + version);
         return gitHubService.convertProductJsonToMavenProductInfo(productJsonContent);
     }
 

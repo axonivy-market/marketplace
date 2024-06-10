@@ -21,6 +21,7 @@ public class MavenArtifact {
     private String groupId;
     private String artifactId;
     private String type;
+    private Boolean isDependency;
     private List<ArchivedArtifact> archivedArtifacts;
 
     public MavenArtifact(String repoUrl, String artifactId, String groupId, String artifactId1, String type) {

@@ -15,5 +15,5 @@ public interface VersionService {
 
     String buildMavenMetadataUrlFromArtifact(String repoUrl, String groupId, String artifactID);
 
-    Map<String, List<MavenArtifactModel>> getArtifactsAndVersionToDisplay(String productId, Boolean isShowDevVersion, String designerVersion) throws IOException;
+    Map<String, List<MavenArtifactModel>> getArtifactsAndVersionToDisplay(String productId, Boolean isShowDevVersion, String designerVersion);
 }
