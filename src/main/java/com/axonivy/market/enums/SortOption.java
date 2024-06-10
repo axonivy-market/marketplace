@@ -9,7 +9,7 @@ import lombok.Getter;
 @Getter
 @AllArgsConstructor
 public enum SortOption {
-  Popularity("popularity", "priority"), Alphabetically("alphabetically", "name"), Recent("recent", "publishDate");
+  Popularity("popularity", "installationCount"), Alphabetically("alphabetically", "name"), Recent("recent", "newestPublishDate");
 
   private String option;
   private String code;

@@ -3,6 +3,16 @@ package com.axonivy.market.factory;
 import com.axonivy.market.constants.GitHubConstants;
 import com.axonivy.market.entity.Product;
 import com.axonivy.market.github.model.Meta;
+import static org.apache.commons.lang3.StringUtils.EMPTY;
+
+import org.apache.commons.lang3.StringUtils;
+import org.kohsuke.github.GHContent;
+import org.springframework.util.CollectionUtils;
+
+import com.axonivy.market.constants.GitHubConstants;
+import com.axonivy.market.entity.Product;
+import com.axonivy.market.github.model.Meta;
+import com.axonivy.market.github.util.GithubUtils;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.lang3.StringUtils;
@@ -19,64 +29,78 @@ public class ProductFactory {
 
     private static final ObjectMapper MAPPER = new ObjectMapper();
 
-    public static Product mappingByGHContent(Product product, GHContent content) {
-        var contentName = content.getName();
-        try {
-            if (contentName.endsWith(META_FILE)) {
-                ProductFactory.mappingByMetaJson(product, content);
-            }
-
-            if (contentName.endsWith(LOGO_FILE)) {
-                product.setLogoUrl(content.getDownloadUrl());
-            }
-        } catch (IOException e) {
-            log.warn("Mapping from GHContent failed", e);
-        }
-        return product;
+  public static Product mappingByGHContent(Product product, GHContent content) {
+    var contentName = content.getName();
+    if (contentName.endsWith(META_FILE)) {
+      ProductFactory.mappingByMetaJson(product, content);
     }
-
-    public static Product mappingByMetaJson(Product product, GHContent ghContent)
-            throws IOException {
-        var meta = jsonDecode(ghContent);
-        if (meta == null) {
-            return product;
-        }
-        product.setKey(meta.getId());
-        product.setName(meta.getName());
-        product.setMarketDirectory(ghContent.getPath().replace(ghContent.getName(), ""));
-        product.setListed(meta.getListed());
-        product.setType(meta.getType());
-        product.setTags(meta.getTags());
-        product.setVersion(meta.getVersion());
-        product.setShortDescription(meta.getDescription());
-        product.setVendor(meta.getVendor());
-        product.setVendorImage(meta.getVendorImage());
-        product.setVendorUrl(meta.getVendorUrl());
-        product.setPlatformReview(meta.getPlatformReview());
-        product.setStatusBadgeUrl(meta.getStatusBadgeUrl());
-        product.setLanguage(meta.getLanguage());
-        product.setIndustry(meta.getIndustry());
-        extractSourceUrl(product, meta);
-        return product;
+    if (contentName.endsWith(LOGO_FILE)) {
+      product.setLogoUrl(GithubUtils.getDownloadUrl(content));
     }
+    return product;
+  }
 
-    private static void extractSourceUrl(Product product, Meta meta) {
-        var sourceUrl = meta.getSourceUrl();
-        if (StringUtils.isBlank(sourceUrl)) {
-            return;
-        }
-        var urlLength = sourceUrl.length();
-        var orgIndex = sourceUrl.indexOf(GitHubConstants.AXONIVY_MARKET_ORGANIZATION_NAME);
-        var repositoryPath = StringUtils.substring(sourceUrl, orgIndex, urlLength);
-        product.setRepositoryName(repositoryPath);
-        product.setSourceUrl(sourceUrl);
+    public static Product mappingByMetaJson(Product product, GHContent ghContent) {
+    Meta meta = null;
+    try {
+      meta = jsonDecode(ghContent);
+    } catch (Exception e) {
+      log.error("Mapping from Meta file by GHContent failed", e);
+      return product;
     }
+    product.setKey(meta.getId());
+    product.setName(meta.getName());
+    product.setMarketDirectory(ghContent.getPath().replace(ghContent.getName(), ""));
+    product.setListed(meta.getListed());
+    product.setType(meta.getType());
+    product.setTags(meta.getTags());
+    product.setVersion(meta.getVersion());
+    product.setShortDescription(meta.getDescription());
+    product.setVendor(meta.getVendor());
+    product.setVendorImage(meta.getVendorImage());
+    product.setVendor(meta.getVendor());
+    product.setVendorImage(meta.getVendorImage());
+    product.setVendorUrl(meta.getVendorUrl());
+    product.setPlatformReview(meta.getPlatformReview());
+    product.setStatusBadgeUrl(meta.getStatusBadgeUrl());
+    product.setLanguage(meta.getLanguage());
+    product.setIndustry(meta.getIndustry());
+    extractSourceUrl(product, meta);
+    updateLatestReleaseDateForProduct(product);
+    return product;
+  }
 
-    public static Meta jsonDecode(GHContent ghContent) throws IOException {
-        if (ghContent != null) {
-            return MAPPER.readValue(ghContent.read().readAllBytes(), Meta.class);
-        }
-        return null;
+  private static void updateLatestReleaseDateForProduct(Product product) {
+    if (StringUtils.isBlank(product.getRepositoryName())) {
+      return;
     }
+    try {
+      var productRepo = GithubUtils.getGHRepoByPath(product.getRepositoryName());
+      var lastTag = CollectionUtils.firstElement(productRepo.listTags().toList());
+      product.setNewestPublishDate(lastTag.getCommit().getCommitDate());
+      product.setNewestReleaseVersion(lastTag.getName());
+    } catch (Exception e) {
+      log.error("Cannot find repository by path {} {}", product.getRepositoryName(), e);
+    }
+  }
 
+  private static String extractParentDirectory(GHContent ghContent) {
+    return ghContent.getPath().replace(ghContent.getName(), EMPTY);
+  }
+
+  private static void extractSourceUrl(Product product, Meta meta) {
+    var sourceUrl = meta.getSourceUrl();
+    if (StringUtils.isBlank(sourceUrl)) {
+      return;
+    }
+    var urlLength = sourceUrl.length();
+    var orgIndex = sourceUrl.indexOf(GitHubConstants.AXONIVY_MARKET_ORGANIZATION_NAME);
+    var repositoryPath = StringUtils.substring(sourceUrl, orgIndex, urlLength);
+    product.setRepositoryName(repositoryPath);
+    product.setSourceUrl(sourceUrl);
+  }
+
+  private static Meta jsonDecode(GHContent ghContent) throws Exception {
+    return MAPPER.readValue(ghContent.read().readAllBytes(), Meta.class);
+  }
 }
