@@ -8,7 +8,6 @@ import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
 import java.util.List;
-import java.util.Map;
 
 import static com.axonivy.market.constants.RequestMappingConstants.PRODUCT_DETAILS;
 
@@ -29,11 +28,11 @@ public class ProductDetailsController {
         log.warn(productId);
         return new ResponseEntity<>(service.getVersionsToDisplay(productId, isDevVersionsDisplayed, designerVersion), HttpStatus.OK);
     }
-
-    @GetMapping("/{productId}/artifacts")
-    public ResponseEntity<Map<String, List<String>>> fetchAllArtifactsFromProduct(@PathVariable(required = true) String productId) throws IOException {
-        return new ResponseEntity<>(service.getArtifactsToDisplay(productId), HttpStatus.OK);
-    }
+//
+//    @GetMapping("/{productId}/artifacts")
+//    public ResponseEntity<Map<String, List<String>>> fetchAllArtifactsFromProduct(@PathVariable(required = true) String productId) throws IOException {
+//        return new ResponseEntity<>(service.getArtifactsToDisplay(productId), HttpStatus.OK);
+//    }
 
     @GetMapping("/{key}")
     public Object findProduct(@PathVariable("key") String key,

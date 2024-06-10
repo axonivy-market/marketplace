@@ -15,14 +15,7 @@ import java.util.List;
 @AllArgsConstructor
 @JsonInclude(JsonInclude.Include.NON_EMPTY)
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class MavenArtifact {
-    private String repoUrl;
-    private String name;
-    private String groupId;
-    private String artifactId;
-    private String type;
-    private List<ArchivedArtifact> archivedArtifacts;
-
-    public MavenArtifact(String repoUrl, String artifactId, String groupId, String artifactId1, String type) {
-    }
+public class MavenProductInfo {
+    private String id;
+    private List<MavenArtifact> artifacts;
 }

@@ -1,15 +1,14 @@
 package com.axonivy.market.service.impl;
 
 import com.axonivy.market.constants.MavenConstants;
-import com.axonivy.market.entity.Product;
 import com.axonivy.market.github.model.MavenArtifact;
 import com.axonivy.market.github.service.GHAxonIvyProductRepoService;
+import com.axonivy.market.model.MavenArtifactModel;
 import com.axonivy.market.service.VersionService;
 import com.axonivy.market.utils.LatestVersionComparator;
 import com.axonivy.market.utils.XmlReader;
 import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.kohsuke.github.GHTag;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
@@ -33,20 +32,10 @@ public class VersionServiceImpl implements VersionService {
     public List<String> getVersionsToDisplay(String productId, Boolean isShowDevVersion, String designerVersion) throws IOException {
         //TODO: convert productId to repo name
         String repoName = "portal";
-        if (BooleanUtils.isTrue(isShowDevVersion)) {
-            //TODO: hanlde dev version
-        }
-        List<String> versions = gitHubService.getAllTagsFromRepoName(repoName).stream().map(GHTag::getName).toList();
-        if (StringUtils.isNotBlank(designerVersion)) {
-            //TODO: handle it please
-            return versions.stream().filter(version -> version.contains(designerVersion)).toList();
-        }
-        return versions;
-    }
 
-    @Override
-    public List<String> getVersionsFromProduct(Product product, Boolean isShowDevVersion, String designerVersion) {
-        List<String> versions = getVersionsFromMaven(product);
+        //TODO: get artifact from meta
+        List<MavenArtifact> artifacts = Collections.emptyList();
+        List<String> versions = getVersionsFromMavenArtifacts(artifacts);
         Stream<String> versionStream = versions.stream();
         if (BooleanUtils.isTrue(isShowDevVersion)) {
             return versionStream.filter(version -> isReleasedVersionOrUnReleaseDevVersion(versions, version)).sorted(new LatestVersionComparator()).toList();
@@ -54,16 +43,14 @@ public class VersionServiceImpl implements VersionService {
         if (StringUtils.isNotBlank(designerVersion)) {
             return versionStream.filter(version -> isMatchWithDesignerVersion(version, designerVersion)).toList();
         }
-
         return versionStream.filter(this::isReleasedVersion).sorted(new LatestVersionComparator()).toList();
     }
 
-    private List<String> getVersionsFromMaven(Product product) {
-        List<MavenArtifact> productArtifact = Collections.emptyList();
+    private List<String> getVersionsFromMavenArtifacts(List<MavenArtifact> artifacts) {
         Set<String> versions = new HashSet<>();
-        for (MavenArtifact artifact : productArtifact) {
-            versions.addAll(getVersionsFromArtifactInfo(artifact.getRepoUrl(), artifact.getGroupId(), artifact.getArtifactId()));
-            Optional.ofNullable(artifact.getArchivedArtifacts()).orElse(Collections.emptyList()).forEach(archivedArtifact -> versions.addAll(getVersionsFromArtifactInfo(artifact.getRepoUrl(), archivedArtifact.getGroupId(), archivedArtifact.getArtifactId())));
+        for (MavenArtifact artifact : artifacts) {
+            versions.addAll(getVersionsFromArtifactDetails(artifact.getRepoUrl(), artifact.getGroupId(), artifact.getArtifactId()));
+            Optional.ofNullable(artifact.getArchivedArtifacts()).orElse(Collections.emptyList()).forEach(archivedArtifact -> versions.addAll(getVersionsFromArtifactDetails(artifact.getRepoUrl(), archivedArtifact.getGroupId(), archivedArtifact.getArtifactId())));
         }
         List<String> versionList = new ArrayList<>(versions);
         versionList.sort(new LatestVersionComparator());
@@ -71,7 +58,7 @@ public class VersionServiceImpl implements VersionService {
     }
 
     @Override
-    public List<String> getVersionsFromArtifactInfo(String repoUrl, String groupId, String artifactID) {
+    public List<String> getVersionsFromArtifactDetails(String repoUrl, String groupId, String artifactID) {
         List<String> versions = new ArrayList<>();
         String baseUrl = buildMavenMetadataUrlFromArtifact(repoUrl, groupId, artifactID);
         if (StringUtils.isNotBlank(baseUrl)) {
@@ -90,7 +77,6 @@ public class VersionServiceImpl implements VersionService {
         return String.format(MavenConstants.METADATA_URL_FORMAT, repoUrl, groupId, artifactID);
     }
 
-    @Override
     public boolean isReleasedVersionOrUnReleaseDevVersion(List<String> versions, String version) {
         if (isSnapshotVersion(version)) {
             return !versions.contains(version.replace(MavenConstants.SNAPSHOT_RELEASE_POSTFIX, StringUtils.EMPTY));
@@ -100,17 +86,14 @@ public class VersionServiceImpl implements VersionService {
         return true;
     }
 
-    @Override
     public boolean isSnapshotVersion(String version) {
         return version.endsWith(MavenConstants.SNAPSHOT_RELEASE_POSTFIX);
     }
 
-    @Override
     public boolean isSprintVersion(String version) {
         return version.contains(MavenConstants.SPRINT_RELEASE_POSTFIX);
     }
 
-    @Override
     public boolean isReleasedVersion(String version) {
         return !(isSprintVersion(version) || isSnapshotVersion(version));
     }
@@ -119,12 +102,12 @@ public class VersionServiceImpl implements VersionService {
         return isReleasedVersion(version) && version.startsWith(designerVersion);
     }
 
-    @Override
-    public Map<String, List<String>> getArtifactsToDisplay(String productId) throws IOException {
-        List<String> versions = gitHubService.getAllTagsFromRepoName(productId).stream().map(GHTag::getName).toList();
-
-        return null;
+    //    @Override
+    public Map<String, List<MavenArtifactModel>> getArtifactsAndVersionToDisplay(String productId, Boolean isShowDevVersion, String designerVersion) throws IOException {
+        List<String> versionsToDisplay = getVersionsToDisplay(productId, isShowDevVersion, designerVersion);
+        for (String version : versionsToDisplay) {
+//            List<MavenArtifactModel>
+        }
+        return Map.of();
     }
-
-
 }
