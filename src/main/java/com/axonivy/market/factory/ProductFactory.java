@@ -1,5 +1,7 @@
 package com.axonivy.market.factory;
 
+import static com.axonivy.market.constants.CommonConstants.LOGO_FILE;
+import static com.axonivy.market.constants.CommonConstants.META_FILE;
 import static org.apache.commons.lang3.StringUtils.EMPTY;
 
 import org.apache.commons.lang3.StringUtils;
@@ -16,10 +18,6 @@ import lombok.extern.log4j.Log4j2;
 
 @Log4j2
 public class ProductFactory {
-
-  public static final String META_FILE = "meta.json";
-  public static final String LOGO_FILE = "logo.png";
-
   private static final ObjectMapper MAPPER = new ObjectMapper();
 
   public static Product mappingByGHContent(Product product, GHContent content) {

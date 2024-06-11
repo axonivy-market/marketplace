@@ -30,18 +30,20 @@ import com.axonivy.market.repository.GithubRepoMetaRepository;
 import com.axonivy.market.repository.ProductRepository;
 import com.axonivy.market.service.ProductService;
 
+import static org.apache.commons.lang3.StringUtils.*;
+
 @Service
 public class ProductServiceImpl implements ProductService {
 
-  private final ProductRepository productRepo;
+  private final ProductRepository productRepository;
   private final GHAxonIvyMarketRepoService githubMarketRepoService;
   private final GithubRepoMetaRepository repoMetaRepository;
   private GHCommit lastGHCommit;
   private GithubRepoMeta marketRepoMeta;
 
-  public ProductServiceImpl(ProductRepository repo, GHAxonIvyMarketRepoService githubService,
+  public ProductServiceImpl(ProductRepository productRepository, GHAxonIvyMarketRepoService githubService,
       GithubRepoMetaRepository repoMetaRepository) {
-    this.productRepo = repo;
+    this.productRepository = productRepository;
     this.githubMarketRepoService = githubService;
     this.repoMetaRepository = repoMetaRepository;
   }
@@ -65,8 +67,8 @@ public class ProductServiceImpl implements ProductService {
 
     Pageable unifiedPageabe = refinePagination(pageable);
     return switch (filterType) {
-    case ALL -> productRepo.findAll(unifiedPageabe);
-    case CONNECTORS, UTILITIES, SOLUTIONS -> productRepo.findByType(filterType.getCode(), pageable);
+    case ALL -> productRepository.findAll(unifiedPageabe);
+    case CONNECTORS, UTILITIES, SOLUTIONS -> productRepository.findByType(filterType.getCode(), pageable);
     default -> Page.empty();
     };
   }
@@ -89,17 +91,17 @@ public class ProductServiceImpl implements ProductService {
     }
     var githubFileChanges = githubMarketRepoService.fetchMarketItemsBySHA1Range(marketRepoMeta.getLastSHA1(),
         lastGHCommit.getSHA1());
-    Map<String, List<GitHubFile>> groupedGithubFiles = new HashMap<>();
+    Map<String, List<GitHubFile>> groupGithubFiles = new HashMap<>();
     for (var file : githubFileChanges) {
       var filePath = file.getFileName();
-      var parentPath = filePath.replace(FileType.META.getFileName(), "").replace(FileType.LOGO.getFileName(), "");
-      var files = groupedGithubFiles.getOrDefault(parentPath, new ArrayList<>());
+      var parentPath = filePath.replace(FileType.META.getFileName(), EMPTY).replace(FileType.LOGO.getFileName(), EMPTY);
+      var files = groupGithubFiles.getOrDefault(parentPath, new ArrayList<>());
       files.add(file);
-      groupedGithubFiles.putIfAbsent(parentPath, files);
+      groupGithubFiles.putIfAbsent(parentPath, files);
     }
 
-    for (var parentPath : groupedGithubFiles.keySet()) {
-      var files = groupedGithubFiles.get(parentPath);
+    for (var parentPath : groupGithubFiles.keySet()) {
+      var files = groupGithubFiles.get(parentPath);
       for (var file : files) {
         Product product = new Product();
         var fileContent = githubMarketRepoService.getGHContent(file.getFileName());
@@ -117,16 +119,16 @@ public class ProductServiceImpl implements ProductService {
     Product result = null;
     switch (file.getStatus()) {
     case MODIFIED, ADDED:
-      result = productRepo.findByMarketDirectoryRegex(parentPath);
+      result = productRepository.findByMarketDirectoryRegex(parentPath);
       if (result != null) {
         result.setLogoUrl(GithubUtils.getDownloadUrl(fileContent));
-        productRepo.save(result);
+        productRepository.save(result);
       }
       break;
     case REMOVED:
-      result = productRepo.findByLogoUrl(product.getLogoUrl());
+      result = productRepository.findByLogoUrl(product.getLogoUrl());
       if (result != null) {
-        productRepo.deleteById(result.getKey());
+        productRepository.deleteById(result.getKey());
       }
       break;
     default:
@@ -137,10 +139,10 @@ public class ProductServiceImpl implements ProductService {
   private void modifyProductByMetaContent(GitHubFile file, Product product) {
     switch (file.getStatus()) {
     case MODIFIED, ADDED:
-      productRepo.save(product);
+      productRepository.save(product);
       break;
     case REMOVED:
-      productRepo.deleteById(product.getKey());
+      productRepository.deleteById(product.getKey());
       break;
     default:
       break;
@@ -185,15 +187,15 @@ public class ProductServiceImpl implements ProductService {
       }
       products.add(product);
     }
-    productRepo.saveAll(products);
+    productRepository.saveAll(products);
     return new PageImpl<Product>(products);
   }
 
   public Page<Product> searchProducts(FilterType filterType, String keyword, Pageable pageable) {
     Pageable unifiedPageabe = refinePagination(pageable);
     if (StringUtils.isBlank(keyword)) {
-      return productRepo.findAll(pageable);
+      return productRepository.findAll(pageable);
     }
-    return productRepo.searchByKeywordAndType(keyword, filterType.getCode(), unifiedPageabe);
+    return productRepository.searchByKeywordAndType(keyword, filterType.getCode(), unifiedPageabe);
   }
 }
