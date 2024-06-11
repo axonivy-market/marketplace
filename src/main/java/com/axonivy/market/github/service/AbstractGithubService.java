@@ -6,6 +6,7 @@ import java.util.List;
 import org.kohsuke.github.GHContent;
 import org.kohsuke.github.GHOrganization;
 import org.kohsuke.github.GHRepository;
+import org.springframework.util.Assert;
 
 import com.axonivy.market.github.GitHubProvider;
 
@@ -16,10 +17,8 @@ public abstract class AbstractGithubService {
   }
 
   protected List<GHContent> getDirectoryContent(GHRepository ghRepository, String path) throws IOException {
-    if (ghRepository != null) {
-      return ghRepository.getDirectoryContent(path);
-    }
-    return null;
+    Assert.notNull(ghRepository, "Repository must not be null");
+    return ghRepository.getDirectoryContent(path);
   }
 
 }

@@ -10,12 +10,11 @@ import org.springframework.util.ResourceUtils;
 
 public class GitHubProvider {
 
+  private static final String GITHUB_TOKEN_FILE = "classpath:github.token";
+
   public static GitHub get() {
     try {
-      File githubtoken = null;
-
-      githubtoken = ResourceUtils.getFile("classpath:github.token");
-
+      File githubtoken = ResourceUtils.getFile(GITHUB_TOKEN_FILE);
       var token = Files.readString(githubtoken.toPath());
       return new GitHubBuilder().withOAuthToken(token).build();
     } catch (IOException ex) {
