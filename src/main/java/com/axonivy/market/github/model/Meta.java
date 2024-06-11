@@ -34,8 +34,7 @@ public class Meta {
   private String vendorUrl;
   private List<String> tags;
   private List<MavenArtifact> mavenArtifacts;
-
   private String compatibility;
-
   private Boolean contactUs;
+  private String cost;
 }

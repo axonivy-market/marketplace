@@ -66,6 +66,9 @@ public class ProductFactory {
         product.setStatusBadgeUrl(meta.getStatusBadgeUrl());
         product.setLanguage(meta.getLanguage());
         product.setIndustry(meta.getIndustry());
+        product.setContactUs(meta.getContactUs());
+        product.setCompatibility(meta.getCompatibility());
+        product.setCost(meta.getCost());
         extractSourceUrl(product, meta);
         updateLatestReleaseDateForProduct(product);
         return product;
