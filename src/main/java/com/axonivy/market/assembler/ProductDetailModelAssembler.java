@@ -8,7 +8,7 @@ import org.springframework.hateoas.server.mvc.RepresentationModelAssemblerSuppor
 import org.springframework.stereotype.Component;
 
 @Component
-public class ProductDetailModelAssembler extends RepresentationModelAssemblerSupport<Product, ProductDetailModel>  {
+public class ProductDetailModelAssembler extends RepresentationModelAssemblerSupport<Product, ProductDetailModel> {
 
     public ProductDetailModelAssembler() {
         super(ProductDetailsController.class, ProductDetailModel.class);
@@ -19,6 +19,7 @@ public class ProductDetailModelAssembler extends RepresentationModelAssemblerSup
         ProductDetailModel model = createModelWithId(product.getKey(), product);
         model.setVendor(product.getVendor());
         model.setVendorUrl(product.getVendorUrl());
+        model.setNewestReleaseVersion(product.getNewestReleaseVersion());
         model.setPlatformReview(product.getPlatformReview());
         model.setSourceUrl(product.getSourceUrl());
         model.setStatusBadgeUrl(product.getStatusBadgeUrl());
@@ -26,6 +27,9 @@ public class ProductDetailModelAssembler extends RepresentationModelAssemblerSup
         model.setIndustry(product.getIndustry());
         model.setCompatibility(product.getCompatibility());
         model.setContactUs(product.getContactUs());
+        model.setDescription(product.getDescription());
+        model.setSetup(product.getSetup());
+        model.setDemo(product.getDemo());
         return model;
     }
 }

@@ -51,6 +51,12 @@ public class Product implements Serializable {
   private Date newestPublishDate;
   private String newestReleaseVersion;
 
+  private String description;
+
+  private String setup;
+
+  private String demo;
+
   @Override
   public int hashCode() {
     HashCodeBuilder builder = new HashCodeBuilder();

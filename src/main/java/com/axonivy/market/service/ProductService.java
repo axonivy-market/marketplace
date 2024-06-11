@@ -12,6 +12,4 @@ public interface ProductService {
   Page<Product> searchProducts(String keyword, Pageable pageable);
 
   Product fetchProductDetail(String key);
-
-  ProductDetailModel fetch(String key);
 }
