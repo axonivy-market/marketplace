@@ -29,7 +29,6 @@ public class XmlReader {
     public static List<String> readXMLFromUrl(String url) {
         List<String> versions = new ArrayList<>();
         String xmlData = new RestTemplate().getForObject(url, String.class);
-        log.warn(xmlData);
         extractVersions(xmlData, versions);
         return versions;
     }

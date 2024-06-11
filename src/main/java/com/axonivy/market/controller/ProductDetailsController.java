@@ -27,14 +27,13 @@ public class ProductDetailsController {
     public ResponseEntity<Map<String, List<MavenArtifactModel>>> fecthAllVersionFromProduct(@PathVariable(required = true) String productId,
                                                                                             @RequestParam(required = false, value = "showDevVersion") Boolean isDevVersionsDisplayed,
                                                                                             @RequestParam(required = false, value = "designerVersion") String designerVersion) throws IOException {
+        log.warn("controller layer");
         log.warn(productId);
+        log.warn(isDevVersionsDisplayed);
+        log.warn(designerVersion);
+
         return new ResponseEntity<>(service.getArtifactsAndVersionToDisplay(productId, isDevVersionsDisplayed, designerVersion), HttpStatus.OK);
     }
-//
-//    @GetMapping("/{productId}/artifacts")
-//    public ResponseEntity<Map<String, List<String>>> fetchAllArtifactsFromProduct(@PathVariable(required = true) String productId) throws IOException {
-//        return new ResponseEntity<>(service.getArtifactsToDisplay(productId), HttpStatus.OK);
-//    }
 
     @GetMapping("/{key}")
     public Object findProduct(@PathVariable("key") String key,
