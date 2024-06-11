@@ -9,9 +9,10 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 public class WebConfig implements WebMvcConfigurer {
 
   private static final String[] EXCLUDE_PATHS = { "/swagger-ui/**", "/api-docs/**" };
-  private static final String[] ALLOWED_HEADERS = { "Accept-Language", "Content-Type", "X-Requested-By",
+  private static final String[] ALLOWED_HEADERS = { "Accept-Language", "Content-Type", "Authorization",
+      "X-Requested-By",
       "x-requested-with", "X-Forwarded-Host" };
-  private static final String[] ALLOWED_METHODS = { "GET", "POST", "PUT", "DELETE" };
+  private static final String[] ALLOWED_METHODS = { "GET", "POST", "PUT", "DELETE", "OPTIONS" };
 
   private final MarketHeaderInterceptor headerInterceptor;
 
