@@ -44,7 +44,7 @@ public class GHAxonIvyMarketRepoServiceImpl extends AbstractGithubService implem
     }
 
     private void extractFileOfContent(GHContent content, Map<String, List<GHContent>> ghContentMap) throws IOException {
-        if (content.isDirectory() && content.getName().equals("process-analyzer")) {
+        if (content.isDirectory() && content.getName().equals("docuware-connector")) {
             var listOfContent = content.listDirectoryContent();
             for (var childContent : listOfContent.toList()) {
                 if (childContent.isFile()) {

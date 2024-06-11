@@ -109,7 +109,7 @@ public class VersionServiceImpl implements VersionService {
         //TODO  convert productID to reponame;
         String repoName = productId;
         var contents = marketRepoService.fetchAllMarketItems();
-        GHContent metaJsonContent = contents.get("market/utils/process-analyzer").stream().filter(content -> content.getName().equals("meta.json")).findAny().orElse(null);
+        GHContent metaJsonContent = contents.get("market/connector/docuware-connector").stream().filter(content -> content.getName().equals("meta.json")).findAny().orElse(null);
         Map<String, List<MavenArtifactModel>> result = new HashMap<>();
 
         Meta metaFile = null;
