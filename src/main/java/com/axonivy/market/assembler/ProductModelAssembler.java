@@ -35,7 +35,7 @@ public class ProductModelAssembler extends RepresentationModelAssemblerSupport<P
   private ProductModel createResource(ProductModel model, Product product) {
     model.setKey(product.getKey());
     model.setName(product.getName());
-    model.setShortDescript(product.getShortDescription());
+    model.setShortDescription(product.getShortDescription());
     model.setType(product.getType());
     model.setTags(product.getTags());
     model.setLogoUrl(product.getLogoUrl());

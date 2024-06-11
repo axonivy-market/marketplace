@@ -47,7 +47,12 @@ public class ProductServiceImpl implements ProductService {
   }
 
   @Override
-  public Page<Product> findProductsByType(String type, Pageable pageable) {
+  public Page<Product> findProducts(String type, String keyword, Pageable pageable) {
+    final FilterType filterType = FilterType.of(type);
+    if (StringUtils.isNoneBlank(keyword)) {
+      return searchProducts(filterType, keyword, pageable);
+    }
+
     if (!isLastGithubCommitCovered()) {
       if (marketRepoMeta == null) {
         syncProductsFromGithubRepo();
@@ -58,9 +63,7 @@ public class ProductServiceImpl implements ProductService {
       syncRepoMetaDataStatus();
     }
 
-    final FilterType filterType = FilterType.of(type);
     Pageable unifiedPageabe = refinePagination(pageable);
-
     return switch (filterType) {
     case ALL -> productRepo.findAll(unifiedPageabe);
     case CONNECTORS, UTILITIES, SOLUTIONS -> productRepo.findByType(filterType.getCode(), pageable);
@@ -135,7 +138,7 @@ public class ProductServiceImpl implements ProductService {
     switch (file.getStatus()) {
     case MODIFIED, ADDED:
       productRepo.save(product);
-    break;
+      break;
     case REMOVED:
       productRepo.deleteById(product.getKey());
       break;
@@ -186,12 +189,11 @@ public class ProductServiceImpl implements ProductService {
     return new PageImpl<Product>(products);
   }
 
-  @Override
-  public Page<Product> searchProducts(String keyword, Pageable pageable) {
+  public Page<Product> searchProducts(FilterType filterType, String keyword, Pageable pageable) {
     Pageable unifiedPageabe = refinePagination(pageable);
     if (StringUtils.isBlank(keyword)) {
       return productRepo.findAll(pageable);
     }
-    return productRepo.findByNameOrShortDescriptionRegex(keyword, unifiedPageabe);
+    return productRepo.searchByKeywordAndType(keyword, filterType.getCode(), unifiedPageabe);
   }
 }

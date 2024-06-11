@@ -8,7 +8,7 @@ import lombok.Getter;
 
 @Getter
 public enum FilterType {
-  ALL("all", ""), CONNECTORS("connectors", "connector"), UTILITIES("utilities", "util"), SOLUTIONS("solutions", "solution");
+  ALL("all", ""), CONNECTORS("connectors", "connector"), UTILITIES("utilities", "util"), SOLUTIONS("solutions", "solution"), DEMOS("demos", "demo");
 
   private String option;
   private String code;

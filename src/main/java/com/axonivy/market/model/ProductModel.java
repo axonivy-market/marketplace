@@ -20,7 +20,7 @@ import lombok.Setter;
 public class ProductModel extends RepresentationModel<ProductModel> {
   private String key;
   private String name;
-  private String shortDescript;
+  private String shortDescription;
   private String logoUrl;
   private String type;
   private List<String> tags;
