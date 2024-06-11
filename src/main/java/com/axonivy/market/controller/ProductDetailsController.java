@@ -1,6 +1,6 @@
 package com.axonivy.market.controller;
 
-import com.axonivy.market.model.MavenArtifactModel;
+import com.axonivy.market.github.model.MavenArtifactModel;
 import com.axonivy.market.service.VersionService;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.http.HttpStatus;

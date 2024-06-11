@@ -1,7 +1,7 @@
 package com.axonivy.market.service;
 
 import com.axonivy.market.github.model.MavenArtifact;
-import com.axonivy.market.model.MavenArtifactModel;
+import com.axonivy.market.github.model.MavenArtifactModel;
 
 import java.io.IOException;
 import java.util.List;
