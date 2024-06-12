@@ -6,6 +6,7 @@ import com.axonivy.market.exceptions.NotFoundException;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
+
 @Getter
 @AllArgsConstructor
 public enum SortOption {

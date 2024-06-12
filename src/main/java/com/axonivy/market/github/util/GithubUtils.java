@@ -22,7 +22,7 @@ public class GithubUtils {
     if (commit != null) {
       try {
         commitTime = commit.getCommitDate().getTime();
-      } catch (IOException e) {
+      } catch (Exception e) {
         log.error("Check last commit failed", e);
       }
     }
@@ -33,7 +33,7 @@ public class GithubUtils {
     try {
       return content.getDownloadUrl();
     } catch (IOException e) {
-      log.warn("Cannot get DownloadURl from GHContent: ", e);
+      log.error("Cannot get DownloadURl from GHContent: ", e);
     }
     return "";
   }

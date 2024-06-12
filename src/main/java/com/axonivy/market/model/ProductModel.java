@@ -18,7 +18,7 @@ import lombok.Setter;
 @Relation(collectionRelation = "products", itemRelation = "product")
 @JsonInclude(Include.NON_NULL)
 public class ProductModel extends RepresentationModel<ProductModel> {
-  private String key;
+  private String id;
   private String name;
   private String shortDescription;
   private String logoUrl;

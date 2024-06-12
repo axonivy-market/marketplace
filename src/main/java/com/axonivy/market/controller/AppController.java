@@ -17,7 +17,7 @@ import com.axonivy.market.model.Message;
 public class AppController {
 
   @GetMapping
-  public ResponseEntity<Message> init() {
+  public ResponseEntity<Message> root() {
     var swaggerURL = ServletUriComponentsBuilder.fromCurrentContextPath().path(SWAGGER_URL).toUriString();
     var message = new Message();
     message.setErrorCode("0");

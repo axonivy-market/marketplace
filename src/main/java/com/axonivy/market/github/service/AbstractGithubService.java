@@ -20,5 +20,4 @@ public abstract class AbstractGithubService {
     Assert.notNull(ghRepository, "Repository must not be null");
     return ghRepository.getDirectoryContent(path);
   }
-
 }
