@@ -13,6 +13,7 @@ import com.axonivy.market.github.service.GHAxonIvyProductRepoService;
 import com.axonivy.market.repository.GithubRepoMetaRepository;
 import com.axonivy.market.repository.MavenArtifactVersionRepository;
 import com.axonivy.market.service.VersionService;
+import com.axonivy.market.utils.ArchivedArtifactsComparator;
 import com.axonivy.market.utils.LatestVersionComparator;
 import com.axonivy.market.utils.XmlReader;
 import lombok.extern.log4j.Log4j2;
@@ -32,6 +33,7 @@ public class VersionServiceImpl implements VersionService {
     private final GHAxonIvyProductRepoService gitHubService;
     private final GHAxonIvyMarketRepoService marketRepoService;
     private final MavenArtifactVersionRepository mavenArtifactVersionRepository;
+
 
     public VersionServiceImpl(GHAxonIvyProductRepoService gitHubService, GHAxonIvyMarketRepoService marketRepoService, MavenArtifactVersionRepository mavenArtifactVersionRepository) {
         this.gitHubService = gitHubService;
@@ -116,6 +118,7 @@ public class VersionServiceImpl implements VersionService {
     public Map<String, List<MavenArtifactModel>> getArtifactsAndVersionToDisplay(String productId, Boolean isShowDevVersion, String designerVersion) {
         //TODO  convert productID to reponame;
         String repoName = productId;
+        Map<String, List<ArchivedArtifact>> archivedArtifactsMap= new HashMap<>();
         var contents = marketRepoService.fetchAllMarketItems();
         GHContent metaJsonContent = contents.get("market/connector/adobe-acrobat-sign-connector").stream().filter(content -> content.getName().equals("meta.json")).findAny().orElse(null);
         Map<String, List<MavenArtifactModel>> result = new HashMap<>();
@@ -129,66 +132,72 @@ public class VersionServiceImpl implements VersionService {
             List<MavenArtifact> artifactsFromMeta = metaFile.getMavenArtifacts();
             MavenArtifact productArtifact = artifactsFromMeta.stream().filter(artifact -> artifact.getArtifactId().endsWith(MavenConstants.PRODUCT_ARTIFACT_POSTFIX)).findAny().orElse(new MavenArtifact());
             artifactsFromMeta.remove(productArtifact);
-            artifactsFromMeta.forEach(artifact -> artifact.setName(convertArtifactIdToName(artifact.getArtifactId(),artifact.getType())));
-
+            artifactsFromMeta.forEach(artifact -> {
+                artifact.setType(Optional.ofNullable(artifact.getType()).orElse("iar"));
+                List<ArchivedArtifact> archivedArtifacts = new ArrayList<>(artifact.getArchivedArtifacts().stream().sorted(new ArchivedArtifactsComparator()).toList());
+                Collections.reverse(archivedArtifacts);
+                archivedArtifactsMap.put(artifact.getArtifactId(), archivedArtifacts);
+            });
             versions = getVersionsToDisplay(artifactsFromMeta, isShowDevVersion, designerVersion);
             for (String version : versions) {
-                List<MavenArtifactModel> models = new ArrayList<>();
-
                 List<MavenArtifact> artifactFromProductJson = getProductJsonByVersion(productArtifact, repoName, version);
-                models.addAll(convertMavenArtifactsToModels(artifactFromProductJson, version));
-                models.addAll(convertMavenArtifactsToModels(artifactsFromMeta, version));
-                result.put(version, models);
+                artifactFromProductJson.addAll(artifactsFromMeta);
+
+                artifactFromProductJson.stream().distinct().filter(Objects::nonNull).forEach(artifact -> artifact.setName(convertArtifactIdToName(artifact.getArtifactId(),artifact.getType())));
+                result.put(version, convertMavenArtifactsToModels(artifactFromProductJson, archivedArtifactsMap, version));
             }
         } catch (Exception e) {
             log.error(e.getMessage());
         }
-        mavenArtifactVersionRepository.save(new MavenArtifactVersion(productId,versions, result));
+//        mavenArtifactVersionRepository.save(new MavenArtifactVersion(productId,versions, result));
         return result;
     }
 
-    private String getProductModuleNameByVersion(MavenArtifact artifact, String version){
-        List<ArchivedArtifact> archivedArtifacts = artifact.getArchivedArtifacts();
-        if(CollectionUtils.isEmpty(archivedArtifacts)) {
-            return artifact.getArtifactId();
+    private String getArtifactIdByVersion(String artifactId,Map<String, List<ArchivedArtifact>> archivedArtifactsMap, String version){
+        List<ArchivedArtifact> archivedArtifacts = archivedArtifactsMap.get(artifactId);
+        if(CollectionUtils.isEmpty(archivedArtifactsMap.get(artifactId))) {
+            return artifactId;
         }
-
         LatestVersionComparator comparator = new LatestVersionComparator();
         for(ArchivedArtifact archivedArtifact : archivedArtifacts) {
             if(comparator.compare(archivedArtifact.getLastVersion(),version)<=0){
-               return artifact.getArtifactId();
+               return archivedArtifact.getArtifactId();
             }
         }
-        return artifact.getArtifactId();
+        return artifactId;
     }
     private List<MavenArtifact> getProductJsonByVersion(MavenArtifact artifact, String repoName, String version) {
         List<MavenArtifact> result = new ArrayList<>();
-        String productJsonFilePath = getProductModuleNameByVersion(artifact, version);
-        try {
-            GHContent productJsonContent = gitHubService.getContentFromGHRepoAndTag(repoName, productJsonFilePath, "v" + version);
-            result =  gitHubService.convertProductJsonToMavenProductInfo(productJsonContent);
-        } catch (IOException e) {
-            log.warn("Can not get the product.json from repo {} by path in {} version {}", repoName, productJsonFilePath, version);
-        }
+//        String productJsonFilePath = String.format(GitHubConstants.PROUCT_JSON_FILE_PATH_FORMAT, String.format(GitHubConstants.PRODUCT_ARTIFACT_MODULE_FORMAT, getArtifactIdByVersion(artifact, version)));
+//        try {
+//            GHContent productJsonContent = gitHubService.getContentFromGHRepoAndTag(repoName, productJsonFilePath, "v" + version);
+//            if(Objects.isNull(productJsonContent)) {
+//                return result;
+//            }
+//            result =  gitHubService.convertProductJsonToMavenProductInfo(productJsonContent);
+//        } catch (IOException e) {
+//            log.warn("Can not get the product.json from repo {} by path in {} version {}", repoName, productJsonFilePath, version);
+//        }
         return result;
     }
 
-    private List<MavenArtifactModel> convertMavenArtifactsToModels(List<MavenArtifact> artifacts, String version) {
+    private List<MavenArtifactModel> convertMavenArtifactsToModels(List<MavenArtifact> artifacts,Map<String, List<ArchivedArtifact>> archivedArtifactsMap, String version) {
         List<MavenArtifactModel> result = new ArrayList<>();
         for (MavenArtifact artifact : artifacts) {
-            result.add(convertMavenArtifactToModel(artifact, version));
+            result.add(convertMavenArtifactToModel(artifact,archivedArtifactsMap, version));
         }
         return result;
     }
 
-    private MavenArtifactModel convertMavenArtifactToModel(MavenArtifact artifact, String version) {
-        return new MavenArtifactModel(artifact.getName(), buildDownloadUrlFromArtifactAndVersion(artifact, version));
+    private MavenArtifactModel convertMavenArtifactToModel(MavenArtifact artifact,Map<String, List<ArchivedArtifact>> archivedArtifactsMap, String version) {
+        return new MavenArtifactModel(artifact.getName(), buildDownloadUrlFromArtifactAndVersion(artifact,archivedArtifactsMap, version));
     }
 
-    private String buildDownloadUrlFromArtifactAndVersion(MavenArtifact artifact, String version) {
+    private String buildDownloadUrlFromArtifactAndVersion(MavenArtifact artifact,Map<String, List<ArchivedArtifact>> archivedArtifactsMap, String version) {
         String repoUrl = Optional.ofNullable(artifact.getRepoUrl()).orElse(MavenConstants.DEFAULT_IVY_MAVEN_BASE_URL);
-        String groupId = artifact.getGroupId().replace(MavenConstants.GROUP_ID_SEPARATOR, MavenConstants.GROUP_ID_URL_SEPARATOR);
-        return String.format(MavenConstants.ARTIFACT_DOWNLOAD_URL_FORMAT, repoUrl, groupId, artifact.getArtifactId(), version, artifact.getArtifactId(), version, artifact.getType());
+        String groupId = getGroupIdByVersion(artifact,archivedArtifactsMap, version).replace(MavenConstants.GROUP_ID_SEPARATOR, MavenConstants.GROUP_ID_URL_SEPARATOR);
+        String artifactId = getArtifactIdByVersion(artifact.getArtifactId(), archivedArtifactsMap, version);
+        return String.format(MavenConstants.ARTIFACT_DOWNLOAD_URL_FORMAT, repoUrl, groupId, artifactId, version, artifactId, version, artifact.getType());
     }
     private String convertArtifactIdToName(String artifactId, String type) {
         if (StringUtils.isBlank(artifactId)) {
@@ -196,5 +205,20 @@ public class VersionServiceImpl implements VersionService {
         }
         String artifactNameFromArtifactId = artifactId.replace(MavenConstants.ARTIFACT_ID_SEPARATOR, MavenConstants.ARTIFACT_NAME_SEPARATOR);
         return String.format(MavenConstants.ARTIFACT_NAME_FORMAT, artifactNameFromArtifactId, type);
+    }
+
+    private String getGroupIdByVersion(MavenArtifact artifact, Map<String, List<ArchivedArtifact>> archivedArtifactsMap, String version) {
+        List<ArchivedArtifact> archivedArtifacts = archivedArtifactsMap.get(artifact.getArtifactId());
+        if(CollectionUtils.isEmpty(archivedArtifacts)) {
+            return artifact.getGroupId();
+        }
+
+        LatestVersionComparator comparator = new LatestVersionComparator();
+        for(ArchivedArtifact archivedArtifact : archivedArtifacts) {
+            if(comparator.compare(archivedArtifact.getLastVersion(),version)<=0){
+                return archivedArtifact.getGroupId();
+            }
+        }
+        return artifact.getGroupId();
     }
 }

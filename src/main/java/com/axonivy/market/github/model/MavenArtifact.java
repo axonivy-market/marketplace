@@ -8,6 +8,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.util.List;
+import java.util.Objects;
 
 @Getter
 @Setter
@@ -23,4 +24,17 @@ public class MavenArtifact {
     private String type;
     private Boolean isDependency;
     private List<ArchivedArtifact> archivedArtifacts;
+
+    @Override
+    public boolean equals(Object object) {
+        if (this == object) return true;
+        if (object == null || getClass() != object.getClass()) return false;
+        MavenArtifact reference = (MavenArtifact) object;
+        return artifactId.equals(reference.getArtifactId()) && groupId.equals(reference.getGroupId()) && Objects.equals(type, reference.getType());
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(groupId, artifactId, type);
+    }
 }
