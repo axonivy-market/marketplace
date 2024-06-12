@@ -68,17 +68,7 @@ public class GHAxonIvyProductRepoServiceImpl extends AbstractGithubService imple
         artifact.setGroupId(node.path(ProductJsonConstants.GROUP_ID).asText());
         artifact.setArtifactId(node.path(ProductJsonConstants.ARTIFACT_ID).asText());
         artifact.setType(node.path(ProductJsonConstants.TYPE).asText());
-        artifact.setName(convertArtifactIdToName(artifact.getArtifactId(), artifact.getType()));
         return artifact;
-    }
-
-
-    private String convertArtifactIdToName(String artifactId, String type) {
-        if (StringUtils.isNotBlank(artifactId)) {
-            String artifactNameFromArtifactId = artifactId.replace(MavenConstants.ARTIFACT_ID_SEPARATOR, MavenConstants.ARTIFACT_NAME_SEPARATOR);
-            return String.format(MavenConstants.ARTIFACT_NAME_FORMAT, artifactNameFromArtifactId, type);
-        }
-        return StringUtils.EMPTY;
     }
 
     @Override

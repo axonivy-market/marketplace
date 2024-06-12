@@ -6,6 +6,7 @@ import java.io.Serializable;
 import java.util.Date;
 import java.util.List;
 
+import com.axonivy.market.github.model.MavenArtifact;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.springframework.data.annotation.Id;
@@ -50,6 +51,7 @@ public class Product implements Serializable {
   private Integer installationCount;
   private Date newestPublishDate;
   private String newestReleaseVersion;
+  private List<MavenArtifact> artifacts;
 
   @Override
   public int hashCode() {

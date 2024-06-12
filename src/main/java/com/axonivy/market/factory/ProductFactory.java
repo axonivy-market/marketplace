@@ -59,6 +59,7 @@ public class ProductFactory {
         product.setIndustry(meta.getIndustry());
         extractSourceUrl(product, meta);
         updateLatestReleaseDateForProduct(product);
+        product.setArtifacts(meta.getMavenArtifacts());
         return product;
     }
 
