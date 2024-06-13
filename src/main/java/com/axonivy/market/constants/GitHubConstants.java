@@ -1,5 +1,9 @@
 package com.axonivy.market.constants;
 
+import lombok.AccessLevel;
+import lombok.NoArgsConstructor;
+
+@NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class GitHubConstants {
   public static final String AXONIVY_MARKET_ORGANIZATION_NAME = "axonivy-market";
   public static final String AXONIVY_MARKETPLACE_REPO_NAME = "market";

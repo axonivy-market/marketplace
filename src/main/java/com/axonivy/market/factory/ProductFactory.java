@@ -5,6 +5,8 @@ import static com.axonivy.market.constants.CommonConstants.META_FILE;
 import static com.axonivy.market.constants.CommonConstants.SLASH;
 import static org.apache.commons.lang3.StringUtils.EMPTY;
 
+import java.io.IOException;
+
 import org.apache.commons.lang3.StringUtils;
 import org.kohsuke.github.GHContent;
 import org.kohsuke.github.GHRepository;
@@ -16,9 +18,12 @@ import com.axonivy.market.github.model.Meta;
 import com.axonivy.market.github.util.GithubUtils;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import lombok.AccessLevel;
+import lombok.NoArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 
 @Log4j2
+@NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class ProductFactory {
   private static final ObjectMapper MAPPER = new ObjectMapper();
 
@@ -95,7 +100,7 @@ public class ProductFactory {
     product.setSourceUrl(sourceUrl);
   }
 
-  private static Meta jsonDecode(GHContent ghContent) throws Exception {
+  private static Meta jsonDecode(GHContent ghContent) throws IOException {
     return MAPPER.readValue(ghContent.read().readAllBytes(), Meta.class);
   }
 }

@@ -1,5 +1,9 @@
 package com.axonivy.market.constants;
 
+import lombok.AccessLevel;
+import lombok.NoArgsConstructor;
+
+@NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class CommonConstants {
   public static final int INITIAL_PAGE = 1;
   public static final int INITIAL_PAGE_SIZE = 10;

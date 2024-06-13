@@ -105,19 +105,18 @@ public class ProductServiceImpl implements ProductService {
       groupGithubFiles.putIfAbsent(parentPath, files);
     }
 
-    for (var parentPath : groupGithubFiles.keySet()) {
-      var files = groupGithubFiles.get(parentPath);
-      for (var file : files) {
+    groupGithubFiles.entrySet().forEach(ghFileEntity -> {
+      for (var file : ghFileEntity.getValue()) {
         Product product = new Product();
         GHContent fileContent = githubMarketRepoService.getGHContent(file.getFileName());
         ProductFactory.mappingByGHContent(product, fileContent);
         if (FileType.META == file.getType()) {
           modifyProductByMetaContent(file, product);
         } else {
-          modifyProductLogo(parentPath, file, product, fileContent);
+          modifyProductLogo(ghFileEntity.getKey(), file, product, fileContent);
         }
       }
-    }
+    });
   }
 
   private void modifyProductLogo(String parentPath, GitHubFile file, Product product, GHContent fileContent) {
@@ -157,7 +156,7 @@ public class ProductServiceImpl implements ProductService {
   private Pageable refinePagination(Pageable pageable) {
     PageRequest pageRequest = (PageRequest) pageable;
     if (pageable != null && pageable.getSort() != null) {
-      List<Order> orders = new ArrayList<Sort.Order>();
+      List<Order> orders = new ArrayList<>();
       for (var sort : pageable.getSort()) {
         final SortOption sortOption = SortOption.of(sort.getProperty());
         Order order = new Order(sort.getDirection(), sortOption.getCode());
@@ -186,15 +185,15 @@ public class ProductServiceImpl implements ProductService {
   private Page<Product> syncProductsFromGithubRepo() {
     var githubContentMap = githubMarketRepoService.fetchAllMarketItems();
     List<Product> products = new ArrayList<>();
-    for (var contentKey : githubContentMap.keySet()) {
+    githubContentMap.entrySet().forEach(ghContentEntity -> {
       Product product = new Product();
-      for (var content : githubContentMap.get(contentKey)) {
+      for (var content : ghContentEntity.getValue()) {
         ProductFactory.mappingByGHContent(product, content);
       }
       products.add(product);
-    }
+    });
     productRepository.saveAll(products);
-    return new PageImpl<Product>(products);
+    return new PageImpl<>(products);
   }
 
   private Page<Product> searchProducts(FilterType filterType, String keyword, Pageable pageable) {

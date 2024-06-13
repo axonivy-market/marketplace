@@ -35,7 +35,7 @@ public class GHAxonIvyMarketRepoServiceImpl extends AbstractGithubService implem
 
   @Override
   public Map<String, List<GHContent>> fetchAllMarketItems() {
-    Map<String, List<GHContent>> ghContentMap = new HashMap<String, List<GHContent>>();
+    Map<String, List<GHContent>> ghContentMap = new HashMap<>();
     try {
       List<GHContent> directoryContent = getDirectoryContent(getRepository(), GitHubConstants.AXONIVY_MARKETPLACE_PATH);
       for (var content : directoryContent) {
@@ -56,7 +56,7 @@ public class GHAxonIvyMarketRepoServiceImpl extends AbstractGithubService implem
       PagedIterable<GHContent> listOfContent = content.listDirectoryContent();
       for (var childContent : listOfContent.toList()) {
         if (childContent.isFile()) {
-          var contents = ghContentMap.getOrDefault(content.getPath(), new ArrayList<GHContent>());
+          var contents = ghContentMap.getOrDefault(content.getPath(), new ArrayList<>());
           contents.add(childContent);
           ghContentMap.putIfAbsent(content.getPath(), contents);
         } else {
