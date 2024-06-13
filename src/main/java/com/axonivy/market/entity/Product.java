@@ -52,6 +52,7 @@ public class Product implements Serializable {
   private Date newestPublishDate;
   private String newestReleaseVersion;
   private List<MavenArtifact> artifacts;
+  private String repoName;
 
   @Override
   public int hashCode() {

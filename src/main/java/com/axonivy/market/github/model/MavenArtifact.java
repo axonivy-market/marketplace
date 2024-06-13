@@ -6,6 +6,7 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.springframework.data.annotation.Transient;
 
 import java.util.List;
 import java.util.Objects;
@@ -23,6 +24,8 @@ public class MavenArtifact {
     private String artifactId;
     private String type;
     private Boolean isDependency;
+    @Transient
+    private Boolean isProductArtifact;
     private List<ArchivedArtifact> archivedArtifacts;
 
     @Override

@@ -68,6 +68,7 @@ public class GHAxonIvyProductRepoServiceImpl extends AbstractGithubService imple
         artifact.setGroupId(node.path(ProductJsonConstants.GROUP_ID).asText());
         artifact.setArtifactId(node.path(ProductJsonConstants.ARTIFACT_ID).asText());
         artifact.setType(node.path(ProductJsonConstants.TYPE).asText());
+        artifact.setIsProductArtifact(true);
         return artifact;
     }
 
