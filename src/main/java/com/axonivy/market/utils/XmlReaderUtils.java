@@ -19,11 +19,11 @@ import java.util.List;
 import java.util.Optional;
 
 @Log4j2
-public class XmlReader {
+public class XmlReaderUtils {
 
     private static final String VERSION_PATH = "//versions/version/text()";
 
-    private XmlReader() {
+    private XmlReaderUtils() {
     }
 
     public static List<String> readXMLFromUrl(String url) {

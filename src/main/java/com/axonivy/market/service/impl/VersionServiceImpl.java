@@ -15,7 +15,7 @@ import com.axonivy.market.repository.MavenArtifactVersionRepository;
 import com.axonivy.market.service.VersionService;
 import com.axonivy.market.utils.ArchivedArtifactsComparator;
 import com.axonivy.market.utils.LatestVersionComparator;
-import com.axonivy.market.utils.XmlReader;
+import com.axonivy.market.utils.XmlReaderUtils;
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -110,7 +110,7 @@ public class VersionServiceImpl implements VersionService {
         List<String> versions = new ArrayList<>();
         String baseUrl = buildMavenMetadataUrlFromArtifact(repoUrl, groupId, artifactID);
         if (StringUtils.isNotBlank(baseUrl)) {
-            versions.addAll(XmlReader.readXMLFromUrl(baseUrl));
+            versions.addAll(XmlReaderUtils.readXMLFromUrl(baseUrl));
         }
         return versions;
     }
