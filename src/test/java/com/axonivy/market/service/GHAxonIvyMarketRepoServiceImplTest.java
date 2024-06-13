@@ -1,5 +1,7 @@
 package com.axonivy.market.service;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
 import java.io.IOException;
 
 import org.junit.jupiter.api.Test;
@@ -27,7 +29,7 @@ class GHAxonIvyMarketRepoServiceImplTest {
   @Test
   void testFetchAllMarketItems() throws IOException {
 
-    axonIvyMarketRepoServiceImpl.fetchAllMarketItems();
-
+    var data = axonIvyMarketRepoServiceImpl.fetchAllMarketItems();
+    assertEquals(data.values().size(), 0);
   }
 }

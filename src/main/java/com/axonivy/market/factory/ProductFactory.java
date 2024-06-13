@@ -16,8 +16,6 @@ import org.springframework.util.CollectionUtils;
 import com.axonivy.market.entity.Product;
 import com.axonivy.market.github.model.Meta;
 import com.axonivy.market.github.util.GithubUtils;
-import com.fasterxml.jackson.core.exc.StreamReadException;
-import com.fasterxml.jackson.databind.DatabindException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import lombok.AccessLevel;
@@ -102,7 +100,7 @@ public class ProductFactory {
     product.setSourceUrl(sourceUrl);
   }
 
-  private static Meta jsonDecode(GHContent ghContent) throws StreamReadException, DatabindException, IOException {
+  private static Meta jsonDecode(GHContent ghContent) throws IOException {
     return MAPPER.readValue(ghContent.read().readAllBytes(), Meta.class);
   }
 }
