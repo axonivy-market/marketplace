@@ -48,7 +48,6 @@ public class VersionServiceImpl implements VersionService {
 
     }
 
-    //TODO: convert product id -> repo name
     public List<MavenArtifactVersionModel> getArtifactsAndVersionToDisplay(String productId, Boolean isShowDevVersion, String designerVersion) {
         List<MavenArtifactVersionModel> result = new ArrayList<>();
         boolean isNewVersionDetected = false;
