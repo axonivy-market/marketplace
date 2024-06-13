@@ -2,6 +2,8 @@ package com.axonivy.market.model;
 
 import java.util.List;
 
+import org.apache.commons.lang3.builder.EqualsBuilder;
+import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.springframework.hateoas.RepresentationModel;
 import org.springframework.hateoas.server.core.Relation;
 
@@ -24,4 +26,21 @@ public class ProductModel extends RepresentationModel<ProductModel> {
   private String logoUrl;
   private String type;
   private List<String> tags;
+
+  @Override
+  public int hashCode() {
+    HashCodeBuilder builder = new HashCodeBuilder();
+    builder.append(id);
+    return builder.hashCode();
+  }
+
+  @Override
+  public boolean equals(Object obj) {
+    if (obj == null || this.getClass() != obj.getClass()) {
+      return false;
+    }
+    EqualsBuilder builder = new EqualsBuilder();
+    builder.append(id, ((ProductModel) obj).getId());
+    return builder.isEquals();
+  }
 }

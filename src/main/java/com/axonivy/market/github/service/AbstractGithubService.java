@@ -12,11 +12,11 @@ import com.axonivy.market.github.GitHubProvider;
 
 public abstract class AbstractGithubService {
 
-  protected GHOrganization getOrganization(String orgName) throws IOException {
+  public GHOrganization getOrganization(String orgName) throws IOException {
     return GitHubProvider.get().getOrganization(orgName);
   }
 
-  protected List<GHContent> getDirectoryContent(GHRepository ghRepository, String path) throws IOException {
+  public List<GHContent> getDirectoryContent(GHRepository ghRepository, String path) throws IOException {
     Assert.notNull(ghRepository, "Repository must not be null");
     return ghRepository.getDirectoryContent(path);
   }

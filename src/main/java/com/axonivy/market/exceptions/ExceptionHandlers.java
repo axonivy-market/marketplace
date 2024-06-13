@@ -16,7 +16,7 @@ public class ExceptionHandlers extends ResponseEntityExceptionHandler {
   @ExceptionHandler(MissingHeaderException.class)
   protected ResponseEntity<Object> handleMissingServletRequestParameter(MissingHeaderException missingHeaderException) {
     var errorMessage = new Message();
-    errorMessage.setMessage(missingHeaderException.getMessage());
+    errorMessage.setMessageDetails(missingHeaderException.getMessage());
     return new ResponseEntity<>(errorMessage, HttpStatus.BAD_REQUEST);
   }
 
@@ -24,7 +24,7 @@ public class ExceptionHandlers extends ResponseEntityExceptionHandler {
   protected ResponseEntity<Object> handleNotFoundException(NotFoundException notFoundException) {
     var errorMessage = new Message();
     errorMessage.setErrorCode(NOT_FOUND_EXCEPTION_CODE);
-    errorMessage.setMessage(notFoundException.getMessage());
+    errorMessage.setMessageDetails(notFoundException.getMessage());
     return new ResponseEntity<>(errorMessage, HttpStatus.NOT_FOUND);
   }
 }

@@ -21,10 +21,10 @@ public class AppController {
     var swaggerURL = ServletUriComponentsBuilder.fromCurrentContextPath().path(SWAGGER_URL).toUriString();
     var message = new Message();
     message.setErrorCode("0");
-    message.setMessage("Welcome to Marketplace API");
+    message.setMessageDetails("Welcome to Marketplace API");
     message.setHelpText(
         "This is a REST APIs for Marketplace website - No user interface. Try with %s".formatted(swaggerURL));
 
-    return new ResponseEntity<Message>(message, HttpStatus.OK);
+    return new ResponseEntity<>(message, HttpStatus.OK);
   }
 }

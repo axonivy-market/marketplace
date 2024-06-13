@@ -15,7 +15,7 @@ import com.axonivy.market.repository.UserRepository;
 import com.axonivy.market.service.impl.UserServiceImpl;
 
 @ExtendWith(MockitoExtension.class)
-public class UserServiceImplTest {
+class UserServiceImplTest {
 
   @InjectMocks
   private UserServiceImpl employeeService;
@@ -24,7 +24,7 @@ public class UserServiceImplTest {
   private UserRepository userRepository;
 
   @Test
-  public void testFindAllUser() {
+  void testFindAllUser() {
     // Mock data and service
     User mockUser = new User();
     mockUser.setId("123");

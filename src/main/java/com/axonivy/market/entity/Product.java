@@ -60,7 +60,7 @@ public class Product implements Serializable {
 
   @Override
   public boolean equals(Object obj) {
-    if (obj == null) {
+    if (obj == null || this.getClass() != obj.getClass()) {
       return false;
     }
     EqualsBuilder builder = new EqualsBuilder();

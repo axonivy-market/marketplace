@@ -29,7 +29,7 @@ import com.axonivy.market.repository.ProductRepository;
 import com.axonivy.market.service.impl.ProductServiceImpl;
 
 @ExtendWith(MockitoExtension.class)
-public class ProductServiceImplTest {
+class ProductServiceImplTest {
 
   private long lastChangeTime = 1718096290000l;
   private Pageable pageable = PageRequest.of(0, 20);
@@ -54,7 +54,7 @@ public class ProductServiceImplTest {
   }
 
   @Test
-  public void testFindAllProducts() {
+  void testFindAllProducts() {
     when(productRepository.findAll(pageable)).thenReturn(mockResultReturn);
     mockMarketRepoMetaStatus();
     Page<Product> result = productService.findProducts(FilterType.ALL.getOption(), keyword, pageable);
@@ -63,7 +63,7 @@ public class ProductServiceImplTest {
   }
 
   @Test
-  public void testFindAllProductsFirstTime() {
+  void testFindAllProductsFirstTime() {
     String type = FilterType.ALL.getOption();
     when(productRepository.findAll(pageable)).thenReturn(mockResultReturn);
     when(githubService.getLastCommit(lastChangeTime)).thenReturn(new GHCommit());
@@ -75,7 +75,7 @@ public class ProductServiceImplTest {
   }
 
   @Test
-  public void testSearchProducts() {
+  void testSearchProducts() {
     String type = FilterType.ALL.getOption();
     keyword = "o";
     when(productRepository.searchByNameOrShortDescriptionRegex(keyword, pageable)).thenReturn(mockResultReturn);
