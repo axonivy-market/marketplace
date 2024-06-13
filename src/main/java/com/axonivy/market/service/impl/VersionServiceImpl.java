@@ -4,12 +4,9 @@ import com.axonivy.market.constants.GitHubConstants;
 import com.axonivy.market.constants.MavenConstants;
 import com.axonivy.market.entity.MavenArtifactVersion;
 import com.axonivy.market.entity.Product;
-import com.axonivy.market.factory.ProductFactory;
 import com.axonivy.market.github.model.ArchivedArtifact;
 import com.axonivy.market.github.model.MavenArtifact;
 import com.axonivy.market.entity.MavenArtifactModel;
-import com.axonivy.market.github.model.Meta;
-import com.axonivy.market.github.service.GHAxonIvyMarketRepoService;
 import com.axonivy.market.github.service.GHAxonIvyProductRepoService;
 import com.axonivy.market.model.MavenArtifactVersionModel;
 import com.axonivy.market.repository.MavenArtifactVersionRepository;
@@ -27,6 +24,7 @@ import org.springframework.util.CollectionUtils;
 
 import java.io.IOException;
 import java.util.*;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 @Log4j2
@@ -38,9 +36,9 @@ public class VersionServiceImpl implements VersionService {
     private String repoName;
     private final Map<String, List<ArchivedArtifact>> archivedArtifactsMap = new HashMap<>();
     private List<MavenArtifact> artifactsFromMeta;
-    private MavenArtifactVersion processedDataCache;
+    private MavenArtifactVersion proceedDataCache;
     private MavenArtifact metaProductArtifact;
-    private LatestVersionComparator comparator = new LatestVersionComparator();
+    private final LatestVersionComparator latestVersionComparator = new LatestVersionComparator();
 
 
     public VersionServiceImpl(GHAxonIvyProductRepoService gitHubService, MavenArtifactVersionRepository mavenArtifactVersionRepository, ProductRepository productRepository) {
@@ -57,49 +55,39 @@ public class VersionServiceImpl implements VersionService {
 
         artifactsFromMeta = getProductMetaArtifacts(productId);
         List<String> versionsToDisplay = getVersionsToDisplay(isShowDevVersion, designerVersion);
-        processedDataCache = mavenArtifactVersionRepository.findById(productId).orElse(new MavenArtifactVersion(productId));
+        proceedDataCache = mavenArtifactVersionRepository.findById(productId).orElse(new MavenArtifactVersion(productId));
         metaProductArtifact = artifactsFromMeta.stream().filter(artifact -> artifact.getArtifactId().endsWith(MavenConstants.PRODUCT_ARTIFACT_POSTFIX)).findAny().orElse(new MavenArtifact());
 
         sanitizeMetaArtifactBeforeHandle();
 
         for (String version : versionsToDisplay) {
-            boolean isProductArtifactSynced = true;
-            if (processedDataCache.getProductArtifactWithVersionReleased().get(version) == null) {
+            List<MavenArtifactModel> artifactsInVersion = convertMavenArtifactsToModels(artifactsFromMeta, version);
+            List<MavenArtifactModel> productArtifactModels = proceedDataCache.getProductArtifactWithVersionReleased().get(version);
+            if (productArtifactModels == null) {
                 isNewVersionDetected = true;
-                isProductArtifactSynced = false;
-                artifactsFromMeta.addAll(getProductJsonByVersion(version));
+                productArtifactModels = updateArtifactsInVersionWithProductArtifact(version);
             }
-            updateResultAndCacheData(version, result, isProductArtifactSynced);
+            artifactsInVersion.addAll(productArtifactModels);
+            result.add(new MavenArtifactVersionModel(version, artifactsInVersion.stream().distinct().toList()));
         }
         if (isNewVersionDetected) {
-            mavenArtifactVersionRepository.save(processedDataCache);
+            mavenArtifactVersionRepository.save(proceedDataCache);
         }
         return result;
     }
 
-    private void updateResultAndCacheData(String version, List<MavenArtifactVersionModel> result, boolean isProductArtifactSynced) {
-        List<MavenArtifactModel> artifactModels = artifactsFromMeta.stream().distinct().filter(Objects::nonNull).map(artifact -> convertMavenArtifactToModel(artifact, version)).toList();
-        result.add(new MavenArtifactVersionModel(version, artifactModels));
-        updateCacheData(version, isProductArtifactSynced, artifactModels);
-        if (!isProductArtifactSynced) {
-            processedDataCache.getVersions().add(version);
-            processedDataCache.getProductArtifactWithVersionReleased().put(version, artifactModels.stream().filter(MavenArtifactModel::getIsProductArtifact).toList());
-        }
-    }
-
-
-    private void updateCacheData(String version, boolean isProductArtifactSynced, List<MavenArtifactModel> artifactModels) {
-        if (!isProductArtifactSynced) {
-            processedDataCache.getVersions().add(version);
-            processedDataCache.getProductArtifactWithVersionReleased().put(version, artifactModels.stream().filter(MavenArtifactModel::getIsProductArtifact).toList());
-        }
+    private List<MavenArtifactModel> updateArtifactsInVersionWithProductArtifact(String version) {
+        List<MavenArtifactModel> productArtifactModels = convertMavenArtifactsToModels(getProductJsonByVersion(version), version);
+        proceedDataCache.getVersions().add(version);
+        proceedDataCache.getProductArtifactWithVersionReleased().put(version, productArtifactModels);
+        return productArtifactModels;
     }
 
     private List<MavenArtifact> getProductMetaArtifacts(String productId) {
-        Product productInfo = productRepository.findByKey(productId);
-        repoName = Optional.ofNullable(productInfo).map(Product::getRepositoryName).orElse(StringUtils.EMPTY);
-        if(StringUtils.isNotEmpty(repoName)){
-            
+        Product productInfo = Optional.ofNullable(productRepository.findByKey(productId)).orElse(new Product());
+        String fullRepoName = productInfo.getRepositoryName();
+        if (StringUtils.isNotEmpty(fullRepoName)) {
+            repoName = getRepoNameFromMarketRepo(fullRepoName);
         }
         return productInfo.getArtifacts();
     }
@@ -202,9 +190,22 @@ public class VersionServiceImpl implements VersionService {
     private MavenArtifactModel convertMavenArtifactToModel(MavenArtifact artifact, String version) {
         String artifactName = artifact.getName();
         if (StringUtils.isBlank(artifactName)) {
-            artifactName = convertArtifactIdToName(artifact.getArtifactId(), artifact.getType());
+            artifactName = convertArtifactIdToName(artifact.getArtifactId());
         }
+        String type = Optional.ofNullable(artifact.getType()).orElse("iar");
+        artifactName = String.format(MavenConstants.ARTIFACT_NAME_FORMAT, artifactName, type);
         return new MavenArtifactModel(artifactName, buildDownloadUrlFromArtifactAndVersion(artifact, version), artifact.getIsProductArtifact());
+    }
+
+    private List<MavenArtifactModel> convertMavenArtifactsToModels(List<MavenArtifact> artifacts, String version) {
+        List<MavenArtifactModel> list = new ArrayList<>();
+        if (!CollectionUtils.isEmpty(artifacts)) {
+            for (MavenArtifact artifact : artifacts) {
+                MavenArtifactModel mavenArtifactModel = convertMavenArtifactToModel(artifact, version);
+                list.add(mavenArtifactModel);
+            }
+        }
+        return list;
     }
 
     private String buildDownloadUrlFromArtifactAndVersion(MavenArtifact artifact, String version) {
@@ -228,18 +229,24 @@ public class VersionServiceImpl implements VersionService {
             return null;
         }
         for (ArchivedArtifact archivedArtifact : archivedArtifacts) {
-            if (comparator.compare(archivedArtifact.getLastVersion(), version) <= 0) {
+            if (latestVersionComparator.compare(archivedArtifact.getLastVersion(), version) <= 0) {
                 return archivedArtifact;
             }
         }
         return null;
     }
 
-    private String convertArtifactIdToName(String artifactId, String type) {
+    private String convertArtifactIdToName(String artifactId) {
         if (StringUtils.isBlank(artifactId)) {
             return StringUtils.EMPTY;
         }
-        String artifactNameFromArtifactId = artifactId.replace(MavenConstants.ARTIFACT_ID_SEPARATOR, MavenConstants.ARTIFACT_NAME_SEPARATOR);
-        return String.format(MavenConstants.ARTIFACT_NAME_FORMAT, artifactNameFromArtifactId, type);
+        return Arrays.stream(artifactId.split(MavenConstants.ARTIFACT_ID_SEPARATOR))
+                .map(part -> part.substring(0, 1).toUpperCase() + part.substring(1).toLowerCase())
+                .collect(Collectors.joining(MavenConstants.ARTIFACT_NAME_SEPARATOR));
+    }
+
+    private String getRepoNameFromMarketRepo(String fullRepoName) {
+        String[] repoNamePart = fullRepoName.split("/");
+        return repoNamePart[repoNamePart.length - 1];
     }
 }
