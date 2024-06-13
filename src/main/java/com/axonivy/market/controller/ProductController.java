@@ -27,7 +27,7 @@ public class ProductController {
 
   private final ProductService service;
   private final ProductModelAssembler assembler;
-  private PagedResourcesAssembler<Product> pagedResourcesAssembler;
+  private final PagedResourcesAssembler<Product> pagedResourcesAssembler;
 
   public ProductController(ProductService service, ProductModelAssembler assembler,
       PagedResourcesAssembler<Product> pagedResourcesAssembler) {

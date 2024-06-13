@@ -9,9 +9,6 @@ import java.io.IOException;
 
 import org.apache.commons.lang3.StringUtils;
 import org.kohsuke.github.GHContent;
-import org.kohsuke.github.GHRepository;
-import org.kohsuke.github.GHTag;
-import org.springframework.util.CollectionUtils;
 
 import com.axonivy.market.entity.Product;
 import com.axonivy.market.github.model.Meta;
@@ -29,10 +26,10 @@ public class ProductFactory {
 
   public static Product mappingByGHContent(Product product, GHContent content) {
     var contentName = content.getName();
-    if (contentName.endsWith(META_FILE)) {
+    if (StringUtils.endsWith(contentName, META_FILE)) {
       mappingByMetaJSONFile(product, content);
     }
-    if (contentName.endsWith(LOGO_FILE)) {
+    if (StringUtils.endsWith(contentName, LOGO_FILE)) {
       product.setLogoUrl(GithubUtils.getDownloadUrl(content));
     }
     return product;
@@ -63,26 +60,12 @@ public class ProductFactory {
     product.setLanguage(meta.getLanguage());
     product.setIndustry(meta.getIndustry());
     extractSourceUrl(product, meta);
-    updateLatestReleaseDateForProduct(product);
     return product;
   }
 
-  private static void updateLatestReleaseDateForProduct(Product product) {
-    if (StringUtils.isBlank(product.getRepositoryName())) {
-      return;
-    }
-    try {
-      GHRepository productRepo = GithubUtils.getGHRepoByPath(product.getRepositoryName());
-      GHTag lastTag = CollectionUtils.firstElement(productRepo.listTags().toList());
-      product.setNewestPublishDate(lastTag.getCommit().getCommitDate());
-      product.setNewestReleaseVersion(lastTag.getName());
-    } catch (Exception e) {
-      log.error("Cannot find repository by path {} {}", product.getRepositoryName(), e);
-    }
-  }
-
   private static String extractParentDirectory(GHContent ghContent) {
-    return ghContent.getPath().replace(ghContent.getName(), EMPTY);
+    var path = StringUtils.defaultIfEmpty(ghContent.getPath(), EMPTY);
+    return path.replace(ghContent.getName(), EMPTY);
   }
 
   private static void extractSourceUrl(Product product, Meta meta) {

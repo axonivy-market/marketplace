@@ -13,6 +13,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.kohsuke.github.GHCommit;
 import org.kohsuke.github.GHContent;
 import org.kohsuke.github.GHRepository;
+import org.kohsuke.github.GHTag;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
@@ -20,6 +21,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.domain.Sort.Order;
 import org.springframework.stereotype.Service;
+import org.springframework.util.CollectionUtils;
 
 import com.axonivy.market.constants.GitHubConstants;
 import com.axonivy.market.entity.GithubRepoMeta;
@@ -30,25 +32,32 @@ import com.axonivy.market.enums.SortOption;
 import com.axonivy.market.factory.ProductFactory;
 import com.axonivy.market.github.model.GitHubFile;
 import com.axonivy.market.github.service.GHAxonIvyMarketRepoService;
+import com.axonivy.market.github.service.GithubService;
 import com.axonivy.market.github.util.GithubUtils;
 import com.axonivy.market.repository.GithubRepoMetaRepository;
 import com.axonivy.market.repository.ProductRepository;
 import com.axonivy.market.service.ProductService;
 
+import lombok.extern.log4j.Log4j2;
+
+@Log4j2
 @Service
 public class ProductServiceImpl implements ProductService {
 
   private final ProductRepository productRepository;
   private final GHAxonIvyMarketRepoService githubMarketRepoService;
   private final GithubRepoMetaRepository repoMetaRepository;
+  private final GithubService githubService;
+
   private GHCommit lastGHCommit;
   private GithubRepoMeta marketRepoMeta;
 
-  public ProductServiceImpl(ProductRepository productRepository, GHAxonIvyMarketRepoService githubService,
-      GithubRepoMetaRepository repoMetaRepository) {
+  public ProductServiceImpl(ProductRepository productRepository, GHAxonIvyMarketRepoService githubMarketRepoService,
+      GithubRepoMetaRepository repoMetaRepository, GithubService githubService) {
     this.productRepository = productRepository;
-    this.githubMarketRepoService = githubService;
+    this.githubMarketRepoService = githubMarketRepoService;
     this.repoMetaRepository = repoMetaRepository;
+    this.githubService = githubService;
   }
 
   @Override
@@ -110,6 +119,7 @@ public class ProductServiceImpl implements ProductService {
         Product product = new Product();
         GHContent fileContent = githubMarketRepoService.getGHContent(file.getFileName());
         ProductFactory.mappingByGHContent(product, fileContent);
+        updateLatestReleaseDateForProduct(product);
         if (FileType.META == file.getType()) {
           modifyProductByMetaContent(file, product);
         } else {
@@ -189,11 +199,28 @@ public class ProductServiceImpl implements ProductService {
       Product product = new Product();
       for (var content : ghContentEntity.getValue()) {
         ProductFactory.mappingByGHContent(product, content);
+        updateLatestReleaseDateForProduct(product);
       }
       products.add(product);
     });
-    productRepository.saveAll(products);
+    if (!products.isEmpty()) {
+      productRepository.saveAll(products);
+    }
     return new PageImpl<>(products);
+  }
+
+  private void updateLatestReleaseDateForProduct(Product product) {
+    if (StringUtils.isBlank(product.getRepositoryName())) {
+      return;
+    }
+    try {
+      GHRepository productRepo = githubService.getRepository(product.getRepositoryName());
+      GHTag lastTag = CollectionUtils.firstElement(productRepo.listTags().toList());
+      product.setNewestPublishDate(lastTag.getCommit().getCommitDate());
+      product.setNewestReleaseVersion(lastTag.getName());
+    } catch (Exception e) {
+      log.error("Cannot find repository by path {} {}", product.getRepositoryName(), e);
+    }
   }
 
   private Page<Product> searchProducts(FilterType filterType, String keyword, Pageable pageable) {
