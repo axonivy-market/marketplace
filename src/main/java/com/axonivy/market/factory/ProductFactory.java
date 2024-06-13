@@ -2,13 +2,15 @@ package com.axonivy.market.factory;
 
 import static com.axonivy.market.constants.CommonConstants.LOGO_FILE;
 import static com.axonivy.market.constants.CommonConstants.META_FILE;
+import static com.axonivy.market.constants.CommonConstants.SLASH;
 import static org.apache.commons.lang3.StringUtils.EMPTY;
 
 import org.apache.commons.lang3.StringUtils;
 import org.kohsuke.github.GHContent;
+import org.kohsuke.github.GHRepository;
+import org.kohsuke.github.GHTag;
 import org.springframework.util.CollectionUtils;
 
-import com.axonivy.market.constants.GitHubConstants;
 import com.axonivy.market.entity.Product;
 import com.axonivy.market.github.model.Meta;
 import com.axonivy.market.github.util.GithubUtils;
@@ -23,7 +25,7 @@ public class ProductFactory {
   public static Product mappingByGHContent(Product product, GHContent content) {
     var contentName = content.getName();
     if (contentName.endsWith(META_FILE)) {
-      ProductFactory.mappingByMetaJson(product, content);
+      mappingByMetaJSONFile(product, content);
     }
     if (contentName.endsWith(LOGO_FILE)) {
       product.setLogoUrl(GithubUtils.getDownloadUrl(content));
@@ -31,7 +33,7 @@ public class ProductFactory {
     return product;
   }
 
-  public static Product mappingByMetaJson(Product product, GHContent ghContent) {
+  public static Product mappingByMetaJSONFile(Product product, GHContent ghContent) {
     Meta meta = null;
     try {
       meta = jsonDecode(ghContent);
@@ -40,7 +42,7 @@ public class ProductFactory {
       return product;
     }
 
-    product.setKey(meta.getId());
+    product.setId(meta.getId());
     product.setName(meta.getName());
     product.setMarketDirectory(extractParentDirectory(ghContent));
     product.setListed(meta.getListed());
@@ -65,8 +67,8 @@ public class ProductFactory {
       return;
     }
     try {
-      var productRepo = GithubUtils.getGHRepoByPath(product.getRepositoryName());
-      var lastTag = CollectionUtils.firstElement(productRepo.listTags().toList());
+      GHRepository productRepo = GithubUtils.getGHRepoByPath(product.getRepositoryName());
+      GHTag lastTag = CollectionUtils.firstElement(productRepo.listTags().toList());
       product.setNewestPublishDate(lastTag.getCommit().getCommitDate());
       product.setNewestReleaseVersion(lastTag.getName());
     } catch (Exception e) {
@@ -83,9 +85,12 @@ public class ProductFactory {
     if (StringUtils.isBlank(sourceUrl)) {
       return;
     }
-    var urlLength = sourceUrl.length();
-    var orgIndex = sourceUrl.indexOf(GitHubConstants.AXONIVY_MARKET_ORGANIZATION_NAME);
-    var repositoryPath = StringUtils.substring(sourceUrl, orgIndex, urlLength);
+    String[] tokens = sourceUrl.split(SLASH);
+    var tokensLength = tokens.length;
+    var repositoryPath = sourceUrl;
+    if (tokensLength > 1) {
+      repositoryPath = String.join(SLASH, tokens[tokensLength - 2], tokens[tokensLength - 1]);
+    }
     product.setRepositoryName(repositoryPath);
     product.setSourceUrl(sourceUrl);
   }

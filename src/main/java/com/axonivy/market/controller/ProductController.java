@@ -3,6 +3,7 @@ package com.axonivy.market.controller;
 import static com.axonivy.market.constants.RequestMappingConstants.PRODUCT;
 
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PagedResourcesAssembler;
 import org.springframework.hateoas.PagedModel;
@@ -35,21 +36,22 @@ public class ProductController {
     this.pagedResourcesAssembler = pagedResourcesAssembler;
   }
 
-  @Operation(summary = "Find all products by type", description = "Be default system will finds product by type as 'all'")
+  @Operation(summary = "Find all products", description = "Be default system will finds product by type as 'all'")
   @GetMapping()
   public ResponseEntity<PagedModel<ProductModel>> findProducts(@RequestParam(required = false) String type,
       @RequestParam(required = false) String keyword, Pageable pageable) {
-    var results = service.findProducts(type, keyword, pageable);
-    var pageResources = pagedResourcesAssembler.toModel(results, assembler);
+    Page<Product> results = service.findProducts(type, keyword, pageable);
     if (results.isEmpty()) {
       return generateEmptyPagedModel();
     }
+    var responseContent = new PageImpl<Product>(results.getContent(), pageable, results.getTotalElements());
+    var pageResources = pagedResourcesAssembler.toModel(responseContent, assembler);
     return new ResponseEntity<>(pageResources, HttpStatus.OK);
   }
 
   @SuppressWarnings("unchecked")
   private ResponseEntity<PagedModel<ProductModel>> generateEmptyPagedModel() {
-    PagedModel<ProductModel> emptyPagedModel = (PagedModel<ProductModel>) pagedResourcesAssembler
+    var emptyPagedModel = (PagedModel<ProductModel>) pagedResourcesAssembler
         .toEmptyModel(Page.empty(), ProductModel.class);
     return new ResponseEntity<>(emptyPagedModel, HttpStatus.OK);
   }

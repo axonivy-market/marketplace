@@ -19,7 +19,7 @@ public class MarketHeaderInterceptor implements HandlerInterceptor {
 
   @Override
   public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
-    if (request.getMethod().equalsIgnoreCase(HttpMethod.OPTIONS.name())) {
+    if (HttpMethod.OPTIONS.name().equalsIgnoreCase(request.getMethod())) {
       return true;
     }
     if (!requestHeader.equals(request.getHeader(CommonConstants.REQUESTED_BY))) {
