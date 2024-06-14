@@ -15,8 +15,8 @@ import org.springframework.web.bind.annotation.RestController;
 public class ProductDetailsController {
 
   @GetMapping("/{id}")
-  public Object findProduct(@PathVariable("id") String key,
+  public ResponseEntity<Object> findProduct(@PathVariable("id") String key,
       @RequestParam(name = "type", required = false) String type) {
-    return new ResponseEntity<Object>(HttpStatus.NOT_FOUND);
+    return new ResponseEntity<>(HttpStatus.NOT_FOUND);
   }
 }

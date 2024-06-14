@@ -5,7 +5,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.servlet.HandlerInterceptor;
 
 import com.axonivy.market.constants.CommonConstants;
-import com.axonivy.market.exceptions.MissingHeaderException;
+import com.axonivy.market.exceptions.model.MissingHeaderException;
 
 import io.swagger.v3.oas.models.PathItem.HttpMethod;
 import jakarta.servlet.http.HttpServletRequest;

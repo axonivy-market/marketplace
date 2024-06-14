@@ -2,6 +2,7 @@ package com.axonivy.market.service.impl;
 
 import static org.apache.commons.lang3.StringUtils.EMPTY;
 
+import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -45,18 +46,18 @@ import lombok.extern.log4j.Log4j2;
 public class ProductServiceImpl implements ProductService {
 
   private final ProductRepository productRepository;
-  private final GHAxonIvyMarketRepoService githubMarketRepoService;
-  private final GithubRepoMetaRepository repoMetaRepository;
+  private final GHAxonIvyMarketRepoService axonivyMarketRepoService;
+  private final GithubRepoMetaRepository githubRepoMetaRepository;
   private final GithubService githubService;
 
   private GHCommit lastGHCommit;
   private GithubRepoMeta marketRepoMeta;
 
-  public ProductServiceImpl(ProductRepository productRepository, GHAxonIvyMarketRepoService githubMarketRepoService,
-      GithubRepoMetaRepository repoMetaRepository, GithubService githubService) {
+  public ProductServiceImpl(ProductRepository productRepository, GHAxonIvyMarketRepoService axonivyMarketRepoService,
+      GithubRepoMetaRepository githubRepoMetaRepository, GithubService githubService) {
     this.productRepository = productRepository;
-    this.githubMarketRepoService = githubMarketRepoService;
-    this.repoMetaRepository = repoMetaRepository;
+    this.axonivyMarketRepoService = axonivyMarketRepoService;
+    this.githubRepoMetaRepository = githubRepoMetaRepository;
     this.githubService = githubService;
   }
 
@@ -95,7 +96,7 @@ public class ProductServiceImpl implements ProductService {
     marketRepoMeta.setRepoName(GitHubConstants.AXONIVY_MARKETPLACE_REPO_NAME);
     marketRepoMeta.setLastSHA1(lastGHCommit.getSHA1());
     marketRepoMeta.setLastChange(GithubUtils.getGHCommitDate(lastGHCommit));
-    repoMetaRepository.save(marketRepoMeta);
+    githubRepoMetaRepository.save(marketRepoMeta);
     marketRepoMeta = null;
   }
 
@@ -103,7 +104,7 @@ public class ProductServiceImpl implements ProductService {
     if (lastGHCommit == null || marketRepoMeta == null) {
       return;
     }
-    List<GitHubFile> githubFileChanges = githubMarketRepoService
+    List<GitHubFile> githubFileChanges = axonivyMarketRepoService
         .fetchMarketItemsBySHA1Range(marketRepoMeta.getLastSHA1(), lastGHCommit.getSHA1());
     Map<String, List<GitHubFile>> groupGithubFiles = new HashMap<>();
     for (var file : githubFileChanges) {
@@ -117,7 +118,14 @@ public class ProductServiceImpl implements ProductService {
     groupGithubFiles.entrySet().forEach(ghFileEntity -> {
       for (var file : ghFileEntity.getValue()) {
         Product product = new Product();
-        GHContent fileContent = githubMarketRepoService.getGHContent(file.getFileName());
+        GHContent fileContent;
+        try {
+          fileContent = githubService.getGHContent(axonivyMarketRepoService.getRepository(), file.getFileName());
+        } catch (IOException e) {
+          log.error("Get GHContent failed: ", e);
+          continue;
+        }
+
         ProductFactory.mappingByGHContent(product, fileContent);
         updateLatestReleaseDateForProduct(product);
         if (FileType.META == file.getType()) {
@@ -180,11 +188,11 @@ public class ProductServiceImpl implements ProductService {
   private boolean isLastGithubCommitCovered() {
     boolean isLastCommitCovered = false;
     long lastCommitTime = 0l;
-    marketRepoMeta = repoMetaRepository.findByRepoName(GitHubConstants.AXONIVY_MARKETPLACE_REPO_NAME);
+    marketRepoMeta = githubRepoMetaRepository.findByRepoName(GitHubConstants.AXONIVY_MARKETPLACE_REPO_NAME);
     if (marketRepoMeta != null) {
       lastCommitTime = marketRepoMeta.getLastChange();
     }
-    lastGHCommit = githubMarketRepoService.getLastCommit(lastCommitTime);
+    lastGHCommit = axonivyMarketRepoService.getLastCommit(lastCommitTime);
     if (lastGHCommit != null && marketRepoMeta != null
         && StringUtils.equals(lastGHCommit.getSHA1(), marketRepoMeta.getLastSHA1())) {
       isLastCommitCovered = true;
@@ -193,7 +201,7 @@ public class ProductServiceImpl implements ProductService {
   }
 
   private Page<Product> syncProductsFromGithubRepo() {
-    var githubContentMap = githubMarketRepoService.fetchAllMarketItems();
+    var githubContentMap = axonivyMarketRepoService.fetchAllMarketItems();
     List<Product> products = new ArrayList<>();
     githubContentMap.entrySet().forEach(ghContentEntity -> {
       Product product = new Product();

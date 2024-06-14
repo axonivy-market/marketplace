@@ -1,4 +1,4 @@
-package com.axonivy.market.exceptions;
+package com.axonivy.market.exceptions.model;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;

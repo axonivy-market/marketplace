@@ -29,9 +29,7 @@ public class ProductModel extends RepresentationModel<ProductModel> {
 
   @Override
   public int hashCode() {
-    HashCodeBuilder builder = new HashCodeBuilder();
-    builder.append(id);
-    return builder.hashCode();
+    return new HashCodeBuilder().append(id).hashCode();
   }
 
   @Override
@@ -39,8 +37,6 @@ public class ProductModel extends RepresentationModel<ProductModel> {
     if (obj == null || this.getClass() != obj.getClass()) {
       return false;
     }
-    EqualsBuilder builder = new EqualsBuilder();
-    builder.append(id, ((ProductModel) obj).getId());
-    return builder.isEquals();
+    return new EqualsBuilder().append(id, ((ProductModel) obj).getId()).isEquals();
   }
 }

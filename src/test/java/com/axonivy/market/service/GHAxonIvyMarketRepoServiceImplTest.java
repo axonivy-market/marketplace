@@ -69,7 +69,7 @@ class GHAxonIvyMarketRepoServiceImplTest {
     var mockGHContent = mock(GHContent.class);
     when(mockGHContent.isDirectory()).thenReturn(true);
     when(mockGHContent.listDirectoryContent()).thenReturn(pagedGHContent);
-    List<GHContent> mockGhContents = new ArrayList<GHContent>();
+    List<GHContent> mockGhContents = new ArrayList<>();
     mockGhContents.add(mockGHContent);
     when(mockGHFileContent.isFile()).thenReturn(true);
     when(pagedGHContent.toList()).thenReturn(List.of(mockGHFileContent));

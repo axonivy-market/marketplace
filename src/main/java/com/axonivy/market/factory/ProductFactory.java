@@ -25,6 +25,10 @@ public class ProductFactory {
   private static final ObjectMapper MAPPER = new ObjectMapper();
 
   public static Product mappingByGHContent(Product product, GHContent content) {
+    if (content == null) {
+      return product;
+    }
+
     var contentName = content.getName();
     if (StringUtils.endsWith(contentName, META_FILE)) {
       mappingByMetaJSONFile(product, content);

@@ -44,4 +44,9 @@ public class GithubServiceImpl implements GithubService {
     return getGithub().getRepository(repositoryPath);
   }
 
+  @Override
+  public GHContent getGHContent(GHRepository ghRepository, String path) throws IOException {
+    Assert.notNull(ghRepository, "Repository must not be null");
+    return ghRepository.getFileContent(path);
+  }
 }

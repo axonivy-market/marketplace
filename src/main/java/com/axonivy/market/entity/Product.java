@@ -53,9 +53,7 @@ public class Product implements Serializable {
 
   @Override
   public int hashCode() {
-    HashCodeBuilder builder = new HashCodeBuilder();
-    builder.append(id);
-    return builder.hashCode();
+    return new HashCodeBuilder().append(id).hashCode();
   }
 
   @Override
@@ -63,9 +61,7 @@ public class Product implements Serializable {
     if (obj == null || this.getClass() != obj.getClass()) {
       return false;
     }
-    EqualsBuilder builder = new EqualsBuilder();
-    builder.append(id, ((Product) obj).getId());
-    return builder.isEquals();
+    return new EqualsBuilder().append(id, ((Product) obj).getId()).isEquals();
   }
 
 }

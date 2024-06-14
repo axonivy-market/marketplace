@@ -84,7 +84,7 @@ public class GHAxonIvyMarketRepoServiceImpl implements GHAxonIvyMarketRepoServic
     return null;
   }
 
-  private GHCommitQueryBuilder createQueryCommitsBuilder(long lastCommitTime) throws IOException {
+  private GHCommitQueryBuilder createQueryCommitsBuilder(long lastCommitTime) {
     return getRepository().queryCommits().since(lastCommitTime).from(DEFAULT_BRANCH);
   }
 
@@ -117,16 +117,6 @@ public class GHAxonIvyMarketRepoServiceImpl implements GHAxonIvyMarketRepoServic
     return new ArrayList<>(githubFileMap.values());
   }
 
-  @Override
-  public GHContent getGHContent(String path) {
-    try {
-      return getRepository().getFileContent(path);
-    } catch (IOException e) {
-      log.error("Cannot get GHContent by path {}: {}", path, e);
-    }
-    return null;
-  }
-
   private GHOrganization getOrganization() throws IOException {
     if (organization == null) {
       organization = githubService.getOrganization(GitHubConstants.AXONIVY_MARKET_ORGANIZATION_NAME);
@@ -134,9 +124,14 @@ public class GHAxonIvyMarketRepoServiceImpl implements GHAxonIvyMarketRepoServic
     return organization;
   }
 
-  public GHRepository getRepository() throws IOException {
+  @Override
+  public GHRepository getRepository() {
     if (repository == null) {
-      repository = getOrganization().getRepository(GitHubConstants.AXONIVY_MARKETPLACE_REPO_NAME);
+      try {
+        repository = getOrganization().getRepository(GitHubConstants.AXONIVY_MARKETPLACE_REPO_NAME);
+      } catch (IOException e) {
+        log.error("Get AxonIvy Market repo failed: ", e);
+      }
     }
     return repository;
   }

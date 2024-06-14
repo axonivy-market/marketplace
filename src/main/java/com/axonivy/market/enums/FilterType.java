@@ -2,7 +2,7 @@ package com.axonivy.market.enums;
 
 import org.apache.commons.lang3.StringUtils;
 
-import com.axonivy.market.exceptions.NotFoundException;
+import com.axonivy.market.exceptions.model.NotFoundException;
 
 import lombok.Getter;
 
