@@ -27,5 +27,4 @@ public class MavenArtifact {
     @Transient
     private Boolean isProductArtifact;
     private List<ArchivedArtifact> archivedArtifacts;
-
 }
