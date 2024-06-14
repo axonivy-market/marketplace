@@ -9,35 +9,43 @@ import java.util.List;
 import java.util.Map;
 
 import org.kohsuke.github.GHCommit;
+import org.kohsuke.github.GHCommitQueryBuilder;
 import org.kohsuke.github.GHCompare;
 import org.kohsuke.github.GHContent;
 import org.kohsuke.github.GHOrganization;
 import org.kohsuke.github.GHRepository;
-import org.kohsuke.github.PagedIterable;
 import org.springframework.stereotype.Service;
 
 import com.axonivy.market.constants.GitHubConstants;
 import com.axonivy.market.enums.FileStatus;
 import com.axonivy.market.enums.FileType;
 import com.axonivy.market.github.model.GitHubFile;
-import com.axonivy.market.github.service.AbstractGithubService;
 import com.axonivy.market.github.service.GHAxonIvyMarketRepoService;
+import com.axonivy.market.github.service.GithubService;
+import com.axonivy.market.github.util.GithubUtils;
 
 import lombok.extern.log4j.Log4j2;
 
 @Log4j2
 @Service
-public class GHAxonIvyMarketRepoServiceImpl extends AbstractGithubService implements GHAxonIvyMarketRepoService {
+public class GHAxonIvyMarketRepoServiceImpl implements GHAxonIvyMarketRepoService {
   private static final String DEFAULT_BRANCH = "master";
   private static final LocalDateTime INITIAL_COMMIT_DATE = LocalDateTime.of(2020, 10, 30, 0, 0);
   private GHOrganization organization;
   private GHRepository repository;
 
+  private final GithubService githubService;
+
+  public GHAxonIvyMarketRepoServiceImpl(GithubService githubService) {
+    this.githubService = githubService;
+  }
+
   @Override
   public Map<String, List<GHContent>> fetchAllMarketItems() {
     Map<String, List<GHContent>> ghContentMap = new HashMap<>();
     try {
-      List<GHContent> directoryContent = getDirectoryContent(getRepository(), GitHubConstants.AXONIVY_MARKETPLACE_PATH);
+      List<GHContent> directoryContent = githubService.getDirectoryContent(getRepository(),
+          GitHubConstants.AXONIVY_MARKETPLACE_PATH);
       for (var content : directoryContent) {
         extractFileInDirectoryContent(content, ghContentMap);
       }
@@ -49,12 +57,8 @@ public class GHAxonIvyMarketRepoServiceImpl extends AbstractGithubService implem
 
   private void extractFileInDirectoryContent(GHContent content, Map<String, List<GHContent>> ghContentMap)
       throws IOException {
-    if (content == null) {
-      return;
-    }
-    if (content.isDirectory()) {
-      PagedIterable<GHContent> listOfContent = content.listDirectoryContent();
-      for (var childContent : listOfContent.toList()) {
+    if (content != null && content.isDirectory()) {
+      for (var childContent : GithubUtils.mapPagedIteratorToList(content.listDirectoryContent())) {
         if (childContent.isFile()) {
           var contents = ghContentMap.getOrDefault(content.getPath(), new ArrayList<>());
           contents.add(childContent);
@@ -72,12 +76,16 @@ public class GHAxonIvyMarketRepoServiceImpl extends AbstractGithubService implem
       lastCommitTime = INITIAL_COMMIT_DATE.atZone(ZoneId.systemDefault()).toEpochSecond();
     }
     try {
-      var lastCommits = getRepository().queryCommits().since(lastCommitTime).from(DEFAULT_BRANCH).list().iterator();
-      return lastCommits.hasNext() ? lastCommits.next() : null;
+      GHCommitQueryBuilder commitBuilder = createQueryCommitsBuilder(lastCommitTime);
+      return GithubUtils.mapPagedIteratorToList(commitBuilder.list()).stream().findFirst().orElse(null);
     } catch (Exception e) {
       log.error("Cannot query GHCommit: ", e);
     }
     return null;
+  }
+
+  private GHCommitQueryBuilder createQueryCommitsBuilder(long lastCommitTime) throws IOException {
+    return getRepository().queryCommits().since(lastCommitTime).from(DEFAULT_BRANCH);
   }
 
   @Override
@@ -85,12 +93,12 @@ public class GHAxonIvyMarketRepoServiceImpl extends AbstractGithubService implem
     Map<String, GitHubFile> githubFileMap = new HashMap<>();
     try {
       GHCompare compareResult = getRepository().getCompare(fromSHA1, toSHA1);
-      for (var commit : compareResult.listCommits()) {
+      for (var commit : GithubUtils.mapPagedIteratorToList(compareResult.listCommits())) {
         var listFiles = commit.listFiles();
         if (listFiles == null) {
           continue;
         }
-        listFiles.iterator().forEachRemaining(file -> {
+        GithubUtils.mapPagedIteratorToList(listFiles).forEach(file -> {
           String fullPathName = file.getFileName();
           if (FileType.of(fullPathName) != null) {
             var githubFile = new GitHubFile();
@@ -121,7 +129,7 @@ public class GHAxonIvyMarketRepoServiceImpl extends AbstractGithubService implem
 
   private GHOrganization getOrganization() throws IOException {
     if (organization == null) {
-      organization = getOrganization(GitHubConstants.AXONIVY_MARKET_ORGANIZATION_NAME);
+      organization = githubService.getOrganization(GitHubConstants.AXONIVY_MARKET_ORGANIZATION_NAME);
     }
     return organization;
   }
