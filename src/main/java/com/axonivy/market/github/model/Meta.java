@@ -30,7 +30,6 @@ public class Meta {
   private Boolean listed;
   private String version;
   private String vendor;
-  private String vendorImage;
   private String vendorUrl;
   private List<String> tags;
   private List<MavenArtifact> mavenArtifacts;

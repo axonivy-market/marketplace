@@ -5,6 +5,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import com.axonivy.market.github.service.GHAxonIvyProductRepoService;
+import com.axonivy.market.model.ReadmeModel;
 import org.apache.commons.lang3.StringUtils;
 import org.kohsuke.github.GHCommit;
 import org.kohsuke.github.GHContent;
@@ -35,14 +37,16 @@ public class ProductServiceImpl implements ProductService {
 
 	private final ProductRepository productRepo;
 	private final GHAxonIvyMarketRepoService githubMarketRepoService;
+	private final GHAxonIvyProductRepoService githubProductRepoService;
 	private final GithubRepoMetaRepository repoMetaRepository;
 	private GHCommit lastGHCommit;
 	private GithubRepoMeta marketRepoMeta;
 
 	public ProductServiceImpl(ProductRepository productRepo, GHAxonIvyMarketRepoService githubMarketRepoService,
-			GithubRepoMetaRepository repoMetaRepository) {
+							  GHAxonIvyProductRepoService githubProductRepoService, GithubRepoMetaRepository repoMetaRepository) {
 		this.productRepo = productRepo;
 		this.githubMarketRepoService = githubMarketRepoService;
+		this.githubProductRepoService = githubProductRepoService;
 		this.repoMetaRepository = repoMetaRepository;
 	}
 
@@ -59,10 +63,10 @@ public class ProductServiceImpl implements ProductService {
 		}
 
 		final FilterType filterType = FilterType.of(type);
-//		Pageable unifiedPageabe = refinePagination(pageable);
+		Pageable unifiedPageabe = refinePagination(pageable);
 
 		return switch (filterType) {
-		case ALL -> productRepo.findAll(pageable);
+		case ALL -> productRepo.findAll(unifiedPageabe);
 		case CONNECTORS, UTILITIES, SOLUTIONS -> productRepo.findByType(filterType.getCode(), pageable);
 		default -> Page.empty();
 		};
@@ -199,5 +203,10 @@ public class ProductServiceImpl implements ProductService {
 	@Override
 	public Product fetchProductDetail(String key) {
 		return productRepo.findByKey(key);
+	}
+
+	@Override
+	public ReadmeModel getReadmeContent(String productKey, String tag){
+		return githubProductRepoService.getReadmeContentsFromTag(productRepo.findByKey(productKey).getRepositoryName(), tag);
 	}
 }

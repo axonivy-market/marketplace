@@ -1,10 +1,12 @@
 package com.axonivy.market.github.util;
 
 import java.io.IOException;
+import java.util.List;
 
 import org.kohsuke.github.GHCommit;
 import org.kohsuke.github.GHContent;
 import org.kohsuke.github.GHRepository;
+import org.kohsuke.github.GHTag;
 import org.springframework.util.Assert;
 
 import com.axonivy.market.github.GitHubProvider;
@@ -44,4 +46,7 @@ public class GithubUtils {
     return github.getRepository(repositoryPath);
   }
 
+  public static List<GHTag> getTagsFromRepo(String repositoryPath) throws IOException {
+    return getGHRepoByPath(repositoryPath).listTags().toList();
+  }
 }

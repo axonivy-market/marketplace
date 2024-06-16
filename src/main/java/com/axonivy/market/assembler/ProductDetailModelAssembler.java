@@ -32,9 +32,6 @@ public class ProductDetailModelAssembler extends RepresentationModelAssemblerSup
         model.setIndustry(product.getIndustry());
         model.setCompatibility(product.getCompatibility());
         model.setContactUs(product.getContactUs());
-        model.setDescription(product.getDescription());
-        model.setSetup(product.getSetup());
-        model.setDemo(product.getDemo());
         model.setKey(product.getKey());
         model.setName(product.getName());
         model.setShortDescript(product.getShortDescription());

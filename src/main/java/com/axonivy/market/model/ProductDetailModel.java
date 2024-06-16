@@ -21,9 +21,6 @@ public class ProductDetailModel extends ProductModel {
     private String industry;
     private String compatibility;
     private Boolean contactUs;
-    private String description;
-    private String setup;
-    private String demo;
     private String key;
     private String name;
     private String shortDescript;

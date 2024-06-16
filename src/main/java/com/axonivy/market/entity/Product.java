@@ -35,7 +35,6 @@ public class Product implements Serializable {
   private String type;
   private List<String> tags;
   private String vendor;
-  private String vendorImage;
   private String vendorUrl;
   private String platformReview;
   private String cost;
@@ -50,12 +49,6 @@ public class Product implements Serializable {
   private Integer installationCount;
   private Date newestPublishDate;
   private String newestReleaseVersion;
-
-  private String description;
-
-  private String setup;
-
-  private String demo;
 
   @Override
   public int hashCode() {
