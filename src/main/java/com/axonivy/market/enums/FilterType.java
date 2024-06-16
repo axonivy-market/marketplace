@@ -2,13 +2,13 @@ package com.axonivy.market.enums;
 
 import org.apache.commons.lang3.StringUtils;
 
-import com.axonivy.market.exceptions.NotFoundException;
+import com.axonivy.market.exceptions.model.NotFoundException;
 
 import lombok.Getter;
 
 @Getter
 public enum FilterType {
-  ALL("all", ""), CONNECTORS("connectors", "connector"), UTILITIES("utilities", "util"), SOLUTIONS("solutions", "solution");
+  ALL("all", ""), CONNECTORS("connectors", "connector"), UTILITIES("utilities", "util"), SOLUTIONS("solutions", "solution"), DEMOS("demos", "demo");
 
   private String option;
   private String code;

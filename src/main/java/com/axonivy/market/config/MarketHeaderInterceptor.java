@@ -5,7 +5,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.servlet.HandlerInterceptor;
 
 import com.axonivy.market.constants.CommonConstants;
-import com.axonivy.market.exceptions.MissingHeaderException;
+import com.axonivy.market.exceptions.model.MissingHeaderException;
 
 import io.swagger.v3.oas.models.PathItem.HttpMethod;
 import jakarta.servlet.http.HttpServletRequest;
@@ -19,7 +19,7 @@ public class MarketHeaderInterceptor implements HandlerInterceptor {
 
   @Override
   public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
-    if (request.getMethod().equalsIgnoreCase(HttpMethod.OPTIONS.name())) {
+    if (HttpMethod.OPTIONS.name().equalsIgnoreCase(request.getMethod())) {
       return true;
     }
     if (!requestHeader.equals(request.getHeader(CommonConstants.REQUESTED_BY))) {
