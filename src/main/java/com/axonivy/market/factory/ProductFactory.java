@@ -1,16 +1,13 @@
 package com.axonivy.market.factory;
 
-import static com.axonivy.market.constants.CommonConstants.LOGO_FILE;
-import static com.axonivy.market.constants.CommonConstants.META_FILE;
 import static com.axonivy.market.constants.CommonConstants.SLASH;
 import static org.apache.commons.lang3.StringUtils.EMPTY;
 
 import org.apache.commons.lang3.BooleanUtils;
+
 import java.io.IOException;
 
 import org.apache.commons.lang3.StringUtils;
-import org.kohsuke.github.*;
-import org.springframework.util.CollectionUtils;
 import org.kohsuke.github.GHContent;
 
 import com.axonivy.market.entity.Product;
@@ -29,38 +26,36 @@ public class ProductFactory {
     public static final String META_FILE = "meta.json";
     public static final String LOGO_FILE = "logo.png";
     private static final ObjectMapper MAPPER = new ObjectMapper();
-    public static final String NON_NUMERIC_CHAR = "[^0-9.]";
-  private static final ObjectMapper MAPPER = new ObjectMapper();
 
-  public static Product mappingByGHContent(Product product, GHContent content) {
-    if (content == null) {
-      return product;
+    public static Product mappingByGHContent(Product product, GHContent content) {
+        if (content == null) {
+            return product;
+        }
+
+        var contentName = content.getName();
+        if (StringUtils.endsWith(contentName, META_FILE)) {
+            mappingByMetaJSONFile(product, content);
+        }
+        if (StringUtils.endsWith(contentName, LOGO_FILE)) {
+            product.setLogoUrl(GithubUtils.getDownloadUrl(content));
+        }
+        return product;
     }
 
-    var contentName = content.getName();
-    if (StringUtils.endsWith(contentName, META_FILE)) {
-      mappingByMetaJSONFile(product, content);
-    }
-    if (StringUtils.endsWith(contentName, LOGO_FILE)) {
-      product.setLogoUrl(GithubUtils.getDownloadUrl(content));
-    }
-    return product;
-  }
-
-  public static Product mappingByMetaJSONFile(Product product, GHContent ghContent) {
-    Meta meta = null;
-    try {
-      meta = jsonDecode(ghContent);
-    } catch (Exception e) {
-      log.error("Mapping from Meta file by GHContent failed", e);
-      return product;
-    }
+    public static Product mappingByMetaJSONFile(Product product, GHContent ghContent) {
+        Meta meta = null;
+        try {
+            meta = jsonDecode(ghContent);
+        } catch (Exception e) {
+            log.error("Mapping from Meta file by GHContent failed", e);
+            return product;
+        }
 
         product.setId(meta.getId());
         product.setName(meta.getName());
         product.setMarketDirectory(extractParentDirectory(ghContent));
         product.setListed(meta.getListed());
-        product.setType(StringUtils.capitalize(meta.getType()));
+        product.setType(meta.getType());
         product.setTags(meta.getTags());
         product.setShortDescription(meta.getDescription());
         product.setVendor(StringUtils.isBlank(meta.getVendor()) ? "Axon Ivy AG" : meta.getVendor());
@@ -71,57 +66,33 @@ public class ProductFactory {
         product.setIndustry(meta.getIndustry());
         product.setContactUs(BooleanUtils.isTrue(meta.getContactUs()) ? meta.getContactUs() : false);
         product.setCost(StringUtils.isBlank(meta.getCost()) ? "Free" : StringUtils.capitalize(meta.getCost()));
+        product.setCompatibility(meta.getCompatibility());
         extractSourceUrl(product, meta);
-        extractCompatibilityFromOldestTag(product, meta);
         return product;
     }
 
-  private static String extractParentDirectory(GHContent ghContent) {
-    var path = StringUtils.defaultIfEmpty(ghContent.getPath(), EMPTY);
-    return path.replace(ghContent.getName(), EMPTY);
-  }
-
-  private static void extractSourceUrl(Product product, Meta meta) {
-    var sourceUrl = meta.getSourceUrl();
-    if (StringUtils.isBlank(sourceUrl)) {
-      return;
-    }
-    String[] tokens = sourceUrl.split(SLASH);
-    var tokensLength = tokens.length;
-    var repositoryPath = sourceUrl;
-    if (tokensLength > 1) {
-      repositoryPath = String.join(SLASH, tokens[tokensLength - 2], tokens[tokensLength - 1]);
-    }
-    product.setRepositoryName(repositoryPath);
-    product.setSourceUrl(sourceUrl);
-  }
-
-  private static Meta jsonDecode(GHContent ghContent) throws IOException {
-    return MAPPER.readValue(ghContent.read().readAllBytes(), Meta.class);
-  }
-    private static void extractCompatibilityFromOldestTag(Product product, Meta meta) {
-        try {
-            GHTag oldestTag = CollectionUtils.lastElement(GithubUtils.getTagsFromRepo(product.getRepositoryName()));
-            if (oldestTag != null) {
-                String compatibility = getCompatibilityFromNumericTag(oldestTag);
-                product.setCompatibility(StringUtils.isBlank(meta.getCompatibility()) ? compatibility : meta.getCompatibility());
-            }
-        } catch (Exception e) {
-            log.error("Cannot find repository by path {}", e);
-        }
+    private static String extractParentDirectory(GHContent ghContent) {
+        var path = StringUtils.defaultIfEmpty(ghContent.getPath(), EMPTY);
+        return path.replace(ghContent.getName(), EMPTY);
     }
 
-    // Cover 3 cases after removing non-numeric characters (8, 11.1 and 10.0.2)
-    private static String getCompatibilityFromNumericTag(GHTag oldestTag) {
-        String numericTag = oldestTag.getName().replaceAll(NON_NUMERIC_CHAR, "");
-        if (!numericTag.contains(".")) {
-            return numericTag + ".0+";
+    private static void extractSourceUrl(Product product, Meta meta) {
+        var sourceUrl = meta.getSourceUrl();
+        if (StringUtils.isBlank(sourceUrl)) {
+            return;
         }
-        int firstDot = numericTag.indexOf(".");
-        int secondDot = numericTag.indexOf(".", firstDot + 1);
-        if (secondDot == -1) {
-            return numericTag + "+";
+        String[] tokens = sourceUrl.split(SLASH);
+        var tokensLength = tokens.length;
+        var repositoryPath = sourceUrl;
+        if (tokensLength > 1) {
+            repositoryPath = String.join(SLASH, tokens[tokensLength - 2], tokens[tokensLength - 1]);
         }
-        return numericTag.substring(0, secondDot) + "+";
+        product.setRepositoryName(repositoryPath);
+        product.setSourceUrl(sourceUrl);
     }
+
+    private static Meta jsonDecode(GHContent ghContent) throws IOException {
+        return MAPPER.readValue(ghContent.read().readAllBytes(), Meta.class);
+    }
+
 }

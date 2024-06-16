@@ -2,9 +2,9 @@ package com.axonivy.market.github.service.impl;
 
 import com.axonivy.market.constants.GitHubConstants;
 import com.axonivy.market.github.service.GHAxonIvyProductRepoService;
-import com.axonivy.market.github.util.GithubUtils;
 import com.axonivy.market.model.ReadmeModel;
 import lombok.extern.log4j.Log4j2;
+
 import java.io.IOException;
 import java.util.List;
 
@@ -13,18 +13,13 @@ import org.kohsuke.github.GHOrganization;
 import org.kohsuke.github.GHTag;
 import org.springframework.stereotype.Service;
 
-import java.io.IOException;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import com.axonivy.market.constants.GitHubConstants;
-import com.axonivy.market.github.service.GHAxonIvyProductRepoService;
-import com.axonivy.market.github.service.GithubService;
 
-import lombok.extern.log4j.Log4j2;
+import com.axonivy.market.github.service.GithubService;
 
 @Log4j2
 @Service
@@ -35,26 +30,26 @@ public class GHAxonIvyProductRepoServiceImpl implements GHAxonIvyProductRepoServ
     public static final String PRODUCT_FOLDER_SUFFIX = "-product";
     public static final String README_FILE = "README.md";
 
-  public GHAxonIvyProductRepoServiceImpl(GithubService githubService) {
-    this.githubService = githubService;
-  }
-
-  @Override
-  public GHContent getContentFromGHRepoAndTag(String repoName, String filePath, String tagVersion) {
-    try {
-      return getOrganization().getRepository(repoName).getFileContent(filePath, tagVersion);
-    } catch (IOException e) {
-      log.error("Cannot Get Content From File Directory", e);
-      return null;
+    public GHAxonIvyProductRepoServiceImpl(GithubService githubService) {
+        this.githubService = githubService;
     }
-  }
 
-  private GHOrganization getOrganization() throws IOException {
-    if (organization == null) {
-      organization = githubService.getOrganization(GitHubConstants.AXONIVY_MARKET_ORGANIZATION_NAME);
+    @Override
+    public GHContent getContentFromGHRepoAndTag(String repoName, String filePath, String tagVersion) {
+        try {
+            return getOrganization().getRepository(repoName).getFileContent(filePath, tagVersion);
+        } catch (IOException e) {
+            log.error("Cannot Get Content From File Directory", e);
+            return null;
+        }
     }
-    return organization;
-  }
+
+    private GHOrganization getOrganization() throws IOException {
+        if (organization == null) {
+            organization = githubService.getOrganization(GitHubConstants.AXONIVY_MARKET_ORGANIZATION_NAME);
+        }
+        return organization;
+    }
 
     @Override
     public List<GHTag> getAllTagsFromRepoName(String repoName) throws IOException {
@@ -85,7 +80,7 @@ public class GHAxonIvyProductRepoServiceImpl implements GHAxonIvyProductRepoServ
         return getExtractedPartsOfReadme(readmeContents);
     }
 
-    private static String updateImagesWithDownloadUrl(List<GHContent> contents, String readmeContents) throws IOException {
+    private String updateImagesWithDownloadUrl(List<GHContent> contents, String readmeContents) throws IOException {
         Map<String, String> imageUrls = new HashMap<>();
         Optional<GHContent> productImage = contents.stream()
                 .filter(GHContent::isFile)
@@ -146,8 +141,8 @@ public class GHAxonIvyProductRepoServiceImpl implements GHAxonIvyProductRepoServ
         return new ReadmeModel(description, setup, demo);
     }
 
-    private static List<GHContent> getRepoContents(String repoName, String tag) throws IOException {
-        return GithubUtils.getGHRepoByPath(repoName)
+    private List<GHContent> getRepoContents(String repoName, String tag) throws IOException {
+        return githubService.getRepository(repoName)
                 .getDirectoryContent("/", tag)
                 .stream()
                 .filter(GHContent::isDirectory)
@@ -161,7 +156,7 @@ public class GHAxonIvyProductRepoServiceImpl implements GHAxonIvyProductRepoServ
                 }).toList();
     }
 
-    private static boolean containsImageDirectives(String readmeContents) {
+    private boolean containsImageDirectives(String readmeContents) {
         Pattern pattern = Pattern.compile("images/(.*?)");
         Matcher matcher = pattern.matcher(readmeContents);
         return matcher.find();

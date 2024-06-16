@@ -15,6 +15,8 @@ public interface ProductRepository extends MongoRepository<Product, String> {
 
     Product findByLogoUrl(String logoUrl);
 
+    Product findByIdAndType(String id, String type);
+
     @Query(value = "{'marketDirectory': {$regex : ?0, $options: 'i'}}")
     Product findByMarketDirectoryRegex(String search);
 
@@ -23,6 +25,4 @@ public interface ProductRepository extends MongoRepository<Product, String> {
 
     @Query("{ $or: [ { 'name': { $regex: ?0, $options: 'i' } }, { 'shortDescription': { $regex: ?0, $options: 'i' } } ] }")
     Page<Product> searchByNameOrShortDescriptionRegex(String keyword, Pageable unifiedPageabe);
-
-    Product findByKey(String key);
 }
