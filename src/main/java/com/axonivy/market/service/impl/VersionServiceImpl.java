@@ -74,7 +74,7 @@ public class VersionServiceImpl implements VersionService {
         return result;
     }
 
-    private boolean handleArtifactForVersionToDisplay(List<String> versionsToDisplay, List<MavenArtifactVersionModel> result) {
+    public boolean handleArtifactForVersionToDisplay(List<String> versionsToDisplay, List<MavenArtifactVersionModel> result) {
         boolean isNewVersionDetected = false;
         for (String version : versionsToDisplay) {
             List<MavenArtifactModel> artifactsInVersion = convertMavenArtifactsToModels(artifactsFromMeta, version);

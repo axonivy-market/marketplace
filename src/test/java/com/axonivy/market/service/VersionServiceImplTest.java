@@ -1,6 +1,5 @@
 package com.axonivy.market.service;
 
-import ch.qos.logback.core.joran.spi.XMLUtil;
 import com.axonivy.market.constants.MavenConstants;
 import com.axonivy.market.entity.MavenArtifactModel;
 import com.axonivy.market.entity.MavenArtifactVersion;
@@ -8,23 +7,29 @@ import com.axonivy.market.entity.Product;
 import com.axonivy.market.github.model.ArchivedArtifact;
 import com.axonivy.market.github.model.MavenArtifact;
 import com.axonivy.market.github.service.GHAxonIvyProductRepoService;
+import com.axonivy.market.model.MavenArtifactVersionModel;
 import com.axonivy.market.repository.MavenArtifactVersionRepository;
 import com.axonivy.market.repository.ProductRepository;
 import com.axonivy.market.service.impl.VersionServiceImpl;
 import com.axonivy.market.utils.XmlReaderUtils;
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.lang3.StringUtils;
+import org.assertj.core.api.Fail;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.kohsuke.github.GHContent;
 import org.mockito.*;
 
+
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.test.util.ReflectionTestUtils;
 
+import java.io.IOException;
 import java.util.*;
 
 @Log4j2
@@ -52,7 +57,9 @@ public class VersionServiceImplTest {
     public void prepareBeforeTest() {
         archivedArtifactsMap = new HashMap<>();
         artifactsFromMeta = new ArrayList<>();
-        MockitoAnnotations.openMocks(VersionServiceImpl.class);
+        metaProductArtifact = new MavenArtifact();
+        proceedDataCache = new MavenArtifactVersion();
+        repoName = StringUtils.EMPTY;
         ReflectionTestUtils.setField(versionService, "archivedArtifactsMap", archivedArtifactsMap);
         ReflectionTestUtils.setField(versionService, "artifactsFromMeta", artifactsFromMeta);
         ReflectionTestUtils.setField(versionService, "proceedDataCache", proceedDataCache);
@@ -62,6 +69,26 @@ public class VersionServiceImplTest {
     @Test
     public void testGetArtifactsAndVersionToDisplay() {
         Assertions.assertEquals("", "");
+    }
+
+    @Test
+    public void testHandleArtifactForVersionToDisplay() {
+        String newVersionDetected = "10.0.10";
+        List<MavenArtifactVersionModel> result = new ArrayList<>();
+        List<String> versionsToDisplay = List.of(newVersionDetected);
+
+        Assertions.assertTrue(versionService.handleArtifactForVersionToDisplay(versionsToDisplay, result));
+        Assertions.assertEquals(1, result.size());
+        Assertions.assertEquals(newVersionDetected, result.get(0).getVersion());
+        Assertions.assertEquals(0, result.get(0).getArtifactsByVersion().size());
+
+        result = new ArrayList<>();
+        ArrayList<MavenArtifactModel> artifactsInVersion = new ArrayList<>();
+        artifactsInVersion.add(new MavenArtifactModel());
+        when(versionService.convertMavenArtifactsToModels(Mockito.anyList(), Mockito.anyString())).thenReturn(artifactsInVersion);
+        Assertions.assertFalse(versionService.handleArtifactForVersionToDisplay(versionsToDisplay, result));
+        Assertions.assertEquals(1, result.size());
+        Assertions.assertEquals(1, result.get(0).getArtifactsByVersion().size());
     }
 
     @Test
@@ -83,8 +110,17 @@ public class VersionServiceImplTest {
 
     @Test
     public void testUpdateArtifactsInVersionWithProductArtifact() {
-        Assertions.assertEquals("", "");
-
+        String version = "10.0.10";
+        MavenArtifactModel artifactModel = new MavenArtifactModel();
+        List<MavenArtifactModel> mockMavenArtifactModels = List.of(artifactModel);
+        when(versionService.getProductJsonByVersion(Mockito.anyString())).thenReturn(List.of(new MavenArtifact()));
+        when(versionService.convertMavenArtifactsToModels(Mockito.anyList(), Mockito.anyString())).thenReturn(mockMavenArtifactModels);
+        Assertions.assertEquals(mockMavenArtifactModels, versionService.updateArtifactsInVersionWithProductArtifact(version));
+        Assertions.assertEquals(1, proceedDataCache.getVersions().size());
+        Assertions.assertEquals(1, proceedDataCache.getProductArtifactWithVersionReleased().size());
+        Assertions.assertEquals(version, proceedDataCache.getVersions().get(0));
+        Assertions.assertEquals(1, proceedDataCache.getProductArtifactWithVersionReleased().get(version).size());
+        Assertions.assertEquals(artifactModel, proceedDataCache.getProductArtifactWithVersionReleased().get(version).get(0));
     }
 
     @Test
@@ -94,10 +130,9 @@ public class VersionServiceImplTest {
         String artifactId = "adobe-acrobat-sign-connector";
         String archivedArtifactId1 = "adobe-acrobat-sign-connector";
         String archivedArtifactId2 = "adobe-acrobat-sign-connector";
-
-        metaProductArtifact = new MavenArtifact(repoUrl, "", groupId, artifactId, "", null, true, null);
-        ReflectionTestUtils.setField(versionService, "metaProductArtifact", metaProductArtifact);
-
+        metaProductArtifact.setGroupId(groupId);
+        metaProductArtifact.setArtifactId(artifactId);
+        metaProductArtifact.setIsProductArtifact(true);
         MavenArtifact additionalMavenArtifact = new MavenArtifact(repoUrl, "", groupId, artifactId, "", null, null, null);
         ArchivedArtifact archivedArtifact1 = new ArchivedArtifact("10.0.10", groupId, archivedArtifactId1);
         ArchivedArtifact archivedArtifact2 = new ArchivedArtifact("10.0.20", groupId, archivedArtifactId2);
@@ -254,7 +289,32 @@ public class VersionServiceImplTest {
 
     @Test
     public void testGetProductJsonByVersion() {
+        String targetArtifactId = "adobe-acrobat-sign-connector";
+        String targetGroupId = "com.axonivy.connector.adobe.acrobat";
+        GHContent mockContent = mock(GHContent.class);
+        repoName = "adobe-acrobat-sign-connector";
+        ReflectionTestUtils.setField(versionService, "repoName", repoName);
 
+        MavenArtifact productArtifact = new MavenArtifact("https://maven.axonivy.com", null, targetGroupId, targetArtifactId, "iar", null, true, null);
+
+        metaProductArtifact.setRepoUrl("https://maven.axonivy.com");
+        metaProductArtifact.setGroupId(targetGroupId);
+        metaProductArtifact.setArtifactId(targetArtifactId);
+        when(gitHubService.getContentFromGHRepoAndTag(Mockito.anyString(), Mockito.anyString(), Mockito.anyString())).thenReturn(null);
+        Assertions.assertEquals(0, versionService.getProductJsonByVersion("10.0.20").size());
+
+        metaProductArtifact.setGroupId("com.axonivy.connector.adobe.acrobat.connector");
+        when(gitHubService.getContentFromGHRepoAndTag(Mockito.anyString(), Mockito.anyString(), Mockito.anyString())).thenReturn(mockContent);
+
+        try {
+            when(gitHubService.convertProductJsonToMavenProductInfo(mockContent)).thenReturn(List.of(productArtifact));
+            Assertions.assertEquals(1, versionService.getProductJsonByVersion("10.0.20").size());
+
+            when(gitHubService.convertProductJsonToMavenProductInfo(mockContent)).thenThrow(new IOException("Mock IO Exception"));
+            Assertions.assertEquals(0, versionService.getProductJsonByVersion("10.0.20").size());
+        } catch (IOException e) {
+            Fail.fail("Mock setup should not throw an exception");
+        }
     }
 
     @Test
@@ -317,7 +377,7 @@ public class VersionServiceImplTest {
         String customRepoUrl = "https://nexus.axonivy.com";
         targetArtifact.setRepoUrl(customRepoUrl);
         result = versionService.buildDownloadUrlFromArtifactAndVersion(targetArtifact, targetVersion);
-        expectedResult = String.format(MavenConstants.ARTIFACT_DOWNLOAD_URL_FORMAT, customRepoUrl, "com/axonivy/connector", targetArtifactId, targetVersion,targetArtifactId, targetVersion, "iar");
+        expectedResult = String.format(MavenConstants.ARTIFACT_DOWNLOAD_URL_FORMAT, customRepoUrl, "com/axonivy/connector", targetArtifactId, targetVersion, targetArtifactId, targetVersion, "iar");
         Assertions.assertEquals(expectedResult, result);
 
         //Assert case with artifact got matching archived artifact & use custom file type
