@@ -38,7 +38,7 @@ public class ProductController {
 
   @Operation(summary = "Find all products", description = "Be default system will finds product by type as 'all'")
   @GetMapping()
-  public ResponseEntity<PagedModel<ProductModel>> findProducts(@RequestParam(required = false) String type,
+  public ResponseEntity<PagedModel<ProductModel>> findProducts(@RequestParam(required = true) String type,
       @RequestParam(required = false) String keyword, Pageable pageable) {
     Page<Product> results = service.findProducts(type, keyword, pageable);
     if (results.isEmpty()) {

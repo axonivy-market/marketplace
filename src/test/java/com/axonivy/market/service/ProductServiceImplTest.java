@@ -3,6 +3,7 @@ package com.axonivy.market.service;
 import static com.axonivy.market.constants.CommonConstants.LOGO_FILE;
 import static com.axonivy.market.constants.CommonConstants.META_FILE;
 import static com.axonivy.market.constants.CommonConstants.SLASH;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.anyString;
@@ -19,7 +20,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -86,12 +86,12 @@ class ProductServiceImplTest {
     mockMarketRepoMetaStatus();
     // Executes
     var result = productService.findProducts(FilterType.ALL.getOption(), keyword, PAGEABLE);
-    Assertions.assertEquals(mockResultReturn, result);
+    assertEquals(mockResultReturn, result);
 
     // Start testing by Other
     // Executes
     result = productService.findProducts(FilterType.DEMOS.getOption(), keyword, PAGEABLE);
-    Assertions.assertEquals(0, result.getSize());
+    assertEquals(0, result.getSize());
   }
 
   @Test
@@ -117,7 +117,7 @@ class ProductServiceImplTest {
 
     // Executes
     var result = productService.findProducts(FilterType.CONNECTORS.getOption(), keyword, PAGEABLE);
-    Assertions.assertEquals(mockPagedResult, result);
+    assertEquals(mockPagedResult, result);
 
     // Start testing by deleting new meta
     mockCommit = mockGHCommitHasSHA1(UUID.randomUUID().toString());
@@ -126,7 +126,7 @@ class ProductServiceImplTest {
     mockGithubFile.setStatus(FileStatus.REMOVED);
     // Executes
     result = productService.findProducts(FilterType.CONNECTORS.getOption(), keyword, PAGEABLE);
-    Assertions.assertEquals(mockPagedResult, result);
+    assertEquals(mockPagedResult, result);
   }
 
   @Test
@@ -152,7 +152,7 @@ class ProductServiceImplTest {
 
     // Executes
     var result = productService.findProducts(FilterType.CONNECTORS.getOption(), keyword, PAGEABLE);
-    Assertions.assertEquals(mockPagedResult, result);
+    assertEquals(mockPagedResult, result);
 
     // Start testing by deleting new logo
     when(mockCommit.getSHA1()).thenReturn(UUID.randomUUID().toString());
@@ -163,7 +163,7 @@ class ProductServiceImplTest {
 
     // Executes
     result = productService.findProducts(FilterType.CONNECTORS.getOption(), keyword, PAGEABLE);
-    Assertions.assertEquals(mockPagedResult, result);
+    assertEquals(mockPagedResult, result);
   }
 
   @Test
@@ -185,7 +185,7 @@ class ProductServiceImplTest {
 
     // Executes
     var result = productService.findProducts(allType, keyword, PAGEABLE);
-    Assertions.assertEquals(result, mockResultReturn);
+    assertEquals(result, mockResultReturn);
     verify(productRepository).findAll(any(Pageable.class));
   }
 
@@ -197,7 +197,7 @@ class ProductServiceImplTest {
     when(productRepository.searchByNameOrShortDescriptionRegex(keyword, simplePageable)).thenReturn(mockResultReturn);
 
     var result = productService.findProducts(type, keyword, simplePageable);
-    Assertions.assertEquals(result, mockResultReturn);
+    assertEquals(result, mockResultReturn);
     verify(productRepository).searchByNameOrShortDescriptionRegex(keyword, simplePageable);
   }
 
