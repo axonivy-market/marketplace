@@ -10,7 +10,13 @@ import lombok.Setter;
 @NoArgsConstructor
 @AllArgsConstructor
 public class ReadmeModel {
+    private String tag;
     private String description;
     private String setup;
     private String demo;
+    private Boolean isDependency;
+    private String name;
+    private String groupId;
+    private String artifactId;
+    private String type;
 }

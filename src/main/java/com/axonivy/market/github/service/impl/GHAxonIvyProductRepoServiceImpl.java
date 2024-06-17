@@ -3,21 +3,23 @@ package com.axonivy.market.github.service.impl;
 import com.axonivy.market.constants.GitHubConstants;
 import com.axonivy.market.github.service.GHAxonIvyProductRepoService;
 import com.axonivy.market.model.ReadmeModel;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.log4j.Log4j2;
 
 import java.io.IOException;
-import java.util.List;
+import java.util.*;
 
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.text.WordUtils;
 import org.kohsuke.github.GHContent;
 import org.kohsuke.github.GHOrganization;
 import org.kohsuke.github.GHTag;
 import org.springframework.stereotype.Service;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Optional;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 import com.axonivy.market.github.service.GithubService;
 
@@ -26,9 +28,12 @@ import com.axonivy.market.github.service.GithubService;
 public class GHAxonIvyProductRepoServiceImpl implements GHAxonIvyProductRepoService {
     private GHOrganization organization;
     private final GithubService githubService;
+    private static final ObjectMapper MAPPER = new ObjectMapper();
     public static final String IMAGES_FOLDER = "images";
     public static final String PRODUCT_FOLDER_SUFFIX = "-product";
     public static final String README_FILE = "README.md";
+    public static final String PRODUCT_JSON_FILE = "product.json";
+    public static final String NON_NUMERIC_CHAR = "[^0-9.]";
 
     public GHAxonIvyProductRepoServiceImpl(GithubService githubService) {
         this.githubService = githubService;
@@ -58,26 +63,49 @@ public class GHAxonIvyProductRepoServiceImpl implements GHAxonIvyProductRepoServ
 
     @Override
     public ReadmeModel getReadmeContentsFromTag(String repoName, String tag) {
-        String readmeContents = "";
+        ReadmeModel readmeModel = new ReadmeModel();
         try {
             List<GHContent> contents = getRepoContents(repoName, tag);
+            readmeModel.setTag(tag.replaceAll(NON_NUMERIC_CHAR, ""));
+            getProductJsonContent(readmeModel, contents);
             Optional<GHContent> readmeFile = contents.stream()
                     .filter(GHContent::isFile)
                     .filter(content -> README_FILE.equals(content.getName()))
                     .findFirst();
             if (readmeFile.isPresent()) {
-                readmeContents = new String(readmeFile.get().read().readAllBytes());
+                String readmeContents = new String(readmeFile.get().read().readAllBytes());
                 if (containsImageDirectives(readmeContents)) {
                     readmeContents = updateImagesWithDownloadUrl(contents, readmeContents);
-                    getExtractedPartsOfReadme(readmeContents);
+                    getExtractedPartsOfReadme(readmeModel, readmeContents);
                 } else {
-                    getExtractedPartsOfReadme(readmeContents);
+                    getExtractedPartsOfReadme(readmeModel, readmeContents);
                 }
             }
         } catch (Exception e) {
             log.error("Cannot get README file's content {}", e);
         }
-        return getExtractedPartsOfReadme(readmeContents);
+        return readmeModel;
+    }
+
+    private void getProductJsonContent(ReadmeModel readmeModel, List<GHContent> contents) throws IOException {
+        String productJsonContents;
+        Optional<GHContent> productJsonFile = contents.stream().filter(GHContent::isFile).filter(content -> PRODUCT_JSON_FILE.equals(content.getName())).findFirst();
+        if (productJsonFile.isPresent()) {
+            productJsonContents = new String(productJsonFile.get().read().readAllBytes());
+            JsonNode rootNode = MAPPER.readTree(productJsonContents);
+            JsonNode installersNode = rootNode.path("installers");
+            for (JsonNode installerNode : installersNode) {
+                if (installerNode.path("id").asText().endsWith("-dependency")) {
+                    JsonNode dataNode = installerNode.path("data");
+                    JsonNode dependenciesNode = dataNode.path("dependencies");
+                    readmeModel.setIsDependency(Boolean.TRUE);
+                    readmeModel.setGroupId(dependenciesNode.get(0).path("groupId").asText());
+                    readmeModel.setArtifactId(dependenciesNode.get(0).path("artifactId").asText());
+                    readmeModel.setType(dependenciesNode.get(0).path("type").asText());
+                    readmeModel.setName(StringUtils.isBlank(readmeModel.getArtifactId()) ? StringUtils.EMPTY : WordUtils.capitalize(readmeModel.getArtifactId().replaceAll("-", " ")));
+                }
+            }
+        }
     }
 
     private String updateImagesWithDownloadUrl(List<GHContent> contents, String readmeContents) throws IOException {
@@ -105,7 +133,7 @@ public class GHAxonIvyProductRepoServiceImpl implements GHAxonIvyProductRepoServ
         return readmeContents;
     }
 
-    private ReadmeModel getExtractedPartsOfReadme(String readmeContents) {
+    private void getExtractedPartsOfReadme(ReadmeModel readmeModel, String readmeContents) {
         String description = "";
         String setup = "";
         String demo = "";
@@ -138,7 +166,9 @@ public class GHAxonIvyProductRepoServiceImpl implements GHAxonIvyProductRepoServ
                 setup = parts[1].trim();
             }
         }
-        return new ReadmeModel(description, setup, demo);
+        readmeModel.setDescription(description);
+        readmeModel.setDemo(demo);
+        readmeModel.setSetup(setup);
     }
 
     private List<GHContent> getRepoContents(String repoName, String tag) throws IOException {
