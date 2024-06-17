@@ -15,17 +15,23 @@ import org.kohsuke.github.GHOrganization;
 import org.kohsuke.github.GHTag;
 import org.springframework.stereotype.Service;
 
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
+import com.axonivy.market.constants.GitHubConstants;
+import com.axonivy.market.github.service.GHAxonIvyProductRepoService;
+import com.axonivy.market.github.service.GithubService;
+
+import lombok.extern.log4j.Log4j2;
 
 @Log4j2
 @Service
-public class GHAxonIvyProductRepoServiceImpl extends AbstractGithubService implements GHAxonIvyProductRepoService {
-    ObjectMapper mapper = new ObjectMapper();
-    private GHOrganization organization;
+public class GHAxonIvyProductRepoServiceImpl implements GHAxonIvyProductRepoService {
+  private GHOrganization organization;
 
-    @Override
+  private final GithubService githubService;
+
+  public GHAxonIvyProductRepoServiceImpl(GithubService githubService) {
+    this.githubService = githubService;
+  }
+   @Override
     public List<MavenArtifact> convertProductJsonToMavenProductInfo(GHContent content) throws IOException {
         ObjectMapper objectMapper = new ObjectMapper();
         JsonNode rootNode = objectMapper.readTree(content.getContent());
@@ -61,7 +67,7 @@ public class GHAxonIvyProductRepoServiceImpl extends AbstractGithubService imple
         return artifacts;
     }
 
-    private MavenArtifact createArtifactFromJsonNode(JsonNode node, String repoUrl, boolean isDependency) {
+      private MavenArtifact createArtifactFromJsonNode(JsonNode node, String repoUrl, boolean isDependency) {
         MavenArtifact artifact = new MavenArtifact();
         artifact.setRepoUrl(repoUrl);
         artifact.setIsDependency(isDependency);
@@ -72,25 +78,25 @@ public class GHAxonIvyProductRepoServiceImpl extends AbstractGithubService imple
         return artifact;
     }
 
-    @Override
-    public GHContent getContentFromGHRepoAndTag(String repoName, String filePath, String tagVersion) {
-        try {
-            return getOrganization().getRepository(repoName).getFileContent(filePath, tagVersion);
-        } catch (IOException e) {
-            log.error("Cannot Get Content From File Directory", e);
-            return null;
-        }
+  @Override
+  public GHContent getContentFromGHRepoAndTag(String repoName, String filePath, String tagVersion) {
+    try {
+      return getOrganization().getRepository(repoName).getFileContent(filePath, tagVersion);
+    } catch (IOException e) {
+      log.error("Cannot Get Content From File Directory", e);
+      return null;
     }
+  }
 
-    private GHOrganization getOrganization() throws IOException {
-        if (organization == null) {
-            organization = getOrganization(GitHubConstants.AXONIVY_MARKET_ORGANIZATION_NAME);
-        }
-        return organization;
+  private GHOrganization getOrganization() throws IOException {
+    if (organization == null) {
+      organization = githubService.getOrganization(GitHubConstants.AXONIVY_MARKET_ORGANIZATION_NAME);
     }
+    return organization;
+  }
 
-    @Override
-    public List<GHTag> getAllTagsFromRepoName(String repoName) throws IOException {
-        return getOrganization().getRepository(repoName).listTags().toList();
-    }
+  @Override
+  public List<GHTag> getAllTagsFromRepoName(String repoName) throws IOException {
+    return getOrganization().getRepository(repoName).listTags().toList();
+  }
 }

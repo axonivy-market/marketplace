@@ -26,7 +26,7 @@ public class Product implements Serializable {
 
   private static final long serialVersionUID = -8770801877877277258L;
   @Id
-  private String key;
+  private String id;
   private String marketDirectory;
   private String name;
   private String version;
@@ -56,19 +56,15 @@ public class Product implements Serializable {
 
   @Override
   public int hashCode() {
-    HashCodeBuilder builder = new HashCodeBuilder();
-    builder.append(key);
-    return builder.hashCode();
+    return new HashCodeBuilder().append(id).hashCode();
   }
 
   @Override
   public boolean equals(Object obj) {
-    if (obj == null) {
+    if (obj == null || this.getClass() != obj.getClass()) {
       return false;
     }
-    EqualsBuilder builder = new EqualsBuilder();
-    builder.append(key, ((Product) obj).getKey());
-    return builder.isEquals();
+    return new EqualsBuilder().append(id, ((Product) obj).getId()).isEquals();
   }
 
 }

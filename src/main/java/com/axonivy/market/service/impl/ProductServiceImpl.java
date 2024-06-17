@@ -1,5 +1,29 @@
 package com.axonivy.market.service.impl;
 
+import static org.apache.commons.lang3.StringUtils.EMPTY;
+
+import java.io.IOException;
+import java.net.URL;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+
+import org.apache.commons.lang3.StringUtils;
+import org.kohsuke.github.GHCommit;
+import org.kohsuke.github.GHContent;
+import org.kohsuke.github.GHRepository;
+import org.kohsuke.github.GHTag;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.domain.Sort.Order;
+import org.springframework.stereotype.Service;
+import org.springframework.util.CollectionUtils;
+
 import com.axonivy.market.constants.GitHubConstants;
 import com.axonivy.market.entity.GithubRepoMeta;
 import com.axonivy.market.entity.Product;
@@ -9,6 +33,7 @@ import com.axonivy.market.enums.SortOption;
 import com.axonivy.market.factory.ProductFactory;
 import com.axonivy.market.github.model.GitHubFile;
 import com.axonivy.market.github.service.GHAxonIvyMarketRepoService;
+import com.axonivy.market.github.service.GithubService;
 import com.axonivy.market.github.util.GithubUtils;
 import com.axonivy.market.repository.GithubRepoMetaRepository;
 import com.axonivy.market.repository.ProductRepository;
@@ -25,24 +50,35 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import lombok.extern.log4j.Log4j2;
+
+@Log4j2
 @Service
 public class ProductServiceImpl implements ProductService {
 
-  private final ProductRepository productRepo;
-  private final GHAxonIvyMarketRepoService githubMarketRepoService;
-  private final GithubRepoMetaRepository repoMetaRepository;
+  private final ProductRepository productRepository;
+  private final GHAxonIvyMarketRepoService axonivyMarketRepoService;
+  private final GithubRepoMetaRepository githubRepoMetaRepository;
+  private final GithubService githubService;
+
   private GHCommit lastGHCommit;
   private GithubRepoMeta marketRepoMeta;
 
-  public ProductServiceImpl(ProductRepository repo, GHAxonIvyMarketRepoService githubService,
-      GithubRepoMetaRepository repoMetaRepository) {
-    this.productRepo = repo;
-    this.githubMarketRepoService = githubService;
-    this.repoMetaRepository = repoMetaRepository;
+  public ProductServiceImpl(ProductRepository productRepository, GHAxonIvyMarketRepoService axonivyMarketRepoService,
+      GithubRepoMetaRepository githubRepoMetaRepository, GithubService githubService) {
+    this.productRepository = productRepository;
+    this.axonivyMarketRepoService = axonivyMarketRepoService;
+    this.githubRepoMetaRepository = githubRepoMetaRepository;
+    this.githubService = githubService;
   }
 
   @Override
-  public Page<Product> findProductsByType(String type, Pageable pageable) {
+  public Page<Product> findProducts(String type, String keyword, Pageable pageable) {
+    final var filterType = FilterType.of(type);
+    if (StringUtils.isNoneBlank(keyword)) {
+      return searchProducts(filterType, keyword, pageable);
+    }
+
     if (!isLastGithubCommitCovered()) {
       if (marketRepoMeta == null) {
         syncProductsFromGithubRepo();
@@ -53,12 +89,10 @@ public class ProductServiceImpl implements ProductService {
       syncRepoMetaDataStatus();
     }
 
-    final FilterType filterType = FilterType.of(type);
     Pageable unifiedPageabe = refinePagination(pageable);
-
     return switch (filterType) {
-    case ALL -> productRepo.findAll(unifiedPageabe);
-    case CONNECTORS, UTILITIES, SOLUTIONS -> productRepo.findByType(filterType.getCode(), pageable);
+    case ALL -> productRepository.findAll(unifiedPageabe);
+    case CONNECTORS, UTILITIES, SOLUTIONS -> productRepository.findByType(filterType.getCode(), pageable);
     default -> Page.empty();
     };
   }
@@ -67,11 +101,13 @@ public class ProductServiceImpl implements ProductService {
     if (marketRepoMeta == null || lastGHCommit == null) {
       return;
     }
-    marketRepoMeta.setRepoURL(lastGHCommit.getOwner().getUrl().getPath());
+    String repoURL = Optional.ofNullable(lastGHCommit.getOwner()).map(GHRepository::getUrl).map(URL::getPath)
+        .orElse(EMPTY);
+    marketRepoMeta.setRepoURL(repoURL);
     marketRepoMeta.setRepoName(GitHubConstants.AXONIVY_MARKETPLACE_REPO_NAME);
     marketRepoMeta.setLastSHA1(lastGHCommit.getSHA1());
     marketRepoMeta.setLastChange(GithubUtils.getGHCommitDate(lastGHCommit));
-    repoMetaRepository.save(marketRepoMeta);
+    githubRepoMetaRepository.save(marketRepoMeta);
     marketRepoMeta = null;
   }
 
@@ -79,46 +115,53 @@ public class ProductServiceImpl implements ProductService {
     if (lastGHCommit == null || marketRepoMeta == null) {
       return;
     }
-    var githubFileChanges = githubMarketRepoService.fetchMarketItemsBySHA1Range(marketRepoMeta.getLastSHA1(),
-        lastGHCommit.getSHA1());
-    Map<String, List<GitHubFile>> groupedGithubFiles = new HashMap<>();
+    List<GitHubFile> githubFileChanges = axonivyMarketRepoService
+        .fetchMarketItemsBySHA1Range(marketRepoMeta.getLastSHA1(), lastGHCommit.getSHA1());
+    Map<String, List<GitHubFile>> groupGithubFiles = new HashMap<>();
     for (var file : githubFileChanges) {
-      var filePath = file.getFileName();
-      var parentPath = filePath.replace(FileType.META.getFileName(), "").replace(FileType.LOGO.getFileName(), "");
-      var files = groupedGithubFiles.getOrDefault(parentPath, new ArrayList<>());
+      String filePath = file.getFileName();
+      var parentPath = filePath.replace(FileType.META.getFileName(), EMPTY).replace(FileType.LOGO.getFileName(), EMPTY);
+      var files = groupGithubFiles.getOrDefault(parentPath, new ArrayList<>());
       files.add(file);
-      groupedGithubFiles.putIfAbsent(parentPath, files);
+      groupGithubFiles.putIfAbsent(parentPath, files);
     }
 
-    for (var parentPath : groupedGithubFiles.keySet()) {
-      var files = groupedGithubFiles.get(parentPath);
-      for (var file : files) {
+    groupGithubFiles.entrySet().forEach(ghFileEntity -> {
+      for (var file : ghFileEntity.getValue()) {
         Product product = new Product();
-        var fileContent = githubMarketRepoService.getGHContent(file.getFileName());
+        GHContent fileContent;
+        try {
+          fileContent = githubService.getGHContent(axonivyMarketRepoService.getRepository(), file.getFileName());
+        } catch (IOException e) {
+          log.error("Get GHContent failed: ", e);
+          continue;
+        }
+
         ProductFactory.mappingByGHContent(product, fileContent);
+        updateLatestReleaseDateForProduct(product);
         if (FileType.META == file.getType()) {
           modifyProductByMetaContent(file, product);
         } else {
-          modifyProductLogo(parentPath, file, product, fileContent);
+          modifyProductLogo(ghFileEntity.getKey(), file, product, fileContent);
         }
       }
-    }
+    });
   }
 
   private void modifyProductLogo(String parentPath, GitHubFile file, Product product, GHContent fileContent) {
     Product result = null;
     switch (file.getStatus()) {
     case MODIFIED, ADDED:
-      result = productRepo.findByMarketDirectoryRegex(parentPath);
+      result = productRepository.findByMarketDirectoryRegex(parentPath);
       if (result != null) {
         result.setLogoUrl(GithubUtils.getDownloadUrl(fileContent));
-        productRepo.save(result);
+        productRepository.save(result);
       }
       break;
     case REMOVED:
-      result = productRepo.findByLogoUrl(product.getLogoUrl());
+      result = productRepository.findByLogoUrl(product.getLogoUrl());
       if (result != null) {
-        productRepo.deleteById(result.getKey());
+        productRepository.deleteById(result.getId());
       }
       break;
     default:
@@ -129,10 +172,10 @@ public class ProductServiceImpl implements ProductService {
   private void modifyProductByMetaContent(GitHubFile file, Product product) {
     switch (file.getStatus()) {
     case MODIFIED, ADDED:
-      productRepo.save(product);
-    break;
+      productRepository.save(product);
+      break;
     case REMOVED:
-      productRepo.deleteById(product.getKey());
+      productRepository.deleteById(product.getId());
       break;
     default:
       break;
@@ -142,7 +185,7 @@ public class ProductServiceImpl implements ProductService {
   private Pageable refinePagination(Pageable pageable) {
     PageRequest pageRequest = (PageRequest) pageable;
     if (pageable != null && pageable.getSort() != null) {
-      List<Order> orders = new ArrayList<Sort.Order>();
+      List<Order> orders = new ArrayList<>();
       for (var sort : pageable.getSort()) {
         final SortOption sortOption = SortOption.of(sort.getProperty());
         Order order = new Order(sort.getDirection(), sortOption.getCode());
@@ -156,37 +199,54 @@ public class ProductServiceImpl implements ProductService {
   private boolean isLastGithubCommitCovered() {
     boolean isLastCommitCovered = false;
     long lastCommitTime = 0l;
-    marketRepoMeta = repoMetaRepository.findByRepoName(GitHubConstants.AXONIVY_MARKETPLACE_REPO_NAME);
+    marketRepoMeta = githubRepoMetaRepository.findByRepoName(GitHubConstants.AXONIVY_MARKETPLACE_REPO_NAME);
     if (marketRepoMeta != null) {
       lastCommitTime = marketRepoMeta.getLastChange();
     }
-    lastGHCommit = githubMarketRepoService.getLastCommit(lastCommitTime);
-    if (lastGHCommit != null && marketRepoMeta != null && lastGHCommit.getSHA1().equals(marketRepoMeta.getLastSHA1())) {
+    lastGHCommit = axonivyMarketRepoService.getLastCommit(lastCommitTime);
+    if (lastGHCommit != null && marketRepoMeta != null
+        && StringUtils.equals(lastGHCommit.getSHA1(), marketRepoMeta.getLastSHA1())) {
       isLastCommitCovered = true;
     }
     return isLastCommitCovered;
   }
 
   private Page<Product> syncProductsFromGithubRepo() {
-    var githubContentMap = githubMarketRepoService.fetchAllMarketItems();
+    var githubContentMap = axonivyMarketRepoService.fetchAllMarketItems();
     List<Product> products = new ArrayList<>();
-    for (var contentKey : githubContentMap.keySet()) {
+    githubContentMap.entrySet().forEach(ghContentEntity -> {
       Product product = new Product();
-      for (var content : githubContentMap.get(contentKey)) {
+      for (var content : ghContentEntity.getValue()) {
         ProductFactory.mappingByGHContent(product, content);
+        updateLatestReleaseDateForProduct(product);
       }
       products.add(product);
+    });
+    if (!products.isEmpty()) {
+      productRepository.saveAll(products);
     }
-    productRepo.saveAll(products);
-    return new PageImpl<Product>(products);
+    return new PageImpl<>(products);
   }
 
-  @Override
-  public Page<Product> searchProducts(String keyword, Pageable pageable) {
-    Pageable unifiedPageabe = refinePagination(pageable);
-    if (StringUtils.isBlank(keyword)) {
-      return productRepo.findAll(pageable);
+  private void updateLatestReleaseDateForProduct(Product product) {
+    if (StringUtils.isBlank(product.getRepositoryName())) {
+      return;
     }
-    return productRepo.findByNameOrShortDescriptionRegex(keyword, unifiedPageabe);
+    try {
+      GHRepository productRepo = githubService.getRepository(product.getRepositoryName());
+      GHTag lastTag = CollectionUtils.firstElement(productRepo.listTags().toList());
+      product.setNewestPublishDate(lastTag.getCommit().getCommitDate());
+      product.setNewestReleaseVersion(lastTag.getName());
+    } catch (Exception e) {
+      log.error("Cannot find repository by path {} {}", product.getRepositoryName(), e);
+    }
+  }
+
+  private Page<Product> searchProducts(FilterType filterType, String keyword, Pageable pageable) {
+    Pageable unifiedPageabe = refinePagination(pageable);
+    if (FilterType.ALL == filterType) {
+      return productRepository.searchByNameOrShortDescriptionRegex(keyword, unifiedPageabe);
+    }
+    return productRepository.searchByKeywordAndType(keyword, filterType.getCode(), unifiedPageabe);
   }
 }

@@ -2,14 +2,15 @@ package com.axonivy.market.enums;
 
 import org.apache.commons.lang3.StringUtils;
 
-import com.axonivy.market.exceptions.NotFoundException;
+import com.axonivy.market.exceptions.model.NotFoundException;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
+
 @Getter
 @AllArgsConstructor
 public enum SortOption {
-  Popularity("popularity", "installationCount"), Alphabetically("alphabetically", "name"), Recent("recent", "newestPublishDate");
+  POPULARITY("popularity", "installationCount"), ALPHABETICALLY("alphabetically", "name"), RECENT("recent", "newestPublishDate");
 
   private String option;
   private String code;

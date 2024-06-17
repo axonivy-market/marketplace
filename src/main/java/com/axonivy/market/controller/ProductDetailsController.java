@@ -18,20 +18,10 @@ import static com.axonivy.market.constants.RequestMappingConstants.PRODUCT_DETAI
 public class ProductDetailsController {
     private final VersionService service;
 
-    public ProductDetailsController(VersionService service) {
-        this.service = service;
-    }
 
-    @GetMapping("/{productId}/versions")
-    public ResponseEntity<List<MavenArtifactVersionModel>> fecthAllVersionFromProduct(@PathVariable(required = true) String productId,
-                                                                                      @RequestParam(required = false, value = "showDevVersion") Boolean isDevVersionsDisplayed,
-                                                                                      @RequestParam(required = false, value = "designerVersion") String designerVersion) throws IOException {
-        return new ResponseEntity<>(service.getArtifactsAndVersionToDisplay(productId, isDevVersionsDisplayed, designerVersion), HttpStatus.OK);
-    }
-
-    @GetMapping("/{key}")
-    public Object findProduct(@PathVariable("key") String key,
-                              @RequestParam(name = "type", required = false) String type) {
-        return new ResponseEntity<Object>(HttpStatus.NOT_FOUND);
-    }
+  @GetMapping("/{id}")
+  public ResponseEntity<Object> findProduct(@PathVariable("id") String key,
+      @RequestParam(name = "type", required = false) String type) {
+    return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+  }
 }
