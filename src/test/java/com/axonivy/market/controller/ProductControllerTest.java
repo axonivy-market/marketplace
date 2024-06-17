@@ -79,6 +79,7 @@ class ProductControllerTest {
     when(pagedResourcesAssembler.toModel(any(), any(ProductModelAssembler.class))).thenReturn(mockPagedModel);
     var result = productController.findProducts(FilterType.ALL.getOption(), null, pageable);
     assertEquals(HttpStatus.OK, result.getStatusCode());
+    assertTrue(result.hasBody());
     assertEquals(1, result.getBody().getContent().size());
     assertEquals(PRODUCT_NAME_SAMPLE, result.getBody().getContent().iterator().next().getName());
   }
