@@ -29,5 +29,6 @@ public class MarketHeaderInterceptor implements HandlerInterceptor {
     if (!requestHeader.equals(request.getHeader(CommonConstants.REQUESTED_BY))) {
       throw new MissingHeaderException();
     }
+    return true;
   }
 }

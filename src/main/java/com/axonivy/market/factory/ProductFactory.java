@@ -20,42 +20,18 @@ import lombok.NoArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 
 
-import static org.apache.commons.lang3.StringUtils.EMPTY;
 
 
 @Log4j2
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
-public static class ProductFactory {
+public class ProductFactory {
 
   private static final ObjectMapper MAPPER = new ObjectMapper();
 
   public static Product mappingByGHContent(Product product, GHContent content) {
     var contentName = content.getName();
-    if (contentName.endsWith(META_FILE)) {
-      mappingByMetaJsonFile(product, content);
-    }
-    if (contentName.endsWith(LOGO_FILE)) {
-      product.setLogoUrl(GithubUtils.getDownloadUrl(content));
-    }
-    return product;
-
-
-  public static Product mappingByGHContent(Product product, GHContent content) {
-    var contentName = content.getName();
-    if (contentName.endsWith(META_FILE)) {
-      ProductFactory.mappingByMetaJson(product, content);
-    }
-    if (contentName.endsWith(LOGO_FILE)) {
-      product.setLogoUrl(GithubUtils.getDownloadUrl(content));
-    }
-    return product;
-  }
-      return product;
-    }
-
-    var contentName = content.getName();
     if (StringUtils.endsWith(contentName, META_FILE)) {
-      mappingByMetaJSONFile(product, content);
+    mappingByMetaJSONFile(product, content);
     }
     if (StringUtils.endsWith(contentName, LOGO_FILE)) {
       product.setLogoUrl(GithubUtils.getDownloadUrl(content));

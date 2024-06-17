@@ -67,74 +67,73 @@ public class GHAxonIvyMarketRepoServiceImpl implements GHAxonIvyMarketRepoServic
                     extractFileInDirectoryContent(childContent, ghContentMap);
                 }
             }
-
-            @Override
-            public GHCommit getLastCommit ( long lastCommitTime){
-                if (lastCommitTime == 0l) {
-                    lastCommitTime = INITIAL_COMMIT_DATE.atZone(ZoneId.systemDefault()).toEpochSecond();
-                }
-                try {
-                    GHCommitQueryBuilder commitBuilder = createQueryCommitsBuilder(lastCommitTime);
-                    return GithubUtils.mapPagedIteratorToList(commitBuilder.list()).stream().findFirst().orElse(null);
-                } catch (Exception e) {
-                    log.error("Cannot query GHCommit: ", e);
-                }
-                return null;
-            }
-
-            private GHCommitQueryBuilder createQueryCommitsBuilder (
-            long lastCommitTime){
-                return getRepository().queryCommits().since(lastCommitTime).from(DEFAULT_BRANCH);
-            }
-
-            @Override
-            public List<GitHubFile> fetchMarketItemsBySHA1Range (String
-            fromSHA1, String toSHA1){
-                Map<String, GitHubFile> githubFileMap = new HashMap<>();
-
-                try {
-                    GHCompare compareResult = getRepository().getCompare(fromSHA1, toSHA1);
-                    for (var commit : GithubUtils.mapPagedIteratorToList(compareResult.listCommits())) {
-                        var listFiles = commit.listFiles();
-                        if (listFiles == null) {
-                            continue;
-                        }
-                        GithubUtils.mapPagedIteratorToList(listFiles).forEach(file -> {
-                            String fullPathName = file.getFileName();
-                            if (FileType.of(fullPathName) != null) {
-                                var githubFile = new GitHubFile();
-                                githubFile.setFileName(fullPathName);
-                                githubFile.setPath(file.getRawUrl().getPath());
-                                githubFile.setStatus(FileStatus.of(file.getStatus()));
-                                githubFile.setType(FileType.of(fullPathName));
-                                githubFile.setPreviousFilename(file.getPreviousFilename());
-                                githubFileMap.put(fullPathName, githubFile);
-                            }
-                        });
-                    }
-                } catch (IOException e) {
-                    log.error("Cannot get GH compare: ", e);
-                }
-                return new ArrayList<>(githubFileMap.values());
-            }
-
-            private GHOrganization getOrganization () throws IOException {
-                if (organization == null) {
-                    organization = githubService.getOrganization(GitHubConstants.AXONIVY_MARKET_ORGANIZATION_NAME);
-                }
-                return organization;
-            }
-
-            @Override
-            public GHRepository getRepository () {
-                if (repository == null) {
-                    try {
-                        repository = getOrganization().getRepository(GitHubConstants.AXONIVY_MARKETPLACE_REPO_NAME);
-                    } catch (IOException e) {
-                        log.error("Get AxonIvy Market repo failed: ", e);
-                    }
-                }
-                return repository;
-            }
-
         }
+    }
+
+    @Override
+    public GHCommit getLastCommit(long lastCommitTime) {
+        if (lastCommitTime == 0l) {
+            lastCommitTime = INITIAL_COMMIT_DATE.atZone(ZoneId.systemDefault()).toEpochSecond();
+        }
+        try {
+            GHCommitQueryBuilder commitBuilder = createQueryCommitsBuilder(lastCommitTime);
+            return GithubUtils.mapPagedIteratorToList(commitBuilder.list()).stream().findFirst().orElse(null);
+        } catch (Exception e) {
+            log.error("Cannot query GHCommit: ", e);
+        }
+        return null;
+    }
+
+    private GHCommitQueryBuilder createQueryCommitsBuilder(long lastCommitTime) {
+        return getRepository().queryCommits().since(lastCommitTime).from(DEFAULT_BRANCH);
+    }
+
+    @Override
+    public List<GitHubFile> fetchMarketItemsBySHA1Range(String fromSHA1, String toSHA1) {
+        Map<String, GitHubFile> githubFileMap = new HashMap<>();
+        try {
+            GHCompare compareResult = getRepository().getCompare(fromSHA1, toSHA1);
+            for (var commit : GithubUtils.mapPagedIteratorToList(compareResult.listCommits())) {
+                var listFiles = commit.listFiles();
+                if (listFiles == null) {
+                    continue;
+                }
+                GithubUtils.mapPagedIteratorToList(listFiles).forEach(file -> {
+                    String fullPathName = file.getFileName();
+                    if (FileType.of(fullPathName) != null) {
+                        var githubFile = new GitHubFile();
+                        githubFile.setFileName(fullPathName);
+                        githubFile.setPath(file.getRawUrl().getPath());
+                        githubFile.setStatus(FileStatus.of(file.getStatus()));
+                        githubFile.setType(FileType.of(fullPathName));
+                        githubFile.setPreviousFilename(file.getPreviousFilename());
+                        githubFileMap.put(fullPathName, githubFile);
+                    }
+                });
+            }
+        } catch (IOException e) {
+            log.error("Cannot get GH compare: ", e);
+        }
+        return new ArrayList<>(githubFileMap.values());
+    }
+
+    private GHOrganization getOrganization() throws IOException {
+        if (organization == null) {
+            organization = githubService.getOrganization(GitHubConstants.AXONIVY_MARKET_ORGANIZATION_NAME);
+        }
+        return organization;
+    }
+
+    @Override
+    public GHRepository getRepository() {
+        if (repository == null) {
+            try {
+                repository = getOrganization().getRepository(GitHubConstants.AXONIVY_MARKETPLACE_REPO_NAME);
+            } catch (IOException e) {
+                log.error("Get AxonIvy Market repo failed: ", e);
+            }
+        }
+        return repository;
+    }
+
+}

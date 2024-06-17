@@ -1,31 +1,27 @@
 package com.axonivy.market.github.service.impl;
 
 import com.axonivy.market.constants.GitHubConstants;
-import com.axonivy.market.constants.MavenConstants;
 import com.axonivy.market.constants.ProductJsonConstants;
 import com.axonivy.market.github.model.MavenArtifact;
-import com.axonivy.market.github.service.AbstractGithubService;
 import com.axonivy.market.github.service.GHAxonIvyProductRepoService;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.log4j.Log4j2;
-import org.apache.commons.lang3.StringUtils;
 import org.kohsuke.github.GHContent;
 import org.kohsuke.github.GHOrganization;
 import org.kohsuke.github.GHTag;
 import org.springframework.stereotype.Service;
 
-import com.axonivy.market.constants.GitHubConstants;
-import com.axonivy.market.github.service.GHAxonIvyProductRepoService;
 import com.axonivy.market.github.service.GithubService;
 
-import lombok.extern.log4j.Log4j2;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 @Log4j2
 @Service
 public class GHAxonIvyProductRepoServiceImpl implements GHAxonIvyProductRepoService {
   private GHOrganization organization;
-
   private final GithubService githubService;
 
   public GHAxonIvyProductRepoServiceImpl(GithubService githubService) {
