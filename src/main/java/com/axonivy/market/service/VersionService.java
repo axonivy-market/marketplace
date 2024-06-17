@@ -1,9 +1,6 @@
 package com.axonivy.market.service;
 
-import com.axonivy.market.github.model.MavenArtifact;
 import com.axonivy.market.model.MavenArtifactVersionModel;
-
-import java.io.IOException;
 import java.util.List;
 
 public interface VersionService {

@@ -66,9 +66,30 @@ public class VersionServiceImplTest {
         ReflectionTestUtils.setField(versionService, "metaProductArtifact", metaProductArtifact);
     }
 
+    private void setUpArtifactFromMeta() {
+        String repoUrl = "https://maven.axonivy.com";
+        String groupId = "com.axonivy.connector.adobe.acrobat.sign";
+        String artifactId = "adobe-acrobat-sign-connector";
+        metaProductArtifact.setGroupId(groupId);
+        metaProductArtifact.setArtifactId(artifactId);
+        metaProductArtifact.setIsProductArtifact(true);
+        MavenArtifact additionalMavenArtifact = new MavenArtifact(repoUrl, "", groupId, artifactId, "", null, null, null);
+        artifactsFromMeta.add(metaProductArtifact);
+        artifactsFromMeta.add(additionalMavenArtifact);
+    }
+
     @Test
     public void testGetArtifactsAndVersionToDisplay() {
-        Assertions.assertEquals("", "");
+        String productId="adobe-acrobat-sign-connector";
+        setUpArtifactFromMeta();
+        when(versionService.getProductMetaArtifacts(Mockito.anyString())).thenReturn(artifactsFromMeta);
+        when(versionService.getVersionsToDisplay(Mockito.anyBoolean(), Mockito.anyString())).thenReturn(List.of("10.0.10"));
+        when(mavenArtifactVersionRepository.findById(Mockito.anyString())).thenReturn(Optional.ofNullable(null));
+        ArrayList<MavenArtifactModel> artifactsInVersion = new ArrayList<>();
+        artifactsInVersion.add(new MavenArtifactModel());
+        when(versionService.convertMavenArtifactsToModels(Mockito.anyList(), Mockito.anyString())).thenReturn(artifactsInVersion);
+        Assertions.assertEquals(1,versionService.getArtifactsAndVersionToDisplay(productId,false, "10.0.10").size());
+        versionService.getArtifactsAndVersionToDisplay(productId,false, "10.0.10");
     }
 
     @Test
@@ -125,28 +146,24 @@ public class VersionServiceImplTest {
 
     @Test
     public void testSanitizeMetaArtifactBeforeHandle() {
-        String repoUrl = "https://maven.axonivy.com";
+        setUpArtifactFromMeta();
         String groupId = "com.axonivy.connector.adobe.acrobat.sign";
-        String artifactId = "adobe-acrobat-sign-connector";
         String archivedArtifactId1 = "adobe-acrobat-sign-connector";
         String archivedArtifactId2 = "adobe-acrobat-sign-connector";
-        metaProductArtifact.setGroupId(groupId);
-        metaProductArtifact.setArtifactId(artifactId);
-        metaProductArtifact.setIsProductArtifact(true);
-        MavenArtifact additionalMavenArtifact = new MavenArtifact(repoUrl, "", groupId, artifactId, "", null, null, null);
         ArchivedArtifact archivedArtifact1 = new ArchivedArtifact("10.0.10", groupId, archivedArtifactId1);
         ArchivedArtifact archivedArtifact2 = new ArchivedArtifact("10.0.20", groupId, archivedArtifactId2);
-        additionalMavenArtifact.setArchivedArtifacts(List.of(archivedArtifact2, archivedArtifact1));
-        artifactsFromMeta.add(metaProductArtifact);
-        artifactsFromMeta.add(additionalMavenArtifact);
+        artifactsFromMeta.get(1).setArchivedArtifacts(List.of(archivedArtifact2, archivedArtifact1));
 
         versionService.sanitizeMetaArtifactBeforeHandle();
+        String artifactId = "adobe-acrobat-sign-connector";
 
         Assertions.assertEquals(1, artifactsFromMeta.size());
         Assertions.assertEquals(1, archivedArtifactsMap.size());
         Assertions.assertEquals(2, archivedArtifactsMap.get(artifactId).size());
         Assertions.assertEquals(archivedArtifact1, archivedArtifactsMap.get(artifactId).get(0));
     }
+
+
 
     //TODO: test sorting again
     @Test

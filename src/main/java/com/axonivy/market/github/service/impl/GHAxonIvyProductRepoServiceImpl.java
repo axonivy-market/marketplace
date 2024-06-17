@@ -33,10 +33,10 @@ public class GHAxonIvyProductRepoServiceImpl implements GHAxonIvyProductRepoServ
     public List<MavenArtifact> convertProductJsonToMavenProductInfo(GHContent content) throws IOException {
         ObjectMapper objectMapper = new ObjectMapper();
         List<MavenArtifact> artifacts = new ArrayList<>();
-        if (Objects.isNull(content) || Objects.isNull(content.getContent())) {
+        if (Objects.isNull(content) || Objects.isNull(content.read())) {
             return artifacts;
         }
-        JsonNode rootNode = objectMapper.readTree(content.getContent());
+        JsonNode rootNode = objectMapper.readTree(content.read());
 
         JsonNode installersNode = rootNode.path(ProductJsonConstants.INSTALLERS);
 
