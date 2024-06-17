@@ -15,6 +15,7 @@ import com.axonivy.market.service.VersionService;
 import com.axonivy.market.utils.ArchivedArtifactsComparator;
 import com.axonivy.market.utils.LatestVersionComparator;
 import com.axonivy.market.utils.XmlReaderUtils;
+import lombok.Getter;
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -29,12 +30,18 @@ import java.util.stream.Stream;
 
 @Log4j2
 @Service
+@Getter
 public class VersionServiceImpl implements VersionService {
 
 
     private final GHAxonIvyProductRepoService gitHubService;
     private final MavenArtifactVersionRepository mavenArtifactVersionRepository;
     private final ProductRepository productRepository;
+
+    public String getRepoName() {
+        return repoName;
+    }
+
     private String repoName;
     private final Map<String, List<ArchivedArtifact>> archivedArtifactsMap = new HashMap<>();
     private List<MavenArtifact> artifactsFromMeta;
@@ -101,7 +108,8 @@ public class VersionServiceImpl implements VersionService {
     public void sanitizeMetaArtifactBeforeHandle() {
         artifactsFromMeta.remove(metaProductArtifact);
         artifactsFromMeta.forEach(artifact -> {
-            List<ArchivedArtifact> archivedArtifacts = new ArrayList<>(artifact.getArchivedArtifacts().stream().sorted(new ArchivedArtifactsComparator()).toList());
+            List<ArchivedArtifact> archivedArtifacts = new ArrayList<>(Optional.ofNullable(artifact.getArchivedArtifacts())
+                    .orElse(Collections.emptyList()).stream().sorted(new ArchivedArtifactsComparator()).toList());
             Collections.reverse(archivedArtifacts);
             archivedArtifactsMap.put(artifact.getArtifactId(), archivedArtifacts);
         });
@@ -111,14 +119,13 @@ public class VersionServiceImpl implements VersionService {
     public List<String> getVersionsToDisplay(Boolean isShowDevVersion, String designerVersion) {
         List<String> versions = getVersionsFromMavenArtifacts();
         Stream<String> versionStream = versions.stream();
-        List<String> availableVersionsFromMaven = versions.stream().filter(this::isReleasedVersion).sorted(new LatestVersionComparator()).toList();
         if (BooleanUtils.isTrue(isShowDevVersion)) {
             return versionStream.filter(version -> isReleasedVersionOrUnReleaseDevVersion(versions, version)).sorted(new LatestVersionComparator()).toList();
         }
         if (StringUtils.isNotBlank(designerVersion)) {
             return versionStream.filter(version -> isMatchWithDesignerVersion(version, designerVersion)).toList();
         }
-        return availableVersionsFromMaven;
+        return versions.stream().filter(this::isReleasedVersion).sorted(new LatestVersionComparator()).toList();
     }
 
     public List<String> getVersionsFromMavenArtifacts() {
