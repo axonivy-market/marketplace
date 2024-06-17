@@ -1,6 +1,7 @@
 package com.axonivy.market.utils;
 
 import lombok.extern.log4j.Log4j2;
+import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
@@ -28,8 +29,13 @@ public class XmlReaderUtils {
 
     public static List<String> readXMLFromUrl(String url) {
         List<String> versions = new ArrayList<>();
+        try {
+
         String xmlData = new RestTemplate().getForObject(url, String.class);
         extractVersions(xmlData, versions);
+        } catch (HttpClientErrorException e) {
+            log.error(e.getMessage());
+        }
         return versions;
     }
 
