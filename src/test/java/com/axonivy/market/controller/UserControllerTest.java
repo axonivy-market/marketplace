@@ -21,7 +21,7 @@ class UserControllerTest {
 
   @Test
   void testGetAllUser() {
-    var result = userController.getAllUser();
+    var result = userController.getAllUsers();
     assertNotEquals(null, result);
   }
 }

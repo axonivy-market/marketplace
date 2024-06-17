@@ -28,8 +28,7 @@ class UserServiceImplTest {
     // Mock data and service
     User mockUser = new User();
     mockUser.setId("123");
-    mockUser.setUsername("tvtTest");
-    mockUser.setPassword("12345");
+    mockUser.setName("tvtTest");
     List<User> mockResultReturn = List.of(mockUser);
     Mockito.when(userRepository.findAll()).thenReturn(mockResultReturn);
 

@@ -10,5 +10,6 @@ public class RequestMappingConstants {
   public static final String USER_MAPPING = "/user";
   public static final String PRODUCT = API + "/product";
   public static final String PRODUCT_DETAILS = API + "/product-details";
+  public static final String FEEDBACK = API + "/feedback";
   public static final String SWAGGER_URL = "/swagger-ui/index.html";
 }
