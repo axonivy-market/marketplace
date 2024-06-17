@@ -1,6 +1,7 @@
 package com.axonivy.market.controller;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 
@@ -61,6 +62,7 @@ class ProductControllerTest {
     when(pagedResourcesAssembler.toEmptyModel(any(), any())).thenReturn(PagedModel.empty());
     var result = productController.findProducts(FilterType.ALL.getOption(), null, pageable);
     assertEquals(HttpStatus.OK, result.getStatusCode());
+    assertTrue(result.hasBody());
     assertEquals(0, result.getBody().getContent().size());
   }
 
@@ -75,7 +77,6 @@ class ProductControllerTest {
     var mockProductModel = assembler.toModel(mockProduct);
     var mockPagedModel = PagedModel.of(List.of(mockProductModel), new PageMetadata(1, 0, 1));
     when(pagedResourcesAssembler.toModel(any(), any(ProductModelAssembler.class))).thenReturn(mockPagedModel);
-
     var result = productController.findProducts(FilterType.ALL.getOption(), null, pageable);
     assertEquals(HttpStatus.OK, result.getStatusCode());
     assertEquals(1, result.getBody().getContent().size());
