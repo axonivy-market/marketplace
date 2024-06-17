@@ -18,19 +18,38 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import lombok.extern.log4j.Log4j2;
-import org.apache.commons.lang3.StringUtils;
-import org.kohsuke.github.GHContent;
-import org.springframework.util.CollectionUtils;
+
 
 import static org.apache.commons.lang3.StringUtils.EMPTY;
 
 
 @Log4j2
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
-public class ProductFactory {
+public static class ProductFactory {
 
-    public static final String META_FILE = "meta.json";
-    public static final String LOGO_FILE = "logo.png";
+  private static final ObjectMapper MAPPER = new ObjectMapper();
+
+  public static Product mappingByGHContent(Product product, GHContent content) {
+    var contentName = content.getName();
+    if (contentName.endsWith(META_FILE)) {
+      mappingByMetaJsonFile(product, content);
+    }
+    if (contentName.endsWith(LOGO_FILE)) {
+      product.setLogoUrl(GithubUtils.getDownloadUrl(content));
+    }
+    return product;
+
+
+  public static Product mappingByGHContent(Product product, GHContent content) {
+    var contentName = content.getName();
+    if (contentName.endsWith(META_FILE)) {
+      ProductFactory.mappingByMetaJson(product, content);
+    }
+    if (contentName.endsWith(LOGO_FILE)) {
+      product.setLogoUrl(GithubUtils.getDownloadUrl(content));
+    }
+    return product;
+  }
       return product;
     }
 
