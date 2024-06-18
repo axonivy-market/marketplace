@@ -1,5 +1,6 @@
 package com.axonivy.market.utils;
 
+import com.axonivy.market.constants.MavenConstants;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
@@ -21,16 +22,17 @@ import java.util.Optional;
 
 @Log4j2
 public class XmlReaderUtils {
-
-    private static final String VERSION_PATH = "//versions/version/text()";
     private static final RestTemplate restTemplate = new RestTemplate();
+
+    private XmlReaderUtils() {
+    }
 
     public static List<String> readXMLFromUrl(String url) {
         List<String> versions = new ArrayList<>();
         try {
 
-        String xmlData = restTemplate.getForObject(url, String.class);
-        extractVersions(xmlData, versions);
+            String xmlData = restTemplate.getForObject(url, String.class);
+            extractVersions(xmlData, versions);
         } catch (HttpClientErrorException e) {
             log.error(e.getMessage());
         }
@@ -43,7 +45,7 @@ public class XmlReaderUtils {
             Document document = builder.parse(new InputSource(new StringReader(xmlData)));
 
             XPath xpath = XPathFactory.newInstance().newXPath();
-            XPathExpression expr = xpath.compile(VERSION_PATH);
+            XPathExpression expr = xpath.compile(MavenConstants.VERSION_PATH_FROM_METADATA_FILE);
 
             Object result = expr.evaluate(document, XPathConstants.NODESET);
             NodeList versionNodes = (NodeList) result;
