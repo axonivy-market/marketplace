@@ -19,6 +19,7 @@ import java.util.Date;
 public class FeedbackModel extends RepresentationModel<FeedbackModel> {
     private String id;
     private String userId;
+    private String productId;
     private String content;
     private Integer rating;
     private Date createdAt;

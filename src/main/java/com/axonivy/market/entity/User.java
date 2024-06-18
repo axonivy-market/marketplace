@@ -5,6 +5,7 @@ import static com.axonivy.market.constants.EntityConstants.USER;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import lombok.Getter;
@@ -25,7 +26,9 @@ public class User implements Serializable {
     @Id
     private String id;
 
+    @Indexed(unique = true)
     private String githubId;
+
     private String name;
     private String avatarUrl;
 

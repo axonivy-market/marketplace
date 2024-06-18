@@ -27,6 +27,7 @@ public class FeedbackModelAssembler extends RepresentationModelAssemblerSupport<
   private FeedbackModel createResource(FeedbackModel model, Feedback feedback) {
     model.setId(feedback.getId());
     model.setUserId(feedback.getUserId());
+    model.setProductId(feedback.getProductId());
     model.setContent(feedback.getContent());
     model.setRating(feedback.getRating());
     model.setCreatedAt(feedback.getCreatedAt());
