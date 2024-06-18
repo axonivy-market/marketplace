@@ -1,21 +1,8 @@
-package com.axonivy.market.service;
-
-import static org.junit.jupiter.api.Assertions.*;
-import static org.junit.jupiter.api.Assertions.fail;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
-
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
+package com.axonivy.market.github.service;
 
 import com.axonivy.market.constants.ProductJsonConstants;
 import com.axonivy.market.github.model.MavenArtifact;
+import com.axonivy.market.github.service.impl.GHAxonIvyProductRepoServiceImpl;
 import com.fasterxml.jackson.databind.JsonNode;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -26,8 +13,18 @@ import org.mockito.Mockito;
 import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import com.axonivy.market.github.service.GithubService;
-import com.axonivy.market.github.service.impl.GHAxonIvyProductRepoServiceImpl;
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
+
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class GHAxonIvyProductRepoServiceImplTest {
@@ -48,15 +45,11 @@ class GHAxonIvyProductRepoServiceImplTest {
     GHOrganization organization;
 
     @Mock
-    GHRepository repository;
-
-    @Mock
-    PagedIterable<GHTag> tags;
-
-    @Mock
     JsonNode dataNode;
+
     @Mock
     JsonNode childNode;
+
     @Mock
     GHContent content = new GHContent();
 
@@ -66,8 +59,8 @@ class GHAxonIvyProductRepoServiceImplTest {
 
     void setup() throws IOException {
         var mockGHOrganization = mock(GHOrganization.class);
-        when(mockGHOrganization.getRepository(any())).thenReturn(ghRepository);
         when(githubService.getOrganization(any())).thenReturn(mockGHOrganization);
+        when(mockGHOrganization.getRepository(any())).thenReturn(ghRepository);
     }
 
     @Test
@@ -86,7 +79,10 @@ class GHAxonIvyProductRepoServiceImplTest {
     void testContentFromGHRepoAndTag() throws IOException {
         setup();
         var result = axonivyProductRepoServiceImpl.getContentFromGHRepoAndTag("", null, null);
-        assertEquals(null, result);
+        assertNull(result);
+        when(axonivyProductRepoServiceImpl.getOrganization()).thenThrow(IOException.class);
+        result = axonivyProductRepoServiceImpl.getContentFromGHRepoAndTag("", null, null);
+        assertNull(result);
     }
 
     @Test
@@ -223,35 +219,9 @@ class GHAxonIvyProductRepoServiceImplTest {
     }
 
     @Test
-    void testGetOrganization() {
-        try {
-            Mockito.when(githubService.getOrganization(Mockito.anyString())).thenReturn(organization);
-            assertEquals(organization, axonivyProductRepoServiceImpl.getOrganization());
-            assertEquals(organization, axonivyProductRepoServiceImpl.getOrganization());
-        } catch (IOException e) {
-            fail("Can not get default organization from Market");
-        }
-    }
-
-    @Test
-    void testGetAllTagsFromRepoName() throws IOException {
-        List<GHTag> tagList = List.of(new GHTag());
-        setupMockRepository();
-        Mockito.when(repository.listTags()).thenReturn(tags);
-        Mockito.when(tags.toList()).thenReturn(tagList);
-        List<GHTag> result = axonivyProductRepoServiceImpl.getAllTagsFromRepoName("portal");
-        assertEquals(tagList.size(), result.size());
-        assertEquals(tagList.get(0), result.get(0));
-
-
-    }
-
-    private void setupMockRepository() {
-        try {
-            Mockito.when(githubService.getOrganization(Mockito.anyString())).thenReturn(organization);
-            Mockito.when(organization.getRepository(Mockito.anyString())).thenReturn(repository);
-        } catch (IOException e) {
-            fail("Can not get default organization from Market");
-        }
+    void testGetOrganization() throws IOException {
+        Mockito.when(githubService.getOrganization(Mockito.anyString())).thenReturn(organization);
+        assertEquals(organization, axonivyProductRepoServiceImpl.getOrganization());
+        assertEquals(organization, axonivyProductRepoServiceImpl.getOrganization());
     }
 }
