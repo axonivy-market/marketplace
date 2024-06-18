@@ -1,7 +1,6 @@
 package com.axonivy.market.utils;
 
 import lombok.extern.log4j.Log4j2;
-import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
@@ -21,6 +20,8 @@ import java.util.Optional;
 
 @Log4j2
 public class XmlReaderUtils {
+    private XmlReaderUtils() {
+    }
 
     private static final String VERSION_PATH = "//versions/version/text()";
     private static final RestTemplate restTemplate = new RestTemplate();
@@ -30,15 +31,15 @@ public class XmlReaderUtils {
         try {
             String xmlData = restTemplate.getForObject(url, String.class);
             extractVersions(xmlData, versions);
-        } catch (HttpClientErrorException | ParserConfigurationException |
-                 IOException | SAXException | XPathExpressionException e) {
+        } catch (Exception e) {
             log.error("Can not read the content from this url: {} {}", url, e);
         }
         return versions;
     }
 
     private static void extractVersions(String xmlData, List<String> versions) throws ParserConfigurationException, IOException, SAXException, XPathExpressionException {
-        DocumentBuilder builder = DocumentBuilderFactory.newInstance().newDocumentBuilder();
+        DocumentBuilderFactory builderFactory = DocumentBuilderFactory.newInstance();
+        DocumentBuilder builder = builderFactory.newDocumentBuilder();
         Document document = builder.parse(new InputSource(new StringReader(xmlData)));
         XPath xpath = XPathFactory.newInstance().newXPath();
         XPathExpression expr = xpath.compile(VERSION_PATH);
