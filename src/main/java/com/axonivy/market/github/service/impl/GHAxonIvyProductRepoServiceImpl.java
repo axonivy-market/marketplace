@@ -15,6 +15,7 @@ import org.springframework.stereotype.Service;
 import com.axonivy.market.github.service.GithubService;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -24,6 +25,9 @@ import java.util.Objects;
 public class GHAxonIvyProductRepoServiceImpl implements GHAxonIvyProductRepoService {
     private GHOrganization organization;
     private final GithubService githubService;
+    private String repoUrl;
+    private static final ObjectMapper objectMapper = new ObjectMapper();
+
 
     public GHAxonIvyProductRepoServiceImpl(GithubService githubService) {
         this.githubService = githubService;
@@ -31,12 +35,13 @@ public class GHAxonIvyProductRepoServiceImpl implements GHAxonIvyProductRepoServ
 
     @Override
     public List<MavenArtifact> convertProductJsonToMavenProductInfo(GHContent content) throws IOException {
-        ObjectMapper objectMapper = new ObjectMapper();
         List<MavenArtifact> artifacts = new ArrayList<>();
-        if (Objects.isNull(content) || Objects.isNull(content.read())) {
+        InputStream contentStream = extractedContentStream(content);
+        if (Objects.isNull(contentStream)) {
             return artifacts;
         }
-        JsonNode rootNode = objectMapper.readTree(content.read());
+
+        JsonNode rootNode = objectMapper.readTree(contentStream);
 
         JsonNode installersNode = rootNode.path(ProductJsonConstants.INSTALLERS);
 
@@ -45,30 +50,43 @@ public class GHAxonIvyProductRepoServiceImpl implements GHAxonIvyProductRepoServ
 
             // Extract repository URL
             JsonNode repositoriesNode = dataNode.path(ProductJsonConstants.REPOSITORIES);
-            String repoUrl = repositoriesNode.get(0).path(ProductJsonConstants.URL).asText();
+            repoUrl = repositoriesNode.get(0).path(ProductJsonConstants.URL).asText();
 
             // Process projects
             if (dataNode.has(ProductJsonConstants.PROJECTS)) {
-                JsonNode projectsNode = dataNode.path(ProductJsonConstants.PROJECTS);
-                for (JsonNode projectNode : projectsNode) {
-                    MavenArtifact artifact = createArtifactFromJsonNode(projectNode, repoUrl, false);
-                    artifacts.add(artifact);
-                }
+                extractMavenArtifactFromJsonNode(dataNode, false, artifacts);
             }
 
             // Process dependencies
             if (dataNode.has(ProductJsonConstants.DEPENDENCIES)) {
-                JsonNode dependenciesNode = dataNode.path(ProductJsonConstants.DEPENDENCIES);
-                for (JsonNode dependencyNode : dependenciesNode) {
-                    MavenArtifact artifact = createArtifactFromJsonNode(dependencyNode, repoUrl, true);
-                    artifacts.add(artifact);
-                }
+                extractMavenArtifactFromJsonNode(dataNode, true, artifacts);
             }
         }
         return artifacts;
     }
 
-    private MavenArtifact createArtifactFromJsonNode(JsonNode node, String repoUrl, boolean isDependency) {
+    public InputStream extractedContentStream(GHContent content) {
+        try {
+            return content.read();
+        } catch (IOException | NullPointerException e) {
+            log.warn("Can not read the current content: {}", e.getMessage());
+            return null;
+        }
+    }
+
+    public void extractMavenArtifactFromJsonNode(JsonNode dataNode, boolean isDependency, List<MavenArtifact> artifacts) {
+        String nodeName = ProductJsonConstants.PROJECTS;
+        if (isDependency) {
+            nodeName = ProductJsonConstants.DEPENDENCIES;
+        }
+        JsonNode dependenciesNode = dataNode.path(nodeName);
+        for (JsonNode dependencyNode : dependenciesNode) {
+            MavenArtifact artifact = createArtifactFromJsonNode(dependencyNode, repoUrl, isDependency);
+            artifacts.add(artifact);
+        }
+    }
+
+    public MavenArtifact createArtifactFromJsonNode(JsonNode node, String repoUrl, boolean isDependency) {
         MavenArtifact artifact = new MavenArtifact();
         artifact.setRepoUrl(repoUrl);
         artifact.setIsDependency(isDependency);
@@ -89,7 +107,7 @@ public class GHAxonIvyProductRepoServiceImpl implements GHAxonIvyProductRepoServ
         }
     }
 
-    private GHOrganization getOrganization() throws IOException {
+    public GHOrganization getOrganization() throws IOException {
         if (organization == null) {
             organization = githubService.getOrganization(GitHubConstants.AXONIVY_MARKET_ORGANIZATION_NAME);
         }

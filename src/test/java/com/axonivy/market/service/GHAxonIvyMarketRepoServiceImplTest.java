@@ -14,13 +14,9 @@ import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.kohsuke.github.*;
 import org.kohsuke.github.GHCommit.File;
-import org.kohsuke.github.GHCompare;
 import org.kohsuke.github.GHCompare.Commit;
-import org.kohsuke.github.GHContent;
-import org.kohsuke.github.GHOrganization;
-import org.kohsuke.github.GHRepository;
-import org.kohsuke.github.PagedIterable;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -48,6 +44,9 @@ class GHAxonIvyMarketRepoServiceImplTest {
 
   @Mock
   GithubService githubService;
+
+  @Mock
+  GitHub gitHub;
 
   @InjectMocks
   GHAxonIvyMarketRepoServiceImpl axonIvyMarketRepoServiceImpl;
