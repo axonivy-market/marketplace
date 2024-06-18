@@ -16,6 +16,4 @@ public interface GithubService {
     public List<GHContent> getDirectoryContent(GHRepository ghRepository, String path) throws IOException;
 
     public GHContent getGHContent(GHRepository ghRepository, String path) throws IOException;
-
-    public List<GHTag> getTagsFromRepo(String repositoryPath) throws IOException;
 }

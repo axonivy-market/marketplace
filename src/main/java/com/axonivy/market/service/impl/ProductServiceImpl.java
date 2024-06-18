@@ -131,7 +131,6 @@ public class ProductServiceImpl implements ProductService {
                 }
 
                 ProductFactory.mappingByGHContent(product, fileContent);
-                extractCompatibilityFromOldestTag(product);
                 updateLatestReleaseDateForProduct(product);
                 if (FileType.META == file.getType()) {
                     modifyProductByMetaContent(file, product);
@@ -166,7 +165,6 @@ public class ProductServiceImpl implements ProductService {
     private void modifyProductByMetaContent(GitHubFile file, Product product) {
         switch (file.getStatus()) {
             case MODIFIED, ADDED:
-                extractCompatibilityFromOldestTag(product);
                 productRepository.save(product);
                 break;
             case REMOVED:
@@ -213,7 +211,7 @@ public class ProductServiceImpl implements ProductService {
             Product product = new Product();
             for (var content : ghContentEntity.getValue()) {
                 ProductFactory.mappingByGHContent(product, content);
-//                extractCompatibilityFromOldestTag(product);
+                extractCompatibilityFromOldestTag(product);
                 updateLatestReleaseDateForProduct(product);
             }
             products.add(product);
@@ -238,14 +236,10 @@ public class ProductServiceImpl implements ProductService {
         }
     }
 
-    private void extractCompatibilityFromOldestTag(Product product) {
+    public void extractCompatibilityFromOldestTag(Product product) {
         try {
-            log.error("repo name  {}", product.getRepositoryName());
-            log.error("repo cpmp  {}", product.getCompatibility());
             if (StringUtils.isBlank(product.getCompatibility())) {
-                log.error("repo name1  {}", product.getRepositoryName());
                 GHRepository productRepo = githubService.getRepository(product.getRepositoryName());
-                log.error("repo name2  {}", productRepo);
                 GHTag oldestTag = CollectionUtils.lastElement(productRepo.listTags().toList());
                 if (oldestTag != null) {
                     String compatibility = getCompatibilityFromNumericTag(oldestTag);
@@ -285,7 +279,7 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
-    public ReadmeModel getReadmeContent(String productId, String tag) {
-        return axonivyProductRepoService.getReadmeContentsFromTag(productRepository.findById(productId).get().getRepositoryName(), tag);
+    public ReadmeModel getReadmeAndProductContentsFromTag(String productId, String tag) {
+        return axonivyProductRepoService.getReadmeAndProductContentsFromTag(productRepository.findById(productId).get().getRepositoryName(), tag);
     }
 }

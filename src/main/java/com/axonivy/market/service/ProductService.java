@@ -11,5 +11,5 @@ public interface ProductService {
 
     Product fetchProductDetail(String id, String type);
 
-    ReadmeModel getReadmeContent(String id, String tag);
+    ReadmeModel getReadmeAndProductContentsFromTag(String id, String tag);
 }

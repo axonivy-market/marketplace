@@ -30,8 +30,8 @@ public class ProductDetailsController {
     }
 
     @GetMapping("/{id}/readme")
-    public ResponseEntity<ReadmeModel> getReadmeContentOfProductTag(@PathVariable("id") String id, @RequestParam(name = "tag") String tag) {
-        var readme = service.getReadmeContent(id, tag);
+    public ResponseEntity<ReadmeModel> getReadmeAndProductContentsFromTag(@PathVariable("id") String id, @RequestParam(name = "tag") String tag) {
+        var readme = service.getReadmeAndProductContentsFromTag(id, tag);
         return new ResponseEntity<>(readme, HttpStatus.OK);
     }
 }

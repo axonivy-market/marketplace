@@ -2,6 +2,7 @@ package com.axonivy.market.controller;
 
 import static com.axonivy.market.constants.RequestMappingConstants.PRODUCT;
 
+import lombok.extern.log4j.Log4j2;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
@@ -21,6 +22,7 @@ import com.axonivy.market.service.ProductService;
 
 import io.swagger.v3.oas.annotations.Operation;
 
+@Log4j2
 @RestController
 @RequestMapping(PRODUCT)
 public class ProductController {

@@ -13,5 +13,5 @@ public interface GHAxonIvyProductRepoService {
 
     List<GHTag> getAllTagsFromRepoName(String repoName) throws IOException;
 
-    ReadmeModel getReadmeContentsFromTag(String repositoryName, String tag);
+    ReadmeModel getReadmeAndProductContentsFromTag(String repositoryName, String tag);
 }

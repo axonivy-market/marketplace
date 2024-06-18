@@ -25,6 +25,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.kohsuke.github.GHCommit;
 import org.kohsuke.github.GHContent;
+import org.kohsuke.github.GHTag;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -54,7 +55,7 @@ class ProductServiceImplTest {
   private static final String SAMPLE_PRODUCT_NAME = "amazon-comprehend";
   private static final long LAST_CHANGE_TIME = 1718096290000l;
   private static final Pageable PAGEABLE = PageRequest.of(0, 20,
-      Sort.by(SortOption.ALPHABETICALLY.getOption()).descending());
+          Sort.by(SortOption.ALPHABETICALLY.getOption()).descending());
   private static final String SHA1_SAMPLE = "35baa89091b2452b77705da227f1a964ecabc6c8";
   private String keyword;
   private Page<Product> mockResultReturn;
@@ -200,6 +201,66 @@ class ProductServiceImplTest {
     assertEquals(result, mockResultReturn);
     verify(productRepository).searchByNameOrShortDescriptionRegex(keyword, simplePageable);
   }
+
+  @Test
+  void extractCompatibilityFromOldestTag_shouldNotChangeCompatIfAlreadySet() {
+    Product product = new Product();
+    product.setCompatibility("1.0");
+    productService.extractCompatibilityFromOldestTag(product);
+    assertEquals("1.0", product.getCompatibility());
+  }
+
+//  @Test
+//  void extractCompatibilityFromOldestTag_shouldSetCompatibilityBasedOnOldestTag() throws IOException {
+//    Product product = new Product();
+//
+////    var mockTag = mock(GHTag.class);
+////    when(mockTag.getName()).thenReturn(DUMMY_TAG);
+////    when(listTags.toList()).thenReturn(List.of(mockTag));
+////    when(ghRepository.listTags()).thenReturn(listTags);
+////    var result = axonivyProductRepoServiceImpl.getAllTagsFromRepoName("");
+//
+//    GHRepository repo = mock(GHRepository.class);
+//    GHTag oldestTag = mock(GHTag.class);
+//    when(githubService.getRepository("Docker")).thenReturn(repo);
+//    when(repo.listTags()).thenReturn(Arrays.asList(oldestTag));
+//    when(oldestTag.getName()).thenReturn("v8");
+//    product.setRepositoryName("repoName");
+//    service.extractCompatibilityFromOldestTag(product);
+//    assertEquals("8.0+", product.getCompatibility());
+//  }
+//
+//  @Test
+//  void extractCompatibilityFromOldestTag_noTagsInRepo() throws IOException {
+//    Product product = new Product();
+//    GHRepository repo = mock(GHRepository.class);
+//    when(githubService.getRepository("repoName")).thenReturn(repo);
+//    when(repo.listTags()).thenReturn(Collections.emptyList());
+//    product.setRepositoryName("repoName");
+//    service.extractCompatibilityFromOldestTag(product);
+//    assertNull(product.getCompatibility());
+//  }
+//
+//  @Test
+//  void extractCompatibilityFromOldestTag_repositoryNotFound() throws IOException {
+//    Product product = new Product();
+//    product.setRepositoryName("repoName");
+//    when(githubService.getRepository("repoName")).thenThrow(new IOException());
+//    service.extractCompatibilityFromOldestTag(product);
+//    assertNull(product.getCompatibility());
+//  }
+//
+//  @Test
+//  void extractCompatibilityFromOldestTag_nonNumericTag() throws IOException {
+//    Product product = new Product();
+//    GHRepository repo = mock(GHRepository.class);
+//    GHTag oldestTag = mock(GHTag.class);
+//    when(githubService.getRepository("repoName")).thenReturn(repo);
+//    when(repo.listTags()).thenReturn(Arrays.asList(oldestTag));
+//    when(oldestTag.getName()).thenReturn("release_11.1_special");
+//    product.setRepositoryName("repoName");
+//
+//  }
 
   private Page<Product> createPageProductsMock() {
     var mockProducts = new ArrayList<Product>();

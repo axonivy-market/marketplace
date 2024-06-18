@@ -19,7 +19,6 @@ import org.springframework.stereotype.Service;
 
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import java.util.stream.Collectors;
 
 import com.axonivy.market.github.service.GithubService;
 
@@ -33,7 +32,6 @@ public class GHAxonIvyProductRepoServiceImpl implements GHAxonIvyProductRepoServ
     public static final String PRODUCT_FOLDER_SUFFIX = "-product";
     public static final String README_FILE = "README.md";
     public static final String PRODUCT_JSON_FILE = "product.json";
-    public static final String NON_NUMERIC_CHAR = "[^0-9.]";
 
     public GHAxonIvyProductRepoServiceImpl(GithubService githubService) {
         this.githubService = githubService;
@@ -62,11 +60,11 @@ public class GHAxonIvyProductRepoServiceImpl implements GHAxonIvyProductRepoServ
     }
 
     @Override
-    public ReadmeModel getReadmeContentsFromTag(String repoName, String tag) {
+    public ReadmeModel getReadmeAndProductContentsFromTag(String repoName, String tag) {
         ReadmeModel readmeModel = new ReadmeModel();
         try {
             List<GHContent> contents = getRepoContents(repoName, tag);
-            readmeModel.setTag(tag.replaceAll(NON_NUMERIC_CHAR, ""));
+            readmeModel.setTag(tag);
             getProductJsonContent(readmeModel, contents);
             Optional<GHContent> readmeFile = contents.stream()
                     .filter(GHContent::isFile)
@@ -133,7 +131,7 @@ public class GHAxonIvyProductRepoServiceImpl implements GHAxonIvyProductRepoServ
         return readmeContents;
     }
 
-    private void getExtractedPartsOfReadme(ReadmeModel readmeModel, String readmeContents) {
+    public void getExtractedPartsOfReadme(ReadmeModel readmeModel, String readmeContents) {
         String description = "";
         String setup = "";
         String demo = "";

@@ -16,7 +16,7 @@ public class ProductDetailModelAssembler extends RepresentationModelAssemblerSup
 
     @Override
     public ProductDetailModel toModel(Product product) {
-        ProductDetailModel model = createModelWithId(product.getId(), product);
+        ProductDetailModel model = createModelWithId(product.getId(), product, product.getType());
         model.setId(product.getId());
         model.setName(product.getName());
         model.setShortDescript(product.getShortDescription());

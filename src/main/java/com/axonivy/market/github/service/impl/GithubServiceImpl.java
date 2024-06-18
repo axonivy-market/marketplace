@@ -45,9 +45,4 @@ public class GithubServiceImpl implements GithubService {
         Assert.notNull(ghRepository, "Repository must not be null");
         return ghRepository.getFileContent(path);
     }
-
-    @Override
-    public List<GHTag> getTagsFromRepo(String repositoryPath) throws IOException {
-        return getRepository(repositoryPath).listTags().toList();
-    }
 }
