@@ -45,7 +45,7 @@ public class XmlReaderUtils {
             Document document = builder.parse(new InputSource(new StringReader(xmlData)));
 
             XPath xpath = XPathFactory.newInstance().newXPath();
-            XPathExpression expr = xpath.compile(MavenConstants.VERSION_PATH_FROM_METADATA_FILE);
+            XPathExpression expr = xpath.compile(MavenConstants.VERSION_EXTRACT_FORMAT_FROM_METADATA_FILE);
 
             Object result = expr.evaluate(document, XPathConstants.NODESET);
             NodeList versionNodes = (NodeList) result;
