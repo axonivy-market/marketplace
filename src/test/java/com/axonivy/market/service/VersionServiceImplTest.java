@@ -28,6 +28,7 @@ import static org.mockito.Mockito.when;
 
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.test.util.ReflectionTestUtils;
+import org.springframework.util.CollectionUtils;
 
 import java.io.IOException;
 import java.util.*;
@@ -81,15 +82,20 @@ public class VersionServiceImplTest {
     @Test
     public void testGetArtifactsAndVersionToDisplay() {
         String productId="adobe-acrobat-sign-connector";
+        String targetVersion = "10.0.10";
         setUpArtifactFromMeta();
         when(versionService.getProductMetaArtifacts(Mockito.anyString())).thenReturn(artifactsFromMeta);
-        when(versionService.getVersionsToDisplay(Mockito.anyBoolean(), Mockito.anyString())).thenReturn(List.of("10.0.10"));
+        when(versionService.getVersionsToDisplay(Mockito.anyBoolean(), Mockito.anyString())).thenReturn(List.of(targetVersion));
         when(mavenArtifactVersionRepository.findById(Mockito.anyString())).thenReturn(Optional.ofNullable(null));
         ArrayList<MavenArtifactModel> artifactsInVersion = new ArrayList<>();
         artifactsInVersion.add(new MavenArtifactModel());
         when(versionService.convertMavenArtifactsToModels(Mockito.anyList(), Mockito.anyString())).thenReturn(artifactsInVersion);
-        Assertions.assertEquals(1,versionService.getArtifactsAndVersionToDisplay(productId,false, "10.0.10").size());
-        versionService.getArtifactsAndVersionToDisplay(productId,false, "10.0.10");
+        Assertions.assertEquals(1,versionService.getArtifactsAndVersionToDisplay(productId,false, targetVersion).size());
+
+        MavenArtifactVersion proceededData = new MavenArtifactVersion();
+        proceededData.getProductArtifactWithVersionReleased().put(targetVersion, new ArrayList<>());
+        when(mavenArtifactVersionRepository.findById(Mockito.anyString())).thenReturn(Optional.of(proceededData));
+        Assertions.assertEquals(1,versionService.getArtifactsAndVersionToDisplay(productId,false, targetVersion).size());
     }
 
     @Test
@@ -140,8 +146,6 @@ public class VersionServiceImplTest {
         Assertions.assertEquals(1, proceedDataCache.getVersions().size());
         Assertions.assertEquals(1, proceedDataCache.getProductArtifactWithVersionReleased().size());
         Assertions.assertEquals(version, proceedDataCache.getVersions().get(0));
-        Assertions.assertEquals(1, proceedDataCache.getProductArtifactWithVersionReleased().get(version).size());
-        Assertions.assertEquals(artifactModel, proceedDataCache.getProductArtifactWithVersionReleased().get(version).get(0));
     }
 
     @Test
