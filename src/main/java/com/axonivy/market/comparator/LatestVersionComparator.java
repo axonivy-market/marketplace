@@ -1,4 +1,4 @@
-package com.axonivy.market.utils;
+package com.axonivy.market.comparator;
 
 import java.util.Comparator;
 
