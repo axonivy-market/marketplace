@@ -29,6 +29,8 @@ public class User implements Serializable {
     @Indexed(unique = true)
     private String githubId;
 
+    private String provider;
+    private String username;
     private String name;
     private String avatarUrl;
 
