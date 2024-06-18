@@ -72,7 +72,7 @@ public class ProductFactory {
     return path.replace(ghContent.getName(), EMPTY);
   }
 
-  private static void extractSourceUrl(Product product, Meta meta) {
+  public static void extractSourceUrl(Product product, Meta meta) {
     var sourceUrl = meta.getSourceUrl();
     if (StringUtils.isBlank(sourceUrl)) {
       return;

@@ -33,15 +33,9 @@ import java.util.stream.Stream;
 @Getter
 public class VersionServiceImpl implements VersionService {
 
-
     private final GHAxonIvyProductRepoService gitHubService;
     private final MavenArtifactVersionRepository mavenArtifactVersionRepository;
     private final ProductRepository productRepository;
-
-    public String getRepoName() {
-        return repoName;
-    }
-
     private String repoName;
     private final Map<String, List<ArchivedArtifact>> archivedArtifactsMap = new HashMap<>();
     private List<MavenArtifact> artifactsFromMeta;
@@ -49,6 +43,9 @@ public class VersionServiceImpl implements VersionService {
     private MavenArtifact metaProductArtifact;
     private final LatestVersionComparator latestVersionComparator = new LatestVersionComparator();
 
+    public String getRepoName() {
+        return repoName;
+    }
 
     public VersionServiceImpl(GHAxonIvyProductRepoService gitHubService, MavenArtifactVersionRepository mavenArtifactVersionRepository, ProductRepository productRepository) {
         this.gitHubService = gitHubService;
