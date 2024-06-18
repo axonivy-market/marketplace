@@ -66,5 +66,11 @@ class ProductFactoryTest {
     ProductFactory.extractSourceUrl(product,meta);
     Assertions.assertEquals("axonivy-market/alfresco-connector", product.getRepositoryName());
     Assertions.assertEquals(sourceUrl, product.getSourceUrl());
+
+    sourceUrl = "portal";
+    meta.setSourceUrl(sourceUrl);
+    ProductFactory.extractSourceUrl(product,meta);
+    Assertions.assertEquals(sourceUrl, product.getRepositoryName());
+    Assertions.assertEquals(sourceUrl, product.getSourceUrl());
   }
 }
