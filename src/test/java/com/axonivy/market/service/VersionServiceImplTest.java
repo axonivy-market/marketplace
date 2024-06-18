@@ -252,10 +252,13 @@ class VersionServiceImplTest {
         String releasedVersion = "10.0.20";
         String snapshotVersion = "10.0.20-SNAPSHOT";
         String sprintVersion = "10.0.21-m1234";
+        String releasedSprintVersion = "10.0.20-m1234";
         List<String> versions = List.of(releasedVersion, snapshotVersion, sprintVersion);
         Assertions.assertTrue(versionService.isReleasedVersionOrUnReleaseDevVersion(versions, releasedVersion));
         Assertions.assertTrue(versionService.isReleasedVersionOrUnReleaseDevVersion(versions, sprintVersion));
         Assertions.assertFalse(versionService.isReleasedVersionOrUnReleaseDevVersion(versions, snapshotVersion));
+        Assertions.assertFalse(versionService.isReleasedVersionOrUnReleaseDevVersion(versions, releasedSprintVersion));
+
     }
 
     @Test
