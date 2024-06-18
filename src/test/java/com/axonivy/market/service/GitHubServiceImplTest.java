@@ -19,7 +19,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import com.axonivy.market.github.service.impl.GithubServiceImpl;
 
 @ExtendWith(MockitoExtension.class)
-class GithubServiceImplTest {
+class GitHubServiceImplTest {
   private static final String DUMMY_API_URL = "https://api.github.com";
 
   @Mock
