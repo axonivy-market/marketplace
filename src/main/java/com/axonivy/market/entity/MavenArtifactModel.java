@@ -7,13 +7,15 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.springframework.data.annotation.Transient;
 
+import java.io.Serializable;
 import java.util.Objects;
 
 @AllArgsConstructor
 @NoArgsConstructor
 @Setter
 @Getter
-public class MavenArtifactModel {
+public class MavenArtifactModel implements Serializable {
+    private static final long serialVersionUID = 1L;
     private String name;
     private String downloadUrl;
     @Transient
