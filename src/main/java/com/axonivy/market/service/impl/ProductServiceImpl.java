@@ -38,17 +38,6 @@ import com.axonivy.market.github.util.GithubUtils;
 import com.axonivy.market.repository.GithubRepoMetaRepository;
 import com.axonivy.market.repository.ProductRepository;
 import com.axonivy.market.service.ProductService;
-import org.apache.commons.lang3.StringUtils;
-import org.kohsuke.github.GHCommit;
-import org.kohsuke.github.GHContent;
-import org.springframework.data.domain.*;
-import org.springframework.data.domain.Sort.Order;
-import org.springframework.stereotype.Service;
-
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 
 import lombok.extern.log4j.Log4j2;
 

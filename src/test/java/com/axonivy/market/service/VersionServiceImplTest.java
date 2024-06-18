@@ -35,7 +35,7 @@ import java.util.*;
 
 @Log4j2
 @ExtendWith(MockitoExtension.class)
-public class VersionServiceImplTest {
+class VersionServiceImplTest {
     private String repoName;
     private Map<String, List<ArchivedArtifact>> archivedArtifactsMap;
     private List<MavenArtifact> artifactsFromMeta;
@@ -55,7 +55,7 @@ public class VersionServiceImplTest {
     private ProductRepository productRepository;
 
     @BeforeEach()
-    public void prepareBeforeTest() {
+    void prepareBeforeTest() {
         archivedArtifactsMap = new HashMap<>();
         artifactsFromMeta = new ArrayList<>();
         metaProductArtifact = new MavenArtifact();
@@ -80,7 +80,7 @@ public class VersionServiceImplTest {
     }
 
     @Test
-    public void testGetArtifactsAndVersionToDisplay() {
+    void testGetArtifactsAndVersionToDisplay() {
         String productId="adobe-acrobat-sign-connector";
         String targetVersion = "10.0.10";
         setUpArtifactFromMeta();
@@ -99,7 +99,7 @@ public class VersionServiceImplTest {
     }
 
     @Test
-    public void testHandleArtifactForVersionToDisplay() {
+    void testHandleArtifactForVersionToDisplay() {
         String newVersionDetected = "10.0.10";
         List<MavenArtifactVersionModel> result = new ArrayList<>();
         List<String> versionsToDisplay = List.of(newVersionDetected);
@@ -119,7 +119,7 @@ public class VersionServiceImplTest {
     }
 
     @Test
-    public void testGetProductMetaArtifacts() {
+    void testGetProductMetaArtifacts() {
         Product product = new Product();
         MavenArtifact artifact1 = new MavenArtifact();
         MavenArtifact artifact2 = new MavenArtifact();
@@ -136,7 +136,7 @@ public class VersionServiceImplTest {
     }
 
     @Test
-    public void testUpdateArtifactsInVersionWithProductArtifact() {
+    void testUpdateArtifactsInVersionWithProductArtifact() {
         String version = "10.0.10";
         MavenArtifactModel artifactModel = new MavenArtifactModel();
         List<MavenArtifactModel> mockMavenArtifactModels = List.of(artifactModel);
@@ -149,7 +149,7 @@ public class VersionServiceImplTest {
     }
 
     @Test
-    public void testSanitizeMetaArtifactBeforeHandle() {
+    void testSanitizeMetaArtifactBeforeHandle() {
         setUpArtifactFromMeta();
         String groupId = "com.axonivy.connector.adobe.acrobat.sign";
         String archivedArtifactId1 = "adobe-acrobat-sign-connector";
@@ -171,7 +171,7 @@ public class VersionServiceImplTest {
 
     //TODO: test sorting again
     @Test
-    public void testGetVersionsToDisplay() {
+    void testGetVersionsToDisplay() {
         String repoUrl = "https://maven.axonivy.com";
         String groupId = "com.axonivy.connector.adobe.acrobat.sign";
         String artifactId = "adobe-acrobat-sign-connector";
@@ -190,7 +190,7 @@ public class VersionServiceImplTest {
 
     // TODO: make data be true
     @Test
-    public void getVersionsFromMavenArtifacts() {
+    void getVersionsFromMavenArtifacts() {
         String repoUrl = "https://maven.axonivy.com";
         String groupId = "com.axonivy.connector.adobe.acrobat.sign";
         String artifactId = "adobe-acrobat-sign-connector";
@@ -217,7 +217,7 @@ public class VersionServiceImplTest {
 
     //TODO: need to convert to mock data
     @Test
-    public void testGetVersionsFromArtifactDetails() {
+    void testGetVersionsFromArtifactDetails() {
 
         String repoUrl = "https://maven.axonivy.com";
         String groupId = "com.axonivy.connector.adobe.acrobat.sign";
@@ -238,18 +238,18 @@ public class VersionServiceImplTest {
     }
 
     @Test
-    public void testBuildMavenMetadataUrlFromArtifact() {
+    void testBuildMavenMetadataUrlFromArtifact() {
         String repoUrl = "https://maven.axonivy.com";
         String groupId = "com.axonivy.connector.adobe.acrobat.sign";
         String artifactId = "adobe-acrobat-sign-connector";
         String metadataUrl = "https://maven.axonivy.com/com/axonivy/connector/adobe/acrobat/sign/adobe-acrobat-sign-connector/maven-metadata.xml";
-        Assertions.assertEquals(versionService.buildMavenMetadataUrlFromArtifact(repoUrl, null, artifactId), StringUtils.EMPTY);
-        Assertions.assertEquals(versionService.buildMavenMetadataUrlFromArtifact(repoUrl, groupId, null), StringUtils.EMPTY);
-        Assertions.assertEquals(versionService.buildMavenMetadataUrlFromArtifact(repoUrl, groupId, artifactId), metadataUrl);
+        Assertions.assertEquals( StringUtils.EMPTY, versionService.buildMavenMetadataUrlFromArtifact(repoUrl, null, artifactId));
+        Assertions.assertEquals( StringUtils.EMPTY,versionService.buildMavenMetadataUrlFromArtifact(repoUrl, groupId, null), StringUtils.EMPTY);
+        Assertions.assertEquals(metadataUrl,versionService.buildMavenMetadataUrlFromArtifact(repoUrl, groupId, artifactId));
     }
 
     @Test
-    public void testIsReleasedVersionOrUnReleaseDevVersion() {
+    void testIsReleasedVersionOrUnReleaseDevVersion() {
         String releasedVersion = "10.0.20";
         String snapshotVersion = "10.0.20-SNAPSHOT";
         String sprintVersion = "10.0.21-m1234";
@@ -260,7 +260,7 @@ public class VersionServiceImplTest {
     }
 
     @Test
-    public void testIsSnapshotVersion() {
+    void testIsSnapshotVersion() {
         String targetVersion = "10.0.21-SNAPSHOT";
         Assertions.assertTrue(versionService.isSnapshotVersion(targetVersion));
 
@@ -272,7 +272,7 @@ public class VersionServiceImplTest {
     }
 
     @Test
-    public void testIsSprintVersion() {
+    void testIsSprintVersion() {
         String targetVersion = "10.0.21-m1234";
         Assertions.assertTrue(versionService.isSprintVersion(targetVersion));
 
@@ -284,7 +284,7 @@ public class VersionServiceImplTest {
     }
 
     @Test
-    public void testIsReleasedVersion() {
+    void testIsReleasedVersion() {
         String targetVersion = "10.0.21";
         Assertions.assertTrue(versionService.isReleasedVersion(targetVersion));
 
@@ -296,7 +296,7 @@ public class VersionServiceImplTest {
     }
 
     @Test
-    public void testIsMatchWithDesignerVersion() {
+    void testIsMatchWithDesignerVersion() {
         String designerVersion = "10.0.21";
         String targetVersion = "10.0.21.2";
         Assertions.assertTrue(versionService.isMatchWithDesignerVersion(targetVersion, designerVersion));
@@ -309,7 +309,7 @@ public class VersionServiceImplTest {
     }
 
     @Test
-    public void testGetProductJsonByVersion() {
+    void testGetProductJsonByVersion() {
         String targetArtifactId = "adobe-acrobat-sign-connector";
         String targetGroupId = "com.axonivy.connector.adobe.acrobat";
         GHContent mockContent = mock(GHContent.class);
@@ -339,7 +339,7 @@ public class VersionServiceImplTest {
     }
 
     @Test
-    public void testConvertMavenArtifactToModel() {
+    void testConvertMavenArtifactToModel() {
         String downloadUrl = "https://maven.axonivy.com/com/axonivy/connector/adobe/acrobat/sign/adobe-acrobat-sign-connector/10.0.21/adobe-acrobat-sign-connector-10.0.21.iar";
         String artifactName = "Adobe Acrobat Sign Connector (iar)";
 
@@ -348,8 +348,8 @@ public class VersionServiceImplTest {
         // Assert case handle artifact without name
         MavenArtifactModel result = versionService.convertMavenArtifactToModel(targetArtifact, "10.0.21");
         MavenArtifactModel expectedResult = new MavenArtifactModel(artifactName, downloadUrl, null);
-        Assertions.assertEquals(result.getName(), expectedResult.getName());
-        Assertions.assertEquals(result.getDownloadUrl(), expectedResult.getDownloadUrl());
+        Assertions.assertEquals(expectedResult.getName(),result.getName());
+        Assertions.assertEquals(expectedResult.getDownloadUrl(),result.getDownloadUrl());
 
         // Assert case handle artifact with name
         artifactName = "Adobe Connector";
@@ -357,12 +357,12 @@ public class VersionServiceImplTest {
         targetArtifact.setName(artifactName);
         result = versionService.convertMavenArtifactToModel(targetArtifact, "10.0.21");
         expectedResult = new MavenArtifactModel(artifactName, downloadUrl, null);
-        Assertions.assertEquals(result.getName(), expectedArtifactName);
-        Assertions.assertEquals(result.getDownloadUrl(), expectedResult.getDownloadUrl());
+        Assertions.assertEquals(expectedArtifactName,result.getName());
+        Assertions.assertEquals(expectedResult.getDownloadUrl(),result.getDownloadUrl());
     }
 
     @Test
-    public void testConvertMavenArtifactsToModels() {
+    void testConvertMavenArtifactsToModels() {
         // Assert case param is empty
         List<MavenArtifactModel> result = versionService.convertMavenArtifactsToModels(Collections.emptyList(), "10.0.21");
         Assertions.assertEquals(result, Collections.emptyList());
@@ -373,13 +373,12 @@ public class VersionServiceImplTest {
 
         // Assert case param is a list with existed element
         MavenArtifact targetArtifact = new MavenArtifact(null, null, "com.axonivy.connector.adobe.acrobat.sign", "adobe-acrobat-sign-connector", null, null, null, null);
-        MavenArtifactModel expectedModel = new MavenArtifactModel("Adobe Connector ", "http://market.axonivy.com", null);
         result = versionService.convertMavenArtifactsToModels(List.of(targetArtifact), "10.0.21");
         Assertions.assertEquals(1, result.size());
     }
 
     @Test
-    public void testBuildDownloadUrlFromArtifactAndVersion() {
+    void testBuildDownloadUrlFromArtifactAndVersion() {
         // Set up artifact for testing
         String targetArtifactId = "adobe-acrobat-sign-connector";
         String targetGroupId = "com.axonivy.connector";
@@ -411,7 +410,7 @@ public class VersionServiceImplTest {
     }
 
     @Test
-    public void testFindArchivedArtifactInfoBestMatchWithVersion() {
+    void testFindArchivedArtifactInfoBestMatchWithVersion() {
         String targetArtifactId = "adobe-acrobat-sign-connector";
         String targetVersion = "10.0.10";
         ArchivedArtifact result = versionService.findArchivedArtifactInfoBestMatchWithVersion(targetArtifactId, targetVersion);
@@ -440,7 +439,7 @@ public class VersionServiceImplTest {
     }
 
     @Test
-    public void testConvertArtifactIdToName() {
+    void testConvertArtifactIdToName() {
         String defaultArtifactId = "adobe-acrobat-sign-connector";
         String result = versionService.convertArtifactIdToName(defaultArtifactId);
         Assertions.assertEquals("Adobe Acrobat Sign Connector", result);
@@ -456,17 +455,18 @@ public class VersionServiceImplTest {
     }
 
     @Test
-    public void testGetRepoNameFromMarketRepo() {
+    void testGetRepoNameFromMarketRepo() {
         String defaultRepositoryName = "market/adobe-acrobat-connector";
+        String expectedRepoName = "adobe-acrobat-connector";
         String result = versionService.getRepoNameFromMarketRepo(defaultRepositoryName);
-        Assertions.assertEquals(result, "adobe-acrobat-connector");
+        Assertions.assertEquals(expectedRepoName, result);
 
         defaultRepositoryName = "market/utils/adobe-acrobat-connector";
         result = versionService.getRepoNameFromMarketRepo(defaultRepositoryName);
-        Assertions.assertEquals(result, "adobe-acrobat-connector");
+        Assertions.assertEquals(expectedRepoName ,result);
 
         defaultRepositoryName = "adobe-acrobat-connector";
         result = versionService.getRepoNameFromMarketRepo(defaultRepositoryName);
-        Assertions.assertEquals(result, "adobe-acrobat-connector");
+        Assertions.assertEquals(expectedRepoName, result);
     }
 }

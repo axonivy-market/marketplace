@@ -14,4 +14,7 @@ public class ProductJsonConstants {
     public static final String MAVEN_DEPENDENCY = "maven-dependency";
     public static final String DEPENDENCIES = "dependencies";
     public static final String INSTALLERS = "installers";
+
+    private ProductJsonConstants() {
+    }
 }
