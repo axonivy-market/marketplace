@@ -94,7 +94,7 @@ public class VersionServiceImpl implements VersionService {
     }
 
     public List<MavenArtifact> getProductMetaArtifacts(String productId) {
-        Product productInfo = Optional.ofNullable(productRepository.findByKey(productId)).orElse(new Product());
+        Product productInfo = productRepository.findById(productId).orElse(new Product());
         String fullRepoName = productInfo.getRepositoryName();
         if (StringUtils.isNotEmpty(fullRepoName)) {
             repoName = getRepoNameFromMarketRepo(fullRepoName);

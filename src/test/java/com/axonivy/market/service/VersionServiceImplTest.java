@@ -28,7 +28,6 @@ import static org.mockito.Mockito.when;
 
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.test.util.ReflectionTestUtils;
-import org.springframework.util.CollectionUtils;
 
 import java.io.IOException;
 import java.util.*;
@@ -125,7 +124,7 @@ class VersionServiceImplTest {
         MavenArtifact artifact2 = new MavenArtifact();
         List<MavenArtifact> artifacts = List.of(artifact1, artifact2);
         product.setArtifacts(artifacts);
-        when(productRepository.findByKey(Mockito.anyString())).thenReturn(product);
+        when(productRepository.findById(Mockito.anyString())).thenReturn(Optional.of(product));
         List<MavenArtifact> result = versionService.getProductMetaArtifacts("portal");
         Assertions.assertEquals(artifacts, result);
         Assertions.assertNull(versionService.getRepoName());
