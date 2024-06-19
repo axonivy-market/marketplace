@@ -3,7 +3,8 @@ package com.axonivy.market.controller;
 import com.axonivy.market.entity.User;
 import com.axonivy.market.model.Oauth2AuthorizationCode;
 import com.axonivy.market.service.GitHubService;
-import com.axonivy.market.util.JwtUtil;
+import com.axonivy.market.service.JwtService;
+import com.axonivy.market.service.impl.JwtServiceImpl;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
@@ -21,39 +22,42 @@ import java.util.Map;
 @RequestMapping("/auth")
 public class OAuth2Controller {
 
-    @Value("${spring.security.oauth2.client.registration.github.client-id}")
-    private String clientId;
+  @Value("${spring.security.oauth2.client.registration.github.client-id}")
+  private String clientId;
 
-    @Value("${spring.security.oauth2.client.registration.github.client-secret}")
-    private String clientSecret;
+  @Value("${spring.security.oauth2.client.registration.github.client-secret}")
+  private String clientSecret;
 
-    private final GitHubService gitHubService;
+  private final GitHubService gitHubService;
 
-    public OAuth2Controller(GitHubService gitHubService) {
-        this.gitHubService = gitHubService;
-    }
+  private final JwtService jwtService;
 
-    @PostMapping("/exchange-code")
-    public ResponseEntity<?> exchangeCodeForToken(@RequestBody Oauth2AuthorizationCode oauth2AuthorizationCode, HttpServletResponse response) {
-        Map<String, Object> tokenResponse = gitHubService.getAccessToken(oauth2AuthorizationCode.getCode(), clientId, clientSecret);
-        String accessToken = (String) tokenResponse.get("access_token");
+  public OAuth2Controller(GitHubService gitHubService, JwtService jwtService) {
+    this.gitHubService = gitHubService;
+    this.jwtService = jwtService;
+  }
 
-        User user = gitHubService.getAndUpdateUser(accessToken);
+  @PostMapping("/exchange-code")
+  public ResponseEntity<?> exchangeCodeForToken(@RequestBody Oauth2AuthorizationCode oauth2AuthorizationCode, HttpServletResponse response) {
+    Map<String, Object> tokenResponse = gitHubService.getAccessToken(oauth2AuthorizationCode.getCode(), clientId, clientSecret);
+    String accessToken = (String) tokenResponse.get("access_token");
 
-        // Generate JWT
-        String jwtToken = JwtUtil.generateToken(user);
+    User user = gitHubService.getAndUpdateUser(accessToken);
 
-        // Create HTTP-only cookie with JWT
-        ResponseCookie cookie = ResponseCookie.from("token", jwtToken)
-                .httpOnly(true)
-                .path("/")
-                .maxAge(86400) // 24 hours
-                .build();
+    // Generate JWT
+    String jwtToken = jwtService.generateToken(user);
 
-        // Add cookie to response
-        response.addHeader(HttpHeaders.SET_COOKIE, cookie.toString());
+    // Create HTTP-only cookie with JWT
+    ResponseCookie cookie = ResponseCookie.from("token", jwtToken)
+        .httpOnly(false)
+        .path("/")
+        .maxAge(365L * 86400)
+        .build();
 
-        // Return the JWT in the response body if needed
-        return ResponseEntity.ok().body(Collections.singletonMap("token", jwtToken));
-    }
+    // Add cookie to response
+    response.addHeader(HttpHeaders.SET_COOKIE, cookie.toString());
+
+    // Return the JWT in the response body if needed
+    return ResponseEntity.ok().body(Collections.singletonMap("token", jwtToken));
+  }
 }

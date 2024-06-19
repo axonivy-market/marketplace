@@ -60,6 +60,7 @@ public class GitHubServiceImpl implements GitHubService {
         String gitHubId = userDetails.get("id").toString();
         String name = (String) userDetails.get("name");
         String avatarUrl = (String) userDetails.get("avatar_url");
+        String username = (String) userDetails.get("login");
 
         User user = userRepository.searchByGitHubId(gitHubId);
         if (user == null) {
@@ -67,6 +68,7 @@ public class GitHubServiceImpl implements GitHubService {
         }
         user.setGitHubId(gitHubId);
         user.setUsername(name);
+        user.setUsername(username);
         user.setAvatarUrl(avatarUrl);
         user.setProvider("GitHub");
 
