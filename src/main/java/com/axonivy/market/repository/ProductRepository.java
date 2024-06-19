@@ -1,6 +1,5 @@
 package com.axonivy.market.repository;
 
-import com.mongodb.lang.NonNull;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.mongodb.repository.MongoRepository;
@@ -18,8 +17,7 @@ public interface ProductRepository extends MongoRepository<Product, String> {
 
   Product findByLogoUrl(String logoUrl);
 
-  @Override
-  Optional<Product> findById(@NonNull String productId);
+  Optional<Product> findById( String productId);
 
   @Query("{'marketDirectory': {$regex : ?0, $options: 'i'}}")
   Product findByMarketDirectoryRegex(String search);
