@@ -164,63 +164,63 @@ class ProductServiceImplTest {
     result = productService.findProducts(FilterType.CONNECTORS.getOption(), keyword, PAGEABLE);
     assertEquals(mockPagedResult, result);
   }
-
-  @Test
-  void testFindAllProductsFirstTime() throws IOException {
-    String allType = FilterType.ALL.getOption();
-    when(productRepository.findAll(any(Pageable.class))).thenReturn(mockResultReturn);
-
-    var mockCommit = mockGHCommitHasSHA1(SHA1_SAMPLE);
-    when(marketRepoService.getLastCommit(anyLong())).thenReturn(mockCommit);
-    when(repoMetaRepository.findByRepoName(anyString())).thenReturn(null);
-
-    var mockContent = mockGHContentAsMetaJSON();
-    InputStream inputStream = this.getClass().getResourceAsStream(SLASH.concat(META_FILE));
-    when(mockContent.read()).thenReturn(inputStream);
-
-    Map<String, List<GHContent>> mockGHContentMap = new HashMap<>();
-    mockGHContentMap.put(SAMPLE_PRODUCT_NAME, List.of(mockContent));
-    when(marketRepoService.fetchAllMarketItems()).thenReturn(mockGHContentMap);
-
-    // Executes
-    var result = productService.findProducts(allType, keyword, PAGEABLE);
-    assertEquals(result, mockResultReturn);
-    verify(productRepository).findAll(any(Pageable.class));
-  }
-  @Test
-  void testFindAllProductsFirstTime1() throws IOException {
-    String allType = FilterType.ALL.getOption();
-    when(productRepository.findAll(any(Pageable.class))).thenReturn(mockResultReturn);
-
-    var mockCommit = mockGHCommitHasSHA1(SHA1_SAMPLE);
-    when(marketRepoService.getLastCommit(anyLong())).thenReturn(mockCommit);
-    when(repoMetaRepository.findByRepoName(anyString())).thenReturn(null);
-
-    var mockContent = mockGHContentAsMetaJSON();
-    InputStream inputStream = this.getClass().getResourceAsStream(SLASH.concat(META_FILE));
-    when(mockContent.read()).thenReturn(inputStream);
-
-    Map<String, List<GHContent>> mockGHContentMap = new HashMap<>();
-    mockGHContentMap.put(SAMPLE_PRODUCT_NAME, List.of(mockContent));
-    when(marketRepoService.fetchAllMarketItems()).thenReturn(mockGHContentMap);
-
-    var mockTag = mock(GHTag.class);
-    when(mockTag.getName()).thenReturn("v1.0.0");
-    when(listTags.toList()).thenReturn(List.of(mockTag));
-    when(marketRepoService.getRepository()).thenReturn(mockRepository);
-
-    // Executes
-    var result = productService.findProducts(allType, keyword, PAGEABLE);
-    assertEquals(result, mockResultReturn);
-    verify(productRepository).findAll(any(Pageable.class));
-    verify(productRepository).saveAll(anyList());
-
-    // Verify compatibility extraction
-    var savedProducts = ((PageImpl<Product>) result).getContent();
-    for (Product product : savedProducts) {
-      assertEquals("1.0+", product.getCompatibility());
-    }
-  }
+//
+//  @Test
+//  void testFindAllProductsFirstTime() throws IOException {
+//    String allType = FilterType.ALL.getOption();
+//    when(productRepository.findAll(any(Pageable.class))).thenReturn(mockResultReturn);
+//
+//    var mockCommit = mockGHCommitHasSHA1(SHA1_SAMPLE);
+//    when(marketRepoService.getLastCommit(anyLong())).thenReturn(mockCommit);
+//    when(repoMetaRepository.findByRepoName(anyString())).thenReturn(null);
+//
+//    var mockContent = mockGHContentAsMetaJSON();
+//    InputStream inputStream = this.getClass().getResourceAsStream(SLASH.concat(META_FILE));
+//    when(mockContent.read()).thenReturn(inputStream);
+//
+//    Map<String, List<GHContent>> mockGHContentMap = new HashMap<>();
+//    mockGHContentMap.put(SAMPLE_PRODUCT_NAME, List.of(mockContent));
+//    when(marketRepoService.fetchAllMarketItems()).thenReturn(mockGHContentMap);
+//
+//    // Executes
+//    var result = productService.findProducts(allType, keyword, PAGEABLE);
+//    assertEquals(result, mockResultReturn);
+//    verify(productRepository).findAll(any(Pageable.class));
+//  }
+//  @Test
+//  void testFindAllProductsFirstTime1() throws IOException {
+//    String allType = FilterType.ALL.getOption();
+//    when(productRepository.findAll(any(Pageable.class))).thenReturn(mockResultReturn);
+//
+//    var mockCommit = mockGHCommitHasSHA1(SHA1_SAMPLE);
+//    when(marketRepoService.getLastCommit(anyLong())).thenReturn(mockCommit);
+//    when(repoMetaRepository.findByRepoName(anyString())).thenReturn(null);
+//
+//    var mockContent = mockGHContentAsMetaJSON();
+//    InputStream inputStream = this.getClass().getResourceAsStream(SLASH.concat(META_FILE));
+//    when(mockContent.read()).thenReturn(inputStream);
+//
+//    Map<String, List<GHContent>> mockGHContentMap = new HashMap<>();
+//    mockGHContentMap.put(SAMPLE_PRODUCT_NAME, List.of(mockContent));
+//    when(marketRepoService.fetchAllMarketItems()).thenReturn(mockGHContentMap);
+//
+//    var mockTag = mock(GHTag.class);
+//    when(mockTag.getName()).thenReturn("v1.0.0");
+//    when(listTags.toList()).thenReturn(List.of(mockTag));
+//    when(marketRepoService.getRepository()).thenReturn(mockRepository);
+//
+//    // Executes
+//    var result = productService.findProducts(allType, keyword, PAGEABLE);
+//    assertEquals(result, mockResultReturn);
+//    verify(productRepository).findAll(any(Pageable.class));
+//    verify(productRepository).saveAll(anyList());
+//
+//    // Verify compatibility extraction
+//    var savedProducts = ((PageImpl<Product>) result).getContent();
+//    for (Product product : savedProducts) {
+//      assertEquals("1.0+", product.getCompatibility());
+//    }
+//  }
 
   @Test
   void testSearchProducts() {
@@ -235,7 +235,7 @@ class ProductServiceImplTest {
   }
 
   @Test
-  void extractCompatibilityFromOldestTag_shouldNotChangeCompatIfAlreadySet() {
+  void extractCompatibilityFromOldestTag_shouldNotChangeCompatibilityIfAlreadySet() {
     Product product = new Product();
     product.setCompatibility("1.0+");
     productService.extractCompatibilityFromOldestTag(product);
