@@ -42,6 +42,7 @@ public class VersionServiceImpl implements VersionService {
     private MavenArtifactVersion proceedDataCache;
     private MavenArtifact metaProductArtifact;
     private final LatestVersionComparator latestVersionComparator = new LatestVersionComparator();
+    private String productJsonFilePath;
 
     public String getRepoName() {
         return repoName;
@@ -99,7 +100,7 @@ public class VersionServiceImpl implements VersionService {
         if (StringUtils.isNotEmpty(fullRepoName)) {
             repoName = getRepoNameFromMarketRepo(fullRepoName);
         }
-        return productInfo.getArtifacts();
+        return Optional.ofNullable(productInfo.getArtifacts()).orElse(new ArrayList<>());
     }
 
     public void sanitizeMetaArtifactBeforeHandle() {
@@ -183,7 +184,7 @@ public class VersionServiceImpl implements VersionService {
 
     public List<MavenArtifact> getProductJsonByVersion(String version) {
         List<MavenArtifact> result = new ArrayList<>();
-        String productJsonFilePath = String.format(GitHubConstants.PROUCT_JSON_FILE_PATH_FORMAT, metaProductArtifact.getArtifactId());
+        buildProductJsonFilePath();
         try {
             GHContent productJsonContent = gitHubService.getContentFromGHRepoAndTag(repoName, productJsonFilePath, "v" + version);
             if (Objects.isNull(productJsonContent)) {
@@ -194,6 +195,14 @@ public class VersionServiceImpl implements VersionService {
             log.warn("Can not get the product.json from repo {} by path in {} version {}", repoName, productJsonFilePath, version);
         }
         return result;
+    }
+
+    private void buildProductJsonFilePath() {
+        if (StringUtils.isNotBlank(productJsonFilePath)) {
+            return;
+        }
+
+        productJsonFilePath = String.format(GitHubConstants.PROUCT_JSON_FILE_PATH_FORMAT, metaProductArtifact.getArtifactId());
     }
 
     public MavenArtifactModel convertMavenArtifactToModel(MavenArtifact artifact, String version) {

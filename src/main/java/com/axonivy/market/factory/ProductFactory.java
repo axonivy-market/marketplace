@@ -64,6 +64,7 @@ public class ProductFactory {
     product.setLanguage(meta.getLanguage());
     product.setIndustry(meta.getIndustry());
     extractSourceUrl(product, meta);
+    product.setArtifacts(meta.getMavenArtifacts());
     return product;
   }
 
