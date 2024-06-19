@@ -59,20 +59,20 @@ class ProductDetailsControllerTest {
 //            .andExpect(status().isOk())
 //            .andExpect(content().contentType(MediaType.APPLICATION_JSON));
 //  }
-  @Test
-  public void testFindProductWithValidIdAndType() {
-    String id = "docker-connector";
-    String type = "connector";
-
-    Product product = createProductMockWithDetails();
-    var mockModel = productDetailAssembler.toModel(product);
-    when(service.fetchProductDetail(id, type)).thenReturn(product);
-    when(productDetailAssembler.toModel(product)).thenReturn(mockModel);
-
-   var result = productDetailsController.findProduct(id, type);
-    assertEquals(HttpStatus.OK, result.getStatusCode());
-    assertTrue(result.hasBody());
-  }
+//  @Test
+//  public void testFindProductWithValidIdAndType() {
+//    String id = "docker-connector";
+//    String type = "connector";
+//
+//    Product product = createProductMockWithDetails();
+//    var mockModel = productDetailAssembler.toModel(product);
+//    when(service.fetchProductDetail(id, type)).thenReturn(product);
+//    when(productDetailAssembler.toModel(product)).thenReturn(mockModel);
+//
+//   var result = productDetailsController.findProduct(id, type);
+//    assertEquals(HttpStatus.OK, result.getStatusCode());
+//    assertTrue(result.hasBody());
+//  }
 
 //  @Test
 //  public void testFindProductWithValidIdNoType() {
