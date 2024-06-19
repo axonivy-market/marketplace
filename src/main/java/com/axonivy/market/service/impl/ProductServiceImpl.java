@@ -211,8 +211,8 @@ public class ProductServiceImpl implements ProductService {
             Product product = new Product();
             for (var content : ghContentEntity.getValue()) {
                 ProductFactory.mappingByGHContent(product, content);
-                extractCompatibilityFromOldestTag(product);
                 updateLatestReleaseDateForProduct(product);
+                extractCompatibilityFromOldestTag(product);
             }
             products.add(product);
         });
