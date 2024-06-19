@@ -2,6 +2,7 @@ package com.axonivy.market.service.impl;
 
 import com.axonivy.market.constants.GitHubConstants;
 import com.axonivy.market.constants.MavenConstants;
+import com.axonivy.market.constants.NonStandardProductPPackageConstants;
 import com.axonivy.market.entity.MavenArtifactVersion;
 import com.axonivy.market.entity.Product;
 import com.axonivy.market.github.model.ArchivedArtifact;
@@ -37,12 +38,13 @@ public class VersionServiceImpl implements VersionService {
     private final MavenArtifactVersionRepository mavenArtifactVersionRepository;
     private final ProductRepository productRepository;
     private String repoName;
-    private final Map<String, List<ArchivedArtifact>> archivedArtifactsMap = new HashMap<>();
+    private Map<String, List<ArchivedArtifact>> archivedArtifactsMap;
     private List<MavenArtifact> artifactsFromMeta;
     private MavenArtifactVersion proceedDataCache;
     private MavenArtifact metaProductArtifact;
     private final LatestVersionComparator latestVersionComparator = new LatestVersionComparator();
     private String productJsonFilePath;
+    private String productId;
 
     public String getRepoName() {
         return repoName;
@@ -55,9 +57,22 @@ public class VersionServiceImpl implements VersionService {
 
     }
 
+    private void resetData() {
+        repoName=null;
+        archivedArtifactsMap = new HashMap<>();
+        artifactsFromMeta = Collections.emptyList();
+        proceedDataCache = null;
+        metaProductArtifact = null;
+        productJsonFilePath = null;
+        productId = null;
+
+    }
+
     public List<MavenArtifactVersionModel> getArtifactsAndVersionToDisplay(String productId, Boolean isShowDevVersion, String designerVersion) {
         List<MavenArtifactVersionModel> result = new ArrayList<>();
+        resetData();
 
+        this.productId = productId;
         artifactsFromMeta = getProductMetaArtifacts(productId);
         List<String> versionsToDisplay = getVersionsToDisplay(isShowDevVersion, designerVersion);
         proceedDataCache = mavenArtifactVersionRepository.findById(productId).orElse(new MavenArtifactVersion(productId));
@@ -184,25 +199,45 @@ public class VersionServiceImpl implements VersionService {
 
     public List<MavenArtifact> getProductJsonByVersion(String version) {
         List<MavenArtifact> result = new ArrayList<>();
-        buildProductJsonFilePath();
+        String versionTag = buildProductJsonFilePath(version);
         try {
-            GHContent productJsonContent = gitHubService.getContentFromGHRepoAndTag(repoName, productJsonFilePath, "v" + version);
+            GHContent productJsonContent = gitHubService.getContentFromGHRepoAndTag(repoName, productJsonFilePath, versionTag);
             if (Objects.isNull(productJsonContent)) {
                 return result;
             }
             result = gitHubService.convertProductJsonToMavenProductInfo(productJsonContent);
         } catch (IOException e) {
-            log.warn("Can not get the product.json from repo {} by path in {} version {}", repoName, productJsonFilePath, version);
+            log.warn("Can not get the product.json from repo {} by path in {} version {}", repoName, productJsonFilePath, versionTag);
         }
         return result;
     }
 
-    private void buildProductJsonFilePath() {
-        if (StringUtils.isNotBlank(productJsonFilePath)) {
-            return;
+    private String buildProductJsonFilePath(String version) {
+        String verisonTag = "v"+version;
+        String pathToProductJsonFileFromTagContent = metaProductArtifact.getArtifactId();
+        switch (productId) {
+            case NonStandardProductPPackageConstants.PORTAL:
+                pathToProductJsonFileFromTagContent = "AxonIvyPortal/portal-product";
+                verisonTag = version;
+            case NonStandardProductPPackageConstants.ASPOSE_BARCODE_DEMO:
+            case NonStandardProductPPackageConstants.ASPOSE_EMAIL_DEMO:
+            case NonStandardProductPPackageConstants.CHAT_GPT_ASSISTANT:
+            case NonStandardProductPPackageConstants.CONNECTIVITY_FEATURE:
+            case NonStandardProductPPackageConstants.MICROSOFT_365:
+            case NonStandardProductPPackageConstants.EMPLOYEE_ONBOARDING:
+            case NonStandardProductPPackageConstants.ERROR_HANDLING:
+            case NonStandardProductPPackageConstants.MICROSOFT_MAIL:
+            case NonStandardProductPPackageConstants.MICROSOFT_TEAMS:
+            case NonStandardProductPPackageConstants.MICROSOFT_TODO:
+            case NonStandardProductPPackageConstants.MICROSOFT_CALENDAR:
+            case NonStandardProductPPackageConstants.RULE_ENGINE_DEMOS:
+            case NonStandardProductPPackageConstants.WEB_TESTER:
+            case NonStandardProductPPackageConstants.WORKFLOW_DEMO:
+            default:
+                break;
         }
-
-        productJsonFilePath = String.format(GitHubConstants.PROUCT_JSON_FILE_PATH_FORMAT, metaProductArtifact.getArtifactId());
+        productJsonFilePath = String.format(GitHubConstants.PROUCT_JSON_FILE_PATH_FORMAT, pathToProductJsonFileFromTagContent);
+        return verisonTag;
     }
 
     public MavenArtifactModel convertMavenArtifactToModel(MavenArtifact artifact, String version) {
