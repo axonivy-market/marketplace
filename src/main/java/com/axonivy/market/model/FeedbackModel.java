@@ -18,7 +18,9 @@ import java.util.Date;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class FeedbackModel extends RepresentationModel<FeedbackModel> {
     private String id;
-    private String userId;
+    private String username;
+    private String userAvatarUrl;
+    private String userProvider;
     private String productId;
     private String content;
     private Integer rating;

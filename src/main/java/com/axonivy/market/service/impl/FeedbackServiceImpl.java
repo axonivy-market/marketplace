@@ -1,7 +1,6 @@
 package com.axonivy.market.service.impl;
 
 import com.axonivy.market.entity.Feedback;
-import com.axonivy.market.exceptions.model.DuplicatedEntityException;
 import com.axonivy.market.exceptions.model.NotFoundException;
 import com.axonivy.market.repository.FeedbackRepository;
 import com.axonivy.market.repository.ProductRepository;
@@ -38,23 +37,38 @@ public class FeedbackServiceImpl implements FeedbackService {
   }
 
   @Override
-  public Feedback createFeedback(Feedback feedback) throws NotFoundException {
+  public Feedback findFeedbackByUserIdAndProductId(String userId, String productId) throws NotFoundException {
+    userRepository.findById(userId)
+        .orElseThrow(() -> new NotFoundException("Not found user with id: " + userId));
+    validateProductExists(productId);
+
+    List<Feedback> existingFeedbacks = feedbackRepository.searchByProductIdAndUserId(userId, productId);
+    if (existingFeedbacks.isEmpty()) {
+      throw new NotFoundException(String.format("Not found feedback with user id '%s' and product id '%s'", userId, productId));
+    }
+    return existingFeedbacks.get(0);
+  }
+
+  @Override
+  public Feedback upsertFeedback(Feedback feedback) throws NotFoundException {
     userRepository.findById(feedback.getUserId())
         .orElseThrow(() -> new NotFoundException("Not found user with id: " + feedback.getUserId()));
     validateProductExists(feedback.getProductId());
-    validateUniqueFeedbackForOneUser(feedback.getProductId(), feedback.getUserId());
-    return feedbackRepository.save(feedback);
+
+    List<Feedback> existingFeedbacks = feedbackRepository.searchByProductIdAndUserId(feedback.getUserId(), feedback.getProductId());
+
+    if (existingFeedbacks.isEmpty()) {
+      return feedbackRepository.save(feedback);
+    } else {
+      Feedback existingFeedback = existingFeedbacks.get(0);
+      existingFeedback.setRating(feedback.getRating());
+      existingFeedback.setContent(feedback.getContent());
+      return feedbackRepository.save(existingFeedback);
+    }
   }
 
   private void validateProductExists(String productId) throws NotFoundException {
     productRepository.findById(productId)
         .orElseThrow(() -> new NotFoundException("Not found product with id: " + productId));
-  }
-
-  private void validateUniqueFeedbackForOneUser(String productId, String userId) {
-    List<Feedback> existingFeedbacks  = feedbackRepository.searchByProductIdAndUserId(productId, userId);
-    if (!existingFeedbacks.isEmpty()) {
-      throw new DuplicatedEntityException(String.format("Feedback already exists for product with id '%s' and user with id '%s'", productId, userId));
-    }
   }
 }

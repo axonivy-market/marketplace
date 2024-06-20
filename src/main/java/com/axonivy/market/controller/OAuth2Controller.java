@@ -47,15 +47,15 @@ public class OAuth2Controller {
     // Generate JWT
     String jwtToken = jwtService.generateToken(user);
 
-    // Create HTTP-only cookie with JWT
-    ResponseCookie cookie = ResponseCookie.from("token", jwtToken)
-        .httpOnly(false)
-        .path("/")
-        .maxAge(365L * 86400)
-        .build();
-
-    // Add cookie to response
-    response.addHeader(HttpHeaders.SET_COOKIE, cookie.toString());
+//    // Create HTTP-only cookie with JWT
+//    ResponseCookie cookie = ResponseCookie.from("token", jwtToken)
+//        .httpOnly(false)
+//        .path("/")
+//        .maxAge(365L * 86400)
+//        .build();
+//
+//    // Add cookie to response
+//    response.addHeader(HttpHeaders.SET_COOKIE, cookie.toString());
 
     // Return the JWT in the response body if needed
     return ResponseEntity.ok().body(Collections.singletonMap("token", jwtToken));

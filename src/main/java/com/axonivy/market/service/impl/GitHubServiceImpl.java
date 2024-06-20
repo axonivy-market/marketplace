@@ -67,7 +67,7 @@ public class GitHubServiceImpl implements GitHubService {
             user = new User();
         }
         user.setGitHubId(gitHubId);
-        user.setUsername(name);
+        user.setName(name);
         user.setUsername(username);
         user.setAvatarUrl(avatarUrl);
         user.setProvider("GitHub");

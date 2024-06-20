@@ -1,6 +1,5 @@
 package com.axonivy.market.exceptions;
 
-import com.axonivy.market.exceptions.model.DuplicatedEntityException;
 import com.axonivy.market.exceptions.model.Oauth2ExchangeCodeException;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -60,14 +59,6 @@ public class ExceptionHandlers extends ResponseEntityExceptionHandler {
     errorMessage.setErrorCode(NOT_FOUND_EXCEPTION_CODE);
     errorMessage.setMessageDetails(notFoundException.getMessage());
     return new ResponseEntity<>(errorMessage, HttpStatus.NOT_FOUND);
-  }
-
-  @ExceptionHandler(DuplicatedEntityException.class)
-  public ResponseEntity<Object> handleNotFoundException(DuplicatedEntityException duplicateFeedbackException) {
-    var errorMessage = new Message();
-    errorMessage.setErrorCode(DUPLICATED_ENTITY_EXCEPTION_CODE);
-    errorMessage.setMessageDetails(duplicateFeedbackException.getMessage());
-    return new ResponseEntity<>(errorMessage, HttpStatus.CONFLICT);
   }
 
   @ExceptionHandler(Oauth2ExchangeCodeException.class)

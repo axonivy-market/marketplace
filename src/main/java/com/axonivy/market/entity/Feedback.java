@@ -27,7 +27,6 @@ public class Feedback implements Serializable {
     @Id
     private String id;
 
-    @NotBlank(message = "User id cannot be blank")
     private String userId;
 
     @NotBlank(message = "Product id cannot be blank")
