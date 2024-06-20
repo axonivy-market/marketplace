@@ -18,7 +18,7 @@ class AppControllerTest {
   @Test
   void testRoot() throws Exception {
     var response = appController.root();
-    assertTrue(HttpStatus.OK.equals(response.getStatusCode()));
+    assertEquals(HttpStatus.OK, response.getStatusCode());
     assertTrue(response.hasBody());
     assertEquals("Welcome to Marketplace API", response.getBody().getMessageDetails());
   }
