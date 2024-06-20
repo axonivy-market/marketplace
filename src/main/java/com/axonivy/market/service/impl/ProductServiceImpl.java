@@ -68,7 +68,20 @@ public class ProductServiceImpl implements ProductService {
       return searchProducts(filterType, keyword, pageable);
     }
 
-    if (!isLastGithubCommitCovered()) {
+    syncLatestDataFromMarketRepo();
+
+    Pageable unifiedPageabe = refinePagination(pageable);
+    return switch (filterType) {
+    case ALL -> productRepository.findAll(unifiedPageabe);
+    case CONNECTORS, UTILITIES, SOLUTIONS -> productRepository.findByType(filterType.getCode(), pageable);
+    default -> Page.empty();
+    };
+  }
+
+  @Override
+  public boolean syncLatestDataFromMarketRepo() {
+    var isAlreadyUpToDate = isLastGithubCommitCovered();
+    if (!isAlreadyUpToDate) {
       if (marketRepoMeta == null) {
         syncProductsFromGithubRepo();
         marketRepoMeta = new GithubRepoMeta();
@@ -77,13 +90,7 @@ public class ProductServiceImpl implements ProductService {
       }
       syncRepoMetaDataStatus();
     }
-
-    Pageable unifiedPageabe = refinePagination(pageable);
-    return switch (filterType) {
-    case ALL -> productRepository.findAll(unifiedPageabe);
-    case CONNECTORS, UTILITIES, SOLUTIONS -> productRepository.findByType(filterType.getCode(), pageable);
-    default -> Page.empty();
-    };
+    return isAlreadyUpToDate;
   }
 
   private void syncRepoMetaDataStatus() {
@@ -104,8 +111,10 @@ public class ProductServiceImpl implements ProductService {
     if (lastGHCommit == null || marketRepoMeta == null) {
       return;
     }
-    List<GitHubFile> githubFileChanges = axonivyMarketRepoService
-        .fetchMarketItemsBySHA1Range(marketRepoMeta.getLastSHA1(), lastGHCommit.getSHA1());
+    var fromSHA1 = marketRepoMeta.getLastSHA1();
+    var toSHA1 = lastGHCommit.getSHA1();
+    log.warn("**ProductService: synchronize products from SHA1 {} to SHA1 {}", fromSHA1, toSHA1);
+    List<GitHubFile> githubFileChanges = axonivyMarketRepoService.fetchMarketItemsBySHA1Range(fromSHA1, toSHA1);
     Map<String, List<GitHubFile>> groupGithubFiles = new HashMap<>();
     for (var file : githubFileChanges) {
       String filePath = file.getFileName();
@@ -201,6 +210,7 @@ public class ProductServiceImpl implements ProductService {
   }
 
   private Page<Product> syncProductsFromGithubRepo() {
+    log.warn("**ProductService: synchronize products from scratch based on the Market repo");
     var githubContentMap = axonivyMarketRepoService.fetchAllMarketItems();
     List<Product> products = new ArrayList<>();
     githubContentMap.entrySet().forEach(ghContentEntity -> {
