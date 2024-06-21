@@ -102,7 +102,7 @@ class VersionServiceImplTest {
         String newVersionDetected = "10.0.10";
         List<MavenArtifactVersionModel> result = new ArrayList<>();
         List<String> versionsToDisplay = List.of(newVersionDetected);
-
+        ReflectionTestUtils.setField(versionService,"productId", "adobe-acrobat-connector");
         Assertions.assertTrue(versionService.handleArtifactForVersionToDisplay(versionsToDisplay, result));
         Assertions.assertEquals(1, result.size());
         Assertions.assertEquals(newVersionDetected, result.get(0).getVersion());
@@ -137,6 +137,7 @@ class VersionServiceImplTest {
     @Test
     void testUpdateArtifactsInVersionWithProductArtifact() {
         String version = "10.0.10";
+        ReflectionTestUtils.setField(versionService,"productId", "adobe-acrobat-connector");
         MavenArtifactModel artifactModel = new MavenArtifactModel();
         List<MavenArtifactModel> mockMavenArtifactModels = List.of(artifactModel);
         when(versionService.getProductJsonByVersion(Mockito.anyString())).thenReturn(List.of(new MavenArtifact()));
@@ -316,7 +317,7 @@ class VersionServiceImplTest {
         GHContent mockContent = mock(GHContent.class);
         repoName = "adobe-acrobat-sign-connector";
         ReflectionTestUtils.setField(versionService, "repoName", repoName);
-
+        ReflectionTestUtils.setField(versionService,"productId", "adobe-acrobat-connector");
         MavenArtifact productArtifact = new MavenArtifact("https://maven.axonivy.com", null, targetGroupId, targetArtifactId, "iar", null, true, null);
 
         metaProductArtifact.setRepoUrl("https://maven.axonivy.com");
