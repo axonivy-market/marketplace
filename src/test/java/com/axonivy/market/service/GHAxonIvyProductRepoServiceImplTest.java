@@ -19,7 +19,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import com.axonivy.market.github.service.GithubService;
+import com.axonivy.market.github.service.GitHubService;
 import com.axonivy.market.github.service.impl.GHAxonIvyProductRepoServiceImpl;
 
 @ExtendWith(MockitoExtension.class)
@@ -34,7 +34,7 @@ class GHAxonIvyProductRepoServiceImplTest {
   GHRepository ghRepository;
 
   @Mock
-  GithubService githubService;
+  GitHubService gitHubService;
 
   @InjectMocks
   private GHAxonIvyProductRepoServiceImpl axonivyProductRepoServiceImpl;
@@ -43,7 +43,7 @@ class GHAxonIvyProductRepoServiceImplTest {
   void setup() throws IOException {
     var mockGHOrganization = mock(GHOrganization.class);
     when(mockGHOrganization.getRepository(any())).thenReturn(ghRepository);
-    when(githubService.getOrganization(any())).thenReturn(mockGHOrganization);
+    when(gitHubService.getOrganization(any())).thenReturn(mockGHOrganization);
   }
 
   @Test

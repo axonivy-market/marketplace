@@ -22,6 +22,6 @@ public enum SortOption {
         return sortOption;
       }
     }
-    throw new NotFoundException("Not found sort option: " + option);
+    throw new NotFoundException(ErrorCode.PRODUCT_SORT_INVALID, "SortOption: " + option);
   }
 }

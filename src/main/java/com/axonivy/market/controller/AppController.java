@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
+import com.axonivy.market.enums.ErrorCode;
 import com.axonivy.market.model.Message;
 
 import lombok.extern.log4j.Log4j2;
@@ -22,11 +23,11 @@ public class AppController {
   @GetMapping
   public ResponseEntity<Message> root() {
     var message = new Message();
-    message.setErrorCode("0");
-    message.setMessageDetails("Welcome to Marketplace API");
-    message.setHelpText(
-        "This is a REST APIs for Marketplace website - No user interface. Try with %s".formatted(extractSwaggerUrl()));
-
+    message.setHelpCode(ErrorCode.APPLICATION.getCode());
+    message.setMessageDetails(
+        "Marketplace API is a REST APIs for Marketplace website. Try with %s"
+        .formatted(extractSwaggerUrl()));
+    message.setHelpText(ErrorCode.APPLICATION.getHelpText());
     return new ResponseEntity<>(message, HttpStatus.OK);
   }
 

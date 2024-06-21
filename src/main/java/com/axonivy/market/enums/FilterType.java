@@ -25,6 +25,6 @@ public enum FilterType {
         return filter;
       }
     }
-    throw new NotFoundException("Not found filter option: " + option);
+    throw new NotFoundException(ErrorCode.PRODUCT_FILTER_INVALID, "FilterType: " + option);
   }
 }

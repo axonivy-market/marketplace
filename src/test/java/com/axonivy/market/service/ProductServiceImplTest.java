@@ -35,7 +35,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 
 import com.axonivy.market.constants.GitHubConstants;
-import com.axonivy.market.entity.GithubRepoMeta;
+import com.axonivy.market.entity.GitHubRepoMeta;
 import com.axonivy.market.entity.Product;
 import com.axonivy.market.enums.FileStatus;
 import com.axonivy.market.enums.FileType;
@@ -43,8 +43,8 @@ import com.axonivy.market.enums.FilterType;
 import com.axonivy.market.enums.SortOption;
 import com.axonivy.market.github.model.GitHubFile;
 import com.axonivy.market.github.service.GHAxonIvyMarketRepoService;
-import com.axonivy.market.github.service.GithubService;
-import com.axonivy.market.repository.GithubRepoMetaRepository;
+import com.axonivy.market.github.service.GitHubService;
+import com.axonivy.market.repository.GitHubRepoMetaRepository;
 import com.axonivy.market.repository.ProductRepository;
 import com.axonivy.market.service.impl.ProductServiceImpl;
 
@@ -66,10 +66,10 @@ class ProductServiceImplTest {
   private GHAxonIvyMarketRepoService marketRepoService;
 
   @Mock
-  private GithubRepoMetaRepository repoMetaRepository;
+  private GitHubRepoMetaRepository repoMetaRepository;
 
   @Mock
-  private GithubService githubService;
+  private GitHubService gitHubService;
 
   @InjectMocks
   private ProductServiceImpl productService;
@@ -113,7 +113,7 @@ class ProductServiceImplTest {
     mockGithubFile.setStatus(FileStatus.ADDED);
     when(marketRepoService.fetchMarketItemsBySHA1Range(any(), any())).thenReturn(List.of(mockGithubFile));
     var mockGHContent = mockGHContentAsMetaJSON();
-    when(githubService.getGHContent(any(), anyString())).thenReturn(mockGHContent);
+    when(gitHubService.getGHContent(any(), anyString())).thenReturn(mockGHContent);
 
     // Executes
     var result = productService.findProducts(FilterType.CONNECTORS.getOption(), keyword, PAGEABLE);
@@ -141,14 +141,14 @@ class ProductServiceImplTest {
     var connectorProducts = mockResultReturn.filter(product -> product.getType().equals(connectorCode)).toList();
     var mockPagedResult = new PageImpl<Product>(connectorProducts);
     when(productRepository.findByType(connectorCode, PAGEABLE)).thenReturn(mockPagedResult);
-    var mockGithubFile = mock(GitHubFile.class);
-    mockGithubFile = new GitHubFile();
-    mockGithubFile.setFileName(LOGO_FILE);
-    mockGithubFile.setType(FileType.LOGO);
-    mockGithubFile.setStatus(FileStatus.ADDED);
-    when(marketRepoService.fetchMarketItemsBySHA1Range(any(), any())).thenReturn(List.of(mockGithubFile));
+    var mockGitHubFile = mock(GitHubFile.class);
+    mockGitHubFile = new GitHubFile();
+    mockGitHubFile.setFileName(LOGO_FILE);
+    mockGitHubFile.setType(FileType.LOGO);
+    mockGitHubFile.setStatus(FileStatus.ADDED);
+    when(marketRepoService.fetchMarketItemsBySHA1Range(any(), any())).thenReturn(List.of(mockGitHubFile));
     var mockGHContent = mockGHContentAsMetaJSON();
-    when(githubService.getGHContent(any(), anyString())).thenReturn(mockGHContent);
+    when(gitHubService.getGHContent(any(), anyString())).thenReturn(mockGHContent);
 
     // Executes
     var result = productService.findProducts(FilterType.CONNECTORS.getOption(), keyword, PAGEABLE);
@@ -156,9 +156,9 @@ class ProductServiceImplTest {
 
     // Start testing by deleting new logo
     when(mockCommit.getSHA1()).thenReturn(UUID.randomUUID().toString());
-    mockGithubFile.setStatus(FileStatus.REMOVED);
-    when(marketRepoService.fetchMarketItemsBySHA1Range(any(), any())).thenReturn(List.of(mockGithubFile));
-    when(githubService.getGHContent(any(), anyString())).thenReturn(mockGHContent);
+    mockGitHubFile.setStatus(FileStatus.REMOVED);
+    when(marketRepoService.fetchMarketItemsBySHA1Range(any(), any())).thenReturn(List.of(mockGitHubFile));
+    when(gitHubService.getGHContent(any(), anyString())).thenReturn(mockGHContent);
     when(productRepository.findByLogoUrl(any())).thenReturn(new Product());
 
     // Executes
@@ -218,7 +218,7 @@ class ProductServiceImplTest {
   }
 
   private void mockMarketRepoMetaStatus() {
-    var mockMartketRepoMeta = new GithubRepoMeta();
+    var mockMartketRepoMeta = new GitHubRepoMeta();
     mockMartketRepoMeta.setRepoURL(GitHubConstants.AXONIVY_MARKETPLACE_REPO_NAME);
     mockMartketRepoMeta.setRepoName(GitHubConstants.AXONIVY_MARKETPLACE_REPO_NAME);
     mockMartketRepoMeta.setLastChange(LAST_CHANGE_TIME);

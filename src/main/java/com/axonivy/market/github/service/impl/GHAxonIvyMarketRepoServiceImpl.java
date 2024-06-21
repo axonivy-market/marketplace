@@ -21,8 +21,8 @@ import com.axonivy.market.enums.FileStatus;
 import com.axonivy.market.enums.FileType;
 import com.axonivy.market.github.model.GitHubFile;
 import com.axonivy.market.github.service.GHAxonIvyMarketRepoService;
-import com.axonivy.market.github.service.GithubService;
-import com.axonivy.market.github.util.GithubUtils;
+import com.axonivy.market.github.service.GitHubService;
+import com.axonivy.market.github.util.GitHubUtils;
 
 import lombok.extern.log4j.Log4j2;
 
@@ -34,17 +34,17 @@ public class GHAxonIvyMarketRepoServiceImpl implements GHAxonIvyMarketRepoServic
   private GHOrganization organization;
   private GHRepository repository;
 
-  private final GithubService githubService;
+  private final GitHubService gitHubService;
 
-  public GHAxonIvyMarketRepoServiceImpl(GithubService githubService) {
-    this.githubService = githubService;
+  public GHAxonIvyMarketRepoServiceImpl(GitHubService gitHubService) {
+    this.gitHubService = gitHubService;
   }
 
   @Override
   public Map<String, List<GHContent>> fetchAllMarketItems() {
     Map<String, List<GHContent>> ghContentMap = new HashMap<>();
     try {
-      List<GHContent> directoryContent = githubService.getDirectoryContent(getRepository(),
+      List<GHContent> directoryContent = gitHubService.getDirectoryContent(getRepository(),
           GitHubConstants.AXONIVY_MARKETPLACE_PATH);
       for (var content : directoryContent) {
         extractFileInDirectoryContent(content, ghContentMap);
@@ -58,7 +58,7 @@ public class GHAxonIvyMarketRepoServiceImpl implements GHAxonIvyMarketRepoServic
   private void extractFileInDirectoryContent(GHContent content, Map<String, List<GHContent>> ghContentMap)
       throws IOException {
     if (content != null && content.isDirectory()) {
-      for (var childContent : GithubUtils.mapPagedIteratorToList(content.listDirectoryContent())) {
+      for (var childContent : GitHubUtils.mapPagedIteratorToList(content.listDirectoryContent())) {
         if (childContent.isFile()) {
           var contents = ghContentMap.getOrDefault(content.getPath(), new ArrayList<>());
           contents.add(childContent);
@@ -77,7 +77,7 @@ public class GHAxonIvyMarketRepoServiceImpl implements GHAxonIvyMarketRepoServic
     }
     try {
       GHCommitQueryBuilder commitBuilder = createQueryCommitsBuilder(lastCommitTime);
-      return GithubUtils.mapPagedIteratorToList(commitBuilder.list()).stream().findFirst().orElse(null);
+      return GitHubUtils.mapPagedIteratorToList(commitBuilder.list()).stream().findFirst().orElse(null);
     } catch (Exception e) {
       log.error("Cannot query GHCommit: ", e);
     }
@@ -90,36 +90,36 @@ public class GHAxonIvyMarketRepoServiceImpl implements GHAxonIvyMarketRepoServic
 
   @Override
   public List<GitHubFile> fetchMarketItemsBySHA1Range(String fromSHA1, String toSHA1) {
-    Map<String, GitHubFile> githubFileMap = new HashMap<>();
+    Map<String, GitHubFile> gitHubFileMap = new HashMap<>();
     try {
       GHCompare compareResult = getRepository().getCompare(fromSHA1, toSHA1);
-      for (var commit : GithubUtils.mapPagedIteratorToList(compareResult.listCommits())) {
+      for (var commit : GitHubUtils.mapPagedIteratorToList(compareResult.listCommits())) {
         var listFiles = commit.listFiles();
         if (listFiles == null) {
           continue;
         }
-        GithubUtils.mapPagedIteratorToList(listFiles).forEach(file -> {
+        GitHubUtils.mapPagedIteratorToList(listFiles).forEach(file -> {
           String fullPathName = file.getFileName();
           if (FileType.of(fullPathName) != null) {
-            var githubFile = new GitHubFile();
-            githubFile.setFileName(fullPathName);
-            githubFile.setPath(file.getRawUrl().getPath());
-            githubFile.setStatus(FileStatus.of(file.getStatus()));
-            githubFile.setType(FileType.of(fullPathName));
-            githubFile.setPreviousFilename(file.getPreviousFilename());
-            githubFileMap.put(fullPathName, githubFile);
+            var gitHubFile = new GitHubFile();
+            gitHubFile.setFileName(fullPathName);
+            gitHubFile.setPath(file.getRawUrl().getPath());
+            gitHubFile.setStatus(FileStatus.of(file.getStatus()));
+            gitHubFile.setType(FileType.of(fullPathName));
+            gitHubFile.setPreviousFilename(file.getPreviousFilename());
+            gitHubFileMap.put(fullPathName, gitHubFile);
           }
         });
       }
     } catch (IOException e) {
       log.error("Cannot get GH compare: ", e);
     }
-    return new ArrayList<>(githubFileMap.values());
+    return new ArrayList<>(gitHubFileMap.values());
   }
 
   private GHOrganization getOrganization() throws IOException {
     if (organization == null) {
-      organization = githubService.getOrganization(GitHubConstants.AXONIVY_MARKET_ORGANIZATION_NAME);
+      organization = gitHubService.getOrganization(GitHubConstants.AXONIVY_MARKET_ORGANIZATION_NAME);
     }
     return organization;
   }
