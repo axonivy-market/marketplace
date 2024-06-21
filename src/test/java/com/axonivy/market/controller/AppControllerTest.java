@@ -20,7 +20,7 @@ class AppControllerTest {
     var response = appController.root();
     assertEquals(HttpStatus.OK, response.getStatusCode());
     assertTrue(response.hasBody());
-    assertEquals("Welcome to Marketplace API", response.getBody().getMessageDetails());
+    assertTrue(response.getBody().getMessageDetails().contains("/swagger-ui/index.html"));
   }
 
 }

@@ -111,7 +111,7 @@ public class GHAxonIvyMarketRepoServiceImpl implements GHAxonIvyMarketRepoServic
           }
         });
       }
-    } catch (IOException e) {
+    } catch (Exception e) {
       log.error("Cannot get GH compare: ", e);
     }
     return new ArrayList<>(gitHubFileMap.values());
