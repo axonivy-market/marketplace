@@ -1,6 +1,7 @@
 package com.axonivy.market.service;
 
 import com.axonivy.market.constants.MavenConstants;
+import com.axonivy.market.constants.NonStandardProductPPackageConstants;
 import com.axonivy.market.entity.MavenArtifactModel;
 import com.axonivy.market.entity.MavenArtifactVersion;
 import com.axonivy.market.entity.Product;
@@ -85,7 +86,7 @@ class VersionServiceImplTest {
         setUpArtifactFromMeta();
         when(versionService.getProductMetaArtifacts(Mockito.anyString())).thenReturn(artifactsFromMeta);
         when(versionService.getVersionsToDisplay(Mockito.anyBoolean(), Mockito.anyString())).thenReturn(List.of(targetVersion));
-        when(mavenArtifactVersionRepository.findById(Mockito.anyString())).thenReturn(Optional.ofNullable(null));
+        when(mavenArtifactVersionRepository.findById(Mockito.anyString())).thenReturn(Optional.empty());
         ArrayList<MavenArtifactModel> artifactsInVersion = new ArrayList<>();
         artifactsInVersion.add(new MavenArtifactModel());
         when(versionService.convertMavenArtifactsToModels(Mockito.anyList(), Mockito.anyString())).thenReturn(artifactsInVersion);
@@ -470,5 +471,41 @@ class VersionServiceImplTest {
         defaultRepositoryName = "adobe-acrobat-connector";
         result = versionService.getRepoNameFromMarketRepo(defaultRepositoryName);
         Assertions.assertEquals(expectedRepoName, result);
+    }
+
+    @Test
+    void testBuildProductJsonFilePath() {
+        String version = "10.0.1";
+        ReflectionTestUtils.setField(versionService, "productId", "adobe-acrobat-connector");
+        Assertions.assertEquals("v10.0.1", versionService.buildProductJsonFilePath(version));
+
+        ReflectionTestUtils.setField(versionService, "productId", NonStandardProductPPackageConstants.PORTAL);
+        Assertions.assertEquals("10.0.1", versionService.buildProductJsonFilePath(version));
+        Assertions.assertEquals("AxonIvyPortal/portal-product/product.json", versionService.getProductJsonFilePath());
+
+
+        ReflectionTestUtils.setField(versionService, "productId", NonStandardProductPPackageConstants.CONNECTIVITY_FEATURE);
+        versionService.buildProductJsonFilePath(version);
+        Assertions.assertEquals("connectivity/connectivity-demos-product/product.json", versionService.getProductJsonFilePath());
+
+        ReflectionTestUtils.setField(versionService, "productId", NonStandardProductPPackageConstants.ERROR_HANDLING);
+        versionService.buildProductJsonFilePath(version);
+        Assertions.assertEquals("error-handling/error-handling-demos-product/product.json", versionService.getProductJsonFilePath());
+
+        ReflectionTestUtils.setField(versionService, "productId", NonStandardProductPPackageConstants.WORKFLOW_DEMO);
+        versionService.buildProductJsonFilePath(version);
+        Assertions.assertEquals("workflow/workflow-demos-product/product.json", versionService.getProductJsonFilePath());
+
+        ReflectionTestUtils.setField(versionService, "productId", NonStandardProductPPackageConstants.MICROSOFT_365);
+        versionService.buildProductJsonFilePath(version);
+        Assertions.assertEquals("msgraph-connector-product/products/msgraph-connector/product.json", versionService.getProductJsonFilePath());
+
+        ReflectionTestUtils.setField(versionService, "productId", NonStandardProductPPackageConstants.HTML_DIALOG_DEMO);
+        versionService.buildProductJsonFilePath(version);versionService.buildProductJsonFilePath(version);
+        Assertions.assertEquals("html-dialog/html-dialog-demos-product/product.json", versionService.getProductJsonFilePath());
+
+        ReflectionTestUtils.setField(versionService, "productId", NonStandardProductPPackageConstants.RULE_ENGINE_DEMOS);
+        versionService.buildProductJsonFilePath(version);
+        Assertions.assertEquals("rule-engine/rule-engine-demos-product/product.json", versionService.getProductJsonFilePath());
     }
 }

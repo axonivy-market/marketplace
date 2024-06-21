@@ -46,6 +46,10 @@ public class VersionServiceImpl implements VersionService {
     private String productJsonFilePath;
     private String productId;
 
+    public String getProductJsonFilePath() {
+        return productJsonFilePath;
+    }
+
     public String getRepoName() {
         return repoName;
     }
@@ -58,7 +62,7 @@ public class VersionServiceImpl implements VersionService {
     }
 
     private void resetData() {
-        repoName=null;
+        repoName = null;
         archivedArtifactsMap = new HashMap<>();
         artifactsFromMeta = Collections.emptyList();
         proceedDataCache = null;
@@ -212,27 +216,32 @@ public class VersionServiceImpl implements VersionService {
         return result;
     }
 
-    private String buildProductJsonFilePath(String version) {
-        String verisonTag = "v"+version;
+    public String buildProductJsonFilePath(String version) {
+        String verisonTag = "v" + version;
         String pathToProductJsonFileFromTagContent = metaProductArtifact.getArtifactId();
         switch (productId) {
             case NonStandardProductPPackageConstants.PORTAL:
                 pathToProductJsonFileFromTagContent = "AxonIvyPortal/portal-product";
                 verisonTag = version;
-            case NonStandardProductPPackageConstants.ASPOSE_BARCODE_DEMO:
-            case NonStandardProductPPackageConstants.ASPOSE_EMAIL_DEMO:
-            case NonStandardProductPPackageConstants.CHAT_GPT_ASSISTANT:
+                break;
             case NonStandardProductPPackageConstants.CONNECTIVITY_FEATURE:
-            case NonStandardProductPPackageConstants.MICROSOFT_365:
-            case NonStandardProductPPackageConstants.EMPLOYEE_ONBOARDING:
+                pathToProductJsonFileFromTagContent = "connectivity/connectivity-demos-product";
+                break;
             case NonStandardProductPPackageConstants.ERROR_HANDLING:
-            case NonStandardProductPPackageConstants.MICROSOFT_MAIL:
-            case NonStandardProductPPackageConstants.MICROSOFT_TEAMS:
-            case NonStandardProductPPackageConstants.MICROSOFT_TODO:
-            case NonStandardProductPPackageConstants.MICROSOFT_CALENDAR:
-            case NonStandardProductPPackageConstants.RULE_ENGINE_DEMOS:
-            case NonStandardProductPPackageConstants.WEB_TESTER:
+                pathToProductJsonFileFromTagContent = "error-handling/error-handling-demos-product";
+                break;
             case NonStandardProductPPackageConstants.WORKFLOW_DEMO:
+                pathToProductJsonFileFromTagContent = "workflow/workflow-demos-product";
+                break;
+            case NonStandardProductPPackageConstants.MICROSOFT_365:
+                pathToProductJsonFileFromTagContent = "msgraph-connector-product/products/msgraph-connector";
+                break;
+            case NonStandardProductPPackageConstants.HTML_DIALOG_DEMO:
+                pathToProductJsonFileFromTagContent = "html-dialog/html-dialog-demos-product";
+                break;
+            case NonStandardProductPPackageConstants.RULE_ENGINE_DEMOS:
+                pathToProductJsonFileFromTagContent = "rule-engine/rule-engine-demos-product";
+                break;
             default:
                 break;
         }
