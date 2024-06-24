@@ -90,6 +90,12 @@ class ProductServiceImplTest {
     var result = productService.findProducts(TypeOption.ALL.getOption(), keyword, PAGEABLE);
     assertEquals(mockResultReturn, result);
 
+    // Start testing by Connector
+    when(productRepository.findByType(any(), any(Pageable.class))).thenReturn(mockResultReturn);
+    // Executes
+    result = productService.findProducts(TypeOption.CONNECTORS.getOption(), keyword, PAGEABLE);
+    assertEquals(mockResultReturn, result);
+
     // Start testing by Other
     // Executes
     result = productService.findProducts(TypeOption.DEMOS.getOption(), keyword, PAGEABLE);
@@ -160,7 +166,7 @@ class ProductServiceImplTest {
   }
 
   @Test
-  void testFindAllProductsFirstTime() throws IOException {
+  void testFindAllProductsWithKeyword() throws IOException {
     when(productRepository.findAll(any(Pageable.class))).thenReturn(mockResultReturn);
     // Executes
     var result = productService.findProducts(TypeOption.ALL.getOption(), keyword, PAGEABLE);
@@ -174,6 +180,15 @@ class ProductServiceImplTest {
     // Executes
     result = productService.findProducts(TypeOption.ALL.getOption(), SAMPLE_PRODUCT_NAME, PAGEABLE);
     verify(productRepository).findAll(any(Pageable.class));
+    assertTrue(result.hasContent());
+    assertEquals(SAMPLE_PRODUCT_NAME, result.getContent().get(0).getName());
+
+    // Test has keyword and type is connector
+    when(productRepository.searchByKeywordAndType(any(), any(), any(Pageable.class))).thenReturn(
+        new PageImpl<>(mockResultReturn.stream().filter(product -> product.getName().equals(SAMPLE_PRODUCT_NAME)
+            && product.getType().equals(TypeOption.CONNECTORS.getCode())).collect(Collectors.toList())));
+    // Executes
+    result = productService.findProducts(TypeOption.CONNECTORS.getOption(), SAMPLE_PRODUCT_NAME, PAGEABLE);
     assertTrue(result.hasContent());
     assertEquals(SAMPLE_PRODUCT_NAME, result.getContent().get(0).getName());
   }
