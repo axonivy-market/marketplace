@@ -1,4 +1,4 @@
-package com.axonivy.market.exceptions;
+package com.axonivy.market.exceptions.model;
 
 import static com.axonivy.market.constants.ErrorMessageConstants.INVALID_MISSING_HEADER_ERROR_MESSAGE;
 
