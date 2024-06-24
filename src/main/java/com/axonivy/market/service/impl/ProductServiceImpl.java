@@ -70,7 +70,7 @@ public class ProductServiceImpl implements ProductService {
     switch (typeOption) {
     case ALL:
       if (StringUtils.isBlank(keyword)) {
-        result = productRepository.findAll(pageable);
+        result = productRepository.findAll(searchPageable);
       } else {
         result = productRepository.searchByNameOrShortDescriptionRegex(keyword, searchPageable);
       }
