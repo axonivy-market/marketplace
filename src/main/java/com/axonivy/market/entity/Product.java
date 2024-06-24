@@ -48,7 +48,7 @@ public class Product implements Serializable {
   private Boolean validate;
   private Boolean contactUs;
   private Integer installationCount;
-  private Date newestPublishDate;
+  private Date newestPublishedDate;
   private String newestReleaseVersion;
 
   @Override

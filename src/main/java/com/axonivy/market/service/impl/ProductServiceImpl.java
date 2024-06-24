@@ -241,7 +241,7 @@ public class ProductServiceImpl implements ProductService {
     try {
       GHRepository productRepo = gitHubService.getRepository(product.getRepositoryName());
       GHTag lastTag = CollectionUtils.firstElement(productRepo.listTags().toList());
-      product.setNewestPublishDate(lastTag.getCommit().getCommitDate());
+      product.setNewestPublishedDate(lastTag.getCommit().getCommitDate());
       product.setNewestReleaseVersion(lastTag.getName());
     } catch (Exception e) {
       log.error("Cannot find repository by path {} {}", product.getRepositoryName(), e);
