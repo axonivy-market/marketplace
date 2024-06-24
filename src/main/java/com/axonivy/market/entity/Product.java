@@ -2,6 +2,7 @@ package com.axonivy.market.entity;
 
 import static com.axonivy.market.constants.EntityConstants.PRODUCT;
 
+import java.io.Serial;
 import java.io.Serializable;
 import java.util.Date;
 import java.util.List;
@@ -23,7 +24,9 @@ import lombok.Setter;
 @Document(PRODUCT)
 public class Product implements Serializable {
 
+  @Serial
   private static final long serialVersionUID = -8770801877877277258L;
+
   @Id
   private String id;
   private String marketDirectory;
@@ -50,6 +53,11 @@ public class Product implements Serializable {
   private Integer installationCount;
   private Date newestPublishDate;
   private String newestReleaseVersion;
+  private Integer oneStarCount;
+  private Integer twoStarCount;
+  private Integer threeStarCount;
+  private Integer fourStarCount;
+  private Integer fiveStarCount;
 
   @Override
   public int hashCode() {

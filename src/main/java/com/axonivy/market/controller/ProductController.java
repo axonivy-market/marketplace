@@ -2,6 +2,10 @@ package com.axonivy.market.controller;
 
 import static com.axonivy.market.constants.RequestMappingConstants.PRODUCT;
 
+import com.axonivy.market.entity.Feedback;
+import com.axonivy.market.model.FeedbackModel;
+import com.axonivy.market.model.ProductRating;
+import jakarta.websocket.server.PathParam;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
@@ -9,10 +13,7 @@ import org.springframework.data.web.PagedResourcesAssembler;
 import org.springframework.hateoas.PagedModel;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import com.axonivy.market.assembler.ProductModelAssembler;
 import com.axonivy.market.entity.Product;
@@ -20,6 +21,8 @@ import com.axonivy.market.model.ProductModel;
 import com.axonivy.market.service.ProductService;
 
 import io.swagger.v3.oas.annotations.Operation;
+
+import java.util.List;
 
 @RestController
 @RequestMapping(PRODUCT)
@@ -54,5 +57,12 @@ public class ProductController {
     var emptyPagedModel = (PagedModel<ProductModel>) pagedResourcesAssembler
         .toEmptyModel(Page.empty(), ProductModel.class);
     return new ResponseEntity<>(emptyPagedModel, HttpStatus.OK);
+  }
+
+  @Operation(summary = "Find rating information of product by id")
+  @GetMapping("{productId}/rating")
+  public ResponseEntity<List<ProductRating>> findFeedbackByUserIdAndProductId(@PathVariable String productId) {
+    List<ProductRating> ratings = service.getProductRatingById(productId);
+    return ResponseEntity.ok(ratings);
   }
 }
