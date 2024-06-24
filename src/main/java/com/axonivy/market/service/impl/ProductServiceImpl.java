@@ -29,8 +29,8 @@ import com.axonivy.market.constants.GitHubConstants;
 import com.axonivy.market.entity.GitHubRepoMeta;
 import com.axonivy.market.entity.Product;
 import com.axonivy.market.enums.FileType;
-import com.axonivy.market.enums.FilterType;
 import com.axonivy.market.enums.SortOption;
+import com.axonivy.market.enums.TypeOption;
 import com.axonivy.market.factory.ProductFactory;
 import com.axonivy.market.github.model.GitHubFile;
 import com.axonivy.market.github.service.GHAxonIvyMarketRepoService;
@@ -64,19 +64,28 @@ public class ProductServiceImpl implements ProductService {
 
   @Override
   public Page<Product> findProducts(String type, String keyword, Pageable pageable) {
-    final var filterType = FilterType.of(type);
-    if (StringUtils.isNoneBlank(keyword)) {
-      return searchProducts(filterType, keyword, pageable);
+    final var typeOption = TypeOption.of(type);
+    final var searchPageable = refinePagination(pageable);
+    Page<Product> result = Page.empty();
+    switch (typeOption) {
+    case ALL:
+      if (StringUtils.isBlank(keyword)) {
+        result = productRepository.findAll(pageable);
+      } else {
+        result = productRepository.searchByNameOrShortDescriptionRegex(keyword, searchPageable);
+      }
+      break;
+    case CONNECTORS, UTILITIES, SOLUTIONS:
+      if (StringUtils.isBlank(keyword)) {
+        result = productRepository.findByType(typeOption.getCode(), searchPageable);
+      } else {
+        result = productRepository.searchByKeywordAndType(keyword, typeOption.getCode(), searchPageable);
+      }
+      break;
+    default:
+      break;
     }
-
-    syncLatestDataFromMarketRepo();
-
-    Pageable unifiedPageabe = refinePagination(pageable);
-    return switch (filterType) {
-    case ALL -> productRepository.findAll(unifiedPageabe);
-    case CONNECTORS, UTILITIES, SOLUTIONS -> productRepository.findByType(filterType.getCode(), pageable);
-    default -> Page.empty();
-    };
+    return result;
   }
 
   @Override
@@ -183,7 +192,7 @@ public class ProductServiceImpl implements ProductService {
     if (pageable != null && pageable.getSort() != null) {
       List<Order> orders = new ArrayList<>();
       for (var sort : pageable.getSort()) {
-        final SortOption sortOption = SortOption.of(sort.getProperty());
+        final var sortOption = SortOption.of(sort.getProperty());
         Order order = new Order(sort.getDirection(), sortOption.getCode());
         orders.add(order);
       }
@@ -237,13 +246,5 @@ public class ProductServiceImpl implements ProductService {
     } catch (Exception e) {
       log.error("Cannot find repository by path {} {}", product.getRepositoryName(), e);
     }
-  }
-
-  private Page<Product> searchProducts(FilterType filterType, String keyword, Pageable pageable) {
-    Pageable unifiedPageabe = refinePagination(pageable);
-    if (FilterType.ALL == filterType) {
-      return productRepository.searchByNameOrShortDescriptionRegex(keyword, unifiedPageabe);
-    }
-    return productRepository.searchByKeywordAndType(keyword, filterType.getCode(), unifiedPageabe);
   }
 }

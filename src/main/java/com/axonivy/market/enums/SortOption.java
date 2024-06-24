@@ -2,7 +2,7 @@ package com.axonivy.market.enums;
 
 import org.apache.commons.lang3.StringUtils;
 
-import com.axonivy.market.exceptions.model.NotFoundException;
+import com.axonivy.market.exceptions.model.InvalidParamException;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -22,6 +22,6 @@ public enum SortOption {
         return sortOption;
       }
     }
-    throw new NotFoundException(ErrorCode.PRODUCT_SORT_INVALID, "SortOption: " + option);
+    throw new InvalidParamException(ErrorCode.PRODUCT_SORT_INVALID, "SortOption: " + option);
   }
 }

@@ -4,6 +4,7 @@ import static com.axonivy.market.constants.CommonConstants.LOGO_FILE;
 import static com.axonivy.market.constants.CommonConstants.META_FILE;
 import static com.axonivy.market.constants.CommonConstants.SLASH;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.anyString;
@@ -19,6 +20,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -39,8 +41,8 @@ import com.axonivy.market.entity.GitHubRepoMeta;
 import com.axonivy.market.entity.Product;
 import com.axonivy.market.enums.FileStatus;
 import com.axonivy.market.enums.FileType;
-import com.axonivy.market.enums.FilterType;
 import com.axonivy.market.enums.SortOption;
+import com.axonivy.market.enums.TypeOption;
 import com.axonivy.market.github.model.GitHubFile;
 import com.axonivy.market.github.service.GHAxonIvyMarketRepoService;
 import com.axonivy.market.github.service.GitHubService;
@@ -51,7 +53,8 @@ import com.axonivy.market.service.impl.ProductServiceImpl;
 @ExtendWith(MockitoExtension.class)
 class ProductServiceImplTest {
 
-  private static final String SAMPLE_PRODUCT_NAME = "amazon-comprehend";
+  private static final String SAMPLE_PRODUCT_ID = "amazon-comprehend";
+  private static final String SAMPLE_PRODUCT_NAME = "Amazon Comprehend";
   private static final long LAST_CHANGE_TIME = 1718096290000l;
   private static final Pageable PAGEABLE = PageRequest.of(0, 20,
       Sort.by(SortOption.ALPHABETICALLY.getOption()).descending());
@@ -80,32 +83,26 @@ class ProductServiceImplTest {
   }
 
   @Test
-  void testFindProducts() throws IOException {
+  void testFindProducts() {
     // Start testing by All
     when(productRepository.findAll(any(Pageable.class))).thenReturn(mockResultReturn);
-    mockMarketRepoMetaStatus();
     // Executes
-    var result = productService.findProducts(FilterType.ALL.getOption(), keyword, PAGEABLE);
+    var result = productService.findProducts(TypeOption.ALL.getOption(), keyword, PAGEABLE);
     assertEquals(mockResultReturn, result);
 
     // Start testing by Other
     // Executes
-    result = productService.findProducts(FilterType.DEMOS.getOption(), keyword, PAGEABLE);
+    result = productService.findProducts(TypeOption.DEMOS.getOption(), keyword, PAGEABLE);
     assertEquals(0, result.getSize());
   }
 
   @Test
-  void testFindProductsAsUpdateMetaJSONFromGitHub() throws IOException {
+  void testSyncProductsAsUpdateMetaJSONFromGitHub() throws IOException {
     // Start testing by adding new meta
     mockMarketRepoMetaStatus();
     var mockCommit = mockGHCommitHasSHA1(UUID.randomUUID().toString());
     when(mockCommit.getCommitDate()).thenReturn(new Date());
     when(marketRepoService.getLastCommit(anyLong())).thenReturn(mockCommit);
-
-    var connectorCode = FilterType.CONNECTORS.getCode();
-    var connectorProducts = mockResultReturn.filter(product -> product.getType().equals(connectorCode)).toList();
-    var mockPagedResult = new PageImpl<Product>(connectorProducts);
-    when(productRepository.findByType(connectorCode, PAGEABLE)).thenReturn(mockPagedResult);
 
     var mockGithubFile = new GitHubFile();
     mockGithubFile.setFileName(META_FILE);
@@ -116,8 +113,8 @@ class ProductServiceImplTest {
     when(gitHubService.getGHContent(any(), anyString())).thenReturn(mockGHContent);
 
     // Executes
-    var result = productService.findProducts(FilterType.CONNECTORS.getOption(), keyword, PAGEABLE);
-    assertEquals(mockPagedResult, result);
+    var result = productService.syncLatestDataFromMarketRepo();
+    assertEquals(false, result);
 
     // Start testing by deleting new meta
     mockCommit = mockGHCommitHasSHA1(UUID.randomUUID().toString());
@@ -125,22 +122,18 @@ class ProductServiceImplTest {
     when(marketRepoService.getLastCommit(anyLong())).thenReturn(mockCommit);
     mockGithubFile.setStatus(FileStatus.REMOVED);
     // Executes
-    result = productService.findProducts(FilterType.CONNECTORS.getOption(), keyword, PAGEABLE);
-    assertEquals(mockPagedResult, result);
+    result = productService.syncLatestDataFromMarketRepo();
+    assertEquals(false, result);
   }
 
   @Test
-  void testFindProductsAsUpdateLogoFromGitHub() throws IOException {
+  void testSyncProductsAsUpdateLogoFromGitHub() throws IOException {
     // Start testing by adding new logo
     mockMarketRepoMetaStatus();
     var mockCommit = mockGHCommitHasSHA1(UUID.randomUUID().toString());
     when(mockCommit.getCommitDate()).thenReturn(new Date());
     when(marketRepoService.getLastCommit(anyLong())).thenReturn(mockCommit);
 
-    var connectorCode = FilterType.CONNECTORS.getCode();
-    var connectorProducts = mockResultReturn.filter(product -> product.getType().equals(connectorCode)).toList();
-    var mockPagedResult = new PageImpl<Product>(connectorProducts);
-    when(productRepository.findByType(connectorCode, PAGEABLE)).thenReturn(mockPagedResult);
     var mockGitHubFile = mock(GitHubFile.class);
     mockGitHubFile = new GitHubFile();
     mockGitHubFile.setFileName(LOGO_FILE);
@@ -151,8 +144,8 @@ class ProductServiceImplTest {
     when(gitHubService.getGHContent(any(), anyString())).thenReturn(mockGHContent);
 
     // Executes
-    var result = productService.findProducts(FilterType.CONNECTORS.getOption(), keyword, PAGEABLE);
-    assertEquals(mockPagedResult, result);
+    var result = productService.syncLatestDataFromMarketRepo();
+    assertEquals(false, result);
 
     // Start testing by deleting new logo
     when(mockCommit.getSHA1()).thenReturn(UUID.randomUUID().toString());
@@ -162,15 +155,31 @@ class ProductServiceImplTest {
     when(productRepository.findByLogoUrl(any())).thenReturn(new Product());
 
     // Executes
-    result = productService.findProducts(FilterType.CONNECTORS.getOption(), keyword, PAGEABLE);
-    assertEquals(mockPagedResult, result);
+    result = productService.syncLatestDataFromMarketRepo();
+    assertEquals(false, result);
   }
 
   @Test
   void testFindAllProductsFirstTime() throws IOException {
-    String allType = FilterType.ALL.getOption();
     when(productRepository.findAll(any(Pageable.class))).thenReturn(mockResultReturn);
+    // Executes
+    var result = productService.findProducts(TypeOption.ALL.getOption(), keyword, PAGEABLE);
+    assertEquals(mockResultReturn, result);
+    verify(productRepository).findAll(any(Pageable.class));
 
+    // Test has keyword
+    when(productRepository.searchByNameOrShortDescriptionRegex(any(), any(Pageable.class)))
+        .thenReturn(new PageImpl<>(mockResultReturn.stream()
+            .filter(product -> product.getName().equals(SAMPLE_PRODUCT_NAME)).collect(Collectors.toList())));
+    // Executes
+    result = productService.findProducts(TypeOption.ALL.getOption(), SAMPLE_PRODUCT_NAME, PAGEABLE);
+    verify(productRepository).findAll(any(Pageable.class));
+    assertTrue(result.hasContent());
+    assertEquals(SAMPLE_PRODUCT_NAME, result.getContent().get(0).getName());
+  }
+
+  @Test
+  void testSyncProductsFirstTime() throws IOException {
     var mockCommit = mockGHCommitHasSHA1(SHA1_SAMPLE);
     when(marketRepoService.getLastCommit(anyLong())).thenReturn(mockCommit);
     when(repoMetaRepository.findByRepoName(anyString())).thenReturn(null);
@@ -180,19 +189,31 @@ class ProductServiceImplTest {
     when(mockContent.read()).thenReturn(inputStream);
 
     Map<String, List<GHContent>> mockGHContentMap = new HashMap<>();
-    mockGHContentMap.put(SAMPLE_PRODUCT_NAME, List.of(mockContent));
+    mockGHContentMap.put(SAMPLE_PRODUCT_ID, List.of(mockContent));
     when(marketRepoService.fetchAllMarketItems()).thenReturn(mockGHContentMap);
 
     // Executes
-    var result = productService.findProducts(allType, keyword, PAGEABLE);
-    assertEquals(result, mockResultReturn);
-    verify(productRepository).findAll(any(Pageable.class));
+    var result = productService.syncLatestDataFromMarketRepo();
+    assertEquals(false, result);
+  }
+
+  @Test
+  void testNothingToSync() throws IOException {
+    var gitHubRepoMeta = mock(GitHubRepoMeta.class);
+    when(gitHubRepoMeta.getLastSHA1()).thenReturn(SHA1_SAMPLE);
+    var mockCommit = mockGHCommitHasSHA1(SHA1_SAMPLE);
+    when(marketRepoService.getLastCommit(anyLong())).thenReturn(mockCommit);
+    when(repoMetaRepository.findByRepoName(anyString())).thenReturn(gitHubRepoMeta);
+
+    // Executes
+    var result = productService.syncLatestDataFromMarketRepo();
+    assertEquals(true, result);
   }
 
   @Test
   void testSearchProducts() {
     var simplePageable = PageRequest.of(0, 20);
-    String type = FilterType.ALL.getOption();
+    String type = TypeOption.ALL.getOption();
     keyword = "on";
     when(productRepository.searchByNameOrShortDescriptionRegex(keyword, simplePageable)).thenReturn(mockResultReturn);
 
@@ -204,8 +225,8 @@ class ProductServiceImplTest {
   private Page<Product> createPageProductsMock() {
     var mockProducts = new ArrayList<Product>();
     Product mockProduct = new Product();
-    mockProduct.setId(SAMPLE_PRODUCT_NAME);
-    mockProduct.setName("Amazon Comprehend");
+    mockProduct.setId(SAMPLE_PRODUCT_ID);
+    mockProduct.setName(SAMPLE_PRODUCT_NAME);
     mockProduct.setType("connector");
     mockProducts.add(mockProduct);
 

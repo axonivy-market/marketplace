@@ -7,6 +7,7 @@ import org.springframework.boot.context.event.ApplicationStartedEvent;
 import org.springframework.context.event.EventListener;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.annotation.EnableAsync;
+import org.springframework.scheduling.annotation.EnableScheduling;
 
 import com.axonivy.market.service.ProductService;
 
@@ -14,6 +15,7 @@ import lombok.extern.log4j.Log4j2;
 
 @Log4j2
 @EnableAsync
+@EnableScheduling
 @SpringBootApplication
 public class MarketplaceServiceApplication {
 
@@ -30,6 +32,10 @@ public class MarketplaceServiceApplication {
   @Async
   @EventListener(ApplicationStartedEvent.class)
   public void startInitializeSystem() {
+    syncProductData();
+  }
+
+  private void syncProductData() {
     var watch = new StopWatch();
     log.warn("Synchronizing Market repo: Started synchronizing data for Axon Ivy Market repo");
     watch.start();

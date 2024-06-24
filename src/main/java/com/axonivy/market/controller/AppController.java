@@ -23,11 +23,11 @@ public class AppController {
   @GetMapping
   public ResponseEntity<Message> root() {
     var message = new Message();
-    message.setHelpCode(ErrorCode.APPLICATION.getCode());
+    message.setHelpCode(ErrorCode.SUCCESSFUL.getCode());
     message.setMessageDetails(
         "Marketplace API is a REST APIs for Marketplace website. Try with %s"
         .formatted(extractSwaggerUrl()));
-    message.setHelpText(ErrorCode.APPLICATION.getHelpText());
+    message.setHelpText(ErrorCode.SUCCESSFUL.getHelpText());
     return new ResponseEntity<>(message, HttpStatus.OK);
   }
 
