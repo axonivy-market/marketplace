@@ -1,6 +1,6 @@
 package com.axonivy.market.entity;
 
-import static com.axonivy.market.constants.EntityConstants.GITHUB_REPO_META;
+import static com.axonivy.market.constants.EntityConstants.GH_REPO_META;
 
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
@@ -10,8 +10,8 @@ import lombok.Setter;
 
 @Getter
 @Setter
-@Document(GITHUB_REPO_META)
-public class GithubRepoMeta {
+@Document(GH_REPO_META)
+public class GitHubRepoMeta {
   @Id
   private String repoURL;
   private String repoName;

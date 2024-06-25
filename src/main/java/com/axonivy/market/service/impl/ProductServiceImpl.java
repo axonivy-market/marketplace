@@ -30,19 +30,12 @@ import org.springframework.util.CollectionUtils;
 import com.axonivy.market.constants.GitHubConstants;
 import com.axonivy.market.entity.Product;
 import com.axonivy.market.enums.FileType;
-import com.axonivy.market.enums.FilterType;
 import com.axonivy.market.enums.SortOption;
 import com.axonivy.market.factory.ProductFactory;
 import com.axonivy.market.github.model.GitHubFile;
 import com.axonivy.market.github.service.GHAxonIvyMarketRepoService;
 import com.axonivy.market.entity.GitHubRepoMeta;
-import com.axonivy.market.entity.Product;
-import com.axonivy.market.enums.FileType;
-import com.axonivy.market.enums.SortOption;
 import com.axonivy.market.enums.TypeOption;
-import com.axonivy.market.factory.ProductFactory;
-import com.axonivy.market.github.model.GitHubFile;
-import com.axonivy.market.github.service.GHAxonIvyMarketRepoService;
 import com.axonivy.market.github.service.GitHubService;
 import com.axonivy.market.github.util.GitHubUtils;
 import com.axonivy.market.repository.GitHubRepoMetaRepository;
@@ -57,7 +50,7 @@ public class ProductServiceImpl implements ProductService {
 
     private final ProductRepository productRepository;
     private final GHAxonIvyMarketRepoService axonIvyMarketRepoService;
-    private final GHAxonIvyProductRepoService axonivyProductRepoService;
+    private final GHAxonIvyProductRepoService axonIvyProductRepoService;
     private final GitHubRepoMetaRepository gitHubRepoMetaRepository;
     private final GitHubService gitHubService;
 
@@ -67,10 +60,10 @@ public class ProductServiceImpl implements ProductService {
     public static final String NON_NUMERIC_CHAR = "[^0-9.]";
 
     public ProductServiceImpl(ProductRepository productRepository, GHAxonIvyMarketRepoService axonIvyMarketRepoService,
-                              GHAxonIvyProductRepoService axonivyProductRepoService, GitHubRepoMetaRepository gitHubRepoMetaRepository, GitHubService gitHubService) {
+                              GHAxonIvyProductRepoService axonIvyProductRepoService, GitHubRepoMetaRepository gitHubRepoMetaRepository, GitHubService gitHubService) {
         this.productRepository = productRepository;
         this.axonIvyMarketRepoService = axonIvyMarketRepoService;
-        this.axonivyProductRepoService = axonivyProductRepoService;
+        this.axonIvyProductRepoService = axonIvyProductRepoService;
         this.gitHubRepoMetaRepository = gitHubRepoMetaRepository;
         this.gitHubService = gitHubService;
     }
@@ -298,6 +291,6 @@ public class ProductServiceImpl implements ProductService {
 
     @Override
     public ReadmeModel getReadmeAndProductContentsFromTag(String productId, String tag) {
-        return axonivyProductRepoService.getReadmeAndProductContentsFromTag(productRepository.findById(productId).get().getRepositoryName(), tag);
+        return axonIvyProductRepoService.getReadmeAndProductContentsFromTag(productRepository.findById(productId).get().getRepositoryName(), tag);
     }
 }

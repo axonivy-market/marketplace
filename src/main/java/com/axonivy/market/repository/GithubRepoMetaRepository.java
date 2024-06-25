@@ -2,9 +2,9 @@ package com.axonivy.market.repository;
 
 import org.springframework.data.mongodb.repository.MongoRepository;
 
-import com.axonivy.market.entity.GithubRepoMeta;
+import com.axonivy.market.entity.GitHubRepoMeta;
 
-public interface GithubRepoMetaRepository extends MongoRepository<GithubRepoMeta, String> {
+public interface GitHubRepoMetaRepository extends MongoRepository<GitHubRepoMeta, String> {
 
-  GithubRepoMeta findByRepoName(String repoName);
+  GitHubRepoMeta findByRepoName(String repoName);
 }

@@ -4,7 +4,6 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
 
-import com.axonivy.market.exceptions.model.NotFoundException;
 import com.axonivy.market.model.ReadmeModel;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -21,14 +20,10 @@ import org.kohsuke.github.GHTag;
 import org.springframework.stereotype.Service;
 import com.axonivy.market.github.service.GitHubService;
 
-import lombok.extern.log4j.Log4j2;
-
 import java.util.Map;
 import java.util.Optional;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
-import com.axonivy.market.github.service.GithubService;
 
 @Log4j2
 @Service
@@ -171,7 +166,7 @@ public class GHAxonIvyProductRepoServiceImpl implements GHAxonIvyProductRepoServ
     }
 
     private List<GHContent> getRepoContents(String repoName, String tag) throws IOException {
-        return githubService.getRepository(repoName)
+        return gitHubService.getRepository(repoName)
                 .getDirectoryContent(SLASH, tag)
                 .stream()
                 .filter(GHContent::isDirectory)
@@ -180,7 +175,7 @@ public class GHAxonIvyProductRepoServiceImpl implements GHAxonIvyProductRepoServ
                     try {
                         return content.listDirectoryContent().toList().stream();
                     } catch (Exception e) {
-                        throw new NotFoundException("Cannot list directory content");
+                        throw new RuntimeException(e);
                     }
                 }).toList();
     }
