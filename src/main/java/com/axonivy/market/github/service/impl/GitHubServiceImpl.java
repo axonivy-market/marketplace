@@ -25,7 +25,7 @@ public class GitHubServiceImpl implements GitHubService {
   public GitHub getGitHub() throws IOException {
     File gitHubToken = ResourceUtils.getFile(GITHUB_TOKEN_FILE);
     var token = Files.readString(gitHubToken.toPath());
-    return new GitHubBuilder().withOAuthToken(token).build();
+    return new GitHubBuilder().withOAuthToken(token.trim().strip()).build();
   }
 
   @Override
