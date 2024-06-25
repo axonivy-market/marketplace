@@ -16,15 +16,14 @@ import static com.axonivy.market.constants.RequestMappingConstants.USER_MAPPING;
 @RestController
 @RequestMapping(USER_MAPPING)
 public class UserController {
-    private final UserService userService;
+  private final UserService userService;
 
-    public UserController(UserService userService) {
-        this.userService = userService;
-    }
+  public UserController(UserService userService) {
+    this.userService = userService;
+  }
 
-    @GetMapping
-    public ResponseEntity<List<User>> getAllUser() {
-        log.warn("user nha");
-        return ResponseEntity.ok(userService.getAllUsers());
-    }
+  @GetMapping
+  public ResponseEntity<List<User>> getAllUser() {
+    return ResponseEntity.ok(userService.getAllUsers());
+  }
 }

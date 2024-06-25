@@ -16,7 +16,6 @@ import java.util.List;
 
 import static com.axonivy.market.constants.RequestMappingConstants.PRODUCT_DETAILS;
 
-@Log4j2
 @RestController
 @RequestMapping(PRODUCT_DETAILS)
 public class ProductDetailsController {
@@ -25,8 +24,6 @@ public class ProductDetailsController {
     public ProductDetailsController(VersionService service) {
         this.service = service;
     }
-
-    public
 
     @GetMapping("/{id}")
     ResponseEntity<Object> findProduct(@PathVariable("id") String key,

@@ -14,8 +14,6 @@ import com.axonivy.market.model.Message;
 @ControllerAdvice
 public class ExceptionHandlers extends ResponseEntityExceptionHandler {
 
-  private static final String NOT_FOUND_EXCEPTION_CODE = "-1";
-
   @ExceptionHandler(MissingHeaderException.class)
   public ResponseEntity<Object> handleMissingServletRequestParameter(MissingHeaderException missingHeaderException) {
     var errorMessage = new Message();

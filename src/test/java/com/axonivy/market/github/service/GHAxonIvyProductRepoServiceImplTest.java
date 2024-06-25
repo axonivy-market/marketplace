@@ -38,7 +38,7 @@ class GHAxonIvyProductRepoServiceImplTest {
     GHRepository ghRepository;
 
     @Mock
-    GithubService githubService;
+    GitHubService githubService;
 
     @Mock
     GHOrganization organization;
