@@ -10,6 +10,8 @@ import static org.mockito.Mockito.when;
 import java.io.IOException;
 import java.io.InputStream;
 
+import com.axonivy.market.github.model.Meta;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.kohsuke.github.GHContent;
@@ -20,8 +22,6 @@ import com.axonivy.market.entity.Product;
 
 @ExtendWith(MockitoExtension.class)
 class ProductFactoryTest {
-  @InjectMocks
-  private ProductFactory productFactory;
   private static final String DUMMY_LOGO_URL = "https://raw.githubusercontent.com/axonivy-market/market/master/market/connector/amazon-comprehend-connector/logo.png";
 
   @Test
