@@ -25,11 +25,11 @@ jobs:
         GITHUB_TOKEN_FILE: 'src/main/resources/github.token'
         MONGODB_HOST: ${{ secrets.MONGODB_HOST }}
         MONGODB_DATABASE: ${{ secrets.MONGODB_DATABASE }}
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        GH_TOKEN: ${{ secrets.GH_TOKEN }}
       run: |
           sed -i "s/^spring.data.mongodb.host=.*$/spring.data.mongodb.host=$MONGODB_HOST/" $APP_PROPERTIES_FILE
           sed -i "s/^spring.data.mongodb.database=.*$/spring.data.mongodb.database=$MONGODB_DATABASE/" $APP_PROPERTIES_FILE
-          sed -i '1d;$d' $GITHUB_TOKEN_FILE && echo $GITHUB_TOKEN > $GITHUB_TOKEN_FILE
+          sed -i '1d;$d' $GITHUB_TOKEN_FILE && echo $GH_TOKEN > $GITHUB_TOKEN_FILE
     - name: Build with Maven
       run: mvn clean package -DskipTests
     - name: Prepare deployment directory
