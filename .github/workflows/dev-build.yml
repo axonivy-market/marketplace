@@ -19,7 +19,7 @@ jobs:
         java-version: '17'
         distribution: 'temurin'
         cache: maven
-    - name: Update MongoDB in application.properties
+    - name: Update configuration
       env:
         APP_PROPERTIES_FILE: 'src/main/resources/application.properties'
         GITHUB_TOKEN_FILE: 'src/main/resources/github.token'
@@ -35,7 +35,7 @@ jobs:
     - name: Prepare deployment directory
       run: mkdir -p deployment && cp target/*.war deployment/
     - name: Copy WAR to Tomcat server
-      run: sudo cp deployment/*.war /opt/tomcat/webapps/marketplace-server.war
+      run: sudo cp deployment/*.war /opt/tomcat/webapps/marketplace-service.war
     - name: Restart Tomcat server
       run: |
           sudo systemctl stop tomcat
