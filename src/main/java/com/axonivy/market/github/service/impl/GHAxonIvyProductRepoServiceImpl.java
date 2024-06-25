@@ -42,7 +42,6 @@ public class GHAxonIvyProductRepoServiceImpl implements GHAxonIvyProductRepoServ
     }
 
     JsonNode rootNode = objectMapper.readTree(contentStream);
-
     JsonNode installersNode = rootNode.path(ProductJsonConstants.INSTALLERS);
 
     for (JsonNode installerNode : installersNode) {
@@ -50,7 +49,11 @@ public class GHAxonIvyProductRepoServiceImpl implements GHAxonIvyProductRepoServ
 
       // Extract repository URL
       JsonNode repositoriesNode = dataNode.path(ProductJsonConstants.REPOSITORIES);
-      repoUrl = repositoriesNode.get(0).path(ProductJsonConstants.URL).asText();
+      JsonNode repositoryNode = repositoriesNode.get(0);
+      if(Objects.isNull(repositoryNode)){
+        continue;
+      }
+      repoUrl = repositoryNode.path(ProductJsonConstants.URL).asText();
 
       // Process projects
       if (dataNode.has(ProductJsonConstants.PROJECTS)) {
