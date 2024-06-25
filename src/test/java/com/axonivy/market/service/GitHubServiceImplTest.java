@@ -7,6 +7,7 @@ import static org.mockito.Mockito.when;
 
 import java.io.IOException;
 
+import com.axonivy.market.github.service.impl.GitHubServiceImpl;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.kohsuke.github.GHContent;

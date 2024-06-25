@@ -26,8 +26,8 @@ public class ProductDetailsController {
   }
 
   @GetMapping("/{id}")
-  ResponseEntity<Object> findProduct(@PathVariable("id") String key,
-                                     @RequestParam(name = "type", required = false) String type) {
+  public ResponseEntity<Object> findProduct(@PathVariable("id") String key,
+                                            @RequestParam(name = "type", required = false) String type) {
     return new ResponseEntity<>(HttpStatus.NOT_FOUND);
   }
 
