@@ -23,8 +23,8 @@ public class ProductDetailsController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<ProductDetailModel> findProduct(@PathVariable("id") String id,
-                                                          @RequestParam(name = "type", required = false) String type) {
+    public ResponseEntity<ProductDetailModel> findProductDetails(@PathVariable("id") String id,
+                                                                 @RequestParam(name = "type", required = false) String type) {
         var productDetail = service.fetchProductDetail(id, type);
         return new ResponseEntity<>(detailModelAssembler.toModel(productDetail), HttpStatus.OK);
     }

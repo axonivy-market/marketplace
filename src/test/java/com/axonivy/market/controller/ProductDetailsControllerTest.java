@@ -3,10 +3,13 @@ package com.axonivy.market.controller;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 import com.axonivy.market.assembler.ProductDetailModelAssembler;
+import com.axonivy.market.assembler.ProductModelAssembler;
 import com.axonivy.market.entity.Product;
+import com.axonivy.market.model.ProductDetailModel;
+import com.axonivy.market.model.ReadmeModel;
 import com.axonivy.market.service.ProductService;
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.lang3.StringUtils;
@@ -15,115 +18,87 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 
 import java.util.List;
 
 @Log4j2
 @ExtendWith(MockitoExtension.class)
 class ProductDetailsControllerTest {
-  @Mock
-  private ProductService service;
+    @Mock
+    private ProductService service;
 
-  @Mock
-  private ProductDetailModelAssembler productDetailAssembler;
-  @InjectMocks
-  private ProductDetailsController productDetailsController;
+    @Mock
+    private ProductModelAssembler productAssembler;
 
-  @BeforeEach
-  void setup(){
-    productDetailAssembler = new ProductDetailModelAssembler();
-  }
+    @Mock
+    private ProductDetailModelAssembler productDetailAssembler;
 
-//  @Test
-//  public void testFindProduct() throws Exception {
-//    ProductDetailModel productDetailModel = new ProductDetailModel();
-//    when(service.fetchProductDetail(anyString(), any())).thenReturn(productDetailModel);
-//    when(detailModelAssembler.toModel(any())).thenReturn(productDetailModel);
-//
-//    mockMvc.perform(MockMvcRequestBuilders.get("/1")
-//                    .contentType(MediaType.APPLICATION_JSON))
-//            .andExpect(status().isOk())
-//            .andExpect(content().contentType(MediaType.APPLICATION_JSON));
-//  }
-//
-//  @Test
-//  public void testGetReadmeAndProductContentsFromTag() throws Exception {
-//    ReadmeModel readmeModel = new ReadmeModel();
-//    when(service.getReadmeAndProductContentsFromTag(anyString(), anyString())).thenReturn(readmeModel);
-//
-//    mockMvc.perform(MockMvcRequestBuilders.get("/1/readme")
-//                    .param("tag", "v1.0")
-//                    .contentType(MediaType.APPLICATION_JSON))
-//            .andExpect(status().isOk())
-//            .andExpect(content().contentType(MediaType.APPLICATION_JSON));
-//  }
-//  @Test
-//  public void testFindProductWithValidIdAndType() {
-//    String id = "docker-connector";
-//    String type = "connector";
-//
-//    Product product = createProductMockWithDetails();
-//    var mockModel = productDetailAssembler.toModel(product);
-//    when(service.fetchProductDetail(id, type)).thenReturn(product);
-//    when(productDetailAssembler.toModel(product)).thenReturn(mockModel);
-//
-//   var result = productDetailsController.findProduct(id, type);
-//    assertEquals(HttpStatus.OK, result.getStatusCode());
-//    assertTrue(result.hasBody());
-//  }
+    @InjectMocks
+    private ProductDetailsController productDetailsController;
 
-//  @Test
-//  public void testFindProductWithValidIdNoType() {
-//    String id = "123";
-//    ProductDetail productDetail = new ProductDetail();
-//    ProductDetailModel model = new ProductDetailModel();
-//
-//    when(service.fetchProductDetail(id, null)).thenReturn(productDetail);
-//    when(detailModelAssembler.toModel(productDetail)).thenReturn(model);
-//
-//    ResponseEntity<ProductDetailModel> response = controller.findProduct(id, null);
-//    assertEquals(HttpStatus.OK, response.getStatusCode());
-//    assertEquals(model, response.getBody());
-//  }
-//
-//  @Test public void testGetReadmeAndProductContentsFromTagValidInputs() {
-//    String id = "123";
-//    String tag = "v1.0";
-//    ReadmeModel readmeModel = new ReadmeModel();
-//    when(service.getReadmeAndProductContentsFromTag(id, tag)).thenReturn(readmeModel);
-//
-//    ResponseEntity<ReadmeModel> response = controller.getReadmeAndProductContentsFromTag(id, tag);
-//    assertEquals(HttpStatus.OK, response.getStatusCode());
-//    assertEquals(readmeModel, response.getBody());
-//  }
-//
-//  @Test public void testGetReadmeAndProductContentsFromTagWithNullTag() {
-//    String id = "123";
-//
-//    ResponseEntity<ReadmeModel> response = controller.getReadmeAndProductContentsFromTag(id, null);
-//    assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
-//  }
-//
-//  @Test public void testGetReadmeAndProductContentsFromTagWithEmptyTag() {
-//    String id = "123";
-//    ResponseEntity<ReadmeModel> response = controller.getReadmeAndProductContentsFromTag(id, "");
-//    assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
-//  }
-private Product createProductMockWithDetails(){
-    Product mockProduct = new Product();
-  mockProduct.setId("docker-connector");
-  mockProduct.setName("Docker");
-  mockProduct.setShortDescription("Create, start, stop, remove Docker containers directly from your business processes.");
-  mockProduct.setType("connector");
-  mockProduct.setTags(List.of("container"));
-  mockProduct.setCompatibility("10.0+");
-  mockProduct.setSourceUrl("https://github.com/axonivy-market/docker-connector");
-  mockProduct.setStatusBadgeUrl("https://github.com/axonivy-market/docker-connector");
-  mockProduct.setLanguage("English");
-  mockProduct.setIndustry("Cross-Industry");
-  mockProduct.setContactUs(false);
-  return mockProduct;
-}
+    @BeforeEach
+    void setup() {
+        productAssembler = new ProductModelAssembler();
+        productDetailAssembler = new ProductDetailModelAssembler(productAssembler);
+    }
+
+    @Test
+    public void testFindProductDetails() {
+        String id = "docker-connector";
+        String type = "connector";
+
+        Product product = createProductMockWithDetails();
+
+        // Mock the service to return the product when fetchProductDetail is called
+        when(service.fetchProductDetail(id, type)).thenReturn(product);
+
+        // Create a mock ProductDetailModel
+        ProductDetailModel mockProductDetailModel = mock(ProductDetailModel.class);
+        ProductDetailModel model = productDetailAssembler.toModel(product);
+        when(productDetailAssembler.toModel(any())).thenReturn(model);
+        ResponseEntity<ProductDetailModel> result = productDetailsController.findProductDetails(id, type);
+
+        // Assertions
+        assertEquals(HttpStatus.OK, result.getStatusCode());
+        assertEquals(mockProductDetailModel, result.getBody());
+        assertEquals("docker-connector", result.getBody().getId());
+        assertEquals("Docker", result.getBody().getName());
+        assertEquals("Create, start, stop, remove Docker containers directly from your business processes.", result.getBody().getShortDescription());
+        assertEquals("connector", result.getBody().getType());
+
+        // Verify interactions with the mocks
+        verify(service, times(1)).fetchProductDetail(id, type);
+        verify(productDetailAssembler, times(1)).toModel(product);
+    }
+
+    @Test
+    void testGetReadmeAndProductContentsFromTag() {
+        String productId = "amazon-comprehend";
+        String tag = "v1.0";
+        ReadmeModel mockReadmeModel = new ReadmeModel();
+        when(service.getReadmeAndProductContentsFromTag(productId, tag)).thenReturn(mockReadmeModel);
+        var result = productDetailsController.getReadmeAndProductContentsFromTag(productId, tag);
+        assertEquals(HttpStatus.OK, result.getStatusCode());
+        assertTrue(result.hasBody());
+    }
+
+    private Product createProductMockWithDetails() {
+        Product mockProduct = new Product();
+        mockProduct.setId("docker-connector");
+        mockProduct.setName("Docker");
+        mockProduct.setShortDescription("Create, start, stop, remove Docker containers directly from your business processes.");
+        mockProduct.setType("connector");
+        mockProduct.setTags(List.of("container"));
+        mockProduct.setCompatibility("10.0+");
+        mockProduct.setSourceUrl("https://github.com/axonivy-market/docker-connector");
+        mockProduct.setStatusBadgeUrl("https://github.com/axonivy-market/docker-connector");
+        mockProduct.setLanguage("English");
+        mockProduct.setIndustry("Cross-Industry");
+        mockProduct.setContactUs(false);
+        return mockProduct;
+    }
 }

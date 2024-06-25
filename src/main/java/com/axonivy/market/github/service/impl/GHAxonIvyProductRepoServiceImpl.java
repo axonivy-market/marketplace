@@ -1,6 +1,7 @@
 package com.axonivy.market.github.service.impl;
 
 import com.axonivy.market.constants.GitHubConstants;
+import com.axonivy.market.exceptions.model.NotFoundException;
 import com.axonivy.market.github.service.GHAxonIvyProductRepoService;
 import com.axonivy.market.model.ReadmeModel;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -28,6 +29,7 @@ public class GHAxonIvyProductRepoServiceImpl implements GHAxonIvyProductRepoServ
     private GHOrganization organization;
     private final GithubService githubService;
     private static final ObjectMapper MAPPER = new ObjectMapper();
+    public static final String SLASH = "/";
     public static final String IMAGES_FOLDER = "images";
     public static final String PRODUCT_FOLDER_SUFFIX = "-product";
     public static final String README_FILE = "README.md";
@@ -80,7 +82,8 @@ public class GHAxonIvyProductRepoServiceImpl implements GHAxonIvyProductRepoServ
                 }
             }
         } catch (Exception e) {
-            log.error("Cannot get README file's content {}", e);
+            log.error("Cannot get product.json and README file's content {}", e);
+            return null;
         }
         return readmeModel;
     }
@@ -106,11 +109,12 @@ public class GHAxonIvyProductRepoServiceImpl implements GHAxonIvyProductRepoServ
         }
     }
 
-    private String updateImagesWithDownloadUrl(List<GHContent> contents, String readmeContents) throws IOException {
+    public String updateImagesWithDownloadUrl(List<GHContent> contents, String readmeContents) throws IOException {
+        String imagePrefix = "";
         Map<String, String> imageUrls = new HashMap<>();
         Optional<GHContent> productImage = contents.stream()
                 .filter(GHContent::isFile)
-                .filter(content -> content.getName().matches(".+\\.(jpeg|jpg|png)"))
+                .filter(content -> content.getName().toLowerCase().matches(".+\\.(jpeg|jpg|png)"))
                 .findAny();
         if (productImage.isPresent()) {
             imageUrls.put(productImage.get().getName(), productImage.get().getDownloadUrl());
@@ -120,58 +124,46 @@ public class GHAxonIvyProductRepoServiceImpl implements GHAxonIvyProductRepoServ
                     .filter(content -> IMAGES_FOLDER.equals(content.getName()))
                     .findFirst();
             if (imageFolder.isPresent()) {
+                imagePrefix = IMAGES_FOLDER.concat(SLASH);
                 for (GHContent imageContent : imageFolder.get().listDirectoryContent()) {
                     imageUrls.put(imageContent.getName(), imageContent.getDownloadUrl());
                 }
             }
         }
         for (Map.Entry<String, String> entry : imageUrls.entrySet()) {
-            readmeContents = readmeContents.replaceAll("images/" + Pattern.quote(entry.getKey()), entry.getValue());
+            readmeContents = readmeContents.replaceAll(imagePrefix + Pattern.quote(entry.getKey()), entry.getValue());
         }
         return readmeContents;
     }
 
+    // Cover some cases including when demo and setup parts switch positions or missing one of them
     public void getExtractedPartsOfReadme(ReadmeModel readmeModel, String readmeContents) {
-        String description = "";
+        String[] parts = readmeContents.split("(?i)## Demo|## Setup");
+        boolean hasDemoPart = readmeContents.contains("## Demo");
+        boolean hasSetupPart = readmeContents.contains("## Setup");
         String setup = "";
         String demo = "";
-        String[] parts = readmeContents.split("(?i)## Demo|## Setup");
-        if (parts.length > 0) {
-            description = removeFirstLine(parts[0].trim());
-        }
-        if (readmeContents.contains("## Demo") && readmeContents.contains("## Setup")) {
+        if (hasDemoPart && hasSetupPart) {
             if (readmeContents.indexOf("## Demo") < readmeContents.indexOf("## Setup")) {
-                if (parts.length >= 2) {
-                    demo = parts[1].trim();
-                }
-                if (parts.length >= 3) {
-                    setup = parts[2].trim();
-                }
+                demo = parts.length > 1 ? parts[1].trim() : StringUtils.EMPTY;
+                setup = parts.length > 2 ? parts[2].trim() : StringUtils.EMPTY;
             } else {
-                if (parts.length >= 2) {
-                    setup = parts[1].trim();
-                }
-                if (parts.length >= 3) {
-                    demo = parts[2].trim();
-                }
+                setup = parts.length > 1 ? parts[1].trim() : StringUtils.EMPTY;
+                demo = parts.length > 2 ? parts[2].trim() : StringUtils.EMPTY;
             }
-        } else if (readmeContents.contains("## Demo")) {
-            if (parts.length >= 2) {
-                demo = parts[1].trim();
-            }
-        } else if (readmeContents.contains("## Setup")) {
-            if (parts.length >= 2) {
-                setup = parts[1].trim();
-            }
+        } else if (hasDemoPart) {
+            demo = parts.length > 1 ? parts[1].trim() : StringUtils.EMPTY;
+        } else if (hasSetupPart) {
+            setup = parts.length > 1 ? parts[1].trim() : StringUtils.EMPTY;
         }
-        readmeModel.setDescription(description);
+        readmeModel.setDescription(parts.length > 0 ? removeFirstLine(parts[0].trim()) : StringUtils.EMPTY);
         readmeModel.setDemo(demo);
         readmeModel.setSetup(setup);
     }
 
     private List<GHContent> getRepoContents(String repoName, String tag) throws IOException {
         return githubService.getRepository(repoName)
-                .getDirectoryContent("/", tag)
+                .getDirectoryContent(SLASH, tag)
                 .stream()
                 .filter(GHContent::isDirectory)
                 .filter(content -> content.getName().endsWith(PRODUCT_FOLDER_SUFFIX))
@@ -179,7 +171,7 @@ public class GHAxonIvyProductRepoServiceImpl implements GHAxonIvyProductRepoServ
                     try {
                         return content.listDirectoryContent().toList().stream();
                     } catch (Exception e) {
-                        throw new RuntimeException(e);
+                        throw new NotFoundException("Cannot list directory content");
                     }
                 }).toList();
     }
@@ -192,13 +184,13 @@ public class GHAxonIvyProductRepoServiceImpl implements GHAxonIvyProductRepoServ
 
     private String removeFirstLine(String text) {
         if (text == null || text.isEmpty()) {
-            return "";
+            return StringUtils.EMPTY;
         }
         int index = text.indexOf("\n");
         if (index != -1) {
             return text.substring(index + 1).trim();
         } else {
-            return "";
+            return StringUtils.EMPTY;
         }
     }
 }

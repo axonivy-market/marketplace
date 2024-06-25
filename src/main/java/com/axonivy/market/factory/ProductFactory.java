@@ -64,7 +64,7 @@ public class ProductFactory {
         product.setStatusBadgeUrl(meta.getStatusBadgeUrl());
         product.setLanguage(meta.getLanguage());
         product.setIndustry(meta.getIndustry());
-        product.setContactUs(BooleanUtils.isTrue(meta.getContactUs()) ? meta.getContactUs() : false);
+        product.setContactUs(BooleanUtils.isTrue(meta.getContactUs()));
         product.setCost(StringUtils.isBlank(meta.getCost()) ? "Free" : StringUtils.capitalize(meta.getCost()));
         product.setCompatibility(meta.getCompatibility());
         extractSourceUrl(product, meta);
