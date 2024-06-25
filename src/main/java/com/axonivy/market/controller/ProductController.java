@@ -45,7 +45,8 @@ public class ProductController {
   @GetMapping()
   public ResponseEntity<PagedModel<ProductModel>> findProducts(
       @RequestParam(required = true, name = "type") String type,
-      @RequestParam(required = false, name = "keyword") String keyword, Pageable pageable) {
+      @RequestParam(required = false, name = "keyword") String keyword,
+      @RequestParam(required = false, name = "pageable") Pageable pageable) {
     Page<Product> results = service.findProducts(type, keyword, pageable);
     if (results.isEmpty()) {
       return generateEmptyPagedModel();
