@@ -18,14 +18,14 @@ import java.util.List;
 @JsonInclude(JsonInclude.Include.NON_EMPTY)
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class MavenArtifact implements Serializable {
-    private static final long serialVersionUID = 1L;
-    private String repoUrl;
-    private String name;
-    private String groupId;
-    private String artifactId;
-    private String type;
-    private Boolean isDependency;
-    @Transient
-    private Boolean isProductArtifact;
-    private List<ArchivedArtifact> archivedArtifacts;
+  private static final long serialVersionUID = 1L;
+  private String repoUrl;
+  private String name;
+  private String groupId;
+  private String artifactId;
+  private String type;
+  private Boolean isDependency;
+  @Transient
+  private Boolean isProductArtifact;
+  private List<ArchivedArtifact> archivedArtifacts;
 }

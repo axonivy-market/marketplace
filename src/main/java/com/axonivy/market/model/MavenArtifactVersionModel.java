@@ -13,6 +13,6 @@ import java.util.List;
 @AllArgsConstructor
 @NoArgsConstructor
 public class MavenArtifactVersionModel {
-    private String version;
-    private List<MavenArtifactModel> artifactsByVersion;
+  private String version;
+  private List<MavenArtifactModel> artifactsByVersion;
 }

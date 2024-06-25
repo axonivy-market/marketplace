@@ -19,23 +19,23 @@ import static com.axonivy.market.constants.RequestMappingConstants.PRODUCT_DETAI
 @RestController
 @RequestMapping(PRODUCT_DETAILS)
 public class ProductDetailsController {
-    private final VersionService service;
+  private final VersionService service;
 
-    public ProductDetailsController(VersionService service) {
-        this.service = service;
-    }
+  public ProductDetailsController(VersionService service) {
+    this.service = service;
+  }
 
-    @GetMapping("/{id}")
-    ResponseEntity<Object> findProduct(@PathVariable("id") String key,
-                                              @RequestParam(name = "type", required = false) String type) {
-        return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-    }
+  @GetMapping("/{id}")
+  ResponseEntity<Object> findProduct(@PathVariable("id") String key,
+                                     @RequestParam(name = "type", required = false) String type) {
+    return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+  }
 
-    @GetMapping("/{id}/versions")
-    public ResponseEntity<List<MavenArtifactVersionModel>> findProductVersionsById(@PathVariable("id") String id,
-                                                                                   @RequestParam(name = "isShowDevVersion") boolean isShowDevVersion,
-                                                                                   @RequestParam(name = "designerVersion", required = false) String designerVersion) {
-        List<MavenArtifactVersionModel> models = service.getArtifactsAndVersionToDisplay(id, isShowDevVersion, designerVersion);
-        return new ResponseEntity<>(models, HttpStatus.OK);
-    }
+  @GetMapping("/{id}/versions")
+  public ResponseEntity<List<MavenArtifactVersionModel>> findProductVersionsById(@PathVariable("id") String id,
+                                                                                 @RequestParam(name = "isShowDevVersion") boolean isShowDevVersion,
+                                                                                 @RequestParam(name = "designerVersion", required = false) String designerVersion) {
+    List<MavenArtifactVersionModel> models = service.getArtifactsAndVersionToDisplay(id, isShowDevVersion, designerVersion);
+    return new ResponseEntity<>(models, HttpStatus.OK);
+  }
 }
