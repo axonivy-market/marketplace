@@ -2,7 +2,6 @@ package com.axonivy.market.controller;
 
 import com.axonivy.market.model.MavenArtifactVersionModel;
 import com.axonivy.market.service.VersionService;
-import lombok.extern.log4j.Log4j2;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;

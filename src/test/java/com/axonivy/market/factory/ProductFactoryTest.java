@@ -28,10 +28,12 @@ class ProductFactoryTest {
   void testMappingByGHContent() throws IOException {
     Product product = new Product();
     GHContent mockContent = mock(GHContent.class);
+    var result = ProductFactory.mappingByGHContent(product, null);
+    assertEquals(product, result);
     when(mockContent.getName()).thenReturn(CommonConstants.META_FILE);
     InputStream inputStream = this.getClass().getResourceAsStream(SLASH.concat(META_FILE));
     when(mockContent.read()).thenReturn(inputStream);
-    var result = ProductFactory.mappingByGHContent(product, mockContent);
+    result = ProductFactory.mappingByGHContent(product, mockContent);
     assertNotEquals(null, result);
     assertEquals("Amazon Comprehend", result.getName());
   }
