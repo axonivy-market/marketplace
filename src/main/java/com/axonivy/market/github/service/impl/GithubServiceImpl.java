@@ -14,23 +14,23 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
 import org.springframework.util.ResourceUtils;
 
-import com.axonivy.market.github.service.GithubService;
+import com.axonivy.market.github.service.GitHubService;
 
 @Service
-public class GithubServiceImpl implements GithubService {
+public class GitHubServiceImpl implements GitHubService {
 
   private static final String GITHUB_TOKEN_FILE = "classpath:github.token";
 
   @Override
-  public GitHub getGithub() throws IOException {
-    File githubtoken = ResourceUtils.getFile(GITHUB_TOKEN_FILE);
-    var token = Files.readString(githubtoken.toPath());
+  public GitHub getGitHub() throws IOException {
+    File gitHubToken = ResourceUtils.getFile(GITHUB_TOKEN_FILE);
+    var token = Files.readString(gitHubToken.toPath());
     return new GitHubBuilder().withOAuthToken(token).build();
   }
 
   @Override
   public GHOrganization getOrganization(String orgName) throws IOException {
-    return getGithub().getOrganization(orgName);
+    return getGitHub().getOrganization(orgName);
   }
 
   @Override
@@ -41,7 +41,7 @@ public class GithubServiceImpl implements GithubService {
 
   @Override
   public GHRepository getRepository(String repositoryPath) throws IOException {
-    return getGithub().getRepository(repositoryPath);
+    return getGitHub().getRepository(repositoryPath);
   }
 
   @Override

@@ -8,9 +8,9 @@ import org.kohsuke.github.GHOrganization;
 import org.kohsuke.github.GHRepository;
 import org.kohsuke.github.GitHub;
 
-public interface GitHubService {
+public interface GithubService {
 
-  public GitHub getGitHub() throws IOException;
+  public GitHub getGithub() throws IOException;
 
   public GHOrganization getOrganization(String orgName) throws IOException;
 
