@@ -7,6 +7,6 @@ import lombok.NoArgsConstructor;
 public class EntityConstants {
   public static final String USER = "User";
   public static final String PRODUCT = "Product";
-  public static final String GITHUB_REPO_META = "GithubRepoMeta";
   public static final String MAVEN_ARTIFACT_VERSION = "MavenArtifactVersion";
+  public static final String GH_REPO_META = "GitHubRepoMeta";
 }

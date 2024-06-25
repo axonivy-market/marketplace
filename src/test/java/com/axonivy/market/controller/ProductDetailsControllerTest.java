@@ -41,5 +41,4 @@ class ProductDetailsControllerTest {
     Assertions.assertEquals(1, Objects.requireNonNull(result.getBody()).size());
     Assertions.assertEquals(models, result.getBody());
   }
-
 }

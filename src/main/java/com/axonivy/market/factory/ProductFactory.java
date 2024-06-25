@@ -12,29 +12,29 @@ import org.kohsuke.github.GHContent;
 
 import com.axonivy.market.entity.Product;
 import com.axonivy.market.github.model.Meta;
-import com.axonivy.market.github.util.GithubUtils;
+import com.axonivy.market.github.util.GitHubUtils;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 
-
-
-
 @Log4j2
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class ProductFactory {
-
   private static final ObjectMapper MAPPER = new ObjectMapper();
 
   public static Product mappingByGHContent(Product product, GHContent content) {
+    if (content == null) {
+      return product;
+    }
+
     var contentName = content.getName();
     if (StringUtils.endsWith(contentName, META_FILE)) {
-    mappingByMetaJSONFile(product, content);
+      mappingByMetaJSONFile(product, content);
     }
     if (StringUtils.endsWith(contentName, LOGO_FILE)) {
-      product.setLogoUrl(GithubUtils.getDownloadUrl(content));
+      product.setLogoUrl(GitHubUtils.getDownloadUrl(content));
     }
     return product;
   }
@@ -73,7 +73,7 @@ public class ProductFactory {
     return path.replace(ghContent.getName(), EMPTY);
   }
 
-  public static void extractSourceUrl(Product product, Meta meta) {
+  private static void extractSourceUrl(Product product, Meta meta) {
     var sourceUrl = meta.getSourceUrl();
     if (StringUtils.isBlank(sourceUrl)) {
       return;
@@ -88,7 +88,7 @@ public class ProductFactory {
     product.setSourceUrl(sourceUrl);
   }
 
-  public static Meta jsonDecode(GHContent ghContent) throws IOException {
+  private static Meta jsonDecode(GHContent ghContent) throws IOException {
     return MAPPER.readValue(ghContent.read().readAllBytes(), Meta.class);
   }
 }

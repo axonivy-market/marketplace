@@ -25,8 +25,9 @@ import org.springframework.http.HttpStatus;
 
 import com.axonivy.market.assembler.ProductModelAssembler;
 import com.axonivy.market.entity.Product;
-import com.axonivy.market.enums.FilterType;
+import com.axonivy.market.enums.ErrorCode;
 import com.axonivy.market.enums.SortOption;
+import com.axonivy.market.enums.TypeOption;
 import com.axonivy.market.service.ProductService;
 
 @ExtendWith(MockitoExtension.class)
@@ -60,7 +61,7 @@ class ProductControllerTest {
     Page<Product> mockProducts = new PageImpl<Product>(List.of(), pageable, 0);
     when(service.findProducts(any(), any(), any())).thenReturn(mockProducts);
     when(pagedResourcesAssembler.toEmptyModel(any(), any())).thenReturn(PagedModel.empty());
-    var result = productController.findProducts(FilterType.ALL.getOption(), null, pageable);
+    var result = productController.findProducts(TypeOption.ALL.getOption(), null, pageable);
     assertEquals(HttpStatus.OK, result.getStatusCode());
     assertTrue(result.hasBody());
     assertEquals(0, result.getBody().getContent().size());
@@ -77,11 +78,19 @@ class ProductControllerTest {
     var mockProductModel = assembler.toModel(mockProduct);
     var mockPagedModel = PagedModel.of(List.of(mockProductModel), new PageMetadata(1, 0, 1));
     when(pagedResourcesAssembler.toModel(any(), any(ProductModelAssembler.class))).thenReturn(mockPagedModel);
-    var result = productController.findProducts(FilterType.ALL.getOption(), null, pageable);
+    var result = productController.findProducts(TypeOption.ALL.getOption(), null, pageable);
     assertEquals(HttpStatus.OK, result.getStatusCode());
     assertTrue(result.hasBody());
     assertEquals(1, result.getBody().getContent().size());
     assertEquals(PRODUCT_NAME_SAMPLE, result.getBody().getContent().iterator().next().getName());
+  }
+
+  @Test
+  void testSyncProducts() {
+    var response = productController.syncProducts();
+    assertEquals(HttpStatus.OK, response.getStatusCode());
+    assertTrue(response.hasBody());
+    assertEquals(ErrorCode.SUCCESSFUL.getCode(), response.getBody().getHelpCode());
   }
 
   private Product createProductMock() {

@@ -10,12 +10,9 @@ import static org.mockito.Mockito.when;
 import java.io.IOException;
 import java.io.InputStream;
 
-import com.axonivy.market.github.model.Meta;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.kohsuke.github.GHContent;
-import org.mockito.InjectMocks;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import com.axonivy.market.constants.CommonConstants;
