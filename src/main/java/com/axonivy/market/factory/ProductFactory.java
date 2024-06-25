@@ -1,5 +1,7 @@
 package com.axonivy.market.factory;
 
+import static com.axonivy.market.constants.CommonConstants.LOGO_FILE;
+import static com.axonivy.market.constants.CommonConstants.META_FILE;
 import static com.axonivy.market.constants.CommonConstants.SLASH;
 import static org.apache.commons.lang3.StringUtils.EMPTY;
 
@@ -12,7 +14,7 @@ import org.kohsuke.github.GHContent;
 
 import com.axonivy.market.entity.Product;
 import com.axonivy.market.github.model.Meta;
-import com.axonivy.market.github.util.GithubUtils;
+import com.axonivy.market.github.util.GitHubUtils;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import lombok.AccessLevel;
@@ -22,9 +24,6 @@ import lombok.extern.log4j.Log4j2;
 @Log4j2
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class ProductFactory {
-
-    public static final String META_FILE = "meta.json";
-    public static final String LOGO_FILE = "logo.png";
     private static final ObjectMapper MAPPER = new ObjectMapper();
 
     public static Product mappingByGHContent(Product product, GHContent content) {
@@ -37,7 +36,7 @@ public class ProductFactory {
             mappingByMetaJSONFile(product, content);
         }
         if (StringUtils.endsWith(contentName, LOGO_FILE)) {
-            product.setLogoUrl(GithubUtils.getDownloadUrl(content));
+            product.setLogoUrl(GitHubUtils.getDownloadUrl(content));
         }
         return product;
     }
@@ -57,6 +56,7 @@ public class ProductFactory {
         product.setListed(meta.getListed());
         product.setType(meta.getType());
         product.setTags(meta.getTags());
+        product.setVersion(meta.getVersion());
         product.setShortDescription(meta.getDescription());
         product.setVendor(StringUtils.isBlank(meta.getVendor()) ? "Axon Ivy AG" : meta.getVendor());
         product.setVendorUrl(StringUtils.isBlank(meta.getVendorUrl()) ? "https://www.axonivy.com" : meta.getVendorUrl());
@@ -94,5 +94,4 @@ public class ProductFactory {
     private static Meta jsonDecode(GHContent ghContent) throws IOException {
         return MAPPER.readValue(ghContent.read().readAllBytes(), Meta.class);
     }
-
 }

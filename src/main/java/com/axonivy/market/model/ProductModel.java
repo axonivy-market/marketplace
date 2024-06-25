@@ -25,7 +25,6 @@ public class ProductModel extends RepresentationModel<ProductModel> {
   private String shortDescription;
   private String logoUrl;
   private String type;
-  private String platformReview;
   private List<String> tags;
 
   @Override

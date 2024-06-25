@@ -9,7 +9,10 @@ import com.axonivy.market.entity.Product;
 public interface ProductService {
     Page<Product> findProducts(String type, String keyword, Pageable pageable);
 
+    boolean syncLatestDataFromMarketRepo();
+
     Product fetchProductDetail(String id, String type);
 
     ReadmeModel getReadmeAndProductContentsFromTag(String id, String tag);
+
 }

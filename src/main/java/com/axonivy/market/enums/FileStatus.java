@@ -2,6 +2,8 @@ package com.axonivy.market.enums;
 
 import org.apache.commons.lang3.StringUtils;
 
+import com.axonivy.market.exceptions.model.NotFoundException;
+
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
@@ -18,6 +20,6 @@ public enum FileStatus {
         return status;
       }
     }
-    return null;
+    throw new NotFoundException(ErrorCode.GH_FILE_STATUS_INVALID, "FileStatus: " + code);
   }
 }

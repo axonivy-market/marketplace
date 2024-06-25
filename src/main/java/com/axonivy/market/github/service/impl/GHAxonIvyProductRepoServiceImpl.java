@@ -1,23 +1,30 @@
 package com.axonivy.market.github.service.impl;
 
-import com.axonivy.market.constants.GitHubConstants;
+import java.io.IOException;
+import java.util.HashMap;
+import java.util.List;
+
 import com.axonivy.market.exceptions.model.NotFoundException;
-import com.axonivy.market.github.service.GHAxonIvyProductRepoService;
 import com.axonivy.market.model.ReadmeModel;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import lombok.extern.log4j.Log4j2;
-
-import java.io.IOException;
-import java.util.*;
-
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.text.WordUtils;
+
+import com.axonivy.market.constants.GitHubConstants;
+import com.axonivy.market.github.service.GHAxonIvyProductRepoService;
+import lombok.extern.log4j.Log4j2;
+
 import org.kohsuke.github.GHContent;
 import org.kohsuke.github.GHOrganization;
 import org.kohsuke.github.GHTag;
 import org.springframework.stereotype.Service;
+import com.axonivy.market.github.service.GitHubService;
 
+import lombok.extern.log4j.Log4j2;
+
+import java.util.Map;
+import java.util.Optional;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -27,7 +34,9 @@ import com.axonivy.market.github.service.GithubService;
 @Service
 public class GHAxonIvyProductRepoServiceImpl implements GHAxonIvyProductRepoService {
     private GHOrganization organization;
-    private final GithubService githubService;
+
+    private final GitHubService gitHubService;
+
     private static final ObjectMapper MAPPER = new ObjectMapper();
     public static final String SLASH = "/";
     public static final String IMAGES_FOLDER = "images";
@@ -35,8 +44,8 @@ public class GHAxonIvyProductRepoServiceImpl implements GHAxonIvyProductRepoServ
     public static final String README_FILE = "README.md";
     public static final String PRODUCT_JSON_FILE = "product.json";
 
-    public GHAxonIvyProductRepoServiceImpl(GithubService githubService) {
-        this.githubService = githubService;
+    public GHAxonIvyProductRepoServiceImpl(GitHubService gitHubService) {
+        this.gitHubService = gitHubService;
     }
 
     @Override
@@ -51,7 +60,7 @@ public class GHAxonIvyProductRepoServiceImpl implements GHAxonIvyProductRepoServ
 
     private GHOrganization getOrganization() throws IOException {
         if (organization == null) {
-            organization = githubService.getOrganization(GitHubConstants.AXONIVY_MARKET_ORGANIZATION_NAME);
+            organization = gitHubService.getOrganization(GitHubConstants.AXONIVY_MARKET_ORGANIZATION_NAME);
         }
         return organization;
     }

@@ -1,25 +1,35 @@
 package com.axonivy.market.service;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 import java.io.IOException;
-import java.io.InputStream;
-import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 
-import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.kohsuke.github.GHOrganization;
+import org.kohsuke.github.GHRepository;
+import org.kohsuke.github.GHTag;
+import org.kohsuke.github.PagedIterable;
+
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.*;
+
+import java.io.InputStream;
+import java.util.Arrays;
+import java.util.Collections;
+
+import org.junit.jupiter.api.AfterEach;
 import org.kohsuke.github.*;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import com.axonivy.market.github.service.GithubService;
+import com.axonivy.market.github.service.GitHubService;
 import com.axonivy.market.github.service.impl.GHAxonIvyProductRepoServiceImpl;
 
 @ExtendWith(MockitoExtension.class)
@@ -74,38 +84,9 @@ class GHAxonIvyProductRepoServiceImplTest {
     }
 
     @Test
-    void testContentFromGHRepoAndTag() throws IOException {
+    void testContentFromGHRepoAndTag() {
         var result = axonivyProductRepoServiceImpl.getContentFromGHRepoAndTag("", null, null);
         assertEquals(null, result);
-    }
-    @Test
-    void testUpdateImagesWithDownloadUrl() throws IOException {
-        // Example README.md content
-        String readmeContentString = "#Product-name\n Test README\n## Demo\nDemo content\n## Setup\nSetup content (images/image.png)";
-
-        // Mocking the necessary GitHub content objects
-        GHContent mockImageFolder = mock(GHContent.class);
-        when(mockImageFolder.isDirectory()).thenReturn(true);
-        when(mockImageFolder.getName()).thenReturn("images");
-
-        GHContent mockImageFile = mock(GHContent.class);
-        when(mockImageFile.isFile()).thenReturn(true);
-        when(mockImageFile.getName()).thenReturn("image.png");
-        when(mockImageFile.getDownloadUrl()).thenReturn("https://raw.githubusercontent.com/image.png");
-
-        // Mocking listDirectoryContent for images folder
-        PagedIterable<GHContent> mockImageFolderPagedIterable = mock(PagedIterable.class);
-        when(mockImageFolder.listDirectoryContent()).thenReturn(mockImageFolderPagedIterable);
-        when(mockImageFolderPagedIterable.toList()).thenReturn(Collections.singletonList(mockImageFile));
-
-        // Mocking repository behavior
-        when(ghRepository.getDirectoryContent(SLASH, RELEASE_TAG)).thenReturn(Arrays.asList(mockImageFolder));
-
-        // Call the updateImagesWithDownloadUrl method directly
-        String updatedReadmeContent = axonivyProductRepoServiceImpl.updateImagesWithDownloadUrl(Arrays.asList(mockImageFolder), readmeContentString);
-
-        // Assert that the image URL has been replaced correctly
-        assertTrue(updatedReadmeContent.contains("Setup content (https://raw.githubusercontent.com/image.png)"));
     }
 
     @Test
@@ -165,6 +146,7 @@ class GHAxonIvyProductRepoServiceImplTest {
         assertEquals("Demo content", result.getDemo());
         assertEquals("Setup content (https://raw.githubusercontent.com/image.png)", result.getSetup());
     }
+
     @Test
     void testGetReadmeAndProductContents4FromTag_ImageFromFolder() throws IOException {
         // Prepare mocks with README content containing image directive
@@ -193,6 +175,7 @@ class GHAxonIvyProductRepoServiceImplTest {
         String updatedReadme = axonivyProductRepoServiceImpl.updateImagesWithDownloadUrl(Collections.singletonList(mockImageFolder), readmeContentString);
         assertEquals("#Product-name\nTest README\n## Demo\nDemo content\n## Setup\nSetup content (https://raw.githubusercontent.com/image.png)", updatedReadme);
     }
+
     @Test
     void testGetReadmeAndProductConten44tsFromTag_ImageFromFolder() throws IOException {
         // Example README.md content with an image directive
@@ -210,8 +193,6 @@ class GHAxonIvyProductRepoServiceImplTest {
         // Assert that the image directive in the README.md content has been replaced correctly
         assertEquals("#Product-name\n Test README\n## Demo\nDemo content\n## Setup\nSetup content (https://raw.githubusercontent.com/image.png)", updatedReadme);
     }
-
-
 
 
     @Test

@@ -17,7 +17,7 @@ public interface ProductRepository extends MongoRepository<Product, String> {
 
     Product findByIdAndType(String id, String type);
 
-    @Query(value = "{'marketDirectory': {$regex : ?0, $options: 'i'}}")
+    @Query("{'marketDirectory': {$regex : ?0, $options: 'i'}}")
     Product findByMarketDirectoryRegex(String search);
 
     @Query("{ $and: [ { $or: [ { 'name': { $regex: ?0, $options: 'i' } }, { 'shortDescription': { $regex: ?0, $options: 'i' } } ] }, { 'type': ?1 } ] }")

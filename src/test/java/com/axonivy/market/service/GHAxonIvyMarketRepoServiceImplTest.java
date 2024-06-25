@@ -25,7 +25,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import com.axonivy.market.github.service.GithubService;
+import com.axonivy.market.github.service.GitHubService;
 import com.axonivy.market.github.service.impl.GHAxonIvyMarketRepoServiceImpl;
 
 @ExtendWith(MockitoExtension.class)
@@ -47,7 +47,7 @@ class GHAxonIvyMarketRepoServiceImplTest {
   PagedIterable<File> pagedFile;
 
   @Mock
-  GithubService githubService;
+  GitHubService gitHubService;
 
   @InjectMocks
   GHAxonIvyMarketRepoServiceImpl axonIvyMarketRepoServiceImpl;
@@ -55,7 +55,7 @@ class GHAxonIvyMarketRepoServiceImplTest {
   @BeforeEach
   void setup() throws IOException {
     when(ghOrganization.getRepository(any())).thenReturn(ghRepository);
-    when(githubService.getOrganization(anyString())).thenReturn(ghOrganization);
+    when(gitHubService.getOrganization(anyString())).thenReturn(ghOrganization);
   }
 
   @Test
@@ -73,7 +73,7 @@ class GHAxonIvyMarketRepoServiceImplTest {
     mockGhContents.add(mockGHContent);
     when(mockGHFileContent.isFile()).thenReturn(true);
     when(pagedGHContent.toList()).thenReturn(List.of(mockGHFileContent));
-    when(githubService.getDirectoryContent(any(), any())).thenReturn(mockGhContents);
+    when(gitHubService.getDirectoryContent(any(), any())).thenReturn(mockGhContents);
 
     ghContentMap = axonIvyMarketRepoServiceImpl.fetchAllMarketItems();
     assertEquals(1, ghContentMap.values().size());
@@ -91,8 +91,8 @@ class GHAxonIvyMarketRepoServiceImplTest {
     when(pagedCommit.toList()).thenReturn(List.of(mockCommit));
     when(ghRepository.getCompare(anyString(), anyString())).thenReturn(mockGHCompare);
 
-    var githubFiles = axonIvyMarketRepoServiceImpl.fetchMarketItemsBySHA1Range(startSHA1, endSHA1);
-    assertEquals(0, githubFiles.size());
+    var gitHubFiles = axonIvyMarketRepoServiceImpl.fetchMarketItemsBySHA1Range(startSHA1, endSHA1);
+    assertEquals(0, gitHubFiles.size());
 
     when(mockCommit.listFiles()).thenReturn(pagedFile);
     var mockFile = mock(File.class);
@@ -102,9 +102,9 @@ class GHAxonIvyMarketRepoServiceImplTest {
     when(mockFile.getPreviousFilename()).thenReturn("test-prev-meta.json");
     when(pagedFile.toList()).thenReturn(List.of(mockFile));
 
-    githubFiles = axonIvyMarketRepoServiceImpl.fetchMarketItemsBySHA1Range(startSHA1, endSHA1);
-    assertEquals(1, githubFiles.size());
-    assertEquals(fileName, githubFiles.get(0).getFileName());
+    gitHubFiles = axonIvyMarketRepoServiceImpl.fetchMarketItemsBySHA1Range(startSHA1, endSHA1);
+    assertEquals(1, gitHubFiles.size());
+    assertEquals(fileName, gitHubFiles.get(0).getFileName());
   }
 
   @Test
