@@ -156,8 +156,6 @@ class GHAxonIvyProductRepoServiceImplTest {
         InputStream inputStream = getMockInputStream();
         Mockito.when(axonivyProductRepoServiceImpl.extractedContentStream(content)).thenReturn(inputStream);
         assertEquals(2, axonivyProductRepoServiceImpl.convertProductJsonToMavenProductInfo(content).size());
-        Mockito.when(axonivyProductRepoServiceImpl.extractedContentStream(content)).thenReturn(inputStream);
-
         inputStream = getMockInputStreamWithOutProjectAndDependency();
         Mockito.when(axonivyProductRepoServiceImpl.extractedContentStream(content)).thenReturn(inputStream);
         assertEquals(0, axonivyProductRepoServiceImpl.convertProductJsonToMavenProductInfo(content).size());
@@ -167,6 +165,7 @@ class GHAxonIvyProductRepoServiceImplTest {
         String jsonContent = "{\n" +
                 "  \"installers\": [\n" +
                 "    {\n" +
+                "      \"id\": \"maven-import\","+
                 "      \"data\": {\n" +
                 "        \"repositories\": [\n" +
                 "          {\n" +
