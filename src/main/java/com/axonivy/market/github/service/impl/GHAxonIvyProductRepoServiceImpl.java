@@ -44,16 +44,18 @@ public class GHAxonIvyProductRepoServiceImpl implements GHAxonIvyProductRepoServ
     JsonNode rootNode = objectMapper.readTree(contentStream);
     JsonNode installersNode = rootNode.path(ProductJsonConstants.INSTALLERS);
 
-    for (JsonNode installerNode : installersNode) {
-      JsonNode dataNode = installerNode.path(ProductJsonConstants.DATA);
+    for (JsonNode mavenNode : installersNode) {
+      JsonNode dataNode = mavenNode.path(ProductJsonConstants.DATA);
+
+      // Not convert to artifact if id of node is not maven-import or maven-dependency
+      List<String> installerIdsToDisplay = List.of(ProductJsonConstants.MAVEN_DEPENDENCY_INSTALLER_ID, ProductJsonConstants.MAVEN_IMPORT_INSTALLER_ID);
+      if(!installerIdsToDisplay.contains(mavenNode.path(ProductJsonConstants.ID).asText())){
+        continue;
+      }
 
       // Extract repository URL
       JsonNode repositoriesNode = dataNode.path(ProductJsonConstants.REPOSITORIES);
-      JsonNode repositoryNode = repositoriesNode.get(0);
-      if(Objects.isNull(repositoryNode)){
-        continue;
-      }
-      repoUrl = repositoryNode.path(ProductJsonConstants.URL).asText();
+      repoUrl = repositoriesNode.get(0).path(ProductJsonConstants.URL).asText();
 
       // Process projects
       if (dataNode.has(ProductJsonConstants.PROJECTS)) {
