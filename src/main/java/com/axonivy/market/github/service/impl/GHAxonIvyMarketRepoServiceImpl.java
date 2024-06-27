@@ -8,6 +8,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import com.axonivy.market.github.util.GitHubUtils;
 import org.kohsuke.github.GHCommit;
 import org.kohsuke.github.GHCommitQueryBuilder;
 import org.kohsuke.github.GHCompare;
@@ -22,7 +23,6 @@ import com.axonivy.market.enums.FileType;
 import com.axonivy.market.github.model.GitHubFile;
 import com.axonivy.market.github.service.GHAxonIvyMarketRepoService;
 import com.axonivy.market.github.service.GitHubService;
-import com.axonivy.market.github.util.GitHubUtils;
 
 import lombok.extern.log4j.Log4j2;
 

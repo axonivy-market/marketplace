@@ -33,6 +33,7 @@ public class ProductDetailModelAssembler extends RepresentationModelAssemblerSup
         model.setVendor(product.getVendor());
         model.setVendorUrl(product.getVendorUrl());
         model.setNewestReleaseVersion(product.getNewestReleaseVersion());
+        model.setPlatformReview(product.getPlatformReview());
         model.setSourceUrl(product.getSourceUrl());
         model.setStatusBadgeUrl(product.getStatusBadgeUrl());
         model.setLanguage(product.getLanguage());

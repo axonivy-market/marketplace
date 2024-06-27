@@ -55,7 +55,7 @@ class GHAxonIvyProductRepoServiceImplTest {
     GHContent ghContent;
 
     @Mock
-    GithubService githubService;
+    GitHubService gitHubService;
     GHOrganization mockGHOrganization = mock(GHOrganization.class);
     @InjectMocks
     private GHAxonIvyProductRepoServiceImpl axonivyProductRepoServiceImpl;
@@ -63,13 +63,13 @@ class GHAxonIvyProductRepoServiceImplTest {
     @BeforeEach
     void setup() throws IOException {
         when(mockGHOrganization.getRepository(any())).thenReturn(ghRepository);
-        when(githubService.getOrganization(any())).thenReturn(mockGHOrganization);
+        when(gitHubService.getOrganization(any())).thenReturn(mockGHOrganization);
     }
 
     @AfterEach
     void after() throws IOException {
         reset(mockGHOrganization);
-        reset(githubService);
+        reset(gitHubService);
     }
 
     @Test
@@ -94,7 +94,7 @@ class GHAxonIvyProductRepoServiceImplTest {
         String readmeContentString = "#Product-name\n Test README\n## Demo\nDemo content\n## Setup\nSetup content (images/image.png)";
         String productJsonString = "{ \"installers\": [{ \"id\": \"maven-dependency\", \"data\": { \"dependencies\": [{ \"groupId\": \"com.test\", \"artifactId\": \"test-artifact\", \"type\": \"iar\" }] } }] }";
         after();
-        when(githubService.getRepository(any())).thenReturn(ghRepository);
+        when(gitHubService.getRepository(any())).thenReturn(ghRepository);
         GHContent mockContent = mock(GHContent.class);
         when(mockContent.isDirectory()).thenReturn(true);
         when(mockContent.getName()).thenReturn("docuware-connector-product");
@@ -199,7 +199,7 @@ class GHAxonIvyProductRepoServiceImplTest {
     void testGetReadmeAndProductContentsFromTag_WithNoFullyThreeParts() throws IOException {
         String readmeContentString = "#Product-name\n Test README\n## Setup\nSetup content";
         after();
-        when(githubService.getRepository(any())).thenReturn(ghRepository);
+        when(gitHubService.getRepository(any())).thenReturn(ghRepository);
         GHContent mockContent = mock(GHContent.class);
         when(mockContent.isDirectory()).thenReturn(true);
         when(mockContent.getName()).thenReturn("amazon-comprehend-connector-product");
@@ -226,7 +226,7 @@ class GHAxonIvyProductRepoServiceImplTest {
     void testGetReadmeAndProductContentsFromTag_SwitchPartsPosition() throws IOException {
         String readmeContentString = "#Product-name\n Test README\n## Setup\nSetup content\n## Demo\nDemo content";
         after();
-        when(githubService.getRepository(any())).thenReturn(ghRepository);
+        when(gitHubService.getRepository(any())).thenReturn(ghRepository);
         GHContent mockContent = mock(GHContent.class);
         when(mockContent.isDirectory()).thenReturn(true);
         when(mockContent.getName()).thenReturn("amazon-comprehend-connector-product");

@@ -12,6 +12,7 @@ import java.util.Map;
 import java.util.Optional;
 
 import com.axonivy.market.github.service.GHAxonIvyProductRepoService;
+import com.axonivy.market.github.util.GitHubUtils;
 import com.axonivy.market.model.ReadmeModel;
 import org.apache.commons.lang3.StringUtils;
 import org.kohsuke.github.GHCommit;
@@ -37,7 +38,6 @@ import com.axonivy.market.github.service.GHAxonIvyMarketRepoService;
 import com.axonivy.market.entity.GitHubRepoMeta;
 import com.axonivy.market.enums.TypeOption;
 import com.axonivy.market.github.service.GitHubService;
-import com.axonivy.market.github.util.GitHubUtils;
 import com.axonivy.market.repository.GitHubRepoMetaRepository;
 import com.axonivy.market.repository.ProductRepository;
 import com.axonivy.market.service.ProductService;
@@ -257,7 +257,7 @@ public class ProductServiceImpl implements ProductService {
 
     public void extractCompatibilityFromOldestTag(Product product) {
         try {
-            if (StringUtils.isBlank(product.getCompatibility())) {
+            if (StringUtils.isBlank(product.getCompatibility()) && StringUtils.isNotBlank(product.getRepositoryName())) {
                 GHRepository productRepo = gitHubService.getRepository(product.getRepositoryName());
                 GHTag oldestTag = CollectionUtils.lastElement(productRepo.listTags().toList());
                 if (oldestTag != null) {

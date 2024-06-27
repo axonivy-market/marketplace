@@ -5,6 +5,7 @@ import static com.axonivy.market.constants.CommonConstants.META_FILE;
 import static com.axonivy.market.constants.CommonConstants.SLASH;
 import static org.apache.commons.lang3.StringUtils.EMPTY;
 
+import com.axonivy.market.github.util.GitHubUtils;
 import org.apache.commons.lang3.BooleanUtils;
 
 import java.io.IOException;
@@ -14,7 +15,6 @@ import org.kohsuke.github.GHContent;
 
 import com.axonivy.market.entity.Product;
 import com.axonivy.market.github.model.Meta;
-import com.axonivy.market.github.util.GitHubUtils;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import lombok.AccessLevel;

@@ -21,10 +21,4 @@ public class ProductDetailModel extends ProductModel {
     private String industry;
     private String compatibility;
     private Boolean contactUs;
-    private String id;
-    private String name;
-    private String shortDescript;
-    private String logoUrl;
-    private String type;
-    private List<String> tags;
 }
