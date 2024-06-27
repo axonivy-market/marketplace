@@ -12,7 +12,7 @@ import org.kohsuke.github.GHContent;
 
 import com.axonivy.market.entity.Product;
 import com.axonivy.market.github.model.Meta;
-import com.axonivy.market.github.util.GithubUtils;
+import com.axonivy.market.github.util.GitHubUtils;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import lombok.AccessLevel;
@@ -34,7 +34,7 @@ public class ProductFactory {
       mappingByMetaJSONFile(product, content);
     }
     if (StringUtils.endsWith(contentName, LOGO_FILE)) {
-      product.setLogoUrl(GithubUtils.getDownloadUrl(content));
+      product.setLogoUrl(GitHubUtils.getDownloadUrl(content));
     }
     return product;
   }

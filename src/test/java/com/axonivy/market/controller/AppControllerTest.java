@@ -1,28 +1,26 @@
 package com.axonivy.market.controller;
 
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.mockito.InjectMocks;
+import org.springframework.http.HttpStatus;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
-import org.springframework.test.web.servlet.MockMvc;
 
 @ExtendWith(SpringExtension.class)
-@WebMvcTest(AppController.class)
 class AppControllerTest {
 
-  @Autowired
-  private MockMvc mockMvc;
+  @InjectMocks
+  private AppController appController;
 
   @Test
   void testRoot() throws Exception {
-    var response = mockMvc.perform(get("/"));
-    response.andExpect(status().isOk());
-    response.andExpect(jsonPath("$.messageDetails").value("Welcome to Marketplace API"));
+    var response = appController.root();
+    assertEquals(HttpStatus.OK, response.getStatusCode());
+    assertTrue(response.hasBody());
+    assertTrue(response.getBody().getMessageDetails().contains("/swagger-ui/index.html"));
   }
 
 }

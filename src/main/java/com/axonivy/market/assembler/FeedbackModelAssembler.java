@@ -4,7 +4,6 @@ import com.axonivy.market.controller.FeedbackController;
 import com.axonivy.market.entity.Feedback;
 import com.axonivy.market.entity.User;
 import com.axonivy.market.model.FeedbackModel;
-import com.axonivy.market.repository.UserRepository;
 import com.axonivy.market.service.UserService;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.hateoas.server.mvc.RepresentationModelAssemblerSupport;

@@ -16,7 +16,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import com.axonivy.market.github.service.impl.GithubServiceImpl;
+import com.axonivy.market.github.service.impl.GitHubServiceImpl;
 
 @ExtendWith(MockitoExtension.class)
 class GitHubServiceImplTest {
@@ -29,11 +29,11 @@ class GitHubServiceImplTest {
   GHRepository ghRepository;
 
   @InjectMocks
-  private GithubServiceImpl githubService;
+  private GitHubServiceImpl gitHubService;
 
   @Test
   void testGetGithub() throws IOException {
-    var result = githubService.getGithub();
+    var result = gitHubService.getGitHub();
     assertEquals(DUMMY_API_URL, result.getApiUrl());
   }
 
@@ -43,13 +43,13 @@ class GitHubServiceImplTest {
     final String dummryURL = DUMMY_API_URL.concat("/dummry-content");
     when(mockGHContent.getUrl()).thenReturn(dummryURL);
     when(ghRepository.getFileContent(any())).thenReturn(mockGHContent);
-    var result = githubService.getGHContent(ghRepository, "");
+    var result = gitHubService.getGHContent(ghRepository, "");
     assertEquals(dummryURL, result.getUrl());
   }
 
   @Test
   void testGetDirectoryContent() throws IOException {
-    var result = githubService.getDirectoryContent(ghRepository, "");
+    var result = gitHubService.getDirectoryContent(ghRepository, "");
     assertEquals(0, result.size());
   }
 

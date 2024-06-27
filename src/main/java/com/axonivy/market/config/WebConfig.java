@@ -1,5 +1,6 @@
 package com.axonivy.market.config;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.servlet.config.annotation.CorsRegistry;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
@@ -15,6 +16,12 @@ public class WebConfig implements WebMvcConfigurer {
 
   private final MarketHeaderInterceptor headerInterceptor;
 
+  @Value("${market.cors.allowed.origin.patterns}")
+  private String marketCorsAllowedOriginPatterns;
+
+  @Value("${market.cors.allowed.origin.maxAge}")
+  private int marketCorsAllowedOriginMaxAge;
+
   public WebConfig(MarketHeaderInterceptor headerInterceptor) {
     this.headerInterceptor = headerInterceptor;
   }
@@ -27,9 +34,9 @@ public class WebConfig implements WebMvcConfigurer {
   @Override
   public void addCorsMappings(CorsRegistry registry) {
     registry.addMapping("/**")
-        .allowedOrigins("http://localhost:4200")
+        .allowedOriginPatterns(marketCorsAllowedOriginPatterns)
         .allowedMethods(ALLOWED_METHODS)
         .allowedHeaders(ALLOWED_HEADERS)
-        .maxAge(3600);
+        .maxAge(marketCorsAllowedOriginMaxAge);
   }
 }

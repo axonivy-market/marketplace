@@ -2,6 +2,7 @@ package com.axonivy.market.service.impl;
 
 import com.axonivy.market.entity.Feedback;
 import com.axonivy.market.entity.Product;
+import com.axonivy.market.enums.ErrorCode;
 import com.axonivy.market.exceptions.model.NotFoundException;
 import com.axonivy.market.repository.FeedbackRepository;
 import com.axonivy.market.repository.ProductRepository;
@@ -35,18 +36,18 @@ public class FeedbackServiceImpl implements FeedbackService {
 
   @Override
   public Feedback findFeedback(String id) throws NotFoundException {
-    return feedbackRepository.findById(id).orElseThrow(() -> new NotFoundException("Not found feedback with id: " + id));
+    return feedbackRepository.findById(id).orElseThrow(() -> new NotFoundException(ErrorCode.FEEDBACK_NOT_FOUND, "Not found feedback with id: " + id));
   }
 
   @Override
   public Feedback findFeedbackByUserIdAndProductId(String userId, String productId) throws NotFoundException {
     userRepository.findById(userId)
-        .orElseThrow(() -> new NotFoundException("Not found user with id: " + userId));
+        .orElseThrow(() -> new NotFoundException(ErrorCode.USER_NOT_FOUND, "Not found user with id: " + userId));
     validateProductExists(productId);
 
     List<Feedback> existingFeedbacks = feedbackRepository.searchByProductIdAndUserId(userId, productId);
     if (existingFeedbacks.isEmpty()) {
-      throw new NotFoundException(String.format("Not found feedback with user id '%s' and product id '%s'", userId, productId));
+      throw new NotFoundException(ErrorCode.FEEDBACK_NOT_FOUND, String.format("Not found feedback with user id '%s' and product id '%s'", userId, productId));
     }
     return existingFeedbacks.get(0);
   }
@@ -55,9 +56,9 @@ public class FeedbackServiceImpl implements FeedbackService {
   @Override
   public Feedback upsertFeedback(Feedback feedback) throws NotFoundException {
     userRepository.findById(feedback.getUserId())
-        .orElseThrow(() -> new NotFoundException("Not found user with id: " + feedback.getUserId()));
+        .orElseThrow(() -> new NotFoundException(ErrorCode.USER_NOT_FOUND,"Not found user with id: " + feedback.getUserId()));
     Product product = productRepository.findById(feedback.getProductId())
-        .orElseThrow(() -> new NotFoundException("Not found product with id: " + feedback.getProductId()));
+        .orElseThrow(() -> new NotFoundException(ErrorCode.PRODUCT_NOT_FOUND, "Not found product with id: " + feedback.getProductId()));
 
     List<Feedback> existingFeedbacks = feedbackRepository.searchByProductIdAndUserId(feedback.getUserId(), feedback.getProductId());
 
@@ -79,7 +80,7 @@ public class FeedbackServiceImpl implements FeedbackService {
 
   private void validateProductExists(String productId) throws NotFoundException {
     productRepository.findById(productId)
-        .orElseThrow(() -> new NotFoundException("Not found product with id: " + productId));
+        .orElseThrow(() -> new NotFoundException(ErrorCode.PRODUCT_NOT_FOUND, "Not found product with id: " + productId));
   }
 
   private void incrementStarCount(Product product, int rating) {

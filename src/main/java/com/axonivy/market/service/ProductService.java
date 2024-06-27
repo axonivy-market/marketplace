@@ -10,5 +10,6 @@ import java.util.List;
 
 public interface ProductService {
   Page<Product> findProducts(String type, String keyword, Pageable pageable);
+  boolean syncLatestDataFromMarketRepo();
   List<ProductRating> getProductRatingById(String productId);
 }

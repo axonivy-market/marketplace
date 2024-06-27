@@ -1,5 +1,6 @@
 package com.axonivy.market.exceptions;
 
+import com.axonivy.market.enums.ErrorCode;
 import com.axonivy.market.exceptions.model.Oauth2ExchangeCodeException;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -13,6 +14,7 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
 
+import com.axonivy.market.exceptions.model.InvalidParamException;
 import com.axonivy.market.exceptions.model.MissingHeaderException;
 import com.axonivy.market.exceptions.model.NotFoundException;
 import com.axonivy.market.model.Message;
@@ -23,15 +25,10 @@ import java.util.List;
 @ControllerAdvice
 public class ExceptionHandlers extends ResponseEntityExceptionHandler {
 
-  private static final String NOT_FOUND_EXCEPTION_CODE = "-1";
-  private static final String DUPLICATED_ENTITY_EXCEPTION_CODE = "-1";
-  private static final String METHOD_ARGUMENT_NOT_VALID_EXCEPTION_CODE = "-1";
-
   @Override
   protected ResponseEntity<Object> handleMethodArgumentNotValid(MethodArgumentNotValidException ex, HttpHeaders headers, HttpStatusCode status, WebRequest request) {
     BindingResult bindingResult = ex.getBindingResult();
     List<String> errors = new ArrayList<>();
-
     if (bindingResult.hasErrors()) {
       for (FieldError fieldError : bindingResult.getFieldErrors()) {
         errors.add(fieldError.getDefaultMessage());
@@ -41,8 +38,8 @@ public class ExceptionHandlers extends ResponseEntityExceptionHandler {
     }
 
     var errorMessage = new Message();
-    errorMessage.setErrorCode(METHOD_ARGUMENT_NOT_VALID_EXCEPTION_CODE);
-    errorMessage.setMessageDetails(String.join("; ", errors));
+    errorMessage.setHelpCode(ErrorCode.ARGUMENT_BAD_REQUEST.getCode());
+    errorMessage.setMessageDetails(ErrorCode.ARGUMENT_BAD_REQUEST.getHelpText() + " - " + String.join("; ", errors));
     return new ResponseEntity<>(errorMessage, status);
   }
 
@@ -56,15 +53,23 @@ public class ExceptionHandlers extends ResponseEntityExceptionHandler {
   @ExceptionHandler(NotFoundException.class)
   public ResponseEntity<Object> handleNotFoundException(NotFoundException notFoundException) {
     var errorMessage = new Message();
-    errorMessage.setErrorCode(NOT_FOUND_EXCEPTION_CODE);
+    errorMessage.setHelpCode(notFoundException.getCode());
     errorMessage.setMessageDetails(notFoundException.getMessage());
     return new ResponseEntity<>(errorMessage, HttpStatus.NOT_FOUND);
   }
 
-  @ExceptionHandler(Oauth2ExchangeCodeException.class)
-  public ResponseEntity<Object> handleNotFoundException(Oauth2ExchangeCodeException oauth2ExchangeCodeException) {
+  @ExceptionHandler(InvalidParamException.class)
+  public ResponseEntity<Object> handleInvalidException(InvalidParamException invalidDataException) {
     var errorMessage = new Message();
-    errorMessage.setErrorCode(oauth2ExchangeCodeException.getError());
+    errorMessage.setHelpCode(invalidDataException.getCode());
+    errorMessage.setMessageDetails(invalidDataException.getMessage());
+    return new ResponseEntity<>(errorMessage, HttpStatus.BAD_REQUEST);
+  }
+
+  @ExceptionHandler(Oauth2ExchangeCodeException.class)
+  public ResponseEntity<Object> handleOauth2ExchangeCodeException(Oauth2ExchangeCodeException oauth2ExchangeCodeException) {
+    var errorMessage = new Message();
+    errorMessage.setHelpCode(oauth2ExchangeCodeException.getError());
     errorMessage.setMessageDetails(oauth2ExchangeCodeException.getErrorDescription());
     return new ResponseEntity<>(errorMessage, HttpStatus.BAD_REQUEST);
   }

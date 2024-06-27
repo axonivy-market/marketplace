@@ -10,7 +10,7 @@ import org.springframework.stereotype.Service;
 
 import com.axonivy.market.constants.GitHubConstants;
 import com.axonivy.market.github.service.GHAxonIvyProductRepoService;
-import com.axonivy.market.github.service.GithubService;
+import com.axonivy.market.github.service.GitHubService;
 
 import lombok.extern.log4j.Log4j2;
 
@@ -19,10 +19,10 @@ import lombok.extern.log4j.Log4j2;
 public class GHAxonIvyProductRepoServiceImpl implements GHAxonIvyProductRepoService {
   private GHOrganization organization;
 
-  private final GithubService githubService;
+  private final GitHubService gitHubService;
 
-  public GHAxonIvyProductRepoServiceImpl(GithubService githubService) {
-    this.githubService = githubService;
+  public GHAxonIvyProductRepoServiceImpl(GitHubService gitHubService) {
+    this.gitHubService = gitHubService;
   }
 
   @Override
@@ -37,7 +37,7 @@ public class GHAxonIvyProductRepoServiceImpl implements GHAxonIvyProductRepoServ
 
   private GHOrganization getOrganization() throws IOException {
     if (organization == null) {
-      organization = githubService.getOrganization(GitHubConstants.AXONIVY_MARKET_ORGANIZATION_NAME);
+      organization = gitHubService.getOrganization(GitHubConstants.AXONIVY_MARKET_ORGANIZATION_NAME);
     }
     return organization;
   }
