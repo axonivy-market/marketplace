@@ -22,7 +22,9 @@ import lombok.Setter;
 public class ProductModel extends RepresentationModel<ProductModel> {
   private String id;
   private String name;
+  private String nameDE;
   private String shortDescription;
+  private String shortDescriptionDE;
   private String logoUrl;
   private String type;
   private List<String> tags;

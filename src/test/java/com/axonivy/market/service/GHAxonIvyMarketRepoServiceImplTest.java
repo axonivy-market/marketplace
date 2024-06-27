@@ -73,7 +73,7 @@ class GHAxonIvyMarketRepoServiceImplTest {
     mockGhContents.add(mockGHContent);
     when(mockGHFileContent.isFile()).thenReturn(true);
     when(pagedGHContent.toList()).thenReturn(List.of(mockGHFileContent));
-    when(gitHubService.getDirectoryContent(any(), any())).thenReturn(mockGhContents);
+    when(gitHubService.getDirectoryContent(any(), any(), any())).thenReturn(mockGhContents);
 
     ghContentMap = axonIvyMarketRepoServiceImpl.fetchAllMarketItems();
     assertEquals(1, ghContentMap.values().size());

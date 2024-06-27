@@ -19,8 +19,8 @@ public class Meta {
   @JsonProperty("$schema")
   private String schema;
   private String id;
-  private String name;
-  private String description;
+  private List<DisplayName> names;
+  private List<DisplayName> descriptions;
   private String type;
   private String platformReview;
   private String sourceUrl;

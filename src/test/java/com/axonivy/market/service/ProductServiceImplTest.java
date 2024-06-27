@@ -116,7 +116,7 @@ class ProductServiceImplTest {
     mockGithubFile.setStatus(FileStatus.ADDED);
     when(marketRepoService.fetchMarketItemsBySHA1Range(any(), any())).thenReturn(List.of(mockGithubFile));
     var mockGHContent = mockGHContentAsMetaJSON();
-    when(gitHubService.getGHContent(any(), anyString())).thenReturn(mockGHContent);
+    when(gitHubService.getGHContent(any(), anyString(), anyString())).thenReturn(mockGHContent);
 
     // Executes
     var result = productService.syncLatestDataFromMarketRepo();
@@ -147,7 +147,7 @@ class ProductServiceImplTest {
     mockGitHubFile.setStatus(FileStatus.ADDED);
     when(marketRepoService.fetchMarketItemsBySHA1Range(any(), any())).thenReturn(List.of(mockGitHubFile));
     var mockGHContent = mockGHContentAsMetaJSON();
-    when(gitHubService.getGHContent(any(), anyString())).thenReturn(mockGHContent);
+    when(gitHubService.getGHContent(any(), anyString(), anyString())).thenReturn(mockGHContent);
 
     // Executes
     var result = productService.syncLatestDataFromMarketRepo();
@@ -157,7 +157,7 @@ class ProductServiceImplTest {
     when(mockCommit.getSHA1()).thenReturn(UUID.randomUUID().toString());
     mockGitHubFile.setStatus(FileStatus.REMOVED);
     when(marketRepoService.fetchMarketItemsBySHA1Range(any(), any())).thenReturn(List.of(mockGitHubFile));
-    when(gitHubService.getGHContent(any(), anyString())).thenReturn(mockGHContent);
+    when(gitHubService.getGHContent(any(), anyString(), anyString())).thenReturn(mockGHContent);
     when(productRepository.findByLogoUrl(any())).thenReturn(new Product());
 
     // Executes

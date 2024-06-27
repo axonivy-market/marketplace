@@ -32,6 +32,7 @@ class ProductFactoryTest {
     var result = ProductFactory.mappingByGHContent(product, mockContent);
     assertNotEquals(null, result);
     assertEquals("Amazon Comprehend", result.getName());
+    assertEquals("Amazon Comprehend DE", result.getNameDE());
   }
 
   @Test

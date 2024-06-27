@@ -9,8 +9,11 @@ import java.io.IOException;
 
 import org.apache.commons.lang3.StringUtils;
 import org.kohsuke.github.GHContent;
+import org.springframework.util.CollectionUtils;
 
 import com.axonivy.market.entity.Product;
+import com.axonivy.market.enums.Language;
+import com.axonivy.market.github.model.DisplayName;
 import com.axonivy.market.github.model.Meta;
 import com.axonivy.market.github.util.GitHubUtils;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -49,13 +52,13 @@ public class ProductFactory {
     }
 
     product.setId(meta.getId());
-    product.setName(meta.getName());
     product.setMarketDirectory(extractParentDirectory(ghContent));
+    mappingNameByMetaJSONFile(product, meta);
+    mappingDescriptionByMetaJSONFile(product, meta);
     product.setListed(meta.getListed());
     product.setType(meta.getType());
     product.setTags(meta.getTags());
     product.setVersion(meta.getVersion());
-    product.setShortDescription(meta.getDescription());
     product.setVendor(meta.getVendor());
     product.setVendorImage(meta.getVendorImage());
     product.setVendorUrl(meta.getVendorUrl());
@@ -70,6 +73,30 @@ public class ProductFactory {
   private static String extractParentDirectory(GHContent ghContent) {
     var path = StringUtils.defaultIfEmpty(ghContent.getPath(), EMPTY);
     return path.replace(ghContent.getName(), EMPTY);
+  }
+
+  public static void mappingNameByMetaJSONFile(Product product, Meta meta) {
+    if (!CollectionUtils.isEmpty(meta.getNames())) {
+      for (DisplayName name : meta.getNames()) {
+        if (Language.EN.getValue().equalsIgnoreCase(name.getLocale())) {
+          product.setName(name.getValue());
+        } else if (Language.DE.getValue().equalsIgnoreCase(name.getLocale())) {
+          product.setNameDE(name.getValue());
+        }
+      }
+    }
+  }
+
+  public static void mappingDescriptionByMetaJSONFile(Product product, Meta meta) {
+    if (!CollectionUtils.isEmpty(meta.getDescriptions())) {
+      for (DisplayName name : meta.getDescriptions()) {
+        if (Language.EN.getValue().equalsIgnoreCase(name.getLocale())) {
+          product.setShortDescription(name.getValue());
+        } else if (Language.DE.getValue().equalsIgnoreCase(name.getLocale())) {
+          product.setShortDescriptionDE(name.getValue());
+        }
+      }
+    }
   }
 
   private static void extractSourceUrl(Product product, Meta meta) {

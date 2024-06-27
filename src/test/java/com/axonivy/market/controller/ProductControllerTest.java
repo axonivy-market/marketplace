@@ -33,6 +33,7 @@ import com.axonivy.market.service.ProductService;
 @ExtendWith(MockitoExtension.class)
 class ProductControllerTest {
   private static final String PRODUCT_NAME_SAMPLE = "Amazon Comprehend";
+  private static final String PRODUCT_NAME_DE_SAMPLE = "Amazon Comprehend DE";
   private static final String PRODUCT_DESC_SAMPLE = "Amazon Comprehend is a AI service that uses machine learning to uncover information in unstructured data.";
 
   @Mock
@@ -83,6 +84,7 @@ class ProductControllerTest {
     assertTrue(result.hasBody());
     assertEquals(1, result.getBody().getContent().size());
     assertEquals(PRODUCT_NAME_SAMPLE, result.getBody().getContent().iterator().next().getName());
+    assertEquals(PRODUCT_NAME_DE_SAMPLE, result.getBody().getContent().iterator().next().getNameDE());
   }
 
   @Test
@@ -97,6 +99,7 @@ class ProductControllerTest {
     Product mockProduct = new Product();
     mockProduct.setId("amazon-comprehend");
     mockProduct.setName(PRODUCT_NAME_SAMPLE);
+    mockProduct.setNameDE(PRODUCT_NAME_DE_SAMPLE);
     mockProduct.setShortDescription(PRODUCT_DESC_SAMPLE);
     mockProduct.setType("connector");
     mockProduct.setTags(List.of("AI"));

@@ -136,7 +136,8 @@ public class ProductServiceImpl implements ProductService {
         Product product = new Product();
         GHContent fileContent;
         try {
-          fileContent = gitHubService.getGHContent(axonIvyMarketRepoService.getRepository(), file.getFileName());
+          fileContent = gitHubService.getGHContent(axonIvyMarketRepoService.getRepository(), file.getFileName(),
+              GitHubConstants.DEFAULT_BRANCH);
         } catch (IOException e) {
           log.error("Get GHContent failed: ", e);
           continue;

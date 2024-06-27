@@ -42,14 +42,14 @@ class GitHubServiceImplTest {
     var mockGHContent = mock(GHContent.class);
     final String dummryURL = DUMMY_API_URL.concat("/dummry-content");
     when(mockGHContent.getUrl()).thenReturn(dummryURL);
-    when(ghRepository.getFileContent(any())).thenReturn(mockGHContent);
-    var result = gitHubService.getGHContent(ghRepository, "");
+    when(ghRepository.getFileContent(any(), any())).thenReturn(mockGHContent);
+    var result = gitHubService.getGHContent(ghRepository, "", "");
     assertEquals(dummryURL, result.getUrl());
   }
 
   @Test
   void testGetDirectoryContent() throws IOException {
-    var result = gitHubService.getDirectoryContent(ghRepository, "");
+    var result = gitHubService.getDirectoryContent(ghRepository, "", "");
     assertEquals(0, result.size());
   }
 

@@ -28,8 +28,10 @@ public class Product implements Serializable {
   private String id;
   private String marketDirectory;
   private String name;
+  private String nameDE;
   private String version;
   private String shortDescription;
+  private String shortDescriptionDE;
   private String logoUrl;
   private Boolean listed;
   private String type;
