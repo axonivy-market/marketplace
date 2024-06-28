@@ -22,7 +22,7 @@ public class LatestVersionComparator implements Comparator<String> {
                 }
                 // Handle non-numeric parts (e.g., "m229")
             } catch (NumberFormatException e) {
-                return parts2[i].replaceAll("[^0-9]", "").compareTo(parts1[i].replaceAll("[^0-9]", ""));
+                return parts2[i].replaceAll("\\D", "").compareTo(parts1[i].replaceAll("\\D", ""));
             }
         }
 
