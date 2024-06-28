@@ -24,7 +24,7 @@ public class ProductDetailsController {
   }
 
   @Operation(summary = "increase installation count by 1", description = "increase installation count by 1")
-  @PostMapping("/installationcount/{key}")
+  @PutMapping("/installationcount/{key}")
   public ResponseEntity<Integer> syncInstallationCount(@PathVariable("key") String key) {
     int result = productService.updateInstallationCountForProduct(key);
     return new ResponseEntity<>(result, HttpStatus.OK);

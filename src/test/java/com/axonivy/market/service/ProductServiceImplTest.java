@@ -8,30 +8,43 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.mockStatic;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.http.HttpClient;
-import java.net.http.HttpResponse;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
-import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.kohsuke.github.GHCommit;
 import org.kohsuke.github.GHContent;
-import org.mockito.*;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Captor;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.MockedStatic;
+import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.test.util.ReflectionTestUtils;
 
 import com.axonivy.market.constants.GitHubConstants;
 import com.axonivy.market.entity.GitHubRepoMeta;
@@ -46,7 +59,6 @@ import com.axonivy.market.github.service.GitHubService;
 import com.axonivy.market.repository.GitHubRepoMetaRepository;
 import com.axonivy.market.repository.ProductRepository;
 import com.axonivy.market.service.impl.ProductServiceImpl;
-import org.springframework.test.util.ReflectionTestUtils;
 
 @ExtendWith(MockitoExtension.class)
 class ProductServiceImplTest {
@@ -110,7 +122,7 @@ class ProductServiceImplTest {
     Mockito.when(productRepository.save(any())).thenReturn(product);
     // Mock the behavior of Files.readString and ObjectMapper.readValue
     String installationCounts = "{\"google-maps-connector\": 10}";
-    try (MockedStatic<Files> filesMockedStatic = mockStatic(Files.class)){
+    try (MockedStatic<Files> filesMockedStatic = mockStatic(Files.class)) {
       when(Files.readString(Paths.get("path/to/installationCount.json"))).thenReturn(installationCounts);
       // Call the method
       int result = productService.updateInstallationCountForProduct("google-maps-connector");
@@ -121,9 +133,10 @@ class ProductServiceImplTest {
       assertTrue(product.getSynchronizedInstallationCount());
     }
   }
+
   private Product mockProduct() {
     return Product.builder().id("google-maps-connector").name("Google Maps").language("English")
-            .synchronizedInstallationCount(true).build();
+        .synchronizedInstallationCount(true).build();
   }
 
   @Test
@@ -317,6 +330,5 @@ class ProductServiceImplTest {
     when(mockGHContent.getName()).thenReturn(META_FILE);
     return mockGHContent;
   }
-
 
 }
