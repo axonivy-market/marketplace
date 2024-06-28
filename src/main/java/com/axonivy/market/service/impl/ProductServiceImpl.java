@@ -5,17 +5,22 @@ import static org.apache.commons.lang3.StringUtils.EMPTY;
 
 import java.io.IOException;
 import java.net.URL;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.kohsuke.github.GHCommit;
 import org.kohsuke.github.GHContent;
 import org.kohsuke.github.GHRepository;
 import org.kohsuke.github.GHTag;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
@@ -53,6 +58,10 @@ public class ProductServiceImpl implements ProductService {
 
   private GHCommit lastGHCommit;
   private GitHubRepoMeta marketRepoMeta;
+  private final ObjectMapper mapper = new ObjectMapper();
+
+  @Value("${synchronized.installation.counts.path}")
+  private String installationCountPath;
 
   public ProductServiceImpl(ProductRepository productRepository, GHAxonIvyMarketRepoService axonIvyMarketRepoService,
       GitHubRepoMetaRepository gitHubRepoMetaRepository, GitHubService gitHubService) {
@@ -101,6 +110,35 @@ public class ProductServiceImpl implements ProductService {
       syncRepoMetaDataStatus();
     }
     return isAlreadyUpToDate;
+  }
+
+  @Override
+  public int updateInstallationCountForProduct(String key) {
+    return productRepository.findById(key).map(product -> {
+      log.info("updating installation count for product {}", key);
+      if (!BooleanUtils.isTrue(product.getSynchronizedInstallationCount())) {
+        syncInstallationCountWithProduct(product);
+      }
+      product.setInstallationCount(product.getInstallationCount() + 1);
+      return productRepository.save(product);
+    }).map(Product::getInstallationCount).orElse(0);
+  }
+
+  private void syncInstallationCountWithProduct(Product product) {
+    log.info("synchronizing installation count for product");
+    try {
+      String installationCounts = Files.readString(Paths.get(installationCountPath));
+      Map<String, Integer> mapping = mapper.readValue(installationCounts, HashMap.class);
+      List<String> keyList = mapping.keySet().stream().toList();
+      if (keyList.contains(product.getId())) {
+        product.setInstallationCount(mapping.get(product.getId()));
+      }
+      product.setSynchronizedInstallationCount(true);
+      log.info("synchronized installation count for products");
+    } catch (IOException ex) {
+      log.error(ex.getMessage());
+      throw new RuntimeException(ex);
+    }
   }
 
   private void syncRepoMetaDataStatus() {

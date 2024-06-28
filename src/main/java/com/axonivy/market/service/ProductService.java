@@ -9,4 +9,6 @@ public interface ProductService {
   Page<Product> findProducts(String type, String keyword, Pageable pageable);
 
   boolean syncLatestDataFromMarketRepo();
+
+  int updateInstallationCountForProduct(String key);
 }

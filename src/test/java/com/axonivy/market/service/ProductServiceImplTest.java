@@ -8,27 +8,24 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
+import java.net.http.HttpClient;
+import java.net.http.HttpResponse;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.util.*;
 import java.util.stream.Collectors;
 
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.kohsuke.github.GHCommit;
 import org.kohsuke.github.GHContent;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
+import org.mockito.*;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
@@ -49,6 +46,7 @@ import com.axonivy.market.github.service.GitHubService;
 import com.axonivy.market.repository.GitHubRepoMetaRepository;
 import com.axonivy.market.repository.ProductRepository;
 import com.axonivy.market.service.impl.ProductServiceImpl;
+import org.springframework.test.util.ReflectionTestUtils;
 
 @ExtendWith(MockitoExtension.class)
 class ProductServiceImplTest {
@@ -74,12 +72,58 @@ class ProductServiceImplTest {
   @Mock
   private GitHubService gitHubService;
 
+  @Captor
+  ArgumentCaptor<Product> argumentCaptor = ArgumentCaptor.forClass(Product.class);
+
   @InjectMocks
   private ProductServiceImpl productService;
 
   @BeforeEach
   public void setup() {
     mockResultReturn = createPageProductsMock();
+  }
+
+  @Test
+  public void testUpdateInstallationCount() {
+    // prepare
+    Mockito.when(productRepository.findById("google-maps-connector")).thenReturn(Optional.of(mockProduct()));
+
+    // exercise
+    productService.updateInstallationCountForProduct("google-maps-connector");
+
+    // Verify
+    verify(productRepository).save(argumentCaptor.capture());
+    int updatedInstallationCount = argumentCaptor.getValue().getInstallationCount();
+
+    assertEquals(1, updatedInstallationCount);
+    verify(productRepository, times(1)).findById(Mockito.anyString());
+    verify(productRepository, times(1)).save(Mockito.any());
+  }
+
+  @Test
+  void testSyncInstallationCountWithProduct() throws Exception {
+    // Mock data
+    ReflectionTestUtils.setField(productService, "installationCountPath", "path/to/installationCount.json");
+    Product product = mockProduct();
+    product.setSynchronizedInstallationCount(false);
+    Mockito.when(productRepository.findById("google-maps-connector")).thenReturn(Optional.of(product));
+    Mockito.when(productRepository.save(any())).thenReturn(product);
+    // Mock the behavior of Files.readString and ObjectMapper.readValue
+    String installationCounts = "{\"google-maps-connector\": 10}";
+    try (MockedStatic<Files> filesMockedStatic = mockStatic(Files.class)){
+      when(Files.readString(Paths.get("path/to/installationCount.json"))).thenReturn(installationCounts);
+      // Call the method
+      int result = productService.updateInstallationCountForProduct("google-maps-connector");
+
+      // Verify the results
+      assertEquals(11, result);
+      assertEquals(true, product.getSynchronizedInstallationCount());
+      assertTrue(product.getSynchronizedInstallationCount());
+    }
+  }
+  private Product mockProduct() {
+    return Product.builder().id("google-maps-connector").name("Google Maps").language("English")
+            .synchronizedInstallationCount(true).build();
   }
 
   @Test
@@ -273,4 +317,6 @@ class ProductServiceImplTest {
     when(mockGHContent.getName()).thenReturn(META_FILE);
     return mockGHContent;
   }
+
+
 }

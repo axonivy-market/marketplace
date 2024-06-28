@@ -6,20 +6,17 @@ import java.io.Serializable;
 import java.util.Date;
 import java.util.List;
 
+import lombok.*;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
-
 @Getter
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
+@Builder
 @Document(PRODUCT)
 public class Product implements Serializable {
 
@@ -47,9 +44,10 @@ public class Product implements Serializable {
   private String compatibility;
   private Boolean validate;
   private Boolean contactUs;
-  private Integer installationCount;
+  private int installationCount;
   private Date newestPublishedDate;
   private String newestReleaseVersion;
+  private Boolean synchronizedInstallationCount;
 
   @Override
   public int hashCode() {
