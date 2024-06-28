@@ -17,7 +17,7 @@ public interface ProductRepository extends MongoRepository<Product, String> {
 
   Product findByLogoUrl(String logoUrl);
 
-  Optional<Product> findById( String productId);
+  Optional<Product> findById(String productId);
 
   @Query("{'marketDirectory': {$regex : ?0, $options: 'i'}}")
   Product findByMarketDirectoryRegex(String search);

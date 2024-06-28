@@ -53,7 +53,7 @@ class ProductFactoryTest {
   }
 
   @Test
-  void testExtractParentDirectory() throws IOException {
+  void testExtractSourceUrl() throws IOException {
     Product product = new Product();
     Meta meta = new Meta();
     ProductFactory.extractSourceUrl(product,meta);

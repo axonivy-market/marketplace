@@ -1,7 +1,7 @@
 package com.axonivy.market.service;
 
 import com.axonivy.market.constants.MavenConstants;
-import com.axonivy.market.constants.NonStandardProductPPackageConstants;
+import com.axonivy.market.constants.NonStandardProductPackageConstants;
 import com.axonivy.market.entity.MavenArtifactModel;
 import com.axonivy.market.entity.MavenArtifactVersion;
 import com.axonivy.market.entity.Product;
@@ -169,7 +169,6 @@ class VersionServiceImplTest {
     }
 
 
-    //TODO: test sorting again
     @Test
     void testGetVersionsToDisplay() {
         String repoUrl = "https://maven.axonivy.com";
@@ -177,10 +176,10 @@ class VersionServiceImplTest {
         String artifactId = "adobe-acrobat-sign-connector";
         artifactsFromMeta.add(new MavenArtifact(repoUrl, null, groupId, artifactId, null, null, null, null));
         ArrayList<String> versionFromArtifact = new ArrayList<>();
-        versionFromArtifact.add("10.0.3-SNAPSHOT");
         versionFromArtifact.add("10.0.6");
         versionFromArtifact.add("10.0.5");
         versionFromArtifact.add("10.0.4");
+        versionFromArtifact.add("10.0.3-SNAPSHOT");
         when(versionService.getVersionsFromArtifactDetails(repoUrl, groupId, artifactId)).thenReturn(versionFromArtifact);
         Assertions.assertEquals(versionFromArtifact, versionService.getVersionsToDisplay(true, null));
         Assertions.assertEquals(List.of("10.0.5"), versionService.getVersionsToDisplay(null, "10.0.5"));
@@ -188,7 +187,6 @@ class VersionServiceImplTest {
         Assertions.assertEquals(versionFromArtifact, versionService.getVersionsToDisplay(null, null));
     }
 
-    // TODO: make data be true
     @Test
     void getVersionsFromMavenArtifacts() {
         String repoUrl = "https://maven.axonivy.com";
@@ -215,7 +213,6 @@ class VersionServiceImplTest {
         Assertions.assertEquals(versionService.getVersionsFromMavenArtifacts(), versionFromArtifact);
     }
 
-    //TODO: need to convert to mock data
     @Test
     void testGetVersionsFromArtifactDetails() {
 
@@ -252,14 +249,27 @@ class VersionServiceImplTest {
     void testIsReleasedVersionOrUnReleaseDevVersion() {
         String releasedVersion = "10.0.20";
         String snapshotVersion = "10.0.20-SNAPSHOT";
-        String sprintVersion = "10.0.21-m1234";
-        String releasedSprintVersion = "10.0.20-m1234";
-        List<String> versions = List.of(releasedVersion, snapshotVersion, sprintVersion);
-        Assertions.assertTrue(versionService.isReleasedVersionOrUnReleaseDevVersion(versions, releasedVersion));
-        Assertions.assertTrue(versionService.isReleasedVersionOrUnReleaseDevVersion(versions, sprintVersion));
-        Assertions.assertFalse(versionService.isReleasedVersionOrUnReleaseDevVersion(versions, snapshotVersion));
-        Assertions.assertFalse(versionService.isReleasedVersionOrUnReleaseDevVersion(versions, releasedSprintVersion));
+        String sprintVersion = "10.0.20-m1234";
+        String minorSprintVersion = "10.0.20.1-m1234";
+        String unreleasedSprintVersion = "10.0.21-m1235";
+        List<String> versions = List.of(releasedVersion, snapshotVersion, sprintVersion, unreleasedSprintVersion);
+        Assertions.assertTrue(versionService.isOfficialVersionOrUnReleasedDevVersion(versions, releasedVersion));
+        Assertions.assertFalse(versionService.isOfficialVersionOrUnReleasedDevVersion(versions, sprintVersion));
+        Assertions.assertFalse(versionService.isOfficialVersionOrUnReleasedDevVersion(versions, snapshotVersion));
+        Assertions.assertFalse(versionService.isOfficialVersionOrUnReleasedDevVersion(versions, minorSprintVersion));
+        Assertions.assertTrue(versionService.isOfficialVersionOrUnReleasedDevVersion(versions, unreleasedSprintVersion));
+    }
 
+    @Test
+    void testGetBugfixVersion() {
+        String releasedVersion = "10.0.20";
+        String snapshotVersion = "10.0.20-SNAPSHOT";
+        String sprintVersion = "10.0.20-m1234";
+        String minorSprintVersion = "10.0.20.1-m1234";
+        Assertions.assertEquals(releasedVersion,versionService.getBugfixVersion( releasedVersion));
+        Assertions.assertEquals(releasedVersion,versionService.getBugfixVersion( snapshotVersion));
+        Assertions.assertEquals(releasedVersion,versionService.getBugfixVersion( sprintVersion));
+        Assertions.assertEquals(releasedVersion,versionService.getBugfixVersion( minorSprintVersion));
     }
 
     @Test
@@ -479,32 +489,32 @@ class VersionServiceImplTest {
         ReflectionTestUtils.setField(versionService, "productId", "adobe-acrobat-connector");
         Assertions.assertEquals("v10.0.1", versionService.buildProductJsonFilePath(version));
 
-        ReflectionTestUtils.setField(versionService, "productId", NonStandardProductPPackageConstants.PORTAL);
+        ReflectionTestUtils.setField(versionService, "productId", NonStandardProductPackageConstants.PORTAL);
         Assertions.assertEquals("10.0.1", versionService.buildProductJsonFilePath(version));
         Assertions.assertEquals("AxonIvyPortal/portal-product/product.json", versionService.getProductJsonFilePath());
 
 
-        ReflectionTestUtils.setField(versionService, "productId", NonStandardProductPPackageConstants.CONNECTIVITY_FEATURE);
+        ReflectionTestUtils.setField(versionService, "productId", NonStandardProductPackageConstants.CONNECTIVITY_FEATURE);
         versionService.buildProductJsonFilePath(version);
         Assertions.assertEquals("connectivity/connectivity-demos-product/product.json", versionService.getProductJsonFilePath());
 
-        ReflectionTestUtils.setField(versionService, "productId", NonStandardProductPPackageConstants.ERROR_HANDLING);
+        ReflectionTestUtils.setField(versionService, "productId", NonStandardProductPackageConstants.ERROR_HANDLING);
         versionService.buildProductJsonFilePath(version);
         Assertions.assertEquals("error-handling/error-handling-demos-product/product.json", versionService.getProductJsonFilePath());
 
-        ReflectionTestUtils.setField(versionService, "productId", NonStandardProductPPackageConstants.WORKFLOW_DEMO);
+        ReflectionTestUtils.setField(versionService, "productId", NonStandardProductPackageConstants.WORKFLOW_DEMO);
         versionService.buildProductJsonFilePath(version);
         Assertions.assertEquals("workflow/workflow-demos-product/product.json", versionService.getProductJsonFilePath());
 
-        ReflectionTestUtils.setField(versionService, "productId", NonStandardProductPPackageConstants.MICROSOFT_365);
+        ReflectionTestUtils.setField(versionService, "productId", NonStandardProductPackageConstants.MICROSOFT_365);
         versionService.buildProductJsonFilePath(version);
         Assertions.assertEquals("msgraph-connector-product/products/msgraph-connector/product.json", versionService.getProductJsonFilePath());
 
-        ReflectionTestUtils.setField(versionService, "productId", NonStandardProductPPackageConstants.HTML_DIALOG_DEMO);
+        ReflectionTestUtils.setField(versionService, "productId", NonStandardProductPackageConstants.HTML_DIALOG_DEMO);
         versionService.buildProductJsonFilePath(version);versionService.buildProductJsonFilePath(version);
         Assertions.assertEquals("html-dialog/html-dialog-demos-product/product.json", versionService.getProductJsonFilePath());
 
-        ReflectionTestUtils.setField(versionService, "productId", NonStandardProductPPackageConstants.RULE_ENGINE_DEMOS);
+        ReflectionTestUtils.setField(versionService, "productId", NonStandardProductPackageConstants.RULE_ENGINE_DEMOS);
         versionService.buildProductJsonFilePath(version);
         Assertions.assertEquals("rule-engine/rule-engine-demos-product/product.json", versionService.getProductJsonFilePath());
     }

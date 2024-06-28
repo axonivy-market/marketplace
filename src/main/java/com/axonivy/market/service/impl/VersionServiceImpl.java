@@ -2,7 +2,7 @@ package com.axonivy.market.service.impl;
 
 import com.axonivy.market.constants.GitHubConstants;
 import com.axonivy.market.constants.MavenConstants;
-import com.axonivy.market.constants.NonStandardProductPPackageConstants;
+import com.axonivy.market.constants.NonStandardProductPackageConstants;
 import com.axonivy.market.entity.MavenArtifactVersion;
 import com.axonivy.market.entity.Product;
 import com.axonivy.market.github.model.ArchivedArtifact;
@@ -67,7 +67,7 @@ public class VersionServiceImpl implements VersionService {
   }
 
   public List<MavenArtifactVersionModel> getArtifactsAndVersionToDisplay(String productId, Boolean isShowDevVersion, String designerVersion) {
-    List<MavenArtifactVersionModel> result = new ArrayList<>();
+    List<MavenArtifactVersionModel> results = new ArrayList<>();
     resetData();
 
     this.productId = productId;
@@ -78,11 +78,11 @@ public class VersionServiceImpl implements VersionService {
 
     sanitizeMetaArtifactBeforeHandle();
 
-    boolean isNewVersionDetected = handleArtifactForVersionToDisplay(versionsToDisplay, result);
+    boolean isNewVersionDetected = handleArtifactForVersionToDisplay(versionsToDisplay, results);
     if (isNewVersionDetected) {
       mavenArtifactVersionRepository.save(proceedDataCache);
     }
-    return result;
+    return results;
   }
 
   public boolean handleArtifactForVersionToDisplay(List<String> versionsToDisplay, List<MavenArtifactVersionModel> result) {
@@ -131,7 +131,7 @@ public class VersionServiceImpl implements VersionService {
     List<String> versions = getVersionsFromMavenArtifacts();
     Stream<String> versionStream = versions.stream();
     if (BooleanUtils.isTrue(isShowDevVersion)) {
-      return versionStream.filter(version -> isReleasedVersionOrUnReleaseDevVersion(versions, version)).sorted(new LatestVersionComparator()).toList();
+      return versionStream.filter(version -> isOfficialVersionOrUnReleasedDevVersion(versions, version)).sorted(new LatestVersionComparator()).toList();
     }
     if (StringUtils.isNotBlank(designerVersion)) {
       return versionStream.filter(version -> isMatchWithDesignerVersion(version, designerVersion)).toList();
@@ -166,17 +166,36 @@ public class VersionServiceImpl implements VersionService {
       return StringUtils.EMPTY;
     }
     repoUrl = Optional.ofNullable(repoUrl).orElse(MavenConstants.DEFAULT_IVY_MAVEN_BASE_URL);
-    groupId = groupId.replace(MavenConstants.GROUP_ID_SEPARATOR, MavenConstants.GROUP_ID_URL_SEPARATOR);
+    groupId = groupId.replace(MavenConstants.DOT_SEPARATOR, MavenConstants.GROUP_ID_URL_SEPARATOR);
     return String.format(MavenConstants.METADATA_URL_FORMAT, repoUrl, groupId, artifactID);
   }
 
-  public boolean isReleasedVersionOrUnReleaseDevVersion(List<String> versions, String version) {
+  public String getBugfixVersion(String version) {
+
     if (isSnapshotVersion(version)) {
-      return !versions.contains(version.replace(MavenConstants.SNAPSHOT_RELEASE_POSTFIX, StringUtils.EMPTY));
+      version = version.replace(MavenConstants.SNAPSHOT_RELEASE_POSTFIX, StringUtils.EMPTY);
     } else if (isSprintVersion(version)) {
-      return !versions.contains(version.split(MavenConstants.SPRINT_RELEASE_POSTFIX)[0]);
+      version = version.split(MavenConstants.SPRINT_RELEASE_POSTFIX)[0];
     }
-    return true;
+    String[] segments = version.split("\\.");
+    if (segments.length >= 3) {
+      segments[2] = segments[2].split(MavenConstants.ARTIFACT_ID_SEPARATOR)[0];
+      return segments[0] + MavenConstants.DOT_SEPARATOR + segments[1] + MavenConstants.DOT_SEPARATOR + segments[2];
+    }
+    return version;
+  }
+
+  public boolean isOfficialVersionOrUnReleasedDevVersion(List<String> versions, String version) {
+    if (isReleasedVersion(version)) {
+      return true;
+    }
+    String bugfixVersion;
+    if (isSnapshotVersion(version)) {
+      bugfixVersion = getBugfixVersion(version.replace(MavenConstants.SNAPSHOT_RELEASE_POSTFIX, StringUtils.EMPTY));
+    } else {
+      bugfixVersion = getBugfixVersion(version.split(MavenConstants.SPRINT_RELEASE_POSTFIX)[0]);
+    }
+    return versions.stream().noneMatch(currentVersion -> !currentVersion.equals(version) && getBugfixVersion(currentVersion).equals(bugfixVersion));
   }
 
   public boolean isSnapshotVersion(String version) {
@@ -211,36 +230,36 @@ public class VersionServiceImpl implements VersionService {
   }
 
   public String buildProductJsonFilePath(String version) {
-    String verisonTag = "v" + version;
+    String versionTag = "v" + version;
     String pathToProductJsonFileFromTagContent = metaProductArtifact.getArtifactId();
     switch (productId) {
-      case NonStandardProductPPackageConstants.PORTAL:
+      case NonStandardProductPackageConstants.PORTAL:
         pathToProductJsonFileFromTagContent = "AxonIvyPortal/portal-product";
-        verisonTag = version;
+        versionTag = version;
         break;
-      case NonStandardProductPPackageConstants.CONNECTIVITY_FEATURE:
+      case NonStandardProductPackageConstants.CONNECTIVITY_FEATURE:
         pathToProductJsonFileFromTagContent = "connectivity/connectivity-demos-product";
         break;
-      case NonStandardProductPPackageConstants.ERROR_HANDLING:
+      case NonStandardProductPackageConstants.ERROR_HANDLING:
         pathToProductJsonFileFromTagContent = "error-handling/error-handling-demos-product";
         break;
-      case NonStandardProductPPackageConstants.WORKFLOW_DEMO:
+      case NonStandardProductPackageConstants.WORKFLOW_DEMO:
         pathToProductJsonFileFromTagContent = "workflow/workflow-demos-product";
         break;
-      case NonStandardProductPPackageConstants.MICROSOFT_365:
+      case NonStandardProductPackageConstants.MICROSOFT_365:
         pathToProductJsonFileFromTagContent = "msgraph-connector-product/products/msgraph-connector";
         break;
-      case NonStandardProductPPackageConstants.HTML_DIALOG_DEMO:
+      case NonStandardProductPackageConstants.HTML_DIALOG_DEMO:
         pathToProductJsonFileFromTagContent = "html-dialog/html-dialog-demos-product";
         break;
-      case NonStandardProductPPackageConstants.RULE_ENGINE_DEMOS:
+      case NonStandardProductPackageConstants.RULE_ENGINE_DEMOS:
         pathToProductJsonFileFromTagContent = "rule-engine/rule-engine-demos-product";
         break;
       default:
         break;
     }
-    productJsonFilePath = String.format(GitHubConstants.PROUCT_JSON_FILE_PATH_FORMAT, pathToProductJsonFileFromTagContent);
-    return verisonTag;
+    productJsonFilePath = String.format(GitHubConstants.PRODUCT_JSON_FILE_PATH_FORMAT, pathToProductJsonFileFromTagContent);
+    return versionTag;
   }
 
   public MavenArtifactModel convertMavenArtifactToModel(MavenArtifact artifact, String version) {
@@ -254,14 +273,14 @@ public class VersionServiceImpl implements VersionService {
   }
 
   public List<MavenArtifactModel> convertMavenArtifactsToModels(List<MavenArtifact> artifacts, String version) {
-    List<MavenArtifactModel> list = new ArrayList<>();
+    List<MavenArtifactModel> results = new ArrayList<>();
     if (!CollectionUtils.isEmpty(artifacts)) {
       for (MavenArtifact artifact : artifacts) {
         MavenArtifactModel mavenArtifactModel = convertMavenArtifactToModel(artifact, version);
-        list.add(mavenArtifactModel);
+        results.add(mavenArtifactModel);
       }
     }
-    return list;
+    return results;
   }
 
   public String buildDownloadUrlFromArtifactAndVersion(MavenArtifact artifact, String version) {
@@ -274,7 +293,7 @@ public class VersionServiceImpl implements VersionService {
       groupIdByVersion = archivedArtifactBestMatchVersion.getGroupId();
       artifactIdByVersion = archivedArtifactBestMatchVersion.getArtifactId();
     }
-    groupIdByVersion = groupIdByVersion.replace(MavenConstants.GROUP_ID_SEPARATOR, MavenConstants.GROUP_ID_URL_SEPARATOR);
+    groupIdByVersion = groupIdByVersion.replace(MavenConstants.DOT_SEPARATOR, MavenConstants.GROUP_ID_URL_SEPARATOR);
     return String.format(MavenConstants.ARTIFACT_DOWNLOAD_URL_FORMAT, repoUrl, groupIdByVersion, artifactIdByVersion, version, artifactIdByVersion, version, artifact.getType());
   }
 

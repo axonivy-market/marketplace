@@ -21,7 +21,6 @@ public class MavenArtifactModel implements Serializable {
   @Transient
   private Boolean isProductArtifact;
 
-
   @Override
   public boolean equals(Object object) {
     if (this == object) return true;
