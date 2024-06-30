@@ -1,7 +1,8 @@
 package com.axonivy.market.github.service;
 
-import com.axonivy.market.model.ReadmeModel;
+import com.axonivy.market.entity.ReadmeProductContent;
 import org.kohsuke.github.GHContent;
+import org.kohsuke.github.GHRepository;
 import org.kohsuke.github.GHTag;
 
 import java.io.IOException;
@@ -13,5 +14,5 @@ public interface GHAxonIvyProductRepoService {
 
     List<GHTag> getAllTagsFromRepoName(String repoName) throws IOException;
 
-    ReadmeModel getReadmeAndProductContentsFromTag(String repositoryName, String tag);
+    ReadmeProductContent getReadmeAndProductContentsFromTag(GHRepository ghRepository, String tag);
 }

@@ -11,7 +11,6 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import com.axonivy.market.assembler.ProductDetailModelAssembler;
 import com.axonivy.market.model.ProductDetailModel;
-import com.axonivy.market.model.ReadmeModel;
 import com.axonivy.market.service.ProductService;
 
 @RestController
@@ -28,14 +27,8 @@ public class ProductDetailsController {
 
     @GetMapping("/{id}")
     public ResponseEntity<ProductDetailModel> findProductDetails(@PathVariable("id") String id,
-                                                                 @RequestParam(name = "type", required = false) String type) {
+                                                                 @RequestParam(name = "type") String type) {
         var productDetail = service.fetchProductDetail(id, type);
         return new ResponseEntity<>(detailModelAssembler.toModel(productDetail), HttpStatus.OK);
-    }
-
-    @GetMapping("/{id}/readme")
-    public ResponseEntity<ReadmeModel> getReadmeAndProductContentsFromTag(@PathVariable("id") String id, @RequestParam(name = "tag") String tag) {
-        var readme = service.getReadmeAndProductContentsFromTag(id, tag);
-        return new ResponseEntity<>(readme, HttpStatus.OK);
     }
 }

@@ -41,5 +41,6 @@ public class ProductDetailModelAssembler extends RepresentationModelAssemblerSup
         model.setCompatibility(product.getCompatibility());
         model.setContactUs(product.getContactUs());
         model.setCost(product.getCost());
+        model.setReadmeProductContents(product.getReadmeProductContents());
     }
 }

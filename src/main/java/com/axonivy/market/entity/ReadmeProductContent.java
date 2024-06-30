@@ -1,4 +1,4 @@
-package com.axonivy.market.model;
+package com.axonivy.market.entity;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -9,7 +9,7 @@ import lombok.Setter;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class ReadmeModel {
+public class ReadmeProductContent {
     private String tag;
     private String description;
     private String setup;

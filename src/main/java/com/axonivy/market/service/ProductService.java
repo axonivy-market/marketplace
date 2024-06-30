@@ -1,6 +1,6 @@
 package com.axonivy.market.service;
 
-import com.axonivy.market.model.ReadmeModel;
+import org.kohsuke.github.GHTag;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
@@ -13,6 +13,5 @@ public interface ProductService {
 
     Product fetchProductDetail(String id, String type);
 
-    ReadmeModel getReadmeAndProductContentsFromTag(String id, String tag);
-
+    String getCompatibilityFromNumericTag(GHTag oldestTag);
 }
