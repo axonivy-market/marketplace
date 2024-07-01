@@ -7,6 +7,7 @@ import static org.mockito.Mockito.when;
 
 import java.io.IOException;
 
+import com.axonivy.market.github.service.impl.GitHubServiceImpl;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.kohsuke.github.GHContent;
@@ -15,8 +16,6 @@ import org.kohsuke.github.GitHub;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-
-import com.axonivy.market.github.service.impl.GitHubServiceImpl;
 
 @ExtendWith(MockitoExtension.class)
 class GitHubServiceImplTest {
