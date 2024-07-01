@@ -15,13 +15,8 @@ import com.axonivy.market.github.service.GHAxonIvyProductRepoService;
 import lombok.extern.log4j.Log4j2;
 
 import org.apache.logging.log4j.util.Strings;
-import com.axonivy.market.constants.GitHubConstants;
 import com.axonivy.market.constants.ProductJsonConstants;
 import com.axonivy.market.github.model.MavenArtifact;
-import com.axonivy.market.github.service.GHAxonIvyProductRepoService;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import lombok.extern.log4j.Log4j2;
 import org.kohsuke.github.GHContent;
 import org.kohsuke.github.GHOrganization;
 import org.kohsuke.github.GHRepository;
@@ -30,7 +25,6 @@ import org.springframework.stereotype.Service;
 
 import com.axonivy.market.github.service.GitHubService;
 
-import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
@@ -126,15 +120,6 @@ public class GHAxonIvyProductRepoServiceImpl implements GHAxonIvyProductRepoServ
 		return artifact;
 	}
 
-	@Override
-	public GHContent getContentFromGHRepoAndTag(String repoName, String filePath, String tagVersion) {
-		try {
-			return getOrganization().getRepository(repoName).getFileContent(filePath, tagVersion);
-		} catch (IOException e) {
-			log.error("Cannot Get Content From File Directory", e);
-			return null;
-		}
-	}
     @Override
     public GHContent getContentFromGHRepoAndTag(String repoName, String filePath, String tagVersion) {
         try {
@@ -145,12 +130,6 @@ public class GHAxonIvyProductRepoServiceImpl implements GHAxonIvyProductRepoServ
         }
     }
 
-    private GHOrganization getOrganization() throws IOException {
-        if (organization == null) {
-            organization = gitHubService.getOrganization(GitHubConstants.AXONIVY_MARKET_ORGANIZATION_NAME);
-        }
-        return organization;
-    }
 	public GHOrganization getOrganization() throws IOException {
 		if (organization == null) {
 			organization = gitHubService.getOrganization(GitHubConstants.AXONIVY_MARKET_ORGANIZATION_NAME);
@@ -299,8 +278,4 @@ public class GHAxonIvyProductRepoServiceImpl implements GHAxonIvyProductRepoServ
                 .map(part -> part.substring(0, 1).toUpperCase() + part.substring(1).toLowerCase())
                 .collect(Collectors.joining(CommonConstants.SPACE));
     }
-	@Override
-	public List<GHTag> getAllTagsFromRepoName(String repoName) throws IOException {
-		return getOrganization().getRepository(repoName).listTags().toList();
-	}
 }

@@ -15,7 +15,6 @@ import org.kohsuke.github.GHContent;
 
 import com.axonivy.market.entity.Product;
 import com.axonivy.market.github.model.Meta;
-import com.axonivy.market.github.util.GitHubUtils;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import lombok.AccessLevel;
