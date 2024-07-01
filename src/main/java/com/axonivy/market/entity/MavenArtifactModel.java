@@ -15,24 +15,25 @@ import java.util.Objects;
 @Setter
 @Getter
 public class MavenArtifactModel implements Serializable {
-  private static final long serialVersionUID = 1L;
-  private String name;
-  private String downloadUrl;
-  @Transient
-  private Boolean isProductArtifact;
+	private static final long serialVersionUID = 1L;
+	private String name;
+	private String downloadUrl;
+	@Transient
+	private Boolean isProductArtifact;
 
-  @Override
-  public boolean equals(Object object) {
-    if (this == object) return true;
-    if (object == null || getClass() != object.getClass()) {
-      return false;
-    }
-    MavenArtifactModel reference = (MavenArtifactModel) object;
-    return Objects.equals(name, reference.getName()) && Objects.equals(downloadUrl, reference.getDownloadUrl());
-  }
+	@Override
+	public boolean equals(Object object) {
+		if (this == object)
+			return true;
+		if (object == null || getClass() != object.getClass()) {
+			return false;
+		}
+		MavenArtifactModel reference = (MavenArtifactModel) object;
+		return Objects.equals(name, reference.getName()) && Objects.equals(downloadUrl, reference.getDownloadUrl());
+	}
 
-  @Override
-  public int hashCode() {
-    return Objects.hash(name, downloadUrl);
-  }
+	@Override
+	public int hashCode() {
+		return Objects.hash(name, downloadUrl);
+	}
 }

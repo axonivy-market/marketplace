@@ -21,12 +21,12 @@ import static com.axonivy.market.constants.EntityConstants.MAVEN_ARTIFACT_VERSIO
 @NoArgsConstructor
 @Document(MAVEN_ARTIFACT_VERSION)
 public class MavenArtifactVersion implements Serializable {
-  @Id
-  private String productId;
-  private List<String> versions = new ArrayList<>();
-  private Map<String, List<MavenArtifactModel>> productArtifactWithVersionReleased = new HashMap<>();
+	@Id
+	private String productId;
+	private List<String> versions = new ArrayList<>();
+	private Map<String, List<MavenArtifactModel>> productArtifactWithVersionReleased = new HashMap<>();
 
-  public MavenArtifactVersion(String productId) {
-    this.productId = productId;
-  }
+	public MavenArtifactVersion(String productId) {
+		this.productId = productId;
+	}
 }
