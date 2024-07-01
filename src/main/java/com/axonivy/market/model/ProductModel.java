@@ -20,23 +20,23 @@ import lombok.Setter;
 @Relation(collectionRelation = "products", itemRelation = "product")
 @JsonInclude(Include.NON_NULL)
 public class ProductModel extends RepresentationModel<ProductModel> {
-  private String id;
-  private String name;
-  private String shortDescription;
-  private String logoUrl;
-  private String type;
-  private List<String> tags;
+	private String id;
+	private String name;
+	private String shortDescription;
+	private String logoUrl;
+	private String type;
+	private List<String> tags;
 
-  @Override
-  public int hashCode() {
-    return new HashCodeBuilder().append(id).hashCode();
-  }
+	@Override
+	public int hashCode() {
+		return new HashCodeBuilder().append(id).hashCode();
+	}
 
-  @Override
-  public boolean equals(Object obj) {
-    if (obj == null || this.getClass() != obj.getClass()) {
-      return false;
-    }
-    return new EqualsBuilder().append(id, ((ProductModel) obj).getId()).isEquals();
-  }
+	@Override
+	public boolean equals(Object obj) {
+		if (obj == null || this.getClass() != obj.getClass()) {
+			return false;
+		}
+		return new EqualsBuilder().append(id, ((ProductModel) obj).getId()).isEquals();
+	}
 }
