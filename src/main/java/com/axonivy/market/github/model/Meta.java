@@ -16,24 +16,24 @@ import lombok.Setter;
 @JsonInclude(JsonInclude.Include.NON_EMPTY)
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class Meta {
-  @JsonProperty("$schema")
-  private String schema;
-  private String id;
-  private String name;
-  private String description;
-  private String type;
-  private String platformReview;
-  private String sourceUrl;
-  private String statusBadgeUrl;
-  private String language;
-  private String industry;
-  private Boolean listed;
-  private String version;
-  private String vendor;
-  private String vendorUrl;
-  private List<String> tags;
-  private List<MavenArtifact> mavenArtifacts;
-  private String compatibility;
-  private Boolean contactUs;
-  private String cost;
+	@JsonProperty("$schema")
+	private String schema;
+	private String id;
+	private String name;
+	private String description;
+	private String type;
+	private String platformReview;
+	private String sourceUrl;
+	private String statusBadgeUrl;
+	private String language;
+	private String industry;
+	private Boolean listed;
+	private String version;
+	private String vendor;
+	private String vendorUrl;
+	private List<String> tags;
+	private List<MavenArtifact> mavenArtifacts;
+	private String compatibility;
+	private Boolean contactUs;
+	private String cost;
 }

@@ -11,16 +11,16 @@ import java.util.List;
 @Setter
 @NoArgsConstructor
 public class ProductDetailModel extends ProductModel {
-    private String vendor;
-    private String vendorUrl;
-    private String platformReview;
-    private String newestReleaseVersion;
-    private String cost;
-    private String sourceUrl;
-    private String statusBadgeUrl;
-    private String language;
-    private String industry;
-    private String compatibility;
-    private Boolean contactUs;
-    private List<ReadmeProductContent> readmeProductContents;
+	private String vendor;
+	private String vendorUrl;
+	private String platformReview;
+	private String newestReleaseVersion;
+	private String cost;
+	private String sourceUrl;
+	private String statusBadgeUrl;
+	private String language;
+	private String industry;
+	private String compatibility;
+	private Boolean contactUs;
+	private List<ReadmeProductContent> readmeProductContents;
 }

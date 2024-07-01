@@ -50,27 +50,28 @@ public class ProductFactory {
 			return product;
 		}
 
-      product.setId(meta.getId());
-      product.setName(meta.getName());
-      product.setMarketDirectory(extractParentDirectory(ghContent));
-      product.setListed(meta.getListed());
-      product.setType(meta.getType());
-      product.setTags(meta.getTags());
-      product.setVersion(meta.getVersion());
-      product.setShortDescription(meta.getDescription());
-      product.setVendor(StringUtils.isBlank(meta.getVendor()) ? "Axon Ivy AG" : meta.getVendor());
-      product.setVendorUrl(StringUtils.isBlank(meta.getVendorUrl()) ? "https://www.axonivy.com" : meta.getVendorUrl());
-      product.setPlatformReview(meta.getPlatformReview());
-      product.setStatusBadgeUrl(meta.getStatusBadgeUrl());
-      product.setLanguage(meta.getLanguage());
-      product.setIndustry(meta.getIndustry());
-      product.setContactUs(BooleanUtils.isTrue(meta.getContactUs()));
-      product.setCost(StringUtils.isBlank(meta.getCost()) ? "Free" : StringUtils.capitalize(meta.getCost()));
-      product.setCompatibility(meta.getCompatibility());
-      extractSourceUrl(product, meta);
-      product.setArtifacts(meta.getMavenArtifacts());
-      return product;
-  }
+		product.setId(meta.getId());
+		product.setName(meta.getName());
+		product.setMarketDirectory(extractParentDirectory(ghContent));
+		product.setListed(meta.getListed());
+		product.setType(meta.getType());
+		product.setTags(meta.getTags());
+		product.setVersion(meta.getVersion());
+		product.setShortDescription(meta.getDescription());
+		product.setVendor(StringUtils.isBlank(meta.getVendor()) ? "Axon Ivy AG" : meta.getVendor());
+		product.setVendorUrl(
+				StringUtils.isBlank(meta.getVendorUrl()) ? "https://www.axonivy.com" : meta.getVendorUrl());
+		product.setPlatformReview(meta.getPlatformReview());
+		product.setStatusBadgeUrl(meta.getStatusBadgeUrl());
+		product.setLanguage(meta.getLanguage());
+		product.setIndustry(meta.getIndustry());
+		product.setContactUs(BooleanUtils.isTrue(meta.getContactUs()));
+		product.setCost(StringUtils.isBlank(meta.getCost()) ? "Free" : StringUtils.capitalize(meta.getCost()));
+		product.setCompatibility(meta.getCompatibility());
+		extractSourceUrl(product, meta);
+		product.setArtifacts(meta.getMavenArtifacts());
+		return product;
+	}
 
 	private static String extractParentDirectory(GHContent ghContent) {
 		var path = StringUtils.defaultIfEmpty(ghContent.getPath(), EMPTY);

@@ -12,11 +12,11 @@ import java.util.List;
 
 public interface GHAxonIvyProductRepoService {
 
-    GHContent getContentFromGHRepoAndTag(String repoName, String filePath, String tagVersion);
+	GHContent getContentFromGHRepoAndTag(String repoName, String filePath, String tagVersion);
 
-    List<GHTag> getAllTagsFromRepoName(String repoName) throws IOException;
+	List<GHTag> getAllTagsFromRepoName(String repoName) throws IOException;
 
-    ReadmeProductContent getReadmeAndProductContentsFromTag(GHRepository ghRepository, String tag);
-    
-    List<MavenArtifact> convertProductJsonToMavenProductInfo(GHContent content) throws IOException;
+	ReadmeProductContent getReadmeAndProductContentsFromTag(GHRepository ghRepository, String tag);
+
+	List<MavenArtifact> convertProductJsonToMavenProductInfo(GHContent content) throws IOException;
 }

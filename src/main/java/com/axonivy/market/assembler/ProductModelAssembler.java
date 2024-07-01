@@ -13,26 +13,27 @@ import com.axonivy.market.model.ProductModel;
 @Component
 public class ProductModelAssembler extends RepresentationModelAssemblerSupport<Product, ProductModel> {
 
-  public ProductModelAssembler() {
-    super(ProductDetailsController.class, ProductModel.class);
-  }
+	public ProductModelAssembler() {
+		super(ProductDetailsController.class, ProductModel.class);
+	}
 
-  @Override
-  public ProductModel toModel(Product product) {
-    ProductModel resource = new ProductModel();
-    resource.add(linkTo(methodOn(ProductDetailsController.class).findProductDetails(product.getId(), product.getType()))
-        .withSelfRel());
-    return createResource(resource, product);
-  }
+	@Override
+	public ProductModel toModel(Product product) {
+		ProductModel resource = new ProductModel();
+		resource.add(
+				linkTo(methodOn(ProductDetailsController.class).findProductDetails(product.getId(), product.getType()))
+						.withSelfRel());
+		return createResource(resource, product);
+	}
 
-  public ProductModel createResource(ProductModel model, Product product) {
-    model.setId(product.getId());
-    model.setName(product.getName());
-    model.setShortDescription(product.getShortDescription());
-    model.setType(product.getType());
-    model.setTags(product.getTags());
-    model.setLogoUrl(product.getLogoUrl());
-    return model;
-  }
+	public ProductModel createResource(ProductModel model, Product product) {
+		model.setId(product.getId());
+		model.setName(product.getName());
+		model.setShortDescription(product.getShortDescription());
+		model.setType(product.getType());
+		model.setTags(product.getTags());
+		model.setLogoUrl(product.getLogoUrl());
+		return model;
+	}
 
 }

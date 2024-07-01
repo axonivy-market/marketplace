@@ -55,46 +55,46 @@ import com.axonivy.market.service.impl.ProductServiceImpl;
 @ExtendWith(MockitoExtension.class)
 class ProductServiceImplTest {
 
-    private static final String SAMPLE_PRODUCT_ID = "amazon-comprehend";
-    private static final String SAMPLE_PRODUCT_NAME = "Amazon Comprehend";
-    private static final long LAST_CHANGE_TIME = 1718096290000l;
-    private static final Pageable PAGEABLE = PageRequest.of(0, 20,
-            Sort.by(SortOption.ALPHABETICALLY.getOption()).descending());
-    private static final String SHA1_SAMPLE = "35baa89091b2452b77705da227f1a964ecabc6c8";
-    public static final String RELEASE_TAG = "v10.0.2";
-    private String keyword;
-    private Page<Product> mockResultReturn;
+	private static final String SAMPLE_PRODUCT_ID = "amazon-comprehend";
+	private static final String SAMPLE_PRODUCT_NAME = "Amazon Comprehend";
+	private static final long LAST_CHANGE_TIME = 1718096290000l;
+	private static final Pageable PAGEABLE = PageRequest.of(0, 20,
+			Sort.by(SortOption.ALPHABETICALLY.getOption()).descending());
+	private static final String SHA1_SAMPLE = "35baa89091b2452b77705da227f1a964ecabc6c8";
+	public static final String RELEASE_TAG = "v10.0.2";
+	private String keyword;
+	private Page<Product> mockResultReturn;
 
-    @Mock
-    private GHRepository ghRepository;
+	@Mock
+	private GHRepository ghRepository;
 
-    @Mock
-    private ProductRepository productRepository;
+	@Mock
+	private ProductRepository productRepository;
 
-    @Mock
-    private GHAxonIvyMarketRepoService marketRepoService;
+	@Mock
+	private GHAxonIvyMarketRepoService marketRepoService;
 
-    @Mock
-    private GitHubRepoMetaRepository repoMetaRepository;
+	@Mock
+	private GitHubRepoMetaRepository repoMetaRepository;
 
-    @Mock
-    private GitHubService gitHubService;
+	@Mock
+	private GitHubService gitHubService;
 
-    @Mock
-    private GHAxonIvyProductRepoService ghAxonIvyProductRepoService;
+	@Mock
+	private GHAxonIvyProductRepoService ghAxonIvyProductRepoService;
 
-    @Captor
-    ArgumentCaptor<ArrayList<Product>> argumentCaptor;
+	@Captor
+	ArgumentCaptor<ArrayList<Product>> argumentCaptor;
 
-    @InjectMocks
-    private ProductServiceImpl productService;
+	@InjectMocks
+	private ProductServiceImpl productService;
 
-    @BeforeEach
-    public void setup() {
-        mockResultReturn = createPageProductsMock();
-    }
+	@BeforeEach
+	public void setup() {
+		mockResultReturn = createPageProductsMock();
+	}
 
-    @Test
+	@Test
     void testFindProducts() {
         // Start testing by All
         when(productRepository.findAll(any(Pageable.class))).thenReturn(mockResultReturn);
@@ -114,70 +114,70 @@ class ProductServiceImplTest {
         assertEquals(0, result.getSize());
     }
 
-    @Test
-    void testSyncProductsAsUpdateMetaJSONFromGitHub() throws IOException {
-        // Start testing by adding new meta
-        mockMarketRepoMetaStatus();
-        var mockCommit = mockGHCommitHasSHA1(UUID.randomUUID().toString());
-        when(mockCommit.getCommitDate()).thenReturn(new Date());
-        when(marketRepoService.getLastCommit(anyLong())).thenReturn(mockCommit);
+	@Test
+	void testSyncProductsAsUpdateMetaJSONFromGitHub() throws IOException {
+		// Start testing by adding new meta
+		mockMarketRepoMetaStatus();
+		var mockCommit = mockGHCommitHasSHA1(UUID.randomUUID().toString());
+		when(mockCommit.getCommitDate()).thenReturn(new Date());
+		when(marketRepoService.getLastCommit(anyLong())).thenReturn(mockCommit);
 
-        var mockGithubFile = new GitHubFile();
-        mockGithubFile.setFileName(META_FILE);
-        mockGithubFile.setType(FileType.META);
-        mockGithubFile.setStatus(FileStatus.ADDED);
-        when(marketRepoService.fetchMarketItemsBySHA1Range(any(), any())).thenReturn(List.of(mockGithubFile));
-        var mockGHContent = mockGHContentAsMetaJSON();
-        when(gitHubService.getGHContent(any(), anyString())).thenReturn(mockGHContent);
+		var mockGithubFile = new GitHubFile();
+		mockGithubFile.setFileName(META_FILE);
+		mockGithubFile.setType(FileType.META);
+		mockGithubFile.setStatus(FileStatus.ADDED);
+		when(marketRepoService.fetchMarketItemsBySHA1Range(any(), any())).thenReturn(List.of(mockGithubFile));
+		var mockGHContent = mockGHContentAsMetaJSON();
+		when(gitHubService.getGHContent(any(), anyString())).thenReturn(mockGHContent);
 
-        // Executes
-        var result = productService.syncLatestDataFromMarketRepo();
-        assertEquals(false, result);
+		// Executes
+		var result = productService.syncLatestDataFromMarketRepo();
+		assertEquals(false, result);
 
-        // Start testing by deleting new meta
-        mockCommit = mockGHCommitHasSHA1(UUID.randomUUID().toString());
-        when(mockCommit.getCommitDate()).thenReturn(new Date());
-        when(marketRepoService.getLastCommit(anyLong())).thenReturn(mockCommit);
-        mockGithubFile.setStatus(FileStatus.REMOVED);
-        // Executes
-        result = productService.syncLatestDataFromMarketRepo();
-        assertEquals(false, result);
-    }
+		// Start testing by deleting new meta
+		mockCommit = mockGHCommitHasSHA1(UUID.randomUUID().toString());
+		when(mockCommit.getCommitDate()).thenReturn(new Date());
+		when(marketRepoService.getLastCommit(anyLong())).thenReturn(mockCommit);
+		mockGithubFile.setStatus(FileStatus.REMOVED);
+		// Executes
+		result = productService.syncLatestDataFromMarketRepo();
+		assertEquals(false, result);
+	}
 
-    @Test
-    void testSyncProductsAsUpdateLogoFromGitHub() throws IOException {
-        // Start testing by adding new logo
-        mockMarketRepoMetaStatus();
-        var mockCommit = mockGHCommitHasSHA1(UUID.randomUUID().toString());
-        when(mockCommit.getCommitDate()).thenReturn(new Date());
-        when(marketRepoService.getLastCommit(anyLong())).thenReturn(mockCommit);
+	@Test
+	void testSyncProductsAsUpdateLogoFromGitHub() throws IOException {
+		// Start testing by adding new logo
+		mockMarketRepoMetaStatus();
+		var mockCommit = mockGHCommitHasSHA1(UUID.randomUUID().toString());
+		when(mockCommit.getCommitDate()).thenReturn(new Date());
+		when(marketRepoService.getLastCommit(anyLong())).thenReturn(mockCommit);
 
-        var mockGitHubFile = mock(GitHubFile.class);
-        mockGitHubFile = new GitHubFile();
-        mockGitHubFile.setFileName(LOGO_FILE);
-        mockGitHubFile.setType(FileType.LOGO);
-        mockGitHubFile.setStatus(FileStatus.ADDED);
-        when(marketRepoService.fetchMarketItemsBySHA1Range(any(), any())).thenReturn(List.of(mockGitHubFile));
-        var mockGHContent = mockGHContentAsMetaJSON();
-        when(gitHubService.getGHContent(any(), anyString())).thenReturn(mockGHContent);
+		var mockGitHubFile = mock(GitHubFile.class);
+		mockGitHubFile = new GitHubFile();
+		mockGitHubFile.setFileName(LOGO_FILE);
+		mockGitHubFile.setType(FileType.LOGO);
+		mockGitHubFile.setStatus(FileStatus.ADDED);
+		when(marketRepoService.fetchMarketItemsBySHA1Range(any(), any())).thenReturn(List.of(mockGitHubFile));
+		var mockGHContent = mockGHContentAsMetaJSON();
+		when(gitHubService.getGHContent(any(), anyString())).thenReturn(mockGHContent);
 
-        // Executes
-        var result = productService.syncLatestDataFromMarketRepo();
-        assertEquals(false, result);
+		// Executes
+		var result = productService.syncLatestDataFromMarketRepo();
+		assertEquals(false, result);
 
-        // Start testing by deleting new logo
-        when(mockCommit.getSHA1()).thenReturn(UUID.randomUUID().toString());
-        mockGitHubFile.setStatus(FileStatus.REMOVED);
-        when(marketRepoService.fetchMarketItemsBySHA1Range(any(), any())).thenReturn(List.of(mockGitHubFile));
-        when(gitHubService.getGHContent(any(), anyString())).thenReturn(mockGHContent);
-        when(productRepository.findByLogoUrl(any())).thenReturn(new Product());
+		// Start testing by deleting new logo
+		when(mockCommit.getSHA1()).thenReturn(UUID.randomUUID().toString());
+		mockGitHubFile.setStatus(FileStatus.REMOVED);
+		when(marketRepoService.fetchMarketItemsBySHA1Range(any(), any())).thenReturn(List.of(mockGitHubFile));
+		when(gitHubService.getGHContent(any(), anyString())).thenReturn(mockGHContent);
+		when(productRepository.findByLogoUrl(any())).thenReturn(new Product());
 
-        // Executes
-        result = productService.syncLatestDataFromMarketRepo();
-        assertEquals(false, result);
-    }
+		// Executes
+		result = productService.syncLatestDataFromMarketRepo();
+		assertEquals(false, result);
+	}
 
-    @Test
+	@Test
     void testFindAllProductsWithKeyword() throws IOException {
         when(productRepository.findAll(any(Pageable.class))).thenReturn(mockResultReturn);
         // Executes
@@ -205,135 +205,138 @@ class ProductServiceImplTest {
         assertEquals(SAMPLE_PRODUCT_NAME, result.getContent().get(0).getName());
     }
 
-    @Test
-    void testSyncProductsFirstTime() throws IOException {
-        var mockCommit = mockGHCommitHasSHA1(SHA1_SAMPLE);
-        when(marketRepoService.getLastCommit(anyLong())).thenReturn(mockCommit);
-        when(repoMetaRepository.findByRepoName(anyString())).thenReturn(null);
-        when(ghAxonIvyProductRepoService.getReadmeAndProductContentsFromTag(any(), anyString())).thenReturn(mockReadmeProductContent());
-        when(gitHubService.getRepository(any())).thenReturn(ghRepository);
-        PagedIterable<GHTag> pagedIterable = mock(PagedIterable.class);
-        when(ghRepository.listTags()).thenReturn(pagedIterable);
+	@Test
+	void testSyncProductsFirstTime() throws IOException {
+		var mockCommit = mockGHCommitHasSHA1(SHA1_SAMPLE);
+		when(marketRepoService.getLastCommit(anyLong())).thenReturn(mockCommit);
+		when(repoMetaRepository.findByRepoName(anyString())).thenReturn(null);
+		when(ghAxonIvyProductRepoService.getReadmeAndProductContentsFromTag(any(), anyString()))
+				.thenReturn(mockReadmeProductContent());
+		when(gitHubService.getRepository(any())).thenReturn(ghRepository);
+		PagedIterable<GHTag> pagedIterable = mock(PagedIterable.class);
+		when(ghRepository.listTags()).thenReturn(pagedIterable);
 
-        GHTag mockTag = mock(GHTag.class);
-        GHCommit mockGHCommit = mock(GHCommit.class);
+		GHTag mockTag = mock(GHTag.class);
+		GHCommit mockGHCommit = mock(GHCommit.class);
 
-        when(mockTag.getName()).thenReturn(RELEASE_TAG);
-        when(mockTag.getCommit()).thenReturn(mockGHCommit);
-        when(mockGHCommit.getCommitDate()).thenReturn(new Date());
+		when(mockTag.getName()).thenReturn(RELEASE_TAG);
+		when(mockTag.getCommit()).thenReturn(mockGHCommit);
+		when(mockGHCommit.getCommitDate()).thenReturn(new Date());
 
-        when(pagedIterable.toList()).thenReturn(List.of(mockTag));
+		when(pagedIterable.toList()).thenReturn(List.of(mockTag));
 
-        var mockContent = mockGHContentAsMetaJSON();
-        InputStream inputStream = this.getClass().getResourceAsStream(SLASH.concat(META_FILE));
-        when(mockContent.read()).thenReturn(inputStream);
+		var mockContent = mockGHContentAsMetaJSON();
+		InputStream inputStream = this.getClass().getResourceAsStream(SLASH.concat(META_FILE));
+		when(mockContent.read()).thenReturn(inputStream);
 
-        Map<String, List<GHContent>> mockGHContentMap = new HashMap<>();
-        mockGHContentMap.put(SAMPLE_PRODUCT_ID, List.of(mockContent));
-        when(marketRepoService.fetchAllMarketItems()).thenReturn(mockGHContentMap);
+		Map<String, List<GHContent>> mockGHContentMap = new HashMap<>();
+		mockGHContentMap.put(SAMPLE_PRODUCT_ID, List.of(mockContent));
+		when(marketRepoService.fetchAllMarketItems()).thenReturn(mockGHContentMap);
 
-        // Executes
-        productService.syncLatestDataFromMarketRepo();
+		// Executes
+		productService.syncLatestDataFromMarketRepo();
 
-        verify(ghAxonIvyProductRepoService, times(1)).getReadmeAndProductContentsFromTag(ghRepository, RELEASE_TAG);
-        verify(productRepository).saveAll(argumentCaptor.capture());
+		verify(ghAxonIvyProductRepoService, times(1)).getReadmeAndProductContentsFromTag(ghRepository, RELEASE_TAG);
+		verify(productRepository).saveAll(argumentCaptor.capture());
 
-        assertThat(argumentCaptor.getValue().get(0).getReadmeProductContents()).usingRecursiveComparison().isEqualTo(List.of(mockReadmeProductContent()));
-    }
+		assertThat(argumentCaptor.getValue().get(0).getReadmeProductContents()).usingRecursiveComparison()
+				.isEqualTo(List.of(mockReadmeProductContent()));
+	}
 
-    @Test
-    void testNothingToSync() throws IOException {
-        var gitHubRepoMeta = mock(GitHubRepoMeta.class);
-        when(gitHubRepoMeta.getLastSHA1()).thenReturn(SHA1_SAMPLE);
-        var mockCommit = mockGHCommitHasSHA1(SHA1_SAMPLE);
-        when(marketRepoService.getLastCommit(anyLong())).thenReturn(mockCommit);
-        when(repoMetaRepository.findByRepoName(anyString())).thenReturn(gitHubRepoMeta);
+	@Test
+	void testNothingToSync() throws IOException {
+		var gitHubRepoMeta = mock(GitHubRepoMeta.class);
+		when(gitHubRepoMeta.getLastSHA1()).thenReturn(SHA1_SAMPLE);
+		var mockCommit = mockGHCommitHasSHA1(SHA1_SAMPLE);
+		when(marketRepoService.getLastCommit(anyLong())).thenReturn(mockCommit);
+		when(repoMetaRepository.findByRepoName(anyString())).thenReturn(gitHubRepoMeta);
 
-        // Executes
-        var result = productService.syncLatestDataFromMarketRepo();
-        assertEquals(true, result);
-    }
+		// Executes
+		var result = productService.syncLatestDataFromMarketRepo();
+		assertEquals(true, result);
+	}
 
-    @Test
-    void testSearchProducts() {
-        var simplePageable = PageRequest.of(0, 20);
-        String type = TypeOption.ALL.getOption();
-        keyword = "on";
-        when(productRepository.searchByNameOrShortDescriptionRegex(keyword, simplePageable)).thenReturn(mockResultReturn);
+	@Test
+	void testSearchProducts() {
+		var simplePageable = PageRequest.of(0, 20);
+		String type = TypeOption.ALL.getOption();
+		keyword = "on";
+		when(productRepository.searchByNameOrShortDescriptionRegex(keyword, simplePageable))
+				.thenReturn(mockResultReturn);
 
-        var result = productService.findProducts(type, keyword, simplePageable);
-        assertEquals(result, mockResultReturn);
-        verify(productRepository).searchByNameOrShortDescriptionRegex(keyword, simplePageable);
-    }
+		var result = productService.findProducts(type, keyword, simplePageable);
+		assertEquals(result, mockResultReturn);
+		verify(productRepository).searchByNameOrShortDescriptionRegex(keyword, simplePageable);
+	}
 
-    @Test
-    void testFetchProductDetail() {
-        String id = "amazon-comprehend";
-        String type = "connector";
-        Product mockProduct = mockResultReturn.getContent().get(0);
-        when(productRepository.findByIdAndType(id, type)).thenReturn(mockProduct);
-        Product result = productService.fetchProductDetail(id, type);
-        assertEquals(mockProduct, result);
-        verify(productRepository, times(1)).findByIdAndType(id, type);
-    }
+	@Test
+	void testFetchProductDetail() {
+		String id = "amazon-comprehend";
+		String type = "connector";
+		Product mockProduct = mockResultReturn.getContent().get(0);
+		when(productRepository.findByIdAndType(id, type)).thenReturn(mockProduct);
+		Product result = productService.fetchProductDetail(id, type);
+		assertEquals(mockProduct, result);
+		verify(productRepository, times(1)).findByIdAndType(id, type);
+	}
 
-    @Test
-    void testGetCompatibilityFromNumericTag() {
-        GHTag mockTag = mock(GHTag.class);
-        when(mockTag.getName()).thenReturn("v1.0.0", "nbm8", "base-11.2");
+	@Test
+	void testGetCompatibilityFromNumericTag() {
+		GHTag mockTag = mock(GHTag.class);
+		when(mockTag.getName()).thenReturn("v1.0.0", "nbm8", "base-11.2");
 
-        String result = productService.getCompatibilityFromNumericTag(mockTag);
-        assertEquals("1.0+", result);
+		String result = productService.getCompatibilityFromNumericTag(mockTag);
+		assertEquals("1.0+", result);
 
-        result = productService.getCompatibilityFromNumericTag(mockTag);
-        assertEquals("8.0+", result);
+		result = productService.getCompatibilityFromNumericTag(mockTag);
+		assertEquals("8.0+", result);
 
-        result = productService.getCompatibilityFromNumericTag(mockTag);
-        assertEquals("11.2+", result);
-    }
+		result = productService.getCompatibilityFromNumericTag(mockTag);
+		assertEquals("11.2+", result);
+	}
 
-    private Page<Product> createPageProductsMock() {
-        var mockProducts = new ArrayList<Product>();
-        Product mockProduct = new Product();
-        mockProduct.setId(SAMPLE_PRODUCT_ID);
-        mockProduct.setName(SAMPLE_PRODUCT_NAME);
-        mockProduct.setType("connector");
-        mockProducts.add(mockProduct);
+	private Page<Product> createPageProductsMock() {
+		var mockProducts = new ArrayList<Product>();
+		Product mockProduct = new Product();
+		mockProduct.setId(SAMPLE_PRODUCT_ID);
+		mockProduct.setName(SAMPLE_PRODUCT_NAME);
+		mockProduct.setType("connector");
+		mockProducts.add(mockProduct);
 
-        mockProduct = new Product();
-        mockProduct.setId("tel-search-ch-connector");
-        mockProduct.setName("Swiss phone directory");
-        mockProduct.setType("util");
-        mockProducts.add(mockProduct);
-        return new PageImpl<>(mockProducts);
-    }
+		mockProduct = new Product();
+		mockProduct.setId("tel-search-ch-connector");
+		mockProduct.setName("Swiss phone directory");
+		mockProduct.setType("util");
+		mockProducts.add(mockProduct);
+		return new PageImpl<>(mockProducts);
+	}
 
-    private void mockMarketRepoMetaStatus() {
-        var mockMartketRepoMeta = new GitHubRepoMeta();
-        mockMartketRepoMeta.setRepoURL(GitHubConstants.AXONIVY_MARKETPLACE_REPO_NAME);
-        mockMartketRepoMeta.setRepoName(GitHubConstants.AXONIVY_MARKETPLACE_REPO_NAME);
-        mockMartketRepoMeta.setLastChange(LAST_CHANGE_TIME);
-        mockMartketRepoMeta.setLastSHA1(SHA1_SAMPLE);
-        when(repoMetaRepository.findByRepoName(any())).thenReturn(mockMartketRepoMeta);
-    }
+	private void mockMarketRepoMetaStatus() {
+		var mockMartketRepoMeta = new GitHubRepoMeta();
+		mockMartketRepoMeta.setRepoURL(GitHubConstants.AXONIVY_MARKETPLACE_REPO_NAME);
+		mockMartketRepoMeta.setRepoName(GitHubConstants.AXONIVY_MARKETPLACE_REPO_NAME);
+		mockMartketRepoMeta.setLastChange(LAST_CHANGE_TIME);
+		mockMartketRepoMeta.setLastSHA1(SHA1_SAMPLE);
+		when(repoMetaRepository.findByRepoName(any())).thenReturn(mockMartketRepoMeta);
+	}
 
-    private GHCommit mockGHCommitHasSHA1(String sha1) {
-        var mockCommit = mock(GHCommit.class);
-        when(mockCommit.getSHA1()).thenReturn(sha1);
-        return mockCommit;
-    }
+	private GHCommit mockGHCommitHasSHA1(String sha1) {
+		var mockCommit = mock(GHCommit.class);
+		when(mockCommit.getSHA1()).thenReturn(sha1);
+		return mockCommit;
+	}
 
-    private GHContent mockGHContentAsMetaJSON() {
-        var mockGHContent = mock(GHContent.class);
-        when(mockGHContent.getName()).thenReturn(META_FILE);
-        return mockGHContent;
-    }
+	private GHContent mockGHContentAsMetaJSON() {
+		var mockGHContent = mock(GHContent.class);
+		when(mockGHContent.getName()).thenReturn(META_FILE);
+		return mockGHContent;
+	}
 
-    private ReadmeProductContent mockReadmeProductContent() {
-        ReadmeProductContent readmeProductContent = new ReadmeProductContent();
-        readmeProductContent.setTag("v10.0.2");
-        readmeProductContent.setName("Amazon Comprehend");
-        readmeProductContent.setDescription("testDescription");
-        return readmeProductContent;
-    }
+	private ReadmeProductContent mockReadmeProductContent() {
+		ReadmeProductContent readmeProductContent = new ReadmeProductContent();
+		readmeProductContent.setTag("v10.0.2");
+		readmeProductContent.setName("Amazon Comprehend");
+		readmeProductContent.setDescription("testDescription");
+		return readmeProductContent;
+	}
 }

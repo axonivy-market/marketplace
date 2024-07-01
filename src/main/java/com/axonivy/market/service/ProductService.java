@@ -7,11 +7,11 @@ import org.springframework.data.domain.Pageable;
 import com.axonivy.market.entity.Product;
 
 public interface ProductService {
-    Page<Product> findProducts(String type, String keyword, Pageable pageable);
+	Page<Product> findProducts(String type, String keyword, Pageable pageable);
 
-    boolean syncLatestDataFromMarketRepo();
+	boolean syncLatestDataFromMarketRepo();
 
-    Product fetchProductDetail(String id, String type);
+	Product fetchProductDetail(String id, String type);
 
-    String getCompatibilityFromNumericTag(GHTag oldestTag);
+	String getCompatibilityFromNumericTag(GHTag oldestTag);
 }
