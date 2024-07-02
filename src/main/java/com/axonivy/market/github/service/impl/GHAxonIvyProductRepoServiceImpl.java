@@ -9,12 +9,12 @@ import com.axonivy.market.entity.ReadmeProductContent;
 import com.axonivy.market.github.util.GitHubUtils;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.apache.commons.lang3.StringUtils;
 
 import com.axonivy.market.constants.GitHubConstants;
 import com.axonivy.market.github.service.GHAxonIvyProductRepoService;
 import lombok.extern.log4j.Log4j2;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.util.Strings;
 import com.axonivy.market.constants.ProductJsonConstants;
 import com.axonivy.market.github.model.MavenArtifact;
@@ -32,7 +32,6 @@ import java.util.List;
 import java.util.Objects;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 @Log4j2
@@ -226,25 +225,36 @@ public class GHAxonIvyProductRepoServiceImpl implements GHAxonIvyProductRepoServ
 		String[] parts = readmeContents.split(DEMO_SETUP_TITLE);
 		boolean hasDemoPart = readmeContents.contains(ReleaseTagConstants.DEMO_PART);
 		boolean hasSetupPart = readmeContents.contains(ReleaseTagConstants.SETUP_PART);
+		String description = Strings.EMPTY;
 		String setup = Strings.EMPTY;
 		String demo = Strings.EMPTY;
+
+		if (parts.length > 0){
+			description = removeFirstLine(parts[0]);
+		}
+
 		if (hasDemoPart && hasSetupPart) {
-			if (readmeContents.indexOf(ReleaseTagConstants.DEMO_PART) < readmeContents
-					.indexOf(ReleaseTagConstants.SETUP_PART)) {
-				demo = parts.length > 1 ? parts[1].trim() : Strings.EMPTY;
-				setup = parts.length > 2 ? parts[2].trim() : Strings.EMPTY;
+			if (isDemoPlaceBeforeSetupPart(readmeContents)) {
+				demo = parts[1];
+				setup = parts[2];
 			} else {
-				setup = parts.length > 1 ? parts[1].trim() : Strings.EMPTY;
-				demo = parts.length > 2 ? parts[2].trim() : Strings.EMPTY;
+				setup = parts[1];
+				demo = parts[2];
 			}
 		} else if (hasDemoPart) {
-			demo = parts.length > 1 ? parts[1].trim() : Strings.EMPTY;
+			demo = parts[1];
 		} else if (hasSetupPart) {
-			setup = parts.length > 1 ? parts[1].trim() : Strings.EMPTY;
+			setup = parts[1];
 		}
-		readmeProductContent.setDescription(parts.length > 0 ? removeFirstLine(parts[0].trim()) : Strings.EMPTY);
-		readmeProductContent.setDemo(demo);
-		readmeProductContent.setSetup(setup);
+
+		readmeProductContent.setDescription(description.trim());
+		readmeProductContent.setDemo(demo.trim());
+		readmeProductContent.setSetup(setup.trim());
+	}
+
+	private static boolean isDemoPlaceBeforeSetupPart(String readmeContents) {
+		return readmeContents.indexOf(ReleaseTagConstants.DEMO_PART) < readmeContents
+				.indexOf(ReleaseTagConstants.SETUP_PART);
 	}
 
 	private List<GHContent> getRepoContents(GHRepository ghRepository, String tag) throws IOException {
@@ -269,7 +279,7 @@ public class GHAxonIvyProductRepoServiceImpl implements GHAxonIvyProductRepoServ
 		if (text.isBlank()) {
 			return Strings.EMPTY;
 		}
-		int index = text.indexOf(CommonConstants.NEW_LINE);
+		int index = text.indexOf(StringUtils.LF);
 		return index != -1 ? text.substring(index + 1).trim() : Strings.EMPTY;
 	}
 }

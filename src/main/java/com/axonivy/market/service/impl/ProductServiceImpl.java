@@ -274,10 +274,11 @@ public class ProductServiceImpl implements ProductService {
 			List<ReadmeProductContent> readmeProductContents = completableFutures.stream().map(f -> {
 				try {
 					return f.get();
-				} catch (IOException e) {
+				} catch (Exception e) {
 					log.error("Get readme and product json contents failed", e);
+					return null;
 				}
-			}).toList();
+			}).collect(Collectors.toList());
 			product.setReadmeProductContents(readmeProductContents);
 		} catch (Exception e) {
 			log.error("Cannot find repository by path {} {}", product.getRepositoryName(), e);
