@@ -1,8 +1,12 @@
 package com.axonivy.market.github.util;
 
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
 
+import com.axonivy.market.constants.MavenConstants;
+import org.apache.commons.lang3.StringUtils;
 import org.kohsuke.github.GHCommit;
 import org.kohsuke.github.GHContent;
 import org.kohsuke.github.PagedIterable;
@@ -45,5 +49,14 @@ public class GitHubUtils {
       }
     }
     return List.of();
+  }
+
+  public static String convertArtifactIdToName(String artifactId) {
+    if (StringUtils.isBlank(artifactId)) {
+      return StringUtils.EMPTY;
+    }
+    return Arrays.stream(artifactId.split(MavenConstants.ARTIFACT_ID_SEPARATOR))
+            .map(part -> part.substring(0, 1).toUpperCase() + part.substring(1).toLowerCase())
+            .collect(Collectors.joining(MavenConstants.ARTIFACT_NAME_SEPARATOR));
   }
 }

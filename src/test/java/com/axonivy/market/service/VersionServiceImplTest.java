@@ -8,6 +8,7 @@ import com.axonivy.market.entity.Product;
 import com.axonivy.market.github.model.ArchivedArtifact;
 import com.axonivy.market.github.model.MavenArtifact;
 import com.axonivy.market.github.service.GHAxonIvyProductRepoService;
+import com.axonivy.market.github.util.GitHubUtils;
 import com.axonivy.market.model.MavenArtifactVersionModel;
 import com.axonivy.market.repository.MavenArtifactVersionRepository;
 import com.axonivy.market.repository.ProductRepository;
@@ -491,16 +492,16 @@ class VersionServiceImplTest {
 	@Test
 	void testConvertArtifactIdToName() {
 		String defaultArtifactId = "adobe-acrobat-sign-connector";
-		String result = versionService.convertArtifactIdToName(defaultArtifactId);
+		String result = GitHubUtils.convertArtifactIdToName(defaultArtifactId);
 		Assertions.assertEquals("Adobe Acrobat Sign Connector", result);
 
-		result = versionService.convertArtifactIdToName(null);
+		result = GitHubUtils.convertArtifactIdToName(null);
 		Assertions.assertEquals(StringUtils.EMPTY, result);
 
-		result = versionService.convertArtifactIdToName(StringUtils.EMPTY);
+		result = GitHubUtils.convertArtifactIdToName(StringUtils.EMPTY);
 		Assertions.assertEquals(StringUtils.EMPTY, result);
 
-		result = versionService.convertArtifactIdToName(" ");
+		result = GitHubUtils.convertArtifactIdToName(" ");
 		Assertions.assertEquals(StringUtils.EMPTY, result);
 	}
 

@@ -6,6 +6,7 @@ import java.util.*;
 import com.axonivy.market.constants.CommonConstants;
 import com.axonivy.market.constants.ReleaseTagConstants;
 import com.axonivy.market.entity.ReadmeProductContent;
+import com.axonivy.market.github.util.GitHubUtils;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.lang3.StringUtils;
@@ -189,7 +190,7 @@ public class GHAxonIvyProductRepoServiceImpl implements GHAxonIvyProductRepoServ
 					readmeProductContent
 							.setArtifactId(dependenciesNode.get(0).path(ReleaseTagConstants.ARTIFACT_ID).asText());
 					readmeProductContent.setType(dependenciesNode.get(0).path(ReleaseTagConstants.TYPE).asText());
-					readmeProductContent.setName(convertArtifactIdToName(readmeProductContent.getArtifactId()));
+					readmeProductContent.setName(GitHubUtils.convertArtifactIdToName(readmeProductContent.getArtifactId()));
 				}
 			}
 		}
@@ -270,14 +271,5 @@ public class GHAxonIvyProductRepoServiceImpl implements GHAxonIvyProductRepoServ
 		}
 		int index = text.indexOf(CommonConstants.NEW_LINE);
 		return index != -1 ? text.substring(index + 1).trim() : Strings.EMPTY;
-	}
-
-	public String convertArtifactIdToName(String artifactId) {
-		if (StringUtils.isBlank(artifactId)) {
-			return Strings.EMPTY;
-		}
-		return Arrays.stream(artifactId.split(CommonConstants.DASH))
-				.map(part -> part.substring(0, 1).toUpperCase() + part.substring(1).toLowerCase())
-				.collect(Collectors.joining(CommonConstants.SPACE));
 	}
 }

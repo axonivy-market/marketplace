@@ -9,6 +9,7 @@ import com.axonivy.market.github.model.ArchivedArtifact;
 import com.axonivy.market.github.model.MavenArtifact;
 import com.axonivy.market.entity.MavenArtifactModel;
 import com.axonivy.market.github.service.GHAxonIvyProductRepoService;
+import com.axonivy.market.github.util.GitHubUtils;
 import com.axonivy.market.model.MavenArtifactVersionModel;
 import com.axonivy.market.repository.MavenArtifactVersionRepository;
 import com.axonivy.market.repository.ProductRepository;
@@ -284,7 +285,7 @@ public class VersionServiceImpl implements VersionService {
 	public MavenArtifactModel convertMavenArtifactToModel(MavenArtifact artifact, String version) {
 		String artifactName = artifact.getName();
 		if (StringUtils.isBlank(artifactName)) {
-			artifactName = convertArtifactIdToName(artifact.getArtifactId());
+			artifactName = GitHubUtils.convertArtifactIdToName(artifact.getArtifactId());
 		}
 		artifact.setType(Optional.ofNullable(artifact.getType()).orElse("iar"));
 		artifactName = String.format(MavenConstants.ARTIFACT_NAME_FORMAT, artifactName, artifact.getType());
@@ -332,15 +333,6 @@ public class VersionServiceImpl implements VersionService {
 			}
 		}
 		return null;
-	}
-
-	public String convertArtifactIdToName(String artifactId) {
-		if (StringUtils.isBlank(artifactId)) {
-			return StringUtils.EMPTY;
-		}
-		return Arrays.stream(artifactId.split(MavenConstants.ARTIFACT_ID_SEPARATOR))
-				.map(part -> part.substring(0, 1).toUpperCase() + part.substring(1).toLowerCase())
-				.collect(Collectors.joining(MavenConstants.ARTIFACT_NAME_SEPARATOR));
 	}
 
 	public String getRepoNameFromMarketRepo(String fullRepoName) {
