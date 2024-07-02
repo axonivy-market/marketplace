@@ -5,11 +5,13 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.io.Serializable;
+
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class ReadmeProductContent {
+public class ReadmeProductContent implements Serializable {
 	private String tag;
 	private String description;
 	private String setup;

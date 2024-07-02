@@ -8,6 +8,7 @@ import java.net.URL;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import com.axonivy.market.constants.CommonConstants;
 import com.axonivy.market.github.service.GHAxonIvyProductRepoService;
@@ -273,10 +274,10 @@ public class ProductServiceImpl implements ProductService {
 			List<ReadmeProductContent> readmeProductContents = completableFutures.stream().map(f -> {
 				try {
 					return f.get();
-				} catch (Exception e) {
-					throw new RuntimeException(e);
+				} catch (IOException e) {
+					log.error("Get readme and product json contents failed", e);
 				}
-			}).collect(Collectors.toList());
+			}).toList();
 			product.setReadmeProductContents(readmeProductContents);
 		} catch (Exception e) {
 			log.error("Cannot find repository by path {} {}", product.getRepositoryName(), e);
