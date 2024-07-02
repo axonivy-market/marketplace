@@ -277,7 +277,8 @@ public class ProductServiceImpl implements ProductService {
 					return f.get();
 				} catch (InterruptedException | ExecutionException e) {
 					Thread.currentThread().interrupt();
-					throw new RuntimeException("Thread was interrupted", e);
+					log.error("Get readme and product json contents failed", e);
+					return null;
 				}
 			}).toList();
 			product.setReadmeProductContents(readmeProductContents);
