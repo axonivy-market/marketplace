@@ -5,6 +5,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.apache.commons.lang3.builder.EqualsBuilder;
+import org.apache.commons.lang3.builder.HashCodeBuilder;
 
 import java.util.List;
 
@@ -24,6 +25,11 @@ public class ProductDetailModel extends ProductModel {
     private String compatibility;
     private Boolean contactUs;
     private List<ReadmeProductContent> readmeProductContents;
+
+    @Override
+    public int hashCode() {
+        return new HashCodeBuilder().append(getId()).hashCode();
+    }
 
     @Override
     public boolean equals(Object obj) {
