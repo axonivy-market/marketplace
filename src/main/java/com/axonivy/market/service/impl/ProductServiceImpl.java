@@ -7,6 +7,7 @@ import java.io.IOException;
 import java.net.URL;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -274,11 +275,11 @@ public class ProductServiceImpl implements ProductService {
 			List<ReadmeProductContent> readmeProductContents = completableFutures.stream().map(f -> {
 				try {
 					return f.get();
-				} catch (Exception e) {
+				} catch (InterruptedException | ExecutionException e) {
 					log.error("Get readme and product json contents failed", e);
 					return null;
 				}
-			}).collect(Collectors.toList());
+			}).toList();
 			product.setReadmeProductContents(readmeProductContents);
 		} catch (Exception e) {
 			log.error("Cannot find repository by path {} {}", product.getRepositoryName(), e);

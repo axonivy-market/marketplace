@@ -4,6 +4,7 @@ import com.axonivy.market.entity.ReadmeProductContent;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.apache.commons.lang3.builder.EqualsBuilder;
 
 import java.util.List;
 
@@ -11,16 +12,24 @@ import java.util.List;
 @Setter
 @NoArgsConstructor
 public class ProductDetailModel extends ProductModel {
-	private String vendor;
-	private String vendorUrl;
-	private String platformReview;
-	private String newestReleaseVersion;
-	private String cost;
-	private String sourceUrl;
-	private String statusBadgeUrl;
-	private String language;
-	private String industry;
-	private String compatibility;
-	private Boolean contactUs;
-	private List<ReadmeProductContent> readmeProductContents;
+    private String vendor;
+    private String vendorUrl;
+    private String platformReview;
+    private String newestReleaseVersion;
+    private String cost;
+    private String sourceUrl;
+    private String statusBadgeUrl;
+    private String language;
+    private String industry;
+    private String compatibility;
+    private Boolean contactUs;
+    private List<ReadmeProductContent> readmeProductContents;
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == null || this.getClass() != obj.getClass()) {
+            return false;
+        }
+        return new EqualsBuilder().append(getId(), ((ProductDetailModel) obj).getId()).isEquals();
+    }
 }
