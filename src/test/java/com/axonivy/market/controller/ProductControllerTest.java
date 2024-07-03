@@ -28,6 +28,7 @@ import com.axonivy.market.entity.Product;
 import com.axonivy.market.enums.ErrorCode;
 import com.axonivy.market.enums.SortOption;
 import com.axonivy.market.enums.TypeOption;
+import com.axonivy.market.model.MultilingualismValue;
 import com.axonivy.market.service.ProductService;
 
 @ExtendWith(MockitoExtension.class)
@@ -35,6 +36,7 @@ class ProductControllerTest {
   private static final String PRODUCT_NAME_SAMPLE = "Amazon Comprehend";
   private static final String PRODUCT_NAME_DE_SAMPLE = "Amazon Comprehend DE";
   private static final String PRODUCT_DESC_SAMPLE = "Amazon Comprehend is a AI service that uses machine learning to uncover information in unstructured data.";
+  private static final String PRODUCT_DESC_DE_SAMPLE = "Amazon Comprehend is a AI service that uses machine learning to uncover information in unstructured data. DE";
 
   @Mock
   private ProductService service;
@@ -60,9 +62,9 @@ class ProductControllerTest {
   void testFindProductsAsEmpty() {
     PageRequest pageable = PageRequest.of(0, 20);
     Page<Product> mockProducts = new PageImpl<Product>(List.of(), pageable, 0);
-    when(service.findProducts(any(), any(), any())).thenReturn(mockProducts);
+    when(service.findProducts(any(), any(), any(), any())).thenReturn(mockProducts);
     when(pagedResourcesAssembler.toEmptyModel(any(), any())).thenReturn(PagedModel.empty());
-    var result = productController.findProducts(TypeOption.ALL.getOption(), null, pageable);
+    var result = productController.findProducts(TypeOption.ALL.getOption(), null, any(), pageable);
     assertEquals(HttpStatus.OK, result.getStatusCode());
     assertTrue(result.hasBody());
     assertEquals(0, result.getBody().getContent().size());
@@ -74,17 +76,17 @@ class ProductControllerTest {
     Product mockProduct = createProductMock();
 
     Page<Product> mockProducts = new PageImpl<Product>(List.of(mockProduct), pageable, 1);
-    when(service.findProducts(any(), any(), any())).thenReturn(mockProducts);
+    when(service.findProducts(any(), any(), any(), any())).thenReturn(mockProducts);
     assembler = new ProductModelAssembler();
     var mockProductModel = assembler.toModel(mockProduct);
     var mockPagedModel = PagedModel.of(List.of(mockProductModel), new PageMetadata(1, 0, 1));
     when(pagedResourcesAssembler.toModel(any(), any(ProductModelAssembler.class))).thenReturn(mockPagedModel);
-    var result = productController.findProducts(TypeOption.ALL.getOption(), null, pageable);
+    var result = productController.findProducts(TypeOption.ALL.getOption(), null, any(), pageable);
     assertEquals(HttpStatus.OK, result.getStatusCode());
     assertTrue(result.hasBody());
     assertEquals(1, result.getBody().getContent().size());
-    assertEquals(PRODUCT_NAME_SAMPLE, result.getBody().getContent().iterator().next().getName());
-    assertEquals(PRODUCT_NAME_DE_SAMPLE, result.getBody().getContent().iterator().next().getNameDE());
+    assertEquals(PRODUCT_NAME_SAMPLE, result.getBody().getContent().iterator().next().getNames().getEn());
+    assertEquals(PRODUCT_NAME_DE_SAMPLE, result.getBody().getContent().iterator().next().getNames().getDe());
   }
 
   @Test
@@ -98,9 +100,14 @@ class ProductControllerTest {
   private Product createProductMock() {
     Product mockProduct = new Product();
     mockProduct.setId("amazon-comprehend");
-    mockProduct.setName(PRODUCT_NAME_SAMPLE);
-    mockProduct.setNameDE(PRODUCT_NAME_DE_SAMPLE);
-    mockProduct.setShortDescription(PRODUCT_DESC_SAMPLE);
+    MultilingualismValue name = new MultilingualismValue();
+    name.setEn(PRODUCT_NAME_SAMPLE);
+    name.setDe(PRODUCT_NAME_DE_SAMPLE);
+    mockProduct.setNames(name);
+    MultilingualismValue shortDescription = new MultilingualismValue();
+    shortDescription.setEn(PRODUCT_DESC_SAMPLE);
+    shortDescription.setDe(PRODUCT_DESC_DE_SAMPLE);
+    mockProduct.setShortDescriptions(shortDescription);
     mockProduct.setType("connector");
     mockProduct.setTags(List.of("AI"));
     return mockProduct;

@@ -11,6 +11,9 @@ import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
+import com.axonivy.market.model.MultilingualismValue;
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -27,11 +30,11 @@ public class Product implements Serializable {
   @Id
   private String id;
   private String marketDirectory;
-  private String name;
-  private String nameDE;
+  @JsonProperty
+  private MultilingualismValue names;
   private String version;
-  private String shortDescription;
-  private String shortDescriptionDE;
+  @JsonProperty
+  private MultilingualismValue shortDescriptions;
   private String logoUrl;
   private Boolean listed;
   private String type;
@@ -65,5 +68,4 @@ public class Product implements Serializable {
     }
     return new EqualsBuilder().append(id, ((Product) obj).getId()).isEquals();
   }
-
 }

@@ -1,4 +1,4 @@
-package com.axonivy.market.github.model;
+package com.axonivy.market.model;
 
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
@@ -17,17 +17,17 @@ import lombok.Setter;
 @AllArgsConstructor
 @JsonInclude(JsonInclude.Include.NON_EMPTY)
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class DisplayName {
+public class DisplayValue {
 
 	private String locale;
 	private String value;
 
 	@Override
 	public boolean equals(Object obj) {
-		if (!(obj instanceof DisplayName)) {
+		if (!(obj instanceof DisplayValue)) {
 			return false;
 		}
-		DisplayName other = (DisplayName) obj;
+		DisplayValue other = (DisplayValue) obj;
 		EqualsBuilder builder = new EqualsBuilder();
 		builder.append(value, other.getValue());
 		builder.append(locale, other.locale);

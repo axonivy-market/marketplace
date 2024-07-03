@@ -63,7 +63,7 @@ public class ProductServiceImpl implements ProductService {
   }
 
   @Override
-  public Page<Product> findProducts(String type, String keyword, Pageable pageable) {
+  public Page<Product> findProducts(String type, String keyword, String language,  Pageable pageable) {
     final var typeOption = TypeOption.of(type);
     final var searchPageable = refinePagination(pageable);
     Page<Product> result = Page.empty();
@@ -72,14 +72,14 @@ public class ProductServiceImpl implements ProductService {
       if (StringUtils.isBlank(keyword)) {
         result = productRepository.findAll(searchPageable);
       } else {
-        result = productRepository.searchByNameOrShortDescriptionRegex(keyword, searchPageable);
+        result = productRepository.searchByNameOrShortDescriptionRegex(keyword, language, searchPageable);
       }
       break;
     case CONNECTORS, UTILITIES, SOLUTIONS:
       if (StringUtils.isBlank(keyword)) {
         result = productRepository.findByType(typeOption.getCode(), searchPageable);
       } else {
-        result = productRepository.searchByKeywordAndType(keyword, typeOption.getCode(), searchPageable);
+        result = productRepository.searchByKeywordAndType(keyword, typeOption.getCode(), language, searchPageable);
       }
       break;
     default:

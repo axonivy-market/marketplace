@@ -2,6 +2,7 @@ package com.axonivy.market.github.model;
 
 import java.util.List;
 
+import com.axonivy.market.model.DisplayValue;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -19,8 +20,8 @@ public class Meta {
   @JsonProperty("$schema")
   private String schema;
   private String id;
-  private List<DisplayName> names;
-  private List<DisplayName> descriptions;
+  private List<DisplayValue> names;
+  private List<DisplayValue> descriptions;
   private String type;
   private String platformReview;
   private String sourceUrl;
