@@ -64,7 +64,7 @@ class ProductControllerTest {
     Page<Product> mockProducts = new PageImpl<Product>(List.of(), pageable, 0);
     when(service.findProducts(any(), any(), any(), any())).thenReturn(mockProducts);
     when(pagedResourcesAssembler.toEmptyModel(any(), any())).thenReturn(PagedModel.empty());
-    var result = productController.findProducts(TypeOption.ALL.getOption(), null, any(), pageable);
+    var result = productController.findProducts(TypeOption.ALL.getOption(), null, "en", pageable);
     assertEquals(HttpStatus.OK, result.getStatusCode());
     assertTrue(result.hasBody());
     assertEquals(0, result.getBody().getContent().size());
@@ -81,7 +81,7 @@ class ProductControllerTest {
     var mockProductModel = assembler.toModel(mockProduct);
     var mockPagedModel = PagedModel.of(List.of(mockProductModel), new PageMetadata(1, 0, 1));
     when(pagedResourcesAssembler.toModel(any(), any(ProductModelAssembler.class))).thenReturn(mockPagedModel);
-    var result = productController.findProducts(TypeOption.ALL.getOption(), null, any(), pageable);
+    var result = productController.findProducts(TypeOption.ALL.getOption(), "", "en", pageable);
     assertEquals(HttpStatus.OK, result.getStatusCode());
     assertTrue(result.hasBody());
     assertEquals(1, result.getBody().getContent().size());

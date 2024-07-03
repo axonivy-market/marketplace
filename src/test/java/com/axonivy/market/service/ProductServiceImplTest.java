@@ -46,6 +46,7 @@ import com.axonivy.market.enums.TypeOption;
 import com.axonivy.market.github.model.GitHubFile;
 import com.axonivy.market.github.service.GHAxonIvyMarketRepoService;
 import com.axonivy.market.github.service.GitHubService;
+import com.axonivy.market.model.MultilingualismValue;
 import com.axonivy.market.repository.GitHubRepoMetaRepository;
 import com.axonivy.market.repository.ProductRepository;
 import com.axonivy.market.service.impl.ProductServiceImpl;
@@ -243,15 +244,19 @@ class ProductServiceImplTest {
 
   private Page<Product> createPageProductsMock() {
     var mockProducts = new ArrayList<Product>();
+    MultilingualismValue name = new MultilingualismValue();
     Product mockProduct = new Product();
     mockProduct.setId(SAMPLE_PRODUCT_ID);
-    mockProduct.getNames().setEn(SAMPLE_PRODUCT_NAME);
+    name.setEn(SAMPLE_PRODUCT_NAME);
+    mockProduct.setNames(name);
     mockProduct.setType("connector");
     mockProducts.add(mockProduct);
 
     mockProduct = new Product();
     mockProduct.setId("tel-search-ch-connector");
-    mockProduct.getNames().setEn("Swiss phone directory");
+    name = new MultilingualismValue();
+    name.setEn("Swiss phone directory");
+    mockProduct.setNames(name);
     mockProduct.setType("util");
     mockProducts.add(mockProduct);
     return new PageImpl<>(mockProducts);
