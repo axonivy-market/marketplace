@@ -27,55 +27,51 @@ import lombok.extern.log4j.Log4j2;
 @Log4j2
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class ProductFactory {
-  private static final ObjectMapper MAPPER = new ObjectMapper();
+	private static final ObjectMapper MAPPER = new ObjectMapper();
 
-  public static Product mappingByGHContent(Product product, GHContent content) {
-    if (content == null) {
-      return product;
-    }
+	public static Product mappingByGHContent(Product product, GHContent content) {
+		if (content == null) {
+			return product;
+		}
 
-    var contentName = content.getName();
-    if (StringUtils.endsWith(contentName, META_FILE)) {
-      mappingByMetaJSONFile(product, content);
-    }
-    if (StringUtils.endsWith(contentName, LOGO_FILE)) {
-      product.setLogoUrl(GitHubUtils.getDownloadUrl(content));
-    }
-    return product;
-  }
+		var contentName = content.getName();
+		if (StringUtils.endsWith(contentName, META_FILE)) {
+			mappingByMetaJSONFile(product, content);
+		}
+		if (StringUtils.endsWith(contentName, LOGO_FILE)) {
+			product.setLogoUrl(GitHubUtils.getDownloadUrl(content));
+		}
+		return product;
+	}
 
-  public static Product mappingByMetaJSONFile(Product product, GHContent ghContent) {
-    Meta meta = null;
-    try {
-      meta = jsonDecode(ghContent);
-    } catch (Exception e) {
-      log.error("Mapping from Meta file by GHContent failed", e);
-      return product;
-    }
+	public static Product mappingByMetaJSONFile(Product product, GHContent ghContent) {
+		Meta meta = null;
+		try {
+			meta = jsonDecode(ghContent);
+		} catch (Exception e) {
+			log.error("Mapping from Meta file by GHContent failed", e);
+			return product;
+		}
 
-    product.setId(meta.getId());
-    product.setMarketDirectory(extractParentDirectory(ghContent));
-    product.setNames(mappingMultilingualismValueByMetaJSONFile(meta.getNames()));
-    product.setShortDescriptions(mappingMultilingualismValueByMetaJSONFile(meta.getDescriptions()));
-    product.setListed(meta.getListed());
-    product.setType(meta.getType());
-    product.setTags(meta.getTags());
-    product.setVersion(meta.getVersion());
-    product.setVendor(meta.getVendor());
-    product.setVendorImage(meta.getVendorImage());
-    product.setVendorUrl(meta.getVendorUrl());
-    product.setPlatformReview(meta.getPlatformReview());
-    product.setStatusBadgeUrl(meta.getStatusBadgeUrl());
-    product.setLanguage(meta.getLanguage());
-    product.setIndustry(meta.getIndustry());
-    extractSourceUrl(product, meta);
-    return product;
-  }
-
-  private static String extractParentDirectory(GHContent ghContent) {
-    var path = StringUtils.defaultIfEmpty(ghContent.getPath(), EMPTY);
-    return path.replace(ghContent.getName(), EMPTY);
-  }
+		product.setId(meta.getId());
+		product.setNames(mappingMultilingualismValueByMetaJSONFile(meta.getNames()));
+		product.setMarketDirectory(extractParentDirectory(ghContent));
+		product.setListed(meta.getListed());
+		product.setType(meta.getType());
+		product.setTags(meta.getTags());
+		product.setVersion(meta.getVersion());
+		product.setShortDescriptions(mappingMultilingualismValueByMetaJSONFile(meta.getDescriptions()));
+		product.setVendor(meta.getVendor());
+		product.setVendorImage(meta.getVendorImage());
+		product.setVendorUrl(meta.getVendorUrl());
+		product.setPlatformReview(meta.getPlatformReview());
+		product.setStatusBadgeUrl(meta.getStatusBadgeUrl());
+		product.setLanguage(meta.getLanguage());
+		product.setIndustry(meta.getIndustry());
+		extractSourceUrl(product, meta);
+		product.setArtifacts(meta.getMavenArtifacts());
+		return product;
+	}
 
   private static MultilingualismValue mappingMultilingualismValueByMetaJSONFile(List<DisplayValue> list) {
     MultilingualismValue value = new MultilingualismValue();
@@ -92,22 +88,27 @@ public class ProductFactory {
     return value;
   }
 
-  private static void extractSourceUrl(Product product, Meta meta) {
-    var sourceUrl = meta.getSourceUrl();
-    if (StringUtils.isBlank(sourceUrl)) {
-      return;
-    }
-    String[] tokens = sourceUrl.split(SLASH);
-    var tokensLength = tokens.length;
-    var repositoryPath = sourceUrl;
-    if (tokensLength > 1) {
-      repositoryPath = String.join(SLASH, tokens[tokensLength - 2], tokens[tokensLength - 1]);
-    }
-    product.setRepositoryName(repositoryPath);
-    product.setSourceUrl(sourceUrl);
-  }
+	private static String extractParentDirectory(GHContent ghContent) {
+		var path = StringUtils.defaultIfEmpty(ghContent.getPath(), EMPTY);
+		return path.replace(ghContent.getName(), EMPTY);
+	}
 
-  private static Meta jsonDecode(GHContent ghContent) throws IOException {
-    return MAPPER.readValue(ghContent.read().readAllBytes(), Meta.class);
-  }
+	public static void extractSourceUrl(Product product, Meta meta) {
+		var sourceUrl = meta.getSourceUrl();
+		if (StringUtils.isBlank(sourceUrl)) {
+			return;
+		}
+		String[] tokens = sourceUrl.split(SLASH);
+		var tokensLength = tokens.length;
+		var repositoryPath = sourceUrl;
+		if (tokensLength > 1) {
+			repositoryPath = String.join(SLASH, tokens[tokensLength - 2], tokens[tokensLength - 1]);
+		}
+		product.setRepositoryName(repositoryPath);
+		product.setSourceUrl(sourceUrl);
+	}
+
+	private static Meta jsonDecode(GHContent ghContent) throws IOException {
+		return MAPPER.readValue(ghContent.read().readAllBytes(), Meta.class);
+	}
 }

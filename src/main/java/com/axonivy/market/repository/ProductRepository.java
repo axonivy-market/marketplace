@@ -8,12 +8,16 @@ import org.springframework.stereotype.Repository;
 
 import com.axonivy.market.entity.Product;
 
+import java.util.Optional;
+
 @Repository
 public interface ProductRepository extends MongoRepository<Product, String> {
 
   Page<Product> findByType(String type, Pageable pageable);
 
   Product findByLogoUrl(String logoUrl);
+
+  Optional<Product> findById(String productId);
 
   @Query("{'marketDirectory': {$regex : ?0, $options: 'i'}}")
   Product findByMarketDirectoryRegex(String search);
