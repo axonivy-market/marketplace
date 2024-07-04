@@ -63,9 +63,9 @@ public class ProductServiceImpl implements ProductService {
   }
 
   @Override
-  public Page<Product> findProducts(String type, String keyword, String language,  Pageable pageable) {
+  public Page<Product> findProducts(String type, String keyword, String language, Pageable pageable) {
     final var typeOption = TypeOption.of(type);
-    final var searchPageable = refinePagination(pageable);
+    final var searchPageable = refinePagination(language, pageable);
     Page<Product> result = Page.empty();
     switch (typeOption) {
     case ALL:
@@ -188,13 +188,13 @@ public class ProductServiceImpl implements ProductService {
     }
   }
 
-  private Pageable refinePagination(Pageable pageable) {
+  private Pageable refinePagination(String language, Pageable pageable) {
     PageRequest pageRequest = (PageRequest) pageable;
-    if (pageable != null && pageable.getSort() != null) {
+    if (pageable != null) {
       List<Order> orders = new ArrayList<>();
       for (var sort : pageable.getSort()) {
         final var sortOption = SortOption.of(sort.getProperty());
-        Order order = new Order(sort.getDirection(), sortOption.getCode());
+        Order order = new Order(sort.getDirection(), sortOption.getCode(language));
         orders.add(order);
       }
       pageRequest = PageRequest.of(pageable.getPageNumber(), pageable.getPageSize(), Sort.by(orders));

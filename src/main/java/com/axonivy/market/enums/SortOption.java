@@ -10,7 +10,7 @@ import lombok.Getter;
 @Getter
 @AllArgsConstructor
 public enum SortOption {
-  POPULARITY("popularity", "installationCount"), ALPHABETICALLY("alphabetically", "name"),
+  POPULARITY("popularity", "installationCount"), ALPHABETICALLY("alphabetically", "names"),
   RECENT("recent", "newestPublishedDate");
 
   private String option;
@@ -24,5 +24,11 @@ public enum SortOption {
       }
     }
     throw new InvalidParamException(ErrorCode.PRODUCT_SORT_INVALID, "SortOption: " + option);
+  }
+
+  public String getCode(String language) {
+    return StringUtils.isNotBlank(language) && ALPHABETICALLY.option.equalsIgnoreCase(option)
+        ? String.format("%s.%s", ALPHABETICALLY.code, language)
+        : code;
   }
 }
