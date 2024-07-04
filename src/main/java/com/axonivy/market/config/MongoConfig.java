@@ -3,6 +3,7 @@ package com.axonivy.market.config;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.mongodb.config.AbstractMongoClientConfiguration;
+import org.springframework.data.mongodb.config.EnableMongoAuditing;
 import org.springframework.data.mongodb.repository.config.EnableMongoRepositories;
 
 import com.mongodb.ConnectionString;
@@ -12,6 +13,7 @@ import com.mongodb.client.MongoClients;
 
 @Configuration
 @EnableMongoRepositories(basePackages = "com.axonivy.market.repository")
+@EnableMongoAuditing
 public class MongoConfig extends AbstractMongoClientConfiguration {
 
   @Value("${spring.data.mongodb.host}")
