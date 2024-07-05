@@ -246,7 +246,7 @@ class ProductServiceImplTest {
 
   @Test
   void testGetProductRatingById() {
-    when(productRepository.findById(SAMPLE_PRODUCT_ID)).thenReturn(java.util.Optional.of(mockProduct));
+    when(productRepository.findById(SAMPLE_PRODUCT_ID)).thenReturn(java.util.Optional.of(createProductMock()));
     // Executes
     List<ProductRating> result = productService.getProductRatingById(SAMPLE_PRODUCT_ID);
 
@@ -313,6 +313,18 @@ class ProductServiceImplTest {
     mockProduct.setType("util");
     mockProducts.add(mockProduct);
     return new PageImpl<>(mockProducts);
+  }
+
+  private Product createProductMock() {
+    Product mockProduct = new Product();
+    mockProduct.setId(SAMPLE_PRODUCT_ID);
+    mockProduct.setName(SAMPLE_PRODUCT_NAME);
+    mockProduct.setOneStarCount(SAMPLE_PRODUCT_ONE_STAR_COUNT);
+    mockProduct.setTwoStarCount(SAMPLE_PRODUCT_TWO_STAR_COUNT);
+    mockProduct.setThreeStarCount(SAMPLE_PRODUCT_THREE_STAR_COUNT);
+    mockProduct.setFourStarCount(SAMPLE_PRODUCT_FOUR_STAR_COUNT);
+    mockProduct.setFiveStarCount(SAMPLE_PRODUCT_FIVE_STAR_COUNT);
+    return mockProduct;
   }
 
   private void mockMarketRepoMetaStatus() {
