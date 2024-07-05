@@ -33,7 +33,7 @@ jobs:
     - name: Build with Maven
       run: mvn clean package -DskipTests --file ./marketplace-service/pom.xml
     - name: Prepare deployment directory
-      run: mkdir -p deployment && cp target/*.war deployment/
+      run: mkdir -p deployment && cp ./marketplace-service/target/*.war deployment/
     - name: Copy WAR to Tomcat server
       run: sudo cp deployment/*.war /opt/tomcat/webapps/marketplace-service.war
     - name: Restart Tomcat server
