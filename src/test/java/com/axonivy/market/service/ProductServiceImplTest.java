@@ -22,6 +22,8 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
+import com.axonivy.market.exceptions.model.NotFoundException;
+import com.axonivy.market.model.ProductRating;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -55,6 +57,11 @@ class ProductServiceImplTest {
 
   private static final String SAMPLE_PRODUCT_ID = "amazon-comprehend";
   private static final String SAMPLE_PRODUCT_NAME = "Amazon Comprehend";
+  private static final Integer SAMPLE_PRODUCT_ONE_STAR_COUNT = 5;
+  private static final Integer SAMPLE_PRODUCT_TWO_STAR_COUNT = 10;
+  private static final Integer SAMPLE_PRODUCT_THREE_STAR_COUNT = 15;
+  private static final Integer SAMPLE_PRODUCT_FOUR_STAR_COUNT = 20;
+  private static final Integer SAMPLE_PRODUCT_FIVE_STAR_COUNT = 50;
   private static final long LAST_CHANGE_TIME = 1718096290000l;
   private static final Pageable PAGEABLE = PageRequest.of(0, 20,
       Sort.by(SortOption.ALPHABETICALLY.getOption()).descending());
@@ -237,11 +244,66 @@ class ProductServiceImplTest {
     verify(productRepository).searchByNameOrShortDescriptionRegex(keyword, simplePageable);
   }
 
+  @Test
+  void testGetProductRatingById() {
+    when(productRepository.findById(SAMPLE_PRODUCT_ID)).thenReturn(java.util.Optional.of(mockProduct));
+    // Executes
+    List<ProductRating> result = productService.getProductRatingById(SAMPLE_PRODUCT_ID);
+
+    // Assertions
+    assertEquals(5, result.size());
+    assertEquals(1, result.get(0).getStarRating());
+    assertEquals(SAMPLE_PRODUCT_ONE_STAR_COUNT, result.get(0).getCommentNumber());
+    assertEquals(calculatePercentage(SAMPLE_PRODUCT_ONE_STAR_COUNT), result.get(0).getPercent());
+
+    assertEquals(2, result.get(1).getStarRating());
+    assertEquals(SAMPLE_PRODUCT_TWO_STAR_COUNT, result.get(1).getCommentNumber());
+    assertEquals(calculatePercentage(SAMPLE_PRODUCT_TWO_STAR_COUNT), result.get(1).getPercent());
+
+    assertEquals(3, result.get(2).getStarRating());
+    assertEquals(SAMPLE_PRODUCT_THREE_STAR_COUNT, result.get(2).getCommentNumber());
+    assertEquals(calculatePercentage(SAMPLE_PRODUCT_THREE_STAR_COUNT), result.get(2).getPercent());
+
+    assertEquals(4, result.get(3).getStarRating());
+    assertEquals(SAMPLE_PRODUCT_FOUR_STAR_COUNT, result.get(3).getCommentNumber());
+    assertEquals(calculatePercentage(SAMPLE_PRODUCT_FOUR_STAR_COUNT), result.get(3).getPercent());
+
+    assertEquals(5, result.get(4).getStarRating());
+    assertEquals(SAMPLE_PRODUCT_FIVE_STAR_COUNT, result.get(4).getCommentNumber());
+    assertEquals(calculatePercentage(SAMPLE_PRODUCT_FIVE_STAR_COUNT), result.get(4).getPercent());
+  }
+
+  @Test
+  void testGetProductRatingById_ProductNotFound() {
+    when(productRepository.findById(any())).thenReturn(java.util.Optional.empty());
+
+    try {
+      productService.getProductRatingById("non-existent-product-id");
+    } catch (NotFoundException e) {
+      assertEquals("PRODUCT_NOT_FOUND-Not found product with id: non-existent-product-id", e.getMessage());
+    }
+  }
+
+  private int calculatePercentage(int starCount) {
+    int totalComments = SAMPLE_PRODUCT_ONE_STAR_COUNT +
+        SAMPLE_PRODUCT_TWO_STAR_COUNT +
+        SAMPLE_PRODUCT_THREE_STAR_COUNT +
+        SAMPLE_PRODUCT_FOUR_STAR_COUNT +
+        SAMPLE_PRODUCT_FIVE_STAR_COUNT;
+
+    return totalComments == 0 ? 0 : (int) ((starCount / (double) totalComments) * 100);
+  }
+
   private Page<Product> createPageProductsMock() {
     var mockProducts = new ArrayList<Product>();
     Product mockProduct = new Product();
     mockProduct.setId(SAMPLE_PRODUCT_ID);
     mockProduct.setName(SAMPLE_PRODUCT_NAME);
+    mockProduct.setOneStarCount(SAMPLE_PRODUCT_ONE_STAR_COUNT);
+    mockProduct.setTwoStarCount(SAMPLE_PRODUCT_TWO_STAR_COUNT);
+    mockProduct.setThreeStarCount(SAMPLE_PRODUCT_THREE_STAR_COUNT);
+    mockProduct.setFourStarCount(SAMPLE_PRODUCT_FOUR_STAR_COUNT);
+    mockProduct.setFiveStarCount(SAMPLE_PRODUCT_FIVE_STAR_COUNT);
     mockProduct.setType("connector");
     mockProducts.add(mockProduct);
 

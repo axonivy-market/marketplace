@@ -71,11 +71,8 @@ public class FeedbackController {
   @PostMapping
   public ResponseEntity<Void> createFeedback(@RequestBody @Valid Feedback feedback, HttpServletRequest request, @RequestHeader(value = "Authorization", required = false) String authorizationHeader) {
 
-    // Get the JWT token from the cookie
-    String token = getTokenFromCookie(request);
-
-    // If token is not found in cookie, try to get it from Authorization header
-    if (token == null && authorizationHeader != null && authorizationHeader.startsWith("Bearer ")) {
+    String token = null;
+    if (authorizationHeader != null && authorizationHeader.startsWith("Bearer ")) {
       token = authorizationHeader.substring(7); // Remove "Bearer " prefix
     }
 
@@ -84,9 +81,7 @@ public class FeedbackController {
       return ResponseEntity.status(401).build(); // Unauthorized if token is missing or invalid
     }
 
-    // Optionally, get claims from the token
     Claims claims = jwtService.getClaimsFromToken(token);
-    // You can use claims to perform any user-specific logic
     feedback.setUserId(claims.getSubject());
     Feedback newFeedback = service.upsertFeedback(feedback);
 
@@ -103,18 +98,5 @@ public class FeedbackController {
     var emptyPagedModel = (PagedModel<FeedbackModel>) pagedResourcesAssembler
         .toEmptyModel(Page.empty(), FeedbackModel.class);
     return new ResponseEntity<>(emptyPagedModel, HttpStatus.OK);
-  }
-
-  private String getTokenFromCookie(HttpServletRequest request) {
-    String token = null;
-    if (request.getCookies() != null) {
-      for (Cookie cookie : request.getCookies()) {
-        if ("jwt".equals(cookie.getName())) {
-          token = cookie.getValue();
-          break;
-        }
-      }
-    }
-    return token;
   }
 }

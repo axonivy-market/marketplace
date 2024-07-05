@@ -3,10 +3,13 @@ package com.axonivy.market.controller;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import java.util.Collections;
 import java.util.List;
 
+import com.axonivy.market.model.ProductRating;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -32,6 +35,7 @@ import com.axonivy.market.service.ProductService;
 
 @ExtendWith(MockitoExtension.class)
 class ProductControllerTest {
+  private static final String PRODUCT_ID_SAMPLE = "amazon-comprehend";
   private static final String PRODUCT_NAME_SAMPLE = "Amazon Comprehend";
   private static final String PRODUCT_DESC_SAMPLE = "Amazon Comprehend is a AI service that uses machine learning to uncover information in unstructured data.";
 
@@ -93,6 +97,20 @@ class ProductControllerTest {
     assertEquals(ErrorCode.SUCCESSFUL.getCode(), response.getBody().getHelpCode());
   }
 
+  @Test
+  void testGetProductRating() {
+    List<ProductRating> productRatingMocks = List.of(createProductRatingMock());
+
+    when(service.getProductRatingById(PRODUCT_ID_SAMPLE)).thenReturn(productRatingMocks);
+    var result = productController.getProductRating(PRODUCT_ID_SAMPLE);
+
+    assertEquals(HttpStatus.OK, result.getStatusCode());
+    assertTrue(result.hasBody());
+    assertEquals(1, result.getBody().size());
+    assertEquals(productRatingMocks, result.getBody());
+    verify(service).getProductRatingById(PRODUCT_ID_SAMPLE);
+  }
+
   private Product createProductMock() {
     Product mockProduct = new Product();
     mockProduct.setId("amazon-comprehend");
@@ -101,5 +119,13 @@ class ProductControllerTest {
     mockProduct.setType("connector");
     mockProduct.setTags(List.of("AI"));
     return mockProduct;
+  }
+
+  private ProductRating createProductRatingMock() {
+    ProductRating productRatingMock = new ProductRating();
+    productRatingMock.setStarRating(1);
+    productRatingMock.setPercent(10);
+    productRatingMock.setCommentNumber(5);
+    return productRatingMock;
   }
 }
