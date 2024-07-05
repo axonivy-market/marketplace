@@ -63,23 +63,23 @@ public class ProductServiceImpl implements ProductService {
   }
 
   @Override
-  public Page<Product> findProducts(String type, String keyword, Pageable pageable) {
+  public Page<Product> findProducts(String type, String keyword, String language, Pageable pageable) {
     final var typeOption = TypeOption.of(type);
-    final var searchPageable = refinePagination(pageable);
+    final var searchPageable = refinePagination(language, pageable);
     Page<Product> result = Page.empty();
     switch (typeOption) {
     case ALL:
       if (StringUtils.isBlank(keyword)) {
         result = productRepository.findAll(searchPageable);
       } else {
-        result = productRepository.searchByNameOrShortDescriptionRegex(keyword, searchPageable);
+        result = productRepository.searchByNameOrShortDescriptionRegex(keyword, language, searchPageable);
       }
       break;
     case CONNECTORS, UTILITIES, SOLUTIONS:
       if (StringUtils.isBlank(keyword)) {
         result = productRepository.findByType(typeOption.getCode(), searchPageable);
       } else {
-        result = productRepository.searchByKeywordAndType(keyword, typeOption.getCode(), searchPageable);
+        result = productRepository.searchByKeywordAndType(keyword, typeOption.getCode(), language, searchPageable);
       }
       break;
     default:
@@ -136,7 +136,8 @@ public class ProductServiceImpl implements ProductService {
         Product product = new Product();
         GHContent fileContent;
         try {
-          fileContent = gitHubService.getGHContent(axonIvyMarketRepoService.getRepository(), file.getFileName());
+          fileContent = gitHubService.getGHContent(axonIvyMarketRepoService.getRepository(), file.getFileName(),
+              GitHubConstants.DEFAULT_BRANCH);
         } catch (IOException e) {
           log.error("Get GHContent failed: ", e);
           continue;
@@ -187,13 +188,13 @@ public class ProductServiceImpl implements ProductService {
     }
   }
 
-  private Pageable refinePagination(Pageable pageable) {
+  private Pageable refinePagination(String language, Pageable pageable) {
     PageRequest pageRequest = (PageRequest) pageable;
-    if (pageable != null && pageable.getSort() != null) {
+    if (pageable != null) {
       List<Order> orders = new ArrayList<>();
       for (var sort : pageable.getSort()) {
         final var sortOption = SortOption.of(sort.getProperty());
-        Order order = new Order(sort.getDirection(), sortOption.getCode());
+        Order order = new Order(sort.getDirection(), sortOption.getCode(language));
         orders.add(order);
       }
       pageRequest = PageRequest.of(pageable.getPageNumber(), pageable.getPageSize(), Sort.by(orders));
