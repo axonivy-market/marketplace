@@ -1,0 +1,38 @@
+<nav class="navbar navbar-expand-xl">
+  <div class="container-fluid">
+    <a href="/" class="logo navbar-brand">
+      <img
+        class="logo__image"
+        [src]="
+          themeService.isDarkMode()
+            ? '/assets/images/misc/axonivy-logo.svg'
+            : '/assets/images/misc/axonivy-logo-black.svg'
+        "
+        alt="Axon Ivy" />
+    </a>
+    <button
+      class="btn border-0 navbar-toggler rounded-3"
+      data-bs-toggle="collapse"
+      aria-expanded="false"
+      aria-label="Toggle navigation">
+      <span>
+        <i
+          class="header__menu-button"
+          [ngClass]="isMobileMenuCollapsed() ? 'bi bi-list' : 'bi bi-x-lg'"
+          (click)="onCollapsedMobileMenu()"></i>
+      </span>
+    </button>
+
+    <div
+      class="collapse navbar-collapse"
+      [ngClass]="{ show: !isMobileMenuCollapsed() }"
+      id="navbarSupportedContent">
+      <div
+        class="header__navbar-content d-flex flex-column flex-xl-row justify-content-between w-100 min-height-100 align-items-md-start align-items-xl-center">
+        <div class="d-none d-xl-block"></div>
+        <app-navigation></app-navigation>
+        <app-search-bar></app-search-bar>
+      </div>
+    </div>
+  </div>
+</nav>
