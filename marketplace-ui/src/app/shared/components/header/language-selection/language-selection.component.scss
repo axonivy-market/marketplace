@@ -1,0 +1,18 @@
+.language-item {
+  width: 22px;
+  height: 22px;
+  font-size: 16px;
+  text-align: center;
+  font-weight: 600;
+  margin: 0 0 0 10px;
+  background: none;
+  cursor: pointer;
+}
+
+.language-item.active {
+  color: var(--ivy-active-color);
+}
+
+.language-item.inactive {
+  color: #757575;
+}

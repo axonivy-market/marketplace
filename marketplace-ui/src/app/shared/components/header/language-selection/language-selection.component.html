@@ -1,0 +1,14 @@
+<div class="d-flex">
+  @for (language of languages; track $index) {
+    <div
+      [ngClass]="
+        language.value === translateService.getDefaultLang()
+          ? 'active'
+          : 'inactive'
+      "
+      class="language-item border-0"
+      (click)="onSelectLanguage(language.value)">
+      {{ language.label }}
+    </div>
+  }
+</div>

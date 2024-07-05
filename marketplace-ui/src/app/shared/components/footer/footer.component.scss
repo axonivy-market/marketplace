@@ -1,0 +1,38 @@
+.logo {
+  margin: 0 0 2rem 0;
+}
+
+.logo__image {
+  width: 132px;
+  height: 20px;
+  margin-top: 1rem;
+  vertical-align: initial;
+}
+
+.nav-item {
+  margin: 0 0 0 30px;
+}
+
+.nav-link {
+  font-weight: 600;
+  padding: 0 15px;
+}
+
+.button-container {
+  margin: 24px 0 0 0;
+}
+
+.link-icon {
+  width: 18px;
+  height: 18px;
+}
+
+.link--left {
+  margin: 0 2rem 0 0;
+}
+
+@media all and (max-width: 990px) {
+  .link--left {
+    margin: 0;
+  }
+}
