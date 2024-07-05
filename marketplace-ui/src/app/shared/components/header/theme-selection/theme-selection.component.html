@@ -1,0 +1,9 @@
+<div class="header__theme-button" (click)="themeService.changeTheme()">
+  <span class="theme-icon text-primary">
+    @if (themeService.isDarkMode()) {
+      <i class="bi bi-sun"></i>
+    } @else {
+      <i class="bi bi-moon"></i>
+    }
+  </span>
+</div>
