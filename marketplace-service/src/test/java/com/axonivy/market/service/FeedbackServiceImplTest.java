@@ -42,8 +42,6 @@ class FeedbackServiceImplTest {
   private FeedbackServiceImpl feedbackService;
 
   private Feedback feedback;
-  private Product product;
-  private User user;
 
   @BeforeEach
   void setUp() {
@@ -54,10 +52,10 @@ class FeedbackServiceImplTest {
     feedback.setRating(5);
     feedback.setContent("Great product!");
 
-    product = new Product();
+    Product product = new Product();
     product.setId("productId");
 
-    user = new User();
+    User user = new User();
     user.setId("userId");
 
     lenient().when(userRepository.findById(anyString())).thenReturn(Optional.of(user));

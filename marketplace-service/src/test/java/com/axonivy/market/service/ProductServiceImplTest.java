@@ -3,8 +3,7 @@ package com.axonivy.market.service;
 import static com.axonivy.market.constants.CommonConstants.LOGO_FILE;
 import static com.axonivy.market.constants.CommonConstants.META_FILE;
 import static com.axonivy.market.constants.CommonConstants.SLASH;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.anyString;
@@ -62,7 +61,7 @@ class ProductServiceImplTest {
   private static final Integer SAMPLE_PRODUCT_THREE_STAR_COUNT = 15;
   private static final Integer SAMPLE_PRODUCT_FOUR_STAR_COUNT = 20;
   private static final Integer SAMPLE_PRODUCT_FIVE_STAR_COUNT = 50;
-  private static final long LAST_CHANGE_TIME = 1718096290000l;
+  private static final long LAST_CHANGE_TIME = 1718096290000L;
   private static final Pageable PAGEABLE = PageRequest.of(0, 20,
       Sort.by(SortOption.ALPHABETICALLY.getOption()).descending());
   private static final String SHA1_SAMPLE = "35baa89091b2452b77705da227f1a964ecabc6c8";
@@ -127,7 +126,7 @@ class ProductServiceImplTest {
 
     // Executes
     var result = productService.syncLatestDataFromMarketRepo();
-    assertEquals(false, result);
+    assertFalse(result);
 
     // Start testing by deleting new meta
     mockCommit = mockGHCommitHasSHA1(UUID.randomUUID().toString());
@@ -136,7 +135,7 @@ class ProductServiceImplTest {
     mockGithubFile.setStatus(FileStatus.REMOVED);
     // Executes
     result = productService.syncLatestDataFromMarketRepo();
-    assertEquals(false, result);
+    assertFalse(result);
   }
 
   @Test
@@ -158,7 +157,7 @@ class ProductServiceImplTest {
 
     // Executes
     var result = productService.syncLatestDataFromMarketRepo();
-    assertEquals(false, result);
+    assertFalse(result);
 
     // Start testing by deleting new logo
     when(mockCommit.getSHA1()).thenReturn(UUID.randomUUID().toString());
@@ -169,11 +168,11 @@ class ProductServiceImplTest {
 
     // Executes
     result = productService.syncLatestDataFromMarketRepo();
-    assertEquals(false, result);
+    assertFalse(result);
   }
 
   @Test
-  void testFindAllProductsWithKeyword() throws IOException {
+  void testFindAllProductsWithKeyword() {
     when(productRepository.findAll(any(Pageable.class))).thenReturn(mockResultReturn);
     // Executes
     var result = productService.findProducts(TypeOption.ALL.getOption(), keyword, PAGEABLE);
@@ -216,11 +215,11 @@ class ProductServiceImplTest {
 
     // Executes
     var result = productService.syncLatestDataFromMarketRepo();
-    assertEquals(false, result);
+    assertFalse(result);
   }
 
   @Test
-  void testNothingToSync() throws IOException {
+  void testNothingToSync() {
     var gitHubRepoMeta = mock(GitHubRepoMeta.class);
     when(gitHubRepoMeta.getLastSHA1()).thenReturn(SHA1_SAMPLE);
     var mockCommit = mockGHCommitHasSHA1(SHA1_SAMPLE);
@@ -229,7 +228,7 @@ class ProductServiceImplTest {
 
     // Executes
     var result = productService.syncLatestDataFromMarketRepo();
-    assertEquals(true, result);
+    assertTrue(result);
   }
 
   @Test
