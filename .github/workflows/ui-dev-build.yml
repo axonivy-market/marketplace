@@ -1,0 +1,28 @@
+name: UI Dev Build
+run-name: Build and Deploy Marketplace-UI on branch ${{github.ref_name}} by ${{github.actor}}
+
+on:
+  push:
+    branches: [ "develop" ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    name: Build and deploy new code to Deployment directory
+    runs-on: self-hosted
+
+    steps:
+    - uses: actions/checkout@v4
+    - uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+        cache: 'npm'
+    - name: Install Dependencies
+      run: npm install
+    - name: Build Angular app
+      run: npm run build -- --configuration production --output-path=dist
+    - name: Execute Tests
+      run: npm run test
+    - name: Copy files to Deployment directory
+      if: success()
+      run: sudo cp -r dist/* /var/www/marketplace-ui
