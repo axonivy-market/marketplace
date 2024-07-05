@@ -22,13 +22,11 @@ public class FeedbackServiceImpl implements FeedbackService {
   private final FeedbackRepository feedbackRepository;
   private final UserRepository userRepository;
   private final ProductRepository productRepository;
-  private final UserService userService;
 
   public FeedbackServiceImpl(FeedbackRepository feedbackRepository, UserRepository userRepository, ProductRepository productRepository, UserService userService) {
     this.feedbackRepository = feedbackRepository;
     this.userRepository = userRepository;
     this.productRepository = productRepository;
-    this.userService = userService;
   }
 
   @Override

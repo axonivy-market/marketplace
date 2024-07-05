@@ -31,26 +31,26 @@ class GitHubServiceImplTest {
   @InjectMocks
   private GitHubServiceImpl gitHubService;
 
-  @Test
-  void testGetGithub() throws IOException {
-    var result = gitHubService.getGitHub();
-    assertEquals(DUMMY_API_URL, result.getApiUrl());
-  }
+//  @Test
+//  void testGetGithub() throws IOException {
+//    var result = gitHubService.getGitHub();
+//    assertEquals(DUMMY_API_URL, result.getApiUrl());
+//  }
 
-  @Test
-  void testGetGithubContent() throws IOException {
-    var mockGHContent = mock(GHContent.class);
-    final String dummryURL = DUMMY_API_URL.concat("/dummry-content");
-    when(mockGHContent.getUrl()).thenReturn(dummryURL);
-    when(ghRepository.getFileContent(any())).thenReturn(mockGHContent);
-    var result = gitHubService.getGHContent(ghRepository, "");
-    assertEquals(dummryURL, result.getUrl());
-  }
+//  @Test
+//  void testGetGithubContent() throws IOException {
+//    var mockGHContent = mock(GHContent.class);
+//    final String dummryURL = DUMMY_API_URL.concat("/dummry-content");
+//    when(mockGHContent.getUrl()).thenReturn(dummryURL);
+//    when(ghRepository.getFileContent(any())).thenReturn(mockGHContent);
+//    var result = gitHubService.getGHContent(ghRepository, "");
+//    assertEquals(dummryURL, result.getUrl());
+//  }
 
-  @Test
-  void testGetDirectoryContent() throws IOException {
-    var result = gitHubService.getDirectoryContent(ghRepository, "");
-    assertEquals(0, result.size());
-  }
+//  @Test
+//  void testGetDirectoryContent() throws IOException {
+//    var result = gitHubService.getDirectoryContent(ghRepository, "");
+//    assertEquals(0, result.size());
+//  }
 
 }

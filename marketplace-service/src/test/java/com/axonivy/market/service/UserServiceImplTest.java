@@ -1,7 +1,10 @@
 package com.axonivy.market.service;
 
 import java.util.List;
+import java.util.Optional;
 
+import com.axonivy.market.enums.ErrorCode;
+import com.axonivy.market.exceptions.model.NotFoundException;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -37,5 +40,20 @@ class UserServiceImplTest {
 
     // Verify
     Assertions.assertEquals(result, mockResultReturn);
+  }
+
+  @Test
+  void testCreateUser() {
+    // Mock data
+    User mockUser = new User();
+    mockUser.setId("123");
+    mockUser.setName("tvtTest");
+    Mockito.when(userRepository.save(mockUser)).thenReturn(mockUser);
+
+    // Exercise
+    User result = employeeService.createUser(mockUser);
+
+    // Verify
+    Assertions.assertEquals(result, mockUser);
   }
 }
