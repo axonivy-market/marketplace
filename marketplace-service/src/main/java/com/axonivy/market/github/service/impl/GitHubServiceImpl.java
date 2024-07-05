@@ -34,9 +34,9 @@ public class GitHubServiceImpl implements GitHubService {
   }
 
   @Override
-  public List<GHContent> getDirectoryContent(GHRepository ghRepository, String path) throws IOException {
+  public List<GHContent> getDirectoryContent(GHRepository ghRepository, String path, String ref) throws IOException {
     Assert.notNull(ghRepository, "Repository must not be null");
-    return ghRepository.getDirectoryContent(path);
+    return ghRepository.getDirectoryContent(path, ref);
   }
 
   @Override
@@ -45,8 +45,8 @@ public class GitHubServiceImpl implements GitHubService {
   }
 
   @Override
-  public GHContent getGHContent(GHRepository ghRepository, String path) throws IOException {
+  public GHContent getGHContent(GHRepository ghRepository, String path, String ref) throws IOException {
     Assert.notNull(ghRepository, "Repository must not be null");
-    return ghRepository.getFileContent(path);
+    return ghRepository.getFileContent(path, ref);
   }
 }

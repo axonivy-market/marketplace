@@ -210,7 +210,7 @@ public class VersionServiceImpl implements VersionService {
 		} else {
 			bugfixVersion = getBugfixVersion(version.split(MavenConstants.SPRINT_RELEASE_POSTFIX)[0]);
 		}
-		return versions.stream().noneMatch(currentVersion -> !currentVersion.equals(version)
+		return versions.stream().noneMatch(currentVersion -> !currentVersion.equals(version) && isReleasedVersion(currentVersion)
 				&& getBugfixVersion(currentVersion).equals(bugfixVersion));
 	}
 

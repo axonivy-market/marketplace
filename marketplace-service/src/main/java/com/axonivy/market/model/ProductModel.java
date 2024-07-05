@@ -21,8 +21,8 @@ import lombok.Setter;
 @JsonInclude(Include.NON_NULL)
 public class ProductModel extends RepresentationModel<ProductModel> {
 	private String id;
-	private String name;
-	private String shortDescription;
+	private MultilingualismValue names;
+	private MultilingualismValue shortDescriptions;
 	private String logoUrl;
 	private String type;
 	private List<String> tags;
