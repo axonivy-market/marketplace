@@ -1,0 +1,28 @@
+<div class="card product-card w-100">
+  <div class="d-flex justify-content-between align-items-start">
+    <img
+      class="card-img-top rounded"
+      width="70"
+      height="70"
+      [ngSrc]="product | logo"
+      [alt]="product.names | multilingualism: languageService.getSelectedLanguage()" />
+    <div
+      class="card__tag lh-md px-2 py-1"
+      [ngClass]="themeService.isDarkMode() ? 'text-dark' : 'text-light'">
+      {{ 'common.filter.value.' + product.type | translate }}
+    </div>
+  </div>
+  <div>
+    <h5 class="card__title text-primary">
+      {{
+        product.names | multilingualism: languageService.getSelectedLanguage()
+      }}
+    </h5>
+    <p class="card__description text-secondary">
+      {{
+        product.shortDescriptions
+          | multilingualism: languageService.getSelectedLanguage()
+      }}
+    </p>
+  </div>
+</div>
