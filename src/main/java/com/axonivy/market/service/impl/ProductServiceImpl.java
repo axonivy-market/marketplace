@@ -8,13 +8,11 @@ import java.net.URL;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import com.axonivy.market.constants.CommonConstants;
 import com.axonivy.market.github.service.GHAxonIvyProductRepoService;
 import com.axonivy.market.github.util.GitHubUtils;
-import com.axonivy.market.entity.ReadmeProductContent;
+import com.axonivy.market.entity.ProductModuleContent;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.util.Strings;
 import org.kohsuke.github.GHCommit;
@@ -255,51 +253,50 @@ public class ProductServiceImpl implements ProductService {
 			GHRepository productRepo = gitHubService.getRepository(product.getRepositoryName());
 			List<GHTag> tags = productRepo.listTags().toList();
 			GHTag lastTag = CollectionUtils.firstElement(tags);
-			GHTag oldestTag = CollectionUtils.lastElement(tags);
 			if (lastTag != null) {
 				product.setNewestPublishedDate(lastTag.getCommit().getCommitDate());
 				product.setNewestReleaseVersion(lastTag.getName());
 			}
 
+			String oldestTag = tags.stream().map(tag -> tag.getName().replaceAll(NON_NUMERIC_CHAR, Strings.EMPTY))
+					.distinct().sorted(Comparator.reverseOrder()).reduce((tag1, tag2) -> tag2).orElse(null);
 			if (oldestTag != null && StringUtils.isBlank(product.getCompatibility())) {
-				String compatibility = getCompatibilityFromNumericTag(oldestTag);
+				String compatibility = getCompatibilityFromOldestTag(oldestTag);
 				product.setCompatibility(compatibility);
 			}
 
-			List<CompletableFuture<ReadmeProductContent>> completableFutures = new ArrayList<>();
+			List<CompletableFuture<ProductModuleContent>> completableFutures = new ArrayList<>();
 			for (GHTag ghtag : tags) {
 				completableFutures.add(CompletableFuture.supplyAsync(() -> axonIvyProductRepoService
 						.getReadmeAndProductContentsFromTag(productRepo, ghtag.getName())));
 			}
 			completableFutures.forEach(CompletableFuture::join);
-			List<ReadmeProductContent> readmeProductContents = completableFutures.stream().map(f -> {
+			List<ProductModuleContent> productModuleContents = completableFutures.stream().map(completableFuture -> {
 				try {
-					return f.get();
+					return completableFuture.get();
 				} catch (InterruptedException | ExecutionException e) {
 					Thread.currentThread().interrupt();
 					log.error("Get readme and product json contents failed", e);
 					return null;
 				}
 			}).toList();
-			product.setReadmeProductContents(readmeProductContents);
+			product.setProductModuleContents(productModuleContents);
 		} catch (Exception e) {
 			log.error("Cannot find repository by path {} {}", product.getRepositoryName(), e);
 		}
 	}
 
 	// Cover 3 cases after removing non-numeric characters (8, 11.1 and 10.0.2)
-	@Override
-	public String getCompatibilityFromNumericTag(GHTag oldestTag) {
-		String numericTag = oldestTag.getName().replaceAll(NON_NUMERIC_CHAR, Strings.EMPTY);
-		if (!numericTag.contains(CommonConstants.DOT)) {
-			return numericTag + ".0+";
+	public String getCompatibilityFromOldestTag(String oldestTag) {
+		if (!oldestTag.contains(CommonConstants.DOT_SEPARATOR)) {
+			return oldestTag + ".0+";
 		}
-		int firstDot = numericTag.indexOf(CommonConstants.DOT);
-		int secondDot = numericTag.indexOf(CommonConstants.DOT, firstDot + 1);
+		int firstDot = oldestTag.indexOf(CommonConstants.DOT_SEPARATOR);
+		int secondDot = oldestTag.indexOf(CommonConstants.DOT_SEPARATOR, firstDot + 1);
 		if (secondDot == -1) {
-			return numericTag.concat(CommonConstants.PLUS);
+			return oldestTag.concat(CommonConstants.PLUS);
 		}
-		return numericTag.substring(0, secondDot).concat(CommonConstants.PLUS);
+		return oldestTag.substring(0, secondDot).concat(CommonConstants.PLUS);
 	}
 
 	@Override

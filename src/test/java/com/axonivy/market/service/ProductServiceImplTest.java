@@ -1,7 +1,7 @@
 package com.axonivy.market.service;
 
 import static com.axonivy.market.constants.CommonConstants.LOGO_FILE;
-import static com.axonivy.market.constants.CommonConstants.META_FILE;
+import static com.axonivy.market.constants.MetaConstants.META_FILE;
 import static com.axonivy.market.constants.CommonConstants.SLASH;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -21,7 +21,7 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
-import com.axonivy.market.entity.ReadmeProductContent;
+import com.axonivy.market.entity.ProductModuleContent;
 import com.axonivy.market.github.service.GHAxonIvyProductRepoService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -239,7 +239,7 @@ class ProductServiceImplTest {
 		verify(ghAxonIvyProductRepoService, times(1)).getReadmeAndProductContentsFromTag(ghRepository, RELEASE_TAG);
 		verify(productRepository).saveAll(argumentCaptor.capture());
 
-		assertThat(argumentCaptor.getValue().get(0).getReadmeProductContents()).usingRecursiveComparison()
+		assertThat(argumentCaptor.getValue().get(0).getProductModuleContents()).usingRecursiveComparison()
 				.isEqualTo(List.of(mockReadmeProductContent()));
 	}
 
@@ -282,16 +282,16 @@ class ProductServiceImplTest {
 
 	@Test
 	void testGetCompatibilityFromNumericTag() {
-		GHTag mockTag = mock(GHTag.class);
-		when(mockTag.getName()).thenReturn("v1.0.0", "nbm8", "base-11.2");
+//		String mockTag = "";
+//		when(mockTag).thenReturn("v1.0.0", "nbm8", "base-11.2");
 
-		String result = productService.getCompatibilityFromNumericTag(mockTag);
+		String result = productService.getCompatibilityFromOldestTag("v1.0.0");
 		assertEquals("1.0+", result);
 
-		result = productService.getCompatibilityFromNumericTag(mockTag);
+		result = productService.getCompatibilityFromOldestTag("nbm8");
 		assertEquals("8.0+", result);
 
-		result = productService.getCompatibilityFromNumericTag(mockTag);
+		result = productService.getCompatibilityFromOldestTag("base-11.2");
 		assertEquals("11.2+", result);
 	}
 
@@ -332,11 +332,11 @@ class ProductServiceImplTest {
 		return mockGHContent;
 	}
 
-	private ReadmeProductContent mockReadmeProductContent() {
-		ReadmeProductContent readmeProductContent = new ReadmeProductContent();
-		readmeProductContent.setTag("v10.0.2");
-		readmeProductContent.setName("Amazon Comprehend");
-		readmeProductContent.setDescription("testDescription");
-		return readmeProductContent;
+	private ProductModuleContent mockReadmeProductContent() {
+		ProductModuleContent productModuleContent = new ProductModuleContent();
+		productModuleContent.setTag("v10.0.2");
+		productModuleContent.setName("Amazon Comprehend");
+		productModuleContent.setDescription("testDescription");
+		return productModuleContent;
 	}
 }

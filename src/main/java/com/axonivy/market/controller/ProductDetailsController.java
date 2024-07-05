@@ -21,13 +21,13 @@ import static com.axonivy.market.constants.RequestMappingConstants.PRODUCT_DETAI
 @RestController
 @RequestMapping(PRODUCT_DETAILS)
 public class ProductDetailsController {
-	private final VersionService service;
+	private final VersionService versionService;
 	private final ProductService productService;
 	private final ProductDetailModelAssembler detailModelAssembler;
 
-	public ProductDetailsController(VersionService service, ProductService productService,
+	public ProductDetailsController(VersionService versionService, ProductService productService,
 			ProductDetailModelAssembler detailModelAssembler) {
-		this.service = service;
+		this.versionService = versionService;
 		this.productService = productService;
 		this.detailModelAssembler = detailModelAssembler;
 	}
@@ -43,7 +43,7 @@ public class ProductDetailsController {
 	public ResponseEntity<List<MavenArtifactVersionModel>> findProductVersionsById(@PathVariable("id") String id,
 			@RequestParam(name = "isShowDevVersion") boolean isShowDevVersion,
 			@RequestParam(name = "designerVersion", required = false) String designerVersion) {
-		List<MavenArtifactVersionModel> models = service.getArtifactsAndVersionToDisplay(id, isShowDevVersion,
+		List<MavenArtifactVersionModel> models = versionService.getArtifactsAndVersionToDisplay(id, isShowDevVersion,
 				designerVersion);
 		return new ResponseEntity<>(models, HttpStatus.OK);
 	}

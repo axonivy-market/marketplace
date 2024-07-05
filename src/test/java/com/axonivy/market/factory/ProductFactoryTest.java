@@ -1,6 +1,6 @@
 package com.axonivy.market.factory;
 
-import static com.axonivy.market.constants.CommonConstants.META_FILE;
+import static com.axonivy.market.constants.MetaConstants.META_FILE;
 import static com.axonivy.market.constants.CommonConstants.SLASH;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
@@ -30,7 +30,7 @@ class ProductFactoryTest {
 		GHContent mockContent = mock(GHContent.class);
 		var result = ProductFactory.mappingByGHContent(product, null);
 		assertEquals(product, result);
-		when(mockContent.getName()).thenReturn(CommonConstants.META_FILE);
+		when(mockContent.getName()).thenReturn(META_FILE);
 		InputStream inputStream = this.getClass().getResourceAsStream(SLASH.concat(META_FILE));
 		when(mockContent.read()).thenReturn(inputStream);
 		result = ProductFactory.mappingByGHContent(product, mockContent);

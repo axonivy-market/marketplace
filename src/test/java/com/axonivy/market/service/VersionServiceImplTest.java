@@ -8,12 +8,11 @@ import com.axonivy.market.entity.Product;
 import com.axonivy.market.github.model.ArchivedArtifact;
 import com.axonivy.market.github.model.MavenArtifact;
 import com.axonivy.market.github.service.GHAxonIvyProductRepoService;
-import com.axonivy.market.github.util.GitHubUtils;
 import com.axonivy.market.model.MavenArtifactVersionModel;
 import com.axonivy.market.repository.MavenArtifactVersionRepository;
 import com.axonivy.market.repository.ProductRepository;
 import com.axonivy.market.service.impl.VersionServiceImpl;
-import com.axonivy.market.utils.XmlReaderUtils;
+import com.axonivy.market.util.XmlReaderUtils;
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.lang3.StringUtils;
 import org.assertj.core.api.Fail;
@@ -487,22 +486,6 @@ class VersionServiceImplTest {
 		archivedArtifactsMap.get(targetArtifactId).add(adobeArchivedArtifactVersion10);
 		result = versionService.findArchivedArtifactInfoBestMatchWithVersion(targetArtifactId, targetVersion);
 		Assertions.assertEquals(adobeArchivedArtifactVersion10, result);
-	}
-
-	@Test
-	void testConvertArtifactIdToName() {
-		String defaultArtifactId = "adobe-acrobat-sign-connector";
-		String result = GitHubUtils.convertArtifactIdToName(defaultArtifactId);
-		Assertions.assertEquals("Adobe Acrobat Sign Connector", result);
-
-		result = GitHubUtils.convertArtifactIdToName(null);
-		Assertions.assertEquals(StringUtils.EMPTY, result);
-
-		result = GitHubUtils.convertArtifactIdToName(StringUtils.EMPTY);
-		Assertions.assertEquals(StringUtils.EMPTY, result);
-
-		result = GitHubUtils.convertArtifactIdToName(" ");
-		Assertions.assertEquals(StringUtils.EMPTY, result);
 	}
 
 	@Test

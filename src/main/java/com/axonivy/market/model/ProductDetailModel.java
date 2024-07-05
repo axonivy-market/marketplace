@@ -1,6 +1,6 @@
 package com.axonivy.market.model;
 
-import com.axonivy.market.entity.ReadmeProductContent;
+import com.axonivy.market.entity.ProductModuleContent;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -24,7 +24,7 @@ public class ProductDetailModel extends ProductModel {
     private String industry;
     private String compatibility;
     private Boolean contactUs;
-    private List<ReadmeProductContent> readmeProductContents;
+    private List<ProductModuleContent> productModuleContents;
 
     @Override
     public int hashCode() {

@@ -1,8 +1,8 @@
 package com.axonivy.market.factory;
 
 import static com.axonivy.market.constants.CommonConstants.LOGO_FILE;
-import static com.axonivy.market.constants.CommonConstants.META_FILE;
 import static com.axonivy.market.constants.CommonConstants.SLASH;
+import static com.axonivy.market.constants.MetaConstants.*;
 import static org.apache.commons.lang3.StringUtils.EMPTY;
 
 import com.axonivy.market.github.util.GitHubUtils;
@@ -58,9 +58,9 @@ public class ProductFactory {
 		product.setTags(meta.getTags());
 		product.setVersion(meta.getVersion());
 		product.setShortDescription(meta.getDescription());
-		product.setVendor(StringUtils.isBlank(meta.getVendor()) ? "Axon Ivy AG" : meta.getVendor());
+		product.setVendor(StringUtils.isBlank(meta.getVendor()) ? DEFAULT_VENDOR_NAME : meta.getVendor());
 		product.setVendorUrl(
-				StringUtils.isBlank(meta.getVendorUrl()) ? "https://www.axonivy.com" : meta.getVendorUrl());
+				StringUtils.isBlank(meta.getVendorUrl()) ? DEFAULT_VENDOR_URL : meta.getVendorUrl());
 		product.setPlatformReview(meta.getPlatformReview());
 		product.setStatusBadgeUrl(meta.getStatusBadgeUrl());
 		product.setLanguage(meta.getLanguage());

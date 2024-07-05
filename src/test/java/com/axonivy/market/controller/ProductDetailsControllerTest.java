@@ -30,7 +30,7 @@ import lombok.extern.log4j.Log4j2;
 @ExtendWith(MockitoExtension.class)
 class ProductDetailsControllerTest {
 	@Mock
-	private ProductService service;
+	private ProductService productService;
 
 	@Mock
 	VersionService versionService;
@@ -43,7 +43,7 @@ class ProductDetailsControllerTest {
 
 	@Test
 	void testProductDetails() {
-		Mockito.when(service.fetchProductDetail(Mockito.anyString(), Mockito.anyString())).thenReturn(mockProduct());
+		Mockito.when(productService.fetchProductDetail(Mockito.anyString(), Mockito.anyString())).thenReturn(mockProduct());
 		Mockito.when(detailModelAssembler.toModel(Mockito.any())).thenReturn(createProductMockWithDetails());
 		ResponseEntity<ProductDetailModel> mockExpectedResult = new ResponseEntity<>(createProductMockWithDetails(),
 				HttpStatus.OK);
@@ -54,7 +54,7 @@ class ProductDetailsControllerTest {
 		assertEquals(HttpStatus.OK, result.getStatusCode());
 		assertEquals(result, mockExpectedResult);
 
-		verify(service, times(1)).fetchProductDetail("docker-connector", "connector");
+		verify(productService, times(1)).fetchProductDetail("docker-connector", "connector");
 		verify(detailModelAssembler, times(1)).toModel(mockProduct());
 	}
 

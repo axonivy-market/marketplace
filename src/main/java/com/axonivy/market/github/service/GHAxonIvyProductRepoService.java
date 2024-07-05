@@ -1,6 +1,6 @@
 package com.axonivy.market.github.service;
 
-import com.axonivy.market.entity.ReadmeProductContent;
+import com.axonivy.market.entity.ProductModuleContent;
 import com.axonivy.market.github.model.MavenArtifact;
 
 import org.kohsuke.github.GHContent;
@@ -16,7 +16,7 @@ public interface GHAxonIvyProductRepoService {
 
 	List<GHTag> getAllTagsFromRepoName(String repoName) throws IOException;
 
-	ReadmeProductContent getReadmeAndProductContentsFromTag(GHRepository ghRepository, String tag);
+	ProductModuleContent getReadmeAndProductContentsFromTag(GHRepository ghRepository, String tag);
 
 	List<MavenArtifact> convertProductJsonToMavenProductInfo(GHContent content) throws IOException;
 }

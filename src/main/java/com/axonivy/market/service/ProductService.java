@@ -13,5 +13,5 @@ public interface ProductService {
 
 	Product fetchProductDetail(String id, String type);
 
-	String getCompatibilityFromNumericTag(GHTag oldestTag);
+	String getCompatibilityFromOldestTag(String oldestTag);
 }

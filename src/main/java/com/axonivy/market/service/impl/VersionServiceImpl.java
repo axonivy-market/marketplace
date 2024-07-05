@@ -1,5 +1,6 @@
 package com.axonivy.market.service.impl;
 
+import com.axonivy.market.constants.CommonConstants;
 import com.axonivy.market.constants.GitHubConstants;
 import com.axonivy.market.constants.MavenConstants;
 import com.axonivy.market.constants.NonStandardProductPackageConstants;
@@ -16,7 +17,7 @@ import com.axonivy.market.repository.ProductRepository;
 import com.axonivy.market.service.VersionService;
 import com.axonivy.market.comparator.ArchivedArtifactsComparator;
 import com.axonivy.market.comparator.LatestVersionComparator;
-import com.axonivy.market.utils.XmlReaderUtils;
+import com.axonivy.market.util.XmlReaderUtils;
 import lombok.Getter;
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.lang3.BooleanUtils;
@@ -27,7 +28,6 @@ import org.springframework.util.CollectionUtils;
 
 import java.io.IOException;
 import java.util.*;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 @Log4j2
@@ -65,7 +65,6 @@ public class VersionServiceImpl implements VersionService {
 		metaProductArtifact = null;
 		productJsonFilePath = null;
 		productId = null;
-
 	}
 
 	public List<MavenArtifactVersionModel> getArtifactsAndVersionToDisplay(String productId, Boolean isShowDevVersion,
@@ -180,7 +179,7 @@ public class VersionServiceImpl implements VersionService {
 			return StringUtils.EMPTY;
 		}
 		repoUrl = Optional.ofNullable(repoUrl).orElse(MavenConstants.DEFAULT_IVY_MAVEN_BASE_URL);
-		groupId = groupId.replace(MavenConstants.DOT_SEPARATOR, MavenConstants.GROUP_ID_URL_SEPARATOR);
+		groupId = groupId.replace(CommonConstants.DOT_SEPARATOR, CommonConstants.SLASH);
 		return String.format(MavenConstants.METADATA_URL_FORMAT, repoUrl, groupId, artifactID);
 	}
 
@@ -193,8 +192,8 @@ public class VersionServiceImpl implements VersionService {
 		}
 		String[] segments = version.split("\\.");
 		if (segments.length >= 3) {
-			segments[2] = segments[2].split(MavenConstants.ARTIFACT_ID_SEPARATOR)[0];
-			return segments[0] + MavenConstants.DOT_SEPARATOR + segments[1] + MavenConstants.DOT_SEPARATOR
+			segments[2] = segments[2].split(CommonConstants.DASH_SEPARATOR)[0];
+			return segments[0] + CommonConstants.DOT_SEPARATOR + segments[1] + CommonConstants.DOT_SEPARATOR
 					+ segments[2];
 		}
 		return version;
@@ -315,8 +314,8 @@ public class VersionServiceImpl implements VersionService {
 			groupIdByVersion = archivedArtifactBestMatchVersion.getGroupId();
 			artifactIdByVersion = archivedArtifactBestMatchVersion.getArtifactId();
 		}
-		groupIdByVersion = groupIdByVersion.replace(MavenConstants.DOT_SEPARATOR,
-				MavenConstants.GROUP_ID_URL_SEPARATOR);
+		groupIdByVersion = groupIdByVersion.replace(CommonConstants.DOT_SEPARATOR,
+				CommonConstants.SLASH);
 		return String.format(MavenConstants.ARTIFACT_DOWNLOAD_URL_FORMAT, repoUrl, groupIdByVersion,
 				artifactIdByVersion, version, artifactIdByVersion, version, artifact.getType());
 	}

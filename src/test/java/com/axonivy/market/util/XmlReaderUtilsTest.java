@@ -1,4 +1,4 @@
-package com.axonivy.market.utils;
+package com.axonivy.market.util;
 
 import org.apache.commons.lang3.StringUtils;
 import org.junit.jupiter.api.Assertions;

@@ -5,7 +5,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import com.axonivy.market.constants.MavenConstants;
+import com.axonivy.market.constants.CommonConstants;
 import org.apache.commons.lang3.StringUtils;
 import org.kohsuke.github.GHCommit;
 import org.kohsuke.github.GHContent;
@@ -55,8 +55,8 @@ public class GitHubUtils {
     if (StringUtils.isBlank(artifactId)) {
       return StringUtils.EMPTY;
     }
-    return Arrays.stream(artifactId.split(MavenConstants.ARTIFACT_ID_SEPARATOR))
+    return Arrays.stream(artifactId.split(CommonConstants.DASH_SEPARATOR))
             .map(part -> part.substring(0, 1).toUpperCase() + part.substring(1).toLowerCase())
-            .collect(Collectors.joining(MavenConstants.ARTIFACT_NAME_SEPARATOR));
+            .collect(Collectors.joining(CommonConstants.SPACE_SEPARATOR));
   }
 }

@@ -2,7 +2,7 @@ package com.axonivy.market.service;
 
 import com.axonivy.market.constants.CommonConstants;
 import com.axonivy.market.constants.ProductJsonConstants;
-import com.axonivy.market.constants.ReleaseTagConstants;
+import com.axonivy.market.constants.ReadmeConstants;
 import com.axonivy.market.github.model.MavenArtifact;
 import com.axonivy.market.github.service.GitHubService;
 import com.axonivy.market.github.service.impl.GHAxonIvyProductRepoServiceImpl;
@@ -229,7 +229,7 @@ class GHAxonIvyProductRepoServiceImplTest {
 		String readmeContentWithImageFolder = "#Product-name\n Test README\n## Demo\nDemo content\n## Setup\nSetup content (images/image.png)";
 
 		GHContent mockImageFile = mock(GHContent.class);
-		when(mockImageFile.getName()).thenReturn(ReleaseTagConstants.IMAGES, IMAGE_NAME);
+		when(mockImageFile.getName()).thenReturn(ReadmeConstants.IMAGES, IMAGE_NAME);
 		when(mockImageFile.isDirectory()).thenReturn(true);
 		when(mockImageFile.getDownloadUrl()).thenReturn(IMAGE_DOWNLOAD_URL);
 
@@ -358,7 +358,7 @@ class GHAxonIvyProductRepoServiceImplTest {
 	private static GHContent createMockProductJson() throws IOException {
 		GHContent mockProductJson = mock(GHContent.class);
 		when(mockProductJson.isFile()).thenReturn(true);
-		when(mockProductJson.getName()).thenReturn(ReleaseTagConstants.PRODUCT_JSON_FILE);
+		when(mockProductJson.getName()).thenReturn(ProductJsonConstants.PRODUCT_JSON_FILE);
 		InputStream mockProductJsonInputStream = mock(InputStream.class);
 		when(mockProductJson.read()).thenReturn(mockProductJsonInputStream);
 		when(mockProductJsonInputStream.readAllBytes()).thenReturn(PRODUCT_ROOT_TREE.getBytes());
@@ -368,7 +368,7 @@ class GHAxonIvyProductRepoServiceImplTest {
 	private static GHContent createMockReadme(String readmeContentString) throws IOException {
 		GHContent mockReadme = mock(GHContent.class);
 		when(mockReadme.isFile()).thenReturn(true);
-		when(mockReadme.getName()).thenReturn(ReleaseTagConstants.README_FILE);
+		when(mockReadme.getName()).thenReturn(ReadmeConstants.README_FILE);
 		InputStream mockReadmeInputStream = mock(InputStream.class);
 		when(mockReadme.read()).thenReturn(mockReadmeInputStream);
 		when(mockReadmeInputStream.readAllBytes()).thenReturn(readmeContentString.getBytes());

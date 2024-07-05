@@ -6,8 +6,14 @@ import java.io.Serializable;
 import java.util.Date;
 import java.util.List;
 
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+import lombok.Builder;
+
 import com.axonivy.market.github.model.MavenArtifact;
+
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.springframework.data.annotation.Id;
@@ -46,7 +52,7 @@ public class Product implements Serializable {
 	private Integer installationCount;
 	private Date newestPublishedDate;
 	private String newestReleaseVersion;
-	private List<ReadmeProductContent> readmeProductContents;
+	private List<ProductModuleContent> productModuleContents;
 	private List<MavenArtifact> artifacts;
 
 	@Override

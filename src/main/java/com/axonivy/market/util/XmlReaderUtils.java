@@ -1,4 +1,4 @@
-package com.axonivy.market.utils;
+package com.axonivy.market.util;
 
 import com.axonivy.market.constants.MavenConstants;
 import lombok.extern.log4j.Log4j2;
