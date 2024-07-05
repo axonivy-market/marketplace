@@ -8,7 +8,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import com.axonivy.market.github.util.GitHubUtils;
 import org.kohsuke.github.GHCommit;
 import org.kohsuke.github.GHCommitQueryBuilder;
 import org.kohsuke.github.GHCompare;
@@ -23,13 +22,13 @@ import com.axonivy.market.enums.FileType;
 import com.axonivy.market.github.model.GitHubFile;
 import com.axonivy.market.github.service.GHAxonIvyMarketRepoService;
 import com.axonivy.market.github.service.GitHubService;
+import com.axonivy.market.github.util.GitHubUtils;
 
 import lombok.extern.log4j.Log4j2;
 
 @Log4j2
 @Service
 public class GHAxonIvyMarketRepoServiceImpl implements GHAxonIvyMarketRepoService {
-	private static final String DEFAULT_BRANCH = "master";
 	private static final LocalDateTime INITIAL_COMMIT_DATE = LocalDateTime.of(2020, 10, 30, 0, 0);
 	private GHOrganization organization;
 	private GHRepository repository;
@@ -45,7 +44,7 @@ public class GHAxonIvyMarketRepoServiceImpl implements GHAxonIvyMarketRepoServic
 		Map<String, List<GHContent>> ghContentMap = new HashMap<>();
 		try {
 			List<GHContent> directoryContent = gitHubService.getDirectoryContent(getRepository(),
-					GitHubConstants.AXONIVY_MARKETPLACE_PATH);
+					GitHubConstants.AXONIVY_MARKETPLACE_PATH, GitHubConstants.DEFAULT_BRANCH);
 			for (var content : directoryContent) {
 				extractFileInDirectoryContent(content, ghContentMap);
 			}
@@ -85,7 +84,7 @@ public class GHAxonIvyMarketRepoServiceImpl implements GHAxonIvyMarketRepoServic
 	}
 
 	private GHCommitQueryBuilder createQueryCommitsBuilder(long lastCommitTime) {
-		return getRepository().queryCommits().since(lastCommitTime).from(DEFAULT_BRANCH);
+		return getRepository().queryCommits().since(lastCommitTime).from(GitHubConstants.DEFAULT_BRANCH);
 	}
 
 	@Override

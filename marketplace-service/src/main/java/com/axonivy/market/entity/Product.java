@@ -6,6 +6,8 @@ import java.io.Serializable;
 import java.util.Date;
 import java.util.List;
 
+import com.axonivy.market.model.MultilingualismValue;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -30,9 +32,11 @@ public class Product implements Serializable {
 	@Id
 	private String id;
 	private String marketDirectory;
-	private String name;
+	@JsonProperty
+	private MultilingualismValue names;
 	private String version;
-	private String shortDescription;
+	@JsonProperty
+	private MultilingualismValue shortDescriptions;
 	private String logoUrl;
 	private Boolean listed;
 	private String type;

@@ -70,27 +70,27 @@ public class ProductServiceImpl implements ProductService {
 	}
 
 	@Override
-	public Page<Product> findProducts(String type, String keyword, Pageable pageable) {
+	public Page<Product> findProducts(String type, String keyword, String language, Pageable pageable) {
 		final var typeOption = TypeOption.of(type);
-		final var searchPageable = refinePagination(pageable);
+		final var searchPageable = refinePagination(language, pageable);
 		Page<Product> result = Page.empty();
 		switch (typeOption) {
-		case ALL:
-			if (StringUtils.isBlank(keyword)) {
-				result = productRepository.findAll(searchPageable);
-			} else {
-				result = productRepository.searchByNameOrShortDescriptionRegex(keyword, searchPageable);
-			}
-			break;
-		case CONNECTORS, UTILITIES, SOLUTIONS:
-			if (StringUtils.isBlank(keyword)) {
-				result = productRepository.findByType(typeOption.getCode(), searchPageable);
-			} else {
-				result = productRepository.searchByKeywordAndType(keyword, typeOption.getCode(), searchPageable);
-			}
-			break;
-		default:
-			break;
+			case ALL:
+				if (StringUtils.isBlank(keyword)) {
+					result = productRepository.findAll(searchPageable);
+				} else {
+					result = productRepository.searchByNameOrShortDescriptionRegex(keyword, language, searchPageable);
+				}
+				break;
+			case CONNECTORS, UTILITIES, SOLUTIONS:
+				if (StringUtils.isBlank(keyword)) {
+					result = productRepository.findByType(typeOption.getCode(), searchPageable);
+				} else {
+					result = productRepository.searchByKeywordAndType(keyword, typeOption.getCode(), language, searchPageable);
+				}
+				break;
+			default:
+				break;
 		}
 		return result;
 	}
@@ -132,8 +132,7 @@ public class ProductServiceImpl implements ProductService {
 		Map<String, List<GitHubFile>> groupGitHubFiles = new HashMap<>();
 		for (var file : gitHubFileChanges) {
 			String filePath = file.getFileName();
-			var parentPath = filePath.replace(FileType.META.getFileName(), EMPTY).replace(FileType.LOGO.getFileName(),
-					EMPTY);
+			var parentPath = filePath.replace(FileType.META.getFileName(), EMPTY).replace(FileType.LOGO.getFileName(), EMPTY);
 			var files = groupGitHubFiles.getOrDefault(parentPath, new ArrayList<>());
 			files.add(file);
 			groupGitHubFiles.putIfAbsent(parentPath, files);
@@ -144,8 +143,8 @@ public class ProductServiceImpl implements ProductService {
 				Product product = new Product();
 				GHContent fileContent;
 				try {
-					fileContent = gitHubService.getGHContent(axonIvyMarketRepoService.getRepository(),
-							file.getFileName());
+					fileContent = gitHubService.getGHContent(axonIvyMarketRepoService.getRepository(), file.getFileName(),
+							GitHubConstants.DEFAULT_BRANCH);
 				} catch (IOException e) {
 					log.error("Get GHContent failed: ", e);
 					continue;
@@ -165,44 +164,44 @@ public class ProductServiceImpl implements ProductService {
 	private void modifyProductLogo(String parentPath, GitHubFile file, Product product, GHContent fileContent) {
 		Product result = null;
 		switch (file.getStatus()) {
-		case MODIFIED, ADDED:
-			result = productRepository.findByMarketDirectoryRegex(parentPath);
-			if (result != null) {
-				result.setLogoUrl(GitHubUtils.getDownloadUrl(fileContent));
-				productRepository.save(result);
-			}
-			break;
-		case REMOVED:
-			result = productRepository.findByLogoUrl(product.getLogoUrl());
-			if (result != null) {
-				productRepository.deleteById(result.getId());
-			}
-			break;
-		default:
-			break;
+			case MODIFIED, ADDED:
+				result = productRepository.findByMarketDirectoryRegex(parentPath);
+				if (result != null) {
+					result.setLogoUrl(GitHubUtils.getDownloadUrl(fileContent));
+					productRepository.save(result);
+				}
+				break;
+			case REMOVED:
+				result = productRepository.findByLogoUrl(product.getLogoUrl());
+				if (result != null) {
+					productRepository.deleteById(result.getId());
+				}
+				break;
+			default:
+				break;
 		}
 	}
 
 	private void modifyProductByMetaContent(GitHubFile file, Product product) {
 		switch (file.getStatus()) {
-		case MODIFIED, ADDED:
-			productRepository.save(product);
-			break;
-		case REMOVED:
-			productRepository.deleteById(product.getId());
-			break;
-		default:
-			break;
+			case MODIFIED, ADDED:
+				productRepository.save(product);
+				break;
+			case REMOVED:
+				productRepository.deleteById(product.getId());
+				break;
+			default:
+				break;
 		}
 	}
 
-	private Pageable refinePagination(Pageable pageable) {
+	private Pageable refinePagination(String language, Pageable pageable) {
 		PageRequest pageRequest = (PageRequest) pageable;
-		if (pageable != null && pageable.getSort() != null) {
+		if (pageable != null) {
 			List<Order> orders = new ArrayList<>();
 			for (var sort : pageable.getSort()) {
 				final var sortOption = SortOption.of(sort.getProperty());
-				Order order = new Order(sort.getDirection(), sortOption.getCode());
+				Order order = new Order(sort.getDirection(), sortOption.getCode(language));
 				orders.add(order);
 			}
 			pageRequest = PageRequest.of(pageable.getPageNumber(), pageable.getPageSize(), Sort.by(orders));
@@ -236,9 +235,7 @@ public class ProductServiceImpl implements ProductService {
 				updateProductFromReleaseTags(product);
 			}
 			products.add(product);
-
 		});
-
 		if (!products.isEmpty()) {
 			productRepository.saveAll(products);
 		}
