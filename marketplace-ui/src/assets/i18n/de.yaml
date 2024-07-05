@@ -1,0 +1,55 @@
+common:
+  branch: Axon Ivy Marktplatz
+  language:
+    english: Englisch
+    german: Deutsch
+  nav:
+    news: News
+    doc: Dokumentation
+    tutorial: Tutorial
+    community: Community
+    team: Team
+    market: Marktplatz
+  introduction:
+    about: Durch die vielfältigen Angebote des Axon Ivy Marktplatzes wird die Prozessautomatisierung umfassend erweitert.
+    contribute: Mit leistungsstarken Konnektoren, beispielsweise zur Einbindung von ChatGPT, MS Office oder den gängigen Datenbanken wird die Prozessautomatisierung komfortabel einfach.
+    link: Werde Teil der Community und
+      <a class="link-opacity-100" href=""> baue deinen eigenen Konnektor.</a>
+  filter:
+    label: Filter
+    value:
+      allTypes: Alle
+      connector: Konnektoren
+      util: Utilities
+      demos: Demos
+      solution: Lösungen
+  sort:
+    label: Sortierung
+    value:
+      popularity: Beliebtheit
+      alphabetically: Alphabetisch
+      recent: Datum der Veröffentlichung
+  search:
+    placeholder: Suche
+  nothingFound: Nichts gefunden
+  header:
+    download: Download
+  footer:
+    newVersionsInfo: Neue Version verfügbar für Linux,<br /> Windows und MacOS Betriebssysteme.
+    downloadLatestLTSVersion: Herunterladen V10.0.18
+    downloadLatestDevVersion: Herunterladen V11.2.1
+    ivyCompanyInfo: © 2023 Axon Ivy Inc
+    privacyPolicy: Datenschutzrichtlinie
+    termsOfService: Nutzungsbedingungen
+  product:
+    detail:
+      install:
+        buttonLabel: Jetzt installieren
+      download:
+        buttonLabel: Download
+        hideDevVersions: Entwicklungsversionen ausblenden
+        showDevVersions: Entwicklungsversionen anzeigen
+        versionSelector:
+          label: Zielplattform
+        artifactSelector:
+          label: Artefakt

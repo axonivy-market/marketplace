@@ -1,0 +1,85 @@
+<div
+  class="product-detail__versions-action position-relative d-flex justify-content-center">
+  <button
+    class="btn btn__install"
+    data-bs-toggle="tooltip"
+    data-bs-placement="bottom"
+    data-bs-html="true"
+    [attr.data-bs-title]="getInstallationTooltipText()"
+    data-bs-custom-class="custom-tooltip"
+    [ngClass]="themeService.isDarkMode() ? 'btn-light' : 'btn-primary'">
+    {{ 'common.product.detail.install.buttonLabel' | translate }}
+  </button>
+  <button
+    class="btn btn__download btn-secondary primary-bg"
+    type="button"
+    (click)="onShowVersionAndArtifact()"
+    aria-expanded="false">
+    {{ 'common.product.detail.download.buttonLabel' | translate }}
+  </button>
+  @if (isDropDownDisplayed()) {
+    <div class="up-arrow up-arrow__action m-3 border__dropdown position-absolute"></div>
+    <div class="dropdown-menu show mt-5 maven-artifact-version__action border__dropdown">
+      <form>
+        <div class="form-group">
+          <label for="artifacts-selector" class="form-label fs-md text-primary">
+            {{
+              'common.product.detail.download.artifactSelector.label'
+                | translate
+            }}
+          </label>
+          <select
+            id="artifacts-selector"
+            [(ngModel)]="selectedArtifact"
+            name="Artifact"
+            class="form-select form-select-sm artifacts-selector__dropdown border__dropdown fs-md"
+            aria-label=".form-select-sm">
+            @for (item of artifacts(); track $index) {
+              <option class="option" [value]="item.downloadUrl">{{ item.name }}</option>
+            }
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="verions-selector" class="form-label mt-2 fs-md text-primary">
+            {{
+              'common.product.detail.download.versionSelector.label' | translate
+            }}
+          </label>
+          <select
+            id="verions-selector"
+            [(ngModel)]="selectedVersion"
+            [ngClass]="getIndicatorClass()"
+            (click)="onShowVersions()"
+            name="Version"
+            (change)="onSelectVersion()"
+            class="form-select form-select-sm versions-selector__dropdown border__dropdown fs-md"
+            aria-label=".form-select-sm example">
+            @for (item of versions(); track $index) {
+              <option [value]="item">{{ item }}</option>
+            }
+          </select>
+        </div>
+        <a
+          href="#"
+          class="dev-versions__toggle primary-color text-decoration-none"
+          (click)="onShowDevVersion($event)">
+          @if (isDevVersionsDisplayed()) {
+            {{ 'common.product.detail.download.hideDevVersions' | translate }}
+          } @else {
+            {{ 'common.product.detail.download.showDevVersions' | translate }}
+          }
+        </a>
+        <div class="form-group d-flex justify-content-end">
+          <button
+            class="btn form-download__btn text-center"
+            [ngClass]="themeService.isDarkMode() ? 'btn-light' : 'btn-primary'"
+            (click)="downloadArifact()"
+            type="button"
+            id="downloadButton">
+            {{ 'common.product.detail.download.buttonLabel' | translate }}
+          </button>
+        </div>
+      </form>
+    </div>
+  }
+</div>

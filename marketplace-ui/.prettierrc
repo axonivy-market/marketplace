@@ -1,0 +1,15 @@
+{
+  "overrides": [
+    {
+      "files": "*.html",
+      "options": {
+        "parser": "angular"
+      }
+    }
+  ],
+  "singleQuote": true,
+  "htmlWhitespaceSensitivity": "ignore",
+  "bracketSameLine": true,
+  "trailingComma": "none",
+  "arrowParens": "avoid"
+}

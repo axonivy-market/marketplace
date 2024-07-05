@@ -1,0 +1,33 @@
+.search-icon {
+  width: 22px;
+  height: 22px;
+  margin: 0 16px 0 16px;
+}
+
+.bi-search {
+  font-size: 16.5px;
+}
+
+.input-group {
+  border-radius: 10px;
+}
+
+.header__search-input {
+  height: 37px;
+}
+
+.header__download-button {
+  height: 35px;
+  border-radius: 7px;
+}
+
+@media all and (max-width: 992px) {
+  .header__button {
+    padding: 10px 0;
+    margin: 20px 0 0 0;
+  }
+
+  .border-top-md-gray {
+    border-top: 1px solid var(--header-border-color);
+  }
+}
