@@ -23,6 +23,7 @@ import java.util.stream.Collectors;
 
 import com.axonivy.market.entity.ProductModuleContent;
 import com.axonivy.market.github.service.GHAxonIvyProductRepoService;
+import com.axonivy.market.model.MultilingualismValue;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -63,6 +64,7 @@ class ProductServiceImplTest {
 	private static final String SHA1_SAMPLE = "35baa89091b2452b77705da227f1a964ecabc6c8";
 	public static final String RELEASE_TAG = "v10.0.2";
 	private String keyword;
+	private String langague;
 	private Page<Product> mockResultReturn;
 
 	@Mock
@@ -95,24 +97,25 @@ class ProductServiceImplTest {
 	}
 
 	@Test
-    void testFindProducts() {
-        // Start testing by All
-        when(productRepository.findAll(any(Pageable.class))).thenReturn(mockResultReturn);
-        // Executes
-        var result = productService.findProducts(TypeOption.ALL.getOption(), keyword, PAGEABLE);
-        assertEquals(mockResultReturn, result);
+	void testFindProducts() {
+		langague = "en";
+		// Start testing by All
+		when(productRepository.findAll(any(Pageable.class))).thenReturn(mockResultReturn);
+		// Executes
+		var result = productService.findProducts(TypeOption.ALL.getOption(), keyword, langague, PAGEABLE);
+		assertEquals(mockResultReturn, result);
 
-        // Start testing by Connector
-        when(productRepository.findByType(any(), any(Pageable.class))).thenReturn(mockResultReturn);
-        // Executes
-        result = productService.findProducts(TypeOption.CONNECTORS.getOption(), keyword, PAGEABLE);
-        assertEquals(mockResultReturn, result);
+		// Start testing by Connector
+		when(productRepository.findByType(any(), any(Pageable.class))).thenReturn(mockResultReturn);
+		// Executes
+		result = productService.findProducts(TypeOption.CONNECTORS.getOption(), keyword, langague, PAGEABLE);
+		assertEquals(mockResultReturn, result);
 
-        // Start testing by Other
-        // Executes
-        result = productService.findProducts(TypeOption.DEMOS.getOption(), keyword, PAGEABLE);
-        assertEquals(0, result.getSize());
-    }
+		// Start testing by Other
+		// Executes
+		result = productService.findProducts(TypeOption.DEMOS.getOption(), keyword, langague, PAGEABLE);
+		assertEquals(0, result.getSize());
+	}
 
 	@Test
 	void testSyncProductsAsUpdateMetaJSONFromGitHub() throws IOException {
@@ -128,7 +131,7 @@ class ProductServiceImplTest {
 		mockGithubFile.setStatus(FileStatus.ADDED);
 		when(marketRepoService.fetchMarketItemsBySHA1Range(any(), any())).thenReturn(List.of(mockGithubFile));
 		var mockGHContent = mockGHContentAsMetaJSON();
-		when(gitHubService.getGHContent(any(), anyString())).thenReturn(mockGHContent);
+		when(gitHubService.getGHContent(any(), anyString(), anyString())).thenReturn(mockGHContent);
 
 		// Executes
 		var result = productService.syncLatestDataFromMarketRepo();
@@ -159,7 +162,7 @@ class ProductServiceImplTest {
 		mockGitHubFile.setStatus(FileStatus.ADDED);
 		when(marketRepoService.fetchMarketItemsBySHA1Range(any(), any())).thenReturn(List.of(mockGitHubFile));
 		var mockGHContent = mockGHContentAsMetaJSON();
-		when(gitHubService.getGHContent(any(), anyString())).thenReturn(mockGHContent);
+		when(gitHubService.getGHContent(any(), anyString(), anyString())).thenReturn(mockGHContent);
 
 		// Executes
 		var result = productService.syncLatestDataFromMarketRepo();
@@ -169,7 +172,7 @@ class ProductServiceImplTest {
 		when(mockCommit.getSHA1()).thenReturn(UUID.randomUUID().toString());
 		mockGitHubFile.setStatus(FileStatus.REMOVED);
 		when(marketRepoService.fetchMarketItemsBySHA1Range(any(), any())).thenReturn(List.of(mockGitHubFile));
-		when(gitHubService.getGHContent(any(), anyString())).thenReturn(mockGHContent);
+		when(gitHubService.getGHContent(any(), anyString(), anyString())).thenReturn(mockGHContent);
 		when(productRepository.findByLogoUrl(any())).thenReturn(new Product());
 
 		// Executes
@@ -178,32 +181,33 @@ class ProductServiceImplTest {
 	}
 
 	@Test
-    void testFindAllProductsWithKeyword() throws IOException {
-        when(productRepository.findAll(any(Pageable.class))).thenReturn(mockResultReturn);
-        // Executes
-        var result = productService.findProducts(TypeOption.ALL.getOption(), keyword, PAGEABLE);
-        assertEquals(mockResultReturn, result);
-        verify(productRepository).findAll(any(Pageable.class));
+	void testFindAllProductsWithKeyword() throws IOException {
+		langague = "en";
+		when(productRepository.findAll(any(Pageable.class))).thenReturn(mockResultReturn);
+		// Executes
+		var result = productService.findProducts(TypeOption.ALL.getOption(), keyword, langague, PAGEABLE);
+		assertEquals(mockResultReturn, result);
+		verify(productRepository).findAll(any(Pageable.class));
 
-        // Test has keyword
-        when(productRepository.searchByNameOrShortDescriptionRegex(any(), any(Pageable.class)))
-                .thenReturn(new PageImpl<>(mockResultReturn.stream()
-                        .filter(product -> product.getName().equals(SAMPLE_PRODUCT_NAME)).collect(Collectors.toList())));
-        // Executes
-        result = productService.findProducts(TypeOption.ALL.getOption(), SAMPLE_PRODUCT_NAME, PAGEABLE);
-        verify(productRepository).findAll(any(Pageable.class));
-        assertTrue(result.hasContent());
-        assertEquals(SAMPLE_PRODUCT_NAME, result.getContent().get(0).getName());
+		// Test has keyword
+		when(productRepository.searchByNameOrShortDescriptionRegex(any(), any(), any(Pageable.class)))
+				.thenReturn(new PageImpl<>(mockResultReturn.stream()
+						.filter(product -> product.getNames().getEn().equals(SAMPLE_PRODUCT_NAME)).collect(Collectors.toList())));
+		// Executes
+		result = productService.findProducts(TypeOption.ALL.getOption(), SAMPLE_PRODUCT_NAME, langague, PAGEABLE);
+		verify(productRepository).findAll(any(Pageable.class));
+		assertTrue(result.hasContent());
+		assertEquals(SAMPLE_PRODUCT_NAME, result.getContent().get(0).getNames().getEn());
 
-        // Test has keyword and type is connector
-        when(productRepository.searchByKeywordAndType(any(), any(), any(Pageable.class))).thenReturn(
-                new PageImpl<>(mockResultReturn.stream().filter(product -> product.getName().equals(SAMPLE_PRODUCT_NAME)
-                        && product.getType().equals(TypeOption.CONNECTORS.getCode())).collect(Collectors.toList())));
-        // Executes
-        result = productService.findProducts(TypeOption.CONNECTORS.getOption(), SAMPLE_PRODUCT_NAME, PAGEABLE);
-        assertTrue(result.hasContent());
-        assertEquals(SAMPLE_PRODUCT_NAME, result.getContent().get(0).getName());
-    }
+		// Test has keyword and type is connector
+		when(productRepository.searchByKeywordAndType(any(), any(), any(), any(Pageable.class))).thenReturn(
+				new PageImpl<>(mockResultReturn.stream().filter(product -> product.getNames().getEn().equals(SAMPLE_PRODUCT_NAME)
+						&& product.getType().equals(TypeOption.CONNECTORS.getCode())).collect(Collectors.toList())));
+		// Executes
+		result = productService.findProducts(TypeOption.CONNECTORS.getOption(), SAMPLE_PRODUCT_NAME, langague, PAGEABLE);
+		assertTrue(result.hasContent());
+		assertEquals(SAMPLE_PRODUCT_NAME, result.getContent().get(0).getNames().getEn());
+	}
 
 	@Test
 	void testSyncProductsFirstTime() throws IOException {
@@ -261,12 +265,12 @@ class ProductServiceImplTest {
 		var simplePageable = PageRequest.of(0, 20);
 		String type = TypeOption.ALL.getOption();
 		keyword = "on";
-		when(productRepository.searchByNameOrShortDescriptionRegex(keyword, simplePageable))
-				.thenReturn(mockResultReturn);
+		langague = "en";
+		when(productRepository.searchByNameOrShortDescriptionRegex(keyword, langague, simplePageable)).thenReturn(mockResultReturn);
 
-		var result = productService.findProducts(type, keyword, simplePageable);
+		var result = productService.findProducts(type, keyword, langague, simplePageable);
 		assertEquals(result, mockResultReturn);
-		verify(productRepository).searchByNameOrShortDescriptionRegex(keyword, simplePageable);
+		verify(productRepository).searchByNameOrShortDescriptionRegex(keyword, langague, simplePageable);
 	}
 
 	@Test
@@ -282,30 +286,32 @@ class ProductServiceImplTest {
 
 	@Test
 	void testGetCompatibilityFromNumericTag() {
-//		String mockTag = "";
-//		when(mockTag).thenReturn("v1.0.0", "nbm8", "base-11.2");
 
-		String result = productService.getCompatibilityFromOldestTag("v1.0.0");
+		String result = productService.getCompatibilityFromOldestTag("1.0.0");
 		assertEquals("1.0+", result);
 
-		result = productService.getCompatibilityFromOldestTag("nbm8");
+		result = productService.getCompatibilityFromOldestTag("8");
 		assertEquals("8.0+", result);
 
-		result = productService.getCompatibilityFromOldestTag("base-11.2");
+		result = productService.getCompatibilityFromOldestTag("11.2");
 		assertEquals("11.2+", result);
 	}
 
 	private Page<Product> createPageProductsMock() {
 		var mockProducts = new ArrayList<Product>();
+		MultilingualismValue name = new MultilingualismValue();
 		Product mockProduct = new Product();
 		mockProduct.setId(SAMPLE_PRODUCT_ID);
-		mockProduct.setName(SAMPLE_PRODUCT_NAME);
+		name.setEn(SAMPLE_PRODUCT_NAME);
+		mockProduct.setNames(name);
 		mockProduct.setType("connector");
 		mockProducts.add(mockProduct);
 
 		mockProduct = new Product();
 		mockProduct.setId("tel-search-ch-connector");
-		mockProduct.setName("Swiss phone directory");
+		name = new MultilingualismValue();
+		name.setEn("Swiss phone directory");
+		mockProduct.setNames(name);
 		mockProduct.setType("util");
 		mockProducts.add(mockProduct);
 		return new PageImpl<>(mockProducts);

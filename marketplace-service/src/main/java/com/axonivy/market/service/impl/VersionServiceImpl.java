@@ -232,7 +232,8 @@ public class VersionServiceImpl implements VersionService {
 
 	public List<MavenArtifact> getProductJsonByVersion(String version) {
 		List<MavenArtifact> result = new ArrayList<>();
-		String versionTag = buildProductJsonFilePath(version);
+		String versionTag = getVersionTag(version);
+		productJsonFilePath = buildProductJsonFilePath();
 		try {
 			GHContent productJsonContent = gitHubService.getContentFromGHRepoAndTag(repoName, productJsonFilePath,
 					versionTag);
@@ -247,38 +248,20 @@ public class VersionServiceImpl implements VersionService {
 		return result;
 	}
 
-	public String buildProductJsonFilePath(String version) {
+	public String getVersionTag(String version) {
 		String versionTag = "v" + version;
-		String pathToProductJsonFileFromTagContent = metaProductArtifact.getArtifactId();
-		switch (productId) {
-		case NonStandardProductPackageConstants.PORTAL:
-			pathToProductJsonFileFromTagContent = "AxonIvyPortal/portal-product";
+		if (NonStandardProductPackageConstants.PORTAL.equals(productId)) {
 			versionTag = version;
-			break;
-		case NonStandardProductPackageConstants.CONNECTIVITY_FEATURE:
-			pathToProductJsonFileFromTagContent = "connectivity/connectivity-demos-product";
-			break;
-		case NonStandardProductPackageConstants.ERROR_HANDLING:
-			pathToProductJsonFileFromTagContent = "error-handling/error-handling-demos-product";
-			break;
-		case NonStandardProductPackageConstants.WORKFLOW_DEMO:
-			pathToProductJsonFileFromTagContent = "workflow/workflow-demos-product";
-			break;
-		case NonStandardProductPackageConstants.MICROSOFT_365:
-			pathToProductJsonFileFromTagContent = "msgraph-connector-product/products/msgraph-connector";
-			break;
-		case NonStandardProductPackageConstants.HTML_DIALOG_DEMO:
-			pathToProductJsonFileFromTagContent = "html-dialog/html-dialog-demos-product";
-			break;
-		case NonStandardProductPackageConstants.RULE_ENGINE_DEMOS:
-			pathToProductJsonFileFromTagContent = "rule-engine/rule-engine-demos-product";
-			break;
-		default:
-			break;
 		}
-		productJsonFilePath = String.format(GitHubConstants.PRODUCT_JSON_FILE_PATH_FORMAT,
-				pathToProductJsonFileFromTagContent);
 		return versionTag;
+	}
+
+	public String buildProductJsonFilePath() {
+		String pathToProductFolderFromTagContent = metaProductArtifact.getArtifactId();
+		GitHubUtils.getNonStandardProductFilePath(productId);
+		productJsonFilePath = String.format(GitHubConstants.PRODUCT_JSON_FILE_PATH_FORMAT,
+				pathToProductFolderFromTagContent);
+		return productJsonFilePath;
 	}
 
 	public MavenArtifactModel convertMavenArtifactToModel(MavenArtifact artifact, String version) {

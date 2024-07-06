@@ -5,9 +5,13 @@ import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 
 import com.axonivy.market.controller.ProductDetailsController;
 import com.axonivy.market.entity.Product;
+import com.axonivy.market.entity.ProductModuleContent;
 import com.axonivy.market.model.ProductDetailModel;
 import org.springframework.hateoas.server.mvc.RepresentationModelAssemblerSupport;
 import org.springframework.stereotype.Component;
+import org.springframework.util.CollectionUtils;
+
+import java.util.Comparator;
 
 @Component
 public class ProductDetailModelAssembler extends RepresentationModelAssemblerSupport<Product, ProductDetailModel> {
@@ -32,7 +36,6 @@ public class ProductDetailModelAssembler extends RepresentationModelAssemblerSup
 
 	private void createDetailResource(ProductDetailModel model, Product product) {
 		model.setVendor(product.getVendor());
-		model.setVendorUrl(product.getVendorUrl());
 		model.setNewestReleaseVersion(product.getNewestReleaseVersion());
 		model.setPlatformReview(product.getPlatformReview());
 		model.setSourceUrl(product.getSourceUrl());
@@ -44,4 +47,8 @@ public class ProductDetailModelAssembler extends RepresentationModelAssemblerSup
 		model.setCost(product.getCost());
 		model.setProductModuleContents(product.getProductModuleContents());
 	}
+
+//	private ProductModuleContent getProductModuleContentOfLatestTag(Product product) {
+//		return product.getProductModuleContents().stream().max(Comparator.comparing(ProductModuleContent::getTag)).orElse(null);
+//	}
 }

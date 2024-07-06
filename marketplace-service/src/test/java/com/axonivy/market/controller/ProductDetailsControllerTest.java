@@ -5,6 +5,7 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
 import com.axonivy.market.model.MavenArtifactVersionModel;
+import com.axonivy.market.model.MultilingualismValue;
 import com.axonivy.market.service.VersionService;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -40,6 +41,8 @@ class ProductDetailsControllerTest {
 
 	@InjectMocks
 	private ProductDetailsController productDetailsController;
+	private static final String PRODUCT_NAME_SAMPLE = "Docker";
+	private static final String PRODUCT_NAME_DE_SAMPLE = "Docker DE";
 
 	@Test
 	void testProductDetails() {
@@ -71,20 +74,30 @@ class ProductDetailsControllerTest {
 	}
 
 	private Product mockProduct() {
-		return Product.builder().id("docker-connector").name("Docker").language("English").build();
+		Product mockProduct = new Product();
+		mockProduct.setId("docker-connector");
+		MultilingualismValue name = new MultilingualismValue();
+		name.setEn(PRODUCT_NAME_SAMPLE);
+		name.setDe(PRODUCT_NAME_DE_SAMPLE);
+		mockProduct.setNames(name);
+		mockProduct.setLanguage("English");
+		return mockProduct;
 	}
 
 	private ProductDetailModel createProductMockWithDetails() {
-		ProductDetailModel mockProduct = new ProductDetailModel();
-		mockProduct.setId("docker-connector");
-		mockProduct.setName("Docker");
-		mockProduct.setType("connector");
-		mockProduct.setCompatibility("10.0+");
-		mockProduct.setSourceUrl("https://github.com/axonivy-market/docker-connector");
-		mockProduct.setStatusBadgeUrl("https://github.com/axonivy-market/docker-connector");
-		mockProduct.setLanguage("English");
-		mockProduct.setIndustry("Cross-Industry");
-		mockProduct.setContactUs(false);
-		return mockProduct;
+		ProductDetailModel mockProductDetail = new ProductDetailModel();
+		mockProductDetail.setId("docker-connector");
+		MultilingualismValue name = new MultilingualismValue();
+		name.setEn(PRODUCT_NAME_SAMPLE);
+		name.setDe(PRODUCT_NAME_DE_SAMPLE);
+		mockProductDetail.setNames(name);
+		mockProductDetail.setType("connector");
+		mockProductDetail.setCompatibility("10.0+");
+		mockProductDetail.setSourceUrl("https://github.com/axonivy-market/docker-connector");
+		mockProductDetail.setStatusBadgeUrl("https://github.com/axonivy-market/docker-connector");
+		mockProductDetail.setLanguage("English");
+		mockProductDetail.setIndustry("Cross-Industry");
+		mockProductDetail.setContactUs(false);
+		return mockProductDetail;
 	}
 }

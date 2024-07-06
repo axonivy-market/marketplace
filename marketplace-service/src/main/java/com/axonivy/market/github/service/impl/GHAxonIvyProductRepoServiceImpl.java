@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.util.*;
 
 import com.axonivy.market.constants.*;
+import com.axonivy.market.entity.Product;
 import com.axonivy.market.entity.ProductModuleContent;
 import com.axonivy.market.github.util.GitHubUtils;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -22,6 +23,7 @@ import org.kohsuke.github.GHTag;
 import org.springframework.stereotype.Service;
 
 import com.axonivy.market.github.service.GitHubService;
+import org.springframework.util.CollectionUtils;
 
 import java.io.InputStream;
 import java.util.ArrayList;
@@ -39,9 +41,7 @@ public class GHAxonIvyProductRepoServiceImpl implements GHAxonIvyProductRepoServ
 	private String repoUrl;
 	private static final ObjectMapper objectMapper = new ObjectMapper();
 	public static final String DEMO_SETUP_TITLE = "(?i)## Demo|## Setup";
-	public static final String IMAGE_EXTENSION = "(.*?).(jpeg|jpg|png)";
-
-	private static final ObjectMapper MAPPER = new ObjectMapper();
+	public static final String IMAGE_EXTENSION = "(.*?).(jpeg|jpg|png|gif)";
 
 	public GHAxonIvyProductRepoServiceImpl(GitHubService gitHubService) {
 		this.gitHubService = gitHubService;
@@ -141,10 +141,10 @@ public class GHAxonIvyProductRepoServiceImpl implements GHAxonIvyProductRepoServ
 	}
 
 	@Override
-	public ProductModuleContent getReadmeAndProductContentsFromTag(GHRepository ghRepository, String tag) {
+	public ProductModuleContent getReadmeAndProductContentsFromTag(Product product, GHRepository ghRepository, String tag) {
 		ProductModuleContent productModuleContent = new ProductModuleContent();
 		try {
-			List<GHContent> contents = getProductFolderContents(ghRepository, tag);
+			List<GHContent> contents = getProductFolderContents(product, ghRepository, tag);
 			productModuleContent.setTag(tag);
 			getProductJsonContent(productModuleContent, contents);
 			GHContent readmeFile = contents.stream().filter(GHContent::isFile)
@@ -153,7 +153,7 @@ public class GHAxonIvyProductRepoServiceImpl implements GHAxonIvyProductRepoServ
 			if (Objects.nonNull(readmeFile)) {
 				String readmeContents = new String(readmeFile.read().readAllBytes());
 				if (hasImageDirectives(readmeContents)) {
-					readmeContents = updateImagesWithDownloadUrl(contents, readmeContents);
+					readmeContents = updateImagesWithDownloadUrl(product, contents, readmeContents);
 				}
 				getExtractedPartsOfReadme(productModuleContent, readmeContents);
 			}
@@ -166,46 +166,37 @@ public class GHAxonIvyProductRepoServiceImpl implements GHAxonIvyProductRepoServ
 
 	private void getProductJsonContent(ProductModuleContent productModuleContent, List<GHContent> contents)
 			throws IOException {
-		String productJsonContents;
-		GHContent productJsonFile = contents.stream().filter(GHContent::isFile)
-				.filter(content -> ProductJsonConstants.PRODUCT_JSON_FILE.equals(content.getName())).findFirst()
-				.orElse(null);
+		GHContent productJsonFile = getProductJsonFile(contents);
 		if (Objects.nonNull(productJsonFile)) {
-			productJsonContents = new String(productJsonFile.read().readAllBytes());
-			JsonNode rootNode = MAPPER.readTree(productJsonContents);
-			JsonNode installersNode = rootNode.path(ProductJsonConstants.INSTALLERS);
-			for (JsonNode installerNode : installersNode) {
-				if (installerNode.path(ProductJsonConstants.ID).asText()
-						.endsWith(ProductJsonConstants.DEPENDENCY_SUFFIX)) {
-					JsonNode dataNode = installerNode.path(ProductJsonConstants.DATA);
-					JsonNode dependenciesNode = dataNode.path(ProductJsonConstants.DEPENDENCIES);
-					productModuleContent.setIsDependency(Boolean.TRUE);
-					productModuleContent
-							.setGroupId(dependenciesNode.get(0).path(ProductJsonConstants.GROUP_ID).asText());
-					productModuleContent
-							.setArtifactId(dependenciesNode.get(0).path(ProductJsonConstants.ARTIFACT_ID).asText());
-					productModuleContent.setType(dependenciesNode.get(0).path(ProductJsonConstants.TYPE).asText());
-					productModuleContent.setName(GitHubUtils.convertArtifactIdToName(productModuleContent.getArtifactId()));
-				}
+			List<MavenArtifact> artifacts = convertProductJsonToMavenProductInfo(productJsonFile);
+			MavenArtifact artifact = artifacts.stream().filter(MavenArtifact::getIsDependency).findFirst().orElse(null);
+
+			if (Objects.nonNull(artifact)) {
+				productModuleContent.setIsDependency(Boolean.TRUE);
+				productModuleContent.setGroupId(artifact.getGroupId());
+				productModuleContent.setArtifactId(artifact.getArtifactId());
+				productModuleContent.setType(artifact.getType());
+				productModuleContent.setName(artifact.getName());
 			}
 		}
 	}
 
-	public String updateImagesWithDownloadUrl(List<GHContent> contents, String readmeContents) throws IOException {
-		Map<String, String> imageUrls = new HashMap<>();
-		GHContent productImage = contents.stream().filter(GHContent::isFile)
-				.filter(content -> content.getName().toLowerCase().matches(IMAGE_EXTENSION)).findAny()
+	private static GHContent getProductJsonFile(List<GHContent> contents) {
+		return contents.stream().filter(GHContent::isFile)
+				.filter(content -> ProductJsonConstants.PRODUCT_JSON_FILE.equals(content.getName())).findFirst()
 				.orElse(null);
-		if (Objects.nonNull(productImage)) {
-			imageUrls.put(productImage.getName(), productImage.getDownloadUrl());
-		} else {
-			GHContent imageFolder = contents.stream().filter(GHContent::isDirectory)
-					.filter(content -> ReadmeConstants.IMAGES.equals(content.getName())).findFirst().orElse(null);
-			if (Objects.nonNull(imageFolder)) {
-				for (GHContent imageContent : imageFolder.listDirectoryContent().toList()) {
-					imageUrls.put(imageContent.getName(), imageContent.getDownloadUrl());
-				}
+	}
+
+	public String updateImagesWithDownloadUrl(Product product, List<GHContent> contents, String readmeContents) throws IOException {
+		Map<String, String> imageUrls = new HashMap<>();
+		List<GHContent> productImages = contents.stream().filter(GHContent::isFile)
+				.filter(content -> content.getName().toLowerCase().matches(IMAGE_EXTENSION)).toList();
+		if (!CollectionUtils.isEmpty(productImages)) {
+			for (GHContent productImage : productImages) {
+				imageUrls.put(productImage.getName(), productImage.getDownloadUrl());
 			}
+		} else {
+			getImagesFromImageFolder(product, contents, imageUrls);
 		}
 		for (Map.Entry<String, String> entry : imageUrls.entrySet()) {
 			String imageUrlPattern = "\\(([^)]*?" + Pattern.quote(entry.getKey()) + "[^)]*?)\\)";
@@ -215,12 +206,22 @@ public class GHAxonIvyProductRepoServiceImpl implements GHAxonIvyProductRepoServ
 		return readmeContents;
 	}
 
-	// Cover some cases including when demo and setup parts switch positions or
-	// missing one of them
+	private void getImagesFromImageFolder(Product product, List<GHContent> contents, Map<String, String> imageUrls) throws IOException {
+		String imageFolderPath = GitHubUtils.getNonStandardImageFolder(product.getId());
+		GHContent imageFolder = contents.stream().filter(GHContent::isDirectory)
+				.filter(content -> imageFolderPath.equals(content.getName())).findFirst().orElse(null);
+		if (Objects.nonNull(imageFolder)) {
+			for (GHContent imageContent : imageFolder.listDirectoryContent().toList()) {
+				imageUrls.put(imageContent.getName(), imageContent.getDownloadUrl());
+			}
+		}
+	}
+
+	// Cover some cases including when demo and setup parts switch positions or missing one of them
 	public void getExtractedPartsOfReadme(ProductModuleContent productModuleContent, String readmeContents) {
 		String[] parts = readmeContents.split(DEMO_SETUP_TITLE);
-		boolean hasDemoPart = readmeContents.contains(ReadmeConstants.DEMO_PART);
-		boolean hasSetupPart = readmeContents.contains(ReadmeConstants.SETUP_PART);
+		int demoIndex = readmeContents.indexOf(ReadmeConstants.DEMO_PART);
+		int setupIndex = readmeContents.indexOf(ReadmeConstants.SETUP_PART);
 		String description = Strings.EMPTY;
 		String setup = Strings.EMPTY;
 		String demo = Strings.EMPTY;
@@ -229,17 +230,17 @@ public class GHAxonIvyProductRepoServiceImpl implements GHAxonIvyProductRepoServ
 			description = removeFirstLine(parts[0]);
 		}
 
-		if (hasDemoPart && hasSetupPart) {
-			if (isDemoPlaceBeforeSetupPart(readmeContents)) {
+		if (demoIndex != -1 && setupIndex != -1) {
+			if (demoIndex < setupIndex) {
 				demo = parts[1];
 				setup = parts[2];
 			} else {
 				setup = parts[1];
 				demo = parts[2];
 			}
-		} else if (hasDemoPart) {
+		} else if (demoIndex != -1) {
 			demo = parts[1];
-		} else if (hasSetupPart) {
+		} else if (setupIndex != -1) {
 			setup = parts[1];
 		}
 
@@ -248,21 +249,19 @@ public class GHAxonIvyProductRepoServiceImpl implements GHAxonIvyProductRepoServ
 		productModuleContent.setSetup(setup.trim());
 	}
 
-	private static boolean isDemoPlaceBeforeSetupPart(String readmeContents) {
-		return readmeContents.indexOf(ReadmeConstants.DEMO_PART) < readmeContents
-				.indexOf(ReadmeConstants.SETUP_PART);
+	private List<GHContent> getProductFolderContents(Product product, GHRepository ghRepository, String tag) throws IOException {
+		String productFolderPath = ghRepository.getDirectoryContent(CommonConstants.SLASH, tag).stream().filter(GHContent::isDirectory).map(GHContent::getName)
+				.filter(content -> content.endsWith(MavenConstants.PRODUCT_ARTIFACT_POSTFIX)).findFirst().orElse(null);
+
+		if (StringUtils.isBlank(productFolderPath) || hasChildConnector(ghRepository)) {
+			productFolderPath = GitHubUtils.getNonStandardProductFilePath(product.getId());
+		}
+
+		return ghRepository.getDirectoryContent(productFolderPath, tag);
 	}
 
-	private List<GHContent> getProductFolderContents(GHRepository ghRepository, String tag) throws IOException {
-		return ghRepository.getDirectoryContent(CommonConstants.SLASH, tag).stream().filter(GHContent::isDirectory)
-				.filter(content -> content.getName().endsWith(MavenConstants.PRODUCT_ARTIFACT_POSTFIX))
-				.flatMap(content -> {
-					try {
-						return content.listDirectoryContent().toList().stream();
-					} catch (Exception e) {
-						return Stream.empty();
-					}
-				}).toList();
+	private boolean hasChildConnector(GHRepository ghRepository) {
+		return NonStandardProductPackageConstants.MICROSOFT_REPO_NAME.equals(ghRepository.getName()) || NonStandardProductPackageConstants.OPENAI_CONNECTOR.equals(ghRepository.getName());
 	}
 
 	private boolean hasImageDirectives(String readmeContents) {

@@ -1,7 +1,7 @@
 package com.axonivy.market.factory;
 
-import static com.axonivy.market.constants.MetaConstants.META_FILE;
 import static com.axonivy.market.constants.CommonConstants.SLASH;
+import static com.axonivy.market.constants.MetaConstants.META_FILE;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.mockito.Mockito.mock;
@@ -22,7 +22,8 @@ import com.axonivy.market.entity.Product;
 
 @ExtendWith(MockitoExtension.class)
 class ProductFactoryTest {
-	private static final String DUMMY_LOGO_URL = "https://raw.githubusercontent.com/axonivy-market/market/master/market/connector/amazon-comprehend-connector/logo.png";
+	private static final String DUMMY_LOGO_URL =
+			"https://raw.githubusercontent.com/axonivy-market/market/master/market/connector/amazon-comprehend-connector/logo.png";
 
 	@Test
 	void testMappingByGHContent() throws IOException {
@@ -35,7 +36,8 @@ class ProductFactoryTest {
 		when(mockContent.read()).thenReturn(inputStream);
 		result = ProductFactory.mappingByGHContent(product, mockContent);
 		assertNotEquals(null, result);
-		assertEquals("Amazon Comprehend", result.getName());
+		assertEquals("Amazon Comprehend", result.getNames().getEn());
+		assertEquals("Amazon Comprehend DE", result.getNames().getDe());
 	}
 
 	@Test

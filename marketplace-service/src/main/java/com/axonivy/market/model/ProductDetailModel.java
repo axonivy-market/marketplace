@@ -14,7 +14,6 @@ import java.util.List;
 @NoArgsConstructor
 public class ProductDetailModel extends ProductModel {
     private String vendor;
-    private String vendorUrl;
     private String platformReview;
     private String newestReleaseVersion;
     private String cost;

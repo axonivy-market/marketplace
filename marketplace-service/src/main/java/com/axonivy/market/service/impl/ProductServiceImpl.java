@@ -265,7 +265,7 @@ public class ProductServiceImpl implements ProductService {
 			List<CompletableFuture<ProductModuleContent>> completableFutures = new ArrayList<>();
 			for (GHTag ghtag : tags) {
 				completableFutures.add(CompletableFuture.supplyAsync(() -> axonIvyProductRepoService
-						.getReadmeAndProductContentsFromTag(productRepo, ghtag.getName())));
+						.getReadmeAndProductContentsFromTag(product, productRepo, ghtag.getName())));
 			}
 			completableFutures.forEach(CompletableFuture::join);
 			List<ProductModuleContent> productModuleContents = completableFutures.stream().map(completableFuture -> {

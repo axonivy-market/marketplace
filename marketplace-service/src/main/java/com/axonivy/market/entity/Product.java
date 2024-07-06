@@ -12,7 +12,6 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import lombok.Builder;
 
 import com.axonivy.market.github.model.MavenArtifact;
 
@@ -25,7 +24,6 @@ import org.springframework.data.mongodb.core.mapping.Document;
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
-@Builder
 @Document(PRODUCT)
 public class Product implements Serializable {
 	private static final long serialVersionUID = -8770801877877277258L;
