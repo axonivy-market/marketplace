@@ -7,6 +7,7 @@ import static org.mockito.Mockito.when;
 
 import java.io.IOException;
 
+import com.axonivy.market.github.service.impl.GitHubServiceImpl;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.kohsuke.github.GHContent;
@@ -15,8 +16,6 @@ import org.kohsuke.github.GitHub;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-
-import com.axonivy.market.github.service.impl.GitHubServiceImpl;
 
 @ExtendWith(MockitoExtension.class)
 class GitHubServiceImplTest {
@@ -31,26 +30,26 @@ class GitHubServiceImplTest {
   @InjectMocks
   private GitHubServiceImpl gitHubService;
 
-//  @Test
-//  void testGetGithub() throws IOException {
-//    var result = gitHubService.getGitHub();
-//    assertEquals(DUMMY_API_URL, result.getApiUrl());
-//  }
+  @Test
+  void testGetGithub() throws IOException {
+    var result = gitHubService.getGitHub();
+    assertEquals(DUMMY_API_URL, result.getApiUrl());
+  }
 
-//  @Test
-//  void testGetGithubContent() throws IOException {
-//    var mockGHContent = mock(GHContent.class);
-//    final String dummryURL = DUMMY_API_URL.concat("/dummry-content");
-//    when(mockGHContent.getUrl()).thenReturn(dummryURL);
-//    when(ghRepository.getFileContent(any())).thenReturn(mockGHContent);
-//    var result = gitHubService.getGHContent(ghRepository, "");
-//    assertEquals(dummryURL, result.getUrl());
-//  }
+  @Test
+  void testGetGithubContent() throws IOException {
+    var mockGHContent = mock(GHContent.class);
+    final String dummryURL = DUMMY_API_URL.concat("/dummry-content");
+    when(mockGHContent.getUrl()).thenReturn(dummryURL);
+    when(ghRepository.getFileContent(any(), any())).thenReturn(mockGHContent);
+    var result = gitHubService.getGHContent(ghRepository, "", "");
+    assertEquals(dummryURL, result.getUrl());
+  }
 
-//  @Test
-//  void testGetDirectoryContent() throws IOException {
-//    var result = gitHubService.getDirectoryContent(ghRepository, "");
-//    assertEquals(0, result.size());
-//  }
+  @Test
+  void testGetDirectoryContent() throws IOException {
+    var result = gitHubService.getDirectoryContent(ghRepository, "", "");
+    assertEquals(0, result.size());
+  }
 
 }

@@ -9,7 +9,8 @@ import com.axonivy.market.entity.Product;
 import java.util.List;
 
 public interface ProductService {
-  Page<Product> findProducts(String type, String keyword, Pageable pageable);
+  Page<Product> findProducts(String type, String keyword, String language, Pageable pageable);
+
   boolean syncLatestDataFromMarketRepo();
   List<ProductRating> getProductRatingById(String productId);
 }

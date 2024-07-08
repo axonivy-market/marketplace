@@ -52,9 +52,9 @@ public class GitHubServiceImpl implements GitHubService {
   }
 
   @Override
-  public List<GHContent> getDirectoryContent(GHRepository ghRepository, String path) throws IOException {
+  public List<GHContent> getDirectoryContent(GHRepository ghRepository, String path, String ref) throws IOException {
     Assert.notNull(ghRepository, "Repository must not be null");
-    return ghRepository.getDirectoryContent(path);
+    return ghRepository.getDirectoryContent(path, ref);
   }
 
   @Override
@@ -63,62 +63,62 @@ public class GitHubServiceImpl implements GitHubService {
   }
 
   @Override
-  public GHContent getGHContent(GHRepository ghRepository, String path) throws IOException {
+  public GHContent getGHContent(GHRepository ghRepository, String path, String ref) throws IOException {
     Assert.notNull(ghRepository, "Repository must not be null");
-    return ghRepository.getFileContent(path);
+    return ghRepository.getFileContent(path, ref);
   }
 
-  @Override
-  public Map<String, Object> getAccessToken(String code, String clientId, String clientSecret) throws Oauth2ExchangeCodeException {
-    String url = "https://github.com/login/oauth/access_token";
-    MultiValueMap<String, String> params = new LinkedMultiValueMap<>();
-    params.add("client_id", clientId);
-    params.add("client_secret", clientSecret);
-    params.add("code", code);
+    @Override
+    public Map<String, Object> getAccessToken(String code, String clientId, String clientSecret) throws Oauth2ExchangeCodeException {
+        String url = "https://github.com/login/oauth/access_token";
+        MultiValueMap<String, String> params = new LinkedMultiValueMap<>();
+        params.add("client_id", clientId);
+        params.add("client_secret", clientSecret);
+        params.add("code", code);
 
-    HttpHeaders headers = new HttpHeaders();
-    headers.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
-    HttpEntity<MultiValueMap<String, String>> request = new HttpEntity<>(params, headers);
+        HttpHeaders headers = new HttpHeaders();
+        headers.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
+        HttpEntity<MultiValueMap<String, String>> request = new HttpEntity<>(params, headers);
 
-    ResponseEntity<Map> response = restTemplate.postForEntity(url, request, Map.class);
-    if (response.getBody().containsKey("error")) {
-      throw new Oauth2ExchangeCodeException(response.getBody().get("error").toString(), response.getBody().get("error_description").toString());
-    }
-    return response.getBody();
-  }
-
-  @Override
-  public User getAndUpdateUser(String accessToken) {
-    HttpHeaders headers = new HttpHeaders();
-    headers.setBearerAuth(accessToken);
-    HttpEntity<String> entity = new HttpEntity<>(headers);
-
-    ResponseEntity<Map> response = restTemplate.exchange(
-        "https://api.github.com/user", HttpMethod.GET, entity, Map.class);
-
-    Map<String, Object> userDetails = response.getBody();
-
-    if (userDetails == null) {
-      throw new RuntimeException("Failed to fetch user details from GitHub");
+        ResponseEntity<Map> response = restTemplate.postForEntity(url, request, Map.class);
+        if (response.getBody().containsKey("error")) {
+            throw new Oauth2ExchangeCodeException(response.getBody().get("error").toString(), response.getBody().get("error_description").toString());
+        }
+        return response.getBody();
     }
 
-    String gitHubId = userDetails.get("id").toString();
-    String name = (String) userDetails.get("name");
-    String avatarUrl = (String) userDetails.get("avatar_url");
-    String username = (String) userDetails.get("login");
+    @Override
+    public User getAndUpdateUser(String accessToken) {
+        HttpHeaders headers = new HttpHeaders();
+        headers.setBearerAuth(accessToken);
+        HttpEntity<String> entity = new HttpEntity<>(headers);
 
-    User user = userRepository.searchByGitHubId(gitHubId);
-    if (user == null) {
-      user = new User();
+        ResponseEntity<Map> response = restTemplate.exchange(
+                "https://api.github.com/user", HttpMethod.GET, entity, Map.class);
+
+        Map<String, Object> userDetails = response.getBody();
+
+        if (userDetails == null) {
+            throw new RuntimeException("Failed to fetch user details from GitHub");
+        }
+
+        String gitHubId = userDetails.get("id").toString();
+        String name = (String) userDetails.get("name");
+        String avatarUrl = (String) userDetails.get("avatar_url");
+        String username = (String) userDetails.get("login");
+
+        User user = userRepository.searchByGitHubId(gitHubId);
+        if (user == null) {
+            user = new User();
+        }
+        user.setGitHubId(gitHubId);
+        user.setName(name);
+        user.setUsername(username);
+        user.setAvatarUrl(avatarUrl);
+        user.setProvider("GitHub");
+
+        userRepository.save(user);
+
+        return user;
     }
-    user.setGitHubId(gitHubId);
-    user.setName(name);
-    user.setUsername(username);
-    user.setAvatarUrl(avatarUrl);
-    user.setProvider("GitHub");
-
-    userRepository.save(user);
-
-    return user;
-  }
 }

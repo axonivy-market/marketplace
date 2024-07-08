@@ -3,7 +3,8 @@ package com.axonivy.market.service;
 import static com.axonivy.market.constants.CommonConstants.LOGO_FILE;
 import static com.axonivy.market.constants.CommonConstants.META_FILE;
 import static com.axonivy.market.constants.CommonConstants.SLASH;
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.anyString;
@@ -47,6 +48,7 @@ import com.axonivy.market.enums.TypeOption;
 import com.axonivy.market.github.model.GitHubFile;
 import com.axonivy.market.github.service.GHAxonIvyMarketRepoService;
 import com.axonivy.market.github.service.GitHubService;
+import com.axonivy.market.model.MultilingualismValue;
 import com.axonivy.market.repository.GitHubRepoMetaRepository;
 import com.axonivy.market.repository.ProductRepository;
 import com.axonivy.market.service.impl.ProductServiceImpl;
@@ -56,16 +58,17 @@ class ProductServiceImplTest {
 
   private static final String SAMPLE_PRODUCT_ID = "amazon-comprehend";
   private static final String SAMPLE_PRODUCT_NAME = "Amazon Comprehend";
+  private static final long LAST_CHANGE_TIME = 1718096290000l;
   private static final Integer SAMPLE_PRODUCT_ONE_STAR_COUNT = 5;
   private static final Integer SAMPLE_PRODUCT_TWO_STAR_COUNT = 10;
   private static final Integer SAMPLE_PRODUCT_THREE_STAR_COUNT = 15;
   private static final Integer SAMPLE_PRODUCT_FOUR_STAR_COUNT = 20;
   private static final Integer SAMPLE_PRODUCT_FIVE_STAR_COUNT = 50;
-  private static final long LAST_CHANGE_TIME = 1718096290000L;
   private static final Pageable PAGEABLE = PageRequest.of(0, 20,
       Sort.by(SortOption.ALPHABETICALLY.getOption()).descending());
   private static final String SHA1_SAMPLE = "35baa89091b2452b77705da227f1a964ecabc6c8";
   private String keyword;
+  private String langague;
   private Page<Product> mockResultReturn;
 
   @Mock
@@ -90,21 +93,22 @@ class ProductServiceImplTest {
 
   @Test
   void testFindProducts() {
+    langague = "en";
     // Start testing by All
     when(productRepository.findAll(any(Pageable.class))).thenReturn(mockResultReturn);
     // Executes
-    var result = productService.findProducts(TypeOption.ALL.getOption(), keyword, PAGEABLE);
+    var result = productService.findProducts(TypeOption.ALL.getOption(), keyword, langague, PAGEABLE);
     assertEquals(mockResultReturn, result);
 
     // Start testing by Connector
     when(productRepository.findByType(any(), any(Pageable.class))).thenReturn(mockResultReturn);
     // Executes
-    result = productService.findProducts(TypeOption.CONNECTORS.getOption(), keyword, PAGEABLE);
+    result = productService.findProducts(TypeOption.CONNECTORS.getOption(), keyword, langague, PAGEABLE);
     assertEquals(mockResultReturn, result);
 
     // Start testing by Other
     // Executes
-    result = productService.findProducts(TypeOption.DEMOS.getOption(), keyword, PAGEABLE);
+    result = productService.findProducts(TypeOption.DEMOS.getOption(), keyword, langague, PAGEABLE);
     assertEquals(0, result.getSize());
   }
 
@@ -122,11 +126,11 @@ class ProductServiceImplTest {
     mockGithubFile.setStatus(FileStatus.ADDED);
     when(marketRepoService.fetchMarketItemsBySHA1Range(any(), any())).thenReturn(List.of(mockGithubFile));
     var mockGHContent = mockGHContentAsMetaJSON();
-    when(gitHubService.getGHContent(any(), anyString())).thenReturn(mockGHContent);
+    when(gitHubService.getGHContent(any(), anyString(), anyString())).thenReturn(mockGHContent);
 
     // Executes
     var result = productService.syncLatestDataFromMarketRepo();
-    assertFalse(result);
+    assertEquals(false, result);
 
     // Start testing by deleting new meta
     mockCommit = mockGHCommitHasSHA1(UUID.randomUUID().toString());
@@ -135,7 +139,7 @@ class ProductServiceImplTest {
     mockGithubFile.setStatus(FileStatus.REMOVED);
     // Executes
     result = productService.syncLatestDataFromMarketRepo();
-    assertFalse(result);
+    assertEquals(false, result);
   }
 
   @Test
@@ -153,50 +157,51 @@ class ProductServiceImplTest {
     mockGitHubFile.setStatus(FileStatus.ADDED);
     when(marketRepoService.fetchMarketItemsBySHA1Range(any(), any())).thenReturn(List.of(mockGitHubFile));
     var mockGHContent = mockGHContentAsMetaJSON();
-    when(gitHubService.getGHContent(any(), anyString())).thenReturn(mockGHContent);
+    when(gitHubService.getGHContent(any(), anyString(), anyString())).thenReturn(mockGHContent);
 
     // Executes
     var result = productService.syncLatestDataFromMarketRepo();
-    assertFalse(result);
+    assertEquals(false, result);
 
     // Start testing by deleting new logo
     when(mockCommit.getSHA1()).thenReturn(UUID.randomUUID().toString());
     mockGitHubFile.setStatus(FileStatus.REMOVED);
     when(marketRepoService.fetchMarketItemsBySHA1Range(any(), any())).thenReturn(List.of(mockGitHubFile));
-    when(gitHubService.getGHContent(any(), anyString())).thenReturn(mockGHContent);
+    when(gitHubService.getGHContent(any(), anyString(), anyString())).thenReturn(mockGHContent);
     when(productRepository.findByLogoUrl(any())).thenReturn(new Product());
 
     // Executes
     result = productService.syncLatestDataFromMarketRepo();
-    assertFalse(result);
+    assertEquals(false, result);
   }
 
   @Test
-  void testFindAllProductsWithKeyword() {
+  void testFindAllProductsWithKeyword() throws IOException {
+    langague = "en";
     when(productRepository.findAll(any(Pageable.class))).thenReturn(mockResultReturn);
     // Executes
-    var result = productService.findProducts(TypeOption.ALL.getOption(), keyword, PAGEABLE);
+    var result = productService.findProducts(TypeOption.ALL.getOption(), keyword, langague, PAGEABLE);
     assertEquals(mockResultReturn, result);
     verify(productRepository).findAll(any(Pageable.class));
 
     // Test has keyword
-    when(productRepository.searchByNameOrShortDescriptionRegex(any(), any(Pageable.class)))
+    when(productRepository.searchByNameOrShortDescriptionRegex(any(), any(), any(Pageable.class)))
         .thenReturn(new PageImpl<>(mockResultReturn.stream()
-            .filter(product -> product.getName().equals(SAMPLE_PRODUCT_NAME)).collect(Collectors.toList())));
+            .filter(product -> product.getNames().getEn().equals(SAMPLE_PRODUCT_NAME)).collect(Collectors.toList())));
     // Executes
-    result = productService.findProducts(TypeOption.ALL.getOption(), SAMPLE_PRODUCT_NAME, PAGEABLE);
+    result = productService.findProducts(TypeOption.ALL.getOption(), SAMPLE_PRODUCT_NAME, langague, PAGEABLE);
     verify(productRepository).findAll(any(Pageable.class));
     assertTrue(result.hasContent());
-    assertEquals(SAMPLE_PRODUCT_NAME, result.getContent().get(0).getName());
+    assertEquals(SAMPLE_PRODUCT_NAME, result.getContent().get(0).getNames().getEn());
 
     // Test has keyword and type is connector
-    when(productRepository.searchByKeywordAndType(any(), any(), any(Pageable.class))).thenReturn(
-        new PageImpl<>(mockResultReturn.stream().filter(product -> product.getName().equals(SAMPLE_PRODUCT_NAME)
+    when(productRepository.searchByKeywordAndType(any(), any(), any(), any(Pageable.class))).thenReturn(
+        new PageImpl<>(mockResultReturn.stream().filter(product -> product.getNames().getEn().equals(SAMPLE_PRODUCT_NAME)
             && product.getType().equals(TypeOption.CONNECTORS.getCode())).collect(Collectors.toList())));
     // Executes
-    result = productService.findProducts(TypeOption.CONNECTORS.getOption(), SAMPLE_PRODUCT_NAME, PAGEABLE);
+    result = productService.findProducts(TypeOption.CONNECTORS.getOption(), SAMPLE_PRODUCT_NAME, langague, PAGEABLE);
     assertTrue(result.hasContent());
-    assertEquals(SAMPLE_PRODUCT_NAME, result.getContent().get(0).getName());
+    assertEquals(SAMPLE_PRODUCT_NAME, result.getContent().get(0).getNames().getEn());
   }
 
   @Test
@@ -215,11 +220,11 @@ class ProductServiceImplTest {
 
     // Executes
     var result = productService.syncLatestDataFromMarketRepo();
-    assertFalse(result);
+    assertEquals(false, result);
   }
 
   @Test
-  void testNothingToSync() {
+  void testNothingToSync() throws IOException {
     var gitHubRepoMeta = mock(GitHubRepoMeta.class);
     when(gitHubRepoMeta.getLastSHA1()).thenReturn(SHA1_SAMPLE);
     var mockCommit = mockGHCommitHasSHA1(SHA1_SAMPLE);
@@ -228,7 +233,7 @@ class ProductServiceImplTest {
 
     // Executes
     var result = productService.syncLatestDataFromMarketRepo();
-    assertTrue(result);
+    assertEquals(true, result);
   }
 
   @Test
@@ -236,11 +241,12 @@ class ProductServiceImplTest {
     var simplePageable = PageRequest.of(0, 20);
     String type = TypeOption.ALL.getOption();
     keyword = "on";
-    when(productRepository.searchByNameOrShortDescriptionRegex(keyword, simplePageable)).thenReturn(mockResultReturn);
+    langague = "en";
+    when(productRepository.searchByNameOrShortDescriptionRegex(keyword, langague, simplePageable)).thenReturn(mockResultReturn);
 
-    var result = productService.findProducts(type, keyword, simplePageable);
+    var result = productService.findProducts(type, keyword, langague, simplePageable);
     assertEquals(result, mockResultReturn);
-    verify(productRepository).searchByNameOrShortDescriptionRegex(keyword, simplePageable);
+    verify(productRepository).searchByNameOrShortDescriptionRegex(keyword, langague, simplePageable);
   }
 
   @Test
@@ -295,9 +301,11 @@ class ProductServiceImplTest {
 
   private Page<Product> createPageProductsMock() {
     var mockProducts = new ArrayList<Product>();
+    MultilingualismValue name = new MultilingualismValue();
     Product mockProduct = new Product();
     mockProduct.setId(SAMPLE_PRODUCT_ID);
-    mockProduct.setName(SAMPLE_PRODUCT_NAME);
+    name.setEn(SAMPLE_PRODUCT_NAME);
+    mockProduct.setNames(name);
     mockProduct.setOneStarCount(SAMPLE_PRODUCT_ONE_STAR_COUNT);
     mockProduct.setTwoStarCount(SAMPLE_PRODUCT_TWO_STAR_COUNT);
     mockProduct.setThreeStarCount(SAMPLE_PRODUCT_THREE_STAR_COUNT);
@@ -308,7 +316,9 @@ class ProductServiceImplTest {
 
     mockProduct = new Product();
     mockProduct.setId("tel-search-ch-connector");
-    mockProduct.setName("Swiss phone directory");
+    name = new MultilingualismValue();
+    name.setEn("Swiss phone directory");
+    mockProduct.setNames(name);
     mockProduct.setType("util");
     mockProducts.add(mockProduct);
     return new PageImpl<>(mockProducts);
@@ -317,7 +327,6 @@ class ProductServiceImplTest {
   private Product createProductMock() {
     Product mockProduct = new Product();
     mockProduct.setId(SAMPLE_PRODUCT_ID);
-    mockProduct.setName(SAMPLE_PRODUCT_NAME);
     mockProduct.setOneStarCount(SAMPLE_PRODUCT_ONE_STAR_COUNT);
     mockProduct.setTwoStarCount(SAMPLE_PRODUCT_TWO_STAR_COUNT);
     mockProduct.setThreeStarCount(SAMPLE_PRODUCT_THREE_STAR_COUNT);

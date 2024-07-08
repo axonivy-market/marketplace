@@ -22,5 +22,4 @@ class AppControllerTest {
     assertTrue(response.hasBody());
     assertTrue(response.getBody().getMessageDetails().contains("/swagger-ui/index.html"));
   }
-
 }

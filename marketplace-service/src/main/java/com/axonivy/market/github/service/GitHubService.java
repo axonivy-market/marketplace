@@ -18,11 +18,11 @@ public interface GitHubService {
 
   public GHRepository getRepository(String repositoryPath) throws IOException;
 
-  public List<GHContent> getDirectoryContent(GHRepository ghRepository, String path) throws IOException;
+  public List<GHContent> getDirectoryContent(GHRepository ghRepository, String path, String ref) throws IOException;
 
-  public GHContent getGHContent(GHRepository ghRepository, String path) throws IOException;
+  public GHContent getGHContent(GHRepository ghRepository, String path, String ref) throws IOException;
 
-  Map<String, Object> getAccessToken(String code, String clientId, String clientSecret);
+  public Map<String, Object> getAccessToken(String code, String clientId, String clientSecret);
 
-  User getAndUpdateUser(String accessToken);
+  public User getAndUpdateUser(String accessToken);
 }

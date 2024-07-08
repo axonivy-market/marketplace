@@ -8,6 +8,8 @@ import org.springframework.stereotype.Repository;
 
 import com.axonivy.market.entity.Product;
 
+import java.util.Optional;
+
 @Repository
 public interface ProductRepository extends MongoRepository<Product, String> {
 
@@ -15,12 +17,14 @@ public interface ProductRepository extends MongoRepository<Product, String> {
 
   Product findByLogoUrl(String logoUrl);
 
+  Optional<Product> findById(String productId);
+
   @Query("{'marketDirectory': {$regex : ?0, $options: 'i'}}")
   Product findByMarketDirectoryRegex(String search);
 
-  @Query("{ $and: [ { $or: [ { 'name': { $regex: ?0, $options: 'i' } }, { 'shortDescription': { $regex: ?0, $options: 'i' } } ] }, { 'type': ?1 } ] }")
-  Page<Product> searchByKeywordAndType(String keyword, String type, Pageable unifiedPageable);
+  @Query("{ $and: [ { $or: [ { 'names.?': { $regex: ?0, $options: 'i' } }, { 'shortDescriptions.?': { $regex: ?0, $options: 'i' } } ] }, { 'type': ?1 } ] }")
+  Page<Product> searchByKeywordAndType(String keyword, String type, String language, Pageable unifiedPageabe);
 
-  @Query("{ $or: [ { 'name': { $regex: ?0, $options: 'i' } }, { 'shortDescription': { $regex: ?0, $options: 'i' } } ] }")
-  Page<Product> searchByNameOrShortDescriptionRegex(String keyword, Pageable unifiedPageable);
+  @Query("{ $or: [ { 'names.?1': { $regex: ?0, $options: 'i' } }, { 'shortDescriptions.?1': { $regex: ?0, $options: 'i' } } ] }")
+  Page<Product> searchByNameOrShortDescriptionRegex(String keyword, String language, Pageable unifiedPageabe);
 }
