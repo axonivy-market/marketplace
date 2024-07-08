@@ -1,35 +1,42 @@
 package com.axonivy.market.github.service.impl;
 
 import java.io.IOException;
-import java.util.*;
-
-import com.axonivy.market.constants.*;
-import com.axonivy.market.entity.ProductModuleContent;
-import com.axonivy.market.github.util.GitHubUtils;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-
-import com.axonivy.market.github.service.GHAxonIvyProductRepoService;
-import lombok.extern.log4j.Log4j2;
+import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.util.Strings;
-import com.axonivy.market.github.model.MavenArtifact;
 import org.kohsuke.github.GHContent;
 import org.kohsuke.github.GHOrganization;
 import org.kohsuke.github.GHRepository;
 import org.kohsuke.github.GHTag;
 import org.springframework.stereotype.Service;
+import org.springframework.util.CollectionUtils;
 
+import com.axonivy.market.constants.CommonConstants;
+import com.axonivy.market.constants.GitHubConstants;
+import com.axonivy.market.constants.MavenConstants;
+import com.axonivy.market.constants.ProductJsonConstants;
+import com.axonivy.market.constants.ReadmeConstants;
+import com.axonivy.market.entity.ProductModuleContent;
+import com.axonivy.market.enums.Language;
+import com.axonivy.market.github.model.MavenArtifact;
+import com.axonivy.market.github.service.GHAxonIvyProductRepoService;
 import com.axonivy.market.github.service.GitHubService;
+import com.axonivy.market.github.util.GitHubUtils;
+import com.axonivy.market.model.MultilingualismValue;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
-import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-import java.util.stream.Stream;
+import lombok.extern.log4j.Log4j2;
 
 @Log4j2
 @Service
@@ -147,21 +154,34 @@ public class GHAxonIvyProductRepoServiceImpl implements GHAxonIvyProductRepoServ
 			List<GHContent> contents = getProductFolderContents(ghRepository, tag);
 			productModuleContent.setTag(tag);
 			getProductJsonContent(productModuleContent, contents);
-			GHContent readmeFile = contents.stream().filter(GHContent::isFile)
-					.filter(content -> ReadmeConstants.README_FILE.equals(content.getName())).findFirst()
-					.orElse(null);
-			if (Objects.nonNull(readmeFile)) {
-				String readmeContents = new String(readmeFile.read().readAllBytes());
-				if (hasImageDirectives(readmeContents)) {
-					readmeContents = updateImagesWithDownloadUrl(contents, readmeContents);
+			List<GHContent> readmeFiles = contents.stream().filter(GHContent::isFile)
+					.filter(content -> GitHubConstants.PRODUCT_README_FILES.contains(content.getName()))
+					.collect(Collectors.toList());
+			if (!CollectionUtils.isEmpty(readmeFiles)) {
+				for (GHContent readmeFile : readmeFiles) {
+					String readmeContents = new String(readmeFile.read().readAllBytes());
+					if (hasImageDirectives(readmeContents)) {
+						readmeContents = updateImagesWithDownloadUrl(contents, readmeContents);
+					}
+					String locale = getReadmeFileLocale(readmeFile.getName());
+					getExtractedPartsOfReadme(productModuleContent, readmeContents, locale);
 				}
-				getExtractedPartsOfReadme(productModuleContent, readmeContents);
 			}
 		} catch (Exception e) {
 			log.error("Cannot get product.json and README file's content {}", e);
 			return null;
 		}
 		return productModuleContent;
+	}
+
+	private String getReadmeFileLocale(String readmeFile) {
+		String result = StringUtils.EMPTY;
+		Pattern pattern = Pattern.compile(GitHubConstants.README_FILE_LOCALE_REGEX);
+		Matcher matcher = pattern.matcher(readmeFile);
+		if (matcher.find()) {
+			result = matcher.group(1);
+		}
+		return result;
 	}
 
 	private void getProductJsonContent(ProductModuleContent productModuleContent, List<GHContent> contents)
@@ -217,7 +237,7 @@ public class GHAxonIvyProductRepoServiceImpl implements GHAxonIvyProductRepoServ
 
 	// Cover some cases including when demo and setup parts switch positions or
 	// missing one of them
-	public void getExtractedPartsOfReadme(ProductModuleContent productModuleContent, String readmeContents) {
+	public void getExtractedPartsOfReadme(ProductModuleContent productModuleContent, String readmeContents, String locale) {
 		String[] parts = readmeContents.split(DEMO_SETUP_TITLE);
 		boolean hasDemoPart = readmeContents.contains(ReadmeConstants.DEMO_PART);
 		boolean hasSetupPart = readmeContents.contains(ReadmeConstants.SETUP_PART);
@@ -243,9 +263,21 @@ public class GHAxonIvyProductRepoServiceImpl implements GHAxonIvyProductRepoServ
 			setup = parts[1];
 		}
 
-		productModuleContent.setDescription(description.trim());
 		productModuleContent.setDemo(demo.trim());
 		productModuleContent.setSetup(setup.trim());
+		setDescriptionWithLocale(productModuleContent, description, locale);
+	}
+
+	private void setDescriptionWithLocale(ProductModuleContent productModuleContent, String description,
+			String locale) {
+		if (productModuleContent.getDescription() == null) {
+			productModuleContent.setDescription(new MultilingualismValue());
+		}
+		if (Language.DE.getValue().equalsIgnoreCase(locale)) {
+			productModuleContent.getDescription().setDe(description);
+		} else {
+			productModuleContent.getDescription().setEn(description);
+		}
 	}
 
 	private static boolean isDemoPlaceBeforeSetupPart(String readmeContents) {

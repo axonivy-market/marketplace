@@ -5,6 +5,7 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
 import com.axonivy.market.model.MavenArtifactVersionModel;
+import com.axonivy.market.model.MultilingualismValue;
 import com.axonivy.market.service.VersionService;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -71,13 +72,14 @@ class ProductDetailsControllerTest {
 	}
 
 	private Product mockProduct() {
-		return Product.builder().id("docker-connector").name("Docker").language("English").build();
+		MultilingualismValue productName = new MultilingualismValue() {{setEn("Docker");}};
+		return Product.builder().id("docker-connector").names(productName).language("English").build();
 	}
 
 	private ProductDetailModel createProductMockWithDetails() {
 		ProductDetailModel mockProduct = new ProductDetailModel();
 		mockProduct.setId("docker-connector");
-		mockProduct.setName("Docker");
+		mockProduct.getNames().setEn("Docker");
 		mockProduct.setType("connector");
 		mockProduct.setCompatibility("10.0+");
 		mockProduct.setSourceUrl("https://github.com/axonivy-market/docker-connector");
