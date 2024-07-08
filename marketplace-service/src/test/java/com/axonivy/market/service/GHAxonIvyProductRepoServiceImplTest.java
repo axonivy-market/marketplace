@@ -219,7 +219,7 @@ class GHAxonIvyProductRepoServiceImplTest {
 		assertEquals("test-artifact", result.getArtifactId());
 		assertEquals("iar", result.getType());
 		assertEquals("Test Artifact", result.getName());
-		assertEquals("Test README", result.getDescription());
+		assertEquals("Test README", result.getDescription().getEn());
 		assertEquals("Demo content", result.getDemo());
 		assertEquals("Setup content (https://raw.githubusercontent.com/image.png)", result.getSetup());
 	}

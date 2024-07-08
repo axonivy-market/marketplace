@@ -79,7 +79,9 @@ class ProductDetailsControllerTest {
 	private ProductDetailModel createProductMockWithDetails() {
 		ProductDetailModel mockProduct = new ProductDetailModel();
 		mockProduct.setId("docker-connector");
-		mockProduct.getNames().setEn("Docker");
+		MultilingualismValue name = new MultilingualismValue();
+		name.setEn("Docker");
+		mockProduct.setNames(name);
 		mockProduct.setType("connector");
 		mockProduct.setCompatibility("10.0+");
 		mockProduct.setSourceUrl("https://github.com/axonivy-market/docker-connector");
