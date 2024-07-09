@@ -7,11 +7,12 @@ import com.axonivy.market.controller.ProductDetailsController;
 import com.axonivy.market.entity.Product;
 import com.axonivy.market.entity.ProductModuleContent;
 import com.axonivy.market.model.ProductDetailModel;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.hateoas.server.mvc.RepresentationModelAssemblerSupport;
 import org.springframework.stereotype.Component;
-import org.springframework.util.CollectionUtils;
 
-import java.util.Comparator;
+import java.util.List;
+import java.util.Objects;
 
 @Component
 public class ProductDetailModelAssembler extends RepresentationModelAssemblerSupport<Product, ProductDetailModel> {
@@ -25,16 +26,24 @@ public class ProductDetailModelAssembler extends RepresentationModelAssemblerSup
 
 	@Override
 	public ProductDetailModel toModel(Product product) {
+		return createModel(product, null);
+	}
+
+	public ProductDetailModel toModel(Product product, String tag) {
+		return createModel(product, tag);
+	}
+
+	private ProductDetailModel createModel(Product product, String tag) {
 		ProductDetailModel model = instantiateModel(product);
 		productModelAssembler.createResource(model, product);
 		model.add(
-				linkTo(methodOn(ProductDetailsController.class).findProductDetails(product.getId(), product.getType()))
+				linkTo(methodOn(ProductDetailsController.class).findProductDetails(product.getId(), product.getType(), tag))
 						.withSelfRel());
-		createDetailResource(model, product);
+		createDetailResource(model, product, tag);
 		return model;
 	}
 
-	private void createDetailResource(ProductDetailModel model, Product product) {
+	private void createDetailResource(ProductDetailModel model, Product product, String tag) {
 		model.setVendor(product.getVendor());
 		model.setNewestReleaseVersion(product.getNewestReleaseVersion());
 		model.setPlatformReview(product.getPlatformReview());
@@ -45,10 +54,15 @@ public class ProductDetailModelAssembler extends RepresentationModelAssemblerSup
 		model.setCompatibility(product.getCompatibility());
 		model.setContactUs(product.getContactUs());
 		model.setCost(product.getCost());
-		model.setProductModuleContents(product.getProductModuleContents());
+
+		if (StringUtils.isBlank(tag) && StringUtils.isNotBlank(product.getNewestReleaseVersion())) {
+			tag = product.getNewestReleaseVersion();
+		}
+		ProductModuleContent content = getProductModuleContentByTag(product.getProductModuleContents(), tag);
+		model.setProductModuleContent(content);
 	}
 
-//	private ProductModuleContent getProductModuleContentOfLatestTag(Product product) {
-//		return product.getProductModuleContents().stream().max(Comparator.comparing(ProductModuleContent::getTag)).orElse(null);
-//	}
+	private ProductModuleContent getProductModuleContentByTag(List<ProductModuleContent> contents, String tag) {
+		return contents.stream().filter(content -> StringUtils.equals(content.getTag(), tag)).findAny().orElse(null);
+	}
 }

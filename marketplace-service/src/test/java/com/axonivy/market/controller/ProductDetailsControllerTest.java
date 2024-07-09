@@ -47,18 +47,18 @@ class ProductDetailsControllerTest {
 	@Test
 	void testProductDetails() {
 		Mockito.when(productService.fetchProductDetail(Mockito.anyString(), Mockito.anyString())).thenReturn(mockProduct());
-		Mockito.when(detailModelAssembler.toModel(Mockito.any())).thenReturn(createProductMockWithDetails());
+		Mockito.when(detailModelAssembler.toModel(mockProduct(), null)).thenReturn(createProductMockWithDetails());
 		ResponseEntity<ProductDetailModel> mockExpectedResult = new ResponseEntity<>(createProductMockWithDetails(),
 				HttpStatus.OK);
 
 		ResponseEntity<ProductDetailModel> result = productDetailsController.findProductDetails("docker-connector",
-				"connector");
+				"connector", null);
 
 		assertEquals(HttpStatus.OK, result.getStatusCode());
 		assertEquals(result, mockExpectedResult);
 
 		verify(productService, times(1)).fetchProductDetail("docker-connector", "connector");
-		verify(detailModelAssembler, times(1)).toModel(mockProduct());
+		verify(detailModelAssembler, times(1)).toModel(mockProduct(), null);
 	}
 
 	@Test

@@ -101,10 +101,10 @@ public class GitHubUtils {
         pathToProductFolderFromTagContent = "rule-engine/rule-engine-demos-product";
         break;
       case NonStandardProductPackageConstants.OPENAI_CONNECTOR:
-        pathToProductFolderFromTagContent = "openai-connector/openai-connector-product";
+        pathToProductFolderFromTagContent = "openai-connector-product";
         break;
       case NonStandardProductPackageConstants.OPENAI_ASSISTANT:
-        pathToProductFolderFromTagContent = "openai-connector/openai-assistant-product";
+        pathToProductFolderFromTagContent = "openai-assistant-product";
         break;
       default:
         break;

@@ -34,9 +34,9 @@ public class ProductDetailsController {
 
 	@GetMapping("/{id}")
 	public ResponseEntity<ProductDetailModel> findProductDetails(@PathVariable("id") String id,
-			@RequestParam(name = "type") String type) {
+			@RequestParam(name = "type") String type, @RequestParam(name = "tag", required = false) String tag) {
 		var productDetail = productService.fetchProductDetail(id, type);
-		return new ResponseEntity<>(detailModelAssembler.toModel(productDetail), HttpStatus.OK);
+		return new ResponseEntity<>(detailModelAssembler.toModel(productDetail, tag), HttpStatus.OK);
 	}
 
 	@GetMapping("/{id}/versions")

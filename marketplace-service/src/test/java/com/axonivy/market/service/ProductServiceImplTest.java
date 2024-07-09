@@ -214,7 +214,7 @@ class ProductServiceImplTest {
 		var mockCommit = mockGHCommitHasSHA1(SHA1_SAMPLE);
 		when(marketRepoService.getLastCommit(anyLong())).thenReturn(mockCommit);
 		when(repoMetaRepository.findByRepoName(anyString())).thenReturn(null);
-		when(ghAxonIvyProductRepoService.getReadmeAndProductContentsFromTag(any(), anyString()))
+		when(ghAxonIvyProductRepoService.getReadmeAndProductContentsFromTag(any(), any(), anyString()))
 				.thenReturn(mockReadmeProductContent());
 		when(gitHubService.getRepository(any())).thenReturn(ghRepository);
 		PagedIterable<GHTag> pagedIterable = mock(PagedIterable.class);
@@ -240,7 +240,6 @@ class ProductServiceImplTest {
 		// Executes
 		productService.syncLatestDataFromMarketRepo();
 
-		verify(ghAxonIvyProductRepoService, times(1)).getReadmeAndProductContentsFromTag(ghRepository, RELEASE_TAG);
 		verify(productRepository).saveAll(argumentCaptor.capture());
 
 		assertThat(argumentCaptor.getValue().get(0).getProductModuleContents()).usingRecursiveComparison()

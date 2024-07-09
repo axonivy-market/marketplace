@@ -23,7 +23,7 @@ public class ProductDetailModel extends ProductModel {
     private String industry;
     private String compatibility;
     private Boolean contactUs;
-    private List<ProductModuleContent> productModuleContents;
+    private ProductModuleContent productModuleContent;
 
     @Override
     public int hashCode() {
