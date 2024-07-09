@@ -100,20 +100,6 @@ class ProductControllerTest {
     assertEquals(ErrorCode.SUCCESSFUL.getCode(), response.getBody().getHelpCode());
   }
 
-  @Test
-  void testGetProductRating() {
-    List<ProductRating> productRatingMocks = List.of(createProductRatingMock());
-
-    when(service.getProductRatingById(PRODUCT_ID_SAMPLE)).thenReturn(productRatingMocks);
-    var result = productController.getProductRating(PRODUCT_ID_SAMPLE);
-
-    assertEquals(HttpStatus.OK, result.getStatusCode());
-    assertTrue(result.hasBody());
-    assertEquals(1, result.getBody().size());
-    assertEquals(productRatingMocks, result.getBody());
-    verify(service).getProductRatingById(PRODUCT_ID_SAMPLE);
-  }
-
   private Product createProductMock() {
     Product mockProduct = new Product();
     mockProduct.setId("amazon-comprehend");

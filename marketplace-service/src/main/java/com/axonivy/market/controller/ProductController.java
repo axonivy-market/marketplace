@@ -86,11 +86,4 @@ public class ProductController {
         .toEmptyModel(Page.empty(), ProductModel.class);
     return new ResponseEntity<>(emptyPagedModel, HttpStatus.OK);
   }
-
-  @Operation(summary = "Find rating information of product by id")
-  @GetMapping("{productId}/rating")
-  public ResponseEntity<List<ProductRating>> getProductRating(@PathVariable String productId) {
-    List<ProductRating> ratings = service.getProductRatingById(productId);
-    return ResponseEntity.ok(ratings);
-  }
 }

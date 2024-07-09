@@ -106,65 +106,6 @@ public class ProductServiceImpl implements ProductService {
     return isAlreadyUpToDate;
   }
 
-  @Override
-  public List<ProductRating> getProductRatingById(String productId) {
-    Product existingProduct = productRepository.findById(productId)
-        .orElseThrow(() -> new NotFoundException(ErrorCode.PRODUCT_NOT_FOUND, "Not found product with id: " + productId));
-    return mapToListProductRating(existingProduct);
-  }
-
-  private List<ProductRating> mapToListProductRating(Product product) {
-    int oneStarCount = getSafeCount(product.getOneStarCount());
-    int twoStarCount = getSafeCount(product.getTwoStarCount());
-    int threeStarCount = getSafeCount(product.getThreeStarCount());
-    int fourStarCount = getSafeCount(product.getFourStarCount());
-    int fiveStarCount = getSafeCount(product.getFiveStarCount());
-
-    int totalComments = oneStarCount + twoStarCount + threeStarCount + fourStarCount + fiveStarCount;
-
-    List<ProductRating> productRatings = new ArrayList<>();
-
-    productRatings.add(new ProductRating(
-        1,
-        oneStarCount,
-        calculatePercentage(oneStarCount, totalComments)
-    ));
-
-    productRatings.add(new ProductRating(
-        2,
-        twoStarCount,
-        calculatePercentage(twoStarCount, totalComments)
-    ));
-
-    productRatings.add(new ProductRating(
-        3,
-        threeStarCount,
-        calculatePercentage(threeStarCount, totalComments)
-    ));
-
-    productRatings.add(new ProductRating(
-        4,
-        fourStarCount,
-        calculatePercentage(fourStarCount, totalComments)
-    ));
-
-    productRatings.add(new ProductRating(
-        5,
-        fiveStarCount,
-        calculatePercentage(fiveStarCount, totalComments)
-    ));
-
-    return productRatings;
-  }
-
-  private int getSafeCount(Integer count) {
-    return count == null ? 0 : count;
-  }
-
-  private int calculatePercentage(int starCount, int totalComments) {
-    return totalComments == 0 ? 0 : (int) ((starCount / (double) totalComments) * 100);
-  }
-
   private void syncRepoMetaDataStatus() {
     if (lastGHCommit == null) {
       return;

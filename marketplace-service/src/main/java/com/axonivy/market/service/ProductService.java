@@ -12,5 +12,4 @@ public interface ProductService {
   Page<Product> findProducts(String type, String keyword, String language, Pageable pageable);
 
   boolean syncLatestDataFromMarketRepo();
-  List<ProductRating> getProductRatingById(String productId);
 }

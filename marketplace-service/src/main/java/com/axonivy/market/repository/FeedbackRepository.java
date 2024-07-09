@@ -18,6 +18,9 @@ public interface FeedbackRepository extends MongoRepository<Feedback, String> {
   @Query("{ 'productId': ?0 }")
   Page<Feedback> searchByProductId(String productId, Pageable pageable);
 
+  @Query("{ 'productId': ?0 }")
+  List<Feedback> getAllByProductId(String productId);
+
   @Query("{ $and: [ { 'userId': ?0 },  { 'productId': ?1 } ] }")
   List<Feedback> searchByProductIdAndUserId(String userId, String productId);
 }

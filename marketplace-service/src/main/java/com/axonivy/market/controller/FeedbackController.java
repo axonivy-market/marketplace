@@ -3,6 +3,7 @@ package com.axonivy.market.controller;
 import com.axonivy.market.assembler.FeedbackModelAssembler;
 import com.axonivy.market.entity.Feedback;
 import com.axonivy.market.model.FeedbackModel;
+import com.axonivy.market.model.ProductRating;
 import com.axonivy.market.service.FeedbackService;
 import com.axonivy.market.service.JwtService;
 import io.jsonwebtoken.Claims;
@@ -21,6 +22,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import java.net.URI;
+import java.util.List;
 
 import static com.axonivy.market.constants.RequestMappingConstants.FEEDBACK;
 
@@ -91,6 +93,12 @@ public class FeedbackController {
         .toUri();
 
     return ResponseEntity.created(location).build();
+  }
+
+  @Operation(summary = "Find rating information of product by id")
+  @GetMapping("/product/{productId}/rating")
+  public ResponseEntity<List<ProductRating>> getProductRating(@PathVariable String productId) {
+    return ResponseEntity.ok(service.getProductRatingById(productId));
   }
 
   @SuppressWarnings("unchecked")
