@@ -1,0 +1,42 @@
+{
+  "$schema": "https://json-schema.axonivy.com/market/10.0.0/meta.json",
+  "id": "amazon-comprehend",
+  "names": [
+    {
+      "locale":"en",
+      "value": "Amazon Comprehend"
+    },
+    {
+      "locale":"de",
+      "value": "Amazon Comprehend DE"
+    }
+  ],
+  "descriptions": [
+    {
+      "locale":"en",
+      "value": "Amazon Comprehend is a AI service that uses machine learning to uncover information in unstructured data."
+    },
+    {
+      "locale":"de",
+      "value": "Amazon Comprehend is a AI service that uses machine learning to uncover information in unstructured data. DE"
+    }
+  ],
+  "type": "connector",
+  "platformReview": "4.5",
+  "sourceUrl": "https://github.com/axonivy-market/amazon-comprehend-connector",
+  "statusBadgeUrl": "https://github.com/axonivy-market/amazon-comprehend-connector/actions/workflows/ci.yml/badge.svg",
+  "language": "English",
+  "industry": "Cross-Industry",
+  "tags": [
+    "AI"
+  ],
+  "mavenArtifacts": [
+    {
+      "repoUrl": "https://maven.axonivy.com",
+      "name": "Amazon Comprehend Product",
+      "groupId": "com.axonivy.connector.amazon.comprehend",
+      "artifactId": "amazon-comprehend-connector-product",
+      "type": "zip"
+    }
+  ]
+}

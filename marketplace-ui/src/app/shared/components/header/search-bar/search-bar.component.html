@@ -1,0 +1,81 @@
+<ul
+  class="navbar-nav navbar-nav--right mr-auto flex-lg-row flex-column-reverse align-items-lg-center align-items-sm-stretch header__action">
+  @if (isSearchBarDisplayed()) {
+    <li>
+      <div class="input-group bg-secondary">
+        <div class="input-group-prepend">
+          <span class="input-group-text text-primary h-100 border-0 bg-secondary">
+            <i class="bi bi-search"></i>
+          </span>
+        </div>
+        <input
+          class="form-control bg-secondary me-2 border-0 header__search-input bg-secondary"
+          type="input"
+          [placeholder]="
+            translateService.get('common.search.placeholder') | async
+          "
+          [ariaLabel]="
+            translateService.get('common.search.placeholder') | async
+          " />
+
+        <div
+          class="input-group-prepend search__cancel-button"
+          (click)="onHideSearch()">
+          <span class="input-group-text text-primary h-100 border-0 bg-secondary">
+            <i class="bi bi-x-lg"></i>
+          </span>
+        </div>
+      </div>
+    </li>
+  } @else {
+    <!-- Language Selection -->
+    <div 
+      class="d-flex flex-row-reverse flex-lg-row justify-content-between border-top-md-gray header__button">
+      <li class="header__button--right">
+        <app-language-selection></app-language-selection>
+      </li>
+
+      <!-- Theme Mode -->
+      <li class="header__button--right">
+        <app-theme-selection></app-theme-selection>
+      </li>
+    </div>
+
+    <!-- Collapse Search -->
+    <li class="d-none d-lg-flex header__button--right">
+      @if (isSearchBarDisplayed()) {
+        <div class="header-desktop__search">
+          <div class="input-group-prepend h-100">
+            <span class="input-group-text border-0 bg-secondary">
+              <i class="bi bi-search"></i>
+            </span>
+          </div>
+          <input
+            class="form-control bg-secondary me-2 border-0 header__search-input bg-secondary"
+            type="search"
+            [placeholder]="
+              translateService.get('common.search.placeholder') | async
+            "
+            [ariaLabel]="
+              translateService.get('common.search.placeholder') | async
+            " />
+        </div>
+      } @else {
+        <div class="search-icon">
+          <i class="bi bi-search header__search-button" (click)="onClickSearchIcon()"></i>
+        </div>
+      }
+    </li>
+
+    <!-- Download Latest LTS Version -->
+    <li>
+      <button
+        class="btn btn-primary header__download-button border-0 w-100 rounded-3">
+        {{ 'common.header.download' | translate }}
+        <span>
+          <i class="bi bi-chevron-down"></i>
+        </span>
+      </button>
+    </li>
+  }
+</ul>

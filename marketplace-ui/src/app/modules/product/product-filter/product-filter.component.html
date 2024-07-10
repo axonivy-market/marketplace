@@ -1,0 +1,79 @@
+<div class="mt-5">
+  <p class="h3 mb-4">
+    {{ translateService.get('common.filter.label') | async }}
+  </p>
+  <div class="filter-container d-flex justify-content-between w-auto mb-4">
+    <!-- Filter type -->
+    <div class="filter-container__button d-none d-md-flex">
+      @for (type of types; track $index) {
+        <div
+          (click)="onSelectType(type.value)"
+          class="filter-type border"
+          [ngClass]="{
+            'border-light text-light': themeService.isDarkMode(),
+            'border-dark text-dark': !themeService.isDarkMode(),
+            'bg-light text-dark':
+              selectedType === type.value && themeService.isDarkMode(),
+            'bg-primary border-0 text-light':
+              selectedType === type.value && !themeService.isDarkMode()
+          }">
+          <p>
+            {{ type.label | translate }}
+          </p>
+        </div>
+      }
+    </div>
+    <div class="col-6 d-md-block d-md-none">
+      <select
+        [(ngModel)]="selectedType"
+        (ngModelChange)="onSelectType($event)"
+        class="form-select border-primary filter-type--select w-auto"
+        aria-label="sort"
+        name="sort">
+        @for (type of types; track $index) {
+          <option [value]="type.value">
+            {{ type.label | translate }}
+          </option>
+        }
+      </select>
+    </div>
+
+    <!-- Sort type -->
+    <div
+      class="col-6 col-md-4 d-flex sort-container justify-content-end align-items-end">
+      <h4 class="sort-container__label text-primary d-none d-lg-flex w-auto">
+        {{ translateService.get('common.sort.label') | async }}:
+      </h4>
+      <select
+        [(ngModel)]="selectedSort"
+        (ngModelChange)="onSortChange()"
+        class="form-select text-primary border-primary sort-type w-50 ms-2"
+        aria-label="sort"
+        name="sort">
+        @for (type of sorts; track $index) {
+          <option class="border-danger" [value]="type.value">
+            {{ type.label | translate }}
+          </option>
+        }
+      </select>
+    </div>
+  </div>
+
+  <!-- Search -->
+  <div class="input-group mb-5">
+    <div class="input-group-prepend">
+      <span
+        class="input-group-text text-primary bg-secondary h-100 border-0 rounded-start-4 rounded-end-0">
+        <i class="bi bi-search"></i>
+      </span>
+    </div>
+    <input
+      [(ngModel)]="searchText"
+      (ngModelChange)="onSearchChanged($event)"
+      type="text"
+      class="form-control input__search bg-secondary border-0 rounded-end-4 rounded-start-0 search-input"
+      [placeholder]="translateService.get('common.search.placeholder') | async"
+      [ariaLabel]="translateService.get('common.search.placeholder') | async"
+      aria-describedby="search" />
+  </div>
+</div>

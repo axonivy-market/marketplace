@@ -1,0 +1,36 @@
+<div class="header__navigation">
+  <!-- Mobile Search Input -->
+  <div class="input-group d-lg-none header-mobile__search bg-secondary">
+    <div class="input-group-prepend">
+      <span
+        class="input-group-text h-100 rounded-start-4 rounded-end-0 border-0">
+        <i class="bi bi-search"></i>
+      </span>
+    </div>
+    <input
+      class="form-control bg-secondary me-2 border-0"
+      type="search"
+      [placeholder]="translateService.get('common.search.placeholder') | async"
+      [ariaLabel]="translateService.get('common.search.placeholder') | async" />
+  </div>
+
+  <!-- Navigation -->
+  <ul class="navbar-nav">
+    @for (item of navItems; track $index) {
+      <li class="nav-item">
+        <a
+          class="nav-link"
+          [ngClass]="
+            item.link === '/' ? 'text-primary fw-bold active' : 'text-secondary'
+          "
+          aria-current="page"
+          [href]="item.link">
+          {{ item.label | translate }}
+        </a>
+        <div
+          class="active-line d-none"
+          [ngClass]="{ 'd-lg-block': item.link === '/' }"></div>
+      </li>
+    }
+  </ul>
+</div>
