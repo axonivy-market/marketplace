@@ -133,7 +133,7 @@ class FeedbackControllerTest {
     when(jwtService.getClaimsFromToken(TOKEN_SAMPLE)).thenReturn(mockClaims);
     when(service.upsertFeedback(any())).thenReturn(mockFeedback);
 
-    var result = feedbackController.createFeedback(mockFeedback, request, "Bearer " + TOKEN_SAMPLE);
+    var result = feedbackController.createFeedback(mockFeedback, "Bearer " + TOKEN_SAMPLE);
     assertEquals(HttpStatus.CREATED, result.getStatusCode());
     assertTrue(result.getHeaders().getLocation().toString().contains(mockFeedback.getId()));
   }

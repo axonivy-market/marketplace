@@ -4,10 +4,6 @@ import static com.axonivy.market.constants.RequestMappingConstants.PRODUCT;
 import static com.axonivy.market.constants.RequestMappingConstants.SYNC;
 
 import org.apache.commons.lang3.time.StopWatch;
-import com.axonivy.market.entity.Feedback;
-import com.axonivy.market.model.FeedbackModel;
-import com.axonivy.market.model.ProductRating;
-import jakarta.websocket.server.PathParam;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
@@ -20,7 +16,6 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.bind.annotation.*;
 
 import com.axonivy.market.assembler.ProductModelAssembler;
 import com.axonivy.market.entity.Product;
@@ -31,19 +26,17 @@ import com.axonivy.market.service.ProductService;
 
 import io.swagger.v3.oas.annotations.Operation;
 
-import java.util.List;
-
 @RestController
 @RequestMapping(PRODUCT)
 public class ProductController {
 
-  private final ProductService service;
+  private final ProductService productService;
   private final ProductModelAssembler assembler;
   private final PagedResourcesAssembler<Product> pagedResourcesAssembler;
 
-  public ProductController(ProductService service, ProductModelAssembler assembler,
-      PagedResourcesAssembler<Product> pagedResourcesAssembler) {
-    this.service = service;
+  public ProductController(ProductService productService, ProductModelAssembler assembler,
+                           PagedResourcesAssembler<Product> pagedResourcesAssembler) {
+    this.productService = productService;
     this.assembler = assembler;
     this.pagedResourcesAssembler = pagedResourcesAssembler;
   }
@@ -51,14 +44,14 @@ public class ProductController {
   @Operation(summary = "Find all products", description = "Be default system will finds product by type as 'all'")
   @GetMapping()
   public ResponseEntity<PagedModel<ProductModel>> findProducts(
-      @RequestParam(required = true, name = "type") String type,
+      @RequestParam(name = "type") String type,
       @RequestParam(required = false, name = "keyword") String keyword,
-      @RequestParam(required = true, name = "language") String language, Pageable pageable) {
-    Page<Product> results = service.findProducts(type, keyword, language, pageable);
+      @RequestParam(name = "language") String language, Pageable pageable) {
+    Page<Product> results = productService.findProducts(type, keyword, language, pageable);
     if (results.isEmpty()) {
       return generateEmptyPagedModel();
     }
-    var responseContent = new PageImpl<Product>(results.getContent(), pageable, results.getTotalElements());
+    var responseContent = new PageImpl<>(results.getContent(), pageable, results.getTotalElements());
     var pageResources = pagedResourcesAssembler.toModel(responseContent, assembler);
     return new ResponseEntity<>(pageResources, HttpStatus.OK);
   }
@@ -67,7 +60,7 @@ public class ProductController {
   public ResponseEntity<Message> syncProducts() {
     var stopWatch = new StopWatch();
     stopWatch.start();
-    var isAlreadyUpToDate = service.syncLatestDataFromMarketRepo();
+    var isAlreadyUpToDate = productService.syncLatestDataFromMarketRepo();
     var message = new Message();
     message.setHelpCode(ErrorCode.SUCCESSFUL.getCode());
     message.setHelpText(ErrorCode.SUCCESSFUL.getHelpText());

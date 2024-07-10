@@ -12,17 +12,17 @@ import org.kohsuke.github.GitHub;
 
 public interface GitHubService {
 
-  public GitHub getGitHub() throws IOException;
+  GitHub getGitHub() throws IOException;
 
-  public GHOrganization getOrganization(String orgName) throws IOException;
+  GHOrganization getOrganization(String orgName) throws IOException;
 
-  public GHRepository getRepository(String repositoryPath) throws IOException;
+  GHRepository getRepository(String repositoryPath) throws IOException;
 
-  public List<GHContent> getDirectoryContent(GHRepository ghRepository, String path, String ref) throws IOException;
+  List<GHContent> getDirectoryContent(GHRepository ghRepository, String path, String ref) throws IOException;
 
-  public GHContent getGHContent(GHRepository ghRepository, String path, String ref) throws IOException;
+  GHContent getGHContent(GHRepository ghRepository, String path, String ref) throws IOException;
 
-  public Map<String, Object> getAccessToken(String code, String clientId, String clientSecret);
+  Map<String, Object> getAccessToken(String code, String clientId, String clientSecret);
 
-  public User getAndUpdateUser(String accessToken);
+  User getAndUpdateUser(String accessToken);
 }

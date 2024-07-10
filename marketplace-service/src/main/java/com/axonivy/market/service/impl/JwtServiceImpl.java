@@ -3,6 +3,7 @@ package com.axonivy.market.service.impl;
 import com.axonivy.market.entity.User;
 import com.axonivy.market.service.JwtService;
 import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.Jws;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import org.springframework.beans.factory.annotation.Value;
@@ -37,7 +38,7 @@ public class JwtServiceImpl implements JwtService {
 
   public boolean validateToken(String token) {
     try {
-      Jwts.parser().setSigningKey(secret).parseClaimsJws(token);
+      getClaimsJws(token);
       return true;
     } catch (Exception e) {
       return false;
@@ -45,6 +46,10 @@ public class JwtServiceImpl implements JwtService {
   }
 
   public Claims getClaimsFromToken(String token) {
-    return Jwts.parser().setSigningKey(secret).parseClaimsJws(token).getBody();
+    return getClaimsJws(token).getBody();
+  }
+
+  private Jws<Claims> getClaimsJws(String token) {
+    return Jwts.parser().setSigningKey(secret).parseClaimsJws(token);
   }
 }

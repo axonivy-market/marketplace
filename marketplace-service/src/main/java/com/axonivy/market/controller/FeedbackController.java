@@ -8,8 +8,6 @@ import com.axonivy.market.service.FeedbackService;
 import com.axonivy.market.service.JwtService;
 import io.jsonwebtoken.Claims;
 import io.swagger.v3.oas.annotations.Operation;
-import jakarta.servlet.http.Cookie;
-import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
@@ -30,49 +28,48 @@ import static com.axonivy.market.constants.RequestMappingConstants.FEEDBACK;
 @RequestMapping(FEEDBACK)
 public class FeedbackController {
 
-  private final FeedbackService service;
+  private final FeedbackService feedbackService;
   private final JwtService jwtService;
-  private final FeedbackModelAssembler assembler;
+  private final FeedbackModelAssembler feedbackModelAssembler;
 
   private final PagedResourcesAssembler<Feedback> pagedResourcesAssembler;
 
-  public FeedbackController(FeedbackService feedbackService, JwtService jwtService, FeedbackModelAssembler assembler, PagedResourcesAssembler<Feedback> pagedResourcesAssembler) {
-    this.service = feedbackService;
+  public FeedbackController(FeedbackService feedbackService, JwtService jwtService, FeedbackModelAssembler feedbackModelAssembler, PagedResourcesAssembler<Feedback> pagedResourcesAssembler) {
+    this.feedbackService = feedbackService;
     this.jwtService = jwtService;
-    this.assembler = assembler;
+    this.feedbackModelAssembler = feedbackModelAssembler;
     this.pagedResourcesAssembler = pagedResourcesAssembler;
   }
 
   @Operation(summary = "Find all feedbacks by product id")
   @GetMapping("/product/{productId}")
   public ResponseEntity<PagedModel<FeedbackModel>> findFeedbacks(@PathVariable String productId, Pageable pageable) {
-    Page<Feedback> results = service.findFeedbacks(productId, pageable);
+    Page<Feedback> results = feedbackService.findFeedbacks(productId, pageable);
     if (results.isEmpty()) {
       return generateEmptyPagedModel();
     }
     var responseContent = new PageImpl<>(results.getContent(), pageable, results.getTotalElements());
-    var pageResources = pagedResourcesAssembler.toModel(responseContent, assembler);
+    var pageResources = pagedResourcesAssembler.toModel(responseContent, feedbackModelAssembler);
     return new ResponseEntity<>(pageResources, HttpStatus.OK);
   }
 
   @GetMapping("/{id}")
   public ResponseEntity<FeedbackModel> findFeedback(@PathVariable String id) {
-    Feedback feedback = service.findFeedback(id);
-    return ResponseEntity.ok(assembler.toModel(feedback));
+    Feedback feedback = feedbackService.findFeedback(id);
+    return ResponseEntity.ok(feedbackModelAssembler.toModel(feedback));
   }
 
   @Operation(summary = "Find all feedbacks by user id and product id")
   @GetMapping()
   public ResponseEntity<FeedbackModel> findFeedbackByUserIdAndProductId(
-      @RequestParam() String userId,
+      @RequestParam String userId,
       @RequestParam String productId) {
-    Feedback feedback = service.findFeedbackByUserIdAndProductId(userId, productId);
-    return ResponseEntity.ok(assembler.toModel(feedback));
+    Feedback feedback = feedbackService.findFeedbackByUserIdAndProductId(userId, productId);
+    return ResponseEntity.ok(feedbackModelAssembler.toModel(feedback));
   }
 
   @PostMapping
-  public ResponseEntity<Void> createFeedback(@RequestBody @Valid Feedback feedback, HttpServletRequest request, @RequestHeader(value = "Authorization", required = false) String authorizationHeader) {
-
+  public ResponseEntity<Void> createFeedback(@RequestBody @Valid Feedback feedback, @RequestHeader(value = "Authorization", required = false) String authorizationHeader) {
     String token = null;
     if (authorizationHeader != null && authorizationHeader.startsWith("Bearer ")) {
       token = authorizationHeader.substring(7); // Remove "Bearer " prefix
@@ -85,7 +82,7 @@ public class FeedbackController {
 
     Claims claims = jwtService.getClaimsFromToken(token);
     feedback.setUserId(claims.getSubject());
-    Feedback newFeedback = service.upsertFeedback(feedback);
+    Feedback newFeedback = feedbackService.upsertFeedback(feedback);
 
     URI location = ServletUriComponentsBuilder.fromCurrentRequest()
         .path("/{id}")
@@ -98,7 +95,7 @@ public class FeedbackController {
   @Operation(summary = "Find rating information of product by id")
   @GetMapping("/product/{productId}/rating")
   public ResponseEntity<List<ProductRating>> getProductRating(@PathVariable String productId) {
-    return ResponseEntity.ok(service.getProductRatingById(productId));
+    return ResponseEntity.ok(feedbackService.getProductRatingById(productId));
   }
 
   @SuppressWarnings("unchecked")

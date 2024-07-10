@@ -7,6 +7,8 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
+import com.axonivy.market.constants.GitHubConstants;
+import com.axonivy.market.constants.GitHubJsonConstants;
 import com.axonivy.market.entity.User;
 import com.axonivy.market.exceptions.model.Oauth2ExchangeCodeException;
 import com.axonivy.market.repository.UserRepository;
@@ -70,19 +72,18 @@ public class GitHubServiceImpl implements GitHubService {
 
     @Override
     public Map<String, Object> getAccessToken(String code, String clientId, String clientSecret) throws Oauth2ExchangeCodeException {
-        String url = "https://github.com/login/oauth/access_token";
         MultiValueMap<String, String> params = new LinkedMultiValueMap<>();
-        params.add("client_id", clientId);
-        params.add("client_secret", clientSecret);
-        params.add("code", code);
+        params.add(GitHubJsonConstants.CLIENT_ID, clientId);
+        params.add(GitHubJsonConstants.CLIENT_SECRET, clientSecret);
+        params.add(GitHubJsonConstants.CODE, code);
 
         HttpHeaders headers = new HttpHeaders();
         headers.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
         HttpEntity<MultiValueMap<String, String>> request = new HttpEntity<>(params, headers);
 
-        ResponseEntity<Map> response = restTemplate.postForEntity(url, request, Map.class);
-        if (response.getBody().containsKey("error")) {
-            throw new Oauth2ExchangeCodeException(response.getBody().get("error").toString(), response.getBody().get("error_description").toString());
+        ResponseEntity<Map> response = restTemplate.postForEntity(GitHubConstants.GITHUB_GET_ACCESS_TOKEN_URL, request, Map.class);
+        if (response.getBody().containsKey(GitHubJsonConstants.ERROR)) {
+            throw new Oauth2ExchangeCodeException(response.getBody().get(GitHubJsonConstants.ERROR).toString(), response.getBody().get(GitHubJsonConstants.ERROR_DESCRIPTION).toString());
         }
         return response.getBody();
     }
@@ -102,10 +103,10 @@ public class GitHubServiceImpl implements GitHubService {
             throw new RuntimeException("Failed to fetch user details from GitHub");
         }
 
-        String gitHubId = userDetails.get("id").toString();
-        String name = (String) userDetails.get("name");
-        String avatarUrl = (String) userDetails.get("avatar_url");
-        String username = (String) userDetails.get("login");
+        String gitHubId = (String) userDetails.get(GitHubJsonConstants.USER_ID);
+        String name = (String) userDetails.get(GitHubJsonConstants.USER_NAME);
+        String avatarUrl = (String) userDetails.get(GitHubJsonConstants.USER_AVATAR_URL);
+        String username = (String) userDetails.get(GitHubJsonConstants.USER_LOGIN_NAME);
 
         User user = userRepository.searchByGitHubId(gitHubId);
         if (user == null) {
@@ -115,7 +116,7 @@ public class GitHubServiceImpl implements GitHubService {
         user.setName(name);
         user.setUsername(username);
         user.setAvatarUrl(avatarUrl);
-        user.setProvider("GitHub");
+        user.setProvider(GitHubConstants.GITHUB_PROVIDER_NAME);
 
         userRepository.save(user);
 

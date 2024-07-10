@@ -55,24 +55,19 @@ public class FeedbackServiceImpl implements FeedbackService {
     return existingFeedbacks.get(0);
   }
 
-  @Transactional
   @Override
   public Feedback upsertFeedback(Feedback feedback) throws NotFoundException {
      userRepository.findById(feedback.getUserId())
         .orElseThrow(() -> new NotFoundException(ErrorCode.USER_NOT_FOUND,"Not found user with id: " + feedback.getUserId()));
-    Product product = productRepository.findById(feedback.getProductId())
-        .orElseThrow(() -> new NotFoundException(ErrorCode.PRODUCT_NOT_FOUND, "Not found product with id: " + feedback.getProductId()));
 
     List<Feedback> existingFeedbacks = feedbackRepository.searchByProductIdAndUserId(feedback.getUserId(), feedback.getProductId());
 
     if (existingFeedbacks.isEmpty()) {
-      productRepository.save(product);
       return feedbackRepository.save(feedback);
     } else {
       Feedback existingFeedback = existingFeedbacks.get(0);
       existingFeedback.setRating(feedback.getRating());
       existingFeedback.setContent(feedback.getContent());
-      productRepository.save(product);
       return feedbackRepository.save(existingFeedback);
     }
   }

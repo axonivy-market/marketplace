@@ -10,4 +10,6 @@ public class GitHubConstants {
   public static final String AXONIVY_MARKETPLACE_PATH = "market";
   public static final String DEFAULT_BRANCH = "feature/MARP-463-Multilingualism-for-Website";
   public static final String PRODUCT_JSON_FILE_PATH_FORMAT = "%s/product.json";
+  public static final String GITHUB_PROVIDER_NAME = "GitHub";
+  public static final String GITHUB_GET_ACCESS_TOKEN_URL = "https://github.com/login/oauth/access_token";
 }

@@ -48,7 +48,7 @@ class OAuth2ControllerTest {
     when(gitHubService.getAndUpdateUser(accessToken)).thenReturn(user);
     when(jwtService.generateToken(user)).thenReturn(jwtToken);
 
-    ResponseEntity<?> response = oAuth2Controller.gitHubLogin(oauth2AuthorizationCode, null);
+    ResponseEntity<?> response = oAuth2Controller.gitHubLogin(oauth2AuthorizationCode);
 
     assertEquals(200, response.getStatusCodeValue());
     assertEquals(Map.of("token", jwtToken), response.getBody());
