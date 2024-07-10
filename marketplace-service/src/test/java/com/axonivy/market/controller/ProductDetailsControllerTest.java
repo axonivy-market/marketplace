@@ -1,8 +1,10 @@
 package com.axonivy.market.controller;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.Mockito.when;
 
 import com.axonivy.market.model.MavenArtifactVersionModel;
+import com.axonivy.market.service.ProductService;
 import com.axonivy.market.service.VersionService;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -24,6 +26,9 @@ class ProductDetailsControllerTest {
   private ProductDetailsController productDetailsController;
 
   @Mock
+  private ProductService productService;
+
+  @Mock
   VersionService versionService;
 
   @Test
@@ -35,10 +40,19 @@ class ProductDetailsControllerTest {
   @Test
   void testFindProductVersionsById(){
     List<MavenArtifactVersionModel> models = List.of(new MavenArtifactVersionModel());
-    Mockito.when(versionService.getArtifactsAndVersionToDisplay(Mockito.anyString(), Mockito.anyBoolean(), Mockito.anyString())).thenReturn(models);
+    when(versionService.getArtifactsAndVersionToDisplay(Mockito.anyString(), Mockito.anyBoolean(), Mockito.anyString())).thenReturn(models);
     ResponseEntity<List<MavenArtifactVersionModel>> result = productDetailsController.findProductVersionsById("protal", true, "10.0.1");
     Assertions.assertEquals(HttpStatus.OK, result.getStatusCode());
     Assertions.assertEquals(1, Objects.requireNonNull(result.getBody()).size());
     Assertions.assertEquals(models, result.getBody());
+  }
+
+  @Test
+  public void testSyncInstallationCount() throws Exception {
+    when(productService.updateInstallationCountForProduct("google-maps-connector")).thenReturn(1);
+
+    var result = productDetailsController.syncInstallationCount("google-maps-connector");
+
+    assertEquals(1, result.getBody());
   }
 }
