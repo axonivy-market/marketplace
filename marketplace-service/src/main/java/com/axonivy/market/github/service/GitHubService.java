@@ -1,14 +1,14 @@
 package com.axonivy.market.github.service;
 
-import java.io.IOException;
-import java.util.List;
-import java.util.Map;
-
 import com.axonivy.market.entity.User;
 import org.kohsuke.github.GHContent;
 import org.kohsuke.github.GHOrganization;
 import org.kohsuke.github.GHRepository;
 import org.kohsuke.github.GitHub;
+
+import java.io.IOException;
+import java.util.List;
+import java.util.Map;
 
 public interface GitHubService {
 

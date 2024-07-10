@@ -1,7 +1,5 @@
 package com.axonivy.market.controller;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-
 import com.axonivy.market.model.MavenArtifactVersionModel;
 import com.axonivy.market.service.VersionService;
 import org.junit.jupiter.api.Assertions;
@@ -16,6 +14,8 @@ import org.springframework.http.ResponseEntity;
 
 import java.util.List;
 import java.util.Objects;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 @ExtendWith(MockitoExtension.class)
 class ProductDetailsControllerTest {

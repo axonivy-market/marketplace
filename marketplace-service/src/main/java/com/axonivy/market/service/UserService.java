@@ -1,9 +1,9 @@
 package com.axonivy.market.service;
 
-import java.util.List;
-
 import com.axonivy.market.entity.User;
 import com.axonivy.market.exceptions.model.NotFoundException;
+
+import java.util.List;
 
 public interface UserService {
   List<User> getAllUsers();

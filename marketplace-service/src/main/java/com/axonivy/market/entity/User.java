@@ -1,19 +1,18 @@
 package com.axonivy.market.entity;
 
-import static com.axonivy.market.constants.EntityConstants.USER;
-
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
 
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
-
 import java.io.Serial;
 import java.io.Serializable;
+
+import static com.axonivy.market.constants.EntityConstants.USER;
 
 @Getter
 @Setter

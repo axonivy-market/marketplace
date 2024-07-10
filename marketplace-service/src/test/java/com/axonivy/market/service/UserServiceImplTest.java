@@ -1,10 +1,8 @@
 package com.axonivy.market.service;
 
-import java.util.List;
-import java.util.Optional;
-
-import com.axonivy.market.enums.ErrorCode;
-import com.axonivy.market.exceptions.model.NotFoundException;
+import com.axonivy.market.entity.User;
+import com.axonivy.market.repository.UserRepository;
+import com.axonivy.market.service.impl.UserServiceImpl;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -13,9 +11,7 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import com.axonivy.market.entity.User;
-import com.axonivy.market.repository.UserRepository;
-import com.axonivy.market.service.impl.UserServiceImpl;
+import java.util.List;
 
 @ExtendWith(MockitoExtension.class)
 class UserServiceImplTest {

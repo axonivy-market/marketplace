@@ -101,13 +101,13 @@ class FeedbackServiceImplTest {
 
   @Test
   void testFindFeedbackByUserIdAndProductId_Success() throws NotFoundException {
-    when(feedbackRepository.searchByProductIdAndUserId(anyString(), anyString())).thenReturn(Collections.singletonList(feedback));
+    when(feedbackRepository.findByUserIdAndProductId(anyString(), anyString())).thenReturn(Collections.singletonList(feedback));
 
     Feedback result = feedbackService.findFeedbackByUserIdAndProductId("userId", "productId");
 
     assertNotNull(result);
     assertEquals("feedbackId", result.getId());
-    verify(feedbackRepository, times(1)).searchByProductIdAndUserId(anyString(), anyString());
+    verify(feedbackRepository, times(1)).findByUserIdAndProductId(anyString(), anyString());
   }
 
   @Test
@@ -126,14 +126,14 @@ class FeedbackServiceImplTest {
 
   @Test
   void testFindFeedbackByUserIdAndProductId_FeedbackNotFound() {
-    when(feedbackRepository.searchByProductIdAndUserId(anyString(), anyString())).thenReturn(Collections.emptyList());
+    when(feedbackRepository.findByUserIdAndProductId(anyString(), anyString())).thenReturn(Collections.emptyList());
 
     assertThrows(NotFoundException.class, () -> feedbackService.findFeedbackByUserIdAndProductId("userId", "productId"));
   }
 
   @Test
   void testUpsertFeedback_NewFeedback() throws NotFoundException {
-    when(feedbackRepository.searchByProductIdAndUserId(anyString(), anyString())).thenReturn(Collections.emptyList());
+    when(feedbackRepository.findByUserIdAndProductId(anyString(), anyString())).thenReturn(Collections.emptyList());
     when(feedbackRepository.save(any(Feedback.class))).thenReturn(feedback);
 
     Feedback result = feedbackService.upsertFeedback(feedback);
@@ -153,7 +153,7 @@ class FeedbackServiceImplTest {
     existingFeedback.setRating(4);
     existingFeedback.setContent("Good product");
 
-    when(feedbackRepository.searchByProductIdAndUserId(anyString(), anyString())).thenReturn(Collections.singletonList(existingFeedback));
+    when(feedbackRepository.findByUserIdAndProductId(anyString(), anyString())).thenReturn(Collections.singletonList(existingFeedback));
     when(feedbackRepository.save(any(Feedback.class))).thenReturn(feedback);
 
     Feedback result = feedbackService.upsertFeedback(feedback);

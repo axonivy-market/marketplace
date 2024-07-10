@@ -1,15 +1,14 @@
 package com.axonivy.market.github.util;
 
-import java.io.IOException;
-import java.util.List;
-
+import lombok.AccessLevel;
+import lombok.NoArgsConstructor;
+import lombok.extern.log4j.Log4j2;
 import org.kohsuke.github.GHCommit;
 import org.kohsuke.github.GHContent;
 import org.kohsuke.github.PagedIterable;
 
-import lombok.AccessLevel;
-import lombok.NoArgsConstructor;
-import lombok.extern.log4j.Log4j2;
+import java.io.IOException;
+import java.util.List;
 
 @Log4j2
 @NoArgsConstructor(access = AccessLevel.PRIVATE)

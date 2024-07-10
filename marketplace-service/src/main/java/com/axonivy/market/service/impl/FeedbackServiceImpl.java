@@ -1,7 +1,6 @@
 package com.axonivy.market.service.impl;
 
 import com.axonivy.market.entity.Feedback;
-import com.axonivy.market.entity.Product;
 import com.axonivy.market.enums.ErrorCode;
 import com.axonivy.market.exceptions.model.NotFoundException;
 import com.axonivy.market.model.ProductRating;
@@ -13,10 +12,13 @@ import com.axonivy.market.service.UserService;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
-import java.util.*;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 @Service
 public class FeedbackServiceImpl implements FeedbackService {
@@ -48,11 +50,11 @@ public class FeedbackServiceImpl implements FeedbackService {
         .orElseThrow(() -> new NotFoundException(ErrorCode.USER_NOT_FOUND, "Not found user with id: " + userId));
     validateProductExists(productId);
 
-    List<Feedback> existingFeedbacks = feedbackRepository.searchByProductIdAndUserId(userId, productId);
-    if (existingFeedbacks.isEmpty()) {
+    Feedback existingUserFeedback = feedbackRepository.findByUserIdAndProductId(userId, productId);
+    if (existingUserFeedback == null) {
       throw new NotFoundException(ErrorCode.FEEDBACK_NOT_FOUND, String.format("Not found feedback with user id '%s' and product id '%s'", userId, productId));
     }
-    return existingFeedbacks.get(0);
+    return existingUserFeedback;
   }
 
   @Override
@@ -60,48 +62,35 @@ public class FeedbackServiceImpl implements FeedbackService {
      userRepository.findById(feedback.getUserId())
         .orElseThrow(() -> new NotFoundException(ErrorCode.USER_NOT_FOUND,"Not found user with id: " + feedback.getUserId()));
 
-    List<Feedback> existingFeedbacks = feedbackRepository.searchByProductIdAndUserId(feedback.getUserId(), feedback.getProductId());
-
-    if (existingFeedbacks.isEmpty()) {
+    Feedback existingUserFeedback = feedbackRepository.findByUserIdAndProductId(feedback.getUserId(), feedback.getProductId());
+    if (existingUserFeedback == null) {
       return feedbackRepository.save(feedback);
     } else {
-      Feedback existingFeedback = existingFeedbacks.get(0);
-      existingFeedback.setRating(feedback.getRating());
-      existingFeedback.setContent(feedback.getContent());
-      return feedbackRepository.save(existingFeedback);
+      existingUserFeedback.setRating(feedback.getRating());
+      existingUserFeedback.setContent(feedback.getContent());
+      return feedbackRepository.save(existingUserFeedback);
     }
   }
 
   @Override
   public List<ProductRating> getProductRatingById(String productId) {
-    List<Feedback> feedbacks = this.feedbackRepository.getAllByProductId(productId);
-    if (feedbacks.isEmpty()) {
-      return Arrays.asList(
-          new ProductRating(1, 0, 0),
-          new ProductRating(2, 0, 0),
-          new ProductRating(3, 0, 0),
-          new ProductRating(4, 0, 0),
-          new ProductRating(5, 0, 0)
-      );
-    }
-
+    List<Feedback> feedbacks = feedbackRepository.findByProductId(productId);
     int totalFeedbacks = feedbacks.size();
 
-    Map<Integer, Long> ratingCountMap = new HashMap<>();
-    for (int i = 1; i <= 5; i++) {
-      ratingCountMap.put(i, 0L);
+    if (totalFeedbacks == 0) {
+      return IntStream.rangeClosed(1, 5)
+          .mapToObj(star -> new ProductRating(star, 0, 0))
+          .collect(Collectors.toList());
     }
 
-    ratingCountMap.putAll(feedbacks.stream()
-        .collect(Collectors.groupingBy(Feedback::getRating, Collectors.counting())));
+    Map<Integer, Long> ratingCountMap = feedbacks.stream()
+        .collect(Collectors.groupingBy(Feedback::getRating, Collectors.counting()));
 
-    return ratingCountMap.entrySet().stream()
-        .map(entry -> {
-          ProductRating productRating = new ProductRating();
-          productRating.setStarRating(entry.getKey());
-          productRating.setCommentNumber(Math.toIntExact(entry.getValue()));
-          productRating.setPercent((int) ((entry.getValue() * 100) / totalFeedbacks));
-          return productRating;
+    return IntStream.rangeClosed(1, 5)
+        .mapToObj(star -> {
+          long count = ratingCountMap.getOrDefault(star, 0L);
+          int percent = (int) ((count * 100) / totalFeedbacks);
+          return new ProductRating(star, Math.toIntExact(count), percent);
         })
         .collect(Collectors.toList());
   }

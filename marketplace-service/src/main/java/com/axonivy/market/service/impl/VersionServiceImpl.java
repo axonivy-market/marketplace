@@ -1,20 +1,20 @@
 package com.axonivy.market.service.impl;
 
+import com.axonivy.market.comparator.ArchivedArtifactsComparator;
+import com.axonivy.market.comparator.LatestVersionComparator;
 import com.axonivy.market.constants.GitHubConstants;
 import com.axonivy.market.constants.MavenConstants;
 import com.axonivy.market.constants.NonStandardProductPackageConstants;
+import com.axonivy.market.entity.MavenArtifactModel;
 import com.axonivy.market.entity.MavenArtifactVersion;
 import com.axonivy.market.entity.Product;
 import com.axonivy.market.github.model.ArchivedArtifact;
 import com.axonivy.market.github.model.MavenArtifact;
-import com.axonivy.market.entity.MavenArtifactModel;
 import com.axonivy.market.github.service.GHAxonIvyProductRepoService;
 import com.axonivy.market.model.MavenArtifactVersionModel;
 import com.axonivy.market.repository.MavenArtifactVersionRepository;
 import com.axonivy.market.repository.ProductRepository;
 import com.axonivy.market.service.VersionService;
-import com.axonivy.market.comparator.ArchivedArtifactsComparator;
-import com.axonivy.market.comparator.LatestVersionComparator;
 import com.axonivy.market.utils.XmlReaderUtils;
 import lombok.Getter;
 import lombok.extern.log4j.Log4j2;

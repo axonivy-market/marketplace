@@ -1,15 +1,7 @@
 package com.axonivy.market.factory;
 
-import static com.axonivy.market.constants.CommonConstants.META_FILE;
-import static com.axonivy.market.constants.CommonConstants.SLASH;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotEquals;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
-
-import java.io.IOException;
-import java.io.InputStream;
-
+import com.axonivy.market.constants.CommonConstants;
+import com.axonivy.market.entity.Product;
 import com.axonivy.market.github.model.Meta;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -17,8 +9,15 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.kohsuke.github.GHContent;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import com.axonivy.market.constants.CommonConstants;
-import com.axonivy.market.entity.Product;
+import java.io.IOException;
+import java.io.InputStream;
+
+import static com.axonivy.market.constants.CommonConstants.META_FILE;
+import static com.axonivy.market.constants.CommonConstants.SLASH;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class ProductFactoryTest {
