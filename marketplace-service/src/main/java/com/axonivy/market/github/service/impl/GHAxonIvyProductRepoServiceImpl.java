@@ -253,7 +253,7 @@ public class GHAxonIvyProductRepoServiceImpl implements GHAxonIvyProductRepoServ
       throws IOException {
     String productFolderPath = ghRepository.getDirectoryContent(CommonConstants.SLASH, tag).stream()
         .filter(GHContent::isDirectory).map(GHContent::getName)
-        .filter(content -> content.equals(product.getId() + "/" + MavenConstants.PRODUCT_ARTIFACT_POSTFIX)).findFirst()
+        .filter(content -> content.endsWith(MavenConstants.PRODUCT_ARTIFACT_POSTFIX)).findFirst()
         .orElse(null);
 
     if (StringUtils.isBlank(productFolderPath) || hasChildConnector(ghRepository)) {
