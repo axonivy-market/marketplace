@@ -41,6 +41,8 @@ public class GHAxonIvyProductRepoServiceImpl implements GHAxonIvyProductRepoServ
   private static final ObjectMapper objectMapper = new ObjectMapper();
   public static final String DEMO_SETUP_TITLE = "(?i)## Demo|## Setup";
   public static final String IMAGE_EXTENSION = "(.*?).(jpeg|jpg|png|gif)";
+  public static final String README_IMAGE_FORMAT = "\\(([^)]*?%s[^)]*?)\\)";
+  public static final String IMAGE_DOWNLOAD_URL_FORMAT = "(%s)";
 
   public GHAxonIvyProductRepoServiceImpl(GitHubService gitHubService) {
     this.gitHubService = gitHubService;
@@ -197,8 +199,8 @@ public class GHAxonIvyProductRepoServiceImpl implements GHAxonIvyProductRepoServ
       getImagesFromImageFolder(product, contents, imageUrls);
     }
     for (Map.Entry<String, String> entry : imageUrls.entrySet()) {
-      String imageUrlPattern = "\\(([^)]*?" + Pattern.quote(entry.getKey()) + "[^)]*?)\\)";
-      readmeContents = readmeContents.replaceAll(imageUrlPattern, "(" + entry.getValue() + ")");
+      String imageUrlPattern = String.format(README_IMAGE_FORMAT, Pattern.quote(entry.getKey()));
+      readmeContents = readmeContents.replaceAll(imageUrlPattern, String.format(IMAGE_DOWNLOAD_URL_FORMAT,entry.getValue()));
 
     }
     return readmeContents;
@@ -255,7 +257,6 @@ public class GHAxonIvyProductRepoServiceImpl implements GHAxonIvyProductRepoServ
         .filter(GHContent::isDirectory).map(GHContent::getName)
         .filter(content -> content.endsWith(MavenConstants.PRODUCT_ARTIFACT_POSTFIX)).findFirst()
         .orElse(null);
-
     if (StringUtils.isBlank(productFolderPath) || hasChildConnector(ghRepository)) {
       productFolderPath = GitHubUtils.getNonStandardProductFilePath(product.getId());
     }
