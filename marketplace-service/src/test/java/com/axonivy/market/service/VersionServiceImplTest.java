@@ -504,45 +504,4 @@ class VersionServiceImplTest {
 		result = versionService.getRepoNameFromMarketRepo(defaultRepositoryName);
 		Assertions.assertEquals(expectedRepoName, result);
 	}
-
-//	@Test
-//	void testBuildProductJsonFilePath() {
-//
-//		ReflectionTestUtils.setField(versionService, "productId", NonStandardProductPackageConstants.PORTAL);
-//		String pathToProductFolderFromTagContent = GitHubUtils.getNonStandardProductFilePath(NonStandardProductPackageConstants.PORTAL);
-//		versionService.buildProductJsonFilePath();
-////		Assertions.assertEquals("AxonIvyPortal/portal-product", GitHubUtils.getNonStandardProductFilePath(NonStandardProductPackageConstants.PORTAL));
-//		Assertions.assertEquals("AxonIvyPortal/portal-product/product.json", versionService.getProductJsonFilePath());
-//
-////		ReflectionTestUtils.setField(versionService, "productId",
-////				NonStandardProductPackageConstants.CONNECTIVITY_FEATURE);
-////		Assertions.assertEquals("connectivity/connectivity-demos-product/product.json",
-////				versionService.getProductJsonFilePath());
-////
-////		ReflectionTestUtils.setField(versionService, "productId", NonStandardProductPackageConstants.ERROR_HANDLING);
-////		versionService.buildProductJsonFilePath(version);
-////		Assertions.assertEquals("error-handling/error-handling-demos-product/product.json",
-////				versionService.getProductJsonFilePath());
-////
-////		ReflectionTestUtils.setField(versionService, "productId", NonStandardProductPackageConstants.WORKFLOW_DEMO);
-////		versionService.buildProductJsonFilePath(version);
-////		Assertions.assertEquals("workflow/workflow-demos-product/product.json",
-////				versionService.getProductJsonFilePath());
-////
-////		ReflectionTestUtils.setField(versionService, "productId", NonStandardProductPackageConstants.MICROSOFT_365);
-////		versionService.buildProductJsonFilePath(version);
-////		Assertions.assertEquals("msgraph-connector-product/products/msgraph-connector/product.json",
-////				versionService.getProductJsonFilePath());
-////
-////		ReflectionTestUtils.setField(versionService, "productId", NonStandardProductPackageConstants.HTML_DIALOG_DEMO);
-////		versionService.buildProductJsonFilePath(version);
-////		versionService.buildProductJsonFilePath(version);
-////		Assertions.assertEquals("html-dialog/html-dialog-demos-product/product.json",
-////				versionService.getProductJsonFilePath());
-////
-////		ReflectionTestUtils.setField(versionService, "productId", NonStandardProductPackageConstants.RULE_ENGINE_DEMOS);
-////		versionService.buildProductJsonFilePath(version);
-////		Assertions.assertEquals("rule-engine/rule-engine-demos-product/product.json",
-////				versionService.getProductJsonFilePath());
-//	}
 }

@@ -1,6 +1,5 @@
 package com.axonivy.market.service;
 
-import org.kohsuke.github.GHTag;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
