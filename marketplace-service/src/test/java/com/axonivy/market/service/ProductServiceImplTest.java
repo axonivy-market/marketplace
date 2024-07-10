@@ -137,7 +137,7 @@ class ProductServiceImplTest {
   }
 
   private Product mockProduct() {
-    return Product.builder().id("google-maps-connector").name("Google Maps").language("English")
+    return Product.builder().id("google-maps-connector").language("English")
         .synchronizedInstallationCount(true).build();
   }
 
