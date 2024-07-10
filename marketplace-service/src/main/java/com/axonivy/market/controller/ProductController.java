@@ -35,7 +35,7 @@ public class ProductController {
   private final PagedResourcesAssembler<Product> pagedResourcesAssembler;
 
   public ProductController(ProductService service, ProductModelAssembler assembler,
-                           PagedResourcesAssembler<Product> pagedResourcesAssembler) {
+      PagedResourcesAssembler<Product> pagedResourcesAssembler) {
     this.service = service;
     this.assembler = assembler;
     this.pagedResourcesAssembler = pagedResourcesAssembler;
@@ -44,9 +44,9 @@ public class ProductController {
   @Operation(summary = "Find all products", description = "Be default system will finds product by type as 'all'")
   @GetMapping()
   public ResponseEntity<PagedModel<ProductModel>> findProducts(
-          @RequestParam(required = true, name = "type") String type,
-          @RequestParam(required = false, name = "keyword") String keyword,
-          @RequestParam(required = true, name = "language") String language, Pageable pageable) {
+      @RequestParam(required = true, name = "type") String type,
+      @RequestParam(required = false, name = "keyword") String keyword,
+      @RequestParam(required = true, name = "language") String language, Pageable pageable) {
     Page<Product> results = service.findProducts(type, keyword, language, pageable);
     if (results.isEmpty()) {
       return generateEmptyPagedModel();
@@ -75,8 +75,8 @@ public class ProductController {
 
   @SuppressWarnings("unchecked")
   private ResponseEntity<PagedModel<ProductModel>> generateEmptyPagedModel() {
-    var emptyPagedModel = (PagedModel<ProductModel>) pagedResourcesAssembler
-            .toEmptyModel(Page.empty(), ProductModel.class);
+    var emptyPagedModel =
+        (PagedModel<ProductModel>) pagedResourcesAssembler.toEmptyModel(Page.empty(), ProductModel.class);
     return new ResponseEntity<>(emptyPagedModel, HttpStatus.OK);
   }
 }

@@ -21,30 +21,30 @@ import static com.axonivy.market.constants.RequestMappingConstants.PRODUCT_DETAI
 @RestController
 @RequestMapping(PRODUCT_DETAILS)
 public class ProductDetailsController {
-	private final VersionService versionService;
-	private final ProductService productService;
-	private final ProductDetailModelAssembler detailModelAssembler;
+  private final VersionService versionService;
+  private final ProductService productService;
+  private final ProductDetailModelAssembler detailModelAssembler;
 
-	public ProductDetailsController(VersionService versionService, ProductService productService,
-			ProductDetailModelAssembler detailModelAssembler) {
-		this.versionService = versionService;
-		this.productService = productService;
-		this.detailModelAssembler = detailModelAssembler;
-	}
+  public ProductDetailsController(VersionService versionService, ProductService productService,
+      ProductDetailModelAssembler detailModelAssembler) {
+    this.versionService = versionService;
+    this.productService = productService;
+    this.detailModelAssembler = detailModelAssembler;
+  }
 
-	@GetMapping("/{id}")
-	public ResponseEntity<ProductDetailModel> findProductDetails(@PathVariable("id") String id,
-			@RequestParam(name = "type") String type, @RequestParam(name = "tag", required = false) String tag) {
-		var productDetail = productService.fetchProductDetail(id, type);
-		return new ResponseEntity<>(detailModelAssembler.toModel(productDetail, tag), HttpStatus.OK);
-	}
+  @GetMapping("/{id}")
+  public ResponseEntity<ProductDetailModel> findProductDetails(@PathVariable("id") String id,
+      @RequestParam(name = "type") String type, @RequestParam(name = "tag", required = false) String tag) {
+    var productDetail = productService.fetchProductDetail(id, type);
+    return new ResponseEntity<>(detailModelAssembler.toModel(productDetail, tag), HttpStatus.OK);
+  }
 
-	@GetMapping("/{id}/versions")
-	public ResponseEntity<List<MavenArtifactVersionModel>> findProductVersionsById(@PathVariable("id") String id,
-			@RequestParam(name = "isShowDevVersion") boolean isShowDevVersion,
-			@RequestParam(name = "designerVersion", required = false) String designerVersion) {
-		List<MavenArtifactVersionModel> models = versionService.getArtifactsAndVersionToDisplay(id, isShowDevVersion,
-				designerVersion);
-		return new ResponseEntity<>(models, HttpStatus.OK);
-	}
+  @GetMapping("/{id}/versions")
+  public ResponseEntity<List<MavenArtifactVersionModel>> findProductVersionsById(@PathVariable("id") String id,
+      @RequestParam(name = "isShowDevVersion") boolean isShowDevVersion,
+      @RequestParam(name = "designerVersion", required = false) String designerVersion) {
+    List<MavenArtifactVersionModel> models =
+        versionService.getArtifactsAndVersionToDisplay(id, isShowDevVersion, designerVersion);
+    return new ResponseEntity<>(models, HttpStatus.OK);
+  }
 }

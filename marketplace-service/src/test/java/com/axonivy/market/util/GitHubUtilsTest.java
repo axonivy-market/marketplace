@@ -9,19 +9,19 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 @ExtendWith(MockitoExtension.class)
 class GitHubUtilsTest {
-    @Test
-    void testConvertArtifactIdToName() {
-        String defaultArtifactId = "adobe-acrobat-sign-connector";
-        String result = GitHubUtils.convertArtifactIdToName(defaultArtifactId);
-        Assertions.assertEquals("Adobe Acrobat Sign Connector", result);
+  @Test
+  void testConvertArtifactIdToName() {
+    String defaultArtifactId = "adobe-acrobat-sign-connector";
+    String result = GitHubUtils.convertArtifactIdToName(defaultArtifactId);
+    Assertions.assertEquals("Adobe Acrobat Sign Connector", result);
 
-        result = GitHubUtils.convertArtifactIdToName(null);
-        Assertions.assertEquals(StringUtils.EMPTY, result);
+    result = GitHubUtils.convertArtifactIdToName(null);
+    Assertions.assertEquals(StringUtils.EMPTY, result);
 
-        result = GitHubUtils.convertArtifactIdToName(StringUtils.EMPTY);
-        Assertions.assertEquals(StringUtils.EMPTY, result);
+    result = GitHubUtils.convertArtifactIdToName(StringUtils.EMPTY);
+    Assertions.assertEquals(StringUtils.EMPTY, result);
 
-        result = GitHubUtils.convertArtifactIdToName(" ");
-        Assertions.assertEquals(StringUtils.EMPTY, result);
-    }
+    result = GitHubUtils.convertArtifactIdToName(" ");
+    Assertions.assertEquals(StringUtils.EMPTY, result);
+  }
 }

@@ -12,10 +12,10 @@ import java.util.List;
 @ExtendWith(MockitoExtension.class)
 class XmlReaderUtilsTest {
 
-	@Test
-	void testExtractVersions() {
-		List<String> versions = Collections.emptyList();
-		XmlReaderUtils.extractVersions(StringUtils.EMPTY, versions);
-		Assertions.assertTrue(versions.isEmpty());
-	}
+  @Test
+  void testExtractVersions() {
+    List<String> versions = Collections.emptyList();
+    XmlReaderUtils.extractVersions(StringUtils.EMPTY, versions);
+    Assertions.assertTrue(versions.isEmpty());
+  }
 }
