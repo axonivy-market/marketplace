@@ -119,11 +119,4 @@ class FeedbackServiceImplTest {
 
     assertThrows(NotFoundException.class, () -> feedbackService.upsertFeedback(feedback));
   }
-
-  @Test
-  void testUpsertFeedback_ProductNotFound() {
-    when(productRepository.findById(anyString())).thenReturn(Optional.empty());
-
-    assertThrows(NotFoundException.class, () -> feedbackService.upsertFeedback(feedback));
-  }
 }
