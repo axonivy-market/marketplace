@@ -1,36 +1,50 @@
 package com.axonivy.market.service.impl;
 
-import com.axonivy.market.constants.GitHubConstants;
-import com.axonivy.market.entity.GitHubRepoMeta;
-import com.axonivy.market.entity.Product;
-import com.axonivy.market.enums.FileType;
-import com.axonivy.market.enums.SortOption;
-import com.axonivy.market.enums.TypeOption;
-import com.axonivy.market.factory.ProductFactory;
-import com.axonivy.market.github.model.GitHubFile;
-import com.axonivy.market.github.service.GHAxonIvyMarketRepoService;
-import com.axonivy.market.github.service.GitHubService;
-import com.axonivy.market.github.util.GitHubUtils;
-import com.axonivy.market.repository.GitHubRepoMetaRepository;
-import com.axonivy.market.repository.ProductRepository;
-import com.axonivy.market.service.ProductService;
-import lombok.extern.log4j.Log4j2;
-import org.apache.commons.lang3.StringUtils;
-import org.kohsuke.github.GHCommit;
-import org.kohsuke.github.GHContent;
-import org.kohsuke.github.GHRepository;
-import org.kohsuke.github.GHTag;
-import org.springframework.data.domain.*;
-import org.springframework.data.domain.Sort.Order;
-import org.springframework.stereotype.Service;
-import org.springframework.util.CollectionUtils;
+import static java.util.Optional.ofNullable;
+import static org.apache.commons.lang3.StringUtils.EMPTY;
 
 import java.io.IOException;
 import java.net.URL;
 import java.util.*;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
-import static java.util.Optional.ofNullable;
-import static org.apache.commons.lang3.StringUtils.EMPTY;
+import com.axonivy.market.constants.CommonConstants;
+import com.axonivy.market.github.service.GHAxonIvyProductRepoService;
+import com.axonivy.market.github.util.GitHubUtils;
+import com.axonivy.market.entity.ProductModuleContent;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.logging.log4j.util.Strings;
+import org.kohsuke.github.GHCommit;
+import org.kohsuke.github.GHContent;
+import org.kohsuke.github.GHRepository;
+import org.kohsuke.github.GHTag;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.domain.Sort.Order;
+import org.springframework.stereotype.Service;
+import org.springframework.util.CollectionUtils;
+
+import com.axonivy.market.constants.GitHubConstants;
+import com.axonivy.market.entity.Product;
+import com.axonivy.market.enums.FileType;
+import com.axonivy.market.enums.SortOption;
+import com.axonivy.market.factory.ProductFactory;
+import com.axonivy.market.github.model.GitHubFile;
+import com.axonivy.market.github.service.GHAxonIvyMarketRepoService;
+import com.axonivy.market.entity.GitHubRepoMeta;
+import com.axonivy.market.enums.TypeOption;
+import com.axonivy.market.github.service.GitHubService;
+import com.axonivy.market.repository.GitHubRepoMetaRepository;
+import com.axonivy.market.repository.ProductRepository;
+import com.axonivy.market.service.ProductService;
+
+import lombok.extern.log4j.Log4j2;
 
 @Log4j2
 @Service
@@ -38,16 +52,21 @@ public class ProductServiceImpl implements ProductService {
 
   private final ProductRepository productRepository;
   private final GHAxonIvyMarketRepoService axonIvyMarketRepoService;
+  private final GHAxonIvyProductRepoService axonIvyProductRepoService;
   private final GitHubRepoMetaRepository gitHubRepoMetaRepository;
   private final GitHubService gitHubService;
 
   private GHCommit lastGHCommit;
   private GitHubRepoMeta marketRepoMeta;
 
+  public static final String NON_NUMERIC_CHAR = "[^0-9.]";
+
   public ProductServiceImpl(ProductRepository productRepository, GHAxonIvyMarketRepoService axonIvyMarketRepoService,
-      GitHubRepoMetaRepository gitHubRepoMetaRepository, GitHubService gitHubService) {
+      GHAxonIvyProductRepoService axonIvyProductRepoService, GitHubRepoMetaRepository gitHubRepoMetaRepository,
+      GitHubService gitHubService) {
     this.productRepository = productRepository;
     this.axonIvyMarketRepoService = axonIvyMarketRepoService;
+    this.axonIvyProductRepoService = axonIvyProductRepoService;
     this.gitHubRepoMetaRepository = gitHubRepoMetaRepository;
     this.gitHubService = gitHubService;
   }
@@ -58,22 +77,22 @@ public class ProductServiceImpl implements ProductService {
     final var searchPageable = refinePagination(language, pageable);
     Page<Product> result = Page.empty();
     switch (typeOption) {
-    case ALL:
-      if (StringUtils.isBlank(keyword)) {
-        result = productRepository.findAll(searchPageable);
-      } else {
-        result = productRepository.searchByNameOrShortDescriptionRegex(keyword, language, searchPageable);
-      }
-      break;
-    case CONNECTORS, UTILITIES, SOLUTIONS:
-      if (StringUtils.isBlank(keyword)) {
-        result = productRepository.findByType(typeOption.getCode(), searchPageable);
-      } else {
-        result = productRepository.searchByKeywordAndType(keyword, typeOption.getCode(), language, searchPageable);
-      }
-      break;
-    default:
-      break;
+      case ALL:
+        if (StringUtils.isBlank(keyword)) {
+          result = productRepository.findAll(searchPageable);
+        } else {
+          result = productRepository.searchByNameOrShortDescriptionRegex(keyword, language, searchPageable);
+        }
+        break;
+      case CONNECTORS, UTILITIES, SOLUTIONS:
+        if (StringUtils.isBlank(keyword)) {
+          result = productRepository.findByType(typeOption.getCode(), searchPageable);
+        } else {
+          result = productRepository.searchByKeywordAndType(keyword, typeOption.getCode(), language, searchPageable);
+        }
+        break;
+      default:
+        break;
     }
     return result;
   }
@@ -97,8 +116,8 @@ public class ProductServiceImpl implements ProductService {
     if (lastGHCommit == null) {
       return;
     }
-    String repoURL = Optional.ofNullable(lastGHCommit.getOwner()).map(GHRepository::getUrl).map(URL::getPath)
-        .orElse(EMPTY);
+    String repoURL =
+        Optional.ofNullable(lastGHCommit.getOwner()).map(GHRepository::getUrl).map(URL::getPath).orElse(EMPTY);
     marketRepoMeta.setRepoURL(repoURL);
     marketRepoMeta.setRepoName(GitHubConstants.AXONIVY_MARKETPLACE_REPO_NAME);
     marketRepoMeta.setLastSHA1(lastGHCommit.getSHA1());
@@ -134,7 +153,7 @@ public class ProductServiceImpl implements ProductService {
         }
 
         ProductFactory.mappingByGHContent(product, fileContent);
-        updateLatestReleaseDateForProduct(product);
+        updateProductFromReleaseTags(product);
         if (FileType.META == file.getType()) {
           modifyProductByMetaContent(file, product);
         } else {
@@ -147,34 +166,34 @@ public class ProductServiceImpl implements ProductService {
   private void modifyProductLogo(String parentPath, GitHubFile file, Product product, GHContent fileContent) {
     Product result = null;
     switch (file.getStatus()) {
-    case MODIFIED, ADDED:
-      result = productRepository.findByMarketDirectoryRegex(parentPath);
-      if (result != null) {
-        result.setLogoUrl(GitHubUtils.getDownloadUrl(fileContent));
-        productRepository.save(result);
-      }
-      break;
-    case REMOVED:
-      result = productRepository.findByLogoUrl(product.getLogoUrl());
-      if (result != null) {
-        productRepository.deleteById(result.getId());
-      }
-      break;
-    default:
-      break;
+      case MODIFIED, ADDED:
+        result = productRepository.findByMarketDirectoryRegex(parentPath);
+        if (result != null) {
+          result.setLogoUrl(GitHubUtils.getDownloadUrl(fileContent));
+          productRepository.save(result);
+        }
+        break;
+      case REMOVED:
+        result = productRepository.findByLogoUrl(product.getLogoUrl());
+        if (result != null) {
+          productRepository.deleteById(result.getId());
+        }
+        break;
+      default:
+        break;
     }
   }
 
   private void modifyProductByMetaContent(GitHubFile file, Product product) {
     switch (file.getStatus()) {
-    case MODIFIED, ADDED:
-      productRepository.save(product);
-      break;
-    case REMOVED:
-      productRepository.deleteById(product.getId());
-      break;
-    default:
-      break;
+      case MODIFIED, ADDED:
+        productRepository.save(product);
+        break;
+      case REMOVED:
+        productRepository.deleteById(product.getId());
+        break;
+      default:
+        break;
     }
   }
 
@@ -215,7 +234,7 @@ public class ProductServiceImpl implements ProductService {
       Product product = new Product();
       for (var content : ghContentEntity.getValue()) {
         ProductFactory.mappingByGHContent(product, content);
-        updateLatestReleaseDateForProduct(product);
+        updateProductFromReleaseTags(product);
       }
       products.add(product);
     });
@@ -225,17 +244,64 @@ public class ProductServiceImpl implements ProductService {
     return new PageImpl<>(products);
   }
 
-  private void updateLatestReleaseDateForProduct(Product product) {
+  private void updateProductFromReleaseTags(Product product) {
     if (StringUtils.isBlank(product.getRepositoryName())) {
       return;
     }
     try {
       GHRepository productRepo = gitHubService.getRepository(product.getRepositoryName());
-      GHTag lastTag = CollectionUtils.firstElement(productRepo.listTags().toList());
-      product.setNewestPublishedDate(lastTag.getCommit().getCommitDate());
-      product.setNewestReleaseVersion(lastTag.getName());
+      List<GHTag> tags = productRepo.listTags().toList();
+      GHTag lastTag = CollectionUtils.firstElement(tags);
+      if (lastTag != null) {
+        product.setNewestPublishedDate(lastTag.getCommit().getCommitDate());
+        product.setNewestReleaseVersion(lastTag.getName());
+      }
+
+      String oldestTag = tags.stream().map(tag -> tag.getName().replaceAll(NON_NUMERIC_CHAR, Strings.EMPTY)).distinct()
+          .sorted(Comparator.reverseOrder()).reduce((tag1, tag2) -> tag2).orElse(null);
+      if (oldestTag != null && StringUtils.isBlank(product.getCompatibility())) {
+        String compatibility = getCompatibilityFromOldestTag(oldestTag);
+        product.setCompatibility(compatibility);
+      }
+
+      List<CompletableFuture<ProductModuleContent>> completableFutures = new ArrayList<>();
+      ExecutorService service = Executors.newFixedThreadPool(10);
+      for (GHTag ghtag : tags) {
+        completableFutures.add(CompletableFuture.supplyAsync(
+            () -> axonIvyProductRepoService.getReadmeAndProductContentsFromTag(product, productRepo, ghtag.getName()),
+            service));
+      }
+      completableFutures.forEach(CompletableFuture::join);
+      List<ProductModuleContent> productModuleContents = completableFutures.stream().map(completableFuture -> {
+        try {
+          return completableFuture.get();
+        } catch (InterruptedException | ExecutionException e) {
+          Thread.currentThread().interrupt();
+          log.error("Get readme and product json contents failed", e);
+          return null;
+        }
+      }).toList();
+      product.setProductModuleContents(productModuleContents);
     } catch (Exception e) {
       log.error("Cannot find repository by path {} {}", product.getRepositoryName(), e);
     }
+  }
+
+  // Cover 3 cases after removing non-numeric characters (8, 11.1 and 10.0.2)
+  public String getCompatibilityFromOldestTag(String oldestTag) {
+    if (!oldestTag.contains(CommonConstants.DOT_SEPARATOR)) {
+      return oldestTag + ".0+";
+    }
+    int firstDot = oldestTag.indexOf(CommonConstants.DOT_SEPARATOR);
+    int secondDot = oldestTag.indexOf(CommonConstants.DOT_SEPARATOR, firstDot + 1);
+    if (secondDot == -1) {
+      return oldestTag.concat(CommonConstants.PLUS);
+    }
+    return oldestTag.substring(0, secondDot).concat(CommonConstants.PLUS);
+  }
+
+  @Override
+  public Product fetchProductDetail(String id) {
+    return productRepository.findById(id).orElse(null);
   }
 }

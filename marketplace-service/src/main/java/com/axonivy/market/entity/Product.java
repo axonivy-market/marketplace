@@ -1,23 +1,24 @@
 package com.axonivy.market.entity;
 
-import com.axonivy.market.github.model.MavenArtifact;
+import static com.axonivy.market.constants.EntityConstants.PRODUCT;
+
+import java.io.Serializable;
+import java.util.Date;
+import java.util.List;
+
 import com.axonivy.market.model.MultilingualismValue;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+
+import com.axonivy.market.github.model.MavenArtifact;
+
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
-
-import java.io.Serial;
-import java.io.Serializable;
-import java.util.Date;
-import java.util.List;
-
-import static com.axonivy.market.constants.EntityConstants.PRODUCT;
 
 @Getter
 @Setter
@@ -25,8 +26,6 @@ import static com.axonivy.market.constants.EntityConstants.PRODUCT;
 @NoArgsConstructor
 @Document(PRODUCT)
 public class Product implements Serializable {
-
-  @Serial
   private static final long serialVersionUID = -8770801877877277258L;
   @Id
   private String id;
@@ -41,7 +40,6 @@ public class Product implements Serializable {
   private String type;
   private List<String> tags;
   private String vendor;
-  private String vendorImage;
   private String vendorUrl;
   private String platformReview;
   private String cost;
@@ -56,6 +54,7 @@ public class Product implements Serializable {
   private Integer installationCount;
   private Date newestPublishedDate;
   private String newestReleaseVersion;
+  private List<ProductModuleContent> productModuleContents;
   private List<MavenArtifact> artifacts;
 
   @Override

@@ -8,4 +8,8 @@ public interface ProductService {
   Page<Product> findProducts(String type, String keyword, String language, Pageable pageable);
 
   boolean syncLatestDataFromMarketRepo();
+
+  Product fetchProductDetail(String id);
+
+  String getCompatibilityFromOldestTag(String oldestTag);
 }

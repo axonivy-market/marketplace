@@ -1,5 +1,39 @@
 package com.axonivy.market.service;
 
+import static com.axonivy.market.constants.CommonConstants.LOGO_FILE;
+import static com.axonivy.market.constants.MetaConstants.META_FILE;
+import static com.axonivy.market.constants.CommonConstants.SLASH;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.*;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.*;
+import java.util.stream.Collectors;
+
+import com.axonivy.market.entity.ProductModuleContent;
+import com.axonivy.market.github.service.GHAxonIvyProductRepoService;
+import com.axonivy.market.model.MultilingualismValue;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.kohsuke.github.*;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Captor;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+
 import com.axonivy.market.constants.GitHubConstants;
 import com.axonivy.market.entity.GitHubRepoMeta;
 import com.axonivy.market.entity.Product;
@@ -10,30 +44,9 @@ import com.axonivy.market.enums.TypeOption;
 import com.axonivy.market.github.model.GitHubFile;
 import com.axonivy.market.github.service.GHAxonIvyMarketRepoService;
 import com.axonivy.market.github.service.GitHubService;
-import com.axonivy.market.model.MultilingualismValue;
 import com.axonivy.market.repository.GitHubRepoMetaRepository;
 import com.axonivy.market.repository.ProductRepository;
 import com.axonivy.market.service.impl.ProductServiceImpl;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.kohsuke.github.GHCommit;
-import org.kohsuke.github.GHContent;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.data.domain.*;
-
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.*;
-import java.util.stream.Collectors;
-
-import static com.axonivy.market.constants.CommonConstants.*;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.mockito.ArgumentMatchers.*;
-import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class ProductServiceImplTest {
@@ -41,17 +54,16 @@ class ProductServiceImplTest {
   private static final String SAMPLE_PRODUCT_ID = "amazon-comprehend";
   private static final String SAMPLE_PRODUCT_NAME = "Amazon Comprehend";
   private static final long LAST_CHANGE_TIME = 1718096290000l;
-  private static final Integer SAMPLE_PRODUCT_ONE_STAR_COUNT = 5;
-  private static final Integer SAMPLE_PRODUCT_TWO_STAR_COUNT = 10;
-  private static final Integer SAMPLE_PRODUCT_THREE_STAR_COUNT = 15;
-  private static final Integer SAMPLE_PRODUCT_FOUR_STAR_COUNT = 20;
-  private static final Integer SAMPLE_PRODUCT_FIVE_STAR_COUNT = 50;
-  private static final Pageable PAGEABLE = PageRequest.of(0, 20,
-      Sort.by(SortOption.ALPHABETICALLY.getOption()).descending());
+  private static final Pageable PAGEABLE =
+      PageRequest.of(0, 20, Sort.by(SortOption.ALPHABETICALLY.getOption()).descending());
   private static final String SHA1_SAMPLE = "35baa89091b2452b77705da227f1a964ecabc6c8";
+  public static final String RELEASE_TAG = "v10.0.2";
   private String keyword;
   private String langague;
   private Page<Product> mockResultReturn;
+
+  @Mock
+  private GHRepository ghRepository;
 
   @Mock
   private ProductRepository productRepository;
@@ -64,6 +76,12 @@ class ProductServiceImplTest {
 
   @Mock
   private GitHubService gitHubService;
+
+  @Mock
+  private GHAxonIvyProductRepoService ghAxonIvyProductRepoService;
+
+  @Captor
+  ArgumentCaptor<ArrayList<Product>> argumentCaptor;
 
   @InjectMocks
   private ProductServiceImpl productService;
@@ -177,9 +195,14 @@ class ProductServiceImplTest {
     assertEquals(SAMPLE_PRODUCT_NAME, result.getContent().get(0).getNames().getEn());
 
     // Test has keyword and type is connector
-    when(productRepository.searchByKeywordAndType(any(), any(), any(), any(Pageable.class))).thenReturn(
-        new PageImpl<>(mockResultReturn.stream().filter(product -> product.getNames().getEn().equals(SAMPLE_PRODUCT_NAME)
-            && product.getType().equals(TypeOption.CONNECTORS.getCode())).collect(Collectors.toList())));
+    when(
+        productRepository.searchByKeywordAndType(any(), any(), any(), any(Pageable.class)))
+            .thenReturn(
+                new PageImpl<>(
+                    mockResultReturn.stream()
+                        .filter(product -> product.getNames().getEn().equals(SAMPLE_PRODUCT_NAME)
+                            && product.getType().equals(TypeOption.CONNECTORS.getCode()))
+                        .collect(Collectors.toList())));
     // Executes
     result = productService.findProducts(TypeOption.CONNECTORS.getOption(), SAMPLE_PRODUCT_NAME, langague, PAGEABLE);
     assertTrue(result.hasContent());
@@ -191,6 +214,20 @@ class ProductServiceImplTest {
     var mockCommit = mockGHCommitHasSHA1(SHA1_SAMPLE);
     when(marketRepoService.getLastCommit(anyLong())).thenReturn(mockCommit);
     when(repoMetaRepository.findByRepoName(anyString())).thenReturn(null);
+    when(ghAxonIvyProductRepoService.getReadmeAndProductContentsFromTag(any(), any(), anyString()))
+        .thenReturn(mockReadmeProductContent());
+    when(gitHubService.getRepository(any())).thenReturn(ghRepository);
+    PagedIterable<GHTag> pagedIterable = mock(PagedIterable.class);
+    when(ghRepository.listTags()).thenReturn(pagedIterable);
+
+    GHTag mockTag = mock(GHTag.class);
+    GHCommit mockGHCommit = mock(GHCommit.class);
+
+    when(mockTag.getName()).thenReturn(RELEASE_TAG);
+    when(mockTag.getCommit()).thenReturn(mockGHCommit);
+    when(mockGHCommit.getCommitDate()).thenReturn(new Date());
+
+    when(pagedIterable.toList()).thenReturn(List.of(mockTag));
 
     var mockContent = mockGHContentAsMetaJSON();
     InputStream inputStream = this.getClass().getResourceAsStream(SLASH.concat(META_FILE));
@@ -201,8 +238,12 @@ class ProductServiceImplTest {
     when(marketRepoService.fetchAllMarketItems()).thenReturn(mockGHContentMap);
 
     // Executes
-    var result = productService.syncLatestDataFromMarketRepo();
-    assertEquals(false, result);
+    productService.syncLatestDataFromMarketRepo();
+
+    verify(productRepository).saveAll(argumentCaptor.capture());
+
+    assertThat(argumentCaptor.getValue().get(0).getProductModuleContents()).usingRecursiveComparison()
+        .isEqualTo(List.of(mockReadmeProductContent()));
   }
 
   @Test
@@ -224,11 +265,35 @@ class ProductServiceImplTest {
     String type = TypeOption.ALL.getOption();
     keyword = "on";
     langague = "en";
-    when(productRepository.searchByNameOrShortDescriptionRegex(keyword, langague, simplePageable)).thenReturn(mockResultReturn);
+    when(productRepository.searchByNameOrShortDescriptionRegex(keyword, langague, simplePageable))
+        .thenReturn(mockResultReturn);
 
     var result = productService.findProducts(type, keyword, langague, simplePageable);
     assertEquals(result, mockResultReturn);
     verify(productRepository).searchByNameOrShortDescriptionRegex(keyword, langague, simplePageable);
+  }
+
+  @Test
+  void testFetchProductDetail() {
+    String id = "amazon-comprehend";
+    Product mockProduct = mockResultReturn.getContent().get(0);
+    when(productRepository.findById(id)).thenReturn(Optional.ofNullable(mockProduct));
+    Product result = productService.fetchProductDetail(id);
+    assertEquals(mockProduct, result);
+    verify(productRepository, times(1)).findById(id);
+  }
+
+  @Test
+  void testGetCompatibilityFromNumericTag() {
+
+    String result = productService.getCompatibilityFromOldestTag("1.0.0");
+    assertEquals("1.0+", result);
+
+    result = productService.getCompatibilityFromOldestTag("8");
+    assertEquals("8.0+", result);
+
+    result = productService.getCompatibilityFromOldestTag("11.2");
+    assertEquals("11.2+", result);
   }
 
   private Page<Product> createPageProductsMock() {
@@ -251,12 +316,6 @@ class ProductServiceImplTest {
     return new PageImpl<>(mockProducts);
   }
 
-  private Product createProductMock() {
-    Product mockProduct = new Product();
-    mockProduct.setId(SAMPLE_PRODUCT_ID);
-    return mockProduct;
-  }
-
   private void mockMarketRepoMetaStatus() {
     var mockMartketRepoMeta = new GitHubRepoMeta();
     mockMartketRepoMeta.setRepoURL(GitHubConstants.AXONIVY_MARKETPLACE_REPO_NAME);
@@ -276,5 +335,13 @@ class ProductServiceImplTest {
     var mockGHContent = mock(GHContent.class);
     when(mockGHContent.getName()).thenReturn(META_FILE);
     return mockGHContent;
+  }
+
+  private ProductModuleContent mockReadmeProductContent() {
+    ProductModuleContent productModuleContent = new ProductModuleContent();
+    productModuleContent.setTag("v10.0.2");
+    productModuleContent.setName("Amazon Comprehend");
+    productModuleContent.setDescription("testDescription");
+    return productModuleContent;
   }
 }
