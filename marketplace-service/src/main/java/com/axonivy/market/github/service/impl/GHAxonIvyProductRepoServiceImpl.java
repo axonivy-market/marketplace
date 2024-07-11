@@ -154,8 +154,7 @@ public class GHAxonIvyProductRepoServiceImpl implements GHAxonIvyProductRepoServ
 			productModuleContent.setTag(tag);
 			getProductJsonContent(productModuleContent, contents);
 			List<GHContent> readmeFiles = contents.stream().filter(GHContent::isFile)
-					.filter(content -> GitHubConstants.PRODUCT_README_FILES.contains(content.getName()))
-					.collect(Collectors.toList());
+					.filter(content -> GitHubConstants.PRODUCT_README_FILES.contains(content.getName())).toList();
 			if (!CollectionUtils.isEmpty(readmeFiles)) {
 				for (GHContent readmeFile : readmeFiles) {
 					String readmeContents = new String(readmeFile.read().readAllBytes());
