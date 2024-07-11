@@ -33,6 +33,6 @@ jobs:
             sed -i "s/^SERVICE_MONGODB_PASSWORD=.*$/spring.data.mongodb.database=$MONGODB_DATABASE/" $ENV_FILE
 
       - name: Build and push Docker images
-        working-directory: ../../marketplace-build
+        working-directory: ./marketplace-build
         run: |
           docker-compose -f docker-compose.yml up -d
