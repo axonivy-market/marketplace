@@ -16,9 +16,6 @@ public class WebConfig implements WebMvcConfigurer {
 
   private final MarketHeaderInterceptor headerInterceptor;
 
-  @Value("${market.cors.allowed.origin.patterns}")
-  private String marketCorsAllowedOriginPatterns;
-
   @Value("${market.cors.allowed.origin.maxAge}")
   private int marketCorsAllowedOriginMaxAge;
 
