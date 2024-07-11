@@ -1,0 +1,57 @@
+name: UI CI Build
+run-name: Build on branch ${{github.ref_name}} triggered by ${{github.actor}}
+
+on:
+  push:
+    branches-ignore:
+      - develop
+      - master
+  workflow_dispatch:
+
+jobs:
+  build:
+    name: Build
+    runs-on: self-hosted
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+      - name: Install Dependencies
+        run: npm install
+      - name: Build project
+        run: npm run build
+
+  analysis:
+    name: Sonarqube
+    needs: build
+    runs-on: self-hosted
+    env:
+      SONAR_PROJECT_KEY: 'AxonIvy-Market-UI'
+      SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
+      SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+
+    steps:
+      - name: Execute Tests
+        run: npm run test
+      - uses: sonarsource/sonarqube-scan-action@master
+        env:
+          SONAR_TOKEN: ${{ env.SONAR_TOKEN }}
+          SONAR_HOST_URL: ${{ env.SONAR_HOST_URL }}
+        with:
+          args:
+            -Dsonar.projectKey=${{ env.SONAR_PROJECT_KEY }}
+      - name: SonarQube Quality Gate check
+        id: sonarqube-quality-gate-check
+        uses: sonarsource/sonarqube-quality-gate-action@master
+        timeout-minutes: 5
+        env:
+          SONAR_TOKEN: ${{ env.SONAR_TOKEN }}
+          SONAR_HOST_URL: ${{ env.SONAR_HOST_URL }}
+
+      - name: Clean up
+        run: |
+          rm -rf *

@@ -1,0 +1,42 @@
+name: Service DEV Build
+run-name: Build and Deploy Marketplace-Service on branch ${{github.ref_name}} by ${{github.actor}}
+
+on:
+  push:
+    branches: [ "develop" ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    name: Packge project and deploy to tomcat
+    runs-on: self-hosted
+
+    steps:
+    - uses: actions/checkout@v4
+    - name: Set up JDK 17
+      uses: actions/setup-java@v3
+      with:
+        java-version: '17'
+        distribution: 'temurin'
+        cache: maven
+    - name: Update configuration
+      env:
+        APP_PROPERTIES_FILE: './marketplace-service/src/main/resources/application.properties'
+        GITHUB_TOKEN_FILE: './marketplace-service/src/main/resources/github.token'
+        MONGODB_HOST: ${{ secrets.MONGODB_HOST }}
+        MONGODB_DATABASE: ${{ secrets.MONGODB_DATABASE }}
+        GH_TOKEN: ${{ secrets.GH_TOKEN }}
+      run: |
+          sed -i "s/^spring.data.mongodb.host=.*$/spring.data.mongodb.host=$MONGODB_HOST/" $APP_PROPERTIES_FILE
+          sed -i "s/^spring.data.mongodb.database=.*$/spring.data.mongodb.database=$MONGODB_DATABASE/" $APP_PROPERTIES_FILE
+          sed -i '1d;$d' $GITHUB_TOKEN_FILE && echo $GH_TOKEN > $GITHUB_TOKEN_FILE
+    - name: Build with Maven
+      run: mvn clean package -DskipTests --file ./marketplace-service/pom.xml
+    - name: Prepare deployment directory
+      run: mkdir -p deployment && cp ./marketplace-service/target/*.war deployment/
+    - name: Copy WAR to Tomcat server
+      run: sudo cp deployment/*.war /opt/tomcat/webapps/marketplace-service.war
+    - name: Restart Tomcat server
+      run: |
+          sudo systemctl stop tomcat
+          sudo systemctl start tomcat

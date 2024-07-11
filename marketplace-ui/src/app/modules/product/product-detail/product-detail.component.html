@@ -1,0 +1,18 @@
+<section class="d-md-flex d-flex-collumn justify-content-md-between">
+  <div>
+    <h1>
+      {{
+        product.names | multilingualism: languageService.getSelectedLanguage()
+      }}
+    </h1>
+    <p>
+      {{
+        product.shortDescriptions
+          | multilingualism: languageService.getSelectedLanguage()
+      }}
+    </p>
+  </div>
+  <app-product-version-action
+    class="align-self-center"
+    [productId]="productId"></app-product-version-action>
+</section>
