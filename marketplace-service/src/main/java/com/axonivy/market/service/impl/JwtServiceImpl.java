@@ -48,7 +48,7 @@ public class JwtServiceImpl implements JwtService {
     return getClaimsJws(token).getBody();
   }
 
-  private Jws<Claims> getClaimsJws(String token) {
+  public Jws<Claims> getClaimsJws(String token) {
     return Jwts.parser().setSigningKey(secret).parseClaimsJws(token);
   }
 }

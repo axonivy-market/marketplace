@@ -1,6 +1,8 @@
 package com.axonivy.market.service;
 
 import com.axonivy.market.github.service.impl.GitHubServiceImpl;
+import com.axonivy.market.repository.UserRepository;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.kohsuke.github.GHContent;
@@ -8,14 +10,16 @@ import org.kohsuke.github.GHRepository;
 import org.kohsuke.github.GitHub;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.boot.web.client.RestTemplateBuilder;
+import org.springframework.web.client.RestTemplate;
 
 import java.io.IOException;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class GitHubServiceImplTest {
@@ -27,8 +31,24 @@ class GitHubServiceImplTest {
   @Mock
   GHRepository ghRepository;
 
+  @Mock
+  private RestTemplateBuilder restTemplateBuilder;
+
+  @Mock
+  private RestTemplate restTemplate;
+
+  @Mock
+  private UserRepository userRepository;
+
   @InjectMocks
   private GitHubServiceImpl gitHubService;
+
+  @BeforeEach
+  public void setUp() {
+    MockitoAnnotations.openMocks(this);
+    // Use lenient stubbing
+    lenient().when(restTemplateBuilder.build()).thenReturn(restTemplate);
+  }
 
   @Test
   void testGetGithub() throws IOException {
@@ -51,5 +71,4 @@ class GitHubServiceImplTest {
     var result = gitHubService.getDirectoryContent(ghRepository, "", "");
     assertEquals(0, result.size());
   }
-
 }
