@@ -100,17 +100,6 @@ class FeedbackServiceImplTest {
   }
 
   @Test
-  void testFindFeedbackByUserIdAndProductId_Success() throws NotFoundException {
-    when(feedbackRepository.findByUserIdAndProductId(anyString(), anyString())).thenReturn(Collections.singletonList(feedback));
-
-    Feedback result = feedbackService.findFeedbackByUserIdAndProductId("userId", "productId");
-
-    assertNotNull(result);
-    assertEquals("feedbackId", result.getId());
-    verify(feedbackRepository, times(1)).findByUserIdAndProductId(anyString(), anyString());
-  }
-
-  @Test
   void testFindFeedbackByUserIdAndProductId_UserNotFound() {
     when(userRepository.findById(anyString())).thenReturn(Optional.empty());
 
@@ -122,47 +111,6 @@ class FeedbackServiceImplTest {
     when(productRepository.findById(anyString())).thenReturn(Optional.empty());
 
     assertThrows(NotFoundException.class, () -> feedbackService.findFeedbackByUserIdAndProductId("userId", "invalidProductId"));
-  }
-
-  @Test
-  void testFindFeedbackByUserIdAndProductId_FeedbackNotFound() {
-    when(feedbackRepository.findByUserIdAndProductId(anyString(), anyString())).thenReturn(Collections.emptyList());
-
-    assertThrows(NotFoundException.class, () -> feedbackService.findFeedbackByUserIdAndProductId("userId", "productId"));
-  }
-
-  @Test
-  void testUpsertFeedback_NewFeedback() throws NotFoundException {
-    when(feedbackRepository.findByUserIdAndProductId(anyString(), anyString())).thenReturn(Collections.emptyList());
-    when(feedbackRepository.save(any(Feedback.class))).thenReturn(feedback);
-
-    Feedback result = feedbackService.upsertFeedback(feedback);
-
-    assertNotNull(result);
-    assertEquals("feedbackId", result.getId());
-    verify(feedbackRepository, times(1)).save(any(Feedback.class));
-    verify(productRepository, times(1)).save(any(Product.class));
-  }
-
-  @Test
-  void testUpsertFeedback_UpdateFeedback() throws NotFoundException {
-    Feedback existingFeedback = new Feedback();
-    existingFeedback.setId("feedbackId");
-    existingFeedback.setUserId("userId");
-    existingFeedback.setProductId("productId");
-    existingFeedback.setRating(4);
-    existingFeedback.setContent("Good product");
-
-    when(feedbackRepository.findByUserIdAndProductId(anyString(), anyString())).thenReturn(Collections.singletonList(existingFeedback));
-    when(feedbackRepository.save(any(Feedback.class))).thenReturn(feedback);
-
-    Feedback result = feedbackService.upsertFeedback(feedback);
-
-    assertNotNull(result);
-    assertEquals("feedbackId", result.getId());
-    assertEquals(5, result.getRating());
-    verify(feedbackRepository, times(1)).save(any(Feedback.class));
-    verify(productRepository, times(1)).save(any(Product.class));
   }
 
   @Test

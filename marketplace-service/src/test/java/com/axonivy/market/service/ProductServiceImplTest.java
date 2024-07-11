@@ -238,11 +238,6 @@ class ProductServiceImplTest {
     mockProduct.setId(SAMPLE_PRODUCT_ID);
     name.setEn(SAMPLE_PRODUCT_NAME);
     mockProduct.setNames(name);
-    mockProduct.setOneStarCount(SAMPLE_PRODUCT_ONE_STAR_COUNT);
-    mockProduct.setTwoStarCount(SAMPLE_PRODUCT_TWO_STAR_COUNT);
-    mockProduct.setThreeStarCount(SAMPLE_PRODUCT_THREE_STAR_COUNT);
-    mockProduct.setFourStarCount(SAMPLE_PRODUCT_FOUR_STAR_COUNT);
-    mockProduct.setFiveStarCount(SAMPLE_PRODUCT_FIVE_STAR_COUNT);
     mockProduct.setType("connector");
     mockProducts.add(mockProduct);
 
@@ -259,11 +254,6 @@ class ProductServiceImplTest {
   private Product createProductMock() {
     Product mockProduct = new Product();
     mockProduct.setId(SAMPLE_PRODUCT_ID);
-    mockProduct.setOneStarCount(SAMPLE_PRODUCT_ONE_STAR_COUNT);
-    mockProduct.setTwoStarCount(SAMPLE_PRODUCT_TWO_STAR_COUNT);
-    mockProduct.setThreeStarCount(SAMPLE_PRODUCT_THREE_STAR_COUNT);
-    mockProduct.setFourStarCount(SAMPLE_PRODUCT_FOUR_STAR_COUNT);
-    mockProduct.setFiveStarCount(SAMPLE_PRODUCT_FIVE_STAR_COUNT);
     return mockProduct;
   }
 
