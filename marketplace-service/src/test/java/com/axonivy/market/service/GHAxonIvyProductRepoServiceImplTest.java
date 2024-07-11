@@ -64,9 +64,9 @@ class GHAxonIvyProductRepoServiceImplTest {
   private GHAxonIvyProductRepoServiceImpl axonivyProductRepoServiceImpl;
 
   void setup() throws IOException {
-        when(gitHubService.getOrganization(any())).thenReturn(mockGHOrganization);
-        when(mockGHOrganization.getRepository(any())).thenReturn(ghRepository);
-    }
+    when(gitHubService.getOrganization(any())).thenReturn(mockGHOrganization);
+    when(mockGHOrganization.getRepository(any())).thenReturn(ghRepository);
+  }
 
   @AfterEach
   void after() throws IOException {
@@ -190,7 +190,8 @@ class GHAxonIvyProductRepoServiceImplTest {
 
   @Test
   void testGetReadmeAndProductContentsFromTag() throws IOException {
-    String readmeContentWithImage = "#Product-name\n Test README\n## Demo\nDemo content\n## Setup\nSetup content";
+    String readmeContentWithImage =
+        "#Product-name\n Test README\n## Demo\nDemo content\n## Setup\nSetup content (image.png)";
 
     GHContent mockContent = createMockProductFolderWithProductJson();
 
@@ -207,6 +208,7 @@ class GHAxonIvyProductRepoServiceImplTest {
     assertEquals("iar", result.getType());
     assertEquals("Test README", result.getDescription());
     assertEquals("Demo content", result.getDemo());
+    assertEquals("Setup content (https://raw.githubusercontent.com/image.png)", result.getSetup());
   }
 
   @Test
@@ -366,7 +368,8 @@ class GHAxonIvyProductRepoServiceImplTest {
   private static GHContent createMockProductJson() throws IOException {
     GHContent mockProductJson = mock(GHContent.class);
     when(mockProductJson.isFile()).thenReturn(true);
-    when(mockProductJson.getName()).thenReturn(ProductJsonConstants.PRODUCT_JSON_FILE);
+    when(mockProductJson.getName()).thenReturn(ProductJsonConstants.PRODUCT_JSON_FILE, IMAGE_NAME);
+    when(mockProductJson.getDownloadUrl()).thenReturn(IMAGE_DOWNLOAD_URL);
     return mockProductJson;
   }
 }
