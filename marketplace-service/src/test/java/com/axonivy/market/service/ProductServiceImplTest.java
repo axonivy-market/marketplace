@@ -1,15 +1,18 @@
 package com.axonivy.market.service;
 
 import static com.axonivy.market.constants.CommonConstants.LOGO_FILE;
-import static com.axonivy.market.constants.MetaConstants.META_FILE;
 import static com.axonivy.market.constants.CommonConstants.SLASH;
+import static com.axonivy.market.constants.MetaConstants.META_FILE;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -19,14 +22,15 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
-import com.axonivy.market.entity.ProductModuleContent;
-import com.axonivy.market.github.service.GHAxonIvyProductRepoService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.kohsuke.github.*;
+import org.kohsuke.github.GHCommit;
+import org.kohsuke.github.GHContent;
+import org.kohsuke.github.GHRepository;
+import org.kohsuke.github.GHTag;
+import org.kohsuke.github.PagedIterable;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.InjectMocks;
@@ -41,14 +45,16 @@ import org.springframework.data.domain.Sort;
 import com.axonivy.market.constants.GitHubConstants;
 import com.axonivy.market.entity.GitHubRepoMeta;
 import com.axonivy.market.entity.Product;
+import com.axonivy.market.entity.ProductModuleContent;
 import com.axonivy.market.enums.FileStatus;
 import com.axonivy.market.enums.FileType;
+import com.axonivy.market.enums.Language;
 import com.axonivy.market.enums.SortOption;
 import com.axonivy.market.enums.TypeOption;
 import com.axonivy.market.github.model.GitHubFile;
 import com.axonivy.market.github.service.GHAxonIvyMarketRepoService;
+import com.axonivy.market.github.service.GHAxonIvyProductRepoService;
 import com.axonivy.market.github.service.GitHubService;
-import com.axonivy.market.model.MultilingualismValue;
 import com.axonivy.market.repository.GitHubRepoMetaRepository;
 import com.axonivy.market.repository.ProductRepository;
 import com.axonivy.market.service.impl.ProductServiceImpl;
@@ -289,8 +295,8 @@ class ProductServiceImplTest {
 		var mockProducts = new ArrayList<Product>();
 		Product mockProduct = new Product();
 		mockProduct.setId(SAMPLE_PRODUCT_ID);
-		MultilingualismValue name = new MultilingualismValue();
-		name.setEn(SAMPLE_PRODUCT_NAME);
+		Map<String, String> name = new HashMap<>();
+		name.put(Language.EN.getValue(), SAMPLE_PRODUCT_NAME);
 		mockProduct.setNames(name);
 		mockProduct.setType("connector");
 		mockProducts.add(mockProduct);
@@ -298,8 +304,8 @@ class ProductServiceImplTest {
 
 		Product mockProduct2nd = new Product();
 		mockProduct2nd.setId("tel-search-ch-connector");
-		MultilingualismValue productName = new MultilingualismValue();
-		name.setEn("Swiss phone directory");
+		Map<String, String> productName = new HashMap<>();
+		productName.put(Language.EN.getValue(), "Swiss phone directory");
 		mockProduct2nd.setNames(productName);
 		mockProduct2nd.setType("util");
 		mockProducts.add(mockProduct);
@@ -331,8 +337,8 @@ class ProductServiceImplTest {
 		ProductModuleContent productModuleContent = new ProductModuleContent();
 		productModuleContent.setTag("v10.0.2");
 		productModuleContent.setName("Amazon Comprehend");
-		MultilingualismValue description = new MultilingualismValue();
-		description.setEn("testDescription");
+		Map<String, String> description = new HashMap();
+		description.put("en", "testDescription");
 		productModuleContent.setDescription(description);;
 		return productModuleContent;
 	}

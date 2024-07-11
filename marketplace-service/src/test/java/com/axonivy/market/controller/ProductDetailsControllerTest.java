@@ -4,27 +4,29 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
-import com.axonivy.market.model.MavenArtifactVersionModel;
-import com.axonivy.market.model.MultilingualismValue;
-import com.axonivy.market.service.VersionService;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
-
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
-import java.util.List;
-import java.util.Objects;
-
 import com.axonivy.market.assembler.ProductDetailModelAssembler;
 import com.axonivy.market.entity.Product;
+import com.axonivy.market.enums.Language;
+import com.axonivy.market.model.MavenArtifactVersionModel;
 import com.axonivy.market.model.ProductDetailModel;
 import com.axonivy.market.service.ProductService;
+import com.axonivy.market.service.VersionService;
+
 import lombok.extern.log4j.Log4j2;
 
 @Log4j2
@@ -72,15 +74,16 @@ class ProductDetailsControllerTest {
 	}
 
 	private Product mockProduct() {
-		MultilingualismValue productName = new MultilingualismValue() {{setEn("Docker");}};
+		Map<String, String> productName = new HashMap<>();
+		productName.put(Language.EN.getValue(), "Docker");
 		return Product.builder().id("docker-connector").names(productName).language("English").build();
 	}
 
 	private ProductDetailModel createProductMockWithDetails() {
 		ProductDetailModel mockProduct = new ProductDetailModel();
 		mockProduct.setId("docker-connector");
-		MultilingualismValue name = new MultilingualismValue();
-		name.setEn("Docker");
+		Map<String, String> name = new HashMap<>();
+		name.put(Language.EN.getValue(), "Docker");
 		mockProduct.setNames(name);
 		mockProduct.setType("connector");
 		mockProduct.setCompatibility("10.0+");

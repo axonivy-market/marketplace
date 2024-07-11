@@ -32,7 +32,6 @@ import com.axonivy.market.github.model.MavenArtifact;
 import com.axonivy.market.github.service.GHAxonIvyProductRepoService;
 import com.axonivy.market.github.service.GitHubService;
 import com.axonivy.market.github.util.GitHubUtils;
-import com.axonivy.market.model.MultilingualismValue;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -271,12 +270,12 @@ public class GHAxonIvyProductRepoServiceImpl implements GHAxonIvyProductRepoServ
 	private void setDescriptionWithLocale(ProductModuleContent productModuleContent, String description,
 			String locale) {
 		if (productModuleContent.getDescription() == null) {
-			productModuleContent.setDescription(new MultilingualismValue());
+			productModuleContent.setDescription(new HashMap<>());
 		}
-		if (Language.DE.getValue().equalsIgnoreCase(locale)) {
-			productModuleContent.getDescription().setDe(description);
+		if (StringUtils.isEmpty(locale)) {
+			productModuleContent.getDescription().put(Language.EN.getValue(), description);
 		} else {
-			productModuleContent.getDescription().setEn(description);
+			productModuleContent.getDescription().put(locale.toLowerCase(), description);
 		}
 	}
 

@@ -1,13 +1,12 @@
 package com.axonivy.market.entity;
 
+import java.io.Serializable;
+import java.util.Map;
+
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-
-import java.io.Serializable;
-
-import com.axonivy.market.model.MultilingualismValue;
 
 @Getter
 @Setter
@@ -16,7 +15,7 @@ import com.axonivy.market.model.MultilingualismValue;
 public class ProductModuleContent implements Serializable {
 	private static final long serialVersionUID = 1L;
 	private String tag;
-	private MultilingualismValue description;
+	private Map<String, String> description;
 	private String setup;
 	private String demo;
 	private Boolean isDependency;

@@ -1,6 +1,7 @@
 package com.axonivy.market.model;
 
 import java.util.List;
+import java.util.Map;
 
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
@@ -21,8 +22,8 @@ import lombok.Setter;
 @JsonInclude(Include.NON_NULL)
 public class ProductModel extends RepresentationModel<ProductModel> {
 	private String id;
-	private MultilingualismValue names;
-	private MultilingualismValue shortDescriptions;
+	private Map<String, String> names;
+	private Map<String, String> shortDescriptions;
 	private String logoUrl;
 	private String type;
 	private List<String> tags;

@@ -5,7 +5,9 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -26,9 +28,9 @@ import org.springframework.http.HttpStatus;
 import com.axonivy.market.assembler.ProductModelAssembler;
 import com.axonivy.market.entity.Product;
 import com.axonivy.market.enums.ErrorCode;
+import com.axonivy.market.enums.Language;
 import com.axonivy.market.enums.SortOption;
 import com.axonivy.market.enums.TypeOption;
-import com.axonivy.market.model.MultilingualismValue;
 import com.axonivy.market.service.ProductService;
 
 @ExtendWith(MockitoExtension.class)
@@ -85,8 +87,8 @@ class ProductControllerTest {
     assertEquals(HttpStatus.OK, result.getStatusCode());
     assertTrue(result.hasBody());
     assertEquals(1, result.getBody().getContent().size());
-    assertEquals(PRODUCT_NAME_SAMPLE, result.getBody().getContent().iterator().next().getNames().getEn());
-    assertEquals(PRODUCT_NAME_DE_SAMPLE, result.getBody().getContent().iterator().next().getNames().getDe());
+    assertEquals(PRODUCT_NAME_SAMPLE, result.getBody().getContent().iterator().next().getNames().get(Language.EN.getValue()));
+    assertEquals(PRODUCT_NAME_DE_SAMPLE, result.getBody().getContent().iterator().next().getNames().get(Language.DE.getValue()));
   }
 
   @Test
@@ -100,13 +102,13 @@ class ProductControllerTest {
   private Product createProductMock() {
     Product mockProduct = new Product();
     mockProduct.setId("amazon-comprehend");
-    MultilingualismValue name = new MultilingualismValue();
-    name.setEn(PRODUCT_NAME_SAMPLE);
-    name.setDe(PRODUCT_NAME_DE_SAMPLE);
+    Map<String, String> name = new HashMap<>();
+    name.put(Language.EN.getValue(), PRODUCT_NAME_SAMPLE);
+    name.put(Language.DE.getValue(), PRODUCT_NAME_DE_SAMPLE);
     mockProduct.setNames(name);
-    MultilingualismValue shortDescription = new MultilingualismValue();
-    shortDescription.setEn(PRODUCT_DESC_SAMPLE);
-    shortDescription.setDe(PRODUCT_DESC_DE_SAMPLE);
+    Map<String, String>  shortDescription = new HashMap<>();
+    shortDescription.put(Language.EN.getValue(), PRODUCT_DESC_SAMPLE);
+    shortDescription.put(Language.DE.getValue(), PRODUCT_DESC_DE_SAMPLE);
     mockProduct.setShortDescriptions(shortDescription);
     mockProduct.setType("connector");
     mockProduct.setTags(List.of("AI"));

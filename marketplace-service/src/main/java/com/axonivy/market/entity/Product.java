@@ -5,21 +5,21 @@ import static com.axonivy.market.constants.EntityConstants.PRODUCT;
 import java.io.Serializable;
 import java.util.Date;
 import java.util.List;
-
-import com.axonivy.market.model.MultilingualismValue;
-import com.fasterxml.jackson.annotation.JsonProperty;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
-import lombok.Builder;
-
-import com.axonivy.market.github.model.MavenArtifact;
+import java.util.Map;
 
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
+
+import com.axonivy.market.github.model.MavenArtifact;
+import com.fasterxml.jackson.annotation.JsonProperty;
+
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 @Getter
 @Setter
@@ -33,10 +33,10 @@ public class Product implements Serializable {
 	private String id;
 	private String marketDirectory;
 	@JsonProperty
-	private MultilingualismValue names;
+	private Map<String, String> names;
 	private String version;
 	@JsonProperty
-	private MultilingualismValue shortDescriptions;
+	private Map<String, String> shortDescriptions;
 	private String logoUrl;
 	private Boolean listed;
 	private String type;
