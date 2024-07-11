@@ -8,6 +8,8 @@ import java.net.URL;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 import com.axonivy.market.constants.CommonConstants;
 import com.axonivy.market.github.service.GHAxonIvyProductRepoService;
@@ -263,9 +265,11 @@ public class ProductServiceImpl implements ProductService {
       }
 
       List<CompletableFuture<ProductModuleContent>> completableFutures = new ArrayList<>();
+      ExecutorService service = Executors.newFixedThreadPool(10);
       for (GHTag ghtag : tags) {
         completableFutures.add(CompletableFuture.supplyAsync(
-            () -> axonIvyProductRepoService.getReadmeAndProductContentsFromTag(product, productRepo, ghtag.getName())));
+            () -> axonIvyProductRepoService.getReadmeAndProductContentsFromTag(product, productRepo, ghtag.getName()),
+            service));
       }
       completableFutures.forEach(CompletableFuture::join);
       List<ProductModuleContent> productModuleContents = completableFutures.stream().map(completableFuture -> {
@@ -297,7 +301,7 @@ public class ProductServiceImpl implements ProductService {
   }
 
   @Override
-  public Product fetchProductDetail(String id, String type) {
-    return productRepository.findByIdAndType(id, type);
+  public Product fetchProductDetail(String id) {
+    return productRepository.findById(id).orElse(null);
   }
 }

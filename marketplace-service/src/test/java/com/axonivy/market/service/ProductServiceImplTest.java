@@ -13,12 +13,7 @@ import static org.mockito.Mockito.*;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import com.axonivy.market.entity.ProductModuleContent;
@@ -281,12 +276,11 @@ class ProductServiceImplTest {
   @Test
   void testFetchProductDetail() {
     String id = "amazon-comprehend";
-    String type = "connector";
     Product mockProduct = mockResultReturn.getContent().get(0);
-    when(productRepository.findByIdAndType(id, type)).thenReturn(mockProduct);
-    Product result = productService.fetchProductDetail(id, type);
+    when(productRepository.findById(id)).thenReturn(Optional.ofNullable(mockProduct));
+    Product result = productService.fetchProductDetail(id);
     assertEquals(mockProduct, result);
-    verify(productRepository, times(1)).findByIdAndType(id, type);
+    verify(productRepository, times(1)).findById(id);
   }
 
   @Test

@@ -35,9 +35,7 @@ public class ProductDetailModelAssembler extends RepresentationModelAssemblerSup
   private ProductDetailModel createModel(Product product, String tag) {
     ProductDetailModel model = instantiateModel(product);
     productModelAssembler.createResource(model, product);
-    model.add(
-        linkTo(methodOn(ProductDetailsController.class).findProductDetails(product.getId(), product.getType(), tag))
-            .withSelfRel());
+    model.add(linkTo(methodOn(ProductDetailsController.class).findProductDetails(product.getId(), tag)).withSelfRel());
     createDetailResource(model, product, tag);
     return model;
   }

@@ -10,7 +10,7 @@ public interface ProductService {
 
   boolean syncLatestDataFromMarketRepo();
 
-  Product fetchProductDetail(String id, String type);
+  Product fetchProductDetail(String id);
 
   String getCompatibilityFromOldestTag(String oldestTag);
 }
