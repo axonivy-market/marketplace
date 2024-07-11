@@ -9,6 +9,7 @@ import com.axonivy.market.entity.ProductModuleContent;
 import com.axonivy.market.model.ProductDetailModel;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.hateoas.server.mvc.RepresentationModelAssemblerSupport;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
@@ -17,6 +18,7 @@ import java.util.List;
 public class ProductDetailModelAssembler extends RepresentationModelAssemblerSupport<Product, ProductDetailModel> {
 
   private final ProductModelAssembler productModelAssembler;
+  private ResponseEntity<ProductDetailModel> selfLinkWithTag;
 
   public ProductDetailModelAssembler(ProductModelAssembler productModelAssembler) {
     super(ProductDetailsController.class, ProductDetailModel.class);
@@ -35,7 +37,12 @@ public class ProductDetailModelAssembler extends RepresentationModelAssemblerSup
   private ProductDetailModel createModel(Product product, String tag) {
     ProductDetailModel model = instantiateModel(product);
     productModelAssembler.createResource(model, product);
-    model.add(linkTo(methodOn(ProductDetailsController.class).findProductDetails(product.getId(), tag)).withSelfRel());
+    if (StringUtils.isBlank(tag)) {
+      selfLinkWithTag = methodOn(ProductDetailsController.class).findProductDetails(product.getId());
+    } else {
+      selfLinkWithTag = methodOn(ProductDetailsController.class).findProductDetailsByVersion(product.getId(), tag);
+    }
+    model.add(linkTo(selfLinkWithTag).withSelfRel());
     createDetailResource(model, product, tag);
     return model;
   }

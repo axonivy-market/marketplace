@@ -49,7 +49,7 @@ class ProductDetailsControllerTest {
     ResponseEntity<ProductDetailModel> mockExpectedResult =
         new ResponseEntity<>(createProductMockWithDetails(), HttpStatus.OK);
 
-    ResponseEntity<ProductDetailModel> result = productDetailsController.findProductDetails("docker-connector", null);
+    ResponseEntity<ProductDetailModel> result = productDetailsController.findProductDetails("docker-connector");
 
     assertEquals(HttpStatus.OK, result.getStatusCode());
     assertEquals(result, mockExpectedResult);

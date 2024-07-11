@@ -32,11 +32,17 @@ public class ProductDetailsController {
     this.detailModelAssembler = detailModelAssembler;
   }
 
-  @GetMapping("/{id}")
-  public ResponseEntity<ProductDetailModel> findProductDetails(@PathVariable("id") String id,
-      @RequestParam(name = "tag", required = false) String tag) {
+  @GetMapping("/{id}/{tag}")
+  public ResponseEntity<ProductDetailModel> findProductDetailsByVersion(@PathVariable("id") String id,
+      @PathVariable("tag") String tag) {
     var productDetail = productService.fetchProductDetail(id);
     return new ResponseEntity<>(detailModelAssembler.toModel(productDetail, tag), HttpStatus.OK);
+  }
+
+  @GetMapping("/{id}")
+  public ResponseEntity<ProductDetailModel> findProductDetails(@PathVariable("id") String id) {
+    var productDetail = productService.fetchProductDetail(id);
+    return new ResponseEntity<>(detailModelAssembler.toModel(productDetail, null), HttpStatus.OK);
   }
 
   @GetMapping("/{id}/versions")
