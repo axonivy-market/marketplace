@@ -77,8 +77,8 @@ public class ProductController {
 
   @SuppressWarnings("unchecked")
   private ResponseEntity<PagedModel<ProductModel>> generateEmptyPagedModel() {
-    var emptyPagedModel = (PagedModel<ProductModel>) pagedResourcesAssembler
-        .toEmptyModel(Page.empty(), ProductModel.class);
+    var emptyPagedModel =
+        (PagedModel<ProductModel>) pagedResourcesAssembler.toEmptyModel(Page.empty(), ProductModel.class);
     return new ResponseEntity<>(emptyPagedModel, HttpStatus.OK);
   }
 }
