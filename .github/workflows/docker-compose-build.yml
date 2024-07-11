@@ -1,0 +1,37 @@
+name: Run Docker compose up
+
+on:
+  push:
+    branches: [ "develop" ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: self-hosted
+
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up JDK 17
+        uses: actions/setup-java@v3
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+          cache: maven
+      - name: Update configuration
+        env:
+          ENV_FILE: '../../marketplace-build/.env'
+          MONGODB_HOST: ${{ secrets.MONGODB_HOST }}
+          MONGODB_DATABASE: ${{ secrets.MONGODB_DATABASE }}
+          GH_TOKEN: ${{ secrets.GH_TOKEN }}
+        run: |
+            sed -i "s/^MONGODB_INITDB_ROOT_USERNAME=.*$/spring.data.mongodb.host=$MONGODB_HOST/" $ENV_FILE
+            sed -i "s/^MONGODB_INITDB_ROOT_PASSWORD=.*$/spring.data.mongodb.database=$MONGODB_DATABASE/" $ENV_FILE
+            sed -i "s/^SERVICE_MONGODB_HOST=.*$/spring.data.mongodb.database=$MONGODB_DATABASE/" $ENV_FILE
+            sed -i "s/^SERVICE_MONGODB_DATABASE=.*$/spring.data.mongodb.database=$MONGODB_DATABASE/" $ENV_FILE
+            sed -i "s/^SERVICE_MONGODB_USER=.*$/spring.data.mongodb.database=$MONGODB_DATABASE/" $ENV_FILE
+            sed -i "s/^SERVICE_MONGODB_PASSWORD=.*$/spring.data.mongodb.database=$MONGODB_DATABASE/" $ENV_FILE
+
+      - name: Build and push Docker images
+        working-directory: ../../marketplace-build
+        run: |
+          docker-compose -f docker-compose.yml up -d

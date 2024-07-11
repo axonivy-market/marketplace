@@ -11,6 +11,7 @@ import org.springframework.data.web.PagedResourcesAssembler;
 import org.springframework.hateoas.PagedModel;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -56,6 +57,7 @@ public class ProductController {
     return new ResponseEntity<>(pageResources, HttpStatus.OK);
   }
 
+  @CrossOrigin(originPatterns = "http://localhost:[*]")
   @PutMapping(SYNC)
   public ResponseEntity<Message> syncProducts() {
     var stopWatch = new StopWatch();

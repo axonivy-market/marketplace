@@ -1,1 +1,52 @@
-Placeholder
+version: '3.8'
+
+name: marketplace
+
+services:
+  mongodb:
+    image: mongodb/mongodb-community-server:7.0.0-ubi8
+    container_name: mongodb-7.0.0
+    restart: always
+    ports:
+      - "27017:27017"
+    environment:
+      MONGODB_INITDB_ROOT_USERNAME: ${MONGODB_INITDB_ROOT_USERNAME}
+      MONGODB_INITDB_ROOT_PASSWORD: ${MONGODB_INITDB_ROOT_USERNAME}
+    volumes:
+      - mongodata:/data/db
+      - ./mongod.conf:/etc/mongod.conf
+    command: ["mongod", "--config", "/etc/mongod.conf"]
+
+  nginx:
+    build:
+      context: .
+      additional_contexts:
+        assets: ../marketplace-ui/dist/
+      dockerfile: Dockerfile-NGINX
+    restart: always
+    volumes:
+      - ./config/nginx/nginx.conf:/etc/nginx/nginx.conf
+    ports:
+      - "85:80"
+
+  marketplace-service:
+    image: marketplace-service
+    container_name: marketplace-service
+    restart: always
+    environment:
+      - MONGODB_HOST=${SERVICE_MONGODB_HOST}
+      - MONGODB_DATABASE=${SERVICE_MONGODB_DATABASE}
+      - MONGODB_USER=${SERVICE_MONGODB_USER}
+      - MONGODB_PASSWORD=${SERVICE_MONGODB_PASSWORD}
+    build:
+      context: .
+      additional_contexts:
+        assets: ../marketplace-service/target/
+      dockerfile: Dockerfile-Service
+    volumes:
+      - ../marketplace-service/target/marketplace-service-0.0.1-SNAPSHOT.war:/usr/local/tomcat/webapps/marketplace-service.war
+    ports:
+      - "9090:8080"
+
+volumes:
+  mongodata:
