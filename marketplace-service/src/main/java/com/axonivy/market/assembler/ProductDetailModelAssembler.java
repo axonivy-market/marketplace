@@ -18,7 +18,6 @@ import java.util.List;
 public class ProductDetailModelAssembler extends RepresentationModelAssemblerSupport<Product, ProductDetailModel> {
 
   private final ProductModelAssembler productModelAssembler;
-  private ResponseEntity<ProductDetailModel> selfLinkWithTag;
 
   public ProductDetailModelAssembler(ProductModelAssembler productModelAssembler) {
     super(ProductDetailsController.class, ProductDetailModel.class);
@@ -35,6 +34,7 @@ public class ProductDetailModelAssembler extends RepresentationModelAssemblerSup
   }
 
   private ProductDetailModel createModel(Product product, String tag) {
+    ResponseEntity<ProductDetailModel> selfLinkWithTag;
     ProductDetailModel model = instantiateModel(product);
     productModelAssembler.createResource(model, product);
     if (StringUtils.isBlank(tag)) {
