@@ -94,7 +94,7 @@ public class FeedbackController {
 
   @Operation(summary = "Find rating information of product by id")
   @GetMapping("/product/{productId}/rating")
-  public ResponseEntity<List<ProductRating>> getProductRating(@PathVariable String productId) {
+  public ResponseEntity<List<ProductRating>> getProductRating(@PathVariable("productId") String productId) {
     return ResponseEntity.ok(feedbackService.getProductRatingById(productId));
   }
 
