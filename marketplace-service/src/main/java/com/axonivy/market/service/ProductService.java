@@ -11,4 +11,7 @@ public interface ProductService {
   boolean syncLatestDataFromMarketRepo();
 
   int updateInstallationCountForProduct(String key);
+  Product fetchProductDetail(String id);
+
+  String getCompatibilityFromOldestTag(String oldestTag);
 }
