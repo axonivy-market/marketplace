@@ -1,13 +1,12 @@
 package com.axonivy.market.github.service;
 
-import java.util.List;
-import java.util.Map;
-
+import com.axonivy.market.github.model.GitHubFile;
 import org.kohsuke.github.GHCommit;
 import org.kohsuke.github.GHContent;
 import org.kohsuke.github.GHRepository;
 
-import com.axonivy.market.github.model.GitHubFile;
+import java.util.List;
+import java.util.Map;
 
 public interface GHAxonIvyMarketRepoService {
 

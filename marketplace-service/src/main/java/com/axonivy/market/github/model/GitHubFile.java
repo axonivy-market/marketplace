@@ -1,13 +1,12 @@
 package com.axonivy.market.github.model;
 
-import java.util.Date;
-
 import com.axonivy.market.enums.FileStatus;
 import com.axonivy.market.enums.FileType;
-
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+
+import java.util.Date;
 
 @Getter
 @Setter
