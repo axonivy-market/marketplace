@@ -54,7 +54,7 @@ public class FeedbackController {
   }
 
   @GetMapping("/{id}")
-  public ResponseEntity<FeedbackModel> findFeedback(@PathVariable String id) {
+  public ResponseEntity<FeedbackModel> findFeedback(@PathVariable("id") String id) {
     Feedback feedback = feedbackService.findFeedback(id);
     return ResponseEntity.ok(feedbackModelAssembler.toModel(feedback));
   }
