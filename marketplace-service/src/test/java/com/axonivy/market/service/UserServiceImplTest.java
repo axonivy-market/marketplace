@@ -1,7 +1,8 @@
 package com.axonivy.market.service;
 
-import java.util.List;
-
+import com.axonivy.market.entity.User;
+import com.axonivy.market.repository.UserRepository;
+import com.axonivy.market.service.impl.UserServiceImpl;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -10,9 +11,7 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import com.axonivy.market.entity.User;
-import com.axonivy.market.repository.UserRepository;
-import com.axonivy.market.service.impl.UserServiceImpl;
+import java.util.List;
 
 @ExtendWith(MockitoExtension.class)
 class UserServiceImplTest {
@@ -28,8 +27,7 @@ class UserServiceImplTest {
     // Mock data and service
     User mockUser = new User();
     mockUser.setId("123");
-    mockUser.setUsername("tvtTest");
-    mockUser.setPassword("12345");
+    mockUser.setName("tvtTest");
     List<User> mockResultReturn = List.of(mockUser);
     Mockito.when(userRepository.findAll()).thenReturn(mockResultReturn);
 
@@ -38,5 +36,20 @@ class UserServiceImplTest {
 
     // Verify
     Assertions.assertEquals(result, mockResultReturn);
+  }
+
+  @Test
+  void testCreateUser() {
+    // Mock data
+    User mockUser = new User();
+    mockUser.setId("123");
+    mockUser.setName("tvtTest");
+    Mockito.when(userRepository.save(mockUser)).thenReturn(mockUser);
+
+    // Exercise
+    User result = employeeService.createUser(mockUser);
+
+    // Verify
+    Assertions.assertEquals(result, mockUser);
   }
 }
