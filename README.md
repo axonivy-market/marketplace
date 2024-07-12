@@ -1,34 +1,14 @@
 # Getting Started
 
-### Reference Documentation
-For further reference, please consider the following sections:
-
-* [Official Apache Maven documentation](https://maven.apache.org/guides/index.html)
-* [Spring Boot Maven Plugin Reference Guide](https://docs.spring.io/spring-boot/docs/3.2.5/maven-plugin/reference/html/)
-* [Spring Data MongoDB](https://docs.spring.io/spring-boot/docs/3.2.5/reference/htmlsingle/index.html#data.nosql.mongodb)
-* [Spring Web](https://docs.spring.io/spring-boot/docs/3.2.5/reference/htmlsingle/index.html#web)
+For AxonIvy Martketplace, we have 3 parts: marketplace-ui, marketplace-service and marketplace-build
+* ``marketplace-ui``: is Angular project, built on v18 and contains the frontend code for website
+* ``marketplace-service``: is SpringBoot project, built on v3.2.5 and contains the apis code for website
+* ``marketplace-build``: is folder to keep everything related to build and dockers
 
 ### Guides
-The following guides illustrate how to use some features concretely:
+* How to start the Marketplace UI refer to [marketplace-ui guide][1]
 
-* Installing mongodb, and access it as Url mongodb://localhost:27017/, and you can create and name whatever you want ,then you should put them to application.properties
-* You can change the MongoDB configuration in file `application.properties`
-    ```
-    spring.data.mongodb.host=
-    spring.data.mongodb.database=
-    ```
-* Update GitHub token in file `github.token`
-* Run mvn clean install to build project
-* Run mvn test to test all tests
+* How to start the Marketplace Service refer to [marketplace-service guide][2]
 
-
-### Access Swagger URL: http://{your-host}/swagger-ui/index.html
-
-### Install Lombok for Eclipse IDE
-* Download lombok here https://projectlombok.org/download
-* run command "java -jar lombok.jar" then you can access file “eclipse.ini“ in eclipse folder where you install → there is a text like this:  -javaagent:C:\Users\tvtphuc\eclipse\jee-2024-032\eclipse\lombok.jar → it means you are successful
-* Start eclipse
-* Import the project then in the eclipse , you should run the command “mvn clean install“
-* After that you go to class MarketplaceServiceApplication → right click to main method → click run as → choose Java Application
-* Then you can send a request in postman
-* If you want to run single test in class UserServiceImplTest. You can right-click to method testFindAllUser and right click → select Run as → choose JUnit Test
+  [1]: marketplace-ui/README.md
+  [2]: marketplace-service/README.md
