@@ -6,10 +6,6 @@ import static org.apache.commons.lang3.StringUtils.EMPTY;
 import java.io.IOException;
 import java.net.URL;
 import java.util.*;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 
 import com.axonivy.market.constants.CommonConstants;
 import com.axonivy.market.github.service.GHAxonIvyProductRepoService;
@@ -264,23 +260,12 @@ public class ProductServiceImpl implements ProductService {
         product.setCompatibility(compatibility);
       }
 
-      List<CompletableFuture<ProductModuleContent>> completableFutures = new ArrayList<>();
-      ExecutorService service = Executors.newFixedThreadPool(10);
+      List<ProductModuleContent> productModuleContents = new ArrayList<>();
       for (GHTag ghtag : tags) {
-        completableFutures.add(CompletableFuture.supplyAsync(
-            () -> axonIvyProductRepoService.getReadmeAndProductContentsFromTag(product, productRepo, ghtag.getName()),
-            service));
+        ProductModuleContent productModuleContent =
+            axonIvyProductRepoService.getReadmeAndProductContentsFromTag(product, productRepo, ghtag.getName());
+        productModuleContents.add(productModuleContent);
       }
-      completableFutures.forEach(CompletableFuture::join);
-      List<ProductModuleContent> productModuleContents = completableFutures.stream().map(completableFuture -> {
-        try {
-          return completableFuture.get();
-        } catch (InterruptedException | ExecutionException e) {
-          Thread.currentThread().interrupt();
-          log.error("Get readme and product json contents failed", e);
-          return null;
-        }
-      }).toList();
       product.setProductModuleContents(productModuleContents);
     } catch (Exception e) {
       log.error("Cannot find repository by path {} {}", product.getRepositoryName(), e);
