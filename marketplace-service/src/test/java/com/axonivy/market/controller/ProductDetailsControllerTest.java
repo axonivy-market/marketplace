@@ -59,6 +59,21 @@ class ProductDetailsControllerTest {
   }
 
   @Test
+  void testProductDetailsWithVersion() {
+    Mockito.when(productService.fetchProductDetail(Mockito.anyString())).thenReturn(mockProduct());
+    Mockito.when(detailModelAssembler.toModel(mockProduct(), "v10.0.6")).thenReturn(createProductMockWithDetails());
+    ResponseEntity<ProductDetailModel> mockExpectedResult =
+            new ResponseEntity<>(createProductMockWithDetails(), HttpStatus.OK);
+
+    ResponseEntity<ProductDetailModel> result = productDetailsController.findProductDetailsByVersion("docker-connector", "v10.0.6");
+
+    assertEquals(HttpStatus.OK, result.getStatusCode());
+    assertEquals(result, mockExpectedResult);
+
+    verify(productService, times(1)).fetchProductDetail("docker-connector");
+  }
+
+  @Test
   void testFindProductVersionsById() {
     List<MavenArtifactVersionModel> models = List.of(new MavenArtifactVersionModel());
     Mockito.when(
