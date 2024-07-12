@@ -1,11 +1,9 @@
 package com.axonivy.market.schedulingtask;
 
+import com.axonivy.market.service.ProductService;
+import lombok.extern.log4j.Log4j2;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
-
-import com.axonivy.market.service.ProductService;
-
-import lombok.extern.log4j.Log4j2;
 
 @Log4j2
 @Component
