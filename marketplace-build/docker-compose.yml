@@ -42,7 +42,7 @@ services:
         assets: ../marketplace-service/target/
       dockerfile: Dockerfile-Service
     volumes:
-      - ../marketplace-service/target/marketplace-service-0.0.1-SNAPSHOT.war /usr/local/tomcat/webapps/marketplace-service.war
+      - ../marketplace-service/target/marketplace-service-0.0.1-SNAPSHOT.war:/usr/local/tomcat/webapps/marketplace-service.war
     ports:
       - "8080:8080"
 
