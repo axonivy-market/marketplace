@@ -1,0 +1,32 @@
+name: Run Docker compose up
+
+on:
+  push:
+    branches: [ "develop" ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: self-hosted
+
+    steps:
+      - name: Update configuration
+        env:
+          ENV_FILE: './marketplace-build/.env'
+          MONGODB_HOST: ${{ secrets.MONGODB_HOST }}
+          ROOT_USERNAME: ${{ secrets.MONGODB_ROOT_USERNAME }}
+          ROOT_PASSWORD: ${{ secrets.MONGODB_ROOT_PASSWORD }}
+          SERVICE_USERNAME: ${{ secrets.SERVICE_USERNAME }}
+          SERVICE_PASSWORD: ${{ secrets.SERVICE_PASSWORD }}
+        run: |
+            sed -i "s/^MONGODB_INITDB_ROOT_USERNAME=.*$/MONGODB_INITDB_ROOT_USERNAME=$ROOT_USERNAME/" $ENV_FILE
+            sed -i "s/^MONGODB_INITDB_ROOT_PASSWORD=.*$/MONGODB_INITDB_ROOT_PASSWORD=$ROOT_PASSWORD/" $ENV_FILE
+            sed -i "s/^SERVICE_MONGODB_HOST=.*$/SERVICE_MONGODB_HOST=$MONGODB_HOST/" $ENV_FILE
+            sed -i "s/^SERVICE_MONGODB_DATABASE=.*$/SERVICE_MONGODB_DATABASE=$MONGODB_DATABASE/" $ENV_FILE
+            sed -i "s/^SERVICE_MONGODB_USER=.*$/SERVICE_MONGODB_USER=$SERVICE_USERNAME/" $ENV_FILE
+            sed -i "s/^SERVICE_MONGODB_PASSWORD=.*$/SERVICE_MONGODB_PASSWORD=$SERVICE_PASSWORD/" $ENV_FILE
+
+      - name: Build and push Docker images
+        working-directory: ./marketplace-build
+        run: |
+          docker-compose -f docker-compose.yml up -d
