@@ -1,5 +1,7 @@
 package com.axonivy.market;
 
+import com.axonivy.market.service.ProductService;
+import lombok.extern.log4j.Log4j2;
 import org.apache.commons.lang3.time.StopWatch;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -8,10 +10,6 @@ import org.springframework.context.event.EventListener;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.scheduling.annotation.EnableScheduling;
-
-import com.axonivy.market.service.ProductService;
-
-import lombok.extern.log4j.Log4j2;
 
 @Log4j2
 @EnableAsync
