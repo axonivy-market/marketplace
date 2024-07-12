@@ -7,7 +7,8 @@ on:
 
 jobs:
   build:
-    runs-on: self-hosted
+    #runs-on: self-hosted
+    runs-on: ubuntu-latest
 
     steps:
       - uses: actions/checkout@v4
@@ -19,7 +20,7 @@ jobs:
           cache: maven
       - name: Update configuration
         env:
-          ENV_FILE: '../../marketplace-build/.env'
+          ENV_FILE: './marketplace-build/.env'
           MONGODB_HOST: ${{ secrets.MONGODB_HOST }}
           MONGODB_DATABASE: ${{ secrets.MONGODB_DATABASE }}
           GH_TOKEN: ${{ secrets.GH_TOKEN }}
@@ -32,6 +33,6 @@ jobs:
             sed -i "s/^SERVICE_MONGODB_PASSWORD=.*$/spring.data.mongodb.database=$MONGODB_DATABASE/" $ENV_FILE
 
       - name: Build and push Docker images
-        working-directory: ../../marketplace-build
+        working-directory: ./marketplace-build
         run: |
           docker-compose -f docker-compose.yml up -d
