@@ -43,7 +43,7 @@ public class FeedbackController {
 
   @Operation(summary = "Find all feedbacks by product id")
   @GetMapping("/product/{productId}")
-  public ResponseEntity<PagedModel<FeedbackModel>> findFeedbacks(@PathVariable String productId, Pageable pageable) {
+  public ResponseEntity<PagedModel<FeedbackModel>> findFeedbacks(@PathVariable("productId") String productId, Pageable pageable) {
     Page<Feedback> results = feedbackService.findFeedbacks(productId, pageable);
     if (results.isEmpty()) {
       return generateEmptyPagedModel();
