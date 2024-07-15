@@ -22,38 +22,37 @@ import java.util.Optional;
 
 @Log4j2
 public class XmlReaderUtils {
-	private static final RestTemplate restTemplate = new RestTemplate();
+  private static final RestTemplate restTemplate = new RestTemplate();
 
-	private XmlReaderUtils() {
-	}
+  private XmlReaderUtils() {}
 
-	public static List<String> readXMLFromUrl(String url) {
-		List<String> versions = new ArrayList<>();
-		try {
-			String xmlData = restTemplate.getForObject(url, String.class);
-			extractVersions(xmlData, versions);
-		} catch (HttpClientErrorException e) {
-			log.error(e.getMessage());
-		}
-		return versions;
-	}
+  public static List<String> readXMLFromUrl(String url) {
+    List<String> versions = new ArrayList<>();
+    try {
+      String xmlData = restTemplate.getForObject(url, String.class);
+      extractVersions(xmlData, versions);
+    } catch (HttpClientErrorException e) {
+      log.error(e.getMessage());
+    }
+    return versions;
+  }
 
-	public static void extractVersions(String xmlData, List<String> versions) {
-		try {
-			DocumentBuilder builder = DocumentBuilderFactory.newInstance().newDocumentBuilder();
-			Document document = builder.parse(new InputSource(new StringReader(xmlData)));
+  public static void extractVersions(String xmlData, List<String> versions) {
+    try {
+      DocumentBuilder builder = DocumentBuilderFactory.newInstance().newDocumentBuilder();
+      Document document = builder.parse(new InputSource(new StringReader(xmlData)));
 
-			XPath xpath = XPathFactory.newInstance().newXPath();
-			XPathExpression expr = xpath.compile(MavenConstants.VERSION_EXTRACT_FORMAT_FROM_METADATA_FILE);
+      XPath xpath = XPathFactory.newInstance().newXPath();
+      XPathExpression expr = xpath.compile(MavenConstants.VERSION_EXTRACT_FORMAT_FROM_METADATA_FILE);
 
-			Object result = expr.evaluate(document, XPathConstants.NODESET);
-			NodeList versionNodes = (NodeList) result;
+      Object result = expr.evaluate(document, XPathConstants.NODESET);
+      NodeList versionNodes = (NodeList) result;
 
-			for (int i = 0; i < versionNodes.getLength(); i++) {
-				versions.add(Optional.ofNullable(versionNodes.item(i)).map(Node::getTextContent).orElse(null));
-			}
-		} catch (Exception e) {
-			log.error(e.getMessage());
-		}
-	}
+      for (int i = 0; i < versionNodes.getLength(); i++) {
+        versions.add(Optional.ofNullable(versionNodes.item(i)).map(Node::getTextContent).orElse(null));
+      }
+    } catch (Exception e) {
+      log.error(e.getMessage());
+    }
+  }
 }

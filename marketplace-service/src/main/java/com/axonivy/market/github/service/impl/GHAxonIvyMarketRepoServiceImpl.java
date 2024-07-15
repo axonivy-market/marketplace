@@ -1,21 +1,5 @@
 package com.axonivy.market.github.service.impl;
 
-import java.io.IOException;
-import java.time.LocalDateTime;
-import java.time.ZoneId;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
-import org.kohsuke.github.GHCommit;
-import org.kohsuke.github.GHCommitQueryBuilder;
-import org.kohsuke.github.GHCompare;
-import org.kohsuke.github.GHContent;
-import org.kohsuke.github.GHOrganization;
-import org.kohsuke.github.GHRepository;
-import org.springframework.stereotype.Service;
-
 import com.axonivy.market.constants.GitHubConstants;
 import com.axonivy.market.enums.FileStatus;
 import com.axonivy.market.enums.FileType;
@@ -23,8 +7,17 @@ import com.axonivy.market.github.model.GitHubFile;
 import com.axonivy.market.github.service.GHAxonIvyMarketRepoService;
 import com.axonivy.market.github.service.GitHubService;
 import com.axonivy.market.github.util.GitHubUtils;
-
 import lombok.extern.log4j.Log4j2;
+import org.kohsuke.github.*;
+import org.springframework.stereotype.Service;
+
+import java.io.IOException;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 @Log4j2
 @Service

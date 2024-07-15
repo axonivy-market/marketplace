@@ -1,19 +1,16 @@
 package com.axonivy.market.model;
 
-import java.util.List;
-import java.util.Map;
-
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonInclude.Include;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.springframework.hateoas.RepresentationModel;
 import org.springframework.hateoas.server.core.Relation;
 
-import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.annotation.JsonInclude.Include;
-
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import java.util.List;
 
 @Getter
 @Setter
@@ -22,8 +19,8 @@ import lombok.Setter;
 @JsonInclude(Include.NON_NULL)
 public class ProductModel extends RepresentationModel<ProductModel> {
 	private String id;
-	private Map<String, String> names;
-	private Map<String, String> shortDescriptions;
+	private MultilingualismValue names;
+	private MultilingualismValue shortDescriptions;
 	private String logoUrl;
 	private String type;
 	private List<String> tags;
