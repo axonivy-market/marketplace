@@ -60,6 +60,8 @@ import com.axonivy.market.service.ProductService;
 
 import lombok.extern.log4j.Log4j2;
 
+import javax.swing.text.html.Option;
+
 @Log4j2
 @Service
 public class ProductServiceImpl implements ProductService {
@@ -143,14 +145,14 @@ public class ProductServiceImpl implements ProductService {
   }
 
   private void syncInstallationCountWithProduct(Product product) {
-    log.info("synchronizing installation count for product");
+    log.info("synchronizing installation count for product {}", product.getId());
     try {
       String installationCounts = Files.readString(Paths.get(installationCountPath));
       Map<String, Integer> mapping = mapper.readValue(installationCounts, HashMap.class);
       List<String> keyList = mapping.keySet().stream().toList();
-      if (keyList.contains(product.getId())) {
-        product.setInstallationCount(mapping.get(product.getId()));
-      }
+      int currentInstallationCount = keyList.contains(product.getId()) ?
+              mapping.get(product.getId()) : new Random().nextInt(20, 50);
+      product.setInstallationCount(currentInstallationCount);
       product.setSynchronizedInstallationCount(true);
       log.info("synchronized installation count for products");
     } catch (IOException ex) {
@@ -349,6 +351,13 @@ public class ProductServiceImpl implements ProductService {
 
   @Override
   public Product fetchProductDetail(String id) {
-    return productRepository.findById(id).orElse(null);
+    Product product = productRepository.findById(id).orElse(null);
+    return Optional.ofNullable(product).map(productItem -> {
+      if (!BooleanUtils.isTrue(productItem.getSynchronizedInstallationCount())) {
+        syncInstallationCountWithProduct(productItem);
+        return productRepository.save(productItem);
+      }
+      return productItem;
+    }).orElse(null);
   }
 }

@@ -345,6 +345,7 @@ class ProductServiceImplTest {
   void testFetchProductDetail() {
     String id = "amazon-comprehend";
     Product mockProduct = mockResultReturn.getContent().get(0);
+    mockProduct.setSynchronizedInstallationCount(true);
     when(productRepository.findById(id)).thenReturn(Optional.ofNullable(mockProduct));
     Product result = productService.fetchProductDetail(id);
     assertEquals(mockProduct, result);

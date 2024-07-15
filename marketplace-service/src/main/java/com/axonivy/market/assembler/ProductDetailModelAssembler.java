@@ -58,6 +58,7 @@ public class ProductDetailModelAssembler extends RepresentationModelAssemblerSup
     model.setCompatibility(product.getCompatibility());
     model.setContactUs(product.getContactUs());
     model.setCost(product.getCost());
+    model.setInstallationCount(product.getInstallationCount());
 
     if (StringUtils.isBlank(tag) && StringUtils.isNotBlank(product.getNewestReleaseVersion())) {
       tag = product.getNewestReleaseVersion();

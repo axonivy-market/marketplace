@@ -76,7 +76,7 @@ class ProductDetailsControllerTest {
   }
 
   @Test
-  public void testSyncInstallationCount() throws Exception {
+  void testSyncInstallationCount() {
     when(productService.updateInstallationCountForProduct("google-maps-connector")).thenReturn(1);
 
     var result = productDetailsController.syncInstallationCount("google-maps-connector");
