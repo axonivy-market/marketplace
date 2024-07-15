@@ -19,6 +19,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import com.axonivy.market.constants.CommonConstants;
 import com.axonivy.market.entity.Product;
+import com.axonivy.market.enums.Language;
 
 @ExtendWith(MockitoExtension.class)
 class ProductFactoryTest {
@@ -36,8 +37,8 @@ class ProductFactoryTest {
     when(mockContent.read()).thenReturn(inputStream);
     result = ProductFactory.mappingByGHContent(product, mockContent);
     assertNotEquals(null, result);
-    assertEquals("Amazon Comprehend", result.getNames().getEn());
-    assertEquals("Amazon Comprehend DE", result.getNames().getDe());
+    assertEquals("Amazon Comprehend", result.getNames().get(Language.EN.getValue()));
+    assertEquals("Amazon Comprehend DE", result.getNames().get(Language.DE.getValue()));
   }
 
   @Test

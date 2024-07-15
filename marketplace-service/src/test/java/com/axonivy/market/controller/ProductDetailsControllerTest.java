@@ -4,27 +4,28 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
-import com.axonivy.market.model.MavenArtifactVersionModel;
-import com.axonivy.market.model.MultilingualismValue;
-import com.axonivy.market.service.VersionService;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
-
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
-import java.util.List;
-import java.util.Objects;
-
 import com.axonivy.market.assembler.ProductDetailModelAssembler;
 import com.axonivy.market.entity.Product;
+import com.axonivy.market.enums.Language;
+import com.axonivy.market.model.MavenArtifactVersionModel;
 import com.axonivy.market.model.ProductDetailModel;
 import com.axonivy.market.service.ProductService;
+import com.axonivy.market.service.VersionService;
 
 @ExtendWith(MockitoExtension.class)
 class ProductDetailsControllerTest {
@@ -92,9 +93,9 @@ class ProductDetailsControllerTest {
   private Product mockProduct() {
     Product mockProduct = new Product();
     mockProduct.setId(DOCKER_CONNECTOR_ID);
-    MultilingualismValue name = new MultilingualismValue();
-    name.setEn(PRODUCT_NAME_SAMPLE);
-    name.setDe(PRODUCT_NAME_DE_SAMPLE);
+    Map<String, String> name = new HashMap<>();
+    name.put(Language.EN.getValue(), PRODUCT_NAME_SAMPLE);
+    name.put(Language.DE.getValue(), PRODUCT_NAME_DE_SAMPLE);
     mockProduct.setNames(name);
     mockProduct.setLanguage("English");
     return mockProduct;
@@ -103,9 +104,9 @@ class ProductDetailsControllerTest {
   private ProductDetailModel createProductMockWithDetails() {
     ProductDetailModel mockProductDetail = new ProductDetailModel();
     mockProductDetail.setId(DOCKER_CONNECTOR_ID);
-    MultilingualismValue name = new MultilingualismValue();
-    name.setEn(PRODUCT_NAME_SAMPLE);
-    name.setDe(PRODUCT_NAME_DE_SAMPLE);
+    Map<String, String> name = new HashMap<>();
+    name.put(Language.EN.getValue(), PRODUCT_NAME_SAMPLE);
+    name.put(Language.DE.getValue(), PRODUCT_NAME_DE_SAMPLE);
     mockProductDetail.setNames(name);
     mockProductDetail.setType("connector");
     mockProductDetail.setCompatibility("10.0+");
