@@ -1,8 +1,6 @@
 package com.axonivy.market.github.service.impl;
 
-import java.io.File;
 import java.io.IOException;
-import java.nio.file.Files;
 import java.util.List;
 
 import org.kohsuke.github.GHContent;
@@ -12,20 +10,22 @@ import org.kohsuke.github.GitHub;
 import org.kohsuke.github.GitHubBuilder;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
-import org.springframework.util.ResourceUtils;
 
+import com.axonivy.market.github.model.GitHubProperty;
 import com.axonivy.market.github.service.GitHubService;
 
 @Service
 public class GitHubServiceImpl implements GitHubService {
 
-  private static final String GITHUB_TOKEN_FILE = "classpath:github.token";
+  private GitHubProperty gitHubProperty;
+
+  public GitHubServiceImpl(GitHubProperty gitHubProperty) {
+    this.gitHubProperty = gitHubProperty;
+  }
 
   @Override
   public GitHub getGitHub() throws IOException {
-    File gitHubToken = ResourceUtils.getFile(GITHUB_TOKEN_FILE);
-    var token = Files.readString(gitHubToken.toPath());
-    return new GitHubBuilder().withOAuthToken(token.trim().strip()).build();
+    return new GitHubBuilder().withOAuthToken(gitHubProperty.getToken().trim().strip()).build();
   }
 
   @Override
