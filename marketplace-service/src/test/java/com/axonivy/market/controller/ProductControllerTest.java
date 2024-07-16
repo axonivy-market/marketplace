@@ -31,7 +31,6 @@ import com.axonivy.market.enums.ErrorCode;
 import com.axonivy.market.enums.Language;
 import com.axonivy.market.enums.SortOption;
 import com.axonivy.market.enums.TypeOption;
-import com.axonivy.market.model.ProductRating;
 import com.axonivy.market.service.ProductService;
 
 @ExtendWith(MockitoExtension.class)
@@ -88,8 +87,10 @@ class ProductControllerTest {
     assertEquals(HttpStatus.OK, result.getStatusCode());
     assertTrue(result.hasBody());
     assertEquals(1, result.getBody().getContent().size());
-    assertEquals(PRODUCT_NAME_SAMPLE, result.getBody().getContent().iterator().next().getNames().get(Language.EN.getValue()));
-    assertEquals(PRODUCT_NAME_DE_SAMPLE, result.getBody().getContent().iterator().next().getNames().get(Language.DE.getValue()));
+    assertEquals(PRODUCT_NAME_SAMPLE,
+        result.getBody().getContent().iterator().next().getNames().get(Language.EN.getValue()));
+    assertEquals(PRODUCT_NAME_DE_SAMPLE,
+        result.getBody().getContent().iterator().next().getNames().get(Language.DE.getValue()));
   }
 
   @Test
@@ -114,13 +115,5 @@ class ProductControllerTest {
     mockProduct.setType("connector");
     mockProduct.setTags(List.of("AI"));
     return mockProduct;
-  }
-
-  private ProductRating createProductRatingMock() {
-    ProductRating productRatingMock = new ProductRating();
-    productRatingMock.setStarRating(1);
-    productRatingMock.setPercent(10);
-    productRatingMock.setCommentNumber(5);
-    return productRatingMock;
   }
 }

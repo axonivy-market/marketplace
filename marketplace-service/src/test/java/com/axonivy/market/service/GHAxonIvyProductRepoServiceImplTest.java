@@ -190,8 +190,7 @@ class GHAxonIvyProductRepoServiceImplTest {
 
   @Test
   void testGetReadmeAndProductContentsFromTag() throws IOException {
-    String readmeContentWithImage =
-        "#Product-name\n Test README\n## Demo\nDemo content\n## Setup\nSetup content (image.png)";
+    String readmeContentWithImage = "#Product-name\n Test README\n## Demo\nDemo content\n## Setup\nSetup content (image.png)";
 
     GHContent mockContent = createMockProductFolderWithProductJson();
 
@@ -213,8 +212,7 @@ class GHAxonIvyProductRepoServiceImplTest {
 
   @Test
   void testGetReadmeAndProductContentFromTag_ImageFromFolder() throws IOException {
-    String readmeContentWithImageFolder =
-        "#Product-name\n Test README\n## Demo\nDemo content\n## Setup\nSetup content (./images/image.png)";
+    String readmeContentWithImageFolder = "#Product-name\n Test README\n## Demo\nDemo content\n## Setup\nSetup content (./images/image.png)";
 
     GHContent mockImageFile = mock(GHContent.class);
     when(mockImageFile.getName()).thenReturn(ReadmeConstants.IMAGES, IMAGE_NAME);

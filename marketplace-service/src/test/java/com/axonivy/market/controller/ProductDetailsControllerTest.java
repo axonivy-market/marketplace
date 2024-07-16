@@ -49,8 +49,8 @@ class ProductDetailsControllerTest {
   void testProductDetails() {
     Mockito.when(productService.fetchProductDetail(Mockito.anyString())).thenReturn(mockProduct());
     Mockito.when(detailModelAssembler.toModel(mockProduct(), null)).thenReturn(createProductMockWithDetails());
-    ResponseEntity<ProductDetailModel> mockExpectedResult =
-        new ResponseEntity<>(createProductMockWithDetails(), HttpStatus.OK);
+    ResponseEntity<ProductDetailModel> mockExpectedResult = new ResponseEntity<>(createProductMockWithDetails(),
+        HttpStatus.OK);
 
     ResponseEntity<ProductDetailModel> result = productDetailsController.findProductDetails(DOCKER_CONNECTOR_ID);
 
@@ -65,11 +65,11 @@ class ProductDetailsControllerTest {
   void testProductDetailsWithVersion() {
     Mockito.when(productService.fetchProductDetail(Mockito.anyString())).thenReturn(mockProduct());
     Mockito.when(detailModelAssembler.toModel(mockProduct(), TAG)).thenReturn(createProductMockWithDetails());
-    ResponseEntity<ProductDetailModel> mockExpectedResult =
-        new ResponseEntity<>(createProductMockWithDetails(), HttpStatus.OK);
+    ResponseEntity<ProductDetailModel> mockExpectedResult = new ResponseEntity<>(createProductMockWithDetails(),
+        HttpStatus.OK);
 
-    ResponseEntity<ProductDetailModel> result =
-        productDetailsController.findProductDetailsByVersion(DOCKER_CONNECTOR_ID, TAG);
+    ResponseEntity<ProductDetailModel> result = productDetailsController
+        .findProductDetailsByVersion(DOCKER_CONNECTOR_ID, TAG);
 
     assertEquals(HttpStatus.OK, result.getStatusCode());
     assertEquals(result, mockExpectedResult);
@@ -83,8 +83,8 @@ class ProductDetailsControllerTest {
     Mockito.when(
         versionService.getArtifactsAndVersionToDisplay(Mockito.anyString(), Mockito.anyBoolean(), Mockito.anyString()))
         .thenReturn(models);
-    ResponseEntity<List<MavenArtifactVersionModel>> result =
-        productDetailsController.findProductVersionsById("protal", true, "10.0.1");
+    ResponseEntity<List<MavenArtifactVersionModel>> result = productDetailsController.findProductVersionsById("protal",
+        true, "10.0.1");
     Assertions.assertEquals(HttpStatus.OK, result.getStatusCode());
     Assertions.assertEquals(1, Objects.requireNonNull(result.getBody()).size());
     Assertions.assertEquals(models, result.getBody());

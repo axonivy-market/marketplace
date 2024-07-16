@@ -67,8 +67,8 @@ class ProductServiceImplTest {
   private static final String SAMPLE_PRODUCT_ID = "amazon-comprehend";
   private static final String SAMPLE_PRODUCT_NAME = "Amazon Comprehend";
   private static final long LAST_CHANGE_TIME = 1718096290000l;
-  private static final Pageable PAGEABLE =
-      PageRequest.of(0, 20, Sort.by(SortOption.ALPHABETICALLY.getOption()).descending());
+  private static final Pageable PAGEABLE = PageRequest.of(0, 20,
+      Sort.by(SortOption.ALPHABETICALLY.getOption()).descending());
   private static final String SHA1_SAMPLE = "35baa89091b2452b77705da227f1a964ecabc6c8";
   public static final String RELEASE_TAG = "v10.0.2";
   private String keyword;
@@ -200,7 +200,8 @@ class ProductServiceImplTest {
     // Test has keyword
     when(productRepository.searchByNameOrShortDescriptionRegex(any(), any(), any(Pageable.class)))
         .thenReturn(new PageImpl<>(mockResultReturn.stream()
-            .filter(product -> product.getNames().get(Language.EN.getValue()).equals(SAMPLE_PRODUCT_NAME)).collect(Collectors.toList())));
+            .filter(product -> product.getNames().get(Language.EN.getValue()).equals(SAMPLE_PRODUCT_NAME))
+            .collect(Collectors.toList())));
     // Executes
     result = productService.findProducts(TypeOption.ALL.getOption(), SAMPLE_PRODUCT_NAME, langague, PAGEABLE);
     verify(productRepository).findAll(any(Pageable.class));
@@ -208,14 +209,11 @@ class ProductServiceImplTest {
     assertEquals(SAMPLE_PRODUCT_NAME, result.getContent().get(0).getNames().get(Language.EN.getValue()));
 
     // Test has keyword and type is connector
-    when(
-        productRepository.searchByKeywordAndType(any(), any(), any(), any(Pageable.class)))
-            .thenReturn(
-                new PageImpl<>(
-                    mockResultReturn.stream()
-                        .filter(product -> product.getNames().get(Language.EN.getValue()).equals(SAMPLE_PRODUCT_NAME)
-                            && product.getType().equals(TypeOption.CONNECTORS.getCode()))
-                        .collect(Collectors.toList())));
+    when(productRepository.searchByKeywordAndType(any(), any(), any(), any(Pageable.class)))
+        .thenReturn(new PageImpl<>(mockResultReturn.stream()
+            .filter(product -> product.getNames().get(Language.EN.getValue()).equals(SAMPLE_PRODUCT_NAME)
+                && product.getType().equals(TypeOption.CONNECTORS.getCode()))
+            .collect(Collectors.toList())));
     // Executes
     result = productService.findProducts(TypeOption.CONNECTORS.getOption(), SAMPLE_PRODUCT_NAME, langague, PAGEABLE);
     assertTrue(result.hasContent());
@@ -354,7 +352,9 @@ class ProductServiceImplTest {
     ProductModuleContent productModuleContent = new ProductModuleContent();
     productModuleContent.setTag("v10.0.2");
     productModuleContent.setName("Amazon Comprehend");
-    productModuleContent.setDescription("testDescription");
+    Map<String, String> description = new HashMap<>();
+    description.put(Language.EN.getValue(), "testDescription");
+    productModuleContent.setDescription(description);
     return productModuleContent;
   }
 }
