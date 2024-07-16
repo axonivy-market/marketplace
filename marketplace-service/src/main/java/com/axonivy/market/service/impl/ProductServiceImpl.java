@@ -76,7 +76,7 @@ public class ProductServiceImpl implements ProductService {
   private String installationCountPath;
 
   public static final String NON_NUMERIC_CHAR = "[^0-9.]";
-
+  private final Random random = new Random();
   public ProductServiceImpl(ProductRepository productRepository, GHAxonIvyMarketRepoService axonIvyMarketRepoService,
       GHAxonIvyProductRepoService axonIvyProductRepoService, GitHubRepoMetaRepository gitHubRepoMetaRepository,
       GitHubService gitHubService) {
@@ -147,13 +147,13 @@ public class ProductServiceImpl implements ProductService {
       Map<String, Integer> mapping = mapper.readValue(installationCounts, HashMap.class);
       List<String> keyList = mapping.keySet().stream().toList();
       int currentInstallationCount = keyList.contains(product.getId()) ?
-              mapping.get(product.getId()) : new Random().nextInt(20, 50);
+              mapping.get(product.getId()) : random.nextInt(20, 50);
       product.setInstallationCount(currentInstallationCount);
       product.setSynchronizedInstallationCount(true);
-      log.info("synchronized installation count for products");
+      log.info("synchronized installation count for product {} successfully", product.getId());
     } catch (IOException ex) {
       log.error(ex.getMessage());
-      throw new RuntimeException(ex);
+      log.error("Could not read the marketplace-installation file to synchronize");
     }
   }
 

@@ -116,7 +116,7 @@ class ProductServiceImplTest {
   }
 
   @Test
-  public void testUpdateInstallationCount() {
+  void testUpdateInstallationCount() {
     // prepare
     Mockito.when(productRepository.findById("google-maps-connector")).thenReturn(Optional.of(mockProduct()));
 
