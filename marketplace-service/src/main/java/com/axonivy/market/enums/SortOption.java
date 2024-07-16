@@ -1,11 +1,9 @@
 package com.axonivy.market.enums;
 
-import org.apache.commons.lang3.StringUtils;
-
 import com.axonivy.market.exceptions.model.InvalidParamException;
-
 import lombok.AllArgsConstructor;
 import lombok.Getter;
+import org.apache.commons.lang3.StringUtils;
 
 @Getter
 @AllArgsConstructor
