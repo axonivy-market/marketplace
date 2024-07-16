@@ -65,11 +65,11 @@ class ProductDetailsControllerTest {
   void testProductDetailsWithVersion() {
     Mockito.when(productService.fetchProductDetail(Mockito.anyString())).thenReturn(mockProduct());
     Mockito.when(detailModelAssembler.toModel(mockProduct(), TAG)).thenReturn(createProductMockWithDetails());
-    ResponseEntity<ProductDetailModel> mockExpectedResult = new ResponseEntity<>(createProductMockWithDetails(),
-        HttpStatus.OK);
+    ResponseEntity<ProductDetailModel> mockExpectedResult =
+        new ResponseEntity<>(createProductMockWithDetails(), HttpStatus.OK);
 
-    ResponseEntity<ProductDetailModel> result = productDetailsController
-        .findProductDetailsByVersion(DOCKER_CONNECTOR_ID, TAG);
+    ResponseEntity<ProductDetailModel> result =
+        productDetailsController.findProductDetailsByVersion(DOCKER_CONNECTOR_ID, TAG);
 
     assertEquals(HttpStatus.OK, result.getStatusCode());
     assertEquals(result, mockExpectedResult);

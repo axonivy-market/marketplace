@@ -1,5 +1,13 @@
 package com.axonivy.market.controller;
 
+import com.axonivy.market.assembler.ProductModelAssembler;
+import com.axonivy.market.entity.Product;
+import com.axonivy.market.enums.ErrorCode;
+import com.axonivy.market.enums.SortOption;
+import com.axonivy.market.enums.TypeOption;
+import com.axonivy.market.model.MultilingualismValue;
+import com.axonivy.market.model.ProductRating;
+import com.axonivy.market.service.ProductService;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
@@ -25,6 +33,12 @@ import org.springframework.hateoas.PagedModel;
 import org.springframework.hateoas.PagedModel.PageMetadata;
 import org.springframework.http.HttpStatus;
 
+import java.util.List;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.when;
 import com.axonivy.market.assembler.ProductModelAssembler;
 import com.axonivy.market.entity.Product;
 import com.axonivy.market.enums.ErrorCode;
@@ -35,6 +49,7 @@ import com.axonivy.market.service.ProductService;
 
 @ExtendWith(MockitoExtension.class)
 class ProductControllerTest {
+  private static final String PRODUCT_ID_SAMPLE = "amazon-comprehend";
   private static final String PRODUCT_NAME_SAMPLE = "Amazon Comprehend";
   private static final String PRODUCT_NAME_DE_SAMPLE = "Amazon Comprehend DE";
   private static final String PRODUCT_DESC_SAMPLE = "Amazon Comprehend is a AI service that uses machine learning to uncover information in unstructured data.";
@@ -115,5 +130,13 @@ class ProductControllerTest {
     mockProduct.setType("connector");
     mockProduct.setTags(List.of("AI"));
     return mockProduct;
+  }
+
+  private ProductRating createProductRatingMock() {
+    ProductRating productRatingMock = new ProductRating();
+    productRatingMock.setStarRating(1);
+    productRatingMock.setPercent(10);
+    productRatingMock.setCommentNumber(5);
+    return productRatingMock;
   }
 }
