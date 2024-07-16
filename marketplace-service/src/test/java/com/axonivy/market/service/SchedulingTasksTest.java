@@ -1,18 +1,17 @@
 package com.axonivy.market.service;
 
-import com.axonivy.market.schedulingtask.ScheduledTasks;
+import static org.mockito.Mockito.atLeast;
+import static org.mockito.Mockito.verify;
+
 import org.awaitility.Awaitility;
 import org.awaitility.Durations;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.SpyBean;
 
-import static org.mockito.Mockito.atLeast;
-import static org.mockito.Mockito.verify;
+import com.axonivy.market.schedulingtask.ScheduledTasks;
 
-@SpringBootTest(properties = {
-        "marketPlace-installation-url=D:/marketplace-installation.json"
-})
+@SpringBootTest(properties = { "marketPlace-installation-url=D:/marketplace-installation.json" })
 class SchedulingTasksTest {
 
   @SpyBean

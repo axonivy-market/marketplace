@@ -5,25 +5,17 @@ import static org.apache.commons.lang3.StringUtils.EMPTY;
 
 import java.io.IOException;
 import java.net.URL;
-
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Random;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.lang3.BooleanUtils;
-
-import java.util.*;
-
-import com.axonivy.market.constants.CommonConstants;
-import com.axonivy.market.github.service.GHAxonIvyProductRepoService;
-import com.axonivy.market.github.util.GitHubUtils;
-import com.axonivy.market.entity.ProductModuleContent;
-
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.util.Strings;
 import org.kohsuke.github.GHCommit;
@@ -40,23 +32,26 @@ import org.springframework.data.domain.Sort.Order;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
+import com.axonivy.market.constants.CommonConstants;
 import com.axonivy.market.constants.GitHubConstants;
+import com.axonivy.market.entity.GitHubRepoMeta;
 import com.axonivy.market.entity.Product;
+import com.axonivy.market.entity.ProductModuleContent;
 import com.axonivy.market.enums.FileType;
 import com.axonivy.market.enums.SortOption;
+import com.axonivy.market.enums.TypeOption;
 import com.axonivy.market.factory.ProductFactory;
 import com.axonivy.market.github.model.GitHubFile;
 import com.axonivy.market.github.service.GHAxonIvyMarketRepoService;
-import com.axonivy.market.entity.GitHubRepoMeta;
-import com.axonivy.market.enums.TypeOption;
+import com.axonivy.market.github.service.GHAxonIvyProductRepoService;
 import com.axonivy.market.github.service.GitHubService;
+import com.axonivy.market.github.util.GitHubUtils;
 import com.axonivy.market.repository.GitHubRepoMetaRepository;
 import com.axonivy.market.repository.ProductRepository;
 import com.axonivy.market.service.ProductService;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 import lombok.extern.log4j.Log4j2;
-
-import javax.swing.text.html.Option;
 
 @Log4j2
 @Service
@@ -146,8 +141,8 @@ public class ProductServiceImpl implements ProductService {
       String installationCounts = Files.readString(Paths.get(installationCountPath));
       Map<String, Integer> mapping = mapper.readValue(installationCounts, HashMap.class);
       List<String> keyList = mapping.keySet().stream().toList();
-      int currentInstallationCount = keyList.contains(product.getId()) ?
-              mapping.get(product.getId()) : random.nextInt(20, 50);
+      int currentInstallationCount = keyList.contains(product.getId()) ? mapping.get(product.getId())
+          : random.nextInt(20, 50);
       product.setInstallationCount(currentInstallationCount);
       product.setSynchronizedInstallationCount(true);
       log.info("synchronized installation count for product {} successfully", product.getId());
@@ -322,6 +317,7 @@ public class ProductServiceImpl implements ProductService {
   }
 
   // Cover 3 cases after removing non-numeric characters (8, 11.1 and 10.0.2)
+  @Override
   public String getCompatibilityFromOldestTag(String oldestTag) {
     if (!oldestTag.contains(CommonConstants.DOT_SEPARATOR)) {
       return oldestTag + ".0+";
