@@ -32,6 +32,7 @@ import com.axonivy.market.service.ProductService;
 
 @ExtendWith(MockitoExtension.class)
 class ProductDetailsControllerTest {
+  public static final String TAG = "v10.0.6";
   @Mock
   private ProductService productService;
 
@@ -45,6 +46,7 @@ class ProductDetailsControllerTest {
   private ProductDetailsController productDetailsController;
   private static final String PRODUCT_NAME_SAMPLE = "Docker";
   private static final String PRODUCT_NAME_DE_SAMPLE = "Docker DE";
+  public static final String DOCKER_CONNECTOR_ID = "docker-connector";
 
   @Test
   void testProductDetails() {
@@ -53,13 +55,29 @@ class ProductDetailsControllerTest {
     ResponseEntity<ProductDetailModel> mockExpectedResult =
         new ResponseEntity<>(createProductMockWithDetails(), HttpStatus.OK);
 
-    ResponseEntity<ProductDetailModel> result = productDetailsController.findProductDetails("docker-connector");
+    ResponseEntity<ProductDetailModel> result = productDetailsController.findProductDetails(DOCKER_CONNECTOR_ID);
 
     assertEquals(HttpStatus.OK, result.getStatusCode());
     assertEquals(result, mockExpectedResult);
 
-    verify(productService, times(1)).fetchProductDetail("docker-connector");
+    verify(productService, times(1)).fetchProductDetail(DOCKER_CONNECTOR_ID);
     verify(detailModelAssembler, times(1)).toModel(mockProduct(), null);
+  }
+
+  @Test
+  void testProductDetailsWithVersion() {
+    Mockito.when(productService.fetchProductDetail(Mockito.anyString())).thenReturn(mockProduct());
+    Mockito.when(detailModelAssembler.toModel(mockProduct(), TAG)).thenReturn(createProductMockWithDetails());
+    ResponseEntity<ProductDetailModel> mockExpectedResult =
+        new ResponseEntity<>(createProductMockWithDetails(), HttpStatus.OK);
+
+    ResponseEntity<ProductDetailModel> result =
+        productDetailsController.findProductDetailsByVersion(DOCKER_CONNECTOR_ID, TAG);
+
+    assertEquals(HttpStatus.OK, result.getStatusCode());
+    assertEquals(result, mockExpectedResult);
+
+    verify(productService, times(1)).fetchProductDetail(DOCKER_CONNECTOR_ID);
   }
 
   @Test
@@ -86,7 +104,7 @@ class ProductDetailsControllerTest {
 
   private Product mockProduct() {
     Product mockProduct = new Product();
-    mockProduct.setId("docker-connector");
+    mockProduct.setId(DOCKER_CONNECTOR_ID);
     MultilingualismValue name = new MultilingualismValue();
     name.setEn(PRODUCT_NAME_SAMPLE);
     name.setDe(PRODUCT_NAME_DE_SAMPLE);
@@ -97,7 +115,7 @@ class ProductDetailsControllerTest {
 
   private ProductDetailModel createProductMockWithDetails() {
     ProductDetailModel mockProductDetail = new ProductDetailModel();
-    mockProductDetail.setId("docker-connector");
+    mockProductDetail.setId(DOCKER_CONNECTOR_ID);
     MultilingualismValue name = new MultilingualismValue();
     name.setEn(PRODUCT_NAME_SAMPLE);
     name.setDe(PRODUCT_NAME_DE_SAMPLE);
