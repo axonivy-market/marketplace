@@ -1,0 +1,14 @@
+name: marketplace-website
+
+services:
+  mongodb:
+    image: ghcr.io/nqhoan-axonivy/marketplace/marketplace-db:latest
+
+  nginx:
+    image: ghcr.io/nqhoan-axonivy/marketplace/marketplace-nginx:latest
+
+  marketplace-service:
+    image: ghcr.io/nqhoan-axonivy/marketplace/marketplace-service:latest
+
+volumes:
+  mongodata:
