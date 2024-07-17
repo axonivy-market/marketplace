@@ -1,23 +1,7 @@
 # Get starts with Marketplace build
 
 ### Set up MongoDB with authentication mode
-* Navigate to ``marketplace-build/config/mongodb`` and execute the ``docker-compose up`` to start MongoDB with non-auth mode
-* Create root user for authentication
-  ```
-  use admin
-  db.createUser(
-    {
-      user: "username",
-      pwd: "password",
-      roles: [
-        { role: "userAdminAnyDatabase", db: "admin" },
-        { role: "readWriteAnyDatabase", db: "admin" }
-      ]
-    }
-  )
-
-  db.grantRolesToUser('username', [{ role: 'root', db: 'admin' }])
-  ```
+* Navigate to ``marketplace-build/config/mongodb`` and execute the ``docker-compose up`` to start MongoDB with non-auth mode and create a root admin user.
 
 * [Optional] Execute authentication test for the created user
   ```
