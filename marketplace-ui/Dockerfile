@@ -1,9 +1,11 @@
-# use the latest version of the official nginx image as the base image
-FROM nginx:latest
-# copy the custom nginx configuration file to the container in the
-# default location
-COPY nginx.conf /etc/nginx/nginx.conf
-# copy the built Angular app files to the default nginx html directory
-COPY /dist/browser /usr/share/nginx/html
+# Stage 1: Build Angular app
+FROM node:14-alpine AS build-angular
+WORKDIR /app
+COPY . .
+RUN npm install
+RUN npm run build --prod
 
-# the paths are relative from the Docker file
+# Stage 2: Serve Angular app using Nginx
+FROM nginx:alpine
+COPY --from=build-angular /app/dist/browser /usr/share/nginx/html
+COPY --from=assets ./config/nginx/nginx.conf /etc/nginx/nginx.conf

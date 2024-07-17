@@ -18,10 +18,10 @@ services:
   ui:
     container_name: marketplace-ui
     build:
-      context: .
+      context: ../marketplace-ui
       additional_contexts:
-        assets: ../marketplace-ui/dist/
-      dockerfile: Dockerfile-UI
+        assets: ../marketplace-build/
+      dockerfile: Dockerfile
     restart: always
     volumes:
       - ./config/nginx/nginx.conf:/etc/nginx/nginx.conf
@@ -41,7 +41,7 @@ services:
       - MARKET_GITHUB_TOKEN=${MARKET_GITHUB_TOKEN}
     build:
       context: ../marketplace-service
-      dockerfile: Dockerfile-Service
+      dockerfile: Dockerfile
     volumes:
       - ../marketplace-service/target/marketplace-service-0.0.1-SNAPSHOT.war:/usr/local/tomcat/webapps/marketplace-service.war
     ports:
