@@ -1,5 +1,13 @@
 package com.axonivy.market.controller;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
+import java.util.List;
+import java.util.Objects;
+
 import com.axonivy.market.assembler.ProductDetailModelAssembler;
 import com.axonivy.market.entity.Product;
 import com.axonivy.market.model.MavenArtifactVersionModel;
@@ -23,6 +31,13 @@ import java.util.Objects;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
+import com.axonivy.market.assembler.ProductDetailModelAssembler;
+import com.axonivy.market.entity.Product;
+import com.axonivy.market.model.MavenArtifactVersionModel;
+import com.axonivy.market.model.MultilingualismValue;
+import com.axonivy.market.model.ProductDetailModel;
+import com.axonivy.market.service.ProductService;
+import com.axonivy.market.service.VersionService;
 
 @ExtendWith(MockitoExtension.class)
 class ProductDetailsControllerTest {
@@ -85,6 +100,15 @@ class ProductDetailsControllerTest {
     Assertions.assertEquals(HttpStatus.OK, result.getStatusCode());
     Assertions.assertEquals(1, Objects.requireNonNull(result.getBody()).size());
     Assertions.assertEquals(models, result.getBody());
+  }
+
+  @Test
+  void testSyncInstallationCount() {
+    when(productService.updateInstallationCountForProduct("google-maps-connector")).thenReturn(1);
+
+    var result = productDetailsController.syncInstallationCount("google-maps-connector");
+
+    assertEquals(1, result.getBody());
   }
 
   private Product mockProduct() {
