@@ -48,20 +48,18 @@ jobs:
           SONAR_TOKEN: ${{ env.SONAR_TOKEN }}
           SONAR_HOST_URL: ${{ env.SONAR_HOST_URL }}
         with:
-          projectBaseDir: ./marketplace-ui
+          projectBaseDir: marketplace-ui
           args:
             -Dsonar.projectKey=${{ env.SONAR_PROJECT_KEY }}
       - name: SonarQube Quality Gate check
         id: sonarqube-quality-gate-check
         uses: sonarsource/sonarqube-quality-gate-action@master
-        with:
-          scanMetadataReportFile: ./marketplace-ui/coverage/lcov.info
         timeout-minutes: 5
         env:
           SONAR_TOKEN: ${{ env.SONAR_TOKEN }}
           SONAR_HOST_URL: ${{ env.SONAR_HOST_URL }}
 
       - name: Clean up
+        working-directory: marketplace-ui
         run: |
-          cd ./marketplace-ui
           rm -rf *
