@@ -227,6 +227,10 @@ class VersionServiceImplTest {
     versionFromArtifact.add("10.0.19");
     versionFromArtifact.add("10.0.20");
     versionFromArtifact.add("10.0.21");
+    versionFromArtifact.add("10.0.22");
+    versionFromArtifact.add("10.0.23");
+    versionFromArtifact.add("10.0.24");
+    versionFromArtifact.add("10.0.25");
 
     try (MockedStatic<XmlReaderUtils> xmlUtils = Mockito.mockStatic(XmlReaderUtils.class)) {
       xmlUtils.when(() -> XmlReaderUtils.readXMLFromUrl(Mockito.anyString())).thenReturn(versionFromArtifact);
