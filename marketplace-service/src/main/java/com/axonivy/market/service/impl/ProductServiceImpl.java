@@ -15,6 +15,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Random;
 
+import com.fasterxml.jackson.core.type.TypeReference;
 import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.util.Strings;
@@ -139,9 +140,11 @@ public class ProductServiceImpl implements ProductService {
     log.info("synchronizing installation count for product {}", product.getId());
     try {
       String installationCounts = Files.readString(Paths.get(installationCountPath));
-      Map<String, Integer> mapping = mapper.readValue(installationCounts, HashMap.class);
+      Map<String, Integer> mapping = mapper.readValue(installationCounts,
+          new TypeReference<HashMap<String, Integer>>(){});
       List<String> keyList = mapping.keySet().stream().toList();
-      int currentInstallationCount = keyList.contains(product.getId()) ? mapping.get(product.getId())
+      int currentInstallationCount = keyList.contains(product.getId())
+          ? mapping.get(product.getId())
           : random.nextInt(20, 50);
       product.setInstallationCount(currentInstallationCount);
       product.setSynchronizedInstallationCount(true);
