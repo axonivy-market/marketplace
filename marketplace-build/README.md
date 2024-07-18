@@ -1,7 +1,7 @@
 # Get starts with Marketplace build
 
 ### Set up MongoDB with authentication mode
-* Navigate to ``marketplace-build/config/mongodb`` and execute the ``docker-compose up`` to start MongoDB with non-auth mode and create a root admin user.
+* Navigate to ``marketplace-build/config/mongodb`` and execute the ``docker-compose up -d`` to start MongoDB with non-auth mode and create a root admin user.
 
 * [Optional] Execute authentication test for the created user
   ```
@@ -10,19 +10,12 @@
   ```
 This command should return the ``OK`` code
 
+* Down the non-authen instance to start the main docker compose file by run ``docker-compose down``
+
 ### Docker build for DEV environment
-* Navigate to ``marketplace-service`` and execute maven build for spring-boot app to get the war file:
-  ```
-    mvn clean install -DskipTests
-  ```
+* Navigate to ``marketplace-build``
 
-* Navigate to ``marketplace-ui`` and execute node install and run the angular app to get the dist folder:
-  ```
-    npm instal
-    npm run build --prod
-  ```
-
-* Please run ``docker-compose up --build`` from folder ``marketplace-build`` to start a Marketplace DEV at the local
+* Run ``docker-compose up --build`` to start a Marketplace DEV at the local
 
 ### Docker release
 To release a new version for marketplace images, please trigger the ``Docker Release`` actions.

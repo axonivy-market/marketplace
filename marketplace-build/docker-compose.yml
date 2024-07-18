@@ -42,10 +42,6 @@ services:
     build:
       context: ../marketplace-service
       dockerfile: Dockerfile
-    volumes:
-      - ../marketplace-service/target/marketplace-service-0.0.1-SNAPSHOT.war:/usr/local/tomcat/webapps/marketplace-service.war
-    volumes:
-      - ../marketplace-service/target/marketplace-service-0.0.1-SNAPSHOT.war:/usr/local/tomcat/webapps/marketplace-service.war
     ports:
       - "8080:8080"
     depends_on:

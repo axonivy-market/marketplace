@@ -1,5 +1,5 @@
 # Stage 1: Build Angular app
-FROM node:14-alpine AS build-angular
+FROM node:20-alpine AS build-angular
 WORKDIR /app
 COPY . .
 RUN npm install

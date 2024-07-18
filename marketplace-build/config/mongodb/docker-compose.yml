@@ -3,6 +3,7 @@ name: marketplace
 
 services:
   mongodb:
+    container_name: marketplace-mongodb-non-authen
     image: mongodb/mongodb-community-server:7.0.0-ubi8
     restart: always
     ports:
