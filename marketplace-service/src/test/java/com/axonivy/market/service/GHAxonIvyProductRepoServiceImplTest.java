@@ -104,8 +104,8 @@ class GHAxonIvyProductRepoServiceImplTest {
 
     createListNodeForDataNoteByName(nodeName);
     MavenArtifact mockArtifact = Mockito.mock(MavenArtifact.class);
-    Mockito.doReturn(mockArtifact).when(axonivyProductRepoServiceImpl).createArtifactFromJsonNode(childNode, null,
-        isDependency);
+    Mockito.doReturn(mockArtifact).when(axonivyProductRepoServiceImpl)
+        .createArtifactFromJsonNode(childNode, null, isDependency);
 
     axonivyProductRepoServiceImpl.extractMavenArtifactFromJsonNode(dataNode, isDependency, artifacts);
 
@@ -116,8 +116,8 @@ class GHAxonIvyProductRepoServiceImplTest {
     nodeName = ProductJsonConstants.PROJECTS;
     createListNodeForDataNoteByName(nodeName);
 
-    Mockito.doReturn(mockArtifact).when(axonivyProductRepoServiceImpl).createArtifactFromJsonNode(childNode, null,
-        isDependency);
+    Mockito.doReturn(mockArtifact).when(axonivyProductRepoServiceImpl)
+        .createArtifactFromJsonNode(childNode, null, isDependency);
 
     axonivyProductRepoServiceImpl.extractMavenArtifactFromJsonNode(dataNode, isDependency, artifacts);
 
@@ -190,8 +190,7 @@ class GHAxonIvyProductRepoServiceImplTest {
 
   @Test
   void testGetReadmeAndProductContentsFromTag() throws IOException {
-    String readmeContentWithImage =
-        "#Product-name\n Test README\n## Demo\nDemo content\n## Setup\nSetup content (image.png)";
+    String readmeContentWithImage = "#Product-name\n Test README\n## Demo\nDemo content\n## Setup\nSetup content (image.png)";
 
     GHContent mockContent = createMockProductFolderWithProductJson();
 
@@ -213,8 +212,7 @@ class GHAxonIvyProductRepoServiceImplTest {
 
   @Test
   void testGetReadmeAndProductContentFromTag_ImageFromFolder() throws IOException {
-    String readmeContentWithImageFolder =
-        "#Product-name\n Test README\n## Demo\nDemo content\n## Setup\nSetup content (./images/image.png)";
+    String readmeContentWithImageFolder = "#Product-name\n Test README\n## Demo\nDemo content\n## Setup\nSetup content (./images/image.png)";
 
     GHContent mockImageFile = mock(GHContent.class);
     when(mockImageFile.getName()).thenReturn(ReadmeConstants.IMAGES, IMAGE_NAME);
@@ -324,9 +322,10 @@ class GHAxonIvyProductRepoServiceImplTest {
   }
 
   private static InputStream getMockInputStreamWithOutProjectAndDependency() {
-    String jsonContent = "{\n" + "  \"installers\": [\n" + "    {\n" + "      \"data\": {\n"
-        + "        \"repositories\": [\n" + "          {\n" + "            \"url\": \"http://example.com/repo\"\n"
-        + "          }\n" + "        ]\n" + "      }\n" + "    }\n" + "  ]\n" + "}";
+    String jsonContent =
+        "{\n" + "  \"installers\": [\n" + "    {\n" + "      \"data\": {\n" + "        \"repositories\": [\n"
+            + "          {\n" + "            \"url\": \"http://example.com/repo\"\n" + "          }\n" + "        ]\n"
+            + "      }\n" + "    }\n" + "  ]\n" + "}";
     return new ByteArrayInputStream(jsonContent.getBytes(StandardCharsets.UTF_8));
   }
 
@@ -357,10 +356,10 @@ class GHAxonIvyProductRepoServiceImplTest {
 
     GHContent mockContent2 = createMockProductJson();
 
-    when(ghRepository.getDirectoryContent(CommonConstants.SLASH, RELEASE_TAG))
-        .thenReturn(List.of(mockContent, mockContent2));
-    when(ghRepository.getDirectoryContent(DOCUWARE_CONNECTOR_PRODUCT, RELEASE_TAG))
-        .thenReturn(List.of(mockContent, mockContent2));
+    when(ghRepository.getDirectoryContent(CommonConstants.SLASH, RELEASE_TAG)).thenReturn(
+        List.of(mockContent, mockContent2));
+    when(ghRepository.getDirectoryContent(DOCUWARE_CONNECTOR_PRODUCT, RELEASE_TAG)).thenReturn(
+        List.of(mockContent, mockContent2));
 
     return mockContent;
   }

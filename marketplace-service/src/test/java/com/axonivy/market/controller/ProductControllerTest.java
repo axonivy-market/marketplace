@@ -6,7 +6,6 @@ import com.axonivy.market.enums.ErrorCode;
 import com.axonivy.market.enums.SortOption;
 import com.axonivy.market.enums.TypeOption;
 import com.axonivy.market.model.MultilingualismValue;
-import com.axonivy.market.model.ProductRating;
 import com.axonivy.market.service.ProductService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;

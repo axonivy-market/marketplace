@@ -21,7 +21,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
@@ -102,7 +103,8 @@ class FeedbackServiceImplTest {
     when(userRepository.findById(nonExistingUserId)).thenReturn(Optional.empty());
 
     // Test and verify exception
-    assertThrows(NotFoundException.class, () -> feedbackService.findFeedbackByUserIdAndProductId(nonExistingUserId, productId));
+    assertThrows(NotFoundException.class,
+        () -> feedbackService.findFeedbackByUserIdAndProductId(nonExistingUserId, productId));
 
     // Verify interactions
     verify(userRepository, times(1)).findById(nonExistingUserId);
@@ -127,7 +129,8 @@ class FeedbackServiceImplTest {
     User u = new User();
     u.setId(newFeedbackModel.getUserId());
     when(userRepository.findById(newFeedbackModel.getUserId())).thenReturn(Optional.of(u));
-    when(feedbackRepository.findByUserIdAndProductId(newFeedbackModel.getUserId(), newFeedbackModel.getProductId())).thenReturn(null);
+    when(feedbackRepository.findByUserIdAndProductId(newFeedbackModel.getUserId(),
+        newFeedbackModel.getProductId())).thenReturn(null);
     when(feedbackRepository.save(any(Feedback.class))).thenReturn(newFeedback);
 
     // Test method
@@ -157,7 +160,8 @@ class FeedbackServiceImplTest {
     User u = new User();
     u.setId(existingFeedback.getUserId());
     when(userRepository.findById(existingFeedback.getUserId())).thenReturn(Optional.of(u));
-    when(feedbackRepository.findByUserIdAndProductId(existingFeedback.getUserId(), existingFeedback.getProductId())).thenReturn(existingFeedback);
+    when(feedbackRepository.findByUserIdAndProductId(existingFeedback.getUserId(),
+        existingFeedback.getProductId())).thenReturn(existingFeedback);
     when(feedbackRepository.save(existingFeedback)).thenReturn(existingFeedback);
 
     // Test method
@@ -175,7 +179,8 @@ class FeedbackServiceImplTest {
     assertEquals(updatedFeedback.getContent(), result.getContent());
     assertEquals(updatedFeedback.getRating(), result.getRating());
     verify(userRepository, times(1)).findById(existingFeedback.getUserId());
-    verify(feedbackRepository, times(1)).findByUserIdAndProductId(existingFeedback.getUserId(), existingFeedback.getProductId());
+    verify(feedbackRepository, times(1)).findByUserIdAndProductId(existingFeedback.getUserId(),
+        existingFeedback.getProductId());
     verify(feedbackRepository, times(1)).save(existingFeedback);
   }
 
