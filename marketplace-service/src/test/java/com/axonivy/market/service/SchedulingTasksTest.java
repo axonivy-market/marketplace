@@ -10,7 +10,7 @@ import org.springframework.boot.test.mock.mockito.SpyBean;
 import static org.mockito.Mockito.atLeast;
 import static org.mockito.Mockito.verify;
 
-@SpringBootTest
+@SpringBootTest(properties = { "marketPlace-installation-url=D:/marketplace-installation.json" })
 class SchedulingTasksTest {
 
   @SpyBean

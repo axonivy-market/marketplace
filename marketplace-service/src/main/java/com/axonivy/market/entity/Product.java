@@ -16,6 +16,7 @@ import com.axonivy.market.github.model.MavenArtifact;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -24,6 +25,7 @@ import lombok.Setter;
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
+@Builder
 @Document(PRODUCT)
 public class Product implements Serializable {
   private static final long serialVersionUID = -8770801877877277258L;
@@ -51,11 +53,12 @@ public class Product implements Serializable {
   private String compatibility;
   private Boolean validate;
   private Boolean contactUs;
-  private Integer installationCount;
+  private int installationCount;
   private Date newestPublishedDate;
   private String newestReleaseVersion;
   private List<ProductModuleContent> productModuleContents;
   private List<MavenArtifact> artifacts;
+  private Boolean synchronizedInstallationCount;
 
   @Override
   public int hashCode() {
