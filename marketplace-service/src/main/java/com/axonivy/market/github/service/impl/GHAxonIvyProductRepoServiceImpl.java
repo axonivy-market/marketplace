@@ -262,7 +262,7 @@ public class GHAxonIvyProductRepoServiceImpl implements GHAxonIvyProductRepoServ
       setup = parts[1];
     }
 
-    setDescriptionWithLocale(productModuleContent, description, locale);
+    setDescriptionWithLocale(productModuleContent, description.trim(), locale);
     productModuleContent.setDemo(demo.trim());
     productModuleContent.setSetup(setup.trim());
   }
