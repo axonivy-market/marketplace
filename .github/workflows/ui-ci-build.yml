@@ -48,6 +48,7 @@ jobs:
           SONAR_TOKEN: ${{ env.SONAR_TOKEN }}
           SONAR_HOST_URL: ${{ env.SONAR_HOST_URL }}
         with:
+          projectBaseDir: ./marketplace-ui
           args:
             -Dsonar.projectKey=${{ env.SONAR_PROJECT_KEY }}
       - name: SonarQube Quality Gate check
