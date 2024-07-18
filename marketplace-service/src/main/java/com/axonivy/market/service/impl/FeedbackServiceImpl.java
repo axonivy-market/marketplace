@@ -3,6 +3,7 @@ package com.axonivy.market.service.impl;
 import com.axonivy.market.entity.Feedback;
 import com.axonivy.market.enums.ErrorCode;
 import com.axonivy.market.exceptions.model.NotFoundException;
+import com.axonivy.market.model.FeedbackModel;
 import com.axonivy.market.model.ProductRating;
 import com.axonivy.market.repository.FeedbackRepository;
 import com.axonivy.market.repository.ProductRepository;
@@ -57,13 +58,18 @@ public class FeedbackServiceImpl implements FeedbackService {
   }
 
   @Override
-  public Feedback upsertFeedback(Feedback feedback) throws NotFoundException {
+  public Feedback upsertFeedback(FeedbackModel feedback) throws NotFoundException {
     validateUserExists(feedback.getUserId());
 
     Feedback existingUserFeedback = feedbackRepository.findByUserIdAndProductId(feedback.getUserId(),
         feedback.getProductId());
     if (existingUserFeedback == null) {
-      return feedbackRepository.save(feedback);
+      Feedback newFeedback = new Feedback();
+      newFeedback.setUserId(feedback.getUserId());
+      newFeedback.setProductId(feedback.getProductId());
+      newFeedback.setRating(feedback.getRating());
+      newFeedback.setContent(feedback.getContent());
+      return feedbackRepository.save(newFeedback);
     } else {
       existingUserFeedback.setRating(feedback.getRating());
       existingUserFeedback.setContent(feedback.getContent());

@@ -113,12 +113,4 @@ class ProductControllerTest {
     mockProduct.setTags(List.of("AI"));
     return mockProduct;
   }
-
-  private ProductRating createProductRatingMock() {
-    ProductRating productRatingMock = new ProductRating();
-    productRatingMock.setStarRating(1);
-    productRatingMock.setPercent(10);
-    productRatingMock.setCommentNumber(5);
-    return productRatingMock;
-  }
 }

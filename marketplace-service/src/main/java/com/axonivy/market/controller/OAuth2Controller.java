@@ -3,6 +3,7 @@ package com.axonivy.market.controller;
 import com.axonivy.market.constants.GitHubConstants;
 import com.axonivy.market.entity.User;
 import com.axonivy.market.github.service.GitHubService;
+import com.axonivy.market.model.GitHubAccessTokenResponse;
 import com.axonivy.market.model.Oauth2AuthorizationCode;
 import com.axonivy.market.service.JwtService;
 import org.springframework.beans.factory.annotation.Value;
@@ -35,10 +36,10 @@ public class OAuth2Controller {
   }
 
   @PostMapping("/github/login")
-  public ResponseEntity<?> gitHubLogin(@RequestBody Oauth2AuthorizationCode oauth2AuthorizationCode) {
-    Map<String, Object> tokenResponse = gitHubService.getAccessToken(oauth2AuthorizationCode.getCode(), clientId,
+  public ResponseEntity<Object> gitHubLogin(@RequestBody Oauth2AuthorizationCode oauth2AuthorizationCode) {
+    GitHubAccessTokenResponse tokenResponse = gitHubService.getAccessToken(oauth2AuthorizationCode.getCode(), clientId,
         clientSecret);
-    String accessToken = (String) tokenResponse.get(GitHubConstants.Json.ACCESS_TOKEN);
+    String accessToken = tokenResponse.getAccessToken();
 
     User user = gitHubService.getAndUpdateUser(accessToken);
 

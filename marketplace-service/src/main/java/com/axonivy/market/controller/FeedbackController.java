@@ -70,7 +70,7 @@ public class FeedbackController {
   }
 
   @PostMapping
-  public ResponseEntity<Void> createFeedback(@RequestBody @Valid Feedback feedback,
+  public ResponseEntity<Void> createFeedback(@RequestBody @Valid FeedbackModel feedback,
       @RequestHeader(value = "Authorization", required = false) String authorizationHeader) {
     String token = null;
     if (authorizationHeader != null && authorizationHeader.startsWith("Bearer ")) {

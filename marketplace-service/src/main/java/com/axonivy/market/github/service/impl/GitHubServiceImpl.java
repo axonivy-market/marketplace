@@ -6,6 +6,7 @@ import com.axonivy.market.enums.ErrorCode;
 import com.axonivy.market.exceptions.model.NotFoundException;
 import com.axonivy.market.exceptions.model.Oauth2ExchangeCodeException;
 import com.axonivy.market.github.service.GitHubService;
+import com.axonivy.market.model.GitHubAccessTokenResponse;
 import com.axonivy.market.repository.UserRepository;
 import org.kohsuke.github.*;
 import org.springframework.boot.web.client.RestTemplateBuilder;
@@ -68,7 +69,7 @@ public class GitHubServiceImpl implements GitHubService {
   }
 
   @Override
-  public Map<String, Object> getAccessToken(String code, String clientId, String clientSecret)
+  public GitHubAccessTokenResponse getAccessToken(String code, String clientId, String clientSecret)
       throws Oauth2ExchangeCodeException {
     MultiValueMap<String, String> params = new LinkedMultiValueMap<>();
     params.add(GitHubConstants.Json.CLIENT_ID, clientId);
@@ -79,13 +80,15 @@ public class GitHubServiceImpl implements GitHubService {
     headers.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
     HttpEntity<MultiValueMap<String, String>> request = new HttpEntity<>(params, headers);
 
-    ResponseEntity<Map> response = restTemplate.postForEntity(GitHubConstants.GITHUB_GET_ACCESS_TOKEN_URL, request,
-        Map.class);
-    if (response.getBody().containsKey(GitHubConstants.Json.ERROR)) {
-      throw new Oauth2ExchangeCodeException(response.getBody().get(GitHubConstants.Json.ERROR).toString(),
-          response.getBody().get(GitHubConstants.Json.ERROR_DESCRIPTION).toString());
+    ResponseEntity<GitHubAccessTokenResponse> responseEntity = restTemplate.postForEntity(
+        GitHubConstants.GITHUB_GET_ACCESS_TOKEN_URL, request, GitHubAccessTokenResponse.class);
+    GitHubAccessTokenResponse response = responseEntity.getBody();
+
+    if (response != null && response.getError() != null && !response.getError().isBlank()) {
+      throw new Oauth2ExchangeCodeException(response.getError(), response.getErrorDescription());
     }
-    return response.getBody();
+
+    return response;
   }
 
   @Override
