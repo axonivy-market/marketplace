@@ -1,18 +1,10 @@
 package com.axonivy.market.entity;
 
-import static com.axonivy.market.constants.EntityConstants.PRODUCT;
-
-import java.io.Serializable;
-import java.util.Date;
-import java.util.List;
-
-
 import com.axonivy.market.github.model.MavenArtifact;
 import com.axonivy.market.model.MultilingualismValue;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import lombok.*;
-import com.axonivy.market.github.model.MavenArtifact;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;

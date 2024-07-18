@@ -1,13 +1,5 @@
 package com.axonivy.market.controller;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
-
-import java.util.List;
-import java.util.Objects;
-
 import com.axonivy.market.assembler.ProductDetailModelAssembler;
 import com.axonivy.market.entity.Product;
 import com.axonivy.market.model.MavenArtifactVersionModel;
@@ -31,13 +23,7 @@ import java.util.Objects;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
-import com.axonivy.market.assembler.ProductDetailModelAssembler;
-import com.axonivy.market.entity.Product;
-import com.axonivy.market.model.MavenArtifactVersionModel;
-import com.axonivy.market.model.MultilingualismValue;
-import com.axonivy.market.model.ProductDetailModel;
-import com.axonivy.market.service.ProductService;
-import com.axonivy.market.service.VersionService;
+import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class ProductDetailsControllerTest {
