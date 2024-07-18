@@ -3,9 +3,8 @@ run-name: Build on branch ${{github.ref_name}} triggered by ${{github.actor}}
 
 on:
   push:
-    branches-ignore:
-      - develop
-      - master
+    paths:
+      - 'marketplace-ui/**'
   workflow_dispatch:
 
 jobs:
@@ -20,10 +19,15 @@ jobs:
         with:
           node-version: '20'
           cache: 'npm'
+          cache-dependency-path: ./marketplace-ui/package-lock.json
       - name: Install Dependencies
-        run: npm install
+        run: |
+          cd ./marketplace-ui
+          npm install
       - name: Build project
-        run: npm run build
+        run: |
+          cd ./marketplace-ui
+          npm run build
 
   analysis:
     name: Sonarqube
@@ -36,22 +40,29 @@ jobs:
 
     steps:
       - name: Execute Tests
-        run: npm run test
+        run: |
+          cd ./marketplace-ui
+          npm run test
       - uses: sonarsource/sonarqube-scan-action@master
         env:
           SONAR_TOKEN: ${{ env.SONAR_TOKEN }}
           SONAR_HOST_URL: ${{ env.SONAR_HOST_URL }}
         with:
+          projectBaseDir: ./marketplace-ui
           args:
             -Dsonar.projectKey=${{ env.SONAR_PROJECT_KEY }}
+            -Dsonar.javascript.lcov.reportPaths=${{ github.workspace }}/marketplace-ui/coverage/lcov.info
       - name: SonarQube Quality Gate check
         id: sonarqube-quality-gate-check
         uses: sonarsource/sonarqube-quality-gate-action@master
+        with:
+          scanMetadataReportFile: ${{ github.workspace }}/marketplace-ui/coverage/lcov.info
         timeout-minutes: 5
         env:
           SONAR_TOKEN: ${{ env.SONAR_TOKEN }}
           SONAR_HOST_URL: ${{ env.SONAR_HOST_URL }}
 
       - name: Clean up
+        working-directory: marketplace-ui
         run: |
           rm -rf *

@@ -12,12 +12,9 @@ public class WebConfig implements WebMvcConfigurer {
   private static final String[] EXCLUDE_PATHS = { "/", "/swagger-ui/**", "/api-docs/**" };
   private static final String[] ALLOWED_HEADERS = { "Accept-Language", "Content-Type", "Authorization",
       "X-Requested-By", "x-requested-with", "X-Forwarded-Host" };
-  private static final String[] ALLOWED_METHODS = { "GET", "POST", "PUT", "DELETE", "OPTIONS" };
+  private static final String[] ALLOWED_METHODS = { "GET", "OPTIONS" };
 
   private final MarketHeaderInterceptor headerInterceptor;
-
-  @Value("${market.cors.allowed.origin.patterns}")
-  private String marketCorsAllowedOriginPatterns;
 
   @Value("${market.cors.allowed.origin.maxAge}")
   private int marketCorsAllowedOriginMaxAge;
@@ -33,10 +30,7 @@ public class WebConfig implements WebMvcConfigurer {
 
   @Override
   public void addCorsMappings(CorsRegistry registry) {
-    registry.addMapping("/**")
-        .allowedOriginPatterns(marketCorsAllowedOriginPatterns)
-        .allowedMethods(ALLOWED_METHODS)
-        .allowedHeaders(ALLOWED_HEADERS)
+    registry.addMapping("/**").allowedOrigins("*").allowedMethods(ALLOWED_METHODS).allowedHeaders(ALLOWED_HEADERS)
         .maxAge(marketCorsAllowedOriginMaxAge);
   }
 }
