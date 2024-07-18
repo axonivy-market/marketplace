@@ -11,9 +11,9 @@ import java.io.Serial;
 @AllArgsConstructor
 public class Oauth2ExchangeCodeException extends RuntimeException {
 
-    @Serial
-    private static final long serialVersionUID = 6778659816121728814L;
+  @Serial
+  private static final long serialVersionUID = 6778659816121728814L;
 
-    private String error;
-    private String errorDescription;
+  private final String error;
+  private final String errorDescription;
 }

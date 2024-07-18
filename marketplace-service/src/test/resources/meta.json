@@ -3,21 +3,21 @@
   "id": "amazon-comprehend",
   "names": [
     {
-      "locale":"en",
+      "locale": "en",
       "value": "Amazon Comprehend"
     },
     {
-      "locale":"de",
+      "locale": "de",
       "value": "Amazon Comprehend DE"
     }
   ],
   "descriptions": [
     {
-      "locale":"en",
+      "locale": "en",
       "value": "Amazon Comprehend is a AI service that uses machine learning to uncover information in unstructured data."
     },
     {
-      "locale":"de",
+      "locale": "de",
       "value": "Amazon Comprehend is a AI service that uses machine learning to uncover information in unstructured data. DE"
     }
   ],

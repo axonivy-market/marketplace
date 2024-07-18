@@ -1,30 +1,29 @@
 package com.axonivy.market.factory;
 
-import static com.axonivy.market.constants.CommonConstants.LOGO_FILE;
-import static com.axonivy.market.constants.CommonConstants.SLASH;
-import static com.axonivy.market.constants.MetaConstants.*;
-import static org.apache.commons.lang3.StringUtils.EMPTY;
-
+import com.axonivy.market.entity.Product;
 import com.axonivy.market.enums.Language;
+import com.axonivy.market.github.model.Meta;
 import com.axonivy.market.github.util.GitHubUtils;
 import com.axonivy.market.model.DisplayValue;
 import com.axonivy.market.model.MultilingualismValue;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import lombok.AccessLevel;
+import lombok.NoArgsConstructor;
+import lombok.extern.log4j.Log4j2;
 import org.apache.commons.lang3.BooleanUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.kohsuke.github.GHContent;
+import org.springframework.util.CollectionUtils;
 
 import java.io.IOException;
 import java.util.List;
 
-import org.apache.commons.lang3.StringUtils;
-import org.kohsuke.github.GHContent;
-
-import com.axonivy.market.entity.Product;
-import com.axonivy.market.github.model.Meta;
-import com.fasterxml.jackson.databind.ObjectMapper;
-
-import lombok.AccessLevel;
-import lombok.NoArgsConstructor;
-import lombok.extern.log4j.Log4j2;
-import org.springframework.util.CollectionUtils;
+import static com.axonivy.market.constants.CommonConstants.LOGO_FILE;
+import static com.axonivy.market.constants.CommonConstants.SLASH;
+import static com.axonivy.market.constants.MetaConstants.DEFAULT_VENDOR_NAME;
+import static com.axonivy.market.constants.MetaConstants.DEFAULT_VENDOR_URL;
+import static com.axonivy.market.constants.MetaConstants.META_FILE;
+import static org.apache.commons.lang3.StringUtils.EMPTY;
 
 @Log4j2
 @NoArgsConstructor(access = AccessLevel.PRIVATE)

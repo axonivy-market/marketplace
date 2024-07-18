@@ -23,8 +23,7 @@ public class AppController {
     var message = new Message();
     message.setHelpCode(ErrorCode.SUCCESSFUL.getCode());
     message.setMessageDetails(
-        "Marketplace API is a REST APIs for Marketplace website. Try with %s"
-        .formatted(extractSwaggerUrl()));
+        "Marketplace API is a REST APIs for Marketplace website. Try with %s".formatted(extractSwaggerUrl()));
     message.setHelpText(ErrorCode.SUCCESSFUL.getHelpText());
     return new ResponseEntity<>(message, HttpStatus.OK);
   }

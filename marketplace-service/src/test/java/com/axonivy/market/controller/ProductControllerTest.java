@@ -6,7 +6,6 @@ import com.axonivy.market.enums.ErrorCode;
 import com.axonivy.market.enums.SortOption;
 import com.axonivy.market.enums.TypeOption;
 import com.axonivy.market.model.MultilingualismValue;
-import com.axonivy.market.model.ProductRating;
 import com.axonivy.market.service.ProductService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -112,13 +111,5 @@ class ProductControllerTest {
     mockProduct.setType("connector");
     mockProduct.setTags(List.of("AI"));
     return mockProduct;
-  }
-
-  private ProductRating createProductRatingMock() {
-    ProductRating productRatingMock = new ProductRating();
-    productRatingMock.setStarRating(1);
-    productRatingMock.setPercent(10);
-    productRatingMock.setCommentNumber(5);
-    return productRatingMock;
   }
 }
