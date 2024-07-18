@@ -6,5 +6,5 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface UserRepository extends MongoRepository<User, String> {
-    User searchByGitHubId(String gitHubId);
+  User searchByGitHubId(String gitHubId);
 }

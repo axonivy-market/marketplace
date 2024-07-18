@@ -16,8 +16,8 @@ import java.io.Serializable;
 @JsonInclude(JsonInclude.Include.NON_EMPTY)
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class ArchivedArtifact implements Serializable {
-	private static final long serialVersionUID = 1L;
-	private String lastVersion;
-	private String groupId;
-	private String artifactId;
+  private static final long serialVersionUID = 1L;
+  private String lastVersion;
+  private String groupId;
+  private String artifactId;
 }

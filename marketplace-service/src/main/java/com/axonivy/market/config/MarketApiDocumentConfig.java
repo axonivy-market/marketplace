@@ -20,18 +20,14 @@ public class MarketApiDocumentConfig {
 
   @Bean
   public GroupedOpenApi buildMarketCustomHeader() {
-    return GroupedOpenApi.builder()
-        .group(DEFAULT_DOC_GROUP)
-        .addOpenApiCustomizer(customMarketHeaders())
-        .pathsToMatch(PATH_PATTERN)
-        .build();
+    return GroupedOpenApi.builder().group(DEFAULT_DOC_GROUP).addOpenApiCustomizer(customMarketHeaders())
+        .pathsToMatch(PATH_PATTERN).build();
   }
 
   private OpenApiCustomizer customMarketHeaders() {
     return openApi -> openApi.getPaths().values().forEach((PathItem pathItem) -> {
       for (Operation operation : pathItem.readOperations()) {
-        Parameter headerParameter = new Parameter().in(HEADER_PARAM)
-            .schema(new StringSchema()).name(REQUESTED_BY)
+        Parameter headerParameter = new Parameter().in(HEADER_PARAM).schema(new StringSchema()).name(REQUESTED_BY)
             .description(DEFAULT_PARAM).required(true);
         operation.addParametersItem(headerParameter);
       }

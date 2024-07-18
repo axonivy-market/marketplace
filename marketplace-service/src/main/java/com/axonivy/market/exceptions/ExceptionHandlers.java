@@ -25,7 +25,8 @@ import java.util.List;
 public class ExceptionHandlers extends ResponseEntityExceptionHandler {
 
   @Override
-  protected ResponseEntity<Object> handleMethodArgumentNotValid(MethodArgumentNotValidException ex, HttpHeaders headers, HttpStatusCode status, WebRequest request) {
+  protected ResponseEntity<Object> handleMethodArgumentNotValid(MethodArgumentNotValidException ex, HttpHeaders headers,
+      HttpStatusCode status, WebRequest request) {
     BindingResult bindingResult = ex.getBindingResult();
     List<String> errors = new ArrayList<>();
     if (bindingResult.hasErrors()) {
@@ -66,7 +67,8 @@ public class ExceptionHandlers extends ResponseEntityExceptionHandler {
   }
 
   @ExceptionHandler(Oauth2ExchangeCodeException.class)
-  public ResponseEntity<Object> handleOauth2ExchangeCodeException(Oauth2ExchangeCodeException oauth2ExchangeCodeException) {
+  public ResponseEntity<Object> handleOauth2ExchangeCodeException(
+      Oauth2ExchangeCodeException oauth2ExchangeCodeException) {
     var errorMessage = new Message();
     errorMessage.setHelpCode(oauth2ExchangeCodeException.getError());
     errorMessage.setMessageDetails(oauth2ExchangeCodeException.getErrorDescription());

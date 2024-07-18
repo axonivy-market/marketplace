@@ -26,13 +26,13 @@ public class MongoConfig extends AbstractMongoClientConfiguration {
   @Value("${spring.data.mongodb.uri}")
   private String uri;
 
-	@Value("${spring.data.mongodb.database}")
-	private String databaseName;
+  @Value("${spring.data.mongodb.database}")
+  private String databaseName;
 
-	@Override
-	protected String getDatabaseName() {
-		return databaseName;
-	}
+  @Override
+  protected String getDatabaseName() {
+    return databaseName;
+  }
 
   @Override
   public MongoClient mongoClient() {
@@ -43,19 +43,19 @@ public class MongoConfig extends AbstractMongoClientConfiguration {
     return MongoClients.create(mongoClientSettings);
   }
 
-	/**
-	 * By default, the key in hash map is not allow to contain dot character (.) we
-	 * need to escape it by define a replacement to that char
-	 **/
-	@Override
-	@Bean
-	public MappingMongoConverter mappingMongoConverter(MongoDatabaseFactory databaseFactory,
-			MongoCustomConversions customConversions, MongoMappingContext mappingContext) {
-		DbRefResolver dbRefResolver = new DefaultDbRefResolver(databaseFactory);
-		MappingMongoConverter converter = new MappingMongoConverter(dbRefResolver, mappingContext);
-		converter.setCustomConversions(customConversions);
-		converter.setCodecRegistryProvider(databaseFactory);
-		converter.setMapKeyDotReplacement("_");
-		return converter;
-	}
+  /**
+   * By default, the key in hash map is not allow to contain dot character (.) we need to escape it by define a
+   * replacement to that char
+   **/
+  @Override
+  @Bean
+  public MappingMongoConverter mappingMongoConverter(MongoDatabaseFactory databaseFactory,
+      MongoCustomConversions customConversions, MongoMappingContext mappingContext) {
+    DbRefResolver dbRefResolver = new DefaultDbRefResolver(databaseFactory);
+    MappingMongoConverter converter = new MappingMongoConverter(dbRefResolver, mappingContext);
+    converter.setCustomConversions(customConversions);
+    converter.setCodecRegistryProvider(databaseFactory);
+    converter.setMapKeyDotReplacement("_");
+    return converter;
+  }
 }

@@ -1,7 +1,8 @@
 package com.axonivy.market.constants;
 
 public class MavenConstants {
-  private MavenConstants() {}
+  private MavenConstants() {
+  }
 
   public static final String SNAPSHOT_RELEASE_POSTFIX = "-SNAPSHOT";
   public static final String SPRINT_RELEASE_POSTFIX = "-m";

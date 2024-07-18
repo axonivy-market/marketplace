@@ -11,7 +11,7 @@ public class ScheduledTasks {
 
   private static final String SCHEDULING_TASK_PRODUCTS_CRON = "0 0 0/1 ? * *";
 
-  private ProductService productService;
+  private final ProductService productService;
 
   public ScheduledTasks(ProductService productService) {
     this.productService = productService;
