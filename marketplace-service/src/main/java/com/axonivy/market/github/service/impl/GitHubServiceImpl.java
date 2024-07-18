@@ -1,13 +1,10 @@
 package com.axonivy.market.github.service.impl;
 
-import com.axonivy.market.constants.GitHubConstants;
-import com.axonivy.market.entity.User;
-import com.axonivy.market.enums.ErrorCode;
-import com.axonivy.market.exceptions.model.NotFoundException;
-import com.axonivy.market.exceptions.model.Oauth2ExchangeCodeException;
-import com.axonivy.market.github.service.GitHubService;
-import com.axonivy.market.model.GitHubAccessTokenResponse;
-import com.axonivy.market.repository.UserRepository;
+import java.io.IOException;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+
 import org.kohsuke.github.GHContent;
 import org.kohsuke.github.GHOrganization;
 import org.kohsuke.github.GHRepository;
@@ -28,9 +25,12 @@ import org.springframework.web.client.RestTemplate;
 
 import com.axonivy.market.constants.GitHubConstants;
 import com.axonivy.market.entity.User;
+import com.axonivy.market.enums.ErrorCode;
+import com.axonivy.market.exceptions.model.NotFoundException;
 import com.axonivy.market.exceptions.model.Oauth2ExchangeCodeException;
 import com.axonivy.market.github.model.GitHubProperty;
 import com.axonivy.market.github.service.GitHubService;
+import com.axonivy.market.model.GitHubAccessTokenResponse;
 import com.axonivy.market.repository.UserRepository;
 
 @Service
