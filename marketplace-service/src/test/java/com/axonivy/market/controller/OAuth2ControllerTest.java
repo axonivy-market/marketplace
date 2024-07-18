@@ -2,6 +2,7 @@ package com.axonivy.market.controller;
 
 import com.axonivy.market.entity.User;
 import com.axonivy.market.github.service.GitHubService;
+import com.axonivy.market.model.GitHubAccessTokenResponse;
 import com.axonivy.market.model.Oauth2AuthorizationCode;
 import com.axonivy.market.service.JwtService;
 import org.junit.jupiter.api.BeforeEach;
@@ -44,7 +45,7 @@ class OAuth2ControllerTest {
     User user = createUserMock();
     String jwtToken = "sampleJwtToken";
 
-    when(gitHubService.getAccessToken(any(), any(), any())).thenReturn(Map.of("access_token", accessToken));
+    when(gitHubService.getAccessToken(any(), any(), any())).thenReturn(createGitHubAccessTokenResponseMock());
     when(gitHubService.getAndUpdateUser(accessToken)).thenReturn(user);
     when(jwtService.generateToken(user)).thenReturn(jwtToken);
 
@@ -62,5 +63,11 @@ class OAuth2ControllerTest {
     user.setAvatarUrl("http://avatar.url");
     user.setProvider("github");
     return user;
+  }
+
+  private GitHubAccessTokenResponse createGitHubAccessTokenResponseMock() {
+    GitHubAccessTokenResponse gitHubAccessTokenResponse = new GitHubAccessTokenResponse();
+    gitHubAccessTokenResponse.setAccessToken("sampleAccessToken");
+    return gitHubAccessTokenResponse;
   }
 }

@@ -8,5 +8,5 @@ import lombok.Setter;
 @Setter
 @NoArgsConstructor
 public class Oauth2AuthorizationCode {
-    public String code;
+  private String code;
 }

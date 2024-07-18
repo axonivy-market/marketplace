@@ -115,8 +115,8 @@ class GHAxonIvyProductRepoServiceImplTest {
 
     createListNodeForDataNoteByName(nodeName);
     MavenArtifact mockArtifact = Mockito.mock(MavenArtifact.class);
-    Mockito.doReturn(mockArtifact).when(axonivyProductRepoServiceImpl).createArtifactFromJsonNode(childNode, null,
-        isDependency);
+    Mockito.doReturn(mockArtifact).when(axonivyProductRepoServiceImpl)
+        .createArtifactFromJsonNode(childNode, null, isDependency);
 
     axonivyProductRepoServiceImpl.extractMavenArtifactFromJsonNode(dataNode, isDependency, artifacts);
 
@@ -127,8 +127,8 @@ class GHAxonIvyProductRepoServiceImplTest {
     nodeName = ProductJsonConstants.PROJECTS;
     createListNodeForDataNoteByName(nodeName);
 
-    Mockito.doReturn(mockArtifact).when(axonivyProductRepoServiceImpl).createArtifactFromJsonNode(childNode, null,
-        isDependency);
+    Mockito.doReturn(mockArtifact).when(axonivyProductRepoServiceImpl)
+        .createArtifactFromJsonNode(childNode, null, isDependency);
 
     axonivyProductRepoServiceImpl.extractMavenArtifactFromJsonNode(dataNode, isDependency, artifacts);
 
@@ -333,9 +333,10 @@ class GHAxonIvyProductRepoServiceImplTest {
   }
 
   private static InputStream getMockInputStreamWithOutProjectAndDependency() {
-    String jsonContent = "{\n" + "  \"installers\": [\n" + "    {\n" + "      \"data\": {\n"
-        + "        \"repositories\": [\n" + "          {\n" + "            \"url\": \"http://example.com/repo\"\n"
-        + "          }\n" + "        ]\n" + "      }\n" + "    }\n" + "  ]\n" + "}";
+    String jsonContent =
+        "{\n" + "  \"installers\": [\n" + "    {\n" + "      \"data\": {\n" + "        \"repositories\": [\n"
+            + "          {\n" + "            \"url\": \"http://example.com/repo\"\n" + "          }\n" + "        ]\n"
+            + "      }\n" + "    }\n" + "  ]\n" + "}";
     return new ByteArrayInputStream(jsonContent.getBytes(StandardCharsets.UTF_8));
   }
 
@@ -366,10 +367,10 @@ class GHAxonIvyProductRepoServiceImplTest {
 
     GHContent mockContent2 = createMockProductJson();
 
-    when(ghRepository.getDirectoryContent(CommonConstants.SLASH, RELEASE_TAG))
-        .thenReturn(List.of(mockContent, mockContent2));
-    when(ghRepository.getDirectoryContent(DOCUWARE_CONNECTOR_PRODUCT, RELEASE_TAG))
-        .thenReturn(List.of(mockContent, mockContent2));
+    when(ghRepository.getDirectoryContent(CommonConstants.SLASH, RELEASE_TAG)).thenReturn(
+        List.of(mockContent, mockContent2));
+    when(ghRepository.getDirectoryContent(DOCUWARE_CONNECTOR_PRODUCT, RELEASE_TAG)).thenReturn(
+        List.of(mockContent, mockContent2));
 
     return mockContent;
   }

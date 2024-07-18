@@ -24,7 +24,8 @@ import java.util.Optional;
 public class XmlReaderUtils {
   private static final RestTemplate restTemplate = new RestTemplate();
 
-  private XmlReaderUtils() {}
+  private XmlReaderUtils() {
+  }
 
   public static List<String> readXMLFromUrl(String url) {
     List<String> versions = new ArrayList<>();

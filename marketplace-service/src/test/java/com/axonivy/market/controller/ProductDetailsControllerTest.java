@@ -69,11 +69,11 @@ class ProductDetailsControllerTest {
   void testProductDetailsWithVersion() {
     Mockito.when(productService.fetchProductDetail(Mockito.anyString())).thenReturn(mockProduct());
     Mockito.when(detailModelAssembler.toModel(mockProduct(), TAG)).thenReturn(createProductMockWithDetails());
-    ResponseEntity<ProductDetailModel> mockExpectedResult =
-        new ResponseEntity<>(createProductMockWithDetails(), HttpStatus.OK);
+    ResponseEntity<ProductDetailModel> mockExpectedResult = new ResponseEntity<>(createProductMockWithDetails(),
+        HttpStatus.OK);
 
-    ResponseEntity<ProductDetailModel> result =
-        productDetailsController.findProductDetailsByVersion(DOCKER_CONNECTOR_ID, TAG);
+    ResponseEntity<ProductDetailModel> result = productDetailsController.findProductDetailsByVersion(
+        DOCKER_CONNECTOR_ID, TAG);
 
     assertEquals(HttpStatus.OK, result.getStatusCode());
     assertEquals(result, mockExpectedResult);
@@ -85,7 +85,7 @@ class ProductDetailsControllerTest {
   void testFindProductVersionsById() {
     List<MavenArtifactVersionModel> models = List.of(new MavenArtifactVersionModel());
     Mockito.when(
-        versionService.getArtifactsAndVersionToDisplay(Mockito.anyString(), Mockito.anyBoolean(), Mockito.anyString()))
+            versionService.getArtifactsAndVersionToDisplay(Mockito.anyString(), Mockito.anyBoolean(), Mockito.anyString()))
         .thenReturn(models);
     ResponseEntity<List<MavenArtifactVersionModel>> result = productDetailsController.findProductVersionsById("protal",
         true, "10.0.1");

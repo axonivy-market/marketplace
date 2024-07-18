@@ -277,8 +277,8 @@ class ProductServiceImplTest {
     var mockCommit = mockGHCommitHasSHA1(SHA1_SAMPLE);
     when(marketRepoService.getLastCommit(anyLong())).thenReturn(mockCommit);
     when(repoMetaRepository.findByRepoName(anyString())).thenReturn(null);
-    when(ghAxonIvyProductRepoService.getReadmeAndProductContentsFromTag(any(), any(), anyString()))
-        .thenReturn(mockReadmeProductContent());
+    when(ghAxonIvyProductRepoService.getReadmeAndProductContentsFromTag(any(), any(), anyString())).thenReturn(
+        mockReadmeProductContent());
     when(gitHubService.getRepository(any())).thenReturn(ghRepository);
     PagedIterable<GHTag> pagedIterable = mock(PagedIterable.class);
     when(ghRepository.listTags()).thenReturn(pagedIterable);
@@ -328,8 +328,8 @@ class ProductServiceImplTest {
     String type = TypeOption.ALL.getOption();
     keyword = "on";
     langague = "en";
-    when(productRepository.searchByNameOrShortDescriptionRegex(keyword, langague, simplePageable))
-        .thenReturn(mockResultReturn);
+    when(productRepository.searchByNameOrShortDescriptionRegex(keyword, langague, simplePageable)).thenReturn(
+        mockResultReturn);
 
     var result = productService.findProducts(type, keyword, langague, simplePageable);
     assertEquals(result, mockResultReturn);

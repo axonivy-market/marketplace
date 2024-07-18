@@ -1,5 +1,17 @@
 package com.axonivy.market.factory;
 
+import com.axonivy.market.constants.CommonConstants;
+import com.axonivy.market.entity.Product;
+import com.axonivy.market.github.model.Meta;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.kohsuke.github.GHContent;
+import org.mockito.junit.jupiter.MockitoExtension;
+
+import java.io.IOException;
+import java.io.InputStream;
+
 import static com.axonivy.market.constants.CommonConstants.SLASH;
 import static com.axonivy.market.constants.MetaConstants.META_FILE;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -23,8 +35,7 @@ import com.axonivy.market.enums.Language;
 
 @ExtendWith(MockitoExtension.class)
 class ProductFactoryTest {
-  private static final String DUMMY_LOGO_URL =
-      "https://raw.githubusercontent.com/axonivy-market/market/master/market/connector/amazon-comprehend-connector/logo.png";
+  private static final String DUMMY_LOGO_URL = "https://raw.githubusercontent.com/axonivy-market/market/master/market/connector/amazon-comprehend-connector/logo.png";
 
   @Test
   void testMappingByGHContent() throws IOException {

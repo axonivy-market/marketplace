@@ -1,22 +1,23 @@
 package com.axonivy.market.github.service.impl;
 
-import java.io.IOException;
-import java.util.*;
-
-import com.axonivy.market.constants.*;
+import com.axonivy.market.constants.CommonConstants;
+import com.axonivy.market.constants.GitHubConstants;
+import com.axonivy.market.constants.MavenConstants;
+import com.axonivy.market.constants.NonStandardProductPackageConstants;
+import com.axonivy.market.constants.ProductJsonConstants;
+import com.axonivy.market.constants.ReadmeConstants;
 import com.axonivy.market.entity.Product;
 import com.axonivy.market.entity.ProductModuleContent;
+import com.axonivy.market.github.model.MavenArtifact;
+import com.axonivy.market.github.service.GHAxonIvyProductRepoService;
+import com.axonivy.market.github.service.GitHubService;
 import com.axonivy.market.enums.Language;
 import com.axonivy.market.github.util.GitHubUtils;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-
-import com.axonivy.market.github.service.GHAxonIvyProductRepoService;
 import lombok.extern.log4j.Log4j2;
-
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.util.Strings;
-import com.axonivy.market.github.model.MavenArtifact;
 import org.kohsuke.github.GHContent;
 import org.kohsuke.github.GHOrganization;
 import org.kohsuke.github.GHRepository;
@@ -26,9 +27,12 @@ import org.springframework.util.CollectionUtils;
 
 import com.axonivy.market.github.service.GitHubService;
 
+import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;

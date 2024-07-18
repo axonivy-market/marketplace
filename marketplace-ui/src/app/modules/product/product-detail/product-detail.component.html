@@ -1,18 +1,227 @@
-<section class="d-md-flex d-flex-collumn justify-content-md-between">
-  <div>
-    <h1>
-      {{
-        product.names | multilingualism: languageService.getSelectedLanguage()
-      }}
-    </h1>
-    <p>
-      {{
-        product.shortDescriptions
-          | multilingualism: languageService.getSelectedLanguage()
-      }}
-    </p>
+<div class="container-fluid">
+  <div
+    class="product-detail-container d-flex flex-column justify-content-center p-0">
+    <div class="flexible-gap d-flex flex-column justify-content-center">
+      <div class="link-to-main align-content-center">
+        <a
+          href=""
+          class="back-link text-decoration-none fs-6"
+          [ngClass]="
+            themeService.isDarkMode() ? 'text-light' : 'text-link-blue'
+          ">
+          &lt;
+          <span>{{ 'common.product.detail.backToMainPage' | translate }}</span>
+        </a>
+      </div>
+      <div class="version-gap d-flex flex-column flex-lg-row">
+        <div class="d-flex flex-column module-gap col-12 col-lg-8">
+          <div class="d-flex">
+            <div class="logo__image-container">
+              <img class="logo__image" [src]="productDetail().logoUrl" alt="" />
+            </div>
+            <h1 class="product-title align-items-start">
+              {{
+                productDetail().names
+                  | multilingualism: languageService.selectedLanguage()
+              }}
+            </h1>
+          </div>
+          <div class="d-flex flex-row align-items-start module-gap">
+            <div
+              class="analysis-container d-flex flex-column align-items-start p-0">
+              <app-product-star-rating-number
+                [isShowRateLink]="false"
+                [isShowTotalRatingNumber]="false" />
+            </div>
+            <app-product-installation-count-action [currentInstallationCount]="installationCount"/>
+            <div
+              class="analysis-container d-flex flex-column align-items-start p-0">
+              <h4 class="analysis-title text-secondary mb-0">
+                {{ 'common.product.detail.type' | translate }}
+              </h4>
+              <h2 class="product-analysis mb-0">
+                <i [class]="productDetail().type | productTypeIcon"></i>
+              </h2>
+              <h4 class="analysis-title text-primary text-capitalize mb-0">
+                {{ productDetail().type }}
+              </h4>
+            </div>
+          </div>
+        </div>
+        <div class="d-flex flex-column col-12 col-lg-4">
+          <div
+            class="d-flex justify-content-center justify-content-lg-end mt-md-3 m-sm-0">
+            <app-product-version-action
+            class="w-100 d-flex d-lg-block"
+            (installationCount)="receiveInstallationCountData($event)"
+              [(selectedVersion)]="selectedVersion!"
+              [productId]="productDetail().id"
+              (selectedVersionChange)="
+                loadDetailTabs($event)
+              "></app-product-version-action>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="detail-body d-flex flex-row align-items-start p-0 w-100">
+      <div
+        class="tab-group d-flex flex-column justify-content-center align-items-start p-0 col-12 col-xl-8">
+        <div class="row-tab d-none d-xl-block col-12">
+          <ul ngbNav class="nav nav-tabs form-tabs">
+            @for (tab of detailTabs; track $index) {
+              @if (getContent(tab.value)) {
+                <li
+                  ngbNavItem
+                  class="nav-item d-flex flex-row position-relative border-bottom-1 p-2 justify-content-center align-items-start">
+                  <a
+                    ngbNavLink
+                    class="nav-link border-0 bg-transparent"
+                    [class.active]="tab.activeClass"
+                    [id]="tab.tabId"
+                    (click)="setActiveTab(tab.value)"
+                    role="tab"
+                    [ngClass]="{
+                      'text-secondary': themeService.isDarkMode(),
+                      'text-dark': !themeService.isDarkMode(),
+                      active: activeTab === tab.value
+                    }">
+                    {{ tab.label | translate }}
+                  </a>
+                </li>
+              }
+            }
+          </ul>
+        </div>
+        <!-- For smaller screens -->
+        <div
+          class="dropdown-tab d-block d-xl-none d-flex flex-row justify-content-center align-items-center w-100">
+          <div class="dropdown-row flex-row align-items-center w-100">
+            <div
+              class="dropdown-container position-relative d-flex align-items-center w-100">
+              <select
+                class="form-select flex-grow-1 w-100"
+                id="tab-group-dropdown"
+                (change)="onTabChange($event)"
+                (click)="onTabDropdownShown()"
+                [ngClass]="{'indicator-arrow__up': isTabDropdownShown()}">
+                @for (tab of detailTabs; track $index) {
+                  @if (getContent(tab.value)) {
+                    <option class="w-100" [value]="tab.value" [id]="tab.tabId">
+                      {{ tab.label | translate }}
+                    </option>
+                  }
+                }
+              </select>
+              <button
+                class="bg-transparent border-0"
+                (click)="onShowInfoContent()">
+                <i
+                  class="info-icon bi bi-info-circle"
+                  [ngClass]="{
+                    'text-primary': themeService.isDarkMode(),
+                    'text-secondary':
+                      themeService.isDarkMode() && isDropdownOpen(),
+                    'text-dark': !themeService.isDarkMode()
+                  }"></i>
+              </button>
+              <div
+                class="info-dropdown w-100"
+                [ngClass]="{
+                  show: isDropdownOpen()
+                }">
+                <app-product-detail-information-tab
+                  [productDetail]="productDetail()"
+                  [selectedVersion]="
+                    selectedVersion
+                  "></app-product-detail-information-tab>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="tab-content col-12">
+          <div
+            class="tab-pane fade show"
+            [class.active]="activeTab === 'description'"
+            id="description"
+            role="tabpanel"
+            aria-labelledby="description-tab">
+            <markdown
+              class="readme-content"
+              [data]="productModuleContent().description! | multilingualism: languageService.selectedLanguage()"></markdown>
+          </div>
+          <div
+            class="tab-pane fade"
+            [class.active]="activeTab === 'demo'"
+            id="demo"
+            role="tabpanel"
+            aria-labelledby="demo-tab">
+            <markdown
+              class="readme-content"
+              [data]="productModuleContent().demo"></markdown>
+          </div>
+          <div
+            class="tab-pane fade"
+            [class.active]="activeTab === 'setup'"
+            id="setup"
+            role="tabpanel"
+            aria-labelledby="setup-tab">
+            <markdown
+              class="readme-content"
+              [data]="productModuleContent().setup"></markdown>
+          </div>
+          <div
+            class="tab-pane fade"
+            [class.active]="activeTab === 'dependency'"
+            id="dependency"
+            role="tabpanel"
+            aria-labelledby="dependency-tab">
+            <app-product-detail-maven-content
+              [productModuleContent]="productModuleContent()"
+              [selectedVersion]="
+                selectedVersion
+              "></app-product-detail-maven-content>
+          </div>
+        </div>
+      </div>
+
+      <div
+        class="info-tab d-none d-xl-block d-flex flex-column flex-grow-1 align-items-start col-xl-3">
+        <app-product-detail-information-tab
+          [productDetail]="productDetail()"
+          [selectedVersion]="
+            selectedVersion
+          "></app-product-detail-information-tab>
+      </div>
+    </div>
   </div>
-  <app-product-version-action
-    class="align-self-center"
-    [productId]="productId"></app-product-version-action>
-</section>
+  <hr />
+  <div style="margin-bottom: 8rem">
+    @if (productDetail() && productFeedbackService.totalElements() > 0) {
+      <app-product-detail-feedback [isMobileMode]="isMobileMode()" />
+    } @else {
+      <div class="d-flex justify-content-center text-center">
+        <div>
+          <img
+            src="/assets/images/misc/message-star.svg"
+            width="72"
+            height="72"
+            alt="Message Star" />
+          <p class="rate-empty-text">
+            <span>{{ 'common.feedback.noFeedbackMessage1' | translate }}</span>
+            <br />
+            <span>{{ 'common.feedback.noFeedbackMessage2' | translate }}</span>
+          </p>
+          <button
+            class="btn border-0 btn-primary rate-connector-btn"
+            (click)="onClickRateBtn()">
+            <h5 class="mb-0">
+              {{ 'common.feedback.rateFeedbackBtnLabel' | translate }}
+            </h5>
+          </button>
+        </div>
+      </div>
+    }
+  </div>
+</div>

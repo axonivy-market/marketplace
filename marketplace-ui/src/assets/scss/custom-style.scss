@@ -1,9 +1,8 @@
 // Required
-@import '../../../node_modules/bootstrap/scss/functions';
+@import 'bootstrap/scss/functions';
+@import 'bootstrap/scss/variables';
+@import 'bootstrap/scss/mixins';
 
-// Required
-@import '../../../node_modules/bootstrap/scss/variables';
-@import '../../../node_modules/bootstrap/scss/mixins';
 @font-face {
   font-family: Inter;
   src: url(../fonts/inter.ttf) format('truetype');
@@ -32,6 +31,11 @@ h1 {
   font-size: 72px;
 }
 
+h2 {
+  font-weight: 600;
+  font-size: 64px;
+}
+
 h3 {
   font-weight: 600;
   font-size: 22px;
@@ -40,6 +44,11 @@ h3 {
 h4 {
   font-weight: 400;
   font-size: 18px;
+}
+
+h5 {
+  font-weight: 400;
+  font-size: 16px;
 }
 
 p {
@@ -56,8 +65,19 @@ p {
   --ivy-text-primary-color: $ivyPrimaryTextColorLight;
   --ivy-text-secondary-color: $ivySecondaryTextLight;
   --ivy-border-color: #{$ivySecondaryButtonHoverLight};
+  --ivy-textarea-background-color: #FAFAFA;
   --header-border-color: #ebebeb;
+  --footer-border-color: #e7e7e7;
   --ivy-secondary-border-color: #e7e7e7;
+  --ivy-custom-select-indicator: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%23343a40' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M2 11 8 5 14 11'/%3e%3c/svg%3e") !important;
+  --active-tab-indicator-color: #{$ivyPrimaryTextColorLight};
+  --info-dropdown-bg: #ffffff;
+  --info-dropdown-border: #0000001a;
+
+  --bs-form-select-bg-img: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%23343a40' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M2 11 8 5 14 11'/%3e%3c/svg%3e") !important;
+  --star-color: #b0b0b0;
+  --star-filled-color: #{$ivyPrimaryTextColorLight};
+  --text-no-rating-color: #757575;
 
   .bg-primary {
     background-color: #{$ivyPrimaryColorLight} !important;
@@ -106,6 +126,10 @@ p {
     color: #{$ivyPrimaryTextColorLight} !important;
   }
 
+  .text-link-blue {
+    color: #{$ivyPrimaryColorLight} !important;
+  }
+
   .border-dark {
     border-color: #{$ivyPrimaryTextColorLight};
   }
@@ -113,6 +137,16 @@ p {
   .border-primary {
     border-color: #{$ivyPrimaryTextColorLight} !important;
   }
+
+  /** Star Rating Summary **/
+
+  .star-rating-counting-line {
+    background-color: #{$ivySecondaryColorLight} !important;
+    .star-rating-percent {
+      background-color: #{$ivyPrimaryColorLight} !important;
+    }
+  }
+  /** End Star Rating Summary **/
 }
 
 .spinner-border {
@@ -134,8 +168,17 @@ p {
   --ivy-text-secondary-color: #{$ivySecondaryTextDark};
 
   --ivy-border-color: #{$ivySecondaryTextLight};
+  --ivy-textarea-background-color: #333333;
   --header-border-color: #{$ivySecondaryTextLight};
+  --footer-border-color: #4f4e4e;
   --ivy-secondary-border-color: #4f4e4e;
+  --ivy-custom-select-indicator: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%23dee2e6' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M2 11 8 5 14 11'/%3e%3c/svg%3e") !important;
+  --active-tab-indicator-color: #{$white};
+  --info-dropdown-bg: #{$ivyBodyBackgroundDark};
+  --info-dropdown-border: #000000b2;
+  --star-color: #757575;
+  --star-filled-color: #{$white};
+  --text-no-rating-color: #A3A3A3;
 
   a {
     color: #{$white};
@@ -143,6 +186,14 @@ p {
 
   .bg-light {
     background-color: #{$ivyNormalTextColorLight} !important;
+  }
+
+  .bg-dark {
+    color: var(--bs-body-bg);
+  }
+
+  .bg-white {
+    color: #{$white} !important;
   }
 
   .btn {
@@ -186,6 +237,16 @@ p {
   .border-light {
     border-color: #{$white} !important;
   }
+
+  /** Star Rating Summary **/
+
+  .star-rating-counting-line {
+    background-color: #383838 !important;
+    .star-rating-percent {
+      background-color: #FAFAFA !important;
+    }
+  }
+  /** End Star Rating Summary **/
 }
 
 *:focus {
@@ -207,6 +268,18 @@ p {
 
 .text-muted {
   color: #858585 !important;
+}
+
+@media (max-width: 568px) {
+  code {
+    font-size: 0.7rem;
+  }
+}
+
+@media (max-width: 424px) {
+  code {
+    font-size: 0.57rem;
+  }
 }
 
 @media (min-width: 1440px) {

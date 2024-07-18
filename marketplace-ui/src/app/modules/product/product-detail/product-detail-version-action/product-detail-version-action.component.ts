@@ -1,8 +1,11 @@
 import {
   AfterViewInit,
   Component,
+  ElementRef, EventEmitter,
+  HostListener,
   inject,
   Input,
+  model, Output,
   signal,
   WritableSignal
 } from '@angular/core';
@@ -13,6 +16,7 @@ import { FormsModule } from '@angular/forms';
 import { ProductService } from '../../product.service';
 import { Artifact } from '../../../../shared/models/vesion-artifact.model';
 import { Tooltip } from 'bootstrap';
+import { ProductDetailService } from '../product-detail.service';
 
 const delayTimeBeforeHideMessage = 2000;
 @Component({
@@ -27,13 +31,14 @@ export class ProductDetailVersionActionComponent implements AfterViewInit {
     const tooltipTriggerList = [].slice.call(
       document.querySelectorAll('[data-bs-toggle="tooltip"]')
     );
-    tooltipTriggerList.map(function (tooltipTriggerEl) {
-      return new Tooltip(tooltipTriggerEl);
-    });
+    tooltipTriggerList.forEach(
+      tooltipTriggerEl => new Tooltip(tooltipTriggerEl)
+    );
   }
-
+  @Output() installationCount= new EventEmitter<number>();
   @Input()
   productId!: string;
+  selectedVersion = model<string>('');
   versions: WritableSignal<string[]> = signal([]);
   artifacts: WritableSignal<Artifact[]> = signal([]);
   themeService = inject(ThemeService);
@@ -45,31 +50,26 @@ export class ProductDetailVersionActionComponent implements AfterViewInit {
   isInvalidInstallationEnvironment = signal(false);
   designerVersion = '';
   selectedArtifact = '';
-  selectedVersion!: string;
-  productService = inject(ProductService);
-  versionMap: Map<string, Artifact[]> = new Map();
 
-  getIndicatorClass() {
-    if (this.isVersionsDropDownShow()) {
-      return 'indicator-arrow__up';
-    }
-    return '';
-  }
+  productService = inject(ProductService);
+  productDetailService = inject(ProductDetailService);
+  versionMap: Map<string, Artifact[]> = new Map();
+  elementRef = inject(ElementRef);
 
   onShowVersions() {
     this.isVersionsDropDownShow.set(!this.isVersionsDropDownShow());
   }
 
   getInstallationTooltipText() {
-    return `Please open the
+    return `<p class="text-primary">Please open the
         <a href="https://market.axonivy.com" class="ivy__link">Axon Ivy Market</a>
         inside your
         <a class="ivy__link" href="https://developer.axonivy.com/download">Axon Ivy Designer</a>
-        (minimum version 9.2.0)`;
+        (minimum version 9.2.0)</p>`;
   }
 
   onSelectVersion() {
-    this.artifacts.set(this.versionMap.get(this.selectedVersion) || []);
+    this.artifacts.set(this.versionMap.get(this.selectedVersion()) ?? []);
 
     if (this.artifacts().length !== 0) {
       this.selectedArtifact = this.artifacts()[0].downloadUrl;
@@ -110,7 +110,7 @@ export class ProductDetailVersionActionComponent implements AfterViewInit {
           }
         });
         if (this.versions().length !== 0) {
-          this.selectedVersion = this.versions()[0];
+          this.selectedVersion.set(this.versions()[0]);
           this.onSelectVersion();
         }
       });
@@ -120,14 +120,37 @@ export class ProductDetailVersionActionComponent implements AfterViewInit {
     this.versions.set([]);
     this.artifacts.set([]);
     this.selectedArtifact = '';
-    this.selectedVersion = '';
+    this.selectedVersion.set('');
   }
 
   downloadArifact() {
+    this.onUpdateInstallationCount();
     const newTab = window.open(this.selectedArtifact, '_blank');
     if (newTab) {
       newTab.blur();
     }
     window.focus();
+  }
+
+  @HostListener('document:click', ['$event'])
+  handleClickOutside(event: MouseEvent) {
+    if (
+      !this.elementRef.nativeElement.contains(event.target) &&
+      this.isVersionsDropDownShow()
+    ) {
+      this.onShowVersions();
+    }
+  }
+
+  onUpdateInstallationCount() {
+    this.productService
+      .sendRequestToUpdateInstallationCount(this.productId)
+      .subscribe((data: number) => this.installationCount.emit(data));
+  }
+
+  onUpdateInstallationCountForDesigner() {
+    if (this.isDesignerEnvironment()) {
+      this.onUpdateInstallationCount();
+    }
   }
 }

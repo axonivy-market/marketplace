@@ -1,7 +1,9 @@
 import { TypeOption } from '../enums/type-option.enum';
+import { FeedbackSortType } from '../enums/feedback-sort-type';
 import { Language } from '../enums/language.enum';
 import { SortOption } from '../enums/sort-option.enum';
 import { NavItem } from '../models/nav-item.model';
+import { DetailTab } from '../../modules/product/product-detail/product-detail.component';
 
 export const NAV_ITEMS: NavItem[] = [
   {
@@ -106,5 +108,55 @@ export const SORT_TYPES = [
   {
     value: SortOption.RECENT,
     label: 'common.sort.value.recent'
+  }
+];
+
+export const PRODUCT_DETAIL_TABS: DetailTab[] = [
+  {
+    activeClass: "activeTab === 'description'",
+    tabId: 'description-tab',
+    value: 'description',
+    label: 'common.product.detail.description'
+  },
+  {
+    activeClass: "activeTab === 'demo'",
+    tabId: 'demo-tab',
+    value: 'demo',
+    label: 'common.product.detail.demo'
+  },
+  {
+    activeClass: "activeTab === 'setup'",
+    tabId: 'setup-tab',
+    value: 'setup',
+    label: 'common.product.detail.installationGuide'
+  },
+  {
+    activeClass: "activeTab === 'dependency'",
+    tabId: 'dependency-tab',
+    value: 'dependency',
+    label: 'common.product.detail.maven.label'
+  }
+];
+
+export const FEEDBACK_SORT_TYPES = [
+  {
+    value: FeedbackSortType.NEWEST,
+    label: 'common.sort.value.newest',
+    sortFn: 'updatedAt,desc'
+  },
+  {
+    value: FeedbackSortType.OLDEST,
+    label: 'common.sort.value.oldest',
+    sortFn: 'updatedAt,asc'
+  },
+  {
+    value: FeedbackSortType.HIGHEST,
+    label: 'common.sort.value.highest',
+    sortFn: 'rating,desc'
+  },
+  {
+    value: FeedbackSortType.LOWEST,
+    label: 'common.sort.value.lowest',
+    sortFn: 'rating,asc'
   }
 ];

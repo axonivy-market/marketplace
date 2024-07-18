@@ -1,0 +1,45 @@
+.star-feedback {
+  position: relative;
+  display: inline-block;
+  color: var(--star-color);
+  font-size: 10px;
+  margin-right: 3px;
+  .filled {
+    color: var(--star-filled-color);
+    overflow: hidden;
+    position: absolute;
+    top: 0;
+    left: 0;
+  }
+}
+
+.medium-star {
+  font-size: 20px;
+  margin-right: 8px;
+}
+
+.adding-feedback-star {
+  font-size: 2.5rem;
+  color: #dfdfdf;
+  margin-right: 15px;
+  .filled {
+    color: #FFCB13;
+  }
+}
+
+@media (max-width: 767px) {
+  .medium-star {
+    font-size: 16px;
+    margin-right: 8px;
+  }
+
+  .adding-feedback-star {
+    margin-right: 39px;
+  }
+}
+
+@media (max-width: 400px) {
+  .adding-feedback-star {
+    margin-right: clamp(27px, 6vw, 39px);
+  }
+}

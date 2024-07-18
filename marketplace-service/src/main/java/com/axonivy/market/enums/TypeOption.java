@@ -6,7 +6,8 @@ import org.apache.commons.lang3.StringUtils;
 
 @Getter
 public enum TypeOption {
-  ALL("all", ""), CONNECTORS("connectors", "connector"), UTILITIES("utilities", "util"), SOLUTIONS("solutions", "solution"), DEMOS("demos", "demo");
+  ALL("all", ""), CONNECTORS("connectors", "connector"), UTILITIES("utilities", "util"),
+  SOLUTIONS("solutions", "solution"), DEMOS("demos", "demo");
 
   private String option;
   private String code;

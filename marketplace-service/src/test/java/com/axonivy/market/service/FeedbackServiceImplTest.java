@@ -3,6 +3,7 @@ package com.axonivy.market.service;
 import com.axonivy.market.entity.Feedback;
 import com.axonivy.market.entity.User;
 import com.axonivy.market.exceptions.model.NotFoundException;
+import com.axonivy.market.model.FeedbackModel;
 import com.axonivy.market.model.ProductRating;
 import com.axonivy.market.repository.FeedbackRepository;
 import com.axonivy.market.repository.ProductRepository;
@@ -20,9 +21,13 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class FeedbackServiceImplTest {
@@ -50,7 +55,9 @@ class FeedbackServiceImplTest {
 
     when(productRepository.findById(productId)).thenReturn(Optional.empty());
 
-    assertThrows(NotFoundException.class, () -> feedbackService.findFeedbacks(productId, Pageable.unpaged()));
+    Pageable unpaged = Pageable.unpaged();
+
+    assertThrows(NotFoundException.class, () -> feedbackService.findFeedbacks(productId, unpaged));
 
     verify(productRepository, times(1)).findById(productId);
     verify(feedbackRepository, never()).searchByProductId(any(), any());
@@ -99,7 +106,8 @@ class FeedbackServiceImplTest {
     when(userRepository.findById(nonExistingUserId)).thenReturn(Optional.empty());
 
     // Test and verify exception
-    assertThrows(NotFoundException.class, () -> feedbackService.findFeedbackByUserIdAndProductId(nonExistingUserId, productId));
+    assertThrows(NotFoundException.class,
+        () -> feedbackService.findFeedbackByUserIdAndProductId(nonExistingUserId, productId));
 
     // Verify interactions
     verify(userRepository, times(1)).findById(nonExistingUserId);
@@ -109,42 +117,54 @@ class FeedbackServiceImplTest {
   @Test
   void testUpsertFeedback_NewFeedback() throws NotFoundException {
     // Mock data
+    FeedbackModel newFeedbackModel = new FeedbackModel();
+    newFeedbackModel.setUserId("user123");
+    newFeedbackModel.setProductId("product123");
+    newFeedbackModel.setContent("Great product!");
+    newFeedbackModel.setRating(5);
+
     Feedback newFeedback = new Feedback();
-    newFeedback.setUserId("user123");
-    newFeedback.setProductId("product123");
-    newFeedback.setContent("Great product!");
-    newFeedback.setRating(5);
+    newFeedback.setUserId(newFeedbackModel.getUserId());
+    newFeedback.setProductId(newFeedbackModel.getProductId());
+    newFeedback.setContent(newFeedbackModel.getContent());
+    newFeedback.setRating(newFeedbackModel.getRating());
 
     User u = new User();
-    u.setId(newFeedback.getUserId());
-    when(userRepository.findById(newFeedback.getUserId())).thenReturn(Optional.of(u));
-    when(feedbackRepository.findByUserIdAndProductId(newFeedback.getUserId(), newFeedback.getProductId())).thenReturn(null);
-    when(feedbackRepository.save(newFeedback)).thenReturn(newFeedback);
+    u.setId(newFeedbackModel.getUserId());
+    when(userRepository.findById(newFeedbackModel.getUserId())).thenReturn(Optional.of(u));
+    when(feedbackRepository.findByUserIdAndProductId(newFeedbackModel.getUserId(),
+        newFeedbackModel.getProductId())).thenReturn(null);
+    when(feedbackRepository.save(any(Feedback.class))).thenReturn(newFeedback);
 
     // Test method
-    Feedback result = feedbackService.upsertFeedback(newFeedback);
+    Feedback result = feedbackService.upsertFeedback(newFeedbackModel);
 
     // Verify
     assertEquals(newFeedback, result);
-    verify(userRepository, times(1)).findById(newFeedback.getUserId());
-    verify(feedbackRepository, times(1)).findByUserIdAndProductId(newFeedback.getUserId(), newFeedback.getProductId());
-    verify(feedbackRepository, times(1)).save(newFeedback);
   }
 
   @Test
   void testUpsertFeedback_UpdateFeedback() throws NotFoundException {
     // Mock data
+    FeedbackModel existingFeedbackModel = new FeedbackModel();
+    existingFeedbackModel.setId("existingFeedback123");
+    existingFeedbackModel.setUserId("user123");
+    existingFeedbackModel.setProductId("product123");
+    existingFeedbackModel.setContent("Good product! Very well!");
+    existingFeedbackModel.setRating(5);
+
     Feedback existingFeedback = new Feedback();
     existingFeedback.setId("existingFeedback123");
     existingFeedback.setUserId("user123");
     existingFeedback.setProductId("product123");
-    existingFeedback.setContent("Good product!");
-    existingFeedback.setRating(4);
+    existingFeedback.setContent("Bad product!");
+    existingFeedback.setRating(1);
 
     User u = new User();
     u.setId(existingFeedback.getUserId());
     when(userRepository.findById(existingFeedback.getUserId())).thenReturn(Optional.of(u));
-    when(feedbackRepository.findByUserIdAndProductId(existingFeedback.getUserId(), existingFeedback.getProductId())).thenReturn(existingFeedback);
+    when(feedbackRepository.findByUserIdAndProductId(existingFeedback.getUserId(),
+        existingFeedback.getProductId())).thenReturn(existingFeedback);
     when(feedbackRepository.save(existingFeedback)).thenReturn(existingFeedback);
 
     // Test method
@@ -152,17 +172,18 @@ class FeedbackServiceImplTest {
     updatedFeedback.setId(existingFeedback.getId());
     updatedFeedback.setUserId(existingFeedback.getUserId());
     updatedFeedback.setProductId(existingFeedback.getProductId());
-    updatedFeedback.setContent("Excellent product!");
+    updatedFeedback.setContent("Good product! Very well!");
     updatedFeedback.setRating(5);
 
-    Feedback result = feedbackService.upsertFeedback(updatedFeedback);
+    Feedback result = feedbackService.upsertFeedback(existingFeedbackModel);
 
     // Verify
     assertEquals(updatedFeedback.getId(), result.getId());
     assertEquals(updatedFeedback.getContent(), result.getContent());
     assertEquals(updatedFeedback.getRating(), result.getRating());
     verify(userRepository, times(1)).findById(existingFeedback.getUserId());
-    verify(feedbackRepository, times(1)).findByUserIdAndProductId(existingFeedback.getUserId(), existingFeedback.getProductId());
+    verify(feedbackRepository, times(1)).findByUserIdAndProductId(existingFeedback.getUserId(),
+        existingFeedback.getProductId());
     verify(feedbackRepository, times(1)).save(existingFeedback);
   }
 

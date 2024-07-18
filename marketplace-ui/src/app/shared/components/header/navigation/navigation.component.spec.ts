@@ -3,6 +3,7 @@ import { By } from '@angular/platform-browser';
 import { Viewport } from 'karma-viewport/dist/adapter/viewport';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { NavigationComponent } from './navigation.component';
+
 declare const viewport: Viewport;
 
 describe('NavigationComponent', () => {

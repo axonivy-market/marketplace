@@ -1,5 +1,5 @@
 import { DOCUMENT } from '@angular/common';
-import { Inject, Injectable, WritableSignal, signal } from '@angular/core';
+import { Inject, Injectable, signal, WritableSignal } from '@angular/core';
 import { Theme } from '../../../shared/enums/theme.enum';
 
 const DATA_THEME = 'data-bs-theme';

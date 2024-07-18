@@ -1,0 +1,40 @@
+.total-rating-number {
+  font-size: 64px;
+}
+
+.rate-link {
+  cursor: pointer;
+  color: var(--ivy-active-color);
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 16.8px;
+}
+
+.star-rating-min-width {
+  min-width: 180px;
+}
+
+.message-star-rating-img {
+  width: 72px;
+  height: 72px;
+  margin-bottom: 8px;
+  margin-top: 2px
+}
+
+@media (max-width: 767px) {
+  .total-rating-number-detail-page {
+    font-size: 38px;
+  }
+
+  .review-label-detail-page {
+    margin-bottom: 6px;
+    font-size: 1rem;
+  }
+
+  .message-star-rating-img {
+    width: 42px;
+    height: 42px;
+    margin-bottom: 4px;
+  }
+}
+

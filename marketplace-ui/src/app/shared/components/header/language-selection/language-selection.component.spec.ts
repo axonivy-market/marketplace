@@ -1,7 +1,8 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { TranslateService, TranslateModule } from '@ngx-translate/core';
+import { TranslateModule, TranslateService } from '@ngx-translate/core';
 
 import { LanguageSelectionComponent } from './language-selection.component';
+import { Language } from '../../../enums/language.enum';
 
 describe('LanguageSelectionComponent', () => {
   let component: LanguageSelectionComponent;
@@ -24,7 +25,7 @@ describe('LanguageSelectionComponent', () => {
 
   it('selectLanguage should call translateService', () => {
     spyOn(component.translateService, 'use').and.stub();
-    component.onSelectLanguage('en');
+    component.onSelectLanguage(Language.EN);
     expect(component.translateService.use).toHaveBeenCalled();
   });
 });

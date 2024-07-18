@@ -1,0 +1,20 @@
+<p [innerHTML]="'common.product.detail.maven.description' | translate"></p>
+<code>
+  &lt;!-- {{ productModuleContent.name }} --&gt;
+  <br />
+  &lt;dependency&gt;
+  <br />
+  &nbsp;&nbsp;&lt;groupId&gt;{{ productModuleContent.groupId }}&lt;/groupId&gt;
+  <br />
+  &nbsp;&nbsp;&lt;artifactId&gt;{{
+    productModuleContent.artifactId
+  }}&lt;/artifactId&gt;
+  <br />
+  &nbsp;&nbsp;&lt;version&gt;{{
+    selectedVersion.replaceAll('Version ', '')
+  }}&lt;/version&gt;
+  <br />
+  &nbsp;&nbsp;&lt;type&gt;{{ productModuleContent.type }}&lt;/type&gt;
+  <br />
+  &lt;/dependency&gt;
+</code>
