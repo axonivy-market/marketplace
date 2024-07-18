@@ -1,9 +1,6 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
-import {
-  MOCK_EMPTY_DE_VALUES_AND_NO_LOGO_URL_PRODUCTS,
-  MOCK_PRODUCTS
-} from '../../../shared/mocks/mock-data';
+import { MOCK_EMPTY_DE_VALUES_AND_NO_LOGO_URL_PRODUCTS, MOCK_PRODUCTS } from '../../../shared/mocks/mock-data';
 import { ProductCardComponent } from './product-card.component';
 import { Product } from '../../../shared/models/product.model';
 import { Language } from '../../../shared/enums/language.enum';

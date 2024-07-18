@@ -1,0 +1,48 @@
+// Variables for commonly used values
+$modal-margin: 40px;
+$star-rating-width: 218px;
+$separator-width: 60px;
+$feedback-panel-width: 525px;
+$separator-height: 817px;
+$separator-top: -15px;
+$separator-border: 1px solid #ebebeb;
+
+.modal-content-wrapper {
+  .modal-header {
+    border-bottom: 0;
+  }
+
+  .modal-body {
+    margin-left: $modal-margin;
+    margin-right: $modal-margin;
+  }
+
+  .star-rating {
+    width: $star-rating-width;
+  }
+
+  .separator {
+    width: $separator-width;
+    display: flex;
+    justify-content: center;
+    
+    .vr {
+      position: relative;
+      height: $separator-height;
+      top: $separator-top;
+      border: $separator-border;
+    }
+  }
+
+  .feedback-panel {
+    width: $feedback-panel-width;
+  }
+}
+
+.d-flex {
+  display: flex;
+}
+
+.justify-content-center {
+  justify-content: center;
+}

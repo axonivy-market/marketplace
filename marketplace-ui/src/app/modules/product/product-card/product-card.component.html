@@ -5,7 +5,7 @@
       width="70"
       height="70"
       [ngSrc]="product | logo"
-      [alt]="product.names | multilingualism: languageService.getSelectedLanguage()" />
+      [alt]="product.names | multilingualism: languageService.selectedLanguage()" />
     <div
       class="card__tag lh-md px-2 py-1"
       [ngClass]="themeService.isDarkMode() ? 'text-dark' : 'text-light'">
@@ -15,13 +15,13 @@
   <div>
     <h5 class="card__title text-primary">
       {{
-        product.names | multilingualism: languageService.getSelectedLanguage()
+        product.names | multilingualism: languageService.selectedLanguage()
       }}
     </h5>
     <p class="card__description text-secondary">
       {{
         product.shortDescriptions
-          | multilingualism: languageService.getSelectedLanguage()
+          | multilingualism: languageService.selectedLanguage()
       }}
     </p>
   </div>

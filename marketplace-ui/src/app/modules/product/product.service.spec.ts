@@ -1,29 +1,21 @@
 import { TestBed } from '@angular/core/testing';
 
-import {
-  provideHttpClient,
-  withInterceptorsFromDi
-} from '@angular/common/http';
-import {
-  HttpTestingController,
-  provideHttpClientTesting
-} from '@angular/common/http/testing';
-import { TypeOption } from '../../shared/enums/type-option.enum';
-import { SortOption } from '../../shared/enums/sort-option.enum';
-import { MOCK_PRODUCTS } from '../../shared/mocks/mock-data';
-import { Criteria } from '../../shared/models/criteria.model';
-import { ProductService } from './product.service';
-import { Product } from '../../shared/models/product.model';
-import { catchError } from 'rxjs';
+import { provideHttpClient, withInterceptorsFromDi } from '@angular/common/http';
+import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { LoadingService } from '../../core/services/loading/loading.service';
-import { VersionData } from '../../shared/models/vesion-artifact.model';
 import { Language } from '../../shared/enums/language.enum';
-
-const PRODUCT_ID = 'amazon-comprehend';
-const NOT_EXIST_ID = 'undefined';
+import { SortOption } from '../../shared/enums/sort-option.enum';
+import { TypeOption } from '../../shared/enums/type-option.enum';
+import {
+  MOCK_PRODUCTS,
+  MOCK_PRODUCT_DETAILS
+} from '../../shared/mocks/mock-data';
+import { Criteria } from '../../shared/models/criteria.model';
+import { VersionData } from '../../shared/models/vesion-artifact.model';
+import { ProductService } from './product.service';
 
 describe('ProductService', () => {
-  let products = MOCK_PRODUCTS._embedded.products as Product[];
+  let products = MOCK_PRODUCTS._embedded.products;
   let service: ProductService;
   let httpMock: HttpTestingController;
   let loadingServiceSpy: jasmine.SpyObj<LoadingService>;
@@ -51,18 +43,6 @@ describe('ProductService', () => {
     expect(service).toBeTruthy();
   });
 
-  it('getProductById should return a product', () => {
-    service.getProductById(PRODUCT_ID).subscribe(data => {
-      expect(data.id).toEqual(PRODUCT_ID);
-    });
-  });
-
-  it('getProductById should return null product', () => {
-    service.getProductById(NOT_EXIST_ID).subscribe(data => {
-      expect(data).toEqual({} as Product);
-    });
-  });
-
   it('findProductsByCriteria with should return products properly', () => {
     const searchString = 'Amazon Comprehend';
     const criteria: Criteria = {
@@ -75,11 +55,11 @@ describe('ProductService', () => {
       let products = response._embedded.products;
       for (let i = 0; i < products.length; i++) {
         expect(products[i].type).toEqual(TypeOption.CONNECTORS);
-        expect(products[i].names.en.toLowerCase()).toContain(searchString);
+        expect(products[i].names['en'].toLowerCase()).toContain(searchString);
         if (products[i + 1]) {
-          expect(products[i + 1].names.en.localeCompare(products[i].names.en)).toEqual(
-            1
-          );
+          expect(
+            products[i + 1].names['en'].localeCompare(products[i].names['en'])
+          ).toEqual(1);
         }
       }
     });
@@ -180,4 +160,32 @@ describe('ProductService', () => {
     expect(loadingServiceSpy.show).toHaveBeenCalled();
     expect(loadingServiceSpy.hide).toHaveBeenCalled();
   });
+
+  it('getProductDetailsWithVersion should return a product detail', () => {
+    const productId = 'jira-connector';
+    const tag = 'v10.0.10';
+
+    service.getProductDetailsWithVersion(productId, tag).subscribe(data => {
+      expect(data).toEqual(MOCK_PRODUCT_DETAILS);
+    });
+
+    const req = httpMock.expectOne(request => {
+      expect(request.url).toEqual(`api/product-details/${productId}/${tag}`);
+
+      return true;
+    });
+  });
+
+  it('sendRequestToUpdateInstallationCount', () => {
+    const productId = "google-maps-connector";
+
+    service.sendRequestToUpdateInstallationCount(productId).subscribe(response => {
+      expect(response).toBe(3);
+    });
+
+    const req = httpMock.expectOne(`api/product-details/installationcount/${productId}`);
+    expect(req.request.method).toBe('PUT');
+    expect(req.request.headers.get('X-Requested-By')).toBe('ivy');
+    req.flush(3);
+  })
 });

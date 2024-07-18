@@ -20,11 +20,11 @@ describe('LanguageService', () => {
 
   it('should get default language en', () => {
     document.defaultView?.localStorage.clear();
-    expect(service.getSelectedLanguage()).toEqual(Language.EN);
+    expect(service.selectedLanguage()).toEqual(Language.EN);
   });
 
   it('should change to language de-DE', ()=> {
-    service.loadLanguage("de");
-    expect(service.getSelectedLanguage()).toEqual(Language.DE);
+    service.loadLanguage(Language.DE);
+    expect(service.selectedLanguage()).toEqual(Language.DE);
   });
 });

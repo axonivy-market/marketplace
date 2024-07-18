@@ -1,5 +1,3 @@
 export interface DisplayValue {
-  en: string,
-  de: string
+  [key: string]: string;
 }
-

@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, Input, inject } from '@angular/core';
+import { Component, inject, Input } from '@angular/core';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { NAV_ITEMS } from '../../../constants/common.constant';
 import { NavItem } from '../../../models/nav-item.model';

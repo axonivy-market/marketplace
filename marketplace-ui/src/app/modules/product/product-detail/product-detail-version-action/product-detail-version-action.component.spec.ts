@@ -1,23 +1,27 @@
-import {
-  ComponentFixture,
-  TestBed,
-  fakeAsync,
-  tick
-} from '@angular/core/testing';
+import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { of } from 'rxjs';
 import { ProductDetailVersionActionComponent } from './product-detail-version-action.component';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { ProductService } from '../../product.service';
 import { provideHttpClient } from '@angular/common/http';
 import { Artifact } from '../../../../shared/models/vesion-artifact.model';
+import { ElementRef } from '@angular/core';
+import {provideHttpClientTesting} from "@angular/common/http/testing";
+
+class MockElementRef implements ElementRef {
+  nativeElement = {
+    contains: jasmine.createSpy('contains')
+  };
+}
 describe('ProductVersionActionComponent', () => {
   let component: ProductDetailVersionActionComponent;
   let fixture: ComponentFixture<ProductDetailVersionActionComponent>;
   let productServiceMock: any;
+  let elementRef: MockElementRef;
 
   beforeEach(() => {
     productServiceMock = jasmine.createSpyObj('ProductService', [
-      'sendRequestToProductDetailVersionAPI'
+      'sendRequestToProductDetailVersionAPI' , 'sendRequestToUpdateInstallationCount'
     ]);
 
     TestBed.configureTestingModule({
@@ -25,10 +29,10 @@ describe('ProductVersionActionComponent', () => {
       providers: [
         TranslateService,
         provideHttpClient(),
-        { provide: ProductService, useValue: productServiceMock }
+        { provide: ProductService, useValue: productServiceMock },
+        { provide: ElementRef, useClass: MockElementRef }
       ]
     }).compileComponents();
-
     fixture = TestBed.createComponent(ProductDetailVersionActionComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
@@ -50,7 +54,7 @@ describe('ProductVersionActionComponent', () => {
     } as Artifact;
     component.versions.set([selectedVersion]);
     component.versionMap.set(selectedVersion, [artifact]);
-    component.selectedVersion = selectedVersion;
+    component.selectedVersion.set(selectedVersion);
     component.onSelectVersion();
 
     expect(component.artifacts().length).toBe(1);
@@ -64,19 +68,19 @@ describe('ProductVersionActionComponent', () => {
       downloadUrl: 'https://example.com/download',
       isProductArtifact: true
     } as Artifact;
-    component.selectedVersion = selectedVersion;
+    component.selectedVersion.set(selectedVersion);
     component.selectedArtifact = artifact.downloadUrl;
     component.versions().push(selectedVersion);
     component.artifacts().push(artifact);
 
     expect(component.versions().length).toBe(1);
     expect(component.artifacts().length).toBe(1);
-    expect(component.selectedVersion).toBe(selectedVersion);
+    expect(component.selectedVersion()).toBe(selectedVersion);
     expect(component.selectedArtifact).toBe('https://example.com/download');
     component.sanitizeDataBeforFetching();
     expect(component.versions().length).toBe(0);
     expect(component.artifacts().length).toBe(0);
-    expect(component.selectedVersion).toEqual('');
+    expect(component.selectedVersion()).toEqual('');
     expect(component.selectedArtifact).toEqual('');
   });
 
@@ -96,18 +100,23 @@ describe('ProductVersionActionComponent', () => {
     expect(component.versions()).toEqual(['Version 1.0', 'Version 2.0']);
     expect(component.versionMap.get('Version 1.0')).toEqual([mockArtifct1]);
     expect(component.versionMap.get('Version 2.0')).toEqual([mockArtifct2]);
-    expect(component.selectedVersion).toBe('Version 1.0');
+    expect(component.selectedVersion()).toBe('Version 1.0');
   });
 
   it('should open the artifact download URL in a new window', () => {
     spyOn(window, 'open');
     component.selectedArtifact = 'https://example.com/download';
+    spyOn(component, 'onUpdateInstallationCount');
+
     component.downloadArifact();
+
     expect(window.open).toHaveBeenCalledWith(
       'https://example.com/download',
       '_blank'
     );
+    expect(component.onUpdateInstallationCount).toHaveBeenCalledOnceWith();
   });
+
   it('should call getVersionWithArtifact and toggle isDropDownDisplayed', () => {
     expect(component.isDropDownDisplayed()).toBeFalse();
 
@@ -154,14 +163,6 @@ describe('ProductVersionActionComponent', () => {
     return { mockArtifct1, mockArtifct2 };
   }
 
-  it('should return correct class based on isVersionsDropDownShow', () => {
-    component.isVersionsDropDownShow.set(true);
-    expect(component.getIndicatorClass()).toBe('indicator-arrow__up');
-
-    component.isVersionsDropDownShow.set(false);
-    expect(component.getIndicatorClass()).toBe('');
-  });
-
   it('should toggle isVersionsDropDownShow on calling onShowVersions', () => {
     const initialState = component.isVersionsDropDownShow();
 
@@ -170,5 +171,52 @@ describe('ProductVersionActionComponent', () => {
 
     component.onShowVersions();
     expect(component.isVersionsDropDownShow()).toBe(initialState);
+  });
+
+  it('should not call onShowVersions if dropdown is not shown', () => {
+    spyOn(component, 'isVersionsDropDownShow').and.returnValue(false);
+    spyOn(component, 'onShowVersions');
+    elementRef = TestBed.inject(ElementRef) as unknown as MockElementRef;
+
+    const outsideEvent = new MouseEvent('click', {
+      bubbles: true,
+      cancelable: true,
+      view: window
+    });
+
+    elementRef.nativeElement.contains.and.returnValue(false);
+
+    document.dispatchEvent(outsideEvent);
+
+    expect(component.onShowVersions).not.toHaveBeenCalled();
+  });
+
+  it('should open a new tab with the selected artifact URL', () => {
+    const mockWindowOpen = jasmine.createSpy('windowOpen').and.returnValue({
+      blur: jasmine.createSpy('blur')
+    });
+
+    const mockWindowFocus = spyOn(window, 'focus');
+
+    // Mock window.open
+    spyOn(window, 'open').and.callFake(mockWindowOpen);
+    spyOn(component, 'onUpdateInstallationCount');
+    // Set the artifact URL
+    component.selectedArtifact = 'http://example.com/artifact';
+
+    // Call the method
+    component.downloadArifact();
+
+    // Check if window.open was called with the correct URL and target
+    expect(window.open).toHaveBeenCalledWith(
+      'http://example.com/artifact',
+      '_blank'
+    );
+
+    // Check if newTab.blur() was called
+    expect(mockWindowOpen().blur).toHaveBeenCalled();
+    expect(component.onUpdateInstallationCount).toHaveBeenCalledOnceWith();
+    // Check if window.focus() was called
+    expect(mockWindowFocus).toHaveBeenCalled();
   });
 });

@@ -1,14 +1,12 @@
-import { HttpClient, HttpContext, HttpParams } from '@angular/common/http';
+import { HttpClient, HttpParams } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
-import { Observable, of, tap } from 'rxjs';
-import { MOCK_PRODUCTS } from '../../shared/mocks/mock-data';
-import { Criteria } from '../../shared/models/criteria.model';
-import { Product } from '../../shared/models/product.model';
-import { VersionData } from '../../shared/models/vesion-artifact.model';
+import { Observable, tap } from 'rxjs';
 import { LoadingService } from '../../core/services/loading/loading.service';
 import { RequestParam } from '../../shared/enums/request-param';
 import { ProductApiResponse } from '../../shared/models/apis/product-response.model';
-import { SkipLoading } from '../../core/interceptors/api.interceptor';
+import { Criteria } from '../../shared/models/criteria.model';
+import { ProductDetail } from '../../shared/models/product-detail.model';
+import { VersionData } from '../../shared/models/vesion-artifact.model';
 
 const PRODUCT_API_URL = 'api/product';
 @Injectable()
@@ -29,18 +27,23 @@ export class ProductService {
         .set(RequestParam.LANGUAGE, `${criteria.language}`);
     }
     return this.httpClient.get<ProductApiResponse>(requestURL, {
-      params: requestParams,
-      context: new HttpContext().set(SkipLoading, true)
+      params: requestParams
     });
   }
 
-  getProductById(productId: string): Observable<Product> {
-    const products = MOCK_PRODUCTS._embedded.products;
-    const product = products.find(p => p.id === productId);
-    if (product) {
-      return of(product);
-    }
-    return of({} as Product);
+  getProductDetailsWithVersion(
+    productId: string,
+    tag: string
+  ): Observable<ProductDetail> {
+    return this.httpClient.get<ProductDetail>(
+      `api/product-details/${productId}/${tag}`
+    );
+  }
+
+  getProductDetails(productId: string): Observable<ProductDetail> {
+    return this.httpClient.get<ProductDetail>(
+      `api/product-details/${productId}`
+    );
   }
 
   sendRequestToProductDetailVersionAPI(
@@ -58,5 +61,10 @@ export class ProductService {
         this.loadingService.hide();
       })
     );
+  }
+
+  sendRequestToUpdateInstallationCount(productId: string) {
+    const url = 'api/product-details/installationcount/' + productId;
+    return this.httpClient.put<number>(url, null, { headers: { 'X-Requested-By': 'ivy' } });
   }
 }
