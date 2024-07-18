@@ -20,7 +20,9 @@ import java.util.List;
 
 import static com.axonivy.market.constants.CommonConstants.LOGO_FILE;
 import static com.axonivy.market.constants.CommonConstants.SLASH;
-import static com.axonivy.market.constants.MetaConstants.*;
+import static com.axonivy.market.constants.MetaConstants.DEFAULT_VENDOR_NAME;
+import static com.axonivy.market.constants.MetaConstants.DEFAULT_VENDOR_URL;
+import static com.axonivy.market.constants.MetaConstants.META_FILE;
 import static org.apache.commons.lang3.StringUtils.EMPTY;
 
 @Log4j2
