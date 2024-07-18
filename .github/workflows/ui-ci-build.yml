@@ -20,9 +20,13 @@ jobs:
           node-version: '20'
           cache: 'npm'
       - name: Install Dependencies
-        run: npm install
+        run: |
+          cd ./marketplace-ui
+          npm install
       - name: Build project
-        run: npm run build
+        run: |
+          cd ./marketplace-ui
+          npm run build
 
   analysis:
     name: Sonarqube
@@ -35,7 +39,9 @@ jobs:
 
     steps:
       - name: Execute Tests
-        run: npm run test
+        run: |
+          cd ./marketplace-ui
+          npm run test
       - uses: sonarsource/sonarqube-scan-action@master
         env:
           SONAR_TOKEN: ${{ env.SONAR_TOKEN }}
@@ -53,4 +59,5 @@ jobs:
 
       - name: Clean up
         run: |
+          cd ./marketplace-ui
           rm -rf *
