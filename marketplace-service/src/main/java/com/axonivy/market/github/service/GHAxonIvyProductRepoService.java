@@ -3,7 +3,6 @@ package com.axonivy.market.github.service;
 import com.axonivy.market.entity.Product;
 import com.axonivy.market.entity.ProductModuleContent;
 import com.axonivy.market.github.model.MavenArtifact;
-
 import org.kohsuke.github.GHContent;
 import org.kohsuke.github.GHRepository;
 import org.kohsuke.github.GHTag;

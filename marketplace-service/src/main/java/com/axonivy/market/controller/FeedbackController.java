@@ -34,7 +34,8 @@ public class FeedbackController {
 
   private final PagedResourcesAssembler<Feedback> pagedResourcesAssembler;
 
-  public FeedbackController(FeedbackService feedbackService, JwtService jwtService, FeedbackModelAssembler feedbackModelAssembler, PagedResourcesAssembler<Feedback> pagedResourcesAssembler) {
+  public FeedbackController(FeedbackService feedbackService, JwtService jwtService,
+      FeedbackModelAssembler feedbackModelAssembler, PagedResourcesAssembler<Feedback> pagedResourcesAssembler) {
     this.feedbackService = feedbackService;
     this.jwtService = jwtService;
     this.feedbackModelAssembler = feedbackModelAssembler;
@@ -43,7 +44,8 @@ public class FeedbackController {
 
   @Operation(summary = "Find all feedbacks by product id")
   @GetMapping("/product/{productId}")
-  public ResponseEntity<PagedModel<FeedbackModel>> findFeedbacks(@PathVariable("productId") String productId, Pageable pageable) {
+  public ResponseEntity<PagedModel<FeedbackModel>> findFeedbacks(@PathVariable("productId") String productId,
+      Pageable pageable) {
     Page<Feedback> results = feedbackService.findFeedbacks(productId, pageable);
     if (results.isEmpty()) {
       return generateEmptyPagedModel();
@@ -61,15 +63,15 @@ public class FeedbackController {
 
   @Operation(summary = "Find all feedbacks by user id and product id")
   @GetMapping()
-  public ResponseEntity<FeedbackModel> findFeedbackByUserIdAndProductId(
-      @RequestParam String userId,
+  public ResponseEntity<FeedbackModel> findFeedbackByUserIdAndProductId(@RequestParam String userId,
       @RequestParam String productId) {
     Feedback feedback = feedbackService.findFeedbackByUserIdAndProductId(userId, productId);
     return ResponseEntity.ok(feedbackModelAssembler.toModel(feedback));
   }
 
   @PostMapping
-  public ResponseEntity<Void> createFeedback(@RequestBody @Valid Feedback feedback, @RequestHeader(value = "Authorization", required = false) String authorizationHeader) {
+  public ResponseEntity<Void> createFeedback(@RequestBody @Valid Feedback feedback,
+      @RequestHeader(value = "Authorization", required = false) String authorizationHeader) {
     String token = null;
     if (authorizationHeader != null && authorizationHeader.startsWith("Bearer ")) {
       token = authorizationHeader.substring(7); // Remove "Bearer " prefix
@@ -84,9 +86,7 @@ public class FeedbackController {
     feedback.setUserId(claims.getSubject());
     Feedback newFeedback = feedbackService.upsertFeedback(feedback);
 
-    URI location = ServletUriComponentsBuilder.fromCurrentRequest()
-        .path("/{id}")
-        .buildAndExpand(newFeedback.getId())
+    URI location = ServletUriComponentsBuilder.fromCurrentRequest().path("/{id}").buildAndExpand(newFeedback.getId())
         .toUri();
 
     return ResponseEntity.created(location).build();
@@ -100,8 +100,8 @@ public class FeedbackController {
 
   @SuppressWarnings("unchecked")
   private ResponseEntity<PagedModel<FeedbackModel>> generateEmptyPagedModel() {
-    var emptyPagedModel = (PagedModel<FeedbackModel>) pagedResourcesAssembler
-        .toEmptyModel(Page.empty(), FeedbackModel.class);
+    var emptyPagedModel = (PagedModel<FeedbackModel>) pagedResourcesAssembler.toEmptyModel(Page.empty(),
+        FeedbackModel.class);
     return new ResponseEntity<>(emptyPagedModel, HttpStatus.OK);
   }
 }

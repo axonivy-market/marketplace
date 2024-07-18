@@ -36,7 +36,8 @@ public class OAuth2Controller {
 
   @PostMapping("/github/login")
   public ResponseEntity<?> gitHubLogin(@RequestBody Oauth2AuthorizationCode oauth2AuthorizationCode) {
-    Map<String, Object> tokenResponse = gitHubService.getAccessToken(oauth2AuthorizationCode.getCode(), clientId, clientSecret);
+    Map<String, Object> tokenResponse = gitHubService.getAccessToken(oauth2AuthorizationCode.getCode(), clientId,
+        clientSecret);
     String accessToken = (String) tokenResponse.get(GitHubConstants.Json.ACCESS_TOKEN);
 
     User user = gitHubService.getAndUpdateUser(accessToken);

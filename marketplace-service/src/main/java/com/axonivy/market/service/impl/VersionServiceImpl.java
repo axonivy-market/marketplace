@@ -1,22 +1,22 @@
 package com.axonivy.market.service.impl;
 
+import com.axonivy.market.comparator.ArchivedArtifactsComparator;
+import com.axonivy.market.comparator.LatestVersionComparator;
 import com.axonivy.market.constants.CommonConstants;
 import com.axonivy.market.constants.GitHubConstants;
 import com.axonivy.market.constants.MavenConstants;
 import com.axonivy.market.constants.NonStandardProductPackageConstants;
+import com.axonivy.market.entity.MavenArtifactModel;
 import com.axonivy.market.entity.MavenArtifactVersion;
 import com.axonivy.market.entity.Product;
 import com.axonivy.market.github.model.ArchivedArtifact;
 import com.axonivy.market.github.model.MavenArtifact;
-import com.axonivy.market.entity.MavenArtifactModel;
 import com.axonivy.market.github.service.GHAxonIvyProductRepoService;
 import com.axonivy.market.github.util.GitHubUtils;
 import com.axonivy.market.model.MavenArtifactVersionModel;
 import com.axonivy.market.repository.MavenArtifactVersionRepository;
 import com.axonivy.market.repository.ProductRepository;
 import com.axonivy.market.service.VersionService;
-import com.axonivy.market.comparator.ArchivedArtifactsComparator;
-import com.axonivy.market.comparator.LatestVersionComparator;
 import com.axonivy.market.util.XmlReaderUtils;
 import lombok.Getter;
 import lombok.extern.log4j.Log4j2;
@@ -94,8 +94,8 @@ public class VersionServiceImpl implements VersionService {
     boolean isNewVersionDetected = false;
     for (String version : versionsToDisplay) {
       List<MavenArtifactModel> artifactsInVersion = convertMavenArtifactsToModels(artifactsFromMeta, version);
-      List<MavenArtifactModel> productArtifactModels =
-          proceedDataCache.getProductArtifactWithVersionReleased().get(version);
+      List<MavenArtifactModel> productArtifactModels = proceedDataCache.getProductArtifactWithVersionReleased()
+          .get(version);
       if (productArtifactModels == null) {
         isNewVersionDetected = true;
         productArtifactModels = updateArtifactsInVersionWithProductArtifact(version);
@@ -107,8 +107,8 @@ public class VersionServiceImpl implements VersionService {
   }
 
   public List<MavenArtifactModel> updateArtifactsInVersionWithProductArtifact(String version) {
-    List<MavenArtifactModel> productArtifactModels =
-        convertMavenArtifactsToModels(getProductJsonByVersion(version), version);
+    List<MavenArtifactModel> productArtifactModels = convertMavenArtifactsToModels(getProductJsonByVersion(version),
+        version);
     proceedDataCache.getVersions().add(version);
     proceedDataCache.getProductArtifactWithVersionReleased().put(version, productArtifactModels);
     return productArtifactModels;
@@ -126,8 +126,9 @@ public class VersionServiceImpl implements VersionService {
   public void sanitizeMetaArtifactBeforeHandle() {
     artifactsFromMeta.remove(metaProductArtifact);
     artifactsFromMeta.forEach(artifact -> {
-      List<ArchivedArtifact> archivedArtifacts = new ArrayList<>(Optional.ofNullable(artifact.getArchivedArtifacts())
-          .orElse(Collections.emptyList()).stream().sorted(new ArchivedArtifactsComparator()).toList());
+      List<ArchivedArtifact> archivedArtifacts = new ArrayList<>(
+          Optional.ofNullable(artifact.getArchivedArtifacts()).orElse(Collections.emptyList()).stream()
+              .sorted(new ArchivedArtifactsComparator()).toList());
       Collections.reverse(archivedArtifacts);
       archivedArtifactsMap.put(artifact.getArtifactId(), archivedArtifacts);
     });
@@ -152,9 +153,10 @@ public class VersionServiceImpl implements VersionService {
     for (MavenArtifact artifact : artifactsFromMeta) {
       versions.addAll(
           getVersionsFromArtifactDetails(artifact.getRepoUrl(), artifact.getGroupId(), artifact.getArtifactId()));
-      Optional.ofNullable(artifact.getArchivedArtifacts()).orElse(Collections.emptyList())
-          .forEach(archivedArtifact -> versions.addAll(getVersionsFromArtifactDetails(artifact.getRepoUrl(),
-              archivedArtifact.getGroupId(), archivedArtifact.getArtifactId())));
+      Optional.ofNullable(artifact.getArchivedArtifacts()).orElse(Collections.emptyList()).forEach(
+          archivedArtifact -> versions.addAll(
+              getVersionsFromArtifactDetails(artifact.getRepoUrl(), archivedArtifact.getGroupId(),
+                  archivedArtifact.getArtifactId())));
     }
     List<String> versionList = new ArrayList<>(versions);
     versionList.sort(new LatestVersionComparator());
@@ -206,8 +208,9 @@ public class VersionServiceImpl implements VersionService {
     } else {
       bugfixVersion = getBugfixVersion(version.split(MavenConstants.SPRINT_RELEASE_POSTFIX)[0]);
     }
-    return versions.stream().noneMatch(currentVersion -> !currentVersion.equals(version)
-        && isReleasedVersion(currentVersion) && getBugfixVersion(currentVersion).equals(bugfixVersion));
+    return versions.stream().noneMatch(
+        currentVersion -> !currentVersion.equals(version) && isReleasedVersion(currentVersion) && getBugfixVersion(
+            currentVersion).equals(bugfixVersion));
   }
 
   public boolean isSnapshotVersion(String version) {
@@ -231,8 +234,8 @@ public class VersionServiceImpl implements VersionService {
     String versionTag = getVersionTag(version);
     productJsonFilePath = buildProductJsonFilePath();
     try {
-      GHContent productJsonContent =
-          gitHubService.getContentFromGHRepoAndTag(repoName, productJsonFilePath, versionTag);
+      GHContent productJsonContent = gitHubService.getContentFromGHRepoAndTag(repoName, productJsonFilePath,
+          versionTag);
       if (Objects.isNull(productJsonContent)) {
         return result;
       }
@@ -255,8 +258,8 @@ public class VersionServiceImpl implements VersionService {
   public String buildProductJsonFilePath() {
     String pathToProductFolderFromTagContent = metaProductArtifact.getArtifactId();
     GitHubUtils.getNonStandardProductFilePath(productId);
-    productJsonFilePath =
-        String.format(GitHubConstants.PRODUCT_JSON_FILE_PATH_FORMAT, pathToProductFolderFromTagContent);
+    productJsonFilePath = String.format(GitHubConstants.PRODUCT_JSON_FILE_PATH_FORMAT,
+        pathToProductFolderFromTagContent);
     return productJsonFilePath;
   }
 
@@ -286,8 +289,8 @@ public class VersionServiceImpl implements VersionService {
     String groupIdByVersion = artifact.getGroupId();
     String artifactIdByVersion = artifact.getArtifactId();
     String repoUrl = Optional.ofNullable(artifact.getRepoUrl()).orElse(MavenConstants.DEFAULT_IVY_MAVEN_BASE_URL);
-    ArchivedArtifact archivedArtifactBestMatchVersion =
-        findArchivedArtifactInfoBestMatchWithVersion(artifact.getArtifactId(), version);
+    ArchivedArtifact archivedArtifactBestMatchVersion = findArchivedArtifactInfoBestMatchWithVersion(
+        artifact.getArtifactId(), version);
 
     if (Objects.nonNull(archivedArtifactBestMatchVersion)) {
       groupIdByVersion = archivedArtifactBestMatchVersion.getGroupId();

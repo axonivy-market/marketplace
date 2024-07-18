@@ -64,7 +64,7 @@ public class GHAxonIvyMarketRepoServiceImpl implements GHAxonIvyMarketRepoServic
 
   @Override
   public GHCommit getLastCommit(long lastCommitTime) {
-    if (lastCommitTime == 0l) {
+    if (lastCommitTime == 0L) {
       lastCommitTime = INITIAL_COMMIT_DATE.atZone(ZoneId.systemDefault()).toEpochSecond();
     }
     try {

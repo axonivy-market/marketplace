@@ -17,26 +17,26 @@ import java.util.Date;
 @Relation(collectionRelation = "feedbacks", itemRelation = "feedback")
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class FeedbackModel extends RepresentationModel<FeedbackModel> {
-    private String id;
-    private String username;
-    private String userAvatarUrl;
-    private String userProvider;
-    private String productId;
-    private String content;
-    private Integer rating;
-    private Date createdAt;
-    private Date updatedAt;
+  private String id;
+  private String username;
+  private String userAvatarUrl;
+  private String userProvider;
+  private String productId;
+  private String content;
+  private Integer rating;
+  private Date createdAt;
+  private Date updatedAt;
 
-    @Override
-    public int hashCode() {
-        return new HashCodeBuilder().append(id).hashCode();
-    }
+  @Override
+  public int hashCode() {
+    return new HashCodeBuilder().append(id).hashCode();
+  }
 
-    @Override
-    public boolean equals(Object obj) {
-        if (obj == null || this.getClass() != obj.getClass()) {
-            return false;
-        }
-        return new EqualsBuilder().append(id, ((FeedbackModel) obj).getId()).isEquals();
+  @Override
+  public boolean equals(Object obj) {
+    if (obj == null || this.getClass() != obj.getClass()) {
+      return false;
     }
+    return new EqualsBuilder().append(id, ((FeedbackModel) obj).getId()).isEquals();
+  }
 }

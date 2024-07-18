@@ -10,11 +10,11 @@ import java.util.Map;
 
 public interface GHAxonIvyMarketRepoService {
 
-  public Map<String, List<GHContent>> fetchAllMarketItems();
+  Map<String, List<GHContent>> fetchAllMarketItems();
 
-  public GHCommit getLastCommit(long lastCommitTime);
+  GHCommit getLastCommit(long lastCommitTime);
 
-  public List<GitHubFile> fetchMarketItemsBySHA1Range(String fromSHA1, String toSHA1);
+  List<GitHubFile> fetchMarketItemsBySHA1Range(String fromSHA1, String toSHA1);
 
-  public GHRepository getRepository();
+  GHRepository getRepository();
 }

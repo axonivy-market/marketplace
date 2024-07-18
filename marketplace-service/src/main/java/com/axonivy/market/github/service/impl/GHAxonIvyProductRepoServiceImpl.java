@@ -1,34 +1,27 @@
 package com.axonivy.market.github.service.impl;
 
-import java.io.IOException;
-import java.util.*;
-
 import com.axonivy.market.constants.*;
 import com.axonivy.market.entity.Product;
 import com.axonivy.market.entity.ProductModuleContent;
+import com.axonivy.market.github.model.MavenArtifact;
+import com.axonivy.market.github.service.GHAxonIvyProductRepoService;
+import com.axonivy.market.github.service.GitHubService;
 import com.axonivy.market.github.util.GitHubUtils;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-
-import com.axonivy.market.github.service.GHAxonIvyProductRepoService;
 import lombok.extern.log4j.Log4j2;
-
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.util.Strings;
-import com.axonivy.market.github.model.MavenArtifact;
 import org.kohsuke.github.GHContent;
 import org.kohsuke.github.GHOrganization;
 import org.kohsuke.github.GHRepository;
 import org.kohsuke.github.GHTag;
 import org.springframework.stereotype.Service;
-
-import com.axonivy.market.github.service.GitHubService;
 import org.springframework.util.CollectionUtils;
 
+import java.io.IOException;
 import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -63,8 +56,8 @@ public class GHAxonIvyProductRepoServiceImpl implements GHAxonIvyProductRepoServ
       JsonNode dataNode = mavenNode.path(ProductJsonConstants.DATA);
 
       // Not convert to artifact if id of node is not maven-import or maven-dependency
-      List<String> installerIdsToDisplay =
-          List.of(ProductJsonConstants.MAVEN_DEPENDENCY_INSTALLER_ID, ProductJsonConstants.MAVEN_IMPORT_INSTALLER_ID);
+      List<String> installerIdsToDisplay = List.of(ProductJsonConstants.MAVEN_DEPENDENCY_INSTALLER_ID,
+          ProductJsonConstants.MAVEN_IMPORT_INSTALLER_ID);
       if (!installerIdsToDisplay.contains(mavenNode.path(ProductJsonConstants.ID).asText())) {
         continue;
       }
@@ -200,7 +193,8 @@ public class GHAxonIvyProductRepoServiceImpl implements GHAxonIvyProductRepoServ
     }
     for (Map.Entry<String, String> entry : imageUrls.entrySet()) {
       String imageUrlPattern = String.format(README_IMAGE_FORMAT, Pattern.quote(entry.getKey()));
-      readmeContents = readmeContents.replaceAll(imageUrlPattern, String.format(IMAGE_DOWNLOAD_URL_FORMAT,entry.getValue()));
+      readmeContents = readmeContents.replaceAll(imageUrlPattern,
+          String.format(IMAGE_DOWNLOAD_URL_FORMAT, entry.getValue()));
 
     }
     return readmeContents;
@@ -255,8 +249,7 @@ public class GHAxonIvyProductRepoServiceImpl implements GHAxonIvyProductRepoServ
       throws IOException {
     String productFolderPath = ghRepository.getDirectoryContent(CommonConstants.SLASH, tag).stream()
         .filter(GHContent::isDirectory).map(GHContent::getName)
-        .filter(content -> content.endsWith(MavenConstants.PRODUCT_ARTIFACT_POSTFIX)).findFirst()
-        .orElse(null);
+        .filter(content -> content.endsWith(MavenConstants.PRODUCT_ARTIFACT_POSTFIX)).findFirst().orElse(null);
     if (StringUtils.isBlank(productFolderPath) || hasChildConnector(ghRepository)) {
       productFolderPath = GitHubUtils.getNonStandardProductFilePath(product.getId());
     }

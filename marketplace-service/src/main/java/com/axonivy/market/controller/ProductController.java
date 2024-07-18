@@ -29,7 +29,7 @@ public class ProductController {
   private final PagedResourcesAssembler<Product> pagedResourcesAssembler;
 
   public ProductController(ProductService productService, ProductModelAssembler assembler,
-                           PagedResourcesAssembler<Product> pagedResourcesAssembler) {
+      PagedResourcesAssembler<Product> pagedResourcesAssembler) {
     this.productService = productService;
     this.assembler = assembler;
     this.pagedResourcesAssembler = pagedResourcesAssembler;
@@ -37,8 +37,7 @@ public class ProductController {
 
   @Operation(summary = "Find all products", description = "Be default system will finds product by type as 'all'")
   @GetMapping()
-  public ResponseEntity<PagedModel<ProductModel>> findProducts(
-      @RequestParam(name = "type") String type,
+  public ResponseEntity<PagedModel<ProductModel>> findProducts(@RequestParam(name = "type") String type,
       @RequestParam(required = false, name = "keyword") String keyword,
       @RequestParam(name = "language") String language, Pageable pageable) {
     Page<Product> results = productService.findProducts(type, keyword, language, pageable);
@@ -69,8 +68,8 @@ public class ProductController {
 
   @SuppressWarnings("unchecked")
   private ResponseEntity<PagedModel<ProductModel>> generateEmptyPagedModel() {
-    var emptyPagedModel =
-        (PagedModel<ProductModel>) pagedResourcesAssembler.toEmptyModel(Page.empty(), ProductModel.class);
+    var emptyPagedModel = (PagedModel<ProductModel>) pagedResourcesAssembler.toEmptyModel(Page.empty(),
+        ProductModel.class);
     return new ResponseEntity<>(emptyPagedModel, HttpStatus.OK);
   }
 }

@@ -17,7 +17,7 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 @SpringBootApplication
 public class MarketplaceServiceApplication {
 
-  private ProductService productService;
+  private final ProductService productService;
 
   public MarketplaceServiceApplication(ProductService productService) {
     this.productService = productService;

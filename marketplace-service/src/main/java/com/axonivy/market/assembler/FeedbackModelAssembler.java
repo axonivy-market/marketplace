@@ -28,8 +28,7 @@ public class FeedbackModelAssembler extends RepresentationModelAssemblerSupport<
   @Override
   public FeedbackModel toModel(Feedback feedback) {
     FeedbackModel resource = new FeedbackModel();
-    resource.add(linkTo(methodOn(FeedbackController.class).findFeedback(feedback.getId()))
-        .withSelfRel());
+    resource.add(linkTo(methodOn(FeedbackController.class).findFeedback(feedback.getId())).withSelfRel());
     return createResource(resource, feedback);
   }
 
@@ -37,8 +36,7 @@ public class FeedbackModelAssembler extends RepresentationModelAssemblerSupport<
     User user;
     try {
       user = userService.findUser(feedback.getUserId());
-    }
-    catch (NotFoundException e) {
+    } catch (NotFoundException e) {
       log.warn(e.getMessage());
       user = new User();
     }

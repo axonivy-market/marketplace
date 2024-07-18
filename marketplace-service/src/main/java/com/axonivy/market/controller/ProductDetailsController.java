@@ -1,18 +1,13 @@
 package com.axonivy.market.controller;
 
+import com.axonivy.market.assembler.ProductDetailModelAssembler;
 import com.axonivy.market.model.MavenArtifactVersionModel;
+import com.axonivy.market.model.ProductDetailModel;
+import com.axonivy.market.service.ProductService;
 import com.axonivy.market.service.VersionService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
-import com.axonivy.market.assembler.ProductDetailModelAssembler;
-import com.axonivy.market.model.ProductDetailModel;
-import com.axonivy.market.service.ProductService;
-
-import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -49,8 +44,8 @@ public class ProductDetailsController {
   public ResponseEntity<List<MavenArtifactVersionModel>> findProductVersionsById(@PathVariable("id") String id,
       @RequestParam(name = "isShowDevVersion") boolean isShowDevVersion,
       @RequestParam(name = "designerVersion", required = false) String designerVersion) {
-    List<MavenArtifactVersionModel> models =
-        versionService.getArtifactsAndVersionToDisplay(id, isShowDevVersion, designerVersion);
+    List<MavenArtifactVersionModel> models = versionService.getArtifactsAndVersionToDisplay(id, isShowDevVersion,
+        designerVersion);
     return new ResponseEntity<>(models, HttpStatus.OK);
   }
 }

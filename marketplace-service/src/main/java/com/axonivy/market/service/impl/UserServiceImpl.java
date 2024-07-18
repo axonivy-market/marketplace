@@ -25,7 +25,8 @@ public class UserServiceImpl implements UserService {
 
   @Override
   public User findUser(String id) throws NotFoundException {
-    return userRepository.findById(id).orElseThrow(() -> new NotFoundException(ErrorCode.USER_NOT_FOUND, "Not found user with id: " + id));
+    return userRepository.findById(id)
+        .orElseThrow(() -> new NotFoundException(ErrorCode.USER_NOT_FOUND, "Not found user with id: " + id));
   }
 
   @Override
