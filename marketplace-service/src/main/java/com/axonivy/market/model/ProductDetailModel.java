@@ -22,6 +22,7 @@ public class ProductDetailModel extends ProductModel {
   private String compatibility;
   private Boolean contactUs;
   private ProductModuleContent productModuleContent;
+  private int installationCount;
 
   @Override
   public int hashCode() {

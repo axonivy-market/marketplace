@@ -1,49 +1,68 @@
 package com.axonivy.market.service;
 
 import static com.axonivy.market.constants.CommonConstants.LOGO_FILE;
-import static com.axonivy.market.constants.MetaConstants.META_FILE;
 import static com.axonivy.market.constants.CommonConstants.SLASH;
+import static com.axonivy.market.constants.MetaConstants.META_FILE;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.mockStatic;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.*;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
-import com.axonivy.market.entity.ProductModuleContent;
-import com.axonivy.market.github.service.GHAxonIvyProductRepoService;
-import com.axonivy.market.model.MultilingualismValue;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.kohsuke.github.*;
+import org.kohsuke.github.GHCommit;
+import org.kohsuke.github.GHContent;
+import org.kohsuke.github.GHRepository;
+import org.kohsuke.github.GHTag;
+import org.kohsuke.github.PagedIterable;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.MockedStatic;
+import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.test.util.ReflectionTestUtils;
 
 import com.axonivy.market.constants.GitHubConstants;
 import com.axonivy.market.entity.GitHubRepoMeta;
 import com.axonivy.market.entity.Product;
+import com.axonivy.market.entity.ProductModuleContent;
 import com.axonivy.market.enums.FileStatus;
 import com.axonivy.market.enums.FileType;
 import com.axonivy.market.enums.SortOption;
 import com.axonivy.market.enums.TypeOption;
 import com.axonivy.market.github.model.GitHubFile;
 import com.axonivy.market.github.service.GHAxonIvyMarketRepoService;
+import com.axonivy.market.github.service.GHAxonIvyProductRepoService;
 import com.axonivy.market.github.service.GitHubService;
+import com.axonivy.market.model.MultilingualismValue;
 import com.axonivy.market.repository.GitHubRepoMetaRepository;
 import com.axonivy.market.repository.ProductRepository;
 import com.axonivy.market.service.impl.ProductServiceImpl;
@@ -77,11 +96,13 @@ class ProductServiceImplTest {
   @Mock
   private GitHubService gitHubService;
 
+  @Captor
+  ArgumentCaptor<Product> argumentCaptor = ArgumentCaptor.forClass(Product.class);
   @Mock
   private GHAxonIvyProductRepoService ghAxonIvyProductRepoService;
 
   @Captor
-  ArgumentCaptor<ArrayList<Product>> argumentCaptor;
+  ArgumentCaptor<ArrayList<Product>> productListArgumentCaptor;
 
   @InjectMocks
   private ProductServiceImpl productService;
@@ -89,6 +110,50 @@ class ProductServiceImplTest {
   @BeforeEach
   public void setup() {
     mockResultReturn = createPageProductsMock();
+  }
+
+  @Test
+  void testUpdateInstallationCount() {
+    // prepare
+    Mockito.when(productRepository.findById("google-maps-connector")).thenReturn(Optional.of(mockProduct()));
+
+    // exercise
+    productService.updateInstallationCountForProduct("google-maps-connector");
+
+    // Verify
+    verify(productRepository).save(argumentCaptor.capture());
+    int updatedInstallationCount = argumentCaptor.getValue().getInstallationCount();
+
+    assertEquals(1, updatedInstallationCount);
+    verify(productRepository, times(1)).findById(Mockito.anyString());
+    verify(productRepository, times(1)).save(Mockito.any());
+  }
+
+  @Test
+  void testSyncInstallationCountWithProduct() throws Exception {
+    // Mock data
+    ReflectionTestUtils.setField(productService, "installationCountPath", "path/to/installationCount.json");
+    Product product = mockProduct();
+    product.setSynchronizedInstallationCount(false);
+    Mockito.when(productRepository.findById("google-maps-connector")).thenReturn(Optional.of(product));
+    Mockito.when(productRepository.save(any())).thenReturn(product);
+    // Mock the behavior of Files.readString and ObjectMapper.readValue
+    String installationCounts = "{\"google-maps-connector\": 10}";
+    try (MockedStatic<Files> filesMockedStatic = mockStatic(Files.class)) {
+      when(Files.readString(Paths.get("path/to/installationCount.json"))).thenReturn(installationCounts);
+      // Call the method
+      int result = productService.updateInstallationCountForProduct("google-maps-connector");
+
+      // Verify the results
+      assertEquals(11, result);
+      assertEquals(true, product.getSynchronizedInstallationCount());
+      assertTrue(product.getSynchronizedInstallationCount());
+    }
+  }
+
+  private Product mockProduct() {
+    return Product.builder().id("google-maps-connector").language("English").synchronizedInstallationCount(true)
+        .build();
   }
 
   @Test
@@ -240,9 +305,9 @@ class ProductServiceImplTest {
     // Executes
     productService.syncLatestDataFromMarketRepo();
 
-    verify(productRepository).saveAll(argumentCaptor.capture());
+    verify(productRepository).saveAll(productListArgumentCaptor.capture());
 
-    assertThat(argumentCaptor.getValue().get(0).getProductModuleContents()).usingRecursiveComparison()
+    assertThat(productListArgumentCaptor.getValue().get(0).getProductModuleContents()).usingRecursiveComparison()
         .isEqualTo(List.of(mockReadmeProductContent()));
   }
 
@@ -277,6 +342,7 @@ class ProductServiceImplTest {
   void testFetchProductDetail() {
     String id = "amazon-comprehend";
     Product mockProduct = mockResultReturn.getContent().get(0);
+    mockProduct.setSynchronizedInstallationCount(true);
     when(productRepository.findById(id)).thenReturn(Optional.ofNullable(mockProduct));
     Product result = productService.fetchProductDetail(id);
     assertEquals(mockProduct, result);
