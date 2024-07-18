@@ -1,14 +1,13 @@
 package com.axonivy.market.entity;
 
-import java.io.Serializable;
-import java.util.Objects;
-
-import org.springframework.data.annotation.Transient;
-
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.springframework.data.annotation.Transient;
+
+import java.io.Serializable;
+import java.util.Objects;
 
 @AllArgsConstructor
 @NoArgsConstructor

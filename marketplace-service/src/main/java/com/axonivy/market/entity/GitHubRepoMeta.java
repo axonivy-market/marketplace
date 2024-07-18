@@ -1,12 +1,11 @@
 package com.axonivy.market.entity;
 
-import static com.axonivy.market.constants.EntityConstants.GH_REPO_META;
-
+import lombok.Getter;
+import lombok.Setter;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
-import lombok.Getter;
-import lombok.Setter;
+import static com.axonivy.market.constants.EntityConstants.GH_REPO_META;
 
 @Getter
 @Setter

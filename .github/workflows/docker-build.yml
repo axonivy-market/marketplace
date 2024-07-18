@@ -1,0 +1,58 @@
+name: Docker build
+
+on:
+  push:
+    branches: [ "develop" ]
+  workflow_dispatch:
+  workflow_call:
+
+jobs:
+  build:
+    runs-on: self-hosted
+
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up JDK 17
+        uses: actions/setup-java@v3
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+          cache: maven
+      - name: Build Marketplace service project
+        run: |
+            cd ./marketplace-service
+            mvn clean install -DskipTests
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: ./marketplace-ui/package-lock.json
+      - name: Build Marketplace ui project
+        run: |
+          cd ./marketplace-ui
+          npm i
+          npm run build --prod
+      - name: Update environment variables for ENV
+        env:
+          ENV_FILE: './marketplace-build/.env'
+          MONGODB_HOST: ${{ secrets.MONGODB_HOST }}
+          ROOT_USERNAME: ${{ secrets.MONGODB_ROOT_USERNAME }}
+          ROOT_PASSWORD: ${{ secrets.MONGODB_ROOT_PASSWORD }}
+          SERVICE_USERNAME: ${{ secrets.SERVICE_USERNAME }}
+          SERVICE_PASSWORD: ${{ secrets.SERVICE_PASSWORD }}
+          MONGODB_DATABASE: ${{ secrets.MONGODB_DATABASE }}
+          GH_TOKEN: ${{ secrets.GH_TOKEN }}
+        run: |
+            sed -i "s/^MONGODB_INITDB_ROOT_USERNAME=.*$/MONGODB_INITDB_ROOT_USERNAME=$ROOT_USERNAME/" $ENV_FILE
+            sed -i "s/^MONGODB_INITDB_ROOT_PASSWORD=.*$/MONGODB_INITDB_ROOT_PASSWORD=$ROOT_PASSWORD/" $ENV_FILE
+            sed -i "s/^SERVICE_MONGODB_HOST=.*$/SERVICE_MONGODB_HOST=$MONGODB_HOST/" $ENV_FILE
+            sed -i "s/^SERVICE_MONGODB_DATABASE=.*$/SERVICE_MONGODB_DATABASE=$MONGODB_DATABASE/" $ENV_FILE
+            sed -i "s/^SERVICE_MONGODB_USER=.*$/SERVICE_MONGODB_USER=$SERVICE_USERNAME/" $ENV_FILE
+            sed -i "s/^SERVICE_MONGODB_PASSWORD=.*$/SERVICE_MONGODB_PASSWORD=$SERVICE_PASSWORD/" $ENV_FILE
+            sed -i "s/^MARKET_GITHUB_TOKEN=.*$/MARKET_GITHUB_TOKEN=$GH_TOKEN/" $ENV_FILE
+
+      - name: Refresh Docker images
+        working-directory: ./marketplace-build
+        run: |
+          docker compose down
+          docker compose -f docker-compose.yml up -d

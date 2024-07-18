@@ -1,0 +1,46 @@
+name: Docker Release
+
+on:
+  push:
+    branches: [ "master" ]
+  workflow_dispatch:
+
+env:
+  UI_IMAGE_NAME: marketplace-ui
+  SERVICE_IMAGE_NAME: marketplace-service
+
+jobs:
+
+  build:
+    uses: ./.github/workflows/docker-build.yml
+
+  release:
+    needs: build
+    runs-on: self-hosted
+    permissions:
+      packages: write
+      contents: read
+
+    steps:
+      - name: Log in to registry
+        run: echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
+      - name: Refine release version
+        run: |
+          # This strips the git ref prefix from the version.
+          VERSION=$(echo "${{ github.ref }}" | sed -e 's,.*/\(.*\),\1,')
+          # This strips the "v" prefix from the tag name.
+          [[ "${{ github.ref }}" == "refs/tags/"* ]] && VERSION=$(echo $VERSION | sed -e 's/^v//')
+          # This uses the Docker `latest` tag convention.
+          [ "$VERSION" == "main" ] && VERSION=latest
+          echo "VERSION=$VERSION" >> $GITHUB_ENV
+      - name: Release Marketplace UI image
+        run: |
+          UI_IMAGE_ID=ghcr.io/${{ github.repository_owner }}/$UI_IMAGE_NAME
+          docker tag $UI_IMAGE_NAME $UI_IMAGE_ID:$VERSION
+          docker push $UI_IMAGE_ID:$VERSION
+
+      - name: Release Marketplace Service image
+        run: |
+          SERVICE_IMAGE_ID=ghcr.io/${{ github.repository_owner }}/$SERVICE_IMAGE_NAME
+          docker tag $SERVICE_IMAGE_NAME $SERVICE_IMAGE_ID:$VERSION
+          docker push $SERVICE_IMAGE_ID:$VERSION
