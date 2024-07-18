@@ -51,7 +51,9 @@ class FeedbackServiceImplTest {
 
     when(productRepository.findById(productId)).thenReturn(Optional.empty());
 
-    assertThrows(NotFoundException.class, () -> feedbackService.findFeedbacks(productId, Pageable.unpaged()));
+    Pageable unpaged = Pageable.unpaged();
+
+    assertThrows(NotFoundException.class, () -> feedbackService.findFeedbacks(productId, unpaged));
 
     verify(productRepository, times(1)).findById(productId);
     verify(feedbackRepository, never()).searchByProductId(any(), any());
