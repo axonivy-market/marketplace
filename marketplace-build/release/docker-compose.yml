@@ -17,12 +17,12 @@ services:
       - ../config/mongodb/mongod.conf:/etc/mongod.conf
 
   ui:
-    image: ghcr.io/nqhoan-axonivy/marketplace/marketplace-nginx:latest
+    image: ghcr.io/axonivy-market/marketplace-ui:latest
     ports:
-      - "95:80"
+      - "80:80"
 
   service:
-    image: ghcr.io/nqhoan-axonivy/marketplace/marketplace-service:latest
+    image: ghcr.io/axonivy-market/marketplace-service:latest
 
 volumes:
   mongodata:
