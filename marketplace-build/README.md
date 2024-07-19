@@ -15,7 +15,7 @@ This command should return the ``OK`` code
 ### Docker build for DEV environment
 * Navigate to ``marketplace-build``
 
-* Run ``docker-compose up --build`` to start a Marketplace DEV at the local
+* Run ``docker-compose up -d --build`` to start a Marketplace DEV at the local
 
 ### Docker release
 To release a new version for marketplace images, please trigger the ``Docker Release`` actions.
@@ -24,5 +24,10 @@ To release a new version for marketplace images, please trigger the ``Docker Rel
 * Deploy new image to packages.
 Please verify the result in the ``Package`` after the build is completed.
 
-### Docker compose for PROD deployment
-* Navigate to ``marketplace-build/release`` run ``docker-compose up`` to clone the docker images from GitHub packages and start the website
+### Start Docker compose for PROD deployment
+* Navigate to ``marketplace-build/release`` run ``docker-compose up -d`` to clone the docker images from GitHub packages and start the website
+
+### Start Docker compose using SPRINT release version
+* Navigate to ``marketplace-build/release`` run ``docker-compose -f sprint-compose.yml up`` to clone the docker images from GitHub packages and start the website
+
+
