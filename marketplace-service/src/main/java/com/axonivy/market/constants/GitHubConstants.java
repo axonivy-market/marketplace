@@ -12,6 +12,7 @@ public class GitHubConstants {
   public static final String PRODUCT_JSON_FILE_PATH_FORMAT = "%s/product.json";
   public static final String GITHUB_PROVIDER_NAME = "GitHub";
   public static final String GITHUB_GET_ACCESS_TOKEN_URL = "https://github.com/login/oauth/access_token";
+  public static final String README_FILE_LOCALE_REGEX = "_(..)";
 
   @NoArgsConstructor(access = AccessLevel.PRIVATE)
   public static class Json {

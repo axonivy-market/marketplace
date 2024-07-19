@@ -1,29 +1,5 @@
 package com.axonivy.market.github.service.impl;
 
-import com.axonivy.market.constants.CommonConstants;
-import com.axonivy.market.constants.GitHubConstants;
-import com.axonivy.market.constants.MavenConstants;
-import com.axonivy.market.constants.NonStandardProductPackageConstants;
-import com.axonivy.market.constants.ProductJsonConstants;
-import com.axonivy.market.constants.ReadmeConstants;
-import com.axonivy.market.entity.Product;
-import com.axonivy.market.entity.ProductModuleContent;
-import com.axonivy.market.github.model.MavenArtifact;
-import com.axonivy.market.github.service.GHAxonIvyProductRepoService;
-import com.axonivy.market.github.service.GitHubService;
-import com.axonivy.market.github.util.GitHubUtils;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import lombok.extern.log4j.Log4j2;
-import org.apache.commons.lang3.StringUtils;
-import org.apache.logging.log4j.util.Strings;
-import org.kohsuke.github.GHContent;
-import org.kohsuke.github.GHOrganization;
-import org.kohsuke.github.GHRepository;
-import org.kohsuke.github.GHTag;
-import org.springframework.stereotype.Service;
-import org.springframework.util.CollectionUtils;
-
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
@@ -33,6 +9,33 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import org.apache.commons.lang3.StringUtils;
+import org.apache.logging.log4j.util.Strings;
+import org.kohsuke.github.GHContent;
+import org.kohsuke.github.GHOrganization;
+import org.kohsuke.github.GHRepository;
+import org.kohsuke.github.GHTag;
+import org.springframework.stereotype.Service;
+import org.springframework.util.CollectionUtils;
+
+import com.axonivy.market.constants.CommonConstants;
+import com.axonivy.market.constants.GitHubConstants;
+import com.axonivy.market.constants.MavenConstants;
+import com.axonivy.market.constants.NonStandardProductPackageConstants;
+import com.axonivy.market.constants.ProductJsonConstants;
+import com.axonivy.market.constants.ReadmeConstants;
+import com.axonivy.market.entity.Product;
+import com.axonivy.market.entity.ProductModuleContent;
+import com.axonivy.market.enums.Language;
+import com.axonivy.market.github.model.MavenArtifact;
+import com.axonivy.market.github.service.GHAxonIvyProductRepoService;
+import com.axonivy.market.github.service.GitHubService;
+import com.axonivy.market.github.util.GitHubUtils;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
+import lombok.extern.log4j.Log4j2;
 
 @Log4j2
 @Service
@@ -150,20 +153,33 @@ public class GHAxonIvyProductRepoServiceImpl implements GHAxonIvyProductRepoServ
       List<GHContent> contents = getProductFolderContents(product, ghRepository, tag);
       productModuleContent.setTag(tag);
       getDependencyContentsFromProductJson(productModuleContent, contents);
-      GHContent readmeFile = contents.stream().filter(GHContent::isFile)
-          .filter(content -> ReadmeConstants.README_FILE.equals(content.getName())).findFirst().orElse(null);
-      if (Objects.nonNull(readmeFile)) {
-        String readmeContents = new String(readmeFile.read().readAllBytes());
-        if (hasImageDirectives(readmeContents)) {
-          readmeContents = updateImagesWithDownloadUrl(product, contents, readmeContents);
+      List<GHContent> readmeFiles = contents.stream().filter(GHContent::isFile)
+          .filter(content -> content.getName().startsWith(ReadmeConstants.README_FILE_NAME)).toList();
+      if (!CollectionUtils.isEmpty(readmeFiles)) {
+        for (GHContent readmeFile : readmeFiles) {
+          String readmeContents = new String(readmeFile.read().readAllBytes());
+          if (hasImageDirectives(readmeContents)) {
+            readmeContents = updateImagesWithDownloadUrl(product, contents, readmeContents);
+          }
+          String locale = getReadmeFileLocale(readmeFile.getName());
+          getExtractedPartsOfReadme(productModuleContent, readmeContents, locale);
         }
-        getExtractedPartsOfReadme(productModuleContent, readmeContents);
       }
     } catch (Exception e) {
       log.error("Cannot get product.json and README file's content {}", e);
       return null;
     }
     return productModuleContent;
+  }
+
+  private String getReadmeFileLocale(String readmeFile) {
+    String result = StringUtils.EMPTY;
+    Pattern pattern = Pattern.compile(GitHubConstants.README_FILE_LOCALE_REGEX);
+    Matcher matcher = pattern.matcher(readmeFile);
+    if (matcher.find()) {
+      result = matcher.group(1);
+    }
+    return result;
   }
 
   private void getDependencyContentsFromProductJson(ProductModuleContent productModuleContent, List<GHContent> contents)
@@ -223,7 +239,8 @@ public class GHAxonIvyProductRepoServiceImpl implements GHAxonIvyProductRepoServ
 
   // Cover some cases including when demo and setup parts switch positions or
   // missing one of them
-  public void getExtractedPartsOfReadme(ProductModuleContent productModuleContent, String readmeContents) {
+  public void getExtractedPartsOfReadme(ProductModuleContent productModuleContent, String readmeContents,
+      String locale) {
     String[] parts = readmeContents.split(DEMO_SETUP_TITLE);
     int demoIndex = readmeContents.indexOf(ReadmeConstants.DEMO_PART);
     int setupIndex = readmeContents.indexOf(ReadmeConstants.SETUP_PART);
@@ -249,9 +266,20 @@ public class GHAxonIvyProductRepoServiceImpl implements GHAxonIvyProductRepoServ
       setup = parts[1];
     }
 
-    productModuleContent.setDescription(description.trim());
+    setDescriptionWithLocale(productModuleContent, description.trim(), locale);
     productModuleContent.setDemo(demo.trim());
     productModuleContent.setSetup(setup.trim());
+  }
+
+  private void setDescriptionWithLocale(ProductModuleContent productModuleContent, String description, String locale) {
+    if (productModuleContent.getDescription() == null) {
+      productModuleContent.setDescription(new HashMap<>());
+    }
+    if (StringUtils.isEmpty(locale)) {
+      productModuleContent.getDescription().put(Language.EN.getValue(), description);
+    } else {
+      productModuleContent.getDescription().put(locale.toLowerCase(), description);
+    }
   }
 
   private List<GHContent> getProductFolderContents(Product product, GHRepository ghRepository, String tag)
