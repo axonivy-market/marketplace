@@ -52,6 +52,9 @@ jobs:
           args:
             -Dsonar.projectKey=${{ env.SONAR_PROJECT_KEY }}
             -Dsonar.javascript.lcov.reportPaths=${{ github.workspace }}/marketplace-ui/coverage/lcov.info
+
+      - run: echo $(ls -l ${{ github.workspace }}/marketplace-ui/coverage)
+      
       - name: SonarQube Quality Gate check
         id: sonarqube-quality-gate-check
         uses: sonarsource/sonarqube-quality-gate-action@master
