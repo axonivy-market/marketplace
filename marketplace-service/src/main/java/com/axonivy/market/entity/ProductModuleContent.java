@@ -6,6 +6,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.io.Serializable;
+import java.util.Map;
 
 @Getter
 @Setter
@@ -14,7 +15,7 @@ import java.io.Serializable;
 public class ProductModuleContent implements Serializable {
   private static final long serialVersionUID = 1L;
   private String tag;
-  private String description;
+  private Map<String, String> description;
   private String setup;
   private String demo;
   private Boolean isDependency;
