@@ -30,9 +30,10 @@ jobs:
             sed -i "s/^SERVICE_MONGODB_USER=.*$/SERVICE_MONGODB_USER=$SERVICE_USERNAME/" $ENV_FILE
             sed -i "s/^SERVICE_MONGODB_PASSWORD=.*$/SERVICE_MONGODB_PASSWORD=$SERVICE_PASSWORD/" $ENV_FILE
             sed -i "s/^MARKET_GITHUB_TOKEN=.*$/MARKET_GITHUB_TOKEN=$GH_TOKEN/" $ENV_FILE
+            sed -i "s/^MARKETPLACE_INSTALLATION_URL=.*$/MARKETPLACE_INSTALLATION_URL=dummy/" $ENV_FILE
 
       - name: Refresh Docker images
         working-directory: ./marketplace-build
         run: |
           docker compose down
-          docker compose -f docker-compose.yml up -d
+          docker compose up -d
