@@ -52,14 +52,14 @@
   </section>
   <!-- Section: Policy & Social Media -->
   <section
-    class="d-flex flex-lg-row flex-column justify-content-between py-4 border-bottom">
+    class="d-flex flex-lg-row flex-column justify-content-between py-4">
     <div class="navbar navbar-expand-xl align-self-md-center w-md-100">
       <!-- Left -->
       <div
         class="flex-row navbar-nav me-auto mb-lg-0 flex-wrap w-md-100 justify-content-center text-center footer__ivy-policy">
         @for (link of ivyFooterLinks; track $index) {
         <div class="link--left" [class]="link.containerStyleClass">
-          <a class="nav-link text-secondary" aria-current="page">
+          <a class="nav-link text-secondary h5-text" aria-current="page">
             {{ link.label | translate }}
           </a>
         </div>
