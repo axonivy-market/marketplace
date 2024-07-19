@@ -1,21 +1,33 @@
 package com.axonivy.market.service;
 
-import com.axonivy.market.constants.GitHubConstants;
-import com.axonivy.market.entity.GitHubRepoMeta;
-import com.axonivy.market.entity.Product;
-import com.axonivy.market.entity.ProductModuleContent;
-import com.axonivy.market.enums.FileStatus;
-import com.axonivy.market.enums.FileType;
-import com.axonivy.market.enums.SortOption;
-import com.axonivy.market.enums.TypeOption;
-import com.axonivy.market.github.model.GitHubFile;
-import com.axonivy.market.github.service.GHAxonIvyMarketRepoService;
-import com.axonivy.market.github.service.GHAxonIvyProductRepoService;
-import com.axonivy.market.github.service.GitHubService;
-import com.axonivy.market.model.MultilingualismValue;
-import com.axonivy.market.repository.GitHubRepoMetaRepository;
-import com.axonivy.market.repository.ProductRepository;
-import com.axonivy.market.service.impl.ProductServiceImpl;
+import static com.axonivy.market.constants.CommonConstants.LOGO_FILE;
+import static com.axonivy.market.constants.CommonConstants.SLASH;
+import static com.axonivy.market.constants.MetaConstants.META_FILE;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.mockStatic;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.UUID;
+import java.util.stream.Collectors;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -38,33 +50,22 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.test.util.ReflectionTestUtils;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.nio.file.Files;
-import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.UUID;
-import java.util.stream.Collectors;
-
-import static com.axonivy.market.constants.CommonConstants.LOGO_FILE;
-import static com.axonivy.market.constants.CommonConstants.SLASH;
-import static com.axonivy.market.constants.MetaConstants.META_FILE;
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyLong;
-import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.mockStatic;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import com.axonivy.market.constants.GitHubConstants;
+import com.axonivy.market.entity.GitHubRepoMeta;
+import com.axonivy.market.entity.Product;
+import com.axonivy.market.entity.ProductModuleContent;
+import com.axonivy.market.enums.FileStatus;
+import com.axonivy.market.enums.FileType;
+import com.axonivy.market.enums.Language;
+import com.axonivy.market.enums.SortOption;
+import com.axonivy.market.enums.TypeOption;
+import com.axonivy.market.github.model.GitHubFile;
+import com.axonivy.market.github.service.GHAxonIvyMarketRepoService;
+import com.axonivy.market.github.service.GHAxonIvyProductRepoService;
+import com.axonivy.market.github.service.GitHubService;
+import com.axonivy.market.repository.GitHubRepoMetaRepository;
+import com.axonivy.market.repository.ProductRepository;
+import com.axonivy.market.service.impl.ProductServiceImpl;
 
 @ExtendWith(MockitoExtension.class)
 class ProductServiceImplTest {
@@ -249,25 +250,26 @@ class ProductServiceImplTest {
     verify(productRepository).findAll(any(Pageable.class));
 
     // Test has keyword
-    when(productRepository.searchByNameOrShortDescriptionRegex(any(), any(), any(Pageable.class))).thenReturn(
-        new PageImpl<>(
-            mockResultReturn.stream().filter(product -> product.getNames().getEn().equals(SAMPLE_PRODUCT_NAME))
-                .collect(Collectors.toList())));
+    when(productRepository.searchByNameOrShortDescriptionRegex(any(), any(), any(Pageable.class)))
+        .thenReturn(new PageImpl<>(mockResultReturn.stream()
+            .filter(product -> product.getNames().get(Language.EN.getValue()).equals(SAMPLE_PRODUCT_NAME))
+            .collect(Collectors.toList())));
     // Executes
     result = productService.findProducts(TypeOption.ALL.getOption(), SAMPLE_PRODUCT_NAME, langague, PAGEABLE);
     verify(productRepository).findAll(any(Pageable.class));
     assertTrue(result.hasContent());
-    assertEquals(SAMPLE_PRODUCT_NAME, result.getContent().get(0).getNames().getEn());
+    assertEquals(SAMPLE_PRODUCT_NAME, result.getContent().get(0).getNames().get(Language.EN.getValue()));
 
     // Test has keyword and type is connector
-    when(productRepository.searchByKeywordAndType(any(), any(), any(), any(Pageable.class))).thenReturn(new PageImpl<>(
-        mockResultReturn.stream().filter(
-            product -> product.getNames().getEn().equals(SAMPLE_PRODUCT_NAME) && product.getType()
-                .equals(TypeOption.CONNECTORS.getCode())).collect(Collectors.toList())));
+    when(productRepository.searchByKeywordAndType(any(), any(), any(), any(Pageable.class)))
+        .thenReturn(new PageImpl<>(mockResultReturn.stream()
+            .filter(product -> product.getNames().get(Language.EN.getValue()).equals(SAMPLE_PRODUCT_NAME)
+                && product.getType().equals(TypeOption.CONNECTORS.getCode()))
+            .collect(Collectors.toList())));
     // Executes
     result = productService.findProducts(TypeOption.CONNECTORS.getOption(), SAMPLE_PRODUCT_NAME, langague, PAGEABLE);
     assertTrue(result.hasContent());
-    assertEquals(SAMPLE_PRODUCT_NAME, result.getContent().get(0).getNames().getEn());
+    assertEquals(SAMPLE_PRODUCT_NAME, result.getContent().get(0).getNames().get(Language.EN.getValue()));
   }
 
   @Test
@@ -360,18 +362,18 @@ class ProductServiceImplTest {
 
   private Page<Product> createPageProductsMock() {
     var mockProducts = new ArrayList<Product>();
-    MultilingualismValue name = new MultilingualismValue();
+    Map<String, String> name = new HashMap<>();
     Product mockProduct = new Product();
     mockProduct.setId(SAMPLE_PRODUCT_ID);
-    name.setEn(SAMPLE_PRODUCT_NAME);
+    name.put(Language.EN.getValue(), SAMPLE_PRODUCT_NAME);
     mockProduct.setNames(name);
     mockProduct.setType("connector");
     mockProducts.add(mockProduct);
 
     mockProduct = new Product();
     mockProduct.setId("tel-search-ch-connector");
-    name = new MultilingualismValue();
-    name.setEn("Swiss phone directory");
+    name = new HashMap<>();
+    name.put(Language.EN.getValue(), "Swiss phone directory");
     mockProduct.setNames(name);
     mockProduct.setType("util");
     mockProducts.add(mockProduct);
@@ -403,7 +405,9 @@ class ProductServiceImplTest {
     ProductModuleContent productModuleContent = new ProductModuleContent();
     productModuleContent.setTag("v10.0.2");
     productModuleContent.setName("Amazon Comprehend");
-    productModuleContent.setDescription("testDescription");
+    Map<String, String> description = new HashMap<>();
+    description.put(Language.EN.getValue(), "testDescription");
+    productModuleContent.setDescription(description);
     return productModuleContent;
   }
 }
