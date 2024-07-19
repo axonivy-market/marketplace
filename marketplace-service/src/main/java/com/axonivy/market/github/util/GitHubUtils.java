@@ -6,6 +6,7 @@ import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.lang3.StringUtils;
+import org.bson.json.JsonObject;
 import org.kohsuke.github.GHCommit;
 import org.kohsuke.github.GHContent;
 import org.kohsuke.github.PagedIterable;
@@ -129,5 +130,28 @@ public class GitHubUtils {
       break;
     }
     return pathToImageFolder;
+  }
+
+  public static String extractMessageFromExceptionMessage(String exceptionMessage) {
+    String json = extractJson(exceptionMessage);
+    String key = "\"message\":\"";
+    int startIndex = json.indexOf(key);
+    if (startIndex != -1) {
+      startIndex += key.length();
+      int endIndex = json.indexOf("\"", startIndex);
+      if (endIndex != -1) {
+        return json.substring(startIndex, endIndex);
+      }
+    }
+    return "";
+  }
+
+  private static String extractJson(String text) {
+    int start = text.indexOf("{");
+    int end = text.lastIndexOf("}") + 1;
+    if (start != -1 && end != -1) {
+      return text.substring(start, end);
+    }
+    return "";
   }
 }

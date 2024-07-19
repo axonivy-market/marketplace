@@ -1,7 +1,8 @@
 package com.axonivy.market.github.service;
 
 import com.axonivy.market.entity.User;
-import com.axonivy.market.model.GitHubAccessTokenResponse;
+import com.axonivy.market.exceptions.model.UnauthorizedException;
+import com.axonivy.market.github.model.GitHubAccessTokenResponse;
 import org.kohsuke.github.GHContent;
 import org.kohsuke.github.GHOrganization;
 import org.kohsuke.github.GHRepository;
@@ -25,4 +26,6 @@ public interface GitHubService {
   GitHubAccessTokenResponse getAccessToken(String code, String clientId, String clientSecret);
 
   User getAndUpdateUser(String accessToken);
+
+  void validateUserOrganization(String accessToken, String organization) throws UnauthorizedException;
 }

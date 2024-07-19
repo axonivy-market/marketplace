@@ -5,8 +5,10 @@ import com.axonivy.market.entity.User;
 import com.axonivy.market.enums.ErrorCode;
 import com.axonivy.market.exceptions.model.NotFoundException;
 import com.axonivy.market.exceptions.model.Oauth2ExchangeCodeException;
+import com.axonivy.market.exceptions.model.UnauthorizedException;
+import com.axonivy.market.github.model.GitHubAccessTokenResponse;
 import com.axonivy.market.github.service.GitHubService;
-import com.axonivy.market.model.GitHubAccessTokenResponse;
+import com.axonivy.market.github.util.GitHubUtils;
 import com.axonivy.market.repository.UserRepository;
 import org.kohsuke.github.GHContent;
 import org.kohsuke.github.GHOrganization;
@@ -25,6 +27,7 @@ import org.springframework.util.Assert;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.util.ResourceUtils;
+import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 
 import java.io.File;
@@ -105,7 +108,7 @@ public class GitHubServiceImpl implements GitHubService {
     headers.setBearerAuth(accessToken);
     HttpEntity<String> entity = new HttpEntity<>(headers);
 
-    ResponseEntity<Map<String, Object>> response = restTemplate.exchange("https://api.github.com/user", HttpMethod.GET,
+    ResponseEntity<Map<String, Object>> response = restTemplate.exchange(GitHubConstants.Url.USER, HttpMethod.GET,
         entity, new ParameterizedTypeReference<>() {
         });
 
@@ -133,5 +136,34 @@ public class GitHubServiceImpl implements GitHubService {
     userRepository.save(user);
 
     return user;
+  }
+
+  @Override
+  public void validateUserOrganization(String accessToken, String organization) throws UnauthorizedException {
+    List<Map<String, Object>> userOrganizations = getUserOrganizations(accessToken);
+    for (var org : userOrganizations) {
+      if (org.get("login").equals(organization)) {
+        return;
+      }
+    }
+    throw new UnauthorizedException(ErrorCode.GITHUB_USER_UNAUTHORIZED.getCode(),
+        ErrorCode.GITHUB_USER_UNAUTHORIZED.getHelpText()
+            + "-User must be a member of the Axon Ivy Market Organization");
+  }
+
+  private List<Map<String, Object>> getUserOrganizations(String accessToken) throws UnauthorizedException {
+    HttpHeaders headers = new HttpHeaders();
+    headers.setBearerAuth(accessToken);
+    HttpEntity<String> entity = new HttpEntity<>(headers);
+    try {
+      ResponseEntity<List<Map<String, Object>>> response = restTemplate.exchange(GitHubConstants.Url.USER_ORGS,
+          HttpMethod.GET, entity, new ParameterizedTypeReference<>() {
+          });
+      return response.getBody();
+    }
+    catch (HttpClientErrorException exception) {
+      throw new UnauthorizedException(ErrorCode.GITHUB_USER_UNAUTHORIZED.getCode(),
+          ErrorCode.GITHUB_USER_UNAUTHORIZED.getHelpText() + "-" + GitHubUtils.extractMessageFromExceptionMessage(exception.getMessage()));
+    }
   }
 }
