@@ -4,6 +4,7 @@ services:
   mongodb:
     build:
       context: ../config/mongodb
+      dockerfile: Dockerfile
     container_name: marketplace-mongodb-7.0.0
     restart: always
     ports:
@@ -15,12 +16,12 @@ services:
       - mongodata:/data/db
       - ../config/mongodb/mongod.conf:/etc/mongod.conf
 
-  nginx:
+  ui:
     image: ghcr.io/nqhoan-axonivy/marketplace/marketplace-nginx:latest
     ports:
       - "95:80"
 
-  marketplace-service:
+  service:
     image: ghcr.io/nqhoan-axonivy/marketplace/marketplace-service:latest
 
 volumes:

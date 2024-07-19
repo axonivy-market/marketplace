@@ -2,8 +2,10 @@ name: marketplace-website
 
 services:
   mongodb:
-    image: mongodb/mongodb-community-server:7.0.0-ubi8
     container_name: marketplace-mongodb-7.0.0
+    build:
+      context: ../config/mongodb
+      dockerfile: Dockerfile
     restart: always
     ports:
       - "27017:27017"
@@ -13,12 +15,11 @@ services:
     volumes:
       - mongodata:/data/db
       - ../config/mongodb/mongod.conf:/etc/mongod.conf
-    command: ["mongod", "--config", "/etc/mongod.conf"]
 
-  nginx:
+  ui:
     image: ghcr.io/nqhoan-axonivy/marketplace/marketplace-nginx:latest
 
-  marketplace-service:
+  service:
     image: ghcr.io/nqhoan-axonivy/marketplace/marketplace-service:latest
 
 volumes:
