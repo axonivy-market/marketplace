@@ -56,8 +56,8 @@ jobs:
       - name: SonarQube Quality Gate check
         id: sonarqube-quality-gate-check
         uses: sonarsource/sonarqube-quality-gate-action@master
-        # with:
-        #   scanMetadataReportFile: ${{ github.workspace }}/marketplace-ui/coverage/lcov.info
+        with:
+          scanMetadataReportFile: ${{ github.workspace }}/marketplace-ui/.scannerwork/report-task.txt
         timeout-minutes: 5
         env:
           SONAR_TOKEN: ${{ env.SONAR_TOKEN }}
