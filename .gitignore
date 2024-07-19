@@ -34,3 +34,7 @@ build/
 
 ### Token
 *.token
+marketplace-service/pom.xml
+marketplace-service/src/main/resources/application.properties
+marketplace-service/src/main/resources/github.token
+marketplace-ui/src/environments/environment.development.ts
