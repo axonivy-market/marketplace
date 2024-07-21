@@ -61,12 +61,15 @@ public class ProductController {
   }
 
   @PutMapping(SYNC)
-  public ResponseEntity<Message> syncProducts(@RequestHeader(value = "Authorization") String authorizationHeader) {
+  public ResponseEntity<Message> syncProducts(@RequestHeader(value = "Authorization") String authorizationHeader, @RequestParam("resetSync") boolean resetSync) {
     String token = null;
     if (authorizationHeader.startsWith("Bearer ")) {
       token = authorizationHeader.substring(7); // Remove "Bearer " prefix
     }
     gitHubService.validateUserOrganization(token, GitHubConstants.AXONIVY_MARKET_ORGANIZATION_NAME);
+    if (resetSync) {
+      productService.clearAllProducts();
+    }
 
     var stopWatch = new StopWatch();
     stopWatch.start();

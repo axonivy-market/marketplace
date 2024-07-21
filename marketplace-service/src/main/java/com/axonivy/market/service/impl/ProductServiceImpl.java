@@ -344,4 +344,10 @@ public class ProductServiceImpl implements ProductService {
       return productItem;
     }).orElse(null);
   }
+
+  @Override
+  public void clearAllProducts() {
+    gitHubRepoMetaRepository.deleteAll();
+    productRepository.deleteAll();
+  }
 }

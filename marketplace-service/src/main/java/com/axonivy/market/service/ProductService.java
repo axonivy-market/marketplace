@@ -13,4 +13,6 @@ public interface ProductService {
   Product fetchProductDetail(String id);
 
   String getCompatibilityFromOldestTag(String oldestTag);
+
+  void clearAllProducts();
 }
