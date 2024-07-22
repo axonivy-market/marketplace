@@ -1,5 +1,14 @@
 $rowHeight: 37px;
 
+.input-group-text {
+  border-radius: 10px;
+  padding: 0 15px;
+}
+
+.form-control {
+  border-radius: 10px;
+}
+
 .filter-container {
   height: $rowHeight;
 }
