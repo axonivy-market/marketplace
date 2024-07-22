@@ -5,7 +5,6 @@ import com.axonivy.market.constants.GitHubConstants;
 import com.axonivy.market.entity.Product;
 import com.axonivy.market.enums.ErrorCode;
 import com.axonivy.market.github.service.GitHubService;
-import com.axonivy.market.github.util.GitHubUtils;
 import com.axonivy.market.model.Message;
 import com.axonivy.market.model.ProductModel;
 import com.axonivy.market.service.ProductService;
@@ -24,7 +23,6 @@ import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.client.HttpClientErrorException;
 
 import static com.axonivy.market.constants.RequestMappingConstants.PRODUCT;
 import static com.axonivy.market.constants.RequestMappingConstants.SYNC;
@@ -61,7 +59,8 @@ public class ProductController {
   }
 
   @PutMapping(SYNC)
-  public ResponseEntity<Message> syncProducts(@RequestHeader(value = "Authorization") String authorizationHeader, @RequestParam("resetSync") boolean resetSync) {
+  public ResponseEntity<Message> syncProducts(@RequestHeader(value = "Authorization") String authorizationHeader,
+      @RequestParam(value = "resetSync", required = false) boolean resetSync) {
     String token = null;
     if (authorizationHeader.startsWith("Bearer ")) {
       token = authorizationHeader.substring(7); // Remove "Bearer " prefix

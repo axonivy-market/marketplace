@@ -1,6 +1,5 @@
 package com.axonivy.market.exceptions.model;
 
-import com.axonivy.market.enums.ErrorCode;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
