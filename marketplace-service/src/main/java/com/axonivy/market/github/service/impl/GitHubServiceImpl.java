@@ -1,13 +1,13 @@
 package com.axonivy.market.github.service.impl;
 
-import com.axonivy.market.constants.GitHubConstants;
-import com.axonivy.market.entity.User;
-import com.axonivy.market.enums.ErrorCode;
-import com.axonivy.market.exceptions.model.NotFoundException;
-import com.axonivy.market.exceptions.model.Oauth2ExchangeCodeException;
-import com.axonivy.market.github.service.GitHubService;
-import com.axonivy.market.model.GitHubAccessTokenResponse;
-import com.axonivy.market.repository.UserRepository;
+import static org.apache.commons.lang3.StringUtils.EMPTY;
+
+import java.io.IOException;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+
 import org.kohsuke.github.GHContent;
 import org.kohsuke.github.GHOrganization;
 import org.kohsuke.github.GHRepository;
@@ -24,34 +24,37 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
-import org.springframework.util.ResourceUtils;
 import org.springframework.web.client.RestTemplate;
 
-import java.io.File;
-import java.io.IOException;
-import java.nio.file.Files;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
+import com.axonivy.market.constants.GitHubConstants;
+import com.axonivy.market.entity.User;
+import com.axonivy.market.enums.ErrorCode;
+import com.axonivy.market.exceptions.model.NotFoundException;
+import com.axonivy.market.exceptions.model.Oauth2ExchangeCodeException;
+import com.axonivy.market.github.model.GitHubProperty;
+import com.axonivy.market.github.service.GitHubService;
+import com.axonivy.market.model.GitHubAccessTokenResponse;
+import com.axonivy.market.repository.UserRepository;
 
 @Service
 public class GitHubServiceImpl implements GitHubService {
 
   private final RestTemplate restTemplate;
   private final UserRepository userRepository;
+  private final GitHubProperty gitHubProperty;
 
-  private static final String GITHUB_TOKEN_FILE = "classpath:github.token";
-
-  public GitHubServiceImpl(RestTemplateBuilder restTemplateBuilder, UserRepository userRepository) {
+  public GitHubServiceImpl(RestTemplateBuilder restTemplateBuilder, UserRepository userRepository,
+      GitHubProperty gitHubProperty) {
     this.restTemplate = restTemplateBuilder.build();
     this.userRepository = userRepository;
+    this.gitHubProperty = gitHubProperty;
   }
 
   @Override
   public GitHub getGitHub() throws IOException {
-    File gitHubToken = ResourceUtils.getFile(GITHUB_TOKEN_FILE);
-    var token = Files.readString(gitHubToken.toPath());
-    return new GitHubBuilder().withOAuthToken(token.trim().strip()).build();
+    return new GitHubBuilder()
+        .withOAuthToken(Optional.ofNullable(gitHubProperty).map(GitHubProperty::getToken).orElse(EMPTY).trim())
+        .build();
   }
 
   @Override
