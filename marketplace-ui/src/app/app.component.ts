@@ -51,17 +51,17 @@ export class AppComponent {
   }
 
   ngOnInit(): void {
-    if (this.isBrowserHaveDesignerEnvCookie()) {
-      this.isDesignerViewer.set(true);
-    } else {
-      this.router.events
-        .pipe(filter(event => event instanceof NavigationEnd))
-        .subscribe(() => {
+    this.router.events
+      .pipe(filter(event => event instanceof NavigationEnd))
+      .subscribe(() => {
+        if (this.isBrowserHaveDesignerEnvCookie()) {
+          this.isDesignerViewer.set(true);
+        } else {
           this.route.queryParams.subscribe(params => {
             this.checkCookieForDesignerEnv(params);
             this.checkCookieForDesignerVersion(params);
           })
-        })
-    }
+        }
+      })
   }
 }
