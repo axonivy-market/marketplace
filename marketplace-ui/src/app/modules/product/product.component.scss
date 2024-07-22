@@ -2,6 +2,17 @@
   min-height: 6em;
 }
 
-.mt-8{
+.mt-8 {
   margin-top: 8rem;
+}
+
+.not-found-result {
+  max-width: 500px;
+  margin-bottom: 4rem;
+
+  .not-found-text {
+    line-height: 140%;
+    color: var(--text-no-rating-color);
+    margin-top: 20px;
+  }
 }
