@@ -1,21 +1,25 @@
+@if(!isDesignerViewer()){
 <header class="d-flex align-items-center">
   <div class="container">
     <app-header></app-header>
   </div>
 </header>
+}
 <main>
   <div class="container">
     <router-outlet />
   </div>
 </main>
+@if(!isDesignerViewer()){
 <footer>
   <div class="container">
     <app-footer></app-footer>
   </div>
 </footer>
+}
 
 @if (loadingService.isLoading()) {
-  <div class="spinner-container">
-    <div class="spinner-border"></div>
-  </div>
+<div class="spinner-container">
+  <div class="spinner-border"></div>
+</div>
 }

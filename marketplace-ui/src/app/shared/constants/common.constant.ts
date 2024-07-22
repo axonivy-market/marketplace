@@ -160,3 +160,7 @@ export const FEEDBACK_SORT_TYPES = [
     sortFn: 'rating,asc'
   }
 ];
+
+export const DESIGNER_VARIABLE = {
+    viewer: "designer-market"
+};
