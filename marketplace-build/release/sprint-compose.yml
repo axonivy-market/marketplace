@@ -4,7 +4,7 @@ services:
   mongodb:
     container_name: marketplace-mongodb-7.0.0
     build:
-      context: ./config/mongodb
+      context: ../config/mongodb
       dockerfile: Dockerfile
     restart: always
     ports:
@@ -14,25 +14,16 @@ services:
       MONGODB_INITDB_ROOT_PASSWORD: ${MONGODB_INITDB_ROOT_PASSWORD}
     volumes:
       - mongodata:/data/db
-      - ./config/mongodb/mongod.conf:/etc/mongod.conf
+      - ../config/mongodb/mongod.conf:/etc/mongod.conf
 
   ui:
-    container_name: marketplace-ui
-    build:
-      context: ../marketplace-ui
-      additional_contexts:
-        assets: ../marketplace-build/
-      dockerfile: Dockerfile
+    image: ghcr.io/axonivy-market/marketplace-ui:sprint
     restart: always
-    volumes:
-      - ./config/nginx/nginx.conf:/etc/nginx/nginx.conf
     ports:
-      - "4200:80"
-    depends_on:
-      - service
+      - "95:80"
 
   service:
-    container_name: marketplace-service
+    image: ghcr.io/axonivy-market/marketplace-service:sprint
     restart: always
     environment:
       - MONGODB_HOST=${SERVICE_MONGODB_HOST}
@@ -41,13 +32,6 @@ services:
       - MONGODB_PASSWORD=${SERVICE_MONGODB_PASSWORD}
       - MARKET_GITHUB_TOKEN=${MARKET_GITHUB_TOKEN}
       - MARKETPLACE_INSTALLATION_URL=${MARKETPLACE_INSTALLATION_URL}
-    build:
-      context: ../marketplace-service
-      dockerfile: Dockerfile
-    ports:
-      - "8080:8080"
-    depends_on:
-      - mongodb
-
 volumes:
   mongodata:
+    
