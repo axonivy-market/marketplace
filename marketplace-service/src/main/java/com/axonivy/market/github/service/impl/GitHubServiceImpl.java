@@ -151,7 +151,7 @@ public class GitHubServiceImpl implements GitHubService {
             + "-User must be a member of the Axon Ivy Market Organization");
   }
 
-  private List<Map<String, Object>> getUserOrganizations(String accessToken) throws UnauthorizedException {
+  public List<Map<String, Object>> getUserOrganizations(String accessToken) throws UnauthorizedException {
     HttpHeaders headers = new HttpHeaders();
     headers.setBearerAuth(accessToken);
     HttpEntity<String> entity = new HttpEntity<>(headers);
@@ -160,10 +160,10 @@ public class GitHubServiceImpl implements GitHubService {
           HttpMethod.GET, entity, new ParameterizedTypeReference<>() {
           });
       return response.getBody();
-    }
-    catch (HttpClientErrorException exception) {
+    } catch (HttpClientErrorException exception) {
       throw new UnauthorizedException(ErrorCode.GITHUB_USER_UNAUTHORIZED.getCode(),
-          ErrorCode.GITHUB_USER_UNAUTHORIZED.getHelpText() + "-" + GitHubUtils.extractMessageFromExceptionMessage(exception.getMessage()));
+          ErrorCode.GITHUB_USER_UNAUTHORIZED.getHelpText() + "-" + GitHubUtils.extractMessageFromExceptionMessage(
+              exception.getMessage()));
     }
   }
 }

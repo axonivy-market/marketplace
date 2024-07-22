@@ -1,7 +1,6 @@
 package com.axonivy.market.service;
 
 import com.axonivy.market.github.service.impl.GitHubServiceImpl;
-import com.axonivy.market.repository.UserRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -23,12 +22,10 @@ import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+
 @ExtendWith(MockitoExtension.class)
 class GitHubServiceImplTest {
   private static final String DUMMY_API_URL = "https://api.github.com";
-
-  @Mock
-  GitHub gitHub;
 
   @Mock
   GHRepository ghRepository;
@@ -39,16 +36,12 @@ class GitHubServiceImplTest {
   @Mock
   private RestTemplate restTemplate;
 
-  @Mock
-  private UserRepository userRepository;
-
   @InjectMocks
   private GitHubServiceImpl gitHubService;
 
   @BeforeEach
   public void setUp() {
     MockitoAnnotations.openMocks(this);
-    // Use lenient stubbing
     lenient().when(restTemplateBuilder.build()).thenReturn(restTemplate);
   }
 

@@ -1,14 +1,14 @@
 package com.axonivy.market.controller;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.when;
-
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
+import com.axonivy.market.assembler.ProductModelAssembler;
+import com.axonivy.market.entity.Product;
+import com.axonivy.market.enums.ErrorCode;
+import com.axonivy.market.enums.Language;
+import com.axonivy.market.enums.SortOption;
+import com.axonivy.market.enums.TypeOption;
+import com.axonivy.market.exceptions.model.UnauthorizedException;
+import com.axonivy.market.github.service.GitHubService;
+import com.axonivy.market.service.ProductService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -25,14 +25,16 @@ import org.springframework.hateoas.PagedModel;
 import org.springframework.hateoas.PagedModel.PageMetadata;
 import org.springframework.http.HttpStatus;
 
-import com.axonivy.market.assembler.ProductModelAssembler;
-import com.axonivy.market.entity.Product;
-import com.axonivy.market.enums.ErrorCode;
-import com.axonivy.market.enums.Language;
-import com.axonivy.market.enums.SortOption;
-import com.axonivy.market.enums.TypeOption;
-import com.axonivy.market.model.ProductRating;
-import com.axonivy.market.service.ProductService;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class ProductControllerTest {
@@ -40,6 +42,8 @@ class ProductControllerTest {
   private static final String PRODUCT_NAME_DE_SAMPLE = "Amazon Comprehend DE";
   private static final String PRODUCT_DESC_SAMPLE = "Amazon Comprehend is a AI service that uses machine learning to uncover information in unstructured data.";
   private static final String PRODUCT_DESC_DE_SAMPLE = "Amazon Comprehend is a AI service that uses machine learning to uncover information in unstructured data. DE";
+  private static final String AUTHORIZATION_HEADER = "Bearer valid_token";
+  private static final String INVALID_AUTHORIZATION_HEADER = "Bearer invalid_token";
 
   @Mock
   private ProductService service;
@@ -52,6 +56,9 @@ class ProductControllerTest {
 
   @Mock
   private PagedModel<?> pagedProductModel;
+
+  @Mock
+  private GitHubService gitHubService;
 
   @InjectMocks
   private ProductController productController;
@@ -95,11 +102,41 @@ class ProductControllerTest {
   }
 
   @Test
-  void testSyncProducts() {
-    var response = productController.syncProducts();
+  void testSyncProductsSuccess() {
+    when(service.syncLatestDataFromMarketRepo()).thenReturn(true);
+
+    var response = productController.syncProducts(AUTHORIZATION_HEADER, false);
+
     assertEquals(HttpStatus.OK, response.getStatusCode());
     assertTrue(response.hasBody());
     assertEquals(ErrorCode.SUCCESSFUL.getCode(), response.getBody().getHelpCode());
+    assertEquals("Data is already up to date, nothing to sync", response.getBody().getMessageDetails());
+  }
+
+  @Test
+  void testSyncProductsWithResetSuccess() {
+    // Mocking the dependencies for success case with resetSync = true
+    when(service.syncLatestDataFromMarketRepo()).thenReturn(false);
+
+    var response = productController.syncProducts(AUTHORIZATION_HEADER, false);
+
+    assertEquals(HttpStatus.OK, response.getStatusCode());
+    assertTrue(response.hasBody());
+    assertEquals(ErrorCode.SUCCESSFUL.getCode(), response.getBody().getHelpCode());
+    assertTrue(response.getBody().getMessageDetails().contains("Finished sync data"));
+  }
+
+  @Test
+  void testSyncProductsInvalidToken() {
+    doThrow(new UnauthorizedException(ErrorCode.GITHUB_USER_UNAUTHORIZED.getCode(),
+        ErrorCode.GITHUB_USER_UNAUTHORIZED.getHelpText())).when(gitHubService)
+        .validateUserOrganization(any(String.class), any(String.class));
+
+    UnauthorizedException exception = assertThrows(UnauthorizedException.class, () -> {
+      productController.syncProducts(INVALID_AUTHORIZATION_HEADER, false);
+    });
+
+    assertEquals(ErrorCode.GITHUB_USER_UNAUTHORIZED.getHelpText(), exception.getMessage());
   }
 
   private Product createProductMock() {
