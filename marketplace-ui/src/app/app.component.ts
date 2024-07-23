@@ -1,4 +1,4 @@
-import { Component, inject } from '@angular/core';
+import { Component, inject, signal } from '@angular/core';
 import {
   RouterOutlet,
   ActivatedRoute
@@ -24,7 +24,7 @@ export class AppComponent {
   ) { }
 
   ngOnInit(): void {
-    this.cookieManagementService.getNavigationEndEvents().subscribe(() => {
+    this.cookieManagementService.getNavigationStartEvent().subscribe(() => {
       if (!this.cookieManagementService.isDesignerEnv()) {
         this.route.queryParams.subscribe(params => {
           this.cookieManagementService.checkCookieForDesignerEnv(params);

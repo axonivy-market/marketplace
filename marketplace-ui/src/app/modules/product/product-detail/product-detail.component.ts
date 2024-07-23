@@ -31,7 +31,8 @@ import {
   ProductInstallationCountActionComponent
 } from "./product-installation-count-action/product-installation-count-action.component";
 import { ProductTypeIconPipe } from '../../../shared/pipes/icon.pipe';
-
+import { Observable } from 'rxjs';
+import { CookieManagementService } from '../../../cookie.management.service';
 export interface DetailTab {
   activeClass: string;
   tabId: string;
@@ -73,6 +74,7 @@ export class ProductDetailComponent {
   appModalService = inject(AppModalService);
   authService = inject(AuthService);
   elementRef = inject(ElementRef);
+  cookieService = inject(CookieManagementService);
 
   resizeObserver: ResizeObserver;
 
@@ -109,8 +111,7 @@ export class ProductDetailComponent {
     const productId = this.route.snapshot.params['id'];
     this.productDetailService.productId.set(productId);
     if (productId) {
-      this.productService
-        .getProductDetails(productId)
+      this.getProductById(productId)
         .subscribe(productDetail => {
           this.productDetail.set(productDetail);
           this.productModuleContent.set(productDetail.productModuleContent);
@@ -126,6 +127,14 @@ export class ProductDetailComponent {
       this.activeTab = savedTab;
     }
     this.updateDropdownSelection();
+  }
+
+  getProductById(productId:string):Observable<ProductDetail> {
+    const targetVersion = this.cookieService.getDesignerVersionFromCookie();
+    if(targetVersion != ""){
+      return this.productService.getProductDetailsWithVersion(productId, targetVersion);
+    }
+    return this.productService.getProductDetails(productId);
   }
 
   getContent(value: string): boolean {
