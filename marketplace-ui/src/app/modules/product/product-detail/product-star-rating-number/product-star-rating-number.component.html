@@ -1,0 +1,46 @@
+<div
+  class="d-flex flex-column"
+  [class]="
+    isShowRateLink ? 'star-rating-min-width' : ''
+  ">
+  <h4
+    class="text-secondary review-label-detail-page"
+    [class]="isShowRateLink ? '' : 'review-label-detail-page'"
+    [style]="isShowRateLink ? 'margin-bottom: 0px' : 'margin-bottom: 10px'">
+    {{
+      (productStarRatingService.totalComments() > 0
+        ? 'common.feedback.reviewLabel'
+        : 'common.feedback.reviewLabelNoYet'
+      ) | translate
+    }}
+  </h4>
+  @if (productStarRatingService.totalComments() > 0) {
+    <h1
+      class="text-primary total-rating-number"
+      [class]="isShowRateLink ? '' : 'total-rating-number-detail-page'"
+      [style]="isShowRateLink ? 'margin-bottom: 0px' : 'margin-bottom: 4px'">
+      {{ productStarRatingService.reviewNumber() | number: '1.1-1' }}
+    </h1>
+  } @else {
+    <img
+      src="/assets/images/misc/message-star.svg"
+      class="message-star-rating-img"
+      alt="Message Star" />
+  }
+  <div>
+    <app-star-rating
+      [rate]="productStarRatingService.reviewNumber()"
+      [isReadOnly]="true"
+      [starClass]="'medium-star'"></app-star-rating>
+    @if (isShowTotalRatingNumber) {
+      <h4 class="d-inline-block text-secondary mb-0">
+        ({{ productStarRatingService.totalComments() }})
+      </h4>
+    }
+  </div>
+  @if (isShowRateLink) {
+    <a class="rate-link mt-1" (click)="onClickRateLink()">
+      {{ 'common.feedback.rateLinkLabel' | translate }}
+    </a>
+  }
+</div>

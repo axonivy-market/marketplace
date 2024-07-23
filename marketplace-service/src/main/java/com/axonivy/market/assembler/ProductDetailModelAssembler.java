@@ -1,8 +1,5 @@
 package com.axonivy.market.assembler;
 
-import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
-import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
-
 import com.axonivy.market.controller.ProductDetailsController;
 import com.axonivy.market.entity.Product;
 import com.axonivy.market.entity.ProductModuleContent;
@@ -13,6 +10,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
+
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 
 @Component
 public class ProductDetailModelAssembler extends RepresentationModelAssemblerSupport<Product, ProductDetailModel> {
@@ -58,6 +58,7 @@ public class ProductDetailModelAssembler extends RepresentationModelAssemblerSup
     model.setCompatibility(product.getCompatibility());
     model.setContactUs(product.getContactUs());
     model.setCost(product.getCost());
+    model.setInstallationCount(product.getInstallationCount());
 
     if (StringUtils.isBlank(tag) && StringUtils.isNotBlank(product.getNewestReleaseVersion())) {
       tag = product.getNewestReleaseVersion();

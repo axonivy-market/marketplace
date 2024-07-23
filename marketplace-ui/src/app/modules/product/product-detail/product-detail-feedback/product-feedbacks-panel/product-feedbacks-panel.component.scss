@@ -1,0 +1,70 @@
+// Variables for commonly used values
+$gap-large: 48px;
+$gap-small: 34px;
+$height-header: 37px;
+$height-dialog: 733px;
+
+.d-flex {
+  display: flex;
+}
+
+.flex-column {
+  flex-direction: column;
+}
+
+.flex-row {
+  flex-direction: row;
+}
+
+.p-0 {
+  padding: 0;
+}
+
+.align-items-center {
+  align-items: center;
+}
+
+.justify-content-between {
+  justify-content: space-between;
+}
+
+.h-100 {
+  height: 100%;
+}
+
+.text-secondary {
+  color: var(--bs-secondary);
+}
+
+.overflow-auto {
+  overflow: auto;
+}
+
+.grid-feedbacks-container {
+  display: grid;
+  gap: $gap-large; // Adjust the gap between items as needed
+
+  // Large screens
+  @media (min-width: 768px) {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  // Small screens
+  @media (max-width: 767px) {
+    grid-template-columns: 1fr;
+  }
+}
+
+.grid-feedbacks-container-dialog {
+  display: grid;
+  gap: $gap-small;
+  grid-template-columns: 1fr;
+  padding-bottom: $gap-small;
+  height: $height-dialog;
+  scrollbar-width: none;
+}
+
+.feedback-header {
+  height: $height-header;
+  gap: $gap-large;
+}

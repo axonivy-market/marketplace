@@ -1,0 +1,13 @@
+<ngb-rating
+  [rate]="rate"
+  (rateChange)="onRateChange($event)"
+  [max]="5"
+  [readonly]="isReadOnly">
+  <ng-template let-fill="fill">
+    <i class="bi-star-fill star-feedback" [class]="starClass">
+      @if (fill > 0) {
+        <i class="bi-star-fill filled" [style.width.%]="fill"></i>
+      }
+    </i>
+  </ng-template>
+</ngb-rating>

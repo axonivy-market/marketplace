@@ -13,7 +13,7 @@
               ? '/assets/images/misc/axonivy-logo.svg'
               : '/assets/images/misc/axonivy-logo-black.svg'
           "
-          alt="Axon Ivy" />
+          alt="Axon Ivy"/>
       </div>
       <div
         class="text-secondary"
@@ -35,16 +35,16 @@
       <div class="navbar navbar-expand-lg">
         <ul class="navbar-nav me-auto mb-lg-0">
           @for (item of navItems; track $index) {
-            <li class="nav-item">
-              <a
-                class="nav-link"
-                [ngClass]="
+          <li class="nav-item">
+            <a
+              class="nav-link"
+              [ngClass]="
                   item.link === '/' ? 'text-primary fw-bold' : 'text-muted'
                 "
-                aria-current="page">
-                {{ item.label | translate | uppercase }}
-              </a>
-            </li>
+              aria-current="page">
+              {{ item.label | translate | uppercase }}
+            </a>
+          </li>
           }
         </ul>
       </div>
@@ -52,17 +52,17 @@
   </section>
   <!-- Section: Policy & Social Media -->
   <section
-    class="d-flex flex-lg-row flex-column justify-content-between py-4 border-bottom">
+    class="d-flex flex-lg-row flex-column justify-content-between py-4">
     <div class="navbar navbar-expand-xl align-self-md-center w-md-100">
       <!-- Left -->
       <div
         class="flex-row navbar-nav me-auto mb-lg-0 flex-wrap w-md-100 justify-content-center text-center footer__ivy-policy">
         @for (link of ivyFooterLinks; track $index) {
-          <div class="link--left" [class]="link.containerStyleClass">
-            <a class="nav-link text-secondary" aria-current="page">
-              {{ link.label | translate }}
-            </a>
-          </div>
+        <div class="link--left" [class]="link.containerStyleClass">
+          <a class="nav-link text-secondary h5-text" aria-current="page">
+            {{ link.label | translate }}
+          </a>
+        </div>
         }
       </div>
     </div>
@@ -72,14 +72,14 @@
       <div class="navbar navbar-expand-lg">
         <ul class="navbar-nav me-auto mb-lg-0 flex-row">
           @for (link of socialMediaLinks; track $index) {
-            <li>
-              <a class="nav-link" aria-current="page" [href]="link.url">
+          <li>
+            <a class="nav-link" aria-current="page" [href]="link.url">
                 <span
                   class="d-flex justify-content-center align-items-center link-icon">
                   <i [class]="link.styleClass" class="w-100 h-100"></i>
                 </span>
-              </a>
-            </li>
+            </a>
+          </li>
           }
         </ul>
       </div>

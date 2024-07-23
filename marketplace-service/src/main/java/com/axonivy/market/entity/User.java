@@ -19,30 +19,30 @@ import static com.axonivy.market.constants.EntityConstants.USER;
 @NoArgsConstructor
 @Document(USER)
 public class User implements Serializable {
-    @Serial
-    private static final long serialVersionUID = -1244486023332931059L;
+  @Serial
+  private static final long serialVersionUID = -1244486023332931059L;
 
-    @Id
-    private String id;
+  @Id
+  private String id;
 
-    @Indexed(unique = true)
-    private String gitHubId;
+  @Indexed(unique = true)
+  private String gitHubId;
 
-    private String provider;
-    private String username;
-    private String name;
-    private String avatarUrl;
+  private String provider;
+  private String username;
+  private String name;
+  private String avatarUrl;
 
-    @Override
-    public int hashCode() {
-        return new HashCodeBuilder().append(id).hashCode();
+  @Override
+  public int hashCode() {
+    return new HashCodeBuilder().append(id).hashCode();
+  }
+
+  @Override
+  public boolean equals(Object obj) {
+    if (obj == null || this.getClass() != obj.getClass()) {
+      return false;
     }
-
-    @Override
-    public boolean equals(Object obj) {
-        if (obj == null || this.getClass() != obj.getClass()) {
-            return false;
-        }
-        return new EqualsBuilder().append(id, ((User) obj).getId()).isEquals();
-    }
+    return new EqualsBuilder().append(id, ((User) obj).getId()).isEquals();
+  }
 }

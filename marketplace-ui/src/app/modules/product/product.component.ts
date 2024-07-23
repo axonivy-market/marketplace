@@ -3,16 +3,16 @@ import {
   AfterViewInit,
   Component,
   ElementRef,
-  OnDestroy,
-  ViewChild,
-  WritableSignal,
   inject,
-  signal
+  OnDestroy,
+  signal,
+  ViewChild,
+  WritableSignal
 } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { Router } from '@angular/router';
+import { NavigationStart, Router } from '@angular/router';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
-import { Subject, Subscription, debounceTime } from 'rxjs';
+import { debounceTime, Subject, Subscription } from 'rxjs';
 import { ThemeService } from '../../core/services/theme/theme.service';
 import { TypeOption } from '../../shared/enums/type-option.enum';
 import { SortOption } from '../../shared/enums/sort-option.enum';
@@ -25,6 +25,7 @@ import { ProductApiResponse } from '../../shared/models/apis/product-response.mo
 import { Link } from '../../shared/models/apis/link.model';
 import { Page } from '../../shared/models/apis/page.model';
 import { Language } from '../../shared/enums/language.enum';
+import { ProductDetail } from '../../shared/models/product-detail.model';
 import { LanguageService } from '../../core/services/language/language.service';
 
 const SEARCH_DEBOUNCE_TIME = 500;
@@ -45,6 +46,7 @@ const SEARCH_DEBOUNCE_TIME = 500;
 })
 export class ProductComponent implements AfterViewInit, OnDestroy {
   products: WritableSignal<Product[]> = signal([]);
+  productDetail!: ProductDetail;
   subscriptions: Subscription[] = [];
   searchTextChanged = new Subject<string>();
   criteria: Criteria = {
@@ -77,13 +79,19 @@ export class ProductComponent implements AfterViewInit, OnDestroy {
           this.loadProductItems(true);
         })
     );
+    this.router.events?.subscribe(event => {
+      if (!(event instanceof NavigationStart)) {
+        return;
+      }
+      window.scrollTo(0, 0);
+    });
   }
 
   ngAfterViewInit(): void {
     this.setupIntersectionObserver();
   }
 
-  viewProductDetail(productId: string) {
+  viewProductDetail(productId: string, _productTag: string) {
     this.router.navigate(['', productId]);
   }
 
@@ -110,18 +118,22 @@ export class ProductComponent implements AfterViewInit, OnDestroy {
   }
 
   loadProductItems(shouldCleanData = false) {
-    this.criteria.language = this.languageService.getSelectedLanguage();
+    this.criteria.language = this.languageService.selectedLanguage();
     this.subscriptions.push(
-      this.productService.findProductsByCriteria(this.criteria).subscribe((response: ProductApiResponse) => {
-        const newProducts = response._embedded.products;
-        if (shouldCleanData) {
-          this.products.set(newProducts);
-        } else {
-          this.products.update(existingProducts => existingProducts.concat(newProducts));
-        }
-        this.responseLink = response._links;
-        this.responsePage = response.page;
-      })
+      this.productService
+        .findProductsByCriteria(this.criteria)
+        .subscribe((response: ProductApiResponse) => {
+          const newProducts = response._embedded.products;
+          if (shouldCleanData) {
+            this.products.set(newProducts);
+          } else {
+            this.products.update(existingProducts =>
+              existingProducts.concat(newProducts)
+            );
+          }
+          this.responseLink = response._links;
+          this.responsePage = response.page;
+        })
     );
   }
 
@@ -143,8 +155,10 @@ export class ProductComponent implements AfterViewInit, OnDestroy {
     if (!this.responsePage || !this.responseLink) {
       return false;
     }
-    return this.responsePage.number < this.responsePage.totalPages
-      && this.responseLink?.next !== undefined;
+    return (
+      this.responsePage.number < this.responsePage.totalPages &&
+      this.responseLink?.next !== undefined
+    );
   }
 
   ngOnDestroy(): void {

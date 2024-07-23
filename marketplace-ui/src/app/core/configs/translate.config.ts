@@ -1,6 +1,6 @@
 import { HttpClient } from '@angular/common/http';
 import { TranslateLoader } from '@ngx-translate/core';
-import { Observable, map } from 'rxjs';
+import { map, Observable } from 'rxjs';
 import { parse } from 'yaml';
 
 class TranslateYamlHttpLoader implements TranslateLoader {

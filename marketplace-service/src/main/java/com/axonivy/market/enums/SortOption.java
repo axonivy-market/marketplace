@@ -25,8 +25,7 @@ public enum SortOption {
   }
 
   public String getCode(String language) {
-    return StringUtils.isNotBlank(language) && ALPHABETICALLY.option.equalsIgnoreCase(option)
-        ? String.format("%s.%s", ALPHABETICALLY.code, language)
-        : code;
+    return StringUtils.isNotBlank(language) && ALPHABETICALLY.option.equalsIgnoreCase(option) ? String.format("%s.%s",
+        ALPHABETICALLY.code, language) : code;
   }
 }

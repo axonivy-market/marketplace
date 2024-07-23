@@ -1,7 +1,8 @@
 package com.axonivy.market.constants;
 
 public class NonStandardProductPackageConstants {
-  private NonStandardProductPackageConstants() {}
+  private NonStandardProductPackageConstants() {
+  }
 
   public static final String PORTAL = "portal";
   public static final String MICROSOFT_REPO_NAME = "msgraph-connector";

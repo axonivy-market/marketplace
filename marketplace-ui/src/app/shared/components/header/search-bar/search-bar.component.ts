@@ -1,14 +1,5 @@
 import { CommonModule } from '@angular/common';
-import {
-  Component,
-  ElementRef,
-  EventEmitter,
-  HostListener,
-  Input,
-  Output,
-  inject,
-  signal
-} from '@angular/core';
+import { Component, ElementRef, HostListener, inject, signal } from '@angular/core';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { LanguageSelectionComponent } from '../language-selection/language-selection.component';
 import { ThemeSelectionComponent } from '../theme-selection/theme-selection.component';
@@ -26,11 +17,9 @@ import { ThemeSelectionComponent } from '../theme-selection/theme-selection.comp
   styleUrl: './search-bar.component.scss'
 })
 export class SearchBarComponent {
-  @Input() isSearchBarDisplayed = signal(false);
-  @Output() isShowSearchBarChange = new EventEmitter<boolean>();
+  isSearchBarDisplayed = signal(false);
 
   translateService = inject(TranslateService);
-
   elementRef = inject(ElementRef);
 
   @HostListener('document:click', ['$event'])

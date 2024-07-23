@@ -1,14 +1,37 @@
-name: marketplace-website
+name: marketplace
 
 services:
   mongodb:
-    image: ghcr.io/nqhoan-axonivy/marketplace/marketplace-db:latest
+    build:
+      context: ../config/mongodb
+      dockerfile: Dockerfile
+    container_name: marketplace-mongodb-7.0.0
+    restart: always
+    ports:
+      - "27017:27017"
+    environment:
+      MONGODB_INITDB_ROOT_USERNAME: ${MONGODB_INITDB_ROOT_USERNAME}
+      MONGODB_INITDB_ROOT_PASSWORD: ${MONGODB_INITDB_ROOT_PASSWORD}
+    volumes:
+      - mongodata:/data/db
+      - ../config/mongodb/mongod.conf:/etc/mongod.conf
 
-  nginx:
-    image: ghcr.io/nqhoan-axonivy/marketplace/marketplace-nginx:latest
+  ui:
+    image: ghcr.io/axonivy-market/marketplace-ui:latest
+    restart: always
+    ports:
+      - "80:80"
 
-  marketplace-service:
-    image: ghcr.io/nqhoan-axonivy/marketplace/marketplace-service:latest
+  service:
+    image: ghcr.io/axonivy-market/marketplace-service:latest
+    restart: always
+    environment:
+      - MONGODB_HOST=${SERVICE_MONGODB_HOST}
+      - MONGODB_DATABASE=${SERVICE_MONGODB_DATABASE}
+      - MONGODB_USERNAME=${SERVICE_MONGODB_USER}
+      - MONGODB_PASSWORD=${SERVICE_MONGODB_PASSWORD}
+      - MARKET_GITHUB_TOKEN=${MARKET_GITHUB_TOKEN}
+      - MARKETPLACE_INSTALLATION_URL=${MARKETPLACE_INSTALLATION_URL}
 
 volumes:
   mongodata:

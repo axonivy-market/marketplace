@@ -33,6 +33,10 @@ common:
       popularity: Popularity
       alphabetically: Alphabetically
       recent: Recent
+      newest: Newest
+      oldest: Oldest
+      highest: Highest
+      lowest: Lowest
   search:
     placeholder: Search a keyword
   nothingFound: Nothing found
@@ -42,11 +46,36 @@ common:
     newVersionsInfo: New version release available for Linux,<br /> Window and MacOS operating systems.
     downloadLatestLTSVersion: Download V10.0.18
     downloadLatestDevVersion: Download V11.2.1
-    ivyCompanyInfo: © 2023 Axon Ivy Inc
+    ivyCompanyInfo: © 2023 Axon Ivy Inc.
     privacyPolicy: Privacy Policy
     termsOfService: Terms of Service
   product:
     detail:
+      backToMainPage: Back to marketplace overview
+      review: Review
+      installation: Downloads
+      times: Times
+      type: Type
+      description: Description
+      installationGuide: Installation Guide
+      demo: Demo
+      maven:
+        label: Maven
+        description: You can consume it as maven artifact in your <i>pom.xml</i>
+      information:
+        label: Information
+        value:
+          author: Author/Support
+          version: Version
+          compatibility: Compatibility
+          cost: Cost
+          language: Language
+          industry: Industry
+          tag: Tags
+          source: Source
+          status: Status
+          moreInformation: More Information
+          contactUs: Contact Us
       install:
         buttonLabel: Install Now
       download:
@@ -57,3 +86,22 @@ common:
           label: Choose target platform
         artifactSelector:
           label: Choose artifact
+  feedback:
+    label: Feedback
+    successMessage: Your feedback has been successfully submitted! 
+    thankMessage: Thank you for your contribution
+    addFeedbackTitle: Give your feedback!
+    addFeedbackDescription: By giving your feedback you are enabling us to constantly improve our products and always deliver the best quality to both you and your team.
+    currentProductTitle: Currently reviewing
+    starRatingTitle: Stars rating
+    commentLabel: Let a comment
+    submitBtnLabel: Submit review
+    loggedGithubAsLabel: Logged in Github as
+    reviewLabel: Review
+    detailedReviews: Detailed reviews
+    rateLinkLabel: Rate this connector
+    showMoreBtnLabel: Show more
+    noFeedbackMessage1: There are no feedbacks for this connector yet.
+    noFeedbackMessage2: Bet the first to share your opinion.
+    rateFeedbackBtnLabel: Rate this connector
+    reviewLabelNoYet: No reviews yet

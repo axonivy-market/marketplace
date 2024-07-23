@@ -1,9 +1,4 @@
-import {
-  ComponentFixture,
-  TestBed,
-  fakeAsync,
-  tick
-} from '@angular/core/testing';
+import { ComponentFixture, fakeAsync, TestBed, tick } from '@angular/core/testing';
 
 import { provideHttpClient } from '@angular/common/http';
 import { Router } from '@angular/router';
@@ -25,12 +20,18 @@ describe('ProductComponent', () => {
   let mockIntersectionObserver: any;
 
   beforeAll(() => {
-    mockIntersectionObserver = jasmine.createSpyObj('IntersectionObserver', ['observe', 'unobserve', 'disconnect']);
-    mockIntersectionObserver.observe.and.callFake(() => { });
-    mockIntersectionObserver.unobserve.and.callFake(() => { });
-    mockIntersectionObserver.disconnect.and.callFake(() => { });
+    mockIntersectionObserver = jasmine.createSpyObj('IntersectionObserver', [
+      'observe',
+      'unobserve',
+      'disconnect'
+    ]);
+    mockIntersectionObserver.observe.and.callFake(() => {});
+    mockIntersectionObserver.unobserve.and.callFake(() => {});
+    mockIntersectionObserver.disconnect.and.callFake(() => {});
 
-    (window as any).IntersectionObserver = function (callback: IntersectionObserverCallback) {
+    (window as any).IntersectionObserver = function (
+      callback: IntersectionObserverCallback
+    ) {
       mockIntersectionObserver.callback = callback;
       return mockIntersectionObserver;
     };
@@ -69,16 +70,10 @@ describe('ProductComponent', () => {
     expect(component).toBeTruthy();
   });
 
-  it('viewProductDetail should navigate', () => {
-    component.viewProductDetail('url');
-    expect(router.navigate).toHaveBeenCalledWith(['', 'url']);
-  });
-
   it('loadProductItems should return products with criteria', () => {
-
     component.loadProductItems();
     expect(component.loadProductItems).toBeTruthy();
-  })
+  });
 
   it('ngOnDestroy should unsubscribe all sub', () => {
     const sub = new Subscription();
@@ -89,7 +84,7 @@ describe('ProductComponent', () => {
 
   it('onFilterChange should filter products properly', () => {
     component.onFilterChange(TypeOption.CONNECTORS);
-    component.products().forEach((product) => {
+    component.products().forEach(product => {
       expect(product.type).toEqual('connector');
     });
   });
@@ -99,7 +94,9 @@ describe('ProductComponent', () => {
     component.onSortChange(SortOption.ALPHABETICALLY);
     for (let i = 0; i < component.products.length - 1; i++) {
       expect(
-        component.products()[i + 1].names.en.localeCompare(component.products()[i].names.en)
+        component
+          .products()
+          [i + 1].names['en'].localeCompare(component.products()[i].names['en'])
       ).toEqual(1);
     }
   });
@@ -108,8 +105,8 @@ describe('ProductComponent', () => {
     const productName = 'amazon comprehend';
     component.onSearchChanged(productName);
     tick(500);
-    component.products().forEach((product) => {
-      expect(product.names.en.toLowerCase()).toContain(productName);
+    component.products().forEach(product => {
+      expect(product.names['en'].toLowerCase()).toContain(productName);
     });
   }));
 
@@ -155,5 +152,13 @@ describe('ProductComponent', () => {
 
     expect(component.hasMore).toHaveBeenCalled();
     expect(component.loadProductItems).not.toHaveBeenCalled();
+  });
+
+  it('viewProductDetail should navigate', () => {
+    const productId = 'jira-connector';
+
+    component.viewProductDetail(productId, '');
+
+    expect(router.navigate).toHaveBeenCalledWith(['', productId]);
   });
 });

@@ -1,10 +1,8 @@
 import { CommonModule } from '@angular/common';
-import {
-  Component,
-  inject
-} from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { LANGUAGES } from '../../../constants/common.constant';
+import { Language } from '../../../enums/language.enum';
 import { LanguageService } from '../../../../core/services/language/language.service';
 
 @Component({
@@ -19,7 +17,7 @@ export class LanguageSelectionComponent {
   translateService = inject(TranslateService);
   languageService = inject(LanguageService);
 
-  onSelectLanguage(language: string) {
+  onSelectLanguage(language: Language) {
     this.translateService.setDefaultLang(language);
     this.translateService.use(language);
     this.languageService.loadLanguage(language);

@@ -1,0 +1,15 @@
+<div style="margin-bottom: 64px;">
+  <app-product-star-rating-panel (openAddFeedbackDialog)="appModalService.openAddFeedbackDialog()" [isMobileMode]="isMobileMode()" />
+</div>
+
+<app-product-feedbacks-panel [isMobileMode]="isMobileMode()" />
+
+@if (isShowBtnMore()) {
+  <div class="d-flex flex-row justify-content-center">
+    <button
+      class="btn border-0 btn-secondary btn-show-more"
+      (click)="openShowFeedbacksDialog()">
+      {{ 'common.feedback.showMoreBtnLabel' | translate }}
+    </button>
+  </div>
+}

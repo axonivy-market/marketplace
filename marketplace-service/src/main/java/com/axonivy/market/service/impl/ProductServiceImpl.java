@@ -5,18 +5,24 @@ import static org.apache.commons.lang3.StringUtils.EMPTY;
 
 import java.io.IOException;
 import java.net.URL;
-import java.util.*;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.security.SecureRandom;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 
-import com.axonivy.market.constants.CommonConstants;
-import com.axonivy.market.github.service.GHAxonIvyProductRepoService;
-import com.axonivy.market.github.util.GitHubUtils;
-import com.axonivy.market.entity.ProductModuleContent;
+import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.util.Strings;
 import org.kohsuke.github.GHCommit;
 import org.kohsuke.github.GHContent;
 import org.kohsuke.github.GHRepository;
 import org.kohsuke.github.GHTag;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
@@ -26,19 +32,25 @@ import org.springframework.data.domain.Sort.Order;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
+import com.axonivy.market.constants.CommonConstants;
 import com.axonivy.market.constants.GitHubConstants;
+import com.axonivy.market.entity.GitHubRepoMeta;
 import com.axonivy.market.entity.Product;
+import com.axonivy.market.entity.ProductModuleContent;
 import com.axonivy.market.enums.FileType;
 import com.axonivy.market.enums.SortOption;
+import com.axonivy.market.enums.TypeOption;
 import com.axonivy.market.factory.ProductFactory;
 import com.axonivy.market.github.model.GitHubFile;
 import com.axonivy.market.github.service.GHAxonIvyMarketRepoService;
-import com.axonivy.market.entity.GitHubRepoMeta;
-import com.axonivy.market.enums.TypeOption;
+import com.axonivy.market.github.service.GHAxonIvyProductRepoService;
 import com.axonivy.market.github.service.GitHubService;
+import com.axonivy.market.github.util.GitHubUtils;
 import com.axonivy.market.repository.GitHubRepoMetaRepository;
 import com.axonivy.market.repository.ProductRepository;
 import com.axonivy.market.service.ProductService;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 import lombok.extern.log4j.Log4j2;
 
@@ -54,9 +66,13 @@ public class ProductServiceImpl implements ProductService {
 
   private GHCommit lastGHCommit;
   private GitHubRepoMeta marketRepoMeta;
+  private final ObjectMapper mapper = new ObjectMapper();
+
+  @Value("${synchronized.installation.counts.path}")
+  private String installationCountPath;
 
   public static final String NON_NUMERIC_CHAR = "[^0-9.]";
-
+  private final SecureRandom random = new SecureRandom();
   public ProductServiceImpl(ProductRepository productRepository, GHAxonIvyMarketRepoService axonIvyMarketRepoService,
       GHAxonIvyProductRepoService axonIvyProductRepoService, GitHubRepoMetaRepository gitHubRepoMetaRepository,
       GitHubService gitHubService) {
@@ -73,22 +89,22 @@ public class ProductServiceImpl implements ProductService {
     final var searchPageable = refinePagination(language, pageable);
     Page<Product> result = Page.empty();
     switch (typeOption) {
-      case ALL:
-        if (StringUtils.isBlank(keyword)) {
-          result = productRepository.findAll(searchPageable);
-        } else {
-          result = productRepository.searchByNameOrShortDescriptionRegex(keyword, language, searchPageable);
-        }
-        break;
-      case CONNECTORS, UTILITIES, SOLUTIONS:
-        if (StringUtils.isBlank(keyword)) {
-          result = productRepository.findByType(typeOption.getCode(), searchPageable);
-        } else {
-          result = productRepository.searchByKeywordAndType(keyword, typeOption.getCode(), language, searchPageable);
-        }
-        break;
-      default:
-        break;
+    case ALL:
+      if (StringUtils.isBlank(keyword)) {
+        result = productRepository.findAll(searchPageable);
+      } else {
+        result = productRepository.searchByNameOrShortDescriptionRegex(keyword, language, searchPageable);
+      }
+      break;
+    case CONNECTORS, UTILITIES, SOLUTIONS:
+      if (StringUtils.isBlank(keyword)) {
+        result = productRepository.findByType(typeOption.getCode(), searchPageable);
+      } else {
+        result = productRepository.searchByKeywordAndType(keyword, typeOption.getCode(), language, searchPageable);
+      }
+      break;
+    default:
+      break;
     }
     return result;
   }
@@ -108,12 +124,43 @@ public class ProductServiceImpl implements ProductService {
     return isAlreadyUpToDate;
   }
 
+  @Override
+  public int updateInstallationCountForProduct(String key) {
+    return productRepository.findById(key).map(product -> {
+      log.info("updating installation count for product {}", key);
+      if (!BooleanUtils.isTrue(product.getSynchronizedInstallationCount())) {
+        syncInstallationCountWithProduct(product);
+      }
+      product.setInstallationCount(product.getInstallationCount() + 1);
+      return productRepository.save(product);
+    }).map(Product::getInstallationCount).orElse(0);
+  }
+
+  private void syncInstallationCountWithProduct(Product product) {
+    log.info("synchronizing installation count for product {}", product.getId());
+    try {
+      String installationCounts = Files.readString(Paths.get(installationCountPath));
+      Map<String, Integer> mapping = mapper.readValue(installationCounts,
+          new TypeReference<HashMap<String, Integer>>(){});
+      List<String> keyList = mapping.keySet().stream().toList();
+      int currentInstallationCount = keyList.contains(product.getId())
+          ? mapping.get(product.getId())
+          : random.nextInt(20, 50);
+      product.setInstallationCount(currentInstallationCount);
+      product.setSynchronizedInstallationCount(true);
+      log.info("synchronized installation count for product {} successfully", product.getId());
+    } catch (IOException ex) {
+      log.error(ex.getMessage());
+      log.error("Could not read the marketplace-installation file to synchronize");
+    }
+  }
+
   private void syncRepoMetaDataStatus() {
     if (lastGHCommit == null) {
       return;
     }
-    String repoURL =
-        Optional.ofNullable(lastGHCommit.getOwner()).map(GHRepository::getUrl).map(URL::getPath).orElse(EMPTY);
+    String repoURL = Optional.ofNullable(lastGHCommit.getOwner()).map(GHRepository::getUrl).map(URL::getPath)
+        .orElse(EMPTY);
     marketRepoMeta.setRepoURL(repoURL);
     marketRepoMeta.setRepoName(GitHubConstants.AXONIVY_MARKETPLACE_REPO_NAME);
     marketRepoMeta.setLastSHA1(lastGHCommit.getSHA1());
@@ -162,34 +209,34 @@ public class ProductServiceImpl implements ProductService {
   private void modifyProductLogo(String parentPath, GitHubFile file, Product product, GHContent fileContent) {
     Product result = null;
     switch (file.getStatus()) {
-      case MODIFIED, ADDED:
-        result = productRepository.findByMarketDirectoryRegex(parentPath);
-        if (result != null) {
-          result.setLogoUrl(GitHubUtils.getDownloadUrl(fileContent));
-          productRepository.save(result);
-        }
-        break;
-      case REMOVED:
-        result = productRepository.findByLogoUrl(product.getLogoUrl());
-        if (result != null) {
-          productRepository.deleteById(result.getId());
-        }
-        break;
-      default:
-        break;
+    case MODIFIED, ADDED:
+      result = productRepository.findByMarketDirectoryRegex(parentPath);
+      if (result != null) {
+        result.setLogoUrl(GitHubUtils.getDownloadUrl(fileContent));
+        productRepository.save(result);
+      }
+      break;
+    case REMOVED:
+      result = productRepository.findByLogoUrl(product.getLogoUrl());
+      if (result != null) {
+        productRepository.deleteById(result.getId());
+      }
+      break;
+    default:
+      break;
     }
   }
 
   private void modifyProductByMetaContent(GitHubFile file, Product product) {
     switch (file.getStatus()) {
-      case MODIFIED, ADDED:
-        productRepository.save(product);
-        break;
-      case REMOVED:
-        productRepository.deleteById(product.getId());
-        break;
-      default:
-        break;
+    case MODIFIED, ADDED:
+      productRepository.save(product);
+      break;
+    case REMOVED:
+      productRepository.deleteById(product.getId());
+      break;
+    default:
+      break;
     }
   }
 
@@ -209,14 +256,14 @@ public class ProductServiceImpl implements ProductService {
 
   private boolean isLastGithubCommitCovered() {
     boolean isLastCommitCovered = false;
-    long lastCommitTime = 0l;
+    long lastCommitTime = 0L;
     marketRepoMeta = gitHubRepoMetaRepository.findByRepoName(GitHubConstants.AXONIVY_MARKETPLACE_REPO_NAME);
     if (marketRepoMeta != null) {
       lastCommitTime = marketRepoMeta.getLastChange();
     }
     lastGHCommit = axonIvyMarketRepoService.getLastCommit(lastCommitTime);
-    if (lastGHCommit != null && marketRepoMeta != null
-        && StringUtils.equals(lastGHCommit.getSHA1(), marketRepoMeta.getLastSHA1())) {
+    if (lastGHCommit != null && marketRepoMeta != null && StringUtils.equals(lastGHCommit.getSHA1(),
+        marketRepoMeta.getLastSHA1())) {
       isLastCommitCovered = true;
     }
     return isLastCommitCovered;
@@ -262,8 +309,8 @@ public class ProductServiceImpl implements ProductService {
 
       List<ProductModuleContent> productModuleContents = new ArrayList<>();
       for (GHTag ghtag : tags) {
-        ProductModuleContent productModuleContent =
-            axonIvyProductRepoService.getReadmeAndProductContentsFromTag(product, productRepo, ghtag.getName());
+        ProductModuleContent productModuleContent = axonIvyProductRepoService.getReadmeAndProductContentsFromTag(
+            product, productRepo, ghtag.getName());
         productModuleContents.add(productModuleContent);
       }
       product.setProductModuleContents(productModuleContents);
@@ -273,6 +320,7 @@ public class ProductServiceImpl implements ProductService {
   }
 
   // Cover 3 cases after removing non-numeric characters (8, 11.1 and 10.0.2)
+  @Override
   public String getCompatibilityFromOldestTag(String oldestTag) {
     if (!oldestTag.contains(CommonConstants.DOT_SEPARATOR)) {
       return oldestTag + ".0+";
@@ -287,6 +335,13 @@ public class ProductServiceImpl implements ProductService {
 
   @Override
   public Product fetchProductDetail(String id) {
-    return productRepository.findById(id).orElse(null);
+    Product product = productRepository.findById(id).orElse(null);
+    return Optional.ofNullable(product).map(productItem -> {
+      if (!BooleanUtils.isTrue(productItem.getSynchronizedInstallationCount())) {
+        syncInstallationCountWithProduct(productItem);
+        return productRepository.save(productItem);
+      }
+      return productItem;
+    }).orElse(null);
   }
 }
