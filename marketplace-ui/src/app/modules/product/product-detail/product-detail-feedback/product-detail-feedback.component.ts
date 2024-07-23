@@ -31,7 +31,7 @@ const MAX_ELEMENTS = 6;
   templateUrl: './product-detail-feedback.component.html',
   styleUrls: ['./product-detail-feedback.component.scss']
 })
-export class ProductDetailFeedbackComponent implements OnInit {
+export class ProductDetailFeedbackComponent {
   isMobileMode = input<boolean>();
   isShowBtnMore: Signal<boolean> = computed(() => {
     if (
@@ -46,17 +46,8 @@ export class ProductDetailFeedbackComponent implements OnInit {
 
   productFeedbackService = inject(ProductFeedbackService);
   appModalService = inject(AppModalService);
-  private readonly productStarRatingService = inject(ProductStarRatingService);
-  private readonly authService = inject(AuthService);
-  private readonly route = inject(ActivatedRoute);
-  private readonly router = inject(Router);
 
   showPopup!: boolean;
-
-  ngOnInit(): void {
-    this.productFeedbackService.findProductFeedbackOfUser();
-    this.productStarRatingService.fetchData();
-  }
 
   openShowFeedbacksDialog(): void {
     if (this.isMobileMode()) {
