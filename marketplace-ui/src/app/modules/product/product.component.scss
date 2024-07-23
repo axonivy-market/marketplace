@@ -7,12 +7,23 @@
 }
 
 .not-found-result {
-  max-width: 500px;
+  max-width: 600px;
   margin-bottom: 4rem;
 
   .not-found-text {
     line-height: 140%;
     color: var(--text-no-rating-color);
     margin-top: 20px;
+  }
+}
+
+@media (max-width: 430px) {
+  .no-result-image {
+    width: 60px;
+    height: 60px;
+  }
+
+  .not-found-text {
+    font-size: 0.875rem;
   }
 }
