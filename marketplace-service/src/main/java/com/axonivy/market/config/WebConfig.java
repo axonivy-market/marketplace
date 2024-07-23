@@ -30,7 +30,7 @@ public class WebConfig implements WebMvcConfigurer {
 
   @Override
   public void addCorsMappings(CorsRegistry registry) {
-    registry.addMapping("/**").allowedOrigins("http://marketplace.server.ivy-cloud.com:4200").allowedMethods(ALLOWED_METHODS).allowedHeaders(ALLOWED_HEADERS)
+    registry.addMapping("/**").allowedOrigins("*").allowedMethods(ALLOWED_METHODS).allowedHeaders(ALLOWED_HEADERS)
         .maxAge(marketCorsAllowedOriginMaxAge);
   }
 }
