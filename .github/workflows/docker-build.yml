@@ -50,4 +50,4 @@ jobs:
       - name: Build and bring up containers without cache
         working-directory: ./marketplace-build
         run: |
-          docker compose up --build --force-recreate
+          docker compose up --build --force-recreate -d
