@@ -1,5 +1,5 @@
 
-import { Injectable, signal } from '@angular/core';
+import { Injectable, Signal, signal } from '@angular/core';
 import { CookieService } from 'ngx-cookie-service';
 import { DESIGNER_COOKIE_VARIABLE } from './shared/constants/common.constant';
 import {
@@ -13,6 +13,7 @@ import { filter } from 'rxjs/operators';
   providedIn: 'root'
 })
 export class CookieManagementService {
+  private isDesigner = signal(false);
   constructor(private cookieService: CookieService, private router: Router) { }
 
   checkCookieForDesignerVersion(params: Params) {
@@ -22,16 +23,19 @@ export class CookieManagementService {
     }
   }
 
-  checkCookieForDesignerEnv(params: Params, isDesignerViewerSignal: any) {
+  checkCookieForDesignerEnv(params: Params) {
     const ivyViewerParam = params[DESIGNER_COOKIE_VARIABLE.ivyViewerParamName];
     if (ivyViewerParam == DESIGNER_COOKIE_VARIABLE.defaultDesignerViewer) {
       this.cookieService.set(DESIGNER_COOKIE_VARIABLE.ivyViewerParamName, ivyViewerParam);
-      isDesignerViewerSignal.set(true);
+      this.isDesigner.set(true);
     }
   }
 
-  isBrowserHaveDesignerEnvCookie() {
-    return this.cookieService.get(DESIGNER_COOKIE_VARIABLE.ivyViewerParamName) == DESIGNER_COOKIE_VARIABLE.defaultDesignerViewer;
+  isDesignerEnv() {
+    if(!this.isDesigner()) {
+      this.isDesigner.set(this.cookieService.get(DESIGNER_COOKIE_VARIABLE.ivyViewerParamName) == DESIGNER_COOKIE_VARIABLE.defaultDesignerViewer);
+    }
+    return this.isDesigner();
   }
 
   getNavigationEndEvents(): Observable<NavigationEnd> {

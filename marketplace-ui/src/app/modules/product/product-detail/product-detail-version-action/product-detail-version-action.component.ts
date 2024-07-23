@@ -57,7 +57,7 @@ export class ProductDetailVersionActionComponent implements AfterViewInit {
     tooltipTriggerList.forEach(
       tooltipTriggerEl => new Tooltip(tooltipTriggerEl)
     );
-    this.isDesignerEnvironment.set(this.cookieService.isBrowserHaveDesignerEnvCookie());
+    this.isDesignerEnvironment.set(this.cookieService.isDesignerEnv());
   }
 
   onShowVersions() {

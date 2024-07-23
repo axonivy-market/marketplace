@@ -1,4 +1,4 @@
-@if(!isDesignerViewer()){
+@if(!cookieManagementService.isDesignerEnv()){
 <header class="d-flex align-items-center">
   <div class="container">
     <app-header></app-header>
@@ -10,7 +10,7 @@
     <router-outlet />
   </div>
 </main>
-@if(!isDesignerViewer()){
+@if(!cookieManagementService.isDesignerEnv()){
 <footer>
   <div class="container">
     <app-footer></app-footer>
