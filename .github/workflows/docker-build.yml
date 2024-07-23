@@ -13,7 +13,7 @@ jobs:
     steps:
       - name: Bring down and remove containers and images
         run: |
-          docker-compose down --rmi all
+          docker compose down --rmi all
 
   build-and-deploy:
     runs-on: self-hosted
@@ -47,4 +47,4 @@ jobs:
       - name: Build and bring up containers without cache
         working-directory: ./marketplace-build
         run: |
-          docker-compose up --build --force-recreate
+          docker compose up --build --force-recreate
