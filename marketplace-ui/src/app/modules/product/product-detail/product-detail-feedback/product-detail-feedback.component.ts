@@ -31,7 +31,7 @@ const MAX_ELEMENTS = 6;
   templateUrl: './product-detail-feedback.component.html',
   styleUrls: ['./product-detail-feedback.component.scss']
 })
-export class ProductDetailFeedbackComponent implements OnInit, AfterViewInit {
+export class ProductDetailFeedbackComponent implements OnInit {
   isMobileMode = input<boolean>();
   isShowBtnMore: Signal<boolean> = computed(() => {
     if (
@@ -58,30 +58,11 @@ export class ProductDetailFeedbackComponent implements OnInit, AfterViewInit {
     this.productStarRatingService.fetchData();
   }
 
-  ngAfterViewInit(): void {
-    this.route.queryParams.subscribe(params => {
-      this.showPopup = params['showPopup'] === 'true';
-      if (this.showPopup && this.authService.getToken()) {
-        this.appModalService.openAddFeedbackDialog().then(
-          () => this.removeQueryParam(),
-          () => this.removeQueryParam()
-        );
-      }
-    });
-  }
-
   openShowFeedbacksDialog(): void {
     if (this.isMobileMode()) {
       this.productFeedbackService.loadMoreFeedbacks();
     } else {
       this.appModalService.openShowFeedbacksDialog();
     }
-  }
-
-  private removeQueryParam(): void {
-    this.router.navigate([], {
-      queryParams: { showPopup: null },
-      queryParamsHandling: 'merge'
-    });
   }
 }

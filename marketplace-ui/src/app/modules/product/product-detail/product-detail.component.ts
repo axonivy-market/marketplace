@@ -128,6 +128,18 @@ export class ProductDetailComponent {
     this.updateDropdownSelection();
   }
 
+  ngAfterViewInit(): void {
+    this.checkMediaSize();
+    this.route.queryParams.subscribe(params => {
+      this.showPopup = params['showPopup'] === 'true';
+      if (this.showPopup && this.authService.getToken()) {
+        this.appModalService.openAddFeedbackDialog().then(
+          () => this.removeQueryParam()
+        );
+      }
+    });
+  }
+
   getContent(value: string): boolean {
     const content = this.productModuleContent();
     const conditions: { [key: string]: boolean } = {
@@ -203,10 +215,6 @@ export class ProductDetailComponent {
     }
   }
 
-  ngAfterViewInit(): void {
-    this.checkMediaSize();
-  }
-
   @HostListener('window:resize', ['$event'])
   onResize() {
     this.checkMediaSize();
@@ -232,5 +240,12 @@ export class ProductDetailComponent {
 
   receiveInstallationCountData(data: number) {
     this.installationCount = data;
+  }
+
+  private removeQueryParam(): void {
+    this.router.navigate([], {
+      queryParams: { showPopup: null },
+      queryParamsHandling: 'merge'
+    });
   }
 }
