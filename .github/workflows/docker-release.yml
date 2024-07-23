@@ -17,9 +17,11 @@ env:
 jobs:
 
   build:
+    name: Build Docker images
     uses: ./.github/workflows/docker-build.yml
 
   release:
+    name: Tag and publish image to GH packages
     needs: build
     runs-on: self-hosted
     permissions:
