@@ -11,7 +11,8 @@ import static org.mockito.Mockito.atLeast;
 import static org.mockito.Mockito.verify;
 
 @SpringBootTest(properties = { "MARKETPLACE_INSTALLATION_URL=marketplace-installation.json", "MONGODB_USERNAME=user",
-    "MONGODB_PASSWORD=password", "MONGODB_HOST=mongoHost", "MONGODB_DATABASE=product" })
+    "MONGODB_PASSWORD=password", "MONGODB_HOST=mongoHost", "MONGODB_DATABASE=product",
+    "MARKET_GITHUB_OAUTH_APP_CLIENT_ID=clientId", "MARKET_GITHUB_OAUTH_APP_CLIENT_SECRET=clientSecret", "MARKET_JWT_SECRET_KEY=jwtSecret" })
 class SchedulingTasksTest {
 
   @SpyBean
