@@ -7,11 +7,22 @@ on:
   workflow_call:
 
 jobs:
-  build:
+  cleanup:
     runs-on: self-hosted
 
     steps:
-      - uses: actions/checkout@v4
+      - name: Bring down and remove containers and images
+        run: |
+          docker-compose down --rmi all
+
+  build-and-deploy:
+    runs-on: self-hosted
+    needs: cleanup
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
       - name: Update environment variables for .env
         env:
           ENV_FILE: './marketplace-build/.env'
@@ -33,8 +44,7 @@ jobs:
             sed -i "s/^MARKET_GITHUB_TOKEN=.*$/MARKET_GITHUB_TOKEN=$GH_TOKEN/" $ENV_FILE
             sed -i "s/^MARKETPLACE_INSTALLATION_URL=.*$/MARKETPLACE_INSTALLATION_URL=$MARKETPLACE_INSTALLATION_URL/" $ENV_FILE
 
-      - name: Refresh Docker images
+      - name: Build and bring up containers without cache
         working-directory: ./marketplace-build
         run: |
-          docker compose down
-          docker compose up -d
+          docker-compose up --build --force-recreate
