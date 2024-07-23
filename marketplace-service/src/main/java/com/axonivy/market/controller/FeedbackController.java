@@ -70,8 +70,8 @@ public class FeedbackController {
 
   @Operation(summary = "Find all feedbacks by user id and product id")
   @GetMapping()
-  public ResponseEntity<FeedbackModel> findFeedbackByUserIdAndProductId(@RequestParam String userId,
-      @RequestParam String productId) {
+  public ResponseEntity<FeedbackModel> findFeedbackByUserIdAndProductId(@RequestParam("userId") String userId,
+      @RequestParam("productId") String productId) {
     Feedback feedback = feedbackService.findFeedbackByUserIdAndProductId(userId, productId);
     return ResponseEntity.ok(feedbackModelAssembler.toModel(feedback));
   }
