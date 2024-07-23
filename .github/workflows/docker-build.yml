@@ -8,14 +8,17 @@ on:
 
 jobs:
   cleanup:
+    name: Clean up docker container and images
     runs-on: self-hosted
 
     steps:
       - name: Bring down and remove containers and images
+        working-directory: ./marketplace-build
         run: |
           docker compose down --rmi all
 
   build-and-deploy:
+    name: Build and bring up docker containers
     runs-on: self-hosted
     needs: cleanup
 
