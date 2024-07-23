@@ -35,7 +35,7 @@ public class FeedbackServiceImpl implements FeedbackService {
   @Override
   public Page<Feedback> findFeedbacks(String productId, Pageable pageable) throws NotFoundException {
     validateProductExists(productId);
-    return feedbackRepository.searchByProductId("", pageable);
+    return feedbackRepository.searchByProductId(productId, pageable);
   }
 
   @Override
