@@ -10,7 +10,7 @@ import org.springframework.boot.test.mock.mockito.SpyBean;
 import static org.mockito.Mockito.atLeast;
 import static org.mockito.Mockito.verify;
 
-@SpringBootTest(properties = { "MARKETPLACE_INSTALLATION_URL=marketplace-installation.json", "MONGODB_USERNAME=user",
+@SpringBootTest(properties = { "MONGODB_USERNAME=user",
     "MONGODB_PASSWORD=password", "MONGODB_HOST=mongoHost", "MONGODB_DATABASE=product" })
 class SchedulingTasksTest {
 
