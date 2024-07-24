@@ -1,7 +1,9 @@
 package com.axonivy.market.service;
 
 import com.axonivy.market.entity.Feedback;
+import com.axonivy.market.entity.Product;
 import com.axonivy.market.entity.User;
+import com.axonivy.market.enums.ErrorCode;
 import com.axonivy.market.exceptions.model.NotFoundException;
 import com.axonivy.market.model.FeedbackModel;
 import com.axonivy.market.model.ProductRating;
@@ -15,19 +17,17 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 
-import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class FeedbackServiceImplTest {
@@ -44,167 +44,230 @@ class FeedbackServiceImplTest {
   @InjectMocks
   private FeedbackServiceImpl feedbackService;
 
+  private Feedback feedback;
+  private FeedbackModel feedbackModel;
+
   @BeforeEach
   void setUp() {
-    // Mock initialization or setup if needed
+    feedback = new Feedback();
+    feedback.setId("1");
+    feedback.setUserId("user1");
+    feedback.setProductId("product1");
+    feedback.setRating(5);
+    feedback.setContent("Great product!");
+
+    feedbackModel = new FeedbackModel();
+    feedbackModel.setUserId("user1");
+    feedbackModel.setProductId("product1");
+    feedbackModel.setRating(5);
+    feedbackModel.setContent("Great product!");
+  }
+
+  @Test
+  void testFindFeedbacks() throws NotFoundException {
+    String productId = "product1";
+    Pageable pageable = PageRequest.of(0, 10);
+    Page<Feedback> page = new PageImpl<>(Collections.singletonList(feedback));
+
+    when(productRepository.findById(productId)).thenReturn(Optional.of(new Product()));
+    when(feedbackRepository.searchByProductId(productId, pageable)).thenReturn(page);
+
+    Page<Feedback> result = feedbackService.findFeedbacks(productId, pageable);
+    assertNotNull(result);
+    assertEquals(1, result.getTotalElements());
+    verify(productRepository, times(1)).findById(productId);
+    verify(feedbackRepository, times(1)).searchByProductId(productId, pageable);
   }
 
   @Test
   void testFindFeedbacks_ProductNotFound() {
-    String productId = "nonExistingProduct";
+    String productId = "product1";
+    Pageable pageable = PageRequest.of(0, 10);
 
     when(productRepository.findById(productId)).thenReturn(Optional.empty());
 
-    Pageable unpaged = Pageable.unpaged();
-
-    assertThrows(NotFoundException.class, () -> feedbackService.findFeedbacks(productId, unpaged));
-
+    NotFoundException exception = assertThrows(NotFoundException.class, () -> {
+      feedbackService.findFeedbacks(productId, pageable);
+    });
+    assertEquals(ErrorCode.PRODUCT_NOT_FOUND.getCode(), exception.getCode());
     verify(productRepository, times(1)).findById(productId);
-    verify(feedbackRepository, never()).searchByProductId(any(), any());
+    verify(feedbackRepository, times(0)).searchByProductId(productId, pageable);
   }
 
   @Test
-  void testFindFeedback_Success() throws NotFoundException {
-    // Mock data
-    String feedbackId = "feedback123";
-    Feedback mockFeedback = new Feedback();
-    mockFeedback.setId(feedbackId);
+  void testFindFeedback() throws NotFoundException {
+    String feedbackId = "1";
 
-    // Mock behavior
-    when(feedbackRepository.findById(feedbackId)).thenReturn(Optional.of(mockFeedback));
+    when(feedbackRepository.findById(feedbackId)).thenReturn(Optional.of(feedback));
 
-    // Test method
     Feedback result = feedbackService.findFeedback(feedbackId);
-
-    // Verify
-    assertEquals(mockFeedback, result);
+    assertNotNull(result);
+    assertEquals(feedbackId, result.getId());
     verify(feedbackRepository, times(1)).findById(feedbackId);
   }
 
   @Test
   void testFindFeedback_NotFound() {
-    // Mock data
-    String nonExistingId = "nonExistingFeedbackId";
+    String feedbackId = "1";
 
-    // Mock behavior
-    when(feedbackRepository.findById(nonExistingId)).thenReturn(Optional.empty());
+    when(feedbackRepository.findById(feedbackId)).thenReturn(Optional.empty());
 
-    // Test and verify exception
-    assertThrows(NotFoundException.class, () -> feedbackService.findFeedback(nonExistingId));
-
-    // Verify interactions
-    verify(feedbackRepository, times(1)).findById(nonExistingId);
-  }
-
-  @Test
-  void testFindFeedbackByUserIdAndProductId_UserNotFound() {
-    // Mock data
-    String nonExistingUserId = "nonExistingUser";
-    String productId = "product123";
-
-    // Mock behavior
-    when(userRepository.findById(nonExistingUserId)).thenReturn(Optional.empty());
-
-    // Test and verify exception
-    assertThrows(NotFoundException.class,
-        () -> feedbackService.findFeedbackByUserIdAndProductId(nonExistingUserId, productId));
-
-    // Verify interactions
-    verify(userRepository, times(1)).findById(nonExistingUserId);
-    verify(feedbackRepository, never()).findByUserIdAndProductId(any(), any());
-  }
-
-  @Test
-  void testUpsertFeedback_NewFeedback() throws NotFoundException {
-    // Mock data
-    FeedbackModel newFeedbackModel = new FeedbackModel();
-    newFeedbackModel.setUserId("user123");
-    newFeedbackModel.setProductId("product123");
-    newFeedbackModel.setContent("Great product!");
-    newFeedbackModel.setRating(5);
-
-    Feedback newFeedback = new Feedback();
-    newFeedback.setUserId(newFeedbackModel.getUserId());
-    newFeedback.setProductId(newFeedbackModel.getProductId());
-    newFeedback.setContent(newFeedbackModel.getContent());
-    newFeedback.setRating(newFeedbackModel.getRating());
-
-    User u = new User();
-    u.setId(newFeedbackModel.getUserId());
-    when(userRepository.findById(newFeedbackModel.getUserId())).thenReturn(Optional.of(u));
-    when(feedbackRepository.findByUserIdAndProductId(newFeedbackModel.getUserId(),
-        newFeedbackModel.getProductId())).thenReturn(null);
-    when(feedbackRepository.save(any(Feedback.class))).thenReturn(newFeedback);
-
-    // Test method
-    Feedback result = feedbackService.upsertFeedback(newFeedbackModel);
-
-    // Verify
-    assertEquals(newFeedback, result);
-  }
-
-  @Test
-  void testUpsertFeedback_UpdateFeedback() throws NotFoundException {
-    // Mock data
-    FeedbackModel existingFeedbackModel = new FeedbackModel();
-    existingFeedbackModel.setId("existingFeedback123");
-    existingFeedbackModel.setUserId("user123");
-    existingFeedbackModel.setProductId("product123");
-    existingFeedbackModel.setContent("Good product! Very well!");
-    existingFeedbackModel.setRating(5);
-
-    Feedback existingFeedback = new Feedback();
-    existingFeedback.setId("existingFeedback123");
-    existingFeedback.setUserId("user123");
-    existingFeedback.setProductId("product123");
-    existingFeedback.setContent("Bad product!");
-    existingFeedback.setRating(1);
-
-    User u = new User();
-    u.setId(existingFeedback.getUserId());
-    when(userRepository.findById(existingFeedback.getUserId())).thenReturn(Optional.of(u));
-    when(feedbackRepository.findByUserIdAndProductId(existingFeedback.getUserId(),
-        existingFeedback.getProductId())).thenReturn(existingFeedback);
-    when(feedbackRepository.save(existingFeedback)).thenReturn(existingFeedback);
-
-    // Test method
-    Feedback updatedFeedback = new Feedback();
-    updatedFeedback.setId(existingFeedback.getId());
-    updatedFeedback.setUserId(existingFeedback.getUserId());
-    updatedFeedback.setProductId(existingFeedback.getProductId());
-    updatedFeedback.setContent("Good product! Very well!");
-    updatedFeedback.setRating(5);
-
-    Feedback result = feedbackService.upsertFeedback(existingFeedbackModel);
-
-    // Verify
-    assertEquals(updatedFeedback.getId(), result.getId());
-    assertEquals(updatedFeedback.getContent(), result.getContent());
-    assertEquals(updatedFeedback.getRating(), result.getRating());
-    verify(userRepository, times(1)).findById(existingFeedback.getUserId());
-    verify(feedbackRepository, times(1)).findByUserIdAndProductId(existingFeedback.getUserId(),
-        existingFeedback.getProductId());
-    verify(feedbackRepository, times(1)).save(existingFeedback);
-  }
-
-  @Test
-  void testGetProductRatingById_NoFeedbacks() {
-    // Mock data
-    String productId = "product123";
-
-    // Mock behavior
-    when(feedbackRepository.findByProductId(productId)).thenReturn(new ArrayList<>());
-
-    // Test method
-    List<ProductRating> result = feedbackService.getProductRatingById(productId);
-
-    // Verify
-    assertEquals(5, result.size()); // Expect ratings for stars 1 to 5
-    result.forEach(rating -> {
-      assertEquals(0, rating.getCommentNumber());
-      assertEquals(0, rating.getPercent());
+    NotFoundException exception = assertThrows(NotFoundException.class, () -> {
+      feedbackService.findFeedback(feedbackId);
     });
+    assertEquals(ErrorCode.FEEDBACK_NOT_FOUND.getCode(), exception.getCode());
+    verify(feedbackRepository, times(1)).findById(feedbackId);
+  }
+
+  @Test
+  void testFindFeedbackByUserIdAndProductId() throws NotFoundException {
+    String userId = "user1";
+    String productId = "product1";
+
+    when(userRepository.findById(userId)).thenReturn(Optional.of(new User()));
+    when(productRepository.findById(productId)).thenReturn(Optional.of(new Product()));
+    when(feedbackRepository.findByUserIdAndProductId(userId, productId)).thenReturn(feedback);
+
+    Feedback result = feedbackService.findFeedbackByUserIdAndProductId(userId, productId);
+    assertNotNull(result);
+    assertEquals(userId, result.getUserId());
+    assertEquals(productId, result.getProductId());
+    verify(userRepository, times(1)).findById(userId);
+    verify(productRepository, times(1)).findById(productId);
+    verify(feedbackRepository, times(1)).findByUserIdAndProductId(userId, productId);
+  }
+
+  @Test
+  void testFindFeedbackByUserIdAndProductId_NotFound() {
+    String userId = "user1";
+    String productId = "product1";
+
+    when(userRepository.findById(userId)).thenReturn(Optional.of(new User()));
+    when(productRepository.findById(productId)).thenReturn(Optional.of(new Product()));
+    when(feedbackRepository.findByUserIdAndProductId(userId, productId)).thenReturn(null);
+
+    NotFoundException exception = assertThrows(NotFoundException.class, () -> {
+      feedbackService.findFeedbackByUserIdAndProductId(userId, productId);
+    });
+    assertEquals(ErrorCode.FEEDBACK_NOT_FOUND.getCode(), exception.getCode());
+    verify(userRepository, times(1)).findById(userId);
+    verify(productRepository, times(1)).findById(productId);
+    verify(feedbackRepository, times(1)).findByUserIdAndProductId(userId, productId);
+  }
+
+  @Test
+  void testUpsertFeedback_Insert() throws NotFoundException {
+    String userId = "user1";
+    String productId = "product1";
+
+    when(userRepository.findById(userId)).thenReturn(Optional.of(new User()));
+    when(feedbackRepository.findByUserIdAndProductId(userId, productId)).thenReturn(null);
+    when(feedbackRepository.save(any(Feedback.class))).thenReturn(feedback);
+
+    Feedback result = feedbackService.upsertFeedback(feedbackModel);
+    assertNotNull(result);
+    assertEquals(feedbackModel.getUserId(), result.getUserId());
+    assertEquals(feedbackModel.getProductId(), result.getProductId());
+    assertEquals(feedbackModel.getRating(), result.getRating());
+    assertEquals(feedbackModel.getContent(), result.getContent());
+    verify(userRepository, times(1)).findById(userId);
+    verify(feedbackRepository, times(1)).findByUserIdAndProductId(userId, productId);
+    verify(feedbackRepository, times(1)).save(any(Feedback.class));
+  }
+
+  @Test
+  void testUpsertFeedback_Update() throws NotFoundException {
+    String userId = "user1";
+    String productId = "product1";
+
+    when(userRepository.findById(userId)).thenReturn(Optional.of(new User()));
+    when(feedbackRepository.findByUserIdAndProductId(userId, productId)).thenReturn(feedback);
+    when(feedbackRepository.save(any(Feedback.class))).thenReturn(feedback);
+
+    Feedback result = feedbackService.upsertFeedback(feedbackModel);
+    assertNotNull(result);
+    assertEquals(feedbackModel.getUserId(), result.getUserId());
+    assertEquals(feedbackModel.getProductId(), result.getProductId());
+    assertEquals(feedbackModel.getRating(), result.getRating());
+    assertEquals(feedbackModel.getContent(), result.getContent());
+    verify(userRepository, times(1)).findById(userId);
+    verify(feedbackRepository, times(1)).findByUserIdAndProductId(userId, productId);
+    verify(feedbackRepository, times(1)).save(any(Feedback.class));
+  }
+
+  @Test
+  void testGetProductRatingById() {
+    String productId = "product1";
+    List<Feedback> feedbacks = Collections.singletonList(feedback);
+
+    when(feedbackRepository.findByProductId(productId)).thenReturn(feedbacks);
+
+    List<ProductRating> ratings = feedbackService.getProductRatingById(productId);
+    assertNotNull(ratings);
+    assertEquals(5, ratings.size());
+    assertEquals(1, ratings.get(4).getCommentNumber());
+    assertEquals(100, ratings.get(4).getPercent());
     verify(feedbackRepository, times(1)).findByProductId(productId);
   }
-}
 
+  void testGetProductRatingById_NoFeedbacks() {
+    String productId = "product1";
+
+    when(feedbackRepository.findByProductId(productId)).thenReturn(Collections.emptyList());
+
+    List<ProductRating> ratings = feedbackService.getProductRatingById(productId);
+    assertNotNull(ratings);
+    assertEquals(5, ratings.size());
+    for (ProductRating rating : ratings) {
+      assertEquals(0, rating.getCommentNumber());
+      assertEquals(0, rating.getPercent());
+    }
+    verify(feedbackRepository, times(1)).findByProductId(productId);
+  }
+
+  @Test
+  void testValidateProductExists() {
+    String productId = "product1";
+
+    when(productRepository.findById(productId)).thenReturn(Optional.of(new Product()));
+
+    assertDoesNotThrow(() -> feedbackService.validateProductExists(productId));
+    verify(productRepository, times(1)).findById(productId);
+  }
+
+  @Test
+  void testValidateProductExists_NotFound() {
+    String productId = "product1";
+
+    when(productRepository.findById(productId)).thenReturn(Optional.empty());
+
+    NotFoundException exception = assertThrows(NotFoundException.class, () -> {
+      feedbackService.validateProductExists(productId);
+    });
+    assertEquals(ErrorCode.PRODUCT_NOT_FOUND.getCode(), exception.getCode());
+    verify(productRepository, times(1)).findById(productId);
+  }
+
+  @Test
+  void testValidateUserExists() {
+    String userId = "user1";
+
+    when(userRepository.findById(userId)).thenReturn(Optional.of(new User()));
+
+    assertDoesNotThrow(() -> feedbackService.validateUserExists(userId));
+    verify(userRepository, times(1)).findById(userId);
+  }
+
+  @Test
+  void testValidateUserExists_NotFound() {
+    String userId = "user1";
+
+    when(userRepository.findById(userId)).thenReturn(Optional.empty());
+
+    NotFoundException exception = assertThrows(NotFoundException.class, () -> {
+      feedbackService.validateUserExists(userId);
+    });
+    assertEquals(ErrorCode.USER_NOT_FOUND.getCode(), exception.getCode());
+    verify(userRepository, times(1)).findById(userId);
+  }
+}
