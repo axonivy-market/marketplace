@@ -1,0 +1,21 @@
+.info-title {
+  padding-top: 2px;
+}
+
+.info-container {
+  gap: 0.5rem;
+
+  .status__image {
+    height: 20.36px;
+    border-radius: 2px;
+  }
+
+  span {
+    height: 22px;
+  }
+
+  hr {
+    border-bottom: 1px solid #f8f8f8;
+    margin: 0;
+  }
+}

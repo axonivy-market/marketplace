@@ -1,0 +1,20 @@
+<div class="modal-content-wrapper">
+  <div class="modal-header border-bottom-0">
+    <button
+      type="button"
+      class="btn-close"
+      aria-label="Close"
+      (click)="activeModal.dismiss()"></button>
+  </div>
+  <div class="modal-body">
+    <div class="d-flex">
+      <app-product-star-rating-panel (openAddFeedbackDialog)="appModalService.openAddFeedbackDialog()" [isRenderInModalDialog]="true" />
+      <div class="separator">
+        <div class="vr"></div>
+      </div>
+      <app-product-feedbacks-panel
+        class="feedback-panel"
+        [isRenderInModalDialog]="true" />
+    </div>
+  </div>
+</div>

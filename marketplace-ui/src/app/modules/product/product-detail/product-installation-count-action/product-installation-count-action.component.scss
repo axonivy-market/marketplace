@@ -1,0 +1,29 @@
+.analysis-title {
+  line-height: 140%;
+}
+
+.product-analysis {
+  line-height: 110%;
+}
+
+.analysis-container {
+  gap: 10px;
+}
+
+@media (max-width: 768px) {
+  .analysis-container {
+    gap: 7px;
+  }
+
+  .analysis-title {
+    font-size: 1rem;
+  }
+
+  .product-analysis {
+    font-size: 38px;
+  }
+
+  .analysis-title {
+    font-size: 1rem;
+  }
+}

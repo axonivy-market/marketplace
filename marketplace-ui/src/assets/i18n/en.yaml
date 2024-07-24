@@ -1,0 +1,107 @@
+common:
+  branch: Axon Ivy Market
+  language:
+    english: English
+    french: Français
+    german: Deutsch
+  nav:
+    news: News
+    doc: Doc
+    tutorial: Tutorial
+    community: Community
+    team: Team
+    market: Market
+  introduction:
+    about: The Axon Ivy market offers a unique experience to accelerate process automation.
+    contribute:
+      From standard connectors of leading providers to, ready-to-use process
+      models, business solutions and many utilities such as document
+      generation and workflow user interfaces.
+    link: Contribute to the community and
+      <a class="link-opacity-100" href="">build your own connector!</a>
+  filter:
+    label: Filter
+    value:
+      allTypes: All Types
+      connector: Connectors
+      util: Utilities
+      demos: Demos
+      solution: Solutions
+  sort:
+    label: Sort by
+    value:
+      popularity: Popularity
+      alphabetically: Alphabetically
+      recent: Recent
+      newest: Newest
+      oldest: Oldest
+      highest: Highest
+      lowest: Lowest
+  search:
+    placeholder: Search a keyword
+  nothingFound: Your search did not yield any results.<br /> Please modify your search terms or browse our categories for related content.
+  header:
+    download: Download
+  footer:
+    newVersionsInfo: New version release available for Linux,<br /> Window and MacOS operating systems.
+    downloadLatestLTSVersion: Download V10.0.18
+    downloadLatestDevVersion: Download V11.2.1
+    ivyCompanyInfo: © 2023 Axon Ivy Inc.
+    privacyPolicy: Privacy Policy
+    termsOfService: Terms of Service
+  product:
+    detail:
+      backToMainPage: Back to marketplace overview
+      review: Review
+      installation: Downloads
+      times: Times
+      type: Type
+      description: Description
+      installationGuide: Installation Guide
+      demo: Demo
+      maven:
+        label: Maven
+        description: You can consume it as maven artifact in your <i>pom.xml</i>
+      information:
+        label: Information
+        value:
+          author: Author/Support
+          version: Version
+          compatibility: Compatibility
+          cost: Cost
+          language: Language
+          industry: Industry
+          tag: Tags
+          source: Source
+          status: Status
+          moreInformation: More Information
+          contactUs: Contact Us
+      install:
+        buttonLabel: Install Now
+      download:
+        buttonLabel: Download
+        hideDevVersions: Hide development versions
+        showDevVersions: Show development versions
+        versionSelector:
+          label: Choose target platform
+        artifactSelector:
+          label: Choose artifact
+  feedback:
+    label: Feedback
+    successMessage: Your feedback has been successfully submitted!
+    thankMessage: Thank you for your contribution
+    addFeedbackTitle: Give your feedback!
+    addFeedbackDescription: By giving your feedback you are enabling us to constantly improve our products and always deliver the best quality to both you and your team.
+    currentProductTitle: Currently reviewing
+    starRatingTitle: Stars rating
+    commentLabel: Let a comment
+    submitBtnLabel: Submit review
+    loggedGithubAsLabel: Logged in Github as
+    reviewLabel: Review
+    detailedReviews: Detailed reviews
+    rateLinkLabel: Rate this connector
+    showMoreBtnLabel: Show more
+    noFeedbackMessage1: There are no feedbacks for this connector yet.
+    noFeedbackMessage2: Bet the first to share your opinion.
+    rateFeedbackBtnLabel: Rate this connector
+    reviewLabelNoYet: No reviews yet

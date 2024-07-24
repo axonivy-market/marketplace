@@ -1,0 +1,29 @@
+<div [class]="{
+  'grid-product-star-rating-panel-container': true,
+  'grid-50-50': !isRenderInModalDialog,
+  'grid-100': isRenderInModalDialog
+  }">
+  <app-product-star-rating-number (openAddFeedbackDialog)="openAddFeedbackDialog.emit()" />
+  <div></div>
+  <div>
+    <p class="text-secondary mb-1">
+      {{ 'common.feedback.detailedReviews' | translate }}
+    </p>
+    <div>
+      @for (counting of starRatings(); track $index) {
+      <div class="start-rating-counting-line text-primary">
+        <div aria-hidden="true" class="star-index">
+          <div class="number-star-rating" style="width: 14px;">{{ counting.starRating }}</div>
+          <div class="mini-star-icon">
+            <i class="start-rating-count bi bi-star-fill"></i>
+          </div>
+        </div>
+        <div aria-hidden="true" class="star-rating-counting-line">
+          <div id="star-rating-percent-{{ counting.starRating }}" class="star-rating-percent"
+          starRatingHighlight [percent]="counting.percent!"></div>
+        </div>
+      </div>
+      }
+    </div>
+  </div>
+</div>
