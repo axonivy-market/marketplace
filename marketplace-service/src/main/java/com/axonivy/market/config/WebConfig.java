@@ -12,7 +12,7 @@ public class WebConfig implements WebMvcConfigurer {
   private static final String[] EXCLUDE_PATHS = { "/", "/swagger-ui/**", "/api-docs/**" };
   private static final String[] ALLOWED_HEADERS = { "Accept-Language", "Content-Type", "Authorization",
       "X-Requested-By", "x-requested-with", "X-Forwarded-Host", "x-xsrf-token" };
-  private static final String[] ALLOWED_METHODS = { "GET", "OPTIONS", "POST" };
+  private static final String[] ALLOWED_METHODS = { "GET", "OPTIONS" };
 
   private final MarketHeaderInterceptor headerInterceptor;
 
