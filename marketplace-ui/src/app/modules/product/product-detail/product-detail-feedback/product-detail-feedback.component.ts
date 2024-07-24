@@ -1,21 +1,16 @@
 import {
-  AfterViewInit,
   Component,
   computed,
   inject,
   input,
-  OnInit,
   Signal
 } from '@angular/core';
 import { ProductStarRatingPanelComponent } from './product-star-rating-panel/product-star-rating-panel.component';
 import { ShowFeedbacksDialogComponent } from './show-feedbacks-dialog/show-feedbacks-dialog.component';
 import { ProductFeedbacksPanelComponent } from './product-feedbacks-panel/product-feedbacks-panel.component';
 import { AppModalService } from '../../../../shared/services/app-modal.service';
-import { ActivatedRoute, Router } from '@angular/router';
 import { ProductFeedbackService } from './product-feedbacks-panel/product-feedback.service';
-import { AuthService } from '../../../../auth/auth.service';
 import { TranslateModule } from '@ngx-translate/core';
-import { ProductStarRatingService } from './product-star-rating-panel/product-star-rating.service';
 
 const MAX_ELEMENTS = 6;
 
