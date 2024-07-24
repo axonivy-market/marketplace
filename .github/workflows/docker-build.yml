@@ -7,11 +7,25 @@ on:
   workflow_call:
 
 jobs:
-  build:
+  cleanup:
+    name: Clean up docker container and images
     runs-on: self-hosted
 
     steps:
-      - uses: actions/checkout@v4
+      - name: Bring down and remove containers and images
+        working-directory: ./marketplace-build
+        run: |
+          docker compose down --rmi all
+
+  build-and-deploy:
+    name: Build and bring up docker containers
+    runs-on: self-hosted
+    needs: cleanup
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
       - name: Update environment variables for .env
         env:
           ENV_FILE: './marketplace-build/.env'
@@ -39,8 +53,7 @@ jobs:
             sed -i "s/^MARKET_GITHUB_OAUTH_APP_CLIENT_SECRET=.*$/MARKET_GITHUB_OAUTH_APP_CLIENT_SECRET=$MARKET_GITHUB_OAUTH_APP_CLIENT_SECRET/" $ENV_FILE
             sed -i "s/^MARKET_JWT_SECRET_KEY=.*$/MARKET_JWT_SECRET_KEY=$MARKET_JWT_SECRET_KEY/" $ENV_FILE
 
-      - name: Refresh Docker images
+      - name: Build and bring up containers without cache
         working-directory: ./marketplace-build
         run: |
-          docker compose down
-          docker compose up -d
+          docker compose up --build --force-recreate -d
