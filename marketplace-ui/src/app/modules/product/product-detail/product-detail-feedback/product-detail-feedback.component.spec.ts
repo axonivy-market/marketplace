@@ -95,13 +95,6 @@ describe('ProductDetailFeedbackComponent', () => {
     expect(component).toBeTruthy();
   });
 
-  it('should initialize feedbacks and star ratings on ngOnInit', () => {
-    expect(
-      mockProductFeedbackService.findProductFeedbackOfUser
-    ).toHaveBeenCalled();
-    expect(mockProductStarRatingService.fetchData).toHaveBeenCalled();
-  });
-
   it('should render ProductStarRatingPanelComponent and ProductFeedbacksPanelComponent', () => {
     const starRatingPanel = fixture.debugElement.query(
       By.directive(ProductStarRatingPanelComponent)

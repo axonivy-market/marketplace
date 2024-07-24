@@ -27,7 +27,7 @@
       <p class="text-secondary mb-2">
         {{ 'common.feedback.starRatingTitle' | translate }}
       </p>
-      <app-star-rating [rate]="feedback.rating" (rateChange)="onRateChange($event)" [starClass]="'adding-feedback-star'" />
+      <app-star-rating [rate]="feedback.rating" (rateChange)="onRateChange($event)" [starClass]="'adding-feedback-star'" [ratingStarsClass]="'rating-stars'" />
       <p class="text-secondary mb-2 mt-3">
         {{ 'common.feedback.commentLabel' | translate }}
       </p>

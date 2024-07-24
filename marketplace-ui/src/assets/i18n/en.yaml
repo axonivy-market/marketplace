@@ -39,7 +39,7 @@ common:
       lowest: Lowest
   search:
     placeholder: Search a keyword
-  nothingFound: Nothing found
+  nothingFound: Your search did not yield any results.<br /> Please modify your search terms or browse our categories for related content.
   header:
     download: Download
   footer:
@@ -88,7 +88,7 @@ common:
           label: Choose artifact
   feedback:
     label: Feedback
-    successMessage: Your feedback has been successfully submitted! 
+    successMessage: Your feedback has been successfully submitted!
     thankMessage: Thank you for your contribution
     addFeedbackTitle: Give your feedback!
     addFeedbackDescription: By giving your feedback you are enabling us to constantly improve our products and always deliver the best quality to both you and your team.

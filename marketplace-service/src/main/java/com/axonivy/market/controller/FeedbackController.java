@@ -16,6 +16,7 @@ import org.springframework.data.web.PagedResourcesAssembler;
 import org.springframework.hateoas.PagedModel;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -70,12 +71,13 @@ public class FeedbackController {
 
   @Operation(summary = "Find all feedbacks by user id and product id")
   @GetMapping()
-  public ResponseEntity<FeedbackModel> findFeedbackByUserIdAndProductId(@RequestParam String userId,
-      @RequestParam String productId) {
+  public ResponseEntity<FeedbackModel> findFeedbackByUserIdAndProductId(@RequestParam("userId") String userId,
+      @RequestParam("productId") String productId) {
     Feedback feedback = feedbackService.findFeedbackByUserIdAndProductId(userId, productId);
     return ResponseEntity.ok(feedbackModelAssembler.toModel(feedback));
   }
 
+  @CrossOrigin("*")
   @PostMapping
   public ResponseEntity<Void> createFeedback(@RequestBody @Valid FeedbackModel feedback,
       @RequestHeader(value = "Authorization") String authorizationHeader) {
