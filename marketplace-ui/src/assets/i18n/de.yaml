@@ -35,7 +35,7 @@ common:
       lowest: Niedrigste
   search:
     placeholder: Suche
-  nothingFound: Nichts gefunden
+  nothingFound: Leider hat deine Suche keinen Treffer ergeben.<br /> Ändere deinen Suchbegriff oder stöbere in unseren Kategorien nach ähnlichen Themen.
   header:
     download: Download
   footer:
