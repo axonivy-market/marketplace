@@ -1,4 +1,4 @@
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpContext } from '@angular/common/http';
 import {
   computed,
   inject,
@@ -10,6 +10,7 @@ import {
 import { tap } from 'rxjs';
 import { StarRatingCounting } from '../../../../../shared/models/star-rating-counting.model';
 import { ProductDetailService } from '../../product-detail.service';
+import { SkipLoading } from '../../../../../core/interceptors/api.interceptor';
 
 @Injectable({
   providedIn: 'root'
@@ -29,7 +30,7 @@ export class ProductStarRatingService {
   fetchData(productId: string = this.productDetailService.productId()): void {
     const requestURL = `api/feedback/product/${productId}/rating`;
     this.http
-      .get<StarRatingCounting[]>(requestURL)
+      .get<StarRatingCounting[]>(requestURL, {context: new HttpContext().set(SkipLoading, true)})
       .pipe(
         tap(data => {
           this.sortByStar(data);

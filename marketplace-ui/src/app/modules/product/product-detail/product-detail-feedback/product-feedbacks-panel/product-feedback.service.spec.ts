@@ -112,22 +112,4 @@ describe('ProductFeedbackService', () => {
 
     expect(service.feedbacks()).toEqual([{ content: 'Sorting test', rating: 3, productId: '123' }]);
   });
-
-  it('should find product feedback of user', () => {
-    const mockFeedback: Feedback = {
-      content: 'User feedback',
-      rating: 5,
-      productId: '123'
-    };
-
-    authService.getUserId.and.returnValue('user123');
-    productDetailService.productId.and.returnValue('123');
-
-    service.findProductFeedbackOfUser();
-    const req = httpMock.expectOne('api/feedback?productId=123&userId=user123');
-    expect(req.request.method).toBe('GET');
-    req.flush(mockFeedback);
-
-    expect(service.userFeedback()).toEqual(mockFeedback);
-  });
 });

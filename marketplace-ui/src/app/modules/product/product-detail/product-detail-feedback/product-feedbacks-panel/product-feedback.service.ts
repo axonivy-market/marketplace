@@ -58,7 +58,7 @@ export class ProductFeedbackService {
       .pipe(
         tap(() => {
           this.initFeedbacks();
-          this.findProductFeedbackOfUser();
+          this.findProductFeedbackOfUser().subscribe();
           this.productStarRatingService.fetchData();
         })
       );
@@ -96,13 +96,13 @@ export class ProductFeedbackService {
 
   findProductFeedbackOfUser(
     productId: string = this.productDetailService.productId()
-  ): void {
+  ): Observable<Feedback> {
     const params = new HttpParams()
       .set('productId', productId)
       .set('userId', this.authService.getUserId() ?? '');
     const requestURL = FEEDBACK_API_URL;
 
-    this.http
+    return this.http
       .get<Feedback>(requestURL, {
         params,
         context: new HttpContext().set(SkipLoading, true)
@@ -120,8 +120,7 @@ export class ProductFeedbackService {
           this.userFeedback.set(feedback);
           return of(feedback);
         })
-      )
-      .subscribe();
+      );
   }
 
   initFeedbacks(): void {
