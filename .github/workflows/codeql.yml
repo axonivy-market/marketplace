@@ -33,8 +33,11 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        language: ['javascript-typescript', 'java-kotlin']
-        build-mode: ['none', 'autobuild']
+        include:
+          - language: javascript-typescript
+            build-mode: node
+          - language: java-kotlin
+            build-mode: autobuild
     steps:
     - name: Checkout repository
       uses: actions/checkout@v4
