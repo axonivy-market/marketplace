@@ -27,10 +27,9 @@ import { ProductFeedbackService } from './product-detail-feedback/product-feedba
 import { AppModalService } from '../../../shared/services/app-modal.service';
 import { AuthService } from '../../../auth/auth.service';
 import { ProductStarRatingNumberComponent } from './product-star-rating-number/product-star-rating-number.component';
-import {
-  ProductInstallationCountActionComponent
-} from "./product-installation-count-action/product-installation-count-action.component";
+import { ProductInstallationCountActionComponent } from './product-installation-count-action/product-installation-count-action.component';
 import { ProductTypeIconPipe } from '../../../shared/pipes/icon.pipe';
+import { ProductStarRatingService } from './product-detail-feedback/product-star-rating-panel/product-star-rating.service';
 
 export interface DetailTab {
   activeClass: string;
@@ -56,7 +55,7 @@ const DEFAULT_ACTIVE_TAB = 'description';
     MultilingualismPipe,
     ProductDetailFeedbackComponent,
     ProductInstallationCountActionComponent,
-    ProductTypeIconPipe,
+    ProductTypeIconPipe
   ],
   providers: [ProductService, MarkdownService],
   templateUrl: './product-detail.component.html',
@@ -70,6 +69,7 @@ export class ProductDetailComponent {
   languageService = inject(LanguageService);
   productDetailService = inject(ProductDetailService);
   productFeedbackService = inject(ProductFeedbackService);
+  productStarRatingService = inject(ProductStarRatingService);
   appModalService = inject(AppModalService);
   authService = inject(AuthService);
   elementRef = inject(ElementRef);
@@ -119,6 +119,7 @@ export class ProductDetailComponent {
           this.installationCount = productDetail.installationCount;
         });
       this.productFeedbackService.initFeedbacks();
+      this.productStarRatingService.fetchData();
     }
 
     const savedTab = localStorage.getItem(STORAGE_ITEM);
@@ -126,6 +127,21 @@ export class ProductDetailComponent {
       this.activeTab = savedTab;
     }
     this.updateDropdownSelection();
+  }
+
+  ngAfterViewInit(): void {
+    this.checkMediaSize();
+    this.productFeedbackService.findProductFeedbackOfUser().subscribe(() => {
+      this.route.queryParams.subscribe(params => {
+        this.showPopup = params['showPopup'] === 'true';
+        if (this.showPopup && this.authService.getToken()) {
+          this.appModalService
+            .openAddFeedbackDialog()
+            .then(() => this.removeQueryParam())
+            .catch(() => this.removeQueryParam());
+        }
+      });
+    });
   }
 
   getContent(value: string): boolean {
@@ -203,10 +219,6 @@ export class ProductDetailComponent {
     }
   }
 
-  ngAfterViewInit(): void {
-    this.checkMediaSize();
-  }
-
   @HostListener('window:resize', ['$event'])
   onResize() {
     this.checkMediaSize();
@@ -232,5 +244,12 @@ export class ProductDetailComponent {
 
   receiveInstallationCountData(data: number) {
     this.installationCount = data;
+  }
+
+  private removeQueryParam(): void {
+    this.router.navigate([], {
+      queryParams: { showPopup: null },
+      queryParamsHandling: 'merge'
+    });
   }
 }
