@@ -58,7 +58,7 @@ export class ProductFeedbackService {
       .pipe(
         tap(() => {
           this.initFeedbacks();
-          this.findProductFeedbackOfUser();
+          this.findProductFeedbackOfUser().subscribe();
           this.productStarRatingService.fetchData();
         })
       );
