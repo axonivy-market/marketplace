@@ -36,8 +36,17 @@
       }
     </div>
   } @else {
-    <div class="h1 product-container text-center align-items-center">
-      {{ 'common.nothingFound' | translate }}
+    <div
+      class="d-flex flex-column align-items-center justify-content-center w-100">
+      <div class="not-found-result w-100">
+        <img
+          src="/assets/images/misc/search-off.svg"
+          alt="Search not found"
+          class="no-result-image mx-auto d-block" />
+        <div
+          class="h5 text-center not-found-text"
+          [innerHTML]="'common.nothingFound' | translate"></div>
+      </div>
     </div>
   }
 

@@ -34,13 +34,14 @@ services:
   service:
     container_name: marketplace-service
     restart: always
+    volumes:
+      - /home/axonivy/marketplace/data/market-installations.json:/home/data/market-installation.json
     environment:
       - MONGODB_HOST=${SERVICE_MONGODB_HOST}
       - MONGODB_DATABASE=${SERVICE_MONGODB_DATABASE}
       - MONGODB_USERNAME=${SERVICE_MONGODB_USER}
       - MONGODB_PASSWORD=${SERVICE_MONGODB_PASSWORD}
       - MARKET_GITHUB_TOKEN=${MARKET_GITHUB_TOKEN}
-      - MARKETPLACE_INSTALLATION_URL=${MARKETPLACE_INSTALLATION_URL}
       - MARKET_GITHUB_OAUTH_APP_CLIENT_ID=${MARKET_GITHUB_OAUTH_APP_CLIENT_ID}
       - MARKET_GITHUB_OAUTH_APP_CLIENT_SECRET=${MARKET_GITHUB_OAUTH_APP_CLIENT_SECRET}
       - MARKET_JWT_SECRET_KEY=${MARKET_JWT_SECRET_KEY}

@@ -2,6 +2,28 @@
   min-height: 6em;
 }
 
-.mt-8{
+.mt-8 {
   margin-top: 8rem;
+}
+
+.not-found-result {
+  max-width: 670px;
+  margin-bottom: 4rem;
+
+  .not-found-text {
+    line-height: 140%;
+    color: var(--text-no-rating-color);
+    margin: 20px 0 0 0;
+  }
+}
+
+@media (max-width: 430px) {
+  .no-result-image {
+    width: 60px;
+    height: 60px;
+  }
+
+  .not-found-text {
+    font-size: 0.875rem;
+  }
 }

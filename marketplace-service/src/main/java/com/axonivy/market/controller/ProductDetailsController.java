@@ -14,7 +14,7 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-
+import org.springframework.web.bind.annotation.CrossOrigin;
 import java.util.List;
 
 import static com.axonivy.market.constants.RequestMappingConstants.PRODUCT_DETAILS;
@@ -40,7 +40,8 @@ public class ProductDetailsController {
     return new ResponseEntity<>(detailModelAssembler.toModel(productDetail, tag), HttpStatus.OK);
   }
 
-  @Operation(summary = "increase installation count by 1", description = "increase installation count by 1")
+  @Operation(summary = "increase installation count by 1", description = "update installation count when click download product files by users")
+  @CrossOrigin(originPatterns = "*")
   @PutMapping("/installationcount/{key}")
   public ResponseEntity<Integer> syncInstallationCount(@PathVariable("key") String key) {
     int result = productService.updateInstallationCountForProduct(key);
