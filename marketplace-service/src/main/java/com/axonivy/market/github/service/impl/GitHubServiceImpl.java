@@ -1,9 +1,12 @@
 package com.axonivy.market.github.service.impl;
 
+import static org.apache.commons.lang3.StringUtils.EMPTY;
+
 import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 import org.kohsuke.github.GHContent;
 import org.kohsuke.github.GHOrganization;
@@ -49,7 +52,9 @@ public class GitHubServiceImpl implements GitHubService {
 
   @Override
   public GitHub getGitHub() throws IOException {
-    return new GitHubBuilder().withOAuthToken(gitHubProperty.getToken().trim().strip()).build();
+    return new GitHubBuilder()
+        .withOAuthToken(Optional.ofNullable(gitHubProperty).map(GitHubProperty::getToken).orElse(EMPTY).trim())
+        .build();
   }
 
   @Override
