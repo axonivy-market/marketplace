@@ -34,6 +34,7 @@ jobs:
       fail-fast: false
       matrix:
         language: ['javascript-typescript', 'java-kotlin']
+        build-mode: ['none', 'autobuild']
     steps:
     - name: Checkout repository
       uses: actions/checkout@v4
@@ -43,6 +44,7 @@ jobs:
       uses: github/codeql-action/init@v3
       with:
         languages: ${{ matrix.language }}
+        build-mode: ${{ matrix.build-mode }}
     - name: Perform CodeQL Analysis
       uses: github/codeql-action/analyze@v3
       with:
