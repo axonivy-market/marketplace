@@ -35,9 +35,9 @@ jobs:
       matrix:
         include:
           - language: javascript-typescript
-            build-mode: node
+            build-mode: none
           - language: java-kotlin
-            build-mode: autobuild
+            build-mode: manual
     steps:
     - name: Checkout repository
       uses: actions/checkout@v4
@@ -48,6 +48,17 @@ jobs:
       with:
         languages: ${{ matrix.language }}
         build-mode: ${{ matrix.build-mode }}
+    - name: Set up JDK 17
+      if: matrix.language == 'java-kotlin'
+      uses: actions/setup-java@v3
+      with:
+        java-version: '17'
+        distribution: 'temurin'
+        cache: maven
+    - name: Build with maven
+      if: matrix.language == 'java-kotlin'
+      run: mvn clean install --file ./marketplace-service/pom.xml -DskipTests
+
     - name: Perform CodeQL Analysis
       uses: github/codeql-action/analyze@v3
       with:
