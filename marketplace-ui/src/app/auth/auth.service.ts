@@ -28,7 +28,7 @@ export class AuthService {
   private readonly BASE_URL = environment.apiUrl;
   private readonly TOKEN_KEY = 'token';
   private readonly githubAuthUrl = 'https://github.com/login/oauth/authorize';
-  private readonly githubAuthCallbackPath = environment.githubAuthCallbackPath;
+  private readonly githubAuthCallbackUrl = window.location.origin + environment.githubAuthCallbackPath;
 
   constructor(
     private readonly http: HttpClient,
@@ -38,8 +38,7 @@ export class AuthService {
 
   redirectToGitHub(originalUrl: string): void {
     const state = encodeURIComponent(originalUrl);
-    const githubAuthCallbackUrl = window.location.origin + this.githubAuthCallbackPath;
-    const authUrl = `${this.githubAuthUrl}?client_id=${environment.githubClientId}&redirect_uri=${githubAuthCallbackUrl}&state=${state}`;
+    const authUrl = `${this.githubAuthUrl}?client_id=${environment.githubClientId}&redirect_uri=${this.githubAuthCallbackUrl}&state=${state}`;
     window.location.href = authUrl;
   }
 

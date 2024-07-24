@@ -2,7 +2,7 @@ name: marketplace
 
 services:
   mongodb:
-    container_name: marketplace-mongodb-7.0.0
+    container_name: marketplace-mongodb
     build:
       context: ./config/mongodb
       dockerfile: Dockerfile
