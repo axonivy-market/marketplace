@@ -53,7 +53,7 @@ class GitHubServiceImplTest {
   @BeforeEach
   public void setUp() {
     MockitoAnnotations.openMocks(this);
-    when(restTemplateBuilder.build()).thenReturn(restTemplate);
+    lenient().when(restTemplateBuilder.build()).thenReturn(restTemplate);
   }
 
   @Test
