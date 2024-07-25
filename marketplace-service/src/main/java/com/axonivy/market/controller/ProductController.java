@@ -61,7 +61,7 @@ public class ProductController {
       token = authorizationHeader.substring(7); // Remove "Bearer " prefix
     }
     gitHubService.validateUserOrganization(token, GitHubConstants.AXONIVY_MARKET_ORGANIZATION_NAME);
-    if (resetSync) {
+    if (Boolean.TRUE.equals(resetSync)) {
       productService.clearAllProducts();
     }
 
