@@ -51,10 +51,10 @@ jobs:
         run: |
           if [ "${{ inputs.build_env }}" == "prod" ]; then
             OAUTH_APP_CLIENT_ID=${{ secrets.OAUTH_APP_CLIENT_ID }}
-            OAUTH_APP_CLIENT_SECRET: ${{ secrets.OAUTH_APP_CLIENT_SECRET }}
+            OAUTH_APP_CLIENT_SECRET=${{ secrets.OAUTH_APP_CLIENT_SECRET }}
           else
             OAUTH_APP_CLIENT_ID=${{ secrets.OAUTH_APP_CLIENT_ID_STAGING }}
-            OAUTH_APP_CLIENT_SECRET: ${{ secrets.OAUTH_APP_CLIENT_SECRET_STAGING }}
+            OAUTH_APP_CLIENT_SECRET=${{ secrets.OAUTH_APP_CLIENT_SECRET_STAGING }}
           fi
 
           sed -i "s/^MONGODB_INITDB_ROOT_USERNAME=.*$/MONGODB_INITDB_ROOT_USERNAME=$ROOT_USERNAME/" $ENV_FILE
