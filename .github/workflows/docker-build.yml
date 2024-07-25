@@ -49,7 +49,7 @@ jobs:
           GH_TOKEN: ${{ secrets.GH_TOKEN }}
           MARKET_JWT_SECRET_KEY: ${{ secrets.MARKET_JWT_SECRET_KEY }}
         run: |
-          if [ "${{ inputs.build_env }}" == "prod" ]; then
+          if [ "${{ inputs.build_env }}" == "production" ]; then
             OAUTH_APP_CLIENT_ID=${{ secrets.OAUTH_APP_CLIENT_ID }}
             OAUTH_APP_CLIENT_SECRET=${{ secrets.OAUTH_APP_CLIENT_SECRET }}
           else
