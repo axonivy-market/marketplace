@@ -2,7 +2,7 @@ name: marketplace
 
 services:
   mongodb:
-    container_name: marketplace-mongodb-7.0.0
+    container_name: marketplace-mongodb
     build:
       context: ./config/mongodb
       dockerfile: Dockerfile
@@ -23,6 +23,8 @@ services:
       additional_contexts:
         assets: ../marketplace-build/
       dockerfile: Dockerfile
+      args:
+        - BUILD_ENV=${BUILD_ENV}
     restart: always
     volumes:
       - ./config/nginx/nginx.conf:/etc/nginx/nginx.conf

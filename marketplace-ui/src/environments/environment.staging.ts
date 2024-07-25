@@ -1,8 +1,7 @@
 export const environment = {
-  production: true,
+  production: false,
   apiUrl: '/marketplace-service',
-  githubClientId: 'Ov23liVMliBxBqdQ7FnG',
+  githubClientId: 'Ov23li5r26hRBOXZhtLV',
   githubAuthCallbackPath: '/auth/github/callback',
   dayInMiliseconds: 86400000
-
 };

@@ -9,6 +9,10 @@ on:
         description: 'Marketplace Docker image version'
         required: true
         default: 'latest'
+      build_env:
+        description: 'Build environment'
+        required: true
+        default: 'production'
 
 env:
   UI_IMAGE_NAME: marketplace-ui
@@ -19,6 +23,8 @@ jobs:
   build:
     name: Build Docker images
     uses: ./.github/workflows/docker-build.yml
+    with:
+      build_env: ${{ inputs.build_env }}
 
   release:
     name: Tag and publish image to GH packages
