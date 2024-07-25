@@ -55,7 +55,7 @@ public class ProductController {
 
   @PutMapping(SYNC)
   public ResponseEntity<Message> syncProducts(@RequestHeader(value = "Authorization") String authorizationHeader,
-      @RequestParam(value = "resetSync", required = false) boolean resetSync) {
+      @RequestParam(value = "resetSync", required = false) Boolean resetSync) {
     String token = null;
     if (authorizationHeader.startsWith("Bearer ")) {
       token = authorizationHeader.substring(7); // Remove "Bearer " prefix
