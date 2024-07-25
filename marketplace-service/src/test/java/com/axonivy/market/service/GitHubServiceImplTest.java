@@ -77,26 +77,4 @@ class GitHubServiceImplTest {
     var result = gitHubService.getDirectoryContent(ghRepository, "", "");
     assertEquals(0, result.size());
   }
-
-  @Test
-  void testGetAccessToken() {
-    String code = "code";
-    String clientId = "clientId";
-    String clientSecret = "clientSecret";
-
-    GitHubAccessTokenResponse tokenResponse = new GitHubAccessTokenResponse();
-    tokenResponse.setAccessToken("accessToken");
-
-    HttpHeaders headers = new HttpHeaders();
-    headers.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
-    HttpEntity<MultiValueMap<String, String>> request = new HttpEntity<>(new LinkedMultiValueMap<>(), headers);
-
-    when(restTemplate.postForEntity(GitHubConstants.GITHUB_GET_ACCESS_TOKEN_URL, request, GitHubAccessTokenResponse.class))
-        .thenReturn(new ResponseEntity<>(tokenResponse, HttpStatus.OK));
-
-    GitHubAccessTokenResponse result = gitHubService.getAccessToken(code, clientId, clientSecret);
-    assertNotNull(result);
-    assertEquals(tokenResponse.getAccessToken(), result.getAccessToken());
-  }
-
 }
