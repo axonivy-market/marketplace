@@ -96,13 +96,13 @@ public class FeedbackServiceImpl implements FeedbackService {
     }).toList();
   }
 
-  private void validateProductExists(String productId) throws NotFoundException {
+  public void validateProductExists(String productId) throws NotFoundException {
     if (productRepository.findById(productId).isEmpty()) {
       throw new NotFoundException(ErrorCode.PRODUCT_NOT_FOUND, "Not found product with id: " + productId);
     }
   }
 
-  private void validateUserExists(String userId) {
+  public void validateUserExists(String userId) {
     if (userRepository.findById(userId).isEmpty()) {
       throw new NotFoundException(ErrorCode.USER_NOT_FOUND, "Not found user with id: " + userId);
     }

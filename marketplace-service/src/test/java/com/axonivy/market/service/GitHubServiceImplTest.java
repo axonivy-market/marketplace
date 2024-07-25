@@ -1,7 +1,8 @@
 package com.axonivy.market.service;
 
+import com.axonivy.market.constants.GitHubConstants;
+import com.axonivy.market.github.model.GitHubAccessTokenResponse;
 import com.axonivy.market.github.service.impl.GitHubServiceImpl;
-import com.axonivy.market.repository.UserRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -13,22 +14,29 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.boot.web.client.RestTemplateBuilder;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
+import org.springframework.util.LinkedMultiValueMap;
+import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestTemplate;
 
 import java.io.IOException;
+import java.util.Collections;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+
 @ExtendWith(MockitoExtension.class)
 class GitHubServiceImplTest {
   private static final String DUMMY_API_URL = "https://api.github.com";
-
-  @Mock
-  GitHub gitHub;
 
   @Mock
   GHRepository ghRepository;
@@ -39,16 +47,12 @@ class GitHubServiceImplTest {
   @Mock
   private RestTemplate restTemplate;
 
-  @Mock
-  private UserRepository userRepository;
-
   @InjectMocks
   private GitHubServiceImpl gitHubService;
 
   @BeforeEach
   public void setUp() {
     MockitoAnnotations.openMocks(this);
-    // Use lenient stubbing
     lenient().when(restTemplateBuilder.build()).thenReturn(restTemplate);
   }
 

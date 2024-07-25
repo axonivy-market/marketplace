@@ -80,7 +80,7 @@ public class FeedbackController {
   @CrossOrigin("*")
   @PostMapping
   public ResponseEntity<Void> createFeedback(@RequestBody @Valid FeedbackModel feedback,
-      @RequestHeader(value = "Authorization", required = false) String authorizationHeader) {
+      @RequestHeader(value = "Authorization") String authorizationHeader) {
     String token = null;
     if (authorizationHeader != null && authorizationHeader.startsWith("Bearer ")) {
       token = authorizationHeader.substring(7); // Remove "Bearer " prefix
