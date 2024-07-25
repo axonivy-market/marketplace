@@ -97,6 +97,9 @@
             "production": {
               "buildTarget": "marketplace-ui:build:production"
             },
+            "staging": {
+              "buildTarget": "marketplace-ui:build:staging"
+            },
             "development": {
               "buildTarget": "marketplace-ui:build:development"
             }

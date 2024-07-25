@@ -4,7 +4,7 @@ ARG BUILD_ENV
 WORKDIR /app
 COPY . .
 RUN npm install
-RUN npm run build --$BUILD_ENV
+RUN npm run build -- --configuration $BUILD_ENV
 
 # Stage 2: Serve Angular app using Nginx
 FROM nginx
