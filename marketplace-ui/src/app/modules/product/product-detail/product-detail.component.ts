@@ -30,8 +30,8 @@ import { ProductStarRatingNumberComponent } from './product-star-rating-number/p
 import { ProductInstallationCountActionComponent } from './product-installation-count-action/product-installation-count-action.component';
 import { ProductTypeIconPipe } from '../../../shared/pipes/icon.pipe';
 import { Observable } from 'rxjs';
-import { CookieManagementService } from '../../../cookie.management.service';
 import { ProductStarRatingService } from './product-detail-feedback/product-star-rating-panel/product-star-rating.service';
+import { RoutingQueryParamService } from '../../../shared/services/routing.query.param.service';
 
 export interface DetailTab {
   activeClass: string;
@@ -75,7 +75,7 @@ export class ProductDetailComponent {
   appModalService = inject(AppModalService);
   authService = inject(AuthService);
   elementRef = inject(ElementRef);
-  cookieService = inject(CookieManagementService);
+  routingQueryParamService = inject(RoutingQueryParamService);
 
   resizeObserver: ResizeObserver;
 
@@ -131,11 +131,12 @@ export class ProductDetailComponent {
   }
 
   getProductById(productId: string): Observable<ProductDetail> {
-    const targetVersion = this.cookieService.getDesignerVersionFromCookie();
+    const targetVersion =
+      this.routingQueryParamService.getDesignerVersionFromCookie();
     if (targetVersion != '') {
       return this.productService.getProductDetailsWithVersion(
         productId,
-        targetVersion
+        'v'.concat(targetVersion)
       );
     }
     return this.productService.getProductDetails(productId);

@@ -1,6 +1,5 @@
 package com.axonivy.market.util;
 
-import com.axonivy.market.constants.NonStandardProductPackageConstants;
 import com.axonivy.market.github.util.GitHubUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.junit.jupiter.api.Assertions;

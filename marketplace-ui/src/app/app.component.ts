@@ -1,12 +1,9 @@
-import { Component, inject, signal } from '@angular/core';
-import {
-  RouterOutlet,
-  ActivatedRoute
-} from '@angular/router';
+import { Component, inject } from '@angular/core';
+import { RouterOutlet, ActivatedRoute } from '@angular/router';
 import { FooterComponent } from './shared/components/footer/footer.component';
 import { HeaderComponent } from './shared/components/header/header.component';
 import { LoadingService } from './core/services/loading/loading.service';
-import { CookieManagementService } from './cookie.management.service';
+import { RoutingQueryParamService } from './shared/services/routing.query.param.service';
 
 @Component({
   selector: 'app-root',
@@ -17,20 +14,18 @@ import { CookieManagementService } from './cookie.management.service';
 })
 export class AppComponent {
   loadingService = inject(LoadingService);
-  cookieManagementService = inject( CookieManagementService);
+  routingQueryParamService = inject(RoutingQueryParamService);
 
-  constructor(
-    private route: ActivatedRoute,
-  ) { }
+  constructor(private route: ActivatedRoute) {}
 
   ngOnInit(): void {
-    this.cookieManagementService.getNavigationStartEvent().subscribe(() => {
-      if (!this.cookieManagementService.isDesignerEnv()) {
+    this.routingQueryParamService.getNavigationStartEvent().subscribe(() => {
+      if (!this.routingQueryParamService.isDesignerEnv()) {
         this.route.queryParams.subscribe(params => {
-          this.cookieManagementService.checkCookieForDesignerEnv(params);
-          this.cookieManagementService.checkCookieForDesignerVersion(params);
-        })
+          this.routingQueryParamService.checkCookieForDesignerEnv(params);
+          this.routingQueryParamService.checkCookieForDesignerVersion(params);
+        });
       }
-    })
+    });
   }
 }
