@@ -170,9 +170,7 @@ export class ProductDetailComponent {
   }
 
   loadDetailTabs(selectedVersion: string) {
-    const tag =
-      selectedVersion.replaceAll('Version ', 'v') ||
-      this.productDetail().newestReleaseVersion;
+    const tag = selectedVersion || this.productDetail().newestReleaseVersion;
     this.productService
       .getProductDetailsWithVersion(this.productDetail().id, tag)
       .subscribe(updatedProductDetail => {

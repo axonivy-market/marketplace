@@ -1,8 +1,10 @@
 package com.axonivy.market.assembler;
 
+import com.axonivy.market.constants.CommonConstants;
 import com.axonivy.market.controller.ProductDetailsController;
 import com.axonivy.market.entity.Product;
 import com.axonivy.market.entity.ProductModuleContent;
+import com.axonivy.market.enums.NonStandardProduct;
 import com.axonivy.market.model.ProductDetailModel;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.hateoas.server.mvc.RepresentationModelAssemblerSupport;
@@ -69,5 +71,15 @@ public class ProductDetailModelAssembler extends RepresentationModelAssemblerSup
 
   private ProductModuleContent getProductModuleContentByTag(List<ProductModuleContent> contents, String tag) {
     return contents.stream().filter(content -> StringUtils.equals(content.getTag(), tag)).findAny().orElse(null);
+  }
+
+  private String convertVersionToTag(String productId, String version) {
+    String[] versionParts = version.split(CommonConstants.SPACE_SEPARATOR);
+    String versionNumber = versionParts[versionParts.length - 1];
+    NonStandardProduct product = NonStandardProduct.findById(productId);
+    if (product.isVersionTagNumberOnly()) {
+      return versionNumber;
+    }
+    return "v" + versionNumber;
   }
 }

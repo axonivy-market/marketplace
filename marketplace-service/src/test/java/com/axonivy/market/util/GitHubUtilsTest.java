@@ -1,5 +1,6 @@
 package com.axonivy.market.util;
 
+import com.axonivy.market.enums.NonStandardProduct;
 import com.axonivy.market.github.util.GitHubUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.junit.jupiter.api.Assertions;
@@ -29,61 +30,61 @@ class GitHubUtilsTest {
 
   @Test
   void testBuildProductJsonFilePath() {
-    String result = GitHubUtils.getNonStandardProductFilePath(NonStandardProductPackageConstants.PORTAL);
+    String result = GitHubUtils.getNonStandardProductFilePath(NonStandardProduct.PORTAL.getId());
     Assertions.assertEquals("AxonIvyPortal/portal-product", result);
 
-    result = GitHubUtils.getNonStandardProductFilePath(NonStandardProductPackageConstants.CONNECTIVITY_FEATURE);
+    result = GitHubUtils.getNonStandardProductFilePath(NonStandardProduct.CONNECTIVITY_FEATURE.getId());
     Assertions.assertEquals("connectivity/connectivity-demos-product", result);
 
-    result = GitHubUtils.getNonStandardProductFilePath(NonStandardProductPackageConstants.ERROR_HANDLING);
+    result = GitHubUtils.getNonStandardProductFilePath(NonStandardProduct.ERROR_HANDLING.getId());
     Assertions.assertEquals("error-handling/error-handling-demos-product", result);
 
-    result = GitHubUtils.getNonStandardProductFilePath(NonStandardProductPackageConstants.WORKFLOW_DEMO);
+    result = GitHubUtils.getNonStandardProductFilePath(NonStandardProduct.WORKFLOW_DEMO.getId());
     Assertions.assertEquals("workflow/workflow-demos-product", result);
 
-    result = GitHubUtils.getNonStandardProductFilePath(NonStandardProductPackageConstants.MICROSOFT_365);
+    result = GitHubUtils.getNonStandardProductFilePath(NonStandardProduct.MICROSOFT_365.getId());
     Assertions.assertEquals("msgraph-connector-product/products/msgraph-connector", result);
 
-    result = GitHubUtils.getNonStandardProductFilePath(NonStandardProductPackageConstants.MICROSOFT_CALENDAR);
+    result = GitHubUtils.getNonStandardProductFilePath(NonStandardProduct.MICROSOFT_CALENDAR.getId());
     Assertions.assertEquals("msgraph-connector-product/products/msgraph-calendar", result);
 
-    result = GitHubUtils.getNonStandardProductFilePath(NonStandardProductPackageConstants.MICROSOFT_TEAMS);
+    result = GitHubUtils.getNonStandardProductFilePath(NonStandardProduct.MICROSOFT_TEAMS.getId());
     Assertions.assertEquals("msgraph-connector-product/products/msgraph-chat", result);
 
-    result = GitHubUtils.getNonStandardProductFilePath(NonStandardProductPackageConstants.MICROSOFT_MAIL);
+    result = GitHubUtils.getNonStandardProductFilePath(NonStandardProduct.MICROSOFT_MAIL.getId());
     Assertions.assertEquals("msgraph-connector-product/products/msgraph-mail", result);
 
-    result = GitHubUtils.getNonStandardProductFilePath(NonStandardProductPackageConstants.MICROSOFT_TODO);
+    result = GitHubUtils.getNonStandardProductFilePath(NonStandardProduct.MICROSOFT_TODO.getId());
     Assertions.assertEquals("msgraph-connector-product/products/msgraph-todo", result);
 
-    result = GitHubUtils.getNonStandardProductFilePath(NonStandardProductPackageConstants.HTML_DIALOG_DEMO);
+    result = GitHubUtils.getNonStandardProductFilePath(NonStandardProduct.HTML_DIALOG_DEMO.getId());
     Assertions.assertEquals("html-dialog/html-dialog-demos-product", result);
 
-    result = GitHubUtils.getNonStandardProductFilePath(NonStandardProductPackageConstants.RULE_ENGINE_DEMOS);
+    result = GitHubUtils.getNonStandardProductFilePath(NonStandardProduct.RULE_ENGINE_DEMOS.getId());
     Assertions.assertEquals("rule-engine/rule-engine-demos-product", result);
 
-    result = GitHubUtils.getNonStandardProductFilePath(NonStandardProductPackageConstants.OPENAI_CONNECTOR);
+    result = GitHubUtils.getNonStandardProductFilePath(NonStandardProduct.OPENAI_CONNECTOR.getId());
     Assertions.assertEquals("openai-connector-product", result);
 
-    result = GitHubUtils.getNonStandardProductFilePath(NonStandardProductPackageConstants.OPENAI_ASSISTANT);
+    result = GitHubUtils.getNonStandardProductFilePath(NonStandardProduct.OPENAI_ASSISTANT.getId());
     Assertions.assertEquals("openai-assistant-product", result);
   }
 
   @Test
   void testGetNonStandardImageFolder() {
-    String result = GitHubUtils.getNonStandardImageFolder(NonStandardProductPackageConstants.EXCEL_IMPORTER);
+    String result = GitHubUtils.getNonStandardImageFolder(NonStandardProduct.EXCEL_IMPORTER.getId());
     Assertions.assertEquals("doc", result);
 
-    result = GitHubUtils.getNonStandardImageFolder(NonStandardProductPackageConstants.EXPRESS_IMPORTER);
+    result = GitHubUtils.getNonStandardImageFolder(NonStandardProduct.EXPRESS_IMPORTER.getId());
     Assertions.assertEquals("img", result);
 
-    result = GitHubUtils.getNonStandardImageFolder(NonStandardProductPackageConstants.DEEPL_CONNECTOR);
+    result = GitHubUtils.getNonStandardImageFolder(NonStandardProduct.DEEPL_CONNECTOR.getId());
     Assertions.assertEquals("img", result);
 
-    result = GitHubUtils.getNonStandardImageFolder(NonStandardProductPackageConstants.GRAPHQL_DEMO);
+    result = GitHubUtils.getNonStandardImageFolder(NonStandardProduct.GRAPHQL_DEMO.getId());
     Assertions.assertEquals("assets", result);
 
-    result = GitHubUtils.getNonStandardImageFolder(NonStandardProductPackageConstants.OPENAI_ASSISTANT);
+    result = GitHubUtils.getNonStandardImageFolder(NonStandardProduct.OPENAI_ASSISTANT.getId());
     Assertions.assertEquals("docs", result);
 
     result = GitHubUtils.getNonStandardImageFolder(JIRA_CONNECTOR);
