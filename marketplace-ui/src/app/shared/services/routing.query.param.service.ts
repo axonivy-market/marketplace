@@ -1,4 +1,4 @@
-import { computed, Injectable, Signal, signal } from '@angular/core';
+import { computed, Injectable, signal } from '@angular/core';
 import { CookieService } from 'ngx-cookie-service';
 import { DESIGNER_COOKIE_VARIABLE } from '../constants/common.constant';
 import { Router, Params, NavigationStart } from '@angular/router';

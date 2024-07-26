@@ -1,60 +1,84 @@
 import { TestBed } from '@angular/core/testing';
+import { Router, NavigationStart } from '@angular/router';
+import { CookieService } from 'ngx-cookie-service';
+import { RoutingQueryParamService } from './routing.query.param.service';
+import { Subject } from 'rxjs';
+import { DESIGNER_COOKIE_VARIABLE } from '../constants/common.constant';
 
-import { AppModalService } from './app-modal.service';
-import { AddFeedbackDialogComponent } from '../../modules/product/product-detail/product-detail-feedback/product-star-rating-panel/add-feedback-dialog/add-feedback-dialog.component';
-import { SuccessDialogComponent } from '../../modules/product/product-detail/product-detail-feedback/product-star-rating-panel/add-feedback-dialog/success-dialog/success-dialog.component';
-import { ShowFeedbacksDialogComponent } from '../../modules/product/product-detail/product-detail-feedback/show-feedbacks-dialog/show-feedbacks-dialog.component';
-import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
-
-describe('AppModalService', () => {
-  let service: AppModalService;
-  let modalServiceSpy: jasmine.SpyObj<NgbModal>;
+describe('RoutingQueryParamService', () => {
+  let service: RoutingQueryParamService;
+  let cookieService: jasmine.SpyObj<CookieService>;
+  let router: jasmine.SpyObj<Router>;
+  let eventsSubject: Subject<NavigationStart>;
 
   beforeEach(() => {
-    const spy = jasmine.createSpyObj('NgbModal', ['open']);
+    const cookieServiceSpy = jasmine.createSpyObj('CookieService', [
+      'get',
+      'set'
+    ]);
+    eventsSubject = new Subject<NavigationStart>();
+    const routerSpy = jasmine.createSpyObj('Router', [], {
+      events: eventsSubject.asObservable()
+    });
 
     TestBed.configureTestingModule({
-      providers: [AppModalService, { provide: NgbModal, useValue: spy }]
+      providers: [
+        RoutingQueryParamService,
+        { provide: CookieService, useValue: cookieServiceSpy },
+        { provide: Router, useValue: routerSpy }
+      ]
     });
-
-    service = TestBed.inject(AppModalService);
-    modalServiceSpy = TestBed.inject(NgbModal) as jasmine.SpyObj<NgbModal>;
+    service = TestBed.inject(RoutingQueryParamService);
+    cookieService = TestBed.inject(
+      CookieService
+    ) as jasmine.SpyObj<CookieService>;
+    router = TestBed.inject(Router) as jasmine.SpyObj<Router>;
   });
 
-  it('should open ShowFeedbacksDialogComponent with correct options', () => {
-    service.openShowFeedbacksDialog();
-    expect(modalServiceSpy.open).toHaveBeenCalledWith(
-      ShowFeedbacksDialogComponent,
-      {
-        centered: true,
-        modalDialogClass: 'show-feedbacks-modal-dialog',
-        windowClass: 'overflow-hidden'
-      }
+  it('should be created', () => {
+    expect(service).toBeTruthy();
+  });
+
+  it('should check cookie for designer version', () => {
+    const params = { [DESIGNER_COOKIE_VARIABLE.ivyVersionParamName]: '1.0' };
+    service.checkCookieForDesignerVersion(params);
+    expect(cookieService.set).toHaveBeenCalledWith(
+      DESIGNER_COOKIE_VARIABLE.ivyVersionParamName,
+      '1.0'
     );
+    expect(service.getDesignerVersionFromCookie()).toBe('1.0');
   });
 
-  it('should open AddFeedbackDialogComponent with correct options and return result', async () => {
-    const mockResult = Promise.resolve('test result');
-    modalServiceSpy.open.and.returnValue({ result: mockResult } as any);
-
-    const result = await service.openAddFeedbackDialog();
-    expect(modalServiceSpy.open).toHaveBeenCalledWith(
-      AddFeedbackDialogComponent,
-      {
-        fullscreen: 'md',
-        centered: true,
-        modalDialogClass: 'add-feedback-modal-dialog'
-      }
+  it('should check cookie for designer env', () => {
+    const params = {
+      [DESIGNER_COOKIE_VARIABLE.ivyViewerParamName]:
+        DESIGNER_COOKIE_VARIABLE.defaultDesignerViewer
+    };
+    service.checkCookieForDesignerEnv(params);
+    expect(cookieService.set).toHaveBeenCalledWith(
+      DESIGNER_COOKIE_VARIABLE.ivyViewerParamName,
+      DESIGNER_COOKIE_VARIABLE.defaultDesignerViewer
     );
-    expect(result).toBe('test result');
+    expect(service.isDesignerViewer()).toBeTrue();
   });
 
-  it('should open SuccessDialogComponent with correct options', () => {
-    service.openSuccessDialog();
-    expect(modalServiceSpy.open).toHaveBeenCalledWith(SuccessDialogComponent, {
-      fullscreen: 'md',
-      centered: true,
-      modalDialogClass: 'add-feedback-modal-dialog'
-    });
+  it('should get designer version from cookie if not set', () => {
+    cookieService.get.and.returnValue('1.0');
+    expect(service.getDesignerVersionFromCookie()).toBe('1.0');
+  });
+
+  it('should set isDesigner to true if cookie matches default designer viewer', () => {
+    cookieService.get.and.returnValue(
+      DESIGNER_COOKIE_VARIABLE.defaultDesignerViewer
+    );
+    expect(service.isDesignerViewer()).toBeTrue();
+  });
+
+  it('should listen to navigation start events', () => {
+    cookieService.get.and.returnValue(
+      DESIGNER_COOKIE_VARIABLE.defaultDesignerViewer
+    );
+    eventsSubject.next(new NavigationStart(1, 'testUrl'));
+    expect(service.isDesignerViewer()).toBeTrue();
   });
 });

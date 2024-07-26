@@ -15,8 +15,9 @@ import { RoutingQueryParamService } from './shared/services/routing.query.param.
 export class AppComponent {
   loadingService = inject(LoadingService);
   routingQueryParamService = inject(RoutingQueryParamService);
+  route = inject(ActivatedRoute);
 
-  constructor(private route: ActivatedRoute) {}
+  constructor() {}
 
   ngOnInit(): void {
     this.routingQueryParamService.getNavigationStartEvent().subscribe(() => {
