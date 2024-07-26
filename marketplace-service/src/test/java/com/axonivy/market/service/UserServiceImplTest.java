@@ -1,9 +1,10 @@
-package com.axonivy.market.service.impl;
+package com.axonivy.market.service;
 
 import com.axonivy.market.entity.User;
 import com.axonivy.market.enums.ErrorCode;
 import com.axonivy.market.exceptions.model.NotFoundException;
 import com.axonivy.market.repository.UserRepository;
+import com.axonivy.market.service.impl.UserServiceImpl;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -66,9 +67,7 @@ class UserServiceImplTest {
 
     when(userRepository.findById(userId)).thenReturn(Optional.empty());
 
-    NotFoundException exception = assertThrows(NotFoundException.class, () -> {
-      userService.findUser(userId);
-    });
+    NotFoundException exception = assertThrows(NotFoundException.class, () -> userService.findUser(userId));
     assertEquals(ErrorCode.USER_NOT_FOUND.getCode(), exception.getCode());
     verify(userRepository, times(1)).findById(userId);
   }

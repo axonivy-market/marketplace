@@ -72,7 +72,7 @@ class ProductServiceImplTest {
 
   private static final String SAMPLE_PRODUCT_ID = "amazon-comprehend";
   private static final String SAMPLE_PRODUCT_NAME = "Amazon Comprehend";
-  private static final long LAST_CHANGE_TIME = 1718096290000l;
+  private static final long LAST_CHANGE_TIME = 1718096290000L;
   private static final Pageable PAGEABLE = PageRequest.of(0, 20,
       Sort.by(SortOption.ALPHABETICALLY.getOption()).descending());
   private static final String SHA1_SAMPLE = "35baa89091b2452b77705da227f1a964ecabc6c8";

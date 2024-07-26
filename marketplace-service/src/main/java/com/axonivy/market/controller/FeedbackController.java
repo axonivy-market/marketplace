@@ -1,6 +1,7 @@
 package com.axonivy.market.controller;
 
 import com.axonivy.market.assembler.FeedbackModelAssembler;
+import com.axonivy.market.constants.CommonConstants;
 import com.axonivy.market.entity.Feedback;
 import com.axonivy.market.model.FeedbackModel;
 import com.axonivy.market.model.ProductRating;
@@ -82,8 +83,8 @@ public class FeedbackController {
   public ResponseEntity<Void> createFeedback(@RequestBody @Valid FeedbackModel feedback,
       @RequestHeader(value = "Authorization") String authorizationHeader) {
     String token = null;
-    if (authorizationHeader != null && authorizationHeader.startsWith("Bearer ")) {
-      token = authorizationHeader.substring(7); // Remove "Bearer " prefix
+    if (authorizationHeader != null && authorizationHeader.startsWith(CommonConstants.BEARER)) {
+      token = authorizationHeader.substring(CommonConstants.BEARER.length()).trim(); // Remove "Bearer " prefix
     }
 
     // Validate the token

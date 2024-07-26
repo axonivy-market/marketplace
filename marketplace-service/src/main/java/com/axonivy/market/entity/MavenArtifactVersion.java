@@ -7,6 +7,7 @@ import lombok.Setter;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
+import java.io.Serial;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -21,6 +22,7 @@ import static com.axonivy.market.constants.EntityConstants.MAVEN_ARTIFACT_VERSIO
 @NoArgsConstructor
 @Document(MAVEN_ARTIFACT_VERSION)
 public class MavenArtifactVersion implements Serializable {
+  @Serial
   private static final long serialVersionUID = -6492612804634492078L;
 
   @Id
