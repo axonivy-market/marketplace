@@ -29,7 +29,7 @@ export class RoutingQueryParamService {
 
   checkCookieForDesignerVersion(params: Params) {
     const versionParam = params[DESIGNER_COOKIE_VARIABLE.ivyVersionParamName];
-    if (versionParam != undefined) {
+    if (versionParam !== undefined) {
       this.cookieService.set(
         DESIGNER_COOKIE_VARIABLE.ivyVersionParamName,
         versionParam
