@@ -164,5 +164,7 @@ export const FEEDBACK_SORT_TYPES = [
 export const DESIGNER_COOKIE_VARIABLE = {
   ivyViewerParamName: 'ivy-viewer',
   ivyVersionParamName: 'ivy-version',
-  defaultDesignerViewer: 'designer-market'
+  defaultDesignerViewer: 'designer-market',
+  restClientParamName: 'resultsOnly',
+  typeParamName: 'type'
 };

@@ -7,6 +7,8 @@ import org.springframework.data.domain.Pageable;
 public interface ProductService {
   Page<Product> findProducts(String type, String keyword, String language, Pageable pageable);
 
+  Page<Product> findProductsInDesigner(String search, Pageable pageable);
+
   boolean syncLatestDataFromMarketRepo();
 
   int updateInstallationCountForProduct(String key);

@@ -10,7 +10,7 @@ import {
   WritableSignal
 } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { NavigationStart, Router } from '@angular/router';
+import { ActivatedRoute, NavigationStart, Router } from '@angular/router';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { debounceTime, Subject, Subscription } from 'rxjs';
 import { ThemeService } from '../../core/services/theme/theme.service';
@@ -27,6 +27,7 @@ import { Page } from '../../shared/models/apis/page.model';
 import { Language } from '../../shared/enums/language.enum';
 import { ProductDetail } from '../../shared/models/product-detail.model';
 import { LanguageService } from '../../core/services/language/language.service';
+import { CookieManagementService } from '../../cookie.management.service';
 
 const SEARCH_DEBOUNCE_TIME = 500;
 
@@ -55,30 +56,58 @@ export class ProductComponent implements AfterViewInit, OnDestroy {
     sort: SortOption.POPULARITY,
     language: Language.EN
   };
+
+  designerCriteria: Criteria = {
+    search: '',
+    type: TypeOption.CONNECTORS,
+    sort: SortOption.POPULARITY,
+    language: Language.EN
+  };
+
   responseLink!: Link;
   responsePage!: Page;
+  isRestClient = signal(false);
 
   productService = inject(ProductService);
   themeService = inject(ThemeService);
   translateService = inject(TranslateService);
   languageService = inject(LanguageService);
+  cookieService = inject(CookieManagementService);
 
   router = inject(Router);
   @ViewChild('observer', { static: true }) observerElement!: ElementRef;
 
   constructor() {
-    this.loadProductItems();
-    this.subscriptions.push(
-      this.searchTextChanged
-        .pipe(debounceTime(SEARCH_DEBOUNCE_TIME))
-        .subscribe(value => {
-          this.criteria = {
-            ...this.criteria,
-            search: value
-          };
-          this.loadProductItems(true);
-        })
-    );
+    this.isRestClient.set(this.cookieService.isResultsOnly());
+    console.log(this.isRestClient());
+    if (this.isRestClient()) {
+      this.loadProductInDesigner();
+      this.subscriptions.push(
+        this.searchTextChanged
+          .pipe(debounceTime(SEARCH_DEBOUNCE_TIME))
+          .subscribe(value => {
+            this.designerCriteria = {
+              ...this.designerCriteria,
+              search: value
+            };
+            this.loadProductInDesigner(true);
+          })
+      );
+    } else {
+      this.loadProductItems();
+      this.subscriptions.push(
+        this.searchTextChanged
+          .pipe(debounceTime(SEARCH_DEBOUNCE_TIME))
+          .subscribe(value => {
+            this.criteria = {
+              ...this.criteria,
+              search: value
+            };
+            this.loadProductItems(true);
+          })
+      );
+    }
+
     this.router.events?.subscribe(event => {
       if (!(event instanceof NavigationStart)) {
         return;
@@ -137,13 +166,36 @@ export class ProductComponent implements AfterViewInit, OnDestroy {
     );
   }
 
+  loadProductInDesigner(shouldCleanData = false) {
+    this.subscriptions.push(
+      this.productService
+        .findProductsInDesignerByCriteria(this.designerCriteria)
+        .subscribe((response: ProductApiResponse) => {
+          const newProducts = response._embedded.products;
+          if (shouldCleanData) {
+            this.products.set(newProducts);
+          } else {
+            this.products.update(existingProducts =>
+              existingProducts.concat(newProducts)
+            );
+          }
+          this.responseLink = response._links;
+          this.responsePage = response.page;
+        })
+    );
+  }
+
   setupIntersectionObserver() {
     const options = { root: null, rootMargin: '0px', threshold: 0.1 };
     const observer = new IntersectionObserver(entries => {
       entries.forEach(entry => {
         if (entry.isIntersecting && this.hasMore()) {
           this.criteria.nextPageHref = this.responseLink?.next?.href;
-          this.loadProductItems();
+          if (this.isRestClient()) {
+            this.loadProductInDesigner();
+          } else {
+            this.loadProductItems();
+          }
         }
       });
     }, options);

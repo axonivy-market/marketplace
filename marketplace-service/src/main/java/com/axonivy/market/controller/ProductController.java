@@ -53,6 +53,18 @@ public class ProductController {
     return new ResponseEntity<>(pageResources, HttpStatus.OK);
   }
 
+  @GetMapping("/designer")
+  public ResponseEntity<PagedModel<ProductModel>> findProductsInDesigner(@RequestParam(required = false, name = "search") String search,
+                                                                         Pageable pageable) {
+    Page<Product> results = productService.findProductsInDesigner(search, pageable);
+    if (results.isEmpty()) {
+      return generateEmptyPagedModel();
+    }
+    var responseContent = new PageImpl<>(results.getContent(), pageable, results.getTotalElements());
+    var pageResources = pagedResourcesAssembler.toModel(responseContent, assembler);
+    return new ResponseEntity<>(pageResources, HttpStatus.OK);
+  }
+
   @PutMapping(SYNC)
   public ResponseEntity<Message> syncProducts(@RequestHeader(value = "Authorization") String authorizationHeader,
       @RequestParam(value = "resetSync", required = false) Boolean resetSync) {

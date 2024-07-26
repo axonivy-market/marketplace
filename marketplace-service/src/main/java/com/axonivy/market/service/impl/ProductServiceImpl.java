@@ -6,6 +6,7 @@ import com.axonivy.market.entity.GitHubRepoMeta;
 import com.axonivy.market.entity.Product;
 import com.axonivy.market.entity.ProductModuleContent;
 import com.axonivy.market.enums.FileType;
+import com.axonivy.market.enums.Language;
 import com.axonivy.market.enums.SortOption;
 import com.axonivy.market.enums.TypeOption;
 import com.axonivy.market.factory.ProductFactory;
@@ -103,6 +104,18 @@ public class ProductServiceImpl implements ProductService {
       break;
     default:
       break;
+    }
+    return result;
+  }
+
+  @Override
+  public Page<Product> findProductsInDesigner(String search, Pageable pageable) {
+    final var searchPageable = refinePagination(Language.EN.getValue(), pageable);
+    Page<Product> result;
+        if (StringUtils.isBlank(search)) {
+          result = productRepository.findByType(TypeOption.CONNECTORS.getCode(), searchPageable);
+        } else {
+          result = productRepository.searchByNameAndType(search, TypeOption.CONNECTORS.getCode(), Language.EN.getValue(), searchPageable);
     }
     return result;
   }
