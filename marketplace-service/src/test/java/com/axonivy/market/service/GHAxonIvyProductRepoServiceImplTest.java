@@ -138,7 +138,7 @@ class GHAxonIvyProductRepoServiceImplTest {
 
   private void createListNodeForDataNoteByName(String nodeName) {
     JsonNode sectionNode = Mockito.mock(JsonNode.class);
-    Iterator<JsonNode> iterator = Mockito.mock(Iterator.class);
+    Iterator<JsonNode> iterator = Mockito.mock(String.valueOf(Iterator.class));
     Mockito.when(dataNode.path(nodeName)).thenReturn(sectionNode);
     Mockito.when(sectionNode.iterator()).thenReturn(iterator);
     Mockito.when(iterator.hasNext()).thenReturn(true, false);
