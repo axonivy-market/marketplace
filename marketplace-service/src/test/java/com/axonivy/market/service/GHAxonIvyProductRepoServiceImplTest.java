@@ -80,7 +80,7 @@ class GHAxonIvyProductRepoServiceImplTest {
   }
 
   @AfterEach
-  void after() throws IOException {
+  void after() {
     reset(mockGHOrganization);
     reset(gitHubService);
   }
@@ -138,7 +138,7 @@ class GHAxonIvyProductRepoServiceImplTest {
 
   private void createListNodeForDataNoteByName(String nodeName) {
     JsonNode sectionNode = Mockito.mock(JsonNode.class);
-    Iterator<JsonNode> iterator = Mockito.mock(Iterator.class);
+    Iterator<JsonNode> iterator = Mockito.mock(String.valueOf(Iterator.class));
     Mockito.when(dataNode.path(nodeName)).thenReturn(sectionNode);
     Mockito.when(sectionNode.iterator()).thenReturn(iterator);
     Mockito.when(iterator.hasNext()).thenReturn(true, false);
@@ -230,7 +230,7 @@ class GHAxonIvyProductRepoServiceImplTest {
     when(mockImageFile.isDirectory()).thenReturn(true);
     when(mockImageFile.getDownloadUrl()).thenReturn(IMAGE_DOWNLOAD_URL);
 
-    PagedIterable<GHContent> pagedIterable = mock(PagedIterable.class);
+    PagedIterable<GHContent> pagedIterable = Mockito.mock(String.valueOf(GHContent.class));
     when(mockImageFile.listDirectoryContent()).thenReturn(pagedIterable);
     when(pagedIterable.toList()).thenReturn(List.of(mockImageFile));
 
@@ -340,7 +340,7 @@ class GHAxonIvyProductRepoServiceImplTest {
     return new ByteArrayInputStream(jsonContent.getBytes(StandardCharsets.UTF_8));
   }
 
-  private Product createMockProduct() throws IOException {
+  private Product createMockProduct() {
     Product product = new Product();
     product.setId("docuware-connector");
     product.setLanguage("en");

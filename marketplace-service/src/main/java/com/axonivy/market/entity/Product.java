@@ -12,6 +12,7 @@ import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
+import java.io.Serial;
 import java.io.Serializable;
 import java.util.Date;
 import java.util.List;
@@ -26,6 +27,7 @@ import static com.axonivy.market.constants.EntityConstants.PRODUCT;
 @Builder
 @Document(PRODUCT)
 public class Product implements Serializable {
+  @Serial
   private static final long serialVersionUID = -8770801877877277258L;
   @Id
   private String id;
