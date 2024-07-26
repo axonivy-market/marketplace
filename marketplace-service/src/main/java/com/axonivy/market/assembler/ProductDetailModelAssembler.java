@@ -13,6 +13,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
+import java.util.Optional;
 
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
@@ -32,8 +33,9 @@ public class ProductDetailModelAssembler extends RepresentationModelAssemblerSup
     return createModel(product, null);
   }
 
-  public ProductDetailModel toModel(Product product, String tag) {
-    return createModel(product, tag);
+  public ProductDetailModel toModel(Product product, String version) {
+    String productId = Optional.ofNullable(product).map(Product::getId).orElse(StringUtils.EMPTY);
+    return createModel(product, convertVersionToTag(productId, version));
   }
 
   private ProductDetailModel createModel(Product product, String tag) {
