@@ -60,7 +60,7 @@ class ProductDetailsControllerTest {
     assertEquals(result, mockExpectedResult);
 
     verify(productService, times(1)).fetchProductDetail(DOCKER_CONNECTOR_ID);
-    verify(detailModelAssembler, times(1)).toModel(mockProduct(), null);
+    verify(detailModelAssembler, times(1)).toModel(mockProduct());
   }
 
   @Test
