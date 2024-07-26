@@ -24,7 +24,7 @@ export const apiInterceptor: HttpInterceptorFn = (req, next) => {
   }
   let requestURL = req.url;
   const apiURL = environment.apiUrl;
-  if (!requestURL.startsWith(apiURL)) {
+  if (!requestURL.includes(apiURL)) {
     requestURL = `${apiURL}/${req.url}`;
   }
 

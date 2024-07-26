@@ -2,7 +2,7 @@ package com.axonivy.market.controller;
 
 import com.axonivy.market.entity.User;
 import com.axonivy.market.github.service.GitHubService;
-import com.axonivy.market.model.GitHubAccessTokenResponse;
+import com.axonivy.market.github.model.GitHubAccessTokenResponse;
 import com.axonivy.market.model.Oauth2AuthorizationCode;
 import com.axonivy.market.service.JwtService;
 import org.junit.jupiter.api.BeforeEach;

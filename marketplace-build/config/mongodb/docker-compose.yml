@@ -1,15 +1,14 @@
-# This docker compose to init mongo for setup auth
+# This docker-compose to init MongoDB as free access and create a volume as name + mongodata
+# Then insert the admin user as defined at mogo-init.js
+# Change the name to other if you want to create more volumes. e.g: marketplace-dev
 name: marketplace
 
 services:
   mongodb:
+    image: mongodb/mongodb-community-server:7.0.0-ubi8
     container_name: marketplace-mongodb-non-authen
-    build:
-      context: .
-      dockerfile: Dockerfile
-    restart: always
-    ports:
-      - "27017:27017"
+    expose:
+      - 27017
     volumes:
       - mongodata:/data/db
       - ./mongo-init.js:/docker-entrypoint-initdb.d/mongo-init.js:ro

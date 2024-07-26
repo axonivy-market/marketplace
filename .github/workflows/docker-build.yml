@@ -4,14 +4,39 @@ on:
   push:
     branches: [ "develop" ]
   workflow_dispatch:
+    inputs:
+      build_env:
+        description: 'Build environment'
+        required: true
+        default: 'staging'
+
   workflow_call:
+    inputs:
+      build_env:
+        description: 'Build environment'
+        required: true
+        type: string
 
 jobs:
-  build:
+  cleanup:
+    name: Clean up docker container and images
     runs-on: self-hosted
 
     steps:
-      - uses: actions/checkout@v4
+      - name: Bring down and remove containers and images
+        working-directory: ./marketplace-build
+        run: |
+          docker compose down --rmi all
+
+  build-and-deploy:
+    name: Build and bring up docker containers
+    runs-on: self-hosted
+    needs: cleanup
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
       - name: Update environment variables for .env
         env:
           ENV_FILE: './marketplace-build/.env'
@@ -22,19 +47,29 @@ jobs:
           SERVICE_PASSWORD: ${{ secrets.SERVICE_PASSWORD }}
           MONGODB_DATABASE: ${{ secrets.MONGODB_DATABASE }}
           GH_TOKEN: ${{ secrets.GH_TOKEN }}
-          MARKETPLACE_INSTALLATION_URL: ${{ secrets.MARKETPLACE_INSTALLATION_URL }}
+          MARKET_JWT_SECRET_KEY: ${{ secrets.MARKET_JWT_SECRET_KEY }}
         run: |
-            sed -i "s/^MONGODB_INITDB_ROOT_USERNAME=.*$/MONGODB_INITDB_ROOT_USERNAME=$ROOT_USERNAME/" $ENV_FILE
-            sed -i "s/^MONGODB_INITDB_ROOT_PASSWORD=.*$/MONGODB_INITDB_ROOT_PASSWORD=$ROOT_PASSWORD/" $ENV_FILE
-            sed -i "s/^SERVICE_MONGODB_HOST=.*$/SERVICE_MONGODB_HOST=$MONGODB_HOST/" $ENV_FILE
-            sed -i "s/^SERVICE_MONGODB_DATABASE=.*$/SERVICE_MONGODB_DATABASE=$MONGODB_DATABASE/" $ENV_FILE
-            sed -i "s/^SERVICE_MONGODB_USER=.*$/SERVICE_MONGODB_USER=$SERVICE_USERNAME/" $ENV_FILE
-            sed -i "s/^SERVICE_MONGODB_PASSWORD=.*$/SERVICE_MONGODB_PASSWORD=$SERVICE_PASSWORD/" $ENV_FILE
-            sed -i "s/^MARKET_GITHUB_TOKEN=.*$/MARKET_GITHUB_TOKEN=$GH_TOKEN/" $ENV_FILE
-            sed -i "s/^MARKETPLACE_INSTALLATION_URL=.*$/MARKETPLACE_INSTALLATION_URL=$MARKETPLACE_INSTALLATION_URL/" $ENV_FILE
+          if [ "${{ inputs.build_env }}" == "production" ]; then
+            OAUTH_APP_CLIENT_ID=${{ secrets.OAUTH_APP_CLIENT_ID }}
+            OAUTH_APP_CLIENT_SECRET=${{ secrets.OAUTH_APP_CLIENT_SECRET }}
+          else
+            OAUTH_APP_CLIENT_ID=${{ secrets.OAUTH_APP_CLIENT_ID_STAGING }}
+            OAUTH_APP_CLIENT_SECRET=${{ secrets.OAUTH_APP_CLIENT_SECRET_STAGING }}
+          fi
 
-      - name: Refresh Docker images
+          sed -i "s/^MONGODB_INITDB_ROOT_USERNAME=.*$/MONGODB_INITDB_ROOT_USERNAME=$ROOT_USERNAME/" $ENV_FILE
+          sed -i "s/^MONGODB_INITDB_ROOT_PASSWORD=.*$/MONGODB_INITDB_ROOT_PASSWORD=$ROOT_PASSWORD/" $ENV_FILE
+          sed -i "s/^SERVICE_MONGODB_HOST=.*$/SERVICE_MONGODB_HOST=$MONGODB_HOST/" $ENV_FILE
+          sed -i "s/^SERVICE_MONGODB_DATABASE=.*$/SERVICE_MONGODB_DATABASE=$MONGODB_DATABASE/" $ENV_FILE
+          sed -i "s/^SERVICE_MONGODB_USER=.*$/SERVICE_MONGODB_USER=$SERVICE_USERNAME/" $ENV_FILE
+          sed -i "s/^SERVICE_MONGODB_PASSWORD=.*$/SERVICE_MONGODB_PASSWORD=$SERVICE_PASSWORD/" $ENV_FILE
+          sed -i "s/^MARKET_GITHUB_TOKEN=.*$/MARKET_GITHUB_TOKEN=$GH_TOKEN/" $ENV_FILE
+          sed -i "s/^MARKET_GITHUB_OAUTH_APP_CLIENT_ID=.*$/MARKET_GITHUB_OAUTH_APP_CLIENT_ID=$OAUTH_APP_CLIENT_ID/" $ENV_FILE
+          sed -i "s/^MARKET_GITHUB_OAUTH_APP_CLIENT_SECRET=.*$/MARKET_GITHUB_OAUTH_APP_CLIENT_SECRET=$OAUTH_APP_CLIENT_SECRET/" $ENV_FILE
+          sed -i "s/^MARKET_JWT_SECRET_KEY=.*$/MARKET_JWT_SECRET_KEY=$MARKET_JWT_SECRET_KEY/" $ENV_FILE
+
+      - name: Build and bring up containers without cache
         working-directory: ./marketplace-build
         run: |
-          docker compose down
-          docker compose up -d
+          docker compose build --no-cache --build-arg BUILD_ENV=${{ inputs.build_env }}
+          docker compose up --force-recreate -d

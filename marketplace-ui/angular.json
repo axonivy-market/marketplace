@@ -60,6 +60,23 @@
               ],
               "outputHashing": "all"
             },
+            "staging": {
+              "optimization": {
+                "scripts": true,
+                "styles": {
+                  "minify": true,
+                  "inlineCritical": false
+                },
+                "fonts": true
+              },
+              "outputHashing": "all",
+              "fileReplacements": [
+                {
+                  "replace": "src/environments/environment.ts",
+                  "with": "src/environments/environment.staging.ts"
+                }
+              ]
+            },
             "development": {
               "optimization": false,
               "extractLicenses": false,
@@ -79,6 +96,9 @@
           "configurations": {
             "production": {
               "buildTarget": "marketplace-ui:build:production"
+            },
+            "staging": {
+              "buildTarget": "marketplace-ui:build:staging"
             },
             "development": {
               "buildTarget": "marketplace-ui:build:development"

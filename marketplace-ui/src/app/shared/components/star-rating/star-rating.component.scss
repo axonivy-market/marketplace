@@ -21,10 +21,14 @@
 .adding-feedback-star {
   font-size: 2.25rem;
   color: #dfdfdf;
-  margin-right: 15px;
+  margin-right: 0px;
   .filled {
-    color: #FFCB13;
+    color: #ffcb13;
   }
+}
+
+.rating-stars {
+  width: 40%;
 }
 
 @media (max-width: 767px) {
@@ -33,13 +37,7 @@
     margin-right: 8px;
   }
 
-  .adding-feedback-star {
-    margin-right: 39px;
-  }
-}
-
-@media (max-width: 400px) {
-  .adding-feedback-star {
-    margin-right: clamp(27px, 6vw, 39px);
+  .rating-stars {
+    width: 100%;
   }
 }

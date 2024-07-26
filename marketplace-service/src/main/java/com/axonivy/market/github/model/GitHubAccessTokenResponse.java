@@ -1,4 +1,4 @@
-package com.axonivy.market.model;
+package com.axonivy.market.github.model;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AllArgsConstructor;

@@ -28,7 +28,7 @@ export class AuthService {
   private readonly BASE_URL = environment.apiUrl;
   private readonly TOKEN_KEY = 'token';
   private readonly githubAuthUrl = 'https://github.com/login/oauth/authorize';
-  private readonly githubAuthCallbackUrl = environment.githubAuthCallbackUrl;
+  private readonly githubAuthCallbackUrl = window.location.origin + environment.githubAuthCallbackPath;
 
   constructor(
     private readonly http: HttpClient,
