@@ -18,6 +18,7 @@ import { ProductService } from '../product.service';
 import { ProductDetailComponent } from './product-detail.component';
 import { ProductModuleContent } from '../../../shared/models/product-module-content.model';
 import { RoutingQueryParamService } from '../../../shared/services/routing.query.param.service';
+import { ProductDetail } from '../../../shared/models/product-detail.model';
 
 const products = MOCK_PRODUCTS._embedded.products;
 declare const viewport: Viewport;
@@ -26,6 +27,7 @@ describe('ProductDetailComponent', () => {
   let component: ProductDetailComponent;
   let fixture: ComponentFixture<ProductDetailComponent>;
   let routingQueryParamService: jasmine.SpyObj<RoutingQueryParamService>;
+  let productService: ProductService;
 
   beforeEach(async () => {
     const routingQueryParamServiceSpy = jasmine.createSpyObj(
@@ -42,6 +44,7 @@ describe('ProductDetailComponent', () => {
       providers: [
         provideHttpClient(withInterceptorsFromDi()),
         provideHttpClientTesting(),
+        { provide: ProductService, useClass: MockProductService },
         {
           provide: ActivatedRoute,
           useValue: {
@@ -69,7 +72,7 @@ describe('ProductDetailComponent', () => {
     routingQueryParamService = TestBed.inject(
       RoutingQueryParamService
     ) as jasmine.SpyObj<RoutingQueryParamService>;
-
+    productService = TestBed.inject(ProductService);
     routingQueryParamService.getDesignerVersionFromCookie.and.returnValue('');
     routingQueryParamService.isDesignerEnv.and.returnValue(false);
   });

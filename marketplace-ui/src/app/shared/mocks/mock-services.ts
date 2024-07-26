@@ -23,4 +23,8 @@ export class MockProductService {
   getProductDetails(productId: string, tag: string) {
     return of(MOCK_PRODUCT_DETAILS);
   }
+
+  getProductDetailsWithVersion(productId: string, version: string) {
+    return of(MOCK_PRODUCT_DETAILS);
+  }
 }
