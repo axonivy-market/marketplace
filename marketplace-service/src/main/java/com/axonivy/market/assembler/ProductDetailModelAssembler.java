@@ -1,6 +1,7 @@
 package com.axonivy.market.assembler;
 
 import com.axonivy.market.constants.CommonConstants;
+import com.axonivy.market.constants.GitHubConstants;
 import com.axonivy.market.controller.ProductDetailsController;
 import com.axonivy.market.entity.Product;
 import com.axonivy.market.entity.ProductModuleContent;
@@ -73,13 +74,16 @@ public class ProductDetailModelAssembler extends RepresentationModelAssemblerSup
     return contents.stream().filter(content -> StringUtils.equals(content.getTag(), tag)).findAny().orElse(null);
   }
 
-  private String convertVersionToTag(String productId, String version) {
+  public String convertVersionToTag(String productId, String version) {
+    if (StringUtils.isBlank(version)) {
+      return version;
+    }
     String[] versionParts = version.split(CommonConstants.SPACE_SEPARATOR);
     String versionNumber = versionParts[versionParts.length - 1];
     NonStandardProduct product = NonStandardProduct.findById(productId);
     if (product.isVersionTagNumberOnly()) {
       return versionNumber;
     }
-    return "v" + versionNumber;
+    return GitHubConstants.STANDARD_TAG_PREFIX.concat(versionNumber);
   }
 }
