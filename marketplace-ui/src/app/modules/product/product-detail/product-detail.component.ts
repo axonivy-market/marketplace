@@ -160,9 +160,9 @@ export class ProductDetailComponent {
   getContent(value: string): boolean {
     const content = this.productModuleContent();
     const conditions: { [key: string]: boolean } = {
-      description: content.description != null,
-      demo: content.demo != null && content.demo !== '',
-      setup: content.setup != null && content.setup !== '',
+      description: content.description !== null,
+      demo: content.demo !== null && content.demo !== '',
+      setup: content.setup !== null && content.setup !== '',
       dependency: content.isDependency
     };
 
