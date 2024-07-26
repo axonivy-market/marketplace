@@ -28,6 +28,7 @@ import org.springframework.http.HttpStatus;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -55,9 +56,6 @@ class ProductControllerTest {
   private PagedResourcesAssembler<Product> pagedResourcesAssembler;
 
   @Mock
-  private PagedModel<?> pagedProductModel;
-
-  @Mock
   private GitHubService gitHubService;
 
   @InjectMocks
@@ -71,13 +69,13 @@ class ProductControllerTest {
   @Test
   void testFindProductsAsEmpty() {
     PageRequest pageable = PageRequest.of(0, 20);
-    Page<Product> mockProducts = new PageImpl<Product>(List.of(), pageable, 0);
+    Page<Product> mockProducts = new PageImpl<>(List.of(), pageable, 0);
     when(service.findProducts(any(), any(), any(), any())).thenReturn(mockProducts);
     when(pagedResourcesAssembler.toEmptyModel(any(), any())).thenReturn(PagedModel.empty());
     var result = productController.findProducts(TypeOption.ALL.getOption(), null, "en", pageable);
     assertEquals(HttpStatus.OK, result.getStatusCode());
     assertTrue(result.hasBody());
-    assertEquals(0, result.getBody().getContent().size());
+    assertEquals(0, Objects.requireNonNull(result.getBody()).getContent().size());
   }
 
   @Test
@@ -85,7 +83,7 @@ class ProductControllerTest {
     PageRequest pageable = PageRequest.of(0, 20, Sort.by(Order.by(SortOption.ALPHABETICALLY.getOption())));
     Product mockProduct = createProductMock();
 
-    Page<Product> mockProducts = new PageImpl<Product>(List.of(mockProduct), pageable, 1);
+    Page<Product> mockProducts = new PageImpl<>(List.of(mockProduct), pageable, 1);
     when(service.findProducts(any(), any(), any(), any())).thenReturn(mockProducts);
     assembler = new ProductModelAssembler();
     var mockProductModel = assembler.toModel(mockProduct);
@@ -94,7 +92,7 @@ class ProductControllerTest {
     var result = productController.findProducts(TypeOption.ALL.getOption(), "", "en", pageable);
     assertEquals(HttpStatus.OK, result.getStatusCode());
     assertTrue(result.hasBody());
-    assertEquals(1, result.getBody().getContent().size());
+    assertEquals(1, Objects.requireNonNull(result.getBody()).getContent().size());
     assertEquals(PRODUCT_NAME_SAMPLE,
         result.getBody().getContent().iterator().next().getNames().get(Language.EN.getValue()));
     assertEquals(PRODUCT_NAME_DE_SAMPLE,
@@ -109,7 +107,7 @@ class ProductControllerTest {
 
     assertEquals(HttpStatus.OK, response.getStatusCode());
     assertTrue(response.hasBody());
-    assertEquals(ErrorCode.SUCCESSFUL.getCode(), response.getBody().getHelpCode());
+    assertEquals(ErrorCode.SUCCESSFUL.getCode(), Objects.requireNonNull(response.getBody()).getHelpCode());
     assertEquals("Data is already up to date, nothing to sync", response.getBody().getMessageDetails());
   }
 
@@ -122,7 +120,7 @@ class ProductControllerTest {
 
     assertEquals(HttpStatus.OK, response.getStatusCode());
     assertTrue(response.hasBody());
-    assertEquals(ErrorCode.SUCCESSFUL.getCode(), response.getBody().getHelpCode());
+    assertEquals(ErrorCode.SUCCESSFUL.getCode(), Objects.requireNonNull(response.getBody()).getHelpCode());
     assertTrue(response.getBody().getMessageDetails().contains("Finished sync data"));
   }
 
@@ -132,9 +130,8 @@ class ProductControllerTest {
         ErrorCode.GITHUB_USER_UNAUTHORIZED.getHelpText())).when(gitHubService)
         .validateUserOrganization(any(String.class), any(String.class));
 
-    UnauthorizedException exception = assertThrows(UnauthorizedException.class, () -> {
-      productController.syncProducts(INVALID_AUTHORIZATION_HEADER, false);
-    });
+    UnauthorizedException exception = assertThrows(UnauthorizedException.class,
+        () -> productController.syncProducts(INVALID_AUTHORIZATION_HEADER, false));
 
     assertEquals(ErrorCode.GITHUB_USER_UNAUTHORIZED.getHelpText(), exception.getMessage());
   }

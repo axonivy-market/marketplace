@@ -25,6 +25,7 @@ import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
 
 import java.util.List;
+import java.util.Objects;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -73,7 +74,7 @@ class FeedbackControllerTest {
     var result = feedbackController.findFeedbacks(PRODUCT_ID_SAMPLE, pageable);
     assertEquals(HttpStatus.OK, result.getStatusCode());
     assertTrue(result.hasBody());
-    assertEquals(0, result.getBody().getContent().size());
+    assertEquals(0, Objects.requireNonNull(result.getBody()).getContent().size());
   }
 
   @Test
@@ -91,7 +92,7 @@ class FeedbackControllerTest {
     var result = feedbackController.findFeedbacks(PRODUCT_ID_SAMPLE, pageable);
     assertEquals(HttpStatus.OK, result.getStatusCode());
     assertTrue(result.hasBody());
-    assertEquals(1, result.getBody().getContent().size());
+    assertEquals(1, Objects.requireNonNull(result.getBody()).getContent().size());
     assertEquals(USER_NAME_SAMPLE, result.getBody().getContent().iterator().next().getUsername());
   }
 
@@ -104,7 +105,7 @@ class FeedbackControllerTest {
     var result = feedbackController.findFeedback(FEEDBACK_ID_SAMPLE);
     assertEquals(HttpStatus.OK, result.getStatusCode());
     assertTrue(result.hasBody());
-    assertEquals(USER_NAME_SAMPLE, result.getBody().getUsername());
+    assertEquals(USER_NAME_SAMPLE, Objects.requireNonNull(result.getBody()).getUsername());
   }
 
   @Test
@@ -116,7 +117,7 @@ class FeedbackControllerTest {
     var result = feedbackController.findFeedbackByUserIdAndProductId(USER_ID_SAMPLE, PRODUCT_ID_SAMPLE);
     assertEquals(HttpStatus.OK, result.getStatusCode());
     assertTrue(result.hasBody());
-    assertEquals(USER_NAME_SAMPLE, result.getBody().getUsername());
+    assertEquals(USER_NAME_SAMPLE, Objects.requireNonNull(result.getBody()).getUsername());
   }
 
   @Test
@@ -132,7 +133,7 @@ class FeedbackControllerTest {
 
     var result = feedbackController.createFeedback(mockFeedbackModel, "Bearer " + TOKEN_SAMPLE);
     assertEquals(HttpStatus.CREATED, result.getStatusCode());
-    assertTrue(result.getHeaders().getLocation().toString().contains(mockFeedback.getId()));
+    assertTrue(Objects.requireNonNull(result.getHeaders().getLocation()).toString().contains(mockFeedback.getId()));
   }
 
   private Feedback createFeedbackMock() {

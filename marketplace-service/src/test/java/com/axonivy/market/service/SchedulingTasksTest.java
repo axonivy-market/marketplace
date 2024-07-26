@@ -10,10 +10,9 @@ import org.springframework.boot.test.mock.mockito.SpyBean;
 import static org.mockito.Mockito.atLeast;
 import static org.mockito.Mockito.verify;
 
-@SpringBootTest(properties = { "MONGODB_USERNAME=user",
-    "MONGODB_PASSWORD=password", "MONGODB_HOST=mongoHost", "MONGODB_DATABASE=product",
-    "MARKET_GITHUB_OAUTH_APP_CLIENT_ID=clientId", "MARKET_GITHUB_OAUTH_APP_CLIENT_SECRET=clientSecret",
-    "MARKET_JWT_SECRET_KEY=jwtSecret" })
+@SpringBootTest(properties = { "MONGODB_USERNAME=user", "MONGODB_PASSWORD=password", "MONGODB_HOST=mongoHost",
+    "MONGODB_DATABASE=product", "MARKET_GITHUB_OAUTH_APP_CLIENT_ID=clientId",
+    "MARKET_GITHUB_OAUTH_APP_CLIENT_SECRET=clientSecret", "MARKET_JWT_SECRET_KEY=jwtSecret" })
 class SchedulingTasksTest {
 
   @SpyBean
@@ -21,8 +20,7 @@ class SchedulingTasksTest {
 
   @Test
   void testShouldNotTriggerAfterApplicationStarted() {
-    Awaitility.await().atMost(Durations.TEN_SECONDS).untilAsserted(() -> {
-      verify(tasks, atLeast(0)).syncDataForProductFromGitHubRepo();
-    });
+    Awaitility.await().atMost(Durations.TEN_SECONDS)
+        .untilAsserted(() -> verify(tasks, atLeast(0)).syncDataForProductFromGitHubRepo());
   }
 }
