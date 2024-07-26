@@ -8,7 +8,6 @@ import { DESIGNER_COOKIE_VARIABLE } from '../constants/common.constant';
 describe('RoutingQueryParamService', () => {
   let service: RoutingQueryParamService;
   let cookieService: jasmine.SpyObj<CookieService>;
-  let router: jasmine.SpyObj<Router>;
   let eventsSubject: Subject<NavigationStart>;
 
   beforeEach(() => {
@@ -32,7 +31,6 @@ describe('RoutingQueryParamService', () => {
     cookieService = TestBed.inject(
       CookieService
     ) as jasmine.SpyObj<CookieService>;
-    router = TestBed.inject(Router) as jasmine.SpyObj<Router>;
   });
 
   it('should be created', () => {
