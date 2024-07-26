@@ -8,19 +8,20 @@ import { filter } from 'rxjs/operators';
   providedIn: 'root'
 })
 export class RoutingQueryParamService {
-  private isDesigner = signal(false);
+  private readonly isDesigner = signal(false);
   isDesignerEnv = computed(() => this.isDesigner());
   designerVersion = signal('');
 
   constructor(
-    private cookieService: CookieService,
-    private router: Router
+    private readonly cookieService: CookieService,
+    private readonly router: Router
   ) {
     this.getNavigationStartEvent().subscribe(() => {
       if (!this.isDesigner()) {
         this.isDesigner.set(
-          this.cookieService.get(DESIGNER_COOKIE_VARIABLE.ivyViewerParamName) ==
-            DESIGNER_COOKIE_VARIABLE.defaultDesignerViewer
+          this.cookieService.get(
+            DESIGNER_COOKIE_VARIABLE.ivyViewerParamName
+          ) === DESIGNER_COOKIE_VARIABLE.defaultDesignerViewer
         );
       }
     });
@@ -39,7 +40,7 @@ export class RoutingQueryParamService {
 
   checkCookieForDesignerEnv(params: Params) {
     const ivyViewerParam = params[DESIGNER_COOKIE_VARIABLE.ivyViewerParamName];
-    if (ivyViewerParam == DESIGNER_COOKIE_VARIABLE.defaultDesignerViewer) {
+    if (ivyViewerParam === DESIGNER_COOKIE_VARIABLE.defaultDesignerViewer) {
       this.cookieService.set(
         DESIGNER_COOKIE_VARIABLE.ivyViewerParamName,
         ivyViewerParam
@@ -49,7 +50,7 @@ export class RoutingQueryParamService {
   }
 
   getDesignerVersionFromCookie() {
-    if (this.designerVersion() == '') {
+    if (this.designerVersion() === '') {
       this.designerVersion.set(
         this.cookieService.get(DESIGNER_COOKIE_VARIABLE.ivyVersionParamName)
       );
@@ -60,7 +61,7 @@ export class RoutingQueryParamService {
   isDesignerViewer() {
     if (!this.isDesigner()) {
       this.isDesigner.set(
-        this.cookieService.get(DESIGNER_COOKIE_VARIABLE.ivyViewerParamName) ==
+        this.cookieService.get(DESIGNER_COOKIE_VARIABLE.ivyViewerParamName) ===
           DESIGNER_COOKIE_VARIABLE.defaultDesignerViewer
       );
     }
