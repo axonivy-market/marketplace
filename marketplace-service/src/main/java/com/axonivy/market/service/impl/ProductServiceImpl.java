@@ -8,12 +8,14 @@ import com.axonivy.market.entity.ProductModuleContent;
 import com.axonivy.market.enums.FileType;
 import com.axonivy.market.enums.SortOption;
 import com.axonivy.market.enums.TypeOption;
+import com.axonivy.market.exceptions.model.InvalidParamException;
 import com.axonivy.market.factory.ProductFactory;
 import com.axonivy.market.github.model.GitHubFile;
 import com.axonivy.market.github.service.GHAxonIvyMarketRepoService;
 import com.axonivy.market.github.service.GHAxonIvyProductRepoService;
 import com.axonivy.market.github.service.GitHubService;
 import com.axonivy.market.github.util.GitHubUtils;
+import com.axonivy.market.model.ProductCustomSortRequest;
 import com.axonivy.market.repository.GitHubRepoMetaRepository;
 import com.axonivy.market.repository.ProductRepository;
 import com.axonivy.market.service.ProductService;
@@ -347,5 +349,10 @@ public class ProductServiceImpl implements ProductService {
   public void clearAllProducts() {
     gitHubRepoMetaRepository.deleteAll();
     productRepository.deleteAll();
+  }
+
+  @Override
+  public void addCustomSortProduct(ProductCustomSortRequest customSort) throws InvalidParamException {
+
   }
 }

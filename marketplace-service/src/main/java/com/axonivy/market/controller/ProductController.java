@@ -5,10 +5,12 @@ import com.axonivy.market.constants.GitHubConstants;
 import com.axonivy.market.entity.Product;
 import com.axonivy.market.enums.ErrorCode;
 import com.axonivy.market.github.service.GitHubService;
+import com.axonivy.market.model.ProductCustomSortRequest;
 import com.axonivy.market.model.Message;
 import com.axonivy.market.model.ProductModel;
 import com.axonivy.market.service.ProductService;
 import io.swagger.v3.oas.annotations.Operation;
+import jakarta.validation.Valid;
 import org.apache.commons.lang3.time.StopWatch;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
@@ -17,8 +19,16 @@ import org.springframework.data.web.PagedResourcesAssembler;
 import org.springframework.hateoas.PagedModel;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 
+import static com.axonivy.market.constants.RequestMappingConstants.CUSTOM_SORT;
 import static com.axonivy.market.constants.RequestMappingConstants.PRODUCT;
 import static com.axonivy.market.constants.RequestMappingConstants.SYNC;
 
@@ -56,10 +66,7 @@ public class ProductController {
   @PutMapping(SYNC)
   public ResponseEntity<Message> syncProducts(@RequestHeader(value = "Authorization") String authorizationHeader,
       @RequestParam(value = "resetSync", required = false) Boolean resetSync) {
-    String token = null;
-    if (authorizationHeader.startsWith("Bearer ")) {
-      token = authorizationHeader.substring(7); // Remove "Bearer " prefix
-    }
+    String token = getBearerToken(authorizationHeader);
     gitHubService.validateUserOrganization(token, GitHubConstants.AXONIVY_MARKET_ORGANIZATION_NAME);
     if (Boolean.TRUE.equals(resetSync)) {
       productService.clearAllProducts();
@@ -80,10 +87,29 @@ public class ProductController {
     return new ResponseEntity<>(message, HttpStatus.OK);
   }
 
+  @PostMapping(CUSTOM_SORT)
+  public ResponseEntity<Message> customSortProducts(@RequestHeader(value = "Authorization") String authorizationHeader,
+      @RequestBody @Valid ProductCustomSortRequest productCustomSortRequest) {
+    String token = getBearerToken(authorizationHeader);
+    gitHubService.validateUserOrganization(token, GitHubConstants.AXONIVY_MARKET_ORGANIZATION_NAME);
+    productService.addCustomSortProduct(productCustomSortRequest);
+    var message = new Message(ErrorCode.SUCCESSFUL.getCode(), ErrorCode.SUCCESSFUL.getHelpText(),
+        "Custom product sort order added successfully");
+    return new ResponseEntity<>(message, HttpStatus.OK);
+  }
+
   @SuppressWarnings("unchecked")
   private ResponseEntity<PagedModel<ProductModel>> generateEmptyPagedModel() {
     var emptyPagedModel = (PagedModel<ProductModel>) pagedResourcesAssembler.toEmptyModel(Page.empty(),
         ProductModel.class);
     return new ResponseEntity<>(emptyPagedModel, HttpStatus.OK);
+  }
+
+  private static String getBearerToken(String authorizationHeader) {
+    String token = null;
+    if (authorizationHeader.startsWith("Bearer ")) {
+      token = authorizationHeader.substring(7); // Remove "Bearer " prefix
+    }
+    return token;
   }
 }

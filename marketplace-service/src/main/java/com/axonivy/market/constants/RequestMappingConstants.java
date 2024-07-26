@@ -7,9 +7,10 @@ import lombok.NoArgsConstructor;
 public class RequestMappingConstants {
   public static final String ROOT = "/";
   public static final String API = ROOT + "api";
-  public static final String SYNC = ROOT + "sync";
+  public static final String SYNC = "sync";
   public static final String PRODUCT = API + "/product";
   public static final String PRODUCT_DETAILS = API + "/product-details";
   public static final String FEEDBACK = API + "/feedback";
   public static final String SWAGGER_URL = "/swagger-ui/index.html";
+  public static final String CUSTOM_SORT = "custom-sort";
 }
