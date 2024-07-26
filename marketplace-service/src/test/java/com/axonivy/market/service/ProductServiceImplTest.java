@@ -280,7 +280,7 @@ class ProductServiceImplTest {
     when(ghAxonIvyProductRepoService.getReadmeAndProductContentsFromTag(any(), any(), anyString())).thenReturn(
         mockReadmeProductContent());
     when(gitHubService.getRepository(any())).thenReturn(ghRepository);
-    PagedIterable<GHTag> pagedIterable = mock(PagedIterable.class);
+    PagedIterable<GHTag> pagedIterable = Mockito.mock(String.valueOf(GHTag.class));
     when(ghRepository.listTags()).thenReturn(pagedIterable);
 
     GHTag mockTag = mock(GHTag.class);
@@ -341,7 +341,7 @@ class ProductServiceImplTest {
     String id = "amazon-comprehend";
     Product mockProduct = mockResultReturn.getContent().get(0);
     mockProduct.setSynchronizedInstallationCount(true);
-    when(productRepository.findById(id)).thenReturn(Optional.ofNullable(mockProduct));
+    when(productRepository.findById(id)).thenReturn(Optional.of(mockProduct));
     Product result = productService.fetchProductDetail(id);
     assertEquals(mockProduct, result);
     verify(productRepository, times(1)).findById(id);

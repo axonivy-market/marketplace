@@ -20,7 +20,6 @@ import java.util.stream.Collectors;
 public class GitHubUtils {
 
   private static String pathToProductFolderFromTagContent;
-  private static String pathToImageFolder;
 
   public static long getGHCommitDate(GHCommit commit) {
     long commitTime = 0L;
@@ -111,6 +110,7 @@ public class GitHubUtils {
   }
 
   public static String getNonStandardImageFolder(String productId) {
+    String pathToImageFolder;
     switch (productId) {
     case NonStandardProductPackageConstants.EXCEL_IMPORTER:
       pathToImageFolder = "doc";

@@ -164,7 +164,7 @@ public class GHAxonIvyProductRepoServiceImpl implements GHAxonIvyProductRepoServ
         }
       }
     } catch (Exception e) {
-      log.error("Cannot get product.json and README file's content {}", e);
+      log.error("Cannot get product.json and README file's content {}", e.getMessage());
       return null;
     }
     return productModuleContent;

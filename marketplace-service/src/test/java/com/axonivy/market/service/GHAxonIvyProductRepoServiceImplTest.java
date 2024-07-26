@@ -80,7 +80,7 @@ class GHAxonIvyProductRepoServiceImplTest {
   }
 
   @AfterEach
-  void after() throws IOException {
+  void after() {
     reset(mockGHOrganization);
     reset(gitHubService);
   }
@@ -230,7 +230,7 @@ class GHAxonIvyProductRepoServiceImplTest {
     when(mockImageFile.isDirectory()).thenReturn(true);
     when(mockImageFile.getDownloadUrl()).thenReturn(IMAGE_DOWNLOAD_URL);
 
-    PagedIterable<GHContent> pagedIterable = mock(PagedIterable.class);
+    PagedIterable<GHContent> pagedIterable = Mockito.mock(String.valueOf(GHContent.class));
     when(mockImageFile.listDirectoryContent()).thenReturn(pagedIterable);
     when(pagedIterable.toList()).thenReturn(List.of(mockImageFile));
 
@@ -340,7 +340,7 @@ class GHAxonIvyProductRepoServiceImplTest {
     return new ByteArrayInputStream(jsonContent.getBytes(StandardCharsets.UTF_8));
   }
 
-  private Product createMockProduct() throws IOException {
+  private Product createMockProduct() {
     Product product = new Product();
     product.setId("docuware-connector");
     product.setLanguage("en");

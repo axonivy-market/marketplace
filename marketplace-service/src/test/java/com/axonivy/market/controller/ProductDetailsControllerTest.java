@@ -85,7 +85,7 @@ class ProductDetailsControllerTest {
     Mockito.when(
             versionService.getArtifactsAndVersionToDisplay(Mockito.anyString(), Mockito.anyBoolean(), Mockito.anyString()))
         .thenReturn(models);
-    ResponseEntity<List<MavenArtifactVersionModel>> result = productDetailsController.findProductVersionsById("protal",
+    ResponseEntity<List<MavenArtifactVersionModel>> result = productDetailsController.findProductVersionsById("portal",
         true, "10.0.1");
     Assertions.assertEquals(HttpStatus.OK, result.getStatusCode());
     Assertions.assertEquals(1, Objects.requireNonNull(result.getBody()).size());
