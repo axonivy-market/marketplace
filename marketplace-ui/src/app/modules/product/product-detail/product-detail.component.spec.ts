@@ -6,14 +6,13 @@ import { ActivatedRoute } from '@angular/router';
 import { TranslateModule } from '@ngx-translate/core';
 import { Viewport } from 'karma-viewport/dist/adapter/viewport';
 import { MarkdownModule } from 'ngx-markdown';
-import { of } from 'rxjs';
+import { Observable, of } from 'rxjs';
 import { TypeOption } from '../../../shared/enums/type-option.enum';
 import {
   MOCK_PRODUCT_DETAILS,
   MOCK_PRODUCT_MODULE_CONTENT,
   MOCK_PRODUCTS
 } from '../../../shared/mocks/mock-data';
-import { MockProductService } from '../../../shared/mocks/mock-services';
 import { ProductService } from '../product.service';
 import { ProductDetailComponent } from './product-detail.component';
 import { ProductModuleContent } from '../../../shared/models/product-module-content.model';
@@ -27,13 +26,14 @@ describe('ProductDetailComponent', () => {
   let component: ProductDetailComponent;
   let fixture: ComponentFixture<ProductDetailComponent>;
   let routingQueryParamService: jasmine.SpyObj<RoutingQueryParamService>;
-  let productService: ProductService;
+  let productServiceMock: jasmine.SpyObj<ProductService>;
 
   beforeEach(async () => {
     const routingQueryParamServiceSpy = jasmine.createSpyObj(
       'RoutingQueryParamService',
       ['getDesignerVersionFromCookie', 'isDesignerEnv']
     );
+    const productServiceSpy = jasmine.createSpyObj('ProductService', ['getProductDetails', 'getProductDetailsWithVersion']);
 
     await TestBed.configureTestingModule({
       imports: [
@@ -44,7 +44,7 @@ describe('ProductDetailComponent', () => {
       providers: [
         provideHttpClient(withInterceptorsFromDi()),
         provideHttpClientTesting(),
-        { provide: ProductService, useClass: MockProductService },
+        { provide: ProductService, useValue: productServiceSpy },
         {
           provide: ActivatedRoute,
           useValue: {
@@ -61,18 +61,12 @@ describe('ProductDetailComponent', () => {
         }
       ]
     })
-      .overrideComponent(ProductDetailComponent, {
-        remove: { providers: [ProductService] },
-        add: {
-          providers: [{ provide: ProductService, useClass: MockProductService }]
-        }
-      })
       .compileComponents();
 
     routingQueryParamService = TestBed.inject(
       RoutingQueryParamService
     ) as jasmine.SpyObj<RoutingQueryParamService>;
-    productService = TestBed.inject(ProductService);
+    productServiceMock = TestBed.inject(ProductService) as jasmine.SpyObj<ProductService>;
     routingQueryParamService.getDesignerVersionFromCookie.and.returnValue('');
     routingQueryParamService.isDesignerEnv.and.returnValue(false);
   });
@@ -83,11 +77,22 @@ describe('ProductDetailComponent', () => {
     fixture.detectChanges();
   });
 
-  it('should create', () => {
+  fit('should create', () => {
     expect(component.productDetail().names['en']).toEqual(
       MOCK_PRODUCT_DETAILS.names['en']
     );
   });
+
+  it('should get corresponding version from cookie', () => {
+    const productId = '123';
+    const targetVersion = '1.0';
+    routingQueryParamService.getDesignerVersionFromCookie.and.returnValue(targetVersion);
+    productServiceMock.getProductDetailsWithVersion.and.returnValue(of({} as any));
+    component.getProductById(productId).subscribe(product => {
+      expect(productServiceMock.getProductDetails).not.toHaveBeenCalled();
+      expect(productServiceMock.getProductDetailsWithVersion).toHaveBeenCalledWith(productId, 'v1.0');
+    });
+  })
 
   it('should toggle isDropdownOpen on onShowDropdown', () => {
     component.isDropdownOpen.set(false);
@@ -240,8 +245,8 @@ describe('ProductDetailComponent', () => {
     spyOn(window, 'matchMedia').and.returnValue({
       matches: true,
       media: '',
-      addEventListener: () => {},
-      removeEventListener: () => {},
+      addEventListener: () => { },
+      removeEventListener: () => { },
       onchange: null,
       addListener: function (
         callback:
@@ -268,8 +273,8 @@ describe('ProductDetailComponent', () => {
     (window.matchMedia as jasmine.Spy).and.returnValue({
       matches: false,
       media: '',
-      addEventListener: () => {},
-      removeEventListener: () => {}
+      addEventListener: () => { },
+      removeEventListener: () => { }
     });
 
     component.checkMediaSize();
