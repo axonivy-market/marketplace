@@ -8,7 +8,7 @@ import { SortOption } from '../../shared/enums/sort-option.enum';
 import { TypeOption } from '../../shared/enums/type-option.enum';
 import {
   MOCK_PRODUCTS,
-  MOCK_PRODUCT_DETAILS
+  MOCK_PRODUCT_DETAIL
 } from '../../shared/mocks/mock-data';
 import { Criteria } from '../../shared/models/criteria.model';
 import { VersionData } from '../../shared/models/vesion-artifact.model';
@@ -166,7 +166,7 @@ describe('ProductService', () => {
     const tag = 'v10.0.10';
 
     service.getProductDetailsWithVersion(productId, tag).subscribe(data => {
-      expect(data).toEqual(MOCK_PRODUCT_DETAILS);
+      expect(data).toEqual(MOCK_PRODUCT_DETAIL);
     });
 
     const req = httpMock.expectOne(request => {

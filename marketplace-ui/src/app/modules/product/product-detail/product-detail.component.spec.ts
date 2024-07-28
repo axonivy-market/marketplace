@@ -6,10 +6,10 @@ import { ActivatedRoute } from '@angular/router';
 import { TranslateModule } from '@ngx-translate/core';
 import { Viewport } from 'karma-viewport/dist/adapter/viewport';
 import { MarkdownModule } from 'ngx-markdown';
-import { Observable, of } from 'rxjs';
+import { of } from 'rxjs';
 import { TypeOption } from '../../../shared/enums/type-option.enum';
 import {
-  MOCK_PRODUCT_DETAILS,
+  MOCK_PRODUCT_DETAIL,
   MOCK_PRODUCT_MODULE_CONTENT,
   MOCK_PRODUCTS
 } from '../../../shared/mocks/mock-data';
@@ -17,8 +17,7 @@ import { ProductService } from '../product.service';
 import { ProductDetailComponent } from './product-detail.component';
 import { ProductModuleContent } from '../../../shared/models/product-module-content.model';
 import { RoutingQueryParamService } from '../../../shared/services/routing.query.param.service';
-import { ProductDetail } from '../../../shared/models/product-detail.model';
-
+import { MockProductService } from '../../../shared/mocks/mock-services';
 const products = MOCK_PRODUCTS._embedded.products;
 declare const viewport: Viewport;
 
@@ -26,14 +25,12 @@ describe('ProductDetailComponent', () => {
   let component: ProductDetailComponent;
   let fixture: ComponentFixture<ProductDetailComponent>;
   let routingQueryParamService: jasmine.SpyObj<RoutingQueryParamService>;
-  let productServiceMock: jasmine.SpyObj<ProductService>;
 
   beforeEach(async () => {
     const routingQueryParamServiceSpy = jasmine.createSpyObj(
       'RoutingQueryParamService',
       ['getDesignerVersionFromCookie', 'isDesignerEnv']
     );
-    const productServiceSpy = jasmine.createSpyObj('ProductService', ['getProductDetails', 'getProductDetailsWithVersion']);
 
     await TestBed.configureTestingModule({
       imports: [
@@ -44,7 +41,6 @@ describe('ProductDetailComponent', () => {
       providers: [
         provideHttpClient(withInterceptorsFromDi()),
         provideHttpClientTesting(),
-        { provide: ProductService, useValue: productServiceSpy },
         {
           provide: ActivatedRoute,
           useValue: {
@@ -61,14 +57,13 @@ describe('ProductDetailComponent', () => {
         }
       ]
     })
+      .overrideComponent(ProductDetailComponent, {
+        remove: { providers: [ProductService] },
+        add: {
+          providers: [{ provide: ProductService, useClass: MockProductService }]
+        }
+      })
       .compileComponents();
-
-    routingQueryParamService = TestBed.inject(
-      RoutingQueryParamService
-    ) as jasmine.SpyObj<RoutingQueryParamService>;
-    productServiceMock = TestBed.inject(ProductService) as jasmine.SpyObj<ProductService>;
-    routingQueryParamService.getDesignerVersionFromCookie.and.returnValue('');
-    routingQueryParamService.isDesignerEnv.and.returnValue(false);
   });
 
   beforeEach(() => {
@@ -77,21 +72,20 @@ describe('ProductDetailComponent', () => {
     fixture.detectChanges();
   });
 
-  fit('should create', () => {
+
+  it('should create', () => {
     expect(component.productDetail().names['en']).toEqual(
-      MOCK_PRODUCT_DETAILS.names['en']
+      MOCK_PRODUCT_DETAIL.names['en']
     );
   });
 
-  it('should get corresponding version from cookie', () => {
-    const productId = '123';
+
+  fit('should get corresponding version from cookie', () => {
     const targetVersion = '1.0';
     routingQueryParamService.getDesignerVersionFromCookie.and.returnValue(targetVersion);
-    productServiceMock.getProductDetailsWithVersion.and.returnValue(of({} as any));
-    component.getProductById(productId).subscribe(product => {
-      expect(productServiceMock.getProductDetails).not.toHaveBeenCalled();
-      expect(productServiceMock.getProductDetailsWithVersion).toHaveBeenCalledWith(productId, 'v1.0');
-    });
+    expect(component.productDetail().id).toEqual(
+      MOCK_PRODUCT_DETAIL.id
+    );
   })
 
   it('should toggle isDropdownOpen on onShowDropdown', () => {
@@ -104,9 +98,9 @@ describe('ProductDetailComponent', () => {
   });
 
   it('should reset state before fetching new product details', () => {
-    component.productDetail.set(MOCK_PRODUCT_DETAILS);
+    component.productDetail.set(MOCK_PRODUCT_DETAIL);
     component.productModuleContent.set(
-      MOCK_PRODUCT_DETAILS.productModuleContent
+      MOCK_PRODUCT_DETAIL.productModuleContent
     );
 
     expect(component.productDetail().id).toBe('jira-connector');

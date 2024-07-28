@@ -5,7 +5,7 @@ import {
   MOCK_PRODUCTS,
   MOCK_PRODUCTS_FILTER_CONNECTOR,
   MOCK_PRODUCTS_NEXT_PAGE,
-  MOCK_PRODUCT_DETAILS
+  MOCK_PRODUCT_DETAIL
 } from './mock-data';
 import { ProductApiResponse } from '../models/apis/product-response.model';
 
@@ -21,10 +21,13 @@ export class MockProductService {
   }
 
   getProductDetails(productId: string, tag: string) {
-    return of(MOCK_PRODUCT_DETAILS);
+    console.log(2)
+
+    return of(MOCK_PRODUCT_DETAIL);
   }
 
   getProductDetailsWithVersion(productId: string, version: string) {
-    return of(MOCK_PRODUCT_DETAILS);
+    console.log(1)
+    return of(MOCK_PRODUCT_DETAIL);
   }
 }

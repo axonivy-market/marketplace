@@ -214,7 +214,7 @@ export const MOCK_PRODUCT_MODULE_CONTENT: ProductModuleContent = {
   type: 'iar'
 };
 
-export const MOCK_PRODUCT_DETAILS: ProductDetail = {
+export const MOCK_PRODUCT_DETAIL: ProductDetail = {
   id: 'jira-connector',
   names: {
     en: 'Atlassian Jira',
