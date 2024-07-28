@@ -1,6 +1,7 @@
 package com.axonivy.market.controller;
 
 import com.axonivy.market.assembler.ProductModelAssembler;
+import com.axonivy.market.constants.CommonConstants;
 import com.axonivy.market.constants.GitHubConstants;
 import com.axonivy.market.entity.Product;
 import com.axonivy.market.enums.ErrorCode;
@@ -107,8 +108,8 @@ public class ProductController {
 
   private static String getBearerToken(String authorizationHeader) {
     String token = null;
-    if (authorizationHeader.startsWith("Bearer ")) {
-      token = authorizationHeader.substring(7); // Remove "Bearer " prefix
+    if (authorizationHeader.startsWith(CommonConstants.BEARER)) {
+      token = authorizationHeader.substring(CommonConstants.BEARER.length()).trim(); // Remove "Bearer " prefix
     }
     return token;
   }
