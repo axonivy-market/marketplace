@@ -29,6 +29,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.List;
+
 import static com.axonivy.market.constants.RequestMappingConstants.CUSTOM_SORT;
 import static com.axonivy.market.constants.RequestMappingConstants.PRODUCT;
 import static com.axonivy.market.constants.RequestMappingConstants.SYNC;
@@ -65,7 +67,7 @@ public class ProductController {
   }
 
   @PutMapping(SYNC)
-  public ResponseEntity<Message> syncProducts(@RequestHeader(value = "Authorization") String authorizationHeader,
+  public ResponseEntity<Message> syncProducts(@RequestHeader(value = CommonConstants.AUTHORIZATION) String authorizationHeader,
       @RequestParam(value = "resetSync", required = false) Boolean resetSync) {
     String token = getBearerToken(authorizationHeader);
     gitHubService.validateUserOrganization(token, GitHubConstants.AXONIVY_MARKET_ORGANIZATION_NAME);
@@ -88,8 +90,15 @@ public class ProductController {
     return new ResponseEntity<>(message, HttpStatus.OK);
   }
 
+  @GetMapping(CUSTOM_SORT)
+  public ResponseEntity<List<String>> getCustomSortProducts(@RequestHeader(value = CommonConstants.AUTHORIZATION) String authorizationHeader) {
+    String token = getBearerToken(authorizationHeader);
+    gitHubService.validateUserOrganization(token, GitHubConstants.AXONIVY_MARKET_ORGANIZATION_NAME);
+    return new ResponseEntity<>(productService.getCustomSortProduct(), HttpStatus.OK);
+  }
+
   @PostMapping(CUSTOM_SORT)
-  public ResponseEntity<Message> customSortProducts(@RequestHeader(value = "Authorization") String authorizationHeader,
+  public ResponseEntity<Message> createCustomSortProducts(@RequestHeader(value = CommonConstants.AUTHORIZATION) String authorizationHeader,
       @RequestBody @Valid ProductCustomSortRequest productCustomSortRequest) {
     String token = getBearerToken(authorizationHeader);
     gitHubService.validateUserOrganization(token, GitHubConstants.AXONIVY_MARKET_ORGANIZATION_NAME);

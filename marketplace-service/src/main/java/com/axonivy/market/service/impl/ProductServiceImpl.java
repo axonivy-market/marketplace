@@ -2,12 +2,8 @@ package com.axonivy.market.service.impl;
 
 import com.axonivy.market.constants.CommonConstants;
 import com.axonivy.market.constants.GitHubConstants;
-import com.axonivy.market.entity.GitHubRepoMeta;
-import com.axonivy.market.entity.Product;
-import com.axonivy.market.entity.ProductModuleContent;
-import com.axonivy.market.enums.FileType;
-import com.axonivy.market.enums.SortOption;
-import com.axonivy.market.enums.TypeOption;
+import com.axonivy.market.entity.*;
+import com.axonivy.market.enums.*;
 import com.axonivy.market.exceptions.model.InvalidParamException;
 import com.axonivy.market.factory.ProductFactory;
 import com.axonivy.market.github.model.GitHubFile;
@@ -17,6 +13,7 @@ import com.axonivy.market.github.service.GitHubService;
 import com.axonivy.market.github.util.GitHubUtils;
 import com.axonivy.market.model.ProductCustomSortRequest;
 import com.axonivy.market.repository.GitHubRepoMetaRepository;
+import com.axonivy.market.repository.ProductCustomSortRepository;
 import com.axonivy.market.repository.ProductRepository;
 import com.axonivy.market.service.ProductService;
 import com.fasterxml.jackson.core.type.TypeReference;
@@ -63,6 +60,7 @@ public class ProductServiceImpl implements ProductService {
   private final GHAxonIvyProductRepoService axonIvyProductRepoService;
   private final GitHubRepoMetaRepository gitHubRepoMetaRepository;
   private final GitHubService gitHubService;
+  private final ProductCustomSortRepository productCustomSortRepository;
 
   private GHCommit lastGHCommit;
   private GitHubRepoMeta marketRepoMeta;
@@ -74,13 +72,14 @@ public class ProductServiceImpl implements ProductService {
   public static final String NON_NUMERIC_CHAR = "[^0-9.]";
   private final SecureRandom random = new SecureRandom();
   public ProductServiceImpl(ProductRepository productRepository, GHAxonIvyMarketRepoService axonIvyMarketRepoService,
-      GHAxonIvyProductRepoService axonIvyProductRepoService, GitHubRepoMetaRepository gitHubRepoMetaRepository,
-      GitHubService gitHubService) {
+                            GHAxonIvyProductRepoService axonIvyProductRepoService, GitHubRepoMetaRepository gitHubRepoMetaRepository,
+                            GitHubService gitHubService, ProductCustomSortRepository productCustomSortRepository) {
     this.productRepository = productRepository;
     this.axonIvyMarketRepoService = axonIvyMarketRepoService;
     this.axonIvyProductRepoService = axonIvyProductRepoService;
     this.gitHubRepoMetaRepository = gitHubRepoMetaRepository;
     this.gitHubService = gitHubService;
+    this.productCustomSortRepository = productCustomSortRepository;
   }
 
   @Override
@@ -353,6 +352,39 @@ public class ProductServiceImpl implements ProductService {
 
   @Override
   public void addCustomSortProduct(ProductCustomSortRequest customSort) throws InvalidParamException {
+    refineRuleInCustomSort(customSort.getSortRuleForRemainder(), customSort.getSortDirectionForRemainder());
 
+    ProductCustomSort productCustomSort = new ProductCustomSort();
+    productCustomSort.setOrderedListOfProducts(refineOrderedListOfProductsInCustomSort(customSort.getOrderedListOfProducts()));
+    productCustomSort.setRuleForRemainder(customSort.getSortRuleForRemainder() + " " + customSort.getSortDirectionForRemainder());
+    productCustomSortRepository.deleteAll();
+    productCustomSortRepository.save(productCustomSort);
+  }
+
+  @Override
+  public List<String> getCustomSortProduct() {
+    return List.of();
+  }
+
+  private void refineRuleInCustomSort(String sortOption, String sortDirection) throws InvalidParamException {
+    SortOption.of(sortOption);
+    SortDirection.of(sortDirection);
+  }
+
+  private List<ProductSortEntry> refineOrderedListOfProductsInCustomSort(List<String> orderedListOfProducts) throws InvalidParamException {
+    List<ProductSortEntry> productSortEntries = new ArrayList<>();
+
+    for (int i = 0; i < orderedListOfProducts.size(); i++) {
+      String productId = orderedListOfProducts.get(i);
+      Optional<Product> productOptional = productRepository.findById(productId);
+
+      if (productOptional.isEmpty()) {
+        throw new InvalidParamException(ErrorCode.PRODUCT_NOT_FOUND, "Not found product with id: " + productId);
+      }
+
+      productSortEntries.add(new ProductSortEntry(productId, i + 1));
+    }
+
+    return productSortEntries;
   }
 }
