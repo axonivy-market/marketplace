@@ -97,7 +97,7 @@ public class ProductController {
   }
 
   @PostMapping(CUSTOM_SORT)
-  public ResponseEntity<Message> createCustomSortProducts(@RequestHeader(value = CommonConstants.AUTHORIZATION) String authorizationHeader,
+  public ResponseEntity<Message> createCustomSortProducts(@RequestHeader(value = AUTHORIZATION) String authorizationHeader,
       @RequestBody @Valid ProductCustomSortRequest productCustomSortRequest) {
     String token = getBearerToken(authorizationHeader);
     gitHubService.validateUserOrganization(token, GitHubConstants.AXONIVY_MARKET_ORGANIZATION_NAME);
