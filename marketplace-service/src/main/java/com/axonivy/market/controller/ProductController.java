@@ -61,7 +61,7 @@ public class ProductController {
   @Operation(summary = "Find all products", description = "Be default system will finds product by type as 'all'")
   public ResponseEntity<PagedModel<ProductModel>> findProducts(@RequestParam(name = TYPE) @Parameter(name = "Type", description = "Type of product.", in = ParameterIn.QUERY,
           schema = @Schema(type = "string", allowableValues = {"all", "connectors", "utilities", "solutions", "demos"})) String type,
-                                                               @RequestParam(required = false, name = KEYWORD) @Parameter(name = "Keyword", description = "Keyword that exist in product's name or short description.", in = ParameterIn.QUERY) String keyword,
+                                                               @RequestParam(required = false, name = KEYWORD) @Parameter(name = "Keyword", description = "Keyword that exist in product's name or short description.", example = "connector",in = ParameterIn.QUERY) String keyword,
                                                                @RequestParam(name = LANGUAGE) @Parameter(name = "Language", description = "Language of product short description.", in = ParameterIn.QUERY,
                                                                        schema = @Schema(allowableValues = {"en", "de"})) String language, @Parameter(name = "Pagination", description = "Pagination configuration for result set") Pageable pageable) {
     Page<Product> results = productService.findProducts(type, keyword, language, pageable);
