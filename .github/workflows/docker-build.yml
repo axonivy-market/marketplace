@@ -48,6 +48,7 @@ jobs:
           MONGODB_DATABASE: ${{ secrets.MONGODB_DATABASE }}
           GH_TOKEN: ${{ secrets.GH_TOKEN }}
           MARKET_JWT_SECRET_KEY: ${{ secrets.MARKET_JWT_SECRET_KEY }}
+          MARKET_CORS_ALLOWED_ORIGIN: ${{ secrets.MARKET_CORS_ALLOWED_ORIGIN }}
         run: |
           if [ "${{ inputs.build_env }}" == "production" ]; then
             OAUTH_APP_CLIENT_ID=${{ secrets.OAUTH_APP_CLIENT_ID }}
