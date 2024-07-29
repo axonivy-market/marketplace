@@ -1,15 +1,17 @@
 package com.axonivy.market.controller;
 
-import com.axonivy.market.assembler.FeedbackModelAssembler;
-import com.axonivy.market.constants.CommonConstants;
-import com.axonivy.market.entity.Feedback;
-import com.axonivy.market.model.FeedbackModel;
-import com.axonivy.market.model.ProductRating;
-import com.axonivy.market.service.FeedbackService;
-import com.axonivy.market.service.JwtService;
-import io.jsonwebtoken.Claims;
-import io.swagger.v3.oas.annotations.Operation;
-import jakarta.validation.Valid;
+import static com.axonivy.market.constants.RequestMappingConstants.ALL;
+import static com.axonivy.market.constants.RequestMappingConstants.BY_ID;
+import static com.axonivy.market.constants.RequestMappingConstants.FEEDBACK;
+import static com.axonivy.market.constants.RequestMappingConstants.PRODUCT_BY_ID;
+import static com.axonivy.market.constants.RequestMappingConstants.PRODUCT_RATING_BY_ID;
+import static com.axonivy.market.constants.RequestParamConstants.AUTHORIZATION;
+import static com.axonivy.market.constants.RequestParamConstants.ID;
+import static com.axonivy.market.constants.RequestParamConstants.USER_ID;
+
+import java.net.URI;
+import java.util.List;
+
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
@@ -28,10 +30,17 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
-import java.net.URI;
-import java.util.List;
+import com.axonivy.market.assembler.FeedbackModelAssembler;
+import com.axonivy.market.constants.CommonConstants;
+import com.axonivy.market.entity.Feedback;
+import com.axonivy.market.model.FeedbackModel;
+import com.axonivy.market.model.ProductRating;
+import com.axonivy.market.service.FeedbackService;
+import com.axonivy.market.service.JwtService;
 
-import static com.axonivy.market.constants.RequestMappingConstants.FEEDBACK;
+import io.jsonwebtoken.Claims;
+import io.swagger.v3.oas.annotations.Operation;
+import jakarta.validation.Valid;
 
 @RestController
 @RequestMapping(FEEDBACK)
@@ -52,8 +61,8 @@ public class FeedbackController {
   }
 
   @Operation(summary = "Find all feedbacks by product id")
-  @GetMapping("/product/{productId}")
-  public ResponseEntity<PagedModel<FeedbackModel>> findFeedbacks(@PathVariable("productId") String productId,
+  @GetMapping(PRODUCT_BY_ID)
+  public ResponseEntity<PagedModel<FeedbackModel>> findFeedbacks(@PathVariable(ID) String productId,
       Pageable pageable) {
     Page<Feedback> results = feedbackService.findFeedbacks(productId, pageable);
     if (results.isEmpty()) {
@@ -64,24 +73,24 @@ public class FeedbackController {
     return new ResponseEntity<>(pageResources, HttpStatus.OK);
   }
 
-  @GetMapping("/{id}")
-  public ResponseEntity<FeedbackModel> findFeedback(@PathVariable("id") String id) {
+  @GetMapping(BY_ID)
+  public ResponseEntity<FeedbackModel> findFeedback(@PathVariable(ID) String id) {
     Feedback feedback = feedbackService.findFeedback(id);
     return ResponseEntity.ok(feedbackModelAssembler.toModel(feedback));
   }
 
   @Operation(summary = "Find all feedbacks by user id and product id")
   @GetMapping()
-  public ResponseEntity<FeedbackModel> findFeedbackByUserIdAndProductId(@RequestParam("userId") String userId,
+  public ResponseEntity<FeedbackModel> findFeedbackByUserIdAndProductId(@RequestParam(USER_ID) String userId,
       @RequestParam("productId") String productId) {
     Feedback feedback = feedbackService.findFeedbackByUserIdAndProductId(userId, productId);
     return ResponseEntity.ok(feedbackModelAssembler.toModel(feedback));
   }
 
-  @CrossOrigin("*")
+  @CrossOrigin(ALL)
   @PostMapping
   public ResponseEntity<Void> createFeedback(@RequestBody @Valid FeedbackModel feedback,
-      @RequestHeader(value = "Authorization") String authorizationHeader) {
+      @RequestHeader(value = AUTHORIZATION) String authorizationHeader) {
     String token = null;
     if (authorizationHeader != null && authorizationHeader.startsWith(CommonConstants.BEARER)) {
       token = authorizationHeader.substring(CommonConstants.BEARER.length()).trim(); // Remove "Bearer " prefix
@@ -89,22 +98,22 @@ public class FeedbackController {
 
     // Validate the token
     if (token == null || !jwtService.validateToken(token)) {
-      return ResponseEntity.status(401).build(); // Unauthorized if token is missing or invalid
+      return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build(); // Unauthorized if token is missing or invalid
     }
 
     Claims claims = jwtService.getClaimsFromToken(token);
     feedback.setUserId(claims.getSubject());
     Feedback newFeedback = feedbackService.upsertFeedback(feedback);
 
-    URI location = ServletUriComponentsBuilder.fromCurrentRequest().path("/{id}").buildAndExpand(newFeedback.getId())
+    URI location = ServletUriComponentsBuilder.fromCurrentRequest().path(BY_ID).buildAndExpand(newFeedback.getId())
         .toUri();
 
     return ResponseEntity.created(location).build();
   }
 
   @Operation(summary = "Find rating information of product by id")
-  @GetMapping("/product/{productId}/rating")
-  public ResponseEntity<List<ProductRating>> getProductRating(@PathVariable("productId") String productId) {
+  @GetMapping(PRODUCT_RATING_BY_ID)
+  public ResponseEntity<List<ProductRating>> getProductRating(@PathVariable(ID) String productId) {
     return ResponseEntity.ok(feedbackService.getProductRatingById(productId));
   }
 

@@ -1,10 +1,11 @@
 package com.axonivy.market.controller;
 
-import com.axonivy.market.entity.User;
-import com.axonivy.market.github.service.GitHubService;
-import com.axonivy.market.github.model.GitHubAccessTokenResponse;
-import com.axonivy.market.model.Oauth2AuthorizationCode;
-import com.axonivy.market.service.JwtService;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.when;
+
+import java.util.Map;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -13,11 +14,13 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.ResponseEntity;
 
-import java.util.Map;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.when;
+import com.axonivy.market.entity.User;
+import com.axonivy.market.exceptions.model.MissingHeaderException;
+import com.axonivy.market.exceptions.model.Oauth2ExchangeCodeException;
+import com.axonivy.market.github.model.GitHubAccessTokenResponse;
+import com.axonivy.market.github.service.GitHubService;
+import com.axonivy.market.model.Oauth2AuthorizationCode;
+import com.axonivy.market.service.JwtService;
 
 @ExtendWith(MockitoExtension.class)
 class OAuth2ControllerTest {
@@ -40,12 +43,12 @@ class OAuth2ControllerTest {
   }
 
   @Test
-  void testGitHubLogin() {
+  void testGitHubLogin() throws Oauth2ExchangeCodeException, MissingHeaderException {
     String accessToken = "sampleAccessToken";
     User user = createUserMock();
     String jwtToken = "sampleJwtToken";
 
-    when(gitHubService.getAccessToken(any(), any(), any())).thenReturn(createGitHubAccessTokenResponseMock());
+    when(gitHubService.getAccessToken(any(), any())).thenReturn(createGitHubAccessTokenResponseMock());
     when(gitHubService.getAndUpdateUser(accessToken)).thenReturn(user);
     when(jwtService.generateToken(user)).thenReturn(jwtToken);
 
