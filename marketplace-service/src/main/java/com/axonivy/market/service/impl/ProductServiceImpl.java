@@ -115,7 +115,7 @@ public class ProductServiceImpl implements ProductService {
         if (StringUtils.isBlank(search)) {
           result = productRepository.findByType(TypeOption.CONNECTORS.getCode(), searchPageable);
         } else {
-          result = productRepository.searchByNameAndType(search, TypeOption.CONNECTORS.getCode(), Language.EN.getValue(), searchPageable);
+          result = productRepository.searchByNameAndType(search, searchPageable);
     }
     return result;
   }

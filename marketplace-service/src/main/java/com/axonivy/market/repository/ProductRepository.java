@@ -27,6 +27,6 @@ public interface ProductRepository extends MongoRepository<Product, String> {
   @Query("{ $or: [ { 'names.?1': { $regex: ?0, $options: 'i' } }, { 'shortDescriptions.?1': { $regex: ?0, $options: 'i' } } ] }")
   Page<Product> searchByNameOrShortDescriptionRegex(String keyword, String language, Pageable unifiedPageabe);
 
-  @Query("{ $and: [ { $or: [ { 'names.?': { $regex: ?0, $options: 'i' } } ] }")
-  Page<Product> searchByNameAndType(String search, String type, String language, Pageable unifiedPageable);
+  @Query("{ $and: [{ $or: [ { 'names.en': { $regex: ?0 , $options: 'i' } }] },{ 'type': 'connector' }]}")
+  Page<Product> searchByNameAndType(String search, Pageable unifiedPageable);
 }

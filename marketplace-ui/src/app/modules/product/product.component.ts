@@ -27,7 +27,7 @@ import { Page } from '../../shared/models/apis/page.model';
 import { Language } from '../../shared/enums/language.enum';
 import { ProductDetail } from '../../shared/models/product-detail.model';
 import { LanguageService } from '../../core/services/language/language.service';
-import { CookieManagementService } from '../../cookie.management.service';
+import { RoutingQueryParamService } from '../../shared/services/routing.query.param.service';
 
 const SEARCH_DEBOUNCE_TIME = 500;
 
@@ -66,20 +66,24 @@ export class ProductComponent implements AfterViewInit, OnDestroy {
 
   responseLink!: Link;
   responsePage!: Page;
-  isRestClient = signal(false);
+  isRestClient: WritableSignal<boolean> = signal(false);
+  isDesignerEnvironment = inject(RoutingQueryParamService).isDesignerEnv();
 
   productService = inject(ProductService);
   themeService = inject(ThemeService);
   translateService = inject(TranslateService);
   languageService = inject(LanguageService);
-  cookieService = inject(CookieManagementService);
-
+  route = inject(ActivatedRoute);
   router = inject(Router);
   @ViewChild('observer', { static: true }) observerElement!: ElementRef;
 
   constructor() {
-    this.isRestClient.set(this.cookieService.isResultsOnly());
-    console.log(this.isRestClient());
+    this.route.queryParams.subscribe(params => {
+      if ('resultsOnly' in params && this.isDesignerEnvironment) {
+        this.isRestClient.set(true);
+      }
+    });
+
     if (this.isRestClient()) {
       this.loadProductInDesigner();
       this.subscriptions.push(
@@ -190,10 +194,11 @@ export class ProductComponent implements AfterViewInit, OnDestroy {
     const observer = new IntersectionObserver(entries => {
       entries.forEach(entry => {
         if (entry.isIntersecting && this.hasMore()) {
-          this.criteria.nextPageHref = this.responseLink?.next?.href;
           if (this.isRestClient()) {
+            this.designerCriteria.nextPageHref = this.responseLink?.next?.href;
             this.loadProductInDesigner();
           } else {
+            this.criteria.nextPageHref = this.responseLink?.next?.href;
             this.loadProductItems();
           }
         }
