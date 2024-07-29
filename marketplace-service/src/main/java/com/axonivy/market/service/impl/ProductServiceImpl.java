@@ -272,7 +272,7 @@ public class ProductServiceImpl implements ProductService {
     return pageRequest;
   }
 
-  private Order createOrder(SortOption sortOption, String language) {
+  public Order createOrder(SortOption sortOption, String language) {
     return new Order(sortOption.getDirection(), sortOption.getCode(language));
   }
 
@@ -394,7 +394,7 @@ public class ProductServiceImpl implements ProductService {
     productRepository.saveAll(refineOrderedListOfProductsInCustomSort(customSort.getOrderedListOfProducts()));
   }
 
-  private List<Product> refineOrderedListOfProductsInCustomSort(List<String> orderedListOfProducts)
+  public List<Product> refineOrderedListOfProductsInCustomSort(List<String> orderedListOfProducts)
       throws InvalidParamException {
     List<Product> productEntries = new ArrayList<>();
 
