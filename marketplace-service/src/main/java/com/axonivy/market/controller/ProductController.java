@@ -6,8 +6,8 @@ import com.axonivy.market.constants.GitHubConstants;
 import com.axonivy.market.entity.Product;
 import com.axonivy.market.enums.ErrorCode;
 import com.axonivy.market.github.service.GitHubService;
-import com.axonivy.market.model.ProductCustomSortRequest;
 import com.axonivy.market.model.Message;
+import com.axonivy.market.model.ProductCustomSortRequest;
 import com.axonivy.market.model.ProductModel;
 import com.axonivy.market.service.ProductService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -28,8 +28,6 @@ import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-
-import java.util.List;
 
 import static com.axonivy.market.constants.RequestMappingConstants.CUSTOM_SORT;
 import static com.axonivy.market.constants.RequestMappingConstants.PRODUCT;
