@@ -1,5 +1,28 @@
 package com.axonivy.market.controller;
 
+import static com.axonivy.market.constants.RequestMappingConstants.PRODUCT;
+import static com.axonivy.market.constants.RequestMappingConstants.SYNC;
+import static com.axonivy.market.constants.RequestParamConstants.AUTHORIZATION;
+import static com.axonivy.market.constants.RequestParamConstants.KEYWORD;
+import static com.axonivy.market.constants.RequestParamConstants.LANGUAGE;
+import static com.axonivy.market.constants.RequestParamConstants.RESET_SYNC;
+import static com.axonivy.market.constants.RequestParamConstants.TYPE;
+
+import org.apache.commons.lang3.time.StopWatch;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PagedResourcesAssembler;
+import org.springframework.hateoas.PagedModel;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestHeader;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+
 import com.axonivy.market.assembler.ProductModelAssembler;
 import com.axonivy.market.constants.CommonConstants;
 import com.axonivy.market.constants.GitHubConstants;
@@ -10,24 +33,11 @@ import com.axonivy.market.model.Message;
 import com.axonivy.market.model.ProductCustomSortRequest;
 import com.axonivy.market.model.ProductModel;
 import com.axonivy.market.service.ProductService;
+
 import io.swagger.v3.oas.annotations.Operation;
 import jakarta.validation.Valid;
-import org.apache.commons.lang3.time.StopWatch;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.web.PagedResourcesAssembler;
-import org.springframework.hateoas.PagedModel;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestHeader;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
 
 import static com.axonivy.market.constants.RequestMappingConstants.CUSTOM_SORT;
 import static com.axonivy.market.constants.RequestMappingConstants.PRODUCT;
