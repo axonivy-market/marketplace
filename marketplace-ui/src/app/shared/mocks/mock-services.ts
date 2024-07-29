@@ -5,9 +5,11 @@ import {
   MOCK_PRODUCTS,
   MOCK_PRODUCTS_FILTER_CONNECTOR,
   MOCK_PRODUCTS_NEXT_PAGE,
-  MOCK_PRODUCT_DETAIL
+  MOCK_PRODUCT_DETAIL,
+  MOCK_PRODUCT_DETAIL_BY_VERSION
 } from './mock-data';
 import { ProductApiResponse } from '../models/apis/product-response.model';
+import { ProductDetail } from '../models/product-detail.model';
 
 export class MockProductService {
   findProductsByCriteria(criteria: Criteria): Observable<ProductApiResponse> {
@@ -20,14 +22,14 @@ export class MockProductService {
     return of(response);
   }
 
-  getProductDetails(productId: string, tag: string) {
-    console.log(2)
-
+  getProductDetails(productId: string) {
     return of(MOCK_PRODUCT_DETAIL);
   }
 
-  getProductDetailsWithVersion(productId: string, version: string) {
-    console.log(1)
-    return of(MOCK_PRODUCT_DETAIL);
+  getProductDetailsWithVersion(
+    productId: string,
+    version: string
+  ): Observable<ProductDetail> {
+    return of(MOCK_PRODUCT_DETAIL_BY_VERSION);
   }
 }

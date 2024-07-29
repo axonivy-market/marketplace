@@ -214,6 +214,54 @@ export const MOCK_PRODUCT_MODULE_CONTENT: ProductModuleContent = {
   type: 'iar'
 };
 
+export const MOCK_PRODUCT_DETAIL_BY_VERSION: ProductDetail = {
+  id: 'cronjob',
+  names: {
+    de: 'Cron Job',
+    en: 'Cron Job'
+  },
+  shortDescriptions: {
+    de: 'Das Cron-Job-Utility übernimmt die automatische Verwaltung deiner zeitgesteuerten Aufgaben.',
+    en: 'Cron Job Utility handles your scheduled jobs autonomously.'
+  },
+  logoUrl:
+    'https://raw.githubusercontent.com/axonivy-market/market/feature/MARP-463-Multilingualism-for-Website/market/utils/cronjob/logo.png',
+  type: 'util',
+  tags: ['utils'],
+  vendor: 'Axon Ivy AG',
+  platformReview: '4.5',
+  newestReleaseVersion: 'v10.0.4',
+  cost: 'Free',
+  sourceUrl: 'https://github.com/axonivy-market/cronjob',
+  statusBadgeUrl:
+    'https://github.com/axonivy-market/cronjob/actions/workflows/ci.yml/badge.svg',
+  language: 'English',
+  industry: 'Cross-Industry',
+  compatibility: '10.0+',
+  contactUs: false,
+  vendorUrl: '',
+  productModuleContent: {
+    tag: 'v10.0.4',
+    description: {
+      en: '**Cron Job** is a job-firing schedule that recurs based on calendar-like notions.\n\nThe [Quartz framework](http://www.quartz-scheduler.org/) is used as underlying scheduler framework.\n\nWith Cron Job, you can specify firing-schedules such as “every Friday at noon”, or “every weekday and 9:30 am”, or even “every 5 minutes between 9:00 am and 10:00 am on every Monday, Wednesday and Friday during January”.\n\nFor more details about Cron Expressions please refer to [Lesson 6: CronTrigger](http://www.quartz-scheduler.org/documentation/quartz-2.3.0/tutorials/tutorial-lesson-06.html)'
+    },
+    setup:
+      'No special setup is needed for this demo. Only start the Engine and watch out the logging which will be updated every 5 seconds with the following logging entry:\n\n```\n\nCron Job ist started at: 2023-01-27 10:43:20.\n\n```',
+    demo: 'In this demo, the CronByGlobalVariableTriggerStartEventBean is defined as the Java class to be executed in the Ivy Program Start element.\n\n![Program Start Element screenshot](https://raw.githubusercontent.com/axonivy-market/cronjob/v10.0.4/cronjob-product/ProgramStartElement.png)\n\nThis bean gets a cron expression via the variable defined as Cron expression and it will schedule by using the expression.\n\n![custom editor UI screenshot](https://raw.githubusercontent.com/axonivy-market/cronjob/v10.0.4/cronjob-product/customEditorUI.png)\n\nFor this demo, the Cron expression is defining the time to start the cron that simply fires every 5 seconds.\n\n```\n\n  demoStartCronPattern: 0/5 * * * * ?\n\n```',
+    isDependency: true,
+    name: 'cron job',
+    groupId: 'com.axonivy.utils.cronjob',
+    artifactId: 'cronjob',
+    type: 'iar'
+  },
+  installationCount: 0,
+  _links: {
+    self: {
+      href: 'http://localhost:8080/api/product-details/cronjob'
+    }
+  }
+};
+
 export const MOCK_PRODUCT_DETAIL: ProductDetail = {
   id: 'jira-connector',
   names: {

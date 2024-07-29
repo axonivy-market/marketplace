@@ -1,15 +1,24 @@
-import { provideHttpClient, withInterceptorsFromDi } from '@angular/common/http';
+import {
+  provideHttpClient,
+  withInterceptorsFromDi
+} from '@angular/common/http';
 import { provideHttpClientTesting } from '@angular/common/http/testing';
-import { ComponentFixture, fakeAsync, TestBed, tick } from '@angular/core/testing';
+import {
+  ComponentFixture,
+  fakeAsync,
+  TestBed,
+  tick
+} from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 import { ActivatedRoute } from '@angular/router';
 import { TranslateModule } from '@ngx-translate/core';
 import { Viewport } from 'karma-viewport/dist/adapter/viewport';
 import { MarkdownModule } from 'ngx-markdown';
-import { of } from 'rxjs';
+import { Observable, of } from 'rxjs';
 import { TypeOption } from '../../../shared/enums/type-option.enum';
 import {
   MOCK_PRODUCT_DETAIL,
+  MOCK_PRODUCT_DETAIL_BY_VERSION,
   MOCK_PRODUCT_MODULE_CONTENT,
   MOCK_PRODUCTS
 } from '../../../shared/mocks/mock-data';
@@ -64,6 +73,9 @@ describe('ProductDetailComponent', () => {
         }
       })
       .compileComponents();
+    routingQueryParamService = TestBed.inject(
+      RoutingQueryParamService
+    ) as jasmine.SpyObj<RoutingQueryParamService>;
   });
 
   beforeEach(() => {
@@ -72,21 +84,22 @@ describe('ProductDetailComponent', () => {
     fixture.detectChanges();
   });
 
-
   it('should create', () => {
     expect(component.productDetail().names['en']).toEqual(
       MOCK_PRODUCT_DETAIL.names['en']
     );
   });
 
-
-  fit('should get corresponding version from cookie', () => {
+  it('should get corresponding version from cookie', () => {
     const targetVersion = '1.0';
-    routingQueryParamService.getDesignerVersionFromCookie.and.returnValue(targetVersion);
-    expect(component.productDetail().id).toEqual(
-      MOCK_PRODUCT_DETAIL.id
+    const productId = 'Portal';
+    routingQueryParamService.getDesignerVersionFromCookie.and.returnValue(
+      targetVersion
     );
-  })
+    component.getProductById(productId).subscribe(productDetail => {
+      expect(productDetail).toEqual(MOCK_PRODUCT_DETAIL_BY_VERSION);
+    });
+  });
 
   it('should toggle isDropdownOpen on onShowDropdown', () => {
     component.isDropdownOpen.set(false);
@@ -239,8 +252,8 @@ describe('ProductDetailComponent', () => {
     spyOn(window, 'matchMedia').and.returnValue({
       matches: true,
       media: '',
-      addEventListener: () => { },
-      removeEventListener: () => { },
+      addEventListener: () => {},
+      removeEventListener: () => {},
       onchange: null,
       addListener: function (
         callback:
@@ -267,8 +280,8 @@ describe('ProductDetailComponent', () => {
     (window.matchMedia as jasmine.Spy).and.returnValue({
       matches: false,
       media: '',
-      addEventListener: () => { },
-      removeEventListener: () => { }
+      addEventListener: () => {},
+      removeEventListener: () => {}
     });
 
     component.checkMediaSize();
