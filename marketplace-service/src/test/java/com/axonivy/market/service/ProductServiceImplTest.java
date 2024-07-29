@@ -78,7 +78,7 @@ class ProductServiceImplTest {
   private static final String SHA1_SAMPLE = "35baa89091b2452b77705da227f1a964ecabc6c8";
   public static final String RELEASE_TAG = "v10.0.2";
   private String keyword;
-  private String langague;
+  private String language;
   private Page<Product> mockResultReturn;
 
   @Mock
@@ -158,22 +158,22 @@ class ProductServiceImplTest {
 
   @Test
   void testFindProducts() {
-    langague = "en";
+    language = "en";
     // Start testing by All
     when(productRepository.findAll(any(Pageable.class))).thenReturn(mockResultReturn);
     // Executes
-    var result = productService.findProducts(TypeOption.ALL.getOption(), keyword, langague, PAGEABLE);
+    var result = productService.findProducts(TypeOption.ALL.getOption(), keyword, language, PAGEABLE);
     assertEquals(mockResultReturn, result);
 
     // Start testing by Connector
     when(productRepository.findByType(any(), any(Pageable.class))).thenReturn(mockResultReturn);
     // Executes
-    result = productService.findProducts(TypeOption.CONNECTORS.getOption(), keyword, langague, PAGEABLE);
+    result = productService.findProducts(TypeOption.CONNECTORS.getOption(), keyword, language, PAGEABLE);
     assertEquals(mockResultReturn, result);
 
     // Start testing by Other
     // Executes
-    result = productService.findProducts(TypeOption.DEMOS.getOption(), keyword, langague, PAGEABLE);
+    result = productService.findProducts(TypeOption.DEMOS.getOption(), keyword, language, PAGEABLE);
     assertEquals(0, result.getSize());
   }
 
@@ -242,10 +242,10 @@ class ProductServiceImplTest {
 
   @Test
   void testFindAllProductsWithKeyword() throws IOException {
-    langague = "en";
+    language = "en";
     when(productRepository.findAll(any(Pageable.class))).thenReturn(mockResultReturn);
     // Executes
-    var result = productService.findProducts(TypeOption.ALL.getOption(), keyword, langague, PAGEABLE);
+    var result = productService.findProducts(TypeOption.ALL.getOption(), keyword, language, PAGEABLE);
     assertEquals(mockResultReturn, result);
     verify(productRepository).findAll(any(Pageable.class));
 
@@ -255,7 +255,7 @@ class ProductServiceImplTest {
             .filter(product -> product.getNames().get(Language.EN.getValue()).equals(SAMPLE_PRODUCT_NAME))
             .collect(Collectors.toList())));
     // Executes
-    result = productService.findProducts(TypeOption.ALL.getOption(), SAMPLE_PRODUCT_NAME, langague, PAGEABLE);
+    result = productService.findProducts(TypeOption.ALL.getOption(), SAMPLE_PRODUCT_NAME, language, PAGEABLE);
     verify(productRepository).findAll(any(Pageable.class));
     assertTrue(result.hasContent());
     assertEquals(SAMPLE_PRODUCT_NAME, result.getContent().get(0).getNames().get(Language.EN.getValue()));
@@ -267,7 +267,7 @@ class ProductServiceImplTest {
                 && product.getType().equals(TypeOption.CONNECTORS.getCode()))
             .collect(Collectors.toList())));
     // Executes
-    result = productService.findProducts(TypeOption.CONNECTORS.getOption(), SAMPLE_PRODUCT_NAME, langague, PAGEABLE);
+    result = productService.findProducts(TypeOption.CONNECTORS.getOption(), SAMPLE_PRODUCT_NAME, language, PAGEABLE);
     assertTrue(result.hasContent());
     assertEquals(SAMPLE_PRODUCT_NAME, result.getContent().get(0).getNames().get(Language.EN.getValue()));
   }
@@ -327,13 +327,13 @@ class ProductServiceImplTest {
     var simplePageable = PageRequest.of(0, 20);
     String type = TypeOption.ALL.getOption();
     keyword = "on";
-    langague = "en";
-    when(productRepository.searchByNameOrShortDescriptionRegex(keyword, langague, simplePageable)).thenReturn(
+    language = "en";
+    when(productRepository.searchByNameOrShortDescriptionRegex(keyword, language, simplePageable)).thenReturn(
         mockResultReturn);
 
-    var result = productService.findProducts(type, keyword, langague, simplePageable);
+    var result = productService.findProducts(type, keyword, language, simplePageable);
     assertEquals(result, mockResultReturn);
-    verify(productRepository).searchByNameOrShortDescriptionRegex(keyword, langague, simplePageable);
+    verify(productRepository).searchByNameOrShortDescriptionRegex(keyword, language, simplePageable);
   }
 
   @Test

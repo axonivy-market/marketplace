@@ -14,7 +14,7 @@ import { ActivatedRoute } from '@angular/router';
 import { TranslateModule } from '@ngx-translate/core';
 import { Viewport } from 'karma-viewport/dist/adapter/viewport';
 import { MarkdownModule } from 'ngx-markdown';
-import { Observable, of } from 'rxjs';
+import { of } from 'rxjs';
 import { TypeOption } from '../../../shared/enums/type-option.enum';
 import {
   MOCK_PRODUCT_DETAIL,

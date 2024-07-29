@@ -11,8 +11,8 @@ public enum SortOption {
   POPULARITY("popularity", "installationCount"), ALPHABETICALLY("alphabetically", "names"),
   RECENT("recent", "newestPublishedDate");
 
-  private String option;
-  private String code;
+  private final String option;
+  private final String code;
 
   public static SortOption of(String option) {
     option = StringUtils.isBlank(option) ? option : option.trim();

@@ -8,5 +8,5 @@ import lombok.Getter;
 public enum Language {
   EN("en"), DE("de");
 
-  private String value;
+  private final String value;
 }
