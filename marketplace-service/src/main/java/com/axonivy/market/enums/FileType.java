@@ -10,7 +10,7 @@ import org.apache.commons.lang3.StringUtils;
 public enum FileType {
   META("meta.json"), LOGO("logo.png");
 
-  private String fileName;
+  private final String fileName;
 
   public static FileType of(String name) {
     for (var type : values()) {

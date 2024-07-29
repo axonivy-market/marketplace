@@ -9,9 +9,7 @@ import java.util.List;
 import java.util.Objects;
 
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -52,7 +50,7 @@ class ProductDetailsControllerTest {
   @Test
   void testProductDetails() {
     Mockito.when(productService.fetchProductDetail(Mockito.anyString())).thenReturn(mockProduct());
-    Mockito.when(detailModelAssembler.toModel(mockProduct(), null)).thenReturn(createProductMockWithDetails());
+    Mockito.when(detailModelAssembler.toModel(mockProduct())).thenReturn(createProductMockWithDetails());
     ResponseEntity<ProductDetailModel> mockExpectedResult = new ResponseEntity<>(createProductMockWithDetails(),
         HttpStatus.OK);
 
@@ -62,7 +60,7 @@ class ProductDetailsControllerTest {
     assertEquals(result, mockExpectedResult);
 
     verify(productService, times(1)).fetchProductDetail(DOCKER_CONNECTOR_ID);
-    verify(detailModelAssembler, times(1)).toModel(mockProduct(), null);
+    verify(detailModelAssembler, times(1)).toModel(mockProduct());
   }
 
   @Test
@@ -87,7 +85,7 @@ class ProductDetailsControllerTest {
     Mockito.when(
             versionService.getArtifactsAndVersionToDisplay(Mockito.anyString(), Mockito.anyBoolean(), Mockito.anyString()))
         .thenReturn(models);
-    ResponseEntity<List<MavenArtifactVersionModel>> result = productDetailsController.findProductVersionsById("protal",
+    ResponseEntity<List<MavenArtifactVersionModel>> result = productDetailsController.findProductVersionsById("portal",
         true, "10.0.1");
     Assertions.assertEquals(HttpStatus.OK, result.getStatusCode());
     Assertions.assertEquals(1, Objects.requireNonNull(result.getBody()).size());

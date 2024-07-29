@@ -1,33 +1,21 @@
 package com.axonivy.market.service;
 
-import com.axonivy.market.constants.GitHubConstants;
-import com.axonivy.market.github.model.GitHubAccessTokenResponse;
 import com.axonivy.market.github.service.impl.GitHubServiceImpl;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.kohsuke.github.GHContent;
 import org.kohsuke.github.GHRepository;
-import org.kohsuke.github.GitHub;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.boot.web.client.RestTemplateBuilder;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
-import org.springframework.util.LinkedMultiValueMap;
-import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestTemplate;
 
 import java.io.IOException;
-import java.util.Collections;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.mock;
@@ -65,11 +53,11 @@ class GitHubServiceImplTest {
   @Test
   void testGetGithubContent() throws IOException {
     var mockGHContent = mock(GHContent.class);
-    final String dummryURL = DUMMY_API_URL.concat("/dummry-content");
-    when(mockGHContent.getUrl()).thenReturn(dummryURL);
+    final String dummyURL = DUMMY_API_URL.concat("/dummy-content");
+    when(mockGHContent.getUrl()).thenReturn(dummyURL);
     when(ghRepository.getFileContent(any(), any())).thenReturn(mockGHContent);
     var result = gitHubService.getGHContent(ghRepository, "", "");
-    assertEquals(dummryURL, result.getUrl());
+    assertEquals(dummyURL, result.getUrl());
   }
 
   @Test

@@ -30,8 +30,8 @@ import { ProductStarRatingNumberComponent } from './product-star-rating-number/p
 import { ProductInstallationCountActionComponent } from './product-installation-count-action/product-installation-count-action.component';
 import { ProductTypeIconPipe } from '../../../shared/pipes/icon.pipe';
 import { Observable } from 'rxjs';
-import { CookieManagementService } from '../../../cookie.management.service';
 import { ProductStarRatingService } from './product-detail-feedback/product-star-rating-panel/product-star-rating.service';
+import { RoutingQueryParamService } from '../../../shared/services/routing.query.param.service';
 
 export interface DetailTab {
   activeClass: string;
@@ -75,7 +75,7 @@ export class ProductDetailComponent {
   appModalService = inject(AppModalService);
   authService = inject(AuthService);
   elementRef = inject(ElementRef);
-  cookieService = inject(CookieManagementService);
+  routingQueryParamService = inject(RoutingQueryParamService);
 
   resizeObserver: ResizeObserver;
 
@@ -131,14 +131,15 @@ export class ProductDetailComponent {
   }
 
   getProductById(productId: string): Observable<ProductDetail> {
-    const targetVersion = this.cookieService.getDesignerVersionFromCookie();
-    if (targetVersion != '') {
-      return this.productService.getProductDetailsWithVersion(
-        productId,
-        targetVersion
-      );
+    const targetVersion =
+      this.routingQueryParamService.getDesignerVersionFromCookie();
+    if (!targetVersion) {
+      return this.productService.getProductDetails(productId);
     }
-    return this.productService.getProductDetails(productId);
+    return this.productService.getProductDetailsWithVersion(
+      productId,
+      targetVersion
+    );
   }
 
   ngAfterViewInit(): void {
@@ -159,9 +160,9 @@ export class ProductDetailComponent {
   getContent(value: string): boolean {
     const content = this.productModuleContent();
     const conditions: { [key: string]: boolean } = {
-      description: content.description != null,
-      demo: content.demo != null && content.demo !== '',
-      setup: content.setup != null && content.setup !== '',
+      description: content.description !== null,
+      demo: content.demo !== null && content.demo !== '',
+      setup: content.setup !== null && content.setup !== '',
       dependency: content.isDependency
     };
 
@@ -169,9 +170,7 @@ export class ProductDetailComponent {
   }
 
   loadDetailTabs(selectedVersion: string) {
-    const tag =
-      selectedVersion.replaceAll('Version ', 'v') ||
-      this.productDetail().newestReleaseVersion;
+    const tag = selectedVersion || this.productDetail().newestReleaseVersion;
     this.productService
       .getProductDetailsWithVersion(this.productDetail().id, tag)
       .subscribe(updatedProductDetail => {

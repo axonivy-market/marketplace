@@ -5,10 +5,10 @@ import com.axonivy.market.comparator.LatestVersionComparator;
 import com.axonivy.market.constants.CommonConstants;
 import com.axonivy.market.constants.GitHubConstants;
 import com.axonivy.market.constants.MavenConstants;
-import com.axonivy.market.constants.NonStandardProductPackageConstants;
 import com.axonivy.market.entity.MavenArtifactModel;
 import com.axonivy.market.entity.MavenArtifactVersion;
 import com.axonivy.market.entity.Product;
+import com.axonivy.market.enums.NonStandardProduct;
 import com.axonivy.market.github.model.ArchivedArtifact;
 import com.axonivy.market.github.model.MavenArtifact;
 import com.axonivy.market.github.service.GHAxonIvyProductRepoService;
@@ -257,7 +257,7 @@ public class VersionServiceImpl implements VersionService {
 
   public String getVersionTag(String version) {
     String versionTag = "v" + version;
-    if (NonStandardProductPackageConstants.PORTAL.equals(productId)) {
+    if (NonStandardProduct.PORTAL.getId().equals(productId)) {
       versionTag = version;
     }
     return versionTag;

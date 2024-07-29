@@ -17,7 +17,7 @@ import { ProductService } from '../../product.service';
 import { Artifact } from '../../../../shared/models/vesion-artifact.model';
 import { Tooltip } from 'bootstrap';
 import { ProductDetailService } from '../product-detail.service';
-import { CookieManagementService } from '../../../../cookie.management.service';
+import { RoutingQueryParamService } from '../../../../shared/services/routing.query.param.service';
 
 const delayTimeBeforeHideMessage = 2000;
 @Component({
@@ -43,7 +43,7 @@ export class ProductDetailVersionActionComponent implements AfterViewInit {
   selectedArtifact = '';
   versionMap: Map<string, Artifact[]> = new Map();
 
-  cookieService = inject(CookieManagementService);
+  routingQueryParamService = inject(RoutingQueryParamService);
   themeService = inject(ThemeService);
   translateService = inject(TranslateService);
   productService = inject(ProductService);
@@ -57,7 +57,9 @@ export class ProductDetailVersionActionComponent implements AfterViewInit {
     tooltipTriggerList.forEach(
       tooltipTriggerEl => new Tooltip(tooltipTriggerEl)
     );
-    this.isDesignerEnvironment.set(this.cookieService.isDesignerEnv());
+    this.isDesignerEnvironment.set(
+      this.routingQueryParamService.isDesignerEnv()
+    );
   }
 
   onShowVersions() {

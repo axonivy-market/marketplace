@@ -14,4 +14,5 @@ public class CommonConstants {
   public static final String PLUS = "+";
   public static final String DASH_SEPARATOR = "-";
   public static final String SPACE_SEPARATOR = " ";
+  public static final String BEARER = "Bearer";
 }

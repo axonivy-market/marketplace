@@ -51,7 +51,7 @@ class OAuth2ControllerTest {
 
     ResponseEntity<?> response = oAuth2Controller.gitHubLogin(oauth2AuthorizationCode);
 
-    assertEquals(200, response.getStatusCodeValue());
+    assertEquals(200, response.getStatusCode().value());
     assertEquals(Map.of("token", jwtToken), response.getBody());
   }
 
