@@ -4,8 +4,7 @@ import static com.axonivy.market.constants.CommonConstants.LOGO_FILE;
 import static com.axonivy.market.constants.CommonConstants.SLASH;
 import static com.axonivy.market.constants.MetaConstants.META_FILE;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.anyString;
@@ -195,7 +194,7 @@ class ProductServiceImplTest {
 
     // Executes
     var result = productService.syncLatestDataFromMarketRepo();
-    assertEquals(false, result);
+    assertFalse(result);
 
     // Start testing by deleting new meta
     mockCommit = mockGHCommitHasSHA1(UUID.randomUUID().toString());
@@ -204,7 +203,7 @@ class ProductServiceImplTest {
     mockGithubFile.setStatus(FileStatus.REMOVED);
     // Executes
     result = productService.syncLatestDataFromMarketRepo();
-    assertEquals(false, result);
+    assertFalse(result);
   }
 
   @Test
@@ -226,7 +225,7 @@ class ProductServiceImplTest {
 
     // Executes
     var result = productService.syncLatestDataFromMarketRepo();
-    assertEquals(false, result);
+    assertFalse(result);
 
     // Start testing by deleting new logo
     when(mockCommit.getSHA1()).thenReturn(UUID.randomUUID().toString());
@@ -237,11 +236,11 @@ class ProductServiceImplTest {
 
     // Executes
     result = productService.syncLatestDataFromMarketRepo();
-    assertEquals(false, result);
+    assertFalse(result);
   }
 
   @Test
-  void testFindAllProductsWithKeyword() throws IOException {
+  void testFindAllProductsWithKeyword() {
     language = "en";
     when(productRepository.findAll(any(Pageable.class))).thenReturn(mockResultReturn);
     // Executes
@@ -310,7 +309,7 @@ class ProductServiceImplTest {
   }
 
   @Test
-  void testNothingToSync() throws IOException {
+  void testNothingToSync() {
     var gitHubRepoMeta = mock(GitHubRepoMeta.class);
     when(gitHubRepoMeta.getLastSHA1()).thenReturn(SHA1_SAMPLE);
     var mockCommit = mockGHCommitHasSHA1(SHA1_SAMPLE);
@@ -319,7 +318,7 @@ class ProductServiceImplTest {
 
     // Executes
     var result = productService.syncLatestDataFromMarketRepo();
-    assertEquals(true, result);
+    assertTrue(result);
   }
 
   @Test
@@ -381,12 +380,12 @@ class ProductServiceImplTest {
   }
 
   private void mockMarketRepoMetaStatus() {
-    var mockMartketRepoMeta = new GitHubRepoMeta();
-    mockMartketRepoMeta.setRepoURL(GitHubConstants.AXONIVY_MARKETPLACE_REPO_NAME);
-    mockMartketRepoMeta.setRepoName(GitHubConstants.AXONIVY_MARKETPLACE_REPO_NAME);
-    mockMartketRepoMeta.setLastChange(LAST_CHANGE_TIME);
-    mockMartketRepoMeta.setLastSHA1(SHA1_SAMPLE);
-    when(repoMetaRepository.findByRepoName(any())).thenReturn(mockMartketRepoMeta);
+    var mockMarketRepoMeta = new GitHubRepoMeta();
+    mockMarketRepoMeta.setRepoURL(GitHubConstants.AXONIVY_MARKETPLACE_REPO_NAME);
+    mockMarketRepoMeta.setRepoName(GitHubConstants.AXONIVY_MARKETPLACE_REPO_NAME);
+    mockMarketRepoMeta.setLastChange(LAST_CHANGE_TIME);
+    mockMarketRepoMeta.setLastSHA1(SHA1_SAMPLE);
+    when(repoMetaRepository.findByRepoName(any())).thenReturn(mockMarketRepoMeta);
   }
 
   private GHCommit mockGHCommitHasSHA1(String sha1) {
