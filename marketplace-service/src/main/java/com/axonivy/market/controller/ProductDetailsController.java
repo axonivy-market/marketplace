@@ -12,6 +12,8 @@ import static com.axonivy.market.constants.RequestParamConstants.TAG;
 
 import java.util.List;
 
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
@@ -32,6 +34,7 @@ import io.swagger.v3.oas.annotations.Operation;
 
 @RestController
 @RequestMapping(PRODUCT_DETAILS)
+@Tag(name = "Product Detail Controllers", description = "API collection to get product's detail.")
 public class ProductDetailsController {
   private final VersionService versionService;
   private final ProductService productService;
@@ -45,22 +48,24 @@ public class ProductDetailsController {
   }
 
   @GetMapping(BY_ID_AND_TAG)
-  public ResponseEntity<ProductDetailModel> findProductDetailsByVersion(@PathVariable(ID) String id,
-      @PathVariable(TAG) String tag) {
+  @Operation(summary = "Find product detail by product id and release tag.", description = "get product detail by it product id and release tag.")
+  public ResponseEntity<ProductDetailModel> findProductDetailsByVersion(@PathVariable(ID) @Parameter(name = "Product id (from meta.json)", example = "portal") String id,
+                                                                        @PathVariable(TAG) @Parameter(name = "Release tag (from git hub repo tags)", example = "10.0.19") String tag) {
     var productDetail = productService.fetchProductDetail(id);
     return new ResponseEntity<>(detailModelAssembler.toModel(productDetail, tag), HttpStatus.OK);
   }
 
-  @Operation(summary = "increase installation count by 1", description = "update installation count when click download product files by users")
   @CrossOrigin(originPatterns = "*")
   @PutMapping(INSTALLATION_COUNT_BY_ID)
-  public ResponseEntity<Integer> syncInstallationCount(@PathVariable(ID) String key) {
-    int result = productService.updateInstallationCountForProduct(key);
+  @Operation(summary = "Update installation count of product", description = "By default, increase installation count when click download product files by users")
+  public ResponseEntity<Integer> syncInstallationCount(@PathVariable(ID) @Parameter(name = "Product id (from meta.json)", example = "portal") String productId) {
+    int result = productService.updateInstallationCountForProduct(productId);
     return new ResponseEntity<>(result, HttpStatus.OK);
   }
 
   @GetMapping(BY_ID)
-  public ResponseEntity<ProductDetailModel> findProductDetails(@PathVariable(ID) String id) {
+  @Operation(summary = "increase installation count by 1", description = "update installation count when click download product files by users")
+  public ResponseEntity<ProductDetailModel> findProductDetails(@PathVariable(ID) @Parameter(name = "Product id (from meta.json)", example = "portal") String id) {
     var productDetail = productService.fetchProductDetail(id);
     return new ResponseEntity<>(detailModelAssembler.toModel(productDetail, null), HttpStatus.OK);
   }

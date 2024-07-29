@@ -8,6 +8,10 @@ import static com.axonivy.market.constants.RequestParamConstants.LANGUAGE;
 import static com.axonivy.market.constants.RequestParamConstants.RESET_SYNC;
 import static com.axonivy.market.constants.RequestParamConstants.TYPE;
 
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.enums.ParameterIn;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.apache.commons.lang3.time.StopWatch;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
@@ -37,6 +41,7 @@ import io.swagger.v3.oas.annotations.Operation;
 
 @RestController
 @RequestMapping(PRODUCT)
+@Tag(name = "Product Controller", description = "API collection to get and search products")
 public class ProductController {
 
   private final ProductService productService;
@@ -45,18 +50,20 @@ public class ProductController {
   private final PagedResourcesAssembler<Product> pagedResourcesAssembler;
 
   public ProductController(ProductService productService, GitHubService gitHubService, ProductModelAssembler assembler,
-      PagedResourcesAssembler<Product> pagedResourcesAssembler) {
+                           PagedResourcesAssembler<Product> pagedResourcesAssembler) {
     this.productService = productService;
     this.gitHubService = gitHubService;
     this.assembler = assembler;
     this.pagedResourcesAssembler = pagedResourcesAssembler;
   }
 
-  @Operation(summary = "Find all products", description = "Be default system will finds product by type as 'all'")
   @GetMapping()
-  public ResponseEntity<PagedModel<ProductModel>> findProducts(@RequestParam(name = TYPE) String type,
-      @RequestParam(required = false, name = KEYWORD) String keyword,
-      @RequestParam(name = LANGUAGE) String language, Pageable pageable) {
+  @Operation(summary = "Find all products", description = "Be default system will finds product by type as 'all'")
+  public ResponseEntity<PagedModel<ProductModel>> findProducts(@RequestParam(name = TYPE) @Parameter(name = "Type", description = "Type of product.", in = ParameterIn.QUERY,
+          schema = @Schema(type = "string", allowableValues = {"all", "connectors", "utilities", "solutions", "demos"})) String type,
+                                                               @RequestParam(required = false, name = KEYWORD) @Parameter(name = "Keyword", description = "Keyword that exist in product's name or short description.", in = ParameterIn.QUERY) String keyword,
+                                                               @RequestParam(name = LANGUAGE) @Parameter(name = "Language", description = "Language of product short description.", in = ParameterIn.QUERY,
+                                                                       schema = @Schema(allowableValues = {"en", "de"})) String language, @Parameter(name = "Pagination", description = "Pagination configuration for result set") Pageable pageable) {
     Page<Product> results = productService.findProducts(type, keyword, language, pageable);
     if (results.isEmpty()) {
       return generateEmptyPagedModel();
@@ -67,8 +74,9 @@ public class ProductController {
   }
 
   @PutMapping(SYNC)
+  @Operation(hidden = true)
   public ResponseEntity<Message> syncProducts(@RequestHeader(value = AUTHORIZATION) String authorizationHeader,
-      @RequestParam(value = RESET_SYNC, required = false) Boolean resetSync) {
+                                              @RequestParam(value = RESET_SYNC, required = false) Boolean resetSync) {
     String token = null;
     if (authorizationHeader.startsWith(CommonConstants.BEARER)) {
       token = authorizationHeader.substring(CommonConstants.BEARER.length()).trim(); // Remove "Bearer " prefix
@@ -96,7 +104,7 @@ public class ProductController {
   @SuppressWarnings("unchecked")
   private ResponseEntity<PagedModel<ProductModel>> generateEmptyPagedModel() {
     var emptyPagedModel = (PagedModel<ProductModel>) pagedResourcesAssembler.toEmptyModel(Page.empty(),
-        ProductModel.class);
+            ProductModel.class);
     return new ResponseEntity<>(emptyPagedModel, HttpStatus.OK);
   }
 }
