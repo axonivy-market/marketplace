@@ -32,6 +32,11 @@ import org.springframework.web.bind.annotation.RestController;
 import static com.axonivy.market.constants.RequestMappingConstants.CUSTOM_SORT;
 import static com.axonivy.market.constants.RequestMappingConstants.PRODUCT;
 import static com.axonivy.market.constants.RequestMappingConstants.SYNC;
+import static com.axonivy.market.constants.RequestParamConstants.AUTHORIZATION;
+import static com.axonivy.market.constants.RequestParamConstants.KEYWORD;
+import static com.axonivy.market.constants.RequestParamConstants.LANGUAGE;
+import static com.axonivy.market.constants.RequestParamConstants.RESET_SYNC;
+import static com.axonivy.market.constants.RequestParamConstants.TYPE;
 
 @RestController
 @RequestMapping(PRODUCT)
@@ -52,9 +57,9 @@ public class ProductController {
 
   @Operation(summary = "Find all products", description = "Be default system will finds product by type as 'all'")
   @GetMapping()
-  public ResponseEntity<PagedModel<ProductModel>> findProducts(@RequestParam(name = "type") String type,
-      @RequestParam(required = false, name = "keyword") String keyword,
-      @RequestParam(name = "language") String language, Pageable pageable) {
+  public ResponseEntity<PagedModel<ProductModel>> findProducts(@RequestParam(name = TYPE) String type,
+      @RequestParam(required = false, name = KEYWORD) String keyword,
+      @RequestParam(name = LANGUAGE) String language, Pageable pageable) {
     Page<Product> results = productService.findProducts(type, keyword, language, pageable);
     if (results.isEmpty()) {
       return generateEmptyPagedModel();
@@ -65,9 +70,12 @@ public class ProductController {
   }
 
   @PutMapping(SYNC)
-  public ResponseEntity<Message> syncProducts(@RequestHeader(value = CommonConstants.AUTHORIZATION) String authorizationHeader,
-      @RequestParam(value = "resetSync", required = false) Boolean resetSync) {
-    String token = getBearerToken(authorizationHeader);
+  public ResponseEntity<Message> syncProducts(@RequestHeader(value = AUTHORIZATION) String authorizationHeader,
+      @RequestParam(value = RESET_SYNC, required = false) Boolean resetSync) {
+    String token = null;
+    if (authorizationHeader.startsWith(CommonConstants.BEARER)) {
+      token = authorizationHeader.substring(CommonConstants.BEARER.length()).trim(); // Remove "Bearer " prefix
+    }
     gitHubService.validateUserOrganization(token, GitHubConstants.AXONIVY_MARKET_ORGANIZATION_NAME);
     if (Boolean.TRUE.equals(resetSync)) {
       productService.clearAllProducts();
