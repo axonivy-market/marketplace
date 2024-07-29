@@ -380,10 +380,8 @@ class ProductServiceImplTest {
 
   @Test
   void testRemoveFieldFromAllProductDocuments() {
-    // exercise
     productService.removeFieldFromAllProductDocuments("customOrder");
 
-    // verify
     verify(mongoTemplate, times(1)).updateMulti(any(Query.class), any(Update.class), eq(Product.class));
   }
 
@@ -395,10 +393,8 @@ class ProductServiceImplTest {
     mockProduct.setId(SAMPLE_PRODUCT_ID);
     when(productRepository.findById(SAMPLE_PRODUCT_ID)).thenReturn(Optional.of(mockProduct));
 
-    // exercise
     List<Product> refinedProducts = productService.refineOrderedListOfProductsInCustomSort(orderedListOfProducts);
 
-    // verify
     assertEquals(1, refinedProducts.size());
     assertEquals(1, refinedProducts.get(0).getCustomOrder());
     verify(productRepository, times(1)).findById(SAMPLE_PRODUCT_ID);
@@ -406,7 +402,6 @@ class ProductServiceImplTest {
 
   @Test
   void testRefineOrderedListOfProductsInCustomSort_ProductNotFound() {
-    // prepare
     List<String> orderedListOfProducts = List.of(SAMPLE_PRODUCT_ID);
     when(productRepository.findById(SAMPLE_PRODUCT_ID)).thenReturn(Optional.empty());
 
@@ -417,7 +412,6 @@ class ProductServiceImplTest {
 
   @Test
   void testAddCustomSortProduct() throws InvalidParamException {
-    // prepare
     List<String> orderedListOfProducts = List.of(SAMPLE_PRODUCT_ID);
     ProductCustomSortRequest customSortRequest = new ProductCustomSortRequest();
     customSortRequest.setOrderedListOfProducts(orderedListOfProducts);
@@ -427,10 +421,8 @@ class ProductServiceImplTest {
     mockProduct.setId(SAMPLE_PRODUCT_ID);
     when(productRepository.findById(SAMPLE_PRODUCT_ID)).thenReturn(Optional.of(mockProduct));
 
-    // exercise
     productService.addCustomSortProduct(customSortRequest);
 
-    // verify
     verify(productCustomSortRepository, times(1)).deleteAll();
     verify(mongoTemplate, times(1)).updateMulti(any(Query.class), any(Update.class), eq(Product.class));
     verify(productCustomSortRepository, times(1)).save(any(ProductCustomSort.class));
@@ -443,20 +435,16 @@ class ProductServiceImplTest {
 
   @Test
   void testCreateOrder() {
-    // exercise
     Sort.Order order = productService.createOrder(SortOption.ALPHABETICALLY, "en");
 
-    // verify
     assertEquals(Sort.Direction.ASC, order.getDirection());
     assertEquals(SortOption.ALPHABETICALLY.getCode("en"), order.getProperty());
   }
 
   @Test
-  public void testClearAllProducts() {
-    // When
+  void testClearAllProducts() {
     productService.clearAllProducts();
 
-    // Then
     verify(repoMetaRepository).deleteAll();
     verify(productRepository).deleteAll();
   }
