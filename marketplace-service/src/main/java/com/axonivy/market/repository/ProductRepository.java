@@ -4,6 +4,7 @@ import com.axonivy.market.entity.Product;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.data.mongodb.repository.Aggregation;
 import org.springframework.data.mongodb.repository.MongoRepository;
 import org.springframework.data.mongodb.repository.Query;
 import org.springframework.stereotype.Repository;
@@ -28,7 +29,4 @@ public interface ProductRepository extends MongoRepository<Product, String> {
 
   @Query("{ $or: [ { 'names.?1': { $regex: ?0, $options: 'i' } }, { 'shortDescriptions.?1': { $regex: ?0, $options: 'i' } } ] }")
   Page<Product> searchByNameOrShortDescriptionRegex(String keyword, String language, Pageable unifiedPageabe);
-
-  @Query(value = "{ $and: [{ type: ?0 }, { $addFields: { customOrder: { $switch: { branches: [ { case: { $eq: [_id, customIdList] }, then: 1 } ], default: 3 } } } } , { $sort: { customOrder: 1, newestPublishedDate: sortDirection } } ] }", count = true)
-  Page<Product> findByTypeAndCustomOrderAndSort(String type, List<String> customIdList, Sort.Direction sortDirection, Pageable pageable);
 }

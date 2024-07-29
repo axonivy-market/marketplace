@@ -17,9 +17,6 @@ public class ProductCustomSortRequest {
   @NotEmpty(message = "orderedListOfProducts must not be empty")
   private List<String> orderedListOfProducts;
 
-  @NotBlank(message = "sortRuleForRemainder must not be null or blank")
-  private String sortRuleForRemainder;
-
-  @NotBlank(message = "sortDirectionForRemainder must not be null or blank")
-  private String sortDirectionForRemainder;
+  @NotBlank(message = "ruleForRemainder must not be null or blank")
+  private String ruleForRemainder;
 }

@@ -16,6 +16,5 @@ import static com.axonivy.market.constants.EntityConstants.PRODUCT_CUSTOM_SORT;
 @NoArgsConstructor
 @Document(PRODUCT_CUSTOM_SORT)
 public class ProductCustomSort {
-  private List<ProductSortEntry> orderedListOfProducts;
   private String ruleForRemainder;
 }

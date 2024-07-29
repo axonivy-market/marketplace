@@ -2,8 +2,15 @@ package com.axonivy.market.service.impl;
 
 import com.axonivy.market.constants.CommonConstants;
 import com.axonivy.market.constants.GitHubConstants;
-import com.axonivy.market.entity.*;
-import com.axonivy.market.enums.*;
+import com.axonivy.market.constants.ProductJsonConstants;
+import com.axonivy.market.entity.GitHubRepoMeta;
+import com.axonivy.market.entity.Product;
+import com.axonivy.market.entity.ProductCustomSort;
+import com.axonivy.market.entity.ProductModuleContent;
+import com.axonivy.market.enums.ErrorCode;
+import com.axonivy.market.enums.FileType;
+import com.axonivy.market.enums.SortOption;
+import com.axonivy.market.enums.TypeOption;
 import com.axonivy.market.exceptions.model.InvalidParamException;
 import com.axonivy.market.factory.ProductFactory;
 import com.axonivy.market.github.model.GitHubFile;
@@ -33,6 +40,9 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.domain.Sort.Order;
+import org.springframework.data.mongodb.core.MongoTemplate;
+import org.springframework.data.mongodb.core.query.Query;
+import org.springframework.data.mongodb.core.query.Update;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
@@ -62,6 +72,8 @@ public class ProductServiceImpl implements ProductService {
   private final GitHubService gitHubService;
   private final ProductCustomSortRepository productCustomSortRepository;
 
+  private final MongoTemplate mongoTemplate;
+
   private GHCommit lastGHCommit;
   private GitHubRepoMeta marketRepoMeta;
   private final ObjectMapper mapper = new ObjectMapper();
@@ -71,15 +83,18 @@ public class ProductServiceImpl implements ProductService {
 
   public static final String NON_NUMERIC_CHAR = "[^0-9.]";
   private final SecureRandom random = new SecureRandom();
+
   public ProductServiceImpl(ProductRepository productRepository, GHAxonIvyMarketRepoService axonIvyMarketRepoService,
-                            GHAxonIvyProductRepoService axonIvyProductRepoService, GitHubRepoMetaRepository gitHubRepoMetaRepository,
-                            GitHubService gitHubService, ProductCustomSortRepository productCustomSortRepository) {
+      GHAxonIvyProductRepoService axonIvyProductRepoService, GitHubRepoMetaRepository gitHubRepoMetaRepository,
+      GitHubService gitHubService, ProductCustomSortRepository productCustomSortRepository,
+      MongoTemplate mongoTemplate) {
     this.productRepository = productRepository;
     this.axonIvyMarketRepoService = axonIvyMarketRepoService;
     this.axonIvyProductRepoService = axonIvyProductRepoService;
     this.gitHubRepoMetaRepository = gitHubRepoMetaRepository;
     this.gitHubService = gitHubService;
     this.productCustomSortRepository = productCustomSortRepository;
+    this.mongoTemplate = mongoTemplate;
   }
 
   @Override
@@ -140,7 +155,8 @@ public class ProductServiceImpl implements ProductService {
     try {
       String installationCounts = Files.readString(Paths.get(installationCountPath));
       Map<String, Integer> mapping = mapper.readValue(installationCounts,
-          new TypeReference<HashMap<String, Integer>>(){});
+          new TypeReference<HashMap<String, Integer>>() {
+          });
       List<String> keyList = mapping.keySet().stream().toList();
       int currentInstallationCount = keyList.contains(product.getId())
           ? mapping.get(product.getId())
@@ -244,13 +260,30 @@ public class ProductServiceImpl implements ProductService {
     if (pageable != null) {
       List<Order> orders = new ArrayList<>();
       for (var sort : pageable.getSort()) {
-        final var sortOption = SortOption.of(sort.getProperty());
-        Order order = new Order(sort.getDirection(), sortOption.getCode(language));
+        SortOption sortOption = SortOption.of(sort.getProperty());
+        Order order = createOrder(sortOption, language);
         orders.add(order);
+        if (SortOption.STANDARD.equals(sortOption)) {
+          orders.add(getExtensionOrder(language));
+        }
       }
       pageRequest = PageRequest.of(pageable.getPageNumber(), pageable.getPageSize(), Sort.by(orders));
     }
     return pageRequest;
+  }
+
+  private Order createOrder(SortOption sortOption, String language) {
+    return new Order(sortOption.getDirection(), sortOption.getCode(language));
+  }
+
+  private Order getExtensionOrder(String language) {
+    List<ProductCustomSort> customSorts = productCustomSortRepository.findAll();
+
+    if (!customSorts.isEmpty()) {
+      SortOption sortOptionExtension = SortOption.of(customSorts.get(0).getRuleForRemainder());
+      return createOrder(sortOptionExtension, language);
+    }
+    return createOrder(SortOption.POPULARITY, language);
   }
 
   private boolean isLastGithubCommitCovered() {
@@ -352,39 +385,36 @@ public class ProductServiceImpl implements ProductService {
 
   @Override
   public void addCustomSortProduct(ProductCustomSortRequest customSort) throws InvalidParamException {
-    refineRuleInCustomSort(customSort.getSortRuleForRemainder(), customSort.getSortDirectionForRemainder());
+    SortOption.of(customSort.getRuleForRemainder());
 
-    ProductCustomSort productCustomSort = new ProductCustomSort();
-    productCustomSort.setOrderedListOfProducts(refineOrderedListOfProductsInCustomSort(customSort.getOrderedListOfProducts()));
-    productCustomSort.setRuleForRemainder(customSort.getSortRuleForRemainder() + " " + customSort.getSortDirectionForRemainder());
+    ProductCustomSort productCustomSort = new ProductCustomSort(customSort.getRuleForRemainder());
     productCustomSortRepository.deleteAll();
+    removeFieldFromAllProductDocuments(ProductJsonConstants.CUSTOM_ORDER);
     productCustomSortRepository.save(productCustomSort);
+    productRepository.saveAll(refineOrderedListOfProductsInCustomSort(customSort.getOrderedListOfProducts()));
   }
 
-  @Override
-  public List<String> getCustomSortProduct() {
-    return List.of();
-  }
+  private List<Product> refineOrderedListOfProductsInCustomSort(List<String> orderedListOfProducts)
+      throws InvalidParamException {
+    List<Product> productEntries = new ArrayList<>();
 
-  private void refineRuleInCustomSort(String sortOption, String sortDirection) throws InvalidParamException {
-    SortOption.of(sortOption);
-    SortDirection.of(sortDirection);
-  }
-
-  private List<ProductSortEntry> refineOrderedListOfProductsInCustomSort(List<String> orderedListOfProducts) throws InvalidParamException {
-    List<ProductSortEntry> productSortEntries = new ArrayList<>();
-
-    for (int i = 0; i < orderedListOfProducts.size(); i++) {
-      String productId = orderedListOfProducts.get(i);
+    int descendingOrder = orderedListOfProducts.size();
+    for (String productId : orderedListOfProducts) {
       Optional<Product> productOptional = productRepository.findById(productId);
 
       if (productOptional.isEmpty()) {
         throw new InvalidParamException(ErrorCode.PRODUCT_NOT_FOUND, "Not found product with id: " + productId);
       }
-
-      productSortEntries.add(new ProductSortEntry(productId, i + 1));
+      Product product = productOptional.get();
+      product.setCustomOrder(descendingOrder--);
+      productEntries.add(product);
     }
 
-    return productSortEntries;
+    return productEntries;
+  }
+
+  public void removeFieldFromAllProductDocuments(String fieldName) {
+    Update update = new Update().unset(fieldName);
+    mongoTemplate.updateMulti(new Query(), update, Product.class);
   }
 }

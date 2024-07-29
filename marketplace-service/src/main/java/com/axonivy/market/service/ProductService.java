@@ -22,6 +22,4 @@ public interface ProductService {
   void clearAllProducts();
 
   void addCustomSortProduct(ProductCustomSortRequest customSort) throws InvalidParamException;
-
-  List<String> getCustomSortProduct();
 }

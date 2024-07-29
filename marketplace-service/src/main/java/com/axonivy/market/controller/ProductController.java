@@ -90,13 +90,6 @@ public class ProductController {
     return new ResponseEntity<>(message, HttpStatus.OK);
   }
 
-  @GetMapping(CUSTOM_SORT)
-  public ResponseEntity<List<String>> getCustomSortProducts(@RequestHeader(value = CommonConstants.AUTHORIZATION) String authorizationHeader) {
-    String token = getBearerToken(authorizationHeader);
-    gitHubService.validateUserOrganization(token, GitHubConstants.AXONIVY_MARKET_ORGANIZATION_NAME);
-    return new ResponseEntity<>(productService.getCustomSortProduct(), HttpStatus.OK);
-  }
-
   @PostMapping(CUSTOM_SORT)
   public ResponseEntity<Message> createCustomSortProducts(@RequestHeader(value = CommonConstants.AUTHORIZATION) String authorizationHeader,
       @RequestBody @Valid ProductCustomSortRequest productCustomSortRequest) {
