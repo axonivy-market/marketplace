@@ -1,6 +1,7 @@
 package com.axonivy.market.model;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
+import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
@@ -21,23 +22,39 @@ import java.util.Date;
 @Relation(collectionRelation = "feedbacks", itemRelation = "feedback")
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class FeedbackModel extends RepresentationModel<FeedbackModel> {
+  @Schema(description = "", example = "")
   private String id;
+
+  @Schema(description = "", example = "")
   private String userId;
+
+  @Schema(description = "Github username", example = "ntqdinh-axonivy")
   private String username;
+
+  @Schema(description = "Url of github avatar", example = "")
   private String userAvatarUrl;
+
+  @Schema(description = "", example = "")
   private String userProvider;
 
+  @Schema(description = "Product id (from meta.json)", example = "portal", nullable = false)
   @NotBlank(message = "Product id cannot be blank")
   private String productId;
 
+  @Schema(description = "User's feedback content", example = "Pretty cool connector.", nullable = false)
   @NotBlank(message = "Content cannot be blank")
   @Size(max = 5, message = "Content length must be up to 250 characters")
   private String content;
 
+  @Schema(description = "User's rating point of target product", example = "5", nullable = false,  minimum = "1", maximum = "5")
   @Min(value = 1, message = "Rating should not be less than 1")
   @Max(value = 5, message = "Rating should not be greater than 5")
   private Integer rating;
+
+  @Schema(description = "Feedback/rating creating timestamp", example = "", nullable = false)
   private Date createdAt;
+
+  @Schema(description = "Latest feedback/rating updating timestamp", example = "", nullable = false)
   private Date updatedAt;
 
   @Override

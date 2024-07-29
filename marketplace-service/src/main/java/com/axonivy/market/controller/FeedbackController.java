@@ -11,12 +11,20 @@ import static com.axonivy.market.constants.RequestParamConstants.USER_ID;
 import java.net.URI;
 import java.util.List;
 
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.enums.ParameterIn;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PagedResourcesAssembler;
 import org.springframework.hateoas.PagedModel;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -42,6 +50,7 @@ import jakarta.validation.Valid;
 
 @RestController
 @RequestMapping(FEEDBACK)
+@Tag(name = "User Feedback Controllers", description = "API collection to handle user's feedback.")
 public class FeedbackController {
 
   private final FeedbackService feedbackService;
@@ -58,9 +67,9 @@ public class FeedbackController {
     this.pagedResourcesAssembler = pagedResourcesAssembler;
   }
 
-  @Operation(summary = "Find all feedbacks by product id")
   @GetMapping(PRODUCT_BY_ID)
-  public ResponseEntity<PagedModel<FeedbackModel>> findFeedbacks(@PathVariable(ID) String productId,
+  @Operation(summary = "Find feedbacks by product id with lazy loading.", description = "Get all user feedback by product id (from meta.json) with lazy loading.")
+  public ResponseEntity<PagedModel<FeedbackModel>> findFeedbacks(@PathVariable(ID) @Parameter(description = "Product id (from meta.json)", example = "portal",in = ParameterIn.PATH)String productId,
       Pageable pageable) {
     Page<Feedback> results = feedbackService.findFeedbacks(productId, pageable);
     if (results.isEmpty()) {
@@ -72,20 +81,27 @@ public class FeedbackController {
   }
 
   @GetMapping(BY_ID)
-  public ResponseEntity<FeedbackModel> findFeedback(@PathVariable(ID) String id) {
+  @Operation(summary = "Find all feedbacks by product id", description = "Get all feedbacks by product id(from meta.json) which is used in mobile viewport.")
+  public ResponseEntity<FeedbackModel> findFeedback(@PathVariable(ID) @Parameter(description = "Product id (from meta.json)", example = "portal",in = ParameterIn.PATH)String id) {
     Feedback feedback = feedbackService.findFeedback(id);
     return ResponseEntity.ok(feedbackModelAssembler.toModel(feedback));
   }
 
-  @Operation(summary = "Find all feedbacks by user id and product id")
   @GetMapping()
-  public ResponseEntity<FeedbackModel> findFeedbackByUserIdAndProductId(@RequestParam(USER_ID) String userId,
-      @RequestParam("productId") String productId) {
+  @Operation(summary = "Find all feedbacks by user id and product id", description="Get current user feedback on target product.")
+  public ResponseEntity<FeedbackModel> findFeedbackByUserIdAndProductId(@RequestParam(USER_ID) @Parameter(name = "User Id",description = "Id of current user from DB", example = "1234",in = ParameterIn.QUERY)String userId,
+      @RequestParam("productId") @Parameter(name = "Product Id",description = "Product id (from meta.json)", example = "portal",in = ParameterIn.QUERY)String productId) {
     Feedback feedback = feedbackService.findFeedbackByUserIdAndProductId(userId, productId);
     return ResponseEntity.ok(feedbackModelAssembler.toModel(feedback));
   }
 
   @PostMapping
+  @Operation(summary = "Create user feedback", description = "Save user feedback of product with their token from Github account.")
+  @io.swagger.v3.oas.annotations.parameters.RequestBody(description = "Example request body for feedback", required = true, content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE, schema = @Schema(implementation = FeedbackModel.class)))
+  @ApiResponses(value = {
+          @ApiResponse(responseCode = "200", description = "Successfully created user feedback"),
+          @ApiResponse(responseCode = "400", description = "Invalid input")
+  })
   public ResponseEntity<Void> createFeedback(@RequestBody @Valid FeedbackModel feedback,
       @RequestHeader(value = AUTHORIZATION) String authorizationHeader) {
     String token = null;
@@ -108,9 +124,9 @@ public class FeedbackController {
     return ResponseEntity.created(location).build();
   }
 
-  @Operation(summary = "Find rating information of product by id")
+  @Operation(summary = "Find rating information of product by id",description = "Get overall rating of product from user.")
   @GetMapping(PRODUCT_RATING_BY_ID)
-  public ResponseEntity<List<ProductRating>> getProductRating(@PathVariable(ID) String productId) {
+  public ResponseEntity<List<ProductRating>> getProductRating(@PathVariable(ID) @Parameter(description = "Product id (from meta.json)",example = "portal", in = ParameterIn.PATH)String productId) {
     return ResponseEntity.ok(feedbackService.getProductRatingById(productId));
   }
 

@@ -13,6 +13,7 @@ import static com.axonivy.market.constants.RequestParamConstants.TAG;
 import java.util.List;
 
 import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.enums.ParameterIn;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -49,8 +50,8 @@ public class ProductDetailsController {
 
   @GetMapping(BY_ID_AND_TAG)
   @Operation(summary = "Find product detail by product id and release tag.", description = "get product detail by it product id and release tag.")
-  public ResponseEntity<ProductDetailModel> findProductDetailsByVersion(@PathVariable(ID) @Parameter(name = "Product id (from meta.json)", example = "portal") String id,
-                                                                        @PathVariable(TAG) @Parameter(name = "Release tag (from git hub repo tags)", example = "10.0.19") String tag) {
+  public ResponseEntity<ProductDetailModel> findProductDetailsByVersion(@PathVariable(ID) @Parameter( description = "Product id (from meta.json)", example = "portal",in = ParameterIn.PATH) String id,
+                                                                        @PathVariable(TAG) @Parameter( description = "Release tag (from git hub repo tags)", example = "10.0.19",in = ParameterIn.PATH) String tag) {
     var productDetail = productService.fetchProductDetail(id);
     return new ResponseEntity<>(detailModelAssembler.toModel(productDetail, tag), HttpStatus.OK);
   }
@@ -58,22 +59,22 @@ public class ProductDetailsController {
   @CrossOrigin(originPatterns = "*")
   @PutMapping(INSTALLATION_COUNT_BY_ID)
   @Operation(summary = "Update installation count of product", description = "By default, increase installation count when click download product files by users")
-  public ResponseEntity<Integer> syncInstallationCount(@PathVariable(ID) @Parameter(name = "Product id (from meta.json)", example = "portal") String productId) {
+  public ResponseEntity<Integer> syncInstallationCount(@PathVariable(ID) @Parameter(description = "Product id (from meta.json)", example = "portal",in = ParameterIn.PATH) String productId) {
     int result = productService.updateInstallationCountForProduct(productId);
     return new ResponseEntity<>(result, HttpStatus.OK);
   }
 
   @GetMapping(BY_ID)
   @Operation(summary = "increase installation count by 1", description = "update installation count when click download product files by users")
-  public ResponseEntity<ProductDetailModel> findProductDetails(@PathVariable(ID) @Parameter(name = "Product id (from meta.json)", example = "portal") String id) {
+  public ResponseEntity<ProductDetailModel> findProductDetails(@PathVariable(ID) @Parameter(description = "Product id (from meta.json)", example = "portal",in = ParameterIn.PATH) String id) {
     var productDetail = productService.fetchProductDetail(id);
     return new ResponseEntity<>(detailModelAssembler.toModel(productDetail, null), HttpStatus.OK);
   }
 
   @GetMapping(VERSIONS_BY_ID)
-  public ResponseEntity<List<MavenArtifactVersionModel>> findProductVersionsById(@PathVariable(ID) String id,
-      @RequestParam(SHOW_DEV_VERSION) boolean isShowDevVersion,
-      @RequestParam(name = DESIGNER_VERSION, required = false) String designerVersion) {
+  public ResponseEntity<List<MavenArtifactVersionModel>> findProductVersionsById(@PathVariable(ID) @Parameter(description = "Product id (from meta.json)", example = "portal",in = ParameterIn.PATH)String id,
+      @RequestParam(SHOW_DEV_VERSION) @Parameter(name ="Show dev version",description = "Option to get Dev Version (Snapshot/ sprint release)", in = ParameterIn.QUERY)boolean isShowDevVersion,
+      @RequestParam(name = DESIGNER_VERSION, required = false) @Parameter(name = "Designer version", in = ParameterIn.QUERY, example = "10.0.19") String designerVersion) {
     List<MavenArtifactVersionModel> models =
         versionService.getArtifactsAndVersionToDisplay(id, isShowDevVersion, designerVersion);
     return new ResponseEntity<>(models, HttpStatus.OK);
