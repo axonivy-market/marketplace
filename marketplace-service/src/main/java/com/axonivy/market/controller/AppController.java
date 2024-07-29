@@ -1,8 +1,8 @@
 package com.axonivy.market.controller;
 
-import com.axonivy.market.enums.ErrorCode;
-import com.axonivy.market.model.Message;
-import lombok.extern.log4j.Log4j2;
+import static com.axonivy.market.constants.RequestMappingConstants.ROOT;
+import static com.axonivy.market.constants.RequestMappingConstants.SWAGGER_URL;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -10,8 +10,10 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
-import static com.axonivy.market.constants.RequestMappingConstants.ROOT;
-import static com.axonivy.market.constants.RequestMappingConstants.SWAGGER_URL;
+import com.axonivy.market.enums.ErrorCode;
+import com.axonivy.market.model.Message;
+
+import lombok.extern.log4j.Log4j2;
 
 @Log4j2
 @RestController
