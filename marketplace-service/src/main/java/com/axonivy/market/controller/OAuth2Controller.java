@@ -49,13 +49,11 @@ public class OAuth2Controller {
           gitHubProperty);
       accessToken = tokenResponse.getAccessToken();
     } catch (Exception e) {
-      return new ResponseEntity<Map<String, String>>(Map.of(e.getClass().getName(), e.getMessage()),
-          HttpStatus.BAD_REQUEST);
+      return new ResponseEntity<>(Map.of(e.getClass().getName(), e.getMessage()), HttpStatus.BAD_REQUEST);
     }
 
     User user = gitHubService.getAndUpdateUser(accessToken);
     String jwtToken = jwtService.generateToken(user);
-    return new ResponseEntity<Map<String, String>>(Collections.singletonMap(GitHubConstants.Json.TOKEN, jwtToken),
-        HttpStatus.OK);
+    return new ResponseEntity<>(Collections.singletonMap(GitHubConstants.Json.TOKEN, jwtToken), HttpStatus.OK);
   }
 }

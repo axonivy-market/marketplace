@@ -1,5 +1,9 @@
 package com.axonivy.market.constants;
 
+import lombok.AccessLevel;
+import lombok.NoArgsConstructor;
+
+@NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class RequestParamConstants {
   public static final String ID = "id";
   public static final String KEY = "key";
