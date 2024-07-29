@@ -1,6 +1,5 @@
 package com.axonivy.market.controller;
 
-import static com.axonivy.market.constants.RequestMappingConstants.ALL;
 import static com.axonivy.market.constants.RequestMappingConstants.AUTH;
 import static com.axonivy.market.constants.RequestMappingConstants.GIT_HUB_LOGIN;
 import static org.apache.commons.lang3.StringUtils.EMPTY;
@@ -10,7 +9,6 @@ import java.util.Map;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -40,7 +38,6 @@ public class OAuth2Controller {
     this.gitHubProperty = gitHubProperty;
   }
 
-  @CrossOrigin(ALL)
   @PostMapping(GIT_HUB_LOGIN)
   public ResponseEntity<Map<String, String>> gitHubLogin(@RequestBody Oauth2AuthorizationCode oauth2AuthorizationCode) {
     String accessToken = EMPTY;
