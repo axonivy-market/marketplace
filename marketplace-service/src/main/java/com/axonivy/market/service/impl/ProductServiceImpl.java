@@ -6,7 +6,6 @@ import com.axonivy.market.entity.GitHubRepoMeta;
 import com.axonivy.market.entity.Product;
 import com.axonivy.market.entity.ProductModuleContent;
 import com.axonivy.market.enums.FileType;
-import com.axonivy.market.enums.Language;
 import com.axonivy.market.enums.SortOption;
 import com.axonivy.market.enums.TypeOption;
 import com.axonivy.market.factory.ProductFactory;
@@ -83,41 +82,46 @@ public class ProductServiceImpl implements ProductService {
   }
 
   @Override
-  public Page<Product> findProducts(String type, String keyword, String language, Pageable pageable) {
-    final var typeOption = TypeOption.of(type);
-    final var searchPageable = refinePagination(language, pageable);
+  public Page<Product> findProducts(String type, String keyword, String language, Boolean isRestDesigner, Pageable pageable) {
+    TypeOption typeOption = TypeOption.of(type);
+    Pageable searchPageable = refinePagination(language, pageable);
+
+    if (BooleanUtils.isTrue(isRestDesigner)) {
+      return findProductsForRestDesigner(keyword, searchPageable);
+    } else {
+      return findProducts(typeOption, keyword, language, searchPageable);
+    }
+  }
+
+  private Page<Product> findProducts(TypeOption typeOption, String keyword, String language, Pageable searchPageable) {
     Page<Product> result = Page.empty();
     switch (typeOption) {
-    case ALL:
-      if (StringUtils.isBlank(keyword)) {
-        result = productRepository.findAll(searchPageable);
-      } else {
-        result = productRepository.searchByNameOrShortDescriptionRegex(keyword, language, searchPageable);
-      }
-      break;
-    case CONNECTORS, UTILITIES, SOLUTIONS:
-      if (StringUtils.isBlank(keyword)) {
-        result = productRepository.findByType(typeOption.getCode(), searchPageable);
-      } else {
-        result = productRepository.searchByKeywordAndType(keyword, typeOption.getCode(), language, searchPageable);
-      }
-      break;
-    default:
-      break;
+      case ALL:
+        if (StringUtils.isBlank(keyword)) {
+          result = productRepository.findAll(searchPageable);
+        } else {
+          result = productRepository.searchByNameOrShortDescriptionRegex(keyword, language, searchPageable);
+        }
+        break;
+      case CONNECTORS, UTILITIES, SOLUTIONS:
+        if (StringUtils.isBlank(keyword)) {
+          result = productRepository.findByType(typeOption.getCode(), searchPageable);
+        } else {
+          result = productRepository.searchByKeywordAndType(keyword, typeOption.getCode(), language, searchPageable);
+        }
+        break;
+      default:
+        break;
     }
     return result;
   }
 
-  @Override
-  public Page<Product> findProductsInDesigner(String search, Pageable pageable) {
-    final var searchPageable = refinePagination(Language.EN.getValue(), pageable);
-    Page<Product> result;
-        if (StringUtils.isBlank(search)) {
-          result = productRepository.findByType(TypeOption.CONNECTORS.getCode(), searchPageable);
-        } else {
-          result = productRepository.searchByNameAndType(search, searchPageable);
+  private Page<Product> findProductsForRestDesigner(String keyword, Pageable searchPageable) {
+    if (StringUtils.isBlank(keyword)) {
+      return productRepository.findByType(TypeOption.CONNECTORS.getCode(), searchPageable);
+    } else {
+      return productRepository.searchByNameAndType(keyword, searchPageable);
     }
-    return result;
   }
 
   @Override

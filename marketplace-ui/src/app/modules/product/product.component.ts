@@ -54,16 +54,9 @@ export class ProductComponent implements AfterViewInit, OnDestroy {
     search: '',
     type: TypeOption.All_TYPES,
     sort: SortOption.POPULARITY,
-    language: Language.EN
+    language: Language.EN,
+    isRestDesigner: false
   };
-
-  designerCriteria: Criteria = {
-    search: '',
-    type: TypeOption.CONNECTORS,
-    sort: SortOption.POPULARITY,
-    language: Language.EN
-  };
-
   responseLink!: Link;
   responsePage!: Page;
   isRestClient: WritableSignal<boolean> = signal(false);
@@ -81,37 +74,24 @@ export class ProductComponent implements AfterViewInit, OnDestroy {
     this.route.queryParams.subscribe(params => {
       if ('resultsOnly' in params && this.isDesignerEnvironment) {
         this.isRestClient.set(true);
+      } else {
+        this.isRestClient.set(false);
       }
     });
+    console.log('1 ' + this.isRestClient());
 
-    if (this.isRestClient()) {
-      this.loadProductInDesigner();
-      this.subscriptions.push(
-        this.searchTextChanged
-          .pipe(debounceTime(SEARCH_DEBOUNCE_TIME))
-          .subscribe(value => {
-            this.designerCriteria = {
-              ...this.designerCriteria,
-              search: value
-            };
-            this.loadProductInDesigner(true);
-          })
-      );
-    } else {
-      this.loadProductItems();
-      this.subscriptions.push(
-        this.searchTextChanged
-          .pipe(debounceTime(SEARCH_DEBOUNCE_TIME))
-          .subscribe(value => {
-            this.criteria = {
-              ...this.criteria,
-              search: value
-            };
-            this.loadProductItems(true);
-          })
-      );
-    }
-
+    this.loadProductItems();
+    this.subscriptions.push(
+      this.searchTextChanged
+        .pipe(debounceTime(SEARCH_DEBOUNCE_TIME))
+        .subscribe(value => {
+          this.criteria = {
+            ...this.criteria,
+            search: value
+          };
+          this.loadProductItems(true);
+        })
+    );
     this.router.events?.subscribe(event => {
       if (!(event instanceof NavigationStart)) {
         return;
@@ -152,6 +132,10 @@ export class ProductComponent implements AfterViewInit, OnDestroy {
 
   loadProductItems(shouldCleanData = false) {
     this.criteria.language = this.languageService.selectedLanguage();
+    if (this.isRestClient()) {
+      this.criteria.isRestDesigner = true;
+    }
+    console.log('2 ' + this.isRestClient());
     this.subscriptions.push(
       this.productService
         .findProductsByCriteria(this.criteria)
@@ -170,37 +154,17 @@ export class ProductComponent implements AfterViewInit, OnDestroy {
     );
   }
 
-  loadProductInDesigner(shouldCleanData = false) {
-    this.subscriptions.push(
-      this.productService
-        .findProductsInDesignerByCriteria(this.designerCriteria)
-        .subscribe((response: ProductApiResponse) => {
-          const newProducts = response._embedded.products;
-          if (shouldCleanData) {
-            this.products.set(newProducts);
-          } else {
-            this.products.update(existingProducts =>
-              existingProducts.concat(newProducts)
-            );
-          }
-          this.responseLink = response._links;
-          this.responsePage = response.page;
-        })
-    );
-  }
-
   setupIntersectionObserver() {
     const options = { root: null, rootMargin: '0px', threshold: 0.1 };
+    console.log('3 ' + this.isRestClient());
+    console.log('3.1 ' + this.hasMore());
     const observer = new IntersectionObserver(entries => {
       entries.forEach(entry => {
+        console.log(entry.isIntersecting);
+        console.log('3.3 ' + this.hasMore());
         if (entry.isIntersecting && this.hasMore()) {
-          if (this.isRestClient()) {
-            this.designerCriteria.nextPageHref = this.responseLink?.next?.href;
-            this.loadProductInDesigner();
-          } else {
-            this.criteria.nextPageHref = this.responseLink?.next?.href;
-            this.loadProductItems();
-          }
+          this.criteria.nextPageHref = this.responseLink?.next?.href;
+          this.loadProductItems();
         }
       });
     }, options);

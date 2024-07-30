@@ -9,7 +9,6 @@ import { ProductDetail } from '../../shared/models/product-detail.model';
 import { VersionData } from '../../shared/models/vesion-artifact.model';
 
 const PRODUCT_API_URL = 'api/product';
-const PRODUCT_IN_DESIGNER_URL = 'api/product/designer';
 @Injectable()
 export class ProductService {
   httpClient = inject(HttpClient);
@@ -25,25 +24,8 @@ export class ProductService {
         .set(RequestParam.TYPE, `${criteria.type}`)
         .set(RequestParam.SORT, `${criteria.sort}`)
         .set(RequestParam.KEYWORD, `${criteria.search}`)
-        .set(RequestParam.LANGUAGE, `${criteria.language}`);
-    }
-    return this.httpClient.get<ProductApiResponse>(requestURL, {
-      params: requestParams
-    });
-  }
-
-  findProductsInDesignerByCriteria(
-    criteria: Criteria
-  ): Observable<ProductApiResponse> {
-    let requestParams = new HttpParams();
-    let requestURL = PRODUCT_IN_DESIGNER_URL;
-    if (criteria.nextPageHref) {
-      requestURL = criteria.nextPageHref;
-    } else {
-      requestParams = requestParams.set(
-        RequestParam.SEARCH,
-        `${criteria.search}`
-      );
+        .set(RequestParam.LANGUAGE, `${criteria.language}`)
+        .set(RequestParam.IS_REST_DESIGNER, `${criteria.isRestDesigner}`);
     }
     return this.httpClient.get<ProductApiResponse>(requestURL, {
       params: requestParams

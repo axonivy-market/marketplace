@@ -44,20 +44,8 @@ public class ProductController {
   @GetMapping()
   public ResponseEntity<PagedModel<ProductModel>> findProducts(@RequestParam(name = "type") String type,
       @RequestParam(required = false, name = "keyword") String keyword,
-      @RequestParam(name = "language") String language, Pageable pageable) {
-    Page<Product> results = productService.findProducts(type, keyword, language, pageable);
-    if (results.isEmpty()) {
-      return generateEmptyPagedModel();
-    }
-    var responseContent = new PageImpl<>(results.getContent(), pageable, results.getTotalElements());
-    var pageResources = pagedResourcesAssembler.toModel(responseContent, assembler);
-    return new ResponseEntity<>(pageResources, HttpStatus.OK);
-  }
-
-  @GetMapping("/designer")
-  public ResponseEntity<PagedModel<ProductModel>> findProductsInDesigner(@RequestParam(required = false, name = "search") String search,
-                                                                         Pageable pageable) {
-    Page<Product> results = productService.findProductsInDesigner(search, pageable);
+      @RequestParam(name = "language") String language, @RequestParam(name = "isRestDesigner") Boolean isRestDesigner, Pageable pageable) {
+    Page<Product> results = productService.findProducts(type, keyword, language, isRestDesigner, pageable);
     if (results.isEmpty()) {
       return generateEmptyPagedModel();
     }

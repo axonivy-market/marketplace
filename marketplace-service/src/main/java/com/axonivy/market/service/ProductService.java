@@ -5,9 +5,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
 public interface ProductService {
-  Page<Product> findProducts(String type, String keyword, String language, Pageable pageable);
-
-  Page<Product> findProductsInDesigner(String search, Pageable pageable);
+  Page<Product> findProducts(String type, String keyword, String language, Boolean isRestDesigner,Pageable pageable);
 
   boolean syncLatestDataFromMarketRepo();
 
