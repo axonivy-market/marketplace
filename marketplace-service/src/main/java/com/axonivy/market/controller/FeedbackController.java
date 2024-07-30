@@ -69,7 +69,7 @@ public class FeedbackController {
   }
 
   @GetMapping(PRODUCT_BY_ID)
-  @Operation(summary = "Find feedbacks by product id with lazy loading.", description = "Get all user feedback by product id (from meta.json) with lazy loading.")
+  @Operation(summary = "Find feedbacks by product id with lazy loading", description = "Get all user feedback by product id (from meta.json) with lazy loading")
   @PageableAsQueryParam
   public ResponseEntity<PagedModel<FeedbackModel>> findFeedbacks(@PathVariable(ID)
                                                                  @Parameter(description = "Product id (from meta.json)", example = "portal", in = ParameterIn.PATH)

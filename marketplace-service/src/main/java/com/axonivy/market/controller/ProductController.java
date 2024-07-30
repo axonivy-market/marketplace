@@ -60,17 +60,20 @@ public class ProductController {
   }
 
   @GetMapping()
-  @PageableAsQueryParam
-  @Operation(summary = "Find all products", description = "Be default system will finds product by type as 'all'")
+  @Operation(summary = "Find all products", description = "Be default system will finds product by type as 'all'", parameters = {
+          @Parameter(name = "page", description = "Page number to retrieve", in = ParameterIn.QUERY, example = "0", required = true),
+          @Parameter(name = "size", description = "Number of items per page", in = ParameterIn.QUERY, example = "20", required = true),
+          @Parameter(name = "sort", description = "Sorting criteria in the format: property(popularity|alphabetically|recent),(asc|desc)", in = ParameterIn.QUERY, example = "popularity,asc", required = true)
+  })
   public ResponseEntity<PagedModel<ProductModel>> findProducts(@RequestParam(name = TYPE)
                                                                @Parameter(description = "Type of product.", in = ParameterIn.QUERY,
                                                                        schema = @Schema(type = "string", allowableValues = {"all", "connectors", "utilities", "solutions", "demos"}))
                                                                String type,
                                                                @RequestParam(required = false, name = KEYWORD)
-                                                               @Parameter(description = "Keyword that exist in product's name or short description.", example = "connector", in = ParameterIn.QUERY)
+                                                               @Parameter(description = "Keyword that exist in product's name or short description", example = "connector", in = ParameterIn.QUERY)
                                                                String keyword,
                                                                @RequestParam(name = LANGUAGE)
-                                                               @Parameter(description = "Language of product short description.", in = ParameterIn.QUERY,
+                                                               @Parameter(description = "Language of product short description", in = ParameterIn.QUERY,
                                                                        schema = @Schema(allowableValues = {"en", "de"}))
                                                                String language,
                                                                @ParameterObject

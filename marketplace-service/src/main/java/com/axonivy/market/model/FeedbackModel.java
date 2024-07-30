@@ -37,24 +37,24 @@ public class FeedbackModel extends RepresentationModel<FeedbackModel> {
   @Schema(description = "3rd party login provider", example = "GitHub")
   private String userProvider;
 
-  @Schema(description = "Product id (from meta.json)", example = "portal", nullable = false)
+  @Schema(description = "Product id (from meta.json)", example = "portal")
   @NotBlank(message = "Product id cannot be blank")
   private String productId;
 
-  @Schema(description = "User's feedback content", example = "Pretty cool connector.", nullable = false)
+  @Schema(description = "User's feedback content", example = "Pretty cool connector.")
   @NotBlank(message = "Content cannot be blank")
   @Size(max = 5, message = "Content length must be up to 250 characters")
   private String content;
 
-  @Schema(description = "User's rating point of target product", example = "5", nullable = false,  minimum = "1", maximum = "5")
+  @Schema(description = "User's rating point of target product", example = "5", minimum = "1", maximum = "5")
   @Min(value = 1, message = "Rating should not be less than 1")
   @Max(value = 5, message = "Rating should not be greater than 5")
   private Integer rating;
 
-  @Schema(description = "Feedback/rating creating timestamp", example = "2024-06-24T00:00:00.000Z", nullable = false)
+  @Schema(description = "Feedback/rating creating timestamp", example = "2024-06-24T00:00:00.000Z")
   private Date createdAt;
 
-  @Schema(description = "Latest feedback/rating updating timestamp", example = "2024-06-24T00:00:00.000Z", nullable = false)
+  @Schema(description = "Latest feedback/rating updating timestamp", example = "2024-06-24T00:00:00.000Z")
   private Date updatedAt;
 
   @Override

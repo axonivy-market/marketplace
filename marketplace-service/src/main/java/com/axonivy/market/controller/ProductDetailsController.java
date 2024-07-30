@@ -49,7 +49,7 @@ public class ProductDetailsController {
   }
 
   @GetMapping(BY_ID_AND_TAG)
-  @Operation(summary = "Find product detail by product id and release tag.", description = "get product detail by it product id and release tag.")
+  @Operation(summary = "Find product detail by product id and release tag.", description = "get product detail by it product id and release tag")
   public ResponseEntity<ProductDetailModel> findProductDetailsByVersion(@PathVariable(ID)
                                                                         @Parameter(description = "Product id (from meta.json)", example = "adobe-acrobat-connector", in = ParameterIn.PATH)
                                                                         String id,
