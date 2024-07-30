@@ -1,7 +1,13 @@
 import { TestBed } from '@angular/core/testing';
 
-import { provideHttpClient, withInterceptorsFromDi } from '@angular/common/http';
-import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
+import {
+  provideHttpClient,
+  withInterceptorsFromDi
+} from '@angular/common/http';
+import {
+  HttpTestingController,
+  provideHttpClientTesting
+} from '@angular/common/http/testing';
 import { LoadingService } from '../../core/services/loading/loading.service';
 import { Language } from '../../shared/enums/language.enum';
 import { SortOption } from '../../shared/enums/sort-option.enum';
@@ -49,7 +55,8 @@ describe('ProductService', () => {
       search: searchString,
       sort: SortOption.ALPHABETICALLY,
       type: TypeOption.CONNECTORS,
-      language: Language.EN
+      language: Language.EN,
+      isRestDesigner: false
     };
     service.findProductsByCriteria(criteria).subscribe(response => {
       let products = response._embedded.products;
@@ -70,7 +77,8 @@ describe('ProductService', () => {
       search: '',
       sort: null,
       type: null,
-      language: Language.EN
+      language: Language.EN,
+      isRestDesigner: false
     };
     service.findProductsByCriteria(criteria).subscribe(response => {
       expect(response._embedded.products.length).toEqual(products.length);
@@ -82,7 +90,8 @@ describe('ProductService', () => {
       search: '',
       sort: SortOption.POPULARITY,
       type: null,
-      language: Language.EN
+      language: Language.EN,
+      isRestDesigner: false
     };
     service.findProductsByCriteria(criteria).subscribe(response => {
       let products = response._embedded.products;
@@ -105,7 +114,8 @@ describe('ProductService', () => {
       search: '',
       sort: SortOption.RECENT,
       type: null,
-      language: Language.EN
+      language: Language.EN,
+      isRestDesigner: false
     };
     service.findProductsByCriteria(criteria).subscribe(response => {
       expect(response._embedded.products.length).toEqual(products.length);
@@ -119,7 +129,8 @@ describe('ProductService', () => {
       search: '',
       sort: SortOption.RECENT,
       type: TypeOption.All_TYPES,
-      language: Language.EN
+      language: Language.EN,
+      isRestDesigner: false
     };
     service.findProductsByCriteria(criteria).subscribe(response => {
       expect(response._embedded.products.length).toEqual(0);
@@ -177,15 +188,19 @@ describe('ProductService', () => {
   });
 
   it('sendRequestToUpdateInstallationCount', () => {
-    const productId = "google-maps-connector";
+    const productId = 'google-maps-connector';
 
-    service.sendRequestToUpdateInstallationCount(productId).subscribe(response => {
-      expect(response).toBe(3);
-    });
+    service
+      .sendRequestToUpdateInstallationCount(productId)
+      .subscribe(response => {
+        expect(response).toBe(3);
+      });
 
-    const req = httpMock.expectOne(`api/product-details/installationcount/${productId}`);
+    const req = httpMock.expectOne(
+      `api/product-details/installationcount/${productId}`
+    );
     expect(req.request.method).toBe('PUT');
     expect(req.request.headers.get('X-Requested-By')).toBe('ivy');
     req.flush(3);
-  })
+  });
 });

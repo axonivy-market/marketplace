@@ -1,14 +1,20 @@
-import { ComponentFixture, fakeAsync, TestBed, tick } from '@angular/core/testing';
+import {
+  ComponentFixture,
+  fakeAsync,
+  TestBed,
+  tick
+} from '@angular/core/testing';
 
 import { provideHttpClient } from '@angular/common/http';
-import { Router } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
-import { Subscription } from 'rxjs';
+import { of, Subscription } from 'rxjs';
 import { TypeOption } from '../../shared/enums/type-option.enum';
 import { SortOption } from '../../shared/enums/sort-option.enum';
 import { ProductComponent } from './product.component';
 import { ProductService } from './product.service';
 import { MockProductService } from '../../shared/mocks/mock-services';
+import { RoutingQueryParamService } from '../../shared/services/routing.query.param.service';
 
 const router = {
   navigate: jasmine.createSpy('navigate')
@@ -18,6 +24,8 @@ describe('ProductComponent', () => {
   let component: ProductComponent;
   let fixture: ComponentFixture<ProductComponent>;
   let mockIntersectionObserver: any;
+  let activatedRoute: ActivatedRoute;
+  let routingQueryParamService: jasmine.SpyObj<RoutingQueryParamService>;
 
   beforeAll(() => {
     mockIntersectionObserver = jasmine.createSpyObj('IntersectionObserver', [
@@ -42,12 +50,32 @@ describe('ProductComponent', () => {
   });
 
   beforeEach(async () => {
+    const routingQueryParamServiceSpy = jasmine.createSpyObj(
+      'RoutingQueryParamService',
+      [
+        'getNavigationStartEvent',
+        'isDesignerEnv',
+        'checkCookieForDesignerEnv',
+        'checkCookieForDesignerVersion'
+      ]
+    );
+
     await TestBed.configureTestingModule({
       imports: [ProductComponent, TranslateModule.forRoot()],
       providers: [
         {
           provide: Router,
           useValue: router
+        },
+        {
+          provide: ActivatedRoute,
+          useValue: {
+            queryParams: of({})
+          }
+        },
+        {
+          provide: RoutingQueryParamService,
+          useValue: routingQueryParamServiceSpy
         },
         ProductService,
         TranslateService,
@@ -63,6 +91,10 @@ describe('ProductComponent', () => {
       .compileComponents();
     fixture = TestBed.createComponent(ProductComponent);
     component = fixture.componentInstance;
+    routingQueryParamService = TestBed.inject(
+      RoutingQueryParamService
+    ) as jasmine.SpyObj<RoutingQueryParamService>;
+    activatedRoute = TestBed.inject(ActivatedRoute);
     fixture.detectChanges();
   });
 

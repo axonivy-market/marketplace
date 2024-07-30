@@ -71,16 +71,23 @@ export class ProductComponent implements AfterViewInit, OnDestroy {
   @ViewChild('observer', { static: true }) observerElement!: ElementRef;
 
   constructor() {
+    console.log(this.route);
+    let phuc = '';
     this.route.queryParams.subscribe(params => {
       if ('resultsOnly' in params && this.isDesignerEnvironment) {
         this.isRestClient.set(true);
       } else {
         this.isRestClient.set(false);
       }
+      if (params['search'] != null) {
+        phuc = params['search'];
+        console.log(params['search']);
+        this.criteria.search = params['search'];
+      }
     });
-    console.log('1 ' + this.isRestClient());
 
     this.loadProductItems();
+    console.log(phuc);
     this.subscriptions.push(
       this.searchTextChanged
         .pipe(debounceTime(SEARCH_DEBOUNCE_TIME))
@@ -135,7 +142,6 @@ export class ProductComponent implements AfterViewInit, OnDestroy {
     if (this.isRestClient()) {
       this.criteria.isRestDesigner = true;
     }
-    console.log('2 ' + this.isRestClient());
     this.subscriptions.push(
       this.productService
         .findProductsByCriteria(this.criteria)
@@ -156,12 +162,8 @@ export class ProductComponent implements AfterViewInit, OnDestroy {
 
   setupIntersectionObserver() {
     const options = { root: null, rootMargin: '0px', threshold: 0.1 };
-    console.log('3 ' + this.isRestClient());
-    console.log('3.1 ' + this.hasMore());
     const observer = new IntersectionObserver(entries => {
       entries.forEach(entry => {
-        console.log(entry.isIntersecting);
-        console.log('3.3 ' + this.hasMore());
         if (entry.isIntersecting && this.hasMore()) {
           this.criteria.nextPageHref = this.responseLink?.next?.href;
           this.loadProductItems();

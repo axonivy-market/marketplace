@@ -9,12 +9,7 @@ import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.security.SecureRandom;
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 
 import com.axonivy.market.enums.Language;
 import org.apache.commons.lang3.BooleanUtils;
@@ -87,7 +82,8 @@ public class ProductServiceImpl implements ProductService {
   }
 
   @Override
-  public Page<Product> findProducts(String type, String keyword, String language, Boolean isRestDesigner, Pageable pageable) {
+  public Page<Product> findAllProducts(String type, String keyword, String language, Boolean isRestDesigner,
+      Pageable pageable) {
     TypeOption typeOption = TypeOption.of(type);
     Pageable searchPageable = refinePagination(language, pageable);
 
@@ -112,15 +108,12 @@ public class ProductServiceImpl implements ProductService {
       }
       break;
     case CONNECTORS, UTILITIES, SOLUTIONS:
-      if (StringUtils.isBlank(keyword)) {
-        searchCriteria.setType(typeOption);
-        result = productRepository.searchListedByCriteria(searchCriteria, searchPageable);
-      } else {
+      if (!StringUtils.isBlank(keyword)) {
         searchCriteria.setKeyword(keyword);
         searchCriteria.setLanguage(language);
-        searchCriteria.setType(typeOption);
-        result = productRepository.searchListedByCriteria(searchCriteria, searchPageable);
       }
+      searchCriteria.setType(typeOption);
+      result = productRepository.searchListedByCriteria(searchCriteria, searchPageable);
       break;
     default:
       break;
@@ -129,18 +122,14 @@ public class ProductServiceImpl implements ProductService {
   }
 
   private Page<Product> findProductsForRestDesigner(String keyword, Pageable searchPageable) {
-    Page<Product> result;
     var searchCriteria = new ProductSearchCriteria();
     searchCriteria.setType(TypeOption.CONNECTORS);
-    if (StringUtils.isBlank(keyword)) {
-      result = productRepository.searchListedByCriteria(searchCriteria, searchPageable);
-    } else {
+    if (!StringUtils.isBlank(keyword)) {
       searchCriteria.setKeyword(keyword);
-      searchCriteria.setLanguage(Language.EN.getValue());
-      searchCriteria.setExcludeProperties(new String[] { SHORT_DESCRIPTIONS_FIELD });
-      result = productRepository.searchListedByCriteria(searchCriteria, searchPageable);
+      searchCriteria.setLanguage(Locale.ENGLISH.toLanguageTag());
+      searchCriteria.setExcludeProperties(new String[] {SHORT_DESCRIPTIONS_FIELD});
     }
-    return result;
+    return productRepository.searchListedByCriteria(searchCriteria, searchPageable);
   }
 
   @Override

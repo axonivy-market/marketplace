@@ -1,12 +1,6 @@
 package com.axonivy.market.repository.impl;
 
-import static com.axonivy.market.repository.constants.FieldConstants.LISTED_FIELD;
-import static com.axonivy.market.repository.constants.FieldConstants.TYPE_FIELD;
-
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Locale;
+import java.util.*;
 
 import org.apache.commons.lang3.StringUtils;
 import org.bson.BsonRegularExpression;
@@ -23,6 +17,8 @@ import com.axonivy.market.entity.Product;
 import com.axonivy.market.enums.TypeOption;
 import com.axonivy.market.repository.ProductListedRepository;
 import com.axonivy.market.repository.criteria.ProductSearchCriteria;
+
+import static com.axonivy.market.repository.constants.FieldConstants.*;
 
 public class ProductListedRepositoryImpl implements ProductListedRepository {
 
@@ -69,7 +65,7 @@ public class ProductListedRepositoryImpl implements ProductListedRepository {
       if (StringUtils.isBlank(locale)) {
         locale = Locale.ENGLISH.toLanguageTag();
       }
-      List<String> filterProperties = Arrays.asList(ProductSearchCriteria.DEFAULT_SEARCH_FIELDS);
+      List<String> filterProperties = new ArrayList<>(Arrays.asList(ProductSearchCriteria.DEFAULT_SEARCH_FIELDS));
       if (searchCriteria.getExcludeProperties() != null && searchCriteria.getExcludeProperties().length > 0) {
         filterProperties.removeAll(Arrays.asList(searchCriteria.getExcludeProperties()));
       }

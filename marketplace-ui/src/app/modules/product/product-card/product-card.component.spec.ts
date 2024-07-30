@@ -7,8 +7,6 @@ import {
 import { ProductCardComponent } from './product-card.component';
 import { Product } from '../../../shared/models/product.model';
 import { Language } from '../../../shared/enums/language.enum';
-import { ProductService } from '../product.service';
-import { ProductComponent } from '../product.component';
 
 const products = MOCK_PRODUCTS._embedded.products as Product[];
 const noDeNameAndNoLogoUrlProducts =
@@ -21,7 +19,7 @@ describe('ProductCardComponent', () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [ProductCardComponent, TranslateModule.forRoot()],
-      providers: [TranslateService, ProductService, ProductComponent]
+      providers: [TranslateService]
     }).compileComponents();
 
     fixture = TestBed.createComponent(ProductCardComponent);
