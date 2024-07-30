@@ -26,7 +26,7 @@ public class ProductDetailModelAssembler extends RepresentationModelAssemblerSup
 
   @Override
   public ProductDetailModel toModel(Product product) {
-    return createModel(product, StringUtils.EMPTY);
+    return createModel(product, null);
   }
 
   public ProductDetailModel toModel(Product product, String tag) {
