@@ -13,6 +13,8 @@ import io.swagger.v3.oas.annotations.enums.ParameterIn;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.apache.commons.lang3.time.StopWatch;
+import org.springdoc.core.annotations.ParameterObject;
+import org.springdoc.core.converters.models.PageableAsQueryParam;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
@@ -58,12 +60,22 @@ public class ProductController {
   }
 
   @GetMapping()
+  @PageableAsQueryParam
   @Operation(summary = "Find all products", description = "Be default system will finds product by type as 'all'")
-  public ResponseEntity<PagedModel<ProductModel>> findProducts(@RequestParam(name = TYPE) @Parameter(name = "Type", description = "Type of product.", in = ParameterIn.QUERY,
-          schema = @Schema(type = "string", allowableValues = {"all", "connectors", "utilities", "solutions", "demos"})) String type,
-                                                               @RequestParam(required = false, name = KEYWORD) @Parameter(name = "Keyword", description = "Keyword that exist in product's name or short description.", example = "connector",in = ParameterIn.QUERY) String keyword,
-                                                               @RequestParam(name = LANGUAGE) @Parameter(name = "Language", description = "Language of product short description.", in = ParameterIn.QUERY,
-                                                                       schema = @Schema(allowableValues = {"en", "de"})) String language, @Parameter(name = "Pagination", description = "Pagination configuration for result set") Pageable pageable) {
+  public ResponseEntity<PagedModel<ProductModel>> findProducts(@RequestParam(name = TYPE)
+                                                               @Parameter(description = "Type of product.", in = ParameterIn.QUERY,
+                                                                       schema = @Schema(type = "string", allowableValues = {"all", "connectors", "utilities", "solutions", "demos"}))
+                                                               String type,
+                                                               @RequestParam(required = false, name = KEYWORD)
+                                                               @Parameter(description = "Keyword that exist in product's name or short description.", example = "connector", in = ParameterIn.QUERY)
+                                                               String keyword,
+                                                               @RequestParam(name = LANGUAGE)
+                                                               @Parameter(description = "Language of product short description.", in = ParameterIn.QUERY,
+                                                                       schema = @Schema(allowableValues = {"en", "de"}))
+                                                               String language,
+                                                               @ParameterObject
+                                                               Pageable pageable) {
+
     Page<Product> results = productService.findProducts(type, keyword, language, pageable);
     if (results.isEmpty()) {
       return generateEmptyPagedModel();
@@ -75,8 +87,10 @@ public class ProductController {
 
   @PutMapping(SYNC)
   @Operation(hidden = true)
-  public ResponseEntity<Message> syncProducts(@RequestHeader(value = AUTHORIZATION) String authorizationHeader,
-                                              @RequestParam(value = RESET_SYNC, required = false) Boolean resetSync) {
+  public ResponseEntity<Message> syncProducts(@RequestHeader(value = AUTHORIZATION)
+                                              String authorizationHeader,
+                                              @RequestParam(value = RESET_SYNC, required = false)
+                                              Boolean resetSync) {
     String token = null;
     if (authorizationHeader.startsWith(CommonConstants.BEARER)) {
       token = authorizationHeader.substring(CommonConstants.BEARER.length()).trim(); // Remove "Bearer " prefix

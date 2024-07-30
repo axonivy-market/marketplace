@@ -18,6 +18,8 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import org.springdoc.core.annotations.ParameterObject;
+import org.springdoc.core.converters.models.PageableAsQueryParam;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
@@ -59,8 +61,7 @@ public class FeedbackController {
 
   private final PagedResourcesAssembler<Feedback> pagedResourcesAssembler;
 
-  public FeedbackController(FeedbackService feedbackService, JwtService jwtService,
-      FeedbackModelAssembler feedbackModelAssembler, PagedResourcesAssembler<Feedback> pagedResourcesAssembler) {
+  public FeedbackController(FeedbackService feedbackService, JwtService jwtService, FeedbackModelAssembler feedbackModelAssembler, PagedResourcesAssembler<Feedback> pagedResourcesAssembler) {
     this.feedbackService = feedbackService;
     this.jwtService = jwtService;
     this.feedbackModelAssembler = feedbackModelAssembler;
@@ -69,8 +70,12 @@ public class FeedbackController {
 
   @GetMapping(PRODUCT_BY_ID)
   @Operation(summary = "Find feedbacks by product id with lazy loading.", description = "Get all user feedback by product id (from meta.json) with lazy loading.")
-  public ResponseEntity<PagedModel<FeedbackModel>> findFeedbacks(@PathVariable(ID) @Parameter(description = "Product id (from meta.json)", example = "portal",in = ParameterIn.PATH)String productId,
-      Pageable pageable) {
+  @PageableAsQueryParam
+  public ResponseEntity<PagedModel<FeedbackModel>> findFeedbacks(@PathVariable(ID)
+                                                                 @Parameter(description = "Product id (from meta.json)", example = "portal", in = ParameterIn.PATH)
+                                                                 String productId,
+                                                                 @ParameterObject
+                                                                 Pageable pageable) {
     Page<Feedback> results = feedbackService.findFeedbacks(productId, pageable);
     if (results.isEmpty()) {
       return generateEmptyPagedModel();
@@ -82,31 +87,40 @@ public class FeedbackController {
 
   @GetMapping(BY_ID)
   @Operation(summary = "Find all feedbacks by product id", description = "Get all feedbacks by product id(from meta.json) which is used in mobile viewport.")
-  public ResponseEntity<FeedbackModel> findFeedback(@PathVariable(ID) @Parameter(description = "Product id (from meta.json)", example = "portal",in = ParameterIn.PATH)String id) {
+  public ResponseEntity<FeedbackModel> findFeedback(@PathVariable(ID)
+                                                    @Parameter(description = "Product id (from meta.json)", example = "portal", in = ParameterIn.PATH)
+                                                    String id) {
     Feedback feedback = feedbackService.findFeedback(id);
     return ResponseEntity.ok(feedbackModelAssembler.toModel(feedback));
   }
 
   @GetMapping()
-  @Operation(summary = "Find all feedbacks by user id and product id", description="Get current user feedback on target product.")
-  public ResponseEntity<FeedbackModel> findFeedbackByUserIdAndProductId(@RequestParam(USER_ID) @Parameter(name = "User Id",description = "Id of current user from DB", example = "1234",in = ParameterIn.QUERY)String userId,
-      @RequestParam("productId") @Parameter(name = "Product Id",description = "Product id (from meta.json)", example = "portal",in = ParameterIn.QUERY)String productId) {
+  @Operation(summary = "Find all feedbacks by user id and product id", description = "Get current user feedback on target product.")
+  public ResponseEntity<FeedbackModel> findFeedbackByUserIdAndProductId(@RequestParam(USER_ID)
+                                                                        @Parameter(description = "Id of current user from DB", example = "1234", in = ParameterIn.QUERY)
+                                                                        String userId,
+                                                                        @RequestParam("productId")
+                                                                        @Parameter(description = "Product id (from meta.json)", example = "portal", in = ParameterIn.QUERY)
+                                                                        String productId) {
     Feedback feedback = feedbackService.findFeedbackByUserIdAndProductId(userId, productId);
     return ResponseEntity.ok(feedbackModelAssembler.toModel(feedback));
   }
 
   @PostMapping
   @Operation(summary = "Create user feedback", description = "Save user feedback of product with their token from Github account.")
-  @io.swagger.v3.oas.annotations.parameters.RequestBody(description = "Example request body for feedback", required = true, content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE, schema = @Schema(implementation = FeedbackModel.class)))
+  @io.swagger.v3.oas.annotations.parameters.RequestBody(description = "Example request body for feedback", content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE, schema = @Schema(implementation = FeedbackModel.class)))
   @ApiResponses(value = {
-          @ApiResponse(responseCode = "200", description = "Successfully created user feedback"),
-          @ApiResponse(responseCode = "400", description = "Invalid input")
-  })
-  public ResponseEntity<Void> createFeedback(@RequestBody @Valid FeedbackModel feedback,
-      @RequestHeader(value = AUTHORIZATION) String authorizationHeader) {
+          @ApiResponse(responseCode = "201", description = "Successfully created user feedback"),
+          @ApiResponse(responseCode = "401", description = "Unauthorized request")})
+  public ResponseEntity<Void> createFeedback(@RequestBody
+                                             @Valid
+                                             FeedbackModel feedback,
+                                             @RequestHeader(value = AUTHORIZATION)
+                                             @Parameter(description = "JWT Bearer token", example = "Bearer 123456", in = ParameterIn.HEADER)
+                                             String bearerToken) {
     String token = null;
-    if (authorizationHeader != null && authorizationHeader.startsWith(CommonConstants.BEARER)) {
-      token = authorizationHeader.substring(CommonConstants.BEARER.length()).trim(); // Remove "Bearer " prefix
+    if (bearerToken != null && bearerToken.startsWith(CommonConstants.BEARER)) {
+      token = bearerToken.substring(CommonConstants.BEARER.length()).trim(); // Remove "Bearer " prefix
     }
 
     // Validate the token
@@ -118,22 +132,23 @@ public class FeedbackController {
     feedback.setUserId(claims.getSubject());
     Feedback newFeedback = feedbackService.upsertFeedback(feedback);
 
-    URI location = ServletUriComponentsBuilder.fromCurrentRequest().path(BY_ID).buildAndExpand(newFeedback.getId())
-        .toUri();
+    URI location = ServletUriComponentsBuilder.fromCurrentRequest().path(BY_ID).buildAndExpand(newFeedback.getId()).toUri();
 
     return ResponseEntity.created(location).build();
   }
 
-  @Operation(summary = "Find rating information of product by id",description = "Get overall rating of product from user.")
+  @Operation(summary = "Find rating information of product by its id.", description = "Get overall rating of product by its id.")
   @GetMapping(PRODUCT_RATING_BY_ID)
-  public ResponseEntity<List<ProductRating>> getProductRating(@PathVariable(ID) @Parameter(description = "Product id (from meta.json)",example = "portal", in = ParameterIn.PATH)String productId) {
+  public ResponseEntity<List<ProductRating>> getProductRating(@PathVariable(ID)
+                                                              @Parameter(description = "Product id (from meta.json)", example = "portal", in = ParameterIn.PATH)
+                                                              String productId) {
     return ResponseEntity.ok(feedbackService.getProductRatingById(productId));
   }
 
   @SuppressWarnings("unchecked")
   private ResponseEntity<PagedModel<FeedbackModel>> generateEmptyPagedModel() {
     var emptyPagedModel = (PagedModel<FeedbackModel>) pagedResourcesAssembler.toEmptyModel(Page.empty(),
-        FeedbackModel.class);
+            FeedbackModel.class);
     return new ResponseEntity<>(emptyPagedModel, HttpStatus.OK);
   }
 }

@@ -22,19 +22,19 @@ import java.util.Date;
 @Relation(collectionRelation = "feedbacks", itemRelation = "feedback")
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class FeedbackModel extends RepresentationModel<FeedbackModel> {
-  @Schema(description = "", example = "")
+  @Schema(description = "Id of feedback", example = "667940ecc881b1d0db072f9e")
   private String id;
 
-  @Schema(description = "", example = "")
+  @Schema(description = "User Id", example = "666ff14c847c664ac54d2643")
   private String userId;
 
   @Schema(description = "Github username", example = "ntqdinh-axonivy")
   private String username;
 
-  @Schema(description = "Url of github avatar", example = "")
+  @Schema(description = "Url of github avatar", example = "https://avatars.githubusercontent.com/u/1?v=4")
   private String userAvatarUrl;
 
-  @Schema(description = "", example = "")
+  @Schema(description = "3rd party login provider", example = "GitHub")
   private String userProvider;
 
   @Schema(description = "Product id (from meta.json)", example = "portal", nullable = false)
@@ -51,10 +51,10 @@ public class FeedbackModel extends RepresentationModel<FeedbackModel> {
   @Max(value = 5, message = "Rating should not be greater than 5")
   private Integer rating;
 
-  @Schema(description = "Feedback/rating creating timestamp", example = "", nullable = false)
+  @Schema(description = "Feedback/rating creating timestamp", example = "2024-06-24T00:00:00.000Z", nullable = false)
   private Date createdAt;
 
-  @Schema(description = "Latest feedback/rating updating timestamp", example = "", nullable = false)
+  @Schema(description = "Latest feedback/rating updating timestamp", example = "2024-06-24T00:00:00.000Z", nullable = false)
   private Date updatedAt;
 
   @Override
