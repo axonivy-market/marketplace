@@ -13,6 +13,7 @@ import java.util.List;
 
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.enums.ParameterIn;
+import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -69,8 +70,10 @@ public class FeedbackController {
   }
 
   @GetMapping(PRODUCT_BY_ID)
-  @Operation(summary = "Find feedbacks by product id with lazy loading", description = "Get all user feedback by product id (from meta.json) with lazy loading")
-  @PageableAsQueryParam
+  @Operation(summary = "Find feedbacks by product id with lazy loading", description = "Get all user feedback by product id (from meta.json) with lazy loading", parameters = {
+          @Parameter(name = "page", description = "Page number to retrieve", in = ParameterIn.QUERY, example = "0", required = true),
+          @Parameter(name = "size", description = "Number of items per page", in = ParameterIn.QUERY, example = "20", required = true),
+          @Parameter(name = "sort", description = "Sorting criteria in the format: Sorting criteria(popularity|alphabetically|recent), Sorting order(asc|desc)", in = ParameterIn.QUERY, example = "[\"popularity\",\"asc\"]", required = true)})
   public ResponseEntity<PagedModel<FeedbackModel>> findFeedbacks(@PathVariable(ID)
                                                                  @Parameter(description = "Product id (from meta.json)", example = "portal", in = ParameterIn.PATH)
                                                                  String productId,
