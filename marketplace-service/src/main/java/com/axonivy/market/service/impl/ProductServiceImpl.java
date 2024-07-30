@@ -1,25 +1,20 @@
 package com.axonivy.market.service.impl;
 
-import com.axonivy.market.constants.CommonConstants;
-import com.axonivy.market.constants.GitHubConstants;
-import com.axonivy.market.entity.GitHubRepoMeta;
-import com.axonivy.market.entity.Product;
-import com.axonivy.market.entity.ProductModuleContent;
-import com.axonivy.market.enums.FileType;
-import com.axonivy.market.enums.SortOption;
-import com.axonivy.market.enums.TypeOption;
-import com.axonivy.market.factory.ProductFactory;
-import com.axonivy.market.github.model.GitHubFile;
-import com.axonivy.market.github.service.GHAxonIvyMarketRepoService;
-import com.axonivy.market.github.service.GHAxonIvyProductRepoService;
-import com.axonivy.market.github.service.GitHubService;
-import com.axonivy.market.github.util.GitHubUtils;
-import com.axonivy.market.repository.GitHubRepoMetaRepository;
-import com.axonivy.market.repository.ProductRepository;
-import com.axonivy.market.service.ProductService;
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import lombok.extern.log4j.Log4j2;
+import static java.util.Optional.ofNullable;
+import static org.apache.commons.lang3.StringUtils.EMPTY;
+
+import java.io.IOException;
+import java.net.URL;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.security.SecureRandom;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+
 import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.util.Strings;
@@ -37,20 +32,28 @@ import org.springframework.data.domain.Sort.Order;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
-import java.io.IOException;
-import java.net.URL;
-import java.nio.file.Files;
-import java.nio.file.Paths;
-import java.security.SecureRandom;
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import com.axonivy.market.constants.CommonConstants;
+import com.axonivy.market.constants.GitHubConstants;
+import com.axonivy.market.entity.GitHubRepoMeta;
+import com.axonivy.market.entity.Product;
+import com.axonivy.market.entity.ProductModuleContent;
+import com.axonivy.market.enums.FileType;
+import com.axonivy.market.enums.SortOption;
+import com.axonivy.market.enums.TypeOption;
+import com.axonivy.market.factory.ProductFactory;
+import com.axonivy.market.github.model.GitHubFile;
+import com.axonivy.market.github.service.GHAxonIvyMarketRepoService;
+import com.axonivy.market.github.service.GHAxonIvyProductRepoService;
+import com.axonivy.market.github.service.GitHubService;
+import com.axonivy.market.github.util.GitHubUtils;
+import com.axonivy.market.repository.GitHubRepoMetaRepository;
+import com.axonivy.market.repository.ProductRepository;
+import com.axonivy.market.repository.criteria.ProductSearchCriteria;
+import com.axonivy.market.service.ProductService;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
-import static java.util.Optional.ofNullable;
-import static org.apache.commons.lang3.StringUtils.EMPTY;
+import lombok.extern.log4j.Log4j2;
 
 @Log4j2
 @Service
@@ -86,19 +89,26 @@ public class ProductServiceImpl implements ProductService {
     final var typeOption = TypeOption.of(type);
     final var searchPageable = refinePagination(language, pageable);
     Page<Product> result = Page.empty();
+    var searchCriteria = new ProductSearchCriteria();
     switch (typeOption) {
     case ALL:
       if (StringUtils.isBlank(keyword)) {
-        result = productRepository.findAll(searchPageable);
+        result = productRepository.findAllListed(searchPageable);
       } else {
-        result = productRepository.searchByNameOrShortDescriptionRegex(keyword, language, searchPageable);
+        searchCriteria.setKeyword(keyword);
+        searchCriteria.setLanguage(language);
+        result = productRepository.searchListedByCriteria(searchCriteria, searchPageable);
       }
       break;
     case CONNECTORS, UTILITIES, SOLUTIONS:
       if (StringUtils.isBlank(keyword)) {
-        result = productRepository.findByType(typeOption.getCode(), searchPageable);
+        searchCriteria.setType(typeOption);
+        result = productRepository.searchListedByCriteria(searchCriteria, searchPageable);
       } else {
-        result = productRepository.searchByKeywordAndType(keyword, typeOption.getCode(), language, searchPageable);
+        searchCriteria.setKeyword(keyword);
+        searchCriteria.setLanguage(language);
+        searchCriteria.setType(typeOption);
+        result = productRepository.searchListedByCriteria(searchCriteria, searchPageable);
       }
       break;
     default:
