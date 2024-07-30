@@ -1,6 +1,6 @@
 package com.axonivy.market.service.impl;
 
-import static com.axonivy.market.repository.constants.FieldConstants.SHORT_DESCRIPTIONS_FIELD;
+import static com.axonivy.market.repository.enums.DocumentField.MARKET_DIRECTORY;
 import static java.util.Optional.ofNullable;
 import static org.apache.commons.lang3.StringUtils.EMPTY;
 
@@ -9,9 +9,13 @@ import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.security.SecureRandom;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 
-import com.axonivy.market.enums.Language;
 import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.util.Strings;
@@ -82,54 +86,36 @@ public class ProductServiceImpl implements ProductService {
   }
 
   @Override
-  public Page<Product> findAllProducts(String type, String keyword, String language, Boolean isRestDesigner,
-      Pageable pageable) {
-    TypeOption typeOption = TypeOption.of(type);
-    Pageable searchPageable = refinePagination(language, pageable);
-
-    if (BooleanUtils.isTrue(isRestDesigner)) {
-      return findProductsForRestDesigner(keyword, searchPageable);
-    } else {
-      return findProducts(typeOption, keyword, language, searchPageable);
-    }
-  }
-
-  private Page<Product> findProducts(TypeOption typeOption, String keyword, String language, Pageable searchPageable) {
+  public Page<Product> findProducts(String type, String keyword, String language, Pageable pageable) {
+    final var typeOption = TypeOption.of(type);
+    final var searchPageable = refinePagination(language, pageable);
     Page<Product> result = Page.empty();
     var searchCriteria = new ProductSearchCriteria();
     switch (typeOption) {
-    case ALL:
-      if (StringUtils.isBlank(keyword)) {
-        result = productRepository.findAllListed(searchPageable);
-      } else {
-        searchCriteria.setKeyword(keyword);
-        searchCriteria.setLanguage(language);
-        result = productRepository.searchListedByCriteria(searchCriteria, searchPageable);
-      }
-      break;
-    case CONNECTORS, UTILITIES, SOLUTIONS:
-      if (!StringUtils.isBlank(keyword)) {
-        searchCriteria.setKeyword(keyword);
-        searchCriteria.setLanguage(language);
-      }
-      searchCriteria.setType(typeOption);
-      result = productRepository.searchListedByCriteria(searchCriteria, searchPageable);
-      break;
-    default:
-      break;
+      case ALL:
+        if (StringUtils.isBlank(keyword)) {
+          result = productRepository.findAllListed(searchPageable);
+        } else {
+          searchCriteria.setKeyword(keyword);
+          searchCriteria.setLanguage(language);
+          result = productRepository.searchListedByCriteria(searchCriteria, searchPageable);
+        }
+        break;
+      case CONNECTORS, UTILITIES, SOLUTIONS:
+        if (StringUtils.isBlank(keyword)) {
+          searchCriteria.setType(typeOption);
+          result = productRepository.searchListedByCriteria(searchCriteria, searchPageable);
+        } else {
+          searchCriteria.setKeyword(keyword);
+          searchCriteria.setLanguage(language);
+          searchCriteria.setType(typeOption);
+          result = productRepository.searchListedByCriteria(searchCriteria, searchPageable);
+        }
+        break;
+      default:
+        break;
     }
     return result;
-  }
-
-  private Page<Product> findProductsForRestDesigner(String keyword, Pageable searchPageable) {
-    var searchCriteria = new ProductSearchCriteria();
-    searchCriteria.setType(TypeOption.CONNECTORS);
-    if (!StringUtils.isBlank(keyword)) {
-      searchCriteria.setKeyword(keyword);
-      searchCriteria.setLanguage(Locale.ENGLISH.toLanguageTag());
-      searchCriteria.setExcludeProperties(new String[] {SHORT_DESCRIPTIONS_FIELD});
-    }
-    return productRepository.searchListedByCriteria(searchCriteria, searchPageable);
   }
 
   @Override
@@ -232,34 +218,37 @@ public class ProductServiceImpl implements ProductService {
   private void modifyProductLogo(String parentPath, GitHubFile file, Product product, GHContent fileContent) {
     Product result = null;
     switch (file.getStatus()) {
-    case MODIFIED, ADDED:
-      result = productRepository.findByMarketDirectoryRegex(parentPath);
-      if (result != null) {
-        result.setLogoUrl(GitHubUtils.getDownloadUrl(fileContent));
-        productRepository.save(result);
-      }
-      break;
-    case REMOVED:
-      result = productRepository.findByLogoUrl(product.getLogoUrl());
-      if (result != null) {
-        productRepository.deleteById(result.getId());
-      }
-      break;
-    default:
-      break;
+      case MODIFIED, ADDED:
+        var searchCriteria = new ProductSearchCriteria();
+        searchCriteria.setKeyword(parentPath);
+        searchCriteria.setFields(List.of(MARKET_DIRECTORY));
+        result = productRepository.findByCriteria(searchCriteria);
+        if (result != null) {
+          result.setLogoUrl(GitHubUtils.getDownloadUrl(fileContent));
+          productRepository.save(result);
+        }
+        break;
+      case REMOVED:
+        result = productRepository.findByLogoUrl(product.getLogoUrl());
+        if (result != null) {
+          productRepository.deleteById(result.getId());
+        }
+        break;
+      default:
+        break;
     }
   }
 
   private void modifyProductByMetaContent(GitHubFile file, Product product) {
     switch (file.getStatus()) {
-    case MODIFIED, ADDED:
-      productRepository.save(product);
-      break;
-    case REMOVED:
-      productRepository.deleteById(product.getId());
-      break;
-    default:
-      break;
+      case MODIFIED, ADDED:
+        productRepository.save(product);
+        break;
+      case REMOVED:
+        productRepository.deleteById(product.getId());
+        break;
+      default:
+        break;
     }
   }
 
