@@ -33,6 +33,7 @@ common:
       popularity: Popularity
       alphabetically: Alphabetically
       recent: Recent
+      standard: Standard
       newest: Newest
       oldest: Oldest
       highest: Highest

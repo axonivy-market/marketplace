@@ -60,7 +60,7 @@ describe('ProductFilterComponent', () => {
     const select: HTMLSelectElement = fixture.debugElement.query(
       By.css('.sort-type')
     ).nativeElement;
-    select.value = select.options[2].value;
+    select.value = select.options[3].value;
     select.dispatchEvent(new Event('change'));
     fixture.detectChanges();
     expect(component.selectedSort).toEqual(SortOption.RECENT);

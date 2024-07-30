@@ -98,6 +98,10 @@ export const FILTER_TYPES = [
 
 export const SORT_TYPES = [
   {
+    value: SortOption.STANDARD,
+    label: 'common.sort.value.standard'
+  },
+  {
     value: SortOption.POPULARITY,
     label: 'common.sort.value.popularity'
   },
