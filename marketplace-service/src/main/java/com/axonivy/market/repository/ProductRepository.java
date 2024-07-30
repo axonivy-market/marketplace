@@ -1,21 +1,23 @@
 package com.axonivy.market.repository;
 
-import com.axonivy.market.entity.Product;
+import java.util.Optional;
+
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.mongodb.repository.MongoRepository;
 import org.springframework.data.mongodb.repository.Query;
 import org.springframework.stereotype.Repository;
 
-import java.util.Optional;
+import com.axonivy.market.entity.Product;
 
 @Repository
-public interface ProductRepository extends MongoRepository<Product, String> {
+public interface ProductRepository extends MongoRepository<Product, String>, ProductListedRepository {
 
   Page<Product> findByType(String type, Pageable pageable);
 
   Product findByLogoUrl(String logoUrl);
 
+  @Override
   Optional<Product> findById(String productId);
 
   @Query("{'marketDirectory': {$regex : ?0, $options: 'i'}}")

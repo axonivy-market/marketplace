@@ -17,4 +17,7 @@ import lombok.Setter;
 public class GitHubProperty {
 
   private String token;
+  private String oauth2ClientId;
+  private String oauth2ClientSecret;
+
 }

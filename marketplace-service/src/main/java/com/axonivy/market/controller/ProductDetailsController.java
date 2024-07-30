@@ -11,6 +11,13 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 
 import static com.axonivy.market.constants.RequestMappingConstants.PRODUCT_DETAILS;
 
@@ -28,31 +35,31 @@ public class ProductDetailsController {
     this.detailModelAssembler = detailModelAssembler;
   }
 
-  @GetMapping("/{id}/{version}")
-  public ResponseEntity<ProductDetailModel> findProductDetailsByVersion(@PathVariable("id") String id,
-      @PathVariable("version") String version) {
+  @GetMapping(BY_ID_AND_TAG)
+  public ResponseEntity<ProductDetailModel> findProductDetailsByVersion(@PathVariable(ID) String id,
+      @PathVariable(TAG) String tag) {
     var productDetail = productService.fetchProductDetail(id);
-    return new ResponseEntity<>(detailModelAssembler.toModel(productDetail, version), HttpStatus.OK);
+    return new ResponseEntity<>(detailModelAssembler.toModel(productDetail, tag), HttpStatus.OK);
   }
 
   @Operation(summary = "increase installation count by 1", description = "update installation count when click download product files by users")
   @CrossOrigin(originPatterns = "*")
-  @PutMapping("/installationcount/{key}")
-  public ResponseEntity<Integer> syncInstallationCount(@PathVariable("key") String key) {
+  @PutMapping(INSTALLATION_COUNT_BY_ID)
+  public ResponseEntity<Integer> syncInstallationCount(@PathVariable(ID) String key) {
     int result = productService.updateInstallationCountForProduct(key);
     return new ResponseEntity<>(result, HttpStatus.OK);
   }
 
-  @GetMapping("/{id}")
-  public ResponseEntity<ProductDetailModel> findProductDetails(@PathVariable("id") String id) {
+  @GetMapping(BY_ID)
+  public ResponseEntity<ProductDetailModel> findProductDetails(@PathVariable(ID) String id) {
     var productDetail = productService.fetchProductDetail(id);
-    return new ResponseEntity<>(detailModelAssembler.toModel(productDetail), HttpStatus.OK);
+    return new ResponseEntity<>(detailModelAssembler.toModel(productDetail, null), HttpStatus.OK);
   }
 
-  @GetMapping("/{id}/versions")
-  public ResponseEntity<List<MavenArtifactVersionModel>> findProductVersionsById(@PathVariable("id") String id,
-      @RequestParam(name = "isShowDevVersion") boolean isShowDevVersion,
-      @RequestParam(name = "designerVersion", required = false) String designerVersion) {
+  @GetMapping(VERSIONS_BY_ID)
+  public ResponseEntity<List<MavenArtifactVersionModel>> findProductVersionsById(@PathVariable(ID) String id,
+      @RequestParam(SHOW_DEV_VERSION) boolean isShowDevVersion,
+      @RequestParam(name = DESIGNER_VERSION, required = false) String designerVersion) {
     List<MavenArtifactVersionModel> models =
         versionService.getArtifactsAndVersionToDisplay(id, isShowDevVersion, designerVersion);
     return new ResponseEntity<>(models, HttpStatus.OK);
