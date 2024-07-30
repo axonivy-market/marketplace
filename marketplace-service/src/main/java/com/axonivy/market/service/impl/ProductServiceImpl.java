@@ -1,5 +1,6 @@
 package com.axonivy.market.service.impl;
 
+import static com.axonivy.market.repository.enums.DocumentField.MARKET_DIRECTORY;
 import static java.util.Optional.ofNullable;
 import static org.apache.commons.lang3.StringUtils.EMPTY;
 
@@ -218,7 +219,10 @@ public class ProductServiceImpl implements ProductService {
     Product result = null;
     switch (file.getStatus()) {
     case MODIFIED, ADDED:
-      result = productRepository.findByMarketDirectoryRegex(parentPath);
+      var searchCriteria = new ProductSearchCriteria();
+      searchCriteria.setKeyword(parentPath);
+      searchCriteria.setFields(List.of(MARKET_DIRECTORY));
+      result = productRepository.findByCriteria(searchCriteria);
       if (result != null) {
         result.setLogoUrl(GitHubUtils.getDownloadUrl(fileContent));
         productRepository.save(result);

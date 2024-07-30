@@ -50,6 +50,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.test.util.ReflectionTestUtils;
 
+import com.axonivy.market.BaseTest;
 import com.axonivy.market.constants.GitHubConstants;
 import com.axonivy.market.entity.GitHubRepoMeta;
 import com.axonivy.market.entity.Product;
@@ -68,10 +69,8 @@ import com.axonivy.market.repository.ProductRepository;
 import com.axonivy.market.service.impl.ProductServiceImpl;
 
 @ExtendWith(MockitoExtension.class)
-class ProductServiceImplTest {
+class ProductServiceImplTest extends BaseTest {
 
-  private static final String SAMPLE_PRODUCT_ID = "amazon-comprehend";
-  private static final String SAMPLE_PRODUCT_NAME = "Amazon Comprehend";
   private static final long LAST_CHANGE_TIME = 1718096290000L;
   private static final Pageable PAGEABLE = PageRequest.of(0, 20,
       Sort.by(SortOption.ALPHABETICALLY.getOption()).descending());
@@ -160,13 +159,13 @@ class ProductServiceImplTest {
   void testFindProducts() {
     langague = "en";
     // Start testing by All
-    when(productRepository.findAll(any(Pageable.class))).thenReturn(mockResultReturn);
+    when(productRepository.findAllListed(any(Pageable.class))).thenReturn(mockResultReturn);
     // Executes
     var result = productService.findProducts(TypeOption.ALL.getOption(), keyword, langague, PAGEABLE);
     assertEquals(mockResultReturn, result);
 
     // Start testing by Connector
-    when(productRepository.findByType(any(), any(Pageable.class))).thenReturn(mockResultReturn);
+    when(productRepository.searchListedByCriteria(any(), any(Pageable.class))).thenReturn(mockResultReturn);
     // Executes
     result = productService.findProducts(TypeOption.CONNECTORS.getOption(), keyword, langague, PAGEABLE);
     assertEquals(mockResultReturn, result);
@@ -243,25 +242,25 @@ class ProductServiceImplTest {
   @Test
   void testFindAllProductsWithKeyword() throws IOException {
     langague = "en";
-    when(productRepository.findAll(any(Pageable.class))).thenReturn(mockResultReturn);
+    when(productRepository.findAllListed(any(Pageable.class))).thenReturn(mockResultReturn);
     // Executes
     var result = productService.findProducts(TypeOption.ALL.getOption(), keyword, langague, PAGEABLE);
     assertEquals(mockResultReturn, result);
-    verify(productRepository).findAll(any(Pageable.class));
+    verify(productRepository).findAllListed(any(Pageable.class));
 
     // Test has keyword
-    when(productRepository.searchByNameOrShortDescriptionRegex(any(), any(), any(Pageable.class)))
+    when(productRepository.searchListedByCriteria(any(), any(Pageable.class)))
         .thenReturn(new PageImpl<>(mockResultReturn.stream()
             .filter(product -> product.getNames().get(Language.EN.getValue()).equals(SAMPLE_PRODUCT_NAME))
             .collect(Collectors.toList())));
     // Executes
     result = productService.findProducts(TypeOption.ALL.getOption(), SAMPLE_PRODUCT_NAME, langague, PAGEABLE);
-    verify(productRepository).findAll(any(Pageable.class));
+    verify(productRepository).findAllListed(any(Pageable.class));
     assertTrue(result.hasContent());
     assertEquals(SAMPLE_PRODUCT_NAME, result.getContent().get(0).getNames().get(Language.EN.getValue()));
 
     // Test has keyword and type is connector
-    when(productRepository.searchByKeywordAndType(any(), any(), any(), any(Pageable.class)))
+    when(productRepository.searchListedByCriteria(any(), any(Pageable.class)))
         .thenReturn(new PageImpl<>(mockResultReturn.stream()
             .filter(product -> product.getNames().get(Language.EN.getValue()).equals(SAMPLE_PRODUCT_NAME)
                 && product.getType().equals(TypeOption.CONNECTORS.getCode()))
@@ -328,12 +327,12 @@ class ProductServiceImplTest {
     String type = TypeOption.ALL.getOption();
     keyword = "on";
     langague = "en";
-    when(productRepository.searchByNameOrShortDescriptionRegex(keyword, langague, simplePageable)).thenReturn(
+    when(productRepository.searchListedByCriteria(any(), any(Pageable.class))).thenReturn(
         mockResultReturn);
 
     var result = productService.findProducts(type, keyword, langague, simplePageable);
     assertEquals(result, mockResultReturn);
-    verify(productRepository).searchByNameOrShortDescriptionRegex(keyword, langague, simplePageable);
+    verify(productRepository).searchListedByCriteria(any(), any(Pageable.class));
   }
 
   @Test
@@ -358,26 +357,6 @@ class ProductServiceImplTest {
 
     result = productService.getCompatibilityFromOldestTag("11.2");
     assertEquals("11.2+", result);
-  }
-
-  private Page<Product> createPageProductsMock() {
-    var mockProducts = new ArrayList<Product>();
-    Map<String, String> name = new HashMap<>();
-    Product mockProduct = new Product();
-    mockProduct.setId(SAMPLE_PRODUCT_ID);
-    name.put(Language.EN.getValue(), SAMPLE_PRODUCT_NAME);
-    mockProduct.setNames(name);
-    mockProduct.setType("connector");
-    mockProducts.add(mockProduct);
-
-    mockProduct = new Product();
-    mockProduct.setId("tel-search-ch-connector");
-    name = new HashMap<>();
-    name.put(Language.EN.getValue(), "Swiss phone directory");
-    mockProduct.setNames(name);
-    mockProduct.setType("util");
-    mockProducts.add(mockProduct);
-    return new PageImpl<>(mockProducts);
   }
 
   private void mockMarketRepoMetaStatus() {

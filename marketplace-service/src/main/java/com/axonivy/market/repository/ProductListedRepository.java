@@ -12,4 +12,8 @@ public interface ProductListedRepository {
 
   Page<Product> searchListedByCriteria(ProductSearchCriteria criteria, Pageable pageable);
 
+  Product findListedByCriteria(ProductSearchCriteria criteria);
+
+  Product findByCriteria(ProductSearchCriteria criteria);
+
 }
