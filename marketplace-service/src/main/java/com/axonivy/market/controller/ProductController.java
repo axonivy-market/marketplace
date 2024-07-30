@@ -63,7 +63,8 @@ public class ProductController {
   @Operation(summary = "Find all products", description = "Be default system will finds product by type as 'all'", parameters = {
           @Parameter(name = "page", description = "Page number to retrieve", in = ParameterIn.QUERY, example = "0", required = true),
           @Parameter(name = "size", description = "Number of items per page", in = ParameterIn.QUERY, example = "20", required = true),
-          @Parameter(name = "sort", description = "Sorting criteria in the format: Sorting criteria(popularity|alphabetically|recent), Sorting order(asc|desc)", in = ParameterIn.QUERY, example = "[\"popularity\",\"asc\"]", required = true)})
+          @Parameter(name = "sort", description = "Sorting criteria in the format: Sorting criteria(popularity|alphabetically|recent), Sorting order(asc|desc)",
+                  in = ParameterIn.QUERY, example = "[\"popularity\",\"asc\"]", required = true)})
   public ResponseEntity<PagedModel<ProductModel>> findProducts(@RequestParam(name = TYPE)
                                                                @Parameter(description = "Type of product.", in = ParameterIn.QUERY,
                                                                        schema = @Schema(type = "string", allowableValues = {"all", "connectors", "utilities", "solutions", "demos"}))
