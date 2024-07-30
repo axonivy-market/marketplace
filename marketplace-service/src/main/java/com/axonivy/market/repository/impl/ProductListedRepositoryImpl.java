@@ -17,6 +17,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
+import org.springframework.util.CollectionUtils;
 
 import com.axonivy.market.entity.Product;
 import com.axonivy.market.enums.TypeOption;
@@ -79,7 +80,9 @@ public class ProductListedRepositoryImpl implements ProductListedRepository {
       }
     }
     criteria.andOperator(andFilters);
-    criteria.orOperator(orFilters);
+    if (!CollectionUtils.isEmpty(orFilters)) {
+      criteria.orOperator(orFilters);
+    }
 
     return findByCriteria(pageable, criteria);
   }
