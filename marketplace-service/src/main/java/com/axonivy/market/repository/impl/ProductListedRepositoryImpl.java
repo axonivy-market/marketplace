@@ -8,7 +8,6 @@ import java.util.List;
 
 import org.apache.commons.lang3.StringUtils;
 import org.bson.BsonRegularExpression;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
@@ -29,8 +28,11 @@ public class ProductListedRepositoryImpl implements ProductListedRepository {
   public static final String CASE_INSENSITIVITY_OPTION = "i";
   public static final String LOCALIZE_SEARCH_PATTERN = "%s.%s";
 
-  @Autowired
-  private MongoTemplate mongoTemplate;
+  private final MongoTemplate mongoTemplate;
+
+  public ProductListedRepositoryImpl(MongoTemplate mongoTemplate) {
+    this.mongoTemplate = mongoTemplate;
+  }
 
   @Override
   public Page<Product> findAllListed(Pageable pageable) {

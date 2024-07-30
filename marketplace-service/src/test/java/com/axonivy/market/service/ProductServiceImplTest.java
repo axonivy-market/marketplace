@@ -50,7 +50,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.test.util.ReflectionTestUtils;
 
-import com.axonivy.market.BaseTest;
+import com.axonivy.market.BaseSetup;
 import com.axonivy.market.constants.GitHubConstants;
 import com.axonivy.market.entity.GitHubRepoMeta;
 import com.axonivy.market.entity.Product;
@@ -69,7 +69,7 @@ import com.axonivy.market.repository.ProductRepository;
 import com.axonivy.market.service.impl.ProductServiceImpl;
 
 @ExtendWith(MockitoExtension.class)
-class ProductServiceImplTest extends BaseTest {
+class ProductServiceImplTest extends BaseSetup {
 
   private static final long LAST_CHANGE_TIME = 1718096290000L;
   private static final Pageable PAGEABLE = PageRequest.of(0, 20,

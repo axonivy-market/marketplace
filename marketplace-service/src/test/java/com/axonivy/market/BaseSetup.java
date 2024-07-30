@@ -14,7 +14,7 @@ import com.axonivy.market.entity.Product;
 import com.axonivy.market.enums.Language;
 import com.axonivy.market.enums.SortOption;
 
-public class BaseTest {
+public class BaseSetup {
   protected static final String SAMPLE_PRODUCT_ID = "amazon-comprehend";
   protected static final String SAMPLE_PRODUCT_NAME = "prody Comprehend";
   protected static final Pageable PAGEABLE = PageRequest.of(0, 20,
