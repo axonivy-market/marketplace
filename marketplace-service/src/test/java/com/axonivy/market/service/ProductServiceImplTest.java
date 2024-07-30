@@ -4,15 +4,26 @@ import static com.axonivy.market.constants.CommonConstants.LOGO_FILE;
 import static com.axonivy.market.constants.CommonConstants.SLASH;
 import static com.axonivy.market.constants.MetaConstants.META_FILE;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.mockStatic;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+
+import com.axonivy.market.entity.ProductCustomSort;
+import com.axonivy.market.enums.ErrorCode;
+import com.axonivy.market.model.ProductCustomSortRequest;
+import com.axonivy.market.repository.ProductCustomSortRepository;
+import org.springframework.data.mongodb.core.query.Query;
+import org.springframework.data.mongodb.core.query.Update;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -27,6 +38,7 @@ import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
+import com.axonivy.market.exceptions.model.InvalidParamException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -47,6 +59,7 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.test.util.ReflectionTestUtils;
 
 import com.axonivy.market.constants.GitHubConstants;
@@ -81,6 +94,9 @@ class ProductServiceImplTest {
   private Page<Product> mockResultReturn;
 
   @Mock
+  private MongoTemplate mongoTemplate;
+
+  @Mock
   private GHRepository ghRepository;
 
   @Mock
@@ -94,6 +110,9 @@ class ProductServiceImplTest {
 
   @Mock
   private GitHubService gitHubService;
+
+  @Mock
+  private ProductCustomSortRepository productCustomSortRepository;
 
   @Captor
   ArgumentCaptor<Product> argumentCaptor = ArgumentCaptor.forClass(Product.class);
@@ -357,6 +376,77 @@ class ProductServiceImplTest {
 
     result = productService.getCompatibilityFromOldestTag("11.2");
     assertEquals("11.2+", result);
+  }
+
+  @Test
+  void testRemoveFieldFromAllProductDocuments() {
+    productService.removeFieldFromAllProductDocuments("customOrder");
+
+    verify(mongoTemplate, times(1)).updateMulti(any(Query.class), any(Update.class), eq(Product.class));
+  }
+
+  @Test
+  void testRefineOrderedListOfProductsInCustomSort() throws InvalidParamException {
+    // prepare
+    List<String> orderedListOfProducts = List.of(SAMPLE_PRODUCT_ID);
+    Product mockProduct = new Product();
+    mockProduct.setId(SAMPLE_PRODUCT_ID);
+    when(productRepository.findById(SAMPLE_PRODUCT_ID)).thenReturn(Optional.of(mockProduct));
+
+    List<Product> refinedProducts = productService.refineOrderedListOfProductsInCustomSort(orderedListOfProducts);
+
+    assertEquals(1, refinedProducts.size());
+    assertEquals(1, refinedProducts.get(0).getCustomOrder());
+    verify(productRepository, times(1)).findById(SAMPLE_PRODUCT_ID);
+  }
+
+  @Test
+  void testRefineOrderedListOfProductsInCustomSort_ProductNotFound() {
+    List<String> orderedListOfProducts = List.of(SAMPLE_PRODUCT_ID);
+    when(productRepository.findById(SAMPLE_PRODUCT_ID)).thenReturn(Optional.empty());
+
+    InvalidParamException exception = assertThrows(InvalidParamException.class, () ->
+        productService.refineOrderedListOfProductsInCustomSort(orderedListOfProducts));
+    assertEquals(ErrorCode.PRODUCT_NOT_FOUND.getCode(), exception.getCode());
+  }
+
+  @Test
+  void testAddCustomSortProduct() throws InvalidParamException {
+    List<String> orderedListOfProducts = List.of(SAMPLE_PRODUCT_ID);
+    ProductCustomSortRequest customSortRequest = new ProductCustomSortRequest();
+    customSortRequest.setOrderedListOfProducts(orderedListOfProducts);
+    customSortRequest.setRuleForRemainder(SortOption.ALPHABETICALLY.getOption());
+
+    Product mockProduct = new Product();
+    mockProduct.setId(SAMPLE_PRODUCT_ID);
+    when(productRepository.findById(SAMPLE_PRODUCT_ID)).thenReturn(Optional.of(mockProduct));
+
+    productService.addCustomSortProduct(customSortRequest);
+
+    verify(productCustomSortRepository, times(1)).deleteAll();
+    verify(mongoTemplate, times(1)).updateMulti(any(Query.class), any(Update.class), eq(Product.class));
+    verify(productCustomSortRepository, times(1)).save(any(ProductCustomSort.class));
+    verify(productRepository, times(1)).saveAll(productListArgumentCaptor.capture());
+
+    List<Product> capturedProducts = productListArgumentCaptor.getValue();
+    assertEquals(1, capturedProducts.size());
+    assertEquals(1, capturedProducts.get(0).getCustomOrder());
+  }
+
+  @Test
+  void testCreateOrder() {
+    Sort.Order order = productService.createOrder(SortOption.ALPHABETICALLY, "en");
+
+    assertEquals(Sort.Direction.ASC, order.getDirection());
+    assertEquals(SortOption.ALPHABETICALLY.getCode("en"), order.getProperty());
+  }
+
+  @Test
+  void testClearAllProducts() {
+    productService.clearAllProducts();
+
+    verify(repoMetaRepository).deleteAll();
+    verify(productRepository).deleteAll();
   }
 
   private Page<Product> createPageProductsMock() {

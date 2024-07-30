@@ -29,6 +29,7 @@ common:
       popularity: Beliebtheit
       alphabetically: Alphabetisch
       recent: Datum der Veröffentlichung
+      standard: Standard
       newest: Neuestes
       oldest: Älteste
       highest: Höchste
