@@ -53,9 +53,9 @@ export class ProductComponent implements AfterViewInit, OnDestroy {
   criteria: Criteria = {
     search: '',
     type: TypeOption.All_TYPES,
-    sort: SortOption.POPULARITY,
-    language: Language.EN,
     isRestDesigner: false
+    sort: SortOption.STANDARD,
+    language: Language.EN
   };
   responseLink!: Link;
   responsePage!: Page;

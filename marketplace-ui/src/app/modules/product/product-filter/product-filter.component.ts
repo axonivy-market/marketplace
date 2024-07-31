@@ -21,7 +21,7 @@ export class ProductFilterComponent {
 
   selectedType = TypeOption.All_TYPES;
   types = FILTER_TYPES;
-  selectedSort: SortOption = SortOption.POPULARITY;
+  selectedSort: SortOption = SortOption.STANDARD;
   sorts = SORT_TYPES;
 
   searchText = '';
