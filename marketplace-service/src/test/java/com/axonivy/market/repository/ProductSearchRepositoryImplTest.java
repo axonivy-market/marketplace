@@ -1,6 +1,7 @@
 package com.axonivy.market.repository;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
@@ -19,14 +20,14 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.mongodb.core.MongoTemplate;
 
 import com.axonivy.market.BaseSetup;
+import com.axonivy.market.criteria.ProductSearchCriteria;
 import com.axonivy.market.entity.Product;
+import com.axonivy.market.enums.DocumentField;
 import com.axonivy.market.enums.Language;
-import com.axonivy.market.repository.criteria.ProductSearchCriteria;
-import com.axonivy.market.repository.enums.DocumentField;
-import com.axonivy.market.repository.impl.ProductListedRepositoryImpl;
+import com.axonivy.market.repository.impl.ProductSearchRepositoryImpl;
 
 @ExtendWith(MockitoExtension.class)
-class ProductListedRepositoryImplTest extends BaseSetup {
+class ProductSearchRepositoryImplTest extends BaseSetup {
 
   Page<Product> mockResultReturn;
   ProductSearchCriteria searchCriteria;
@@ -35,7 +36,7 @@ class ProductListedRepositoryImplTest extends BaseSetup {
   MongoTemplate mongoTemplate;
 
   @InjectMocks
-  ProductListedRepositoryImpl productListedRepository;
+  ProductSearchRepositoryImpl productListedRepository;
 
   @BeforeEach
   public void setup() {
@@ -44,30 +45,13 @@ class ProductListedRepositoryImplTest extends BaseSetup {
   }
 
   @Test
-  void testFindAllListed() {
-    var result = productListedRepository.findAllListed(PAGEABLE);
-    assertTrue(result.isEmpty(), "Result is NOT empty");
-  }
-
-  @Test
-  void testFindAllListedHasData() {
+  void testSearchByCriteria() {
     when(mongoTemplate.find(any(), eq(Product.class))).thenReturn(mockResultReturn.getContent());
-    var result = productListedRepository.findAllListed(PAGEABLE);
-    assertNotNull(result, "Result is empty");
-    assertEquals(true, result.isFirst(), "Result is not in first page");
+    var result = productListedRepository.searchByCriteria(searchCriteria, PAGEABLE);
+    assertFalse(result.isEmpty(), "Result is empty");
+    assertTrue(result.isFirst(), "Result is not in first page");
     assertEquals(2, result.getContent().size());
-    assertTrue(result.getContent().get(0).getNames().values().contains(SAMPLE_PRODUCT_NAME),
-        "No Product has name " + SAMPLE_PRODUCT_NAME);
-  }
-
-  @Test
-  void testSearchListedByCriteria() {
-    when(mongoTemplate.find(any(), eq(Product.class))).thenReturn(mockResultReturn.getContent());
-    var result = productListedRepository.searchListedByCriteria(searchCriteria, PAGEABLE);
-    assertEquals(false, result.isEmpty(), "Result is empty");
-    assertEquals(true, result.isFirst(), "Result is not in first page");
-    assertEquals(2, result.getContent().size());
-    assertTrue(result.getContent().get(0).getNames().values().contains(SAMPLE_PRODUCT_NAME),
+    assertTrue(result.getContent().get(0).getNames().containsValue(SAMPLE_PRODUCT_NAME),
         "No Product has name " + SAMPLE_PRODUCT_NAME);
   }
 
@@ -91,19 +75,5 @@ class ProductListedRepositoryImplTest extends BaseSetup {
     assertNotNull(result, "Result is empty");
     assertEquals(mockProduct.getMarketDirectory(), result.getMarketDirectory(),
         "Product MarketDirectory " + result.getMarketDirectory());
-  }
-
-  @Test
-  void testFindListedByCriteria() {
-    Product mockProduct = mockResultReturn.getContent().get(0);
-    when(mongoTemplate.find(any(), eq(Product.class))).thenReturn(List.of(mockProduct));
-    var result = productListedRepository.findListedByCriteria(searchCriteria);
-    assertNotNull(result, "Result is empty");
-    assertEquals(mockProduct.getId(), result.getId(), "Product ID " + result.getId());
-
-    searchCriteria.setExcludeFields(List.of(DocumentField.SHORT_DESCRIPTIONS));
-    searchCriteria.setKeyword(mockProduct.getMarketDirectory());
-    result = productListedRepository.findListedByCriteria(searchCriteria);
-    assertNotNull(result, "Result is empty");
   }
 }

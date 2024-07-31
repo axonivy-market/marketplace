@@ -1,16 +1,16 @@
-package com.axonivy.market.repository.criteria;
+package com.axonivy.market.criteria;
 
-import static com.axonivy.market.repository.enums.DocumentField.NAMES;
-import static com.axonivy.market.repository.enums.DocumentField.SHORT_DESCRIPTIONS;
-
-import java.util.List;
-
+import com.axonivy.market.enums.Language;
 import com.axonivy.market.enums.TypeOption;
-import com.axonivy.market.repository.enums.DocumentField;
-
+import com.axonivy.market.enums.DocumentField;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+
+import java.util.List;
+
+import static com.axonivy.market.enums.DocumentField.NAMES;
+import static com.axonivy.market.enums.DocumentField.SHORT_DESCRIPTIONS;
 
 @Data
 @NoArgsConstructor
@@ -21,8 +21,9 @@ public class ProductSearchCriteria {
 
   private String keyword;
   private TypeOption type;
-  private String language;
+  private Language language;
   private List<DocumentField> fields;
   private List<DocumentField> excludeFields;
+  private boolean isListed;
 
 }

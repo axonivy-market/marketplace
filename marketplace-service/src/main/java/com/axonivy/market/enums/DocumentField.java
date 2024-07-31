@@ -1,4 +1,4 @@
-package com.axonivy.market.repository.enums;
+package com.axonivy.market.enums;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;

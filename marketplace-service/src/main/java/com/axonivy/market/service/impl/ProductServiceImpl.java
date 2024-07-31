@@ -1,6 +1,6 @@
 package com.axonivy.market.service.impl;
 
-import static com.axonivy.market.repository.enums.DocumentField.MARKET_DIRECTORY;
+import static com.axonivy.market.enums.DocumentField.MARKET_DIRECTORY;
 import static java.util.Optional.ofNullable;
 import static org.apache.commons.lang3.StringUtils.EMPTY;
 
@@ -35,10 +35,12 @@ import org.springframework.util.CollectionUtils;
 
 import com.axonivy.market.constants.CommonConstants;
 import com.axonivy.market.constants.GitHubConstants;
+import com.axonivy.market.criteria.ProductSearchCriteria;
 import com.axonivy.market.entity.GitHubRepoMeta;
 import com.axonivy.market.entity.Product;
 import com.axonivy.market.entity.ProductModuleContent;
 import com.axonivy.market.enums.FileType;
+import com.axonivy.market.enums.Language;
 import com.axonivy.market.enums.SortOption;
 import com.axonivy.market.enums.TypeOption;
 import com.axonivy.market.factory.ProductFactory;
@@ -49,7 +51,6 @@ import com.axonivy.market.github.service.GitHubService;
 import com.axonivy.market.github.util.GitHubUtils;
 import com.axonivy.market.repository.GitHubRepoMetaRepository;
 import com.axonivy.market.repository.ProductRepository;
-import com.axonivy.market.repository.criteria.ProductSearchCriteria;
 import com.axonivy.market.service.ProductService;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -75,6 +76,7 @@ public class ProductServiceImpl implements ProductService {
 
   public static final String NON_NUMERIC_CHAR = "[^0-9.]";
   private final SecureRandom random = new SecureRandom();
+
   public ProductServiceImpl(ProductRepository productRepository, GHAxonIvyMarketRepoService axonIvyMarketRepoService,
       GHAxonIvyProductRepoService axonIvyProductRepoService, GitHubRepoMetaRepository gitHubRepoMetaRepository,
       GitHubService gitHubService) {
@@ -89,33 +91,13 @@ public class ProductServiceImpl implements ProductService {
   public Page<Product> findProducts(String type, String keyword, String language, Pageable pageable) {
     final var typeOption = TypeOption.of(type);
     final var searchPageable = refinePagination(language, pageable);
-    Page<Product> result = Page.empty();
     var searchCriteria = new ProductSearchCriteria();
-    switch (typeOption) {
-    case ALL:
-      if (StringUtils.isBlank(keyword)) {
-        result = productRepository.findAllListed(searchPageable);
-      } else {
-        searchCriteria.setKeyword(keyword);
-        searchCriteria.setLanguage(language);
-        result = productRepository.searchListedByCriteria(searchCriteria, searchPageable);
-      }
-      break;
-    case CONNECTORS, UTILITIES, SOLUTIONS:
-      if (StringUtils.isBlank(keyword)) {
-        searchCriteria.setType(typeOption);
-        result = productRepository.searchListedByCriteria(searchCriteria, searchPageable);
-      } else {
-        searchCriteria.setKeyword(keyword);
-        searchCriteria.setLanguage(language);
-        searchCriteria.setType(typeOption);
-        result = productRepository.searchListedByCriteria(searchCriteria, searchPageable);
-      }
-      break;
-    default:
-      break;
-    }
-    return result;
+    searchCriteria.setType(typeOption);
+    searchCriteria.setListed(true);
+    searchCriteria.setKeyword(keyword);
+    searchCriteria.setLanguage(Language.of(language));
+    searchCriteria.setType(typeOption);
+    return productRepository.searchByCriteria(searchCriteria, searchPageable);
   }
 
   @Override
