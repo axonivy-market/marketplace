@@ -1,31 +1,21 @@
 package com.axonivy.market.service.impl;
 
-import com.axonivy.market.constants.CommonConstants;
-import com.axonivy.market.constants.GitHubConstants;
-import com.axonivy.market.constants.ProductJsonConstants;
-import com.axonivy.market.entity.GitHubRepoMeta;
-import com.axonivy.market.entity.Product;
-import com.axonivy.market.entity.ProductCustomSort;
-import com.axonivy.market.entity.ProductModuleContent;
-import com.axonivy.market.enums.ErrorCode;
-import com.axonivy.market.enums.FileType;
-import com.axonivy.market.enums.SortOption;
-import com.axonivy.market.enums.TypeOption;
-import com.axonivy.market.exceptions.model.InvalidParamException;
-import com.axonivy.market.factory.ProductFactory;
-import com.axonivy.market.github.model.GitHubFile;
-import com.axonivy.market.github.service.GHAxonIvyMarketRepoService;
-import com.axonivy.market.github.service.GHAxonIvyProductRepoService;
-import com.axonivy.market.github.service.GitHubService;
-import com.axonivy.market.github.util.GitHubUtils;
-import com.axonivy.market.model.ProductCustomSortRequest;
-import com.axonivy.market.repository.GitHubRepoMetaRepository;
-import com.axonivy.market.repository.ProductCustomSortRepository;
-import com.axonivy.market.repository.ProductRepository;
-import com.axonivy.market.service.ProductService;
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import lombok.extern.log4j.Log4j2;
+import static com.axonivy.market.enums.DocumentField.MARKET_DIRECTORY;
+import static java.util.Optional.ofNullable;
+import static org.apache.commons.lang3.StringUtils.EMPTY;
+
+import java.io.IOException;
+import java.net.URL;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.security.SecureRandom;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+
 import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.util.Strings;
@@ -46,20 +36,35 @@ import org.springframework.data.mongodb.core.query.Update;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
-import java.io.IOException;
-import java.net.URL;
-import java.nio.file.Files;
-import java.nio.file.Paths;
-import java.security.SecureRandom;
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import com.axonivy.market.constants.CommonConstants;
+import com.axonivy.market.constants.GitHubConstants;
+import com.axonivy.market.constants.ProductJsonConstants;
+import com.axonivy.market.criteria.ProductSearchCriteria;
+import com.axonivy.market.entity.GitHubRepoMeta;
+import com.axonivy.market.entity.Product;
+import com.axonivy.market.entity.ProductCustomSort;
+import com.axonivy.market.entity.ProductModuleContent;
+import com.axonivy.market.enums.ErrorCode;
+import com.axonivy.market.enums.FileType;
+import com.axonivy.market.enums.Language;
+import com.axonivy.market.enums.SortOption;
+import com.axonivy.market.enums.TypeOption;
+import com.axonivy.market.exceptions.model.InvalidParamException;
+import com.axonivy.market.factory.ProductFactory;
+import com.axonivy.market.github.model.GitHubFile;
+import com.axonivy.market.github.service.GHAxonIvyMarketRepoService;
+import com.axonivy.market.github.service.GHAxonIvyProductRepoService;
+import com.axonivy.market.github.service.GitHubService;
+import com.axonivy.market.github.util.GitHubUtils;
+import com.axonivy.market.model.ProductCustomSortRequest;
+import com.axonivy.market.repository.GitHubRepoMetaRepository;
+import com.axonivy.market.repository.ProductCustomSortRepository;
+import com.axonivy.market.repository.ProductRepository;
+import com.axonivy.market.service.ProductService;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
-import static java.util.Optional.ofNullable;
-import static org.apache.commons.lang3.StringUtils.EMPTY;
+import lombok.extern.log4j.Log4j2;
 
 @Log4j2
 @Service
@@ -101,26 +106,13 @@ public class ProductServiceImpl implements ProductService {
   public Page<Product> findProducts(String type, String keyword, String language, Pageable pageable) {
     final var typeOption = TypeOption.of(type);
     final var searchPageable = refinePagination(language, pageable);
-    Page<Product> result = Page.empty();
-    switch (typeOption) {
-    case ALL:
-      if (StringUtils.isBlank(keyword)) {
-        result = productRepository.findAll(searchPageable);
-      } else {
-        result = productRepository.searchByNameOrShortDescriptionRegex(keyword, language, searchPageable);
-      }
-      break;
-    case CONNECTORS, UTILITIES, SOLUTIONS:
-      if (StringUtils.isBlank(keyword)) {
-        result = productRepository.findByType(typeOption.getCode(), searchPageable);
-      } else {
-        result = productRepository.searchByKeywordAndType(keyword, typeOption.getCode(), language, searchPageable);
-      }
-      break;
-    default:
-      break;
-    }
-    return result;
+    var searchCriteria = new ProductSearchCriteria();
+    searchCriteria.setType(typeOption);
+    searchCriteria.setListed(true);
+    searchCriteria.setKeyword(keyword);
+    searchCriteria.setLanguage(Language.of(language));
+    searchCriteria.setType(typeOption);
+    return productRepository.searchByCriteria(searchCriteria, searchPageable);
   }
 
   @Override
@@ -225,7 +217,10 @@ public class ProductServiceImpl implements ProductService {
     Product result = null;
     switch (file.getStatus()) {
     case MODIFIED, ADDED:
-      result = productRepository.findByMarketDirectoryRegex(parentPath);
+      var searchCriteria = new ProductSearchCriteria();
+      searchCriteria.setKeyword(parentPath);
+      searchCriteria.setFields(List.of(MARKET_DIRECTORY));
+      result = productRepository.findByCriteria(searchCriteria);
       if (result != null) {
         result.setLogoUrl(GitHubUtils.getDownloadUrl(fileContent));
         productRepository.save(result);
