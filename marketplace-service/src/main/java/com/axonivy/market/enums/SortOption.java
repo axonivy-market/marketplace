@@ -4,15 +4,19 @@ import com.axonivy.market.exceptions.model.InvalidParamException;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.data.domain.Sort;
 
 @Getter
 @AllArgsConstructor
 public enum SortOption {
-  POPULARITY("popularity", "installationCount"), ALPHABETICALLY("alphabetically", "names"),
-  RECENT("recent", "newestPublishedDate");
+  POPULARITY("popularity", "installationCount", Sort.Direction.DESC),
+  ALPHABETICALLY("alphabetically", "names", Sort.Direction.ASC),
+  RECENT("recent", "newestPublishedDate", Sort.Direction.DESC),
+  STANDARD("standard", "customOrder", Sort.Direction.DESC);
 
   private String option;
   private String code;
+  private Sort.Direction direction;
 
   public static SortOption of(String option) {
     option = StringUtils.isBlank(option) ? option : option.trim();

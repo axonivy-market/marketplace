@@ -15,6 +15,7 @@ public class ProductJsonConstants {
   public static final String MAVEN_IMPORT_INSTALLER_ID = "maven-import";
   public static final String MAVEN_DROPIN_INSTALLER_ID = "maven-dropins";
   public static final String MAVEN_DEPENDENCY_INSTALLER_ID = "maven-dependency";
+  public static final String CUSTOM_ORDER = "customOrder";
 
   private ProductJsonConstants() {
   }
