@@ -12,5 +12,5 @@ public enum DocumentField {
   MARKET_DIRECTORY("marketDirectory", false);
 
   private String fieldName;
-  private boolean isSupportedLocalized;
+  private boolean isLocalizedSupport;
 }

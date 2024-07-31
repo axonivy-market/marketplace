@@ -1,16 +1,17 @@
 package com.axonivy.market.criteria;
 
-import com.axonivy.market.enums.Language;
-import com.axonivy.market.enums.TypeOption;
-import com.axonivy.market.enums.DocumentField;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import static com.axonivy.market.enums.DocumentField.NAMES;
+import static com.axonivy.market.enums.DocumentField.SHORT_DESCRIPTIONS;
 
 import java.util.List;
 
-import static com.axonivy.market.enums.DocumentField.NAMES;
-import static com.axonivy.market.enums.DocumentField.SHORT_DESCRIPTIONS;
+import com.axonivy.market.enums.DocumentField;
+import com.axonivy.market.enums.Language;
+import com.axonivy.market.enums.TypeOption;
+
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
 @Data
 @NoArgsConstructor

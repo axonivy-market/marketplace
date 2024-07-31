@@ -1,11 +1,11 @@
 package com.axonivy.market.repository.impl;
 
-import com.axonivy.market.criteria.ProductSearchCriteria;
-import com.axonivy.market.entity.Product;
-import com.axonivy.market.enums.Language;
-import com.axonivy.market.enums.TypeOption;
-import com.axonivy.market.repository.ProductSearchRepository;
-import com.axonivy.market.enums.DocumentField;
+import static com.axonivy.market.enums.DocumentField.LISTED;
+import static com.axonivy.market.enums.DocumentField.TYPE;
+
+import java.util.ArrayList;
+import java.util.List;
+
 import org.apache.commons.lang3.StringUtils;
 import org.bson.BsonRegularExpression;
 import org.springframework.data.domain.Page;
@@ -16,11 +16,12 @@ import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.util.CollectionUtils;
 
-import java.util.ArrayList;
-import java.util.List;
-
-import static com.axonivy.market.enums.DocumentField.LISTED;
-import static com.axonivy.market.enums.DocumentField.TYPE;
+import com.axonivy.market.criteria.ProductSearchCriteria;
+import com.axonivy.market.entity.Product;
+import com.axonivy.market.enums.DocumentField;
+import com.axonivy.market.enums.Language;
+import com.axonivy.market.enums.TypeOption;
+import com.axonivy.market.repository.ProductSearchRepository;
 
 public class ProductSearchRepositoryImpl implements ProductSearchRepository {
 
@@ -53,17 +54,13 @@ public class ProductSearchRepositoryImpl implements ProductSearchRepository {
     return new PageImpl<>(entities, pageable, count);
   }
 
-  private Criteria createListedFilter() {
-    return Criteria.where(LISTED.getFieldName()).ne(false);
-  }
-
   private Criteria buildCriteriaSearch(ProductSearchCriteria searchCriteria) {
     var criteria = new Criteria();
     List<Criteria> andFilters = new ArrayList<>();
 
     // Query by Listed
     if (searchCriteria.isListed()) {
-      andFilters.add(createListedFilter());
+      andFilters.add(Criteria.where(LISTED.getFieldName()).ne(false));
     }
 
     // Query by Type
@@ -105,7 +102,7 @@ public class ProductSearchRepositoryImpl implements ProductSearchRepository {
 
     for (var property : filterProperties) {
       Criteria filterByKeywordCriteria;
-      if (property.isSupportedLocalized()) {
+      if (property.isLocalizedSupport()) {
         filterByKeywordCriteria = Criteria.where(LOCALIZE_SEARCH_PATTERN.formatted(property.getFieldName(), language.getValue()));
       } else {
         filterByKeywordCriteria = Criteria.where(property.getFieldName());
