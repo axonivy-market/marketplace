@@ -1,6 +1,14 @@
-import { provideHttpClient, withInterceptorsFromDi } from '@angular/common/http';
+import {
+  provideHttpClient,
+  withInterceptorsFromDi
+} from '@angular/common/http';
 import { provideHttpClientTesting } from '@angular/common/http/testing';
-import { ComponentFixture, fakeAsync, TestBed, tick } from '@angular/core/testing';
+import {
+  ComponentFixture,
+  fakeAsync,
+  TestBed,
+  tick
+} from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 import { ActivatedRoute } from '@angular/router';
 import { TranslateModule } from '@ngx-translate/core';
@@ -9,23 +17,30 @@ import { MarkdownModule } from 'ngx-markdown';
 import { of } from 'rxjs';
 import { TypeOption } from '../../../shared/enums/type-option.enum';
 import {
-  MOCK_PRODUCT_DETAILS,
+  MOCK_PRODUCT_DETAIL,
+  MOCK_PRODUCT_DETAIL_BY_VERSION,
   MOCK_PRODUCT_MODULE_CONTENT,
   MOCK_PRODUCTS
 } from '../../../shared/mocks/mock-data';
-import { MockProductService } from '../../../shared/mocks/mock-services';
 import { ProductService } from '../product.service';
 import { ProductDetailComponent } from './product-detail.component';
 import { ProductModuleContent } from '../../../shared/models/product-module-content.model';
-
+import { RoutingQueryParamService } from '../../../shared/services/routing.query.param.service';
+import { MockProductService } from '../../../shared/mocks/mock-services';
 const products = MOCK_PRODUCTS._embedded.products;
 declare const viewport: Viewport;
 
 describe('ProductDetailComponent', () => {
   let component: ProductDetailComponent;
   let fixture: ComponentFixture<ProductDetailComponent>;
+  let routingQueryParamService: jasmine.SpyObj<RoutingQueryParamService>;
 
   beforeEach(async () => {
+    const routingQueryParamServiceSpy = jasmine.createSpyObj(
+      'RoutingQueryParamService',
+      ['getDesignerVersionFromCookie', 'isDesignerEnv']
+    );
+
     await TestBed.configureTestingModule({
       imports: [
         ProductDetailComponent,
@@ -44,6 +59,10 @@ describe('ProductDetailComponent', () => {
             },
             fragment: of('description')
           }
+        },
+        {
+          provide: RoutingQueryParamService,
+          useValue: routingQueryParamServiceSpy
         }
       ]
     })
@@ -54,6 +73,9 @@ describe('ProductDetailComponent', () => {
         }
       })
       .compileComponents();
+    routingQueryParamService = TestBed.inject(
+      RoutingQueryParamService
+    ) as jasmine.SpyObj<RoutingQueryParamService>;
   });
 
   beforeEach(() => {
@@ -64,8 +86,19 @@ describe('ProductDetailComponent', () => {
 
   it('should create', () => {
     expect(component.productDetail().names['en']).toEqual(
-      MOCK_PRODUCT_DETAILS.names['en']
+      MOCK_PRODUCT_DETAIL.names['en']
     );
+  });
+
+  it('should get corresponding version from cookie', () => {
+    const targetVersion = '1.0';
+    const productId = 'Portal';
+    routingQueryParamService.getDesignerVersionFromCookie.and.returnValue(
+      targetVersion
+    );
+    component.getProductById(productId).subscribe(productDetail => {
+      expect(productDetail).toEqual(MOCK_PRODUCT_DETAIL_BY_VERSION);
+    });
   });
 
   it('should toggle isDropdownOpen on onShowDropdown', () => {
@@ -78,9 +111,9 @@ describe('ProductDetailComponent', () => {
   });
 
   it('should reset state before fetching new product details', () => {
-    component.productDetail.set(MOCK_PRODUCT_DETAILS);
+    component.productDetail.set(MOCK_PRODUCT_DETAIL);
     component.productModuleContent.set(
-      MOCK_PRODUCT_DETAILS.productModuleContent
+      MOCK_PRODUCT_DETAIL.productModuleContent
     );
 
     expect(component.productDetail().id).toBe('jira-connector');
@@ -115,7 +148,7 @@ describe('ProductDetailComponent', () => {
   it('should return true for description when it is not null and not empty', () => {
     const mockContent: ProductModuleContent = {
       ...MOCK_PRODUCT_MODULE_CONTENT,
-      description: {en: 'Test description'}
+      description: { en: 'Test description' }
     };
 
     component.productModuleContent.set(mockContent);
@@ -207,7 +240,7 @@ describe('ProductDetailComponent', () => {
     infoTab = fixture.debugElement.query(By.css('.info-tab'));
     expect(infoTab).toBeTruthy();
   });
-  
+
   it('should call checkMediaSize on ngAfterViewInit', fakeAsync(() => {
     spyOn(component, 'checkMediaSize');
     component.ngAfterViewInit();

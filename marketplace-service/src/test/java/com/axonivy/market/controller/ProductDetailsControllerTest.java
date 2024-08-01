@@ -50,7 +50,7 @@ class ProductDetailsControllerTest {
   @Test
   void testProductDetails() {
     Mockito.when(productService.fetchProductDetail(Mockito.anyString())).thenReturn(mockProduct());
-    Mockito.when(detailModelAssembler.toModel(mockProduct(), null)).thenReturn(createProductMockWithDetails());
+    Mockito.when(detailModelAssembler.toModel(mockProduct())).thenReturn(createProductMockWithDetails());
     ResponseEntity<ProductDetailModel> mockExpectedResult = new ResponseEntity<>(createProductMockWithDetails(),
         HttpStatus.OK);
 
@@ -60,7 +60,7 @@ class ProductDetailsControllerTest {
     assertEquals(result, mockExpectedResult);
 
     verify(productService, times(1)).fetchProductDetail(DOCKER_CONNECTOR_ID);
-    verify(detailModelAssembler, times(1)).toModel(mockProduct(), null);
+    verify(detailModelAssembler, times(1)).toModel(mockProduct());
   }
 
   @Test

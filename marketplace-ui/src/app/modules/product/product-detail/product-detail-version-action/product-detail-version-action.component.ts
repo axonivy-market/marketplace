@@ -17,6 +17,7 @@ import { ProductService } from '../../product.service';
 import { Artifact } from '../../../../shared/models/vesion-artifact.model';
 import { Tooltip } from 'bootstrap';
 import { ProductDetailService } from '../product-detail.service';
+import { RoutingQueryParamService } from '../../../../shared/services/routing.query.param.service';
 
 const delayTimeBeforeHideMessage = 2000;
 @Component({
@@ -27,22 +28,12 @@ const delayTimeBeforeHideMessage = 2000;
   styleUrl: './product-detail-version-action.component.scss'
 })
 export class ProductDetailVersionActionComponent implements AfterViewInit {
-  ngAfterViewInit() {
-    const tooltipTriggerList = [].slice.call(
-      document.querySelectorAll('[data-bs-toggle="tooltip"]')
-    );
-    tooltipTriggerList.forEach(
-      tooltipTriggerEl => new Tooltip(tooltipTriggerEl)
-    );
-  }
-  @Output() installationCount= new EventEmitter<number>();
+  @Output() installationCount = new EventEmitter<number>();
   @Input()
   productId!: string;
   selectedVersion = model<string>('');
   versions: WritableSignal<string[]> = signal([]);
   artifacts: WritableSignal<Artifact[]> = signal([]);
-  themeService = inject(ThemeService);
-  translateService = inject(TranslateService);
   isDevVersionsDisplayed = signal(false);
   isDropDownDisplayed = signal(false);
   isVersionsDropDownShow = signal(false);
@@ -50,11 +41,26 @@ export class ProductDetailVersionActionComponent implements AfterViewInit {
   isInvalidInstallationEnvironment = signal(false);
   designerVersion = '';
   selectedArtifact = '';
+  versionMap: Map<string, Artifact[]> = new Map();
 
+  routingQueryParamService = inject(RoutingQueryParamService);
+  themeService = inject(ThemeService);
+  translateService = inject(TranslateService);
   productService = inject(ProductService);
   productDetailService = inject(ProductDetailService);
-  versionMap: Map<string, Artifact[]> = new Map();
   elementRef = inject(ElementRef);
+
+  ngAfterViewInit() {
+    const tooltipTriggerList = [].slice.call(
+      document.querySelectorAll('[data-bs-toggle="tooltip"]')
+    );
+    tooltipTriggerList.forEach(
+      tooltipTriggerEl => new Tooltip(tooltipTriggerEl)
+    );
+    this.isDesignerEnvironment.set(
+      this.routingQueryParamService.isDesignerEnv()
+    );
+  }
 
   onShowVersions() {
     this.isVersionsDropDownShow.set(!this.isVersionsDropDownShow());

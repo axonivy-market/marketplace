@@ -9,8 +9,8 @@ public enum TypeOption {
   ALL("all", ""), CONNECTORS("connectors", "connector"), UTILITIES("utilities", "util"),
   SOLUTIONS("solutions", "solution"), DEMOS("demos", "demo");
 
-  private String option;
-  private String code;
+  private final String option;
+  private final String code;
 
   private TypeOption(String option, String code) {
     this.option = option;

@@ -108,7 +108,7 @@ class GHAxonIvyMarketRepoServiceImplTest {
   }
 
   @Test
-  void testGetLastCommit() throws IOException {
+  void testGetLastCommit() {
     var lastCommit = axonIvyMarketRepoServiceImpl.getLastCommit(0L);
     assertNull(lastCommit);
   }

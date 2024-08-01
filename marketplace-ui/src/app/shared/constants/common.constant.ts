@@ -164,3 +164,9 @@ export const FEEDBACK_SORT_TYPES = [
     sortFn: 'rating,asc'
   }
 ];
+
+export const DESIGNER_COOKIE_VARIABLE = {
+  ivyViewerParamName: 'ivy-viewer',
+  ivyVersionParamName: 'ivy-version',
+  defaultDesignerViewer: 'designer-market'
+};
