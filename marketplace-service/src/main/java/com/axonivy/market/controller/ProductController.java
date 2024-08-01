@@ -117,6 +117,7 @@ public class ProductController {
   }
 
   @PostMapping(CUSTOM_SORT)
+  @Operation(hidden = true)
   public ResponseEntity<Message> createCustomSortProducts(
       @RequestHeader(value = AUTHORIZATION) String authorizationHeader,
       @RequestBody @Valid ProductCustomSortRequest productCustomSortRequest) {
