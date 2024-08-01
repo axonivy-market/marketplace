@@ -28,6 +28,7 @@ import { Language } from '../../shared/enums/language.enum';
 import { ProductDetail } from '../../shared/models/product-detail.model';
 import { LanguageService } from '../../core/services/language/language.service';
 import { RoutingQueryParamService } from '../../shared/services/routing.query.param.service';
+import { DESIGNER_COOKIE_VARIABLE } from '../../shared/constants/common.constant';
 
 const SEARCH_DEBOUNCE_TIME = 500;
 
@@ -73,11 +74,12 @@ export class ProductComponent implements AfterViewInit, OnDestroy {
   constructor() {
     this.route.queryParams.subscribe(params => {
       this.isRestClient.set(
-        params['resultsOnly'] && this.isDesignerEnvironment
+        DESIGNER_COOKIE_VARIABLE.restClientParamName in params &&
+          this.isDesignerEnvironment
       );
 
-      if (params['search'] != null) {
-        this.criteria.search = params['search'];
+      if (params[DESIGNER_COOKIE_VARIABLE.searchParamName] != null) {
+        this.criteria.search = params[DESIGNER_COOKIE_VARIABLE.searchParamName];
       }
     });
 
@@ -136,6 +138,7 @@ export class ProductComponent implements AfterViewInit, OnDestroy {
     if (this.isRestClient()) {
       this.criteria.isRestDesigner = true;
     }
+
     this.subscriptions.push(
       this.productService
         .findProductsByCriteria(this.criteria)

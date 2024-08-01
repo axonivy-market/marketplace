@@ -40,7 +40,6 @@ public enum NonStandardProduct {
   private final boolean isVersionTagNumberOnly;
   private final String pathToImageFolder;
   private final String pathToProductFolder;
-
   private static final Map<String, NonStandardProduct> NON_STANDARD_PRODUCT_MAP;
 
   static {

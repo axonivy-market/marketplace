@@ -9,7 +9,6 @@ import { Product } from '../../../shared/models/product.model';
 import { Language } from '../../../shared/enums/language.enum';
 import { ProductComponent } from '../product.component';
 import { ProductService } from '../product.service';
-import { inject } from '@angular/core';
 import { provideHttpClientTesting } from '@angular/common/http/testing';
 import {
   provideHttpClient,

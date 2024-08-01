@@ -1,6 +1,6 @@
 <div
   class="card product-card w-100"
-  [style.height]="!isRestClientCard ? '250px' : '164px'">
+  [style.height]="!isProductInRestClient ? '250px' : '164px'">
   <div class="d-flex justify-content-between align-items-start">
     <img
       class="card-img-top rounded"
@@ -11,14 +11,14 @@
         product.names | multilingualism: languageService.selectedLanguage()
       " />
 
-    @if (!isRestClientCard) {
+    @if (!isProductInRestClient) {
       <div
         class="card__tag lh-md px-2 py-1"
         [ngClass]="themeService.isDarkMode() ? 'text-dark' : 'text-light'">
         {{ 'common.filter.value.' + product.type | translate }}
       </div>
     }
-    @if (isRestClientCard) {
+    @if (isProductInRestClient) {
       <div
         class="card__tag lh-md px-2 py-1 text-capitalize"
         [ngClass]="themeService.isDarkMode() ? 'text-dark' : 'text-light'">
@@ -30,7 +30,7 @@
     <h5 class="card__title text-primary">
       {{ product.names | multilingualism: languageService.selectedLanguage() }}
     </h5>
-    @if (!isRestClientCard) {
+    @if (!isProductInRestClient) {
       <p class="card__description text-secondary">
         {{
           product.shortDescriptions

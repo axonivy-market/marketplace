@@ -25,7 +25,7 @@ export class ProductCardComponent {
   themeService = inject(ThemeService);
   languageService = inject(LanguageService);
 
-  isRestClientCard = inject(ProductComponent).isRestClient();
+  isProductInRestClient = inject(ProductComponent).isRestClient();
 
   @Input() product!: Product;
 }

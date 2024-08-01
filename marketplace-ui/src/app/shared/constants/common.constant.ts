@@ -170,5 +170,5 @@ export const DESIGNER_COOKIE_VARIABLE = {
   ivyVersionParamName: 'ivy-version',
   defaultDesignerViewer: 'designer-market',
   restClientParamName: 'resultsOnly',
-  typeParamName: 'type'
+  searchParamName: 'search'
 };

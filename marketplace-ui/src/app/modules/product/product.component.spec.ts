@@ -15,6 +15,7 @@ import { ProductComponent } from './product.component';
 import { ProductService } from './product.service';
 import { MockProductService } from '../../shared/mocks/mock-services';
 import { RoutingQueryParamService } from '../../shared/services/routing.query.param.service';
+import { DESIGNER_COOKIE_VARIABLE } from '../../shared/constants/common.constant';
 
 const router = {
   navigate: jasmine.createSpy('navigate')
@@ -24,8 +25,6 @@ describe('ProductComponent', () => {
   let component: ProductComponent;
   let fixture: ComponentFixture<ProductComponent>;
   let mockIntersectionObserver: any;
-  let activatedRoute: ActivatedRoute;
-  let routingQueryParamService: jasmine.SpyObj<RoutingQueryParamService>;
 
   beforeAll(() => {
     mockIntersectionObserver = jasmine.createSpyObj('IntersectionObserver', [
@@ -91,10 +90,6 @@ describe('ProductComponent', () => {
       .compileComponents();
     fixture = TestBed.createComponent(ProductComponent);
     component = fixture.componentInstance;
-    routingQueryParamService = TestBed.inject(
-      RoutingQueryParamService
-    ) as jasmine.SpyObj<RoutingQueryParamService>;
-    activatedRoute = TestBed.inject(ActivatedRoute);
     fixture.detectChanges();
   });
 
@@ -192,5 +187,18 @@ describe('ProductComponent', () => {
     component.viewProductDetail(productId, '');
 
     expect(router.navigate).toHaveBeenCalledWith(['', productId]);
+  });
+
+  it('should not display marketplace introduction in designer', () => {
+    component.route.queryParams = of({
+      [DESIGNER_COOKIE_VARIABLE.restClientParamName]: 'resultsoOnly',
+      [DESIGNER_COOKIE_VARIABLE.searchParamName]: 'search'
+    });
+
+    component.isDesignerEnvironment = true;
+    fixture.detectChanges();
+
+    const compiled = fixture.debugElement.nativeElement;
+    expect(compiled.querySelector('.row col-md-12 mt-8')).toBeNull();
   });
 });

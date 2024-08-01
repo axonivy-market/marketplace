@@ -38,7 +38,7 @@ public class ProductDetailsController {
   private final ProductDetailModelAssembler detailModelAssembler;
 
   public ProductDetailsController(VersionService versionService, ProductService productService,
-                                  ProductDetailModelAssembler detailModelAssembler) {
+      ProductDetailModelAssembler detailModelAssembler) {
     this.versionService = versionService;
     this.productService = productService;
     this.detailModelAssembler = detailModelAssembler;
@@ -46,12 +46,13 @@ public class ProductDetailsController {
 
   @GetMapping(BY_ID_AND_TAG)
   public ResponseEntity<ProductDetailModel> findProductDetailsByVersion(@PathVariable(ID) String id,
-                                                                        @PathVariable(TAG) String tag) {
+      @PathVariable(TAG) String tag) {
     var productDetail = productService.fetchProductDetail(id);
     return new ResponseEntity<>(detailModelAssembler.toModel(productDetail, tag), HttpStatus.OK);
   }
 
-  @Operation(summary = "increase installation count by 1", description = "update installation count when click download product files by users")
+  @Operation(summary = "increase installation count by 1",
+      description = "update installation count when click download product files by users")
   @CrossOrigin(originPatterns = "*")
   @PutMapping(INSTALLATION_COUNT_BY_ID)
   public ResponseEntity<Integer> syncInstallationCount(@PathVariable(ID) String key) {
@@ -67,10 +68,10 @@ public class ProductDetailsController {
 
   @GetMapping(VERSIONS_BY_ID)
   public ResponseEntity<List<MavenArtifactVersionModel>> findProductVersionsById(@PathVariable(ID) String id,
-                                                                                 @RequestParam(SHOW_DEV_VERSION) boolean isShowDevVersion,
-                                                                                 @RequestParam(name = DESIGNER_VERSION, required = false) String designerVersion) {
+      @RequestParam(SHOW_DEV_VERSION) boolean isShowDevVersion,
+      @RequestParam(name = DESIGNER_VERSION, required = false) String designerVersion) {
     List<MavenArtifactVersionModel> models =
-            versionService.getArtifactsAndVersionToDisplay(id, isShowDevVersion, designerVersion);
+        versionService.getArtifactsAndVersionToDisplay(id, isShowDevVersion, designerVersion);
     return new ResponseEntity<>(models, HttpStatus.OK);
   }
 }
