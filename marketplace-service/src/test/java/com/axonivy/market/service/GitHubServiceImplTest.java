@@ -53,11 +53,11 @@ class GitHubServiceImplTest {
   @Test
   void testGetGithubContent() throws IOException {
     var mockGHContent = mock(GHContent.class);
-    final String dummryURL = DUMMY_API_URL.concat("/dummry-content");
-    when(mockGHContent.getUrl()).thenReturn(dummryURL);
+    final String dummyURL = DUMMY_API_URL.concat("/dummy-content");
+    when(mockGHContent.getUrl()).thenReturn(dummyURL);
     when(ghRepository.getFileContent(any(), any())).thenReturn(mockGHContent);
     var result = gitHubService.getGHContent(ghRepository, "", "");
-    assertEquals(dummryURL, result.getUrl());
+    assertEquals(dummyURL, result.getUrl());
   }
 
   @Test

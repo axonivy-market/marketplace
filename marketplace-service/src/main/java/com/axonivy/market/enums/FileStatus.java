@@ -10,7 +10,7 @@ import org.apache.commons.lang3.StringUtils;
 public enum FileStatus {
   MODIFIED("modified"), ADDED("added"), REMOVED("removed");
 
-  private String code;
+  private final String code;
 
   public static FileStatus of(String code) {
     for (var status : values()) {

@@ -6,7 +6,6 @@ import { ProductService } from '../../product.service';
 import { provideHttpClient } from '@angular/common/http';
 import { Artifact } from '../../../../shared/models/vesion-artifact.model';
 import { ElementRef } from '@angular/core';
-import {provideHttpClientTesting} from "@angular/common/http/testing";
 
 class MockElementRef implements ElementRef {
   nativeElement = {
