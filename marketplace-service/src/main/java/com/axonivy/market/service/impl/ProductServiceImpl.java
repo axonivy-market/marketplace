@@ -9,12 +9,7 @@ import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.security.SecureRandom;
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 
 import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -103,15 +98,19 @@ public class ProductServiceImpl implements ProductService {
   }
 
   @Override
-  public Page<Product> findProducts(String type, String keyword, String language, Pageable pageable) {
+  public Page<Product> findProducts(String type, String keyword, String language, Boolean isRestDesigner, Pageable pageable) {
     final var typeOption = TypeOption.of(type);
     final var searchPageable = refinePagination(language, pageable);
     var searchCriteria = new ProductSearchCriteria();
-    searchCriteria.setType(typeOption);
     searchCriteria.setListed(true);
     searchCriteria.setKeyword(keyword);
-    searchCriteria.setLanguage(Language.of(language));
-    searchCriteria.setType(typeOption);
+    if (BooleanUtils.isTrue(isRestDesigner)) {
+      searchCriteria.setType(TypeOption.CONNECTORS);
+      searchCriteria.setLanguage(Language.of(Locale.ENGLISH.toLanguageTag()));
+    } else {
+      searchCriteria.setType(typeOption);
+      searchCriteria.setLanguage(Language.of(language));
+    }
     return productRepository.searchByCriteria(searchCriteria, searchPageable);
   }
 

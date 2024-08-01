@@ -53,7 +53,7 @@ export class ProductComponent implements AfterViewInit, OnDestroy {
   criteria: Criteria = {
     search: '',
     type: TypeOption.All_TYPES,
-    isRestDesigner: false
+    isRestDesigner: false,
     sort: SortOption.STANDARD,
     language: Language.EN
   };
@@ -71,23 +71,17 @@ export class ProductComponent implements AfterViewInit, OnDestroy {
   @ViewChild('observer', { static: true }) observerElement!: ElementRef;
 
   constructor() {
-    console.log(this.route);
-    let phuc = '';
     this.route.queryParams.subscribe(params => {
-      if ('resultsOnly' in params && this.isDesignerEnvironment) {
-        this.isRestClient.set(true);
-      } else {
-        this.isRestClient.set(false);
-      }
+      this.isRestClient.set(
+        params['resultsOnly'] && this.isDesignerEnvironment
+      );
+
       if (params['search'] != null) {
-        phuc = params['search'];
-        console.log(params['search']);
         this.criteria.search = params['search'];
       }
     });
 
     this.loadProductItems();
-    console.log(phuc);
     this.subscriptions.push(
       this.searchTextChanged
         .pipe(debounceTime(SEARCH_DEBOUNCE_TIME))

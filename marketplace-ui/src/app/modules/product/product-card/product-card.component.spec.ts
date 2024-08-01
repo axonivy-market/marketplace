@@ -7,6 +7,16 @@ import {
 import { ProductCardComponent } from './product-card.component';
 import { Product } from '../../../shared/models/product.model';
 import { Language } from '../../../shared/enums/language.enum';
+import { ProductComponent } from '../product.component';
+import { ProductService } from '../product.service';
+import { inject } from '@angular/core';
+import { provideHttpClientTesting } from '@angular/common/http/testing';
+import {
+  provideHttpClient,
+  withInterceptorsFromDi
+} from '@angular/common/http';
+import { ActivatedRoute } from '@angular/router';
+import { of } from 'rxjs';
 
 const products = MOCK_PRODUCTS._embedded.products as Product[];
 const noDeNameAndNoLogoUrlProducts =
@@ -15,11 +25,20 @@ const noDeNameAndNoLogoUrlProducts =
 describe('ProductCardComponent', () => {
   let component: ProductCardComponent;
   let fixture: ComponentFixture<ProductCardComponent>;
+  let mockActivatedRoute: any;
 
   beforeEach(async () => {
+    mockActivatedRoute = { queryParams: of({ showPopup: 'true' }) };
     await TestBed.configureTestingModule({
       imports: [ProductCardComponent, TranslateModule.forRoot()],
-      providers: [TranslateService]
+      providers: [
+        provideHttpClient(withInterceptorsFromDi()),
+        provideHttpClientTesting(),
+        TranslateService,
+        ProductService,
+        ProductComponent,
+        { provide: ActivatedRoute, useValue: mockActivatedRoute }
+      ]
     }).compileComponents();
 
     fixture = TestBed.createComponent(ProductCardComponent);
