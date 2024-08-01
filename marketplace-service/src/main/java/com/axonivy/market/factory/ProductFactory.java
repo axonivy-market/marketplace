@@ -46,7 +46,7 @@ public class ProductFactory {
   }
 
   public static Product mappingByMetaJSONFile(Product product, GHContent ghContent) {
-    Meta meta = null;
+    Meta meta;
     try {
       meta = jsonDecode(ghContent);
     } catch (Exception e) {

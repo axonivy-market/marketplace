@@ -1,5 +1,9 @@
 package com.axonivy.market.controller;
 
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.enums.ParameterIn;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import com.axonivy.market.assembler.ProductModelAssembler;
 import com.axonivy.market.constants.CommonConstants;
 import com.axonivy.market.constants.GitHubConstants;
@@ -14,6 +18,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import jakarta.validation.Valid;
 
 import org.apache.commons.lang3.time.StopWatch;
+import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
@@ -42,6 +47,7 @@ import static com.axonivy.market.constants.RequestParamConstants.IS_REST_DESIGNE
 
 @RestController
 @RequestMapping(PRODUCT)
+@Tag(name = "Product Controller", description = "API collection to get and search products")
 public class ProductController {
 
   private final ProductService productService;
@@ -50,18 +56,24 @@ public class ProductController {
   private final PagedResourcesAssembler<Product> pagedResourcesAssembler;
 
   public ProductController(ProductService productService, GitHubService gitHubService, ProductModelAssembler assembler,
-      PagedResourcesAssembler<Product> pagedResourcesAssembler) {
+                           PagedResourcesAssembler<Product> pagedResourcesAssembler) {
     this.productService = productService;
     this.gitHubService = gitHubService;
     this.assembler = assembler;
     this.pagedResourcesAssembler = pagedResourcesAssembler;
   }
 
-  @Operation(summary = "Find all products", description = "Be default system will finds product by type as 'all'")
   @GetMapping()
-  public ResponseEntity<PagedModel<ProductModel>> findProducts(@RequestParam(name = TYPE) String type,
-      @RequestParam(required = false, name = KEYWORD) String keyword, @RequestParam(name = LANGUAGE) String language,
-      @RequestParam(name = IS_REST_DESIGNER) Boolean isRestDesigner, Pageable pageable) {
+  @Operation(summary = "Retrieve a paginated list of all products, optionally filtered by type, keyword, and language", description = "By default, the system finds products with type 'all'", parameters = {
+      @Parameter(name = "page", description = "Page number to retrieve", in = ParameterIn.QUERY, example = "0", required = true),
+      @Parameter(name = "size", description = "Number of items per page", in = ParameterIn.QUERY, example = "20", required = true),
+      @Parameter(name = "sort", description = "Sorting criteria in the format: Sorting criteria(popularity|alphabetically|recent), Sorting order(asc|desc)",
+          in = ParameterIn.QUERY, example = "[\"popularity\",\"asc\"]", required = true)})
+  public ResponseEntity<PagedModel<ProductModel>> findProducts(
+      @RequestParam(name = TYPE) @Parameter(description = "Type of product.", in = ParameterIn.QUERY, schema = @Schema(type = "string", allowableValues = {"all", "connectors", "utilities", "solutions", "demos"})) String type,
+      @RequestParam(required = false, name = KEYWORD) @Parameter(description = "Keyword that exist in product's name or short description", example = "connector", in = ParameterIn.QUERY) String keyword,
+      @RequestParam(name = LANGUAGE) @Parameter(description = "Language of product short description", in = ParameterIn.QUERY, schema = @Schema(allowableValues = {"en", "de"})) String language, @RequestParam(name = IS_REST_DESIGNER) Boolean isRestDesigner,
+      @ParameterObject Pageable pageable) {
     Page<Product> results = productService.findProducts(type, keyword, language, isRestDesigner, pageable);
     if (results.isEmpty()) {
       return generateEmptyPagedModel();
@@ -72,7 +84,9 @@ public class ProductController {
   }
 
   @PutMapping(SYNC)
-  public ResponseEntity<Message> syncProducts(@RequestHeader(value = AUTHORIZATION) String authorizationHeader,
+  @Operation(hidden = true)
+  public ResponseEntity<Message> syncProducts(
+      @RequestHeader(value = AUTHORIZATION) String authorizationHeader,
       @RequestParam(value = RESET_SYNC, required = false) Boolean resetSync) {
     String token = getBearerToken(authorizationHeader);
     gitHubService.validateUserOrganization(token, GitHubConstants.AXONIVY_MARKET_ORGANIZATION_NAME);
@@ -96,6 +110,7 @@ public class ProductController {
   }
 
   @PostMapping(CUSTOM_SORT)
+  @Operation(hidden = true)
   public ResponseEntity<Message> createCustomSortProducts(
       @RequestHeader(value = AUTHORIZATION) String authorizationHeader,
       @RequestBody @Valid ProductCustomSortRequest productCustomSortRequest) {
@@ -110,7 +125,7 @@ public class ProductController {
   @SuppressWarnings("unchecked")
   private ResponseEntity<PagedModel<ProductModel>> generateEmptyPagedModel() {
     var emptyPagedModel = (PagedModel<ProductModel>) pagedResourcesAssembler.toEmptyModel(Page.empty(),
-        ProductModel.class);
+            ProductModel.class);
     return new ResponseEntity<>(emptyPagedModel, HttpStatus.OK);
   }
 

@@ -7,7 +7,13 @@ import static org.apache.commons.lang3.StringUtils.EMPTY;
 import java.util.Collections;
 import java.util.Map;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -39,11 +45,15 @@ public class OAuth2Controller {
   }
 
   @PostMapping(GIT_HUB_LOGIN)
+  @Operation(description = "Get rating authentication token")
+  @ApiResponses(value = {
+      @ApiResponse(responseCode = "200", description = "Successfully login to GitHub provider", content = @Content(mediaType = "application/json", schema = @Schema(implementation = Map.class))),
+      @ApiResponse(responseCode = "400", description = "Bad Request")})
+  @io.swagger.v3.oas.annotations.parameters.RequestBody(content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE, schema = @Schema(implementation = Oauth2AuthorizationCode.class)))
   public ResponseEntity<Map<String, String>> gitHubLogin(@RequestBody Oauth2AuthorizationCode oauth2AuthorizationCode) {
-    String accessToken = EMPTY;
+    String accessToken;
     try {
-      GitHubAccessTokenResponse tokenResponse = gitHubService.getAccessToken(oauth2AuthorizationCode.getCode(),
-          gitHubProperty);
+      GitHubAccessTokenResponse tokenResponse = gitHubService.getAccessToken(oauth2AuthorizationCode.getCode(), gitHubProperty);
       accessToken = tokenResponse.getAccessToken();
     } catch (Exception e) {
       return new ResponseEntity<>(Map.of(e.getClass().getName(), e.getMessage()), HttpStatus.BAD_REQUEST);
