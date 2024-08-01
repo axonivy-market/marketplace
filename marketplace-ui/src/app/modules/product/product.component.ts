@@ -74,6 +74,7 @@ export class ProductComponent implements AfterViewInit, OnDestroy {
         .subscribe(value => {
           this.criteria = {
             ...this.criteria,
+            nextPageHref: '',
             search: value
           };
           this.loadProductItems(true);
