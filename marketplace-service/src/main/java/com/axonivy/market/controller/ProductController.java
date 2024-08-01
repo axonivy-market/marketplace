@@ -2,7 +2,6 @@ package com.axonivy.market.controller;
 
 import static com.axonivy.market.constants.RequestMappingConstants.PRODUCT;
 import static com.axonivy.market.constants.RequestMappingConstants.SYNC;
-import static com.axonivy.market.constants.RequestParamConstants.X_AUTHORIZATION;
 import static com.axonivy.market.constants.RequestParamConstants.AUTHORIZATION;
 import static com.axonivy.market.constants.RequestParamConstants.KEYWORD;
 import static com.axonivy.market.constants.RequestParamConstants.LANGUAGE;
