@@ -1,11 +1,10 @@
-name: marketplace-release_latest
+name: marketplace-release_${RELEASE_VERSION}
 
 services:
   mongodb:
     build:
       context: ../config/mongodb
       dockerfile: Dockerfile
-    container_name: marketplace-mongodb-7.0.0
     restart: always
     ports:
       - "27017:27017"
@@ -17,13 +16,13 @@ services:
       - ../config/mongodb/mongod.conf:/etc/mongod.conf
 
   ui:
-    image: ghcr.io/axonivy-market/marketplace-ui:latest
+    image: ghcr.io/axonivy-market/marketplace-ui:${RELEASE_VERSION}
     restart: always
     ports:
       - "80:80"
 
   service:
-    image: ghcr.io/axonivy-market/marketplace-service:latest
+    image: ghcr.io/axonivy-market/marketplace-service:${RELEASE_VERSION}
     restart: always
     expose:
       - 8080
