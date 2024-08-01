@@ -76,7 +76,7 @@ public class ProductDetailsController {
                                                                @Parameter(description = "Product id (from meta.json)", example = "adobe-acrobat-connector", in = ParameterIn.PATH)
                                                                String id) {
     var productDetail = productService.fetchProductDetail(id);
-    return new ResponseEntity<>(detailModelAssembler.toModel(productDetail, null), HttpStatus.OK);
+    return new ResponseEntity<>(detailModelAssembler.toModel(productDetail), HttpStatus.OK);
   }
 
   @GetMapping(VERSIONS_BY_ID)

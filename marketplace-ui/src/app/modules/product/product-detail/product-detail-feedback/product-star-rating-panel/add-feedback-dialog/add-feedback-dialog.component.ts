@@ -40,7 +40,7 @@ export class AddFeedbackDialogComponent {
   userFeedback: Signal<Feedback | null> =
     this.productFeedbackService.userFeedback;
 
-  ngOnInit() {
+  ngOnInit(): void {
     const displayName = this.authService.getDisplayName();
     if (displayName) {
       this.displayName = displayName;

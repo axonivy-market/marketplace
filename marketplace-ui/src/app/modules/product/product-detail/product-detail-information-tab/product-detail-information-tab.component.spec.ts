@@ -1,7 +1,7 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { ProductDetailInformationTabComponent } from './product-detail-information-tab.component';
-import { MOCK_PRODUCT_DETAILS } from '../../../../shared/mocks/mock-data';
+import { MOCK_PRODUCT_DETAIL } from '../../../../shared/mocks/mock-data';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 
 describe('InformationDetailComponent', () => {
@@ -19,7 +19,7 @@ describe('InformationDetailComponent', () => {
 
     fixture = TestBed.createComponent(ProductDetailInformationTabComponent);
     component = fixture.componentInstance;
-    component.productDetail = MOCK_PRODUCT_DETAILS;
+    component.productDetail = MOCK_PRODUCT_DETAIL;
     component.selectedVersion = '1.0.0';
     fixture.detectChanges();
   });

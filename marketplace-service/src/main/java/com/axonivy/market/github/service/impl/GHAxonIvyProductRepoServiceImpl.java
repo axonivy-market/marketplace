@@ -3,12 +3,12 @@ package com.axonivy.market.github.service.impl;
 import com.axonivy.market.constants.CommonConstants;
 import com.axonivy.market.constants.GitHubConstants;
 import com.axonivy.market.constants.MavenConstants;
-import com.axonivy.market.constants.NonStandardProductPackageConstants;
 import com.axonivy.market.constants.ProductJsonConstants;
 import com.axonivy.market.constants.ReadmeConstants;
 import com.axonivy.market.entity.Product;
 import com.axonivy.market.entity.ProductModuleContent;
 import com.axonivy.market.enums.Language;
+import com.axonivy.market.enums.NonStandardProduct;
 import com.axonivy.market.github.model.MavenArtifact;
 import com.axonivy.market.github.service.GHAxonIvyProductRepoService;
 import com.axonivy.market.github.service.GitHubService;
@@ -293,8 +293,8 @@ public class GHAxonIvyProductRepoServiceImpl implements GHAxonIvyProductRepoServ
   }
 
   private boolean hasChildConnector(GHRepository ghRepository) {
-    return NonStandardProductPackageConstants.MICROSOFT_REPO_NAME.equals(ghRepository.getName())
-        || NonStandardProductPackageConstants.OPENAI_CONNECTOR.equals(ghRepository.getName());
+    return NonStandardProduct.MICROSOFT_REPO_NAME.getId().equals(ghRepository.getName())
+        || NonStandardProduct.OPENAI_CONNECTOR.getId().equals(ghRepository.getName());
   }
 
   private boolean hasImageDirectives(String readmeContents) {
