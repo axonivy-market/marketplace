@@ -3,6 +3,7 @@ package com.axonivy.market.controller;
 import static com.axonivy.market.constants.RequestMappingConstants.PRODUCT;
 import static com.axonivy.market.constants.RequestMappingConstants.SYNC;
 import static com.axonivy.market.constants.RequestParamConstants.X_AUTHORIZATION;
+import static com.axonivy.market.constants.RequestParamConstants.AUTHORIZATION;
 import static com.axonivy.market.constants.RequestParamConstants.KEYWORD;
 import static com.axonivy.market.constants.RequestParamConstants.LANGUAGE;
 import static com.axonivy.market.constants.RequestParamConstants.RESET_SYNC;
@@ -85,7 +86,7 @@ public class ProductController {
   @PutMapping(SYNC)
   @Operation(hidden = true)
   public ResponseEntity<Message> syncProducts(
-      @RequestHeader(value = X_AUTHORIZATION) String authorizationHeader,
+      @RequestHeader(value = AUTHORIZATION) String authorizationHeader,
       @RequestParam(value = RESET_SYNC, required = false) Boolean resetSync) {
     String token = getBearerToken(authorizationHeader);
     gitHubService.validateUserOrganization(token, GitHubConstants.AXONIVY_MARKET_ORGANIZATION_NAME);
@@ -111,7 +112,7 @@ public class ProductController {
   @PostMapping(CUSTOM_SORT)
   @Operation(hidden = true)
   public ResponseEntity<Message> createCustomSortProducts(
-      @RequestHeader(value = X_AUTHORIZATION) String authorizationHeader,
+      @RequestHeader(value = AUTHORIZATION) String authorizationHeader,
       @RequestBody @Valid ProductCustomSortRequest productCustomSortRequest) {
     String token = getBearerToken(authorizationHeader);
     gitHubService.validateUserOrganization(token, GitHubConstants.AXONIVY_MARKET_ORGANIZATION_NAME);
