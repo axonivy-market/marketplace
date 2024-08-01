@@ -6,6 +6,7 @@ import com.axonivy.market.entity.User;
 import com.axonivy.market.enums.ErrorCode;
 import com.axonivy.market.exceptions.model.NotFoundException;
 import com.axonivy.market.model.FeedbackModel;
+import com.axonivy.market.model.FeedbackModelRequest;
 import com.axonivy.market.model.ProductRating;
 import com.axonivy.market.repository.FeedbackRepository;
 import com.axonivy.market.repository.ProductRepository;
@@ -52,21 +53,31 @@ class FeedbackServiceImplTest {
 
   private Feedback feedback;
   private FeedbackModel feedbackModel;
+  private FeedbackModelRequest feedbackModelRequest;
+  private String userId;
+
 
   @BeforeEach
   void setUp() {
+    userId = "user1";
+
     feedback = new Feedback();
     feedback.setId("1");
-    feedback.setUserId("user1");
+    feedback.setUserId(userId);
     feedback.setProductId("product1");
     feedback.setRating(5);
     feedback.setContent("Great product!");
 
     feedbackModel = new FeedbackModel();
-    feedbackModel.setUserId("user1");
+    feedbackModel.setUserId(userId);
     feedbackModel.setProductId("product1");
     feedbackModel.setRating(5);
     feedbackModel.setContent("Great product!");
+
+    feedbackModelRequest = new FeedbackModelRequest();
+    feedbackModelRequest.setProductId("product1");
+    feedbackModelRequest.setRating(5);
+    feedbackModelRequest.setContent("Great product!");
   }
 
   @Test
@@ -159,14 +170,13 @@ class FeedbackServiceImplTest {
 
   @Test
   void testUpsertFeedback_Insert() throws NotFoundException {
-    String userId = "user1";
     String productId = "product1";
 
     when(userRepository.findById(userId)).thenReturn(Optional.of(new User()));
     when(feedbackRepository.findByUserIdAndProductId(userId, productId)).thenReturn(null);
     when(feedbackRepository.save(any(Feedback.class))).thenReturn(feedback);
 
-    Feedback result = feedbackService.upsertFeedback(feedbackModel);
+    Feedback result = feedbackService.upsertFeedback(feedbackModelRequest, userId);
     assertNotNull(result);
     assertEquals(feedbackModel.getUserId(), result.getUserId());
     assertEquals(feedbackModel.getProductId(), result.getProductId());
@@ -179,14 +189,13 @@ class FeedbackServiceImplTest {
 
   @Test
   void testUpsertFeedback_Update() throws NotFoundException {
-    String userId = "user1";
     String productId = "product1";
 
     when(userRepository.findById(userId)).thenReturn(Optional.of(new User()));
     when(feedbackRepository.findByUserIdAndProductId(userId, productId)).thenReturn(feedback);
     when(feedbackRepository.save(any(Feedback.class))).thenReturn(feedback);
 
-    Feedback result = feedbackService.upsertFeedback(feedbackModel);
+    Feedback result = feedbackService.upsertFeedback(feedbackModelRequest, userId);
     assertNotNull(result);
     assertEquals(feedbackModel.getUserId(), result.getUserId());
     assertEquals(feedbackModel.getProductId(), result.getProductId());

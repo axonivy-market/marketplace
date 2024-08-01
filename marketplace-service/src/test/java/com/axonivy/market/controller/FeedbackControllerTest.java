@@ -3,7 +3,7 @@ package com.axonivy.market.controller;
 import com.axonivy.market.assembler.FeedbackModelAssembler;
 import com.axonivy.market.entity.Feedback;
 import com.axonivy.market.entity.User;
-import com.axonivy.market.model.FeedbackModel;
+import com.axonivy.market.model.FeedbackModelRequest;
 import com.axonivy.market.service.FeedbackService;
 import com.axonivy.market.service.JwtService;
 import com.axonivy.market.service.UserService;
@@ -122,14 +122,14 @@ class FeedbackControllerTest {
 
   @Test
   void testCreateFeedback() {
-    FeedbackModel mockFeedbackModel = createFeedbackModelMock();
+    FeedbackModelRequest mockFeedbackModel = createFeedbackModelRequestMock();
     Feedback mockFeedback = createFeedbackMock();
     Claims mockClaims = createMockClaims();
     MockHttpServletRequest request = new MockHttpServletRequest();
     RequestContextHolder.setRequestAttributes(new ServletRequestAttributes(request));
     when(jwtService.validateToken(TOKEN_SAMPLE)).thenReturn(true);
     when(jwtService.getClaimsFromToken(TOKEN_SAMPLE)).thenReturn(mockClaims);
-    when(service.upsertFeedback(any())).thenReturn(mockFeedback);
+    when(service.upsertFeedback(any(), any())).thenReturn(mockFeedback);
 
     var result = feedbackController.createFeedback(mockFeedbackModel, "Bearer " + TOKEN_SAMPLE);
     assertEquals(HttpStatus.CREATED, result.getStatusCode());
@@ -146,10 +146,8 @@ class FeedbackControllerTest {
     return mockFeedback;
   }
 
-  private FeedbackModel createFeedbackModelMock() {
-    FeedbackModel mockFeedback = new FeedbackModel();
-    mockFeedback.setId(FEEDBACK_ID_SAMPLE);
-    mockFeedback.setUserId(USER_ID_SAMPLE);
+  private FeedbackModelRequest createFeedbackModelRequestMock() {
+    FeedbackModelRequest mockFeedback = new FeedbackModelRequest();
     mockFeedback.setProductId(PRODUCT_ID_SAMPLE);
     mockFeedback.setContent("Great product!");
     mockFeedback.setRating(5);
