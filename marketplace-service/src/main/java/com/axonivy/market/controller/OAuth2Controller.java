@@ -51,7 +51,7 @@ public class OAuth2Controller {
           @ApiResponse(responseCode = "400", description = "Bad Request")})
   @io.swagger.v3.oas.annotations.parameters.RequestBody(content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE, schema = @Schema(implementation = Oauth2AuthorizationCode.class)))
   public ResponseEntity<Map<String, String>> gitHubLogin(@RequestBody Oauth2AuthorizationCode oauth2AuthorizationCode) {
-    String accessToken = EMPTY;
+    String accessToken;
     try {
       GitHubAccessTokenResponse tokenResponse = gitHubService.getAccessToken(oauth2AuthorizationCode.getCode(), gitHubProperty);
       accessToken = tokenResponse.getAccessToken();

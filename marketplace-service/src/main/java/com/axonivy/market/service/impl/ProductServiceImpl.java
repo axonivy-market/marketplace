@@ -214,7 +214,7 @@ public class ProductServiceImpl implements ProductService {
   }
 
   private void modifyProductLogo(String parentPath, GitHubFile file, Product product, GHContent fileContent) {
-    Product result = null;
+    Product result;
     switch (file.getStatus()) {
     case MODIFIED, ADDED:
       var searchCriteria = new ProductSearchCriteria();
