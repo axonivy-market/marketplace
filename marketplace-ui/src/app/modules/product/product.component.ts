@@ -54,7 +54,7 @@ export class ProductComponent implements AfterViewInit, OnDestroy {
   criteria: Criteria = {
     search: '',
     type: TypeOption.All_TYPES,
-    isRestDesigner: false,
+    isRESTClientEditor: false,
     sort: SortOption.STANDARD,
     language: Language.EN
   };
@@ -136,7 +136,9 @@ export class ProductComponent implements AfterViewInit, OnDestroy {
   loadProductItems(shouldCleanData = false) {
     this.criteria.language = this.languageService.selectedLanguage();
     if (this.isRestClient()) {
-      this.criteria.isRestDesigner = true;
+      this.criteria.isRESTClientEditor = true;
+      this.criteria.language = Language.EN;
+      this.criteria.type = TypeOption.CONNECTORS;
     }
 
     this.subscriptions.push(

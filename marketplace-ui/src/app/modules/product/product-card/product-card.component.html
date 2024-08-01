@@ -1,36 +1,34 @@
 <div
   class="card product-card w-100"
-  [style.height]="!isProductInRestClient ? '250px' : '164px'">
+  [style.height]="!isShowInRESTClientEditor ? '250px' : '164px'">
   <div class="d-flex justify-content-between align-items-start">
     <img
       class="card-img-top rounded"
       width="70"
       height="70"
       [ngSrc]="product | logo"
-      [alt]="
-        product.names | multilingualism: languageService.selectedLanguage()
-      " />
-
-    @if (!isProductInRestClient) {
+      [alt]="product.names | multilingualism: languageService.selectedLanguage()" />
+    @if (isShowInRESTClientEditor) {
+      <div
+        class="card__tag lh-md px-2 py-1 text-capitalize"
+        [ngClass]="themeService.isDarkMode() ? 'text-dark' : 'text-light'">
+        {{ product.tags[0] }}
+      </div>
+    } @else {
       <div
         class="card__tag lh-md px-2 py-1"
         [ngClass]="themeService.isDarkMode() ? 'text-dark' : 'text-light'">
         {{ 'common.filter.value.' + product.type | translate }}
       </div>
     }
-    @if (isProductInRestClient) {
-      <div
-        class="card__tag lh-md px-2 py-1 text-capitalize"
-        [ngClass]="themeService.isDarkMode() ? 'text-dark' : 'text-light'">
-        {{ product.tags[0] }}
-      </div>
-    }
   </div>
   <div>
     <h5 class="card__title text-primary">
-      {{ product.names | multilingualism: languageService.selectedLanguage() }}
+      {{
+        product.names | multilingualism: languageService.selectedLanguage()
+      }}
     </h5>
-    @if (!isProductInRestClient) {
+    @if (!isShowInRESTClientEditor) {
       <p class="card__description text-secondary">
         {{
           product.shortDescriptions

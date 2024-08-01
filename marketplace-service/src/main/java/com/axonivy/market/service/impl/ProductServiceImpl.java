@@ -1,6 +1,8 @@
 package com.axonivy.market.service.impl;
 
 import static com.axonivy.market.enums.DocumentField.MARKET_DIRECTORY;
+import static com.axonivy.market.enums.DocumentField.SHORT_DESCRIPTIONS;
+
 import static java.util.Optional.ofNullable;
 import static org.apache.commons.lang3.StringUtils.EMPTY;
 
@@ -14,7 +16,6 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
 
@@ -105,16 +106,15 @@ public class ProductServiceImpl implements ProductService {
   }
 
   @Override
-  public Page<Product> findProducts(String type, String keyword, String language, Boolean isRestDesigner,
+  public Page<Product> findProducts(String type, String keyword, String language, Boolean isRESTClient,
       Pageable pageable) {
     final var typeOption = TypeOption.of(type);
     final var searchPageable = refinePagination(language, pageable);
     var searchCriteria = new ProductSearchCriteria();
     searchCriteria.setListed(true);
     searchCriteria.setKeyword(keyword);
-    if (BooleanUtils.isTrue(isRestDesigner)) {
-      searchCriteria.setType(TypeOption.CONNECTORS);
-      searchCriteria.setLanguage(Language.of(Locale.ENGLISH.toLanguageTag()));
+    if (BooleanUtils.isTrue(isRESTClient)) {
+      searchCriteria.setExcludeFields(List.of(SHORT_DESCRIPTIONS));
     } else {
       searchCriteria.setType(typeOption);
       searchCriteria.setLanguage(Language.of(language));
@@ -223,37 +223,37 @@ public class ProductServiceImpl implements ProductService {
   private void modifyProductLogo(String parentPath, GitHubFile file, Product product, GHContent fileContent) {
     Product result;
     switch (file.getStatus()) {
-      case MODIFIED, ADDED:
-        var searchCriteria = new ProductSearchCriteria();
-        searchCriteria.setKeyword(parentPath);
-        searchCriteria.setFields(List.of(MARKET_DIRECTORY));
-        result = productRepository.findByCriteria(searchCriteria);
-        if (result != null) {
-          result.setLogoUrl(GitHubUtils.getDownloadUrl(fileContent));
-          productRepository.save(result);
-        }
-        break;
-      case REMOVED:
-        result = productRepository.findByLogoUrl(product.getLogoUrl());
-        if (result != null) {
-          productRepository.deleteById(result.getId());
-        }
-        break;
-      default:
-        break;
+    case MODIFIED, ADDED:
+      var searchCriteria = new ProductSearchCriteria();
+      searchCriteria.setKeyword(parentPath);
+      searchCriteria.setFields(List.of(MARKET_DIRECTORY));
+      result = productRepository.findByCriteria(searchCriteria);
+      if (result != null) {
+        result.setLogoUrl(GitHubUtils.getDownloadUrl(fileContent));
+        productRepository.save(result);
+      }
+      break;
+    case REMOVED:
+      result = productRepository.findByLogoUrl(product.getLogoUrl());
+      if (result != null) {
+        productRepository.deleteById(result.getId());
+      }
+      break;
+    default:
+      break;
     }
   }
 
   private void modifyProductByMetaContent(GitHubFile file, Product product) {
     switch (file.getStatus()) {
-      case MODIFIED, ADDED:
-        productRepository.save(product);
-        break;
-      case REMOVED:
-        productRepository.deleteById(product.getId());
-        break;
-      default:
-        break;
+    case MODIFIED, ADDED:
+      productRepository.save(product);
+      break;
+    case REMOVED:
+      productRepository.deleteById(product.getId());
+      break;
+    default:
+      break;
     }
   }
 

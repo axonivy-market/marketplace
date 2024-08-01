@@ -25,7 +25,7 @@ export class ProductService {
         .set(RequestParam.SORT, `${criteria.sort}`)
         .set(RequestParam.KEYWORD, `${criteria.search}`)
         .set(RequestParam.LANGUAGE, `${criteria.language}`)
-        .set(RequestParam.IS_REST_DESIGNER, `${criteria.isRestDesigner}`);
+        .set(RequestParam.IS_REST_CLIENT_EDITOR, `${criteria.isRESTClientEditor}`);
     }
     return this.httpClient.get<ProductApiResponse>(requestURL, {
       params: requestParams
@@ -66,8 +66,6 @@ export class ProductService {
 
   sendRequestToUpdateInstallationCount(productId: string) {
     const url = 'api/product-details/installationcount/' + productId;
-    return this.httpClient.put<number>(url, null, {
-      headers: { 'X-Requested-By': 'ivy' }
-    });
+    return this.httpClient.put<number>(url, null, { headers: { 'X-Requested-By': 'ivy' } });
   }
 }

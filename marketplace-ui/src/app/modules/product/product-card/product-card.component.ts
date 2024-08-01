@@ -11,21 +11,14 @@ import { ProductComponent } from '../product.component';
 @Component({
   selector: 'app-product-card',
   standalone: true,
-  imports: [
-    CommonModule,
-    ProductLogoPipe,
-    MultilingualismPipe,
-    TranslateModule,
-    NgOptimizedImage
-  ],
+  imports: [CommonModule, ProductLogoPipe, MultilingualismPipe, TranslateModule, NgOptimizedImage],
   templateUrl: './product-card.component.html',
   styleUrl: './product-card.component.scss'
 })
 export class ProductCardComponent {
   themeService = inject(ThemeService);
   languageService = inject(LanguageService);
-
-  isProductInRestClient = inject(ProductComponent).isRestClient();
+  isShowInRESTClientEditor = inject(ProductComponent).isRestClient();
 
   @Input() product!: Product;
 }

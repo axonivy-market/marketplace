@@ -3,5 +3,5 @@ export enum RequestParam {
   KEYWORD = 'keyword',
   SORT = 'sort',
   LANGUAGE = 'language',
-  IS_REST_DESIGNER = 'isRestDesigner'
+  IS_REST_CLIENT_EDITOR = 'isRESTClient'
 }

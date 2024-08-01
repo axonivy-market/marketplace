@@ -3,6 +3,8 @@ package com.axonivy.market.service;
 import static com.axonivy.market.constants.CommonConstants.LOGO_FILE;
 import static com.axonivy.market.constants.CommonConstants.SLASH;
 import static com.axonivy.market.constants.MetaConstants.META_FILE;
+import static com.axonivy.market.enums.DocumentField.SHORT_DESCRIPTIONS;
+
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -31,6 +33,7 @@ import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
+import com.axonivy.market.criteria.ProductSearchCriteria;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -120,6 +123,9 @@ class ProductServiceImplTest extends BaseSetup {
   @Captor
   ArgumentCaptor<ArrayList<Product>> productListArgumentCaptor;
 
+  @Captor
+  ArgumentCaptor<ProductSearchCriteria> productSearchCriteriaArgumentCaptor;
+
   @InjectMocks
   private ProductServiceImpl productService;
 
@@ -183,13 +189,20 @@ class ProductServiceImplTest extends BaseSetup {
 
     // Start testing by Connector
     // Executes
-    result = productService.findProducts(TypeOption.CONNECTORS.getOption(), keyword, language, true, PAGEABLE);
+    result = productService.findProducts(TypeOption.CONNECTORS.getOption(), keyword, language, false, PAGEABLE);
     assertEquals(mockResultReturn, result);
 
     // Start testing by Other
     // Executes
     result = productService.findProducts(TypeOption.DEMOS.getOption(), keyword, language, false, PAGEABLE);
     assertEquals(2, result.getSize());
+  }
+
+  @Test
+  void testFindProductsInRESTClientOfDesigner() {
+    productService.findProducts(TypeOption.CONNECTORS.getOption(), keyword, Language.EN.getValue(), true, PAGEABLE);
+    verify(productRepository).searchByCriteria(productSearchCriteriaArgumentCaptor.capture(), any(Pageable.class));
+    assertEquals(List.of(SHORT_DESCRIPTIONS), productSearchCriteriaArgumentCaptor.getValue().getExcludeFields());
   }
 
   @Test

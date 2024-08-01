@@ -43,7 +43,7 @@ import static com.axonivy.market.constants.RequestParamConstants.KEYWORD;
 import static com.axonivy.market.constants.RequestParamConstants.LANGUAGE;
 import static com.axonivy.market.constants.RequestParamConstants.RESET_SYNC;
 import static com.axonivy.market.constants.RequestParamConstants.TYPE;
-import static com.axonivy.market.constants.RequestParamConstants.IS_REST_DESIGNER;
+import static com.axonivy.market.constants.RequestParamConstants.IS_REST_CLIENT;
 
 @RestController
 @RequestMapping(PRODUCT)
@@ -73,9 +73,9 @@ public class ProductController {
       @RequestParam(name = TYPE) @Parameter(description = "Type of product.", in = ParameterIn.QUERY, schema = @Schema(type = "string", allowableValues = {"all", "connectors", "utilities", "solutions", "demos"})) String type,
       @RequestParam(required = false, name = KEYWORD) @Parameter(description = "Keyword that exist in product's name or short description", example = "connector", in = ParameterIn.QUERY) String keyword,
       @RequestParam(name = LANGUAGE) @Parameter(description = "Language of product short description", in = ParameterIn.QUERY, schema = @Schema(allowableValues = {"en", "de"})) String language,
-      @RequestParam(name = IS_REST_DESIGNER) @Parameter(description = "Option to get REST client environment", in = ParameterIn.QUERY) Boolean isRestDesigner,
+      @RequestParam(name = IS_REST_CLIENT) @Parameter(description = "Option to render the website in the REST Client Editor of Designer", in = ParameterIn.QUERY) Boolean isRESTClient,
       @ParameterObject Pageable pageable) {
-    Page<Product> results = productService.findProducts(type, keyword, language, isRestDesigner, pageable);
+    Page<Product> results = productService.findProducts(type, keyword, language, isRESTClient, pageable);
     if (results.isEmpty()) {
       return generateEmptyPagedModel();
     }

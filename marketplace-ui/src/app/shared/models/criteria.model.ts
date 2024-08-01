@@ -7,6 +7,6 @@ export interface Criteria {
   sort: SortOption | null;
   type: TypeOption | null;
   language: Language;
-  isRestDesigner: boolean;
+  isRESTClientEditor: boolean;
   nextPageHref?: string;
 }
