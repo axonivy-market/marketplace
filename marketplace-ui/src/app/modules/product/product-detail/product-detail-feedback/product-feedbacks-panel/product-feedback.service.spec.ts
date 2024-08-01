@@ -55,7 +55,7 @@ describe('ProductFeedbackService', () => {
 
     const req = httpMock.expectOne('api/feedback');
     expect(req.request.method).toBe('POST');
-    expect(req.request.headers.get('Authorization')).toBe('Bearer mockToken');
+    expect(req.request.headers.get('X-Authorization')).toBe('Bearer mockToken');
     req.flush(feedback);
     expect(productStarRatingService.fetchData).toHaveBeenCalled();
   });
