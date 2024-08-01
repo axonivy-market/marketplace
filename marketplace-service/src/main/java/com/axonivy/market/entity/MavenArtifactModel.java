@@ -1,5 +1,6 @@
 package com.axonivy.market.entity;
 
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -17,7 +18,9 @@ import java.util.Objects;
 public class MavenArtifactModel implements Serializable {
   @Serial
   private static final long serialVersionUID = 1L;
+  @Schema(description = "Display name and type of artifact", example = "Adobe Acrobat Sign Connector (.iar)")
   private String name;
+  @Schema(description = "Artifact download url", example = "https://maven.axonivy.com/com/axonivy/connector/adobe/acrobat/sign/adobe-acrobat-sign-connector/10.0.25/adobe-acrobat-sign-connector-10.0.25.iar")
   private String downloadUrl;
   @Transient
   private Boolean isProductArtifact;

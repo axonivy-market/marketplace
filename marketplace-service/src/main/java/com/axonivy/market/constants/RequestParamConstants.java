@@ -12,6 +12,7 @@ public class RequestParamConstants {
   public static final String LANGUAGE = "language";
   public static final String USER_ID = "userId";
   public static final String AUTHORIZATION = "Authorization";
+  public static final String X_AUTHORIZATION = "X-Authorization";
   public static final String RESET_SYNC = "resetSync";
   public static final String SHOW_DEV_VERSION = "isShowDevVersion";
   public static final String DESIGNER_VERSION = "designerVersion";

@@ -47,7 +47,7 @@ export class ProductFeedbackService {
 
   submitFeedback(feedback: Feedback): Observable<Feedback> {
     const headers = new HttpHeaders().set(
-      'Authorization',
+      'X-Authorization',
       `Bearer ${this.authService.getToken()}`
     );
     return this.http
