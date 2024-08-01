@@ -2,7 +2,7 @@ package com.axonivy.market.controller;
 
 import static com.axonivy.market.constants.RequestMappingConstants.PRODUCT;
 import static com.axonivy.market.constants.RequestMappingConstants.SYNC;
-import static com.axonivy.market.constants.RequestParamConstants.AUTHORIZATION;
+import static com.axonivy.market.constants.RequestParamConstants.X_AUTHORIZATION;
 import static com.axonivy.market.constants.RequestParamConstants.KEYWORD;
 import static com.axonivy.market.constants.RequestParamConstants.LANGUAGE;
 import static com.axonivy.market.constants.RequestParamConstants.RESET_SYNC;
@@ -68,20 +68,11 @@ public class ProductController {
       @Parameter(name = "size", description = "Number of items per page", in = ParameterIn.QUERY, example = "20", required = true),
       @Parameter(name = "sort", description = "Sorting criteria in the format: Sorting criteria(popularity|alphabetically|recent), Sorting order(asc|desc)",
           in = ParameterIn.QUERY, example = "[\"popularity\",\"asc\"]", required = true)})
-  public ResponseEntity<PagedModel<ProductModel>> findProducts(@RequestParam(name = TYPE)
-      @Parameter(description = "Type of product.", in = ParameterIn.QUERY,
-          schema = @Schema(type = "string", allowableValues = {"all", "connectors", "utilities", "solutions", "demos"}))
-      String type,
-      @RequestParam(required = false, name = KEYWORD)
-      @Parameter(description = "Keyword that exist in product's name or short description", example = "connector", in = ParameterIn.QUERY)
-      String keyword,
-      @RequestParam(name = LANGUAGE)
-      @Parameter(description = "Language of product short description", in = ParameterIn.QUERY,
-          schema = @Schema(allowableValues = {"en", "de"}))
-      String language,
-      @ParameterObject
-      Pageable pageable) {
-
+  public ResponseEntity<PagedModel<ProductModel>> findProducts(
+      @RequestParam(name = TYPE) @Parameter(description = "Type of product.", in = ParameterIn.QUERY, schema = @Schema(type = "string", allowableValues = {"all", "connectors", "utilities", "solutions", "demos"})) String type,
+      @RequestParam(required = false, name = KEYWORD) @Parameter(description = "Keyword that exist in product's name or short description", example = "connector", in = ParameterIn.QUERY) String keyword,
+      @RequestParam(name = LANGUAGE) @Parameter(description = "Language of product short description", in = ParameterIn.QUERY, schema = @Schema(allowableValues = {"en", "de"})) String language,
+      @ParameterObject Pageable pageable) {
     Page<Product> results = productService.findProducts(type, keyword, language, pageable);
     if (results.isEmpty()) {
       return generateEmptyPagedModel();
@@ -93,7 +84,8 @@ public class ProductController {
 
   @PutMapping(SYNC)
   @Operation(hidden = true)
-  public ResponseEntity<Message> syncProducts(@RequestHeader(value = AUTHORIZATION) String authorizationHeader,
+  public ResponseEntity<Message> syncProducts(
+      @RequestHeader(value = X_AUTHORIZATION) String authorizationHeader,
       @RequestParam(value = RESET_SYNC, required = false) Boolean resetSync) {
     String token = getBearerToken(authorizationHeader);
     gitHubService.validateUserOrganization(token, GitHubConstants.AXONIVY_MARKET_ORGANIZATION_NAME);
@@ -119,7 +111,7 @@ public class ProductController {
   @PostMapping(CUSTOM_SORT)
   @Operation(hidden = true)
   public ResponseEntity<Message> createCustomSortProducts(
-      @RequestHeader(value = AUTHORIZATION) String authorizationHeader,
+      @RequestHeader(value = X_AUTHORIZATION) String authorizationHeader,
       @RequestBody @Valid ProductCustomSortRequest productCustomSortRequest) {
     String token = getBearerToken(authorizationHeader);
     gitHubService.validateUserOrganization(token, GitHubConstants.AXONIVY_MARKET_ORGANIZATION_NAME);

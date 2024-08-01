@@ -59,8 +59,7 @@ public class FeedbackController {
 
   private final PagedResourcesAssembler<Feedback> pagedResourcesAssembler;
 
-  public FeedbackController(FeedbackService feedbackService, JwtService jwtService,
-      FeedbackModelAssembler feedbackModelAssembler, PagedResourcesAssembler<Feedback> pagedResourcesAssembler) {
+  public FeedbackController(FeedbackService feedbackService, JwtService jwtService, FeedbackModelAssembler feedbackModelAssembler, PagedResourcesAssembler<Feedback> pagedResourcesAssembler) {
     this.feedbackService = feedbackService;
     this.jwtService = jwtService;
     this.feedbackModelAssembler = feedbackModelAssembler;
@@ -71,7 +70,7 @@ public class FeedbackController {
   @Operation(summary = "Find feedbacks by product id with lazy loading", description = "Get all user feedback by product id (from meta.json) with lazy loading", parameters = {
       @Parameter(name = "page", description = "Page number to retrieve", in = ParameterIn.QUERY, example = "0", required = true),
       @Parameter(name = "size", description = "Number of items per page", in = ParameterIn.QUERY, example = "20", required = true),
-      @Parameter(name = "sort", description = "Sorting criteria in the format: Sorting criteria(popularity|alphabetically|recent), Sorting order(asc|desc)", in = ParameterIn.QUERY, example = "[\"popularity\",\"asc\"]", required = true) })
+      @Parameter(name = "sort", description = "Sorting criteria in the format: Sorting criteria(popularity|alphabetically|recent), Sorting order(asc|desc)", in = ParameterIn.QUERY, example = "[\"popularity\",\"asc\"]", required = true)})
   public ResponseEntity<PagedModel<FeedbackModel>> findFeedbacks(
       @PathVariable(ID) @Parameter(description = "Product id (from meta.json)", example = "portal", in = ParameterIn.PATH) String productId,
       @ParameterObject Pageable pageable) {
@@ -105,10 +104,11 @@ public class FeedbackController {
   @Operation(summary = "Create user feedback", description = "Save user feedback of product with their token from Github account.")
   @io.swagger.v3.oas.annotations.parameters.RequestBody(description = "Example request body for feedback", content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE, schema = @Schema(implementation = FeedbackModelRequest.class)))
   @ApiResponses(value = {
-          @ApiResponse(responseCode = "201", description = "Successfully created user feedback"),
-      @ApiResponse(responseCode = "401", description = "Unauthorized request") })
-  public ResponseEntity<Void> createFeedback(@RequestBody @Valid FeedbackModelRequest feedbackRequest,
-                                             @RequestHeader(value = X_AUTHORIZATION) @Parameter(description = "JWT Bearer token", example = "Bearer 123456", in = ParameterIn.HEADER) String bearerToken) {
+      @ApiResponse(responseCode = "201", description = "Successfully created user feedback"),
+      @ApiResponse(responseCode = "401", description = "Unauthorized request")})
+  public ResponseEntity<Void> createFeedback(
+      @RequestBody @Valid FeedbackModelRequest feedbackRequest,
+      @RequestHeader(value = X_AUTHORIZATION) @Parameter(description = "JWT Bearer token", example = "Bearer 123456", in = ParameterIn.HEADER) String bearerToken) {
     String token = null;
     if (bearerToken != null && bearerToken.startsWith(CommonConstants.BEARER)) {
       token = bearerToken.substring(CommonConstants.BEARER.length()).trim(); // Remove "Bearer " prefix
