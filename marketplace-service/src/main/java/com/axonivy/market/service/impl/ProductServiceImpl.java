@@ -114,6 +114,8 @@ public class ProductServiceImpl implements ProductService {
     searchCriteria.setListed(true);
     searchCriteria.setKeyword(keyword);
     if (BooleanUtils.isTrue(isRESTClient)) {
+      searchCriteria.setType(TypeOption.CONNECTORS);
+      searchCriteria.setLanguage(Language.EN);
       searchCriteria.setExcludeFields(List.of(SHORT_DESCRIPTIONS));
     } else {
       searchCriteria.setType(typeOption);

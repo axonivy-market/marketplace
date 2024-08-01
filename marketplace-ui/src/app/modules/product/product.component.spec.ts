@@ -191,7 +191,7 @@ describe('ProductComponent', () => {
 
   it('should not display marketplace introduction in designer', () => {
     component.route.queryParams = of({
-      [DESIGNER_COOKIE_VARIABLE.restClientParamName]: 'resultsoOnly',
+      [DESIGNER_COOKIE_VARIABLE.restClientParamName]: 'resultsOnly',
       [DESIGNER_COOKIE_VARIABLE.searchParamName]: 'search'
     });
 

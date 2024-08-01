@@ -137,8 +137,6 @@ export class ProductComponent implements AfterViewInit, OnDestroy {
     this.criteria.language = this.languageService.selectedLanguage();
     if (this.isRestClient()) {
       this.criteria.isRESTClientEditor = true;
-      this.criteria.language = Language.EN;
-      this.criteria.type = TypeOption.CONNECTORS;
     }
 
     this.subscriptions.push(

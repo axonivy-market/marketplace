@@ -17,10 +17,12 @@ import com.axonivy.market.service.ProductService;
 import io.swagger.v3.oas.annotations.Operation;
 import jakarta.validation.Valid;
 
+import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.time.StopWatch;
 import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PagedResourcesAssembler;
 import org.springframework.hateoas.PagedModel;
@@ -50,6 +52,7 @@ import static com.axonivy.market.constants.RequestParamConstants.IS_REST_CLIENT;
 @Tag(name = "Product Controller", description = "API collection to get and search products")
 public class ProductController {
 
+  public static final int PAGE_SIZE_FOR_REST_CLIENT = 40;
   private final ProductService productService;
   private final GitHubService gitHubService;
   private final ProductModelAssembler assembler;
@@ -75,6 +78,9 @@ public class ProductController {
       @RequestParam(name = LANGUAGE) @Parameter(description = "Language of product short description", in = ParameterIn.QUERY, schema = @Schema(allowableValues = {"en", "de"})) String language,
       @RequestParam(name = IS_REST_CLIENT) @Parameter(description = "Option to render the website in the REST Client Editor of Designer", in = ParameterIn.QUERY) Boolean isRESTClient,
       @ParameterObject Pageable pageable) {
+    if (BooleanUtils.isTrue(isRESTClient)) {
+      pageable = PageRequest.ofSize(PAGE_SIZE_FOR_REST_CLIENT);
+    }
     Page<Product> results = productService.findProducts(type, keyword, language, isRESTClient, pageable);
     if (results.isEmpty()) {
       return generateEmptyPagedModel();
