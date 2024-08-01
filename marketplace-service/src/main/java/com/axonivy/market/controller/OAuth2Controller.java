@@ -2,7 +2,6 @@ package com.axonivy.market.controller;
 
 import static com.axonivy.market.constants.RequestMappingConstants.AUTH;
 import static com.axonivy.market.constants.RequestMappingConstants.GIT_HUB_LOGIN;
-import static org.apache.commons.lang3.StringUtils.EMPTY;
 
 import java.util.Collections;
 import java.util.Map;
