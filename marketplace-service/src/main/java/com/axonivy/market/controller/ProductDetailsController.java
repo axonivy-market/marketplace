@@ -62,7 +62,7 @@ public class ProductDetailsController {
   @GetMapping(BY_ID)
   public ResponseEntity<ProductDetailModel> findProductDetails(@PathVariable(ID) String id) {
     var productDetail = productService.fetchProductDetail(id);
-    return new ResponseEntity<>(detailModelAssembler.toModel(productDetail, null), HttpStatus.OK);
+    return new ResponseEntity<>(detailModelAssembler.toModel(productDetail), HttpStatus.OK);
   }
 
   @GetMapping(VERSIONS_BY_ID)

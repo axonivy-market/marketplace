@@ -4,6 +4,9 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 
 import java.util.Arrays;
+import java.util.Map;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 import static com.axonivy.market.constants.GitHubConstants.COMMON_IMAGES_FOLDER_NAME;
 
@@ -38,8 +41,13 @@ public enum NonStandardProduct {
   private final String pathToImageFolder;
   private final String pathToProductFolder;
 
-  public static NonStandardProduct findById(String id) {
+  private static final Map<String, NonStandardProduct> NON_STANDARD_PRODUCT_MAP;
 
-    return Arrays.stream(NonStandardProduct.values()).filter(product -> id.equalsIgnoreCase(product.getId())).findAny().orElse(DEFAULT);
+  static {
+    NON_STANDARD_PRODUCT_MAP = Arrays.stream(NonStandardProduct.values()).collect(Collectors.toMap(NonStandardProduct::getId, Function.identity()));
+  }
+
+  public static NonStandardProduct findById(String id) {
+    return NON_STANDARD_PRODUCT_MAP.getOrDefault(id,DEFAULT);
   }
 }

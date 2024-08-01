@@ -155,7 +155,7 @@ export class ProductComponent implements AfterViewInit, OnDestroy {
   }
 
   setupIntersectionObserver() {
-    const options = { root: null, rootMargin: '0px', threshold: 0.1 };
+    const options = { root: null, rootMargin: '10px', threshold: 0.1 };
     const observer = new IntersectionObserver(entries => {
       entries.forEach(entry => {
         if (entry.isIntersecting && this.hasMore()) {
