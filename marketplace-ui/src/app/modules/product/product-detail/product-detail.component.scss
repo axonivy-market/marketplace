@@ -53,6 +53,16 @@
     font-size: 20px;
   }
 
+  p,
+  ul, li {
+    font-size: 18px;
+    font-weight: 400;
+  }
+
+  ul, li {
+    margin: 25.2px 0;
+  }
+
   a {
     word-break: break-all;
   }
