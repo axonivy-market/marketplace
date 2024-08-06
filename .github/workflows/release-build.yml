@@ -27,6 +27,15 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
+      - name: Update version
+        if: ${{ inputs.release_version != '' }}
+        env:
+          POM_FILE: './marketplace-service/pom.xml'
+          PACKAGE_FILE: './marketplace-ui/package.json'
+        run: |
+          xml ed -L -u "//_:project/_:version" -v "${{ inputs.release_version }}" $POM_FILE
+          sed -i 's/"version": "[^"]*"/"version": "${{ inputs.release_version }}"/' $PACKAGE_FILE
+
       - name: Create release tag
         continue-on-error: true
         env:
