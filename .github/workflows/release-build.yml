@@ -37,6 +37,8 @@ jobs:
         run: |
           xml ed -L -u "//_:project/_:version" -v "${{ inputs.release_version }}" $POM_FILE
           sed -i 's/"version": "[^"]*"/"version": "${{ inputs.release_version }}"/' $PACKAGE_FILE
+          git push --delete origin ${{ inputs.release_version }} || true
+          git tag -d ${{ inputs.release_version }} || true
           git commit -a -m "Update version to ${{ inputs.release_version }}"
           git tag ${{ inputs.release_version }}
           git push origin ${{ inputs.release_version }}
