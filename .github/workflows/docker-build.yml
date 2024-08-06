@@ -82,7 +82,7 @@ jobs:
         env:
           POM_FILE: './marketplace-service/pom.xml'
         run: |
-          if [ -n "${{ inputs.release_version }}" ];
+          if [ -n "${{ inputs.release_version }}" ]; then
             BUILD_VERSION=${{ inputs.release_version }}
           else
             BUILD_VERSION=$(xml sel -t -v "//_:project/_:version" $POM_FILE)
