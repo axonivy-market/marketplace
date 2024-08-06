@@ -5,8 +5,8 @@ on:
     branches: [ "master" ]
   workflow_dispatch:
     inputs:
-      image_version:
-        description: 'Marketplace Docker image version'
+      release_version:
+        description: 'Release version'
         required: true
         default: 'latest'
       build_env:
@@ -24,6 +24,7 @@ jobs:
     name: Build Docker images
     uses: ./.github/workflows/docker-build.yml
     with:
+      release_version: ${{ inputs.release_version }}
       build_env: ${{ inputs.build_env }}
 
   release:
@@ -35,6 +36,17 @@ jobs:
       contents: read
 
     steps:
+      - name: Create release tag
+        continue-on-error: true
+        run: |
+          git config user.name "$(git log -n 1 --pretty=format:%an)"
+          git config user.email "$(git log -n 1 --pretty=format:%ae)"
+          git push --delete origin ${{ inputs.release_version }} || true
+          git tag -d ${{ inputs.release_version }} || true
+          git commit -a -m "update projects version"
+          git tag -a ${{ inputs.release_version }} -m "Released ${{ inputs.release_version }} by ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+          git push origin ${{ inputs.release_version }}
+
       - name: Wait for containers to be up and running
         working-directory: ./marketplace-build
         run: |
@@ -58,7 +70,7 @@ jobs:
       - name: Refine release version
         run: |
           # This strips the git ref prefix from the version.
-          VERSION=${{ github.event.inputs.image_version }}
+          VERSION=${{ github.event.inputs.release_version }}
           # This uses the Docker `latest` tag convention.
           [ "$VERSION" == "main" ] && VERSION=latest
           echo "VERSION=$VERSION" >> $GITHUB_ENV
