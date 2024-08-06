@@ -1,0 +1,101 @@
+<h3 class="info-title text-primary mb-3">
+  {{ 'common.product.detail.information.label' | translate }}
+</h3>
+<div class="info-container d-flex flex-column p-0 w-100">
+  <div class="d-flex flex-row justify-content-between p-0">
+    <span class="text-secondary">
+      {{ 'common.product.detail.information.value.author' | translate }}
+    </span>
+    <span class="text-primary">{{ productDetail.vendor }}</span>
+  </div>
+  <hr class="border-top-0" />
+  <div class="d-flex flex-row justify-content-between p-0">
+    <span class="text-secondary">
+      {{ 'common.product.detail.information.value.version' | translate }}
+    </span>
+    <span class="text-primary">
+      {{ selectedVersion.replaceAll('Version ', '') }}
+    </span>
+  </div>
+  <hr class="border-top-0" />
+  <div class="d-flex flex-row justify-content-between p-0">
+    <span class="text-secondary">
+      {{ 'common.product.detail.information.value.compatibility' | translate }}
+    </span>
+    <span class="text-primary">
+      {{ productDetail.compatibility }}
+    </span>
+  </div>
+  <hr class="border-top-0" />
+  <div class="d-flex flex-row justify-content-between p-0">
+    <span class="text-secondary">
+      {{ 'common.product.detail.information.value.cost' | translate }}
+    </span>
+    <span class="text-primary">{{ productDetail.cost }}</span>
+  </div>
+  <hr class="border-top-0" />
+  <div class="d-flex flex-row justify-content-between p-0">
+    <span class="text-secondary">
+      {{ 'common.product.detail.information.value.language' | translate }}
+    </span>
+    <span class="text-primary">{{ productDetail.language }}</span>
+  </div>
+  <hr class="border-top-0" />
+  <div class="d-flex flex-row justify-content-between p-0">
+    <span class="text-secondary">
+      {{ 'common.product.detail.type' | translate }}
+    </span>
+    <span class="text-primary text-capitalize">{{ productDetail.type }}</span>
+  </div>
+  <hr class="border-top-0" />
+  <div class="d-flex flex-row justify-content-between p-0">
+    <span class="text-secondary">
+      {{ 'common.product.detail.information.value.industry' | translate }}
+    </span>
+    <span class="text-primary">{{ productDetail.industry }}</span>
+  </div>
+  <hr class="border-top-0" />
+  <div class="d-flex flex-row justify-content-between p-0">
+    <span class="text-secondary">
+      {{ 'common.product.detail.information.value.tag' | translate }}
+    </span>
+    <span class="text-primary text-capitalize">
+      {{ productDetail.tags ? productDetail.tags!.join(', ') : '' }}
+    </span>
+  </div>
+  <hr class="border-top-0" />
+  <div class="d-flex flex-row justify-content-between p-0">
+    <span class="text-secondary">
+      {{ 'common.product.detail.information.value.source' | translate }}
+    </span>
+    <span>
+      <a class="text-primary" href="{{ productDetail.sourceUrl }}">
+        github.com
+      </a>
+    </span>
+  </div>
+  <hr class="border-top-0" />
+  <div class="d-flex flex-row justify-content-between p-0">
+    <span class="text-secondary">
+      {{ 'common.product.detail.information.value.status' | translate }}
+    </span>
+    <img class="status__image" src="{{ productDetail.statusBadgeUrl }}" [alt]="productDetail.statusBadgeUrl" />
+  </div>
+  <hr class="border-top-0" />
+  <div class="d-flex flex-row justify-content-between p-0">
+    <span class="text-secondary">
+      {{
+        'common.product.detail.information.value.moreInformation' | translate
+      }}
+    </span>
+    <span>
+      <a
+        class="text-primary mx-auto"
+        href="https://www.axonivy.com/marketplace/contact/?market_solutions= + {{
+          productDetail.id
+        }}">
+        {{ 'common.product.detail.information.value.contactUs' | translate }}
+      </a>
+    </span>
+  </div>
+</div>

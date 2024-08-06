@@ -1,0 +1,25 @@
+@if(!routingQueryParamService.isDesignerEnv()){
+<header class="d-flex align-items-center">
+  <div class="container">
+    <app-header></app-header>
+  </div>
+</header>
+}
+<main>
+  <div class="container">
+    <router-outlet />
+  </div>
+</main>
+@if(!routingQueryParamService.isDesignerEnv()){
+<footer>
+  <div class="container">
+    <app-footer></app-footer>
+  </div>
+</footer>
+}
+
+@if (loadingService.isLoading()) {
+<div class="spinner-container">
+  <div class="spinner-border"></div>
+</div>
+}

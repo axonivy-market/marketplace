@@ -1,0 +1,105 @@
+name: Release Build
+
+on:
+  push:
+    branches: [ "master" ]
+  workflow_dispatch:
+    inputs:
+      release_version:
+        description: 'Release version'
+        required: true
+        default: 'latest'
+      build_env:
+        description: 'Build environment'
+        required: true
+        default: 'production'
+
+env:
+  UI_IMAGE_NAME: marketplace-ui
+  SERVICE_IMAGE_NAME: marketplace-service
+
+jobs:
+  tagging_source:
+    name: Create new GH Tag for release
+    runs-on: self-hosted
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Update version
+        if: ${{ inputs.release_version != '' }}
+        env:
+          POM_FILE: './marketplace-service/pom.xml'
+          PACKAGE_FILE: './marketplace-ui/package.json'
+        run: |
+          xml ed -L -u "//_:project/_:version" -v "${{ inputs.release_version }}" $POM_FILE
+          sed -i 's/"version": "[^"]*"/"version": "${{ inputs.release_version }}"/' $PACKAGE_FILE
+
+      - name: Create release tag
+        continue-on-error: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          git fetch --tags
+          git push origin :refs/tags/${{ inputs.release_version }}
+          git tag -d ${{ inputs.release_version }}
+          git tag -a ${{ inputs.release_version }} -m "Released ${{ inputs.release_version }} by ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+          git push origin ${{ inputs.release_version }}
+
+  build:
+    name: Build Docker images
+    needs: tagging_source
+    uses: ./.github/workflows/docker-build.yml
+    with:
+      release_version: ${{ inputs.release_version }}
+      build_env: ${{ inputs.build_env }}
+
+  release:
+    name: Tag and publish image to GH packages
+    needs: build
+    runs-on: self-hosted
+    permissions:
+      packages: write
+      contents: read
+
+    steps:
+      - name: Wait for containers to be up and running
+        working-directory: ./marketplace-build
+        run: |
+          # Wait for up to 300 seconds for the containers to be up
+          timeout=300
+          start_time=$(date +%s)
+          while [ $(($(date +%s) - start_time)) -lt $timeout ]; do
+            if docker compose ps | grep -q "Up"; then
+              echo "Containers are up and running."
+              exit 0
+            fi
+            echo "Waiting for containers to start..."
+            sleep 5
+          done
+          echo "Containers did not start within the timeout period."
+          exit 1
+
+      - name: Log in to registry
+        run: echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
+
+      - name: Refine release version
+        run: |
+          # This strips the git ref prefix from the version.
+          VERSION=${{ github.event.inputs.release_version }}
+          # This uses the Docker `latest` tag convention.
+          [ "$VERSION" == "main" ] && VERSION=latest
+          echo "VERSION=$VERSION" >> $GITHUB_ENV
+
+      - name: Release Marketplace UI image
+        run: |
+          UI_IMAGE_ID=ghcr.io/${{ github.repository_owner }}/$UI_IMAGE_NAME
+          docker tag $UI_IMAGE_NAME $UI_IMAGE_ID:$VERSION
+          docker push $UI_IMAGE_ID:$VERSION
+
+      - name: Release Marketplace Service image
+        run: |
+          SERVICE_IMAGE_ID=ghcr.io/${{ github.repository_owner }}/$SERVICE_IMAGE_NAME
+          docker tag $SERVICE_IMAGE_NAME $SERVICE_IMAGE_ID:$VERSION
+          docker push $SERVICE_IMAGE_ID:$VERSION

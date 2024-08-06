@@ -1,0 +1,161 @@
+::ng-deep .custom-tooltip {
+  --bs-tooltip-bg: var(--bs-body-bg);
+  --bs-tooltip-color: black;
+  --bs-tooltip-font-size: 12px;
+  --bs-tooltip-opacity: inherit !important;
+  background-color: var(--bs-body-bg);
+  min-width: 371px;
+  padding: 10px;
+  gap: 0px;
+  border-radius: 5px;
+  justify-content: space-between;
+  box-shadow: 0px 4px 30px 0px #0000001a;
+  border: 0.5px solid var(--ivy-secondary-border-color);
+  top: 0.8rem !important;
+
+  .tooltip-arrow {
+    top: -0.8rem !important;
+    width: 0;
+    height: 0;
+    border-left: 13px solid transparent;
+    border-right: 13px solid transparent;
+    border-bottom: 13px solid var(--ivy-secondary-border-color);
+    &::before {
+      width: 0;
+      height: 0;
+      border-left: 12px solid transparent !important;
+      border-right: 12px solid transparent !important;
+      border-bottom: 12px solid var(--bs-body-bg) !important;
+      top: 0.15rem !important;
+      left: -0.75rem;
+    }
+  }
+
+  .tooltip-inner {
+    padding: 0px;
+    min-width: 351px;
+    height: 30px;
+    gap: 0px;
+    font-weight: 400;
+    line-height: 15px;
+    letter-spacing: 0.01em;
+    text-align: left;
+    p {
+      font-size: 12px;
+    }
+    .ivy__link {
+      color: var(--ivy-link-corlor);
+    }
+  }
+}
+
+.fs-md {
+  font-size: 12px;
+}
+
+.fs-small {
+  font-size: 10px;
+}
+
+.form-label {
+  font-weight: 400;
+  line-height: 14.52px;
+  text-align: left;
+}
+.border__dropdown {
+  border: 0.5px solid var(--ivy-secondary-border-color);
+}
+.btn {
+  padding: 12px 32px;
+  gap: 10px;
+  font-weight: 500;
+  size: 16px;
+  line-height: 120%;
+  border-radius: 10px;
+  border: none;
+}
+.btn__install {
+  margin-right: 10px;
+  border: 0px;
+}
+.btn__download {
+  border: 0.5px solid #ebebeb;
+}
+.primary-color {
+  color: var(--ivy-primary-bg);
+}
+
+.dropdown-menu {
+  padding: 10px;
+  border-radius: 5px;
+  gap: 15px;
+  box-shadow: 0px 4px 30px 0px rgba(0, 0, 0, 0.1);
+  margin-top: 1.2rem;
+  &.maven-artifact-version__action {
+    min-width: 400px;
+    min-height: 204px;
+
+    @media (max-width: 500px) {
+      left: auto;
+      right: auto;
+      min-width: 80vw;
+    }
+    .form-group {
+      gap: 7px;
+      .form-select {
+        height: 32px;
+        padding: 9px 10px;
+        gap: 10px;
+        border-radius: 5px;
+        line-height: 12px;
+        text-align: start !important;
+        background-color: var(--ivy-text-normal-color);
+        option {
+          height: 44px;
+          padding: 15px;
+          gap: 10px;
+          font-size: 14px;
+          font-weight: 400;
+          line-height: 16.8px;
+        }
+      }
+
+      .artifacts-selector__dropdown {
+        --bs-form-select-bg-img: none !important;
+      }
+
+      .indicator-arrow__up {
+        --bs-form-select-bg-img: var(--ivy-custom-select-indicator);
+      }
+    }
+  }
+
+  .dev-versions__toggle {
+    font-size: 10px;
+  }
+
+  .form-download__btn {
+    padding: 5px 16px;
+    gap: 6px;
+    border-radius: 5px;
+    font-size: 14px;
+    font-weight: 400;
+    line-height: 16.8px;
+  }
+}
+.up-arrow {
+  margin-left: 55%;
+  z-index: 1001;
+  margin-top: -3.1rem;
+  @media (max-width: 767px) {
+    margin-left: 80%;
+  }
+  transform: rotate(45deg);
+  top: 2.45rem;
+  width: 20px;
+  height: 20px;
+  margin-bottom: -0.75rem;
+  border-right-color: transparent;
+  border-bottom-color: transparent;
+  background-color: var(--bs-body-bg);
+}
