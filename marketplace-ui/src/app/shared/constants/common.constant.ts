@@ -4,6 +4,7 @@ import { Language } from '../enums/language.enum';
 import { SortOption } from '../enums/sort-option.enum';
 import { NavItem } from '../models/nav-item.model';
 import { DetailTab } from '../../modules/product/product-detail/product-detail.component';
+import { Pageable } from '../models/apis/pageable.model';
 
 export const NAV_ITEMS: NavItem[] = [
   {
@@ -171,4 +172,13 @@ export const DESIGNER_COOKIE_VARIABLE = {
   defaultDesignerViewer: 'designer-market',
   restClientParamName: 'resultsOnly',
   searchParamName: 'search'
+};
+
+export const DEFAULT_PAGEABLE: Pageable = {
+  page: 0,
+  size: 20
+};
+export const DEFAULT_PAGEABLE_IN_REST_CLIENT: Pageable = {
+  page: 0,
+  size: 40
 };

@@ -18,7 +18,7 @@ import { ProductComponent } from '../product.component';
 export class ProductCardComponent {
   themeService = inject(ThemeService);
   languageService = inject(LanguageService);
-  isShowInRESTClientEditor = inject(ProductComponent).isRestClient();
+  isShowInRESTClientEditor = inject(ProductComponent).isRESTClient();
 
   @Input() product!: Product;
 }

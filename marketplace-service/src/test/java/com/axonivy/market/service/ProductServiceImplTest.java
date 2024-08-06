@@ -202,8 +202,6 @@ class ProductServiceImplTest extends BaseSetup {
   void testFindProductsInRESTClientOfDesigner() {
     productService.findProducts(TypeOption.CONNECTORS.getOption(), keyword, Language.EN.getValue(), true, PAGEABLE);
     verify(productRepository).searchByCriteria(productSearchCriteriaArgumentCaptor.capture(), any(Pageable.class));
-    assertEquals(TypeOption.CONNECTORS, productSearchCriteriaArgumentCaptor.getValue().getType());
-    assertEquals(Language.EN, productSearchCriteriaArgumentCaptor.getValue().getLanguage());
     assertEquals(List.of(SHORT_DESCRIPTIONS), productSearchCriteriaArgumentCaptor.getValue().getExcludeFields());
   }
 

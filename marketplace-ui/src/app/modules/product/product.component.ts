@@ -28,7 +28,11 @@ import { Language } from '../../shared/enums/language.enum';
 import { ProductDetail } from '../../shared/models/product-detail.model';
 import { LanguageService } from '../../core/services/language/language.service';
 import { RoutingQueryParamService } from '../../shared/services/routing.query.param.service';
-import { DESIGNER_COOKIE_VARIABLE } from '../../shared/constants/common.constant';
+import {
+  DEFAULT_PAGEABLE,
+  DEFAULT_PAGEABLE_IN_REST_CLIENT,
+  DESIGNER_COOKIE_VARIABLE
+} from '../../shared/constants/common.constant';
 
 const SEARCH_DEBOUNCE_TIME = 500;
 
@@ -56,11 +60,12 @@ export class ProductComponent implements AfterViewInit, OnDestroy {
     type: TypeOption.All_TYPES,
     isRESTClientEditor: false,
     sort: SortOption.STANDARD,
-    language: Language.EN
+    language: Language.EN,
+    pageable: DEFAULT_PAGEABLE
   };
   responseLink!: Link;
   responsePage!: Page;
-  isRestClient: WritableSignal<boolean> = signal(false);
+  isRESTClient: WritableSignal<boolean> = signal(false);
   isDesignerEnvironment = inject(RoutingQueryParamService).isDesignerEnv();
 
   productService = inject(ProductService);
@@ -73,7 +78,7 @@ export class ProductComponent implements AfterViewInit, OnDestroy {
 
   constructor() {
     this.route.queryParams.subscribe(params => {
-      this.isRestClient.set(
+      this.isRESTClient.set(
         DESIGNER_COOKIE_VARIABLE.restClientParamName in params &&
           this.isDesignerEnvironment
       );
@@ -135,8 +140,14 @@ export class ProductComponent implements AfterViewInit, OnDestroy {
 
   loadProductItems(shouldCleanData = false) {
     this.criteria.language = this.languageService.selectedLanguage();
-    if (this.isRestClient()) {
-      this.criteria.isRESTClientEditor = true;
+    if (this.isRESTClient()) {
+      this.criteria = {
+        ...this.criteria,
+        isRESTClientEditor: true,
+        type: TypeOption.CONNECTORS,
+        language: Language.EN,
+        pageable: DEFAULT_PAGEABLE_IN_REST_CLIENT
+      };
     }
 
     this.subscriptions.push(

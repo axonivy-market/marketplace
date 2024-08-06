@@ -25,6 +25,8 @@ describe('ProductComponent', () => {
   let component: ProductComponent;
   let fixture: ComponentFixture<ProductComponent>;
   let mockIntersectionObserver: any;
+  let activatedRoute: ActivatedRoute;
+  let routingQueryParamService: jasmine.SpyObj<RoutingQueryParamService>;
 
   beforeAll(() => {
     mockIntersectionObserver = jasmine.createSpyObj('IntersectionObserver', [
@@ -91,6 +93,10 @@ describe('ProductComponent', () => {
     fixture = TestBed.createComponent(ProductComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
+    activatedRoute = TestBed.inject(ActivatedRoute);
+    routingQueryParamService = TestBed.inject(
+      RoutingQueryParamService
+    ) as jasmine.SpyObj<RoutingQueryParamService>;
   });
 
   it('should create', () => {
@@ -187,6 +193,19 @@ describe('ProductComponent', () => {
     component.viewProductDetail(productId, '');
 
     expect(router.navigate).toHaveBeenCalledWith(['', productId]);
+  });
+
+  it('should set isRESTClient based on query params and environment', () => {
+component.isDesignerEnvironment = true;
+  routingQueryParamService.isDesignerEnv.and.returnValue(true);
+  const params = { [DESIGNER_COOKIE_VARIABLE.restClientParamName]: 'resultsOnly' };
+  (activatedRoute.queryParams as any) = of(params);
+
+  fixture.detectChanges();
+
+  component.route.queryParams.subscribe(() => {
+    expect(component.isRESTClient()).toBeTrue();
+  });
   });
 
   it('should not display marketplace introduction in designer', () => {

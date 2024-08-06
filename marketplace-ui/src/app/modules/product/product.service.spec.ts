@@ -13,6 +13,7 @@ import {
 import { Criteria } from '../../shared/models/criteria.model';
 import { VersionData } from '../../shared/models/vesion-artifact.model';
 import { ProductService } from './product.service';
+import { DEFAULT_PAGEABLE, DEFAULT_PAGEABLE_IN_REST_CLIENT } from '../../shared/constants/common.constant';
 
 describe('ProductService', () => {
   let products = MOCK_PRODUCTS._embedded.products;
@@ -50,6 +51,7 @@ describe('ProductService', () => {
       sort: SortOption.ALPHABETICALLY,
       type: TypeOption.CONNECTORS,
       language: Language.EN,
+      pageable: DEFAULT_PAGEABLE,
       isRESTClientEditor: false
     };
     service.findProductsByCriteria(criteria).subscribe(response => {
@@ -72,6 +74,7 @@ describe('ProductService', () => {
       sort: null,
       type: null,
       language: Language.EN,
+      pageable: DEFAULT_PAGEABLE,
       isRESTClientEditor: false
     };
     service.findProductsByCriteria(criteria).subscribe(response => {
@@ -85,6 +88,7 @@ describe('ProductService', () => {
       sort: SortOption.POPULARITY,
       type: null,
       language: Language.EN,
+      pageable: DEFAULT_PAGEABLE,
       isRESTClientEditor: false
     };
     service.findProductsByCriteria(criteria).subscribe(response => {
@@ -109,6 +113,7 @@ describe('ProductService', () => {
       sort: SortOption.RECENT,
       type: null,
       language: Language.EN,
+      pageable: DEFAULT_PAGEABLE,
       isRESTClientEditor: false
     };
     service.findProductsByCriteria(criteria).subscribe(response => {
@@ -119,16 +124,43 @@ describe('ProductService', () => {
   it('findProductsByCriteria by next page url', () => {
     const criteria: Criteria = {
       nextPageHref:
-        'http://localhost:8080/marketplace-service/api/product?type=all&page=1&size=20',
+        'http://localhost:8080/marketplace-service/api/product?type=all&isRESTClient=false&page=1&size=20',
       search: '',
       sort: SortOption.RECENT,
       type: TypeOption.All_TYPES,
       language: Language.EN,
+      pageable: DEFAULT_PAGEABLE,
       isRESTClientEditor: false
     };
     service.findProductsByCriteria(criteria).subscribe(response => {
       expect(response._embedded.products.length).toEqual(0);
       expect(response.page.number).toEqual(1);
+    });
+  });
+
+  it('findProductsByCriteria should return products with type connectors', () => {
+    const searchString = 'Amazon Comprehend';
+    const criteria: Criteria = {
+      search: '',
+      sort: SortOption.ALPHABETICALLY,
+      type: null,
+      language: Language.EN,
+      pageable: DEFAULT_PAGEABLE,
+      isRESTClientEditor: true
+    };
+
+    service.findProductsByCriteria(criteria).subscribe(response => {
+      expect(criteria.pageable).toEqual(DEFAULT_PAGEABLE_IN_REST_CLIENT);
+      let products = response._embedded.products;
+      for (let i = 0; i < products.length; i++) {
+        expect(products[i].type).toEqual(TypeOption.CONNECTORS);
+        expect(products[i].names['en'].toLowerCase()).toContain(searchString);
+        if (products[i + 1]) {
+          expect(
+            products[i + 1].names['en'].localeCompare(products[i].names['en'])
+          ).toEqual(1);
+        }
+      }
     });
   });
 

@@ -25,6 +25,8 @@ export class ProductService {
         .set(RequestParam.SORT, `${criteria.sort}`)
         .set(RequestParam.KEYWORD, `${criteria.search}`)
         .set(RequestParam.LANGUAGE, `${criteria.language}`)
+        .set(RequestParam.PAGE, `${criteria.pageable.page}`)
+        .set(RequestParam.SIZE, `${criteria.pageable.size}`)
         .set(RequestParam.IS_REST_CLIENT_EDITOR, `${criteria.isRESTClientEditor}`);
     }
     return this.httpClient.get<ProductApiResponse>(requestURL, {

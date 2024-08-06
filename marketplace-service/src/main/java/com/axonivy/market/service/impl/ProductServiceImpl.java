@@ -113,13 +113,10 @@ public class ProductServiceImpl implements ProductService {
     var searchCriteria = new ProductSearchCriteria();
     searchCriteria.setListed(true);
     searchCriteria.setKeyword(keyword);
+    searchCriteria.setType(typeOption);
+    searchCriteria.setLanguage(Language.of(language));
     if (BooleanUtils.isTrue(isRESTClient)) {
-      searchCriteria.setType(TypeOption.CONNECTORS);
-      searchCriteria.setLanguage(Language.EN);
       searchCriteria.setExcludeFields(List.of(SHORT_DESCRIPTIONS));
-    } else {
-      searchCriteria.setType(typeOption);
-      searchCriteria.setLanguage(Language.of(language));
     }
     return productRepository.searchByCriteria(searchCriteria, searchPageable);
   }
