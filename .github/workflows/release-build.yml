@@ -27,24 +27,18 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Update version
+      - name: Update version and tagging source
         if: ${{ inputs.release_version != '' }}
+        continue-on-error: true
         env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           POM_FILE: './marketplace-service/pom.xml'
           PACKAGE_FILE: './marketplace-ui/package.json'
         run: |
           xml ed -L -u "//_:project/_:version" -v "${{ inputs.release_version }}" $POM_FILE
           sed -i 's/"version": "[^"]*"/"version": "${{ inputs.release_version }}"/' $PACKAGE_FILE
-
-      - name: Create release tag
-        continue-on-error: true
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          git fetch --tags
-          git push origin :refs/tags/${{ inputs.release_version }}
-          git tag -d ${{ inputs.release_version }}
-          git tag -a ${{ inputs.release_version }} -m "Released ${{ inputs.release_version }} by ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+          git commit -a -m "Update version to ${{ inputs.release_version }}"
+          git tag ${{ inputs.release_version }}
           git push origin ${{ inputs.release_version }}
 
   build:
