@@ -11,7 +11,7 @@
   </parent>
   <groupId>com.axonivy.market</groupId>
   <artifactId>marketplace-service</artifactId>
-  <version>1.0.3-m20</version>
+  <version>1.0.0-SNAPSHOT</version>
   <packaging>war</packaging>
   <name>marketplace-service</name>
   <description>marketplace-service</description>
