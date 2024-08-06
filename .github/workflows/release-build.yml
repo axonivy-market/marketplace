@@ -1,4 +1,4 @@
-name: Docker Release
+name: Release Build
 
 on:
   push:
@@ -19,9 +19,28 @@ env:
   SERVICE_IMAGE_NAME: marketplace-service
 
 jobs:
+  tagging_source:
+    name: Create new GH Tag for release
+    runs-on: self-hosted
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Create release tag
+        continue-on-error: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          git fetch --tags
+          git push origin :refs/tags/${{ inputs.release_version }}
+          git tag -d ${{ inputs.release_version }}
+          git tag -a ${{ inputs.release_version }} -m "Released ${{ inputs.release_version }} by ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+          git push origin ${{ inputs.release_version }}
 
   build:
     name: Build Docker images
+    needs: tagging_source
     uses: ./.github/workflows/docker-build.yml
     with:
       release_version: ${{ inputs.release_version }}
@@ -36,17 +55,6 @@ jobs:
       contents: read
 
     steps:
-      - name: Create release tag
-        continue-on-error: true
-        run: |
-          git config user.name "$(git log -n 1 --pretty=format:%an)"
-          git config user.email "$(git log -n 1 --pretty=format:%ae)"
-          git push --delete origin ${{ inputs.release_version }} || true
-          git tag -d ${{ inputs.release_version }} || true
-          git commit -a -m "update projects version"
-          git tag -a ${{ inputs.release_version }} -m "Released ${{ inputs.release_version }} by ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
-          git push origin ${{ inputs.release_version }}
-
       - name: Wait for containers to be up and running
         working-directory: ./marketplace-build
         run: |

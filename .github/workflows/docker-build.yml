@@ -20,6 +20,7 @@ on:
         description: 'Version is used to create a git tag when releasing'
         required: true
         type: string
+        default: ''
 
 jobs:
   cleanup:
@@ -40,6 +41,8 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.release_version || github.ref }}
 
       - name: Update environment variables for .env
         env:
@@ -87,5 +90,5 @@ jobs:
       - name: Build and bring up containers without cache
         working-directory: ./marketplace-build
         run: |
-          docker compose build --no-cache --build-arg BUILD_ENV=${{ inputs.build_env }}
+          docker compose build --no-cache --build-arg BUILD_ENV=${{ inputs.build_env }} --build-arg BUILD_VERSION=${{ inputs.release_version }}
           docker compose up --force-recreate -d
