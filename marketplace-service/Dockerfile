@@ -11,7 +11,8 @@ WORKDIR /app
 RUN rm -rf /usr/local/tomcat/webapps/ROOT
 
 # Copy the WAR file to the webapps directory in Tomcat
-COPY --from=build-api /app/target/marketplace-service-0.0.1-SNAPSHOT.war /usr/local/tomcat/webapps/marketplace-service.war
+ARG BUILD_VERSION
+COPY --from=build-api /app/target/marketplace-service-${BUILD_VERSION}.war /usr/local/tomcat/webapps/marketplace-service.war
 
 # Expose port 8080
 EXPOSE 8080
