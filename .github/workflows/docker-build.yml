@@ -79,13 +79,11 @@ jobs:
 
       - name: Build and bring up containers without cache
         working-directory: ./marketplace-build
-        env:
-          POM_FILE: './marketplace-service/pom.xml'
         run: |
           if [ -n "${{ inputs.release_version }}" ]; then
             BUILD_VERSION=${{ inputs.release_version }}
           else
-            BUILD_VERSION=$(xml sel -t -v "//_:project/_:version" $POM_FILE)
+            BUILD_VERSION=$(xml sel -t -v "//_:project/_:version" ../marketplace-service/pom.xml)
           fi
           docker compose build --no-cache --build-arg BUILD_ENV=${{ inputs.build_env }} --build-arg BUILD_VERSION=$BUILD_VERSION
           docker compose up --force-recreate -d
