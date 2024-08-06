@@ -17,7 +17,7 @@ on:
         required: true
         type: string
       release_version:
-        description: 'Version is used to create a git tag when releasing'
+        description: 'Release version'
         required: true
         type: string
         default: ''
