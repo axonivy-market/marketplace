@@ -17,7 +17,8 @@
         <div class="d-flex flex-column module-gap col-12 col-lg-8">
           <div class="d-flex">
             <div class="logo__image-container">
-              <img class="logo__image" [src]="productDetail().logoUrl" alt="" />
+              <img class="logo__image" [src]="productDetail().logoUrl"
+                [alt]="productDetail().names | multilingualism: languageService.selectedLanguage()" />
             </div>
             <h1 class="product-title align-items-start">
               {{
