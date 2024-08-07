@@ -48,7 +48,7 @@ common:
     termsOfService: Nutzungsbedingungen
   product:
     detail:
-      backToMainPage: Zurück zur Marktplatzübersicht
+      backToMainPage: Zurück zur Übersicht
       review: Überprüfung
       installation: Downloads
       times: Zeiten
