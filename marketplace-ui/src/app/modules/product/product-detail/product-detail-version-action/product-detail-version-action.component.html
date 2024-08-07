@@ -21,7 +21,7 @@
         }}
       </label>
       <select id="artifacts-selector" [(ngModel)]="selectedArtifact" name="Artifact"
-        class="form-select form-select-sm artifacts-selector__dropdown border__dropdown fs-md"
+        class="form-select form-select-sm artifacts-selector__dropdown border__dropdown fs-md pointer-cursor"
         aria-label=".form-select-sm">
         @for (item of artifacts(); track $index) {
         <option class="option" [value]="item.downloadUrl">
