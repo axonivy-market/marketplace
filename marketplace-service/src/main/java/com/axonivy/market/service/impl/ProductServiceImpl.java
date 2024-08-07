@@ -19,6 +19,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.ObjectUtils;
@@ -308,16 +309,13 @@ public class ProductServiceImpl implements ProductService {
 
   private void updateLatestReleaseTagContentsFromProductRepo() {
     List<Product> products = productRepository.findAll();
+    if (ObjectUtils.isEmpty(products)){
+      return;
+    }
+
     for (Product product : products) {
-      try {
-        GHTag lastTag = CollectionUtils.firstElement(gitHubService.getRepositoryTags(product.getRepositoryName()));
-        if(!Objects.requireNonNull(lastTag).getName().equals(product.getNewestReleaseVersion())){
-          updateProductFromReleaseTags(product);
-        }
-        productRepository.save(product);
-      } catch (Exception e) {
-        log.error("Nothing to update in {}", product.getId());
-      }
+      updateProductFromReleaseTags(product);
+      productRepository.save(product);
     }
   }
 
@@ -346,10 +344,13 @@ public class ProductServiceImpl implements ProductService {
       List<GHTag> tags = gitHubService.getRepositoryTags(product.getRepositoryName());
 
       GHTag lastTag = CollectionUtils.firstElement(tags);
-      if (lastTag != null) {
-        product.setNewestPublishedDate(lastTag.getCommit().getCommitDate());
-        product.setNewestReleaseVersion(lastTag.getName());
+
+      if (lastTag == null || lastTag.getName().equals(product.getNewestReleaseVersion())) {
+        return;
       }
+
+      product.setNewestPublishedDate(lastTag.getCommit().getCommitDate());
+      product.setNewestReleaseVersion(lastTag.getName());
 
       if (!ObjectUtils.isEmpty(product.getProductModuleContents())) {
         productModuleContents = product.getProductModuleContents();
@@ -358,10 +359,10 @@ public class ProductServiceImpl implements ProductService {
       }
 
       for (GHTag ghTag : tags) {
-          ProductModuleContent productModuleContent = axonIvyProductRepoService.getReadmeAndProductContentsFromTag(product, gitHubService.getRepository(product.getRepositoryName()), ghTag.getName());
-          productModuleContents.add(productModuleContent);
+        ProductModuleContent productModuleContent = axonIvyProductRepoService.getReadmeAndProductContentsFromTag(product, gitHubService.getRepository(product.getRepositoryName()), ghTag.getName());
+        productModuleContents.add(productModuleContent);
       }
-      product.setProductModuleContents(productModuleContents.stream().sorted(Comparator.comparing(ProductModuleContent::getTag).reversed()).toList());
+      product.setProductModuleContents(productModuleContents);
 
     } catch (Exception e) {
       log.error("Cannot find repository by path {} {}", product.getRepositoryName(), e);
