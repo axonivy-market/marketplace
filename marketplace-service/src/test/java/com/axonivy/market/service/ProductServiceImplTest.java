@@ -3,6 +3,8 @@ package com.axonivy.market.service;
 import static com.axonivy.market.constants.CommonConstants.LOGO_FILE;
 import static com.axonivy.market.constants.CommonConstants.SLASH;
 import static com.axonivy.market.constants.MetaConstants.META_FILE;
+import static com.axonivy.market.enums.DocumentField.SHORT_DESCRIPTIONS;
+
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -31,6 +33,7 @@ import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
+import com.axonivy.market.criteria.ProductSearchCriteria;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -120,6 +123,9 @@ class ProductServiceImplTest extends BaseSetup {
   @Captor
   ArgumentCaptor<ArrayList<Product>> productListArgumentCaptor;
 
+  @Captor
+  ArgumentCaptor<ProductSearchCriteria> productSearchCriteriaArgumentCaptor;
+
   @InjectMocks
   private ProductServiceImpl productService;
 
@@ -178,18 +184,25 @@ class ProductServiceImplTest extends BaseSetup {
     // Start testing by All
     when(productRepository.searchByCriteria(any(), any(Pageable.class))).thenReturn(mockResultReturn);
     // Executes
-    var result = productService.findProducts(TypeOption.ALL.getOption(), keyword, language, PAGEABLE);
+    var result = productService.findProducts(TypeOption.ALL.getOption(), keyword, language, false, PAGEABLE);
     assertEquals(mockResultReturn, result);
 
     // Start testing by Connector
     // Executes
-    result = productService.findProducts(TypeOption.CONNECTORS.getOption(), keyword, language, PAGEABLE);
+    result = productService.findProducts(TypeOption.CONNECTORS.getOption(), keyword, language, false, PAGEABLE);
     assertEquals(mockResultReturn, result);
 
     // Start testing by Other
     // Executes
-    result = productService.findProducts(TypeOption.DEMOS.getOption(), keyword, language, PAGEABLE);
+    result = productService.findProducts(TypeOption.DEMOS.getOption(), keyword, language, false, PAGEABLE);
     assertEquals(2, result.getSize());
+  }
+
+  @Test
+  void testFindProductsInRESTClientOfDesigner() {
+    productService.findProducts(TypeOption.CONNECTORS.getOption(), keyword, Language.EN.getValue(), true, PAGEABLE);
+    verify(productRepository).searchByCriteria(productSearchCriteriaArgumentCaptor.capture(), any(Pageable.class));
+    assertEquals(List.of(SHORT_DESCRIPTIONS), productSearchCriteriaArgumentCaptor.getValue().getExcludeFields());
   }
 
   @Test
@@ -260,7 +273,7 @@ class ProductServiceImplTest extends BaseSetup {
     language = "en";
     when(productRepository.searchByCriteria(any(), any(Pageable.class))).thenReturn(mockResultReturn);
     // Executes
-    var result = productService.findProducts(TypeOption.ALL.getOption(), keyword, language, PAGEABLE);
+    var result = productService.findProducts(TypeOption.ALL.getOption(), keyword, language, false, PAGEABLE);
     assertEquals(mockResultReturn, result);
     verify(productRepository).searchByCriteria(any(), any(Pageable.class));
 
@@ -270,7 +283,7 @@ class ProductServiceImplTest extends BaseSetup {
             .filter(product -> product.getNames().get(Language.EN.getValue()).equals(SAMPLE_PRODUCT_NAME))
             .collect(Collectors.toList())));
     // Executes
-    result = productService.findProducts(TypeOption.ALL.getOption(), SAMPLE_PRODUCT_NAME, language, PAGEABLE);
+    result = productService.findProducts(TypeOption.ALL.getOption(), SAMPLE_PRODUCT_NAME, language, false, PAGEABLE);
     assertTrue(result.hasContent());
     assertEquals(SAMPLE_PRODUCT_NAME, result.getContent().get(0).getNames().get(Language.EN.getValue()));
 
@@ -281,7 +294,8 @@ class ProductServiceImplTest extends BaseSetup {
                 && product.getType().equals(TypeOption.CONNECTORS.getCode()))
             .collect(Collectors.toList())));
     // Executes
-    result = productService.findProducts(TypeOption.CONNECTORS.getOption(), SAMPLE_PRODUCT_NAME, language, PAGEABLE);
+    result =
+        productService.findProducts(TypeOption.CONNECTORS.getOption(), SAMPLE_PRODUCT_NAME, language, false, PAGEABLE);
     assertTrue(result.hasContent());
     assertEquals(SAMPLE_PRODUCT_NAME, result.getContent().get(0).getNames().get(Language.EN.getValue()));
   }
@@ -345,7 +359,7 @@ class ProductServiceImplTest extends BaseSetup {
     when(productRepository.searchByCriteria(any(), any(Pageable.class))).thenReturn(
         mockResultReturn);
 
-    var result = productService.findProducts(type, keyword, language, simplePageable);
+    var result = productService.findProducts(type, keyword, language, false, simplePageable);
     assertEquals(result, mockResultReturn);
     verify(productRepository).searchByCriteria(any(), any(Pageable.class));
   }
