@@ -15,6 +15,7 @@ import { ThemeService } from '../../../../../core/services/theme/theme.service';
 import { Feedback } from '../../../../../shared/models/feedback.model';
 import { CommonModule } from '@angular/common';
 import { ProductDetailService } from '../../product-detail.service';
+import { LanguageService } from '../../../../../core/services/language/language.service';
 
 interface CustomElement extends HTMLElement {
   scrollTop: number;
@@ -43,6 +44,7 @@ export class ProductFeedbacksPanelComponent {
   themeService = inject(ThemeService);
   productFeedbackService = inject(ProductFeedbackService);
   productDetailService = inject(ProductDetailService);
+  languageService = inject(LanguageService);
 
   feedbacks: Signal<Feedback[] | undefined> =
     this.productFeedbackService.feedbacks;

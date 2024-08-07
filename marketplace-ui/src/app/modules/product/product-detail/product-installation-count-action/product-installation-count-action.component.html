@@ -1,9 +1,9 @@
 <div class="analysis-container d-flex flex-column align-items-start p-0">
-  <h4 class="analysis-title text-secondary mb-0">
+  <h4 [lang]="languageService.selectedLanguage()" class="analysis-title text-secondary mb-0">
     {{ 'common.product.detail.installation' | translate }}
   </h4>
   <h2 class="product-analysis text-primary mb-0">{{this.currentInstallationCount}}</h2>
-  <h4 class="analysis-title text-primary mb-0">
+  <h4 [lang]="languageService.selectedLanguage()" class="analysis-title text-primary mb-0">
     {{ 'common.product.detail.times' | translate }}
   </h4>
 </div>
