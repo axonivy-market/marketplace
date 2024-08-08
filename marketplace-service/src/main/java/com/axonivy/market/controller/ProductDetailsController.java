@@ -41,8 +41,7 @@ public class ProductDetailsController {
   private final ProductService productService;
   private final ProductDetailModelAssembler detailModelAssembler;
 
-  public ProductDetailsController(VersionService versionService, ProductService productService,
-      ProductDetailModelAssembler detailModelAssembler) {
+  public ProductDetailsController(VersionService versionService, ProductService productService, ProductDetailModelAssembler detailModelAssembler) {
     this.versionService = versionService;
     this.productService = productService;
     this.detailModelAssembler = detailModelAssembler;

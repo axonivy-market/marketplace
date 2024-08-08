@@ -17,12 +17,10 @@ import com.axonivy.market.service.ProductService;
 import io.swagger.v3.oas.annotations.Operation;
 import jakarta.validation.Valid;
 
-import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.time.StopWatch;
 import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PagedResourcesAssembler;
 import org.springframework.hateoas.PagedModel;
@@ -40,12 +38,12 @@ import org.springframework.web.bind.annotation.RestController;
 import static com.axonivy.market.constants.RequestMappingConstants.CUSTOM_SORT;
 import static com.axonivy.market.constants.RequestMappingConstants.PRODUCT;
 import static com.axonivy.market.constants.RequestMappingConstants.SYNC;
-import static com.axonivy.market.constants.RequestParamConstants.AUTHORIZATION;
 import static com.axonivy.market.constants.RequestParamConstants.KEYWORD;
 import static com.axonivy.market.constants.RequestParamConstants.LANGUAGE;
 import static com.axonivy.market.constants.RequestParamConstants.RESET_SYNC;
 import static com.axonivy.market.constants.RequestParamConstants.TYPE;
 import static com.axonivy.market.constants.RequestParamConstants.IS_REST_CLIENT;
+import static org.springframework.http.HttpHeaders.AUTHORIZATION;
 
 @RestController
 @RequestMapping(PRODUCT)

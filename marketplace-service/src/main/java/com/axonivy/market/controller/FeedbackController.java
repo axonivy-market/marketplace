@@ -44,9 +44,9 @@ import static com.axonivy.market.constants.RequestMappingConstants.BY_ID;
 import static com.axonivy.market.constants.RequestMappingConstants.FEEDBACK;
 import static com.axonivy.market.constants.RequestMappingConstants.PRODUCT_BY_ID;
 import static com.axonivy.market.constants.RequestMappingConstants.PRODUCT_RATING_BY_ID;
-import static com.axonivy.market.constants.RequestParamConstants.X_AUTHORIZATION;
 import static com.axonivy.market.constants.RequestParamConstants.ID;
 import static com.axonivy.market.constants.RequestParamConstants.USER_ID;
+import static com.axonivy.market.constants.RequestParamConstants.X_AUTHORIZATION;
 
 @RestController
 @RequestMapping(FEEDBACK)
@@ -104,12 +104,10 @@ public class FeedbackController {
   @PostMapping
   @Operation(summary = "Create user feedback", description = "Save user feedback of product with their token from Github account.")
   @io.swagger.v3.oas.annotations.parameters.RequestBody(description = "Example request body for feedback", content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE, schema = @Schema(implementation = FeedbackModelRequest.class)))
-  @ApiResponses(value = {
-      @ApiResponse(responseCode = "201", description = "Successfully created user feedback"),
+  @ApiResponses(value = { @ApiResponse(responseCode = "201", description = "Successfully created user feedback"),
       @ApiResponse(responseCode = "401", description = "Unauthorized request") })
-  public ResponseEntity<Void> createFeedback(
-    @RequestBody @Valid FeedbackModelRequest feedbackRequest,
-    @RequestHeader(value = X_AUTHORIZATION) @Parameter(description = "JWT Bearer token", example = "Bearer 123456", in = ParameterIn.HEADER) String bearerToken) {
+  public ResponseEntity<Void> createFeedback(@RequestBody @Valid FeedbackModelRequest feedbackRequest,
+      @RequestHeader(value = X_AUTHORIZATION) @Parameter(description = "JWT Bearer token", example = "Bearer 123456", in = ParameterIn.HEADER) String bearerToken) {
     String token = null;
     if (bearerToken != null && bearerToken.startsWith(CommonConstants.BEARER)) {
       token = bearerToken.substring(CommonConstants.BEARER.length()).trim(); // Remove "Bearer " prefix
