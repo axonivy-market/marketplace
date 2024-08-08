@@ -37,3 +37,15 @@ version-resolver:
 template: |
   ## Changes
   $CHANGES
+autolabeler:
+  - label: 'chore'
+    branch:
+      - '/chore\/.+/'
+  - label: 'bug'
+    branch:
+      - '/bug\/.+/'
+      - '/bugfix\/.+/'
+      - '/hotfix\/.+/'
+  - label: 'feature'
+    branch:
+      - '/feature\/.+/'
