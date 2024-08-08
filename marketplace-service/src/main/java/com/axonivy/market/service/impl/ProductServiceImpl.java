@@ -19,7 +19,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Objects;
-import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.ObjectUtils;
@@ -213,7 +212,7 @@ public class ProductServiceImpl implements ProductService {
         }
 
         ProductFactory.mappingByGHContent(product, fileContent);
-        updateCompatibility(product);
+        updateProductCompatibility(product);
         updateProductFromReleaseTags(product);
         if (FileType.META == file.getType()) {
           modifyProductByMetaContent(file, product);
@@ -309,7 +308,7 @@ public class ProductServiceImpl implements ProductService {
 
   private void updateLatestReleaseTagContentsFromProductRepo() {
     List<Product> products = productRepository.findAll();
-    if (ObjectUtils.isEmpty(products)){
+    if (ObjectUtils.isEmpty(products)) {
       return;
     }
 
@@ -327,7 +326,7 @@ public class ProductServiceImpl implements ProductService {
       Product product = new Product();
       for (var content : ghContentEntity.getValue()) {
         ProductFactory.mappingByGHContent(product, content);
-        updateCompatibility(product);
+        updateProductCompatibility(product);
         updateProductFromReleaseTags(product);
       }
       products.add(product);
@@ -353,13 +352,15 @@ public class ProductServiceImpl implements ProductService {
       product.setNewestReleaseVersion(lastTag.getName());
 
       if (!ObjectUtils.isEmpty(product.getProductModuleContents())) {
-        productModuleContents = product.getProductModuleContents();
-        List<String> currentTags = product.getProductModuleContents().stream().filter(Objects::nonNull).map(ProductModuleContent::getTag).toList();
+        productModuleContents.addAll(product.getProductModuleContents());
+        List<String> currentTags = product.getProductModuleContents().stream().filter(Objects::nonNull)
+            .map(ProductModuleContent::getTag).toList();
         tags = tags.stream().filter(t -> !currentTags.contains(t.getName())).toList();
       }
 
       for (GHTag ghTag : tags) {
-        ProductModuleContent productModuleContent = axonIvyProductRepoService.getReadmeAndProductContentsFromTag(product, gitHubService.getRepository(product.getRepositoryName()), ghTag.getName());
+        ProductModuleContent productModuleContent = axonIvyProductRepoService.getReadmeAndProductContentsFromTag(
+            product, gitHubService.getRepository(product.getRepositoryName()), ghTag.getName());
         productModuleContents.add(productModuleContent);
       }
       product.setProductModuleContents(productModuleContents);
@@ -369,15 +370,17 @@ public class ProductServiceImpl implements ProductService {
     }
   }
 
-  private void updateCompatibility(Product product) {
+  private void updateProductCompatibility(Product product) {
     try {
-      String oldestTag = gitHubService.getRepositoryTags(product.getRepositoryName()).stream().map(tag -> tag.getName().replaceAll(NON_NUMERIC_CHAR, Strings.EMPTY)).distinct().sorted(Comparator.reverseOrder()).reduce((tag1, tag2) -> tag2).orElse(null);
+      String oldestTag = gitHubService.getRepositoryTags(product.getRepositoryName()).stream()
+          .map(tag -> tag.getName().replaceAll(NON_NUMERIC_CHAR, Strings.EMPTY)).distinct()
+          .sorted(Comparator.reverseOrder()).reduce((tag1, tag2) -> tag2).orElse(null);
       if (oldestTag != null && StringUtils.isBlank(product.getCompatibility())) {
         String compatibility = getCompatibilityFromOldestTag(oldestTag);
         product.setCompatibility(compatibility);
       }
     } catch (IOException e) {
-      throw new RuntimeException(e);
+      log.error("Cannot get tag list of product ", e);
     }
   }
 
