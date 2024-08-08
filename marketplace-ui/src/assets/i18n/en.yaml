@@ -8,9 +8,9 @@ common:
     news: News
     doc: Doc
     tutorial: Tutorial
-    community: Community
-    team: Team
-    market: Market
+    community: Community  123
+    team: Team  
+    market: Market  
   introduction:
     about: The Axon Ivy market offers a unique experience to accelerate process automation.
     contribute:
