@@ -14,9 +14,9 @@ public enum SortOption {
   RECENT("recent", "newestPublishedDate", Sort.Direction.DESC),
   STANDARD("standard", "customOrder", Sort.Direction.DESC);
 
-  private String option;
-  private String code;
-  private Sort.Direction direction;
+  private final String option;
+  private final String code;
+  private final Sort.Direction direction;
 
   public static SortOption of(String option) {
     option = StringUtils.isBlank(option) ? option : option.trim();
