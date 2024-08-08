@@ -1,13 +1,5 @@
 package com.axonivy.market.controller;
 
-import static com.axonivy.market.constants.RequestMappingConstants.PRODUCT;
-import static com.axonivy.market.constants.RequestMappingConstants.SYNC;
-import static com.axonivy.market.constants.RequestParamConstants.AUTHORIZATION;
-import static com.axonivy.market.constants.RequestParamConstants.KEYWORD;
-import static com.axonivy.market.constants.RequestParamConstants.LANGUAGE;
-import static com.axonivy.market.constants.RequestParamConstants.RESET_SYNC;
-import static com.axonivy.market.constants.RequestParamConstants.TYPE;
-
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.enums.ParameterIn;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -24,10 +16,13 @@ import com.axonivy.market.model.ProductModel;
 import com.axonivy.market.service.ProductService;
 import io.swagger.v3.oas.annotations.Operation;
 import jakarta.validation.Valid;
+
+import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.time.StopWatch;
 import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PagedResourcesAssembler;
 import org.springframework.hateoas.PagedModel;
@@ -43,12 +38,19 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import static com.axonivy.market.constants.RequestMappingConstants.CUSTOM_SORT;
+import static com.axonivy.market.constants.RequestMappingConstants.PRODUCT;
+import static com.axonivy.market.constants.RequestMappingConstants.SYNC;
+import static com.axonivy.market.constants.RequestParamConstants.AUTHORIZATION;
+import static com.axonivy.market.constants.RequestParamConstants.KEYWORD;
+import static com.axonivy.market.constants.RequestParamConstants.LANGUAGE;
+import static com.axonivy.market.constants.RequestParamConstants.RESET_SYNC;
+import static com.axonivy.market.constants.RequestParamConstants.TYPE;
+import static com.axonivy.market.constants.RequestParamConstants.IS_REST_CLIENT;
 
 @RestController
 @RequestMapping(PRODUCT)
 @Tag(name = "Product Controller", description = "API collection to get and search products")
 public class ProductController {
-
   private final ProductService productService;
   private final GitHubService gitHubService;
   private final ProductModelAssembler assembler;
@@ -72,8 +74,9 @@ public class ProductController {
       @RequestParam(name = TYPE) @Parameter(description = "Type of product.", in = ParameterIn.QUERY, schema = @Schema(type = "string", allowableValues = {"all", "connectors", "utilities", "solutions", "demos"})) String type,
       @RequestParam(required = false, name = KEYWORD) @Parameter(description = "Keyword that exist in product's name or short description", example = "connector", in = ParameterIn.QUERY) String keyword,
       @RequestParam(name = LANGUAGE) @Parameter(description = "Language of product short description", in = ParameterIn.QUERY, schema = @Schema(allowableValues = {"en", "de"})) String language,
+      @RequestParam(name = IS_REST_CLIENT) @Parameter(description = "Option to render the website in the REST Client Editor of Designer", in = ParameterIn.QUERY) Boolean isRESTClient,
       @ParameterObject Pageable pageable) {
-    Page<Product> results = productService.findProducts(type, keyword, language, pageable);
+    Page<Product> results = productService.findProducts(type, keyword, language, isRESTClient, pageable);
     if (results.isEmpty()) {
       return generateEmptyPagedModel();
     }
