@@ -105,10 +105,11 @@ public class FeedbackController {
   @Operation(summary = "Create user feedback", description = "Save user feedback of product with their token from Github account.")
   @io.swagger.v3.oas.annotations.parameters.RequestBody(description = "Example request body for feedback", content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE, schema = @Schema(implementation = FeedbackModelRequest.class)))
   @ApiResponses(value = {
-          @ApiResponse(responseCode = "201", description = "Successfully created user feedback"),
+      @ApiResponse(responseCode = "201", description = "Successfully created user feedback"),
       @ApiResponse(responseCode = "401", description = "Unauthorized request") })
-  public ResponseEntity<Void> createFeedback(@RequestBody @Valid FeedbackModelRequest feedbackRequest,
-                                             @RequestHeader(value = X_AUTHORIZATION) @Parameter(description = "JWT Bearer token", example = "Bearer 123456", in = ParameterIn.HEADER) String bearerToken) {
+  public ResponseEntity<Void> createFeedback(
+    @RequestBody @Valid FeedbackModelRequest feedbackRequest,
+    @RequestHeader(value = X_AUTHORIZATION) @Parameter(description = "JWT Bearer token", example = "Bearer 123456", in = ParameterIn.HEADER) String bearerToken) {
     String token = null;
     if (bearerToken != null && bearerToken.startsWith(CommonConstants.BEARER)) {
       token = bearerToken.substring(CommonConstants.BEARER.length()).trim(); // Remove "Bearer " prefix

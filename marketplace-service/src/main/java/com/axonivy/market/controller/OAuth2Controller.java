@@ -46,8 +46,8 @@ public class OAuth2Controller {
   @PostMapping(GIT_HUB_LOGIN)
   @Operation(description = "Get rating authentication token")
   @ApiResponses(value = {
-          @ApiResponse(responseCode = "200", description = "Successfully login to GitHub provider", content = @Content(mediaType = "application/json", schema = @Schema(implementation = Map.class))),
-          @ApiResponse(responseCode = "400", description = "Bad Request")})
+      @ApiResponse(responseCode = "200", description = "Successfully login to GitHub provider", content = @Content(mediaType = "application/json", schema = @Schema(implementation = Map.class))),
+      @ApiResponse(responseCode = "400", description = "Bad Request")})
   @io.swagger.v3.oas.annotations.parameters.RequestBody(content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE, schema = @Schema(implementation = Oauth2AuthorizationCode.class)))
   public ResponseEntity<Map<String, String>> gitHubLogin(@RequestBody Oauth2AuthorizationCode oauth2AuthorizationCode) {
     String accessToken;

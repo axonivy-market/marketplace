@@ -57,7 +57,7 @@ public class ProductController {
   private final PagedResourcesAssembler<Product> pagedResourcesAssembler;
 
   public ProductController(ProductService productService, GitHubService gitHubService, ProductModelAssembler assembler,
-                           PagedResourcesAssembler<Product> pagedResourcesAssembler) {
+      PagedResourcesAssembler<Product> pagedResourcesAssembler) {
     this.productService = productService;
     this.gitHubService = gitHubService;
     this.assembler = assembler;
@@ -125,8 +125,7 @@ public class ProductController {
 
   @SuppressWarnings("unchecked")
   private ResponseEntity<PagedModel<ProductModel>> generateEmptyPagedModel() {
-    var emptyPagedModel = (PagedModel<ProductModel>) pagedResourcesAssembler.toEmptyModel(Page.empty(),
-            ProductModel.class);
+    var emptyPagedModel = (PagedModel<ProductModel>) pagedResourcesAssembler.toEmptyModel(Page.empty(), ProductModel.class);
     return new ResponseEntity<>(emptyPagedModel, HttpStatus.OK);
   }
 
