@@ -21,7 +21,8 @@ export class ProductFilterComponent {
 
   selectedType = TypeOption.All_TYPES;
   types = FILTER_TYPES;
-  selectedSort: SortOption | undefined = SortOption.STANDARD;
+  defaultSortType = SORT_TYPES.find(s=> s.value === SortOption.STANDARD)?.label;
+  selectedSort: string = this.defaultSortType ? this.defaultSortType : '';
   sorts = SORT_TYPES;
   isDropdownOpen = false;
   searchText = '';
@@ -40,7 +41,8 @@ export class ProductFilterComponent {
 
   onSortChange(sort: SortOption) {
     this.sortChange.next(sort);
-    this.selectedSort = sort
+    this.defaultSortType = this.sorts.find(s => s.value === sort)?.label;
+    this.selectedSort = this.defaultSortType ? this.defaultSortType : '';
     this.isDropdownOpen = false;
   }
 

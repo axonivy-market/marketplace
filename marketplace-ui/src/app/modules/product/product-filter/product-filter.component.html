@@ -46,9 +46,9 @@
       </h4>
 
       <div class="sort-order w-50 ms-2">
-        <button [(ngModel)]="selectedSort" (click)="toggleDropdown()" class="form-select border-primary sort-type text-primary "
+        <button (click)="toggleDropdown()" class="form-select border-primary sort-type text-primary "
                 aria-label="sort" name="sort">
-          {{ selectedSort.la | translate }}
+          {{ (selectedSort | translate) }}
         </button>
         <div class="dropdown-menu" [class.show]="isDropdownOpen">
           <div class="dropdown-item" *ngFor="let sort of sorts" (click)="onSortChange(sort.value)">
