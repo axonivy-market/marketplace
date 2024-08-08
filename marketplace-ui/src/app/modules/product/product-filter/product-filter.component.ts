@@ -21,9 +21,9 @@ export class ProductFilterComponent {
 
   selectedType = TypeOption.All_TYPES;
   types = FILTER_TYPES;
-  selectedSort: SortOption = SortOption.STANDARD;
+  selectedSort: SortOption | undefined = SortOption.STANDARD;
   sorts = SORT_TYPES;
-
+  isDropdownOpen = false;
   searchText = '';
 
   themeService = inject(ThemeService);
@@ -38,7 +38,13 @@ export class ProductFilterComponent {
     this.searchChange.next(searchString);
   }
 
-  onSortChange() {
-    this.sortChange.next(this.selectedSort);
+  onSortChange(sort: SortOption) {
+    this.sortChange.next(sort);
+    this.selectedSort = sort
+    this.isDropdownOpen = false;
+  }
+
+  toggleDropdown() {
+    this.isDropdownOpen = !this.isDropdownOpen;
   }
 }

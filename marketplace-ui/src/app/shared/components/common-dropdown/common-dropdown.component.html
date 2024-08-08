@@ -1,0 +1,10 @@
+<div>
+  <button (click)="toggleDropdown()" class="dropdown-toggle text-bg-warning">
+    {{ selectedOption || 'Select an option' }}
+  </button>
+  <div class="dropdown-menu" [class.show]="isDropdownOpen">
+    <div class="dropdown-item" *ngFor="let option of options" (click)="selectOption(option)">
+      {{ option }}
+    </div>
+  </div>
+</div>

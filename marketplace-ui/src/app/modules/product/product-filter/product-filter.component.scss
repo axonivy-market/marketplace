@@ -55,7 +55,7 @@ $rowHeight: 37px;
 }
 
 @media only screen and (max-width: 768px) {
-  .form-select {
+  .form-select, .sort-order {
     width: 100% !important;
   }
 }
@@ -70,4 +70,8 @@ $rowHeight: 37px;
   .filter-type {
     font-size: 1rem;
   }
+}
+
+.dropdown-item {
+  cursor: pointer;
 }

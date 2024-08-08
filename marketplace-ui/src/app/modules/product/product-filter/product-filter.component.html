@@ -44,18 +44,19 @@
       <h4 class="sort-container__label text-primary d-none d-lg-flex w-auto">
         {{ translateService.get('common.sort.label') | async }}:
       </h4>
-      <select
-        [(ngModel)]="selectedSort"
-        (ngModelChange)="onSortChange()"
-        class="form-select text-primary border-primary sort-type w-50 ms-2"
-        aria-label="sort"
-        name="sort">
-        @for (type of sorts; track $index) {
-        <option class="border-danger" [value]="type.value">
-          {{ type.label | translate }}
-        </option>
-        }
-      </select>
+
+      <div class="sort-order w-50 ms-2">
+        <button [(ngModel)]="selectedSort" (click)="toggleDropdown()" class="form-select border-primary sort-type text-primary "
+                aria-label="sort" name="sort">
+          {{ selectedSort.la | translate }}
+        </button>
+        <div class="dropdown-menu" [class.show]="isDropdownOpen">
+          <div class="dropdown-item" *ngFor="let sort of sorts" (click)="onSortChange(sort.value)">
+            {{ sort.label | translate }}
+          </div>
+        </div>
+      </div>
+
     </div>
   </div>
 
