@@ -16,6 +16,11 @@ on:
         description: 'Build environment'
         required: true
         type: string
+      release_version:
+        description: 'Release version'
+        required: true
+        type: string
+        default: ''
 
 jobs:
   cleanup:
@@ -36,6 +41,8 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.release_version || github.ref }}
 
       - name: Update environment variables for .env
         env:
@@ -70,8 +77,24 @@ jobs:
           sed -i "s/^MARKET_JWT_SECRET_KEY=.*$/MARKET_JWT_SECRET_KEY=$MARKET_JWT_SECRET_KEY/" $ENV_FILE
           sed -i "s/^MARKET_CORS_ALLOWED_ORIGIN=.*$/MARKET_CORS_ALLOWED_ORIGIN=$MARKET_CORS_ALLOWED_ORIGIN/" $ENV_FILE
 
+      - name: Update version and tagging source
+        if: ${{ inputs.release_version != '' }}
+        continue-on-error: true
+        env:
+          POM_FILE: './marketplace-service/pom.xml'
+          PACKAGE_FILE: './marketplace-ui/package.json'
+        run: |
+          xml ed -L -u "//_:project/_:version" -v "${{ inputs.release_version }}" $POM_FILE
+          sed -i 's/"version": "[^"]*"/"version": "${{ inputs.release_version }}"/' $PACKAGE_FILE
+
       - name: Build and bring up containers without cache
         working-directory: ./marketplace-build
         run: |
-          docker compose build --no-cache --build-arg BUILD_ENV=${{ inputs.build_env }}
+          if [ -n "${{ inputs.release_version }}" ]; then
+            BUILD_VERSION="${{ inputs.release_version }}"
+          else
+            BUILD_VERSION=$(xml sel -t -v "//_:project/_:version" ../marketplace-service/pom.xml)
+          fi
+
+          docker compose build --no-cache --build-arg BUILD_ENV=${{ inputs.build_env }} --build-arg BUILD_VERSION=$BUILD_VERSION
           docker compose up --force-recreate -d
