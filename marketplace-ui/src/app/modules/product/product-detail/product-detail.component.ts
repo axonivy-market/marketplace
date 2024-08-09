@@ -29,7 +29,7 @@ import { AuthService } from '../../../auth/auth.service';
 import { ProductStarRatingNumberComponent } from './product-star-rating-number/product-star-rating-number.component';
 import { ProductInstallationCountActionComponent } from './product-installation-count-action/product-installation-count-action.component';
 import { ProductTypeIconPipe } from '../../../shared/pipes/icon.pipe';
-import { Observable } from 'rxjs';
+import { interval, Observable, Subscription } from 'rxjs';
 import { ProductStarRatingService } from './product-detail-feedback/product-star-rating-panel/product-star-rating.service';
 import { RoutingQueryParamService } from '../../../shared/services/routing.query.param.service';
 
@@ -92,6 +92,7 @@ export class ProductDetailComponent {
   showPopup!: boolean;
   isMobileMode = signal<boolean>(false);
   installationCount = 0;
+  intervalSub!: Subscription;
 
   @HostListener('window:popstate', ['$event'])
   onPopState() {
@@ -102,7 +103,14 @@ export class ProductDetailComponent {
     this.updateDropdownSelection();
   }
 
+
   constructor() {
+    const intevalSub = interval(500).subscribe(() => {
+      window.scrollTo(0, 0);
+    });
+    setTimeout(() => {
+      intevalSub.unsubscribe();
+    }, 3000);
     this.resizeObserver = new ResizeObserver(() => {
       this.updateDropdownSelection();
     });
@@ -118,6 +126,8 @@ export class ProductDetailComponent {
         this.productDetailService.productNames.set(productDetail.names);
         localStorage.removeItem(STORAGE_ITEM);
         this.installationCount = productDetail.installationCount;
+      window.scrollTo(0, window.pageYOffset)
+
       });
       this.productFeedbackService.initFeedbacks();
       this.productStarRatingService.fetchData();
