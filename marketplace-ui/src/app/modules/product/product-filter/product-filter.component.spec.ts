@@ -34,7 +34,7 @@ describe('ProductFilterComponent', () => {
     )[1].nativeElement as HTMLDivElement;
 
     filterElement.dispatchEvent(new Event('click'));
-    expect(component.selectedType).toEqual(TypeOption.CONNECTORS);
+    expect(component.selectedTypeLabel).toEqual(TypeOption.CONNECTORS);
   });
 
   it('filter type should change to selectbox in small screen', () => {

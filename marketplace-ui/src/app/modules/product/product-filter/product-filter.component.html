@@ -13,9 +13,9 @@
             'border-light text-light': themeService.isDarkMode(),
             'border-dark text-dark': !themeService.isDarkMode(),
             'bg-light text-dark':
-              selectedType === type.value && themeService.isDarkMode(),
+              selectedTypeLabel === type.value && themeService.isDarkMode(),
             'bg-primary border-0 text-light':
-              selectedType === type.value && !themeService.isDarkMode()
+              selectedTypeLabel === type.value && !themeService.isDarkMode()
           }">
         <p>
           {{ type.label | translate }}
@@ -24,18 +24,28 @@
       }
     </div>
     <div class="col-6 d-md-block d-md-none">
-      <select
-        [(ngModel)]="selectedType"
-        (ngModelChange)="onSelectType($event)"
-        class="form-select border-primary filter-type--select w-auto"
-        aria-label="sort"
-        name="sort">
-        @for (type of types; track $index) {
-        <option [value]="type.value">
-          {{ type.label | translate }}
-        </option>
-        }
-      </select>
+<!--      <select-->
+<!--        [(ngModel)]="selectedTypeLabel"-->
+<!--        (ngModelChange)="onSelectType($event)"-->
+<!--        class="form-select border-primary filter-type&#45;&#45;select w-auto"-->
+<!--        aria-label="sort"-->
+<!--        name="sort">-->
+<!--        @for (type of types; track $index) {-->
+<!--        <option [value]="type.value">-->
+<!--          {{ type.label | translate }}-->
+<!--        </option>-->
+<!--        }-->
+<!--      </select>-->
+
+      <app-common-dropdown
+        [items]="types"
+        [selectedItem]="selectedTypeLabel | translate"
+        [labelKey]="'label'"
+        buttonClass="form-select border-primary filter-type--select w-auto"
+        ariaLabel="sort"
+        (itemSelected)="onSelectType($event.value)">
+      </app-common-dropdown>
+
     </div>
 
     <!-- Sort type -->
@@ -46,17 +56,16 @@
       </h4>
 
       <div class="sort-order w-50 ms-2">
-        <button (click)="toggleDropdown()" class="form-select border-primary sort-type text-primary "
-                aria-label="sort" name="sort"
-                [ngClass]="{'indicator-arrow__up': isDropdownOpen}">
-          {{ (selectedSort | translate) }}
-        </button>
-        <div class="dropdown-menu" [class.show]="isDropdownOpen">
-          <div class="dropdown-item" *ngFor="let sort of sorts" (click)="onSortChange(sort.value)">
-            {{ sort.label | translate }}
-          </div>
-        </div>
+        <app-common-dropdown
+          [items]="sorts"
+          [selectedItem]="selectedSort | translate"
+          [labelKey]="'label'"
+          buttonClass="form-select border-primary sort-type text-primary"
+          ariaLabel="sort"
+          (itemSelected)="onSortChange($event.value)">
+        </app-common-dropdown>
       </div>
+
     </div>
   </div>
 

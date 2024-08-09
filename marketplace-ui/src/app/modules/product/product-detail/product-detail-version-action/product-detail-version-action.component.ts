@@ -19,12 +19,13 @@ import { Tooltip } from 'bootstrap';
 import { ProductDetailService } from '../product-detail.service';
 import { RoutingQueryParamService } from '../../../../shared/services/routing.query.param.service';
 import { SORT_TYPES } from '../../../../shared/constants/common.constant';
+import { CommonDropdownComponent } from '../../../../shared/components/common-dropdown/common-dropdown.component';
 
 const delayTimeBeforeHideMessage = 2000;
 @Component({
   selector: 'app-product-version-action',
   standalone: true,
-  imports: [CommonModule, TranslateModule, FormsModule],
+  imports: [CommonModule, TranslateModule, FormsModule, CommonDropdownComponent],
   templateUrl: './product-detail-version-action.component.html',
   styleUrl: './product-detail-version-action.component.scss'
 })
@@ -42,6 +43,7 @@ export class ProductDetailVersionActionComponent implements AfterViewInit {
   isInvalidInstallationEnvironment = signal(false);
   designerVersion = '';
   selectedArtifact = '';
+  selectedArtifactName = '';
   versionMap: Map<string, Artifact[]> = new Map();
 
   routingQueryParamService = inject(RoutingQueryParamService);
@@ -50,7 +52,6 @@ export class ProductDetailVersionActionComponent implements AfterViewInit {
   productService = inject(ProductService);
   productDetailService = inject(ProductDetailService);
   elementRef = inject(ElementRef);
-  isDropdownOpen = false;
   ngAfterViewInit() {
     const tooltipTriggerList = [].slice.call(
       document.querySelectorAll('[data-bs-toggle="tooltip"]')
@@ -65,7 +66,6 @@ export class ProductDetailVersionActionComponent implements AfterViewInit {
 
   onShowVersions() {
     this.isVersionsDropDownShow.set(!this.isVersionsDropDownShow());
-    this.isDropdownOpen = !this.isDropdownOpen;
   }
 
   getInstallationTooltipText() {
@@ -80,9 +80,14 @@ export class ProductDetailVersionActionComponent implements AfterViewInit {
     this.selectedVersion.set(version);
     this.artifacts.set(this.versionMap.get(this.selectedVersion()) ?? []);
     if (this.artifacts().length !== 0) {
+      this.selectedArtifactName = this.artifacts()[0].name;
       this.selectedArtifact = this.artifacts()[0].downloadUrl;
     }
-    this.isDropdownOpen = false;
+  }
+
+  onSelectArtifact(artifact: Artifact) {
+    this.selectedArtifactName = artifact.name;
+    this.selectedArtifact = artifact.downloadUrl;
   }
 
   onShowDevVersion(event: Event) {

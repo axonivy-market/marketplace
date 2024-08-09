@@ -6,11 +6,12 @@ import { ThemeService } from '../../../core/services/theme/theme.service';
 import { FILTER_TYPES, SORT_TYPES } from '../../../shared/constants/common.constant';
 import { TypeOption } from '../../../shared/enums/type-option.enum';
 import { SortOption } from '../../../shared/enums/sort-option.enum';
+import { CommonDropdownComponent } from '../../../shared/components/common-dropdown/common-dropdown.component';
 
 @Component({
   selector: 'app-product-filter',
   standalone: true,
-  imports: [CommonModule, FormsModule, TranslateModule],
+  imports: [CommonModule, FormsModule, TranslateModule, CommonDropdownComponent],
   templateUrl: './product-filter.component.html',
   styleUrl: './product-filter.component.scss'
 })
@@ -19,19 +20,17 @@ export class ProductFilterComponent {
   @Output() filterChange = new EventEmitter<TypeOption>();
   @Output() sortChange = new EventEmitter<SortOption>();
 
-  selectedType = TypeOption.All_TYPES;
+  selectedTypeLabel = FILTER_TYPES[0].label;
   types = FILTER_TYPES;
-  defaultSortType = SORT_TYPES.find(s=> s.value === SortOption.STANDARD)?.label;
-  selectedSort: string = this.defaultSortType ? this.defaultSortType : '';
+  selectedSort: string = SORT_TYPES[0].label;
   sorts = SORT_TYPES;
-  isDropdownOpen = false;
   searchText = '';
 
   themeService = inject(ThemeService);
   translateService = inject(TranslateService);
 
   onSelectType(type: TypeOption) {
-    this.selectedType = type;
+    this.selectedTypeLabel = this.getLabel(type , this.types);
     this.filterChange.emit(type);
   }
 
@@ -41,12 +40,11 @@ export class ProductFilterComponent {
 
   onSortChange(sort: SortOption) {
     this.sortChange.next(sort);
-    this.defaultSortType = this.sorts.find(s => s.value === sort)?.label;
-    this.selectedSort = this.defaultSortType ? this.defaultSortType : '';
-    this.isDropdownOpen = false;
+    this.selectedSort = this.getLabel(sort, this.sorts);
   }
 
-  toggleDropdown() {
-    this.isDropdownOpen = !this.isDropdownOpen;
+  getLabel(value: string, options: any): string {
+    const currentLabel = options.find((option: { value: string, label: string; }) => option.value === value)?.label;
+    return currentLabel ? currentLabel : options[0].label;
   }
 }

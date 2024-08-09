@@ -1,10 +1,12 @@
-<div>
-  <button (click)="toggleDropdown()" class="dropdown-toggle text-bg-warning">
-    {{ selectedOption || 'Select an option' }}
+<!--<div class="dropdown" [ngClass]="dropdownClass">-->
+  <button (click)="toggleDropdown()"
+          [ngClass]="buttonClass"
+          [attr.aria-label]="ariaLabel">
+    {{ selectedItem[labelKey] || selectedItem }}
   </button>
   <div class="dropdown-menu" [class.show]="isDropdownOpen">
-    <div class="dropdown-item" *ngFor="let option of options" (click)="selectOption(option)">
-      {{ option }}
+    <div class="dropdown-item" *ngFor="let item of items" (click)="onSelect(item)">
+      {{ (item[labelKey] || item ) | translate}}
     </div>
   </div>
-</div>
+<!--</div>-->

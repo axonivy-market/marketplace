@@ -20,15 +20,27 @@
         'common.product.detail.download.artifactSelector.label' | translate
         }}
       </label>
-      <select id="artifacts-selector" [(ngModel)]="selectedArtifact" name="Artifact"
-        class="form-select form-select-sm artifacts-selector__dropdown border__dropdown fs-md"
-        aria-label=".form-select-sm">
-        @for (item of artifacts(); track $index) {
-        <option class="option" [value]="item.downloadUrl">
-          {{ item.name }}
-        </option>
-        }
-      </select>
+<!--      <select id="artifacts-selector" [(ngModel)]="selectedArtifact" name="Artifact"-->
+<!--        class="form-select form-select-sm artifacts-selector__dropdown border__dropdown fs-md"-->
+<!--        aria-label=".form-select-sm">-->
+<!--        @for (item of artifacts(); track $index) {-->
+<!--        <option class="option" [value]="item.downloadUrl">-->
+<!--          {{ item.name }}-->
+<!--        </option>-->
+<!--        }-->
+<!--      </select>-->
+
+      <div id="artifacts-selector">
+        <app-common-dropdown
+          [items]="artifacts()"
+          [selectedItem]="selectedArtifactName"
+          [labelKey]="'name'"
+          buttonClass="form-select form-select-sm artifacts-selector__dropdown border__dropdown fs-md"
+          ariaLabel=".form-select-sm"
+          (itemSelected)="onSelectArtifact($event)">
+        </app-common-dropdown>
+      </div>
+
     </div>
     <div class="form-group">
       <label for="version-selector" class="form-label mt-2 fs-md text-primary">
@@ -46,18 +58,31 @@
 <!--        }-->
 <!--      </select>-->
 
+<!--      <div id="version-selector">-->
+<!--        <button (click)="onShowVersions()"-->
+<!--                class="form-select form-select-sm versions-selector__dropdown border__dropdown fs-md"-->
+<!--                aria-label=".form-select-sm example">-->
+<!--          {{ selectedVersion() }}-->
+<!--        </button>-->
+<!--        <div class="dropdown-menu" [class.show]="isDropdownOpen">-->
+<!--          <div class="dropdown-item" *ngFor="let item of versions()" (click)="onSelectVersion(item)">-->
+<!--            {{ item }}-->
+<!--          </div>-->
+<!--        </div>-->
+<!--      </div>-->
+
       <div id="version-selector">
-        <button (click)="onShowVersions()"
-                class="form-select form-select-sm versions-selector__dropdown border__dropdown fs-md"
-                aria-label=".form-select-sm example">
-          {{ selectedVersion() }}
-        </button>
-        <div class="dropdown-menu" [class.show]="isDropdownOpen">
-          <div class="dropdown-item" *ngFor="let item of versions()" (click)="onSelectVersion(item)">
-            {{ item }}
-          </div>
-        </div>
+        <app-common-dropdown
+          [items]="versions()"
+          [selectedItem]="selectedVersion()"
+          [labelKey]="''"
+          buttonClass="form-select versions-selector__dropdown border__dropdown fs-md"
+          ariaLabel=".form-select-sm example"
+          (itemSelected)="onSelectVersion($event)">
+        </app-common-dropdown>
       </div>
+
+
 
     </div>
     <a href="#" class="dev-versions__toggle primary-color text-decoration-none" (click)="onShowDevVersion($event)">
