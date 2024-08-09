@@ -13,6 +13,7 @@ import org.kohsuke.github.GHOrganization;
 import org.kohsuke.github.GHRepository;
 import org.kohsuke.github.GitHub;
 import org.kohsuke.github.GitHubBuilder;
+import org.kohsuke.github.GHTag;
 import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpEntity;
@@ -75,6 +76,11 @@ public class GitHubServiceImpl implements GitHubService {
   @Override
   public GHRepository getRepository(String repositoryPath) throws IOException {
     return getGitHub().getRepository(repositoryPath);
+  }
+
+  @Override
+  public List<GHTag> getRepositoryTags(String repositoryPath) throws IOException {
+    return getRepository(repositoryPath).listTags().toList();
   }
 
   @Override

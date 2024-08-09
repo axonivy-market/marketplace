@@ -18,8 +18,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Objects;
 
 import org.apache.commons.lang3.BooleanUtils;
+import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.util.Strings;
 import org.kohsuke.github.GHCommit;
@@ -133,6 +135,7 @@ public class ProductServiceImpl implements ProductService {
       }
       syncRepoMetaDataStatus();
     }
+    updateLatestReleaseTagContentsFromProductRepo();
     return isAlreadyUpToDate;
   }
 
@@ -209,6 +212,7 @@ public class ProductServiceImpl implements ProductService {
         }
 
         ProductFactory.mappingByGHContent(product, fileContent);
+        updateProductCompatibility(product);
         updateProductFromReleaseTags(product);
         if (FileType.META == file.getType()) {
           modifyProductByMetaContent(file, product);
@@ -302,6 +306,18 @@ public class ProductServiceImpl implements ProductService {
     return isLastCommitCovered;
   }
 
+  private void updateLatestReleaseTagContentsFromProductRepo() {
+    List<Product> products = productRepository.findAll();
+    if (ObjectUtils.isEmpty(products)) {
+      return;
+    }
+
+    for (Product product : products) {
+      updateProductFromReleaseTags(product);
+      productRepository.save(product);
+    }
+  }
+
   private Page<Product> syncProductsFromGitHubRepo() {
     log.warn("**ProductService: synchronize products from scratch based on the Market repo");
     var gitHubContentMap = axonIvyMarketRepoService.fetchAllMarketItems();
@@ -310,6 +326,7 @@ public class ProductServiceImpl implements ProductService {
       Product product = new Product();
       for (var content : ghContentEntity.getValue()) {
         ProductFactory.mappingByGHContent(product, content);
+        updateProductCompatibility(product);
         updateProductFromReleaseTags(product);
       }
       products.add(product);
@@ -321,34 +338,49 @@ public class ProductServiceImpl implements ProductService {
   }
 
   private void updateProductFromReleaseTags(Product product) {
-    if (StringUtils.isBlank(product.getRepositoryName())) {
-      return;
-    }
     try {
-      GHRepository productRepo = gitHubService.getRepository(product.getRepositoryName());
-      List<GHTag> tags = productRepo.listTags().toList();
+      List<ProductModuleContent> productModuleContents = new ArrayList<>();
+      List<GHTag> tags = gitHubService.getRepositoryTags(product.getRepositoryName());
+
       GHTag lastTag = CollectionUtils.firstElement(tags);
-      if (lastTag != null) {
-        product.setNewestPublishedDate(lastTag.getCommit().getCommitDate());
-        product.setNewestReleaseVersion(lastTag.getName());
+
+      if (lastTag == null || lastTag.getName().equals(product.getNewestReleaseVersion())) {
+        return;
       }
 
-      String oldestTag = tags.stream().map(tag -> tag.getName().replaceAll(NON_NUMERIC_CHAR, Strings.EMPTY)).distinct()
+      product.setNewestPublishedDate(lastTag.getCommit().getCommitDate());
+      product.setNewestReleaseVersion(lastTag.getName());
+
+      if (!ObjectUtils.isEmpty(product.getProductModuleContents())) {
+        productModuleContents.addAll(product.getProductModuleContents());
+        List<String> currentTags = product.getProductModuleContents().stream().filter(Objects::nonNull)
+            .map(ProductModuleContent::getTag).toList();
+        tags = tags.stream().filter(t -> !currentTags.contains(t.getName())).toList();
+      }
+
+      for (GHTag ghTag : tags) {
+        ProductModuleContent productModuleContent = axonIvyProductRepoService.getReadmeAndProductContentsFromTag(
+            product, gitHubService.getRepository(product.getRepositoryName()), ghTag.getName());
+        productModuleContents.add(productModuleContent);
+      }
+      product.setProductModuleContents(productModuleContents);
+
+    } catch (Exception e) {
+      log.error("Cannot find repository by path {} {}", product.getRepositoryName(), e);
+    }
+  }
+
+  private void updateProductCompatibility(Product product) {
+    try {
+      String oldestTag = gitHubService.getRepositoryTags(product.getRepositoryName()).stream()
+          .map(tag -> tag.getName().replaceAll(NON_NUMERIC_CHAR, Strings.EMPTY)).distinct()
           .sorted(Comparator.reverseOrder()).reduce((tag1, tag2) -> tag2).orElse(null);
       if (oldestTag != null && StringUtils.isBlank(product.getCompatibility())) {
         String compatibility = getCompatibilityFromOldestTag(oldestTag);
         product.setCompatibility(compatibility);
       }
-
-      List<ProductModuleContent> productModuleContents = new ArrayList<>();
-      for (GHTag ghtag : tags) {
-        ProductModuleContent productModuleContent = axonIvyProductRepoService.getReadmeAndProductContentsFromTag(
-            product, productRepo, ghtag.getName());
-        productModuleContents.add(productModuleContent);
-      }
-      product.setProductModuleContents(productModuleContents);
-    } catch (Exception e) {
-      log.error("Cannot find repository by path {} {}", product.getRepositoryName(), e);
+    } catch (IOException e) {
+      log.error("Cannot get tag list of product ", e);
     }
   }
 
