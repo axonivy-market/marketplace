@@ -8,6 +8,7 @@ import {
 } from '../../product-star-rating-number/product-star-rating-number.component';
 import { CommonModule } from '@angular/common';
 import { StarRatingCounting } from '../../../../../shared/models/star-rating-counting.model';
+import { LanguageService } from '../../../../../core/services/language/language.service';
 
 @Component({
   selector: 'app-product-star-rating-panel',
@@ -28,6 +29,7 @@ export class ProductStarRatingPanelComponent {
   @Output() openAddFeedbackDialog = new EventEmitter<void>();
 
   productStarRatingService = inject(ProductStarRatingService);
+  languageService = inject(LanguageService);
 
   starRatings: Signal<StarRatingCounting[]> = this.productStarRatingService.starRatings;
 }

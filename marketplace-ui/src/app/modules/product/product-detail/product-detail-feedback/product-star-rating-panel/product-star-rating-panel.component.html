@@ -6,7 +6,7 @@
   <app-product-star-rating-number (openAddFeedbackDialog)="openAddFeedbackDialog.emit()" />
   <div></div>
   <div>
-    <p class="text-secondary mb-1">
+    <p [lang]="languageService.selectedLanguage()" class="text-secondary mb-1">
       {{ 'common.feedback.detailedReviews' | translate }}
     </p>
     <div>
@@ -19,8 +19,8 @@
           </div>
         </div>
         <div aria-hidden="true" class="star-rating-counting-line">
-          <div id="star-rating-percent-{{ counting.starRating }}" class="star-rating-percent"
-          starRatingHighlight [percent]="counting.percent!"></div>
+          <div id="star-rating-percent-{{ counting.starRating }}" class="star-rating-percent" starRatingHighlight
+            [percent]="counting.percent!"></div>
         </div>
       </div>
       }

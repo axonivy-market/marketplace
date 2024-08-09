@@ -11,6 +11,7 @@ import { ProductFeedbacksPanelComponent } from './product-feedbacks-panel/produc
 import { AppModalService } from '../../../../shared/services/app-modal.service';
 import { ProductFeedbackService } from './product-feedbacks-panel/product-feedback.service';
 import { TranslateModule } from '@ngx-translate/core';
+import { LanguageService } from '../../../../core/services/language/language.service';
 
 const MAX_ELEMENTS = 6;
 
@@ -41,6 +42,7 @@ export class ProductDetailFeedbackComponent {
 
   productFeedbackService = inject(ProductFeedbackService);
   appModalService = inject(AppModalService);
+  languageService = inject(LanguageService);
 
   showPopup!: boolean;
 

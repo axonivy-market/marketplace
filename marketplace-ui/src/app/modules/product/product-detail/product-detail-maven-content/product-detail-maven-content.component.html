@@ -1,4 +1,4 @@
-<p [innerHTML]="'common.product.detail.maven.description' | translate"></p>
+<p [lang]="languageService.selectedLanguage()" [innerHTML]="'common.product.detail.maven.description' | translate"></p>
 <code>
   &lt;!-- {{ productModuleContent.name }} --&gt;
   <br />

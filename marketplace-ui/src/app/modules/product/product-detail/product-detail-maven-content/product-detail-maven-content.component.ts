@@ -1,6 +1,7 @@
-import { Component, Input } from '@angular/core';
+import { Component, inject, Input } from '@angular/core';
 import { TranslateModule } from '@ngx-translate/core';
 import { ProductModuleContent } from '../../../../shared/models/product-module-content.model';
+import { LanguageService } from '../../../../core/services/language/language.service';
 
 @Component({
   selector: 'app-product-detail-maven-content',
@@ -14,4 +15,6 @@ export class ProductDetailMavenContentComponent {
   productModuleContent!: ProductModuleContent;
   @Input()
   selectedVersion!: string;
+
+  languageService = inject(LanguageService);
 }

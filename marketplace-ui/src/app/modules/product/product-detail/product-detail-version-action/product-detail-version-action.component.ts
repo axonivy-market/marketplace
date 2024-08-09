@@ -18,6 +18,7 @@ import { Artifact } from '../../../../shared/models/vesion-artifact.model';
 import { Tooltip } from 'bootstrap';
 import { ProductDetailService } from '../product-detail.service';
 import { RoutingQueryParamService } from '../../../../shared/services/routing.query.param.service';
+import { LanguageService } from '../../../../core/services/language/language.service';
 
 const delayTimeBeforeHideMessage = 2000;
 @Component({
@@ -49,6 +50,7 @@ export class ProductDetailVersionActionComponent implements AfterViewInit {
   productService = inject(ProductService);
   productDetailService = inject(ProductDetailService);
   elementRef = inject(ElementRef);
+  languageService = inject(LanguageService);
 
   ngAfterViewInit() {
     const tooltipTriggerList = [].slice.call(
