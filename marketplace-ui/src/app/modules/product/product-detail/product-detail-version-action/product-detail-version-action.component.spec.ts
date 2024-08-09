@@ -42,10 +42,9 @@ describe('ProductVersionActionComponent', () => {
   });
 
   it('first artifact should be chosen when select corresponding version', () => {
-    component.onSelectVersion();
-    expect(component.artifacts().length).toBe(0);
-
     const selectedVersion = 'Version 10.0.2';
+    component.onSelectVersion(selectedVersion);
+    expect(component.artifacts().length).toBe(0);
     const artifact = {
       name: 'Example Artifact',
       downloadUrl: 'https://example.com/download',
@@ -54,7 +53,7 @@ describe('ProductVersionActionComponent', () => {
     component.versions.set([selectedVersion]);
     component.versionMap.set(selectedVersion, [artifact]);
     component.selectedVersion.set(selectedVersion);
-    component.onSelectVersion();
+    component.onSelectVersion(selectedVersion);
 
     expect(component.artifacts().length).toBe(1);
     expect(component.selectedArtifact).toEqual('https://example.com/download');

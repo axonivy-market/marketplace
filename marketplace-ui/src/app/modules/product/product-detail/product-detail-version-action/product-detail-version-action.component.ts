@@ -18,6 +18,7 @@ import { Artifact } from '../../../../shared/models/vesion-artifact.model';
 import { Tooltip } from 'bootstrap';
 import { ProductDetailService } from '../product-detail.service';
 import { RoutingQueryParamService } from '../../../../shared/services/routing.query.param.service';
+import { SORT_TYPES } from '../../../../shared/constants/common.constant';
 
 const delayTimeBeforeHideMessage = 2000;
 @Component({
@@ -49,7 +50,7 @@ export class ProductDetailVersionActionComponent implements AfterViewInit {
   productService = inject(ProductService);
   productDetailService = inject(ProductDetailService);
   elementRef = inject(ElementRef);
-
+  isDropdownOpen = false;
   ngAfterViewInit() {
     const tooltipTriggerList = [].slice.call(
       document.querySelectorAll('[data-bs-toggle="tooltip"]')
@@ -64,6 +65,7 @@ export class ProductDetailVersionActionComponent implements AfterViewInit {
 
   onShowVersions() {
     this.isVersionsDropDownShow.set(!this.isVersionsDropDownShow());
+    this.isDropdownOpen = !this.isDropdownOpen;
   }
 
   getInstallationTooltipText() {
@@ -74,12 +76,13 @@ export class ProductDetailVersionActionComponent implements AfterViewInit {
         (minimum version 9.2.0)</p>`;
   }
 
-  onSelectVersion() {
+  onSelectVersion(version : string) {
+    this.selectedVersion.set(version);
     this.artifacts.set(this.versionMap.get(this.selectedVersion()) ?? []);
-
     if (this.artifacts().length !== 0) {
       this.selectedArtifact = this.artifacts()[0].downloadUrl;
     }
+    this.isDropdownOpen = false;
   }
 
   onShowDevVersion(event: Event) {
@@ -117,7 +120,6 @@ export class ProductDetailVersionActionComponent implements AfterViewInit {
         });
         if (this.versions().length !== 0) {
           this.selectedVersion.set(this.versions()[0]);
-          this.onSelectVersion();
         }
       });
   }

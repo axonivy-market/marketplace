@@ -31,20 +31,34 @@
       </select>
     </div>
     <div class="form-group">
-      <label for="verions-selector" class="form-label mt-2 fs-md text-primary">
+      <label for="version-selector" class="form-label mt-2 fs-md text-primary">
         {{
         'common.product.detail.download.versionSelector.label' | translate
         }}
       </label>
-      <select id="verions-selector" [(ngModel)]="selectedVersion"
-        [ngClass]="{'indicator-arrow__up': isVersionsDropDownShow()}" (click)="onShowVersions()" name="Version"
-        (change)="onSelectVersion()"
-        class="form-select form-select-sm versions-selector__dropdown border__dropdown fs-md"
-        aria-label=".form-select-sm example">
-        @for (item of versions(); track $index) {
-        <option [value]="item">{{ item }}</option>
-        }
-      </select>
+<!--      <select id="verions-selector" [(ngModel)]="selectedVersion"-->
+<!--        [ngClass]="{'indicator-arrow__up': isVersionsDropDownShow()}" (click)="onShowVersions()" name="Version"-->
+<!--        (change)="onSelectVersion()"-->
+<!--        class="form-select form-select-sm versions-selector__dropdown border__dropdown fs-md"-->
+<!--        aria-label=".form-select-sm example">-->
+<!--        @for (item of versions(); track $index) {-->
+<!--        <option [value]="item">{{ item }}</option>-->
+<!--        }-->
+<!--      </select>-->
+
+      <div id="version-selector">
+        <button (click)="onShowVersions()"
+                class="form-select form-select-sm versions-selector__dropdown border__dropdown fs-md"
+                aria-label=".form-select-sm example">
+          {{ selectedVersion() }}
+        </button>
+        <div class="dropdown-menu" [class.show]="isDropdownOpen">
+          <div class="dropdown-item" *ngFor="let item of versions()" (click)="onSelectVersion(item)">
+            {{ item }}
+          </div>
+        </div>
+      </div>
+
     </div>
     <a href="#" class="dev-versions__toggle primary-color text-decoration-none" (click)="onShowDevVersion($event)">
       @if (isDevVersionsDisplayed()) {
