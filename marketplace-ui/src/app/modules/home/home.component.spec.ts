@@ -7,6 +7,8 @@ import {
   withInterceptorsFromDi
 } from '@angular/common/http';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
+import { ActivatedRoute } from '@angular/router';
+import { of } from 'rxjs';
 
 describe('HomeComponent', () => {
   let component: HomeComponent;
@@ -18,7 +20,13 @@ describe('HomeComponent', () => {
       providers: [
         provideHttpClient(withInterceptorsFromDi()),
         provideHttpClientTesting(),
-        TranslateService
+        TranslateService,
+        {
+          provide: ActivatedRoute,
+          useValue: {
+            queryParams: of({})
+          }
+        }
       ]
     }).compileComponents();
 

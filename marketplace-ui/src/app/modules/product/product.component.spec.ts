@@ -1,14 +1,21 @@
-import { ComponentFixture, fakeAsync, TestBed, tick } from '@angular/core/testing';
+import {
+  ComponentFixture,
+  fakeAsync,
+  TestBed,
+  tick
+} from '@angular/core/testing';
 
 import { provideHttpClient } from '@angular/common/http';
-import { Router } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
-import { Subscription } from 'rxjs';
+import { of, Subscription } from 'rxjs';
 import { TypeOption } from '../../shared/enums/type-option.enum';
 import { SortOption } from '../../shared/enums/sort-option.enum';
 import { ProductComponent } from './product.component';
 import { ProductService } from './product.service';
 import { MockProductService } from '../../shared/mocks/mock-services';
+import { RoutingQueryParamService } from '../../shared/services/routing.query.param.service';
+import { DESIGNER_COOKIE_VARIABLE } from '../../shared/constants/common.constant';
 
 const router = {
   navigate: jasmine.createSpy('navigate')
@@ -18,6 +25,7 @@ describe('ProductComponent', () => {
   let component: ProductComponent;
   let fixture: ComponentFixture<ProductComponent>;
   let mockIntersectionObserver: any;
+  let routingQueryParamService: jasmine.SpyObj<RoutingQueryParamService>;
 
   beforeAll(() => {
     mockIntersectionObserver = jasmine.createSpyObj('IntersectionObserver', [
@@ -42,12 +50,33 @@ describe('ProductComponent', () => {
   });
 
   beforeEach(async () => {
+    routingQueryParamService = jasmine.createSpyObj(
+      'RoutingQueryParamService',
+      [
+        'getNavigationStartEvent',
+        'isDesigner',
+        'isDesignerEnv',
+        'checkCookieForDesignerEnv',
+        'checkCookieForDesignerVersion'
+      ]
+    );
+
     await TestBed.configureTestingModule({
       imports: [ProductComponent, TranslateModule.forRoot()],
       providers: [
         {
           provide: Router,
           useValue: router
+        },
+        {
+          provide: ActivatedRoute,
+          useValue: {
+            queryParams: of( {[DESIGNER_COOKIE_VARIABLE.restClientParamName]:true} )
+          }
+        },
+        {
+          provide: RoutingQueryParamService,
+          useValue: routingQueryParamService
         },
         ProductService,
         TranslateService,
@@ -61,6 +90,8 @@ describe('ProductComponent', () => {
         }
       })
       .compileComponents();
+    routingQueryParamService = TestBed.inject(RoutingQueryParamService) as jasmine.SpyObj<RoutingQueryParamService>;
+
     fixture = TestBed.createComponent(ProductComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
@@ -160,5 +191,26 @@ describe('ProductComponent', () => {
     component.viewProductDetail(productId, '');
 
     expect(router.navigate).toHaveBeenCalledWith(['', productId]);
+  });
+
+  it('should set isRESTClient true based on query params and designer environment', () => {
+    routingQueryParamService.isDesignerEnv.and.returnValue(true);
+    const fixtureTest = TestBed.createComponent(ProductComponent);
+    component = fixtureTest.componentInstance;
+
+    expect(component.isRESTClient()).toBeTrue();
+  });
+
+  it('should not display marketplace introduction in designer', () => {
+    component.route.queryParams = of({
+      [DESIGNER_COOKIE_VARIABLE.restClientParamName]: 'resultsOnly',
+      [DESIGNER_COOKIE_VARIABLE.searchParamName]: 'search'
+    });
+
+    component.isDesignerEnvironment = true;
+    fixture.detectChanges();
+
+    const compiled = fixture.debugElement.nativeElement;
+    expect(compiled.querySelector('.row col-md-12 mt-8')).toBeNull();
   });
 });

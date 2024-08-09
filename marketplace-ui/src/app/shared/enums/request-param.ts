@@ -2,5 +2,8 @@ export enum RequestParam {
   TYPE = 'type',
   KEYWORD = 'keyword',
   SORT = 'sort',
-  LANGUAGE = 'language'
+  LANGUAGE = 'language',
+  IS_REST_CLIENT_EDITOR = 'isRESTClient',
+  PAGE = 'page',
+  SIZE = 'size'
 }

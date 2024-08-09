@@ -6,6 +6,7 @@ import { ThemeService } from '../../../core/services/theme/theme.service';
 import { Product } from '../../../shared/models/product.model';
 import { ProductLogoPipe } from '../../../shared/pipes/logo.pipe';
 import { MultilingualismPipe } from '../../../shared/pipes/multilingualism.pipe';
+import { ProductComponent } from '../product.component';
 
 @Component({
   selector: 'app-product-card',
@@ -17,6 +18,7 @@ import { MultilingualismPipe } from '../../../shared/pipes/multilingualism.pipe'
 export class ProductCardComponent {
   themeService = inject(ThemeService);
   languageService = inject(LanguageService);
+  isShowInRESTClientEditor = inject(ProductComponent).isRESTClient();
 
   @Input() product!: Product;
 }

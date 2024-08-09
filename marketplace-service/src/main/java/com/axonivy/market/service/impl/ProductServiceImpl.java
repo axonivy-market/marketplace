@@ -1,6 +1,8 @@
 package com.axonivy.market.service.impl;
 
 import static com.axonivy.market.enums.DocumentField.MARKET_DIRECTORY;
+import static com.axonivy.market.enums.DocumentField.SHORT_DESCRIPTIONS;
+
 import static java.util.Optional.ofNullable;
 import static org.apache.commons.lang3.StringUtils.EMPTY;
 
@@ -9,6 +11,7 @@ import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.security.SecureRandom;
+
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -103,15 +106,18 @@ public class ProductServiceImpl implements ProductService {
   }
 
   @Override
-  public Page<Product> findProducts(String type, String keyword, String language, Pageable pageable) {
+  public Page<Product> findProducts(String type, String keyword, String language, Boolean isRESTClient,
+      Pageable pageable) {
     final var typeOption = TypeOption.of(type);
     final var searchPageable = refinePagination(language, pageable);
     var searchCriteria = new ProductSearchCriteria();
-    searchCriteria.setType(typeOption);
     searchCriteria.setListed(true);
     searchCriteria.setKeyword(keyword);
-    searchCriteria.setLanguage(Language.of(language));
     searchCriteria.setType(typeOption);
+    searchCriteria.setLanguage(Language.of(language));
+    if (BooleanUtils.isTrue(isRESTClient)) {
+      searchCriteria.setExcludeFields(List.of(SHORT_DESCRIPTIONS));
+    }
     return productRepository.searchByCriteria(searchCriteria, searchPageable);
   }
 

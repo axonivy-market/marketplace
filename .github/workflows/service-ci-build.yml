@@ -2,9 +2,9 @@ name: Service CI Build
 run-name: Build Service on branch ${{github.ref_name}} triggered by ${{github.actor}}
 
 on:
-  push:
-    paths:
-      - 'marketplace-service/**'
+  # push:
+  #   paths:
+  #     - 'marketplace-service/**'
   workflow_dispatch:
 
 jobs:

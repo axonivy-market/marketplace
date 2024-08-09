@@ -4,6 +4,16 @@ import { MOCK_EMPTY_DE_VALUES_AND_NO_LOGO_URL_PRODUCTS, MOCK_PRODUCTS } from '..
 import { ProductCardComponent } from './product-card.component';
 import { Product } from '../../../shared/models/product.model';
 import { Language } from '../../../shared/enums/language.enum';
+import { ProductComponent } from '../product.component';
+import { ProductService } from '../product.service';
+import { provideHttpClientTesting } from '@angular/common/http/testing';
+import {
+  provideHttpClient,
+  withInterceptorsFromDi
+} from '@angular/common/http';
+import { ActivatedRoute } from '@angular/router';
+import { of } from 'rxjs';
+import { By } from '@angular/platform-browser';
 
 const products = MOCK_PRODUCTS._embedded.products as Product[];
 const noDeNameAndNoLogoUrlProducts =
@@ -12,11 +22,20 @@ const noDeNameAndNoLogoUrlProducts =
 describe('ProductCardComponent', () => {
   let component: ProductCardComponent;
   let fixture: ComponentFixture<ProductCardComponent>;
+  let mockActivatedRoute: any;
 
   beforeEach(async () => {
+    mockActivatedRoute = { queryParams: of({ showPopup: 'true' }) };
     await TestBed.configureTestingModule({
       imports: [ProductCardComponent, TranslateModule.forRoot()],
-      providers: [TranslateService]
+      providers: [
+        provideHttpClient(withInterceptorsFromDi()),
+        provideHttpClientTesting(),
+        TranslateService,
+        ProductService,
+        ProductComponent,
+        { provide: ActivatedRoute, useValue: mockActivatedRoute }
+      ]
     }).compileComponents();
 
     fixture = TestBed.createComponent(ProductCardComponent);
@@ -46,6 +65,26 @@ describe('ProductCardComponent', () => {
         ?.textContent?.trim()
     ).toEqual(
       'Amazon Comprehend is a AI service that uses machine learning to uncover information in unstructured data.'
+    );
+  });
+
+  it('should display product tag in REST client', () => {
+    component.isShowInRESTClientEditor = true;
+    fixture.detectChanges();
+
+    const tagElement = fixture.debugElement.query(By.css('.card__tag'));
+    expect(tagElement).toBeTruthy();
+    expect(tagElement.nativeElement.textContent).toContain('AI');
+  });
+
+  it('should display product type in marketplace website', () => {
+    component.isShowInRESTClientEditor = false;
+    fixture.detectChanges();
+
+    const tagElement = fixture.debugElement.query(By.css('.card__tag'));
+    expect(tagElement).toBeTruthy();
+    expect(tagElement.nativeElement.textContent).toContain(
+      'common.filter.value.connector'
     );
   });
 });

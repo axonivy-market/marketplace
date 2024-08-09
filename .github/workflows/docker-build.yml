@@ -1,8 +1,8 @@
 name: Docker Build
 
 on:
-  push:
-    branches: [ "develop" ]
+  # push:
+  #   branches: [ "develop" ]
   workflow_dispatch:
     inputs:
       build_env:
