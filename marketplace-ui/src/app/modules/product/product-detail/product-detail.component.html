@@ -19,14 +19,14 @@
             <div class="logo__image-container">
               <img class="logo__image" [src]="productDetail().logoUrl" alt="" />
             </div>
-            <h1 class="product-title align-items-start">
+            <h1 class="product-title align-items-start default-cursor">
               {{
                 productDetail().names
                   | multilingualism: languageService.selectedLanguage()
               }}
             </h1>
           </div>
-          <div class="d-flex flex-row align-items-start module-gap">
+          <div class="d-flex flex-row align-items-start module-gap default-cursor">
             <div
               class="analysis-container d-flex flex-column align-items-start p-0">
               <app-product-star-rating-number
@@ -140,7 +140,7 @@
           </div>
         </div>
 
-        <div class="tab-content col-12">
+        <div class="tab-content col-12 default-cursor">
           <div
             class="tab-pane fade show"
             [class.active]="activeTab === 'description'"
@@ -187,7 +187,7 @@
       </div>
 
       <div
-        class="info-tab d-none d-xl-block d-flex flex-column flex-grow-1 align-items-start col-xl-3">
+        class="info-tab d-none d-xl-block d-flex flex-column flex-grow-1 align-items-start col-xl-3 default-cursor">
         <app-product-detail-information-tab
           [productDetail]="productDetail()"
           [selectedVersion]="
@@ -197,7 +197,7 @@
     </div>
   </div>
   <hr />
-  <div style="margin-bottom: 8rem">
+  <div class="default-cursor" style="margin-bottom: 8rem">
     @if (productDetail() && productFeedbackService.totalElements() > 0) {
       <app-product-detail-feedback [isMobileMode]="isMobileMode()" />
     } @else {
