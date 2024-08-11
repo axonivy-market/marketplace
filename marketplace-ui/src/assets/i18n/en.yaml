@@ -8,7 +8,7 @@ common:
     news: News
     doc: Doc 123
     tutorial: Tutorial
-    community: Community  123
+    community: Community  123 fix bug
     team: Team  
     market: Market  hello bbb
   introduction:
