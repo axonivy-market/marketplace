@@ -28,6 +28,11 @@ jobs:
     runs-on: self-hosted
 
     steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.release_version || github.ref }}
+
       - name: Bring down and remove containers and images
         working-directory: ./marketplace-build/dev
         run: |
