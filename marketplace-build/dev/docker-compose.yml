@@ -12,7 +12,7 @@ services:
         - BUILD_ENV=${BUILD_ENV}
     restart: always
     volumes:
-      - ./config/nginx/nginx.conf:/etc/nginx/nginx.conf
+      - ../../config/nginx/nginx.conf:/etc/nginx/nginx.conf
     ports:
       - "4200:80"
     depends_on:
