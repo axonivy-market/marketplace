@@ -317,7 +317,7 @@ public class ProductServiceImpl implements ProductService {
           updateProductFromReleaseTags(product, productRepo);
           productRepository.save(product);
         } catch (IOException e) {
-          log.error("Cannot find product repository", e);
+          log.error("Cannot find product repository {} {}", product.getRepositoryName(), e);
         }
       }
     }
@@ -338,7 +338,7 @@ public class ProductServiceImpl implements ProductService {
           updateProductCompatibility(product);
           updateProductFromReleaseTags(product, productRepo);
         } catch (IOException e) {
-          log.error("Cannot find product repository", e);
+          log.error("Cannot find product repository {} {}", product.getRepositoryName(), e);
         }
       }
       products.add(product);
