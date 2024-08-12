@@ -22,7 +22,7 @@
         }}
       </label>
       <select id="artifacts-selector" [(ngModel)]="selectedArtifact" name="Artifact"
-        class="form-select form-select-sm artifacts-selector__dropdown border__dropdown fs-md"
+        class="form-select form-select-sm artifacts-selector__dropdown border__dropdown fs-md pointer-cursor"
         aria-label=".form-select-sm">
         @for (item of artifacts(); track $index) {
         <option class="option" [value]="item.downloadUrl">
@@ -41,7 +41,7 @@
       <select id="verions-selector" [(ngModel)]="selectedVersion"
         [ngClass]="{'indicator-arrow__up': isVersionsDropDownShow()}" (click)="onShowVersions()" name="Version"
         (change)="onSelectVersion()"
-        class="form-select form-select-sm versions-selector__dropdown border__dropdown fs-md"
+        class="form-select form-select-sm versions-selector__dropdown border__dropdown fs-md pointer-cursor"
         aria-label=".form-select-sm example">
         @for (item of versions(); track $index) {
         <option [value]="item">{{ item }}</option>

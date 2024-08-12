@@ -248,6 +248,13 @@ p {
   }
   /** End Star Rating Summary **/
 }
+.default-cursor {
+  cursor: default;
+}
+
+.pointer-cursor {
+  cursor: pointer;
+}
 
 *:focus {
   box-shadow: none !important;

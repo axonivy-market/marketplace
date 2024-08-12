@@ -31,7 +31,11 @@ $rowHeight: 37px;
   padding: 10px 15px;
   margin: 0 15px 0 0;
   gap: 10px;
-  cursor: default;
+  cursor: pointer;
+}
+
+.sort-type {
+  cursor: pointer;
 }
 
 .sort-container__label {
