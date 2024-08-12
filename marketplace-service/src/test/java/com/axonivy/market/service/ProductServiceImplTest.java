@@ -328,9 +328,9 @@ class ProductServiceImplTest extends BaseSetup {
     // Executes
     productService.syncLatestDataFromMarketRepo();
 
-    verify(productRepository).saveAll(productListArgumentCaptor.capture());
+    verify(productRepository).save(argumentCaptor.capture());
 
-    assertThat(productListArgumentCaptor.getValue().get(0).getProductModuleContents()).usingRecursiveComparison()
+    assertThat(argumentCaptor.getValue().getProductModuleContents()).usingRecursiveComparison()
         .isEqualTo(List.of(mockReadmeProductContent()));
   }
 
