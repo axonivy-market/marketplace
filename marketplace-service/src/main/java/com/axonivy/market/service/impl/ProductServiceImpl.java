@@ -212,8 +212,6 @@ public class ProductServiceImpl implements ProductService {
         }
 
         ProductFactory.mappingByGHContent(product, fileContent);
-        updateProductCompatibility(product);
-        updateProductFromReleaseTags(product);
         if (FileType.META == file.getType()) {
           modifyProductByMetaContent(file, product);
         } else {
@@ -313,8 +311,15 @@ public class ProductServiceImpl implements ProductService {
     }
 
     for (Product product : products) {
-      updateProductFromReleaseTags(product);
-      productRepository.save(product);
+      if (StringUtils.isNotBlank(product.getRepositoryName())) {
+        try {
+          GHRepository productRepo = gitHubService.getRepository(product.getRepositoryName());
+          updateProductFromReleaseTags(product, productRepo);
+          productRepository.save(product);
+        } catch (IOException e) {
+          log.error("Cannot find product repository", e);
+        }
+      }
     }
   }
 
@@ -326,8 +331,15 @@ public class ProductServiceImpl implements ProductService {
       Product product = new Product();
       for (var content : ghContentEntity.getValue()) {
         ProductFactory.mappingByGHContent(product, content);
-        updateProductCompatibility(product);
-        updateProductFromReleaseTags(product);
+      }
+      if (StringUtils.isNotBlank(product.getRepositoryName())) {
+        try {
+          GHRepository productRepo = gitHubService.getRepository(product.getRepositoryName());
+          updateProductCompatibility(product);
+          updateProductFromReleaseTags(product, productRepo);
+        } catch (IOException e) {
+          log.error("Cannot find product repository", e);
+        }
       }
       products.add(product);
     });
@@ -337,56 +349,63 @@ public class ProductServiceImpl implements ProductService {
     return new PageImpl<>(products);
   }
 
-  private void updateProductFromReleaseTags(Product product) {
-    try {
-      List<ProductModuleContent> productModuleContents = new ArrayList<>();
-      List<GHTag> tags = gitHubService.getRepositoryTags(product.getRepositoryName());
+  private void updateProductFromReleaseTags(Product product, GHRepository productRepo) {
+    List<ProductModuleContent> productModuleContents = new ArrayList<>();
+    List<GHTag> tags = getProductReleaseTags(product);
+    GHTag lastTag = CollectionUtils.firstElement(tags);
 
-      GHTag lastTag = CollectionUtils.firstElement(tags);
-
-      if (lastTag == null || lastTag.getName().equals(product.getNewestReleaseVersion())) {
-        return;
-      }
-
-      product.setNewestPublishedDate(lastTag.getCommit().getCommitDate());
-      product.setNewestReleaseVersion(lastTag.getName());
-
-      if (!ObjectUtils.isEmpty(product.getProductModuleContents())) {
-        productModuleContents.addAll(product.getProductModuleContents());
-        List<String> currentTags = product.getProductModuleContents().stream().filter(Objects::nonNull)
-            .map(ProductModuleContent::getTag).toList();
-        tags = tags.stream().filter(t -> !currentTags.contains(t.getName())).toList();
-      }
-
-      for (GHTag ghTag : tags) {
-        ProductModuleContent productModuleContent = axonIvyProductRepoService.getReadmeAndProductContentsFromTag(
-            product, gitHubService.getRepository(product.getRepositoryName()), ghTag.getName());
-        productModuleContents.add(productModuleContent);
-      }
-      product.setProductModuleContents(productModuleContents);
-
-    } catch (Exception e) {
-      log.error("Cannot find repository by path {} {}", product.getRepositoryName(), e);
+    if (lastTag == null || lastTag.getName().equals(product.getNewestReleaseVersion())) {
+      return;
     }
+
+    try {
+      product.setNewestPublishedDate(lastTag.getCommit().getCommitDate());
+    } catch (IOException e) {
+      log.error("Fail to get commit date ", e);
+    }
+    product.setNewestReleaseVersion(lastTag.getName());
+
+    if (!ObjectUtils.isEmpty(product.getProductModuleContents())) {
+      productModuleContents.addAll(product.getProductModuleContents());
+      List<String> currentTags = product.getProductModuleContents().stream().filter(Objects::nonNull)
+          .map(ProductModuleContent::getTag).toList();
+      tags = tags.stream().filter(t -> !currentTags.contains(t.getName())).toList();
+    }
+
+    for (GHTag ghTag : tags) {
+      ProductModuleContent productModuleContent =
+          axonIvyProductRepoService.getReadmeAndProductContentsFromTag(product, productRepo, ghTag.getName());
+      productModuleContents.add(productModuleContent);
+    }
+    product.setProductModuleContents(productModuleContents);
   }
 
   private void updateProductCompatibility(Product product) {
+    String oldestTag =
+        getProductReleaseTags(product).stream().map(tag -> tag.getName().replaceAll(NON_NUMERIC_CHAR, Strings.EMPTY))
+            .distinct().sorted(Comparator.reverseOrder()).reduce((tag1, tag2) -> tag2).orElse(null);
+    if (oldestTag != null && StringUtils.isBlank(product.getCompatibility())) {
+      String compatibility = getCompatibilityFromOldestTag(oldestTag);
+      product.setCompatibility(compatibility);
+    }
+  }
+
+  private List<GHTag> getProductReleaseTags(Product product) {
+    List<GHTag> tags = new ArrayList<>();
     try {
-      String oldestTag = gitHubService.getRepositoryTags(product.getRepositoryName()).stream()
-          .map(tag -> tag.getName().replaceAll(NON_NUMERIC_CHAR, Strings.EMPTY)).distinct()
-          .sorted(Comparator.reverseOrder()).reduce((tag1, tag2) -> tag2).orElse(null);
-      if (oldestTag != null && StringUtils.isBlank(product.getCompatibility())) {
-        String compatibility = getCompatibilityFromOldestTag(oldestTag);
-        product.setCompatibility(compatibility);
-      }
+      tags = gitHubService.getRepositoryTags(product.getRepositoryName());
     } catch (IOException e) {
       log.error("Cannot get tag list of product ", e);
     }
+    return tags;
   }
 
   // Cover 3 cases after removing non-numeric characters (8, 11.1 and 10.0.2)
   @Override
   public String getCompatibilityFromOldestTag(String oldestTag) {
+    if (StringUtils.isBlank(oldestTag)) {
+      return "0.0+";
+    }
     if (!oldestTag.contains(CommonConstants.DOT_SEPARATOR)) {
       return oldestTag + ".0+";
     }
