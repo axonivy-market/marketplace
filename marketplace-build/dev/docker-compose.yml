@@ -6,7 +6,7 @@ services:
     build:
       context: ../../marketplace-ui
       additional_contexts:
-        assets: ../../../marketplace-build/
+        assets: ../marketplace-build/
       dockerfile: Dockerfile
       args:
         - BUILD_ENV=${BUILD_ENV}
