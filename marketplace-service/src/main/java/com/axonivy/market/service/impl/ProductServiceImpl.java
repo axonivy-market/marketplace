@@ -312,13 +312,8 @@ public class ProductServiceImpl implements ProductService {
 
     for (Product product : products) {
       if (StringUtils.isNotBlank(product.getRepositoryName())) {
-        try {
-          GHRepository productRepo = gitHubService.getRepository(product.getRepositoryName());
-          updateProductFromReleaseTags(product, productRepo);
-          productRepository.save(product);
-        } catch (IOException e) {
-          log.error("Cannot find product repository {} {}", product.getRepositoryName(), e);
-        }
+        getProductContents(product);
+        productRepository.save(product);
       }
     }
   }
@@ -333,13 +328,8 @@ public class ProductServiceImpl implements ProductService {
         ProductFactory.mappingByGHContent(product, content);
       }
       if (StringUtils.isNotBlank(product.getRepositoryName())) {
-        try {
-          GHRepository productRepo = gitHubService.getRepository(product.getRepositoryName());
-          updateProductCompatibility(product);
-          updateProductFromReleaseTags(product, productRepo);
-        } catch (IOException e) {
-          log.error("Cannot find product repository {} {}", product.getRepositoryName(), e);
-        }
+        updateProductCompatibility(product);
+        getProductContents(product);
       }
       products.add(product);
     });
@@ -347,6 +337,15 @@ public class ProductServiceImpl implements ProductService {
       productRepository.saveAll(products);
     }
     return new PageImpl<>(products);
+  }
+
+  private void getProductContents(Product product) {
+    try {
+      GHRepository productRepo = gitHubService.getRepository(product.getRepositoryName());
+      updateProductFromReleaseTags(product, productRepo);
+    } catch (IOException e) {
+      log.error("Cannot find product repository {} {}", product.getRepositoryName(), e);
+    }
   }
 
   private void updateProductFromReleaseTags(Product product, GHRepository productRepo) {
@@ -358,11 +357,7 @@ public class ProductServiceImpl implements ProductService {
       return;
     }
 
-    try {
-      product.setNewestPublishedDate(lastTag.getCommit().getCommitDate());
-    } catch (IOException e) {
-      log.error("Fail to get commit date ", e);
-    }
+    getPublishedDateFromLatestTag(product, lastTag);
     product.setNewestReleaseVersion(lastTag.getName());
 
     if (!ObjectUtils.isEmpty(product.getProductModuleContents())) {
@@ -378,6 +373,14 @@ public class ProductServiceImpl implements ProductService {
       productModuleContents.add(productModuleContent);
     }
     product.setProductModuleContents(productModuleContents);
+  }
+
+  private void getPublishedDateFromLatestTag(Product product, GHTag lastTag) {
+    try {
+      product.setNewestPublishedDate(lastTag.getCommit().getCommitDate());
+    } catch (IOException e) {
+      log.error("Fail to get commit date ", e);
+    }
   }
 
   private void updateProductCompatibility(Product product) {
