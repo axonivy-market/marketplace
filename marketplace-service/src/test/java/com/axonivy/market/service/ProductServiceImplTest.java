@@ -25,6 +25,7 @@ import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -41,7 +42,6 @@ import org.kohsuke.github.GHCommit;
 import org.kohsuke.github.GHContent;
 import org.kohsuke.github.GHRepository;
 import org.kohsuke.github.GHTag;
-import org.kohsuke.github.PagedIterable;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.InjectMocks;
@@ -308,8 +308,6 @@ class ProductServiceImplTest extends BaseSetup {
     when(ghAxonIvyProductRepoService.getReadmeAndProductContentsFromTag(any(), any(), anyString())).thenReturn(
         mockReadmeProductContent());
     when(gitHubService.getRepository(any())).thenReturn(ghRepository);
-    PagedIterable<GHTag> pagedIterable = Mockito.mock(String.valueOf(GHTag.class));
-    when(ghRepository.listTags()).thenReturn(pagedIterable);
 
     GHTag mockTag = mock(GHTag.class);
     GHCommit mockGHCommit = mock(GHCommit.class);
@@ -318,8 +316,7 @@ class ProductServiceImplTest extends BaseSetup {
     when(mockTag.getCommit()).thenReturn(mockGHCommit);
     when(mockGHCommit.getCommitDate()).thenReturn(new Date());
 
-    when(pagedIterable.toList()).thenReturn(List.of(mockTag));
-
+    when(gitHubService.getRepositoryTags(anyString())).thenReturn(List.of(mockTag));
     var mockContent = mockGHContentAsMetaJSON();
     InputStream inputStream = this.getClass().getResourceAsStream(SLASH.concat(META_FILE));
     when(mockContent.read()).thenReturn(inputStream);
@@ -331,10 +328,47 @@ class ProductServiceImplTest extends BaseSetup {
     // Executes
     productService.syncLatestDataFromMarketRepo();
 
-    verify(productRepository).saveAll(productListArgumentCaptor.capture());
+    verify(productRepository).save(argumentCaptor.capture());
 
-    assertThat(productListArgumentCaptor.getValue().get(0).getProductModuleContents()).usingRecursiveComparison()
+    assertThat(argumentCaptor.getValue().getProductModuleContents()).usingRecursiveComparison()
         .isEqualTo(List.of(mockReadmeProductContent()));
+  }
+
+  @Test
+  void testSyncProductsSecondTime() throws IOException {
+    var gitHubRepoMeta = mock(GitHubRepoMeta.class);
+    when(gitHubRepoMeta.getLastSHA1()).thenReturn(SHA1_SAMPLE);
+    var mockCommit = mockGHCommitHasSHA1(SHA1_SAMPLE);
+    when(marketRepoService.getLastCommit(anyLong())).thenReturn(mockCommit);
+    when(repoMetaRepository.findByRepoName(anyString())).thenReturn(gitHubRepoMeta);
+
+    when(productRepository.findAll()).thenReturn(mockProducts());
+
+    GHCommit mockGHCommit = mock(GHCommit.class);
+
+    GHTag mockTag = mock(GHTag.class);
+    when(mockTag.getName()).thenReturn("v10.0.2");
+    when(mockTag.getCommit()).thenReturn(mockGHCommit);
+
+    GHTag mockTag2 = mock(GHTag.class);
+    when(mockTag2.getName()).thenReturn("v10.0.3");
+
+    when(mockGHCommit.getCommitDate()).thenReturn(new Date());
+    when(gitHubService.getRepositoryTags(anyString())).thenReturn(Arrays.asList(mockTag, mockTag2));
+
+    ProductModuleContent mockReturnProductContent = mockReadmeProductContent();
+    mockReturnProductContent.setTag("v10.0.3");
+
+    when(ghAxonIvyProductRepoService.getReadmeAndProductContentsFromTag(any(), any(), anyString()))
+        .thenReturn(mockReturnProductContent);
+
+    // Executes
+    productService.syncLatestDataFromMarketRepo();
+
+    verify(productRepository).save(argumentCaptor.capture());
+    assertEquals(2, argumentCaptor.getValue().getProductModuleContents().size());
+    assertThat(argumentCaptor.getValue().getProductModuleContents()).usingRecursiveComparison()
+        .isEqualTo(List.of(mockReadmeProductContent(), mockReturnProductContent));
   }
 
   @Test
@@ -488,5 +522,11 @@ class ProductServiceImplTest extends BaseSetup {
     description.put(Language.EN.getValue(), "testDescription");
     productModuleContent.setDescription(description);
     return productModuleContent;
+  }
+
+  private List<Product> mockProducts() {
+    Product product1 = Product.builder().repositoryName("axonivy-market/amazon-comprehend-connector")
+        .productModuleContents(List.of(mockReadmeProductContent())).build();
+    return List.of(product1);
   }
 }
