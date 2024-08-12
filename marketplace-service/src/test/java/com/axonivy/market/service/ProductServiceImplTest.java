@@ -316,7 +316,7 @@ class ProductServiceImplTest extends BaseSetup {
     when(mockTag.getCommit()).thenReturn(mockGHCommit);
     when(mockGHCommit.getCommitDate()).thenReturn(new Date());
 
-    when(gitHubService.getRepositoryTags(anyString())).thenReturn(Arrays.asList(mockTag));
+    when(gitHubService.getRepositoryTags(anyString())).thenReturn(List.of(mockTag));
     var mockContent = mockGHContentAsMetaJSON();
     InputStream inputStream = this.getClass().getResourceAsStream(SLASH.concat(META_FILE));
     when(mockContent.read()).thenReturn(inputStream);
