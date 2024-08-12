@@ -74,7 +74,7 @@ describe('ProductCardComponent', () => {
 
     const tagElement = fixture.debugElement.query(By.css('.card__tag'));
     expect(tagElement).toBeTruthy();
-    expect(tagElement.nativeElement.textContent).toContain('AI');
+    expect(tagElement.nativeElement.textContent).toContain('common.filter.value.connector');
   });
 
   it('should display product type in marketplace website', () => {
