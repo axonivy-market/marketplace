@@ -121,8 +121,6 @@ export class ProductDetailComponent {
         this.productDetailService.productNames.set(productDetail.names);
         localStorage.removeItem(STORAGE_ITEM);
         this.installationCount = productDetail.installationCount;
-      window.scrollTo(0, window.pageYOffset)
-
       });
       this.productFeedbackService.initFeedbacks();
       this.productStarRatingService.fetchData();
