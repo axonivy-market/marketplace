@@ -89,7 +89,7 @@ jobs:
           if [ -n "${{ inputs.release_version }}" ]; then
             BUILD_VERSION="${{ inputs.release_version }}"
           else
-            BUILD_VERSION=$(xml sel -t -v "//_:project/_:version" ../marketplace-service/pom.xml)
+            BUILD_VERSION=$(xml sel -t -v "//_:project/_:version" ../../marketplace-service/pom.xml)
           fi
 
           docker compose build --no-cache --build-arg BUILD_ENV=${{ inputs.build_env }} --build-arg BUILD_VERSION=$BUILD_VERSION
