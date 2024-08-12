@@ -332,10 +332,8 @@ public class ProductServiceImpl implements ProductService {
         getProductContents(product);
       }
       products.add(product);
+      productRepository.save(product);
     });
-    if (!products.isEmpty()) {
-      productRepository.saveAll(products);
-    }
     return new PageImpl<>(products);
   }
 
@@ -384,10 +382,13 @@ public class ProductServiceImpl implements ProductService {
   }
 
   private void updateProductCompatibility(Product product) {
+    if (StringUtils.isNotBlank(product.getCompatibility())) {
+      return;
+    }
     String oldestTag =
         getProductReleaseTags(product).stream().map(tag -> tag.getName().replaceAll(NON_NUMERIC_CHAR, Strings.EMPTY))
             .distinct().sorted(Comparator.reverseOrder()).reduce((tag1, tag2) -> tag2).orElse(null);
-    if (oldestTag != null && StringUtils.isBlank(product.getCompatibility())) {
+    if (oldestTag != null) {
       String compatibility = getCompatibilityFromOldestTag(oldestTag);
       product.setCompatibility(compatibility);
     }
@@ -407,7 +408,7 @@ public class ProductServiceImpl implements ProductService {
   @Override
   public String getCompatibilityFromOldestTag(String oldestTag) {
     if (StringUtils.isBlank(oldestTag)) {
-      return "0.0+";
+      return Strings.EMPTY;
     }
     if (!oldestTag.contains(CommonConstants.DOT_SEPARATOR)) {
       return oldestTag + ".0+";
