@@ -1,6 +1,4 @@
-<div
-  class="card product-card w-100"
-  [style.height]="!isShowInRESTClientEditor ? '250px' : '164px'">
+<div class="card product-card w-100" [style.height]="!isShowInRESTClientEditor ? '250px' : '164px'">
   <div class="d-flex justify-content-between align-items-start">
     <img class="card-img-top rounded" width="70" height="70" [ngSrc]="product | logo"
       [alt]="product.names | multilingualism: languageService.selectedLanguage()"
@@ -17,12 +15,12 @@
       }}
     </h5>
     @if (!isShowInRESTClientEditor) {
-      <p class="card__description text-secondary" [lang]="languageService.selectedLanguage()">
-        {{
-          product.shortDescriptions
-            | multilingualism: languageService.selectedLanguage()
-        }}
-      </p>
+    <p class="card__description text-secondary" [lang]="languageService.selectedLanguage()">
+      {{
+      product.shortDescriptions
+      | multilingualism: languageService.selectedLanguage()
+      }}
+    </p>
     }
   </div>
 </div>

@@ -24,8 +24,7 @@
       </p>
       <app-star-rating [rate]="feedback.rating" (rateChange)="onRateChange($event)" [starClass]="'adding-feedback-star'"
         [ratingStarsClass]="'rating-stars'" />
-      <p [lang]="languageService.selectedLanguage()" [lang]="languageService.selectedLanguage()"
-        class="text-secondary mb-2 mt-3">
+      <p [lang]="languageService.selectedLanguage()" class="text-secondary mb-2 mt-3">
         {{ 'common.feedback.commentLabel' | translate }}
       </p>
       <textarea class="feedback-content-textarea text-primary" maxlength="250"
