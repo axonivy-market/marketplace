@@ -105,12 +105,7 @@ export class ProductDetailComponent {
 
 
   constructor() {
-    const intevalSub = interval(500).subscribe(() => {
-      window.scrollTo(0, 0);
-    });
-    setTimeout(() => {
-      intevalSub.unsubscribe();
-    }, 3000);
+    this.scrollToTop();
     this.resizeObserver = new ResizeObserver(() => {
       this.updateDropdownSelection();
     });
@@ -138,6 +133,15 @@ export class ProductDetailComponent {
       this.activeTab = savedTab;
     }
     this.updateDropdownSelection();
+  }
+
+  scrollToTop() {
+    const intevalSub = interval(500).subscribe(() => {
+      window.scrollTo(0, 0);
+    });
+    setTimeout(() => {
+      intevalSub.unsubscribe();
+    }, 3000);
   }
 
   getProductById(productId: string): Observable<ProductDetail> {
