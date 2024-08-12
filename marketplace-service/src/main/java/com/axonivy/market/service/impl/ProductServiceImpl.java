@@ -318,10 +318,9 @@ public class ProductServiceImpl implements ProductService {
     }
   }
 
-  private Page<Product> syncProductsFromGitHubRepo() {
+  private void syncProductsFromGitHubRepo() {
     log.warn("**ProductService: synchronize products from scratch based on the Market repo");
     var gitHubContentMap = axonIvyMarketRepoService.fetchAllMarketItems();
-    List<Product> products = new ArrayList<>();
     gitHubContentMap.entrySet().forEach(ghContentEntity -> {
       Product product = new Product();
       for (var content : ghContentEntity.getValue()) {
@@ -331,10 +330,8 @@ public class ProductServiceImpl implements ProductService {
         updateProductCompatibility(product);
         getProductContents(product);
       }
-      products.add(product);
       productRepository.save(product);
     });
-    return new PageImpl<>(products);
   }
 
   private void getProductContents(Product product) {
