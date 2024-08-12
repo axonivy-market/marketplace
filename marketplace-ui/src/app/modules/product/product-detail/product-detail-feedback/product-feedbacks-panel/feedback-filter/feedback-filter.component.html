@@ -1,14 +1,12 @@
 <div class="d-flex flex-row align-items-center">
-  <p class="text-primary mb-0 text-nowrap">{{'common.sort.label' | translate}}:</p>
-  <select
-    class="form-select border-primary text-primary"
-    aria-label="sort"
-    [ngModel]="productFeedbackService.sort()"
+  <p [lang]="languageService.selectedLanguage()" class="text-primary mb-0 text-nowrap">{{'common.sort.label' |
+    translate}}:</p>
+  <select class="form-select border-primary text-primary" aria-label="sort" [ngModel]="productFeedbackService.sort()"
     (change)="onSortChange($event)">
     @for (type of feedbackSortTypes; track $index) {
-      <option [value]="type.sortFn">
-        {{ type.label | translate }}
-      </option>
+    <option [value]="type.sortFn">
+      {{ type.label | translate }}
+    </option>
     }
   </select>
 </div>

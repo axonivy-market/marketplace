@@ -3,6 +3,7 @@ import { Component, ElementRef, HostListener, inject, signal } from '@angular/co
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { LanguageSelectionComponent } from '../language-selection/language-selection.component';
 import { ThemeSelectionComponent } from '../theme-selection/theme-selection.component';
+import { LanguageService } from '../../../../core/services/language/language.service';
 
 @Component({
   selector: 'app-search-bar',
@@ -21,6 +22,7 @@ export class SearchBarComponent {
 
   translateService = inject(TranslateService);
   elementRef = inject(ElementRef);
+  languageService = inject(LanguageService);
 
   @HostListener('document:click', ['$event'])
   handleClickOutside(event: MouseEvent) {

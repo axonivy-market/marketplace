@@ -62,8 +62,8 @@ p {
   --ivy-active-color: #{$ivyPrimaryColorLight};
   --ivy-link-corlor: #{$ivyPrimaryColorLight};
   --ivy-text-normal-color: #{$ivyNormalTextColorLight};
-  --ivy-text-primary-color: $ivyPrimaryTextColorLight;
-  --ivy-text-secondary-color: $ivySecondaryTextLight;
+  --ivy-text-primary-color: #{$ivyPrimaryTextColorLight};
+  --ivy-text-secondary-color: #{$ivySecondaryTextLight};
   --ivy-border-color: #{$ivySecondaryButtonHoverLight};
   --ivy-textarea-background-color: #FAFAFA;
   --header-border-color: #ebebeb;
@@ -254,11 +254,6 @@ p {
 
 .pointer-cursor {
   cursor: pointer;
-}
-
-*:focus {
-  box-shadow: none !important;
-  outline: none !important;
 }
 
 .card {
