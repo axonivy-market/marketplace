@@ -11,12 +11,20 @@
         product.names | multilingualism: languageService.selectedLanguage()
       "
       [lang]="languageService.selectedLanguage()" />
-    <div
-      [lang]="languageService.selectedLanguage()"
-      class="card__tag lh-md px-2 py-1"
-      [ngClass]="themeService.isDarkMode() ? 'text-dark' : 'text-light'">
-      {{ 'common.filter.value.' + product.type | translate }}
-    </div>
+    @if (isShowInRESTClientEditor) {
+      <div
+        class="card__tag lh-md px-2 py-1 text-capitalize"
+        [ngClass]="themeService.isDarkMode() ? 'text-dark' : 'text-light'">
+        {{ product.tags[0] }}
+      </div>
+    } @else {
+      <div
+        [lang]="languageService.selectedLanguage()"
+        class="card__tag lh-md px-2 py-1"
+        [ngClass]="themeService.isDarkMode() ? 'text-dark' : 'text-light'">
+        {{ 'common.filter.value.' + product.type | translate }}
+      </div>
+    }
   </div>
   <div>
     <h5
