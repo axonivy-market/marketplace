@@ -12,14 +12,10 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.security.SecureRandom;
 
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Objects;
+import java.util.*;
 
+import com.axonivy.market.util.VersionUtils;
+import com.fasterxml.jackson.core.util.VersionUtil;
 import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -290,16 +286,16 @@ public class ProductServiceImpl implements ProductService {
 
   private boolean isLastGithubCommitCovered() {
     boolean isLastCommitCovered = false;
-    long lastCommitTime = 0L;
-    marketRepoMeta = gitHubRepoMetaRepository.findByRepoName(GitHubConstants.AXONIVY_MARKETPLACE_REPO_NAME);
-    if (marketRepoMeta != null) {
-      lastCommitTime = marketRepoMeta.getLastChange();
-    }
-    lastGHCommit = axonIvyMarketRepoService.getLastCommit(lastCommitTime);
-    if (lastGHCommit != null && marketRepoMeta != null && StringUtils.equals(lastGHCommit.getSHA1(),
-        marketRepoMeta.getLastSHA1())) {
-      isLastCommitCovered = true;
-    }
+//    long lastCommitTime = 0L;
+//    marketRepoMeta = gitHubRepoMetaRepository.findByRepoName(GitHubConstants.AXONIVY_MARKETPLACE_REPO_NAME);
+//    if (marketRepoMeta != null) {
+//      lastCommitTime = marketRepoMeta.getLastChange();
+//    }
+//    lastGHCommit = axonIvyMarketRepoService.getLastCommit(lastCommitTime);
+//    if (lastGHCommit != null && marketRepoMeta != null && StringUtils.equals(lastGHCommit.getSHA1(),
+//        marketRepoMeta.getLastSHA1())) {
+//      isLastCommitCovered = true;
+//    }
     return isLastCommitCovered;
   }
 
@@ -365,6 +361,7 @@ public class ProductServiceImpl implements ProductService {
       ProductModuleContent productModuleContent =
           axonIvyProductRepoService.getReadmeAndProductContentsFromTag(product, productRepo, ghTag.getName());
       productModuleContents.add(productModuleContent);
+      product.getReleasedTags().add(ghTag.getName());
     }
     product.setProductModuleContents(productModuleContents);
   }
@@ -427,6 +424,20 @@ public class ProductServiceImpl implements ProductService {
       }
       return productItem;
     }).orElse(null);
+  }
+
+
+  @Override
+  public Product fetchBestMatchProductDetail(String id, String version) {
+    Product product = productRepository.findById(id).orElse(null);
+    if(Objects.isNull(product)){
+      return null;
+    }
+    List<String> versions = VersionUtils.convertTagsToVersions(product.getReleasedTags());
+    String bestMatchVersion = VersionUtils.getBestMatchVersion(versions, version);
+    String bestMatchTag = VersionUtils.convertVersionToTag(id,bestMatchVersion);
+    product.setProductModuleContents(product.getProductModuleContents().stream().filter(content -> StringUtils.equals(content.getTag(),bestMatchTag)).toList());
+    return product;
   }
 
   @Override

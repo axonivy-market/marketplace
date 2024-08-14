@@ -7,6 +7,7 @@ import com.axonivy.market.entity.Product;
 import com.axonivy.market.entity.ProductModuleContent;
 import com.axonivy.market.enums.NonStandardProduct;
 import com.axonivy.market.model.ProductDetailModel;
+import com.axonivy.market.util.VersionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.hateoas.server.mvc.RepresentationModelAssemblerSupport;
 import org.springframework.http.ResponseEntity;
@@ -35,7 +36,7 @@ public class ProductDetailModelAssembler extends RepresentationModelAssemblerSup
 
   public ProductDetailModel toModel(Product product, String version) {
     String productId = Optional.ofNullable(product).map(Product::getId).orElse(StringUtils.EMPTY);
-    return createModel(product, convertVersionToTag(productId, version));
+    return createModel(product, VersionUtils.convertVersionToTag(productId, version));
   }
 
   private ProductDetailModel createModel(Product product, String tag) {
@@ -74,18 +75,5 @@ public class ProductDetailModelAssembler extends RepresentationModelAssemblerSup
 
   private ProductModuleContent getProductModuleContentByTag(List<ProductModuleContent> contents, String tag) {
     return contents.stream().filter(content -> StringUtils.equals(content.getTag(), tag)).findAny().orElse(null);
-  }
-
-  public String convertVersionToTag(String productId, String version) {
-    if (StringUtils.isBlank(version)) {
-      return version;
-    }
-    String[] versionParts = version.split(CommonConstants.SPACE_SEPARATOR);
-    String versionNumber = versionParts[versionParts.length - 1];
-    NonStandardProduct product = NonStandardProduct.findById(productId);
-    if (product.isVersionTagNumberOnly()) {
-      return versionNumber;
-    }
-    return GitHubConstants.STANDARD_TAG_PREFIX.concat(versionNumber);
   }
 }

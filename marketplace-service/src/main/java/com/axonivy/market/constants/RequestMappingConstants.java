@@ -16,6 +16,7 @@ public class RequestMappingConstants {
   public static final String AUTH = "/auth";
   public static final String BY_ID = "/{id}";
   public static final String BY_ID_AND_TAG = "/{id}/{tag}";
+  public static final String BEST_MATCH_BY_ID_AND_VERSION = "/{id}/{version}/designer";
   public static final String VERSIONS_BY_ID = "/{id}/versions";
   public static final String PRODUCT_BY_ID = "/product/{id}";
   public static final String PRODUCT_RATING_BY_ID = "/product/{id}/rating";

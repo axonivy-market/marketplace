@@ -5,10 +5,13 @@ import static com.axonivy.market.constants.RequestMappingConstants.BY_ID_AND_TAG
 import static com.axonivy.market.constants.RequestMappingConstants.INSTALLATION_COUNT_BY_ID;
 import static com.axonivy.market.constants.RequestMappingConstants.PRODUCT_DETAILS;
 import static com.axonivy.market.constants.RequestMappingConstants.VERSIONS_BY_ID;
+import static com.axonivy.market.constants.RequestMappingConstants.BEST_MATCH_BY_ID_AND_VERSION;
 import static com.axonivy.market.constants.RequestParamConstants.DESIGNER_VERSION;
 import static com.axonivy.market.constants.RequestParamConstants.ID;
 import static com.axonivy.market.constants.RequestParamConstants.SHOW_DEV_VERSION;
 import static com.axonivy.market.constants.RequestParamConstants.TAG;
+import static com.axonivy.market.constants.RequestParamConstants.VERSION;
+
 
 import java.util.List;
 
@@ -54,6 +57,14 @@ public class ProductDetailsController {
       @PathVariable(TAG) @Parameter(description = "Release tag (from git hub repo tags)", example = "v10.0.20", in = ParameterIn.PATH) String tag) {
     var productDetail = productService.fetchProductDetail(id);
     return new ResponseEntity<>(detailModelAssembler.toModel(productDetail, tag), HttpStatus.OK);
+  }
+  @GetMapping(BEST_MATCH_BY_ID_AND_VERSION)
+  @Operation(summary = "Find best match product detail by product id and version.", description = "get product detail by it product id and version")
+  public ResponseEntity<ProductDetailModel> findBestMatchProductDetailsByVersion(
+          @PathVariable(ID) @Parameter(description = "Product id (from meta.json)", example = "adobe-acrobat-connector", in = ParameterIn.PATH) String id,
+          @PathVariable(VERSION) @Parameter(description = "Version", example = "10.0.20", in = ParameterIn.PATH) String version) {
+    var productDetail = productService.fetchBestMatchProductDetail(id,version);
+    return new ResponseEntity<>(detailModelAssembler.toModel(productDetail), HttpStatus.OK);
   }
 
   @CrossOrigin(originPatterns = "*")

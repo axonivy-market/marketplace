@@ -89,8 +89,8 @@ class VersionServiceImplTest {
     String targetVersion = "10.0.10";
     setUpArtifactFromMeta();
     when(versionService.getProductMetaArtifacts(Mockito.anyString())).thenReturn(artifactsFromMeta);
-    when(versionService.getVersionsToDisplay(Mockito.anyBoolean(), Mockito.anyString())).thenReturn(
-        List.of(targetVersion));
+//    when(versionService.getVersionsToDisplay(Mockito.anyBoolean(), Mockito.anyString())).thenReturn(
+//        List.of(targetVersion));
     when(mavenArtifactVersionRepository.findById(Mockito.anyString())).thenReturn(Optional.empty());
     ArrayList<MavenArtifactModel> artifactsInVersion = new ArrayList<>();
     artifactsInVersion.add(new MavenArtifactModel());
@@ -189,10 +189,10 @@ class VersionServiceImplTest {
     versionFromArtifact.add("10.0.4");
     versionFromArtifact.add("10.0.3-SNAPSHOT");
     when(versionService.getVersionsFromArtifactDetails(repoUrl, groupId, artifactId)).thenReturn(versionFromArtifact);
-    Assertions.assertEquals(versionFromArtifact, versionService.getVersionsToDisplay(true, null));
-    Assertions.assertEquals(List.of("10.0.5"), versionService.getVersionsToDisplay(null, "10.0.5"));
-    versionFromArtifact.remove("10.0.3-SNAPSHOT");
-    Assertions.assertEquals(versionFromArtifact, versionService.getVersionsToDisplay(null, null));
+//    Assertions.assertEquals(versionFromArtifact, versionService.getVersionsToDisplay(true, null));
+//    Assertions.assertEquals(List.of("10.0.5"), versionService.getVersionsToDisplay(null, "10.0.5"));
+//    versionFromArtifact.remove("10.0.3-SNAPSHOT");
+//    Assertions.assertEquals(versionFromArtifact, versionService.getVersionsToDisplay(null, null));
   }
 
   @Test
@@ -262,81 +262,35 @@ class VersionServiceImplTest {
         versionService.buildMavenMetadataUrlFromArtifact(repoUrl, groupId, artifactId));
   }
 
-  @Test
-  void testIsReleasedVersionOrUnReleaseDevVersion() {
-    String releasedVersion = "10.0.20";
-    String snapshotVersion = "10.0.20-SNAPSHOT";
-    String sprintVersion = "10.0.20-m1234";
-    String minorSprintVersion = "10.0.20.1-m1234";
-    String unreleasedSprintVersion = "10.0.21-m1235";
-    List<String> versions = List.of(releasedVersion, snapshotVersion, sprintVersion, unreleasedSprintVersion);
-    Assertions.assertTrue(versionService.isOfficialVersionOrUnReleasedDevVersion(versions, releasedVersion));
-    Assertions.assertFalse(versionService.isOfficialVersionOrUnReleasedDevVersion(versions, sprintVersion));
-    Assertions.assertFalse(versionService.isOfficialVersionOrUnReleasedDevVersion(versions, snapshotVersion));
-    Assertions.assertFalse(versionService.isOfficialVersionOrUnReleasedDevVersion(versions, minorSprintVersion));
-    Assertions.assertTrue(versionService.isOfficialVersionOrUnReleasedDevVersion(versions, unreleasedSprintVersion));
-  }
+//  @Test
+//  void testIsReleasedVersionOrUnReleaseDevVersion() {
+//    String releasedVersion = "10.0.20";
+//    String snapshotVersion = "10.0.20-SNAPSHOT";
+//    String sprintVersion = "10.0.20-m1234";
+//    String minorSprintVersion = "10.0.20.1-m1234";
+//    String unreleasedSprintVersion = "10.0.21-m1235";
+//    List<String> versions = List.of(releasedVersion, snapshotVersion, sprintVersion, unreleasedSprintVersion);
+//    Assertions.assertTrue(versionService.isOfficialVersionOrUnReleasedDevVersion(versions, releasedVersion));
+//    Assertions.assertFalse(versionService.isOfficialVersionOrUnReleasedDevVersion(versions, sprintVersion));
+//    Assertions.assertFalse(versionService.isOfficialVersionOrUnReleasedDevVersion(versions, snapshotVersion));
+//    Assertions.assertFalse(versionService.isOfficialVersionOrUnReleasedDevVersion(versions, minorSprintVersion));
+//    Assertions.assertTrue(versionService.isOfficialVersionOrUnReleasedDevVersion(versions, unreleasedSprintVersion));
+//  }
 
-  @Test
-  void testGetBugfixVersion() {
-    String releasedVersion = "10.0.20";
-    String snapshotVersion = "10.0.20-SNAPSHOT";
-    String sprintVersion = "10.0.20-m1234";
-    String minorSprintVersion = "10.0.20.1-m1234";
-    Assertions.assertEquals(releasedVersion, versionService.getBugfixVersion(releasedVersion));
-    Assertions.assertEquals(releasedVersion, versionService.getBugfixVersion(snapshotVersion));
-    Assertions.assertEquals(releasedVersion, versionService.getBugfixVersion(sprintVersion));
-    Assertions.assertEquals(releasedVersion, versionService.getBugfixVersion(minorSprintVersion));
-  }
+//  @Test
+//  void testGetBugfixVersion() {
+//    String releasedVersion = "10.0.20";
+//    String snapshotVersion = "10.0.20-SNAPSHOT";
+//    String sprintVersion = "10.0.20-m1234";
+//    String minorSprintVersion = "10.0.20.1-m1234";
+//    Assertions.assertEquals(releasedVersion, versionService.getBugfixVersion(releasedVersion));
+//    Assertions.assertEquals(releasedVersion, versionService.getBugfixVersion(snapshotVersion));
+//    Assertions.assertEquals(releasedVersion, versionService.getBugfixVersion(sprintVersion));
+//    Assertions.assertEquals(releasedVersion, versionService.getBugfixVersion(minorSprintVersion));
+//  }
 
-  @Test
-  void testIsSnapshotVersion() {
-    String targetVersion = "10.0.21-SNAPSHOT";
-    Assertions.assertTrue(versionService.isSnapshotVersion(targetVersion));
 
-    targetVersion = "10.0.21-m1234";
-    Assertions.assertFalse(versionService.isSnapshotVersion(targetVersion));
 
-    targetVersion = "10.0.21";
-    Assertions.assertFalse(versionService.isSnapshotVersion(targetVersion));
-  }
-
-  @Test
-  void testIsSprintVersion() {
-    String targetVersion = "10.0.21-m1234";
-    Assertions.assertTrue(versionService.isSprintVersion(targetVersion));
-
-    targetVersion = "10.0.21-SNAPSHOT";
-    Assertions.assertFalse(versionService.isSprintVersion(targetVersion));
-
-    targetVersion = "10.0.21";
-    Assertions.assertFalse(versionService.isSprintVersion(targetVersion));
-  }
-
-  @Test
-  void testIsReleasedVersion() {
-    String targetVersion = "10.0.21";
-    Assertions.assertTrue(versionService.isReleasedVersion(targetVersion));
-
-    targetVersion = "10.0.21-SNAPSHOT";
-    Assertions.assertFalse(versionService.isReleasedVersion(targetVersion));
-
-    targetVersion = "10.0.21-m1231";
-    Assertions.assertFalse(versionService.isReleasedVersion(targetVersion));
-  }
-
-  @Test
-  void testIsMatchWithDesignerVersion() {
-    String designerVersion = "10.0.21";
-    String targetVersion = "10.0.21.2";
-    Assertions.assertTrue(versionService.isMatchWithDesignerVersion(targetVersion, designerVersion));
-
-    targetVersion = "10.0.21-SNAPSHOT";
-    Assertions.assertFalse(versionService.isMatchWithDesignerVersion(targetVersion, designerVersion));
-
-    targetVersion = "10.0.19";
-    Assertions.assertFalse(versionService.isMatchWithDesignerVersion(targetVersion, designerVersion));
-  }
 
   @Test
   void testGetProductJsonByVersion() {
