@@ -1,6 +1,7 @@
 <div class="dropdown" [ngClass]="dropdownClass">
   <button (click)="toggleDropdown()"
-          [ngClass]="buttonClass"
+          [class]="buttonClass"
+          [ngClass]="{'indicator-arrow__up': isDropdownOpen}"
           [attr.aria-label]="ariaLabel">
     {{ selectedItem[labelKey] || selectedItem }}
   </button>

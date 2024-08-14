@@ -4,6 +4,8 @@ import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { FeedbackFilterComponent } from './feedback-filter.component';
 import { ProductFeedbackService } from '../product-feedback.service';
 import { FEEDBACK_SORT_TYPES } from '../../../../../../shared/constants/common.constant';
+import { By } from '@angular/platform-browser';
+import { CommonDropdownComponent } from '../../../../../../shared/components/common-dropdown/common-dropdown.component';
 
 describe('FeedbackFilterComponent', () => {
   let component: FeedbackFilterComponent;
@@ -38,28 +40,25 @@ describe('FeedbackFilterComponent', () => {
   });
 
   it('should render sort options from feedbackSortTypes', () => {
-    const selectElement: HTMLSelectElement = fixture.nativeElement.querySelector('select');
-    const options = selectElement ? selectElement.querySelectorAll('option') : [];
-  
-    expect(options.length).toBe(FEEDBACK_SORT_TYPES.length);
-  
-    FEEDBACK_SORT_TYPES.forEach((type, index) => {
-      const option = options[index] as HTMLOptionElement | null;
-      expect(option).withContext('Option element should exist');
-      if (option) {
-        expect(option.textContent?.trim()).toBe(type.label);
-        expect(option.value).toBe(type.sortFn);
-      }
-    });
+    const dropdownComponent = fixture.debugElement.query(By.directive(CommonDropdownComponent)).componentInstance;
+    expect(dropdownComponent.items.length).toBe(FEEDBACK_SORT_TYPES.length);
   });
 
-  it('should emit sortChange event on select change', () => {
-    const selectElement: HTMLSelectElement = fixture.nativeElement.querySelector('select');
-    const emitSpy = spyOn(component.sortChange, 'emit').and.callThrough();
+  it('should pass the correct selected item to the dropdown', () => {
+    const dropdownComponent = fixture.debugElement.query(By.directive(CommonDropdownComponent)).componentInstance;
+    expect(dropdownComponent.selectedItem).toBe(component.selectedSortTypeLabel);
+  });
 
-    selectElement.value = 'updatedAt,asc'; // Simulate select change
-    selectElement.dispatchEvent(new Event('change'));
+  it('should call onSortChange when an item is selected', () => {
+    spyOn(component, 'onSortChange');
+    const dropdownComponent = fixture.debugElement.query(By.directive(CommonDropdownComponent)).componentInstance;
 
-    expect(emitSpy).toHaveBeenCalledWith('updatedAt,asc');
+    dropdownComponent.itemSelected.emit('newest');
+    expect(component.onSortChange).toHaveBeenCalledWith('newest');
+  });
+
+  it('should pass the correct items to the dropdown', () => {
+    const dropdownComponent = fixture.debugElement.query(By.directive(CommonDropdownComponent)).componentInstance;
+    expect(dropdownComponent.items).toBe(component.feedbackSortTypes);
   });
 });

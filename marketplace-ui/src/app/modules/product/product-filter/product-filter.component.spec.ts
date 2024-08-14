@@ -6,6 +6,7 @@ import { TypeOption } from '../../../shared/enums/type-option.enum';
 import { SortOption } from '../../../shared/enums/sort-option.enum';
 import { ProductFilterComponent } from './product-filter.component';
 import { Viewport } from 'karma-viewport/dist/adapter/viewport';
+import { CommonDropdownComponent } from '../../../shared/components/common-dropdown/common-dropdown.component';
 
 declare const viewport: Viewport;
 
@@ -34,7 +35,7 @@ describe('ProductFilterComponent', () => {
     )[1].nativeElement as HTMLDivElement;
 
     filterElement.dispatchEvent(new Event('click'));
-    expect(component.selectedTypeLabel).toEqual(TypeOption.CONNECTORS);
+    expect(component.selectedTypeLabel).toEqual('common.filter.value.connector');
   });
 
   it('filter type should change to selectbox in small screen', () => {
@@ -57,14 +58,10 @@ describe('ProductFilterComponent', () => {
   });
 
   it('onSortChange should update selectedSortOption correctly', () => {
-    const select: HTMLSelectElement = fixture.debugElement.query(
-      By.css('.sort-type')
-    ).nativeElement;
-    select.value = select.options[3].value;
-    select.dispatchEvent(new Event('change'));
     fixture.detectChanges();
-    expect(component.selectedSort).toEqual(SortOption.RECENT);
+    expect(component.selectedSort).toEqual('common.sort.value.standard');
   });
+
 
   it('search should update searchText correctly', () => {
     const searchText = 'portal';

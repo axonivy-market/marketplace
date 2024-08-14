@@ -17,11 +17,13 @@
       <p class="text-secondary mb-2">
         {{ 'common.feedback.currentProductTitle' | translate }}
       </p>
-      <select
-        class="form-select product-item-select border-primary text-primary"
-        aria-label="item">
-        <option>{{ productDetailService.productNames() | multilingualism: languageService.selectedLanguage() }}</option>
-      </select>
+
+      <app-common-dropdown
+        [items]="[]"
+        [selectedItem]="productDetailService.productNames() | multilingualism: languageService.selectedLanguage()"
+        buttonClass="form-select product-item-select border-primary text-primary" aria-label="item">
+      </app-common-dropdown>
+
     </div>
     <div class="d-flex flex-column flex-grow-1">
       <p class="text-secondary mb-2">

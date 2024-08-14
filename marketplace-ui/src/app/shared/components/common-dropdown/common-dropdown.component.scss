@@ -8,3 +8,7 @@
     font-weight: 500;
   }
 }
+
+.indicator-arrow__up {
+  --bs-form-select-bg-img: var(--ivy-custom-select-indicator);
+}

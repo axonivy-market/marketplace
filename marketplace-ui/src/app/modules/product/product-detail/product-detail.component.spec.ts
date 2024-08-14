@@ -136,7 +136,7 @@ describe('ProductDetailComponent', () => {
   });
 
   it('should call setActiveTab and updateDropdownSelection on onTabChange', () => {
-    const event = { target: { value: 'description' } } as unknown as Event;
+    const event ={ value: 'description' };
     spyOn(component, 'setActiveTab');
     spyOn(component, 'updateDropdownSelection');
 
