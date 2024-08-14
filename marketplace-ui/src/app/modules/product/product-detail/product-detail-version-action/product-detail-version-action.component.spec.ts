@@ -75,7 +75,7 @@ describe('ProductVersionActionComponent', () => {
     expect(component.artifacts().length).toBe(1);
     expect(component.selectedVersion()).toBe(selectedVersion);
     expect(component.selectedArtifact).toBe('https://example.com/download');
-    component.sanitizeDataBeforFetching();
+    component.sanitizeDataBeforeFetching();
     expect(component.versions().length).toBe(0);
     expect(component.artifacts().length).toBe(0);
     expect(component.selectedVersion()).toEqual('');
@@ -106,7 +106,7 @@ describe('ProductVersionActionComponent', () => {
     component.selectedArtifact = 'https://example.com/download';
     spyOn(component, 'onUpdateInstallationCount');
 
-    component.downloadArifact();
+    component.downloadArtifact();
 
     expect(window.open).toHaveBeenCalledWith(
       'https://example.com/download',
@@ -203,7 +203,7 @@ describe('ProductVersionActionComponent', () => {
     component.selectedArtifact = 'http://example.com/artifact';
 
     // Call the method
-    component.downloadArifact();
+    component.downloadArtifact();
 
     // Check if window.open was called with the correct URL and target
     expect(window.open).toHaveBeenCalledWith(

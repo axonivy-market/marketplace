@@ -1,12 +1,13 @@
-<!--<div class="dropdown" [ngClass]="dropdownClass">-->
+<div class="dropdown" [ngClass]="dropdownClass">
   <button (click)="toggleDropdown()"
           [ngClass]="buttonClass"
           [attr.aria-label]="ariaLabel">
     {{ selectedItem[labelKey] || selectedItem }}
   </button>
-  <div class="dropdown-menu" [class.show]="isDropdownOpen">
-    <div class="dropdown-item" *ngFor="let item of items" (click)="onSelect(item)">
-      {{ (item[labelKey] || item ) | translate}}
+  <div class="dropdown-menu menu-bar" [class.show]="isDropdownOpen">
+    <div class="dropdown-item item-bar text-primary" *ngFor="let item of items" (click)="onSelect(item)"
+         [ngClass]="{'active': isActiveItem(item , selectedItem)}">
+      {{ (item[labelKey] || item) | translate }}
     </div>
   </div>
-<!--</div>-->
+</div>

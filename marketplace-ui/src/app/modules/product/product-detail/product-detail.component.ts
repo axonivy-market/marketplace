@@ -17,7 +17,7 @@ import { CommonModule } from '@angular/common';
 import { ProductDetailInformationTabComponent } from './product-detail-information-tab/product-detail-information-tab.component';
 import { ProductDetailVersionActionComponent } from './product-detail-version-action/product-detail-version-action.component';
 import { ProductDetailMavenContentComponent } from './product-detail-maven-content/product-detail-maven-content.component';
-import { PRODUCT_DETAIL_TABS } from '../../../shared/constants/common.constant';
+import { PRODUCT_DETAIL_TABS, SORT_TYPES } from '../../../shared/constants/common.constant';
 import { NgbNavModule } from '@ng-bootstrap/ng-bootstrap';
 import { LanguageService } from '../../../core/services/language/language.service';
 import { MultilingualismPipe } from '../../../shared/pipes/multilingualism.pipe';
@@ -32,6 +32,7 @@ import { ProductTypeIconPipe } from '../../../shared/pipes/icon.pipe';
 import { Observable } from 'rxjs';
 import { ProductStarRatingService } from './product-detail-feedback/product-star-rating-panel/product-star-rating.service';
 import { RoutingQueryParamService } from '../../../shared/services/routing.query.param.service';
+import { CommonDropdownComponent } from '../../../shared/components/common-dropdown/common-dropdown.component';
 
 export interface DetailTab {
   activeClass: string;
@@ -57,7 +58,8 @@ const DEFAULT_ACTIVE_TAB = 'description';
     MultilingualismPipe,
     ProductDetailFeedbackComponent,
     ProductInstallationCountActionComponent,
-    ProductTypeIconPipe
+    ProductTypeIconPipe,
+    CommonDropdownComponent
   ],
   providers: [ProductService, MarkdownService],
   templateUrl: './product-detail.component.html',
@@ -85,6 +87,7 @@ export class ProductDetailComponent {
   );
   detailContent!: DetailTab;
   detailTabs = PRODUCT_DETAIL_TABS;
+  detailTabsForDropdown = PRODUCT_DETAIL_TABS;
   activeTab = DEFAULT_ACTIVE_TAB;
   isDropdownOpen: WritableSignal<boolean> = signal(false);
   isTabDropdownShown: WritableSignal<boolean> = signal(false);
@@ -92,7 +95,6 @@ export class ProductDetailComponent {
   showPopup!: boolean;
   isMobileMode = signal<boolean>(false);
   installationCount = 0;
-
   @HostListener('window:popstate', ['$event'])
   onPopState() {
     this.activeTab = window.location.hash.split('#tab-')[1];
@@ -115,6 +117,7 @@ export class ProductDetailComponent {
       this.getProductById(productId).subscribe(productDetail => {
         this.productDetail.set(productDetail);
         this.productModuleContent.set(productDetail.productModuleContent);
+        this.detailTabsForDropdown = this.checkTabsIfEmpty();
         this.productDetailService.productNames.set(productDetail.names);
         localStorage.removeItem(STORAGE_ITEM);
         this.installationCount = productDetail.installationCount;
@@ -180,9 +183,8 @@ export class ProductDetailComponent {
       });
   }
 
-  onTabChange(event: Event) {
-    const selectedTab = (event.target as HTMLSelectElement).value;
-    this.setActiveTab(selectedTab);
+  onTabChange(event: any) {
+    this.setActiveTab(event.value);
     this.isTabDropdownShown.update(value => !value);
     this.onTabDropdownShown();
   }
@@ -262,5 +264,9 @@ export class ProductDetailComponent {
       queryParams: { showPopup: null },
       queryParamsHandling: 'merge'
     });
+  }
+
+  checkTabsIfEmpty(): DetailTab[] {
+    return this.detailTabsForDropdown.filter(tab => this.getContent(tab.value));
   }
 }

@@ -1,6 +1,6 @@
-import { Component, EventEmitter, Input, Output } from '@angular/core';
+import { Component, EventEmitter, inject, Input, Output } from '@angular/core';
 import { NgClass, NgForOf } from '@angular/common';
-import { TranslateModule } from '@ngx-translate/core';
+import { TranslateModule, TranslateService } from '@ngx-translate/core';
 
 @Component({
   selector: 'app-common-dropdown',
@@ -14,6 +14,7 @@ import { TranslateModule } from '@ngx-translate/core';
   styleUrl: './common-dropdown.component.scss'
 })
 export class CommonDropdownComponent {
+  translateService = inject(TranslateService);
   @Input() items: any[] = [];
   @Input() selectedItem: any;
   @Input() labelKey: string = '';
@@ -32,5 +33,9 @@ export class CommonDropdownComponent {
   onSelect(item: any) {
     this.itemSelected.emit(item);
     this.isDropdownOpen = false;
+  }
+
+  isActiveItem(value: any, selectedItem: any): boolean {
+    return value?.label ? this.translateService.instant(value.label) === selectedItem : value === selectedItem;
   }
 }

@@ -18,3 +18,27 @@ select {
 p {
   margin-right: 20px;
 }
+
+::ng-deep .form-select {
+  border-radius: 10px;
+  font-size: 14px;
+  line-height: 120%;
+  font-weight: 400;
+  padding: 10px 15px 10px auto;
+  height: 37px;
+  opacity: 0.8;
+  border: 1px solid;
+  cursor: pointer;
+}
+
+::ng-deep .dropdown-menu {
+  min-width: 100%;
+  margin-top: 10px;
+}
+
+::ng-deep .dropdown-item {
+  padding: 15px;
+  font-weight: 400;
+  font-size: 14px;
+  gap: 10px;
+}

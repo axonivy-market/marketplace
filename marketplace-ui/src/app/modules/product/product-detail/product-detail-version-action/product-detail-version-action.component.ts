@@ -48,7 +48,6 @@ export class ProductDetailVersionActionComponent implements AfterViewInit {
 
   routingQueryParamService = inject(RoutingQueryParamService);
   themeService = inject(ThemeService);
-  translateService = inject(TranslateService);
   productService = inject(ProductService);
   productDetailService = inject(ProductDetailService);
   elementRef = inject(ElementRef);
@@ -104,7 +103,7 @@ export class ProductDetailVersionActionComponent implements AfterViewInit {
   }
 
   getVersionWithArtifact() {
-    this.sanitizeDataBeforFetching();
+    this.sanitizeDataBeforeFetching();
 
     this.productService
       .sendRequestToProductDetailVersionAPI(
@@ -129,14 +128,14 @@ export class ProductDetailVersionActionComponent implements AfterViewInit {
       });
   }
 
-  sanitizeDataBeforFetching() {
+  sanitizeDataBeforeFetching() {
     this.versions.set([]);
     this.artifacts.set([]);
     this.selectedArtifact = '';
     this.selectedVersion.set('');
   }
 
-  downloadArifact() {
+  downloadArtifact() {
     this.onUpdateInstallationCount();
     const newTab = window.open(this.selectedArtifact, '_blank');
     if (newTab) {

@@ -50,7 +50,7 @@
       </label>
 <!--      <select id="verions-selector" [(ngModel)]="selectedVersion"-->
 <!--        [ngClass]="{'indicator-arrow__up': isVersionsDropDownShow()}" (click)="onShowVersions()" name="Version"-->
-<!--        (change)="onSelectVersion()"-->
+<!--        (change)="onSelectVersion('asd')"-->
 <!--        class="form-select form-select-sm versions-selector__dropdown border__dropdown fs-md"-->
 <!--        aria-label=".form-select-sm example">-->
 <!--        @for (item of versions(); track $index) {-->
@@ -58,32 +58,16 @@
 <!--        }-->
 <!--      </select>-->
 
-<!--      <div id="version-selector">-->
-<!--        <button (click)="onShowVersions()"-->
-<!--                class="form-select form-select-sm versions-selector__dropdown border__dropdown fs-md"-->
-<!--                aria-label=".form-select-sm example">-->
-<!--          {{ selectedVersion() }}-->
-<!--        </button>-->
-<!--        <div class="dropdown-menu" [class.show]="isDropdownOpen">-->
-<!--          <div class="dropdown-item" *ngFor="let item of versions()" (click)="onSelectVersion(item)">-->
-<!--            {{ item }}-->
-<!--          </div>-->
-<!--        </div>-->
-<!--      </div>-->
-
       <div id="version-selector">
         <app-common-dropdown
           [items]="versions()"
           [selectedItem]="selectedVersion()"
           [labelKey]="''"
-          buttonClass="form-select versions-selector__dropdown border__dropdown fs-md"
+          buttonClass="form-select form-select-sm versions-selector__dropdown border__dropdown fs-md"
           ariaLabel=".form-select-sm example"
           (itemSelected)="onSelectVersion($event)">
         </app-common-dropdown>
       </div>
-
-
-
     </div>
     <a href="#" class="dev-versions__toggle primary-color text-decoration-none" (click)="onShowDevVersion($event)">
       @if (isDevVersionsDisplayed()) {
@@ -94,8 +78,8 @@
     </a>
     <div class="form-group d-flex justify-content-end">
       <button class="btn form-download__btn text-center"
-        [ngClass]="themeService.isDarkMode() ? 'btn-light' : 'btn-primary'" (click)="downloadArifact()" type="button"
-        id="downloadButton">
+              [ngClass]="themeService.isDarkMode() ? 'btn-light' : 'btn-primary'" (click)="downloadArtifact()" type="button"
+              id="downloadButton">
         {{ 'common.product.detail.download.buttonLabel' | translate }}
       </button>
     </div>
