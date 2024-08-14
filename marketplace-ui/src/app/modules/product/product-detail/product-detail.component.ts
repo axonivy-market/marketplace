@@ -87,8 +87,10 @@ export class ProductDetailComponent {
   );
   detailContent!: DetailTab;
   detailTabs = PRODUCT_DETAIL_TABS;
-  detailTabsForDropdown = PRODUCT_DETAIL_TABS;
   activeTab = DEFAULT_ACTIVE_TAB;
+
+  selectedTabLabel = PRODUCT_DETAIL_TABS[0].label;
+  detailTabsForDropdown = PRODUCT_DETAIL_TABS;
   isDropdownOpen: WritableSignal<boolean> = signal(false);
   isTabDropdownShown: WritableSignal<boolean> = signal(false);
   selectedVersion = '';
@@ -185,6 +187,7 @@ export class ProductDetailComponent {
 
   onTabChange(event: any) {
     this.setActiveTab(event.value);
+    this.selectedTabLabel = event.label;
     this.isTabDropdownShown.update(value => !value);
     this.onTabDropdownShown();
   }

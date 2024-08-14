@@ -24,19 +24,6 @@
       }
     </div>
     <div class="col-6 d-md-block d-md-none">
-<!--      <select-->
-<!--        [(ngModel)]="selectedTypeLabel"-->
-<!--        (ngModelChange)="onSelectType($event)"-->
-<!--        class="form-select border-primary filter-type&#45;&#45;select w-auto"-->
-<!--        aria-label="sort"-->
-<!--        name="sort">-->
-<!--        @for (type of types; track $index) {-->
-<!--        <option [value]="type.value">-->
-<!--          {{ type.label | translate }}-->
-<!--        </option>-->
-<!--        }-->
-<!--      </select>-->
-
       <app-common-dropdown
         [items]="types"
         [selectedItem]="selectedTypeLabel | translate"
@@ -45,7 +32,6 @@
         ariaLabel="sort"
         (itemSelected)="onSelectType($event.value)">
       </app-common-dropdown>
-
     </div>
 
     <!-- Sort type -->

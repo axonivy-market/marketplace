@@ -99,30 +99,16 @@
           <div class="dropdown-row flex-row align-items-center w-100">
             <div
               class="dropdown-container position-relative d-flex align-items-center w-100">
-<!--              <select-->
-<!--                class="form-select flex-grow-1 w-100"-->
-<!--                id="tab-group-dropdown"-->
-<!--                (change)="onTabChange($event)"-->
-<!--                (click)="onTabDropdownShown()"-->
-<!--                [ngClass]="{'indicator-arrow__up': isTabDropdownShown()}">-->
-<!--                @for (tab of detailTabs; track $index) {-->
-<!--                  @if (getContent(tab.value)) {-->
-<!--                    <option class="w-100" [value]="tab.value" [id]="tab.tabId">-->
-<!--                      {{ tab.label | translate }}-->
-<!--                    </option>-->
-<!--                  }-->
-<!--                }-->
-<!--              </select>-->
-
-              <div  id="tab-group-dropdown" class="flex-grow-1 w-100" >
+              <div  id="tab-group-dropdown2" class="flex-grow-1 w-100" >
                 <app-common-dropdown
                   [items]="detailTabsForDropdown"
-                  [selectedItem]="activeTab"
+                  [selectedItem]="selectedTabLabel | translate"
                   [labelKey]="'label'"
-                  buttonClass="form-select text-primary"
+                  buttonClass="form-select flex-grow-1 text-start"
                   (itemSelected)="onTabChange($event)">
                 </app-common-dropdown>
               </div>
+
               <button
                 class="bg-transparent border-0"
                 (click)="onShowInfoContent()">

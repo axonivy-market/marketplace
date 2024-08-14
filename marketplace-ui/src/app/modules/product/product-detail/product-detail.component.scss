@@ -140,6 +140,14 @@
   }
 }
 
+::ng-deep .dropdown-menu.menu-bar {
+  padding: 0;
+}
+
+::ng-deep .dropdown-menu .dropdown-item {
+  padding: 13.5px 15px;
+}
+
 .form-select {
   opacity: 80%;
   padding: 10px 15px;
