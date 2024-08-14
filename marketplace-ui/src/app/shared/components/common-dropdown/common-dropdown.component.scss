@@ -3,9 +3,14 @@
 }
 
 .dropdown-menu {
-  .dropdown-item.active {
-    background-color: transparent;
-    font-weight: 500;
+  .dropdown-item {
+    &.active {
+      background-color: transparent;
+      font-weight: 500;
+    }
+    &:hover:active {
+      background-color: transparent;
+    }
   }
 }
 
