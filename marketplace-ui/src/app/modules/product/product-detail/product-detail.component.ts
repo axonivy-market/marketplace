@@ -29,7 +29,7 @@ import { AuthService } from '../../../auth/auth.service';
 import { ProductStarRatingNumberComponent } from './product-star-rating-number/product-star-rating-number.component';
 import { ProductInstallationCountActionComponent } from './product-installation-count-action/product-installation-count-action.component';
 import { ProductTypeIconPipe } from '../../../shared/pipes/icon.pipe';
-import { interval, Observable, Subscription } from 'rxjs';
+import { interval, Observable } from 'rxjs';
 import { ProductStarRatingService } from './product-detail-feedback/product-star-rating-panel/product-star-rating.service';
 import { RoutingQueryParamService } from '../../../shared/services/routing.query.param.service';
 
@@ -92,7 +92,6 @@ export class ProductDetailComponent {
   showPopup!: boolean;
   isMobileMode = signal<boolean>(false);
   installationCount = 0;
-  intervalSub!: Subscription;
 
   @HostListener('window:popstate', ['$event'])
   onPopState() {
@@ -134,12 +133,12 @@ export class ProductDetailComponent {
   }
 
   scrollToTop() {
-    const intevalSub = interval(500).subscribe(() => {
-      window.scrollTo(0, 0);
+    const intervalSub = interval(500).subscribe(() => {
+      window.scrollTo({left: 0, top: 0, behavior: 'instant'});
     });
     setTimeout(() => {
-      intevalSub.unsubscribe();
-    }, 3000);
+      intervalSub.unsubscribe();
+    }, 1000);
   }
 
   getProductById(productId: string): Observable<ProductDetail> {
