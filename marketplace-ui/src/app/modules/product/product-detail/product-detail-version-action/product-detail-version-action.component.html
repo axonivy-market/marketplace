@@ -1,11 +1,12 @@
-<button class="btn btn__install flex-grow-1" data-bs-toggle="tooltip" data-bs-placement="bottom" data-bs-html="true"
-  [attr.data-bs-title]="getInstallationTooltipText()" (click)="onUpdateInstallationCountForDesigner()"
-  data-bs-custom-class="custom-tooltip" [ngClass]="themeService.isDarkMode() ? 'btn-light' : 'btn-primary'">
+<button [lang]="languageService.selectedLanguage()" class="btn btn__install flex-grow-1" data-bs-toggle="tooltip"
+  data-bs-placement="bottom" data-bs-html="true" [attr.data-bs-title]="getInstallationTooltipText()"
+  (click)="onUpdateInstallationCountForDesigner()" data-bs-custom-class="custom-tooltip"
+  [ngClass]="themeService.isDarkMode() ? 'btn-light' : 'btn-primary'">
   {{ 'common.product.detail.install.buttonLabel' | translate }}
 </button>
 @if(!isDesignerEnvironment()) {
-<button class="btn btn__download btn-secondary primary-bg flex-grow-1" type="button"
-  (click)="onShowVersionAndArtifact()" aria-expanded="false">
+<button [lang]="languageService.selectedLanguage()" class="btn btn__download btn-secondary primary-bg flex-grow-1"
+  type="button" (click)="onShowVersionAndArtifact()" aria-expanded="false">
   {{ 'common.product.detail.download.buttonLabel' | translate }}
 </button>
 }
@@ -15,7 +16,7 @@
   <div class="up-arrow border__dropdown position-absolute"></div>
   <form>
     <div class="form-group">
-      <label for="artifacts-selector" class="form-label fs-md text-primary">
+      <label for="artifacts-selector" [lang]="languageService.selectedLanguage()" class="form-label fs-md text-primary">
         {{
         'common.product.detail.download.artifactSelector.label' | translate
         }}
@@ -34,11 +35,13 @@
 
     </div>
     <div class="form-group">
-      <label for="version-selector" class="form-label mt-2 fs-md text-primary">
+      <label for="version-selector" [lang]="languageService.selectedLanguage()"
+        class="form-label mt-2 fs-md text-primary">
         {{
         'common.product.detail.download.versionSelector.label' | translate
         }}
       </label>
+
       <div id="version-selector">
         <app-common-dropdown
           [items]="versions()"
@@ -50,7 +53,8 @@
         </app-common-dropdown>
       </div>
     </div>
-    <a href="#" class="dev-versions__toggle primary-color text-decoration-none" (click)="onShowDevVersion($event)">
+    <a href="#" [lang]="languageService.selectedLanguage()"
+      class="dev-versions__toggle primary-color text-decoration-none" (click)="onShowDevVersion($event)">
       @if (isDevVersionsDisplayed()) {
       {{ 'common.product.detail.download.hideDevVersions' | translate }}
       } @else {
@@ -58,9 +62,9 @@
       }
     </a>
     <div class="form-group d-flex justify-content-end">
-      <button class="btn form-download__btn text-center"
-              [ngClass]="themeService.isDarkMode() ? 'btn-light' : 'btn-primary'" (click)="downloadArtifact()" type="button"
-              id="downloadButton">
+      <button [lang]="languageService.selectedLanguage()" class="btn form-download__btn text-center"
+        [ngClass]="themeService.isDarkMode() ? 'btn-light' : 'btn-primary'" (click)="downloadArifact()" type="button"
+        id="downloadButton">
         {{ 'common.product.detail.download.buttonLabel' | translate }}
       </button>
     </div>

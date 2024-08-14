@@ -1,5 +1,6 @@
-import {Component, Input} from '@angular/core';
+import {Component, inject, Input} from '@angular/core';
 import {TranslateModule} from "@ngx-translate/core";
+import { LanguageService } from '../../../../core/services/language/language.service';
 
 @Component({
   selector: 'app-product-installation-count-action',
@@ -14,4 +15,6 @@ import {TranslateModule} from "@ngx-translate/core";
 export class ProductInstallationCountActionComponent {
   @Input()
   currentInstallationCount!: number;
+
+  languageService = inject(LanguageService);
 }

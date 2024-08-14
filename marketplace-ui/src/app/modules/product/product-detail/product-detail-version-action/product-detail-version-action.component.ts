@@ -20,6 +20,7 @@ import { ProductDetailService } from '../product-detail.service';
 import { RoutingQueryParamService } from '../../../../shared/services/routing.query.param.service';
 import { SORT_TYPES } from '../../../../shared/constants/common.constant';
 import { CommonDropdownComponent } from '../../../../shared/components/common-dropdown/common-dropdown.component';
+import { LanguageService } from '../../../../core/services/language/language.service';
 
 const delayTimeBeforeHideMessage = 2000;
 @Component({
@@ -51,6 +52,8 @@ export class ProductDetailVersionActionComponent implements AfterViewInit {
   productService = inject(ProductService);
   productDetailService = inject(ProductDetailService);
   elementRef = inject(ElementRef);
+  languageService = inject(LanguageService);
+
   ngAfterViewInit() {
     const tooltipTriggerList = [].slice.call(
       document.querySelectorAll('[data-bs-toggle="tooltip"]')

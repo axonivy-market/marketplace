@@ -6,6 +6,7 @@ import { ThemeService } from '../../../core/services/theme/theme.service';
 import { FILTER_TYPES, SORT_TYPES } from '../../../shared/constants/common.constant';
 import { TypeOption } from '../../../shared/enums/type-option.enum';
 import { SortOption } from '../../../shared/enums/sort-option.enum';
+import { LanguageService } from '../../../core/services/language/language.service';
 import { CommonDropdownComponent } from '../../../shared/components/common-dropdown/common-dropdown.component';
 
 @Component({
@@ -28,6 +29,7 @@ export class ProductFilterComponent {
 
   themeService = inject(ThemeService);
   translateService = inject(TranslateService);
+  languageService = inject(LanguageService);
 
   onSelectType(type: TypeOption) {
     this.selectedTypeLabel = this.getLabel(type , this.types);

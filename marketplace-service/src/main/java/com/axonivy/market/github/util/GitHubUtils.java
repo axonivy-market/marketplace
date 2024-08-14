@@ -19,8 +19,6 @@ import java.util.stream.Collectors;
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class GitHubUtils {
 
-  private static String pathToProductFolderFromTagContent;
-
   public static long getGHCommitDate(GHCommit commit) {
     long commitTime = 0L;
     if (commit != null) {

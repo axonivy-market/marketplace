@@ -1,5 +1,6 @@
 <div class="d-flex flex-row align-items-center">
-  <p class="text-primary mb-0 text-nowrap">{{ 'common.sort.label' | translate }}:</p>
+  <p [lang]="languageService.selectedLanguage()" class="text-primary mb-0 text-nowrap">{{'common.sort.label' |
+    translate}}:</p>
   <app-common-dropdown
     [items]="feedbackSortTypes"
     [selectedItem]="selectedSortTypeLabel | translate"

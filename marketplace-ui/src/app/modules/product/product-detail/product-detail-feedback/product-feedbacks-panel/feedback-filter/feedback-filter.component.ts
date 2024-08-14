@@ -3,6 +3,7 @@ import { TranslateModule } from '@ngx-translate/core';
 import { FEEDBACK_SORT_TYPES } from '../../../../../../shared/constants/common.constant';
 import { FormsModule } from '@angular/forms';
 import { ProductFeedbackService } from '../product-feedback.service';
+import { LanguageService } from '../../../../../../core/services/language/language.service';
 import { CommonDropdownComponent } from '../../../../../../shared/components/common-dropdown/common-dropdown.component';
 
 @Component({
@@ -18,6 +19,7 @@ export class FeedbackFilterComponent {
   @Output() sortChange = new EventEmitter<string>();
 
   productFeedbackService = inject(ProductFeedbackService);
+  languageService = inject(LanguageService);
   selectedSortTypeLabel = FEEDBACK_SORT_TYPES[0].label;
   onSortChange(event: any): void {
     this.selectedSortTypeLabel = this.getLabel(event.label);
