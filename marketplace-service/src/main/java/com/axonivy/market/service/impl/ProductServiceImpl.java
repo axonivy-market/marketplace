@@ -90,6 +90,9 @@ public class ProductServiceImpl implements ProductService {
   @Value("${synchronized.installation.counts.path}")
   private String installationCountPath;
 
+  @Value("${market.github.market.branch}")
+  private String marketRepoBranch;
+
   public static final String NON_NUMERIC_CHAR = "[^0-9.]";
   private final SecureRandom random = new SecureRandom();
 
@@ -204,7 +207,7 @@ public class ProductServiceImpl implements ProductService {
         GHContent fileContent;
         try {
           fileContent = gitHubService.getGHContent(axonIvyMarketRepoService.getRepository(), file.getFileName(),
-              GitHubConstants.DEFAULT_BRANCH);
+                  marketRepoBranch);
         } catch (IOException e) {
           log.error("Get GHContent failed: ", e);
           continue;
