@@ -136,7 +136,7 @@ export class ProductDetailComponent {
     if (!targetVersion) {
       return this.productService.getProductDetails(productId);
     }
-    return this.productService.getProductDetailsWithVersion(
+    return this.productService.getBestMatchProductDetailsWithVersion(
       productId,
       targetVersion
     );
