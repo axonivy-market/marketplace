@@ -103,7 +103,6 @@ export class ProductDetailComponent {
     this.updateDropdownSelection();
   }
 
-
   constructor() {
     this.scrollToTop();
     this.resizeObserver = new ResizeObserver(() => {
@@ -134,12 +133,7 @@ export class ProductDetailComponent {
   }
 
   scrollToTop() {
-    const intervalSub = interval(SCROLL_INTERVAL).subscribe(() => {
-      window.scrollTo({left: 0, top: 0, behavior: 'instant'});
-    });
-    setTimeout(() => {
-      intervalSub.unsubscribe();
-    }, 1000);
+    window.scrollTo({ left: 0, top: 0, behavior: 'instant' });
   }
 
   getProductById(productId: string): Observable<ProductDetail> {
