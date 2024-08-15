@@ -135,7 +135,6 @@ class FeedbackServiceImplTest {
 
   @Test
   void testFindFeedbackByUserIdAndProductId() throws NotFoundException {
-    String userId = "user1";
     String productId = "product1";
 
     when(userRepository.findById(userId)).thenReturn(Optional.of(new User()));
@@ -153,7 +152,6 @@ class FeedbackServiceImplTest {
 
   @Test
   void testFindFeedbackByUserIdAndProductId_NotFound() {
-    String userId = "user1";
     String productId = "product1";
 
     when(userRepository.findById(userId)).thenReturn(Optional.of(new User()));
@@ -261,8 +259,6 @@ class FeedbackServiceImplTest {
 
   @Test
   void testValidateUserExists() {
-    String userId = "user1";
-
     when(userRepository.findById(userId)).thenReturn(Optional.of(new User()));
 
     assertDoesNotThrow(() -> feedbackService.validateUserExists(userId));
@@ -271,8 +267,6 @@ class FeedbackServiceImplTest {
 
   @Test
   void testValidateUserExists_NotFound() {
-    String userId = "user1";
-
     when(userRepository.findById(userId)).thenReturn(Optional.empty());
 
     NotFoundException exception = assertThrows(NotFoundException.class,

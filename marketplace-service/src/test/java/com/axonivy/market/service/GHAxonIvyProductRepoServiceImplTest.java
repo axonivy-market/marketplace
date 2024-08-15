@@ -332,10 +332,21 @@ class GHAxonIvyProductRepoServiceImplTest {
   }
 
   private static InputStream getMockInputStreamWithOutProjectAndDependency() {
-    String jsonContent =
-        "{\n" + "  \"installers\": [\n" + "    {\n" + "      \"data\": {\n" + "        \"repositories\": [\n"
-            + "          {\n" + "            \"url\": \"http://example.com/repo\"\n" + "          }\n" + "        ]\n"
-            + "      }\n" + "    }\n" + "  ]\n" + "}";
+    String jsonContent = """
+    {
+      "installers": [
+        {
+          "data": {
+            "repositories": [
+              {
+                "url": "http://example.com/repo"
+              }
+            ]
+          }
+        }
+      ]
+    }
+    """;
     return new ByteArrayInputStream(jsonContent.getBytes(StandardCharsets.UTF_8));
   }
 
