@@ -46,6 +46,9 @@ public class GHAxonIvyProductRepoServiceImpl implements GHAxonIvyProductRepoServ
   public static final String IMAGE_EXTENSION = "(.*?).(jpeg|jpg|png|gif)";
   public static final String README_IMAGE_FORMAT = "\\(([^)]*?%s[^)]*?)\\)";
   public static final String IMAGE_DOWNLOAD_URL_FORMAT = "(%s)";
+  public static final String DESCRIPTION = "description";
+  public static final String DEMO = "demo";
+  public static final String SETUP = "setup";
 
   public GHAxonIvyProductRepoServiceImpl(GitHubService gitHubService) {
     this.gitHubService = gitHubService;
@@ -153,6 +156,7 @@ public class GHAxonIvyProductRepoServiceImpl implements GHAxonIvyProductRepoServ
       getDependencyContentsFromProductJson(productModuleContent, contents);
       List<GHContent> readmeFiles = contents.stream().filter(GHContent::isFile)
           .filter(content -> content.getName().startsWith(ReadmeConstants.README_FILE_NAME)).toList();
+      Map<String,Map<String,String>> moduleContents = new HashMap<>();
       if (!CollectionUtils.isEmpty(readmeFiles)) {
         for (GHContent readmeFile : readmeFiles) {
           String readmeContents = new String(readmeFile.read().readAllBytes());
@@ -160,14 +164,30 @@ public class GHAxonIvyProductRepoServiceImpl implements GHAxonIvyProductRepoServ
             readmeContents = updateImagesWithDownloadUrl(product, contents, readmeContents);
           }
           String locale = getReadmeFileLocale(readmeFile.getName());
-          getExtractedPartsOfReadme(productModuleContent, readmeContents, locale);
+          getExtractedPartsOfReadme(moduleContents, readmeContents, locale);
         }
+        productModuleContent.setDescription(replaceEmptyContentsWithEnContent(moduleContents.get(DESCRIPTION)));
+        productModuleContent.setDemo(replaceEmptyContentsWithEnContent(moduleContents.get(DEMO)));
+        productModuleContent.setSetup(replaceEmptyContentsWithEnContent(moduleContents.get(SETUP)));
       }
     } catch (Exception e) {
       log.error("Cannot get product.json and README file's content {}", e.getMessage());
       return null;
     }
     return productModuleContent;
+  }
+
+  /**
+   * MARP-810: Sabine requires that content in other languages, which has not been translated, be left empty and replaced with English content.
+   */
+  public Map<String, String> replaceEmptyContentsWithEnContent(Map<String, String> map) {
+    String enValue = map.get(Language.EN.getValue());
+    for (Map.Entry<String, String> entry : map.entrySet()) {
+      if (entry.getValue().isEmpty() && !entry.getKey().equals(Language.EN.getValue())) {
+        map.put(entry.getKey(), enValue);
+      }
+    }
+    return map;
   }
 
   private String getReadmeFileLocale(String readmeFile) {
@@ -237,7 +257,7 @@ public class GHAxonIvyProductRepoServiceImpl implements GHAxonIvyProductRepoServ
 
   // Cover some cases including when demo and setup parts switch positions or
   // missing one of them
-  public void getExtractedPartsOfReadme(ProductModuleContent productModuleContent, String readmeContents,
+  public void getExtractedPartsOfReadme(Map<String,Map<String,String>> moduleContents, String readmeContents,
       String locale) {
     String[] parts = readmeContents.split(DEMO_SETUP_TITLE);
     int demoIndex = readmeContents.indexOf(ReadmeConstants.DEMO_PART);
@@ -263,21 +283,14 @@ public class GHAxonIvyProductRepoServiceImpl implements GHAxonIvyProductRepoServ
     } else if (setupIndex != -1) {
       setup = parts[1];
     }
-
-    setDescriptionWithLocale(productModuleContent, description.trim(), locale);
-    productModuleContent.setDemo(demo.trim());
-    productModuleContent.setSetup(setup.trim());
+    locale = StringUtils.isEmpty(locale) ? Language.EN.getValue() : locale.toLowerCase();
+    addLocaleContent(moduleContents, DESCRIPTION, description.trim(), locale);
+    addLocaleContent(moduleContents, DEMO, demo.trim(), locale);
+    addLocaleContent(moduleContents, SETUP, setup.trim(), locale);
   }
 
-  private void setDescriptionWithLocale(ProductModuleContent productModuleContent, String description, String locale) {
-    if (productModuleContent.getDescription() == null) {
-      productModuleContent.setDescription(new HashMap<>());
-    }
-    if (StringUtils.isEmpty(locale)) {
-      productModuleContent.getDescription().put(Language.EN.getValue(), description);
-    } else {
-      productModuleContent.getDescription().put(locale.toLowerCase(), description);
-    }
+  private void addLocaleContent(Map<String, Map<String, String>> moduleContents, String type, String content, String locale) {
+    moduleContents.computeIfAbsent(type, key -> new HashMap<>()).put(locale.toLowerCase(), content);
   }
 
   private List<GHContent> getProductFolderContents(Product product, GHRepository ghRepository, String tag)
