@@ -1,4 +1,4 @@
-<div class="dropdown" [ngClass]="dropdownClass">
+<div class="dropdown">
   <button (click)="toggleDropdown()"
           [class]="buttonClass"
           [ngClass]="{'indicator-arrow__up': isDropdownOpen}"
@@ -7,7 +7,7 @@
   </button>
   <div class="dropdown-menu menu-bar" [class.show]="isDropdownOpen">
     <div class="dropdown-item item-bar text-primary" *ngFor="let item of items" (click)="onSelect(item)"
-         [ngClass]="{'active': isActiveItem(item , selectedItem)}">
+      [ngClass]="{'active': isActiveItem(item , selectedItem)}">
       {{ (item[labelKey] || item) | translate }}
     </div>
   </div>

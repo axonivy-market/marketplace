@@ -120,9 +120,11 @@
       right: auto;
       min-width: 80vw;
     }
+
     .form-group {
       gap: 7px;
-       .form-select {
+
+      .form-select {
         height: 32px;
         padding: 9px 10px;
         gap: 10px;
@@ -130,6 +132,7 @@
         line-height: 12px;
         text-align: start !important;
         background-color: var(--ivy-text-normal-color);
+
         option {
           height: 44px;
           padding: 15px;

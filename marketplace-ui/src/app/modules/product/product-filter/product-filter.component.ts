@@ -3,11 +3,12 @@ import { Component, EventEmitter, inject, Output } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { ThemeService } from '../../../core/services/theme/theme.service';
-import { FILTER_TYPES, SORT_TYPES } from '../../../shared/constants/common.constant';
+import { FILTER_TYPES, LABEL_KEY, SORT_TYPES } from '../../../shared/constants/common.constant';
 import { TypeOption } from '../../../shared/enums/type-option.enum';
 import { SortOption } from '../../../shared/enums/sort-option.enum';
 import { LanguageService } from '../../../core/services/language/language.service';
 import { CommonDropdownComponent } from '../../../shared/components/common-dropdown/common-dropdown.component';
+import { CommonUtils } from '../../../shared/utils/common.utils';
 
 @Component({
   selector: 'app-product-filter',
@@ -21,9 +22,9 @@ export class ProductFilterComponent {
   @Output() filterChange = new EventEmitter<TypeOption>();
   @Output() sortChange = new EventEmitter<SortOption>();
 
-  selectedTypeLabel = FILTER_TYPES[0].label;
+  selectedTypeLabel: string = CommonUtils.getLabel(FILTER_TYPES[0].value, FILTER_TYPES);
+  selectedSortLabel: string = CommonUtils.getLabel(SORT_TYPES[0].value, SORT_TYPES);
   types = FILTER_TYPES;
-  selectedSort: string = SORT_TYPES[0].label;
   sorts = SORT_TYPES;
   searchText = '';
 
@@ -32,7 +33,7 @@ export class ProductFilterComponent {
   languageService = inject(LanguageService);
 
   onSelectType(type: TypeOption) {
-    this.selectedTypeLabel = this.getLabel(type , this.types);
+    this.selectedTypeLabel = CommonUtils.getLabel(type , this.types);
     this.filterChange.emit(type);
   }
 
@@ -42,11 +43,8 @@ export class ProductFilterComponent {
 
   onSortChange(sort: SortOption) {
     this.sortChange.next(sort);
-    this.selectedSort = this.getLabel(sort, this.sorts);
+    this.selectedSortLabel = CommonUtils.getLabel(sort, this.sorts);
   }
 
-  getLabel(value: string, options: any): string {
-    const currentLabel = options.find((option: { value: string, label: string; }) => option.value === value)?.label;
-    return currentLabel ? currentLabel : options[0].label;
-  }
+  protected readonly LABEL_KEY = LABEL_KEY;
 }

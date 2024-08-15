@@ -31,6 +31,10 @@ p {
   cursor: pointer;
 }
 
+::ng-deep .feedback-dropdown .form-select {
+  width: 100px;
+}
+
 ::ng-deep .dropdown-menu {
   min-width: 100%;
   margin-top: 10px;

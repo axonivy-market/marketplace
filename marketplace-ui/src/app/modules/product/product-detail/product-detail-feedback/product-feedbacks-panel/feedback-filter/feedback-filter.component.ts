@@ -1,10 +1,11 @@
 import { Component, EventEmitter, inject, Output } from '@angular/core';
 import { TranslateModule } from '@ngx-translate/core';
-import { FEEDBACK_SORT_TYPES } from '../../../../../../shared/constants/common.constant';
+import { FEEDBACK_SORT_TYPES, LABEL_KEY } from '../../../../../../shared/constants/common.constant';
 import { FormsModule } from '@angular/forms';
 import { ProductFeedbackService } from '../product-feedback.service';
 import { LanguageService } from '../../../../../../core/services/language/language.service';
 import { CommonDropdownComponent } from '../../../../../../shared/components/common-dropdown/common-dropdown.component';
+import { CommonUtils } from '../../../../../../shared/utils/common.utils';
 
 @Component({
   selector: 'app-feedback-filter',
@@ -20,14 +21,12 @@ export class FeedbackFilterComponent {
 
   productFeedbackService = inject(ProductFeedbackService);
   languageService = inject(LanguageService);
-  selectedSortTypeLabel = FEEDBACK_SORT_TYPES[0].label;
+  selectedSortTypeLabel: string = CommonUtils.getLabel(FEEDBACK_SORT_TYPES[0].value,FEEDBACK_SORT_TYPES);
+
   onSortChange(event: any): void {
-    this.selectedSortTypeLabel = this.getLabel(event.label);
+    this.selectedSortTypeLabel = CommonUtils.getLabel(event.value, FEEDBACK_SORT_TYPES);
     this.sortChange.emit(event.sortFn);
   }
 
-  getLabel(label: string): string {
-    const currentLabel = FEEDBACK_SORT_TYPES.find(sortType => sortType.label === label)?.label;
-    return currentLabel ? currentLabel : '';
-  }
+  protected readonly LABEL_KEY = LABEL_KEY;
 }

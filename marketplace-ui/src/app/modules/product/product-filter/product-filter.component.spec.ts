@@ -59,7 +59,7 @@ describe('ProductFilterComponent', () => {
 
   it('onSortChange should update selectedSortOption correctly', () => {
     fixture.detectChanges();
-    expect(component.selectedSort).toEqual('common.sort.value.standard');
+    expect(component.selectedSortLabel).toEqual('common.sort.value.standard');
   });
 
 

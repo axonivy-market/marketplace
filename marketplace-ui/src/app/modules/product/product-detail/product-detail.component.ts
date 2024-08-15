@@ -17,7 +17,7 @@ import { CommonModule } from '@angular/common';
 import { ProductDetailInformationTabComponent } from './product-detail-information-tab/product-detail-information-tab.component';
 import { ProductDetailVersionActionComponent } from './product-detail-version-action/product-detail-version-action.component';
 import { ProductDetailMavenContentComponent } from './product-detail-maven-content/product-detail-maven-content.component';
-import { PRODUCT_DETAIL_TABS, SORT_TYPES } from '../../../shared/constants/common.constant';
+import { LABEL_KEY, PRODUCT_DETAIL_TABS, SORT_TYPES } from '../../../shared/constants/common.constant';
 import { NgbNavModule } from '@ng-bootstrap/ng-bootstrap';
 import { LanguageService } from '../../../core/services/language/language.service';
 import { MultilingualismPipe } from '../../../shared/pipes/multilingualism.pipe';
@@ -33,6 +33,7 @@ import { Observable } from 'rxjs';
 import { ProductStarRatingService } from './product-detail-feedback/product-star-rating-panel/product-star-rating.service';
 import { RoutingQueryParamService } from '../../../shared/services/routing.query.param.service';
 import { CommonDropdownComponent } from '../../../shared/components/common-dropdown/common-dropdown.component';
+import { CommonUtils } from '../../../shared/utils/common.utils';
 
 export interface DetailTab {
   activeClass: string;
@@ -88,8 +89,7 @@ export class ProductDetailComponent {
   detailContent!: DetailTab;
   detailTabs = PRODUCT_DETAIL_TABS;
   activeTab = DEFAULT_ACTIVE_TAB;
-
-  selectedTabLabel = PRODUCT_DETAIL_TABS[0].label;
+  selectedTabLabel: string = CommonUtils.getLabel(PRODUCT_DETAIL_TABS[0].value, PRODUCT_DETAIL_TABS);
   detailTabsForDropdown = PRODUCT_DETAIL_TABS;
   isDropdownOpen: WritableSignal<boolean> = signal(false);
   isTabDropdownShown: WritableSignal<boolean> = signal(false);
@@ -119,7 +119,7 @@ export class ProductDetailComponent {
       this.getProductById(productId).subscribe(productDetail => {
         this.productDetail.set(productDetail);
         this.productModuleContent.set(productDetail.productModuleContent);
-        this.detailTabsForDropdown = this.checkTabsIfEmpty();
+        this.detailTabsForDropdown = this.getNotEmptyTabs();
         this.productDetailService.productNames.set(productDetail.names);
         localStorage.removeItem(STORAGE_ITEM);
         this.installationCount = productDetail.installationCount;
@@ -185,9 +185,9 @@ export class ProductDetailComponent {
       });
   }
 
-  onTabChange(event: any) {
-    this.setActiveTab(event.value);
-    this.selectedTabLabel = event.label;
+  onTabChange(event: string) {
+    this.setActiveTab(event);
+    this.selectedTabLabel = event;
     this.isTabDropdownShown.update(value => !value);
     this.onTabDropdownShown();
   }
@@ -269,7 +269,9 @@ export class ProductDetailComponent {
     });
   }
 
-  checkTabsIfEmpty(): DetailTab[] {
+  getNotEmptyTabs(): DetailTab[] {
     return this.detailTabsForDropdown.filter(tab => this.getContent(tab.value));
   }
+
+  protected readonly LABEL_KEY = LABEL_KEY;
 }

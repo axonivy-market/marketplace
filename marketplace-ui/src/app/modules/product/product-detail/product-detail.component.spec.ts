@@ -140,7 +140,7 @@ describe('ProductDetailComponent', () => {
     spyOn(component, 'setActiveTab');
     spyOn(component, 'updateDropdownSelection');
 
-    component.onTabChange(event);
+    component.onTabChange(event.value);
 
     expect(component.setActiveTab).toHaveBeenCalledWith('description');
   });

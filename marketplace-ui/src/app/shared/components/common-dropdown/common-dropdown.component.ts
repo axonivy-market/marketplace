@@ -18,14 +18,12 @@ export class CommonDropdownComponent {
   @Input() items: any[] = [];
   @Input() selectedItem: any;
   @Input() labelKey: string = '';
-  @Input() dropdownClass: string = '';
   @Input() buttonClass: string = '';
   @Input() ariaLabel: string = '';
 
   @Output() itemSelected = new EventEmitter<any>();
   elementRef = inject(ElementRef);
   isDropdownOpen = false;
-
   toggleDropdown() {
     this.isDropdownOpen = !this.isDropdownOpen;
   }

@@ -1,12 +1,17 @@
 <div class="d-flex flex-row align-items-center">
   <p [lang]="languageService.selectedLanguage()" class="text-primary mb-0 text-nowrap">{{'common.sort.label' |
     translate}}:</p>
-  <app-common-dropdown
-    [items]="feedbackSortTypes"
-    [selectedItem]="selectedSortTypeLabel | translate"
-    [labelKey]="'label'"
-    buttonClass="form-select border-primary text-primary"
-    ariaLabel="sort"
-    (itemSelected)="onSortChange($event)">
-  </app-common-dropdown>
+
+  <div class="feedback-dropdown">
+    <app-common-dropdown
+      [items]="feedbackSortTypes"
+      [selectedItem]="selectedSortTypeLabel | translate"
+      [labelKey]="LABEL_KEY"
+      buttonClass="form-select border-primary text-primary"
+      ariaLabel="sort"
+      (itemSelected)="onSortChange($event)">
+    </app-common-dropdown>
+  </div>
+
+
 </div>
