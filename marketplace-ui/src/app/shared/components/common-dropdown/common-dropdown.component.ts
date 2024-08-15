@@ -1,4 +1,4 @@
-import { Component, EventEmitter, inject, Input, Output } from '@angular/core';
+import { Component, ElementRef, EventEmitter, HostListener, inject, Input, Output } from '@angular/core';
 import { NgClass, NgForOf } from '@angular/common';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 
@@ -23,7 +23,7 @@ export class CommonDropdownComponent {
   @Input() ariaLabel: string = '';
 
   @Output() itemSelected = new EventEmitter<any>();
-
+  elementRef = inject(ElementRef);
   isDropdownOpen = false;
 
   toggleDropdown() {
@@ -37,5 +37,16 @@ export class CommonDropdownComponent {
 
   isActiveItem(value: any, selectedItem: any): boolean {
     return value?.label ? this.translateService.instant(value.label) === selectedItem : value === selectedItem;
+  }
+
+  @HostListener('document:click', ['$event'])
+  handleClickOutside(event: MouseEvent) {
+    if (
+      !this.elementRef.nativeElement
+        .querySelector('.dropdown')
+        .contains(event.target) &&
+      this.isDropdownOpen) {
+      this.isDropdownOpen = !this.isDropdownOpen;
+    }
   }
 }

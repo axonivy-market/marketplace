@@ -5,7 +5,7 @@
 .dropdown-menu {
   .dropdown-item {
     &.active {
-      background-color: transparent;
+      background-color: var(--ivy-textarea-background-color);
       font-weight: 500;
     }
     &:hover:active {
