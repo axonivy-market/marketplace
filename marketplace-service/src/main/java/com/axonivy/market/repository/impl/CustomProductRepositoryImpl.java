@@ -1,5 +1,6 @@
 package com.axonivy.market.repository.impl;
 
+import com.axonivy.market.constants.MongoDBConstants;
 import com.axonivy.market.entity.Product;
 import com.axonivy.market.repository.CustomProductRepository;
 import lombok.extern.log4j.Log4j2;
@@ -23,30 +24,22 @@ public class CustomProductRepositoryImpl implements CustomProductRepository {
   }
 
   private AggregationOperation createIdMatchOperation(String id) {
-    return Aggregation.match(Criteria.where("_id").is(id));
-  }
-
-  private AggregationOperation createReturnFirstModuleContentOperation() {
-    return context -> new Document("$project",
-        new Document("productModuleContents",
-            new Document("$arrayElemAt", Arrays.asList("$productModuleContents", 0))
-        )
-    );
+    return Aggregation.match(Criteria.where(MongoDBConstants.ID).is(id));
   }
 
   private AggregationOperation createReturnFirstMatchTagModuleContentOperation(String tag) {
-    return context -> new Document("$project",
-        new Document("productModuleContents",
-            new Document("$filter",
-                new Document("input", "$productModuleContents")
-                    .append("as", "productModuleContent")
-                    .append("cond", new Document("$eq", Arrays.asList("$$productModuleContent.tag", tag))))
+    return context -> new Document(MongoDBConstants.PROJECT,
+        new Document(MongoDBConstants.PRODUCT_MODULE_CONTENT,
+            new Document(MongoDBConstants.FILTER,
+                new Document(MongoDBConstants.INPUT, MongoDBConstants.PRODUCT_MODULE_CONTENT_QUERY)
+                    .append(MongoDBConstants.AS, MongoDBConstants.PRODUCT_MODULE_CONTENT)
+                    .append(MongoDBConstants.CONDITION, new Document(MongoDBConstants.EQUAL, Arrays.asList(MongoDBConstants.PRODUCT_MODULE_CONTENT_TAG, tag))))
         )
     );
   }
 
   public Product queryProductByAggregation(Aggregation aggregation) {
-    return mongoTemplate.aggregate(aggregation, "Product", Product.class).getUniqueMappedResult();
+    return mongoTemplate.aggregate(aggregation, MongoDBConstants.PRODUCT_COLLECTION, Product.class).getUniqueMappedResult();
   }
 
   @Override
@@ -58,16 +51,13 @@ public class CustomProductRepositoryImpl implements CustomProductRepository {
 
   @Override
   public Product getProductById(String id) {
-    Aggregation aggregation = Aggregation.newAggregation(createIdMatchOperation(id), createReturnFirstModuleContentOperation());
+    Aggregation aggregation = Aggregation.newAggregation(createIdMatchOperation(id));
     return queryProductByAggregation(aggregation);
   }
 
   @Override
   public List<String> getReleasedVersionsById(String id) {
-    AggregationOperation returnReleasedVersionsAggregation = context -> new Document("$project",
-        new Document("name", 1)
-    );
-    Aggregation aggregation = Aggregation.newAggregation(createIdMatchOperation(id), returnReleasedVersionsAggregation);
+    Aggregation aggregation = Aggregation.newAggregation(createIdMatchOperation(id));
     Product product = queryProductByAggregation(aggregation);
     if (Objects.isNull(product)) {
       return Collections.emptyList();
