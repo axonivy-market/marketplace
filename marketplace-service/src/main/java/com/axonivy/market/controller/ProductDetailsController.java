@@ -54,7 +54,7 @@ public class ProductDetailsController {
   public ResponseEntity<ProductDetailModel> findProductDetailsByVersion(
       @PathVariable(ID) @Parameter(description = "Product id (from meta.json)", example = "adobe-acrobat-connector", in = ParameterIn.PATH) String id,
       @PathVariable(VERSION) @Parameter(description = "Release tag (from git hub repo tags)", example = "v10.0.20", in = ParameterIn.PATH) String version) {
-    var productDetail = productService.fetchProductDetail(id);
+    var productDetail = productService.fetchProductDetailByIdAndVersion(id, version);
     return new ResponseEntity<>(detailModelAssembler.toModel(productDetail, version, BY_ID_AND_VERSION), HttpStatus.OK);
   }
   @GetMapping(BEST_MATCH_BY_ID_AND_VERSION)

@@ -419,7 +419,7 @@ public class ProductServiceImpl implements ProductService {
 
   @Override
   public Product fetchProductDetail(String id) {
-    Product product = productRepository.findById(id).orElse(null);
+    Product product = productRepository.getProductById(id);
     return Optional.ofNullable(product).map(productItem -> {
       if (!BooleanUtils.isTrue(productItem.getSynchronizedInstallationCount())) {
         syncInstallationCountWithProduct(productItem);
@@ -432,15 +432,15 @@ public class ProductServiceImpl implements ProductService {
 
   @Override
   public Product fetchBestMatchProductDetail(String id, String version) {
-    Product product = productRepository.findById(id).orElse(null);
-    if(Objects.isNull(product)){
-      return null;
-    }
-    List<String> versions = VersionUtils.convertTagsToVersions(product.getReleasedVersions());
-    String bestMatchVersion = VersionUtils.getBestMatchVersion(versions, version);
+    List<String> releasedVersions = productRepository.getReleasedVersionsById(id);
+    String bestMatchVersion = VersionUtils.getBestMatchVersion(releasedVersions, version);
     String bestMatchTag = VersionUtils.convertVersionToTag(id,bestMatchVersion);
-    product.setProductModuleContents(product.getProductModuleContents().stream().filter(content -> StringUtils.equals(content.getTag(),bestMatchTag)).toList());
-    return product;
+    return productRepository.getProductByIdAndTag(id, bestMatchTag);
+  }
+
+  @Override
+  public Product fetchProductDetailByIdAndVersion(String id, String version) {
+    return productRepository.getProductByIdAndTag(id, VersionUtils.convertVersionToTag(id, version));
   }
 
   @Override

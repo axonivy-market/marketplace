@@ -47,12 +47,11 @@ public class ProductDetailModelAssembler extends RepresentationModelAssemblerSup
     ProductDetailModel model = instantiateModel(product);
     productModelAssembler.createResource(model, product);
     String productId = Optional.of(product).map(Product::getId).orElse(StringUtils.EMPTY);
-    String tag = VersionUtils.convertVersionToTag(productId, version);
     selfLinkWithTag = switch (requestPath) {
       case RequestMappingConstants.BEST_MATCH_BY_ID_AND_VERSION ->
-          methodOn(ProductDetailsController.class).findBestMatchProductDetailsByVersion(product.getId(), tag);
+          methodOn(ProductDetailsController.class).findBestMatchProductDetailsByVersion(product.getId(), version);
       case RequestMappingConstants.BY_ID_AND_VERSION ->
-          methodOn(ProductDetailsController.class).findProductDetailsByVersion(product.getId(), tag);
+          methodOn(ProductDetailsController.class).findProductDetailsByVersion(product.getId(), version);
       default ->
           methodOn(ProductDetailsController.class).findProductDetails(product.getId());
     };
