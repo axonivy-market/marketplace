@@ -74,7 +74,7 @@ public class ProductFactory {
     product.setCompatibility(meta.getCompatibility());
     extractSourceUrl(product, meta);
     product.setArtifacts(meta.getMavenArtifacts());
-    product.setReleasedTags(new ArrayList<>());
+    product.setReleasedVersions(new ArrayList<>());
     return product;
   }
 

@@ -60,7 +60,7 @@ public class Product implements Serializable {
   private List<MavenArtifact> artifacts;
   private Boolean synchronizedInstallationCount;
   private Integer customOrder;
-  private List<String> releasedTags;
+  private List<String> releasedVersions;
 
   @Override
   public int hashCode() {

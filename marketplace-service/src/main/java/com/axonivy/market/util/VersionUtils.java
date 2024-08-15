@@ -98,12 +98,10 @@ public class VersionUtils {
         if (StringUtils.isBlank(version)) {
             return version;
         }
-        String[] versionParts = version.split(CommonConstants.SPACE_SEPARATOR);
-        String versionNumber = versionParts[versionParts.length - 1];
         NonStandardProduct product = NonStandardProduct.findById(productId);
         if (product.isVersionTagNumberOnly()) {
-            return versionNumber;
+            return version;
         }
-        return GitHubConstants.STANDARD_TAG_PREFIX.concat(versionNumber);
+        return GitHubConstants.STANDARD_TAG_PREFIX.concat(version);
     }
 }

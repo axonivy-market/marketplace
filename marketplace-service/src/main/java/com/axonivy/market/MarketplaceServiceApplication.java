@@ -30,7 +30,7 @@ public class MarketplaceServiceApplication {
   @Async
   @EventListener(ApplicationStartedEvent.class)
   public void startInitializeSystem() {
-    syncProductData();
+//    syncProductData();
   }
 
   private void syncProductData() {
