@@ -42,6 +42,7 @@ export interface DetailTab {
 
 const STORAGE_ITEM = 'activeTab';
 const DEFAULT_ACTIVE_TAB = 'description';
+const SCROLL_INTERVAL = 500;
 @Component({
   selector: 'app-product-detail',
   standalone: true,
@@ -133,7 +134,7 @@ export class ProductDetailComponent {
   }
 
   scrollToTop() {
-    const intervalSub = interval(500).subscribe(() => {
+    const intervalSub = interval(SCROLL_INTERVAL).subscribe(() => {
       window.scrollTo({left: 0, top: 0, behavior: 'instant'});
     });
     setTimeout(() => {
