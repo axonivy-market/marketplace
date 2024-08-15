@@ -41,6 +41,3 @@ services:
         - BUILD_VERSION=${BUILD_VERSION}
     ports:
       - "8080:8080"
-
-volumes:
-  mongodata:
