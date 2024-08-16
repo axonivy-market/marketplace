@@ -1,0 +1,19 @@
+.dropdown-item {
+  cursor: pointer;
+}
+
+.dropdown-menu {
+  .dropdown-item {
+    &.active {
+      background-color: var(--ivy-textarea-background-color);
+      font-weight: 500;
+    }
+    &:hover:active {
+      background-color: transparent;
+    }
+  }
+}
+
+.indicator-arrow__up {
+  --bs-form-select-bg-img: var(--ivy-custom-select-indicator);
+}

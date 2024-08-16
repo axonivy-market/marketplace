@@ -6,13 +6,13 @@
     <!-- Filter type -->
     <div class="filter-container__button d-none d-md-flex">
       @for (type of types; track $index) {
-      <div (click)="onSelectType(type.value)" class="filter-type border" [ngClass]="{
+      <div (click)="onSelectType(type)" class="filter-type border" [ngClass]="{
             'border-light text-light': themeService.isDarkMode(),
             'border-dark text-dark': !themeService.isDarkMode(),
             'bg-light text-dark':
-              selectedType === type.value && themeService.isDarkMode(),
+              selectedTypeLabel === type.value && themeService.isDarkMode(),
             'bg-primary border-0 text-light':
-              selectedType === type.value && !themeService.isDarkMode()
+              selectedTypeLabel === type.value && !themeService.isDarkMode()
           }">
         <p [lang]="languageService.selectedLanguage()">
           {{ type.label | translate }}
@@ -21,14 +21,13 @@
       }
     </div>
     <div class="col-6 d-md-block d-md-none">
-      <select [(ngModel)]="selectedType" (ngModelChange)="onSelectType($event)"
-        class="form-select border-primary filter-type--select w-auto" aria-label="sort" name="sort">
-        @for (type of types; track $index) {
-        <option [lang]="languageService.selectedLanguage()" [value]="type.value">
-          {{ type.label | translate }}
-        </option>
-        }
-      </select>
+      <app-common-dropdown
+        [items]="types"
+        [selectedItem]="selectedTypeLabel | translate"
+        buttonClass="form-select border-primary filter-type--select w-auto"
+        ariaLabel="sort"
+        (itemSelected)="onSelectType($event)">
+      </app-common-dropdown>
     </div>
 
     <!-- Sort type -->
@@ -36,14 +35,17 @@
       <h4 [lang]="languageService.selectedLanguage()" class="sort-container__label text-primary d-none d-lg-flex w-auto">
         {{ translateService.get('common.sort.label') | async }}:
       </h4>
-      <select [(ngModel)]="selectedSort" (ngModelChange)="onSortChange()"
-        class="form-select text-primary border-primary sort-type w-50 ms-2" aria-label="sort" name="sort">
-        @for (type of sorts; track $index) {
-        <option [lang]="languageService.selectedLanguage()" class="border-danger" [value]="type.value">
-          {{ type.label | translate }}
-        </option>
-        }
-      </select>
+
+      <div class="sort-order w-50 ms-2">
+        <app-common-dropdown
+          [items]="sorts"
+          [selectedItem]="selectedSortLabel | translate"
+          buttonClass="form-select border-primary text-primary"
+          ariaLabel="sort"
+          (itemSelected)="onSortChange($event.value)">
+        </app-common-dropdown>
+      </div>
+
     </div>
   </div>
 

@@ -33,6 +33,7 @@ import {
   DEFAULT_PAGEABLE_IN_REST_CLIENT,
   DESIGNER_COOKIE_VARIABLE
 } from '../../shared/constants/common.constant';
+import { ItemDropdown } from '../../shared/models/item-dropdown.model';
 
 const SEARCH_DEBOUNCE_TIME = 500;
 
@@ -117,11 +118,11 @@ export class ProductComponent implements AfterViewInit, OnDestroy {
     this.router.navigate(['', productId]);
   }
 
-  onFilterChange(selectedType: TypeOption) {
+  onFilterChange(selectedType: ItemDropdown<TypeOption>) {
     this.criteria = {
       ...this.criteria,
       nextPageHref: '',
-      type: selectedType
+      type: selectedType.value
     };
     this.loadProductItems(true);
   }
