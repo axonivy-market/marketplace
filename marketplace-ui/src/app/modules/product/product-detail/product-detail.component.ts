@@ -29,7 +29,7 @@ import { AuthService } from '../../../auth/auth.service';
 import { ProductStarRatingNumberComponent } from './product-star-rating-number/product-star-rating-number.component';
 import { ProductInstallationCountActionComponent } from './product-installation-count-action/product-installation-count-action.component';
 import { ProductTypeIconPipe } from '../../../shared/pipes/icon.pipe';
-import { interval, Observable } from 'rxjs';
+import { Observable } from 'rxjs';
 import { ProductStarRatingService } from './product-detail-feedback/product-star-rating-panel/product-star-rating.service';
 import { RoutingQueryParamService } from '../../../shared/services/routing.query.param.service';
 import { CommonDropdownComponent } from '../../../shared/components/common-dropdown/common-dropdown.component';
@@ -45,7 +45,6 @@ export interface DetailTab {
 
 const STORAGE_ITEM = 'activeTab';
 const DEFAULT_ACTIVE_TAB = 'description';
-const SCROLL_INTERVAL = 500;
 @Component({
   selector: 'app-product-detail',
   standalone: true,
@@ -140,12 +139,7 @@ export class ProductDetailComponent {
   }
 
   scrollToTop() {
-    const intervalSub = interval(SCROLL_INTERVAL).subscribe(() => {
-      window.scrollTo({left: 0, top: 0, behavior: 'instant'});
-    });
-    setTimeout(() => {
-      intervalSub.unsubscribe();
-    }, 1000);
+    window.scrollTo({ left: 0, top: 0, behavior: 'instant' });
   }
 
   getProductById(productId: string): Observable<ProductDetail> {
