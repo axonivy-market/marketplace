@@ -64,6 +64,23 @@ class ProductDetailsControllerTest {
     verify(detailModelAssembler, times(1)).toModel(mockProduct(), RequestMappingConstants.BY_ID);
   }
 
+
+  @Test
+  void testFindBestMatchProductDetailsByVersion() {
+    Mockito.when(productService.fetchBestMatchProductDetail(Mockito.anyString(), Mockito.anyString())).thenReturn(mockProduct());
+    Mockito.when(detailModelAssembler.toModel(mockProduct(), TAG, RequestMappingConstants.BEST_MATCH_BY_ID_AND_VERSION)).thenReturn(createProductMockWithDetails());
+    ResponseEntity<ProductDetailModel> mockExpectedResult = new ResponseEntity<>(createProductMockWithDetails(),
+        HttpStatus.OK);
+
+    ResponseEntity<ProductDetailModel> result = productDetailsController.findBestMatchProductDetailsByVersion(DOCKER_CONNECTOR_ID, TAG);
+
+    assertEquals(HttpStatus.OK, result.getStatusCode());
+    assertEquals(result, mockExpectedResult);
+
+    verify(productService, times(1)).fetchBestMatchProductDetail(DOCKER_CONNECTOR_ID, TAG);
+    verify(detailModelAssembler, times(1)).toModel(mockProduct(), TAG, RequestMappingConstants.BEST_MATCH_BY_ID_AND_VERSION);
+  }
+
   @Test
   void testProductDetailsWithVersion() {
     Mockito.when(productService.fetchProductDetailByIdAndVersion(Mockito.anyString(), Mockito.anyString())).thenReturn(mockProduct());
