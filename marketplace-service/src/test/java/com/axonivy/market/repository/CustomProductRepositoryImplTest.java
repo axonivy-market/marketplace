@@ -75,7 +75,6 @@ class CustomProductRepositoryImplTest extends BaseSetup {
   @Test
   void testReleasedVersionsById_WhenResultIsNull() {
     // Arrange
-    Aggregation aggregation = mock(Aggregation.class);
     AggregationResults<Product> aggregationResults = mock(AggregationResults.class);
 
     when(mongoTemplate.aggregate(any(Aggregation.class), eq(MongoDBConstants.PRODUCT_COLLECTION), eq(Product.class)))
