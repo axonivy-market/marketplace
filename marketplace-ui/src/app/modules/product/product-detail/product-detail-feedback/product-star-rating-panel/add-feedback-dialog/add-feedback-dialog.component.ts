@@ -69,5 +69,4 @@ export class AddFeedbackDialogComponent {
     this.feedback.rating = newRate;
   }
 
-  protected readonly feedbackSortTypes = FEEDBACK_SORT_TYPES;
 }

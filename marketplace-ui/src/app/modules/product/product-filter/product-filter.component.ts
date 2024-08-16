@@ -9,6 +9,7 @@ import { SortOption } from '../../../shared/enums/sort-option.enum';
 import { LanguageService } from '../../../core/services/language/language.service';
 import { CommonDropdownComponent } from '../../../shared/components/common-dropdown/common-dropdown.component';
 import { CommonUtils } from '../../../shared/utils/common.utils';
+import { ItemDropdown } from '../../../shared/models/item-dropdown.model';
 
 @Component({
   selector: 'app-product-filter',
@@ -18,8 +19,9 @@ import { CommonUtils } from '../../../shared/utils/common.utils';
   styleUrl: './product-filter.component.scss'
 })
 export class ProductFilterComponent {
+  protected readonly LABEL_KEY = LABEL_KEY;
   @Output() searchChange = new EventEmitter<string>();
-  @Output() filterChange = new EventEmitter<TypeOption>();
+  @Output() filterChange = new EventEmitter<ItemDropdown<TypeOption>>();
   @Output() sortChange = new EventEmitter<SortOption>();
 
   selectedTypeLabel: string = CommonUtils.getLabel(FILTER_TYPES[0].value, FILTER_TYPES);
@@ -32,8 +34,8 @@ export class ProductFilterComponent {
   translateService = inject(TranslateService);
   languageService = inject(LanguageService);
 
-  onSelectType(type: TypeOption) {
-    this.selectedTypeLabel = CommonUtils.getLabel(type , this.types);
+  onSelectType(type: ItemDropdown<TypeOption>) {
+    this.selectedTypeLabel = CommonUtils.getLabel(type.value , this.types);
     this.filterChange.emit(type);
   }
 
@@ -46,5 +48,4 @@ export class ProductFilterComponent {
     this.selectedSortLabel = CommonUtils.getLabel(sort, this.sorts);
   }
 
-  protected readonly LABEL_KEY = LABEL_KEY;
 }

@@ -17,7 +17,7 @@ import { CommonModule } from '@angular/common';
 import { ProductDetailInformationTabComponent } from './product-detail-information-tab/product-detail-information-tab.component';
 import { ProductDetailVersionActionComponent } from './product-detail-version-action/product-detail-version-action.component';
 import { ProductDetailMavenContentComponent } from './product-detail-maven-content/product-detail-maven-content.component';
-import { LABEL_KEY, PRODUCT_DETAIL_TABS, SORT_TYPES } from '../../../shared/constants/common.constant';
+import { LABEL_KEY, PRODUCT_DETAIL_TABS } from '../../../shared/constants/common.constant';
 import { NgbNavModule } from '@ng-bootstrap/ng-bootstrap';
 import { LanguageService } from '../../../core/services/language/language.service';
 import { MultilingualismPipe } from '../../../shared/pipes/multilingualism.pipe';
@@ -34,6 +34,7 @@ import { ProductStarRatingService } from './product-detail-feedback/product-star
 import { RoutingQueryParamService } from '../../../shared/services/routing.query.param.service';
 import { CommonDropdownComponent } from '../../../shared/components/common-dropdown/common-dropdown.component';
 import { CommonUtils } from '../../../shared/utils/common.utils';
+import { ItemDropdown } from '../../../shared/models/item-dropdown.model';
 
 export interface DetailTab {
   activeClass: string;
@@ -199,7 +200,7 @@ export class ProductDetailComponent {
 
   onTabChange(event: string) {
     this.setActiveTab(event);
-    this.selectedTabLabel = event;
+    this.selectedTabLabel = CommonUtils.getLabel(event, PRODUCT_DETAIL_TABS);
     this.isTabDropdownShown.update(value => !value);
     this.onTabDropdownShown();
   }
@@ -281,7 +282,7 @@ export class ProductDetailComponent {
     });
   }
 
-  getNotEmptyTabs(): DetailTab[] {
+  getNotEmptyTabs(): ItemDropdown[] {
     return this.detailTabsForDropdown.filter(tab => this.getContent(tab.value));
   }
 

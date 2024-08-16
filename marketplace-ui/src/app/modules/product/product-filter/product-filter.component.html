@@ -6,7 +6,7 @@
     <!-- Filter type -->
     <div class="filter-container__button d-none d-md-flex">
       @for (type of types; track $index) {
-      <div (click)="onSelectType(type.value)" class="filter-type border" [ngClass]="{
+      <div (click)="onSelectType(type)" class="filter-type border" [ngClass]="{
             'border-light text-light': themeService.isDarkMode(),
             'border-dark text-dark': !themeService.isDarkMode(),
             'bg-light text-dark':
@@ -27,7 +27,7 @@
         [labelKey]="LABEL_KEY"
         buttonClass="form-select border-primary filter-type--select w-auto"
         ariaLabel="sort"
-        (itemSelected)="onSelectType($event.value)">
+        (itemSelected)="onSelectType($event)">
       </app-common-dropdown>
     </div>
 

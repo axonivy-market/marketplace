@@ -39,11 +39,7 @@ export class CommonDropdownComponent {
 
   @HostListener('document:click', ['$event'])
   handleClickOutside(event: MouseEvent) {
-    if (
-      !this.elementRef.nativeElement
-        .querySelector('.dropdown')
-        .contains(event.target) &&
-      this.isDropdownOpen) {
+    if (!this.elementRef.nativeElement.querySelector('.dropdown').contains(event.target) && this.isDropdownOpen) {
       this.isDropdownOpen = !this.isDropdownOpen;
     }
   }

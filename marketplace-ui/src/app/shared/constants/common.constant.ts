@@ -5,6 +5,7 @@ import { SortOption } from '../enums/sort-option.enum';
 import { NavItem } from '../models/nav-item.model';
 import { DetailTab } from '../../modules/product/product-detail/product-detail.component';
 import { Pageable } from '../models/apis/pageable.model';
+import { ItemDropdown } from '../models/item-dropdown.model';
 
 export const NAV_ITEMS: NavItem[] = [
   {
@@ -81,7 +82,7 @@ export const LANGUAGES = [
   }
 ];
 
-export const FILTER_TYPES = [
+export const FILTER_TYPES: ItemDropdown<TypeOption>[] = [
   {
     value: TypeOption.All_TYPES,
     label: 'common.filter.value.allTypes'
@@ -100,7 +101,7 @@ export const FILTER_TYPES = [
   }
 ];
 
-export const SORT_TYPES = [
+export const SORT_TYPES: ItemDropdown<SortOption>[] = [
   {
     value: SortOption.STANDARD,
     label: 'common.sort.value.standard'
@@ -119,7 +120,7 @@ export const SORT_TYPES = [
   }
 ];
 
-export const PRODUCT_DETAIL_TABS: DetailTab[] = [
+export const PRODUCT_DETAIL_TABS: ItemDropdown[] = [
   {
     activeClass: "activeTab === 'description'",
     tabId: 'description-tab',
@@ -146,7 +147,7 @@ export const PRODUCT_DETAIL_TABS: DetailTab[] = [
   }
 ];
 
-export const FEEDBACK_SORT_TYPES = [
+export const FEEDBACK_SORT_TYPES: ItemDropdown<FeedbackSortType>[] = [
   {
     value: FeedbackSortType.NEWEST,
     label: 'common.sort.value.newest',

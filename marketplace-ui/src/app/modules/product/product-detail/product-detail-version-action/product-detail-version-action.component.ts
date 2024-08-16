@@ -10,7 +10,7 @@ import {
   WritableSignal
 } from '@angular/core';
 import { ThemeService } from '../../../../core/services/theme/theme.service';
-import { TranslateModule, TranslateService } from '@ngx-translate/core';
+import { TranslateModule } from '@ngx-translate/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ProductService } from '../../product.service';
@@ -18,7 +18,6 @@ import { Artifact } from '../../../../shared/models/vesion-artifact.model';
 import { Tooltip } from 'bootstrap';
 import { ProductDetailService } from '../product-detail.service';
 import { RoutingQueryParamService } from '../../../../shared/services/routing.query.param.service';
-import { SORT_TYPES } from '../../../../shared/constants/common.constant';
 import { CommonDropdownComponent } from '../../../../shared/components/common-dropdown/common-dropdown.component';
 import { LanguageService } from '../../../../core/services/language/language.service';
 

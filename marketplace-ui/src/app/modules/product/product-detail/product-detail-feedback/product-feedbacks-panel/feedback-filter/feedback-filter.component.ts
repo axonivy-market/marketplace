@@ -6,6 +6,8 @@ import { ProductFeedbackService } from '../product-feedback.service';
 import { LanguageService } from '../../../../../../core/services/language/language.service';
 import { CommonDropdownComponent } from '../../../../../../shared/components/common-dropdown/common-dropdown.component';
 import { CommonUtils } from '../../../../../../shared/utils/common.utils';
+import { ItemDropdown } from '../../../../../../shared/models/item-dropdown.model';
+import { FeedbackSortType } from '../../../../../../shared/enums/feedback-sort-type';
 
 @Component({
   selector: 'app-feedback-filter',
@@ -15,6 +17,7 @@ import { CommonUtils } from '../../../../../../shared/utils/common.utils';
   styleUrl: './feedback-filter.component.scss'
 })
 export class FeedbackFilterComponent {
+  protected readonly LABEL_KEY = LABEL_KEY;
   feedbackSortTypes = FEEDBACK_SORT_TYPES;
 
   @Output() sortChange = new EventEmitter<string>();
@@ -23,10 +26,9 @@ export class FeedbackFilterComponent {
   languageService = inject(LanguageService);
   selectedSortTypeLabel: string = CommonUtils.getLabel(FEEDBACK_SORT_TYPES[0].value,FEEDBACK_SORT_TYPES);
 
-  onSortChange(event: any): void {
+  onSortChange(event: ItemDropdown<FeedbackSortType>): void {
     this.selectedSortTypeLabel = CommonUtils.getLabel(event.value, FEEDBACK_SORT_TYPES);
     this.sortChange.emit(event.sortFn);
   }
 
-  protected readonly LABEL_KEY = LABEL_KEY;
 }
