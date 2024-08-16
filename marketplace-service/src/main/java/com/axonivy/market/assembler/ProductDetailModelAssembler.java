@@ -39,6 +39,9 @@ public class ProductDetailModelAssembler extends RepresentationModelAssemblerSup
   }
 
   private ProductDetailModel createModel(Product product, String tag) {
+    if (product == null) {
+      return new ProductDetailModel();
+    }
     ResponseEntity<ProductDetailModel> selfLinkWithTag;
     ProductDetailModel model = instantiateModel(product);
     productModelAssembler.createResource(model, product);

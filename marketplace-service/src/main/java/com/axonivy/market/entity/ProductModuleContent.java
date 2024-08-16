@@ -21,10 +21,10 @@ public class ProductModuleContent implements Serializable {
   private String tag;
   @Schema(description = "Product detail description content ", example = "{ \"de\": \"E-Sign-Konnektor\", \"en\": \"E-sign connector\" }")
   private Map<String, String> description;
-  @Schema(description = "Setup tab content", example = "Adobe Sign account creation: An Adobe Sign account needs to be created to setup and use the connector.")
-  private String setup;
-  @Schema(description = "Demo tab content", example = "The demo project can be used to test the authentication and signing and the demo implementation can be used as inspiration for development")
-  private String demo;
+  @Schema(description = "Setup tab content", example = "{ \"de\": \"Setup\", \"en\": \"Setup\" ")
+  private Map<String, String> setup;
+  @Schema(description = "Demo tab content", example = "{ \"de\": \"Demo\", \"en\": \"Demo\" ")
+  private Map<String, String> demo;
   @Schema(description = "Is dependency artifact", example = "true")
   private Boolean isDependency;
   @Schema(example = "Adobe Acrobat Sign Connector")

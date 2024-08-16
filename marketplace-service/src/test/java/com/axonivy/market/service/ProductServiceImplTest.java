@@ -243,8 +243,7 @@ class ProductServiceImplTest extends BaseSetup {
     when(mockCommit.getCommitDate()).thenReturn(new Date());
     when(marketRepoService.getLastCommit(anyLong())).thenReturn(mockCommit);
 
-    var mockGitHubFile = mock(GitHubFile.class);
-    mockGitHubFile = new GitHubFile();
+    var mockGitHubFile = new GitHubFile();
     mockGitHubFile.setFileName(LOGO_FILE);
     mockGitHubFile.setType(FileType.LOGO);
     mockGitHubFile.setStatus(FileStatus.ADDED);
@@ -281,7 +280,7 @@ class ProductServiceImplTest extends BaseSetup {
     when(productRepository.searchByCriteria(any(), any(Pageable.class)))
         .thenReturn(new PageImpl<>(mockResultReturn.stream()
             .filter(product -> product.getNames().get(Language.EN.getValue()).equals(SAMPLE_PRODUCT_NAME))
-            .collect(Collectors.toList())));
+            .toList()));
     // Executes
     result = productService.findProducts(TypeOption.ALL.getOption(), SAMPLE_PRODUCT_NAME, language, false, PAGEABLE);
     assertTrue(result.hasContent());
@@ -292,7 +291,7 @@ class ProductServiceImplTest extends BaseSetup {
         .thenReturn(new PageImpl<>(mockResultReturn.stream()
             .filter(product -> product.getNames().get(Language.EN.getValue()).equals(SAMPLE_PRODUCT_NAME)
                 && product.getType().equals(TypeOption.CONNECTORS.getCode()))
-            .collect(Collectors.toList())));
+            .toList()));
     // Executes
     result =
         productService.findProducts(TypeOption.CONNECTORS.getOption(), SAMPLE_PRODUCT_NAME, language, false, PAGEABLE);

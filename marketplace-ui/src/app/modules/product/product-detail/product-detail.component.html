@@ -183,7 +183,9 @@
             aria-labelledby="demo-tab">
             <markdown
               class="readme-content"
-              [data]="productModuleContent().demo"></markdown>
+              [data]="productModuleContent().demo!
+                  | multilingualism: languageService.selectedLanguage()
+              "></markdown>
           </div>
           <div
             class="tab-pane fade"
@@ -193,7 +195,9 @@
             aria-labelledby="setup-tab">
             <markdown
               class="readme-content"
-              [data]="productModuleContent().setup"></markdown>
+              [data]="productModuleContent().setup!
+                  | multilingualism: languageService.selectedLanguage()
+              "></markdown>
           </div>
           <div
             class="tab-pane fade"

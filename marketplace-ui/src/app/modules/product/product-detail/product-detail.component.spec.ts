@@ -171,7 +171,7 @@ describe('ProductDetailComponent', () => {
   it('should return true for setup when it is not null and not empty', () => {
     const mockContent: ProductModuleContent = {
       ...MOCK_PRODUCT_MODULE_CONTENT,
-      setup: 'Test setup'
+      setup: { en: 'Test setup' }
     };
 
     component.productModuleContent.set(mockContent);
