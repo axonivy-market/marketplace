@@ -1,4 +1,4 @@
-package com.axonivy.market.service;
+package com.axonivy.market.service.impl;
 
 import com.axonivy.market.entity.Feedback;
 import com.axonivy.market.entity.Product;
@@ -11,7 +11,6 @@ import com.axonivy.market.model.ProductRating;
 import com.axonivy.market.repository.FeedbackRepository;
 import com.axonivy.market.repository.ProductRepository;
 import com.axonivy.market.repository.UserRepository;
-import com.axonivy.market.service.impl.FeedbackServiceImpl;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;

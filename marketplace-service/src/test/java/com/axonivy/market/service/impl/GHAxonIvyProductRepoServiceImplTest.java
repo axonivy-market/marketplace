@@ -1,4 +1,4 @@
-package com.axonivy.market.service;
+package com.axonivy.market.service.impl;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;

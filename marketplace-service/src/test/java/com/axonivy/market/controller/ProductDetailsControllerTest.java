@@ -11,6 +11,7 @@ import java.util.Objects;
 import java.util.HashMap;
 import java.util.Map;
 
+import com.axonivy.market.constants.RequestMappingConstants;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -50,7 +51,7 @@ class ProductDetailsControllerTest {
   @Test
   void testProductDetails() {
     Mockito.when(productService.fetchProductDetail(Mockito.anyString())).thenReturn(mockProduct());
-    Mockito.when(detailModelAssembler.toModel(mockProduct())).thenReturn(createProductMockWithDetails());
+    Mockito.when(detailModelAssembler.toModel(mockProduct(), RequestMappingConstants.BY_ID)).thenReturn(createProductMockWithDetails());
     ResponseEntity<ProductDetailModel> mockExpectedResult = new ResponseEntity<>(createProductMockWithDetails(),
         HttpStatus.OK);
 
@@ -60,13 +61,13 @@ class ProductDetailsControllerTest {
     assertEquals(result, mockExpectedResult);
 
     verify(productService, times(1)).fetchProductDetail(DOCKER_CONNECTOR_ID);
-    verify(detailModelAssembler, times(1)).toModel(mockProduct());
+    verify(detailModelAssembler, times(1)).toModel(mockProduct(), RequestMappingConstants.BY_ID);
   }
 
   @Test
   void testProductDetailsWithVersion() {
-    Mockito.when(productService.fetchProductDetail(Mockito.anyString())).thenReturn(mockProduct());
-    Mockito.when(detailModelAssembler.toModel(mockProduct(), TAG)).thenReturn(createProductMockWithDetails());
+    Mockito.when(productService.fetchProductDetailByIdAndVersion(Mockito.anyString(), Mockito.anyString())).thenReturn(mockProduct());
+    Mockito.when(detailModelAssembler.toModel(mockProduct(), TAG, RequestMappingConstants.BY_ID_AND_VERSION)).thenReturn(createProductMockWithDetails());
     ResponseEntity<ProductDetailModel> mockExpectedResult = new ResponseEntity<>(createProductMockWithDetails(),
         HttpStatus.OK);
 
@@ -76,7 +77,7 @@ class ProductDetailsControllerTest {
     assertEquals(HttpStatus.OK, result.getStatusCode());
     assertEquals(result, mockExpectedResult);
 
-    verify(productService, times(1)).fetchProductDetail(DOCKER_CONNECTOR_ID);
+    verify(productService, times(1)).fetchProductDetailByIdAndVersion(DOCKER_CONNECTOR_ID, TAG);
   }
 
   @Test

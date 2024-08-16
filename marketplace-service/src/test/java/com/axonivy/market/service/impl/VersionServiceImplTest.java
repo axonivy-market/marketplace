@@ -1,4 +1,4 @@
-package com.axonivy.market.service;
+package com.axonivy.market.service.impl;
 
 import com.axonivy.market.constants.MavenConstants;
 import com.axonivy.market.entity.MavenArtifactModel;
@@ -10,7 +10,7 @@ import com.axonivy.market.github.service.GHAxonIvyProductRepoService;
 import com.axonivy.market.model.MavenArtifactVersionModel;
 import com.axonivy.market.repository.MavenArtifactVersionRepository;
 import com.axonivy.market.repository.ProductRepository;
-import com.axonivy.market.service.impl.VersionServiceImpl;
+import com.axonivy.market.util.VersionUtils;
 import com.axonivy.market.util.XmlReaderUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.assertj.core.api.Fail;
@@ -89,8 +89,8 @@ class VersionServiceImplTest {
     String targetVersion = "10.0.10";
     setUpArtifactFromMeta();
     when(versionService.getProductMetaArtifacts(Mockito.anyString())).thenReturn(artifactsFromMeta);
-//    when(versionService.getVersionsToDisplay(Mockito.anyBoolean(), Mockito.anyString())).thenReturn(
-//        List.of(targetVersion));
+    when(versionService.getVersionsFromMavenArtifacts()).thenReturn(
+        List.of(targetVersion));
     when(mavenArtifactVersionRepository.findById(Mockito.anyString())).thenReturn(Optional.empty());
     ArrayList<MavenArtifactModel> artifactsInVersion = new ArrayList<>();
     artifactsInVersion.add(new MavenArtifactModel());
@@ -177,23 +177,6 @@ class VersionServiceImplTest {
     Assertions.assertEquals(archivedArtifact1, archivedArtifactsMap.get(artifactId).get(0));
   }
 
-  @Test
-  void testGetVersionsToDisplay() {
-    String repoUrl = "https://maven.axonivy.com";
-    String groupId = "com.axonivy.connector.adobe.acrobat.sign";
-    String artifactId = "adobe-acrobat-sign-connector";
-    artifactsFromMeta.add(new MavenArtifact(repoUrl, null, groupId, artifactId, null, null, null, null));
-    ArrayList<String> versionFromArtifact = new ArrayList<>();
-    versionFromArtifact.add("10.0.6");
-    versionFromArtifact.add("10.0.5");
-    versionFromArtifact.add("10.0.4");
-    versionFromArtifact.add("10.0.3-SNAPSHOT");
-    when(versionService.getVersionsFromArtifactDetails(repoUrl, groupId, artifactId)).thenReturn(versionFromArtifact);
-//    Assertions.assertEquals(versionFromArtifact, versionService.getVersionsToDisplay(true, null));
-//    Assertions.assertEquals(List.of("10.0.5"), versionService.getVersionsToDisplay(null, "10.0.5"));
-//    versionFromArtifact.remove("10.0.3-SNAPSHOT");
-//    Assertions.assertEquals(versionFromArtifact, versionService.getVersionsToDisplay(null, null));
-  }
 
   @Test
   void getVersionsFromMavenArtifacts() {

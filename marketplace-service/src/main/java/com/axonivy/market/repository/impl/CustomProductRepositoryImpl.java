@@ -3,11 +3,11 @@ package com.axonivy.market.repository.impl;
 import com.axonivy.market.constants.MongoDBConstants;
 import com.axonivy.market.entity.Product;
 import com.axonivy.market.repository.CustomProductRepository;
-import lombok.extern.log4j.Log4j2;
 import org.bson.Document;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.aggregation.Aggregation;
 import org.springframework.data.mongodb.core.aggregation.AggregationOperation;
+import org.springframework.data.mongodb.core.aggregation.ArrayOperators;
 import org.springframework.data.mongodb.core.query.Criteria;
 
 import java.util.Arrays;
@@ -15,7 +15,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 
-@Log4j2
 public class CustomProductRepositoryImpl implements CustomProductRepository {
   private final MongoTemplate mongoTemplate;
 
@@ -25,6 +24,12 @@ public class CustomProductRepositoryImpl implements CustomProductRepository {
 
   private AggregationOperation createIdMatchOperation(String id) {
     return Aggregation.match(Criteria.where(MongoDBConstants.ID).is(id));
+  }
+
+  private AggregationOperation createReturnFirstModuleContentOperation() {
+    return Aggregation.project()
+        .and(ArrayOperators.Slice.sliceArrayOf("productModuleContents").itemCount(1))
+        .as("productModuleContents");
   }
 
   private AggregationOperation createReturnFirstMatchTagModuleContentOperation(String tag) {
@@ -51,7 +56,7 @@ public class CustomProductRepositoryImpl implements CustomProductRepository {
 
   @Override
   public Product getProductById(String id) {
-    Aggregation aggregation = Aggregation.newAggregation(createIdMatchOperation(id));
+    Aggregation aggregation = Aggregation.newAggregation(createIdMatchOperation(id), createReturnFirstModuleContentOperation());
     return queryProductByAggregation(aggregation);
   }
 

@@ -364,6 +364,9 @@ public class ProductServiceImpl implements ProductService {
           axonIvyProductRepoService.getReadmeAndProductContentsFromTag(product, productRepo, ghTag.getName());
       productModuleContents.add(productModuleContent);
       String versionFromTag = VersionUtils.convertTagToVersion(ghTag.getName());
+      if (Objects.isNull(product.getReleasedVersions())) {
+        product.setReleasedVersions(new ArrayList<>());
+      }
       product.getReleasedVersions().add(versionFromTag);
     }
     product.setProductModuleContents(productModuleContents);
