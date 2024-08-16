@@ -31,7 +31,11 @@ public class VersionUtils {
     public static String getBestMatchVersion(List<String> versions, String designerVersion) {
         String bestMatchVersion = versions.stream().filter(version -> StringUtils.equals(version, designerVersion)).findAny().orElse(null);
         if(StringUtils.isBlank(bestMatchVersion)){
-            bestMatchVersion = versions.stream().filter(version -> isMatchWithDesignerVersion(version, designerVersion)).findAny().orElse(CollectionUtils.firstElement(versions));
+            LatestVersionComparator comparator = new LatestVersionComparator();
+            bestMatchVersion = versions.stream().filter(version -> comparator.compare(version, designerVersion) > 0 && isReleasedVersion(version)).findAny().orElse(null);
+        }
+        if (StringUtils.isBlank(bestMatchVersion)) {
+            bestMatchVersion = versions.stream().filter(VersionUtils::isReleasedVersion).findAny().orElse(CollectionUtils.firstElement(versions));
         }
         return bestMatchVersion;
     }
@@ -104,4 +108,5 @@ public class VersionUtils {
         }
         return GitHubConstants.STANDARD_TAG_PREFIX.concat(version);
     }
+
 }

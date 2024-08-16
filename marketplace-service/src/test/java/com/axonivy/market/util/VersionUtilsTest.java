@@ -112,6 +112,7 @@ class VersionUtilsTest {
     @Test
     void testGetBugfixVersion() {
         String releasedVersion = "10.0.20";
+        String shortReleasedVersion = "10.0";
         String snapshotVersion = "10.0.20-SNAPSHOT";
         String sprintVersion = "10.0.20-m1234";
         String minorSprintVersion = "10.0.20.1-m1234";
@@ -119,5 +120,31 @@ class VersionUtilsTest {
         Assertions.assertEquals(releasedVersion, VersionUtils.getBugfixVersion(snapshotVersion));
         Assertions.assertEquals(releasedVersion, VersionUtils.getBugfixVersion(sprintVersion));
         Assertions.assertEquals(releasedVersion, VersionUtils.getBugfixVersion(minorSprintVersion));
+        Assertions.assertEquals(shortReleasedVersion, VersionUtils.getBugfixVersion(shortReleasedVersion));
+
+    }
+
+    @Test
+    void testGetBestMatchVersion() {
+        List<String> releasedVersions = List.of("10.0.21-SNAPSHOT", "10.0.21", "10.0.19", "10.0.17");
+        Assertions.assertEquals("10.0.19", VersionUtils.getBestMatchVersion(releasedVersions, "10.0.19"));
+        Assertions.assertEquals("10.0.21", VersionUtils.getBestMatchVersion(releasedVersions, "10.0.22"));
+        Assertions.assertEquals("10.0.17", VersionUtils.getBestMatchVersion(releasedVersions, "10.0.18"));
+        Assertions.assertEquals("10.0.21", VersionUtils.getBestMatchVersion(releasedVersions, "10.0.16"));
+    }
+
+    @Test
+    void testConvertTagToVersion() {
+        Assertions.assertEquals("10.0.19", VersionUtils.convertTagToVersion("10.0.19"));
+        Assertions.assertEquals("10.0.19", VersionUtils.convertTagToVersion("v10.0.19"));
+        Assertions.assertEquals("", VersionUtils.convertTagToVersion(""));
+    }
+
+    @Test
+    void testConvertTagsToVersions() {
+        List<String> results = VersionUtils.convertTagsToVersions(List.of("10.0.1", "v10.0.2"));
+        Assertions.assertEquals(2, results.size());
+        Assertions.assertEquals("10.0.1", results.get(0));
+        Assertions.assertEquals("10.0.2", results.get(1));
     }
 }
