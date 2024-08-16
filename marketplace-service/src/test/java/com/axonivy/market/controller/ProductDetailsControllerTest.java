@@ -1,6 +1,7 @@
 package com.axonivy.market.controller;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -62,6 +63,8 @@ class ProductDetailsControllerTest {
 
     verify(productService, times(1)).fetchProductDetail(DOCKER_CONNECTOR_ID);
     verify(detailModelAssembler, times(1)).toModel(mockProduct(), RequestMappingConstants.BY_ID);
+    assertTrue(result.hasBody());
+    assertEquals(DOCKER_CONNECTOR_ID, Objects.requireNonNull(result.getBody()).getId());
   }
 
 

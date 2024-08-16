@@ -4,7 +4,6 @@ import com.axonivy.market.BaseSetup;
 import com.axonivy.market.constants.MongoDBConstants;
 import com.axonivy.market.entity.Product;
 import com.axonivy.market.repository.impl.CustomProductRepositoryImpl;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
