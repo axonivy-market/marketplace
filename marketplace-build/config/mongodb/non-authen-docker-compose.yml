@@ -1,7 +1,7 @@
 # This docker-compose to init MongoDB as free access and create a volume as name + mongodata
 # Then insert the admin user as defined at mogo-init.js
 # Change the name to other if you want to create more volumes. e.g: marketplace-dev
-name: marketplace
+name: marketplace-db
 
 services:
   mongodb:

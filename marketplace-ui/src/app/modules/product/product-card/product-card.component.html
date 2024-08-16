@@ -7,7 +7,10 @@
       width="70"
       height="70"
       [ngSrc]="product | logo"
-      [alt]="product.names | multilingualism: languageService.selectedLanguage()" />
+      [alt]="
+        product.names | multilingualism: languageService.selectedLanguage()
+      "
+      [lang]="languageService.selectedLanguage()" />
     @if (isShowInRESTClientEditor) {
       <div
         class="card__tag lh-md px-2 py-1 text-capitalize"
@@ -16,6 +19,7 @@
       </div>
     } @else {
       <div
+        [lang]="languageService.selectedLanguage()"
         class="card__tag lh-md px-2 py-1"
         [ngClass]="themeService.isDarkMode() ? 'text-dark' : 'text-light'">
         {{ 'common.filter.value.' + product.type | translate }}
@@ -23,13 +27,15 @@
     }
   </div>
   <div>
-    <h5 class="card__title text-primary">
-      {{
-        product.names | multilingualism: languageService.selectedLanguage()
-      }}
+    <h5
+      class="card__title text-primary"
+      [lang]="languageService.selectedLanguage()">
+      {{ product.names | multilingualism: languageService.selectedLanguage() }}
     </h5>
     @if (!isShowInRESTClientEditor) {
-      <p class="card__description text-secondary">
+      <p
+        class="card__description text-secondary"
+        [lang]="languageService.selectedLanguage()">
         {{
           product.shortDescriptions
             | multilingualism: languageService.selectedLanguage()

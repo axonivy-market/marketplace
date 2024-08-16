@@ -1,33 +1,18 @@
 name: marketplace
 
 services:
-  mongodb:
-    container_name: marketplace-mongodb
-    build:
-      context: ./config/mongodb
-      dockerfile: Dockerfile
-    restart: always
-    ports:
-      - "27017:27017"
-    environment:
-      MONGODB_INITDB_ROOT_USERNAME: ${MONGODB_INITDB_ROOT_USERNAME}
-      MONGODB_INITDB_ROOT_PASSWORD: ${MONGODB_INITDB_ROOT_PASSWORD}
-    volumes:
-      - mongodata:/data/db
-      - ./config/mongodb/mongod.conf:/etc/mongod.conf
-
   ui:
     container_name: marketplace-ui
     build:
-      context: ../marketplace-ui
+      context: ../../marketplace-ui
       additional_contexts:
-        assets: ../marketplace-build/
+        assets: ../../marketplace-build/
       dockerfile: Dockerfile
       args:
         - BUILD_ENV=${BUILD_ENV}
     restart: always
     volumes:
-      - ./config/nginx/nginx.conf:/etc/nginx/nginx.conf
+      - ../../marketplace-build/config/nginx/nginx.conf:/etc/nginx/nginx.conf
     ports:
       - "4200:80"
     depends_on:
@@ -50,14 +35,9 @@ services:
       - MARKET_JWT_SECRET_KEY=${MARKET_JWT_SECRET_KEY}
       - MARKET_CORS_ALLOWED_ORIGIN=${MARKET_CORS_ALLOWED_ORIGIN}
     build:
-      context: ../marketplace-service
+      context: ../../marketplace-service
       dockerfile: Dockerfile
       args:
         - BUILD_VERSION=${BUILD_VERSION}
     ports:
       - "8080:8080"
-    depends_on:
-      - mongodb
-
-volumes:
-  mongodata:

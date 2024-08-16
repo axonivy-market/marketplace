@@ -1,0 +1,19 @@
+name: marketplace-db
+
+services:
+  mongodb:
+    container_name: mongodb
+    build:
+      dockerfile: Dockerfile
+    restart: always
+    ports:
+      - "27017:27017"
+    environment:
+      MONGODB_INITDB_ROOT_USERNAME: ${MONGODB_INITDB_ROOT_USERNAME}
+      MONGODB_INITDB_ROOT_PASSWORD: ${MONGODB_INITDB_ROOT_PASSWORD}
+    volumes:
+      - mongodata:/data/db
+      - ./mongod.conf:/etc/mongod.conf
+
+volumes:
+  mongodata:
