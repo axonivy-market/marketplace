@@ -1,3 +1,5 @@
+import { ItemDropdown } from './item-dropdown.model';
+
 export interface Artifact {
   name: string;
   downloadUrl: string;
@@ -6,5 +8,5 @@ export interface Artifact {
 
 export interface VersionData {
   version: string;
-  artifactsByVersion: Artifact[];
+  artifactsByVersion: ItemDropdown[];
 }

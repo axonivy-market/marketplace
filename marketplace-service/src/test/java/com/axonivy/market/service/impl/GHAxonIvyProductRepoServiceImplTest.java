@@ -1,22 +1,14 @@
 package com.axonivy.market.service.impl;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNull;
-import static org.junit.jupiter.api.Assertions.assertSame;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.reset;
-import static org.mockito.Mockito.when;
-
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-
+import com.axonivy.market.constants.CommonConstants;
+import com.axonivy.market.constants.ProductJsonConstants;
+import com.axonivy.market.constants.ReadmeConstants;
+import com.axonivy.market.entity.Product;
+import com.axonivy.market.enums.Language;
+import com.axonivy.market.github.model.MavenArtifact;
+import com.axonivy.market.github.service.GitHubService;
+import com.axonivy.market.github.service.impl.GHAxonIvyProductRepoServiceImpl;
+import com.fasterxml.jackson.databind.JsonNode;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -31,15 +23,22 @@ import org.mockito.Mockito;
 import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import com.axonivy.market.constants.CommonConstants;
-import com.axonivy.market.constants.ProductJsonConstants;
-import com.axonivy.market.constants.ReadmeConstants;
-import com.axonivy.market.entity.Product;
-import com.axonivy.market.enums.Language;
-import com.axonivy.market.github.model.MavenArtifact;
-import com.axonivy.market.github.service.GitHubService;
-import com.axonivy.market.github.service.impl.GHAxonIvyProductRepoServiceImpl;
-import com.fasterxml.jackson.databind.JsonNode;
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertSame;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.reset;
+import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class GHAxonIvyProductRepoServiceImplTest {
@@ -217,8 +216,8 @@ class GHAxonIvyProductRepoServiceImplTest {
     assertEquals("bpmn-statistic", result.getArtifactId());
     assertEquals("iar", result.getType());
     assertEquals("Test README", result.getDescription().get(Language.EN.getValue()));
-    assertEquals("Demo content", result.getDemo());
-    assertEquals("Setup content (https://raw.githubusercontent.com/image.png)", result.getSetup());
+    assertEquals("Demo content", result.getDemo().get(Language.EN.getValue()));
+    assertEquals("Setup content (https://raw.githubusercontent.com/image.png)", result.getSetup().get(Language.EN.getValue()));
   }
 
   @Test
@@ -254,7 +253,7 @@ class GHAxonIvyProductRepoServiceImplTest {
         RELEASE_TAG);
 
     assertNull(result.getArtifactId());
-    assertEquals("Setup content", result.getSetup());
+    assertEquals("Setup content", result.getSetup().get(Language.EN.getValue()));
   }
 
   @Test
@@ -267,8 +266,8 @@ class GHAxonIvyProductRepoServiceImplTest {
 
     var result = axonivyProductRepoServiceImpl.getReadmeAndProductContentsFromTag(createMockProduct(), ghRepository,
         RELEASE_TAG);
-    assertEquals("Demo content", result.getDemo());
-    assertEquals("Setup content", result.getSetup());
+    assertEquals("Demo content", result.getDemo().get(Language.EN.getValue()));
+    assertEquals("Setup content", result.getSetup().get(Language.EN.getValue()));
   }
 
   private static void getReadmeInputStream(String readmeContentString, GHContent mockContent) throws IOException {
@@ -333,10 +332,21 @@ class GHAxonIvyProductRepoServiceImplTest {
   }
 
   private static InputStream getMockInputStreamWithOutProjectAndDependency() {
-    String jsonContent =
-        "{\n" + "  \"installers\": [\n" + "    {\n" + "      \"data\": {\n" + "        \"repositories\": [\n"
-            + "          {\n" + "            \"url\": \"http://example.com/repo\"\n" + "          }\n" + "        ]\n"
-            + "      }\n" + "    }\n" + "  ]\n" + "}";
+    String jsonContent = """
+    {
+      "installers": [
+        {
+          "data": {
+            "repositories": [
+              {
+                "url": "http://example.com/repo"
+              }
+            ]
+          }
+        }
+      ]
+    }
+    """;
     return new ByteArrayInputStream(jsonContent.getBytes(StandardCharsets.UTF_8));
   }
 

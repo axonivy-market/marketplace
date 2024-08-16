@@ -17,7 +17,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.io.IOException;
-import java.net.URL;
+import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -97,7 +97,7 @@ class GHAxonIvyMarketRepoServiceImplTest {
     when(mockCommit.listFiles()).thenReturn(pagedFile);
     var mockFile = mock(File.class);
     when(mockFile.getFileName()).thenReturn(fileName);
-    when(mockFile.getRawUrl()).thenReturn(new URL("http://github/test-repo-url/test-meta.json"));
+    when(mockFile.getRawUrl()).thenReturn(URI.create("http://github/test-repo-url/test-meta.json").toURL());
     when(mockFile.getStatus()).thenReturn("added");
     when(mockFile.getPreviousFilename()).thenReturn("test-prev-meta.json");
     when(pagedFile.toList()).thenReturn(List.of(mockFile));

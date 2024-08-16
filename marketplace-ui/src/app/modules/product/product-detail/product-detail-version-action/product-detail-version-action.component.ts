@@ -1,30 +1,30 @@
 import {
   AfterViewInit,
-  Component,
+  Component, computed,
   ElementRef, EventEmitter,
-  HostListener,
   inject,
   Input,
-  model, Output,
+  model, Output, Signal,
   signal,
   WritableSignal
 } from '@angular/core';
 import { ThemeService } from '../../../../core/services/theme/theme.service';
-import { TranslateModule, TranslateService } from '@ngx-translate/core';
+import { TranslateModule } from '@ngx-translate/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ProductService } from '../../product.service';
-import { Artifact } from '../../../../shared/models/vesion-artifact.model';
 import { Tooltip } from 'bootstrap';
 import { ProductDetailService } from '../product-detail.service';
 import { RoutingQueryParamService } from '../../../../shared/services/routing.query.param.service';
+import { CommonDropdownComponent } from '../../../../shared/components/common-dropdown/common-dropdown.component';
 import { LanguageService } from '../../../../core/services/language/language.service';
+import { ItemDropdown } from '../../../../shared/models/item-dropdown.model';
 
 const delayTimeBeforeHideMessage = 2000;
 @Component({
   selector: 'app-product-version-action',
   standalone: true,
-  imports: [CommonModule, TranslateModule, FormsModule],
+  imports: [CommonModule, TranslateModule, FormsModule, CommonDropdownComponent],
   templateUrl: './product-detail-version-action.component.html',
   styleUrl: './product-detail-version-action.component.scss'
 })
@@ -34,19 +34,25 @@ export class ProductDetailVersionActionComponent implements AfterViewInit {
   productId!: string;
   selectedVersion = model<string>('');
   versions: WritableSignal<string[]> = signal([]);
-  artifacts: WritableSignal<Artifact[]> = signal([]);
+  versionDropdown : Signal<ItemDropdown[]> = computed(() => {
+    return this.versions().map(version => ({
+      value: version,
+      label: version
+    }));
+  });
+
+  artifacts: WritableSignal<ItemDropdown[]> = signal([]);
   isDevVersionsDisplayed = signal(false);
   isDropDownDisplayed = signal(false);
-  isVersionsDropDownShow = signal(false);
   isDesignerEnvironment = signal(false);
   isInvalidInstallationEnvironment = signal(false);
   designerVersion = '';
-  selectedArtifact = '';
-  versionMap: Map<string, Artifact[]> = new Map();
+  selectedArtifact: string | undefined = '';
+  selectedArtifactName:string | undefined = '';
+  versionMap: Map<string, ItemDropdown[]> = new Map();
 
   routingQueryParamService = inject(RoutingQueryParamService);
   themeService = inject(ThemeService);
-  translateService = inject(TranslateService);
   productService = inject(ProductService);
   productDetailService = inject(ProductDetailService);
   elementRef = inject(ElementRef);
@@ -62,10 +68,7 @@ export class ProductDetailVersionActionComponent implements AfterViewInit {
     this.isDesignerEnvironment.set(
       this.routingQueryParamService.isDesignerEnv()
     );
-  }
 
-  onShowVersions() {
-    this.isVersionsDropDownShow.set(!this.isVersionsDropDownShow());
   }
 
   getInstallationTooltipText() {
@@ -76,12 +79,23 @@ export class ProductDetailVersionActionComponent implements AfterViewInit {
         (minimum version 9.2.0)</p>`;
   }
 
-  onSelectVersion() {
+  onSelectVersion(version : string) {
+    this.selectedVersion.set(version);
     this.artifacts.set(this.versionMap.get(this.selectedVersion()) ?? []);
-
+    this.artifacts().forEach(artifact => {
+      if(artifact.name) {
+        artifact.label = artifact.name;
+      }
+    });
     if (this.artifacts().length !== 0) {
-      this.selectedArtifact = this.artifacts()[0].downloadUrl;
+      this.selectedArtifactName = this.artifacts()[0].name ?? '';
+      this.selectedArtifact = this.artifacts()[0].downloadUrl ?? '';
     }
+  }
+
+  onSelectArtifact(artifact: ItemDropdown) {
+    this.selectedArtifactName = artifact.name;
+    this.selectedArtifact = artifact.downloadUrl;
   }
 
   onShowDevVersion(event: Event) {
@@ -98,7 +112,7 @@ export class ProductDetailVersionActionComponent implements AfterViewInit {
   }
 
   getVersionWithArtifact() {
-    this.sanitizeDataBeforFetching();
+    this.sanitizeDataBeforeFetching();
 
     this.productService
       .sendRequestToProductDetailVersionAPI(
@@ -113,41 +127,31 @@ export class ProductDetailVersionActionComponent implements AfterViewInit {
             ...currentVersions,
             version
           ]);
+
           if (!this.versionMap.get(version)) {
             this.versionMap.set(version, item.artifactsByVersion);
           }
         });
         if (this.versions().length !== 0) {
           this.selectedVersion.set(this.versions()[0]);
-          this.onSelectVersion();
         }
       });
   }
 
-  sanitizeDataBeforFetching() {
+  sanitizeDataBeforeFetching() {
     this.versions.set([]);
     this.artifacts.set([]);
     this.selectedArtifact = '';
     this.selectedVersion.set('');
   }
 
-  downloadArifact() {
+  downloadArtifact() {
     this.onUpdateInstallationCount();
     const newTab = window.open(this.selectedArtifact, '_blank');
     if (newTab) {
       newTab.blur();
     }
     window.focus();
-  }
-
-  @HostListener('document:click', ['$event'])
-  handleClickOutside(event: MouseEvent) {
-    if (
-      !this.elementRef.nativeElement.contains(event.target) &&
-      this.isVersionsDropDownShow()
-    ) {
-      this.onShowVersions();
-    }
   }
 
   onUpdateInstallationCount() {

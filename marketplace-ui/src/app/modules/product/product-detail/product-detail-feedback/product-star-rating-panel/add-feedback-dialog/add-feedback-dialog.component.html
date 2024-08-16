@@ -13,10 +13,13 @@
       <p [lang]="languageService.selectedLanguage()" class="text-secondary mb-2">
         {{ 'common.feedback.currentProductTitle' | translate }}
       </p>
-      <select class="form-select product-item-select border-primary text-primary" aria-label="item">
-        <option [lang]="languageService.selectedLanguage()">{{ productDetailService.productNames() | multilingualism:
-          languageService.selectedLanguage() }}</option>
-      </select>
+
+      <app-common-dropdown
+        [items]="[]"
+        [selectedItem]="productDetailService.productNames() | multilingualism: languageService.selectedLanguage()"
+        buttonClass="form-select product-item-select border-primary text-primary text-start" aria-label="item">
+      </app-common-dropdown>
+
     </div>
     <div class="d-flex flex-column flex-grow-1">
       <p [lang]="languageService.selectedLanguage()" class="text-secondary mb-2">
