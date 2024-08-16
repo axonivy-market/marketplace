@@ -15,6 +15,8 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 public class VersionUtils {
+    private VersionUtils() {
+    }
     public static List<String> getVersionsToDisplay(List<String> versions, Boolean isShowDevVersion, String designerVersion) {
         Stream<String> versionStream = versions.stream();
         if (StringUtils.isNotBlank(designerVersion)) {
@@ -90,7 +92,7 @@ public class VersionUtils {
 
     public static List<String> convertTagsToVersions (List<String> tags){
         Objects.requireNonNull(tags);
-        return tags.stream().map(VersionUtils::convertTagToVersion).collect(Collectors.toList());
+        return tags.stream().map(VersionUtils::convertTagToVersion).toList();
     }
 
     public static String convertVersionToTag(String productId, String version) {

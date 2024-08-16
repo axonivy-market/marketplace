@@ -1,6 +1,9 @@
 package com.axonivy.market.constants;
 
 public class MongoDBConstants {
+    private MongoDBConstants() {
+    }
+    
     public static final String ID ="_id";
     public static final String PROJECT ="$project";
     public static final String PRODUCT_MODULE_CONTENT ="productModuleContents";

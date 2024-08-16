@@ -1,14 +1,11 @@
 package com.axonivy.market.util;
 
 import com.axonivy.market.enums.NonStandardProduct;
-import com.axonivy.market.github.model.MavenArtifact;
-import com.axonivy.market.service.impl.VersionServiceImpl;
 import org.apache.commons.lang3.StringUtils;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
-import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.ArrayList;
@@ -94,5 +91,33 @@ class VersionUtilsTest {
         Assertions.assertEquals(List.of("10.0.5"), VersionUtils.getVersionsToDisplay(versionFromArtifact, null, "10.0.5"));
         versionFromArtifact.remove("10.0.3-SNAPSHOT");
         Assertions.assertEquals(versionFromArtifact, VersionUtils.getVersionsToDisplay(versionFromArtifact, null, null));
+    }
+
+
+    @Test
+    void testIsReleasedVersionOrUnReleaseDevVersion() {
+        String releasedVersion = "10.0.20";
+        String snapshotVersion = "10.0.20-SNAPSHOT";
+        String sprintVersion = "10.0.20-m1234";
+        String minorSprintVersion = "10.0.20.1-m1234";
+        String unreleasedSprintVersion = "10.0.21-m1235";
+        List<String> versions = List.of(releasedVersion, snapshotVersion, sprintVersion, unreleasedSprintVersion);
+        Assertions.assertTrue(VersionUtils.isOfficialVersionOrUnReleasedDevVersion(versions, releasedVersion));
+        Assertions.assertFalse(VersionUtils.isOfficialVersionOrUnReleasedDevVersion(versions, sprintVersion));
+        Assertions.assertFalse(VersionUtils.isOfficialVersionOrUnReleasedDevVersion(versions, snapshotVersion));
+        Assertions.assertFalse(VersionUtils.isOfficialVersionOrUnReleasedDevVersion(versions, minorSprintVersion));
+        Assertions.assertTrue(VersionUtils.isOfficialVersionOrUnReleasedDevVersion(versions, unreleasedSprintVersion));
+    }
+
+    @Test
+    void testGetBugfixVersion() {
+        String releasedVersion = "10.0.20";
+        String snapshotVersion = "10.0.20-SNAPSHOT";
+        String sprintVersion = "10.0.20-m1234";
+        String minorSprintVersion = "10.0.20.1-m1234";
+        Assertions.assertEquals(releasedVersion, VersionUtils.getBugfixVersion(releasedVersion));
+        Assertions.assertEquals(releasedVersion, VersionUtils.getBugfixVersion(snapshotVersion));
+        Assertions.assertEquals(releasedVersion, VersionUtils.getBugfixVersion(sprintVersion));
+        Assertions.assertEquals(releasedVersion, VersionUtils.getBugfixVersion(minorSprintVersion));
     }
 }

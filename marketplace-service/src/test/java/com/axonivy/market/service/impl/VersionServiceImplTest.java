@@ -10,7 +10,6 @@ import com.axonivy.market.github.service.GHAxonIvyProductRepoService;
 import com.axonivy.market.model.MavenArtifactVersionModel;
 import com.axonivy.market.repository.MavenArtifactVersionRepository;
 import com.axonivy.market.repository.ProductRepository;
-import com.axonivy.market.util.VersionUtils;
 import com.axonivy.market.util.XmlReaderUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.assertj.core.api.Fail;
@@ -245,32 +244,6 @@ class VersionServiceImplTest {
         versionService.buildMavenMetadataUrlFromArtifact(repoUrl, groupId, artifactId));
   }
 
-//  @Test
-//  void testIsReleasedVersionOrUnReleaseDevVersion() {
-//    String releasedVersion = "10.0.20";
-//    String snapshotVersion = "10.0.20-SNAPSHOT";
-//    String sprintVersion = "10.0.20-m1234";
-//    String minorSprintVersion = "10.0.20.1-m1234";
-//    String unreleasedSprintVersion = "10.0.21-m1235";
-//    List<String> versions = List.of(releasedVersion, snapshotVersion, sprintVersion, unreleasedSprintVersion);
-//    Assertions.assertTrue(versionService.isOfficialVersionOrUnReleasedDevVersion(versions, releasedVersion));
-//    Assertions.assertFalse(versionService.isOfficialVersionOrUnReleasedDevVersion(versions, sprintVersion));
-//    Assertions.assertFalse(versionService.isOfficialVersionOrUnReleasedDevVersion(versions, snapshotVersion));
-//    Assertions.assertFalse(versionService.isOfficialVersionOrUnReleasedDevVersion(versions, minorSprintVersion));
-//    Assertions.assertTrue(versionService.isOfficialVersionOrUnReleasedDevVersion(versions, unreleasedSprintVersion));
-//  }
-
-//  @Test
-//  void testGetBugfixVersion() {
-//    String releasedVersion = "10.0.20";
-//    String snapshotVersion = "10.0.20-SNAPSHOT";
-//    String sprintVersion = "10.0.20-m1234";
-//    String minorSprintVersion = "10.0.20.1-m1234";
-//    Assertions.assertEquals(releasedVersion, versionService.getBugfixVersion(releasedVersion));
-//    Assertions.assertEquals(releasedVersion, versionService.getBugfixVersion(snapshotVersion));
-//    Assertions.assertEquals(releasedVersion, versionService.getBugfixVersion(sprintVersion));
-//    Assertions.assertEquals(releasedVersion, versionService.getBugfixVersion(minorSprintVersion));
-//  }
 
 
 
