@@ -183,7 +183,7 @@ public class GHAxonIvyProductRepoServiceImpl implements GHAxonIvyProductRepoServ
   public Map<String, String> replaceEmptyContentsWithEnContent(Map<String, String> map) {
     String enValue = map.get(Language.EN.getValue());
     for (Map.Entry<String, String> entry : map.entrySet()) {
-      if (entry.getValue().isEmpty() && !entry.getKey().equals(Language.EN.getValue())) {
+      if (StringUtils.isBlank(entry.getValue())) {
         map.put(entry.getKey(), enValue);
       }
     }
@@ -290,7 +290,7 @@ public class GHAxonIvyProductRepoServiceImpl implements GHAxonIvyProductRepoServ
   }
 
   private void addLocaleContent(Map<String, Map<String, String>> moduleContents, String type, String content, String locale) {
-    moduleContents.computeIfAbsent(type, key -> new HashMap<>()).put(locale.toLowerCase(), content);
+    moduleContents.computeIfAbsent(type, key -> new HashMap<>()).put(locale, content);
   }
 
   private List<GHContent> getProductFolderContents(Product product, GHRepository ghRepository, String tag)
