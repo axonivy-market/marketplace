@@ -17,7 +17,7 @@ import { CommonModule } from '@angular/common';
 import { ProductDetailInformationTabComponent } from './product-detail-information-tab/product-detail-information-tab.component';
 import { ProductDetailVersionActionComponent } from './product-detail-version-action/product-detail-version-action.component';
 import { ProductDetailMavenContentComponent } from './product-detail-maven-content/product-detail-maven-content.component';
-import { LABEL_KEY, PRODUCT_DETAIL_TABS } from '../../../shared/constants/common.constant';
+import { PRODUCT_DETAIL_TABS } from '../../../shared/constants/common.constant';
 import { NgbNavModule } from '@ng-bootstrap/ng-bootstrap';
 import { LanguageService } from '../../../core/services/language/language.service';
 import { MultilingualismPipe } from '../../../shared/pipes/multilingualism.pipe';
@@ -280,5 +280,4 @@ export class ProductDetailComponent {
     return this.detailTabsForDropdown.filter(tab => this.getContent(tab.value));
   }
 
-  protected readonly LABEL_KEY = LABEL_KEY;
 }

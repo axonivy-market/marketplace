@@ -1,13 +1,13 @@
 import { Component, ElementRef, EventEmitter, HostListener, inject, Input, Output } from '@angular/core';
-import { NgClass, NgForOf } from '@angular/common';
+import { NgClass } from '@angular/common';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { ItemDropdown } from '../../models/item-dropdown.model';
+import { NAV_ITEMS } from '../../constants/common.constant';
 
 @Component({
   selector: 'app-common-dropdown',
   standalone: true,
   imports: [
-    NgForOf,
     NgClass,
     TranslateModule
   ],
@@ -43,4 +43,5 @@ export class CommonDropdownComponent <T extends string> {
       this.isDropdownOpen = !this.isDropdownOpen;
     }
   }
+
 }

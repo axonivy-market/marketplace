@@ -2,7 +2,6 @@ import {
   AfterViewInit,
   Component, computed,
   ElementRef, EventEmitter,
-  HostListener,
   inject,
   Input,
   model, Output, Signal,
@@ -45,7 +44,6 @@ export class ProductDetailVersionActionComponent implements AfterViewInit {
   artifacts: WritableSignal<ItemDropdown[]> = signal([]);
   isDevVersionsDisplayed = signal(false);
   isDropDownDisplayed = signal(false);
-  isVersionsDropDownShow = signal(false);
   isDesignerEnvironment = signal(false);
   isInvalidInstallationEnvironment = signal(false);
   designerVersion = '';
@@ -71,10 +69,6 @@ export class ProductDetailVersionActionComponent implements AfterViewInit {
       this.routingQueryParamService.isDesignerEnv()
     );
 
-  }
-
-  onShowVersions() {
-    this.isVersionsDropDownShow.set(!this.isVersionsDropDownShow());
   }
 
   getInstallationTooltipText() {
@@ -158,16 +152,6 @@ export class ProductDetailVersionActionComponent implements AfterViewInit {
       newTab.blur();
     }
     window.focus();
-  }
-
-  @HostListener('document:click', ['$event'])
-  handleClickOutside(event: MouseEvent) {
-    if (
-      !this.elementRef.nativeElement.contains(event.target) &&
-      this.isVersionsDropDownShow()
-    ) {
-      this.onShowVersions();
-    }
   }
 
   onUpdateInstallationCount() {

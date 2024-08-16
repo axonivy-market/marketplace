@@ -3,7 +3,7 @@ import { Component, EventEmitter, inject, Output } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { ThemeService } from '../../../core/services/theme/theme.service';
-import { FILTER_TYPES, LABEL_KEY, SORT_TYPES } from '../../../shared/constants/common.constant';
+import { FILTER_TYPES, SORT_TYPES } from '../../../shared/constants/common.constant';
 import { TypeOption } from '../../../shared/enums/type-option.enum';
 import { SortOption } from '../../../shared/enums/sort-option.enum';
 import { LanguageService } from '../../../core/services/language/language.service';
@@ -19,7 +19,6 @@ import { ItemDropdown } from '../../../shared/models/item-dropdown.model';
   styleUrl: './product-filter.component.scss'
 })
 export class ProductFilterComponent {
-  protected readonly LABEL_KEY = LABEL_KEY;
   @Output() searchChange = new EventEmitter<string>();
   @Output() filterChange = new EventEmitter<ItemDropdown<TypeOption>>();
   @Output() sortChange = new EventEmitter<SortOption>();

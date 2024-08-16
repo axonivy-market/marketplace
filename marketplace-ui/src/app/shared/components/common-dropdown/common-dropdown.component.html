@@ -6,9 +6,11 @@
     {{ selectedItem }}
   </button>
   <div class="dropdown-menu menu-bar" [class.show]="isDropdownOpen">
-    <div class="dropdown-item item-bar text-primary" *ngFor="let item of items" (click)="onSelect(item)"
-      [ngClass]="{'active': isActiveItem(item , selectedItem)}">
-      {{ item.label   | translate }}
-    </div>
+    @for (item of items; track $index) {
+      <div class="dropdown-item item-bar text-primary" (click)="onSelect(item)"
+        [ngClass]="{'active': isActiveItem(item , selectedItem)}">
+        {{ item.label | translate }}
+      </div>
+    }
   </div>
 </div>

@@ -4,7 +4,6 @@ import { ProductDetailVersionActionComponent } from './product-detail-version-ac
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { ProductService } from '../../product.service';
 import { provideHttpClient } from '@angular/common/http';
-import { Artifact } from '../../../../shared/models/vesion-artifact.model';
 import { ElementRef } from '@angular/core';
 import { ItemDropdown } from '../../../../shared/models/item-dropdown.model';
 
@@ -84,7 +83,7 @@ describe('ProductVersionActionComponent', () => {
   });
 
   it('should call sendRequestToProductDetailVersionAPI and update versions and versionMap', () => {
-    const { mockArtifct1, mockArtifct2 } = mockApiWithExpectedResponse();
+    const { mockArtifact1, mockArtifact2 } = mockApiWithExpectedResponse();
 
     component.getVersionWithArtifact();
 
@@ -97,8 +96,8 @@ describe('ProductVersionActionComponent', () => {
     );
 
     expect(component.versions()).toEqual(['Version 1.0', 'Version 2.0']);
-    expect(component.versionMap.get('Version 1.0')).toEqual([mockArtifct1]);
-    expect(component.versionMap.get('Version 2.0')).toEqual([mockArtifct2]);
+    expect(component.versionMap.get('Version 1.0')).toEqual([mockArtifact1]);
+    expect(component.versionMap.get('Version 2.0')).toEqual([mockArtifact2]);
     expect(component.selectedVersion()).toBe('Version 1.0');
   });
 
@@ -135,12 +134,12 @@ describe('ProductVersionActionComponent', () => {
   });
 
   function mockApiWithExpectedResponse() {
-    const mockArtifct1 = {
+    const mockArtifact1 = {
       name: 'Example Artifact1',
       downloadUrl: 'https://example.com/download',
       isProductArtifact: true, label: 'Example Artifact1',
     } as ItemDropdown;
-    const mockArtifct2 = {
+    const mockArtifact2 = {
       name: 'Example Artifact2',
       downloadUrl: 'https://example.com/download',
       label: 'Example Artifact2',
@@ -149,47 +148,19 @@ describe('ProductVersionActionComponent', () => {
     const mockData = [
       {
         version: '1.0',
-        artifactsByVersion: [mockArtifct1]
+        artifactsByVersion: [mockArtifact1]
       },
       {
         version: '2.0',
-        artifactsByVersion: [mockArtifct2]
+        artifactsByVersion: [mockArtifact2]
       }
     ];
 
     productServiceMock.sendRequestToProductDetailVersionAPI.and.returnValue(
       of(mockData)
     );
-    return { mockArtifct1, mockArtifct2 };
+    return { mockArtifact1: mockArtifact1, mockArtifact2: mockArtifact2 };
   }
-
-  it('should toggle isVersionsDropDownShow on calling onShowVersions', () => {
-    const initialState = component.isVersionsDropDownShow();
-
-    component.onShowVersions();
-    expect(component.isVersionsDropDownShow()).toBe(!initialState);
-
-    component.onShowVersions();
-    expect(component.isVersionsDropDownShow()).toBe(initialState);
-  });
-
-  it('should not call onShowVersions if dropdown is not shown', () => {
-    spyOn(component, 'isVersionsDropDownShow').and.returnValue(false);
-    spyOn(component, 'onShowVersions');
-    elementRef = TestBed.inject(ElementRef) as unknown as MockElementRef;
-
-    const outsideEvent = new MouseEvent('click', {
-      bubbles: true,
-      cancelable: true,
-      view: window
-    });
-
-    elementRef.nativeElement.contains.and.returnValue(false);
-
-    document.dispatchEvent(outsideEvent);
-
-    expect(component.onShowVersions).not.toHaveBeenCalled();
-  });
 
   it('should open a new tab with the selected artifact URL', () => {
     const mockWindowOpen = jasmine.createSpy('windowOpen').and.returnValue({

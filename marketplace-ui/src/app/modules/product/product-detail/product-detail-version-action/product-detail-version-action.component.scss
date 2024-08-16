@@ -69,9 +69,11 @@
   line-height: 14.52px;
   text-align: left;
 }
-.border__dropdown {
+
+::ng-deep .border__dropdown {
   border: 0.5px solid var(--ivy-secondary-border-color);
 }
+
 .btn {
   padding: 12px 32px;
   gap: 10px;
