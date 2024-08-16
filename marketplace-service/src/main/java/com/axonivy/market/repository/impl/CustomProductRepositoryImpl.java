@@ -7,13 +7,11 @@ import org.bson.Document;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.aggregation.Aggregation;
 import org.springframework.data.mongodb.core.aggregation.AggregationOperation;
+import org.springframework.data.mongodb.core.aggregation.AggregationResults;
 import org.springframework.data.mongodb.core.aggregation.ArrayOperators;
 import org.springframework.data.mongodb.core.query.Criteria;
 
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 
 public class CustomProductRepositoryImpl implements CustomProductRepository {
   private final MongoTemplate mongoTemplate;
@@ -44,7 +42,7 @@ public class CustomProductRepositoryImpl implements CustomProductRepository {
   }
 
   public Product queryProductByAggregation(Aggregation aggregation) {
-    return mongoTemplate.aggregate(aggregation, MongoDBConstants.PRODUCT_COLLECTION, Product.class).getUniqueMappedResult();
+    return Optional.ofNullable(mongoTemplate.aggregate(aggregation, MongoDBConstants.PRODUCT_COLLECTION, Product.class)).map(AggregationResults::getUniqueMappedResult).orElse(null);
   }
 
   @Override
