@@ -10,6 +10,7 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.security.SecureRandom;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
@@ -262,6 +263,8 @@ public class ProductServiceImpl implements ProductService {
           orders.add(getExtensionOrder(language));
         }
       }
+      Order orderById = createOrder(SortOption.ID, language);
+      orders.add(orderById);
       pageRequest = PageRequest.of(pageable.getPageNumber(), pageable.getPageSize(), Sort.by(orders));
     }
     return pageRequest;

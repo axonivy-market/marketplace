@@ -12,7 +12,8 @@ public enum SortOption {
   POPULARITY("popularity", "installationCount", Sort.Direction.DESC),
   ALPHABETICALLY("alphabetically", "names", Sort.Direction.ASC),
   RECENT("recent", "newestPublishedDate", Sort.Direction.DESC),
-  STANDARD("standard", "customOrder", Sort.Direction.DESC);
+  STANDARD("standard", "customOrder", Sort.Direction.DESC),
+  ID("id", "_id", Sort.Direction.ASC);
 
   private String option;
   private String code;
