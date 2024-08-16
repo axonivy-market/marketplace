@@ -34,11 +34,6 @@ class CustomProductRepositoryImplTest extends BaseSetup {
   @InjectMocks
   private CustomProductRepositoryImpl repo;
 
-  @BeforeEach
-  void setup() {
-
-  }
-
   @Test
   void testQueryProductByAggregation_WhenResultIsPresent() {
     setUpMockAggregateResult();
@@ -75,6 +70,20 @@ class CustomProductRepositoryImplTest extends BaseSetup {
 
     // Assert
     assertNull(actualProduct);
+  }
+
+  @Test
+  void testReleasedVersionsById_WhenResultIsNull() {
+    // Arrange
+    Aggregation aggregation = mock(Aggregation.class);
+    AggregationResults<Product> aggregationResults = mock(AggregationResults.class);
+
+    when(mongoTemplate.aggregate(any(Aggregation.class), eq(MongoDBConstants.PRODUCT_COLLECTION), eq(Product.class)))
+        .thenReturn(aggregationResults);
+    when(aggregationResults.getUniqueMappedResult()).thenReturn(null);
+
+    List<String> results = repo.getReleasedVersionsById(ID);
+    assertEquals(0, results.size());
   }
 
   @Test
