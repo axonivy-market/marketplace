@@ -44,12 +44,12 @@
 
       <div id="version-selector">
         <app-common-dropdown
-          [items]="versions()"
+          [items]="versionDropdown()"
           [selectedItem]="selectedVersion()"
           [labelKey]="''"
           buttonClass="form-select form-select-sm versions-selector__dropdown border__dropdown fs-md"
           ariaLabel=".form-select-sm example"
-          (itemSelected)="onSelectVersion($event)">
+          (itemSelected)="onSelectVersion($event.value)">
         </app-common-dropdown>
       </div>
     </div>

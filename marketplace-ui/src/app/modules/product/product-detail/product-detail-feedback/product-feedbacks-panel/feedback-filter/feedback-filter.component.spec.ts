@@ -6,6 +6,10 @@ import { ProductFeedbackService } from '../product-feedback.service';
 import { FEEDBACK_SORT_TYPES } from '../../../../../../shared/constants/common.constant';
 import { By } from '@angular/platform-browser';
 import { CommonDropdownComponent } from '../../../../../../shared/components/common-dropdown/common-dropdown.component';
+import { ItemDropdown } from '../../../../../../shared/models/item-dropdown.model';
+import { TypeOption } from '../../../../../../shared/enums/type-option.enum';
+import { SortOption } from '../../../../../../shared/enums/sort-option.enum';
+import { FeedbackSortType } from '../../../../../../shared/enums/feedback-sort-type';
 
 describe('FeedbackFilterComponent', () => {
   let component: FeedbackFilterComponent;
@@ -52,9 +56,13 @@ describe('FeedbackFilterComponent', () => {
   it('should call onSortChange when an item is selected', () => {
     spyOn(component, 'onSortChange');
     const dropdownComponent = fixture.debugElement.query(By.directive(CommonDropdownComponent)).componentInstance;
+    const filterOption: ItemDropdown<FeedbackSortType> = {
+      value: FeedbackSortType.NEWEST,
+      label: 'Connectors' // Or whatever label is appropriate
+    };
 
-    dropdownComponent.itemSelected.emit('newest');
-    expect(component.onSortChange).toHaveBeenCalledWith('newest');
+    dropdownComponent.itemSelected.emit(filterOption);
+    expect(component.onSortChange).toHaveBeenCalledWith(filterOption);
   });
 
   it('should pass the correct items to the dropdown', () => {

@@ -6,6 +6,7 @@ import { ProductService } from '../../product.service';
 import { provideHttpClient } from '@angular/common/http';
 import { Artifact } from '../../../../shared/models/vesion-artifact.model';
 import { ElementRef } from '@angular/core';
+import { ItemDropdown } from '../../../../shared/models/item-dropdown.model';
 
 class MockElementRef implements ElementRef {
   nativeElement = {
@@ -49,7 +50,7 @@ describe('ProductVersionActionComponent', () => {
       name: 'Example Artifact',
       downloadUrl: 'https://example.com/download',
       isProductArtifact: true
-    } as Artifact;
+    } as ItemDropdown;
     component.versions.set([selectedVersion]);
     component.versionMap.set(selectedVersion, [artifact]);
     component.selectedVersion.set(selectedVersion);
@@ -65,7 +66,7 @@ describe('ProductVersionActionComponent', () => {
       name: 'Example Artifact',
       downloadUrl: 'https://example.com/download',
       isProductArtifact: true
-    } as Artifact;
+    } as ItemDropdown;
     component.selectedVersion.set(selectedVersion);
     component.selectedArtifact = artifact.downloadUrl;
     component.versions().push(selectedVersion);
@@ -137,13 +138,14 @@ describe('ProductVersionActionComponent', () => {
     const mockArtifct1 = {
       name: 'Example Artifact1',
       downloadUrl: 'https://example.com/download',
-      isProductArtifact: true
-    } as Artifact;
+      isProductArtifact: true, label: 'Example Artifact1',
+    } as ItemDropdown;
     const mockArtifct2 = {
       name: 'Example Artifact2',
       downloadUrl: 'https://example.com/download',
+      label: 'Example Artifact2',
       isProductArtifact: true
-    } as Artifact;
+    } as ItemDropdown;
     const mockData = [
       {
         version: '1.0',

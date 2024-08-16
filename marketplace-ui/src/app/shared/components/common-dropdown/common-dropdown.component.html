@@ -3,12 +3,12 @@
           [class]="buttonClass"
           [ngClass]="{'indicator-arrow__up': isDropdownOpen}"
           [attr.aria-label]="ariaLabel">
-    {{ selectedItem[labelKey] || selectedItem }}
+    {{ selectedItem }}
   </button>
   <div class="dropdown-menu menu-bar" [class.show]="isDropdownOpen">
     <div class="dropdown-item item-bar text-primary" *ngFor="let item of items" (click)="onSelect(item)"
       [ngClass]="{'active': isActiveItem(item , selectedItem)}">
-      {{ (item[labelKey] || item) | translate }}
+      {{ item.label   | translate }}
     </div>
   </div>
 </div>

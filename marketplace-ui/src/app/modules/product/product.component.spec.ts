@@ -16,6 +16,7 @@ import { ProductService } from './product.service';
 import { MockProductService } from '../../shared/mocks/mock-services';
 import { RoutingQueryParamService } from '../../shared/services/routing.query.param.service';
 import { DESIGNER_COOKIE_VARIABLE } from '../../shared/constants/common.constant';
+import { ItemDropdown } from '../../shared/models/item-dropdown.model';
 
 const router = {
   navigate: jasmine.createSpy('navigate')
@@ -114,7 +115,12 @@ describe('ProductComponent', () => {
   });
 
   it('onFilterChange should filter products properly', () => {
-    component.onFilterChange(TypeOption.CONNECTORS);
+    const filterOption: ItemDropdown<TypeOption> = {
+      value: TypeOption.CONNECTORS,
+      label: 'Connectors' // Or whatever label is appropriate
+    };
+
+    component.onFilterChange(filterOption);
     component.products().forEach(product => {
       expect(product.type).toEqual('connector');
     });

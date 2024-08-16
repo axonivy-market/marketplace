@@ -1,11 +1,11 @@
 import {
   AfterViewInit,
-  Component,
+  Component, computed,
   ElementRef, EventEmitter,
   HostListener,
   inject,
   Input,
-  model, Output,
+  model, Output, Signal,
   signal,
   WritableSignal
 } from '@angular/core';
@@ -20,6 +20,7 @@ import { ProductDetailService } from '../product-detail.service';
 import { RoutingQueryParamService } from '../../../../shared/services/routing.query.param.service';
 import { CommonDropdownComponent } from '../../../../shared/components/common-dropdown/common-dropdown.component';
 import { LanguageService } from '../../../../core/services/language/language.service';
+import { ItemDropdown } from '../../../../shared/models/item-dropdown.model';
 
 const delayTimeBeforeHideMessage = 2000;
 @Component({
@@ -35,16 +36,23 @@ export class ProductDetailVersionActionComponent implements AfterViewInit {
   productId!: string;
   selectedVersion = model<string>('');
   versions: WritableSignal<string[]> = signal([]);
-  artifacts: WritableSignal<Artifact[]> = signal([]);
+  versionDropdown : Signal<ItemDropdown[]> = computed(() => {
+    return this.versions().map(version => ({
+      value: version,
+      label: version
+    }));
+  });
+
+  artifacts: WritableSignal<ItemDropdown[]> = signal([]);
   isDevVersionsDisplayed = signal(false);
   isDropDownDisplayed = signal(false);
   isVersionsDropDownShow = signal(false);
   isDesignerEnvironment = signal(false);
   isInvalidInstallationEnvironment = signal(false);
   designerVersion = '';
-  selectedArtifact = '';
-  selectedArtifactName = '';
-  versionMap: Map<string, Artifact[]> = new Map();
+  selectedArtifact: string | undefined = '';
+  selectedArtifactName:string | undefined = '';
+  versionMap: Map<string, ItemDropdown[]> = new Map();
 
   routingQueryParamService = inject(RoutingQueryParamService);
   themeService = inject(ThemeService);
@@ -63,6 +71,7 @@ export class ProductDetailVersionActionComponent implements AfterViewInit {
     this.isDesignerEnvironment.set(
       this.routingQueryParamService.isDesignerEnv()
     );
+
   }
 
   onShowVersions() {
@@ -80,13 +89,18 @@ export class ProductDetailVersionActionComponent implements AfterViewInit {
   onSelectVersion(version : string) {
     this.selectedVersion.set(version);
     this.artifacts.set(this.versionMap.get(this.selectedVersion()) ?? []);
+    this.artifacts().forEach(artifact => {
+      if(artifact.name) {
+        artifact.label = artifact.name;
+      }
+    });
     if (this.artifacts().length !== 0) {
-      this.selectedArtifactName = this.artifacts()[0].name;
-      this.selectedArtifact = this.artifacts()[0].downloadUrl;
+      this.selectedArtifactName = this.artifacts()[0].name ?? '';
+      this.selectedArtifact = this.artifacts()[0].downloadUrl ?? '';
     }
   }
 
-  onSelectArtifact(artifact: Artifact) {
+  onSelectArtifact(artifact: ItemDropdown) {
     this.selectedArtifactName = artifact.name;
     this.selectedArtifact = artifact.downloadUrl;
   }
@@ -120,6 +134,7 @@ export class ProductDetailVersionActionComponent implements AfterViewInit {
             ...currentVersions,
             version
           ]);
+
           if (!this.versionMap.get(version)) {
             this.versionMap.set(version, item.artifactsByVersion);
           }
