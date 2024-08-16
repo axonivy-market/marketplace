@@ -18,9 +18,8 @@ export class CommonDropdownComponent <T extends string> {
   translateService = inject(TranslateService);
   @Input() items:  ItemDropdown<T>[] = [];
   @Input() selectedItem: T | undefined;
-  @Input() labelKey: string = '';
-  @Input() buttonClass: string = '';
-  @Input() ariaLabel: string = '';
+  @Input() buttonClass = '';
+  @Input() ariaLabel = '';
 
   @Output() itemSelected = new EventEmitter<ItemDropdown<T>>();
   elementRef = inject(ElementRef);

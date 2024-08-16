@@ -12,7 +12,6 @@ import { AppModalService } from '../../../../../../shared/services/app-modal.ser
 import { ProductDetailService } from '../../../product-detail.service';
 import { ProductFeedbackService } from '../../product-feedbacks-panel/product-feedback.service';
 import { throwError } from 'rxjs';
-import { FEEDBACK_SORT_TYPES } from '../../../../../../shared/constants/common.constant';
 import { CommonDropdownComponent } from '../../../../../../shared/components/common-dropdown/common-dropdown.component';
 
 @Component({

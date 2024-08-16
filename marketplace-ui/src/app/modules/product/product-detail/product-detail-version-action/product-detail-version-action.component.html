@@ -26,7 +26,6 @@
         <app-common-dropdown
           [items]="artifacts()"
           [selectedItem]="selectedArtifactName"
-          [labelKey]="'name'"
           buttonClass="form-select form-select-sm artifacts-selector__dropdown border__dropdown fs-md"
           ariaLabel=".form-select-sm"
           (itemSelected)="onSelectArtifact($event)">
@@ -46,7 +45,6 @@
         <app-common-dropdown
           [items]="versionDropdown()"
           [selectedItem]="selectedVersion()"
-          [labelKey]="''"
           buttonClass="form-select form-select-sm versions-selector__dropdown border__dropdown fs-md"
           ariaLabel=".form-select-sm example"
           (itemSelected)="onSelectVersion($event.value)">
