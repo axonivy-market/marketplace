@@ -14,7 +14,6 @@ import { TranslateModule } from '@ngx-translate/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ProductService } from '../../product.service';
-import { Artifact } from '../../../../shared/models/vesion-artifact.model';
 import { Tooltip } from 'bootstrap';
 import { ProductDetailService } from '../product-detail.service';
 import { RoutingQueryParamService } from '../../../../shared/services/routing.query.param.service';
