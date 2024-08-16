@@ -66,10 +66,6 @@ i {
   margin: auto;
 }
 
-::ng-deep .dropdown {
-  width: fit-content;
-}
-
 @media (max-width: 767px) {
   .modal-body-wrapper {
     padding: 20px;
@@ -80,7 +76,7 @@ i {
     width: 100%;
   }
 
-  .product-item-select {
+  ::ng-deep .product-item-select {
     width: 100%;
   }
 }
@@ -92,7 +88,7 @@ i {
     width: 525px;
   }
 
-  .product-item-select {
+  ::ng-deep .product-item-select {
     width: fit-content;
   }
 }
