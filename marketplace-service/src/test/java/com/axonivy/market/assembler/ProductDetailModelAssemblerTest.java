@@ -50,6 +50,6 @@ class ProductDetailModelAssemblerTest {
   @Test
   void testToModelWithRequestPathAndBestMatchVersion() {
     ProductDetailModel model = productDetailModelAssembler.toModel(mockProduct, VERSION, RequestMappingConstants.BEST_MATCH_BY_ID_AND_VERSION);
-    Assertions.assertEquals("http://localhosts/api/product-details/portal/10.0.19/bestmatch", model.getLink(SELF_RELATION).get().getHref());
+    Assertions.assertEquals("http://localhost/api/product-details/portal/10.0.19/bestmatch", model.getLink(SELF_RELATION).get().getHref());
   }
 }
