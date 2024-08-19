@@ -32,4 +32,11 @@ export class MockProductService {
   ): Observable<ProductDetail> {
     return of(MOCK_PRODUCT_DETAIL_BY_VERSION);
   }
+
+  getBestMatchProductDetailsWithVersion(
+    productId: string,
+    version: string
+  ): Observable<ProductDetail> {
+    return of(MOCK_PRODUCT_DETAIL_BY_VERSION);
+  }
 }
