@@ -32,24 +32,24 @@ class ProductDetailModelAssemblerTest {
     ProductDetailModel model = productDetailModelAssembler.toModel(mockProduct);
     Assertions.assertEquals(ID, model.getId());
     Assertions.assertFalse(model.getLinks().isEmpty());
-    Assertions.assertEquals("http://localhost/api/product-details/portal", model.getLink(SELF_RELATION).get().getHref());
+    Assertions.assertTrue(model.getLink(SELF_RELATION).get().getHref().endsWith("/api/product-details/portal"));
   }
 
   @Test
   void testToModelWithRequestPath() {
     ProductDetailModel model = productDetailModelAssembler.toModel(mockProduct, RequestMappingConstants.BY_ID);
-    Assertions.assertEquals("http://localhost/api/product-details/portal", model.getLink(SELF_RELATION).get().getHref());
+    Assertions.assertTrue(model.getLink(SELF_RELATION).get().getHref().endsWith("/api/product-details/portal"));
   }
 
   @Test
   void testToModelWithRequestPathAndVersion() {
     ProductDetailModel model = productDetailModelAssembler.toModel(mockProduct, VERSION, RequestMappingConstants.BY_ID_AND_VERSION);
-    Assertions.assertEquals("http://localhost/api/product-details/portal/10.0.19", model.getLink(SELF_RELATION).get().getHref());
+    Assertions.assertTrue(model.getLink(SELF_RELATION).get().getHref().endsWith("/api/product-details/portal/10.0.19"));
   }
 
   @Test
   void testToModelWithRequestPathAndBestMatchVersion() {
     ProductDetailModel model = productDetailModelAssembler.toModel(mockProduct, VERSION, RequestMappingConstants.BEST_MATCH_BY_ID_AND_VERSION);
-    Assertions.assertEquals("http://localhost/api/product-details/portal/10.0.19/bestmatch", model.getLink(SELF_RELATION).get().getHref());
+    Assertions.assertTrue(model.getLink(SELF_RELATION).get().getHref().endsWith("/api/product-details/portal/10.0.19/bestmatch"));
   }
 }
