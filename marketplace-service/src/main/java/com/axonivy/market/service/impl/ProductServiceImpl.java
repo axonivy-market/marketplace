@@ -272,6 +272,8 @@ public class ProductServiceImpl implements ProductService {
           orders.add(getExtensionOrder(language));
         }
       }
+      Order orderById = createOrder(SortOption.ID, language);
+      orders.add(orderById);
       pageRequest = PageRequest.of(pageable.getPageNumber(), pageable.getPageSize(), Sort.by(orders));
     }
     return pageRequest;
