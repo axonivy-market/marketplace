@@ -4,6 +4,7 @@ import com.axonivy.market.constants.MongoDBConstants;
 import com.axonivy.market.entity.Product;
 import com.axonivy.market.repository.CustomProductRepository;
 import org.bson.Document;
+import org.springframework.data.mongodb.core.FindAndModifyOptions;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.aggregation.Aggregation;
 import org.springframework.data.mongodb.core.aggregation.AggregationOperation;
@@ -76,10 +77,27 @@ public class CustomProductRepositoryImpl implements CustomProductRepository {
   }
 
   public void updateInitialCount(String productId, int initialCount) {
-    Query query = new Query(Criteria.where(MongoDBConstants.ID).is(productId));
     Update update = new Update()
             .inc("InstallationCount", initialCount)
             .set("SynchronizedInstallationCount", true);
-    mongoTemplate.updateFirst(query, update, Product.class);
+    mongoTemplate.updateFirst(createQueryById(productId), update, Product.class);
+    getProductById(productId);
+  }
+
+  @Override
+  public int increaseInstallationCount(String productId) {
+    Update update = new Update().inc("InstallationCount", 1);
+    // Find and modify the document, then return the updated InstallationCount field
+    Product updatedProduct = mongoTemplate.findAndModify(
+            createQueryById(productId),
+            update,
+            FindAndModifyOptions.options().returnNew(true),
+            Product.class
+    );
+    return updatedProduct != null ? updatedProduct.getInstallationCount() : 0;
+  }
+
+  private Query createQueryById(String id) {
+    return new Query(Criteria.where(MongoDBConstants.ID).is(id));
   }
 }

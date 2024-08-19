@@ -138,17 +138,18 @@ public class ProductServiceImpl implements ProductService {
 
   @Override
   public int updateInstallationCountForProduct(String key) {
-    return productRepository.findById(key).map(product -> {
-      log.info("updating installation count for product {}", key);
-      if (!BooleanUtils.isTrue(product.getSynchronizedInstallationCount())) {
+    Product product= productRepository.getProductById(key);
+    if (Objects.isNull(product)){
+      return 0;
+    }
+    log.info("updating installation count for product {}", key);
+    if (!BooleanUtils.isTrue(product.getSynchronizedInstallationCount())) {
         syncInstallationCountWithProduct(product);
-      }
-      product.setInstallationCount(product.getInstallationCount() + 1);
-      return productRepository.save(product);
-    }).map(Product::getInstallationCount).orElse(0);
+    }
+    return productRepository.increaseInstallationCount(key);
   }
 
-  private void syncInstallationCountWithProduct(Product product) {
+  public void syncInstallationCountWithProduct(Product product) {
     log.info("synchronizing installation count for product {}", product.getId());
     try {
       String installationCounts = Files.readString(Paths.get(installationCountPath));

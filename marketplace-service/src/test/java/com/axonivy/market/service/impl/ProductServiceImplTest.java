@@ -6,14 +6,8 @@ import static com.axonivy.market.constants.MetaConstants.META_FILE;
 import static com.axonivy.market.enums.DocumentField.SHORT_DESCRIPTIONS;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyLong;
-import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.ArgumentMatchers.eq;
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.mockStatic;
 import static org.mockito.Mockito.times;
@@ -23,6 +17,7 @@ import static org.mockito.Mockito.when;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -88,6 +83,8 @@ class ProductServiceImplTest extends BaseSetup {
       Sort.by(SortOption.ALPHABETICALLY.getOption()).descending());
   private static final String SHA1_SAMPLE = "35baa89091b2452b77705da227f1a964ecabc6c8";
   public static final String RELEASE_TAG = "v10.0.2";
+  private static final String INSTALLATION_FILE_PATH = "src/test/resources/installationCount.json";
+
   private String keyword;
   private String language;
   private Page<Product> mockResultReturn;
@@ -133,42 +130,48 @@ class ProductServiceImplTest extends BaseSetup {
   }
 
   @Test
-  void testUpdateInstallationCount() {
-    // prepare
-    Mockito.when(productRepository.findById("google-maps-connector")).thenReturn(Optional.of(mockProduct()));
+  void testUpdateInstallationCountForProduct() throws IOException {
+    int result = productService.updateInstallationCountForProduct(null);
+    assertEquals(0, result);
 
-    // exercise
-    productService.updateInstallationCountForProduct("google-maps-connector");
-
-    // Verify
-    verify(productRepository).save(argumentCaptor.capture());
-    int updatedInstallationCount = argumentCaptor.getValue().getInstallationCount();
-
-    assertEquals(1, updatedInstallationCount);
-    verify(productRepository, times(1)).findById(Mockito.anyString());
-    verify(productRepository, times(1)).save(Mockito.any());
+    Product product = mockProduct();
+    when(productRepository.getProductById(product.getId())).thenReturn(product);
+    when(productRepository.increaseInstallationCount(product.getId())).thenReturn(31);
+    result = productService.updateInstallationCountForProduct(product.getId());
+    assertEquals(31,result);
   }
 
   @Test
-  void testSyncInstallationCountWithProduct() throws Exception {
+  void testSyncInstallationCountWithNewProduct() throws IOException {
+    Product product = new Product();
+    product.setSynchronizedInstallationCount(null);
+    product.setId("portal");
+    ReflectionTestUtils.setField(productService, "installationCountPath", INSTALLATION_FILE_PATH);
+
+    // Execute the method
+    productService.syncInstallationCountWithProduct(product);
+
+    // Verify that product's installation count was set to a random value within the default range
+    assertTrue(product.getInstallationCount() >= 20 && product.getInstallationCount() <= 50);
+    assertTrue(product.getSynchronizedInstallationCount());
+    verify(productRepository).updateInitialCount(product.getId(), product.getInstallationCount());
+  }
+
+  @Test
+  void testSyncInstallationCountWithProduct() {
     // Mock data
-    ReflectionTestUtils.setField(productService, "installationCountPath", "path/to/installationCount.json");
+    ReflectionTestUtils.setField(productService, "installationCountPath", INSTALLATION_FILE_PATH);
     Product product = mockProduct();
     product.setSynchronizedInstallationCount(false);
-    Mockito.when(productRepository.findById("google-maps-connector")).thenReturn(Optional.of(product));
-    Mockito.when(productRepository.save(any())).thenReturn(product);
-    // Mock the behavior of Files.readString and ObjectMapper.readValue
-    String installationCounts = "{\"google-maps-connector\": 10}";
-    try (MockedStatic<Files> filesMockedStatic = mockStatic(Files.class)) {
-      when(Files.readString(Paths.get("path/to/installationCount.json"))).thenReturn(installationCounts);
-      // Call the method
-      int result = productService.updateInstallationCountForProduct("google-maps-connector");
 
-      // Verify the results
-      assertEquals(11, result);
-      assertEquals(true, product.getSynchronizedInstallationCount());
-      assertTrue(product.getSynchronizedInstallationCount());
-    }
+    // Mock the behavior of Files.readString and ObjectMapper.readValue
+    productService.syncInstallationCountWithProduct(product);
+
+    // Verify the results
+    assertEquals(40, product.getInstallationCount());
+    assertEquals(true, product.getSynchronizedInstallationCount());
+    assertTrue(product.getSynchronizedInstallationCount());
+    verify(productRepository).updateInitialCount("google-maps-connector", 40);
   }
 
   private Product mockProduct() {
