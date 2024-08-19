@@ -161,6 +161,7 @@ public class ProductServiceImpl implements ProductService {
           : random.nextInt(20, 50);
       product.setInstallationCount(currentInstallationCount);
       product.setSynchronizedInstallationCount(true);
+      productRepository.updateInitialCount(product.getId(),currentInstallationCount);
       log.info("synchronized installation count for product {} successfully", product.getId());
     } catch (IOException ex) {
       log.error(ex.getMessage());
@@ -428,7 +429,6 @@ public class ProductServiceImpl implements ProductService {
     return Optional.ofNullable(product).map(productItem -> {
       if (!BooleanUtils.isTrue(productItem.getSynchronizedInstallationCount())) {
         syncInstallationCountWithProduct(productItem);
-        return productRepository.save(productItem);
       }
       return productItem;
     }).orElse(null);

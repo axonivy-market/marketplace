@@ -8,8 +8,9 @@ import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.aggregation.Aggregation;
 import org.springframework.data.mongodb.core.aggregation.AggregationOperation;
 import org.springframework.data.mongodb.core.aggregation.AggregationResults;
-import org.springframework.data.mongodb.core.aggregation.ArrayOperators;
 import org.springframework.data.mongodb.core.query.Criteria;
+import org.springframework.data.mongodb.core.query.Query;
+import org.springframework.data.mongodb.core.query.Update;
 
 import java.util.*;
 
@@ -72,5 +73,13 @@ public class CustomProductRepositoryImpl implements CustomProductRepository {
     } else {
       return product.getReleasedVersions();
     }
+  }
+
+  public void updateInitialCount(String productId, int initialCount) {
+    Query query = new Query(Criteria.where(MongoDBConstants.ID).is(productId));
+    Update update = new Update()
+            .inc("InstallationCount", initialCount)
+            .set("SynchronizedInstallationCount", true);
+    mongoTemplate.updateFirst(query, update, Product.class);
   }
 }

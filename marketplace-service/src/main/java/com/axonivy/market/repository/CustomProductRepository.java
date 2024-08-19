@@ -10,4 +10,6 @@ public interface CustomProductRepository {
   Product getProductById(String id);
 
   List<String> getReleasedVersionsById(String id);
+
+  void updateInitialCount(String productId, int initialCount);
 }
