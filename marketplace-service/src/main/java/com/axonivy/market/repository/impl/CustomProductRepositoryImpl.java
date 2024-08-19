@@ -25,14 +25,19 @@ public class CustomProductRepositoryImpl implements CustomProductRepository {
   }
 
   private AggregationOperation createReturnFirstModuleContentOperation() {
-    return Aggregation.project()
-        .and(ArrayOperators.Slice.sliceArrayOf("productModuleContents").itemCount(1))
-        .as("productModuleContents");
+    return context -> new Document(MongoDBConstants.ADD_FIELD,
+            new Document(MongoDBConstants.PRODUCT_MODULE_CONTENTS,
+                    new Document(MongoDBConstants.FILTER,
+                            new Document(MongoDBConstants.INPUT, MongoDBConstants.PRODUCT_MODULE_CONTENT_QUERY)
+                                    .append(MongoDBConstants.AS, MongoDBConstants.PRODUCT_MODULE_CONTENT)
+                                    .append(MongoDBConstants.CONDITION, new Document(MongoDBConstants.EQUAL, Arrays.asList(MongoDBConstants.PRODUCT_MODULE_CONTENT_TAG, MongoDBConstants.NEWEST_RELEASED_VERSION_QUERY))))
+            )
+    );
   }
 
   private AggregationOperation createReturnFirstMatchTagModuleContentOperation(String tag) {
-    return context -> new Document(MongoDBConstants.PROJECT,
-        new Document(MongoDBConstants.PRODUCT_MODULE_CONTENT,
+    return context -> new Document(MongoDBConstants.ADD_FIELD,
+        new Document(MongoDBConstants.PRODUCT_MODULE_CONTENTS,
             new Document(MongoDBConstants.FILTER,
                 new Document(MongoDBConstants.INPUT, MongoDBConstants.PRODUCT_MODULE_CONTENT_QUERY)
                     .append(MongoDBConstants.AS, MongoDBConstants.PRODUCT_MODULE_CONTENT)
