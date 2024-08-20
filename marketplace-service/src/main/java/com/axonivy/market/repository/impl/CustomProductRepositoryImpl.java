@@ -32,25 +32,11 @@ public class CustomProductRepositoryImpl implements CustomProductRepository {
   }
 
   private AggregationOperation createReturnFirstModuleContentOperation() {
-    return context -> new Document(MongoDBConstants.ADD_FIELD,
-            new Document(MongoDBConstants.PRODUCT_MODULE_CONTENTS,
-                    new Document(MongoDBConstants.FILTER,
-                            new Document(MongoDBConstants.INPUT, MongoDBConstants.PRODUCT_MODULE_CONTENT_QUERY)
-                                    .append(MongoDBConstants.AS, MongoDBConstants.PRODUCT_MODULE_CONTENT)
-                                    .append(MongoDBConstants.CONDITION, new Document(MongoDBConstants.EQUAL, Arrays.asList(MongoDBConstants.PRODUCT_MODULE_CONTENT_TAG, MongoDBConstants.NEWEST_RELEASED_VERSION_QUERY))))
-            )
-    );
+    return context -> new Document(MongoDBConstants.ADD_FIELD, new Document(MongoDBConstants.PRODUCT_MODULE_CONTENTS, new Document(MongoDBConstants.FILTER, new Document(MongoDBConstants.INPUT, MongoDBConstants.PRODUCT_MODULE_CONTENT_QUERY).append(MongoDBConstants.AS, MongoDBConstants.PRODUCT_MODULE_CONTENT).append(MongoDBConstants.CONDITION, new Document(MongoDBConstants.EQUAL, Arrays.asList(MongoDBConstants.PRODUCT_MODULE_CONTENT_TAG, MongoDBConstants.NEWEST_RELEASED_VERSION_QUERY))))));
   }
 
   private AggregationOperation createReturnFirstMatchTagModuleContentOperation(String tag) {
-    return context -> new Document(MongoDBConstants.ADD_FIELD,
-        new Document(MongoDBConstants.PRODUCT_MODULE_CONTENTS,
-            new Document(MongoDBConstants.FILTER,
-                new Document(MongoDBConstants.INPUT, MongoDBConstants.PRODUCT_MODULE_CONTENT_QUERY)
-                    .append(MongoDBConstants.AS, MongoDBConstants.PRODUCT_MODULE_CONTENT)
-                    .append(MongoDBConstants.CONDITION, new Document(MongoDBConstants.EQUAL, Arrays.asList(MongoDBConstants.PRODUCT_MODULE_CONTENT_TAG, tag))))
-        )
-    );
+    return context -> new Document(MongoDBConstants.ADD_FIELD, new Document(MongoDBConstants.PRODUCT_MODULE_CONTENTS, new Document(MongoDBConstants.FILTER, new Document(MongoDBConstants.INPUT, MongoDBConstants.PRODUCT_MODULE_CONTENT_QUERY).append(MongoDBConstants.AS, MongoDBConstants.PRODUCT_MODULE_CONTENT).append(MongoDBConstants.CONDITION, new Document(MongoDBConstants.EQUAL, Arrays.asList(MongoDBConstants.PRODUCT_MODULE_CONTENT_TAG, tag))))));
   }
 
   public Product queryProductByAggregation(Aggregation aggregation) {
@@ -82,23 +68,15 @@ public class CustomProductRepositoryImpl implements CustomProductRepository {
   }
 
   public void updateInitialCount(String productId, int initialCount) {
-    Update update = new Update()
-            .inc("InstallationCount", initialCount)
-            .set("SynchronizedInstallationCount", true);
+    Update update = new Update().inc("InstallationCount", initialCount).set("SynchronizedInstallationCount", true);
     mongoTemplate.updateFirst(createQueryById(productId), update, Product.class);
-    getProductById(productId);
   }
 
   @Override
   public int increaseInstallationCount(String productId) {
     Update update = new Update().inc("InstallationCount", 1);
     // Find and modify the document, then return the updated InstallationCount field
-    Product updatedProduct = mongoTemplate.findAndModify(
-            createQueryById(productId),
-            update,
-            FindAndModifyOptions.options().returnNew(true),
-            Product.class
-    );
+    Product updatedProduct = mongoTemplate.findAndModify(createQueryById(productId), update, FindAndModifyOptions.options().returnNew(true), Product.class);
     return updatedProduct != null ? updatedProduct.getInstallationCount() : 0;
   }
 
