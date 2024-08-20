@@ -1,4 +1,4 @@
-package com.axonivy.market.service;
+package com.axonivy.market.service.impl;
 
 import com.axonivy.market.github.service.GitHubService;
 import com.axonivy.market.github.service.impl.GHAxonIvyMarketRepoServiceImpl;

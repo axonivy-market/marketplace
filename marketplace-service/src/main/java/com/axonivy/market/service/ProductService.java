@@ -20,4 +20,9 @@ public interface ProductService {
   void clearAllProducts();
 
   void addCustomSortProduct(ProductCustomSortRequest customSort) throws InvalidParamException;
+
+  Product fetchBestMatchProductDetail(String id, String version);
+
+  Product fetchProductDetailByIdAndVersion(String id, String version);
+
 }

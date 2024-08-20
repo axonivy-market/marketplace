@@ -1,36 +1,55 @@
 package com.axonivy.market.assembler;
 
-import com.axonivy.market.enums.NonStandardProduct;
-import org.apache.commons.lang3.StringUtils;
+import com.axonivy.market.constants.RequestMappingConstants;
+import com.axonivy.market.entity.Product;
+import com.axonivy.market.model.ProductDetailModel;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
-import org.springframework.test.context.junit.jupiter.SpringExtension;
+import org.mockito.junit.jupiter.MockitoExtension;
 
-
-@ExtendWith(SpringExtension.class)
+@ExtendWith(MockitoExtension.class)
 class ProductDetailModelAssemblerTest {
+  private static final String ID = "portal";
+  private static final String VERSION = "10.0.19";
+  private static final String SELF_RELATION = "self";
+
+  Product mockProduct;
   @InjectMocks
-  private ProductDetailModelAssembler assembler;
+  private ProductDetailModelAssembler productDetailModelAssembler;
 
   @BeforeEach
   void setup() {
-    assembler = new ProductDetailModelAssembler(new ProductModelAssembler());
+    productDetailModelAssembler = new ProductDetailModelAssembler(new ProductModelAssembler());
+    mockProduct = new Product();
+    mockProduct.setId(ID);
   }
 
   @Test
-  void testConvertVersionToTag() {
-    
-    String rawVersion = StringUtils.EMPTY;
-    Assertions.assertEquals(rawVersion, assembler.convertVersionToTag(StringUtils.EMPTY, rawVersion));
+  void testToModel() {
+    ProductDetailModel model = productDetailModelAssembler.toModel(mockProduct);
+    Assertions.assertEquals(ID, model.getId());
+    Assertions.assertFalse(model.getLinks().isEmpty());
+    Assertions.assertTrue(model.getLink(SELF_RELATION).get().getHref().endsWith("/api/product-details/portal"));
+  }
 
-    rawVersion = "Version 11.0.0";
-    String targetVersion = "11.0.0";
-    Assertions.assertEquals(targetVersion, assembler.convertVersionToTag(NonStandardProduct.PORTAL.getId(), rawVersion));
+  @Test
+  void testToModelWithRequestPath() {
+    ProductDetailModel model = productDetailModelAssembler.toModel(mockProduct, RequestMappingConstants.BY_ID);
+    Assertions.assertTrue(model.getLink(SELF_RELATION).get().getHref().endsWith("/api/product-details/portal"));
+  }
 
-    targetVersion = "v11.0.0";
-    Assertions.assertEquals(targetVersion, assembler.convertVersionToTag(NonStandardProduct.GRAPHQL_DEMO.getId(), rawVersion));
+  @Test
+  void testToModelWithRequestPathAndVersion() {
+    ProductDetailModel model = productDetailModelAssembler.toModel(mockProduct, VERSION, RequestMappingConstants.BY_ID_AND_VERSION);
+    Assertions.assertTrue(model.getLink(SELF_RELATION).get().getHref().endsWith("/api/product-details/portal/10.0.19"));
+  }
+
+  @Test
+  void testToModelWithRequestPathAndBestMatchVersion() {
+    ProductDetailModel model = productDetailModelAssembler.toModel(mockProduct, VERSION, RequestMappingConstants.BEST_MATCH_BY_ID_AND_VERSION);
+    Assertions.assertTrue(model.getLink(SELF_RELATION).get().getHref().endsWith("/api/product-details/portal/10.0.19/bestmatch"));
   }
 }

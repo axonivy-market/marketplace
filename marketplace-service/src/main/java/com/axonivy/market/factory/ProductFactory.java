@@ -14,6 +14,7 @@ import org.kohsuke.github.GHContent;
 import org.springframework.util.CollectionUtils;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -73,6 +74,7 @@ public class ProductFactory {
     product.setCompatibility(meta.getCompatibility());
     extractSourceUrl(product, meta);
     product.setArtifacts(meta.getMavenArtifacts());
+    product.setReleasedVersions(new ArrayList<>());
     return product;
   }
 

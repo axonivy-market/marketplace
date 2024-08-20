@@ -1,7 +1,6 @@
-package com.axonivy.market.service;
+package com.axonivy.market.service.impl;
 
 import com.axonivy.market.entity.User;
-import com.axonivy.market.service.impl.JwtServiceImpl;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jws;
 import org.junit.jupiter.api.BeforeEach;

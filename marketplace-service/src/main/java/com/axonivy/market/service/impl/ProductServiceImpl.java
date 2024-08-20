@@ -11,15 +11,14 @@ import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.security.SecureRandom;
-
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.Objects;
-
+import java.util.Optional;
+import com.axonivy.market.util.VersionUtils;
 import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -143,17 +142,19 @@ public class ProductServiceImpl implements ProductService {
 
   @Override
   public int updateInstallationCountForProduct(String key) {
-    return productRepository.findById(key).map(product -> {
-      log.info("updating installation count for product {}", key);
-      if (!BooleanUtils.isTrue(product.getSynchronizedInstallationCount())) {
-        syncInstallationCountWithProduct(product);
-      }
-      product.setInstallationCount(product.getInstallationCount() + 1);
-      return productRepository.save(product);
-    }).map(Product::getInstallationCount).orElse(0);
+    Product product= productRepository.getProductById(key);
+    if (Objects.isNull(product)){
+      return 0;
+    }
+    log.info("updating installation count for product {}", key);
+    if (BooleanUtils.isTrue(product.getSynchronizedInstallationCount())) {
+      return productRepository.increaseInstallationCount(key);
+    }
+    syncInstallationCountWithProduct(product);
+    return productRepository.updateInitialCount(key, product.getInstallationCount() + 1);
   }
 
-  private void syncInstallationCountWithProduct(Product product) {
+  public void syncInstallationCountWithProduct(Product product) {
     log.info("synchronizing installation count for product {}", product.getId());
     try {
       String installationCounts = Files.readString(Paths.get(installationCountPath));
@@ -370,6 +371,11 @@ public class ProductServiceImpl implements ProductService {
       ProductModuleContent productModuleContent =
           axonIvyProductRepoService.getReadmeAndProductContentsFromTag(product, productRepo, ghTag.getName());
       productModuleContents.add(productModuleContent);
+      String versionFromTag = VersionUtils.convertTagToVersion(ghTag.getName());
+      if (Objects.isNull(product.getReleasedVersions())) {
+        product.setReleasedVersions(new ArrayList<>());
+      }
+      product.getReleasedVersions().add(versionFromTag);
     }
     product.setProductModuleContents(productModuleContents);
   }
@@ -424,14 +430,37 @@ public class ProductServiceImpl implements ProductService {
 
   @Override
   public Product fetchProductDetail(String id) {
-    Product product = productRepository.findById(id).orElse(null);
+    Product product = productRepository.getProductById(id);
     return Optional.ofNullable(product).map(productItem -> {
-      if (!BooleanUtils.isTrue(productItem.getSynchronizedInstallationCount())) {
-        syncInstallationCountWithProduct(productItem);
-        return productRepository.save(productItem);
-      }
+      updateProductInstallationCount(id, productItem);
       return productItem;
     }).orElse(null);
+  }
+
+
+  @Override
+  public Product fetchBestMatchProductDetail(String id, String version) {
+    List<String> releasedVersions = productRepository.getReleasedVersionsById(id);
+    String bestMatchVersion = VersionUtils.getBestMatchVersion(releasedVersions, version);
+    String bestMatchTag = VersionUtils.convertVersionToTag(id,bestMatchVersion);
+    Product product = StringUtils.isBlank(bestMatchTag) ? productRepository.getProductById(id) : productRepository.getProductByIdAndTag(id, bestMatchTag);
+    return Optional.ofNullable(product).map(productItem -> {
+      updateProductInstallationCount(id, productItem);
+      return productItem;
+    }).orElse(null);
+  }
+
+  public void updateProductInstallationCount(String id, Product productItem) {
+    if (!BooleanUtils.isTrue(productItem.getSynchronizedInstallationCount())) {
+      syncInstallationCountWithProduct(productItem);
+      int persistedInitialCount = productRepository.updateInitialCount(id, productItem.getInstallationCount());
+      productItem.setInstallationCount(persistedInitialCount);
+    }
+  }
+
+  @Override
+  public Product fetchProductDetailByIdAndVersion(String id, String version) {
+    return productRepository.getProductByIdAndTag(id, VersionUtils.convertVersionToTag(id, version));
   }
 
   @Override

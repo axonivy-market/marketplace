@@ -148,7 +148,7 @@ export class ProductDetailComponent {
     if (!targetVersion) {
       return this.productService.getProductDetails(productId);
     }
-    return this.productService.getProductDetailsWithVersion(
+    return this.productService.getBestMatchProductDetailsWithVersion(
       productId,
       targetVersion
     );
@@ -182,9 +182,10 @@ export class ProductDetailComponent {
   }
 
   loadDetailTabs(selectedVersion: string) {
-    const tag = selectedVersion || this.productDetail().newestReleaseVersion;
+    let version = selectedVersion || this.productDetail().newestReleaseVersion;
+    version = version.replace("Version ","")
     this.productService
-      .getProductDetailsWithVersion(this.productDetail().id, tag)
+      .getProductDetailsWithVersion(this.productDetail().id, version)
       .subscribe(updatedProductDetail => {
         this.productModuleContent.set(
           updatedProductDetail.productModuleContent

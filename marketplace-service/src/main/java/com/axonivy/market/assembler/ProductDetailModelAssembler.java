@@ -1,18 +1,15 @@
 package com.axonivy.market.assembler;
 
-import com.axonivy.market.constants.CommonConstants;
-import com.axonivy.market.constants.GitHubConstants;
+import com.axonivy.market.constants.RequestMappingConstants;
 import com.axonivy.market.controller.ProductDetailsController;
 import com.axonivy.market.entity.Product;
-import com.axonivy.market.entity.ProductModuleContent;
-import com.axonivy.market.enums.NonStandardProduct;
 import com.axonivy.market.model.ProductDetailModel;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.hateoas.server.mvc.RepresentationModelAssemblerSupport;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
+import org.springframework.util.CollectionUtils;
 
-import java.util.List;
 import java.util.Optional;
 
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
@@ -30,32 +27,36 @@ public class ProductDetailModelAssembler extends RepresentationModelAssemblerSup
 
   @Override
   public ProductDetailModel toModel(Product product) {
-    return createModel(product, StringUtils.EMPTY);
+    return createModel(product, StringUtils.EMPTY, StringUtils.EMPTY);
   }
 
-  public ProductDetailModel toModel(Product product, String version) {
-    String productId = Optional.ofNullable(product).map(Product::getId).orElse(StringUtils.EMPTY);
-    return createModel(product, convertVersionToTag(productId, version));
+  public ProductDetailModel toModel(Product product, String requestPath) {
+    return createModel(product, StringUtils.EMPTY, requestPath);
   }
 
-  private ProductDetailModel createModel(Product product, String tag) {
-    if (product == null) {
-      return new ProductDetailModel();
-    }
+  public ProductDetailModel toModel(Product product, String version, String requestPath) {
+    return createModel(product, version, requestPath);
+  }
+
+  private ProductDetailModel createModel(Product product, String version, String requestPath) {
     ResponseEntity<ProductDetailModel> selfLinkWithTag;
     ProductDetailModel model = instantiateModel(product);
     productModelAssembler.createResource(model, product);
-    if (StringUtils.isBlank(tag)) {
-      selfLinkWithTag = methodOn(ProductDetailsController.class).findProductDetails(product.getId());
-    } else {
-      selfLinkWithTag = methodOn(ProductDetailsController.class).findProductDetailsByVersion(product.getId(), tag);
-    }
+    String productId = Optional.of(product).map(Product::getId).orElse(StringUtils.EMPTY);
+    selfLinkWithTag = switch (requestPath) {
+      case RequestMappingConstants.BEST_MATCH_BY_ID_AND_VERSION ->
+          methodOn(ProductDetailsController.class).findBestMatchProductDetailsByVersion(productId, version);
+      case RequestMappingConstants.BY_ID_AND_VERSION ->
+          methodOn(ProductDetailsController.class).findProductDetailsByVersion(productId, version);
+      default ->
+          methodOn(ProductDetailsController.class).findProductDetails(productId);
+    };
     model.add(linkTo(selfLinkWithTag).withSelfRel());
-    createDetailResource(model, product, tag);
+    createDetailResource(model, product);
     return model;
   }
 
-  private void createDetailResource(ProductDetailModel model, Product product, String tag) {
+  private void createDetailResource(ProductDetailModel model, Product product) {
     model.setVendor(product.getVendor());
     model.setNewestReleaseVersion(product.getNewestReleaseVersion());
     model.setPlatformReview(product.getPlatformReview());
@@ -67,28 +68,6 @@ public class ProductDetailModelAssembler extends RepresentationModelAssemblerSup
     model.setContactUs(product.getContactUs());
     model.setCost(product.getCost());
     model.setInstallationCount(product.getInstallationCount());
-
-    if (StringUtils.isBlank(tag) && StringUtils.isNotBlank(product.getNewestReleaseVersion())) {
-      tag = product.getNewestReleaseVersion();
-    }
-    ProductModuleContent content = getProductModuleContentByTag(product.getProductModuleContents(), tag);
-    model.setProductModuleContent(content);
-  }
-
-  private ProductModuleContent getProductModuleContentByTag(List<ProductModuleContent> contents, String tag) {
-    return contents.stream().filter(content -> StringUtils.equals(content.getTag(), tag)).findAny().orElse(null);
-  }
-
-  public String convertVersionToTag(String productId, String version) {
-    if (StringUtils.isBlank(version)) {
-      return version;
-    }
-    String[] versionParts = version.split(CommonConstants.SPACE_SEPARATOR);
-    String versionNumber = versionParts[versionParts.length - 1];
-    NonStandardProduct product = NonStandardProduct.findById(productId);
-    if (product.isVersionTagNumberOnly()) {
-      return versionNumber;
-    }
-    return GitHubConstants.STANDARD_TAG_PREFIX.concat(versionNumber);
+    model.setProductModuleContent(CollectionUtils.firstElement(product.getProductModuleContents()));
   }
 }

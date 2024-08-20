@@ -1,4 +1,4 @@
-package com.axonivy.market.repository;
+package com.axonivy.market.repository.impl;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -24,7 +24,6 @@ import com.axonivy.market.criteria.ProductSearchCriteria;
 import com.axonivy.market.entity.Product;
 import com.axonivy.market.enums.DocumentField;
 import com.axonivy.market.enums.Language;
-import com.axonivy.market.repository.impl.ProductSearchRepositoryImpl;
 
 @ExtendWith(MockitoExtension.class)
 class ProductSearchRepositoryImplTest extends BaseSetup {

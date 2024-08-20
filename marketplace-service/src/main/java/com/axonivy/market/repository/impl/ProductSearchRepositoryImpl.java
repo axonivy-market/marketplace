@@ -34,6 +34,7 @@ public class ProductSearchRepositoryImpl implements ProductSearchRepository {
     this.mongoTemplate = mongoTemplate;
   }
 
+
   @Override
   public Page<Product> searchByCriteria(ProductSearchCriteria searchCriteria, Pageable pageable) {
     return getResultAsPageable(pageable, buildCriteriaSearch(searchCriteria));

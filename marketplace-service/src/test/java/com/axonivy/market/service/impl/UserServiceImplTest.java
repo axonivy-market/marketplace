@@ -1,10 +1,9 @@
-package com.axonivy.market.service;
+package com.axonivy.market.service.impl;
 
 import com.axonivy.market.entity.User;
 import com.axonivy.market.enums.ErrorCode;
 import com.axonivy.market.exceptions.model.NotFoundException;
 import com.axonivy.market.repository.UserRepository;
-import com.axonivy.market.service.impl.UserServiceImpl;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;

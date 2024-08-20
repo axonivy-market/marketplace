@@ -43,6 +43,15 @@ export class ProductService {
     );
   }
 
+  getBestMatchProductDetailsWithVersion(
+    productId: string,
+    tag: string
+  ): Observable<ProductDetail> {
+    return this.httpClient.get<ProductDetail>(
+      `api/product-details/${productId}/${tag}/bestmatch`
+    );
+  }
+
   getProductDetails(productId: string): Observable<ProductDetail> {
     return this.httpClient.get<ProductDetail>(
       `api/product-details/${productId}`
