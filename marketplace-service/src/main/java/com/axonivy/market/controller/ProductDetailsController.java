@@ -50,18 +50,19 @@ public class ProductDetailsController {
   }
 
   @GetMapping(BY_ID_AND_VERSION)
-  @Operation(summary = "Find product detail by product id and release tag.", description = "get product detail by it product id and release tag")
+  @Operation(summary = "Find product detail by product id and release version.", description = "get product detail by it product id and release version")
   public ResponseEntity<ProductDetailModel> findProductDetailsByVersion(
       @PathVariable(ID) @Parameter(description = "Product id (from meta.json)", example = "approval-decision-utils", in = ParameterIn.PATH) String id,
-      @PathVariable(VERSION) @Parameter(description = "Release tag (from git hub repo tags)", example = "v10.0.20", in = ParameterIn.PATH) String version) {
+      @PathVariable(VERSION) @Parameter(description = "Release version (from maven metadata.xml)", example = "10.0.20", in = ParameterIn.PATH) String version) {
     var productDetail = productService.fetchProductDetailByIdAndVersion(id, version);
     return new ResponseEntity<>(detailModelAssembler.toModel(productDetail, version, BY_ID_AND_VERSION), HttpStatus.OK);
   }
+
   @GetMapping(BEST_MATCH_BY_ID_AND_VERSION)
   @Operation(summary = "Find best match product detail by product id and version.", description = "get product detail by it product id and version")
   public ResponseEntity<ProductDetailModel> findBestMatchProductDetailsByVersion(
-          @PathVariable(ID) @Parameter(description = "Product id (from meta.json)", example = "approval-decision-utils", in = ParameterIn.PATH) String id,
-          @PathVariable(VERSION) @Parameter(description = "Version", example = "10.0.20", in = ParameterIn.PATH) String version) {
+      @PathVariable(ID) @Parameter(description = "Product id (from meta.json)", example = "approval-decision-utils", in = ParameterIn.PATH) String id,
+      @PathVariable(VERSION) @Parameter(description = "Version", example = "10.0.20", in = ParameterIn.PATH) String version) {
     var productDetail = productService.fetchBestMatchProductDetail(id,version);
     return new ResponseEntity<>(detailModelAssembler.toModel(productDetail, version, BEST_MATCH_BY_ID_AND_VERSION), HttpStatus.OK);
   }

@@ -59,23 +59,18 @@ class CustomProductRepositoryImplTest extends BaseSetup {
 
   @Test
   void testQueryProductByAggregation_WhenResultIsNull() {
-    // Arrange
     Aggregation aggregation = mock(Aggregation.class);
     AggregationResults<Product> aggregationResults = mock(AggregationResults.class);
-
     when(mongoTemplate.aggregate(any(Aggregation.class), eq(MongoDBConstants.PRODUCT_COLLECTION), eq(Product.class))).thenReturn(aggregationResults);
     when(aggregationResults.getUniqueMappedResult()).thenReturn(null);
 
-    // Act
     Product actualProduct = repo.queryProductByAggregation(aggregation);
 
-    // Assert
     assertNull(actualProduct);
   }
 
   @Test
   void testReleasedVersionsById_WhenResultIsNull() {
-    // Arrange
     AggregationResults<Product> aggregationResults = mock(AggregationResults.class);
 
     when(mongoTemplate.aggregate(any(Aggregation.class), eq(MongoDBConstants.PRODUCT_COLLECTION), eq(Product.class))).thenReturn(aggregationResults);
@@ -120,17 +115,16 @@ class CustomProductRepositoryImplTest extends BaseSetup {
 
   @Test
   void testIncreaseInstallationCount_NullProduct() {
-    String productId = "nonExistentProductId";
     when(mongoTemplate.findAndModify(any(Query.class), any(Update.class), any(FindAndModifyOptions.class), eq(Product.class))).thenReturn(null);
-    int updatedCount = repo.increaseInstallationCount(productId);
+    int updatedCount = repo.increaseInstallationCount(ID);
     assertEquals(0, updatedCount);
   }
 
   @Test
   void testUpdateInitialCount() {
-    String productId = "testProductId";
+    setUpMockAggregateResult();
     int initialCount = 10;
-    repo.updateInitialCount(productId, initialCount);
+    repo.updateInitialCount(ID, initialCount);
     verify(mongoTemplate).updateFirst(any(Query.class), eq(new Update().inc("InstallationCount", initialCount).set("SynchronizedInstallationCount", true)), eq(Product.class));
   }
 }

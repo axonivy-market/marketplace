@@ -155,7 +155,6 @@ class ProductServiceImplTest extends BaseSetup {
     // Verify that product's installation count was set to a random value within the default range
     assertTrue(product.getInstallationCount() >= 20 && product.getInstallationCount() <= 50);
     assertTrue(product.getSynchronizedInstallationCount());
-    verify(productRepository).updateInitialCount(product.getId(), product.getInstallationCount());
   }
 
   @Test
@@ -172,7 +171,6 @@ class ProductServiceImplTest extends BaseSetup {
     assertEquals(40, product.getInstallationCount());
     assertEquals(true, product.getSynchronizedInstallationCount());
     assertTrue(product.getSynchronizedInstallationCount());
-    verify(productRepository).updateInitialCount("google-maps-connector", 40);
   }
 
   private Product mockProduct() {

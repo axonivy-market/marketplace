@@ -147,10 +147,11 @@ public class ProductServiceImpl implements ProductService {
       return 0;
     }
     log.info("updating installation count for product {}", key);
-    if (!BooleanUtils.isTrue(product.getSynchronizedInstallationCount())) {
-        syncInstallationCountWithProduct(product);
+    if (BooleanUtils.isTrue(product.getSynchronizedInstallationCount())) {
+      return productRepository.increaseInstallationCount(key);
     }
-    return productRepository.increaseInstallationCount(key);
+    syncInstallationCountWithProduct(product);
+    return productRepository.updateInitialCount(key, product.getInstallationCount() + 1);
   }
 
   public void syncInstallationCountWithProduct(Product product) {
@@ -166,7 +167,6 @@ public class ProductServiceImpl implements ProductService {
           : random.nextInt(20, 50);
       product.setInstallationCount(currentInstallationCount);
       product.setSynchronizedInstallationCount(true);
-      productRepository.updateInitialCount(product.getId(),currentInstallationCount);
       log.info("synchronized installation count for product {} successfully", product.getId());
     } catch (IOException ex) {
       log.error(ex.getMessage());
@@ -434,6 +434,8 @@ public class ProductServiceImpl implements ProductService {
     return Optional.ofNullable(product).map(productItem -> {
       if (!BooleanUtils.isTrue(productItem.getSynchronizedInstallationCount())) {
         syncInstallationCountWithProduct(productItem);
+        int persistedInitialCount = productRepository.updateInitialCount(id, product.getInstallationCount());
+        productItem.setInstallationCount(persistedInitialCount);
       }
       return productItem;
     }).orElse(null);
