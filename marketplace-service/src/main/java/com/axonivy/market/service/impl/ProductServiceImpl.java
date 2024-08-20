@@ -165,7 +165,6 @@ public class ProductServiceImpl implements ProductService {
       int currentInstallationCount = keyList.contains(product.getId())
           ? mapping.get(product.getId())
           : random.nextInt(20, 50);
-      log.error(currentInstallationCount);
       product.setInstallationCount(currentInstallationCount);
       product.setSynchronizedInstallationCount(true);
       log.info("synchronized installation count for product {} successfully", product.getId());
@@ -433,11 +432,7 @@ public class ProductServiceImpl implements ProductService {
   public Product fetchProductDetail(String id) {
     Product product = productRepository.getProductById(id);
     return Optional.ofNullable(product).map(productItem -> {
-      if (!BooleanUtils.isTrue(productItem.getSynchronizedInstallationCount())) {
-        syncInstallationCountWithProduct(productItem);
-        int persistedInitialCount = productRepository.updateInitialCount(id, product.getInstallationCount());
-        productItem.setInstallationCount(persistedInitialCount);
-      }
+      updateProductInstallationCount(id, productItem);
       return productItem;
     }).orElse(null);
   }
@@ -450,13 +445,17 @@ public class ProductServiceImpl implements ProductService {
     String bestMatchTag = VersionUtils.convertVersionToTag(id,bestMatchVersion);
     Product product = StringUtils.isBlank(bestMatchTag) ? productRepository.getProductById(id) : productRepository.getProductByIdAndTag(id, bestMatchTag);
     return Optional.ofNullable(product).map(productItem -> {
-      if (!BooleanUtils.isTrue(productItem.getSynchronizedInstallationCount())) {
-        syncInstallationCountWithProduct(productItem);
-        int persistedInitialCount = productRepository.updateInitialCount(id, product.getInstallationCount());
-        productItem.setInstallationCount(persistedInitialCount);
-      }
+      updateProductInstallationCount(id, productItem);
       return productItem;
     }).orElse(null);
+  }
+
+  public void updateProductInstallationCount(String id, Product productItem) {
+    if (!BooleanUtils.isTrue(productItem.getSynchronizedInstallationCount())) {
+      syncInstallationCountWithProduct(productItem);
+      int persistedInitialCount = productRepository.updateInitialCount(id, productItem.getInstallationCount());
+      productItem.setInstallationCount(persistedInitialCount);
+    }
   }
 
   @Override

@@ -11,6 +11,7 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
@@ -149,25 +150,20 @@ class ProductServiceImplTest extends BaseSetup {
     product.setId("portal");
     ReflectionTestUtils.setField(productService, "installationCountPath", INSTALLATION_FILE_PATH);
 
-    // Execute the method
     productService.syncInstallationCountWithProduct(product);
 
-    // Verify that product's installation count was set to a random value within the default range
     assertTrue(product.getInstallationCount() >= 20 && product.getInstallationCount() <= 50);
     assertTrue(product.getSynchronizedInstallationCount());
   }
 
   @Test
   void testSyncInstallationCountWithProduct() {
-    // Mock data
     ReflectionTestUtils.setField(productService, "installationCountPath", INSTALLATION_FILE_PATH);
     Product product = mockProduct();
     product.setSynchronizedInstallationCount(false);
 
-    // Mock the behavior of Files.readString and ObjectMapper.readValue
     productService.syncInstallationCountWithProduct(product);
 
-    // Verify the results
     assertEquals(40, product.getInstallationCount());
     assertEquals(true, product.getSynchronizedInstallationCount());
     assertTrue(product.getSynchronizedInstallationCount());
@@ -496,6 +492,20 @@ class ProductServiceImplTest extends BaseSetup {
     List<Product> capturedProducts = productListArgumentCaptor.getValue();
     assertEquals(1, capturedProducts.size());
     assertEquals(1, capturedProducts.get(0).getCustomOrder());
+  }
+
+  @Test
+  void testUpdateProductInstallationCountWhenNotSynchronized() {
+    Product product = mockProduct();
+    product.setSynchronizedInstallationCount(false);
+    String id = product.getId();
+    ReflectionTestUtils.setField(productService, "installationCountPath", INSTALLATION_FILE_PATH);
+
+    when(productRepository.updateInitialCount(eq(id), anyInt())).thenReturn(10);
+
+    productService.updateProductInstallationCount(id, product);
+
+    assertEquals(10, product.getInstallationCount());
   }
 
   @Test
