@@ -6,19 +6,22 @@ import static com.axonivy.market.constants.MetaConstants.META_FILE;
 import static com.axonivy.market.enums.DocumentField.SHORT_DESCRIPTIONS;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.mockStatic;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
@@ -40,8 +43,6 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.MockedStatic;
-import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
@@ -130,7 +131,7 @@ class ProductServiceImplTest extends BaseSetup {
   }
 
   @Test
-  void testUpdateInstallationCountForProduct() throws IOException {
+  void testUpdateInstallationCountForProduct() {
     int result = productService.updateInstallationCountForProduct(null);
     assertEquals(0, result);
 
@@ -142,7 +143,7 @@ class ProductServiceImplTest extends BaseSetup {
   }
 
   @Test
-  void testSyncInstallationCountWithNewProduct() throws IOException {
+  void testSyncInstallationCountWithNewProduct() {
     Product product = new Product();
     product.setSynchronizedInstallationCount(null);
     product.setId("portal");
