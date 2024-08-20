@@ -13,7 +13,12 @@ import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.data.mongodb.core.query.Update;
 
-import java.util.*;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
+
 
 public class CustomProductRepositoryImpl implements CustomProductRepository {
   private final MongoTemplate mongoTemplate;
@@ -49,7 +54,7 @@ public class CustomProductRepositoryImpl implements CustomProductRepository {
   }
 
   public Product queryProductByAggregation(Aggregation aggregation) {
-    return Optional.ofNullable(mongoTemplate.aggregate(aggregation, MongoDBConstants.PRODUCT_COLLECTION, Product.class)).map(AggregationResults::getUniqueMappedResult).orElse(null);
+    return Optional.of(mongoTemplate.aggregate(aggregation, MongoDBConstants.PRODUCT_COLLECTION, Product.class)).map(AggregationResults::getUniqueMappedResult).orElse(null);
   }
 
   @Override
