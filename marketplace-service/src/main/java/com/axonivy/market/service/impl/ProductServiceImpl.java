@@ -165,6 +165,7 @@ public class ProductServiceImpl implements ProductService {
       int currentInstallationCount = keyList.contains(product.getId())
           ? mapping.get(product.getId())
           : random.nextInt(20, 50);
+      log.error(currentInstallationCount);
       product.setInstallationCount(currentInstallationCount);
       product.setSynchronizedInstallationCount(true);
       log.info("synchronized installation count for product {} successfully", product.getId());
@@ -447,7 +448,15 @@ public class ProductServiceImpl implements ProductService {
     List<String> releasedVersions = productRepository.getReleasedVersionsById(id);
     String bestMatchVersion = VersionUtils.getBestMatchVersion(releasedVersions, version);
     String bestMatchTag = VersionUtils.convertVersionToTag(id,bestMatchVersion);
-    return productRepository.getProductByIdAndTag(id, bestMatchTag);
+    Product product = productRepository.getProductByIdAndTag(id, bestMatchTag);
+    return Optional.ofNullable(product).map(productItem -> {
+      if (!BooleanUtils.isTrue(productItem.getSynchronizedInstallationCount())) {
+        syncInstallationCountWithProduct(productItem);
+        int persistedInitialCount = productRepository.updateInitialCount(id, product.getInstallationCount());
+        productItem.setInstallationCount(persistedInitialCount);
+      }
+      return productItem;
+    }).orElse(null);
   }
 
   @Override
