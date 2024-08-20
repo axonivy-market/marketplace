@@ -31,29 +31,25 @@ public class CustomProductRepositoryImpl implements CustomProductRepository {
     return Aggregation.match(Criteria.where(MongoDBConstants.ID).is(id));
   }
 
+  public Document createDocumentFilterProductModuleContentByTag(String tag) {
+    Document isProductModuleContentOfCurrentTag = new Document(MongoDBConstants.EQUAL,
+        Arrays.asList(MongoDBConstants.PRODUCT_MODULE_CONTENT_TAG, tag));
+    Document loopOverProductModuleContents = new Document(MongoDBConstants.INPUT,
+        MongoDBConstants.PRODUCT_MODULE_CONTENT_QUERY)
+        .append(MongoDBConstants.AS, MongoDBConstants.PRODUCT_MODULE_CONTENT);
+    return loopOverProductModuleContents.append(MongoDBConstants.CONDITION, isProductModuleContentOfCurrentTag);
+  }
+
   private AggregationOperation createReturnFirstModuleContentOperation() {
     return context -> new Document(MongoDBConstants.ADD_FIELD,
         new Document(MongoDBConstants.PRODUCT_MODULE_CONTENTS,
-            new Document(MongoDBConstants.FILTER,
-                new Document(MongoDBConstants.INPUT,
-                    MongoDBConstants.PRODUCT_MODULE_CONTENT_QUERY)
-                    .append(MongoDBConstants.AS, MongoDBConstants.PRODUCT_MODULE_CONTENT)
-                    .append(MongoDBConstants.CONDITION,
-                        new Document(MongoDBConstants.EQUAL,
-                            Arrays.asList(MongoDBConstants.PRODUCT_MODULE_CONTENT_TAG,
-                                MongoDBConstants.NEWEST_RELEASED_VERSION_QUERY))))));
+            new Document(MongoDBConstants.FILTER, createDocumentFilterProductModuleContentByTag(MongoDBConstants.NEWEST_RELEASED_VERSION_QUERY))));
   }
 
   private AggregationOperation createReturnFirstMatchTagModuleContentOperation(String tag) {
     return context -> new Document(MongoDBConstants.ADD_FIELD,
         new Document(MongoDBConstants.PRODUCT_MODULE_CONTENTS,
-            new Document(MongoDBConstants.FILTER,
-                new Document(MongoDBConstants.INPUT,
-                    MongoDBConstants.PRODUCT_MODULE_CONTENT_QUERY)
-                    .append(MongoDBConstants.AS, MongoDBConstants.PRODUCT_MODULE_CONTENT)
-                    .append(MongoDBConstants.CONDITION,
-                        new Document(MongoDBConstants.EQUAL,
-                            Arrays.asList(MongoDBConstants.PRODUCT_MODULE_CONTENT_TAG, tag))))));
+            new Document(MongoDBConstants.FILTER, createDocumentFilterProductModuleContentByTag(tag))));
   }
 
   public Product queryProductByAggregation(Aggregation aggregation) {

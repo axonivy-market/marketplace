@@ -448,7 +448,7 @@ public class ProductServiceImpl implements ProductService {
     List<String> releasedVersions = productRepository.getReleasedVersionsById(id);
     String bestMatchVersion = VersionUtils.getBestMatchVersion(releasedVersions, version);
     String bestMatchTag = VersionUtils.convertVersionToTag(id,bestMatchVersion);
-    Product product = productRepository.getProductByIdAndTag(id, bestMatchTag);
+    Product product = StringUtils.isBlank(bestMatchTag) ? productRepository.getProductById(id) : productRepository.getProductByIdAndTag(id, bestMatchTag);
     return Optional.ofNullable(product).map(productItem -> {
       if (!BooleanUtils.isTrue(productItem.getSynchronizedInstallationCount())) {
         syncInstallationCountWithProduct(productItem);

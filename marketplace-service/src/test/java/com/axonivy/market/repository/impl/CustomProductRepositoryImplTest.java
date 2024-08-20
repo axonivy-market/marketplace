@@ -3,6 +3,7 @@ package com.axonivy.market.repository.impl;
 import com.axonivy.market.BaseSetup;
 import com.axonivy.market.constants.MongoDBConstants;
 import com.axonivy.market.entity.Product;
+import org.bson.Document;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -15,6 +16,7 @@ import org.springframework.data.mongodb.core.aggregation.AggregationResults;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.data.mongodb.core.query.Update;
 
+import java.util.Arrays;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -92,6 +94,19 @@ class CustomProductRepositoryImplTest extends BaseSetup {
     setUpMockAggregateResult();
     Product actualProduct = repo.getProductByIdAndTag(ID, TAG);
     assertEquals(mockProduct, actualProduct);
+  }
+
+  @Test
+  void testCreateDocumentFilterProductModuleContentByTag() {
+    Document expectedCondition = new Document(MongoDBConstants.EQUAL,
+        Arrays.asList(MongoDBConstants.PRODUCT_MODULE_CONTENT_TAG, TAG));
+    Document expectedLoop = new Document(MongoDBConstants.INPUT, MongoDBConstants.PRODUCT_MODULE_CONTENT_QUERY)
+        .append(MongoDBConstants.AS, MongoDBConstants.PRODUCT_MODULE_CONTENT)
+        .append(MongoDBConstants.CONDITION, expectedCondition);
+
+    Document result = repo.createDocumentFilterProductModuleContentByTag(TAG);
+
+    assertEquals(expectedLoop, result, "The created Document does not match the expected structure.");
   }
 
   @Test
