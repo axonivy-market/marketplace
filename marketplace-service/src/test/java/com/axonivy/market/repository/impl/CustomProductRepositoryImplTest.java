@@ -127,7 +127,7 @@ class CustomProductRepositoryImplTest extends BaseSetup {
   }
 
   @Test
-  public void testUpdateInitialCount() {
+  void testUpdateInitialCount() {
     String productId = "testProductId";
     int initialCount = 10;
     repo.updateInitialCount(productId, initialCount);
