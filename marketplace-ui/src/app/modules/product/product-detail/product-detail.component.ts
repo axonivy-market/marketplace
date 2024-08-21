@@ -143,11 +143,12 @@ export class ProductDetailComponent {
   }
 
   getProductById(productId: string): Observable<ProductDetail> {
-    const targetVersion =
-      this.routingQueryParamService.getDesignerVersionFromCookie();
+    console.log("getProductById" + this.selectedVersion);
+    const targetVersion = this.routingQueryParamService.getDesignerVersionFromCookie();
     if (!targetVersion) {
       return this.productService.getProductDetails(productId);
     }
+
     return this.productService.getBestMatchProductDetailsWithVersion(
       productId,
       targetVersion

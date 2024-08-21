@@ -7,15 +7,22 @@ import com.axonivy.market.constants.ProductJsonConstants;
 import com.axonivy.market.constants.ReadmeConstants;
 import com.axonivy.market.entity.Product;
 import com.axonivy.market.entity.ProductModuleContent;
+import com.axonivy.market.entity.productjsonfilecontent.Data;
+import com.axonivy.market.entity.productjsonfilecontent.Installer;
+import com.axonivy.market.entity.productjsonfilecontent.ProductJsonContent;
+import com.axonivy.market.entity.productjsonfilecontent.Project;
 import com.axonivy.market.enums.Language;
 import com.axonivy.market.enums.NonStandardProduct;
 import com.axonivy.market.github.model.MavenArtifact;
 import com.axonivy.market.github.service.GHAxonIvyProductRepoService;
 import com.axonivy.market.github.service.GitHubService;
 import com.axonivy.market.github.util.GitHubUtils;
+import com.axonivy.market.repository.ProductJsonContentRepository;
+import com.axonivy.market.util.VersionUtils;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.log4j.Log4j2;
+import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.util.Strings;
 import org.kohsuke.github.GHContent;
@@ -25,13 +32,10 @@ import org.kohsuke.github.GHTag;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
+import javax.swing.text.html.Option;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -40,6 +44,8 @@ import java.util.regex.Pattern;
 public class GHAxonIvyProductRepoServiceImpl implements GHAxonIvyProductRepoService {
   private GHOrganization organization;
   private final GitHubService gitHubService;
+
+  private final ProductJsonContentRepository productJsonContentRepository;
   private String repoUrl;
   private static final ObjectMapper objectMapper = new ObjectMapper();
   public static final String DEMO_SETUP_TITLE = "(?i)## Demo|## Setup";
@@ -50,8 +56,10 @@ public class GHAxonIvyProductRepoServiceImpl implements GHAxonIvyProductRepoServ
   public static final String DEMO = "demo";
   public static final String SETUP = "setup";
 
-  public GHAxonIvyProductRepoServiceImpl(GitHubService gitHubService) {
+  public GHAxonIvyProductRepoServiceImpl(GitHubService gitHubService,
+      ProductJsonContentRepository productJsonContentRepository) {
     this.gitHubService = gitHubService;
+    this.productJsonContentRepository = productJsonContentRepository;
   }
 
   @Override
@@ -153,7 +161,7 @@ public class GHAxonIvyProductRepoServiceImpl implements GHAxonIvyProductRepoServ
     try {
       List<GHContent> contents = getProductFolderContents(product, ghRepository, tag);
       productModuleContent.setTag(tag);
-      getDependencyContentsFromProductJson(productModuleContent, contents);
+      getDependencyContentsFromProductJson(productModuleContent, contents , product);
       List<GHContent> readmeFiles = contents.stream().filter(GHContent::isFile)
           .filter(content -> content.getName().startsWith(ReadmeConstants.README_FILE_NAME)).toList();
       Map<String,Map<String,String>> moduleContents = new HashMap<>();
@@ -200,7 +208,7 @@ public class GHAxonIvyProductRepoServiceImpl implements GHAxonIvyProductRepoServ
     return result;
   }
 
-  private void getDependencyContentsFromProductJson(ProductModuleContent productModuleContent, List<GHContent> contents)
+  private void getDependencyContentsFromProductJson(ProductModuleContent productModuleContent, List<GHContent> contents , Product product)
       throws IOException {
     GHContent productJsonFile = getProductJsonFile(contents);
     if (Objects.nonNull(productJsonFile)) {
@@ -213,10 +221,35 @@ public class GHAxonIvyProductRepoServiceImpl implements GHAxonIvyProductRepoServ
         productModuleContent.setArtifactId(artifact.getArtifactId());
         productModuleContent.setType(artifact.getType());
         productModuleContent.setName(artifact.getName());
+
+        if (product.getId().equals("vertexai-google")){
+          System.out.println("ok");
+        }
+
+        boolean isProductJsonContentNotFound = Optional.ofNullable(
+            productJsonContentRepository.findByNameAndTag(product.getId(), productModuleContent.getTag())).isEmpty();
+        if (ObjectUtils.isNotEmpty(productJsonFile.getContent()) && isProductJsonContentNotFound ) {
+          String updateVersionContent = productJsonFile.getContent()
+              .replace("${version}", VersionUtils.convertTagToVersion(productModuleContent.getTag()));
+          ProductJsonContent productJsonContent = extractProductJsonContent(updateVersionContent);
+          if (productJsonContent != null) {
+            productJsonContent.setTag(productModuleContent.getTag());
+            productJsonContent.setName(product.getId());
+            productJsonContent = productJsonContentRepository.save(productJsonContent);
+            productModuleContent.setContentProductJsonFileId(productJsonContent.getId());
+          }
+        }
       }
     }
   }
 
+  private ProductJsonContent extractProductJsonContent(String encodedContent) {
+    try {
+      return objectMapper.readValue(encodedContent, ProductJsonContent.class);
+    } catch (Exception exception) {
+      return null;
+    }
+  }
   private static GHContent getProductJsonFile(List<GHContent> contents) {
     return contents.stream().filter(GHContent::isFile)
         .filter(content -> ProductJsonConstants.PRODUCT_JSON_FILE.equals(content.getName())).findFirst().orElse(null);

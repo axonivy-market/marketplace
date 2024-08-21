@@ -19,6 +19,7 @@ import { RoutingQueryParamService } from '../../../../shared/services/routing.qu
 import { CommonDropdownComponent } from '../../../../shared/components/common-dropdown/common-dropdown.component';
 import { LanguageService } from '../../../../core/services/language/language.service';
 import { ItemDropdown } from '../../../../shared/models/item-dropdown.model';
+import { ProductDetail } from '../../../../shared/models/product-detail.model';
 
 const delayTimeBeforeHideMessage = 2000;
 @Component({
@@ -32,10 +33,21 @@ export class ProductDetailVersionActionComponent implements AfterViewInit {
   @Output() installationCount = new EventEmitter<number>();
   @Input()
   productId!: string;
+
+  @Input() product!: ProductDetail;
   selectedVersion = model<string>('');
   versions: WritableSignal<string[]> = signal([]);
   versionDropdown : Signal<ItemDropdown[]> = computed(() => {
     return this.versions().map(version => ({
+      value: version,
+      label: version
+    }));
+  });
+
+  selectedVersionInDesigner = model<string>('');
+  versionsInDesigner: WritableSignal<string[]> = signal([]);
+  versionDropdownInDesigner : Signal<ItemDropdown[]> = computed(() => {
+    return this.versionsInDesigner().map(version => ({
       value: version,
       label: version
     }));
@@ -93,6 +105,11 @@ export class ProductDetailVersionActionComponent implements AfterViewInit {
     }
   }
 
+  onSelectVersionInDesigner(version: string) {
+    this.selectedVersionInDesigner.set(version);
+    this.selectedVersion.set(version.replace('Version ', ''));
+  }
+
   onSelectArtifact(artifact: ItemDropdown) {
     this.selectedArtifactName = artifact.name;
     this.selectedArtifact = artifact.downloadUrl;
@@ -113,7 +130,6 @@ export class ProductDetailVersionActionComponent implements AfterViewInit {
 
   getVersionWithArtifact() {
     this.sanitizeDataBeforeFetching();
-
     this.productService
       .sendRequestToProductDetailVersionAPI(
         this.productId,
@@ -138,6 +154,17 @@ export class ProductDetailVersionActionComponent implements AfterViewInit {
       });
   }
 
+
+  getVersionInDesigner(): void {
+    this.productService.sendRequestToGetProductVersionForDesigner(this.productId,
+      this.designerVersion,
+      this.isDevVersionsDisplayed()
+    ).subscribe(data => {
+      const versionMap = data.map((d: string) => 'Version '.concat(d));
+      this.versionsInDesigner.set(versionMap);
+    });
+  }
+
   sanitizeDataBeforeFetching() {
     this.versions.set([]);
     this.artifacts.set([]);
@@ -160,9 +187,21 @@ export class ProductDetailVersionActionComponent implements AfterViewInit {
       .subscribe((data: number) => this.installationCount.emit(data));
   }
 
+  onGetProductJsonContent() {
+    const abc = this.productService
+      .sendRequestToGetProductJsonContent(this.product.id, this.product.productModuleContent.tag)
+      .subscribe(data => {
+        console.log(data);
+      });
+
+  }
+
   onUpdateInstallationCountForDesigner() {
     if (this.isDesignerEnvironment()) {
+      this.onGetProductJsonContent();
       this.onUpdateInstallationCount();
     }
   }
+
+
 }

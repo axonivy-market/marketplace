@@ -79,4 +79,15 @@ export class ProductService {
     const url = 'api/product-details/installationcount/' + productId;
     return this.httpClient.put<number>(url, null, { headers: { 'X-Requested-By': 'ivy' } });
   }
+
+  sendRequestToGetProductJsonContent(name: string, tag: string) {
+    const url = `api/product-details/productjsoncontent?name=${name}&tag=${tag}`;
+    return this.httpClient.get<any>(url, { headers: { 'X-Requested-By': 'ivy' } });
+  }
+
+  sendRequestToGetProductVersionForDesigner(productId: string, designerVersion: string, isShowDevVersion: boolean) {
+    const url = `api/product-details/${productId}/designerversions?designerVersion=${designerVersion}&isShowDevVersion=${isShowDevVersion}`;
+    return this.httpClient.get<any>(url, { headers: { 'X-Requested-By': 'ivy' } });
+  }
+
 }

@@ -71,6 +71,7 @@
               (installationCount)="receiveInstallationCountData($event)"
               [(selectedVersion)]="selectedVersion!"
               [productId]="productDetail().id"
+              [product]="productDetail()"
               (selectedVersionChange)="
                 loadDetailTabs($event)
               "></app-product-version-action>
@@ -248,3 +249,39 @@
     }
   </div>
 </div>
+
+<!--<script>-->
+<!--  if (!window.callJava) {-->
+<!--    window.callJava = function(index, token, args) {-->
+<!--      return JSON.parse(window.chrome.webview.hostObjects.sync.swt.CallJava(index, token, JSON.stringify(args)));-->
+<!--    }-->
+<!--  }-->
+
+<!--  install = function install() {-->
+<!--    var result = callJava(6, 'b24c6e818c1b9db3ad43fc46c39b1e9', Array.prototype.slice.call(arguments));-->
+<!--    if (typeof result == 'string' && result.indexOf('org.eclipse.swt.browser.error') == 0) {-->
+<!--      var error = new Error(result.substring(29));-->
+<!--      throw error;-->
+<!--    }-->
+<!--    return result;-->
+<!--  };-->
+
+<!--  var frameIds = null;-->
+<!--  for (var i = 0; i < frames.length; i++) {-->
+<!--    try {-->
+<!--      if (!frameIds || (frames[i].name && frameIds[frames[i].name])) {-->
+<!--        if (!frames[i].callJava) {-->
+<!--          frames[i].callJava = window.callJava;-->
+<!--        }-->
+<!--        frames[i].install = function install() {-->
+<!--          var result = callJava(6, 'b24c6e818c1b9db3ad43fc46c39b1e9', Array.prototype.slice.call(arguments));-->
+<!--          if (typeof result == 'string' && result.indexOf('org.eclipse.swt.browser.error') == 0) {-->
+<!--            var error = new Error(result.substring(29));-->
+<!--            throw error;-->
+<!--          }-->
+<!--          return result;-->
+<!--        }-->
+<!--        ;-->
+<!--      }-->
+<!--    } -->
+<!--</script>-->

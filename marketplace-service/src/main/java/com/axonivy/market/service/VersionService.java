@@ -1,5 +1,6 @@
 package com.axonivy.market.service;
 
+import com.axonivy.market.entity.productjsonfilecontent.ProductJsonContent;
 import com.axonivy.market.model.MavenArtifactVersionModel;
 
 import java.util.List;
@@ -12,4 +13,8 @@ public interface VersionService {
 
   List<MavenArtifactVersionModel> getArtifactsAndVersionToDisplay(String productId, Boolean isShowDevVersion,
       String designerVersion);
+
+  ProductJsonContent getProductJsonContentFromNameAndTag(String name , String tag);
+
+  List<String> getVersionsForDesigner(String productId, Boolean isShowDevVersion, String designerVersion);
 }

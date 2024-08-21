@@ -106,6 +106,15 @@
 ::ng-deep .dropdown-menu.menu-bar {
   margin-top: 4px;
 }
+::ng-deep .form-select {
+  height: 32px;
+  padding: 9px 10px;
+  gap: 10px;
+  border-radius: 5px;
+  line-height: 12px;
+  text-align: start !important;
+  background-color: var(--ivy-text-normal-color);
+}
 
 ::ng-deep .dropdown-menu {
   padding: 10px;

@@ -8,6 +8,8 @@ import com.axonivy.market.constants.MavenConstants;
 import com.axonivy.market.entity.MavenArtifactModel;
 import com.axonivy.market.entity.MavenArtifactVersion;
 import com.axonivy.market.entity.Product;
+import com.axonivy.market.entity.ProductModuleContent;
+import com.axonivy.market.entity.productjsonfilecontent.ProductJsonContent;
 import com.axonivy.market.enums.NonStandardProduct;
 import com.axonivy.market.github.model.ArchivedArtifact;
 import com.axonivy.market.github.model.MavenArtifact;
@@ -15,6 +17,7 @@ import com.axonivy.market.github.service.GHAxonIvyProductRepoService;
 import com.axonivy.market.github.util.GitHubUtils;
 import com.axonivy.market.model.MavenArtifactVersionModel;
 import com.axonivy.market.repository.MavenArtifactVersionRepository;
+import com.axonivy.market.repository.ProductJsonContentRepository;
 import com.axonivy.market.repository.ProductRepository;
 import com.axonivy.market.service.VersionService;
 import com.axonivy.market.util.VersionUtils;
@@ -36,6 +39,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 @Log4j2
 @Service
@@ -45,6 +49,7 @@ public class VersionServiceImpl implements VersionService {
   private final GHAxonIvyProductRepoService gitHubService;
   private final MavenArtifactVersionRepository mavenArtifactVersionRepository;
   private final ProductRepository productRepository;
+  private final ProductJsonContentRepository productJsonContentRepository;
   @Getter
   private String repoName;
   private Map<String, List<ArchivedArtifact>> archivedArtifactsMap;
@@ -57,11 +62,13 @@ public class VersionServiceImpl implements VersionService {
   private String productId;
 
   public VersionServiceImpl(GHAxonIvyProductRepoService gitHubService,
-      MavenArtifactVersionRepository mavenArtifactVersionRepository, ProductRepository productRepository) {
+      MavenArtifactVersionRepository mavenArtifactVersionRepository, ProductRepository productRepository,
+      ProductJsonContentRepository productJsonContentRepository) {
     this.gitHubService = gitHubService;
     this.mavenArtifactVersionRepository = mavenArtifactVersionRepository;
     this.productRepository = productRepository;
 
+    this.productJsonContentRepository = productJsonContentRepository;
   }
 
   private void resetData() {
@@ -94,6 +101,18 @@ public class VersionServiceImpl implements VersionService {
       mavenArtifactVersionRepository.save(proceedDataCache);
     }
     return results;
+  }
+
+  @Override
+  public ProductJsonContent getProductJsonContentFromNameAndTag(String name, String tag) {
+    return productJsonContentRepository.findByNameAndTag(name, tag);
+  }
+
+  @Override
+  public List<String> getVersionsForDesigner(String productId, Boolean isShowDevVersion, String designerVersion) {
+    Product product = productRepository.findById(productId).orElse(null);
+    List<String> versionList = product.getProductModuleContents().stream().map(ProductModuleContent::getTag).map(VersionUtils::convertTagToVersion).toList();
+    return VersionUtils.getVersionsToDisplay(versionList,isShowDevVersion,designerVersion);
   }
 
   public boolean handleArtifactForVersionToDisplay(List<String> versionsToDisplay,
