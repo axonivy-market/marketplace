@@ -35,5 +35,4 @@ public class ProductModuleContent implements Serializable {
   private String artifactId;
   @Schema(description = "Artifact file type", example = "iar")
   private String type;
-  private String contentProductJsonFileId;
 }

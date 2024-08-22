@@ -111,12 +111,9 @@ public class VersionServiceImpl implements VersionService {
   @Override
   public List<String> getVersionsForDesigner(String productId, Boolean isShowDevVersion, String designerVersion) {
     Product product = productRepository.findById(productId).orElse(null);
-    List<String> versionList = product.getProductModuleContents()
-        .stream()
-        .map(ProductModuleContent::getTag)
-        .map(VersionUtils::convertTagToVersion)
-        .toList();
-    return VersionUtils.getVersionsToDisplay(versionList,isShowDevVersion,designerVersion);
+    List<String> versionList = product.getProductModuleContents().stream().map(ProductModuleContent::getTag)
+        .map(VersionUtils::convertTagToVersion).toList();
+    return VersionUtils.getVersionsToDisplay(versionList, isShowDevVersion, designerVersion);
   }
 
   public boolean handleArtifactForVersionToDisplay(List<String> versionsToDisplay,

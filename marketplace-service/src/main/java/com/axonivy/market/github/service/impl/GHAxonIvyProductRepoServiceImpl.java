@@ -225,15 +225,14 @@ public class GHAxonIvyProductRepoServiceImpl implements GHAxonIvyProductRepoServ
 
         boolean isProductJsonContentNotFound = Optional.ofNullable(
             productJsonContentRepository.findByNameAndTag(product.getId(), productModuleContent.getTag())).isEmpty();
-        if (ObjectUtils.isNotEmpty(productJsonFile.getContent()) && isProductJsonContentNotFound ) {
+        if (ObjectUtils.isNotEmpty(productJsonFile.getContent()) && isProductJsonContentNotFound) {
           String updateVersionContent = productJsonFile.getContent()
               .replace("${version}", VersionUtils.convertTagToVersion(productModuleContent.getTag()));
           ProductJsonContent productJsonContent = extractProductJsonContent(updateVersionContent);
           if (productJsonContent != null) {
-            productJsonContent.setTag(productModuleContent.getTag());
+            productJsonContent.setTag(VersionUtils.convertTagToVersion(productModuleContent.getTag()));
             productJsonContent.setName(product.getId());
-            productJsonContent = productJsonContentRepository.save(productJsonContent);
-            productModuleContent.setContentProductJsonFileId(productJsonContent.getId());
+            productJsonContentRepository.save(productJsonContent);
           }
         }
       }

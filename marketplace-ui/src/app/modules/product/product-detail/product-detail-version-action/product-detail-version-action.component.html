@@ -3,19 +3,32 @@
     (click)="getVersionInDesigner()"
     [items]="versionDropdownInDesigner()"
     [selectedItem]="selectedVersionInDesigner()"
-    buttonClass="form-select form-select-sm versions-selector__dropdown border__dropdown fs-md"
+    buttonClass="form-select form-select-sm versions-selector__dropdown border__dropdown fs-md version-select-in-designer"
     ariaLabel=".form-select-sm example"
     (itemSelected)="onSelectVersionInDesigner($event.value)">
   </app-common-dropdown>
 }
 
 <button [lang]="languageService.selectedLanguage()" class="btn btn__install flex-grow-1" data-bs-toggle="tooltip"
-        data-bs-placement="bottom" data-bs-html="true" [attr.data-bs-title]="getInstallationTooltipText()" id="install-button"
+        data-bs-placement="bottom" data-bs-html="true" id="install-button"
         data-bs-custom-class="custom-tooltip"
+        [attr.data-bs-title]="getInstallationTooltipText()"
+        [attr.product-id]="product.id"
+        [attr.request-path]="environment.apiUrl"
         onClick = "function installInDesigner(){
-          const url = `http://localhost:8080/api/product-details/productjsoncontent?name=vertexai-google&tag=v10.0.22`;
-          install(url);
-          onUpdateInstallationCountForDesigner()
+          var selectedItemElement = document.querySelector('.version-select-in-designer');
+          if (selectedItemElement) {
+            const version = selectedItemElement.textContent.trim();
+            const productId = document.getElementById('install-button').getAttribute('product-id');
+            const requestPath = document.getElementById('install-button').getAttribute('request-path');
+            console.log('Selected value:', version);
+            const url = `${requestPath}/api/product-details/productjsoncontent?name=${productId}&tag=v${version.replace('Version ','')}`;
+            console.log(url);
+            install(url);
+          }
+          // const url = `http://localhost:8080/api/product-details/productjsoncontent?name=vertexai-google&tag=v10.0.22`;
+          // install(url);
+          // onUpdateInstallationCountForDesigner()
         }
         installInDesigner();"
         [ngClass]="themeService.isDarkMode() ? 'btn-light' : 'btn-primary'">

@@ -20,6 +20,7 @@ import { CommonDropdownComponent } from '../../../../shared/components/common-dr
 import { LanguageService } from '../../../../core/services/language/language.service';
 import { ItemDropdown } from '../../../../shared/models/item-dropdown.model';
 import { ProductDetail } from '../../../../shared/models/product-detail.model';
+import { environment } from '../../../../../environments/environment';
 
 const delayTimeBeforeHideMessage = 2000;
 @Component({
@@ -193,4 +194,5 @@ export class ProductDetailVersionActionComponent implements AfterViewInit {
     }
   }
 
+  protected readonly environment = environment;
 }
