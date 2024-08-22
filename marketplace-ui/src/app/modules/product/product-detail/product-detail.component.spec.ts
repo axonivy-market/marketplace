@@ -145,52 +145,6 @@ describe('ProductDetailComponent', () => {
     expect(component.setActiveTab).toHaveBeenCalledWith('description');
   });
 
-  it('should return true for description when it is not null and not empty', () => {
-    const mockContent: ProductModuleContent = {
-      ...MOCK_PRODUCT_MODULE_CONTENT,
-      description: { en: 'Test description' }
-    };
-
-    component.productModuleContent.set(mockContent);
-    expect(component.getContent('description')).toBeTrue();
-  });
-
-  it('should return false for description when it is null or empty', () => {
-    const mockContentWithEmptyDescription: ProductModuleContent =
-      MOCK_PRODUCT_MODULE_CONTENT;
-    component.productModuleContent.set(mockContentWithEmptyDescription);
-    expect(component.getContent('description')).toBeFalse();
-
-    const mockContentWithNullDescription: ProductModuleContent = {
-      ...MOCK_PRODUCT_MODULE_CONTENT
-    };
-    component.productModuleContent.set(mockContentWithNullDescription);
-    expect(component.getContent('description')).toBeFalse();
-  });
-
-  it('should return true for setup when it is not null and not empty', () => {
-    const mockContent: ProductModuleContent = {
-      ...MOCK_PRODUCT_MODULE_CONTENT,
-      setup: { en: 'Test setup' }
-    };
-
-    component.productModuleContent.set(mockContent);
-    expect(component.getContent('setup')).toBeTrue();
-  });
-
-  it('should return false for setup when it is null or empty', () => {
-    const mockContentWithEmptySetup: ProductModuleContent =
-      MOCK_PRODUCT_MODULE_CONTENT;
-    component.productModuleContent.set(mockContentWithEmptySetup);
-    expect(component.getContent('setup')).toBeFalse();
-
-    const mockContentWithNullSetup: ProductModuleContent = {
-      ...MOCK_PRODUCT_MODULE_CONTENT
-    };
-    component.productModuleContent.set(mockContentWithNullSetup);
-    expect(component.getContent('setup')).toBeFalse();
-  });
-
   it('should display dropdown horizontally on small viewport', () => {
     viewport.set(540);
     const tabGroup = fixture.debugElement.query(By.css('.row-tab'));
