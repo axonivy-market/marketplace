@@ -6,8 +6,7 @@ import { ProductModuleContent } from "../models/product-module-content.model";
   name: 'hasValueTab'
 })
 export class HasValueTabPipe implements PipeTransform {
-  transform(value: string, productModuleContent: ProductModuleContent, args?: any): boolean {
-    console.log('Check')
+  transform(value: string, productModuleContent: ProductModuleContent): boolean {
     const conditions: { [key: string]: boolean } = {
       description: productModuleContent.description !== null,
       demo: productModuleContent.demo !== null,
