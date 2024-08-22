@@ -1,7 +1,5 @@
 package com.axonivy.market.constants;
 
-import java.util.Map;
-
 public class MongoDBConstants {
 
     private MongoDBConstants() {
