@@ -2,19 +2,29 @@ package com.axonivy.market.entity;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.mapping.DBRef;
+import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.io.Serial;
 import java.io.Serializable;
 import java.util.Map;
 
+import static com.axonivy.market.constants.EntityConstants.PRODUCT_MODULE_CONTENT;;
+
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
+@Builder
+@Document(PRODUCT_MODULE_CONTENT)
 public class ProductModuleContent implements Serializable {
+  @Id
+  private String id;
   @Serial
   private static final long serialVersionUID = 1L;
   @Schema(description = "Target release tag", example = "v10.0.25")

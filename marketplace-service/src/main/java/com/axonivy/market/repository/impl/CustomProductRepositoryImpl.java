@@ -40,9 +40,20 @@ public class CustomProductRepositoryImpl implements CustomProductRepository {
     return loopOverProductModuleContents.append(MongoDBConstants.CONDITION, isProductModuleContentOfCurrentTag);
   }
 
-  private AggregationOperation createReturnFirstModuleContentOperation() {
-    return context -> new Document(MongoDBConstants.ADD_FIELD,
-        new Document(MongoDBConstants.PRODUCT_MODULE_CONTENTS,
+
+  private AggregationOperation createLookupProductModuleContentOperation() {
+    return context -> new Document(MongoDBConstants.LOOKUP,
+        new Document()
+        .append(MongoDBConstants.FROM, MongoDBConstants.PRODUCT_MODULE_CONTENT_DOCUMENT)
+        .append(MongoDBConstants.LOCAL_FIELD, MongoDBConstants.PRODUCT_MODULE_CONTENTS_KEY_FIELD)
+        .append(MongoDBConstants.FOREIGN_FIELD, MongoDBConstants.ID)
+        .append(MongoDBConstants.AS, MongoDBConstants.PRODUCT_MODULE_CONTENTS));
+  }
+
+  private AggregationOperation createAddFieldProductModuleContentOperation() {
+    return context ->
+        new Document(MongoDBConstants.ADD_FIELD,
+          new Document(MongoDBConstants.PRODUCT_MODULE_CONTENTS,
             new Document(MongoDBConstants.FILTER, createDocumentFilterProductModuleContentByTag(MongoDBConstants.NEWEST_RELEASED_VERSION_QUERY))));
   }
 
@@ -60,13 +71,20 @@ public class CustomProductRepositoryImpl implements CustomProductRepository {
   @Override
   public Product getProductByIdAndTag(String id, String tag) {
     // Create the aggregation pipeline
-    Aggregation aggregation = Aggregation.newAggregation(createIdMatchOperation(id), createReturnFirstMatchTagModuleContentOperation(tag));
+    Aggregation aggregation = Aggregation.newAggregation(
+        createIdMatchOperation(id),
+        createLookupProductModuleContentOperation(),
+        createReturnFirstMatchTagModuleContentOperation(tag));
     return queryProductByAggregation(aggregation);
   }
 
   @Override
   public Product getProductById(String id) {
-    Aggregation aggregation = Aggregation.newAggregation(createIdMatchOperation(id), createReturnFirstModuleContentOperation());
+    Aggregation aggregation = Aggregation.newAggregation(
+        createIdMatchOperation(id),
+        createLookupProductModuleContentOperation(),
+        createAddFieldProductModuleContentOperation()
+    );
     return queryProductByAggregation(aggregation);
   }
 
@@ -78,7 +96,6 @@ public class CustomProductRepositoryImpl implements CustomProductRepository {
       return Collections.emptyList();
     }
     return product.getReleasedVersions();
-
   }
 
   public int updateInitialCount(String productId, int initialCount) {

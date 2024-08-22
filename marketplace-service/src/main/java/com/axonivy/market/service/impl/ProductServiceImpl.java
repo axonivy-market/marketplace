@@ -62,6 +62,7 @@ import com.axonivy.market.github.util.GitHubUtils;
 import com.axonivy.market.model.ProductCustomSortRequest;
 import com.axonivy.market.repository.GitHubRepoMetaRepository;
 import com.axonivy.market.repository.ProductCustomSortRepository;
+import com.axonivy.market.repository.ProductModuleContentRepository;
 import com.axonivy.market.repository.ProductRepository;
 import com.axonivy.market.service.ProductService;
 import com.fasterxml.jackson.core.type.TypeReference;
@@ -74,6 +75,7 @@ import lombok.extern.log4j.Log4j2;
 public class ProductServiceImpl implements ProductService {
 
   private final ProductRepository productRepository;
+  private final ProductModuleContentRepository productModuleContentRepository;
   private final GHAxonIvyMarketRepoService axonIvyMarketRepoService;
   private final GHAxonIvyProductRepoService axonIvyProductRepoService;
   private final GitHubRepoMetaRepository gitHubRepoMetaRepository;
@@ -95,11 +97,14 @@ public class ProductServiceImpl implements ProductService {
   public static final String NON_NUMERIC_CHAR = "[^0-9.]";
   private final SecureRandom random = new SecureRandom();
 
-  public ProductServiceImpl(ProductRepository productRepository, GHAxonIvyMarketRepoService axonIvyMarketRepoService,
+  public ProductServiceImpl(ProductRepository productRepository,
+      ProductModuleContentRepository productModuleContentRepository,
+      GHAxonIvyMarketRepoService axonIvyMarketRepoService,
       GHAxonIvyProductRepoService axonIvyProductRepoService, GitHubRepoMetaRepository gitHubRepoMetaRepository,
       GitHubService gitHubService, ProductCustomSortRepository productCustomSortRepository,
       MongoTemplate mongoTemplate) {
     this.productRepository = productRepository;
+    this.productModuleContentRepository = productModuleContentRepository;
     this.axonIvyMarketRepoService = axonIvyMarketRepoService;
     this.axonIvyProductRepoService = axonIvyProductRepoService;
     this.gitHubRepoMetaRepository = gitHubRepoMetaRepository;
@@ -368,16 +373,23 @@ public class ProductServiceImpl implements ProductService {
     }
 
     for (GHTag ghTag : tags) {
-      ProductModuleContent productModuleContent =
-          axonIvyProductRepoService.getReadmeAndProductContentsFromTag(product, productRepo, ghTag.getName());
-      productModuleContents.add(productModuleContent);
+      ProductModuleContent productModuleContent = axonIvyProductRepoService.getReadmeAndProductContentsFromTag(product,
+          productRepo, ghTag.getName());
+      if (productModuleContent != null) {
+        productModuleContent.setProduct(product);
+        productModuleContents.add(productModuleContent);
+      }
       String versionFromTag = VersionUtils.convertTagToVersion(ghTag.getName());
       if (Objects.isNull(product.getReleasedVersions())) {
         product.setReleasedVersions(new ArrayList<>());
       }
       product.getReleasedVersions().add(versionFromTag);
     }
-    product.setProductModuleContents(productModuleContents);
+    if (!CollectionUtils.isEmpty(productModuleContents)) {
+      List<ProductModuleContent> savedProductModuleContents = productModuleContentRepository
+          .saveAll(productModuleContents);
+      product.setProductModuleContents(savedProductModuleContents);
+    }
   }
 
   private void getPublishedDateFromLatestTag(Product product, GHTag lastTag) {
@@ -436,7 +448,6 @@ public class ProductServiceImpl implements ProductService {
       return productItem;
     }).orElse(null);
   }
-
 
   @Override
   public Product fetchBestMatchProductDetail(String id, String version) {
