@@ -187,21 +187,10 @@ export class ProductDetailVersionActionComponent implements AfterViewInit {
       .subscribe((data: number) => this.installationCount.emit(data));
   }
 
-  onGetProductJsonContent() {
-    const abc = this.productService
-      .sendRequestToGetProductJsonContent(this.product.id, this.product.productModuleContent.tag)
-      .subscribe(data => {
-        console.log(data);
-      });
-
-  }
-
   onUpdateInstallationCountForDesigner() {
     if (this.isDesignerEnvironment()) {
-      this.onGetProductJsonContent();
       this.onUpdateInstallationCount();
     }
   }
-
 
 }

@@ -222,9 +222,6 @@ public class GHAxonIvyProductRepoServiceImpl implements GHAxonIvyProductRepoServ
         productModuleContent.setType(artifact.getType());
         productModuleContent.setName(artifact.getName());
 
-        if (product.getId().equals("vertexai-google")){
-          System.out.println("ok");
-        }
 
         boolean isProductJsonContentNotFound = Optional.ofNullable(
             productJsonContentRepository.findByNameAndTag(product.getId(), productModuleContent.getTag())).isEmpty();

@@ -10,9 +10,15 @@
 }
 
 <button [lang]="languageService.selectedLanguage()" class="btn btn__install flex-grow-1" data-bs-toggle="tooltip"
-  data-bs-placement="bottom" data-bs-html="true" [attr.data-bs-title]="getInstallationTooltipText()"
-  (click)="onUpdateInstallationCountForDesigner()" data-bs-custom-class="custom-tooltip"
-  [ngClass]="themeService.isDarkMode() ? 'btn-light' : 'btn-primary'">
+        data-bs-placement="bottom" data-bs-html="true" [attr.data-bs-title]="getInstallationTooltipText()" id="install-button"
+        data-bs-custom-class="custom-tooltip"
+        onClick = "function installInDesigner(){
+          const url = `http://localhost:8080/api/product-details/productjsoncontent?name=vertexai-google&tag=v10.0.22`;
+          install(url);
+          onUpdateInstallationCountForDesigner()
+        }
+        installInDesigner();"
+        [ngClass]="themeService.isDarkMode() ? 'btn-light' : 'btn-primary'">
   {{ 'common.product.detail.install.buttonLabel' | translate }}
 </button>
 
@@ -81,3 +87,18 @@
   </form>
 </div>
 }
+
+<script type="text/javascript">
+  function installInDesigner() {
+    console.log("asdasdasdasd")
+    var url = `http://localhost:8080/api/product-details/productjsoncontent?name=vertexai-google&tag=v10.0.22`
+    install(url);
+  }
+
+  var myButton = document.getElementById('#install-button');
+  console.log(myButton)
+  myButton.onclick = function(){
+    console.log("asdasdasdasd")
+    installInDesigner()
+  }
+</script>
