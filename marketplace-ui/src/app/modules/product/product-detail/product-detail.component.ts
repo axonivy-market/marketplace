@@ -35,6 +35,7 @@ import { RoutingQueryParamService } from '../../../shared/services/routing.query
 import { CommonDropdownComponent } from '../../../shared/components/common-dropdown/common-dropdown.component';
 import { CommonUtils } from '../../../shared/utils/common.utils';
 import { ItemDropdown } from '../../../shared/models/item-dropdown.model';
+import { HasValueTabPipe } from '../../../shared/pipes/has-value-tab.pipe';
 
 export interface DetailTab {
   activeClass: string;
@@ -61,6 +62,7 @@ const DEFAULT_ACTIVE_TAB = 'description';
     ProductDetailFeedbackComponent,
     ProductInstallationCountActionComponent,
     ProductTypeIconPipe,
+    HasValueTabPipe,
     CommonDropdownComponent
   ],
   providers: [ProductService, MarkdownService],
@@ -90,7 +92,10 @@ export class ProductDetailComponent {
   detailContent!: DetailTab;
   detailTabs = PRODUCT_DETAIL_TABS;
   activeTab = DEFAULT_ACTIVE_TAB;
-  selectedTabLabel: string = CommonUtils.getLabel(PRODUCT_DETAIL_TABS[0].value, PRODUCT_DETAIL_TABS);
+  selectedTabLabel: string = CommonUtils.getLabel(
+    PRODUCT_DETAIL_TABS[0].value,
+    PRODUCT_DETAIL_TABS
+  );
   detailTabsForDropdown = PRODUCT_DETAIL_TABS;
   isDropdownOpen: WritableSignal<boolean> = signal(false);
   isTabDropdownShown: WritableSignal<boolean> = signal(false);
@@ -106,7 +111,6 @@ export class ProductDetailComponent {
     }
     this.updateDropdownSelection();
   }
-
 
   constructor() {
     this.scrollToTop();
@@ -169,21 +173,9 @@ export class ProductDetailComponent {
     });
   }
 
-  getContent(value: string): boolean {
-    const content = this.productModuleContent();
-    const conditions: { [key: string]: boolean } = {
-      description: content.description !== null,
-      demo: content.demo !== null,
-      setup: content.setup !== null ,
-      dependency: content.isDependency
-    };
-
-    return conditions[value] ?? false;
-  }
-
   loadDetailTabs(selectedVersion: string) {
     let version = selectedVersion || this.productDetail().newestReleaseVersion;
-    version = version.replace("Version ","")
+    version = version.replace('Version ', '');
     this.productService
       .getProductDetailsWithVersion(this.productDetail().id, version)
       .subscribe(updatedProductDetail => {
@@ -278,7 +270,11 @@ export class ProductDetailComponent {
   }
 
   getNotEmptyTabs(): ItemDropdown[] {
-    return this.detailTabsForDropdown.filter(tab => this.getContent(tab.value));
+    return this.detailTabsForDropdown.filter(tab =>
+      HasValueTabPipe.prototype.transform(
+        tab.value,
+        this.productModuleContent()
+      )
+    );
   }
-
 }
