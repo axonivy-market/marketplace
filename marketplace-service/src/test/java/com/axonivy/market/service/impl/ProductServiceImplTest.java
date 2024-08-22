@@ -12,6 +12,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
@@ -75,6 +76,7 @@ import com.axonivy.market.github.service.GitHubService;
 import com.axonivy.market.model.ProductCustomSortRequest;
 import com.axonivy.market.repository.GitHubRepoMetaRepository;
 import com.axonivy.market.repository.ProductCustomSortRepository;
+import com.axonivy.market.repository.ProductModuleContentRepository;
 import com.axonivy.market.repository.ProductRepository;
 
 @ExtendWith(MockitoExtension.class)
@@ -101,6 +103,9 @@ class ProductServiceImplTest extends BaseSetup {
   private ProductRepository productRepository;
 
   @Mock
+  private ProductModuleContentRepository productModuleContentRepository;
+
+  @Mock
   private GHAxonIvyMarketRepoService marketRepoService;
 
   @Mock
@@ -114,6 +119,10 @@ class ProductServiceImplTest extends BaseSetup {
 
   @Captor
   ArgumentCaptor<Product> argumentCaptor = ArgumentCaptor.forClass(Product.class);
+
+  @Captor
+  ArgumentCaptor<List<ProductModuleContent>> argumentCaptorProductModuleContent = ArgumentCaptor.forClass((Class) List.class);
+
   @Mock
   private GHAxonIvyProductRepoService ghAxonIvyProductRepoService;
 
@@ -315,14 +324,14 @@ class ProductServiceImplTest extends BaseSetup {
     var mockContent = mockGHContentAsMetaJSON();
     InputStream inputStream = this.getClass().getResourceAsStream(SLASH.concat(META_FILE));
     when(mockContent.read()).thenReturn(inputStream);
-
     Map<String, List<GHContent>> mockGHContentMap = new HashMap<>();
     mockGHContentMap.put(SAMPLE_PRODUCT_ID, List.of(mockContent));
     when(marketRepoService.fetchAllMarketItems()).thenReturn(mockGHContentMap);
+    when(productModuleContentRepository.saveAll(anyList())).thenReturn(List.of(mockReadmeProductContent()));
 
     // Executes
     productService.syncLatestDataFromMarketRepo();
-
+    verify(productModuleContentRepository).saveAll(argumentCaptorProductModuleContent.capture());
     verify(productRepository).save(argumentCaptor.capture());
 
     assertThat(argumentCaptor.getValue().getProductModuleContents()).usingRecursiveComparison()
@@ -356,10 +365,13 @@ class ProductServiceImplTest extends BaseSetup {
 
     when(ghAxonIvyProductRepoService.getReadmeAndProductContentsFromTag(any(), any(), anyString()))
         .thenReturn(mockReturnProductContent);
+    when(productModuleContentRepository.saveAll(anyList()))
+        .thenReturn(List.of(mockReadmeProductContent(), mockReturnProductContent));
 
     // Executes
     productService.syncLatestDataFromMarketRepo();
 
+    verify(productModuleContentRepository).saveAll(argumentCaptorProductModuleContent.capture());
     verify(productRepository).save(argumentCaptor.capture());
     assertEquals(2, argumentCaptor.getValue().getProductModuleContents().size());
     assertThat(argumentCaptor.getValue().getProductModuleContents()).usingRecursiveComparison()
@@ -547,6 +559,7 @@ class ProductServiceImplTest extends BaseSetup {
 
   private ProductModuleContent mockReadmeProductContent() {
     ProductModuleContent productModuleContent = new ProductModuleContent();
+    productModuleContent.setId("123");
     productModuleContent.setTag("v10.0.2");
     productModuleContent.setName("Amazon Comprehend");
     Map<String, String> description = new HashMap<>();
