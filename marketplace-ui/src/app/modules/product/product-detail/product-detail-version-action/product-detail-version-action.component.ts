@@ -31,9 +31,9 @@ const delayTimeBeforeHideMessage = 2000;
   styleUrl: './product-detail-version-action.component.scss'
 })
 export class ProductDetailVersionActionComponent implements AfterViewInit {
+  protected readonly environment = environment;
   @Output() installationCount = new EventEmitter<number>();
-  @Input()
-  productId!: string;
+  @Input() productId!: string;
 
   @Input() product!: ProductDetail;
   selectedVersion = model<string>('');
@@ -194,5 +194,4 @@ export class ProductDetailVersionActionComponent implements AfterViewInit {
     }
   }
 
-  protected readonly environment = environment;
 }

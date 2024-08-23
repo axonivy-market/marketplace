@@ -16,19 +16,15 @@
         [attr.product-id]="product.id"
         [attr.request-path]="environment.apiUrl"
         onClick = "function installInDesigner(){
-          var selectedItemElement = document.querySelector('.version-select-in-designer');
+          const selectedItemElement = document.querySelector('.version-select-in-designer');
           if (selectedItemElement) {
             const version = selectedItemElement.textContent.trim();
             const productId = document.getElementById('install-button').getAttribute('product-id');
             const requestPath = document.getElementById('install-button').getAttribute('request-path');
-            console.log('Selected value:', version);
+
             const url = `${requestPath}/api/product-details/productjsoncontent?name=${productId}&tag=v${version.replace('Version ','')}`;
-            console.log(url);
             install(url);
           }
-          // const url = `http://localhost:8080/api/product-details/productjsoncontent?name=vertexai-google&tag=v10.0.22`;
-          // install(url);
-          // onUpdateInstallationCountForDesigner()
         }
         installInDesigner();"
         [ngClass]="themeService.isDarkMode() ? 'btn-light' : 'btn-primary'">
