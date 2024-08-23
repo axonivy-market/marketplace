@@ -1,23 +1,23 @@
 @if (isDesignerEnvironment()) {
-  <app-common-dropdown
-    (click)="getVersionInDesigner()"
-    [items]="versionDropdownInDesigner()"
-    [selectedItem]="selectedVersionInDesigner()"
-    buttonClass="form-select form-select-sm versions-selector__dropdown border__dropdown fs-md version-select-in-designer"
-    ariaLabel=".form-select-sm example"
-    (itemSelected)="onSelectVersionInDesigner($event.value)">
-  </app-common-dropdown>
+  <div class="designer-section d-flex justify-content-end gap-2 justify-content-sm-between w-100">
+    <app-common-dropdown
+      (click)="getVersionInDesigner()"
+      [items]="versionDropdownInDesigner()"
+      [selectedItem]="selectedVersionInDesigner()"
+      buttonClass="form-select form-select-sm versions-selector__dropdown border__dropdown h-100 text-primary"
+      ariaLabel=".form-select-sm example"
+      class="flex-grow-1"
+      (itemSelected)="onSelectVersionInDesigner($event.value)">
+    </app-common-dropdown>
 
-}
-
-<button [lang]="languageService.selectedLanguage()" class="btn btn__install flex-grow-1" data-bs-toggle="tooltip"
-        data-bs-placement="bottom" data-bs-html="true" id="install-button"
-        data-bs-custom-class="custom-tooltip"
-        [attr.data-bs-title]="getInstallationTooltipText()"
-        [attr.product-id]="product.id"
-        [attr.request-path]="environment.apiUrl"
-        (click)="onUpdateInstallationCountForDesigner()"
-        onClick = "function installInDesigner(){
+    <button [lang]="languageService.selectedLanguage()" class="btn btn__install flex-grow-1 install-designer-button" data-bs-toggle="tooltip"
+            data-bs-placement="bottom" data-bs-html="true" id="install-button"
+            data-bs-custom-class="custom-tooltip"
+            [attr.data-bs-title]="getInstallationTooltipText()"
+            [attr.product-id]="product.id"
+            [attr.request-path]="environment.apiUrl"
+            (click)="onUpdateInstallationCountForDesigner()"
+            onClick = "function installInDesigner(){
           const selectedItemElement = document.querySelector('.version-select-in-designer');
           if (selectedItemElement) {
             const version = selectedItemElement.textContent.trim();
@@ -30,15 +30,21 @@
           }
         }
         installInDesigner();"
-        [ngClass]="themeService.isDarkMode() ? 'btn-light' : 'btn-primary'">
-  {{ 'common.product.detail.install.buttonLabel' | translate }}
-</button>
-
-@if(!isDesignerEnvironment()) {
-<button [lang]="languageService.selectedLanguage()" class="btn btn__download btn-secondary primary-bg flex-grow-1"
-  type="button" (click)="onShowVersionAndArtifact()" aria-expanded="false">
-  {{ 'common.product.detail.download.buttonLabel' | translate }}
-</button>
+            [ngClass]="themeService.isDarkMode() ? 'btn-light' : 'btn-primary'">
+      {{ 'common.product.detail.install.buttonLabel' | translate }}
+    </button>
+  </div>
+} @else {
+  <button [lang]="languageService.selectedLanguage()" class="btn btn__install flex-grow-1" data-bs-toggle="tooltip"
+          data-bs-placement="bottom" data-bs-html="true" [attr.data-bs-title]="getInstallationTooltipText()"
+          (click)="onUpdateInstallationCountForDesigner()" data-bs-custom-class="custom-tooltip"
+          [ngClass]="themeService.isDarkMode() ? 'btn-light' : 'btn-primary'">
+    {{ 'common.product.detail.install.buttonLabel' | translate }}
+  </button>
+  <button [lang]="languageService.selectedLanguage()" class="btn btn__download btn-secondary primary-bg flex-grow-1"
+          type="button" (click)="onShowVersionAndArtifact()" aria-expanded="false">
+    {{ 'common.product.detail.download.buttonLabel' | translate }}
+  </button>
 }
 
 @if (isDropDownDisplayed()) {
