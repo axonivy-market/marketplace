@@ -90,8 +90,8 @@ public class ProductDetailsController {
     return new ResponseEntity<>(models, HttpStatus.OK);
   }
 
-  @GetMapping(PRODUCT_JSON_CONTENT_BY_NAME_AND_TAG)
-  public ResponseEntity<ProductJsonContent> findProductJsonContentByNameAndTag(@RequestParam String name,
+  @GetMapping(PRODUCT_JSON_CONTENT)
+  public ResponseEntity<ProductJsonContent> findProductJsonContent(@RequestParam String name,
       @RequestParam String tag) {
     ProductJsonContent productJsonContent = versionService.getProductJsonContentFromNameAndTag(name, tag);
     return new ResponseEntity<>(productJsonContent, HttpStatus.OK);

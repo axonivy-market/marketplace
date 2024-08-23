@@ -4,13 +4,23 @@ import com.axonivy.market.comparator.LatestVersionComparator;
 import com.axonivy.market.constants.CommonConstants;
 import com.axonivy.market.constants.GitHubConstants;
 import com.axonivy.market.constants.MavenConstants;
+import com.axonivy.market.entity.productjsonfilecontent.Data;
+import com.axonivy.market.entity.productjsonfilecontent.Dependency;
+import com.axonivy.market.entity.productjsonfilecontent.Installer;
+import com.axonivy.market.entity.productjsonfilecontent.ProductJsonContent;
+import com.axonivy.market.entity.productjsonfilecontent.Project;
 import com.axonivy.market.enums.NonStandardProduct;
 import org.apache.commons.lang3.BooleanUtils;
+import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.util.CollectionUtils;
 
+import javax.swing.text.html.Option;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.stream.Stream;
 
 public class VersionUtils {
@@ -107,6 +117,44 @@ public class VersionUtils {
             return version;
         }
         return GitHubConstants.STANDARD_TAG_PREFIX.concat(version);
+    }
+
+    public static void updateVersionForInstaller(ProductJsonContent productJsonContent, String tag) {
+        if (ObjectUtils.isEmpty(productJsonContent.getInstallers())) {
+            return;
+        }
+        for (Installer installer : productJsonContent.getInstallers()) {
+            String installId = installer.getId();
+            switch (installId) {
+            case "maven-import":
+                updateVersionForInstallForMavenImport(installer, tag);
+                break;
+            case "maven-dropins":
+            case "maven-dependency":
+                updateVersionForInstallForMavenDependencyAndDropins(installer, tag);
+                break;
+            }
+        }
+    }
+
+    private static void updateVersionForInstallForMavenImport(Installer installer, String tag) {
+        Optional.of(installer).map(Installer::getData).map(Data::getProjects).ifPresent(projects -> {
+            for (Project project : projects) {
+                if ("${version}".equals(project.getVersion())) {
+                    project.setVersion(tag);
+                }
+            }
+        });
+    }
+
+    private static void updateVersionForInstallForMavenDependencyAndDropins(Installer installer, String tag) {
+        Optional.of(installer).map(Installer::getData).map(Data::getDependencies).ifPresent(dependencies -> {
+            for (Dependency dependency : dependencies) {
+                if ("${version}".equals(dependency.getVersion())) {
+                    dependency.setVersion(tag);
+                }
+            }
+        });
     }
 
 }

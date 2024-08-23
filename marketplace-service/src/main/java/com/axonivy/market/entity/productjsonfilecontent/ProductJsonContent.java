@@ -28,4 +28,5 @@ public class ProductJsonContent {
   private String tag;
   private String name;
   private List<Installer> installers;
+  private String minimumIvyVersion;
 }

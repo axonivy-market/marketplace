@@ -7,6 +7,7 @@
     ariaLabel=".form-select-sm example"
     (itemSelected)="onSelectVersionInDesigner($event.value)">
   </app-common-dropdown>
+
 }
 
 <button [lang]="languageService.selectedLanguage()" class="btn btn__install flex-grow-1" data-bs-toggle="tooltip"
@@ -22,7 +23,8 @@
             const productId = document.getElementById('install-button').getAttribute('product-id');
             const requestPath = document.getElementById('install-button').getAttribute('request-path');
 
-            const url = `${requestPath}/api/product-details/productjsoncontent?name=${productId}&tag=v${version.replace('Version ','')}`;
+            const url = `${requestPath}/api/product-details/productjsoncontent?name=${productId}&tag=${version.replace('Version ','')}`;
+            console.log(url)
             install(url);
           }
         }

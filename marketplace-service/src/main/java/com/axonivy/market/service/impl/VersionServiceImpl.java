@@ -24,6 +24,7 @@ import com.axonivy.market.util.VersionUtils;
 import com.axonivy.market.util.XmlReaderUtils;
 import lombok.Getter;
 import lombok.extern.log4j.Log4j2;
+import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.kohsuke.github.GHContent;
 import org.springframework.stereotype.Service;
@@ -31,6 +32,7 @@ import org.springframework.util.CollectionUtils;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -39,7 +41,6 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 @Log4j2
 @Service
@@ -105,12 +106,16 @@ public class VersionServiceImpl implements VersionService {
 
   @Override
   public ProductJsonContent getProductJsonContentFromNameAndTag(String name, String tag) {
+    System.out.println(productJsonContentRepository.existsByNameAndTag(name,tag));
     return productJsonContentRepository.findByNameAndTag(name, tag);
   }
 
   @Override
   public List<String> getVersionsForDesigner(String productId, Boolean isShowDevVersion, String designerVersion) {
     Product product = productRepository.findById(productId).orElse(null);
+    if (ObjectUtils.isEmpty(product) || ObjectUtils.isEmpty(product.getProductModuleContents())) {
+      return new ArrayList<>();
+    }
     List<String> versionList = product.getProductModuleContents().stream().map(ProductModuleContent::getTag)
         .map(VersionUtils::convertTagToVersion).toList();
     return VersionUtils.getVersionsToDisplay(versionList, isShowDevVersion, designerVersion);

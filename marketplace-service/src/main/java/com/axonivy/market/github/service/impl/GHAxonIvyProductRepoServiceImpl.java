@@ -7,10 +7,7 @@ import com.axonivy.market.constants.ProductJsonConstants;
 import com.axonivy.market.constants.ReadmeConstants;
 import com.axonivy.market.entity.Product;
 import com.axonivy.market.entity.ProductModuleContent;
-import com.axonivy.market.entity.productjsonfilecontent.Data;
-import com.axonivy.market.entity.productjsonfilecontent.Installer;
 import com.axonivy.market.entity.productjsonfilecontent.ProductJsonContent;
-import com.axonivy.market.entity.productjsonfilecontent.Project;
 import com.axonivy.market.enums.Language;
 import com.axonivy.market.enums.NonStandardProduct;
 import com.axonivy.market.github.model.MavenArtifact;
@@ -32,12 +29,17 @@ import org.kohsuke.github.GHTag;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
-import javax.swing.text.html.Option;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import static com.axonivy.market.util.VersionUtils.updateVersionForInstaller;
 
 @Log4j2
 @Service
@@ -221,31 +223,30 @@ public class GHAxonIvyProductRepoServiceImpl implements GHAxonIvyProductRepoServ
         productModuleContent.setArtifactId(artifact.getArtifactId());
         productModuleContent.setType(artifact.getType());
         productModuleContent.setName(artifact.getName());
-
-
-        boolean isProductJsonContentNotFound = Optional.ofNullable(
-            productJsonContentRepository.findByNameAndTag(product.getId(), productModuleContent.getTag())).isEmpty();
-        if (ObjectUtils.isNotEmpty(productJsonFile.getContent()) && isProductJsonContentNotFound) {
-          String updateVersionContent = productJsonFile.getContent()
-              .replace("${version}", VersionUtils.convertTagToVersion(productModuleContent.getTag()));
-          ProductJsonContent productJsonContent = extractProductJsonContent(updateVersionContent);
-          if (productJsonContent != null) {
-            productJsonContent.setTag(VersionUtils.convertTagToVersion(productModuleContent.getTag()));
-            productJsonContent.setName(product.getId());
-            productJsonContentRepository.save(productJsonContent);
-          }
-        }
+      }
+      String currentVersion = VersionUtils.convertTagToVersion(productModuleContent.getTag());
+      boolean isProductJsonContentExists = productJsonContentRepository.existsByNameAndTag(product.getId(),
+          currentVersion);
+      ProductJsonContent productJsonContent = extractProductJsonContent(productJsonFile);
+      if (ObjectUtils.isNotEmpty(productJsonContent) && !isProductJsonContentExists) {
+        updateVersionForInstaller(productJsonContent, currentVersion);
+        productJsonContent.setTag(currentVersion);
+        productJsonContent.setName(product.getId());
+        productJsonContentRepository.save(productJsonContent);
       }
     }
   }
 
-  private ProductJsonContent extractProductJsonContent(String encodedContent) {
+  private ProductJsonContent extractProductJsonContent(GHContent ghContent) {
     try {
-      return objectMapper.readValue(encodedContent, ProductJsonContent.class);
+      InputStream contentStream = extractedContentStream(ghContent);
+      return objectMapper.readValue(contentStream, ProductJsonContent.class);
     } catch (Exception exception) {
+      log.error("Cannot paste content of product.json " + ghContent.getPath());
       return null;
     }
   }
+
   private static GHContent getProductJsonFile(List<GHContent> contents) {
     return contents.stream().filter(GHContent::isFile)
         .filter(content -> ProductJsonConstants.PRODUCT_JSON_FILE.equals(content.getName())).findFirst().orElse(null);

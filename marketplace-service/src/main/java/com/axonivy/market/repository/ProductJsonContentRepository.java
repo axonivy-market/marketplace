@@ -10,4 +10,6 @@ public interface ProductJsonContentRepository extends MongoRepository<ProductJso
 
   ProductJsonContent findByNameAndTag(String name , String tag);
 
+  boolean existsByNameAndTag(String name , String tag);
+
 }
