@@ -16,6 +16,7 @@
         [attr.data-bs-title]="getInstallationTooltipText()"
         [attr.product-id]="product.id"
         [attr.request-path]="environment.apiUrl"
+        (click)="onUpdateInstallationCountForDesigner()"
         onClick = "function installInDesigner(){
           const selectedItemElement = document.querySelector('.version-select-in-designer');
           if (selectedItemElement) {
