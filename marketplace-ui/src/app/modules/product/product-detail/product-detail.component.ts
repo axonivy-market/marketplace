@@ -126,11 +126,9 @@ export class ProductDetailComponent {
         this.productDetailService.productNames.set(productDetail.names);
         localStorage.removeItem(STORAGE_ITEM);
         this.installationCount = productDetail.installationCount;
-        const version = this.productModuleContent().tag;
-        if (version.startsWith('v')) {
-          this.selectedVersion = version.substring(1);
-        } else {
-          this.selectedVersion = version;
+        this.selectedVersion = this.productModuleContent().tag;
+        if (this.selectedVersion.startsWith('v')) {
+          this.selectedVersion = this.selectedVersion.substring(1);
         }
       });
       this.productFeedbackService.initFeedbacks();
