@@ -286,7 +286,7 @@ export class ProductDetailComponent {
   }
 
   convertTagToVersion(tag: string) : string {
-    if (tag != '' && tag.startsWith('v')){
+    if (tag !== '' && tag.startsWith('v')){
       return tag.substring(1);
     }
     return tag;
