@@ -7,7 +7,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
 public interface ProductService {
-  Page<Product> findProducts(String type, String keyword, String language, Pageable pageable);
+  Page<Product> findProducts(String type, String keyword, String language, Boolean isRESTClient, Pageable pageable);
 
   boolean syncLatestDataFromMarketRepo();
 
@@ -20,4 +20,9 @@ public interface ProductService {
   void clearAllProducts();
 
   void addCustomSortProduct(ProductCustomSortRequest customSort) throws InvalidParamException;
+
+  Product fetchBestMatchProductDetail(String id, String version);
+
+  Product fetchProductDetailByIdAndVersion(String id, String version);
+
 }

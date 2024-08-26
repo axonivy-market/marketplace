@@ -4,6 +4,8 @@ import { Language } from '../enums/language.enum';
 import { SortOption } from '../enums/sort-option.enum';
 import { NavItem } from '../models/nav-item.model';
 import { DetailTab } from '../../modules/product/product-detail/product-detail.component';
+import { Pageable } from '../models/apis/pageable.model';
+import { ItemDropdown } from '../models/item-dropdown.model';
 
 export const NAV_ITEMS: NavItem[] = [
   {
@@ -54,15 +56,18 @@ export const SOCIAL_MEDIA_LINK = [
 export const IVY_FOOTER_LINKS = [
   {
     containerStyleClass: 'w-md-100 footer__ivy-tag',
-    label: 'common.footer.ivyCompanyInfo'
+    label: 'common.footer.ivyCompanyInfo',
+    link: ''
   },
   {
     containerStyleClass: 'footer__ivy-policy-tag',
-    label: 'common.footer.privacyPolicy'
+    label: 'common.footer.privacyPolicy',
+    link: ''
   },
   {
     containerStyleClass: 'footer__ivy-term-of-service-tag',
-    label: 'common.footer.termsOfService'
+    label: 'common.footer.termsOfService',
+    link: ''
   }
 ];
 
@@ -77,7 +82,7 @@ export const LANGUAGES = [
   }
 ];
 
-export const FILTER_TYPES = [
+export const FILTER_TYPES: ItemDropdown<TypeOption>[] = [
   {
     value: TypeOption.All_TYPES,
     label: 'common.filter.value.allTypes'
@@ -96,7 +101,7 @@ export const FILTER_TYPES = [
   }
 ];
 
-export const SORT_TYPES = [
+export const SORT_TYPES: ItemDropdown<SortOption>[] = [
   {
     value: SortOption.STANDARD,
     label: 'common.sort.value.standard'
@@ -115,7 +120,7 @@ export const SORT_TYPES = [
   }
 ];
 
-export const PRODUCT_DETAIL_TABS: DetailTab[] = [
+export const PRODUCT_DETAIL_TABS: ItemDropdown[] = [
   {
     activeClass: "activeTab === 'description'",
     tabId: 'description-tab',
@@ -142,7 +147,7 @@ export const PRODUCT_DETAIL_TABS: DetailTab[] = [
   }
 ];
 
-export const FEEDBACK_SORT_TYPES = [
+export const FEEDBACK_SORT_TYPES: ItemDropdown<FeedbackSortType>[] = [
   {
     value: FeedbackSortType.NEWEST,
     label: 'common.sort.value.newest',
@@ -168,5 +173,16 @@ export const FEEDBACK_SORT_TYPES = [
 export const DESIGNER_COOKIE_VARIABLE = {
   ivyViewerParamName: 'ivy-viewer',
   ivyVersionParamName: 'ivy-version',
-  defaultDesignerViewer: 'designer-market'
+  defaultDesignerViewer: 'designer-market',
+  restClientParamName: 'resultsOnly',
+  searchParamName: 'search'
+};
+
+export const DEFAULT_PAGEABLE: Pageable = {
+  page: 0,
+  size: 20
+};
+export const DEFAULT_PAGEABLE_IN_REST_CLIENT: Pageable = {
+  page: 0,
+  size: 40
 };

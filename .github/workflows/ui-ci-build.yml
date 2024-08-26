@@ -39,6 +39,9 @@ jobs:
       SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
 
     steps:
+      - name: Setup chrome
+        uses: browser-actions/setup-chrome@v1
+
       - name: Execute Tests
         run: |
           cd ./marketplace-ui
@@ -62,8 +65,3 @@ jobs:
         env:
           SONAR_TOKEN: ${{ env.SONAR_TOKEN }}
           SONAR_HOST_URL: ${{ env.SONAR_HOST_URL }}
-
-      - name: Clean up
-        working-directory: marketplace-ui
-        run: |
-          rm -rf *

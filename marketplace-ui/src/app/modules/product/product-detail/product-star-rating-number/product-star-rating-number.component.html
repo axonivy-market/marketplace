@@ -1,9 +1,8 @@
 <div
   class="d-flex flex-column"
-  [class]="
-    isShowRateLink ? 'star-rating-min-width' : ''
-  ">
+  [class]="isShowRateLink ? 'star-rating-min-width' : ''">
   <h4
+    [lang]="languageService.selectedLanguage()"
     class="text-secondary review-label-detail-page"
     [class]="isShowRateLink ? '' : 'review-label-detail-page'"
     [style]="isShowRateLink ? 'margin-bottom: 0px' : 'margin-bottom: 10px'">
@@ -39,7 +38,10 @@
     }
   </div>
   @if (isShowRateLink) {
-    <a class="rate-link mt-1" (click)="onClickRateLink()">
+    <a
+      [lang]="languageService.selectedLanguage()"
+      class="rate-link mt-1"
+      (click)="onClickRateLink()">
       {{ 'common.feedback.rateLinkLabel' | translate }}
     </a>
   }

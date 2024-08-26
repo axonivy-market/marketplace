@@ -31,14 +31,14 @@ $rowHeight: 37px;
   padding: 10px 15px;
   margin: 0 15px 0 0;
   gap: 10px;
-  cursor: default;
+  cursor: pointer;
 }
 
 .sort-container__label {
   line-height: 25.2px;
 }
 
-.form-select {
+::ng-deep .form-select {
   height: $rowHeight;
   line-height: 16.8px;
   font-weight: 400;
@@ -50,12 +50,24 @@ $rowHeight: 37px;
   opacity: 80%;
 }
 
+::ng-deep .dropdown-menu {
+  min-width: 100%;
+  margin-top: 10px;
+  padding: 0;
+}
+
+::ng-deep .dropdown-item {
+  gap: 10px;
+  padding: 13.5px 15px;
+  border: 1px;
+}
+
 .input__search {
   height: 43px;
 }
 
 @media only screen and (max-width: 768px) {
-  .form-select {
+  ::ng-deep .form-select, .sort-order {
     width: 100% !important;
   }
 }

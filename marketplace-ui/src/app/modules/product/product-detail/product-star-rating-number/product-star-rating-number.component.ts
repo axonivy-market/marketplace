@@ -7,6 +7,7 @@ import {
 import { CommonModule } from '@angular/common';
 import { AuthService } from '../../../../auth/auth.service';
 import { ProductDetailService } from '../product-detail.service';
+import { LanguageService } from '../../../../core/services/language/language.service';
 
 @Component({
   selector: 'app-product-star-rating-number',
@@ -19,6 +20,7 @@ export class ProductStarRatingNumberComponent {
   productStarRatingService = inject(ProductStarRatingService);
   private readonly productDetailService = inject(ProductDetailService);
   private readonly authService = inject(AuthService);
+  languageService = inject(LanguageService);
 
   @Input() isShowRateLink = true;
   @Input() isShowTotalRatingNumber = true;

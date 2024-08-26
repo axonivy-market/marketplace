@@ -17,10 +17,10 @@ import com.axonivy.market.model.MavenArtifactVersionModel;
 import com.axonivy.market.repository.MavenArtifactVersionRepository;
 import com.axonivy.market.repository.ProductRepository;
 import com.axonivy.market.service.VersionService;
+import com.axonivy.market.util.VersionUtils;
 import com.axonivy.market.util.XmlReaderUtils;
 import lombok.Getter;
 import lombok.extern.log4j.Log4j2;
-import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.kohsuke.github.GHContent;
 import org.springframework.stereotype.Service;
@@ -36,7 +36,6 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
-import java.util.stream.Stream;
 
 @Log4j2
 @Service
@@ -82,7 +81,7 @@ public class VersionServiceImpl implements VersionService {
 
     this.productId = productId;
     artifactsFromMeta = getProductMetaArtifacts(productId);
-    List<String> versionsToDisplay = getVersionsToDisplay(isShowDevVersion, designerVersion);
+    List<String> versionsToDisplay = VersionUtils.getVersionsToDisplay(getVersionsFromMavenArtifacts(), isShowDevVersion, designerVersion);
     proceedDataCache = mavenArtifactVersionRepository.findById(productId).orElse(new MavenArtifactVersion(productId));
     metaProductArtifact = artifactsFromMeta.stream()
         .filter(artifact -> artifact.getArtifactId().endsWith(MavenConstants.PRODUCT_ARTIFACT_POSTFIX)).findAny()
@@ -142,20 +141,6 @@ public class VersionServiceImpl implements VersionService {
     });
   }
 
-  @Override
-  public List<String> getVersionsToDisplay(Boolean isShowDevVersion, String designerVersion) {
-    List<String> versions = getVersionsFromMavenArtifacts();
-    Stream<String> versionStream = versions.stream();
-    if (BooleanUtils.isTrue(isShowDevVersion)) {
-      return versionStream.filter(version -> isOfficialVersionOrUnReleasedDevVersion(versions, version))
-          .sorted(new LatestVersionComparator()).toList();
-    }
-    if (StringUtils.isNotBlank(designerVersion)) {
-      return versionStream.filter(version -> isMatchWithDesignerVersion(version, designerVersion)).toList();
-    }
-    return versions.stream().filter(this::isReleasedVersion).sorted(new LatestVersionComparator()).toList();
-  }
-
   public List<String> getVersionsFromMavenArtifacts() {
     Set<String> versions = new HashSet<>();
     for (MavenArtifact artifact : artifactsFromMeta) {
@@ -189,52 +174,6 @@ public class VersionServiceImpl implements VersionService {
     repoUrl = Optional.ofNullable(repoUrl).orElse(MavenConstants.DEFAULT_IVY_MAVEN_BASE_URL);
     groupId = groupId.replace(CommonConstants.DOT_SEPARATOR, CommonConstants.SLASH);
     return String.format(MavenConstants.METADATA_URL_FORMAT, repoUrl, groupId, artifactID);
-  }
-
-  public String getBugfixVersion(String version) {
-
-    if (isSnapshotVersion(version)) {
-      version = version.replace(MavenConstants.SNAPSHOT_RELEASE_POSTFIX, StringUtils.EMPTY);
-    } else if (isSprintVersion(version)) {
-      version = version.split(MavenConstants.SPRINT_RELEASE_POSTFIX)[0];
-    }
-    String[] segments = version.split("\\.");
-    if (segments.length >= 3) {
-      segments[2] = segments[2].split(CommonConstants.DASH_SEPARATOR)[0];
-      return segments[0] + CommonConstants.DOT_SEPARATOR + segments[1] + CommonConstants.DOT_SEPARATOR + segments[2];
-    }
-    return version;
-  }
-
-  public boolean isOfficialVersionOrUnReleasedDevVersion(List<String> versions, String version) {
-    if (isReleasedVersion(version)) {
-      return true;
-    }
-    String bugfixVersion;
-    if (isSnapshotVersion(version)) {
-      bugfixVersion = getBugfixVersion(version.replace(MavenConstants.SNAPSHOT_RELEASE_POSTFIX, StringUtils.EMPTY));
-    } else {
-      bugfixVersion = getBugfixVersion(version.split(MavenConstants.SPRINT_RELEASE_POSTFIX)[0]);
-    }
-    return versions.stream().noneMatch(
-        currentVersion -> !currentVersion.equals(version) && isReleasedVersion(currentVersion) && getBugfixVersion(
-            currentVersion).equals(bugfixVersion));
-  }
-
-  public boolean isSnapshotVersion(String version) {
-    return version.endsWith(MavenConstants.SNAPSHOT_RELEASE_POSTFIX);
-  }
-
-  public boolean isSprintVersion(String version) {
-    return version.contains(MavenConstants.SPRINT_RELEASE_POSTFIX);
-  }
-
-  public boolean isReleasedVersion(String version) {
-    return !(isSprintVersion(version) || isSnapshotVersion(version));
-  }
-
-  public boolean isMatchWithDesignerVersion(String version, String designerVersion) {
-    return isReleasedVersion(version) && version.startsWith(designerVersion);
   }
 
   public List<MavenArtifact> getProductJsonByVersion(String version) {

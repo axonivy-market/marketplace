@@ -1,14 +1,16 @@
 package com.axonivy.market.controller;
 
 import static com.axonivy.market.constants.RequestMappingConstants.BY_ID;
-import static com.axonivy.market.constants.RequestMappingConstants.BY_ID_AND_TAG;
+import static com.axonivy.market.constants.RequestMappingConstants.BY_ID_AND_VERSION;
 import static com.axonivy.market.constants.RequestMappingConstants.INSTALLATION_COUNT_BY_ID;
 import static com.axonivy.market.constants.RequestMappingConstants.PRODUCT_DETAILS;
 import static com.axonivy.market.constants.RequestMappingConstants.VERSIONS_BY_ID;
+import static com.axonivy.market.constants.RequestMappingConstants.BEST_MATCH_BY_ID_AND_VERSION;
 import static com.axonivy.market.constants.RequestParamConstants.DESIGNER_VERSION;
 import static com.axonivy.market.constants.RequestParamConstants.ID;
 import static com.axonivy.market.constants.RequestParamConstants.SHOW_DEV_VERSION;
-import static com.axonivy.market.constants.RequestParamConstants.TAG;
+import static com.axonivy.market.constants.RequestParamConstants.VERSION;
+
 
 import java.util.List;
 
@@ -47,20 +49,29 @@ public class ProductDetailsController {
     this.detailModelAssembler = detailModelAssembler;
   }
 
-  @GetMapping(BY_ID_AND_TAG)
-  @Operation(summary = "Find product detail by product id and release tag.", description = "get product detail by it product id and release tag")
+  @GetMapping(BY_ID_AND_VERSION)
+  @Operation(summary = "Find product detail by product id and release version.", description = "get product detail by it product id and release version")
   public ResponseEntity<ProductDetailModel> findProductDetailsByVersion(
-      @PathVariable(ID) @Parameter(description = "Product id (from meta.json)", example = "adobe-acrobat-connector", in = ParameterIn.PATH) String id,
-      @PathVariable(TAG) @Parameter(description = "Release tag (from git hub repo tags)", example = "v10.0.20", in = ParameterIn.PATH) String tag) {
-    var productDetail = productService.fetchProductDetail(id);
-    return new ResponseEntity<>(detailModelAssembler.toModel(productDetail, tag), HttpStatus.OK);
+      @PathVariable(ID) @Parameter(description = "Product id (from meta.json)", example = "approval-decision-utils", in = ParameterIn.PATH) String id,
+      @PathVariable(VERSION) @Parameter(description = "Release version (from maven metadata.xml)", example = "10.0.20", in = ParameterIn.PATH) String version) {
+    var productDetail = productService.fetchProductDetailByIdAndVersion(id, version);
+    return new ResponseEntity<>(detailModelAssembler.toModel(productDetail, version, BY_ID_AND_VERSION), HttpStatus.OK);
+  }
+
+  @GetMapping(BEST_MATCH_BY_ID_AND_VERSION)
+  @Operation(summary = "Find best match product detail by product id and version.", description = "get product detail by it product id and version")
+  public ResponseEntity<ProductDetailModel> findBestMatchProductDetailsByVersion(
+      @PathVariable(ID) @Parameter(description = "Product id (from meta.json)", example = "approval-decision-utils", in = ParameterIn.PATH) String id,
+      @PathVariable(VERSION) @Parameter(description = "Version", example = "10.0.20", in = ParameterIn.PATH) String version) {
+    var productDetail = productService.fetchBestMatchProductDetail(id,version);
+    return new ResponseEntity<>(detailModelAssembler.toModel(productDetail, version, BEST_MATCH_BY_ID_AND_VERSION), HttpStatus.OK);
   }
 
   @CrossOrigin(originPatterns = "*")
   @PutMapping(INSTALLATION_COUNT_BY_ID)
   @Operation(summary = "Update installation count of product", description = "By default, increase installation count when click download product files by users")
   public ResponseEntity<Integer> syncInstallationCount(
-      @PathVariable(ID) @Parameter(description = "Product id (from meta.json)", example = "adobe-acrobat-connector", in = ParameterIn.PATH) String productId) {
+      @PathVariable(ID) @Parameter(description = "Product id (from meta.json)", example = "approval-decision-utils", in = ParameterIn.PATH) String productId) {
     int result = productService.updateInstallationCountForProduct(productId);
     return new ResponseEntity<>(result, HttpStatus.OK);
   }
@@ -68,9 +79,9 @@ public class ProductDetailsController {
   @GetMapping(BY_ID)
   @Operation(summary = "increase installation count by 1", description = "update installation count when click download product files by users")
   public ResponseEntity<ProductDetailModel> findProductDetails(
-      @PathVariable(ID) @Parameter(description = "Product id (from meta.json)", example = "adobe-acrobat-connector", in = ParameterIn.PATH) String id) {
+      @PathVariable(ID) @Parameter(description = "Product id (from meta.json)", example = "approval-decision-utils", in = ParameterIn.PATH) String id) {
     var productDetail = productService.fetchProductDetail(id);
-    return new ResponseEntity<>(detailModelAssembler.toModel(productDetail), HttpStatus.OK);
+    return new ResponseEntity<>(detailModelAssembler.toModel(productDetail, BY_ID), HttpStatus.OK);
   }
 
   @GetMapping(VERSIONS_BY_ID)

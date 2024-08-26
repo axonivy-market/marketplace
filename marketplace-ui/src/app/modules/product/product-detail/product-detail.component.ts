@@ -32,6 +32,9 @@ import { ProductTypeIconPipe } from '../../../shared/pipes/icon.pipe';
 import { Observable } from 'rxjs';
 import { ProductStarRatingService } from './product-detail-feedback/product-star-rating-panel/product-star-rating.service';
 import { RoutingQueryParamService } from '../../../shared/services/routing.query.param.service';
+import { CommonDropdownComponent } from '../../../shared/components/common-dropdown/common-dropdown.component';
+import { CommonUtils } from '../../../shared/utils/common.utils';
+import { ItemDropdown } from '../../../shared/models/item-dropdown.model';
 
 export interface DetailTab {
   activeClass: string;
@@ -57,7 +60,8 @@ const DEFAULT_ACTIVE_TAB = 'description';
     MultilingualismPipe,
     ProductDetailFeedbackComponent,
     ProductInstallationCountActionComponent,
-    ProductTypeIconPipe
+    ProductTypeIconPipe,
+    CommonDropdownComponent
   ],
   providers: [ProductService, MarkdownService],
   templateUrl: './product-detail.component.html',
@@ -86,13 +90,14 @@ export class ProductDetailComponent {
   detailContent!: DetailTab;
   detailTabs = PRODUCT_DETAIL_TABS;
   activeTab = DEFAULT_ACTIVE_TAB;
+  selectedTabLabel: string = CommonUtils.getLabel(PRODUCT_DETAIL_TABS[0].value, PRODUCT_DETAIL_TABS);
+  detailTabsForDropdown = PRODUCT_DETAIL_TABS;
   isDropdownOpen: WritableSignal<boolean> = signal(false);
   isTabDropdownShown: WritableSignal<boolean> = signal(false);
   selectedVersion = '';
   showPopup!: boolean;
   isMobileMode = signal<boolean>(false);
   installationCount = 0;
-
   @HostListener('window:popstate', ['$event'])
   onPopState() {
     this.activeTab = window.location.hash.split('#tab-')[1];
@@ -102,7 +107,9 @@ export class ProductDetailComponent {
     this.updateDropdownSelection();
   }
 
+
   constructor() {
+    this.scrollToTop();
     this.resizeObserver = new ResizeObserver(() => {
       this.updateDropdownSelection();
     });
@@ -115,9 +122,14 @@ export class ProductDetailComponent {
       this.getProductById(productId).subscribe(productDetail => {
         this.productDetail.set(productDetail);
         this.productModuleContent.set(productDetail.productModuleContent);
+        this.detailTabsForDropdown = this.getNotEmptyTabs();
         this.productDetailService.productNames.set(productDetail.names);
         localStorage.removeItem(STORAGE_ITEM);
         this.installationCount = productDetail.installationCount;
+        this.selectedVersion = this.productModuleContent().tag;
+        if (this.selectedVersion.startsWith('v')) {
+          this.selectedVersion = this.selectedVersion.substring(1);
+        }
       });
       this.productFeedbackService.initFeedbacks();
       this.productStarRatingService.fetchData();
@@ -130,13 +142,17 @@ export class ProductDetailComponent {
     this.updateDropdownSelection();
   }
 
+  scrollToTop() {
+    window.scrollTo({ left: 0, top: 0, behavior: 'instant' });
+  }
+
   getProductById(productId: string): Observable<ProductDetail> {
     const targetVersion =
       this.routingQueryParamService.getDesignerVersionFromCookie();
     if (!targetVersion) {
       return this.productService.getProductDetails(productId);
     }
-    return this.productService.getProductDetailsWithVersion(
+    return this.productService.getBestMatchProductDetailsWithVersion(
       productId,
       targetVersion
     );
@@ -161,8 +177,8 @@ export class ProductDetailComponent {
     const content = this.productModuleContent();
     const conditions: { [key: string]: boolean } = {
       description: content.description !== null,
-      demo: content.demo !== null && content.demo !== '',
-      setup: content.setup !== null && content.setup !== '',
+      demo: content.demo !== null,
+      setup: content.setup !== null ,
       dependency: content.isDependency
     };
 
@@ -170,9 +186,10 @@ export class ProductDetailComponent {
   }
 
   loadDetailTabs(selectedVersion: string) {
-    const tag = selectedVersion || this.productDetail().newestReleaseVersion;
+    let version = selectedVersion || this.productDetail().newestReleaseVersion;
+    version = version.replace("Version ","")
     this.productService
-      .getProductDetailsWithVersion(this.productDetail().id, tag)
+      .getProductDetailsWithVersion(this.productDetail().id, version)
       .subscribe(updatedProductDetail => {
         this.productModuleContent.set(
           updatedProductDetail.productModuleContent
@@ -180,9 +197,9 @@ export class ProductDetailComponent {
       });
   }
 
-  onTabChange(event: Event) {
-    const selectedTab = (event.target as HTMLSelectElement).value;
-    this.setActiveTab(selectedTab);
+  onTabChange(event: string) {
+    this.setActiveTab(event);
+    this.selectedTabLabel = CommonUtils.getLabel(event, PRODUCT_DETAIL_TABS);
     this.isTabDropdownShown.update(value => !value);
     this.onTabDropdownShown();
   }
@@ -263,4 +280,9 @@ export class ProductDetailComponent {
       queryParamsHandling: 'merge'
     });
   }
+
+  getNotEmptyTabs(): ItemDropdown[] {
+    return this.detailTabsForDropdown.filter(tab => this.getContent(tab.value));
+  }
+
 }

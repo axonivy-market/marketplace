@@ -90,6 +90,10 @@ describe('ProductDetailComponent', () => {
     );
   });
 
+  it('version should display in number', () => {
+    expect(component.selectedVersion).toEqual('10.0.0');
+  });
+
   it('should get corresponding version from cookie', () => {
     const targetVersion = '1.0';
     const productId = 'Portal';
@@ -136,11 +140,11 @@ describe('ProductDetailComponent', () => {
   });
 
   it('should call setActiveTab and updateDropdownSelection on onTabChange', () => {
-    const event = { target: { value: 'description' } } as unknown as Event;
+    const event ={ value: 'description' };
     spyOn(component, 'setActiveTab');
     spyOn(component, 'updateDropdownSelection');
 
-    component.onTabChange(event);
+    component.onTabChange(event.value);
 
     expect(component.setActiveTab).toHaveBeenCalledWith('description');
   });
@@ -171,7 +175,7 @@ describe('ProductDetailComponent', () => {
   it('should return true for setup when it is not null and not empty', () => {
     const mockContent: ProductModuleContent = {
       ...MOCK_PRODUCT_MODULE_CONTENT,
-      setup: 'Test setup'
+      setup: { en: 'Test setup' }
     };
 
     component.productModuleContent.set(mockContent);

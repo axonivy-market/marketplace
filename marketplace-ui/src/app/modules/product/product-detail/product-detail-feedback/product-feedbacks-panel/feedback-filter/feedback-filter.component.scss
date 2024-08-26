@@ -1,4 +1,8 @@
-select {
+p {
+  margin-right: 20px;
+}
+
+::ng-deep .form-select {
   border-radius: 10px;
   font-size: 14px;
   line-height: 120%;
@@ -8,13 +12,20 @@ select {
   opacity: 0.8;
   border: 1px solid;
   cursor: pointer;
-  option {
-    padding: 10px;
-    font-weight: 400;
-    font-size: 14px;
-  }
 }
 
-p {
-  margin-right: 20px;
+::ng-deep .feedback-dropdown .form-select {
+  width: 100px;
+}
+
+::ng-deep .dropdown-menu {
+  min-width: 100%;
+  margin-top: 10px;
+}
+
+::ng-deep .dropdown-item {
+  padding: 15px;
+  font-weight: 400;
+  font-size: 14px;
+  gap: 10px;
 }

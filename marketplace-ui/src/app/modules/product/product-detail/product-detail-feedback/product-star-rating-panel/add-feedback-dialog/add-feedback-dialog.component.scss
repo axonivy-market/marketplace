@@ -17,7 +17,7 @@ i {
   font-weight: 600;
 }
 
-.product-item-select {
+::ng-deep .product-item-select {
   border-radius: 10px;
   font-size: 14px;
   line-height: 120%;
@@ -76,7 +76,7 @@ i {
     width: 100%;
   }
 
-  .product-item-select {
+  ::ng-deep .product-item-select {
     width: 100%;
   }
 }
@@ -88,7 +88,7 @@ i {
     width: 525px;
   }
 
-  .product-item-select {
+  ::ng-deep .product-item-select {
     width: fit-content;
   }
 }

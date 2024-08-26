@@ -1,6 +1,8 @@
 package com.axonivy.market.service.impl;
 
 import static com.axonivy.market.enums.DocumentField.MARKET_DIRECTORY;
+import static com.axonivy.market.enums.DocumentField.SHORT_DESCRIPTIONS;
+
 import static java.util.Optional.ofNullable;
 import static org.apache.commons.lang3.StringUtils.EMPTY;
 
@@ -14,9 +16,11 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
-
+import com.axonivy.market.util.VersionUtils;
 import org.apache.commons.lang3.BooleanUtils;
+import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.util.Strings;
 import org.kohsuke.github.GHCommit;
@@ -25,7 +29,6 @@ import org.kohsuke.github.GHRepository;
 import org.kohsuke.github.GHTag;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -86,6 +89,9 @@ public class ProductServiceImpl implements ProductService {
   @Value("${synchronized.installation.counts.path}")
   private String installationCountPath;
 
+  @Value("${market.github.market.branch}")
+  private String marketRepoBranch;
+
   public static final String NON_NUMERIC_CHAR = "[^0-9.]";
   private final SecureRandom random = new SecureRandom();
 
@@ -103,15 +109,18 @@ public class ProductServiceImpl implements ProductService {
   }
 
   @Override
-  public Page<Product> findProducts(String type, String keyword, String language, Pageable pageable) {
+  public Page<Product> findProducts(String type, String keyword, String language, Boolean isRESTClient,
+      Pageable pageable) {
     final var typeOption = TypeOption.of(type);
     final var searchPageable = refinePagination(language, pageable);
     var searchCriteria = new ProductSearchCriteria();
-    searchCriteria.setType(typeOption);
     searchCriteria.setListed(true);
     searchCriteria.setKeyword(keyword);
-    searchCriteria.setLanguage(Language.of(language));
     searchCriteria.setType(typeOption);
+    searchCriteria.setLanguage(Language.of(language));
+    if (BooleanUtils.isTrue(isRESTClient)) {
+      searchCriteria.setExcludeFields(List.of(SHORT_DESCRIPTIONS));
+    }
     return productRepository.searchByCriteria(searchCriteria, searchPageable);
   }
 
@@ -127,22 +136,25 @@ public class ProductServiceImpl implements ProductService {
       }
       syncRepoMetaDataStatus();
     }
+    updateLatestReleaseTagContentsFromProductRepo();
     return isAlreadyUpToDate;
   }
 
   @Override
   public int updateInstallationCountForProduct(String key) {
-    return productRepository.findById(key).map(product -> {
-      log.info("updating installation count for product {}", key);
-      if (!BooleanUtils.isTrue(product.getSynchronizedInstallationCount())) {
-        syncInstallationCountWithProduct(product);
-      }
-      product.setInstallationCount(product.getInstallationCount() + 1);
-      return productRepository.save(product);
-    }).map(Product::getInstallationCount).orElse(0);
+    Product product= productRepository.getProductById(key);
+    if (Objects.isNull(product)){
+      return 0;
+    }
+    log.info("updating installation count for product {}", key);
+    if (BooleanUtils.isTrue(product.getSynchronizedInstallationCount())) {
+      return productRepository.increaseInstallationCount(key);
+    }
+    syncInstallationCountWithProduct(product);
+    return productRepository.updateInitialCount(key, product.getInstallationCount() + 1);
   }
 
-  private void syncInstallationCountWithProduct(Product product) {
+  public void syncInstallationCountWithProduct(Product product) {
     log.info("synchronizing installation count for product {}", product.getId());
     try {
       String installationCounts = Files.readString(Paths.get(installationCountPath));
@@ -196,14 +208,13 @@ public class ProductServiceImpl implements ProductService {
         GHContent fileContent;
         try {
           fileContent = gitHubService.getGHContent(axonIvyMarketRepoService.getRepository(), file.getFileName(),
-              GitHubConstants.DEFAULT_BRANCH);
+                  marketRepoBranch);
         } catch (IOException e) {
           log.error("Get GHContent failed: ", e);
           continue;
         }
 
         ProductFactory.mappingByGHContent(product, fileContent);
-        updateProductFromReleaseTags(product);
         if (FileType.META == file.getType()) {
           modifyProductByMetaContent(file, product);
         } else {
@@ -262,6 +273,8 @@ public class ProductServiceImpl implements ProductService {
           orders.add(getExtensionOrder(language));
         }
       }
+      Order orderById = createOrder(SortOption.ID, language);
+      orders.add(orderById);
       pageRequest = PageRequest.of(pageable.getPageNumber(), pageable.getPageSize(), Sort.by(orders));
     }
     return pageRequest;
@@ -296,59 +309,114 @@ public class ProductServiceImpl implements ProductService {
     return isLastCommitCovered;
   }
 
-  private Page<Product> syncProductsFromGitHubRepo() {
+  private void updateLatestReleaseTagContentsFromProductRepo() {
+    List<Product> products = productRepository.findAll();
+    if (ObjectUtils.isEmpty(products)) {
+      return;
+    }
+
+    for (Product product : products) {
+      if (StringUtils.isNotBlank(product.getRepositoryName())) {
+        getProductContents(product);
+        productRepository.save(product);
+      }
+    }
+  }
+
+  private void syncProductsFromGitHubRepo() {
     log.warn("**ProductService: synchronize products from scratch based on the Market repo");
     var gitHubContentMap = axonIvyMarketRepoService.fetchAllMarketItems();
-    List<Product> products = new ArrayList<>();
     gitHubContentMap.entrySet().forEach(ghContentEntity -> {
       Product product = new Product();
       for (var content : ghContentEntity.getValue()) {
         ProductFactory.mappingByGHContent(product, content);
-        updateProductFromReleaseTags(product);
       }
-      products.add(product);
+      if (StringUtils.isNotBlank(product.getRepositoryName())) {
+        updateProductCompatibility(product);
+        getProductContents(product);
+      }
+      productRepository.save(product);
     });
-    if (!products.isEmpty()) {
-      productRepository.saveAll(products);
-    }
-    return new PageImpl<>(products);
   }
 
-  private void updateProductFromReleaseTags(Product product) {
-    if (StringUtils.isBlank(product.getRepositoryName())) {
-      return;
-    }
+  private void getProductContents(Product product) {
     try {
       GHRepository productRepo = gitHubService.getRepository(product.getRepositoryName());
-      List<GHTag> tags = productRepo.listTags().toList();
-      GHTag lastTag = CollectionUtils.firstElement(tags);
-      if (lastTag != null) {
-        product.setNewestPublishedDate(lastTag.getCommit().getCommitDate());
-        product.setNewestReleaseVersion(lastTag.getName());
-      }
-
-      String oldestTag = tags.stream().map(tag -> tag.getName().replaceAll(NON_NUMERIC_CHAR, Strings.EMPTY)).distinct()
-          .sorted(Comparator.reverseOrder()).reduce((tag1, tag2) -> tag2).orElse(null);
-      if (oldestTag != null && StringUtils.isBlank(product.getCompatibility())) {
-        String compatibility = getCompatibilityFromOldestTag(oldestTag);
-        product.setCompatibility(compatibility);
-      }
-
-      List<ProductModuleContent> productModuleContents = new ArrayList<>();
-      for (GHTag ghtag : tags) {
-        ProductModuleContent productModuleContent = axonIvyProductRepoService.getReadmeAndProductContentsFromTag(
-            product, productRepo, ghtag.getName());
-        productModuleContents.add(productModuleContent);
-      }
-      product.setProductModuleContents(productModuleContents);
-    } catch (Exception e) {
-      log.error("Cannot find repository by path {} {}", product.getRepositoryName(), e);
+      updateProductFromReleaseTags(product, productRepo);
+    } catch (IOException e) {
+      log.error("Cannot find product repository {} {}", product.getRepositoryName(), e);
     }
+  }
+
+  private void updateProductFromReleaseTags(Product product, GHRepository productRepo) {
+    List<ProductModuleContent> productModuleContents = new ArrayList<>();
+    List<GHTag> tags = getProductReleaseTags(product);
+    GHTag lastTag = CollectionUtils.firstElement(tags);
+
+    if (lastTag == null || lastTag.getName().equals(product.getNewestReleaseVersion())) {
+      return;
+    }
+
+    getPublishedDateFromLatestTag(product, lastTag);
+    product.setNewestReleaseVersion(lastTag.getName());
+
+    if (!ObjectUtils.isEmpty(product.getProductModuleContents())) {
+      productModuleContents.addAll(product.getProductModuleContents());
+      List<String> currentTags = product.getProductModuleContents().stream().filter(Objects::nonNull)
+          .map(ProductModuleContent::getTag).toList();
+      tags = tags.stream().filter(t -> !currentTags.contains(t.getName())).toList();
+    }
+
+    for (GHTag ghTag : tags) {
+      ProductModuleContent productModuleContent =
+          axonIvyProductRepoService.getReadmeAndProductContentsFromTag(product, productRepo, ghTag.getName());
+      productModuleContents.add(productModuleContent);
+      String versionFromTag = VersionUtils.convertTagToVersion(ghTag.getName());
+      if (Objects.isNull(product.getReleasedVersions())) {
+        product.setReleasedVersions(new ArrayList<>());
+      }
+      product.getReleasedVersions().add(versionFromTag);
+    }
+    product.setProductModuleContents(productModuleContents);
+  }
+
+  private void getPublishedDateFromLatestTag(Product product, GHTag lastTag) {
+    try {
+      product.setNewestPublishedDate(lastTag.getCommit().getCommitDate());
+    } catch (IOException e) {
+      log.error("Fail to get commit date ", e);
+    }
+  }
+
+  private void updateProductCompatibility(Product product) {
+    if (StringUtils.isNotBlank(product.getCompatibility())) {
+      return;
+    }
+    String oldestTag =
+        getProductReleaseTags(product).stream().map(tag -> tag.getName().replaceAll(NON_NUMERIC_CHAR, Strings.EMPTY))
+            .distinct().sorted(Comparator.reverseOrder()).reduce((tag1, tag2) -> tag2).orElse(null);
+    if (oldestTag != null) {
+      String compatibility = getCompatibilityFromOldestTag(oldestTag);
+      product.setCompatibility(compatibility);
+    }
+  }
+
+  private List<GHTag> getProductReleaseTags(Product product) {
+    List<GHTag> tags = new ArrayList<>();
+    try {
+      tags = gitHubService.getRepositoryTags(product.getRepositoryName());
+    } catch (IOException e) {
+      log.error("Cannot get tag list of product ", e);
+    }
+    return tags;
   }
 
   // Cover 3 cases after removing non-numeric characters (8, 11.1 and 10.0.2)
   @Override
   public String getCompatibilityFromOldestTag(String oldestTag) {
+    if (StringUtils.isBlank(oldestTag)) {
+      return Strings.EMPTY;
+    }
     if (!oldestTag.contains(CommonConstants.DOT_SEPARATOR)) {
       return oldestTag + ".0+";
     }
@@ -362,14 +430,37 @@ public class ProductServiceImpl implements ProductService {
 
   @Override
   public Product fetchProductDetail(String id) {
-    Product product = productRepository.findById(id).orElse(null);
+    Product product = productRepository.getProductById(id);
     return Optional.ofNullable(product).map(productItem -> {
-      if (!BooleanUtils.isTrue(productItem.getSynchronizedInstallationCount())) {
-        syncInstallationCountWithProduct(productItem);
-        return productRepository.save(productItem);
-      }
+      updateProductInstallationCount(id, productItem);
       return productItem;
     }).orElse(null);
+  }
+
+
+  @Override
+  public Product fetchBestMatchProductDetail(String id, String version) {
+    List<String> releasedVersions = productRepository.getReleasedVersionsById(id);
+    String bestMatchVersion = VersionUtils.getBestMatchVersion(releasedVersions, version);
+    String bestMatchTag = VersionUtils.convertVersionToTag(id,bestMatchVersion);
+    Product product = StringUtils.isBlank(bestMatchTag) ? productRepository.getProductById(id) : productRepository.getProductByIdAndTag(id, bestMatchTag);
+    return Optional.ofNullable(product).map(productItem -> {
+      updateProductInstallationCount(id, productItem);
+      return productItem;
+    }).orElse(null);
+  }
+
+  public void updateProductInstallationCount(String id, Product productItem) {
+    if (!BooleanUtils.isTrue(productItem.getSynchronizedInstallationCount())) {
+      syncInstallationCountWithProduct(productItem);
+      int persistedInitialCount = productRepository.updateInitialCount(id, productItem.getInstallationCount());
+      productItem.setInstallationCount(persistedInitialCount);
+    }
+  }
+
+  @Override
+  public Product fetchProductDetailByIdAndVersion(String id, String version) {
+    return productRepository.getProductByIdAndTag(id, VersionUtils.convertVersionToTag(id, version));
   }
 
   @Override

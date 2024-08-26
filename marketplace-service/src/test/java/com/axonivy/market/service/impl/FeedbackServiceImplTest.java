@@ -1,4 +1,4 @@
-package com.axonivy.market.service;
+package com.axonivy.market.service.impl;
 
 import com.axonivy.market.entity.Feedback;
 import com.axonivy.market.entity.Product;
@@ -11,7 +11,6 @@ import com.axonivy.market.model.ProductRating;
 import com.axonivy.market.repository.FeedbackRepository;
 import com.axonivy.market.repository.ProductRepository;
 import com.axonivy.market.repository.UserRepository;
-import com.axonivy.market.service.impl.FeedbackServiceImpl;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -135,7 +134,6 @@ class FeedbackServiceImplTest {
 
   @Test
   void testFindFeedbackByUserIdAndProductId() throws NotFoundException {
-    String userId = "user1";
     String productId = "product1";
 
     when(userRepository.findById(userId)).thenReturn(Optional.of(new User()));
@@ -153,7 +151,6 @@ class FeedbackServiceImplTest {
 
   @Test
   void testFindFeedbackByUserIdAndProductId_NotFound() {
-    String userId = "user1";
     String productId = "product1";
 
     when(userRepository.findById(userId)).thenReturn(Optional.of(new User()));
@@ -261,8 +258,6 @@ class FeedbackServiceImplTest {
 
   @Test
   void testValidateUserExists() {
-    String userId = "user1";
-
     when(userRepository.findById(userId)).thenReturn(Optional.of(new User()));
 
     assertDoesNotThrow(() -> feedbackService.validateUserExists(userId));
@@ -271,8 +266,6 @@ class FeedbackServiceImplTest {
 
   @Test
   void testValidateUserExists_NotFound() {
-    String userId = "user1";
-
     when(userRepository.findById(userId)).thenReturn(Optional.empty());
 
     NotFoundException exception = assertThrows(NotFoundException.class,
