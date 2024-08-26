@@ -106,7 +106,6 @@ public class VersionServiceImpl implements VersionService {
 
   @Override
   public ProductJsonContent getProductJsonContentFromNameAndTag(String name, String tag) {
-    System.out.println(productJsonContentRepository.existsByNameAndTag(name,tag));
     return productJsonContentRepository.findByNameAndTag(name, tag);
   }
 

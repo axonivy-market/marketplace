@@ -1,17 +1,21 @@
 @if (isDesignerEnvironment()) {
-  <div class="designer-section d-flex justify-content-end gap-2 justify-content-sm-between w-100">
+  <div class="designer-section d-flex justify-content-sm-between w-100 row">
     <app-common-dropdown
       (click)="getVersionInDesigner()"
       [items]="versionDropdownInDesigner()"
       [selectedItem]="selectedVersionInDesigner()"
-      buttonClass="form-select form-select-sm versions-selector__dropdown border__dropdown h-100 text-primary"
+      buttonClass="form-select form-select-sm versions-selector__dropdown border__dropdown h-100 text-primary install-designer-dropdown"
       ariaLabel=".form-select-sm example"
-      class="flex-grow-1"
+      class="flex-grow-1 col-8 version-select-in-designer"
       (itemSelected)="onSelectVersionInDesigner($event.value)">
     </app-common-dropdown>
 
-    <button [lang]="languageService.selectedLanguage()" class="btn btn__install flex-grow-1 install-designer-button" data-bs-toggle="tooltip"
-            data-bs-placement="bottom" data-bs-html="true" id="install-button"
+    <button [lang]="languageService.selectedLanguage()"
+            class="btn btn__install flex-grow-1 install-designer-button m-0 col-4"
+            data-bs-toggle="tooltip"
+            data-bs-placement="bottom"
+            data-bs-html="true"
+            id="install-button"
             data-bs-custom-class="custom-tooltip"
             [attr.data-bs-title]="getInstallationTooltipText()"
             [attr.product-id]="product.id"
@@ -25,13 +29,12 @@
             const requestPath = document.getElementById('install-button').getAttribute('request-path');
 
             const url = `${requestPath}/api/product-details/productjsoncontent?name=${productId}&tag=${version.replace('Version ','')}`;
-            console.log(url)
             install(url);
           }
         }
         installInDesigner();"
             [ngClass]="themeService.isDarkMode() ? 'btn-light' : 'btn-primary'">
-      {{ 'common.product.detail.install.buttonLabel' | translate }}
+      {{ 'common.product.detail.install.buttonLabelInDesigner' | translate }}
     </button>
   </div>
 } @else {

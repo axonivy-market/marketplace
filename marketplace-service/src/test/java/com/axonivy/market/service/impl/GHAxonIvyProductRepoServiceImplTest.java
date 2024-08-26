@@ -8,6 +8,7 @@ import com.axonivy.market.enums.Language;
 import com.axonivy.market.github.model.MavenArtifact;
 import com.axonivy.market.github.service.GitHubService;
 import com.axonivy.market.github.service.impl.GHAxonIvyProductRepoServiceImpl;
+import com.axonivy.market.repository.ProductJsonContentRepository;
 import com.fasterxml.jackson.databind.JsonNode;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
@@ -68,6 +69,9 @@ class GHAxonIvyProductRepoServiceImplTest {
 
   @Mock
   GHContent content = new GHContent();
+
+  @Mock
+  ProductJsonContentRepository productJsonContentRepository;
 
   @InjectMocks
   @Spy
@@ -198,27 +202,27 @@ class GHAxonIvyProductRepoServiceImplTest {
     assertEquals(mockGHOrganization, axonivyProductRepoServiceImpl.getOrganization());
   }
 
-//  @Test
-//  void testGetReadmeAndProductContentsFromTag() throws IOException {
-//    String readmeContentWithImage = "#Product-name\n Test README\n## Demo\nDemo content\n## Setup\nSetup content (image.png)";
-//
-//    GHContent mockContent = createMockProductFolderWithProductJson();
-//
-//    getReadmeInputStream(readmeContentWithImage, mockContent);
-//    InputStream inputStream = getMockInputStream();
-//    Mockito.when(axonivyProductRepoServiceImpl.extractedContentStream(any())).thenReturn(inputStream);
-//    var result = axonivyProductRepoServiceImpl.getReadmeAndProductContentsFromTag(createMockProduct(), ghRepository,
-//        RELEASE_TAG);
-//
-//    assertEquals(RELEASE_TAG, result.getTag());
-//    assertTrue(result.getIsDependency());
-//    assertEquals("com.axonivy.utils.bpmnstatistic", result.getGroupId());
-//    assertEquals("bpmn-statistic", result.getArtifactId());
-//    assertEquals("iar", result.getType());
-//    assertEquals("Test README", result.getDescription().get(Language.EN.getValue()));
-//    assertEquals("Demo content", result.getDemo().get(Language.EN.getValue()));
-//    assertEquals("Setup content (https://raw.githubusercontent.com/image.png)", result.getSetup().get(Language.EN.getValue()));
-//  }
+  @Test
+  void testGetReadmeAndProductContentsFromTag() throws IOException {
+    String readmeContentWithImage = "#Product-name\n Test README\n## Demo\nDemo content\n## Setup\nSetup content (image.png)";
+
+    GHContent mockContent = createMockProductFolderWithProductJson();
+
+    getReadmeInputStream(readmeContentWithImage, mockContent);
+    InputStream inputStream = getMockInputStream();
+    Mockito.when(axonivyProductRepoServiceImpl.extractedContentStream(any())).thenReturn(inputStream);
+    var result = axonivyProductRepoServiceImpl.getReadmeAndProductContentsFromTag(createMockProduct(), ghRepository,
+        RELEASE_TAG);
+
+    assertEquals(RELEASE_TAG, result.getTag());
+    assertTrue(result.getIsDependency());
+    assertEquals("com.axonivy.utils.bpmnstatistic", result.getGroupId());
+    assertEquals("bpmn-statistic", result.getArtifactId());
+    assertEquals("iar", result.getType());
+    assertEquals("Test README", result.getDescription().get(Language.EN.getValue()));
+    assertEquals("Demo content", result.getDemo().get(Language.EN.getValue()));
+    assertEquals("Setup content (https://raw.githubusercontent.com/image.png)", result.getSetup().get(Language.EN.getValue()));
+  }
 
   @Test
   void testGetReadmeAndProductContentFromTag_ImageFromFolder() throws IOException {

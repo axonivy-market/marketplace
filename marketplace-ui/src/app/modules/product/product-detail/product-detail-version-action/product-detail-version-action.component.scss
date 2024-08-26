@@ -75,15 +75,14 @@
 }
 
 ::ng-deep .btn {
-
   padding: 12px 32px;
   gap: 10px;
   font-weight: 500;
-  size: 50px;
   line-height: 120%;
   border-radius: 10px;
   border: none;
 }
+
 .btn__install {
   margin-right: 10px;
   border: 0px;
@@ -107,35 +106,11 @@
 ::ng-deep .dropdown-menu.menu-bar {
   margin-top: 4px;
 }
-//::ng-deep .form-select {
-//  height: 32px;
-//  padding: 9px 10px;
-//  gap: 10px;
-//  border-radius: 5px;
-//  line-height: 12px;
-//  text-align: start !important;
-//  background-color: red;
-//}
 
-::ng-deep .version-select-in-designer{
-  padding: 12px 32px;
-  gap: 10px;
-  font-weight: 500;
-  line-height: 120%;
-  border-radius: 10px;
-  border: none;
-}
-
-.install-designer-button {
-  //height: 32px;
-  //padding: 8px 12px 8px 12px;
-  //gap: 6px;
-  //border-radius: 5px 0px 0px 0px;
-}
-
-.designer-section {
-  //display: flex;
-  //gap: 10px;
+::ng-deep .install-designer-dropdown {
+  border-radius: 3px;
+  padding: 10px;
+  text-align: start;
 }
 
 ::ng-deep .dropdown-menu {

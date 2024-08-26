@@ -13,6 +13,10 @@ import java.util.HashMap;
 import java.util.Map;
 
 import com.axonivy.market.constants.RequestMappingConstants;
+import com.axonivy.market.entity.productjsonfilecontent.ProductJsonContent;
+import com.axonivy.market.util.VersionUtils;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -122,6 +126,29 @@ class ProductDetailsControllerTest {
     assertEquals(1, result.getBody());
   }
 
+  @Test
+  void findProductVersionsById() {
+    when(versionService.getVersionsForDesigner("google-maps-connector", false, "10.0.21")).thenReturn(
+        List.of("10.0.21", "10.0.22", "10.0.23"));
+
+    var result = productDetailsController.findVersionForDesigner("google-maps-connector", false, "10.0.21");
+
+    assertEquals(Objects.requireNonNull(result.getBody()).size(), 3);
+    assertEquals(Objects.requireNonNull(result.getBody()).get(0), "10.0.21");
+    assertEquals(Objects.requireNonNull(result.getBody()).get(1), "10.0.22");
+    assertEquals(Objects.requireNonNull(result.getBody()).get(2), "10.0.23");
+  }
+
+  @Test
+  void findProductJsonContentByNameAndTag() throws JsonProcessingException {
+    ProductJsonContent productJsonContent = mockProductJsonContent();
+    when(versionService.getProductJsonContentFromNameAndTag("bpmnstatistic","10.0.21")).thenReturn(productJsonContent);
+
+    var result = productDetailsController.findProductJsonContentByNameAndTag("bpmnstatistic", "10.0.21");
+
+    assertEquals(new ResponseEntity<>(productJsonContent, HttpStatus.OK),result);
+  }
+
   private Product mockProduct() {
     Product mockProduct = new Product();
     mockProduct.setId(DOCKER_CONNECTOR_ID);
@@ -148,5 +175,61 @@ class ProductDetailsControllerTest {
     mockProductDetail.setIndustry("Cross-Industry");
     mockProductDetail.setContactUs(false);
     return mockProductDetail;
+  }
+
+  private ProductJsonContent mockProductJsonContent() throws JsonProcessingException {
+    String jsonContent = """
+        {
+           "$schema": "https://json-schema.axonivy.com/market/10.0.0/product.json",
+           "installers": [
+             {
+               "id": "maven-import",
+               "data": {
+                 "projects": [
+                   {
+                     "groupId": "com.axonivy.utils.bpmnstatistic",
+                     "artifactId": "bpmn-statistic-demo",
+                     "version": "${version}",
+                     "type": "iar"
+                   }
+                 ],
+                 "repositories": [
+                   {
+                     "id": "maven.axonivy.com",
+                     "url": "https://maven.axonivy.com",
+                     "snapshots": {
+                       "enabled": "true"
+                     }
+                   }
+                 ]
+               }
+             },
+             {
+               "id": "maven-dependency",
+               "data": {
+                 "dependencies": [
+                   {
+                     "groupId": "com.axonivy.utils.bpmnstatistic",
+                     "artifactId": "bpmn-statistic",
+                     "version": "${version}",
+                     "type": "iar"
+                   }
+                 ],
+                 "repositories": [
+                   {
+                     "id": "maven.axonivy.com",
+                     "url": "https://maven.axonivy.com",
+                     "snapshots": {
+                       "enabled": "true"
+                     }
+                   }
+                 ]
+               }
+             }
+           ]
+         }
+        """;
+
+    return new ObjectMapper().readValue(jsonContent, ProductJsonContent.class);
   }
 }

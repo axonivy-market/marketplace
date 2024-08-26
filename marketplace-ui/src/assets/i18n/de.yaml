@@ -75,6 +75,7 @@ common:
           contactUs: Kontakt
       install:
         buttonLabel: Jetzt installieren
+        buttonLabelInDesigner: installieren
       download:
         buttonLabel: Download
         hideDevVersions: Entwicklungsversionen ausblenden

@@ -1,6 +1,10 @@
 package com.axonivy.market.util;
 
+import com.axonivy.market.entity.productjsonfilecontent.ProductJsonContent;
 import com.axonivy.market.enums.NonStandardProduct;
+import com.axonivy.market.github.model.Meta;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.lang3.StringUtils;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -146,5 +150,80 @@ class VersionUtilsTest {
         Assertions.assertEquals(2, results.size());
         Assertions.assertEquals("10.0.1", results.get(0));
         Assertions.assertEquals("10.0.2", results.get(1));
+    }
+
+    private ProductJsonContent mockProductJsonContent() throws JsonProcessingException {
+        String jsonContent = """
+        {
+           "$schema": "https://json-schema.axonivy.com/market/10.0.0/product.json",
+           "installers": [
+             {
+               "id": "maven-import",
+               "data": {
+                 "projects": [
+                   {
+                     "groupId": "com.axonivy.utils.bpmnstatistic",
+                     "artifactId": "bpmn-statistic-demo",
+                     "version": "${version}",
+                     "type": "iar"
+                   }
+                 ],
+                 "repositories": [
+                   {
+                     "id": "maven.axonivy.com",
+                     "url": "https://maven.axonivy.com",
+                     "snapshots": {
+                       "enabled": "true"
+                     }
+                   }
+                 ]
+               }
+             },
+             {
+               "id": "maven-dependency",
+               "data": {
+                 "dependencies": [
+                   {
+                     "groupId": "com.axonivy.utils.bpmnstatistic",
+                     "artifactId": "bpmn-statistic",
+                     "version": "${version}",
+                     "type": "iar"
+                   }
+                 ],
+                 "repositories": [
+                   {
+                     "id": "maven.axonivy.com",
+                     "url": "https://maven.axonivy.com",
+                     "snapshots": {
+                       "enabled": "true"
+                     }
+                   }
+                 ]
+               }
+             }
+           ]
+         }
+        """;
+
+        return new ObjectMapper().readValue(jsonContent, ProductJsonContent.class);
+    }
+
+    @Test
+    void test_updateVersionForInstaller() throws JsonProcessingException {
+        ProductJsonContent mockProductJsonContent = mockProductJsonContent();
+
+        VersionUtils.updateVersionForInstaller(mockProductJsonContent , "10.0.21");
+
+        Assertions.assertEquals("10.0.21", mockProductJsonContent
+            .getInstallers().get(0)
+            .getData()
+            .getProjects().get(0)
+            .getVersion());
+
+        Assertions.assertEquals("10.0.21", mockProductJsonContent
+            .getInstallers().get(1)
+            .getData()
+            .getDependencies().get(0)
+            .getVersion());
     }
 }
