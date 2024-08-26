@@ -129,9 +129,10 @@ public class VersionUtils {
             case "maven-import":
                 updateVersionForInstallForMavenImport(installer, tag);
                 break;
-            case "maven-dropins":
-            case "maven-dependency":
+            case "maven-dependency", "maven-dropins":
                 updateVersionForInstallForMavenDependencyAndDropins(installer, tag);
+                break;
+            default:
                 break;
             }
         }

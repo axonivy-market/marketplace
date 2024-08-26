@@ -2,7 +2,6 @@ package com.axonivy.market.util;
 
 import com.axonivy.market.entity.productjsonfilecontent.ProductJsonContent;
 import com.axonivy.market.enums.NonStandardProduct;
-import com.axonivy.market.github.model.Meta;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.lang3.StringUtils;

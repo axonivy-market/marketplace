@@ -14,7 +14,6 @@ import java.util.Map;
 
 import com.axonivy.market.constants.RequestMappingConstants;
 import com.axonivy.market.entity.productjsonfilecontent.ProductJsonContent;
-import com.axonivy.market.util.VersionUtils;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Assertions;
@@ -133,10 +132,10 @@ class ProductDetailsControllerTest {
 
     var result = productDetailsController.findVersionForDesigner("google-maps-connector", false, "10.0.21");
 
-    assertEquals(Objects.requireNonNull(result.getBody()).size(), 3);
-    assertEquals(Objects.requireNonNull(result.getBody()).get(0), "10.0.21");
-    assertEquals(Objects.requireNonNull(result.getBody()).get(1), "10.0.22");
-    assertEquals(Objects.requireNonNull(result.getBody()).get(2), "10.0.23");
+    assertEquals(3, Objects.requireNonNull(result.getBody()).size());
+    assertEquals("10.0.21", Objects.requireNonNull(result.getBody()).get(0));
+    assertEquals("10.0.22", Objects.requireNonNull(result.getBody()).get(1));
+    assertEquals("10.0.23", Objects.requireNonNull(result.getBody()).get(2));
   }
 
   @Test
@@ -144,7 +143,7 @@ class ProductDetailsControllerTest {
     ProductJsonContent productJsonContent = mockProductJsonContent();
     when(versionService.getProductJsonContentFromNameAndTag("bpmnstatistic","10.0.21")).thenReturn(productJsonContent);
 
-    var result = productDetailsController.findProductJsonContentByNameAndTag("bpmnstatistic", "10.0.21");
+    var result = productDetailsController.findProductJsonContent("bpmnstatistic", "10.0.21");
 
     assertEquals(new ResponseEntity<>(productJsonContent, HttpStatus.OK),result);
   }
