@@ -43,6 +43,8 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 
+import static com.axonivy.market.constants.ProductJsonConstants.NAME;
+
 @Log4j2
 @Service
 @Getter
@@ -114,7 +116,7 @@ public class VersionServiceImpl implements VersionService {
       return new HashMap<>();
     }
     Map<String, Object> result = mapper.readValue(productJsonContent.getContent(), Map.class);
-    result.computeIfAbsent("name", k -> productJsonContent.getName());
+    result.computeIfAbsent(NAME, k -> productJsonContent.getName());
     return result;
   }
 
