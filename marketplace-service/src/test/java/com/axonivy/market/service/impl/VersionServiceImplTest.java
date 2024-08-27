@@ -426,6 +426,7 @@ class VersionServiceImplTest {
 
     Assertions.assertEquals(result, List.of("11.3.0", "11.1.1", "11.1.0", "10.0.2"));
   }
+
   @Test
   void testGetProductJsonContentByIdAndVersion() throws JsonProcessingException {
     ProductJsonContent mockProductJsonContent = new ProductJsonContent();
@@ -454,14 +455,11 @@ class VersionServiceImplTest {
     mockProductJsonContent.setName("Amazon Comprehend");
     mockProductJsonContent.setContent(mockContent);
 
-    Mockito.when(productJsonContentRepository.findByProductIdAndVersion(anyString(),anyString()))
+    Mockito.when(productJsonContentRepository.findByProductIdAndVersion(anyString(), anyString()))
         .thenReturn(mockProductJsonContent);
 
-    Map<String, Object> result = versionService
-        .getProductJsonContentByIdAndVersion("amazon-comprehend","11.3.1");
+    Map<String, Object> result = versionService.getProductJsonContentByIdAndVersion("amazon-comprehend", "11.3.1");
 
-    Assertions.assertEquals(result.get("name"), "Amazon Comprehend");
+    Assertions.assertEquals("Amazon Comprehend", result.get("name"));
   }
-
-
 }
