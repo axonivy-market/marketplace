@@ -32,7 +32,6 @@ import org.springframework.util.CollectionUtils;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -105,8 +104,8 @@ public class VersionServiceImpl implements VersionService {
   }
 
   @Override
-  public ProductJsonContent getProductJsonContentFromNameAndTag(String name, String tag) {
-    return productJsonContentRepository.findByNameAndTag(name, tag);
+  public ProductJsonContent getProductJsonContentFromNameAndVersion(String productId, String version) {
+    return productJsonContentRepository.findByProductIdAndVersion(productId, version);
   }
 
   @Override

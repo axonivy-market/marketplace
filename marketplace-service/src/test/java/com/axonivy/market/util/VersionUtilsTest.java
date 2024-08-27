@@ -11,8 +11,12 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Scanner;
 
 @ExtendWith(MockitoExtension.class)
 
@@ -151,64 +155,15 @@ class VersionUtilsTest {
         Assertions.assertEquals("10.0.2", results.get(1));
     }
 
-    private ProductJsonContent mockProductJsonContent() throws JsonProcessingException {
-        String jsonContent = """
-        {
-           "$schema": "https://json-schema.axonivy.com/market/10.0.0/product.json",
-           "installers": [
-             {
-               "id": "maven-import",
-               "data": {
-                 "projects": [
-                   {
-                     "groupId": "com.axonivy.utils.bpmnstatistic",
-                     "artifactId": "bpmn-statistic-demo",
-                     "version": "${version}",
-                     "type": "iar"
-                   }
-                 ],
-                 "repositories": [
-                   {
-                     "id": "maven.axonivy.com",
-                     "url": "https://maven.axonivy.com",
-                     "snapshots": {
-                       "enabled": "true"
-                     }
-                   }
-                 ]
-               }
-             },
-             {
-               "id": "maven-dependency",
-               "data": {
-                 "dependencies": [
-                   {
-                     "groupId": "com.axonivy.utils.bpmnstatistic",
-                     "artifactId": "bpmn-statistic",
-                     "version": "${version}",
-                     "type": "iar"
-                   }
-                 ],
-                 "repositories": [
-                   {
-                     "id": "maven.axonivy.com",
-                     "url": "https://maven.axonivy.com",
-                     "snapshots": {
-                       "enabled": "true"
-                     }
-                   }
-                 ]
-               }
-             }
-           ]
-         }
-        """;
-
+    private ProductJsonContent mockProductJsonContent() throws IOException {
+        InputStream inputStream = getClass().getClassLoader().getResourceAsStream("product.json");
+        assert inputStream != null;
+        String jsonContent = new Scanner(inputStream, StandardCharsets.UTF_8).useDelimiter("\\A").next();
         return new ObjectMapper().readValue(jsonContent, ProductJsonContent.class);
     }
 
     @Test
-    void test_updateVersionForInstaller() throws JsonProcessingException {
+    void test_updateVersionForInstaller() throws IOException {
         ProductJsonContent mockProductJsonContent = mockProductJsonContent();
 
         VersionUtils.updateVersionForInstaller(mockProductJsonContent , "10.0.21");

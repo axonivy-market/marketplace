@@ -27,7 +27,8 @@ public class ProductJsonContent {
   @JsonProperty("$schema")
   private String schema;
   @JsonIgnore
-  private String tag;
+  private String version;
+  private String productId;
   private String name;
   private List<Installer> installers;
   private Properties properties;

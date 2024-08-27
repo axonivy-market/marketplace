@@ -157,7 +157,7 @@ export class ProductDetailVersionActionComponent implements AfterViewInit {
 
 
   getVersionInDesigner(): void {
-    this.productService.sendRequestToGetProductVersionForDesigner(this.productId,
+    this.productService.sendRequestToGetProductVersionsForDesigner(this.productId,
       this.designerVersion,
       this.isDevVersionsDisplayed()
     ).subscribe(data => {

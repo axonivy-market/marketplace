@@ -80,7 +80,7 @@ export class ProductService {
     return this.httpClient.put<number>(url, null, { headers: { 'X-Requested-By': 'ivy' } });
   }
 
-  sendRequestToGetProductVersionForDesigner(productId: string, designerVersion: string, isShowDevVersion: boolean) {
+  sendRequestToGetProductVersionsForDesigner(productId: string, designerVersion: string, isShowDevVersion: boolean) {
     const url = `api/product-details/${productId}/designerversions?designerVersion=${designerVersion}&isShowDevVersion=${isShowDevVersion}`;
     return this.httpClient.get<string[]>(url, { headers: { 'X-Requested-By': 'ivy' } });
   }

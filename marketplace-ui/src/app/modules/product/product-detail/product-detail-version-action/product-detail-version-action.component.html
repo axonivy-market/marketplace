@@ -6,29 +6,24 @@
       [selectedItem]="selectedVersionInDesigner()"
       buttonClass="form-select form-select-sm versions-selector__dropdown border__dropdown h-100 text-primary install-designer-dropdown"
       ariaLabel=".form-select-sm example"
-      class="flex-grow-1 col-8 version-select-in-designer"
+      class="flex-grow-1 col-8"
       (itemSelected)="onSelectVersionInDesigner($event.value)">
     </app-common-dropdown>
 
     <button [lang]="languageService.selectedLanguage()"
             class="btn btn__install flex-grow-1 install-designer-button m-0 col-4"
-            data-bs-toggle="tooltip"
-            data-bs-placement="bottom"
-            data-bs-html="true"
             id="install-button"
-            data-bs-custom-class="custom-tooltip"
-            [attr.data-bs-title]="getInstallationTooltipText()"
             [attr.product-id]="product.id"
             [attr.request-path]="environment.apiUrl"
             (click)="onUpdateInstallationCountForDesigner()"
-            onClick = "function installInDesigner(){
-          const selectedItemElement = document.querySelector('.version-select-in-designer');
+            onClick="function installInDesigner(){
+          const selectedItemElement = document.querySelector('.install-designer-dropdown');
           if (selectedItemElement) {
             const version = selectedItemElement.textContent.trim();
             const productId = document.getElementById('install-button').getAttribute('product-id');
             const requestPath = document.getElementById('install-button').getAttribute('request-path');
-
-            const url = `${requestPath}/api/product-details/productjsoncontent?name=${productId}&tag=${version.replace('Version ','')}`;
+            const url = `${requestPath}/api/product-details/productjsoncontent/${productId}/${version.replace('Version ','')}`
+            console.log(url);
             install(url);
           }
         }

@@ -6,11 +6,17 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.List;
 import java.util.Objects;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Scanner;
 
 import com.axonivy.market.constants.RequestMappingConstants;
 import com.axonivy.market.entity.productjsonfilecontent.ProductJsonContent;
@@ -23,6 +29,9 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.Resource;
+import org.springframework.core.io.ResourceLoader;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
@@ -33,6 +42,7 @@ import com.axonivy.market.model.MavenArtifactVersionModel;
 import com.axonivy.market.model.ProductDetailModel;
 import com.axonivy.market.service.ProductService;
 import com.axonivy.market.service.VersionService;
+import org.springframework.util.FileCopyUtils;
 
 @ExtendWith(MockitoExtension.class)
 class ProductDetailsControllerTest {
@@ -130,7 +140,7 @@ class ProductDetailsControllerTest {
     when(versionService.getVersionsForDesigner("google-maps-connector", false, "10.0.21")).thenReturn(
         List.of("10.0.21", "10.0.22", "10.0.23"));
 
-    var result = productDetailsController.findVersionForDesigner("google-maps-connector", false, "10.0.21");
+    var result = productDetailsController.findVersionsForDesigner("google-maps-connector", false, "10.0.21");
 
     assertEquals(3, Objects.requireNonNull(result.getBody()).size());
     assertEquals("10.0.21", Objects.requireNonNull(result.getBody()).get(0));
@@ -139,13 +149,14 @@ class ProductDetailsControllerTest {
   }
 
   @Test
-  void findProductJsonContentByNameAndTag() throws JsonProcessingException {
+  void findProductJsonContentByNameAndTag() throws IOException {
     ProductJsonContent productJsonContent = mockProductJsonContent();
-    when(versionService.getProductJsonContentFromNameAndTag("bpmnstatistic","10.0.21")).thenReturn(productJsonContent);
+    when(versionService.getProductJsonContentFromNameAndVersion("bpmnstatistic", "10.0.21")).thenReturn(
+        productJsonContent);
 
     var result = productDetailsController.findProductJsonContent("bpmnstatistic", "10.0.21");
 
-    assertEquals(new ResponseEntity<>(productJsonContent, HttpStatus.OK),result);
+    assertEquals(new ResponseEntity<>(productJsonContent, HttpStatus.OK), result);
   }
 
   private Product mockProduct() {
@@ -176,59 +187,10 @@ class ProductDetailsControllerTest {
     return mockProductDetail;
   }
 
-  private ProductJsonContent mockProductJsonContent() throws JsonProcessingException {
-    String jsonContent = """
-        {
-           "$schema": "https://json-schema.axonivy.com/market/10.0.0/product.json",
-           "installers": [
-             {
-               "id": "maven-import",
-               "data": {
-                 "projects": [
-                   {
-                     "groupId": "com.axonivy.utils.bpmnstatistic",
-                     "artifactId": "bpmn-statistic-demo",
-                     "version": "${version}",
-                     "type": "iar"
-                   }
-                 ],
-                 "repositories": [
-                   {
-                     "id": "maven.axonivy.com",
-                     "url": "https://maven.axonivy.com",
-                     "snapshots": {
-                       "enabled": "true"
-                     }
-                   }
-                 ]
-               }
-             },
-             {
-               "id": "maven-dependency",
-               "data": {
-                 "dependencies": [
-                   {
-                     "groupId": "com.axonivy.utils.bpmnstatistic",
-                     "artifactId": "bpmn-statistic",
-                     "version": "${version}",
-                     "type": "iar"
-                   }
-                 ],
-                 "repositories": [
-                   {
-                     "id": "maven.axonivy.com",
-                     "url": "https://maven.axonivy.com",
-                     "snapshots": {
-                       "enabled": "true"
-                     }
-                   }
-                 ]
-               }
-             }
-           ]
-         }
-        """;
-
+  private ProductJsonContent mockProductJsonContent() throws IOException {
+    InputStream inputStream = getClass().getClassLoader().getResourceAsStream("product.json");
+    assert inputStream != null;
+    String jsonContent = new Scanner(inputStream, StandardCharsets.UTF_8).useDelimiter("\\A").next();
     return new ObjectMapper().readValue(jsonContent, ProductJsonContent.class);
   }
 }

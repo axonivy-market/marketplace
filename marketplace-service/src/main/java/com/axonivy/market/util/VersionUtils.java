@@ -23,6 +23,11 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Stream;
 
+import static com.axonivy.market.constants.ProductJsonConstants.MAVEN_DEPENDENCY_INSTALLER_ID;
+import static com.axonivy.market.constants.ProductJsonConstants.MAVEN_DROPINS_INSTALLER_ID;
+import static com.axonivy.market.constants.ProductJsonConstants.MAVEN_IMPORT_INSTALLER_ID;
+import static com.axonivy.market.constants.ProductJsonConstants.VERSION_VALUE;
+
 public class VersionUtils {
     private VersionUtils() {
     }
@@ -126,10 +131,10 @@ public class VersionUtils {
         for (Installer installer : productJsonContent.getInstallers()) {
             String installId = installer.getId();
             switch (installId) {
-            case "maven-import":
+            case MAVEN_IMPORT_INSTALLER_ID:
                 updateVersionForInstallForMavenImport(installer, tag);
                 break;
-            case "maven-dependency", "maven-dropins":
+            case MAVEN_DEPENDENCY_INSTALLER_ID, MAVEN_DROPINS_INSTALLER_ID:
                 updateVersionForInstallForMavenDependencyAndDropins(installer, tag);
                 break;
             default:
@@ -141,7 +146,7 @@ public class VersionUtils {
     private static void updateVersionForInstallForMavenImport(Installer installer, String tag) {
         Optional.of(installer).map(Installer::getData).map(Data::getProjects).ifPresent(projects -> {
             for (Project project : projects) {
-                if ("${version}".equals(project.getVersion())) {
+                if (VERSION_VALUE.equals(project.getVersion())) {
                     project.setVersion(tag);
                 }
             }
@@ -151,7 +156,7 @@ public class VersionUtils {
     private static void updateVersionForInstallForMavenDependencyAndDropins(Installer installer, String tag) {
         Optional.of(installer).map(Installer::getData).map(Data::getDependencies).ifPresent(dependencies -> {
             for (Dependency dependency : dependencies) {
-                if ("${version}".equals(dependency.getVersion())) {
+                if (VERSION_VALUE.equals(dependency.getVersion())) {
                     dependency.setVersion(tag);
                 }
             }

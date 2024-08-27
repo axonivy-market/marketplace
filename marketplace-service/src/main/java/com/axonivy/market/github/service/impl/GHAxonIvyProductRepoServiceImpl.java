@@ -16,6 +16,7 @@ import com.axonivy.market.github.service.GitHubService;
 import com.axonivy.market.github.util.GitHubUtils;
 import com.axonivy.market.repository.ProductJsonContentRepository;
 import com.axonivy.market.util.VersionUtils;
+import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.log4j.Log4j2;
@@ -225,24 +226,25 @@ public class GHAxonIvyProductRepoServiceImpl implements GHAxonIvyProductRepoServ
         productModuleContent.setName(artifact.getName());
       }
       String currentVersion = VersionUtils.convertTagToVersion(productModuleContent.getTag());
-      boolean isProductJsonContentExists = productJsonContentRepository.existsByNameAndTag(product.getId(),
+      boolean isProductJsonContentExists = productJsonContentRepository.existsByProductIdAndVersion(product.getId(),
           currentVersion);
-      ProductJsonContent productJsonContent = extractProductJsonContent(productJsonFile);
+      ProductJsonContent productJsonContent = extractProductJsonContent(productJsonFile, productModuleContent.getTag());
       if (ObjectUtils.isNotEmpty(productJsonContent) && !isProductJsonContentExists) {
         updateVersionForInstaller(productJsonContent, currentVersion);
-        productJsonContent.setTag(currentVersion);
-        productJsonContent.setName(product.getId());
+        productJsonContent.setVersion(currentVersion);
+        productJsonContent.setProductId(product.getId());
+        productJsonContent.setName(product.getNames().get("en"));
         productJsonContentRepository.save(productJsonContent);
       }
     }
   }
 
-  private ProductJsonContent extractProductJsonContent(GHContent ghContent) {
+  private ProductJsonContent extractProductJsonContent(GHContent ghContent, String tag) {
     try {
       InputStream contentStream = extractedContentStream(ghContent);
       return objectMapper.readValue(contentStream, ProductJsonContent.class);
     } catch (Exception exception) {
-      log.error("Cannot paste content of product.json " + ghContent.getPath());
+      log.error("Cannot paste content of product.json {0} at tag: {1}" + ghContent.getPath(), tag);
       return null;
     }
   }

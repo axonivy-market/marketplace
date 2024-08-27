@@ -1,14 +1,21 @@
 package com.axonivy.market.controller;
 
-import static com.axonivy.market.constants.RequestMappingConstants.*;
+import static com.axonivy.market.constants.RequestMappingConstants.PRODUCT_JSON_CONTENT_BY_PRODUCTID_AND_VERSION;
+import static com.axonivy.market.constants.RequestMappingConstants.VERSIONS_IN_DESIGNER;
 import static com.axonivy.market.constants.RequestParamConstants.DESIGNER_VERSION;
 import static com.axonivy.market.constants.RequestParamConstants.ID;
+import static com.axonivy.market.constants.RequestParamConstants.PRODUCT_ID;
 import static com.axonivy.market.constants.RequestParamConstants.SHOW_DEV_VERSION;
 import static com.axonivy.market.constants.RequestParamConstants.VERSION;
 
 
 import java.util.List;
-
+import static com.axonivy.market.constants.RequestMappingConstants.BY_ID;
+import static com.axonivy.market.constants.RequestMappingConstants.BY_ID_AND_VERSION;
+import static com.axonivy.market.constants.RequestMappingConstants.INSTALLATION_COUNT_BY_ID;
+import static com.axonivy.market.constants.RequestMappingConstants.PRODUCT_DETAILS;
+import static com.axonivy.market.constants.RequestMappingConstants.VERSIONS_BY_ID;
+import static com.axonivy.market.constants.RequestMappingConstants.BEST_MATCH_BY_ID_AND_VERSION;
 import com.axonivy.market.entity.productjsonfilecontent.ProductJsonContent;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.enums.ParameterIn;
@@ -90,18 +97,21 @@ public class ProductDetailsController {
     return new ResponseEntity<>(models, HttpStatus.OK);
   }
 
-  @GetMapping(PRODUCT_JSON_CONTENT)
-  public ResponseEntity<ProductJsonContent> findProductJsonContent(@RequestParam String name,
-      @RequestParam String tag) {
-    ProductJsonContent productJsonContent = versionService.getProductJsonContentFromNameAndTag(name, tag);
+  @GetMapping(PRODUCT_JSON_CONTENT_BY_PRODUCTID_AND_VERSION)
+  public ResponseEntity<ProductJsonContent> findProductJsonContent(
+      @PathVariable(PRODUCT_ID) String productId,
+      @PathVariable(VERSION) String version) {
+    ProductJsonContent productJsonContent = versionService.getProductJsonContentFromNameAndVersion(productId, version);
     return new ResponseEntity<>(productJsonContent, HttpStatus.OK);
   }
 
   @GetMapping(VERSIONS_IN_DESIGNER)
-  public ResponseEntity<List<String>> findVersionForDesigner(@PathVariable(ID) String id,
+  public ResponseEntity<List<String>> findVersionsForDesigner(@PathVariable(ID) String id,
       @RequestParam(SHOW_DEV_VERSION) @Parameter(description = "Option to get Dev Version (Snapshot/ sprint release)", in = ParameterIn.QUERY) boolean isShowDevVersion,
       @RequestParam(name = DESIGNER_VERSION, required = false) @Parameter(in = ParameterIn.QUERY, example = "v10.0.20") String designerVersion) {
     List<String> versionList = versionService.getVersionsForDesigner(id, isShowDevVersion, designerVersion);
     return new ResponseEntity<>(versionList, HttpStatus.OK);
   }
+
+
 }

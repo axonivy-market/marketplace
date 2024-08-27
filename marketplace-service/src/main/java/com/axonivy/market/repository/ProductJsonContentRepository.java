@@ -7,8 +7,8 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface ProductJsonContentRepository extends MongoRepository<ProductJsonContent, String> {
 
-  ProductJsonContent findByNameAndTag(String name , String tag);
+  ProductJsonContent findByProductIdAndVersion(String productId , String version);
 
-  boolean existsByNameAndTag(String name , String tag);
+  boolean existsByProductIdAndVersion(String productId , String version);
 
 }

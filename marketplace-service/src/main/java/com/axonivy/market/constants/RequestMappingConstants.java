@@ -22,7 +22,7 @@ public class RequestMappingConstants {
   public static final String PRODUCT_RATING_BY_ID = "/product/{id}/rating";
   public static final String INSTALLATION_COUNT_BY_ID = "/installationcount/{id}";
 
-  public static final String PRODUCT_JSON_CONTENT = "/productjsoncontent";
+  public static final String PRODUCT_JSON_CONTENT_BY_PRODUCTID_AND_VERSION = "/productjsoncontent/{productId}/{version}";
 
   public static final String VERSIONS_IN_DESIGNER = "/{id}/designerversions";
   public static final String CUSTOM_SORT = "custom-sort";
