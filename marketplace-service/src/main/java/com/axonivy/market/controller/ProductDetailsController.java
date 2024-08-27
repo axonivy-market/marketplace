@@ -1,6 +1,6 @@
 package com.axonivy.market.controller;
 
-import static com.axonivy.market.constants.RequestMappingConstants.PRODUCT_JSON_CONTENT_BY_PRODUCTID_AND_VERSION;
+import static com.axonivy.market.constants.RequestMappingConstants.PRODUCT_JSON_CONTENT_BY_PRODUCT_ID_AND_VERSION;
 import static com.axonivy.market.constants.RequestMappingConstants.VERSIONS_IN_DESIGNER;
 import static com.axonivy.market.constants.RequestParamConstants.DESIGNER_VERSION;
 import static com.axonivy.market.constants.RequestParamConstants.ID;
@@ -97,7 +97,7 @@ public class ProductDetailsController {
     return new ResponseEntity<>(models, HttpStatus.OK);
   }
 
-  @GetMapping(PRODUCT_JSON_CONTENT_BY_PRODUCTID_AND_VERSION)
+  @GetMapping(PRODUCT_JSON_CONTENT_BY_PRODUCT_ID_AND_VERSION)
   public ResponseEntity<ProductJsonContent> findProductJsonContent(
       @PathVariable(PRODUCT_ID) String productId,
       @PathVariable(VERSION) String version) {

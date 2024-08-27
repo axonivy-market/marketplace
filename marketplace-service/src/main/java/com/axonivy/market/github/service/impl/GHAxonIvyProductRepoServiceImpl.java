@@ -244,7 +244,7 @@ public class GHAxonIvyProductRepoServiceImpl implements GHAxonIvyProductRepoServ
       InputStream contentStream = extractedContentStream(ghContent);
       return objectMapper.readValue(contentStream, ProductJsonContent.class);
     } catch (Exception exception) {
-      log.error("Cannot paste content of product.json {0} at tag: {1}" + ghContent.getPath(), tag);
+      log.error("Cannot paste content of product.json {} at tag: {}", ghContent.getPath(), tag);
       return null;
     }
   }
