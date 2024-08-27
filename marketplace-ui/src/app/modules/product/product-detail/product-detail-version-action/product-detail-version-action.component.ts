@@ -19,6 +19,8 @@ import { RoutingQueryParamService } from '../../../../shared/services/routing.qu
 import { CommonDropdownComponent } from '../../../../shared/components/common-dropdown/common-dropdown.component';
 import { LanguageService } from '../../../../core/services/language/language.service';
 import { ItemDropdown } from '../../../../shared/models/item-dropdown.model';
+import { ProductDetail } from '../../../../shared/models/product-detail.model';
+import { environment } from '../../../../../environments/environment';
 
 const delayTimeBeforeHideMessage = 2000;
 @Component({
@@ -29,9 +31,11 @@ const delayTimeBeforeHideMessage = 2000;
   styleUrl: './product-detail-version-action.component.scss'
 })
 export class ProductDetailVersionActionComponent implements AfterViewInit {
+  protected readonly environment = environment;
   @Output() installationCount = new EventEmitter<number>();
-  @Input()
-  productId!: string;
+  @Input() productId!: string;
+
+  @Input() product!: ProductDetail;
   selectedVersion = model<string>('');
   versions: WritableSignal<string[]> = signal([]);
   versionDropdown : Signal<ItemDropdown[]> = computed(() => {
@@ -93,6 +97,10 @@ export class ProductDetailVersionActionComponent implements AfterViewInit {
     }
   }
 
+  onSelectVersionInDesigner(version: string) {
+    this.selectedVersion.set(version);
+  }
+
   onSelectArtifact(artifact: ItemDropdown) {
     this.selectedArtifactName = artifact.name;
     this.selectedArtifact = artifact.downloadUrl;
@@ -113,7 +121,6 @@ export class ProductDetailVersionActionComponent implements AfterViewInit {
 
   getVersionWithArtifact() {
     this.sanitizeDataBeforeFetching();
-
     this.productService
       .sendRequestToProductDetailVersionAPI(
         this.productId,
@@ -136,6 +143,17 @@ export class ProductDetailVersionActionComponent implements AfterViewInit {
           this.selectedVersion.set(this.versions()[0]);
         }
       });
+  }
+
+
+  getVersionInDesigner(): void {
+    if (this.versions().length === 0) {
+      this.productService.sendRequestToGetProductVersionsForDesigner(this.productId
+      ).subscribe(data => {
+        const versionMap = data.map((versionNumber: string) => 'Version '.concat(versionNumber));
+        this.versions.set(versionMap);
+      });
+    }
   }
 
   sanitizeDataBeforeFetching() {
@@ -165,4 +183,5 @@ export class ProductDetailVersionActionComponent implements AfterViewInit {
       this.onUpdateInstallationCount();
     }
   }
+
 }

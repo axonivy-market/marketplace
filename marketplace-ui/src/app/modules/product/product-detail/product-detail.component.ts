@@ -122,6 +122,9 @@ export class ProductDetailComponent {
       this.getProductById(productId).subscribe(productDetail => {
         this.productDetail.set(productDetail);
         this.productModuleContent.set(productDetail.productModuleContent);
+        if (this.routingQueryParamService.isDesignerEnv()) {
+          this.selectedVersion = 'Version '.concat(this.convertTagToVersion((productDetail.productModuleContent.tag)));
+        }
         this.detailTabsForDropdown = this.getNotEmptyTabs();
         this.productDetailService.productNames.set(productDetail.names);
         localStorage.removeItem(STORAGE_ITEM);
@@ -147,11 +150,11 @@ export class ProductDetailComponent {
   }
 
   getProductById(productId: string): Observable<ProductDetail> {
-    const targetVersion =
-      this.routingQueryParamService.getDesignerVersionFromCookie();
+    const targetVersion = this.routingQueryParamService.getDesignerVersionFromCookie();
     if (!targetVersion) {
       return this.productService.getProductDetails(productId);
     }
+
     return this.productService.getBestMatchProductDetailsWithVersion(
       productId,
       targetVersion
@@ -285,4 +288,10 @@ export class ProductDetailComponent {
     return this.detailTabsForDropdown.filter(tab => this.getContent(tab.value));
   }
 
+  convertTagToVersion(tag: string) : string {
+    if (tag !== '' && tag.startsWith('v')){
+      return tag.substring(1);
+    }
+    return tag;
+  }
 }
