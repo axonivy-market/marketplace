@@ -79,6 +79,7 @@ common:
           contactUs: Contact Us
       install:
         buttonLabel: Install Now
+        buttonLabelInDesigner: Install
       download:
         buttonLabel: Download
         hideDevVersions: Hide development versions

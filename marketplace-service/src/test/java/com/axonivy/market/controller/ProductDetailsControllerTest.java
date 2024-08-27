@@ -6,13 +6,14 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import java.io.IOException;
 import java.util.List;
 import java.util.Objects;
-
 import java.util.HashMap;
 import java.util.Map;
-
 import com.axonivy.market.constants.RequestMappingConstants;
+import com.axonivy.market.entity.productjsonfilecontent.ProductJsonContent;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -22,7 +23,6 @@ import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-
 import com.axonivy.market.assembler.ProductDetailModelAssembler;
 import com.axonivy.market.entity.Product;
 import com.axonivy.market.enums.Language;
@@ -122,6 +122,31 @@ class ProductDetailsControllerTest {
     assertEquals(1, result.getBody());
   }
 
+  @Test
+  void findProductVersionsById() {
+    when(versionService.getVersionsForDesigner("google-maps-connector")).thenReturn(
+        List.of("10.0.21", "10.0.22", "10.0.23"));
+
+    var result = productDetailsController.findVersionsForDesigner("google-maps-connector");
+
+    assertEquals(3, Objects.requireNonNull(result.getBody()).size());
+    assertEquals("10.0.21", Objects.requireNonNull(result.getBody()).get(0));
+    assertEquals("10.0.22", Objects.requireNonNull(result.getBody()).get(1));
+    assertEquals("10.0.23", Objects.requireNonNull(result.getBody()).get(2));
+  }
+
+  @Test
+  void findProductJsonContentByIdAndTag() throws IOException {
+    ProductJsonContent productJsonContent = mockProductJsonContent();
+    Map<String , Object> map = new ObjectMapper().readValue(productJsonContent.getContent(), Map.class);
+    when(versionService.getProductJsonContentByIdAndVersion("bpmnstatistic", "10.0.21")).thenReturn(
+        map);
+
+    var result = productDetailsController.findProductJsonContent("bpmnstatistic", "10.0.21");
+
+    assertEquals(new ResponseEntity<>(map, HttpStatus.OK), result);
+  }
+
   private Product mockProduct() {
     Product mockProduct = new Product();
     mockProduct.setId(DOCKER_CONNECTOR_ID);
@@ -148,5 +173,41 @@ class ProductDetailsControllerTest {
     mockProductDetail.setIndustry("Cross-Industry");
     mockProductDetail.setContactUs(false);
     return mockProductDetail;
+  }
+
+  private ProductJsonContent mockProductJsonContent() {
+    String encodedContent = """
+        {
+            "$schema": "https://json-schema.axonivy.com/market/10.0.0/product.json",
+            "minimumIvyVersion": "10.0.8",
+            "installers": [
+                {
+                    "id": "maven-import",
+                    "data": {
+                        "projects": [
+                            {
+                                "groupId": "com.axonivy.utils.docfactory",
+                                "artifactId": "aspose-barcode-demo",
+                                "version": "${version}",
+                                "type": "iar"
+                            }
+                        ],
+                        "repositories": [
+                            {
+                                "id": "maven.axonivy.com",
+                                "url": "https://maven.axonivy.com"
+                            }
+                        ]
+                    }
+                }
+            ]
+        }
+        """;
+
+    ProductJsonContent jsonContent = new ProductJsonContent();
+    jsonContent.setContent(encodedContent);
+    jsonContent.setName("aspose-barcode");
+
+    return jsonContent;
   }
 }
