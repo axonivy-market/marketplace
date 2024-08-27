@@ -72,7 +72,7 @@ describe('FooterComponent', () => {
     expect(getComputedStyle(ivyPolicy.nativeElement).textAlign).toBe('center');
   });
 
-  it('should navigate to the correct URL when the link is clicked', () => {
+  it('should navigate to the correct URL when the link icon is clicked', () => {
     const socialMediaLinks = fixture.debugElement.queryAll(
       By.css('.social-link')
     );

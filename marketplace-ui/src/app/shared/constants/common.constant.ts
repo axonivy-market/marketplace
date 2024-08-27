@@ -36,25 +36,25 @@ export const NAV_ITEMS: NavItem[] = [
 
 export const SOCIAL_MEDIA_LINK = [
   {
-    styleClass: 'fab fa-linkedin',
+    styleClass: 'fa-brands fa-linkedin-in',
     title: 'Axon Ivy | LinkedIn',
     url: 'https://www.linkedin.com/company/axon-ivy-ag'
   },
   {
-    styleClass: 'fab fa-xing',
+    styleClass: 'fa-brands fa-xing',
     title: 'Axon Ivy | XING',
     url: 'https://www.xing.com/companies/axonivyag'
   },
   {
-    styleClass: 'fab fa-youtube',
+    styleClass: 'fa-brands fa-facebook-f',
+    title: 'Axon Ivy | Facebook',
+    url: 'https://www.facebook.com/axonivy'
+  },
+  {
+    styleClass: 'fa-brands fa-youtube',
     title: 'Axon Ivy | Youtube',
     url: 'https://www.youtube.com/channel/UCkoNcDoeDAVM7FB-txy3jnQ'
   },
-  {
-    styleClass: 'fab fa-facebook',
-    title: 'Axon Ivy | Facebook',
-    url: 'https://www.facebook.com/axonivy'
-  }
 ];
 
 export const IVY_FOOTER_LINKS = [
