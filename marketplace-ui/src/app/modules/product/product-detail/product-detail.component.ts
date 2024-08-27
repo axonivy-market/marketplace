@@ -95,7 +95,6 @@ export class ProductDetailComponent {
   isDropdownOpen: WritableSignal<boolean> = signal(false);
   isTabDropdownShown: WritableSignal<boolean> = signal(false);
   selectedVersion = '';
-  selectedVersionInDesigner = '';
   showPopup!: boolean;
   isMobileMode = signal<boolean>(false);
   installationCount = 0;
@@ -124,7 +123,7 @@ export class ProductDetailComponent {
         this.productDetail.set(productDetail);
         this.productModuleContent.set(productDetail.productModuleContent);
         if (this.routingQueryParamService.isDesignerEnv()) {
-          this.selectedVersionInDesigner = 'Version '.concat(this.convertTagToVersion((productDetail.productModuleContent.tag)));
+          this.selectedVersion = 'Version '.concat(this.convertTagToVersion((productDetail.productModuleContent.tag)));
         }
         this.detailTabsForDropdown = this.getNotEmptyTabs();
         this.productDetailService.productNames.set(productDetail.names);

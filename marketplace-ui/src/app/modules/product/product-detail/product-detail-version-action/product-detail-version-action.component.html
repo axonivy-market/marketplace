@@ -2,8 +2,8 @@
   <div class="designer-section d-flex justify-content-sm-between w-100 row">
     <app-common-dropdown
       (click)="getVersionInDesigner()"
-      [items]="versionDropdownInDesigner()"
-      [selectedItem]="selectedVersionInDesigner()"
+      [items]="versionDropdown()"
+      [selectedItem]="selectedVersion()"
       buttonClass="form-select form-select-sm versions-selector__dropdown border__dropdown h-100 text-primary install-designer-dropdown"
       ariaLabel=".form-select-sm example"
       class="flex-grow-1 col-8"

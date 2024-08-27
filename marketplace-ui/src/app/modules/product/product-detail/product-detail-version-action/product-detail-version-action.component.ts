@@ -45,15 +45,6 @@ export class ProductDetailVersionActionComponent implements AfterViewInit {
     }));
   });
 
-  selectedVersionInDesigner = model<string>('');
-  versionsInDesigner: WritableSignal<string[]> = signal([]);
-  versionDropdownInDesigner : Signal<ItemDropdown[]> = computed(() => {
-    return this.versionsInDesigner().map(version => ({
-      value: version,
-      label: version
-    }));
-  });
-
   artifacts: WritableSignal<ItemDropdown[]> = signal([]);
   isDevVersionsDisplayed = signal(false);
   isDropDownDisplayed = signal(false);
@@ -107,8 +98,7 @@ export class ProductDetailVersionActionComponent implements AfterViewInit {
   }
 
   onSelectVersionInDesigner(version: string) {
-    this.selectedVersionInDesigner.set(version);
-    this.selectedVersion.set(version.replace('Version ', ''));
+    this.selectedVersion.set(version);
   }
 
   onSelectArtifact(artifact: ItemDropdown) {
@@ -157,13 +147,18 @@ export class ProductDetailVersionActionComponent implements AfterViewInit {
 
 
   getVersionInDesigner(): void {
-    this.productService.sendRequestToGetProductVersionsForDesigner(this.productId,
-      this.designerVersion,
-      this.isDevVersionsDisplayed()
-    ).subscribe(data => {
-      const versionMap = data.map((d: string) => 'Version '.concat(d));
-      this.versionsInDesigner.set(versionMap);
-    });
+    if (this.versions().length == 0) {
+      this.productService.sendRequestToGetProductVersionsForDesigner(this.productId,
+        this.designerVersion,
+        this.isDevVersionsDisplayed()
+      ).subscribe(data => {
+        const versionMap = data.map((d: string) => 'Version '.concat(d));
+        this.versions.set(versionMap);
+      });
+      if (this.versions().length !== 0 && this.selectedVersion() == '') {
+        this.selectedVersion.set(this.versions()[0]);
+      }
+    }
   }
 
   sanitizeDataBeforeFetching() {

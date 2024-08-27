@@ -41,6 +41,7 @@ import java.util.Objects;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import static com.axonivy.market.constants.ProductJsonConstants.EN_LANGUAGE;
 import static com.axonivy.market.constants.ProductJsonConstants.VERSION_VALUE;
 
 @Log4j2
@@ -165,7 +166,7 @@ public class GHAxonIvyProductRepoServiceImpl implements GHAxonIvyProductRepoServ
     try {
       List<GHContent> contents = getProductFolderContents(product, ghRepository, tag);
       productModuleContent.setTag(tag);
-      getDependencyContentsFromProductJson(productModuleContent, contents , product);
+      updateDependencyContentsFromProductJson(productModuleContent, contents , product);
       List<GHContent> readmeFiles = contents.stream().filter(GHContent::isFile)
           .filter(content -> content.getName().startsWith(ReadmeConstants.README_FILE_NAME)).toList();
       Map<String,Map<String,String>> moduleContents = new HashMap<>();
@@ -212,8 +213,8 @@ public class GHAxonIvyProductRepoServiceImpl implements GHAxonIvyProductRepoServ
     return result;
   }
 
-  private void getDependencyContentsFromProductJson(ProductModuleContent productModuleContent, List<GHContent> contents , Product product)
-      throws IOException {
+  private void updateDependencyContentsFromProductJson(ProductModuleContent productModuleContent,
+      List<GHContent> contents, Product product) throws IOException {
     GHContent productJsonFile = getProductJsonFile(contents);
     if (Objects.nonNull(productJsonFile)) {
       List<MavenArtifact> artifacts = convertProductJsonToMavenProductInfo(productJsonFile);
@@ -234,8 +235,8 @@ public class GHAxonIvyProductRepoServiceImpl implements GHAxonIvyProductRepoServ
         ProductJsonContent jsonContent = new ProductJsonContent();
         jsonContent.setVersion(currentVersion);
         jsonContent.setProductId(product.getId());
-        jsonContent.setName(product.getNames().get("en"));
-        jsonContent.setContent(content.replace(VERSION_VALUE , currentVersion));
+        jsonContent.setName(product.getNames().get(EN_LANGUAGE));
+        jsonContent.setContent(content.replace(VERSION_VALUE, currentVersion));
         productJsonContentRepository.save(jsonContent);
       }
     }
