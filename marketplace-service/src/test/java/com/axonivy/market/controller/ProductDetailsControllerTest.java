@@ -136,7 +136,7 @@ class ProductDetailsControllerTest {
   }
 
   @Test
-  void findProductJsonContentByNameAndTag() throws IOException {
+  void findProductJsonContentByIdAndTag() throws IOException {
     ProductJsonContent productJsonContent = mockProductJsonContent();
     Map<String , Object> map = new ObjectMapper().readValue(productJsonContent.getContent(), Map.class);
     when(versionService.getProductJsonContentByIdAndVersion("bpmnstatistic", "10.0.21")).thenReturn(

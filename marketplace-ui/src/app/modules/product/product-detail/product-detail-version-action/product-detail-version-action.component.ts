@@ -150,12 +150,9 @@ export class ProductDetailVersionActionComponent implements AfterViewInit {
     if (this.versions().length == 0) {
       this.productService.sendRequestToGetProductVersionsForDesigner(this.productId
       ).subscribe(data => {
-        const versionMap = data.map((d: string) => 'Version '.concat(d));
+        const versionMap = data.map((versionNumber: string) => 'Version '.concat(versionNumber));
         this.versions.set(versionMap);
       });
-      if (this.versions().length !== 0 && this.selectedVersion() == '') {
-        this.selectedVersion.set(this.versions()[0]);
-      }
     }
   }
 
