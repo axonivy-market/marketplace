@@ -52,7 +52,7 @@ common:
     termsOfService: Terms of Service
   product:
     detail:
-      backToMainPage: Back to marketplace overview
+      backToMainPage: Back to overview
       review: Review
       installation: Downloads
       times: Times
