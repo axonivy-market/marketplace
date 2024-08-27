@@ -73,17 +73,17 @@ describe('FooterComponent', () => {
   });
 
   it('should navigate to the correct URL when the link is clicked', () => {
-    const linkDebugElement = fixture.debugElement.queryAll(
+    const socialMediaLinks = fixture.debugElement.queryAll(
       By.css('.social-link')
     );
 
-    for (let index = 0; index < linkDebugElement.length; index++) {
-      const linkElement: HTMLAnchorElement =
-        linkDebugElement[index].nativeElement;
+    for (let index = 0; index < socialMediaLinks.length; index++) {
+      const socialMediaLinkElement: HTMLAnchorElement =
+      socialMediaLinks[index].nativeElement;
 
-      linkElement.click();
+      socialMediaLinkElement.click();
 
-      expect(linkElement.href).toBe(SOCIAL_MEDIA_LINK[index].url);
+      expect(socialMediaLinkElement.href).toBe(SOCIAL_MEDIA_LINK[index].url);
     }
   });
 });

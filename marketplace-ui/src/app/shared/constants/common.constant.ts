@@ -42,17 +42,17 @@ export const SOCIAL_MEDIA_LINK = [
   },
   {
     styleClass: 'fab fa-xing',
-    title: 'AXON IVY AG | XING',
+    title: 'Axon Ivy | XING',
     url: 'https://www.xing.com/companies/axonivyag'
   },
   {
     styleClass: 'fab fa-youtube',
-    title: 'Axon Ivy',
+    title: 'Axon Ivy | Youtube',
     url: 'https://www.youtube.com/channel/UCkoNcDoeDAVM7FB-txy3jnQ'
   },
   {
     styleClass: 'fab fa-facebook',
-    title: 'Axon Ivy | Zug',
+    title: 'Axon Ivy | Facebook',
     url: 'https://www.facebook.com/axonivy'
   }
 ];
