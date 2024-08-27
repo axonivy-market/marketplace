@@ -1,9 +1,7 @@
 package com.axonivy.market.service;
 
-import com.axonivy.market.entity.productjsonfilecontent.ProductJsonContent;
 import com.axonivy.market.model.MavenArtifactVersionModel;
 import com.fasterxml.jackson.core.JsonProcessingException;
-
 import java.util.List;
 import java.util.Map;
 

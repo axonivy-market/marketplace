@@ -7,20 +7,12 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.io.IOException;
-import java.io.InputStream;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.util.List;
 import java.util.Objects;
-
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Scanner;
-
 import com.axonivy.market.constants.RequestMappingConstants;
 import com.axonivy.market.entity.productjsonfilecontent.ProductJsonContent;
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -29,12 +21,8 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.core.io.Resource;
-import org.springframework.core.io.ResourceLoader;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-
 import com.axonivy.market.assembler.ProductDetailModelAssembler;
 import com.axonivy.market.entity.Product;
 import com.axonivy.market.enums.Language;
@@ -42,7 +30,6 @@ import com.axonivy.market.model.MavenArtifactVersionModel;
 import com.axonivy.market.model.ProductDetailModel;
 import com.axonivy.market.service.ProductService;
 import com.axonivy.market.service.VersionService;
-import org.springframework.util.FileCopyUtils;
 
 @ExtendWith(MockitoExtension.class)
 class ProductDetailsControllerTest {
@@ -188,17 +175,35 @@ class ProductDetailsControllerTest {
     return mockProductDetail;
   }
 
-  private ProductJsonContent mockProductJsonContent() throws IOException {
-    String encodedContent = "{\n" + "    \"$schema\": \"https://json-schema.axonivy.com/market/10.0.0/product.json\",\n"
-        + "    \"minimumIvyVersion\": \"10.0.8\",\n" + "    \"installers\": [\n" + "        {\n"
-        + "            \"id\": \"maven-import\",\n" + "            \"data\": {\n" + "                \"projects\": [\n"
-        + "                    {\n" + "                        \"groupId\": \"com.axonivy.utils.docfactory\",\n"
-        + "                        \"artifactId\": \"aspose-barcode-demo\",\n"
-        + "                        \"version\": \"${version}\",\n" + "                        \"type\": \"iar\"\n"
-        + "                    }\n" + "                ],\n" + "                \"repositories\": [\n"
-        + "                    {\n" + "                        \"id\": \"maven.axonivy.com\",\n"
-        + "                        \"url\": \"https://maven.axonivy.com\"\n" + "                    }\n"
-        + "                ]\n" + "            }\n" + "        }\n" + "    ]\n" + "}";
+  private ProductJsonContent mockProductJsonContent() {
+    String encodedContent = """
+        {
+            "$schema": "https://json-schema.axonivy.com/market/10.0.0/product.json",
+            "minimumIvyVersion": "10.0.8",
+            "installers": [
+                {
+                    "id": "maven-import",
+                    "data": {
+                        "projects": [
+                            {
+                                "groupId": "com.axonivy.utils.docfactory",
+                                "artifactId": "aspose-barcode-demo",
+                                "version": "${version}",
+                                "type": "iar"
+                            }
+                        ],
+                        "repositories": [
+                            {
+                                "id": "maven.axonivy.com",
+                                "url": "https://maven.axonivy.com"
+                            }
+                        ]
+                    }
+                }
+            ]
+        }
+        """;
+
     ProductJsonContent jsonContent = new ProductJsonContent();
     jsonContent.setContent(encodedContent);
     jsonContent.setName("aspose-barcode");

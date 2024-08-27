@@ -18,7 +18,6 @@ import static com.axonivy.market.constants.RequestMappingConstants.INSTALLATION_
 import static com.axonivy.market.constants.RequestMappingConstants.PRODUCT_DETAILS;
 import static com.axonivy.market.constants.RequestMappingConstants.VERSIONS_BY_ID;
 import static com.axonivy.market.constants.RequestMappingConstants.BEST_MATCH_BY_ID_AND_VERSION;
-import com.axonivy.market.entity.productjsonfilecontent.ProductJsonContent;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.enums.ParameterIn;
