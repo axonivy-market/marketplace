@@ -67,10 +67,14 @@
         <ul class="navbar-nav me-auto mb-lg-0 flex-row">
           @for (link of socialMediaLinks; track $index) {
           <li>
-            <a class="nav-link" aria-current="page" [href]="link.url">
-              <span class="d-flex justify-content-center align-items-center link-icon">
-                <i [class]="link.styleClass" class="w-100 h-100"></i>
-              </span>
+            <a 
+              class="nav-link" 
+              aria-current="page" 
+              [href]="link.url" 
+              [title]="link.url">
+                <span class="d-flex justify-content-center align-items-center link-icon">
+                  <i [class]="link.styleClass" class="w-100 h-100"></i>
+                </span>
             </a>
           </li>
           }
