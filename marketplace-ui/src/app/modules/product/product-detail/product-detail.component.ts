@@ -129,6 +129,10 @@ export class ProductDetailComponent {
         this.productDetailService.productNames.set(productDetail.names);
         localStorage.removeItem(STORAGE_ITEM);
         this.installationCount = productDetail.installationCount;
+        this.selectedVersion = this.productModuleContent().tag;
+        if (this.selectedVersion.startsWith('v')) {
+          this.selectedVersion = this.selectedVersion.substring(1);
+        }
       });
       this.productFeedbackService.initFeedbacks();
       this.productStarRatingService.fetchData();
