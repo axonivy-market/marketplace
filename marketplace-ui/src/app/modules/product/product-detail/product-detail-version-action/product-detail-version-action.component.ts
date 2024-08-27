@@ -148,9 +148,7 @@ export class ProductDetailVersionActionComponent implements AfterViewInit {
 
   getVersionInDesigner(): void {
     if (this.versions().length == 0) {
-      this.productService.sendRequestToGetProductVersionsForDesigner(this.productId,
-        this.designerVersion,
-        this.isDevVersionsDisplayed()
+      this.productService.sendRequestToGetProductVersionsForDesigner(this.productId
       ).subscribe(data => {
         const versionMap = data.map((d: string) => 'Version '.concat(d));
         this.versions.set(versionMap);

@@ -17,5 +17,5 @@ public interface VersionService {
   Map<String, Object> getProductJsonContentByIdAndVersion(String name , String version)
       throws JsonProcessingException;
 
-  List<String> getVersionsForDesigner(String productId, Boolean isShowDevVersion, String designerVersion);
+  List<String> getVersionsForDesigner(String productId);
 }

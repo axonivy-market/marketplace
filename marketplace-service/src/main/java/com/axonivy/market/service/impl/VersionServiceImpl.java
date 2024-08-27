@@ -121,7 +121,7 @@ public class VersionServiceImpl implements VersionService {
   }
 
   @Override
-  public List<String> getVersionsForDesigner(String productId, Boolean isShowDevVersion, String designerVersion) {
+  public List<String> getVersionsForDesigner(String productId) {
     return productRepository.getReleasedVersionsById(productId);
   }
 
