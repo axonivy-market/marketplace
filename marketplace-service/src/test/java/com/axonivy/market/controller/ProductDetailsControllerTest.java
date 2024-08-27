@@ -151,12 +151,13 @@ class ProductDetailsControllerTest {
   @Test
   void findProductJsonContentByNameAndTag() throws IOException {
     ProductJsonContent productJsonContent = mockProductJsonContent();
+    Map<String , Object> map = new ObjectMapper().readValue(productJsonContent.getContent(), Map.class);
     when(versionService.getProductJsonContentFromNameAndVersion("bpmnstatistic", "10.0.21")).thenReturn(
-        productJsonContent);
+        map);
 
     var result = productDetailsController.findProductJsonContent("bpmnstatistic", "10.0.21");
 
-    assertEquals(new ResponseEntity<>(productJsonContent, HttpStatus.OK), result);
+    assertEquals(new ResponseEntity<>(map, HttpStatus.OK), result);
   }
 
   private Product mockProduct() {
@@ -188,9 +189,20 @@ class ProductDetailsControllerTest {
   }
 
   private ProductJsonContent mockProductJsonContent() throws IOException {
-    InputStream inputStream = getClass().getClassLoader().getResourceAsStream("product.json");
-    assert inputStream != null;
-    String jsonContent = new Scanner(inputStream, StandardCharsets.UTF_8).useDelimiter("\\A").next();
-    return new ObjectMapper().readValue(jsonContent, ProductJsonContent.class);
+    String encodedContent = "{\n" + "    \"$schema\": \"https://json-schema.axonivy.com/market/10.0.0/product.json\",\n"
+        + "    \"minimumIvyVersion\": \"10.0.8\",\n" + "    \"installers\": [\n" + "        {\n"
+        + "            \"id\": \"maven-import\",\n" + "            \"data\": {\n" + "                \"projects\": [\n"
+        + "                    {\n" + "                        \"groupId\": \"com.axonivy.utils.docfactory\",\n"
+        + "                        \"artifactId\": \"aspose-barcode-demo\",\n"
+        + "                        \"version\": \"${version}\",\n" + "                        \"type\": \"iar\"\n"
+        + "                    }\n" + "                ],\n" + "                \"repositories\": [\n"
+        + "                    {\n" + "                        \"id\": \"maven.axonivy.com\",\n"
+        + "                        \"url\": \"https://maven.axonivy.com\"\n" + "                    }\n"
+        + "                ]\n" + "            }\n" + "        }\n" + "    ]\n" + "}";
+    ProductJsonContent jsonContent = new ProductJsonContent();
+    jsonContent.setContent(encodedContent);
+    jsonContent.setName("aspose-barcode");
+
+    return jsonContent;
   }
 }

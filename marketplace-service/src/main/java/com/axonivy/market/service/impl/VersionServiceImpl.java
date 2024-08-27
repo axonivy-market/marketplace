@@ -22,6 +22,8 @@ import com.axonivy.market.repository.ProductRepository;
 import com.axonivy.market.service.VersionService;
 import com.axonivy.market.util.VersionUtils;
 import com.axonivy.market.util.XmlReaderUtils;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.Getter;
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.lang3.ObjectUtils;
@@ -60,6 +62,7 @@ public class VersionServiceImpl implements VersionService {
   @Getter
   private String productJsonFilePath;
   private String productId;
+  private final ObjectMapper mapper = new ObjectMapper();
 
   public VersionServiceImpl(GHAxonIvyProductRepoService gitHubService,
       MavenArtifactVersionRepository mavenArtifactVersionRepository, ProductRepository productRepository,
@@ -104,8 +107,15 @@ public class VersionServiceImpl implements VersionService {
   }
 
   @Override
-  public ProductJsonContent getProductJsonContentFromNameAndVersion(String productId, String version) {
-    return productJsonContentRepository.findByProductIdAndVersion(productId, version);
+  public Map<String, Object> getProductJsonContentFromNameAndVersion(String productId, String version)
+      throws JsonProcessingException {
+    ProductJsonContent productJsonContent = productJsonContentRepository.findByProductIdAndVersion(productId, version);
+    if (ObjectUtils.isEmpty(productJsonContent)) {
+      return new HashMap<>();
+    }
+    Map<String, Object> result = mapper.readValue(productJsonContent.getContent(), Map.class);
+    result.computeIfAbsent("name", k -> productJsonContent.getName());
+    return result;
   }
 
   @Override

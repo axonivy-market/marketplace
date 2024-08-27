@@ -10,6 +10,8 @@ import static com.axonivy.market.constants.RequestParamConstants.VERSION;
 
 
 import java.util.List;
+import java.util.Map;
+
 import static com.axonivy.market.constants.RequestMappingConstants.BY_ID;
 import static com.axonivy.market.constants.RequestMappingConstants.BY_ID_AND_VERSION;
 import static com.axonivy.market.constants.RequestMappingConstants.INSTALLATION_COUNT_BY_ID;
@@ -17,6 +19,7 @@ import static com.axonivy.market.constants.RequestMappingConstants.PRODUCT_DETAI
 import static com.axonivy.market.constants.RequestMappingConstants.VERSIONS_BY_ID;
 import static com.axonivy.market.constants.RequestMappingConstants.BEST_MATCH_BY_ID_AND_VERSION;
 import com.axonivy.market.entity.productjsonfilecontent.ProductJsonContent;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.enums.ParameterIn;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -98,10 +101,10 @@ public class ProductDetailsController {
   }
 
   @GetMapping(PRODUCT_JSON_CONTENT_BY_PRODUCT_ID_AND_VERSION)
-  public ResponseEntity<ProductJsonContent> findProductJsonContent(
+  public ResponseEntity<Map<String, Object>> findProductJsonContent(
       @PathVariable(PRODUCT_ID) String productId,
-      @PathVariable(VERSION) String version) {
-    ProductJsonContent productJsonContent = versionService.getProductJsonContentFromNameAndVersion(productId, version);
+      @PathVariable(VERSION) String version) throws JsonProcessingException {
+    Map<String, Object> productJsonContent = versionService.getProductJsonContentFromNameAndVersion(productId, version);
     return new ResponseEntity<>(productJsonContent, HttpStatus.OK);
   }
 

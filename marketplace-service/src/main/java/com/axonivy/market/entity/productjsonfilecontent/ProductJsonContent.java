@@ -24,13 +24,8 @@ public class ProductJsonContent {
   @Id
   @JsonIgnore
   private String id;
-  @JsonProperty("$schema")
-  private String schema;
-  @JsonIgnore
   private String version;
   private String productId;
   private String name;
-  private List<Installer> installers;
-  private Properties properties;
-  private String minimumIvyVersion;
+  private String content;
 }

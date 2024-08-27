@@ -16,10 +16,10 @@ import com.axonivy.market.github.service.GitHubService;
 import com.axonivy.market.github.util.GitHubUtils;
 import com.axonivy.market.repository.ProductJsonContentRepository;
 import com.axonivy.market.util.VersionUtils;
-import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.log4j.Log4j2;
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.util.Strings;
@@ -32,6 +32,7 @@ import org.springframework.util.CollectionUtils;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -40,7 +41,7 @@ import java.util.Objects;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import static com.axonivy.market.util.VersionUtils.updateVersionForInstaller;
+import static com.axonivy.market.constants.ProductJsonConstants.VERSION_VALUE;
 
 @Log4j2
 @Service
@@ -228,21 +229,22 @@ public class GHAxonIvyProductRepoServiceImpl implements GHAxonIvyProductRepoServ
       String currentVersion = VersionUtils.convertTagToVersion(productModuleContent.getTag());
       boolean isProductJsonContentExists = productJsonContentRepository.existsByProductIdAndVersion(product.getId(),
           currentVersion);
-      ProductJsonContent productJsonContent = extractProductJsonContent(productJsonFile, productModuleContent.getTag());
-      if (ObjectUtils.isNotEmpty(productJsonContent) && !isProductJsonContentExists) {
-        updateVersionForInstaller(productJsonContent, currentVersion);
-        productJsonContent.setVersion(currentVersion);
-        productJsonContent.setProductId(product.getId());
-        productJsonContent.setName(product.getNames().get("en"));
-        productJsonContentRepository.save(productJsonContent);
+      String content = extractProductJsonContent(productJsonFile, productModuleContent.getTag());
+      if (ObjectUtils.isNotEmpty(content) && !isProductJsonContentExists) {
+        ProductJsonContent jsonContent = new ProductJsonContent();
+        jsonContent.setVersion(currentVersion);
+        jsonContent.setProductId(product.getId());
+        jsonContent.setName(product.getNames().get("en"));
+        jsonContent.setContent(content.replace(VERSION_VALUE , currentVersion));
+        productJsonContentRepository.save(jsonContent);
       }
     }
   }
 
-  private ProductJsonContent extractProductJsonContent(GHContent ghContent, String tag) {
+  private String extractProductJsonContent(GHContent ghContent, String tag) {
     try {
       InputStream contentStream = extractedContentStream(ghContent);
-      return objectMapper.readValue(contentStream, ProductJsonContent.class);
+      return IOUtils.toString(contentStream, StandardCharsets.UTF_8);
     } catch (Exception exception) {
       log.error("Cannot paste content of product.json {} at tag: {}", ghContent.getPath(), tag);
       return null;
