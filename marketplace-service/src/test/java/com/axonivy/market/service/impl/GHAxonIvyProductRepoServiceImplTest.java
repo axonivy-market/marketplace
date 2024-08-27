@@ -428,9 +428,9 @@ class GHAxonIvyProductRepoServiceImplTest {
         RELEASE_TAG);
 
     verify(productJsonContentRepository).save(argumentCaptor.capture());
-    assertEquals(argumentCaptor.getValue().getName(), "docuware-connector-name");
-    assertEquals(argumentCaptor.getValue().getVersion(), "10.0.0");
-    assertEquals(argumentCaptor.getValue().getProductId(), "docuware-connector");
-    assertEquals(argumentCaptor.getValue().getContent(), getMockProductJsonContent().replace("${version}", "10.0.0"));
+    assertEquals("docuware-connector-name" , argumentCaptor.getValue().getName());
+    assertEquals("10.0.0",argumentCaptor.getValue().getVersion());
+    assertEquals("docuware-connector" , argumentCaptor.getValue().getProductId());
+    assertEquals(getMockProductJsonContent().replace("${version}", "10.0.0"),argumentCaptor.getValue().getContent());
   }
 }
