@@ -7,17 +7,14 @@ import static com.axonivy.market.constants.RequestParamConstants.ID;
 import static com.axonivy.market.constants.RequestParamConstants.PRODUCT_ID;
 import static com.axonivy.market.constants.RequestParamConstants.SHOW_DEV_VERSION;
 import static com.axonivy.market.constants.RequestParamConstants.VERSION;
-
-
-import java.util.List;
-import java.util.Map;
-
 import static com.axonivy.market.constants.RequestMappingConstants.BY_ID;
 import static com.axonivy.market.constants.RequestMappingConstants.BY_ID_AND_VERSION;
 import static com.axonivy.market.constants.RequestMappingConstants.INSTALLATION_COUNT_BY_ID;
 import static com.axonivy.market.constants.RequestMappingConstants.PRODUCT_DETAILS;
 import static com.axonivy.market.constants.RequestMappingConstants.VERSIONS_BY_ID;
 import static com.axonivy.market.constants.RequestMappingConstants.BEST_MATCH_BY_ID_AND_VERSION;
+import java.util.List;
+import java.util.Map;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.enums.ParameterIn;
@@ -100,20 +97,20 @@ public class ProductDetailsController {
   }
 
   @GetMapping(PRODUCT_JSON_CONTENT_BY_PRODUCT_ID_AND_VERSION)
-  public ResponseEntity<Map<String, Object>> findProductJsonContent(
-      @PathVariable(PRODUCT_ID) String productId,
+  @Operation(summary = "Get product json content for designer to install", description = "When we click install in designer, this API will send content of product json for installing in Ivy designer")
+  public ResponseEntity<Map<String, Object>> findProductJsonContent(@PathVariable(PRODUCT_ID) String productId,
       @PathVariable(VERSION) String version) throws JsonProcessingException {
-    Map<String, Object> productJsonContent = versionService.getProductJsonContentFromNameAndVersion(productId, version);
+    Map<String, Object> productJsonContent = versionService.getProductJsonContentByIdAndVersion(productId, version);
     return new ResponseEntity<>(productJsonContent, HttpStatus.OK);
   }
 
   @GetMapping(VERSIONS_IN_DESIGNER)
+  @Operation(summary = "Get the list of released version in product", description = "Collect the released versions in product for ivy designer")
   public ResponseEntity<List<String>> findVersionsForDesigner(@PathVariable(ID) String id,
       @RequestParam(SHOW_DEV_VERSION) @Parameter(description = "Option to get Dev Version (Snapshot/ sprint release)", in = ParameterIn.QUERY) boolean isShowDevVersion,
       @RequestParam(name = DESIGNER_VERSION, required = false) @Parameter(in = ParameterIn.QUERY, example = "v10.0.20") String designerVersion) {
     List<String> versionList = versionService.getVersionsForDesigner(id, isShowDevVersion, designerVersion);
     return new ResponseEntity<>(versionList, HttpStatus.OK);
   }
-
 
 }

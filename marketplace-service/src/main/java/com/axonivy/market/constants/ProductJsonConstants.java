@@ -17,9 +17,7 @@ public class ProductJsonConstants {
   public static final String VERSION_VALUE = "${version}";
   public static final String MAVEN_DEPENDENCY_INSTALLER_ID = "maven-dependency";
   public static final String CUSTOM_ORDER = "customOrder";
-
   public static final String EN_LANGUAGE = "en";
-
   public static final String NAME = "name";
 
   private ProductJsonConstants() {

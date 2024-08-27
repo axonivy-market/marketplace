@@ -4,6 +4,7 @@ import com.axonivy.market.constants.CommonConstants;
 import com.axonivy.market.constants.ProductJsonConstants;
 import com.axonivy.market.constants.ReadmeConstants;
 import com.axonivy.market.entity.Product;
+import com.axonivy.market.entity.productjsonfilecontent.ProductJsonContent;
 import com.axonivy.market.enums.Language;
 import com.axonivy.market.github.model.MavenArtifact;
 import com.axonivy.market.github.service.GitHubService;
@@ -18,6 +19,7 @@ import org.kohsuke.github.GHOrganization;
 import org.kohsuke.github.GHRepository;
 import org.kohsuke.github.GHTag;
 import org.kohsuke.github.PagedIterable;
+import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
@@ -31,14 +33,17 @@ import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.reset;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -281,7 +286,12 @@ class GHAxonIvyProductRepoServiceImplTest {
   }
 
   private static InputStream getMockInputStream() {
-    String jsonContent = """
+    String jsonContent = getMockProductJsonContent();
+    return new ByteArrayInputStream(jsonContent.getBytes(StandardCharsets.UTF_8));
+  }
+
+  private static String getMockProductJsonContent(){
+    return """
         {
            "$schema": "https://json-schema.axonivy.com/market/10.0.0/product.json",
            "installers": [
@@ -332,7 +342,6 @@ class GHAxonIvyProductRepoServiceImplTest {
            ]
          }
         """;
-    return new ByteArrayInputStream(jsonContent.getBytes(StandardCharsets.UTF_8));
   }
 
   private static InputStream getMockInputStreamWithOutProjectAndDependency() {
@@ -355,8 +364,10 @@ class GHAxonIvyProductRepoServiceImplTest {
   }
 
   private Product createMockProduct() {
+    Map<String, String> names = Map.of("en","docuware-connector-name");
     Product product = new Product();
     product.setId("docuware-connector");
+    product.setNames(names);
     product.setLanguage("en");
     return product;
   }
@@ -395,5 +406,31 @@ class GHAxonIvyProductRepoServiceImplTest {
     when(mockProductJson.getName()).thenReturn(ProductJsonConstants.PRODUCT_JSON_FILE, IMAGE_NAME);
     when(mockProductJson.getDownloadUrl()).thenReturn(IMAGE_DOWNLOAD_URL);
     return mockProductJson;
+  }
+
+  @Test
+  void test_insertProductJsonContent() throws IOException {
+    ArgumentCaptor<ProductJsonContent> argumentCaptor = ArgumentCaptor.forClass(ProductJsonContent.class);
+    String readmeContentWithImage = "#Product-name\n Test README\n## Demo\nDemo content\n## Setup\nSetup content (image.png)";
+    GHContent mockContent = createMockProductFolderWithProductJson();
+    getReadmeInputStream(readmeContentWithImage, mockContent);
+    InputStream inputStream = getMockInputStream();
+    Mockito.when(axonivyProductRepoServiceImpl.extractedContentStream(any())).thenReturn(inputStream);
+    Mockito.when(axonivyProductRepoServiceImpl.extractProductJsonContent(any(),anyString())).thenReturn(getMockProductJsonContent());
+
+    ProductJsonContent expectedProductJsonContent = new ProductJsonContent();
+    expectedProductJsonContent.setProductId("docuware-connector");
+    expectedProductJsonContent.setName("docuware-connector-name");
+    expectedProductJsonContent.setVersion("10.0.0");
+    expectedProductJsonContent.setContent(getMockProductJsonContent());
+
+    axonivyProductRepoServiceImpl.getReadmeAndProductContentsFromTag(createMockProduct(), ghRepository,
+        RELEASE_TAG);
+
+    verify(productJsonContentRepository).save(argumentCaptor.capture());
+    assertEquals(argumentCaptor.getValue().getName(), "docuware-connector-name");
+    assertEquals(argumentCaptor.getValue().getVersion(), "10.0.0");
+    assertEquals(argumentCaptor.getValue().getProductId(), "docuware-connector");
+    assertEquals(argumentCaptor.getValue().getContent(), getMockProductJsonContent().replace("${version}", "10.0.0"));
   }
 }

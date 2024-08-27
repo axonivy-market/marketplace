@@ -16,18 +16,17 @@
             [attr.product-id]="product.id"
             [attr.request-path]="environment.apiUrl"
             (click)="onUpdateInstallationCountForDesigner()"
-            onClick="function installInDesigner(){
-          const selectedItemElement = document.querySelector('.install-designer-dropdown');
-          if (selectedItemElement) {
-            const version = selectedItemElement.textContent.trim();
-            const productId = document.getElementById('install-button').getAttribute('product-id');
-            const requestPath = document.getElementById('install-button').getAttribute('request-path');
-            const url = `${requestPath}/api/product-details/productjsoncontent/${productId}/${version.replace('Version ','')}`
-            console.log(url);
-            install(url);
-          }
-        }
-        installInDesigner();"
+            onClick="function installInDesigner() {
+              const selectedItemElement = document.querySelector('.install-designer-dropdown');
+              if (selectedItemElement) {
+                const version = selectedItemElement.textContent.trim();
+                const productId = document.getElementById('install-button').getAttribute('product-id');
+                const requestPath = document.getElementById('install-button').getAttribute('request-path');
+                const url = `${requestPath}/api/product-details/productjsoncontent/${productId}/${version.replace('Version ','')}`
+                install(url);
+              }
+            }
+            installInDesigner();"
             [ngClass]="themeService.isDarkMode() ? 'btn-light' : 'btn-primary'">
       {{ 'common.product.detail.install.buttonLabelInDesigner' | translate }}
     </button>

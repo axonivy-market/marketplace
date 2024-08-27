@@ -242,7 +242,7 @@ public class GHAxonIvyProductRepoServiceImpl implements GHAxonIvyProductRepoServ
     }
   }
 
-  private String extractProductJsonContent(GHContent ghContent, String tag) {
+  public String extractProductJsonContent(GHContent ghContent, String tag) {
     try {
       InputStream contentStream = extractedContentStream(ghContent);
       return IOUtils.toString(contentStream, StandardCharsets.UTF_8);

@@ -109,7 +109,7 @@ public class VersionServiceImpl implements VersionService {
   }
 
   @Override
-  public Map<String, Object> getProductJsonContentFromNameAndVersion(String productId, String version)
+  public Map<String, Object> getProductJsonContentByIdAndVersion(String productId, String version)
       throws JsonProcessingException {
     ProductJsonContent productJsonContent = productJsonContentRepository.findByProductIdAndVersion(productId, version);
     if (ObjectUtils.isEmpty(productJsonContent)) {
@@ -122,13 +122,7 @@ public class VersionServiceImpl implements VersionService {
 
   @Override
   public List<String> getVersionsForDesigner(String productId, Boolean isShowDevVersion, String designerVersion) {
-    Product product = productRepository.findById(productId).orElse(null);
-    if (ObjectUtils.isEmpty(product) || ObjectUtils.isEmpty(product.getProductModuleContents())) {
-      return new ArrayList<>();
-    }
-    List<String> versionList = product.getProductModuleContents().stream().map(ProductModuleContent::getTag)
-        .map(VersionUtils::convertTagToVersion).toList();
-    return VersionUtils.getVersionsToDisplay(versionList, isShowDevVersion, designerVersion);
+    return productRepository.getReleasedVersionsById(productId);
   }
 
   public boolean handleArtifactForVersionToDisplay(List<String> versionsToDisplay,
