@@ -103,7 +103,7 @@ common:
     detailedReviews: Detailed reviews
     rateLinkLabel: Rate this connector
     showMoreBtnLabel: Show more
-    noFeedbackMessage1: There are no feedbacks for this connector yet.
-    noFeedbackMessage2: Bet the first to share your opinion.
+    noFeedbackMessage1: There is no feedback for this connector yet.
+    noFeedbackMessage2: Be the first to share your opinion.
     rateFeedbackBtnLabel: Rate this connector
     reviewLabelNoYet: No reviews yet
