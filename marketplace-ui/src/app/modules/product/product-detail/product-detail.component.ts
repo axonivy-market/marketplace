@@ -35,6 +35,7 @@ import { RoutingQueryParamService } from '../../../shared/services/routing.query
 import { CommonDropdownComponent } from '../../../shared/components/common-dropdown/common-dropdown.component';
 import { CommonUtils } from '../../../shared/utils/common.utils';
 import { ItemDropdown } from '../../../shared/models/item-dropdown.model';
+import { DisplayValue } from '../../../shared/models/display-value.model';
 
 export interface DetailTab {
   activeClass: string;
@@ -107,7 +108,6 @@ export class ProductDetailComponent {
     this.updateDropdownSelection();
   }
 
-
   constructor() {
     this.scrollToTop();
     this.resizeObserver = new ResizeObserver(() => {
@@ -176,12 +176,21 @@ export class ProductDetailComponent {
     });
   }
 
+  private isPropertyNullOrAllEmpty(property: DisplayValue | null) {
+    if (property === null) {
+      return true;
+    } else {
+      const isValueEmpty = (currentValue: String) => currentValue === '';
+      return Object.values(property).every(isValueEmpty);
+    }
+  }
+
   getContent(value: string): boolean {
     const content = this.productModuleContent();
     const conditions: { [key: string]: boolean } = {
-      description: content.description !== null,
-      demo: content.demo !== null,
-      setup: content.setup !== null ,
+      description: !this.isPropertyNullOrAllEmpty(content.description),
+      demo: !this.isPropertyNullOrAllEmpty(content.demo),
+      setup: !this.isPropertyNullOrAllEmpty(content.setup),
       dependency: content.isDependency
     };
 
@@ -190,7 +199,7 @@ export class ProductDetailComponent {
 
   loadDetailTabs(selectedVersion: string) {
     let version = selectedVersion || this.productDetail().newestReleaseVersion;
-    version = version.replace("Version ","")
+    version = version.replace("Version ","");
     this.productService
       .getProductDetailsWithVersion(this.productDetail().id, version)
       .subscribe(updatedProductDetail => {
