@@ -23,6 +23,7 @@
                 const productId = document.getElementById('install-button').getAttribute('product-id');
                 const requestPath = document.getElementById('install-button').getAttribute('request-path');
                 const url = `${requestPath}/api/product-details/productjsoncontent/${productId}/${version.replace('Version ','')}`
+                console.log(url);
                 install(url);
               }
             }

@@ -122,17 +122,11 @@ export class ProductDetailComponent {
       this.getProductById(productId).subscribe(productDetail => {
         this.productDetail.set(productDetail);
         this.productModuleContent.set(productDetail.productModuleContent);
-        if (this.routingQueryParamService.isDesignerEnv()) {
-          this.selectedVersion = 'Version '.concat(this.convertTagToVersion((productDetail.productModuleContent.tag)));
-        }
+        this.selectedVersion = 'Version '.concat(this.convertTagToVersion((productDetail.productModuleContent.tag)));
         this.detailTabsForDropdown = this.getNotEmptyTabs();
         this.productDetailService.productNames.set(productDetail.names);
         localStorage.removeItem(STORAGE_ITEM);
         this.installationCount = productDetail.installationCount;
-        this.selectedVersion = this.productModuleContent().tag;
-        if (this.selectedVersion.startsWith('v')) {
-          this.selectedVersion = this.selectedVersion.substring(1);
-        }
       });
       this.productFeedbackService.initFeedbacks();
       this.productStarRatingService.fetchData();
