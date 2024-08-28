@@ -3,6 +3,7 @@ import { FooterComponent } from './footer.component';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { By } from '@angular/platform-browser';
 import { Viewport } from 'karma-viewport/dist/adapter/viewport';
+import { SOCIAL_MEDIA_LINK } from '../../constants/common.constant';
 
 declare const viewport: Viewport;
 
@@ -69,5 +70,20 @@ describe('FooterComponent', () => {
     const ivyPolicy = fixture.debugElement.query(By.css('.footer__ivy-policy'));
     expect(getComputedStyle(logo.nativeElement).textAlign).toBe('center');
     expect(getComputedStyle(ivyPolicy.nativeElement).textAlign).toBe('center');
+  });
+
+  it('should navigate to the correct URL when the link icon is clicked', () => {
+    const socialMediaLinks = fixture.debugElement.queryAll(
+      By.css('.social-link')
+    );
+
+    for (let index = 0; index < socialMediaLinks.length; index++) {
+      const socialMediaLinkElement: HTMLAnchorElement =
+      socialMediaLinks[index].nativeElement;
+
+      socialMediaLinkElement.click();
+
+      expect(socialMediaLinkElement.href).toBe(SOCIAL_MEDIA_LINK[index].url);
+    }
   });
 });
