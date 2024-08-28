@@ -79,4 +79,10 @@ export class ProductService {
     const url = 'api/product-details/installationcount/' + productId;
     return this.httpClient.put<number>(url, null, { headers: { 'X-Requested-By': 'ivy' } });
   }
+
+  sendRequestToGetProductVersionsForDesigner(productId: string) {
+    const url = `api/product-details/${productId}/designerversions`;
+    return this.httpClient.get<string[]>(url, { headers: { 'X-Requested-By': 'ivy' } });
+  }
+
 }
