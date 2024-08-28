@@ -27,8 +27,6 @@ import { ProductDetailComponent } from './product-detail.component';
 import { ProductModuleContent } from '../../../shared/models/product-module-content.model';
 import { RoutingQueryParamService } from '../../../shared/services/routing.query.param.service';
 import { MockProductService } from '../../../shared/mocks/mock-services';
-import { string } from 'yaml/dist/schema/common/string';
-import { features } from 'process';
 const products = MOCK_PRODUCTS._embedded.products;
 declare const viewport: Viewport;
 
