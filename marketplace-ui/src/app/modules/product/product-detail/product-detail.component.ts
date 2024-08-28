@@ -180,7 +180,7 @@ export class ProductDetailComponent {
     if (property === null) {
       return true;
     } else {
-      const isValueEmpty = (currentValue: String) => currentValue === '';
+      const isValueEmpty = (currentValue: string) => currentValue === '';
       return Object.values(property).every(isValueEmpty);
     }
   }
