@@ -153,7 +153,7 @@
           </div>
         </div>
         <div class="tab-content col-12 default-cursor">
-          @if (isEmptyProductContent()) {
+          @if (!isEmptyProductContent()) {
             <div
               class="tab-pane fade show"
               [class.active]="activeTab === 'description'"

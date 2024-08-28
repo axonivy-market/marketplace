@@ -204,11 +204,14 @@ describe('ProductDetailComponent', () => {
     expect(component.getContent('setup')).toBeFalse();
   });
 
-  it('it should not display information when product detail is empty', () => {
+  it('should not display information when product detail is empty', () => {
     const mockContentWithEmptySetup: ProductModuleContent =
       {} as ProductModuleContent;
     component.productModuleContent.set(mockContentWithEmptySetup);
-    expect(component.isEmptyProductContent()).toBeFalse();
+    expect(component.isEmptyProductContent()).toBeTrue();
+    fixture.detectChanges();
+    const description = fixture.debugElement.query(By.css('#description'));
+    expect(description).toBeFalsy();
   });
 
   it('should display dropdown horizontally on small viewport', () => {
