@@ -35,6 +35,7 @@ import { RoutingQueryParamService } from '../../../shared/services/routing.query
 import { CommonDropdownComponent } from '../../../shared/components/common-dropdown/common-dropdown.component';
 import { CommonUtils } from '../../../shared/utils/common.utils';
 import { ItemDropdown } from '../../../shared/models/item-dropdown.model';
+import { ProductTypePipe } from '../../../shared/pipes/product-type.pipe';
 
 export interface DetailTab {
   activeClass: string;
@@ -58,6 +59,7 @@ const DEFAULT_ACTIVE_TAB = 'description';
     ProductDetailMavenContentComponent,
     NgbNavModule,
     MultilingualismPipe,
+    ProductTypePipe,
     ProductDetailFeedbackComponent,
     ProductInstallationCountActionComponent,
     ProductTypeIconPipe,

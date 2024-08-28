@@ -19,8 +19,8 @@ common:
     label: Filter
     value:
       allTypes: Alle
-      connector: Konnektoren
-      util: Utilities
+      connector: Konnektor
+      util: Nützliches
       demos: Demos
       solution: Lösungen
   sort:
