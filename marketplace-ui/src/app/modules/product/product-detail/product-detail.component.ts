@@ -178,6 +178,9 @@ export class ProductDetailComponent {
 
   getContent(value: string): boolean {
     const content = this.productModuleContent();
+    if (!content) {
+      return false;
+    }
     const conditions: { [key: string]: boolean } = {
       description: content.description !== null,
       demo: content.demo !== null,
