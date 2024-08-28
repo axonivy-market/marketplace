@@ -153,7 +153,7 @@
           </div>
         </div>
         <div class="tab-content col-12 default-cursor">
-          @if (productModuleContent()) {
+          @if (isEmptyProductContent()) {
             <div
               class="tab-pane fade show"
               [class.active]="activeTab === 'description'"
@@ -169,44 +169,44 @@
                 "></markdown>
             </div>
             <div
-            class="tab-pane fade"
-            [class.active]="activeTab === 'demo'"
-            id="demo"
-            role="tabpanel"
-            aria-labelledby="demo-tab">
-            <markdown
-              class="readme-content"
-              [data]="
-                productModuleContent().demo!
-                  | multilingualism: languageService.selectedLanguage()
-                  "></markdown>
-          </div>
-          <div
-            class="tab-pane fade"
-            [class.active]="activeTab === 'setup'"
-            id="setup"
-            role="tabpanel"
-            aria-labelledby="setup-tab">
-            <markdown
-            class="readme-content"
-            [data]="
-                productModuleContent().setup!
-                | multilingualism: languageService.selectedLanguage()
+              class="tab-pane fade"
+              [class.active]="activeTab === 'demo'"
+              id="demo"
+              role="tabpanel"
+              aria-labelledby="demo-tab">
+              <markdown
+                class="readme-content"
+                [data]="
+                  productModuleContent().demo!
+                    | multilingualism: languageService.selectedLanguage()
                 "></markdown>
-          </div>
-          <div
-          class="tab-pane fade"
-          [class.active]="activeTab === 'dependency'"
-          id="dependency"
-          role="tabpanel"
-          aria-labelledby="dependency-tab">
-          <app-product-detail-maven-content
-          [productModuleContent]="productModuleContent()"
-          [selectedVersion]="
-                selectedVersion
+            </div>
+            <div
+              class="tab-pane fade"
+              [class.active]="activeTab === 'setup'"
+              id="setup"
+              role="tabpanel"
+              aria-labelledby="setup-tab">
+              <markdown
+                class="readme-content"
+                [data]="
+                  productModuleContent().setup!
+                    | multilingualism: languageService.selectedLanguage()
+                "></markdown>
+            </div>
+            <div
+              class="tab-pane fade"
+              [class.active]="activeTab === 'dependency'"
+              id="dependency"
+              role="tabpanel"
+              aria-labelledby="dependency-tab">
+              <app-product-detail-maven-content
+                [productModuleContent]="productModuleContent()"
+                [selectedVersion]="
+                  selectedVersion
                 "></app-product-detail-maven-content>
-          </div>
-        }
+            </div>
+          }
         </div>
       </div>
 

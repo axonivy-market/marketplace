@@ -90,7 +90,10 @@ export class ProductDetailComponent {
   detailContent!: DetailTab;
   detailTabs = PRODUCT_DETAIL_TABS;
   activeTab = DEFAULT_ACTIVE_TAB;
-  selectedTabLabel: string = CommonUtils.getLabel(PRODUCT_DETAIL_TABS[0].value, PRODUCT_DETAIL_TABS);
+  selectedTabLabel: string = CommonUtils.getLabel(
+    PRODUCT_DETAIL_TABS[0].value,
+    PRODUCT_DETAIL_TABS
+  );
   detailTabsForDropdown = PRODUCT_DETAIL_TABS;
   isDropdownOpen: WritableSignal<boolean> = signal(false);
   isTabDropdownShown: WritableSignal<boolean> = signal(false);
@@ -107,7 +110,6 @@ export class ProductDetailComponent {
     this.updateDropdownSelection();
   }
 
-
   constructor() {
     this.scrollToTop();
     this.resizeObserver = new ResizeObserver(() => {
@@ -123,7 +125,9 @@ export class ProductDetailComponent {
         this.productDetail.set(productDetail);
         this.productModuleContent.set(productDetail.productModuleContent);
         if (this.routingQueryParamService.isDesignerEnv()) {
-          this.selectedVersion = 'Version '.concat(this.convertTagToVersion((productDetail.productModuleContent.tag)));
+          this.selectedVersion = 'Version '.concat(
+            this.convertTagToVersion(productDetail.productModuleContent.tag)
+          );
         }
         this.detailTabsForDropdown = this.getNotEmptyTabs();
         this.productDetailService.productNames.set(productDetail.names);
@@ -150,7 +154,8 @@ export class ProductDetailComponent {
   }
 
   getProductById(productId: string): Observable<ProductDetail> {
-    const targetVersion = this.routingQueryParamService.getDesignerVersionFromCookie();
+    const targetVersion =
+      this.routingQueryParamService.getDesignerVersionFromCookie();
     if (!targetVersion) {
       return this.productService.getProductDetails(productId);
     }
@@ -177,23 +182,31 @@ export class ProductDetailComponent {
   }
 
   getContent(value: string): boolean {
-    const content = this.productModuleContent();
-    if (!content) {
+    if (this.isEmptyProductContent()) {
       return false;
     }
+    const content = this.productModuleContent();
     const conditions: { [key: string]: boolean } = {
       description: content.description !== null,
       demo: content.demo !== null,
-      setup: content.setup !== null ,
+      setup: content.setup !== null,
       dependency: content.isDependency
     };
 
     return conditions[value] ?? false;
   }
 
+  isEmptyProductContent(): boolean {
+    const content = this.productModuleContent();
+    if (!content || Object.keys(content).length === 0) {
+      return true;
+    }
+    return false;
+  }
+
   loadDetailTabs(selectedVersion: string) {
     let version = selectedVersion || this.productDetail().newestReleaseVersion;
-    version = version.replace("Version ","")
+    version = version.replace('Version ', '');
     this.productService
       .getProductDetailsWithVersion(this.productDetail().id, version)
       .subscribe(updatedProductDetail => {
@@ -291,8 +304,8 @@ export class ProductDetailComponent {
     return this.detailTabsForDropdown.filter(tab => this.getContent(tab.value));
   }
 
-  convertTagToVersion(tag: string) : string {
-    if (tag !== '' && tag.startsWith('v')){
+  convertTagToVersion(tag: string): string {
+    if (tag !== '' && tag.startsWith('v')) {
       return tag.substring(1);
     }
     return tag;

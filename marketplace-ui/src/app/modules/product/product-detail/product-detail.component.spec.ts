@@ -27,6 +27,8 @@ import { ProductDetailComponent } from './product-detail.component';
 import { ProductModuleContent } from '../../../shared/models/product-module-content.model';
 import { RoutingQueryParamService } from '../../../shared/services/routing.query.param.service';
 import { MockProductService } from '../../../shared/mocks/mock-services';
+import { string } from 'yaml/dist/schema/common/string';
+import { features } from 'process';
 const products = MOCK_PRODUCTS._embedded.products;
 declare const viewport: Viewport;
 
@@ -140,7 +142,7 @@ describe('ProductDetailComponent', () => {
   });
 
   it('should call setActiveTab and updateDropdownSelection on onTabChange', () => {
-    const event ={ value: 'description' };
+    const event = { value: 'description' };
     spyOn(component, 'setActiveTab');
     spyOn(component, 'updateDropdownSelection');
 
@@ -157,6 +159,15 @@ describe('ProductDetailComponent', () => {
 
     component.productModuleContent.set(mockContent);
     expect(component.getContent('description')).toBeTrue();
+  });
+
+  it('should return false in tab visibility when product module content is missing', () => {
+    const mockEmptyContent: ProductModuleContent = {} as ProductModuleContent;
+    component.productModuleContent.set(mockEmptyContent);
+    expect(component.getContent('description')).toBeFalse();
+    expect(component.getContent('demo')).toBeFalse();
+    expect(component.getContent('setup')).toBeFalse();
+    expect(component.getContent('dependency')).toBeFalse();
   });
 
   it('should return false for description when it is null or empty', () => {
@@ -193,6 +204,13 @@ describe('ProductDetailComponent', () => {
     };
     component.productModuleContent.set(mockContentWithNullSetup);
     expect(component.getContent('setup')).toBeFalse();
+  });
+
+  it('it should not display information when product detail is empty', () => {
+    const mockContentWithEmptySetup: ProductModuleContent =
+      {} as ProductModuleContent;
+    component.productModuleContent.set(mockContentWithEmptySetup);
+    expect(component.isEmptyProductContent()).toBeFalse();
   });
 
   it('should display dropdown horizontally on small viewport', () => {
