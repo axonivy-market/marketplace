@@ -17,7 +17,10 @@ import { CommonModule } from '@angular/common';
 import { ProductDetailInformationTabComponent } from './product-detail-information-tab/product-detail-information-tab.component';
 import { ProductDetailVersionActionComponent } from './product-detail-version-action/product-detail-version-action.component';
 import { ProductDetailMavenContentComponent } from './product-detail-maven-content/product-detail-maven-content.component';
-import { PRODUCT_DETAIL_TABS } from '../../../shared/constants/common.constant';
+import {
+  PRODUCT_DETAIL_TABS,
+  VERSION
+} from '../../../shared/constants/common.constant';
 import { NgbNavModule } from '@ng-bootstrap/ng-bootstrap';
 import { LanguageService } from '../../../core/services/language/language.service';
 import { MultilingualismPipe } from '../../../shared/pipes/multilingualism.pipe';
@@ -35,7 +38,6 @@ import { RoutingQueryParamService } from '../../../shared/services/routing.query
 import { CommonDropdownComponent } from '../../../shared/components/common-dropdown/common-dropdown.component';
 import { CommonUtils } from '../../../shared/utils/common.utils';
 import { ItemDropdown } from '../../../shared/models/item-dropdown.model';
-import { VERSION } from '../../../shared/constants/common.constant';
 
 export interface DetailTab {
   activeClass: string;
@@ -156,8 +158,7 @@ export class ProductDetailComponent {
   }
 
   getProductById(productId: string): Observable<ProductDetail> {
-    const targetVersion =
-      this.routingQueryParamService.getDesignerVersionFromCookie();
+    const targetVersion = this.routingQueryParamService.getDesignerVersionFromCookie();
     if (!targetVersion) {
       return this.productService.getProductDetails(productId);
     }
