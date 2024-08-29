@@ -1,11 +1,11 @@
 import {
-  AfterViewInit,
+  AfterViewInit, ChangeDetectorRef,
   Component, computed,
-  ElementRef, EventEmitter,
+  ElementRef, EventEmitter, HostListener,
   inject,
   Input,
   model, Output, Signal,
-  signal,
+  signal, ViewChild,
   WritableSignal
 } from '@angular/core';
 import { ThemeService } from '../../../../core/services/theme/theme.service';
@@ -35,6 +35,9 @@ export class ProductDetailVersionActionComponent implements AfterViewInit {
   @Output() installationCount = new EventEmitter<number>();
   @Input() productId!: string;
 
+  @ViewChild('artifactDownloadButton') artifactDownloadButton!: ElementRef;
+  @ViewChild('artifactDownloadDialog') artifactDownloadDialog!: ElementRef;
+
   @Input() product!: ProductDetail;
   selectedVersion = model<string>('');
   versions: WritableSignal<string[]> = signal([]);
@@ -61,6 +64,7 @@ export class ProductDetailVersionActionComponent implements AfterViewInit {
   productDetailService = inject(ProductDetailService);
   elementRef = inject(ElementRef);
   languageService = inject(LanguageService);
+  changeDetectorRef = inject(ChangeDetectorRef);
 
   ngAfterViewInit() {
     const tooltipTriggerList = [].slice.call(
@@ -117,6 +121,42 @@ export class ProductDetailVersionActionComponent implements AfterViewInit {
       this.getVersionWithArtifact();
     }
     this.isDropDownDisplayed.set(!this.isDropDownDisplayed());
+    this.changeDetectorRef.detectChanges();
+    this.reLocaleDialog();
+  }
+
+  @HostListener('window:resize', ['$event'])
+  onResize() {
+    this.reLocaleDialog();
+  }
+
+  reLocaleDialog() {
+    const buttonPosition = this.getElementPosition(this.artifactDownloadButton);
+    const dialogPosition = this.getElementPosition(this.artifactDownloadDialog);
+    if (buttonPosition && dialogPosition) {
+      const dialogElement = this.artifactDownloadDialog.nativeElement;
+
+      dialogElement.style.position = 'absolute';
+      dialogElement.style.top = `${buttonPosition.y + buttonPosition.height}px`;
+
+      // Align the dialog to the center of the button
+      const dialogWidth = dialogElement.offsetWidth;
+      const buttonCenterX = buttonPosition.x + buttonPosition.width / 2;
+      dialogElement.style.left = `${buttonCenterX - dialogWidth / 2}px`;
+    }
+  }
+
+  getElementPosition(element: ElementRef) {
+    if (element && element.nativeElement) {
+      const rect = element.nativeElement.getBoundingClientRect();
+      return {
+        x: rect.left + window.scrollX,
+        y: rect.top + window.scrollY,
+        width: rect.width,
+        height: rect.height
+      };
+    }
+    return null;
   }
 
   getVersionWithArtifact() {

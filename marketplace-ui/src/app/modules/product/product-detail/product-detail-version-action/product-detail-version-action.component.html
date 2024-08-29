@@ -38,14 +38,14 @@
           [ngClass]="themeService.isDarkMode() ? 'btn-light' : 'btn-primary'">
     {{ 'common.product.detail.install.buttonLabel' | translate }}
   </button>
-  <button [lang]="languageService.selectedLanguage()" class="btn btn__download btn-secondary primary-bg flex-grow-1"
+  <button #artifactDownloadButton [lang]="languageService.selectedLanguage()" class="btn btn__download btn-secondary primary-bg flex-grow-1"
           type="button" (click)="onShowVersionAndArtifact()" aria-expanded="false">
     {{ 'common.product.detail.download.buttonLabel' | translate }}
   </button>
 }
 
 @if (isDropDownDisplayed()) {
-<div class="dropdown-menu show maven-artifact-version__action border__dropdown">
+<div #artifactDownloadDialog class="dropdown-menu show maven-artifact-version__action border__dropdown">
   <div class="up-arrow border__dropdown position-absolute"></div>
   <form>
     <div class="form-group">
