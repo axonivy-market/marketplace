@@ -17,6 +17,8 @@ services:
 
   ui:
     image: ghcr.io/axonivy-market/marketplace-ui:${RELEASE_VERSION}
+    volumes:
+      - ../config/nginx/nginx.conf:/etc/nginx/nginx.conf
     restart: always
     ports:
       - "80:80"
