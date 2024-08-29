@@ -264,10 +264,11 @@ export class ProductDetailComponent {
 
   @HostListener('document:click', ['$event'])
   handleClickOutside(event: MouseEvent) {
+    const formSelect =
+      this.elementRef.nativeElement.querySelector('.form-select');
     if (
-      !this.elementRef.nativeElement
-        .querySelector('.form-select')
-        .contains(event.target) &&
+      formSelect &&
+      !formSelect.contains(event.target) &&
       this.isTabDropdownShown()
     ) {
       this.onTabDropdownShown();
