@@ -176,23 +176,21 @@ export class ProductDetailComponent {
     });
   }
 
-  private isPropertyNullOrAllEmpty(property: DisplayValue | null) {
-    if (property === null) {
-      return true;
-    } else {
-      const isValueEmpty = (currentValue: string) => currentValue === '';
-      return Object.values(property).every(isValueEmpty);
-    }
+  private isPropertyNotNullAndNotEmpty(property: DisplayValue | null, selectedLanguage: string): boolean {
+    return property != null && property[selectedLanguage] !== '';
   }
 
   getContent(value: string): boolean {
     const content = this.productModuleContent();
+
+    const selectedLanguage = this.languageService.selectedLanguage();
+ 
     const conditions: { [key: string]: boolean } = {
-      description: !this.isPropertyNullOrAllEmpty(content.description),
-      demo: !this.isPropertyNullOrAllEmpty(content.demo),
-      setup: !this.isPropertyNullOrAllEmpty(content.setup),
+      description: this.isPropertyNotNullAndNotEmpty(content.description, selectedLanguage),
+      demo: this.isPropertyNotNullAndNotEmpty(content.demo, selectedLanguage),
+      setup: this.isPropertyNotNullAndNotEmpty(content.setup, selectedLanguage),
       dependency: content.isDependency
-    };
+    };   
 
     return conditions[value] ?? false;
   }

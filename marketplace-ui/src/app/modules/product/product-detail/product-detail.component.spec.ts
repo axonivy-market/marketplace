@@ -27,6 +27,8 @@ import { ProductDetailComponent } from './product-detail.component';
 import { ProductModuleContent } from '../../../shared/models/product-module-content.model';
 import { RoutingQueryParamService } from '../../../shared/services/routing.query.param.service';
 import { MockProductService } from '../../../shared/mocks/mock-services';
+import { LanguageService } from '../../../core/services/language/language.service';
+import { Language } from '../../../shared/enums/language.enum';
 const products = MOCK_PRODUCTS._embedded.products;
 declare const viewport: Viewport;
 
@@ -34,11 +36,17 @@ describe('ProductDetailComponent', () => {
   let component: ProductDetailComponent;
   let fixture: ComponentFixture<ProductDetailComponent>;
   let routingQueryParamService: jasmine.SpyObj<RoutingQueryParamService>;
+  let languageService: jasmine.SpyObj<LanguageService>;
 
   beforeEach(async () => {
     const routingQueryParamServiceSpy = jasmine.createSpyObj(
       'RoutingQueryParamService',
       ['getDesignerVersionFromCookie', 'isDesignerEnv']
+    );
+    
+    const languageServiceSpy = jasmine.createSpyObj(
+      'LanguageService',
+      ['selectedLanguage']
     );
 
     await TestBed.configureTestingModule({
@@ -63,6 +71,10 @@ describe('ProductDetailComponent', () => {
         {
           provide: RoutingQueryParamService,
           useValue: routingQueryParamServiceSpy
+        },
+        {
+          provide: LanguageService,
+          useValue: languageServiceSpy
         }
       ]
     })
@@ -76,6 +88,10 @@ describe('ProductDetailComponent', () => {
     routingQueryParamService = TestBed.inject(
       RoutingQueryParamService
     ) as jasmine.SpyObj<RoutingQueryParamService>;
+
+    languageService = TestBed.inject(
+      LanguageService
+    ) as jasmine.SpyObj<LanguageService>;
   });
 
   beforeEach(() => {
@@ -140,7 +156,7 @@ describe('ProductDetailComponent', () => {
   });
 
   it('should call setActiveTab and updateDropdownSelection on onTabChange', () => {
-    const event ={ value: 'description' };
+    const event = { value: 'description' };
     spyOn(component, 'setActiveTab');
     spyOn(component, 'updateDropdownSelection');
 
@@ -159,16 +175,26 @@ describe('ProductDetailComponent', () => {
     expect(component.getContent('description')).toBeTrue();
   });
 
-  it('should return false for description when it is null or empty', () => {
-    const mockContentWithEmptyDescription: ProductModuleContent =
+  it('should return false for description when it is null', () => {
+    const mockContentWithNullDescription: ProductModuleContent =
       MOCK_PRODUCT_MODULE_CONTENT;
-    component.productModuleContent.set(mockContentWithEmptyDescription);
-    expect(component.getContent('description')).toBeFalse();
-
-    const mockContentWithNullDescription: ProductModuleContent = {
-      ...MOCK_PRODUCT_MODULE_CONTENT
-    };
     component.productModuleContent.set(mockContentWithNullDescription);
+    expect(component.getContent('description')).toBeFalse();
+  });
+
+  it('should return false for description when it is an empty string', () => {
+    const mockContentWithEmptyDescription: ProductModuleContent = {
+      ...MOCK_PRODUCT_MODULE_CONTENT,
+      description: { en: '' }
+    };
+    
+    const selectedLanguage = Language.EN;
+
+    languageService.selectedLanguage.and.returnValue(
+      selectedLanguage
+    );
+
+    component.productModuleContent.set(mockContentWithEmptyDescription);
     expect(component.getContent('description')).toBeFalse();
   });
 
@@ -182,17 +208,60 @@ describe('ProductDetailComponent', () => {
     expect(component.getContent('setup')).toBeTrue();
   });
 
-  it('should return false for setup when it is null or empty', () => {
-    const mockContentWithEmptySetup: ProductModuleContent =
+  it('should return false for setup when it is null', () => {
+    const mockContentWithNullSetup: ProductModuleContent =
       MOCK_PRODUCT_MODULE_CONTENT;
-    component.productModuleContent.set(mockContentWithEmptySetup);
-    expect(component.getContent('setup')).toBeFalse();
-
-    const mockContentWithNullSetup: ProductModuleContent = {
-      ...MOCK_PRODUCT_MODULE_CONTENT
-    };
     component.productModuleContent.set(mockContentWithNullSetup);
     expect(component.getContent('setup')).toBeFalse();
+  });
+
+  it('should return false for setup when it is an empty string', () => {
+    const mockContentWithEmptySetup: ProductModuleContent = {
+      ...MOCK_PRODUCT_MODULE_CONTENT,
+      setup: { en: '' }
+    };
+
+    const selectedLanguage = Language.EN;
+
+    languageService.selectedLanguage.and.returnValue(
+      selectedLanguage
+    );
+
+    component.productModuleContent.set(mockContentWithEmptySetup);
+    expect(component.getContent('setup')).toBeFalse();
+  });
+
+  it('should return true for demo when it is not null and not empty', () => {
+    const mockContent: ProductModuleContent = {
+      ...MOCK_PRODUCT_MODULE_CONTENT,
+      demo: { en: 'Test demo' }
+    };
+
+    component.productModuleContent.set(mockContent);
+    expect(component.getContent('demo')).toBeTrue();
+  });
+
+  it('should return false for demo when it is null', () => {
+    const mockContentWithNullDemo: ProductModuleContent =
+      MOCK_PRODUCT_MODULE_CONTENT;
+    component.productModuleContent.set(mockContentWithNullDemo);
+    expect(component.getContent('demo')).toBeFalse();
+  });
+
+  it('should return false for demo when it is an empty string', () => {
+    const mockContentWithEmptyDemo: ProductModuleContent = {
+      ...MOCK_PRODUCT_MODULE_CONTENT,
+      demo: { en: '' }
+    };
+
+    const selectedLanguage = Language.EN;
+
+    languageService.selectedLanguage.and.returnValue(
+      selectedLanguage
+    );
+
+    component.productModuleContent.set(mockContentWithEmptyDemo);
+    expect(component.getContent('demo')).toBeFalse();
   });
 
   it('should display dropdown horizontally on small viewport', () => {
