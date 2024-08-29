@@ -35,6 +35,7 @@ import { RoutingQueryParamService } from '../../../shared/services/routing.query
 import { CommonDropdownComponent } from '../../../shared/components/common-dropdown/common-dropdown.component';
 import { CommonUtils } from '../../../shared/utils/common.utils';
 import { ItemDropdown } from '../../../shared/models/item-dropdown.model';
+import { VERSION } from '../../../shared/constants/common.constant';
 
 export interface DetailTab {
   activeClass: string;
@@ -90,10 +91,7 @@ export class ProductDetailComponent {
   detailContent!: DetailTab;
   detailTabs = PRODUCT_DETAIL_TABS;
   activeTab = DEFAULT_ACTIVE_TAB;
-  selectedTabLabel: string = CommonUtils.getLabel(
-    PRODUCT_DETAIL_TABS[0].value,
-    PRODUCT_DETAIL_TABS
-  );
+  selectedTabLabel: string = CommonUtils.getLabel(PRODUCT_DETAIL_TABS[0].value, PRODUCT_DETAIL_TABS);
   detailTabsForDropdown = PRODUCT_DETAIL_TABS;
   isDropdownOpen: WritableSignal<boolean> = signal(false);
   isTabDropdownShown: WritableSignal<boolean> = signal(false);
@@ -145,15 +143,11 @@ export class ProductDetailComponent {
     if (this.isEmptyProductContent()) {
       return;
     }
+    this.selectedVersion = this.convertTagToVersion(
+      this.productModuleContent().tag
+    );
     if (this.routingQueryParamService.isDesignerEnv()) {
-      this.selectedVersion = 'Version '.concat(
-        this.convertTagToVersion(this.productModuleContent().tag)
-      );
-    } else {
-      this.selectedVersion = this.productModuleContent().tag;
-    }
-    if (this.selectedVersion.startsWith('v')) {
-      this.selectedVersion = this.selectedVersion.substring(1);
+      this.selectedVersion = VERSION.displayPrefix.concat(this.selectedVersion);
     }
   }
 
@@ -206,15 +200,12 @@ export class ProductDetailComponent {
 
   isEmptyProductContent(): boolean {
     const content = this.productModuleContent();
-    if (!content || Object.keys(content).length === 0) {
-      return true;
-    }
-    return false;
+    return !content || Object.keys(content).length === 0;
   }
 
   loadDetailTabs(selectedVersion: string) {
     let version = selectedVersion || this.productDetail().newestReleaseVersion;
-    version = version.replace('Version ', '');
+    version = version.replace(VERSION.displayPrefix, '');
     this.productService
       .getProductDetailsWithVersion(this.productDetail().id, version)
       .subscribe(updatedProductDetail => {
@@ -314,7 +305,7 @@ export class ProductDetailComponent {
   }
 
   convertTagToVersion(tag: string): string {
-    if (tag !== '' && tag.startsWith('v')) {
+    if (tag !== '' && tag.startsWith(VERSION.tagPrefix)) {
       return tag.substring(1);
     }
     return tag;

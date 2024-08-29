@@ -121,9 +121,8 @@
                   [items]="detailTabsForDropdown"
                   [selectedItem]="selectedTabLabel | translate"
                   buttonClass="form-select flex-grow-1 text-start"
-                  (itemSelected)="
-                    onTabChange($event.value)
-                  "></app-common-dropdown>
+                  (itemSelected)="onTabChange($event.value)">
+                </app-common-dropdown>
               </div>
 
               <button
