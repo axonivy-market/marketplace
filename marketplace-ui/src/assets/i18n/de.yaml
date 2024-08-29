@@ -99,7 +99,7 @@ common:
     detailedReviews: Ausführliche Bewertungen
     rateLinkLabel: Bewerte diesen Konnektor
     showMoreBtnLabel: Mehr anzeigen
-    noFeedbackMessage1: Es gibt noch keine Rückmeldungen für diesen Anschluss.
-    noFeedbackMessage2: Seien Sie der Erste, der seine Meinung mitteilt.
+    noFeedbackMessage1: Deine Meinung ist gefragt.
+    noFeedbackMessage2: ''
     rateFeedbackBtnLabel: Bewerte diesen Konnektor
     reviewLabelNoYet: Noch keine Bewertungen
