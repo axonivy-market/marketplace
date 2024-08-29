@@ -190,3 +190,8 @@ export const DEFAULT_PAGEABLE_IN_REST_CLIENT: Pageable = {
   page: 0,
   size: 40
 };
+
+export const VERSION = {
+  tagPrefix: 'v',
+  displayPrefix: 'Version '
+};

@@ -140,7 +140,7 @@ describe('ProductDetailComponent', () => {
   });
 
   it('should call setActiveTab and updateDropdownSelection on onTabChange', () => {
-    const event ={ value: 'description' };
+    const event = { value: 'description' };
     spyOn(component, 'setActiveTab');
     spyOn(component, 'updateDropdownSelection');
 
@@ -157,6 +157,15 @@ describe('ProductDetailComponent', () => {
 
     component.productModuleContent.set(mockContent);
     expect(component.getContent('description')).toBeTrue();
+  });
+
+  it('should return false in tab visibility when product module content is missing', () => {
+    const mockEmptyContent: ProductModuleContent = {} as ProductModuleContent;
+    component.productModuleContent.set(mockEmptyContent);
+    expect(component.getContent('description')).toBeFalse();
+    expect(component.getContent('demo')).toBeFalse();
+    expect(component.getContent('setup')).toBeFalse();
+    expect(component.getContent('dependency')).toBeFalse();
   });
 
   it('should return false for description when it is null or empty', () => {
@@ -193,6 +202,16 @@ describe('ProductDetailComponent', () => {
     };
     component.productModuleContent.set(mockContentWithNullSetup);
     expect(component.getContent('setup')).toBeFalse();
+  });
+
+  it('should not display information when product detail is empty', () => {
+    const mockContentWithEmptySetup: ProductModuleContent =
+      {} as ProductModuleContent;
+    component.productModuleContent.set(mockContentWithEmptySetup);
+    expect(component.isEmptyProductContent()).toBeTrue();
+    fixture.detectChanges();
+    const description = fixture.debugElement.query(By.css('#description'));
+    expect(description).toBeFalsy();
   });
 
   it('should display dropdown horizontally on small viewport', () => {
@@ -296,5 +315,23 @@ describe('ProductDetailComponent', () => {
     spyOn(component, 'checkMediaSize');
     component.onResize();
     expect(component.checkMediaSize).toHaveBeenCalled();
+  });
+
+  it('should be empty selected version if product detail content is missing', () => {
+    component.productModuleContent.set({} as ProductModuleContent);
+    component.selectedVersion = '';
+    component.handleProductContentVersion();
+    expect(component.selectedVersion).toEqual('');
+  });
+
+  it('should be formated selected version if open in designer', () => {
+    const mockContent: ProductModuleContent = {
+      ...MOCK_PRODUCT_MODULE_CONTENT,
+      tag: '10.0.11'
+    };
+    component.productModuleContent.set(mockContent);
+    routingQueryParamService.isDesignerEnv.and.returnValue(true);
+    component.handleProductContentVersion();
+    expect(component.selectedVersion).toEqual('Version 10.0.11');
   });
 });
