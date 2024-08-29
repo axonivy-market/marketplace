@@ -316,4 +316,22 @@ describe('ProductDetailComponent', () => {
     component.onResize();
     expect(component.checkMediaSize).toHaveBeenCalled();
   });
+
+  it('should be empty selected version if product detail content is missing', () => {
+    component.productModuleContent.set({} as ProductModuleContent);
+    component.selectedVersion = '';
+    component.handleProductContentVersion();
+    expect(component.selectedVersion).toEqual('');
+  });
+
+  it('should be formated selected version if open in designer', () => {
+    const mockContent: ProductModuleContent = {
+      ...MOCK_PRODUCT_MODULE_CONTENT,
+      tag: '10.0.11'
+    };
+    component.productModuleContent.set(mockContent);
+    routingQueryParamService.isDesignerEnv.and.returnValue(true);
+    component.handleProductContentVersion();
+    expect(component.selectedVersion).toEqual('Version 10.0.11');
+  });
 });
