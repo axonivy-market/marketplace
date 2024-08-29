@@ -58,7 +58,7 @@
                 <i [class]="productDetail().type | productTypeIcon"></i>
               </h2>
               <h4 class="analysis-title text-primary text-capitalize mb-0">
-                {{ productDetail().type }}
+                {{ productDetail().type | productType | translate }}
               </h4>
             </div>
           </div>

@@ -10,9 +10,9 @@
             'border-light text-light': themeService.isDarkMode(),
             'border-dark text-dark': !themeService.isDarkMode(),
             'bg-light text-dark':
-              selectedTypeLabel === type.value && themeService.isDarkMode(),
+              selectedTypeLabel === type.label && themeService.isDarkMode(),
             'bg-primary border-0 text-light':
-              selectedTypeLabel === type.value && !themeService.isDarkMode()
+              selectedTypeLabel === type.label && !themeService.isDarkMode()
           }">
         <p [lang]="languageService.selectedLanguage()">
           {{ type.label | translate }}
