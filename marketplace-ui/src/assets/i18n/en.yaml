@@ -18,7 +18,7 @@ common:
       models, business solutions and many utilities such as document
       generation and workflow user interfaces.
     link: Contribute to the community and
-      <a class="link-opacity-100" href="">build your own connector!</a>
+      <a class="link-opacity-100" href="https://github.com/axonivy-market/market/wiki" aria-label="Github - How to contribute">build your own connector!</a>
   filter:
     label: Filter
     value:
