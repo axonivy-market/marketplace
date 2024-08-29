@@ -411,6 +411,11 @@ public class ProductServiceImpl implements ProductService {
     return tags;
   }
 
+  @Override
+  public boolean increaseInstallationCountForProductByDesignerVersion(String productId, String designerVersion) {
+    return productRepository.increaseInstallationCountForProductByDesignerVersion(productId, designerVersion);
+  }
+
   // Cover 3 cases after removing non-numeric characters (8, 11.1 and 10.0.2)
   @Override
   public String getCompatibilityFromOldestTag(String oldestTag) {

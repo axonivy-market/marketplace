@@ -13,6 +13,8 @@ public interface ProductService {
 
   int updateInstallationCountForProduct(String key);
 
+  boolean increaseInstallationCountForProductByDesignerVersion(String productId, String designerVersion);
+
   Product fetchProductDetail(String id);
 
   String getCompatibilityFromOldestTag(String oldestTag);

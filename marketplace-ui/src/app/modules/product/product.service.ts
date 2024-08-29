@@ -85,4 +85,13 @@ export class ProductService {
     return this.httpClient.get<string[]>(url, { headers: { 'X-Requested-By': 'ivy' } });
   }
 
+  sendRequestToUpdateInstallationCountByDesignerVersion(
+    designerVersion: string,
+    productId: string
+  ) {
+    const url = `api/product-details/installationcount/${productId}/designer/${designerVersion}`;
+    return this.httpClient.put<boolean>(url, {
+      headers: { 'X-Requested-By': 'ivy' }
+    });
+  }
 }

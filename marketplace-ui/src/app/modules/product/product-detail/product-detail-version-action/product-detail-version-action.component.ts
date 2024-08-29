@@ -38,7 +38,7 @@ export class ProductDetailVersionActionComponent implements AfterViewInit {
   @Input() product!: ProductDetail;
   selectedVersion = model<string>('');
   versions: WritableSignal<string[]> = signal([]);
-  versionDropdown : Signal<ItemDropdown[]> = computed(() => {
+  versionDropdown: Signal<ItemDropdown[]> = computed(() => {
     return this.versions().map(version => ({
       value: version,
       label: version
@@ -52,7 +52,7 @@ export class ProductDetailVersionActionComponent implements AfterViewInit {
   isInvalidInstallationEnvironment = signal(false);
   designerVersion = '';
   selectedArtifact: string | undefined = '';
-  selectedArtifactName:string | undefined = '';
+  selectedArtifactName: string | undefined = '';
   versionMap: Map<string, ItemDropdown[]> = new Map();
 
   routingQueryParamService = inject(RoutingQueryParamService);
@@ -72,7 +72,6 @@ export class ProductDetailVersionActionComponent implements AfterViewInit {
     this.isDesignerEnvironment.set(
       this.routingQueryParamService.isDesignerEnv()
     );
-
   }
 
   getInstallationTooltipText() {
@@ -83,11 +82,11 @@ export class ProductDetailVersionActionComponent implements AfterViewInit {
         (minimum version 9.2.0)</p>`;
   }
 
-  onSelectVersion(version : string) {
+  onSelectVersion(version: string) {
     this.selectedVersion.set(version);
     this.artifacts.set(this.versionMap.get(this.selectedVersion()) ?? []);
     this.artifacts().forEach(artifact => {
-      if(artifact.name) {
+      if (artifact.name) {
         artifact.label = artifact.name;
       }
     });
@@ -145,7 +144,6 @@ export class ProductDetailVersionActionComponent implements AfterViewInit {
       });
   }
 
-
   getVersionInDesigner(): void {
     if (this.versions().length === 0) {
       this.productService.sendRequestToGetProductVersionsForDesigner(this.productId
@@ -181,7 +179,19 @@ export class ProductDetailVersionActionComponent implements AfterViewInit {
   onUpdateInstallationCountForDesigner() {
     if (this.isDesignerEnvironment()) {
       this.onUpdateInstallationCount();
+      this.updateInstallationCountByDesignerVersion(
+        this.routingQueryParamService.getDesignerVersionFromCookie(),
+        this.productId
+      );
     }
   }
 
+  updateInstallationCountByDesignerVersion(
+    designerVersion: string,
+    productId: string
+  ) {
+    this.productService
+      .sendRequestToUpdateInstallationCountByDesignerVersion(designerVersion, productId)
+      .subscribe();
+  }
 }

@@ -1,5 +1,6 @@
 package com.axonivy.market.controller;
 
+import static com.axonivy.market.constants.RequestMappingConstants.INSTALLATION_COUNT_BY_ID_AND_DESIGNER_VERSION;
 import static com.axonivy.market.constants.RequestMappingConstants.PRODUCT_JSON_CONTENT_BY_PRODUCT_ID_AND_VERSION;
 import static com.axonivy.market.constants.RequestMappingConstants.VERSIONS_IN_DESIGNER;
 import static com.axonivy.market.constants.RequestParamConstants.DESIGNER_VERSION;
@@ -75,6 +76,15 @@ public class ProductDetailsController {
   public ResponseEntity<Integer> syncInstallationCount(
       @PathVariable(ID) @Parameter(description = "Product id (from meta.json)", example = "approval-decision-utils", in = ParameterIn.PATH) String productId) {
     int result = productService.updateInstallationCountForProduct(productId);
+    return new ResponseEntity<>(result, HttpStatus.OK);
+  }
+
+  @PutMapping(INSTALLATION_COUNT_BY_ID_AND_DESIGNER_VERSION)
+  @Operation(summary = "increase designer installation count by 1", description = "update designer installation count when click download product files by users")
+  public ResponseEntity<Boolean> increaseDesignerInstallationCount(
+          @PathVariable(PRODUCT_ID) @Parameter(description = "Product id (from meta.json)", example = "approval-decision-utils", in = ParameterIn.PATH) String productId,
+          @PathVariable(DESIGNER_VERSION) @Parameter(description = "Designer version", example = "11.4.0", in = ParameterIn.PATH) String designerVersion) {
+    boolean result = productService.increaseInstallationCountForProductByDesignerVersion(productId, designerVersion);
     return new ResponseEntity<>(result, HttpStatus.OK);
   }
 

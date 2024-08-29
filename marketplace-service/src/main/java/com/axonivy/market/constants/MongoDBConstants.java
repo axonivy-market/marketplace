@@ -17,4 +17,7 @@ public class MongoDBConstants {
     public static final String PRODUCT_MODULE_CONTENT_TAG ="$$productModuleContent.tag";
     public static final String PRODUCT_COLLECTION ="Product";
     public static final String NEWEST_RELEASED_VERSION_QUERY = "$newestReleaseVersion";
+    public static final String PRODUCT_ID = "productId";
+    public static final String DESIGNER_VERSION = "designerVersion";
+    public static final String INSTALLATION_COUNT = "installationCount";
 }
