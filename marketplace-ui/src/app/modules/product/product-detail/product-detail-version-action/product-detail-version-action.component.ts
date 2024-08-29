@@ -21,8 +21,6 @@ import { LanguageService } from '../../../../core/services/language/language.ser
 import { ItemDropdown } from '../../../../shared/models/item-dropdown.model';
 import { ProductDetail } from '../../../../shared/models/product-detail.model';
 import { environment } from '../../../../../environments/environment';
-
-const delayTimeBeforeHideMessage = 2000;
 @Component({
   selector: 'app-product-version-action',
   standalone: true,
@@ -52,7 +50,6 @@ export class ProductDetailVersionActionComponent implements AfterViewInit {
   isDevVersionsDisplayed = signal(false);
   isDropDownDisplayed = signal(false);
   isDesignerEnvironment = signal(false);
-  isInvalidInstallationEnvironment = signal(false);
   designerVersion = '';
   selectedArtifact: string | undefined = '';
   selectedArtifactName:string | undefined = '';
@@ -147,7 +144,7 @@ export class ProductDetailVersionActionComponent implements AfterViewInit {
   }
 
   getElementPosition(element: ElementRef) {
-    if (element && element.nativeElement) {
+    if (element?.nativeElement) {
       const rect = element.nativeElement.getBoundingClientRect();
       return {
         x: rect.left + window.scrollX,
