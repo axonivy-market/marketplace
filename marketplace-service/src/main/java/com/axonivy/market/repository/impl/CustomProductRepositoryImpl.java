@@ -40,14 +40,12 @@ public class CustomProductRepositoryImpl implements CustomProductRepository {
     return loopOverProductModuleContents.append(MongoDBConstants.CONDITION, isProductModuleContentOfCurrentTag);
   }
 
-
-  private AggregationOperation createLookupProductModuleContentOperation() {
-    return context -> new Document(MongoDBConstants.LOOKUP,
-        new Document()
-        .append(MongoDBConstants.FROM, MongoDBConstants.PRODUCT_MODULE_CONTENT_DOCUMENT)
-        .append(MongoDBConstants.LOCAL_FIELD, MongoDBConstants.PRODUCT_MODULE_CONTENTS_KEY_FIELD)
-        .append(MongoDBConstants.FOREIGN_FIELD, MongoDBConstants.ID)
-        .append(MongoDBConstants.AS, MongoDBConstants.PRODUCT_MODULE_CONTENTS));
+  public AggregationOperation createLookupProductModuleContentOperation() {
+    return Aggregation.lookup()
+        .from(MongoDBConstants.PRODUCT_MODULE_CONTENT_DOCUMENT)
+        .localField(MongoDBConstants.PRODUCT_MODULE_CONTENTS_KEY_FIELD)
+        .foreignField(MongoDBConstants.ID)
+        .as(MongoDBConstants.PRODUCT_MODULE_CONTENTS);
   }
 
   private AggregationOperation createAddFieldProductModuleContentOperation() {
