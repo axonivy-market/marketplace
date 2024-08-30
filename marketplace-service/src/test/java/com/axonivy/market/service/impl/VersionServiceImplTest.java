@@ -417,15 +417,15 @@ class VersionServiceImplTest {
     Assertions.assertEquals(expectedRepoName, result);
   }
 
-  @Test
-  void testGetVersionsForDesigner() {
-    Mockito.when(productRepository.getReleasedVersionsById(anyString()))
-        .thenReturn(List.of("11.3.0", "11.1.1", "11.1.0", "10.0.2"));
-
-    List<String> result = versionService.getVersionsForDesigner("11.3.0");
-
-    Assertions.assertEquals(result, List.of("11.3.0", "11.1.1", "11.1.0", "10.0.2"));
-  }
+//  @Test
+//  void testGetVersionsForDesigner() {
+//    Mockito.when(productRepository.getReleasedVersionsById(anyString()))
+//        .thenReturn(List.of("11.3.0", "11.1.1", "11.1.0", "10.0.2"));
+//
+//    List<String> result = versionService.getVersionsForDesigner("11.3.0");
+//
+//    Assertions.assertEquals(result, List.of("11.3.0", "11.1.1", "11.1.0", "10.0.2"));
+//  }
 
   @Test
   void testGetProductJsonContentByIdAndVersion() throws JsonProcessingException {

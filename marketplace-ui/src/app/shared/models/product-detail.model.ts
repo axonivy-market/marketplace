@@ -21,6 +21,7 @@ export interface ProductDetail {
   contactUs: boolean;
   installationCount: number;
   productModuleContent: ProductModuleContent;
+  metaProductJsonUrl?: string;
   _links: {
     self: {
       href: string;

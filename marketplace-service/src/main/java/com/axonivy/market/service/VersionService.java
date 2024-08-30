@@ -1,6 +1,7 @@
 package com.axonivy.market.service;
 
 import com.axonivy.market.model.MavenArtifactVersionModel;
+import com.axonivy.market.model.VersionAndUrlModel;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import java.util.List;
 import java.util.Map;
@@ -17,5 +18,5 @@ public interface VersionService {
   Map<String, Object> getProductJsonContentByIdAndVersion(String name , String version)
       throws JsonProcessingException;
 
-  List<String> getVersionsForDesigner(String productId);
+  List<VersionAndUrlModel> getVersionsForDesigner(String productId) throws JsonProcessingException;
 }

@@ -15,6 +15,8 @@ import static com.axonivy.market.constants.RequestMappingConstants.VERSIONS_BY_I
 import static com.axonivy.market.constants.RequestMappingConstants.BEST_MATCH_BY_ID_AND_VERSION;
 import java.util.List;
 import java.util.Map;
+
+import com.axonivy.market.model.VersionAndUrlModel;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.enums.ParameterIn;
@@ -106,8 +108,9 @@ public class ProductDetailsController {
 
   @GetMapping(VERSIONS_IN_DESIGNER)
   @Operation(summary = "Get the list of released version in product", description = "Collect the released versions in product for ivy designer")
-  public ResponseEntity<List<String>> findVersionsForDesigner(@PathVariable(ID) String id) {
-    List<String> versionList = versionService.getVersionsForDesigner(id);
+  public ResponseEntity<List<VersionAndUrlModel>> findVersionsForDesigner(@PathVariable(ID) String id)
+      throws JsonProcessingException {
+    List<VersionAndUrlModel> versionList = versionService.getVersionsForDesigner(id);
     return new ResponseEntity<>(versionList, HttpStatus.OK);
   }
 

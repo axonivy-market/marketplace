@@ -2,29 +2,25 @@
   <div class="designer-section d-flex justify-content-sm-between w-100 row">
     <app-common-dropdown
       (click)="getVersionInDesigner()"
-      [items]="versionDropdown()"
+      [items]="versionDropdownInDesigner"
       [selectedItem]="selectedVersion()"
       buttonClass="form-select form-select-sm versions-selector__dropdown border__dropdown h-100 text-primary install-designer-dropdown"
       ariaLabel=".form-select-sm example"
       class="flex-grow-1 col-8"
+      [meta_data_json_url] = "meta_data_json_url()"
       (itemSelected)="onSelectVersionInDesigner($event.value)">
     </app-common-dropdown>
 
     <button [lang]="languageService.selectedLanguage()"
             class="btn btn__install flex-grow-1 install-designer-button m-0 col-4"
             id="install-button"
-            [attr.product-id]="product.id"
-            [attr.request-path]="environment.apiUrl"
             (click)="onUpdateInstallationCountForDesigner()"
             onClick="function installInDesigner() {
               const selectedItemElement = document.querySelector('.install-designer-dropdown');
               if (selectedItemElement) {
-                const version = selectedItemElement.textContent.trim();
-                const productId = document.getElementById('install-button').getAttribute('product-id');
-                const requestPath = document.getElementById('install-button').getAttribute('request-path');
-                const url = `${requestPath}/api/product-details/productjsoncontent/${productId}/${version.replace('Version ','')}`
-                console.log(url);
-                install(url);
+              const metaDataJsonUrl = selectedItemElement.getAttribute('meta_data_json_url');
+              console.log(metaDataJsonUrl);
+              install(metaDataJsonUrl);
               }
             }
             installInDesigner();"

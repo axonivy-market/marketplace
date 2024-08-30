@@ -13,9 +13,10 @@ import { ItemDropdown } from '../../models/item-dropdown.model';
   templateUrl: './common-dropdown.component.html',
   styleUrl: './common-dropdown.component.scss'
 })
-export class CommonDropdownComponent <T extends string> {
+export class CommonDropdownComponent<T extends string> {
   translateService = inject(TranslateService);
-  @Input() items:  ItemDropdown<T>[] = [];
+
+  @Input() items: ItemDropdown<T>[] = [];
   @Input() selectedItem: T | undefined;
   @Input() buttonClass = '';
   @Input() ariaLabel = '';
@@ -23,6 +24,8 @@ export class CommonDropdownComponent <T extends string> {
   @Output() itemSelected = new EventEmitter<ItemDropdown<T>>();
   elementRef = inject(ElementRef);
   isDropdownOpen = false;
+  @Input() meta_data_json_url: string | undefined = '';
+
   toggleDropdown() {
     this.isDropdownOpen = !this.isDropdownOpen;
   }
@@ -30,6 +33,7 @@ export class CommonDropdownComponent <T extends string> {
   onSelect(item: ItemDropdown<T>) {
     this.itemSelected.emit(item);
     this.isDropdownOpen = false;
+    this.meta_data_json_url = item.meta_data_json_url;
   }
 
   isActiveItem(value: ItemDropdown, selectedItem: T | undefined): boolean {

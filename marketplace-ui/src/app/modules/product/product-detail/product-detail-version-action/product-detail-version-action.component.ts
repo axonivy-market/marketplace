@@ -21,6 +21,7 @@ import { LanguageService } from '../../../../core/services/language/language.ser
 import { ItemDropdown } from '../../../../shared/models/item-dropdown.model';
 import { ProductDetail } from '../../../../shared/models/product-detail.model';
 import { environment } from '../../../../../environments/environment';
+import { VersionAndUrl } from '../../../../shared/models/version-and-url';
 
 const delayTimeBeforeHideMessage = 2000;
 @Component({
@@ -41,9 +42,11 @@ export class ProductDetailVersionActionComponent implements AfterViewInit {
   versionDropdown : Signal<ItemDropdown[]> = computed(() => {
     return this.versions().map(version => ({
       value: version,
-      label: version
+      label: version,
     }));
   });
+  meta_data_json_url = model<string>('');
+  versionDropdownInDesigner: ItemDropdown[] = [];
 
   artifacts: WritableSignal<ItemDropdown[]> = signal([]);
   isDevVersionsDisplayed = signal(false);
@@ -97,7 +100,7 @@ export class ProductDetailVersionActionComponent implements AfterViewInit {
     }
   }
 
-  onSelectVersionInDesigner(version: string) {
+  onSelectVersionInDesigner(version: any) {
     this.selectedVersion.set(version);
   }
 
@@ -150,7 +153,12 @@ export class ProductDetailVersionActionComponent implements AfterViewInit {
     if (this.versions().length === 0) {
       this.productService.sendRequestToGetProductVersionsForDesigner(this.productId
       ).subscribe(data => {
-        const versionMap = data.map((versionNumber: string) => 'Version '.concat(versionNumber));
+        const versionMap = data.map(data => data.version).map(version => 'Version '.concat(version));
+        data.forEach(data => {
+          const currentVersion = 'Version '.concat(data.version);
+          const versionAndUrl: ItemDropdown = { value: currentVersion, label: currentVersion, meta_data_json_url: data.url };
+          this.versionDropdownInDesigner.push(versionAndUrl);
+        });
         this.versions.set(versionMap);
       });
     }

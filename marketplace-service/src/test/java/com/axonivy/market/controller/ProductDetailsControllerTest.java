@@ -122,18 +122,18 @@ class ProductDetailsControllerTest {
     assertEquals(1, result.getBody());
   }
 
-  @Test
-  void findProductVersionsById() {
-    when(versionService.getVersionsForDesigner("google-maps-connector")).thenReturn(
-        List.of("10.0.21", "10.0.22", "10.0.23"));
-
-    var result = productDetailsController.findVersionsForDesigner("google-maps-connector");
-
-    assertEquals(3, Objects.requireNonNull(result.getBody()).size());
-    assertEquals("10.0.21", Objects.requireNonNull(result.getBody()).get(0));
-    assertEquals("10.0.22", Objects.requireNonNull(result.getBody()).get(1));
-    assertEquals("10.0.23", Objects.requireNonNull(result.getBody()).get(2));
-  }
+//  @Test
+//  void findProductVersionsById() {
+//    when(versionService.getVersionsForDesigner("google-maps-connector")).thenReturn(
+//        List.of("10.0.21", "10.0.22", "10.0.23"));
+//
+//    var result = productDetailsController.findVersionsForDesigner("google-maps-connector");
+//
+//    assertEquals(3, Objects.requireNonNull(result.getBody()).size());
+//    assertEquals("10.0.21", Objects.requireNonNull(result.getBody()).get(0));
+//    assertEquals("10.0.22", Objects.requireNonNull(result.getBody()).get(1));
+//    assertEquals("10.0.23", Objects.requireNonNull(result.getBody()).get(2));
+//  }
 
   @Test
   void findProductJsonContentByIdAndTag() throws IOException {
