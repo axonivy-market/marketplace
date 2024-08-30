@@ -14,7 +14,6 @@ import java.util.Map;
 import com.axonivy.market.constants.RequestMappingConstants;
 import com.axonivy.market.entity.productjsonfilecontent.ProductJsonContent;
 import com.axonivy.market.model.VersionAndUrlModel;
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -125,7 +124,7 @@ class ProductDetailsControllerTest {
   }
 
   @Test
-  void findProductVersionsById() throws JsonProcessingException {
+  void findProductVersionsById() {
     when(versionService.getVersionsForDesigner("google-maps-connector")).thenReturn(mockVersionAndUrlModels());
 
     var result = productDetailsController.findVersionsForDesigner("google-maps-connector");

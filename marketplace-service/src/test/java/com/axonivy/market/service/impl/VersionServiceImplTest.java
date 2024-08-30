@@ -14,7 +14,6 @@ import com.axonivy.market.repository.MavenArtifactVersionRepository;
 import com.axonivy.market.repository.ProductJsonContentRepository;
 import com.axonivy.market.repository.ProductRepository;
 import com.axonivy.market.util.XmlReaderUtils;
-import com.fasterxml.jackson.core.JsonProcessingException;
 import org.apache.commons.lang3.StringUtils;
 import org.assertj.core.api.Fail;
 import org.junit.jupiter.api.Assertions;
@@ -420,7 +419,7 @@ class VersionServiceImplTest {
   }
 
   @Test
-  void testGetVersionsForDesigner() throws JsonProcessingException {
+  void testGetVersionsForDesigner() {
     Mockito.when(productRepository.getReleasedVersionsById(anyString()))
         .thenReturn(List.of("11.3.0", "11.1.1", "11.1.0", "10.0.2"));
 
@@ -436,7 +435,7 @@ class VersionServiceImplTest {
   }
 
   @Test
-  void testGetProductJsonContentByIdAndVersion() throws JsonProcessingException {
+  void testGetProductJsonContentByIdAndVersion() {
     ProductJsonContent mockProductJsonContent = new ProductJsonContent();
     String mockContent = """
         {

@@ -130,7 +130,7 @@ public class VersionServiceImpl implements VersionService {
   }
 
   @Override
-  public List<VersionAndUrlModel> getVersionsForDesigner(String productId) throws JsonProcessingException {
+  public List<VersionAndUrlModel> getVersionsForDesigner(String productId) {
     List<VersionAndUrlModel> versionAndUrlList = new ArrayList<>();
     List<String> versions = productRepository.getReleasedVersionsById(productId);
     for (String version : versions) {
