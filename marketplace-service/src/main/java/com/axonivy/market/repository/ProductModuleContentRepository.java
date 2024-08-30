@@ -6,4 +6,6 @@ import org.springframework.stereotype.Repository;
 import com.axonivy.market.entity.ProductModuleContent;
 
 @Repository
-public interface ProductModuleContentRepository extends MongoRepository<ProductModuleContent, String> {}
+public interface ProductModuleContentRepository extends MongoRepository<ProductModuleContent, String> {
+
+}

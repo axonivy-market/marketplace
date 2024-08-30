@@ -34,6 +34,7 @@ import java.util.Optional;
 import java.util.UUID;
 
 import com.axonivy.market.criteria.ProductSearchCriteria;
+import com.fasterxml.jackson.core.type.TypeReference;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -121,7 +122,7 @@ class ProductServiceImplTest extends BaseSetup {
   ArgumentCaptor<Product> argumentCaptor = ArgumentCaptor.forClass(Product.class);
 
   @Captor
-  ArgumentCaptor<List<ProductModuleContent>> argumentCaptorProductModuleContent = ArgumentCaptor.forClass((Class) List.class);
+  ArgumentCaptor<ArrayList<ProductModuleContent>> argumentCaptorProductModuleContent;
 
   @Mock
   private GHAxonIvyProductRepoService ghAxonIvyProductRepoService;
@@ -149,7 +150,7 @@ class ProductServiceImplTest extends BaseSetup {
     when(productRepository.getProductById(product.getId())).thenReturn(product);
     when(productRepository.increaseInstallationCount(product.getId())).thenReturn(31);
     result = productService.updateInstallationCountForProduct(product.getId());
-    assertEquals(31,result);
+    assertEquals(31, result);
   }
 
   @Test
@@ -298,8 +299,8 @@ class ProductServiceImplTest extends BaseSetup {
                 && product.getType().equals(TypeOption.CONNECTORS.getCode()))
             .toList()));
     // Executes
-    result =
-        productService.findProducts(TypeOption.CONNECTORS.getOption(), SAMPLE_PRODUCT_NAME, language, false, PAGEABLE);
+    result = productService.findProducts(TypeOption.CONNECTORS.getOption(), SAMPLE_PRODUCT_NAME, language, false,
+        PAGEABLE);
     assertTrue(result.hasContent());
     assertEquals(SAMPLE_PRODUCT_NAME, result.getContent().get(0).getNames().get(Language.EN.getValue()));
   }
@@ -478,8 +479,8 @@ class ProductServiceImplTest extends BaseSetup {
     List<String> orderedListOfProducts = List.of(SAMPLE_PRODUCT_ID);
     when(productRepository.findById(SAMPLE_PRODUCT_ID)).thenReturn(Optional.empty());
 
-    InvalidParamException exception = assertThrows(InvalidParamException.class, () ->
-        productService.refineOrderedListOfProductsInCustomSort(orderedListOfProducts));
+    InvalidParamException exception = assertThrows(InvalidParamException.class,
+        () -> productService.refineOrderedListOfProductsInCustomSort(orderedListOfProducts));
     assertEquals(ErrorCode.PRODUCT_NOT_FOUND.getCode(), exception.getCode());
   }
 
