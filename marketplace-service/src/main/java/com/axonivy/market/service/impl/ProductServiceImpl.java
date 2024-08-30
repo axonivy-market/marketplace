@@ -334,6 +334,11 @@ public class ProductServiceImpl implements ProductService {
       if (StringUtils.isNotBlank(product.getRepositoryName())) {
         updateProductCompatibility(product);
         getProductContents(product);
+      } else {
+        ProductModuleContent initialContent = new ProductModuleContent();
+        initialContent.setTag("1.0");
+        axonIvyProductRepoService.extractedReadMeFileFromContents(product, ghContentEntity.getValue(), initialContent);
+        product.setProductModuleContents(List.of(initialContent));
       }
       productRepository.save(product);
     });

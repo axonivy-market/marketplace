@@ -167,9 +167,19 @@ public class GHAxonIvyProductRepoServiceImpl implements GHAxonIvyProductRepoServ
       List<GHContent> contents = getProductFolderContents(product, ghRepository, tag);
       productModuleContent.setTag(tag);
       updateDependencyContentsFromProductJson(productModuleContent, contents , product);
+      extractedReadMeFileFromContents(product, contents, productModuleContent);
+    } catch (Exception e) {
+      log.error("Cannot get product.json content {}", e.getMessage());
+      return null;
+    }
+    return productModuleContent;
+  }
+
+  public void extractedReadMeFileFromContents(Product product, List<GHContent> contents, ProductModuleContent productModuleContent) {
+    try {
       List<GHContent> readmeFiles = contents.stream().filter(GHContent::isFile)
           .filter(content -> content.getName().startsWith(ReadmeConstants.README_FILE_NAME)).toList();
-      Map<String,Map<String,String>> moduleContents = new HashMap<>();
+      Map<String, Map<String, String>> moduleContents = new HashMap<>();
       if (!CollectionUtils.isEmpty(readmeFiles)) {
         for (GHContent readmeFile : readmeFiles) {
           String readmeContents = new String(readmeFile.read().readAllBytes());
@@ -184,10 +194,8 @@ public class GHAxonIvyProductRepoServiceImpl implements GHAxonIvyProductRepoServ
         productModuleContent.setSetup(replaceEmptyContentsWithEnContent(moduleContents.get(SETUP)));
       }
     } catch (Exception e) {
-      log.error("Cannot get product.json and README file's content {}", e.getMessage());
-      return null;
+      log.error("Cannot get README file's content {}", e.getMessage());
     }
-    return productModuleContent;
   }
 
   /**
