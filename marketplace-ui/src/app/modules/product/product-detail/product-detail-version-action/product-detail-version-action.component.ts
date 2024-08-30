@@ -155,7 +155,7 @@ export class ProductDetailVersionActionComponent implements AfterViewInit {
       ).subscribe(data => {
         const versionMap = data.map(dataVersionAndUrl => dataVersionAndUrl.version).map(version => VERSION.displayPrefix.concat(version));
         data.forEach(dataVersionAndUrl => {
-          const currentVersion = 'Version '.concat(dataVersionAndUrl.version);
+          const currentVersion = VERSION.displayPrefix.concat(dataVersionAndUrl.version);
           const versionAndUrl: ItemDropdown = { value: currentVersion, label: currentVersion, metaDataJsonUrl: dataVersionAndUrl.url };
           this.versionDropdownInDesigner.push(versionAndUrl);
         });

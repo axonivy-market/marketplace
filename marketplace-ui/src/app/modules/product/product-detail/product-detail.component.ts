@@ -127,7 +127,7 @@ export class ProductDetailComponent {
       this.getProductById(productId).subscribe(productDetail => {
         this.productDetail.set(productDetail);
         this.productModuleContent.set(productDetail.productModuleContent);
-        this.selectedVersion = 'Version '.concat(this.convertTagToVersion((productDetail.productModuleContent.tag)));
+        this.selectedVersion = VERSION.displayPrefix.concat(this.convertTagToVersion((productDetail.productModuleContent.tag)));
         this.metaProductJsonUrl = productDetail.metaProductJsonUrl;
         this.detailTabsForDropdown = this.getNotEmptyTabs();
         this.productDetailService.productNames.set(productDetail.names);
