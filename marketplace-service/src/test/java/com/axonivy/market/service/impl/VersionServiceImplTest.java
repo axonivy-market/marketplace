@@ -470,4 +470,13 @@ class VersionServiceImplTest {
 
     Assertions.assertEquals("Amazon Comprehend", result.get("name"));
   }
+
+  @Test
+  void testGetProductJsonContentByIdAndVersion_noResult() {
+    Mockito.when(productJsonContentRepository.findByProductIdAndVersion(anyString(), anyString())).thenReturn(null);
+
+    Map<String, Object> result = versionService.getProductJsonContentByIdAndVersion("amazon-comprehend", "11.3.1");
+
+    Assertions.assertEquals(new HashMap<>(), result);
+  }
 }
