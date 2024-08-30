@@ -202,6 +202,13 @@ class ProductServiceImplTest extends BaseSetup {
   }
 
   @Test
+  void testIncreaseInstallationCountForProductByDesignerVersion() {
+    when(productRepository.increaseInstallationCountForProductByDesignerVersion(any(), any())).thenReturn(true);
+    boolean success = productService.increaseInstallationCountForProductByDesignerVersion("portal", "11.4.0");
+    assertTrue(success);
+  }
+
+  @Test
   void testSyncProductsAsUpdateMetaJSONFromGitHub() throws IOException {
     // Start testing by adding new meta
     mockMarketRepoMetaStatus();

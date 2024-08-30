@@ -24,7 +24,7 @@ public class ProductDesignerInstallationServiceImpl implements ProductDesignerIn
     public List<DesignerInstallation> findByProductId(String productId) {
         List<DesignerInstallation> designerInstallations = new ArrayList<>();
         List<ProductDesignerInstallation> productDesignerInstallations = productDesignerInstallationRepository.findByProductId(productId);
-        for(ProductDesignerInstallation productDesignerInstallation: productDesignerInstallations) {
+        for (ProductDesignerInstallation productDesignerInstallation : productDesignerInstallations) {
             DesignerInstallation designerInstallation = new DesignerInstallation(productDesignerInstallation.getDesignerVersion(), productDesignerInstallation.getInstallationCount());
             designerInstallations.add(designerInstallation);
         }
