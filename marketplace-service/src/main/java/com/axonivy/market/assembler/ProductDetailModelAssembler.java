@@ -62,7 +62,7 @@ public class ProductDetailModelAssembler extends RepresentationModelAssemblerSup
           methodOn(ProductDetailsController.class).findProductDetailsByVersion(productId, version);
       default -> methodOn(ProductDetailsController.class).findProductDetails(productId);
     };
-    
+
     model.add(linkTo(selfLinkWithTag).withSelfRel());
     createDetailResource(model, product);
     return model;
