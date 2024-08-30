@@ -153,12 +153,10 @@ export class ProductDetailVersionActionComponent implements AfterViewInit {
     if (this.versions().length === 0) {
       this.productService.sendRequestToGetProductVersionsForDesigner(this.productId
       ).subscribe(data => {
-        const versionMap = data
-          .map(dataVersionAndUrl => dataVersionAndUrl.version)
-          .map(version => VERSION.displayPrefix.concat(version));
-        data.forEach(data => {
-          const currentVersion = 'Version '.concat(data.version);
-          const versionAndUrl: ItemDropdown = { value: currentVersion, label: currentVersion, metaDataJsonUrl: data.url };
+        const versionMap = data.map(dataVersionAndUrl => dataVersionAndUrl.version).map(version => VERSION.displayPrefix.concat(version));
+        data.forEach(dataVersionAndUrl => {
+          const currentVersion = 'Version '.concat(dataVersionAndUrl.version);
+          const versionAndUrl: ItemDropdown = { value: currentVersion, label: currentVersion, metaDataJsonUrl: dataVersionAndUrl.url };
           this.versionDropdownInDesigner.push(versionAndUrl);
         });
         this.versions.set(versionMap);
