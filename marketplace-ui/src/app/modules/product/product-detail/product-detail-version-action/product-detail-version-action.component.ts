@@ -1,10 +1,14 @@
 import {
   AfterViewInit,
-  Component, computed,
-  ElementRef, EventEmitter,
+  Component,
+  computed,
+  ElementRef,
+  EventEmitter,
   inject,
   Input,
-  model, Output, Signal,
+  model,
+  Output,
+  Signal,
   signal,
   WritableSignal
 } from '@angular/core';
@@ -22,16 +26,23 @@ import { ItemDropdown } from '../../../../shared/models/item-dropdown.model';
 import { ProductDetail } from '../../../../shared/models/product-detail.model';
 import { environment } from '../../../../../environments/environment';
 import { VERSION } from '../../../../shared/constants/common.constant';
+import { LoadingSpinnerComponent } from '../../../../shared/components/loading-spinner/loading-spinner.component';
+import { CookieService } from 'ngx-cookie-service';
+import { CommonUtils } from '../../../../shared/utils/common.utils';
+import { ActivatedRoute, Router } from '@angular/router';
 
 const delayTimeBeforeHideMessage = 2000;
+
 @Component({
   selector: 'app-product-version-action',
   standalone: true,
-  imports: [CommonModule, TranslateModule, FormsModule, CommonDropdownComponent],
+  imports: [CommonModule, TranslateModule, FormsModule, CommonDropdownComponent, LoadingSpinnerComponent],
   templateUrl: './product-detail-version-action.component.html',
   styleUrl: './product-detail-version-action.component.scss'
 })
 export class ProductDetailVersionActionComponent implements AfterViewInit {
+  readonly SHOW_DEV_VERSION_COOKIE_NAME: string = 'showDevVersions';
+  readonly VERSION_PARAM: string = 'version';
   protected readonly environment = environment;
   @Output() installationCount = new EventEmitter<number>();
   @Input() productId!: string;
@@ -39,7 +50,7 @@ export class ProductDetailVersionActionComponent implements AfterViewInit {
   @Input() product!: ProductDetail;
   selectedVersion = model<string>('');
   versions: WritableSignal<string[]> = signal([]);
-  versionDropdown : Signal<ItemDropdown[]> = computed(() => {
+  versionDropdown: Signal<ItemDropdown[]> = computed(() => {
     return this.versions().map(version => ({
       value: version,
       label: version
@@ -47,13 +58,13 @@ export class ProductDetailVersionActionComponent implements AfterViewInit {
   });
 
   artifacts: WritableSignal<ItemDropdown[]> = signal([]);
-  isDevVersionsDisplayed = signal(false);
   isDropDownDisplayed = signal(false);
   isDesignerEnvironment = signal(false);
   isInvalidInstallationEnvironment = signal(false);
+  isArtifactLoading = signal(false);
   designerVersion = '';
   selectedArtifact: string | undefined = '';
-  selectedArtifactName:string | undefined = '';
+  selectedArtifactName: string | undefined = '';
   versionMap: Map<string, ItemDropdown[]> = new Map();
 
   routingQueryParamService = inject(RoutingQueryParamService);
@@ -62,6 +73,11 @@ export class ProductDetailVersionActionComponent implements AfterViewInit {
   productDetailService = inject(ProductDetailService);
   elementRef = inject(ElementRef);
   languageService = inject(LanguageService);
+  cookieService = inject(CookieService);
+  router = inject(Router);
+  route = inject(ActivatedRoute);
+
+  isDevVersionsDisplayed = signal(CommonUtils.getCookieValue(this.cookieService, this.SHOW_DEV_VERSION_COOKIE_NAME, false));
 
   ngAfterViewInit() {
     const tooltipTriggerList = [].slice.call(
@@ -84,18 +100,29 @@ export class ProductDetailVersionActionComponent implements AfterViewInit {
         (minimum version 9.2.0)</p>`;
   }
 
-  onSelectVersion(version : string) {
-    this.selectedVersion.set(version);
-    this.artifacts.set(this.versionMap.get(this.selectedVersion()) ?? []);
-    this.artifacts().forEach(artifact => {
-      if(artifact.name) {
-        artifact.label = artifact.name;
+  onSelectVersion(version: string) {
+    if (this.selectedVersion() !== version) {
+      this.selectedVersion.set(version);
+      this.artifacts.set(this.versionMap.get(version) ?? []);
+      this.artifacts().forEach(artifact => {
+        if (artifact.name) {
+          artifact.label = artifact.name;
+        }
+      });
+      if (this.artifacts().length !== 0) {
+        this.selectedArtifactName = this.artifacts()[0].name ?? '';
+        this.selectedArtifact = this.artifacts()[0].downloadUrl ?? '';
       }
-    });
-    if (this.artifacts().length !== 0) {
-      this.selectedArtifactName = this.artifacts()[0].name ?? '';
-      this.selectedArtifact = this.artifacts()[0].downloadUrl ?? '';
+      this.addVersionParamToRoute(version);
     }
+  }
+
+  addVersionParamToRoute(selectedVersion: string) {
+    this.router.navigate([], {
+      relativeTo: this.route,
+      queryParams: { [this.VERSION_PARAM]: selectedVersion },
+      queryParamsHandling: 'merge'
+    }).then();
   }
 
   onSelectVersionInDesigner(version: string) {
@@ -109,8 +136,10 @@ export class ProductDetailVersionActionComponent implements AfterViewInit {
 
   onShowDevVersion(event: Event) {
     event.preventDefault();
-    this.isDevVersionsDisplayed.set(!this.isDevVersionsDisplayed());
+    const newValue = !this.isDevVersionsDisplayed();
+    this.isDevVersionsDisplayed.set(newValue);
     this.getVersionWithArtifact();
+    this.cookieService.set(this.SHOW_DEV_VERSION_COOKIE_NAME, newValue.toString());
   }
 
   onShowVersionAndArtifact() {
@@ -121,11 +150,12 @@ export class ProductDetailVersionActionComponent implements AfterViewInit {
   }
 
   getVersionWithArtifact() {
+    this.isArtifactLoading.set(true);
     this.sanitizeDataBeforeFetching();
     this.productService
       .sendRequestToProductDetailVersionAPI(
         this.productId,
-        this.isDevVersionsDisplayed(),
+        CommonUtils.getCookieValue(this.cookieService, this.SHOW_DEV_VERSION_COOKIE_NAME, false),
         this.designerVersion
       )
       .subscribe(data => {
@@ -141,11 +171,15 @@ export class ProductDetailVersionActionComponent implements AfterViewInit {
           }
         });
         if (this.versions().length !== 0) {
-          this.selectedVersion.set(this.versions()[0]);
+          this.onSelectVersion(this.getVersionFromRoute() ?? this.versions()[0]);
         }
+        this.isArtifactLoading.set(false);
       });
   }
 
+  getVersionFromRoute(): string | null {
+    return this.route.snapshot.queryParams[this.VERSION_PARAM] || null;
+  }
 
   getVersionInDesigner(): void {
     if (this.versions().length === 0) {
@@ -161,7 +195,6 @@ export class ProductDetailVersionActionComponent implements AfterViewInit {
     this.versions.set([]);
     this.artifacts.set([]);
     this.selectedArtifact = '';
-    this.selectedVersion.set('');
   }
 
   downloadArtifact() {

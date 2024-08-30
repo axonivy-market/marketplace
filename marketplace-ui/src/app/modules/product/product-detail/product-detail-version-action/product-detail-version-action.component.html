@@ -100,5 +100,8 @@
       </button>
     </div>
   </form>
+  @if (isArtifactLoading()) {
+    <app-loading-spinner [isFixPosition]="false" />
+  }
 </div>
 }

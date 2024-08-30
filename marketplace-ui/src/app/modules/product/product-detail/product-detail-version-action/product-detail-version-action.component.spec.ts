@@ -6,34 +6,56 @@ import { ProductService } from '../../product.service';
 import { provideHttpClient } from '@angular/common/http';
 import { ElementRef } from '@angular/core';
 import { ItemDropdown } from '../../../../shared/models/item-dropdown.model';
+import { CookieService } from 'ngx-cookie-service';
+import { ActivatedRoute, provideRouter, Router } from '@angular/router';
+import { CommonUtils } from '../../../../shared/utils/common.utils';
 
 class MockElementRef implements ElementRef {
   nativeElement = {
     contains: jasmine.createSpy('contains')
   };
 }
+
 describe('ProductVersionActionComponent', () => {
   let component: ProductDetailVersionActionComponent;
   let fixture: ComponentFixture<ProductDetailVersionActionComponent>;
   let productServiceMock: any;
   let elementRef: MockElementRef;
+  let cookieService: jasmine.SpyObj<CookieService>;
+  let router: Router;
+  let route: jasmine.SpyObj<ActivatedRoute>;
 
   beforeEach(() => {
     productServiceMock = jasmine.createSpyObj('ProductService', [
-      'sendRequestToProductDetailVersionAPI' , 'sendRequestToUpdateInstallationCount'
+      'sendRequestToProductDetailVersionAPI', 'sendRequestToUpdateInstallationCount'
     ]);
+    const commonUtilsSpy = jasmine.createSpyObj('CommonUtils', ['getCookieValue']);
+    const cookieServiceSpy = jasmine.createSpyObj('CookieService', ['get', 'set']);
+    const activatedRouteSpy = jasmine.createSpyObj('ActivatedRoute', [], {
+      snapshot: {
+        queryParams: {}
+      }
+    });
 
     TestBed.configureTestingModule({
       imports: [ProductDetailVersionActionComponent, TranslateModule.forRoot()],
       providers: [
         TranslateService,
         provideHttpClient(),
+        provideRouter([]),
         { provide: ProductService, useValue: productServiceMock },
-        { provide: ElementRef, useClass: MockElementRef }
+        { provide: CookieService, useValue: cookieServiceSpy },
+        { provide: ElementRef, useClass: MockElementRef },
+        { provide: ActivatedRoute, useValue: { queryParams: of({}) } },
+        { provide: CommonUtils, useValue: commonUtilsSpy },
+        { provide: ActivatedRoute, useValue: activatedRouteSpy }
       ]
     }).compileComponents();
     fixture = TestBed.createComponent(ProductDetailVersionActionComponent);
     component = fixture.componentInstance;
+    cookieService = TestBed.inject(CookieService) as jasmine.SpyObj<CookieService>;
+    router = TestBed.inject(Router);
+    route = TestBed.inject(ActivatedRoute) as jasmine.SpyObj<ActivatedRoute>;
     fixture.detectChanges();
   });
 
@@ -59,6 +81,53 @@ describe('ProductVersionActionComponent', () => {
     expect(component.selectedArtifact).toEqual('https://example.com/download');
   });
 
+  it('should update selectedVersion, artifacts, selectedArtifactName, and selectedArtifact, and call addVersionParamToRoute', () => {
+    const version = '1.0';
+    const artifacts = [{
+      name: 'Example Artifact',
+      downloadUrl: 'https://example.com/download',
+      isProductArtifact: true
+    } as ItemDropdown];
+    const versionMap = new Map<string, any[]>();
+    versionMap.set(version, artifacts);
+
+    // Set up spies
+    spyOn(component.selectedVersion, 'set');
+    spyOn(component as any, 'addVersionParamToRoute').and.callThrough();
+
+    // Mock data
+    component.versionMap = versionMap;
+    component.artifacts.set([]);
+
+    // Call the method
+    component.onSelectVersion(version);
+
+    // Expectations
+    expect(component.selectedVersion.set).toHaveBeenCalledWith(version);
+    expect(component.artifacts()).toEqual(artifacts);
+    expect(component.selectedArtifactName).toBe('Example Artifact');
+    expect(component.selectedArtifact).toBe('https://example.com/download');
+    expect(component.addVersionParamToRoute).toHaveBeenCalledWith(version);
+  });
+
+  it('should navigate with the selected version in the query params', () => {
+    const version = '1.0';
+
+    // Set up spy for router.navigate
+    spyOn(router, 'navigate').and.returnValue(Promise.resolve(true));
+
+    // Call the method
+    component.addVersionParamToRoute(version);
+
+    // Expectations
+    expect(router.navigate).toHaveBeenCalledWith([], {
+      relativeTo: route,
+      queryParams: { [component.VERSION_PARAM]: version },
+      queryParamsHandling: 'merge'
+    });
+  });
+
+
   it('all of state should be reset before call rest api', () => {
     const selectedVersion = 'Version 10.0.2';
     const artifact = {
@@ -78,7 +147,7 @@ describe('ProductVersionActionComponent', () => {
     component.sanitizeDataBeforeFetching();
     expect(component.versions().length).toBe(0);
     expect(component.artifacts().length).toBe(0);
-    expect(component.selectedVersion()).toEqual('');
+    expect(component.selectedVersion()).toEqual(selectedVersion);
     expect(component.selectedArtifact).toEqual('');
   });
 
@@ -123,7 +192,7 @@ describe('ProductVersionActionComponent', () => {
     expect(component.isDropDownDisplayed()).toBeTrue();
   });
 
-  it('should send Api to get DevVersion', () => {
+  it('should send Api to get DevVersion and set the cookie', () => {
     expect(component.isDevVersionsDisplayed()).toBeFalse();
     mockApiWithExpectedResponse();
     const event = new Event('click');
@@ -131,13 +200,33 @@ describe('ProductVersionActionComponent', () => {
     component.onShowDevVersion(event);
     expect(event.preventDefault).toHaveBeenCalled();
     expect(component.isDevVersionsDisplayed()).toBeTrue();
+    expect(component.isDevVersionsDisplayed.set).toHaveBeenCalledWith(false);
+    expect(component.getVersionWithArtifact).toHaveBeenCalled();
+    expect(cookieService.set).toHaveBeenCalledWith(component.SHOW_DEV_VERSION_COOKIE_NAME, 'false');
+  });
+
+  it('should toggle isDevVersionsDisplayed from false to true and set the cookie', () => {
+    spyOn(component.isDevVersionsDisplayed, 'set');
+    spyOn(component, 'getVersionWithArtifact');
+
+    const event = new Event('click');
+    spyOn(event, 'preventDefault');
+
+    spyOn(component, 'isDevVersionsDisplayed').and.returnValue(false);
+
+    component.onShowDevVersion(event);
+
+    expect(event.preventDefault).toHaveBeenCalled();
+    expect(component.isDevVersionsDisplayed.set).toHaveBeenCalledWith(true); // Expect the toggle to true
+    expect(component.getVersionWithArtifact).toHaveBeenCalled();
+    expect(cookieService.set).toHaveBeenCalledWith(component.SHOW_DEV_VERSION_COOKIE_NAME, 'true');
   });
 
   function mockApiWithExpectedResponse() {
     const mockArtifact1 = {
       name: 'Example Artifact1',
       downloadUrl: 'https://example.com/download',
-      isProductArtifact: true, label: 'Example Artifact1',
+      isProductArtifact: true, label: 'Example Artifact1'
     } as ItemDropdown;
     const mockArtifact2 = {
       name: 'Example Artifact2',
