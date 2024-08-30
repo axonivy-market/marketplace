@@ -153,58 +153,60 @@
         </div>
         <div class="tab-content col-12 default-cursor">
           @if (!isEmptyProductContent()) {
-            <div
-              class="tab-pane fade show"
-              [class.active]="activeTab === 'description'"
-              id="description"
-              role="tabpanel"
-              aria-labelledby="description-tab">
-              <markdown
-                [lang]="languageService.selectedLanguage()"
-                class="readme-content"
-                [data]="
-                  productModuleContent().description!
-                    | multilingualism: languageService.selectedLanguage()
-                "></markdown>
-            </div>
-            <div
-              class="tab-pane fade"
-              [class.active]="activeTab === 'demo'"
-              id="demo"
-              role="tabpanel"
-              aria-labelledby="demo-tab">
-              <markdown
-                class="readme-content"
-                [data]="
-                  productModuleContent().demo!
-                    | multilingualism: languageService.selectedLanguage()
-                "></markdown>
-            </div>
-            <div
-              class="tab-pane fade"
-              [class.active]="activeTab === 'setup'"
-              id="setup"
-              role="tabpanel"
-              aria-labelledby="setup-tab">
-              <markdown
-                class="readme-content"
-                [data]="
-                  productModuleContent().setup!
-                    | multilingualism: languageService.selectedLanguage()
-                "></markdown>
-            </div>
-            <div
-              class="tab-pane fade"
-              [class.active]="activeTab === 'dependency'"
-              id="dependency"
-              role="tabpanel"
-              aria-labelledby="dependency-tab">
-              <app-product-detail-maven-content
-                [productModuleContent]="productModuleContent()"
-                [selectedVersion]="
-                  selectedVersion
-                "></app-product-detail-maven-content>
-            </div>
+            @if(getContent(activeTab)) {
+              <div
+                class="tab-pane fade show"
+                [class.active]="activeTab === 'description'"
+                id="description"
+                role="tabpanel"
+                aria-labelledby="description-tab">
+                <markdown
+                  [lang]="languageService.selectedLanguage()"
+                  class="readme-content"
+                  [data]="
+                    productModuleContent().description!
+                      | multilingualism: languageService.selectedLanguage()
+                  "></markdown>
+              </div>
+              <div
+                class="tab-pane fade"
+                [class.active]="activeTab === 'demo'"
+                id="demo"
+                role="tabpanel"
+                aria-labelledby="demo-tab">
+                <markdown
+                  class="readme-content"
+                  [data]="
+                    productModuleContent().demo!
+                      | multilingualism: languageService.selectedLanguage()
+                  "></markdown>
+              </div>
+              <div
+                class="tab-pane fade"
+                [class.active]="activeTab === 'setup'"
+                id="setup"
+                role="tabpanel"
+                aria-labelledby="setup-tab">
+                <markdown
+                  class="readme-content"
+                  [data]="
+                    productModuleContent().setup!
+                      | multilingualism: languageService.selectedLanguage()
+                  "></markdown>
+              </div>
+              <div
+                class="tab-pane fade"
+                [class.active]="activeTab === 'dependency'"
+                id="dependency"
+                role="tabpanel"
+                aria-labelledby="dependency-tab">
+                <app-product-detail-maven-content
+                  [productModuleContent]="productModuleContent()"
+                  [selectedVersion]="
+                    selectedVersion
+                  "></app-product-detail-maven-content>
+              </div>
+            }
           }
         </div>
       </div>

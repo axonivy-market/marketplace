@@ -40,6 +40,7 @@ import { CommonUtils } from '../../../shared/utils/common.utils';
 import { ItemDropdown } from '../../../shared/models/item-dropdown.model';
 import { ProductTypePipe } from '../../../shared/pipes/product-type.pipe';
 import { DisplayValue } from '../../../shared/models/display-value.model';
+import { Language } from '../../../shared/enums/language.enum';
 
 export interface DetailTab {
   activeClass: string;
@@ -187,24 +188,40 @@ export class ProductDetailComponent {
     });
   }
 
-  private isPropertyNotNullAndNotEmpty(property: DisplayValue | null, selectedLanguage: string): boolean {
-    return property != null && property[selectedLanguage] !== '';
+  private isContentDisplayedBasedOnLanguage(value: DisplayValue) {
+    const currentLanguage = this.languageService.selectedLanguage();
+
+    if (currentLanguage === Language.DE) {
+      if (
+        value[currentLanguage] !== '' &&
+        value[currentLanguage] !== undefined
+      ) {
+        return true;
+      }
+    }
+
+    return value[Language.EN] !== '' && value[Language.EN] !== undefined;
   }
 
   getContent(value: string): boolean {
-    if (this.isEmptyProductContent()) {
-      return false;
-    }
     const content = this.productModuleContent();
 
-    const selectedLanguage = this.languageService.selectedLanguage();
- 
+    if (Object.keys(content).length === 0) {
+      return false;
+    }
+
     const conditions: { [key: string]: boolean } = {
-      description: this.isPropertyNotNullAndNotEmpty(content.description, selectedLanguage),
-      demo: this.isPropertyNotNullAndNotEmpty(content.demo, selectedLanguage),
-      setup: this.isPropertyNotNullAndNotEmpty(content.setup, selectedLanguage),
+      description:
+        content.description !== null &&
+        this.isContentDisplayedBasedOnLanguage(content.description),
+      demo:
+        content.demo !== null &&
+        this.isContentDisplayedBasedOnLanguage(content.demo),
+      setup:
+        content.setup !== null &&
+        this.isContentDisplayedBasedOnLanguage(content.setup),
       dependency: content.isDependency
-    };   
+    };
 
     return conditions[value] ?? false;
   }
