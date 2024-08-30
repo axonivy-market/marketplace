@@ -9,11 +9,11 @@ import com.axonivy.market.github.model.ArchivedArtifact;
 import com.axonivy.market.github.model.MavenArtifact;
 import com.axonivy.market.github.service.GHAxonIvyProductRepoService;
 import com.axonivy.market.model.MavenArtifactVersionModel;
+import com.axonivy.market.model.VersionAndUrlModel;
 import com.axonivy.market.repository.MavenArtifactVersionRepository;
 import com.axonivy.market.repository.ProductJsonContentRepository;
 import com.axonivy.market.repository.ProductRepository;
 import com.axonivy.market.util.XmlReaderUtils;
-import com.fasterxml.jackson.core.JsonProcessingException;
 import org.apache.commons.lang3.StringUtils;
 import org.assertj.core.api.Fail;
 import org.junit.jupiter.api.Assertions;
@@ -28,7 +28,6 @@ import org.mockito.Mockito;
 import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.test.util.ReflectionTestUtils;
-
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -422,13 +421,19 @@ class VersionServiceImplTest {
     Mockito.when(productRepository.getReleasedVersionsById(anyString()))
         .thenReturn(List.of("11.3.0", "11.1.1", "11.1.0", "10.0.2"));
 
-    List<String> result = versionService.getVersionsForDesigner("11.3.0");
+    List<VersionAndUrlModel> result = versionService.getVersionsForDesigner("11.3.0");
 
-    Assertions.assertEquals(result, List.of("11.3.0", "11.1.1", "11.1.0", "10.0.2"));
+    Assertions.assertEquals(result.stream().map(VersionAndUrlModel::getVersion).toList(),
+        List.of("11.3.0", "11.1.1", "11.1.0", "10.0.2"));
+    Assertions.assertEquals("/api/product-details/productjsoncontent/11.3.0/11.3.0", result.get(0).getUrl());
+    Assertions.assertEquals("/api/product-details/productjsoncontent/11.3.0/11.1.1", result.get(1).getUrl());
+    Assertions.assertEquals("/api/product-details/productjsoncontent/11.3.0/11.1.0", result.get(2).getUrl());
+    Assertions.assertEquals("/api/product-details/productjsoncontent/11.3.0/10.0.2", result.get(3).getUrl());
+
   }
 
   @Test
-  void testGetProductJsonContentByIdAndVersion() throws JsonProcessingException {
+  void testGetProductJsonContentByIdAndVersion() {
     ProductJsonContent mockProductJsonContent = new ProductJsonContent();
     String mockContent = """
         {
@@ -461,5 +466,14 @@ class VersionServiceImplTest {
     Map<String, Object> result = versionService.getProductJsonContentByIdAndVersion("amazon-comprehend", "11.3.1");
 
     Assertions.assertEquals("Amazon Comprehend", result.get("name"));
+  }
+
+  @Test
+  void testGetProductJsonContentByIdAndVersion_noResult() {
+    Mockito.when(productJsonContentRepository.findByProductIdAndVersion(anyString(), anyString())).thenReturn(null);
+
+    Map<String, Object> result = versionService.getProductJsonContentByIdAndVersion("amazon-comprehend", "11.3.1");
+
+    Assertions.assertEquals(new HashMap<>(), result);
   }
 }

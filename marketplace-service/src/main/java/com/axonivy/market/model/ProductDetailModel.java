@@ -35,6 +35,8 @@ public class ProductDetailModel extends ProductModel {
   private ProductModuleContent productModuleContent;
   @Schema(description = "Installation/download count", example = "0")
   private int installationCount;
+  @Schema(description = "The api url to get metadata from product.json")
+  private String metaProductJsonUrl;
 
   @Override
   public int hashCode() {
