@@ -4,7 +4,7 @@ import com.axonivy.market.constants.MavenConstants;
 import com.axonivy.market.entity.MavenArtifactModel;
 import com.axonivy.market.entity.MavenArtifactVersion;
 import com.axonivy.market.entity.Product;
-import com.axonivy.market.entity.productjsonfilecontent.ProductJsonContent;
+import com.axonivy.market.entity.ProductJsonContent;
 import com.axonivy.market.github.model.ArchivedArtifact;
 import com.axonivy.market.github.model.MavenArtifact;
 import com.axonivy.market.github.service.GHAxonIvyProductRepoService;

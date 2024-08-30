@@ -12,7 +12,7 @@ import java.util.Objects;
 import java.util.HashMap;
 import java.util.Map;
 import com.axonivy.market.constants.RequestMappingConstants;
-import com.axonivy.market.entity.productjsonfilecontent.ProductJsonContent;
+import com.axonivy.market.entity.ProductJsonContent;
 import com.axonivy.market.model.VersionAndUrlModel;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Assertions;
