@@ -2,13 +2,14 @@
   <button (click)="toggleDropdown()"
           [class]="buttonClass"
           [ngClass]="{'indicator-arrow__up': isDropdownOpen}"
-          [attr.aria-label]="ariaLabel"
-  >
+          [attr.metaDataJsonUrl]="metaDataJsonUrl"
+          [attr.aria-label]="ariaLabel">
     {{ selectedItem }}
   </button>
   <div class="dropdown-menu menu-bar" [class.show]="isDropdownOpen">
     @for (item of items; track $index) {
       <div class="dropdown-item item-bar text-primary" (click)="onSelect(item)"
+           [attr.metaDataJsonUrl]="item.metaDataJsonUrl"
            [ngClass]="{'active': isActiveItem(item , selectedItem)}">
         {{ item.label | translate }}
       </div>

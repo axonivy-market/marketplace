@@ -20,7 +20,7 @@ import java.util.Map;
 
 import com.axonivy.market.model.DesignerInstallation;
 import com.axonivy.market.service.ProductDesignerInstallationService;
-import com.fasterxml.jackson.core.JsonProcessingException;
+import com.axonivy.market.model.VersionAndUrlModel;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.enums.ParameterIn;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -125,15 +125,15 @@ public class ProductDetailsController {
   @GetMapping(PRODUCT_JSON_CONTENT_BY_PRODUCT_ID_AND_VERSION)
   @Operation(summary = "Get product json content for designer to install", description = "When we click install in designer, this API will send content of product json for installing in Ivy designer")
   public ResponseEntity<Map<String, Object>> findProductJsonContent(@PathVariable(PRODUCT_ID) String productId,
-      @PathVariable(VERSION) String version) throws JsonProcessingException {
+      @PathVariable(VERSION) String version) {
     Map<String, Object> productJsonContent = versionService.getProductJsonContentByIdAndVersion(productId, version);
     return new ResponseEntity<>(productJsonContent, HttpStatus.OK);
   }
 
   @GetMapping(VERSIONS_IN_DESIGNER)
   @Operation(summary = "Get the list of released version in product", description = "Collect the released versions in product for ivy designer")
-  public ResponseEntity<List<String>> findVersionsForDesigner(@PathVariable(ID) String id) {
-    List<String> versionList = versionService.getVersionsForDesigner(id);
+  public ResponseEntity<List<VersionAndUrlModel>> findVersionsForDesigner(@PathVariable(ID) String id) {
+    List<VersionAndUrlModel> versionList = versionService.getVersionsForDesigner(id);
     return new ResponseEntity<>(versionList, HttpStatus.OK);
   }
 

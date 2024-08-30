@@ -21,6 +21,7 @@ import { LanguageService } from '../../../../core/services/language/language.ser
 import { ItemDropdown } from '../../../../shared/models/item-dropdown.model';
 import { ProductDetail } from '../../../../shared/models/product-detail.model';
 import { environment } from '../../../../../environments/environment';
+import { VERSION } from '../../../../shared/constants/common.constant';
 
 const delayTimeBeforeHideMessage = 2000;
 @Component({
@@ -41,9 +42,11 @@ export class ProductDetailVersionActionComponent implements AfterViewInit {
   versionDropdown: Signal<ItemDropdown[]> = computed(() => {
     return this.versions().map(version => ({
       value: version,
-      label: version
+      label: version,
     }));
   });
+  metaDataJsonUrl = model<string>('');
+  versionDropdownInDesigner: ItemDropdown[] = [];
 
   artifacts: WritableSignal<ItemDropdown[]> = signal([]);
   isDevVersionsDisplayed = signal(false);
@@ -128,7 +131,7 @@ export class ProductDetailVersionActionComponent implements AfterViewInit {
       )
       .subscribe(data => {
         data.forEach(item => {
-          const version = 'Version '.concat(item.version);
+          const version = VERSION.displayPrefix.concat(item.version);
           this.versions.update(currentVersions => [
             ...currentVersions,
             version
@@ -148,7 +151,12 @@ export class ProductDetailVersionActionComponent implements AfterViewInit {
     if (this.versions().length === 0) {
       this.productService.sendRequestToGetProductVersionsForDesigner(this.productId
       ).subscribe(data => {
-        const versionMap = data.map((versionNumber: string) => 'Version '.concat(versionNumber));
+        const versionMap = data.map(dataVersionAndUrl => dataVersionAndUrl.version).map(version => VERSION.displayPrefix.concat(version));
+        data.forEach(dataVersionAndUrl => {
+          const currentVersion = VERSION.displayPrefix.concat(dataVersionAndUrl.version);
+          const versionAndUrl: ItemDropdown = { value: currentVersion, label: currentVersion, metaDataJsonUrl: dataVersionAndUrl.url };
+          this.versionDropdownInDesigner.push(versionAndUrl);
+        });
         this.versions.set(versionMap);
       });
     }

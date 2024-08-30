@@ -14,13 +14,13 @@ common:
     about: Durch die vielfältigen Angebote des Axon Ivy Marktplatzes wird die Prozessautomatisierung umfassend erweitert.
     contribute: Mit leistungsstarken Konnektoren, beispielsweise zur Einbindung von ChatGPT, MS Office oder den gängigen Datenbanken wird die Prozessautomatisierung komfortabel einfach.
     link: Werde Teil der Community und
-      <a class="link-opacity-100" href=""> baue deinen eigenen Konnektor.</a>
+      <a class="link-opacity-100" href="https://github.com/axonivy-market/market/wiki" aria-label="Github - How to contribute"> baue deinen eigenen Konnektor.</a>
   filter:
     label: Filter
     value:
       allTypes: Alle
-      connector: Konnektoren
-      util: Utilities
+      connector: Konnektor
+      util: Nützliches
       demos: Demos
       solution: Lösungen
   sort:
@@ -97,9 +97,9 @@ common:
     loggedGithubAsLabel: Eingeloggt bei Github als
     reviewLabel: Überprüfung
     detailedReviews: Ausführliche Bewertungen
-    rateLinkLabel: Diesen Stecker bewerten
+    rateLinkLabel: Bewerte diesen Konnektor
     showMoreBtnLabel: Mehr anzeigen
-    noFeedbackMessage1: Es gibt noch keine Rückmeldungen für diesen Anschluss.
-    noFeedbackMessage2: Seien Sie der Erste, der seine Meinung mitteilt.
-    rateFeedbackBtnLabel: Diesen Stecker bewerten
+    noFeedbackMessage1: Deine Meinung ist gefragt.
+    noFeedbackMessage2: ''
+    rateFeedbackBtnLabel: Bewerte diesen Konnektor
     reviewLabelNoYet: Noch keine Bewertungen
