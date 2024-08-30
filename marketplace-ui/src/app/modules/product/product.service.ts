@@ -89,8 +89,8 @@ export class ProductService {
     designerVersion: string,
     productId: string
   ) {
-    const url = `api/product-details/installationcount/${productId}/designer/${designerVersion}`;
-    return this.httpClient.put<boolean>(url, {
+    const url = `api/product-details/installation/${productId}/designer/${designerVersion}`;
+    return this.httpClient.put<boolean>(url, null, {
       headers: { 'X-Requested-By': 'ivy' }
     });
   }

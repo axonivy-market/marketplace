@@ -6,6 +6,8 @@ import { ProductService } from '../../product.service';
 import { provideHttpClient } from '@angular/common/http';
 import { ElementRef } from '@angular/core';
 import { ItemDropdown } from '../../../../shared/models/item-dropdown.model';
+import { By } from '@angular/platform-browser';
+import { MOCK_PRODUCT_DETAIL_BY_VERSION } from '../../../../shared/mocks/mock-data';
 
 class MockElementRef implements ElementRef {
   nativeElement = {
@@ -16,11 +18,11 @@ describe('ProductVersionActionComponent', () => {
   let component: ProductDetailVersionActionComponent;
   let fixture: ComponentFixture<ProductDetailVersionActionComponent>;
   let productServiceMock: any;
-  let elementRef: MockElementRef;
 
   beforeEach(() => {
     productServiceMock = jasmine.createSpyObj('ProductService', [
-      'sendRequestToProductDetailVersionAPI' , 'sendRequestToUpdateInstallationCount'
+      'sendRequestToProductDetailVersionAPI' , 'sendRequestToUpdateInstallationCount',
+      'sendRequestToUpdateInstallationCountByDesignerVersion'
     ]);
 
     TestBed.configureTestingModule({
@@ -189,5 +191,28 @@ describe('ProductVersionActionComponent', () => {
     expect(component.onUpdateInstallationCount).toHaveBeenCalledOnceWith();
     // Check if window.focus() was called
     expect(mockWindowFocus).toHaveBeenCalled();
+  });
+
+  it('should render install designer button', () => {
+    component.product = MOCK_PRODUCT_DETAIL_BY_VERSION;
+    component.isDesignerEnvironment.set(true);
+    fixture.detectChanges();
+    const button = fixture.debugElement.query(By.css('.install-designer-button')).nativeElement;
+    expect(button.id).toEqual("install-button");
+    expect(button.getAttribute('product-id')).toEqual("cronjob");
+
+    productServiceMock.sendRequestToUpdateInstallationCount.and.returnValue(
+      of(1)
+    );
+    productServiceMock.sendRequestToUpdateInstallationCountByDesignerVersion.and.returnValue(
+      of()
+    );
+
+    // When calling the button.click(), we got a error 'install() is not define', this method is defined in the ivy designer
+    // So the test will fail
+    // Call the method in the component instead
+    component.onUpdateInstallationCountForDesigner();
+    expect(productServiceMock.sendRequestToUpdateInstallationCount).toHaveBeenCalledWith(component.productId);
+    expect(productServiceMock.sendRequestToUpdateInstallationCountByDesignerVersion).toHaveBeenCalled();
   });
 });

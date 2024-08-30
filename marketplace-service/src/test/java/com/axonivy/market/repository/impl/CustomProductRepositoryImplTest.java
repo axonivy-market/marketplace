@@ -3,6 +3,8 @@ package com.axonivy.market.repository.impl;
 import com.axonivy.market.BaseSetup;
 import com.axonivy.market.constants.MongoDBConstants;
 import com.axonivy.market.entity.Product;
+import com.axonivy.market.entity.ProductDesignerInstallation;
+import com.mongodb.client.result.UpdateResult;
 import org.bson.Document;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -22,6 +24,7 @@ import java.util.List;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
@@ -141,5 +144,19 @@ class CustomProductRepositoryImplTest extends BaseSetup {
     int initialCount = 10;
     repo.updateInitialCount(ID, initialCount);
     verify(mongoTemplate).updateFirst(any(Query.class), eq(new Update().inc("InstallationCount", initialCount).set("SynchronizedInstallationCount", true)), eq(Product.class));
+  }
+
+  @Test
+  void testIncreaseInstallationCountForProductByDesignerVersion() {
+    String productId = "portal";
+    String designerVersion = "11.4.0";
+    ProductDesignerInstallation productDesignerInstallation = new ProductDesignerInstallation();
+    productDesignerInstallation.setProductId(productId);
+    productDesignerInstallation.setDesignerVersion(designerVersion);
+    productDesignerInstallation.setInstallationCount(5);
+    when(mongoTemplate.upsert(any(Query.class), any(Update.class), eq(ProductDesignerInstallation.class))).
+            thenReturn(UpdateResult.acknowledged(1L, 1L, null));
+    boolean success = repo.increaseInstallationCountForProductByDesignerVersion(productId, designerVersion);
+    assertTrue(success);
   }
 }

@@ -1,21 +1,25 @@
 package com.axonivy.market.controller;
 
-import static com.axonivy.market.constants.RequestMappingConstants.INSTALLATION_COUNT_BY_ID_AND_DESIGNER_VERSION;
-import static com.axonivy.market.constants.RequestMappingConstants.PRODUCT_JSON_CONTENT_BY_PRODUCT_ID_AND_VERSION;
-import static com.axonivy.market.constants.RequestMappingConstants.VERSIONS_IN_DESIGNER;
 import static com.axonivy.market.constants.RequestParamConstants.DESIGNER_VERSION;
 import static com.axonivy.market.constants.RequestParamConstants.ID;
 import static com.axonivy.market.constants.RequestParamConstants.PRODUCT_ID;
 import static com.axonivy.market.constants.RequestParamConstants.SHOW_DEV_VERSION;
 import static com.axonivy.market.constants.RequestParamConstants.VERSION;
+import static com.axonivy.market.constants.RequestMappingConstants.BEST_MATCH_BY_ID_AND_VERSION;
 import static com.axonivy.market.constants.RequestMappingConstants.BY_ID;
 import static com.axonivy.market.constants.RequestMappingConstants.BY_ID_AND_VERSION;
+import static com.axonivy.market.constants.RequestMappingConstants.DESIGNER_INSTALLATION_BY_PRODUCT_ID;
+import static com.axonivy.market.constants.RequestMappingConstants.DESIGNER_INSTALLATION_BY_PRODUCT_ID_AND_DESIGNER_VERSION;
 import static com.axonivy.market.constants.RequestMappingConstants.INSTALLATION_COUNT_BY_ID;
 import static com.axonivy.market.constants.RequestMappingConstants.PRODUCT_DETAILS;
+import static com.axonivy.market.constants.RequestMappingConstants.PRODUCT_JSON_CONTENT_BY_PRODUCT_ID_AND_VERSION;
 import static com.axonivy.market.constants.RequestMappingConstants.VERSIONS_BY_ID;
-import static com.axonivy.market.constants.RequestMappingConstants.BEST_MATCH_BY_ID_AND_VERSION;
+import static com.axonivy.market.constants.RequestMappingConstants.VERSIONS_IN_DESIGNER;
 import java.util.List;
 import java.util.Map;
+
+import com.axonivy.market.model.DesignerInstallation;
+import com.axonivy.market.service.ProductDesignerInstallationService;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.enums.ParameterIn;
@@ -44,11 +48,15 @@ import io.swagger.v3.oas.annotations.Operation;
 public class ProductDetailsController {
   private final VersionService versionService;
   private final ProductService productService;
+  private final ProductDesignerInstallationService productDesignerInstallationService;
   private final ProductDetailModelAssembler detailModelAssembler;
 
-  public ProductDetailsController(VersionService versionService, ProductService productService, ProductDetailModelAssembler detailModelAssembler) {
+  public ProductDetailsController(VersionService versionService, ProductService productService,
+                                  ProductDesignerInstallationService productDesignerInstallationService,
+                                  ProductDetailModelAssembler detailModelAssembler) {
     this.versionService = versionService;
     this.productService = productService;
+    this.productDesignerInstallationService = productDesignerInstallationService;
     this.detailModelAssembler = detailModelAssembler;
   }
 
@@ -79,13 +87,21 @@ public class ProductDetailsController {
     return new ResponseEntity<>(result, HttpStatus.OK);
   }
 
-  @PutMapping(INSTALLATION_COUNT_BY_ID_AND_DESIGNER_VERSION)
+  @PutMapping(DESIGNER_INSTALLATION_BY_PRODUCT_ID_AND_DESIGNER_VERSION)
   @Operation(summary = "increase designer installation count by 1", description = "update designer installation count when click download product files by users")
   public ResponseEntity<Boolean> increaseDesignerInstallationCount(
           @PathVariable(PRODUCT_ID) @Parameter(description = "Product id (from meta.json)", example = "approval-decision-utils", in = ParameterIn.PATH) String productId,
           @PathVariable(DESIGNER_VERSION) @Parameter(description = "Designer version", example = "11.4.0", in = ParameterIn.PATH) String designerVersion) {
     boolean result = productService.increaseInstallationCountForProductByDesignerVersion(productId, designerVersion);
     return new ResponseEntity<>(result, HttpStatus.OK);
+  }
+
+  @GetMapping(DESIGNER_INSTALLATION_BY_PRODUCT_ID)
+  @Operation(summary = "Get designer installation count by product id.", description = "get designer installation count by product id")
+  public ResponseEntity<List<DesignerInstallation>> getProductDesignerInstallationByProductId(
+          @PathVariable(PRODUCT_ID) @Parameter(description = "Product id (from meta.json)", example = "adobe-acrobat-connector", in = ParameterIn.PATH) String productId) {
+    List<DesignerInstallation> models = productDesignerInstallationService.findByProductId(productId);
+    return new ResponseEntity<>(models, HttpStatus.OK);
   }
 
   @GetMapping(BY_ID)

@@ -13,6 +13,8 @@ import java.util.HashMap;
 import java.util.Map;
 import com.axonivy.market.constants.RequestMappingConstants;
 import com.axonivy.market.entity.productjsonfilecontent.ProductJsonContent;
+import com.axonivy.market.model.DesignerInstallation;
+import com.axonivy.market.service.ProductDesignerInstallationService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -39,6 +41,9 @@ class ProductDetailsControllerTest {
 
   @Mock
   VersionService versionService;
+
+  @Mock
+  ProductDesignerInstallationService productDesignerInstallationService;
 
   @Mock
   private ProductDetailModelAssembler detailModelAssembler;
@@ -209,5 +214,26 @@ class ProductDetailsControllerTest {
     jsonContent.setName("aspose-barcode");
 
     return jsonContent;
+  }
+
+  @Test
+  void testIncreaseDesignerInstallationCount() {
+    Mockito.when(productService.increaseInstallationCountForProductByDesignerVersion(Mockito.anyString(),
+            Mockito.anyString())).thenReturn(Boolean.TRUE);
+    ResponseEntity<Boolean> result = productDetailsController.increaseDesignerInstallationCount("portal", "11.4.0");
+    Assertions.assertEquals(HttpStatus.OK, result.getStatusCode());
+    Assertions.assertEquals(Boolean.TRUE, result.getBody());
+  }
+
+  @Test
+  void testGetProductDesignerInstallationByProductId() {
+    List<DesignerInstallation> models = List.of(new DesignerInstallation("11.4.0", 5));
+    Mockito.when(productDesignerInstallationService.findByProductId(Mockito.anyString())).thenReturn(models);
+    ResponseEntity<List<DesignerInstallation>> result = productDetailsController.getProductDesignerInstallationByProductId("portal");
+    Assertions.assertEquals(HttpStatus.OK, result.getStatusCode());
+    Assertions.assertEquals(1, Objects.requireNonNull(result.getBody()).size());
+    Assertions.assertEquals("11.4.0", result.getBody().get(0).getDesignerVersion());
+    Assertions.assertEquals(5, result.getBody().get(0).getNumberOfDownloads());
+    Assertions.assertEquals(models, result.getBody());
   }
 }
