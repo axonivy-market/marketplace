@@ -36,21 +36,25 @@ export const NAV_ITEMS: NavItem[] = [
 
 export const SOCIAL_MEDIA_LINK = [
   {
-    styleClass: 'fab fa-linkedin',
-    url: '/'
+    styleClass: 'fa-brands fa-linkedin-in',
+    title: 'Axon Ivy | LinkedIn',
+    url: 'https://www.linkedin.com/company/axon-ivy-ag'
   },
   {
-    styleClass: 'fab fa-xing',
-    url: '/'
+    styleClass: 'fa-brands fa-xing',
+    title: 'Axon Ivy | XING',
+    url: 'https://www.xing.com/companies/axonivyag'
   },
   {
-    styleClass: 'fab fa-youtube',
-    url: '/'
+    styleClass: 'fa-brands fa-facebook-f',
+    title: 'Axon Ivy | Facebook',
+    url: 'https://www.facebook.com/axonivy'
   },
   {
-    styleClass: 'fab fa-facebook',
-    url: '/'
-  }
+    styleClass: 'fa-brands fa-youtube',
+    title: 'Axon Ivy | Youtube',
+    url: 'https://www.youtube.com/channel/UCkoNcDoeDAVM7FB-txy3jnQ'
+  },
 ];
 
 export const IVY_FOOTER_LINKS = [
@@ -185,4 +189,9 @@ export const DEFAULT_PAGEABLE: Pageable = {
 export const DEFAULT_PAGEABLE_IN_REST_CLIENT: Pageable = {
   page: 0,
   size: 40
+};
+
+export const VERSION = {
+  tagPrefix: 'v',
+  displayPrefix: 'Version '
 };

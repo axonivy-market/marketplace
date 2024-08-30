@@ -22,6 +22,7 @@ import { ItemDropdown } from '../../../../shared/models/item-dropdown.model';
 import { ProductDetail } from '../../../../shared/models/product-detail.model';
 import { environment } from '../../../../../environments/environment';
 import { VersionAndUrl } from '../../../../shared/models/version-and-url';
+import { VERSION } from '../../../../shared/constants/common.constant';
 
 const delayTimeBeforeHideMessage = 2000;
 @Component({
@@ -132,7 +133,7 @@ export class ProductDetailVersionActionComponent implements AfterViewInit {
       )
       .subscribe(data => {
         data.forEach(item => {
-          const version = 'Version '.concat(item.version);
+          const version = VERSION.displayPrefix.concat(item.version);
           this.versions.update(currentVersions => [
             ...currentVersions,
             version
@@ -153,12 +154,13 @@ export class ProductDetailVersionActionComponent implements AfterViewInit {
     if (this.versions().length === 0) {
       this.productService.sendRequestToGetProductVersionsForDesigner(this.productId
       ).subscribe(data => {
-        const versionMap = data.map(data => data.version).map(version => 'Version '.concat(version));
+        const versionMap = data.map(data => data.version).map(version => VERSION.displayPrefix.concat(version));
         data.forEach(data => {
           const currentVersion = 'Version '.concat(data.version);
           const versionAndUrl: ItemDropdown = { value: currentVersion, label: currentVersion, metaDataJsonUrl: data.url };
           this.versionDropdownInDesigner.push(versionAndUrl);
         });
+        // const versionMap = data.map((versionNumber: string) => VERSION.displayPrefix.concat(versionNumber));
         this.versions.set(versionMap);
       });
     }

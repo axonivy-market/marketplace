@@ -39,6 +39,9 @@ export class ProductFilterComponent {
   }
 
   onSearchChanged(searchString: string) {
+    if (searchString) {
+      searchString = searchString.trim();
+    }
     this.searchChange.next(searchString);
   }
 
