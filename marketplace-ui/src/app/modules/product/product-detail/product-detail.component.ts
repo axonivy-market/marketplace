@@ -191,11 +191,10 @@ export class ProductDetailComponent {
   private isContentDisplayedBasedOnLanguage(value: DisplayValue) {
     const currentLanguage = this.languageService.selectedLanguage();
 
-    if (currentLanguage === Language.DE) {
-      if (
-        value[currentLanguage] !== '' &&
-        value[currentLanguage] !== undefined
-      ) {
+    if (currentLanguage === Language.DE && 
+        value[currentLanguage] !== '' && 
+        value[currentLanguage] !== undefined) {
+      {
         return true;
       }
     }
