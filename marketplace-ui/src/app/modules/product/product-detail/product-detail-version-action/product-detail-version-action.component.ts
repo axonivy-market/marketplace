@@ -45,7 +45,7 @@ export class ProductDetailVersionActionComponent implements AfterViewInit {
       label: version,
     }));
   });
-  meta_data_json_url = model<string>('');
+  metaDataJsonUrl = model<string>('');
   versionDropdownInDesigner: ItemDropdown[] = [];
 
   artifacts: WritableSignal<ItemDropdown[]> = signal([]);
@@ -156,7 +156,7 @@ export class ProductDetailVersionActionComponent implements AfterViewInit {
         const versionMap = data.map(data => data.version).map(version => 'Version '.concat(version));
         data.forEach(data => {
           const currentVersion = 'Version '.concat(data.version);
-          const versionAndUrl: ItemDropdown = { value: currentVersion, label: currentVersion, meta_data_json_url: data.url };
+          const versionAndUrl: ItemDropdown = { value: currentVersion, label: currentVersion, metaDataJsonUrl: data.url };
           this.versionDropdownInDesigner.push(versionAndUrl);
         });
         this.versions.set(versionMap);

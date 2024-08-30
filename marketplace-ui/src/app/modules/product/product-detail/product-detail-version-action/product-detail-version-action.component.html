@@ -7,7 +7,7 @@
       buttonClass="form-select form-select-sm versions-selector__dropdown border__dropdown h-100 text-primary install-designer-dropdown"
       ariaLabel=".form-select-sm example"
       class="flex-grow-1 col-8"
-      [meta_data_json_url] = "meta_data_json_url()"
+      [metaDataJsonUrl] = "metaDataJsonUrl()"
       (itemSelected)="onSelectVersionInDesigner($event.value)">
     </app-common-dropdown>
 
@@ -18,7 +18,7 @@
             onClick="function installInDesigner() {
               const selectedItemElement = document.querySelector('.install-designer-dropdown');
               if (selectedItemElement) {
-              const metaDataJsonUrl = selectedItemElement.getAttribute('meta_data_json_url');
+              const metaDataJsonUrl = selectedItemElement.getAttribute('metaDataJsonUrl');
               console.log(metaDataJsonUrl);
               install(metaDataJsonUrl);
               }

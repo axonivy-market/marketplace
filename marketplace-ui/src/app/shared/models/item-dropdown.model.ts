@@ -10,5 +10,5 @@ export interface ItemDropdown<T extends string = string> {
   downloadUrl?: string;
   isProductArtifact?: boolean | null;
 
-  meta_data_json_url?: string;
+  metaDataJsonUrl?: string;
 }

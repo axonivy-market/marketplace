@@ -10,6 +10,8 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.util.List;
+
 @ExtendWith(MockitoExtension.class)
 class ProductDetailModelAssemblerTest {
   private static final String ID = "portal";
@@ -25,6 +27,7 @@ class ProductDetailModelAssemblerTest {
     productDetailModelAssembler = new ProductDetailModelAssembler(new ProductModelAssembler());
     mockProduct = new Product();
     mockProduct.setId(ID);
+    mockProduct.setReleasedVersions(List.of("11.0.1", "10.0.8"));
   }
 
   @Test
@@ -47,9 +50,10 @@ class ProductDetailModelAssemblerTest {
     Assertions.assertTrue(model.getLink(SELF_RELATION).get().getHref().endsWith("/api/product-details/portal/10.0.19"));
   }
 
-//  @Test
-//  void testToModelWithRequestPathAndBestMatchVersion() {
-//    ProductDetailModel model = productDetailModelAssembler.toModel(mockProduct, VERSION, RequestMappingConstants.BEST_MATCH_BY_ID_AND_VERSION);
-//    Assertions.assertTrue(model.getLink(SELF_RELATION).get().getHref().endsWith("/api/product-details/portal/10.0.19/bestmatch"));
-//  }
+  @Test
+  void testToModelWithRequestPathAndBestMatchVersion() {
+    ProductDetailModel model = productDetailModelAssembler.toModel(mockProduct, VERSION, RequestMappingConstants.BEST_MATCH_BY_ID_AND_VERSION);
+    Assertions.assertEquals(model.getMetaProductJsonUrl(), "/api/product-details/productjsoncontent/portal/10.0.8");
+    Assertions.assertTrue(model.getLink(SELF_RELATION).get().getHref().endsWith("/api/product-details/portal/10.0.19/bestmatch"));
+  }
 }

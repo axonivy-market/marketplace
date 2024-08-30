@@ -48,6 +48,14 @@ public class ProductDetailModelAssembler extends RepresentationModelAssemblerSup
     ProductDetailModel model = instantiateModel(product);
     productModelAssembler.createResource(model, product);
     String productId = Optional.of(product).map(Product::getId).orElse(StringUtils.EMPTY);
+
+    if (requestPath.equals(RequestMappingConstants.BEST_MATCH_BY_ID_AND_VERSION)) {
+      String bestMatchVersion = VersionUtils.getBestMatchVersion(product.getReleasedVersions(), version);
+      Link link = linkTo(
+          methodOn(ProductDetailsController.class).findProductJsonContent(productId, bestMatchVersion)).withSelfRel();
+      model.setMetaProductJsonUrl(link.getHref());
+    }
+
     selfLinkWithTag = switch (requestPath) {
       case RequestMappingConstants.BEST_MATCH_BY_ID_AND_VERSION ->
           methodOn(ProductDetailsController.class).findBestMatchProductDetailsByVersion(productId, version);
@@ -56,16 +64,6 @@ public class ProductDetailModelAssembler extends RepresentationModelAssemblerSup
       default -> methodOn(ProductDetailsController.class).findProductDetails(productId);
     };
 
-    try {
-      if (requestPath.equals(RequestMappingConstants.BEST_MATCH_BY_ID_AND_VERSION)) {
-        String bestMatchVersion = VersionUtils.getBestMatchVersion(product.getReleasedVersions(), version);
-        Link link = linkTo(
-            methodOn(ProductDetailsController.class).findProductJsonContent(productId, bestMatchVersion)).withSelfRel();
-        model.setMetaProductJsonUrl(link.getHref());
-      }
-    } catch (JsonProcessingException jsonProcessingException) {
-      log.error(jsonProcessingException.getMessage());
-    }
 
     model.add(linkTo(selfLinkWithTag).withSelfRel());
     createDetailResource(model, product);

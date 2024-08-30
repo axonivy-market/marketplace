@@ -113,14 +113,19 @@ public class VersionServiceImpl implements VersionService {
   }
 
   @Override
-  public Map<String, Object> getProductJsonContentByIdAndVersion(String productId, String version)
-      throws JsonProcessingException {
-    ProductJsonContent productJsonContent = productJsonContentRepository.findByProductIdAndVersion(productId, version);
-    if (ObjectUtils.isEmpty(productJsonContent)) {
-      return new HashMap<>();
+  public Map<String, Object> getProductJsonContentByIdAndVersion(String productId, String version){
+    Map<String, Object> result = new HashMap<>();
+    try {
+      ProductJsonContent productJsonContent = productJsonContentRepository.findByProductIdAndVersion(productId, version);
+      if (ObjectUtils.isEmpty(productJsonContent)) {
+        return new HashMap<>();
+      }
+      result = mapper.readValue(productJsonContent.getContent(), Map.class);
+      result.computeIfAbsent(NAME, k -> productJsonContent.getName());
+
+    } catch (JsonProcessingException jsonProcessingException){
+      log.error(jsonProcessingException.getMessage());
     }
-    Map<String, Object> result = mapper.readValue(productJsonContent.getContent(), Map.class);
-    result.computeIfAbsent(NAME, k -> productJsonContent.getName());
     return result;
   }
 

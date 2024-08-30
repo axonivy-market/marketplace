@@ -101,7 +101,7 @@ public class ProductDetailsController {
   @GetMapping(PRODUCT_JSON_CONTENT_BY_PRODUCT_ID_AND_VERSION)
   @Operation(summary = "Get product json content for designer to install", description = "When we click install in designer, this API will send content of product json for installing in Ivy designer")
   public ResponseEntity<Map<String, Object>> findProductJsonContent(@PathVariable(PRODUCT_ID) String productId,
-      @PathVariable(VERSION) String version) throws JsonProcessingException {
+      @PathVariable(VERSION) String version) {
     Map<String, Object> productJsonContent = versionService.getProductJsonContentByIdAndVersion(productId, version);
     return new ResponseEntity<>(productJsonContent, HttpStatus.OK);
   }

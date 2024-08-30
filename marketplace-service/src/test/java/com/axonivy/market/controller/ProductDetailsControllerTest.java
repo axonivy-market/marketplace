@@ -13,6 +13,8 @@ import java.util.HashMap;
 import java.util.Map;
 import com.axonivy.market.constants.RequestMappingConstants;
 import com.axonivy.market.entity.productjsonfilecontent.ProductJsonContent;
+import com.axonivy.market.model.VersionAndUrlModel;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -122,18 +124,34 @@ class ProductDetailsControllerTest {
     assertEquals(1, result.getBody());
   }
 
-//  @Test
-//  void findProductVersionsById() {
-//    when(versionService.getVersionsForDesigner("google-maps-connector")).thenReturn(
-//        List.of("10.0.21", "10.0.22", "10.0.23"));
-//
-//    var result = productDetailsController.findVersionsForDesigner("google-maps-connector");
-//
-//    assertEquals(3, Objects.requireNonNull(result.getBody()).size());
-//    assertEquals("10.0.21", Objects.requireNonNull(result.getBody()).get(0));
-//    assertEquals("10.0.22", Objects.requireNonNull(result.getBody()).get(1));
-//    assertEquals("10.0.23", Objects.requireNonNull(result.getBody()).get(2));
-//  }
+  @Test
+  void findProductVersionsById() throws JsonProcessingException {
+    when(versionService.getVersionsForDesigner("google-maps-connector")).thenReturn(mockVersionAndUrlModels());
+
+    var result = productDetailsController.findVersionsForDesigner("google-maps-connector");
+
+    assertEquals(2, Objects.requireNonNull(result.getBody()).size());
+    assertEquals("10.0.21", Objects.requireNonNull(result.getBody()).get(0).getVersion());
+    assertEquals("/api/product-details/productjsoncontent/portal/10.0.21",
+        Objects.requireNonNull(result.getBody()).get(0).getUrl());
+    assertEquals("10.0.22", Objects.requireNonNull(result.getBody()).get(1).getVersion());
+    assertEquals("/api/product-details/productjsoncontent/portal/10.0.22",
+        Objects.requireNonNull(result.getBody()).get(1).getUrl());
+  }
+
+  private List<VersionAndUrlModel> mockVersionAndUrlModels(){
+    VersionAndUrlModel versionAndUrlModel = VersionAndUrlModel.builder()
+        .version("10.0.21")
+        .url("/api/product-details/productjsoncontent/portal/10.0.21")
+        .build();
+
+    VersionAndUrlModel versionAndUrlModel2 = VersionAndUrlModel.builder()
+        .version("10.0.22")
+        .url("/api/product-details/productjsoncontent/portal/10.0.22")
+        .build();
+
+    return List.of(versionAndUrlModel,versionAndUrlModel2);
+  }
 
   @Test
   void findProductJsonContentByIdAndTag() throws IOException {
