@@ -33,7 +33,7 @@ class ProductDesignerInstallationServiceImplTest extends BaseSetup {
 
   @Test
   void testFindByProductId() {
-    when(productDesignerInstallationRepository.findByProductId(any())).thenReturn(this.mockResultReturn);
+    when(productDesignerInstallationRepository.findByProductId(any(), any())).thenReturn(this.mockResultReturn);
     List<DesignerInstallation> results = productDesignerInstallationServiceImpl.findByProductId(BaseSetup.SAMPLE_PRODUCT_ID);
     assertEquals(2,results.size());
     assertEquals("10.0.22", results.get(0).getDesignerVersion());
