@@ -90,9 +90,9 @@ describe('ProductDetailComponent', () => {
     );
   });
 
-  // it('version should display in number', () => {
-  //   expect(component.selectedVersion).toEqual('10.0.0');
-  // });
+  it('version should display in number', () => {
+    expect(component.selectedVersion).toEqual('10.0.0');
+  });
 
   it('should get corresponding version from cookie', () => {
     const targetVersion = '1.0';

@@ -225,21 +225,20 @@ describe('ProductService', () => {
     expect(req.request.headers.get('X-Requested-By')).toBe('ivy');
     req.flush(3);
   });
-  //
-  // it('sendRequestToGetProductVersionForDesigner', () => {
-  //   const productId = 'google-maps-connector';
-  //   const designerVersion = '10.0.3';
-  //
-  //   service.sendRequestToGetProductVersionsForDesigner(productId).subscribe(response => {
-  //     expect(response.length).toBe(3);
-  //     expect(response[0]).toBe('10.0.2');
-  //     expect(response[1]).toBe('10.0.1');
-  //     expect(response[2]).toBe('10.0.0');
-  //   });
-  //
-  //   const req = httpMock.expectOne(`api/product-details/${productId}/designerversions`);
-  //   expect(req.request.method).toBe('GET');
-  //   expect(req.request.headers.get('X-Requested-By')).toBe('ivy');
-  //   req.flush(['10.0.2', '10.0.1', '10.0.0']);
-  // });
+
+  it('sendRequestToGetProductVersionForDesigner', () => {
+    const productId = 'google-maps-connector';
+
+    service.sendRequestToGetProductVersionsForDesigner(productId).subscribe(response => {
+      expect(response.length).toBe(3);
+      expect(response[0].version).toBe('10.0.2');
+      expect(response[1].version).toBe('10.0.1');
+      expect(response[2].version).toBe('10.0.0');
+    });
+
+    const req = httpMock.expectOne(`api/product-details/${productId}/designerversions`);
+    expect(req.request.method).toBe('GET');
+    expect(req.request.headers.get('X-Requested-By')).toBe('ivy');
+    req.flush([{ version: '10.0.2' }, {version: '10.0.1'}, {version: '10.0.0'}]);
+  });
 });
