@@ -1,6 +1,6 @@
 {
   "name": "marketplace-ui",
-  "version": "1.0.0-SNAPSHOT",
+  "version": "v1.0.0-m22",
   "scripts": {
     "ng": "ng",
     "start": "ng serve",
