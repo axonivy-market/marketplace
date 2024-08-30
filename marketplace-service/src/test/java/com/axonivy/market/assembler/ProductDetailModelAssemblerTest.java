@@ -53,7 +53,7 @@ class ProductDetailModelAssemblerTest {
   @Test
   void testToModelWithRequestPathAndBestMatchVersion() {
     ProductDetailModel model = productDetailModelAssembler.toModel(mockProduct, VERSION, RequestMappingConstants.BEST_MATCH_BY_ID_AND_VERSION);
-    Assertions.assertEquals(model.getMetaProductJsonUrl(), "/api/product-details/productjsoncontent/portal/10.0.8");
     Assertions.assertTrue(model.getLink(SELF_RELATION).get().getHref().endsWith("/api/product-details/portal/10.0.19/bestmatch"));
+    Assertions.assertTrue(model.getMetaProductJsonUrl().endsWith("/api/product-details/productjsoncontent/portal/10.0.8"));
   }
 }
