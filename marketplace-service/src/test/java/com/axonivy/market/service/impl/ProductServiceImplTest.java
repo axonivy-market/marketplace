@@ -392,6 +392,26 @@ class ProductServiceImplTest extends BaseSetup {
   }
 
   @Test
+  void testSyncNullProductModuleContent() throws IOException  {
+    var mockCommit = mockGHCommitHasSHA1(SHA1_SAMPLE);
+    when(marketRepoService.getLastCommit(anyLong())).thenReturn(mockCommit);
+    when(repoMetaRepository.findByRepoName(anyString())).thenReturn(null);
+
+    GHTag mockTag = mock(GHTag.class);
+    GHCommit mockGHCommit = mock(GHCommit.class);
+
+    Map<String, List<GHContent>> mockGHContentMap = new HashMap<>();
+    mockGHContentMap.put(SAMPLE_PRODUCT_ID, new ArrayList<>());
+    when(marketRepoService.fetchAllMarketItems()).thenReturn(mockGHContentMap);
+
+    // Executes
+    productService.syncLatestDataFromMarketRepo();
+    verify(productRepository).save(argumentCaptor.capture());
+
+    assertThat(argumentCaptor.getValue().getProductModuleContents()).isNull();
+  }
+
+  @Test
   void testSearchProducts() {
     var simplePageable = PageRequest.of(0, 20);
     String type = TypeOption.ALL.getOption();
