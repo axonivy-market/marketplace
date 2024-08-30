@@ -193,10 +193,8 @@ export class ProductDetailComponent {
 
     if (currentLanguage === Language.DE && 
         value[currentLanguage] !== '' && 
-        value[currentLanguage] !== undefined) {
-      {
+        value[currentLanguage] !== undefined) {  
         return true;
-      }
     }
 
     return value[Language.EN] !== '' && value[Language.EN] !== undefined;
