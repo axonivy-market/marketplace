@@ -85,7 +85,7 @@ class ProductServiceImplTest extends BaseSetup {
       Sort.by(SortOption.ALPHABETICALLY.getOption()).descending());
   private static final String SHA1_SAMPLE = "35baa89091b2452b77705da227f1a964ecabc6c8";
   public static final String RELEASE_TAG = "v10.0.2";
-  private static final String INSTALLATION_FILE_PATH = "/installationCount.json";
+  private static final String INSTALLATION_FILE_PATH = "src/test/resources/installationCount.json";
   private static final String EMPTY_SOURCE_URL_META_JSON_FILE = "/emptySourceUrlMeta.json";
 
   private String keyword;
