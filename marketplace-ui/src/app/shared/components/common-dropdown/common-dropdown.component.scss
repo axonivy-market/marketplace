@@ -3,10 +3,10 @@
 }
 
 .dropdown-menu {
-  max-height: 430px;
+  max-height: 27.5rem;
   overflow: auto;
   @media (max-width: 990px) {
-    max-height: 220px;
+    max-height: 13.75rem;
   }
 
   .dropdown-item {
