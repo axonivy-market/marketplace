@@ -88,6 +88,8 @@ common:
           label: Choose target platform
         artifactSelector:
           label: Choose artifact
+      contactUs:
+        label: Contact Us
   feedback:
     label: Feedback
     successMessage: Your feedback has been successfully submitted!

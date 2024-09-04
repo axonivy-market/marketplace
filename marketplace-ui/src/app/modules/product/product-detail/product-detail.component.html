@@ -72,7 +72,7 @@
               [(selectedVersion)]="selectedVersion!"
               [(metaDataJsonUrl)]="metaProductJsonUrl!"
               [productId]="productDetail().id"
-              [product]="productDetail()"
+              [actionType]="productDetailActionType()"
               (selectedVersionChange)="
                 loadDetailTabs($event)
               "></app-product-version-action>
