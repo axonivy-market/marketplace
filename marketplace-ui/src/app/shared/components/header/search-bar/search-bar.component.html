@@ -58,15 +58,22 @@
     }
   </li>
 
-  <!-- Download Latest LTS Version -->
-  <li>
-    <button [lang]="languageService.selectedLanguage()"
-      class="btn btn-primary header__download-button border-0 w-100 rounded-3">
-      {{ 'common.header.download' | translate }}
-      <span>
-        <i class="bi bi-chevron-down"></i>
-      </span>
-    </button>
-  </li>
+    <!-- Download Latest LTS Version -->
+    <li>
+      <button
+        [lang]="languageService.selectedLanguage()"
+        class="btn btn-primary header__download-button border-0 w-100 rounded-3 d-none d-lg-block">
+        {{ 'common.header.download' | translate }}
+        <span>
+          <i class="bi bi-chevron-down"></i>
+        </span>
+      </button>
+      <button
+        [lang]="languageService.selectedLanguage()"
+        class="btn btn-primary header__download-button border-0 w-100 rounded-3 d-lg-none"
+        [ngClass]="themeService.isDarkMode() ? 'text-dark' : 'text-light'">
+        {{ 'common.downloadLatestLTSVersion' | translate }}
+      </button>
+    </li>
   }
 </ul>

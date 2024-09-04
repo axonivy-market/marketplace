@@ -41,11 +41,11 @@ common:
     download: Download
   footer:
     newVersionsInfo: Neue Version verfügbar für Linux,<br /> Windows und MacOS Betriebssysteme.
-    downloadLatestLTSVersion: Download V10.0.18
     downloadLatestDevVersion: Download V11.2.1
     ivyCompanyInfo: © 2023 Axon Ivy Inc
     privacyPolicy: Datenschutzrichtlinie
     termsOfService: Nutzungsbedingungen
+  downloadLatestLTSVersion: Download V10.0.22
   product:
     detail:
       backToMainPage: Zurück zur Übersicht
