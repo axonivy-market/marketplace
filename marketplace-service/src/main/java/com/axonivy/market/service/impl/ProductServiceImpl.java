@@ -93,6 +93,7 @@ public class ProductServiceImpl implements ProductService {
   private String marketRepoBranch;
 
   public static final String NON_NUMERIC_CHAR = "[^0-9.]";
+  private final String INITIAL_VERSION = "1.0";
   private final SecureRandom random = new SecureRandom();
 
   public ProductServiceImpl(ProductRepository productRepository, GHAxonIvyMarketRepoService axonIvyMarketRepoService,
@@ -336,8 +337,10 @@ public class ProductServiceImpl implements ProductService {
         getProductContents(product);
       } else {
         ProductModuleContent initialContent = new ProductModuleContent();
-        initialContent.setTag("1.0");
-        axonIvyProductRepoService.extractedReadMeFileFromContents(product, ghContentEntity.getValue(), initialContent);
+        initialContent.setTag(INITIAL_VERSION);
+        product.setReleasedVersions(List.of(INITIAL_VERSION));
+        product.setNewestReleaseVersion(INITIAL_VERSION);
+        axonIvyProductRepoService.extractReadMeFileFromContents(product, ghContentEntity.getValue(), initialContent);
         product.setProductModuleContents(List.of(initialContent));
       }
       productRepository.save(product);

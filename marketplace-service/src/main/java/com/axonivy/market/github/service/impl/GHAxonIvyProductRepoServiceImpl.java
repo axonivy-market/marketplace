@@ -167,7 +167,7 @@ public class GHAxonIvyProductRepoServiceImpl implements GHAxonIvyProductRepoServ
       List<GHContent> contents = getProductFolderContents(product, ghRepository, tag);
       productModuleContent.setTag(tag);
       updateDependencyContentsFromProductJson(productModuleContent, contents , product);
-      extractedReadMeFileFromContents(product, contents, productModuleContent);
+      extractReadMeFileFromContents(product, contents, productModuleContent);
     } catch (Exception e) {
       log.error("Cannot get product.json content {}", e.getMessage());
       return null;
@@ -175,7 +175,7 @@ public class GHAxonIvyProductRepoServiceImpl implements GHAxonIvyProductRepoServ
     return productModuleContent;
   }
 
-  public void extractedReadMeFileFromContents(Product product, List<GHContent> contents, ProductModuleContent productModuleContent) {
+  public void extractReadMeFileFromContents(Product product, List<GHContent> contents, ProductModuleContent productModuleContent) {
     try {
       List<GHContent> readmeFiles = contents.stream().filter(GHContent::isFile)
           .filter(content -> content.getName().startsWith(ReadmeConstants.README_FILE_NAME)).toList();
