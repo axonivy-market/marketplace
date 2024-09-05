@@ -361,8 +361,8 @@ public class ProductServiceImpl implements ProductService {
     }
 
     for (GHTag ghTag : tags) {
-      ProductModuleContent productModuleContent = axonIvyProductRepoService.getReadmeAndProductContentsFromTag(product,
-          productRepo, ghTag.getName());
+      ProductModuleContent productModuleContent =
+          axonIvyProductRepoService.getReadmeAndProductContentsFromTag(product, productRepo, ghTag.getName());
       if (productModuleContent != null) {
         productModuleContents.add(productModuleContent);
       }

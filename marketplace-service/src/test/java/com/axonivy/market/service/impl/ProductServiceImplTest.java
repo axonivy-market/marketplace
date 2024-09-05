@@ -392,14 +392,11 @@ class ProductServiceImplTest extends BaseSetup {
   }
 
   @Test
-  void testSyncNullProductModuleContent() throws IOException  {
+  void testSyncNullProductModuleContent() {
     var mockCommit = mockGHCommitHasSHA1(SHA1_SAMPLE);
     when(marketRepoService.getLastCommit(anyLong())).thenReturn(mockCommit);
     when(repoMetaRepository.findByRepoName(anyString())).thenReturn(null);
-
-    GHTag mockTag = mock(GHTag.class);
-    GHCommit mockGHCommit = mock(GHCommit.class);
-
+    
     Map<String, List<GHContent>> mockGHContentMap = new HashMap<>();
     mockGHContentMap.put(SAMPLE_PRODUCT_ID, new ArrayList<>());
     when(marketRepoService.fetchAllMarketItems()).thenReturn(mockGHContentMap);
