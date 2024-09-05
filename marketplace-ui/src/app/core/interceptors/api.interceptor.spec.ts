@@ -54,7 +54,7 @@ describe('AuthInterceptor', () => {
     });
   });
 
-  it('should throw error with url i18n', () => {
+  it('should throw error with the url contains i18n', () => {
     httpClient.get('assets/i18n').subscribe({
       next() {
         fail('Expected an error, but got a response');

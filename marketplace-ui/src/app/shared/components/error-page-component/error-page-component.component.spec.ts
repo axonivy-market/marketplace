@@ -37,18 +37,12 @@ describe('ErrorPageComponentComponent', () => {
     component.themeService.isDarkMode.set(false);
     viewport.set(1920);
     component.onResize();
-    expect(component.imageSrc()).toEqual('/assets/images/misc/robot.png');
-
     fixture.detectChanges();
     let imgElement = fixture.debugElement.query(By.css('img'));
     expect(imgElement.attributes['src']).toBe('/assets/images/misc/robot.png');
 
     viewport.set(540);
     component.onResize();
-    expect(component.imageSrc()).toEqual(
-      '/assets/images/misc/robot-mobile.png'
-    );
-
     fixture.detectChanges();
     expect(imgElement.attributes['src']).toBe(
       '/assets/images/misc/robot-mobile.png'
@@ -59,8 +53,6 @@ describe('ErrorPageComponentComponent', () => {
     component.themeService.isDarkMode.set(true);
     viewport.set(1920);
     component.onResize();
-    expect(component.imageSrc()).toEqual('/assets/images/misc/robot-black.png');
-
     fixture.detectChanges();
     let imgElement = fixture.debugElement.query(By.css('img'));
     expect(imgElement.attributes['src']).toBe(
@@ -69,10 +61,6 @@ describe('ErrorPageComponentComponent', () => {
 
     viewport.set(540);
     component.onResize();
-    expect(component.imageSrc()).toEqual(
-      '/assets/images/misc/robot-mobile-black.png'
-    );
-
     fixture.detectChanges();
     expect(imgElement.attributes['src']).toBe(
       '/assets/images/misc/robot-mobile-black.png'

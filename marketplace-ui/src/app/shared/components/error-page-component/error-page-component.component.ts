@@ -16,7 +16,7 @@ export class ErrorPageComponentComponent {
   themeService = inject(ThemeService);
   languageService = inject(LanguageService);
   isMobileMode = signal<boolean>(false);
-  imageSrc = signal<string>('');
+  //imageSrc = signal<string>('');
 
   constructor(private readonly router: Router) {
     this.checkMediaSize();
@@ -34,16 +34,38 @@ export class ErrorPageComponentComponent {
   checkMediaSize() {
     const mediaQuery = window.matchMedia('(max-width: 767px)');
     this.isMobileMode.set(mediaQuery.matches);
-    var imageSrc = '';
+   // this.imageSrc.set(this.getImageSrc());
+  }
+
+  // getImageSrc(): string {
+  //   let imageSrc = '';
+  //   if (this.themeService.isDarkMode()) {
+  //     imageSrc = this.getImageSrcInDarkMode();
+  //   } else {
+  //     imageSrc = this.getImageSrcInLightMode();
+  //   }
+  //   return imageSrc;
+  // }
+
+  getImageSrcInLightMode(): string {
+    let imageSrc = '';
     if (this.isMobileMode()) {
-      imageSrc = this.themeService.isDarkMode()
-        ? '/assets/images/misc/robot-mobile-black.png'
-        : '/assets/images/misc/robot-mobile.png';
+      imageSrc = '/assets/images/misc/robot-mobile.png';
     } else {
-      imageSrc = this.themeService.isDarkMode()
-        ? '/assets/images/misc/robot-black.png'
-        : '/assets/images/misc/robot.png';
+      imageSrc = '/assets/images/misc/robot.png';
     }
-    this.imageSrc.set(imageSrc);
+
+    return imageSrc;
+  }
+
+  getImageSrcInDarkMode(): string {
+    let imageSrc = '';
+    if (this.isMobileMode()) {
+      imageSrc = '/assets/images/misc/robot-mobile-black.png';
+    } else {
+      imageSrc = '/assets/images/misc/robot-black.png';
+    }
+
+    return imageSrc;
   }
 }
