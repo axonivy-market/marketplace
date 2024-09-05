@@ -354,10 +354,8 @@ public class ProductServiceImpl implements ProductService {
         lastTag);
     product.setNewestReleaseVersion(lastTag.getName());
 
-    if (!ObjectUtils.isEmpty(product.getProductModuleContents())) {
-      productModuleContents.addAll(product.getProductModuleContents());
-      List<String> currentTags = product.getProductModuleContents().stream().filter(Objects::nonNull)
-          .map(ProductModuleContent::getTag).toList();
+    if (!CollectionUtils.isEmpty(product.getReleasedVersions())) {
+      List<String> currentTags = VersionUtils.getReleaseTagsFromProduct(product);
       ghTags = ghTags.stream().filter(t -> !currentTags.contains(t.getName())).toList();
     }
 
@@ -376,7 +374,6 @@ public class ProductServiceImpl implements ProductService {
     if (!CollectionUtils.isEmpty(productModuleContents)) {
       List<ProductModuleContent> savedProductModuleContents = productModuleContentRepository
           .saveAll(productModuleContents);
-      product.setProductModuleContents(savedProductModuleContents);
     }
   }
 

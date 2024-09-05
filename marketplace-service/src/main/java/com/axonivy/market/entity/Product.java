@@ -58,11 +58,12 @@ public class Product implements Serializable {
   private int installationCount;
   private Date newestPublishedDate;
   private String newestReleaseVersion;
+  @Transient
+  private ProductModuleContent productModuleContent;
   private List<MavenArtifact> artifacts;
   private Boolean synchronizedInstallationCount;
   private Integer customOrder;
   private List<String> releasedVersions;
-
   @Transient
   private String metaProductJsonUrl;
 

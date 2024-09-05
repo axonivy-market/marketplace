@@ -116,7 +116,6 @@ public class VersionUtils {
         if (Objects.isNull(product)) {
             return new ArrayList<>();
         }
-        return product.getVersion().map(VersionUtils::convertVersionToTag).orElse();
+        return product.getReleasedVersions().stream().map(version -> convertVersionToTag(product.getId(), version)).toList();
     }
-
 }

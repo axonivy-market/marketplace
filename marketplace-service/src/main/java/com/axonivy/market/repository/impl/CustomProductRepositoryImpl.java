@@ -2,18 +2,17 @@ package com.axonivy.market.repository.impl;
 
 import com.axonivy.market.constants.MongoDBConstants;
 import com.axonivy.market.entity.Product;
+import com.axonivy.market.entity.ProductModuleContent;
 import com.axonivy.market.repository.CustomProductRepository;
-import org.bson.Document;
+import com.axonivy.market.repository.ProductModuleContentRepository;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.mongodb.core.FindAndModifyOptions;
 import org.springframework.data.mongodb.core.MongoTemplate;
-import org.springframework.data.mongodb.core.aggregation.Aggregation;
-import org.springframework.data.mongodb.core.aggregation.AggregationOperation;
-import org.springframework.data.mongodb.core.aggregation.AggregationResults;
+import org.springframework.data.mongodb.core.aggregation.*;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.data.mongodb.core.query.Update;
 
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
@@ -22,43 +21,16 @@ import java.util.Optional;
 
 public class CustomProductRepositoryImpl implements CustomProductRepository {
   private final MongoTemplate mongoTemplate;
+  @Autowired
+  private final ProductModuleContentRepository contentRepository;
 
-  public CustomProductRepositoryImpl(MongoTemplate mongoTemplate) {
+  public CustomProductRepositoryImpl(MongoTemplate mongoTemplate, ProductModuleContentRepository contentRepository) {
     this.mongoTemplate = mongoTemplate;
+      this.contentRepository = contentRepository;
   }
 
   private AggregationOperation createIdMatchOperation(String id) {
     return Aggregation.match(Criteria.where(MongoDBConstants.ID).is(id));
-  }
-
-  public Document createDocumentFilterProductModuleContentByTag(String tag) {
-    Document isProductModuleContentOfCurrentTag = new Document(MongoDBConstants.EQUAL,
-        Arrays.asList(MongoDBConstants.PRODUCT_MODULE_CONTENT_TAG, tag));
-    Document loopOverProductModuleContents = new Document(MongoDBConstants.INPUT,
-        MongoDBConstants.PRODUCT_MODULE_CONTENT_QUERY)
-        .append(MongoDBConstants.AS, MongoDBConstants.PRODUCT_MODULE_CONTENT);
-    return loopOverProductModuleContents.append(MongoDBConstants.CONDITION, isProductModuleContentOfCurrentTag);
-  }
-
-  public AggregationOperation createLookupProductModuleContentOperation() {
-    return Aggregation.lookup()
-        .from(MongoDBConstants.PRODUCT_MODULE_CONTENT_DOCUMENT)
-        .localField(MongoDBConstants.PRODUCT_MODULE_CONTENTS_KEY_FIELD)
-        .foreignField(MongoDBConstants.ID)
-        .as(MongoDBConstants.PRODUCT_MODULE_CONTENTS);
-  }
-
-  private AggregationOperation createAddFieldProductModuleContentOperation() {
-    return context ->
-        new Document(MongoDBConstants.ADD_FIELD,
-          new Document(MongoDBConstants.PRODUCT_MODULE_CONTENTS,
-            new Document(MongoDBConstants.FILTER, createDocumentFilterProductModuleContentByTag(MongoDBConstants.NEWEST_RELEASED_VERSION_QUERY))));
-  }
-
-  private AggregationOperation createReturnFirstMatchTagModuleContentOperation(String tag) {
-    return context -> new Document(MongoDBConstants.ADD_FIELD,
-        new Document(MongoDBConstants.PRODUCT_MODULE_CONTENTS,
-            new Document(MongoDBConstants.FILTER, createDocumentFilterProductModuleContentByTag(tag))));
   }
 
   public Product queryProductByAggregation(Aggregation aggregation) {
@@ -68,20 +40,18 @@ public class CustomProductRepositoryImpl implements CustomProductRepository {
 
   @Override
   public Product getProductByIdAndTag(String id, String tag) {
-    // Create the aggregation pipeline
-    Aggregation aggregation = Aggregation.newAggregation(
-        createIdMatchOperation(id),
-        createLookupProductModuleContentOperation(),
-        createReturnFirstMatchTagModuleContentOperation(tag));
-    return queryProductByAggregation(aggregation);
+    Product result = getProductById(id);
+    if (!Objects.isNull(result)) {
+      ProductModuleContent content = contentRepository.findByTagAndProductId(tag,id);
+      result.setProductModuleContent(content);
+    }
+    return result;
   }
 
   @Override
   public Product getProductById(String id) {
     Aggregation aggregation = Aggregation.newAggregation(
-        createIdMatchOperation(id),
-        createLookupProductModuleContentOperation(),
-        createAddFieldProductModuleContentOperation()
+        createIdMatchOperation(id)
     );
     return queryProductByAggregation(aggregation);
   }
@@ -97,15 +67,14 @@ public class CustomProductRepositoryImpl implements CustomProductRepository {
   }
 
   public int updateInitialCount(String productId, int initialCount) {
-    Update update = new Update().inc("InstallationCount", initialCount).set("SynchronizedInstallationCount", true);
+    Update update = new Update().inc(MongoDBConstants.INSTALLATION_COUNT, initialCount).set(MongoDBConstants.SYNCHRONIZED_INSTALLATION_COUNT, true);
     mongoTemplate.updateFirst(createQueryById(productId), update, Product.class);
     return Optional.ofNullable(getProductById(productId)).map(Product::getInstallationCount).orElse(0);
   }
 
   @Override
   public int increaseInstallationCount(String productId) {
-    Update update = new Update().inc("InstallationCount", 1);
-    // Find and modify the document, then return the updated InstallationCount field
+    Update update = new Update().inc(MongoDBConstants.INSTALLATION_COUNT, 1);
     Product updatedProduct = mongoTemplate.findAndModify(createQueryById(productId), update,
         FindAndModifyOptions.options().returnNew(true), Product.class);
     return updatedProduct != null ? updatedProduct.getInstallationCount() : 0;
