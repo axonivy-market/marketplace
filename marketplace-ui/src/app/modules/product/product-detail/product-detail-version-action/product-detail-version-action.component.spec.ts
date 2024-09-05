@@ -332,11 +332,13 @@ describe('ProductVersionActionComponent', () => {
   it('should call productService and update versions if versions are empty', () => {
     const productId = '123';
     component.versions.set([]);
-    const mockVersions = ['1.0', '2.0'];
+    const mockVersions = [{ version: '1.0' }, { version: '2.0' }];
     productServiceMock.sendRequestToGetProductVersionsForDesigner.and.returnValue(of(mockVersions));
 
+    // Act
     component.getVersionInDesigner();
 
+    // Assert
     expect(productServiceMock.sendRequestToGetProductVersionsForDesigner).toHaveBeenCalledWith(productId);
     expect(component.versions()).toEqual(['Version 1.0', 'Version 2.0']);
   });
@@ -345,8 +347,10 @@ describe('ProductVersionActionComponent', () => {
     component.versions.set([]);
     productServiceMock.sendRequestToGetProductVersionsForDesigner.and.returnValue(of([]));
 
+    // Act
     component.getVersionInDesigner();
 
+    // Assert
     expect(productServiceMock.sendRequestToGetProductVersionsForDesigner).toHaveBeenCalledWith(productId);
     expect(component.versions()).toEqual([]);
   });

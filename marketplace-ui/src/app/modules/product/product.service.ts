@@ -8,6 +8,7 @@ import { Criteria } from '../../shared/models/criteria.model';
 import { ProductDetail } from '../../shared/models/product-detail.model';
 import { VersionData } from '../../shared/models/vesion-artifact.model';
 import { SkipLoading } from '../../core/interceptors/api.interceptor';
+import { VersionAndUrl } from '../../shared/models/version-and-url';
 
 const PRODUCT_API_URL = 'api/product';
 @Injectable()
@@ -81,7 +82,7 @@ export class ProductService {
 
   sendRequestToGetProductVersionsForDesigner(productId: string) {
     const url = `api/product-details/${productId}/designerversions`;
-    return this.httpClient.get<string[]>(url, { headers: { 'X-Requested-By': 'ivy' } });
+    return this.httpClient.get<VersionAndUrl[]>(url, { headers: { 'X-Requested-By': 'ivy' } });
   }
 
 }

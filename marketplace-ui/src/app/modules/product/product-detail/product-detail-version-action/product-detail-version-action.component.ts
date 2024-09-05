@@ -53,9 +53,11 @@ export class ProductDetailVersionActionComponent implements AfterViewInit {
   versionDropdown: Signal<ItemDropdown[]> = computed(() => {
     return this.versions().map(version => ({
       value: version,
-      label: version
+      label: version,
     }));
   });
+  metaDataJsonUrl = model<string>('');
+  versionDropdownInDesigner: ItemDropdown[] = [];
 
   artifacts: WritableSignal<ItemDropdown[]> = signal([]);
   isDropDownDisplayed = signal(false);
@@ -181,12 +183,15 @@ export class ProductDetailVersionActionComponent implements AfterViewInit {
   }
 
   getVersionInDesigner(): void {
-    console.log('this.versions().length ' + this.versions().length);
-    console.log('this.productId ' + this.productId);
     if (this.versions().length === 0) {
       this.productService.sendRequestToGetProductVersionsForDesigner(this.productId
       ).subscribe(data => {
-        const versionMap = data.map((versionNumber: string) => VERSION.displayPrefix.concat(versionNumber));
+        const versionMap = data.map(dataVersionAndUrl => dataVersionAndUrl.version).map(version => VERSION.displayPrefix.concat(version));
+        data.forEach(dataVersionAndUrl => {
+          const currentVersion = VERSION.displayPrefix.concat(dataVersionAndUrl.version);
+          const versionAndUrl: ItemDropdown = { value: currentVersion, label: currentVersion, metaDataJsonUrl: dataVersionAndUrl.url };
+          this.versionDropdownInDesigner.push(versionAndUrl);
+        });
         this.versions.set(versionMap);
       });
     }

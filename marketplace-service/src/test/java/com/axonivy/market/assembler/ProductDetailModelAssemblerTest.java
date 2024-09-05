@@ -10,6 +10,8 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.util.List;
+
 @ExtendWith(MockitoExtension.class)
 class ProductDetailModelAssemblerTest {
   private static final String ID = "portal";
@@ -25,6 +27,7 @@ class ProductDetailModelAssemblerTest {
     productDetailModelAssembler = new ProductDetailModelAssembler(new ProductModelAssembler());
     mockProduct = new Product();
     mockProduct.setId(ID);
+    mockProduct.setReleasedVersions(List.of("11.0.1", "10.0.8"));
   }
 
   @Test
@@ -51,5 +54,6 @@ class ProductDetailModelAssemblerTest {
   void testToModelWithRequestPathAndBestMatchVersion() {
     ProductDetailModel model = productDetailModelAssembler.toModel(mockProduct, VERSION, RequestMappingConstants.BEST_MATCH_BY_ID_AND_VERSION);
     Assertions.assertTrue(model.getLink(SELF_RELATION).get().getHref().endsWith("/api/product-details/portal/10.0.19/bestmatch"));
+    Assertions.assertTrue(model.getMetaProductJsonUrl().endsWith("/api/product-details/productjsoncontent/portal/10.0.8"));
   }
 }
