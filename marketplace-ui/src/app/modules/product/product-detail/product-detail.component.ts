@@ -2,7 +2,6 @@ import {
   Component,
   ElementRef,
   HostListener,
-  Signal,
   WritableSignal,
   inject,
   signal
@@ -41,7 +40,6 @@ import { CommonUtils } from '../../../shared/utils/common.utils';
 import { ItemDropdown } from '../../../shared/models/item-dropdown.model';
 import { ProductTypePipe } from '../../../shared/pipes/product-type.pipe';
 import { ProductDetailActionType } from '../../../shared/enums/product-detail-action-type';
-import { log } from 'console';
 
 export interface DetailTab {
   activeClass: string;
@@ -95,7 +93,7 @@ export class ProductDetailComponent {
   productModuleContent: WritableSignal<ProductModuleContent> = signal(
     {} as ProductModuleContent
   );
-  productDetailActionType: Signal<ProductDetailActionType> = signal(ProductDetailActionType.STANDARD);
+  productDetailActionType = signal(ProductDetailActionType.STANDARD);
   detailContent!: DetailTab;
   detailTabs = PRODUCT_DETAIL_TABS;
   activeTab = DEFAULT_ACTIVE_TAB;
@@ -128,7 +126,7 @@ export class ProductDetailComponent {
     const productId = this.route.snapshot.params['id'];
     this.productDetailService.productId.set(productId);
     if (productId) {
-      this.getProductById(productId).subscribe(productDetail => {        
+      this.getProductById(productId).subscribe(productDetail => {
         this.productDetail.set(productDetail);
         this.productModuleContent.set(productDetail.productModuleContent);
         this.selectedVersion = VERSION.displayPrefix.concat(this.convertTagToVersion((productDetail.productModuleContent.tag)));
@@ -139,7 +137,6 @@ export class ProductDetailComponent {
         this.installationCount = productDetail.installationCount;
         this.handleProductContentVersion();
         this.updateProductDetailActionType(productDetail);
-        console.log(this.productDetailActionType())
       });
       this.productFeedbackService.initFeedbacks();
       this.productStarRatingService.fetchData();
@@ -166,11 +163,9 @@ export class ProductDetailComponent {
 
   updateProductDetailActionType(productDetail: ProductDetail) {
     if (this.routingQueryParamService.isDesignerEnv()) {
-      this.productDetailActionType = signal(ProductDetailActionType.DESIGNER_ENV);
-    } else if (productDetail!= undefined && productDetail.sourceUrl!= undefined) {
-      this.productDetailActionType= signal(ProductDetailActionType.STANDARD);
-    } else {
-      this.productDetailActionType= signal(ProductDetailActionType.CUSTOM_SOLUTION);
+      this.productDetailActionType.set(ProductDetailActionType.DESIGNER_ENV);
+    } else if (productDetail?.sourceUrl == undefined) {
+      this.productDetailActionType.set(ProductDetailActionType.CUSTOM_SOLUTION);
     }
   }
 

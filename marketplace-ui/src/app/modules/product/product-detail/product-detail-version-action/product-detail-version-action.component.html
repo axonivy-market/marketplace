@@ -36,7 +36,7 @@
   }
   @case ('customSolution') {
     <button [lang]="languageService.selectedLanguage()"
-      class="btn btn__install row w-100"
+      class="btn row btn_contact-us"
       (click)="onNavigateToContactPage()"
       [ngClass]="themeService.isDarkMode() ? 'btn-light' : 'btn-primary'">
       {{ 'common.product.detail.contactUs.label' | translate }}

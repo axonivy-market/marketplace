@@ -14,8 +14,6 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ProductService } from '../../product.service';
 import { Tooltip } from 'bootstrap';
-import { ProductDetailService } from '../product-detail.service';
-import { RoutingQueryParamService } from '../../../../shared/services/routing.query.param.service';
 import { CommonDropdownComponent } from '../../../../shared/components/common-dropdown/common-dropdown.component';
 import { LanguageService } from '../../../../core/services/language/language.service';
 import { ItemDropdown } from '../../../../shared/models/item-dropdown.model';
