@@ -16,7 +16,6 @@ export class ErrorPageComponentComponent {
   themeService = inject(ThemeService);
   languageService = inject(LanguageService);
   isMobileMode = signal<boolean>(false);
-  //imageSrc = signal<string>('');
 
   constructor(private readonly router: Router) {
     this.checkMediaSize();
@@ -34,18 +33,7 @@ export class ErrorPageComponentComponent {
   checkMediaSize() {
     const mediaQuery = window.matchMedia('(max-width: 767px)');
     this.isMobileMode.set(mediaQuery.matches);
-   // this.imageSrc.set(this.getImageSrc());
   }
-
-  // getImageSrc(): string {
-  //   let imageSrc = '';
-  //   if (this.themeService.isDarkMode()) {
-  //     imageSrc = this.getImageSrcInDarkMode();
-  //   } else {
-  //     imageSrc = this.getImageSrcInLightMode();
-  //   }
-  //   return imageSrc;
-  // }
 
   getImageSrcInLightMode(): string {
     let imageSrc = '';
