@@ -27,6 +27,7 @@ import { ProductDetailComponent } from './product-detail.component';
 import { ProductModuleContent } from '../../../shared/models/product-module-content.model';
 import { RoutingQueryParamService } from '../../../shared/services/routing.query.param.service';
 import { MockProductService } from '../../../shared/mocks/mock-services';
+import { ProductDetailActionType } from '../../../shared/enums/product-detail-action-type';
 const products = MOCK_PRODUCTS._embedded.products;
 declare const viewport: Viewport;
 
@@ -334,4 +335,34 @@ describe('ProductDetailComponent', () => {
     component.handleProductContentVersion();
     expect(component.selectedVersion).toEqual('Version 10.0.11');
   });
+
+    it('should set ProductDetailActionType to DESIGNER_ENV when isDesignerEnv returns true', () => {
+      routingQueryParamService.isDesignerEnv.and.returnValue(true);
+
+      component.updateProductDetailActionType({} as any); // Pass an empty object as ProductDetail
+
+      expect(component.productDetailActionType()).toBe(
+        ProductDetailActionType.DESIGNER_ENV
+      );
+    });
+
+    it('should set ProductDetailActionType to CUSTOM_SOLUTION when productDetail.sourceUrl is undefined', () => {
+      routingQueryParamService.isDesignerEnv.and.returnValue(false);
+
+      component.updateProductDetailActionType({ sourceUrl: undefined } as any);
+
+      expect(component.productDetailActionType()).toBe(
+        ProductDetailActionType.CUSTOM_SOLUTION
+      );
+    });
+
+    it('should set ProductDetailActionType to STANDARD when productDetail.sourceUrl is defined', () => {
+      routingQueryParamService.isDesignerEnv.and.returnValue(false);
+
+      component.updateProductDetailActionType({ sourceUrl: 'some-url' } as any);
+
+      expect(component.productDetailActionType()).toBe(
+        ProductDetailActionType.STANDARD
+      );
+    });
 });
