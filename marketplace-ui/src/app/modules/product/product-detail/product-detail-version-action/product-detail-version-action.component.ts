@@ -187,5 +187,4 @@ export class ProductDetailVersionActionComponent implements AfterViewInit {
     }
     window.focus();
   }
-
 }

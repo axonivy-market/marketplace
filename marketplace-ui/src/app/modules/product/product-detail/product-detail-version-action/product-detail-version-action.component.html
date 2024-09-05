@@ -19,7 +19,6 @@
         ariaLabel=".form-select-sm example" class="flex-grow-1 col-8" [metaDataJsonUrl]="metaDataJsonUrl()"
         (itemSelected)="onSelectVersionInDesigner($event.value)">
       </app-common-dropdown>
-    
       <button [lang]="languageService.selectedLanguage()"
         class="btn btn__install flex-grow-1 install-designer-button m-0 col-4" id="install-button"
         (click)="onUpdateInstallationCountForDesigner()" onClick="function installInDesigner() {

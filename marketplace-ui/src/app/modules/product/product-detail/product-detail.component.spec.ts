@@ -336,17 +336,16 @@ describe('ProductDetailComponent', () => {
     expect(component.selectedVersion).toEqual('Version 10.0.11');
   });
 
-    it('should set ProductDetailActionType to DESIGNER_ENV when isDesignerEnv returns true', () => {
+    it('should return DESIGNER_ENV as acction type in Designer Env', () => {
       routingQueryParamService.isDesignerEnv.and.returnValue(true);
 
-      component.updateProductDetailActionType({} as any); // Pass an empty object as ProductDetail
-
+      component.updateProductDetailActionType({} as any);
       expect(component.productDetailActionType()).toBe(
         ProductDetailActionType.DESIGNER_ENV
       );
     });
 
-    it('should set ProductDetailActionType to CUSTOM_SOLUTION when productDetail.sourceUrl is undefined', () => {
+    it('should return CUSTOM_SOLUTION as acction type when productDetail.sourceUrl is undefined', () => {
       routingQueryParamService.isDesignerEnv.and.returnValue(false);
 
       component.updateProductDetailActionType({ sourceUrl: undefined } as any);
@@ -356,7 +355,7 @@ describe('ProductDetailComponent', () => {
       );
     });
 
-    it('should set ProductDetailActionType to STANDARD when productDetail.sourceUrl is defined', () => {
+    it('should return STANDARD as acction type when when productDetail.sourceUrl is defined', () => {
       routingQueryParamService.isDesignerEnv.and.returnValue(false);
 
       component.updateProductDetailActionType({ sourceUrl: 'some-url' } as any);

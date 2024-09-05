@@ -161,14 +161,14 @@ class VersionUtilsTest {
     }
 
     @Test
-    void testGetOldestTagWithNullTags() {
+    void testGetOldestVersionWithNullTags() {
         String oldestTag = VersionUtils.getOldestVersion(null);
 
         Assertions.assertEquals(StringUtils.EMPTY, oldestTag);
     }
 
     @Test
-    void testGetOldestTagWithNonNumericCharacters() {
+    void testGetOldestVersionWithNonNumericCharacters() {
         GHTag tag1 = Mockito.mock(GHTag.class);
         GHTag tag2 = Mockito.mock(GHTag.class);
         Mockito.when(tag1.getName()).thenReturn("v1.0");
