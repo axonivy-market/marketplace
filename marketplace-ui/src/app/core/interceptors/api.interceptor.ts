@@ -11,7 +11,7 @@ import { Router } from '@angular/router';
 
 export const REQUEST_BY = 'X-Requested-By';
 export const IVY = 'ivy';
-export const ERROR_PAGE_PATH = '/error';
+export const ERROR_PAGE_PATH = '/app/error';
 export const CODE_404 = 404;
 export const CODE_500 = 500;
 

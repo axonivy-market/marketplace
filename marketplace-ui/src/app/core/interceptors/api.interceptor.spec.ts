@@ -1,13 +1,12 @@
-import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { HttpClient, HttpContext, HttpContextToken, HttpHeaders, HttpResponse } from '@angular/common/http';
-import { provideHttpClient, withInterceptors } from '@angular/common/http';
+import { HttpClient, HttpHeaders, provideHttpClient, withInterceptors } from '@angular/common/http';
 import { HttpTestingController } from '@angular/common/http/testing';
-import { apiInterceptor } from './api.interceptor';
-import { ProductComponent } from '../../modules/product/product.component';
-import { TranslateModule } from '@ngx-translate/core';
+import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { ActivatedRoute } from '@angular/router';
+import { TranslateModule } from '@ngx-translate/core';
 import { of } from 'rxjs';
+import { ProductComponent } from '../../modules/product/product.component';
 import { DESIGNER_COOKIE_VARIABLE } from '../../shared/constants/common.constant';
+import { apiInterceptor } from './api.interceptor';
 
 describe('AuthInterceptor', () => {
   let productComponent: ProductComponent;
