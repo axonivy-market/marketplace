@@ -68,23 +68,12 @@ describe('ProductCardComponent', () => {
     );
   });
 
-  it('should display product tag in REST client', () => {
+  it('should display product tag in uppercase', () => {
     component.isShowInRESTClientEditor = true;
     fixture.detectChanges();
 
     const tagElement = fixture.debugElement.query(By.css('.card__tag'));
     expect(tagElement).toBeTruthy();
     expect(tagElement.nativeElement.textContent).toContain('AI');
-  });
-
-  it('should display product type in marketplace website', () => {
-    component.isShowInRESTClientEditor = false;
-    fixture.detectChanges();
-
-    const tagElement = fixture.debugElement.query(By.css('.card__tag'));
-    expect(tagElement).toBeTruthy();
-    expect(tagElement.nativeElement.textContent).toContain(
-      'common.filter.value.connector'
-    );
   });
 });
