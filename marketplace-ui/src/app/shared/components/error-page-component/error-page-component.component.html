@@ -1,0 +1,27 @@
+<div
+  class="error-page-container container-fluid d-flex flex-column flex-lg-row"
+  [ngClass]="isMobileMode() ? 'mobile-mode' : ''">
+  <div
+    class="flexible-gap d-flex flex-column justify-content-center module-gap col-12 col-lg-4">
+    <div class="error-code-404">{{ 'common.error.code' | translate }}</div>
+    <div class="oops">{{ 'common.error.oops' | translate }}</div>
+    <div class="error-description">
+      {{ 'common.error.description' | translate }}
+    </div>
+    <div class="button-container flex-row">
+      <button
+        (click)="backToHomePage()"
+        [lang]="languageService.selectedLanguage()"
+        class="btn btn-primary border-0"
+        [ngClass]="themeService.isDarkMode() ? 'text-dark' : 'text-light'">
+        {{ 'common.error.buttonLabel' | translate }}
+      </button>
+    </div>
+  </div>
+  <div class="d-flex flex-column col-12 col-lg-1"></div>
+  <div class="version-gap d-flex flex-column module-gap col-12 col-lg-7">
+    <img
+      [src]="imageSrc()"
+      alt="404 Not Found" />
+  </div>
+</div>

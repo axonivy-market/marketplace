@@ -23,6 +23,11 @@ common:
       util: Nützliches
       demos: Demos
       solution: Lösungen
+  error:
+    code: 'ERROR CODE: 404'
+    oops: 'Oops!'
+    description: 'Unsere Webseite macht eine kleine Pause. Offenbar finden wir die von Dir angefragte Seite nicht.'
+    buttonLabel: Zurück zur Startseite
   sort:
     label: Sortierung
     value:

@@ -27,6 +27,11 @@ common:
       util: Utilities
       demos: Demos
       solution: Solutions
+  error:
+    code: 'ERROR CODE: 404'
+    oops: 'Oops!'
+    description: 'Our website is having a break. We can’t seem to find the page you’re looking for.'
+    buttonLabel: Back to homepage
   sort:
     label: Sort by
     value:

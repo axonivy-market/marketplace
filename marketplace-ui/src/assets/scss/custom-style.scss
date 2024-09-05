@@ -78,6 +78,8 @@ p {
   --star-color: #b0b0b0;
   --star-filled-color: #{$ivyPrimaryTextColorLight};
   --text-no-rating-color: #757575;
+  --text-error-code-color: #757575;
+  --text-error-oops-color: #{$ivyPrimaryTextColorLight};
 
   .bg-primary {
     background-color: #{$ivyPrimaryColorLight} !important;
@@ -179,6 +181,9 @@ p {
   --star-color: #757575;
   --star-filled-color: #{$white};
   --text-no-rating-color: #A3A3A3;
+
+  --text-error-code-color: #A3A3A3;
+  --text-error-oops-color: #ffffff;
 
   a {
     color: #{$white};
