@@ -3,21 +3,26 @@ import { By } from '@angular/platform-browser';
 import { SearchBarComponent } from './search-bar.component';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { Viewport } from 'karma-viewport/dist/adapter/viewport';
+import { ElementRef } from '@angular/core';
 
 declare const viewport: Viewport;
 
 describe('SearchBarComponent', () => {
   let component: SearchBarComponent;
   let fixture: ComponentFixture<SearchBarComponent>;
+  let mockElementRef: ElementRef;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [SearchBarComponent, TranslateModule.forRoot()],
-      providers: [TranslateService]
+      providers: [TranslateService,
+        { provide: ElementRef, useValue: { nativeElement: document.createElement('div') } }
+      ]
     }).compileComponents();
 
     fixture = TestBed.createComponent(SearchBarComponent);
     component = fixture.componentInstance;
+    mockElementRef = TestBed.inject(ElementRef);
     fixture.detectChanges();
   });
 
@@ -70,5 +75,20 @@ describe('SearchBarComponent', () => {
     expect(getComputedStyle(desktopSearch.nativeElement).display).not.toBe(
       'none'
     );
+  });
+
+  it('should set isSearchBarDisplayed to false when clicking outside', () => {
+    // Set up the DOM
+    const outsideClickEvent = new MouseEvent('click', {
+      bubbles: true,
+      cancelable: true,
+      view: window
+    });
+
+    // Dispatch a click event to the document
+    document.dispatchEvent(outsideClickEvent);
+
+    // Verify the behavior
+    expect(component.isSearchBarDisplayed()).toBeFalse();
   });
 });

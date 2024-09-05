@@ -1,14 +1,6 @@
-import {
-  provideHttpClient,
-  withInterceptorsFromDi
-} from '@angular/common/http';
+import { provideHttpClient, withInterceptorsFromDi } from '@angular/common/http';
 import { provideHttpClientTesting } from '@angular/common/http/testing';
-import {
-  ComponentFixture,
-  fakeAsync,
-  TestBed,
-  tick
-} from '@angular/core/testing';
+import { ComponentFixture, fakeAsync, TestBed, tick } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 import { ActivatedRoute } from '@angular/router';
 import { TranslateModule } from '@ngx-translate/core';
@@ -27,6 +19,7 @@ import { ProductDetailComponent } from './product-detail.component';
 import { ProductModuleContent } from '../../../shared/models/product-module-content.model';
 import { RoutingQueryParamService } from '../../../shared/services/routing.query.param.service';
 import { MockProductService } from '../../../shared/mocks/mock-services';
+
 const products = MOCK_PRODUCTS._embedded.products;
 declare const viewport: Viewport;
 
@@ -275,24 +268,26 @@ describe('ProductDetailComponent', () => {
     spyOn(window, 'matchMedia').and.returnValue({
       matches: true,
       media: '',
-      addEventListener: () => {},
-      removeEventListener: () => {},
+      addEventListener: () => {
+      },
+      removeEventListener: () => {
+      },
       onchange: null,
-      addListener: function (
+      addListener: function(
         callback:
           | ((this: MediaQueryList, ev: MediaQueryListEvent) => any)
           | null
       ): void {
         throw new Error('Function not implemented.');
       },
-      removeListener: function (
+      removeListener: function(
         callback:
           | ((this: MediaQueryList, ev: MediaQueryListEvent) => any)
           | null
       ): void {
         throw new Error('Function not implemented.');
       },
-      dispatchEvent: function (event: Event): boolean {
+      dispatchEvent: function(event: Event): boolean {
         throw new Error('Function not implemented.');
       }
     });
@@ -303,8 +298,10 @@ describe('ProductDetailComponent', () => {
     (window.matchMedia as jasmine.Spy).and.returnValue({
       matches: false,
       media: '',
-      addEventListener: () => {},
-      removeEventListener: () => {}
+      addEventListener: () => {
+      },
+      removeEventListener: () => {
+      }
     });
 
     component.checkMediaSize();
@@ -334,4 +331,44 @@ describe('ProductDetailComponent', () => {
     component.handleProductContentVersion();
     expect(component.selectedVersion).toEqual('Version 10.0.11');
   });
+
+  it('should update activeTab based on URL hash', () => {
+    // Simulate window popstate event with a specific hash
+    window.location.hash = '#tab-2';
+    window.dispatchEvent(new PopStateEvent('popstate'));
+
+    // Check if activeTab is updated correctly
+    expect(component.activeTab).toBe('2');
+
+    // Simulate window popstate event with no hash
+    window.location.hash = '';
+    window.dispatchEvent(new PopStateEvent('popstate'));
+
+    // Check if activeTab is set to DEFAULT_ACTIVE_TAB
+    expect(component.activeTab).toBe(component.DEFAULT_ACTIVE_TAB);
+  });
+
+  it('should set activeTab to savedTab if it exists in localStorage', () => {
+    // Arrange
+    const savedTab = 'tab-1';
+    spyOn(localStorage, 'getItem').and.returnValue(savedTab);
+
+    // Act
+    component.ngOnInit();
+
+    // Assert
+    expect(component.activeTab).toBe(savedTab);
+  });
+
+  it('should set activeTab to DEFAULT_ACTIVE_TAB if savedTab does not exist in localStorage', () => {
+    // Arrange
+    spyOn(localStorage, 'getItem').and.returnValue(null);
+
+    // Act
+    component.ngOnInit();
+
+    // Assert
+    expect(component.activeTab).toBe(component.DEFAULT_ACTIVE_TAB);
+  });
+
 });

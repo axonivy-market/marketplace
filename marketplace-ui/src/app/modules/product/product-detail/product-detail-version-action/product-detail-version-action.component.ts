@@ -77,7 +77,7 @@ export class ProductDetailVersionActionComponent implements AfterViewInit {
   router = inject(Router);
   route = inject(ActivatedRoute);
 
-  isDevVersionsDisplayed = signal(CommonUtils.getCookieValue(this.cookieService, this.SHOW_DEV_VERSION_COOKIE_NAME, false));
+  isDevVersionsDisplayed: WritableSignal<boolean> = signal(CommonUtils.getCookieValue(this.cookieService, this.SHOW_DEV_VERSION_COOKIE_NAME, false));
 
   ngAfterViewInit() {
     const tooltipTriggerList = [].slice.call(
@@ -103,18 +103,18 @@ export class ProductDetailVersionActionComponent implements AfterViewInit {
   onSelectVersion(version: string) {
     if (this.selectedVersion() !== version) {
       this.selectedVersion.set(version);
-      this.artifacts.set(this.versionMap.get(version) ?? []);
-      this.artifacts().forEach(artifact => {
-        if (artifact.name) {
-          artifact.label = artifact.name;
-        }
-      });
-      if (this.artifacts().length !== 0) {
-        this.selectedArtifactName = this.artifacts()[0].name ?? '';
-        this.selectedArtifact = this.artifacts()[0].downloadUrl ?? '';
-      }
-      this.addVersionParamToRoute(version);
     }
+    this.artifacts.set(this.versionMap.get(version) ?? []);
+    this.artifacts().forEach(artifact => {
+      if (artifact.name) {
+        artifact.label = artifact.name;
+      }
+    });
+    if (this.artifacts().length !== 0) {
+      this.selectedArtifactName = this.artifacts()[0].name ?? '';
+      this.selectedArtifact = this.artifacts()[0].downloadUrl ?? '';
+    }
+    this.addVersionParamToRoute(version);
   }
 
   addVersionParamToRoute(selectedVersion: string) {
@@ -136,10 +136,9 @@ export class ProductDetailVersionActionComponent implements AfterViewInit {
 
   onShowDevVersion(event: Event) {
     event.preventDefault();
-    const newValue = !this.isDevVersionsDisplayed();
-    this.isDevVersionsDisplayed.set(newValue);
+    this.isDevVersionsDisplayed.update(oldValue => !oldValue);
     this.getVersionWithArtifact();
-    this.cookieService.set(this.SHOW_DEV_VERSION_COOKIE_NAME, newValue.toString());
+    this.cookieService.set(this.SHOW_DEV_VERSION_COOKIE_NAME, this.isDevVersionsDisplayed().toString());
   }
 
   onShowVersionAndArtifact() {
@@ -182,6 +181,8 @@ export class ProductDetailVersionActionComponent implements AfterViewInit {
   }
 
   getVersionInDesigner(): void {
+    console.log('this.versions().length ' + this.versions().length);
+    console.log('this.productId ' + this.productId);
     if (this.versions().length === 0) {
       this.productService.sendRequestToGetProductVersionsForDesigner(this.productId
       ).subscribe(data => {

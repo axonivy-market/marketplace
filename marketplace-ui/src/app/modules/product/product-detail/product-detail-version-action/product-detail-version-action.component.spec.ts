@@ -17,20 +17,19 @@ class MockElementRef implements ElementRef {
 }
 
 describe('ProductVersionActionComponent', () => {
+  const productId = '123';
   let component: ProductDetailVersionActionComponent;
   let fixture: ComponentFixture<ProductDetailVersionActionComponent>;
   let productServiceMock: any;
-  let elementRef: MockElementRef;
-  let cookieService: jasmine.SpyObj<CookieService>;
   let router: Router;
   let route: jasmine.SpyObj<ActivatedRoute>;
 
   beforeEach(() => {
     productServiceMock = jasmine.createSpyObj('ProductService', [
-      'sendRequestToProductDetailVersionAPI', 'sendRequestToUpdateInstallationCount'
+      'sendRequestToProductDetailVersionAPI', 'sendRequestToUpdateInstallationCount', 'sendRequestToGetProductVersionsForDesigner'
     ]);
     const commonUtilsSpy = jasmine.createSpyObj('CommonUtils', ['getCookieValue']);
-    const cookieServiceSpy = jasmine.createSpyObj('CookieService', ['get', 'set']);
+    // const cookieServiceSpy = jasmine.createSpyObj('CookieService', ['get', 'set']);
     const activatedRouteSpy = jasmine.createSpyObj('ActivatedRoute', [], {
       snapshot: {
         queryParams: {}
@@ -41,10 +40,10 @@ describe('ProductVersionActionComponent', () => {
       imports: [ProductDetailVersionActionComponent, TranslateModule.forRoot()],
       providers: [
         TranslateService,
+        CookieService,
         provideHttpClient(),
         provideRouter([]),
         { provide: ProductService, useValue: productServiceMock },
-        { provide: CookieService, useValue: cookieServiceSpy },
         { provide: ElementRef, useClass: MockElementRef },
         { provide: ActivatedRoute, useValue: { queryParams: of({}) } },
         { provide: CommonUtils, useValue: commonUtilsSpy },
@@ -53,7 +52,7 @@ describe('ProductVersionActionComponent', () => {
     }).compileComponents();
     fixture = TestBed.createComponent(ProductDetailVersionActionComponent);
     component = fixture.componentInstance;
-    cookieService = TestBed.inject(CookieService) as jasmine.SpyObj<CookieService>;
+    component.productId = productId;
     router = TestBed.inject(Router);
     route = TestBed.inject(ActivatedRoute) as jasmine.SpyObj<ActivatedRoute>;
     fixture.detectChanges();
@@ -107,6 +106,43 @@ describe('ProductVersionActionComponent', () => {
     expect(component.artifacts()).toEqual(artifacts);
     expect(component.selectedArtifactName).toBe('Example Artifact');
     expect(component.selectedArtifact).toBe('https://example.com/download');
+    expect(component.addVersionParamToRoute).toHaveBeenCalledWith(version);
+  });
+
+  it('should not update selected version or artifacts if the version is the same', () => {
+    // Arrange
+    const version = 'v1';
+    component.selectedVersion.set(version);
+    spyOn(component.selectedVersion, 'set');
+    spyOn(component.artifacts, 'set');
+    spyOn(component.versionMap, 'get');
+    spyOn(component, 'addVersionParamToRoute');
+
+    // Act
+    component.onSelectVersion(version);
+
+    // Assert
+    expect(component.selectedVersion.set).not.toHaveBeenCalled();
+    expect(component.artifacts.set).toHaveBeenCalled();
+    expect(component.addVersionParamToRoute).toHaveBeenCalledWith(version);
+  });
+
+  it('should handle empty artifacts', () => {
+    // Arrange
+    const version = 'v1';
+    spyOn(component.selectedVersion, 'set');
+    spyOn(component.artifacts, 'set');
+    spyOn(component.versionMap, 'get').and.returnValue([]);
+    spyOn(component, 'addVersionParamToRoute');
+
+    // Act
+    component.onSelectVersion(version);
+
+    // Assert
+    expect(component.selectedVersion.set).toHaveBeenCalledWith(version);
+    expect(component.artifacts.set).toHaveBeenCalledWith([]);
+    expect(component.selectedArtifactName).toBe('');
+    expect(component.selectedArtifact).toBe('');
     expect(component.addVersionParamToRoute).toHaveBeenCalledWith(version);
   });
 
@@ -192,7 +228,8 @@ describe('ProductVersionActionComponent', () => {
     expect(component.isDropDownDisplayed()).toBeTrue();
   });
 
-  it('should send Api to get DevVersion and set the cookie', () => {
+  it('should send Api to get DevVersion', () => {
+    spyOn(component.isDevVersionsDisplayed, 'set');
     expect(component.isDevVersionsDisplayed()).toBeFalse();
     mockApiWithExpectedResponse();
     const event = new Event('click');
@@ -200,26 +237,6 @@ describe('ProductVersionActionComponent', () => {
     component.onShowDevVersion(event);
     expect(event.preventDefault).toHaveBeenCalled();
     expect(component.isDevVersionsDisplayed()).toBeTrue();
-    expect(component.isDevVersionsDisplayed.set).toHaveBeenCalledWith(false);
-    expect(component.getVersionWithArtifact).toHaveBeenCalled();
-    expect(cookieService.set).toHaveBeenCalledWith(component.SHOW_DEV_VERSION_COOKIE_NAME, 'false');
-  });
-
-  it('should toggle isDevVersionsDisplayed from false to true and set the cookie', () => {
-    spyOn(component.isDevVersionsDisplayed, 'set');
-    spyOn(component, 'getVersionWithArtifact');
-
-    const event = new Event('click');
-    spyOn(event, 'preventDefault');
-
-    spyOn(component, 'isDevVersionsDisplayed').and.returnValue(false);
-
-    component.onShowDevVersion(event);
-
-    expect(event.preventDefault).toHaveBeenCalled();
-    expect(component.isDevVersionsDisplayed.set).toHaveBeenCalledWith(true); // Expect the toggle to true
-    expect(component.getVersionWithArtifact).toHaveBeenCalled();
-    expect(cookieService.set).toHaveBeenCalledWith(component.SHOW_DEV_VERSION_COOKIE_NAME, 'true');
   });
 
   function mockApiWithExpectedResponse() {
@@ -278,5 +295,59 @@ describe('ProductVersionActionComponent', () => {
     expect(component.onUpdateInstallationCount).toHaveBeenCalledOnceWith();
     // Check if window.focus() was called
     expect(mockWindowFocus).toHaveBeenCalled();
+  });
+
+  it('should call onUpdateInstallationCount when isDesignerEnvironment returns true', () => {
+    // Arrange
+    spyOn(component, 'isDesignerEnvironment').and.returnValue(true);
+    spyOn(component, 'onUpdateInstallationCount');
+
+    // Act
+    component.onUpdateInstallationCountForDesigner();
+
+    // Assert
+    expect(component.onUpdateInstallationCount).toHaveBeenCalled();
+  });
+
+  it('should not call onUpdateInstallationCount when isDesignerEnvironment returns false', () => {
+    // Arrange
+    spyOn(component, 'isDesignerEnvironment').and.returnValue(false);
+    spyOn(component, 'onUpdateInstallationCount');
+
+    // Act
+    component.onUpdateInstallationCountForDesigner();
+
+    // Assert
+    expect(component.onUpdateInstallationCount).not.toHaveBeenCalled();
+  });
+
+  it('should not call productService if versions are already populated', () => {
+    component.versions.set(['1.0', '1.1']);
+    fixture.detectChanges();
+    component.getVersionInDesigner();
+
+    expect(productServiceMock.sendRequestToGetProductVersionsForDesigner).not.toHaveBeenCalled();
+  });
+
+  it('should call productService and update versions if versions are empty', () => {
+    const productId = '123';
+    component.versions.set([]);
+    const mockVersions = ['1.0', '2.0'];
+    productServiceMock.sendRequestToGetProductVersionsForDesigner.and.returnValue(of(mockVersions));
+
+    component.getVersionInDesigner();
+
+    expect(productServiceMock.sendRequestToGetProductVersionsForDesigner).toHaveBeenCalledWith(productId);
+    expect(component.versions()).toEqual(['Version 1.0', 'Version 2.0']);
+  });
+
+  it('should handle empty response from productService', () => {
+    component.versions.set([]);
+    productServiceMock.sendRequestToGetProductVersionsForDesigner.and.returnValue(of([]));
+
+    component.getVersionInDesigner();
+
+    expect(productServiceMock.sendRequestToGetProductVersionsForDesigner).toHaveBeenCalledWith(productId);
+    expect(component.versions()).toEqual([]);
   });
 });

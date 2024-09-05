@@ -47,8 +47,6 @@ export interface DetailTab {
   label: string;
 }
 
-const STORAGE_ITEM = 'activeTab';
-const DEFAULT_ACTIVE_TAB = 'description';
 @Component({
   selector: 'app-product-detail',
   standalone: true,
@@ -73,6 +71,8 @@ const DEFAULT_ACTIVE_TAB = 'description';
   styleUrl: './product-detail.component.scss'
 })
 export class ProductDetailComponent {
+  readonly STORAGE_ITEM = 'activeTab';
+  readonly DEFAULT_ACTIVE_TAB = 'description';
   themeService = inject(ThemeService);
   route = inject(ActivatedRoute);
   router = inject(Router);
@@ -94,7 +94,7 @@ export class ProductDetailComponent {
   );
   detailContent!: DetailTab;
   detailTabs = PRODUCT_DETAIL_TABS;
-  activeTab = DEFAULT_ACTIVE_TAB;
+  activeTab = this.DEFAULT_ACTIVE_TAB;
   selectedTabLabel: string = CommonUtils.getLabel(PRODUCT_DETAIL_TABS[0].value, PRODUCT_DETAIL_TABS);
   detailTabsForDropdown = PRODUCT_DETAIL_TABS;
   isDropdownOpen: WritableSignal<boolean> = signal(false);
@@ -103,11 +103,12 @@ export class ProductDetailComponent {
   showPopup!: boolean;
   isMobileMode = signal<boolean>(false);
   installationCount = 0;
+
   @HostListener('window:popstate', ['$event'])
   onPopState() {
     this.activeTab = window.location.hash.split('#tab-')[1];
     if (this.activeTab === undefined) {
-      this.activeTab = DEFAULT_ACTIVE_TAB;
+      this.activeTab = this.DEFAULT_ACTIVE_TAB;
     }
     this.updateDropdownSelection();
   }
@@ -128,7 +129,7 @@ export class ProductDetailComponent {
         this.productModuleContent.set(productDetail.productModuleContent);
         this.detailTabsForDropdown = this.getNotEmptyTabs();
         this.productDetailService.productNames.set(productDetail.names);
-        localStorage.removeItem(STORAGE_ITEM);
+        localStorage.removeItem(this.STORAGE_ITEM);
         this.installationCount = productDetail.installationCount;
         this.handleProductContentVersion();
       });
@@ -136,7 +137,7 @@ export class ProductDetailComponent {
       this.productStarRatingService.fetchData();
     }
 
-    const savedTab = localStorage.getItem(STORAGE_ITEM);
+    const savedTab = localStorage.getItem(this.STORAGE_ITEM);
     if (savedTab) {
       this.activeTab = savedTab;
     }
@@ -245,7 +246,7 @@ export class ProductDetailComponent {
     }
     this.updateDropdownSelection();
 
-    localStorage.setItem(STORAGE_ITEM, tab);
+    localStorage.setItem(this.STORAGE_ITEM, tab);
   }
 
   onShowInfoContent() {

@@ -7,10 +7,7 @@ import { AppModalService } from '../../../../../shared/services/app-modal.servic
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { CommonModule } from '@angular/common';
 import { By } from '@angular/platform-browser';
-import {
-  provideHttpClient,
-  withInterceptorsFromDi
-} from '@angular/common/http';
+import { provideHttpClient, withInterceptorsFromDi } from '@angular/common/http';
 import { provideHttpClientTesting } from '@angular/common/http/testing';
 
 describe('ShowFeedbacksDialogComponent', () => {
@@ -74,4 +71,39 @@ describe('ShowFeedbacksDialogComponent', () => {
 
     expect(mockAppModalService.openAddFeedbackDialog).toHaveBeenCalled();
   });
+
+  it('should call activeModal.dismiss when the window is resized to less than or equal to 767px', () => {
+    // Set up a media query list that matches
+    spyOn(window, 'matchMedia').and.returnValue({
+      matches: true,
+      addListener: () => {
+      },
+      removeListener: () => {
+      }
+    } as any);
+
+    // Trigger the resize event
+    component.onResize();
+
+    // Check that dismiss was called
+    expect(mockActiveModal.dismiss).toHaveBeenCalled();
+  });
+
+  it('should not call activeModal.dismiss when the window is resized to more than 767px', () => {
+    // Set up a media query list that does not match
+    spyOn(window, 'matchMedia').and.returnValue({
+      matches: false,
+      addListener: () => {
+      },
+      removeListener: () => {
+      }
+    } as any);
+
+    // Trigger the resize event
+    component.onResize();
+
+    // Check that dismiss was not called
+    expect(mockActiveModal.dismiss).not.toHaveBeenCalled();
+  });
+
 });

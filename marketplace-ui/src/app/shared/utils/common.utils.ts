@@ -14,7 +14,7 @@ export class CommonUtils {
     defaultValue: T
   ): T {
     const cookieValue = cookieService.get(cookieName);
-    if (cookieValue === undefined || cookieValue === null) {
+    if (cookieValue === undefined || cookieValue === null || cookieValue === '') {
       return defaultValue;
     }
 
