@@ -2,6 +2,31 @@
   opacity: 0px;
 }
 
+.navbar-mobile {
+  z-index: 1;
+  background-color: red;
+  // padding-bottom: 30px;
+  transition: 0.5s;
+  // overflow: hidden;
+  height: 100vh;
+  position: fixed;
+  overflow-x: hidden;
+  z-index: 1;
+  background-color: red;
+  padding-bottom: 30px;
+  transition: 0.5s;
+  overflow: hidden;  /* Prevents content from overflowing */
+  height: auto;  /* Allows the menu to adjust its height */
+  position: relative; /* Positioning is relative to its container */
+}
+
+.container-mobile {
+  background-color: pink;
+  position: relative;
+  width: 100%;
+  // margin-top: 30px;
+}
+
 .navbar-brand {
   padding-top: 0.8rem;
 }
