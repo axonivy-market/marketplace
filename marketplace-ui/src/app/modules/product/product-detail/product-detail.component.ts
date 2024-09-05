@@ -164,8 +164,10 @@ export class ProductDetailComponent {
   updateProductDetailActionType(productDetail: ProductDetail) {
     if (this.routingQueryParamService.isDesignerEnv()) {
       this.productDetailActionType.set(ProductDetailActionType.DESIGNER_ENV);
-    } else if (productDetail?.sourceUrl == undefined) {
+    } else if (productDetail?.sourceUrl === undefined) {
       this.productDetailActionType.set(ProductDetailActionType.CUSTOM_SOLUTION);
+    } else {
+      this.productDetailActionType.set(ProductDetailActionType.STANDARD)
     }
   }
 
