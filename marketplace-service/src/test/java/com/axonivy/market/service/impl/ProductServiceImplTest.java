@@ -334,7 +334,7 @@ class ProductServiceImplTest extends BaseSetup {
     verify(productModuleContentRepository).saveAll(argumentCaptorProductModuleContent.capture());
     verify(productRepository).save(argumentCaptor.capture());
 
-    assertThat(argumentCaptor.getValue().getProductModuleContents()).usingRecursiveComparison()
+    assertThat(argumentCaptorProductModuleContent.getValue()).usingRecursiveComparison()
         .isEqualTo(List.of(mockReadmeProductContent()));
   }
 
@@ -373,9 +373,8 @@ class ProductServiceImplTest extends BaseSetup {
 
     verify(productModuleContentRepository).saveAll(argumentCaptorProductModuleContent.capture());
     verify(productRepository).save(argumentCaptor.capture());
-    assertEquals(2, argumentCaptor.getValue().getProductModuleContents().size());
-    assertThat(argumentCaptor.getValue().getProductModuleContents()).usingRecursiveComparison()
-        .isEqualTo(List.of(mockReadmeProductContent(), mockReturnProductContent));
+    assertThat(argumentCaptor.getValue().getProductModuleContent()).usingRecursiveComparison()
+        .isEqualTo(mockReadmeProductContent());
   }
 
   @Test
@@ -405,7 +404,7 @@ class ProductServiceImplTest extends BaseSetup {
     productService.syncLatestDataFromMarketRepo();
     verify(productRepository).save(argumentCaptor.capture());
 
-    assertThat(argumentCaptor.getValue().getProductModuleContents()).isNull();
+    assertThat(argumentCaptor.getValue().getProductModuleContent()).isNull();
   }
 
   @Test
@@ -587,7 +586,7 @@ class ProductServiceImplTest extends BaseSetup {
 
   private List<Product> mockProducts() {
     Product product1 = Product.builder().repositoryName("axonivy-market/amazon-comprehend-connector")
-        .productModuleContents(List.of(mockReadmeProductContent())).build();
+        .productModuleContent(mockReadmeProductContent()).build();
     return List.of(product1);
   }
 }

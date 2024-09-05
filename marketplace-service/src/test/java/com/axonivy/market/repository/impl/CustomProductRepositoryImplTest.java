@@ -3,7 +3,7 @@ package com.axonivy.market.repository.impl;
 import com.axonivy.market.BaseSetup;
 import com.axonivy.market.constants.MongoDBConstants;
 import com.axonivy.market.entity.Product;
-import org.bson.Document;
+import com.axonivy.market.repository.ProductModuleContentRepository;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -16,7 +16,6 @@ import org.springframework.data.mongodb.core.aggregation.AggregationResults;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.data.mongodb.core.query.Update;
 
-import java.util.Arrays;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -34,6 +33,9 @@ class CustomProductRepositoryImplTest extends BaseSetup {
   private static final String TAG = "v10.0.21";
   private Product mockProduct;
   private Aggregation mockAggregation;
+
+  @Mock
+  ProductModuleContentRepository contentRepo;
 
   @Mock
   private MongoTemplate mongoTemplate;
@@ -92,21 +94,9 @@ class CustomProductRepositoryImplTest extends BaseSetup {
   @Test
   void testGetProductByIdAndTag() {
     setUpMockAggregateResult();
+    when(contentRepo.findByTagAndProductId(TAG, ID)).thenReturn(null);
     Product actualProduct = repo.getProductByIdAndTag(ID, TAG);
     assertEquals(mockProduct, actualProduct);
-  }
-
-  @Test
-  void testCreateDocumentFilterProductModuleContentByTag() {
-    Document expectedCondition = new Document(MongoDBConstants.EQUAL,
-        Arrays.asList(MongoDBConstants.PRODUCT_MODULE_CONTENT_TAG, TAG));
-    Document expectedLoop = new Document(MongoDBConstants.INPUT, MongoDBConstants.PRODUCT_MODULE_CONTENT_QUERY)
-        .append(MongoDBConstants.AS, MongoDBConstants.PRODUCT_MODULE_CONTENT)
-        .append(MongoDBConstants.CONDITION, expectedCondition);
-
-    Document result = repo.createDocumentFilterProductModuleContentByTag(TAG);
-
-    assertEquals(expectedLoop, result, "The created Document does not match the expected structure.");
   }
 
   @Test
@@ -133,13 +123,5 @@ class CustomProductRepositoryImplTest extends BaseSetup {
     when(mongoTemplate.findAndModify(any(Query.class), any(Update.class), any(FindAndModifyOptions.class), eq(Product.class))).thenReturn(null);
     int updatedCount = repo.increaseInstallationCount(ID);
     assertEquals(0, updatedCount);
-  }
-
-  @Test
-  void testUpdateInitialCount() {
-    setUpMockAggregateResult();
-    int initialCount = 10;
-    repo.updateInitialCount(ID, initialCount);
-    verify(mongoTemplate).updateFirst(any(Query.class), eq(new Update().inc("InstallationCount", initialCount).set("SynchronizedInstallationCount", true)), eq(Product.class));
   }
 }
