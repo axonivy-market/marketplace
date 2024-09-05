@@ -8,8 +8,7 @@ import org.springframework.stereotype.Repository;
 import java.util.List;
 
 @Repository
-public interface ProductDesignerInstallationRepository extends MongoRepository<ProductDesignerInstallation, String>,
-        CustomProductRepository {
+public interface ProductDesignerInstallationRepository extends MongoRepository<ProductDesignerInstallation, String> {
 
     List<ProductDesignerInstallation> findByProductId(String productId, Sort sort);
 }
