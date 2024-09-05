@@ -58,8 +58,6 @@ public class Product implements Serializable {
   private int installationCount;
   private Date newestPublishedDate;
   private String newestReleaseVersion;
-  @DBRef
-  private List<ProductModuleContent> productModuleContents;
   private List<MavenArtifact> artifacts;
   private Boolean synchronizedInstallationCount;
   private Integer customOrder;

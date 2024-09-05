@@ -26,6 +26,8 @@ public class ProductModuleContent implements Serializable {
   private String id;
   @Serial
   private static final long serialVersionUID = 1L;
+  @Schema(description = "product Id (from meta.json)", example = "portal")
+  private String productId;
   @Schema(description = "Target release tag", example = "v10.0.25")
   private String tag;
   @Schema(description = "Product detail description content ", example = "{ \"de\": \"E-Sign-Konnektor\", \"en\": \"E-sign connector\" }")

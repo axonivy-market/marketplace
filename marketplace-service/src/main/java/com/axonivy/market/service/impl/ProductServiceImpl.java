@@ -343,24 +343,25 @@ public class ProductServiceImpl implements ProductService {
 
   private void updateProductFromReleaseTags(Product product, GHRepository productRepo) {
     List<ProductModuleContent> productModuleContents = new ArrayList<>();
-    List<GHTag> tags = getProductReleaseTags(product);
-    GHTag lastTag = CollectionUtils.firstElement(tags);
+    List<GHTag> ghTags = getProductReleaseTags(product);
+    GHTag lastTag = CollectionUtils.firstElement(ghTags);
 
     if (lastTag == null || lastTag.getName().equals(product.getNewestReleaseVersion())) {
       return;
     }
 
-    getPublishedDateFromLatestTag(product, lastTag);
+    getPublishedDateFromLatestTag(product,
+        lastTag);
     product.setNewestReleaseVersion(lastTag.getName());
 
     if (!ObjectUtils.isEmpty(product.getProductModuleContents())) {
       productModuleContents.addAll(product.getProductModuleContents());
       List<String> currentTags = product.getProductModuleContents().stream().filter(Objects::nonNull)
           .map(ProductModuleContent::getTag).toList();
-      tags = tags.stream().filter(t -> !currentTags.contains(t.getName())).toList();
+      ghTags = ghTags.stream().filter(t -> !currentTags.contains(t.getName())).toList();
     }
 
-    for (GHTag ghTag : tags) {
+    for (GHTag ghTag : ghTags) {
       ProductModuleContent productModuleContent =
           axonIvyProductRepoService.getReadmeAndProductContentsFromTag(product, productRepo, ghTag.getName());
       if (productModuleContent != null) {
