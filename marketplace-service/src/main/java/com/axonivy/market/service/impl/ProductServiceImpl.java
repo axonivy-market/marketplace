@@ -12,12 +12,12 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.security.SecureRandom;
 import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+
 import com.axonivy.market.util.VersionUtils;
 import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.ObjectUtils;
@@ -92,7 +92,6 @@ public class ProductServiceImpl implements ProductService {
   @Value("${market.github.market.branch}")
   private String marketRepoBranch;
 
-  public static final String NON_NUMERIC_CHAR = "[^0-9.]";
   private final SecureRandom random = new SecureRandom();
 
   public ProductServiceImpl(ProductRepository productRepository, GHAxonIvyMarketRepoService axonIvyMarketRepoService,
@@ -392,11 +391,9 @@ public class ProductServiceImpl implements ProductService {
     if (StringUtils.isNotBlank(product.getCompatibility())) {
       return;
     }
-    String oldestTag =
-        getProductReleaseTags(product).stream().map(tag -> tag.getName().replaceAll(NON_NUMERIC_CHAR, Strings.EMPTY))
-            .distinct().sorted(Comparator.reverseOrder()).reduce((tag1, tag2) -> tag2).orElse(null);
-    if (oldestTag != null) {
-      String compatibility = getCompatibilityFromOldestTag(oldestTag);
+    String oldestVersion = VersionUtils.getOldestVersion(getProductReleaseTags(product));
+    if (oldestVersion != null) {
+      String compatibility = getCompatibilityFromOldestTag(oldestVersion);
       product.setCompatibility(compatibility);
     }
   }
