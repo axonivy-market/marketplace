@@ -76,23 +76,16 @@ export class ProductService {
     );
   }
 
-  sendRequestToUpdateInstallationCount(productId: string) {
+  sendRequestToUpdateInstallationCount(productId: string, designerVersion: string) {
     const url = 'api/product-details/installationcount/' + productId;
-    return this.httpClient.put<number>(url, null, { headers: { 'X-Requested-By': 'ivy' } });
+    return this.httpClient.put<number>(url, null, {
+      headers: { 'X-Requested-By': 'ivy' },
+      params: { 'designerVersion:': designerVersion }
+    });
   }
 
   sendRequestToGetProductVersionsForDesigner(productId: string) {
     const url = `api/product-details/${productId}/designerversions`;
     return this.httpClient.get<VersionAndUrl[]>(url, { headers: { 'X-Requested-By': 'ivy' } });
-  }
-
-  sendRequestToUpdateInstallationCountByDesignerVersion(
-    designerVersion: string,
-    productId: string
-  ) {
-    const url = `api/product-details/installation/${productId}/designer/${designerVersion}`;
-    return this.httpClient.put<boolean>(url, null, {
-      headers: { 'X-Requested-By': 'ivy' }
-    });
   }
 }

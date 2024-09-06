@@ -1,10 +1,14 @@
 import {
   AfterViewInit,
-  Component, computed,
-  ElementRef, EventEmitter,
+  Component,
+  computed,
+  ElementRef,
+  EventEmitter,
   inject,
   Input,
-  model, Output, Signal,
+  model,
+  Output,
+  Signal,
   signal,
   WritableSignal
 } from '@angular/core';
@@ -27,7 +31,12 @@ const delayTimeBeforeHideMessage = 2000;
 @Component({
   selector: 'app-product-version-action',
   standalone: true,
-  imports: [CommonModule, TranslateModule, FormsModule, CommonDropdownComponent],
+  imports: [
+    CommonModule,
+    TranslateModule,
+    FormsModule,
+    CommonDropdownComponent
+  ],
   templateUrl: './product-detail-version-action.component.html',
   styleUrl: './product-detail-version-action.component.scss'
 })
@@ -42,7 +51,7 @@ export class ProductDetailVersionActionComponent implements AfterViewInit {
   versionDropdown: Signal<ItemDropdown[]> = computed(() => {
     return this.versions().map(version => ({
       value: version,
-      label: version,
+      label: version
     }));
   });
   metaDataJsonUrl = model<string>('');
@@ -149,16 +158,25 @@ export class ProductDetailVersionActionComponent implements AfterViewInit {
 
   getVersionInDesigner(): void {
     if (this.versions().length === 0) {
-      this.productService.sendRequestToGetProductVersionsForDesigner(this.productId
-      ).subscribe(data => {
-        const versionMap = data.map(dataVersionAndUrl => dataVersionAndUrl.version).map(version => VERSION.displayPrefix.concat(version));
-        data.forEach(dataVersionAndUrl => {
-          const currentVersion = VERSION.displayPrefix.concat(dataVersionAndUrl.version);
-          const versionAndUrl: ItemDropdown = { value: currentVersion, label: currentVersion, metaDataJsonUrl: dataVersionAndUrl.url };
-          this.versionDropdownInDesigner.push(versionAndUrl);
+      this.productService
+        .sendRequestToGetProductVersionsForDesigner(this.productId)
+        .subscribe(data => {
+          const versionMap = data
+            .map(dataVersionAndUrl => dataVersionAndUrl.version)
+            .map(version => VERSION.displayPrefix.concat(version));
+          data.forEach(dataVersionAndUrl => {
+            const currentVersion = VERSION.displayPrefix.concat(
+              dataVersionAndUrl.version
+            );
+            const versionAndUrl: ItemDropdown = {
+              value: currentVersion,
+              label: currentVersion,
+              metaDataJsonUrl: dataVersionAndUrl.url
+            };
+            this.versionDropdownInDesigner.push(versionAndUrl);
+          });
+          this.versions.set(versionMap);
         });
-        this.versions.set(versionMap);
-      });
     }
   }
 
@@ -180,26 +198,16 @@ export class ProductDetailVersionActionComponent implements AfterViewInit {
 
   onUpdateInstallationCount() {
     this.productService
-      .sendRequestToUpdateInstallationCount(this.productId)
+      .sendRequestToUpdateInstallationCount(
+        this.productId,
+        this.routingQueryParamService.getDesignerVersionFromCookie()
+      )
       .subscribe((data: number) => this.installationCount.emit(data));
   }
 
   onUpdateInstallationCountForDesigner() {
     if (this.isDesignerEnvironment()) {
       this.onUpdateInstallationCount();
-      this.updateInstallationCountByDesignerVersion(
-        this.routingQueryParamService.getDesignerVersionFromCookie(),
-        this.productId
-      );
     }
-  }
-
-  updateInstallationCountByDesignerVersion(
-    designerVersion: string,
-    productId: string
-  ) {
-    this.productService
-      .sendRequestToUpdateInstallationCountByDesignerVersion(designerVersion, productId)
-      .subscribe();
   }
 }

@@ -141,7 +141,7 @@ public class ProductServiceImpl implements ProductService {
   }
 
   @Override
-  public int updateInstallationCountForProduct(String key) {
+  public int updateInstallationCountForProduct(String key, String designerVersion) {
     Product product= productRepository.getProductById(key);
     if (Objects.isNull(product)){
       return 0;
@@ -151,6 +151,9 @@ public class ProductServiceImpl implements ProductService {
       return productRepository.increaseInstallationCount(key);
     }
     syncInstallationCountWithProduct(product);
+    if (StringUtils.isNotBlank(designerVersion)) {
+      productRepository.increaseInstallationCountForProductByDesignerVersion(key, designerVersion);
+    }
     return productRepository.updateInitialCount(key, product.getInstallationCount() + 1);
   }
 
@@ -409,11 +412,6 @@ public class ProductServiceImpl implements ProductService {
       log.error("Cannot get tag list of product ", e);
     }
     return tags;
-  }
-
-  @Override
-  public boolean increaseInstallationCountForProductByDesignerVersion(String productId, String designerVersion) {
-    return productRepository.increaseInstallationCountForProductByDesignerVersion(productId, designerVersion);
   }
 
   // Cover 3 cases after removing non-numeric characters (8, 11.1 and 10.0.2)

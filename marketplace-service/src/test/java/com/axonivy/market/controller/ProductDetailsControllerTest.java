@@ -14,7 +14,6 @@ import java.util.Map;
 import com.axonivy.market.constants.RequestMappingConstants;
 import com.axonivy.market.entity.ProductJsonContent;
 import com.axonivy.market.model.VersionAndUrlModel;
-import com.axonivy.market.model.DesignerInstallation;
 import com.axonivy.market.service.ProductDesignerInstallationService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Assertions;
@@ -121,9 +120,9 @@ class ProductDetailsControllerTest {
 
   @Test
   void testSyncInstallationCount() {
-    when(productService.updateInstallationCountForProduct("google-maps-connector")).thenReturn(1);
+    when(productService.updateInstallationCountForProduct("google-maps-connector", "10.0.20")).thenReturn(1);
 
-    var result = productDetailsController.syncInstallationCount("google-maps-connector");
+    var result = productDetailsController.syncInstallationCount("google-maps-connector", "10.0.20");
 
     assertEquals(1, result.getBody());
   }
@@ -231,26 +230,5 @@ class ProductDetailsControllerTest {
     jsonContent.setName("aspose-barcode");
 
     return jsonContent;
-  }
-
-  @Test
-  void testIncreaseDesignerInstallationCount() {
-    Mockito.when(productService.increaseInstallationCountForProductByDesignerVersion(Mockito.anyString(),
-            Mockito.anyString())).thenReturn(Boolean.TRUE);
-    ResponseEntity<Boolean> result = productDetailsController.increaseDesignerInstallationCount("portal", "11.4.0");
-    Assertions.assertEquals(HttpStatus.OK, result.getStatusCode());
-    Assertions.assertEquals(Boolean.TRUE, result.getBody());
-  }
-
-  @Test
-  void testGetProductDesignerInstallationByProductId() {
-    List<DesignerInstallation> models = List.of(new DesignerInstallation("11.4.0", 5));
-    Mockito.when(productDesignerInstallationService.findByProductId(Mockito.anyString())).thenReturn(models);
-    ResponseEntity<List<DesignerInstallation>> result = productDetailsController.getProductDesignerInstallationByProductId("portal");
-    Assertions.assertEquals(HttpStatus.OK, result.getStatusCode());
-    Assertions.assertEquals(1, Objects.requireNonNull(result.getBody()).size());
-    Assertions.assertEquals("11.4.0", result.getBody().get(0).getDesignerVersion());
-    Assertions.assertEquals(5, result.getBody().get(0).getNumberOfDownloads());
-    Assertions.assertEquals(models, result.getBody());
   }
 }

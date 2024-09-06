@@ -15,5 +15,5 @@ public interface CustomProductRepository {
 
   int increaseInstallationCount(String productId);
 
-  boolean increaseInstallationCountForProductByDesignerVersion(String productId, String designerVersion);
+  void increaseInstallationCountForProductByDesignerVersion(String productId, String designerVersion);
 }

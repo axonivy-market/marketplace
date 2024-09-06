@@ -145,18 +145,4 @@ class CustomProductRepositoryImplTest extends BaseSetup {
     repo.updateInitialCount(ID, initialCount);
     verify(mongoTemplate).updateFirst(any(Query.class), eq(new Update().inc("InstallationCount", initialCount).set("SynchronizedInstallationCount", true)), eq(Product.class));
   }
-
-  @Test
-  void testIncreaseInstallationCountForProductByDesignerVersion() {
-    String productId = "portal";
-    String designerVersion = "11.4.0";
-    ProductDesignerInstallation productDesignerInstallation = new ProductDesignerInstallation();
-    productDesignerInstallation.setProductId(productId);
-    productDesignerInstallation.setDesignerVersion(designerVersion);
-    productDesignerInstallation.setInstallationCount(5);
-    when(mongoTemplate.upsert(any(Query.class), any(Update.class), eq(ProductDesignerInstallation.class))).
-            thenReturn(UpdateResult.acknowledged(1L, 1L, null));
-    boolean success = repo.increaseInstallationCountForProductByDesignerVersion(productId, designerVersion);
-    assertTrue(success);
-  }
 }

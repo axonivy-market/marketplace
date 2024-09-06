@@ -103,11 +103,10 @@ public class CustomProductRepositoryImpl implements CustomProductRepository {
   }
 
   @Override
-  public boolean increaseInstallationCountForProductByDesignerVersion(String productId, String designerVersion) {
+  public void increaseInstallationCountForProductByDesignerVersion(String productId, String designerVersion) {
     Update update = new Update().inc(MongoDBConstants.INSTALLATION_COUNT, 1);
-    UpdateResult result = mongoTemplate.upsert(createQueryByProductIdAndDesignerVersion(productId, designerVersion),
+    mongoTemplate.upsert(createQueryByProductIdAndDesignerVersion(productId, designerVersion),
             update, ProductDesignerInstallation.class);
-    return result.getModifiedCount() > 0;
   }
 
   private Query createQueryByProductIdAndDesignerVersion(String productId, String designerVersion) {

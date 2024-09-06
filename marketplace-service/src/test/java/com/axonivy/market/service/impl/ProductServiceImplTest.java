@@ -133,13 +133,13 @@ class ProductServiceImplTest extends BaseSetup {
 
   @Test
   void testUpdateInstallationCountForProduct() {
-    int result = productService.updateInstallationCountForProduct(null);
+    int result = productService.updateInstallationCountForProduct(null, "10.0.20");
     assertEquals(0, result);
 
     Product product = mockProduct();
     when(productRepository.getProductById(product.getId())).thenReturn(product);
     when(productRepository.increaseInstallationCount(product.getId())).thenReturn(31);
-    result = productService.updateInstallationCountForProduct(product.getId());
+    result = productService.updateInstallationCountForProduct(product.getId(), "10.0.20");
     assertEquals(31,result);
   }
 
@@ -199,13 +199,6 @@ class ProductServiceImplTest extends BaseSetup {
     productService.findProducts(TypeOption.CONNECTORS.getOption(), keyword, Language.EN.getValue(), true, PAGEABLE);
     verify(productRepository).searchByCriteria(productSearchCriteriaArgumentCaptor.capture(), any(Pageable.class));
     assertEquals(List.of(SHORT_DESCRIPTIONS), productSearchCriteriaArgumentCaptor.getValue().getExcludeFields());
-  }
-
-  @Test
-  void testIncreaseInstallationCountForProductByDesignerVersion() {
-    when(productRepository.increaseInstallationCountForProductByDesignerVersion(any(), any())).thenReturn(true);
-    boolean success = productService.increaseInstallationCountForProductByDesignerVersion("portal", "11.4.0");
-    assertTrue(success);
   }
 
   @Test

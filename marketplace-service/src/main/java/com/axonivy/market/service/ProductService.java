@@ -11,9 +11,7 @@ public interface ProductService {
 
   boolean syncLatestDataFromMarketRepo();
 
-  int updateInstallationCountForProduct(String key);
-
-  boolean increaseInstallationCountForProductByDesignerVersion(String productId, String designerVersion);
+  int updateInstallationCountForProduct(String key, String designerVersion);
 
   Product fetchProductDetail(String id);
 
