@@ -84,6 +84,8 @@ common:
           label: Zielplattform
         artifactSelector:
           label: Artefakt
+      contactUs:
+          label: Kontakt
   feedback:
     label: Rückmeldung
     successMessage: Ihr Feedback wurde erfolgreich übermittelt!

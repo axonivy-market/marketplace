@@ -39,6 +39,7 @@ import { CommonDropdownComponent } from '../../../shared/components/common-dropd
 import { CommonUtils } from '../../../shared/utils/common.utils';
 import { ItemDropdown } from '../../../shared/models/item-dropdown.model';
 import { ProductTypePipe } from '../../../shared/pipes/product-type.pipe';
+import { ProductDetailActionType } from '../../../shared/enums/product-detail-action-type';
 
 export interface DetailTab {
   activeClass: string;
@@ -92,6 +93,7 @@ export class ProductDetailComponent {
   productModuleContent: WritableSignal<ProductModuleContent> = signal(
     {} as ProductModuleContent
   );
+  productDetailActionType = signal(ProductDetailActionType.STANDARD);
   detailContent!: DetailTab;
   detailTabs = PRODUCT_DETAIL_TABS;
   activeTab = DEFAULT_ACTIVE_TAB;
@@ -134,6 +136,7 @@ export class ProductDetailComponent {
         localStorage.removeItem(STORAGE_ITEM);
         this.installationCount = productDetail.installationCount;
         this.handleProductContentVersion();
+        this.updateProductDetailActionType(productDetail);
       });
       this.productFeedbackService.initFeedbacks();
       this.productStarRatingService.fetchData();
@@ -155,6 +158,16 @@ export class ProductDetailComponent {
     );
     if (this.routingQueryParamService.isDesignerEnv()) {
       this.selectedVersion = VERSION.displayPrefix.concat(this.selectedVersion);
+    }
+  }
+
+  updateProductDetailActionType(productDetail: ProductDetail) {
+    if (this.routingQueryParamService.isDesignerEnv()) {
+      this.productDetailActionType.set(ProductDetailActionType.DESIGNER_ENV);
+    } else if (productDetail?.sourceUrl === undefined) {
+      this.productDetailActionType.set(ProductDetailActionType.CUSTOM_SOLUTION);
+    } else {
+      this.productDetailActionType.set(ProductDetailActionType.STANDARD)
     }
   }
 
