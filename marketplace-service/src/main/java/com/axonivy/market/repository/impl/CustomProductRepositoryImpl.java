@@ -5,6 +5,7 @@ import com.axonivy.market.entity.Product;
 import com.axonivy.market.entity.ProductModuleContent;
 import com.axonivy.market.repository.CustomProductRepository;
 import com.axonivy.market.repository.ProductModuleContentRepository;
+import com.axonivy.market.util.VersionUtils;
 import lombok.Builder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.mongodb.core.FindAndModifyOptions;
@@ -41,7 +42,7 @@ public class CustomProductRepositoryImpl implements CustomProductRepository {
 
   @Override
   public Product getProductByIdAndTag(String id, String tag) {
-    Product result = getProductById(id);
+    Product result = findProductById(id);
     if (!Objects.isNull(result)) {
       ProductModuleContent content = contentRepository.findByTagAndProductId(tag,id);
       result.setProductModuleContent(content);
@@ -49,12 +50,20 @@ public class CustomProductRepositoryImpl implements CustomProductRepository {
     return result;
   }
 
+  private Product findProductById(String id) {
+    Aggregation aggregation = Aggregation.newAggregation(createIdMatchOperation(id));
+    return queryProductByAggregation(aggregation);
+  }
+
   @Override
   public Product getProductById(String id) {
-    Aggregation aggregation = Aggregation.newAggregation(
-        createIdMatchOperation(id)
-    );
-    return queryProductByAggregation(aggregation);
+    Product result = findProductById(id);
+    if (!Objects.isNull(result)) {
+      ProductModuleContent content = contentRepository.findByTagAndProductId(
+          result.getNewestReleaseVersion(), id);
+      result.setProductModuleContent(content);
+    }
+    return result;
   }
 
   @Override
