@@ -14,7 +14,7 @@ public class MongoDBConstants {
     public static final String EQUAL ="$eq";
     public static final String PRODUCT_MODULE_CONTENT_TAG ="$$productModuleContent.tag";
     public static final String PRODUCT_COLLECTION ="Product";
-    public static final String INSTALLATION_COUNT ="Product";
+    public static final String INSTALLATION_COUNT = "InstallationCount";
     public static final String SYNCHRONIZED_INSTALLATION_COUNT ="SynchronizedInstallationCount";
 
 }
