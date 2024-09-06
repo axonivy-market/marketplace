@@ -1,3 +1,4 @@
+import { CommonModule } from '@angular/common';
 import {
   Component,
   ElementRef,
@@ -7,39 +8,39 @@ import {
   signal
 } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
-import { ProductService } from '../product.service';
+import { NgbNavModule } from '@ng-bootstrap/ng-bootstrap';
 import { TranslateModule } from '@ngx-translate/core';
 import { MarkdownModule, MarkdownService } from 'ngx-markdown';
-import { ProductDetail } from '../../../shared/models/product-detail.model';
-import { ProductModuleContent } from '../../../shared/models/product-module-content.model';
+import { Observable } from 'rxjs';
+import { AuthService } from '../../../auth/auth.service';
+import { LanguageService } from '../../../core/services/language/language.service';
 import { ThemeService } from '../../../core/services/theme/theme.service';
-import { CommonModule } from '@angular/common';
-import { ProductDetailInformationTabComponent } from './product-detail-information-tab/product-detail-information-tab.component';
-import { ProductDetailVersionActionComponent } from './product-detail-version-action/product-detail-version-action.component';
-import { ProductDetailMavenContentComponent } from './product-detail-maven-content/product-detail-maven-content.component';
+import { CommonDropdownComponent } from '../../../shared/components/common-dropdown/common-dropdown.component';
 import {
   PRODUCT_DETAIL_TABS,
   VERSION
 } from '../../../shared/constants/common.constant';
-import { NgbNavModule } from '@ng-bootstrap/ng-bootstrap';
-import { LanguageService } from '../../../core/services/language/language.service';
+import { ItemDropdown } from '../../../shared/models/item-dropdown.model';
+import { ProductDetail } from '../../../shared/models/product-detail.model';
+import { ProductModuleContent } from '../../../shared/models/product-module-content.model';
+import { HasValueTabPipe } from '../../../shared/pipes/has-value-tab.pipe';
+import { ProductTypeIconPipe } from '../../../shared/pipes/icon.pipe';
 import { MultilingualismPipe } from '../../../shared/pipes/multilingualism.pipe';
-import { ProductDetailService } from './product-detail.service';
+import { ProductTypePipe } from '../../../shared/pipes/product-type.pipe';
+import { AppModalService } from '../../../shared/services/app-modal.service';
+import { RoutingQueryParamService } from '../../../shared/services/routing.query.param.service';
+import { CommonUtils } from '../../../shared/utils/common.utils';
+import { ProductService } from '../product.service';
 import { ProductDetailFeedbackComponent } from './product-detail-feedback/product-detail-feedback.component';
 import { ProductFeedbackService } from './product-detail-feedback/product-feedbacks-panel/product-feedback.service';
-import { AppModalService } from '../../../shared/services/app-modal.service';
-import { AuthService } from '../../../auth/auth.service';
-import { ProductStarRatingNumberComponent } from './product-star-rating-number/product-star-rating-number.component';
-import { ProductInstallationCountActionComponent } from './product-installation-count-action/product-installation-count-action.component';
-import { ProductTypeIconPipe } from '../../../shared/pipes/icon.pipe';
-import { Observable } from 'rxjs';
 import { ProductStarRatingService } from './product-detail-feedback/product-star-rating-panel/product-star-rating.service';
-import { RoutingQueryParamService } from '../../../shared/services/routing.query.param.service';
-import { CommonDropdownComponent } from '../../../shared/components/common-dropdown/common-dropdown.component';
-import { CommonUtils } from '../../../shared/utils/common.utils';
-import { ItemDropdown } from '../../../shared/models/item-dropdown.model';
-import { ProductTypePipe } from '../../../shared/pipes/product-type.pipe';
 import { ProductDetailActionType } from '../../../shared/enums/product-detail-action-type';
+import { ProductDetailInformationTabComponent } from './product-detail-information-tab/product-detail-information-tab.component';
+import { ProductDetailMavenContentComponent } from './product-detail-maven-content/product-detail-maven-content.component';
+import { ProductDetailVersionActionComponent } from './product-detail-version-action/product-detail-version-action.component';
+import { ProductDetailService } from './product-detail.service';
+import { ProductInstallationCountActionComponent } from './product-installation-count-action/product-installation-count-action.component';
+import { ProductStarRatingNumberComponent } from './product-star-rating-number/product-star-rating-number.component';
 
 export interface DetailTab {
   activeClass: string;
@@ -67,6 +68,7 @@ const DEFAULT_ACTIVE_TAB = 'description';
     ProductDetailFeedbackComponent,
     ProductInstallationCountActionComponent,
     ProductTypeIconPipe,
+    HasValueTabPipe,
     CommonDropdownComponent
   ],
   providers: [ProductService, MarkdownService],
@@ -97,7 +99,10 @@ export class ProductDetailComponent {
   detailContent!: DetailTab;
   detailTabs = PRODUCT_DETAIL_TABS;
   activeTab = DEFAULT_ACTIVE_TAB;
-  selectedTabLabel: string = CommonUtils.getLabel(PRODUCT_DETAIL_TABS[0].value, PRODUCT_DETAIL_TABS);
+  selectedTabLabel: string = CommonUtils.getLabel(
+    PRODUCT_DETAIL_TABS[0].value,
+    PRODUCT_DETAIL_TABS
+  );
   detailTabsForDropdown = PRODUCT_DETAIL_TABS;
   isDropdownOpen: WritableSignal<boolean> = signal(false);
   isTabDropdownShown: WritableSignal<boolean> = signal(false);
@@ -200,21 +205,6 @@ export class ProductDetailComponent {
         }
       });
     });
-  }
-
-  getContent(value: string): boolean {
-    if (this.isEmptyProductContent()) {
-      return false;
-    }
-    const content = this.productModuleContent();
-    const conditions: { [key: string]: boolean } = {
-      description: content.description !== null,
-      demo: content.demo !== null,
-      setup: content.setup !== null,
-      dependency: content.isDependency
-    };
-
-    return conditions[value] ?? false;
   }
 
   isEmptyProductContent(): boolean {
@@ -320,7 +310,12 @@ export class ProductDetailComponent {
   }
 
   getNotEmptyTabs(): ItemDropdown[] {
-    return this.detailTabsForDropdown.filter(tab => this.getContent(tab.value));
+    return this.detailTabsForDropdown.filter(tab =>
+      HasValueTabPipe.prototype.transform(
+        tab.value,
+        this.productModuleContent()
+      )
+    );
   }
 
   convertTagToVersion(tag: string): string {
