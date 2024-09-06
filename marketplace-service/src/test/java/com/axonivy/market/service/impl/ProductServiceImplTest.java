@@ -151,6 +151,9 @@ class ProductServiceImplTest extends BaseSetup {
     when(productRepository.increaseInstallationCount(product.getId())).thenReturn(31);
     result = productService.updateInstallationCountForProduct(product.getId(), designerVersion);
     assertEquals(31, result);
+
+    result = productService.updateInstallationCountForProduct(product.getId(), "");
+    assertEquals(31, result);
   }
 
   @Test
