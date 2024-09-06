@@ -11,6 +11,7 @@ import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.annotation.Transient;
+import org.springframework.data.mongodb.core.mapping.DBRef;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.io.Serial;
@@ -57,12 +58,12 @@ public class Product implements Serializable {
   private int installationCount;
   private Date newestPublishedDate;
   private String newestReleaseVersion;
-  private List<ProductModuleContent> productModuleContents;
+  @Transient
+  private ProductModuleContent productModuleContent;
   private List<MavenArtifact> artifacts;
   private Boolean synchronizedInstallationCount;
   private Integer customOrder;
   private List<String> releasedVersions;
-
   @Transient
   private String metaProductJsonUrl;
 

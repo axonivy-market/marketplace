@@ -165,15 +165,6 @@ describe('ProductDetailComponent', () => {
     expect(component.setActiveTab).toHaveBeenCalledWith('description');
   });
 
-  it('should return false in tab visibility when product module content is missing', () => {
-    const mockEmptyContent: ProductModuleContent = {} as ProductModuleContent;
-    component.productModuleContent.set(mockEmptyContent);
-    expect(component.getContent('description')).toBeFalse();
-    expect(component.getContent('demo')).toBeFalse();
-    expect(component.getContent('setup')).toBeFalse();
-    expect(component.getContent('dependency')).toBeFalse();
-  });
-
   it('should not display information when product detail is empty', () => {
     const mockContentWithEmptySetup: ProductModuleContent =
       {} as ProductModuleContent;

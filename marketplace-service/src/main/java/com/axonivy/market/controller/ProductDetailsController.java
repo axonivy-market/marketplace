@@ -80,7 +80,7 @@ public class ProductDetailsController {
   }
 
   @GetMapping(BY_ID)
-  @Operation(summary = "increase installation count by 1", description = "update installation count when click download product files by users")
+  @Operation(summary = "get product detail by ID", description = "Return product detail by product id (from meta.json)")
   public ResponseEntity<ProductDetailModel> findProductDetails(
       @PathVariable(ID) @Parameter(description = "Product id (from meta.json)", example = "approval-decision-utils", in = ParameterIn.PATH) String id) {
     var productDetail = productService.fetchProductDetail(id);
