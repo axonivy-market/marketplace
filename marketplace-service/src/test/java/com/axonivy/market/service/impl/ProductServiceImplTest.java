@@ -150,6 +150,11 @@ class ProductServiceImplTest extends BaseSetup {
     when(productRepository.increaseInstallationCount(product.getId())).thenReturn(31);
     result = productService.updateInstallationCountForProduct(product.getId(), "10.0.20");
     assertEquals(31, result);
+
+    product.setSynchronizedInstallationCount(false);
+    when(productRepository.updateInitialCount(product.getId(), 31)).thenReturn(32);
+    result = productService.updateInstallationCountForProduct(product.getId(), "10.0.20");
+    assertEquals(32, result);
   }
 
   @Test

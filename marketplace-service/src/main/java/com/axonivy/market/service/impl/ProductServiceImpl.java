@@ -149,14 +149,17 @@ public class ProductServiceImpl implements ProductService {
     if (Objects.isNull(product)){
       return 0;
     }
+
+    log.info("Increase installation count for product {} By Designer Version {}", key, designerVersion);
+    if (StringUtils.isNotBlank(designerVersion)) {
+      productRepository.increaseInstallationCountForProductByDesignerVersion(key, designerVersion);
+    }
+
     log.info("updating installation count for product {}", key);
     if (BooleanUtils.isTrue(product.getSynchronizedInstallationCount())) {
       return productRepository.increaseInstallationCount(key);
     }
     syncInstallationCountWithProduct(product);
-    if (StringUtils.isNotBlank(designerVersion)) {
-      productRepository.increaseInstallationCountForProductByDesignerVersion(key, designerVersion);
-    }
     return productRepository.updateInitialCount(key, product.getInstallationCount() + 1);
   }
 
