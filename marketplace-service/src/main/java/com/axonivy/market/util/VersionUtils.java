@@ -4,13 +4,16 @@ import com.axonivy.market.comparator.LatestVersionComparator;
 import com.axonivy.market.constants.CommonConstants;
 import com.axonivy.market.constants.GitHubConstants;
 import com.axonivy.market.constants.MavenConstants;
+import com.axonivy.market.entity.Product;
 import com.axonivy.market.enums.NonStandardProduct;
 import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.util.CollectionUtils;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.stream.Stream;
 
 public class VersionUtils {
@@ -109,4 +112,10 @@ public class VersionUtils {
         return GitHubConstants.STANDARD_TAG_PREFIX.concat(version);
     }
 
+    public static List<String> getReleaseTagsFromProduct(Product product) {
+        if (Objects.isNull(product)) {
+            return new ArrayList<>();
+        }
+        return product.getReleasedVersions().stream().map(version -> convertVersionToTag(product.getId(), version)).toList();
+    }
 }

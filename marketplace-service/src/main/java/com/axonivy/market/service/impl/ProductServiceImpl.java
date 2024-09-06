@@ -1,24 +1,31 @@
 package com.axonivy.market.service.impl;
 
-import static com.axonivy.market.enums.DocumentField.MARKET_DIRECTORY;
-import static com.axonivy.market.enums.DocumentField.SHORT_DESCRIPTIONS;
-
-import static java.util.Optional.ofNullable;
-import static org.apache.commons.lang3.StringUtils.EMPTY;
-
-import java.io.IOException;
-import java.net.URL;
-import java.nio.file.Files;
-import java.nio.file.Paths;
-import java.security.SecureRandom;
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
+import com.axonivy.market.constants.CommonConstants;
+import com.axonivy.market.constants.GitHubConstants;
+import com.axonivy.market.constants.ProductJsonConstants;
+import com.axonivy.market.criteria.ProductSearchCriteria;
+import com.axonivy.market.entity.GitHubRepoMeta;
+import com.axonivy.market.entity.Product;
+import com.axonivy.market.entity.ProductCustomSort;
+import com.axonivy.market.entity.ProductModuleContent;
+import com.axonivy.market.enums.*;
+import com.axonivy.market.exceptions.model.InvalidParamException;
+import com.axonivy.market.factory.ProductFactory;
+import com.axonivy.market.github.model.GitHubFile;
+import com.axonivy.market.github.service.GHAxonIvyMarketRepoService;
+import com.axonivy.market.github.service.GHAxonIvyProductRepoService;
+import com.axonivy.market.github.service.GitHubService;
+import com.axonivy.market.github.util.GitHubUtils;
+import com.axonivy.market.model.ProductCustomSortRequest;
+import com.axonivy.market.repository.GitHubRepoMetaRepository;
+import com.axonivy.market.repository.ProductCustomSortRepository;
+import com.axonivy.market.repository.ProductModuleContentRepository;
+import com.axonivy.market.repository.ProductRepository;
+import com.axonivy.market.service.ProductService;
 import com.axonivy.market.util.VersionUtils;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import lombok.extern.log4j.Log4j2;
 import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -39,41 +46,24 @@ import org.springframework.data.mongodb.core.query.Update;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
-import com.axonivy.market.constants.CommonConstants;
-import com.axonivy.market.constants.GitHubConstants;
-import com.axonivy.market.constants.ProductJsonConstants;
-import com.axonivy.market.criteria.ProductSearchCriteria;
-import com.axonivy.market.entity.GitHubRepoMeta;
-import com.axonivy.market.entity.Product;
-import com.axonivy.market.entity.ProductCustomSort;
-import com.axonivy.market.entity.ProductModuleContent;
-import com.axonivy.market.enums.ErrorCode;
-import com.axonivy.market.enums.FileType;
-import com.axonivy.market.enums.Language;
-import com.axonivy.market.enums.SortOption;
-import com.axonivy.market.enums.TypeOption;
-import com.axonivy.market.exceptions.model.InvalidParamException;
-import com.axonivy.market.factory.ProductFactory;
-import com.axonivy.market.github.model.GitHubFile;
-import com.axonivy.market.github.service.GHAxonIvyMarketRepoService;
-import com.axonivy.market.github.service.GHAxonIvyProductRepoService;
-import com.axonivy.market.github.service.GitHubService;
-import com.axonivy.market.github.util.GitHubUtils;
-import com.axonivy.market.model.ProductCustomSortRequest;
-import com.axonivy.market.repository.GitHubRepoMetaRepository;
-import com.axonivy.market.repository.ProductCustomSortRepository;
-import com.axonivy.market.repository.ProductRepository;
-import com.axonivy.market.service.ProductService;
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import java.io.IOException;
+import java.net.URL;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.security.SecureRandom;
+import java.util.*;
 
-import lombok.extern.log4j.Log4j2;
+import static com.axonivy.market.enums.DocumentField.MARKET_DIRECTORY;
+import static com.axonivy.market.enums.DocumentField.SHORT_DESCRIPTIONS;
+import static java.util.Optional.ofNullable;
+import static org.apache.commons.lang3.StringUtils.EMPTY;
 
 @Log4j2
 @Service
 public class ProductServiceImpl implements ProductService {
 
   private final ProductRepository productRepository;
+  private final ProductModuleContentRepository productModuleContentRepository;
   private final GHAxonIvyMarketRepoService axonIvyMarketRepoService;
   private final GHAxonIvyProductRepoService axonIvyProductRepoService;
   private final GitHubRepoMetaRepository gitHubRepoMetaRepository;
@@ -95,11 +85,14 @@ public class ProductServiceImpl implements ProductService {
   public static final String NON_NUMERIC_CHAR = "[^0-9.]";
   private final SecureRandom random = new SecureRandom();
 
-  public ProductServiceImpl(ProductRepository productRepository, GHAxonIvyMarketRepoService axonIvyMarketRepoService,
+  public ProductServiceImpl(ProductRepository productRepository,
+      ProductModuleContentRepository productModuleContentRepository,
+      GHAxonIvyMarketRepoService axonIvyMarketRepoService,
       GHAxonIvyProductRepoService axonIvyProductRepoService, GitHubRepoMetaRepository gitHubRepoMetaRepository,
       GitHubService gitHubService, ProductCustomSortRepository productCustomSortRepository,
       MongoTemplate mongoTemplate) {
     this.productRepository = productRepository;
+    this.productModuleContentRepository = productModuleContentRepository;
     this.axonIvyMarketRepoService = axonIvyMarketRepoService;
     this.axonIvyProductRepoService = axonIvyProductRepoService;
     this.gitHubRepoMetaRepository = gitHubRepoMetaRepository;
@@ -350,34 +343,37 @@ public class ProductServiceImpl implements ProductService {
 
   private void updateProductFromReleaseTags(Product product, GHRepository productRepo) {
     List<ProductModuleContent> productModuleContents = new ArrayList<>();
-    List<GHTag> tags = getProductReleaseTags(product);
-    GHTag lastTag = CollectionUtils.firstElement(tags);
+    List<GHTag> ghTags = getProductReleaseTags(product);
+    GHTag lastTag = CollectionUtils.firstElement(ghTags);
 
     if (lastTag == null || lastTag.getName().equals(product.getNewestReleaseVersion())) {
       return;
     }
 
-    getPublishedDateFromLatestTag(product, lastTag);
+    getPublishedDateFromLatestTag(product,
+        lastTag);
     product.setNewestReleaseVersion(lastTag.getName());
 
-    if (!ObjectUtils.isEmpty(product.getProductModuleContents())) {
-      productModuleContents.addAll(product.getProductModuleContents());
-      List<String> currentTags = product.getProductModuleContents().stream().filter(Objects::nonNull)
-          .map(ProductModuleContent::getTag).toList();
-      tags = tags.stream().filter(t -> !currentTags.contains(t.getName())).toList();
+    if (!CollectionUtils.isEmpty(product.getReleasedVersions())) {
+      List<String> currentTags = VersionUtils.getReleaseTagsFromProduct(product);
+      ghTags = ghTags.stream().filter(t -> !currentTags.contains(t.getName())).toList();
     }
 
-    for (GHTag ghTag : tags) {
+    for (GHTag ghTag : ghTags) {
       ProductModuleContent productModuleContent =
           axonIvyProductRepoService.getReadmeAndProductContentsFromTag(product, productRepo, ghTag.getName());
-      productModuleContents.add(productModuleContent);
+      if (productModuleContent != null) {
+        productModuleContents.add(productModuleContent);
+      }
       String versionFromTag = VersionUtils.convertTagToVersion(ghTag.getName());
       if (Objects.isNull(product.getReleasedVersions())) {
         product.setReleasedVersions(new ArrayList<>());
       }
       product.getReleasedVersions().add(versionFromTag);
     }
-    product.setProductModuleContents(productModuleContents);
+    if (!CollectionUtils.isEmpty(productModuleContents)) {
+      productModuleContentRepository.saveAll(productModuleContents);
+    }
   }
 
   private void getPublishedDateFromLatestTag(Product product, GHTag lastTag) {
@@ -436,7 +432,6 @@ public class ProductServiceImpl implements ProductService {
       return productItem;
     }).orElse(null);
   }
-
 
   @Override
   public Product fetchBestMatchProductDetail(String id, String version) {
