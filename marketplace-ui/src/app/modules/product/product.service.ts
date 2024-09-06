@@ -79,18 +79,12 @@ export class ProductService {
   sendRequestToUpdateInstallationCount(productId: string, designerVersion: string) {
     const url = 'api/product-details/installationcount/' + productId;
     const headers = { 'X-Requested-By': 'ivy' };
-    const params = { designerVersion: designerVersion };
-    const options = {
-      headers,
-      params
-    };
-    return this.httpClient.put<number>(url, null, options);
+    const params = new HttpParams().append('designerVersion', designerVersion);
+    return this.httpClient.put<number>(url, null, { headers, params });
   }
 
   sendRequestToGetProductVersionsForDesigner(productId: string) {
     const url = `api/product-details/${productId}/designerversions`;
-    const headers = { 'X-Requested-By': 'ivy' };
-    const options = { headers };
-    return this.httpClient.get<VersionAndUrl[]>(url, options);
+    return this.httpClient.get<VersionAndUrl[]>(url, { headers: { 'X-Requested-By': 'ivy' } });
   }
 }
