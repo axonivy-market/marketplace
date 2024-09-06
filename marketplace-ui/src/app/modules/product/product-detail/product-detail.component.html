@@ -45,8 +45,10 @@
                 [isShowRateLink]="false"
                 [isShowTotalRatingNumber]="false" />
             </div>
-            <app-product-installation-count-action
-              [currentInstallationCount]="installationCount" />
+            @if(productDetailActionType() !== 'customSolution') {
+              <app-product-installation-count-action
+                [currentInstallationCount]="installationCount" />
+            }
             <div
               class="analysis-container d-flex flex-column align-items-start p-0">
               <h4
