@@ -122,7 +122,10 @@ class ProductServiceImplTest extends BaseSetup {
   ArgumentCaptor<Product> argumentCaptor = ArgumentCaptor.forClass(Product.class);
 
   @Captor
-  ArgumentCaptor<ArrayList<ProductModuleContent>> argumentCaptorProductModuleContent;
+  ArgumentCaptor<ArrayList<ProductModuleContent>> argumentCaptorProductModuleContents;
+
+  @Captor
+  ArgumentCaptor<ProductModuleContent> argumentCaptorProductModuleContent;
 
   @Mock
   private GHAxonIvyProductRepoService ghAxonIvyProductRepoService;
@@ -332,10 +335,10 @@ class ProductServiceImplTest extends BaseSetup {
 
     // Executes
     productService.syncLatestDataFromMarketRepo();
-    verify(productModuleContentRepository).saveAll(argumentCaptorProductModuleContent.capture());
+    verify(productModuleContentRepository).saveAll(argumentCaptorProductModuleContents.capture());
     verify(productRepository).save(argumentCaptor.capture());
 
-    assertThat(argumentCaptorProductModuleContent.getValue()).usingRecursiveComparison()
+    assertThat(argumentCaptorProductModuleContents.getValue()).usingRecursiveComparison()
         .isEqualTo(List.of(mockReadmeProductContent()));
   }
 
@@ -355,8 +358,8 @@ class ProductServiceImplTest extends BaseSetup {
 
     // Executes
     productService.syncLatestDataFromMarketRepo();
-    verify(productRepository).save(argumentCaptor.capture());
-    assertEquals("1.0", argumentCaptor.getValue().getProductModuleContents().get(0).getTag());
+    verify(productModuleContentRepository).save(argumentCaptorProductModuleContent.capture());
+    assertEquals("1.0", argumentCaptorProductModuleContent.getValue().getTag());
   }
 
   @Test
@@ -392,7 +395,7 @@ class ProductServiceImplTest extends BaseSetup {
     // Executes
     productService.syncLatestDataFromMarketRepo();
 
-    verify(productModuleContentRepository).saveAll(argumentCaptorProductModuleContent.capture());
+    verify(productModuleContentRepository).saveAll(argumentCaptorProductModuleContents.capture());
     verify(productRepository).save(argumentCaptor.capture());
     assertThat(argumentCaptor.getValue().getProductModuleContent()).usingRecursiveComparison()
         .isEqualTo(mockReadmeProductContent());
