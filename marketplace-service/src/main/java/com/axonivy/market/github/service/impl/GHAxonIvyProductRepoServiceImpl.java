@@ -165,6 +165,7 @@ public class GHAxonIvyProductRepoServiceImpl implements GHAxonIvyProductRepoServ
     ProductModuleContent productModuleContent = new ProductModuleContent();
     try {
       List<GHContent> contents = getProductFolderContents(product, ghRepository, tag);
+      productModuleContent.setProductId(product.getId());
       productModuleContent.setTag(tag);
       updateDependencyContentsFromProductJson(productModuleContent, contents , product);
       List<GHContent> readmeFiles = contents.stream().filter(GHContent::isFile)

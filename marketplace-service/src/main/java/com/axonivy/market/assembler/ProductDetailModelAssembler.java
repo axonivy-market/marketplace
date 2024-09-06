@@ -80,6 +80,6 @@ public class ProductDetailModelAssembler extends RepresentationModelAssemblerSup
     model.setContactUs(product.getContactUs());
     model.setCost(product.getCost());
     model.setInstallationCount(product.getInstallationCount());
-    model.setProductModuleContent(CollectionUtils.firstElement(product.getProductModuleContents()));
+    model.setProductModuleContent(product.getProductModuleContent());
   }
 }
