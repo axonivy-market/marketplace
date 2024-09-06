@@ -124,4 +124,12 @@ class CustomProductRepositoryImplTest extends BaseSetup {
     int updatedCount = repo.increaseInstallationCount(ID);
     assertEquals(0, updatedCount);
   }
+
+  @Test
+  void testUpdateInitialCount() {
+    setUpMockAggregateResult();
+    int initialCount = 10;
+    repo.updateInitialCount(ID, initialCount);
+    verify(mongoTemplate).updateFirst(any(Query.class), eq(new Update().inc("InstallationCount", initialCount).set("SynchronizedInstallationCount", true)), eq(Product.class));
+  }
 }
