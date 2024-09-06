@@ -30,6 +30,7 @@ const MAX_ELEMENTS = 6;
 export class ProductDetailFeedbackComponent {
   isMobileMode = input<boolean>();
   isShowBtnMore: Signal<boolean> = computed(() => {
+    console.log(48);
     if (
       this.productFeedbackService.areAllFeedbacksLoaded() &&
       (this.isMobileMode() ||
@@ -47,6 +48,7 @@ export class ProductDetailFeedbackComponent {
   showPopup!: boolean;
 
   openShowFeedbacksDialog(): void {
+    console.log(47);
     if (this.isMobileMode()) {
       this.productFeedbackService.loadMoreFeedbacks();
     } else {

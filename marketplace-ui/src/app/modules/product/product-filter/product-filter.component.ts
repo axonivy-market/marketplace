@@ -34,11 +34,13 @@ export class ProductFilterComponent {
   languageService = inject(LanguageService);
 
   onSelectType(type: ItemDropdown<TypeOption>) {
+    console.log(10);
     this.selectedTypeLabel = CommonUtils.getLabel(type.value , this.types);
     this.filterChange.emit(type);
   }
 
   onSearchChanged(searchString: string) {
+    console.log(11);
     if (searchString) {
       searchString = searchString.trim();
     }
@@ -46,6 +48,7 @@ export class ProductFilterComponent {
   }
 
   onSortChange(sort: SortOption) {
+    console.log(12);
     this.sortChange.next(sort);
     this.selectedSortLabel = CommonUtils.getLabel(sort, this.sorts);
   }

@@ -17,6 +17,7 @@ export class ShowFeedbacksDialogComponent {
 
   @HostListener('window:resize', ['$event'])
   onResize() {
+    console.log(49);
     const mediaQuery = window.matchMedia('(max-width: 767px)');
     if (mediaQuery.matches) {
       this.activeModal.dismiss();

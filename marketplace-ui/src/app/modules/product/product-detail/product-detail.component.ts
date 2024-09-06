@@ -24,6 +24,7 @@ import { ItemDropdown } from '../../../shared/models/item-dropdown.model';
 import { ProductDetail } from '../../../shared/models/product-detail.model';
 import { ProductModuleContent } from '../../../shared/models/product-module-content.model';
 import { HasValueTabPipe } from '../../../shared/pipes/has-value-tab.pipe';
+import { MissingReadmeContentPipe } from '../../../shared/pipes/missing-readme-content.pipe';
 import { ProductTypeIconPipe } from '../../../shared/pipes/icon.pipe';
 import { MultilingualismPipe } from '../../../shared/pipes/multilingualism.pipe';
 import { ProductTypePipe } from '../../../shared/pipes/product-type.pipe';
@@ -68,6 +69,7 @@ const DEFAULT_ACTIVE_TAB = 'description';
     ProductInstallationCountActionComponent,
     ProductTypeIconPipe,
     HasValueTabPipe,
+    MissingReadmeContentPipe,
     CommonDropdownComponent
   ],
   providers: [ProductService, MarkdownService],
@@ -126,6 +128,7 @@ export class ProductDetailComponent {
   }
 
   ngOnInit(): void {
+    console.log(13);
     const productId = this.route.snapshot.params['id'];
     this.productDetailService.productId.set(productId);
     if (productId) {
@@ -152,6 +155,7 @@ export class ProductDetailComponent {
   }
 
   handleProductContentVersion() {
+    console.log(14);
     if (this.isEmptyProductContent()) {
       return;
     }
@@ -168,6 +172,7 @@ export class ProductDetailComponent {
   }
 
   getProductById(productId: string): Observable<ProductDetail> {
+    console.log(16);
     const targetVersion = this.routingQueryParamService.getDesignerVersionFromCookie();
     if (!targetVersion) {
       return this.productService.getProductDetails(productId);
@@ -180,6 +185,7 @@ export class ProductDetailComponent {
   }
 
   ngAfterViewInit(): void {
+    console.log(17);
     this.checkMediaSize();
     this.productFeedbackService.findProductFeedbackOfUser().subscribe(() => {
       this.route.queryParams.subscribe(params => {
@@ -195,11 +201,13 @@ export class ProductDetailComponent {
   }
 
   isEmptyProductContent(): boolean {
+    console.log(18);
     const content = this.productModuleContent();
     return !content || Object.keys(content).length === 0;
   }
 
   loadDetailTabs(selectedVersion: string) {
+    console.log(19);
     let version = selectedVersion || this.productDetail().newestReleaseVersion;
     version = version.replace(VERSION.displayPrefix, '');
     this.productService
@@ -212,6 +220,7 @@ export class ProductDetailComponent {
   }
 
   onTabChange(event: string) {
+    console.log(20);
     this.setActiveTab(event);
     this.selectedTabLabel = CommonUtils.getLabel(event, PRODUCT_DETAIL_TABS);
     this.isTabDropdownShown.update(value => !value);
@@ -219,6 +228,7 @@ export class ProductDetailComponent {
   }
 
   updateDropdownSelection() {
+    console.log(21);
     const dropdown = document.getElementById(
       'tab-group-dropdown'
     ) as HTMLSelectElement;
@@ -228,6 +238,7 @@ export class ProductDetailComponent {
   }
 
   setActiveTab(tab: string) {
+    console.log(22);
     this.activeTab = tab;
     const hash = '#tab-' + tab;
     const path = window.location.pathname;
@@ -242,15 +253,18 @@ export class ProductDetailComponent {
   }
 
   onShowInfoContent() {
+    console.log(23);
     this.isDropdownOpen.update(value => !value);
   }
 
   onTabDropdownShown() {
+    console.log(24);
     this.isTabDropdownShown.set(!this.isTabDropdownShown());
   }
 
   @HostListener('document:click', ['$event'])
   handleClickOutside(event: MouseEvent) {
+    console.log(25);
     const formSelect =
       this.elementRef.nativeElement.querySelector('.form-select');
     if (
@@ -264,10 +278,12 @@ export class ProductDetailComponent {
 
   @HostListener('window:resize', ['$event'])
   onResize() {
+    console.log(26);
     this.checkMediaSize();
   }
 
   checkMediaSize() {
+    console.log(27);
     const mediaQuery = window.matchMedia('(max-width: 767px)');
     if (mediaQuery.matches) {
       this.isMobileMode.set(true);
@@ -277,6 +293,7 @@ export class ProductDetailComponent {
   }
 
   onClickRateBtn() {
+    console.log(28);
     const productId = this.productDetailService.productId();
     if (this.authService.getToken()) {
       this.appModalService.openAddFeedbackDialog();
@@ -286,10 +303,12 @@ export class ProductDetailComponent {
   }
 
   receiveInstallationCountData(data: number) {
+    console.log(29);
     this.installationCount = data;
   }
 
   private removeQueryParam(): void {
+    console.log(30);
     this.router.navigate([], {
       queryParams: { showPopup: null },
       queryParamsHandling: 'merge'
@@ -297,6 +316,7 @@ export class ProductDetailComponent {
   }
 
   getNotEmptyTabs(): ItemDropdown[] {
+    console.log(31);
     return this.detailTabsForDropdown.filter(tab =>
       HasValueTabPipe.prototype.transform(
         tab.value,
@@ -306,6 +326,7 @@ export class ProductDetailComponent {
   }
 
   convertTagToVersion(tag: string): string {
+    console.log(32);
     if (tag !== '' && tag.startsWith(VERSION.tagPrefix)) {
       return tag.substring(1);
     }

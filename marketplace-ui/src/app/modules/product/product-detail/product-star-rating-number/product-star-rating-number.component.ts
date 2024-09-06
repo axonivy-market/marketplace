@@ -27,6 +27,7 @@ export class ProductStarRatingNumberComponent {
   @Output() openAddFeedbackDialog = new EventEmitter<void>();
 
   onClickRateLink() {
+    console.log(33);
     const productId = this.productDetailService.productId();
     if(this.authService.getToken()) {
       this.openAddFeedbackDialog.emit();
