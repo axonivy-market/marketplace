@@ -12,8 +12,7 @@ import { Router } from '@angular/router';
 export const REQUEST_BY = 'X-Requested-By';
 export const IVY = 'ivy';
 export const ERROR_PAGE_PATH = '/app/error';
-export const CODE_404 = 404;
-export const CODE_500 = 500;
+export const NOT_FOUND_CODE = 404;
 
 /** This is option for exclude loading api
  * @Example return httpClient.get('apiEndPoint', { context: new HttpContext().set(SkipLoading, true) })
@@ -46,7 +45,7 @@ export const apiInterceptor: HttpInterceptorFn = (req, next) => {
 
   return next(cloneReq).pipe(
     catchError(error => {
-      if (error.status === CODE_404 || error.status >= CODE_500) {
+      if (error.status === NOT_FOUND_CODE) {
         router.navigate([ERROR_PAGE_PATH]);
       }
       return throwError(() => new Error(error.message));
