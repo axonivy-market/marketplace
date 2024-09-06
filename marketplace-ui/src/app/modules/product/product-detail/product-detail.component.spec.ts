@@ -298,6 +298,12 @@ describe('ProductDetailComponent', () => {
       expect(component.productDetailActionType()).toBe(
         ProductDetailActionType.CUSTOM_SOLUTION
       );
+      fixture.detectChanges();
+      let installationCount = fixture.debugElement.query(
+        By.css('#app-product-installation-count-action')
+      );
+      expect(installationCount).toBeFalsy();
+
     });
 
     it('should return STANDARD as acction type when when productDetail.sourceUrl is defined', () => {
