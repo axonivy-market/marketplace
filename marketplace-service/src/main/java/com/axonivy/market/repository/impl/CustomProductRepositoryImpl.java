@@ -5,7 +5,6 @@ import com.axonivy.market.entity.Product;
 import com.axonivy.market.entity.ProductModuleContent;
 import com.axonivy.market.repository.CustomProductRepository;
 import com.axonivy.market.repository.ProductModuleContentRepository;
-import com.axonivy.market.util.VersionUtils;
 import lombok.Builder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.mongodb.core.FindAndModifyOptions;
@@ -23,7 +22,6 @@ import java.util.Optional;
 @Builder
 public class CustomProductRepositoryImpl implements CustomProductRepository {
   private final MongoTemplate mongoTemplate;
-  @Autowired
   private final ProductModuleContentRepository contentRepository;
 
   public CustomProductRepositoryImpl(MongoTemplate mongoTemplate, ProductModuleContentRepository contentRepository) {

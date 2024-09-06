@@ -372,8 +372,7 @@ public class ProductServiceImpl implements ProductService {
       product.getReleasedVersions().add(versionFromTag);
     }
     if (!CollectionUtils.isEmpty(productModuleContents)) {
-      List<ProductModuleContent> savedProductModuleContents = productModuleContentRepository
-          .saveAll(productModuleContents);
+      productModuleContentRepository.saveAll(productModuleContents);
     }
   }
 
