@@ -102,6 +102,7 @@ export class ProductDetailComponent {
   isDropdownOpen: WritableSignal<boolean> = signal(false);
   isTabDropdownShown: WritableSignal<boolean> = signal(false);
   selectedVersion = '';
+  metaProductJsonUrl: string | undefined = '';
   showPopup!: boolean;
   isMobileMode = signal<boolean>(false);
   installationCount = 0;
@@ -128,6 +129,8 @@ export class ProductDetailComponent {
       this.getProductById(productId).subscribe(productDetail => {
         this.productDetail.set(productDetail);
         this.productModuleContent.set(productDetail.productModuleContent);
+        this.selectedVersion = VERSION.displayPrefix.concat(this.convertTagToVersion((productDetail.productModuleContent.tag)));
+        this.metaProductJsonUrl = productDetail.metaProductJsonUrl;
         this.detailTabsForDropdown = this.getNotEmptyTabs();
         this.productDetailService.productNames.set(productDetail.names);
         localStorage.removeItem(STORAGE_ITEM);
