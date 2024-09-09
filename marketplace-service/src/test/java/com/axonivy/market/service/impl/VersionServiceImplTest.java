@@ -4,11 +4,14 @@ import com.axonivy.market.constants.MavenConstants;
 import com.axonivy.market.entity.MavenArtifactModel;
 import com.axonivy.market.entity.MavenArtifactVersion;
 import com.axonivy.market.entity.Product;
+import com.axonivy.market.entity.ProductJsonContent;
 import com.axonivy.market.github.model.ArchivedArtifact;
 import com.axonivy.market.github.model.MavenArtifact;
 import com.axonivy.market.github.service.GHAxonIvyProductRepoService;
 import com.axonivy.market.model.MavenArtifactVersionModel;
+import com.axonivy.market.model.VersionAndUrlModel;
 import com.axonivy.market.repository.MavenArtifactVersionRepository;
+import com.axonivy.market.repository.ProductJsonContentRepository;
 import com.axonivy.market.repository.ProductRepository;
 import com.axonivy.market.util.XmlReaderUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -25,7 +28,6 @@ import org.mockito.Mockito;
 import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.test.util.ReflectionTestUtils;
-
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -34,6 +36,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -56,6 +59,9 @@ class VersionServiceImplTest {
 
   @Mock
   private ProductRepository productRepository;
+
+  @Mock
+  private ProductJsonContentRepository productJsonContentRepository;
 
   @BeforeEach()
   void prepareBeforeTest() {
@@ -244,10 +250,6 @@ class VersionServiceImplTest {
         versionService.buildMavenMetadataUrlFromArtifact(repoUrl, groupId, artifactId));
   }
 
-
-
-
-
   @Test
   void testGetProductJsonByVersion() {
     String targetArtifactId = "adobe-acrobat-sign-connector";
@@ -412,5 +414,66 @@ class VersionServiceImplTest {
     defaultRepositoryName = "adobe-acrobat-connector";
     result = versionService.getRepoNameFromMarketRepo(defaultRepositoryName);
     Assertions.assertEquals(expectedRepoName, result);
+  }
+
+  @Test
+  void testGetVersionsForDesigner() {
+    Mockito.when(productRepository.getReleasedVersionsById(anyString()))
+        .thenReturn(List.of("11.3.0", "11.1.1", "11.1.0", "10.0.2"));
+
+    List<VersionAndUrlModel> result = versionService.getVersionsForDesigner("11.3.0");
+
+    Assertions.assertEquals(result.stream().map(VersionAndUrlModel::getVersion).toList(),
+        List.of("11.3.0", "11.1.1", "11.1.0", "10.0.2"));
+    Assertions.assertEquals("/api/product-details/productjsoncontent/11.3.0/11.3.0", result.get(0).getUrl());
+    Assertions.assertEquals("/api/product-details/productjsoncontent/11.3.0/11.1.1", result.get(1).getUrl());
+    Assertions.assertEquals("/api/product-details/productjsoncontent/11.3.0/11.1.0", result.get(2).getUrl());
+    Assertions.assertEquals("/api/product-details/productjsoncontent/11.3.0/10.0.2", result.get(3).getUrl());
+
+  }
+
+  @Test
+  void testGetProductJsonContentByIdAndVersion() {
+    ProductJsonContent mockProductJsonContent = new ProductJsonContent();
+    String mockContent = """
+        {
+           "$schema": "https://json-schema.axonivy.com/market/10.0.0/product.json",
+           "installers": [
+             {
+               "id": "maven-import",
+               "data": {
+                 "projects": [
+                   {
+                     "groupId": "com.axonivy.utils.bpmnstatistic",
+                     "artifactId": "bpmn-statistic-demo",
+                     "version": "11.3.1",
+                     "type": "iar"
+                   }
+                 ]
+               }
+             }
+           ]
+         }
+        """;
+    mockProductJsonContent.setProductId("amazon-comprehend");
+    mockProductJsonContent.setVersion("11.3.1");
+    mockProductJsonContent.setName("Amazon Comprehend");
+    mockProductJsonContent.setContent(mockContent);
+
+    Mockito.when(productJsonContentRepository.findByProductIdAndVersion(anyString(), anyString()))
+        .thenReturn(mockProductJsonContent);
+
+    Map<String, Object> result = versionService.getProductJsonContentByIdAndVersion("amazon-comprehend", "11.3.1");
+
+    Assertions.assertEquals("Amazon Comprehend", result.get("name"));
+  }
+
+  @Test
+  void testGetProductJsonContentByIdAndVersion_noResult() {
+    Mockito.when(productJsonContentRepository.findByProductIdAndVersion(anyString(), anyString())).thenReturn(null);
+
+    Map<String, Object> result = versionService.getProductJsonContentByIdAndVersion("amazon-comprehend", "11.3.1");
+
+    Assertions.assertEquals(new HashMap<>(), result);
   }
 }

@@ -7,6 +7,7 @@ import { ProductApiResponse } from '../../shared/models/apis/product-response.mo
 import { Criteria } from '../../shared/models/criteria.model';
 import { ProductDetail } from '../../shared/models/product-detail.model';
 import { VersionData } from '../../shared/models/vesion-artifact.model';
+import { VersionAndUrl } from '../../shared/models/version-and-url';
 
 const PRODUCT_API_URL = 'api/product';
 @Injectable()
@@ -79,4 +80,10 @@ export class ProductService {
     const url = 'api/product-details/installationcount/' + productId;
     return this.httpClient.put<number>(url, null, { headers: { 'X-Requested-By': 'ivy' } });
   }
+
+  sendRequestToGetProductVersionsForDesigner(productId: string) {
+    const url = `api/product-details/${productId}/designerversions`;
+    return this.httpClient.get<VersionAndUrl[]>(url, { headers: { 'X-Requested-By': 'ivy' } });
+  }
+
 }

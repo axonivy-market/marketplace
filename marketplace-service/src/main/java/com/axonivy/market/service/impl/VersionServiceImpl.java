@@ -5,24 +5,32 @@ import com.axonivy.market.comparator.LatestVersionComparator;
 import com.axonivy.market.constants.CommonConstants;
 import com.axonivy.market.constants.GitHubConstants;
 import com.axonivy.market.constants.MavenConstants;
+import com.axonivy.market.controller.ProductDetailsController;
 import com.axonivy.market.entity.MavenArtifactModel;
 import com.axonivy.market.entity.MavenArtifactVersion;
 import com.axonivy.market.entity.Product;
+import com.axonivy.market.entity.ProductJsonContent;
 import com.axonivy.market.enums.NonStandardProduct;
 import com.axonivy.market.github.model.ArchivedArtifact;
 import com.axonivy.market.github.model.MavenArtifact;
 import com.axonivy.market.github.service.GHAxonIvyProductRepoService;
 import com.axonivy.market.github.util.GitHubUtils;
 import com.axonivy.market.model.MavenArtifactVersionModel;
+import com.axonivy.market.model.VersionAndUrlModel;
 import com.axonivy.market.repository.MavenArtifactVersionRepository;
+import com.axonivy.market.repository.ProductJsonContentRepository;
 import com.axonivy.market.repository.ProductRepository;
 import com.axonivy.market.service.VersionService;
 import com.axonivy.market.util.VersionUtils;
 import com.axonivy.market.util.XmlReaderUtils;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.Getter;
 import lombok.extern.log4j.Log4j2;
+import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.kohsuke.github.GHContent;
+import org.springframework.hateoas.Link;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
@@ -37,6 +45,9 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 
+import static com.axonivy.market.constants.ProductJsonConstants.NAME;
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 @Log4j2
 @Service
 @Getter
@@ -45,6 +56,7 @@ public class VersionServiceImpl implements VersionService {
   private final GHAxonIvyProductRepoService gitHubService;
   private final MavenArtifactVersionRepository mavenArtifactVersionRepository;
   private final ProductRepository productRepository;
+  private final ProductJsonContentRepository productJsonContentRepository;
   @Getter
   private String repoName;
   private Map<String, List<ArchivedArtifact>> archivedArtifactsMap;
@@ -55,13 +67,16 @@ public class VersionServiceImpl implements VersionService {
   @Getter
   private String productJsonFilePath;
   private String productId;
+  private final ObjectMapper mapper = new ObjectMapper();
 
   public VersionServiceImpl(GHAxonIvyProductRepoService gitHubService,
-      MavenArtifactVersionRepository mavenArtifactVersionRepository, ProductRepository productRepository) {
+      MavenArtifactVersionRepository mavenArtifactVersionRepository, ProductRepository productRepository,
+      ProductJsonContentRepository productJsonContentRepository) {
     this.gitHubService = gitHubService;
     this.mavenArtifactVersionRepository = mavenArtifactVersionRepository;
     this.productRepository = productRepository;
 
+    this.productJsonContentRepository = productJsonContentRepository;
   }
 
   private void resetData() {
@@ -94,6 +109,36 @@ public class VersionServiceImpl implements VersionService {
       mavenArtifactVersionRepository.save(proceedDataCache);
     }
     return results;
+  }
+
+  @Override
+  public Map<String, Object> getProductJsonContentByIdAndVersion(String productId, String version){
+    Map<String, Object> result = new HashMap<>();
+    try {
+      ProductJsonContent productJsonContent = productJsonContentRepository.findByProductIdAndVersion(productId, version);
+      if (ObjectUtils.isEmpty(productJsonContent)) {
+        return new HashMap<>();
+      }
+      result = mapper.readValue(productJsonContent.getContent(), Map.class);
+      result.computeIfAbsent(NAME, k -> productJsonContent.getName());
+
+    } catch (JsonProcessingException jsonProcessingException){
+      log.error(jsonProcessingException.getMessage());
+    }
+    return result;
+  }
+
+  @Override
+  public List<VersionAndUrlModel> getVersionsForDesigner(String productId) {
+    List<VersionAndUrlModel> versionAndUrlList = new ArrayList<>();
+    List<String> versions = productRepository.getReleasedVersionsById(productId);
+    for (String version : versions) {
+      Link link = linkTo(
+          methodOn(ProductDetailsController.class).findProductJsonContent(productId, version)).withSelfRel();
+      VersionAndUrlModel versionAndUrlModel = new VersionAndUrlModel(version, link.getHref());
+      versionAndUrlList.add(versionAndUrlModel);
+    }
+    return versionAndUrlList;
   }
 
   public boolean handleArtifactForVersionToDisplay(List<String> versionsToDisplay,

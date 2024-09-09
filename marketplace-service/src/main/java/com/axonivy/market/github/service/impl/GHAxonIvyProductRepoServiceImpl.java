@@ -7,15 +7,20 @@ import com.axonivy.market.constants.ProductJsonConstants;
 import com.axonivy.market.constants.ReadmeConstants;
 import com.axonivy.market.entity.Product;
 import com.axonivy.market.entity.ProductModuleContent;
+import com.axonivy.market.entity.ProductJsonContent;
 import com.axonivy.market.enums.Language;
 import com.axonivy.market.enums.NonStandardProduct;
 import com.axonivy.market.github.model.MavenArtifact;
 import com.axonivy.market.github.service.GHAxonIvyProductRepoService;
 import com.axonivy.market.github.service.GitHubService;
 import com.axonivy.market.github.util.GitHubUtils;
+import com.axonivy.market.repository.ProductJsonContentRepository;
+import com.axonivy.market.util.VersionUtils;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.log4j.Log4j2;
+import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.util.Strings;
 import org.kohsuke.github.GHContent;
@@ -27,6 +32,7 @@ import org.springframework.util.CollectionUtils;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -35,11 +41,16 @@ import java.util.Objects;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import static com.axonivy.market.constants.ProductJsonConstants.EN_LANGUAGE;
+import static com.axonivy.market.constants.ProductJsonConstants.VERSION_VALUE;
+
 @Log4j2
 @Service
 public class GHAxonIvyProductRepoServiceImpl implements GHAxonIvyProductRepoService {
   private GHOrganization organization;
   private final GitHubService gitHubService;
+
+  private final ProductJsonContentRepository productJsonContentRepository;
   private String repoUrl;
   private static final ObjectMapper objectMapper = new ObjectMapper();
   public static final String DEMO_SETUP_TITLE = "(?i)## Demo|## Setup";
@@ -50,8 +61,10 @@ public class GHAxonIvyProductRepoServiceImpl implements GHAxonIvyProductRepoServ
   public static final String DEMO = "demo";
   public static final String SETUP = "setup";
 
-  public GHAxonIvyProductRepoServiceImpl(GitHubService gitHubService) {
+  public GHAxonIvyProductRepoServiceImpl(GitHubService gitHubService,
+      ProductJsonContentRepository productJsonContentRepository) {
     this.gitHubService = gitHubService;
+    this.productJsonContentRepository = productJsonContentRepository;
   }
 
   @Override
@@ -152,8 +165,9 @@ public class GHAxonIvyProductRepoServiceImpl implements GHAxonIvyProductRepoServ
     ProductModuleContent productModuleContent = new ProductModuleContent();
     try {
       List<GHContent> contents = getProductFolderContents(product, ghRepository, tag);
+      productModuleContent.setProductId(product.getId());
       productModuleContent.setTag(tag);
-      getDependencyContentsFromProductJson(productModuleContent, contents);
+      updateDependencyContentsFromProductJson(productModuleContent, contents , product);
       List<GHContent> readmeFiles = contents.stream().filter(GHContent::isFile)
           .filter(content -> content.getName().startsWith(ReadmeConstants.README_FILE_NAME)).toList();
       Map<String,Map<String,String>> moduleContents = new HashMap<>();
@@ -200,8 +214,8 @@ public class GHAxonIvyProductRepoServiceImpl implements GHAxonIvyProductRepoServ
     return result;
   }
 
-  private void getDependencyContentsFromProductJson(ProductModuleContent productModuleContent, List<GHContent> contents)
-      throws IOException {
+  private void updateDependencyContentsFromProductJson(ProductModuleContent productModuleContent,
+      List<GHContent> contents, Product product) throws IOException {
     GHContent productJsonFile = getProductJsonFile(contents);
     if (Objects.nonNull(productJsonFile)) {
       List<MavenArtifact> artifacts = convertProductJsonToMavenProductInfo(productJsonFile);
@@ -214,6 +228,28 @@ public class GHAxonIvyProductRepoServiceImpl implements GHAxonIvyProductRepoServ
         productModuleContent.setType(artifact.getType());
         productModuleContent.setName(artifact.getName());
       }
+      String currentVersion = VersionUtils.convertTagToVersion(productModuleContent.getTag());
+      boolean isProductJsonContentExists = productJsonContentRepository.existsByProductIdAndVersion(product.getId(),
+          currentVersion);
+      String content = extractProductJsonContent(productJsonFile, productModuleContent.getTag());
+      if (ObjectUtils.isNotEmpty(content) && !isProductJsonContentExists) {
+        ProductJsonContent jsonContent = new ProductJsonContent();
+        jsonContent.setVersion(currentVersion);
+        jsonContent.setProductId(product.getId());
+        jsonContent.setName(product.getNames().get(EN_LANGUAGE));
+        jsonContent.setContent(content.replace(VERSION_VALUE, currentVersion));
+        productJsonContentRepository.save(jsonContent);
+      }
+    }
+  }
+
+  public String extractProductJsonContent(GHContent ghContent, String tag) {
+    try {
+      InputStream contentStream = extractedContentStream(ghContent);
+      return IOUtils.toString(contentStream, StandardCharsets.UTF_8);
+    } catch (Exception exception) {
+      log.error("Cannot paste content of product.json {} at tag: {}", ghContent.getPath(), tag);
+      return null;
     }
   }
 

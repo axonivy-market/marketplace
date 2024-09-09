@@ -11,4 +11,6 @@ public class EntityConstants {
   public static final String GH_REPO_META = "GitHubRepoMeta";
   public static final String FEEDBACK = "Feedback";
   public static final String PRODUCT_CUSTOM_SORT = "ProductCustomSort";
+  public static final String PRODUCT_JSON_CONTENT = "ProductJsonContent";
+  public static final String PRODUCT_MODULE_CONTENT = "ProductModuleContent";
 }

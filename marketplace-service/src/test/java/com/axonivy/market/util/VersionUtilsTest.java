@@ -147,4 +147,5 @@ class VersionUtilsTest {
         Assertions.assertEquals("10.0.1", results.get(0));
         Assertions.assertEquals("10.0.2", results.get(1));
     }
+
 }
