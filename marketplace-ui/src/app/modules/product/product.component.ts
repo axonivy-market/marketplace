@@ -120,7 +120,6 @@ export class ProductComponent implements AfterViewInit, OnDestroy {
   }
 
   onFilterChange(selectedType: ItemDropdown<TypeOption>) {
-
     this.criteria = {
       ...this.criteria,
       nextPageHref: '',

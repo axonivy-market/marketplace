@@ -27,8 +27,7 @@ export class ProductFeedbackComponent {
   }
 
   private setShowToggle() {
-  
-  this.showToggle.set(this.contentElement.nativeElement.scrollHeight > this.contentElement.nativeElement.clientHeight);
+    this.showToggle.set(this.contentElement.nativeElement.scrollHeight > this.contentElement.nativeElement.clientHeight);
   }
 
   toggleContent() {

@@ -156,10 +156,8 @@ export class ProductDetailComponent {
     if (this.isEmptyProductContent()) {
       return;
     }
-    this.selectedVersion = this.convertTagToVersion(
-      this.productModuleContent().tag
-    );
-      this.selectedVersion = VERSION.displayPrefix.concat(this.selectedVersion);
+    this.selectedVersion = VERSION.displayPrefix.concat(
+      this.convertTagToVersion(this.productModuleContent().tag));
   }
 
   scrollToTop() {

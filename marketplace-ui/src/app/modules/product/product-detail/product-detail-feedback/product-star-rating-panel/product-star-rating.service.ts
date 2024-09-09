@@ -41,8 +41,6 @@ export class ProductStarRatingService {
   }
 
   private sortByStar(starRatings: StarRatingCounting[]): void {
-    (starRatings);
-    
     starRatings.sort((a, b) => b.starRating - a.starRating);
   }
 

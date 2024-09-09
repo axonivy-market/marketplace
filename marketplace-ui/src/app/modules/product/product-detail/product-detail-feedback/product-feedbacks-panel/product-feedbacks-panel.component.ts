@@ -50,7 +50,6 @@ export class ProductFeedbacksPanelComponent {
     this.productFeedbackService.feedbacks;
 
   onSortChange(sort: string): void {
-
     this.productFeedbackService.changeSort(sort);
   }
 
