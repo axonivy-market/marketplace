@@ -167,10 +167,10 @@ export class ProductDetailComponent {
   }
 
   updateProductDetailActionType(productDetail: ProductDetail) {
-    if (this.routingQueryParamService.isDesignerEnv()) {
-      this.productDetailActionType.set(ProductDetailActionType.DESIGNER_ENV);
-    } else if (productDetail?.sourceUrl === undefined) {
+    if (productDetail?.sourceUrl === undefined) {
       this.productDetailActionType.set(ProductDetailActionType.CUSTOM_SOLUTION);
+    } else if (this.routingQueryParamService.isDesignerEnv()) {
+      this.productDetailActionType.set(ProductDetailActionType.DESIGNER_ENV);
     } else {
       this.productDetailActionType.set(ProductDetailActionType.STANDARD)
     }

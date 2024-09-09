@@ -76,7 +76,7 @@ common:
           source: Source
           status: Status
           moreInformation: More Information
-          contactUs: Contact Us
+          contactUs: Contact us
       install:
         buttonLabel: Install Now
         buttonLabelInDesigner: Install
