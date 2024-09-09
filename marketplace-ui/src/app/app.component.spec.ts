@@ -7,6 +7,7 @@ import { RoutingQueryParamService } from './shared/services/routing.query.param.
 import { ActivatedRoute, RouterOutlet, NavigationStart } from '@angular/router';
 import { of, Subject } from 'rxjs';
 import { TranslateService, TranslateModule } from '@ngx-translate/core';
+import { By } from '@angular/platform-browser';
 
 describe('AppComponent', () => {
   let component: AppComponent;
@@ -14,6 +15,7 @@ describe('AppComponent', () => {
   let routingQueryParamService: jasmine.SpyObj<RoutingQueryParamService>;
   let activatedRoute: ActivatedRoute;
   let navigationStartSubject: Subject<NavigationStart>;
+  let appElement: HTMLElement;
 
   beforeEach(async () => {
     navigationStartSubject = new Subject<NavigationStart>();
@@ -64,6 +66,9 @@ describe('AppComponent', () => {
     routingQueryParamService.getNavigationStartEvent.and.returnValue(
       navigationStartSubject.asObservable()
     );
+    appElement = fixture.debugElement.query(
+      By.css('.app-container')
+    ).nativeElement;
   });
 
   it('should create the app', () => {
@@ -103,5 +108,27 @@ describe('AppComponent', () => {
     expect(
       routingQueryParamService.checkCookieForDesignerVersion
     ).not.toHaveBeenCalled();
+  });
+
+  it('should hide scrollbar when burger menu is opened', () => {
+    component.toggleMobileHeader(false);
+    fixture.detectChanges();
+
+    expect(component.headerClass).toBe('header-mobile');
+    expect(appElement.classList.contains('header-mobile-container')).toBeTrue();
+
+    const headerComputedStyle = window.getComputedStyle(appElement);
+    expect(headerComputedStyle.overflow).toBe('hidden');
+  });
+
+  it('should reset header style when burger menu is closed', () => {
+    component.toggleMobileHeader(true);
+    fixture.detectChanges();
+
+    expect(component.headerClass).toBe('');
+    expect(appElement.classList.contains('header-mobile')).toBeFalse();
+    expect(
+      appElement.classList.contains('header-mobile-container')
+    ).toBeFalse();
   });
 });

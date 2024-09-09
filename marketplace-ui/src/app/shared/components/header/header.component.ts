@@ -1,5 +1,12 @@
 import { CommonModule } from '@angular/common';
-import { Component, inject, signal, WritableSignal } from '@angular/core';
+import {
+  Component,
+  EventEmitter,
+  inject,
+  Output,
+  signal,
+  WritableSignal
+} from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { LanguageService } from '../../../core/services/language/language.service';
@@ -25,6 +32,8 @@ import { ThemeSelectionComponent } from './theme-selection/theme-selection.compo
   styleUrls: ['./header.component.scss', '../../../app.component.scss']
 })
 export class HeaderComponent {
+  @Output() isHeaderMenuShown = new EventEmitter<boolean>();
+
   selectedNav = '/';
 
   isMobileMenuCollapsed: WritableSignal<boolean> = signal(true);
@@ -42,5 +51,6 @@ export class HeaderComponent {
 
   onCollapsedMobileMenu() {
     this.isMobileMenuCollapsed.update(value => !value);
+    this.isHeaderMenuShown.emit(this.isMobileMenuCollapsed());
   }
 }

@@ -42,3 +42,19 @@ footer {
   width: 4rem;
   height: 4rem;
 }
+
+.header-mobile {
+  z-index: 1;
+  position: absolute;
+  background: var(--info-dropdown-bg);
+  top: 0;
+  left: 0;
+  width: 100vw;
+}
+
+.header-mobile-container {
+  position: relative;
+  width: 100vw;
+  height: 100vh;
+  overflow: hidden;
+}

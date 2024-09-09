@@ -1,25 +1,32 @@
-@if(!routingQueryParamService.isDesignerEnv()){
-<header class="d-flex align-items-center">
-  <div class="container">
-    <app-header></app-header>
-  </div>
-</header>
-}
-<main>
-  <div class="container">
-    <router-outlet />
-  </div>
-</main>
-@if(!routingQueryParamService.isDesignerEnv()){
-<footer>
-  <div class="container">
-    <app-footer></app-footer>
-  </div>
-</footer>
-}
+<div class="app-container"
+  [ngClass]="
+    headerClass === 'header-mobile'
+      ? 'header-mobile-container'
+      : ''
+  ">
+  @if (!routingQueryParamService.isDesignerEnv()) {
+    <header class="d-flex align-items-center" [ngClass]="headerClass">
+      <div class="container">
+        <app-header (isHeaderMenuShown)="toggleMobileHeader($event)"></app-header>
+      </div>
+    </header>
+  }
+  <main>
+    <div class="container">
+      <router-outlet />
+    </div>
+  </main>
+  @if (!routingQueryParamService.isDesignerEnv()) {
+    <footer>
+      <div class="container">
+        <app-footer></app-footer>
+      </div>
+    </footer>
+  }
 
-@if (loadingService.isLoading()) {
-<div class="spinner-container">
-  <div class="spinner-border"></div>
+  @if (loadingService.isLoading()) {
+    <div class="spinner-container">
+      <div class="spinner-border"></div>
+    </div>
+  }
 </div>
-}
