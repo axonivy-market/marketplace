@@ -4,7 +4,6 @@ import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { LanguageSelectionComponent } from '../language-selection/language-selection.component';
 import { ThemeSelectionComponent } from '../theme-selection/theme-selection.component';
 import { LanguageService } from '../../../../core/services/language/language.service';
-import { ThemeService } from '../../../../core/services/theme/theme.service';
 
 @Component({
   selector: 'app-search-bar',
@@ -21,7 +20,6 @@ import { ThemeService } from '../../../../core/services/theme/theme.service';
 export class SearchBarComponent {
   isSearchBarDisplayed = signal(false);
 
-  themeService = inject(ThemeService);
   translateService = inject(TranslateService);
   elementRef = inject(ElementRef);
   languageService = inject(LanguageService);
