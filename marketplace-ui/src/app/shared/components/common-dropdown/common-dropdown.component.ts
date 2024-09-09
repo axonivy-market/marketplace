@@ -38,13 +38,11 @@ export class CommonDropdownComponent<T extends string> {
   }
 
   isActiveItem(value: ItemDropdown, selectedItem: T | undefined): boolean {
-    console.log(100);
     return this.translateService.instant(value.label) === selectedItem;
   }
 
   @HostListener('document:click', ['$event'])
   handleClickOutside(event: MouseEvent) {
-    console.log(99);
     if (!this.elementRef.nativeElement.querySelector('.dropdown').contains(event.target) && this.isDropdownOpen) {
       this.isDropdownOpen = !this.isDropdownOpen;
     }

@@ -66,7 +66,6 @@ export class ProductDetailVersionActionComponent implements AfterViewInit {
   languageService = inject(LanguageService);
 
   ngAfterViewInit() {
-    console.log(34);
     const tooltipTriggerList = [].slice.call(
       document.querySelectorAll('[data-bs-toggle="tooltip"]')
     );
@@ -80,11 +79,14 @@ export class ProductDetailVersionActionComponent implements AfterViewInit {
   }
 
   onSelectVersion(version : string) {
-    console.log(36);
     this.selectedVersion.set(version);
     this.artifacts.set(this.versionMap.get(this.selectedVersion()) ?? []);
+    this.updateSelectedArtifact();
+  }
+
+  private updateSelectedArtifact() {
     this.artifacts().forEach(artifact => {
-      if(artifact.name) {
+      if (artifact.name) {
         artifact.label = artifact.name;
       }
     });
@@ -95,25 +97,21 @@ export class ProductDetailVersionActionComponent implements AfterViewInit {
   }
 
   onSelectVersionInDesigner(version: string) {
-    console.log(37);
     this.selectedVersion.set(version);
   }
 
   onSelectArtifact(artifact: ItemDropdown) {
-    console.log(38);
     this.selectedArtifactName = artifact.name;
     this.selectedArtifact = artifact.downloadUrl;
   }
 
   onShowDevVersion(event: Event) {
-    console.log(39);
     event.preventDefault();
     this.isDevVersionsDisplayed.set(!this.isDevVersionsDisplayed());
     this.getVersionWithArtifact();
   }
 
   onShowVersionAndArtifact() {
-    console.log(40);
     if (!this.isDropDownDisplayed() && this.artifacts().length === 0) {
       this.getVersionWithArtifact();
     }
@@ -121,7 +119,6 @@ export class ProductDetailVersionActionComponent implements AfterViewInit {
   }
 
   getVersionWithArtifact() {
-    console.log(41);
     this.sanitizeDataBeforeFetching();
     this.productService
       .sendRequestToProductDetailVersionAPI(
@@ -142,14 +139,14 @@ export class ProductDetailVersionActionComponent implements AfterViewInit {
           }
         });
         if (this.versions().length !== 0) {
-          this.selectedVersion.set(this.versions()[0]);
+          this.artifacts.set(this.versionMap.get(this.selectedVersion()) ?? []);
+          this.updateSelectedArtifact();
         }
       });
   }
 
 
   getVersionInDesigner(): void {
-    console.log(42);
     if (this.versions().length === 0) {
       this.productService.sendRequestToGetProductVersionsForDesigner(this.productId
       ).subscribe(data => {
@@ -165,15 +162,11 @@ export class ProductDetailVersionActionComponent implements AfterViewInit {
   }
 
   sanitizeDataBeforeFetching() {
-    console.log(43);
     this.versions.set([]);
     this.artifacts.set([]);
-    this.selectedArtifact = '';
-    this.selectedVersion.set('');
   }
 
   downloadArtifact() {
-    console.log(44);
     this.onUpdateInstallationCount();
     const newTab = window.open(this.selectedArtifact, '_blank');
     if (newTab) {
@@ -183,14 +176,12 @@ export class ProductDetailVersionActionComponent implements AfterViewInit {
   }
 
   onUpdateInstallationCount() {
-    console.log(45);
     this.productService
       .sendRequestToUpdateInstallationCount(this.productId)
       .subscribe((data: number) => this.installationCount.emit(data));
   }
 
   onUpdateInstallationCountForDesigner() {
-    console.log(46);
     if (this.isDesignerEnvironment()) {
       this.onUpdateInstallationCount();
     }

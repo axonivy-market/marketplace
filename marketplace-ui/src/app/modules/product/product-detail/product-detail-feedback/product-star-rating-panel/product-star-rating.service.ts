@@ -28,7 +28,6 @@ export class ProductStarRatingService {
   );
 
   fetchData(productId: string = this.productDetailService.productId()): void {
-    console.log(50);
     const requestURL = `api/feedback/product/${productId}/rating`;
     this.http
       .get<StarRatingCounting[]>(requestURL, {context: new HttpContext().set(SkipLoading, true)})
@@ -42,14 +41,12 @@ export class ProductStarRatingService {
   }
 
   private sortByStar(starRatings: StarRatingCounting[]): void {
-    console.log(51);
-    console.log(starRatings);
+    (starRatings);
     
     starRatings.sort((a, b) => b.starRating - a.starRating);
   }
 
   private calculateTotalComments(starRatings: StarRatingCounting[]): number {
-    console.log(52);
     let totalComments = 0;
     starRatings.forEach(starRating => {
       totalComments += starRating.commentNumber ?? 0;
@@ -58,7 +55,6 @@ export class ProductStarRatingService {
   }
 
   private calculateReviewNumber(starRatings: StarRatingCounting[]): number {
-    console.log(53);
     let reviewNumber = 0;
     const totalComments = this.calculateTotalComments(starRatings);
     starRatings.forEach(starRating => {

@@ -50,13 +50,11 @@ export class ProductFeedbacksPanelComponent {
     this.productFeedbackService.feedbacks;
 
   onSortChange(sort: string): void {
-        console.log(57);
 
     this.productFeedbackService.changeSort(sort);
   }
 
   onScrollCheckAllFeedbacksLoaded(e: Event): void {
-    console.log(56);
     const element = e.target as CustomElement;
     const threshold = 50;
     const position = element.scrollTop + element.offsetHeight;

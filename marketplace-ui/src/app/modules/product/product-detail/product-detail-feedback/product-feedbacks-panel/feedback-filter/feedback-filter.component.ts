@@ -26,7 +26,6 @@ export class FeedbackFilterComponent {
   selectedSortTypeLabel: string = CommonUtils.getLabel(FEEDBACK_SORT_TYPES[0].value, FEEDBACK_SORT_TYPES);
 
   onSortChange(event: ItemDropdown<FeedbackSortType>): void {
-    console.log(64);
     this.selectedSortTypeLabel = CommonUtils.getLabel(event.value, FEEDBACK_SORT_TYPES);
     this.sortChange.emit(event.sortFn);
   }

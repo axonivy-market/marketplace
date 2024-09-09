@@ -55,7 +55,6 @@ export class AddFeedbackDialogComponent {
   }
 
   onSubmitFeedback(): void {
-    console.log(54);
     this.productFeedbackService.submitFeedback(this.feedback).subscribe({
       complete: () => {
         this.activeModal.close();
@@ -66,7 +65,6 @@ export class AddFeedbackDialogComponent {
   }
 
   onRateChange(newRate: number) {
-    console.log(55);
     this.feedback.rating = newRate;
   }
 

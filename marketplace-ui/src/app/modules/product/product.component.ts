@@ -115,13 +115,11 @@ export class ProductComponent implements AfterViewInit, OnDestroy {
   }
 
   viewProductDetail(productId: string, _productTag: string) {
-    console.log(1);
     
     this.router.navigate(['', productId]);
   }
 
   onFilterChange(selectedType: ItemDropdown<TypeOption>) {
-        console.log(2);
 
     this.criteria = {
       ...this.criteria,
@@ -132,7 +130,6 @@ export class ProductComponent implements AfterViewInit, OnDestroy {
   }
 
   onSortChange(selectedSort: SortOption) {
-    console.log(3);
     this.criteria = {
       ...this.criteria,
       nextPageHref: '',
@@ -142,12 +139,10 @@ export class ProductComponent implements AfterViewInit, OnDestroy {
   }
 
   onSearchChanged(searchString: string) {
-    console.log(4);
     this.searchTextChanged.next(searchString);
   }
 
   loadProductItems(shouldCleanData = false) {
-    console.log(5);
     this.criteria.language = this.languageService.selectedLanguage();
     if (this.isRESTClient()) {
       this.criteria = {
@@ -178,7 +173,6 @@ export class ProductComponent implements AfterViewInit, OnDestroy {
   }
 
   setupIntersectionObserver() {
-    console.log(6);
     const options = { root: null, rootMargin: '10px', threshold: 0.1 };
     const observer = new IntersectionObserver(entries => {
       entries.forEach(entry => {
@@ -193,7 +187,6 @@ export class ProductComponent implements AfterViewInit, OnDestroy {
   }
 
   hasMore() {
-    console.log(7);
     if (!this.responsePage || !this.responseLink) {
       return false;
     }
@@ -204,7 +197,6 @@ export class ProductComponent implements AfterViewInit, OnDestroy {
   }
 
   ngOnDestroy(): void {
-    console.log(8);
     this.subscriptions.forEach(sub => {
       sub.unsubscribe();
     });

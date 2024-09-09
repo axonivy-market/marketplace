@@ -17,7 +17,6 @@ export class StarRatingComponent {
   @Output() rateChange = new EventEmitter<number>();
 
   onRateChange(newRate: number): void {
-    console.log(69);
     this.rate = newRate;
     this.rateChange.emit(newRate);
   }

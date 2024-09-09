@@ -23,19 +23,15 @@ export class ProductFeedbackComponent {
 
   @HostListener('window:resize', ['$event'])
   onResize() {
-    console.log(61);
     this.setShowToggle();
   }
 
   private setShowToggle() {
-        console.log(60);
-
-    this.showToggle.set(this.contentElement.nativeElement.scrollHeight > this.contentElement.nativeElement.clientHeight);
+  
+  this.showToggle.set(this.contentElement.nativeElement.scrollHeight > this.contentElement.nativeElement.clientHeight);
   }
 
   toggleContent() {
-        console.log(59);
-
     this.isExpanded.set(!this.isExpanded());
   }
 }
