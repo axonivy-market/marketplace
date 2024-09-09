@@ -87,7 +87,7 @@
         <div class="row-tab d-none d-xl-block col-12">
           <ul ngbNav class="nav nav-tabs form-tabs">
             @for (tab of detailTabs; track $index) {
-              @if (tab.value | hasValueTab: productModuleContent()) {
+              @if (tab.value | hasValueTab: productModuleContent() : languageService.selectedLanguage()) {
                 <li
                   ngbNavItem
                   class="nav-item d-flex flex-row position-relative border-bottom-1 p-2 justify-content-center align-items-start">

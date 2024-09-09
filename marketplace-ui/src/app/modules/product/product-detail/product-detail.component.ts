@@ -15,21 +15,16 @@ import { Observable } from 'rxjs';
 import { AuthService } from '../../../auth/auth.service';
 import { LanguageService } from '../../../core/services/language/language.service';
 import { ThemeService } from '../../../core/services/theme/theme.service';
-import { CommonDropdownComponent } from '../../../shared/components/common-dropdown/common-dropdown.component';
 import {
   PRODUCT_DETAIL_TABS,
   VERSION
 } from '../../../shared/constants/common.constant';
-import { ItemDropdown } from '../../../shared/models/item-dropdown.model';
 import { ProductDetail } from '../../../shared/models/product-detail.model';
 import { ProductModuleContent } from '../../../shared/models/product-module-content.model';
 import { HasValueTabPipe } from '../../../shared/pipes/has-value-tab.pipe';
 import { ProductTypeIconPipe } from '../../../shared/pipes/icon.pipe';
 import { MultilingualismPipe } from '../../../shared/pipes/multilingualism.pipe';
-import { ProductTypePipe } from '../../../shared/pipes/product-type.pipe';
 import { AppModalService } from '../../../shared/services/app-modal.service';
-import { RoutingQueryParamService } from '../../../shared/services/routing.query.param.service';
-import { CommonUtils } from '../../../shared/utils/common.utils';
 import { ProductService } from '../product.service';
 import { ProductDetailFeedbackComponent } from './product-detail-feedback/product-detail-feedback.component';
 import { ProductFeedbackService } from './product-detail-feedback/product-feedbacks-panel/product-feedback.service';
@@ -139,7 +134,6 @@ export class ProductDetailComponent {
       this.getProductById(productId).subscribe(productDetail => {
         this.productDetail.set(productDetail);
         this.productModuleContent.set(productDetail.productModuleContent);
-        this.selectedVersion = VERSION.displayPrefix.concat(this.convertTagToVersion((productDetail.productModuleContent.tag)));
         this.metaProductJsonUrl = productDetail.metaProductJsonUrl;
         this.detailTabsForDropdown = this.getNotEmptyTabs();
         this.productDetailService.productNames.set(productDetail.names);
@@ -342,7 +336,8 @@ export class ProductDetailComponent {
     return this.detailTabsForDropdown.filter(tab =>
       HasValueTabPipe.prototype.transform(
         tab.value,
-        this.productModuleContent()
+        this.productModuleContent(),
+        this.languageService.selectedLanguage()
       )
     );
   }
