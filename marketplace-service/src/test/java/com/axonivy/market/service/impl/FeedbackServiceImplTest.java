@@ -153,7 +153,7 @@ class FeedbackServiceImplTest {
   @Test
   void testFindFeedbackByUserIdAndProductId_NoContent() {
     String productId = "product1";
-    String userId = "";
+    userId = "";
     when(productRepository.findById(productId)).thenReturn(Optional.of(new Product()));
     when(feedbackRepository.findByUserIdAndProductId(userId, productId)).thenReturn(null);
 
@@ -166,7 +166,7 @@ class FeedbackServiceImplTest {
 
   @Test
   void testFindFeedbackByUserIdAndProductId_NotFound() {
-    String userId = "notFoundUser";
+    userId = "notFoundUser";
 
     when(userRepository.findById(userId)).thenReturn(Optional.empty());
     NotFoundException exception = assertThrows(NotFoundException.class,
