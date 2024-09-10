@@ -18,14 +18,13 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ProductService } from '../../product.service';
 import { Tooltip } from 'bootstrap';
-import { ProductDetailService } from '../product-detail.service';
-import { RoutingQueryParamService } from '../../../../shared/services/routing.query.param.service';
 import { CommonDropdownComponent } from '../../../../shared/components/common-dropdown/common-dropdown.component';
 import { LanguageService } from '../../../../core/services/language/language.service';
 import { ItemDropdown } from '../../../../shared/models/item-dropdown.model';
-import { ProductDetail } from '../../../../shared/models/product-detail.model';
 import { environment } from '../../../../../environments/environment';
 import { VERSION } from '../../../../shared/constants/common.constant';
+import { ProductDetailActionType } from '../../../../shared/enums/product-detail-action-type';
+import { RoutingQueryParamService } from '../../../../shared/services/routing.query.param.service';
 
 const delayTimeBeforeHideMessage = 2000;
 @Component({
@@ -44,8 +43,7 @@ export class ProductDetailVersionActionComponent implements AfterViewInit {
   protected readonly environment = environment;
   @Output() installationCount = new EventEmitter<number>();
   @Input() productId!: string;
-
-  @Input() product!: ProductDetail;
+  @Input() actionType!: ProductDetailActionType;
   selectedVersion = model<string>('');
   versions: WritableSignal<string[]> = signal([]);
   versionDropdown: Signal<ItemDropdown[]> = computed(() => {
@@ -60,19 +58,17 @@ export class ProductDetailVersionActionComponent implements AfterViewInit {
   artifacts: WritableSignal<ItemDropdown[]> = signal([]);
   isDevVersionsDisplayed = signal(false);
   isDropDownDisplayed = signal(false);
-  isDesignerEnvironment = signal(false);
   isInvalidInstallationEnvironment = signal(false);
   designerVersion = '';
   selectedArtifact: string | undefined = '';
   selectedArtifactName: string | undefined = '';
   versionMap: Map<string, ItemDropdown[]> = new Map();
 
-  routingQueryParamService = inject(RoutingQueryParamService);
   themeService = inject(ThemeService);
   productService = inject(ProductService);
-  productDetailService = inject(ProductDetailService);
   elementRef = inject(ElementRef);
   languageService = inject(LanguageService);
+  routingQueryParamService = inject(RoutingQueryParamService);
 
   ngAfterViewInit() {
     const tooltipTriggerList = [].slice.call(
@@ -81,13 +77,9 @@ export class ProductDetailVersionActionComponent implements AfterViewInit {
     tooltipTriggerList.forEach(
       tooltipTriggerEl => new Tooltip(tooltipTriggerEl)
     );
-    this.isDesignerEnvironment.set(
-      this.routingQueryParamService.isDesignerEnv()
-    );
-
   }
 
-  onSelectVersion(version : string) {
+  onSelectVersion(version: string) {
     this.selectedVersion.set(version);
     this.artifacts.set(this.versionMap.get(this.selectedVersion()) ?? []);
     this.updateSelectedArtifact();
@@ -202,8 +194,17 @@ export class ProductDetailVersionActionComponent implements AfterViewInit {
   }
 
   onUpdateInstallationCountForDesigner() {
-    if (this.isDesignerEnvironment()) {
-      this.onUpdateInstallationCount();
+    this.onUpdateInstallationCount();
+  }
+
+  onNavigateToContactPage() {
+    const newTab = window.open(
+      `https://www.axonivy.com/marketplace/contact/?market_solutions=${this.productId}`,
+      '_blank'
+    );
+    if (newTab) {
+      newTab.blur();
     }
+    window.focus();
   }
 }

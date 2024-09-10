@@ -45,8 +45,11 @@
                 [isShowRateLink]="false"
                 [isShowTotalRatingNumber]="false" />
             </div>
-            <app-product-installation-count-action
-              [currentInstallationCount]="installationCount" />
+            @if(productDetailActionType() !== 'customSolution') {
+              <app-product-installation-count-action
+                id="app-product-installation-count-action"
+                [currentInstallationCount]="installationCount" />
+            }
             <div
               class="analysis-container d-flex flex-column align-items-start p-0">
               <h4
@@ -72,6 +75,7 @@
               [(selectedVersion)]="selectedVersion!"
               [(metaDataJsonUrl)]="metaProductJsonUrl!"
               [productId]="productDetail().id"
+              [actionType]="productDetailActionType()"
               (selectedVersionChange)="
                 loadDetailTabs($event)
               "></app-product-version-action>

@@ -76,7 +76,7 @@ common:
           source: Source
           status: Status
           moreInformation: More Information
-          contactUs: Contact Us
+          contactUs: Contact us
       install:
         buttonLabel: Install Now
         buttonLabelInDesigner: Install
@@ -88,6 +88,8 @@ common:
           label: Choose target platform
         artifactSelector:
           label: Choose artifact
+      contactUs:
+        label: Contact us
   feedback:
     label: Feedback
     successMessage: Your feedback has been successfully submitted!

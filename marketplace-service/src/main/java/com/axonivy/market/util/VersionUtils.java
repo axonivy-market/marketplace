@@ -8,6 +8,8 @@ import com.axonivy.market.entity.Product;
 import com.axonivy.market.enums.NonStandardProduct;
 import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.logging.log4j.util.Strings;
+import org.kohsuke.github.GHTag;
 import org.springframework.util.CollectionUtils;
 
 import java.util.ArrayList;
@@ -17,6 +19,8 @@ import java.util.Optional;
 import java.util.stream.Stream;
 
 public class VersionUtils {
+    public static final String NON_NUMERIC_CHAR = "[^0-9.]";
+
     private VersionUtils() {
     }
     public static List<String> getVersionsToDisplay(List<String> versions, Boolean isShowDevVersion, String designerVersion) {
@@ -112,6 +116,15 @@ public class VersionUtils {
         return GitHubConstants.STANDARD_TAG_PREFIX.concat(version);
     }
 
+    public static String getOldestVersion(List<GHTag> tags) {
+        String result = StringUtils.EMPTY;
+        if (!CollectionUtils.isEmpty(tags)) {
+            List<String> releasedTags = tags.stream().map(tag -> tag.getName().replaceAll(NON_NUMERIC_CHAR, Strings.EMPTY))
+                .distinct().sorted(new LatestVersionComparator()).toList();
+            return CollectionUtils.lastElement(releasedTags);
+        }
+        return result;
+    }
     public static List<String> getReleaseTagsFromProduct(Product product) {
         if (Objects.isNull(product)) {
             return new ArrayList<>();

@@ -1,35 +1,7 @@
-@if (isDesignerEnvironment()) {
-  <div class="designer-section d-flex justify-content-sm-between w-100 row">
-    <app-common-dropdown
-      (click)="getVersionInDesigner()"
-      [items]="versionDropdownInDesigner"
-      [selectedItem]="selectedVersion()"
-      buttonClass="form-select form-select-sm versions-selector__dropdown border__dropdown h-100 text-primary install-designer-dropdown"
-      ariaLabel=".form-select-sm example"
-      class="flex-grow-1 col-8"
-      [metaDataJsonUrl] = "metaDataJsonUrl()"
-      (itemSelected)="onSelectVersionInDesigner($event.value)">
-    </app-common-dropdown>
-
-    <button [lang]="languageService.selectedLanguage()"
-            class="btn btn__install flex-grow-1 install-designer-button m-0 col-4"
-            id="install-button"
-            (click)="onUpdateInstallationCountForDesigner()"
-            onClick="function installInDesigner() {
-              const selectedItemElement = document.querySelector('.install-designer-dropdown');
-              if (selectedItemElement) {
-              const metaDataJsonUrl = selectedItemElement.getAttribute('metaDataJsonUrl');
-              install(metaDataJsonUrl);
-              }
-            }
-            installInDesigner();"
-            [ngClass]="themeService.isDarkMode() ? 'btn-light' : 'btn-primary'">
-      {{ 'common.product.detail.install.buttonLabelInDesigner' | translate }}
-    </button>
-  </div>
-} @else {
-  <button [lang]="languageService.selectedLanguage()" class="btn btn__install flex-grow-1" data-bs-toggle="tooltip"
-          data-bs-placement="bottom" data-bs-html="true" data-bs-title="<p class='text-primary'> 
+@switch(actionType){
+  @case ('standard') {
+    <button [lang]="languageService.selectedLanguage()" class="btn btn__install flex-grow-1" data-bs-toggle="tooltip"
+      data-bs-placement="bottom" data-bs-html="true" data-bs-title="<p class='text-primary'> 
             Please open the 
             <a href='https://market.axonivy.com' class='ivy__link'>
                Axon Ivy Market 
@@ -40,14 +12,45 @@
             </a>
              (minimum version 9.2.0)
           </p>"
-          (click)="onUpdateInstallationCountForDesigner()" data-bs-custom-class="custom-tooltip"
-          [ngClass]="themeService.isDarkMode() ? 'btn-light' : 'btn-primary'">
-    {{ 'common.product.detail.install.buttonLabel' | translate }}
-  </button>
-  <button [lang]="languageService.selectedLanguage()" class="btn btn__download btn-secondary primary-bg flex-grow-1"
-          type="button" (click)="onShowVersionAndArtifact()" aria-expanded="false">
-    {{ 'common.product.detail.download.buttonLabel' | translate }}
-  </button>
+      (click)="onUpdateInstallationCountForDesigner()" data-bs-custom-class="custom-tooltip"
+      [ngClass]="themeService.isDarkMode() ? 'btn-light' : 'btn-primary'">
+      {{ 'common.product.detail.install.buttonLabel' | translate }}
+    </button>
+    <button [lang]="languageService.selectedLanguage()" class="btn btn__download btn-secondary primary-bg flex-grow-1"
+      type="button" (click)="onShowVersionAndArtifact()" aria-expanded="false">
+      {{ 'common.product.detail.download.buttonLabel' | translate }}
+    </button>
+  }
+  @case ('designerEnv') {
+    <div class="designer-section d-flex justify-content-sm-between w-100 row">
+      <app-common-dropdown (click)="getVersionInDesigner()" [items]="versionDropdownInDesigner"
+        [selectedItem]="selectedVersion()"
+        buttonClass="form-select form-select-sm versions-selector__dropdown border__dropdown h-100 text-primary install-designer-dropdown"
+        ariaLabel=".form-select-sm example" class="flex-grow-1 col-8" [metaDataJsonUrl]="metaDataJsonUrl()"
+        (itemSelected)="onSelectVersionInDesigner($event.value)">
+      </app-common-dropdown>
+      <button [lang]="languageService.selectedLanguage()"
+        class="btn btn__install flex-grow-1 install-designer-button m-0 col-4" id="install-button"
+        (click)="onUpdateInstallationCountForDesigner()" onClick="function installInDesigner() {
+                  const selectedItemElement = document.querySelector('.install-designer-dropdown');
+                  if (selectedItemElement) {
+                  const metaDataJsonUrl = selectedItemElement.getAttribute('metaDataJsonUrl');
+                  install(metaDataJsonUrl);
+                  }
+                }
+                installInDesigner();" [ngClass]="themeService.isDarkMode() ? 'btn-light' : 'btn-primary'">
+        {{ 'common.product.detail.install.buttonLabelInDesigner' | translate }}
+      </button>
+    </div>
+  }
+  @case ('customSolution') {
+    <button [lang]="languageService.selectedLanguage()"
+      class="btn row btn_contact-us"
+      (click)="onNavigateToContactPage()"
+      [ngClass]="themeService.isDarkMode() ? 'btn-light' : 'btn-primary'">
+      {{ 'common.product.detail.contactUs.label' | translate }}
+    </button>
+  }
 }
 
 @if (isDropDownDisplayed()) {

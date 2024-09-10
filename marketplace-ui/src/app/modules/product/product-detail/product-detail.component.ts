@@ -35,6 +35,7 @@ import { ProductService } from '../product.service';
 import { ProductDetailFeedbackComponent } from './product-detail-feedback/product-detail-feedback.component';
 import { ProductFeedbackService } from './product-detail-feedback/product-feedbacks-panel/product-feedback.service';
 import { ProductStarRatingService } from './product-detail-feedback/product-star-rating-panel/product-star-rating.service';
+import { ProductDetailActionType } from '../../../shared/enums/product-detail-action-type';
 import { ProductDetailInformationTabComponent } from './product-detail-information-tab/product-detail-information-tab.component';
 import { ProductDetailMavenContentComponent } from './product-detail-maven-content/product-detail-maven-content.component';
 import { ProductDetailVersionActionComponent } from './product-detail-version-action/product-detail-version-action.component';
@@ -96,6 +97,7 @@ export class ProductDetailComponent {
   productModuleContent: WritableSignal<ProductModuleContent> = signal(
     {} as ProductModuleContent
   );
+  productDetailActionType = signal(ProductDetailActionType.STANDARD);
   detailContent!: DetailTab;
   detailTabs = PRODUCT_DETAIL_TABS;
   activeTab = DEFAULT_ACTIVE_TAB;
@@ -140,6 +142,7 @@ export class ProductDetailComponent {
         localStorage.removeItem(STORAGE_ITEM);
         this.installationCount = productDetail.installationCount;
         this.handleProductContentVersion();
+        this.updateProductDetailActionType(productDetail);
       });
       this.productFeedbackService.initFeedbacks();
       this.productStarRatingService.fetchData();
@@ -158,6 +161,16 @@ export class ProductDetailComponent {
     }
     this.selectedVersion = VERSION.displayPrefix.concat(
       this.convertTagToVersion(this.productModuleContent().tag));
+  }
+
+  updateProductDetailActionType(productDetail: ProductDetail) {
+    if (productDetail?.sourceUrl === undefined) {
+      this.productDetailActionType.set(ProductDetailActionType.CUSTOM_SOLUTION);
+    } else if (this.routingQueryParamService.isDesignerEnv()) {
+      this.productDetailActionType.set(ProductDetailActionType.DESIGNER_ENV);
+    } else {
+      this.productDetailActionType.set(ProductDetailActionType.STANDARD)
+    }
   }
 
   scrollToTop() {
