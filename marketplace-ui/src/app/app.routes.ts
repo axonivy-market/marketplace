@@ -4,6 +4,10 @@ import { ErrorPageComponentComponent } from './shared/components/error-page-comp
 
 export const routes: Routes = [
   {
+    path: 'error-page',
+    component: ErrorPageComponentComponent
+  },
+  {
     path: '',
     loadChildren: () => import('./modules/home/home.routes').then(m => m.routes)
   },
@@ -11,10 +15,6 @@ export const routes: Routes = [
     path: ':id',
     loadChildren: () =>
       import('./modules/product/product.routes').then(m => m.routes)
-  },
-  {
-    path: 'app/error',
-    component: ErrorPageComponentComponent
   },
   {
     path: 'auth/github/callback',
