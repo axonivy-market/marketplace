@@ -39,26 +39,6 @@ jobs:
       SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
 
     steps:
-      - name: Check if Chrome is already set up
-        id: check-chrome
-        run: |
-          if [ -f "/tmp/chrome-setup-done" ]; then
-            echo "Chrome is already set up."
-            echo "CHROME_SETUP=true" >> $GITHUB_ENV
-          else
-            echo "CHROME_SETUP=false" >> $GITHUB_ENV
-          fi
-
-      # Setp if there is no instance existed
-      - name: Setup Chrome
-        if: env.CHROME_SETUP == 'false'
-        uses: browser-actions/setup-chrome@v1
-
-      # Use current Chrome instance from the last run
-      - name: Mark Chrome setup as done
-        if: env.CHROME_SETUP == 'false'
-        run: touch /tmp/chrome-setup-done
-
       - name: Execute Tests
         run: |
           cd ./marketplace-ui
