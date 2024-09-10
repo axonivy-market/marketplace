@@ -14,6 +14,7 @@ export const IVY = 'ivy';
 export const ERROR_PAGE_PATH = '/app/error';
 export const NOT_FOUND_ERROR_CODE = 404;
 export const INTERNAL_SERVER_ERROR_CODE = 500;
+export const UNDEFINED_ERROR_CODE = 0;
 
 /** This is option for exclude loading api
  * @Example return httpClient.get('apiEndPoint', { context: new HttpContext().set(SkipLoading, true) })
@@ -46,7 +47,11 @@ export const apiInterceptor: HttpInterceptorFn = (req, next) => {
 
   return next(cloneReq).pipe(
     catchError(error => {
-      if (error.status === NOT_FOUND_ERROR_CODE || error.status === INTERNAL_SERVER_ERROR_CODE) {
+      if (
+        error.status === NOT_FOUND_ERROR_CODE ||
+        error.status === INTERNAL_SERVER_ERROR_CODE ||
+        error.status === UNDEFINED_ERROR_CODE
+      ) {
         router.navigate([ERROR_PAGE_PATH]);
       }
       return throwError(() => new Error(error.message));
