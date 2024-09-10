@@ -36,24 +36,18 @@ export class ErrorPageComponentComponent {
   }
 
   getImageSrcInLightMode(): string {
-    let imageSrc = '';
     if (this.isMobileMode()) {
-      imageSrc = '/assets/images/misc/robot-mobile.png';
-    } else {
-      imageSrc = '/assets/images/misc/robot.png';
+      return '/assets/images/misc/robot-mobile.png';
     }
 
-    return imageSrc;
+    return '/assets/images/misc/robot.png';
   }
 
   getImageSrcInDarkMode(): string {
-    let imageSrc = '';
     if (this.isMobileMode()) {
-      imageSrc = '/assets/images/misc/robot-mobile-black.png';
-    } else {
-      imageSrc = '/assets/images/misc/robot-black.png';
+      return '/assets/images/misc/robot-mobile-black.png';
     }
 
-    return imageSrc;
+    return '/assets/images/misc/robot-black.png';
   }
 }
