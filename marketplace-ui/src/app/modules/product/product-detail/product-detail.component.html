@@ -22,7 +22,7 @@
               <img
                 [lang]="languageService.selectedLanguage()"
                 class="logo__image"
-                [src]="currentLogo"
+                [src]="productDetail().logoUrl"
                 [alt]="
                   productDetail().names
                     | multilingualism: languageService.selectedLanguage()

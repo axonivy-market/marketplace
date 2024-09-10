@@ -6,7 +6,7 @@
       class="card-img-top rounded"
       width="70"
       height="70"
-      [src]="product | logo"
+      [ngSrc]="product | logo"
       [alt]="
         product.names | multilingualism: languageService.selectedLanguage()
       "

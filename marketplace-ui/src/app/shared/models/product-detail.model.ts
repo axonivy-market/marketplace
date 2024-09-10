@@ -22,7 +22,6 @@ export interface ProductDetail {
   installationCount: number;
   productModuleContent: ProductModuleContent;
   metaProductJsonUrl?: string;
-  logo?: string;
   _links: {
     self: {
       href: string;

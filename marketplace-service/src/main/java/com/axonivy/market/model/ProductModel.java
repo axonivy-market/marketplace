@@ -32,8 +32,6 @@ public class ProductModel extends RepresentationModel<ProductModel> {
   private String type;
   @Schema(description = "Tags of product", example = "[\"helper\"]")
   private List<String> tags;
-  @Schema(description = "Product's logo in base64", example = "asdasfw3312tdxvnu83gg782r3")
-  private String logo;
 
   @Override
   public int hashCode() {

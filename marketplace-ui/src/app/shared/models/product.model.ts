@@ -25,7 +25,6 @@ export interface Product {
   installMatcher: string;
   mavenArtifacts: MavenArtifact[];
   contactUs: boolean;
-  logo: string;
   _links?: {
     self: {
       href: string;

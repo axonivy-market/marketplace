@@ -5,17 +5,13 @@ import com.axonivy.market.enums.NonStandardProduct;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import lombok.extern.log4j.Log4j2;
-import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.kohsuke.github.GHCommit;
 import org.kohsuke.github.GHContent;
 import org.kohsuke.github.PagedIterable;
 
 import java.io.IOException;
-import java.io.InputStream;
-import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
-import java.util.Base64;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -42,18 +38,6 @@ public class GitHubUtils {
       log.error("Cannot get DownloadURl from GHContent: ", e);
     }
     return "";
-  }
-
-  public static String getProductLogo(GHContent ghContent) {
-    try {
-      InputStream contentStream = ghContent.read();
-      byte[] sourceBytes = IOUtils.toByteArray(contentStream);
-      return Base64.getEncoder().encodeToString(sourceBytes);
-    } catch (Exception exception) {
-      log.error(exception.getMessage());
-      log.error("Cannot get content of product logo {} ", ghContent.getName());
-      return null;
-    }
   }
 
   public static <T> List<T> mapPagedIteratorToList(PagedIterable<T> paged) {

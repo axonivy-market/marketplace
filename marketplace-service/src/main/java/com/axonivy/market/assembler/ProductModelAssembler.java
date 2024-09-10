@@ -29,8 +29,7 @@ public class ProductModelAssembler extends RepresentationModelAssemblerSupport<P
     model.setShortDescriptions(product.getShortDescriptions());
     model.setType(product.getType());
     model.setTags(product.getTags());
-//    model.setLogoUrl(product.getLogoUrl());
-    model.setLogo(product.getLogo());
+    model.setLogoUrl(product.getLogoUrl());
     return model;
   }
 

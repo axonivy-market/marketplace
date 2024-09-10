@@ -41,7 +41,7 @@ public class ProductFactory {
       mappingByMetaJSONFile(product, content);
     }
     if (StringUtils.endsWith(contentName, LOGO_FILE)) {
-      product.setLogo(GitHubUtils.getProductLogo(content));
+      product.setLogoUrl(GitHubUtils.getDownloadUrl(content));
     }
     return product;
   }

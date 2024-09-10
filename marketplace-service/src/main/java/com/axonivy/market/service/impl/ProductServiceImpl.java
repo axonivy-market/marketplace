@@ -242,8 +242,7 @@ public class ProductServiceImpl implements ProductService {
       searchCriteria.setFields(List.of(MARKET_DIRECTORY));
       result = productRepository.findByCriteria(searchCriteria);
       if (result != null) {
-        result.setLogo(GitHubUtils.getProductLogo(fileContent));
-//        result.setLogoUrl(GitHubUtils.getDownloadUrl(fileContent));
+        result.setLogoUrl(GitHubUtils.getDownloadUrl(fileContent));
         productRepository.save(result);
       }
       break;
