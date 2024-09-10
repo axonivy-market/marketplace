@@ -3,24 +3,16 @@ import { LanguageService } from '../../core/services/language/language.service';
 import { Language } from '../enums/language.enum';
 import { DisplayValue } from '../models/display-value.model';
 import { ProductModuleContent } from '../models/product-module-content.model';
+import { ProductDetailService } from '../../modules/product/product-detail/product-detail.service';
+import { CommonUtils } from '../utils/common.utils';
 
 @Pipe({
   standalone: true,
   name: 'hasValueTab'
 })
 export class HasValueTabPipe implements PipeTransform {
-  // transform(value: string, productModuleContent: ProductModuleContent): boolean {
-  //   const conditions: { [key: string]: boolean } = {
-  //     description: productModuleContent?.description !== null,
-  //     demo: productModuleContent?.demo !== null,
-  //     setup: productModuleContent?.setup !== null ,
-  //     dependency: productModuleContent?.isDependency
-  //   };
-
-  //   return conditions[value] ?? false;
-  // }
-
   languageService = inject(LanguageService);
+  productDetailService = inject(ProductDetailService);
 
   transform(
     value: string,
@@ -30,19 +22,20 @@ export class HasValueTabPipe implements PipeTransform {
     if (Object.keys(productModuleContent).length === 0) {
       return false;
     }
+
     const conditions: { [key: string]: boolean } = {
       description:
         productModuleContent.description !== null &&
-        this.isContentDisplayedBasedOnLanguage(
+        CommonUtils.isContentDisplayedBasedOnLanguage(
           productModuleContent.description,
           lang
         ),
       demo:
         productModuleContent.demo !== null &&
-        this.isContentDisplayedBasedOnLanguage(productModuleContent.demo, lang),
+        CommonUtils.isContentDisplayedBasedOnLanguage(productModuleContent.demo, lang),
       setup:
         productModuleContent.setup !== null &&
-        this.isContentDisplayedBasedOnLanguage(
+        CommonUtils.isContentDisplayedBasedOnLanguage(
           productModuleContent.setup,
           lang
         ),
@@ -50,20 +43,5 @@ export class HasValueTabPipe implements PipeTransform {
     };
 
     return conditions[value] ?? false;
-  }
-
-  private isContentDisplayedBasedOnLanguage(
-    value: DisplayValue,
-    language: Language
-  ) {
-    if (
-      language === Language.DE &&
-      value[language] !== '' &&
-      value[language] !== undefined
-    ) {
-      return true;
-    }
-
-    return value[Language.EN] !== '' && value[Language.EN] !== undefined;
   }
 }

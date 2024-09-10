@@ -3,7 +3,9 @@ import {
   Component,
   ElementRef,
   HostListener,
+  SimpleChanges,
   WritableSignal,
+  effect,
   inject,
   signal
 } from '@angular/core';
@@ -15,16 +17,21 @@ import { Observable } from 'rxjs';
 import { AuthService } from '../../../auth/auth.service';
 import { LanguageService } from '../../../core/services/language/language.service';
 import { ThemeService } from '../../../core/services/theme/theme.service';
+import { CommonDropdownComponent } from '../../../shared/components/common-dropdown/common-dropdown.component';
 import {
   PRODUCT_DETAIL_TABS,
   VERSION
 } from '../../../shared/constants/common.constant';
+import { ItemDropdown } from '../../../shared/models/item-dropdown.model';
 import { ProductDetail } from '../../../shared/models/product-detail.model';
 import { ProductModuleContent } from '../../../shared/models/product-module-content.model';
 import { HasValueTabPipe } from '../../../shared/pipes/has-value-tab.pipe';
 import { ProductTypeIconPipe } from '../../../shared/pipes/icon.pipe';
 import { MultilingualismPipe } from '../../../shared/pipes/multilingualism.pipe';
+import { ProductTypePipe } from '../../../shared/pipes/product-type.pipe';
 import { AppModalService } from '../../../shared/services/app-modal.service';
+import { RoutingQueryParamService } from '../../../shared/services/routing.query.param.service';
+import { CommonUtils } from '../../../shared/utils/common.utils';
 import { ProductService } from '../product.service';
 import { ProductDetailFeedbackComponent } from './product-detail-feedback/product-detail-feedback.component';
 import { ProductFeedbackService } from './product-detail-feedback/product-feedbacks-panel/product-feedback.service';
@@ -35,13 +42,6 @@ import { ProductDetailVersionActionComponent } from './product-detail-version-ac
 import { ProductDetailService } from './product-detail.service';
 import { ProductInstallationCountActionComponent } from './product-installation-count-action/product-installation-count-action.component';
 import { ProductStarRatingNumberComponent } from './product-star-rating-number/product-star-rating-number.component';
-import { RoutingQueryParamService } from '../../../shared/services/routing.query.param.service';
-import { CommonDropdownComponent } from '../../../shared/components/common-dropdown/common-dropdown.component';
-import { CommonUtils } from '../../../shared/utils/common.utils';
-import { ItemDropdown } from '../../../shared/models/item-dropdown.model';
-import { ProductTypePipe } from '../../../shared/pipes/product-type.pipe';
-import { DisplayValue } from '../../../shared/models/display-value.model';
-import { Language } from '../../../shared/enums/language.enum';
 
 export interface DetailTab {
   activeClass: string;
@@ -98,12 +98,12 @@ export class ProductDetailComponent {
   );
   detailContent!: DetailTab;
   detailTabs = PRODUCT_DETAIL_TABS;
-  activeTab = DEFAULT_ACTIVE_TAB;
+  activeTab = '';
+  displayedTabs: ItemDropdown[] = [];
   selectedTabLabel: string = CommonUtils.getLabel(
     PRODUCT_DETAIL_TABS[0].value,
     PRODUCT_DETAIL_TABS
   );
-  detailTabsForDropdown = PRODUCT_DETAIL_TABS;
   isDropdownOpen: WritableSignal<boolean> = signal(false);
   isTabDropdownShown: WritableSignal<boolean> = signal(false);
   selectedVersion = '';
@@ -111,6 +111,7 @@ export class ProductDetailComponent {
   showPopup!: boolean;
   isMobileMode = signal<boolean>(false);
   installationCount = 0;
+
   @HostListener('window:popstate', ['$event'])
   onPopState() {
     this.activeTab = window.location.hash.split('#tab-')[1];
@@ -125,6 +126,10 @@ export class ProductDetailComponent {
     this.resizeObserver = new ResizeObserver(() => {
       this.updateDropdownSelection();
     });
+
+    effect(() => {
+      this.getDisplayedTabs();
+    })
   }
 
   ngOnInit(): void {
@@ -135,12 +140,13 @@ export class ProductDetailComponent {
         this.productDetail.set(productDetail);
         this.productModuleContent.set(productDetail.productModuleContent);
         this.metaProductJsonUrl = productDetail.metaProductJsonUrl;
-        this.detailTabsForDropdown = this.getNotEmptyTabs();
         this.productDetailService.productNames.set(productDetail.names);
         localStorage.removeItem(STORAGE_ITEM);
         this.installationCount = productDetail.installationCount;
         this.handleProductContentVersion();
+        this.getDisplayedTabs();
       });
+
       this.productFeedbackService.initFeedbacks();
       this.productStarRatingService.fetchData();
     }
@@ -195,18 +201,6 @@ export class ProductDetailComponent {
     });
   }
 
-  private isContentDisplayedBasedOnLanguage(value: DisplayValue) {
-    const currentLanguage = this.languageService.selectedLanguage();
-
-    if (currentLanguage === Language.DE && 
-        value[currentLanguage] !== '' && 
-        value[currentLanguage] !== undefined) {  
-        return true;
-    }
-
-    return value[Language.EN] !== '' && value[Language.EN] !== undefined;
-  }
-
   getContent(value: string): boolean {
     const content = this.productModuleContent();
 
@@ -217,13 +211,22 @@ export class ProductDetailComponent {
     const conditions: { [key: string]: boolean } = {
       description:
         content.description !== null &&
-        this.isContentDisplayedBasedOnLanguage(content.description),
+        CommonUtils.isContentDisplayedBasedOnLanguage(
+          content.description,
+          this.languageService.selectedLanguage()
+        ),
       demo:
         content.demo !== null &&
-        this.isContentDisplayedBasedOnLanguage(content.demo),
+        CommonUtils.isContentDisplayedBasedOnLanguage(
+          content.demo,
+          this.languageService.selectedLanguage()
+        ),
       setup:
         content.setup !== null &&
-        this.isContentDisplayedBasedOnLanguage(content.setup),
+        CommonUtils.isContentDisplayedBasedOnLanguage(
+          content.setup,
+          this.languageService.selectedLanguage()
+        ),
       dependency: content.isDependency
     };
 
@@ -332,20 +335,30 @@ export class ProductDetailComponent {
     });
   }
 
-  getNotEmptyTabs(): ItemDropdown[] {
-    return this.detailTabsForDropdown.filter(tab =>
-      HasValueTabPipe.prototype.transform(
-        tab.value,
-        this.productModuleContent(),
-        this.languageService.selectedLanguage()
-      )
-    );
-  }
-
   convertTagToVersion(tag: string): string {
     if (tag !== '' && tag.startsWith(VERSION.tagPrefix)) {
       return tag.substring(1);
     }
     return tag;
+  }
+
+  getDisplayedTabs() {
+    this.displayedTabs = [];
+    for (let detailTab of this.detailTabs) {
+      if (this.getContent(detailTab.value)) {
+        this.displayedTabs.push(detailTab);
+        this.activeTab = this.displayedTabs[0].value;
+      }
+    }
+    
+    this.selectedTabLabel = CommonUtils.getLabel(
+      this.activeTab,
+      PRODUCT_DETAIL_TABS
+    );
+  }
+
+  getProductModuleContentValue(key: string): any {
+    const castKey = key as keyof ProductModuleContent;
+    return this.productModuleContent()[castKey];
   }
 }
