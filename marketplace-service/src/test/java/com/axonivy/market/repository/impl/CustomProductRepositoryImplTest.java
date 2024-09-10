@@ -3,6 +3,7 @@ package com.axonivy.market.repository.impl;
 import com.axonivy.market.BaseSetup;
 import com.axonivy.market.constants.MongoDBConstants;
 import com.axonivy.market.entity.Product;
+import com.axonivy.market.entity.ProductDesignerInstallation;
 import com.axonivy.market.repository.ProductModuleContentRepository;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -131,5 +132,11 @@ class CustomProductRepositoryImplTest extends BaseSetup {
     int initialCount = 10;
     repo.updateInitialCount(ID, initialCount);
     verify(mongoTemplate).updateFirst(any(Query.class), eq(new Update().inc("InstallationCount", initialCount).set("SynchronizedInstallationCount", true)), eq(Product.class));
+  }
+
+  @Test
+  void testIncreaseInstallationCountForProductByDesignerVersion() {
+    repo.increaseInstallationCountForProductByDesignerVersion("portal", "10.0.20");
+    verify(mongoTemplate).upsert(any(Query.class), any(Update.class), eq(ProductDesignerInstallation.class));
   }
 }
