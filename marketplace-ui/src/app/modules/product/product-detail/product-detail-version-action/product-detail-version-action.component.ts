@@ -96,7 +96,6 @@ export class ProductDetailVersionActionComponent implements AfterViewInit {
   private updateSelectedArtifact() {
     this.artifacts().forEach(artifact => {
       if (artifact.name) {
-      if (artifact.name) {
         artifact.label = artifact.name;
       }
     });
