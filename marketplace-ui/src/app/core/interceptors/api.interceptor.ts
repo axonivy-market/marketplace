@@ -8,14 +8,10 @@ import { LoadingService } from '../services/loading/loading.service';
 import { inject } from '@angular/core';
 import { catchError, finalize, throwError } from 'rxjs';
 import { Router } from '@angular/router';
+import { ERROR_CODES, ERROR_PAGE_PATH } from '../../shared/constants/common.constant';
 
 export const REQUEST_BY = 'X-Requested-By';
 export const IVY = 'ivy';
-export const ERROR_PAGE_PATH = '/error-page';
-export const NOT_FOUND_ERROR_CODE = 404;
-export const INTERNAL_SERVER_ERROR_CODE = 500;
-export const UNDEFINED_ERROR_CODE = 0;
-export const ERROR_CODES = [UNDEFINED_ERROR_CODE, NOT_FOUND_ERROR_CODE, INTERNAL_SERVER_ERROR_CODE];
 
 /** This is option for exclude loading api
  * @Example return httpClient.get('apiEndPoint', { context: new HttpContext().set(SkipLoading, true) })
