@@ -10,6 +10,7 @@ public class RequestMappingConstants {
   public static final String SYNC = "sync";
   public static final String PRODUCT = API + "/product";
   public static final String PRODUCT_DETAILS = API + "/product-details";
+  public static final String PRODUCT_DESIGNER_INSTALLATION = API + "/product-designer-installation";
   public static final String FEEDBACK = API + "/feedback";
   public static final String SWAGGER_URL = "/swagger-ui/index.html";
   public static final String GIT_HUB_LOGIN = "/github/login";
@@ -23,5 +24,7 @@ public class RequestMappingConstants {
   public static final String INSTALLATION_COUNT_BY_ID = "/installationcount/{id}";
   public static final String PRODUCT_JSON_CONTENT_BY_PRODUCT_ID_AND_VERSION = "/productjsoncontent/{productId}/{version}";
   public static final String VERSIONS_IN_DESIGNER = "/{id}/designerversions";
+  public static final String DESIGNER_INSTALLATION_BY_PRODUCT_ID_AND_DESIGNER_VERSION = "/installation/{productId}/designer/{designerVersion}";
+  public static final String DESIGNER_INSTALLATION_BY_PRODUCT_ID = "/installation/{productId}/designer";
   public static final String CUSTOM_SORT = "custom-sort";
 }

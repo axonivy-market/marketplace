@@ -16,7 +16,6 @@ describe('ProductVersionActionComponent', () => {
   let component: ProductDetailVersionActionComponent;
   let fixture: ComponentFixture<ProductDetailVersionActionComponent>;
   let productServiceMock: any;
-  let elementRef: MockElementRef;
 
   beforeEach(() => {
     productServiceMock = jasmine.createSpyObj('ProductService', [
