@@ -64,6 +64,7 @@ public class Product implements Serializable {
   private Boolean synchronizedInstallationCount;
   private Integer customOrder;
   private List<String> releasedVersions;
+  private String logo;
   @Transient
   private String metaProductJsonUrl;
 

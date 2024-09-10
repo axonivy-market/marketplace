@@ -87,7 +87,7 @@ export class ProductDetailComponent {
   authService = inject(AuthService);
   elementRef = inject(ElementRef);
   routingQueryParamService = inject(RoutingQueryParamService);
-
+  currentLogo = '';
   resizeObserver: ResizeObserver;
 
   productDetail: WritableSignal<ProductDetail> = signal({} as ProductDetail);
@@ -138,6 +138,7 @@ export class ProductDetailComponent {
         this.productDetailService.productNames.set(productDetail.names);
         localStorage.removeItem(STORAGE_ITEM);
         this.installationCount = productDetail.installationCount;
+        this.currentLogo = productDetail.logo ? "data:image/jpg;base64,".concat(productDetail.logo) : '';
         this.handleProductContentVersion();
       });
       this.productFeedbackService.initFeedbacks();
