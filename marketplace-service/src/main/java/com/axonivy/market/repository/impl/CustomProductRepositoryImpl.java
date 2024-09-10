@@ -3,6 +3,7 @@ package com.axonivy.market.repository.impl;
 import com.axonivy.market.constants.MongoDBConstants;
 import com.axonivy.market.entity.Product;
 import com.axonivy.market.entity.ProductModuleContent;
+import com.axonivy.market.entity.ProductDesignerInstallation;
 import com.axonivy.market.repository.CustomProductRepository;
 import com.axonivy.market.repository.ProductModuleContentRepository;
 import lombok.Builder;
@@ -91,5 +92,17 @@ public class CustomProductRepositoryImpl implements CustomProductRepository {
 
   private Query createQueryById(String id) {
     return new Query(Criteria.where(MongoDBConstants.ID).is(id));
+  }
+
+  @Override
+  public void increaseInstallationCountForProductByDesignerVersion(String productId, String designerVersion) {
+    Update update = new Update().inc(MongoDBConstants.INSTALLATION_COUNT, 1);
+    mongoTemplate.upsert(createQueryByProductIdAndDesignerVersion(productId, designerVersion),
+            update, ProductDesignerInstallation.class);
+  }
+
+  private Query createQueryByProductIdAndDesignerVersion(String productId, String designerVersion) {
+    return new Query(Criteria.where(MongoDBConstants.PRODUCT_ID).is(productId)
+            .andOperator(Criteria.where(MongoDBConstants.DESIGNER_VERSION).is(designerVersion)));
   }
 }

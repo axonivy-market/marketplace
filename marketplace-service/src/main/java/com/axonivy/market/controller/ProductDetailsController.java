@@ -1,18 +1,18 @@
 package com.axonivy.market.controller;
 
-import static com.axonivy.market.constants.RequestMappingConstants.PRODUCT_JSON_CONTENT_BY_PRODUCT_ID_AND_VERSION;
-import static com.axonivy.market.constants.RequestMappingConstants.VERSIONS_IN_DESIGNER;
 import static com.axonivy.market.constants.RequestParamConstants.DESIGNER_VERSION;
 import static com.axonivy.market.constants.RequestParamConstants.ID;
 import static com.axonivy.market.constants.RequestParamConstants.PRODUCT_ID;
 import static com.axonivy.market.constants.RequestParamConstants.SHOW_DEV_VERSION;
 import static com.axonivy.market.constants.RequestParamConstants.VERSION;
+import static com.axonivy.market.constants.RequestMappingConstants.BEST_MATCH_BY_ID_AND_VERSION;
 import static com.axonivy.market.constants.RequestMappingConstants.BY_ID;
 import static com.axonivy.market.constants.RequestMappingConstants.BY_ID_AND_VERSION;
 import static com.axonivy.market.constants.RequestMappingConstants.INSTALLATION_COUNT_BY_ID;
 import static com.axonivy.market.constants.RequestMappingConstants.PRODUCT_DETAILS;
+import static com.axonivy.market.constants.RequestMappingConstants.PRODUCT_JSON_CONTENT_BY_PRODUCT_ID_AND_VERSION;
 import static com.axonivy.market.constants.RequestMappingConstants.VERSIONS_BY_ID;
-import static com.axonivy.market.constants.RequestMappingConstants.BEST_MATCH_BY_ID_AND_VERSION;
+import static com.axonivy.market.constants.RequestMappingConstants.VERSIONS_IN_DESIGNER;
 import java.util.List;
 import java.util.Map;
 
@@ -46,7 +46,8 @@ public class ProductDetailsController {
   private final ProductService productService;
   private final ProductDetailModelAssembler detailModelAssembler;
 
-  public ProductDetailsController(VersionService versionService, ProductService productService, ProductDetailModelAssembler detailModelAssembler) {
+  public ProductDetailsController(VersionService versionService, ProductService productService,
+                                  ProductDetailModelAssembler detailModelAssembler) {
     this.versionService = versionService;
     this.productService = productService;
     this.detailModelAssembler = detailModelAssembler;
@@ -74,8 +75,9 @@ public class ProductDetailsController {
   @PutMapping(INSTALLATION_COUNT_BY_ID)
   @Operation(summary = "Update installation count of product", description = "By default, increase installation count when click download product files by users")
   public ResponseEntity<Integer> syncInstallationCount(
-      @PathVariable(ID) @Parameter(description = "Product id (from meta.json)", example = "approval-decision-utils", in = ParameterIn.PATH) String productId) {
-    int result = productService.updateInstallationCountForProduct(productId);
+      @PathVariable(ID) @Parameter(description = "Product id (from meta.json)", example = "approval-decision-utils", in = ParameterIn.PATH) String productId,
+      @RequestParam(name = DESIGNER_VERSION, required = false) @Parameter(in = ParameterIn.QUERY, example = "v10.0.20") String designerVersion) {
+    int result = productService.updateInstallationCountForProduct(productId, designerVersion);
     return new ResponseEntity<>(result, HttpStatus.OK);
   }
 
