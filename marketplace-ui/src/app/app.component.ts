@@ -18,7 +18,7 @@ export class AppComponent {
   routingQueryParamService = inject(RoutingQueryParamService);
   route = inject(ActivatedRoute);
 
-  constructor(private router: Router) {}
+  constructor(private readonly router: Router) {}
 
   ngOnInit(): void {
     this.router.events.subscribe((event: Event) => {
