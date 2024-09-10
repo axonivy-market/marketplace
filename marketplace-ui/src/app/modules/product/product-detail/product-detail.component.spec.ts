@@ -281,38 +281,38 @@ describe('ProductDetailComponent', () => {
     expect(component.selectedVersion).toEqual('Version 10.0.11');
   });
 
-    it('should return DESIGNER_ENV as acction type in Designer Env', () => {
-      routingQueryParamService.isDesignerEnv.and.returnValue(true);
+  it('should return DESIGNER_ENV as acction type in Designer Env', () => {
+    routingQueryParamService.isDesignerEnv.and.returnValue(true);
 
-      component.updateProductDetailActionType({} as any);
-      expect(component.productDetailActionType()).toBe(
-        ProductDetailActionType.DESIGNER_ENV
-      );
-    });
+    component.updateProductDetailActionType({ sourceUrl: 'some-url'} as any);
+    expect(component.productDetailActionType()).toBe(
+      ProductDetailActionType.DESIGNER_ENV
+    );
+  });
 
-    it('should return CUSTOM_SOLUTION as acction type when productDetail.sourceUrl is undefined', () => {
-      routingQueryParamService.isDesignerEnv.and.returnValue(false);
+  it('should return CUSTOM_SOLUTION as acction type when productDetail.sourceUrl is undefined', () => {
+    routingQueryParamService.isDesignerEnv.and.returnValue(false);
 
-      component.updateProductDetailActionType({ sourceUrl: undefined } as any);
+    component.updateProductDetailActionType({ sourceUrl: undefined } as any);
 
-      expect(component.productDetailActionType()).toBe(
-        ProductDetailActionType.CUSTOM_SOLUTION
-      );
-      fixture.detectChanges();
-      let installationCount = fixture.debugElement.query(
-        By.css('#app-product-installation-count-action')
-      );
-      expect(installationCount).toBeFalsy();
+    expect(component.productDetailActionType()).toBe(
+      ProductDetailActionType.CUSTOM_SOLUTION
+    );
+    fixture.detectChanges();
+    let installationCount = fixture.debugElement.query(
+      By.css('#app-product-installation-count-action')
+    );
+    expect(installationCount).toBeFalsy();
 
-    });
+  });
 
-    it('should return STANDARD as acction type when when productDetail.sourceUrl is defined', () => {
-      routingQueryParamService.isDesignerEnv.and.returnValue(false);
+  it('should return STANDARD as acction type when when productDetail.sourceUrl is defined', () => {
+    routingQueryParamService.isDesignerEnv.and.returnValue(false);
 
-      component.updateProductDetailActionType({ sourceUrl: 'some-url' } as any);
+    component.updateProductDetailActionType({ sourceUrl: 'some-url' } as any);
 
-      expect(component.productDetailActionType()).toBe(
-        ProductDetailActionType.STANDARD
-      );
-    });
+    expect(component.productDetailActionType()).toBe(
+      ProductDetailActionType.STANDARD
+    );
+  });
 });
