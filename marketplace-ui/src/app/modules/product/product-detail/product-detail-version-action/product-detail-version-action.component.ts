@@ -84,19 +84,16 @@ export class ProductDetailVersionActionComponent implements AfterViewInit {
     this.isDesignerEnvironment.set(
       this.routingQueryParamService.isDesignerEnv()
     );
+
   }
 
-  getInstallationTooltipText() {
-    return `<p class="text-primary">Please open the
-        <a href="https://market.axonivy.com" class="ivy__link">Axon Ivy Market</a>
-        inside your
-        <a class="ivy__link" href="https://developer.axonivy.com/download">Axon Ivy Designer</a>
-        (minimum version 9.2.0)</p>`;
-  }
-
-  onSelectVersion(version: string) {
+  onSelectVersion(version : string) {
     this.selectedVersion.set(version);
     this.artifacts.set(this.versionMap.get(this.selectedVersion()) ?? []);
+    this.updateSelectedArtifact();
+  }
+
+  private updateSelectedArtifact() {
     this.artifacts().forEach(artifact => {
       if (artifact.name) {
         artifact.label = artifact.name;
@@ -151,7 +148,8 @@ export class ProductDetailVersionActionComponent implements AfterViewInit {
           }
         });
         if (this.versions().length !== 0) {
-          this.selectedVersion.set(this.versions()[0]);
+          this.artifacts.set(this.versionMap.get(this.selectedVersion()) ?? []);
+          this.updateSelectedArtifact();
         }
       });
   }
@@ -183,8 +181,6 @@ export class ProductDetailVersionActionComponent implements AfterViewInit {
   sanitizeDataBeforeFetching() {
     this.versions.set([]);
     this.artifacts.set([]);
-    this.selectedArtifact = '';
-    this.selectedVersion.set('');
   }
 
   downloadArtifact() {

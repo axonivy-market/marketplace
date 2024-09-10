@@ -77,15 +77,12 @@ describe('ProductVersionActionComponent', () => {
     component.sanitizeDataBeforeFetching();
     expect(component.versions().length).toBe(0);
     expect(component.artifacts().length).toBe(0);
-    expect(component.selectedVersion()).toEqual('');
-    expect(component.selectedArtifact).toEqual('');
   });
 
   it('should call sendRequestToProductDetailVersionAPI and update versions and versionMap', () => {
     const { mockArtifact1, mockArtifact2 } = mockApiWithExpectedResponse();
-
+    component.selectedVersion.set('Version 1.0');
     component.getVersionWithArtifact();
-
     expect(
       productServiceMock.sendRequestToProductDetailVersionAPI
     ).toHaveBeenCalledWith(
