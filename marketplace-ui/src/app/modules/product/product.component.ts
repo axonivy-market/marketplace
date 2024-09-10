@@ -115,7 +115,6 @@ export class ProductComponent implements AfterViewInit, OnDestroy {
   }
 
   viewProductDetail(productId: string, _productTag: string) {
-    
     this.router.navigate(['', productId]);
   }
 
