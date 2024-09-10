@@ -1,6 +1,7 @@
 package com.axonivy.market.comparator;
 
 import com.axonivy.market.constants.CommonConstants;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.math.NumberUtils;
 import org.kohsuke.github.GHTag;
 import org.springframework.util.CollectionUtils;
@@ -9,12 +10,16 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import static com.axonivy.market.constants.CommonConstants.DASH_SEPARATOR;
 import static com.axonivy.market.constants.MavenConstants.SNAPSHOT_VERSION;
 import static org.apache.commons.lang3.StringUtils.EMPTY;
 
 public class MavenVersionComparator {
 
     private static final String MAIN_VERSION_REGEX = "\\.";
+    private static final int GREATER_THAN = 1;
+    private static final int EQUAL = 0;
+    private static final int LESS_THAN = -1;
 
     private MavenVersionComparator() {
     }
@@ -34,7 +39,7 @@ public class MavenVersionComparator {
 
         String highestVersion = versions.get(0);
         for (var version : versions) {
-            if (compare(version, highestVersion) > 0) {
+            if (compare(version, highestVersion) > EQUAL) {
                 highestVersion = version;
             }
         }
@@ -44,29 +49,25 @@ public class MavenVersionComparator {
     private static int compare(String version, String otherVersion) {
         version = stripLeadingChars(version);
         otherVersion = stripLeadingChars(otherVersion);
-
-        // Split versions into main parts and qualifiers
-        String[] versionParts = version.split(CommonConstants.DASH_SEPARATOR, 2);
-        String[] otherVersionParts = otherVersion.split(CommonConstants.DASH_SEPARATOR, 2);
+        String[] versionParts = createMainAndQualifierArray(version);
+        String[] otherVersionParts = createMainAndQualifierArray(otherVersion);
 
         // Compare main version parts
         int mainComparison = compareMainVersion(versionParts[0], otherVersionParts[0]);
-        if (mainComparison != 0) {
+        if (mainComparison != EQUAL) {
             return mainComparison;
         }
 
-        // Compare qualifiers, if any
-        String qualifier1 = versionParts.length > 1 ? versionParts[1] : EMPTY;
-        String qualifier2 = otherVersionParts.length > 1 ? otherVersionParts[1] : EMPTY;
-
+        // Compare qualifiers
+        String qualifier1 = getQualifierPart(versionParts);
+        String qualifier2 = getQualifierPart(otherVersionParts);
         // Consider versions without a qualifier higher than those with qualifiers
         if (qualifier1.isEmpty() && !qualifier2.isEmpty()) {
-            return 1;
+            return GREATER_THAN;
         }
         if (!qualifier1.isEmpty() && qualifier2.isEmpty()) {
-            return -1;
+            return LESS_THAN;
         }
-
         return compareQualifier(qualifier1, qualifier2);
     }
 
@@ -85,28 +86,36 @@ public class MavenVersionComparator {
 
         int length = Math.max(parts1.length, parts2.length);
         for (int i = 0; i < length; i++) {
-            int num1 = i < parts1.length ? parseToNumber(parts1[i]) : 0;
-            int num2 = i < parts2.length ? parseToNumber(parts2[i]) : 0;
+            int num1 = parseToNumber(parts1, i);
+            int num2 = parseToNumber(parts2, i);
             if (num1 != num2) {
                 return num1 - num2;
             }
         }
-        return 0;
+        return EQUAL;
     }
 
-    private static int parseToNumber(String version) {
-        if (NumberUtils.isDigits(version)) {
-            return NumberUtils.toInt(version);
+    private static String getQualifierPart(String[] versionParts) {
+        return versionParts.length > 1 ? versionParts[1] : EMPTY;
+    }
+
+    private static String[] createMainAndQualifierArray(String version) {
+        return StringUtils.defaultIfBlank(version, EMPTY).split(DASH_SEPARATOR, 2);
+    }
+
+    private static int parseToNumber(String[] versionParts, int index) {
+        if (index < versionParts.length && NumberUtils.isDigits(versionParts[index])) {
+            return NumberUtils.toInt(versionParts[index]);
         }
         return 0;
     }
 
     private static int compareQualifier(String qualifier1, String qualifier2) {
         if (SNAPSHOT_VERSION.equals(qualifier1) && !SNAPSHOT_VERSION.equals(qualifier2)) {
-            return -1;
+            return LESS_THAN;
         }
         if (!SNAPSHOT_VERSION.equals(qualifier1) && SNAPSHOT_VERSION.equals(qualifier2)) {
-            return 1;
+            return GREATER_THAN;
         }
         return qualifier1.compareTo(qualifier2);
     }

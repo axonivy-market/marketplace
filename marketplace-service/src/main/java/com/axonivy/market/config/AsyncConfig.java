@@ -9,7 +9,7 @@ import java.util.concurrent.Executor;
 @Configuration
 public class AsyncConfig implements AsyncConfigurer {
 
-    private static final String THREAD_NAME_PREFIX = "MPAsyncThread-";
+    private static final String THREAD_NAME_PREFIX = "AC-Thread-";
 
     @Override
     public Executor getAsyncExecutor() {

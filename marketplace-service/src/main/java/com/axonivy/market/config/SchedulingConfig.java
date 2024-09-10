@@ -7,7 +7,7 @@ import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 @Configuration
 public class SchedulingConfig {
 
-    private static final String THREAD_NAME_PREFIX = "MPSchedulerThread-";
+    private static final String THREAD_NAME_PREFIX = "SC-Thread-";
 
     @Bean
     public ThreadPoolTaskScheduler taskScheduler() {
