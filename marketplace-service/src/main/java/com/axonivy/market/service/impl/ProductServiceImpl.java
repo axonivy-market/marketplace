@@ -387,7 +387,7 @@ public class ProductServiceImpl implements ProductService {
   private Date getPublishedDateFromLatestTag(GHTag lastTag) {
     try {
       return lastTag.getCommit().getCommitDate();
-    } catch (IOException e) {
+    } catch (Exception e) {
       log.error("Fail to get commit date ", e);
     }
     return null;
