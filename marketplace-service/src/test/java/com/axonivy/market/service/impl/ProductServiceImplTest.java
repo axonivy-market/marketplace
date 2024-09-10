@@ -146,13 +146,17 @@ class ProductServiceImplTest extends BaseSetup {
 
   @Test
   void testUpdateInstallationCountForProduct() {
-    int result = productService.updateInstallationCountForProduct(null);
+    String designerVersion = "10.0.20";
+    int result = productService.updateInstallationCountForProduct(null, designerVersion);
     assertEquals(0, result);
 
     Product product = mockProduct();
     when(productRepository.getProductById(product.getId())).thenReturn(product);
     when(productRepository.increaseInstallationCount(product.getId())).thenReturn(31);
-    result = productService.updateInstallationCountForProduct(product.getId());
+    result = productService.updateInstallationCountForProduct(product.getId(), designerVersion);
+    assertEquals(31, result);
+
+    result = productService.updateInstallationCountForProduct(product.getId(), "");
     assertEquals(31, result);
   }
 

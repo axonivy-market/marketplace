@@ -24,6 +24,7 @@ import { ItemDropdown } from '../../../shared/models/item-dropdown.model';
 import { ProductDetail } from '../../../shared/models/product-detail.model';
 import { ProductModuleContent } from '../../../shared/models/product-module-content.model';
 import { HasValueTabPipe } from '../../../shared/pipes/has-value-tab.pipe';
+import { MissingReadmeContentPipe } from '../../../shared/pipes/missing-readme-content.pipe';
 import { ProductTypeIconPipe } from '../../../shared/pipes/icon.pipe';
 import { MultilingualismPipe } from '../../../shared/pipes/multilingualism.pipe';
 import { ProductTypePipe } from '../../../shared/pipes/product-type.pipe';
@@ -69,6 +70,7 @@ const DEFAULT_ACTIVE_TAB = 'description';
     ProductInstallationCountActionComponent,
     ProductTypeIconPipe,
     HasValueTabPipe,
+    MissingReadmeContentPipe,
     CommonDropdownComponent
   ],
   providers: [ProductService, MarkdownService],
@@ -134,7 +136,6 @@ export class ProductDetailComponent {
       this.getProductById(productId).subscribe(productDetail => {
         this.productDetail.set(productDetail);
         this.productModuleContent.set(productDetail.productModuleContent);
-        this.selectedVersion = VERSION.displayPrefix.concat(this.convertTagToVersion((productDetail.productModuleContent.tag)));
         this.metaProductJsonUrl = productDetail.metaProductJsonUrl;
         this.detailTabsForDropdown = this.getNotEmptyTabs();
         this.productDetailService.productNames.set(productDetail.names);
@@ -158,12 +159,8 @@ export class ProductDetailComponent {
     if (this.isEmptyProductContent()) {
       return;
     }
-    this.selectedVersion = this.convertTagToVersion(
-      this.productModuleContent().tag
-    );
-    if (this.routingQueryParamService.isDesignerEnv()) {
-      this.selectedVersion = VERSION.displayPrefix.concat(this.selectedVersion);
-    }
+    this.selectedVersion = VERSION.displayPrefix.concat(
+      this.convertTagToVersion(this.productModuleContent().tag));
   }
 
   updateProductDetailActionType(productDetail: ProductDetail) {

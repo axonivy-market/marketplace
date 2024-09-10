@@ -2,8 +2,10 @@ package com.axonivy.market;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
+import com.axonivy.market.entity.ProductDesignerInstallation;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
@@ -40,5 +42,21 @@ public class BaseSetup {
     mockProduct.setMarketDirectory(SAMPLE_PRODUCT_ID);
     mockProducts.add(mockProduct);
     return new PageImpl<>(mockProducts);
+  }
+
+  protected List<ProductDesignerInstallation> createProductDesignerInstallationsMock() {
+    var mockProductDesignerInstallations = new ArrayList<ProductDesignerInstallation>();
+    ProductDesignerInstallation mockProductDesignerInstallation = new ProductDesignerInstallation();
+    mockProductDesignerInstallation.setProductId(SAMPLE_PRODUCT_ID);
+    mockProductDesignerInstallation.setDesignerVersion("10.0.22");
+    mockProductDesignerInstallation.setInstallationCount(50);
+    mockProductDesignerInstallations.add(mockProductDesignerInstallation);
+
+    mockProductDesignerInstallation = new ProductDesignerInstallation();
+    mockProductDesignerInstallation.setProductId(SAMPLE_PRODUCT_ID);
+    mockProductDesignerInstallation.setDesignerVersion("11.4.0");
+    mockProductDesignerInstallation.setInstallationCount(30);
+    mockProductDesignerInstallations.add(mockProductDesignerInstallation);
+    return mockProductDesignerInstallations;
   }
 }
