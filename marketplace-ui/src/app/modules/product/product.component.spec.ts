@@ -191,12 +191,21 @@ describe('ProductComponent', () => {
     expect(component.loadProductItems).not.toHaveBeenCalled();
   });
 
-  it('viewProductDetail should navigate', () => {
+  it('viewProductDetail should set window.location.href correctly', () => {
     const productId = 'jira-connector';
+
+    const originalWindowLocation = window.location;
+    console.log(window.location);
+
+    window.location = {
+      href: ''
+    } as any;
 
     component.viewProductDetail(productId, '');
 
-    expect(router.navigate).toHaveBeenCalledWith(['', productId]);
+    expect(window.location.href).toHaveBeenCalledWith(`/${productId}`);
+
+    window.location = originalWindowLocation;
   });
 
   it('should set isRESTClient true based on query params and designer environment', () => {
