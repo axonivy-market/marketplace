@@ -105,7 +105,6 @@ export class ProductDetailComponent {
     this.languageService.selectedLanguage();
     return this.getDisplayedTabsSignal();
   });
-  selectedTabLabelSignal: WritableSignal<string> = signal('');
   isDropdownOpen: WritableSignal<boolean> = signal(false);
   isTabDropdownShown: WritableSignal<boolean> = signal(false);
   selectedVersion = '';
@@ -131,6 +130,11 @@ export class ProductDetailComponent {
   }
 
   ngOnInit(): void {
+    this.router.navigate([], {
+      relativeTo: this.route,
+      replaceUrl: true
+    });
+
     const productId = this.route.snapshot.params['id'];
     this.productDetailService.productId.set(productId);
     if (productId) {
@@ -141,26 +145,12 @@ export class ProductDetailComponent {
         this.productDetailService.productNames.set(productDetail.names);
         this.installationCount = productDetail.installationCount;
         this.handleProductContentVersion();
-        this.getActiveTabFromLocalStorage(productDetail.id);
-        this.selectedTabLabelSignal.set(
-          CommonUtils.getLabel(this.activeTab, PRODUCT_DETAIL_TABS)
-        );
       });
 
       this.productFeedbackService.initFeedbacks();
       this.productStarRatingService.fetchData();
     }
     this.updateDropdownSelection();
-  }
-
-  getActiveTabFromLocalStorage(id: string) {
-    const savedTab = localStorage.getItem(STORAGE_ITEM);
-    if (savedTab) {
-      const parsedSavedTab = JSON.parse(savedTab);
-      if (parsedSavedTab.productId === this.productDetail().id) {
-        this.activeTab = parsedSavedTab.savedActiveTab;
-      }
-    }
   }
 
   handleProductContentVersion() {
@@ -254,11 +244,12 @@ export class ProductDetailComponent {
 
   onTabChange(event: string) {
     this.setActiveTab(event);
-    this.selectedTabLabelSignal.set(
-      CommonUtils.getLabel(this.activeTab, PRODUCT_DETAIL_TABS)
-    );
     this.isTabDropdownShown.update(value => !value);
     this.onTabDropdownShown();
+  }
+
+  getSelectedTabLabel() {
+    return CommonUtils.getLabel(this.activeTab, PRODUCT_DETAIL_TABS);
   }
 
   updateDropdownSelection() {
@@ -359,7 +350,6 @@ export class ProductDetailComponent {
         this.activeTab = displayedTabs[0].value;
       }
     }
-    this.getActiveTabFromLocalStorage(this.productDetail().id);
     return displayedTabs;
   }
 

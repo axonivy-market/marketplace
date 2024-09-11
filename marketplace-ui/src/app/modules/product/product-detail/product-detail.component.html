@@ -116,7 +116,7 @@
               <div id="tab-group-dropdown" class="flex-grow-1 w-100">
                 <app-common-dropdown
                   [items]="displayedTabsSignal()"
-                  [selectedItem]="selectedTabLabelSignal() | translate"
+                  [selectedItem]="getSelectedTabLabel() | translate"
                   buttonClass="form-select flex-grow-1 text-start"
                   (itemSelected)="
                     onTabChange($event.value)
