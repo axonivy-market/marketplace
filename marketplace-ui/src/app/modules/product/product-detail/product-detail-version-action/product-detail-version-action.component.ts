@@ -134,7 +134,7 @@ export class ProductDetailVersionActionComponent implements AfterViewInit {
     event.preventDefault();
     this.isDevVersionsDisplayed.update(oldValue => !oldValue);
     this.cookieService.set(this.SHOW_DEV_VERSION_COOKIE_NAME, this.isDevVersionsDisplayed().toString());
-    this.getVersionWithArtifact();
+    this.getVersionWithArtifact(true);
   }
 
   onShowVersionAndArtifact() {
@@ -144,7 +144,7 @@ export class ProductDetailVersionActionComponent implements AfterViewInit {
     this.isDropDownDisplayed.set(!this.isDropDownDisplayed());
   }
 
-  getVersionWithArtifact() {
+  getVersionWithArtifact(ignoreRouteVersion = false) {
     this.isArtifactLoading.set(true);
     this.sanitizeDataBeforeFetching();
     this.productService
@@ -166,15 +166,16 @@ export class ProductDetailVersionActionComponent implements AfterViewInit {
           }
         });
         if (this.versions().length !== 0) {
-          this.onSelectVersion(this.getVersionFromRoute() ?? this.versions()[0]);
-          // this.artifacts.set(this.versionMap.get(this.selectedVersion()) ?? []);
-          // this.updateSelectedArtifact();
+          this.onSelectVersion(this.getVersionFromRoute(ignoreRouteVersion) ?? this.versions()[0]);
         }
         this.isArtifactLoading.set(false);
       });
   }
 
-  getVersionFromRoute(): string | null {
+  getVersionFromRoute(ignoreRouteVersion: boolean): string | null {
+    if (ignoreRouteVersion) {
+      return null;
+    }
     return this.route.snapshot.queryParams[this.VERSION_PARAM] || null;
   }
 
