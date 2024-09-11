@@ -88,6 +88,7 @@ class ProductServiceImplTest extends BaseSetup {
   private static final String SHA1_SAMPLE = "35baa89091b2452b77705da227f1a964ecabc6c8";
   public static final String RELEASE_TAG = "v10.0.2";
   private static final String INSTALLATION_FILE_PATH = "src/test/resources/installationCount.json";
+  private static final String EMPTY_SOURCE_URL_META_JSON_FILE = "/emptySourceUrlMeta.json";
 
   private String keyword;
   private String language;
@@ -121,7 +122,10 @@ class ProductServiceImplTest extends BaseSetup {
   ArgumentCaptor<Product> argumentCaptor = ArgumentCaptor.forClass(Product.class);
 
   @Captor
-  ArgumentCaptor<ArrayList<ProductModuleContent>> argumentCaptorProductModuleContent;
+  ArgumentCaptor<ArrayList<ProductModuleContent>> argumentCaptorProductModuleContents;
+
+  @Captor
+  ArgumentCaptor<ProductModuleContent> argumentCaptorProductModuleContent;
 
   @Mock
   private GHAxonIvyProductRepoService ghAxonIvyProductRepoService;
@@ -335,11 +339,31 @@ class ProductServiceImplTest extends BaseSetup {
 
     // Executes
     productService.syncLatestDataFromMarketRepo();
-    verify(productModuleContentRepository).saveAll(argumentCaptorProductModuleContent.capture());
+    verify(productModuleContentRepository).saveAll(argumentCaptorProductModuleContents.capture());
     verify(productRepository).save(argumentCaptor.capture());
 
-    assertThat(argumentCaptorProductModuleContent.getValue()).usingRecursiveComparison()
+    assertThat(argumentCaptorProductModuleContents.getValue()).usingRecursiveComparison()
         .isEqualTo(List.of(mockReadmeProductContent()));
+  }
+
+  @Test
+  void testSyncProductsFirstTimeWithOutSourceUrl() throws IOException {
+    var mockCommit = mockGHCommitHasSHA1(SHA1_SAMPLE);
+    when(marketRepoService.getLastCommit(anyLong())).thenReturn(mockCommit);
+    when(repoMetaRepository.findByRepoName(anyString())).thenReturn(null);
+
+    var mockContent = mockGHContentAsMetaJSON();
+    InputStream inputStream = this.getClass().getResourceAsStream(EMPTY_SOURCE_URL_META_JSON_FILE);
+    when(mockContent.read()).thenReturn(inputStream);
+
+    Map<String, List<GHContent>> mockGHContentMap = new HashMap<>();
+    mockGHContentMap.put(SAMPLE_PRODUCT_ID, List.of(mockContent));
+    when(marketRepoService.fetchAllMarketItems()).thenReturn(mockGHContentMap);
+
+    // Executes
+    productService.syncLatestDataFromMarketRepo();
+    verify(productModuleContentRepository).save(argumentCaptorProductModuleContent.capture());
+    assertEquals("1.0", argumentCaptorProductModuleContent.getValue().getTag());
   }
 
   @Test
@@ -356,10 +380,10 @@ class ProductServiceImplTest extends BaseSetup {
 
     GHTag mockTag = mock(GHTag.class);
     when(mockTag.getName()).thenReturn("v10.0.2");
-    when(mockTag.getCommit()).thenReturn(mockGHCommit);
 
     GHTag mockTag2 = mock(GHTag.class);
     when(mockTag2.getName()).thenReturn("v10.0.3");
+    when(mockTag2.getCommit()).thenReturn(mockGHCommit);
 
     when(mockGHCommit.getCommitDate()).thenReturn(new Date());
     when(gitHubService.getRepositoryTags(anyString())).thenReturn(Arrays.asList(mockTag, mockTag2));
@@ -375,7 +399,7 @@ class ProductServiceImplTest extends BaseSetup {
     // Executes
     productService.syncLatestDataFromMarketRepo();
 
-    verify(productModuleContentRepository).saveAll(argumentCaptorProductModuleContent.capture());
+    verify(productModuleContentRepository).saveAll(argumentCaptorProductModuleContents.capture());
     verify(productRepository).save(argumentCaptor.capture());
     assertThat(argumentCaptor.getValue().getProductModuleContent()).usingRecursiveComparison()
         .isEqualTo(mockReadmeProductContent());
