@@ -11,13 +11,9 @@ import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.security.SecureRandom;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
+import java.util.*;
 
+import com.axonivy.market.comparator.MavenVersionComparator;
 import com.axonivy.market.util.VersionUtils;
 import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.ObjectUtils;
@@ -375,14 +371,11 @@ public class ProductServiceImpl implements ProductService {
   private void updateProductFromReleaseTags(Product product, GHRepository productRepo) {
     List<ProductModuleContent> productModuleContents = new ArrayList<>();
     List<GHTag> ghTags = getProductReleaseTags(product);
-    GHTag lastTag = CollectionUtils.firstElement(ghTags);
-
+    GHTag lastTag = MavenVersionComparator.findHighestTag(ghTags);
     if (lastTag == null || lastTag.getName().equals(product.getNewestReleaseVersion())) {
       return;
     }
-
-    getPublishedDateFromLatestTag(product,
-        lastTag);
+    product.setNewestPublishedDate(getPublishedDateFromLatestTag(lastTag));
     product.setNewestReleaseVersion(lastTag.getName());
 
     if (!CollectionUtils.isEmpty(product.getReleasedVersions())) {
@@ -407,12 +400,13 @@ public class ProductServiceImpl implements ProductService {
     }
   }
 
-  private void getPublishedDateFromLatestTag(Product product, GHTag lastTag) {
+  private Date getPublishedDateFromLatestTag(GHTag lastTag) {
     try {
-      product.setNewestPublishedDate(lastTag.getCommit().getCommitDate());
-    } catch (IOException e) {
+      return lastTag.getCommit().getCommitDate();
+    } catch (Exception e) {
       log.error("Fail to get commit date ", e);
     }
+    return null;
   }
 
   private void updateProductCompatibility(Product product) {
@@ -427,13 +421,12 @@ public class ProductServiceImpl implements ProductService {
   }
 
   private List<GHTag> getProductReleaseTags(Product product) {
-    List<GHTag> tags = new ArrayList<>();
     try {
-      tags = gitHubService.getRepositoryTags(product.getRepositoryName());
+      return gitHubService.getRepositoryTags(product.getRepositoryName());
     } catch (IOException e) {
       log.error("Cannot get tag list of product ", e);
     }
-    return tags;
+    return List.of();
   }
 
   // Cover 3 cases after removing non-numeric characters (8, 11.1 and 10.0.2)
