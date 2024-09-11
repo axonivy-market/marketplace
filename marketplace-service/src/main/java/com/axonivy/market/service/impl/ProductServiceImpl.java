@@ -1,5 +1,6 @@
 package com.axonivy.market.service.impl;
 
+import com.axonivy.market.comparator.MavenVersionComparator;
 import com.axonivy.market.constants.CommonConstants;
 import com.axonivy.market.constants.GitHubConstants;
 import com.axonivy.market.constants.ProductJsonConstants;
@@ -61,7 +62,7 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.security.SecureRandom;
 import java.util.ArrayList;
-import java.util.Comparator;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -73,6 +74,8 @@ import static com.axonivy.market.enums.DocumentField.MARKET_DIRECTORY;
 import static com.axonivy.market.enums.DocumentField.SHORT_DESCRIPTIONS;
 import static java.util.Optional.ofNullable;
 import static org.apache.commons.lang3.StringUtils.EMPTY;
+
+
 
 @Log4j2
 @Service
@@ -100,6 +103,7 @@ public class ProductServiceImpl implements ProductService {
   private String marketRepoBranch;
 
   public static final String NON_NUMERIC_CHAR = "[^0-9.]";
+  private static final String INITIAL_VERSION = "1.0";
   private final SecureRandom random = new SecureRandom();
 
   public ProductServiceImpl(ProductRepository productRepository,
@@ -352,6 +356,8 @@ public class ProductServiceImpl implements ProductService {
       if (StringUtils.isNotBlank(product.getRepositoryName())) {
         updateProductCompatibility(product);
         getProductContents(product);
+      } else {
+        updateProductContentForNonStandardProduct(ghContentEntity, product);
       }
       productRepository.save(product);
     });
@@ -381,6 +387,16 @@ public class ProductServiceImpl implements ProductService {
   }
 
 
+  private void updateProductContentForNonStandardProduct(Map.Entry<String, List<GHContent>> ghContentEntity, Product product) {
+    ProductModuleContent initialContent = new ProductModuleContent();
+    initialContent.setTag(INITIAL_VERSION);
+    initialContent.setProductId(product.getId());
+    product.setReleasedVersions(List.of(INITIAL_VERSION));
+    product.setNewestReleaseVersion(INITIAL_VERSION);
+    axonIvyProductRepoService.extractReadMeFileFromContents(product, ghContentEntity.getValue(), initialContent);
+    productModuleContentRepository.save(initialContent);
+  }
+
   private void getProductContents(Product product) {
     try {
       GHRepository productRepo = gitHubService.getRepository(product.getRepositoryName());
@@ -393,14 +409,11 @@ public class ProductServiceImpl implements ProductService {
   private void updateProductFromReleaseTags(Product product, GHRepository productRepo) {
     List<ProductModuleContent> productModuleContents = new ArrayList<>();
     List<GHTag> ghTags = getProductReleaseTags(product);
-    GHTag lastTag = CollectionUtils.firstElement(ghTags);
-
+    GHTag lastTag = MavenVersionComparator.findHighestTag(ghTags);
     if (lastTag == null || lastTag.getName().equals(product.getNewestReleaseVersion())) {
       return;
     }
-
-    getPublishedDateFromLatestTag(product,
-        lastTag);
+    product.setNewestPublishedDate(getPublishedDateFromLatestTag(lastTag));
     product.setNewestReleaseVersion(lastTag.getName());
 
     if (!CollectionUtils.isEmpty(product.getReleasedVersions())) {
@@ -425,35 +438,33 @@ public class ProductServiceImpl implements ProductService {
     }
   }
 
-  private void getPublishedDateFromLatestTag(Product product, GHTag lastTag) {
+  private Date getPublishedDateFromLatestTag(GHTag lastTag) {
     try {
-      product.setNewestPublishedDate(lastTag.getCommit().getCommitDate());
-    } catch (IOException e) {
+      return lastTag.getCommit().getCommitDate();
+    } catch (Exception e) {
       log.error("Fail to get commit date ", e);
     }
+    return null;
   }
 
   private void updateProductCompatibility(Product product) {
     if (StringUtils.isNotBlank(product.getCompatibility())) {
       return;
     }
-    String oldestTag =
-        getProductReleaseTags(product).stream().map(tag -> tag.getName().replaceAll(NON_NUMERIC_CHAR, Strings.EMPTY))
-            .distinct().sorted(Comparator.reverseOrder()).reduce((tag1, tag2) -> tag2).orElse(null);
-    if (oldestTag != null) {
-      String compatibility = getCompatibilityFromOldestTag(oldestTag);
+    String oldestVersion = VersionUtils.getOldestVersion(getProductReleaseTags(product));
+    if (oldestVersion != null) {
+      String compatibility = getCompatibilityFromOldestTag(oldestVersion);
       product.setCompatibility(compatibility);
     }
   }
 
   private List<GHTag> getProductReleaseTags(Product product) {
-    List<GHTag> tags = new ArrayList<>();
     try {
-      tags = gitHubService.getRepositoryTags(product.getRepositoryName());
+      return gitHubService.getRepositoryTags(product.getRepositoryName());
     } catch (IOException e) {
       log.error("Cannot get tag list of product ", e);
     }
-    return tags;
+    return List.of();
   }
 
   // Cover 3 cases after removing non-numeric characters (8, 11.1 and 10.0.2)

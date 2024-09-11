@@ -9,8 +9,8 @@
   <div class="dropdown-menu menu-bar" [class.show]="isDropdownOpen">
     @for (item of items; track $index) {
       <div class="dropdown-item item-bar text-primary" (click)="onSelect(item)"
-           [attr.metaDataJsonUrl]="item.metaDataJsonUrl"
-           [ngClass]="{'active': isActiveItem(item , selectedItem)}">
+          [attr.metaDataJsonUrl]="item.metaDataJsonUrl"
+          [ngClass]="{'active': (item | activeItemPipe : selectedItem)}">
         {{ item.label | translate }}
       </div>
     }
