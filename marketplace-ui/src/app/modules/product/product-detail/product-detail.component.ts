@@ -366,7 +366,8 @@ export class ProductDetailComponent {
   }
 
   getProductModuleContentValue(key: ItemDropdown): DisplayValue | null {
-    const value = key.value as  'description' | 'demo' | 'setup'
+    type tabName = 'description' | 'demo' | 'setup';
+    const value = key.value as tabName;
     return this.productModuleContent()[value];
   }
 }

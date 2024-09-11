@@ -122,9 +122,8 @@
                   [items]="displayedTabsSignal()"
                   [selectedItem]="getSelectedTabLabel() | translate"
                   buttonClass="form-select flex-grow-1 text-start"
-                  (itemSelected)="
-                    onTabChange($event.value)
-                  "></app-common-dropdown>
+                  (itemSelected)="onTabChange($event.value)">
+                </app-common-dropdown>
               </div>
 
               <button
@@ -165,9 +164,8 @@
                 @if (displayedTab.value === 'dependency') {
                   <app-product-detail-maven-content
                     [productModuleContent]="productModuleContent()"
-                    [selectedVersion]="
-                      selectedVersion
-                    "></app-product-detail-maven-content>
+                    [selectedVersion]="selectedVersion">
+                  </app-product-detail-maven-content>
                 } @else {
                   <markdown
                     [lang]="languageService.selectedLanguage()"
