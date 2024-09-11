@@ -24,6 +24,7 @@ import { ItemDropdown } from '../../../shared/models/item-dropdown.model';
 import { ProductDetail } from '../../../shared/models/product-detail.model';
 import { ProductModuleContent } from '../../../shared/models/product-module-content.model';
 import { HasValueTabPipe } from '../../../shared/pipes/has-value-tab.pipe';
+import { MissingReadmeContentPipe } from '../../../shared/pipes/missing-readme-content.pipe';
 import { ProductTypeIconPipe } from '../../../shared/pipes/icon.pipe';
 import { MultilingualismPipe } from '../../../shared/pipes/multilingualism.pipe';
 import { ProductTypePipe } from '../../../shared/pipes/product-type.pipe';
@@ -34,6 +35,7 @@ import { ProductService } from '../product.service';
 import { ProductDetailFeedbackComponent } from './product-detail-feedback/product-detail-feedback.component';
 import { ProductFeedbackService } from './product-detail-feedback/product-feedbacks-panel/product-feedback.service';
 import { ProductStarRatingService } from './product-detail-feedback/product-star-rating-panel/product-star-rating.service';
+import { ProductDetailActionType } from '../../../shared/enums/product-detail-action-type';
 import { ProductDetailInformationTabComponent } from './product-detail-information-tab/product-detail-information-tab.component';
 import { ProductDetailMavenContentComponent } from './product-detail-maven-content/product-detail-maven-content.component';
 import { ProductDetailVersionActionComponent } from './product-detail-version-action/product-detail-version-action.component';
@@ -68,6 +70,7 @@ const DEFAULT_ACTIVE_TAB = 'description';
     ProductInstallationCountActionComponent,
     ProductTypeIconPipe,
     HasValueTabPipe,
+    MissingReadmeContentPipe,
     CommonDropdownComponent
   ],
   providers: [ProductService, MarkdownService],
@@ -94,6 +97,7 @@ export class ProductDetailComponent {
   productModuleContent: WritableSignal<ProductModuleContent> = signal(
     {} as ProductModuleContent
   );
+  productDetailActionType = signal(ProductDetailActionType.STANDARD);
   detailContent!: DetailTab;
   detailTabs = PRODUCT_DETAIL_TABS;
   activeTab = DEFAULT_ACTIVE_TAB;
@@ -132,13 +136,13 @@ export class ProductDetailComponent {
       this.getProductById(productId).subscribe(productDetail => {
         this.productDetail.set(productDetail);
         this.productModuleContent.set(productDetail.productModuleContent);
-        this.selectedVersion = VERSION.displayPrefix.concat(this.convertTagToVersion((productDetail.productModuleContent.tag)));
         this.metaProductJsonUrl = productDetail.metaProductJsonUrl;
         this.detailTabsForDropdown = this.getNotEmptyTabs();
         this.productDetailService.productNames.set(productDetail.names);
         localStorage.removeItem(STORAGE_ITEM);
         this.installationCount = productDetail.installationCount;
         this.handleProductContentVersion();
+        this.updateProductDetailActionType(productDetail);
       });
       this.productFeedbackService.initFeedbacks();
       this.productStarRatingService.fetchData();
@@ -155,11 +159,17 @@ export class ProductDetailComponent {
     if (this.isEmptyProductContent()) {
       return;
     }
-    this.selectedVersion = this.convertTagToVersion(
-      this.productModuleContent().tag
-    );
-    if (this.routingQueryParamService.isDesignerEnv()) {
-      this.selectedVersion = VERSION.displayPrefix.concat(this.selectedVersion);
+    this.selectedVersion = VERSION.displayPrefix.concat(
+      this.convertTagToVersion(this.productModuleContent().tag));
+  }
+
+  updateProductDetailActionType(productDetail: ProductDetail) {
+    if (productDetail?.sourceUrl === undefined) {
+      this.productDetailActionType.set(ProductDetailActionType.CUSTOM_SOLUTION);
+    } else if (this.routingQueryParamService.isDesignerEnv()) {
+      this.productDetailActionType.set(ProductDetailActionType.DESIGNER_ENV);
+    } else {
+      this.productDetailActionType.set(ProductDetailActionType.STANDARD)
     }
   }
 

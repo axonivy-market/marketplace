@@ -27,6 +27,7 @@ import { ProductDetailComponent } from './product-detail.component';
 import { ProductModuleContent } from '../../../shared/models/product-module-content.model';
 import { RoutingQueryParamService } from '../../../shared/services/routing.query.param.service';
 import { MockProductService } from '../../../shared/mocks/mock-services';
+import { ProductDetailActionType } from '../../../shared/enums/product-detail-action-type';
 const products = MOCK_PRODUCTS._embedded.products;
 declare const viewport: Viewport;
 
@@ -91,7 +92,7 @@ describe('ProductDetailComponent', () => {
   });
 
   it('version should display in number', () => {
-    expect(component.selectedVersion).toEqual('10.0.0');
+    expect(component.selectedVersion).toEqual('Version 10.0.0');
   });
 
   it('should get corresponding version from cookie', () => {
@@ -278,5 +279,40 @@ describe('ProductDetailComponent', () => {
     routingQueryParamService.isDesignerEnv.and.returnValue(true);
     component.handleProductContentVersion();
     expect(component.selectedVersion).toEqual('Version 10.0.11');
+  });
+
+  it('should return DESIGNER_ENV as acction type in Designer Env', () => {
+    routingQueryParamService.isDesignerEnv.and.returnValue(true);
+
+    component.updateProductDetailActionType({ sourceUrl: 'some-url'} as any);
+    expect(component.productDetailActionType()).toBe(
+      ProductDetailActionType.DESIGNER_ENV
+    );
+  });
+
+  it('should return CUSTOM_SOLUTION as acction type when productDetail.sourceUrl is undefined', () => {
+    routingQueryParamService.isDesignerEnv.and.returnValue(false);
+
+    component.updateProductDetailActionType({ sourceUrl: undefined } as any);
+
+    expect(component.productDetailActionType()).toBe(
+      ProductDetailActionType.CUSTOM_SOLUTION
+    );
+    fixture.detectChanges();
+    let installationCount = fixture.debugElement.query(
+      By.css('#app-product-installation-count-action')
+    );
+    expect(installationCount).toBeFalsy();
+
+  });
+
+  it('should return STANDARD as acction type when when productDetail.sourceUrl is defined', () => {
+    routingQueryParamService.isDesignerEnv.and.returnValue(false);
+
+    component.updateProductDetailActionType({ sourceUrl: 'some-url' } as any);
+
+    expect(component.productDetailActionType()).toBe(
+      ProductDetailActionType.STANDARD
+    );
   });
 });

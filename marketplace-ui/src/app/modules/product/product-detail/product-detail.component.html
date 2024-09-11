@@ -45,8 +45,11 @@
                 [isShowRateLink]="false"
                 [isShowTotalRatingNumber]="false" />
             </div>
-            <app-product-installation-count-action
-              [currentInstallationCount]="installationCount" />
+            @if(productDetailActionType() !== 'customSolution') {
+              <app-product-installation-count-action
+                id="app-product-installation-count-action"
+                [currentInstallationCount]="installationCount" />
+            }
             <div
               class="analysis-container d-flex flex-column align-items-start p-0">
               <h4
@@ -72,7 +75,7 @@
               [(selectedVersion)]="selectedVersion!"
               [(metaDataJsonUrl)]="metaProductJsonUrl!"
               [productId]="productDetail().id"
-              [product]="productDetail()"
+              [actionType]="productDetailActionType()"
               (selectedVersionChange)="
                 loadDetailTabs($event)
               "></app-product-version-action>
@@ -153,7 +156,7 @@
           </div>
         </div>
         <div class="tab-content col-12 default-cursor">
-          @if (!isEmptyProductContent()) {
+          @if (!(productModuleContent() | missingReadmeContent)) {
             <div
               class="tab-pane fade show"
               [class.active]="activeTab === 'description'"
