@@ -14,4 +14,6 @@ public class CommonConstants {
   public static final String SPACE_SEPARATOR = " ";
   public static final String BEARER = "Bearer";
   public static final String DIGIT_REGEX = "([0-9]+.*)";
+  public static final String ERROR = "error";
+  public static final String MESSAGE = "message";
 }

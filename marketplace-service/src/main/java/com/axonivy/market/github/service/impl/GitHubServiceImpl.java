@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
+import com.axonivy.market.constants.ErrorMessageConstants;
 import org.kohsuke.github.GHContent;
 import org.kohsuke.github.GHOrganization;
 import org.kohsuke.github.GHRepository;
@@ -109,7 +110,8 @@ public class GitHubServiceImpl implements GitHubService {
     GitHubAccessTokenResponse response = responseEntity.getBody();
 
     if (response != null && response.getError() != null && !response.getError().isBlank()) {
-      throw new Oauth2ExchangeCodeException(response.getError(), response.getErrorDescription());
+      String errorDescription = buildErrorDescription(response.getErrorDescription(), gitHubProperty.getOauth2ClientId());
+      throw new Oauth2ExchangeCodeException(response.getError(), errorDescription);
     }
 
     return response;
@@ -178,5 +180,9 @@ public class GitHubServiceImpl implements GitHubService {
           ErrorCode.GITHUB_USER_UNAUTHORIZED.getHelpText() + "-" + GitHubUtils.extractMessageFromExceptionMessage(
               exception.getMessage()));
     }
+  }
+
+  private String buildErrorDescription(String errorDescription, String clientId) {
+    return String.format(ErrorMessageConstants.WRONG_AUTHORIZED_CODE_ERROR_MESSAGE, errorDescription, clientId);
   }
 }
