@@ -40,9 +40,6 @@ public class ProductFactory {
     if (StringUtils.endsWith(contentName, META_FILE)) {
       mappingByMetaJSONFile(product, content);
     }
-    if (StringUtils.endsWith(contentName, LOGO_FILE)) {
-      product.setLogoUrl(GitHubUtils.getDownloadUrl(content));
-    }
     return product;
   }
 

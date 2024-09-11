@@ -131,6 +131,7 @@ export class ProductDetailComponent {
     if (productId) {
       this.getProductById(productId).subscribe(productDetail => {
         this.productDetail.set(productDetail);
+        this.productDetail().logoUrl = `http://localhost:8080/api/product-details/amazon-comprehend/?isLogo=true`
         this.productModuleContent.set(productDetail.productModuleContent);
         this.selectedVersion = VERSION.displayPrefix.concat(this.convertTagToVersion((productDetail.productModuleContent.tag)));
         this.metaProductJsonUrl = productDetail.metaProductJsonUrl;

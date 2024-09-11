@@ -25,4 +25,6 @@ public interface ProductService {
 
   Product fetchProductDetailByIdAndVersion(String id, String version);
 
+  byte[] readImageFromLogoUrl(String productId, boolean isLogo);
+
 }

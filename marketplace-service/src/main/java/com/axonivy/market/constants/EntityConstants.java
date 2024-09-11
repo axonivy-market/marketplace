@@ -14,4 +14,6 @@ public class EntityConstants {
   public static final String PRODUCT_CUSTOM_SORT = "ProductCustomSort";
   public static final String PRODUCT_JSON_CONTENT = "ProductJsonContent";
   public static final String PRODUCT_MODULE_CONTENT = "ProductModuleContent";
+
+  public static final String IMAGE = "Image";
 }

@@ -5,6 +5,7 @@ import com.axonivy.market.constants.GitHubConstants;
 import com.axonivy.market.constants.ProductJsonConstants;
 import com.axonivy.market.criteria.ProductSearchCriteria;
 import com.axonivy.market.entity.GitHubRepoMeta;
+import com.axonivy.market.entity.Image;
 import com.axonivy.market.entity.Product;
 import com.axonivy.market.entity.ProductCustomSort;
 import com.axonivy.market.entity.ProductModuleContent;
@@ -22,6 +23,7 @@ import com.axonivy.market.github.service.GitHubService;
 import com.axonivy.market.github.util.GitHubUtils;
 import com.axonivy.market.model.ProductCustomSortRequest;
 import com.axonivy.market.repository.GitHubRepoMetaRepository;
+import com.axonivy.market.repository.ImageRepository;
 import com.axonivy.market.repository.ProductCustomSortRepository;
 import com.axonivy.market.repository.ProductModuleContentRepository;
 import com.axonivy.market.repository.ProductRepository;
@@ -30,10 +32,12 @@ import com.axonivy.market.util.VersionUtils;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.log4j.Log4j2;
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.util.Strings;
+import org.bson.types.Binary;
 import org.kohsuke.github.GHCommit;
 import org.kohsuke.github.GHContent;
 import org.kohsuke.github.GHRepository;
@@ -51,6 +55,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Paths;
@@ -63,6 +68,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 
+import static com.axonivy.market.constants.CommonConstants.LOGO_FILE;
 import static com.axonivy.market.enums.DocumentField.MARKET_DIRECTORY;
 import static com.axonivy.market.enums.DocumentField.SHORT_DESCRIPTIONS;
 import static java.util.Optional.ofNullable;
@@ -80,6 +86,7 @@ public class ProductServiceImpl implements ProductService {
   private final GitHubService gitHubService;
   private final ProductCustomSortRepository productCustomSortRepository;
 
+  private final ImageRepository imageRepository;
   private final MongoTemplate mongoTemplate;
 
   private GHCommit lastGHCommit;
@@ -100,7 +107,7 @@ public class ProductServiceImpl implements ProductService {
       GHAxonIvyMarketRepoService axonIvyMarketRepoService,
       GHAxonIvyProductRepoService axonIvyProductRepoService, GitHubRepoMetaRepository gitHubRepoMetaRepository,
       GitHubService gitHubService, ProductCustomSortRepository productCustomSortRepository,
-      MongoTemplate mongoTemplate) {
+      ImageRepository imageRepository, MongoTemplate mongoTemplate) {
     this.productRepository = productRepository;
     this.productModuleContentRepository = productModuleContentRepository;
     this.axonIvyMarketRepoService = axonIvyMarketRepoService;
@@ -108,6 +115,7 @@ public class ProductServiceImpl implements ProductService {
     this.gitHubRepoMetaRepository = gitHubRepoMetaRepository;
     this.gitHubService = gitHubService;
     this.productCustomSortRepository = productCustomSortRepository;
+    this.imageRepository = imageRepository;
     this.mongoTemplate = mongoTemplate;
   }
 
@@ -338,6 +346,7 @@ public class ProductServiceImpl implements ProductService {
     gitHubContentMap.entrySet().forEach(ghContentEntity -> {
       Product product = new Product();
       for (var content : ghContentEntity.getValue()) {
+        mappingLogoFromGHContent(product,content);
         ProductFactory.mappingByGHContent(product, content);
       }
       if (StringUtils.isNotBlank(product.getRepositoryName())) {
@@ -347,6 +356,30 @@ public class ProductServiceImpl implements ProductService {
       productRepository.save(product);
     });
   }
+
+  private void mappingLogoFromGHContent(Product product, GHContent ghContent) {
+    if (StringUtils.endsWith(ghContent.getName(), LOGO_FILE)) {
+      Image image = new Image();
+      image.setProductId(product.getId());
+      image.setLogo(true);
+      image.setLogoUrl(GitHubUtils.getDownloadUrl(ghContent));
+      image.setImageData(getProductLogo(ghContent));
+      imageRepository.save(image);
+    }
+  }
+
+  public static Binary getProductLogo(GHContent ghContent) {
+    try {
+      InputStream contentStream = ghContent.read();
+      byte[] sourceBytes = IOUtils.toByteArray(contentStream);
+      return new Binary(sourceBytes);
+    } catch (Exception exception) {
+      log.error(exception.getMessage());
+      log.error("Cannot get content of product logo {} ", ghContent.getName());
+      return null;
+    }
+  }
+
 
   private void getProductContents(Product product) {
     try {
@@ -472,6 +505,12 @@ public class ProductServiceImpl implements ProductService {
   @Override
   public Product fetchProductDetailByIdAndVersion(String id, String version) {
     return productRepository.getProductByIdAndTag(id, VersionUtils.convertVersionToTag(id, version));
+  }
+
+  @Override
+  public byte[] readImageFromLogoUrl(String productId , boolean isLogo) {
+    Image image = imageRepository.findByProductId(productId);
+    return image.getImageData().getData();
   }
 
   @Override

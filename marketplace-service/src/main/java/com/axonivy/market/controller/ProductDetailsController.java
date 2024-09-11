@@ -46,6 +46,7 @@ public class ProductDetailsController {
   private final ProductService productService;
   private final ProductDetailModelAssembler detailModelAssembler;
 
+
   public ProductDetailsController(VersionService versionService, ProductService productService,
                                   ProductDetailModelAssembler detailModelAssembler) {
     this.versionService = versionService;
@@ -112,6 +113,13 @@ public class ProductDetailsController {
   public ResponseEntity<List<VersionAndUrlModel>> findVersionsForDesigner(@PathVariable(ID) String id) {
     List<VersionAndUrlModel> versionList = versionService.getVersionsForDesigner(id);
     return new ResponseEntity<>(versionList, HttpStatus.OK);
+  }
+
+  @GetMapping("/{productId}/")
+  public ResponseEntity<byte[]> getImageFromProductAndIsLogo(@PathVariable(PRODUCT_ID) String productId,
+      @RequestParam(name = "isLogo", required = false) boolean isLogo) {
+    byte[] imageData = productService.readImageFromLogoUrl(productId, isLogo);
+    return new ResponseEntity<>(imageData, HttpStatus.OK);
   }
 
 }
