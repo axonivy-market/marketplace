@@ -214,13 +214,14 @@ describe('ProductService', () => {
   });
 
   it('sendRequestToUpdateInstallationCount', () => {
-    const productId = 'google-maps-connector';
+    const productId = "google-maps-connector";
+    const designerVersion = "10.0.0";
 
-    service.sendRequestToUpdateInstallationCount(productId).subscribe(response => {
+    service.sendRequestToUpdateInstallationCount(productId, designerVersion).subscribe(response => {
       expect(response).toBe(3);
     });
 
-    const req = httpMock.expectOne(`api/product-details/installationcount/${productId}`);
+    const req = httpMock.expectOne(`api/product-details/installationcount/${productId}?designerVersion=${designerVersion}`);
     expect(req.request.method).toBe('PUT');
     expect(req.request.headers.get('X-Requested-By')).toBe('ivy');
     req.flush(3);
@@ -241,4 +242,5 @@ describe('ProductService', () => {
     expect(req.request.headers.get('X-Requested-By')).toBe('ivy');
     req.flush([{ version: '10.0.2' }, {version: '10.0.1'}, {version: '10.0.0'}]);
   });
+
 });

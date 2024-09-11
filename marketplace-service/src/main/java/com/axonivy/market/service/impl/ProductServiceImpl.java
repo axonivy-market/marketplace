@@ -12,12 +12,12 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.security.SecureRandom;
 import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+
 import com.axonivy.market.util.VersionUtils;
 import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.ObjectUtils;
@@ -62,18 +62,20 @@ import com.axonivy.market.github.util.GitHubUtils;
 import com.axonivy.market.model.ProductCustomSortRequest;
 import com.axonivy.market.repository.GitHubRepoMetaRepository;
 import com.axonivy.market.repository.ProductCustomSortRepository;
+import com.axonivy.market.repository.ProductModuleContentRepository;
 import com.axonivy.market.repository.ProductRepository;
 import com.axonivy.market.service.ProductService;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-
 import lombok.extern.log4j.Log4j2;
+
 
 @Log4j2
 @Service
 public class ProductServiceImpl implements ProductService {
 
   private final ProductRepository productRepository;
+  private final ProductModuleContentRepository productModuleContentRepository;
   private final GHAxonIvyMarketRepoService axonIvyMarketRepoService;
   private final GHAxonIvyProductRepoService axonIvyProductRepoService;
   private final GitHubRepoMetaRepository gitHubRepoMetaRepository;
@@ -93,13 +95,17 @@ public class ProductServiceImpl implements ProductService {
   private String marketRepoBranch;
 
   public static final String NON_NUMERIC_CHAR = "[^0-9.]";
+  private static final String INITIAL_VERSION = "1.0";
   private final SecureRandom random = new SecureRandom();
 
-  public ProductServiceImpl(ProductRepository productRepository, GHAxonIvyMarketRepoService axonIvyMarketRepoService,
+  public ProductServiceImpl(ProductRepository productRepository,
+      ProductModuleContentRepository productModuleContentRepository,
+      GHAxonIvyMarketRepoService axonIvyMarketRepoService,
       GHAxonIvyProductRepoService axonIvyProductRepoService, GitHubRepoMetaRepository gitHubRepoMetaRepository,
       GitHubService gitHubService, ProductCustomSortRepository productCustomSortRepository,
       MongoTemplate mongoTemplate) {
     this.productRepository = productRepository;
+    this.productModuleContentRepository = productModuleContentRepository;
     this.axonIvyMarketRepoService = axonIvyMarketRepoService;
     this.axonIvyProductRepoService = axonIvyProductRepoService;
     this.gitHubRepoMetaRepository = gitHubRepoMetaRepository;
@@ -141,11 +147,17 @@ public class ProductServiceImpl implements ProductService {
   }
 
   @Override
-  public int updateInstallationCountForProduct(String key) {
+  public int updateInstallationCountForProduct(String key, String designerVersion) {
     Product product= productRepository.getProductById(key);
     if (Objects.isNull(product)){
       return 0;
     }
+
+    log.info("Increase installation count for product {} By Designer Version {}", key, designerVersion);
+    if (StringUtils.isNotBlank(designerVersion)) {
+      productRepository.increaseInstallationCountForProductByDesignerVersion(key, designerVersion);
+    }
+
     log.info("updating installation count for product {}", key);
     if (BooleanUtils.isTrue(product.getSynchronizedInstallationCount())) {
       return productRepository.increaseInstallationCount(key);
@@ -334,9 +346,21 @@ public class ProductServiceImpl implements ProductService {
       if (StringUtils.isNotBlank(product.getRepositoryName())) {
         updateProductCompatibility(product);
         getProductContents(product);
+      } else {
+        updateProductContentForNonStandardProduct(ghContentEntity, product);
       }
       productRepository.save(product);
     });
+  }
+
+  private void updateProductContentForNonStandardProduct(Map.Entry<String, List<GHContent>> ghContentEntity, Product product) {
+    ProductModuleContent initialContent = new ProductModuleContent();
+    initialContent.setTag(INITIAL_VERSION);
+    initialContent.setProductId(product.getId());
+    product.setReleasedVersions(List.of(INITIAL_VERSION));
+    product.setNewestReleaseVersion(INITIAL_VERSION);
+    axonIvyProductRepoService.extractReadMeFileFromContents(product, ghContentEntity.getValue(), initialContent);
+    productModuleContentRepository.save(initialContent);
   }
 
   private void getProductContents(Product product) {
@@ -350,34 +374,37 @@ public class ProductServiceImpl implements ProductService {
 
   private void updateProductFromReleaseTags(Product product, GHRepository productRepo) {
     List<ProductModuleContent> productModuleContents = new ArrayList<>();
-    List<GHTag> tags = getProductReleaseTags(product);
-    GHTag lastTag = CollectionUtils.firstElement(tags);
+    List<GHTag> ghTags = getProductReleaseTags(product);
+    GHTag lastTag = CollectionUtils.firstElement(ghTags);
 
     if (lastTag == null || lastTag.getName().equals(product.getNewestReleaseVersion())) {
       return;
     }
 
-    getPublishedDateFromLatestTag(product, lastTag);
+    getPublishedDateFromLatestTag(product,
+        lastTag);
     product.setNewestReleaseVersion(lastTag.getName());
 
-    if (!ObjectUtils.isEmpty(product.getProductModuleContents())) {
-      productModuleContents.addAll(product.getProductModuleContents());
-      List<String> currentTags = product.getProductModuleContents().stream().filter(Objects::nonNull)
-          .map(ProductModuleContent::getTag).toList();
-      tags = tags.stream().filter(t -> !currentTags.contains(t.getName())).toList();
+    if (!CollectionUtils.isEmpty(product.getReleasedVersions())) {
+      List<String> currentTags = VersionUtils.getReleaseTagsFromProduct(product);
+      ghTags = ghTags.stream().filter(t -> !currentTags.contains(t.getName())).toList();
     }
 
-    for (GHTag ghTag : tags) {
+    for (GHTag ghTag : ghTags) {
       ProductModuleContent productModuleContent =
           axonIvyProductRepoService.getReadmeAndProductContentsFromTag(product, productRepo, ghTag.getName());
-      productModuleContents.add(productModuleContent);
+      if (productModuleContent != null) {
+        productModuleContents.add(productModuleContent);
+      }
       String versionFromTag = VersionUtils.convertTagToVersion(ghTag.getName());
       if (Objects.isNull(product.getReleasedVersions())) {
         product.setReleasedVersions(new ArrayList<>());
       }
       product.getReleasedVersions().add(versionFromTag);
     }
-    product.setProductModuleContents(productModuleContents);
+    if (!CollectionUtils.isEmpty(productModuleContents)) {
+      productModuleContentRepository.saveAll(productModuleContents);
+    }
   }
 
   private void getPublishedDateFromLatestTag(Product product, GHTag lastTag) {
@@ -392,11 +419,9 @@ public class ProductServiceImpl implements ProductService {
     if (StringUtils.isNotBlank(product.getCompatibility())) {
       return;
     }
-    String oldestTag =
-        getProductReleaseTags(product).stream().map(tag -> tag.getName().replaceAll(NON_NUMERIC_CHAR, Strings.EMPTY))
-            .distinct().sorted(Comparator.reverseOrder()).reduce((tag1, tag2) -> tag2).orElse(null);
-    if (oldestTag != null) {
-      String compatibility = getCompatibilityFromOldestTag(oldestTag);
+    String oldestVersion = VersionUtils.getOldestVersion(getProductReleaseTags(product));
+    if (oldestVersion != null) {
+      String compatibility = getCompatibilityFromOldestTag(oldestVersion);
       product.setCompatibility(compatibility);
     }
   }
@@ -436,7 +461,6 @@ public class ProductServiceImpl implements ProductService {
       return productItem;
     }).orElse(null);
   }
-
 
   @Override
   public Product fetchBestMatchProductDetail(String id, String version) {

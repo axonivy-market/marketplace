@@ -16,7 +16,7 @@ class MockElementRef implements ElementRef {
   };
 }
 
-describe('ProductVersionActionComponent', () => {
+describe('ProductDetailVersionActionComponent', () => {
   const productId = '123';
   let component: ProductDetailVersionActionComponent;
   let fixture: ComponentFixture<ProductDetailVersionActionComponent>;
@@ -189,9 +189,8 @@ describe('ProductVersionActionComponent', () => {
 
   it('should call sendRequestToProductDetailVersionAPI and update versions and versionMap', () => {
     const { mockArtifact1, mockArtifact2 } = mockApiWithExpectedResponse();
-
+    component.selectedVersion.set('Version 1.0');
     component.getVersionWithArtifact();
-
     expect(
       productServiceMock.sendRequestToProductDetailVersionAPI
     ).toHaveBeenCalledWith(
@@ -272,53 +271,53 @@ describe('ProductVersionActionComponent', () => {
     const mockWindowOpen = jasmine.createSpy('windowOpen').and.returnValue({
       blur: jasmine.createSpy('blur')
     });
-
     const mockWindowFocus = spyOn(window, 'focus');
-
-    // Mock window.open
     spyOn(window, 'open').and.callFake(mockWindowOpen);
     spyOn(component, 'onUpdateInstallationCount');
-    // Set the artifact URL
     component.selectedArtifact = 'http://example.com/artifact';
 
-    // Call the method
     component.downloadArtifact();
 
-    // Check if window.open was called with the correct URL and target
     expect(window.open).toHaveBeenCalledWith(
       'http://example.com/artifact',
       '_blank'
     );
-
-    // Check if newTab.blur() was called
     expect(mockWindowOpen().blur).toHaveBeenCalled();
     expect(component.onUpdateInstallationCount).toHaveBeenCalledOnceWith();
-    // Check if window.focus() was called
     expect(mockWindowFocus).toHaveBeenCalled();
   });
 
-  it('should call onUpdateInstallationCount when isDesignerEnvironment returns true', () => {
-    // Arrange
-    spyOn(component, 'isDesignerEnvironment').and.returnValue(true);
-    spyOn(component, 'onUpdateInstallationCount');
+  it('should open a new tab with the correct URL and blur it', () => {
+    const productId = 'octopus';
+    component.productId = productId;
+    const newTabMock: Partial<Window> = {
+      blur: jasmine.createSpy('blur')
+    };
+    spyOn(window, 'open').and.returnValue(newTabMock as Window);
+    spyOn(window, 'focus');
+    component.onNavigateToContactPage();
 
-    // Act
-    component.onUpdateInstallationCountForDesigner();
-
-    // Assert
-    expect(component.onUpdateInstallationCount).toHaveBeenCalled();
+    expect(window.open).toHaveBeenCalledWith(
+      `https://www.axonivy.com/marketplace/contact/?market_solutions=${productId}`,
+      '_blank'
+    );
+    expect(newTabMock.blur).toHaveBeenCalled();
+    expect(window.focus).toHaveBeenCalled();
   });
 
-  it('should not call onUpdateInstallationCount when isDesignerEnvironment returns false', () => {
-    // Arrange
-    spyOn(component, 'isDesignerEnvironment').and.returnValue(false);
-    spyOn(component, 'onUpdateInstallationCount');
+  it('should not call blur if newTab is null', () => {
+    const productId = 'octopus';
+    component.productId = productId;
+    spyOn(window, 'open').and.returnValue(null);
+    spyOn(window, 'focus');
 
-    // Act
-    component.onUpdateInstallationCountForDesigner();
+    component.onNavigateToContactPage();
 
-    // Assert
-    expect(component.onUpdateInstallationCount).not.toHaveBeenCalled();
+    expect(window.open).toHaveBeenCalledWith(
+      `https://www.axonivy.com/marketplace/contact/?market_solutions=${productId}`,
+      '_blank'
+    );
+    expect(window.focus).toHaveBeenCalled();
   });
 
   it('should not call productService if versions are already populated', () => {

@@ -14,6 +14,7 @@ import java.util.Map;
 import com.axonivy.market.constants.RequestMappingConstants;
 import com.axonivy.market.entity.ProductJsonContent;
 import com.axonivy.market.model.VersionAndUrlModel;
+import com.axonivy.market.service.ProductDesignerInstallationService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -40,6 +41,9 @@ class ProductDetailsControllerTest {
 
   @Mock
   VersionService versionService;
+
+  @Mock
+  ProductDesignerInstallationService productDesignerInstallationService;
 
   @Mock
   private ProductDetailModelAssembler detailModelAssembler;
@@ -116,9 +120,9 @@ class ProductDetailsControllerTest {
 
   @Test
   void testSyncInstallationCount() {
-    when(productService.updateInstallationCountForProduct("google-maps-connector")).thenReturn(1);
+    when(productService.updateInstallationCountForProduct("google-maps-connector", "10.0.20")).thenReturn(1);
 
-    var result = productDetailsController.syncInstallationCount("google-maps-connector");
+    var result = productDetailsController.syncInstallationCount("google-maps-connector", "10.0.20");
 
     assertEquals(1, result.getBody());
   }

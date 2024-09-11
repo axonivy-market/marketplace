@@ -19,6 +19,7 @@ import { ProductDetailComponent } from './product-detail.component';
 import { ProductModuleContent } from '../../../shared/models/product-module-content.model';
 import { RoutingQueryParamService } from '../../../shared/services/routing.query.param.service';
 import { MockProductService } from '../../../shared/mocks/mock-services';
+import { ProductDetailActionType } from '../../../shared/enums/product-detail-action-type';
 
 const products = MOCK_PRODUCTS._embedded.products;
 declare const viewport: Viewport;
@@ -84,7 +85,7 @@ describe('ProductDetailComponent', () => {
   });
 
   it('version should display in number', () => {
-    expect(component.selectedVersion).toEqual('10.0.0');
+    expect(component.selectedVersion).toEqual('Version 10.0.0');
   });
 
   it('should get corresponding version from cookie', () => {
@@ -140,61 +141,6 @@ describe('ProductDetailComponent', () => {
     component.onTabChange(event.value);
 
     expect(component.setActiveTab).toHaveBeenCalledWith('description');
-  });
-
-  it('should return true for description when it is not null and not empty', () => {
-    const mockContent: ProductModuleContent = {
-      ...MOCK_PRODUCT_MODULE_CONTENT,
-      description: { en: 'Test description' }
-    };
-
-    component.productModuleContent.set(mockContent);
-    expect(component.getContent('description')).toBeTrue();
-  });
-
-  it('should return false in tab visibility when product module content is missing', () => {
-    const mockEmptyContent: ProductModuleContent = {} as ProductModuleContent;
-    component.productModuleContent.set(mockEmptyContent);
-    expect(component.getContent('description')).toBeFalse();
-    expect(component.getContent('demo')).toBeFalse();
-    expect(component.getContent('setup')).toBeFalse();
-    expect(component.getContent('dependency')).toBeFalse();
-  });
-
-  it('should return false for description when it is null or empty', () => {
-    const mockContentWithEmptyDescription: ProductModuleContent =
-      MOCK_PRODUCT_MODULE_CONTENT;
-    component.productModuleContent.set(mockContentWithEmptyDescription);
-    expect(component.getContent('description')).toBeFalse();
-
-    const mockContentWithNullDescription: ProductModuleContent = {
-      ...MOCK_PRODUCT_MODULE_CONTENT
-    };
-    component.productModuleContent.set(mockContentWithNullDescription);
-    expect(component.getContent('description')).toBeFalse();
-  });
-
-  it('should return true for setup when it is not null and not empty', () => {
-    const mockContent: ProductModuleContent = {
-      ...MOCK_PRODUCT_MODULE_CONTENT,
-      setup: { en: 'Test setup' }
-    };
-
-    component.productModuleContent.set(mockContent);
-    expect(component.getContent('setup')).toBeTrue();
-  });
-
-  it('should return false for setup when it is null or empty', () => {
-    const mockContentWithEmptySetup: ProductModuleContent =
-      MOCK_PRODUCT_MODULE_CONTENT;
-    component.productModuleContent.set(mockContentWithEmptySetup);
-    expect(component.getContent('setup')).toBeFalse();
-
-    const mockContentWithNullSetup: ProductModuleContent = {
-      ...MOCK_PRODUCT_MODULE_CONTENT
-    };
-    component.productModuleContent.set(mockContentWithNullSetup);
-    expect(component.getContent('setup')).toBeFalse();
   });
 
   it('should not display information when product detail is empty', () => {
@@ -330,6 +276,41 @@ describe('ProductDetailComponent', () => {
     routingQueryParamService.isDesignerEnv.and.returnValue(true);
     component.handleProductContentVersion();
     expect(component.selectedVersion).toEqual('Version 10.0.11');
+  });
+
+  it('should return DESIGNER_ENV as acction type in Designer Env', () => {
+    routingQueryParamService.isDesignerEnv.and.returnValue(true);
+
+    component.updateProductDetailActionType({ sourceUrl: 'some-url'} as any);
+    expect(component.productDetailActionType()).toBe(
+      ProductDetailActionType.DESIGNER_ENV
+    );
+  });
+
+  it('should return CUSTOM_SOLUTION as acction type when productDetail.sourceUrl is undefined', () => {
+    routingQueryParamService.isDesignerEnv.and.returnValue(false);
+
+    component.updateProductDetailActionType({ sourceUrl: undefined } as any);
+
+    expect(component.productDetailActionType()).toBe(
+      ProductDetailActionType.CUSTOM_SOLUTION
+    );
+    fixture.detectChanges();
+    let installationCount = fixture.debugElement.query(
+      By.css('#app-product-installation-count-action')
+    );
+    expect(installationCount).toBeFalsy();
+
+  });
+
+  it('should return STANDARD as acction type when when productDetail.sourceUrl is defined', () => {
+    routingQueryParamService.isDesignerEnv.and.returnValue(false);
+
+    component.updateProductDetailActionType({ sourceUrl: 'some-url' } as any);
+
+    expect(component.productDetailActionType()).toBe(
+      ProductDetailActionType.STANDARD
+    );
   });
 
   it('should update activeTab based on URL hash', () => {

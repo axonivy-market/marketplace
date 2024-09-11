@@ -18,14 +18,13 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ProductService } from '../../product.service';
 import { Tooltip } from 'bootstrap';
-import { ProductDetailService } from '../product-detail.service';
-import { RoutingQueryParamService } from '../../../../shared/services/routing.query.param.service';
 import { CommonDropdownComponent } from '../../../../shared/components/common-dropdown/common-dropdown.component';
 import { LanguageService } from '../../../../core/services/language/language.service';
 import { ItemDropdown } from '../../../../shared/models/item-dropdown.model';
-import { ProductDetail } from '../../../../shared/models/product-detail.model';
 import { environment } from '../../../../../environments/environment';
 import { VERSION } from '../../../../shared/constants/common.constant';
+import { ProductDetailActionType } from '../../../../shared/enums/product-detail-action-type';
+import { RoutingQueryParamService } from '../../../../shared/services/routing.query.param.service';
 import { LoadingSpinnerComponent } from '../../../../shared/components/loading-spinner/loading-spinner.component';
 import { CookieService } from 'ngx-cookie-service';
 import { CommonUtils } from '../../../../shared/utils/common.utils';
@@ -36,7 +35,13 @@ const delayTimeBeforeHideMessage = 2000;
 @Component({
   selector: 'app-product-version-action',
   standalone: true,
-  imports: [CommonModule, TranslateModule, FormsModule, CommonDropdownComponent, LoadingSpinnerComponent],
+  imports: [
+    CommonModule,
+    TranslateModule,
+    FormsModule,
+    CommonDropdownComponent,
+    LoadingSpinnerComponent
+  ],
   templateUrl: './product-detail-version-action.component.html',
   styleUrl: './product-detail-version-action.component.scss'
 })
@@ -46,14 +51,13 @@ export class ProductDetailVersionActionComponent implements AfterViewInit {
   protected readonly environment = environment;
   @Output() installationCount = new EventEmitter<number>();
   @Input() productId!: string;
-
-  @Input() product!: ProductDetail;
+  @Input() actionType!: ProductDetailActionType;
   selectedVersion = model<string>('');
   versions: WritableSignal<string[]> = signal([]);
   versionDropdown: Signal<ItemDropdown[]> = computed(() => {
     return this.versions().map(version => ({
       value: version,
-      label: version,
+      label: version
     }));
   });
   metaDataJsonUrl = model<string>('');
@@ -61,7 +65,6 @@ export class ProductDetailVersionActionComponent implements AfterViewInit {
 
   artifacts: WritableSignal<ItemDropdown[]> = signal([]);
   isDropDownDisplayed = signal(false);
-  isDesignerEnvironment = signal(false);
   isInvalidInstallationEnvironment = signal(false);
   isArtifactLoading = signal(false);
   designerVersion = '';
@@ -69,12 +72,11 @@ export class ProductDetailVersionActionComponent implements AfterViewInit {
   selectedArtifactName: string | undefined = '';
   versionMap: Map<string, ItemDropdown[]> = new Map();
 
-  routingQueryParamService = inject(RoutingQueryParamService);
   themeService = inject(ThemeService);
   productService = inject(ProductService);
-  productDetailService = inject(ProductDetailService);
   elementRef = inject(ElementRef);
   languageService = inject(LanguageService);
+  routingQueryParamService = inject(RoutingQueryParamService);
   cookieService = inject(CookieService);
   router = inject(Router);
   route = inject(ActivatedRoute);
@@ -88,18 +90,6 @@ export class ProductDetailVersionActionComponent implements AfterViewInit {
     tooltipTriggerList.forEach(
       tooltipTriggerEl => new Tooltip(tooltipTriggerEl)
     );
-    this.isDesignerEnvironment.set(
-      this.routingQueryParamService.isDesignerEnv()
-    );
-
-  }
-
-  getInstallationTooltipText() {
-    return `<p class="text-primary">Please open the
-        <a href="https://market.axonivy.com" class="ivy__link">Axon Ivy Market</a>
-        inside your
-        <a class="ivy__link" href="https://developer.axonivy.com/download">Axon Ivy Designer</a>
-        (minimum version 9.2.0)</p>`;
   }
 
   onSelectVersion(version: string) {
@@ -107,6 +97,10 @@ export class ProductDetailVersionActionComponent implements AfterViewInit {
       this.selectedVersion.set(version);
     }
     this.artifacts.set(this.versionMap.get(version) ?? []);
+    this.updateSelectedArtifact(version);
+  }
+
+  private updateSelectedArtifact(version: string) {
     this.artifacts().forEach(artifact => {
       if (artifact.name) {
         artifact.label = artifact.name;
@@ -173,6 +167,8 @@ export class ProductDetailVersionActionComponent implements AfterViewInit {
         });
         if (this.versions().length !== 0) {
           this.onSelectVersion(this.getVersionFromRoute() ?? this.versions()[0]);
+          // this.artifacts.set(this.versionMap.get(this.selectedVersion()) ?? []);
+          // this.updateSelectedArtifact();
         }
         this.isArtifactLoading.set(false);
       });
@@ -184,16 +180,25 @@ export class ProductDetailVersionActionComponent implements AfterViewInit {
 
   getVersionInDesigner(): void {
     if (this.versions().length === 0) {
-      this.productService.sendRequestToGetProductVersionsForDesigner(this.productId
-      ).subscribe(data => {
-        const versionMap = data.map(dataVersionAndUrl => dataVersionAndUrl.version).map(version => VERSION.displayPrefix.concat(version));
-        data.forEach(dataVersionAndUrl => {
-          const currentVersion = VERSION.displayPrefix.concat(dataVersionAndUrl.version);
-          const versionAndUrl: ItemDropdown = { value: currentVersion, label: currentVersion, metaDataJsonUrl: dataVersionAndUrl.url };
-          this.versionDropdownInDesigner.push(versionAndUrl);
+      this.productService
+        .sendRequestToGetProductVersionsForDesigner(this.productId)
+        .subscribe(data => {
+          const versionMap = data
+            .map(dataVersionAndUrl => dataVersionAndUrl.version)
+            .map(version => VERSION.displayPrefix.concat(version));
+          data.forEach(dataVersionAndUrl => {
+            const currentVersion = VERSION.displayPrefix.concat(
+              dataVersionAndUrl.version
+            );
+            const versionAndUrl: ItemDropdown = {
+              value: currentVersion,
+              label: currentVersion,
+              metaDataJsonUrl: dataVersionAndUrl.url
+            };
+            this.versionDropdownInDesigner.push(versionAndUrl);
+          });
+          this.versions.set(versionMap);
         });
-        this.versions.set(versionMap);
-      });
     }
   }
 
@@ -214,14 +219,25 @@ export class ProductDetailVersionActionComponent implements AfterViewInit {
 
   onUpdateInstallationCount() {
     this.productService
-      .sendRequestToUpdateInstallationCount(this.productId)
+      .sendRequestToUpdateInstallationCount(
+        this.productId,
+        this.routingQueryParamService.getDesignerVersionFromCookie()
+      )
       .subscribe((data: number) => this.installationCount.emit(data));
   }
 
   onUpdateInstallationCountForDesigner() {
-    if (this.isDesignerEnvironment()) {
-      this.onUpdateInstallationCount();
-    }
+    this.onUpdateInstallationCount();
   }
 
+  onNavigateToContactPage() {
+    const newTab = window.open(
+      `https://www.axonivy.com/marketplace/contact/?market_solutions=${this.productId}`,
+      '_blank'
+    );
+    if (newTab) {
+      newTab.blur();
+    }
+    window.focus();
+  }
 }
