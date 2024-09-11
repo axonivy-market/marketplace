@@ -25,7 +25,6 @@ import {
 import { ItemDropdown } from '../../../shared/models/item-dropdown.model';
 import { ProductDetail } from '../../../shared/models/product-detail.model';
 import { ProductModuleContent } from '../../../shared/models/product-module-content.model';
-import { HasValueTabPipe } from '../../../shared/pipes/has-value-tab.pipe';
 import { ProductTypeIconPipe } from '../../../shared/pipes/icon.pipe';
 import { MissingReadmeContentPipe } from '../../../shared/pipes/missing-readme-content.pipe';
 import { MultilingualismPipe } from '../../../shared/pipes/multilingualism.pipe';
@@ -71,7 +70,6 @@ const DEFAULT_ACTIVE_TAB = 'description';
     ProductDetailFeedbackComponent,
     ProductInstallationCountActionComponent,
     ProductTypeIconPipe,
-    HasValueTabPipe,
     MissingReadmeContentPipe,
     CommonDropdownComponent
   ],
