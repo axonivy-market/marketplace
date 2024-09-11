@@ -39,6 +39,8 @@ jobs:
       SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
 
     steps:
+      - name: Remove unused sonar images
+        run: docker image prune -af
       - name: Execute Tests
         run: |
           cd ./marketplace-ui
