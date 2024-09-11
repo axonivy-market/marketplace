@@ -85,7 +85,7 @@
         class="tab-group d-flex flex-column justify-content-center align-items-start p-0 col-12 col-xl-8">
         <div class="row-tab d-none d-xl-block col-12">
           <ul ngbNav class="nav nav-tabs form-tabs">
-            @for (displayedTab of displayedTabs; track $index) {
+            @for (displayedTab of displayedTabsSignal(); track $index) {
               <li
                 ngbNavItem
                 class="nav-item d-flex flex-row position-relative border-bottom-1 p-2 justify-content-center align-items-start">
@@ -115,8 +115,8 @@
               class="dropdown-container position-relative d-flex align-items-center w-100">
               <div id="tab-group-dropdown" class="flex-grow-1 w-100">
                 <app-common-dropdown
-                  [items]="displayedTabs"
-                  [selectedItem]="selectedTabLabel | translate"
+                  [items]="displayedTabsSignal()"
+                  [selectedItem]="selectedTabLabelSignal() | translate"
                   buttonClass="form-select flex-grow-1 text-start"
                   (itemSelected)="
                     onTabChange($event.value)
@@ -151,7 +151,7 @@
         </div>
         <div class="tab-content col-12 default-cursor">
           @if (!isEmptyProductContent()) {
-            @for (displayedTab of displayedTabs; track $index) {
+            @for (displayedTab of displayedTabsSignal(); track $index) {
               <div
                 class="tab-pane fade show"
                 [class.active]="activeTab === displayedTab.value"
