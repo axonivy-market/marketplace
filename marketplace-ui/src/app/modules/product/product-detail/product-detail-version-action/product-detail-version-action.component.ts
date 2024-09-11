@@ -133,8 +133,8 @@ export class ProductDetailVersionActionComponent implements AfterViewInit {
   onShowDevVersion(event: Event) {
     event.preventDefault();
     this.isDevVersionsDisplayed.update(oldValue => !oldValue);
-    this.getVersionWithArtifact();
     this.cookieService.set(this.SHOW_DEV_VERSION_COOKIE_NAME, this.isDevVersionsDisplayed().toString());
+    this.getVersionWithArtifact();
   }
 
   onShowVersionAndArtifact() {
