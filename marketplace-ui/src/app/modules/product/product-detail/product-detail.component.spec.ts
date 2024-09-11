@@ -447,16 +447,6 @@ describe('ProductDetailComponent', () => {
     expect(component.getContent('setup')).toBeFalse();
   });
 
-  // it('should return true for demo when it is not null and not empty', () => {
-  //   const mockContent: ProductModuleContent = {
-  //     ...MOCK_PRODUCT_MODULE_CONTENT,
-  //     demo: { en: 'Test demo' }
-  //   };
-
-  //   component.productModuleContent.set(mockContent);
-  //   expect(component.getContent('demo')).toBeTrue();
-  // });
-
   it('should return true for demo when in EN language it is not null and not undefined and not empty', () => {
     const mockContent: ProductModuleContent = {
       ...MOCK_PRODUCT_MODULE_CONTENT,
