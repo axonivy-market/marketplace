@@ -169,7 +169,7 @@
                     [lang]="languageService.selectedLanguage()"
                     class="readme-content"
                     [data]="
-                      getProductModuleContentValue(displayedTab.value)
+                      getProductModuleContentValue(displayedTab)
                         | multilingualism: languageService.selectedLanguage()
                     "></markdown>
                 }

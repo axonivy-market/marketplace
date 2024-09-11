@@ -43,6 +43,7 @@ import { ProductDetailVersionActionComponent } from './product-detail-version-ac
 import { ProductDetailService } from './product-detail.service';
 import { ProductInstallationCountActionComponent } from './product-installation-count-action/product-installation-count-action.component';
 import { ProductStarRatingNumberComponent } from './product-star-rating-number/product-star-rating-number.component';
+import { DisplayValue } from '../../../shared/models/display-value.model';
 
 export interface DetailTab {
   activeClass: string;
@@ -353,8 +354,8 @@ export class ProductDetailComponent {
     return displayedTabs;
   }
 
-  getProductModuleContentValue(key: string): any {
-    const castKey = key as keyof ProductModuleContent;
-    return this.productModuleContent()[castKey];
+  getProductModuleContentValue(key: ItemDropdown): DisplayValue | null {
+    const value = key.value as  'description' | 'demo' | 'setup'
+    return this.productModuleContent()[value];
   }
 }
