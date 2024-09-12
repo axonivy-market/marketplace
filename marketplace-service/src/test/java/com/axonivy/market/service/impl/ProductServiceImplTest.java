@@ -273,7 +273,6 @@ class ProductServiceImplTest extends BaseSetup {
     mockGitHubFile.setStatus(FileStatus.REMOVED);
     when(marketRepoService.fetchMarketItemsBySHA1Range(any(), any())).thenReturn(List.of(mockGitHubFile));
     when(gitHubService.getGHContent(any(), anyString(), any())).thenReturn(mockGHContent);
-    when(productRepository.findByLogoUrl(any())).thenReturn(new Product());
 
     // Executes
     result = productService.syncLatestDataFromMarketRepo();

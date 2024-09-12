@@ -5,6 +5,7 @@ import com.axonivy.market.constants.GitHubConstants;
 import com.axonivy.market.constants.MavenConstants;
 import com.axonivy.market.constants.ProductJsonConstants;
 import com.axonivy.market.constants.ReadmeConstants;
+import com.axonivy.market.entity.Image;
 import com.axonivy.market.entity.Product;
 import com.axonivy.market.entity.ProductModuleContent;
 import com.axonivy.market.entity.ProductJsonContent;
@@ -15,6 +16,7 @@ import com.axonivy.market.github.service.GHAxonIvyProductRepoService;
 import com.axonivy.market.github.service.GitHubService;
 import com.axonivy.market.github.util.GitHubUtils;
 import com.axonivy.market.repository.ProductJsonContentRepository;
+import com.axonivy.market.service.ImageService;
 import com.axonivy.market.util.VersionUtils;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -49,7 +51,7 @@ import static com.axonivy.market.constants.ProductJsonConstants.VERSION_VALUE;
 public class GHAxonIvyProductRepoServiceImpl implements GHAxonIvyProductRepoService {
   private GHOrganization organization;
   private final GitHubService gitHubService;
-
+  private final ImageService imageService;
   private final ProductJsonContentRepository productJsonContentRepository;
   private String repoUrl;
   private static final ObjectMapper objectMapper = new ObjectMapper();
@@ -61,9 +63,10 @@ public class GHAxonIvyProductRepoServiceImpl implements GHAxonIvyProductRepoServ
   public static final String DEMO = "demo";
   public static final String SETUP = "setup";
 
-  public GHAxonIvyProductRepoServiceImpl(GitHubService gitHubService,
+  public GHAxonIvyProductRepoServiceImpl(GitHubService gitHubService, ImageService imageService,
       ProductJsonContentRepository productJsonContentRepository) {
     this.gitHubService = gitHubService;
+    this.imageService = imageService;
     this.productJsonContentRepository = productJsonContentRepository;
   }
 
@@ -268,35 +271,39 @@ public class GHAxonIvyProductRepoServiceImpl implements GHAxonIvyProductRepoServ
 
   public String updateImagesWithDownloadUrl(Product product, List<GHContent> contents, String readmeContents)
       throws IOException {
-    Map<String, String> imageUrls = new HashMap<>();
-    List<GHContent> productImages = contents.stream().filter(GHContent::isFile)
-        .filter(content -> content.getName().toLowerCase().matches(IMAGE_EXTENSION)).toList();
-    if (!CollectionUtils.isEmpty(productImages)) {
-      for (GHContent productImage : productImages) {
-        imageUrls.put(productImage.getName(), productImage.getDownloadUrl());
-      }
-    } else {
-      getImagesFromImageFolder(product, contents, imageUrls);
-    }
-    for (Map.Entry<String, String> entry : imageUrls.entrySet()) {
-      String imageUrlPattern = String.format(README_IMAGE_FORMAT, Pattern.quote(entry.getKey()));
-      readmeContents = readmeContents.replaceAll(imageUrlPattern,
-          String.format(IMAGE_DOWNLOAD_URL_FORMAT, entry.getValue()));
 
+    List<GHContent> productImagesOutsideFolder = contents.stream().filter(GHContent::isFile)
+        .filter(content -> content.getName().toLowerCase().matches(IMAGE_EXTENSION)).toList();
+
+    List<GHContent> allContentOfImages = ObjectUtils.isNotEmpty(productImagesOutsideFolder)
+        ? productImagesOutsideFolder
+        : getImagesFromImageFolder(product, contents);
+
+    Map<String, String> imageUrls = new HashMap<>();
+
+    allContentOfImages.forEach(content -> {
+      Image image = imageService.mappingImageFromGHContent(product, content);
+      imageUrls.put(content.getName(), "imageId-".concat(image.getId()));
+    });
+
+    for (String key : imageUrls.keySet()) {
+      String imageUrlPattern = String.format(README_IMAGE_FORMAT, Pattern.quote(key));
+      readmeContents = readmeContents.replaceAll(imageUrlPattern,
+          String.format(IMAGE_DOWNLOAD_URL_FORMAT, imageUrls.get(key)));
     }
     return readmeContents;
   }
 
-  private void getImagesFromImageFolder(Product product, List<GHContent> contents, Map<String, String> imageUrls)
-      throws IOException {
+  private List<GHContent> getImagesFromImageFolder(Product product, List<GHContent> contents) throws IOException {
+    List<GHContent> images = new ArrayList<>();
     String imageFolderPath = GitHubUtils.getNonStandardImageFolder(product.getId());
     GHContent imageFolder = contents.stream().filter(GHContent::isDirectory)
         .filter(content -> imageFolderPath.equals(content.getName())).findFirst().orElse(null);
-    if (Objects.nonNull(imageFolder)) {
-      for (GHContent imageContent : imageFolder.listDirectoryContent().toList()) {
-        imageUrls.put(imageContent.getName(), imageContent.getDownloadUrl());
-      }
+
+    if (ObjectUtils.isNotEmpty(imageFolder)) {
+      images.addAll(imageFolder.listDirectoryContent().toList());
     }
+    return images;
   }
 
   // Cover some cases including when demo and setup parts switch positions or

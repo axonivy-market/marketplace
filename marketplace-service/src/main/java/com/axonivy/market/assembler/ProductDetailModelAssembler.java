@@ -3,7 +3,9 @@ package com.axonivy.market.assembler;
 import com.axonivy.market.constants.RequestMappingConstants;
 import com.axonivy.market.controller.ProductDetailsController;
 import com.axonivy.market.entity.Product;
+import com.axonivy.market.entity.ProductModuleContent;
 import com.axonivy.market.model.ProductDetailModel;
+import com.axonivy.market.util.ImageUtils;
 import com.axonivy.market.util.VersionUtils;
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.lang3.StringUtils;
@@ -11,9 +13,12 @@ import org.springframework.hateoas.Link;
 import org.springframework.hateoas.server.mvc.RepresentationModelAssemblerSupport;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
-import org.springframework.util.CollectionUtils;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
@@ -80,6 +85,7 @@ public class ProductDetailModelAssembler extends RepresentationModelAssemblerSup
     model.setContactUs(product.getContactUs());
     model.setCost(product.getCost());
     model.setInstallationCount(product.getInstallationCount());
-    model.setProductModuleContent(product.getProductModuleContent());
+    model.setProductModuleContent(ImageUtils.mappingImageForProductModuleContent(product.getProductModuleContent()));
   }
+
 }

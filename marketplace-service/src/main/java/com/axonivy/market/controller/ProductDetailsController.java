@@ -20,7 +20,9 @@ import com.axonivy.market.model.VersionAndUrlModel;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.enums.ParameterIn;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -115,11 +117,12 @@ public class ProductDetailsController {
     return new ResponseEntity<>(versionList, HttpStatus.OK);
   }
 
-  @GetMapping("/{productId}/")
-  public ResponseEntity<byte[]> getImageFromProductAndIsLogo(@PathVariable(PRODUCT_ID) String productId,
-      @RequestParam(name = "isLogo", required = false) boolean isLogo) {
-    byte[] imageData = productService.readImageFromLogoUrl(productId, isLogo);
-    return new ResponseEntity<>(imageData, HttpStatus.OK);
+  @GetMapping("image/{id}")
+  public ResponseEntity<byte[]> getImageFromId(@PathVariable(ID) String id) {
+    HttpHeaders headers = new HttpHeaders();
+    headers.setContentType(MediaType.IMAGE_PNG);
+    byte[] imageData = productService.readImage(id);
+    return new ResponseEntity<>(imageData, headers, HttpStatus.OK);
   }
 
 }

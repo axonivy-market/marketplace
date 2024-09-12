@@ -66,6 +66,7 @@ public class Product implements Serializable {
   private List<String> releasedVersions;
   @Transient
   private String metaProductJsonUrl;
+  private String logoId;
 
   @Override
   public int hashCode() {
