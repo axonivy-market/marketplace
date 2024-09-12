@@ -380,10 +380,10 @@ class ProductServiceImplTest extends BaseSetup {
 
     GHTag mockTag = mock(GHTag.class);
     when(mockTag.getName()).thenReturn("v10.0.2");
-    when(mockTag.getCommit()).thenReturn(mockGHCommit);
 
     GHTag mockTag2 = mock(GHTag.class);
     when(mockTag2.getName()).thenReturn("v10.0.3");
+    when(mockTag2.getCommit()).thenReturn(mockGHCommit);
 
     when(mockGHCommit.getCommitDate()).thenReturn(new Date());
     when(gitHubService.getRepositoryTags(anyString())).thenReturn(Arrays.asList(mockTag, mockTag2));
