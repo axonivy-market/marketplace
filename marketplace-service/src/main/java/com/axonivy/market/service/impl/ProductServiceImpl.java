@@ -354,21 +354,6 @@ public class ProductServiceImpl implements ProductService {
   private void syncProductsFromGitHubRepo() {
     log.warn("**ProductService: synchronize products from scratch based on the Market repo");
     var gitHubContentMap = axonIvyMarketRepoService.fetchAllMarketItems();
-//    gitHubContentMap.entrySet().forEach(ghContentEntity -> {
-//      Product product = new Product();
-//      for (var content : ghContentEntity.getValue()) {
-//        mappingLogoFromGHContent(product, content);
-//        ProductFactory.mappingByGHContent(product, content);
-//      }
-//      if (StringUtils.isNotBlank(product.getRepositoryName())) {
-//        updateProductCompatibility(product);
-//        getProductContents(product);
-//      } else {
-//        updateProductContentForNonStandardProduct(ghContentEntity, product);
-//      }
-//      productRepository.save(product);
-//    });
-
     for (Map.Entry<String, List<GHContent>> ghContentEntity : gitHubContentMap.entrySet()) {
       Product product = new Product();
       //update the meta.json first
@@ -393,7 +378,6 @@ public class ProductServiceImpl implements ProductService {
         updateProductContentForNonStandardProduct(ghContentEntity, product);
       }
       productRepository.save(product);
-      break;
     }
   }
 
@@ -449,7 +433,6 @@ public class ProductServiceImpl implements ProductService {
         product.setReleasedVersions(new ArrayList<>());
       }
       product.getReleasedVersions().add(versionFromTag);
-      break;
     }
     if (!CollectionUtils.isEmpty(productModuleContents)) {
       productModuleContentRepository.saveAll(productModuleContents);
