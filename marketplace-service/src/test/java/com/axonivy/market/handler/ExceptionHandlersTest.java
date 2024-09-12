@@ -3,6 +3,7 @@ package com.axonivy.market.handler;
 import com.axonivy.market.exceptions.ExceptionHandlers;
 import com.axonivy.market.exceptions.model.InvalidParamException;
 import com.axonivy.market.exceptions.model.MissingHeaderException;
+import com.axonivy.market.exceptions.model.NoContentException;
 import com.axonivy.market.exceptions.model.NotFoundException;
 import com.axonivy.market.model.Message;
 import org.junit.jupiter.api.BeforeEach;
@@ -45,6 +46,13 @@ class ExceptionHandlersTest {
     var notFoundException = mock(NotFoundException.class);
     var responseEntity = exceptionHandlers.handleNotFoundException(notFoundException);
     assertEquals(HttpStatus.NOT_FOUND, responseEntity.getStatusCode());
+  }
+
+  @Test
+  void testHandleNoContentException() {
+    var noContentException = mock(NoContentException.class);
+    var responseEntity = exceptionHandlers.handleNoContentException(noContentException);
+    assertEquals(HttpStatus.NO_CONTENT, responseEntity.getStatusCode());
   }
 
   @Test
