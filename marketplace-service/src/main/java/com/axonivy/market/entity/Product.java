@@ -66,6 +66,7 @@ public class Product implements Serializable {
   private List<String> releasedVersions;
   @Transient
   private String metaProductJsonUrl;
+  private Date lastUpdate = new Date();
 
   @Override
   public int hashCode() {

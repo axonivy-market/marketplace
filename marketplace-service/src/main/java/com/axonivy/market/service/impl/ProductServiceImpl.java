@@ -224,6 +224,7 @@ public class ProductServiceImpl implements ProductService {
 
         ProductFactory.mappingByGHContent(product, fileContent);
         if (FileType.META == file.getType()) {
+          transferComputedDataFromDB(product);
           modifyProductByMetaContent(file, product);
         } else {
           modifyProductLogo(ghFileEntity.getKey(), file, product, fileContent);
@@ -339,12 +340,16 @@ public class ProductServiceImpl implements ProductService {
       for (var content : ghContentEntity.getValue()) {
         ProductFactory.mappingByGHContent(product, content);
       }
+      if (!Objects.isNull(productRepository.findById(product.getId()).orElse(null))) {
+        return;
+      }
       if (StringUtils.isNotBlank(product.getRepositoryName())) {
         updateProductCompatibility(product);
         getProductContents(product);
       } else {
         updateProductContentForNonStandardProduct(ghContentEntity, product);
       }
+      transferComputedDataFromDB(product);
       productRepository.save(product);
     });
   }
@@ -378,10 +383,14 @@ public class ProductServiceImpl implements ProductService {
     }
     product.setNewestPublishedDate(getPublishedDateFromLatestTag(lastTag));
     product.setNewestReleaseVersion(lastTag.getName());
+    List<String> currentTags = VersionUtils.getReleaseTagsFromProduct(product);;
+    if (CollectionUtils.isEmpty(currentTags)) {
+      currentTags = productModuleContentRepository.findTagsByProductId(product.getId());
+    }
 
-    if (!CollectionUtils.isEmpty(product.getReleasedVersions())) {
-      List<String> currentTags = VersionUtils.getReleaseTagsFromProduct(product);
-      ghTags = ghTags.stream().filter(t -> !currentTags.contains(t.getName())).toList();
+    if (!CollectionUtils.isEmpty(currentTags)) {
+      List<String> finalCurrentTags = currentTags;
+      ghTags = ghTags.stream().filter(t -> !finalCurrentTags.contains(t.getName())).toList();
     }
 
     for (GHTag ghTag : ghTags) {
@@ -520,5 +529,13 @@ public class ProductServiceImpl implements ProductService {
   public void removeFieldFromAllProductDocuments(String fieldName) {
     Update update = new Update().unset(fieldName);
     mongoTemplate.updateMulti(new Query(), update, Product.class);
+  }
+
+  public void transferComputedDataFromDB(Product product) {
+    Product persistedData = productRepository.findById(product.getId()).orElse(null);
+    if (Objects.isNull(persistedData)) {
+      return;
+    }
+    ProductFactory.transferComputedPersistedDataToProduct(persistedData,product);
   }
 }

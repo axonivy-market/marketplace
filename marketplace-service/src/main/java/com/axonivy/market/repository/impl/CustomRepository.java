@@ -8,7 +8,7 @@ import org.springframework.data.mongodb.core.query.Query;
 
 public class CustomRepository {
   protected AggregationOperation createIdMatchOperation(String id) {
-    return Aggregation.match(Criteria.where(MongoDBConstants.ID).is(id));
+    return createFieldMatchOperation(MongoDBConstants.ID, id);
   }
 
   protected Query createQueryById(String id) {
@@ -16,6 +16,10 @@ public class CustomRepository {
   }
 
   AggregationOperation createProjectAggregationBySingleFieldName(String fieldName) {
-    return Aggregation.project("tag");
+    return Aggregation.project(MongoDBConstants.TAG);
+  }
+
+  protected AggregationOperation createFieldMatchOperation(String fieldName, String id) {
+    return Aggregation.match(Criteria.where(fieldName).is(id));
   }
 }

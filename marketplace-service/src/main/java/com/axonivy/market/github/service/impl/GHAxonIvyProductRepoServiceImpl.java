@@ -239,11 +239,10 @@ public class GHAxonIvyProductRepoServiceImpl implements GHAxonIvyProductRepoServ
         productModuleContent.setName(artifact.getName());
       }
       String currentVersion = VersionUtils.convertTagToVersion(productModuleContent.getTag());
-      boolean isProductJsonContentExists = productJsonContentRepository.existsByProductIdAndVersion(product.getId(),
-          currentVersion);
       String content = extractProductJsonContent(productJsonFile, productModuleContent.getTag());
-      if (ObjectUtils.isNotEmpty(content) && !isProductJsonContentExists) {
+      if (ObjectUtils.isNotEmpty(content)) {
         ProductJsonContent jsonContent = new ProductJsonContent();
+        jsonContent.setId(product.getId()+ currentVersion);
         jsonContent.setVersion(currentVersion);
         jsonContent.setProductId(product.getId());
         jsonContent.setName(product.getNames().get(EN_LANGUAGE));

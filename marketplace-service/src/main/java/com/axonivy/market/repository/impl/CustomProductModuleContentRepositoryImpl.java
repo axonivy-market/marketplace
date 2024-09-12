@@ -1,6 +1,7 @@
 package com.axonivy.market.repository.impl;
 
 import com.axonivy.market.constants.EntityConstants;
+import com.axonivy.market.constants.MongoDBConstants;
 import com.axonivy.market.entity.ProductModuleContent;
 import com.axonivy.market.repository.CustomProductModuleContentRepository;
 import lombok.Builder;
@@ -20,7 +21,7 @@ public class CustomProductModuleContentRepositoryImpl extends CustomRepository i
 
   @Override
   public List<String> findTagsByProductId(String id) {
-    Aggregation aggregation = Aggregation.newAggregation(createIdMatchOperation(id), createProjectAggregationBySingleFieldName("tag"));
+    Aggregation aggregation = Aggregation.newAggregation(createFieldMatchOperation(MongoDBConstants.PRODUCT_ID,id), createProjectAggregationBySingleFieldName(MongoDBConstants.TAG));
     return queryProductModuleContentsByAggregation(aggregation).stream().map(ProductModuleContent::getTag).toList();
   }
 

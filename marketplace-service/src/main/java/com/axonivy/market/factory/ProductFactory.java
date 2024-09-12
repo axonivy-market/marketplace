@@ -78,6 +78,12 @@ public class ProductFactory {
     return product;
   }
 
+  public static void transferComputedPersistedDataToProduct(Product persisted, Product product) {
+    product.setCustomOrder(persisted.getCustomOrder());
+    product.setNewestReleaseVersion(persisted.getNewestReleaseVersion());
+    product.setReleasedVersions(persisted.getReleasedVersions());
+  }
+
   private static Map<String, String> mappingMultilingualismValueByMetaJSONFile(List<DisplayValue> list) {
     Map<String, String> value = new HashMap<>();
     if (!CollectionUtils.isEmpty(list)) {
