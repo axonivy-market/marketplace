@@ -1,5 +1,6 @@
 package com.axonivy.market.util;
 
+import com.axonivy.market.entity.Product;
 import com.axonivy.market.enums.NonStandardProduct;
 import org.apache.commons.lang3.StringUtils;
 import org.junit.jupiter.api.Assertions;
@@ -13,6 +14,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 
 @ExtendWith(MockitoExtension.class)
 
@@ -178,5 +180,19 @@ class VersionUtilsTest {
         String oldestTag = VersionUtils.getOldestVersion(tags);
 
         Assertions.assertEquals("1.0", oldestTag); // Assuming the replacement of non-numeric characters works correctly
+    }
+
+    @Test
+    void testGetReleaseTagsFromProduct() {
+        Assertions.assertEquals(0, VersionUtils.getReleaseTagsFromProduct(null).size());
+
+        Product mockProduct = new Product();
+        mockProduct.setId("portal");
+        List<String> releasedVersions = List.of("10.0.1", "10.0.2");
+        mockProduct.setReleasedVersions(releasedVersions);
+
+        Assertions.assertEquals(releasedVersions.get(0), VersionUtils.getReleaseTagsFromProduct(mockProduct).get(0));
+
+
     }
 }

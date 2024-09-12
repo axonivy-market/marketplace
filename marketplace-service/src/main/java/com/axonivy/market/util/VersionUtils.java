@@ -125,6 +125,7 @@ public class VersionUtils {
         }
         return result;
     }
+
     public static List<String> getReleaseTagsFromProduct(Product product) {
         if (Objects.isNull(product)) {
             return new ArrayList<>();
