@@ -38,6 +38,10 @@
 
 .detail-body {
   gap: 4rem;
+
+  .tab-title {
+    padding: 0.5rem;
+  }
 }
 
 .readme-content ::ng-deep {
@@ -205,6 +209,7 @@
 
 .product-title {
   line-height: 79.2px;
+  white-space: break-spaces;
 }
 
 hr {
