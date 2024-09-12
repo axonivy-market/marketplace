@@ -16,4 +16,5 @@ public class GitHubRepoMeta {
   private String repoName;
   private Long lastChange;
   private String lastSHA1;
+  private boolean isSyncInProgress;
 }

@@ -53,13 +53,6 @@ public class GHAxonIvyProductRepoServiceImpl implements GHAxonIvyProductRepoServ
   private final ProductJsonContentRepository productJsonContentRepository;
   private String repoUrl;
   private static final ObjectMapper objectMapper = new ObjectMapper();
-  public static final String DEMO_SETUP_TITLE = "(?i)## Demo|## Setup";
-  public static final String IMAGE_EXTENSION = "(.*?).(jpeg|jpg|png|gif)";
-  public static final String README_IMAGE_FORMAT = "\\(([^)]*?%s[^)]*?)\\)";
-  public static final String IMAGE_DOWNLOAD_URL_FORMAT = "(%s)";
-  public static final String DESCRIPTION = "description";
-  public static final String DEMO = "demo";
-  public static final String SETUP = "setup";
 
   public GHAxonIvyProductRepoServiceImpl(GitHubService gitHubService,
       ProductJsonContentRepository productJsonContentRepository) {
@@ -190,9 +183,9 @@ public class GHAxonIvyProductRepoServiceImpl implements GHAxonIvyProductRepoServ
           String locale = getReadmeFileLocale(readmeFile.getName());
           getExtractedPartsOfReadme(moduleContents, readmeContents, locale);
         }
-        productModuleContent.setDescription(replaceEmptyContentsWithEnContent(moduleContents.get(DESCRIPTION)));
-        productModuleContent.setDemo(replaceEmptyContentsWithEnContent(moduleContents.get(DEMO)));
-        productModuleContent.setSetup(replaceEmptyContentsWithEnContent(moduleContents.get(SETUP)));
+        productModuleContent.setDescription(replaceEmptyContentsWithEnContent(moduleContents.get(ReadmeConstants.DESCRIPTION)));
+        productModuleContent.setDemo(replaceEmptyContentsWithEnContent(moduleContents.get(ReadmeConstants.DEMO)));
+        productModuleContent.setSetup(replaceEmptyContentsWithEnContent(moduleContents.get(ReadmeConstants.SETUP)));
       }
     } catch (Exception e) {
       log.error("Cannot get README file's content {}", e.getMessage());
@@ -270,7 +263,7 @@ public class GHAxonIvyProductRepoServiceImpl implements GHAxonIvyProductRepoServ
       throws IOException {
     Map<String, String> imageUrls = new HashMap<>();
     List<GHContent> productImages = contents.stream().filter(GHContent::isFile)
-        .filter(content -> content.getName().toLowerCase().matches(IMAGE_EXTENSION)).toList();
+            .filter(content -> content.getName().toLowerCase().matches(ReadmeConstants.IMAGE_EXTENSION)).toList();
     if (!CollectionUtils.isEmpty(productImages)) {
       for (GHContent productImage : productImages) {
         imageUrls.put(productImage.getName(), productImage.getDownloadUrl());
@@ -279,9 +272,9 @@ public class GHAxonIvyProductRepoServiceImpl implements GHAxonIvyProductRepoServ
       getImagesFromImageFolder(product, contents, imageUrls);
     }
     for (Map.Entry<String, String> entry : imageUrls.entrySet()) {
-      String imageUrlPattern = String.format(README_IMAGE_FORMAT, Pattern.quote(entry.getKey()));
+      String imageUrlPattern = String.format(ReadmeConstants.README_IMAGE_FORMAT, Pattern.quote(entry.getKey()));
       readmeContents = readmeContents.replaceAll(imageUrlPattern,
-          String.format(IMAGE_DOWNLOAD_URL_FORMAT, entry.getValue()));
+              String.format(ReadmeConstants.IMAGE_DOWNLOAD_URL_FORMAT, entry.getValue()));
 
     }
     return readmeContents;
@@ -303,7 +296,7 @@ public class GHAxonIvyProductRepoServiceImpl implements GHAxonIvyProductRepoServ
   // missing one of them
   public void getExtractedPartsOfReadme(Map<String,Map<String,String>> moduleContents, String readmeContents,
       String locale) {
-    String[] parts = readmeContents.split(DEMO_SETUP_TITLE);
+    String[] parts = readmeContents.split(ReadmeConstants.DEMO_SETUP_TITLE);
     int demoIndex = readmeContents.indexOf(ReadmeConstants.DEMO_PART);
     int setupIndex = readmeContents.indexOf(ReadmeConstants.SETUP_PART);
     String description = Strings.EMPTY;
@@ -328,9 +321,9 @@ public class GHAxonIvyProductRepoServiceImpl implements GHAxonIvyProductRepoServ
       setup = parts[1];
     }
     locale = StringUtils.isEmpty(locale) ? Language.EN.getValue() : locale.toLowerCase();
-    addLocaleContent(moduleContents, DESCRIPTION, description.trim(), locale);
-    addLocaleContent(moduleContents, DEMO, demo.trim(), locale);
-    addLocaleContent(moduleContents, SETUP, setup.trim(), locale);
+    addLocaleContent(moduleContents, ReadmeConstants.DESCRIPTION, description.trim(), locale);
+    addLocaleContent(moduleContents, ReadmeConstants.DEMO, demo.trim(), locale);
+    addLocaleContent(moduleContents, ReadmeConstants.SETUP, setup.trim(), locale);
   }
 
   private void addLocaleContent(Map<String, Map<String, String>> moduleContents, String type, String content, String locale) {
@@ -355,7 +348,7 @@ public class GHAxonIvyProductRepoServiceImpl implements GHAxonIvyProductRepoServ
   }
 
   private boolean hasImageDirectives(String readmeContents) {
-    Pattern pattern = Pattern.compile(IMAGE_EXTENSION);
+    Pattern pattern = Pattern.compile(ReadmeConstants.IMAGE_EXTENSION);
     Matcher matcher = pattern.matcher(readmeContents);
     return matcher.find();
   }

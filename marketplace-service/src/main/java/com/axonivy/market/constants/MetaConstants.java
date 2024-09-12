@@ -8,4 +8,5 @@ public class MetaConstants {
   public static final String META_FILE = "meta.json";
   public static final String DEFAULT_VENDOR_NAME = "Axon Ivy AG";
   public static final String DEFAULT_VENDOR_URL = "https://www.axonivy.com";
+  public static final String INITIAL_VERSION = "1.0";
 }

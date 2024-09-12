@@ -14,6 +14,7 @@ import java.security.SecureRandom;
 import java.util.*;
 
 import com.axonivy.market.comparator.MavenVersionComparator;
+import com.axonivy.market.constants.MetaConstants;
 import com.axonivy.market.util.VersionUtils;
 import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.ObjectUtils;
@@ -91,7 +92,6 @@ public class ProductServiceImpl implements ProductService {
   private String marketRepoBranch;
 
   public static final String NON_NUMERIC_CHAR = "[^0-9.]";
-  private static final String INITIAL_VERSION = "1.0";
   private final SecureRandom random = new SecureRandom();
 
   public ProductServiceImpl(ProductRepository productRepository,
@@ -351,10 +351,8 @@ public class ProductServiceImpl implements ProductService {
 
   private void updateProductContentForNonStandardProduct(Map.Entry<String, List<GHContent>> ghContentEntity, Product product) {
     ProductModuleContent initialContent = new ProductModuleContent();
-    initialContent.setTag(INITIAL_VERSION);
+    initialContent.setTag(MetaConstants.INITIAL_VERSION);
     initialContent.setProductId(product.getId());
-    product.setReleasedVersions(List.of(INITIAL_VERSION));
-    product.setNewestReleaseVersion(INITIAL_VERSION);
     axonIvyProductRepoService.extractReadMeFileFromContents(product, ghContentEntity.getValue(), initialContent);
     productModuleContentRepository.save(initialContent);
   }
@@ -395,9 +393,9 @@ public class ProductServiceImpl implements ProductService {
       }
       product.getReleasedVersions().add(versionFromTag);
     }
-    if (!CollectionUtils.isEmpty(productModuleContents)) {
-      productModuleContentRepository.saveAll(productModuleContents);
-    }
+    productModuleContents.stream()
+            .filter(content -> !productModuleContentRepository.existsByProductIdAndTag(content.getProductId(), content.getTag()))
+            .forEach(productModuleContentRepository::save);
   }
 
   private Date getPublishedDateFromLatestTag(GHTag lastTag) {

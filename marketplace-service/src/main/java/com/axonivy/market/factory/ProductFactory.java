@@ -1,5 +1,6 @@
 package com.axonivy.market.factory;
 
+import com.axonivy.market.constants.MetaConstants;
 import com.axonivy.market.entity.Product;
 import com.axonivy.market.github.model.Meta;
 import com.axonivy.market.github.util.GitHubUtils;
@@ -56,6 +57,7 @@ public class ProductFactory {
     }
 
     product.setId(meta.getId());
+    extractSourceUrl(product, meta);
     product.setNames(mappingMultilingualismValueByMetaJSONFile(meta.getNames()));
     product.setMarketDirectory(extractParentDirectory(ghContent));
     product.setListed(meta.getListed());
@@ -72,9 +74,14 @@ public class ProductFactory {
     product.setContactUs(BooleanUtils.isTrue(meta.getContactUs()));
     product.setCost(StringUtils.isBlank(meta.getCost()) ? "Free" : StringUtils.capitalize(meta.getCost()));
     product.setCompatibility(meta.getCompatibility());
-    extractSourceUrl(product, meta);
     product.setArtifacts(meta.getMavenArtifacts());
-    product.setReleasedVersions(new ArrayList<>());
+
+    boolean isSourceUrlExist = StringUtils.isNotBlank(product.getSourceUrl());
+    if (!isSourceUrlExist) {
+      product.setReleasedVersions(List.of(MetaConstants.INITIAL_VERSION));
+      product.setNewestReleaseVersion(MetaConstants.INITIAL_VERSION);
+    }
+
     return product;
   }
 
