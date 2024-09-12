@@ -6,7 +6,9 @@ import {
 import { environment } from '../../../environments/environment';
 import { LoadingService } from '../services/loading/loading.service';
 import { inject } from '@angular/core';
-import { finalize } from 'rxjs';
+import { catchError, finalize, throwError } from 'rxjs';
+import { Router } from '@angular/router';
+import { ERROR_CODES, ERROR_PAGE_PATH } from '../../shared/constants/common.constant';
 
 export const REQUEST_BY = 'X-Requested-By';
 export const IVY = 'ivy';
@@ -17,6 +19,7 @@ export const IVY = 'ivy';
 export const SkipLoading = new HttpContextToken<boolean>(() => false);
 
 export const apiInterceptor: HttpInterceptorFn = (req, next) => {
+  const router = inject(Router);
   const loadingService = inject(LoadingService);
 
   if (req.url.includes('i18n')) {
@@ -40,6 +43,12 @@ export const apiInterceptor: HttpInterceptorFn = (req, next) => {
   loadingService.show();
 
   return next(cloneReq).pipe(
+    catchError(error => {
+      if (ERROR_CODES.includes(error.status)) {
+        router.navigate([ERROR_PAGE_PATH]);
+      }
+      return throwError(() => new Error(error.message));
+    }),
     finalize(() => {
       loadingService.hide();
     })

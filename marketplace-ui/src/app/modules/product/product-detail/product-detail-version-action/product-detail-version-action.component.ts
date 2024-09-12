@@ -1,15 +1,18 @@
 import {
   AfterViewInit,
+  ChangeDetectorRef,
   Component,
   computed,
   ElementRef,
   EventEmitter,
+  HostListener,
   inject,
   Input,
   model,
   Output,
   Signal,
   signal,
+  ViewChild,
   WritableSignal
 } from '@angular/core';
 import { ThemeService } from '../../../../core/services/theme/theme.service';
@@ -25,8 +28,8 @@ import { environment } from '../../../../../environments/environment';
 import { VERSION } from '../../../../shared/constants/common.constant';
 import { ProductDetailActionType } from '../../../../shared/enums/product-detail-action-type';
 import { RoutingQueryParamService } from '../../../../shared/services/routing.query.param.service';
+import { ProductDetail } from '../../../../shared/models/product-detail.model';
 
-const delayTimeBeforeHideMessage = 2000;
 @Component({
   selector: 'app-product-version-action',
   standalone: true,
@@ -44,6 +47,11 @@ export class ProductDetailVersionActionComponent implements AfterViewInit {
   @Output() installationCount = new EventEmitter<number>();
   @Input() productId!: string;
   @Input() actionType!: ProductDetailActionType;
+
+  @ViewChild('artifactDownloadButton') artifactDownloadButton!: ElementRef;
+  @ViewChild('artifactDownloadDialog') artifactDownloadDialog!: ElementRef;
+
+  @Input() product!: ProductDetail;
   selectedVersion = model<string>('');
   versions: WritableSignal<string[]> = signal([]);
   versionDropdown: Signal<ItemDropdown[]> = computed(() => {
@@ -58,7 +66,6 @@ export class ProductDetailVersionActionComponent implements AfterViewInit {
   artifacts: WritableSignal<ItemDropdown[]> = signal([]);
   isDevVersionsDisplayed = signal(false);
   isDropDownDisplayed = signal(false);
-  isInvalidInstallationEnvironment = signal(false);
   designerVersion = '';
   selectedArtifact: string | undefined = '';
   selectedArtifactName: string | undefined = '';
@@ -69,6 +76,7 @@ export class ProductDetailVersionActionComponent implements AfterViewInit {
   elementRef = inject(ElementRef);
   languageService = inject(LanguageService);
   routingQueryParamService = inject(RoutingQueryParamService);
+  changeDetectorRef = inject(ChangeDetectorRef);
 
   ngAfterViewInit() {
     const tooltipTriggerList = [].slice.call(
@@ -117,6 +125,42 @@ export class ProductDetailVersionActionComponent implements AfterViewInit {
       this.getVersionWithArtifact();
     }
     this.isDropDownDisplayed.set(!this.isDropDownDisplayed());
+    this.changeDetectorRef.detectChanges();
+    this.reLocaleDialog();
+  }
+
+  @HostListener('window:resize', ['$event'])
+  onResize() {
+    this.reLocaleDialog();
+  }
+
+  reLocaleDialog() {
+    const buttonPosition = this.getElementPosition(this.artifactDownloadButton);
+    const dialogPosition = this.getElementPosition(this.artifactDownloadDialog);
+    if (buttonPosition && dialogPosition) {
+      const dialogElement = this.artifactDownloadDialog.nativeElement;
+
+      dialogElement.style.position = 'absolute';
+      dialogElement.style.top = `${buttonPosition.y + buttonPosition.height}px`;
+
+      // Align the dialog to the center of the button
+      const dialogWidth = dialogElement.offsetWidth;
+      const buttonCenterX = buttonPosition.x + buttonPosition.width / 2;
+      dialogElement.style.left = `${buttonCenterX - dialogWidth / 2}px`;
+    }
+  }
+
+  getElementPosition(element: ElementRef) {
+    if (element?.nativeElement) {
+      const rect = element.nativeElement.getBoundingClientRect();
+      return {
+        x: rect.left + window.scrollX,
+        y: rect.top + window.scrollY,
+        width: rect.width,
+        height: rect.height
+      };
+    }
+    return null;
   }
 
   getVersionWithArtifact() {
