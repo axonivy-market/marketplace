@@ -194,3 +194,8 @@
   background-color: var(--bs-body-bg);
 }
 
+.btn_contact-us {
+  @media (max-width: 991px) {
+    width: 100%;
+  }
+}

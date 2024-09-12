@@ -18,7 +18,7 @@ common:
       models, business solutions and many utilities such as document
       generation and workflow user interfaces.
     link: Contribute to the community and
-      <a class="link-opacity-100" href="">build your own connector!</a>
+      <a class="link-opacity-100" href="https://github.com/axonivy-market/market/wiki" aria-label="Github - How to contribute">build your own connector!</a>
   filter:
     label: Filter
     value:
@@ -27,6 +27,11 @@ common:
       util: Utilities
       demos: Demos
       solution: Solutions
+  error:
+    code: 'ERROR CODE: 404'
+    oops: 'Oops!'
+    description: 'Our website is taking a break. It seems that we cannot find the page you requested.'
+    buttonLabel: Back to homepage
   sort:
     label: Sort by
     value:
@@ -71,12 +76,11 @@ common:
           compatibility: Compatibility
           cost: Cost
           language: Language
-          industry: Industry
           tag: Tags
           source: Source
           status: Status
           moreInformation: More Information
-          contactUs: Contact Us
+          contactUs: Contact us
       install:
         buttonLabel: Install Now
         buttonLabelInDesigner: Install
@@ -88,6 +92,8 @@ common:
           label: Choose target platform
         artifactSelector:
           label: Choose artifact
+      contactUs:
+        label: Contact us
   feedback:
     label: Feedback
     successMessage: Your feedback has been successfully submitted!

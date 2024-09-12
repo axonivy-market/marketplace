@@ -14,7 +14,7 @@ common:
     about: Durch die vielfältigen Angebote des Axon Ivy Marktplatzes wird die Prozessautomatisierung umfassend erweitert.
     contribute: Mit leistungsstarken Konnektoren, beispielsweise zur Einbindung von ChatGPT, MS Office oder den gängigen Datenbanken wird die Prozessautomatisierung komfortabel einfach.
     link: Werde Teil der Community und
-      <a class="link-opacity-100" href=""> baue deinen eigenen Konnektor.</a>
+      <a class="link-opacity-100" href="https://github.com/axonivy-market/market/wiki" aria-label="Github - How to contribute"> baue deinen eigenen Konnektor.</a>
   filter:
     label: Filter
     value:
@@ -23,6 +23,11 @@ common:
       util: Nützliches
       demos: Demos
       solution: Lösungen
+  error:
+    code: 'ERROR CODE: 404'
+    oops: 'Oops!'
+    description: 'Unsere Webseite macht eine kleine Pause. Offenbar finden wir die von Dir angefragte Seite nicht.'
+    buttonLabel: Zurück zur Startseite
   sort:
     label: Sortierung
     value:
@@ -67,7 +72,6 @@ common:
           compatibility: Kompatibilität
           cost: Kosten
           language: Sprache
-          industry: Branche
           tag: Tags
           source: Quelle
           status: Status
@@ -84,6 +88,8 @@ common:
           label: Zielplattform
         artifactSelector:
           label: Artefakt
+      contactUs:
+          label: Kontakt
   feedback:
     label: Rückmeldung
     successMessage: Ihr Feedback wurde erfolgreich übermittelt!

@@ -2,20 +2,22 @@ import { Component, ElementRef, EventEmitter, HostListener, inject, Input, Outpu
 import { NgClass } from '@angular/common';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { ItemDropdown } from '../../models/item-dropdown.model';
-
+import { ActiveDropDownItemPipe } from '../../pipes/active-dropdown-item.pipe';
 @Component({
   selector: 'app-common-dropdown',
   standalone: true,
   imports: [
     NgClass,
-    TranslateModule
-  ],
+    TranslateModule,
+    ActiveDropDownItemPipe
+],
   templateUrl: './common-dropdown.component.html',
   styleUrl: './common-dropdown.component.scss'
 })
-export class CommonDropdownComponent <T extends string> {
+export class CommonDropdownComponent<T extends string> {
   translateService = inject(TranslateService);
-  @Input() items:  ItemDropdown<T>[] = [];
+
+  @Input() items: ItemDropdown<T>[] = [];
   @Input() selectedItem: T | undefined;
   @Input() buttonClass = '';
   @Input() ariaLabel = '';
@@ -23,6 +25,8 @@ export class CommonDropdownComponent <T extends string> {
   @Output() itemSelected = new EventEmitter<ItemDropdown<T>>();
   elementRef = inject(ElementRef);
   isDropdownOpen = false;
+  @Input() metaDataJsonUrl: string | undefined = '';
+
   toggleDropdown() {
     this.isDropdownOpen = !this.isDropdownOpen;
   }
@@ -30,6 +34,7 @@ export class CommonDropdownComponent <T extends string> {
   onSelect(item: ItemDropdown<T>) {
     this.itemSelected.emit(item);
     this.isDropdownOpen = false;
+    this.metaDataJsonUrl = item.metaDataJsonUrl;
   }
 
   isActiveItem(value: ItemDropdown, selectedItem: T | undefined): boolean {
