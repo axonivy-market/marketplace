@@ -25,10 +25,10 @@ import static com.axonivy.market.constants.EntityConstants.PRODUCT_MODULE_CONTEN
 @Builder
 @Document(PRODUCT_MODULE_CONTENT)
 public class ProductModuleContent implements Serializable {
-  @Serial
-  private static final long serialVersionUID = 1L;
   @Id
   private String id;
+  @Serial
+  private static final long serialVersionUID = 1L;
   @Schema(description = "product Id (from meta.json)", example = "portal")
   private String productId;
   @Schema(description = "Target release tag", example = "v10.0.25")

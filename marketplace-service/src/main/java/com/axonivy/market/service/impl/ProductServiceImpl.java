@@ -213,6 +213,7 @@ public class ProductServiceImpl implements ProductService {
     groupGitHubFiles.entrySet().forEach(ghFileEntity -> {
       for (var file : ghFileEntity.getValue()) {
         Product product = new Product();
+        product.setLastUpdate(new Date());
         GHContent fileContent;
         try {
           fileContent = gitHubService.getGHContent(axonIvyMarketRepoService.getRepository(), file.getFileName(),
@@ -337,6 +338,7 @@ public class ProductServiceImpl implements ProductService {
     var gitHubContentMap = axonIvyMarketRepoService.fetchAllMarketItems();
     gitHubContentMap.entrySet().forEach(ghContentEntity -> {
       Product product = new Product();
+      product.setLastUpdate(new Date());
       for (var content : ghContentEntity.getValue()) {
         ProductFactory.mappingByGHContent(product, content);
       }

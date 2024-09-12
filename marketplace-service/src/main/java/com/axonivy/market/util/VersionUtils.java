@@ -126,7 +126,7 @@ public class VersionUtils {
         return result;
     }
     public static List<String> getReleaseTagsFromProduct(Product product) {
-        if (Objects.isNull(product)) {
+        if (Objects.isNull(product) || Objects.isNull(product.getReleasedVersions())) {
             return new ArrayList<>();
         }
         return product.getReleasedVersions().stream().map(version -> convertVersionToTag(product.getId(), version)).toList();
