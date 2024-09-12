@@ -31,6 +31,8 @@ jobs:
       SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
       SONAR_PROJECT_KEY : ${{ secrets.SONAR_PROJECT_KEY }}
     steps:
+      - name: Remove unused sonar images
+        run: docker image prune -af
       - name: Set up JDK 17
         uses: actions/setup-java@v3
         with:

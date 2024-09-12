@@ -7,7 +7,7 @@ const DATA_LANGUAGE = 'data-language';
 @Injectable({ providedIn: 'root' })
 export class LanguageService {
   private readonly language = signal(Language.EN);
-  selectedLanguage = computed(() => this.language() ?? Language.EN)
+  selectedLanguage = computed(() => this.language() ?? Language.EN);
 
   constructor(@Inject(DOCUMENT) private readonly document: Document) {
     const localStorage = this.document.defaultView?.localStorage;

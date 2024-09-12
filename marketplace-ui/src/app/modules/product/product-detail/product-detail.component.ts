@@ -3,7 +3,9 @@ import {
   Component,
   ElementRef,
   HostListener,
+  Signal,
   WritableSignal,
+  computed,
   inject,
   signal
 } from '@angular/core';
@@ -23,9 +25,8 @@ import {
 import { ItemDropdown } from '../../../shared/models/item-dropdown.model';
 import { ProductDetail } from '../../../shared/models/product-detail.model';
 import { ProductModuleContent } from '../../../shared/models/product-module-content.model';
-import { HasValueTabPipe } from '../../../shared/pipes/has-value-tab.pipe';
-import { MissingReadmeContentPipe } from '../../../shared/pipes/missing-readme-content.pipe';
 import { ProductTypeIconPipe } from '../../../shared/pipes/icon.pipe';
+import { MissingReadmeContentPipe } from '../../../shared/pipes/missing-readme-content.pipe';
 import { MultilingualismPipe } from '../../../shared/pipes/multilingualism.pipe';
 import { ProductTypePipe } from '../../../shared/pipes/product-type.pipe';
 import { AppModalService } from '../../../shared/services/app-modal.service';
@@ -42,6 +43,7 @@ import { ProductDetailVersionActionComponent } from './product-detail-version-ac
 import { ProductDetailService } from './product-detail.service';
 import { ProductInstallationCountActionComponent } from './product-installation-count-action/product-installation-count-action.component';
 import { ProductStarRatingNumberComponent } from './product-star-rating-number/product-star-rating-number.component';
+import { DisplayValue } from '../../../shared/models/display-value.model';
 
 export interface DetailTab {
   activeClass: string;
@@ -69,7 +71,6 @@ const DEFAULT_ACTIVE_TAB = 'description';
     ProductDetailFeedbackComponent,
     ProductInstallationCountActionComponent,
     ProductTypeIconPipe,
-    HasValueTabPipe,
     MissingReadmeContentPipe,
     CommonDropdownComponent
   ],
@@ -100,12 +101,11 @@ export class ProductDetailComponent {
   productDetailActionType = signal(ProductDetailActionType.STANDARD);
   detailContent!: DetailTab;
   detailTabs = PRODUCT_DETAIL_TABS;
-  activeTab = DEFAULT_ACTIVE_TAB;
-  selectedTabLabel: string = CommonUtils.getLabel(
-    PRODUCT_DETAIL_TABS[0].value,
-    PRODUCT_DETAIL_TABS
-  );
-  detailTabsForDropdown = PRODUCT_DETAIL_TABS;
+  activeTab = '';
+  displayedTabsSignal: Signal<ItemDropdown[]> = computed(() => {
+    this.languageService.selectedLanguage();
+    return this.getDisplayedTabsSignal();
+  });
   isDropdownOpen: WritableSignal<boolean> = signal(false);
   isTabDropdownShown: WritableSignal<boolean> = signal(false);
   selectedVersion = '';
@@ -113,6 +113,7 @@ export class ProductDetailComponent {
   showPopup!: boolean;
   isMobileMode = signal<boolean>(false);
   installationCount = 0;
+
   @HostListener('window:popstate', ['$event'])
   onPopState() {
     this.activeTab = window.location.hash.split('#tab-')[1];
@@ -130,6 +131,11 @@ export class ProductDetailComponent {
   }
 
   ngOnInit(): void {
+    this.router.navigate([], {
+      relativeTo: this.route,
+      replaceUrl: true
+    });
+
     const productId = this.route.snapshot.params['id'];
     this.productDetailService.productId.set(productId);
     if (productId) {
@@ -137,20 +143,14 @@ export class ProductDetailComponent {
         this.productDetail.set(productDetail);
         this.productModuleContent.set(productDetail.productModuleContent);
         this.metaProductJsonUrl = productDetail.metaProductJsonUrl;
-        this.detailTabsForDropdown = this.getNotEmptyTabs();
         this.productDetailService.productNames.set(productDetail.names);
-        localStorage.removeItem(STORAGE_ITEM);
         this.installationCount = productDetail.installationCount;
         this.handleProductContentVersion();
         this.updateProductDetailActionType(productDetail);
       });
+
       this.productFeedbackService.initFeedbacks();
       this.productStarRatingService.fetchData();
-    }
-
-    const savedTab = localStorage.getItem(STORAGE_ITEM);
-    if (savedTab) {
-      this.activeTab = savedTab;
     }
     this.updateDropdownSelection();
   }
@@ -160,7 +160,8 @@ export class ProductDetailComponent {
       return;
     }
     this.selectedVersion = VERSION.displayPrefix.concat(
-      this.convertTagToVersion(this.productModuleContent().tag));
+      this.convertTagToVersion(this.productModuleContent().tag)
+    );
   }
 
   updateProductDetailActionType(productDetail: ProductDetail) {
@@ -204,6 +205,38 @@ export class ProductDetailComponent {
     });
   }
 
+  getContent(value: string): boolean {
+    const content = this.productModuleContent();
+
+    if (Object.keys(content).length === 0) {
+      return false;
+    }
+
+    const conditions: { [key: string]: boolean } = {
+      description:
+        content.description !== null &&
+        CommonUtils.isContentDisplayedBasedOnLanguage(
+          content.description,
+          this.languageService.selectedLanguage()
+        ),
+      demo:
+        content.demo !== null &&
+        CommonUtils.isContentDisplayedBasedOnLanguage(
+          content.demo,
+          this.languageService.selectedLanguage()
+        ),
+      setup:
+        content.setup !== null &&
+        CommonUtils.isContentDisplayedBasedOnLanguage(
+          content.setup,
+          this.languageService.selectedLanguage()
+        ),
+      dependency: content.isDependency
+    };
+
+    return conditions[value] ?? false;
+  }
+
   isEmptyProductContent(): boolean {
     const content = this.productModuleContent();
     return !content || Object.keys(content).length === 0;
@@ -223,9 +256,12 @@ export class ProductDetailComponent {
 
   onTabChange(event: string) {
     this.setActiveTab(event);
-    this.selectedTabLabel = CommonUtils.getLabel(event, PRODUCT_DETAIL_TABS);
     this.isTabDropdownShown.update(value => !value);
     this.onTabDropdownShown();
+  }
+
+  getSelectedTabLabel() {
+    return CommonUtils.getLabel(this.activeTab, PRODUCT_DETAIL_TABS);
   }
 
   updateDropdownSelection() {
@@ -248,7 +284,12 @@ export class ProductDetailComponent {
     }
     this.updateDropdownSelection();
 
-    localStorage.setItem(STORAGE_ITEM, tab);
+    const savedTab = {
+      productId: this.productDetail().id,
+      savedActiveTab: this.activeTab
+    };
+
+    localStorage.setItem(STORAGE_ITEM, JSON.stringify(savedTab));
   }
 
   onShowInfoContent() {
@@ -306,19 +347,27 @@ export class ProductDetailComponent {
     });
   }
 
-  getNotEmptyTabs(): ItemDropdown[] {
-    return this.detailTabsForDropdown.filter(tab =>
-      HasValueTabPipe.prototype.transform(
-        tab.value,
-        this.productModuleContent()
-      )
-    );
-  }
-
   convertTagToVersion(tag: string): string {
     if (tag !== '' && tag.startsWith(VERSION.tagPrefix)) {
       return tag.substring(1);
     }
     return tag;
+  }
+
+  getDisplayedTabsSignal() {
+    const displayedTabs: ItemDropdown[] = [];
+    for (const detailTab of this.detailTabs) {
+      if (this.getContent(detailTab.value)) {
+        displayedTabs.push(detailTab);
+        this.activeTab = displayedTabs[0].value;
+      }
+    }
+    return displayedTabs;
+  }
+
+  getProductModuleContentValue(key: ItemDropdown): DisplayValue | null {
+    type tabName = 'description' | 'demo' | 'setup';
+    const value = key.value as tabName;
+    return this.productModuleContent()[value];
   }
 }
