@@ -72,7 +72,6 @@ common:
           compatibility: Kompatibilität
           cost: Kosten
           language: Sprache
-          industry: Branche
           tag: Tags
           source: Quelle
           status: Status

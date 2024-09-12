@@ -76,7 +76,6 @@ common:
           compatibility: Compatibility
           cost: Cost
           language: Language
-          industry: Industry
           tag: Tags
           source: Source
           status: Status
