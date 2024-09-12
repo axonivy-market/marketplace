@@ -394,8 +394,8 @@ public class ProductServiceImpl implements ProductService {
       product.getReleasedVersions().add(versionFromTag);
     }
     productModuleContents.stream()
-            .filter(content -> !productModuleContentRepository.existsByProductIdAndTag(content.getProductId(), content.getTag()))
-            .forEach(productModuleContentRepository::save);
+      .filter(content -> !productModuleContentRepository.existsByProductIdAndTag(content.getProductId(), content.getTag()))
+      .forEach(productModuleContentRepository::save);
   }
 
   private Date getPublishedDateFromLatestTag(GHTag lastTag) {
