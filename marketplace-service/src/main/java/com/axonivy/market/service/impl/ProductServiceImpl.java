@@ -381,7 +381,12 @@ public class ProductServiceImpl implements ProductService {
       ghTags = ghTags.stream().filter(t -> !currentTags.contains(t.getName())).toList();
     }
 
+    List<String> existedTag = productModuleContentRepository.findByProductId(product.getId()).stream()
+        .map(ProductModuleContent::getTag).toList();
     for (GHTag ghTag : ghTags) {
+      if (existedTag.contains(ghTag.getName())) {
+        continue;
+      }
       ProductModuleContent productModuleContent =
           axonIvyProductRepoService.getReadmeAndProductContentsFromTag(product, productRepo, ghTag.getName());
       if (productModuleContent != null) {
@@ -393,9 +398,9 @@ public class ProductServiceImpl implements ProductService {
       }
       product.getReleasedVersions().add(versionFromTag);
     }
-    productModuleContents.stream()
-        .filter(content -> !productModuleContentRepository.existsByProductIdAndTag(content.getProductId(), content.getTag()))
-        .forEach(productModuleContentRepository::save);
+    if (!CollectionUtils.isEmpty(productModuleContents)) {
+      productModuleContentRepository.saveAll(productModuleContents);
+    }
   }
 
   private Date getPublishedDateFromLatestTag(GHTag lastTag) {
