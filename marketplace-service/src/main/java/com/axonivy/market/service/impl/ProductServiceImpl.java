@@ -198,7 +198,7 @@ public class ProductServiceImpl implements ProductService {
 
   private void updateLatestChangeToProductsFromGithubRepo() {
     var fromSHA1 = marketRepoMeta.getLastSHA1();
-    var toSHA1 = ofNullable(lastGHCommit).map(GHCommit::getSHA1).orElse("");
+    var toSHA1 = ofNullable(lastGHCommit).map(GHCommit::getSHA1).orElse(EMPTY);
     log.warn("**ProductService: synchronize products from SHA1 {} to SHA1 {}", fromSHA1, toSHA1);
     List<GitHubFile> gitHubFileChanges = axonIvyMarketRepoService.fetchMarketItemsBySHA1Range(fromSHA1, toSHA1);
     Map<String, List<GitHubFile>> groupGitHubFiles = new HashMap<>();
