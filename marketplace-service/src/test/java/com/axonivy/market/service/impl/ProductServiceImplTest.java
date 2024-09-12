@@ -335,15 +335,16 @@ class ProductServiceImplTest extends BaseSetup {
     Map<String, List<GHContent>> mockGHContentMap = new HashMap<>();
     mockGHContentMap.put(SAMPLE_PRODUCT_ID, List.of(mockContent));
     when(marketRepoService.fetchAllMarketItems()).thenReturn(mockGHContentMap);
-    when(productModuleContentRepository.saveAll(anyList())).thenReturn(List.of(mockReadmeProductContent()));
+    when(productModuleContentRepository.existsByProductIdAndTag("amazon", RELEASE_TAG)).thenReturn(false);
+    when(productModuleContentRepository.save(any())).thenReturn(mockReadmeProductContent());
 
     // Executes
     productService.syncLatestDataFromMarketRepo();
-    verify(productModuleContentRepository).saveAll(argumentCaptorProductModuleContents.capture());
+    verify(productModuleContentRepository).save(argumentCaptorProductModuleContent.capture());
     verify(productRepository).save(argumentCaptor.capture());
 
-    assertThat(argumentCaptorProductModuleContents.getValue()).usingRecursiveComparison()
-        .isEqualTo(List.of(mockReadmeProductContent()));
+    assertThat(argumentCaptorProductModuleContent.getValue()).usingRecursiveComparison()
+            .isEqualTo(mockReadmeProductContent());
   }
 
   @Test
@@ -393,16 +394,60 @@ class ProductServiceImplTest extends BaseSetup {
 
     when(ghAxonIvyProductRepoService.getReadmeAndProductContentsFromTag(any(), any(), anyString()))
         .thenReturn(mockReturnProductContent);
-    when(productModuleContentRepository.saveAll(anyList()))
-        .thenReturn(List.of(mockReadmeProductContent(), mockReturnProductContent));
 
     // Executes
     productService.syncLatestDataFromMarketRepo();
 
-    verify(productModuleContentRepository).saveAll(argumentCaptorProductModuleContents.capture());
+    verify(productModuleContentRepository, times(2)).save(argumentCaptorProductModuleContent.capture());
     verify(productRepository).save(argumentCaptor.capture());
     assertThat(argumentCaptor.getValue().getProductModuleContent()).usingRecursiveComparison()
         .isEqualTo(mockReadmeProductContent());
+  }
+
+  @Test
+  void testSyncProductsSecondTimeWithDuplicatedContent() throws IOException {
+    String firstTag = "v10.0.2";
+    String secondTag = "v10.0.3";
+    var gitHubRepoMeta = mock(GitHubRepoMeta.class);
+    when(gitHubRepoMeta.getLastSHA1()).thenReturn(SHA1_SAMPLE);
+    var mockCommit = mockGHCommitHasSHA1(SHA1_SAMPLE);
+    when(marketRepoService.getLastCommit(anyLong())).thenReturn(mockCommit);
+    when(repoMetaRepository.findByRepoName(anyString())).thenReturn(gitHubRepoMeta);
+    when(productRepository.findAll()).thenReturn(mockProducts());
+
+
+    GHCommit mockGHCommit = mock(GHCommit.class);
+
+    GHTag mockTag = mock(GHTag.class);
+    when(mockTag.getName()).thenReturn(firstTag);
+
+    GHTag mockTag2 = mock(GHTag.class);
+    when(mockTag2.getName()).thenReturn(secondTag);
+    when(mockTag2.getCommit()).thenReturn(mockGHCommit);
+
+    when(mockGHCommit.getCommitDate()).thenReturn(new Date());
+    when(gitHubService.getRepositoryTags(anyString())).thenReturn(Arrays.asList(mockTag, mockTag2));
+
+    ProductModuleContent mockReturnProductContent = mockReadmeProductContent();
+    mockReturnProductContent.setTag(firstTag);
+
+    ProductModuleContent mockReturnProductContent2 = mockReadmeProductContent();
+    mockReturnProductContent.setTag(secondTag);
+
+    when(ghAxonIvyProductRepoService.getReadmeAndProductContentsFromTag(any(), any(), eq(firstTag)))
+            .thenReturn(mockReturnProductContent);
+    when(ghAxonIvyProductRepoService.getReadmeAndProductContentsFromTag(any(), any(), eq(secondTag)))
+            .thenReturn(mockReturnProductContent2);
+
+    when(productModuleContentRepository.existsByProductIdAndTag("amazon", firstTag)).thenReturn(true);
+    when(productModuleContentRepository.existsByProductIdAndTag("amazon", secondTag)).thenReturn(false);
+
+    // Executes
+    productService.syncLatestDataFromMarketRepo();
+
+    verify(productModuleContentRepository).save(argumentCaptorProductModuleContent.capture());
+    assertThat(argumentCaptorProductModuleContent.getValue()).usingRecursiveComparison()
+            .isEqualTo(mockReturnProductContent);
   }
 
   @Test
@@ -604,6 +649,7 @@ class ProductServiceImplTest extends BaseSetup {
   private ProductModuleContent mockReadmeProductContent() {
     ProductModuleContent productModuleContent = new ProductModuleContent();
     productModuleContent.setId("123");
+    productModuleContent.setProductId("amazon");
     productModuleContent.setTag("v10.0.2");
     productModuleContent.setName("Amazon Comprehend");
     Map<String, String> description = new HashMap<>();
