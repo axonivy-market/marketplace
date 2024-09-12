@@ -23,7 +23,9 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import com.axonivy.market.assembler.ProductDetailModelAssembler;
 import com.axonivy.market.entity.Product;
@@ -230,5 +232,19 @@ class ProductDetailsControllerTest {
     jsonContent.setName("aspose-barcode");
 
     return jsonContent;
+  }
+
+  @Test
+  void test_getImageFromId() throws IOException {
+    byte[] mockImageData = "image data".getBytes();
+    when(productService.readImage("66e2b14868f2f95b2f95549a")).thenReturn(mockImageData);
+
+    HttpHeaders headers = new HttpHeaders();
+    headers.setContentType(MediaType.IMAGE_PNG);
+    ResponseEntity<byte[]> expectedResult = new ResponseEntity<>(mockImageData, headers, HttpStatus.OK);
+
+    ResponseEntity<byte[]> result = productDetailsController.getImageFromId("66e2b14868f2f95b2f95549a");
+
+    assertEquals(expectedResult, result);
   }
 }

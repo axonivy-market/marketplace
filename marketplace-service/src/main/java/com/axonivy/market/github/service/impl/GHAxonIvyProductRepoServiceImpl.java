@@ -283,6 +283,7 @@ public class GHAxonIvyProductRepoServiceImpl implements GHAxonIvyProductRepoServ
 
     allContentOfImages.forEach(content -> {
       Image image = imageService.mappingImageFromGHContent(product, content);
+      System.out.println(content.getName());
       imageUrls.put(content.getName(), "imageId-".concat(image.getId()));
     });
 

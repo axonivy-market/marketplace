@@ -2,11 +2,13 @@ package com.axonivy.market.util;
 
 import com.axonivy.market.controller.ProductDetailsController;
 import com.axonivy.market.entity.ProductModuleContent;
+import org.apache.commons.lang3.ObjectUtils;
 import org.springframework.hateoas.Link;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -15,21 +17,27 @@ import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 
 public class ImageUtils {
   public static ProductModuleContent mappingImageForProductModuleContent(ProductModuleContent productModuleContent) {
+    if (ObjectUtils.isEmpty(productModuleContent)) {
+      return null;
+    }
     mappingImageUrl(productModuleContent.getDescription());
     mappingImageUrl(productModuleContent.getDemo());
     mappingImageUrl(productModuleContent.getSetup());
     return productModuleContent;
   }
 
-  private static void mappingImageUrl(Map<String, String> content){
-    content.forEach((key , value ) -> {
+  private static void mappingImageUrl(Map<String, String> content) {
+    if (ObjectUtils.isEmpty(content)) {
+      return;
+    }
+    content.forEach((key, value) -> {
       List<String> imageIds = extractAllImageId(value);
       for (String imageId : imageIds) {
-        String rawId = imageId.replace("imageId-","");
+        String rawId = imageId.replace("imageId-", "");
         Link link = linkTo(methodOn(ProductDetailsController.class).getImageFromId(rawId)).withSelfRel();
-        value = value.replace(imageId,link.getHref());
+        value = value.replace(imageId, link.getHref());
       }
-      content.put(key,value);
+      content.put(key, value);
     });
   }
 

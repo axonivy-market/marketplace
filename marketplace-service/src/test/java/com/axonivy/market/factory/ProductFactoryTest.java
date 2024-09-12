@@ -49,7 +49,7 @@ class ProductFactoryTest {
     assertNotEquals(null, result);
 
     when(content.getName()).thenReturn(CommonConstants.LOGO_FILE);
-    when(content.getDownloadUrl()).thenReturn(DUMMY_LOGO_URL);
+//    when(content.getDownloadUrl()).thenReturn(DUMMY_LOGO_URL);
     result = ProductFactory.mappingByGHContent(product, content);
     assertNotEquals(null, result);
   }
