@@ -351,6 +351,7 @@ public class ProductServiceImpl implements ProductService {
 
   private void updateProductContentForNonStandardProduct(Map.Entry<String, List<GHContent>> ghContentEntity, Product product) {
     ProductModuleContent initialContent = new ProductModuleContent();
+    initialContent.setId(product.getId() + INITIAL_VERSION);
     initialContent.setTag(INITIAL_VERSION);
     initialContent.setProductId(product.getId());
     product.setReleasedVersions(List.of(INITIAL_VERSION));

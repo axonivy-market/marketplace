@@ -1,5 +1,6 @@
 package com.axonivy.market.repository.impl;
 
+import com.axonivy.market.constants.EntityConstants;
 import com.axonivy.market.constants.MongoDBConstants;
 import com.axonivy.market.entity.Product;
 import com.axonivy.market.entity.ProductModuleContent;
@@ -22,7 +23,7 @@ import java.util.Objects;
 import java.util.Optional;
 
 @Builder
-public class CustomProductRepositoryImpl implements CustomProductRepository {
+public class CustomProductRepositoryImpl extends CustomRepository implements CustomProductRepository {
   private final MongoTemplate mongoTemplate;
   private final ProductModuleContentRepository contentRepository;
 
@@ -31,12 +32,9 @@ public class CustomProductRepositoryImpl implements CustomProductRepository {
       this.contentRepository = contentRepository;
   }
 
-  private AggregationOperation createIdMatchOperation(String id) {
-    return Aggregation.match(Criteria.where(MongoDBConstants.ID).is(id));
-  }
 
   public Product queryProductByAggregation(Aggregation aggregation) {
-    return Optional.of(mongoTemplate.aggregate(aggregation, MongoDBConstants.PRODUCT_COLLECTION, Product.class))
+    return Optional.of(mongoTemplate.aggregate(aggregation, EntityConstants.PRODUCT, Product.class))
         .map(AggregationResults::getUniqueMappedResult).orElse(null);
   }
 
@@ -90,9 +88,6 @@ public class CustomProductRepositoryImpl implements CustomProductRepository {
     return updatedProduct != null ? updatedProduct.getInstallationCount() : 0;
   }
 
-  private Query createQueryById(String id) {
-    return new Query(Criteria.where(MongoDBConstants.ID).is(id));
-  }
 
   @Override
   public void increaseInstallationCountForProductByDesignerVersion(String productId, String designerVersion) {

@@ -7,10 +7,13 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.index.CompoundIndex;
+import org.springframework.data.mongodb.core.index.CompoundIndexes;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.io.Serial;
 import java.io.Serializable;
+import java.util.Date;
 import java.util.Map;
 
 import static com.axonivy.market.constants.EntityConstants.PRODUCT_MODULE_CONTENT;
@@ -22,10 +25,10 @@ import static com.axonivy.market.constants.EntityConstants.PRODUCT_MODULE_CONTEN
 @Builder
 @Document(PRODUCT_MODULE_CONTENT)
 public class ProductModuleContent implements Serializable {
-  @Id
-  private String id;
   @Serial
   private static final long serialVersionUID = 1L;
+  @Id
+  private String id;
   @Schema(description = "product Id (from meta.json)", example = "portal")
   private String productId;
   @Schema(description = "Target release tag", example = "v10.0.25")
@@ -46,4 +49,5 @@ public class ProductModuleContent implements Serializable {
   private String artifactId;
   @Schema(description = "Artifact file type", example = "iar")
   private String type;
+  private Date createdAt = new Date();
 }

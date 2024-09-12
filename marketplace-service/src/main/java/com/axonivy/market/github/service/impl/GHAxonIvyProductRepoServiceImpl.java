@@ -34,6 +34,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -165,6 +166,7 @@ public class GHAxonIvyProductRepoServiceImpl implements GHAxonIvyProductRepoServ
     ProductModuleContent productModuleContent = new ProductModuleContent();
     try {
       List<GHContent> contents = getProductFolderContents(product, ghRepository, tag);
+      productModuleContent.setId(product.getId() + tag);
       productModuleContent.setProductId(product.getId());
       productModuleContent.setTag(tag);
       updateDependencyContentsFromProductJson(productModuleContent, contents , product);
