@@ -211,7 +211,8 @@ export const MOCK_PRODUCT_MODULE_CONTENT: ProductModuleContent = {
   name: 'Jira Connector',
   groupId: 'com.axonivy.connector.jira',
   artifactId: 'jira-connector',
-  type: 'iar'
+  type: 'iar',
+  productId: 'jira-connector'
 };
 
 export const MOCK_PRODUCT_DETAIL_BY_VERSION: ProductDetail = {
@@ -255,7 +256,8 @@ export const MOCK_PRODUCT_DETAIL_BY_VERSION: ProductDetail = {
     name: 'cron job',
     groupId: 'com.axonivy.utils.cronjob',
     artifactId: 'cronjob',
-    type: 'iar'
+    type: 'iar',
+    productId: 'cronjob'
   },
   installationCount: 0,
   _links: {
@@ -307,7 +309,8 @@ export const MOCK_PRODUCT_DETAIL: ProductDetail = {
     name: 'Jira Connector',
     groupId: 'com.axonivy.connector.jira',
     artifactId: 'jira-connector',
-    type: 'iar'
+    type: 'iar',
+    productId: 'jira-connector',
   },
   _links: {
     self: {

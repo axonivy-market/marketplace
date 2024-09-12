@@ -28,6 +28,8 @@ import { ProductModuleContent } from '../../../shared/models/product-module-cont
 import { RoutingQueryParamService } from '../../../shared/services/routing.query.param.service';
 import { MockProductService } from '../../../shared/mocks/mock-services';
 import { ProductDetailActionType } from '../../../shared/enums/product-detail-action-type';
+import { LanguageService } from '../../../core/services/language/language.service';
+import { Language } from '../../../shared/enums/language.enum';
 const products = MOCK_PRODUCTS._embedded.products;
 declare const viewport: Viewport;
 
@@ -35,11 +37,17 @@ describe('ProductDetailComponent', () => {
   let component: ProductDetailComponent;
   let fixture: ComponentFixture<ProductDetailComponent>;
   let routingQueryParamService: jasmine.SpyObj<RoutingQueryParamService>;
+  let languageService: jasmine.SpyObj<LanguageService>;
 
   beforeEach(async () => {
     const routingQueryParamServiceSpy = jasmine.createSpyObj(
       'RoutingQueryParamService',
       ['getDesignerVersionFromCookie', 'isDesignerEnv']
+    );
+    
+    const languageServiceSpy = jasmine.createSpyObj(
+      'LanguageService',
+      ['selectedLanguage']
     );
 
     await TestBed.configureTestingModule({
@@ -64,6 +72,10 @@ describe('ProductDetailComponent', () => {
         {
           provide: RoutingQueryParamService,
           useValue: routingQueryParamServiceSpy
+        },
+        {
+          provide: LanguageService,
+          useValue: languageServiceSpy
         }
       ]
     })
@@ -77,6 +89,10 @@ describe('ProductDetailComponent', () => {
     routingQueryParamService = TestBed.inject(
       RoutingQueryParamService
     ) as jasmine.SpyObj<RoutingQueryParamService>;
+
+    languageService = TestBed.inject(
+      LanguageService
+    ) as jasmine.SpyObj<LanguageService>;
   });
 
   beforeEach(() => {
@@ -158,7 +174,414 @@ describe('ProductDetailComponent', () => {
     fixture.detectChanges();
     const description = fixture.debugElement.query(By.css('#description'));
     expect(description).toBeFalsy();
+    }
+  )
+
+  it('should return true for description when in EN language it is not null and not undefined and not empty', () => {
+    const mockContent: ProductModuleContent = {
+      ...MOCK_PRODUCT_MODULE_CONTENT,
+      description: { en: 'Test description' }
+    };
+    
+    const selectedLanguage = Language.EN;
+
+    languageService.selectedLanguage.and.returnValue(
+      selectedLanguage
+    );
+
+    component.productModuleContent.set(mockContent);
+    expect(component.getContent('description')).toBeTrue();
   });
+
+  it('should return true for description when in DE language it is not null and not undefined and not empty', () => {
+    const mockContent: ProductModuleContent = {
+      ...MOCK_PRODUCT_MODULE_CONTENT,
+      description: { de: 'Test description' }
+    };
+    
+    const selectedLanguage = Language.DE;
+
+    languageService.selectedLanguage.and.returnValue(
+      selectedLanguage
+    );
+
+    component.productModuleContent.set(mockContent);
+    expect(component.getContent('description')).toBeTrue();
+  });
+
+  it('should return true for description when in DE language it is empty but in EN language it has value', () => {
+    const mockContent: ProductModuleContent = {
+      ...MOCK_PRODUCT_MODULE_CONTENT,
+      description: { en: 'Test description', de: '' }
+    };
+    
+    const selectedLanguage = Language.DE;
+
+    languageService.selectedLanguage.and.returnValue(
+      selectedLanguage
+    );
+
+    component.productModuleContent.set(mockContent);
+    expect(component.getContent('description')).toBeTrue();
+  });
+
+  it('should return true for description when in DE language it is undefined but in EN language it has value', () => {
+    const mockContent: ProductModuleContent = {
+      ...MOCK_PRODUCT_MODULE_CONTENT,
+      description: { en: 'Test description'}
+    };
+    
+    const selectedLanguage = Language.DE;
+
+    languageService.selectedLanguage.and.returnValue(
+      selectedLanguage
+    );
+
+    component.productModuleContent.set(mockContent);
+    expect(component.getContent('description')).toBeTrue();
+  });
+
+  it('should return false for description when it is null', () => {
+    const mockContentWithNullDescription: ProductModuleContent =
+      MOCK_PRODUCT_MODULE_CONTENT;
+    component.productModuleContent.set(mockContentWithNullDescription);
+    expect(component.getContent('description')).toBeFalse();
+  });
+
+  it('should return false for description when in EN language it is an empty string', () => {
+    const mockContent: ProductModuleContent = {
+      ...MOCK_PRODUCT_MODULE_CONTENT,
+      description: { en: '', de: 'Test description' }
+    };
+    
+    const selectedLanguage = Language.EN;
+
+    languageService.selectedLanguage.and.returnValue(
+      selectedLanguage
+    );
+
+    component.productModuleContent.set(mockContent);
+    expect(component.getContent('description')).toBeFalse();
+  });
+
+  it('should return false for description when in EN language it is undefined', () => {
+    const mockContent: ProductModuleContent = {
+      ...MOCK_PRODUCT_MODULE_CONTENT,
+      description: { de: "Test description" }
+    };
+
+    const selectedLanguage = Language.EN;
+
+    languageService.selectedLanguage.and.returnValue(
+      selectedLanguage
+    );
+
+    component.productModuleContent.set(mockContent);
+    expect(component.getContent('description')).toBeFalse();
+  });
+
+  it('should return false for description when in both DE and EN language it is an empty string', () => {
+    const mockContent: ProductModuleContent = {
+      ...MOCK_PRODUCT_MODULE_CONTENT,
+      description: { en: '', de: '' }
+    };
+    
+    const selectedLanguage = Language.EN;
+
+    languageService.selectedLanguage.and.returnValue(
+      selectedLanguage
+    );
+
+    component.productModuleContent.set(mockContent);
+    expect(component.getContent('description')).toBeFalse();
+  });
+
+  it('should return false for description when in both DE and EN language it is an undefined', () => {
+    const mockContent: ProductModuleContent = {
+      ...MOCK_PRODUCT_MODULE_CONTENT,
+      description: {}
+    };
+    
+    const selectedLanguage = Language.EN;
+
+    languageService.selectedLanguage.and.returnValue(
+      selectedLanguage
+    );
+
+    component.productModuleContent.set(mockContent);
+    expect(component.getContent('description')).toBeFalse();
+  });
+
+  it('should return true for setup when in EN language it is not null and not undefined and not empty', () => {
+    const mockContent: ProductModuleContent = {
+      ...MOCK_PRODUCT_MODULE_CONTENT,
+      setup: { en: 'Test setup' }
+    };
+    
+    const selectedLanguage = Language.EN;
+
+    languageService.selectedLanguage.and.returnValue(
+      selectedLanguage
+    );
+
+    component.productModuleContent.set(mockContent);
+    expect(component.getContent('setup')).toBeTrue();
+  });
+
+  it('should return true for setup when in DE language it is not null and not undefined and not empty', () => {
+    const mockContent: ProductModuleContent = {
+      ...MOCK_PRODUCT_MODULE_CONTENT,
+      setup: { de: 'Test setup' }
+    };
+    
+    const selectedLanguage = Language.DE;
+
+    languageService.selectedLanguage.and.returnValue(
+      selectedLanguage
+    );
+
+    component.productModuleContent.set(mockContent);
+    expect(component.getContent('setup')).toBeTrue();
+  });
+
+  it('should return true for setup when in DE language it is empty but in EN language it has value', () => {
+    const mockContent: ProductModuleContent = {
+      ...MOCK_PRODUCT_MODULE_CONTENT,
+      setup: { en: 'Test setup', de: '' }
+    };
+    
+    const selectedLanguage = Language.DE;
+
+    languageService.selectedLanguage.and.returnValue(
+      selectedLanguage
+    );
+
+    component.productModuleContent.set(mockContent);
+    expect(component.getContent('setup')).toBeTrue();
+  });
+
+  it('should return true for setup when in DE language it is undefined but in EN language it has value', () => {
+    const mockContent: ProductModuleContent = {
+      ...MOCK_PRODUCT_MODULE_CONTENT,
+      setup: { en: 'Test setup'}
+    };
+    
+    const selectedLanguage = Language.DE;
+
+    languageService.selectedLanguage.and.returnValue(
+      selectedLanguage
+    );
+
+    component.productModuleContent.set(mockContent);
+    expect(component.getContent('setup')).toBeTrue();
+  });
+
+  it('should return false for setup when it is null', () => {
+    const mockContentWithNullSetup: ProductModuleContent =
+      MOCK_PRODUCT_MODULE_CONTENT;
+    component.productModuleContent.set(mockContentWithNullSetup);
+    expect(component.getContent('setup')).toBeFalse();
+  });
+
+  it('should return false for setup when in EN language it is an empty string', () => {
+    const mockContent: ProductModuleContent = {
+      ...MOCK_PRODUCT_MODULE_CONTENT,
+      setup: { en: '', de: "Test setup" }
+    };
+
+    const selectedLanguage = Language.EN;
+
+    languageService.selectedLanguage.and.returnValue(
+      selectedLanguage
+    );
+
+    component.productModuleContent.set(mockContent);
+    expect(component.getContent('setup')).toBeFalse();
+  });
+
+  it('should return false for setup when in EN language it is undefined', () => {
+    const mockContent: ProductModuleContent = {
+      ...MOCK_PRODUCT_MODULE_CONTENT,
+      setup: { de: "Test setup" }
+    };
+
+    const selectedLanguage = Language.EN;
+
+    languageService.selectedLanguage.and.returnValue(
+      selectedLanguage
+    );
+
+    component.productModuleContent.set(mockContent);
+    expect(component.getContent('setup')).toBeFalse();
+  });
+
+  it('should return false for setup when in both DE and EN language it is an empty string', () => {
+    const mockContent: ProductModuleContent = {
+      ...MOCK_PRODUCT_MODULE_CONTENT,
+      setup: { en: '', de: '' }
+    };
+    
+    const selectedLanguage = Language.EN;
+
+    languageService.selectedLanguage.and.returnValue(
+      selectedLanguage
+    );
+
+    component.productModuleContent.set(mockContent);
+    expect(component.getContent('setup')).toBeFalse();
+  });
+
+  it('should return false for setup when in both DE and EN language it is an undefined', () => {
+    const mockContent: ProductModuleContent = {
+      ...MOCK_PRODUCT_MODULE_CONTENT,
+      setup: {}
+    };
+    
+    const selectedLanguage = Language.EN;
+
+    languageService.selectedLanguage.and.returnValue(
+      selectedLanguage
+    );
+
+    component.productModuleContent.set(mockContent);
+    expect(component.getContent('setup')).toBeFalse();
+  });
+
+  it('should return true for demo when in EN language it is not null and not undefined and not empty', () => {
+    const mockContent: ProductModuleContent = {
+      ...MOCK_PRODUCT_MODULE_CONTENT,
+      demo: { en: 'Test demo' }
+    };
+    
+    const selectedLanguage = Language.EN;
+
+    languageService.selectedLanguage.and.returnValue(
+      selectedLanguage
+    );
+
+    component.productModuleContent.set(mockContent);
+    expect(component.getContent('demo')).toBeTrue();
+  });
+
+  it('should return true for demo when in DE language it is not null and not undefined and not empty', () => {
+    const mockContent: ProductModuleContent = {
+      ...MOCK_PRODUCT_MODULE_CONTENT,
+      demo: { de: 'Test demo' }
+    };
+    
+    const selectedLanguage = Language.DE;
+
+    languageService.selectedLanguage.and.returnValue(
+      selectedLanguage
+    );
+
+    component.productModuleContent.set(mockContent);
+    expect(component.getContent('demo')).toBeTrue();
+  });
+
+  it('should return true for demo when in DE language it is empty but in EN language it has value', () => {
+    const mockContent: ProductModuleContent = {
+      ...MOCK_PRODUCT_MODULE_CONTENT,
+      demo: { en: 'Test demo', de: '' }
+    };
+    
+    const selectedLanguage = Language.DE;
+
+    languageService.selectedLanguage.and.returnValue(
+      selectedLanguage
+    );
+
+    component.productModuleContent.set(mockContent);
+    expect(component.getContent('demo')).toBeTrue();
+  });
+
+  it('should return true for demo when in DE language it is undefined but in EN language it has value', () => {
+    const mockContent: ProductModuleContent = {
+      ...MOCK_PRODUCT_MODULE_CONTENT,
+      demo: { en: 'Test demo'}
+    };
+    
+    const selectedLanguage = Language.DE;
+
+    languageService.selectedLanguage.and.returnValue(
+      selectedLanguage
+    );
+
+    component.productModuleContent.set(mockContent);
+    expect(component.getContent('demo')).toBeTrue();
+  });
+
+  it('should return false for demo when it is null', () => {
+    const mockContentWithNullDemo: ProductModuleContent =
+      MOCK_PRODUCT_MODULE_CONTENT;
+    component.productModuleContent.set(mockContentWithNullDemo);
+    expect(component.getContent('demo')).toBeFalse();
+  });
+
+  it('should return false for demo when in EN language it is an empty string', () => {
+    const mockContent: ProductModuleContent = {
+      ...MOCK_PRODUCT_MODULE_CONTENT,
+      demo: { en: '', de: 'Test demo' }
+    };
+    
+    const selectedLanguage = Language.EN;
+
+    languageService.selectedLanguage.and.returnValue(
+      selectedLanguage
+    );
+
+    component.productModuleContent.set(mockContent);
+    expect(component.getContent('demo')).toBeFalse();
+  });
+
+  it('should return false for demo when in EN language it is undefined', () => {
+    const mockContent: ProductModuleContent = {
+      ...MOCK_PRODUCT_MODULE_CONTENT,
+      demo: { de: "Test demo" }
+    };
+
+    const selectedLanguage = Language.EN;
+
+    languageService.selectedLanguage.and.returnValue(
+      selectedLanguage
+    );
+
+    component.productModuleContent.set(mockContent);
+    expect(component.getContent('demo')).toBeFalse();
+  });
+
+  it('should return false for demo when in both DE and EN language it is an empty string', () => {
+    const mockContent: ProductModuleContent = {
+      ...MOCK_PRODUCT_MODULE_CONTENT,
+      demo: { en: '', de: '' }
+    };
+    
+    const selectedLanguage = Language.EN;
+
+    languageService.selectedLanguage.and.returnValue(
+      selectedLanguage
+    );
+
+    component.productModuleContent.set(mockContent);
+    expect(component.getContent('demo')).toBeFalse();
+  });
+
+  it('should return false for demo when in both DE and EN language it is undefined', () => {
+    const mockContent: ProductModuleContent = {
+      ...MOCK_PRODUCT_MODULE_CONTENT,
+      demo: {}
+    };
+    
+    const selectedLanguage = Language.EN;
+
+    languageService.selectedLanguage.and.returnValue(
+      selectedLanguage
+    );
+
+    component.productModuleContent.set(mockContent);
+    expect(component.getContent('demo')).toBeFalse();
+  });
+
 
   it('should display dropdown horizontally on small viewport', () => {
     viewport.set(540);
