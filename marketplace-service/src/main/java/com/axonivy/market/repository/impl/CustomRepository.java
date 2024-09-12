@@ -16,7 +16,7 @@ public class CustomRepository {
   }
 
   AggregationOperation createProjectAggregationBySingleFieldName(String fieldName) {
-    return Aggregation.project(MongoDBConstants.TAG);
+    return Aggregation.project(fieldName);
   }
 
   protected AggregationOperation createFieldMatchOperation(String fieldName, String id) {
