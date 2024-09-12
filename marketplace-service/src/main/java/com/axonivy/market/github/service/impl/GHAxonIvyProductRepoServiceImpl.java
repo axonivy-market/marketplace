@@ -263,7 +263,7 @@ public class GHAxonIvyProductRepoServiceImpl implements GHAxonIvyProductRepoServ
       throws IOException {
     Map<String, String> imageUrls = new HashMap<>();
     List<GHContent> productImages = contents.stream().filter(GHContent::isFile)
-            .filter(content -> content.getName().toLowerCase().matches(ReadmeConstants.IMAGE_EXTENSION)).toList();
+        .filter(content -> content.getName().toLowerCase().matches(ReadmeConstants.IMAGE_EXTENSION)).toList();
     if (!CollectionUtils.isEmpty(productImages)) {
       for (GHContent productImage : productImages) {
         imageUrls.put(productImage.getName(), productImage.getDownloadUrl());
@@ -274,7 +274,7 @@ public class GHAxonIvyProductRepoServiceImpl implements GHAxonIvyProductRepoServ
     for (Map.Entry<String, String> entry : imageUrls.entrySet()) {
       String imageUrlPattern = String.format(ReadmeConstants.README_IMAGE_FORMAT, Pattern.quote(entry.getKey()));
       readmeContents = readmeContents.replaceAll(imageUrlPattern,
-              String.format(ReadmeConstants.IMAGE_DOWNLOAD_URL_FORMAT, entry.getValue()));
+          String.format(ReadmeConstants.IMAGE_DOWNLOAD_URL_FORMAT, entry.getValue()));
 
     }
     return readmeContents;

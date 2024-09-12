@@ -76,8 +76,8 @@ public class ProductFactory {
     product.setCompatibility(meta.getCompatibility());
     product.setArtifacts(meta.getMavenArtifacts());
 
-    boolean isSourceUrlExist = StringUtils.isNotBlank(product.getSourceUrl());
-    if (!isSourceUrlExist) {
+    boolean isSourceUrlNotExist = StringUtils.isBlank(product.getSourceUrl());
+    if (isSourceUrlNotExist) {
       product.setReleasedVersions(List.of(MetaConstants.INITIAL_VERSION));
       product.setNewestReleaseVersion(MetaConstants.INITIAL_VERSION);
     }
