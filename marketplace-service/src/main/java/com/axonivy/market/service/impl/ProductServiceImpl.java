@@ -385,7 +385,7 @@ public class ProductServiceImpl implements ProductService {
     }
     product.setNewestPublishedDate(getPublishedDateFromLatestTag(lastTag));
     product.setNewestReleaseVersion(lastTag.getName());
-    List<String> currentTags = VersionUtils.getReleaseTagsFromProduct(product);;
+    List<String> currentTags = VersionUtils.getReleaseTagsFromProduct(product);
     if (CollectionUtils.isEmpty(currentTags)) {
       currentTags = productModuleContentRepository.findTagsByProductId(product.getId());
     }
