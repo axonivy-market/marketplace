@@ -342,7 +342,7 @@ public class ProductServiceImpl implements ProductService {
       for (var content : ghContentEntity.getValue()) {
         ProductFactory.mappingByGHContent(product, content);
       }
-      if (!Objects.isNull(productRepository.findById(product.getId()).orElse(null))) {
+      if (Objects.nonNull(productRepository.findById(product.getId()).orElse(null))) {
         return;
       }
       if (StringUtils.isNotBlank(product.getRepositoryName())) {

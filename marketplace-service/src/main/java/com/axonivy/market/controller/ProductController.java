@@ -86,7 +86,7 @@ public class ProductController {
   @PutMapping(SYNC)
   @Operation(hidden = true)
   public ResponseEntity<Message> syncProducts(@RequestHeader(value = AUTHORIZATION) String authorizationHeader,
-                                              @RequestParam(value = RESET_SYNC, required = false) Boolean resetSync) {
+      @RequestParam(value = RESET_SYNC, required = false) Boolean resetSync) {
     String token = getBearerToken(authorizationHeader);
     gitHubService.validateUserOrganization(token, GitHubConstants.AXONIVY_MARKET_ORGANIZATION_NAME);
     if (Boolean.TRUE.equals(resetSync)) {
