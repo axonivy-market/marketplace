@@ -343,7 +343,7 @@ class ProductServiceImplTest extends BaseSetup {
     verify(productRepository).save(argumentCaptor.capture());
 
     assertThat(argumentCaptorProductModuleContent.getValue()).usingRecursiveComparison()
-            .isEqualTo(mockReadmeProductContent());
+        .isEqualTo(mockReadmeProductContent());
   }
 
   @Test
@@ -434,9 +434,9 @@ class ProductServiceImplTest extends BaseSetup {
     mockReturnProductContent.setTag(secondTag);
 
     when(ghAxonIvyProductRepoService.getReadmeAndProductContentsFromTag(any(), any(), eq(firstTag)))
-            .thenReturn(mockReturnProductContent);
+        .thenReturn(mockReturnProductContent);
     when(ghAxonIvyProductRepoService.getReadmeAndProductContentsFromTag(any(), any(), eq(secondTag)))
-            .thenReturn(mockReturnProductContent2);
+        .thenReturn(mockReturnProductContent2);
 
     when(productModuleContentRepository.existsByProductIdAndTag("amazon", firstTag)).thenReturn(true);
     when(productModuleContentRepository.existsByProductIdAndTag("amazon", secondTag)).thenReturn(false);
@@ -446,7 +446,7 @@ class ProductServiceImplTest extends BaseSetup {
 
     verify(productModuleContentRepository).save(argumentCaptorProductModuleContent.capture());
     assertThat(argumentCaptorProductModuleContent.getValue()).usingRecursiveComparison()
-            .isEqualTo(mockReturnProductContent);
+        .isEqualTo(mockReturnProductContent);
   }
 
   @Test

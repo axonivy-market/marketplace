@@ -191,7 +191,5 @@ class VersionUtilsTest {
         mockProduct.setReleasedVersions(releasedVersions);
 
         Assertions.assertEquals(releasedVersions.get(0), VersionUtils.getReleaseTagsFromProduct(mockProduct).get(0));
-
-
     }
 }
