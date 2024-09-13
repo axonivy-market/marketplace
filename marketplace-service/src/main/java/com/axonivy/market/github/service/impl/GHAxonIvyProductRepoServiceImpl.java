@@ -53,6 +53,7 @@ public class GHAxonIvyProductRepoServiceImpl implements GHAxonIvyProductRepoServ
   private final ProductJsonContentRepository productJsonContentRepository;
   private String repoUrl;
   private static final ObjectMapper objectMapper = new ObjectMapper();
+  private static final String HASH = "#";
   public static final String DEMO_SETUP_TITLE = "(?i)## Demo|## Setup";
   public static final String IMAGE_EXTENSION = "(.*?).(jpeg|jpg|png|gif)";
   public static final String README_IMAGE_FORMAT = "\\(([^)]*?%s[^)]*?)\\)";
@@ -361,10 +362,16 @@ public class GHAxonIvyProductRepoServiceImpl implements GHAxonIvyProductRepoServ
   }
 
   private String removeFirstLine(String text) {
+    String result;
     if (text.isBlank()) {
-      return Strings.EMPTY;
+      result = Strings.EMPTY;
+    } else if (text.startsWith(HASH)) {
+      int index = text.indexOf(StringUtils.LF);
+      result = index != -1 ? text.substring(index + 1).trim() : Strings.EMPTY;
+    } else {
+      result = text;
     }
-    int index = text.indexOf(StringUtils.LF);
-    return index != -1 ? text.substring(index + 1).trim() : Strings.EMPTY;
+
+    return result;
   }
 }
