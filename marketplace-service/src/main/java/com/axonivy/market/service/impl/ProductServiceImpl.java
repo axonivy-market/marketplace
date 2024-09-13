@@ -534,9 +534,9 @@ public class ProductServiceImpl implements ProductService {
   }
 
   public void transferComputedDataFromDB(Product product) {
-    productRepository.findById(product.getId()).ifPresent(persistedData -> {
-      ProductFactory.transferComputedPersistedDataToProduct(persistedData, product);
-    });
+    productRepository.findById(product.getId()).ifPresent(persistedData ->
+        ProductFactory.transferComputedPersistedDataToProduct(persistedData, product)
+    );
   }
 
   private void updateProductModifiedTimeStampBeforeSave(Product product) {
