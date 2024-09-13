@@ -6,6 +6,7 @@ import com.axonivy.market.entity.Product;
 import com.axonivy.market.entity.ProductModuleContent;
 import com.axonivy.market.entity.ProductDesignerInstallation;
 import com.axonivy.market.repository.CustomProductRepository;
+import com.axonivy.market.repository.CustomRepository;
 import com.axonivy.market.repository.ProductModuleContentRepository;
 import lombok.Builder;
 import org.springframework.data.mongodb.core.FindAndModifyOptions;

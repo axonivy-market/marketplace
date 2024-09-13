@@ -1,4 +1,4 @@
-package com.axonivy.market.repository.impl;
+package com.axonivy.market.repository;
 
 import com.axonivy.market.constants.MongoDBConstants;
 import org.springframework.data.mongodb.core.aggregation.Aggregation;
@@ -15,7 +15,7 @@ public class CustomRepository {
     return new Query(Criteria.where(MongoDBConstants.ID).is(id));
   }
 
-  AggregationOperation createProjectAggregationBySingleFieldName(String fieldName) {
+  protected AggregationOperation createProjectAggregationBySingleFieldName(String fieldName) {
     return Aggregation.project(fieldName);
   }
 

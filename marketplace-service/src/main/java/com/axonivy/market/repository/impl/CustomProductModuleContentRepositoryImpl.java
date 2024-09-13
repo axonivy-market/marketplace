@@ -4,6 +4,7 @@ import com.axonivy.market.constants.EntityConstants;
 import com.axonivy.market.constants.MongoDBConstants;
 import com.axonivy.market.entity.ProductModuleContent;
 import com.axonivy.market.repository.CustomProductModuleContentRepository;
+import com.axonivy.market.repository.CustomRepository;
 import lombok.Builder;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.aggregation.Aggregation;

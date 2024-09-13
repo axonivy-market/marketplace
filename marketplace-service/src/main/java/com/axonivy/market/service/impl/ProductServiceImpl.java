@@ -248,7 +248,7 @@ public class ProductServiceImpl implements ProductService {
       result = productRepository.findByCriteria(searchCriteria);
       if (result != null) {
         result.setLogoUrl(GitHubUtils.getDownloadUrl(fileContent));
-        updateProductModifiedTimeStampBeforeSave(result);
+        productRepository.save(product);
       }
       break;
     case REMOVED:
@@ -313,7 +313,7 @@ public class ProductServiceImpl implements ProductService {
   private void modifyProductByMetaContent(GitHubFile file, Product product) {
     switch (file.getStatus()) {
       case MODIFIED, ADDED:
-        updateProductModifiedTimeStampBeforeSave(product);
+        productRepository.save(product);
         break;
       case REMOVED:
         productRepository.deleteById(product.getId());
@@ -332,16 +332,16 @@ public class ProductServiceImpl implements ProductService {
     for (Product product : products) {
       if (StringUtils.isNotBlank(product.getRepositoryName())) {
         getProductContents(product);
-        updateProductModifiedTimeStampBeforeSave(product);
+        productRepository.save(product);
       }
     }
   }
 
   private void updateProductContentForNonStandardProduct(Map.Entry<String, List<GHContent>> ghContentEntity, Product product) {
     ProductModuleContent initialContent = new ProductModuleContent();
-    initialContent.setId(product.getId() + CommonConstants.DASH_SEPARATOR + INITIAL_VERSION);
     initialContent.setTag(INITIAL_VERSION);
     initialContent.setProductId(product.getId());
+    ProductFactory.mappingIdForProductModuleContent(initialContent);
     product.setReleasedVersions(List.of(INITIAL_VERSION));
     product.setNewestReleaseVersion(INITIAL_VERSION);
     axonIvyProductRepoService.extractReadMeFileFromContents(product, ghContentEntity.getValue(), initialContent);
@@ -375,7 +375,7 @@ public class ProductServiceImpl implements ProductService {
         updateProductContentForNonStandardProduct(ghContentEntity, product);
       }
       transferComputedDataFromDB(product);
-      updateProductModifiedTimeStampBeforeSave(product);
+      productRepository.save(product);
     });
   }
 
@@ -521,7 +521,7 @@ public class ProductServiceImpl implements ProductService {
       }
       Product product = productOptional.get();
       product.setCustomOrder(descendingOrder--);
-      updateProductModifiedTimeStampBeforeSave(product);
+      productRepository.save(product);
       productEntries.add(product);
     }
 
@@ -539,9 +539,4 @@ public class ProductServiceImpl implements ProductService {
     );
   }
 
-  private void updateProductModifiedTimeStampBeforeSave(Product product) {
-    Objects.requireNonNull(product);
-    product.setLastUpdate(new Date());
-    productRepository.save(product);
-  }
 }

@@ -10,6 +10,7 @@ import com.axonivy.market.entity.ProductModuleContent;
 import com.axonivy.market.entity.ProductJsonContent;
 import com.axonivy.market.enums.Language;
 import com.axonivy.market.enums.NonStandardProduct;
+import com.axonivy.market.factory.ProductFactory;
 import com.axonivy.market.github.model.MavenArtifact;
 import com.axonivy.market.github.service.GHAxonIvyProductRepoService;
 import com.axonivy.market.github.service.GitHubService;
@@ -165,9 +166,9 @@ public class GHAxonIvyProductRepoServiceImpl implements GHAxonIvyProductRepoServ
     ProductModuleContent productModuleContent = new ProductModuleContent();
     try {
       List<GHContent> contents = getProductFolderContents(product, ghRepository, tag);
-      productModuleContent.setId(product.getId() + CommonConstants.DASH_SEPARATOR + tag);
       productModuleContent.setProductId(product.getId());
       productModuleContent.setTag(tag);
+      ProductFactory.mappingIdForProductModuleContent(productModuleContent);
       updateDependencyContentsFromProductJson(productModuleContent, contents , product);
       extractReadMeFileFromContents(product, contents, productModuleContent);
     } catch (Exception e) {
@@ -241,9 +242,9 @@ public class GHAxonIvyProductRepoServiceImpl implements GHAxonIvyProductRepoServ
       String content = extractProductJsonContent(productJsonFile, productModuleContent.getTag());
       if (ObjectUtils.isNotEmpty(content)) {
         ProductJsonContent jsonContent = new ProductJsonContent();
-        jsonContent.setId(product.getId() + CommonConstants.DASH_SEPARATOR + currentVersion);
         jsonContent.setVersion(currentVersion);
         jsonContent.setProductId(product.getId());
+        ProductFactory.mappingIdForProductJsonContent(jsonContent);
         jsonContent.setName(product.getNames().get(EN_LANGUAGE));
         jsonContent.setContent(content.replace(VERSION_VALUE, currentVersion));
         productJsonContentRepository.save(jsonContent);

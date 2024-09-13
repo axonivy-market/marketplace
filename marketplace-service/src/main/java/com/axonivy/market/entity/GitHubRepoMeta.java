@@ -3,6 +3,7 @@ package com.axonivy.market.entity;
 import lombok.Getter;
 import lombok.Setter;
 import org.springframework.data.annotation.Id;
+import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.util.Date;
@@ -18,9 +19,6 @@ public class GitHubRepoMeta {
   private String repoName;
   private Long lastChange;
   private String lastSHA1;
-  private Date lastSync;
-
-  public GitHubRepoMeta() {
-    this.lastSync = new Date();
-  }
+  @LastModifiedDate
+  private Date updatedAt;
 }
