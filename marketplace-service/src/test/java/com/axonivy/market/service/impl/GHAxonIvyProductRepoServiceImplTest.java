@@ -1,19 +1,25 @@
 package com.axonivy.market.service.impl;
 
-import com.axonivy.market.constants.CommonConstants;
-import com.axonivy.market.constants.ProductJsonConstants;
-import com.axonivy.market.constants.ReadmeConstants;
-import com.axonivy.market.entity.Image;
-import com.axonivy.market.entity.Product;
-import com.axonivy.market.entity.ProductJsonContent;
-import com.axonivy.market.enums.Language;
-import com.axonivy.market.github.model.MavenArtifact;
-import com.axonivy.market.github.service.GitHubService;
-import com.axonivy.market.github.service.impl.GHAxonIvyProductRepoServiceImpl;
-import com.axonivy.market.repository.ProductJsonContentRepository;
-import com.axonivy.market.service.ImageService;
-import com.fasterxml.jackson.databind.JsonNode;
-import org.bson.types.Binary;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertSame;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.reset;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -29,25 +35,19 @@ import org.mockito.Mockito;
 import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNull;
-import static org.junit.jupiter.api.Assertions.assertSame;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.reset;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import com.axonivy.market.constants.CommonConstants;
+import com.axonivy.market.constants.ProductJsonConstants;
+import com.axonivy.market.constants.ReadmeConstants;
+import com.axonivy.market.entity.Image;
+import com.axonivy.market.entity.Product;
+import com.axonivy.market.entity.ProductJsonContent;
+import com.axonivy.market.enums.Language;
+import com.axonivy.market.github.model.MavenArtifact;
+import com.axonivy.market.github.service.GitHubService;
+import com.axonivy.market.github.service.impl.GHAxonIvyProductRepoServiceImpl;
+import com.axonivy.market.repository.ProductJsonContentRepository;
+import com.axonivy.market.service.ImageService;
+import com.fasterxml.jackson.databind.JsonNode;
 
 @ExtendWith(MockitoExtension.class)
 class GHAxonIvyProductRepoServiceImplTest {

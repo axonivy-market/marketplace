@@ -1,19 +1,19 @@
 package com.axonivy.market.util;
 
-import com.axonivy.market.controller.ProductDetailsController;
-import com.axonivy.market.entity.ProductModuleContent;
-import org.apache.commons.lang3.ObjectUtils;
-import org.springframework.hateoas.Link;
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
-import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
+import org.apache.commons.lang3.ObjectUtils;
+import org.springframework.hateoas.Link;
+
+import com.axonivy.market.controller.ProductDetailsController;
+import com.axonivy.market.entity.ProductModuleContent;
 
 public class ImageUtils {
   public static ProductModuleContent mappingImageForProductModuleContent(ProductModuleContent productModuleContent) {

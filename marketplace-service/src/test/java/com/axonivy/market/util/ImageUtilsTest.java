@@ -1,15 +1,14 @@
 package com.axonivy.market.util;
 
-import com.axonivy.market.entity.ProductModuleContent;
-import com.axonivy.market.github.util.GitHubUtils;
-import org.apache.commons.lang3.StringUtils;
+import java.util.HashMap;
+import java.util.Map;
+
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import java.util.HashMap;
-import java.util.Map;
+import com.axonivy.market.entity.ProductModuleContent;
 
 @ExtendWith(MockitoExtension.class)
 public class ImageUtilsTest {

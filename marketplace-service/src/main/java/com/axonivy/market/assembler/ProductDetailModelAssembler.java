@@ -1,30 +1,24 @@
 package com.axonivy.market.assembler;
 
-import com.axonivy.market.constants.RequestMappingConstants;
-import com.axonivy.market.controller.ProductDetailsController;
-import com.axonivy.market.entity.Product;
-import com.axonivy.market.entity.ProductModuleContent;
-import com.axonivy.market.model.ProductDetailModel;
-import com.axonivy.market.util.ImageUtils;
-import com.axonivy.market.util.VersionUtils;
-import lombok.extern.log4j.Log4j2;
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
+
+import java.util.Optional;
+
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.hateoas.Link;
 import org.springframework.hateoas.server.mvc.RepresentationModelAssemblerSupport;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
-import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
-import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
+import com.axonivy.market.constants.RequestMappingConstants;
+import com.axonivy.market.controller.ProductDetailsController;
+import com.axonivy.market.entity.Product;
+import com.axonivy.market.model.ProductDetailModel;
+import com.axonivy.market.util.ImageUtils;
+import com.axonivy.market.util.VersionUtils;
 
 @Component
-@Log4j2
 public class ProductDetailModelAssembler extends RepresentationModelAssemblerSupport<Product, ProductDetailModel> {
 
   private final ProductModelAssembler productModelAssembler;
@@ -55,17 +49,17 @@ public class ProductDetailModelAssembler extends RepresentationModelAssemblerSup
 
     if (requestPath.equals(RequestMappingConstants.BEST_MATCH_BY_ID_AND_VERSION)) {
       String bestMatchVersion = VersionUtils.getBestMatchVersion(product.getReleasedVersions(), version);
-      Link link = linkTo(
-          methodOn(ProductDetailsController.class).findProductJsonContent(productId, bestMatchVersion)).withSelfRel();
+      Link link = linkTo(methodOn(ProductDetailsController.class).findProductJsonContent(productId, bestMatchVersion))
+          .withSelfRel();
       model.setMetaProductJsonUrl(link.getHref());
     }
 
     selfLinkWithTag = switch (requestPath) {
-      case RequestMappingConstants.BEST_MATCH_BY_ID_AND_VERSION ->
-          methodOn(ProductDetailsController.class).findBestMatchProductDetailsByVersion(productId, version);
-      case RequestMappingConstants.BY_ID_AND_VERSION ->
-          methodOn(ProductDetailsController.class).findProductDetailsByVersion(productId, version);
-      default -> methodOn(ProductDetailsController.class).findProductDetails(productId);
+    case RequestMappingConstants.BEST_MATCH_BY_ID_AND_VERSION ->
+      methodOn(ProductDetailsController.class).findBestMatchProductDetailsByVersion(productId, version);
+    case RequestMappingConstants.BY_ID_AND_VERSION ->
+      methodOn(ProductDetailsController.class).findProductDetailsByVersion(productId, version);
+    default -> methodOn(ProductDetailsController.class).findProductDetails(productId);
     };
 
     model.add(linkTo(selfLinkWithTag).withSelfRel());
