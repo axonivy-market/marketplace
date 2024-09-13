@@ -10,4 +10,5 @@ export interface ProductModuleContent {
   groupId: string;
   artifactId: string;
   type: string;
+  productId: string;
 }
