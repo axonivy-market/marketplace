@@ -604,7 +604,7 @@ class ProductServiceImplTest extends BaseSetup {
 
   private ProductModuleContent mockReadmeProductContent() {
     ProductModuleContent productModuleContent = new ProductModuleContent();
-    productModuleContent.setId("amazon-comprehendv10.0.2");
+    productModuleContent.setId("amazon-comprehendv-10.0.2");
     productModuleContent.setTag("v10.0.2");
     productModuleContent.setName("Amazon Comprehend");
     Map<String, String> description = new HashMap<>();
