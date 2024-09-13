@@ -16,7 +16,6 @@ import static com.axonivy.market.constants.EntityConstants.PRODUCT_JSON_CONTENT;
 @Getter
 @Setter
 @AllArgsConstructor
-@NoArgsConstructor
 @Document(PRODUCT_JSON_CONTENT)
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class ProductJsonContent {
@@ -28,4 +27,8 @@ public class ProductJsonContent {
   private String name;
   private String content;
   private Date createdAt = new Date();
+
+  public ProductJsonContent() {
+    this.createdAt = new Date();
+  }
 }

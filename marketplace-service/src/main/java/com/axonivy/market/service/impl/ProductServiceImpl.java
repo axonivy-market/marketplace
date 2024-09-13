@@ -12,6 +12,7 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.security.SecureRandom;
 import java.util.*;
+import java.util.function.Predicate;
 
 import com.axonivy.market.comparator.MavenVersionComparator;
 import com.axonivy.market.util.VersionUtils;
@@ -213,7 +214,6 @@ public class ProductServiceImpl implements ProductService {
     groupGitHubFiles.entrySet().forEach(ghFileEntity -> {
       for (var file : ghFileEntity.getValue()) {
         Product product = new Product();
-        product.setLastUpdate(new Date());
         GHContent fileContent;
         try {
           fileContent = gitHubService.getGHContent(axonIvyMarketRepoService.getRepository(), file.getFileName(),
@@ -234,6 +234,10 @@ public class ProductServiceImpl implements ProductService {
     });
   }
 
+  private static Predicate<GHTag> filterNonPersistGhTagName(List<String> currentTags) {
+    return tag -> !currentTags.contains(tag.getName());
+  }
+
   private void modifyProductLogo(String parentPath, GitHubFile file, Product product, GHContent fileContent) {
     Product result;
     switch (file.getStatus()) {
@@ -244,7 +248,7 @@ public class ProductServiceImpl implements ProductService {
       result = productRepository.findByCriteria(searchCriteria);
       if (result != null) {
         result.setLogoUrl(GitHubUtils.getDownloadUrl(fileContent));
-        productRepository.save(result);
+        updateProductModifiedTimeStampBeforeSave(result);
       }
       break;
     case REMOVED:
@@ -252,19 +256,6 @@ public class ProductServiceImpl implements ProductService {
       if (result != null) {
         productRepository.deleteById(result.getId());
       }
-      break;
-    default:
-      break;
-    }
-  }
-
-  private void modifyProductByMetaContent(GitHubFile file, Product product) {
-    switch (file.getStatus()) {
-    case MODIFIED, ADDED:
-      productRepository.save(product);
-      break;
-    case REMOVED:
-      productRepository.deleteById(product.getId());
       break;
     default:
       break;
@@ -319,6 +310,19 @@ public class ProductServiceImpl implements ProductService {
     return isLastCommitCovered;
   }
 
+  private void modifyProductByMetaContent(GitHubFile file, Product product) {
+    switch (file.getStatus()) {
+      case MODIFIED, ADDED:
+        updateProductModifiedTimeStampBeforeSave(product);
+        break;
+      case REMOVED:
+        productRepository.deleteById(product.getId());
+        break;
+      default:
+        break;
+    }
+  }
+
   private void updateLatestReleaseTagContentsFromProductRepo() {
     List<Product> products = productRepository.findAll();
     if (ObjectUtils.isEmpty(products)) {
@@ -328,37 +332,14 @@ public class ProductServiceImpl implements ProductService {
     for (Product product : products) {
       if (StringUtils.isNotBlank(product.getRepositoryName())) {
         getProductContents(product);
-        productRepository.save(product);
+        updateProductModifiedTimeStampBeforeSave(product);
       }
     }
   }
 
-  private void syncProductsFromGitHubRepo() {
-    log.warn("**ProductService: synchronize products from scratch based on the Market repo");
-    var gitHubContentMap = axonIvyMarketRepoService.fetchAllMarketItems();
-    gitHubContentMap.entrySet().forEach(ghContentEntity -> {
-      Product product = new Product();
-      product.setLastUpdate(new Date());
-      for (var content : ghContentEntity.getValue()) {
-        ProductFactory.mappingByGHContent(product, content);
-      }
-      if (Objects.nonNull(productRepository.findById(product.getId()).orElse(null))) {
-        return;
-      }
-      if (StringUtils.isNotBlank(product.getRepositoryName())) {
-        updateProductCompatibility(product);
-        getProductContents(product);
-      } else {
-        updateProductContentForNonStandardProduct(ghContentEntity, product);
-      }
-      transferComputedDataFromDB(product);
-      productRepository.save(product);
-    });
-  }
-
   private void updateProductContentForNonStandardProduct(Map.Entry<String, List<GHContent>> ghContentEntity, Product product) {
     ProductModuleContent initialContent = new ProductModuleContent();
-    initialContent.setId(product.getId() + INITIAL_VERSION);
+    initialContent.setId(product.getId() + "-" + INITIAL_VERSION);
     initialContent.setTag(INITIAL_VERSION);
     initialContent.setProductId(product.getId());
     product.setReleasedVersions(List.of(INITIAL_VERSION));
@@ -376,6 +357,28 @@ public class ProductServiceImpl implements ProductService {
     }
   }
 
+  private void syncProductsFromGitHubRepo() {
+    log.warn("**ProductService: synchronize products from scratch based on the Market repo");
+    var gitHubContentMap = axonIvyMarketRepoService.fetchAllMarketItems();
+    gitHubContentMap.entrySet().forEach(ghContentEntity -> {
+      Product product = new Product();
+      for (var content : ghContentEntity.getValue()) {
+        ProductFactory.mappingByGHContent(product, content);
+      }
+      if (productRepository.findById(product.getId()).isPresent()) {
+        return;
+      }
+      if (StringUtils.isNotBlank(product.getRepositoryName())) {
+        updateProductCompatibility(product);
+        getProductContents(product);
+      } else {
+        updateProductContentForNonStandardProduct(ghContentEntity, product);
+      }
+      transferComputedDataFromDB(product);
+      updateProductModifiedTimeStampBeforeSave(product);
+    });
+  }
+
   private void updateProductFromReleaseTags(Product product, GHRepository productRepo) {
     List<ProductModuleContent> productModuleContents = new ArrayList<>();
     List<GHTag> ghTags = getProductReleaseTags(product);
@@ -389,11 +392,7 @@ public class ProductServiceImpl implements ProductService {
     if (CollectionUtils.isEmpty(currentTags)) {
       currentTags = productModuleContentRepository.findTagsByProductId(product.getId());
     }
-
-    if (!CollectionUtils.isEmpty(currentTags)) {
-      List<String> finalCurrentTags = currentTags;
-      ghTags = ghTags.stream().filter(t -> !finalCurrentTags.contains(t.getName())).toList();
-    }
+    ghTags = ghTags.stream().filter(filterNonPersistGhTagName(currentTags)).toList();
 
     for (GHTag ghTag : ghTags) {
       ProductModuleContent productModuleContent =
@@ -522,6 +521,7 @@ public class ProductServiceImpl implements ProductService {
       }
       Product product = productOptional.get();
       product.setCustomOrder(descendingOrder--);
+      updateProductModifiedTimeStampBeforeSave(product);
       productEntries.add(product);
     }
 
@@ -534,10 +534,14 @@ public class ProductServiceImpl implements ProductService {
   }
 
   public void transferComputedDataFromDB(Product product) {
-    Product persistedData = productRepository.findById(product.getId()).orElse(null);
-    if (Objects.isNull(persistedData)) {
-      return;
-    }
-    ProductFactory.transferComputedPersistedDataToProduct(persistedData,product);
+    productRepository.findById(product.getId()).ifPresent(persistedData -> {
+      ProductFactory.transferComputedPersistedDataToProduct(persistedData, product);
+    });
+  }
+
+  private void updateProductModifiedTimeStampBeforeSave(Product product) {
+    Objects.requireNonNull(product);
+    product.setLastUpdate(new Date());
+    productRepository.save(product);
   }
 }

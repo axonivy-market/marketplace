@@ -18,5 +18,9 @@ public class GitHubRepoMeta {
   private String repoName;
   private Long lastChange;
   private String lastSHA1;
-  private Date lastSync = new Date();
+  private Date lastSync;
+
+  public GitHubRepoMeta() {
+    this.lastSync = new Date();
+  }
 }

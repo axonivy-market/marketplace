@@ -18,7 +18,6 @@ import static com.axonivy.market.constants.EntityConstants.PRODUCT_MODULE_CONTEN
 
 @Getter
 @Setter
-@NoArgsConstructor
 @AllArgsConstructor
 @Builder
 @Document(PRODUCT_MODULE_CONTENT)
@@ -48,4 +47,8 @@ public class ProductModuleContent implements Serializable {
   @Schema(description = "Artifact file type", example = "iar")
   private String type;
   private Date createdAt = new Date();
+
+  public ProductModuleContent() {
+    this.createdAt = new Date();
+  }
 }

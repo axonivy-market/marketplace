@@ -90,6 +90,5 @@ class ProductFactoryTest {
     assertEquals(initialVersion, product.getNewestReleaseVersion());
     assertEquals(1, product.getReleasedVersions().size());
     assertEquals(initialVersion, product.getReleasedVersions().get(0));
-
   }
 }
