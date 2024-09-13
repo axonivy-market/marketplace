@@ -1,5 +1,6 @@
 package com.axonivy.market.controller;
 
+import static com.axonivy.market.constants.RequestMappingConstants.IMAGE_BY_ID;
 import static com.axonivy.market.constants.RequestParamConstants.DESIGNER_VERSION;
 import static com.axonivy.market.constants.RequestParamConstants.ID;
 import static com.axonivy.market.constants.RequestParamConstants.PRODUCT_ID;
@@ -117,7 +118,8 @@ public class ProductDetailsController {
     return new ResponseEntity<>(versionList, HttpStatus.OK);
   }
 
-  @GetMapping("image/{id}")
+  @GetMapping(IMAGE_BY_ID)
+  @Operation(summary = "Get the image content", description = "Collect the byte[] of image with contentType in header is PNG")
   public ResponseEntity<byte[]> getImageFromId(@PathVariable(ID) String id) {
     HttpHeaders headers = new HttpHeaders();
     headers.setContentType(MediaType.IMAGE_PNG);

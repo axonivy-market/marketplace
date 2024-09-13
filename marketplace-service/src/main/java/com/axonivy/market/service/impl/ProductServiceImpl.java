@@ -227,12 +227,27 @@ public class ProductServiceImpl implements ProductService {
     }
 
     groupGitHubFiles.entrySet().forEach(ghFileEntity -> {
+
+      ghFileEntity.getValue().sort((file1, file2) -> {
+        String[] splitFileName1 = file1.getFileName().split("/");
+        String[] splitFileName2 = file2.getFileName().split("/");
+
+        String file1Name = splitFileName1[splitFileName1.length - 1];
+        String file2Name = splitFileName2[splitFileName1.length - 1];
+
+        if (file1Name.equals(META_FILE))
+          return -1;
+        if (file2Name.equals(META_FILE))
+          return 1;
+        return file1Name.compareTo(file2Name);
+      });
+
       for (var file : ghFileEntity.getValue()) {
         Product product = new Product();
         GHContent fileContent;
         try {
           fileContent = gitHubService.getGHContent(axonIvyMarketRepoService.getRepository(), file.getFileName(),
-                  marketRepoBranch);
+              marketRepoBranch);
         } catch (IOException e) {
           log.error("Get GHContent failed: ", e);
           continue;
@@ -257,12 +272,9 @@ public class ProductServiceImpl implements ProductService {
       searchCriteria.setFields(List.of(MARKET_DIRECTORY));
       result = productRepository.findByCriteria(searchCriteria);
       if (result != null) {
-        Image newImage = imageService.mappingImageFromGHContent(product,fileContent);
-        if (!newImage.getId().equals(product.getLogoId())){
-          imageRepository.deleteById(product.getLogoId());
-          product.setLogoId(newImage.getId());
-          productRepository.save(result);
-        }
+        Image image = imageService.mappingImageFromGHContent(result, fileContent, true);
+        result.setLogoId(image.getId());
+        productRepository.save(result);
       }
       break;
     case REMOVED:
@@ -383,7 +395,7 @@ public class ProductServiceImpl implements ProductService {
 
   private void mappingLogoFromGHContent(Product product, GHContent ghContent) {
     if (StringUtils.endsWith(ghContent.getName(), LOGO_FILE)) {
-      Image image = imageService.mappingImageFromGHContent(product, ghContent);
+      Image image = imageService.mappingImageFromGHContent(product, ghContent, true);
       product.setLogoId(image.getId());
     }
   }

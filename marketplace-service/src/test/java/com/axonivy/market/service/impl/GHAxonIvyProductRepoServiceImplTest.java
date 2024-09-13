@@ -5,6 +5,7 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.reset;
@@ -222,7 +223,7 @@ class GHAxonIvyProductRepoServiceImplTest {
     getReadmeInputStream(readmeContentWithImage, mockContent);
     InputStream inputStream = getMockInputStream();
     Mockito.when(axonivyProductRepoServiceImpl.extractedContentStream(any())).thenReturn(inputStream);
-    Mockito.when(imageService.mappingImageFromGHContent(any(),any())).thenReturn(mockImage());
+    Mockito.when(imageService.mappingImageFromGHContent(any(),any(),anyBoolean())).thenReturn(mockImage());
     var result = axonivyProductRepoServiceImpl.getReadmeAndProductContentsFromTag(createMockProduct(), ghRepository,
         RELEASE_TAG);
 
@@ -253,7 +254,7 @@ class GHAxonIvyProductRepoServiceImplTest {
     GHContent mockImageFile = mock(GHContent.class);
     when(mockImageFile.getName()).thenReturn(ReadmeConstants.IMAGES, IMAGE_NAME);
     when(mockImageFile.isDirectory()).thenReturn(true);
-    Mockito.when(imageService.mappingImageFromGHContent(any(),any())).thenReturn(mockImage());
+    Mockito.when(imageService.mappingImageFromGHContent(any(),any() ,anyBoolean())).thenReturn(mockImage());
     PagedIterable<GHContent> pagedIterable = Mockito.mock(String.valueOf(GHContent.class));
     when(mockImageFile.listDirectoryContent()).thenReturn(pagedIterable);
     when(pagedIterable.toList()).thenReturn(List.of(mockImageFile));

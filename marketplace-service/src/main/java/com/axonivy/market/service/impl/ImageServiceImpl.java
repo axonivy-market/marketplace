@@ -7,6 +7,7 @@ import com.axonivy.market.repository.ImageRepository;
 import com.axonivy.market.service.ImageService;
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.ObjectUtils;
 import org.bson.types.Binary;
 import org.kohsuke.github.GHContent;
@@ -38,11 +39,13 @@ public class ImageServiceImpl implements ImageService {
   }
 
   @Override
-  public Image mappingImageFromGHContent(Product product, GHContent ghContent) {
+  public Image mappingImageFromGHContent(Product product, GHContent ghContent, boolean isLogo) {
     String currentLogoUrl = GitHubUtils.getDownloadUrl(ghContent);
-    Image existsImage = imageRepository.findByLogoUrlAndSha(currentLogoUrl, ghContent.getSha());
-    if (ObjectUtils.isNotEmpty(existsImage)) {
-      return existsImage;
+    if (BooleanUtils.isNotTrue(isLogo)) {
+      Image existsImage = imageRepository.findByLogoUrlAndSha(currentLogoUrl, ghContent.getSha());
+      if (ObjectUtils.isNotEmpty(existsImage)) {
+        return existsImage;
+      }
     }
     Image image = new Image();
     image.setProductId(product.getId());

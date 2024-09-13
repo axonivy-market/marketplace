@@ -43,7 +43,7 @@ class ImageServiceImplTest {
     InputStream inputStream = this.getClass().getResourceAsStream(SLASH.concat(META_FILE));
     when(content.read()).thenReturn(inputStream);
 
-    imageService.mappingImageFromGHContent(mockProduct(), content);
+    imageService.mappingImageFromGHContent(mockProduct(), content , true);
 
     Image expectedImage = new Image();
     expectedImage.setProductId("google-maps-connector");

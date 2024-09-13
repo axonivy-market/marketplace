@@ -11,6 +11,7 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.ArgumentMatchers.anyLong;
@@ -345,7 +346,8 @@ class ProductServiceImplTest extends BaseSetup {
     when(marketRepoService.fetchAllMarketItems()).thenReturn(mockGHContentMap);
     when(productModuleContentRepository.saveAll(anyList())).thenReturn(List.of(mockReadmeProductContent()));
 
-    Mockito.when(imageService.mappingImageFromGHContent(any(),any())).thenReturn(GHAxonIvyProductRepoServiceImplTest.mockImage());
+    Mockito.when(imageService.mappingImageFromGHContent(any(), any(), anyBoolean()))
+        .thenReturn(GHAxonIvyProductRepoServiceImplTest.mockImage());
     // Executes
     productService.syncLatestDataFromMarketRepo();
     verify(productModuleContentRepository).saveAll(argumentCaptorProductModuleContents.capture());
@@ -371,7 +373,7 @@ class ProductServiceImplTest extends BaseSetup {
     List<GHContent> mockMetaJsonAndLogoList = new ArrayList<>(List.of(mockContent, mockContentLogo));
     mockGHContentMap.put(SAMPLE_PRODUCT_ID, mockMetaJsonAndLogoList);
     when(marketRepoService.fetchAllMarketItems()).thenReturn(mockGHContentMap);
-    Mockito.when(imageService.mappingImageFromGHContent(any(),any())).thenReturn(GHAxonIvyProductRepoServiceImplTest.mockImage());
+    Mockito.when(imageService.mappingImageFromGHContent(any(),any(),anyBoolean())).thenReturn(GHAxonIvyProductRepoServiceImplTest.mockImage());
     // Executes
     productService.syncLatestDataFromMarketRepo();
     verify(productModuleContentRepository).save(argumentCaptorProductModuleContent.capture());
@@ -435,7 +437,7 @@ class ProductServiceImplTest extends BaseSetup {
     var mockCommit = mockGHCommitHasSHA1(SHA1_SAMPLE);
     when(marketRepoService.getLastCommit(anyLong())).thenReturn(mockCommit);
     when(repoMetaRepository.findByRepoName(anyString())).thenReturn(null);
-    
+
     Map<String, List<GHContent>> mockGHContentMap = new HashMap<>();
     mockGHContentMap.put(SAMPLE_PRODUCT_ID, new ArrayList<>());
     when(marketRepoService.fetchAllMarketItems()).thenReturn(mockGHContentMap);
