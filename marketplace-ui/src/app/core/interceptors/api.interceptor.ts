@@ -11,7 +11,7 @@ import { Router } from '@angular/router';
 import { ERROR_CODES, ERROR_PAGE_PATH } from '../../shared/constants/common.constant';
 
 export const REQUEST_BY = 'X-Requested-By';
-export const IVY = 'ivy';
+export const IVY = 'marketplace-website';
 
 /** This is option for exclude loading api
  * @Example return httpClient.get('apiEndPoint', { context: new HttpContext().set(SkipLoading, true) })
