@@ -15,6 +15,8 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import static com.axonivy.market.constants.MetaConstants.META_FILE;
+
 @Log4j2
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class GitHubUtils {
@@ -89,5 +91,13 @@ public class GitHubUtils {
       return text.substring(start, end);
     }
     return "";
+  }
+
+  public static int sortMetaJsonFirst(String file1Name, String file2Name) {
+    if (file1Name.equals(META_FILE))
+      return -1;
+    if (file2Name.equals(META_FILE))
+      return 1;
+    return file1Name.compareTo(file2Name);
   }
 }

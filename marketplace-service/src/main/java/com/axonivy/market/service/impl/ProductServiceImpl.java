@@ -69,6 +69,7 @@ import java.util.Objects;
 import java.util.Optional;
 
 import static com.axonivy.market.constants.CommonConstants.LOGO_FILE;
+import static com.axonivy.market.constants.CommonConstants.SLASH;
 import static com.axonivy.market.constants.MetaConstants.META_FILE;
 import static com.axonivy.market.enums.DocumentField.MARKET_DIRECTORY;
 import static com.axonivy.market.enums.DocumentField.SHORT_DESCRIPTIONS;
@@ -229,17 +230,13 @@ public class ProductServiceImpl implements ProductService {
     groupGitHubFiles.entrySet().forEach(ghFileEntity -> {
 
       ghFileEntity.getValue().sort((file1, file2) -> {
-        String[] splitFileName1 = file1.getFileName().split("/");
-        String[] splitFileName2 = file2.getFileName().split("/");
+        String[] splitFileName1 = file1.getFileName().split(SLASH);
+        String[] splitFileName2 = file2.getFileName().split(SLASH);
 
         String file1Name = splitFileName1[splitFileName1.length - 1];
         String file2Name = splitFileName2[splitFileName1.length - 1];
 
-        if (file1Name.equals(META_FILE))
-          return -1;
-        if (file2Name.equals(META_FILE))
-          return 1;
-        return file1Name.compareTo(file2Name);
+        return GitHubUtils.sortMetaJsonFirst(file1Name, file2Name);
       });
 
       for (var file : ghFileEntity.getValue()) {
@@ -369,16 +366,7 @@ public class ProductServiceImpl implements ProductService {
     for (Map.Entry<String, List<GHContent>> ghContentEntity : gitHubContentMap.entrySet()) {
       Product product = new Product();
       //update the meta.json first
-      ghContentEntity.getValue().sort((file1, file2) -> {
-        String file1Name = file1.getName();
-        String file2Name = file2.getName();
-        if (file1Name.equals(META_FILE))
-          return -1;
-        if (file2Name.equals(META_FILE))
-          return 1;
-        return file1Name.compareTo(file2Name);
-      });
-
+      ghContentEntity.getValue().sort((file1, file2) -> GitHubUtils.sortMetaJsonFirst(file1.getName(),file2.getName()));
       for (var content : ghContentEntity.getValue()) {
         ProductFactory.mappingByGHContent(product, content);
         mappingLogoFromGHContent(product, content);
