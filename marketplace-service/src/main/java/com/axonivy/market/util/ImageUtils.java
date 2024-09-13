@@ -17,7 +17,7 @@ import com.axonivy.market.entity.ProductModuleContent;
 
 public class ImageUtils {
 
-  public ImageUtils() {
+  private ImageUtils() {
   }
 
   public static ProductModuleContent mappingImageForProductModuleContent(ProductModuleContent productModuleContent) {
