@@ -1,5 +1,6 @@
 package com.axonivy.market.util;
 
+import static com.axonivy.market.constants.CommonConstants.IMAGE_ID_FROM_README;
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 
@@ -10,12 +11,15 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.apache.commons.lang3.ObjectUtils;
+import org.apache.logging.log4j.util.Strings;
 import org.springframework.hateoas.Link;
 
 import com.axonivy.market.controller.ProductDetailsController;
 import com.axonivy.market.entity.ProductModuleContent;
 
 public class ImageUtils {
+  public static final String IMAGE_ID_FORMAT_PATTERN = "imageId-\\w+";
+  private static final Pattern pattern = Pattern.compile(IMAGE_ID_FORMAT_PATTERN);
 
   private ImageUtils() {
   }
@@ -37,7 +41,7 @@ public class ImageUtils {
     content.forEach((key, value) -> {
       List<String> imageIds = extractAllImageId(value);
       for (String imageId : imageIds) {
-        String rawId = imageId.replace("imageId-", "");
+        String rawId = imageId.replace(IMAGE_ID_FROM_README, Strings.EMPTY);
         Link link = linkTo(methodOn(ProductDetailsController.class).getImageFromId(rawId)).withSelfRel();
         value = value.replace(imageId, link.getHref());
       }
@@ -47,7 +51,6 @@ public class ImageUtils {
 
   private static List<String> extractAllImageId(String content) {
     List<String> result = new ArrayList<>();
-    Pattern pattern = Pattern.compile("imageId-\\w+");
     Matcher matcher = pattern.matcher(content);
     while (matcher.find()) {
       var foundImgTag = matcher.group();
