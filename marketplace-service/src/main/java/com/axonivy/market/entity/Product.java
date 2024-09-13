@@ -10,8 +10,8 @@ import lombok.Setter;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.springframework.data.annotation.Id;
+import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.annotation.Transient;
-import org.springframework.data.mongodb.core.mapping.DBRef;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.io.Serial;
@@ -66,6 +66,8 @@ public class Product implements Serializable {
   private List<String> releasedVersions;
   @Transient
   private String metaProductJsonUrl;
+  @LastModifiedDate
+  private Date updatedAt;
 
   @Override
   public int hashCode() {

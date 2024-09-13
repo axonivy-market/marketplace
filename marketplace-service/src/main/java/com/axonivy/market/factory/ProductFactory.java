@@ -1,6 +1,9 @@
 package com.axonivy.market.factory;
 
+import com.axonivy.market.constants.CommonConstants;
 import com.axonivy.market.entity.Product;
+import com.axonivy.market.entity.ProductJsonContent;
+import com.axonivy.market.entity.ProductModuleContent;
 import com.axonivy.market.github.model.Meta;
 import com.axonivy.market.github.util.GitHubUtils;
 import com.axonivy.market.model.DisplayValue;
@@ -78,6 +81,14 @@ public class ProductFactory {
     return product;
   }
 
+  public static void transferComputedPersistedDataToProduct(Product persisted, Product product) {
+    product.setCustomOrder(persisted.getCustomOrder());
+    product.setNewestReleaseVersion(persisted.getNewestReleaseVersion());
+    product.setReleasedVersions(persisted.getReleasedVersions());
+    product.setInstallationCount(persisted.getInstallationCount());
+    product.setSynchronizedInstallationCount(persisted.getSynchronizedInstallationCount());
+  }
+
   private static Map<String, String> mappingMultilingualismValueByMetaJSONFile(List<DisplayValue> list) {
     Map<String, String> value = new HashMap<>();
     if (!CollectionUtils.isEmpty(list)) {
@@ -111,5 +122,17 @@ public class ProductFactory {
 
   private static Meta jsonDecode(GHContent ghContent) throws IOException {
     return MAPPER.readValue(ghContent.read().readAllBytes(), Meta.class);
+  }
+
+  public static void mappingIdForProductModuleContent(ProductModuleContent content) {
+    if (StringUtils.isNotBlank(content.getProductId()) && StringUtils.isNotBlank(content.getTag())) {
+      content.setId(String.format(CommonConstants.ID_WITH_NUMBER_PATTERN, content.getProductId(), content.getTag()));
+    }
+  }
+
+  public static void mappingIdForProductJsonContent(ProductJsonContent content) {
+    if (StringUtils.isNotBlank(content.getProductId()) && StringUtils.isNotBlank(content.getVersion())) {
+      content.setId(String.format(CommonConstants.ID_WITH_NUMBER_PATTERN, content.getProductId(), content.getVersion()));
+    }
   }
 }
