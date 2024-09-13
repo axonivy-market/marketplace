@@ -235,7 +235,7 @@ class ProductDetailsControllerTest {
   }
 
   @Test
-  void test_getImageFromId() throws IOException {
+  void test_getImageFromId() {
     byte[] mockImageData = "image data".getBytes();
     when(productService.readImage("66e2b14868f2f95b2f95549a")).thenReturn(mockImageData);
 

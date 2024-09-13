@@ -283,15 +283,15 @@ public class GHAxonIvyProductRepoServiceImpl implements GHAxonIvyProductRepoServ
 
     allContentOfImages.forEach(content -> {
       Image image = imageService.mappingImageFromGHContent(product, content);
-      System.out.println(content.getName());
       imageUrls.put(content.getName(), "imageId-".concat(image.getId()));
     });
 
-    for (String key : imageUrls.keySet()) {
-      String imageUrlPattern = String.format(README_IMAGE_FORMAT, Pattern.quote(key));
+    for (Map.Entry<String, String> entry : imageUrls.entrySet()) {
+      String imageUrlPattern = String.format(README_IMAGE_FORMAT, Pattern.quote(entry.getKey()));
       readmeContents = readmeContents.replaceAll(imageUrlPattern,
-          String.format(IMAGE_DOWNLOAD_URL_FORMAT, imageUrls.get(key)));
+          String.format(IMAGE_DOWNLOAD_URL_FORMAT, entry.getValue()));
     }
+
     return readmeContents;
   }
 

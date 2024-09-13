@@ -253,7 +253,6 @@ class GHAxonIvyProductRepoServiceImplTest {
     GHContent mockImageFile = mock(GHContent.class);
     when(mockImageFile.getName()).thenReturn(ReadmeConstants.IMAGES, IMAGE_NAME);
     when(mockImageFile.isDirectory()).thenReturn(true);
-//    when(mockImageFile.getDownloadUrl()).thenReturn(IMAGE_DOWNLOAD_URL);
     Mockito.when(imageService.mappingImageFromGHContent(any(),any())).thenReturn(mockImage());
     PagedIterable<GHContent> pagedIterable = Mockito.mock(String.valueOf(GHContent.class));
     when(mockImageFile.listDirectoryContent()).thenReturn(pagedIterable);
@@ -417,11 +416,10 @@ class GHAxonIvyProductRepoServiceImplTest {
     return mockContent;
   }
 
-  private static GHContent createMockProductJson() throws IOException {
+  private static GHContent createMockProductJson() {
     GHContent mockProductJson = mock(GHContent.class);
     when(mockProductJson.isFile()).thenReturn(true);
     when(mockProductJson.getName()).thenReturn(ProductJsonConstants.PRODUCT_JSON_FILE, IMAGE_NAME);
-//    when(mockProductJson.getDownloadUrl()).thenReturn(IMAGE_DOWNLOAD_URL);
     return mockProductJson;
   }
 

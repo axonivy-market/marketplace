@@ -41,7 +41,7 @@ class ProductFactoryTest {
   }
 
   @Test
-  void testMappingLogo() throws IOException {
+  void testMappingLogo() {
     Product product = new Product();
     GHContent content = mock(GHContent.class);
     when(content.getName()).thenReturn(CommonConstants.LOGO_FILE);
@@ -49,7 +49,6 @@ class ProductFactoryTest {
     assertNotEquals(null, result);
 
     when(content.getName()).thenReturn(CommonConstants.LOGO_FILE);
-//    when(content.getDownloadUrl()).thenReturn(DUMMY_LOGO_URL);
     result = ProductFactory.mappingByGHContent(product, content);
     assertNotEquals(null, result);
   }

@@ -24,7 +24,7 @@ import com.axonivy.market.entity.Product;
 import com.axonivy.market.repository.ImageRepository;
 
 @ExtendWith(MockitoExtension.class)
-public class ImageServiceImplTest {
+class ImageServiceImplTest {
   @InjectMocks
   private ImageServiceImpl imageService;
 

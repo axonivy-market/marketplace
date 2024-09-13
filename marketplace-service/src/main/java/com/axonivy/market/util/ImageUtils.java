@@ -16,6 +16,10 @@ import com.axonivy.market.controller.ProductDetailsController;
 import com.axonivy.market.entity.ProductModuleContent;
 
 public class ImageUtils {
+
+  public ImageUtils() {
+  }
+
   public static ProductModuleContent mappingImageForProductModuleContent(ProductModuleContent productModuleContent) {
     if (ObjectUtils.isEmpty(productModuleContent)) {
       return null;

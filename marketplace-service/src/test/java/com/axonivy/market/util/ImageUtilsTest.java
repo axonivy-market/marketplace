@@ -11,7 +11,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import com.axonivy.market.entity.ProductModuleContent;
 
 @ExtendWith(MockitoExtension.class)
-public class ImageUtilsTest {
+class ImageUtilsTest {
 
   @Test
   void testMappingImageForProductModuleContent() {
