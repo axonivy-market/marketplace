@@ -22,7 +22,8 @@ public class CustomProductModuleContentRepositoryImpl extends CustomRepository i
 
   @Override
   public List<String> findTagsByProductId(String id) {
-    Aggregation aggregation = Aggregation.newAggregation(createFieldMatchOperation(MongoDBConstants.PRODUCT_ID,id), createProjectAggregationBySingleFieldName(MongoDBConstants.TAG));
+    Aggregation aggregation = Aggregation.newAggregation(createFieldMatchOperation(MongoDBConstants.PRODUCT_ID, id),
+        createProjectAggregationBySingleFieldName(MongoDBConstants.TAG));
     return queryProductModuleContentsByAggregation(aggregation).stream().map(ProductModuleContent::getTag).toList();
   }
 
