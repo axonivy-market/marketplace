@@ -71,7 +71,6 @@ public class ProductDetailsController {
     return new ResponseEntity<>(detailModelAssembler.toModel(productDetail, version, BEST_MATCH_BY_ID_AND_VERSION), HttpStatus.OK);
   }
 
-  @CrossOrigin(originPatterns = "*")
   @PutMapping(INSTALLATION_COUNT_BY_ID)
   @Operation(summary = "Update installation count of product", description = "By default, increase installation count when click download product files by users")
   public ResponseEntity<Integer> syncInstallationCount(

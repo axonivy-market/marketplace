@@ -29,7 +29,7 @@ services:
     expose:
       - 8080
     volumes:
-      - /home/axonivy/marketplace/data/market-installations.json:/home/data/market-installation.json
+      - /home/axonivy/marketplace/data/market-installations.json:/data/market-installation.json
     environment:
       - MONGODB_HOST=${SERVICE_MONGODB_HOST}
       - MONGODB_DATABASE=${SERVICE_MONGODB_DATABASE}
