@@ -82,6 +82,8 @@ public class ProductFactory {
     product.setCustomOrder(persisted.getCustomOrder());
     product.setNewestReleaseVersion(persisted.getNewestReleaseVersion());
     product.setReleasedVersions(persisted.getReleasedVersions());
+    product.setInstallationCount(persisted.getInstallationCount());
+    product.setSynchronizedInstallationCount(persisted.getSynchronizedInstallationCount());
   }
 
   private static Map<String, String> mappingMultilingualismValueByMetaJSONFile(List<DisplayValue> list) {
