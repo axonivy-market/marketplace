@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
+import com.axonivy.market.constants.CommonConstants;
 import org.kohsuke.github.GHContent;
 import org.kohsuke.github.GHOrganization;
 import org.kohsuke.github.GHRepository;
@@ -175,7 +176,7 @@ public class GitHubServiceImpl implements GitHubService {
       return response.getBody();
     } catch (HttpClientErrorException exception) {
       throw new UnauthorizedException(ErrorCode.GITHUB_USER_UNAUTHORIZED.getCode(),
-          ErrorCode.GITHUB_USER_UNAUTHORIZED.getHelpText() + "-" + GitHubUtils.extractMessageFromExceptionMessage(
+          ErrorCode.GITHUB_USER_UNAUTHORIZED.getHelpText() + CommonConstants.DASH_SEPARATOR + GitHubUtils.extractMessageFromExceptionMessage(
               exception.getMessage()));
     }
   }

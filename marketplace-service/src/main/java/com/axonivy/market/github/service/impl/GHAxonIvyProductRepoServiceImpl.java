@@ -165,7 +165,7 @@ public class GHAxonIvyProductRepoServiceImpl implements GHAxonIvyProductRepoServ
     ProductModuleContent productModuleContent = new ProductModuleContent();
     try {
       List<GHContent> contents = getProductFolderContents(product, ghRepository, tag);
-      productModuleContent.setId(product.getId() + "-" + tag);
+      productModuleContent.setId(product.getId() + CommonConstants.DASH_SEPARATOR + tag);
       productModuleContent.setProductId(product.getId());
       productModuleContent.setTag(tag);
       updateDependencyContentsFromProductJson(productModuleContent, contents , product);
@@ -241,7 +241,7 @@ public class GHAxonIvyProductRepoServiceImpl implements GHAxonIvyProductRepoServ
       String content = extractProductJsonContent(productJsonFile, productModuleContent.getTag());
       if (ObjectUtils.isNotEmpty(content)) {
         ProductJsonContent jsonContent = new ProductJsonContent();
-        jsonContent.setId(product.getId() + "-" + currentVersion);
+        jsonContent.setId(product.getId() + CommonConstants.DASH_SEPARATOR + currentVersion);
         jsonContent.setVersion(currentVersion);
         jsonContent.setProductId(product.getId());
         jsonContent.setName(product.getNames().get(EN_LANGUAGE));
