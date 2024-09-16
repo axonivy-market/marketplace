@@ -1,21 +1,26 @@
 package com.axonivy.market.github.service.impl;
 
-import static org.apache.commons.lang3.StringUtils.EMPTY;
-
-import java.io.IOException;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-
-import com.axonivy.market.constants.ErrorMessageConstants;
 import com.axonivy.market.constants.CommonConstants;
+import com.axonivy.market.constants.ErrorMessageConstants;
+import com.axonivy.market.constants.GitHubConstants;
+import com.axonivy.market.entity.User;
+import com.axonivy.market.enums.ErrorCode;
+import com.axonivy.market.exceptions.model.MissingHeaderException;
+import com.axonivy.market.exceptions.model.NotFoundException;
+import com.axonivy.market.exceptions.model.Oauth2ExchangeCodeException;
+import com.axonivy.market.exceptions.model.UnauthorizedException;
+import com.axonivy.market.github.model.GitHubAccessTokenResponse;
+import com.axonivy.market.github.model.GitHubProperty;
+import com.axonivy.market.github.service.GitHubService;
+import com.axonivy.market.github.util.GitHubUtils;
+import com.axonivy.market.repository.UserRepository;
+import lombok.extern.log4j.Log4j2;
 import org.kohsuke.github.GHContent;
 import org.kohsuke.github.GHOrganization;
 import org.kohsuke.github.GHRepository;
+import org.kohsuke.github.GHTag;
 import org.kohsuke.github.GitHub;
 import org.kohsuke.github.GitHubBuilder;
-import org.kohsuke.github.GHTag;
 import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpEntity;
@@ -30,19 +35,15 @@ import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 
-import com.axonivy.market.constants.GitHubConstants;
-import com.axonivy.market.entity.User;
-import com.axonivy.market.enums.ErrorCode;
-import com.axonivy.market.exceptions.model.MissingHeaderException;
-import com.axonivy.market.exceptions.model.NotFoundException;
-import com.axonivy.market.exceptions.model.Oauth2ExchangeCodeException;
-import com.axonivy.market.exceptions.model.UnauthorizedException;
-import com.axonivy.market.github.model.GitHubAccessTokenResponse;
-import com.axonivy.market.github.model.GitHubProperty;
-import com.axonivy.market.github.service.GitHubService;
-import com.axonivy.market.github.util.GitHubUtils;
-import com.axonivy.market.repository.UserRepository;
+import java.io.IOException;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 
+import static org.apache.commons.lang3.StringUtils.EMPTY;
+
+@Log4j2
 @Service
 public class GitHubServiceImpl implements GitHubService {
 
@@ -59,9 +60,8 @@ public class GitHubServiceImpl implements GitHubService {
 
   @Override
   public GitHub getGitHub() throws IOException {
-    return new GitHubBuilder()
-        .withOAuthToken(Optional.ofNullable(gitHubProperty).map(GitHubProperty::getToken).orElse(EMPTY).trim())
-        .build();
+    return new GitHubBuilder().withOAuthToken(
+        Optional.ofNullable(gitHubProperty).map(GitHubProperty::getToken).orElse(EMPTY).trim()).build();
   }
 
   @Override
@@ -111,8 +111,9 @@ public class GitHubServiceImpl implements GitHubService {
     GitHubAccessTokenResponse response = responseEntity.getBody();
 
     if (response != null && response.getError() != null && !response.getError().isBlank()) {
-      String errorDescription = buildErrorDescription(response.getErrorDescription(), gitHubProperty.getOauth2ClientId());
-      throw new Oauth2ExchangeCodeException(response.getError(), errorDescription);
+      log.warn(String.format(ErrorMessageConstants.CURRENT_CLIENT_ID_MISMATCH_MESSAGE, code,
+          gitHubProperty.getOauth2ClientId()));
+      throw new Oauth2ExchangeCodeException(response.getError(), response.getErrorDescription());
     }
 
     return response;
@@ -178,12 +179,8 @@ public class GitHubServiceImpl implements GitHubService {
       return response.getBody();
     } catch (HttpClientErrorException exception) {
       throw new UnauthorizedException(ErrorCode.GITHUB_USER_UNAUTHORIZED.getCode(),
-          ErrorCode.GITHUB_USER_UNAUTHORIZED.getHelpText() + CommonConstants.DASH_SEPARATOR + GitHubUtils.extractMessageFromExceptionMessage(
-              exception.getMessage()));
+          ErrorCode.GITHUB_USER_UNAUTHORIZED.getHelpText() + CommonConstants.DASH_SEPARATOR
+              + GitHubUtils.extractMessageFromExceptionMessage(exception.getMessage()));
     }
-  }
-
-  private String buildErrorDescription(String errorDescription, String clientId) {
-    return String.format(ErrorMessageConstants.WRONG_AUTHORIZED_CODE_ERROR_MESSAGE, errorDescription, clientId);
   }
 }

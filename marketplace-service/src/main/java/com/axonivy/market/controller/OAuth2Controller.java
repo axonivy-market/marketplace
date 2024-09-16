@@ -57,6 +57,9 @@ public class OAuth2Controller {
     try {
       GitHubAccessTokenResponse tokenResponse = gitHubService.getAccessToken(oauth2AuthorizationCode.getCode(), gitHubProperty);
       accessToken = tokenResponse.getAccessToken();
+      User user = gitHubService.getAndUpdateUser(accessToken);
+      String jwtToken = jwtService.generateToken(user);
+      return new ResponseEntity<>(Collections.singletonMap(GitHubConstants.Json.TOKEN, jwtToken), HttpStatus.OK);
     } catch (Oauth2ExchangeCodeException e) {
       Map<String, String> errorResponse = new HashMap<>();
       errorResponse.put(CommonConstants.ERROR, e.getError());
@@ -65,9 +68,5 @@ public class OAuth2Controller {
     } catch (Exception e) {
       return new ResponseEntity<>(Map.of(CommonConstants.MESSAGE, e.getMessage()), HttpStatus.BAD_REQUEST);
     }
-
-    User user = gitHubService.getAndUpdateUser(accessToken);
-    String jwtToken = jwtService.generateToken(user);
-    return new ResponseEntity<>(Collections.singletonMap(GitHubConstants.Json.TOKEN, jwtToken), HttpStatus.OK);
   }
 }
