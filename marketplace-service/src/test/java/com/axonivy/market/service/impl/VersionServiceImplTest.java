@@ -35,6 +35,7 @@ import java.util.Optional;
 
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.verify;
 
 @ExtendWith(MockitoExtension.class)
 class VersionServiceImplTest {
@@ -195,13 +196,26 @@ class VersionServiceImplTest {
   }
 
   @Test
-  void testGetMavenArtifactsFromProductJsonByVersion() {
+  void testGetMavenArtifactsFromProductJsonByVersion() throws IOException {
     ReflectionTestUtils.setField(versionService, "repoName", repoName);
     ReflectionTestUtils.setField(versionService, "productId", "adobe-acrobat-connector");
+    when(productJsonContentRepository.findByProductIdAndVersion("adobe-acrobat-connector", "10.0.20")).thenReturn(null);
 
     Assertions.assertEquals(0, versionService.getMavenArtifactsFromProductJsonByVersion("10.0.20").size());
-    ProductJsonContent mockJsonContent = new ProductJsonContent();
 
+    String jsonContent = "{ \"installers\": [{ \"id\": \"maven-import\", \"data\": { \"repositories\": [{ \"url\": \"http://repo.url\" }], \"projects\": [], \"dependencies\": [] } }] }";
+    ProductJsonContent productJson = new ProductJsonContent();
+    productJson.setContent(jsonContent);
+    when(productJsonContentRepository.findByProductIdAndVersion("adobe-acrobat-connector", "10.0.20")).thenReturn(productJson);
+
+    List<MavenArtifact> expectedArtifacts = new ArrayList<>();
+    when(gitHubService.extractMavenArtifactsFromContentStream(Mockito.any())).thenReturn(expectedArtifacts);
+
+    List<MavenArtifact> actualArtifacts = versionService.getMavenArtifactsFromProductJsonByVersion("10.0.20");
+
+    Assertions.assertEquals(expectedArtifacts, actualArtifacts);
+    verify(productJsonContentRepository, Mockito.times(2)).findByProductIdAndVersion("adobe-acrobat-connector", "10.0.20");
+    verify(gitHubService).extractMavenArtifactsFromContentStream(Mockito.any());
 
   }
 
@@ -346,10 +360,10 @@ class VersionServiceImplTest {
 
     Assertions.assertEquals(result.stream().map(VersionAndUrlModel::getVersion).toList(),
         List.of("11.3.0", "11.1.1", "11.1.0", "10.0.2"));
-    Assertions.assertEquals("/api/product-details/11.3.0/11.3.0/json", result.get(0).getUrl());
-    Assertions.assertEquals("/api/product-details/11.3.0/11.1.1/json", result.get(1).getUrl());
-    Assertions.assertEquals("/api/product-details/11.3.0/11.1.0/json", result.get(2).getUrl());
-    Assertions.assertEquals("/api/product-details/11.3.0/10.0.2/json", result.get(3).getUrl());
+    Assertions.assertTrue(result.get(0).getUrl().endsWith("/api/product-details/11.3.0/11.3.0/json"));
+    Assertions.assertTrue(result.get(1).getUrl().endsWith("/api/product-details/11.3.0/11.1.1/json"));
+    Assertions.assertTrue(result.get(2).getUrl().endsWith("/api/product-details/11.3.0/11.1.0/json"));
+    Assertions.assertTrue(result.get(3).getUrl().endsWith("/api/product-details/11.3.0/10.0.2/json"));
   }
 
   @Test

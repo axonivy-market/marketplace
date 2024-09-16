@@ -81,7 +81,6 @@ public class VersionServiceImpl implements VersionService {
 
     this.productJsonContentRepository = productJsonContentRepository;
     this.productModuleContentRepository = productModuleContentRepository;
-    StringUtils.I
   }
 
   private void resetData() {
