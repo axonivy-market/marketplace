@@ -69,16 +69,12 @@ public class VersionUtils {
         return version.contains(MavenConstants.SPRINT_RELEASE_POSTFIX);
     }
 
-    public static boolean isBugFixVersion(String version) {
-        return version.chars().filter(ch -> ch == '.').count() == 3;
-    }
-
     public static boolean isProjectVersion(String version) {
         return version.chars().filter(ch -> ch == '-').count() == 2;
     }
 
     public static boolean isReleasedVersion(String version) {
-        return !(isSprintVersion(version) || isSnapshotVersion(version) || isBugFixVersion(version) || isProjectVersion(version));
+        return !(isSprintVersion(version) || isSnapshotVersion(version) || isProjectVersion(version));
     }
 
     public static boolean isMatchWithDesignerVersion(String version, String designerVersion) {
