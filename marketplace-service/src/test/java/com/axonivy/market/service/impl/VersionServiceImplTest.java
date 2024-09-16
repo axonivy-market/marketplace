@@ -201,13 +201,7 @@ class VersionServiceImplTest {
 
     Assertions.assertEquals(0, versionService.getMavenArtifactsFromProductJsonByVersion("10.0.20").size());
     ProductJsonContent mockJsonContent = new ProductJsonContent();
-    when(productJsonContentRepository.findByProductIdAndVersion("adobe-acrobat-connector", "10.0.20")).thenReturn(mockJsonContent);
-    try {
-      when(gitHubService.extractMavenArtifactsFromContentStream(Mockito.any())).thenReturn(List.of(new MavenArtifact()));
-//      Assertions.assertEquals(1, versionService.getMavenArtifactsFromProductJsonByVersion("10.0.20").size());
-    } catch (IOException e) {
-      throw new RuntimeException(e);
-    }
+
 
   }
 
