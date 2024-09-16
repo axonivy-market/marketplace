@@ -215,19 +215,17 @@ public class VersionServiceImpl implements VersionService {
   }
 
   public List<MavenArtifact> getMavenArtifactsFromProductJsonByVersion(String version) {
-    List<MavenArtifact> result = new ArrayList<>();
     ProductJsonContent productJson = productJsonContentRepository.findByProductIdAndVersion(productId, version);
     if (Objects.isNull(productJson) || StringUtils.isBlank(productJson.getContent())) {
-      return result;
+      return new ArrayList<>();
     }
     InputStream contentStream = IOUtils.toInputStream(productJson.getContent(), StandardCharsets.UTF_8);
     try {
-      gitHubService.extractMavenArtifactsFromContentStream(contentStream, result);
+      return gitHubService.extractMavenArtifactsFromContentStream(contentStream);
     } catch (IOException e) {
       log.error("Can not get maven artifacts from Product.json of {} - version {}:{}", productId, version, e.getMessage());
+      return new ArrayList<>();
     }
-    log.error(result.size());
-    return result;
   }
 
   public MavenArtifactModel convertMavenArtifactToModel(MavenArtifact artifact, String version) {

@@ -70,17 +70,16 @@ public class GHAxonIvyProductRepoServiceImpl implements GHAxonIvyProductRepoServ
 
   @Override
   public List<MavenArtifact> convertProductJsonToMavenProductInfo(GHContent content) throws IOException {
-    List<MavenArtifact> artifacts = new ArrayList<>();
     InputStream contentStream = extractedContentStream(content);
     if (Objects.isNull(contentStream)) {
-      return artifacts;
+      return new ArrayList<>();
     }
-    extractMavenArtifactsFromContentStream(contentStream, artifacts);
-    return artifacts;
+    return extractMavenArtifactsFromContentStream(contentStream);
   }
 
   @Override
-  public void extractMavenArtifactsFromContentStream(InputStream contentStream, List<MavenArtifact> artifacts) throws IOException {
+  public List<MavenArtifact> extractMavenArtifactsFromContentStream(InputStream contentStream) throws IOException {
+    List<MavenArtifact> artifacts = new ArrayList<>();
     JsonNode rootNode = objectMapper.readTree(contentStream);
     JsonNode installersNode = rootNode.path(ProductJsonConstants.INSTALLERS);
 
@@ -108,6 +107,7 @@ public class GHAxonIvyProductRepoServiceImpl implements GHAxonIvyProductRepoServ
         extractMavenArtifactFromJsonNode(dataNode, true, artifacts);
       }
     }
+    return artifacts;
   }
 
   public InputStream extractedContentStream(GHContent content) {

@@ -12,9 +12,8 @@ import java.io.InputStream;
 import java.util.List;
 
 public interface GHAxonIvyProductRepoService {
-
-
-  void extractMavenArtifactsFromContentStream(InputStream contentStream, List<MavenArtifact> artifacts) throws IOException;
+  
+  List<MavenArtifact> extractMavenArtifactsFromContentStream(InputStream contentStream) throws IOException;
 
   GHContent getContentFromGHRepoAndTag(String repoName, String filePath, String tagVersion);
 
