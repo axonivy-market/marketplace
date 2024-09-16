@@ -50,7 +50,7 @@ common:
     download: Download
   footer:
     newVersionsInfo: New version release available for Linux,<br /> Window and MacOS operating systems.
-    downloadLatestDevVersion: Download V11.2.1
+    downloadLatestDevVersion: Download V11.3.1
     ivyCompanyInfo: © 2023 Axon Ivy Inc.
     privacyPolicy: Privacy Policy
     termsOfService: Terms of Service
