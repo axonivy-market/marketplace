@@ -2,6 +2,7 @@ package com.axonivy.market.constants;
 
 public class ProductJsonConstants {
   public static final String PRODUCT_JSON_FILE = "product.json";
+  public static final String LOGO_FILE = "logo.png";
   public static final String DATA = "data";
   public static final String REPOSITORIES = "repositories";
   public static final String URL = "url";

@@ -29,7 +29,7 @@ services:
     expose:
       - 8080
     volumes:
-      - /home/axonivy/marketplace/data/market-installations.json:/home/data/market-installation.json
+      - /home/axonivy/marketplace/data/market-installations.json:/data/market-installation.json
     environment:
       - MONGODB_HOST=${SERVICE_MONGODB_HOST}
       - MONGODB_DATABASE=${SERVICE_MONGODB_DATABASE}
@@ -41,5 +41,6 @@ services:
       - MARKET_GITHUB_OAUTH_APP_CLIENT_SECRET=${MARKET_GITHUB_OAUTH_APP_CLIENT_SECRET}
       - MARKET_JWT_SECRET_KEY=${MARKET_JWT_SECRET_KEY}
       - MARKET_CORS_ALLOWED_ORIGIN=${MARKET_CORS_ALLOWED_ORIGIN}
+      - MARKET_MONGO_LOG_LEVEL=${MARKET_MONGO_LOG_LEVEL}
 volumes:
   mongodata:

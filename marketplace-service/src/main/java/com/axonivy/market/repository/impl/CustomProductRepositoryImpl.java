@@ -1,15 +1,17 @@
 package com.axonivy.market.repository.impl;
 
+import com.axonivy.market.constants.EntityConstants;
 import com.axonivy.market.constants.MongoDBConstants;
 import com.axonivy.market.entity.Product;
 import com.axonivy.market.entity.ProductModuleContent;
+import com.axonivy.market.entity.ProductDesignerInstallation;
 import com.axonivy.market.repository.CustomProductRepository;
+import com.axonivy.market.repository.CustomRepository;
 import com.axonivy.market.repository.ProductModuleContentRepository;
 import lombok.Builder;
 import org.springframework.data.mongodb.core.FindAndModifyOptions;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.aggregation.Aggregation;
-import org.springframework.data.mongodb.core.aggregation.AggregationOperation;
 import org.springframework.data.mongodb.core.aggregation.AggregationResults;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
@@ -21,7 +23,7 @@ import java.util.Objects;
 import java.util.Optional;
 
 @Builder
-public class CustomProductRepositoryImpl implements CustomProductRepository {
+public class CustomProductRepositoryImpl extends CustomRepository implements CustomProductRepository {
   private final MongoTemplate mongoTemplate;
   private final ProductModuleContentRepository contentRepository;
 
@@ -30,12 +32,9 @@ public class CustomProductRepositoryImpl implements CustomProductRepository {
       this.contentRepository = contentRepository;
   }
 
-  private AggregationOperation createIdMatchOperation(String id) {
-    return Aggregation.match(Criteria.where(MongoDBConstants.ID).is(id));
-  }
 
   public Product queryProductByAggregation(Aggregation aggregation) {
-    return Optional.of(mongoTemplate.aggregate(aggregation, MongoDBConstants.PRODUCT_COLLECTION, Product.class))
+    return Optional.of(mongoTemplate.aggregate(aggregation, EntityConstants.PRODUCT, Product.class))
         .map(AggregationResults::getUniqueMappedResult).orElse(null);
   }
 
@@ -89,7 +88,16 @@ public class CustomProductRepositoryImpl implements CustomProductRepository {
     return updatedProduct != null ? updatedProduct.getInstallationCount() : 0;
   }
 
-  private Query createQueryById(String id) {
-    return new Query(Criteria.where(MongoDBConstants.ID).is(id));
+
+  @Override
+  public void increaseInstallationCountForProductByDesignerVersion(String productId, String designerVersion) {
+    Update update = new Update().inc(MongoDBConstants.INSTALLATION_COUNT, 1);
+    mongoTemplate.upsert(createQueryByProductIdAndDesignerVersion(productId, designerVersion),
+            update, ProductDesignerInstallation.class);
+  }
+
+  private Query createQueryByProductIdAndDesignerVersion(String productId, String designerVersion) {
+    return new Query(Criteria.where(MongoDBConstants.PRODUCT_ID).is(productId)
+            .andOperator(Criteria.where(MongoDBConstants.DESIGNER_VERSION).is(designerVersion)));
   }
 }

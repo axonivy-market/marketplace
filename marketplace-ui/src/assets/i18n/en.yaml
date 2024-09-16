@@ -27,6 +27,11 @@ common:
       util: Utilities
       demos: Demos
       solution: Solutions
+  error:
+    code: 'ERROR CODE: 404'
+    oops: 'Oops!'
+    description: 'Our website is taking a break. It seems that we cannot find the page you requested.'
+    buttonLabel: Back to homepage
   sort:
     label: Sort by
     value:
@@ -45,11 +50,11 @@ common:
     download: Download
   footer:
     newVersionsInfo: New version release available for Linux,<br /> Window and MacOS operating systems.
-    downloadLatestLTSVersion: Download V10.0.18
-    downloadLatestDevVersion: Download V11.2.1
+    downloadLatestDevVersion: Download V11.3.1
     ivyCompanyInfo: © 2023 Axon Ivy Inc.
     privacyPolicy: Privacy Policy
     termsOfService: Terms of Service
+  downloadLatestLTSVersion: Download V10.0.23
   product:
     detail:
       backToMainPage: Back to overview
@@ -71,12 +76,11 @@ common:
           compatibility: Compatibility
           cost: Cost
           language: Language
-          industry: Industry
           tag: Tags
           source: Source
           status: Status
           moreInformation: More Information
-          contactUs: Contact Us
+          contactUs: Contact us
       install:
         buttonLabel: Install Now
         buttonLabelInDesigner: Install
@@ -88,6 +92,8 @@ common:
           label: Choose target platform
         artifactSelector:
           label: Choose artifact
+      contactUs:
+        label: Contact us
   feedback:
     label: Feedback
     successMessage: Your feedback has been successfully submitted!

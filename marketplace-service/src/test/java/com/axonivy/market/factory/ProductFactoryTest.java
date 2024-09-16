@@ -1,6 +1,6 @@
 package com.axonivy.market.factory;
 
-import com.axonivy.market.constants.CommonConstants;
+import com.axonivy.market.constants.ProductJsonConstants;
 import com.axonivy.market.entity.Product;
 import com.axonivy.market.github.model.Meta;
 import org.junit.jupiter.api.Assertions;
@@ -11,6 +11,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.List;
 
 import static com.axonivy.market.constants.CommonConstants.SLASH;
 import static com.axonivy.market.constants.MetaConstants.META_FILE;
@@ -41,15 +42,14 @@ class ProductFactoryTest {
   }
 
   @Test
-  void testMappingLogo() throws IOException {
+  void testMappingLogo() {
     Product product = new Product();
     GHContent content = mock(GHContent.class);
-    when(content.getName()).thenReturn(CommonConstants.LOGO_FILE);
+    when(content.getName()).thenReturn(ProductJsonConstants.LOGO_FILE);
     var result = ProductFactory.mappingByGHContent(product, content);
     assertNotEquals(null, result);
 
-    when(content.getName()).thenReturn(CommonConstants.LOGO_FILE);
-    when(content.getDownloadUrl()).thenReturn(DUMMY_LOGO_URL);
+    when(content.getName()).thenReturn(ProductJsonConstants.LOGO_FILE);
     result = ProductFactory.mappingByGHContent(product, content);
     assertNotEquals(null, result);
   }
@@ -73,5 +73,21 @@ class ProductFactoryTest {
     ProductFactory.extractSourceUrl(product, meta);
     Assertions.assertEquals(sourceUrl, product.getRepositoryName());
     Assertions.assertEquals(sourceUrl, product.getSourceUrl());
+  }
+
+  @Test
+  void testTransferComputedData() {
+    String initialVersion ="10.0.2";
+    Product product = new Product();
+    Product persistedData = new Product();
+    persistedData.setCustomOrder(1);
+    persistedData.setReleasedVersions(List.of(initialVersion));
+    persistedData.setNewestReleaseVersion(initialVersion);
+
+    ProductFactory.transferComputedPersistedDataToProduct(persistedData,product);
+    assertEquals(1,product.getCustomOrder());
+    assertEquals(initialVersion, product.getNewestReleaseVersion());
+    assertEquals(1, product.getReleasedVersions().size());
+    assertEquals(initialVersion, product.getReleasedVersions().get(0));
   }
 }

@@ -1,18 +1,17 @@
 package com.axonivy.market.controller;
 
-import static com.axonivy.market.constants.RequestMappingConstants.PRODUCT_JSON_CONTENT_BY_PRODUCT_ID_AND_VERSION;
-import static com.axonivy.market.constants.RequestMappingConstants.VERSIONS_IN_DESIGNER;
 import static com.axonivy.market.constants.RequestParamConstants.DESIGNER_VERSION;
 import static com.axonivy.market.constants.RequestParamConstants.ID;
-import static com.axonivy.market.constants.RequestParamConstants.PRODUCT_ID;
 import static com.axonivy.market.constants.RequestParamConstants.SHOW_DEV_VERSION;
 import static com.axonivy.market.constants.RequestParamConstants.VERSION;
+import static com.axonivy.market.constants.RequestMappingConstants.BEST_MATCH_BY_ID_AND_VERSION;
 import static com.axonivy.market.constants.RequestMappingConstants.BY_ID;
 import static com.axonivy.market.constants.RequestMappingConstants.BY_ID_AND_VERSION;
 import static com.axonivy.market.constants.RequestMappingConstants.INSTALLATION_COUNT_BY_ID;
 import static com.axonivy.market.constants.RequestMappingConstants.PRODUCT_DETAILS;
+import static com.axonivy.market.constants.RequestMappingConstants.PRODUCT_JSON_CONTENT_BY_PRODUCT_ID_AND_VERSION;
 import static com.axonivy.market.constants.RequestMappingConstants.VERSIONS_BY_ID;
-import static com.axonivy.market.constants.RequestMappingConstants.BEST_MATCH_BY_ID_AND_VERSION;
+import static com.axonivy.market.constants.RequestMappingConstants.VERSIONS_IN_DESIGNER;
 import java.util.List;
 import java.util.Map;
 
@@ -22,7 +21,6 @@ import io.swagger.v3.oas.annotations.enums.ParameterIn;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -46,7 +44,8 @@ public class ProductDetailsController {
   private final ProductService productService;
   private final ProductDetailModelAssembler detailModelAssembler;
 
-  public ProductDetailsController(VersionService versionService, ProductService productService, ProductDetailModelAssembler detailModelAssembler) {
+  public ProductDetailsController(VersionService versionService, ProductService productService,
+      ProductDetailModelAssembler detailModelAssembler) {
     this.versionService = versionService;
     this.productService = productService;
     this.detailModelAssembler = detailModelAssembler;
@@ -70,12 +69,12 @@ public class ProductDetailsController {
     return new ResponseEntity<>(detailModelAssembler.toModel(productDetail, version, BEST_MATCH_BY_ID_AND_VERSION), HttpStatus.OK);
   }
 
-  @CrossOrigin(originPatterns = "*")
   @PutMapping(INSTALLATION_COUNT_BY_ID)
   @Operation(summary = "Update installation count of product", description = "By default, increase installation count when click download product files by users")
   public ResponseEntity<Integer> syncInstallationCount(
-      @PathVariable(ID) @Parameter(description = "Product id (from meta.json)", example = "approval-decision-utils", in = ParameterIn.PATH) String productId) {
-    int result = productService.updateInstallationCountForProduct(productId);
+      @PathVariable(ID) @Parameter(description = "Product id (from meta.json)", example = "approval-decision-utils", in = ParameterIn.PATH) String productId,
+      @RequestParam(name = DESIGNER_VERSION, required = false) @Parameter(in = ParameterIn.QUERY, example = "v10.0.20") String designerVersion) {
+    int result = productService.updateInstallationCountForProduct(productId, designerVersion);
     return new ResponseEntity<>(result, HttpStatus.OK);
   }
 
@@ -99,7 +98,7 @@ public class ProductDetailsController {
 
   @GetMapping(PRODUCT_JSON_CONTENT_BY_PRODUCT_ID_AND_VERSION)
   @Operation(summary = "Get product json content for designer to install", description = "When we click install in designer, this API will send content of product json for installing in Ivy designer")
-  public ResponseEntity<Map<String, Object>> findProductJsonContent(@PathVariable(PRODUCT_ID) String productId,
+  public ResponseEntity<Map<String, Object>> findProductJsonContent(@PathVariable(ID) String productId,
       @PathVariable(VERSION) String version) {
     Map<String, Object> productJsonContent = versionService.getProductJsonContentByIdAndVersion(productId, version);
     return new ResponseEntity<>(productJsonContent, HttpStatus.OK);
@@ -111,5 +110,4 @@ public class ProductDetailsController {
     List<VersionAndUrlModel> versionList = versionService.getVersionsForDesigner(id);
     return new ResponseEntity<>(versionList, HttpStatus.OK);
   }
-
 }

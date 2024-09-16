@@ -23,6 +23,11 @@ common:
       util: Nützliches
       demos: Demos
       solution: Lösungen
+  error:
+    code: 'ERROR CODE: 404'
+    oops: 'Oops!'
+    description: 'Unsere Webseite macht eine kleine Pause. Offenbar finden wir die von Dir angefragte Seite nicht.'
+    buttonLabel: Zurück zur Startseite
   sort:
     label: Sortierung
     value:
@@ -41,11 +46,11 @@ common:
     download: Download
   footer:
     newVersionsInfo: Neue Version verfügbar für Linux,<br /> Windows und MacOS Betriebssysteme.
-    downloadLatestLTSVersion: Download V10.0.18
-    downloadLatestDevVersion: Download V11.2.1
+    downloadLatestDevVersion: Download V11.3.1
     ivyCompanyInfo: © 2023 Axon Ivy Inc
     privacyPolicy: Datenschutzrichtlinie
     termsOfService: Nutzungsbedingungen
+  downloadLatestLTSVersion: Download V10.0.23
   product:
     detail:
       backToMainPage: Zurück zur Übersicht
@@ -67,7 +72,6 @@ common:
           compatibility: Kompatibilität
           cost: Kosten
           language: Sprache
-          industry: Branche
           tag: Tags
           source: Quelle
           status: Status
@@ -84,6 +88,8 @@ common:
           label: Zielplattform
         artifactSelector:
           label: Artefakt
+      contactUs:
+        label: Kontakt
   feedback:
     label: Rückmeldung
     successMessage: Ihr Feedback wurde erfolgreich übermittelt!

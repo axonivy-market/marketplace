@@ -7,15 +7,14 @@ import { DisplayValue } from '../models/display-value.model';
   name: 'multilingualism'
 })
 export class MultilingualismPipe implements PipeTransform {
-  transform(value: DisplayValue, language: Language, _args?: []): string {
+  transform(value: DisplayValue | null, language: Language, _args?: []): string {
     let displayValue = '';
-    if (value !== undefined) {
+    if (value) {
       displayValue = value[language];
       if (displayValue === undefined || displayValue === '') {
         displayValue = value[Language.EN];
       }
     }
-
     return displayValue;
   }
 }
