@@ -26,6 +26,6 @@ public class RequestMappingConstants {
   public static final String VERSIONS_IN_DESIGNER = "/{id}/designerversions";
   public static final String IMAGE_BY_ID = "image/{id}";
   public static final String DESIGNER_INSTALLATION_BY_PRODUCT_ID_AND_DESIGNER_VERSION = "/installation/{productId}/designer/{designerVersion}";
-  public static final String DESIGNER_INSTALLATION_BY_PRODUCT_ID = "/installation/{productId}/designer";
+  public static final String DESIGNER_INSTALLATION_BY_ID = "/installation/{id}/designer";
   public static final String CUSTOM_SORT = "custom-sort";
 }

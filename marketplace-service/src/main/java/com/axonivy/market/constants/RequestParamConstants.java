@@ -18,5 +18,4 @@ public class RequestParamConstants {
   public static final String DESIGNER_VERSION = "designerVersion";
   public static final String VERSION = "version";
   public static final String PRODUCT_ID = "productId";
-
 }

@@ -1,5 +1,6 @@
 package com.axonivy.market.exceptions.model;
 
+import com.axonivy.market.constants.CommonConstants;
 import com.axonivy.market.enums.ErrorCode;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -14,7 +15,6 @@ public class NotFoundException extends RuntimeException {
 
   @Serial
   private static final long serialVersionUID = 1L;
-  private static final String SEPARATOR = "-";
 
   private final String code;
   private final String message;
@@ -26,7 +26,7 @@ public class NotFoundException extends RuntimeException {
 
   public NotFoundException(ErrorCode errorCode, String additionalMessage) {
     this.code = errorCode.getCode();
-    this.message = errorCode.getHelpText() + SEPARATOR + additionalMessage;
+    this.message = errorCode.getHelpText() + CommonConstants.DASH_SEPARATOR + additionalMessage;
   }
 
 }

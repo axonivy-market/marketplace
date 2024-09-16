@@ -39,7 +39,7 @@ public class GitHubUtils {
     } catch (IOException e) {
       log.error("Cannot get DownloadURl from GHContent: ", e);
     }
-    return "";
+    return StringUtils.EMPTY;
   }
 
   public static <T> List<T> mapPagedIteratorToList(PagedIterable<T> paged) {
@@ -81,7 +81,7 @@ public class GitHubUtils {
         return json.substring(startIndex, endIndex);
       }
     }
-    return "";
+    return StringUtils.EMPTY;
   }
 
   private static String extractJson(String text) {
@@ -90,7 +90,7 @@ public class GitHubUtils {
     if (start != -1 && end != -1) {
       return text.substring(start, end);
     }
-    return "";
+    return StringUtils.EMPTY;
   }
 
   public static int sortMetaJsonFirst(String file1Name, String file2Name) {
