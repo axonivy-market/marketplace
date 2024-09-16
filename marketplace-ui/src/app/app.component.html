@@ -1,13 +1,13 @@
-<div class="app-container"
-  [ngClass]="
-    headerClass === 'header-mobile'
-      ? 'header-mobile-container'
-      : ''
-  ">
+<div
+  class="app-container"
+  [ngClass]="{ 'header-mobile-container': !this.isMobileMenuCollapsed }">
   @if (!routingQueryParamService.isDesignerEnv()) {
-    <header class="d-flex align-items-center" [ngClass]="headerClass">
+    <header
+      class="d-flex align-items-center"
+      [ngClass]="{ 'header-mobile': !this.isMobileMenuCollapsed }">
       <div class="container">
-        <app-header (isHeaderMenuShown)="toggleMobileHeader($event)"></app-header>
+        <app-header
+          [(isMobileMenuCollapsed)]="isMobileMenuCollapsed"></app-header>
       </div>
     </header>
   }

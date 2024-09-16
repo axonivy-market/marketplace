@@ -1,13 +1,17 @@
-import { Component, inject, Input } from '@angular/core';
-import { RouterOutlet, ActivatedRoute } from '@angular/router';
-import { Component, inject } from '@angular/core';
-import { RouterOutlet, ActivatedRoute, Router, NavigationError, Event } from '@angular/router';
 import { FooterComponent } from './shared/components/footer/footer.component';
 import { HeaderComponent } from './shared/components/header/header.component';
 import { LoadingService } from './core/services/loading/loading.service';
 import { RoutingQueryParamService } from './shared/services/routing.query.param.service';
 import { CommonModule } from '@angular/common';
 import { ERROR_PAGE_PATH } from './shared/constants/common.constant';
+import { Component, inject } from '@angular/core';
+import {
+  ActivatedRoute,
+  NavigationError,
+  Router,
+  RouterOutlet,
+  Event
+} from '@angular/router';
 
 @Component({
   selector: 'app-root',
@@ -20,8 +24,7 @@ export class AppComponent {
   loadingService = inject(LoadingService);
   routingQueryParamService = inject(RoutingQueryParamService);
   route = inject(ActivatedRoute);
-
-  @Input() headerClass = '';
+  isMobileMenuCollapsed: boolean = true;
 
   constructor(private readonly router: Router) {}
 
@@ -40,9 +43,5 @@ export class AppComponent {
         });
       }
     });
-  }
-
-  toggleMobileHeader(isMobileMenuCollapsed: boolean) {
-    this.headerClass = isMobileMenuCollapsed ? '' : 'header-mobile';
   }
 }
