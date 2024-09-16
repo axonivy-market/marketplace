@@ -33,6 +33,7 @@ import org.kohsuke.github.GHTag;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
+import javax.swing.text.html.Option;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
@@ -41,6 +42,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -271,22 +273,19 @@ public class GHAxonIvyProductRepoServiceImpl implements GHAxonIvyProductRepoServ
         .filter(content -> ProductJsonConstants.PRODUCT_JSON_FILE.equals(content.getName())).findFirst().orElse(null);
   }
 
-  public String updateImagesWithDownloadUrl(Product product, List<GHContent> contents, String readmeContents)
-      throws IOException {
+  public String updateImagesWithDownloadUrl(Product product, List<GHContent> contents, String readmeContents) {
 
-    List<GHContent> productImagesOutsideFolder = contents.stream().filter(GHContent::isFile)
+    List<GHContent> imagesAtRootFolder = contents.stream().filter(GHContent::isFile)
         .filter(content -> content.getName().toLowerCase().matches(IMAGE_EXTENSION)).toList();
 
-    List<GHContent> allContentOfImages = ObjectUtils.isNotEmpty(productImagesOutsideFolder)
-        ? productImagesOutsideFolder
+    List<GHContent> allContentOfImages = ObjectUtils.isNotEmpty(imagesAtRootFolder)
+        ? imagesAtRootFolder
         : getImagesFromImageFolder(product, contents);
 
     Map<String, String> imageUrls = new HashMap<>();
 
-    allContentOfImages.forEach(content -> {
-      Image image = imageService.mappingImageFromGHContent(product, content, false);
-      imageUrls.put(content.getName(), IMAGE_ID_PREFIX.concat(image.getId()));
-    });
+    allContentOfImages.forEach(content -> Optional.of(imageService.mappingImageFromGHContent(product, content, false))
+        .ifPresent(image -> imageUrls.put(content.getName(), IMAGE_ID_PREFIX.concat(image.getId()))));
 
     for (Map.Entry<String, String> entry : imageUrls.entrySet()) {
       String imageUrlPattern = String.format(README_IMAGE_FORMAT, Pattern.quote(entry.getKey()));
@@ -297,15 +296,18 @@ public class GHAxonIvyProductRepoServiceImpl implements GHAxonIvyProductRepoServ
     return readmeContents;
   }
 
-  private List<GHContent> getImagesFromImageFolder(Product product, List<GHContent> contents) throws IOException {
+  private List<GHContent> getImagesFromImageFolder(Product product, List<GHContent> contents) {
     List<GHContent> images = new ArrayList<>();
     String imageFolderPath = GitHubUtils.getNonStandardImageFolder(product.getId());
-    GHContent imageFolder = contents.stream().filter(GHContent::isDirectory)
-        .filter(content -> imageFolderPath.equals(content.getName())).findFirst().orElse(null);
-
-    if (ObjectUtils.isNotEmpty(imageFolder)) {
-      images.addAll(imageFolder.listDirectoryContent().toList());
-    }
+    contents.stream().filter(GHContent::isDirectory)
+        .filter(content -> imageFolderPath.equals(content.getName()))
+        .findFirst().ifPresent(imageFolder -> {
+          try {
+            images.addAll(imageFolder.listDirectoryContent().toList());
+          } catch (IOException e) {
+            log.error(e.getMessage());
+          }
+        });
     return images;
   }
 

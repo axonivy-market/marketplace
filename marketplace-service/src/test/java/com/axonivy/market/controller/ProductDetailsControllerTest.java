@@ -237,18 +237,4 @@ class ProductDetailsControllerTest {
 
     return jsonContent;
   }
-
-  @Test
-  void test_getImageFromId() {
-    byte[] mockImageData = "image data".getBytes();
-    when(imageService.readImage("66e2b14868f2f95b2f95549a")).thenReturn(mockImageData);
-
-    HttpHeaders headers = new HttpHeaders();
-    headers.setContentType(MediaType.IMAGE_PNG);
-    ResponseEntity<byte[]> expectedResult = new ResponseEntity<>(mockImageData, headers, HttpStatus.OK);
-
-    ResponseEntity<byte[]> result = productDetailsController.findImageById("66e2b14868f2f95b2f95549a");
-
-    assertEquals(expectedResult, result);
-  }
 }

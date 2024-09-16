@@ -1,5 +1,6 @@
 package com.axonivy.market.assembler;
 
+import com.axonivy.market.controller.ImageController;
 import com.axonivy.market.controller.ProductDetailsController;
 import com.axonivy.market.entity.Product;
 import com.axonivy.market.model.ProductModel;
@@ -31,7 +32,7 @@ public class ProductModelAssembler extends RepresentationModelAssemblerSupport<P
     model.setType(product.getType());
     model.setTags(product.getTags());
 
-    Link logoLink = linkTo(methodOn(ProductDetailsController.class).findImageById(product.getLogoId())).withSelfRel();
+    Link logoLink = linkTo(methodOn(ImageController.class).findImageById(product.getLogoId())).withSelfRel();
     model.setLogoUrl(logoLink.getHref());
     return model;
   }

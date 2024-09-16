@@ -1,6 +1,5 @@
 package com.axonivy.market.controller;
 
-import static com.axonivy.market.constants.RequestMappingConstants.IMAGE_BY_ID;
 import static com.axonivy.market.constants.RequestParamConstants.DESIGNER_VERSION;
 import static com.axonivy.market.constants.RequestParamConstants.ID;
 import static com.axonivy.market.constants.RequestParamConstants.SHOW_DEV_VERSION;
@@ -17,13 +16,10 @@ import java.util.List;
 import java.util.Map;
 
 import com.axonivy.market.model.VersionAndUrlModel;
-import com.axonivy.market.service.ImageService;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.enums.ParameterIn;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -47,14 +43,12 @@ public class ProductDetailsController {
   private final VersionService versionService;
   private final ProductService productService;
   private final ProductDetailModelAssembler detailModelAssembler;
-  private final ImageService imageService;
 
   public ProductDetailsController(VersionService versionService, ProductService productService,
-                                  ProductDetailModelAssembler detailModelAssembler, ImageService imageService) {
+      ProductDetailModelAssembler detailModelAssembler) {
     this.versionService = versionService;
     this.productService = productService;
     this.detailModelAssembler = detailModelAssembler;
-    this.imageService = imageService;
   }
 
   @GetMapping(BY_ID_AND_VERSION)
@@ -116,14 +110,4 @@ public class ProductDetailsController {
     List<VersionAndUrlModel> versionList = versionService.getVersionsForDesigner(id);
     return new ResponseEntity<>(versionList, HttpStatus.OK);
   }
-
-  @GetMapping(IMAGE_BY_ID)
-  @Operation(summary = "Get the image content by id", description = "Collect the byte[] of image with contentType in header is PNG")
-  public ResponseEntity<byte[]> findImageById(@PathVariable(ID) String id) {
-    HttpHeaders headers = new HttpHeaders();
-    headers.setContentType(MediaType.IMAGE_PNG);
-    byte[] imageData = imageService.readImage(id);
-    return new ResponseEntity<>(imageData, headers, HttpStatus.OK);
-  }
-
 }
