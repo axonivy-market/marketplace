@@ -4,8 +4,11 @@ import static com.axonivy.market.constants.RequestMappingConstants.AUTH;
 import static com.axonivy.market.constants.RequestMappingConstants.GIT_HUB_LOGIN;
 
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.Map;
 
+import com.axonivy.market.constants.CommonConstants;
+import com.axonivy.market.exceptions.model.Oauth2ExchangeCodeException;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -54,12 +57,16 @@ public class OAuth2Controller {
     try {
       GitHubAccessTokenResponse tokenResponse = gitHubService.getAccessToken(oauth2AuthorizationCode.getCode(), gitHubProperty);
       accessToken = tokenResponse.getAccessToken();
+      User user = gitHubService.getAndUpdateUser(accessToken);
+      String jwtToken = jwtService.generateToken(user);
+      return new ResponseEntity<>(Collections.singletonMap(GitHubConstants.Json.TOKEN, jwtToken), HttpStatus.OK);
+    } catch (Oauth2ExchangeCodeException e) {
+      Map<String, String> errorResponse = new HashMap<>();
+      errorResponse.put(CommonConstants.ERROR, e.getError());
+      errorResponse.put(CommonConstants.MESSAGE, e.getErrorDescription());
+      return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
     } catch (Exception e) {
-      return new ResponseEntity<>(Map.of(e.getClass().getName(), e.getMessage()), HttpStatus.BAD_REQUEST);
+      return new ResponseEntity<>(Map.of(CommonConstants.MESSAGE, e.getMessage()), HttpStatus.BAD_REQUEST);
     }
-
-    User user = gitHubService.getAndUpdateUser(accessToken);
-    String jwtToken = jwtService.generateToken(user);
-    return new ResponseEntity<>(Collections.singletonMap(GitHubConstants.Json.TOKEN, jwtToken), HttpStatus.OK);
   }
 }
