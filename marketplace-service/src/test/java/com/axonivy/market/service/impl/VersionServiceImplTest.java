@@ -12,6 +12,7 @@ import com.axonivy.market.model.MavenArtifactVersionModel;
 import com.axonivy.market.model.VersionAndUrlModel;
 import com.axonivy.market.repository.MavenArtifactVersionRepository;
 import com.axonivy.market.repository.ProductJsonContentRepository;
+import com.axonivy.market.repository.ProductModuleContentRepository;
 import com.axonivy.market.repository.ProductRepository;
 import com.axonivy.market.util.XmlReaderUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -63,6 +64,9 @@ class VersionServiceImplTest {
   @Mock
   private ProductJsonContentRepository productJsonContentRepository;
 
+  @Mock
+  private ProductModuleContentRepository productModuleContentRepository;
+
   @BeforeEach()
   void prepareBeforeTest() {
     archivedArtifactsMap = new HashMap<>();
@@ -94,8 +98,7 @@ class VersionServiceImplTest {
     String targetVersion = "10.0.10";
     setUpArtifactFromMeta();
     when(versionService.getProductMetaArtifacts(Mockito.anyString())).thenReturn(artifactsFromMeta);
-    when(versionService.getVersionsFromMavenArtifacts()).thenReturn(
-        List.of(targetVersion));
+    when(productModuleContentRepository.findTagsByProductId(productId)).thenReturn(List.of("v10.0.10"));
     when(mavenArtifactVersionRepository.findById(Mockito.anyString())).thenReturn(Optional.empty());
     ArrayList<MavenArtifactModel> artifactsInVersion = new ArrayList<>();
     artifactsInVersion.add(new MavenArtifactModel());
@@ -180,60 +183,6 @@ class VersionServiceImplTest {
     Assertions.assertEquals(1, archivedArtifactsMap.size());
     Assertions.assertEquals(2, archivedArtifactsMap.get(artifactId).size());
     Assertions.assertEquals(archivedArtifact1, archivedArtifactsMap.get(artifactId).get(0));
-  }
-
-
-  @Test
-  void getVersionsFromMavenArtifacts() {
-    String repoUrl = "https://maven.axonivy.com";
-    String groupId = "com.axonivy.connector.adobe.acrobat.sign";
-    String artifactId = "adobe-acrobat-sign-connector";
-    String archivedArtifactId = "adobe-sign-connector";
-    artifactsFromMeta.add(new MavenArtifact(repoUrl, null, groupId, artifactId, null, null, null, null));
-    ArrayList<String> versionFromArtifact = new ArrayList<>();
-    versionFromArtifact.add("10.0.6");
-    versionFromArtifact.add("10.0.5");
-    versionFromArtifact.add("10.0.4");
-
-    when(versionService.getVersionsFromArtifactDetails(repoUrl, groupId, artifactId)).thenReturn(versionFromArtifact);
-    Assertions.assertEquals(versionService.getVersionsFromMavenArtifacts(), versionFromArtifact);
-
-    List<ArchivedArtifact> archivedArtifacts = List.of(new ArchivedArtifact("10.0.9", groupId, archivedArtifactId));
-    ArrayList<String> versionFromArchivedArtifact = new ArrayList<>();
-    versionFromArchivedArtifact.add("10.0.3");
-    versionFromArchivedArtifact.add("10.0.2");
-    versionFromArchivedArtifact.add("10.0.1");
-    artifactsFromMeta.get(0).setArchivedArtifacts(archivedArtifacts);
-    when(versionService.getVersionsFromArtifactDetails(repoUrl, groupId, archivedArtifactId)).thenReturn(
-        versionFromArchivedArtifact);
-    versionFromArtifact.addAll(versionFromArchivedArtifact);
-    Assertions.assertEquals(versionService.getVersionsFromMavenArtifacts(), versionFromArtifact);
-  }
-
-  @Test
-  void testGetVersionsFromArtifactDetails() {
-
-    String repoUrl = "https://maven.axonivy.com";
-    String groupId = "com.axonivy.connector.adobe.acrobat.sign";
-    String artifactId = "adobe-acrobat-sign-connector";
-
-    ArrayList<String> versionFromArtifact = new ArrayList<>();
-    versionFromArtifact.add("10.0.16");
-    versionFromArtifact.add("10.0.18");
-    versionFromArtifact.add("10.0.19");
-    versionFromArtifact.add("10.0.20");
-    versionFromArtifact.add("10.0.21");
-    versionFromArtifact.add("10.0.22");
-    versionFromArtifact.add("10.0.23");
-    versionFromArtifact.add("10.0.24");
-    versionFromArtifact.add("10.0.25");
-
-    try (MockedStatic<XmlReaderUtils> xmlUtils = Mockito.mockStatic(XmlReaderUtils.class)) {
-      xmlUtils.when(() -> XmlReaderUtils.readXMLFromUrl(Mockito.anyString())).thenReturn(versionFromArtifact);
-      Assertions.assertEquals(versionService.getVersionsFromArtifactDetails(repoUrl, null, null), new ArrayList<>());
-      Assertions.assertEquals(versionService.getVersionsFromArtifactDetails(repoUrl, groupId, artifactId),
-          versionFromArtifact);
-    }
   }
 
   @Test

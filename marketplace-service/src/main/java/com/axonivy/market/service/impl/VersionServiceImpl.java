@@ -19,6 +19,7 @@ import com.axonivy.market.model.MavenArtifactVersionModel;
 import com.axonivy.market.model.VersionAndUrlModel;
 import com.axonivy.market.repository.MavenArtifactVersionRepository;
 import com.axonivy.market.repository.ProductJsonContentRepository;
+import com.axonivy.market.repository.ProductModuleContentRepository;
 import com.axonivy.market.repository.ProductRepository;
 import com.axonivy.market.service.VersionService;
 import com.axonivy.market.util.VersionUtils;
@@ -44,6 +45,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import static com.axonivy.market.constants.ProductJsonConstants.NAME;
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
@@ -57,6 +59,7 @@ public class VersionServiceImpl implements VersionService {
   private final MavenArtifactVersionRepository mavenArtifactVersionRepository;
   private final ProductRepository productRepository;
   private final ProductJsonContentRepository productJsonContentRepository;
+  private final ProductModuleContentRepository productModuleContentRepository;
   @Getter
   private String repoName;
   private Map<String, List<ArchivedArtifact>> archivedArtifactsMap;
@@ -71,12 +74,13 @@ public class VersionServiceImpl implements VersionService {
 
   public VersionServiceImpl(GHAxonIvyProductRepoService gitHubService,
       MavenArtifactVersionRepository mavenArtifactVersionRepository, ProductRepository productRepository,
-      ProductJsonContentRepository productJsonContentRepository) {
+      ProductJsonContentRepository productJsonContentRepository, ProductModuleContentRepository productModuleContentRepository) {
     this.gitHubService = gitHubService;
     this.mavenArtifactVersionRepository = mavenArtifactVersionRepository;
     this.productRepository = productRepository;
 
     this.productJsonContentRepository = productJsonContentRepository;
+    this.productModuleContentRepository = productModuleContentRepository;
   }
 
   private void resetData() {
@@ -96,7 +100,7 @@ public class VersionServiceImpl implements VersionService {
 
     this.productId = productId;
     artifactsFromMeta = getProductMetaArtifacts(productId);
-    List<String> versionsToDisplay = VersionUtils.getVersionsToDisplay(getVersionsFromMavenArtifacts(), isShowDevVersion, designerVersion);
+    List<String> versionsToDisplay = VersionUtils.getVersionsToDisplay(getPersistedVersions(productId), isShowDevVersion, designerVersion);
     proceedDataCache = mavenArtifactVersionRepository.findById(productId).orElse(new MavenArtifactVersion(productId));
     metaProductArtifact = artifactsFromMeta.stream()
         .filter(artifact -> artifact.getArtifactId().endsWith(MavenConstants.PRODUCT_ARTIFACT_POSTFIX)).findAny()
@@ -186,29 +190,19 @@ public class VersionServiceImpl implements VersionService {
     });
   }
 
-  public List<String> getVersionsFromMavenArtifacts() {
+  public List<String> getPersistedVersions(String productId) {
+    var product = productRepository.findById(productId);
     Set<String> versions = new HashSet<>();
-    for (MavenArtifact artifact : artifactsFromMeta) {
-      versions.addAll(
-          getVersionsFromArtifactDetails(artifact.getRepoUrl(), artifact.getGroupId(), artifact.getArtifactId()));
-      Optional.ofNullable(artifact.getArchivedArtifacts()).orElse(Collections.emptyList()).forEach(
-          archivedArtifact -> versions.addAll(
-              getVersionsFromArtifactDetails(artifact.getRepoUrl(), archivedArtifact.getGroupId(),
-                  archivedArtifact.getArtifactId())));
+    if (product.isPresent()) {
+      versions.addAll(product.get().getReleasedVersions());
+    }
+    if (CollectionUtils.isEmpty(versions)) {
+      versions.addAll(productModuleContentRepository.findTagsByProductId(productId));
+      versions = versions.stream().map(tag -> VersionUtils.convertTagToVersion(tag)).collect(Collectors.toSet());
     }
     List<String> versionList = new ArrayList<>(versions);
     versionList.sort(new LatestVersionComparator());
     return versionList;
-  }
-
-  @Override
-  public List<String> getVersionsFromArtifactDetails(String repoUrl, String groupId, String artifactID) {
-    List<String> versions = new ArrayList<>();
-    String baseUrl = buildMavenMetadataUrlFromArtifact(repoUrl, groupId, artifactID);
-    if (StringUtils.isNotBlank(baseUrl)) {
-      versions.addAll(XmlReaderUtils.readXMLFromUrl(baseUrl));
-    }
-    return versions;
   }
 
   @Override
@@ -223,7 +217,7 @@ public class VersionServiceImpl implements VersionService {
 
   public List<MavenArtifact> getProductJsonByVersion(String version) {
     List<MavenArtifact> result = new ArrayList<>();
-    String versionTag = getVersionTag(version);
+    String versionTag = VersionUtils.convertVersionToTag(productId, version);
     productJsonFilePath = buildProductJsonFilePath();
     try {
       GHContent productJsonContent = gitHubService.getContentFromGHRepoAndTag(repoName, productJsonFilePath,
@@ -237,14 +231,6 @@ public class VersionServiceImpl implements VersionService {
           versionTag);
     }
     return result;
-  }
-
-  public String getVersionTag(String version) {
-    String versionTag = "v" + version;
-    if (NonStandardProduct.PORTAL.getId().equals(productId)) {
-      versionTag = version;
-    }
-    return versionTag;
   }
 
   public String buildProductJsonFilePath() {
