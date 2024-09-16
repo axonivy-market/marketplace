@@ -54,7 +54,7 @@ common:
     ivyCompanyInfo: © 2023 Axon Ivy Inc.
     privacyPolicy: Privacy Policy
     termsOfService: Terms of Service
-  downloadLatestLTSVersion: Download V10.0.22
+  downloadLatestLTSVersion: Download V10.0.23
   product:
     detail:
       backToMainPage: Back to overview
