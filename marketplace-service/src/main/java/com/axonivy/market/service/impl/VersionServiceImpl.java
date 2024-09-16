@@ -10,7 +10,6 @@ import com.axonivy.market.entity.MavenArtifactModel;
 import com.axonivy.market.entity.MavenArtifactVersion;
 import com.axonivy.market.entity.Product;
 import com.axonivy.market.entity.ProductJsonContent;
-import com.axonivy.market.enums.NonStandardProduct;
 import com.axonivy.market.github.model.ArchivedArtifact;
 import com.axonivy.market.github.model.MavenArtifact;
 import com.axonivy.market.github.service.GHAxonIvyProductRepoService;
@@ -23,7 +22,6 @@ import com.axonivy.market.repository.ProductModuleContentRepository;
 import com.axonivy.market.repository.ProductRepository;
 import com.axonivy.market.service.VersionService;
 import com.axonivy.market.util.VersionUtils;
-import com.axonivy.market.util.XmlReaderUtils;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.Getter;
@@ -198,7 +196,7 @@ public class VersionServiceImpl implements VersionService {
     }
     if (CollectionUtils.isEmpty(versions)) {
       versions.addAll(productModuleContentRepository.findTagsByProductId(productId));
-      versions = versions.stream().map(tag -> VersionUtils.convertTagToVersion(tag)).collect(Collectors.toSet());
+      versions = versions.stream().map(VersionUtils::convertTagToVersion).collect(Collectors.toSet());
     }
     List<String> versionList = new ArrayList<>(versions);
     versionList.sort(new LatestVersionComparator());
