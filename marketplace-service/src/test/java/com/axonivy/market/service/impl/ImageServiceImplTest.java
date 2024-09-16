@@ -3,6 +3,7 @@ package com.axonivy.market.service.impl;
 import static com.axonivy.market.constants.CommonConstants.SLASH;
 import static com.axonivy.market.constants.MetaConstants.META_FILE;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -55,6 +56,12 @@ class ImageServiceImplTest {
     assertEquals(argumentCaptor.getValue().getProductId(),expectedImage.getProductId());
     assertEquals(argumentCaptor.getValue().getSha(),expectedImage.getSha());
     assertEquals(argumentCaptor.getValue().getImageUrl(),expectedImage.getImageUrl());
+  }
+
+  @Test
+  void testMappingImageFromGHContent_noGhContent() {
+    var result = imageService.mappingImageFromGHContent(mockProduct(), null , true);
+    assertNull(result);
   }
 
   private Product mockProduct() {
