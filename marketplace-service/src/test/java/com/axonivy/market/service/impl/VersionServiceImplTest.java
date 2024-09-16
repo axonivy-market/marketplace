@@ -429,7 +429,6 @@ class VersionServiceImplTest {
     Assertions.assertEquals("/api/product-details/11.3.0/11.1.1/json", result.get(1).getUrl());
     Assertions.assertEquals("/api/product-details/11.3.0/11.1.0/json", result.get(2).getUrl());
     Assertions.assertEquals("/api/product-details/11.3.0/10.0.2/json", result.get(3).getUrl());
-
   }
 
   @Test

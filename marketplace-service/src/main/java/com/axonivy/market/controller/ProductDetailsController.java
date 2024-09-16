@@ -3,6 +3,7 @@ package com.axonivy.market.controller;
 import static com.axonivy.market.constants.RequestMappingConstants.IMAGE_BY_ID;
 import static com.axonivy.market.constants.RequestParamConstants.DESIGNER_VERSION;
 import static com.axonivy.market.constants.RequestParamConstants.ID;
+import static com.axonivy.market.constants.RequestParamConstants.PRODUCT_ID;
 import static com.axonivy.market.constants.RequestParamConstants.SHOW_DEV_VERSION;
 import static com.axonivy.market.constants.RequestParamConstants.VERSION;
 import static com.axonivy.market.constants.RequestMappingConstants.BEST_MATCH_BY_ID_AND_VERSION;
@@ -10,7 +11,7 @@ import static com.axonivy.market.constants.RequestMappingConstants.BY_ID;
 import static com.axonivy.market.constants.RequestMappingConstants.BY_ID_AND_VERSION;
 import static com.axonivy.market.constants.RequestMappingConstants.INSTALLATION_COUNT_BY_ID;
 import static com.axonivy.market.constants.RequestMappingConstants.PRODUCT_DETAILS;
-import static com.axonivy.market.constants.RequestMappingConstants.PRODUCT_JSON_CONTENT_BY_ID_AND_VERSION;
+import static com.axonivy.market.constants.RequestMappingConstants.PRODUCT_JSON_CONTENT_BY_PRODUCT_ID_AND_VERSION;
 import static com.axonivy.market.constants.RequestMappingConstants.VERSIONS_BY_ID;
 import static com.axonivy.market.constants.RequestMappingConstants.VERSIONS_IN_DESIGNER;
 import java.util.List;
@@ -101,9 +102,9 @@ public class ProductDetailsController {
     return new ResponseEntity<>(models, HttpStatus.OK);
   }
 
-  @GetMapping(PRODUCT_JSON_CONTENT_BY_ID_AND_VERSION)
+  @GetMapping(PRODUCT_JSON_CONTENT_BY_PRODUCT_ID_AND_VERSION)
   @Operation(summary = "Get product json content for designer to install", description = "When we click install in designer, this API will send content of product json for installing in Ivy designer")
-  public ResponseEntity<Map<String, Object>> findProductJsonContent(@PathVariable(ID) String productId,
+  public ResponseEntity<Map<String, Object>> findProductJsonContent(@PathVariable(PRODUCT_ID) String productId,
       @PathVariable(VERSION) String version) {
     Map<String, Object> productJsonContent = versionService.getProductJsonContentByIdAndVersion(productId, version);
     return new ResponseEntity<>(productJsonContent, HttpStatus.OK);
