@@ -385,7 +385,7 @@ public class ProductServiceImpl implements ProductService {
         mappingLogoFromGHContent(product, content);
       }
       if (productRepository.findById(product.getId()).isPresent()) {
-        return;
+        continue;
       }
       if (StringUtils.isNotBlank(product.getRepositoryName())) {
         updateProductCompatibility(product);
