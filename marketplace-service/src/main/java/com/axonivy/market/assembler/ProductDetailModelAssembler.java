@@ -11,7 +11,6 @@ import org.springframework.hateoas.Link;
 import org.springframework.hateoas.server.mvc.RepresentationModelAssemblerSupport;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
-import org.springframework.util.CollectionUtils;
 
 import java.util.Optional;
 
@@ -80,6 +79,6 @@ public class ProductDetailModelAssembler extends RepresentationModelAssemblerSup
     model.setContactUs(product.getContactUs());
     model.setCost(product.getCost());
     model.setInstallationCount(product.getInstallationCount());
-    model.setProductModuleContent(CollectionUtils.firstElement(product.getProductModuleContents()));
+    model.setProductModuleContent(product.getProductModuleContent());
   }
 }

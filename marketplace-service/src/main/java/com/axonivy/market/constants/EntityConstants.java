@@ -7,9 +7,11 @@ import lombok.NoArgsConstructor;
 public class EntityConstants {
   public static final String USER = "User";
   public static final String PRODUCT = "Product";
+  public static final String PRODUCT_DESIGNER_INSTALLATION = "ProductDesignerInstallation";
   public static final String MAVEN_ARTIFACT_VERSION = "MavenArtifactVersion";
   public static final String GH_REPO_META = "GitHubRepoMeta";
   public static final String FEEDBACK = "Feedback";
   public static final String PRODUCT_CUSTOM_SORT = "ProductCustomSort";
   public static final String PRODUCT_JSON_CONTENT = "ProductJsonContent";
+  public static final String PRODUCT_MODULE_CONTENT = "ProductModuleContent";
 }

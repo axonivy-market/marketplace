@@ -175,19 +175,27 @@
     line-height: 16.8px;
   }
 }
+
 .up-arrow {
-  margin-left: 55%;
-  z-index: 1001;
-  margin-top: -3.1rem;
-  @media (max-width: 767px) {
-    margin-left: 80%;
-  }
-  transform: rotate(45deg);
-  top: 2.45rem;
+  margin: 0;
+  top: -10px;
   width: 20px;
   height: 20px;
-  margin-bottom: -0.75rem;
+  left: 50%;
+  z-index: 1001;
+  @media (max-width: 767px) {
+    top: -8px;
+    width: 16px;
+    height: 16px;
+  }
+  transform: translateX(-50%) rotate(45deg);
   border-right-color: transparent;
   border-bottom-color: transparent;
   background-color: var(--bs-body-bg);
+}
+
+.btn_contact-us {
+  @media (max-width: 991px) {
+    width: 100%;
+  }
 }

@@ -7,7 +7,10 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.springframework.data.annotation.Id;
+import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.mongodb.core.mapping.Document;
+
+import java.util.Date;
 
 import static com.axonivy.market.constants.EntityConstants.PRODUCT_JSON_CONTENT;
 
@@ -25,4 +28,6 @@ public class ProductJsonContent {
   private String productId;
   private String name;
   private String content;
+  @LastModifiedDate
+  private Date updatedAt;
 }
