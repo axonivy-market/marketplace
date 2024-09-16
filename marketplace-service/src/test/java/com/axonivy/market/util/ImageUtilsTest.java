@@ -15,7 +15,7 @@ class ImageUtilsTest {
 
   @Test
   void testMappingImageForProductModuleContent() {
-    String expectedValue = "Login or create a new account.[demo-process](/image/66e2b13c68f2f95b2f95548c)";
+    String expectedValue = "Login or create a new account.[demo-process](/api/image/66e2b13c68f2f95b2f95548c)";
     var result = ImageUtils.mappingImageForProductModuleContent(mockProductModuleContent());
     Assertions.assertEquals(expectedValue, result.getDescription().get("en"));
     Assertions.assertEquals(expectedValue, result.getSetup().get("de"));

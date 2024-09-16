@@ -1,7 +1,14 @@
 package com.axonivy.market.controller;
 
+import com.axonivy.market.entity.Image;
 import com.axonivy.market.service.ImageService;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.enums.ParameterIn;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -28,7 +35,12 @@ public class ImageController {
 
   @GetMapping(BY_ID)
   @Operation(summary = "Get the image content by id", description = "Collect the byte[] of image with contentType in header is PNG")
-  public ResponseEntity<byte[]> findImageById(@PathVariable(ID) String id) {
+  @ApiResponses({
+      @ApiResponse(responseCode = "200", description = "Image found and returned", content = @Content(mediaType = MediaType.IMAGE_PNG_VALUE, schema = @Schema(implementation = Image.class))),
+      @ApiResponse(responseCode = "404", description = "Image not found"),
+      @ApiResponse(responseCode = "204", description = "No content (image empty)") })
+  public ResponseEntity<byte[]> findImageById(
+      @PathVariable(ID) @Parameter(description = "the image id", example = "66e7efc8a24f36158df06fc7", in = ParameterIn.PATH) String id) {
     HttpHeaders headers = new HttpHeaders();
     headers.setContentType(MediaType.IMAGE_PNG);
     byte[] imageData = imageService.readImage(id);
