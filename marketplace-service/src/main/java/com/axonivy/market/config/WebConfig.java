@@ -10,8 +10,8 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 public class WebConfig implements WebMvcConfigurer {
 
   private static final String ALL_MAPPINGS = "/**";
-  private static final String[] EXCLUDE_PATHS = { "/", "/swagger-ui/**", "/api-docs/**",
-      "/api/product-details/productjsoncontent/**" , };
+  private static final String[] EXCLUDE_PATHS = { "/", "/swagger-ui/**", "/api-docs/**", "/api/product-details/**/json",
+      "/api/image/**" };
   private static final String[] ALLOWED_HEADERS = { "Accept-Language", "Content-Type", "Authorization",
       "X-Requested-By", "x-requested-with", "X-Forwarded-Host", "x-xsrf-token", "x-authorization" };
   private static final String[] ALLOWED_METHODS = { "GET", "POST", "PUT", "DELETE", "OPTIONS" };

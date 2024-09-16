@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, inject, Input } from '@angular/core';
+import { Component, HostListener, inject, Input, signal } from '@angular/core';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { NAV_ITEMS } from '../../../constants/common.constant';
 import { NavItem } from '../../../models/nav-item.model';
@@ -17,4 +17,19 @@ export class NavigationComponent {
 
   translateService = inject(TranslateService);
   languageService = inject(LanguageService);
+  isMobileMode = signal<boolean>(false);
+
+  constructor() {
+    this.checkMediaSize();
+  }
+
+  @HostListener('window:resize', ['$event'])
+  onResize() {
+    this.checkMediaSize();
+  }
+
+  checkMediaSize() {
+    const mediaQuery = window.matchMedia('(max-width: 992px)');
+    this.isMobileMode.set(mediaQuery.matches);
+  }
 }
