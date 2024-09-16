@@ -125,10 +125,12 @@ describe('AppComponent', () => {
   });
 
   it('should hide scrollbar when burger menu is opened', () => {
-    component.toggleMobileHeader(false);
+    component.isMobileMenuCollapsed = false;
     fixture.detectChanges();
 
-    expect(component.headerClass).toBe('header-mobile');
+    const headerElement = fixture.debugElement.query(By.css('.header-mobile'));
+    expect(headerElement).toBeTruthy();
+
     expect(appElement.classList.contains('header-mobile-container')).toBeTrue();
 
     const headerComputedStyle = window.getComputedStyle(appElement);
@@ -136,14 +138,16 @@ describe('AppComponent', () => {
   });
 
   it('should reset header style when burger menu is closed', () => {
-    component.toggleMobileHeader(true);
+    component.isMobileMenuCollapsed = true;
     fixture.detectChanges();
 
-    expect(component.headerClass).toBe('');
-    expect(appElement.classList.contains('header-mobile')).toBeFalse();
+    const headerElement = fixture.debugElement.query(By.css('.header-mobile'));
+    expect(headerElement).toBeNull();
+
     expect(
       appElement.classList.contains('header-mobile-container')
     ).toBeFalse();
+  });
 
   it('should redirect to "/error-page" on NavigationError', () => {
     // Simulate a NavigationError event
