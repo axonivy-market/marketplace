@@ -10,6 +10,7 @@ import com.axonivy.market.entity.ProductModuleContent;
 import com.axonivy.market.entity.ProductJsonContent;
 import com.axonivy.market.enums.Language;
 import com.axonivy.market.enums.NonStandardProduct;
+import com.axonivy.market.factory.ProductFactory;
 import com.axonivy.market.github.model.MavenArtifact;
 import com.axonivy.market.github.service.GHAxonIvyProductRepoService;
 import com.axonivy.market.github.service.GitHubService;
@@ -168,6 +169,7 @@ public class GHAxonIvyProductRepoServiceImpl implements GHAxonIvyProductRepoServ
       List<GHContent> contents = getProductFolderContents(product, ghRepository, tag);
       productModuleContent.setProductId(product.getId());
       productModuleContent.setTag(tag);
+      ProductFactory.mappingIdForProductModuleContent(productModuleContent);
       updateDependencyContentsFromProductJson(productModuleContent, contents , product);
       extractReadMeFileFromContents(product, contents, productModuleContent);
     } catch (Exception e) {
@@ -238,13 +240,12 @@ public class GHAxonIvyProductRepoServiceImpl implements GHAxonIvyProductRepoServ
         productModuleContent.setName(artifact.getName());
       }
       String currentVersion = VersionUtils.convertTagToVersion(productModuleContent.getTag());
-      boolean isProductJsonContentExists = productJsonContentRepository.existsByProductIdAndVersion(product.getId(),
-          currentVersion);
       String content = extractProductJsonContent(productJsonFile, productModuleContent.getTag());
-      if (ObjectUtils.isNotEmpty(content) && !isProductJsonContentExists) {
+      if (ObjectUtils.isNotEmpty(content)) {
         ProductJsonContent jsonContent = new ProductJsonContent();
         jsonContent.setVersion(currentVersion);
         jsonContent.setProductId(product.getId());
+        ProductFactory.mappingIdForProductJsonContent(jsonContent);
         jsonContent.setName(product.getNames().get(EN_LANGUAGE));
         jsonContent.setContent(content.replace(VERSION_VALUE, currentVersion));
         productJsonContentRepository.save(jsonContent);

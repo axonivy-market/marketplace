@@ -15,9 +15,9 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
 
-import static com.axonivy.market.constants.RequestMappingConstants.DESIGNER_INSTALLATION_BY_PRODUCT_ID;
+import static com.axonivy.market.constants.RequestMappingConstants.DESIGNER_INSTALLATION_BY_ID;
 import static com.axonivy.market.constants.RequestMappingConstants.PRODUCT_DESIGNER_INSTALLATION;
-import static com.axonivy.market.constants.RequestParamConstants.PRODUCT_ID;
+import static com.axonivy.market.constants.RequestParamConstants.ID;
 
 @RestController
 @RequestMapping(PRODUCT_DESIGNER_INSTALLATION)
@@ -29,9 +29,9 @@ public class ProductDesignerInstallationController {
         this.productDesignerInstallationService = productDesignerInstallationService;
     }
 
-    @GetMapping(DESIGNER_INSTALLATION_BY_PRODUCT_ID)
+    @GetMapping(DESIGNER_INSTALLATION_BY_ID)
     @Operation(summary = "Get designer installation count by product id.", description = "get designer installation count by product id")
-    public ResponseEntity<List<DesignerInstallation>> getProductDesignerInstallationByProductId(@PathVariable(PRODUCT_ID) @Parameter(description = "Product id (from meta.json)", example = "adobe-acrobat-connector", in = ParameterIn.PATH) String productId) {
+    public ResponseEntity<List<DesignerInstallation>> getProductDesignerInstallationByProductId(@PathVariable(ID) @Parameter(description = "Product id (from meta.json)", example = "adobe-acrobat-connector", in = ParameterIn.PATH) String productId) {
         List<DesignerInstallation> models = productDesignerInstallationService.findByProductId(productId);
         return new ResponseEntity<>(models, HttpStatus.OK);
     }
