@@ -368,7 +368,7 @@ public class GHAxonIvyProductRepoServiceImpl implements GHAxonIvyProductRepoServ
       result = Strings.EMPTY;
     } else if (text.startsWith(HASH)) {
       int index = text.indexOf(StringUtils.LF);
-      result = index != -1 ? text.substring(index + 1).trim() : Strings.EMPTY;
+      result = index != StringUtils.INDEX_NOT_FOUND ? text.substring(index + 1).trim() : Strings.EMPTY;
     } else {
       result = text;
     }

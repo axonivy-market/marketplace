@@ -222,7 +222,7 @@ class GHAxonIvyProductRepoServiceImplTest {
     InputStream inputStream = getMockInputStream();
     Mockito.when(axonivyProductRepoServiceImpl.extractedContentStream(any())).thenReturn(inputStream);
     var result = axonivyProductRepoServiceImpl.getReadmeAndProductContentsFromTag(createMockProduct(), ghRepository,
-            RELEASE_TAG);
+        RELEASE_TAG);
 
     assertEquals(RELEASE_TAG, result.getTag());
     assertTrue(result.getIsDependency());
