@@ -154,7 +154,7 @@ class VersionServiceImplTest {
     ReflectionTestUtils.setField(versionService, "productId", "adobe-acrobat-connector");
     MavenArtifactModel artifactModel = new MavenArtifactModel();
     List<MavenArtifactModel> mockMavenArtifactModels = List.of(artifactModel);
-    when(versionService.getProductJsonByVersion(Mockito.anyString())).thenReturn(List.of(new MavenArtifact()));
+    when(versionService.getMavenArtifactsFromProductJsonByVersion(Mockito.anyString())).thenReturn(List.of(new MavenArtifact()));
     when(versionService.convertMavenArtifactsToModels(Mockito.anyList(), Mockito.anyString())).thenReturn(
         mockMavenArtifactModels);
     Assertions.assertEquals(mockMavenArtifactModels,
@@ -198,7 +198,7 @@ class VersionServiceImplTest {
   }
 
   @Test
-  void testGetProductJsonByVersion() {
+  void testGetMavenArtifactsFromProductJsonByVersion() {
     String targetArtifactId = "adobe-acrobat-sign-connector";
     String targetGroupId = "com.axonivy.connector.adobe.acrobat";
     GHContent mockContent = mock(GHContent.class);
@@ -213,7 +213,7 @@ class VersionServiceImplTest {
     metaProductArtifact.setArtifactId(targetArtifactId);
     when(gitHubService.getContentFromGHRepoAndTag(Mockito.anyString(), Mockito.anyString(),
         Mockito.anyString())).thenReturn(null);
-    Assertions.assertEquals(0, versionService.getProductJsonByVersion("10.0.20").size());
+    Assertions.assertEquals(0, versionService.getMavenArtifactsFromProductJsonByVersion("10.0.20").size());
 
     metaProductArtifact.setGroupId("com.axonivy.connector.adobe.acrobat.connector");
     when(gitHubService.getContentFromGHRepoAndTag(Mockito.anyString(), Mockito.anyString(),
@@ -221,11 +221,11 @@ class VersionServiceImplTest {
 
     try {
       when(gitHubService.convertProductJsonToMavenProductInfo(mockContent)).thenReturn(List.of(productArtifact));
-      Assertions.assertEquals(1, versionService.getProductJsonByVersion("10.0.20").size());
+      Assertions.assertEquals(1, versionService.getMavenArtifactsFromProductJsonByVersion("10.0.20").size());
 
       when(gitHubService.convertProductJsonToMavenProductInfo(mockContent)).thenThrow(
           new IOException("Mock IO Exception"));
-      Assertions.assertEquals(0, versionService.getProductJsonByVersion("10.0.20").size());
+      Assertions.assertEquals(0, versionService.getMavenArtifactsFromProductJsonByVersion("10.0.20").size());
     } catch (IOException e) {
       Fail.fail("Mock setup should not throw an exception");
     }

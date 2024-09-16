@@ -8,9 +8,13 @@ import org.kohsuke.github.GHRepository;
 import org.kohsuke.github.GHTag;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.List;
 
 public interface GHAxonIvyProductRepoService {
+
+
+  void extractMavenArtifactsFromContentStream(InputStream contentStream, List<MavenArtifact> artifacts) throws IOException;
 
   GHContent getContentFromGHRepoAndTag(String repoName, String filePath, String tagVersion);
 

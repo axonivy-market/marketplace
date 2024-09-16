@@ -75,7 +75,12 @@ public class GHAxonIvyProductRepoServiceImpl implements GHAxonIvyProductRepoServ
     if (Objects.isNull(contentStream)) {
       return artifacts;
     }
+    extractMavenArtifactsFromContentStream(contentStream, artifacts);
+    return artifacts;
+  }
 
+  @Override
+  public void extractMavenArtifactsFromContentStream(InputStream contentStream, List<MavenArtifact> artifacts) throws IOException {
     JsonNode rootNode = objectMapper.readTree(contentStream);
     JsonNode installersNode = rootNode.path(ProductJsonConstants.INSTALLERS);
 
@@ -103,7 +108,6 @@ public class GHAxonIvyProductRepoServiceImpl implements GHAxonIvyProductRepoServ
         extractMavenArtifactFromJsonNode(dataNode, true, artifacts);
       }
     }
-    return artifacts;
   }
 
   public InputStream extractedContentStream(GHContent content) {

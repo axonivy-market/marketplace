@@ -3,7 +3,6 @@ package com.axonivy.market.service.impl;
 import com.axonivy.market.comparator.ArchivedArtifactsComparator;
 import com.axonivy.market.comparator.LatestVersionComparator;
 import com.axonivy.market.constants.CommonConstants;
-import com.axonivy.market.constants.GitHubConstants;
 import com.axonivy.market.constants.MavenConstants;
 import com.axonivy.market.controller.ProductDetailsController;
 import com.axonivy.market.entity.MavenArtifactModel;
@@ -26,6 +25,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.Getter;
 import lombok.extern.log4j.Log4j2;
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.kohsuke.github.GHContent;
@@ -34,6 +34,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
 import java.io.IOException;
+import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -161,7 +163,7 @@ public class VersionServiceImpl implements VersionService {
   }
 
   public List<MavenArtifactModel> updateArtifactsInVersionWithProductArtifact(String version) {
-    List<MavenArtifactModel> productArtifactModels = convertMavenArtifactsToModels(getProductJsonByVersion(version),
+    List<MavenArtifactModel> productArtifactModels = convertMavenArtifactsToModels(getMavenArtifactsFromProductJsonByVersion(version),
         version);
     proceedDataCache.getVersions().add(version);
     proceedDataCache.getProductArtifactWithVersionReleased().put(version, productArtifactModels);
@@ -213,30 +215,20 @@ public class VersionServiceImpl implements VersionService {
     return String.format(MavenConstants.METADATA_URL_FORMAT, repoUrl, groupId, artifactID);
   }
 
-  public List<MavenArtifact> getProductJsonByVersion(String version) {
+  public List<MavenArtifact> getMavenArtifactsFromProductJsonByVersion(String version) {
     List<MavenArtifact> result = new ArrayList<>();
-    String versionTag = VersionUtils.convertVersionToTag(productId, version);
-    productJsonFilePath = buildProductJsonFilePath();
-    try {
-      GHContent productJsonContent = gitHubService.getContentFromGHRepoAndTag(repoName, productJsonFilePath,
-          versionTag);
-      if (Objects.isNull(productJsonContent)) {
-        return result;
-      }
-      result = gitHubService.convertProductJsonToMavenProductInfo(productJsonContent);
-    } catch (IOException e) {
-      log.warn("Can not get the product.json from repo {} by path in {} version {}", repoName, productJsonFilePath,
-          versionTag);
+    ProductJsonContent productJson = productJsonContentRepository.findByProductIdAndVersion(productId, version);
+    if (Objects.isNull(productJson) || StringUtils.isBlank(productJson.getContent())) {
+      return result;
     }
+    InputStream contentStream = IOUtils.toInputStream(productJson.getContent(), StandardCharsets.UTF_8);
+    try {
+      gitHubService.extractMavenArtifactsFromContentStream(contentStream, result);
+    } catch (IOException e) {
+      log.error("Can not get maven artifacts from Product.json of {} - version {}:{}", productId, version, e.getMessage());
+    }
+    log.error(result.size());
     return result;
-  }
-
-  public String buildProductJsonFilePath() {
-    String pathToProductFolderFromTagContent = metaProductArtifact.getArtifactId();
-    GitHubUtils.getNonStandardProductFilePath(productId);
-    productJsonFilePath = String.format(GitHubConstants.PRODUCT_JSON_FILE_PATH_FORMAT,
-        pathToProductFolderFromTagContent);
-    return productJsonFilePath;
   }
 
   public MavenArtifactModel convertMavenArtifactToModel(MavenArtifact artifact, String version) {
