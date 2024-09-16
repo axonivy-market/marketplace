@@ -201,7 +201,6 @@ public class VersionServiceImpl implements VersionService {
       versions = versions.stream().map(VersionUtils::convertTagToVersion).collect(Collectors.toSet());
     }
     List<String> versionList = new ArrayList<>(versions);
-    versionList.sort(new LatestVersionComparator());
     return versionList;
   }
 

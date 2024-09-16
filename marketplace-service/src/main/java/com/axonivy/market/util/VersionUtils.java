@@ -25,7 +25,7 @@ public class VersionUtils {
     public static List<String> getVersionsToDisplay(List<String> versions, Boolean isShowDevVersion, String designerVersion) {
         Stream<String> versionStream = versions.stream();
         if (StringUtils.isNotBlank(designerVersion)) {
-            return versionStream.filter(version -> isMatchWithDesignerVersion(version, designerVersion)).toList();
+            return versionStream.filter(version -> isMatchWithDesignerVersion(version, designerVersion)).sorted(new LatestVersionComparator()).toList();
         }
         if (BooleanUtils.isTrue(isShowDevVersion)) {
             return versionStream.filter(version -> isOfficialVersionOrUnReleasedDevVersion(versions, version))
@@ -69,8 +69,16 @@ public class VersionUtils {
         return version.contains(MavenConstants.SPRINT_RELEASE_POSTFIX);
     }
 
+    public static boolean isBugFixVersion(String version) {
+        return version.chars().filter(ch -> ch == '.').count() == 3;
+    }
+
+    public static boolean isProjectVersion(String version) {
+        return version.chars().filter(ch -> ch == '-').count() == 2;
+    }
+
     public static boolean isReleasedVersion(String version) {
-        return !(isSprintVersion(version) || isSnapshotVersion(version));
+        return !(isSprintVersion(version) || isSnapshotVersion(version) || isBugFixVersion(version) || isProjectVersion(version));
     }
 
     public static boolean isMatchWithDesignerVersion(String version, String designerVersion) {

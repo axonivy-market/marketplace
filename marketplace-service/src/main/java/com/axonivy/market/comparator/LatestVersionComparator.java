@@ -20,8 +20,12 @@ public class LatestVersionComparator implements Comparator<String> {
         if (num1 != num2) {
           return num2 - num1;
         }
-        // Handle non-numeric parts (e.g., "m229")
       } catch (NumberFormatException e) {
+        // Handle case portal-9.4.0-serenity
+        if (i == 0) {
+          return parts1[i].compareTo(parts2[i]);
+        }
+        // Handle non-numeric parts (e.g., "m229")
         return parts2[i].replaceAll("\\D", "").compareTo(parts1[i].replaceAll("\\D", ""));
       }
     }
