@@ -163,7 +163,7 @@
                 [attr.aria-labelledby]="displayedTab.value + '-tab'">
                 @if (displayedTab.value === 'dependency') {
                   <app-product-detail-maven-content
-                    [productModuleContent]="productModuleContent()"
+                    [productDetail]="productDetail()"
                     [selectedVersion]="selectedVersion">
                   </app-product-detail-maven-content>
                 } @else {
