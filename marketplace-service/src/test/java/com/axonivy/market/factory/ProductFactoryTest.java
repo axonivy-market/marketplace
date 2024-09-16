@@ -1,6 +1,5 @@
 package com.axonivy.market.factory;
 
-import com.axonivy.market.constants.CommonConstants;
 import com.axonivy.market.constants.ProductJsonConstants;
 import com.axonivy.market.entity.Product;
 import com.axonivy.market.github.model.Meta;
