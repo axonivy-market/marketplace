@@ -81,6 +81,7 @@ public class VersionServiceImpl implements VersionService {
 
     this.productJsonContentRepository = productJsonContentRepository;
     this.productModuleContentRepository = productModuleContentRepository;
+    StringUtils.I
   }
 
   private void resetData() {
@@ -200,8 +201,7 @@ public class VersionServiceImpl implements VersionService {
       versions.addAll(productModuleContentRepository.findTagsByProductId(productId));
       versions = versions.stream().map(VersionUtils::convertTagToVersion).collect(Collectors.toSet());
     }
-    List<String> versionList = new ArrayList<>(versions);
-    return versionList;
+    return new ArrayList<>(versions);
   }
 
   @Override
