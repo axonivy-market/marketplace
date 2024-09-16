@@ -217,7 +217,12 @@ class GHAxonIvyProductRepoServiceImplTest {
   @Test
   void testGetReadmeAndProductContentsFromTag() throws IOException {
     String readmeContentWithImage = "#Product-name\n Test README\n## Demo\nDemo content\n## Setup\nSetup content (image.png)";
+    testGetReadmeAndProductContentsFromTagWithReadmeText(readmeContentWithImage);
+    String readmeContentWithoutHashProductName = "Test README\n## Demo\nDemo content\n## Setup\nSetup content (image.png)";
+    testGetReadmeAndProductContentsFromTagWithReadmeText(readmeContentWithoutHashProductName);
+  }
 
+  private void testGetReadmeAndProductContentsFromTagWithReadmeText(String readmeContentWithImage) throws IOException {
     GHContent mockContent = createMockProductFolderWithProductJson();
 
     getReadmeInputStream(readmeContentWithImage, mockContent);

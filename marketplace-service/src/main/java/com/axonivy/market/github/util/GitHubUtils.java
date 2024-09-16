@@ -84,7 +84,7 @@ public class GitHubUtils {
     return StringUtils.EMPTY;
   }
 
-  private static String extractJson(String text) {
+  public static String extractJson(String text) {
     int start = text.indexOf("{");
     int end = text.lastIndexOf("}") + 1;
     if (start != -1 && end != -1) {

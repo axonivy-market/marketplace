@@ -1,20 +1,12 @@
 <p [lang]="languageService.selectedLanguage()" [innerHTML]="'common.product.detail.maven.description' | translate"></p>
-<code>
-  &lt;!-- {{ productModuleContent.name }} --&gt;
-  <br />
-  &lt;dependency&gt;
-  <br />
-  &nbsp;&nbsp;&lt;groupId&gt;{{ productModuleContent.groupId }}&lt;/groupId&gt;
-  <br />
-  &nbsp;&nbsp;&lt;artifactId&gt;{{
-    productModuleContent.artifactId
-  }}&lt;/artifactId&gt;
-  <br />
-  &nbsp;&nbsp;&lt;version&gt;{{
-    selectedVersion.replaceAll('Version ', '')
-  }}&lt;/version&gt;
-  <br />
-  &nbsp;&nbsp;&lt;type&gt;{{ productModuleContent.type }}&lt;/type&gt;
-  <br />
-  &lt;/dependency&gt;
-</code>
+<pre>
+  <code>
+    &lt;!-- {{ getProductName() }} --&gt;
+    &lt;dependency&gt;
+    &nbsp;&nbsp;&lt;groupId&gt;{{ productDetail.productModuleContent.groupId }}&lt;/groupId&gt;
+    &nbsp;&nbsp;&lt;artifactId&gt;{{productDetail.productModuleContent.artifactId}}&lt;/artifactId&gt;
+    &nbsp;&nbsp;&lt;version&gt;{{ selectedVersion.replaceAll('Version ', '') }}&lt;/version&gt;
+    &nbsp;&nbsp;&lt;type&gt;{{ productDetail.productModuleContent.type }}&lt;/type&gt;
+    &lt;/dependency&gt;
+  </code>
+</pre>

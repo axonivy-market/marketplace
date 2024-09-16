@@ -8,8 +8,8 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import static com.axonivy.market.constants.ProductJsonConstants.LOGO_FILE;
 import static com.axonivy.market.constants.MetaConstants.META_FILE;
+import static com.axonivy.market.constants.ProductJsonConstants.LOGO_FILE;
 
 @ExtendWith(MockitoExtension.class)
 class GitHubUtilsTest {
@@ -104,5 +104,41 @@ class GitHubUtilsTest {
 
     result = GitHubUtils.sortMetaJsonFirst(LOGO_FILE, LOGO_FILE);
     Assertions.assertEquals(0, result);
+  }
+
+  @Test
+  void testExtractJson() {
+    // Test case: valid JSON inside a string
+    String exceptionMessage = "Error occurred: {\"message\":\"An error occurred\"}";
+    String json = GitHubUtils.extractJson(exceptionMessage);
+    Assertions.assertEquals("{\"message\":\"An error occurred\"}", json);
+
+    // Test case: no JSON in string
+    exceptionMessage = "Error occurred: no json here";
+    json = GitHubUtils.extractJson(exceptionMessage);
+    Assertions.assertEquals(StringUtils.EMPTY, json);
+
+    // Test case: empty string
+    exceptionMessage = "";
+    json = GitHubUtils.extractJson(exceptionMessage);
+    Assertions.assertEquals(StringUtils.EMPTY, json);
+  }
+
+  @Test
+  void testExtractMessageFromExceptionMessage() {
+    // Test case: valid message extraction
+    String exceptionMessage = "Some error occurred: {\"message\":\"Invalid input data\"}";
+    String extractedMessage = GitHubUtils.extractMessageFromExceptionMessage(exceptionMessage);
+    Assertions.assertEquals("Invalid input data", extractedMessage);
+
+    // Test case: no message key
+    exceptionMessage = "Some error occurred: {\"error\":\"Something went wrong\"}";
+    extractedMessage = GitHubUtils.extractMessageFromExceptionMessage(exceptionMessage);
+    Assertions.assertEquals(StringUtils.EMPTY, extractedMessage);
+
+    // Test case: empty exception message
+    exceptionMessage = "";
+    extractedMessage = GitHubUtils.extractMessageFromExceptionMessage(exceptionMessage);
+    Assertions.assertEquals(StringUtils.EMPTY, extractedMessage);
   }
 }
