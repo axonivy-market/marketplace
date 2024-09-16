@@ -44,6 +44,7 @@ import java.util.Objects;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import static com.axonivy.market.constants.CommonConstants.IMAGE_ID_PREFIX;
 import static com.axonivy.market.constants.ProductJsonConstants.EN_LANGUAGE;
 import static com.axonivy.market.constants.ProductJsonConstants.VERSION_VALUE;
 
@@ -284,7 +285,7 @@ public class GHAxonIvyProductRepoServiceImpl implements GHAxonIvyProductRepoServ
 
     allContentOfImages.forEach(content -> {
       Image image = imageService.mappingImageFromGHContent(product, content, false);
-      imageUrls.put(content.getName(), "imageId-".concat(image.getId()));
+      imageUrls.put(content.getName(), IMAGE_ID_PREFIX.concat(image.getId()));
     });
 
     for (Map.Entry<String, String> entry : imageUrls.entrySet()) {

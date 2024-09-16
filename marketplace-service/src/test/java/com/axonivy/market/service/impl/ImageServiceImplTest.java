@@ -48,13 +48,13 @@ class ImageServiceImplTest {
     Image expectedImage = new Image();
     expectedImage.setProductId("google-maps-connector");
     expectedImage.setSha("914d9b6956db7a1404622f14265e435f36db81fa");
-    expectedImage.setLogoUrl("https://raw.githubusercontent.com/images/comprehend-demo-sentiment.png");
+    expectedImage.setImageUrl("https://raw.githubusercontent.com/images/comprehend-demo-sentiment.png");
 
     verify(imageRepository).save(argumentCaptor.capture());
 
     assertEquals(argumentCaptor.getValue().getProductId(),expectedImage.getProductId());
     assertEquals(argumentCaptor.getValue().getSha(),expectedImage.getSha());
-    assertEquals(argumentCaptor.getValue().getLogoUrl(),expectedImage.getLogoUrl());
+    assertEquals(argumentCaptor.getValue().getImageUrl(),expectedImage.getImageUrl());
   }
 
   private Product mockProduct() {

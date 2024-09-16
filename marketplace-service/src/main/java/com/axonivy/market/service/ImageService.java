@@ -7,8 +7,9 @@ import com.axonivy.market.entity.Image;
 import com.axonivy.market.entity.Product;
 
 public interface ImageService {
-  Binary getBinaryImage(GHContent ghContent);
+  Binary getImageBinary(GHContent ghContent);
 
   Image mappingImageFromGHContent(Product product, GHContent ghContent, boolean isLogo);
 
+  byte[] readImage(String id);
 }

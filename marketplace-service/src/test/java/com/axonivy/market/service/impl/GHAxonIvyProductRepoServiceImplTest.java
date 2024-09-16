@@ -242,7 +242,7 @@ class GHAxonIvyProductRepoServiceImplTest {
     image.setId("66e2b14868f2f95b2f95549a");
     image.setSha("914d9b6956db7a1404622f14265e435f36db81fa");
     image.setProductId("amazon-comprehend");
-    image.setLogoUrl(
+    image.setImageUrl(
         "https://raw.githubusercontent.com/amazon-comprehend-connector-product/images/comprehend-demo-sentiment.png");
     return image;
   }

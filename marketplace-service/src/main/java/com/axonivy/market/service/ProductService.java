@@ -25,6 +25,4 @@ public interface ProductService {
 
   Product fetchProductDetailByIdAndVersion(String id, String version);
 
-  byte[] readImage(String id);
-
 }

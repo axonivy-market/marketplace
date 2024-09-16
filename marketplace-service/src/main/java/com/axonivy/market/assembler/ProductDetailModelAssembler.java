@@ -49,17 +49,17 @@ public class ProductDetailModelAssembler extends RepresentationModelAssemblerSup
 
     if (requestPath.equals(RequestMappingConstants.BEST_MATCH_BY_ID_AND_VERSION)) {
       String bestMatchVersion = VersionUtils.getBestMatchVersion(product.getReleasedVersions(), version);
-      Link link = linkTo(methodOn(ProductDetailsController.class).findProductJsonContent(productId, bestMatchVersion))
-          .withSelfRel();
+      Link link = linkTo(
+          methodOn(ProductDetailsController.class).findProductJsonContent(productId, bestMatchVersion)).withSelfRel();
       model.setMetaProductJsonUrl(link.getHref());
     }
 
     selfLinkWithTag = switch (requestPath) {
-    case RequestMappingConstants.BEST_MATCH_BY_ID_AND_VERSION ->
-      methodOn(ProductDetailsController.class).findBestMatchProductDetailsByVersion(productId, version);
-    case RequestMappingConstants.BY_ID_AND_VERSION ->
-      methodOn(ProductDetailsController.class).findProductDetailsByVersion(productId, version);
-    default -> methodOn(ProductDetailsController.class).findProductDetails(productId);
+      case RequestMappingConstants.BEST_MATCH_BY_ID_AND_VERSION ->
+          methodOn(ProductDetailsController.class).findBestMatchProductDetailsByVersion(productId, version);
+      case RequestMappingConstants.BY_ID_AND_VERSION ->
+          methodOn(ProductDetailsController.class).findProductDetailsByVersion(productId, version);
+      default -> methodOn(ProductDetailsController.class).findProductDetails(productId);
     };
 
     model.add(linkTo(selfLinkWithTag).withSelfRel());

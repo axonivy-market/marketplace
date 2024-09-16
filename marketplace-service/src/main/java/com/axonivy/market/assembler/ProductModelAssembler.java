@@ -31,8 +31,8 @@ public class ProductModelAssembler extends RepresentationModelAssemblerSupport<P
     model.setType(product.getType());
     model.setTags(product.getTags());
 
-    Link link = linkTo(methodOn(ProductDetailsController.class).getImageFromId(product.getLogoId())).withSelfRel();
-    model.setLogoUrl(link.getHref());
+    Link logoLink = linkTo(methodOn(ProductDetailsController.class).findImageById(product.getLogoId())).withSelfRel();
+    model.setLogoUrl(logoLink.getHref());
     return model;
   }
 

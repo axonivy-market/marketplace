@@ -21,7 +21,7 @@ public class Image {
   @Id
   private String id;
   private String productId;
-  private String logoUrl;
+  private String imageUrl;
   private Binary imageData;
   private String sha;
 }

@@ -6,5 +6,5 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface ImageRepository extends MongoRepository<Image, String> {
-  Image findByLogoUrlAndSha(String logoUrl, String sha);
+  Image findByImageUrlAndSha(String logoUrl, String sha);
 }

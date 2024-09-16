@@ -1,6 +1,6 @@
 package com.axonivy.market.util;
 
-import static com.axonivy.market.constants.CommonConstants.IMAGE_ID_FROM_README;
+import static com.axonivy.market.constants.CommonConstants.IMAGE_ID_PREFIX;
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 
@@ -39,17 +39,17 @@ public class ImageUtils {
       return;
     }
     content.forEach((key, value) -> {
-      List<String> imageIds = extractAllImageId(value);
+      List<String> imageIds = extractAllImageIds(value);
       for (String imageId : imageIds) {
-        String rawId = imageId.replace(IMAGE_ID_FROM_README, Strings.EMPTY);
-        Link link = linkTo(methodOn(ProductDetailsController.class).getImageFromId(rawId)).withSelfRel();
+        String rawId = imageId.replace(IMAGE_ID_PREFIX, Strings.EMPTY);
+        Link link = linkTo(methodOn(ProductDetailsController.class).findImageById(rawId)).withSelfRel();
         value = value.replace(imageId, link.getHref());
       }
       content.put(key, value);
     });
   }
 
-  private static List<String> extractAllImageId(String content) {
+  private static List<String> extractAllImageIds(String content) {
     List<String> result = new ArrayList<>();
     Matcher matcher = pattern.matcher(content);
     while (matcher.find()) {

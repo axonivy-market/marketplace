@@ -14,6 +14,7 @@ import java.util.Map;
 import com.axonivy.market.constants.RequestMappingConstants;
 import com.axonivy.market.entity.ProductJsonContent;
 import com.axonivy.market.model.VersionAndUrlModel;
+import com.axonivy.market.service.ImageService;
 import com.axonivy.market.service.ProductDesignerInstallationService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Assertions;
@@ -40,6 +41,9 @@ class ProductDetailsControllerTest {
   public static final String TAG = "v10.0.6";
   @Mock
   private ProductService productService;
+
+  @Mock
+  private ImageService imageService;
 
   @Mock
   VersionService versionService;
@@ -237,13 +241,13 @@ class ProductDetailsControllerTest {
   @Test
   void test_getImageFromId() {
     byte[] mockImageData = "image data".getBytes();
-    when(productService.readImage("66e2b14868f2f95b2f95549a")).thenReturn(mockImageData);
+    when(imageService.readImage("66e2b14868f2f95b2f95549a")).thenReturn(mockImageData);
 
     HttpHeaders headers = new HttpHeaders();
     headers.setContentType(MediaType.IMAGE_PNG);
     ResponseEntity<byte[]> expectedResult = new ResponseEntity<>(mockImageData, headers, HttpStatus.OK);
 
-    ResponseEntity<byte[]> result = productDetailsController.getImageFromId("66e2b14868f2f95b2f95549a");
+    ResponseEntity<byte[]> result = productDetailsController.findImageById("66e2b14868f2f95b2f95549a");
 
     assertEquals(expectedResult, result);
   }

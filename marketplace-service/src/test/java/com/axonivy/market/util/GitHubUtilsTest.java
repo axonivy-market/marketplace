@@ -8,7 +8,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import static com.axonivy.market.constants.MetaConstants.LOGO_FILE;
+import static com.axonivy.market.constants.ProductJsonConstants.LOGO_FILE;
 import static com.axonivy.market.constants.MetaConstants.META_FILE;
 
 @ExtendWith(MockitoExtension.class)

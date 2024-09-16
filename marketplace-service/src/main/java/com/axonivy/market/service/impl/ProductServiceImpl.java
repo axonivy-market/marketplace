@@ -38,7 +38,6 @@ import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.util.Strings;
-import org.bson.types.Binary;
 import org.kohsuke.github.GHCommit;
 import org.kohsuke.github.GHContent;
 import org.kohsuke.github.GHRepository;
@@ -69,7 +68,7 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Predicate;
 
-import static com.axonivy.market.constants.CommonConstants.LOGO_FILE;
+import static com.axonivy.market.constants.ProductJsonConstants.LOGO_FILE;
 import static com.axonivy.market.constants.CommonConstants.SLASH;
 import static com.axonivy.market.enums.DocumentField.MARKET_DIRECTORY;
 import static com.axonivy.market.enums.DocumentField.SHORT_DESCRIPTIONS;
@@ -87,8 +86,6 @@ public class ProductServiceImpl implements ProductService {
   private final GitHubRepoMetaRepository gitHubRepoMetaRepository;
   private final GitHubService gitHubService;
   private final ProductCustomSortRepository productCustomSortRepository;
-
-  private final ImageRepository imageRepository;
 
   private final ImageService imageService;
   private final MongoTemplate mongoTemplate;
@@ -120,7 +117,6 @@ public class ProductServiceImpl implements ProductService {
     this.gitHubRepoMetaRepository = gitHubRepoMetaRepository;
     this.gitHubService = gitHubService;
     this.productCustomSortRepository = productCustomSortRepository;
-    this.imageRepository = imageRepository;
     this.imageService = imageService;
     this.mongoTemplate = mongoTemplate;
   }
@@ -227,15 +223,8 @@ public class ProductServiceImpl implements ProductService {
 
     groupGitHubFiles.entrySet().forEach(ghFileEntity -> {
 
-      ghFileEntity.getValue().sort((file1, file2) -> {
-        String[] splitFileName1 = file1.getFileName().split(SLASH);
-        String[] splitFileName2 = file2.getFileName().split(SLASH);
-
-        String file1Name = splitFileName1[splitFileName1.length - 1];
-        String file2Name = splitFileName2[splitFileName1.length - 1];
-
-        return GitHubUtils.sortMetaJsonFirst(file1Name, file2Name);
-      });
+      ghFileEntity.getValue()
+          .sort((file1, file2) -> GitHubUtils.sortMetaJsonFirst(file1.getFileName(), file2.getFileName()));
 
       for (var file : ghFileEntity.getValue()) {
         Product product = new Product();
@@ -363,7 +352,6 @@ public class ProductServiceImpl implements ProductService {
     }
   }
 
-
   private void updateProductContentForNonStandardProduct(Map.Entry<String, List<GHContent>> ghContentEntity, Product product) {
     ProductModuleContent initialContent = new ProductModuleContent();
     initialContent.setTag(INITIAL_VERSION);
@@ -390,7 +378,8 @@ public class ProductServiceImpl implements ProductService {
     gitHubContentMap.entrySet().forEach(ghContentEntity -> {
       Product product = new Product();
       //update the meta.json first
-      ghContentEntity.getValue().sort((file1, file2) -> GitHubUtils.sortMetaJsonFirst(file1.getName(),file2.getName()));
+      ghContentEntity.getValue()
+          .sort((file1, file2) -> GitHubUtils.sortMetaJsonFirst(file1.getName(), file2.getName()));
       for (var content : ghContentEntity.getValue()) {
         ProductFactory.mappingByGHContent(product, content);
         mappingLogoFromGHContent(product, content);
@@ -526,12 +515,6 @@ public class ProductServiceImpl implements ProductService {
   @Override
   public Product fetchProductDetailByIdAndVersion(String id, String version) {
     return productRepository.getProductByIdAndTag(id, VersionUtils.convertVersionToTag(id, version));
-  }
-
-  @Override
-  public byte[] readImage(String id) {
-    Image image = imageRepository.findById(id).orElse(null);
-    return Optional.ofNullable(image).map(Image::getImageData).map(Binary::getData).orElse(null);
   }
 
   @Override

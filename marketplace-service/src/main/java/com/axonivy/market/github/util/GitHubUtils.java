@@ -93,11 +93,11 @@ public class GitHubUtils {
     return StringUtils.EMPTY;
   }
 
-  public static int sortMetaJsonFirst(String file1Name, String file2Name) {
-    if (file1Name.equals(META_FILE))
+  public static int sortMetaJsonFirst(String fileName1, String fileName2) {
+    if (fileName1.endsWith(META_FILE))
       return -1;
-    if (file2Name.equals(META_FILE))
+    if (fileName2.endsWith(META_FILE))
       return 1;
-    return file1Name.compareTo(file2Name);
+    return fileName1.compareTo(fileName2);
   }
 }
