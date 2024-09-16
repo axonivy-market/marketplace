@@ -425,11 +425,10 @@ class VersionServiceImplTest {
 
     Assertions.assertEquals(result.stream().map(VersionAndUrlModel::getVersion).toList(),
         List.of("11.3.0", "11.1.1", "11.1.0", "10.0.2"));
-    Assertions.assertEquals("/api/product-details/productjsoncontent/11.3.0/11.3.0", result.get(0).getUrl());
-    Assertions.assertEquals("/api/product-details/productjsoncontent/11.3.0/11.1.1", result.get(1).getUrl());
-    Assertions.assertEquals("/api/product-details/productjsoncontent/11.3.0/11.1.0", result.get(2).getUrl());
-    Assertions.assertEquals("/api/product-details/productjsoncontent/11.3.0/10.0.2", result.get(3).getUrl());
-
+    Assertions.assertEquals("/api/product-details/11.3.0/11.3.0/json", result.get(0).getUrl());
+    Assertions.assertEquals("/api/product-details/11.3.0/11.1.1/json", result.get(1).getUrl());
+    Assertions.assertEquals("/api/product-details/11.3.0/11.1.0/json", result.get(2).getUrl());
+    Assertions.assertEquals("/api/product-details/11.3.0/10.0.2/json", result.get(3).getUrl());
   }
 
   @Test

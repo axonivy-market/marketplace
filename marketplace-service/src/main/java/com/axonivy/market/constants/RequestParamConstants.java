@@ -6,7 +6,6 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class RequestParamConstants {
   public static final String ID = "id";
-  public static final String TAG = "tag";
   public static final String TYPE = "type";
   public static final String KEYWORD = "keyword";
   public static final String LANGUAGE = "language";
