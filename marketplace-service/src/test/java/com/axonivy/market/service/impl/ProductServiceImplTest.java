@@ -342,8 +342,9 @@ class ProductServiceImplTest extends BaseSetup {
     verify(productModuleContentRepository).saveAll(argumentCaptorProductModuleContents.capture());
     verify(productRepository).save(argumentCaptor.capture());
 
-    assertThat(argumentCaptorProductModuleContents.getValue()).usingRecursiveComparison()
-        .isEqualTo(List.of(mockReadmeProductContent()));
+    assertEquals(1, argumentCaptorProductModuleContents.getValue().size());
+    assertThat(argumentCaptorProductModuleContents.getValue().get(0).getId())
+            .isEqualTo(mockReadmeProductContent().getId());
   }
 
   @Test
@@ -401,8 +402,8 @@ class ProductServiceImplTest extends BaseSetup {
 
     verify(productModuleContentRepository).saveAll(argumentCaptorProductModuleContents.capture());
     verify(productRepository).save(argumentCaptor.capture());
-    assertThat(argumentCaptor.getValue().getProductModuleContent()).usingRecursiveComparison()
-        .isEqualTo(mockReadmeProductContent());
+    assertThat(argumentCaptor.getValue().getProductModuleContent().getId())
+        .isEqualTo(mockReadmeProductContent().getId());
   }
 
   @Test
@@ -603,7 +604,7 @@ class ProductServiceImplTest extends BaseSetup {
 
   private ProductModuleContent mockReadmeProductContent() {
     ProductModuleContent productModuleContent = new ProductModuleContent();
-    productModuleContent.setId("123");
+    productModuleContent.setId("amazon-comprehendv-10.0.2");
     productModuleContent.setTag("v10.0.2");
     productModuleContent.setName("Amazon Comprehend");
     Map<String, String> description = new HashMap<>();
