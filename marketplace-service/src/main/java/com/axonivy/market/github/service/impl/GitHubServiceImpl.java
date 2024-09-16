@@ -111,7 +111,7 @@ public class GitHubServiceImpl implements GitHubService {
     GitHubAccessTokenResponse response = responseEntity.getBody();
 
     if (response != null && response.getError() != null && !response.getError().isBlank()) {
-      log.warn(String.format(ErrorMessageConstants.CURRENT_CLIENT_ID_MISMATCH_MESSAGE, code,
+      log.error(String.format(ErrorMessageConstants.CURRENT_CLIENT_ID_MISMATCH_MESSAGE, code,
           gitHubProperty.getOauth2ClientId()));
       throw new Oauth2ExchangeCodeException(response.getError(), response.getErrorDescription());
     }
