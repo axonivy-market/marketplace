@@ -6,7 +6,7 @@
       class="card-img-top rounded"
       width="70"
       height="70"
-      [ngSrc]="product | logo"
+      [ngSrc]="product.logoUrl" onerror="this.src='/assets/images/misc/axonivy-logo-round.png'"
       [alt]="
         product.names | multilingualism: languageService.selectedLanguage()
       "

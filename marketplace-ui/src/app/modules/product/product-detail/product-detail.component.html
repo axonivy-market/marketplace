@@ -23,6 +23,7 @@
                 [lang]="languageService.selectedLanguage()"
                 class="logo__image"
                 [src]="productDetail().logoUrl"
+                onerror="this.src='/assets/images/misc/axonivy-logo-round.png'"
                 [alt]="
                   productDetail().names
                     | multilingualism: languageService.selectedLanguage()
