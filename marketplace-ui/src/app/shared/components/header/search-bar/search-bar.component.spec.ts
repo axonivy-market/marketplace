@@ -71,4 +71,42 @@ describe('SearchBarComponent', () => {
       'none'
     );
   });
+
+  it('should display the correct text in large screen', () => {
+    viewport.set(1920);
+    fixture.detectChanges();
+
+    const largeScreenButton = fixture.debugElement.query(
+      By.css('.d-none.d-lg-block')
+    ).nativeElement;
+    const smallScreenButton = fixture.debugElement.query(
+      By.css('.d-lg-none')
+    ).nativeElement;
+
+    expect(getComputedStyle(largeScreenButton).display).not.toBe('none');
+    expect(getComputedStyle(smallScreenButton).display).toBe('none');
+
+    expect(largeScreenButton.textContent.trim()).toContain(
+      'common.header.download'
+    );
+  });
+
+  it('should display the correct text in smaller screen', () => {
+    viewport.set(430);
+    fixture.detectChanges();
+
+    const smallScreenButton = fixture.debugElement.query(
+      By.css('.d-lg-none')
+    ).nativeElement;
+    const largeScreenButton = fixture.debugElement.query(
+      By.css('.d-none.d-lg-block')
+    ).nativeElement;
+
+    expect(getComputedStyle(smallScreenButton).display).not.toBe('none');
+    expect(getComputedStyle(largeScreenButton).display).toBe('none');
+
+    expect(smallScreenButton.textContent.trim()).toContain(
+      'common.downloadLatestLTSVersion'
+    );
+  });
 });

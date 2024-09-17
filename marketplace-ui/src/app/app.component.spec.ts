@@ -7,6 +7,7 @@ import { RoutingQueryParamService } from './shared/services/routing.query.param.
 import { ActivatedRoute, RouterOutlet, NavigationStart, RouterModule, Router, NavigationError, Event } from '@angular/router';
 import { of, Subject } from 'rxjs';
 import { TranslateService, TranslateModule } from '@ngx-translate/core';
+import { By } from '@angular/platform-browser';
 import { ERROR_PAGE_PATH } from './shared/constants/common.constant';
 
 describe('AppComponent', () => {
@@ -15,6 +16,7 @@ describe('AppComponent', () => {
   let routingQueryParamService: jasmine.SpyObj<RoutingQueryParamService>;
   let activatedRoute: ActivatedRoute;
   let navigationStartSubject: Subject<NavigationStart>;
+  let appElement: HTMLElement;
   let router: Router;
   let routerEventsSubject: Subject<Event>;
 
@@ -74,6 +76,10 @@ describe('AppComponent', () => {
     routingQueryParamService.getNavigationStartEvent.and.returnValue(
       navigationStartSubject.asObservable()
     );
+    appElement = fixture.debugElement.query(
+      By.css('.app-container')
+    ).nativeElement;
+
     activatedRoute = TestBed.inject(ActivatedRoute);
     router = TestBed.inject(Router);
     fixture.detectChanges();
@@ -116,6 +122,31 @@ describe('AppComponent', () => {
     expect(
       routingQueryParamService.checkCookieForDesignerVersion
     ).not.toHaveBeenCalled();
+  });
+
+  it('should hide scrollbar when burger menu is opened', () => {
+    component.isMobileMenuCollapsed = false;
+    fixture.detectChanges();
+
+    const headerElement = fixture.debugElement.query(By.css('.header-mobile'));
+    expect(headerElement).toBeTruthy();
+
+    expect(appElement.classList.contains('header-mobile-container')).toBeTrue();
+
+    const headerComputedStyle = window.getComputedStyle(appElement);
+    expect(headerComputedStyle.overflow).toBe('hidden');
+  });
+
+  it('should reset header style when burger menu is closed', () => {
+    component.isMobileMenuCollapsed = true;
+    fixture.detectChanges();
+
+    const headerElement = fixture.debugElement.query(By.css('.header-mobile'));
+    expect(headerElement).toBeNull();
+
+    expect(
+      appElement.classList.contains('header-mobile-container')
+    ).toBeFalse();
   });
 
   it('should redirect to "/error-page" on NavigationError', () => {
