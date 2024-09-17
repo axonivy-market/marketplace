@@ -1,6 +1,6 @@
 package com.axonivy.market.service.impl;
 
-import static com.axonivy.market.constants.CommonConstants.LOGO_FILE;
+import static com.axonivy.market.constants.ProductJsonConstants.LOGO_FILE;
 import static com.axonivy.market.constants.CommonConstants.SLASH;
 import static com.axonivy.market.constants.MetaConstants.META_FILE;
 import static com.axonivy.market.enums.DocumentField.SHORT_DESCRIPTIONS;
@@ -11,6 +11,7 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.ArgumentMatchers.anyLong;
@@ -34,6 +35,7 @@ import java.util.Optional;
 import java.util.UUID;
 
 import com.axonivy.market.criteria.ProductSearchCriteria;
+import com.axonivy.market.service.ImageService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -45,6 +47,7 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
@@ -129,6 +132,9 @@ class ProductServiceImplTest extends BaseSetup {
 
   @Mock
   private GHAxonIvyProductRepoService ghAxonIvyProductRepoService;
+
+  @Mock
+  private ImageService imageService;
 
   @Captor
   ArgumentCaptor<ArrayList<Product>> productListArgumentCaptor;
@@ -273,7 +279,6 @@ class ProductServiceImplTest extends BaseSetup {
     mockGitHubFile.setStatus(FileStatus.REMOVED);
     when(marketRepoService.fetchMarketItemsBySHA1Range(any(), any())).thenReturn(List.of(mockGitHubFile));
     when(gitHubService.getGHContent(any(), anyString(), any())).thenReturn(mockGHContent);
-    when(productRepository.findByLogoUrl(any())).thenReturn(new Product());
 
     // Executes
     result = productService.syncLatestDataFromMarketRepo();
@@ -332,11 +337,17 @@ class ProductServiceImplTest extends BaseSetup {
     var mockContent = mockGHContentAsMetaJSON();
     InputStream inputStream = this.getClass().getResourceAsStream(SLASH.concat(META_FILE));
     when(mockContent.read()).thenReturn(inputStream);
+
+    var mockContentLogo = mockGHContentAsLogo();
+    List<GHContent> mockMetaJsonAndLogoList = new ArrayList<>(List.of(mockContent, mockContentLogo));
+
     Map<String, List<GHContent>> mockGHContentMap = new HashMap<>();
-    mockGHContentMap.put(SAMPLE_PRODUCT_ID, List.of(mockContent));
+    mockGHContentMap.put(SAMPLE_PRODUCT_ID, mockMetaJsonAndLogoList);
     when(marketRepoService.fetchAllMarketItems()).thenReturn(mockGHContentMap);
     when(productModuleContentRepository.saveAll(anyList())).thenReturn(List.of(mockReadmeProductContent()));
 
+    Mockito.when(imageService.mappingImageFromGHContent(any(), any(), anyBoolean()))
+        .thenReturn(GHAxonIvyProductRepoServiceImplTest.mockImage());
     // Executes
     productService.syncLatestDataFromMarketRepo();
     verify(productModuleContentRepository).saveAll(argumentCaptorProductModuleContents.capture());
@@ -357,10 +368,13 @@ class ProductServiceImplTest extends BaseSetup {
     InputStream inputStream = this.getClass().getResourceAsStream(EMPTY_SOURCE_URL_META_JSON_FILE);
     when(mockContent.read()).thenReturn(inputStream);
 
-    Map<String, List<GHContent>> mockGHContentMap = new HashMap<>();
-    mockGHContentMap.put(SAMPLE_PRODUCT_ID, List.of(mockContent));
-    when(marketRepoService.fetchAllMarketItems()).thenReturn(mockGHContentMap);
+    var mockContentLogo = mockGHContentAsLogo();
 
+    Map<String, List<GHContent>> mockGHContentMap = new HashMap<>();
+    List<GHContent> mockMetaJsonAndLogoList = new ArrayList<>(List.of(mockContent, mockContentLogo));
+    mockGHContentMap.put(SAMPLE_PRODUCT_ID, mockMetaJsonAndLogoList);
+    when(marketRepoService.fetchAllMarketItems()).thenReturn(mockGHContentMap);
+    Mockito.when(imageService.mappingImageFromGHContent(any(),any(),anyBoolean())).thenReturn(GHAxonIvyProductRepoServiceImplTest.mockImage());
     // Executes
     productService.syncLatestDataFromMarketRepo();
     verify(productModuleContentRepository).save(argumentCaptorProductModuleContent.capture());
@@ -424,7 +438,7 @@ class ProductServiceImplTest extends BaseSetup {
     var mockCommit = mockGHCommitHasSHA1(SHA1_SAMPLE);
     when(marketRepoService.getLastCommit(anyLong())).thenReturn(mockCommit);
     when(repoMetaRepository.findByRepoName(anyString())).thenReturn(null);
-    
+
     Map<String, List<GHContent>> mockGHContentMap = new HashMap<>();
     mockGHContentMap.put(SAMPLE_PRODUCT_ID, new ArrayList<>());
     when(marketRepoService.fetchAllMarketItems()).thenReturn(mockGHContentMap);
@@ -599,6 +613,12 @@ class ProductServiceImplTest extends BaseSetup {
   private GHContent mockGHContentAsMetaJSON() {
     var mockGHContent = mock(GHContent.class);
     when(mockGHContent.getName()).thenReturn(META_FILE);
+    return mockGHContent;
+  }
+
+  private GHContent mockGHContentAsLogo() {
+    var mockGHContent = mock(GHContent.class);
+    when(mockGHContent.getName()).thenReturn("logo.png");
     return mockGHContent;
   }
 

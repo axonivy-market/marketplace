@@ -1,6 +1,6 @@
 package com.axonivy.market.factory;
 
-import com.axonivy.market.constants.CommonConstants;
+import com.axonivy.market.constants.ProductJsonConstants;
 import com.axonivy.market.entity.Product;
 import com.axonivy.market.github.model.Meta;
 import org.junit.jupiter.api.Assertions;
@@ -42,15 +42,14 @@ class ProductFactoryTest {
   }
 
   @Test
-  void testMappingLogo() throws IOException {
+  void testMappingLogo() {
     Product product = new Product();
     GHContent content = mock(GHContent.class);
-    when(content.getName()).thenReturn(CommonConstants.LOGO_FILE);
+    when(content.getName()).thenReturn(ProductJsonConstants.LOGO_FILE);
     var result = ProductFactory.mappingByGHContent(product, content);
     assertNotEquals(null, result);
 
-    when(content.getName()).thenReturn(CommonConstants.LOGO_FILE);
-    when(content.getDownloadUrl()).thenReturn(DUMMY_LOGO_URL);
+    when(content.getName()).thenReturn(ProductJsonConstants.LOGO_FILE);
     result = ProductFactory.mappingByGHContent(product, content);
     assertNotEquals(null, result);
   }

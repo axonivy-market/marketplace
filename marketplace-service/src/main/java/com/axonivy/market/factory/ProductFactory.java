@@ -1,11 +1,15 @@
 package com.axonivy.market.factory;
 
+import static com.axonivy.market.constants.CommonConstants.SLASH;
+import static com.axonivy.market.constants.MetaConstants.DEFAULT_VENDOR_NAME;
+import static com.axonivy.market.constants.MetaConstants.DEFAULT_VENDOR_URL;
+import static com.axonivy.market.constants.MetaConstants.META_FILE;
+import static org.apache.commons.lang3.StringUtils.EMPTY;
 import com.axonivy.market.constants.CommonConstants;
 import com.axonivy.market.entity.Product;
 import com.axonivy.market.entity.ProductJsonContent;
 import com.axonivy.market.entity.ProductModuleContent;
 import com.axonivy.market.github.model.Meta;
-import com.axonivy.market.github.util.GitHubUtils;
 import com.axonivy.market.model.DisplayValue;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.AccessLevel;
@@ -15,19 +19,11 @@ import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.kohsuke.github.GHContent;
 import org.springframework.util.CollectionUtils;
-
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
-import static com.axonivy.market.constants.CommonConstants.LOGO_FILE;
-import static com.axonivy.market.constants.CommonConstants.SLASH;
-import static com.axonivy.market.constants.MetaConstants.DEFAULT_VENDOR_NAME;
-import static com.axonivy.market.constants.MetaConstants.DEFAULT_VENDOR_URL;
-import static com.axonivy.market.constants.MetaConstants.META_FILE;
-import static org.apache.commons.lang3.StringUtils.EMPTY;
 
 @Log4j2
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
@@ -42,9 +38,6 @@ public class ProductFactory {
     var contentName = content.getName();
     if (StringUtils.endsWith(contentName, META_FILE)) {
       mappingByMetaJSONFile(product, content);
-    }
-    if (StringUtils.endsWith(contentName, LOGO_FILE)) {
-      product.setLogoUrl(GitHubUtils.getDownloadUrl(content));
     }
     return product;
   }

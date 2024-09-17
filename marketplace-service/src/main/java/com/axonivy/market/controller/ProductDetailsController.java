@@ -9,7 +9,7 @@ import static com.axonivy.market.constants.RequestMappingConstants.BY_ID;
 import static com.axonivy.market.constants.RequestMappingConstants.BY_ID_AND_VERSION;
 import static com.axonivy.market.constants.RequestMappingConstants.INSTALLATION_COUNT_BY_ID;
 import static com.axonivy.market.constants.RequestMappingConstants.PRODUCT_DETAILS;
-import static com.axonivy.market.constants.RequestMappingConstants.PRODUCT_JSON_CONTENT_BY_ID_AND_VERSION;
+import static com.axonivy.market.constants.RequestMappingConstants.PRODUCT_JSON_CONTENT_BY_PRODUCT_ID_AND_VERSION;
 import static com.axonivy.market.constants.RequestMappingConstants.VERSIONS_BY_ID;
 import static com.axonivy.market.constants.RequestMappingConstants.VERSIONS_IN_DESIGNER;
 import java.util.List;
@@ -45,7 +45,7 @@ public class ProductDetailsController {
   private final ProductDetailModelAssembler detailModelAssembler;
 
   public ProductDetailsController(VersionService versionService, ProductService productService,
-                                  ProductDetailModelAssembler detailModelAssembler) {
+      ProductDetailModelAssembler detailModelAssembler) {
     this.versionService = versionService;
     this.productService = productService;
     this.detailModelAssembler = detailModelAssembler;
@@ -96,7 +96,7 @@ public class ProductDetailsController {
     return new ResponseEntity<>(models, HttpStatus.OK);
   }
 
-  @GetMapping(PRODUCT_JSON_CONTENT_BY_ID_AND_VERSION)
+  @GetMapping(PRODUCT_JSON_CONTENT_BY_PRODUCT_ID_AND_VERSION)
   @Operation(summary = "Get product json content for designer to install", description = "When we click install in designer, this API will send content of product json for installing in Ivy designer")
   public ResponseEntity<Map<String, Object>> findProductJsonContent(@PathVariable(ID) String productId,
       @PathVariable(VERSION) String version) {
@@ -110,5 +110,4 @@ public class ProductDetailsController {
     List<VersionAndUrlModel> versionList = versionService.getVersionsForDesigner(id);
     return new ResponseEntity<>(versionList, HttpStatus.OK);
   }
-
 }
