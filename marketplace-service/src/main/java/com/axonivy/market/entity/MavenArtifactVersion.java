@@ -27,7 +27,6 @@ public class MavenArtifactVersion implements Serializable {
 
   @Id
   private String productId;
-  private List<String> versions = new ArrayList<>();
   private Map<String, List<MavenArtifactModel>> productArtifactWithVersionReleased = new HashMap<>();
 
   public MavenArtifactVersion(String productId) {

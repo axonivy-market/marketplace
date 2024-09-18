@@ -28,7 +28,6 @@ import lombok.extern.log4j.Log4j2;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.kohsuke.github.GHContent;
 import org.springframework.hateoas.Link;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
@@ -60,16 +59,11 @@ public class VersionServiceImpl implements VersionService {
   private final ProductRepository productRepository;
   private final ProductJsonContentRepository productJsonContentRepository;
   private final ProductModuleContentRepository productModuleContentRepository;
-  @Getter
-  private String repoName;
   private Map<String, List<ArchivedArtifact>> archivedArtifactsMap;
   private List<MavenArtifact> artifactsFromMeta;
   private MavenArtifactVersion proceedDataCache;
   private MavenArtifact metaProductArtifact;
   private final LatestVersionComparator latestVersionComparator = new LatestVersionComparator();
-  @Getter
-  private String productJsonFilePath;
-  private String productId;
   private final ObjectMapper mapper = new ObjectMapper();
 
   public VersionServiceImpl(GHAxonIvyProductRepoService gitHubService,
@@ -78,19 +72,15 @@ public class VersionServiceImpl implements VersionService {
     this.gitHubService = gitHubService;
     this.mavenArtifactVersionRepository = mavenArtifactVersionRepository;
     this.productRepository = productRepository;
-
     this.productJsonContentRepository = productJsonContentRepository;
     this.productModuleContentRepository = productModuleContentRepository;
   }
 
   private void resetData() {
-    repoName = null;
     archivedArtifactsMap = new HashMap<>();
     artifactsFromMeta = Collections.emptyList();
     proceedDataCache = null;
     metaProductArtifact = null;
-    productJsonFilePath = null;
-    productId = null;
   }
 
   public List<MavenArtifactVersionModel> getArtifactsAndVersionToDisplay(String productId, Boolean isShowDevVersion,
@@ -98,7 +88,6 @@ public class VersionServiceImpl implements VersionService {
     List<MavenArtifactVersionModel> results = new ArrayList<>();
     resetData();
 
-    this.productId = productId;
     artifactsFromMeta = getProductMetaArtifacts(productId);
     List<String> versionsToDisplay = VersionUtils.getVersionsToDisplay(getPersistedVersions(productId), isShowDevVersion, designerVersion);
     proceedDataCache = mavenArtifactVersionRepository.findById(productId).orElse(new MavenArtifactVersion(productId));
@@ -108,7 +97,7 @@ public class VersionServiceImpl implements VersionService {
 
     sanitizeMetaArtifactBeforeHandle();
 
-    boolean isNewVersionDetected = handleArtifactForVersionToDisplay(versionsToDisplay, results);
+    boolean isNewVersionDetected = handleArtifactForVersionToDisplay(versionsToDisplay, results, productId);
     if (isNewVersionDetected) {
       mavenArtifactVersionRepository.save(proceedDataCache);
     }
@@ -146,7 +135,7 @@ public class VersionServiceImpl implements VersionService {
   }
 
   public boolean handleArtifactForVersionToDisplay(List<String> versionsToDisplay,
-      List<MavenArtifactVersionModel> result) {
+                                                   List<MavenArtifactVersionModel> result, String productId) {
     boolean isNewVersionDetected = false;
     for (String version : versionsToDisplay) {
       List<MavenArtifactModel> artifactsInVersion = convertMavenArtifactsToModels(artifactsFromMeta, version);
@@ -154,7 +143,7 @@ public class VersionServiceImpl implements VersionService {
           .get(version);
       if (productArtifactModels == null) {
         isNewVersionDetected = true;
-        productArtifactModels = updateArtifactsInVersionWithProductArtifact(version);
+        productArtifactModels = updateArtifactsInVersionWithProductArtifact(version, productId);
       }
       artifactsInVersion.addAll(productArtifactModels);
       result.add(new MavenArtifactVersionModel(version, artifactsInVersion.stream().distinct().toList()));
@@ -162,20 +151,15 @@ public class VersionServiceImpl implements VersionService {
     return isNewVersionDetected;
   }
 
-  public List<MavenArtifactModel> updateArtifactsInVersionWithProductArtifact(String version) {
-    List<MavenArtifactModel> productArtifactModels = convertMavenArtifactsToModels(getMavenArtifactsFromProductJsonByVersion(version),
+  public List<MavenArtifactModel> updateArtifactsInVersionWithProductArtifact(String version, String productId) {
+    List<MavenArtifactModel> productArtifactModels = convertMavenArtifactsToModels(getMavenArtifactsFromProductJsonByVersion(version, productId),
         version);
-    proceedDataCache.getVersions().add(version);
     proceedDataCache.getProductArtifactWithVersionReleased().put(version, productArtifactModels);
     return productArtifactModels;
   }
 
   public List<MavenArtifact> getProductMetaArtifacts(String productId) {
     Product productInfo = productRepository.findById(productId).orElse(new Product());
-    String fullRepoName = productInfo.getRepositoryName();
-    if (StringUtils.isNotEmpty(fullRepoName)) {
-      repoName = getRepoNameFromMarketRepo(fullRepoName);
-    }
     return Optional.ofNullable(productInfo.getArtifacts()).orElse(new ArrayList<>());
   }
 
@@ -213,7 +197,7 @@ public class VersionServiceImpl implements VersionService {
     return String.format(MavenConstants.METADATA_URL_FORMAT, repoUrl, groupId, artifactID);
   }
 
-  public List<MavenArtifact> getMavenArtifactsFromProductJsonByVersion(String version) {
+  public List<MavenArtifact> getMavenArtifactsFromProductJsonByVersion(String version, String productId) {
     ProductJsonContent productJson = productJsonContentRepository.findByProductIdAndVersion(productId, version);
     if (Objects.isNull(productJson) || StringUtils.isBlank(productJson.getContent())) {
       return new ArrayList<>();
@@ -277,10 +261,5 @@ public class VersionServiceImpl implements VersionService {
       }
     }
     return null;
-  }
-
-  public String getRepoNameFromMarketRepo(String fullRepoName) {
-    String[] repoNamePart = fullRepoName.split("/");
-    return repoNamePart[repoNamePart.length - 1];
   }
 }

@@ -113,8 +113,7 @@ class VersionServiceImplTest {
     String newVersionDetected = "10.0.10";
     List<MavenArtifactVersionModel> result = new ArrayList<>();
     List<String> versionsToDisplay = List.of(newVersionDetected);
-    ReflectionTestUtils.setField(versionService, "productId", "adobe-acrobat-connector");
-    Assertions.assertTrue(versionService.handleArtifactForVersionToDisplay(versionsToDisplay, result));
+    Assertions.assertTrue(versionService.handleArtifactForVersionToDisplay(versionsToDisplay, result, "adobe-acrobat-connector"));
     Assertions.assertEquals(1, result.size());
     Assertions.assertEquals(newVersionDetected, result.get(0).getVersion());
     Assertions.assertEquals(0, result.get(0).getArtifactsByVersion().size());
@@ -124,7 +123,7 @@ class VersionServiceImplTest {
     artifactsInVersion.add(new MavenArtifactModel());
     when(versionService.convertMavenArtifactsToModels(Mockito.anyList(), Mockito.anyString())).thenReturn(
         artifactsInVersion);
-    Assertions.assertFalse(versionService.handleArtifactForVersionToDisplay(versionsToDisplay, result));
+    Assertions.assertFalse(versionService.handleArtifactForVersionToDisplay(versionsToDisplay, result, "adobe-acrobat-connector"));
     Assertions.assertEquals(1, result.size());
     Assertions.assertEquals(1, result.get(0).getArtifactsByVersion().size());
   }
@@ -139,27 +138,20 @@ class VersionServiceImplTest {
     when(productRepository.findById(Mockito.anyString())).thenReturn(Optional.of(product));
     List<MavenArtifact> result = versionService.getProductMetaArtifacts("portal");
     Assertions.assertEquals(artifacts, result);
-    Assertions.assertNull(versionService.getRepoName());
-
-    product.setRepositoryName("/market/portal");
-    versionService.getProductMetaArtifacts("portal");
-    Assertions.assertEquals("portal", versionService.getRepoName());
   }
 
   @Test
   void testUpdateArtifactsInVersionWithProductArtifact() {
     String version = "10.0.10";
-    ReflectionTestUtils.setField(versionService, "productId", "adobe-acrobat-connector");
     MavenArtifactModel artifactModel = new MavenArtifactModel();
     List<MavenArtifactModel> mockMavenArtifactModels = List.of(artifactModel);
-    when(versionService.getMavenArtifactsFromProductJsonByVersion(Mockito.anyString())).thenReturn(List.of(new MavenArtifact()));
+    when(versionService.getMavenArtifactsFromProductJsonByVersion(Mockito.anyString(), Mockito.eq("adobe-acrobat-connector"))).thenReturn(List.of(new MavenArtifact()));
     when(versionService.convertMavenArtifactsToModels(Mockito.anyList(), Mockito.anyString())).thenReturn(
         mockMavenArtifactModels);
     Assertions.assertEquals(mockMavenArtifactModels,
-        versionService.updateArtifactsInVersionWithProductArtifact(version));
-    Assertions.assertEquals(1, proceedDataCache.getVersions().size());
+        versionService.updateArtifactsInVersionWithProductArtifact(version, "adobe-acrobat-connector"));
     Assertions.assertEquals(1, proceedDataCache.getProductArtifactWithVersionReleased().size());
-    Assertions.assertEquals(version, proceedDataCache.getVersions().get(0));
+    Assertions.assertEquals(1, proceedDataCache.getProductArtifactWithVersionReleased().size());
   }
 
   @Test
@@ -197,11 +189,9 @@ class VersionServiceImplTest {
 
   @Test
   void testGetMavenArtifactsFromProductJsonByVersion() throws IOException {
-    ReflectionTestUtils.setField(versionService, "repoName", repoName);
-    ReflectionTestUtils.setField(versionService, "productId", "adobe-acrobat-connector");
     when(productJsonContentRepository.findByProductIdAndVersion("adobe-acrobat-connector", "10.0.20")).thenReturn(null);
 
-    Assertions.assertEquals(0, versionService.getMavenArtifactsFromProductJsonByVersion("10.0.20").size());
+    Assertions.assertEquals(0, versionService.getMavenArtifactsFromProductJsonByVersion("10.0.20", "adobe-acrobat-connector").size());
 
     String jsonContent = "{ \"installers\": [{ \"id\": \"maven-import\", \"data\": { \"repositories\": [{ \"url\": \"http://repo.url\" }], \"projects\": [], \"dependencies\": [] } }] }";
     ProductJsonContent productJson = new ProductJsonContent();
@@ -211,7 +201,7 @@ class VersionServiceImplTest {
     List<MavenArtifact> expectedArtifacts = new ArrayList<>();
     when(gitHubService.extractMavenArtifactsFromContentStream(Mockito.any())).thenReturn(expectedArtifacts);
 
-    List<MavenArtifact> actualArtifacts = versionService.getMavenArtifactsFromProductJsonByVersion("10.0.20");
+    List<MavenArtifact> actualArtifacts = versionService.getMavenArtifactsFromProductJsonByVersion("10.0.20", "adobe-acrobat-connector");
 
     Assertions.assertEquals(expectedArtifacts, actualArtifacts);
     verify(productJsonContentRepository, Mockito.times(2)).findByProductIdAndVersion("adobe-acrobat-connector", "10.0.20");
@@ -333,22 +323,6 @@ class VersionServiceImplTest {
     archivedArtifactsMap.get(targetArtifactId).add(adobeArchivedArtifactVersion10);
     result = versionService.findArchivedArtifactInfoBestMatchWithVersion(targetArtifactId, targetVersion);
     Assertions.assertEquals(adobeArchivedArtifactVersion10, result);
-  }
-
-  @Test
-  void testGetRepoNameFromMarketRepo() {
-    String defaultRepositoryName = "market/adobe-acrobat-connector";
-    String expectedRepoName = "adobe-acrobat-connector";
-    String result = versionService.getRepoNameFromMarketRepo(defaultRepositoryName);
-    Assertions.assertEquals(expectedRepoName, result);
-
-    defaultRepositoryName = "market/utils/adobe-acrobat-connector";
-    result = versionService.getRepoNameFromMarketRepo(defaultRepositoryName);
-    Assertions.assertEquals(expectedRepoName, result);
-
-    defaultRepositoryName = "adobe-acrobat-connector";
-    result = versionService.getRepoNameFromMarketRepo(defaultRepositoryName);
-    Assertions.assertEquals(expectedRepoName, result);
   }
 
   @Test
