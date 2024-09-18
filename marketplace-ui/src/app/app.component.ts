@@ -24,7 +24,7 @@ export class AppComponent {
   loadingService = inject(LoadingService);
   routingQueryParamService = inject(RoutingQueryParamService);
   route = inject(ActivatedRoute);
-  isMobileMenuCollapsed: boolean = true;
+  isMobileMenuCollapsed = true;
 
   constructor(private readonly router: Router) {}
 
