@@ -248,6 +248,17 @@ describe('ProductDetailComponent', () => {
     expect(component.getContent('description')).toBeFalse();
   });
 
+  it('should return false for any tab when detail content is undefined or null', () => {
+    component.productModuleContent.set(null as any as ProductModuleContent);
+    expect(component.getContent('description')).toBeFalse();
+    component.productModuleContent.set(
+      undefined as any as ProductModuleContent
+    );
+    expect(component.getContent('description')).toBeFalse();
+    component.productModuleContent.set({} as any as ProductModuleContent);
+    expect(component.getContent('description')).toBeFalse();
+  });
+
   it('should return false for description when in EN language it is an empty string', () => {
     const mockContent: ProductModuleContent = {
       ...MOCK_PRODUCT_MODULE_CONTENT,
