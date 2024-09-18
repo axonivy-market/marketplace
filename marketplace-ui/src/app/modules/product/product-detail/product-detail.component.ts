@@ -1,4 +1,4 @@
-import { CommonModule } from '@angular/common';
+import { CommonModule, NgOptimizedImage } from '@angular/common';
 import {
   Component,
   ElementRef,
@@ -72,7 +72,8 @@ const DEFAULT_ACTIVE_TAB = 'description';
     ProductInstallationCountActionComponent,
     ProductTypeIconPipe,
     MissingReadmeContentPipe,
-    CommonDropdownComponent
+    CommonDropdownComponent,
+    NgOptimizedImage
   ],
   providers: [ProductService, MarkdownService],
   templateUrl: './product-detail.component.html',
@@ -113,7 +114,7 @@ export class ProductDetailComponent {
   showPopup!: boolean;
   isMobileMode = signal<boolean>(false);
   installationCount = 0;
-
+  logoUrl = '';
   @HostListener('window:popstate', ['$event'])
   onPopState() {
     this.activeTab = window.location.hash.split('#tab-')[1];
@@ -147,12 +148,17 @@ export class ProductDetailComponent {
         this.installationCount = productDetail.installationCount;
         this.handleProductContentVersion();
         this.updateProductDetailActionType(productDetail);
+        this.logoUrl = productDetail.logoUrl;
       });
 
       this.productFeedbackService.initFeedbacks();
       this.productStarRatingService.fetchData();
     }
     this.updateDropdownSelection();
+  }
+
+  onErrorLogo() {
+    this.logoUrl = '/assets/images/misc/axonivy-logo-round.png';
   }
 
   handleProductContentVersion() {

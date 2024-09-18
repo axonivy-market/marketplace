@@ -20,4 +20,13 @@ export class ProductCardComponent {
   isShowInRESTClientEditor = inject(ProductComponent).isRESTClient();
 
   @Input() product!: Product;
+  logoUrl = "";
+
+  ngOnInit(): void {
+    this.logoUrl = this.product.logoUrl;
+  }
+
+  onErrorLogo() {
+    this.logoUrl = '/assets/images/misc/axonivy-logo-round.png';
+  }
 }

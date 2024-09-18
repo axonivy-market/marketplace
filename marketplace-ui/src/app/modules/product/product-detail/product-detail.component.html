@@ -22,12 +22,12 @@
               <img
                 [lang]="languageService.selectedLanguage()"
                 class="logo__image"
-                [src]="productDetail().logoUrl"
-                onerror="this.src='/assets/images/misc/axonivy-logo-round.png'"
+                [ngSrc]="logoUrl"
+                (error)="onErrorLogo()"
                 [alt]="
                   productDetail().names
                     | multilingualism: languageService.selectedLanguage()
-                " />
+                "/>
             </div>
             <h1
               [lang]="languageService.selectedLanguage()"
