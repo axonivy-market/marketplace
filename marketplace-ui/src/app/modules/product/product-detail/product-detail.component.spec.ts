@@ -255,7 +255,7 @@ describe('ProductDetailComponent', () => {
       undefined as any as ProductModuleContent
     );
     expect(component.getContent('description')).toBeFalse();
-component.productModuleContent.set({} as any as ProductModuleContent);
+    component.productModuleContent.set({} as any as ProductModuleContent);
     expect(component.getContent('description')).toBeFalse();
   });
 
