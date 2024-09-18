@@ -207,7 +207,8 @@ export class ProductDetailComponent {
 
   getContent(value: string): boolean {
     const content = this.productModuleContent();
-    if (content == undefined || Object.keys(content).length === 0) {
+
+    if (!content || Object.keys(content).length === 0) {
       return false;
     }
 
