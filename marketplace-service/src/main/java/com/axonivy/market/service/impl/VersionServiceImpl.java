@@ -88,7 +88,6 @@ public class VersionServiceImpl implements VersionService {
 
     artifactsFromMeta = getProductMetaArtifacts(productId);
     List<String> versionsToDisplay = VersionUtils.getVersionsToDisplay(getPersistedVersions(productId), isShowDevVersion, designerVersion);
-//    proceedDataCache = mavenArtifactVersionRepository.findById(productId).orElse(new MavenArtifactVersion(productId));
     metaProductArtifact = artifactsFromMeta.stream()
         .filter(artifact -> artifact.getArtifactId().endsWith(MavenConstants.PRODUCT_ARTIFACT_POSTFIX)).findAny()
         .orElse(new MavenArtifact());
