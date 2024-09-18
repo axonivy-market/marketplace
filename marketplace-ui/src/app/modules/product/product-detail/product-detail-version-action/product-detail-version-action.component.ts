@@ -217,7 +217,7 @@ export class ProductDetailVersionActionComponent implements AfterViewInit {
     this.artifacts.set([]);
   }
 
-  downloadArtifact() {    
+  downloadArtifact() {
     this.onUpdateInstallationCount();
     const newTab = window.open(this.selectedArtifact, '_blank');
     if (newTab) {
