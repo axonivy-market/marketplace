@@ -7,7 +7,7 @@
       width="70"
       height="70"
       [ngSrc]="logoUrl"
-      (error)="onErrorLogo()"
+      (error)="onLogoError()"
       [alt]="
         product.names | multilingualism: languageService.selectedLanguage()
       "

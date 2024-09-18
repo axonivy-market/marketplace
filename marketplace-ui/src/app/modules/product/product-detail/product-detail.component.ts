@@ -19,6 +19,7 @@ import { LanguageService } from '../../../core/services/language/language.servic
 import { ThemeService } from '../../../core/services/theme/theme.service';
 import { CommonDropdownComponent } from '../../../shared/components/common-dropdown/common-dropdown.component';
 import {
+  ERROR_IMAGE_URL,
   PRODUCT_DETAIL_TABS,
   VERSION
 } from '../../../shared/constants/common.constant';
@@ -114,7 +115,7 @@ export class ProductDetailComponent {
   showPopup!: boolean;
   isMobileMode = signal<boolean>(false);
   installationCount = 0;
-  logoUrl = '/assets/images/misc/axonivy-logo-round.png';
+  logoUrl = ERROR_IMAGE_URL;
   @HostListener('window:popstate', ['$event'])
   onPopState() {
     this.activeTab = window.location.hash.split('#tab-')[1];
@@ -157,8 +158,8 @@ export class ProductDetailComponent {
     this.updateDropdownSelection();
   }
 
-  onErrorLogo() {
-    this.logoUrl = '/assets/images/misc/axonivy-logo-round.png';
+  onLogoError() {
+    this.logoUrl = ERROR_IMAGE_URL;
   }
 
   handleProductContentVersion() {

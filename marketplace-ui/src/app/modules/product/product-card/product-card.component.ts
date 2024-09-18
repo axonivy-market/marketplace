@@ -6,6 +6,7 @@ import { ThemeService } from '../../../core/services/theme/theme.service';
 import { Product } from '../../../shared/models/product.model';
 import { MultilingualismPipe } from '../../../shared/pipes/multilingualism.pipe';
 import { ProductComponent } from '../product.component';
+import { ERROR_IMAGE_URL } from '../../../shared/constants/common.constant';
 
 @Component({
   selector: 'app-product-card',
@@ -20,13 +21,13 @@ export class ProductCardComponent {
   isShowInRESTClientEditor = inject(ProductComponent).isRESTClient();
 
   @Input() product!: Product;
-  logoUrl = '/assets/images/misc/axonivy-logo-round.png';
+  logoUrl = ERROR_IMAGE_URL;
 
   ngOnInit(): void {
     this.logoUrl = this.product.logoUrl;
   }
 
-  onErrorLogo() {
-    this.logoUrl = '/assets/images/misc/axonivy-logo-round.png';
+  onLogoError() {
+    this.logoUrl = ERROR_IMAGE_URL;
   }
 }
