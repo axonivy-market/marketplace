@@ -61,7 +61,6 @@ public class VersionServiceImpl implements VersionService {
   private final ProductModuleContentRepository productModuleContentRepository;
   private Map<String, List<ArchivedArtifact>> archivedArtifactsMap;
   private List<MavenArtifact> artifactsFromMeta;
-  private MavenArtifactVersion proceedDataCache;
   private MavenArtifact metaProductArtifact;
   private final LatestVersionComparator latestVersionComparator = new LatestVersionComparator();
   private final ObjectMapper mapper = new ObjectMapper();
@@ -79,7 +78,6 @@ public class VersionServiceImpl implements VersionService {
   private void resetData() {
     archivedArtifactsMap = new HashMap<>();
     artifactsFromMeta = Collections.emptyList();
-    proceedDataCache = null;
     metaProductArtifact = null;
   }
 
@@ -90,17 +88,13 @@ public class VersionServiceImpl implements VersionService {
 
     artifactsFromMeta = getProductMetaArtifacts(productId);
     List<String> versionsToDisplay = VersionUtils.getVersionsToDisplay(getPersistedVersions(productId), isShowDevVersion, designerVersion);
-    proceedDataCache = mavenArtifactVersionRepository.findById(productId).orElse(new MavenArtifactVersion(productId));
+//    proceedDataCache = mavenArtifactVersionRepository.findById(productId).orElse(new MavenArtifactVersion(productId));
     metaProductArtifact = artifactsFromMeta.stream()
         .filter(artifact -> artifact.getArtifactId().endsWith(MavenConstants.PRODUCT_ARTIFACT_POSTFIX)).findAny()
         .orElse(new MavenArtifact());
 
     sanitizeMetaArtifactBeforeHandle();
-
-    boolean isNewVersionDetected = handleArtifactForVersionToDisplay(versionsToDisplay, results, productId);
-    if (isNewVersionDetected) {
-      mavenArtifactVersionRepository.save(proceedDataCache);
-    }
+    handleArtifactForVersionToDisplay(versionsToDisplay, results, productId);
     return results;
   }
 
@@ -134,8 +128,9 @@ public class VersionServiceImpl implements VersionService {
     return versionAndUrlList;
   }
 
-  public boolean handleArtifactForVersionToDisplay(List<String> versionsToDisplay,
+  public void handleArtifactForVersionToDisplay(List<String> versionsToDisplay,
                                                    List<MavenArtifactVersionModel> result, String productId) {
+    MavenArtifactVersion proceedDataCache = mavenArtifactVersionRepository.findById(productId).orElse(new MavenArtifactVersion(productId));
     boolean isNewVersionDetected = false;
     for (String version : versionsToDisplay) {
       List<MavenArtifactModel> artifactsInVersion = convertMavenArtifactsToModels(artifactsFromMeta, version);
@@ -143,15 +138,17 @@ public class VersionServiceImpl implements VersionService {
           .get(version);
       if (productArtifactModels == null) {
         isNewVersionDetected = true;
-        productArtifactModels = updateArtifactsInVersionWithProductArtifact(version, productId);
+        productArtifactModels = updateArtifactsInVersionWithProductArtifact(version, productId, proceedDataCache);
       }
       artifactsInVersion.addAll(productArtifactModels);
       result.add(new MavenArtifactVersionModel(version, artifactsInVersion.stream().distinct().toList()));
     }
-    return isNewVersionDetected;
+    if (isNewVersionDetected) {
+      mavenArtifactVersionRepository.save(proceedDataCache);
+    }
   }
 
-  public List<MavenArtifactModel> updateArtifactsInVersionWithProductArtifact(String version, String productId) {
+  public List<MavenArtifactModel> updateArtifactsInVersionWithProductArtifact(String version, String productId, MavenArtifactVersion proceedDataCache) {
     List<MavenArtifactModel> productArtifactModels = convertMavenArtifactsToModels(getMavenArtifactsFromProductJsonByVersion(version, productId),
         version);
     proceedDataCache.getProductArtifactWithVersionReleased().put(version, productArtifactModels);

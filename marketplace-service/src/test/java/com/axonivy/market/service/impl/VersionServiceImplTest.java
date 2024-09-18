@@ -39,10 +39,8 @@ import static org.mockito.Mockito.verify;
 
 @ExtendWith(MockitoExtension.class)
 class VersionServiceImplTest {
-  private String repoName;
   private Map<String, List<ArchivedArtifact>> archivedArtifactsMap;
   private List<MavenArtifact> artifactsFromMeta;
-  private MavenArtifactVersion proceedDataCache;
   private MavenArtifact metaProductArtifact;
   @Spy
   @InjectMocks
@@ -68,11 +66,8 @@ class VersionServiceImplTest {
     archivedArtifactsMap = new HashMap<>();
     artifactsFromMeta = new ArrayList<>();
     metaProductArtifact = new MavenArtifact();
-    proceedDataCache = new MavenArtifactVersion();
-    repoName = StringUtils.EMPTY;
     ReflectionTestUtils.setField(versionService, "archivedArtifactsMap", archivedArtifactsMap);
     ReflectionTestUtils.setField(versionService, "artifactsFromMeta", artifactsFromMeta);
-    ReflectionTestUtils.setField(versionService, "proceedDataCache", proceedDataCache);
     ReflectionTestUtils.setField(versionService, "metaProductArtifact", metaProductArtifact);
   }
 
@@ -113,7 +108,7 @@ class VersionServiceImplTest {
     String newVersionDetected = "10.0.10";
     List<MavenArtifactVersionModel> result = new ArrayList<>();
     List<String> versionsToDisplay = List.of(newVersionDetected);
-    Assertions.assertTrue(versionService.handleArtifactForVersionToDisplay(versionsToDisplay, result, "adobe-acrobat-connector"));
+    versionService.handleArtifactForVersionToDisplay(versionsToDisplay, result, "adobe-acrobat-connector");
     Assertions.assertEquals(1, result.size());
     Assertions.assertEquals(newVersionDetected, result.get(0).getVersion());
     Assertions.assertEquals(0, result.get(0).getArtifactsByVersion().size());
@@ -123,7 +118,7 @@ class VersionServiceImplTest {
     artifactsInVersion.add(new MavenArtifactModel());
     when(versionService.convertMavenArtifactsToModels(Mockito.anyList(), Mockito.anyString())).thenReturn(
         artifactsInVersion);
-    Assertions.assertFalse(versionService.handleArtifactForVersionToDisplay(versionsToDisplay, result, "adobe-acrobat-connector"));
+    versionService.handleArtifactForVersionToDisplay(versionsToDisplay, result, "adobe-acrobat-connector");
     Assertions.assertEquals(1, result.size());
     Assertions.assertEquals(1, result.get(0).getArtifactsByVersion().size());
   }
@@ -148,10 +143,11 @@ class VersionServiceImplTest {
     when(versionService.getMavenArtifactsFromProductJsonByVersion(Mockito.anyString(), Mockito.eq("adobe-acrobat-connector"))).thenReturn(List.of(new MavenArtifact()));
     when(versionService.convertMavenArtifactsToModels(Mockito.anyList(), Mockito.anyString())).thenReturn(
         mockMavenArtifactModels);
+    MavenArtifactVersion mockMavenArtifactVersion = new MavenArtifactVersion();
     Assertions.assertEquals(mockMavenArtifactModels,
-        versionService.updateArtifactsInVersionWithProductArtifact(version, "adobe-acrobat-connector"));
-    Assertions.assertEquals(1, proceedDataCache.getProductArtifactWithVersionReleased().size());
-    Assertions.assertEquals(1, proceedDataCache.getProductArtifactWithVersionReleased().size());
+        versionService.updateArtifactsInVersionWithProductArtifact(version, "adobe-acrobat-connector", mockMavenArtifactVersion));
+    Assertions.assertEquals(1, mockMavenArtifactVersion.getProductArtifactWithVersionReleased().size());
+    Assertions.assertEquals(1, mockMavenArtifactVersion.getProductArtifactWithVersionReleased().size());
   }
 
   @Test
