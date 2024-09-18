@@ -114,7 +114,7 @@ export class ProductDetailComponent {
   showPopup!: boolean;
   isMobileMode = signal<boolean>(false);
   installationCount = 0;
-  logoUrl = '';
+  logoUrl ='/assets/images/misc/axonivy-logo-round.png'
   @HostListener('window:popstate', ['$event'])
   onPopState() {
     this.activeTab = window.location.hash.split('#tab-')[1];
