@@ -88,12 +88,12 @@ class VersionServiceImplTest {
     String productId = "adobe-acrobat-sign-connector";
     String targetVersion = "10.0.10";
     setUpArtifactFromMeta();
-    when(versionService.getProductMetaArtifacts(Mockito.anyString())).thenReturn(artifactsFromMeta);
+    when(versionService.getArtifactsFromMeta(Mockito.anyString())).thenReturn(artifactsFromMeta);
     when(productModuleContentRepository.findTagsByProductId(productId)).thenReturn(List.of("v10.0.10"));
     when(mavenArtifactVersionRepository.findById(Mockito.anyString())).thenReturn(Optional.empty());
     ArrayList<MavenArtifactModel> artifactsInVersion = new ArrayList<>();
     artifactsInVersion.add(new MavenArtifactModel());
-    when(versionService.convertMavenArtifactsToModels(Mockito.anyList(), Mockito.anyString())).thenReturn(
+    when(versionService.convertArtifactsToModels(Mockito.anyList(), Mockito.anyString())).thenReturn(
         artifactsInVersion);
     Assertions.assertEquals(1, versionService.getArtifactsAndVersionToDisplay(productId, false, targetVersion).size());
 
@@ -116,7 +116,7 @@ class VersionServiceImplTest {
     result = new ArrayList<>();
     ArrayList<MavenArtifactModel> artifactsInVersion = new ArrayList<>();
     artifactsInVersion.add(new MavenArtifactModel());
-    when(versionService.convertMavenArtifactsToModels(Mockito.anyList(), Mockito.anyString())).thenReturn(
+    when(versionService.convertArtifactsToModels(Mockito.anyList(), Mockito.anyString())).thenReturn(
         artifactsInVersion);
     versionService.handleArtifactForVersionToDisplay(versionsToDisplay, result, "adobe-acrobat-connector");
     Assertions.assertEquals(1, result.size());
@@ -124,14 +124,14 @@ class VersionServiceImplTest {
   }
 
   @Test
-  void testGetProductMetaArtifacts() {
+  void testGetArtifactsFromMeta() {
     Product product = new Product();
     MavenArtifact artifact1 = new MavenArtifact();
     MavenArtifact artifact2 = new MavenArtifact();
     List<MavenArtifact> artifacts = List.of(artifact1, artifact2);
     product.setArtifacts(artifacts);
     when(productRepository.findById(Mockito.anyString())).thenReturn(Optional.of(product));
-    List<MavenArtifact> result = versionService.getProductMetaArtifacts("portal");
+    List<MavenArtifact> result = versionService.getArtifactsFromMeta("portal");
     Assertions.assertEquals(artifacts, result);
   }
 
@@ -141,7 +141,7 @@ class VersionServiceImplTest {
     MavenArtifactModel artifactModel = new MavenArtifactModel();
     List<MavenArtifactModel> mockMavenArtifactModels = List.of(artifactModel);
     when(versionService.getMavenArtifactsFromProductJsonByVersion(Mockito.anyString(), Mockito.eq("adobe-acrobat-connector"))).thenReturn(List.of(new MavenArtifact()));
-    when(versionService.convertMavenArtifactsToModels(Mockito.anyList(), Mockito.anyString())).thenReturn(
+    when(versionService.convertArtifactsToModels(Mockito.anyList(), Mockito.anyString())).thenReturn(
         mockMavenArtifactModels);
     MavenArtifactVersion mockMavenArtifactVersion = new MavenArtifactVersion();
     Assertions.assertEquals(mockMavenArtifactModels,
@@ -151,7 +151,7 @@ class VersionServiceImplTest {
   }
 
   @Test
-  void testSanitizeMetaArtifactBeforeHandle() {
+  void testGetArchivedArtifactMapFromProduct() {
     setUpArtifactFromMeta();
     String groupId = "com.axonivy.connector.adobe.acrobat.sign";
     String archivedArtifactId1 = "adobe-acrobat-sign-connector";
@@ -160,7 +160,7 @@ class VersionServiceImplTest {
     ArchivedArtifact archivedArtifact2 = new ArchivedArtifact("10.0.20", groupId, archivedArtifactId2);
     artifactsFromMeta.get(1).setArchivedArtifacts(List.of(archivedArtifact2, archivedArtifact1));
 
-    versionService.sanitizeMetaArtifactBeforeHandle();
+//    versionService.sanitizeMetaArtifactBeforeHandle();
     String artifactId = "adobe-acrobat-sign-connector";
 
     Assertions.assertEquals(1, artifactsFromMeta.size());
@@ -230,19 +230,19 @@ class VersionServiceImplTest {
   }
 
   @Test
-  void testConvertMavenArtifactsToModels() {
+  void testConvertArtifactsToModels() {
     // Assert case param is empty
-    List<MavenArtifactModel> result = versionService.convertMavenArtifactsToModels(Collections.emptyList(), "10.0.21");
+    List<MavenArtifactModel> result = versionService.convertArtifactsToModels(Collections.emptyList(), "10.0.21");
     Assertions.assertEquals(Collections.emptyList(), result);
 
     // Assert case param is null
-    result = versionService.convertMavenArtifactsToModels(null, "10.0.21");
+    result = versionService.convertArtifactsToModels(null, "10.0.21");
     Assertions.assertEquals(Collections.emptyList(), result);
 
     // Assert case param is a list with existed element
     MavenArtifact targetArtifact = new MavenArtifact(null, null, "com.axonivy.connector.adobe.acrobat.sign",
         "adobe-acrobat-sign-connector", null, null, null, null);
-    result = versionService.convertMavenArtifactsToModels(List.of(targetArtifact), "10.0.21");
+    result = versionService.convertArtifactsToModels(List.of(targetArtifact), "10.0.21");
     Assertions.assertEquals(1, result.size());
   }
 
