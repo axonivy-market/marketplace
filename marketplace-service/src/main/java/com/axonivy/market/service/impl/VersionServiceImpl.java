@@ -48,6 +48,7 @@ import java.util.Set;
 import static com.axonivy.market.constants.ProductJsonConstants.NAME;
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
+
 @Log4j2
 @Service
 @Getter
@@ -96,7 +97,8 @@ public class VersionServiceImpl implements VersionService {
 
     this.productId = productId;
     artifactsFromMeta = getProductMetaArtifacts(productId);
-    List<String> versionsToDisplay = VersionUtils.getVersionsToDisplay(getVersionsFromMavenArtifacts(), isShowDevVersion, designerVersion);
+    List<String> versionsToDisplay = VersionUtils.getVersionsToDisplay(getVersionsFromMavenArtifacts(),
+        isShowDevVersion, designerVersion);
     proceedDataCache = mavenArtifactVersionRepository.findById(productId).orElse(new MavenArtifactVersion(productId));
     metaProductArtifact = artifactsFromMeta.stream()
         .filter(artifact -> artifact.getArtifactId().endsWith(MavenConstants.PRODUCT_ARTIFACT_POSTFIX)).findAny()
@@ -112,17 +114,18 @@ public class VersionServiceImpl implements VersionService {
   }
 
   @Override
-  public Map<String, Object> getProductJsonContentByIdAndVersion(String productId, String version){
+  public Map<String, Object> getProductJsonContentByIdAndVersion(String productId, String version) {
     Map<String, Object> result = new HashMap<>();
     try {
-      ProductJsonContent productJsonContent = productJsonContentRepository.findByProductIdAndVersion(productId, version);
+      ProductJsonContent productJsonContent = productJsonContentRepository.findByProductIdAndVersion(productId,
+          version);
       if (ObjectUtils.isEmpty(productJsonContent)) {
         return new HashMap<>();
       }
       result = mapper.readValue(productJsonContent.getContent(), Map.class);
       result.computeIfAbsent(NAME, k -> productJsonContent.getName());
 
-    } catch (JsonProcessingException jsonProcessingException){
+    } catch (JsonProcessingException jsonProcessingException) {
       log.error(jsonProcessingException.getMessage());
     }
     return result;
@@ -249,7 +252,9 @@ public class VersionServiceImpl implements VersionService {
 
   public String buildProductJsonFilePath() {
     String pathToProductFolderFromTagContent = metaProductArtifact.getArtifactId();
-    GitHubUtils.getNonStandardProductFilePath(productId);
+    if (NonStandardProduct.DEFAULT != NonStandardProduct.findById(productId)) {
+      pathToProductFolderFromTagContent = GitHubUtils.getNonStandardProductFilePath(productId);
+    }
     productJsonFilePath = String.format(GitHubConstants.PRODUCT_JSON_FILE_PATH_FORMAT,
         pathToProductFolderFromTagContent);
     return productJsonFilePath;
