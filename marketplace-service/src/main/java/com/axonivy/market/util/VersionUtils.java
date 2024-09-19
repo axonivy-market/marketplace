@@ -1,6 +1,7 @@
 package com.axonivy.market.util;
 
 import com.axonivy.market.comparator.LatestVersionComparator;
+import com.axonivy.market.comparator.MavenVersionComparator;
 import com.axonivy.market.constants.CommonConstants;
 import com.axonivy.market.constants.GitHubConstants;
 import com.axonivy.market.constants.MavenConstants;
@@ -37,8 +38,7 @@ public class VersionUtils {
     public static String getBestMatchVersion(List<String> versions, String designerVersion) {
         String bestMatchVersion = versions.stream().filter(version -> StringUtils.equals(version, designerVersion)).findAny().orElse(null);
         if(StringUtils.isBlank(bestMatchVersion)){
-            LatestVersionComparator comparator = new LatestVersionComparator();
-            bestMatchVersion = versions.stream().filter(version -> comparator.compare(version, designerVersion) > 0 && isReleasedVersion(version)).findAny().orElse(null);
+            bestMatchVersion = versions.stream().filter(version -> MavenVersionComparator.compare(version, designerVersion) > 0 && isReleasedVersion(version)).findAny().orElse(null);
         }
         if (StringUtils.isBlank(bestMatchVersion)) {
             bestMatchVersion = versions.stream().filter(VersionUtils::isReleasedVersion).findAny().orElse(CollectionUtils.firstElement(versions));

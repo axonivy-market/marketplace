@@ -5,7 +5,6 @@ import com.axonivy.market.constants.GitHubConstants;
 import com.axonivy.market.constants.MavenConstants;
 import com.axonivy.market.constants.ProductJsonConstants;
 import com.axonivy.market.constants.ReadmeConstants;
-import com.axonivy.market.entity.Image;
 import com.axonivy.market.entity.Product;
 import com.axonivy.market.entity.ProductModuleContent;
 import com.axonivy.market.entity.ProductJsonContent;
@@ -33,7 +32,6 @@ import org.kohsuke.github.GHTag;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
-import javax.swing.text.html.Option;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;

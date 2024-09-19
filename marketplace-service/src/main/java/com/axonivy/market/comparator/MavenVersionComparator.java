@@ -46,7 +46,7 @@ public class MavenVersionComparator {
         return highestVersion;
     }
 
-    private static int compare(String version, String otherVersion) {
+    public static int compare(String version, String otherVersion) {
         version = stripLeadingChars(version);
         otherVersion = stripLeadingChars(otherVersion);
         String[] versionParts = createMainAndQualifierArray(version);

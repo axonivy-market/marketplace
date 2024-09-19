@@ -1,7 +1,7 @@
 package com.axonivy.market.service.impl;
 
 import com.axonivy.market.comparator.ArchivedArtifactsComparator;
-import com.axonivy.market.comparator.LatestVersionComparator;
+import com.axonivy.market.comparator.MavenVersionComparator;
 import com.axonivy.market.constants.CommonConstants;
 import com.axonivy.market.constants.MavenConstants;
 import com.axonivy.market.controller.ProductDetailsController;
@@ -58,7 +58,6 @@ public class VersionServiceImpl implements VersionService {
   private final ProductRepository productRepo;
   private final ProductJsonContentRepository productJsonRepo;
   private final ProductModuleContentRepository productContentRepo;
-  private final LatestVersionComparator latestVersionComparator = new LatestVersionComparator();
   private final ObjectMapper mapper = new ObjectMapper();
 
   public VersionServiceImpl(GHAxonIvyProductRepoService gitHubService, MavenArtifactVersionRepository mavenArtifactVersionRepository, ProductRepository productRepo, ProductJsonContentRepository productJsonRepo, ProductModuleContentRepository productContentRepo) {
@@ -223,7 +222,7 @@ public class VersionServiceImpl implements VersionService {
       return null;
     }
     for (ArchivedArtifact archivedArtifact : archivedArtifacts) {
-      if (latestVersionComparator.compare(archivedArtifact.getLastVersion(), version) <= 0) {
+      if (MavenVersionComparator.compare(archivedArtifact.getLastVersion(), version) <= 0) {
         return archivedArtifact;
       }
     }
