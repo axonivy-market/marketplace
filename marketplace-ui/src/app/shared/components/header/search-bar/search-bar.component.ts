@@ -18,6 +18,7 @@ import { LanguageService } from '../../../../core/services/language/language.ser
   styleUrl: './search-bar.component.scss'
 })
 export class SearchBarComponent {
+  private readonly searchUrl = 'https://developer.axonivy.com/search';
   isSearchBarDisplayed = signal(false);
 
   translateService = inject(TranslateService);
@@ -37,5 +38,9 @@ export class SearchBarComponent {
 
   onHideSearch() {
     this.isSearchBarDisplayed.set(false);
+  }
+
+  onClickSearchInput() {
+    window.location.href = this.searchUrl;
   }
 }

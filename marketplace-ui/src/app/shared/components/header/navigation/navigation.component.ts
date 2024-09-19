@@ -13,6 +13,7 @@ import { LanguageService } from '../../../../core/services/language/language.ser
   styleUrl: './navigation.component.scss'
 })
 export class NavigationComponent {
+  private readonly searchUrl = 'https://developer.axonivy.com/search';
   @Input() navItems: NavItem[] = NAV_ITEMS;
 
   translateService = inject(TranslateService);
@@ -31,5 +32,9 @@ export class NavigationComponent {
   checkMediaSize() {
     const mediaQuery = window.matchMedia('(max-width: 992px)');
     this.isMobileMode.set(mediaQuery.matches);
+  }
+
+  onClickSearchInput() {
+    window.location.href = this.searchUrl;
   }
 }
