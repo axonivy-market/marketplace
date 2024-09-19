@@ -222,7 +222,7 @@ public class VersionServiceImpl implements VersionService {
       return null;
     }
     for (ArchivedArtifact archivedArtifact : archivedArtifacts) {
-      if (MavenVersionComparator.compare(archivedArtifact.getLastVersion(), version) <= 0) {
+      if (MavenVersionComparator.compare(archivedArtifact.getLastVersion(), version) >= 0) {
         return archivedArtifact;
       }
     }
