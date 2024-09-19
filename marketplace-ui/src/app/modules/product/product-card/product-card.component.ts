@@ -6,7 +6,7 @@ import { ThemeService } from '../../../core/services/theme/theme.service';
 import { Product } from '../../../shared/models/product.model';
 import { MultilingualismPipe } from '../../../shared/pipes/multilingualism.pipe';
 import { ProductComponent } from '../product.component';
-import { ERROR_IMAGE_URL } from '../../../shared/constants/common.constant';
+import { DEFAULT_IMAGE_URL } from '../../../shared/constants/common.constant';
 
 @Component({
   selector: 'app-product-card',
@@ -21,13 +21,13 @@ export class ProductCardComponent {
   isShowInRESTClientEditor = inject(ProductComponent).isRESTClient();
 
   @Input() product!: Product;
-  logoUrl = ERROR_IMAGE_URL;
+  logoUrl = DEFAULT_IMAGE_URL;
 
   ngOnInit(): void {
     this.logoUrl = this.product.logoUrl;
   }
 
   onLogoError() {
-    this.logoUrl = ERROR_IMAGE_URL;
+    this.logoUrl = DEFAULT_IMAGE_URL;
   }
 }
