@@ -20,6 +20,7 @@ import com.axonivy.market.model.VersionAndUrlModel;
 import com.axonivy.market.repository.MavenArtifactVersionRepository;
 import com.axonivy.market.repository.ProductJsonContentRepository;
 import com.axonivy.market.repository.ProductRepository;
+import com.axonivy.market.service.FileDownloadService;
 import com.axonivy.market.service.VersionService;
 import com.axonivy.market.util.VersionUtils;
 import com.axonivy.market.util.XmlReaderUtils;
@@ -55,6 +56,7 @@ import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 public class VersionServiceImpl implements VersionService {
 
   private final GHAxonIvyProductRepoService gitHubService;
+  private final FileDownloadService fileDownloadService;
   private final MavenArtifactVersionRepository mavenArtifactVersionRepository;
   private final ProductRepository productRepository;
   private final ProductJsonContentRepository productJsonContentRepository;
@@ -70,10 +72,11 @@ public class VersionServiceImpl implements VersionService {
   private String productId;
   private final ObjectMapper mapper = new ObjectMapper();
 
-  public VersionServiceImpl(GHAxonIvyProductRepoService gitHubService,
+  public VersionServiceImpl(GHAxonIvyProductRepoService gitHubService, FileDownloadService fileDownloadService,
       MavenArtifactVersionRepository mavenArtifactVersionRepository, ProductRepository productRepository,
       ProductJsonContentRepository productJsonContentRepository) {
     this.gitHubService = gitHubService;
+    this.fileDownloadService = fileDownloadService;
     this.mavenArtifactVersionRepository = mavenArtifactVersionRepository;
     this.productRepository = productRepository;
 
@@ -109,8 +112,29 @@ public class VersionServiceImpl implements VersionService {
     boolean isNewVersionDetected = handleArtifactForVersionToDisplay(versionsToDisplay, results);
     if (isNewVersionDetected) {
       mavenArtifactVersionRepository.save(proceedDataCache);
+      // Handle doc for Portal
+      if (productId.equals("portal")) {
+        handleDocumentForPortalGuide(results);
+      }
     }
     return results;
+  }
+
+  private void handleDocumentForPortalGuide(List<MavenArtifactVersionModel> mavenArtifactVersionModels) {
+    if (ObjectUtils.isEmpty(mavenArtifactVersionModels)) {
+      return;
+    }
+    for (var artifactVersionModel : mavenArtifactVersionModels) {
+      for (var version : artifactVersionModel.getArtifactsByVersion()) {
+        if (version.getDownloadUrl().contains("portal-guide")) {
+          try {
+            fileDownloadService.downloadAndUnzipFile(version.getDownloadUrl(), false);
+          } catch (Exception e) {
+            log.warn("Cannot download portal-guide for {}", version.getDownloadUrl());
+          }
+        }
+      }
+    }
   }
 
   @Override

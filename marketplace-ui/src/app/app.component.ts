@@ -31,7 +31,7 @@ export class AppComponent {
   ngOnInit(): void {
     this.router.events.subscribe((event: Event) => {
       if (event instanceof NavigationError) {
-        this.router.navigate([ERROR_PAGE_PATH]);
+        this.router.navigate([ERROR_PAGE_PATH + '/' + event.id]);
       }
     });
 
