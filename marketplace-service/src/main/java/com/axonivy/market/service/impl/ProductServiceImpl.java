@@ -376,6 +376,9 @@ public class ProductServiceImpl implements ProductService {
     log.warn("**ProductService: synchronize products from scratch based on the Market repo");
     var gitHubContentMap = axonIvyMarketRepoService.fetchAllMarketItems();
     for (Map.Entry<String, List<GHContent>> ghContentEntity : gitHubContentMap.entrySet()) {
+      if(!ghContentEntity.getKey().equals("market/connector/skribble-connector")){
+        continue;
+      }
       Product product = new Product();
       //update the meta.json first
       ghContentEntity.getValue()
