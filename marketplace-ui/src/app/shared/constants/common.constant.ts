@@ -206,4 +206,4 @@ export const ERROR_CODES = [
   INTERNAL_SERVER_ERROR_CODE
 ];
 
-export const ERROR_IMAGE_URL = '/assets/images/misc/axonivy-logo-round.png';
+export const DEFAULT_IMAGE_URL = '/assets/images/misc/axonivy-logo-round.png';
