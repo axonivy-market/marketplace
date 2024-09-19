@@ -19,8 +19,4 @@ export class FooterComponent {
   socialMediaLinks = SOCIAL_MEDIA_LINK;
   navItems: NavItem[] = NAV_ITEMS;
   ivyFooterLinks = IVY_FOOTER_LINKS;
-
-  onClickDownloadButton(){
-    window.location.href = 'https://developer.axonivy.com/download';
-  }
 }

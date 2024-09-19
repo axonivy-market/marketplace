@@ -36,8 +36,12 @@
   font-size: 16px;
 }
 
-.abc {
+.footer-text {
   text-wrap: balance;
+}
+
+::ng-deep .footer-text a {
+  color: var(--ivy-primary-bg);
 }
 
 .btn-secondary {

@@ -86,4 +86,12 @@ describe('FooterComponent', () => {
       expect(socialMediaLinkElement.href).toBe(SOCIAL_MEDIA_LINK[index].url);
     }
   });
+
+  it('should redirect to download URL when clicking download button', () => {
+    const downloadButton = fixture.debugElement.query(
+      By.css('.download-button')
+    ).nativeElement;
+
+    expect(downloadButton.href).toBe('https://developer.axonivy.com/download');
+  });
 });

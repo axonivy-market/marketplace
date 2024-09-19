@@ -12,13 +12,18 @@
           " alt="Axon Ivy" />
       </div>
       <div
-        [lang]="languageService.selectedLanguage()" class="abc text-secondary default-cursor"
+        [lang]="languageService.selectedLanguage()"
+        class="footer-text text-secondary default-cursor"
         [innerHtml]="'common.footer.newVersionsInfo' | translate"></div>
       <div class="button-container flex-row">
-        <button [lang]="languageService.selectedLanguage()" class="btn btn-primary border-0"
-          [ngClass]="themeService.isDarkMode() ? 'text-dark' : 'text-light'" (click)="onClickDownloadButton()">
-          {{ 'common.footer.download' | translate }}
-        </button>
+        <a class="download-button" href="https://developer.axonivy.com/download">
+          <button
+            [lang]="languageService.selectedLanguage()"
+            class="btn btn-primary border-0"
+            [ngClass]="themeService.isDarkMode() ? 'text-dark' : 'text-light'">
+            {{ 'common.footer.download' | translate }}
+          </button>
+        </a>
       </div>
     </div>
 
