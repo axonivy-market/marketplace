@@ -9,6 +9,7 @@ public class MongoDBConstants {
   public static final String PRODUCT_ID = "productId";
   public static final String DESIGNER_VERSION = "designerVersion";
   public static final String TAG = "tag";
+
   private MongoDBConstants() {
   }
 

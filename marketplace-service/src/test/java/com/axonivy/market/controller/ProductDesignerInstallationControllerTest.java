@@ -31,7 +31,7 @@ class ProductDesignerInstallationControllerTest {
     Mockito.when(productDesignerInstallationService.findByProductId(Mockito.anyString())).thenReturn(models);
     ResponseEntity<List<DesignerInstallation>> result =
         productDesignerInstallationController.getProductDesignerInstallationByProductId(
-        "portal");
+            "portal");
     Assertions.assertEquals(HttpStatus.OK, result.getStatusCode());
     Assertions.assertEquals(1, Objects.requireNonNull(result.getBody()).size());
     Assertions.assertEquals(DESIGNER_VERSION, result.getBody().get(0).getDesignerVersion());
