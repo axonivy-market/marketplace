@@ -1,26 +1,18 @@
 package com.axonivy.market.service.impl;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNull;
-import static org.junit.jupiter.api.Assertions.assertSame;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyBoolean;
-import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.reset;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
-
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-
+import com.axonivy.market.constants.CommonConstants;
+import com.axonivy.market.constants.ProductJsonConstants;
+import com.axonivy.market.constants.ReadmeConstants;
+import com.axonivy.market.entity.Image;
+import com.axonivy.market.entity.Product;
+import com.axonivy.market.entity.ProductJsonContent;
+import com.axonivy.market.enums.Language;
+import com.axonivy.market.github.model.MavenArtifact;
+import com.axonivy.market.github.service.GitHubService;
+import com.axonivy.market.github.service.impl.GHAxonIvyProductRepoServiceImpl;
+import com.axonivy.market.repository.ProductJsonContentRepository;
+import com.axonivy.market.service.ImageService;
+import com.fasterxml.jackson.databind.JsonNode;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -36,19 +28,18 @@ import org.mockito.Mockito;
 import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import com.axonivy.market.constants.CommonConstants;
-import com.axonivy.market.constants.ProductJsonConstants;
-import com.axonivy.market.constants.ReadmeConstants;
-import com.axonivy.market.entity.Image;
-import com.axonivy.market.entity.Product;
-import com.axonivy.market.entity.ProductJsonContent;
-import com.axonivy.market.enums.Language;
-import com.axonivy.market.github.model.MavenArtifact;
-import com.axonivy.market.github.service.GitHubService;
-import com.axonivy.market.github.service.impl.GHAxonIvyProductRepoServiceImpl;
-import com.axonivy.market.repository.ProductJsonContentRepository;
-import com.axonivy.market.service.ImageService;
-import com.fasterxml.jackson.databind.JsonNode;
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class GHAxonIvyProductRepoServiceImplTest {
@@ -216,9 +207,11 @@ class GHAxonIvyProductRepoServiceImplTest {
 
   @Test
   void testGetReadmeAndProductContentsFromTag() throws IOException {
-    String readmeContentWithImage = "#Product-name\n Test README\n## Demo\nDemo content\n## Setup\nSetup content (image.png)";
+    String readmeContentWithImage = "#Product-name\n Test README\n## Demo\nDemo content\n## Setup\nSetup content " +
+        "(image.png)";
     testGetReadmeAndProductContentsFromTagWithReadmeText(readmeContentWithImage);
-    String readmeContentWithoutHashProductName = "Test README\n## Demo\nDemo content\n## Setup\nSetup content (image.png)";
+    String readmeContentWithoutHashProductName = "Test README\n## Demo\nDemo content\n## Setup\nSetup content (image" +
+        ".png)";
     testGetReadmeAndProductContentsFromTagWithReadmeText(readmeContentWithoutHashProductName);
   }
 
@@ -228,7 +221,7 @@ class GHAxonIvyProductRepoServiceImplTest {
     getReadmeInputStream(readmeContentWithImage, mockContent);
     InputStream inputStream = getMockInputStream();
     Mockito.when(axonivyProductRepoServiceImpl.extractedContentStream(any())).thenReturn(inputStream);
-    Mockito.when(imageService.mappingImageFromGHContent(any(),any(),anyBoolean())).thenReturn(mockImage());
+    Mockito.when(imageService.mappingImageFromGHContent(any(), any(), anyBoolean())).thenReturn(mockImage());
     var result = axonivyProductRepoServiceImpl.getReadmeAndProductContentsFromTag(createMockProduct(), ghRepository,
         RELEASE_TAG);
 
@@ -254,12 +247,13 @@ class GHAxonIvyProductRepoServiceImplTest {
 
   @Test
   void testGetReadmeAndProductContentFromTag_ImageFromFolder() throws IOException {
-    String readmeContentWithImageFolder = "#Product-name\n Test README\n## Demo\nDemo content\n## Setup\nSetup content (./images/image.png)";
+    String readmeContentWithImageFolder = "#Product-name\n Test README\n## Demo\nDemo content\n## Setup\nSetup " +
+        "content (./images/image.png)";
 
     GHContent mockImageFile = mock(GHContent.class);
     when(mockImageFile.getName()).thenReturn(ReadmeConstants.IMAGES, IMAGE_NAME);
     when(mockImageFile.isDirectory()).thenReturn(true);
-    Mockito.when(imageService.mappingImageFromGHContent(any(),any() ,anyBoolean())).thenReturn(mockImage());
+    Mockito.when(imageService.mappingImageFromGHContent(any(), any(), anyBoolean())).thenReturn(mockImage());
     PagedIterable<GHContent> pagedIterable = Mockito.mock(String.valueOf(GHContent.class));
     when(mockImageFile.listDirectoryContent()).thenReturn(pagedIterable);
     when(pagedIterable.toList()).thenReturn(List.of(mockImageFile));
@@ -268,7 +262,8 @@ class GHAxonIvyProductRepoServiceImplTest {
         List.of(mockImageFile), readmeContentWithImageFolder);
 
     assertEquals(
-        "#Product-name\n Test README\n## Demo\nDemo content\n## Setup\nSetup content (imageId-66e2b14868f2f95b2f95549a)",
+        "#Product-name\n Test README\n## Demo\nDemo content\n## Setup\nSetup content " +
+            "(imageId-66e2b14868f2f95b2f95549a)",
         updatedReadme);
   }
 
@@ -312,7 +307,7 @@ class GHAxonIvyProductRepoServiceImplTest {
     return new ByteArrayInputStream(jsonContent.getBytes(StandardCharsets.UTF_8));
   }
 
-  private static String getMockProductJsonContent(){
+  private static String getMockProductJsonContent() {
     return """
         {
            "$schema": "https://json-schema.axonivy.com/market/10.0.0/product.json",
@@ -368,25 +363,25 @@ class GHAxonIvyProductRepoServiceImplTest {
 
   private static InputStream getMockInputStreamWithOutProjectAndDependency() {
     String jsonContent = """
-    {
-      "installers": [
         {
-          "data": {
-            "repositories": [
-              {
-                "url": "http://example.com/repo"
+          "installers": [
+            {
+              "data": {
+                "repositories": [
+                  {
+                    "url": "http://example.com/repo"
+                  }
+                ]
               }
-            ]
-          }
+            }
+          ]
         }
-      ]
-    }
-    """;
+        """;
     return new ByteArrayInputStream(jsonContent.getBytes(StandardCharsets.UTF_8));
   }
 
   private Product createMockProduct() {
-    Map<String, String> names = Map.of("en","docuware-connector-name");
+    Map<String, String> names = Map.of("en", "docuware-connector-name");
     Product product = new Product();
     product.setId("docuware-connector");
     product.setNames(names);
@@ -432,12 +427,14 @@ class GHAxonIvyProductRepoServiceImplTest {
   @Test
   void test_insertProductJsonContent() throws IOException {
     ArgumentCaptor<ProductJsonContent> argumentCaptor = ArgumentCaptor.forClass(ProductJsonContent.class);
-    String readmeContentWithImage = "#Product-name\n Test README\n## Demo\nDemo content\n## Setup\nSetup content (image.png)";
+    String readmeContentWithImage = "#Product-name\n Test README\n## Demo\nDemo content\n## Setup\nSetup content " +
+        "(image.png)";
     GHContent mockContent = createMockProductFolderWithProductJson();
     getReadmeInputStream(readmeContentWithImage, mockContent);
     InputStream inputStream = getMockInputStream();
     Mockito.when(axonivyProductRepoServiceImpl.extractedContentStream(any())).thenReturn(inputStream);
-    Mockito.when(axonivyProductRepoServiceImpl.extractProductJsonContent(any(),anyString())).thenReturn(getMockProductJsonContent());
+    Mockito.when(axonivyProductRepoServiceImpl.extractProductJsonContent(any(), anyString())).thenReturn(
+        getMockProductJsonContent());
 
     ProductJsonContent expectedProductJsonContent = new ProductJsonContent();
     expectedProductJsonContent.setProductId("docuware-connector");
@@ -449,9 +446,9 @@ class GHAxonIvyProductRepoServiceImplTest {
         RELEASE_TAG);
 
     verify(productJsonContentRepository).save(argumentCaptor.capture());
-    assertEquals("docuware-connector-name" , argumentCaptor.getValue().getName());
-    assertEquals("10.0.0",argumentCaptor.getValue().getVersion());
-    assertEquals("docuware-connector" , argumentCaptor.getValue().getProductId());
-    assertEquals(getMockProductJsonContent().replace("${version}", "10.0.0"),argumentCaptor.getValue().getContent());
+    assertEquals("docuware-connector-name", argumentCaptor.getValue().getName());
+    assertEquals("10.0.0", argumentCaptor.getValue().getVersion());
+    assertEquals("docuware-connector", argumentCaptor.getValue().getProductId());
+    assertEquals(getMockProductJsonContent().replace("${version}", "10.0.0"), argumentCaptor.getValue().getContent());
   }
 }

@@ -1,16 +1,8 @@
 package com.axonivy.market.service.impl;
 
-import static com.axonivy.market.constants.CommonConstants.SLASH;
-import static com.axonivy.market.constants.MetaConstants.META_FILE;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNull;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
-
-import java.io.IOException;
-import java.io.InputStream;
-
+import com.axonivy.market.entity.Image;
+import com.axonivy.market.entity.Product;
+import com.axonivy.market.repository.ImageRepository;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.kohsuke.github.GHContent;
@@ -20,9 +12,14 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import com.axonivy.market.entity.Image;
-import com.axonivy.market.entity.Product;
-import com.axonivy.market.repository.ImageRepository;
+import java.io.IOException;
+import java.io.InputStream;
+
+import static com.axonivy.market.constants.CommonConstants.SLASH;
+import static com.axonivy.market.constants.MetaConstants.META_FILE;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class ImageServiceImplTest {
@@ -44,7 +41,7 @@ class ImageServiceImplTest {
     InputStream inputStream = this.getClass().getResourceAsStream(SLASH.concat(META_FILE));
     when(content.read()).thenReturn(inputStream);
 
-    imageService.mappingImageFromGHContent(mockProduct(), content , true);
+    imageService.mappingImageFromGHContent(mockProduct(), content, true);
 
     Image expectedImage = new Image();
     expectedImage.setProductId("google-maps-connector");
@@ -53,14 +50,14 @@ class ImageServiceImplTest {
 
     verify(imageRepository).save(argumentCaptor.capture());
 
-    assertEquals(argumentCaptor.getValue().getProductId(),expectedImage.getProductId());
-    assertEquals(argumentCaptor.getValue().getSha(),expectedImage.getSha());
-    assertEquals(argumentCaptor.getValue().getImageUrl(),expectedImage.getImageUrl());
+    assertEquals(argumentCaptor.getValue().getProductId(), expectedImage.getProductId());
+    assertEquals(argumentCaptor.getValue().getSha(), expectedImage.getSha());
+    assertEquals(argumentCaptor.getValue().getImageUrl(), expectedImage.getImageUrl());
   }
 
   @Test
   void testMappingImageFromGHContent_noGhContent() {
-    var result = imageService.mappingImageFromGHContent(mockProduct(), null , true);
+    var result = imageService.mappingImageFromGHContent(mockProduct(), null, true);
     assertNull(result);
   }
 

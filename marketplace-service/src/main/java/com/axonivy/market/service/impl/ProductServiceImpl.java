@@ -155,8 +155,8 @@ public class ProductServiceImpl implements ProductService {
 
   @Override
   public int updateInstallationCountForProduct(String key, String designerVersion) {
-    Product product= productRepository.getProductById(key);
-    if (Objects.isNull(product)){
+    Product product = productRepository.getProductById(key);
+    if (Objects.isNull(product)) {
       return 0;
     }
 
@@ -228,7 +228,7 @@ public class ProductServiceImpl implements ProductService {
         GHContent fileContent;
         try {
           fileContent = gitHubService.getGHContent(axonIvyMarketRepoService.getRepository(), file.getFileName(),
-                  marketRepoBranch);
+              marketRepoBranch);
         } catch (IOException e) {
           log.error("Get GHContent failed: ", e);
           continue;
@@ -252,28 +252,28 @@ public class ProductServiceImpl implements ProductService {
   private void modifyProductLogo(String parentPath, GitHubFile file, Product product, GHContent fileContent) {
     Product result;
     switch (file.getStatus()) {
-    case MODIFIED, ADDED:
-      var searchCriteria = new ProductSearchCriteria();
-      searchCriteria.setKeyword(parentPath);
-      searchCriteria.setFields(List.of(MARKET_DIRECTORY));
-      result = productRepository.findByCriteria(searchCriteria);
-      if (result != null) {
-        Optional.ofNullable(imageService.mappingImageFromGHContent(result, fileContent, true)).ifPresent(image -> {
-          imageRepository.deleteById(result.getLogoId());
-          result.setLogoId(image.getId());
-          productRepository.save(result);
-        });
-      }
-      break;
-    case REMOVED:
-      result = productRepository.findByLogoId(product.getLogoId());
-      if (result != null) {
-        imageRepository.deleteAllByProductId(result.getId());
-        productRepository.deleteById(result.getId());
-      }
-      break;
-    default:
-      break;
+      case MODIFIED, ADDED:
+        var searchCriteria = new ProductSearchCriteria();
+        searchCriteria.setKeyword(parentPath);
+        searchCriteria.setFields(List.of(MARKET_DIRECTORY));
+        result = productRepository.findByCriteria(searchCriteria);
+        if (result != null) {
+          Optional.ofNullable(imageService.mappingImageFromGHContent(result, fileContent, true)).ifPresent(image -> {
+            imageRepository.deleteById(result.getLogoId());
+            result.setLogoId(image.getId());
+            productRepository.save(result);
+          });
+        }
+        break;
+      case REMOVED:
+        result = productRepository.findByLogoId(product.getLogoId());
+        if (result != null) {
+          imageRepository.deleteAllByProductId(result.getId());
+          productRepository.deleteById(result.getId());
+        }
+        break;
+      default:
+        break;
     }
   }
 
@@ -352,7 +352,8 @@ public class ProductServiceImpl implements ProductService {
     }
   }
 
-  private void updateProductContentForNonStandardProduct(Map.Entry<String, List<GHContent>> ghContentEntity, Product product) {
+  private void updateProductContentForNonStandardProduct(Map.Entry<String, List<GHContent>> ghContentEntity,
+      Product product) {
     ProductModuleContent initialContent = new ProductModuleContent();
     initialContent.setTag(INITIAL_VERSION);
     initialContent.setProductId(product.getId());
@@ -496,8 +497,9 @@ public class ProductServiceImpl implements ProductService {
   public Product fetchBestMatchProductDetail(String id, String version) {
     List<String> releasedVersions = productRepository.getReleasedVersionsById(id);
     String bestMatchVersion = VersionUtils.getBestMatchVersion(releasedVersions, version);
-    String bestMatchTag = VersionUtils.convertVersionToTag(id,bestMatchVersion);
-    Product product = StringUtils.isBlank(bestMatchTag) ? productRepository.getProductById(id) : productRepository.getProductByIdAndTag(id, bestMatchTag);
+    String bestMatchTag = VersionUtils.convertVersionToTag(id, bestMatchVersion);
+    Product product = StringUtils.isBlank(bestMatchTag) ? productRepository.getProductById(
+        id) : productRepository.getProductByIdAndTag(id, bestMatchTag);
     return Optional.ofNullable(product).map(productItem -> {
       updateProductInstallationCount(id, productItem);
       return productItem;

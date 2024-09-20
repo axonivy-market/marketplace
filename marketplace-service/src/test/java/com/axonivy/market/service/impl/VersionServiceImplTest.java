@@ -118,7 +118,8 @@ class VersionServiceImplTest {
     Assertions.assertEquals(0,
         versionService.getMavenArtifactsFromProductJsonByVersion("10.0.20", "adobe-acrobat-connector").size());
 
-    String jsonContent = "{ \"installers\": [{ \"id\": \"maven-import\", \"data\": { \"repositories\": [{ \"url\": \"http://repo.url\" }], \"projects\": [], \"dependencies\": [] } }] }";
+    String jsonContent = "{ \"installers\": [{ \"id\": \"maven-import\", \"data\": { \"repositories\": [{ \"url\": " +
+        "\"http://repo.url\" }], \"projects\": [], \"dependencies\": [] } }] }";
     ProductJsonContent productJson = new ProductJsonContent();
     productJson.setContent(jsonContent);
     when(productJsonContentRepository.findByProductIdAndVersion("adobe-acrobat-connector", "10.0.20")).thenReturn(
