@@ -9,7 +9,6 @@ import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.io.Serial;
 import java.io.Serializable;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -27,7 +26,6 @@ public class MavenArtifactVersion implements Serializable {
 
   @Id
   private String productId;
-  private List<String> versions = new ArrayList<>();
   private Map<String, List<MavenArtifactModel>> productArtifactWithVersionReleased = new HashMap<>();
 
   public MavenArtifactVersion(String productId) {
