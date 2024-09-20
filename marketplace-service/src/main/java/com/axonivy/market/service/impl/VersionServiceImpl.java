@@ -89,7 +89,10 @@ public class VersionServiceImpl implements VersionService {
     List<String> versionsToDisplay = VersionUtils.getVersionsToDisplay(getPersistedVersions(productId),
         isShowDevVersion, designerVersion);
     List<MavenArtifact> artifactsFromMeta = getArtifactsFromMeta(productId);
-
+    MavenArtifact productArtifact = artifactsFromMeta.stream()
+        .filter(artifact -> artifact.getArtifactId().endsWith(MavenConstants.PRODUCT_ARTIFACT_POSTFIX)).findAny()
+        .orElse(new MavenArtifact());
+    artifactsFromMeta.remove(productArtifact);
     Map<String, List<ArchivedArtifact>> archivedArtifactsMap = getArchivedArtifactMapFromProduct(artifactsFromMeta);
     return handleArtifactForVersionToDisplay(versionsToDisplay, productId, artifactsFromMeta, archivedArtifactsMap);
   }
