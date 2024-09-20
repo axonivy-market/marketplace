@@ -6,6 +6,7 @@ import com.axonivy.market.constants.GitHubConstants;
 import com.axonivy.market.constants.ProductJsonConstants;
 import com.axonivy.market.criteria.ProductSearchCriteria;
 import com.axonivy.market.entity.GitHubRepoMeta;
+import com.axonivy.market.entity.Image;
 import com.axonivy.market.entity.Product;
 import com.axonivy.market.entity.ProductCustomSort;
 import com.axonivy.market.entity.ProductModuleContent;
@@ -225,27 +226,50 @@ public class ProductServiceImpl implements ProductService {
       groupGitHubFiles.putIfAbsent(parentPath, files);
     }
 
-    groupGitHubFiles.entrySet().forEach(ghFileEntity -> {
-      for (var file : ghFileEntity.getValue()) {
-        Product product = new Product();
-        GHContent fileContent;
-        try {
-          fileContent = gitHubService.getGHContent(axonIvyMarketRepoService.getRepository(), file.getFileName(),
-              marketRepoBranch);
-        } catch (IOException e) {
-          log.error("Get GHContent failed: ", e);
-          continue;
-        }
-
-        ProductFactory.mappingByGHContent(product, fileContent);
-        if (FileType.META == file.getType()) {
-          transferComputedDataFromDB(product);
-          modifyProductByMetaContent(file, product);
+    groupGitHubFiles.forEach((key, value) -> {
+      for (var file : value) {
+        if (file.getStatus() == MODIFIED || file.getStatus() == ADDED) {
+          Product product = new Product();
+          GHContent fileContent;
+          try {
+            fileContent = gitHubService.getGHContent(axonIvyMarketRepoService.getRepository(), file.getFileName(),
+                marketRepoBranch);
+          } catch (IOException e) {
+            log.error("Get GHContent failed: ", e);
+            continue;
+          }
+          ProductFactory.mappingByGHContent(product, fileContent);
+          if (FileType.META == file.getType()) {
+            transferComputedDataFromDB(product);
+            productRepository.save(product);
+          } else {
+            modifyProductLogo(key, file, product, fileContent);
+          }
         } else {
-          modifyProductLogo(ghFileEntity.getKey(), file, product, fileContent);
+          removeProductAndImage(file);
         }
       }
     });
+  }
+
+  private void removeProductAndImage(GitHubFile file) {
+    if (FileType.META == file.getType()) {
+      String[] splitMetaJsonPath = file.getFileName().split("/");
+      String extractMarketDirectory = file.getFileName().replace(splitMetaJsonPath[splitMetaJsonPath.length - 1], "");
+      List<Product> productList = productRepository.findByMarketDirectory(extractMarketDirectory);
+      if (ObjectUtils.isNotEmpty(productList)) {
+        String productId = productList.get(0).getId();
+        productRepository.deleteById(productId);
+        imageRepository.deleteAllByProductId(productId);
+      }
+    } else {
+      List<Image> images = imageRepository.findByImageUrlEndsWithIgnoreCase(file.getFileName());
+      if (ObjectUtils.isNotEmpty(images)) {
+        Image currentImage = images.get(0);
+        productRepository.deleteById(currentImage.getProductId());
+        imageRepository.deleteAllByProductId(currentImage.getProductId());
+      }
+    }
   }
 
   private static Predicate<GHTag> filterNonPersistGhTagName(List<String> currentTags) {
@@ -253,34 +277,18 @@ public class ProductServiceImpl implements ProductService {
   }
 
   private void modifyProductLogo(String parentPath, GitHubFile file, Product product, GHContent fileContent) {
-    Product result;
-    switch (file.getStatus()) {
-    case MODIFIED, ADDED:
-      var searchCriteria = new ProductSearchCriteria();
-      searchCriteria.setKeyword(parentPath);
-      searchCriteria.setFields(List.of(MARKET_DIRECTORY));
-      result = productRepository.findByCriteria(searchCriteria);
-      if (result != null) {
-        Optional.ofNullable(imageService.mappingImageFromGHContent(result, fileContent, true)).ifPresent(image -> {
-          if (StringUtils.isNotBlank(result.getLogoId())) {
-            imageRepository.deleteById(result.getLogoId());
-          }
-          result.setLogoId(image.getId());
-          productRepository.save(result);
-        });
-      }
-      break;
-    case REMOVED:
-      Optional.ofNullable(product.getLogoId()).ifPresent(logoId -> {
-        Product currentProduct = productRepository.findByLogoId(product.getLogoId());
-        if (ObjectUtils.isEmpty(currentProduct)) {
-          imageRepository.deleteAllByProductId(currentProduct.getId());
-          productRepository.deleteById(currentProduct.getId());
+    var searchCriteria = new ProductSearchCriteria();
+    searchCriteria.setKeyword(parentPath);
+    searchCriteria.setFields(List.of(MARKET_DIRECTORY));
+    Product result = productRepository.findByCriteria(searchCriteria);
+    if (result != null) {
+      Optional.ofNullable(imageService.mappingImageFromGHContent(result, fileContent, true)).ifPresent(image -> {
+        if (StringUtils.isNotBlank(result.getLogoId())) {
+          imageRepository.deleteById(result.getLogoId());
         }
+        result.setLogoId(image.getId());
+        productRepository.save(result);
       });
-      break;
-    default:
-      break;
     }
   }
 

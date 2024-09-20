@@ -35,6 +35,7 @@ import java.util.Optional;
 import java.util.UUID;
 
 import com.axonivy.market.criteria.ProductSearchCriteria;
+import com.axonivy.market.repository.ImageRepository;
 import com.axonivy.market.service.ImageService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -117,6 +118,9 @@ class ProductServiceImplTest extends BaseSetup {
 
   @Mock
   private GitHubService gitHubService;
+
+  @Mock
+  private ImageRepository imageRepository;
 
   @Mock
   private ProductCustomSortRepository productCustomSortRepository;
@@ -278,7 +282,6 @@ class ProductServiceImplTest extends BaseSetup {
     when(mockCommit.getSHA1()).thenReturn(UUID.randomUUID().toString());
     mockGitHubFile.setStatus(FileStatus.REMOVED);
     when(marketRepoService.fetchMarketItemsBySHA1Range(any(), any())).thenReturn(List.of(mockGitHubFile));
-    when(gitHubService.getGHContent(any(), anyString(), any())).thenReturn(mockGHContent);
 
     // Executes
     result = productService.syncLatestDataFromMarketRepo();
@@ -634,8 +637,66 @@ class ProductServiceImplTest extends BaseSetup {
   }
 
   private List<Product> mockProducts() {
-    Product product1 = Product.builder().repositoryName("axonivy-market/amazon-comprehend-connector")
+    Product product1 = Product.builder().id("amazon-comprehend-connector").repositoryName("axonivy-market/amazon-comprehend-connector")
         .productModuleContent(mockReadmeProductContent()).build();
     return List.of(product1);
+  }
+
+  @Test
+  void testUpdateNewLogoFromGitHub_removeOldLogo() throws IOException {
+    // Start testing by adding new logo
+    mockMarketRepoMetaStatus();
+    var mockCommit = mockGHCommitHasSHA1(UUID.randomUUID().toString());
+    when(mockCommit.getCommitDate()).thenReturn(new Date());
+    when(marketRepoService.getLastCommit(anyLong())).thenReturn(mockCommit);
+
+    var mockGitHubFile = new GitHubFile();
+    mockGitHubFile.setFileName(LOGO_FILE);
+    mockGitHubFile.setType(FileType.LOGO);
+    mockGitHubFile.setStatus(FileStatus.ADDED);
+    when(marketRepoService.fetchMarketItemsBySHA1Range(any(), any())).thenReturn(List.of(mockGitHubFile));
+    var mockGHContent = mockGHContentAsMetaJSON();
+    when(gitHubService.getGHContent(any(), anyString(), any())).thenReturn(mockGHContent);
+
+    // Executes
+    var result = productService.syncLatestDataFromMarketRepo();
+    assertFalse(result);
+
+    // Start testing by deleting new logo
+    when(mockCommit.getSHA1()).thenReturn(UUID.randomUUID().toString());
+    mockGitHubFile.setStatus(FileStatus.REMOVED);
+    when(marketRepoService.fetchMarketItemsBySHA1Range(any(), any())).thenReturn(List.of(mockGitHubFile));
+    when(imageRepository.findByImageUrlEndsWithIgnoreCase(anyString()))
+        .thenReturn(List.of(GHAxonIvyProductRepoServiceImplTest.mockImage()));
+    // Executes
+    result = productService.syncLatestDataFromMarketRepo();
+
+    verify(productRepository, times(1)).deleteById(anyString());
+    verify(imageRepository, times(1)).deleteAllByProductId(anyString());
+    verify(imageRepository, times(1)).findByImageUrlEndsWithIgnoreCase(anyString());
+    assertFalse(result);
+  }
+
+  @Test
+  void testUpdateNewLogoFromGitHub_ModifyLogo() throws IOException {
+    // Start testing by adding new logo
+    mockMarketRepoMetaStatus();
+    var mockCommit = mockGHCommitHasSHA1(UUID.randomUUID().toString());
+    when(mockCommit.getCommitDate()).thenReturn(new Date());
+    when(marketRepoService.getLastCommit(anyLong())).thenReturn(mockCommit);
+
+    var mockGitHubFile = new GitHubFile();
+    mockGitHubFile.setFileName("meta.json");
+    mockGitHubFile.setType(FileType.META);
+    mockGitHubFile.setStatus(FileStatus.REMOVED);
+    when(marketRepoService.fetchMarketItemsBySHA1Range(any(), any())).thenReturn(List.of(mockGitHubFile));
+    when(productRepository.findByMarketDirectory(anyString())).thenReturn(mockProducts());
+
+    // Executes
+    var result = productService.syncLatestDataFromMarketRepo();
+
+    assertFalse(result);
+    verify(productRepository, times(1)).deleteById(anyString());
+    verify(imageRepository, times(1)).deleteAllByProductId(anyString());
   }
 }
