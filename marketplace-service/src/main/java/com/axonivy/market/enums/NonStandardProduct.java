@@ -47,6 +47,6 @@ public enum NonStandardProduct {
   }
 
   public static NonStandardProduct findById(String id) {
-    return NON_STANDARD_PRODUCT_MAP.getOrDefault(id,DEFAULT);
+    return NON_STANDARD_PRODUCT_MAP.getOrDefault(id, DEFAULT);
   }
 }

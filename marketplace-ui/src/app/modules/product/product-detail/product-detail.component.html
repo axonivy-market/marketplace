@@ -20,13 +20,15 @@
           <div class="d-flex">
             <div class="logo__image-container">
               <img
+                fill
                 [lang]="languageService.selectedLanguage()"
                 class="logo__image"
-                [src]="productDetail().logoUrl"
+                [ngSrc]="logoUrl"
+                (error)="onLogoError()"
                 [alt]="
                   productDetail().names
                     | multilingualism: languageService.selectedLanguage()
-                " />
+                "/>
             </div>
             <h1
               [lang]="languageService.selectedLanguage()"
