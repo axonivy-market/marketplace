@@ -229,22 +229,7 @@ public class ProductServiceImpl implements ProductService {
     groupGitHubFiles.forEach((key, value) -> {
       for (var file : value) {
         if (file.getStatus() == MODIFIED || file.getStatus() == ADDED) {
-          Product product = new Product();
-          GHContent fileContent;
-          try {
-            fileContent = gitHubService.getGHContent(axonIvyMarketRepoService.getRepository(), file.getFileName(),
-                marketRepoBranch);
-          } catch (IOException e) {
-            log.error("Get GHContent failed: ", e);
-            continue;
-          }
-          ProductFactory.mappingByGHContent(product, fileContent);
-          if (FileType.META == file.getType()) {
-            transferComputedDataFromDB(product);
-            productRepository.save(product);
-          } else {
-            modifyProductLogo(key, file, product, fileContent);
-          }
+          modifyProductMetaOrLogo(file, key);
         } else {
           removeProductAndImage(file);
         }
@@ -272,11 +257,30 @@ public class ProductServiceImpl implements ProductService {
     }
   }
 
+  private void modifyProductMetaOrLogo(GitHubFile file, String key){
+    Product product = new Product();
+    GHContent fileContent;
+    try {
+      fileContent = gitHubService.getGHContent(axonIvyMarketRepoService.getRepository(), file.getFileName(),
+          marketRepoBranch);
+    } catch (IOException e) {
+      log.error("Get GHContent failed: ", e);
+      return;
+    }
+    ProductFactory.mappingByGHContent(product, fileContent);
+    if (FileType.META == file.getType()) {
+      transferComputedDataFromDB(product);
+      productRepository.save(product);
+    } else {
+      modifyProductLogo(key, fileContent);
+    }
+  }
+
   private static Predicate<GHTag> filterNonPersistGhTagName(List<String> currentTags) {
     return tag -> !currentTags.contains(tag.getName());
   }
 
-  private void modifyProductLogo(String parentPath, GitHubFile file, Product product, GHContent fileContent) {
+  private void modifyProductLogo(String parentPath, GHContent fileContent) {
     var searchCriteria = new ProductSearchCriteria();
     searchCriteria.setKeyword(parentPath);
     searchCriteria.setFields(List.of(MARKET_DIRECTORY));
@@ -338,19 +342,6 @@ public class ProductServiceImpl implements ProductService {
       isLastCommitCovered = true;
     }
     return isLastCommitCovered;
-  }
-
-  private void modifyProductByMetaContent(GitHubFile file, Product product) {
-    switch (file.getStatus()) {
-      case MODIFIED, ADDED:
-        productRepository.save(product);
-        break;
-      case REMOVED:
-        productRepository.deleteById(product.getId());
-        break;
-      default:
-        break;
-    }
   }
 
   private void updateLatestReleaseTagContentsFromProductRepo() {
