@@ -1,12 +1,7 @@
 package com.axonivy.market.handler;
 
 import com.axonivy.market.exceptions.ExceptionHandlers;
-import com.axonivy.market.exceptions.model.InvalidParamException;
-import com.axonivy.market.exceptions.model.MissingHeaderException;
-import com.axonivy.market.exceptions.model.NoContentException;
-import com.axonivy.market.exceptions.model.NotFoundException;
-import com.axonivy.market.exceptions.model.Oauth2ExchangeCodeException;
-import com.axonivy.market.exceptions.model.UnauthorizedException;
+import com.axonivy.market.exceptions.model.*;
 import com.axonivy.market.model.Message;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;

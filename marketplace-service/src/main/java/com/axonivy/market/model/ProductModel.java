@@ -22,11 +22,15 @@ import java.util.Map;
 public class ProductModel extends RepresentationModel<ProductModel> {
   @Schema(description = "Product id", example = "jira-connector")
   private String id;
-  @Schema(description = "Product name by locale", example = "{ \"de\": \"Atlassian Jira\", \"en\": \"Atlassian Jira\" }")
+  @Schema(description = "Product name by locale", example = "{ \"de\": \"Atlassian Jira\", \"en\": \"Atlassian Jira\"" +
+          " }")
   private Map<String, String> names;
-  @Schema(description = "Product's short descriptions by locale", example = "{ \"de\": \"Nutze den Jira Connector von Atlassian, um Jira-Tickets direkt von der Axon Ivy Plattform aus zu verfolgen.\", \"en\": \"Atlassian's Jira connector lets you track issues directly from the Axon Ivy platform\" }")
+  @Schema(description = "Product's short descriptions by locale", example = "{ \"de\": \"Nutze den Jira Connector von" +
+          " Atlassian, um Jira-Tickets direkt von der Axon Ivy Plattform aus zu verfolgen.\", \"en\": \"Atlassian's " +
+          "Jira connector lets you track issues directly from the Axon Ivy platform\" }")
   private Map<String, String> shortDescriptions;
-  @Schema(description = "Product's logo url", example = "https://raw.githubusercontent.com/axonivy-market/market/feature/MARP-463-Multilingualism-for-Website/market/connector/jira/logo.png")
+  @Schema(description = "Product's logo url", example = "https://raw.githubusercontent" +
+          ".com/axonivy-market/market/feature/MARP-463-Multilingualism-for-Website/market/connector/jira/logo.png")
   private String logoUrl;
   @Schema(description = "Type of product", example = "connector")
   private String type;

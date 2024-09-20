@@ -20,9 +20,11 @@ public class ProductDetailModel extends ProductModel {
   private String newestReleaseVersion;
   @Schema(description = "Product cost", example = "Free")
   private String cost;
-  @Schema(description = "Source repository url", example = "https://github.com/axonivy-market/adobe-acrobat-sign-connector")
+  @Schema(description = "Source repository url", example = "https://github.com/axonivy-market/adobe-acrobat-sign" +
+          "-connector")
   private String sourceUrl;
-  @Schema(description = "Status badge url", example = "https://github.com/axonivy-market/adobe-acrobat-sign-connector/actions/workflows/ci.yml/badge.svg")
+  @Schema(description = "Status badge url", example = "https://github.com/axonivy-market/adobe-acrobat-sign-connector" +
+          "/actions/workflows/ci.yml/badge.svg")
   private String statusBadgeUrl;
   @Schema(description = "Default language", example = "English")
   private String language;

@@ -7,5 +7,5 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface ProductJsonContentRepository extends MongoRepository<ProductJsonContent, String> {
 
-  ProductJsonContent findByProductIdAndVersion(String productId , String version);
+  ProductJsonContent findByProductIdAndVersion(String productId, String version);
 }

@@ -26,16 +26,9 @@ import org.springframework.hateoas.PagedModel;
 import org.springframework.hateoas.PagedModel.PageMetadata;
 import org.springframework.http.HttpStatus;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNull;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.when;
@@ -44,8 +37,10 @@ import static org.mockito.Mockito.when;
 class ProductControllerTest {
   private static final String PRODUCT_NAME_SAMPLE = "Amazon Comprehend";
   private static final String PRODUCT_NAME_DE_SAMPLE = "Amazon Comprehend DE";
-  private static final String PRODUCT_DESC_SAMPLE = "Amazon Comprehend is a AI service that uses machine learning to uncover information in unstructured data.";
-  private static final String PRODUCT_DESC_DE_SAMPLE = "Amazon Comprehend is a AI service that uses machine learning to uncover information in unstructured data. DE";
+  private static final String PRODUCT_DESC_SAMPLE = "Amazon Comprehend is a AI service that uses machine learning to " +
+      "uncover information in unstructured data.";
+  private static final String PRODUCT_DESC_DE_SAMPLE = "Amazon Comprehend is a AI service that uses machine learning " +
+      "to uncover information in unstructured data. DE";
   private static final String AUTHORIZATION_HEADER = "Bearer valid_token";
   private static final String INVALID_AUTHORIZATION_HEADER = "Bearer invalid_token";
 
@@ -73,7 +68,7 @@ class ProductControllerTest {
   void testFindProductsAsEmpty() {
     PageRequest pageable = PageRequest.of(0, 20);
     Page<Product> mockProducts = new PageImpl<>(List.of(), pageable, 0);
-    when(service.findProducts(any(), any(), any(), any() , any())).thenReturn(mockProducts);
+    when(service.findProducts(any(), any(), any(), any(), any())).thenReturn(mockProducts);
     when(pagedResourcesAssembler.toEmptyModel(any(), any())).thenReturn(PagedModel.empty());
     var result = productController.findProducts(TypeOption.ALL.getOption(), null, "en", false, pageable);
     assertEquals(HttpStatus.OK, result.getStatusCode());

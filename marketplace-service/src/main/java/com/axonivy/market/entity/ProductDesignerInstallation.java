@@ -18,24 +18,24 @@ import static com.axonivy.market.constants.EntityConstants.PRODUCT_DESIGNER_INST
 @Builder
 @Document(PRODUCT_DESIGNER_INSTALLATION)
 public class ProductDesignerInstallation implements Serializable {
-    @Serial
-    private static final long serialVersionUID = 1L;
-    @Id
-    private String id;
-    private String productId;
-    private String designerVersion;
-    private int installationCount;
+  @Serial
+  private static final long serialVersionUID = 1L;
+  @Id
+  private String id;
+  private String productId;
+  private String designerVersion;
+  private int installationCount;
 
-    @Override
-    public int hashCode() {
-        return new HashCodeBuilder().append(productId).hashCode();
-    }
+  @Override
+  public int hashCode() {
+    return new HashCodeBuilder().append(productId).hashCode();
+  }
 
-    @Override
-    public boolean equals(Object obj) {
-        if (obj == null || this.getClass() != obj.getClass()) {
-            return false;
-        }
-        return new EqualsBuilder().append(productId, ((ProductDesignerInstallation) obj).getProductId()).isEquals();
+  @Override
+  public boolean equals(Object obj) {
+    if (obj == null || this.getClass() != obj.getClass()) {
+      return false;
     }
+    return new EqualsBuilder().append(productId, ((ProductDesignerInstallation) obj).getProductId()).isEquals();
+  }
 }

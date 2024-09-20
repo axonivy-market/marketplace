@@ -9,16 +9,16 @@ import java.util.concurrent.Executor;
 @Configuration
 public class AsyncConfig implements AsyncConfigurer {
 
-    private static final String THREAD_NAME_PREFIX = "AC-Thread-";
+  private static final String THREAD_NAME_PREFIX = "AC-Thread-";
 
-    @Override
-    public Executor getAsyncExecutor() {
-        ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
-        executor.setCorePoolSize(5);
-        executor.setMaxPoolSize(10);
-        executor.setQueueCapacity(25);
-        executor.setThreadNamePrefix(THREAD_NAME_PREFIX);
-        executor.initialize();
-        return executor;
-    }
+  @Override
+  public Executor getAsyncExecutor() {
+    ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
+    executor.setCorePoolSize(5);
+    executor.setMaxPoolSize(10);
+    executor.setQueueCapacity(25);
+    executor.setThreadNamePrefix(THREAD_NAME_PREFIX);
+    executor.initialize();
+    return executor;
+  }
 }

@@ -8,12 +8,7 @@ import com.axonivy.market.github.service.GHAxonIvyMarketRepoService;
 import com.axonivy.market.github.service.GitHubService;
 import com.axonivy.market.github.util.GitHubUtils;
 import lombok.extern.log4j.Log4j2;
-import org.kohsuke.github.GHCommit;
-import org.kohsuke.github.GHCommitQueryBuilder;
-import org.kohsuke.github.GHCompare;
-import org.kohsuke.github.GHContent;
-import org.kohsuke.github.GHOrganization;
-import org.kohsuke.github.GHRepository;
+import org.kohsuke.github.*;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
@@ -29,10 +24,9 @@ import java.util.Map;
 @Service
 public class GHAxonIvyMarketRepoServiceImpl implements GHAxonIvyMarketRepoService {
   private static final LocalDateTime INITIAL_COMMIT_DATE = LocalDateTime.of(2020, 10, 30, 0, 0);
+  private final GitHubService gitHubService;
   private GHOrganization organization;
   private GHRepository repository;
-
-  private final GitHubService gitHubService;
   @Value("${market.github.market.branch}")
   private String marketRepoBranch;
 

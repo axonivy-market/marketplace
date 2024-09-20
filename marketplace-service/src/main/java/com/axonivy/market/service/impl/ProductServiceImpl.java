@@ -9,11 +9,7 @@ import com.axonivy.market.entity.GitHubRepoMeta;
 import com.axonivy.market.entity.Product;
 import com.axonivy.market.entity.ProductCustomSort;
 import com.axonivy.market.entity.ProductModuleContent;
-import com.axonivy.market.enums.ErrorCode;
-import com.axonivy.market.enums.FileType;
-import com.axonivy.market.enums.Language;
-import com.axonivy.market.enums.SortOption;
-import com.axonivy.market.enums.TypeOption;
+import com.axonivy.market.enums.*;
 import com.axonivy.market.exceptions.model.InvalidParamException;
 import com.axonivy.market.factory.ProductFactory;
 import com.axonivy.market.github.model.GitHubFile;
@@ -22,11 +18,7 @@ import com.axonivy.market.github.service.GHAxonIvyProductRepoService;
 import com.axonivy.market.github.service.GitHubService;
 import com.axonivy.market.github.util.GitHubUtils;
 import com.axonivy.market.model.ProductCustomSortRequest;
-import com.axonivy.market.repository.GitHubRepoMetaRepository;
-import com.axonivy.market.repository.ImageRepository;
-import com.axonivy.market.repository.ProductCustomSortRepository;
-import com.axonivy.market.repository.ProductModuleContentRepository;
-import com.axonivy.market.repository.ProductRepository;
+import com.axonivy.market.repository.*;
 import com.axonivy.market.service.ImageService;
 import com.axonivy.market.service.ProductService;
 import com.axonivy.market.util.VersionUtils;
@@ -58,13 +50,7 @@ import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.security.SecureRandom;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
+import java.util.*;
 import java.util.function.Predicate;
 
 import static com.axonivy.market.constants.ProductJsonConstants.LOGO_FILE;
@@ -77,6 +63,8 @@ import static org.apache.commons.lang3.StringUtils.EMPTY;
 @Service
 public class ProductServiceImpl implements ProductService {
 
+  public static final String NON_NUMERIC_CHAR = "[^0-9.]";
+  private static final String INITIAL_VERSION = "1.0";
   private final ProductRepository productRepository;
   private final ProductModuleContentRepository productModuleContentRepository;
   private final GHAxonIvyMarketRepoService axonIvyMarketRepoService;
@@ -85,23 +73,16 @@ public class ProductServiceImpl implements ProductService {
   private final GitHubService gitHubService;
   private final ProductCustomSortRepository productCustomSortRepository;
   private final ImageRepository imageRepository;
-
   private final ImageService imageService;
   private final MongoTemplate mongoTemplate;
-
+  private final ObjectMapper mapper = new ObjectMapper();
+  private final SecureRandom random = new SecureRandom();
   private GHCommit lastGHCommit;
   private GitHubRepoMeta marketRepoMeta;
-  private final ObjectMapper mapper = new ObjectMapper();
-
   @Value("${synchronized.installation.counts.path}")
   private String installationCountPath;
-
   @Value("${market.github.market.branch}")
   private String marketRepoBranch;
-
-  public static final String NON_NUMERIC_CHAR = "[^0-9.]";
-  private static final String INITIAL_VERSION = "1.0";
-  private final SecureRandom random = new SecureRandom();
 
   public ProductServiceImpl(ProductRepository productRepository,
       ProductModuleContentRepository productModuleContentRepository,
@@ -119,6 +100,10 @@ public class ProductServiceImpl implements ProductService {
     this.imageRepository = imageRepository1;
     this.imageService = imageService;
     this.mongoTemplate = mongoTemplate;
+  }
+
+  private static Predicate<GHTag> filterNonPersistGhTagName(List<String> currentTags) {
+    return tag -> !currentTags.contains(tag.getName());
   }
 
   @Override
@@ -155,8 +140,8 @@ public class ProductServiceImpl implements ProductService {
 
   @Override
   public int updateInstallationCountForProduct(String key, String designerVersion) {
-    Product product= productRepository.getProductById(key);
-    if (Objects.isNull(product)){
+    Product product = productRepository.getProductById(key);
+    if (Objects.isNull(product)) {
       return 0;
     }
 
@@ -228,7 +213,7 @@ public class ProductServiceImpl implements ProductService {
         GHContent fileContent;
         try {
           fileContent = gitHubService.getGHContent(axonIvyMarketRepoService.getRepository(), file.getFileName(),
-                  marketRepoBranch);
+              marketRepoBranch);
         } catch (IOException e) {
           log.error("Get GHContent failed: ", e);
           continue;
@@ -245,35 +230,31 @@ public class ProductServiceImpl implements ProductService {
     });
   }
 
-  private static Predicate<GHTag> filterNonPersistGhTagName(List<String> currentTags) {
-    return tag -> !currentTags.contains(tag.getName());
-  }
-
   private void modifyProductLogo(String parentPath, GitHubFile file, Product product, GHContent fileContent) {
     Product result;
     switch (file.getStatus()) {
-    case MODIFIED, ADDED:
-      var searchCriteria = new ProductSearchCriteria();
-      searchCriteria.setKeyword(parentPath);
-      searchCriteria.setFields(List.of(MARKET_DIRECTORY));
-      result = productRepository.findByCriteria(searchCriteria);
-      if (result != null) {
-        Optional.ofNullable(imageService.mappingImageFromGHContent(result, fileContent, true)).ifPresent(image -> {
-          imageRepository.deleteById(result.getLogoId());
-          result.setLogoId(image.getId());
-          productRepository.save(result);
-        });
-      }
-      break;
-    case REMOVED:
-      result = productRepository.findByLogoId(product.getLogoId());
-      if (result != null) {
-        imageRepository.deleteAllByProductId(result.getId());
-        productRepository.deleteById(result.getId());
-      }
-      break;
-    default:
-      break;
+      case MODIFIED, ADDED:
+        var searchCriteria = new ProductSearchCriteria();
+        searchCriteria.setKeyword(parentPath);
+        searchCriteria.setFields(List.of(MARKET_DIRECTORY));
+        result = productRepository.findByCriteria(searchCriteria);
+        if (result != null) {
+          Optional.ofNullable(imageService.mappingImageFromGHContent(result, fileContent, true)).ifPresent(image -> {
+            imageRepository.deleteById(result.getLogoId());
+            result.setLogoId(image.getId());
+            productRepository.save(result);
+          });
+        }
+        break;
+      case REMOVED:
+        result = productRepository.findByLogoId(product.getLogoId());
+        if (result != null) {
+          imageRepository.deleteAllByProductId(result.getId());
+          productRepository.deleteById(result.getId());
+        }
+        break;
+      default:
+        break;
     }
   }
 
@@ -352,7 +333,8 @@ public class ProductServiceImpl implements ProductService {
     }
   }
 
-  private void updateProductContentForNonStandardProduct(Map.Entry<String, List<GHContent>> ghContentEntity, Product product) {
+  private void updateProductContentForNonStandardProduct(Map.Entry<String, List<GHContent>> ghContentEntity,
+      Product product) {
     ProductModuleContent initialContent = new ProductModuleContent();
     initialContent.setTag(INITIAL_VERSION);
     initialContent.setProductId(product.getId());
@@ -496,8 +478,9 @@ public class ProductServiceImpl implements ProductService {
   public Product fetchBestMatchProductDetail(String id, String version) {
     List<String> releasedVersions = productRepository.getReleasedVersionsById(id);
     String bestMatchVersion = VersionUtils.getBestMatchVersion(releasedVersions, version);
-    String bestMatchTag = VersionUtils.convertVersionToTag(id,bestMatchVersion);
-    Product product = StringUtils.isBlank(bestMatchTag) ? productRepository.getProductById(id) : productRepository.getProductByIdAndTag(id, bestMatchTag);
+    String bestMatchTag = VersionUtils.convertVersionToTag(id, bestMatchVersion);
+    Product product = StringUtils.isBlank(bestMatchTag) ? productRepository.getProductById(
+        id) : productRepository.getProductByIdAndTag(id, bestMatchTag);
     return Optional.ofNullable(product).map(productItem -> {
       updateProductInstallationCount(id, productItem);
       return productItem;

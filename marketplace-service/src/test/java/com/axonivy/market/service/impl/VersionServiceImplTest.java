@@ -25,12 +25,7 @@ import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.verify;
@@ -118,7 +113,8 @@ class VersionServiceImplTest {
     Assertions.assertEquals(0,
         versionService.getMavenArtifactsFromProductJsonByVersion("10.0.20", "adobe-acrobat-connector").size());
 
-    String jsonContent = "{ \"installers\": [{ \"id\": \"maven-import\", \"data\": { \"repositories\": [{ \"url\": \"http://repo.url\" }], \"projects\": [], \"dependencies\": [] } }] }";
+    String jsonContent = "{ \"installers\": [{ \"id\": \"maven-import\", \"data\": { \"repositories\": [{ \"url\": " +
+        "\"http://repo.url\" }], \"projects\": [], \"dependencies\": [] } }] }";
     ProductJsonContent productJson = new ProductJsonContent();
     productJson.setContent(jsonContent);
     when(productJsonContentRepository.findByProductIdAndVersion("adobe-acrobat-connector", "10.0.20")).thenReturn(

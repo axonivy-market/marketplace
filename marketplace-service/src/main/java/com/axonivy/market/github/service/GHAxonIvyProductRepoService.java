@@ -12,7 +12,7 @@ import java.io.InputStream;
 import java.util.List;
 
 public interface GHAxonIvyProductRepoService {
-  
+
   List<MavenArtifact> extractMavenArtifactsFromContentStream(InputStream contentStream) throws IOException;
 
   GHContent getContentFromGHRepoAndTag(String repoName, String filePath, String tagVersion);
@@ -23,5 +23,6 @@ public interface GHAxonIvyProductRepoService {
 
   List<MavenArtifact> convertProductJsonToMavenProductInfo(GHContent content) throws IOException;
 
-  void extractReadMeFileFromContents(Product product, List<GHContent> contents, ProductModuleContent productModuleContent);
+  void extractReadMeFileFromContents(Product product, List<GHContent> contents,
+      ProductModuleContent productModuleContent);
 }
