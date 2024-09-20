@@ -15,6 +15,8 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import static com.axonivy.market.constants.MetaConstants.META_FILE;
+
 @Log4j2
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class GitHubUtils {
@@ -37,7 +39,7 @@ public class GitHubUtils {
     } catch (IOException e) {
       log.error("Cannot get DownloadURl from GHContent: ", e);
     }
-    return "";
+    return StringUtils.EMPTY;
   }
 
   public static <T> List<T> mapPagedIteratorToList(PagedIterable<T> paged) {
@@ -79,15 +81,23 @@ public class GitHubUtils {
         return json.substring(startIndex, endIndex);
       }
     }
-    return "";
+    return StringUtils.EMPTY;
   }
 
-  private static String extractJson(String text) {
+  public static String extractJson(String text) {
     int start = text.indexOf("{");
     int end = text.lastIndexOf("}") + 1;
     if (start != -1 && end != -1) {
       return text.substring(start, end);
     }
-    return "";
+    return StringUtils.EMPTY;
+  }
+
+  public static int sortMetaJsonFirst(String fileName1, String fileName2) {
+    if (fileName1.endsWith(META_FILE))
+      return -1;
+    if (fileName2.endsWith(META_FILE))
+      return 1;
+    return fileName1.compareTo(fileName2);
   }
 }

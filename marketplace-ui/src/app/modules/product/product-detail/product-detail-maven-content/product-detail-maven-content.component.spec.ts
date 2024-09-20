@@ -15,7 +15,7 @@ describe('ProductDetailMavenContentComponent', () => {
 
     fixture = TestBed.createComponent(ProductDetailMavenContentComponent);
     component = fixture.componentInstance;
-    component.productModuleContent = MOCK_PRODUCT_DETAIL.productModuleContent;
+    component.productDetail = MOCK_PRODUCT_DETAIL;
     component.selectedVersion = '1.0.0';
     fixture.detectChanges();
   });

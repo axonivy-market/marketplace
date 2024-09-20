@@ -5,16 +5,19 @@ import com.axonivy.market.constants.GitHubConstants;
 import com.axonivy.market.constants.MavenConstants;
 import com.axonivy.market.constants.ProductJsonConstants;
 import com.axonivy.market.constants.ReadmeConstants;
+import com.axonivy.market.entity.Image;
 import com.axonivy.market.entity.Product;
 import com.axonivy.market.entity.ProductModuleContent;
 import com.axonivy.market.entity.ProductJsonContent;
 import com.axonivy.market.enums.Language;
 import com.axonivy.market.enums.NonStandardProduct;
+import com.axonivy.market.factory.ProductFactory;
 import com.axonivy.market.github.model.MavenArtifact;
 import com.axonivy.market.github.service.GHAxonIvyProductRepoService;
 import com.axonivy.market.github.service.GitHubService;
 import com.axonivy.market.github.util.GitHubUtils;
 import com.axonivy.market.repository.ProductJsonContentRepository;
+import com.axonivy.market.service.ImageService;
 import com.axonivy.market.util.VersionUtils;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -30,6 +33,7 @@ import org.kohsuke.github.GHTag;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
+import javax.swing.text.html.Option;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
@@ -38,9 +42,11 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import static com.axonivy.market.constants.CommonConstants.IMAGE_ID_PREFIX;
 import static com.axonivy.market.constants.ProductJsonConstants.EN_LANGUAGE;
 import static com.axonivy.market.constants.ProductJsonConstants.VERSION_VALUE;
 
@@ -49,10 +55,11 @@ import static com.axonivy.market.constants.ProductJsonConstants.VERSION_VALUE;
 public class GHAxonIvyProductRepoServiceImpl implements GHAxonIvyProductRepoService {
   private GHOrganization organization;
   private final GitHubService gitHubService;
-
+  private final ImageService imageService;
   private final ProductJsonContentRepository productJsonContentRepository;
   private String repoUrl;
   private static final ObjectMapper objectMapper = new ObjectMapper();
+  private static final String HASH = "#";
   public static final String DEMO_SETUP_TITLE = "(?i)## Demo|## Setup";
   public static final String IMAGE_EXTENSION = "(.*?).(jpeg|jpg|png|gif)";
   public static final String README_IMAGE_FORMAT = "\\(([^)]*?%s[^)]*?)\\)";
@@ -61,9 +68,10 @@ public class GHAxonIvyProductRepoServiceImpl implements GHAxonIvyProductRepoServ
   public static final String DEMO = "demo";
   public static final String SETUP = "setup";
 
-  public GHAxonIvyProductRepoServiceImpl(GitHubService gitHubService,
+  public GHAxonIvyProductRepoServiceImpl(GitHubService gitHubService, ImageService imageService,
       ProductJsonContentRepository productJsonContentRepository) {
     this.gitHubService = gitHubService;
+    this.imageService = imageService;
     this.productJsonContentRepository = productJsonContentRepository;
   }
 
@@ -167,6 +175,7 @@ public class GHAxonIvyProductRepoServiceImpl implements GHAxonIvyProductRepoServ
       List<GHContent> contents = getProductFolderContents(product, ghRepository, tag);
       productModuleContent.setProductId(product.getId());
       productModuleContent.setTag(tag);
+      ProductFactory.mappingIdForProductModuleContent(productModuleContent);
       updateDependencyContentsFromProductJson(productModuleContent, contents , product);
       extractReadMeFileFromContents(product, contents, productModuleContent);
     } catch (Exception e) {
@@ -237,13 +246,12 @@ public class GHAxonIvyProductRepoServiceImpl implements GHAxonIvyProductRepoServ
         productModuleContent.setName(artifact.getName());
       }
       String currentVersion = VersionUtils.convertTagToVersion(productModuleContent.getTag());
-      boolean isProductJsonContentExists = productJsonContentRepository.existsByProductIdAndVersion(product.getId(),
-          currentVersion);
       String content = extractProductJsonContent(productJsonFile, productModuleContent.getTag());
-      if (ObjectUtils.isNotEmpty(content) && !isProductJsonContentExists) {
+      if (ObjectUtils.isNotEmpty(content)) {
         ProductJsonContent jsonContent = new ProductJsonContent();
         jsonContent.setVersion(currentVersion);
         jsonContent.setProductId(product.getId());
+        ProductFactory.mappingIdForProductJsonContent(jsonContent);
         jsonContent.setName(product.getNames().get(EN_LANGUAGE));
         jsonContent.setContent(content.replace(VERSION_VALUE, currentVersion));
         productJsonContentRepository.save(jsonContent);
@@ -266,37 +274,42 @@ public class GHAxonIvyProductRepoServiceImpl implements GHAxonIvyProductRepoServ
         .filter(content -> ProductJsonConstants.PRODUCT_JSON_FILE.equals(content.getName())).findFirst().orElse(null);
   }
 
-  public String updateImagesWithDownloadUrl(Product product, List<GHContent> contents, String readmeContents)
-      throws IOException {
-    Map<String, String> imageUrls = new HashMap<>();
-    List<GHContent> productImages = contents.stream().filter(GHContent::isFile)
+  public String updateImagesWithDownloadUrl(Product product, List<GHContent> contents, String readmeContents) {
+
+    List<GHContent> imagesAtRootFolder = contents.stream().filter(GHContent::isFile)
         .filter(content -> content.getName().toLowerCase().matches(IMAGE_EXTENSION)).toList();
-    if (!CollectionUtils.isEmpty(productImages)) {
-      for (GHContent productImage : productImages) {
-        imageUrls.put(productImage.getName(), productImage.getDownloadUrl());
-      }
-    } else {
-      getImagesFromImageFolder(product, contents, imageUrls);
-    }
+
+    List<GHContent> allContentOfImages = ObjectUtils.isNotEmpty(imagesAtRootFolder)
+        ? imagesAtRootFolder
+        : getImagesFromImageFolder(product, contents);
+
+    Map<String, String> imageUrls = new HashMap<>();
+
+    allContentOfImages.forEach(content -> Optional.of(imageService.mappingImageFromGHContent(product, content, false))
+        .ifPresent(image -> imageUrls.put(content.getName(), IMAGE_ID_PREFIX.concat(image.getId()))));
+
     for (Map.Entry<String, String> entry : imageUrls.entrySet()) {
       String imageUrlPattern = String.format(README_IMAGE_FORMAT, Pattern.quote(entry.getKey()));
       readmeContents = readmeContents.replaceAll(imageUrlPattern,
           String.format(IMAGE_DOWNLOAD_URL_FORMAT, entry.getValue()));
-
     }
+
     return readmeContents;
   }
 
-  private void getImagesFromImageFolder(Product product, List<GHContent> contents, Map<String, String> imageUrls)
-      throws IOException {
+  private List<GHContent> getImagesFromImageFolder(Product product, List<GHContent> contents) {
+    List<GHContent> images = new ArrayList<>();
     String imageFolderPath = GitHubUtils.getNonStandardImageFolder(product.getId());
-    GHContent imageFolder = contents.stream().filter(GHContent::isDirectory)
-        .filter(content -> imageFolderPath.equals(content.getName())).findFirst().orElse(null);
-    if (Objects.nonNull(imageFolder)) {
-      for (GHContent imageContent : imageFolder.listDirectoryContent().toList()) {
-        imageUrls.put(imageContent.getName(), imageContent.getDownloadUrl());
-      }
-    }
+    contents.stream().filter(GHContent::isDirectory)
+        .filter(content -> imageFolderPath.equals(content.getName()))
+        .findFirst().ifPresent(imageFolder -> {
+          try {
+            images.addAll(imageFolder.listDirectoryContent().toList());
+          } catch (IOException e) {
+            log.error(e.getMessage());
+          }
+        });
+    return images;
   }
 
   // Cover some cases including when demo and setup parts switch positions or
@@ -361,10 +374,16 @@ public class GHAxonIvyProductRepoServiceImpl implements GHAxonIvyProductRepoServ
   }
 
   private String removeFirstLine(String text) {
+    String result;
     if (text.isBlank()) {
-      return Strings.EMPTY;
+      result = Strings.EMPTY;
+    } else if (text.startsWith(HASH)) {
+      int index = text.indexOf(StringUtils.LF);
+      result = index != StringUtils.INDEX_NOT_FOUND ? text.substring(index + 1).trim() : Strings.EMPTY;
+    } else {
+      result = text;
     }
-    int index = text.indexOf(StringUtils.LF);
-    return index != -1 ? text.substring(index + 1).trim() : Strings.EMPTY;
+
+    return result;
   }
 }

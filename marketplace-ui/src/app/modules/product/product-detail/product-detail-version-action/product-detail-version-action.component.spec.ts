@@ -1,6 +1,6 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { of } from 'rxjs';
-import { ProductDetailVersionActionComponent } from './product-detail-version-action.component';
+import { ProductDetailVersionActionComponent, versionParam } from './product-detail-version-action.component';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { ProductService } from '../../product.service';
 import { provideHttpClient } from '@angular/common/http';
@@ -158,7 +158,7 @@ describe('ProductDetailVersionActionComponent', () => {
     // Expectations
     expect(router.navigate).toHaveBeenCalledWith([], {
       relativeTo: route,
-      queryParams: { [component.VERSION_PARAM]: version },
+      queryParams: { [versionParam]: version },
       queryParamsHandling: 'merge'
     });
   });

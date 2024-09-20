@@ -4,11 +4,13 @@
 }
 
 .logo__image {
-  width: 70px;
+  object-fit: contain;
 }
 
 .logo__image-container {
   margin-right: 20px;
+  width: 70px;
+  position: relative !important;
 }
 
 .link-to-main {
@@ -38,6 +40,10 @@
 
 .detail-body {
   gap: 4rem;
+
+  .tab-title {
+    padding: 0.5rem;
+  }
 }
 
 .readme-content ::ng-deep {
@@ -205,6 +211,7 @@
 
 .product-title {
   line-height: 79.2px;
+  white-space: break-spaces;
 }
 
 hr {
@@ -221,6 +228,7 @@ hr {
 
   .logo__image {
     width: 41px;
+    object-fit: contain;
   }
 
   .product-analysis {

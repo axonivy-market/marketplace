@@ -20,13 +20,15 @@
           <div class="d-flex">
             <div class="logo__image-container">
               <img
+                fill
                 [lang]="languageService.selectedLanguage()"
                 class="logo__image"
-                [src]="productDetail().logoUrl"
+                [ngSrc]="logoUrl"
+                (error)="onLogoError()"
                 [alt]="
                   productDetail().names
                     | multilingualism: languageService.selectedLanguage()
-                " />
+                "/>
             </div>
             <h1
               [lang]="languageService.selectedLanguage()"
@@ -96,7 +98,7 @@
                 <a
                   [lang]="languageService.selectedLanguage()"
                   ngbNavLink
-                  class="nav-link border-0 bg-transparent"
+                  class="nav-link tab-title border-0 bg-transparent"
                   [class.active]="activeTab === displayedTab.value"
                   [id]="displayedTab.tabId"
                   (click)="setActiveTab(displayedTab.value)"
@@ -163,7 +165,7 @@
                 [attr.aria-labelledby]="displayedTab.value + '-tab'">
                 @if (displayedTab.value === 'dependency') {
                   <app-product-detail-maven-content
-                    [productModuleContent]="productModuleContent()"
+                    [productDetail]="productDetail()"
                     [selectedVersion]="selectedVersion">
                   </app-product-detail-maven-content>
                 } @else {

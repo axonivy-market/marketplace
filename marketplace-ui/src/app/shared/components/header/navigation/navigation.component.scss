@@ -11,8 +11,10 @@
 .nav-link {
   height: 22px;
   line-height: 22.4px;
-  font-weight: 400;
-  font-size: 16px;
+}
+
+.nav-link.active {
+  font-weight: bold;
 }
 
 .active-line {
@@ -48,6 +50,9 @@
     gap: 0px;
     border-radius: 5px;
     opacity: 0px;
+    line-height: 140%;
+    font-weight: 600;
+    font-size: 1.125rem;
   }
 
   .nav-link.active {
@@ -56,6 +61,6 @@
     gap: 0px;
     border-radius: 5px;
     opacity: 0px;
-    background-color: var(--ivy-secondary-background);
+    background-color: var(--ivy-secondary-bg);
   }
 }

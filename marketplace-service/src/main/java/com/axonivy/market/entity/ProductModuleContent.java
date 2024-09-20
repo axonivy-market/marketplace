@@ -7,10 +7,12 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.springframework.data.annotation.Id;
+import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.io.Serial;
 import java.io.Serializable;
+import java.util.Date;
 import java.util.Map;
 
 import static com.axonivy.market.constants.EntityConstants.PRODUCT_MODULE_CONTENT;
@@ -46,4 +48,6 @@ public class ProductModuleContent implements Serializable {
   private String artifactId;
   @Schema(description = "Artifact file type", example = "iar")
   private String type;
+  @LastModifiedDate
+  private Date updatedAt;
 }

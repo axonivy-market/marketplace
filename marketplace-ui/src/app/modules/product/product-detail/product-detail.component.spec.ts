@@ -1,6 +1,14 @@
-import { provideHttpClient, withInterceptorsFromDi } from '@angular/common/http';
+import {
+  provideHttpClient,
+  withInterceptorsFromDi
+} from '@angular/common/http';
 import { provideHttpClientTesting } from '@angular/common/http/testing';
-import { ComponentFixture, fakeAsync, TestBed, tick } from '@angular/core/testing';
+import {
+  ComponentFixture,
+  fakeAsync,
+  TestBed,
+  tick
+} from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 import { ActivatedRoute } from '@angular/router';
 import { TranslateModule } from '@ngx-translate/core';
@@ -22,7 +30,6 @@ import { MockProductService } from '../../../shared/mocks/mock-services';
 import { ProductDetailActionType } from '../../../shared/enums/product-detail-action-type';
 import { LanguageService } from '../../../core/services/language/language.service';
 import { Language } from '../../../shared/enums/language.enum';
-
 const products = MOCK_PRODUCTS._embedded.products;
 declare const viewport: Viewport;
 
@@ -37,7 +44,7 @@ describe('ProductDetailComponent', () => {
       'RoutingQueryParamService',
       ['getDesignerVersionFromCookie', 'isDesignerEnv']
     );
-
+    
     const languageServiceSpy = jasmine.createSpyObj(
       'LanguageService',
       ['selectedLanguage']
@@ -160,22 +167,22 @@ describe('ProductDetailComponent', () => {
   });
 
   it('should not display information when product detail is empty', () => {
-      const mockContentWithEmptySetup: ProductModuleContent =
-        {} as ProductModuleContent;
-      component.productModuleContent.set(mockContentWithEmptySetup);
-      expect(component.isEmptyProductContent()).toBeTrue();
-      fixture.detectChanges();
-      const description = fixture.debugElement.query(By.css('#description'));
-      expect(description).toBeFalsy();
+    const mockContentWithEmptySetup: ProductModuleContent =
+      {} as ProductModuleContent;
+    component.productModuleContent.set(mockContentWithEmptySetup);
+    expect(component.isEmptyProductContent()).toBeTrue();
+    fixture.detectChanges();
+    const description = fixture.debugElement.query(By.css('#description'));
+    expect(description).toBeFalsy();
     }
-  );
+  )
 
   it('should return true for description when in EN language it is not null and not undefined and not empty', () => {
     const mockContent: ProductModuleContent = {
       ...MOCK_PRODUCT_MODULE_CONTENT,
       description: { en: 'Test description' }
     };
-
+    
     const selectedLanguage = Language.EN;
 
     languageService.selectedLanguage.and.returnValue(
@@ -191,7 +198,7 @@ describe('ProductDetailComponent', () => {
       ...MOCK_PRODUCT_MODULE_CONTENT,
       description: { de: 'Test description' }
     };
-
+    
     const selectedLanguage = Language.DE;
 
     languageService.selectedLanguage.and.returnValue(
@@ -207,7 +214,7 @@ describe('ProductDetailComponent', () => {
       ...MOCK_PRODUCT_MODULE_CONTENT,
       description: { en: 'Test description', de: '' }
     };
-
+    
     const selectedLanguage = Language.DE;
 
     languageService.selectedLanguage.and.returnValue(
@@ -221,9 +228,9 @@ describe('ProductDetailComponent', () => {
   it('should return true for description when in DE language it is undefined but in EN language it has value', () => {
     const mockContent: ProductModuleContent = {
       ...MOCK_PRODUCT_MODULE_CONTENT,
-      description: { en: 'Test description' }
+      description: { en: 'Test description'}
     };
-
+    
     const selectedLanguage = Language.DE;
 
     languageService.selectedLanguage.and.returnValue(
@@ -241,12 +248,23 @@ describe('ProductDetailComponent', () => {
     expect(component.getContent('description')).toBeFalse();
   });
 
+  it('should return false for any tab when detail content is undefined or null', () => {
+    component.productModuleContent.set(null as any as ProductModuleContent);
+    expect(component.getContent('description')).toBeFalse();
+    component.productModuleContent.set(
+      undefined as any as ProductModuleContent
+    );
+    expect(component.getContent('description')).toBeFalse();
+    component.productModuleContent.set({} as any as ProductModuleContent);
+    expect(component.getContent('description')).toBeFalse();
+  });
+
   it('should return false for description when in EN language it is an empty string', () => {
     const mockContent: ProductModuleContent = {
       ...MOCK_PRODUCT_MODULE_CONTENT,
       description: { en: '', de: 'Test description' }
     };
-
+    
     const selectedLanguage = Language.EN;
 
     languageService.selectedLanguage.and.returnValue(
@@ -260,7 +278,7 @@ describe('ProductDetailComponent', () => {
   it('should return false for description when in EN language it is undefined', () => {
     const mockContent: ProductModuleContent = {
       ...MOCK_PRODUCT_MODULE_CONTENT,
-      description: { de: 'Test description' }
+      description: { de: "Test description" }
     };
 
     const selectedLanguage = Language.EN;
@@ -278,7 +296,7 @@ describe('ProductDetailComponent', () => {
       ...MOCK_PRODUCT_MODULE_CONTENT,
       description: { en: '', de: '' }
     };
-
+    
     const selectedLanguage = Language.EN;
 
     languageService.selectedLanguage.and.returnValue(
@@ -294,7 +312,7 @@ describe('ProductDetailComponent', () => {
       ...MOCK_PRODUCT_MODULE_CONTENT,
       description: {}
     };
-
+    
     const selectedLanguage = Language.EN;
 
     languageService.selectedLanguage.and.returnValue(
@@ -310,7 +328,7 @@ describe('ProductDetailComponent', () => {
       ...MOCK_PRODUCT_MODULE_CONTENT,
       setup: { en: 'Test setup' }
     };
-
+    
     const selectedLanguage = Language.EN;
 
     languageService.selectedLanguage.and.returnValue(
@@ -326,7 +344,7 @@ describe('ProductDetailComponent', () => {
       ...MOCK_PRODUCT_MODULE_CONTENT,
       setup: { de: 'Test setup' }
     };
-
+    
     const selectedLanguage = Language.DE;
 
     languageService.selectedLanguage.and.returnValue(
@@ -342,7 +360,7 @@ describe('ProductDetailComponent', () => {
       ...MOCK_PRODUCT_MODULE_CONTENT,
       setup: { en: 'Test setup', de: '' }
     };
-
+    
     const selectedLanguage = Language.DE;
 
     languageService.selectedLanguage.and.returnValue(
@@ -356,9 +374,9 @@ describe('ProductDetailComponent', () => {
   it('should return true for setup when in DE language it is undefined but in EN language it has value', () => {
     const mockContent: ProductModuleContent = {
       ...MOCK_PRODUCT_MODULE_CONTENT,
-      setup: { en: 'Test setup' }
+      setup: { en: 'Test setup'}
     };
-
+    
     const selectedLanguage = Language.DE;
 
     languageService.selectedLanguage.and.returnValue(
@@ -379,7 +397,7 @@ describe('ProductDetailComponent', () => {
   it('should return false for setup when in EN language it is an empty string', () => {
     const mockContent: ProductModuleContent = {
       ...MOCK_PRODUCT_MODULE_CONTENT,
-      setup: { en: '', de: 'Test setup' }
+      setup: { en: '', de: "Test setup" }
     };
 
     const selectedLanguage = Language.EN;
@@ -395,7 +413,7 @@ describe('ProductDetailComponent', () => {
   it('should return false for setup when in EN language it is undefined', () => {
     const mockContent: ProductModuleContent = {
       ...MOCK_PRODUCT_MODULE_CONTENT,
-      setup: { de: 'Test setup' }
+      setup: { de: "Test setup" }
     };
 
     const selectedLanguage = Language.EN;
@@ -413,7 +431,7 @@ describe('ProductDetailComponent', () => {
       ...MOCK_PRODUCT_MODULE_CONTENT,
       setup: { en: '', de: '' }
     };
-
+    
     const selectedLanguage = Language.EN;
 
     languageService.selectedLanguage.and.returnValue(
@@ -429,7 +447,7 @@ describe('ProductDetailComponent', () => {
       ...MOCK_PRODUCT_MODULE_CONTENT,
       setup: {}
     };
-
+    
     const selectedLanguage = Language.EN;
 
     languageService.selectedLanguage.and.returnValue(
@@ -445,7 +463,7 @@ describe('ProductDetailComponent', () => {
       ...MOCK_PRODUCT_MODULE_CONTENT,
       demo: { en: 'Test demo' }
     };
-
+    
     const selectedLanguage = Language.EN;
 
     languageService.selectedLanguage.and.returnValue(
@@ -461,7 +479,7 @@ describe('ProductDetailComponent', () => {
       ...MOCK_PRODUCT_MODULE_CONTENT,
       demo: { de: 'Test demo' }
     };
-
+    
     const selectedLanguage = Language.DE;
 
     languageService.selectedLanguage.and.returnValue(
@@ -477,7 +495,7 @@ describe('ProductDetailComponent', () => {
       ...MOCK_PRODUCT_MODULE_CONTENT,
       demo: { en: 'Test demo', de: '' }
     };
-
+    
     const selectedLanguage = Language.DE;
 
     languageService.selectedLanguage.and.returnValue(
@@ -491,9 +509,9 @@ describe('ProductDetailComponent', () => {
   it('should return true for demo when in DE language it is undefined but in EN language it has value', () => {
     const mockContent: ProductModuleContent = {
       ...MOCK_PRODUCT_MODULE_CONTENT,
-      demo: { en: 'Test demo' }
+      demo: { en: 'Test demo'}
     };
-
+    
     const selectedLanguage = Language.DE;
 
     languageService.selectedLanguage.and.returnValue(
@@ -516,7 +534,7 @@ describe('ProductDetailComponent', () => {
       ...MOCK_PRODUCT_MODULE_CONTENT,
       demo: { en: '', de: 'Test demo' }
     };
-
+    
     const selectedLanguage = Language.EN;
 
     languageService.selectedLanguage.and.returnValue(
@@ -530,7 +548,7 @@ describe('ProductDetailComponent', () => {
   it('should return false for demo when in EN language it is undefined', () => {
     const mockContent: ProductModuleContent = {
       ...MOCK_PRODUCT_MODULE_CONTENT,
-      demo: { de: 'Test demo' }
+      demo: { de: "Test demo" }
     };
 
     const selectedLanguage = Language.EN;
@@ -548,7 +566,7 @@ describe('ProductDetailComponent', () => {
       ...MOCK_PRODUCT_MODULE_CONTENT,
       demo: { en: '', de: '' }
     };
-
+    
     const selectedLanguage = Language.EN;
 
     languageService.selectedLanguage.and.returnValue(
@@ -564,7 +582,7 @@ describe('ProductDetailComponent', () => {
       ...MOCK_PRODUCT_MODULE_CONTENT,
       demo: {}
     };
-
+    
     const selectedLanguage = Language.EN;
 
     languageService.selectedLanguage.and.returnValue(
@@ -637,26 +655,24 @@ describe('ProductDetailComponent', () => {
     spyOn(window, 'matchMedia').and.returnValue({
       matches: true,
       media: '',
-      addEventListener: () => {
-      },
-      removeEventListener: () => {
-      },
+      addEventListener: () => {},
+      removeEventListener: () => {},
       onchange: null,
-      addListener: function(
+      addListener: function (
         callback:
           | ((this: MediaQueryList, ev: MediaQueryListEvent) => any)
           | null
       ): void {
         throw new Error('Function not implemented.');
       },
-      removeListener: function(
+      removeListener: function (
         callback:
           | ((this: MediaQueryList, ev: MediaQueryListEvent) => any)
           | null
       ): void {
         throw new Error('Function not implemented.');
       },
-      dispatchEvent: function(event: Event): boolean {
+      dispatchEvent: function (event: Event): boolean {
         throw new Error('Function not implemented.');
       }
     });
@@ -667,10 +683,8 @@ describe('ProductDetailComponent', () => {
     (window.matchMedia as jasmine.Spy).and.returnValue({
       matches: false,
       media: '',
-      addEventListener: () => {
-      },
-      removeEventListener: () => {
-      }
+      addEventListener: () => {},
+      removeEventListener: () => {}
     });
 
     component.checkMediaSize();
@@ -704,7 +718,7 @@ describe('ProductDetailComponent', () => {
   it('should return DESIGNER_ENV as acction type in Designer Env', () => {
     routingQueryParamService.isDesignerEnv.and.returnValue(true);
 
-    component.updateProductDetailActionType({ sourceUrl: 'some-url' } as any);
+    component.updateProductDetailActionType({ sourceUrl: 'some-url'} as any);
     expect(component.productDetailActionType()).toBe(
       ProductDetailActionType.DESIGNER_ENV
     );
@@ -735,33 +749,4 @@ describe('ProductDetailComponent', () => {
       ProductDetailActionType.STANDARD
     );
   });
-
-  it('should update activeTab based on URL hash', () => {
-    // Simulate window popstate event with a specific hash
-    window.location.hash = '#tab-2';
-    window.dispatchEvent(new PopStateEvent('popstate'));
-
-    // Check if activeTab is updated correctly
-    expect(component.activeTab).toBe('2');
-
-    // Simulate window popstate event with no hash
-    window.location.hash = '';
-    window.dispatchEvent(new PopStateEvent('popstate'));
-
-    // Check if activeTab is set to DEFAULT_ACTIVE_TAB
-    expect(component.activeTab).toBe(component.DEFAULT_ACTIVE_TAB);
-  });
-
-  it('should set activeTab to savedTab if it exists in localStorage', () => {
-    // Arrange
-    const savedTab = 'tab-1';
-    spyOn(localStorage, 'getItem').and.returnValue(savedTab);
-
-    // Act
-    component.ngOnInit();
-
-    // Assert
-    expect(component.activeTab).toBe(savedTab);
-  });
-
 });

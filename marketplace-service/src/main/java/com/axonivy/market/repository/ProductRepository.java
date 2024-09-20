@@ -10,4 +10,6 @@ public interface ProductRepository extends MongoRepository<Product, String>, Pro
 
   Product findByLogoUrl(String logoUrl);
 
+  Product findByLogoId(String logoId);
+
 }
