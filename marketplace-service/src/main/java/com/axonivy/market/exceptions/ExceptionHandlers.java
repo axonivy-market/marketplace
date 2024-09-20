@@ -84,6 +84,7 @@ public class ExceptionHandlers extends ResponseEntityExceptionHandler {
     errorMessage.setMessageDetails(oauth2ExchangeCodeException.getErrorDescription());
     return new ResponseEntity<>(errorMessage, HttpStatus.BAD_REQUEST);
   }
+
   @ExceptionHandler(UnauthorizedException.class)
   public ResponseEntity<Object> handleUnauthorizedException(
       UnauthorizedException unauthorizedException) {

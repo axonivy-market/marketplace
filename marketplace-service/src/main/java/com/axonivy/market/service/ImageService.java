@@ -1,10 +1,9 @@
 package com.axonivy.market.service;
 
-import org.bson.types.Binary;
-import org.kohsuke.github.GHContent;
-
 import com.axonivy.market.entity.Image;
 import com.axonivy.market.entity.Product;
+import org.bson.types.Binary;
+import org.kohsuke.github.GHContent;
 
 public interface ImageService {
   Binary getImageBinary(GHContent ghContent);

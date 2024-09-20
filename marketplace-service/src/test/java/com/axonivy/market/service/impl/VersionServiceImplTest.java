@@ -28,6 +28,7 @@ import org.mockito.Mockito;
 import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.test.util.ReflectionTestUtils;
+
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -241,7 +242,8 @@ class VersionServiceImplTest {
     String repoUrl = "https://maven.axonivy.com";
     String groupId = "com.axonivy.connector.adobe.acrobat.sign";
     String artifactId = "adobe-acrobat-sign-connector";
-    String metadataUrl = "https://maven.axonivy.com/com/axonivy/connector/adobe/acrobat/sign/adobe-acrobat-sign-connector/maven-metadata.xml";
+    String metadataUrl = "https://maven.axonivy.com/com/axonivy/connector/adobe/acrobat/sign/adobe-acrobat-sign" +
+        "-connector/maven-metadata.xml";
     Assertions.assertEquals(StringUtils.EMPTY,
         versionService.buildMavenMetadataUrlFromArtifact(repoUrl, null, artifactId));
     Assertions.assertEquals(StringUtils.EMPTY, versionService.buildMavenMetadataUrlFromArtifact(repoUrl, groupId, null),
@@ -286,7 +288,8 @@ class VersionServiceImplTest {
 
   @Test
   void testConvertMavenArtifactToModel() {
-    String downloadUrl = "https://maven.axonivy.com/com/axonivy/connector/adobe/acrobat/sign/adobe-acrobat-sign-connector/10.0.21/adobe-acrobat-sign-connector-10.0.21.iar";
+    String downloadUrl = "https://maven.axonivy.com/com/axonivy/connector/adobe/acrobat/sign/adobe-acrobat-sign" +
+        "-connector/10.0.21/adobe-acrobat-sign-connector-10.0.21.iar";
     String artifactName = "Adobe Acrobat Sign Connector (iar)";
 
     MavenArtifact targetArtifact = new MavenArtifact(null, null, "com.axonivy.connector.adobe.acrobat.sign",

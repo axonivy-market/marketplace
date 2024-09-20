@@ -32,7 +32,8 @@ public class ProductModuleContent implements Serializable {
   private String productId;
   @Schema(description = "Target release tag", example = "v10.0.25")
   private String tag;
-  @Schema(description = "Product detail description content ", example = "{ \"de\": \"E-Sign-Konnektor\", \"en\": \"E-sign connector\" }")
+  @Schema(description = "Product detail description content ",
+      example = "{ \"de\": \"E-Sign-Konnektor\", \"en\": \"E-sign connector\" }")
   private Map<String, String> description;
   @Schema(description = "Setup tab content", example = "{ \"de\": \"Setup\", \"en\": \"Setup\" ")
   private Map<String, String> setup;

@@ -10,5 +10,5 @@ import java.util.List;
 @Repository
 public interface ProductDesignerInstallationRepository extends MongoRepository<ProductDesignerInstallation, String> {
 
-    List<ProductDesignerInstallation> findByProductId(String productId, Sort sort);
+  List<ProductDesignerInstallation> findByProductId(String productId, Sort sort);
 }
