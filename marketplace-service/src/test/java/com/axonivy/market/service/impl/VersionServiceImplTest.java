@@ -111,17 +111,6 @@ class VersionServiceImplTest {
   }
 
   @Test
-  void testBuildMavenMetadataUrlFromArtifact() {
-    String repoUrl = "https://maven.axonivy.com";
-    String groupId = "com.axonivy.connector.adobe.acrobat.sign";
-    String artifactId = "adobe-acrobat-sign-connector";
-    String metadataUrl = "https://maven.axonivy.com/com/axonivy/connector/adobe/acrobat/sign/adobe-acrobat-sign-connector/maven-metadata.xml";
-    Assertions.assertEquals(StringUtils.EMPTY, versionService.buildMavenMetadataUrlFromArtifact(repoUrl, null, artifactId));
-    Assertions.assertEquals(StringUtils.EMPTY, versionService.buildMavenMetadataUrlFromArtifact(repoUrl, groupId, null), StringUtils.EMPTY);
-    Assertions.assertEquals(metadataUrl, versionService.buildMavenMetadataUrlFromArtifact(repoUrl, groupId, artifactId));
-  }
-
-  @Test
   void testGetMavenArtifactsFromProductJsonByVersion() throws IOException {
     when(productJsonContentRepository.findByProductIdAndVersion("adobe-acrobat-connector", "10.0.20")).thenReturn(null);
 

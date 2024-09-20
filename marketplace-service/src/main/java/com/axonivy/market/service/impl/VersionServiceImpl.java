@@ -156,16 +156,6 @@ public class VersionServiceImpl implements VersionService {
     return new ArrayList<>(versions);
   }
 
-  @Override
-  public String buildMavenMetadataUrlFromArtifact(String repoUrl, String groupId, String artifactID) {
-    if (StringUtils.isAnyBlank(groupId, artifactID)) {
-      return StringUtils.EMPTY;
-    }
-    repoUrl = Optional.ofNullable(repoUrl).orElse(MavenConstants.DEFAULT_IVY_MAVEN_BASE_URL);
-    groupId = groupId.replace(CommonConstants.DOT_SEPARATOR, CommonConstants.SLASH);
-    return String.format(MavenConstants.METADATA_URL_FORMAT, repoUrl, groupId, artifactID);
-  }
-
   public List<MavenArtifact> getMavenArtifactsFromProductJsonByVersion(String version, String productId) {
     ProductJsonContent productJson = productJsonRepo.findByProductIdAndVersion(productId, version);
     if (Objects.isNull(productJson) || StringUtils.isBlank(productJson.getContent())) {
