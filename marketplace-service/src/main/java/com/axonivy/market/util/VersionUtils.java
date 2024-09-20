@@ -52,7 +52,9 @@ public class VersionUtils {
             return true;
         }
         String bugfixVersion;
-        if (isSnapshotVersion(version)) {
+        if (!isValidFormatReleasedVersion(version)) {
+            return false;
+        } else if (isSnapshotVersion(version)) {
             bugfixVersion = getBugfixVersion(version.replace(MavenConstants.SNAPSHOT_RELEASE_POSTFIX, StringUtils.EMPTY));
         } else {
             bugfixVersion = getBugfixVersion(version.split(MavenConstants.SPRINT_RELEASE_POSTFIX)[0]);
