@@ -14,12 +14,12 @@ public class MarketHeaderInterceptor implements HandlerInterceptor {
 
   @Override
   public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler)
-          throws Exception {
+      throws Exception {
     if (HttpMethod.OPTIONS.name().equalsIgnoreCase(request.getMethod())) {
       return true;
     }
     if (!HttpMethod.GET.name().equalsIgnoreCase(request.getMethod())
-            && StringUtils.isBlank(request.getHeader(CommonConstants.REQUESTED_BY))) {
+        && StringUtils.isBlank(request.getHeader(CommonConstants.REQUESTED_BY))) {
       throw new MissingHeaderException();
     }
     return true;

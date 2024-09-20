@@ -1,10 +1,5 @@
 package com.axonivy.market.factory;
 
-import static com.axonivy.market.constants.CommonConstants.SLASH;
-import static com.axonivy.market.constants.MetaConstants.DEFAULT_VENDOR_NAME;
-import static com.axonivy.market.constants.MetaConstants.DEFAULT_VENDOR_URL;
-import static com.axonivy.market.constants.MetaConstants.META_FILE;
-import static org.apache.commons.lang3.StringUtils.EMPTY;
 import com.axonivy.market.constants.CommonConstants;
 import com.axonivy.market.entity.Product;
 import com.axonivy.market.entity.ProductJsonContent;
@@ -19,11 +14,16 @@ import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.kohsuke.github.GHContent;
 import org.springframework.util.CollectionUtils;
+
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import static com.axonivy.market.constants.CommonConstants.SLASH;
+import static com.axonivy.market.constants.MetaConstants.*;
+import static org.apache.commons.lang3.StringUtils.EMPTY;
 
 @Log4j2
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
@@ -125,7 +125,8 @@ public class ProductFactory {
 
   public static void mappingIdForProductJsonContent(ProductJsonContent content) {
     if (StringUtils.isNotBlank(content.getProductId()) && StringUtils.isNotBlank(content.getVersion())) {
-      content.setId(String.format(CommonConstants.ID_WITH_NUMBER_PATTERN, content.getProductId(), content.getVersion()));
+      content.setId(
+          String.format(CommonConstants.ID_WITH_NUMBER_PATTERN, content.getProductId(), content.getVersion()));
     }
   }
 }
