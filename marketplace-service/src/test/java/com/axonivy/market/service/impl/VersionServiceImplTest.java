@@ -88,7 +88,8 @@ class VersionServiceImplTest {
     when(mavenArtifactVersionRepository.findById(Mockito.anyString())).thenReturn(Optional.empty());
     ArrayList<MavenArtifactModel> artifactsInVersion = new ArrayList<>();
     artifactsInVersion.add(new MavenArtifactModel());
-    when(versionService.convertArtifactsToModels(Mockito.anyList(), Mockito.anyString(), Mockito.any())).thenReturn(artifactsInVersion);
+    when(versionService.convertArtifactsToModels(Mockito.anyList(), Mockito.anyString(), Mockito.any())).thenReturn(
+        artifactsInVersion);
     Assertions.assertEquals(1, versionService.getArtifactsAndVersionToDisplay(productId, false, targetVersion).size());
 
     MavenArtifactVersion proceededData = new MavenArtifactVersion();
@@ -113,20 +114,24 @@ class VersionServiceImplTest {
   void testGetMavenArtifactsFromProductJsonByVersion() throws IOException {
     when(productJsonContentRepository.findByProductIdAndVersion("adobe-acrobat-connector", "10.0.20")).thenReturn(null);
 
-    Assertions.assertEquals(0, versionService.getMavenArtifactsFromProductJsonByVersion("10.0.20", "adobe-acrobat-connector").size());
+    Assertions.assertEquals(0,
+        versionService.getMavenArtifactsFromProductJsonByVersion("10.0.20", "adobe-acrobat-connector").size());
 
     String jsonContent = "{ \"installers\": [{ \"id\": \"maven-import\", \"data\": { \"repositories\": [{ \"url\": \"http://repo.url\" }], \"projects\": [], \"dependencies\": [] } }] }";
     ProductJsonContent productJson = new ProductJsonContent();
     productJson.setContent(jsonContent);
-    when(productJsonContentRepository.findByProductIdAndVersion("adobe-acrobat-connector", "10.0.20")).thenReturn(productJson);
+    when(productJsonContentRepository.findByProductIdAndVersion("adobe-acrobat-connector", "10.0.20")).thenReturn(
+        productJson);
 
     List<MavenArtifact> expectedArtifacts = new ArrayList<>();
     when(gitHubService.extractMavenArtifactsFromContentStream(Mockito.any())).thenReturn(expectedArtifacts);
 
-    List<MavenArtifact> actualArtifacts = versionService.getMavenArtifactsFromProductJsonByVersion("10.0.20", "adobe-acrobat-connector");
+    List<MavenArtifact> actualArtifacts = versionService.getMavenArtifactsFromProductJsonByVersion("10.0.20",
+        "adobe-acrobat-connector");
 
     Assertions.assertEquals(expectedArtifacts, actualArtifacts);
-    verify(productJsonContentRepository, Mockito.times(2)).findByProductIdAndVersion("adobe-acrobat-connector", "10.0.20");
+    verify(productJsonContentRepository, Mockito.times(2)).findByProductIdAndVersion("adobe-acrobat-connector",
+        "10.0.20");
     verify(gitHubService).extractMavenArtifactsFromContentStream(Mockito.any());
 
   }
@@ -134,7 +139,8 @@ class VersionServiceImplTest {
   @Test
   void testConvertArtifactsToModels() {
     // Assert case param is empty
-    List<MavenArtifactModel> result = versionService.convertArtifactsToModels(Collections.emptyList(), "10.0.21", new HashMap<>());
+    List<MavenArtifactModel> result = versionService.convertArtifactsToModels(Collections.emptyList(), "10.0.21",
+        new HashMap<>());
     Assertions.assertEquals(Collections.emptyList(), result);
 
     // Assert case param is null
@@ -142,7 +148,8 @@ class VersionServiceImplTest {
     Assertions.assertEquals(Collections.emptyList(), result);
 
     // Assert case param is a list with existed element
-    MavenArtifact targetArtifact = new MavenArtifact(null, null, "com.axonivy.connector.adobe.acrobat.sign", "adobe-acrobat-sign-connector", null, null, null, null);
+    MavenArtifact targetArtifact = new MavenArtifact(null, null, "com.axonivy.connector.adobe.acrobat.sign",
+        "adobe-acrobat-sign-connector", null, null, null, null);
     result = versionService.convertArtifactsToModels(List.of(targetArtifact), "10.0.21", new HashMap<>());
     Assertions.assertEquals(1, result.size());
   }
@@ -152,22 +159,29 @@ class VersionServiceImplTest {
     // Set up artifact for testing
     String targetArtifactId = "adobe-acrobat-sign-connector";
     String targetGroupId = "com.axonivy.connector";
-    MavenArtifact targetArtifact = new MavenArtifact(null, null, targetGroupId, targetArtifactId, "iar", null, null, null);
+    MavenArtifact targetArtifact = new MavenArtifact(null, null, targetGroupId, targetArtifactId, "iar", null, null,
+        null);
     String targetVersion = "10.0.10";
 
     // Assert case without archived artifact
-    String expectedResult = String.format(MavenConstants.ARTIFACT_DOWNLOAD_URL_FORMAT, MavenConstants.DEFAULT_IVY_MAVEN_BASE_URL, "com/axonivy/connector", targetArtifactId, targetVersion, targetArtifactId, targetVersion, "iar");
-    String result = versionService.buildDownloadUrlFromArtifactAndVersion(targetArtifact, targetVersion, archivedArtifactsMap);
+    String expectedResult = String.format(MavenConstants.ARTIFACT_DOWNLOAD_URL_FORMAT,
+        MavenConstants.DEFAULT_IVY_MAVEN_BASE_URL, "com/axonivy/connector", targetArtifactId, targetVersion,
+        targetArtifactId, targetVersion, "iar");
+    String result = versionService.buildDownloadUrlFromArtifactAndVersion(targetArtifact, targetVersion,
+        archivedArtifactsMap);
     Assertions.assertEquals(expectedResult, result);
 
     // Assert case with artifact not match & use custom repo
-    ArchivedArtifact adobeArchivedArtifactVersion9 = new ArchivedArtifact("10.0.9", "com.axonivy.adobe.connector", "adobe-connector");
-    ArchivedArtifact adobeArchivedArtifactVersion8 = new ArchivedArtifact("10.0.8", "com.axonivy.adobe.sign.connector", "adobe-sign-connector");
+    ArchivedArtifact adobeArchivedArtifactVersion9 = new ArchivedArtifact("10.0.9", "com.axonivy.adobe.connector",
+        "adobe-connector");
+    ArchivedArtifact adobeArchivedArtifactVersion8 = new ArchivedArtifact("10.0.8", "com.axonivy.adobe.sign.connector",
+        "adobe-sign-connector");
     archivedArtifactsMap.put(targetArtifactId, List.of(adobeArchivedArtifactVersion9, adobeArchivedArtifactVersion8));
     String customRepoUrl = "https://nexus.axonivy.com";
     targetArtifact.setRepoUrl(customRepoUrl);
     result = versionService.buildDownloadUrlFromArtifactAndVersion(targetArtifact, targetVersion, archivedArtifactsMap);
-    expectedResult = String.format(MavenConstants.ARTIFACT_DOWNLOAD_URL_FORMAT, customRepoUrl, "com/axonivy/connector", targetArtifactId, targetVersion, targetArtifactId, targetVersion, "iar");
+    expectedResult = String.format(MavenConstants.ARTIFACT_DOWNLOAD_URL_FORMAT, customRepoUrl, "com/axonivy/connector",
+        targetArtifactId, targetVersion, targetArtifactId, targetVersion, "iar");
     Assertions.assertEquals(expectedResult, result);
 
     // Assert case with artifact got matching archived artifact & use custom file
@@ -176,7 +190,8 @@ class VersionServiceImplTest {
     targetArtifact.setType(customType);
     targetVersion = "10.0.9";
     result = versionService.buildDownloadUrlFromArtifactAndVersion(targetArtifact, "10.0.9", archivedArtifactsMap);
-    expectedResult = String.format(MavenConstants.ARTIFACT_DOWNLOAD_URL_FORMAT, customRepoUrl, "com/axonivy/adobe/connector", "adobe-connector", targetVersion, "adobe-connector", targetVersion, customType);
+    expectedResult = String.format(MavenConstants.ARTIFACT_DOWNLOAD_URL_FORMAT, customRepoUrl,
+        "com/axonivy/adobe/connector", "adobe-connector", targetVersion, "adobe-connector", targetVersion, customType);
     Assertions.assertEquals(expectedResult, result);
   }
 
@@ -184,40 +199,49 @@ class VersionServiceImplTest {
   void testFindArchivedArtifactInfoBestMatchWithVersion() {
     String targetArtifactId = "adobe-acrobat-sign-connector";
     String targetVersion = "10.0.10";
-    ArchivedArtifact result = versionService.findArchivedArtifactInfoBestMatchWithVersion(targetArtifactId, targetVersion, new HashMap<>());
+    ArchivedArtifact result = versionService.findArchivedArtifactInfoBestMatchWithVersion(targetArtifactId,
+        targetVersion, new HashMap<>());
     Assertions.assertNull(result);
 
     // Assert case with target version higher than all of latest version from
     // archived artifact list
-    ArchivedArtifact adobeArchivedArtifactVersion8 = new ArchivedArtifact("10.0.8", "com.axonivy.connector", "adobe-sign-connector");
-    ArchivedArtifact adobeArchivedArtifactVersion9 = new ArchivedArtifact("10.0.9", "com.axonivy.connector", "adobe-acrobat-sign-connector");
+    ArchivedArtifact adobeArchivedArtifactVersion8 = new ArchivedArtifact("10.0.8", "com.axonivy.connector",
+        "adobe-sign-connector");
+    ArchivedArtifact adobeArchivedArtifactVersion9 = new ArchivedArtifact("10.0.9", "com.axonivy.connector",
+        "adobe-acrobat-sign-connector");
     List<ArchivedArtifact> archivedArtifacts = new ArrayList<>();
     archivedArtifacts.add(adobeArchivedArtifactVersion8);
     archivedArtifacts.add(adobeArchivedArtifactVersion9);
     archivedArtifactsMap.put(targetArtifactId, archivedArtifacts);
-    result = versionService.findArchivedArtifactInfoBestMatchWithVersion(targetArtifactId, targetVersion, archivedArtifactsMap);
+    result = versionService.findArchivedArtifactInfoBestMatchWithVersion(targetArtifactId, targetVersion,
+        archivedArtifactsMap);
     Assertions.assertNull(result);
 
     // Assert case with target version less than all of latest version from archived
     // artifact list
-    result = versionService.findArchivedArtifactInfoBestMatchWithVersion(targetArtifactId, "10.0.7", archivedArtifactsMap);
+    result = versionService.findArchivedArtifactInfoBestMatchWithVersion(targetArtifactId, "10.0.7",
+        archivedArtifactsMap);
     Assertions.assertEquals(adobeArchivedArtifactVersion8, result);
 
     // Assert case with target version is in range of archived artifact list
-    ArchivedArtifact adobeArchivedArtifactVersion10 = new ArchivedArtifact("10.0.10", "com.axonivy.connector", "adobe-sign-connector");
+    ArchivedArtifact adobeArchivedArtifactVersion10 = new ArchivedArtifact("10.0.10", "com.axonivy.connector",
+        "adobe-sign-connector");
 
     archivedArtifactsMap.get(targetArtifactId).add(adobeArchivedArtifactVersion10);
-    result = versionService.findArchivedArtifactInfoBestMatchWithVersion(targetArtifactId, targetVersion, archivedArtifactsMap);
+    result = versionService.findArchivedArtifactInfoBestMatchWithVersion(targetArtifactId, targetVersion,
+        archivedArtifactsMap);
     Assertions.assertEquals(adobeArchivedArtifactVersion10, result);
   }
 
   @Test
   void testGetVersionsForDesigner() {
-    Mockito.when(productRepository.getReleasedVersionsById(anyString())).thenReturn(List.of("11.3.0", "11.1.1", "11.1.0", "10.0.2"));
+    Mockito.when(productRepository.getReleasedVersionsById(anyString()))
+        .thenReturn(List.of("11.3.0", "11.1.1", "11.1.0", "10.0.2"));
 
     List<VersionAndUrlModel> result = versionService.getVersionsForDesigner("11.3.0");
 
-    Assertions.assertEquals(result.stream().map(VersionAndUrlModel::getVersion).toList(), List.of("11.3.0", "11.1.1", "11.1.0", "10.0.2"));
+    Assertions.assertEquals(result.stream().map(VersionAndUrlModel::getVersion).toList(),
+        List.of("11.3.0", "11.1.1", "11.1.0", "10.0.2"));
     Assertions.assertTrue(result.get(0).getUrl().endsWith("/api/product-details/11.3.0/11.3.0/json"));
     Assertions.assertTrue(result.get(1).getUrl().endsWith("/api/product-details/11.3.0/11.1.1/json"));
     Assertions.assertTrue(result.get(2).getUrl().endsWith("/api/product-details/11.3.0/11.1.0/json"));
@@ -252,7 +276,8 @@ class VersionServiceImplTest {
     mockProductJsonContent.setName("Amazon Comprehend");
     mockProductJsonContent.setContent(mockContent);
 
-    Mockito.when(productJsonContentRepository.findByProductIdAndVersion(anyString(), anyString())).thenReturn(mockProductJsonContent);
+    Mockito.when(productJsonContentRepository.findByProductIdAndVersion(anyString(), anyString()))
+        .thenReturn(mockProductJsonContent);
 
     Map<String, Object> result = versionService.getProductJsonContentByIdAndVersion("amazon-comprehend", "11.3.1");
 
