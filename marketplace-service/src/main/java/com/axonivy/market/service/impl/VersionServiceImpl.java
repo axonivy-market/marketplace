@@ -127,6 +127,12 @@ public class VersionServiceImpl implements VersionService {
     return versionAndUrlList;
   }
 
+  /**
+   * This function will combine default artifacts (from product.json) and custom artifacts from (meta.json)
+   * of each version and return it to user.
+   * By default, all artifacts model (from product.json) by version to display will be taken from db.
+   * If new version is detected, new model will be built and save back to db.
+   **/
   public List<MavenArtifactVersionModel> handleArtifactForVersionToDisplay(List<String> versionsToDisplay,
       String productId, List<MavenArtifact> artifactsFromMeta,
       Map<String, List<ArchivedArtifact>> archivedArtifactsMap) {
