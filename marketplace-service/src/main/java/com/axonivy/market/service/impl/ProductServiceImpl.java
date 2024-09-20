@@ -10,6 +10,7 @@ import com.axonivy.market.entity.Product;
 import com.axonivy.market.entity.ProductCustomSort;
 import com.axonivy.market.entity.ProductModuleContent;
 import com.axonivy.market.enums.ErrorCode;
+import com.axonivy.market.enums.FileStatus;
 import com.axonivy.market.enums.FileType;
 import com.axonivy.market.enums.Language;
 import com.axonivy.market.enums.SortOption;
@@ -70,6 +71,8 @@ import java.util.function.Predicate;
 import static com.axonivy.market.constants.ProductJsonConstants.LOGO_FILE;
 import static com.axonivy.market.enums.DocumentField.MARKET_DIRECTORY;
 import static com.axonivy.market.enums.DocumentField.SHORT_DESCRIPTIONS;
+import static com.axonivy.market.enums.FileStatus.ADDED;
+import static com.axonivy.market.enums.FileStatus.MODIFIED;
 import static java.util.Optional.ofNullable;
 import static org.apache.commons.lang3.StringUtils.EMPTY;
 
@@ -217,8 +220,8 @@ public class ProductServiceImpl implements ProductService {
       String filePath = file.getFileName();
       var parentPath = filePath.replace(FileType.META.getFileName(), EMPTY).replace(FileType.LOGO.getFileName(), EMPTY);
       var files = groupGitHubFiles.getOrDefault(parentPath, new ArrayList<>());
-      files.sort((file1, file2) -> GitHubUtils.sortMetaJsonFirst(file1.getFileName(), file2.getFileName()));
       files.add(file);
+      files.sort((file1, file2) -> GitHubUtils.sortMetaJsonFirst(file1.getFileName(), file2.getFileName()));
       groupGitHubFiles.putIfAbsent(parentPath, files);
     }
 
@@ -228,7 +231,7 @@ public class ProductServiceImpl implements ProductService {
         GHContent fileContent;
         try {
           fileContent = gitHubService.getGHContent(axonIvyMarketRepoService.getRepository(), file.getFileName(),
-                  marketRepoBranch);
+              marketRepoBranch);
         } catch (IOException e) {
           log.error("Get GHContent failed: ", e);
           continue;
@@ -259,18 +262,22 @@ public class ProductServiceImpl implements ProductService {
       result = productRepository.findByCriteria(searchCriteria);
       if (result != null) {
         Optional.ofNullable(imageService.mappingImageFromGHContent(result, fileContent, true)).ifPresent(image -> {
-          imageRepository.deleteById(result.getLogoId());
+          if (StringUtils.isNotBlank(result.getLogoId())) {
+            imageRepository.deleteById(result.getLogoId());
+          }
           result.setLogoId(image.getId());
           productRepository.save(result);
         });
       }
       break;
     case REMOVED:
-      result = productRepository.findByLogoId(product.getLogoId());
-      if (result != null) {
-        imageRepository.deleteAllByProductId(result.getId());
-        productRepository.deleteById(result.getId());
-      }
+      Optional.ofNullable(product.getLogoId()).ifPresent(logoId -> {
+        Product currentProduct = productRepository.findByLogoId(product.getLogoId());
+        if (ObjectUtils.isEmpty(currentProduct)) {
+          imageRepository.deleteAllByProductId(currentProduct.getId());
+          productRepository.deleteById(currentProduct.getId());
+        }
+      });
       break;
     default:
       break;
@@ -376,9 +383,6 @@ public class ProductServiceImpl implements ProductService {
     log.warn("**ProductService: synchronize products from scratch based on the Market repo");
     var gitHubContentMap = axonIvyMarketRepoService.fetchAllMarketItems();
     for (Map.Entry<String, List<GHContent>> ghContentEntity : gitHubContentMap.entrySet()) {
-      if(!ghContentEntity.getKey().equals("market/connector/skribble-connector")){
-        continue;
-      }
       Product product = new Product();
       //update the meta.json first
       ghContentEntity.getValue()
