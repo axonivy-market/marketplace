@@ -1,9 +1,6 @@
 package com.axonivy.market.constants;
 
 public class MavenConstants {
-  private MavenConstants() {
-  }
-
   public static final String SNAPSHOT_VERSION = "SNAPSHOT";
   public static final String SNAPSHOT_RELEASE_POSTFIX = "-" + SNAPSHOT_VERSION;
   public static final String SPRINT_RELEASE_POSTFIX = "-m";
@@ -13,4 +10,7 @@ public class MavenConstants {
   public static final String ARTIFACT_NAME_FORMAT = "%s (%s)";
   public static final String VERSION_EXTRACT_FORMAT_FROM_METADATA_FILE = "//versions/version/text()";
   public static final String MAIN_VERSION_REGEX = "\\.";
+
+  private MavenConstants() {
+  }
 }

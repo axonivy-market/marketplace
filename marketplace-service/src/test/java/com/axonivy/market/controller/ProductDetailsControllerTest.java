@@ -1,21 +1,17 @@
 package com.axonivy.market.controller;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
-
-import java.io.IOException;
-import java.util.List;
-import java.util.Objects;
-import java.util.HashMap;
-import java.util.Map;
+import com.axonivy.market.assembler.ProductDetailModelAssembler;
 import com.axonivy.market.constants.RequestMappingConstants;
+import com.axonivy.market.entity.Product;
 import com.axonivy.market.entity.ProductJsonContent;
+import com.axonivy.market.enums.Language;
+import com.axonivy.market.model.MavenArtifactVersionModel;
+import com.axonivy.market.model.ProductDetailModel;
 import com.axonivy.market.model.VersionAndUrlModel;
 import com.axonivy.market.service.ImageService;
 import com.axonivy.market.service.ProductDesignerInstallationService;
+import com.axonivy.market.service.ProductService;
+import com.axonivy.market.service.VersionService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -26,42 +22,41 @@ import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import com.axonivy.market.assembler.ProductDetailModelAssembler;
-import com.axonivy.market.entity.Product;
-import com.axonivy.market.enums.Language;
-import com.axonivy.market.model.MavenArtifactVersionModel;
-import com.axonivy.market.model.ProductDetailModel;
-import com.axonivy.market.service.ProductService;
-import com.axonivy.market.service.VersionService;
+
+import java.io.IOException;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class ProductDetailsControllerTest {
   public static final String TAG = "v10.0.6";
-  @Mock
-  private ProductService productService;
-
-  @Mock
-  private ImageService imageService;
-
-  @Mock
-  VersionService versionService;
-
-  @Mock
-  ProductDesignerInstallationService productDesignerInstallationService;
-
-  @Mock
-  private ProductDetailModelAssembler detailModelAssembler;
-
-  @InjectMocks
-  private ProductDetailsController productDetailsController;
+  public static final String DOCKER_CONNECTOR_ID = "docker-connector";
   private static final String PRODUCT_NAME_SAMPLE = "Docker";
   private static final String PRODUCT_NAME_DE_SAMPLE = "Docker DE";
-  public static final String DOCKER_CONNECTOR_ID = "docker-connector";
+  @Mock
+  VersionService versionService;
+  @Mock
+  ProductDesignerInstallationService productDesignerInstallationService;
+  @Mock
+  private ProductService productService;
+  @Mock
+  private ImageService imageService;
+  @Mock
+  private ProductDetailModelAssembler detailModelAssembler;
+  @InjectMocks
+  private ProductDetailsController productDetailsController;
 
   @Test
   void testProductDetails() {
     Mockito.when(productService.fetchProductDetail(Mockito.anyString())).thenReturn(mockProduct());
-    Mockito.when(detailModelAssembler.toModel(mockProduct(), RequestMappingConstants.BY_ID)).thenReturn(createProductMockWithDetails());
+    Mockito.when(detailModelAssembler.toModel(mockProduct(), RequestMappingConstants.BY_ID)).thenReturn(
+        createProductMockWithDetails());
     ResponseEntity<ProductDetailModel> mockExpectedResult = new ResponseEntity<>(createProductMockWithDetails(),
         HttpStatus.OK);
 
@@ -79,24 +74,31 @@ class ProductDetailsControllerTest {
 
   @Test
   void testFindBestMatchProductDetailsByVersion() {
-    Mockito.when(productService.fetchBestMatchProductDetail(Mockito.anyString(), Mockito.anyString())).thenReturn(mockProduct());
-    Mockito.when(detailModelAssembler.toModel(mockProduct(), TAG, RequestMappingConstants.BEST_MATCH_BY_ID_AND_VERSION)).thenReturn(createProductMockWithDetails());
+    Mockito.when(productService.fetchBestMatchProductDetail(Mockito.anyString(), Mockito.anyString())).thenReturn(
+        mockProduct());
+    Mockito.when(detailModelAssembler.toModel(mockProduct(), TAG,
+        RequestMappingConstants.BEST_MATCH_BY_ID_AND_VERSION)).thenReturn(createProductMockWithDetails());
     ResponseEntity<ProductDetailModel> mockExpectedResult = new ResponseEntity<>(createProductMockWithDetails(),
         HttpStatus.OK);
 
-    ResponseEntity<ProductDetailModel> result = productDetailsController.findBestMatchProductDetailsByVersion(DOCKER_CONNECTOR_ID, TAG);
+    ResponseEntity<ProductDetailModel> result = productDetailsController.findBestMatchProductDetailsByVersion(
+        DOCKER_CONNECTOR_ID, TAG);
 
     assertEquals(HttpStatus.OK, result.getStatusCode());
     assertEquals(result, mockExpectedResult);
 
     verify(productService, times(1)).fetchBestMatchProductDetail(DOCKER_CONNECTOR_ID, TAG);
-    verify(detailModelAssembler, times(1)).toModel(mockProduct(), TAG, RequestMappingConstants.BEST_MATCH_BY_ID_AND_VERSION);
+    verify(detailModelAssembler, times(1)).toModel(mockProduct(), TAG,
+        RequestMappingConstants.BEST_MATCH_BY_ID_AND_VERSION);
   }
 
   @Test
   void testProductDetailsWithVersion() {
-    Mockito.when(productService.fetchProductDetailByIdAndVersion(Mockito.anyString(), Mockito.anyString())).thenReturn(mockProduct());
-    Mockito.when(detailModelAssembler.toModel(mockProduct(), TAG, RequestMappingConstants.BY_ID_AND_VERSION)).thenReturn(createProductMockWithDetails());
+    Mockito.when(productService.fetchProductDetailByIdAndVersion(Mockito.anyString(), Mockito.anyString())).thenReturn(
+        mockProduct());
+    Mockito.when(
+        detailModelAssembler.toModel(mockProduct(), TAG, RequestMappingConstants.BY_ID_AND_VERSION)).thenReturn(
+        createProductMockWithDetails());
     ResponseEntity<ProductDetailModel> mockExpectedResult = new ResponseEntity<>(createProductMockWithDetails(),
         HttpStatus.OK);
 
@@ -113,7 +115,8 @@ class ProductDetailsControllerTest {
   void testFindProductVersionsById() {
     List<MavenArtifactVersionModel> models = List.of(new MavenArtifactVersionModel());
     Mockito.when(
-            versionService.getArtifactsAndVersionToDisplay(Mockito.anyString(), Mockito.anyBoolean(), Mockito.anyString()))
+            versionService.getArtifactsAndVersionToDisplay(Mockito.anyString(), Mockito.anyBoolean(),
+                Mockito.anyString()))
         .thenReturn(models);
     ResponseEntity<List<MavenArtifactVersionModel>> result = productDetailsController.findProductVersionsById("portal",
         true, "10.0.1");
@@ -146,7 +149,7 @@ class ProductDetailsControllerTest {
         Objects.requireNonNull(result.getBody()).get(1).getUrl());
   }
 
-  private List<VersionAndUrlModel> mockVersionAndUrlModels(){
+  private List<VersionAndUrlModel> mockVersionAndUrlModels() {
     VersionAndUrlModel versionAndUrlModel = VersionAndUrlModel.builder()
         .version("10.0.21")
         .url("/api/product-details/productjsoncontent/portal/10.0.21")
@@ -157,13 +160,13 @@ class ProductDetailsControllerTest {
         .url("/api/product-details/productjsoncontent/portal/10.0.22")
         .build();
 
-    return List.of(versionAndUrlModel,versionAndUrlModel2);
+    return List.of(versionAndUrlModel, versionAndUrlModel2);
   }
 
   @Test
   void findProductJsonContentByIdAndTag() throws IOException {
     ProductJsonContent productJsonContent = mockProductJsonContent();
-    Map<String , Object> map = new ObjectMapper().readValue(productJsonContent.getContent(), Map.class);
+    Map<String, Object> map = new ObjectMapper().readValue(productJsonContent.getContent(), Map.class);
     when(versionService.getProductJsonContentByIdAndVersion("bpmnstatistic", "10.0.21")).thenReturn(
         map);
 
