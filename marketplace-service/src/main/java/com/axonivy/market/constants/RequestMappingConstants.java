@@ -9,6 +9,7 @@ public class RequestMappingConstants {
   public static final String API = ROOT + "api";
   public static final String PRODUCT = API + "/product";
   public static final String PRODUCT_DETAILS = API + "/product-details";
+  public static final String PRODUCT_DOC = API + "/product-doc";
   public static final String PRODUCT_DESIGNER_INSTALLATION = API + "/product-designer-installation";
   public static final String FEEDBACK = API + "/feedback";
   public static final String IMAGE = API + "/image";

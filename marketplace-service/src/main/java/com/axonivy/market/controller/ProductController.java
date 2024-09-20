@@ -10,6 +10,7 @@ import com.axonivy.market.model.Message;
 import com.axonivy.market.model.ProductCustomSortRequest;
 import com.axonivy.market.model.ProductModel;
 import com.axonivy.market.service.ProductService;
+import com.axonivy.market.util.AuthorizationUtils;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.enums.ParameterIn;
@@ -55,14 +56,6 @@ public class ProductController {
     this.pagedResourcesAssembler = pagedResourcesAssembler;
   }
 
-  public static String getBearerToken(String authorizationHeader) {
-    String token = null;
-    if (authorizationHeader.startsWith(CommonConstants.BEARER)) {
-      token = authorizationHeader.substring(CommonConstants.BEARER.length()).trim(); // Remove "Bearer " prefix
-    }
-    return token;
-  }
-
   @GetMapping()
   @Operation(summary = "Retrieve a paginated list of all products, optionally filtered by type, keyword, and " +
       "language", description = "By default, the system finds products with type 'all'", parameters = {
@@ -96,7 +89,7 @@ public class ProductController {
   @Operation(hidden = true)
   public ResponseEntity<Message> syncProducts(@RequestHeader(value = AUTHORIZATION) String authorizationHeader,
       @RequestParam(value = RESET_SYNC, required = false) Boolean resetSync) {
-    String token = getBearerToken(authorizationHeader);
+    String token = AuthorizationUtils.getBearerToken(authorizationHeader);
     gitHubService.validateUserOrganization(token, GitHubConstants.AXONIVY_MARKET_ORGANIZATION_NAME);
     if (Boolean.TRUE.equals(resetSync)) {
       productService.clearAllProducts();
@@ -122,7 +115,7 @@ public class ProductController {
   public ResponseEntity<Message> createCustomSortProducts(
       @RequestHeader(value = AUTHORIZATION) String authorizationHeader,
       @RequestBody @Valid ProductCustomSortRequest productCustomSortRequest) {
-    String token = getBearerToken(authorizationHeader);
+    String token = AuthorizationUtils.getBearerToken(authorizationHeader);
     gitHubService.validateUserOrganization(token, GitHubConstants.AXONIVY_MARKET_ORGANIZATION_NAME);
     productService.addCustomSortProduct(productCustomSortRequest);
     var message = new Message(ErrorCode.SUCCESSFUL.getCode(), ErrorCode.SUCCESSFUL.getHelpText(),

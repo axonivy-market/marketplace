@@ -8,6 +8,7 @@ import com.axonivy.market.model.FeedbackModelRequest;
 import com.axonivy.market.model.ProductRating;
 import com.axonivy.market.service.FeedbackService;
 import com.axonivy.market.service.JwtService;
+import com.axonivy.market.util.AuthorizationUtils;
 import io.jsonwebtoken.Claims;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -117,10 +118,7 @@ public class FeedbackController {
   public ResponseEntity<Void> createFeedback(@RequestBody @Valid FeedbackModelRequest feedbackRequest,
       @RequestHeader(value = X_AUTHORIZATION) @Parameter(description = "JWT Bearer token", example = "Bearer 123456",
           in = ParameterIn.HEADER) String bearerToken) {
-    String token = null;
-    if (bearerToken != null && bearerToken.startsWith(CommonConstants.BEARER)) {
-      token = bearerToken.substring(CommonConstants.BEARER.length()).trim(); // Remove "Bearer " prefix
-    }
+    String token = AuthorizationUtils.getBearerToken(bearerToken);
 
     // Validate the token
     if (token == null || !jwtService.validateToken(token)) {

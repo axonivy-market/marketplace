@@ -10,6 +10,7 @@ import com.axonivy.market.exceptions.model.UnauthorizedException;
 import com.axonivy.market.github.service.GitHubService;
 import com.axonivy.market.model.ProductCustomSortRequest;
 import com.axonivy.market.service.ProductService;
+import com.axonivy.market.util.AuthorizationUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -150,13 +151,13 @@ class ProductControllerTest {
 
   @Test
   void testGetBearerTokenWithValidHeader() {
-    String token = ProductController.getBearerToken(AUTHORIZATION_HEADER);
+    String token = AuthorizationUtils.getBearerToken(AUTHORIZATION_HEADER);
     assertEquals("valid_token", token);
   }
 
   @Test
   void testGetBearerTokenWithInvalidHeader() {
-    String token = ProductController.getBearerToken("InvalidTokenFormat");
+    String token = AuthorizationUtils.getBearerToken("InvalidTokenFormat");
     assertNull(token);
   }
 
