@@ -23,14 +23,12 @@ import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class ImageServiceImplTest {
-  @InjectMocks
-  private ImageServiceImpl imageService;
-
-  @Mock
-  private ImageRepository imageRepository;
-
   @Captor
   ArgumentCaptor<Image> argumentCaptor = ArgumentCaptor.forClass(Image.class);
+  @InjectMocks
+  private ImageServiceImpl imageService;
+  @Mock
+  private ImageRepository imageRepository;
 
   @Test
   void testMappingImageFromGHContent() throws IOException {

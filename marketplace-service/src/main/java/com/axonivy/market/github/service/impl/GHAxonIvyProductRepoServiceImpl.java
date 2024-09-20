@@ -51,13 +51,6 @@ import static com.axonivy.market.constants.ProductJsonConstants.VERSION_VALUE;
 @Log4j2
 @Service
 public class GHAxonIvyProductRepoServiceImpl implements GHAxonIvyProductRepoService {
-  private GHOrganization organization;
-  private final GitHubService gitHubService;
-  private final ImageService imageService;
-  private final ProductJsonContentRepository productJsonContentRepository;
-  private String repoUrl;
-  private static final ObjectMapper objectMapper = new ObjectMapper();
-  private static final String HASH = "#";
   public static final String DEMO_SETUP_TITLE = "(?i)## Demo|## Setup";
   public static final String IMAGE_EXTENSION = "(.*?).(jpeg|jpg|png|gif)";
   public static final String README_IMAGE_FORMAT = "\\(([^)]*?%s[^)]*?)\\)";
@@ -65,12 +58,24 @@ public class GHAxonIvyProductRepoServiceImpl implements GHAxonIvyProductRepoServ
   public static final String DESCRIPTION = "description";
   public static final String DEMO = "demo";
   public static final String SETUP = "setup";
+  private static final ObjectMapper objectMapper = new ObjectMapper();
+  private static final String HASH = "#";
+  private final GitHubService gitHubService;
+  private final ImageService imageService;
+  private final ProductJsonContentRepository productJsonContentRepository;
+  private GHOrganization organization;
+  private String repoUrl;
 
   public GHAxonIvyProductRepoServiceImpl(GitHubService gitHubService, ImageService imageService,
       ProductJsonContentRepository productJsonContentRepository) {
     this.gitHubService = gitHubService;
     this.imageService = imageService;
     this.productJsonContentRepository = productJsonContentRepository;
+  }
+
+  private static GHContent getProductJsonFile(List<GHContent> contents) {
+    return contents.stream().filter(GHContent::isFile)
+        .filter(content -> ProductJsonConstants.PRODUCT_JSON_FILE.equals(content.getName())).findFirst().orElse(null);
   }
 
   @Override
@@ -271,11 +276,6 @@ public class GHAxonIvyProductRepoServiceImpl implements GHAxonIvyProductRepoServ
       log.error("Cannot paste content of product.json {} at tag: {}", ghContent.getPath(), tag);
       return null;
     }
-  }
-
-  private static GHContent getProductJsonFile(List<GHContent> contents) {
-    return contents.stream().filter(GHContent::isFile)
-        .filter(content -> ProductJsonConstants.PRODUCT_JSON_FILE.equals(content.getName())).findFirst().orElse(null);
   }
 
   public String updateImagesWithDownloadUrl(Product product, List<GHContent> contents, String readmeContents) {
