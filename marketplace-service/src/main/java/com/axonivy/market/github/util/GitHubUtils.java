@@ -16,6 +16,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import static com.axonivy.market.constants.MetaConstants.META_FILE;
+import static com.axonivy.market.github.service.impl.GHAxonIvyProductRepoServiceImpl.IMAGE_EXTENSION;
 
 @Log4j2
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
@@ -99,5 +100,22 @@ public class GitHubUtils {
     if (fileName2.endsWith(META_FILE))
       return 1;
     return fileName1.compareTo(fileName2);
+  }
+
+  public static void findImages(List<GHContent> folder, List<GHContent> images) {
+    for (GHContent itemInFolder : folder) {
+      if (itemInFolder.isDirectory()) {
+        try {
+          List<GHContent> contentsInNextFolder = itemInFolder.listDirectoryContent().toList();
+          findImages(contentsInNextFolder, images);
+        } catch (IOException e) {
+          log.error(e.getMessage());
+        }
+      } else {
+        if (itemInFolder.getName().toLowerCase().matches(IMAGE_EXTENSION)) {
+          images.add(itemInFolder);
+        }
+      }
+    }
   }
 }

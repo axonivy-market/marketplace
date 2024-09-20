@@ -190,6 +190,7 @@ public class GHAxonIvyProductRepoServiceImpl implements GHAxonIvyProductRepoServ
       List<GHContent> readmeFiles = contents.stream().filter(GHContent::isFile)
           .filter(content -> content.getName().startsWith(ReadmeConstants.README_FILE_NAME)).toList();
       Map<String, Map<String, String>> moduleContents = new HashMap<>();
+
       if (!CollectionUtils.isEmpty(readmeFiles)) {
         for (GHContent readmeFile : readmeFiles) {
           String readmeContents = new String(readmeFile.read().readAllBytes());
@@ -275,14 +276,7 @@ public class GHAxonIvyProductRepoServiceImpl implements GHAxonIvyProductRepoServ
   }
 
   public String updateImagesWithDownloadUrl(Product product, List<GHContent> contents, String readmeContents) {
-
-    List<GHContent> imagesAtRootFolder = contents.stream().filter(GHContent::isFile)
-        .filter(content -> content.getName().toLowerCase().matches(IMAGE_EXTENSION)).toList();
-
-    List<GHContent> allContentOfImages = ObjectUtils.isNotEmpty(imagesAtRootFolder)
-        ? imagesAtRootFolder
-        : getImagesFromImageFolder(product, contents);
-
+    List<GHContent> allContentOfImages = getAllImagesFromProductFolder(contents);
     Map<String, String> imageUrls = new HashMap<>();
 
     allContentOfImages.forEach(content -> Optional.of(imageService.mappingImageFromGHContent(product, content, false))
@@ -297,18 +291,15 @@ public class GHAxonIvyProductRepoServiceImpl implements GHAxonIvyProductRepoServ
     return readmeContents;
   }
 
-  private List<GHContent> getImagesFromImageFolder(Product product, List<GHContent> contents) {
+  private List<GHContent> getAllImagesFromProductFolder(List<GHContent> productFolderContents) {
+    List<String> excludedFileNameList = List.of("README.md", "README_DE.md", "pom.xml", "product.json", "zip.xml");
+
+    List<GHContent> filteredUnnecessaryContentsFromProductFolder = productFolderContents.stream()
+        .filter(ghContent -> !excludedFileNameList.contains(ghContent.getName())).toList();
+
     List<GHContent> images = new ArrayList<>();
-    String imageFolderPath = GitHubUtils.getNonStandardImageFolder(product.getId());
-    contents.stream().filter(GHContent::isDirectory)
-        .filter(content -> imageFolderPath.equals(content.getName()))
-        .findFirst().ifPresent(imageFolder -> {
-          try {
-            images.addAll(imageFolder.listDirectoryContent().toList());
-          } catch (IOException e) {
-            log.error(e.getMessage());
-          }
-        });
+
+    GitHubUtils.findImages(filteredUnnecessaryContentsFromProductFolder, images);
     return images;
   }
 
@@ -355,6 +346,7 @@ public class GHAxonIvyProductRepoServiceImpl implements GHAxonIvyProductRepoServ
     String productFolderPath = ghRepository.getDirectoryContent(CommonConstants.SLASH, tag).stream()
         .filter(GHContent::isDirectory).map(GHContent::getName)
         .filter(content -> content.endsWith(MavenConstants.PRODUCT_ARTIFACT_POSTFIX)).findFirst().orElse(null);
+
     if (StringUtils.isBlank(productFolderPath) || hasChildConnector(ghRepository)) {
       productFolderPath = GitHubUtils.getNonStandardProductFilePath(product.getId());
     }
