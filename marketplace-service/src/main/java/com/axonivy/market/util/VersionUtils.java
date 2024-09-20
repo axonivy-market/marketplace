@@ -1,6 +1,7 @@
 package com.axonivy.market.util;
 
 import com.axonivy.market.comparator.LatestVersionComparator;
+import com.axonivy.market.comparator.MavenVersionComparator;
 import com.axonivy.market.constants.CommonConstants;
 import com.axonivy.market.constants.GitHubConstants;
 import com.axonivy.market.constants.MavenConstants;
@@ -25,7 +26,7 @@ public class VersionUtils {
     public static List<String> getVersionsToDisplay(List<String> versions, Boolean isShowDevVersion, String designerVersion) {
         Stream<String> versionStream = versions.stream();
         if (StringUtils.isNotBlank(designerVersion)) {
-            return versionStream.filter(version -> isMatchWithDesignerVersion(version, designerVersion)).toList();
+            return versionStream.filter(version -> isMatchWithDesignerVersion(version, designerVersion)).sorted(new LatestVersionComparator()).toList();
         }
         if (BooleanUtils.isTrue(isShowDevVersion)) {
             return versionStream.filter(version -> isOfficialVersionOrUnReleasedDevVersion(versions, version))
@@ -37,8 +38,7 @@ public class VersionUtils {
     public static String getBestMatchVersion(List<String> versions, String designerVersion) {
         String bestMatchVersion = versions.stream().filter(version -> StringUtils.equals(version, designerVersion)).findAny().orElse(null);
         if(StringUtils.isBlank(bestMatchVersion)){
-            LatestVersionComparator comparator = new LatestVersionComparator();
-            bestMatchVersion = versions.stream().filter(version -> comparator.compare(version, designerVersion) > 0 && isReleasedVersion(version)).findAny().orElse(null);
+            bestMatchVersion = versions.stream().filter(version -> MavenVersionComparator.compare(version, designerVersion) < 0 && isReleasedVersion(version)).findAny().orElse(null);
         }
         if (StringUtils.isBlank(bestMatchVersion)) {
             bestMatchVersion = versions.stream().filter(VersionUtils::isReleasedVersion).findAny().orElse(CollectionUtils.firstElement(versions));
@@ -51,7 +51,9 @@ public class VersionUtils {
             return true;
         }
         String bugfixVersion;
-        if (isSnapshotVersion(version)) {
+        if (!isValidFormatReleasedVersion(version)) {
+            return false;
+        } else if (isSnapshotVersion(version)) {
             bugfixVersion = getBugfixVersion(version.replace(MavenConstants.SNAPSHOT_RELEASE_POSTFIX, StringUtils.EMPTY));
         } else {
             bugfixVersion = getBugfixVersion(version.split(MavenConstants.SPRINT_RELEASE_POSTFIX)[0]);
@@ -69,8 +71,12 @@ public class VersionUtils {
         return version.contains(MavenConstants.SPRINT_RELEASE_POSTFIX);
     }
 
+    public static boolean isValidFormatReleasedVersion(String version) {
+        return StringUtils.isNumeric(version.split(MavenConstants.MAIN_VERSION_REGEX)[0]);
+    }
+
     public static boolean isReleasedVersion(String version) {
-        return !(isSprintVersion(version) || isSnapshotVersion(version));
+        return !(isSprintVersion(version) || isSnapshotVersion(version)) && isValidFormatReleasedVersion(version);
     }
 
     public static boolean isMatchWithDesignerVersion(String version, String designerVersion) {

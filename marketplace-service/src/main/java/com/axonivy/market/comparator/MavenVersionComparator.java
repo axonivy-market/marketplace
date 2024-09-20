@@ -11,12 +11,12 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import static com.axonivy.market.constants.CommonConstants.DASH_SEPARATOR;
+import static com.axonivy.market.constants.MavenConstants.MAIN_VERSION_REGEX;
 import static com.axonivy.market.constants.MavenConstants.SNAPSHOT_VERSION;
 import static org.apache.commons.lang3.StringUtils.EMPTY;
 
 public class MavenVersionComparator {
 
-    private static final String MAIN_VERSION_REGEX = "\\.";
     private static final int GREATER_THAN = 1;
     private static final int EQUAL = 0;
     private static final int LESS_THAN = -1;
@@ -46,7 +46,7 @@ public class MavenVersionComparator {
         return highestVersion;
     }
 
-    private static int compare(String version, String otherVersion) {
+    public static int compare(String version, String otherVersion) {
         version = stripLeadingChars(version);
         otherVersion = stripLeadingChars(otherVersion);
         String[] versionParts = createMainAndQualifierArray(version);

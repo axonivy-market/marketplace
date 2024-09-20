@@ -5,7 +5,6 @@ import com.axonivy.market.constants.GitHubConstants;
 import com.axonivy.market.constants.MavenConstants;
 import com.axonivy.market.constants.ProductJsonConstants;
 import com.axonivy.market.constants.ReadmeConstants;
-import com.axonivy.market.entity.Image;
 import com.axonivy.market.entity.Product;
 import com.axonivy.market.entity.ProductModuleContent;
 import com.axonivy.market.entity.ProductJsonContent;
@@ -33,7 +32,6 @@ import org.kohsuke.github.GHTag;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
-import javax.swing.text.html.Option;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
@@ -77,12 +75,16 @@ public class GHAxonIvyProductRepoServiceImpl implements GHAxonIvyProductRepoServ
 
   @Override
   public List<MavenArtifact> convertProductJsonToMavenProductInfo(GHContent content) throws IOException {
-    List<MavenArtifact> artifacts = new ArrayList<>();
     InputStream contentStream = extractedContentStream(content);
     if (Objects.isNull(contentStream)) {
-      return artifacts;
+      return new ArrayList<>();
     }
+    return extractMavenArtifactsFromContentStream(contentStream);
+  }
 
+  @Override
+  public List<MavenArtifact> extractMavenArtifactsFromContentStream(InputStream contentStream) throws IOException {
+    List<MavenArtifact> artifacts = new ArrayList<>();
     JsonNode rootNode = objectMapper.readTree(contentStream);
     JsonNode installersNode = rootNode.path(ProductJsonConstants.INSTALLERS);
 
