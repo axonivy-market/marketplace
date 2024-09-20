@@ -12,4 +12,5 @@ public class MavenConstants {
   public static final String ARTIFACT_FILE_NAME_FORMAT = "%s-%s.%s";
   public static final String ARTIFACT_NAME_FORMAT = "%s (%s)";
   public static final String VERSION_EXTRACT_FORMAT_FROM_METADATA_FILE = "//versions/version/text()";
+  public static final String MAIN_VERSION_REGEX = "\\.";
 }

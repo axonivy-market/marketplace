@@ -9,6 +9,7 @@ import com.axonivy.market.entity.Product;
 import com.axonivy.market.enums.NonStandardProduct;
 import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.math.NumberUtils;
 import org.apache.logging.log4j.util.Strings;
 import org.kohsuke.github.GHTag;
 import org.springframework.util.CollectionUtils;
@@ -69,12 +70,12 @@ public class VersionUtils {
         return version.contains(MavenConstants.SPRINT_RELEASE_POSTFIX);
     }
 
-    public static boolean isProjectVersion(String version) {
-        return version.chars().filter(ch -> ch == '-').count() == 2;
+    public static boolean isValidFormatReleasedVersion(String version) {
+        return StringUtils.isNumeric(version.split(MavenConstants.MAIN_VERSION_REGEX)[0]);
     }
 
     public static boolean isReleasedVersion(String version) {
-        return !(isSprintVersion(version) || isSnapshotVersion(version) || isProjectVersion(version));
+        return !(isSprintVersion(version) || isSnapshotVersion(version)) && isValidFormatReleasedVersion(version);
     }
 
     public static boolean isMatchWithDesignerVersion(String version, String designerVersion) {
