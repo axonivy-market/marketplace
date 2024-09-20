@@ -8,10 +8,6 @@ import java.util.Map;
 
 public interface VersionService {
 
-  List<String> getVersionsFromArtifactDetails(String repoUrl, String groupId, String artifactId);
-
-  String buildMavenMetadataUrlFromArtifact(String repoUrl, String groupId, String artifactId);
-
   List<MavenArtifactVersionModel> getArtifactsAndVersionToDisplay(String productId, Boolean isShowDevVersion,
       String designerVersion);
 

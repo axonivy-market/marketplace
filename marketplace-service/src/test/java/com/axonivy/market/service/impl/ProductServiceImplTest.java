@@ -70,63 +70,46 @@ import static org.mockito.Mockito.*;
 @ExtendWith(MockitoExtension.class)
 class ProductServiceImplTest extends BaseSetup {
 
+  public static final String RELEASE_TAG = "v10.0.2";
   private static final long LAST_CHANGE_TIME = 1718096290000L;
   private static final Pageable PAGEABLE = PageRequest.of(0, 20,
       Sort.by(SortOption.ALPHABETICALLY.getOption()).descending());
   private static final String SHA1_SAMPLE = "35baa89091b2452b77705da227f1a964ecabc6c8";
-  public static final String RELEASE_TAG = "v10.0.2";
   private static final String INSTALLATION_FILE_PATH = "src/test/resources/installationCount.json";
   private static final String EMPTY_SOURCE_URL_META_JSON_FILE = "/emptySourceUrlMeta.json";
-
+  @Captor
+  ArgumentCaptor<Product> argumentCaptor = ArgumentCaptor.forClass(Product.class);
+  @Captor
+  ArgumentCaptor<ArrayList<ProductModuleContent>> argumentCaptorProductModuleContents;
+  @Captor
+  ArgumentCaptor<ProductModuleContent> argumentCaptorProductModuleContent;
+  @Captor
+  ArgumentCaptor<ArrayList<Product>> productListArgumentCaptor;
+  @Captor
+  ArgumentCaptor<ProductSearchCriteria> productSearchCriteriaArgumentCaptor;
   private String keyword;
   private String language;
   private Page<Product> mockResultReturn;
-
   @Mock
   private MongoTemplate mongoTemplate;
-
   @Mock
   private GHRepository ghRepository;
-
   @Mock
   private ProductRepository productRepository;
-
   @Mock
   private ProductModuleContentRepository productModuleContentRepository;
-
   @Mock
   private GHAxonIvyMarketRepoService marketRepoService;
-
   @Mock
   private GitHubRepoMetaRepository repoMetaRepository;
-
   @Mock
   private GitHubService gitHubService;
-
   @Mock
   private ProductCustomSortRepository productCustomSortRepository;
-
-  @Captor
-  ArgumentCaptor<Product> argumentCaptor = ArgumentCaptor.forClass(Product.class);
-
-  @Captor
-  ArgumentCaptor<ArrayList<ProductModuleContent>> argumentCaptorProductModuleContents;
-
-  @Captor
-  ArgumentCaptor<ProductModuleContent> argumentCaptorProductModuleContent;
-
   @Mock
   private GHAxonIvyProductRepoService ghAxonIvyProductRepoService;
-
   @Mock
   private ImageService imageService;
-
-  @Captor
-  ArgumentCaptor<ArrayList<Product>> productListArgumentCaptor;
-
-  @Captor
-  ArgumentCaptor<ProductSearchCriteria> productSearchCriteriaArgumentCaptor;
-
   @InjectMocks
   private ProductServiceImpl productService;
 

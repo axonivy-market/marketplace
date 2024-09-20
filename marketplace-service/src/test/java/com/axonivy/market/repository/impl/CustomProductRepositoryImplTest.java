@@ -27,12 +27,10 @@ import static org.mockito.Mockito.*;
 class CustomProductRepositoryImplTest extends BaseSetup {
   private static final String ID = "bmpn-statistic";
   private static final String TAG = "v10.0.21";
-  private Product mockProduct;
-  private Aggregation mockAggregation;
-
   @Mock
   ProductModuleContentRepository contentRepo;
-
+  private Product mockProduct;
+  private Aggregation mockAggregation;
   @Mock
   private MongoTemplate mongoTemplate;
 
