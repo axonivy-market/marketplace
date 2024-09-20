@@ -31,6 +31,8 @@ import { CommonUtils } from '../../../../shared/utils/common.utils';
 import { ActivatedRoute, Router } from '@angular/router';
 
 const delayTimeBeforeHideMessage = 2000;
+const showDevVersionCookieName = 'showDevVersions';
+const versionParam = 'version';
 
 @Component({
   selector: 'app-product-version-action',
@@ -46,8 +48,6 @@ const delayTimeBeforeHideMessage = 2000;
   styleUrl: './product-detail-version-action.component.scss'
 })
 export class ProductDetailVersionActionComponent implements AfterViewInit {
-  readonly SHOW_DEV_VERSION_COOKIE_NAME: string = 'showDevVersions';
-  readonly VERSION_PARAM: string = 'version';
   protected readonly environment = environment;
   @Output() installationCount = new EventEmitter<number>();
   @Input() productId!: string;
@@ -81,7 +81,7 @@ export class ProductDetailVersionActionComponent implements AfterViewInit {
   router = inject(Router);
   route = inject(ActivatedRoute);
 
-  isDevVersionsDisplayed: WritableSignal<boolean> = signal(CommonUtils.getCookieValue(this.cookieService, this.SHOW_DEV_VERSION_COOKIE_NAME, false));
+  isDevVersionsDisplayed: WritableSignal<boolean> = signal(this.getShowDevVersionFromCookie());
 
   ngAfterViewInit() {
     const tooltipTriggerList = [].slice.call(
@@ -100,6 +100,10 @@ export class ProductDetailVersionActionComponent implements AfterViewInit {
     this.updateSelectedArtifact(version);
   }
 
+  private getShowDevVersionFromCookie() {
+    return CommonUtils.getCookieValue(this.cookieService, showDevVersionCookieName, false);
+  }
+
   private updateSelectedArtifact(version: string) {
     this.artifacts().forEach(artifact => {
       if (artifact.name) {
@@ -116,7 +120,7 @@ export class ProductDetailVersionActionComponent implements AfterViewInit {
   addVersionParamToRoute(selectedVersion: string) {
     this.router.navigate([], {
       relativeTo: this.route,
-      queryParams: { [this.VERSION_PARAM]: selectedVersion },
+      queryParams: { [versionParam]: selectedVersion },
       queryParamsHandling: 'merge'
     }).then();
   }
@@ -133,7 +137,7 @@ export class ProductDetailVersionActionComponent implements AfterViewInit {
   onShowDevVersion(event: Event) {
     event.preventDefault();
     this.isDevVersionsDisplayed.update(oldValue => !oldValue);
-    this.cookieService.set(this.SHOW_DEV_VERSION_COOKIE_NAME, this.isDevVersionsDisplayed().toString());
+    this.cookieService.set(showDevVersionCookieName, this.isDevVersionsDisplayed().toString());
     this.getVersionWithArtifact(true);
   }
 
@@ -150,7 +154,7 @@ export class ProductDetailVersionActionComponent implements AfterViewInit {
     this.productService
       .sendRequestToProductDetailVersionAPI(
         this.productId,
-        CommonUtils.getCookieValue(this.cookieService, this.SHOW_DEV_VERSION_COOKIE_NAME, false),
+        this.getShowDevVersionFromCookie(),
         this.designerVersion
       )
       .subscribe(data => {
@@ -176,7 +180,7 @@ export class ProductDetailVersionActionComponent implements AfterViewInit {
     if (ignoreRouteVersion) {
       return null;
     }
-    return this.route.snapshot.queryParams[this.VERSION_PARAM] || null;
+    return this.route.snapshot.queryParams[versionParam] || null;
   }
 
   getVersionInDesigner(): void {

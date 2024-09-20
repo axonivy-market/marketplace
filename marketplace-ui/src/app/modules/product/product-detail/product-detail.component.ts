@@ -1,5 +1,14 @@
-import { CommonModule } from '@angular/common';
-import { Component, computed, ElementRef, HostListener, inject, Signal, signal, WritableSignal } from '@angular/core';
+import { CommonModule, NgOptimizedImage } from '@angular/common';
+import {
+  Component,
+  ElementRef,
+  HostListener,
+  Signal,
+  WritableSignal,
+  computed,
+  inject,
+  signal
+} from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { NgbNavModule } from '@ng-bootstrap/ng-bootstrap';
 import { TranslateModule } from '@ngx-translate/core';
@@ -9,7 +18,10 @@ import { AuthService } from '../../../auth/auth.service';
 import { LanguageService } from '../../../core/services/language/language.service';
 import { ThemeService } from '../../../core/services/theme/theme.service';
 import { CommonDropdownComponent } from '../../../shared/components/common-dropdown/common-dropdown.component';
-import { PRODUCT_DETAIL_TABS, VERSION } from '../../../shared/constants/common.constant';
+import {
+  PRODUCT_DETAIL_TABS,
+  VERSION
+} from '../../../shared/constants/common.constant';
 import { ItemDropdown } from '../../../shared/models/item-dropdown.model';
 import { ProductDetail } from '../../../shared/models/product-detail.model';
 import { ProductModuleContent } from '../../../shared/models/product-module-content.model';
@@ -23,23 +35,13 @@ import { CommonUtils } from '../../../shared/utils/common.utils';
 import { ProductService } from '../product.service';
 import { ProductDetailFeedbackComponent } from './product-detail-feedback/product-detail-feedback.component';
 import { ProductFeedbackService } from './product-detail-feedback/product-feedbacks-panel/product-feedback.service';
-import {
-  ProductStarRatingService
-} from './product-detail-feedback/product-star-rating-panel/product-star-rating.service';
+import { ProductStarRatingService } from './product-detail-feedback/product-star-rating-panel/product-star-rating.service';
 import { ProductDetailActionType } from '../../../shared/enums/product-detail-action-type';
-import {
-  ProductDetailInformationTabComponent
-} from './product-detail-information-tab/product-detail-information-tab.component';
-import {
-  ProductDetailMavenContentComponent
-} from './product-detail-maven-content/product-detail-maven-content.component';
-import {
-  ProductDetailVersionActionComponent
-} from './product-detail-version-action/product-detail-version-action.component';
+import { ProductDetailInformationTabComponent } from './product-detail-information-tab/product-detail-information-tab.component';
+import { ProductDetailMavenContentComponent } from './product-detail-maven-content/product-detail-maven-content.component';
+import { ProductDetailVersionActionComponent } from './product-detail-version-action/product-detail-version-action.component';
 import { ProductDetailService } from './product-detail.service';
-import {
-  ProductInstallationCountActionComponent
-} from './product-installation-count-action/product-installation-count-action.component';
+import { ProductInstallationCountActionComponent } from './product-installation-count-action/product-installation-count-action.component';
 import { ProductStarRatingNumberComponent } from './product-star-rating-number/product-star-rating-number.component';
 import { DisplayValue } from '../../../shared/models/display-value.model';
 
@@ -50,6 +52,8 @@ export interface DetailTab {
   label: string;
 }
 
+const STORAGE_ITEM = 'activeTab';
+const DEFAULT_ACTIVE_TAB = 'description';
 @Component({
   selector: 'app-product-detail',
   standalone: true,
@@ -75,8 +79,6 @@ export interface DetailTab {
   styleUrl: './product-detail.component.scss'
 })
 export class ProductDetailComponent {
-  readonly STORAGE_ITEM = 'activeTab';
-  readonly DEFAULT_ACTIVE_TAB = 'description';
   themeService = inject(ThemeService);
   route = inject(ActivatedRoute);
   router = inject(Router);
@@ -97,7 +99,6 @@ export class ProductDetailComponent {
     {} as ProductModuleContent
   );
   productDetailActionType = signal(ProductDetailActionType.STANDARD);
-  detailContent!: DetailTab;
   detailTabs = PRODUCT_DETAIL_TABS;
   activeTab = '';
   displayedTabsSignal: Signal<ItemDropdown[]> = computed(() => {
@@ -116,7 +117,7 @@ export class ProductDetailComponent {
   onPopState() {
     this.activeTab = window.location.hash.split('#tab-')[1];
     if (this.activeTab === undefined) {
-      this.activeTab = this.DEFAULT_ACTIVE_TAB;
+      this.activeTab = DEFAULT_ACTIVE_TAB;
     }
     this.updateDropdownSelection();
   }
@@ -142,7 +143,7 @@ export class ProductDetailComponent {
         this.productModuleContent.set(productDetail.productModuleContent);
         this.metaProductJsonUrl = productDetail.metaProductJsonUrl;
         this.productDetailService.productNames.set(productDetail.names);
-        localStorage.removeItem(this.STORAGE_ITEM);
+        localStorage.removeItem(STORAGE_ITEM);
         this.installationCount = productDetail.installationCount;
         this.handleProductContentVersion();
         this.updateProductDetailActionType(productDetail);
@@ -288,7 +289,7 @@ export class ProductDetailComponent {
       savedActiveTab: this.activeTab
     };
 
-    localStorage.setItem(this.STORAGE_ITEM, JSON.stringify(savedTab));
+    localStorage.setItem(STORAGE_ITEM, JSON.stringify(savedTab));
   }
 
   onShowInfoContent() {

@@ -10,7 +10,6 @@ declare const viewport: Viewport;
 describe('SearchBarComponent', () => {
   let component: SearchBarComponent;
   let fixture: ComponentFixture<SearchBarComponent>;
-  let mockElementRef: ElementRef;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
@@ -22,7 +21,6 @@ describe('SearchBarComponent', () => {
 
     fixture = TestBed.createComponent(SearchBarComponent);
     component = fixture.componentInstance;
-    mockElementRef = TestBed.inject(ElementRef);
     fixture.detectChanges();
   });
 
