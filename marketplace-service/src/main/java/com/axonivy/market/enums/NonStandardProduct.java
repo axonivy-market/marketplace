@@ -2,6 +2,7 @@ package com.axonivy.market.enums;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
+import org.apache.commons.lang3.ObjectUtils;
 
 import java.util.Arrays;
 import java.util.Map;
@@ -34,6 +35,8 @@ public enum NonStandardProduct {
   WORKFLOW_DEMO("workflow-demo", false, COMMON_IMAGES_FOLDER_NAME, "workflow/workflow-demos-product"),
   HTML_DIALOG_DEMO("html-dialog-demo", false, COMMON_IMAGES_FOLDER_NAME, "html-dialog/html-dialog-demos-product"),
   PROCESSING_VALVE_DEMO("processing-valve-demo", false, COMMON_IMAGES_FOLDER_NAME, ""),// no product json
+  DOC_FACTORY("doc-factory", false, "", "doc-factory-product"),
+  ASPOSE_EMAIL("aspose-email-demo", false, "", "aspose-email-demo-product"),
   OPENAI_CONNECTOR("openai-connector", false, COMMON_IMAGES_FOLDER_NAME, "openai-connector-product"),
   OPENAI_ASSISTANT("openai-assistant", false, "docs", "openai-assistant-product"),
   // Non standard image folder name
@@ -57,5 +60,10 @@ public enum NonStandardProduct {
 
   public static NonStandardProduct findById(String id) {
     return NON_STANDARD_PRODUCT_MAP.getOrDefault(id, DEFAULT);
+  }
+
+  public static String findById(String id, String defaultPath) {
+    String nonStandardPath = findById(id).pathToProductFolder;
+    return ObjectUtils.isEmpty(nonStandardPath) ? defaultPath : nonStandardPath;
   }
 }
