@@ -20,5 +20,6 @@ public interface GHAxonIvyProductRepoService {
 
   List<MavenArtifact> convertProductJsonToMavenProductInfo(GHContent content) throws IOException;
 
-  void extractReadMeFileFromContents(Product product, List<GHContent> contents, ProductModuleContent productModuleContent);
+  void extractReadMeFileFromContents(Product product, List<GHContent> contents,
+      ProductModuleContent productModuleContent);
 }

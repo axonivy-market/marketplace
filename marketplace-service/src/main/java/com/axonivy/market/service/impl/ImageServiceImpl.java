@@ -39,7 +39,7 @@ public class ImageServiceImpl implements ImageService {
   @Override
   public Image mappingImageFromGHContent(Product product, GHContent ghContent, boolean isLogo) {
     if (ObjectUtils.isEmpty(ghContent)) {
-      log.info("There is missing for image content for product {}" , product.getId());
+      log.info("There is missing for image content for product {}", product.getId());
       return null;
     }
 

@@ -1,40 +1,28 @@
 package com.axonivy.market.service.impl;
 
-import static com.axonivy.market.constants.ProductJsonConstants.LOGO_FILE;
-import static com.axonivy.market.constants.CommonConstants.SLASH;
-import static com.axonivy.market.constants.MetaConstants.META_FILE;
-import static com.axonivy.market.enums.DocumentField.SHORT_DESCRIPTIONS;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyBoolean;
-import static org.mockito.ArgumentMatchers.anyInt;
-import static org.mockito.ArgumentMatchers.anyList;
-import static org.mockito.ArgumentMatchers.anyLong;
-import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
-
-import java.io.IOException;
-import java.io.InputStream;
-
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.UUID;
-
+import com.axonivy.market.BaseSetup;
+import com.axonivy.market.constants.GitHubConstants;
 import com.axonivy.market.criteria.ProductSearchCriteria;
+import com.axonivy.market.entity.GitHubRepoMeta;
+import com.axonivy.market.entity.Product;
+import com.axonivy.market.entity.ProductCustomSort;
+import com.axonivy.market.entity.ProductModuleContent;
+import com.axonivy.market.enums.ErrorCode;
+import com.axonivy.market.enums.FileStatus;
+import com.axonivy.market.enums.FileType;
+import com.axonivy.market.enums.Language;
+import com.axonivy.market.enums.SortOption;
+import com.axonivy.market.enums.TypeOption;
+import com.axonivy.market.exceptions.model.InvalidParamException;
+import com.axonivy.market.github.model.GitHubFile;
+import com.axonivy.market.github.service.GHAxonIvyMarketRepoService;
+import com.axonivy.market.github.service.GHAxonIvyProductRepoService;
+import com.axonivy.market.github.service.GitHubService;
+import com.axonivy.market.model.ProductCustomSortRequest;
+import com.axonivy.market.repository.GitHubRepoMetaRepository;
+import com.axonivy.market.repository.ProductCustomSortRepository;
+import com.axonivy.market.repository.ProductModuleContentRepository;
+import com.axonivy.market.repository.ProductRepository;
 import com.axonivy.market.service.ImageService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -59,28 +47,25 @@ import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.data.mongodb.core.query.Update;
 import org.springframework.test.util.ReflectionTestUtils;
 
-import com.axonivy.market.BaseSetup;
-import com.axonivy.market.constants.GitHubConstants;
-import com.axonivy.market.entity.GitHubRepoMeta;
-import com.axonivy.market.entity.Product;
-import com.axonivy.market.entity.ProductCustomSort;
-import com.axonivy.market.entity.ProductModuleContent;
-import com.axonivy.market.enums.ErrorCode;
-import com.axonivy.market.enums.FileStatus;
-import com.axonivy.market.enums.FileType;
-import com.axonivy.market.enums.Language;
-import com.axonivy.market.enums.SortOption;
-import com.axonivy.market.enums.TypeOption;
-import com.axonivy.market.exceptions.model.InvalidParamException;
-import com.axonivy.market.github.model.GitHubFile;
-import com.axonivy.market.github.service.GHAxonIvyMarketRepoService;
-import com.axonivy.market.github.service.GHAxonIvyProductRepoService;
-import com.axonivy.market.github.service.GitHubService;
-import com.axonivy.market.model.ProductCustomSortRequest;
-import com.axonivy.market.repository.GitHubRepoMetaRepository;
-import com.axonivy.market.repository.ProductCustomSortRepository;
-import com.axonivy.market.repository.ProductModuleContentRepository;
-import com.axonivy.market.repository.ProductRepository;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.UUID;
+
+import static com.axonivy.market.constants.CommonConstants.SLASH;
+import static com.axonivy.market.constants.MetaConstants.META_FILE;
+import static com.axonivy.market.constants.ProductJsonConstants.LOGO_FILE;
+import static com.axonivy.market.enums.DocumentField.SHORT_DESCRIPTIONS;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class ProductServiceImplTest extends BaseSetup {
@@ -355,7 +340,7 @@ class ProductServiceImplTest extends BaseSetup {
 
     assertEquals(1, argumentCaptorProductModuleContents.getValue().size());
     assertThat(argumentCaptorProductModuleContents.getValue().get(0).getId())
-            .isEqualTo(mockReadmeProductContent().getId());
+        .isEqualTo(mockReadmeProductContent().getId());
   }
 
   @Test
@@ -374,7 +359,8 @@ class ProductServiceImplTest extends BaseSetup {
     List<GHContent> mockMetaJsonAndLogoList = new ArrayList<>(List.of(mockContent, mockContentLogo));
     mockGHContentMap.put(SAMPLE_PRODUCT_ID, mockMetaJsonAndLogoList);
     when(marketRepoService.fetchAllMarketItems()).thenReturn(mockGHContentMap);
-    Mockito.when(imageService.mappingImageFromGHContent(any(),any(),anyBoolean())).thenReturn(GHAxonIvyProductRepoServiceImplTest.mockImage());
+    Mockito.when(imageService.mappingImageFromGHContent(any(), any(), anyBoolean())).thenReturn(
+        GHAxonIvyProductRepoServiceImplTest.mockImage());
     // Executes
     productService.syncLatestDataFromMarketRepo();
     verify(productModuleContentRepository).save(argumentCaptorProductModuleContent.capture());

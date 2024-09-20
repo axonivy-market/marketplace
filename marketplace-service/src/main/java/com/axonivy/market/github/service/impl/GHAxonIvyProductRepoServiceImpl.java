@@ -5,10 +5,9 @@ import com.axonivy.market.constants.GitHubConstants;
 import com.axonivy.market.constants.MavenConstants;
 import com.axonivy.market.constants.ProductJsonConstants;
 import com.axonivy.market.constants.ReadmeConstants;
-import com.axonivy.market.entity.Image;
 import com.axonivy.market.entity.Product;
-import com.axonivy.market.entity.ProductModuleContent;
 import com.axonivy.market.entity.ProductJsonContent;
+import com.axonivy.market.entity.ProductModuleContent;
 import com.axonivy.market.enums.Language;
 import com.axonivy.market.enums.NonStandardProduct;
 import com.axonivy.market.factory.ProductFactory;
@@ -33,7 +32,6 @@ import org.kohsuke.github.GHTag;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
-import javax.swing.text.html.Option;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
@@ -176,7 +174,7 @@ public class GHAxonIvyProductRepoServiceImpl implements GHAxonIvyProductRepoServ
       productModuleContent.setProductId(product.getId());
       productModuleContent.setTag(tag);
       ProductFactory.mappingIdForProductModuleContent(productModuleContent);
-      updateDependencyContentsFromProductJson(productModuleContent, contents , product);
+      updateDependencyContentsFromProductJson(productModuleContent, contents, product);
       extractReadMeFileFromContents(product, contents, productModuleContent);
     } catch (Exception e) {
       log.error("Cannot get product.json content {}", e.getMessage());
@@ -185,7 +183,8 @@ public class GHAxonIvyProductRepoServiceImpl implements GHAxonIvyProductRepoServ
     return productModuleContent;
   }
 
-  public void extractReadMeFileFromContents(Product product, List<GHContent> contents, ProductModuleContent productModuleContent) {
+  public void extractReadMeFileFromContents(Product product, List<GHContent> contents,
+      ProductModuleContent productModuleContent) {
     try {
       List<GHContent> readmeFiles = contents.stream().filter(GHContent::isFile)
           .filter(content -> content.getName().startsWith(ReadmeConstants.README_FILE_NAME)).toList();
@@ -209,7 +208,8 @@ public class GHAxonIvyProductRepoServiceImpl implements GHAxonIvyProductRepoServ
   }
 
   /**
-   * MARP-810: Sabine requires that content in other languages, which has not been translated, be left empty and replaced with English content.
+   * MARP-810: Sabine requires that content in other languages, which has not been translated, be left empty and
+   * replaced with English content.
    */
   public Map<String, String> replaceEmptyContentsWithEnContent(Map<String, String> map) {
     String enValue = map.get(Language.EN.getValue());
@@ -314,7 +314,7 @@ public class GHAxonIvyProductRepoServiceImpl implements GHAxonIvyProductRepoServ
 
   // Cover some cases including when demo and setup parts switch positions or
   // missing one of them
-  public void getExtractedPartsOfReadme(Map<String,Map<String,String>> moduleContents, String readmeContents,
+  public void getExtractedPartsOfReadme(Map<String, Map<String, String>> moduleContents, String readmeContents,
       String locale) {
     String[] parts = readmeContents.split(DEMO_SETUP_TITLE);
     int demoIndex = readmeContents.indexOf(ReadmeConstants.DEMO_PART);
@@ -346,7 +346,8 @@ public class GHAxonIvyProductRepoServiceImpl implements GHAxonIvyProductRepoServ
     addLocaleContent(moduleContents, SETUP, setup.trim(), locale);
   }
 
-  private void addLocaleContent(Map<String, Map<String, String>> moduleContents, String type, String content, String locale) {
+  private void addLocaleContent(Map<String, Map<String, String>> moduleContents, String type, String content,
+      String locale) {
     moduleContents.computeIfAbsent(type, key -> new HashMap<>()).put(locale, content);
   }
 
