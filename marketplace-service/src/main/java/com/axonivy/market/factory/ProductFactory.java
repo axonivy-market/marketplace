@@ -69,7 +69,7 @@ public class ProductFactory {
     product.setCost(StringUtils.isBlank(meta.getCost()) ? "Free" : StringUtils.capitalize(meta.getCost()));
     product.setCompatibility(meta.getCompatibility());
     extractSourceUrl(product, meta);
-    product.setArtifacts(meta.getMavenArtifacts());
+    product.setArtifacts(meta.getArtifacts());
     product.setReleasedVersions(new ArrayList<>());
     return product;
   }

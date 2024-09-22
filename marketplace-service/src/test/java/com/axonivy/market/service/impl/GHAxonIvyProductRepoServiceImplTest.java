@@ -9,6 +9,8 @@ import com.axonivy.market.entity.ProductJsonContent;
 import com.axonivy.market.enums.Language;
 import com.axonivy.market.github.service.GitHubService;
 import com.axonivy.market.github.service.impl.GHAxonIvyProductRepoServiceImpl;
+import com.axonivy.market.maven.model.Artifact;
+import com.axonivy.market.maven.util.MavenUtils;
 import com.axonivy.market.repository.ProductJsonContentRepository;
 import com.axonivy.market.service.ImageService;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -214,16 +216,16 @@ class GHAxonIvyProductRepoServiceImplTest {
 
   @Test
   void testExtractMavenArtifactFromJsonNode() {
-    List<MavenArtifact> artifacts = new ArrayList<>();
+    List<Artifact> artifacts = new ArrayList<>();
     boolean isDependency = true;
     String nodeName = ProductJsonConstants.DEPENDENCIES;
 
     createListNodeForDataNoteByName(nodeName);
-    MavenArtifact mockArtifact = Mockito.mock(MavenArtifact.class);
+    Artifact mockArtifact = Mockito.mock(Artifact.class);
     Mockito.doReturn(mockArtifact).when(axonivyProductRepoServiceImpl)
         .createArtifactFromJsonNode(childNode, null, isDependency);
 
-    axonivyProductRepoServiceImpl.extractMavenArtifactFromJsonNode(dataNode, isDependency, artifacts);
+    MavenUtils.extractMavenArtifactFromJsonNode(dataNode, isDependency, artifacts);
 
     assertEquals(1, artifacts.size());
     assertSame(mockArtifact, artifacts.get(0));
@@ -268,7 +270,7 @@ class GHAxonIvyProductRepoServiceImplTest {
     Mockito.when(dataNode.path(ProductJsonConstants.ARTIFACT_ID)).thenReturn(artifactIdNode);
     Mockito.when(dataNode.path(ProductJsonConstants.TYPE)).thenReturn(typeNode);
 
-    MavenArtifact artifact = axonivyProductRepoServiceImpl.createArtifactFromJsonNode(dataNode, repoUrl, isDependency);
+    Artifact artifact = axonivyProductRepoServiceImpl.createArtifactFromJsonNode(dataNode, repoUrl, isDependency);
 
     assertEquals(repoUrl, artifact.getRepoUrl());
     assertTrue(artifact.getIsDependency());

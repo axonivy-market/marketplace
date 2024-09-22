@@ -2,7 +2,6 @@ package com.axonivy.market.service.impl;
 
 import com.axonivy.market.constants.CommonConstants;
 import com.axonivy.market.constants.MavenConstants;
-import com.axonivy.market.entity.MavenArtifactModel;
 import com.axonivy.market.entity.MavenArtifactVersion;
 import com.axonivy.market.entity.Product;
 import com.axonivy.market.entity.ProductJsonContent;

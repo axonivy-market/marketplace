@@ -1,6 +1,6 @@
 package com.axonivy.market.github.util;
 
-import com.axonivy.market.maven.model.MavenArtifact;
+import com.axonivy.market.maven.model.Artifact;
 import com.axonivy.market.constants.CommonConstants;
 import com.axonivy.market.enums.NonStandardProduct;
 import com.axonivy.market.maven.util.MavenUtils;
@@ -106,7 +106,7 @@ public class GitHubUtils {
     return fileName1.compareTo(fileName2);
   }
 
-  public static List<MavenArtifact> convertProductJsonToMavenProductInfo(GHContent content) throws IOException {
+  public static List<Artifact> convertProductJsonToMavenProductInfo(GHContent content) throws IOException {
     InputStream contentStream = extractedContentStream(content);
     if (Objects.isNull(contentStream)) {
       return new ArrayList<>();

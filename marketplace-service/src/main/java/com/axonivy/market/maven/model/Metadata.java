@@ -14,7 +14,7 @@ import java.util.Objects;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class MavenVersion {
+public class Metadata {
   @Id
   private String metadataUrl;
   private LocalDateTime lastUpdated;
@@ -28,12 +28,15 @@ public class MavenVersion {
   private String release;
   @Transient
   private List<String> versions;
+  private String repoUrl;
+  private String type;
+  private String name;
 
   @Override
   public boolean equals(Object o) {
     if (this == o) return true;
     if (o == null || getClass() != o.getClass()) return false;
-    MavenVersion that = (MavenVersion) o;
+    Metadata that = (Metadata) o;
     return Objects.equals(metadataUrl, that.metadataUrl);
   }
 

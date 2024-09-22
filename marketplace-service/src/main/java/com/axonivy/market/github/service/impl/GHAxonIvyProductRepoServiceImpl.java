@@ -1,6 +1,6 @@
 package com.axonivy.market.github.service.impl;
 
-import com.axonivy.market.maven.model.MavenArtifact;
+import com.axonivy.market.maven.model.Artifact;
 import com.axonivy.market.constants.CommonConstants;
 import com.axonivy.market.constants.GitHubConstants;
 import com.axonivy.market.constants.MavenConstants;
@@ -170,8 +170,8 @@ public class GHAxonIvyProductRepoServiceImpl implements GHAxonIvyProductRepoServ
       List<GHContent> contents, Product product) throws IOException {
     GHContent productJsonFile = getProductJsonFile(contents);
     if (Objects.nonNull(productJsonFile)) {
-      List<MavenArtifact> artifacts = GitHubUtils.convertProductJsonToMavenProductInfo(productJsonFile);
-      MavenArtifact artifact = artifacts.stream().filter(MavenArtifact::getIsDependency).findFirst().orElse(null);
+      List<Artifact> artifacts = GitHubUtils.convertProductJsonToMavenProductInfo(productJsonFile);
+      Artifact artifact = artifacts.stream().filter(Artifact::getIsDependency).findFirst().orElse(null);
 
       if (Objects.nonNull(artifact)) {
         productModuleContent.setIsDependency(Boolean.TRUE);

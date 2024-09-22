@@ -1,13 +1,11 @@
 package com.axonivy.market.util;
 
-import com.axonivy.market.maven.model.MavenArtifact;
 import com.axonivy.market.comparator.LatestVersionComparator;
 import com.axonivy.market.comparator.MavenVersionComparator;
 import com.axonivy.market.constants.CommonConstants;
 import com.axonivy.market.constants.GitHubConstants;
 import com.axonivy.market.constants.MavenConstants;
 import com.axonivy.market.entity.Product;
-import com.axonivy.market.entity.ProductJsonContent;
 import com.axonivy.market.enums.NonStandardProduct;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.BooleanUtils;

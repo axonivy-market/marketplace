@@ -10,15 +10,12 @@ public class MavenConstants {
   public static final String ARTIFACT_NAME_FORMAT = "%s (%s)";
   public static final String VERSION_EXTRACT_FORMAT_FROM_METADATA_FILE = "//versions/version/text()";
   public static final String MAIN_VERSION_REGEX = "\\.";
-  public static final String GROUP_ID_TAG = "groupId";
-  public static final String ARTIFACT_ID_TAG = "artifactId";
-  public static final String VERSIONING_TAG = "versioning";
   public static final String LATEST_VERSION_TAG = "latest";
   public static final String LATEST_RELEASE_TAG = "release";
-  public static final String VERSIONS_LIST_TAG = "versions";
+  public static final String DATE_TIME_FORMAT = "yyyyMMddHHmmss";
   public static final String VERSION_TAG = "version";
-  public static final String lAST_UPDATED_TAG = "lastUpdated";
-
+  public static final String LAST_UPDATED_TAG = "lastUpdated";
+  public static final String METADATA_URL_POSTFIX = "maven-metadata.xml";
   private MavenConstants() {
   }
 }

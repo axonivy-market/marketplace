@@ -1,5 +1,6 @@
 package com.axonivy.market.entity;
 
+import com.axonivy.market.model.MavenArtifactModel;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;

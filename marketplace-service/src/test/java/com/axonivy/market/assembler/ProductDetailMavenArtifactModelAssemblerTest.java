@@ -13,7 +13,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import java.util.List;
 
 @ExtendWith(MockitoExtension.class)
-class ProductDetailModelAssemblerTest {
+class ProductDetailMavenArtifactModelAssemblerTest {
   private static final String ID = "portal";
   private static final String VERSION = "10.0.19";
   private static final String SELF_RELATION = "self";

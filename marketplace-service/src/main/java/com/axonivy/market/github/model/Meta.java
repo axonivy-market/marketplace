@@ -1,6 +1,6 @@
 package com.axonivy.market.github.model;
 
-import com.axonivy.market.maven.model.MavenArtifact;
+import com.axonivy.market.maven.model.Artifact;
 import com.axonivy.market.model.DisplayValue;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
@@ -33,7 +33,7 @@ public class Meta {
   private String vendor;
   private String vendorUrl;
   private List<String> tags;
-  private List<MavenArtifact> mavenArtifacts;
+  private List<Artifact> artifacts;
   private String compatibility;
   private Boolean contactUs;
   private String cost;
