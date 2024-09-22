@@ -26,6 +26,8 @@ public class MavenArtifactModel implements Serializable {
   private String downloadUrl;
   @Transient
   private Boolean isProductArtifact;
+  @Schema(description = "Artifact id", example = "adobe-acrobat-sign-connector")
+  private String artifactId;
 
   @Override
   public boolean equals(Object object) {

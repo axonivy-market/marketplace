@@ -177,7 +177,8 @@ public class VersionServiceImpl implements VersionService {
     artifact.setType(StringUtils.defaultIfBlank(artifact.getType(), ProductJsonConstants.DEFAULT_PRODUCT_TYPE));
     artifactName = String.format(MavenConstants.ARTIFACT_NAME_FORMAT, artifactName, artifact.getType());
     return new MavenArtifactModel(artifactName,
-        buildDownloadUrlFromArtifactAndVersion(artifact, version, archivedArtifacts), artifact.getIsProductArtifact());
+        buildDownloadUrlFromArtifactAndVersion(artifact, version, archivedArtifacts), artifact.getIsProductArtifact()
+        , artifact.getArtifactId());
   }
 
   public List<MavenArtifactModel> convertArtifactsToModels(List<MavenArtifact> artifacts, String version,
