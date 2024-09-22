@@ -38,6 +38,11 @@ public class CustomProductRepositoryImpl extends CustomRepository implements Cus
         .map(AggregationResults::getUniqueMappedResult).orElse(null);
   }
 
+  public List<Product> queryProductsByAggregation(Aggregation aggregation) {
+    return Optional.of(mongoTemplate.aggregate(aggregation, EntityConstants.PRODUCT, Product.class))
+        .map(AggregationResults::getMappedResults).orElse(Collections.emptyList());
+  }
+
   @Override
   public Product getProductByIdAndTag(String id, String tag) {
     Product result = findProductById(id);
@@ -95,6 +100,13 @@ public class CustomProductRepositoryImpl extends CustomRepository implements Cus
     Update update = new Update().inc(MongoDBConstants.INSTALLATION_COUNT, 1);
     mongoTemplate.upsert(createQueryByProductIdAndDesignerVersion(productId, designerVersion),
         update, ProductDesignerInstallation.class);
+  }
+
+  @Override
+  public List<String> getAllProductId(String id) {
+    return queryProductsByAggregation(
+        Aggregation.newAggregation(createProjectOnlyOneFieldOperation(MongoDBConstants.ID))).stream().map(
+        Product::getId).toList();
   }
 
   private Query createQueryByProductIdAndDesignerVersion(String productId, String designerVersion) {

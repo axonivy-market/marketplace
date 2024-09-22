@@ -1,6 +1,7 @@
 package com.axonivy.market.repository;
 
 import com.axonivy.market.constants.MongoDBConstants;
+import org.bson.Document;
 import org.springframework.data.mongodb.core.aggregation.Aggregation;
 import org.springframework.data.mongodb.core.aggregation.AggregationOperation;
 import org.springframework.data.mongodb.core.query.Criteria;
@@ -21,5 +22,11 @@ public class CustomRepository {
 
   protected AggregationOperation createFieldMatchOperation(String fieldName, String id) {
     return Aggregation.match(Criteria.where(fieldName).is(id));
+  }
+
+  protected AggregationOperation createProjectOnlyOneFieldOperation(String fieldName) {
+    return  context -> new Document(MongoDBConstants.PROJECT_KEY,
+        new Document(fieldName, 1)
+    );
   }
 }
