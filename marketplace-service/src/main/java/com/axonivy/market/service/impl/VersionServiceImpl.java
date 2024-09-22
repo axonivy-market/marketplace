@@ -1,5 +1,6 @@
 package com.axonivy.market.service.impl;
 
+import com.axonivy.market.maven.model.MavenArtifact;
 import com.axonivy.market.comparator.ArchivedArtifactsComparator;
 import com.axonivy.market.comparator.MavenVersionComparator;
 import com.axonivy.market.constants.CommonConstants;
@@ -11,9 +12,8 @@ import com.axonivy.market.entity.MavenArtifactVersion;
 import com.axonivy.market.entity.Product;
 import com.axonivy.market.entity.ProductJsonContent;
 import com.axonivy.market.github.model.ArchivedArtifact;
-import com.axonivy.market.github.model.MavenArtifact;
-import com.axonivy.market.github.service.GHAxonIvyProductRepoService;
 import com.axonivy.market.github.util.GitHubUtils;
+import com.axonivy.market.maven.util.MavenUtils;
 import com.axonivy.market.model.MavenArtifactVersionModel;
 import com.axonivy.market.model.VersionAndUrlModel;
 import com.axonivy.market.repository.MavenArtifactVersionRepository;
@@ -25,16 +25,12 @@ import com.axonivy.market.util.VersionUtils;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.log4j.Log4j2;
-import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.hateoas.Link;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -54,17 +50,15 @@ import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 @Service
 public class VersionServiceImpl implements VersionService {
 
-  private final GHAxonIvyProductRepoService gitHubService;
   private final MavenArtifactVersionRepository mavenArtifactVersionRepository;
   private final ProductRepository productRepo;
   private final ProductJsonContentRepository productJsonRepo;
   private final ProductModuleContentRepository productContentRepo;
   private final ObjectMapper mapper = new ObjectMapper();
 
-  public VersionServiceImpl(GHAxonIvyProductRepoService gitHubService,
+  public VersionServiceImpl(
       MavenArtifactVersionRepository mavenArtifactVersionRepository, ProductRepository productRepo,
       ProductJsonContentRepository productJsonRepo, ProductModuleContentRepository productContentRepo) {
-    this.gitHubService = gitHubService;
     this.mavenArtifactVersionRepository = mavenArtifactVersionRepository;
     this.productRepo = productRepo;
     this.productJsonRepo = productJsonRepo;
@@ -155,17 +149,7 @@ public class VersionServiceImpl implements VersionService {
 
   public List<MavenArtifact> getMavenArtifactsFromProductJsonByVersion(String version, String productId) {
     ProductJsonContent productJson = productJsonRepo.findByProductIdAndVersion(productId, version);
-    if (Objects.isNull(productJson) || StringUtils.isBlank(productJson.getContent())) {
-      return new ArrayList<>();
-    }
-    InputStream contentStream = IOUtils.toInputStream(productJson.getContent(), StandardCharsets.UTF_8);
-    try {
-      return GitHubUtils.extractMavenArtifactsFromContentStream(contentStream);
-    } catch (IOException e) {
-      log.error("Can not get maven artifacts from Product.json of {} - version {}:{}", productId, version,
-          e.getMessage());
-      return new ArrayList<>();
-    }
+      return MavenUtils.getMavenArtifactsFromProductJson(productJson);
   }
 
   public MavenArtifactModel convertMavenArtifactToModel(MavenArtifact artifact, String version,

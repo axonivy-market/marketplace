@@ -1,7 +1,8 @@
-package com.axonivy.market.bo;
+package com.axonivy.market.maven.model;
 
 import lombok.*;
 import org.springframework.data.annotation.Id;
+import org.springframework.data.annotation.Transient;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -16,11 +17,16 @@ import java.util.Objects;
 public class MavenVersion {
   @Id
   private String metadataUrl;
-  private String artifactId;
-  private String groupId;
-  private String latest;
-  private String release;
   private LocalDateTime lastUpdated;
+  @Transient
+  private String artifactId;
+  @Transient
+  private String groupId;
+  @Transient
+  private String latest;
+  @Transient
+  private String release;
+  @Transient
   private List<String> versions;
 
   @Override

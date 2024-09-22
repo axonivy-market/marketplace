@@ -1,5 +1,6 @@
-package com.axonivy.market.github.model;
+package com.axonivy.market.maven.model;
 
+import com.axonivy.market.github.model.ArchivedArtifact;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.AllArgsConstructor;

@@ -7,7 +7,6 @@ import com.axonivy.market.entity.Image;
 import com.axonivy.market.entity.Product;
 import com.axonivy.market.entity.ProductJsonContent;
 import com.axonivy.market.enums.Language;
-import com.axonivy.market.github.model.MavenArtifact;
 import com.axonivy.market.github.service.GitHubService;
 import com.axonivy.market.github.service.impl.GHAxonIvyProductRepoServiceImpl;
 import com.axonivy.market.repository.ProductJsonContentRepository;

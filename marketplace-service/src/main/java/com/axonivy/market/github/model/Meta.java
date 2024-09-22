@@ -1,5 +1,6 @@
 package com.axonivy.market.github.model;
 
+import com.axonivy.market.maven.model.MavenArtifact;
 import com.axonivy.market.model.DisplayValue;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;

@@ -1,6 +1,6 @@
 package com.axonivy.market.entity;
 
-import com.axonivy.market.github.model.MavenArtifact;
+import com.axonivy.market.maven.model.MavenArtifact;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AllArgsConstructor;
 import lombok.Builder;

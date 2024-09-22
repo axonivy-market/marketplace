@@ -1,13 +1,9 @@
 package com.axonivy.market.github.util;
 
+import com.axonivy.market.maven.model.MavenArtifact;
 import com.axonivy.market.constants.CommonConstants;
-import com.axonivy.market.constants.ProductJsonConstants;
-import com.axonivy.market.entity.Product;
-import com.axonivy.market.entity.ProductModuleContent;
 import com.axonivy.market.enums.NonStandardProduct;
-import com.axonivy.market.github.model.MavenArtifact;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import com.axonivy.market.maven.util.MavenUtils;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import lombok.extern.log4j.Log4j2;
@@ -29,7 +25,6 @@ import static com.axonivy.market.constants.MetaConstants.META_FILE;
 @Log4j2
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class GitHubUtils {
-  private static final ObjectMapper objectMapper = new ObjectMapper();
 
   public static long getGHCommitDate(GHCommit commit) {
     long commitTime = 0L;
@@ -116,40 +111,10 @@ public class GitHubUtils {
     if (Objects.isNull(contentStream)) {
       return new ArrayList<>();
     }
-    return extractMavenArtifactsFromContentStream(contentStream);
+    return MavenUtils.extractMavenArtifactsFromContentStream(contentStream);
   }
 
-  public static List<MavenArtifact> extractMavenArtifactsFromContentStream(InputStream contentStream) throws IOException {
-    List<MavenArtifact> artifacts = new ArrayList<>();
-    JsonNode rootNode = objectMapper.readTree(contentStream);
-    JsonNode installersNode = rootNode.path(ProductJsonConstants.INSTALLERS);
 
-    for (JsonNode mavenNode : installersNode) {
-      JsonNode dataNode = mavenNode.path(ProductJsonConstants.DATA);
-
-      // Not convert to artifact if id of node is not maven-import or maven-dependency
-      List<String> installerIdsToDisplay = List.of(ProductJsonConstants.MAVEN_DEPENDENCY_INSTALLER_ID,
-          ProductJsonConstants.MAVEN_IMPORT_INSTALLER_ID);
-      if (!installerIdsToDisplay.contains(mavenNode.path(ProductJsonConstants.ID).asText())) {
-        continue;
-      }
-
-      // Extract repository URL
-      JsonNode repositoriesNode = dataNode.path(ProductJsonConstants.REPOSITORIES);
-      String repoUrl = repositoriesNode.get(0).path(ProductJsonConstants.URL).asText();
-
-      // Process projects
-      if (dataNode.has(ProductJsonConstants.PROJECTS)) {
-        extractMavenArtifactFromJsonNode(dataNode, false, artifacts, repoUrl);
-      }
-
-      // Process dependencies
-      if (dataNode.has(ProductJsonConstants.DEPENDENCIES)) {
-        extractMavenArtifactFromJsonNode(dataNode, true, artifacts, repoUrl);
-      }
-    }
-    return artifacts;
-  }
 
   public static InputStream extractedContentStream(GHContent content) {
     try {
@@ -160,28 +125,7 @@ public class GitHubUtils {
     }
   }
 
-  public static void extractMavenArtifactFromJsonNode(JsonNode dataNode, boolean isDependency,
-      List<MavenArtifact> artifacts
-      , String repoUrl) {
-    String nodeName = ProductJsonConstants.PROJECTS;
-    if (isDependency) {
-      nodeName = ProductJsonConstants.DEPENDENCIES;
-    }
-    JsonNode dependenciesNode = dataNode.path(nodeName);
-    for (JsonNode dependencyNode : dependenciesNode) {
-      MavenArtifact artifact = createArtifactFromJsonNode(dependencyNode, repoUrl, isDependency);
-      artifacts.add(artifact);
-    }
-  }
 
-  public static MavenArtifact createArtifactFromJsonNode(JsonNode node, String repoUrl, boolean isDependency) {
-    MavenArtifact artifact = new MavenArtifact();
-    artifact.setRepoUrl(repoUrl);
-    artifact.setIsDependency(isDependency);
-    artifact.setGroupId(node.path(ProductJsonConstants.GROUP_ID).asText());
-    artifact.setArtifactId(node.path(ProductJsonConstants.ARTIFACT_ID).asText());
-    artifact.setType(node.path(ProductJsonConstants.TYPE).asText());
-    artifact.setIsProductArtifact(true);
-    return artifact;
-  }
+
+
 }

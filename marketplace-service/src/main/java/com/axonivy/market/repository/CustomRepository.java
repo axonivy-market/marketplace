@@ -1,7 +1,6 @@
 package com.axonivy.market.repository;
 
 import com.axonivy.market.constants.MongoDBConstants;
-import org.bson.Document;
 import org.springframework.data.mongodb.core.aggregation.Aggregation;
 import org.springframework.data.mongodb.core.aggregation.AggregationOperation;
 import org.springframework.data.mongodb.core.query.Criteria;

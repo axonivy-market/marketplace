@@ -1,5 +1,6 @@
 package com.axonivy.market.github.service.impl;
 
+import com.axonivy.market.maven.model.MavenArtifact;
 import com.axonivy.market.constants.CommonConstants;
 import com.axonivy.market.constants.GitHubConstants;
 import com.axonivy.market.constants.MavenConstants;
@@ -11,15 +12,12 @@ import com.axonivy.market.entity.ProductModuleContent;
 import com.axonivy.market.enums.Language;
 import com.axonivy.market.enums.NonStandardProduct;
 import com.axonivy.market.factory.ProductFactory;
-import com.axonivy.market.github.model.MavenArtifact;
 import com.axonivy.market.github.service.GHAxonIvyProductRepoService;
 import com.axonivy.market.github.service.GitHubService;
 import com.axonivy.market.github.util.GitHubUtils;
 import com.axonivy.market.repository.ProductJsonContentRepository;
 import com.axonivy.market.service.ImageService;
 import com.axonivy.market.util.VersionUtils;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.ObjectUtils;
