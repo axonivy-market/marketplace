@@ -6,18 +6,28 @@ import com.axonivy.market.constants.CommonConstants;
 import com.axonivy.market.constants.GitHubConstants;
 import com.axonivy.market.constants.MavenConstants;
 import com.axonivy.market.entity.Product;
+import com.axonivy.market.entity.ProductJsonContent;
 import com.axonivy.market.enums.NonStandardProduct;
+import com.axonivy.market.github.model.MavenArtifact;
+import com.axonivy.market.github.util.GitHubUtils;
+import com.axonivy.market.repository.ProductJsonContentRepository;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.util.Strings;
 import org.kohsuke.github.GHTag;
 import org.springframework.util.CollectionUtils;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Stream;
 
+@Slf4j
 public class VersionUtils {
   public static final String NON_NUMERIC_CHAR = "[^0-9.]";
 
@@ -145,4 +155,19 @@ public class VersionUtils {
     return product.getReleasedVersions().stream().map(
         version -> convertVersionToTag(product.getId(), version)).toList();
   }
+
+  public static List<MavenArtifact> getMavenArtifactsFromProductJson(ProductJsonContent productJson) {
+    if (Objects.isNull(productJson) || StringUtils.isBlank(productJson.getContent())) {
+      return new ArrayList<>();
+    }
+    InputStream contentStream = IOUtils.toInputStream(productJson.getContent(), StandardCharsets.UTF_8);
+    try {
+      return GitHubUtils.extractMavenArtifactsFromContentStream(contentStream);
+    } catch (IOException e) {
+      log.error("Can not get maven artifacts from Product.json of {}", productJson);
+      return new ArrayList<>();
+    }
+  }
+
+
 }

@@ -58,13 +58,11 @@ public class GHAxonIvyProductRepoServiceImpl implements GHAxonIvyProductRepoServ
   public static final String DESCRIPTION = "description";
   public static final String DEMO = "demo";
   public static final String SETUP = "setup";
-  private static final ObjectMapper objectMapper = new ObjectMapper();
   private static final String HASH = "#";
   private final GitHubService gitHubService;
   private final ImageService imageService;
   private final ProductJsonContentRepository productJsonContentRepository;
   private GHOrganization organization;
-  private String repoUrl;
 
   public GHAxonIvyProductRepoServiceImpl(GitHubService gitHubService, ImageService imageService,
       ProductJsonContentRepository productJsonContentRepository) {
@@ -78,79 +76,9 @@ public class GHAxonIvyProductRepoServiceImpl implements GHAxonIvyProductRepoServ
         .filter(content -> ProductJsonConstants.PRODUCT_JSON_FILE.equals(content.getName())).findFirst().orElse(null);
   }
 
-  @Override
-  public List<MavenArtifact> convertProductJsonToMavenProductInfo(GHContent content) throws IOException {
-    InputStream contentStream = extractedContentStream(content);
-    if (Objects.isNull(contentStream)) {
-      return new ArrayList<>();
-    }
-    return extractMavenArtifactsFromContentStream(contentStream);
-  }
 
-  @Override
-  public List<MavenArtifact> extractMavenArtifactsFromContentStream(InputStream contentStream) throws IOException {
-    List<MavenArtifact> artifacts = new ArrayList<>();
-    JsonNode rootNode = objectMapper.readTree(contentStream);
-    JsonNode installersNode = rootNode.path(ProductJsonConstants.INSTALLERS);
 
-    for (JsonNode mavenNode : installersNode) {
-      JsonNode dataNode = mavenNode.path(ProductJsonConstants.DATA);
 
-      // Not convert to artifact if id of node is not maven-import or maven-dependency
-      List<String> installerIdsToDisplay = List.of(ProductJsonConstants.MAVEN_DEPENDENCY_INSTALLER_ID,
-          ProductJsonConstants.MAVEN_IMPORT_INSTALLER_ID);
-      if (!installerIdsToDisplay.contains(mavenNode.path(ProductJsonConstants.ID).asText())) {
-        continue;
-      }
-
-      // Extract repository URL
-      JsonNode repositoriesNode = dataNode.path(ProductJsonConstants.REPOSITORIES);
-      repoUrl = repositoriesNode.get(0).path(ProductJsonConstants.URL).asText();
-
-      // Process projects
-      if (dataNode.has(ProductJsonConstants.PROJECTS)) {
-        extractMavenArtifactFromJsonNode(dataNode, false, artifacts);
-      }
-
-      // Process dependencies
-      if (dataNode.has(ProductJsonConstants.DEPENDENCIES)) {
-        extractMavenArtifactFromJsonNode(dataNode, true, artifacts);
-      }
-    }
-    return artifacts;
-  }
-
-  public InputStream extractedContentStream(GHContent content) {
-    try {
-      return content.read();
-    } catch (IOException | NullPointerException e) {
-      log.warn("Can not read the current content: {}", e.getMessage());
-      return null;
-    }
-  }
-
-  public void extractMavenArtifactFromJsonNode(JsonNode dataNode, boolean isDependency, List<MavenArtifact> artifacts) {
-    String nodeName = ProductJsonConstants.PROJECTS;
-    if (isDependency) {
-      nodeName = ProductJsonConstants.DEPENDENCIES;
-    }
-    JsonNode dependenciesNode = dataNode.path(nodeName);
-    for (JsonNode dependencyNode : dependenciesNode) {
-      MavenArtifact artifact = createArtifactFromJsonNode(dependencyNode, repoUrl, isDependency);
-      artifacts.add(artifact);
-    }
-  }
-
-  public MavenArtifact createArtifactFromJsonNode(JsonNode node, String repoUrl, boolean isDependency) {
-    MavenArtifact artifact = new MavenArtifact();
-    artifact.setRepoUrl(repoUrl);
-    artifact.setIsDependency(isDependency);
-    artifact.setGroupId(node.path(ProductJsonConstants.GROUP_ID).asText());
-    artifact.setArtifactId(node.path(ProductJsonConstants.ARTIFACT_ID).asText());
-    artifact.setType(node.path(ProductJsonConstants.TYPE).asText());
-    artifact.setIsProductArtifact(true);
-    return artifact;
-  }
 
   @Override
   public GHContent getContentFromGHRepoAndTag(String repoName, String filePath, String tagVersion) {
@@ -244,7 +172,7 @@ public class GHAxonIvyProductRepoServiceImpl implements GHAxonIvyProductRepoServ
       List<GHContent> contents, Product product) throws IOException {
     GHContent productJsonFile = getProductJsonFile(contents);
     if (Objects.nonNull(productJsonFile)) {
-      List<MavenArtifact> artifacts = convertProductJsonToMavenProductInfo(productJsonFile);
+      List<MavenArtifact> artifacts = GitHubUtils.convertProductJsonToMavenProductInfo(productJsonFile);
       MavenArtifact artifact = artifacts.stream().filter(MavenArtifact::getIsDependency).findFirst().orElse(null);
 
       if (Objects.nonNull(artifact)) {
@@ -270,7 +198,7 @@ public class GHAxonIvyProductRepoServiceImpl implements GHAxonIvyProductRepoServ
 
   public String extractProductJsonContent(GHContent ghContent, String tag) {
     try {
-      InputStream contentStream = extractedContentStream(ghContent);
+      InputStream contentStream = GitHubUtils.extractedContentStream(ghContent);
       return IOUtils.toString(contentStream, StandardCharsets.UTF_8);
     } catch (Exception exception) {
       log.error("Cannot paste content of product.json {} at tag: {}", ghContent.getPath(), tag);

@@ -23,10 +23,4 @@ public class CustomRepository {
   protected AggregationOperation createFieldMatchOperation(String fieldName, String id) {
     return Aggregation.match(Criteria.where(fieldName).is(id));
   }
-
-  protected AggregationOperation createProjectOnlyOneFieldOperation(String fieldName) {
-    return  context -> new Document(MongoDBConstants.PROJECT_KEY,
-        new Document(fieldName, 1)
-    );
-  }
 }

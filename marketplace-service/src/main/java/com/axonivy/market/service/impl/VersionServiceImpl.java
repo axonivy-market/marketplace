@@ -160,7 +160,7 @@ public class VersionServiceImpl implements VersionService {
     }
     InputStream contentStream = IOUtils.toInputStream(productJson.getContent(), StandardCharsets.UTF_8);
     try {
-      return gitHubService.extractMavenArtifactsFromContentStream(contentStream);
+      return GitHubUtils.extractMavenArtifactsFromContentStream(contentStream);
     } catch (IOException e) {
       log.error("Can not get maven artifacts from Product.json of {} - version {}:{}", productId, version,
           e.getMessage());

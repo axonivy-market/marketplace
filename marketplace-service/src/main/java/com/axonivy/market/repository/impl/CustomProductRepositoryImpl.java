@@ -9,9 +9,11 @@ import com.axonivy.market.repository.CustomProductRepository;
 import com.axonivy.market.repository.CustomRepository;
 import com.axonivy.market.repository.ProductModuleContentRepository;
 import lombok.Builder;
+import org.bson.Document;
 import org.springframework.data.mongodb.core.FindAndModifyOptions;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.aggregation.Aggregation;
+import org.springframework.data.mongodb.core.aggregation.AggregationOperation;
 import org.springframework.data.mongodb.core.aggregation.AggregationResults;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
@@ -103,14 +105,19 @@ public class CustomProductRepositoryImpl extends CustomRepository implements Cus
   }
 
   @Override
-  public List<String> getAllProductId(String id) {
+  public List<Product> getAllProductWithIdAndReleaseTag() {
     return queryProductsByAggregation(
-        Aggregation.newAggregation(createProjectOnlyOneFieldOperation(MongoDBConstants.ID))).stream().map(
-        Product::getId).toList();
+        Aggregation.newAggregation(createProjectIdAndReleasedVersionsOperation()));
   }
 
   private Query createQueryByProductIdAndDesignerVersion(String productId, String designerVersion) {
     return new Query(Criteria.where(MongoDBConstants.PRODUCT_ID).is(productId)
         .andOperator(Criteria.where(MongoDBConstants.DESIGNER_VERSION).is(designerVersion)));
+  }
+
+  protected AggregationOperation createProjectIdAndReleasedVersionsOperation() {
+    return  context -> new Document(MongoDBConstants.PROJECT_KEY,
+        new Document(MongoDBConstants.PRODUCT_ID, 1).append(MongoDBConstants.RELEASED_VERSIONS, 1)
+    );
   }
 }
