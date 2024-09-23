@@ -360,16 +360,9 @@ public class GHAxonIvyProductRepoServiceImpl implements GHAxonIvyProductRepoServ
     String productFolderPath = ghRepository.getDirectoryContent(CommonConstants.SLASH, tag).stream()
         .filter(GHContent::isDirectory).map(GHContent::getName)
         .filter(content -> content.endsWith(MavenConstants.PRODUCT_ARTIFACT_POSTFIX)).findFirst().orElse(null);
-    if (StringUtils.isBlank(productFolderPath) || hasChildConnector(ghRepository)) {
-      productFolderPath = GitHubUtils.getNonStandardProductFilePath(product.getId());
-    }
+    productFolderPath = NonStandardProduct.findById(product.getId(), productFolderPath);
 
     return ghRepository.getDirectoryContent(productFolderPath, tag);
-  }
-
-  private boolean hasChildConnector(GHRepository ghRepository) {
-    return NonStandardProduct.MICROSOFT_REPO_NAME.getId().equals(ghRepository.getName())
-        || NonStandardProduct.OPENAI_CONNECTOR.getId().equals(ghRepository.getName());
   }
 
   private boolean hasImageDirectives(String readmeContents) {

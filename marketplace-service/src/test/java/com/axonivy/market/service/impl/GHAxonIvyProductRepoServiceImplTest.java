@@ -48,7 +48,6 @@ class GHAxonIvyProductRepoServiceImplTest {
   public static final String RELEASE_TAG = "v10.0.0";
   public static final String IMAGE_NAME = "image.png";
   public static final String DOCUWARE_CONNECTOR_PRODUCT = "docuware-connector-product";
-  public static final String IMAGE_DOWNLOAD_URL = "https://raw.githubusercontent.com/image.png";
 
   @Mock
   PagedIterable<GHTag> listTags;
