@@ -99,10 +99,8 @@ export class ProductDetailVersionActionComponent implements AfterViewInit {
         artifact.label = artifact.name;
       }
     });
-    if (this.artifacts().length !== 0) {
-      this.selectedArtifactName = this.artifacts()[0].name ?? '';
-      this.selectedArtifact = this.artifacts()[0].downloadUrl ?? '';
-    }
+      this.selectedArtifactName = this.artifacts()[0]?.name ?? '';
+      this.selectedArtifact = this.artifacts()[0]?.downloadUrl ?? '';
   }
 
   onSelectVersionInDesigner(version: string) {
