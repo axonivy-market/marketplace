@@ -55,33 +55,29 @@ public class ProductController {
     this.pagedResourcesAssembler = pagedResourcesAssembler;
   }
 
-  public static String getBearerToken(String authorizationHeader) {
-    String token = null;
-    if (authorizationHeader.startsWith(CommonConstants.BEARER)) {
-      token = authorizationHeader.substring(CommonConstants.BEARER.length()).trim(); // Remove "Bearer " prefix
-    }
-    return token;
-  }
-
   @GetMapping()
-  @Operation(summary = "Retrieve a paginated list of all products, optionally filtered by type, keyword, and " +
-      "language", description = "By default, the system finds products with type 'all'", parameters = {
+  @Operation(summary = "Retrieve a paginated list of all products, optionally filtered by type, keyword, and language",
+      description = "By default, the system finds products with type 'all'", parameters = {
       @Parameter(name = "page", description = "Page number to retrieve", in = ParameterIn.QUERY, example = "0",
           required = true),
       @Parameter(name = "size", description = "Number of items per page", in = ParameterIn.QUERY, example = "20",
           required = true),
-      @Parameter(name = "sort", description = "Sorting criteria in the format: Sorting criteria" +
-          "(popularity|alphabetically|recent), Sorting order(asc|desc)",
+      @Parameter(name = "sort",
+          description = "Sorting criteria in the format: Sorting criteria(popularity|alphabetically|recent), Sorting " +
+                  "order(asc|desc)",
           in = ParameterIn.QUERY, example = "[\"popularity\",\"asc\"]", required = true)})
   public ResponseEntity<PagedModel<ProductModel>> findProducts(
-      @RequestParam(name = TYPE) @Parameter(description = "Type of product.", in = ParameterIn.QUERY, schema =
-      @Schema(type = "string", allowableValues = {"all", "connectors", "utilities", "solutions", "demos"})) String type,
-      @RequestParam(required = false, name = KEYWORD) @Parameter(description = "Keyword that exist in product's name " +
-          "or short description", example = "connector", in = ParameterIn.QUERY) String keyword,
-      @RequestParam(name = LANGUAGE) @Parameter(description = "Language of product short description", in =
-          ParameterIn.QUERY, schema = @Schema(allowableValues = {"en", "de"})) String language,
-      @RequestParam(name = IS_REST_CLIENT) @Parameter(description = "Option to render the website in the REST Client " +
-          "Editor of Designer", in = ParameterIn.QUERY) Boolean isRESTClient,
+      @RequestParam(name = TYPE) @Parameter(description = "Type of product.", in = ParameterIn.QUERY,
+          schema = @Schema(type = "string",
+              allowableValues = {"all", "connectors", "utilities", "solutions", "demos"})) String type,
+      @RequestParam(required = false, name = KEYWORD) @Parameter(
+          description = "Keyword that exist in product's name or short description", example = "connector",
+          in = ParameterIn.QUERY) String keyword,
+      @RequestParam(name = LANGUAGE) @Parameter(description = "Language of product short description",
+          in = ParameterIn.QUERY, schema = @Schema(allowableValues = {"en", "de"})) String language,
+      @RequestParam(name = IS_REST_CLIENT) @Parameter(
+          description = "Option to render the website in the REST Client Editor of Designer",
+          in = ParameterIn.QUERY) Boolean isRESTClient,
       @ParameterObject Pageable pageable) {
     Page<Product> results = productService.findProducts(type, keyword, language, isRESTClient, pageable);
     if (results.isEmpty()) {
@@ -135,5 +131,13 @@ public class ProductController {
     var emptyPagedModel = (PagedModel<ProductModel>) pagedResourcesAssembler.toEmptyModel(Page.empty(),
         ProductModel.class);
     return new ResponseEntity<>(emptyPagedModel, HttpStatus.OK);
+  }
+
+  public static String getBearerToken(String authorizationHeader) {
+    String token = null;
+    if (authorizationHeader.startsWith(CommonConstants.BEARER)) {
+      token = authorizationHeader.substring(CommonConstants.BEARER.length()).trim(); // Remove "Bearer " prefix
+    }
+    return token;
   }
 }

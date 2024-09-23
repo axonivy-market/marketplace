@@ -43,17 +43,16 @@ public enum NonStandardProduct {
   DEEPL_CONNECTOR("deepl-connector", false, "img", ""),
   DEFAULT("", false, COMMON_IMAGES_FOLDER_NAME, "");
 
+  private final String id;
+  private final boolean isVersionTagNumberOnly;
+  private final String pathToImageFolder;
+  private final String pathToProductFolder;
   private static final Map<String, NonStandardProduct> NON_STANDARD_PRODUCT_MAP;
 
   static {
     NON_STANDARD_PRODUCT_MAP = Arrays.stream(NonStandardProduct.values()).collect(
         Collectors.toMap(NonStandardProduct::getId, Function.identity()));
   }
-
-  private final String id;
-  private final boolean isVersionTagNumberOnly;
-  private final String pathToImageFolder;
-  private final String pathToProductFolder;
 
   public static NonStandardProduct findById(String id) {
     return NON_STANDARD_PRODUCT_MAP.getOrDefault(id, DEFAULT);

@@ -21,8 +21,8 @@ import static com.axonivy.market.constants.RequestParamConstants.ID;
 
 @RestController
 @RequestMapping(PRODUCT_DESIGNER_INSTALLATION)
-@Tag(name = "Product Designer Installation Controllers", description = "API collection to get designer installation " +
-    "count.")
+@Tag(name = "Product Designer Installation Controllers",
+    description = "API collection to get designer installation count.")
 public class ProductDesignerInstallationController {
   private final ProductDesignerInstallationService productDesignerInstallationService;
 
@@ -31,8 +31,8 @@ public class ProductDesignerInstallationController {
   }
 
   @GetMapping(DESIGNER_INSTALLATION_BY_ID)
-  @Operation(summary = "Get designer installation count by product id.", description = "get designer installation " +
-      "count by product id")
+  @Operation(summary = "Get designer installation count by product id.",
+      description = "get designer installation count by product id")
   public ResponseEntity<List<DesignerInstallation>> getProductDesignerInstallationByProductId(
       @PathVariable(ID) @Parameter(description = "Product id (from meta.json)", example = "adobe-acrobat-connector",
           in = ParameterIn.PATH) String productId) {

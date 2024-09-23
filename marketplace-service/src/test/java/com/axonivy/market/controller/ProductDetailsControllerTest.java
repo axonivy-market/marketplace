@@ -36,21 +36,26 @@ import static org.mockito.Mockito.*;
 @ExtendWith(MockitoExtension.class)
 class ProductDetailsControllerTest {
   public static final String TAG = "v10.0.6";
-  public static final String DOCKER_CONNECTOR_ID = "docker-connector";
-  private static final String PRODUCT_NAME_SAMPLE = "Docker";
-  private static final String PRODUCT_NAME_DE_SAMPLE = "Docker DE";
-  @Mock
-  VersionService versionService;
-  @Mock
-  ProductDesignerInstallationService productDesignerInstallationService;
   @Mock
   private ProductService productService;
+
   @Mock
   private ImageService imageService;
+
+  @Mock
+  VersionService versionService;
+
+  @Mock
+  ProductDesignerInstallationService productDesignerInstallationService;
+
   @Mock
   private ProductDetailModelAssembler detailModelAssembler;
+
   @InjectMocks
   private ProductDetailsController productDetailsController;
+  private static final String PRODUCT_NAME_SAMPLE = "Docker";
+  private static final String PRODUCT_NAME_DE_SAMPLE = "Docker DE";
+  public static final String DOCKER_CONNECTOR_ID = "docker-connector";
 
   @Test
   void testProductDetails() {
@@ -116,7 +121,7 @@ class ProductDetailsControllerTest {
     List<MavenArtifactVersionModel> models = List.of(new MavenArtifactVersionModel());
     Mockito.when(
             versionService.getArtifactsAndVersionToDisplay(Mockito.anyString(), Mockito.anyBoolean(),
-                Mockito.anyString()))
+                    Mockito.anyString()))
         .thenReturn(models);
     ResponseEntity<List<MavenArtifactVersionModel>> result = productDetailsController.findProductVersionsById("portal",
         true, "10.0.1");
