@@ -47,7 +47,8 @@ public class FeedbackServiceImpl implements FeedbackService {
   }
 
   @Override
-  public Feedback findFeedbackByUserIdAndProductId(String userId, String productId) throws NotFoundException, NoContentException {
+  public Feedback findFeedbackByUserIdAndProductId(String userId,
+      String productId) throws NotFoundException, NoContentException {
     if (StringUtils.isNotBlank(userId)) {
       validateUserExists(userId);
     }

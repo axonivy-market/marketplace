@@ -1,11 +1,11 @@
 package com.axonivy.market.repository.impl;
 
-import static com.axonivy.market.enums.DocumentField.LISTED;
-import static com.axonivy.market.enums.DocumentField.TYPE;
-
-import java.util.ArrayList;
-import java.util.List;
-
+import com.axonivy.market.criteria.ProductSearchCriteria;
+import com.axonivy.market.entity.Product;
+import com.axonivy.market.enums.DocumentField;
+import com.axonivy.market.enums.Language;
+import com.axonivy.market.enums.TypeOption;
+import com.axonivy.market.repository.ProductSearchRepository;
 import org.apache.commons.lang3.StringUtils;
 import org.bson.BsonRegularExpression;
 import org.springframework.data.domain.Page;
@@ -16,12 +16,11 @@ import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.util.CollectionUtils;
 
-import com.axonivy.market.criteria.ProductSearchCriteria;
-import com.axonivy.market.entity.Product;
-import com.axonivy.market.enums.DocumentField;
-import com.axonivy.market.enums.Language;
-import com.axonivy.market.enums.TypeOption;
-import com.axonivy.market.repository.ProductSearchRepository;
+import java.util.ArrayList;
+import java.util.List;
+
+import static com.axonivy.market.enums.DocumentField.LISTED;
+import static com.axonivy.market.enums.DocumentField.TYPE;
 
 public class ProductSearchRepositoryImpl implements ProductSearchRepository {
 
@@ -103,7 +102,8 @@ public class ProductSearchRepositoryImpl implements ProductSearchRepository {
     for (var property : filterProperties) {
       Criteria filterByKeywordCriteria;
       if (property.isLocalizedSupport()) {
-        filterByKeywordCriteria = Criteria.where(LOCALIZE_SEARCH_PATTERN.formatted(property.getFieldName(), language.getValue()));
+        filterByKeywordCriteria = Criteria.where(
+            LOCALIZE_SEARCH_PATTERN.formatted(property.getFieldName(), language.getValue()));
       } else {
         filterByKeywordCriteria = Criteria.where(property.getFieldName());
       }

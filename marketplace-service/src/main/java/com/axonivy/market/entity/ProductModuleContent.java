@@ -1,11 +1,7 @@
 package com.axonivy.market.entity;
 
 import io.swagger.v3.oas.annotations.media.Schema;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.mongodb.core.mapping.Document;
@@ -32,7 +28,8 @@ public class ProductModuleContent implements Serializable {
   private String productId;
   @Schema(description = "Target release tag", example = "v10.0.25")
   private String tag;
-  @Schema(description = "Product detail description content ", example = "{ \"de\": \"E-Sign-Konnektor\", \"en\": \"E-sign connector\" }")
+  @Schema(description = "Product detail description content ",
+      example = "{ \"de\": \"E-Sign-Konnektor\", \"en\": \"E-sign connector\" }")
   private Map<String, String> description;
   @Schema(description = "Setup tab content", example = "{ \"de\": \"Setup\", \"en\": \"Setup\" ")
   private Map<String, String> setup;
