@@ -1,6 +1,6 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { ErrorPageComponentComponent } from './error-page-component.component';
+import { ErrorPageComponent } from './error-page.component';
 import { TranslateModule } from '@ngx-translate/core';
 import { Viewport } from 'karma-viewport/dist/adapter/viewport';
 import { By } from '@angular/platform-browser';
@@ -8,13 +8,13 @@ import { ActivatedRoute, Router } from '@angular/router';
 declare const viewport: Viewport;
 
 describe('ErrorPageComponentComponent', () => {
-  let component: ErrorPageComponentComponent;
-  let fixture: ComponentFixture<ErrorPageComponentComponent>;
+  let component: ErrorPageComponent;
+  let fixture: ComponentFixture<ErrorPageComponent>;
   let router: Router;
 
 const setupComponent = (idValue: string | undefined) => {
   TestBed.configureTestingModule({
-    imports: [ErrorPageComponentComponent, TranslateModule.forRoot()],
+    imports: [ErrorPageComponent, TranslateModule.forRoot()],
     providers: [
       {
         provide: ActivatedRoute,
@@ -27,7 +27,7 @@ const setupComponent = (idValue: string | undefined) => {
     ]
   }).compileComponents();
 
-  fixture = TestBed.createComponent(ErrorPageComponentComponent );
+  fixture = TestBed.createComponent(ErrorPageComponent );
   component = fixture.componentInstance;
   router = TestBed.inject(Router);
   fixture.detectChanges();

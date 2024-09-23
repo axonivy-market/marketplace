@@ -4,16 +4,15 @@ import { LanguageService } from '../../../core/services/language/language.servic
 import { CommonModule } from '@angular/common';
 import { TranslateModule } from '@ngx-translate/core';
 import { ActivatedRoute, Router } from '@angular/router';
-import { ERROR_PAGE_PATH } from '../../constants/common.constant';
 
 @Component({
   selector: 'app-error-page-component',
   standalone: true,
   imports: [CommonModule, TranslateModule],
-  templateUrl: './error-page-component.component.html',
-  styleUrl: './error-page-component.component.scss'
+  templateUrl: './error-page.component.html',
+  styleUrl: './error-page.component.scss'
 })
-export class ErrorPageComponentComponent implements OnInit {
+export class ErrorPageComponent implements OnInit {
   themeService = inject(ThemeService);
   languageService = inject(LanguageService);
   isMobileMode = signal<boolean>(false);
