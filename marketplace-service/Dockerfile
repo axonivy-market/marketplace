@@ -2,7 +2,7 @@
 FROM maven:3.8.1-openjdk-17 AS build-api
 WORKDIR /app
 COPY . .
-RUN mvn clean install -DskipTests
+RUN mvn clean install -DskipTests=true
 
 # Stage 2: Run the application
 FROM tomcat:10.1-jdk17-openjdk-slim
