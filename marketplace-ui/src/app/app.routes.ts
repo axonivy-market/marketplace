@@ -8,6 +8,10 @@ export const routes: Routes = [
     component: ErrorPageComponentComponent
   },
   {
+    path: 'error-page/:id',
+    component: ErrorPageComponentComponent
+  },
+  {
     path: '',
     loadChildren: () => import('./modules/home/home.routes').then(m => m.routes)
   },
