@@ -114,8 +114,6 @@ public class GitHubUtils {
     return MavenUtils.extractMavenArtifactsFromContentStream(contentStream);
   }
 
-
-
   public static InputStream extractedContentStream(GHContent content) {
     try {
       return content.read();
@@ -124,8 +122,4 @@ public class GitHubUtils {
       return null;
     }
   }
-
-
-
-
 }

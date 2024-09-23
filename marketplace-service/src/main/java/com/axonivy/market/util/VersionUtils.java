@@ -147,6 +147,4 @@ public class VersionUtils {
     return product.getReleasedVersions().stream().map(
         version -> convertVersionToTag(product.getId(), version)).toList();
   }
-
-
 }

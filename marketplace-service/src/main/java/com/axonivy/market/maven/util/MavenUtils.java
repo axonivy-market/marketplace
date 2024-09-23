@@ -5,9 +5,11 @@ import com.axonivy.market.constants.CommonConstants;
 import com.axonivy.market.constants.MavenConstants;
 import com.axonivy.market.constants.ProductJsonConstants;
 import com.axonivy.market.entity.ProductJsonContent;
-import com.axonivy.market.github.model.ArchivedArtifact;
+import com.axonivy.market.github.util.GitHubUtils;
+import com.axonivy.market.maven.model.ArchivedArtifact;
 import com.axonivy.market.maven.model.Artifact;
 import com.axonivy.market.maven.model.Metadata;
+import com.axonivy.market.model.MavenArtifactModel;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
@@ -20,6 +22,7 @@ import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 
 @Slf4j
@@ -50,9 +53,8 @@ public class MavenUtils {
     return artifact;
   }
 
-  public static void extractMavenArtifactFromJsonNode(JsonNode dataNode, boolean isDependency,
-      List<Artifact> artifacts
-      , String repoUrl) {
+  public static void extractMavenArtifactFromJsonNode(JsonNode dataNode, boolean isDependency, List<Artifact> artifacts,
+      String repoUrl) {
     String nodeName = ProductJsonConstants.PROJECTS;
     if (isDependency) {
       nodeName = ProductJsonConstants.DEPENDENCIES;
@@ -64,8 +66,7 @@ public class MavenUtils {
     }
   }
 
-  public static List<Artifact> extractMavenArtifactsFromContentStream(
-      InputStream contentStream) throws IOException {
+  public static List<Artifact> extractMavenArtifactsFromContentStream(InputStream contentStream) throws IOException {
     List<Artifact> artifacts = new ArrayList<>();
     JsonNode rootNode = objectMapper.readTree(contentStream);
     JsonNode installersNode = rootNode.path(ProductJsonConstants.INSTALLERS);
@@ -131,34 +132,29 @@ public class MavenUtils {
     if (CollectionUtils.isEmpty(archivedArtifacts)) {
       return null;
     }
-    return archivedArtifacts.stream()
-        .filter(archivedArtifact -> MavenVersionComparator.compare(archivedArtifact.getLastVersion(), version) >= 0)
-        .findAny().orElse(null);
+    return archivedArtifacts.stream().filter(
+        archivedArtifact -> MavenVersionComparator.compare(archivedArtifact.getLastVersion(),
+            version) >= 0).findAny().orElse(null);
   }
-//TODO: convert maven Artifact
 
+  public static MavenArtifactModel convertMavenArtifactToModel(Artifact artifact, String version) {
+    String artifactName = artifact.getName();
+    if (StringUtils.isBlank(artifactName)) {
+      artifactName = GitHubUtils.convertArtifactIdToName(artifact.getArtifactId());
+    }
+    artifact.setType(StringUtils.defaultIfBlank(artifact.getType(), ProductJsonConstants.DEFAULT_PRODUCT_TYPE));
+    artifactName = String.format(MavenConstants.ARTIFACT_NAME_FORMAT, artifactName, artifact.getType());
+    return new MavenArtifactModel(artifactName, buildDownloadUrl(artifact, version));
+  }
 
-
-//  public static MavenArtifactModel convertMavenArtifactToModel(MavenArtifact artifact, String version) {
-//    String artifactName = artifact.getName();
-//    if (StringUtils.isBlank(artifactName)) {
-//      artifactName = GitHubUtils.convertArtifactIdToName(artifact.getArtifactId());
-//    }
-//    artifact.setType(StringUtils.defaultIfBlank(artifact.getType(), ProductJsonConstants.DEFAULT_PRODUCT_TYPE));
-//    artifactName = String.format(MavenConstants.ARTIFACT_NAME_FORMAT, artifactName, artifact.getType());
-//    return new MavenArtifactModel(artifactName,
-//        buildDownloadUrl(artifact, version), artifact.getIsProductArtifact()
-//        , artifact.getArtifactId());
-//  }
-//
-//  public static List<MavenArtifactModel> convertArtifactsToModels(List<MavenArtifact> artifacts, String version) {
-//    List<MavenArtifactModel> results = new ArrayList<>();
-//    if (!CollectionUtils.isEmpty(artifacts)) {
-//      for (MavenArtifact artifact : artifacts) {
-//        MavenArtifactModel mavenArtifactModel = convertMavenArtifactToModel(artifact, version);
-//        results.add(mavenArtifactModel);
-//      }
-//    }
-//    return results;
-//  }
+  public static List<MavenArtifactModel> convertArtifactsToModels(List<Artifact> artifacts, String version) {
+    List<MavenArtifactModel> results = new ArrayList<>();
+    if (!CollectionUtils.isEmpty(artifacts)) {
+      for (Artifact artifact : artifacts) {
+        MavenArtifactModel mavenArtifactModel = convertMavenArtifactToModel(artifact, version);
+        results.add(mavenArtifactModel);
+      }
+    }
+    return results;
+  }
 }

@@ -1,6 +1,5 @@
 package com.axonivy.market.maven.model;
 
-import com.axonivy.market.github.model.ArchivedArtifact;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.AllArgsConstructor;
@@ -35,8 +34,12 @@ public class Artifact implements Serializable {
 
   @Override
   public boolean equals(Object o) {
-    if (this == o) return true;
-    if (o == null || getClass() != o.getClass()) return false;
+    if (this == o) {
+      return true;
+    }
+    if (o == null || getClass() != o.getClass()) {
+      return false;
+    }
     Artifact that = (Artifact) o;
     return Objects.equals(groupId, that.groupId) && Objects.equals(artifactId, that.artifactId);
   }

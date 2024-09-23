@@ -5,7 +5,7 @@ import com.axonivy.market.constants.MavenConstants;
 import com.axonivy.market.controller.ProductDetailsController;
 import com.axonivy.market.entity.Product;
 import com.axonivy.market.entity.ProductJsonContent;
-import com.axonivy.market.github.model.ArchivedArtifact;
+import com.axonivy.market.maven.model.ArchivedArtifact;
 import com.axonivy.market.maven.model.Artifact;
 import com.axonivy.market.maven.util.MavenUtils;
 import com.axonivy.market.model.MavenArtifactModel;
@@ -83,7 +83,10 @@ public class VersionServiceImpl implements VersionService {
     List<MavenArtifactVersionModel> results = new ArrayList<>();
 
     for (String version : versionsToDisplay) {
-      results.add(new MavenArtifactVersionModel(version, cache.get(version)));
+      List<MavenArtifactModel> artifactsByVersion = new ArrayList<>();
+      artifactsByVersion.addAll(MavenUtils.convertArtifactsToModels(artifactsFromMeta, version));
+      artifactsByVersion.addAll(cache.get(version));
+      results.add(new MavenArtifactVersionModel(version, artifactsByVersion));
     }
     return results;
   }

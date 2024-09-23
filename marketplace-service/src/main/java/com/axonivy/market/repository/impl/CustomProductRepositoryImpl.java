@@ -107,7 +107,7 @@ public class CustomProductRepositoryImpl extends CustomRepository implements Cus
   @Override
   public List<Product> getAllProductWithIdAndReleaseTag() {
     return queryProductsByAggregation(
-        Aggregation.newAggregation(createProjectIdAndReleasedVersionsOperation()));
+        createProjectIdAndReleasedVersionsAndArtifactsAggregation());
   }
 
   private Query createQueryByProductIdAndDesignerVersion(String productId, String designerVersion) {
@@ -115,9 +115,9 @@ public class CustomProductRepositoryImpl extends CustomRepository implements Cus
         .andOperator(Criteria.where(MongoDBConstants.DESIGNER_VERSION).is(designerVersion)));
   }
 
-  protected AggregationOperation createProjectIdAndReleasedVersionsOperation() {
-    return  context -> new Document(MongoDBConstants.PROJECT_KEY,
-        new Document(MongoDBConstants.PRODUCT_ID, 1).append(MongoDBConstants.RELEASED_VERSIONS, 1)
+  protected Aggregation createProjectIdAndReleasedVersionsAndArtifactsAggregation() {
+    return Aggregation.newAggregation(
+        Aggregation.project(MongoDBConstants.ID, "artifacts", MongoDBConstants.RELEASED_VERSIONS)
     );
   }
 }
