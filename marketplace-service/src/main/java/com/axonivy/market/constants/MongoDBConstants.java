@@ -1,5 +1,9 @@
 package com.axonivy.market.constants;
 
+import lombok.AccessLevel;
+import lombok.NoArgsConstructor;
+
+@NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class MongoDBConstants {
 
   public static final String ID = "_id";
@@ -9,8 +13,5 @@ public class MongoDBConstants {
   public static final String PRODUCT_ID = "productId";
   public static final String DESIGNER_VERSION = "designerVersion";
   public static final String TAG = "tag";
-
-  private MongoDBConstants() {
-  }
-
+  public static final String DOC = "artifacts.doc";
 }

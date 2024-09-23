@@ -13,8 +13,9 @@ services:
     restart: always
     volumes:
       - ../../marketplace-build/config/nginx/dev/nginx.conf:/etc/nginx/nginx.conf
+      - cachedata:/usr/share/nginx/html/cache
     ports:
-      - "4200:80"
+      - "4201:80"
     depends_on:
       - service
 
@@ -23,6 +24,7 @@ services:
     restart: always
     volumes:
       - /home/axonivy/marketplace/data/market-installations.json:/data/market-installation.json
+      - cachedata:/usr/local/tomcat/webapps/marketplace-service/cache
     environment:
       - MONGODB_HOST=${SERVICE_MONGODB_HOST}
       - MONGODB_DATABASE=${SERVICE_MONGODB_DATABASE}
@@ -42,3 +44,6 @@ services:
         - BUILD_VERSION=${BUILD_VERSION}
     ports:
       - "8080:8080"
+
+volumes:
+  cachedata:

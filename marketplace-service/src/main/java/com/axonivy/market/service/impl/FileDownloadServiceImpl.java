@@ -18,6 +18,7 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
 import static com.axonivy.market.constants.CommonConstants.SLASH;
+import static org.apache.commons.lang3.StringUtils.EMPTY;
 
 @Log4j2
 @Service
@@ -25,14 +26,16 @@ import static com.axonivy.market.constants.CommonConstants.SLASH;
 public class FileDownloadServiceImpl implements FileDownloadService {
 
   private static final String ROOT_DIR = "user.dir";
-  private static final String CACHED_DIR = "cached";
+  private static final String CACHE_DIR = "cache";
   private static final String DOC_DIR = "doc";
   private static final String ZIP_EXTENSION = ".zip";
   private static final String TEMP_FILE_NAME = "downloaded";
 
   public static void main(String[] args) throws Exception {
     FileDownloadService server = new FileDownloadServiceImpl();
-    server.downloadAndUnzipFile("https://nexus.axonivy.com/repository/maven-releases/com/axonivy/portal/portal-guide/11.4.0-m263/portal-guide-11.4.0-m263.zip", true);
+    server.downloadAndUnzipFile(
+        "https://nexus.axonivy.com/repository/maven-releases/com/axonivy/portal/portal-guide/11.4" + ".0-m263/portal" + "-guide-11.4.0-m263.zip",
+        true);
   }
 
   private static byte[] downloadFileByRestTemplate(String url) {
@@ -40,7 +43,7 @@ public class FileDownloadServiceImpl implements FileDownloadService {
   }
 
   private static String generateCacheStorageDirectory(String url) {
-    String destinationDirectory = System.getProperty(ROOT_DIR) + File.separator + CACHED_DIR;
+    String destinationDirectory = System.getProperty(ROOT_DIR) + File.separator + CACHE_DIR;
     url = url.substring(0, url.lastIndexOf(SLASH));
     var urlArrays = Arrays.asList(url.split(SLASH));
     Collections.reverse(urlArrays);
@@ -60,17 +63,17 @@ public class FileDownloadServiceImpl implements FileDownloadService {
   }
 
   @Override
-  public void downloadAndUnzipFile(String url, boolean isForce) throws Exception {
+  public String downloadAndUnzipFile(String url, boolean isForce) throws Exception {
     if (StringUtils.isBlank(url) || !url.endsWith(ZIP_EXTENSION)) {
       log.warn("Request URL not a ZIP file - {}", url);
-      return;
+      return EMPTY;
     }
 
     String location = generateCacheStorageDirectory(url);
     File cacheFolder = new File(location);
     if (cacheFolder.exists() && cacheFolder.isDirectory() && !isForce) {
       log.warn("Data is already - {}", location);
-      return;
+      return EMPTY;
     } else {
       cacheFolder.mkdirs();
     }
@@ -87,6 +90,7 @@ public class FileDownloadServiceImpl implements FileDownloadService {
 
     // Clean up the temporary zip file
     Files.delete(tempZipPath);
+    return location;
   }
 
   private void unzipFile(String zipFilePath, String location) throws IOException {

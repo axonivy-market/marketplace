@@ -19,6 +19,7 @@ services:
     image: ghcr.io/axonivy-market/marketplace-ui:${RELEASE_VERSION}
     volumes:
       - ../config/nginx/nginx.conf:/etc/nginx/nginx.conf
+      - cachedata:/usr/share/nginx/html/cache
     restart: always
     ports:
       - "80:80"
@@ -30,6 +31,7 @@ services:
       - 8080
     volumes:
       - /home/axonivy/marketplace/data/market-installations.json:/data/market-installation.json
+      - cachedata:/usr/local/tomcat/webapps/marketplace-service/cache
     environment:
       - MONGODB_HOST=${SERVICE_MONGODB_HOST}
       - MONGODB_DATABASE=${SERVICE_MONGODB_DATABASE}
@@ -44,3 +46,4 @@ services:
       - MARKET_MONGO_LOG_LEVEL=${MARKET_MONGO_LOG_LEVEL}
 volumes:
   mongodata:
+  cachedata:

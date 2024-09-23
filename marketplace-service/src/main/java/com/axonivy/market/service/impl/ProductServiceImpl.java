@@ -9,11 +9,7 @@ import com.axonivy.market.entity.GitHubRepoMeta;
 import com.axonivy.market.entity.Product;
 import com.axonivy.market.entity.ProductCustomSort;
 import com.axonivy.market.entity.ProductModuleContent;
-import com.axonivy.market.enums.ErrorCode;
-import com.axonivy.market.enums.FileType;
-import com.axonivy.market.enums.Language;
-import com.axonivy.market.enums.SortOption;
-import com.axonivy.market.enums.TypeOption;
+import com.axonivy.market.enums.*;
 import com.axonivy.market.exceptions.model.InvalidParamException;
 import com.axonivy.market.factory.ProductFactory;
 import com.axonivy.market.github.model.GitHubFile;
@@ -22,11 +18,7 @@ import com.axonivy.market.github.service.GHAxonIvyProductRepoService;
 import com.axonivy.market.github.service.GitHubService;
 import com.axonivy.market.github.util.GitHubUtils;
 import com.axonivy.market.model.ProductCustomSortRequest;
-import com.axonivy.market.repository.GitHubRepoMetaRepository;
-import com.axonivy.market.repository.ImageRepository;
-import com.axonivy.market.repository.ProductCustomSortRepository;
-import com.axonivy.market.repository.ProductModuleContentRepository;
-import com.axonivy.market.repository.ProductRepository;
+import com.axonivy.market.repository.*;
 import com.axonivy.market.service.ImageService;
 import com.axonivy.market.service.ProductService;
 import com.axonivy.market.util.VersionUtils;
@@ -58,13 +50,7 @@ import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.security.SecureRandom;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
+import java.util.*;
 import java.util.function.Predicate;
 
 import static com.axonivy.market.constants.ProductJsonConstants.LOGO_FILE;
@@ -137,19 +123,20 @@ public class ProductServiceImpl implements ProductService {
   }
 
   @Override
-  public boolean syncLatestDataFromMarketRepo() {
+  public List<String> syncLatestDataFromMarketRepo() {
+    List<String> syncedProductIds = new ArrayList<>();
     var isAlreadyUpToDate = isLastGithubCommitCovered();
     if (!isAlreadyUpToDate) {
       if (marketRepoMeta == null) {
-        syncProductsFromGitHubRepo();
+        syncedProductIds = syncProductsFromGitHubRepo();
         marketRepoMeta = new GitHubRepoMeta();
       } else {
-        updateLatestChangeToProductsFromGithubRepo();
+        syncedProductIds = updateLatestChangeToProductsFromGithubRepo();
       }
       syncRepoMetaDataStatus();
     }
     updateLatestReleaseTagContentsFromProductRepo();
-    return isAlreadyUpToDate;
+    return syncedProductIds;
   }
 
   @Override
@@ -206,7 +193,8 @@ public class ProductServiceImpl implements ProductService {
     marketRepoMeta = null;
   }
 
-  private void updateLatestChangeToProductsFromGithubRepo() {
+  private List<String> updateLatestChangeToProductsFromGithubRepo() {
+    Set<String> syncedProductIds = new HashSet<>();
     var fromSHA1 = marketRepoMeta.getLastSHA1();
     var toSHA1 = ofNullable(lastGHCommit).map(GHCommit::getSHA1).orElse(EMPTY);
     log.warn("**ProductService: synchronize products from SHA1 {} to SHA1 {}", fromSHA1, toSHA1);
@@ -240,8 +228,10 @@ public class ProductServiceImpl implements ProductService {
         } else {
           modifyProductLogo(ghFileEntity.getKey(), file, product, fileContent);
         }
+        syncedProductIds.add(product.getId());
       }
     });
+    return syncedProductIds.stream().toList();
   }
 
   private void modifyProductLogo(String parentPath, GitHubFile file, Product product, GHContent fileContent) {
@@ -368,8 +358,9 @@ public class ProductServiceImpl implements ProductService {
     }
   }
 
-  private void syncProductsFromGitHubRepo() {
+  private List<String> syncProductsFromGitHubRepo() {
     log.warn("**ProductService: synchronize products from scratch based on the Market repo");
+    List<String> syncedProductIds = new ArrayList<>();
     var gitHubContentMap = axonIvyMarketRepoService.fetchAllMarketItems();
     for (Map.Entry<String, List<GHContent>> ghContentEntity : gitHubContentMap.entrySet()) {
       Product product = new Product();
@@ -390,8 +381,9 @@ public class ProductServiceImpl implements ProductService {
         updateProductContentForNonStandardProduct(ghContentEntity, product);
       }
       transferComputedDataFromDB(product);
-      productRepository.save(product);
+      syncedProductIds.add(productRepository.save(product).getId());
     }
+    return syncedProductIds;
   }
 
   private void mappingLogoFromGHContent(Product product, GHContent ghContent) {

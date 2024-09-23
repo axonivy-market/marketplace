@@ -5,6 +5,7 @@ import com.axonivy.market.criteria.ProductSearchCriteria;
 import com.axonivy.market.entity.Product;
 import com.axonivy.market.enums.DocumentField;
 import com.axonivy.market.enums.Language;
+import com.axonivy.market.repository.ProductRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -31,7 +32,7 @@ class ProductSearchRepositoryImplTest extends BaseSetup {
   MongoTemplate mongoTemplate;
 
   @InjectMocks
-  ProductSearchRepositoryImpl productListedRepository;
+  ProductRepository productListedRepository;
 
   @BeforeEach
   public void setup() {

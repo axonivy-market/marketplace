@@ -5,10 +5,8 @@ import org.springframework.data.mongodb.repository.MongoRepository;
 import org.springframework.stereotype.Repository;
 
 @Repository
-public interface ProductRepository extends MongoRepository<Product, String>, ProductSearchRepository,
+public interface ProductRepository extends MongoRepository<Product, String>,
     CustomProductRepository {
-
-  Product findByLogoUrl(String logoUrl);
 
   Product findByLogoId(String logoId);
 

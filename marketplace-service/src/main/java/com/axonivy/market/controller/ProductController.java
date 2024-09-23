@@ -1,7 +1,6 @@
 package com.axonivy.market.controller;
 
 import com.axonivy.market.assembler.ProductModelAssembler;
-import com.axonivy.market.constants.CommonConstants;
 import com.axonivy.market.constants.GitHubConstants;
 import com.axonivy.market.entity.Product;
 import com.axonivy.market.enums.ErrorCode;
@@ -17,6 +16,7 @@ import io.swagger.v3.oas.annotations.enums.ParameterIn;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
+import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.time.StopWatch;
 import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.data.domain.Page;
@@ -26,14 +26,9 @@ import org.springframework.data.web.PagedResourcesAssembler;
 import org.springframework.hateoas.PagedModel;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestHeader;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 import static com.axonivy.market.constants.RequestMappingConstants.*;
 import static com.axonivy.market.constants.RequestParamConstants.*;
@@ -97,15 +92,16 @@ public class ProductController {
 
     var stopWatch = new StopWatch();
     stopWatch.start();
-    var isAlreadyUpToDate = productService.syncLatestDataFromMarketRepo();
+    List<String> syncedProductIds = productService.syncLatestDataFromMarketRepo();
     var message = new Message();
     message.setHelpCode(ErrorCode.SUCCESSFUL.getCode());
     message.setHelpText(ErrorCode.SUCCESSFUL.getHelpText());
-    if (isAlreadyUpToDate) {
+    if (ObjectUtils.isEmpty(syncedProductIds)) {
       message.setMessageDetails("Data is already up to date, nothing to sync");
     } else {
       stopWatch.stop();
-      message.setMessageDetails(String.format("Finished sync data in [%s] milliseconds", stopWatch.getTime()));
+      message.setMessageDetails(String.format("Finished sync [%s] data in [%s] milliseconds", syncedProductIds,
+          stopWatch.getTime()));
     }
     return new ResponseEntity<>(message, HttpStatus.OK);
   }

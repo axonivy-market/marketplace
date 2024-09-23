@@ -30,4 +30,5 @@ public class MavenArtifact implements Serializable {
   @Transient
   private Boolean isProductArtifact;
   private List<ArchivedArtifact> archivedArtifacts;
+  private Boolean doc;
 }
