@@ -12,11 +12,12 @@ import {
   RouterOutlet,
   Event
 } from '@angular/router';
+import { LoadingSpinnerComponent } from "./shared/components/loading-spinner/loading-spinner.component";
 
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [RouterOutlet, HeaderComponent, FooterComponent, CommonModule],
+  imports: [RouterOutlet, HeaderComponent, FooterComponent, CommonModule, LoadingSpinnerComponent],
   templateUrl: './app.component.html',
   styleUrl: './app.component.scss'
 })
@@ -24,7 +25,7 @@ export class AppComponent {
   loadingService = inject(LoadingService);
   routingQueryParamService = inject(RoutingQueryParamService);
   route = inject(ActivatedRoute);
-  isMobileMenuCollapsed: boolean = true;
+  isMobileMenuCollapsed = true;
 
   constructor(private readonly router: Router) {}
 

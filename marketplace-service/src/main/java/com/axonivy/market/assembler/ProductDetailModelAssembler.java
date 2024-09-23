@@ -1,22 +1,21 @@
 package com.axonivy.market.assembler;
 
-import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
-import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
-
-import java.util.Optional;
-
-import org.apache.commons.lang3.StringUtils;
-import org.springframework.hateoas.Link;
-import org.springframework.hateoas.server.mvc.RepresentationModelAssemblerSupport;
-import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Component;
-
 import com.axonivy.market.constants.RequestMappingConstants;
 import com.axonivy.market.controller.ProductDetailsController;
 import com.axonivy.market.entity.Product;
 import com.axonivy.market.model.ProductDetailModel;
 import com.axonivy.market.util.ImageUtils;
 import com.axonivy.market.util.VersionUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.springframework.hateoas.Link;
+import org.springframework.hateoas.server.mvc.RepresentationModelAssemblerSupport;
+import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Component;
+
+import java.util.Optional;
+
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 
 @Component
 public class ProductDetailModelAssembler extends RepresentationModelAssemblerSupport<Product, ProductDetailModel> {

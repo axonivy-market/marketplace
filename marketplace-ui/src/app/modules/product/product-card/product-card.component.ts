@@ -4,14 +4,14 @@ import { TranslateModule } from '@ngx-translate/core';
 import { LanguageService } from '../../../core/services/language/language.service';
 import { ThemeService } from '../../../core/services/theme/theme.service';
 import { Product } from '../../../shared/models/product.model';
-import { ProductLogoPipe } from '../../../shared/pipes/logo.pipe';
 import { MultilingualismPipe } from '../../../shared/pipes/multilingualism.pipe';
 import { ProductComponent } from '../product.component';
+import { DEFAULT_IMAGE_URL } from '../../../shared/constants/common.constant';
 
 @Component({
   selector: 'app-product-card',
   standalone: true,
-  imports: [CommonModule, ProductLogoPipe, MultilingualismPipe, TranslateModule, NgOptimizedImage],
+  imports: [CommonModule, MultilingualismPipe, TranslateModule, NgOptimizedImage],
   templateUrl: './product-card.component.html',
   styleUrl: './product-card.component.scss'
 })
@@ -21,4 +21,13 @@ export class ProductCardComponent {
   isShowInRESTClientEditor = inject(ProductComponent).isRESTClient();
 
   @Input() product!: Product;
+  logoUrl = DEFAULT_IMAGE_URL;
+
+  ngOnInit(): void {
+    this.logoUrl = this.product.logoUrl;
+  }
+
+  onLogoError() {
+    this.logoUrl = DEFAULT_IMAGE_URL;
+  }
 }

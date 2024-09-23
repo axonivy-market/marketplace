@@ -4,11 +4,13 @@
 }
 
 .logo__image {
-  width: 70px;
+  object-fit: contain;
 }
 
 .logo__image-container {
   margin-right: 20px;
+  width: 70px;
+  position: relative !important;
 }
 
 .link-to-main {
@@ -226,6 +228,7 @@ hr {
 
   .logo__image {
     width: 41px;
+    object-fit: contain;
   }
 
   .product-analysis {

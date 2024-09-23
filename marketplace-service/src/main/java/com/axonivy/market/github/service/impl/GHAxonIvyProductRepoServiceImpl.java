@@ -5,10 +5,9 @@ import com.axonivy.market.constants.GitHubConstants;
 import com.axonivy.market.constants.MavenConstants;
 import com.axonivy.market.constants.ProductJsonConstants;
 import com.axonivy.market.constants.ReadmeConstants;
-import com.axonivy.market.entity.Image;
 import com.axonivy.market.entity.Product;
-import com.axonivy.market.entity.ProductModuleContent;
 import com.axonivy.market.entity.ProductJsonContent;
+import com.axonivy.market.entity.ProductModuleContent;
 import com.axonivy.market.enums.Language;
 import com.axonivy.market.enums.NonStandardProduct;
 import com.axonivy.market.factory.ProductFactory;
@@ -33,7 +32,6 @@ import org.kohsuke.github.GHTag;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
-import javax.swing.text.html.Option;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
@@ -53,13 +51,6 @@ import static com.axonivy.market.constants.ProductJsonConstants.VERSION_VALUE;
 @Log4j2
 @Service
 public class GHAxonIvyProductRepoServiceImpl implements GHAxonIvyProductRepoService {
-  private GHOrganization organization;
-  private final GitHubService gitHubService;
-  private final ImageService imageService;
-  private final ProductJsonContentRepository productJsonContentRepository;
-  private String repoUrl;
-  private static final ObjectMapper objectMapper = new ObjectMapper();
-  private static final String HASH = "#";
   public static final String DEMO_SETUP_TITLE = "(?i)## Demo|## Setup";
   public static final String IMAGE_EXTENSION = "(.*?).(jpeg|jpg|png|gif)";
   public static final String README_IMAGE_FORMAT = "\\(([^)]*?%s[^)]*?)\\)";
@@ -67,6 +58,13 @@ public class GHAxonIvyProductRepoServiceImpl implements GHAxonIvyProductRepoServ
   public static final String DESCRIPTION = "description";
   public static final String DEMO = "demo";
   public static final String SETUP = "setup";
+  private static final ObjectMapper objectMapper = new ObjectMapper();
+  private static final String HASH = "#";
+  private final GitHubService gitHubService;
+  private final ImageService imageService;
+  private final ProductJsonContentRepository productJsonContentRepository;
+  private GHOrganization organization;
+  private String repoUrl;
 
   public GHAxonIvyProductRepoServiceImpl(GitHubService gitHubService, ImageService imageService,
       ProductJsonContentRepository productJsonContentRepository) {
@@ -75,14 +73,23 @@ public class GHAxonIvyProductRepoServiceImpl implements GHAxonIvyProductRepoServ
     this.productJsonContentRepository = productJsonContentRepository;
   }
 
+  private static GHContent getProductJsonFile(List<GHContent> contents) {
+    return contents.stream().filter(GHContent::isFile)
+        .filter(content -> ProductJsonConstants.PRODUCT_JSON_FILE.equals(content.getName())).findFirst().orElse(null);
+  }
+
   @Override
   public List<MavenArtifact> convertProductJsonToMavenProductInfo(GHContent content) throws IOException {
-    List<MavenArtifact> artifacts = new ArrayList<>();
     InputStream contentStream = extractedContentStream(content);
     if (Objects.isNull(contentStream)) {
-      return artifacts;
+      return new ArrayList<>();
     }
+    return extractMavenArtifactsFromContentStream(contentStream);
+  }
 
+  @Override
+  public List<MavenArtifact> extractMavenArtifactsFromContentStream(InputStream contentStream) throws IOException {
+    List<MavenArtifact> artifacts = new ArrayList<>();
     JsonNode rootNode = objectMapper.readTree(contentStream);
     JsonNode installersNode = rootNode.path(ProductJsonConstants.INSTALLERS);
 
@@ -176,7 +183,7 @@ public class GHAxonIvyProductRepoServiceImpl implements GHAxonIvyProductRepoServ
       productModuleContent.setProductId(product.getId());
       productModuleContent.setTag(tag);
       ProductFactory.mappingIdForProductModuleContent(productModuleContent);
-      updateDependencyContentsFromProductJson(productModuleContent, contents , product);
+      updateDependencyContentsFromProductJson(productModuleContent, contents, product);
       extractReadMeFileFromContents(product, contents, productModuleContent);
     } catch (Exception e) {
       log.error("Cannot get product.json content {}", e.getMessage());
@@ -185,7 +192,8 @@ public class GHAxonIvyProductRepoServiceImpl implements GHAxonIvyProductRepoServ
     return productModuleContent;
   }
 
-  public void extractReadMeFileFromContents(Product product, List<GHContent> contents, ProductModuleContent productModuleContent) {
+  public void extractReadMeFileFromContents(Product product, List<GHContent> contents,
+      ProductModuleContent productModuleContent) {
     try {
       List<GHContent> readmeFiles = contents.stream().filter(GHContent::isFile)
           .filter(content -> content.getName().startsWith(ReadmeConstants.README_FILE_NAME)).toList();
@@ -209,7 +217,8 @@ public class GHAxonIvyProductRepoServiceImpl implements GHAxonIvyProductRepoServ
   }
 
   /**
-   * MARP-810: Sabine requires that content in other languages, which has not been translated, be left empty and replaced with English content.
+   * MARP-810: Sabine requires that content in other languages, which has not been translated, be left empty and
+   * replaced with English content.
    */
   public Map<String, String> replaceEmptyContentsWithEnContent(Map<String, String> map) {
     String enValue = map.get(Language.EN.getValue());
@@ -269,11 +278,6 @@ public class GHAxonIvyProductRepoServiceImpl implements GHAxonIvyProductRepoServ
     }
   }
 
-  private static GHContent getProductJsonFile(List<GHContent> contents) {
-    return contents.stream().filter(GHContent::isFile)
-        .filter(content -> ProductJsonConstants.PRODUCT_JSON_FILE.equals(content.getName())).findFirst().orElse(null);
-  }
-
   public String updateImagesWithDownloadUrl(Product product, List<GHContent> contents, String readmeContents) {
 
     List<GHContent> imagesAtRootFolder = contents.stream().filter(GHContent::isFile)
@@ -314,7 +318,7 @@ public class GHAxonIvyProductRepoServiceImpl implements GHAxonIvyProductRepoServ
 
   // Cover some cases including when demo and setup parts switch positions or
   // missing one of them
-  public void getExtractedPartsOfReadme(Map<String,Map<String,String>> moduleContents, String readmeContents,
+  public void getExtractedPartsOfReadme(Map<String, Map<String, String>> moduleContents, String readmeContents,
       String locale) {
     String[] parts = readmeContents.split(DEMO_SETUP_TITLE);
     int demoIndex = readmeContents.indexOf(ReadmeConstants.DEMO_PART);
@@ -346,7 +350,8 @@ public class GHAxonIvyProductRepoServiceImpl implements GHAxonIvyProductRepoServ
     addLocaleContent(moduleContents, SETUP, setup.trim(), locale);
   }
 
-  private void addLocaleContent(Map<String, Map<String, String>> moduleContents, String type, String content, String locale) {
+  private void addLocaleContent(Map<String, Map<String, String>> moduleContents, String type, String content,
+      String locale) {
     moduleContents.computeIfAbsent(type, key -> new HashMap<>()).put(locale, content);
   }
 
@@ -355,16 +360,9 @@ public class GHAxonIvyProductRepoServiceImpl implements GHAxonIvyProductRepoServ
     String productFolderPath = ghRepository.getDirectoryContent(CommonConstants.SLASH, tag).stream()
         .filter(GHContent::isDirectory).map(GHContent::getName)
         .filter(content -> content.endsWith(MavenConstants.PRODUCT_ARTIFACT_POSTFIX)).findFirst().orElse(null);
-    if (StringUtils.isBlank(productFolderPath) || hasChildConnector(ghRepository)) {
-      productFolderPath = GitHubUtils.getNonStandardProductFilePath(product.getId());
-    }
+    productFolderPath = NonStandardProduct.findById(product.getId(), productFolderPath);
 
     return ghRepository.getDirectoryContent(productFolderPath, tag);
-  }
-
-  private boolean hasChildConnector(GHRepository ghRepository) {
-    return NonStandardProduct.MICROSOFT_REPO_NAME.getId().equals(ghRepository.getName())
-        || NonStandardProduct.OPENAI_CONNECTOR.getId().equals(ghRepository.getName());
   }
 
   private boolean hasImageDirectives(String readmeContents) {

@@ -1,11 +1,5 @@
 import { CommonModule } from '@angular/common';
-import {
-  Component,
-  EventEmitter,
-  inject,
-  Output,
-  model
-} from '@angular/core';
+import { Component, inject, model } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { LanguageService } from '../../../core/services/language/language.service';
@@ -31,7 +25,6 @@ import { ThemeSelectionComponent } from './theme-selection/theme-selection.compo
   styleUrls: ['./header.component.scss', '../../../app.component.scss']
 })
 export class HeaderComponent {
-
   selectedNav = '/';
 
   isMobileMenuCollapsed = model<boolean>(true);
