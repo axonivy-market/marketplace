@@ -4,7 +4,7 @@ import com.axonivy.market.constants.CommonConstants;
 import com.axonivy.market.constants.MavenConstants;
 import com.axonivy.market.constants.ProductJsonConstants;
 import com.axonivy.market.entity.MavenArtifactVersion;
-import com.axonivy.market.entity.MavenVersionSync;
+import com.axonivy.market.entity.MetadataSync;
 import com.axonivy.market.entity.Product;
 import com.axonivy.market.entity.ProductJsonContent;
 import com.axonivy.market.github.util.GitHubUtils;
@@ -62,8 +62,8 @@ public class MavenServiceImpl implements MavenService {
     List<Product> products = productRepo.getAllProductWithIdAndReleaseTag();
     for (Product product : products) {
       Set<Artifact> artifacts = new HashSet<>();
-      MavenVersionSync cache = mavenRepo.findById(product.getId()).orElse(
-          MavenVersionSync.builder().productId(product.getId()).syncedVersions(new ArrayList<>()).build());
+      MetadataSync cache = mavenRepo.findById(product.getId()).orElse(
+          MetadataSync.builder().productId(product.getId()).syncedVersions(new ArrayList<>()).build());
       List<String> nonSyncedVersions = getNonSyncedVersions(product, cache);
       if (CollectionUtils.isEmpty(nonSyncedVersions)) {
         continue;
@@ -100,7 +100,7 @@ public class MavenServiceImpl implements MavenService {
     });
   }
 
-  private List<String> getNonSyncedVersions(Product product, MavenVersionSync cache) {
+  private List<String> getNonSyncedVersions(Product product, MetadataSync cache) {
     List<String> nonSyncedVersions = product.getReleasedVersions();
     if (!CollectionUtils.isEmpty(cache.getSyncedVersions())) {
       nonSyncedVersions.removeAll(cache.getSyncedVersions()); // filter non synced version

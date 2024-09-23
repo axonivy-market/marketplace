@@ -2,6 +2,7 @@ package com.axonivy.market.entity;
 
 import com.axonivy.market.model.MavenArtifactModel;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -20,6 +21,7 @@ import static com.axonivy.market.constants.EntityConstants.MAVEN_ARTIFACT_VERSIO
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
+@Builder
 @Document(MAVEN_ARTIFACT_VERSION)
 public class MavenArtifactVersion implements Serializable {
   @Serial
@@ -28,8 +30,4 @@ public class MavenArtifactVersion implements Serializable {
   @Id
   private String productId;
   private Map<String, List<MavenArtifactModel>> productArtifactWithVersionReleased = new HashMap<>();
-
-  public MavenArtifactVersion(String productId) {
-    this.productId = productId;
-  }
 }

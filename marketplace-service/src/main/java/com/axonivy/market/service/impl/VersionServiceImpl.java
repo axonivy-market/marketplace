@@ -3,6 +3,7 @@ package com.axonivy.market.service.impl;
 import com.axonivy.market.comparator.ArchivedArtifactsComparator;
 import com.axonivy.market.constants.MavenConstants;
 import com.axonivy.market.controller.ProductDetailsController;
+import com.axonivy.market.entity.MavenArtifactVersion;
 import com.axonivy.market.entity.Product;
 import com.axonivy.market.entity.ProductJsonContent;
 import com.axonivy.market.bo.ArchivedArtifact;
@@ -74,7 +75,7 @@ public class VersionServiceImpl implements VersionService {
   public List<MavenArtifactVersionModel> getArtifactsAndVersionToDisplay(String productId, Boolean isShowDevVersion,
       String designerVersion) {
     Map<String, List<MavenArtifactModel>> cache = mavenArtifactVersionRepository.findById(productId).orElse(
-        new com.axonivy.market.entity.MavenArtifactVersion(productId)).getProductArtifactWithVersionReleased();
+        MavenArtifactVersion.builder().productId(productId).build()).getProductArtifactWithVersionReleased();
     List<String> versionsToDisplay = VersionUtils.getVersionsToDisplay(new ArrayList<>(cache.keySet()),
         isShowDevVersion, designerVersion);
 
