@@ -1,4 +1,4 @@
-package com.axonivy.market.maven.util;
+package com.axonivy.market.util;
 
 import com.axonivy.market.constants.MavenConstants;
 import com.axonivy.market.bo.Metadata;

@@ -3,7 +3,7 @@ package com.axonivy.market.github.util;
 import com.axonivy.market.bo.Artifact;
 import com.axonivy.market.constants.CommonConstants;
 import com.axonivy.market.enums.NonStandardProduct;
-import com.axonivy.market.maven.util.MavenUtils;
+import com.axonivy.market.util.MavenUtils;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import lombok.extern.log4j.Log4j2;
