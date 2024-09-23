@@ -145,7 +145,6 @@ export class ProductDetailComponent {
         this.productModuleContent.set(productDetail.productModuleContent);
         this.metaProductJsonUrl = productDetail.metaProductJsonUrl;
         this.productDetailService.productNames.set(productDetail.names);
-        localStorage.removeItem(STORAGE_ITEM);
         this.installationCount = productDetail.installationCount;
         this.handleProductContentVersion();
         this.updateProductDetailActionType(productDetail);
