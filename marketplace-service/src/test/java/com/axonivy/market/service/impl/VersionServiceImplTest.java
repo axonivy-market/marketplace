@@ -73,7 +73,7 @@ class VersionServiceImplTest {
     metaProductArtifact.setGroupId(groupId);
     metaProductArtifact.setArtifactId(artifactId);
     metaProductArtifact.setIsProductArtifact(true);
-    Artifact additionalMavenArtifact = new Artifact(repoUrl, "", groupId, artifactId, "", null, null, null);
+    Artifact additionalMavenArtifact = new Artifact(repoUrl, "", groupId, artifactId, "", null, null, null,true);
     artifactsFromMeta.add(metaProductArtifact);
     artifactsFromMeta.add(additionalMavenArtifact);
   }
@@ -88,9 +88,9 @@ class VersionServiceImplTest {
     when(mavenArtifactVersionRepository.findById(Mockito.anyString())).thenReturn(Optional.empty());
     ArrayList<MavenArtifactModel> artifactsInVersion = new ArrayList<>();
     artifactsInVersion.add(new MavenArtifactModel());
-//    when(versionService.convertArtifactsToModels(Mockito.anyList(), Mockito.anyString(), Mockito.any())).thenReturn(
-//        artifactsInVersion);
-    Assertions.assertEquals(1, versionService.getArtifactsAndVersionToDisplay(productId, false, targetVersion).size());
+    when(mavenArtifactVersionRepository.findById("adobe-acrobat-sign-connector")).thenReturn(
+        Optional.ofNullable(MavenArtifactVersion.builder().productId(productId).productArtifactWithVersionReleased(new HashMap<>()).build()));
+    Assertions.assertEquals(0, versionService.getArtifactsAndVersionToDisplay(productId, false, targetVersion).size());
 
     MavenArtifactVersion proceededData = new MavenArtifactVersion();
     proceededData.getProductArtifactWithVersionReleased().put(targetVersion, new ArrayList<>());
@@ -123,7 +123,7 @@ class VersionServiceImplTest {
     productJson.setContent(jsonContent);
     when(productJsonContentRepository.findByProductIdAndVersion("adobe-acrobat-connector", "10.0.20")).thenReturn(
         productJson);
-//    List<Artifact> results = versionService.getMavenArtifactsFromProductJsonByVersion()
+    List<Artifact> results = versionService.getMavenArtifactsFromProductJsonByVersion("10.0.20","adobe-acrobat-connector");
   }
 
   @Test
@@ -138,7 +138,7 @@ class VersionServiceImplTest {
 
     // Assert case param is a list with existed element
     Artifact targetArtifact = new Artifact(null, null, "com.axonivy.connector.adobe.acrobat.sign",
-        "adobe-acrobat-sign-connector", null, null, null, null);
+        "adobe-acrobat-sign-connector", null, null, null, null,false);
     result = MavenUtils.convertArtifactsToModels(List.of(targetArtifact), "10.0.21");
     Assertions.assertEquals(1, result.size());
   }
@@ -149,7 +149,7 @@ class VersionServiceImplTest {
     String targetArtifactId = "adobe-acrobat-sign-connector";
     String targetGroupId = "com.axonivy.connector";
     Artifact targetArtifact = new Artifact(null, null, targetGroupId, targetArtifactId, "iar", null, null,
-        null);
+        null, false);
     String targetVersion = "10.0.10";
     String artifactFileName = String.format(MavenConstants.ARTIFACT_FILE_NAME_FORMAT, targetArtifactId, targetVersion,
         "iar");
