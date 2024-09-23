@@ -81,7 +81,11 @@ public class MavenServiceImpl implements MavenService {
 
   private MavenArtifactVersion updateMavenArtifactVersionData(Product product, Set<Metadata> metadataSet,
       List<String> nonSyncedVersions) {
-    metadataSet.forEach(version -> MetadataReaderUtils.extractDataFromUrl(version.getMetadataUrl(), version));
+    metadataSet.forEach(metadata -> {
+          log.warn("{} {} {}", product.getId(), metadata.getUrl(), metadata.getArtifactId());
+          MetadataReaderUtils.extractDataFromUrl(metadata.getUrl(), metadata);
+        }
+    );
     MavenArtifactVersion artifactVersionCache = mavenArtifactVersionRepo.findById(product.getId()).orElse(
         new MavenArtifactVersion(product.getId(), new HashMap<>()));
     nonSyncedVersions.forEach(version -> updateCache(version, metadataSet, artifactVersionCache));
@@ -139,7 +143,7 @@ public class MavenServiceImpl implements MavenService {
     String type = StringUtils.defaultIfBlank(artifact.getType(), ProductJsonConstants.DEFAULT_PRODUCT_TYPE);
     artifactName = String.format(MavenConstants.ARTIFACT_NAME_FORMAT, artifactName, type);
     return Metadata.builder().groupId(artifact.getGroupId()).versions(new ArrayList<>()).artifactId(
-        artifact.getArtifactId()).metadataUrl(metadataUrl).repoUrl(
+        artifact.getArtifactId()).url(metadataUrl).repoUrl(
         StringUtils.defaultIfEmpty(artifact.getRepoUrl(), MavenConstants.DEFAULT_IVY_MAVEN_BASE_URL)).type(type).name(
         artifactName).build();
   }

@@ -87,7 +87,9 @@ public class VersionServiceImpl implements VersionService {
       List<MavenArtifactModel> artifactsByVersion = new ArrayList<>();
       artifactsByVersion.addAll(MavenUtils.convertArtifactsToModels(artifactsFromMeta, version));
       artifactsByVersion.addAll(cache.get(version));
-      results.add(new MavenArtifactVersionModel(version, artifactsByVersion));
+      if (!CollectionUtils.isEmpty(artifactsByVersion)) {
+        results.add(new MavenArtifactVersionModel(version, artifactsByVersion));
+      }
     }
     return results;
   }
@@ -101,7 +103,6 @@ public class VersionServiceImpl implements VersionService {
       }
       result = mapper.readValue(productJsonContent.getContent(), Map.class);
       result.computeIfAbsent(NAME, k -> productJsonContent.getName());
-
     } catch (JsonProcessingException jsonProcessingException) {
       log.error(jsonProcessingException.getMessage());
     }

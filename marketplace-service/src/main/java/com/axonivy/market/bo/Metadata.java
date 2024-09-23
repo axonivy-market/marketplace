@@ -16,7 +16,7 @@ import java.util.Objects;
 @Builder
 public class Metadata {
   @Id
-  private String metadataUrl;
+  private String url;
   private LocalDateTime lastUpdated;
   @Transient
   private String artifactId;
@@ -41,11 +41,11 @@ public class Metadata {
       return false;
     }
     Metadata that = (Metadata) o;
-    return Objects.equals(metadataUrl, that.metadataUrl);
+    return Objects.equals(url, that.url);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hashCode(metadataUrl);
+    return Objects.hashCode(url);
   }
 }

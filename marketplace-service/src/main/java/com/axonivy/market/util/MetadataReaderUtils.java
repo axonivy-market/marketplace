@@ -39,7 +39,7 @@ public class MetadataReaderUtils {
         metadata.getVersions().add(versionNodes.item(i).getTextContent());
       }
     } catch (Exception e) {
-      log.error(e);
+      log.error("Maven Metadata Reader Utils: can not read the metadata from Url: {} with error: {}", url, e);
     }
   }
 
