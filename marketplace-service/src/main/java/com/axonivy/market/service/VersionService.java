@@ -14,4 +14,6 @@ public interface VersionService {
   Map<String, Object> getProductJsonContentByIdAndVersion(String name, String version);
 
   List<VersionAndUrlModel> getVersionsForDesigner(String productId);
+
+  void clearAllProductVersions();
 }

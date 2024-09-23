@@ -59,19 +59,6 @@ public class VersionServiceImpl implements VersionService {
     this.productContentRepo = productContentRepo;
   }
 
-  public static Map<String, List<ArchivedArtifact>> getArchivedArtifactMapFromMeta(
-      List<Artifact> artifactsFromMeta) {
-    Map<String, List<ArchivedArtifact>> result = new HashMap<>();
-    artifactsFromMeta.forEach(artifact -> {
-      List<ArchivedArtifact> archivedArtifacts = new ArrayList<>(
-          Optional.ofNullable(artifact.getArchivedArtifacts()).orElse(Collections.emptyList()).stream()
-              .sorted(new ArchivedArtifactsComparator()).toList());
-      Collections.reverse(archivedArtifacts);
-      result.put(artifact.getArtifactId(), archivedArtifacts);
-    });
-    return result;
-  }
-
   public List<MavenArtifactVersionModel> getArtifactsAndVersionToDisplay(String productId, Boolean isShowDevVersion,
       String designerVersion) {
     Map<String, List<MavenArtifactModel>> cache = mavenArtifactVersionRepository.findById(productId).orElse(
@@ -122,6 +109,11 @@ public class VersionServiceImpl implements VersionService {
     return versionAndUrlList;
   }
 
+  @Override
+  public void clearAllProductVersions() {
+    mavenArtifactVersionRepository.deleteAll();
+  }
+
   public List<Artifact> getArtifactsFromMeta(String productId) {
     Product productInfo = productRepo.findById(productId).orElse(new Product());
     return Optional.ofNullable(productInfo.getArtifacts()).orElse(new ArrayList<>());
@@ -129,15 +121,15 @@ public class VersionServiceImpl implements VersionService {
 
   public List<String> getPersistedVersions(String productId) {
     var product = productRepo.findById(productId);
-    Set<String> versions = new HashSet<>();
+    List<String> versions = new ArrayList<>();
     if (product.isPresent()) {
       versions.addAll(product.get().getReleasedVersions());
     }
     if (CollectionUtils.isEmpty(versions)) {
       versions.addAll(productContentRepo.findTagsByProductId(productId));
-      versions = versions.stream().map(VersionUtils::convertTagToVersion).collect(Collectors.toSet());
+      versions = versions.stream().map(VersionUtils::convertTagToVersion).collect(Collectors.toList());
     }
-    return new ArrayList<>(versions);
+    return versions;
   }
 
   public List<Artifact> getMavenArtifactsFromProductJsonByVersion(String version,

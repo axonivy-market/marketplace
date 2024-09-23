@@ -1,5 +1,6 @@
 package com.axonivy.market.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -24,4 +25,6 @@ public class MavenArtifactModel implements Serializable {
       example = "https://maven.axonivy.com/com/axonivy/connector/adobe/acrobat/sign/adobe-acrobat-sign-connector/10.0" +
               ".25/adobe-acrobat-sign-connector-10.0.25.iar")
   private String downloadUrl;
+  @JsonIgnore
+  private boolean isInvalidArtifact;
 }

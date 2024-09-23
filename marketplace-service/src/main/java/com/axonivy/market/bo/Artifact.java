@@ -31,6 +31,7 @@ public class Artifact implements Serializable {
   @Transient
   private Boolean isProductArtifact;
   private List<ArchivedArtifact> archivedArtifacts;
+  private boolean isInvalidArtifact;
 
   @Override
   public boolean equals(Object o) {

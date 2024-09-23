@@ -1,5 +1,6 @@
 package com.axonivy.market.factory;
 
+import com.axonivy.market.bo.Artifact;
 import com.axonivy.market.constants.CommonConstants;
 import com.axonivy.market.entity.Product;
 import com.axonivy.market.entity.ProductJsonContent;
@@ -7,12 +8,14 @@ import com.axonivy.market.entity.ProductModuleContent;
 import com.axonivy.market.github.model.Meta;
 import com.axonivy.market.model.DisplayValue;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import io.jsonwebtoken.lang.Collections;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.kohsuke.github.GHContent;
+import org.springframework.core.CollectionFactory;
 import org.springframework.util.CollectionUtils;
 
 import java.io.IOException;
@@ -69,7 +72,10 @@ public class ProductFactory {
     product.setCost(StringUtils.isBlank(meta.getCost()) ? "Free" : StringUtils.capitalize(meta.getCost()));
     product.setCompatibility(meta.getCompatibility());
     extractSourceUrl(product, meta);
-    product.setArtifacts(meta.getArtifacts());
+    List<Artifact> artifacts = CollectionUtils.isEmpty(meta.getArtifacts()) ? new ArrayList<>() : meta.getArtifacts();
+    artifacts.stream().forEach(
+        artifact -> artifact.setInvalidArtifact(!artifact.getArtifactId().contains(meta.getId())));
+    product.setArtifacts(artifacts);
     product.setReleasedVersions(new ArrayList<>());
     return product;
   }
@@ -89,7 +95,6 @@ public class ProductFactory {
         value.put(name.getLocale(), name.getValue());
       }
     }
-
     return value;
   }
 

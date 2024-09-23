@@ -9,7 +9,9 @@ import com.axonivy.market.github.service.GitHubService;
 import com.axonivy.market.model.Message;
 import com.axonivy.market.model.ProductCustomSortRequest;
 import com.axonivy.market.model.ProductModel;
+import com.axonivy.market.service.MetadataService;
 import com.axonivy.market.service.ProductService;
+import com.axonivy.market.service.VersionService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.enums.ParameterIn;
@@ -46,13 +48,18 @@ public class ProductController {
   private final GitHubService gitHubService;
   private final ProductModelAssembler assembler;
   private final PagedResourcesAssembler<Product> pagedResourcesAssembler;
+  private final MetadataService metadataService;
+  private final VersionService versionService;
 
   public ProductController(ProductService productService, GitHubService gitHubService, ProductModelAssembler assembler,
-      PagedResourcesAssembler<Product> pagedResourcesAssembler) {
+      PagedResourcesAssembler<Product> pagedResourcesAssembler, MetadataService metadataService,
+      VersionService versionService) {
     this.productService = productService;
     this.gitHubService = gitHubService;
     this.assembler = assembler;
     this.pagedResourcesAssembler = pagedResourcesAssembler;
+    this.metadataService = metadataService;
+    this.versionService = versionService;
   }
 
   @GetMapping()
@@ -101,6 +108,32 @@ public class ProductController {
     var stopWatch = new StopWatch();
     stopWatch.start();
     var isAlreadyUpToDate = productService.syncLatestDataFromMarketRepo();
+    var message = new Message();
+    message.setHelpCode(ErrorCode.SUCCESSFUL.getCode());
+    message.setHelpText(ErrorCode.SUCCESSFUL.getHelpText());
+    if (isAlreadyUpToDate) {
+      message.setMessageDetails("Data is already up to date, nothing to sync");
+    } else {
+      stopWatch.stop();
+      message.setMessageDetails(String.format("Finished sync data in [%s] milliseconds", stopWatch.getTime()));
+    }
+    return new ResponseEntity<>(message, HttpStatus.OK);
+  }
+
+  @PutMapping(SYNC_PRODUCT_VERSION)
+  @Operation(hidden = true)
+  public ResponseEntity<Message> syncProductVersions(@RequestHeader(value = AUTHORIZATION) String authorizationHeader,
+      @RequestParam(value = RESET_SYNC, required = false) Boolean resetSync) {
+    String token = getBearerToken(authorizationHeader);
+    gitHubService.validateUserOrganization(token, GitHubConstants.AXONIVY_MARKET_ORGANIZATION_NAME);
+    if (Boolean.TRUE.equals(resetSync)) {
+      versionService.clearAllProductVersions();
+      metadataService.clearAllSync();
+    }
+
+    var stopWatch = new StopWatch();
+    stopWatch.start();
+    var isAlreadyUpToDate = metadataService.syncAllArtifactFromMaven();
     var message = new Message();
     message.setHelpCode(ErrorCode.SUCCESSFUL.getCode());
     message.setHelpText(ErrorCode.SUCCESSFUL.getHelpText());
