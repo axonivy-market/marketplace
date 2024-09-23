@@ -6,7 +6,7 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface ProductRepository extends MongoRepository<Product, String>, ProductSearchRepository,
-    CustomProductRepository {
+        CustomProductRepository {
 
   Product findByLogoUrl(String logoUrl);
 

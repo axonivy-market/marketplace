@@ -56,7 +56,7 @@
 }
 
 @if (isDropDownDisplayed()) {
-<div #artifactDownloadDialog class="dropdown-menu show maven-artifact-version__action border__dropdown">
+  <div #artifactDownloadDialog class="dropdown-menu show maven-artifact-version__action border__dropdown">
     <div class="up-arrow border__dropdown position-absolute"></div>
     <form>
       <div class="form-group">
@@ -113,5 +113,8 @@
         </button>
       </div>
     </form>
+    @if (isArtifactLoading()) {
+      <app-loading-spinner [isFixPosition]="false" />
+    }
   </div>
 }
