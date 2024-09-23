@@ -207,11 +207,22 @@ class GHAxonIvyProductRepoServiceImplTest {
 
   @Test
   void testGetReadmeAndProductContentsFromTag() throws IOException {
-    String readmeContentWithImage = "#Product-name\n Test README\n## Demo\nDemo content\n## Setup\nSetup content " +
-        "(image.png)";
+    String readmeContentWithImage = """
+        #Product-name
+        Test README
+        ## Demo
+        Demo content
+        ## Setup
+        Setup content (image.png)
+        """;
     testGetReadmeAndProductContentsFromTagWithReadmeText(readmeContentWithImage);
-    String readmeContentWithoutHashProductName = "Test README\n## Demo\nDemo content\n## Setup\nSetup content (image" +
-        ".png)";
+    String readmeContentWithoutHashProductName = """
+        Test README
+        ## Demo
+        Demo content
+        ## Setup
+        Setup content (image.png)
+        """;
     testGetReadmeAndProductContentsFromTagWithReadmeText(readmeContentWithoutHashProductName);
   }
 
@@ -247,8 +258,14 @@ class GHAxonIvyProductRepoServiceImplTest {
 
   @Test
   void testGetReadmeAndProductContentFromTag_ImageFromFolder() throws IOException {
-    String readmeContentWithImageFolder = "#Product-name\n Test README\n## Demo\nDemo content\n## Setup\nSetup " +
-        "content (./images/image.png)";
+    String readmeContentWithImageFolder = """
+        #Product-name
+        Test README
+        ## Demo
+        Demo content
+        ## Setup
+        Setup content (./images/image.png)
+        """;
 
     GHContent mockImageFile = mock(GHContent.class);
     when(mockImageFile.getName()).thenReturn(ReadmeConstants.IMAGES, IMAGE_NAME);
@@ -261,9 +278,14 @@ class GHAxonIvyProductRepoServiceImplTest {
     String updatedReadme = axonivyProductRepoServiceImpl.updateImagesWithDownloadUrl(createMockProduct(),
         List.of(mockImageFile), readmeContentWithImageFolder);
 
-    assertEquals(
-        "#Product-name\n Test README\n## Demo\nDemo content\n## Setup\nSetup content " +
-            "(imageId-66e2b14868f2f95b2f95549a)",
+    assertEquals("""
+            #Product-name
+            Test README
+            ## Demo
+            Demo content
+            ## Setup
+            Setup content (imageId-66e2b14868f2f95b2f95549a)
+            """,
         updatedReadme);
   }
 
@@ -427,8 +449,14 @@ class GHAxonIvyProductRepoServiceImplTest {
   @Test
   void test_insertProductJsonContent() throws IOException {
     ArgumentCaptor<ProductJsonContent> argumentCaptor = ArgumentCaptor.forClass(ProductJsonContent.class);
-    String readmeContentWithImage = "#Product-name\n Test README\n## Demo\nDemo content\n## Setup\nSetup content " +
-        "(image.png)";
+    String readmeContentWithImage = """
+        #Product-name
+        Test README
+        ## Demo
+        Demo content
+        ## Setup
+        Setup content (image.png)
+        """;
     GHContent mockContent = createMockProductFolderWithProductJson();
     getReadmeInputStream(readmeContentWithImage, mockContent);
     InputStream inputStream = getMockInputStream();
