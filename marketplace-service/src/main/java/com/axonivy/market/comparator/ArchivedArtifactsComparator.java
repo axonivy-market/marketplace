@@ -1,6 +1,6 @@
 package com.axonivy.market.comparator;
 
-import com.axonivy.market.maven.model.ArchivedArtifact;
+import com.axonivy.market.bo.ArchivedArtifact;
 
 import java.util.Comparator;
 

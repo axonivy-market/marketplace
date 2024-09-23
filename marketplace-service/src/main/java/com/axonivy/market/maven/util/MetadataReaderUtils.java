@@ -1,7 +1,7 @@
 package com.axonivy.market.maven.util;
 
 import com.axonivy.market.constants.MavenConstants;
-import com.axonivy.market.maven.model.Metadata;
+import com.axonivy.market.bo.Metadata;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.web.client.RestTemplate;
 import org.w3c.dom.Document;

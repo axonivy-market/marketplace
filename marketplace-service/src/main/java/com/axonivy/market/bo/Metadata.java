@@ -1,4 +1,4 @@
-package com.axonivy.market.maven.model;
+package com.axonivy.market.bo;
 
 import lombok.*;
 import org.springframework.data.annotation.Id;

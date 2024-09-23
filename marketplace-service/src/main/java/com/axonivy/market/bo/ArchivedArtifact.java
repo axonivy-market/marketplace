@@ -1,4 +1,4 @@
-package com.axonivy.market.maven.model;
+package com.axonivy.market.bo;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;

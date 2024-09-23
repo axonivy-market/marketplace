@@ -6,9 +6,9 @@ import com.axonivy.market.constants.MavenConstants;
 import com.axonivy.market.constants.ProductJsonConstants;
 import com.axonivy.market.entity.ProductJsonContent;
 import com.axonivy.market.github.util.GitHubUtils;
-import com.axonivy.market.maven.model.ArchivedArtifact;
-import com.axonivy.market.maven.model.Artifact;
-import com.axonivy.market.maven.model.Metadata;
+import com.axonivy.market.bo.ArchivedArtifact;
+import com.axonivy.market.bo.Artifact;
+import com.axonivy.market.bo.Metadata;
 import com.axonivy.market.model.MavenArtifactModel;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -22,7 +22,6 @@ import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
 
 @Slf4j

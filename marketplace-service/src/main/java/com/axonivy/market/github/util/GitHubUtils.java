@@ -1,6 +1,6 @@
 package com.axonivy.market.github.util;
 
-import com.axonivy.market.maven.model.Artifact;
+import com.axonivy.market.bo.Artifact;
 import com.axonivy.market.constants.CommonConstants;
 import com.axonivy.market.enums.NonStandardProduct;
 import com.axonivy.market.maven.util.MavenUtils;
