@@ -73,11 +73,7 @@ public class GHAxonIvyProductRepoServiceImpl implements GHAxonIvyProductRepoServ
     return contents.stream().filter(GHContent::isFile)
         .filter(content -> ProductJsonConstants.PRODUCT_JSON_FILE.equals(content.getName())).findFirst().orElse(null);
   }
-
-
-
-
-
+  
   @Override
   public GHContent getContentFromGHRepoAndTag(String repoName, String filePath, String tagVersion) {
     try {
