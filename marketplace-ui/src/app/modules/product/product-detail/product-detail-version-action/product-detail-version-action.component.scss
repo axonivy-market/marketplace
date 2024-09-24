@@ -48,9 +48,6 @@
     }
   }
 }
-::ng-deep .dropdown-menu {
-  min-width: 100%;
-}
 
 ::ng-deep .dropdown-item {
   font-size: 14px;
@@ -89,9 +86,6 @@
   margin-right: 10px;
   border: 0px;
 }
-.btn__download {
-  border: 0.5px solid #ebebeb;
-}
 .primary-color {
   color: var(--ivy-primary-bg);
 }
@@ -115,7 +109,88 @@
   text-align: start;
 }
 
+// ::ng-deep .dropdown-menu {
+//   min-width: 100%;
+// }
+
+.install-download-button-container {
+  position: relative;
+}
+
+.btn__download {
+  border: 0.5px solid #ebebeb;
+}
+
+::ng-deep .dropdown-menu2 {
+  position: absolute;
+  right: 0;
+  min-width: 120%;
+  padding: 10px;
+  border-radius: 5px;
+  gap: 15px;
+  box-shadow: 0px 4px 30px 0px rgba(0, 0, 0, 0.1);
+  margin-top: 1.2rem;
+
+  &.maven-artifact-version__action {
+    // min-width: 400px;
+    // min-height: 204px;
+
+    @media (max-width: 500px) {
+      left: auto;
+      right: auto;
+      // min-width: 80vw;
+    }
+
+    .form-group {
+      gap: 7px;
+
+      .form-select {
+        height: 32px;
+        padding: 9px 10px;
+        gap: 10px;
+        border-radius: 5px;
+        line-height: 12px;
+        text-align: start !important;
+        background-color: var(--ivy-text-normal-color);
+
+        option {
+          height: 44px;
+          padding: 15px;
+          gap: 10px;
+          font-size: 14px;
+          font-weight: 400;
+          line-height: 16.8px;
+        }
+      }
+
+      .artifacts-selector__dropdown {
+        --bs-form-select-bg-img: none !important;
+      }
+
+      .indicator-arrow__up {
+        --bs-form-select-bg-img: var(--ivy-custom-select-indicator);
+      }
+    }
+  }
+
+  .dev-versions__toggle {
+    font-size: 10px;
+  }
+
+  .form-download__btn {
+    padding: 5px 16px;
+    gap: 6px;
+    border-radius: 5px;
+    font-size: 14px;
+    font-weight: 400;
+    line-height: 16.8px;
+  }
+}
+
 ::ng-deep .dropdown-menu {
+  top: 0;
+  left: 0;
+  min-width: 100%;
   padding: 10px;
   border-radius: 5px;
   gap: 15px;
@@ -176,6 +251,7 @@
     line-height: 16.8px;
   }
 }
+
 
 .up-arrow {
   margin: 0;

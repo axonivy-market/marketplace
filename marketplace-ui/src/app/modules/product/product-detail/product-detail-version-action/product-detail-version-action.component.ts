@@ -156,7 +156,7 @@ export class ProductDetailVersionActionComponent implements AfterViewInit {
     }
     this.isDropDownDisplayed.set(!this.isDropDownDisplayed());
     this.changeDetectorRef.detectChanges();
-    this.reLocaleDialog();
+    // this.reLocaleDialog();
   }
 
   @HostListener('window:resize', ['$event'])
