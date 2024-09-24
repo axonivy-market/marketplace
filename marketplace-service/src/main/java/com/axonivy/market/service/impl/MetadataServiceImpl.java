@@ -9,7 +9,7 @@ import com.axonivy.market.entity.Product;
 import com.axonivy.market.entity.ProductJsonContent;
 import com.axonivy.market.github.util.GitHubUtils;
 import com.axonivy.market.bo.Artifact;
-import com.axonivy.market.bo.Metadata;
+import com.axonivy.market.entity.Metadata;
 import com.axonivy.market.service.MetadataService;
 import com.axonivy.market.util.MavenUtils;
 import com.axonivy.market.util.MetadataReaderUtils;
@@ -68,7 +68,7 @@ public class MetadataServiceImpl implements MetadataService {
     for (Product product : products) {
       Set<Artifact> artifacts = new HashSet<>();
       MetadataSync cache = metadataRepo.findById(product.getId()).orElse(
-          MetadataSync.builder().productId(product.getId()).syncedVersions(new ArrayList<>()).build());
+          MetadataSync.builder().productId(product.getId()).syncedTags(new HashSet<>()).build());
       List<String> nonSyncedVersions = getNonSyncedVersions(product, cache);
       if (CollectionUtils.isEmpty(nonSyncedVersions)) {
         continue;
@@ -79,7 +79,7 @@ public class MetadataServiceImpl implements MetadataService {
       Set<Metadata> metadataSet = convertArtifactsToMetadataSet(artifacts);
       MavenArtifactVersion artifactVersionCache = updateMavenArtifactVersionData(product, metadataSet,
           nonSyncedVersions);
-      cache.getSyncedVersions().addAll(nonSyncedVersions);
+      cache.getSyncedTags().addAll(nonSyncedVersions);
       metadataRepo.save(cache);
       mavenArtifactVersionRepo.save(artifactVersionCache);
     }
@@ -118,8 +118,8 @@ public class MetadataServiceImpl implements MetadataService {
 
   private List<String> getNonSyncedVersions(Product product, MetadataSync cache) {
     List<String> nonSyncedVersions = product.getReleasedVersions();
-    if (!CollectionUtils.isEmpty(cache.getSyncedVersions())) {
-      nonSyncedVersions.removeAll(cache.getSyncedVersions());
+    if (!CollectionUtils.isEmpty(cache.getSyncedTags())) {
+      nonSyncedVersions.removeAll(cache.getSyncedTags());
     }
     return nonSyncedVersions;
   }
@@ -154,7 +154,7 @@ public class MetadataServiceImpl implements MetadataService {
     }
     String type = StringUtils.defaultIfBlank(artifact.getType(), ProductJsonConstants.DEFAULT_PRODUCT_TYPE);
     artifactName = String.format(MavenConstants.ARTIFACT_NAME_FORMAT, artifactName, type);
-    return Metadata.builder().groupId(artifact.getGroupId()).versions(new ArrayList<>()).artifactId(
+    return Metadata.builder().groupId(artifact.getGroupId()).versions(new HashSet<>()).artifactId(
         artifact.getArtifactId()).url(metadataUrl).repoUrl(
         StringUtils.defaultIfEmpty(artifact.getRepoUrl(), MavenConstants.DEFAULT_IVY_MAVEN_BASE_URL)).type(type).name(
         artifactName).build();

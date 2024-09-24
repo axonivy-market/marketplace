@@ -1,5 +1,6 @@
 package com.axonivy.market.bo;
 
+import com.axonivy.market.entity.Metadata;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 

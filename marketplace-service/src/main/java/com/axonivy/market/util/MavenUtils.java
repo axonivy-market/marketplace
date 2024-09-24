@@ -8,7 +8,7 @@ import com.axonivy.market.entity.ProductJsonContent;
 import com.axonivy.market.github.util.GitHubUtils;
 import com.axonivy.market.bo.ArchivedArtifact;
 import com.axonivy.market.bo.Artifact;
-import com.axonivy.market.bo.Metadata;
+import com.axonivy.market.entity.Metadata;
 import com.axonivy.market.model.MavenArtifactModel;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;

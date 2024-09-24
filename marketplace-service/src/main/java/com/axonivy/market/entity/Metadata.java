@@ -1,12 +1,17 @@
-package com.axonivy.market.bo;
+package com.axonivy.market.entity;
 
 import lombok.*;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.annotation.Transient;
+import org.springframework.data.mongodb.core.mapping.Document;
 
+import java.io.Serial;
+import java.io.Serializable;
 import java.time.LocalDateTime;
-import java.util.List;
 import java.util.Objects;
+import java.util.Set;
+
+import static com.axonivy.market.constants.EntityConstants.METADATA;
 
 
 @Getter
@@ -14,8 +19,12 @@ import java.util.Objects;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class Metadata {
+@Document(METADATA)
+public class Metadata implements Serializable {
+  @Serial
+  private static final long serialVersionUID = 1L;
   @Id
+  private String id;
   private String url;
   private LocalDateTime lastUpdated;
   @Transient
@@ -27,7 +36,7 @@ public class Metadata {
   @Transient
   private String release;
   @Transient
-  private List<String> versions;
+  private Set<String> versions;
   private String repoUrl;
   private String type;
   private String name;

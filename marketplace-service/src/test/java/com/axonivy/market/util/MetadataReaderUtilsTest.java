@@ -1,6 +1,6 @@
 package com.axonivy.market.util;
 
-import com.axonivy.market.bo.Metadata;
+import com.axonivy.market.entity.Metadata;
 import com.axonivy.market.constants.MavenConstants;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;

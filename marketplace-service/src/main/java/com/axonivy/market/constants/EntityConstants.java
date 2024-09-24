@@ -9,6 +9,7 @@ public class EntityConstants {
   public static final String PRODUCT = "Product";
   public static final String PRODUCT_DESIGNER_INSTALLATION = "ProductDesignerInstallation";
   public static final String MAVEN_METADATA_SYNC = "MavenMetadataSync";
+  public static final String METADATA = "Metadata";
   public static final String GH_REPO_META = "GitHubRepoMeta";
   public static final String FEEDBACK = "Feedback";
   public static final String PRODUCT_CUSTOM_SORT = "ProductCustomSort";
