@@ -12,6 +12,7 @@ import javax.xml.parsers.DocumentBuilderFactory;
 import java.io.StringReader;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.Objects;
 
 @Log4j2
 public class MetadataReaderUtils {
@@ -24,13 +25,17 @@ public class MetadataReaderUtils {
       DocumentBuilder builder = DocumentBuilderFactory.newInstance().newDocumentBuilder();
       Document document = builder.parse(new InputSource(new StringReader(xmlData)));
       document.getDocumentElement().normalize();
+      DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern(MavenConstants.DATE_TIME_FORMAT);
+      LocalDateTime lastUpdated = LocalDateTime.parse(
+          Objects.requireNonNull(getElementValue(document, MavenConstants.LAST_UPDATED_TAG)),
+          dateTimeFormatter);
+      if (lastUpdated.equals(metadata.getLastUpdated())) {
+        return;
+      }
+      metadata.setLastUpdated(lastUpdated);
       metadata.setLatest(getElementValue(document, MavenConstants.LATEST_VERSION_TAG));
       metadata.setRelease(getElementValue(document, MavenConstants.LATEST_RELEASE_TAG));
 
-      DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern(MavenConstants.DATE_TIME_FORMAT);
-      LocalDateTime lastUpdated = LocalDateTime.parse(getElementValue(document, MavenConstants.LAST_UPDATED_TAG),
-          dateTimeFormatter);
-      metadata.setLastUpdated(lastUpdated);
       NodeList versionNodes = document.getElementsByTagName(MavenConstants.VERSION_TAG);
       for (int i = 0; i < versionNodes.getLength(); i++) {
         metadata.getVersions().add(versionNodes.item(i).getTextContent());
