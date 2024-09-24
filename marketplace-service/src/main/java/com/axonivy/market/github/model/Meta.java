@@ -33,7 +33,7 @@ public class Meta {
   private String vendor;
   private String vendorUrl;
   private List<String> tags;
-  private List<Artifact> artifacts;
+  private List<Artifact> mavenArtifacts;
   private String compatibility;
   private Boolean contactUs;
   private String cost;

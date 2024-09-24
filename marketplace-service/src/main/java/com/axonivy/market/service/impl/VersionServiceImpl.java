@@ -1,12 +1,10 @@
 package com.axonivy.market.service.impl;
 
-import com.axonivy.market.comparator.ArchivedArtifactsComparator;
 import com.axonivy.market.constants.MavenConstants;
 import com.axonivy.market.controller.ProductDetailsController;
 import com.axonivy.market.entity.MavenArtifactVersion;
 import com.axonivy.market.entity.Product;
 import com.axonivy.market.entity.ProductJsonContent;
-import com.axonivy.market.bo.ArchivedArtifact;
 import com.axonivy.market.bo.Artifact;
 import com.axonivy.market.util.MavenUtils;
 import com.axonivy.market.model.MavenArtifactModel;
@@ -27,13 +25,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.Set;
 import java.util.stream.Collectors;
 
 import static com.axonivy.market.constants.ProductJsonConstants.NAME;

@@ -2,20 +2,19 @@ package com.axonivy.market.factory;
 
 import com.axonivy.market.bo.Artifact;
 import com.axonivy.market.constants.CommonConstants;
+import com.axonivy.market.constants.MetaConstants;
 import com.axonivy.market.entity.Product;
 import com.axonivy.market.entity.ProductJsonContent;
 import com.axonivy.market.entity.ProductModuleContent;
 import com.axonivy.market.github.model.Meta;
 import com.axonivy.market.model.DisplayValue;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import io.jsonwebtoken.lang.Collections;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.kohsuke.github.GHContent;
-import org.springframework.core.CollectionFactory;
 import org.springframework.util.CollectionUtils;
 
 import java.io.IOException;
@@ -25,7 +24,6 @@ import java.util.List;
 import java.util.Map;
 
 import static com.axonivy.market.constants.CommonConstants.SLASH;
-import static com.axonivy.market.constants.MetaConstants.*;
 import static org.apache.commons.lang3.StringUtils.EMPTY;
 
 @Log4j2
@@ -39,7 +37,7 @@ public class ProductFactory {
     }
 
     var contentName = content.getName();
-    if (StringUtils.endsWith(contentName, META_FILE)) {
+    if (StringUtils.endsWith(contentName, MetaConstants.META_FILE)) {
       mappingByMetaJSONFile(product, content);
     }
     return product;
@@ -62,17 +60,19 @@ public class ProductFactory {
     product.setTags(meta.getTags());
     product.setVersion(meta.getVersion());
     product.setShortDescriptions(mappingMultilingualismValueByMetaJSONFile(meta.getDescriptions()));
-    product.setVendor(StringUtils.isBlank(meta.getVendor()) ? DEFAULT_VENDOR_NAME : meta.getVendor());
-    product.setVendorUrl(StringUtils.isBlank(meta.getVendorUrl()) ? DEFAULT_VENDOR_URL : meta.getVendorUrl());
+    product.setVendor(StringUtils.defaultIfEmpty(meta.getVendor(), MetaConstants.DEFAULT_VENDOR_NAME));
+    product.setVendorUrl(StringUtils.defaultIfEmpty(meta.getVendorUrl(), MetaConstants.DEFAULT_VENDOR_URL));
     product.setPlatformReview(meta.getPlatformReview());
     product.setStatusBadgeUrl(meta.getStatusBadgeUrl());
     product.setLanguage(meta.getLanguage());
     product.setIndustry(meta.getIndustry());
     product.setContactUs(BooleanUtils.isTrue(meta.getContactUs()));
-    product.setCost(StringUtils.isBlank(meta.getCost()) ? "Free" : StringUtils.capitalize(meta.getCost()));
+    product.setCost(
+        StringUtils.capitalize(StringUtils.defaultIfEmpty(meta.getCost(), MetaConstants.DEFAULT_COST_VALUE)));
     product.setCompatibility(meta.getCompatibility());
     extractSourceUrl(product, meta);
-    List<Artifact> artifacts = CollectionUtils.isEmpty(meta.getArtifacts()) ? new ArrayList<>() : meta.getArtifacts();
+    List<Artifact> artifacts = CollectionUtils.isEmpty(
+        meta.getMavenArtifacts()) ? new ArrayList<>() : meta.getMavenArtifacts();
     artifacts.stream().forEach(
         artifact -> artifact.setInvalidArtifact(!artifact.getArtifactId().contains(meta.getId())));
     product.setArtifacts(artifacts);
