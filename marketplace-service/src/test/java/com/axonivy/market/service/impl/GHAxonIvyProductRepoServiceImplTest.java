@@ -29,6 +29,7 @@ import org.kohsuke.github.PagedIterable;
 import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -187,23 +188,18 @@ class GHAxonIvyProductRepoServiceImplTest {
     assertTrue(artifact.getIsProductArtifact());
   }
 
-  @Test
-  void testConvertProductJsonToMavenProductInfo() throws IOException {
-//    assertEquals(0, axonivyProductRepoServiceImpl.convertProductJsonToMavenProductInfo(null).size());
-//    assertEquals(0, axonivyProductRepoServiceImpl.convertProductJsonToMavenProductInfo(content).size());
-//
-//    InputStream inputStream = getMockInputStream();
-//    Mockito.when(axonivyProductRepoServiceImpl.extractedContentStream(content)).thenReturn(inputStream);
-//    assertEquals(2, axonivyProductRepoServiceImpl.convertProductJsonToMavenProductInfo(content).size());
-//    inputStream = getMockInputStreamWithOutProjectAndDependency();
-//    Mockito.when(axonivyProductRepoServiceImpl.extractedContentStream(content)).thenReturn(inputStream);
-//    assertEquals(0, axonivyProductRepoServiceImpl.convertProductJsonToMavenProductInfo(content).size());
+  private static GHContent createMockProductJson() throws IOException {
+    GHContent mockProductJson = mock(GHContent.class);
+    when(mockProductJson.isFile()).thenReturn(true);
+    when(mockProductJson.getName()).thenReturn(ProductJsonConstants.PRODUCT_JSON_FILE, IMAGE_NAME);
+//    when(mockProductJson.read()).thenReturn(getMockInputStream());
+    return mockProductJson;
   }
 
-  @Test
-  void testExtractedContentStream() {
-//    assertNull(axonivyProductRepoServiceImpl.extractedContentStream(null));
-//    assertNull(axonivyProductRepoServiceImpl.extractedContentStream(content));
+  private static void getReadmeInputStream(String readmeContentString, GHContent mockContent) throws IOException {
+    InputStream mockReadmeInputStream = mock(InputStream.class);
+    when(mockContent.read()).thenReturn(mockReadmeInputStream);
+    when(mockReadmeInputStream.readAllBytes()).thenReturn(readmeContentString.getBytes());
   }
 
   @Test
@@ -326,10 +322,17 @@ class GHAxonIvyProductRepoServiceImplTest {
     assertEquals("Setup content", result.getSetup().get(Language.EN.getValue()));
   }
 
-  private static void getReadmeInputStream(String readmeContentString, GHContent mockContent) throws IOException {
-    InputStream mockReadmeInputStream = mock(InputStream.class);
-    when(mockContent.read()).thenReturn(mockReadmeInputStream);
-    when(mockReadmeInputStream.readAllBytes()).thenReturn(readmeContentString.getBytes());
+  @Test
+  void testConvertProductJsonToMavenProductInfo() throws IOException {
+    assertEquals(0, GitHubUtils.convertProductJsonToMavenProductInfo(null).size());
+    assertEquals(0, GitHubUtils.convertProductJsonToMavenProductInfo(content).size());
+
+    InputStream inputStream = getMockInputStream();
+    Mockito.when(GitHubUtils.extractedContentStream(content)).thenReturn(inputStream);
+    assertEquals(2, GitHubUtils.convertProductJsonToMavenProductInfo(content).size());
+    inputStream = getMockInputStreamWithOutProjectAndDependency();
+    Mockito.when(GitHubUtils.extractedContentStream(content)).thenReturn(inputStream);
+    assertEquals(0, GitHubUtils.convertProductJsonToMavenProductInfo(content).size());
   }
 
   private static InputStream getMockInputStream() {
@@ -447,41 +450,50 @@ class GHAxonIvyProductRepoServiceImplTest {
     return mockContent;
   }
 
-  private static GHContent createMockProductJson() {
-    GHContent mockProductJson = mock(GHContent.class);
-    when(mockProductJson.isFile()).thenReturn(true);
-    when(mockProductJson.getName()).thenReturn(ProductJsonConstants.PRODUCT_JSON_FILE, IMAGE_NAME);
-    return mockProductJson;
+  @Test
+  void testExtractedContentStream() {
+    assertNull(GitHubUtils.extractedContentStream(null));
+    assertNull(GitHubUtils.extractedContentStream(content));
   }
 
-//  @Test
-//  void test_insertProductJsonContent() throws IOException {
-//    ArgumentCaptor<ProductJsonContent> argumentCaptor = ArgumentCaptor.forClass(ProductJsonContent.class);
-//    String readmeContentWithImage = """
-//        #Product-name
-//        Test README
-//        ## Demo
-//        Demo content
-//        ## Setup
-//        Setup content (image.png)
-//        """;
-//    GHContent mockContent = createMockProductFolderWithProductJson();
-//    getReadmeInputStream(readmeContentWithImage, mockContent);
-//    InputStream inputStream = getMockInputStream();
-//    Mockito.when(GitHubUtils.extractedContentStream(mockContent)).thenReturn(inputStream);
-//    when(mockContent.read()).thenReturn(inputStream);
-//    when(axonivyProductRepoServiceImpl.extractProductJsonContent(mockContent, "v10.0.0")).thenReturn(
-//        getMockProductJsonContent());
-//
-//    axonivyProductRepoServiceImpl.getReadmeAndProductContentsFromTag(createMockProduct(), ghRepository,
-//        RELEASE_TAG);
-//
-//    verify(productJsonContentRepository).save(argumentCaptor.capture());
-//    assertEquals("docuware-connector-name", argumentCaptor.getValue().getName());
-//    assertEquals("10.0.0", argumentCaptor.getValue().getVersion());
-//    assertEquals("docuware-connector", argumentCaptor.getValue().getProductId());
-//    assertEquals(getMockProductJsonContent().replace("${version}", "10.0.0"), argumentCaptor.getValue().getContent());
-//  }
+  @Test
+  void test_updateDependencyContentsFromProductJson() throws IOException {
+    try (MockedStatic<GitHubUtils> mockedGitHubUtils = Mockito.mockStatic(GitHubUtils.class)) {
+      ArgumentCaptor<ProductJsonContent> argumentCaptor = ArgumentCaptor.forClass(ProductJsonContent.class);
+      String readmeContentWithImage = """
+          #Product-name
+          Test README
+          ## Demo
+          Demo content
+          ## Setup
+          Setup content (image.png)
+          """;
+
+      GHContent mockContent = mock(GHContent.class);
+      when(mockContent.isDirectory()).thenReturn(true);
+      when(mockContent.isFile()).thenReturn(true);
+      when(mockContent.getName()).thenReturn(DOCUWARE_CONNECTOR_PRODUCT, ReadmeConstants.README_FILE);
+
+      GHContent mockContent2 = createMockProductJson();
+
+      when(ghRepository.getDirectoryContent(CommonConstants.SLASH, RELEASE_TAG)).thenReturn(
+          List.of(mockContent, mockContent2));
+      when(ghRepository.getDirectoryContent(DOCUWARE_CONNECTOR_PRODUCT, RELEASE_TAG)).thenReturn(
+          List.of(mockContent, mockContent2));
+      InputStream inputStream = getMockInputStream();
+      when(mockContent.read()).thenReturn(inputStream);
+      mockedGitHubUtils.when(() -> GitHubUtils.extractedContentStream(mockContent2)).thenReturn(inputStream);
+
+      axonivyProductRepoServiceImpl.getReadmeAndProductContentsFromTag(createMockProduct(), ghRepository,
+          RELEASE_TAG);
+
+      verify(productJsonContentRepository, times(1)).save(argumentCaptor.capture());
+      assertEquals("docuware-connector-name", argumentCaptor.getValue().getName());
+      assertEquals("10.0.0", argumentCaptor.getValue().getVersion());
+      assertEquals("docuware-connector", argumentCaptor.getValue().getProductId());
+      assertEquals(getMockProductJsonContent().replace("${version}", "10.0.0"), argumentCaptor.getValue().getContent());
+    }
+  }
 
 
 }
