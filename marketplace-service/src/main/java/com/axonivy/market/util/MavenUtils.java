@@ -45,11 +45,15 @@ public class MavenUtils {
     Artifact artifact = new Artifact();
     artifact.setRepoUrl(repoUrl);
     artifact.setIsDependency(isDependency);
-    artifact.setGroupId(node.path(ProductJsonConstants.GROUP_ID).asText());
-    artifact.setArtifactId(node.path(ProductJsonConstants.ARTIFACT_ID).asText());
-    artifact.setType(node.path(ProductJsonConstants.TYPE).asText());
+    artifact.setGroupId(getTextValueFromNodeAndPath(node, ProductJsonConstants.GROUP_ID));
+    artifact.setArtifactId(getTextValueFromNodeAndPath(node, ProductJsonConstants.ARTIFACT_ID));
+    artifact.setType(getTextValueFromNodeAndPath(node, ProductJsonConstants.TYPE));
     artifact.setIsProductArtifact(true);
     return artifact;
+  }
+
+  private static String getTextValueFromNodeAndPath(JsonNode node, String path) {
+    return Objects.isNull(node.path(path)) ? StringUtils.EMPTY : node.path(path).asText();
   }
 
   public static void extractMavenArtifactFromJsonNode(JsonNode dataNode, boolean isDependency, List<Artifact> artifacts,

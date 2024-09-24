@@ -84,7 +84,6 @@ class VersionServiceImplTest {
     String targetVersion = "10.0.10";
     setUpArtifactFromMeta();
     when(versionService.getArtifactsFromMeta(Mockito.anyString())).thenReturn(artifactsFromMeta);
-    when(productModuleContentRepository.findTagsByProductId(productId)).thenReturn(List.of("v10.0.10"));
     when(mavenArtifactVersionRepository.findById(Mockito.anyString())).thenReturn(Optional.empty());
     ArrayList<MavenArtifactModel> artifactsInVersion = new ArrayList<>();
     artifactsInVersion.add(new MavenArtifactModel());
@@ -92,7 +91,8 @@ class VersionServiceImplTest {
         Optional.ofNullable(MavenArtifactVersion.builder().productId(productId).productArtifactWithVersionReleased(new HashMap<>()).build()));
     Assertions.assertEquals(0, versionService.getArtifactsAndVersionToDisplay(productId, false, targetVersion).size());
 
-    MavenArtifactVersion proceededData = new MavenArtifactVersion();
+    MavenArtifactVersion proceededData =
+        MavenArtifactVersion.builder().productArtifactWithVersionReleased(new HashMap<>()).build();
     proceededData.getProductArtifactWithVersionReleased().put(targetVersion, new ArrayList<>());
     when(mavenArtifactVersionRepository.findById(Mockito.anyString())).thenReturn(Optional.of(proceededData));
     Assertions.assertEquals(1, versionService.getArtifactsAndVersionToDisplay(productId, false, targetVersion).size());
@@ -303,5 +303,7 @@ class VersionServiceImplTest {
 
   @Test
   void testClearAllProductVersions() {
+    versionService.clearAllProductVersions();
+    verify(mavenArtifactVersionRepository).deleteAll();
   }
 }
