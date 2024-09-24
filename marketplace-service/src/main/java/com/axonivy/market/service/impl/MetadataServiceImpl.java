@@ -38,16 +38,14 @@ public class MetadataServiceImpl implements MetadataService {
   private final MetadataSyncRepository metadataRepo;
   private final ProductJsonContentRepository productJsonRepo;
   private final MavenArtifactVersionRepository mavenArtifactVersionRepo;
-  private final RestTemplate restTemplate;
+  private final RestTemplate restTemplate = new RestTemplate();
 
   public MetadataServiceImpl(ProductRepository productRepo, MetadataSyncRepository metadataRepo,
-      ProductJsonContentRepository productJsonRepo, MavenArtifactVersionRepository mavenArtifactVersionRepo,
-      RestTemplate restTemplate) {
+      ProductJsonContentRepository productJsonRepo, MavenArtifactVersionRepository mavenArtifactVersionRepo) {
     this.productRepo = productRepo;
     this.metadataRepo = metadataRepo;
     this.productJsonRepo = productJsonRepo;
     this.mavenArtifactVersionRepo = mavenArtifactVersionRepo;
-    this.restTemplate = restTemplate;
   }
 
   private static void updateMavenArtifactVersion(String version, Set<Metadata> metadataSet,

@@ -26,6 +26,8 @@ import java.util.Objects;
 
 @Slf4j
 public class MavenUtils {
+  private MavenUtils() {}
+
   private static final ObjectMapper objectMapper = new ObjectMapper();
 
   public static List<Artifact> getMavenArtifactsFromProductJson(ProductJsonContent productJson) {

@@ -3,7 +3,7 @@ package com.axonivy.market.bo;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
-public class ArtifactTest {
+class ArtifactTest {
   @Test
   void testEqual() {
     Artifact artifact = new Artifact();

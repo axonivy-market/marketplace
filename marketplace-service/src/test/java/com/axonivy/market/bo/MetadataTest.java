@@ -3,7 +3,7 @@ package com.axonivy.market.bo;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
-public class MetadataTest {
+class MetadataTest {
   @Test
   void testEqual() {
     Metadata meta =

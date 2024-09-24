@@ -151,7 +151,7 @@ class GHAxonIvyProductRepoServiceImplTest {
     assertEquals("octopus-util-demo", artifacts.get(1).getArtifactId());
   }
 
-  private static GHContent createMockProductJson() throws IOException {
+  private static GHContent createMockProductJson() {
     GHContent mockProductJson = mock(GHContent.class);
     when(mockProductJson.isFile()).thenReturn(true);
     when(mockProductJson.getName()).thenReturn(ProductJsonConstants.PRODUCT_JSON_FILE, IMAGE_NAME);
