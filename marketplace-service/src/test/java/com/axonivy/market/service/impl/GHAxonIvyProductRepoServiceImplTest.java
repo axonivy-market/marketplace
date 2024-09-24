@@ -186,15 +186,6 @@ class GHAxonIvyProductRepoServiceImplTest {
     assertTrue(artifact.getIsProductArtifact());
   }
 
-  private void createListNodeForDataNoteByName(String nodeName) {
-    JsonNode sectionNode = Mockito.mock(JsonNode.class);
-    Iterator<JsonNode> iterator = Mockito.mock(String.valueOf(Iterator.class));
-    Mockito.when(dataNode.path(nodeName)).thenReturn(sectionNode);
-    Mockito.when(sectionNode.iterator()).thenReturn(iterator);
-    Mockito.when(iterator.hasNext()).thenReturn(true, false);
-    Mockito.when(iterator.next()).thenReturn(childNode);
-  }
-
   private static void getReadmeInputStream(String readmeContentString, GHContent mockContent) throws IOException {
     InputStream mockReadmeInputStream = mock(InputStream.class);
     when(mockContent.read()).thenReturn(mockReadmeInputStream);
@@ -232,7 +223,6 @@ class GHAxonIvyProductRepoServiceImplTest {
   private void testGetReadmeAndProductContentsFromTagWithReadmeText(String readmeContentWithImage) throws IOException {
     try (MockedStatic<GitHubUtils> mockedGitHubUtils = Mockito.mockStatic(GitHubUtils.class)) {
       InputStream inputStream = getMockInputStream();
-
       //Mock readme content
       GHContent mockContent = mock(GHContent.class);
       when(mockContent.isDirectory()).thenReturn(true);
@@ -311,9 +301,7 @@ class GHAxonIvyProductRepoServiceImplTest {
   @Test
   void testGetReadmeAndProductContentsFromTag_WithNoFullyThreeParts() throws IOException {
     String readmeContentString = "#Product-name\n Test README\n## Setup\nSetup content";
-
     GHContent mockContent = createMockProductFolder();
-
     getReadmeInputStream(readmeContentString, mockContent);
 
     var result = axonivyProductRepoServiceImpl.getReadmeAndProductContentsFromTag(createMockProduct(), ghRepository,
@@ -326,9 +314,7 @@ class GHAxonIvyProductRepoServiceImplTest {
   @Test
   void testGetReadmeAndProductContentsFromTag_SwitchPartsPosition() throws IOException {
     String readmeContentString = "#Product-name\n Test README\n## Setup\nSetup content\n## Demo\nDemo content";
-
     GHContent mockContent = createMockProductFolder();
-
     getReadmeInputStream(readmeContentString, mockContent);
 
     var result = axonivyProductRepoServiceImpl.getReadmeAndProductContentsFromTag(createMockProduct(), ghRepository,
