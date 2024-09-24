@@ -3,7 +3,6 @@ package com.axonivy.market.util;
 import com.axonivy.market.constants.MavenConstants;
 import com.axonivy.market.bo.Metadata;
 import lombok.extern.log4j.Log4j2;
-import org.springframework.web.client.RestTemplate;
 import org.w3c.dom.Document;
 import org.w3c.dom.NodeList;
 import org.xml.sax.InputSource;
@@ -16,14 +15,12 @@ import java.time.format.DateTimeFormatter;
 
 @Log4j2
 public class MetadataReaderUtils {
-  private static final RestTemplate restTemplate = new RestTemplate();
 
   private MetadataReaderUtils() {
   }
 
-  public static void extractDataFromUrl(String url, Metadata metadata) {
+  public static void parseMetadataFromString(String xmlData, Metadata metadata) {
     try {
-      String xmlData = restTemplate.getForObject(url, String.class);
       DocumentBuilder builder = DocumentBuilderFactory.newInstance().newDocumentBuilder();
       Document document = builder.parse(new InputSource(new StringReader(xmlData)));
       document.getDocumentElement().normalize();
@@ -39,7 +36,7 @@ public class MetadataReaderUtils {
         metadata.getVersions().add(versionNodes.item(i).getTextContent());
       }
     } catch (Exception e) {
-      log.error("Maven Metadata Reader Utils: can not read the metadata from Url: {} with error: {}", url, e);
+      log.error("Metadata Reader: can not read the metadata of {}", xmlData);
     }
   }
 

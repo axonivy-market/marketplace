@@ -22,6 +22,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
+import org.springframework.web.client.RestTemplate;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -37,13 +38,16 @@ public class MetadataServiceImpl implements MetadataService {
   private final MetadataSyncRepository metadataRepo;
   private final ProductJsonContentRepository productJsonRepo;
   private final MavenArtifactVersionRepository mavenArtifactVersionRepo;
+  private final RestTemplate restTemplate;
 
   public MetadataServiceImpl(ProductRepository productRepo, MetadataSyncRepository metadataRepo,
-      ProductJsonContentRepository productJsonRepo, MavenArtifactVersionRepository mavenArtifactVersionRepo) {
+      ProductJsonContentRepository productJsonRepo, MavenArtifactVersionRepository mavenArtifactVersionRepo,
+      RestTemplate restTemplate) {
     this.productRepo = productRepo;
     this.metadataRepo = metadataRepo;
     this.productJsonRepo = productJsonRepo;
     this.mavenArtifactVersionRepo = mavenArtifactVersionRepo;
+    this.restTemplate = restTemplate;
   }
 
   private static void updateMavenArtifactVersion(String version, Set<Metadata> metadataSet,
@@ -91,11 +95,14 @@ public class MetadataServiceImpl implements MetadataService {
 
   private MavenArtifactVersion updateMavenArtifactVersionData(Product product, Set<Metadata> metadataSet,
       List<String> nonSyncedVersions) {
-    metadataSet.forEach(metadata -> MetadataReaderUtils.extractDataFromUrl(metadata.getUrl(), metadata));
+    metadataSet.forEach(
+        metadata -> MetadataReaderUtils.parseMetadataFromString(
+            restTemplate.getForObject(metadata.getUrl(), String.class),
+            metadata));
     MavenArtifactVersion artifactVersionCache = mavenArtifactVersionRepo.findById(product.getId()).orElse(
         new MavenArtifactVersion(product.getId(), new HashMap<>()));
-    nonSyncedVersions.forEach(version -> updateMavenArtifactVersion(version, metadataSet, artifactVersionCache,
-        product.getId()));
+    nonSyncedVersions.forEach(
+        version -> updateMavenArtifactVersion(version, metadataSet, artifactVersionCache, product.getId()));
     return artifactVersionCache;
   }
 
