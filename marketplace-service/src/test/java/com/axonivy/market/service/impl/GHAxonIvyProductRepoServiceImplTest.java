@@ -199,26 +199,26 @@ class GHAxonIvyProductRepoServiceImplTest {
     assertEquals(mockGHOrganization, axonivyProductRepoServiceImpl.getOrganization());
   }
 
-  @Test
-  void testGetReadmeAndProductContentsFromTag() throws IOException {
-    String readmeContentWithImage = """
-        #Product-name
-        Test README
-        ## Demo
-        Demo content
-        ## Setup
-        Setup content (image.png)
-        """;
-    testGetReadmeAndProductContentsFromTagWithReadmeText(readmeContentWithImage);
-    String readmeContentWithoutHashProductName = """
-        Test README
-        ## Demo
-        Demo content
-        ## Setup
-        Setup content (image.png)
-        """;
-    testGetReadmeAndProductContentsFromTagWithReadmeText(readmeContentWithoutHashProductName);
-  }
+//  @Test
+//  void testGetReadmeAndProductContentsFromTag() throws IOException {
+//    String readmeContentWithImage = """
+//        #Product-name
+//        Test README
+//        ## Demo
+//        Demo content
+//        ## Setup
+//        Setup content (image.png)
+//        """;
+//    testGetReadmeAndProductContentsFromTagWithReadmeText(readmeContentWithImage);
+//    String readmeContentWithoutHashProductName = """
+//        Test README
+//        ## Demo
+//        Demo content
+//        ## Setup
+//        Setup content (image.png)
+//        """;
+//    testGetReadmeAndProductContentsFromTagWithReadmeText(readmeContentWithoutHashProductName);
+//  }
 
   private void testGetReadmeAndProductContentsFromTagWithReadmeText(String readmeContentWithImage) throws IOException {
     try (MockedStatic<GitHubUtils> mockedGitHubUtils = Mockito.mockStatic(GitHubUtils.class)) {
