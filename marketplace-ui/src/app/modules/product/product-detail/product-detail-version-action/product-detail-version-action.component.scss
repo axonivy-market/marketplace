@@ -83,7 +83,6 @@
 }
 
 .btn__install {
-  margin-right: 10px;
   border: 0px;
 }
 .primary-color {
@@ -100,7 +99,7 @@
 }
 
 ::ng-deep .dropdown-menu.menu-bar {
-  margin-top: 4px;
+  margin-top: 2.5rem;
 }
 
 ::ng-deep .install-designer-dropdown {
@@ -108,10 +107,6 @@
   padding: 10px;
   text-align: start;
 }
-
-// ::ng-deep .dropdown-menu {
-//   min-width: 100%;
-// }
 
 .install-download-button-container {
   position: relative;
@@ -124,23 +119,20 @@
 ::ng-deep .dropdown-menu2 {
   position: absolute;
   right: 0;
-  min-width: 120%;
+  width: 120%;
+  margin-top: 1rem;
+  background-color: var(--bs-body-bg);
+  z-index: 999;
   padding: 10px;
   border-radius: 5px;
-  gap: 15px;
   box-shadow: 0px 4px 30px 0px rgba(0, 0, 0, 0.1);
-  margin-top: 1.2rem;
+
+  @media screen and (max-width: 991px) {
+    width: 100%;
+    margin-top: 4rem;
+  }
 
   &.maven-artifact-version__action {
-    // min-width: 400px;
-    // min-height: 204px;
-
-    @media (max-width: 500px) {
-      left: auto;
-      right: auto;
-      // min-width: 80vw;
-    }
-
     .form-group {
       gap: 7px;
 
@@ -249,6 +241,23 @@
     font-size: 14px;
     font-weight: 400;
     line-height: 16.8px;
+  }
+}
+
+.up-arrow2 {
+  margin: 0;
+  top: -10px;
+  width: 20px;
+  height: 20px;
+  right: 15%;
+  z-index: 1001;
+  transform: translateX(-50%) rotate(45deg);
+  border-right-color: transparent;
+  border-bottom-color: transparent;
+  background-color: var(--bs-body-bg);
+
+  @media screen and (max-width: 991px) {
+    right: 22%;
   }
 }
 
