@@ -29,6 +29,14 @@ import { VERSION } from '../../../../shared/constants/common.constant';
 import { ProductDetailActionType } from '../../../../shared/enums/product-detail-action-type';
 import { RoutingQueryParamService } from '../../../../shared/services/routing.query.param.service';
 import { ProductDetail } from '../../../../shared/models/product-detail.model';
+import { LoadingSpinnerComponent } from '../../../../shared/components/loading-spinner/loading-spinner.component';
+import { CookieService } from 'ngx-cookie-service';
+import { CommonUtils } from '../../../../shared/utils/common.utils';
+import { ActivatedRoute, Router } from '@angular/router';
+
+const delayTimeBeforeHideMessage = 2000;
+const showDevVersionCookieName = 'showDevVersions';
+export const versionParam = 'version';
 
 @Component({
   selector: 'app-product-version-action',
@@ -37,7 +45,8 @@ import { ProductDetail } from '../../../../shared/models/product-detail.model';
     CommonModule,
     TranslateModule,
     FormsModule,
-    CommonDropdownComponent
+    CommonDropdownComponent,
+    LoadingSpinnerComponent
   ],
   templateUrl: './product-detail-version-action.component.html',
   styleUrl: './product-detail-version-action.component.scss'
@@ -64,8 +73,8 @@ export class ProductDetailVersionActionComponent implements AfterViewInit {
   versionDropdownInDesigner: ItemDropdown[] = [];
 
   artifacts: WritableSignal<ItemDropdown[]> = signal([]);
-  isDevVersionsDisplayed = signal(false);
   isDropDownDisplayed = signal(false);
+  isArtifactLoading = signal(false);
   designerVersion = '';
   selectedArtifact: string | undefined = '';
   selectedArtifactName: string | undefined = '';
@@ -77,6 +86,11 @@ export class ProductDetailVersionActionComponent implements AfterViewInit {
   languageService = inject(LanguageService);
   routingQueryParamService = inject(RoutingQueryParamService);
   changeDetectorRef = inject(ChangeDetectorRef);
+  cookieService = inject(CookieService);
+  router = inject(Router);
+  route = inject(ActivatedRoute);
+
+  isDevVersionsDisplayed: WritableSignal<boolean> = signal(this.getShowDevVersionFromCookie());
 
   ngAfterViewInit() {
     const tooltipTriggerList = [].slice.call(
@@ -88,19 +102,36 @@ export class ProductDetailVersionActionComponent implements AfterViewInit {
   }
 
   onSelectVersion(version: string) {
-    this.selectedVersion.set(version);
-    this.artifacts.set(this.versionMap.get(this.selectedVersion()) ?? []);
-    this.updateSelectedArtifact();
+    if (this.selectedVersion() !== version) {
+      this.selectedVersion.set(version);
+    }
+    this.artifacts.set(this.versionMap.get(version) ?? []);
+    this.updateSelectedArtifact(version);
   }
 
-  private updateSelectedArtifact() {
+  private getShowDevVersionFromCookie() {
+    return CommonUtils.getCookieValue(this.cookieService, showDevVersionCookieName, false);
+  }
+
+  private updateSelectedArtifact(version: string) {
     this.artifacts().forEach(artifact => {
       if (artifact.name) {
         artifact.label = artifact.name;
       }
     });
-      this.selectedArtifactName = this.artifacts()[0]?.name ?? '';
-      this.selectedArtifact = this.artifacts()[0]?.downloadUrl ?? '';
+    if (this.artifacts().length !== 0) {
+      this.selectedArtifactName = this.artifacts()[0].name ?? '';
+      this.selectedArtifact = this.artifacts()[0].downloadUrl ?? '';
+    }
+    this.addVersionParamToRoute(version);
+  }
+
+  addVersionParamToRoute(selectedVersion: string) {
+    this.router.navigate([], {
+      relativeTo: this.route,
+      queryParams: { [versionParam]: selectedVersion },
+      queryParamsHandling: 'merge'
+    }).then();
   }
 
   onSelectVersionInDesigner(version: string) {
@@ -114,8 +145,9 @@ export class ProductDetailVersionActionComponent implements AfterViewInit {
 
   onShowDevVersion(event: Event) {
     event.preventDefault();
-    this.isDevVersionsDisplayed.set(!this.isDevVersionsDisplayed());
-    this.getVersionWithArtifact();
+    this.isDevVersionsDisplayed.update(oldValue => !oldValue);
+    this.cookieService.set(showDevVersionCookieName, this.isDevVersionsDisplayed().toString());
+    this.getVersionWithArtifact(true);
   }
 
   onShowVersionAndArtifact() {
@@ -161,12 +193,13 @@ export class ProductDetailVersionActionComponent implements AfterViewInit {
     return null;
   }
 
-  getVersionWithArtifact() {
+  getVersionWithArtifact(ignoreRouteVersion = false) {
+    this.isArtifactLoading.set(true);
     this.sanitizeDataBeforeFetching();
     this.productService
       .sendRequestToProductDetailVersionAPI(
         this.productId,
-        this.isDevVersionsDisplayed(),
+        this.getShowDevVersionFromCookie(),
         this.designerVersion
       )
       .subscribe(data => {
@@ -182,10 +215,17 @@ export class ProductDetailVersionActionComponent implements AfterViewInit {
           }
         });
         if (this.versions().length !== 0) {
-          this.artifacts.set(this.versionMap.get(this.selectedVersion()) ?? []);
-          this.updateSelectedArtifact();
+          this.onSelectVersion(this.getVersionFromRoute(ignoreRouteVersion) ?? this.versions()[0]);
         }
+        this.isArtifactLoading.set(false);
       });
+  }
+
+  getVersionFromRoute(ignoreRouteVersion: boolean): string | null {
+    if (ignoreRouteVersion) {
+      return null;
+    }
+    return this.route.snapshot.queryParams[versionParam] || null;
   }
 
   getVersionInDesigner(): void {
@@ -215,6 +255,7 @@ export class ProductDetailVersionActionComponent implements AfterViewInit {
   sanitizeDataBeforeFetching() {
     this.versions.set([]);
     this.artifacts.set([]);
+    this.selectedArtifact = '';
   }
 
   downloadArtifact() {

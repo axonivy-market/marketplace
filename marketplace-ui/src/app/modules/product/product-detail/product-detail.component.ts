@@ -101,7 +101,6 @@ export class ProductDetailComponent {
     {} as ProductModuleContent
   );
   productDetailActionType = signal(ProductDetailActionType.STANDARD);
-  detailContent!: DetailTab;
   detailTabs = PRODUCT_DETAIL_TABS;
   activeTab = '';
   displayedTabsSignal: Signal<ItemDropdown[]> = computed(() => {
@@ -177,7 +176,7 @@ export class ProductDetailComponent {
     } else if (this.routingQueryParamService.isDesignerEnv()) {
       this.productDetailActionType.set(ProductDetailActionType.DESIGNER_ENV);
     } else {
-      this.productDetailActionType.set(ProductDetailActionType.STANDARD)
+      this.productDetailActionType.set(ProductDetailActionType.STANDARD);
     }
   }
 

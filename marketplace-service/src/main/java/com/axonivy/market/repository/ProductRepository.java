@@ -4,12 +4,10 @@ import com.axonivy.market.entity.Product;
 import org.springframework.data.mongodb.repository.MongoRepository;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
+
 @Repository
-public interface ProductRepository extends MongoRepository<Product, String>, ProductSearchRepository,
-        CustomProductRepository {
-
-  Product findByLogoUrl(String logoUrl);
-
-  Product findByLogoId(String logoId);
+public interface ProductRepository extends MongoRepository<Product, String>, ProductSearchRepository, CustomProductRepository {
+  List<Product> findByMarketDirectory(String marketDirectory);
 
 }
