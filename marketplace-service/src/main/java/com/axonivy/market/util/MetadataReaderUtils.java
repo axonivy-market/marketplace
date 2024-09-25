@@ -3,6 +3,7 @@ package com.axonivy.market.util;
 import com.axonivy.market.constants.MavenConstants;
 import com.axonivy.market.entity.Metadata;
 import lombok.extern.log4j.Log4j2;
+import org.apache.commons.lang3.StringUtils;
 import org.w3c.dom.Document;
 import org.w3c.dom.NodeList;
 import org.xml.sax.InputSource;
@@ -35,13 +36,33 @@ public class MetadataReaderUtils {
       metadata.setLastUpdated(lastUpdated);
       metadata.setLatest(getElementValue(document, MavenConstants.LATEST_VERSION_TAG));
       metadata.setRelease(getElementValue(document, MavenConstants.LATEST_RELEASE_TAG));
-
       NodeList versionNodes = document.getElementsByTagName(MavenConstants.VERSION_TAG);
       for (int i = 0; i < versionNodes.getLength(); i++) {
         metadata.getVersions().add(versionNodes.item(i).getTextContent());
       }
     } catch (Exception e) {
       log.error("Metadata Reader: can not read the metadata of {}", xmlData);
+    }
+  }
+
+  public static void parseMetadataSnapshotFromString(String xmlData, Metadata metadata) {
+    try {
+      DocumentBuilder builder = DocumentBuilderFactory.newInstance().newDocumentBuilder();
+      Document document = builder.parse(new InputSource(new StringReader(xmlData)));
+      document.getDocumentElement().normalize();
+      DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern(
+          MavenConstants.SNAPSHOT_LAST_UPDATED_DATE_TIME_FORMAT);
+      LocalDateTime lastUpdated = LocalDateTime.parse(
+          Objects.requireNonNull(getElementValue(document, MavenConstants.SNAPSHOT_LAST_UPDATED_TAG)),
+          dateTimeFormatter);
+      if (lastUpdated.equals(metadata.getLastUpdated())) {
+        return;
+      }
+      metadata.setLastUpdated(lastUpdated);
+      String value = document.getElementsByTagName(MavenConstants.VALUE_TAG).item(0).getTextContent();
+      metadata.setSnapshotVersionValue(value);
+    } catch (Exception e) {
+      log.error("Metadata Reader: can not read the snapshot metadata of {}", xmlData);
     }
   }
 

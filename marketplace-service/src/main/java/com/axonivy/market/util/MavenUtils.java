@@ -127,14 +127,14 @@ public class MavenUtils {
         groupIdByVersion, StringUtils.EMPTY);
   }
 
-  private static String buildDownloadUrl(String artifactId, String baseVersion, String type, String repoUrl,
+  public static String buildDownloadUrl(String artifactId, String baseVersion, String type, String repoUrl,
       String groupId, String version) {
     groupId = groupId.replace(CommonConstants.DOT_SEPARATOR, CommonConstants.SLASH);
     if (StringUtils.isBlank(version)) {
       version = baseVersion;
     }
     String artifactFileName = String.format(MavenConstants.ARTIFACT_FILE_NAME_FORMAT, artifactId, version, type);
-    return String.join(CommonConstants.SLASH, repoUrl, groupId, artifactId, version, artifactFileName);
+    return String.join(CommonConstants.SLASH, repoUrl, groupId, artifactId, baseVersion, artifactFileName);
   }
 
 

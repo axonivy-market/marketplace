@@ -36,6 +36,8 @@ public class Metadata implements Serializable {
   private String repoUrl;
   private String type;
   private String name;
+  private boolean isSnapShotMetadata;
+  private String snapshotVersionValue;
 
   @Override
   public boolean equals(Object o) {
