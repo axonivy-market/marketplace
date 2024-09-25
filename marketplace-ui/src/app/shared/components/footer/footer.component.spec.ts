@@ -3,7 +3,7 @@ import { FooterComponent } from './footer.component';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { By } from '@angular/platform-browser';
 import { Viewport } from 'karma-viewport/dist/adapter/viewport';
-import { SOCIAL_MEDIA_LINK } from '../../constants/common.constant';
+import { IVY_FOOTER_LINKS, SOCIAL_MEDIA_LINK } from '../../constants/common.constant';
 
 declare const viewport: Viewport;
 
@@ -83,7 +83,7 @@ describe('FooterComponent', () => {
     expect(getComputedStyle(ivyPolicy.nativeElement).textAlign).toBe('center');
   });
 
-  it('should navigate to the correct URL when the link icon is clicked', () => {
+  it('should navigate to the correct URL when the social link icon is clicked', () => {
     const socialMediaLinks = fixture.debugElement.queryAll(
       By.css('.social-link')
     );
@@ -95,6 +95,21 @@ describe('FooterComponent', () => {
       socialMediaLinkElement.click();
 
       expect(socialMediaLinkElement.href).toBe(SOCIAL_MEDIA_LINK[index].url);
+    }
+  });
+
+  it('should navigate to the correct URL when the policy link icon is clicked', () => {
+    const policyLinks = fixture.debugElement.queryAll(
+      By.css('.policy-link')
+    );
+
+    for (let index = 0; index < policyLinks.length; index++) {
+      const policyLinkElement: HTMLAnchorElement =
+      policyLinks[index].nativeElement;
+
+      policyLinkElement.click();
+
+      expect(policyLinkElement.href).toBe(IVY_FOOTER_LINKS[index].link);
     }
   });
 
