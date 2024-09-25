@@ -7,6 +7,7 @@ import com.axonivy.market.constants.GitHubConstants;
 import com.axonivy.market.constants.MavenConstants;
 import com.axonivy.market.entity.Product;
 import com.axonivy.market.enums.NonStandardProduct;
+import lombok.extern.log4j.Log4j2;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -20,7 +21,7 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Stream;
 
-@Slf4j
+@Log4j2
 public class VersionUtils {
   public static final String NON_NUMERIC_CHAR = "[^0-9.]";
 

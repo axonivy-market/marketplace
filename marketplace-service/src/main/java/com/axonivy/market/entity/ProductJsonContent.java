@@ -24,7 +24,7 @@ public class ProductJsonContent {
   @Id
   @JsonIgnore
   private String id;
-  private String tag;
+  private String version;
   private String productId;
   private String name;
   private String content;

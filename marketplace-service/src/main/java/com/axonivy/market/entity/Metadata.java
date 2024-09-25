@@ -28,15 +28,10 @@ public class Metadata implements Serializable {
   private String id;
   private String productId;
   private LocalDateTime lastUpdated;
-  @Transient
   private String artifactId;
-  @Transient
   private String groupId;
-  @Transient
   private String latest;
-  @Transient
   private String release;
-  @Transient
   private Set<String> versions;
   private String repoUrl;
   private String type;

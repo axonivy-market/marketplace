@@ -12,6 +12,7 @@ import com.axonivy.market.entity.Metadata;
 import com.axonivy.market.model.MavenArtifactModel;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import lombok.extern.log4j.Log4j2;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -24,11 +25,11 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
-@Slf4j
+@Log4j2
 public class MavenUtils {
-  private MavenUtils() {}
-
   private static final ObjectMapper objectMapper = new ObjectMapper();
+
+  private MavenUtils() {}
 
   public static List<Artifact> getMavenArtifactsFromProductJson(ProductJsonContent productJson) {
     if (Objects.isNull(productJson) || StringUtils.isBlank(productJson.getContent())) {
@@ -115,20 +116,25 @@ public class MavenUtils {
       artifactIdByVersion = archivedArtifactBestMatchVersion.getArtifactId();
     }
     groupIdByVersion = groupIdByVersion.replace(CommonConstants.DOT_SEPARATOR, CommonConstants.SLASH);
-    String artifactFileName = String.format(MavenConstants.ARTIFACT_FILE_NAME_FORMAT, artifactIdByVersion, version,
-        artifact.getType());
-    return String.join(CommonConstants.SLASH, repoUrl, groupIdByVersion, artifactIdByVersion, version,
-        artifactFileName);
+    return buildDownloadUrl(artifactIdByVersion, version, artifact.getType(), repoUrl, groupIdByVersion,
+        StringUtils.EMPTY);
   }
 
   public static String buildDownloadUrl(Metadata metadata, String version) {
     String groupIdByVersion = metadata.getGroupId();
-    String artifactIdByVersion = metadata.getArtifactId();
     groupIdByVersion = groupIdByVersion.replace(CommonConstants.DOT_SEPARATOR, CommonConstants.SLASH);
-    String type = String.format(MavenConstants.ARTIFACT_FILE_NAME_FORMAT, artifactIdByVersion, version,
-        metadata.getType());
-    return String.join(CommonConstants.SLASH, metadata.getRepoUrl(), groupIdByVersion, artifactIdByVersion, version,
-        type);
+    return buildDownloadUrl(metadata.getArtifactId(), version, metadata.getType(), metadata.getRepoUrl(),
+        groupIdByVersion, StringUtils.EMPTY);
+  }
+
+  private static String buildDownloadUrl(String artifactId, String baseVersion, String type, String repoUrl,
+      String groupId, String version) {
+    groupId = groupId.replace(CommonConstants.DOT_SEPARATOR, CommonConstants.SLASH);
+    if (StringUtils.isBlank(version)) {
+      version = baseVersion;
+    }
+    String artifactFileName = String.format(MavenConstants.ARTIFACT_FILE_NAME_FORMAT, artifactId, version, type);
+    return String.join(CommonConstants.SLASH, repoUrl, groupId, artifactId, version, artifactFileName);
   }
 
 

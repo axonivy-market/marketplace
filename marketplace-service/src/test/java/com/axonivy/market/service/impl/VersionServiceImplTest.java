@@ -110,7 +110,7 @@ class VersionServiceImplTest {
 
   @Test
   void testGetMavenArtifactsFromProductJsonByVersion() throws IOException {
-    when(productJsonContentRepository.findByProductIdAndTag("adobe-acrobat-connector", "10.0.20")).thenReturn(null);
+    when(productJsonContentRepository.findByProductIdAndVersion("adobe-acrobat-connector", "10.0.20")).thenReturn(null);
 
     Assertions.assertEquals(0,
         versionService.getMavenArtifactsFromProductJsonByTag("10.0.20", "adobe-acrobat-connector").size());
@@ -119,7 +119,7 @@ class VersionServiceImplTest {
         "\"http://repo.url\" }], \"projects\": [], \"dependencies\": [] } }] }";
     ProductJsonContent productJson = new ProductJsonContent();
     productJson.setContent(jsonContent);
-    when(productJsonContentRepository.findByProductIdAndTag("adobe-acrobat-connector", "10.0.20")).thenReturn(
+    when(productJsonContentRepository.findByProductIdAndVersion("adobe-acrobat-connector", "10.0.20")).thenReturn(
         productJson);
     List<Artifact> results = versionService.getMavenArtifactsFromProductJsonByTag("10.0.20", "adobe-acrobat-connector");
   }
@@ -207,7 +207,7 @@ class VersionServiceImplTest {
     mockProductJsonContent.setName("Amazon Comprehend");
     mockProductJsonContent.setContent(mockContent);
 
-    Mockito.when(productJsonContentRepository.findByProductIdAndTag(anyString(), anyString()))
+    Mockito.when(productJsonContentRepository.findByProductIdAndVersion(anyString(), anyString()))
         .thenReturn(mockProductJsonContent);
 
     Map<String, Object> result = versionService.getProductJsonContentByIdAndTag("amazon-comprehend", "11.3.1");
@@ -217,7 +217,7 @@ class VersionServiceImplTest {
 
   @Test
   void testGetProductJsonContentByIdAndVersion_noResult() {
-    Mockito.when(productJsonContentRepository.findByProductIdAndTag(anyString(), anyString())).thenReturn(null);
+    Mockito.when(productJsonContentRepository.findByProductIdAndVersion(anyString(), anyString())).thenReturn(null);
 
     Map<String, Object> result = versionService.getProductJsonContentByIdAndTag("amazon-comprehend", "11.3.1");
 

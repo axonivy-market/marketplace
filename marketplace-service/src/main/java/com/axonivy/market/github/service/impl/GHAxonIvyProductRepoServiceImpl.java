@@ -108,7 +108,7 @@ public class GHAxonIvyProductRepoServiceImpl implements GHAxonIvyProductRepoServ
       updateDependencyContentsFromProductJson(productModuleContent, contents, product);
       extractReadMeFileFromContents(product, contents, productModuleContent);
     } catch (Exception e) {
-      log.error("Cannot get product.json content {}", e.getMessage());
+      log.error("Cannot get product.json content in {} - {}", ghRepository.getName(), e.getMessage());
       return null;
     }
     return productModuleContent;
@@ -180,7 +180,7 @@ public class GHAxonIvyProductRepoServiceImpl implements GHAxonIvyProductRepoServ
       String content = extractProductJsonContent(productJsonFile, productModuleContent.getTag());
       if (ObjectUtils.isNotEmpty(content)) {
         ProductJsonContent jsonContent = new ProductJsonContent();
-        jsonContent.setTag(currentVersion);
+        jsonContent.setVersion(currentVersion);
         jsonContent.setProductId(product.getId());
         ProductFactory.mappingIdForProductJsonContent(jsonContent);
         jsonContent.setName(product.getNames().get(EN_LANGUAGE));

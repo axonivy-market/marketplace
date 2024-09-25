@@ -129,9 +129,9 @@ public class ProductFactory {
   }
 
   public static void mappingIdForProductJsonContent(ProductJsonContent content) {
-    if (StringUtils.isNotBlank(content.getProductId()) && StringUtils.isNotBlank(content.getTag())) {
+    if (StringUtils.isNotBlank(content.getProductId()) && StringUtils.isNotBlank(content.getVersion())) {
       content.setId(
-          String.format(CommonConstants.ID_WITH_NUMBER_PATTERN, content.getProductId(), content.getTag()));
+          String.format(CommonConstants.ID_WITH_NUMBER_PATTERN, content.getProductId(), content.getVersion()));
     }
   }
 }

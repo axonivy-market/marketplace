@@ -79,7 +79,7 @@ public class VersionServiceImpl implements VersionService {
   public Map<String, Object> getProductJsonContentByIdAndTag(String productId, String tag) {
     Map<String, Object> result = new HashMap<>();
     try {
-      ProductJsonContent productJsonContent = productJsonRepo.findByProductIdAndTag(productId, tag);
+      ProductJsonContent productJsonContent = productJsonRepo.findByProductIdAndVersion(productId, tag);
       if (ObjectUtils.isEmpty(productJsonContent)) {
         return new HashMap<>();
       }
@@ -129,7 +129,7 @@ public class VersionServiceImpl implements VersionService {
 
   public List<Artifact> getMavenArtifactsFromProductJsonByTag(String tag,
       String productId) {
-    ProductJsonContent productJson = productJsonRepo.findByProductIdAndTag(productId, tag);
+    ProductJsonContent productJson = productJsonRepo.findByProductIdAndVersion(productId, tag);
     return MavenUtils.getMavenArtifactsFromProductJson(productJson);
   }
 }
