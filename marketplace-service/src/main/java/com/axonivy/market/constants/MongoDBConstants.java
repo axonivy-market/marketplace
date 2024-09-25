@@ -11,6 +11,7 @@ public class MongoDBConstants {
   public static final String TAG = "tag";
   public static final String PROJECT_KEY = "$project";
   public static final String RELEASED_VERSIONS = "releasedVersions";
+  public static final String ARTIFACTS = "artifacts";
   private MongoDBConstants() {
   }
 

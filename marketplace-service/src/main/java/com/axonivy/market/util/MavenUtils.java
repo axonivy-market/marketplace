@@ -14,6 +14,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.util.CollectionUtils;
 import org.springframework.web.client.RestTemplate;
@@ -203,7 +204,7 @@ public class MavenUtils {
     return Metadata.builder().groupId(artifact.getGroupId()).versions(new HashSet<>()).productId(productId).artifactId(
         artifact.getArtifactId()).url(metadataUrl).repoUrl(
         StringUtils.defaultIfEmpty(artifact.getRepoUrl(), MavenConstants.DEFAULT_IVY_MAVEN_BASE_URL)).type(type).name(
-        artifactName).build();
+        artifactName).isProductArtifact(BooleanUtils.isTrue(artifact.getIsProductArtifact())).build();
   }
 
   public static Metadata buildSnapShotMetadataFromVersion(Metadata metadata, String version) {
@@ -211,7 +212,7 @@ public class MavenUtils {
         metadata.getArtifactId(), version);
     return Metadata.builder().url(snapshotMetadataUrl).repoUrl(metadata.getRepoUrl()).groupId(
         metadata.getGroupId()).artifactId(metadata.getArtifactId()).type(metadata.getType()).productId(
-        metadata.getProductId()).name(metadata.getName()).isSnapShotMetadata(true).build();
+        metadata.getProductId()).name(metadata.getName()).isProductArtifact(metadata.isProductArtifact()).build();
   }
 
   public static MavenArtifactModel buildMavenArtifactModelFromSnapShotMetadata(String version,
@@ -253,5 +254,13 @@ public class MavenUtils {
         results.add(convertArtifactToMetadata(productId, artifact, archivedMetadataUrl));
       });
     }
+  }
+
+  public static List<Artifact> filterNonProductArtifactFromMeta(List<Artifact> artifactsFromMeta) {
+    if(CollectionUtils.isEmpty(artifactsFromMeta)) {
+      return artifactsFromMeta;
+    }
+    return artifactsFromMeta.stream()
+        .filter(artifact -> !artifact.getArtifactId().endsWith(MavenConstants.PRODUCT_ARTIFACT_POSTFIX)).toList();
   }
 }

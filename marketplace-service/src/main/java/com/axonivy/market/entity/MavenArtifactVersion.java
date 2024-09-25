@@ -29,4 +29,5 @@ public class MavenArtifactVersion implements Serializable {
   @Id
   private String productId;
   private Map<String, List<MavenArtifactModel>> productArtifactsByVersion;
+  private Map<String, List<MavenArtifactModel>> additionalArtifactsByVersion;
 }

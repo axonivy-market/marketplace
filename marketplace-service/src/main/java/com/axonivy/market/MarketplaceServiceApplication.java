@@ -1,5 +1,6 @@
 package com.axonivy.market;
 
+import com.axonivy.market.service.MetadataService;
 import com.axonivy.market.service.ProductService;
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.lang3.time.StopWatch;
@@ -18,9 +19,11 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 public class MarketplaceServiceApplication {
 
   private final ProductService productService;
+  private final MetadataService metadataService;
 
-  public MarketplaceServiceApplication(ProductService productService) {
+  public MarketplaceServiceApplication(ProductService productService, MetadataService metadataService) {
     this.productService = productService;
+    this.metadataService = metadataService;
   }
 
   public static void main(String[] args) {
@@ -34,15 +37,16 @@ public class MarketplaceServiceApplication {
   }
 
   private void syncProductData() {
-    var watch = new StopWatch();
-    log.warn("Synchronizing Market repo: Started synchronizing data for Axon Ivy Market repo");
-    watch.start();
-    if (productService.syncLatestDataFromMarketRepo()) {
-      log.warn("Synchronizing Market repo: Data is already up to date");
-    } else {
-      watch.stop();
-      log.warn("Synchronizing Market repo: Finished synchronizing data for Axon Ivy Market repo in [{}] milliseconds",
-          watch.getTime());
-    }
+    metadataService.syncAllProductMavenMetadata();
+//    var watch = new StopWatch();
+//    log.warn("Synchronizing Market repo: Started synchronizing data for Axon Ivy Market repo");
+//    watch.start();
+//    if (productService.syncLatestDataFromMarketRepo()) {
+//      log.warn("Synchronizing Market repo: Data is already up to date");
+//    } else {
+//      watch.stop();
+//      log.warn("Synchronizing Market repo: Finished synchronizing data for Axon Ivy Market repo in [{}] milliseconds",
+//          watch.getTime());
+//    }
   }
 }

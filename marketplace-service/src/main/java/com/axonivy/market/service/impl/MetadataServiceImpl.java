@@ -47,19 +47,6 @@ public class MetadataServiceImpl implements MetadataService {
     this.metadataRepo = metadataRepo;
   }
 
-  private static void updateMavenArtifactVersionForStableVersion(MavenArtifactVersion artifactVersionCache,
-      Metadata metadata, String version) {
-    boolean isExist = artifactVersionCache.getProductArtifactsByVersion().computeIfAbsent(version,
-        k -> new ArrayList<>()).stream().anyMatch(
-        artifact -> StringUtils.equals(metadata.getName(), artifact.getName()));
-    if (!isExist) {
-      MavenArtifactModel model = MavenArtifactModel.builder().name(metadata.getName()).downloadUrl(
-          MavenUtils.buildDownloadUrl(metadata, version)).isInvalidArtifact(
-          !metadata.getArtifactId().contains(metadata.getProductId())).build();
-      artifactVersionCache.getProductArtifactsByVersion().get(version).add(model);
-    }
-  }
-
   private void updateMavenArtifactVersionData(Set<Metadata> metadataSet, MavenArtifactVersion artifactVersionCache) {
     for (Metadata metadata : metadataSet) {
       String metadataContent = MavenUtils.getMetadataContentFromUrl(metadata.getUrl());
@@ -73,14 +60,14 @@ public class MetadataServiceImpl implements MetadataService {
 
   @Override
   public void syncAllProductMavenMetadata() {
-    List<Product> products = productRepo.getAllProductWithIdAndReleaseTag();
+    List<Product> products = productRepo.getAllProductWithIdAndReleaseTagAndArtifact();
     log.warn("**MetadataService: Start to sync version for {} product(s)", products.size());
     for (Product product : products) {
       // Set up cache before sync
       String productId = product.getId();
       Set<Metadata> metadataSet = new HashSet<>(metadataRepo.findByProductId(product.getId()));
       MavenArtifactVersion artifactVersionCache = mavenArtifactVersionRepo.findById(product.getId()).orElse(
-          new MavenArtifactVersion(productId, new HashMap<>()));
+          new MavenArtifactVersion(productId, new HashMap<>(), new HashMap<>()));
       MetadataSync syncCache = metadataSyncRepo.findById(product.getId()).orElse(
           MetadataSync.builder().productId(product.getId()).syncedTags(new HashSet<>()).build());
       Set<Artifact> artifactsFromNewTags = new HashSet<>();
@@ -94,10 +81,15 @@ public class MetadataServiceImpl implements MetadataService {
       }
 
       // Sync versions from maven & update artifacts-version table
+      List<Artifact> additionalArtifactFromMeta = MavenUtils.filterNonProductArtifactFromMeta(product.getArtifacts());
       metadataSet.addAll(MavenUtils.convertArtifactsToMetadataSet(artifactsFromNewTags, productId));
+
+      metadataSet.addAll(
+          MavenUtils.convertArtifactsToMetadataSet(new HashSet<>(additionalArtifactFromMeta), productId));
       if (CollectionUtils.isEmpty(metadataSet)) {
         continue;
       }
+      artifactVersionCache.setAdditionalArtifactsByVersion(new HashMap<>());
       updateMavenArtifactVersionData(metadataSet, artifactVersionCache);
 
       // Persist changed
@@ -116,7 +108,7 @@ public class MetadataServiceImpl implements MetadataService {
           updateMavenArtifactVersionForNonReleaseDeVersion(artifactVersionCache, metadata, version);
         }
       } else {
-        updateMavenArtifactVersionForStableVersion(artifactVersionCache, metadata, version);
+        updateMavenArtifactVersionCacheWithModel(artifactVersionCache, version, metadata);
       }
     });
   }
@@ -126,8 +118,18 @@ public class MetadataServiceImpl implements MetadataService {
     Metadata snapShotMetadata = MavenUtils.buildSnapShotMetadataFromVersion(metadata, version);
     MetadataReaderUtils.parseMetadataSnapshotFromString(MavenUtils.getMetadataContentFromUrl(snapShotMetadata.getUrl()),
         snapShotMetadata);
-    artifactVersionCache.getProductArtifactsByVersion().computeIfAbsent(version, k -> new ArrayList<>()).add(
-        MavenUtils.buildMavenArtifactModelFromSnapShotMetadata(version, snapShotMetadata));
+    updateMavenArtifactVersionCacheWithModel(artifactVersionCache, version, snapShotMetadata);
+  }
+
+  private static void updateMavenArtifactVersionCacheWithModel(MavenArtifactVersion artifactVersionCache,
+      String version, Metadata metadata) {
+    if (metadata.isProductArtifact()) {
+      artifactVersionCache.getProductArtifactsByVersion().computeIfAbsent(version, k -> new ArrayList<>()).add(
+          MavenUtils.buildMavenArtifactModelFromSnapShotMetadata(version, metadata));
+    } else {
+      artifactVersionCache.getAdditionalArtifactsByVersion().computeIfAbsent(version, k -> new ArrayList<>()).add(
+          MavenUtils.buildMavenArtifactModelFromSnapShotMetadata(version, metadata));
+    }
   }
 
   private void updateArtifactsFromNonSyncedVersion(String productId, List<String> nonSyncedVersions,

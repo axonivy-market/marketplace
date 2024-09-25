@@ -56,19 +56,19 @@ public class VersionServiceImpl implements VersionService {
 
   public List<MavenArtifactVersionModel> getArtifactsAndVersionToDisplay(String productId, Boolean isShowDevVersion,
       String designerVersion) {
-    Map<String, List<MavenArtifactModel>> cache = mavenArtifactVersionRepository.findById(productId).orElse(
-        MavenArtifactVersion.builder().productId(productId).build()).getProductArtifactsByVersion();
-    List<String> versionsToDisplay = VersionUtils.getVersionsToDisplay(new ArrayList<>(cache.keySet()),
+    MavenArtifactVersion cache = mavenArtifactVersionRepository.findById(productId).orElse(
+        MavenArtifactVersion.builder().productId(productId).build());
+    List<String> versionsToDisplay = VersionUtils.getVersionsToDisplay(new ArrayList<>(cache.getProductArtifactsByVersion().keySet()),
         isShowDevVersion, designerVersion);
 
-    List<Artifact> artifactsFromMeta = getArtifactsFromMeta(productId).stream()
-        .filter(artifact -> !artifact.getArtifactId().endsWith(MavenConstants.PRODUCT_ARTIFACT_POSTFIX)).toList();
+    List<Artifact> artifactsFromMeta = MavenUtils.filterNonProductArtifactFromMeta(getArtifactsFromMeta(productId));
     List<MavenArtifactVersionModel> results = new ArrayList<>();
 
     for (String version : versionsToDisplay) {
       List<MavenArtifactModel> artifactsByVersion = new ArrayList<>();
       artifactsByVersion.addAll(MavenUtils.convertArtifactsToModels(artifactsFromMeta, version));
-      artifactsByVersion.addAll(cache.get(version));
+      artifactsByVersion.addAll(cache.getProductArtifactsByVersion().get(version));
+      artifactsByVersion.addAll(cache.getAdditionalArtifactsByVersion().get(version));
       if (!CollectionUtils.isEmpty(artifactsByVersion)) {
         results.add(new MavenArtifactVersionModel(version, artifactsByVersion));
       }
