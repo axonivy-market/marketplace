@@ -86,12 +86,13 @@ class VersionServiceImplTest {
     ArrayList<MavenArtifactModel> artifactsInVersion = new ArrayList<>();
     artifactsInVersion.add(new MavenArtifactModel());
     when(mavenArtifactVersionRepository.findById("adobe-acrobat-sign-connector")).thenReturn(
-        Optional.ofNullable(MavenArtifactVersion.builder().productId(productId).productArtifactWithVersionReleased(new HashMap<>()).build()));
+        Optional.ofNullable(
+            MavenArtifactVersion.builder().productId(productId).productArtifactsByVersion(new HashMap<>()).build()));
     Assertions.assertEquals(0, versionService.getArtifactsAndVersionToDisplay(productId, false, targetVersion).size());
 
     MavenArtifactVersion proceededData =
-        MavenArtifactVersion.builder().productArtifactWithVersionReleased(new HashMap<>()).build();
-    proceededData.getProductArtifactWithVersionReleased().put(targetVersion, new ArrayList<>());
+        MavenArtifactVersion.builder().productArtifactsByVersion(new HashMap<>()).build();
+    proceededData.getProductArtifactsByVersion().put(targetVersion, new ArrayList<>());
     when(mavenArtifactVersionRepository.findById(Mockito.anyString())).thenReturn(Optional.of(proceededData));
     Assertions.assertEquals(1, versionService.getArtifactsAndVersionToDisplay(productId, false, targetVersion).size());
   }
@@ -203,7 +204,7 @@ class VersionServiceImplTest {
          }
         """;
     mockProductJsonContent.setProductId("amazon-comprehend");
-    mockProductJsonContent.setTag("11.3.1");
+    mockProductJsonContent.setVersion("11.3.1");
     mockProductJsonContent.setName("Amazon Comprehend");
     mockProductJsonContent.setContent(mockContent);
 

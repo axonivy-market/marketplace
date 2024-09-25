@@ -1,14 +1,14 @@
 package com.axonivy.market.util;
 
+import com.axonivy.market.bo.ArchivedArtifact;
+import com.axonivy.market.bo.Artifact;
 import com.axonivy.market.comparator.MavenVersionComparator;
 import com.axonivy.market.constants.CommonConstants;
 import com.axonivy.market.constants.MavenConstants;
 import com.axonivy.market.constants.ProductJsonConstants;
+import com.axonivy.market.entity.Metadata;
 import com.axonivy.market.entity.ProductJsonContent;
 import com.axonivy.market.github.util.GitHubUtils;
-import com.axonivy.market.bo.ArchivedArtifact;
-import com.axonivy.market.bo.Artifact;
-import com.axonivy.market.entity.Metadata;
 import com.axonivy.market.model.MavenArtifactModel;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -16,17 +16,22 @@ import lombok.extern.log4j.Log4j2;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.util.CollectionUtils;
+import org.springframework.web.client.RestTemplate;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
+import java.util.Set;
 
 @Log4j2
 public class MavenUtils {
   private static final ObjectMapper objectMapper = new ObjectMapper();
+  private static final RestTemplate restTemplate = new RestTemplate();
 
   private MavenUtils() {}
 
@@ -166,5 +171,88 @@ public class MavenUtils {
       }
     }
     return results;
+  }
+
+  public static String buildSnapshotMetadataUrlFromArtifactInfo(String repoUrl, String groupId, String artifactId,
+      String snapshotVersion) {
+    if (StringUtils.isAnyBlank(groupId, artifactId)) {
+      return StringUtils.EMPTY;
+    }
+    repoUrl = Optional.ofNullable(repoUrl).orElse(MavenConstants.DEFAULT_IVY_MAVEN_BASE_URL);
+    groupId = groupId.replace(CommonConstants.DOT_SEPARATOR, CommonConstants.SLASH);
+    return String.join(CommonConstants.SLASH, repoUrl, groupId, artifactId, snapshotVersion,
+        MavenConstants.METADATA_URL_POSTFIX);
+  }
+
+  public static String buildMetadataUrlFromArtifactInfo(String repoUrl, String groupId, String artifactId) {
+    if (StringUtils.isAnyBlank(groupId, artifactId)) {
+      return StringUtils.EMPTY;
+    }
+    repoUrl = Optional.ofNullable(repoUrl).orElse(MavenConstants.DEFAULT_IVY_MAVEN_BASE_URL);
+    groupId = groupId.replace(CommonConstants.DOT_SEPARATOR, CommonConstants.SLASH);
+    return String.join(CommonConstants.SLASH, repoUrl, groupId, artifactId, MavenConstants.METADATA_URL_POSTFIX);
+  }
+
+  public static Metadata convertArtifactToMetadata(String productId, Artifact artifact, String metadataUrl) {
+    String artifactName = artifact.getName();
+    if (StringUtils.isBlank(artifactName)) {
+      artifactName = GitHubUtils.convertArtifactIdToName(artifact.getArtifactId());
+    }
+    String type = StringUtils.defaultIfBlank(artifact.getType(), ProductJsonConstants.DEFAULT_PRODUCT_TYPE);
+    artifactName = String.format(MavenConstants.ARTIFACT_NAME_FORMAT, artifactName, type);
+    return Metadata.builder().groupId(artifact.getGroupId()).versions(new HashSet<>()).productId(productId).artifactId(
+        artifact.getArtifactId()).url(metadataUrl).repoUrl(
+        StringUtils.defaultIfEmpty(artifact.getRepoUrl(), MavenConstants.DEFAULT_IVY_MAVEN_BASE_URL)).type(type).name(
+        artifactName).build();
+  }
+
+  public static Metadata buildSnapShotMetadataFromVersion(Metadata metadata, String version) {
+    String snapshotMetadataUrl = buildSnapshotMetadataUrlFromArtifactInfo(metadata.getRepoUrl(), metadata.getGroupId(),
+        metadata.getArtifactId(), version);
+    Metadata snapShotMetadata = Metadata.builder().url(snapshotMetadataUrl).repoUrl(metadata.getRepoUrl()).groupId(
+        metadata.getGroupId()).artifactId(metadata.getArtifactId()).type(metadata.getType()).productId(
+        metadata.getProductId()).name(metadata.getName()).isSnapShotMetadata(true).build();
+    return snapShotMetadata;
+  }
+
+  public static MavenArtifactModel buildMavenArtifactModelFromSnapShotMetadata(String version,
+      Metadata snapShotMetadata) {
+    return new MavenArtifactModel(snapShotMetadata.getName(),
+        buildDownloadUrl(snapShotMetadata.getArtifactId(), version, snapShotMetadata.getType(),
+            snapShotMetadata.getRepoUrl(), snapShotMetadata.getGroupId(), snapShotMetadata.getSnapshotVersionValue()),
+        snapShotMetadata.getArtifactId().contains(snapShotMetadata.getGroupId()));
+  }
+
+  public static String getMetadataContentFromUrl(String metadataUrl) {
+    try {
+      return restTemplate.getForObject(metadataUrl, String.class);
+    } catch (Exception e) {
+      log.error("**MetadataService: Failed to fetch metadata from url {}", metadataUrl);
+      return StringUtils.EMPTY;
+    }
+  }
+
+  public static Set<Metadata> convertArtifactsToMetadataSet(Set<Artifact> artifacts, String productId) {
+    Set<Metadata> results = new HashSet<>();
+    if (!CollectionUtils.isEmpty(artifacts)) {
+      artifacts.forEach(artifact -> {
+        String metadataUrl = buildMetadataUrlFromArtifactInfo(artifact.getRepoUrl(), artifact.getGroupId(),
+            artifact.getArtifactId());
+        results.add(convertArtifactToMetadata(productId, artifact, metadataUrl));
+        extractMetaDataFromArchivedArtifacts(productId, artifact, results);
+      });
+    }
+    return results;
+  }
+
+  public static void extractMetaDataFromArchivedArtifacts(String productId, Artifact artifact,
+      Set<Metadata> results) {
+    if (!CollectionUtils.isEmpty(artifact.getArchivedArtifacts())) {
+      artifact.getArchivedArtifacts().forEach(archivedArtifact -> {
+        String archivedMetadataUrl = buildMetadataUrlFromArtifactInfo(artifact.getRepoUrl(),
+            archivedArtifact.getGroupId(), archivedArtifact.getArtifactId());
+        results.add(convertArtifactToMetadata(productId, artifact, archivedMetadataUrl));
+      });
+    }
   }
 }

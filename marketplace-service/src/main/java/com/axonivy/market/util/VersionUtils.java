@@ -5,6 +5,7 @@ import com.axonivy.market.comparator.MavenVersionComparator;
 import com.axonivy.market.constants.CommonConstants;
 import com.axonivy.market.constants.GitHubConstants;
 import com.axonivy.market.constants.MavenConstants;
+import com.axonivy.market.entity.Metadata;
 import com.axonivy.market.entity.Product;
 import com.axonivy.market.enums.NonStandardProduct;
 import lombok.extern.log4j.Log4j2;
@@ -161,5 +162,15 @@ public class VersionUtils {
     }
     return product.getReleasedVersions().stream().map(
         version -> convertVersionToTag(product.getId(), version)).toList();
+  }
+
+  public static Metadata buildSnapShotMetadata(Metadata metadata, String version) {
+    String snapshotMetadataUrl = MavenUtils.buildSnapshotMetadataUrlFromArtifactInfo(metadata.getRepoUrl(),
+        metadata.getGroupId(),
+        metadata.getArtifactId(), version);
+    Metadata snapShotMetadata = Metadata.builder().url(snapshotMetadataUrl).repoUrl(metadata.getRepoUrl()).groupId(
+        metadata.getGroupId()).artifactId(metadata.getArtifactId()).type(metadata.getType()).productId(
+        metadata.getProductId()).name(metadata.getName()).isSnapShotMetadata(true).build();
+    return snapShotMetadata;
   }
 }

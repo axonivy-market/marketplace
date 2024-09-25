@@ -57,7 +57,7 @@ public class VersionServiceImpl implements VersionService {
   public List<MavenArtifactVersionModel> getArtifactsAndVersionToDisplay(String productId, Boolean isShowDevVersion,
       String designerVersion) {
     Map<String, List<MavenArtifactModel>> cache = mavenArtifactVersionRepository.findById(productId).orElse(
-        MavenArtifactVersion.builder().productId(productId).build()).getProductArtifactWithVersionReleased();
+        MavenArtifactVersion.builder().productId(productId).build()).getProductArtifactsByVersion();
     List<String> versionsToDisplay = VersionUtils.getVersionsToDisplay(new ArrayList<>(cache.keySet()),
         isShowDevVersion, designerVersion);
 

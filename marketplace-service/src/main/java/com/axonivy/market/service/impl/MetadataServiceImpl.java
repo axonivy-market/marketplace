@@ -1,15 +1,11 @@
 package com.axonivy.market.service.impl;
 
 import com.axonivy.market.bo.Artifact;
-import com.axonivy.market.constants.CommonConstants;
-import com.axonivy.market.constants.MavenConstants;
-import com.axonivy.market.constants.ProductJsonConstants;
 import com.axonivy.market.entity.MavenArtifactVersion;
 import com.axonivy.market.entity.Metadata;
 import com.axonivy.market.entity.MetadataSync;
 import com.axonivy.market.entity.Product;
 import com.axonivy.market.entity.ProductJsonContent;
-import com.axonivy.market.github.util.GitHubUtils;
 import com.axonivy.market.model.MavenArtifactModel;
 import com.axonivy.market.repository.MavenArtifactVersionRepository;
 import com.axonivy.market.repository.MetadataRepository;
@@ -24,13 +20,11 @@ import lombok.extern.log4j.Log4j2;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
-import org.springframework.web.client.RestTemplate;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Optional;
 import java.util.Set;
 
 @Service
@@ -41,7 +35,6 @@ public class MetadataServiceImpl implements MetadataService {
   private final ProductJsonContentRepository productJsonRepo;
   private final MavenArtifactVersionRepository mavenArtifactVersionRepo;
   private final MetadataRepository metadataRepo;
-  private final RestTemplate restTemplate = new RestTemplate();
 
 
   public MetadataServiceImpl(ProductRepository productRepo, MetadataSyncRepository metadataSyncRepo,
@@ -56,44 +49,25 @@ public class MetadataServiceImpl implements MetadataService {
 
   private static void updateMavenArtifactVersionForStableVersion(MavenArtifactVersion artifactVersionCache,
       Metadata metadata, String version) {
-    boolean isExist = artifactVersionCache.getProductArtifactWithVersionReleased().computeIfAbsent(version,
+    boolean isExist = artifactVersionCache.getProductArtifactsByVersion().computeIfAbsent(version,
         k -> new ArrayList<>()).stream().anyMatch(
         artifact -> StringUtils.equals(metadata.getName(), artifact.getName()));
     if (!isExist) {
       MavenArtifactModel model = MavenArtifactModel.builder().name(metadata.getName()).downloadUrl(
           MavenUtils.buildDownloadUrl(metadata, version)).isInvalidArtifact(
           !metadata.getArtifactId().contains(metadata.getProductId())).build();
-      artifactVersionCache.getProductArtifactWithVersionReleased().get(version).add(model);
+      artifactVersionCache.getProductArtifactsByVersion().get(version).add(model);
     }
   }
 
-  private static MavenArtifactModel buildMavenArtifactModelFromSnapShotMetadata(String version,
-      Metadata snapShotMetadata) {
-    return new MavenArtifactModel(snapShotMetadata.getName(),
-        MavenUtils.buildDownloadUrl(snapShotMetadata.getArtifactId(), version, snapShotMetadata.getType(),
-            snapShotMetadata.getRepoUrl(), snapShotMetadata.getGroupId(), snapShotMetadata.getSnapshotVersionValue()),
-        snapShotMetadata.getArtifactId().contains(snapShotMetadata.getGroupId()));
-  }
-
-  private String getMetadataContent(String metadataUrl) {
-    try {
-      return restTemplate.getForObject(metadataUrl, String.class);
-    } catch (Exception e) {
-      log.error("**MetadataService: Failed to fetch metadata from url {}", metadataUrl);
-      return StringUtils.EMPTY;
-    }
-  }
-
-  private void updateMavenArtifactVersionData(Set<Metadata> metadataSet,
-      MavenArtifactVersion artifactVersionCache) {
+  private void updateMavenArtifactVersionData(Set<Metadata> metadataSet, MavenArtifactVersion artifactVersionCache) {
     for (Metadata metadata : metadataSet) {
-      String metadataContent = getMetadataContent(metadata.getUrl());
+      String metadataContent = MavenUtils.getMetadataContentFromUrl(metadata.getUrl());
       if (StringUtils.isBlank(metadataContent)) {
         continue;
       }
       MetadataReaderUtils.parseMetadataFromString(metadataContent, metadata);
       updateMavenArtifactVersionFromMetadata(artifactVersionCache, metadata);
-
     }
   }
 
@@ -120,7 +94,7 @@ public class MetadataServiceImpl implements MetadataService {
       }
 
       // Sync versions from maven & update artifacts-version table
-      metadataSet.addAll(convertArtifactsToMetadataSet(artifactsFromNewTags, productId));
+      metadataSet.addAll(MavenUtils.convertArtifactsToMetadataSet(artifactsFromNewTags, productId));
       if (CollectionUtils.isEmpty(metadataSet)) {
         continue;
       }
@@ -149,20 +123,11 @@ public class MetadataServiceImpl implements MetadataService {
 
   private void updateMavenArtifactVersionForNonReleaseDeVersion(MavenArtifactVersion artifactVersionCache,
       Metadata metadata, String version) {
-    Metadata snapShotMetadata = buildSnapShotMetaData(metadata, version);
-    MetadataReaderUtils.parseMetadataSnapshotFromString(getMetadataContent(snapShotMetadata.getUrl()),
+    Metadata snapShotMetadata = MavenUtils.buildSnapShotMetadataFromVersion(metadata, version);
+    MetadataReaderUtils.parseMetadataSnapshotFromString(MavenUtils.getMetadataContentFromUrl(snapShotMetadata.getUrl()),
         snapShotMetadata);
-    artifactVersionCache.getProductArtifactWithVersionReleased().computeIfAbsent(version, k -> new ArrayList<>()).add(
-        buildMavenArtifactModelFromSnapShotMetadata(version, snapShotMetadata));
-  }
-
-  private Metadata buildSnapShotMetaData(Metadata metadata, String version) {
-    String snapshotMetadataUrl = buildSnapshotMetadataUrlFromArtifactInfo(metadata.getRepoUrl(), metadata.getGroupId(),
-        metadata.getArtifactId(), version);
-    Metadata snapShotMetadata = Metadata.builder().url(snapshotMetadataUrl).repoUrl(metadata.getRepoUrl()).groupId(
-        metadata.getGroupId()).artifactId(metadata.getArtifactId()).type(metadata.getType()).productId(
-        metadata.getProductId()).name(metadata.getName()).isSnapShotMetadata(true).build();
-    return snapShotMetadata;
+    artifactVersionCache.getProductArtifactsByVersion().computeIfAbsent(version, k -> new ArrayList<>()).add(
+        MavenUtils.buildMavenArtifactModelFromSnapShotMetadata(version, snapShotMetadata));
   }
 
   private void updateArtifactsFromNonSyncedVersion(String productId, List<String> nonSyncedVersions,
@@ -182,61 +147,5 @@ public class MetadataServiceImpl implements MetadataService {
       releasedVersion.removeAll(cache.getSyncedTags());
     }
     return releasedVersion;
-  }
-
-  private Set<Metadata> convertArtifactsToMetadataSet(Set<Artifact> artifacts, String productId) {
-    Set<Metadata> results = new HashSet<>();
-    if (!CollectionUtils.isEmpty(artifacts)) {
-      artifacts.forEach(artifact -> {
-        String metadataUrl = buildMetadataUrlFromArtifactInfo(artifact.getRepoUrl(), artifact.getGroupId(),
-            artifact.getArtifactId());
-        results.add(convertArtifactToMetadata(productId, artifact, metadataUrl));
-        extractedMetaDataFromArchivedArtifacts(productId, artifact, results);
-      });
-    }
-    return results;
-  }
-
-  private void extractedMetaDataFromArchivedArtifacts(String productId, Artifact artifact, Set<Metadata> results) {
-    if (!CollectionUtils.isEmpty(artifact.getArchivedArtifacts())) {
-      artifact.getArchivedArtifacts().forEach(archivedArtifact -> {
-        String archivedMetadataUrl = buildMetadataUrlFromArtifactInfo(artifact.getRepoUrl(),
-            archivedArtifact.getGroupId(), archivedArtifact.getArtifactId());
-        results.add(convertArtifactToMetadata(productId, artifact, archivedMetadataUrl));
-      });
-    }
-  }
-
-  private Metadata convertArtifactToMetadata(String productId, Artifact artifact, String metadataUrl) {
-    String artifactName = artifact.getName();
-    if (StringUtils.isBlank(artifactName)) {
-      artifactName = GitHubUtils.convertArtifactIdToName(artifact.getArtifactId());
-    }
-    String type = StringUtils.defaultIfBlank(artifact.getType(), ProductJsonConstants.DEFAULT_PRODUCT_TYPE);
-    artifactName = String.format(MavenConstants.ARTIFACT_NAME_FORMAT, artifactName, type);
-    return Metadata.builder().groupId(artifact.getGroupId()).versions(new HashSet<>()).productId(productId).artifactId(
-        artifact.getArtifactId()).url(metadataUrl).repoUrl(
-        StringUtils.defaultIfEmpty(artifact.getRepoUrl(), MavenConstants.DEFAULT_IVY_MAVEN_BASE_URL)).type(type).name(
-        artifactName).build();
-  }
-
-  private String buildMetadataUrlFromArtifactInfo(String repoUrl, String groupId, String artifactId) {
-    if (StringUtils.isAnyBlank(groupId, artifactId)) {
-      return StringUtils.EMPTY;
-    }
-    repoUrl = Optional.ofNullable(repoUrl).orElse(MavenConstants.DEFAULT_IVY_MAVEN_BASE_URL);
-    groupId = groupId.replace(CommonConstants.DOT_SEPARATOR, CommonConstants.SLASH);
-    return String.join(CommonConstants.SLASH, repoUrl, groupId, artifactId, MavenConstants.METADATA_URL_POSTFIX);
-  }
-
-  private String buildSnapshotMetadataUrlFromArtifactInfo(String repoUrl, String groupId, String artifactId,
-      String snapshotVersion) {
-    if (StringUtils.isAnyBlank(groupId, artifactId)) {
-      return StringUtils.EMPTY;
-    }
-    repoUrl = Optional.ofNullable(repoUrl).orElse(MavenConstants.DEFAULT_IVY_MAVEN_BASE_URL);
-    groupId = groupId.replace(CommonConstants.DOT_SEPARATOR, CommonConstants.SLASH);
-    return String.join(CommonConstants.SLASH, repoUrl, groupId, artifactId, snapshotVersion,
-        MavenConstants.METADATA_URL_POSTFIX);
   }
 }
