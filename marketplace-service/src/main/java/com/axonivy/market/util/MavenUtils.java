@@ -209,10 +209,9 @@ public class MavenUtils {
   public static Metadata buildSnapShotMetadataFromVersion(Metadata metadata, String version) {
     String snapshotMetadataUrl = buildSnapshotMetadataUrlFromArtifactInfo(metadata.getRepoUrl(), metadata.getGroupId(),
         metadata.getArtifactId(), version);
-    Metadata snapShotMetadata = Metadata.builder().url(snapshotMetadataUrl).repoUrl(metadata.getRepoUrl()).groupId(
+    return Metadata.builder().url(snapshotMetadataUrl).repoUrl(metadata.getRepoUrl()).groupId(
         metadata.getGroupId()).artifactId(metadata.getArtifactId()).type(metadata.getType()).productId(
         metadata.getProductId()).name(metadata.getName()).isSnapShotMetadata(true).build();
-    return snapShotMetadata;
   }
 
   public static MavenArtifactModel buildMavenArtifactModelFromSnapShotMetadata(String version,

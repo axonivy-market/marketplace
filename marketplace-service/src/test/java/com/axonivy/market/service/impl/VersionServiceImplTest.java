@@ -110,7 +110,7 @@ class VersionServiceImplTest {
   }
 
   @Test
-  void testGetMavenArtifactsFromProductJsonByVersion() throws IOException {
+  void testGetMavenArtifactsFromProductJsonByVersion() {
     when(productJsonContentRepository.findByProductIdAndVersion("adobe-acrobat-connector", "10.0.20")).thenReturn(null);
 
     Assertions.assertEquals(0,
@@ -131,7 +131,6 @@ class VersionServiceImplTest {
 
   @Test
   void testFindArchivedArtifactInfoBestMatchWithVersion() {
-    String targetArtifactId = "adobe-acrobat-sign-connector";
     String targetVersion = "10.0.10";
     ArchivedArtifact result = MavenUtils.findArchivedArtifactInfoBestMatchWithVersion(
         targetVersion, Collections.emptyList());

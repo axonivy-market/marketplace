@@ -163,14 +163,4 @@ public class VersionUtils {
     return product.getReleasedVersions().stream().map(
         version -> convertVersionToTag(product.getId(), version)).toList();
   }
-
-  public static Metadata buildSnapShotMetadata(Metadata metadata, String version) {
-    String snapshotMetadataUrl = MavenUtils.buildSnapshotMetadataUrlFromArtifactInfo(metadata.getRepoUrl(),
-        metadata.getGroupId(),
-        metadata.getArtifactId(), version);
-    Metadata snapShotMetadata = Metadata.builder().url(snapshotMetadataUrl).repoUrl(metadata.getRepoUrl()).groupId(
-        metadata.getGroupId()).artifactId(metadata.getArtifactId()).type(metadata.getType()).productId(
-        metadata.getProductId()).name(metadata.getName()).isSnapShotMetadata(true).build();
-    return snapShotMetadata;
-  }
 }
