@@ -98,18 +98,22 @@ describe('FooterComponent', () => {
     }
   });
 
-  it('should navigate to the correct URL when the policy link icon is clicked', () => {
+  it('should navigate to the correct URL when the policy link text is clicked', () => {
     const policyLinks = fixture.debugElement.queryAll(
       By.css('.policy-link')
     );
 
-    for (let index = 0; index < policyLinks.length; index++) {
+    const policyLinksFromConstants = IVY_FOOTER_LINKS.filter((element) => element.link.trim().length !== 0);
+    policyLinksFromConstants.forEach((e) => console.log(e));
+
+
+    for (let index = 0; index < policyLinksFromConstants.length; index++) {
       const policyLinkElement: HTMLAnchorElement =
       policyLinks[index].nativeElement;
 
       policyLinkElement.click();
 
-      expect(policyLinkElement.href).toBe(IVY_FOOTER_LINKS[index].link);
+      expect(policyLinkElement.href).toBe(policyLinksFromConstants[index].link);
     }
   });
 

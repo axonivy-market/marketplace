@@ -61,7 +61,7 @@ export const IVY_FOOTER_LINKS = [
   {
     containerStyleClass: 'w-md-100 footer__ivy-tag',
     label: 'common.footer.ivyCompanyInfo',
-    link: 'https://www.axonivy.com/'
+    link: ''
   },
   {
     containerStyleClass: 'footer__ivy-policy-tag',
