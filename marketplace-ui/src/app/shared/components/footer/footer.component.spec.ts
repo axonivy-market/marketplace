@@ -66,7 +66,7 @@ describe('FooterComponent', () => {
     const ivyTag = fixture.nativeElement.querySelector('.footer__ivy-tag');
 
     const ivyTermOfService = fixture.nativeElement.querySelector(
-      '.footer__ivy-term-of-service-tag'
+      '.footer__ivy-policy-tag'
     );
 
     expect(ivyTag.getBoundingClientRect().top).toBeLessThan(
@@ -104,8 +104,6 @@ describe('FooterComponent', () => {
     );
 
     const policyLinksFromConstants = IVY_FOOTER_LINKS.filter((element) => element.link.trim().length !== 0);
-    policyLinksFromConstants.forEach((e) => console.log(e));
-
 
     for (let index = 0; index < policyLinksFromConstants.length; index++) {
       const policyLinkElement: HTMLAnchorElement =
