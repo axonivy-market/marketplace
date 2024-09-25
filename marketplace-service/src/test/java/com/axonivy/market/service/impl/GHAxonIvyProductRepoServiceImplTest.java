@@ -139,7 +139,7 @@ class GHAxonIvyProductRepoServiceImplTest {
         }
         """;
 
-    JsonNode dataNode = objectMapper.readTree(mockJsonNode);
+    dataNode = objectMapper.readTree(mockJsonNode);
     boolean isDependency = true;
 
     MavenUtils.extractMavenArtifactFromJsonNode(dataNode, isDependency, artifacts,
@@ -460,14 +460,6 @@ class GHAxonIvyProductRepoServiceImplTest {
   void test_updateDependencyContentsFromProductJson() throws IOException {
     try (MockedStatic<GitHubUtils> mockedGitHubUtils = Mockito.mockStatic(GitHubUtils.class)) {
       ArgumentCaptor<ProductJsonContent> argumentCaptor = ArgumentCaptor.forClass(ProductJsonContent.class);
-      String readmeContentWithImage = """
-          #Product-name
-          Test README
-          ## Demo
-          Demo content
-          ## Setup
-          Setup content (image.png)
-          """;
 
       GHContent mockContent = mock(GHContent.class);
       when(mockContent.isDirectory()).thenReturn(true);
