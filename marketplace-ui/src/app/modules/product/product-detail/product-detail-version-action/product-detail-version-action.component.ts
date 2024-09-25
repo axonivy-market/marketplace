@@ -5,7 +5,6 @@ import {
   computed,
   ElementRef,
   EventEmitter,
-  HostListener,
   inject,
   Input,
   model,
@@ -55,9 +54,6 @@ export class ProductDetailVersionActionComponent implements AfterViewInit {
   @Output() installationCount = new EventEmitter<number>();
   @Input() productId!: string;
   @Input() actionType!: ProductDetailActionType;
-
-  @ViewChild('artifactDownloadButton') artifactDownloadButton!: ElementRef;
-  @ViewChild('artifactDownloadDialog') artifactDownloadDialog!: ElementRef;
 
   @Input() product!: ProductDetail;
   selectedVersion = model<string>('');
@@ -154,44 +150,8 @@ export class ProductDetailVersionActionComponent implements AfterViewInit {
       this.getVersionWithArtifact();
     }
     this.isDropDownDisplayed.set(!this.isDropDownDisplayed());
-    this.changeDetectorRef.detectChanges();
-    this.reLocaleDialog();
   }
-
-  @HostListener('window:resize', ['$event'])
-  onResize() {
-    this.reLocaleDialog();
-  }
-
-  reLocaleDialog() {
-    const buttonPosition = this.getElementPosition(this.artifactDownloadButton);
-    const dialogPosition = this.getElementPosition(this.artifactDownloadDialog);
-    if (buttonPosition && dialogPosition) {
-      const dialogElement = this.artifactDownloadDialog.nativeElement;
-
-      dialogElement.style.position = 'absolute';
-      dialogElement.style.top = `${buttonPosition.y + buttonPosition.height}px`;
-
-      // Align the dialog to the center of the button
-      const dialogWidth = dialogElement.offsetWidth;
-      const buttonCenterX = buttonPosition.x + buttonPosition.width / 2;
-      dialogElement.style.left = `${buttonCenterX - dialogWidth / 2}px`;
-    }
-  }
-
-  getElementPosition(element: ElementRef) {
-    if (element?.nativeElement) {
-      const rect = element.nativeElement.getBoundingClientRect();
-      return {
-        x: rect.left + window.scrollX,
-        y: rect.top + window.scrollY,
-        width: rect.width,
-        height: rect.height
-      };
-    }
-    return null;
-  }
-
+  
   getVersionWithArtifact(ignoreRouteVersion = false) {
     this.isArtifactLoading.set(true);
     this.sanitizeDataBeforeFetching();
