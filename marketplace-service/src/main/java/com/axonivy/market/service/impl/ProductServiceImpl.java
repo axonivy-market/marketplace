@@ -69,6 +69,7 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Predicate;
 
+import static com.axonivy.market.constants.CommonConstants.SLASH;
 import static com.axonivy.market.constants.ProductJsonConstants.LOGO_FILE;
 import static com.axonivy.market.enums.DocumentField.MARKET_DIRECTORY;
 import static com.axonivy.market.enums.DocumentField.SHORT_DESCRIPTIONS;
@@ -238,8 +239,9 @@ public class ProductServiceImpl implements ProductService {
 
   private void removeProductAndImage(GitHubFile file) {
     if (FileType.META == file.getType()) {
-      String[] splitMetaJsonPath = file.getFileName().split("/");
-      String extractMarketDirectory = file.getFileName().replace(splitMetaJsonPath[splitMetaJsonPath.length - 1], "");
+      String[] splitMetaJsonPath = file.getFileName().split(SLASH);
+      String extractMarketDirectory = file.getFileName().replace(splitMetaJsonPath[splitMetaJsonPath.length - 1],
+          EMPTY);
       List<Product> productList = productRepository.findByMarketDirectory(extractMarketDirectory);
       if (ObjectUtils.isNotEmpty(productList)) {
         String productId = productList.get(0).getId();
