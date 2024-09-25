@@ -6,10 +6,12 @@ import com.axonivy.market.constants.GitHubConstants;
 import com.axonivy.market.constants.ProductJsonConstants;
 import com.axonivy.market.criteria.ProductSearchCriteria;
 import com.axonivy.market.entity.GitHubRepoMeta;
+import com.axonivy.market.entity.Image;
 import com.axonivy.market.entity.Product;
 import com.axonivy.market.entity.ProductCustomSort;
 import com.axonivy.market.entity.ProductModuleContent;
 import com.axonivy.market.enums.ErrorCode;
+import com.axonivy.market.enums.FileStatus;
 import com.axonivy.market.enums.FileType;
 import com.axonivy.market.enums.Language;
 import com.axonivy.market.enums.SortOption;
@@ -67,9 +69,12 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Predicate;
 
+import static com.axonivy.market.constants.CommonConstants.SLASH;
 import static com.axonivy.market.constants.ProductJsonConstants.LOGO_FILE;
 import static com.axonivy.market.enums.DocumentField.MARKET_DIRECTORY;
 import static com.axonivy.market.enums.DocumentField.SHORT_DESCRIPTIONS;
+import static com.axonivy.market.enums.FileStatus.ADDED;
+import static com.axonivy.market.enums.FileStatus.MODIFIED;
 import static java.util.Optional.ofNullable;
 import static org.apache.commons.lang3.StringUtils.EMPTY;
 
@@ -216,59 +221,79 @@ public class ProductServiceImpl implements ProductService {
       String filePath = file.getFileName();
       var parentPath = filePath.replace(FileType.META.getFileName(), EMPTY).replace(FileType.LOGO.getFileName(), EMPTY);
       var files = groupGitHubFiles.getOrDefault(parentPath, new ArrayList<>());
-      files.sort((file1, file2) -> GitHubUtils.sortMetaJsonFirst(file1.getFileName(), file2.getFileName()));
       files.add(file);
+      files.sort((file1, file2) -> GitHubUtils.sortMetaJsonFirst(file1.getFileName(), file2.getFileName()));
       groupGitHubFiles.putIfAbsent(parentPath, files);
     }
 
-    groupGitHubFiles.entrySet().forEach(ghFileEntity -> {
-      for (var file : ghFileEntity.getValue()) {
-        Product product = new Product();
-        GHContent fileContent;
-        try {
-          fileContent = gitHubService.getGHContent(axonIvyMarketRepoService.getRepository(), file.getFileName(),
-              marketRepoBranch);
-        } catch (IOException e) {
-          log.error("Get GHContent failed: ", e);
-          continue;
-        }
-
-        ProductFactory.mappingByGHContent(product, fileContent);
-        if (FileType.META == file.getType()) {
-          transferComputedDataFromDB(product);
-          modifyProductByMetaContent(file, product);
+    groupGitHubFiles.forEach((key, value) -> {
+      for (var file : value) {
+        if (file.getStatus() == MODIFIED || file.getStatus() == ADDED) {
+          modifyProductMetaOrLogo(file, key);
         } else {
-          modifyProductLogo(ghFileEntity.getKey(), file, product, fileContent);
+          removeProductAndImage(file);
         }
       }
     });
   }
 
-  private void modifyProductLogo(String parentPath, GitHubFile file, Product product, GHContent fileContent) {
-    Product result;
-    switch (file.getStatus()) {
-      case MODIFIED, ADDED:
-        var searchCriteria = new ProductSearchCriteria();
-        searchCriteria.setKeyword(parentPath);
-        searchCriteria.setFields(List.of(MARKET_DIRECTORY));
-        result = productRepository.findByCriteria(searchCriteria);
-        if (result != null) {
-          Optional.ofNullable(imageService.mappingImageFromGHContent(result, fileContent, true)).ifPresent(image -> {
-            imageRepository.deleteById(result.getLogoId());
-            result.setLogoId(image.getId());
-            productRepository.save(result);
-          });
+  private void removeProductAndImage(GitHubFile file) {
+    if (FileType.META == file.getType()) {
+      String[] splitMetaJsonPath = file.getFileName().split(SLASH);
+      String extractMarketDirectory = file.getFileName().replace(splitMetaJsonPath[splitMetaJsonPath.length - 1],
+          EMPTY);
+      List<Product> productList = productRepository.findByMarketDirectory(extractMarketDirectory);
+      if (ObjectUtils.isNotEmpty(productList)) {
+        String productId = productList.get(0).getId();
+        productRepository.deleteById(productId);
+        imageRepository.deleteAllByProductId(productId);
+      }
+    } else {
+      List<Image> images = imageRepository.findByImageUrlEndsWithIgnoreCase(file.getFileName());
+      if (ObjectUtils.isNotEmpty(images)) {
+        Image currentImage = images.get(0);
+        productRepository.deleteById(currentImage.getProductId());
+        imageRepository.deleteAllByProductId(currentImage.getProductId());
+      }
+    }
+  }
+
+  private void modifyProductMetaOrLogo(GitHubFile file, String parentPath) {
+    try {
+      GHContent fileContent = gitHubService.getGHContent(axonIvyMarketRepoService.getRepository(), file.getFileName(),
+          marketRepoBranch);
+      updateProductByMetaJsonAndLogo(fileContent, file, parentPath);
+    } catch (IOException e) {
+      log.error("Get GHContent failed: ", e);
+    }
+  }
+
+  private void updateProductByMetaJsonAndLogo(GHContent fileContent, GitHubFile file, String parentPath) {
+    Product product = new Product();
+    ProductFactory.mappingByGHContent(product, fileContent);
+    if (FileType.META == file.getType()) {
+      transferComputedDataFromDB(product);
+      productRepository.save(product);
+    } else {
+      modifyProductLogo(parentPath, fileContent);
+    }
+  }
+
+  private void modifyProductLogo(String parentPath, GHContent fileContent) {
+    var searchCriteria = new ProductSearchCriteria();
+    searchCriteria.setKeyword(parentPath);
+    searchCriteria.setFields(List.of(MARKET_DIRECTORY));
+    Product result = productRepository.findByCriteria(searchCriteria);
+    if (result != null) {
+      Optional.ofNullable(imageService.mappingImageFromGHContent(result, fileContent, true)).ifPresent(image -> {
+        if (StringUtils.isNotBlank(result.getLogoId())) {
+          imageRepository.deleteById(result.getLogoId());
         }
-        break;
-      case REMOVED:
-        result = productRepository.findByLogoId(product.getLogoId());
-        if (result != null) {
-          imageRepository.deleteAllByProductId(result.getId());
-          productRepository.deleteById(result.getId());
-        }
-        break;
-      default:
-        break;
+        result.setLogoId(image.getId());
+        productRepository.save(result);
+      });
+    } else {
+      log.info("There is no product to update the logo with path {}", parentPath);
     }
   }
 
@@ -318,19 +343,6 @@ public class ProductServiceImpl implements ProductService {
       isLastCommitCovered = true;
     }
     return isLastCommitCovered;
-  }
-
-  private void modifyProductByMetaContent(GitHubFile file, Product product) {
-    switch (file.getStatus()) {
-      case MODIFIED, ADDED:
-        productRepository.save(product);
-        break;
-      case REMOVED:
-        productRepository.deleteById(product.getId());
-        break;
-      default:
-        break;
-    }
   }
 
   private void updateLatestReleaseTagContentsFromProductRepo() {
