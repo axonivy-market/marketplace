@@ -4,9 +4,10 @@ import com.axonivy.market.comparator.LatestVersionComparator;
 import com.axonivy.market.comparator.MavenVersionComparator;
 import com.axonivy.market.constants.CommonConstants;
 import com.axonivy.market.constants.GitHubConstants;
-import com.axonivy.market.constants.MavenConstants;
 import com.axonivy.market.entity.Product;
 import com.axonivy.market.enums.NonStandardProduct;
+import lombok.AccessLevel;
+import lombok.NoArgsConstructor;
 import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.util.Strings;
@@ -18,11 +19,11 @@ import java.util.List;
 import java.util.Objects;
 import java.util.stream.Stream;
 
+import static com.axonivy.market.constants.MavenConstants.*;
+
+@NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class VersionUtils {
   public static final String NON_NUMERIC_CHAR = "[^0-9.]";
-
-  private VersionUtils() {
-  }
 
   public static List<String> getVersionsToDisplay(List<String> versions, Boolean isShowDevVersion,
       String designerVersion) {
@@ -32,8 +33,8 @@ public class VersionUtils {
           new LatestVersionComparator()).toList();
     }
     if (BooleanUtils.isTrue(isShowDevVersion)) {
-      return versionStream.filter(version -> isOfficialVersionOrUnReleasedDevVersion(versions, version))
-          .sorted(new LatestVersionComparator()).toList();
+      return versionStream.filter(version -> isOfficialVersionOrUnReleasedDevVersion(versions, version)).sorted(
+          new LatestVersionComparator()).toList();
     }
     return versions.stream().filter(VersionUtils::isReleasedVersion).sorted(new LatestVersionComparator()).toList();
   }
@@ -61,9 +62,9 @@ public class VersionUtils {
     if (!isValidFormatReleasedVersion(version)) {
       return false;
     } else if (isSnapshotVersion(version)) {
-      bugfixVersion = getBugfixVersion(version.replace(MavenConstants.SNAPSHOT_RELEASE_POSTFIX, StringUtils.EMPTY));
+      bugfixVersion = getBugfixVersion(version.replace(SNAPSHOT_RELEASE_POSTFIX, StringUtils.EMPTY));
     } else {
-      bugfixVersion = getBugfixVersion(version.split(MavenConstants.SPRINT_RELEASE_POSTFIX)[0]);
+      bugfixVersion = getBugfixVersion(version.split(SPRINT_RELEASE_POSTFIX)[0]);
     }
     return versions.stream().noneMatch(
         currentVersion -> !currentVersion.equals(version) && isReleasedVersion(currentVersion) && getBugfixVersion(
@@ -71,15 +72,15 @@ public class VersionUtils {
   }
 
   public static boolean isSnapshotVersion(String version) {
-    return version.endsWith(MavenConstants.SNAPSHOT_RELEASE_POSTFIX);
+    return version.endsWith(SNAPSHOT_RELEASE_POSTFIX);
   }
 
   public static boolean isSprintVersion(String version) {
-    return version.contains(MavenConstants.SPRINT_RELEASE_POSTFIX);
+    return version.contains(SPRINT_RELEASE_POSTFIX);
   }
 
   public static boolean isValidFormatReleasedVersion(String version) {
-    return StringUtils.isNumeric(version.split(MavenConstants.MAIN_VERSION_REGEX)[0]);
+    return StringUtils.isNumeric(version.split(MAIN_VERSION_REGEX)[0]);
   }
 
   public static boolean isReleasedVersion(String version) {
@@ -91,13 +92,12 @@ public class VersionUtils {
   }
 
   public static String getBugfixVersion(String version) {
-
     if (isSnapshotVersion(version)) {
-      version = version.replace(MavenConstants.SNAPSHOT_RELEASE_POSTFIX, StringUtils.EMPTY);
+      version = version.replace(SNAPSHOT_RELEASE_POSTFIX, StringUtils.EMPTY);
     } else if (isSprintVersion(version)) {
-      version = version.split(MavenConstants.SPRINT_RELEASE_POSTFIX)[0];
+      version = version.split(SPRINT_RELEASE_POSTFIX)[0];
     }
-    String[] segments = version.split("\\.");
+    String[] segments = version.split(MAIN_VERSION_REGEX);
     if (segments.length >= 3) {
       segments[2] = segments[2].split(CommonConstants.DASH_SEPARATOR)[0];
       return segments[0] + CommonConstants.DOT_SEPARATOR + segments[1] + CommonConstants.DOT_SEPARATOR + segments[2];
@@ -131,8 +131,9 @@ public class VersionUtils {
   public static String getOldestVersion(List<GHTag> tags) {
     String result = StringUtils.EMPTY;
     if (!CollectionUtils.isEmpty(tags)) {
-      List<String> releasedTags = tags.stream().map(tag -> tag.getName().replaceAll(NON_NUMERIC_CHAR, Strings.EMPTY))
-          .distinct().sorted(new LatestVersionComparator()).toList();
+      List<String> releasedTags = tags.stream().map(
+          tag -> tag.getName().replaceAll(NON_NUMERIC_CHAR, Strings.EMPTY)).distinct().sorted(
+          new LatestVersionComparator()).toList();
       return CollectionUtils.lastElement(releasedTags);
     }
     return result;

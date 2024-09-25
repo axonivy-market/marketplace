@@ -1,4 +1,7 @@
 target/
+cache/
+/data/market-cache/
+data/market-cache/
 !.mvn/wrapper/maven-wrapper.jar
 !**/src/main/**/target/
 !**/src/test/**/target/

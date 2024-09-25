@@ -1,7 +1,7 @@
 package com.axonivy.market.factory;
 
 import com.axonivy.market.comparator.MavenVersionComparator;
-import com.axonivy.market.constants.CommonConstants;
+
 import static com.axonivy.market.constants.MavenConstants.DEFAULT_IVY_MAVEN_BASE_URL;
 import static com.axonivy.market.constants.MavenConstants.ARTIFACT_FILE_NAME_FORMAT;
 import static com.axonivy.market.constants.CommonConstants.DOT_SEPARATOR;
@@ -31,7 +31,7 @@ public class MavenArtifactFactory {
     String artifactIdByVersion = artifact.getArtifactId();
     String repoUrl = StringUtils.defaultIfBlank(artifact.getRepoUrl(), DEFAULT_IVY_MAVEN_BASE_URL);
 
-    ArchivedArtifact archivedArtifactBestMatchVersion = findArchivedArtifactBestMatchWithVersion(version,
+    ArchivedArtifact archivedArtifactBestMatchVersion = findArchivedArtifactBestMatchVersion(version,
         artifact.getArchivedArtifacts());
     if (Objects.nonNull(archivedArtifactBestMatchVersion)) {
       groupIdByVersion = archivedArtifactBestMatchVersion.getGroupId();
@@ -44,7 +44,7 @@ public class MavenArtifactFactory {
     return String.join(SLASH, repoUrl, groupIdByVersion, artifactIdByVersion, version, artifactFileName);
   }
 
-  public static ArchivedArtifact findArchivedArtifactBestMatchWithVersion(String version,
+  public static ArchivedArtifact findArchivedArtifactBestMatchVersion(String version,
       List<ArchivedArtifact> archivedArtifacts) {
     if (CollectionUtils.isEmpty(archivedArtifacts)) {
       return null;

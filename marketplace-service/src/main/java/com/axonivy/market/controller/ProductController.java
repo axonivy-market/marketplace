@@ -129,12 +129,4 @@ public class ProductController {
         ProductModel.class);
     return new ResponseEntity<>(emptyPagedModel, HttpStatus.OK);
   }
-
-  public static String getBearerToken(String authorizationHeader) {
-    String token = null;
-    if (authorizationHeader.startsWith(CommonConstants.BEARER)) {
-      token = authorizationHeader.substring(CommonConstants.BEARER.length()).trim(); // Remove "Bearer " prefix
-    }
-    return token;
-  }
 }

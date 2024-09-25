@@ -1,8 +1,10 @@
 package com.axonivy.market.service.impl;
 
+import com.axonivy.market.constants.DirectoryConstants;
 import com.axonivy.market.entity.Product;
 import com.axonivy.market.entity.ProductDocumentMeta;
 import com.axonivy.market.factory.MavenArtifactFactory;
+import com.axonivy.market.factory.VersionFactory;
 import com.axonivy.market.github.model.MavenArtifact;
 import com.axonivy.market.repository.ProductDocumentMetaRepository;
 import com.axonivy.market.repository.ProductRepository;
@@ -25,6 +27,8 @@ import static org.apache.commons.lang3.StringUtils.EMPTY;
 @AllArgsConstructor
 @Service
 public class ProductDocumentServiceImpl implements ProductDocumentService {
+
+  private static final String VIEW_DOC_URL_PATTERN = "/%s/index.html";
   final ProductRepository productRepo;
   final ProductDocumentMetaRepository productDocumentMetaRepo;
   final FileDownloadService fileDownloadService;
@@ -32,10 +36,10 @@ public class ProductDocumentServiceImpl implements ProductDocumentService {
   @Override
   public void syncDocumentForProduct(String productId, boolean isResetSync) {
     productRepo.findById(productId).ifPresent(product -> {
-      List<MavenArtifact> docArtifacts = Optional.ofNullable(product.getArtifacts()).orElse(List.of())
-          .stream().filter(artifact -> BooleanUtils.isTrue(artifact.getDoc())).toList();
-      List<String> releasedVersions = Optional.ofNullable(product.getReleasedVersions()).orElse(List.of())
-          .stream().filter(version -> VersionUtils.isValidFormatReleasedVersion(version)).toList();
+      List<MavenArtifact> docArtifacts = Optional.ofNullable(product.getArtifacts()).orElse(List.of()).stream().filter(
+          artifact -> BooleanUtils.isTrue(artifact.getDoc())).toList();
+      List<String> releasedVersions = Optional.ofNullable(product.getReleasedVersions()).orElse(
+          List.of()).stream().filter(version -> VersionUtils.isValidFormatReleasedVersion(version)).toList();
       if (ObjectUtils.isEmpty(docArtifacts) || ObjectUtils.isEmpty(releasedVersions)) {
         return;
       }
@@ -51,12 +55,23 @@ public class ProductDocumentServiceImpl implements ProductDocumentService {
     return productRepo.findAllProductsHaveDocument();
   }
 
+  @Override
+  public String findViewDocURI(String productId, String version) {
+    var product = productRepo.findById(productId);
+    if (product.isEmpty()) {
+      return EMPTY;
+    }
+    List<ProductDocumentMeta> productDocumentMetas = productDocumentMetaRepo.findAll();
+    String resolvedVersion = VersionFactory.get(
+        productDocumentMetas.stream().map(ProductDocumentMeta::getVersion).toList(), version);
+    return productDocumentMetas.stream().filter(meta -> meta.getVersion().equals(resolvedVersion)).map(
+        ProductDocumentMeta::getViewDocUrl).findAny().orElse(EMPTY);
+  }
+
   private void syncDocumentationForProduct(String productId, boolean isResetSync, MavenArtifact artifact,
       List<String> releasedVersions) {
     for (var version : releasedVersions) {
-      List<ProductDocumentMeta> documentMetas =
-          productDocumentMetaRepo.findByProductIdAndGroupIdAndArtifactIdAndVersion(
-              productId, artifact.getGroupId(), artifact.getArtifactId(), version);
+      List<ProductDocumentMeta> documentMetas = productDocumentMetaRepo.findByProductIdAndVersion(productId, version);
       if (!isResetSync && ObjectUtils.isNotEmpty(documentMetas)) {
         continue;
       }
@@ -68,10 +83,10 @@ public class ProductDocumentServiceImpl implements ProductDocumentService {
         productDocumentMetaRepo.deleteAll(documentMetas);
         var documentMeta = new ProductDocumentMeta();
         documentMeta.setProductId(productId);
-        documentMeta.setGroupId(artifact.getGroupId());
-        documentMeta.setArtifactId(artifact.getArtifactId());
         documentMeta.setVersion(version);
         documentMeta.setStorageDirectory(location);
+        var locationRelative = location.replaceFirst(FileDownloadService.ROOT_STORAGE, DirectoryConstants.CACHE_DIR);
+        documentMeta.setViewDocUrl(String.format(VIEW_DOC_URL_PATTERN, locationRelative));
         productDocumentMetaRepo.save(documentMeta);
       }
     }

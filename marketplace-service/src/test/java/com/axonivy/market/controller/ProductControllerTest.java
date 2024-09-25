@@ -27,11 +27,7 @@ import org.springframework.hateoas.PagedModel;
 import org.springframework.hateoas.PagedModel.PageMetadata;
 import org.springframework.http.HttpStatus;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
@@ -104,7 +100,7 @@ class ProductControllerTest {
 
   @Test
   void testSyncProductsSuccess() {
-    when(service.syncLatestDataFromMarketRepo()).thenReturn(true);
+    when(service.syncLatestDataFromMarketRepo()).thenReturn(List.of());
 
     var response = productController.syncProducts(AUTHORIZATION_HEADER, false);
 
@@ -116,7 +112,7 @@ class ProductControllerTest {
 
   @Test
   void testSyncProductsWithResetSuccess() {
-    when(service.syncLatestDataFromMarketRepo()).thenReturn(false);
+    when(service.syncLatestDataFromMarketRepo()).thenReturn(List.of("portal"));
 
     var response = productController.syncProducts(AUTHORIZATION_HEADER, true);
 

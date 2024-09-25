@@ -9,6 +9,5 @@ import java.util.List;
 @Repository
 public interface ProductDocumentMetaRepository extends MongoRepository<ProductDocumentMeta, String> {
 
-  List<ProductDocumentMeta> findByProductIdAndGroupIdAndArtifactIdAndVersion(String productId,
-      String groupId, String artifactId, String version);
+  List<ProductDocumentMeta> findByProductIdAndVersion(String productId, String version);
 }

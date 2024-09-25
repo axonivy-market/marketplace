@@ -24,6 +24,7 @@ import com.axonivy.market.repository.ProductCustomSortRepository;
 import com.axonivy.market.repository.ProductModuleContentRepository;
 import com.axonivy.market.repository.ProductRepository;
 import com.axonivy.market.service.ImageService;
+import org.apache.commons.lang3.ObjectUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -210,7 +211,7 @@ class ProductServiceImplTest extends BaseSetup {
 
     // Executes
     var result = productService.syncLatestDataFromMarketRepo();
-    assertFalse(result);
+    assertFalse(ObjectUtils.isEmpty(result));
 
     // Start testing by deleting new meta
     mockCommit = mockGHCommitHasSHA1(UUID.randomUUID().toString());
@@ -219,7 +220,7 @@ class ProductServiceImplTest extends BaseSetup {
     mockGithubFile.setStatus(FileStatus.REMOVED);
     // Executes
     result = productService.syncLatestDataFromMarketRepo();
-    assertFalse(result);
+    assertFalse(ObjectUtils.isEmpty(result));
   }
 
   @Test
@@ -240,7 +241,7 @@ class ProductServiceImplTest extends BaseSetup {
 
     // Executes
     var result = productService.syncLatestDataFromMarketRepo();
-    assertFalse(result);
+    assertFalse(ObjectUtils.isEmpty(result));
 
     // Start testing by deleting new logo
     when(mockCommit.getSHA1()).thenReturn(UUID.randomUUID().toString());
@@ -250,7 +251,7 @@ class ProductServiceImplTest extends BaseSetup {
 
     // Executes
     result = productService.syncLatestDataFromMarketRepo();
-    assertFalse(result);
+    assertFalse(ObjectUtils.isEmpty(result));
   }
 
   @Test
@@ -399,7 +400,7 @@ class ProductServiceImplTest extends BaseSetup {
 
     // Executes
     var result = productService.syncLatestDataFromMarketRepo();
-    assertTrue(result);
+    assertTrue(ObjectUtils.isEmpty(result));
   }
 
   @Test

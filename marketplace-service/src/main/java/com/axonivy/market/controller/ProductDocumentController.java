@@ -8,18 +8,22 @@ import com.axonivy.market.model.Message;
 import com.axonivy.market.service.ProductDocumentService;
 import com.axonivy.market.util.AuthorizationUtils;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.enums.ParameterIn;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.AllArgsConstructor;
 import org.apache.commons.lang3.ObjectUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.List;
 
-import static com.axonivy.market.constants.RequestMappingConstants.PRODUCT_DOC;
-import static com.axonivy.market.constants.RequestMappingConstants.SYNC;
-import static com.axonivy.market.constants.RequestParamConstants.RESET_SYNC;
+import static com.axonivy.market.constants.RequestMappingConstants.*;
+import static com.axonivy.market.constants.RequestParamConstants.*;
 import static org.springframework.http.HttpHeaders.AUTHORIZATION;
 
 @RestController
@@ -29,6 +33,20 @@ import static org.springframework.http.HttpHeaders.AUTHORIZATION;
 public class ProductDocumentController {
   final ProductDocumentService productDocumentService;
   final GitHubService gitHubService;
+
+  @GetMapping(BY_ID_AND_VERSION)
+  public ResponseEntity<URI> findViewDocURI(
+      @PathVariable(ID) @Parameter(description = "Product id (from meta.json)", example = "approval-decision-utils",
+          in = ParameterIn.PATH) String id,
+      @PathVariable(VERSION) @Parameter(description = "Release version (from maven metadata.xml)", example = "10.0.20",
+          in = ParameterIn.PATH) String version) throws URISyntaxException {
+    String viewDocURI = productDocumentService.findViewDocURI(id, version);
+    if (StringUtils.isBlank(viewDocURI)) {
+      return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+    }
+    var uri = new URI(viewDocURI);
+    return new ResponseEntity<>(uri, HttpStatus.OK);
+  }
 
   @PutMapping(SYNC)
   @Operation(hidden = true)

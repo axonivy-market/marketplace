@@ -28,7 +28,7 @@ services:
     restart: always
     volumes:
       - ./config/nginx/nginx.conf:/etc/nginx/nginx.conf
-      - cachedata:/usr/share/nginx/html/cache
+      - marketcache:/usr/share/nginx/html/market-cache
     ports:
       - "4200:80"
     depends_on:
@@ -38,8 +38,8 @@ services:
     container_name: marketplace-service
     restart: always
     volumes:
-      - /home/axonivy/marketplace/data/market-installations.json:/data/market-installation.json
-      - cachedata:/usr/local/tomcat/webapps/marketplace-service/cache
+      - /home/axonivy/marketplace/data/market-installations.json:/app/data/market-installation.json
+      - marketcache:/app/data/market-cache
     environment:
       - MONGODB_HOST=${SERVICE_MONGODB_HOST}
       - MONGODB_DATABASE=${SERVICE_MONGODB_DATABASE}
@@ -64,4 +64,4 @@ services:
 
 volumes:
   mongodata:
-  cachedata:
+  marketcache:

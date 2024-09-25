@@ -8,4 +8,6 @@ public interface ProductDocumentService {
   void syncDocumentForProduct(String productId, boolean isResetSync);
 
   List<Product> findAllProductsHaveDocument();
+
+  String findViewDocURI(String productId, String version);
 }

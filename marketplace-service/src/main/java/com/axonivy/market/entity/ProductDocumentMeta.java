@@ -1,7 +1,11 @@
 package com.axonivy.market.entity;
 
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.annotation.Id;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.mongodb.core.mapping.Document;
 
@@ -15,11 +19,12 @@ import static com.axonivy.market.constants.EntityConstants.PRODUCT_DOCUMENT_META
 @NoArgsConstructor
 @Document(PRODUCT_DOCUMENT_META)
 public class ProductDocumentMeta {
+  @Id
+  private String id;
   private String productId;
-  private String groupId;
-  private String artifactId;
   private String version;
   private String storageDirectory;
+  private String viewDocUrl;
   @CreatedDate
   private Date createdAt;
   @LastModifiedDate

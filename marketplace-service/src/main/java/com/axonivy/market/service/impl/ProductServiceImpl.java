@@ -45,6 +45,7 @@ import org.springframework.data.mongodb.core.query.Update;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
+import java.io.File;
 import java.io.IOException;
 import java.net.URL;
 import java.nio.file.Files;
@@ -53,6 +54,8 @@ import java.security.SecureRandom;
 import java.util.*;
 import java.util.function.Predicate;
 
+import static com.axonivy.market.constants.DirectoryConstants.APP_DIR;
+import static com.axonivy.market.constants.DirectoryConstants.DATA_DIR;
 import static com.axonivy.market.constants.ProductJsonConstants.LOGO_FILE;
 import static com.axonivy.market.enums.DocumentField.MARKET_DIRECTORY;
 import static com.axonivy.market.enums.DocumentField.SHORT_DESCRIPTIONS;
@@ -65,6 +68,8 @@ public class ProductServiceImpl implements ProductService {
 
   public static final String NON_NUMERIC_CHAR = "[^0-9.]";
   private static final String INITIAL_VERSION = "1.0";
+  private static final String LEGACY_INSTALLATION_COUNT_PATH = String.join(File.separator, APP_DIR, DATA_DIR,
+      "market-installation.json");
   private final ProductRepository productRepository;
   private final ProductModuleContentRepository productModuleContentRepository;
   private final GHAxonIvyMarketRepoService axonIvyMarketRepoService;
@@ -79,8 +84,6 @@ public class ProductServiceImpl implements ProductService {
   private final SecureRandom random = new SecureRandom();
   private GHCommit lastGHCommit;
   private GitHubRepoMeta marketRepoMeta;
-  @Value("${synchronized.installation.counts.path}")
-  private String installationCountPath;
   @Value("${market.github.market.branch}")
   private String marketRepoBranch;
 
@@ -162,14 +165,13 @@ public class ProductServiceImpl implements ProductService {
   public void syncInstallationCountWithProduct(Product product) {
     log.info("synchronizing installation count for product {}", product.getId());
     try {
-      String installationCounts = Files.readString(Paths.get(installationCountPath));
+      String installationCounts = Files.readString(Paths.get(LEGACY_INSTALLATION_COUNT_PATH));
       Map<String, Integer> mapping = mapper.readValue(installationCounts,
           new TypeReference<HashMap<String, Integer>>() {
           });
       List<String> keyList = mapping.keySet().stream().toList();
-      int currentInstallationCount = keyList.contains(product.getId())
-          ? mapping.get(product.getId())
-          : random.nextInt(20, 50);
+      int currentInstallationCount = keyList.contains(product.getId()) ? mapping.get(product.getId()) : random.nextInt(
+          20, 50);
       product.setInstallationCount(currentInstallationCount);
       product.setSynchronizedInstallationCount(true);
       log.info("synchronized installation count for product {} successfully", product.getId());
@@ -183,8 +185,8 @@ public class ProductServiceImpl implements ProductService {
     if (lastGHCommit == null) {
       return;
     }
-    String repoURL = Optional.ofNullable(lastGHCommit.getOwner()).map(GHRepository::getUrl).map(URL::getPath)
-        .orElse(EMPTY);
+    String repoURL = Optional.ofNullable(lastGHCommit.getOwner()).map(GHRepository::getUrl).map(URL::getPath).orElse(
+        EMPTY);
     marketRepoMeta.setRepoURL(repoURL);
     marketRepoMeta.setRepoName(GitHubConstants.AXONIVY_MARKETPLACE_REPO_NAME);
     marketRepoMeta.setLastSHA1(lastGHCommit.getSHA1());
@@ -365,8 +367,8 @@ public class ProductServiceImpl implements ProductService {
     for (Map.Entry<String, List<GHContent>> ghContentEntity : gitHubContentMap.entrySet()) {
       Product product = new Product();
       //update the meta.json first
-      ghContentEntity.getValue()
-          .sort((file1, file2) -> GitHubUtils.sortMetaJsonFirst(file1.getName(), file2.getName()));
+      ghContentEntity.getValue().sort(
+          (file1, file2) -> GitHubUtils.sortMetaJsonFirst(file1.getName(), file2.getName()));
       for (var content : ghContentEntity.getValue()) {
         ProductFactory.mappingByGHContent(product, content);
         mappingLogoFromGHContent(product, content);
@@ -388,8 +390,8 @@ public class ProductServiceImpl implements ProductService {
 
   private void mappingLogoFromGHContent(Product product, GHContent ghContent) {
     if (StringUtils.endsWith(ghContent.getName(), LOGO_FILE)) {
-      Optional.ofNullable(imageService.mappingImageFromGHContent(product, ghContent, true))
-          .ifPresent(image -> product.setLogoId(image.getId()));
+      Optional.ofNullable(imageService.mappingImageFromGHContent(product, ghContent, true)).ifPresent(
+          image -> product.setLogoId(image.getId()));
     }
   }
 
@@ -409,8 +411,8 @@ public class ProductServiceImpl implements ProductService {
     ghTags = ghTags.stream().filter(filterNonPersistGhTagName(currentTags)).toList();
 
     for (GHTag ghTag : ghTags) {
-      ProductModuleContent productModuleContent =
-          axonIvyProductRepoService.getReadmeAndProductContentsFromTag(product, productRepo, ghTag.getName());
+      ProductModuleContent productModuleContent = axonIvyProductRepoService.getReadmeAndProductContentsFromTag(product,
+          productRepo, ghTag.getName());
       if (productModuleContent != null) {
         productModuleContents.add(productModuleContent);
       }
@@ -523,8 +525,8 @@ public class ProductServiceImpl implements ProductService {
     productRepository.saveAll(refineOrderedListOfProductsInCustomSort(customSort.getOrderedListOfProducts()));
   }
 
-  public List<Product> refineOrderedListOfProductsInCustomSort(List<String> orderedListOfProducts)
-      throws InvalidParamException {
+  public List<Product> refineOrderedListOfProductsInCustomSort(
+      List<String> orderedListOfProducts) throws InvalidParamException {
     List<Product> productEntries = new ArrayList<>();
 
     int descendingOrder = orderedListOfProducts.size();
@@ -549,9 +551,8 @@ public class ProductServiceImpl implements ProductService {
   }
 
   public void transferComputedDataFromDB(Product product) {
-    productRepository.findById(product.getId()).ifPresent(persistedData ->
-        ProductFactory.transferComputedPersistedDataToProduct(persistedData, product)
-    );
+    productRepository.findById(product.getId()).ifPresent(
+        persistedData -> ProductFactory.transferComputedPersistedDataToProduct(persistedData, product));
   }
 
 }

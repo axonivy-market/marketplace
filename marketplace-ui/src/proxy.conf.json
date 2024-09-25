@@ -1,0 +1,8 @@
+{
+  "/portal/10.0/doc/index.html": {
+    "target": "http://localhost:4200/market-cache/portal/10.0/doc",
+    "secure": false,
+    "changeOrigin": true,
+    "logLevel": "debug"
+  }
+}

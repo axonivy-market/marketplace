@@ -45,6 +45,7 @@ import { ProductDetailService } from './product-detail.service';
 import { ProductInstallationCountActionComponent } from './product-installation-count-action/product-installation-count-action.component';
 import { ProductStarRatingNumberComponent } from './product-star-rating-number/product-star-rating-number.component';
 import { DisplayValue } from '../../../shared/models/display-value.model';
+import { ROUTER } from '../../../shared/constants/router.constant';
 
 export interface DetailTab {
   activeClass: string;
@@ -137,7 +138,7 @@ export class ProductDetailComponent {
       replaceUrl: true
     });
 
-    const productId = this.route.snapshot.params['id'];
+    const productId = this.route.snapshot.params[ROUTER.ID];
     this.productDetailService.productId.set(productId);
     if (productId) {
       this.getProductById(productId).subscribe(productDetail => {

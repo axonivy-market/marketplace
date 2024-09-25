@@ -10,10 +10,10 @@ import org.springframework.web.client.RestTemplate;
 import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
+import java.nio.file.Paths;
+import java.nio.file.attribute.PosixFilePermission;
+import java.nio.file.attribute.PosixFilePermissions;
+import java.util.*;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
@@ -30,20 +30,13 @@ public class FileDownloadServiceImpl implements FileDownloadService {
   private static final String DOC_DIR = "doc";
   private static final String ZIP_EXTENSION = ".zip";
   private static final String TEMP_FILE_NAME = "downloaded";
-
-  public static void main(String[] args) throws Exception {
-    FileDownloadService server = new FileDownloadServiceImpl();
-    server.downloadAndUnzipFile(
-        "https://nexus.axonivy.com/repository/maven-releases/com/axonivy/portal/portal-guide/11.4" + ".0-m263/portal" + "-guide-11.4.0-m263.zip",
-        true);
-  }
+  private static final String FULL_PERMISSIONS = "rwxrwxrwx";
 
   private static byte[] downloadFileByRestTemplate(String url) {
     return new RestTemplate().getForObject(url, byte[].class);
   }
 
   private static String generateCacheStorageDirectory(String url) {
-    String destinationDirectory = System.getProperty(ROOT_DIR) + File.separator + CACHE_DIR;
     url = url.substring(0, url.lastIndexOf(SLASH));
     var urlArrays = Arrays.asList(url.split(SLASH));
     Collections.reverse(urlArrays);
@@ -59,7 +52,7 @@ public class FileDownloadServiceImpl implements FileDownloadService {
       index++;
     } while (index < 3);
     Collections.reverse(paths);
-    return destinationDirectory + File.separator + String.join(File.separator, paths) + File.separator + DOC_DIR;
+    return ROOT_STORAGE + File.separator + String.join(File.separator, paths) + File.separator + DOC_DIR;
   }
 
   @Override
@@ -72,22 +65,21 @@ public class FileDownloadServiceImpl implements FileDownloadService {
     String location = generateCacheStorageDirectory(url);
     File cacheFolder = new File(location);
     if (cacheFolder.exists() && cacheFolder.isDirectory() && !isForce) {
-      log.warn("Data is already - {}", location);
+      log.warn("Data is already in {}", location);
       return EMPTY;
     } else {
-      cacheFolder.mkdirs();
+      createFolder(location);
     }
 
     // Download the file
     byte[] fileBytes = downloadFileByRestTemplate(url);
-
     // Save the downloaded file as a zip
     Path tempZipPath = Files.createTempFile(TEMP_FILE_NAME, ZIP_EXTENSION);
     Files.write(tempZipPath, fileBytes);
-
     // Unzip the file
     unzipFile(tempZipPath.toString(), location);
-
+    // Grant full access control on doc folder
+    grantFullPermissionFor(location);
     // Clean up the temporary zip file
     Files.delete(tempZipPath);
     return location;
@@ -116,6 +108,28 @@ public class FileDownloadServiceImpl implements FileDownloadService {
       while ((read = zis.read(bytesIn)) != -1) {
         bos.write(bytesIn, 0, read);
       }
+    }
+  }
+
+  private void createFolder(String location) {
+    Path folderPath = Paths.get(location);
+    try {
+      Files.createDirectories(folderPath);
+    } catch (IOException e) {
+      log.error("An error occurred while creating the folder: ", e);
+    }
+  }
+
+  private void grantFullPermissionFor(String location) {
+    Path folderPath = Paths.get(location);
+    try {
+      Set<PosixFilePermission> permissions = PosixFilePermissions.fromString(FULL_PERMISSIONS);
+      Files.setPosixFilePermissions(folderPath, permissions);
+      log.warn("Folder {} created with full access permissions.", folderPath);
+    } catch (UnsupportedOperationException e) {
+      log.error("POSIX file permissions are not supported on this system.");
+    } catch (IOException e) {
+      log.error("An error occurred while creating the folder: ", e);
     }
   }
 }
