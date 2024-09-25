@@ -7,22 +7,14 @@ import com.axonivy.market.entity.GitHubRepoMeta;
 import com.axonivy.market.entity.Product;
 import com.axonivy.market.entity.ProductCustomSort;
 import com.axonivy.market.entity.ProductModuleContent;
-import com.axonivy.market.enums.ErrorCode;
-import com.axonivy.market.enums.FileStatus;
-import com.axonivy.market.enums.FileType;
-import com.axonivy.market.enums.Language;
-import com.axonivy.market.enums.SortOption;
-import com.axonivy.market.enums.TypeOption;
+import com.axonivy.market.enums.*;
 import com.axonivy.market.exceptions.model.InvalidParamException;
 import com.axonivy.market.github.model.GitHubFile;
 import com.axonivy.market.github.service.GHAxonIvyMarketRepoService;
 import com.axonivy.market.github.service.GHAxonIvyProductRepoService;
 import com.axonivy.market.github.service.GitHubService;
 import com.axonivy.market.model.ProductCustomSortRequest;
-import com.axonivy.market.repository.GitHubRepoMetaRepository;
-import com.axonivy.market.repository.ProductCustomSortRepository;
-import com.axonivy.market.repository.ProductModuleContentRepository;
-import com.axonivy.market.repository.ProductRepository;
+import com.axonivy.market.repository.*;
 import com.axonivy.market.service.ImageService;
 import org.apache.commons.lang3.ObjectUtils;
 import org.junit.jupiter.api.BeforeEach;
@@ -32,17 +24,9 @@ import org.kohsuke.github.GHCommit;
 import org.kohsuke.github.GHContent;
 import org.kohsuke.github.GHRepository;
 import org.kohsuke.github.GHTag;
-import org.mockito.ArgumentCaptor;
-import org.mockito.Captor;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.Mockito;
+import org.mockito.*;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
+import org.springframework.data.domain.*;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.data.mongodb.core.query.Update;
@@ -50,14 +34,7 @@ import org.springframework.test.util.ReflectionTestUtils;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
 
 import static com.axonivy.market.constants.CommonConstants.SLASH;
 import static com.axonivy.market.constants.MetaConstants.META_FILE;
@@ -78,6 +55,7 @@ class ProductServiceImplTest extends BaseSetup {
   private static final String SHA1_SAMPLE = "35baa89091b2452b77705da227f1a964ecabc6c8";
   private static final String INSTALLATION_FILE_PATH = "src/test/resources/installationCount.json";
   private static final String EMPTY_SOURCE_URL_META_JSON_FILE = "/emptySourceUrlMeta.json";
+  private static final String AMAZON_COMPREHEND_ID = "amazon-comprehend";
   @Captor
   ArgumentCaptor<Product> argumentCaptor = ArgumentCaptor.forClass(Product.class);
   @Captor
@@ -105,6 +83,8 @@ class ProductServiceImplTest extends BaseSetup {
   private GitHubRepoMetaRepository repoMetaRepository;
   @Mock
   private GitHubService gitHubService;
+  @Mock
+  private ImageRepository imageRepository;
   @Mock
   private ProductCustomSortRepository productCustomSortRepository;
   @Mock
@@ -140,7 +120,7 @@ class ProductServiceImplTest extends BaseSetup {
     Product product = new Product();
     product.setSynchronizedInstallationCount(null);
     product.setId("portal");
-    ReflectionTestUtils.setField(productService, "installationCountPath", INSTALLATION_FILE_PATH);
+    mockLegacyInstallationCountPath();
 
     productService.syncInstallationCountWithProduct(product);
 
@@ -150,7 +130,7 @@ class ProductServiceImplTest extends BaseSetup {
 
   @Test
   void testSyncInstallationCountWithProduct() {
-    ReflectionTestUtils.setField(productService, "installationCountPath", INSTALLATION_FILE_PATH);
+    mockLegacyInstallationCountPath();
     Product product = mockProduct();
     product.setSynchronizedInstallationCount(false);
 
@@ -159,6 +139,10 @@ class ProductServiceImplTest extends BaseSetup {
     assertEquals(40, product.getInstallationCount());
     assertEquals(true, product.getSynchronizedInstallationCount());
     assertTrue(product.getSynchronizedInstallationCount());
+  }
+
+  private void mockLegacyInstallationCountPath() {
+    ReflectionTestUtils.setField(productService, "legacyInstallationCountPath", INSTALLATION_FILE_PATH);
   }
 
   private Product mockProduct() {
@@ -208,6 +192,7 @@ class ProductServiceImplTest extends BaseSetup {
     when(marketRepoService.fetchMarketItemsBySHA1Range(any(), any())).thenReturn(List.of(mockGithubFile));
     var mockGHContent = mockGHContentAsMetaJSON();
     when(gitHubService.getGHContent(any(), anyString(), any())).thenReturn(mockGHContent);
+    mockSavedProductResult();
 
     // Executes
     var result = productService.syncLatestDataFromMarketRepo();
@@ -221,6 +206,10 @@ class ProductServiceImplTest extends BaseSetup {
     // Executes
     result = productService.syncLatestDataFromMarketRepo();
     assertFalse(ObjectUtils.isEmpty(result));
+  }
+
+  private void mockSavedProductResult() {
+    when(productRepository.save(any())).thenReturn(mockProduct());
   }
 
   @Test
@@ -247,7 +236,6 @@ class ProductServiceImplTest extends BaseSetup {
     when(mockCommit.getSHA1()).thenReturn(UUID.randomUUID().toString());
     mockGitHubFile.setStatus(FileStatus.REMOVED);
     when(marketRepoService.fetchMarketItemsBySHA1Range(any(), any())).thenReturn(List.of(mockGitHubFile));
-    when(gitHubService.getGHContent(any(), anyString(), any())).thenReturn(mockGHContent);
 
     // Executes
     result = productService.syncLatestDataFromMarketRepo();
@@ -317,6 +305,7 @@ class ProductServiceImplTest extends BaseSetup {
 
     Mockito.when(imageService.mappingImageFromGHContent(any(), any(), anyBoolean()))
         .thenReturn(GHAxonIvyProductRepoServiceImplTest.mockImage());
+    mockSavedProductResult();
     // Executes
     productService.syncLatestDataFromMarketRepo();
     verify(productModuleContentRepository).saveAll(argumentCaptorProductModuleContents.capture());
@@ -345,6 +334,7 @@ class ProductServiceImplTest extends BaseSetup {
     when(marketRepoService.fetchAllMarketItems()).thenReturn(mockGHContentMap);
     Mockito.when(imageService.mappingImageFromGHContent(any(), any(), anyBoolean())).thenReturn(
         GHAxonIvyProductRepoServiceImplTest.mockImage());
+    mockSavedProductResult();
     // Executes
     productService.syncLatestDataFromMarketRepo();
     verify(productModuleContentRepository).save(argumentCaptorProductModuleContent.capture());
@@ -412,6 +402,7 @@ class ProductServiceImplTest extends BaseSetup {
     Map<String, List<GHContent>> mockGHContentMap = new HashMap<>();
     mockGHContentMap.put(SAMPLE_PRODUCT_ID, new ArrayList<>());
     when(marketRepoService.fetchAllMarketItems()).thenReturn(mockGHContentMap);
+    mockSavedProductResult();
 
     // Executes
     productService.syncLatestDataFromMarketRepo();
@@ -436,35 +427,32 @@ class ProductServiceImplTest extends BaseSetup {
 
   @Test
   void testFetchProductDetail() {
-    String id = "amazon-comprehend";
     Product mockProduct = mockResultReturn.getContent().get(0);
     mockProduct.setSynchronizedInstallationCount(true);
-    when(productRepository.getProductById(id)).thenReturn(mockProduct);
-    Product result = productService.fetchProductDetail(id);
+    when(productRepository.getProductById(AMAZON_COMPREHEND_ID)).thenReturn(mockProduct);
+    Product result = productService.fetchProductDetail(AMAZON_COMPREHEND_ID);
     assertEquals(mockProduct, result);
-    verify(productRepository, times(1)).getProductById(id);
+    verify(productRepository, times(1)).getProductById(AMAZON_COMPREHEND_ID);
   }
 
   @Test
   void testFetchProductDetailByIdAndVersion() {
-    String id = "amazon-comprehend";
     Product mockProduct = mockResultReturn.getContent().get(0);
-    when(productRepository.getProductByIdAndTag(id, RELEASE_TAG)).thenReturn(mockProduct);
-    Product result = productService.fetchProductDetailByIdAndVersion(id, "10.0.2");
+    when(productRepository.getProductByIdAndTag(AMAZON_COMPREHEND_ID, RELEASE_TAG)).thenReturn(mockProduct);
+    Product result = productService.fetchProductDetailByIdAndVersion(AMAZON_COMPREHEND_ID, "10.0.2");
     assertEquals(mockProduct, result);
-    verify(productRepository, times(1)).getProductByIdAndTag(id, RELEASE_TAG);
+    verify(productRepository, times(1)).getProductByIdAndTag(AMAZON_COMPREHEND_ID, RELEASE_TAG);
   }
 
   @Test
   void testFetchBestMatchProductDetailByIdAndVersion() {
-    String id = "amazon-comprehend";
     Product mockProduct = mockResultReturn.getContent().get(0);
     mockProduct.setSynchronizedInstallationCount(true);
-    when(productRepository.getReleasedVersionsById(id)).thenReturn(List.of("10.0.2", "10.0.1"));
-    when(productRepository.getProductByIdAndTag(id, RELEASE_TAG)).thenReturn(mockProduct);
-    Product result = productService.fetchBestMatchProductDetail(id, "10.0.2");
+    when(productRepository.getReleasedVersionsById(AMAZON_COMPREHEND_ID)).thenReturn(List.of("10.0.2", "10.0.1"));
+    when(productRepository.getProductByIdAndTag(AMAZON_COMPREHEND_ID, RELEASE_TAG)).thenReturn(mockProduct);
+    Product result = productService.fetchBestMatchProductDetail(AMAZON_COMPREHEND_ID, "10.0.2");
     assertEquals(mockProduct, result);
-    verify(productRepository, times(1)).getProductByIdAndTag(id, RELEASE_TAG);
+    verify(productRepository, times(1)).getProductByIdAndTag(AMAZON_COMPREHEND_ID, RELEASE_TAG);
   }
 
   @Test
@@ -540,7 +528,7 @@ class ProductServiceImplTest extends BaseSetup {
     Product product = mockProduct();
     product.setSynchronizedInstallationCount(false);
     String id = product.getId();
-    ReflectionTestUtils.setField(productService, "installationCountPath", INSTALLATION_FILE_PATH);
+    mockLegacyInstallationCountPath();
 
     when(productRepository.updateInitialCount(eq(id), anyInt())).thenReturn(10);
 
@@ -604,8 +592,67 @@ class ProductServiceImplTest extends BaseSetup {
   }
 
   private List<Product> mockProducts() {
-    Product product1 = Product.builder().repositoryName("axonivy-market/amazon-comprehend-connector")
+    Product product1 = Product.builder().id("amazon-comprehend-connector").repositoryName(
+            "axonivy-market/amazon-comprehend-connector")
         .productModuleContent(mockReadmeProductContent()).build();
     return List.of(product1);
+  }
+
+  @Test
+  void testUpdateNewLogoFromGitHub_removeOldLogo() throws IOException {
+    // Start testing by adding new logo
+    mockMarketRepoMetaStatus();
+    var mockCommit = mockGHCommitHasSHA1(UUID.randomUUID().toString());
+    when(mockCommit.getCommitDate()).thenReturn(new Date());
+    when(marketRepoService.getLastCommit(anyLong())).thenReturn(mockCommit);
+
+    var mockGitHubFile = new GitHubFile();
+    mockGitHubFile.setFileName(LOGO_FILE);
+    mockGitHubFile.setType(FileType.LOGO);
+    mockGitHubFile.setStatus(FileStatus.ADDED);
+    when(marketRepoService.fetchMarketItemsBySHA1Range(any(), any())).thenReturn(List.of(mockGitHubFile));
+    var mockGHContent = mockGHContentAsMetaJSON();
+    when(gitHubService.getGHContent(any(), anyString(), any())).thenReturn(mockGHContent);
+
+    // Executes
+    var result = productService.syncLatestDataFromMarketRepo();
+    assertFalse(ObjectUtils.isEmpty(result));
+
+    // Start testing by deleting new logo
+    when(mockCommit.getSHA1()).thenReturn(UUID.randomUUID().toString());
+    mockGitHubFile.setStatus(FileStatus.REMOVED);
+    when(marketRepoService.fetchMarketItemsBySHA1Range(any(), any())).thenReturn(List.of(mockGitHubFile));
+    when(imageRepository.findByImageUrlEndsWithIgnoreCase(anyString()))
+        .thenReturn(List.of(GHAxonIvyProductRepoServiceImplTest.mockImage()));
+    // Executes
+    result = productService.syncLatestDataFromMarketRepo();
+
+    verify(productRepository, times(1)).deleteById(anyString());
+    verify(imageRepository, times(1)).deleteAllByProductId(anyString());
+    verify(imageRepository, times(1)).findByImageUrlEndsWithIgnoreCase(anyString());
+    assertFalse(ObjectUtils.isEmpty(result));
+  }
+
+  @Test
+  void testUpdateNewLogoFromGitHub_ModifyLogo() throws IOException {
+    // Start testing by adding new logo
+    mockMarketRepoMetaStatus();
+    var mockCommit = mockGHCommitHasSHA1(UUID.randomUUID().toString());
+    when(mockCommit.getCommitDate()).thenReturn(new Date());
+    when(marketRepoService.getLastCommit(anyLong())).thenReturn(mockCommit);
+
+    var mockGitHubFile = new GitHubFile();
+    mockGitHubFile.setFileName("meta.json");
+    mockGitHubFile.setType(FileType.META);
+    mockGitHubFile.setStatus(FileStatus.REMOVED);
+    when(marketRepoService.fetchMarketItemsBySHA1Range(any(), any())).thenReturn(List.of(mockGitHubFile));
+    when(productRepository.findByMarketDirectory(anyString())).thenReturn(mockProducts());
+
+    // Executes
+    var result = productService.syncLatestDataFromMarketRepo();
+
+    assertFalse(ObjectUtils.isEmpty(result));
+    verify(productRepository, times(1)).deleteById(anyString());
+    verify(imageRepository, times(1)).deleteAllByProductId(anyString());
   }
 }

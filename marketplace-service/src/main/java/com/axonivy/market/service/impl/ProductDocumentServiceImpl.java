@@ -62,10 +62,10 @@ public class ProductDocumentServiceImpl implements ProductDocumentService {
       return EMPTY;
     }
     List<ProductDocumentMeta> productDocumentMetas = productDocumentMetaRepo.findAll();
-    String resolvedVersion = VersionFactory.get(
-        productDocumentMetas.stream().map(ProductDocumentMeta::getVersion).toList(), version);
-    return productDocumentMetas.stream().filter(meta -> meta.getVersion().equals(resolvedVersion)).map(
-        ProductDocumentMeta::getViewDocUrl).findAny().orElse(EMPTY);
+    String resolvedVersion = VersionFactory.get(productDocumentMetas.stream()
+        .map(ProductDocumentMeta::getVersion).toList(), version);
+    return productDocumentMetas.stream().filter(meta -> StringUtils.equals(meta.getVersion(), resolvedVersion))
+        .map(ProductDocumentMeta::getViewDocUrl).findAny().orElse(EMPTY);
   }
 
   private void syncDocumentationForProduct(String productId, boolean isResetSync, MavenArtifact artifact,

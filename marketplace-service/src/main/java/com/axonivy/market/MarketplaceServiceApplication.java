@@ -61,9 +61,7 @@ public class MarketplaceServiceApplication {
     if (ObjectUtils.isEmpty(productIds)) {
       log.warn("Synchronizing Product Document: Nothing updated");
     }
-    productIds.forEach(productId -> {
-      productDocumentService.syncDocumentForProduct(productId, false);
-    });
+    productIds.forEach(productId -> productDocumentService.syncDocumentForProduct(productId, false));
     watch.stop();
     log.warn("Synchronizing Product Document: Finished synchronizing data for Document in [{}] milliseconds",
         watch.getTime());

@@ -5,10 +5,7 @@ import com.axonivy.market.constants.CommonConstants;
 import com.axonivy.market.constants.GitHubConstants;
 import com.axonivy.market.constants.ProductJsonConstants;
 import com.axonivy.market.criteria.ProductSearchCriteria;
-import com.axonivy.market.entity.GitHubRepoMeta;
-import com.axonivy.market.entity.Product;
-import com.axonivy.market.entity.ProductCustomSort;
-import com.axonivy.market.entity.ProductModuleContent;
+import com.axonivy.market.entity.*;
 import com.axonivy.market.enums.*;
 import com.axonivy.market.exceptions.model.InvalidParamException;
 import com.axonivy.market.factory.ProductFactory;
@@ -54,22 +51,21 @@ import java.security.SecureRandom;
 import java.util.*;
 import java.util.function.Predicate;
 
+import static com.axonivy.market.constants.CommonConstants.SLASH;
 import static com.axonivy.market.constants.DirectoryConstants.APP_DIR;
 import static com.axonivy.market.constants.DirectoryConstants.DATA_DIR;
 import static com.axonivy.market.constants.ProductJsonConstants.LOGO_FILE;
 import static com.axonivy.market.enums.DocumentField.MARKET_DIRECTORY;
 import static com.axonivy.market.enums.DocumentField.SHORT_DESCRIPTIONS;
+import static com.axonivy.market.enums.FileStatus.ADDED;
+import static com.axonivy.market.enums.FileStatus.MODIFIED;
 import static java.util.Optional.ofNullable;
 import static org.apache.commons.lang3.StringUtils.EMPTY;
 
 @Log4j2
 @Service
 public class ProductServiceImpl implements ProductService {
-
-  public static final String NON_NUMERIC_CHAR = "[^0-9.]";
   private static final String INITIAL_VERSION = "1.0";
-  private static final String LEGACY_INSTALLATION_COUNT_PATH = String.join(File.separator, APP_DIR, DATA_DIR,
-      "market-installation.json");
   private final ProductRepository productRepository;
   private final ProductModuleContentRepository productModuleContentRepository;
   private final GHAxonIvyMarketRepoService axonIvyMarketRepoService;
@@ -84,6 +80,8 @@ public class ProductServiceImpl implements ProductService {
   private final SecureRandom random = new SecureRandom();
   private GHCommit lastGHCommit;
   private GitHubRepoMeta marketRepoMeta;
+  @Value("${market.legacy.installation.counts.path}")
+  private String legacyInstallationCountPath;
   @Value("${market.github.market.branch}")
   private String marketRepoBranch;
 
@@ -165,7 +163,7 @@ public class ProductServiceImpl implements ProductService {
   public void syncInstallationCountWithProduct(Product product) {
     log.info("synchronizing installation count for product {}", product.getId());
     try {
-      String installationCounts = Files.readString(Paths.get(LEGACY_INSTALLATION_COUNT_PATH));
+      String installationCounts = Files.readString(Paths.get(legacyInstallationCountPath));
       Map<String, Integer> mapping = mapper.readValue(installationCounts,
           new TypeReference<HashMap<String, Integer>>() {
           });
@@ -176,8 +174,7 @@ public class ProductServiceImpl implements ProductService {
       product.setSynchronizedInstallationCount(true);
       log.info("synchronized installation count for product {} successfully", product.getId());
     } catch (IOException ex) {
-      log.error(ex.getMessage());
-      log.error("Could not read the marketplace-installation file to synchronize");
+      log.error("Could not read the marketplace-installation file to synchronize", ex);
     }
   }
 
@@ -206,62 +203,90 @@ public class ProductServiceImpl implements ProductService {
       String filePath = file.getFileName();
       var parentPath = filePath.replace(FileType.META.getFileName(), EMPTY).replace(FileType.LOGO.getFileName(), EMPTY);
       var files = groupGitHubFiles.getOrDefault(parentPath, new ArrayList<>());
-      files.sort((file1, file2) -> GitHubUtils.sortMetaJsonFirst(file1.getFileName(), file2.getFileName()));
       files.add(file);
+      files.sort((file1, file2) -> GitHubUtils.sortMetaJsonFirst(file1.getFileName(), file2.getFileName()));
       groupGitHubFiles.putIfAbsent(parentPath, files);
     }
 
-    groupGitHubFiles.entrySet().forEach(ghFileEntity -> {
-      for (var file : ghFileEntity.getValue()) {
-        Product product = new Product();
-        GHContent fileContent;
-        try {
-          fileContent = gitHubService.getGHContent(axonIvyMarketRepoService.getRepository(), file.getFileName(),
-              marketRepoBranch);
-        } catch (IOException e) {
-          log.error("Get GHContent failed: ", e);
-          continue;
-        }
-
-        ProductFactory.mappingByGHContent(product, fileContent);
-        if (FileType.META == file.getType()) {
-          transferComputedDataFromDB(product);
-          modifyProductByMetaContent(file, product);
+    groupGitHubFiles.forEach((key, value) -> {
+      for (var file : value) {
+        var productId = EMPTY;
+        if (file.getStatus() == MODIFIED || file.getStatus() == ADDED) {
+          productId = modifyProductMetaOrLogo(file, key);
         } else {
-          modifyProductLogo(ghFileEntity.getKey(), file, product, fileContent);
+          productId = removeProductAndImage(file);
         }
-        syncedProductIds.add(product.getId());
+        syncedProductIds.add(productId);
       }
     });
     return syncedProductIds.stream().toList();
   }
 
-  private void modifyProductLogo(String parentPath, GitHubFile file, Product product, GHContent fileContent) {
-    Product result;
-    switch (file.getStatus()) {
-      case MODIFIED, ADDED:
-        var searchCriteria = new ProductSearchCriteria();
-        searchCriteria.setKeyword(parentPath);
-        searchCriteria.setFields(List.of(MARKET_DIRECTORY));
-        result = productRepository.findByCriteria(searchCriteria);
-        if (result != null) {
-          Optional.ofNullable(imageService.mappingImageFromGHContent(result, fileContent, true)).ifPresent(image -> {
-            imageRepository.deleteById(result.getLogoId());
-            result.setLogoId(image.getId());
-            productRepository.save(result);
-          });
-        }
-        break;
-      case REMOVED:
-        result = productRepository.findByLogoId(product.getLogoId());
-        if (result != null) {
-          imageRepository.deleteAllByProductId(result.getId());
-          productRepository.deleteById(result.getId());
-        }
-        break;
-      default:
-        break;
+  private String removeProductAndImage(GitHubFile file) {
+    String productId = EMPTY;
+    if (FileType.META == file.getType()) {
+      String[] splitMetaJsonPath = file.getFileName().split(SLASH);
+      String extractMarketDirectory = file.getFileName().replace(splitMetaJsonPath[splitMetaJsonPath.length - 1],
+          EMPTY);
+      List<Product> productList = productRepository.findByMarketDirectory(extractMarketDirectory);
+      if (ObjectUtils.isNotEmpty(productList)) {
+        productId = productList.get(0).getId();
+        productRepository.deleteById(productId);
+        imageRepository.deleteAllByProductId(productId);
+      }
+    } else {
+      List<Image> images = imageRepository.findByImageUrlEndsWithIgnoreCase(file.getFileName());
+      if (ObjectUtils.isNotEmpty(images)) {
+        Image currentImage = images.get(0);
+        productId = currentImage.getProductId();
+        productRepository.deleteById(productId);
+        imageRepository.deleteAllByProductId(productId);
+      }
     }
+    return productId;
+  }
+
+  private String modifyProductMetaOrLogo(GitHubFile file, String parentPath) {
+    try {
+      GHContent fileContent = gitHubService.getGHContent(axonIvyMarketRepoService.getRepository(), file.getFileName(),
+          marketRepoBranch);
+      return updateProductByMetaJsonAndLogo(fileContent, file, parentPath);
+    } catch (IOException e) {
+      log.error("Get GHContent failed: ", e);
+    }
+    return EMPTY;
+  }
+
+  private String updateProductByMetaJsonAndLogo(GHContent fileContent, GitHubFile file, String parentPath) {
+    String productId;
+    Product product = new Product();
+    ProductFactory.mappingByGHContent(product, fileContent);
+    if (FileType.META == file.getType()) {
+      transferComputedDataFromDB(product);
+      productId = productRepository.save(product).getId();
+    } else {
+      productId = modifyProductLogo(parentPath, fileContent);
+    }
+    return productId;
+  }
+
+  private String modifyProductLogo(String parentPath, GHContent fileContent) {
+    var searchCriteria = new ProductSearchCriteria();
+    searchCriteria.setKeyword(parentPath);
+    searchCriteria.setFields(List.of(MARKET_DIRECTORY));
+    Product result = productRepository.findByCriteria(searchCriteria);
+    if (result != null) {
+      Optional.ofNullable(imageService.mappingImageFromGHContent(result, fileContent, true)).ifPresent(image -> {
+        if (StringUtils.isNotBlank(result.getLogoId())) {
+          imageRepository.deleteById(result.getLogoId());
+        }
+        result.setLogoId(image.getId());
+        productRepository.save(result);
+      });
+      return result.getId();
+    }
+    log.info("There is no product to update the logo with path {}", parentPath);
+    return EMPTY;
   }
 
   private Pageable refinePagination(String language, Pageable pageable) {
@@ -310,19 +335,6 @@ public class ProductServiceImpl implements ProductService {
       isLastCommitCovered = true;
     }
     return isLastCommitCovered;
-  }
-
-  private void modifyProductByMetaContent(GitHubFile file, Product product) {
-    switch (file.getStatus()) {
-      case MODIFIED, ADDED:
-        productRepository.save(product);
-        break;
-      case REMOVED:
-        productRepository.deleteById(product.getId());
-        break;
-      default:
-        break;
-    }
   }
 
   private void updateLatestReleaseTagContentsFromProductRepo() {

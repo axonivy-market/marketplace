@@ -17,12 +17,6 @@ COPY --from=build-api /app/target/marketplace-service-${BUILD_VERSION}.war /usr/
 # Expose port 8080
 EXPOSE 8080
 
-# Change ownership of the shared volume
-RUN mkdir -p /app/data/market-cache
-RUN chown -R root:root /app/data/market-cache
-
-USER root
-
 # Start Tomcat
 CMD ["catalina.sh", "run"]
 

@@ -119,7 +119,7 @@ class ProductControllerTest {
     assertEquals(HttpStatus.OK, response.getStatusCode());
     assertTrue(response.hasBody());
     assertEquals(ErrorCode.SUCCESSFUL.getCode(), Objects.requireNonNull(response.getBody()).getHelpCode());
-    assertTrue(response.getBody().getMessageDetails().contains("Finished sync data"));
+    assertTrue(response.getBody().getMessageDetails().contains("Finished sync [[portal]] data in"));
   }
 
   @Test

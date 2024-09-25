@@ -60,9 +60,7 @@ public class ProductDocumentController {
     if (ObjectUtils.isEmpty(products)) {
       return new ResponseEntity<>(message, HttpStatus.NO_CONTENT);
     }
-    products.forEach(product -> {
-      productDocumentService.syncDocumentForProduct(product.getId(), resetSync);
-    });
+    products.forEach(product -> productDocumentService.syncDocumentForProduct(product.getId(), resetSync));
 
     message.setHelpCode(ErrorCode.SUCCESSFUL.getCode());
     message.setHelpText(ErrorCode.SUCCESSFUL.getHelpText());

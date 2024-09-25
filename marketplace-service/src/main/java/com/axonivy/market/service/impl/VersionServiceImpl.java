@@ -17,11 +17,11 @@ import com.axonivy.market.repository.MavenArtifactVersionRepository;
 import com.axonivy.market.repository.ProductJsonContentRepository;
 import com.axonivy.market.repository.ProductModuleContentRepository;
 import com.axonivy.market.repository.ProductRepository;
-import com.axonivy.market.service.FileDownloadService;
 import com.axonivy.market.service.VersionService;
 import com.axonivy.market.util.VersionUtils;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import lombok.AllArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.ObjectUtils;
@@ -41,27 +41,16 @@ import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 
 @Log4j2
+@AllArgsConstructor
 @Service
 public class VersionServiceImpl implements VersionService {
 
   private final GHAxonIvyProductRepoService gitHubService;
-  private final FileDownloadService fileDownloadService;
   private final MavenArtifactVersionRepository mavenArtifactVersionRepository;
   private final ProductRepository productRepo;
   private final ProductJsonContentRepository productJsonRepo;
   private final ProductModuleContentRepository productContentRepo;
   private final ObjectMapper mapper = new ObjectMapper();
-
-  public VersionServiceImpl(GHAxonIvyProductRepoService gitHubService, FileDownloadService fileDownloadService,
-      MavenArtifactVersionRepository mavenArtifactVersionRepository, ProductRepository productRepo,
-      ProductJsonContentRepository productJsonRepo, ProductModuleContentRepository productContentRepo) {
-    this.gitHubService = gitHubService;
-    this.fileDownloadService = fileDownloadService;
-    this.mavenArtifactVersionRepository = mavenArtifactVersionRepository;
-    this.productRepo = productRepo;
-    this.productJsonRepo = productJsonRepo;
-    this.productContentRepo = productContentRepo;
-  }
 
   public List<MavenArtifactVersionModel> getArtifactsAndVersionToDisplay(String productId, Boolean isShowDevVersion,
       String designerVersion) {
@@ -73,23 +62,6 @@ public class VersionServiceImpl implements VersionService {
         new MavenArtifact());
     artifactsFromMeta.remove(productArtifact);
     return handleArtifactForVersionToDisplay(versionsToDisplay, productId, artifactsFromMeta);
-  }
-
-  private void handleDocumentForPortalGuide(List<MavenArtifactVersionModel> mavenArtifactVersionModels) {
-    if (ObjectUtils.isEmpty(mavenArtifactVersionModels)) {
-      return;
-    }
-    for (var artifactVersionModel : mavenArtifactVersionModels) {
-      for (var version : artifactVersionModel.getArtifactsByVersion()) {
-        if (version.getDownloadUrl().contains("portal-guide")) {
-          try {
-            fileDownloadService.downloadAndUnzipFile(version.getDownloadUrl(), false);
-          } catch (Exception e) {
-            log.warn("Cannot download portal-guide for {}", version.getDownloadUrl());
-          }
-        }
-      }
-    }
   }
 
   @Override
