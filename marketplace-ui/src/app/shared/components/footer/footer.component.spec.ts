@@ -12,6 +12,13 @@ describe('FooterComponent', () => {
   let fixture: ComponentFixture<FooterComponent>;
 
   beforeEach(async () => {
+    let testMockDate: Date;
+
+    jasmine.clock().uninstall();
+    jasmine.clock().install();
+    testMockDate = new Date('2019-09-15T05:00:00Z');
+    jasmine.clock().mockDate(testMockDate);
+
     await TestBed.configureTestingModule({
       imports: [FooterComponent, TranslateModule.forRoot()],
       providers: [TranslateService]
@@ -20,6 +27,10 @@ describe('FooterComponent', () => {
     fixture = TestBed.createComponent(FooterComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
+  });
+
+  afterEach(function() {
+    jasmine.clock().uninstall();
   });
 
   it('should create', () => {
@@ -86,4 +97,21 @@ describe('FooterComponent', () => {
       expect(socialMediaLinkElement.href).toBe(SOCIAL_MEDIA_LINK[index].url);
     }
   });
+
+  it('should get year of mock year', () => {
+    component.getCurrentYear();
+
+    expect(component.year).toBe('2019');
+  })  
+
+  it('should get year of current year', () => {
+    let currentDate = new Date();
+    let currentYear = currentDate.getFullYear();
+
+    jasmine.clock().mockDate(currentDate);
+
+    component.getCurrentYear();
+
+    expect(component.year).toBe(currentYear.toString());
+  })
 });
