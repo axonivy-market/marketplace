@@ -1,26 +1,92 @@
 @switch (actionType) {
   @case ('standard') {
-    <button [lang]="languageService.selectedLanguage()" class="btn btn__install flex-grow-1" data-bs-toggle="tooltip"
-            data-bs-placement="bottom" data-bs-html="true" data-bs-title="<p class='text-primary'>
-            Please open the
-            <a href='https://market.axonivy.com' class='ivy__link'>
-               Axon Ivy Market
+    <div class="install-download-button-container gap-2 w-100 d-flex d-lg-block">
+      <button [lang]="languageService.selectedLanguage()" class="btn btn__install flex-grow-1 me-lg-2" data-bs-toggle="tooltip"
+              data-bs-placement="bottom" data-bs-html="true" data-bs-title="<p class='text-primary'>
+              Please open the
+              <a href='https://market.axonivy.com' class='ivy__link'>
+                Axon Ivy Market
+              </a>
+              inside your
+              <a class='ivy__link' href='https://developer.axonivy.com/download'>
+                Axon Ivy Designer
+              </a>
+              (minimum version 9.2.0)
+            </p>"
+              data-bs-custom-class="custom-tooltip"
+              [ngClass]="themeService.isDarkMode() ? 'btn-light' : 'btn-primary'">
+        {{ 'common.product.detail.install.buttonLabel' | translate }}
+      </button>
+      <button #artifactDownloadButton [lang]="languageService.selectedLanguage()"
+              class="btn btn__download btn-secondary primary-bg flex-grow-1"
+              type="button" (click)="onShowVersionAndArtifact()" aria-expanded="false">
+        {{ 'common.product.detail.download.buttonLabel' | translate }}
+      </button>
+      
+      @if (isDropDownDisplayed()) {
+        <div #artifactDownloadDialog class="dropdown-menu show maven-artifact-version__action border__dropdown">
+          <div class="up-arrow border__dropdown position-absolute"></div>
+          <form>
+            <div class="form-group">
+              <label for="artifacts-selector" [lang]="languageService.selectedLanguage()"
+                    class="form-label fs-md text-primary">
+                {{
+                  'common.product.detail.download.artifactSelector.label' | translate
+                }}
+              </label>
+      
+              <div id="artifacts-selector">
+                <app-common-dropdown
+                  [items]="artifacts()"
+                  [selectedItem]="selectedArtifactName"
+                  buttonClass="form-select form-select-sm artifacts-selector__dropdown border__dropdown fs-md"
+                  ariaLabel=".form-select-sm"
+                  (itemSelected)="onSelectArtifact($event)">
+                </app-common-dropdown>
+              </div>
+      
+            </div>
+            <div class="form-group">
+              <label for="version-selector" [lang]="languageService.selectedLanguage()"
+                    class="form-label mt-2 fs-md text-primary">
+                {{
+                  'common.product.detail.download.versionSelector.label' | translate
+                }}
+              </label>
+      
+              <div id="version-selector">
+                <app-common-dropdown
+                  [items]="versionDropdown()"
+                  [selectedItem]="selectedVersion()"
+                  buttonClass="form-select form-select-sm versions-selector__dropdown border__dropdown fs-md"
+                  ariaLabel=".form-select-sm example"
+                  (itemSelected)="onSelectVersion($event.value)">
+                </app-common-dropdown>
+              </div>
+            </div>
+            <a href="#" [lang]="languageService.selectedLanguage()"
+              class="dev-versions__toggle primary-color text-decoration-none" (click)="onShowDevVersion($event)">
+              @if (isDevVersionsDisplayed()) {
+                {{ 'common.product.detail.download.hideDevVersions' | translate }}
+              } @else {
+                {{ 'common.product.detail.download.showDevVersions' | translate }}
+              }
             </a>
-             inside your
-            <a class='ivy__link' href='https://developer.axonivy.com/download'>
-               Axon Ivy Designer
-            </a>
-             (minimum version 9.2.0)
-          </p>"
-            data-bs-custom-class="custom-tooltip"
-            [ngClass]="themeService.isDarkMode() ? 'btn-light' : 'btn-primary'">
-      {{ 'common.product.detail.install.buttonLabel' | translate }}
-    </button>
-    <button #artifactDownloadButton [lang]="languageService.selectedLanguage()"
-            class="btn btn__download btn-secondary primary-bg flex-grow-1"
-            type="button" (click)="onShowVersionAndArtifact()" aria-expanded="false">
-      {{ 'common.product.detail.download.buttonLabel' | translate }}
-    </button>
+            <div class="form-group d-flex justify-content-end">
+              <button [lang]="languageService.selectedLanguage()" class="btn form-download__btn text-center"
+                      [ngClass]="themeService.isDarkMode() ? 'btn-light' : 'btn-primary'" (click)="downloadArtifact()"
+                      type="button"
+                      id="downloadButton">
+                {{ 'common.product.detail.download.buttonLabel' | translate }}
+              </button>
+            </div>
+          </form>
+          @if (isArtifactLoading()) {
+            <app-loading-spinner [isFixPosition]="false" />
+          }
+        </div>
+      }
+  </div>
   }
   @case ('designerEnv') {
     <div class="designer-section d-flex justify-content-sm-between w-100 row">
@@ -53,68 +119,4 @@
       {{ 'common.product.detail.contactUs.label' | translate }}
     </button>
   }
-}
-
-@if (isDropDownDisplayed()) {
-  <div #artifactDownloadDialog class="dropdown-menu show maven-artifact-version__action border__dropdown">
-    <div class="up-arrow border__dropdown position-absolute"></div>
-    <form>
-      <div class="form-group">
-        <label for="artifacts-selector" [lang]="languageService.selectedLanguage()"
-               class="form-label fs-md text-primary">
-          {{
-            'common.product.detail.download.artifactSelector.label' | translate
-          }}
-        </label>
-
-        <div id="artifacts-selector">
-          <app-common-dropdown
-            [items]="artifacts()"
-            [selectedItem]="selectedArtifactName"
-            buttonClass="form-select form-select-sm artifacts-selector__dropdown border__dropdown fs-md"
-            ariaLabel=".form-select-sm"
-            (itemSelected)="onSelectArtifact($event)">
-          </app-common-dropdown>
-        </div>
-
-      </div>
-      <div class="form-group">
-        <label for="version-selector" [lang]="languageService.selectedLanguage()"
-               class="form-label mt-2 fs-md text-primary">
-          {{
-            'common.product.detail.download.versionSelector.label' | translate
-          }}
-        </label>
-
-        <div id="version-selector">
-          <app-common-dropdown
-            [items]="versionDropdown()"
-            [selectedItem]="selectedVersion()"
-            buttonClass="form-select form-select-sm versions-selector__dropdown border__dropdown fs-md"
-            ariaLabel=".form-select-sm example"
-            (itemSelected)="onSelectVersion($event.value)">
-          </app-common-dropdown>
-        </div>
-      </div>
-      <a href="#" [lang]="languageService.selectedLanguage()"
-         class="dev-versions__toggle primary-color text-decoration-none" (click)="onShowDevVersion($event)">
-        @if (isDevVersionsDisplayed()) {
-          {{ 'common.product.detail.download.hideDevVersions' | translate }}
-        } @else {
-          {{ 'common.product.detail.download.showDevVersions' | translate }}
-        }
-      </a>
-      <div class="form-group d-flex justify-content-end">
-        <button [lang]="languageService.selectedLanguage()" class="btn form-download__btn text-center"
-                [ngClass]="themeService.isDarkMode() ? 'btn-light' : 'btn-primary'" (click)="downloadArtifact()"
-                type="button"
-                id="downloadButton">
-          {{ 'common.product.detail.download.buttonLabel' | translate }}
-        </button>
-      </div>
-    </form>
-    @if (isArtifactLoading()) {
-      <app-loading-spinner [isFixPosition]="false" />
-    }
-  </div>
 }
