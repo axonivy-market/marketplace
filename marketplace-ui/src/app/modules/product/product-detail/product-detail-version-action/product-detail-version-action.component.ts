@@ -5,7 +5,6 @@ import {
   computed,
   ElementRef,
   EventEmitter,
-  HostListener,
   inject,
   Input,
   model,
@@ -157,7 +156,22 @@ export class ProductDetailVersionActionComponent implements AfterViewInit {
       this.getVersionWithArtifact();
     }
     this.isDropDownDisplayed.set(!this.isDropDownDisplayed());
-    this.changeDetectorRef.detectChanges();
+  }
+
+  reLocaleDialog() {
+    const buttonPosition = this.getElementPosition(this.artifactDownloadButton);
+    const dialogPosition = this.getElementPosition(this.artifactDownloadDialog);
+    if (buttonPosition && dialogPosition) {
+      const dialogElement = this.artifactDownloadDialog.nativeElement;
+
+      dialogElement.style.position = 'absolute';
+      dialogElement.style.top = `${buttonPosition.y + buttonPosition.height}px`;
+
+      // Align the dialog to the center of the button
+      const dialogWidth = dialogElement.offsetWidth;
+      const buttonCenterX = buttonPosition.x + buttonPosition.width / 2;
+      dialogElement.style.left = `${buttonCenterX - dialogWidth / 2}px`;
+    }
   }
 
   getElementPosition(element: ElementRef) {

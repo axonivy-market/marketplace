@@ -119,8 +119,8 @@
 ::ng-deep .dropdown-menu {
   position: absolute;
   right: 0;
-  min-width: 400px;
-  min-height: 204px;
+  width: 400px;
+  height: 204px;
   margin-top: 1rem;
   background-color: var(--bs-body-bg);
   z-index: 999;
