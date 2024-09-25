@@ -1,12 +1,10 @@
 package com.axonivy.market.service.impl;
 
+import com.axonivy.market.bo.ArchivedArtifact;
 import com.axonivy.market.bo.Artifact;
-import com.axonivy.market.constants.CommonConstants;
-import com.axonivy.market.constants.MavenConstants;
 import com.axonivy.market.entity.MavenArtifactVersion;
 import com.axonivy.market.entity.Product;
 import com.axonivy.market.entity.ProductJsonContent;
-import com.axonivy.market.bo.ArchivedArtifact;
 import com.axonivy.market.github.service.GHAxonIvyProductRepoService;
 import com.axonivy.market.model.MavenArtifactModel;
 import com.axonivy.market.model.VersionAndUrlModel;
@@ -112,18 +110,18 @@ class VersionServiceImplTest {
 
   @Test
   void testGetMavenArtifactsFromProductJsonByVersion() throws IOException {
-    when(productJsonContentRepository.findByProductIdAndVersion("adobe-acrobat-connector", "10.0.20")).thenReturn(null);
+    when(productJsonContentRepository.findByProductIdAndTag("adobe-acrobat-connector", "10.0.20")).thenReturn(null);
 
     Assertions.assertEquals(0,
-        versionService.getMavenArtifactsFromProductJsonByVersion("10.0.20", "adobe-acrobat-connector").size());
+        versionService.getMavenArtifactsFromProductJsonByTag("10.0.20", "adobe-acrobat-connector").size());
 
     String jsonContent = "{ \"installers\": [{ \"id\": \"maven-import\", \"data\": { \"repositories\": [{ \"url\": " +
         "\"http://repo.url\" }], \"projects\": [], \"dependencies\": [] } }] }";
     ProductJsonContent productJson = new ProductJsonContent();
     productJson.setContent(jsonContent);
-    when(productJsonContentRepository.findByProductIdAndVersion("adobe-acrobat-connector", "10.0.20")).thenReturn(
+    when(productJsonContentRepository.findByProductIdAndTag("adobe-acrobat-connector", "10.0.20")).thenReturn(
         productJson);
-    List<Artifact> results = versionService.getMavenArtifactsFromProductJsonByVersion("10.0.20","adobe-acrobat-connector");
+    List<Artifact> results = versionService.getMavenArtifactsFromProductJsonByTag("10.0.20", "adobe-acrobat-connector");
   }
 
 
@@ -205,23 +203,23 @@ class VersionServiceImplTest {
          }
         """;
     mockProductJsonContent.setProductId("amazon-comprehend");
-    mockProductJsonContent.setVersion("11.3.1");
+    mockProductJsonContent.setTag("11.3.1");
     mockProductJsonContent.setName("Amazon Comprehend");
     mockProductJsonContent.setContent(mockContent);
 
-    Mockito.when(productJsonContentRepository.findByProductIdAndVersion(anyString(), anyString()))
+    Mockito.when(productJsonContentRepository.findByProductIdAndTag(anyString(), anyString()))
         .thenReturn(mockProductJsonContent);
 
-    Map<String, Object> result = versionService.getProductJsonContentByIdAndVersion("amazon-comprehend", "11.3.1");
+    Map<String, Object> result = versionService.getProductJsonContentByIdAndTag("amazon-comprehend", "11.3.1");
 
     Assertions.assertEquals("Amazon Comprehend", result.get("name"));
   }
 
   @Test
   void testGetProductJsonContentByIdAndVersion_noResult() {
-    Mockito.when(productJsonContentRepository.findByProductIdAndVersion(anyString(), anyString())).thenReturn(null);
+    Mockito.when(productJsonContentRepository.findByProductIdAndTag(anyString(), anyString())).thenReturn(null);
 
-    Map<String, Object> result = versionService.getProductJsonContentByIdAndVersion("amazon-comprehend", "11.3.1");
+    Map<String, Object> result = versionService.getProductJsonContentByIdAndTag("amazon-comprehend", "11.3.1");
 
     Assertions.assertEquals(new HashMap<>(), result);
   }

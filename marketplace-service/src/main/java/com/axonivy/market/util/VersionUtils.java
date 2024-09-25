@@ -17,6 +17,7 @@ import org.springframework.util.CollectionUtils;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.stream.Stream;
 
 @Slf4j
@@ -38,6 +39,20 @@ public class VersionUtils {
           .sorted(new LatestVersionComparator()).toList();
     }
     return versions.stream().filter(VersionUtils::isReleasedVersion).sorted(new LatestVersionComparator()).toList();
+  }
+
+  public static String getMavenVersionMatchWithTag(List<String> releasedVersions, String mavenVersion) {
+    for (String version : releasedVersions) {
+      if (!mavenVersion.equals(version)) {
+        return getAlternativeVersion(releasedVersions, mavenVersion);
+      }
+    }
+    return mavenVersion;
+  }
+
+  public static String getAlternativeVersion(List<String> releaseVersions, String version) {
+    return Optional.ofNullable(releaseVersions).orElse(List.of()).stream().filter(version::startsWith).findAny().orElse(
+        null);
   }
 
   public static String getBestMatchVersion(List<String> versions, String designerVersion) {

@@ -105,7 +105,7 @@ public class ProductDetailsController {
           "Ivy designer")
   public ResponseEntity<Map<String, Object>> findProductJsonContent(@PathVariable(ID) String productId,
       @PathVariable(VERSION) String version) {
-    Map<String, Object> productJsonContent = versionService.getProductJsonContentByIdAndVersion(productId, version);
+    Map<String, Object> productJsonContent = versionService.getProductJsonContentByIdAndTag(productId, version);
     return new ResponseEntity<>(productJsonContent, HttpStatus.OK);
   }
 

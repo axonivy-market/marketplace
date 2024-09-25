@@ -1,12 +1,11 @@
 package com.axonivy.market.service.impl;
 
+import com.axonivy.market.bo.Artifact;
 import com.axonivy.market.constants.MavenConstants;
 import com.axonivy.market.controller.ProductDetailsController;
 import com.axonivy.market.entity.MavenArtifactVersion;
 import com.axonivy.market.entity.Product;
 import com.axonivy.market.entity.ProductJsonContent;
-import com.axonivy.market.bo.Artifact;
-import com.axonivy.market.util.MavenUtils;
 import com.axonivy.market.model.MavenArtifactModel;
 import com.axonivy.market.model.MavenArtifactVersionModel;
 import com.axonivy.market.model.VersionAndUrlModel;
@@ -15,6 +14,7 @@ import com.axonivy.market.repository.ProductJsonContentRepository;
 import com.axonivy.market.repository.ProductModuleContentRepository;
 import com.axonivy.market.repository.ProductRepository;
 import com.axonivy.market.service.VersionService;
+import com.axonivy.market.util.MavenUtils;
 import com.axonivy.market.util.VersionUtils;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -76,10 +76,10 @@ public class VersionServiceImpl implements VersionService {
     return results;
   }
 
-  public Map<String, Object> getProductJsonContentByIdAndVersion(String productId, String version) {
+  public Map<String, Object> getProductJsonContentByIdAndTag(String productId, String tag) {
     Map<String, Object> result = new HashMap<>();
     try {
-      ProductJsonContent productJsonContent = productJsonRepo.findByProductIdAndVersion(productId, version);
+      ProductJsonContent productJsonContent = productJsonRepo.findByProductIdAndTag(productId, tag);
       if (ObjectUtils.isEmpty(productJsonContent)) {
         return new HashMap<>();
       }
@@ -127,9 +127,9 @@ public class VersionServiceImpl implements VersionService {
     return versions;
   }
 
-  public List<Artifact> getMavenArtifactsFromProductJsonByVersion(String version,
+  public List<Artifact> getMavenArtifactsFromProductJsonByTag(String tag,
       String productId) {
-    ProductJsonContent productJson = productJsonRepo.findByProductIdAndVersion(productId, version);
+    ProductJsonContent productJson = productJsonRepo.findByProductIdAndTag(productId, tag);
     return MavenUtils.getMavenArtifactsFromProductJson(productJson);
   }
 }

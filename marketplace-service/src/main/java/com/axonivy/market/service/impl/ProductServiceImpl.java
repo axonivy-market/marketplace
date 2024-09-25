@@ -523,7 +523,9 @@ public class ProductServiceImpl implements ProductService {
 
   @Override
   public Product fetchProductDetailByIdAndVersion(String id, String version) {
-    return productRepository.getProductByIdAndTag(id, VersionUtils.convertVersionToTag(id, version));
+    List<String> releasedVersions = productRepository.getReleasedVersionsById(id);
+    String receivedVersion = VersionUtils.getMavenVersionMatchWithTag(releasedVersions, version);
+    return productRepository.getProductByIdAndTag(id, VersionUtils.convertVersionToTag(id, receivedVersion));
   }
 
   @Override

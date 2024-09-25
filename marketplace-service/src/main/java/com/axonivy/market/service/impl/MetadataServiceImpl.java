@@ -1,26 +1,25 @@
 package com.axonivy.market.service.impl;
 
+import com.axonivy.market.bo.Artifact;
 import com.axonivy.market.constants.CommonConstants;
 import com.axonivy.market.constants.MavenConstants;
 import com.axonivy.market.constants.ProductJsonConstants;
 import com.axonivy.market.entity.MavenArtifactVersion;
+import com.axonivy.market.entity.Metadata;
 import com.axonivy.market.entity.MetadataSync;
 import com.axonivy.market.entity.Product;
 import com.axonivy.market.entity.ProductJsonContent;
 import com.axonivy.market.github.util.GitHubUtils;
-import com.axonivy.market.bo.Artifact;
-import com.axonivy.market.entity.Metadata;
-import com.axonivy.market.repository.MetadataRepository;
-import com.axonivy.market.service.MetadataService;
-import com.axonivy.market.util.MavenUtils;
-import com.axonivy.market.util.MetadataReaderUtils;
 import com.axonivy.market.model.MavenArtifactModel;
 import com.axonivy.market.repository.MavenArtifactVersionRepository;
+import com.axonivy.market.repository.MetadataRepository;
 import com.axonivy.market.repository.MetadataSyncRepository;
 import com.axonivy.market.repository.ProductJsonContentRepository;
 import com.axonivy.market.repository.ProductRepository;
+import com.axonivy.market.service.MetadataService;
+import com.axonivy.market.util.MavenUtils;
+import com.axonivy.market.util.MetadataReaderUtils;
 import lombok.extern.log4j.Log4j2;
-import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
@@ -123,8 +122,8 @@ public class MetadataServiceImpl implements MetadataService {
     if (CollectionUtils.isEmpty(nonSyncedVersions)) {
       return;
     }
-    nonSyncedVersions.forEach(version -> {
-      ProductJsonContent productJson = productJsonRepo.findByProductIdAndVersion(productId, version);
+    nonSyncedVersions.forEach(tag -> {
+      ProductJsonContent productJson = productJsonRepo.findByProductIdAndTag(productId, tag);
       List<Artifact> artifactsInVersion = MavenUtils.getMavenArtifactsFromProductJson(productJson);
       artifacts.addAll(artifactsInVersion);
     });

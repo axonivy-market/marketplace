@@ -11,7 +11,7 @@ public interface VersionService {
   List<MavenArtifactVersionModel> getArtifactsAndVersionToDisplay(String productId, Boolean isShowDevVersion,
       String designerVersion);
 
-  Map<String, Object> getProductJsonContentByIdAndVersion(String name, String version);
+  Map<String, Object> getProductJsonContentByIdAndTag(String name, String version);
 
   List<VersionAndUrlModel> getVersionsForDesigner(String productId);
 

@@ -180,7 +180,7 @@ public class GHAxonIvyProductRepoServiceImpl implements GHAxonIvyProductRepoServ
       String content = extractProductJsonContent(productJsonFile, productModuleContent.getTag());
       if (ObjectUtils.isNotEmpty(content)) {
         ProductJsonContent jsonContent = new ProductJsonContent();
-        jsonContent.setVersion(currentVersion);
+        jsonContent.setTag(currentVersion);
         jsonContent.setProductId(product.getId());
         ProductFactory.mappingIdForProductJsonContent(jsonContent);
         jsonContent.setName(product.getNames().get(EN_LANGUAGE));
