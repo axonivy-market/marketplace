@@ -56,9 +56,6 @@ export class ProductDetailVersionActionComponent implements AfterViewInit {
   @Input() productId!: string;
   @Input() actionType!: ProductDetailActionType;
 
-  @ViewChild('artifactDownloadButton') artifactDownloadButton!: ElementRef;
-  @ViewChild('artifactDownloadDialog') artifactDownloadDialog!: ElementRef;
-
   @Input() product!: ProductDetail;
   selectedVersion = model<string>('');
   versions: WritableSignal<string[]> = signal([]);
@@ -155,36 +152,7 @@ export class ProductDetailVersionActionComponent implements AfterViewInit {
     }
     this.isDropDownDisplayed.set(!this.isDropDownDisplayed());
   }
-
-  reLocaleDialog() {
-    const buttonPosition = this.getElementPosition(this.artifactDownloadButton);
-    const dialogPosition = this.getElementPosition(this.artifactDownloadDialog);
-    if (buttonPosition && dialogPosition) {
-      const dialogElement = this.artifactDownloadDialog.nativeElement;
-
-      dialogElement.style.position = 'absolute';
-      dialogElement.style.top = `${buttonPosition.y + buttonPosition.height}px`;
-
-      // Align the dialog to the center of the button
-      const dialogWidth = dialogElement.offsetWidth;
-      const buttonCenterX = buttonPosition.x + buttonPosition.width / 2;
-      dialogElement.style.left = `${buttonCenterX - dialogWidth / 2}px`;
-    }
-  }
-
-  getElementPosition(element: ElementRef) {
-    if (element?.nativeElement) {
-      const rect = element.nativeElement.getBoundingClientRect();
-      return {
-        x: rect.left + window.scrollX,
-        y: rect.top + window.scrollY,
-        width: rect.width,
-        height: rect.height
-      };
-    }
-    return null;
-  }
-
+  
   getVersionWithArtifact(ignoreRouteVersion = false) {
     this.isArtifactLoading.set(true);
     this.sanitizeDataBeforeFetching();
