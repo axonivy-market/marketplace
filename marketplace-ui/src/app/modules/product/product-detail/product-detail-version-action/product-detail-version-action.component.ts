@@ -101,8 +101,6 @@ export class ProductDetailVersionActionComponent implements AfterViewInit {
   }
 
   onSelectVersion(version: string) {
-    console.log("Selecting version");
-    
     if (this.selectedVersion() !== version) {
       this.selectedVersion.set(version);
     }
