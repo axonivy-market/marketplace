@@ -102,20 +102,22 @@ public class GitHubUtils {
     return fileName1.compareTo(fileName2);
   }
 
-  public static void findImages(List<GHContent> folder, List<GHContent> images) {
-    for (GHContent itemInFolder : folder) {
-      if (itemInFolder.isDirectory()) {
-        try {
-          List<GHContent> contentsInNextFolder = itemInFolder.listDirectoryContent().toList();
-          findImages(contentsInNextFolder, images);
-        } catch (IOException e) {
-          log.error(e.getMessage());
-        }
-      } else {
-        if (itemInFolder.getName().toLowerCase().matches(IMAGE_EXTENSION)) {
-          images.add(itemInFolder);
-        }
+  public static void findImages(List<GHContent> files, List<GHContent> images) {
+    for (GHContent file : files) {
+      if (file.isDirectory()) {
+        findImagesInDirectory(file, images);
+      } else if (file.getName().toLowerCase().matches(IMAGE_EXTENSION)) {
+        images.add(file);
       }
+    }
+  }
+
+  private static void findImagesInDirectory(GHContent file, List<GHContent> images) {
+    try {
+      List<GHContent> childrenFiles = file.listDirectoryContent().toList();
+      findImages(childrenFiles, images);
+    } catch (IOException e) {
+      log.error(e.getMessage());
     }
   }
 }

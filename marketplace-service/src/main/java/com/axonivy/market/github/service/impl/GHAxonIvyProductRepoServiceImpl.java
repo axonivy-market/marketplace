@@ -296,14 +296,8 @@ public class GHAxonIvyProductRepoServiceImpl implements GHAxonIvyProductRepoServ
   }
 
   private List<GHContent> getAllImagesFromProductFolder(List<GHContent> productFolderContents) {
-    List<String> excludedFileNameList = List.of("README.md", "README_DE.md", "pom.xml", "product.json", "zip.xml");
-
-    List<GHContent> filteredUnnecessaryContentsFromProductFolder = productFolderContents.stream()
-        .filter(ghContent -> !excludedFileNameList.contains(ghContent.getName())).toList();
-
     List<GHContent> images = new ArrayList<>();
-
-    GitHubUtils.findImages(filteredUnnecessaryContentsFromProductFolder, images);
+    GitHubUtils.findImages(productFolderContents, images);
     return images;
   }
 
