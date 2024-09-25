@@ -256,16 +256,18 @@ public class ProductServiceImpl implements ProductService {
     }
   }
 
-  private void modifyProductMetaOrLogo(GitHubFile file, String key){
-    Product product = new Product();
-    GHContent fileContent;
+  private void modifyProductMetaOrLogo(GitHubFile file, String key) {
     try {
-      fileContent = gitHubService.getGHContent(axonIvyMarketRepoService.getRepository(), file.getFileName(),
+      GHContent fileContent = gitHubService.getGHContent(axonIvyMarketRepoService.getRepository(), file.getFileName(),
           marketRepoBranch);
+      updateProductByMetaJsonAndLogo(fileContent, file, key);
     } catch (IOException e) {
       log.error("Get GHContent failed: ", e);
-      return;
     }
+  }
+
+  private void updateProductByMetaJsonAndLogo(GHContent fileContent, GitHubFile file, String key) {
+    Product product = new Product();
     ProductFactory.mappingByGHContent(product, fileContent);
     if (FileType.META == file.getType()) {
       transferComputedDataFromDB(product);
@@ -288,6 +290,8 @@ public class ProductServiceImpl implements ProductService {
         result.setLogoId(image.getId());
         productRepository.save(result);
       });
+    } else {
+      log.info("There is no product to update the logo with path {}", parentPath);
     }
   }
 
