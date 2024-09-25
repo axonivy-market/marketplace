@@ -256,24 +256,24 @@ public class ProductServiceImpl implements ProductService {
     }
   }
 
-  private void modifyProductMetaOrLogo(GitHubFile file, String key) {
+  private void modifyProductMetaOrLogo(GitHubFile file, String parentPath) {
     try {
       GHContent fileContent = gitHubService.getGHContent(axonIvyMarketRepoService.getRepository(), file.getFileName(),
           marketRepoBranch);
-      updateProductByMetaJsonAndLogo(fileContent, file, key);
+      updateProductByMetaJsonAndLogo(fileContent, file, parentPath);
     } catch (IOException e) {
       log.error("Get GHContent failed: ", e);
     }
   }
 
-  private void updateProductByMetaJsonAndLogo(GHContent fileContent, GitHubFile file, String key) {
+  private void updateProductByMetaJsonAndLogo(GHContent fileContent, GitHubFile file, String parentPath) {
     Product product = new Product();
     ProductFactory.mappingByGHContent(product, fileContent);
     if (FileType.META == file.getType()) {
       transferComputedDataFromDB(product);
       productRepository.save(product);
     } else {
-      modifyProductLogo(key, fileContent);
+      modifyProductLogo(parentPath, fileContent);
     }
   }
 
