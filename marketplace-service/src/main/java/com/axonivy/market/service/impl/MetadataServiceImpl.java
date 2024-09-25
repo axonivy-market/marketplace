@@ -19,6 +19,7 @@ import com.axonivy.market.repository.MavenArtifactVersionRepository;
 import com.axonivy.market.repository.MetadataSyncRepository;
 import com.axonivy.market.repository.ProductJsonContentRepository;
 import com.axonivy.market.repository.ProductRepository;
+import lombok.extern.log4j.Log4j2;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
@@ -33,7 +34,7 @@ import java.util.Optional;
 import java.util.Set;
 
 @Service
-@Slf4j
+@Log4j2
 public class MetadataServiceImpl implements MetadataService {
   private final ProductRepository productRepo;
   private final MetadataSyncRepository metadataSyncRepo;
@@ -53,44 +54,19 @@ public class MetadataServiceImpl implements MetadataService {
     this.metadataRepo = metadataRepo;
   }
 
-  private static void updateMavenArtifactVersion(Set<Metadata> metadataSet,
-      MavenArtifactVersion artifactVersion, String productId) {
-    metadataSet.forEach(metadata -> {
-      metadata.getVersions().forEach(version -> {
-
-        MavenArtifactModel model = MavenArtifactModel.builder().name(metadata.getName()).downloadUrl(
-            MavenUtils.buildDownloadUrl(metadata, version)).isInvalidArtifact(
-            !metadata.getArtifactId().contains(productId)).build();
-        artifactVersion.getProductArtifactWithVersionReleased().computeIfAbsent(version, k -> new ArrayList<>()).add(
-            model);
-      });
-    });
-  }
-
-
-  @Override
-  public boolean syncAllArtifactFromMaven() {
-    boolean isAlreadyUpToDate = true;
-    List<Product> products = productRepo.getAllProductWithIdAndReleaseTag();
-    for (Product product : products) {
-      Set<Artifact> artifacts = new HashSet<>();
-      MetadataSync cache = metadataSyncRepo.findById(product.getId()).orElse(
-          MetadataSync.builder().productId(product.getId()).syncedTags(new HashSet<>()).build());
-      List<String> nonSyncedVersions = getNonSyncedVersions(product, cache);
-      MavenArtifactVersion artifactVersionCache = mavenArtifactVersionRepo.findById(product.getId()).orElse(
-          new MavenArtifactVersion(product.getId(), new HashMap<>()));
-      if (!CollectionUtils.isEmpty(nonSyncedVersions)) {
-        updateArtifactsFromNonSyncedVersion(product, nonSyncedVersions, artifacts);
+  private static void updateMavenArtifactVersion(String productId, MavenArtifactVersion artifactVersionCache,
+      Metadata metadata) {
+    metadata.getVersions().forEach(version -> {
+      MavenArtifactModel model = MavenArtifactModel.builder().name(metadata.getName()).downloadUrl(
+          MavenUtils.buildDownloadUrl(metadata, version)).isInvalidArtifact(
+          !metadata.getArtifactId().contains(productId)).build();
+      boolean isExist = artifactVersionCache.getProductArtifactWithVersionReleased().computeIfAbsent(version,
+          k -> new ArrayList<>()).stream().anyMatch(artifact -> StringUtils.equals(model.getDownloadUrl(),
+          artifact.getDownloadUrl()));
+      if (!isExist) {
+        artifactVersionCache.getProductArtifactWithVersionReleased().get(version).add(model);
       }
-
-      Set<Metadata> metadataSet = convertArtifactsToMetadataSet(artifacts);
-      metadataSet.addAll(metadataRepo.findByProductId(product.getId()));
-      updateMavenArtifactVersionData(product, metadataSet, artifactVersionCache);
-      cache.getSyncedTags().addAll(nonSyncedVersions);
-      metadataSyncRepo.save(cache);
-      mavenArtifactVersionRepo.save(artifactVersionCache);
-    }
-    return isAlreadyUpToDate;
+    });
   }
 
   @Override
@@ -98,27 +74,63 @@ public class MetadataServiceImpl implements MetadataService {
     metadataSyncRepo.deleteAll();
   }
 
-  private void updateMavenArtifactVersionData(Product product, Set<Metadata> metadataSet, MavenArtifactVersion artifactVersionCache) {
-    metadataSet.forEach(
-        metadata -> MetadataReaderUtils.parseMetadataFromString(
-            restTemplate.getForObject(metadata.getUrl(), String.class),
-            metadata));
-    updateMavenArtifactVersion(metadataSet, artifactVersionCache, product.getId());
+  @Override
+  public boolean syncAllArtifactFromMaven() {
+    boolean isAlreadyUpToDate = true;
+    List<Product> products = productRepo.getAllProductWithIdAndReleaseTag();
+    log.info("**Sync maven version :: Start to sync version for {} product(s).**", products.size());
+    for (Product product : products) {
+      // Set up cache before sync
+      String productId = product.getId();
+      Set<Metadata> metadataSet = new HashSet<>(metadataRepo.findByProductId(product.getId()));
+      MavenArtifactVersion artifactVersionCache = mavenArtifactVersionRepo.findById(product.getId()).orElse(
+          new MavenArtifactVersion(productId, new HashMap<>()));
+      MetadataSync syncCache = metadataSyncRepo.findById(product.getId()).orElse(
+          MetadataSync.builder().productId(product.getId()).syncedTags(new HashSet<>()).build());
+      Set<Artifact> artifactsFromNewTags = new HashSet<>();
+
+      // Find artifacts form unhandled tags
+      List<String> nonSyncedVersionOfTags = getNonSyncedVersionOfTags(product, syncCache);
+      if (!CollectionUtils.isEmpty(nonSyncedVersionOfTags)) {
+        isAlreadyUpToDate = false;
+        updateArtifactsFromNonSyncedVersion(product.getId(), nonSyncedVersionOfTags, artifactsFromNewTags);
+      }
+
+      // Sync versions from maven & update artifacts-version table
+      metadataSet.addAll(convertArtifactsToMetadataSet(artifactsFromNewTags));
+      updateMavenArtifactVersionData(product.getId(), metadataSet, artifactVersionCache);
+
+      // Persist changed
+      syncCache.getSyncedTags().addAll(nonSyncedVersionOfTags);
+      metadataSyncRepo.save(syncCache);
+      mavenArtifactVersionRepo.save(artifactVersionCache);
+    }
+    return isAlreadyUpToDate;
   }
 
-  private void updateArtifactsFromNonSyncedVersion(Product product, List<String> nonSyncedVersions,
+  private void updateMavenArtifactVersionData(String productId, Set<Metadata> metadataSet,
+      MavenArtifactVersion artifactVersionCache) {
+    metadataSet.forEach(
+        metadata -> {
+          MetadataReaderUtils.parseMetadataFromString(restTemplate.getForObject(metadata.getUrl(), String.class),
+              metadata);
+          updateMavenArtifactVersion(productId, artifactVersionCache, metadata);
+        });
+  }
+
+  private void updateArtifactsFromNonSyncedVersion(String productId, List<String> nonSyncedVersions,
       Set<Artifact> artifacts) {
     if (CollectionUtils.isEmpty(nonSyncedVersions)) {
       return;
     }
     nonSyncedVersions.forEach(version -> {
-      ProductJsonContent productJson = productJsonRepo.findByProductIdAndVersion(product.getId(), version);
+      ProductJsonContent productJson = productJsonRepo.findByProductIdAndVersion(productId, version);
       List<Artifact> artifactsInVersion = MavenUtils.getMavenArtifactsFromProductJson(productJson);
       artifacts.addAll(artifactsInVersion);
     });
   }
 
-  private List<String> getNonSyncedVersions(Product product, MetadataSync cache) {
+  private List<String> getNonSyncedVersionOfTags(Product product, MetadataSync cache) {
     List<String> nonSyncedVersions = product.getReleasedVersions();
     if (!CollectionUtils.isEmpty(cache.getSyncedTags())) {
       nonSyncedVersions.removeAll(cache.getSyncedTags());
