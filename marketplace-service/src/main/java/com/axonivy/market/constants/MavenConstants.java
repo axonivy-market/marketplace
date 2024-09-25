@@ -15,7 +15,6 @@ public class MavenConstants {
   public static final String VERSION_TAG = "version";
   public static final String LAST_UPDATED_TAG = "lastUpdated";
   public static final String METADATA_URL_POSTFIX = "maven-metadata.xml";
-  public static final String DEFAULT_ARTIFACT_TYPE = "iar";
   public static final String SNAPSHOT_LAST_UPDATED_TAG = "timestamp";
   public static final String SNAPSHOT_LAST_UPDATED_DATE_TIME_FORMAT = "yyyyMMdd.HHmmss";
   public static final String VALUE_TAG = "value";

@@ -67,14 +67,38 @@ public class MetadataServiceImpl implements MetadataService {
     }
   }
 
-  @Override
-  public void clearAllSync() {
-    metadataSyncRepo.deleteAll();
+  private static MavenArtifactModel buildMavenArtifactModelFromSnapShotMetadata(String version,
+      Metadata snapShotMetadata) {
+    return new MavenArtifactModel(snapShotMetadata.getName(),
+        MavenUtils.buildDownloadUrl(snapShotMetadata.getArtifactId(), version, snapShotMetadata.getType(),
+            snapShotMetadata.getRepoUrl(), snapShotMetadata.getGroupId(), snapShotMetadata.getSnapshotVersionValue()),
+        snapShotMetadata.getArtifactId().contains(snapShotMetadata.getGroupId()));
+  }
+
+  private String getMetadataContent(String metadataUrl) {
+    try {
+      return restTemplate.getForObject(metadataUrl, String.class);
+    } catch (Exception e) {
+      log.error("**MetadataService: Failed to fetch metadata from url {}", metadataUrl);
+      return StringUtils.EMPTY;
+    }
+  }
+
+  private void updateMavenArtifactVersionData(Set<Metadata> metadataSet,
+      MavenArtifactVersion artifactVersionCache) {
+    for (Metadata metadata : metadataSet) {
+      String metadataContent = getMetadataContent(metadata.getUrl());
+      if (StringUtils.isBlank(metadataContent)) {
+        continue;
+      }
+      MetadataReaderUtils.parseMetadataFromString(metadataContent, metadata);
+      updateMavenArtifactVersionFromMetadata(artifactVersionCache, metadata);
+
+    }
   }
 
   @Override
-  public boolean syncAllArtifactFromMaven() {
-    boolean isAlreadyUpToDate = true;
+  public void syncAllProductMavenMetadata() {
     List<Product> products = productRepo.getAllProductWithIdAndReleaseTag();
     log.warn("**MetadataService: Start to sync version for {} product(s)", products.size());
     for (Product product : products) {
@@ -88,9 +112,8 @@ public class MetadataServiceImpl implements MetadataService {
       Set<Artifact> artifactsFromNewTags = new HashSet<>();
 
       // Find artifacts form unhandled tags
-      List<String> nonSyncedVersionOfTags = getNonSyncedVersionOfTags(product, syncCache);
+      List<String> nonSyncedVersionOfTags = getNonSyncedVersionOfTags(product.getReleasedVersions(), syncCache);
       if (!CollectionUtils.isEmpty(nonSyncedVersionOfTags)) {
-        isAlreadyUpToDate = false;
         updateArtifactsFromNonSyncedVersion(product.getId(), nonSyncedVersionOfTags, artifactsFromNewTags);
         log.info("**MetadataService: New tags detected: {} in product {}", nonSyncedVersionOfTags.toString(),
             productId);
@@ -101,7 +124,7 @@ public class MetadataServiceImpl implements MetadataService {
       if (CollectionUtils.isEmpty(metadataSet)) {
         continue;
       }
-      updateMavenArtifactVersionData(product.getId(), metadataSet, artifactVersionCache);
+      updateMavenArtifactVersionData(metadataSet, artifactVersionCache);
 
       // Persist changed
       syncCache.getSyncedTags().addAll(nonSyncedVersionOfTags);
@@ -110,36 +133,14 @@ public class MetadataServiceImpl implements MetadataService {
       metadataRepo.saveAll(metadataSet);
     }
     log.warn("**MetadataService: version sync finished");
-    return isAlreadyUpToDate;
-  }
-
-  private String getMetadataContent(String metadataUrl) {
-    try {
-      return restTemplate.getForObject(metadataUrl, String.class);
-    } catch (Exception e) {
-      log.error("**MetadataService: Failed to fetch metadata from url {}", metadataUrl);
-      return StringUtils.EMPTY;
-    }
-  }
-
-  private void updateMavenArtifactVersionData(String productId, Set<Metadata> metadataSet,
-      MavenArtifactVersion artifactVersionCache) {
-    for (Metadata metadata : metadataSet) {
-      String metadataContent = getMetadataContent(metadata.getUrl());
-      if (StringUtils.isBlank(metadataContent)) {
-        continue;
-      }
-      MetadataReaderUtils.parseMetadataFromString(metadataContent, metadata);
-      updateMavenArtifactVersionFromMetadata(artifactVersionCache, metadata);
-
-    }
   }
 
   private void updateMavenArtifactVersionFromMetadata(MavenArtifactVersion artifactVersionCache, Metadata metadata) {
     metadata.getVersions().forEach(version -> {
-      if (VersionUtils.isSnapshotVersion(version) && VersionUtils.isOfficialVersionOrUnReleasedDevVersion(
-          metadata.getVersions().stream().toList(), version)) {
-        updateMavenArtifactVersionForNonReleaseDeVersion(artifactVersionCache, metadata, version);
+      if (VersionUtils.isSnapshotVersion(version)) {
+        if (VersionUtils.isOfficialVersionOrUnReleasedDevVersion(metadata.getVersions().stream().toList(), version)) {
+          updateMavenArtifactVersionForNonReleaseDeVersion(artifactVersionCache, metadata, version);
+        }
       } else {
         updateMavenArtifactVersionForStableVersion(artifactVersionCache, metadata, version);
       }
@@ -148,18 +149,20 @@ public class MetadataServiceImpl implements MetadataService {
 
   private void updateMavenArtifactVersionForNonReleaseDeVersion(MavenArtifactVersion artifactVersionCache,
       Metadata metadata, String version) {
+    Metadata snapShotMetadata = buildSnapShotMetaData(metadata, version);
+    MetadataReaderUtils.parseMetadataSnapshotFromString(getMetadataContent(snapShotMetadata.getUrl()),
+        snapShotMetadata);
+    artifactVersionCache.getProductArtifactWithVersionReleased().computeIfAbsent(version, k -> new ArrayList<>()).add(
+        buildMavenArtifactModelFromSnapShotMetadata(version, snapShotMetadata));
+  }
+
+  private Metadata buildSnapShotMetaData(Metadata metadata, String version) {
     String snapshotMetadataUrl = buildSnapshotMetadataUrlFromArtifactInfo(metadata.getRepoUrl(), metadata.getGroupId(),
         metadata.getArtifactId(), version);
     Metadata snapShotMetadata = Metadata.builder().url(snapshotMetadataUrl).repoUrl(metadata.getRepoUrl()).groupId(
         metadata.getGroupId()).artifactId(metadata.getArtifactId()).type(metadata.getType()).productId(
         metadata.getProductId()).name(metadata.getName()).isSnapShotMetadata(true).build();
-    MetadataReaderUtils.parseMetadataSnapshotFromString(getMetadataContent(snapshotMetadataUrl), snapShotMetadata);
-    artifactVersionCache.getProductArtifactWithVersionReleased().computeIfAbsent(version, k -> new ArrayList<>()).add(
-        new MavenArtifactModel(snapShotMetadata.getName(),
-            MavenUtils.buildDownloadUrl(snapShotMetadata.getArtifactId(), version, snapShotMetadata.getType(),
-                snapShotMetadata.getRepoUrl(), snapShotMetadata.getGroupId(),
-                snapShotMetadata.getSnapshotVersionValue()),
-            snapShotMetadata.getArtifactId().contains(snapShotMetadata.getGroupId())));
+    return snapShotMetadata;
   }
 
   private void updateArtifactsFromNonSyncedVersion(String productId, List<String> nonSyncedVersions,
@@ -174,12 +177,11 @@ public class MetadataServiceImpl implements MetadataService {
     });
   }
 
-  private List<String> getNonSyncedVersionOfTags(Product product, MetadataSync cache) {
-    List<String> nonSyncedVersions = product.getReleasedVersions();
+  private List<String> getNonSyncedVersionOfTags(List<String> releasedVersion, MetadataSync cache) {
     if (!CollectionUtils.isEmpty(cache.getSyncedTags())) {
-      nonSyncedVersions.removeAll(cache.getSyncedTags());
+      releasedVersion.removeAll(cache.getSyncedTags());
     }
-    return nonSyncedVersions;
+    return releasedVersion;
   }
 
   private Set<Metadata> convertArtifactsToMetadataSet(Set<Artifact> artifacts, String productId) {

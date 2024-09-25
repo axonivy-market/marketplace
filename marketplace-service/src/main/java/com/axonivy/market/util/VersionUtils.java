@@ -8,7 +8,6 @@ import com.axonivy.market.constants.MavenConstants;
 import com.axonivy.market.entity.Product;
 import com.axonivy.market.enums.NonStandardProduct;
 import lombok.extern.log4j.Log4j2;
-import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.util.Strings;

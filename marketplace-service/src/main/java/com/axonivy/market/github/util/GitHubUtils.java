@@ -79,10 +79,10 @@ public class GitHubUtils {
     String json = extractJson(exceptionMessage);
     String key = "\"message\":\"";
     int startIndex = json.indexOf(key);
-    if (startIndex != -1) {
+    if (startIndex != StringUtils.INDEX_NOT_FOUND) {
       startIndex += key.length();
       int endIndex = json.indexOf("\"", startIndex);
-      if (endIndex != -1) {
+      if (endIndex != StringUtils.INDEX_NOT_FOUND) {
         return json.substring(startIndex, endIndex);
       }
     }
@@ -92,7 +92,7 @@ public class GitHubUtils {
   public static String extractJson(String text) {
     int start = text.indexOf("{");
     int end = text.lastIndexOf("}") + 1;
-    if (start != -1 && end != -1) {
+    if (start != StringUtils.INDEX_NOT_FOUND && end != StringUtils.INDEX_NOT_FOUND) {
       return text.substring(start, end);
     }
     return StringUtils.EMPTY;
