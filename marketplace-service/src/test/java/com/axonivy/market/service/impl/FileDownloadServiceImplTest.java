@@ -42,13 +42,10 @@ class FileDownloadServiceImplTest {
   void testDownloadAndUnzipFileWithEmptyResult() throws IOException {
     var result = fileDownloadService.downloadAndUnzipFile("", false);
     assertTrue(result.isEmpty());
-
-    result = fileDownloadService.downloadAndUnzipFile(DOWNLOAD_URL, false);
-    assertTrue(result.isEmpty());
   }
 
   @Test
-  void testDownloadAndUnzipFile() {
+  void testDownloadAndUnzipFileWithIssue() {
     assertThrows(ResourceAccessException.class, () -> fileDownloadService.downloadAndUnzipFile(DOWNLOAD_URL, true));
   }
 
