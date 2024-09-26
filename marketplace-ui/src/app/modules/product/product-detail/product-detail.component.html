@@ -16,7 +16,7 @@
         </a>
       </div>
       <div class="version-gap d-flex flex-column flex-lg-row justify-content-between">
-        <div class="d-flex flex-column module-gap">
+        <div class="d-flex flex-column module-gap connector-title-container">
           <div class="d-flex">
             <div class="logo__image-container">
               <img
@@ -32,8 +32,7 @@
             </div>
             <h1
               [lang]="languageService.selectedLanguage()"
-              class="product-title align-items-start default-cursor">
-              {{
+              class="product-title align-items-start default-cursor">{{
                 productDetail().names
                   | multilingualism: languageService.selectedLanguage()
               }}
@@ -79,7 +78,7 @@
           (selectedVersionChange)="
             loadDetailTabs($event)
           "></app-product-version-action>
-        </div>
+      </div>
     </div>
 
     <div class="detail-body d-flex flex-row align-items-start p-0 w-100">
