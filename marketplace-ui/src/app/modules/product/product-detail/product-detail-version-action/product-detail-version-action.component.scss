@@ -48,9 +48,6 @@
     }
   }
 }
-::ng-deep .dropdown-menu {
-  min-width: 100%;
-}
 
 ::ng-deep .dropdown-item {
   font-size: 14px;
@@ -86,11 +83,7 @@
 }
 
 .btn__install {
-  margin-right: 10px;
   border: 0px;
-}
-.btn__download {
-  border: 0.5px solid #ebebeb;
 }
 .primary-color {
   color: var(--ivy-primary-bg);
@@ -106,7 +99,7 @@
 }
 
 ::ng-deep .dropdown-menu.menu-bar {
-  margin-top: 4px;
+  margin-top: 2.5rem;
 }
 
 ::ng-deep .install-designer-dropdown {
@@ -115,22 +108,32 @@
   text-align: start;
 }
 
+.install-download-button-container {
+  position: relative;
+}
+
+.btn__download {
+  border: 0.5px solid #ebebeb;
+}
+
 ::ng-deep .dropdown-menu {
+  position: absolute;
+  right: 0;
+  width: 400px;
+  height: 204px;
+  margin-top: 1rem;
+  background-color: var(--bs-body-bg);
+  z-index: 999;
   padding: 10px;
   border-radius: 5px;
-  gap: 15px;
   box-shadow: 0px 4px 30px 0px rgba(0, 0, 0, 0.1);
-  margin-top: 1.2rem;
+
+  @media screen and (max-width: 991px) {
+    width: 100%;
+    margin-top: 4rem;
+  }
+
   &.maven-artifact-version__action {
-    min-width: 400px;
-    min-height: 204px;
-
-    @media (max-width: 500px) {
-      left: auto;
-      right: auto;
-      min-width: 80vw;
-    }
-
     .form-group {
       gap: 7px;
 
@@ -182,17 +185,16 @@
   top: -10px;
   width: 20px;
   height: 20px;
-  left: 50%;
+  right: 12%;
   z-index: 1001;
-  @media (max-width: 767px) {
-    top: -8px;
-    width: 16px;
-    height: 16px;
-  }
   transform: translateX(-50%) rotate(45deg);
   border-right-color: transparent;
   border-bottom-color: transparent;
   background-color: var(--bs-body-bg);
+
+  @media screen and (max-width: 991px) {
+    right: 22%;
+  }
 }
 
 .btn_contact-us {

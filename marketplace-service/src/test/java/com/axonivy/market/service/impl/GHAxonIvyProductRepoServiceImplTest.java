@@ -265,23 +265,18 @@ class GHAxonIvyProductRepoServiceImplTest {
   }
 
   @Test
-  void testGetReadmeAndProductContentFromTag_ImageFromFolder() throws IOException {
+  void testGetReadmeAndProductContentFromTag_ImageFromRootFolder() {
     String readmeContentWithImageFolder = """
         #Product-name
         Test README
         ## Demo
         Demo content
         ## Setup
-        Setup content (./images/image.png)
-        """;
+        Setup content (./image.png)""";
 
     GHContent mockImageFile = mock(GHContent.class);
-    when(mockImageFile.getName()).thenReturn(ReadmeConstants.IMAGES, IMAGE_NAME);
-    when(mockImageFile.isDirectory()).thenReturn(true);
+    when(mockImageFile.getName()).thenReturn(IMAGE_NAME);
     Mockito.when(imageService.mappingImageFromGHContent(any(), any(), anyBoolean())).thenReturn(mockImage());
-    PagedIterable<GHContent> pagedIterable = Mockito.mock(String.valueOf(GHContent.class));
-    when(mockImageFile.listDirectoryContent()).thenReturn(pagedIterable);
-    when(pagedIterable.toList()).thenReturn(List.of(mockImageFile));
 
     String updatedReadme = axonivyProductRepoServiceImpl.updateImagesWithDownloadUrl(createMockProduct(),
         List.of(mockImageFile), readmeContentWithImageFolder);
@@ -292,8 +287,49 @@ class GHAxonIvyProductRepoServiceImplTest {
             ## Demo
             Demo content
             ## Setup
-            Setup content (imageId-66e2b14868f2f95b2f95549a)
-            """,
+            Setup content (imageId-66e2b14868f2f95b2f95549a)""",
+        updatedReadme);
+  }
+
+  @Test
+  void testGetReadmeAndProductContentFromTag_ImageFromChildFolder() throws IOException {
+    String readmeContentWithImageFolder = """
+        #Product-name
+        Test README
+        ## Demo
+        Demo content
+        ## Setup
+        Setup content (.doc/img/image.png)""";
+
+    GHContent mockImageFile = mock(GHContent.class);
+    when(mockImageFile.isDirectory()).thenReturn(true);
+
+    GHContent mockImageFile2 = mock(GHContent.class);
+    when(mockImageFile2.isDirectory()).thenReturn(true);
+
+    GHContent mockImageFile3 = mock(GHContent.class);
+    when(mockImageFile3.getName()).thenReturn(IMAGE_NAME);
+
+    PagedIterable<GHContent> pagedIterable = Mockito.mock(String.valueOf(GHContent.class));
+    when(mockImageFile.listDirectoryContent()).thenReturn(pagedIterable);
+    when(pagedIterable.toList()).thenReturn(List.of(mockImageFile2));
+
+    PagedIterable<GHContent> pagedIterable2 = Mockito.mock(String.valueOf(GHContent.class));
+    when(mockImageFile2.listDirectoryContent()).thenReturn(pagedIterable2);
+    when(pagedIterable2.toList()).thenReturn(List.of(mockImageFile3));
+
+    Mockito.when(imageService.mappingImageFromGHContent(any(), any(), anyBoolean())).thenReturn(mockImage());
+
+    String updatedReadme = axonivyProductRepoServiceImpl.updateImagesWithDownloadUrl(createMockProduct(),
+        List.of(mockImageFile), readmeContentWithImageFolder);
+
+    assertEquals("""
+            #Product-name
+            Test README
+            ## Demo
+            Demo content
+            ## Setup
+            Setup content (imageId-66e2b14868f2f95b2f95549a)""",
         updatedReadme);
   }
 
@@ -438,6 +474,10 @@ class GHAxonIvyProductRepoServiceImplTest {
     GHContent mockContent = mock(GHContent.class);
     when(mockContent.isDirectory()).thenReturn(true);
     when(mockContent.isFile()).thenReturn(true);
+
+    PagedIterable<GHContent> pagedIterable = Mockito.mock(String.valueOf(GHContent.class));
+    when(mockContent.listDirectoryContent()).thenReturn(pagedIterable);
+
     when(mockContent.getName()).thenReturn(DOCUWARE_CONNECTOR_PRODUCT, ReadmeConstants.README_FILE);
 
     GHContent mockContent2 = createMockProductJson();

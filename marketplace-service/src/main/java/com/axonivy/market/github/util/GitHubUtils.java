@@ -21,6 +21,7 @@ import java.util.Objects;
 import java.util.stream.Collectors;
 
 import static com.axonivy.market.constants.MetaConstants.META_FILE;
+import static com.axonivy.market.github.service.impl.GHAxonIvyProductRepoServiceImpl.IMAGE_EXTENSION;
 
 @Log4j2
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
@@ -120,6 +121,25 @@ public class GitHubUtils {
     } catch (IOException | NullPointerException e) {
       log.warn("Can not read the current content: {}", e.getMessage());
       return null;
+    }
+  }
+
+  public static void findImages(List<GHContent> files, List<GHContent> images) {
+    for (GHContent file : files) {
+      if (file.isDirectory()) {
+        findImagesInDirectory(file, images);
+      } else if (file.getName().toLowerCase().matches(IMAGE_EXTENSION)) {
+        images.add(file);
+      }
+    }
+  }
+
+  private static void findImagesInDirectory(GHContent file, List<GHContent> images) {
+    try {
+      List<GHContent> childrenFiles = file.listDirectoryContent().toList();
+      findImages(childrenFiles, images);
+    } catch (IOException e) {
+      log.error(e.getMessage());
     }
   }
 }
