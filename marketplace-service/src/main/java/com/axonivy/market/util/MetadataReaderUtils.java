@@ -89,7 +89,7 @@ public class MetadataReaderUtils {
 
     String destDir = snapShotMetadata.getArtifactId();
     unzip(zipFilePath, destDir);
-
+    Files.deleteIfExists(Path.of(zipFilePath));
     return Paths.get(destDir).toAbsolutePath().toString();
   }
 

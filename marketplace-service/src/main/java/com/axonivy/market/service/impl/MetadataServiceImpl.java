@@ -6,6 +6,7 @@ import com.axonivy.market.constants.GitHubConstants;
 import com.axonivy.market.constants.MavenConstants;
 import com.axonivy.market.constants.ProductJsonConstants;
 import com.axonivy.market.constants.ReadmeConstants;
+import com.axonivy.market.entity.Image;
 import com.axonivy.market.entity.MavenArtifactVersion;
 import com.axonivy.market.entity.Metadata;
 import com.axonivy.market.entity.MetadataSync;
@@ -15,10 +16,12 @@ import com.axonivy.market.entity.ProductModuleContent;
 import com.axonivy.market.enums.Language;
 import com.axonivy.market.enums.NonStandardProduct;
 import com.axonivy.market.factory.ProductFactory;
+import com.axonivy.market.repository.ImageRepository;
 import com.axonivy.market.repository.MavenArtifactVersionRepository;
 import com.axonivy.market.repository.MetadataRepository;
 import com.axonivy.market.repository.MetadataSyncRepository;
 import com.axonivy.market.repository.ProductJsonContentRepository;
+import com.axonivy.market.repository.ProductModuleContentRepository;
 import com.axonivy.market.repository.ProductRepository;
 import com.axonivy.market.service.MetadataService;
 import com.axonivy.market.util.MavenUtils;
@@ -29,6 +32,7 @@ import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.util.Strings;
+import org.bson.types.Binary;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
@@ -39,6 +43,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -58,6 +63,8 @@ public class MetadataServiceImpl implements MetadataService {
   private final ProductJsonContentRepository productJsonRepo;
   private final MavenArtifactVersionRepository mavenArtifactVersionRepo;
   private final MetadataRepository metadataRepo;
+  private final ImageRepository imageRepository;
+  private final ProductModuleContentRepository productModuleContentRepo;
   public static final String DEMO_SETUP_TITLE = "(?i)## Demo|## Setup";
   public static final String IMAGE_EXTENSION = "(.*?).(jpeg|jpg|png|gif)";
   public static final String README_IMAGE_FORMAT = "\\(([^)]*?%s[^)]*?)\\)";
@@ -70,12 +77,15 @@ public class MetadataServiceImpl implements MetadataService {
 
   public MetadataServiceImpl(ProductRepository productRepo, MetadataSyncRepository metadataSyncRepo,
       ProductJsonContentRepository productJsonRepo, MavenArtifactVersionRepository mavenArtifactVersionRepo,
-      MetadataRepository metadataRepo) {
+      MetadataRepository metadataRepo, ImageRepository imageRepository,
+      ProductModuleContentRepository productModuleContentRepo) {
     this.productRepo = productRepo;
     this.metadataSyncRepo = metadataSyncRepo;
     this.productJsonRepo = productJsonRepo;
     this.mavenArtifactVersionRepo = mavenArtifactVersionRepo;
     this.metadataRepo = metadataRepo;
+    this.imageRepository = imageRepository;
+    this.productModuleContentRepo = productModuleContentRepo;
   }
 
   private static void updateMavenArtifactVersionCacheWithModel(MavenArtifactVersion artifactVersionCache,
@@ -131,11 +141,6 @@ public class MetadataServiceImpl implements MetadataService {
 
       // Sync versions from maven & update artifacts-version table
       List<Artifact> additionalArtifactFromMeta = product.getArtifacts();
-//      Artifact productArtifact =
-//          additionalArtifactFromMeta.stream().filter(
-//              a -> a.getArtifactId().contains(MavenConstants.PRODUCT_ARTIFACT_POSTFIX)).findAny().orElse(
-//              new Artifact());
-//      additionalArtifactFromMeta.remove(productArtifact);
       metadataSet.addAll(MavenUtils.convertArtifactsToMetadataSet(artifactsFromNewTags, productId));
       metadataSet.addAll(
           MavenUtils.convertArtifactsToMetadataSet(new HashSet<>(additionalArtifactFromMeta), productId));
@@ -198,7 +203,9 @@ public class MetadataServiceImpl implements MetadataService {
         }
       }
     }
-
+    if (!CollectionUtils.isEmpty(productModuleContents)) {
+      productModuleContentRepo.saveAll(productModuleContents);
+    }
   }
 
   public ProductModuleContent getReadmeAndProductContentsFromTag(Product product, String tag,
@@ -213,6 +220,7 @@ public class MetadataServiceImpl implements MetadataService {
       ProductFactory.mappingIdForProductModuleContent(productModuleContent);
       updateDependencyContentsFromProductJson(productModuleContent, product, unzippedFolderPath);
       extractReadMeFileFromContents(product, unzippedFolderPath, productModuleContent);
+      Files.deleteIfExists(Path.of(unzippedFolderPath));
     } catch (Exception e) {
       log.error("Cannot get product.json content in {}", e.getMessage());
       return null;
@@ -233,7 +241,7 @@ public class MetadataServiceImpl implements MetadataService {
         for (Path readmeFile : readmeFiles) {
           String readmeContents = Files.readString(readmeFile);
           if (hasImageDirectives(readmeContents)) {
-            readmeContents = updateImagesWithDownloadUrl(unzippedFolderPath, readmeContents);
+            readmeContents = updateImagesWithDownloadUrl(product, unzippedFolderPath, readmeContents);
           }
           String locale = getReadmeFileLocale(readmeFile.getFileName().toString());
           getExtractedPartsOfReadme(moduleContents, readmeContents, locale);
@@ -257,7 +265,7 @@ public class MetadataServiceImpl implements MetadataService {
     return map;
   }
 
-  private String updateImagesWithDownloadUrl(String unzippedFolderPath,
+  private String updateImagesWithDownloadUrl(Product product, String unzippedFolderPath,
       String readmeContents) throws IOException {
     List<Path> imagesAtRootFolder = Files.walk(Paths.get(unzippedFolderPath))
         .filter(Files::isRegularFile)
@@ -265,15 +273,31 @@ public class MetadataServiceImpl implements MetadataService {
         .toList();
 
     Map<String, String> imageUrls = new HashMap<>();
-    for (Path image : imagesAtRootFolder) {
-      String imageName = image.getFileName().toString();
-      String imageUrl = CommonConstants.IMAGE_ID_PREFIX.concat(imageName);
+    for (Path imagePath : imagesAtRootFolder) {
+      String imageName = imagePath.getFileName().toString();
+      List<Image> existingImages = imageRepository.findByProductId(product.getId());
+
+      InputStream contentStream = MavenUtils.extractedContentStream(imagePath);
+      byte[] sourceBytes = IOUtils.toByteArray(contentStream);
+      boolean isImageExisted =
+          existingImages.stream().anyMatch(existingImage -> Arrays.equals(existingImage.getImageData().getData(),
+              sourceBytes));
+      if (isImageExisted) {
+        continue;
+      }
+
+      Image image = new Image();
+      image.setImageData(new Binary(sourceBytes));
+      image.setProductId(product.getId());
+      imageRepository.save(image);
+
+      String imageUrl = CommonConstants.IMAGE_ID_PREFIX.concat(image.getId());
       imageUrls.put(imageName, imageUrl);
     }
 
     for (Map.Entry<String, String> entry : imageUrls.entrySet()) {
-      String imageUrlPattern = String.format(README_IMAGE_FORMAT, Pattern.quote(entry.getKey()));
-      readmeContents = readmeContents.replaceAll(imageUrlPattern,
+      String imagePattern = String.format(README_IMAGE_FORMAT, Pattern.quote(entry.getKey()));
+      readmeContents = readmeContents.replaceAll(imagePattern,
           String.format(IMAGE_DOWNLOAD_URL_FORMAT, entry.getValue()));
     }
 
@@ -347,7 +371,6 @@ public class MetadataServiceImpl implements MetadataService {
 
     return result;
   }
-
 
   private void updateDependencyContentsFromProductJson(ProductModuleContent productModuleContent,
       Product product, String unzippedFolderPath) throws IOException {
