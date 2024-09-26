@@ -80,10 +80,10 @@ public class GitHubUtils {
     String json = extractJson(exceptionMessage);
     String key = "\"message\":\"";
     int startIndex = json.indexOf(key);
-    if (startIndex != StringUtils.INDEX_NOT_FOUND) {
+    if (startIndex != -1) {
       startIndex += key.length();
       int endIndex = json.indexOf("\"", startIndex);
-      if (endIndex != StringUtils.INDEX_NOT_FOUND) {
+      if (endIndex != -1) {
         return json.substring(startIndex, endIndex);
       }
     }
@@ -93,7 +93,7 @@ public class GitHubUtils {
   public static String extractJson(String text) {
     int start = text.indexOf("{");
     int end = text.lastIndexOf("}") + 1;
-    if (start != StringUtils.INDEX_NOT_FOUND && end != StringUtils.INDEX_NOT_FOUND) {
+    if (start != -1 && end != -1) {
       return text.substring(start, end);
     }
     return StringUtils.EMPTY;
@@ -105,23 +105,6 @@ public class GitHubUtils {
     if (fileName2.endsWith(META_FILE))
       return 1;
     return fileName1.compareTo(fileName2);
-  }
-
-  public static List<Artifact> convertProductJsonToMavenProductInfo(GHContent content) throws IOException {
-    InputStream contentStream = extractedContentStream(content);
-    if (Objects.isNull(contentStream)) {
-      return new ArrayList<>();
-    }
-    return MavenUtils.extractMavenArtifactsFromContentStream(contentStream);
-  }
-
-  public static InputStream extractedContentStream(GHContent content) {
-    try {
-      return content.read();
-    } catch (IOException | NullPointerException e) {
-      log.warn("Can not read the current content: {}", e.getMessage());
-      return null;
-    }
   }
 
   public static void findImages(List<GHContent> files, List<GHContent> images) {
@@ -140,6 +123,23 @@ public class GitHubUtils {
       findImages(childrenFiles, images);
     } catch (IOException e) {
       log.error(e.getMessage());
+    }
+  }
+
+  public static List<Artifact> convertProductJsonToMavenProductInfo(GHContent content) throws IOException {
+    InputStream contentStream = extractedContentStream(content);
+    if (Objects.isNull(contentStream)) {
+      return new ArrayList<>();
+    }
+    return MavenUtils.extractMavenArtifactsFromContentStream(contentStream);
+  }
+
+  public static InputStream extractedContentStream(GHContent content) {
+    try {
+      return content.read();
+    } catch (IOException | NullPointerException e) {
+      log.warn("Can not read the current content: {}", e.getMessage());
+      return null;
     }
   }
 }

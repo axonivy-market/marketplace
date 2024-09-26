@@ -56,7 +56,6 @@ public class VersionServiceImpl implements VersionService {
     this.productContentRepo = productContentRepo;
   }
 
-//TODO: resolve comment here
   public List<MavenArtifactVersionModel> getArtifactsAndVersionToDisplay(String productId, Boolean isShowDevVersion,
       String designerVersion) {
     MavenArtifactVersion cache = mavenArtifactVersionRepository.findById(productId).orElse(
