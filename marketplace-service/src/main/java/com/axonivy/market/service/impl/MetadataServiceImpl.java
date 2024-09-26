@@ -6,7 +6,6 @@ import com.axonivy.market.entity.Metadata;
 import com.axonivy.market.entity.MetadataSync;
 import com.axonivy.market.entity.Product;
 import com.axonivy.market.entity.ProductJsonContent;
-import com.axonivy.market.model.MavenArtifactModel;
 import com.axonivy.market.repository.MavenArtifactVersionRepository;
 import com.axonivy.market.repository.MetadataRepository;
 import com.axonivy.market.repository.MetadataSyncRepository;
@@ -21,6 +20,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -47,14 +47,15 @@ public class MetadataServiceImpl implements MetadataService {
     this.metadataRepo = metadataRepo;
   }
 
-  private void updateMavenArtifactVersionData(Set<Metadata> metadataSet, MavenArtifactVersion artifactVersionCache) {
+  private void updateMavenArtifactVersionData(Product product, Set<Metadata> metadataSet,
+      MavenArtifactVersion artifactVersionCache) {
     for (Metadata metadata : metadataSet) {
       String metadataContent = MavenUtils.getMetadataContentFromUrl(metadata.getUrl());
       if (StringUtils.isBlank(metadataContent)) {
         continue;
       }
       MetadataReaderUtils.parseMetadataFromString(metadataContent, metadata);
-      updateMavenArtifactVersionFromMetadata(artifactVersionCache, metadata);
+      updateMavenArtifactVersionFromMetadata(product, artifactVersionCache, metadata);
     }
   }
 
@@ -90,7 +91,7 @@ public class MetadataServiceImpl implements MetadataService {
         continue;
       }
       artifactVersionCache.setAdditionalArtifactsByVersion(new HashMap<>());
-      updateMavenArtifactVersionData(metadataSet, artifactVersionCache);
+      updateMavenArtifactVersionData(product, metadataSet, artifactVersionCache);
 
       // Persist changed
       syncCache.getSyncedTags().addAll(nonSyncedVersionOfTags);
@@ -101,7 +102,41 @@ public class MetadataServiceImpl implements MetadataService {
     log.warn("**MetadataService: version sync finished");
   }
 
-  private void updateMavenArtifactVersionFromMetadata(MavenArtifactVersion artifactVersionCache, Metadata metadata) {
+  private void updateMavenArtifactVersionFromMetadata(Product product, MavenArtifactVersion artifactVersionCache,
+      Metadata metadata) {
+    Set<String> notInGHTags = new HashSet<>();
+
+    for (String metaVersion : metadata.getVersions()) {
+      String matchedVersion = VersionUtils.getMavenVersionMatchWithTag(
+          product.getReleasedVersions(), metaVersion);
+      if (!metaVersion.equals(matchedVersion) && VersionUtils.isSnapshotVersion(metaVersion)) {
+        notInGHTags.add(metaVersion);
+      }
+    }
+    log.error("Snapshot Versions not in GHTags: {}", notInGHTags);
+    for (String notInGHTag : notInGHTags) {
+      Metadata snapShotMetadata = MavenUtils.buildSnapShotMetadataFromVersion(metadata, notInGHTag);
+      MetadataReaderUtils.parseMetadataSnapshotFromString(
+          MavenUtils.getMetadataContentFromUrl(snapShotMetadata.getUrl()),
+          snapShotMetadata);
+      String url = "https://maven.axonivy.com/com/axonivy/demo/connectivity-demos-product/12.0" +
+          ".0-SNAPSHOT/connectivity-demos-product-12.0.0-20240925.050040-20.zip";
+//      String url = MavenUtils.buildDownloadUrl(snapShotMetadata.getArtifactId(),
+//          notInGHTag, "zip",
+//          snapShotMetadata.getRepoUrl(), snapShotMetadata.getGroupId(), snapShotMetadata.getSnapshotVersionValue());
+      log.error("url {}", url);
+
+      if (StringUtils.isBlank(url)) {
+        return;
+      }
+      try {
+        MetadataReaderUtils.downloadAndUnzipFile(url);
+      } catch (IOException e) {
+        log.error("Cannot download and unzip file");
+      }
+
+    }
+
     metadata.getVersions().forEach(version -> {
       if (VersionUtils.isSnapshotVersion(version)) {
         if (VersionUtils.isOfficialVersionOrUnReleasedDevVersion(metadata.getVersions().stream().toList(), version)) {

@@ -3,16 +3,27 @@ package com.axonivy.market.util;
 import com.axonivy.market.constants.MavenConstants;
 import com.axonivy.market.entity.Metadata;
 import lombok.extern.log4j.Log4j2;
+import org.apache.commons.lang3.StringUtils;
 import org.w3c.dom.Document;
 import org.w3c.dom.NodeList;
 import org.xml.sax.InputSource;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
+import java.io.BufferedOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.io.StringReader;
+import java.net.URL;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Objects;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipInputStream;
 
 @Log4j2
 public class MetadataReaderUtils {
@@ -71,5 +82,54 @@ public class MetadataReaderUtils {
       return nodeList.item(0).getTextContent();
     }
     return null;
+  }
+
+  public static void downloadAndUnzipFile(String url) throws IOException {
+    if (StringUtils.isNotBlank(url)) {
+      downloadFile(url, "abc.zip");
+      unzip("abc.zip", "abc");
+    }
+  }
+
+  private static void downloadFile(String fileURL, String saveDir) throws IOException {
+    URL url = new URL(fileURL);
+
+    try (InputStream in = url.openStream()) {
+      Path path = Paths.get(saveDir);
+      Files.copy(in, path, StandardCopyOption.REPLACE_EXISTING);
+    }
+  }
+
+  private static void unzip(String zipFilePath, String destDir) throws IOException {
+    byte[] buffer = new byte[1024];
+
+    Path unzipPath = Paths.get(destDir);
+    if (!Files.exists(unzipPath)) {
+      Files.createDirectories(unzipPath);
+    }
+
+    try (ZipInputStream zis = new ZipInputStream(Files.newInputStream(Paths.get(zipFilePath)))) {
+      ZipEntry zipEntry = zis.getNextEntry();
+      while (zipEntry != null) {
+        Path newPath = unzipPath.resolve(zipEntry.getName());
+
+        if (zipEntry.isDirectory()) {
+          Files.createDirectories(newPath);
+        } else {
+          log.error("Extracting file: " + zipEntry.getName());
+          Files.createDirectories(newPath.getParent());
+          try (BufferedOutputStream bos = new BufferedOutputStream(Files.newOutputStream(newPath))) {
+            int len;
+            while ((len = zis.read(buffer)) > 0) {
+              bos.write(buffer, 0, len);
+            }
+          }
+        }
+        zipEntry = zis.getNextEntry();
+      }
+      zis.closeEntry();
+    } catch (IOException e) {
+      throw new RuntimeException("Error while unzipping: " + e.getMessage(), e);
+    }
   }
 }

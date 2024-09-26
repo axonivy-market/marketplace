@@ -5,7 +5,6 @@ import com.axonivy.market.comparator.MavenVersionComparator;
 import com.axonivy.market.constants.CommonConstants;
 import com.axonivy.market.constants.GitHubConstants;
 import com.axonivy.market.constants.MavenConstants;
-import com.axonivy.market.entity.Metadata;
 import com.axonivy.market.entity.Product;
 import com.axonivy.market.enums.NonStandardProduct;
 import lombok.extern.log4j.Log4j2;
@@ -24,6 +23,8 @@ import java.util.stream.Stream;
 @Log4j2
 public class VersionUtils {
   public static final String NON_NUMERIC_CHAR = "[^0-9.]";
+
+  public static List<String> notInGithubVersions;
 
   private VersionUtils() {
   }
@@ -44,16 +45,16 @@ public class VersionUtils {
 
   public static String getMavenVersionMatchWithTag(List<String> releasedVersions, String mavenVersion) {
     for (String version : releasedVersions) {
-      if (!mavenVersion.equals(version)) {
-        return getAlternativeVersion(releasedVersions, mavenVersion);
+      if (mavenVersion.equals(version)) {
+        return mavenVersion;
       }
     }
-    return mavenVersion;
+    return getAlternativeVersion(releasedVersions, mavenVersion);
   }
 
   public static String getAlternativeVersion(List<String> releaseVersions, String version) {
-    return Optional.ofNullable(releaseVersions).orElse(List.of()).stream().filter(version::startsWith).findAny().orElse(
-        null);
+    return Optional.ofNullable(releaseVersions).orElse(List.of()).stream().filter(
+        version::startsWith).sorted().findAny().orElse(null);
   }
 
   public static String getBestMatchVersion(List<String> versions, String designerVersion) {

@@ -11,6 +11,7 @@ import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.util.Date;
+import java.util.Set;
 
 import static com.axonivy.market.constants.EntityConstants.PRODUCT_JSON_CONTENT;
 
@@ -26,6 +27,7 @@ public class ProductJsonContent {
   private String id;
   private String version;
   private String productId;
+  private Set<String> relatedMavenVersions;
   private String name;
   private String content;
   @LastModifiedDate

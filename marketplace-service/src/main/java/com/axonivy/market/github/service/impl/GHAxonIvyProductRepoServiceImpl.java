@@ -35,6 +35,7 @@ import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -104,6 +105,7 @@ public class GHAxonIvyProductRepoServiceImpl implements GHAxonIvyProductRepoServ
       List<GHContent> contents = getProductFolderContents(product, ghRepository, tag);
       productModuleContent.setProductId(product.getId());
       productModuleContent.setTag(tag);
+      productModuleContent.setRelatedMavenVersions(new HashSet<>());
       ProductFactory.mappingIdForProductModuleContent(productModuleContent);
       updateDependencyContentsFromProductJson(productModuleContent, contents, product);
       extractReadMeFileFromContents(product, contents, productModuleContent);
@@ -184,6 +186,7 @@ public class GHAxonIvyProductRepoServiceImpl implements GHAxonIvyProductRepoServ
         jsonContent.setProductId(product.getId());
         ProductFactory.mappingIdForProductJsonContent(jsonContent);
         jsonContent.setName(product.getNames().get(EN_LANGUAGE));
+        jsonContent.setRelatedMavenVersions(new HashSet<>());
         jsonContent.setContent(content.replace(VERSION_VALUE, currentVersion));
         productJsonContentRepository.save(jsonContent);
       }
