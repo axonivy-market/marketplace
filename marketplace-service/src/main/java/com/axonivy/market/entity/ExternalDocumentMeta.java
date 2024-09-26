@@ -24,7 +24,7 @@ public class ExternalDocumentMeta {
   private String productId;
   private String version;
   private String storageDirectory;
-  private String viewDocUrl;
+  private String relativeLink;
   @CreatedDate
   private Date createdAt;
   @LastModifiedDate

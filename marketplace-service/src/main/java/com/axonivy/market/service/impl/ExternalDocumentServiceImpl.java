@@ -65,7 +65,7 @@ public class ExternalDocumentServiceImpl implements ExternalDocumentService {
     String resolvedVersion = VersionFactory.get(productDocumentMetas.stream()
         .map(ExternalDocumentMeta::getVersion).toList(), version);
     return productDocumentMetas.stream().filter(meta -> StringUtils.equals(meta.getVersion(), resolvedVersion))
-        .map(ExternalDocumentMeta::getViewDocUrl).findAny().orElse(EMPTY);
+        .map(ExternalDocumentMeta::getRelativeLink).findAny().orElse(EMPTY);
   }
 
   private void syncDocumentationForProduct(String productId, boolean isResetSync, MavenArtifact artifact,
@@ -85,8 +85,8 @@ public class ExternalDocumentServiceImpl implements ExternalDocumentService {
         documentMeta.setProductId(productId);
         documentMeta.setVersion(version);
         documentMeta.setStorageDirectory(location);
-        var locationRelative = location.replaceFirst(FileDownloadService.ROOT_STORAGE, DirectoryConstants.CACHE_DIR);
-        documentMeta.setViewDocUrl(String.format(DOC_URL_PATTERN, locationRelative));
+        var locationRelative = location.substring(location.indexOf(DirectoryConstants.CACHE_DIR));
+        documentMeta.setRelativeLink(String.format(DOC_URL_PATTERN, locationRelative));
         externalDocumentMetaRepo.save(documentMeta);
       }
     }

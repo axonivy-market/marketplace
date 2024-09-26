@@ -67,7 +67,7 @@ class ExternalDocumentServiceImplTest {
 
     mockProductDocumentMeta.setProductId(PORTAL);
     mockProductDocumentMeta.setVersion(mockVersion);
-    mockProductDocumentMeta.setViewDocUrl("/market-cache/portal/10.0.0/doc/index.html");
+    mockProductDocumentMeta.setRelativeLink("/market-cache/portal/10.0.0/doc/index.html");
     when(externalDocumentMetaRepository.findAll()).thenReturn(List.of(mockProductDocumentMeta));
     result = service.findExternalDocumentURI(PORTAL, mockVersion);
     assertNotNull(result);

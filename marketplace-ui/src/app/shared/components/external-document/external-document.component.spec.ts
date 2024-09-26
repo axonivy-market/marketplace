@@ -5,7 +5,7 @@ import { ActivatedRoute } from '@angular/router';
 import { of } from 'rxjs';
 import { TranslateModule } from '@ngx-translate/core';
 
-const DOC_API = 'api/product-doc';
+const DOC_API = 'api/externaldocument';
 
 describe('ExternalDocumentComponent', () => {
   let component: ExternalDocumentComponent;

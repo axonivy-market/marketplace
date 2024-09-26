@@ -5,7 +5,7 @@ import { ROUTER } from '../../constants/router.constant';
 import { TranslateModule } from '@ngx-translate/core';
 
 const INDEX_FILE = '/index.html';
-const DOC_API = 'api/product-doc';
+const DOC_API = 'api/externaldocument';
 
 @Component({
   selector: 'app-external-document',
