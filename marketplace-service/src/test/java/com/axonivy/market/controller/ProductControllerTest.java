@@ -138,6 +138,31 @@ class ProductControllerTest {
   }
 
   @Test
+  void testSyncMavenVersionSuccess() {
+//    when(service.syncLatestDataFromMarketRepo()).thenReturn(true);
+
+    var response = productController.syncProductVersions(AUTHORIZATION_HEADER, false);
+
+    assertEquals(HttpStatus.OK, response.getStatusCode());
+    assertTrue(response.hasBody());
+    assertEquals(ErrorCode.SUCCESSFUL.getCode(), Objects.requireNonNull(response.getBody()).getHelpCode());
+  }
+
+
+  @Test
+  void testSyncMavenVersionWithInvalidToken() {
+    doThrow(new UnauthorizedException(ErrorCode.GITHUB_USER_UNAUTHORIZED.getCode(),
+        ErrorCode.GITHUB_USER_UNAUTHORIZED.getHelpText())).when(gitHubService)
+        .validateUserOrganization(any(String.class), any(String.class));
+
+    UnauthorizedException exception = assertThrows(UnauthorizedException.class,
+        () -> productController.syncProductVersions(INVALID_AUTHORIZATION_HEADER, false));
+
+    assertEquals(ErrorCode.GITHUB_USER_UNAUTHORIZED.getHelpText(), exception.getMessage());
+  }
+
+
+  @Test
   void testCreateCustomSortProductsSuccess() {
     ProductCustomSortRequest mockProductCustomSortRequest = createProductCustomSortRequestMock();
     var response = productController.createCustomSortProducts(AUTHORIZATION_HEADER, mockProductCustomSortRequest);

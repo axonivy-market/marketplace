@@ -2,23 +2,19 @@ package com.axonivy.market.util;
 
 import com.axonivy.market.entity.Metadata;
 import com.axonivy.market.constants.MavenConstants;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 
-import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
-
-
 @ExtendWith(MockitoExtension.class)
 class MetadataReaderUtilsTest {
-  private static final String VALID_XML = """
+  private static final String MOCK_METADATA = """
       <metadata>
           <latest>1.0.2</latest>
           <release>1.0.1</release>
@@ -30,36 +26,58 @@ class MetadataReaderUtilsTest {
           </versions>
       </metadata>
       """;
+  private static final String MOCK_SNAPSHOT = """
+      <metadata modelVersion="1.1.0">
+        <groupId>com.axonivy.demo</groupId>
+        <artifactId>workflow-demos</artifactId>
+        <version>8.0.5-SNAPSHOT</version>
+        <versioning>
+          <snapshot>
+            <timestamp>20221011.124215</timestamp>
+            <buildNumber>170</buildNumber>
+          </snapshot>
+        <lastUpdated>20221011130000</lastUpdated>
+          <snapshotVersions>
+             <snapshotVersion>
+               <extension>iar</extension>
+               <value>8.0.5-20221011.124215-170</value>
+               <updated>20221011124215</updated>
+             </snapshotVersion>
+          </snapshotVersions>
+        </versioning>
+      </metadata>
+       """;
+  private static final String INVALID_METADATA = "<metadata><invalidTag></invalidTag></metadata>";
+
   private Metadata metadata;
 
   @BeforeEach
   void setUp() {
-    metadata = mock(Metadata.class);
+    metadata = Metadata.builder().build();
   }
 
   @Test
   void testParseMetadataFromStringWithValidXml() {
-    MetadataReaderUtils.parseMetadataFromString(VALID_XML, metadata);
-
-    verify(metadata).setLatest("1.0.2");
-    verify(metadata).setRelease("1.0.1");
-
+    MetadataReaderUtils.parseMetadataFromString(MOCK_METADATA, metadata);
     LocalDateTime expectedLastUpdated = LocalDateTime.parse("20230924010101",
         DateTimeFormatter.ofPattern(MavenConstants.DATE_TIME_FORMAT));
-    verify(metadata).setLastUpdated(expectedLastUpdated);
 
-    verify(metadata, Mockito.times(3)).getVersions();
+    Assertions.assertEquals("1.0.2", metadata.getLatest());
+    Assertions.assertEquals("1.0.1", metadata.getRelease());
+    Assertions.assertEquals(expectedLastUpdated, metadata.getLastUpdated());
   }
 
   @Test
-  void testParseMetadataFromStringWithInvalidXml() {
-    String invalidXml = "<metadata><invalid></metadata>"; // malformed XML
+  public void testParseInvalidXML() throws Exception {
+    MetadataReaderUtils.parseMetadataSnapshotFromString(INVALID_METADATA, metadata);
+    Assertions.assertNull(metadata.getLatest());
+    Assertions.assertNull(metadata.getRelease());
+    Assertions.assertNull(metadata.getLastUpdated());
+  }
 
-    MetadataReaderUtils.parseMetadataFromString(invalidXml, metadata);
-
-    verify(metadata, Mockito.never()).setLatest(Mockito.anyString());
-    verify(metadata, Mockito.never()).setRelease(Mockito.anyString());
-    verify(metadata, Mockito.never()).setLastUpdated(Mockito.any(LocalDateTime.class));
-    verify(metadata, Mockito.never()).getVersions();
+  @Test
+  public void testParseMetadataSnapshotFromStringWithValidXml() throws Exception {
+    MetadataReaderUtils.parseMetadataSnapshotFromString(MOCK_SNAPSHOT, metadata);
+    Assertions.assertEquals("8.0.5-20221011.124215-170", metadata.getSnapshotVersionValue());
   }
 }

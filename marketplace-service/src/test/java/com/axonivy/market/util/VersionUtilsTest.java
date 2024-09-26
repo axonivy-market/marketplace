@@ -1,5 +1,6 @@
 package com.axonivy.market.util;
 
+import com.axonivy.market.entity.MetadataSync;
 import com.axonivy.market.enums.NonStandardProduct;
 import org.apache.commons.lang3.StringUtils;
 import org.junit.jupiter.api.Assertions;
@@ -13,6 +14,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Set;
 
 @ExtendWith(MockitoExtension.class)
 class VersionUtilsTest {
@@ -177,5 +179,16 @@ class VersionUtilsTest {
     String oldestTag = VersionUtils.getOldestVersion(tags);
 
     Assertions.assertEquals("1.0", oldestTag); // Assuming the replacement of non-numeric characters works correctly
+  }
+
+  @Test
+  void testGetNonSyncedVersionOfTags() {
+    MetadataSync cache = MetadataSync.builder().syncedTags(Set.of("1.0.0")).build();
+    List<String> releasedVersions = new ArrayList<>();
+    releasedVersions.add("1.0.0");
+    releasedVersions.add("2.0.0");
+    List<String> result = VersionUtils.getNonSyncedVersionOfTagsFromMetadataSync(releasedVersions, cache);
+    Assertions.assertEquals(1, result.size());
+    Assertions.assertEquals("2.0.0", result.get(0));
   }
 }

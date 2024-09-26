@@ -48,14 +48,15 @@ public class ProductController {
   private final GitHubService gitHubService;
   private final ProductModelAssembler assembler;
   private final PagedResourcesAssembler<Product> pagedResourcesAssembler;
+  private final MetadataService metadataService;
 
   public ProductController(ProductService productService, GitHubService gitHubService, ProductModelAssembler assembler,
-      PagedResourcesAssembler<Product> pagedResourcesAssembler) {
+      PagedResourcesAssembler<Product> pagedResourcesAssembler, MetadataService metadataService) {
     this.productService = productService;
     this.gitHubService = gitHubService;
     this.assembler = assembler;
     this.pagedResourcesAssembler = pagedResourcesAssembler;
-
+    this.metadataService = metadataService;
   }
 
   @GetMapping()
@@ -122,6 +123,7 @@ public class ProductController {
       @RequestParam(value = RESET_SYNC, required = false) Boolean resetSync) {
     String token = getBearerToken(authorizationHeader);
     gitHubService.validateUserOrganization(token, GitHubConstants.AXONIVY_MARKET_ORGANIZATION_NAME);
+    metadataService.syncAllProductMavenMetadata();
     var message = new Message();
     message.setHelpCode(ErrorCode.SUCCESSFUL.getCode());
     message.setHelpText(ErrorCode.SUCCESSFUL.getHelpText());

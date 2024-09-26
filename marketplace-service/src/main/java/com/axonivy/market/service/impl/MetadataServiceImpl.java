@@ -65,7 +65,7 @@ public class MetadataServiceImpl implements MetadataService {
     }
   }
 
-  private void updateMavenArtifactVersionData(List<String> releasedVersions, Set<Metadata> metadataSet,
+  public void updateMavenArtifactVersionData(List<String> releasedVersions, Set<Metadata> metadataSet,
       MavenArtifactVersion artifactVersionCache) {
     for (Metadata metadata : metadataSet) {
       String metadataContent = MavenUtils.getMetadataContentFromUrl(metadata.getUrl());
@@ -78,7 +78,6 @@ public class MetadataServiceImpl implements MetadataService {
     }
   }
 
-  @Override
   public void syncAllProductMavenMetadata() {
     List<Product> products = productRepo.getAllProductWithIdAndReleaseTagAndArtifact();
     log.warn("**MetadataService: Start to sync version for {} product(s)", products.size());
@@ -93,7 +92,9 @@ public class MetadataServiceImpl implements MetadataService {
       Set<Artifact> artifactsFromNewTags = new HashSet<>();
 
       // Find artifacts form unhandled tags
-      List<String> nonSyncedVersionOfTags = getNonSyncedVersionOfTags(product.getReleasedVersions(), syncCache);
+      List<String> nonSyncedVersionOfTags = VersionUtils.getNonSyncedVersionOfTagsFromMetadataSync(
+          product.getReleasedVersions(),
+          syncCache);
       if (!CollectionUtils.isEmpty(nonSyncedVersionOfTags)) {
         updateArtifactsFromNonSyncedVersion(product.getId(), nonSyncedVersionOfTags, artifactsFromNewTags);
         log.info("**MetadataService: New tags detected: {} in product {}", nonSyncedVersionOfTags.toString(),
@@ -159,7 +160,7 @@ public class MetadataServiceImpl implements MetadataService {
     }
   }
 
-  private void updateMavenArtifactVersionFromMetadata(MavenArtifactVersion artifactVersionCache,
+  public void updateMavenArtifactVersionFromMetadata(MavenArtifactVersion artifactVersionCache,
       Metadata metadata) {
     NonStandardProduct currentProduct = NonStandardProduct.findById(metadata.getProductId());
     metadata.getVersions().forEach(version -> {
@@ -173,7 +174,7 @@ public class MetadataServiceImpl implements MetadataService {
     });
   }
 
-  private void updateMavenArtifactVersionForNonReleaseDeVersion(MavenArtifactVersion artifactVersionCache,
+  public void updateMavenArtifactVersionForNonReleaseDeVersion(MavenArtifactVersion artifactVersionCache,
       Metadata metadata, String version) {
     Metadata snapShotMetadata = MavenUtils.buildSnapShotMetadataFromVersion(metadata, version);
     MetadataReaderUtils.parseMetadataSnapshotFromString(MavenUtils.getMetadataContentFromUrl(snapShotMetadata.getUrl()),
@@ -181,7 +182,7 @@ public class MetadataServiceImpl implements MetadataService {
     updateMavenArtifactVersionCacheWithModel(artifactVersionCache, version, snapShotMetadata);
   }
 
-  private void updateArtifactsFromNonSyncedVersion(String productId, List<String> nonSyncedVersions,
+  public void updateArtifactsFromNonSyncedVersion(String productId, List<String> nonSyncedVersions,
       Set<Artifact> artifacts) {
     if (CollectionUtils.isEmpty(nonSyncedVersions)) {
       return;
@@ -191,12 +192,5 @@ public class MetadataServiceImpl implements MetadataService {
       List<Artifact> artifactsInVersion = MavenUtils.getMavenArtifactsFromProductJson(productJson);
       artifacts.addAll(artifactsInVersion);
     });
-  }
-
-  private List<String> getNonSyncedVersionOfTags(List<String> releasedVersion, MetadataSync cache) {
-    if (!CollectionUtils.isEmpty(cache.getSyncedTags())) {
-      releasedVersion.removeAll(cache.getSyncedTags());
-    }
-    return releasedVersion;
   }
 }
