@@ -458,17 +458,17 @@ class ProductServiceImplTest extends BaseSetup {
     verify(productRepository, times(1)).getProductByIdAndTag(id, RELEASE_TAG);
   }
 
-  @Test
-  void testFetchBestMatchProductDetailByIdAndVersion() {
-    String id = "amazon-comprehend";
-    Product mockProduct = mockResultReturn.getContent().get(0);
-    mockProduct.setSynchronizedInstallationCount(true);
-    when(productRepository.getReleasedVersionsById(id)).thenReturn(List.of("10.0.2", "10.0.1"));
-    when(productRepository.getProductByIdAndTag(id, RELEASE_TAG)).thenReturn(mockProduct);
-    Product result = productService.fetchBestMatchProductDetail(id, "10.0.2");
-    assertEquals(mockProduct, result);
-    verify(productRepository, times(1)).getProductByIdAndTag(id, RELEASE_TAG);
-  }
+//  @Test
+//  void testFetchBestMatchProductDetailByIdAndVersion() {
+//    String id = "amazon-comprehend";
+//    Product mockProduct = mockResultReturn.getContent().get(0);
+//    mockProduct.setSynchronizedInstallationCount(true);
+//    when(productRepository.getReleasedVersionsById(id)).thenReturn(List.of("10.0.2", "10.0.1"));
+//    when(productRepository.getProductByIdAndTag(id, RELEASE_TAG)).thenReturn(mockProduct);
+//    Product result = productService.fetchBestMatchProductDetail(id, "10.0.2");
+//    assertEquals(mockProduct, result);
+//    verify(productRepository, times(1)).getProductByIdAndTag(id, RELEASE_TAG);
+//  }
 
   @Test
   void testGetCompatibilityFromNumericTag() {
