@@ -17,6 +17,7 @@ import com.axonivy.market.service.VersionService;
 import com.axonivy.market.util.MavenUtils;
 import com.axonivy.market.util.VersionUtils;
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.util.VersionUtil;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.lang3.ObjectUtils;
@@ -126,6 +127,17 @@ public class VersionServiceImpl implements VersionService {
   @Override
   public void clearAllProductVersions() {
     mavenArtifactVersionRepository.deleteAll();
+  }
+
+  @Override
+  public String getLatestVersionArtifactDownloadUrl(String productId, String version, String artifactId) {
+    var productArtifactByVersion = mavenArtifactVersionRepository.findById(productId);
+    if (!productArtifactByVersion.isPresent()) {
+      return StringUtils.EMPTY;
+    }
+    VersionUtil.parseVersion()
+
+    return "";
   }
 
   public List<Artifact> getArtifactsFromMeta(String productId) {

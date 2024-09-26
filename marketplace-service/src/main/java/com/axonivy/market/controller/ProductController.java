@@ -143,6 +143,12 @@ public class ProductController {
     return new ResponseEntity<>(message, HttpStatus.OK);
   }
 
+  @GetMapping(LATEST_LIB_VERSION_BY_ID_AND_ARTIFACT_ID)
+  public ResponseEntity<String> getLatestArtifactDownloadUrl(@RequestParam(value = ID) String productId,
+      @RequestParam(value = VERSION) String version, @RequestParam(value = ARTIFACT_ID) String artifactId) {
+    return new ResponseEntity<>("", HttpStatus.OK);
+  }
+
   @SuppressWarnings("unchecked")
   private ResponseEntity<PagedModel<ProductModel>> generateEmptyPagedModel() {
     var emptyPagedModel = (PagedModel<ProductModel>) pagedResourcesAssembler.toEmptyModel(Page.empty(),
