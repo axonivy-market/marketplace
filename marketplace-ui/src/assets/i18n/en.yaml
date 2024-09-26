@@ -28,7 +28,7 @@ common:
       demos: Demos
       solution: Solutions
   error:
-    code: 'ERROR CODE: 404'
+    code: 'ERROR CODE'
     oops: 'Oops!'
     description: 'Our website is taking a break. It seems that we cannot find the page you requested.'
     buttonLabel: Back to homepage
