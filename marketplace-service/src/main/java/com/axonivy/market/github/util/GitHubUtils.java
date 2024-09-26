@@ -21,6 +21,7 @@ import java.util.Objects;
 import java.util.stream.Collectors;
 
 import static com.axonivy.market.constants.MetaConstants.META_FILE;
+import static com.axonivy.market.github.service.impl.GHAxonIvyProductRepoServiceImpl.IMAGE_EXTENSION;
 
 @Log4j2
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
@@ -79,10 +80,10 @@ public class GitHubUtils {
     String json = extractJson(exceptionMessage);
     String key = "\"message\":\"";
     int startIndex = json.indexOf(key);
-    if (startIndex != StringUtils.INDEX_NOT_FOUND) {
+    if (startIndex != -1) {
       startIndex += key.length();
       int endIndex = json.indexOf("\"", startIndex);
-      if (endIndex != StringUtils.INDEX_NOT_FOUND) {
+      if (endIndex != -1) {
         return json.substring(startIndex, endIndex);
       }
     }
@@ -92,7 +93,7 @@ public class GitHubUtils {
   public static String extractJson(String text) {
     int start = text.indexOf("{");
     int end = text.lastIndexOf("}") + 1;
-    if (start != StringUtils.INDEX_NOT_FOUND && end != StringUtils.INDEX_NOT_FOUND) {
+    if (start != -1 && end != -1) {
       return text.substring(start, end);
     }
     return StringUtils.EMPTY;
@@ -104,6 +105,25 @@ public class GitHubUtils {
     if (fileName2.endsWith(META_FILE))
       return 1;
     return fileName1.compareTo(fileName2);
+  }
+
+  public static void findImages(List<GHContent> files, List<GHContent> images) {
+    for (GHContent file : files) {
+      if (file.isDirectory()) {
+        findImagesInDirectory(file, images);
+      } else if (file.getName().toLowerCase().matches(IMAGE_EXTENSION)) {
+        images.add(file);
+      }
+    }
+  }
+
+  private static void findImagesInDirectory(GHContent file, List<GHContent> images) {
+    try {
+      List<GHContent> childrenFiles = file.listDirectoryContent().toList();
+      findImages(childrenFiles, images);
+    } catch (IOException e) {
+      log.error(e.getMessage());
+    }
   }
 
   public static List<Artifact> convertProductJsonToMavenProductInfo(GHContent content) throws IOException {

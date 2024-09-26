@@ -24,7 +24,7 @@ common:
       demos: Demos
       solution: Lösungen
   error:
-    code: 'ERROR CODE: 404'
+    code: 'ERROR CODE'
     oops: 'Oops!'
     description: 'Unsere Webseite macht eine kleine Pause. Offenbar finden wir die von Dir angefragte Seite nicht.'
     buttonLabel: Zurück zur Startseite

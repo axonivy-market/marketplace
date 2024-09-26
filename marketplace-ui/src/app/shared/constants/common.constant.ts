@@ -196,7 +196,7 @@ export const VERSION = {
   displayPrefix: 'Version '
 };
 
-export const ERROR_PAGE_PATH = '/error-page';
+export const ERROR_PAGE_PATH = 'error-page';
 export const NOT_FOUND_ERROR_CODE = 404;
 export const INTERNAL_SERVER_ERROR_CODE = 500;
 export const UNDEFINED_ERROR_CODE = 0;
