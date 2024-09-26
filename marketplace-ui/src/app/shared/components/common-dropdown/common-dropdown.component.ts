@@ -14,7 +14,7 @@ import { ActiveDropDownItemPipe } from '../../pipes/active-dropdown-item.pipe';
   templateUrl: './common-dropdown.component.html',
   styleUrl: './common-dropdown.component.scss'
 })
-export class CommonDropdownComponent<T extends string> implements OnInit{
+export class CommonDropdownComponent<T extends string> {
   translateService = inject(TranslateService);
 
   @Input() items: ItemDropdown<T>[] = [];
@@ -27,12 +27,6 @@ export class CommonDropdownComponent<T extends string> implements OnInit{
   isDropdownOpen = false;
   @Input() metaDataJsonUrl: string | undefined = '';
   
-  ngOnInit(): void {
-    console.log(this.items);
-    console.log(this.selectedItem);
-    
-  }
-
   toggleDropdown() {
     this.isDropdownOpen = !this.isDropdownOpen;
   }
