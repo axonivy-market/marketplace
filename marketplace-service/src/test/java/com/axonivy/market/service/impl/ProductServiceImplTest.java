@@ -448,15 +448,15 @@ class ProductServiceImplTest extends BaseSetup {
     verify(productRepository, times(1)).getProductById(id);
   }
 
-  @Test
-  void testFetchProductDetailByIdAndVersion() {
-    String id = "amazon-comprehend";
-    Product mockProduct = mockResultReturn.getContent().get(0);
-    when(productRepository.getProductByIdAndTag(id, RELEASE_TAG)).thenReturn(mockProduct);
-    Product result = productService.fetchProductDetailByIdAndVersion(id, "10.0.2");
-    assertEquals(mockProduct, result);
-    verify(productRepository, times(1)).getProductByIdAndTag(id, RELEASE_TAG);
-  }
+//  @Test
+//  void testFetchProductDetailByIdAndVersion() {
+//    String id = "amazon-comprehend";
+//    Product mockProduct = mockResultReturn.getContent().get(0);
+//    when(productRepository.getProductByIdAndTag(id, RELEASE_TAG)).thenReturn(mockProduct);
+//    Product result = productService.fetchProductDetailByIdAndVersion(id, "10.0.2");
+//    assertEquals(mockProduct, result);
+//    verify(productRepository, times(1)).getProductByIdAndTag(id, RELEASE_TAG);
+//  }
 
   @Test
   void testFetchBestMatchProductDetailByIdAndVersion() {

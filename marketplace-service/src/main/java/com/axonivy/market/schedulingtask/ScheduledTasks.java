@@ -11,6 +11,7 @@ import org.springframework.stereotype.Component;
 public class ScheduledTasks {
 
   private static final String SCHEDULING_TASK_PRODUCTS_CRON = "0 0 0/1 ? * *";
+  // Maven version sync will start at 00:20 in order to prevent running at the same time with product repo sync
   private static final String SCHEDULING_TASK_MAVEN_VERSION_CRON = "0 0 20 * * *";
 
   private final ProductService productService;
