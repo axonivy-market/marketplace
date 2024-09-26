@@ -18,17 +18,13 @@
 }
 
 .connector-title-container {
-  width: 75%;
-  
+  width: 70%;
+
   @media (max-width: 1399px) {
-    width: 70%;
-  }
-  
-  @media (max-width: 1199px) {
-    width: 65%;
+    width: 60%;
   }
 
-  @media (max-width: 991px) {
+  @media (max-width: 1199px) {
     width: 100%;
   }
 }

@@ -1,4 +1,4 @@
-import { Component, ElementRef, EventEmitter, HostListener, inject, Input, Output } from '@angular/core';
+import { Component, ElementRef, EventEmitter, HostListener, inject, Input, OnInit, Output } from '@angular/core';
 import { NgClass } from '@angular/common';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { ItemDropdown } from '../../models/item-dropdown.model';
@@ -14,7 +14,7 @@ import { ActiveDropDownItemPipe } from '../../pipes/active-dropdown-item.pipe';
   templateUrl: './common-dropdown.component.html',
   styleUrl: './common-dropdown.component.scss'
 })
-export class CommonDropdownComponent<T extends string> {
+export class CommonDropdownComponent<T extends string> implements OnInit{
   translateService = inject(TranslateService);
 
   @Input() items: ItemDropdown<T>[] = [];
@@ -26,6 +26,12 @@ export class CommonDropdownComponent<T extends string> {
   elementRef = inject(ElementRef);
   isDropdownOpen = false;
   @Input() metaDataJsonUrl: string | undefined = '';
+  
+  ngOnInit(): void {
+    console.log(this.items);
+    console.log(this.selectedItem);
+    
+  }
 
   toggleDropdown() {
     this.isDropdownOpen = !this.isDropdownOpen;

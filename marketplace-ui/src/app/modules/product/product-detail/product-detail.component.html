@@ -15,8 +15,8 @@
           </span>
         </a>
       </div>
-      <div class="version-gap d-flex flex-column flex-lg-row justify-content-between">
-        <div class="d-flex flex-column module-gap connector-title-container">
+      <div class="version-gap d-flex flex-column flex-xl-row justify-content-between">
+        <div class="connector-title-container d-flex flex-column module-gap">
           <div class="d-flex">
             <div class="logo__image-container">
               <img
@@ -84,6 +84,7 @@
     <div class="detail-body d-flex flex-row align-items-start p-0 w-100">
       <div
         class="tab-group d-flex flex-column justify-content-center align-items-start p-0 col-12 col-xl-8">
+        @if (displayedTabsSignal().length > 0) {
         <div class="row-tab d-none d-xl-block col-12">
           <ul ngbNav class="nav nav-tabs form-tabs">
             @for (displayedTab of displayedTabsSignal(); track $index) {
@@ -176,6 +177,7 @@
             }
           }
         </div>
+      } 
       </div>
 
       <div
