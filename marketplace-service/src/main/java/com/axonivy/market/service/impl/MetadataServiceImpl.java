@@ -21,7 +21,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -70,7 +69,7 @@ public class MetadataServiceImpl implements MetadataService {
         continue;
       }
       MetadataReaderUtils.parseMetadataFromString(metadataContent, metadata);
-      updateMavenArtifactVersionFromMetadata(product, artifactVersionCache, metadata);
+      updateMavenArtifactVersionFromMetadata(artifactVersionCache, metadata);
     }
   }
 
@@ -106,7 +105,7 @@ public class MetadataServiceImpl implements MetadataService {
         continue;
       }
       artifactVersionCache.setAdditionalArtifactsByVersion(new HashMap<>());
-      updateMavenArtifactVersionData(product, metadataSet, artifactVersionCache);
+      updateMavenArtifactVersionData(metadataSet, artifactVersionCache);
 
       // Persist changed
       syncCache.getSyncedTags().addAll(nonSyncedVersionOfTags);

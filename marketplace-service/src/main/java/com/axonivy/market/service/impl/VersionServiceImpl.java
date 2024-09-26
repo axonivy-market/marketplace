@@ -67,7 +67,7 @@ public class VersionServiceImpl implements VersionService {
     List<Artifact> artifactsFromMeta = MavenUtils.filterNonProductArtifactFromMeta(getArtifactsFromMeta(productId));
     List<MavenArtifactVersionModel> results = new ArrayList<>();
 
-    for (String mavenVersion : versionsToDisplay) {
+    for (String version : versionsToDisplay) {
       List<MavenArtifactModel> artifactsByVersion = new ArrayList<>();
       // artifactsByVersion.addAll(MavenUtils.convertArtifactsToModels(artifactsFromMeta, mavenVersion));
       // artifactsByVersion.addAll(cache.getProductArtifactsByVersion().get(mavenVersion));
@@ -91,7 +91,7 @@ public class VersionServiceImpl implements VersionService {
       artifactsByVersion.addAll(
           cache.getAdditionalArtifactsByVersion().computeIfAbsent(version, k -> new ArrayList<>()));
       if (!CollectionUtils.isEmpty(artifactsByVersion)) {
-        results.add(new MavenArtifactVersionModel(mavenVersion, artifactsByVersion));
+        results.add(new MavenArtifactVersionModel(version, artifactsByVersion));
       }
     }
     return results;
