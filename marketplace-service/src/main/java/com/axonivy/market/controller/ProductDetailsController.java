@@ -49,6 +49,9 @@ public class ProductDetailsController {
       @PathVariable(VERSION) @Parameter(description = "Release version (from maven metadata.xml)", example = "10.0.20",
           in = ParameterIn.PATH) String version) {
     var productDetail = productService.fetchProductDetailByIdAndVersion(id, version);
+    if (productDetail == null) {
+      return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+    }
     return new ResponseEntity<>(detailModelAssembler.toModel(productDetail, version, BY_ID_AND_VERSION), HttpStatus.OK);
   }
 
@@ -61,6 +64,9 @@ public class ProductDetailsController {
       @PathVariable(VERSION) @Parameter(description = "Version", example = "10.0.20",
           in = ParameterIn.PATH) String version) {
     var productDetail = productService.fetchBestMatchProductDetail(id, version);
+    if (productDetail == null) {
+      return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+    }
     return new ResponseEntity<>(detailModelAssembler.toModel(productDetail, version, BEST_MATCH_BY_ID_AND_VERSION),
         HttpStatus.OK);
   }
@@ -83,6 +89,9 @@ public class ProductDetailsController {
       @PathVariable(ID) @Parameter(description = "Product id (from meta.json)", example = "approval-decision-utils",
           in = ParameterIn.PATH) String id) {
     var productDetail = productService.fetchProductDetail(id);
+    if (productDetail == null) {
+      return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+    }
     return new ResponseEntity<>(detailModelAssembler.toModel(productDetail, BY_ID), HttpStatus.OK);
   }
 

@@ -3,7 +3,11 @@
   [ngClass]="isMobileMode() ? 'mobile-mode' : ''">
   <div
     class="flexible-gap d-flex flex-column justify-content-center module-gap col-12 col-lg-4">
-    <div class="error-code-404">{{ 'common.error.code' | translate }}</div>
+    @if (errorId !== undefined) {
+      <div class="error-code">
+        {{ 'common.error.code' | translate }}: {{ errorId }}
+      </div>
+    }   
     <div class="oops">{{ 'common.error.oops' | translate }}</div>
     <div class="error-description">
       {{ 'common.error.description' | translate }}
