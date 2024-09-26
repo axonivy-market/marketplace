@@ -56,7 +56,7 @@ public class VersionServiceImpl implements VersionService {
     this.productContentRepo = productContentRepo;
   }
 
-
+//TODO: resolve comment here
   public List<MavenArtifactVersionModel> getArtifactsAndVersionToDisplay(String productId, Boolean isShowDevVersion,
       String designerVersion) {
     MavenArtifactVersion cache = mavenArtifactVersionRepository.findById(productId).orElse(
@@ -69,23 +69,27 @@ public class VersionServiceImpl implements VersionService {
 
     for (String mavenVersion : versionsToDisplay) {
       List<MavenArtifactModel> artifactsByVersion = new ArrayList<>();
-      artifactsByVersion.addAll(MavenUtils.convertArtifactsToModels(artifactsFromMeta, mavenVersion));
-      artifactsByVersion.addAll(cache.getProductArtifactsByVersion().get(mavenVersion));
-      artifactsByVersion.addAll(cache.getAdditionalArtifactsByVersion().get(mavenVersion));
+      // artifactsByVersion.addAll(MavenUtils.convertArtifactsToModels(artifactsFromMeta, mavenVersion));
+      // artifactsByVersion.addAll(cache.getProductArtifactsByVersion().get(mavenVersion));
+      // artifactsByVersion.addAll(cache.getAdditionalArtifactsByVersion().get(mavenVersion));
 
-      List<String> releasedVersions = productRepo.getReleasedVersionsById(productId);
-      String version = VersionUtils.getMavenVersionMatchWithTag(releasedVersions, mavenVersion);
+      // List<String> releasedVersions = productRepo.getReleasedVersionsById(productId);
+      // String version = VersionUtils.getMavenVersionMatchWithTag(releasedVersions, mavenVersion);
 
-      if (StringUtils.isNotBlank(version)) {
-        ProductJsonContent json = productJsonRepo.findByProductIdAndVersion(productId, version);
-        json.setRelatedMavenVersions(Set.of(mavenVersion));
-        productJsonRepo.save(json);
+      // if (StringUtils.isNotBlank(version)) {
+      //   ProductJsonContent json = productJsonRepo.findByProductIdAndVersion(productId, version);
+      //   json.setRelatedMavenVersions(Set.of(mavenVersion));
+      //   productJsonRepo.save(json);
 
-        ProductModuleContent moduleContent =
-            productContentRepo.findByTagAndProductId(VersionUtils.convertVersionToTag(productId, version), productId);
-        moduleContent.setRelatedMavenVersions(Set.of(mavenVersion));
-        productContentRepo.save(moduleContent);
-      }
+      //   ProductModuleContent moduleContent =
+      //       productContentRepo.findByTagAndProductId(VersionUtils.convertVersionToTag(productId, version), productId);
+      //   moduleContent.setRelatedMavenVersions(Set.of(mavenVersion));
+      //   productContentRepo.save(moduleContent);
+      // }
+      artifactsByVersion.addAll(MavenUtils.convertArtifactsToModels(artifactsFromMeta, version));
+      artifactsByVersion.addAll(cache.getProductArtifactsByVersion().computeIfAbsent(version, k -> new ArrayList<>()));
+      artifactsByVersion.addAll(
+          cache.getAdditionalArtifactsByVersion().computeIfAbsent(version, k -> new ArrayList<>()));
       if (!CollectionUtils.isEmpty(artifactsByVersion)) {
         results.add(new MavenArtifactVersionModel(mavenVersion, artifactsByVersion));
       }

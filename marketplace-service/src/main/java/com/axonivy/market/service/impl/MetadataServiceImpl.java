@@ -6,6 +6,7 @@ import com.axonivy.market.entity.Metadata;
 import com.axonivy.market.entity.MetadataSync;
 import com.axonivy.market.entity.Product;
 import com.axonivy.market.entity.ProductJsonContent;
+import com.axonivy.market.enums.NonStandardProduct;
 import com.axonivy.market.repository.MavenArtifactVersionRepository;
 import com.axonivy.market.repository.MetadataRepository;
 import com.axonivy.market.repository.MetadataSyncRepository;
@@ -47,8 +48,22 @@ public class MetadataServiceImpl implements MetadataService {
     this.metadataRepo = metadataRepo;
   }
 
-  private void updateMavenArtifactVersionData(Product product, Set<Metadata> metadataSet,
-      MavenArtifactVersion artifactVersionCache) {
+  private static void updateMavenArtifactVersionCacheWithModel(MavenArtifactVersion artifactVersionCache,
+      String version, Metadata metadata) {
+    if (metadata.isProductArtifact()) {
+      if (artifactVersionCache.getProductArtifactsByVersion().computeIfAbsent(version,
+          k -> new ArrayList<>()).stream().anyMatch(artifact -> metadata.getName().equals(artifact.getName()))) {
+        return;
+      }
+      artifactVersionCache.getProductArtifactsByVersion().get(version).add(
+          MavenUtils.buildMavenArtifactModelFromSnapShotMetadata(version, metadata));
+    } else {
+      artifactVersionCache.getAdditionalArtifactsByVersion().computeIfAbsent(version, k -> new ArrayList<>()).add(
+          MavenUtils.buildMavenArtifactModelFromSnapShotMetadata(version, metadata));
+    }
+  }
+
+  private void updateMavenArtifactVersionData(Set<Metadata> metadataSet, MavenArtifactVersion artifactVersionCache) {
     for (Metadata metadata : metadataSet) {
       String metadataContent = MavenUtils.getMetadataContentFromUrl(metadata.getUrl());
       if (StringUtils.isBlank(metadataContent)) {
@@ -84,9 +99,9 @@ public class MetadataServiceImpl implements MetadataService {
       // Sync versions from maven & update artifacts-version table
       List<Artifact> additionalArtifactFromMeta = MavenUtils.filterNonProductArtifactFromMeta(product.getArtifacts());
       metadataSet.addAll(MavenUtils.convertArtifactsToMetadataSet(artifactsFromNewTags, productId));
-
       metadataSet.addAll(
           MavenUtils.convertArtifactsToMetadataSet(new HashSet<>(additionalArtifactFromMeta), productId));
+
       if (CollectionUtils.isEmpty(metadataSet)) {
         continue;
       }
@@ -101,44 +116,46 @@ public class MetadataServiceImpl implements MetadataService {
     }
     log.warn("**MetadataService: version sync finished");
   }
+//TODO: resolve comment here
+//   private void updateMavenArtifactVersionFromMetadata(Product product, MavenArtifactVersion artifactVersionCache,
+//       Metadata metadata) {
+//     Set<String> notInGHTags = new HashSet<>();
 
-  private void updateMavenArtifactVersionFromMetadata(Product product, MavenArtifactVersion artifactVersionCache,
-      Metadata metadata) {
-    Set<String> notInGHTags = new HashSet<>();
+//     for (String metaVersion : metadata.getVersions()) {
+//       String matchedVersion = VersionUtils.getMavenVersionMatchWithTag(
+//           product.getReleasedVersions(), metaVersion);
+//       if (!metaVersion.equals(matchedVersion) && VersionUtils.isSnapshotVersion(metaVersion)) {
+//         notInGHTags.add(metaVersion);
+//       }
+//     }
+//     log.error("Snapshot Versions not in GHTags: {}", notInGHTags);
+//     for (String notInGHTag : notInGHTags) {
+//       Metadata snapShotMetadata = MavenUtils.buildSnapShotMetadataFromVersion(metadata, notInGHTag);
+//       MetadataReaderUtils.parseMetadataSnapshotFromString(
+//           MavenUtils.getMetadataContentFromUrl(snapShotMetadata.getUrl()),
+//           snapShotMetadata);
+//       String url = "https://maven.axonivy.com/com/axonivy/demo/connectivity-demos-product/12.0" +
+//           ".0-SNAPSHOT/connectivity-demos-product-12.0.0-20240925.050040-20.zip";
+// //      String url = MavenUtils.buildDownloadUrl(snapShotMetadata.getArtifactId(),
+// //          notInGHTag, "zip",
+// //          snapShotMetadata.getRepoUrl(), snapShotMetadata.getGroupId(), snapShotMetadata.getSnapshotVersionValue());
+//       log.error("url {}", url);
 
-    for (String metaVersion : metadata.getVersions()) {
-      String matchedVersion = VersionUtils.getMavenVersionMatchWithTag(
-          product.getReleasedVersions(), metaVersion);
-      if (!metaVersion.equals(matchedVersion) && VersionUtils.isSnapshotVersion(metaVersion)) {
-        notInGHTags.add(metaVersion);
-      }
-    }
-    log.error("Snapshot Versions not in GHTags: {}", notInGHTags);
-    for (String notInGHTag : notInGHTags) {
-      Metadata snapShotMetadata = MavenUtils.buildSnapShotMetadataFromVersion(metadata, notInGHTag);
-      MetadataReaderUtils.parseMetadataSnapshotFromString(
-          MavenUtils.getMetadataContentFromUrl(snapShotMetadata.getUrl()),
-          snapShotMetadata);
-      String url = "https://maven.axonivy.com/com/axonivy/demo/connectivity-demos-product/12.0" +
-          ".0-SNAPSHOT/connectivity-demos-product-12.0.0-20240925.050040-20.zip";
-//      String url = MavenUtils.buildDownloadUrl(snapShotMetadata.getArtifactId(),
-//          notInGHTag, "zip",
-//          snapShotMetadata.getRepoUrl(), snapShotMetadata.getGroupId(), snapShotMetadata.getSnapshotVersionValue());
-      log.error("url {}", url);
+//       if (StringUtils.isBlank(url)) {
+//         return;
+//       }
+//       try {
+//         MetadataReaderUtils.downloadAndUnzipFile(url);
+//       } catch (IOException e) {
+//         log.error("Cannot download and unzip file");
+//       }
 
-      if (StringUtils.isBlank(url)) {
-        return;
-      }
-      try {
-        MetadataReaderUtils.downloadAndUnzipFile(url);
-      } catch (IOException e) {
-        log.error("Cannot download and unzip file");
-      }
+//     }
 
-    }
-
+  private void updateMavenArtifactVersionFromMetadata(MavenArtifactVersion artifactVersionCache, Metadata metadata) {
+    NonStandardProduct currentProduct = NonStandardProduct.findById(metadata.getProductId());
     metadata.getVersions().forEach(version -> {
-      if (VersionUtils.isSnapshotVersion(version)) {
+      if (VersionUtils.isSnapshotVersion(version) && currentProduct != NonStandardProduct.PORTAL) {
         if (VersionUtils.isOfficialVersionOrUnReleasedDevVersion(metadata.getVersions().stream().toList(), version)) {
           updateMavenArtifactVersionForNonReleaseDeVersion(artifactVersionCache, metadata, version);
         }
@@ -154,17 +171,6 @@ public class MetadataServiceImpl implements MetadataService {
     MetadataReaderUtils.parseMetadataSnapshotFromString(MavenUtils.getMetadataContentFromUrl(snapShotMetadata.getUrl()),
         snapShotMetadata);
     updateMavenArtifactVersionCacheWithModel(artifactVersionCache, version, snapShotMetadata);
-  }
-
-  private static void updateMavenArtifactVersionCacheWithModel(MavenArtifactVersion artifactVersionCache,
-      String version, Metadata metadata) {
-    if (metadata.isProductArtifact()) {
-      artifactVersionCache.getProductArtifactsByVersion().computeIfAbsent(version, k -> new ArrayList<>()).add(
-          MavenUtils.buildMavenArtifactModelFromSnapShotMetadata(version, metadata));
-    } else {
-      artifactVersionCache.getAdditionalArtifactsByVersion().computeIfAbsent(version, k -> new ArrayList<>()).add(
-          MavenUtils.buildMavenArtifactModelFromSnapShotMetadata(version, metadata));
-    }
   }
 
   private void updateArtifactsFromNonSyncedVersion(String productId, List<String> nonSyncedVersions,

@@ -11,7 +11,7 @@ import org.springframework.stereotype.Component;
 public class ScheduledTasks {
 
   private static final String SCHEDULING_TASK_PRODUCTS_CRON = "0 0 0/1 ? * *";
-  private static final String SCHEDULING_TASK_MAVEN_VERSION_CRON = "0 0 0 * * *";
+  private static final String SCHEDULING_TASK_MAVEN_VERSION_CRON = "0 0 20 * * *";
 
   private final ProductService productService;
   private final MetadataService metadataService;
