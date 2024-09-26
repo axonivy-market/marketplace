@@ -1,6 +1,7 @@
 package com.axonivy.market.controller;
 
 import com.axonivy.market.assembler.ProductModelAssembler;
+import com.axonivy.market.entity.Metadata;
 import com.axonivy.market.entity.Product;
 import com.axonivy.market.enums.ErrorCode;
 import com.axonivy.market.enums.Language;
@@ -9,6 +10,7 @@ import com.axonivy.market.enums.TypeOption;
 import com.axonivy.market.exceptions.model.UnauthorizedException;
 import com.axonivy.market.github.service.GitHubService;
 import com.axonivy.market.model.ProductCustomSortRequest;
+import com.axonivy.market.service.MetadataService;
 import com.axonivy.market.service.ProductService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -62,6 +64,9 @@ class ProductControllerTest {
 
   @InjectMocks
   private ProductController productController;
+
+  @Mock
+  private MetadataService metadataService;
 
   @BeforeEach
   void setup() {
@@ -139,8 +144,6 @@ class ProductControllerTest {
 
   @Test
   void testSyncMavenVersionSuccess() {
-//    when(service.syncLatestDataFromMarketRepo()).thenReturn(true);
-
     var response = productController.syncProductVersions(AUTHORIZATION_HEADER, false);
 
     assertEquals(HttpStatus.OK, response.getStatusCode());
