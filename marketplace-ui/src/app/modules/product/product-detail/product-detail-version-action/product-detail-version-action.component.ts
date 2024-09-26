@@ -11,7 +11,6 @@ import {
   Output,
   Signal,
   signal,
-  ViewChild,
   WritableSignal
 } from '@angular/core';
 import { ThemeService } from '../../../../core/services/theme/theme.service';

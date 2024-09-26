@@ -98,8 +98,10 @@
   line-height: 16.8px;
 }
 
-::ng-deep .dropdown-menu.menu-bar {
-  margin-top: 2.5rem;
+::ng-deep #download-dropdown-menu .dropdown-menu.menu-bar {
+  margin-top: 0.2rem;
+  height: fit-content;
+  max-height: 176px;
 }
 
 ::ng-deep .install-designer-dropdown {
@@ -116,21 +118,20 @@
   border: 0.5px solid #ebebeb;
 }
 
-::ng-deep .dropdown-menu {
+::ng-deep #download-dropdown-menu {
   position: absolute;
   right: 0;
   width: 400px;
   height: 204px;
-  margin-top: 1rem;
+  margin-top: 4rem;
   background-color: var(--bs-body-bg);
   z-index: 999;
   padding: 10px;
   border-radius: 5px;
   box-shadow: 0px 4px 30px 0px rgba(0, 0, 0, 0.1);
 
-  @media screen and (max-width: 991px) {
+  @media (max-width: 1399px) {
     width: 100%;
-    margin-top: 4rem;
   }
 
   &.maven-artifact-version__action {
@@ -192,8 +193,20 @@
   border-bottom-color: transparent;
   background-color: var(--bs-body-bg);
 
-  @media screen and (max-width: 991px) {
-    right: 22%;
+  @media screen and (max-width: 1399px) {
+    right: 14%;
+  }
+  
+  @media screen and (max-width: 1199px) {
+    right: 21%;
+  }
+
+  @media screen and (max-width: 767px) {
+    right: 18%;
+  }
+
+  @media screen and (max-width: 575px) {
+    right: 15%;
   }
 }
 
