@@ -26,7 +26,7 @@ export class CommonDropdownComponent<T extends string> {
   elementRef = inject(ElementRef);
   isDropdownOpen = false;
   @Input() metaDataJsonUrl: string | undefined = '';
-  
+
   toggleDropdown() {
     this.isDropdownOpen = !this.isDropdownOpen;
   }
