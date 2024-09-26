@@ -18,6 +18,7 @@ public class MavenConstants {
   public static final String SNAPSHOT_LAST_UPDATED_TAG = "timestamp";
   public static final String SNAPSHOT_LAST_UPDATED_DATE_TIME_FORMAT = "yyyyMMdd.HHmmss";
   public static final String VALUE_TAG = "value";
+  public static final String DEFAULT_PRODUCT_FOLDER_TYPE = "zip";
 
 
   private MavenConstants() {

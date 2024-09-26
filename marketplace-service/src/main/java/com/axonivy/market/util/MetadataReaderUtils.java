@@ -3,7 +3,6 @@ package com.axonivy.market.util;
 import com.axonivy.market.constants.MavenConstants;
 import com.axonivy.market.entity.Metadata;
 import lombok.extern.log4j.Log4j2;
-import org.apache.commons.lang3.StringUtils;
 import org.w3c.dom.Document;
 import org.w3c.dom.NodeList;
 import org.xml.sax.InputSource;
@@ -84,11 +83,10 @@ public class MetadataReaderUtils {
     return null;
   }
 
-  public static void downloadAndUnzipFile(String url) throws IOException {
-    if (StringUtils.isNotBlank(url)) {
-      downloadFile(url, "abc.zip");
-      unzip("abc.zip", "abc");
-    }
+  public static void downloadAndUnzipFile(String url, Metadata snapShotMetadata) throws IOException {
+    downloadFile(url, snapShotMetadata.getArtifactId() + MavenConstants.DEFAULT_PRODUCT_FOLDER_TYPE);
+    unzip(snapShotMetadata.getArtifactId() + MavenConstants.DEFAULT_PRODUCT_FOLDER_TYPE,
+        snapShotMetadata.getArtifactId());
   }
 
   private static void downloadFile(String fileURL, String saveDir) throws IOException {
@@ -116,7 +114,6 @@ public class MetadataReaderUtils {
         if (zipEntry.isDirectory()) {
           Files.createDirectories(newPath);
         } else {
-          log.error("Extracting file: " + zipEntry.getName());
           Files.createDirectories(newPath.getParent());
           try (BufferedOutputStream bos = new BufferedOutputStream(Files.newOutputStream(newPath))) {
             int len;
@@ -129,7 +126,7 @@ public class MetadataReaderUtils {
       }
       zis.closeEntry();
     } catch (IOException e) {
-      throw new RuntimeException("Error while unzipping: " + e.getMessage(), e);
+      log.error("Error while unzipping: {}", e.getMessage());
     }
   }
 }
