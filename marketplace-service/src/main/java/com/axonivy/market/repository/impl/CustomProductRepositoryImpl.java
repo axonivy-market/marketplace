@@ -126,7 +126,7 @@ public class CustomProductRepositoryImpl extends CustomRepository implements Cus
   @Override
   public List<Product> findAllProductsHaveDocument() {
     var criteria = new Criteria();
-    criteria.andOperator(Criteria.where(MongoDBConstants.DOC).is(true));
+    criteria.andOperator(Criteria.where(MongoDBConstants.ARTIFACTS_DOC).is(true));
     return mongoTemplate.find(new Query(criteria), Product.class);
   }
 

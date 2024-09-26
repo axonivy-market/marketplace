@@ -1,6 +1,6 @@
 package com.axonivy.market;
 
-import com.axonivy.market.service.ProductDocumentService;
+import com.axonivy.market.service.ExternalDocumentService;
 import com.axonivy.market.service.ProductService;
 import lombok.AllArgsConstructor;
 import lombok.extern.log4j.Log4j2;
@@ -24,7 +24,7 @@ import java.util.List;
 public class MarketplaceServiceApplication {
 
   final ProductService productService;
-  final ProductDocumentService productDocumentService;
+  final ExternalDocumentService externalDocumentService;
 
   public static void main(String[] args) {
     SpringApplication.run(MarketplaceServiceApplication.class, args);
@@ -34,7 +34,7 @@ public class MarketplaceServiceApplication {
   @EventListener(ApplicationStartedEvent.class)
   public void startInitializeSystem() {
     List<String> productIds = syncProductData();
-    syncProductDocumentData(productIds);
+    syncExternalDocumentData(productIds);
   }
 
   private List<String> syncProductData() {
@@ -48,22 +48,21 @@ public class MarketplaceServiceApplication {
       watch.stop();
       log.warn("Synchronizing Market repo: Finished synchronizing data for Axon Ivy Market repo in [{}] milliseconds",
           watch.getTime());
-      log.warn("Synchronizing Market repo: Synced products [{}]",
-          syncedProductIds);
+      log.warn("Synchronizing Market repo: Synced products [{}]", syncedProductIds);
     }
     return syncedProductIds;
   }
 
-  private void syncProductDocumentData(List<String> productIds) {
+  private void syncExternalDocumentData(List<String> productIds) {
     var watch = new StopWatch();
-    log.warn("Synchronizing Product Document: Started synchronizing data for Document");
+    log.warn("Synchronizing External Document: Started synchronizing data for Document");
     watch.start();
     if (ObjectUtils.isEmpty(productIds)) {
-      log.warn("Synchronizing Product Document: Nothing updated");
+      log.warn("Synchronizing External Document: Nothing updated");
     }
-    productIds.forEach(productId -> productDocumentService.syncDocumentForProduct(productId, false));
+    productIds.forEach(id -> externalDocumentService.syncDocumentForProduct(id, false));
     watch.stop();
-    log.warn("Synchronizing Product Document: Finished synchronizing data for Document in [{}] milliseconds",
+    log.warn("Synchronizing External Document: Finished synchronizing data for Document in [{}] milliseconds",
         watch.getTime());
   }
 }

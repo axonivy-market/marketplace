@@ -3,15 +3,11 @@ package com.axonivy.market.service;
 import com.axonivy.market.entity.Product;
 import com.axonivy.market.repository.ProductRepository;
 import com.axonivy.market.schedulingtask.ScheduledTasks;
-import org.awaitility.Awaitility;
-import org.awaitility.Durations;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.SpyBean;
 
 import java.util.List;
 
@@ -26,7 +22,7 @@ class SystemTasksTest {
   ProductRepository productRepo;
 
   @Mock
-  ProductDocumentService productDocumentService;
+  ExternalDocumentService externalDocumentService;
 
   @Mock
   ProductService productService;
@@ -40,7 +36,7 @@ class SystemTasksTest {
     when(productRepo.findAllProductsHaveDocument()).thenReturn(List.of(mockProduct));
     tasks.syncDataForProductDocuments();
     verify(productRepo, times(1)).findAllProductsHaveDocument();
-    verify(productDocumentService, times(1)).syncDocumentForProduct(PORTAL, false);
+    verify(externalDocumentService, times(1)).syncDocumentForProduct(PORTAL, false);
   }
 
   @Test

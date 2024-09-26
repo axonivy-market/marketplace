@@ -11,14 +11,14 @@ import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.util.Date;
 
-import static com.axonivy.market.constants.EntityConstants.PRODUCT_DOCUMENT_META;
+import static com.axonivy.market.constants.EntityConstants.EXTERNAL_DOCUMENT_META;
 
 @Getter
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
-@Document(PRODUCT_DOCUMENT_META)
-public class ProductDocumentMeta {
+@Document(EXTERNAL_DOCUMENT_META)
+public class ExternalDocumentMeta {
   @Id
   private String id;
   private String productId;

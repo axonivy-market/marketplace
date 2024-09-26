@@ -15,5 +15,5 @@ public class EntityConstants {
   public static final String PRODUCT_JSON_CONTENT = "ProductJsonContent";
   public static final String PRODUCT_MODULE_CONTENT = "ProductModuleContent";
   public static final String IMAGE = "Image";
-  public static final String PRODUCT_DOCUMENT_META = "ProductDocumentMeta";
+  public static final String EXTERNAL_DOCUMENT_META = "ExternalDocumentMeta";
 }
