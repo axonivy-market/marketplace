@@ -83,11 +83,16 @@ public class MetadataReaderUtils {
     return null;
   }
 
-  public static void downloadAndUnzipFile(String url, Metadata snapShotMetadata) throws IOException {
-    downloadFile(url, snapShotMetadata.getArtifactId() + MavenConstants.DEFAULT_PRODUCT_FOLDER_TYPE);
-    unzip(snapShotMetadata.getArtifactId() + MavenConstants.DEFAULT_PRODUCT_FOLDER_TYPE,
-        snapShotMetadata.getArtifactId());
+  public static String downloadAndUnzipFile(String url, Metadata snapShotMetadata) throws IOException {
+    String zipFilePath = snapShotMetadata.getArtifactId() + "." + MavenConstants.DEFAULT_PRODUCT_FOLDER_TYPE;
+    downloadFile(url, zipFilePath);
+
+    String destDir = snapShotMetadata.getArtifactId();
+    unzip(zipFilePath, destDir);
+
+    return Paths.get(destDir).toAbsolutePath().toString();
   }
+
 
   private static void downloadFile(String fileURL, String saveDir) throws IOException {
     URL url = new URL(fileURL);

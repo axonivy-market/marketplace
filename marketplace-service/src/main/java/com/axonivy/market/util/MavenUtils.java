@@ -22,6 +22,8 @@ import org.springframework.web.client.RestTemplate;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -74,6 +76,31 @@ public class MavenUtils {
     for (JsonNode dependencyNode : dependenciesNode) {
       Artifact artifact = createArtifactFromJsonNode(dependencyNode, repoUrl, isDependency);
       artifacts.add(artifact);
+    }
+  }
+
+  public static List<Artifact> convertProductJsonToMavenProductInfo(Path folderPath) throws IOException {
+    Path productJsonPath = folderPath.resolve(ProductJsonConstants.PRODUCT_JSON_FILE);
+
+
+    if (!(Files.exists(productJsonPath) && Files.isRegularFile(productJsonPath))) {
+      log.warn("product.json file not found in the folder: {}", folderPath);
+      return new ArrayList<>();
+    }
+
+    InputStream contentStream = extractedContentStream(productJsonPath);
+    if (Objects.isNull(contentStream)) {
+      return new ArrayList<>();
+    }
+    return extractMavenArtifactsFromContentStream(contentStream);
+  }
+
+  public static InputStream extractedContentStream(Path filePath) {
+    try {
+      return Files.newInputStream(filePath);
+    } catch (IOException | NullPointerException e) {
+      log.warn("Cannot read the current file: {}", e.getMessage());
+      return null;
     }
   }
 
