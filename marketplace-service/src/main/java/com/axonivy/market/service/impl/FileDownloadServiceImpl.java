@@ -122,7 +122,7 @@ public class FileDownloadServiceImpl implements FileDownloadService {
     return path;
   }
 
-  private void unzipFile(String zipFilePath, String location) throws IOException {
+  public void unzipFile(String zipFilePath, String location) throws IOException {
     Path destDirPath = Paths.get(location).toAbsolutePath().normalize();
     try (ZipFile zipFile = new ZipFile(new File(zipFilePath))) {
       Enumeration<? extends ZipEntry> entries = zipFile.entries();
@@ -149,7 +149,7 @@ public class FileDownloadServiceImpl implements FileDownloadService {
     }
   }
 
-  private int extractFile(ZipFile zipFile, ZipEntry zipEntry, String filePath,
+  public int extractFile(ZipFile zipFile, ZipEntry zipEntry, String filePath,
       int totalSizeArchive) {
     try (BufferedOutputStream bos = new BufferedOutputStream(new FileOutputStream(filePath))) {
       InputStream stream = new BufferedInputStream(zipFile.getInputStream(zipEntry));
@@ -183,7 +183,7 @@ public class FileDownloadServiceImpl implements FileDownloadService {
     }
   }
 
-  private void grantNecessaryPermissionsFor(String location) {
+  public void grantNecessaryPermissionsFor(String location) {
     Path folderPath = Paths.get(location);
     try {
       if (SystemUtils.IS_OS_UNIX) {

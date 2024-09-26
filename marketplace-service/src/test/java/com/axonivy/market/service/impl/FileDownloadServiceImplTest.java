@@ -10,16 +10,20 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.web.client.ResourceAccessException;
 import org.springframework.web.client.RestTemplate;
 
+import java.io.File;
 import java.io.IOException;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipFile;
 
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class FileDownloadServiceImplTest {
 
   private static final String DOWNLOAD_URL = "https://repo/axonivy/portal/portal-guide/10.0.0/portal-guide-10.0.0.zip";
-
+  private static final String EMPTY_SOURCE_URL_META_JSON_FILE = "/emptySourceUrlMeta.json";
   private static final String PORTAL = "portal";
 
   @Mock
@@ -48,4 +52,14 @@ class FileDownloadServiceImplTest {
     assertThrows(ResourceAccessException.class, () -> fileDownloadService.downloadAndUnzipFile(DOWNLOAD_URL, true));
   }
 
+  @Test
+  void testSupportFunctions() throws IOException {
+    var file = new File("src/test/resources/meta.json");
+    fileDownloadService.grantNecessaryPermissionsFor(file.getPath());
+
+    var mockZipFile = new ZipFile(new File("src/test/resources/mock-doc.zip"));
+    var mockZipEntry = mockZipFile.entries().nextElement();
+    var totalSizeArchive = fileDownloadService.extractFile(mockZipFile, mockZipEntry, file.getPath(), 10);
+    assertTrue(totalSizeArchive > 10);
+  }
 }
