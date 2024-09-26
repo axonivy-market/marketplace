@@ -86,12 +86,16 @@ class VersionServiceImplTest {
     artifactsInVersion.add(new MavenArtifactModel());
     when(mavenArtifactVersionRepository.findById("adobe-acrobat-sign-connector")).thenReturn(
         Optional.ofNullable(
-            MavenArtifactVersion.builder().productId(productId).productArtifactsByVersion(new HashMap<>()).build()));
+            MavenArtifactVersion.builder().productId(productId).productArtifactsByVersion(
+                new HashMap<>()).additionalArtifactsByVersion(new HashMap<>()).build()));
     Assertions.assertEquals(0, versionService.getArtifactsAndVersionToDisplay(productId, false, targetVersion).size());
 
     MavenArtifactVersion proceededData =
-        MavenArtifactVersion.builder().productArtifactsByVersion(new HashMap<>()).build();
+        MavenArtifactVersion.builder().productArtifactsByVersion(new HashMap<>()).additionalArtifactsByVersion(
+            new HashMap<>()).build();
     proceededData.getProductArtifactsByVersion().put(targetVersion, new ArrayList<>());
+    proceededData.getAdditionalArtifactsByVersion().put(targetVersion, new ArrayList<>());
+
     when(mavenArtifactVersionRepository.findById(Mockito.anyString())).thenReturn(Optional.of(proceededData));
     Assertions.assertEquals(1, versionService.getArtifactsAndVersionToDisplay(productId, false, targetVersion).size());
   }
