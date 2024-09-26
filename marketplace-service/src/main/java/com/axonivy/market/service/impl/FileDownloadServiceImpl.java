@@ -44,11 +44,11 @@ public class FileDownloadServiceImpl implements FileDownloadService {
   private static final int THRESHOLD_SIZE = 1000000000;
   private static final double THRESHOLD_RATIO = 10;
 
-  private static byte[] downloadFileByRestTemplate(String url) {
+  private byte[] downloadFileByRestTemplate(String url) {
     return new RestTemplate().getForObject(url, byte[].class);
   }
 
-  private static String generateCacheStorageDirectory(String url) {
+  private String generateCacheStorageDirectory(String url) {
     url = url.substring(0, url.lastIndexOf(SLASH));
     var urlArrays = Arrays.asList(url.split(SLASH));
     Collections.reverse(urlArrays);
@@ -108,7 +108,7 @@ public class FileDownloadServiceImpl implements FileDownloadService {
     return tempZipPath;
   }
 
-  private static Path grantPermissionForNonUnixSystem(File tempFile) {
+  private Path grantPermissionForNonUnixSystem(File tempFile) {
     var path = tempFile.toPath();
     if (tempFile.setReadable(true, false)) {
       log.warn("Cannot grant read permission to {}", path);
@@ -161,7 +161,7 @@ public class FileDownloadServiceImpl implements FileDownloadService {
         totalSizeEntry += read;
         totalSizeArchive += read;
 
-        double compressionRatio = totalSizeEntry / zipEntry.getCompressedSize();
+        var compressionRatio = totalSizeEntry / zipEntry.getCompressedSize();
         if (compressionRatio > THRESHOLD_RATIO) {
           log.warn("Extract file is skipped due to threshold issue {}", compressionRatio);
           break;
