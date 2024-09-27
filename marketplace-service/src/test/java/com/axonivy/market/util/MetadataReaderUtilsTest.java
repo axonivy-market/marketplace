@@ -1,12 +1,11 @@
 package com.axonivy.market.util;
 
-import com.axonivy.market.entity.Metadata;
 import com.axonivy.market.constants.MavenConstants;
+import com.axonivy.market.entity.Metadata;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.time.LocalDateTime;
@@ -68,7 +67,7 @@ class MetadataReaderUtilsTest {
   }
 
   @Test
-  public void testParseInvalidXML() throws Exception {
+  void testParseInvalidXML() {
     MetadataReaderUtils.parseMetadataSnapshotFromString(INVALID_METADATA, metadata);
     Assertions.assertNull(metadata.getLatest());
     Assertions.assertNull(metadata.getRelease());
@@ -76,7 +75,7 @@ class MetadataReaderUtilsTest {
   }
 
   @Test
-  public void testParseMetadataSnapshotFromStringWithValidXml() throws Exception {
+  void testParseMetadataSnapshotFromStringWithValidXml() {
     MetadataReaderUtils.parseMetadataSnapshotFromString(MOCK_SNAPSHOT, metadata);
     Assertions.assertEquals("8.0.5-20221011.124215-170", metadata.getSnapshotVersionValue());
   }

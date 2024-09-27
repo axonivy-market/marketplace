@@ -25,8 +25,6 @@ import java.util.stream.Stream;
 public class VersionUtils {
   public static final String NON_NUMERIC_CHAR = "[^0-9.]";
 
-  public static List<String> notInGithubVersions;
-
   private VersionUtils() {
   }
 
