@@ -3,7 +3,6 @@ package com.axonivy.market.service.impl;
 import com.axonivy.market.constants.ProductJsonConstants;
 import com.axonivy.market.entity.Product;
 import com.axonivy.market.entity.ProductJsonContent;
-import com.axonivy.market.entity.ProductModuleContent;
 import com.axonivy.market.factory.ProductFactory;
 import com.axonivy.market.repository.ProductJsonContentRepository;
 import com.axonivy.market.service.ProductJsonContentService;
@@ -21,9 +20,7 @@ public class ProductJsonContentServiceImpl implements ProductJsonContentService 
   private final ProductJsonContentRepository productJsonRepo;
 
   @Override
-  public void updateProductJsonContent(ProductModuleContent productModuleContent,
-      String jsonContent, String currentVersion,
-      Product product) {
+  public void updateProductJsonContent(String jsonContent, String currentVersion, Product product) {
     if (ObjectUtils.isNotEmpty(jsonContent)) {
       ProductJsonContent productJsonContent = new ProductJsonContent();
       productJsonContent.setVersion(currentVersion);

@@ -12,6 +12,8 @@ import com.axonivy.market.github.util.GitHubUtils;
 import com.axonivy.market.model.MavenArtifactModel;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import lombok.AccessLevel;
+import lombok.NoArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.BooleanUtils;
@@ -32,11 +34,10 @@ import java.util.Optional;
 import java.util.Set;
 
 @Log4j2
+@NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class MavenUtils {
   private static final ObjectMapper objectMapper = new ObjectMapper();
   private static final RestTemplate restTemplate = new RestTemplate();
-
-  private MavenUtils() {}
 
   public static List<Artifact> getMavenArtifactsFromProductJson(ProductJsonContent productJson) {
     if (Objects.isNull(productJson) || StringUtils.isBlank(productJson.getContent())) {
@@ -81,7 +82,6 @@ public class MavenUtils {
 
   public static List<Artifact> convertProductJsonToMavenProductInfo(Path folderPath) throws IOException {
     Path productJsonPath = folderPath.resolve(ProductJsonConstants.PRODUCT_JSON_FILE);
-
 
     if (!(Files.exists(productJsonPath) && Files.isRegularFile(productJsonPath))) {
       log.warn("product.json file not found in the folder: {}", folderPath);
@@ -283,7 +283,7 @@ public class MavenUtils {
   }
 
   public static List<Artifact> filterNonProductArtifactFromList(List<Artifact> artifactsFromMeta) {
-    if(CollectionUtils.isEmpty(artifactsFromMeta)) {
+    if (CollectionUtils.isEmpty(artifactsFromMeta)) {
       return artifactsFromMeta;
     }
     return artifactsFromMeta.stream()

@@ -83,7 +83,7 @@ public class ImageServiceImpl implements ImageService {
         return imageRepository.save(image);
       }
       return existedImage;
-    } catch (IOException e) {
+    } catch (IOException | NullPointerException e) {
       log.error("Cannot get image from downloaded folder {}", e.getMessage());
       return null;
     }

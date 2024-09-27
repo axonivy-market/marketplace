@@ -3,7 +3,6 @@ package com.axonivy.market.service.impl;
 import com.axonivy.market.constants.ProductJsonConstants;
 import com.axonivy.market.entity.Product;
 import com.axonivy.market.entity.ProductJsonContent;
-import com.axonivy.market.entity.ProductModuleContent;
 import com.axonivy.market.repository.ProductJsonContentRepository;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -29,7 +28,6 @@ class ProductJsonContentServiceImplTest {
 
   @Test
   void testUpdateProductJsonContent_ValidJsonContent() {
-    ProductModuleContent productModuleContent = new ProductModuleContent();
     String jsonContent = "{\"version\":\"${version}\"}";
     String currentVersion = "1.0.0";
     Product product = new Product();
@@ -38,7 +36,7 @@ class ProductJsonContentServiceImplTest {
     names.put(ProductJsonConstants.EN_LANGUAGE, "Test Product");
     product.setNames(names);
 
-    productJsonContentService.updateProductJsonContent(productModuleContent, jsonContent, currentVersion, product);
+    productJsonContentService.updateProductJsonContent(jsonContent, currentVersion, product);
 
     ArgumentCaptor<ProductJsonContent> captor = ArgumentCaptor.forClass(ProductJsonContent.class);
     verify(productJsonRepo, times(1)).save(captor.capture());
@@ -52,12 +50,11 @@ class ProductJsonContentServiceImplTest {
 
   @Test
   void testUpdateProductJsonContent_EmptyJsonContent() {
-    ProductModuleContent productModuleContent = new ProductModuleContent();
     String jsonContent = "";
     String currentVersion = "1.0.0";
     Product product = new Product();
 
-    productJsonContentService.updateProductJsonContent(productModuleContent, jsonContent, currentVersion, product);
+    productJsonContentService.updateProductJsonContent(jsonContent, currentVersion, product);
 
     verify(productJsonRepo, times(0)).save(any(ProductJsonContent.class));
   }

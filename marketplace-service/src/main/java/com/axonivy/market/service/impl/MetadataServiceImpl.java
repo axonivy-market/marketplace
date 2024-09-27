@@ -142,14 +142,12 @@ public class MetadataServiceImpl implements MetadataService {
 
   private void updateContentsFromNonMatchVersions(List<String> releasedVersions,
       Metadata metadata) {
-    Set<String> nonMatchSnapshotVersions = new HashSet<>();
     List<ProductModuleContent> productModuleContents = new ArrayList<>();
-    getNonMatchSnapshotVersions(releasedVersions, metadata, nonMatchSnapshotVersions);
+    Set<String> nonMatchSnapshotVersions = getNonMatchSnapshotVersions(releasedVersions, metadata);
 
     for (String nonMatchSnapshotVersion : nonMatchSnapshotVersions) {
-      Metadata productArtifact = getProductArtifact(metadata);
-      if (Objects.nonNull(productArtifact)) {
-        handleProductArtifact(metadata.getProductId(), nonMatchSnapshotVersion, productArtifact, productModuleContents);
+      if (isProductArtifact(metadata)) {
+        handleProductArtifact(metadata.getProductId(), nonMatchSnapshotVersion, metadata, productModuleContents);
       }
     }
     if (ObjectUtils.isNotEmpty(productModuleContents)) {
@@ -157,8 +155,8 @@ public class MetadataServiceImpl implements MetadataService {
     }
   }
 
-  private Metadata getProductArtifact(Metadata metadata) {
-    return metadata.getArtifactId().endsWith(MavenConstants.PRODUCT_ARTIFACT_POSTFIX) ? metadata : null;
+  private boolean isProductArtifact(Metadata metadata) {
+    return metadata.getArtifactId().endsWith(MavenConstants.PRODUCT_ARTIFACT_POSTFIX);
   }
 
   private void handleProductArtifact(String productId, String nonMatchSnapshotVersion, Metadata productArtifact,
@@ -198,8 +196,8 @@ public class MetadataServiceImpl implements MetadataService {
     }
   }
 
-  private void getNonMatchSnapshotVersions(List<String> releasedVersions, Metadata metadata,
-      Set<String> nonMatchSnapshotVersions) {
+  private Set<String> getNonMatchSnapshotVersions(List<String> releasedVersions, Metadata metadata) {
+    Set<String> nonMatchSnapshotVersions = new HashSet<>();
     for (String metaVersion : metadata.getVersions()) {
       String matchedVersion = VersionUtils.getMavenVersionMatchWithTag(
           releasedVersions, metaVersion);
@@ -207,6 +205,7 @@ public class MetadataServiceImpl implements MetadataService {
         nonMatchSnapshotVersions.add(metaVersion);
       }
     }
+    return nonMatchSnapshotVersions;
   }
 
   private ProductModuleContent getReadmeAndProductContentsFromTag(Product product, String tag,
@@ -234,7 +233,7 @@ public class MetadataServiceImpl implements MetadataService {
     String currentVersion = VersionUtils.convertTagToVersion(productModuleContent.getTag());
     Path productJsonPath = Paths.get(unzippedFolderPath, ProductJsonConstants.PRODUCT_JSON_FILE);
     String content = extractProductJsonContent(productJsonPath);
-    productJsonContentService.updateProductJsonContent(productModuleContent, content, currentVersion, product);
+    productJsonContentService.updateProductJsonContent(content, currentVersion, product);
   }
 
   private void extractReadMeFileFromContents(Product product, String unzippedFolderPath,

@@ -3,6 +3,8 @@ package com.axonivy.market.service.impl;
 import com.axonivy.market.entity.Image;
 import com.axonivy.market.entity.Product;
 import com.axonivy.market.repository.ImageRepository;
+import com.axonivy.market.util.MavenUtils;
+import org.bson.types.Binary;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.kohsuke.github.GHContent;
@@ -10,13 +12,19 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.MockedStatic;
+import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.file.Path;
+import java.util.Collections;
 
 import static com.axonivy.market.constants.CommonConstants.SLASH;
 import static com.axonivy.market.constants.MetaConstants.META_FILE;
+import static org.bson.assertions.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.mockito.Mockito.*;
@@ -51,6 +59,32 @@ class ImageServiceImplTest {
     assertEquals(argumentCaptor.getValue().getProductId(), expectedImage.getProductId());
     assertEquals(argumentCaptor.getValue().getSha(), expectedImage.getSha());
     assertEquals(argumentCaptor.getValue().getImageUrl(), expectedImage.getImageUrl());
+  }
+
+  @Test
+  void testMappingImageFromDownloadedFolder() {
+    try (MockedStatic<MavenUtils> mockedMavenUtils = Mockito.mockStatic(MavenUtils.class)) {
+      Product product = new Product();
+      product.setId("connectivity-demo");
+
+      byte[] newImageData = "connectivity-image-data".getBytes();
+      Path imagePath = Path.of("connectivity-image.png");
+      ByteArrayInputStream inputStream = new ByteArrayInputStream(newImageData);
+      when(MavenUtils.extractedContentStream(imagePath)).thenReturn(inputStream);
+      when(imageRepository.findByProductId(product.getId())).thenReturn(Collections.emptyList());
+
+      Image newImage = new Image();
+      newImage.setImageData(new Binary(newImageData));
+      newImage.setProductId(product.getId());
+
+      when(imageRepository.save(any(Image.class))).thenReturn(newImage);
+
+      Image result = imageService.mappingImageFromDownloadedFolder(product, imagePath);
+
+      assertNotNull(result);
+      assertEquals(newImage, result);
+      verify(imageRepository).save(any(Image.class));
+    }
   }
 
   @Test

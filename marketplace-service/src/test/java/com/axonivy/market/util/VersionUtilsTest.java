@@ -1,6 +1,5 @@
 package com.axonivy.market.util;
 
-import com.axonivy.market.entity.MetadataSync;
 import com.axonivy.market.entity.Product;
 import com.axonivy.market.enums.NonStandardProduct;
 import org.apache.commons.lang3.StringUtils;
