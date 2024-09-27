@@ -5,6 +5,7 @@ import com.axonivy.market.comparator.MavenVersionComparator;
 import com.axonivy.market.constants.CommonConstants;
 import com.axonivy.market.constants.GitHubConstants;
 import com.axonivy.market.constants.MavenConstants;
+import com.axonivy.market.entity.Metadata;
 import com.axonivy.market.entity.MetadataSync;
 import com.axonivy.market.entity.Product;
 import com.axonivy.market.enums.NonStandardProduct;
@@ -78,9 +79,7 @@ public class VersionUtils {
       return true;
     }
     String bugfixVersion;
-    if (!isValidFormatReleasedVersion(version)) {
-      return false;
-    } else if (isSnapshotVersion(version)) {
+    if (isSnapshotVersion(version)) {
       bugfixVersion = getBugfixVersion(version.replace(MavenConstants.SNAPSHOT_RELEASE_POSTFIX, StringUtils.EMPTY));
     } else {
       bugfixVersion = getBugfixVersion(version.split(MavenConstants.SPRINT_RELEASE_POSTFIX)[0]);
@@ -98,12 +97,8 @@ public class VersionUtils {
     return version.contains(MavenConstants.SPRINT_RELEASE_POSTFIX);
   }
 
-  public static boolean isValidFormatReleasedVersion(String version) {
-    return StringUtils.isNumeric(version.split(MavenConstants.MAIN_VERSION_REGEX)[0]);
-  }
-
   public static boolean isReleasedVersion(String version) {
-    return !(isSprintVersion(version) || isSnapshotVersion(version)) && isValidFormatReleasedVersion(version);
+    return !(isSprintVersion(version) || isSnapshotVersion(version));
   }
 
   public static boolean isMatchWithDesignerVersion(String version, String designerVersion) {
@@ -172,5 +167,26 @@ public class VersionUtils {
       releasedVersion.removeAll(cache.getSyncedTags());
     }
     return releasedVersion;
+  }
+
+  public static String getNumbersOnly(String version) {
+    return StringUtils.defaultIfBlank(version, StringUtils.EMPTY).split(CommonConstants.DASH_SEPARATOR)[0];
+  }
+
+  public static boolean isMajorVersion(String version) {
+    return getNumbersOnly(version).split(CommonConstants.DOT_SEPARATOR).length == 0 && isReleasedVersion(version);
+  }
+
+  public static boolean isMinorVersion(String version) {
+    return getNumbersOnly(version).split(CommonConstants.DOT_SEPARATOR).length == 1 && isReleasedVersion(version);
+  }
+
+  public static boolean isBugFixVersion(String version) {
+    return getNumbersOnly(version).split(CommonConstants.DOT_SEPARATOR).length == 2 && isReleasedVersion(version);
+  }
+
+  public static String getLatestDevVersionFromRange(List<String> versionInRange, String version) {
+    return CollectionUtils.firstElement(versionInRange.stream().sorted(
+        new LatestVersionComparator()).toList());
   }
 }

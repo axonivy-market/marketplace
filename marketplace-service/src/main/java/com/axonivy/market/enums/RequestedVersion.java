@@ -1,19 +1,23 @@
 package com.axonivy.market.enums;
 
+import org.apache.commons.lang3.StringUtils;
+
 public enum RequestedVersion {
-  LATEST_DEV, MINOR_DEV_VERSION, LATEST, ORDINARY;
+  LATEST_DEV_OF_VERSION, LATEST, ORDINARY, RELEASE;
 
   public static RequestedVersion findByText(String requestedVersion) {
     switch (requestedVersion) {
       case "dev":
       case "nightly":
       case "sprint":
-        return LATEST_DEV;
-      case "latest":
         return LATEST;
+      case "latest":
+        return RELEASE;
       default:
-        if (requestedVersion.contains("-dev")) {
-          return MINOR_DEV_VERSION;
+        if (StringUtils.isNotBlank(requestedVersion)) {
+          if (requestedVersion.contains("-dev")) {
+            return LATEST_DEV_OF_VERSION;
+          }
         }
         return ORDINARY;
     }

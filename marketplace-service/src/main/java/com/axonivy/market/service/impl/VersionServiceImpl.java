@@ -1,15 +1,19 @@
 package com.axonivy.market.service.impl;
 
 import com.axonivy.market.bo.Artifact;
+import com.axonivy.market.comparator.LatestVersionComparator;
 import com.axonivy.market.controller.ProductDetailsController;
 import com.axonivy.market.entity.MavenArtifactVersion;
+import com.axonivy.market.entity.Metadata;
 import com.axonivy.market.entity.Product;
 import com.axonivy.market.entity.ProductJsonContent;
 import com.axonivy.market.entity.ProductModuleContent;
+import com.axonivy.market.enums.RequestedVersion;
 import com.axonivy.market.model.MavenArtifactModel;
 import com.axonivy.market.model.MavenArtifactVersionModel;
 import com.axonivy.market.model.VersionAndUrlModel;
 import com.axonivy.market.repository.MavenArtifactVersionRepository;
+import com.axonivy.market.repository.MetadataRepository;
 import com.axonivy.market.repository.ProductJsonContentRepository;
 import com.axonivy.market.repository.ProductModuleContentRepository;
 import com.axonivy.market.repository.ProductRepository;
@@ -17,7 +21,6 @@ import com.axonivy.market.service.VersionService;
 import com.axonivy.market.util.MavenUtils;
 import com.axonivy.market.util.VersionUtils;
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.core.util.VersionUtil;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.lang3.ObjectUtils;
@@ -30,6 +33,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -47,14 +51,17 @@ public class VersionServiceImpl implements VersionService {
   private final ProductJsonContentRepository productJsonRepo;
   private final ProductModuleContentRepository productContentRepo;
   private final ObjectMapper mapper = new ObjectMapper();
+  private final MetadataRepository metadataRepo;
 
   public VersionServiceImpl(
       MavenArtifactVersionRepository mavenArtifactVersionRepository, ProductRepository productRepo,
-      ProductJsonContentRepository productJsonRepo, ProductModuleContentRepository productContentRepo) {
+      ProductJsonContentRepository productJsonRepo, ProductModuleContentRepository productContentRepo,
+      MetadataRepository metadataRepo) {
     this.mavenArtifactVersionRepository = mavenArtifactVersionRepository;
     this.productRepo = productRepo;
     this.productJsonRepo = productJsonRepo;
     this.productContentRepo = productContentRepo;
+    this.metadataRepo = metadataRepo;
   }
 
   public List<MavenArtifactVersionModel> getArtifactsAndVersionToDisplay(String productId, Boolean isShowDevVersion,
@@ -131,13 +138,56 @@ public class VersionServiceImpl implements VersionService {
 
   @Override
   public String getLatestVersionArtifactDownloadUrl(String productId, String version, String artifactId) {
-    var productArtifactByVersion = mavenArtifactVersionRepository.findById(productId);
-    if (!productArtifactByVersion.isPresent()) {
+    String targetVersion = getLatestVersionOfArtifactByVersionRequest(productId, version, artifactId);
+    if (StringUtils.isBlank(targetVersion)) {
       return StringUtils.EMPTY;
     }
-    VersionUtil.parseVersion()
+    var artifactVersionCache = mavenArtifactVersionRepository.findById(productId);
+    if (!artifactVersionCache.isPresent()) {
+      return StringUtils.EMPTY;
+    }
+    String downloadUrl =
+        artifactVersionCache.get().getProductArtifactsByVersion().get(targetVersion).stream().filter(
+            artifact -> StringUtils.equals(artifactId, artifact.getArtifactId())).findAny().map(
+            MavenArtifactModel::getDownloadUrl).orElse(null);
+    if (StringUtils.isBlank(downloadUrl)) {
+      downloadUrl = artifactVersionCache.get().getAdditionalArtifactsByVersion().get(targetVersion).stream().filter(
+          artifact -> StringUtils.equals(artifactId, artifact.getArtifactId())).findAny().map(
+          MavenArtifactModel::getDownloadUrl).orElse(null);
+    }
+    return downloadUrl;
+  }
 
-    return "";
+  private String getLatestVersionOfArtifactByVersionRequest(String productId, String version, String artifactId) {
+    Metadata artifactMetadata = metadataRepo.findByProductIdAndArtifactId(productId, artifactId);
+    if (Objects.isNull(artifactMetadata)) {
+      return StringUtils.EMPTY;
+    }
+    List<String> versions = new ArrayList<>(artifactMetadata.getVersions());
+    RequestedVersion VersionType = RequestedVersion.findByText(version);
+    // version in ['dev','nightly','sprint']
+    if (VersionType == RequestedVersion.LATEST) {
+      return artifactMetadata.getLatest();
+    }
+    //version is 'latest'
+    if (VersionType == RequestedVersion.RELEASE) {
+      return artifactMetadata.getRelease();
+    }
+
+    List<String> versionInRange =
+        versions.stream().filter(
+            v -> v.startsWith(VersionUtils.getNumbersOnly(version))).sorted(new LatestVersionComparator()).toList();
+    //version is 10.0-dev
+    if (VersionType == RequestedVersion.LATEST_DEV_OF_VERSION) {
+      return CollectionUtils.firstElement(versionInRange);
+    }
+
+    //version is 10.1 or 10
+    if (VersionUtils.isMajorVersion(version) || VersionUtils.isMinorVersion(version)) {
+      return CollectionUtils.firstElement(versionInRange.stream().filter(VersionUtils::isReleasedVersion).toList());
+    }
+    String matchVersion = CollectionUtils.firstElement(versionInRange);
+    return StringUtils.isBlank(matchVersion) ? artifactMetadata.getLatest() : matchVersion;
   }
 
   public List<Artifact> getArtifactsFromMeta(String productId) {
