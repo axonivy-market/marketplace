@@ -18,6 +18,7 @@ import com.axonivy.market.util.MavenUtils;
 import com.axonivy.market.util.VersionUtils;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import lombok.AllArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -39,6 +40,7 @@ import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 
 @Log4j2
 @Service
+@AllArgsConstructor
 public class VersionServiceImpl implements VersionService {
 
   private final MavenArtifactVersionRepository mavenArtifactVersionRepository;
@@ -46,15 +48,6 @@ public class VersionServiceImpl implements VersionService {
   private final ProductJsonContentRepository productJsonRepo;
   private final ProductModuleContentRepository productContentRepo;
   private final ObjectMapper mapper = new ObjectMapper();
-
-  public VersionServiceImpl(
-      MavenArtifactVersionRepository mavenArtifactVersionRepository, ProductRepository productRepo,
-      ProductJsonContentRepository productJsonRepo, ProductModuleContentRepository productContentRepo) {
-    this.mavenArtifactVersionRepository = mavenArtifactVersionRepository;
-    this.productRepo = productRepo;
-    this.productJsonRepo = productJsonRepo;
-    this.productContentRepo = productContentRepo;
-  }
 
   public List<MavenArtifactVersionModel> getArtifactsAndVersionToDisplay(String productId, Boolean isShowDevVersion,
       String designerVersion) {

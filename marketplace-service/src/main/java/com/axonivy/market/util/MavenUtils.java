@@ -242,12 +242,11 @@ public class MavenUtils {
         metadata.getProductId()).name(metadata.getName()).isProductArtifact(metadata.isProductArtifact()).build();
   }
 
-  public static MavenArtifactModel buildMavenArtifactModelFromSnapShotMetadata(String version,
-      Metadata snapShotMetadata) {
-    return new MavenArtifactModel(snapShotMetadata.getName(),
-        buildDownloadUrl(snapShotMetadata.getArtifactId(), version, snapShotMetadata.getType(),
-            snapShotMetadata.getRepoUrl(), snapShotMetadata.getGroupId(), snapShotMetadata.getSnapshotVersionValue()),
-        snapShotMetadata.getArtifactId().contains(snapShotMetadata.getGroupId()));
+  public static MavenArtifactModel buildMavenArtifactModelFromMetadata(String version, Metadata metadata) {
+    return new MavenArtifactModel(metadata.getName(),
+        buildDownloadUrl(metadata.getArtifactId(), version, metadata.getType(),
+            metadata.getRepoUrl(), metadata.getGroupId(), metadata.getSnapshotVersionValue()),
+        metadata.getArtifactId().contains(metadata.getGroupId()));
   }
 
   public static String getMetadataContentFromUrl(String metadataUrl) {

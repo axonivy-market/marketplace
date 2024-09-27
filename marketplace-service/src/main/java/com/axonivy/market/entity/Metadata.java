@@ -24,7 +24,6 @@ public class Metadata implements Serializable {
   private static final long serialVersionUID = 1L;
   @Id
   private String url;
-  private String id;
   private String productId;
   private LocalDateTime lastUpdated;
   private String artifactId;

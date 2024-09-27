@@ -16,6 +16,7 @@ import com.axonivy.market.service.ImageService;
 import com.axonivy.market.service.ProductJsonContentService;
 import com.axonivy.market.util.ProductContentUtils;
 import com.axonivy.market.util.VersionUtils;
+import lombok.AllArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.io.IOUtils;
 import org.kohsuke.github.GHContent;
@@ -39,19 +40,13 @@ import static com.axonivy.market.constants.CommonConstants.IMAGE_ID_PREFIX;
 
 @Log4j2
 @Service
+@AllArgsConstructor
 public class GHAxonIvyProductRepoServiceImpl implements GHAxonIvyProductRepoService {
   public static final String IMAGE_EXTENSION = "(.*?).(jpeg|jpg|png|gif)";
   private final GitHubService gitHubService;
   private final ImageService imageService;
   private GHOrganization organization;
   private final ProductJsonContentService productJsonContentService;
-
-  public GHAxonIvyProductRepoServiceImpl(GitHubService gitHubService, ImageService imageService,
-      ProductJsonContentService productJsonContentService) {
-    this.gitHubService = gitHubService;
-    this.imageService = imageService;
-    this.productJsonContentService = productJsonContentService;
-  }
 
   private static GHContent getProductJsonFile(List<GHContent> contents) {
     return contents.stream().filter(GHContent::isFile)

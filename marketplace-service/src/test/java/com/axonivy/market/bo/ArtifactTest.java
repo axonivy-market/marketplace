@@ -13,6 +13,8 @@ class ArtifactTest {
     Assertions.assertNotEquals(new Object(), artifact);
     Assertions.assertEquals(artifact, artifact);
 
+    Assertions.assertNotEquals(artifact, new Object());
+
     Artifact sameArtifact = new Artifact();
     sameArtifact.setGroupId("com.axonivy.com");
     sameArtifact.setArtifactId("octopus-demo");

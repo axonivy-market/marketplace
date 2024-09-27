@@ -148,10 +148,10 @@ class MavenUtilsTest {
   }
 
   @Test
-  void testBuildMavenArtifactModelFromSnapShotMetadata() {
+  void testBuildMavenArtifactModelFromMetadata() {
     Metadata mocKMetadata = buildMocKMetadata();
     mocKMetadata.setSnapshotVersionValue("20241111-111111");
-    MavenArtifactModel result = MavenUtils.buildMavenArtifactModelFromSnapShotMetadata("1.0.0-SNAPSHOT", mocKMetadata);
+    MavenArtifactModel result = MavenUtils.buildMavenArtifactModelFromMetadata("1.0.0-SNAPSHOT", mocKMetadata);
     Assertions.assertEquals(
         "https://maven.axonivy.com/com/axonivy/util/octopus/1.0.0-SNAPSHOT/octopus-20241111-111111.zip",
         result.getDownloadUrl());

@@ -143,7 +143,7 @@ class ProductControllerTest {
 
   @Test
   void testSyncMavenVersionSuccess() {
-    var response = productController.syncProductVersions(AUTHORIZATION_HEADER, false);
+    var response = productController.syncProductVersions(AUTHORIZATION_HEADER);
 
     assertEquals(HttpStatus.OK, response.getStatusCode());
     assertTrue(response.hasBody());
@@ -158,7 +158,7 @@ class ProductControllerTest {
         .validateUserOrganization(any(String.class), any(String.class));
 
     UnauthorizedException exception = assertThrows(UnauthorizedException.class,
-        () -> productController.syncProductVersions(INVALID_AUTHORIZATION_HEADER, false));
+        () -> productController.syncProductVersions(INVALID_AUTHORIZATION_HEADER));
 
     assertEquals(ErrorCode.GITHUB_USER_UNAUTHORIZED.getHelpText(), exception.getMessage());
   }
