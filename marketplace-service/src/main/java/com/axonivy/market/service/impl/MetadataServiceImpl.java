@@ -274,15 +274,12 @@ public class MetadataServiceImpl implements MetadataService {
         .filter(Files::isRegularFile)
         .filter(path -> path.getFileName().toString().toLowerCase().matches(CommonConstants.IMAGE_EXTENSION))
         .toList();
-
     Map<String, String> imageUrls = new HashMap<>();
     allImagePaths.forEach(imagePath -> Optional.of(imageService.mappingImageFromDownloadedFolder(product, imagePath))
         .ifPresent(image -> imageUrls.put(imagePath.getFileName().toString(),
             CommonConstants.IMAGE_ID_PREFIX.concat(image.getId()))));
 
-    ProductContentUtils.replaceImageDirWithImageCustomId(imageUrls, readmeContents);
-
-    return readmeContents;
+    return ProductContentUtils.replaceImageDirWithImageCustomId(imageUrls, readmeContents);
   }
 
   private String extractProductJsonContent(Path filePath) {

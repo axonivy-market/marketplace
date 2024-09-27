@@ -144,11 +144,12 @@ public class ProductContentUtils {
         (SETUP)));
   }
 
-  public static void replaceImageDirWithImageCustomId(Map<String, String> imageUrls, String readmeContents) {
+  public static String replaceImageDirWithImageCustomId(Map<String, String> imageUrls, String readmeContents) {
     for (Map.Entry<String, String> entry : imageUrls.entrySet()) {
       String imagePattern = String.format(README_IMAGE_FORMAT, Pattern.quote(entry.getKey()));
       readmeContents = readmeContents.replaceAll(imagePattern,
           String.format(IMAGE_DOWNLOAD_URL_FORMAT, entry.getValue()));
     }
+    return readmeContents;
   }
 }
