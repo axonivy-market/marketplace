@@ -12,11 +12,11 @@ import org.springframework.web.client.RestTemplate;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -51,12 +51,12 @@ class FileDownloadServiceImplTest {
 
   @Test
   void testSupportFunctions() throws IOException {
-    var file = new File("src/test/resources/meta.json");
-    fileDownloadService.grantNecessaryPermissionsFor(file.getPath());
+    var mockFile = fileDownloadService.createFolder("unzip");
+    var grantedPath = fileDownloadService.grantNecessaryPermissionsFor(mockFile.toString());
+    assertNotNull(grantedPath);
 
-    var mockZipFile = new ZipFile(new File("src/test/resources/mock-doc.zip"));
-    var mockZipEntry = mockZipFile.entries().nextElement();
-    var totalSizeArchive = fileDownloadService.extractFile(mockZipFile, mockZipEntry, file.getPath(), 10);
-    assertTrue(totalSizeArchive > 10);
+    var mockZipFile = new File("src/test/resources/mock-doc.zip");
+    var totalSizeArchive = fileDownloadService.unzipFile(mockZipFile.getPath(), mockFile.toString());
+    assertTrue(totalSizeArchive > 0);
   }
 }

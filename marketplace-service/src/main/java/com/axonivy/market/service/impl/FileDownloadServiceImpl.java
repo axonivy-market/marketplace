@@ -109,24 +109,23 @@ public class FileDownloadServiceImpl implements FileDownloadService {
   }
 
   private Path grantPermissionForNonUnixSystem(File tempFile) {
-    var path = tempFile.toPath();
     if (tempFile.setReadable(true, false)) {
-      log.warn("Cannot grant read permission to {}", path);
+      log.warn("Cannot grant read permission to {}", tempFile.toPath());
     }
     if (tempFile.setWritable(true, false)) {
-      log.warn("Cannot grant write permission to {}", path);
+      log.warn("Cannot grant write permission to {}", tempFile.toPath());
     }
     if (tempFile.setExecutable(true, false)) {
-      log.warn("Cannot grant exec permission to {}", path);
+      log.warn("Cannot grant exec permission to {}", tempFile.toPath());
     }
-    return path;
+    return tempFile.toPath();
   }
 
-  public void unzipFile(String zipFilePath, String location) throws IOException {
+  public int unzipFile(String zipFilePath, String location) throws IOException {
+    int totalSizeArchive = 0;
     Path destDirPath = Paths.get(location).toAbsolutePath().normalize();
     try (ZipFile zipFile = new ZipFile(new File(zipFilePath))) {
       Enumeration<? extends ZipEntry> entries = zipFile.entries();
-      int totalSizeArchive = 0;
       int totalEntryArchive = 0;
 
       while (entries.hasMoreElements()) {
@@ -147,6 +146,7 @@ public class FileDownloadServiceImpl implements FileDownloadService {
         }
       }
     }
+    return totalSizeArchive;
   }
 
   public int extractFile(ZipFile zipFile, ZipEntry zipEntry, String filePath,
@@ -174,16 +174,17 @@ public class FileDownloadServiceImpl implements FileDownloadService {
     return totalSizeArchive;
   }
 
-  private void createFolder(String location) {
+  public Path createFolder(String location) {
     Path folderPath = Paths.get(location);
     try {
       Files.createDirectories(folderPath);
     } catch (IOException e) {
       log.error("An error occurred while creating the folder: ", e);
     }
+    return folderPath;
   }
 
-  public void grantNecessaryPermissionsFor(String location) {
+  public Path grantNecessaryPermissionsFor(String location) {
     Path folderPath = Paths.get(location);
     try {
       if (SystemUtils.IS_OS_UNIX) {
@@ -191,11 +192,11 @@ public class FileDownloadServiceImpl implements FileDownloadService {
         Files.setPosixFilePermissions(folderPath, PERMS);
       } else {
         log.warn("NON_UNIX_OS detected: grant permission for {}", location);
-        File tempFile = folderPath.toFile();
-        grantPermissionForNonUnixSystem(tempFile);
+        folderPath = grantPermissionForNonUnixSystem(folderPath.toFile());
       }
     } catch (IOException e) {
       log.error("An error occurred while granting permission the folder: ", e);
     }
+    return folderPath;
   }
 }

@@ -1,8 +1,9 @@
 import { HttpClient } from '@angular/common/http';
 import { Component, inject, OnInit } from '@angular/core';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { ROUTER } from '../../constants/router.constant';
 import { TranslateModule } from '@ngx-translate/core';
+import { ERROR_PAGE_PATH, NOT_FOUND_ERROR_CODE } from '../../constants/common.constant';
 
 const INDEX_FILE = '/index.html';
 const DOC_API = 'api/externaldocument';
@@ -16,11 +17,13 @@ const DOC_API = 'api/externaldocument';
 export class ExternalDocumentComponent implements OnInit {
   httpClient = inject(HttpClient);
 
-  constructor(private route: ActivatedRoute) { }
+  constructor(private activeRoute: ActivatedRoute,
+    private readonly router: Router
+  ) { }
 
   ngOnInit(): void {
-    const product = this.route.snapshot.paramMap.get(ROUTER.ID);
-    const version = this.route.snapshot.paramMap.get(ROUTER.VERSION);
+    const product = this.activeRoute.snapshot.paramMap.get(ROUTER.ID);
+    const version = this.activeRoute.snapshot.paramMap.get(ROUTER.VERSION);
     const currentUrl = window.location.href;
 
     if (product && version) {
@@ -39,8 +42,11 @@ export class ExternalDocumentComponent implements OnInit {
   }
 
   handleRedirection(response: string, currentUrl: string): void {
-    const isSameUrl = response === null || response === '' || currentUrl === response || currentUrl + INDEX_FILE === response;
+    if (response === null || response === '') {
+      this.router.navigate([ERROR_PAGE_PATH]);
+    }
 
+    const isSameUrl = currentUrl === response || currentUrl + INDEX_FILE === response;
     if (isSameUrl) {
       console.log('No redirection needed, the URLs are the same.');
     } else {

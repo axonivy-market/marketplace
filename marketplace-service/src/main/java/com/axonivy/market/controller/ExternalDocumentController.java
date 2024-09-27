@@ -48,7 +48,7 @@ public class ExternalDocumentController {
           in = ParameterIn.PATH) String version) throws URISyntaxException {
     String externalDocumentURI = externalDocumentService.findExternalDocumentURI(id, version);
     if (StringUtils.isBlank(externalDocumentURI)) {
-      return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+      return new ResponseEntity<>(HttpStatus.NOT_FOUND);
     }
     return new ResponseEntity<>(new URI(externalDocumentURI), HttpStatus.OK);
   }
