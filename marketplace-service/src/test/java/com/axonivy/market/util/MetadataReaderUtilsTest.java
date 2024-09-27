@@ -13,19 +13,7 @@ import java.time.format.DateTimeFormatter;
 
 @ExtendWith(MockitoExtension.class)
 class MetadataReaderUtilsTest {
-  private static final String MOCK_METADATA = """
-      <metadata>
-          <latest>1.0.2</latest>
-          <release>1.0.1</release>
-          <lastUpdated>20230924010101</lastUpdated>
-          <versions>
-              <version>1.0.0</version>
-              <version>1.0.1</version>
-              <version>1.0.2</version>
-          </versions>
-      </metadata>
-      """;
-  private static final String MOCK_SNAPSHOT = """
+  public final String MOCK_SNAPSHOT = """
       <metadata modelVersion="1.1.0">
         <groupId>com.axonivy.demo</groupId>
         <artifactId>workflow-demos</artifactId>
@@ -46,6 +34,18 @@ class MetadataReaderUtilsTest {
         </versioning>
       </metadata>
        """;
+  private final String MOCK_METADATA = """
+      <metadata>
+          <latest>1.0.2</latest>
+          <release>1.0.1</release>
+          <lastUpdated>20230924010101</lastUpdated>
+          <versions>
+              <version>1.0.0</version>
+              <version>1.0.1</version>
+              <version>1.0.2</version>
+          </versions>
+      </metadata>
+      """;
   private static final String INVALID_METADATA = "<metadata><invalidTag></invalidTag></metadata>";
 
   private Metadata metadata;
