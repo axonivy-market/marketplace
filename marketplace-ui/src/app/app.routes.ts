@@ -1,11 +1,15 @@
 import { Routes } from '@angular/router';
 import { GithubCallbackComponent } from './auth/github-callback/github-callback.component';
-import { ErrorPageComponentComponent } from './shared/components/error-page-component/error-page-component.component';
+import { ErrorPageComponent } from './shared/components/error-page/error-page.component';
 
 export const routes: Routes = [
   {
     path: 'error-page',
-    component: ErrorPageComponentComponent
+    component: ErrorPageComponent
+  },
+  {
+    path: 'error-page/:id',
+    component: ErrorPageComponent
   },
   {
     path: '',
