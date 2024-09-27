@@ -35,12 +35,9 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 
-import static com.axonivy.market.constants.CommonConstants.IMAGE_ID_PREFIX;
-
 @Log4j2
 @Service
 public class GHAxonIvyProductRepoServiceImpl implements GHAxonIvyProductRepoService {
-  public static final String IMAGE_EXTENSION = "(.*?).(jpeg|jpg|png|gif)";
   private final GitHubService gitHubService;
   private final ImageService imageService;
   private GHOrganization organization;
@@ -144,7 +141,7 @@ public class GHAxonIvyProductRepoServiceImpl implements GHAxonIvyProductRepoServ
     Map<String, String> imageUrls = new HashMap<>();
 
     allContentOfImages.forEach(content -> Optional.of(imageService.mappingImageFromGHContent(product, content, false))
-        .ifPresent(image -> imageUrls.put(content.getName(), IMAGE_ID_PREFIX.concat(image.getId()))));
+        .ifPresent(image -> imageUrls.put(content.getName(), CommonConstants.IMAGE_ID_PREFIX.concat(image.getId()))));
 
     ProductContentUtils.replaceImageDirWithImageCustomId(imageUrls, readmeContents);
     return readmeContents;

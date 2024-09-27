@@ -1,6 +1,7 @@
 package com.axonivy.market.service.impl;
 
 import com.axonivy.market.bo.Artifact;
+import com.axonivy.market.constants.CommonConstants;
 import com.axonivy.market.constants.MavenConstants;
 import com.axonivy.market.constants.ProductJsonConstants;
 import com.axonivy.market.constants.ReadmeConstants;
@@ -45,8 +46,6 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 
-import static com.axonivy.market.constants.CommonConstants.IMAGE_ID_PREFIX;
-
 @Service
 @Log4j2
 public class MetadataServiceImpl implements MetadataService {
@@ -58,7 +57,6 @@ public class MetadataServiceImpl implements MetadataService {
   private final ImageService imageService;
   private final ProductModuleContentRepository productModuleContentRepo;
   private final ProductJsonContentService productJsonContentService;
-  public static final String IMAGE_EXTENSION = "(.*?).(jpeg|jpg|png|gif)";
 
 
   public MetadataServiceImpl(ProductRepository productRepo, MetadataSyncRepository metadataSyncRepo,
@@ -274,12 +272,13 @@ public class MetadataServiceImpl implements MetadataService {
       String readmeContents) throws IOException {
     List<Path> allImagePaths = Files.walk(Paths.get(unzippedFolderPath))
         .filter(Files::isRegularFile)
-        .filter(path -> path.getFileName().toString().toLowerCase().matches(IMAGE_EXTENSION))
+        .filter(path -> path.getFileName().toString().toLowerCase().matches(CommonConstants.IMAGE_EXTENSION))
         .toList();
 
     Map<String, String> imageUrls = new HashMap<>();
     allImagePaths.forEach(imagePath -> Optional.of(imageService.mappingImageFromDownloadedFolder(product, imagePath))
-        .ifPresent(image -> imageUrls.put(imagePath.getFileName().toString(), IMAGE_ID_PREFIX.concat(image.getId()))));
+        .ifPresent(image -> imageUrls.put(imagePath.getFileName().toString(),
+            CommonConstants.IMAGE_ID_PREFIX.concat(image.getId()))));
 
     ProductContentUtils.replaceImageDirWithImageCustomId(imageUrls, readmeContents);
 

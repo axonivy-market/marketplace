@@ -1,6 +1,7 @@
 package com.axonivy.market.util;
 
 import com.axonivy.market.bo.Artifact;
+import com.axonivy.market.constants.CommonConstants;
 import com.axonivy.market.constants.GitHubConstants;
 import com.axonivy.market.constants.ReadmeConstants;
 import com.axonivy.market.entity.Product;
@@ -24,7 +25,6 @@ public class ProductContentUtils {
   public static final String DESCRIPTION = "description";
   public static final String DEMO = "demo";
   public static final String SETUP = "setup";
-  public static final String IMAGE_EXTENSION = "(.*?).(jpeg|jpg|png|gif)";
   public static final String README_IMAGE_FORMAT = "\\(([^)]*?%s[^)]*?)\\)";
   public static final String IMAGE_DOWNLOAD_URL_FORMAT = "(%s)";
 
@@ -96,7 +96,7 @@ public class ProductContentUtils {
   }
 
   public static boolean hasImageDirectives(String readmeContents) {
-    Pattern pattern = Pattern.compile(IMAGE_EXTENSION);
+    Pattern pattern = Pattern.compile(CommonConstants.IMAGE_EXTENSION);
     Matcher matcher = pattern.matcher(readmeContents);
     return matcher.find();
   }

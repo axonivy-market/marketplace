@@ -8,11 +8,13 @@ import com.axonivy.market.factory.ProductFactory;
 import com.axonivy.market.repository.ProductJsonContentRepository;
 import com.axonivy.market.service.ProductJsonContentService;
 import org.apache.commons.lang3.ObjectUtils;
+import org.springframework.stereotype.Service;
 
 import java.util.HashSet;
 
 import static com.axonivy.market.constants.ProductJsonConstants.EN_LANGUAGE;
 
+@Service
 public class ProductJsonContentServiceImpl implements ProductJsonContentService {
   private final ProductJsonContentRepository productJsonRepo;
 
