@@ -83,7 +83,7 @@ public class MetadataServiceImpl implements MetadataService {
     }
   }
 
-  private void updateMavenArtifactVersionData(List<String> releasedVersions,
+  public void updateMavenArtifactVersionData(List<String> releasedVersions,
       Set<Metadata> metadataSet, MavenArtifactVersion artifactVersionCache) {
     for (Metadata metadata : metadataSet) {
       String metadataContent = MavenUtils.getMetadataContentFromUrl(metadata.getUrl());
