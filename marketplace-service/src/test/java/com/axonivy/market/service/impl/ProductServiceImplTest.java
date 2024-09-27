@@ -3,7 +3,6 @@ package com.axonivy.market.service.impl;
 import com.axonivy.market.BaseSetup;
 import com.axonivy.market.constants.GitHubConstants;
 import com.axonivy.market.criteria.ProductSearchCriteria;
-import com.axonivy.market.repository.ImageRepository;
 import com.axonivy.market.entity.GitHubRepoMeta;
 import com.axonivy.market.entity.Product;
 import com.axonivy.market.entity.ProductCustomSort;
@@ -21,10 +20,12 @@ import com.axonivy.market.github.service.GHAxonIvyProductRepoService;
 import com.axonivy.market.github.service.GitHubService;
 import com.axonivy.market.model.ProductCustomSortRequest;
 import com.axonivy.market.repository.GitHubRepoMetaRepository;
+import com.axonivy.market.repository.ImageRepository;
 import com.axonivy.market.repository.ProductCustomSortRepository;
 import com.axonivy.market.repository.ProductModuleContentRepository;
 import com.axonivy.market.repository.ProductRepository;
 import com.axonivy.market.service.ImageService;
+import com.axonivy.market.util.VersionUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -36,6 +37,7 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.domain.Page;
@@ -448,15 +450,36 @@ class ProductServiceImplTest extends BaseSetup {
     verify(productRepository, times(1)).getProductById(id);
   }
 
-//  @Test
-//  void testFetchProductDetailByIdAndVersion() {
-//    String id = "amazon-comprehend";
-//    Product mockProduct = mockResultReturn.getContent().get(0);
-//    when(productRepository.getProductByIdAndTag(id, RELEASE_TAG)).thenReturn(mockProduct);
-//    Product result = productService.fetchProductDetailByIdAndVersion(id, "10.0.2");
-//    assertEquals(mockProduct, result);
-//    verify(productRepository, times(1)).getProductByIdAndTag(id, RELEASE_TAG);
-//  }
+  @Test
+  void testFetchProductDetailByIdAndVersion() {
+    String id = "amazon-comprehend";
+    String version = "10.0.2-SNAPSHOT";
+    String receivedVersion = "10.0.2";
+    String tag = "v10.0.2";
+    List<String> releasedVersions = List.of("9.0.0", "10.0.2");
+
+    Product mockProduct = mockResultReturn.getContent().get(0);
+
+    // Mocking the product repository
+    when(productRepository.getReleasedVersionsById(id)).thenReturn(releasedVersions);
+    when(productRepository.getProductByIdAndTag(id, tag)).thenReturn(mockProduct);
+
+    // Mocking methods of VersionUtils
+    try (MockedStatic<VersionUtils> mockedVersionUtils = mockStatic(VersionUtils.class)) {
+      mockedVersionUtils.when(() -> VersionUtils.getMavenVersionMatchWithTag(releasedVersions, version))
+          .thenReturn(receivedVersion);
+      mockedVersionUtils.when(() -> VersionUtils.convertVersionToTag(id, receivedVersion))
+          .thenReturn(tag);
+
+      Product result = productService.fetchProductDetailByIdAndVersion(id, version);
+
+      assertEquals(mockProduct, result);
+      verify(productRepository, times(1)).getReleasedVersionsById(id);
+      mockedVersionUtils.verify(() -> VersionUtils.getMavenVersionMatchWithTag(releasedVersions, version), times(1));
+      mockedVersionUtils.verify(() -> VersionUtils.convertVersionToTag(id, receivedVersion), times(1));
+      verify(productRepository, times(1)).getProductByIdAndTag(id, tag);
+    }
+  }
 
   @Test
   void testFetchBestMatchProductDetailByIdAndVersion() {

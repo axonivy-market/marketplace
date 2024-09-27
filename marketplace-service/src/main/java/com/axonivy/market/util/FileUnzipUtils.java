@@ -3,6 +3,7 @@ package com.axonivy.market.util;
 import lombok.extern.log4j.Log4j2;
 
 import java.io.BufferedOutputStream;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
@@ -60,5 +61,21 @@ public class FileUnzipUtils {
     } catch (IOException e) {
       log.error("Error while unzipping: {}", e.getMessage());
     }
+  }
+
+  public static boolean deleteDirectory(File dir) {
+    if (dir.isDirectory()) {
+      File[] files = dir.listFiles();
+      if (files != null) {
+        for (File file : files) {
+          if (file.isDirectory()) {
+            deleteDirectory(file);
+          } else {
+            file.delete();
+          }
+        }
+      }
+    }
+    return dir.delete();
   }
 }

@@ -18,6 +18,7 @@ import java.io.InputStream;
 import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 @Log4j2
@@ -69,15 +70,19 @@ public class ImageServiceImpl implements ImageService {
     try {
       InputStream contentStream = MavenUtils.extractedContentStream(imagePath);
       byte[] sourceBytes = IOUtils.toByteArray(contentStream);
-      boolean isImageExisted =
-          existingImages.stream().anyMatch(existingImage -> Arrays.equals(existingImage.getImageData().getData(),
-              sourceBytes));
-      Image image = new Image();
-      if (!isImageExisted) {
+
+      Image existedImage = existingImages.stream().filter(image -> {
+        byte[] imageData = Optional.of(image).map(Image::getImageData).map(Binary::getData).orElse(null);
+        return ObjectUtils.isNotEmpty(imageData) && Arrays.equals(imageData, sourceBytes);
+      }).findAny().orElse(null);
+
+      if (ObjectUtils.isEmpty(existedImage)) {
+        Image image = new Image();
         image.setImageData(new Binary(sourceBytes));
         image.setProductId(product.getId());
+        return imageRepository.save(image);
       }
-      return imageRepository.save(image);
+      return existedImage;
     } catch (IOException e) {
       log.error("Cannot get image from downloaded folder {}", e.getMessage());
       return null;

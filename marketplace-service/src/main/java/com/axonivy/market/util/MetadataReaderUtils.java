@@ -9,10 +9,9 @@ import org.xml.sax.InputSource;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
+import java.io.File;
 import java.io.IOException;
 import java.io.StringReader;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -20,7 +19,7 @@ import java.util.Objects;
 
 @Log4j2
 public class MetadataReaderUtils {
-  private static final String ZIP_FILE_FORMAT = "%s.%s";
+  public static final String ZIP_FILE_FORMAT = "%s.%s";
   private MetadataReaderUtils() {
   }
 
@@ -84,7 +83,7 @@ public class MetadataReaderUtils {
 
     String destDir = snapShotMetadata.getArtifactId();
     FileUnzipUtils.unzipFile(zipFilePath, destDir);
-    Files.deleteIfExists(Path.of(zipFilePath));
+    FileUnzipUtils.deleteDirectory(new File(zipFilePath));
     return Paths.get(destDir).toAbsolutePath().toString();
   }
 }

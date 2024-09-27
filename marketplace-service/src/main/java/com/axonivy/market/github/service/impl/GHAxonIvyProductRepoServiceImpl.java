@@ -145,9 +145,7 @@ public class GHAxonIvyProductRepoServiceImpl implements GHAxonIvyProductRepoServ
 
     allContentOfImages.forEach(content -> Optional.of(imageService.mappingImageFromGHContent(product, content, false))
         .ifPresent(image -> imageUrls.put(content.getName(), IMAGE_ID_PREFIX.concat(image.getId()))));
-
-    ProductContentUtils.replaceImageDirWithImageCustomId(imageUrls, readmeContents);
-    return readmeContents;
+    return ProductContentUtils.replaceImageDirWithImageCustomId(imageUrls, readmeContents);
   }
 
   private List<GHContent> getAllImagesFromProductFolder(List<GHContent> productFolderContents) {

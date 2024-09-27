@@ -22,6 +22,7 @@ import com.axonivy.market.repository.ProductRepository;
 import com.axonivy.market.service.ImageService;
 import com.axonivy.market.service.MetadataService;
 import com.axonivy.market.service.ProductJsonContentService;
+import com.axonivy.market.util.FileUnzipUtils;
 import com.axonivy.market.util.MavenUtils;
 import com.axonivy.market.util.MetadataReaderUtils;
 import com.axonivy.market.util.ProductContentUtils;
@@ -34,6 +35,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
@@ -215,7 +217,7 @@ public class MetadataServiceImpl implements MetadataService {
           snapShotMetadata);
       updateDependencyContentsFromProductJson(productModuleContent, product, unzippedFolderPath);
       extractReadMeFileFromContents(product, unzippedFolderPath, productModuleContent);
-      Files.deleteIfExists(Path.of(unzippedFolderPath));
+      FileUnzipUtils.deleteDirectory(new File(unzippedFolderPath));
     } catch (Exception e) {
       log.error("Cannot get product.json content in {}", e.getMessage());
       return null;
