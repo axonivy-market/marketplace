@@ -3,9 +3,7 @@ package com.axonivy.market.service.impl;
 import com.axonivy.market.bo.Artifact;
 import com.axonivy.market.entity.MavenArtifactVersion;
 import com.axonivy.market.entity.Metadata;
-import com.axonivy.market.entity.MetadataSync;
 import com.axonivy.market.entity.ProductJsonContent;
-import com.axonivy.market.github.model.Meta;
 import com.axonivy.market.model.MavenArtifactModel;
 import com.axonivy.market.repository.MavenArtifactVersionRepository;
 import com.axonivy.market.repository.MetadataRepository;
@@ -21,7 +19,6 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -113,15 +110,15 @@ class MetadataServiceImplTest {
 
 
   @Test
-  void testUpdateArtifactsFromNonSyncedVersion() {
+  void testGetArtifactsFromNonSyncedVersion() {
     Mockito.when(productJsonRepo.findByProductIdAndVersion("bpmn-statistic", "1.0.0")).thenReturn(
         getMockProductJson());
-    Set<Artifact> artifacts = new HashSet<>();
-    metadataService.updateArtifactsFromNonSyncedVersion("bpmn-statistic", Collections.emptyList(), artifacts);
+    Set<Artifact> artifacts = metadataService.getArtifactsFromNonSyncedVersion("bpmn-statistic",
+        Collections.emptyList());
     Assertions.assertEquals(0, artifacts.size());
     Mockito.verify(productJsonRepo, Mockito.never()).findByProductIdAndVersion(Mockito.anyString(),
         Mockito.anyString());
-    metadataService.updateArtifactsFromNonSyncedVersion("bpmn-statistic", List.of("1.0.0"), artifacts);
+    artifacts = metadataService.getArtifactsFromNonSyncedVersion("bpmn-statistic", List.of("1.0.0"));
     Assertions.assertEquals(2, artifacts.size());
     Assertions.assertEquals("bpmn-statistic-demo", artifacts.iterator().next().getArtifactId());
     Assertions.assertEquals(2, artifacts.stream().filter(Artifact::getIsProductArtifact).toList().size());

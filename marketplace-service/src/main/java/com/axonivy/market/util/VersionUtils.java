@@ -5,11 +5,11 @@ import com.axonivy.market.comparator.MavenVersionComparator;
 import com.axonivy.market.constants.CommonConstants;
 import com.axonivy.market.constants.GitHubConstants;
 import com.axonivy.market.constants.MavenConstants;
-import com.axonivy.market.entity.MetadataSync;
 import com.axonivy.market.entity.Product;
 import com.axonivy.market.enums.NonStandardProduct;
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.lang3.BooleanUtils;
+import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.util.Strings;
 import org.kohsuke.github.GHTag;
@@ -19,6 +19,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Stream;
 
 @Log4j2
@@ -164,10 +165,10 @@ public class VersionUtils {
         version -> convertVersionToTag(product.getId(), version)).toList();
   }
 
-  public static List<String> getNonSyncedVersionOfTagsFromMetadataSync(List<String> releasedVersion,
-      MetadataSync cache) {
-    if (!CollectionUtils.isEmpty(cache.getSyncedTags())) {
-      releasedVersion.removeAll(cache.getSyncedTags());
+  public static List<String> removeSyncedVersionsFromReleasedVersions(List<String> releasedVersion,
+      Set<String> syncTags) {
+    if (ObjectUtils.isNotEmpty(syncTags)) {
+      releasedVersion.removeAll(syncTags);
     }
     return releasedVersion;
   }

@@ -183,11 +183,12 @@ class VersionUtilsTest {
 
   @Test
   void testGetNonSyncedVersionOfTags() {
-    MetadataSync cache = MetadataSync.builder().syncedTags(Set.of("1.0.0")).build();
+    MetadataSync cache = MetadataSync.builder().syncedVersions(Set.of("1.0.0")).build();
     List<String> releasedVersions = new ArrayList<>();
     releasedVersions.add("1.0.0");
     releasedVersions.add("2.0.0");
-    List<String> result = VersionUtils.getNonSyncedVersionOfTagsFromMetadataSync(releasedVersions, cache);
+    List<String> result = VersionUtils.removeSyncedVersionsFromReleasedVersions(releasedVersions,
+        cache.getSyncedVersions());
     Assertions.assertEquals(1, result.size());
     Assertions.assertEquals("2.0.0", result.get(0));
   }

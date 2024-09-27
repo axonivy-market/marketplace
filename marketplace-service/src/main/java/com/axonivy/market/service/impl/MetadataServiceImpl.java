@@ -29,6 +29,7 @@ import com.axonivy.market.util.VersionUtils;
 import lombok.AllArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
@@ -104,15 +105,14 @@ public class MetadataServiceImpl implements MetadataService {
           MavenArtifactVersion.builder().productId(productId).productArtifactsByVersion(
               new HashMap<>()).additionalArtifactsByVersion(new HashMap<>()).build());
       MetadataSync syncCache = metadataSyncRepo.findById(product.getId()).orElse(
-          MetadataSync.builder().productId(product.getId()).syncedTags(new HashSet<>()).build());
+          MetadataSync.builder().productId(product.getId()).syncedVersions(new HashSet<>()).build());
       Set<Artifact> artifactsFromNewTags = new HashSet<>();
 
       // Find artifacts from unhandled tags
-      List<String> nonSyncedVersionOfTags = VersionUtils.getNonSyncedVersionOfTagsFromMetadataSync(
-          product.getReleasedVersions(),
-          syncCache);
-      if (!CollectionUtils.isEmpty(nonSyncedVersionOfTags)) {
-        updateArtifactsFromNonSyncedVersion(product.getId(), nonSyncedVersionOfTags, artifactsFromNewTags);
+      List<String> nonSyncedVersionOfTags = VersionUtils.removeSyncedVersionsFromReleasedVersions(
+          product.getReleasedVersions(), syncCache.getSyncedVersions());
+      if (ObjectUtils.isNotEmpty(nonSyncedVersionOfTags)) {
+        artifactsFromNewTags.addAll(getArtifactsFromNonSyncedVersion(product.getId(), nonSyncedVersionOfTags));
         log.info("**MetadataService: New tags detected: {} in product {}", nonSyncedVersionOfTags.toString(),
             productId);
       }
@@ -130,7 +130,7 @@ public class MetadataServiceImpl implements MetadataService {
       updateMavenArtifactVersionData(product.getReleasedVersions(), metadataSet, artifactVersionCache);
 
       // Persist changed
-      syncCache.getSyncedTags().addAll(nonSyncedVersionOfTags);
+      syncCache.getSyncedVersions().addAll(nonSyncedVersionOfTags);
       metadataSyncRepo.save(syncCache);
       mavenArtifactVersionRepo.save(artifactVersionCache);
       metadataRepo.saveAll(metadataSet);
@@ -150,7 +150,7 @@ public class MetadataServiceImpl implements MetadataService {
         handleProductArtifact(metadata.getProductId(), nonMatchSnapshotVersion, productArtifact, productModuleContents);
       }
     }
-    if (!CollectionUtils.isEmpty(productModuleContents)) {
+    if (ObjectUtils.isNotEmpty(productModuleContents)) {
       productModuleContentRepo.saveAll(productModuleContents);
     }
   }
@@ -244,7 +244,7 @@ public class MetadataServiceImpl implements MetadataService {
           .toList();
 
       Map<String, Map<String, String>> moduleContents = new HashMap<>();
-      if (!CollectionUtils.isEmpty(readmeFiles)) {
+      if (ObjectUtils.isNotEmpty(readmeFiles)) {
         for (Path readmeFile : readmeFiles) {
           String readmeContents = Files.readString(readmeFile);
           if (ProductContentUtils.hasImageDirectives(readmeContents)) {
@@ -306,15 +306,16 @@ public class MetadataServiceImpl implements MetadataService {
     updateMavenArtifactVersionCacheWithModel(artifactVersionCache, version, snapShotMetadata);
   }
 
-  public void updateArtifactsFromNonSyncedVersion(String productId, List<String> nonSyncedVersions,
-      Set<Artifact> artifacts) {
+  public Set<Artifact> getArtifactsFromNonSyncedVersion(String productId, List<String> nonSyncedVersions) {
+    Set<Artifact> artifacts = new HashSet<>();
     if (CollectionUtils.isEmpty(nonSyncedVersions)) {
-      return;
+      return artifacts;
     }
     nonSyncedVersions.forEach(version -> {
       ProductJsonContent productJson = productJsonRepo.findByProductIdAndVersion(productId, version);
       List<Artifact> artifactsInVersion = MavenUtils.getMavenArtifactsFromProductJson(productJson);
       artifacts.addAll(artifactsInVersion);
     });
+    return artifacts;
   }
 }
