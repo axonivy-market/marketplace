@@ -289,7 +289,7 @@ public class MetadataServiceImpl implements MetadataService {
   public void updateMavenArtifactVersionFromMetadata(MavenArtifactVersion artifactVersionCache,
       Metadata metadata) {
     metadata.getVersions().forEach(version -> {
-      if (VersionUtils.isSnapshotVersion(version) && StringUtils.equals(NonStandardProduct.PORTAL.getId(),
+      if (VersionUtils.isSnapshotVersion(version) && !StringUtils.equals(NonStandardProduct.PORTAL.getId(),
           metadata.getProductId())) {
         if (VersionUtils.isOfficialVersionOrUnReleasedDevVersion(metadata.getVersions().stream().toList(), version)) {
           updateMavenArtifactVersionForNonReleaseDeVersion(artifactVersionCache, metadata, version);

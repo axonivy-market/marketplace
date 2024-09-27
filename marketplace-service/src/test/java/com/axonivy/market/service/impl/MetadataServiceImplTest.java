@@ -134,9 +134,9 @@ class MetadataServiceImplTest {
     return result;
   }
 
-  private Artifact getMockArtifact() {
-    Artifact mockArtifact = new Artifact();
-    return mockArtifact;
+  private MavenArtifactVersion getMockMavenArtifactVersion() {
+    return new MavenArtifactVersion(StringUtils.EMPTY, new HashMap<>(),
+        new HashMap<>());
   }
 
   private Metadata getMockMetadata() {
@@ -163,8 +163,7 @@ class MetadataServiceImplTest {
 
   @Test
   void testUpdateMavenArtifactVersionCacheWithModel() {
-    MavenArtifactVersion mockMavenArtifactVersion = new MavenArtifactVersion(StringUtils.EMPTY, new HashMap<>(),
-        new HashMap<>());
+    MavenArtifactVersion mockMavenArtifactVersion = getMockMavenArtifactVersion();
     String version = "1.0.0";
     Metadata mockMetadata = getMockMetadata();
     metadataService.updateMavenArtifactVersionCacheWithModel(mockMavenArtifactVersion, version, mockMetadata);
@@ -186,8 +185,7 @@ class MetadataServiceImplTest {
   void testUpdateMavenArtifactVersionForNonReleaseDeVersion() {
     Metadata mockMetadata = getMockMetadata();
     String version = "1.0.0-SNAPSHOT";
-    MavenArtifactVersion mockMavenArtifactVersion = new MavenArtifactVersion(StringUtils.EMPTY, new HashMap<>(),
-        new HashMap<>());
+    MavenArtifactVersion mockMavenArtifactVersion = getMockMavenArtifactVersion();
     try (MockedStatic<MavenUtils> mockUtils = Mockito.mockStatic(MavenUtils.class)) {
       mockUtils.when(() -> MavenUtils.buildSnapShotMetadataFromVersion(mockMetadata, version)).thenReturn(mockMetadata);
       mockUtils.when(() -> MavenUtils.getMetadataContentFromUrl(
@@ -197,6 +195,34 @@ class MetadataServiceImplTest {
       metadataService.updateMavenArtifactVersionForNonReleaseDeVersion(mockMavenArtifactVersion, mockMetadata, version);
       Assertions.assertEquals(1, mockMavenArtifactVersion.getProductArtifactsByVersion().entrySet().size());
       Assertions.assertEquals(1, mockMavenArtifactVersion.getProductArtifactsByVersion().get(version).size());
+    }
+  }
+
+  @Test
+  void testUpdateMavenArtifactVersionFromMetadata() {
+    Metadata mockMetadata = getMockMetadata();
+    mockMetadata.setVersions(Set.of("1.0.0"));
+    MavenArtifactVersion mockMavenArtifactVersion = getMockMavenArtifactVersion();
+    metadataService.updateMavenArtifactVersionFromMetadata(mockMavenArtifactVersion, mockMetadata);
+    Assertions.assertEquals(1, mockMavenArtifactVersion.getProductArtifactsByVersion().entrySet().size());
+    Assertions.assertEquals(0, mockMavenArtifactVersion.getAdditionalArtifactsByVersion().entrySet().size());
+    String snapshotVersion = "2.0.0-SNAPSHOT";
+    mockMetadata.setVersions(Set.of(snapshotVersion, "1.0.0"));
+    try (MockedStatic<MavenUtils> mockUtils = Mockito.mockStatic(MavenUtils.class)) {
+      mockUtils.when(() -> MavenUtils.buildSnapShotMetadataFromVersion(mockMetadata, snapshotVersion)).thenReturn(
+          mockMetadata);
+      mockUtils.when(() -> MavenUtils.getMetadataContentFromUrl(
+          "https://maven.axonivy.com/com/axonivvy/util/bpmn-statistic/1.0.0-SNAPSHOT/maven-metadata.xml")).thenReturn(
+          MOCK_SNAPSHOT);
+      mockUtils.when(() -> MavenUtils.buildSnapShotMetadataFromVersion(mockMetadata, snapshotVersion)).thenReturn(
+          mockMetadata);
+      metadataService.updateMavenArtifactVersionFromMetadata(mockMavenArtifactVersion, mockMetadata);
+      Assertions.assertEquals(2, mockMavenArtifactVersion.getProductArtifactsByVersion().entrySet().size());
+      Assertions.assertEquals(0, mockMavenArtifactVersion.getAdditionalArtifactsByVersion().entrySet().size());
+
+      mockMetadata.setProductArtifact(false);
+      metadataService.updateMavenArtifactVersionFromMetadata(mockMavenArtifactVersion, mockMetadata);
+      Assertions.assertEquals(2, mockMavenArtifactVersion.getAdditionalArtifactsByVersion().entrySet().size());
     }
   }
 }
