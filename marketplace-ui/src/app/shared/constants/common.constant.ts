@@ -66,13 +66,8 @@ export const IVY_FOOTER_LINKS = [
   {
     containerStyleClass: 'footer__ivy-policy-tag',
     label: 'common.footer.privacyPolicy',
-    link: ''
+    link: 'https://www.axonivy.com/privacy-policy'
   },
-  {
-    containerStyleClass: 'footer__ivy-term-of-service-tag',
-    label: 'common.footer.termsOfService',
-    link: ''
-  }
 ];
 
 export const LANGUAGES = [
