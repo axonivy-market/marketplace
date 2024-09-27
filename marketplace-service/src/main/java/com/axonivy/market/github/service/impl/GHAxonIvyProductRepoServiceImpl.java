@@ -16,7 +16,6 @@ import com.axonivy.market.service.ImageService;
 import com.axonivy.market.service.ProductJsonContentService;
 import com.axonivy.market.util.ProductContentUtils;
 import com.axonivy.market.util.VersionUtils;
-import lombok.AllArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.io.IOUtils;
 import org.kohsuke.github.GHContent;
@@ -36,14 +35,23 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 
+import static com.axonivy.market.constants.CommonConstants.IMAGE_ID_PREFIX;
+
 @Log4j2
 @Service
-@AllArgsConstructor
 public class GHAxonIvyProductRepoServiceImpl implements GHAxonIvyProductRepoService {
+  public static final String IMAGE_EXTENSION = "(.*?).(jpeg|jpg|png|gif)";
   private final GitHubService gitHubService;
   private final ImageService imageService;
   private GHOrganization organization;
   private final ProductJsonContentService productJsonContentService;
+
+  public GHAxonIvyProductRepoServiceImpl(GitHubService gitHubService, ImageService imageService,
+      ProductJsonContentService productJsonContentService) {
+    this.gitHubService = gitHubService;
+    this.imageService = imageService;
+    this.productJsonContentService = productJsonContentService;
+  }
 
   private static GHContent getProductJsonFile(List<GHContent> contents) {
     return contents.stream().filter(GHContent::isFile)
@@ -136,8 +144,10 @@ public class GHAxonIvyProductRepoServiceImpl implements GHAxonIvyProductRepoServ
     Map<String, String> imageUrls = new HashMap<>();
 
     allContentOfImages.forEach(content -> Optional.of(imageService.mappingImageFromGHContent(product, content, false))
-        .ifPresent(image -> imageUrls.put(content.getName(), CommonConstants.IMAGE_ID_PREFIX.concat(image.getId()))));
-    return ProductContentUtils.replaceImageDirWithImageCustomId(imageUrls, readmeContents);
+        .ifPresent(image -> imageUrls.put(content.getName(), IMAGE_ID_PREFIX.concat(image.getId()))));
+
+    ProductContentUtils.replaceImageDirWithImageCustomId(imageUrls, readmeContents);
+    return readmeContents;
   }
 
   private List<GHContent> getAllImagesFromProductFolder(List<GHContent> productFolderContents) {
