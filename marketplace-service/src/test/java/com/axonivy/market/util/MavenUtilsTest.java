@@ -209,4 +209,10 @@ class MavenUtilsTest {
   void testGetMetadataContent() {
     Assertions.assertEquals(StringUtils.EMPTY, MavenUtils.getMetadataContentFromUrl("octopus.com"));
   }
+
+  @Test
+  void testFFilterNonProductArtifactFromList() {
+    Assertions.assertNull(MavenUtils.filterNonProductArtifactFromList(null));
+    Assertions.assertEquals(0, MavenUtils.filterNonProductArtifactFromList(Collections.emptyList()).size());
+  }
 }

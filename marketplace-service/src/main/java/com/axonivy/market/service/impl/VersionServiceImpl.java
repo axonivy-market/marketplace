@@ -56,7 +56,7 @@ public class VersionServiceImpl implements VersionService {
     List<String> versionsToDisplay = VersionUtils.getVersionsToDisplay(new ArrayList<>(cache.getProductArtifactsByVersion().keySet()),
         isShowDevVersion, designerVersion);
 
-    List<Artifact> artifactsFromMeta = MavenUtils.filterNonProductArtifactFromMeta(getArtifactsFromMeta(productId));
+    List<Artifact> artifactsFromMeta = MavenUtils.filterNonProductArtifactFromList(getArtifactsFromMeta(productId));
     List<MavenArtifactVersionModel> results = new ArrayList<>();
 
     for (String mavenVersion : versionsToDisplay) {

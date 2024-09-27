@@ -282,7 +282,7 @@ public class MavenUtils {
     }
   }
 
-  public static List<Artifact> filterNonProductArtifactFromMeta(List<Artifact> artifactsFromMeta) {
+  public static List<Artifact> filterNonProductArtifactFromList(List<Artifact> artifactsFromMeta) {
     if(CollectionUtils.isEmpty(artifactsFromMeta)) {
       return artifactsFromMeta;
     }

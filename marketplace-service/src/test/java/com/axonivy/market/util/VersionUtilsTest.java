@@ -1,6 +1,7 @@
 package com.axonivy.market.util;
 
 import com.axonivy.market.entity.MetadataSync;
+import com.axonivy.market.entity.Product;
 import com.axonivy.market.enums.NonStandardProduct;
 import org.apache.commons.lang3.StringUtils;
 import org.junit.jupiter.api.Assertions;
@@ -13,6 +14,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
@@ -182,14 +184,28 @@ class VersionUtilsTest {
   }
 
   @Test
-  void testGetNonSyncedVersionOfTags() {
-    MetadataSync cache = MetadataSync.builder().syncedVersions(Set.of("1.0.0")).build();
+  void testRemoveSyncedVersionsFromReleasedVersions() {
+    Set syncVersion = Set.of("1.0.0");
     List<String> releasedVersions = new ArrayList<>();
     releasedVersions.add("1.0.0");
     releasedVersions.add("2.0.0");
     List<String> result = VersionUtils.removeSyncedVersionsFromReleasedVersions(releasedVersions,
-        cache.getSyncedVersions());
+        Collections.emptySet());
+    Assertions.assertEquals(2, result.size());
+    result = VersionUtils.removeSyncedVersionsFromReleasedVersions(releasedVersions,
+        syncVersion);
     Assertions.assertEquals(1, result.size());
     Assertions.assertEquals("2.0.0", result.get(0));
+  }
+
+  @Test
+  void testGetReleaseTagsFromProduct() {
+    List<String> result = VersionUtils.getReleaseTagsFromProduct(null);
+    Assertions.assertNotNull(result);
+    Assertions.assertEquals(0, result.size());
+    Product mockProduct = Product.builder().id("portal").releasedVersions(List.of("1.0.0")).build();
+    result = VersionUtils.getReleaseTagsFromProduct(mockProduct);
+    Assertions.assertEquals(1, result.size());
+    Assertions.assertEquals("1.0.0", result.get(0));
   }
 }
