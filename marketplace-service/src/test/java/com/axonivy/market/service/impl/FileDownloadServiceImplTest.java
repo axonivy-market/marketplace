@@ -12,19 +12,13 @@ import org.springframework.web.client.RestTemplate;
 
 import java.io.File;
 import java.io.IOException;
-import java.nio.file.Files;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipFile;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class FileDownloadServiceImplTest {
 
   private static final String DOWNLOAD_URL = "https://repo/axonivy/portal/portal-guide/10.0.0/portal-guide-10.0.0.zip";
-  private static final String EMPTY_SOURCE_URL_META_JSON_FILE = "/emptySourceUrlMeta.json";
-  private static final String PORTAL = "portal";
 
   @Mock
   ProductRepository productRepository;
