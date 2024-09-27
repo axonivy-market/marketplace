@@ -6,7 +6,7 @@
           [attr.aria-label]="ariaLabel">
     {{ selectedItem }}
   </button>
-  <div class="dropdown-menu menu-bar" [class.show]="isDropdownOpen">
+  <div class="dropdown-menu menu-bar w-100" [class.show]="isDropdownOpen">
     @for (item of items; track $index) {
       <div class="dropdown-item item-bar text-primary" (click)="onSelect(item)"
           [attr.metaDataJsonUrl]="item.metaDataJsonUrl"

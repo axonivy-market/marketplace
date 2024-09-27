@@ -263,6 +263,7 @@ class GHAxonIvyProductRepoServiceImplTest {
     return image;
   }
 
+  //TODO: handle this test case
 //  @Test
 //  void testGetReadmeAndProductContentFromTag_ImageFromRootFolder() {
 //    String readmeContentWithImageFolder = """
@@ -290,6 +291,7 @@ class GHAxonIvyProductRepoServiceImplTest {
 //        updatedReadme);
 //  }
 
+  //TODO: handle this test case
 //  @Test
 //  void testGetReadmeAndProductContentFromTag_ImageFromChildFolder() throws IOException {
 //    String readmeContentWithImageFolder = """
@@ -495,6 +497,8 @@ class GHAxonIvyProductRepoServiceImplTest {
     assertNull(GitHubUtils.extractedContentStream(content));
   }
 
+
+  //TODO:handle this test case
 //  @Test
 //  void test_updateDependencyContentsFromProductJson() throws IOException {
 //    try (MockedStatic<GitHubUtils> mockedGitHubUtils = Mockito.mockStatic(GitHubUtils.class)) {
