@@ -206,7 +206,7 @@ public class MavenUtils {
     if (StringUtils.isAnyBlank(groupId, artifactId)) {
       return StringUtils.EMPTY;
     }
-    repoUrl = Optional.ofNullable(repoUrl).orElse(MavenConstants.DEFAULT_IVY_MAVEN_BASE_URL);
+    repoUrl = StringUtils.defaultIfEmpty(repoUrl, MavenConstants.DEFAULT_IVY_MAVEN_BASE_URL);
     groupId = groupId.replace(CommonConstants.DOT_SEPARATOR, CommonConstants.SLASH);
     return String.join(CommonConstants.SLASH, repoUrl, groupId, artifactId, snapshotVersion,
         MavenConstants.METADATA_URL_POSTFIX);
@@ -216,7 +216,7 @@ public class MavenUtils {
     if (StringUtils.isAnyBlank(groupId, artifactId)) {
       return StringUtils.EMPTY;
     }
-    repoUrl = Optional.ofNullable(repoUrl).orElse(MavenConstants.DEFAULT_IVY_MAVEN_BASE_URL);
+    repoUrl = StringUtils.defaultIfEmpty(repoUrl, MavenConstants.DEFAULT_IVY_MAVEN_BASE_URL);
     groupId = groupId.replace(CommonConstants.DOT_SEPARATOR, CommonConstants.SLASH);
     return String.join(CommonConstants.SLASH, repoUrl, groupId, artifactId, MavenConstants.METADATA_URL_POSTFIX);
   }

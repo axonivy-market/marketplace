@@ -120,10 +120,9 @@ public class MetadataServiceImpl implements MetadataService {
       }
 
       // Sync versions from maven & update artifacts-version table
-      List<Artifact> additionalArtifactFromMeta = product.getArtifacts();
       metadataSet.addAll(MavenUtils.convertArtifactsToMetadataSet(artifactsFromNewTags, productId));
       metadataSet.addAll(
-          MavenUtils.convertArtifactsToMetadataSet(new HashSet<>(additionalArtifactFromMeta), productId));
+          MavenUtils.convertArtifactsToMetadataSet(new HashSet<>(product.getArtifacts()), productId));
 
       if (CollectionUtils.isEmpty(metadataSet)) {
         continue;
