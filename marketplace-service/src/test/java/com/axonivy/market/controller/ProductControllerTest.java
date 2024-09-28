@@ -144,7 +144,11 @@ class ProductControllerTest {
   @Test
   void testSyncMavenVersionSuccess() {
     var response = productController.syncProductVersions(AUTHORIZATION_HEADER);
-
+    assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, response.getStatusCode());
+    assertTrue(response.hasBody());
+    assertEquals(ErrorCode.MAVEN_VERSION_SYNC_FAILED.getCode(), Objects.requireNonNull(response.getBody()).getHelpCode());
+    when(metadataService.syncAllProductsMetadata()).thenReturn(1);
+    response = productController.syncProductVersions(AUTHORIZATION_HEADER);
     assertEquals(HttpStatus.OK, response.getStatusCode());
     assertTrue(response.hasBody());
     assertEquals(ErrorCode.SUCCESSFUL.getCode(), Objects.requireNonNull(response.getBody()).getHelpCode());

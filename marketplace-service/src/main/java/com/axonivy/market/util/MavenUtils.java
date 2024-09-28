@@ -258,6 +258,10 @@ public class MavenUtils {
     }
   }
 
+  public static boolean isProductArtifactId (String artifactId) {
+    return StringUtils.endsWith(artifactId, MavenConstants.PRODUCT_ARTIFACT_POSTFIX);
+  }
+
   public static Set<Metadata> convertArtifactsToMetadataSet(Set<Artifact> artifacts, String productId) {
     Set<Metadata> results = new HashSet<>();
     if (!CollectionUtils.isEmpty(artifacts)) {

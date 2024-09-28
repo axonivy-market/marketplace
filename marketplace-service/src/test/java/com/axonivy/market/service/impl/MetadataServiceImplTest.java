@@ -1,8 +1,10 @@
 package com.axonivy.market.service.impl;
 
 import com.axonivy.market.bo.Artifact;
+import com.axonivy.market.constants.MavenConstants;
 import com.axonivy.market.entity.MavenArtifactVersion;
 import com.axonivy.market.entity.Metadata;
+import com.axonivy.market.entity.Product;
 import com.axonivy.market.entity.ProductJsonContent;
 import com.axonivy.market.github.util.GitHubUtils;
 import com.axonivy.market.model.MavenArtifactModel;
@@ -145,6 +147,21 @@ class MetadataServiceImplTest {
         "statistic (iar)").build();
   }
 
+  private Artifact getMockArtifact() {
+    Artifact mockArtifact = new Artifact();
+    mockArtifact.setArtifactId("bpmn-statistic");
+    mockArtifact.setGroupId("com.axonivy.util");
+    mockArtifact.setType("iar");
+    mockArtifact.setRepoUrl(MavenConstants.DEFAULT_IVY_MAVEN_BASE_URL);
+    return mockArtifact;
+  }
+
+  private List<Product> getMockProducts() {
+    Product mockProduct =
+        Product.builder().id("bpmn-statistic").releasedVersions(List.of("1.0.0")).artifacts(List.of(getMockArtifact())).build();
+    return List.of(mockProduct);
+  }
+
 
   @Test
   void testGetArtifactsFromNonSyncedVersion() {
@@ -224,5 +241,11 @@ class MetadataServiceImplTest {
       metadataService.updateMavenArtifactVersionFromMetadata(mockMavenArtifactVersion, mockMetadata);
       Assertions.assertEquals(2, mockMavenArtifactVersion.getAdditionalArtifactsByVersion().entrySet().size());
     }
+  }
+  @Test
+  void testSyncAllProductsMetadata() {
+    Mockito.when(productRepo.getAllProductsWithIdAndReleaseTagAndArtifact()).thenReturn(getMockProducts());
+    int result = metadataService.syncAllProductsMetadata();
+    Assertions.assertEquals(0,result);
   }
 }

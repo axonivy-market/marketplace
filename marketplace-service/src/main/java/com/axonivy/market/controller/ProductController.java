@@ -114,11 +114,18 @@ public class ProductController {
   public ResponseEntity<Message> syncProductVersions(@RequestHeader(value = AUTHORIZATION) String authorizationHeader) {
     String token = getBearerToken(authorizationHeader);
     gitHubService.validateUserOrganization(token, GitHubConstants.AXONIVY_MARKET_ORGANIZATION_NAME);
-    metadataService.syncAllProductsMetadata();
+    int nonSyncResult = metadataService.syncAllProductsMetadata();
     var message = new Message();
-    message.setHelpCode(ErrorCode.SUCCESSFUL.getCode());
-    message.setHelpText(ErrorCode.SUCCESSFUL.getHelpText());
-    return new ResponseEntity<>(message, HttpStatus.OK);
+    HttpStatus statusCode = HttpStatus.OK;
+    if(nonSyncResult == 1) {
+      message.setHelpCode(ErrorCode.SUCCESSFUL.getCode());
+      message.setHelpText(ErrorCode.SUCCESSFUL.getHelpText());
+    } else {
+      statusCode = HttpStatus.INTERNAL_SERVER_ERROR;
+      message.setHelpCode(ErrorCode.MAVEN_VERSION_SYNC_FAILED.getCode());
+      message.setMessageDetails(ErrorCode.MAVEN_VERSION_SYNC_FAILED.getHelpText());
+    }
+    return new ResponseEntity<>(message, statusCode);
   }
 
   @PostMapping(CUSTOM_SORT)

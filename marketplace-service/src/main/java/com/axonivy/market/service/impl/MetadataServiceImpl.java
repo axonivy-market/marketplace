@@ -96,9 +96,10 @@ public class MetadataServiceImpl implements MetadataService {
     }
   }
 
-  public void syncAllProductsMetadata() {
+  public int syncAllProductsMetadata() {
     List<Product> products = productRepo.getAllProductsWithIdAndReleaseTagAndArtifact();
     log.warn("**MetadataService: Start to sync version for {} product(s)", products.size());
+    int nonUpdatedSyncCount = 0;
     for (Product product : products) {
       // Set up cache before sync
       String productId = product.getId();
@@ -125,6 +126,8 @@ public class MetadataServiceImpl implements MetadataService {
           MavenUtils.convertArtifactsToMetadataSet(new HashSet<>(product.getArtifacts()), productId));
 
       if (CollectionUtils.isEmpty(metadataSet)) {
+        log.info("**MetadataService: No artifact found in product {}", productId);
+        nonUpdatedSyncCount +=1;
         continue;
       }
       artifactVersionCache.setAdditionalArtifactsByVersion(new HashMap<>());
@@ -137,6 +140,7 @@ public class MetadataServiceImpl implements MetadataService {
       metadataRepo.saveAll(metadataSet);
     }
     log.warn("**MetadataService: version sync finished");
+    return nonUpdatedSyncCount;
   }
 
   private void updateContentsFromNonMatchVersions(List<String> releasedVersions,
@@ -145,17 +149,13 @@ public class MetadataServiceImpl implements MetadataService {
     Set<String> nonMatchSnapshotVersions = getNonMatchSnapshotVersions(releasedVersions, metadata);
 
     for (String nonMatchSnapshotVersion : nonMatchSnapshotVersions) {
-      if (isProductArtifact(metadata)) {
+      if (MavenUtils.isProductArtifactId(metadata.getArtifactId())) {
         handleProductArtifact(metadata.getProductId(), nonMatchSnapshotVersion, metadata, productModuleContents);
       }
     }
     if (ObjectUtils.isNotEmpty(productModuleContents)) {
       productModuleContentRepo.saveAll(productModuleContents);
     }
-  }
-
-  private boolean isProductArtifact(Metadata metadata) {
-    return metadata.getArtifactId().endsWith(MavenConstants.PRODUCT_ARTIFACT_POSTFIX);
   }
 
   private void handleProductArtifact(String productId, String nonMatchSnapshotVersion, Metadata productArtifact,
