@@ -244,8 +244,27 @@ class MetadataServiceImplTest {
   }
   @Test
   void testSyncAllProductsMetadata() {
-    Mockito.when(productRepo.getAllProductsWithIdAndReleaseTagAndArtifact()).thenReturn(getMockProducts());
+    Mockito.when(productRepo.getAllProductsWithIdAndReleaseTagAndArtifact()).thenReturn(List.of(new Product()));
     int result = metadataService.syncAllProductsMetadata();
+    Assertions.assertEquals(1,result);
+    Mockito.when(productRepo.getAllProductsWithIdAndReleaseTagAndArtifact()).thenReturn(getMockProducts());
+    result = metadataService.syncAllProductsMetadata();
     Assertions.assertEquals(0,result);
+  }
+  @Test
+  void testGetNonMatchSnapshotVersions() {
+    List<String> releasedVersion = List.of("1.0.0-SNAPSHOT");
+    Set<String> metaVersions = Set.of("1.0.0-SNAPSHOT");
+    Assertions.assertEquals(0,metadataService.getNonMatchSnapshotVersions(releasedVersion,metaVersions).size());
+    metaVersions = Set.of("2.0.0-SNAPSHOT");
+    Assertions.assertEquals(1,metadataService.getNonMatchSnapshotVersions(releasedVersion,metaVersions).size());
+    metaVersions = Set.of("2.0.0");
+    Assertions.assertEquals(0,metadataService.getNonMatchSnapshotVersions(releasedVersion,metaVersions).size());
+  }
+
+  @Test
+  void testBuildProductFolderDownloadUrl() {
+    Metadata mockMetadata = getMockMetadata();
+    Assertions.assertEquals("https://maven.axonivy.com/com/axonivvy/util/bpmn-statistic/1.0.0-SNAPSHOT/bpmn-statistic-1.0.0-SNAPSHOT.zip",metadataService.buildProductFolderDownloadUrl(mockMetadata,"1.0.0-SNAPSHOT"));
   }
 }

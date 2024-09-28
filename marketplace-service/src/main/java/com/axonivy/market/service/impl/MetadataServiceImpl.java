@@ -122,8 +122,10 @@ public class MetadataServiceImpl implements MetadataService {
 
       // Sync versions from maven & update artifacts-version table
       metadataSet.addAll(MavenUtils.convertArtifactsToMetadataSet(artifactsFromNewTags, productId));
-      metadataSet.addAll(
-          MavenUtils.convertArtifactsToMetadataSet(new HashSet<>(product.getArtifacts()), productId));
+      if (ObjectUtils.isNotEmpty(product.getArtifacts())) {
+        metadataSet.addAll(
+            MavenUtils.convertArtifactsToMetadataSet(new HashSet<>(product.getArtifacts()), productId));
+      }
 
       if (CollectionUtils.isEmpty(metadataSet)) {
         log.info("**MetadataService: No artifact found in product {}", productId);
@@ -146,7 +148,7 @@ public class MetadataServiceImpl implements MetadataService {
   private void updateContentsFromNonMatchVersions(List<String> releasedVersions,
       Metadata metadata) {
     List<ProductModuleContent> productModuleContents = new ArrayList<>();
-    Set<String> nonMatchSnapshotVersions = getNonMatchSnapshotVersions(releasedVersions, metadata);
+    Set<String> nonMatchSnapshotVersions = getNonMatchSnapshotVersions(releasedVersions, metadata.getVersions());
 
     for (String nonMatchSnapshotVersion : nonMatchSnapshotVersions) {
       if (MavenUtils.isProductArtifactId(metadata.getArtifactId())) {
@@ -178,7 +180,7 @@ public class MetadataServiceImpl implements MetadataService {
     }
   }
 
-  private String buildProductFolderDownloadUrl(Metadata snapShotMetadata, String nonMatchSnapshotVersion) {
+  public String buildProductFolderDownloadUrl(Metadata snapShotMetadata, String nonMatchSnapshotVersion) {
     return MavenUtils.buildDownloadUrl(
         snapShotMetadata.getArtifactId(), nonMatchSnapshotVersion,
         MavenConstants.DEFAULT_PRODUCT_FOLDER_TYPE,
@@ -195,11 +197,10 @@ public class MetadataServiceImpl implements MetadataService {
     }
   }
 
-  private Set<String> getNonMatchSnapshotVersions(List<String> releasedVersions, Metadata metadata) {
+  public Set<String> getNonMatchSnapshotVersions(List<String> releasedVersions, Set<String> metaVersions) {
     Set<String> nonMatchSnapshotVersions = new HashSet<>();
-    for (String metaVersion : metadata.getVersions()) {
-      String matchedVersion = VersionUtils.getMavenVersionMatchWithTag(
-          releasedVersions, metaVersion);
+    for (String metaVersion : metaVersions) {
+      String matchedVersion = VersionUtils.getMavenVersionMatchWithTag(releasedVersions, metaVersion);
       if (matchedVersion == null && VersionUtils.isSnapshotVersion(metaVersion)) {
         nonMatchSnapshotVersions.add(metaVersion);
       }
