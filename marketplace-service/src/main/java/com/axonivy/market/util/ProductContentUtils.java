@@ -12,10 +12,10 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.util.Strings;
 
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -115,11 +115,11 @@ public class ProductContentUtils {
     return result;
   }
 
-  public static ProductModuleContent initializeProductModuleContent(Product product, String tag) {
+  public static ProductModuleContent initProductModuleContent(Product product, String tag, Set<String> mavenVersions) {
     ProductModuleContent productModuleContent = new ProductModuleContent();
     productModuleContent.setProductId(product.getId());
     productModuleContent.setTag(tag);
-    productModuleContent.setRelatedMavenVersions(new HashSet<>());
+    productModuleContent.setMavenVersions(mavenVersions);
     ProductFactory.mappingIdForProductModuleContent(productModuleContent);
     return productModuleContent;
   }

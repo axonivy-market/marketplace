@@ -10,8 +10,6 @@ import lombok.AllArgsConstructor;
 import org.apache.commons.lang3.ObjectUtils;
 import org.springframework.stereotype.Service;
 
-import java.util.HashSet;
-
 import static com.axonivy.market.constants.ProductJsonConstants.EN_LANGUAGE;
 
 @Service
@@ -27,7 +25,6 @@ public class ProductJsonContentServiceImpl implements ProductJsonContentService 
       productJsonContent.setProductId(product.getId());
       ProductFactory.mappingIdForProductJsonContent(productJsonContent);
       productJsonContent.setName(product.getNames().get(EN_LANGUAGE));
-      productJsonContent.setRelatedMavenVersions(new HashSet<>());
       productJsonContent.setContent(jsonContent.replace(ProductJsonConstants.VERSION_VALUE, currentVersion));
       productJsonRepo.save(productJsonContent);
     }

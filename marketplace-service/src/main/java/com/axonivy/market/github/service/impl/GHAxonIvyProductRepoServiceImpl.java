@@ -30,6 +30,7 @@ import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -83,7 +84,8 @@ public class GHAxonIvyProductRepoServiceImpl implements GHAxonIvyProductRepoServ
   @Override
   public ProductModuleContent getReadmeAndProductContentsFromTag(Product product, GHRepository ghRepository,
       String tag) {
-    ProductModuleContent productModuleContent = ProductContentUtils.initializeProductModuleContent(product, tag);
+    ProductModuleContent productModuleContent = ProductContentUtils.initProductModuleContent(product, tag,
+        new HashSet<>());
     try {
       List<GHContent> contents = getProductFolderContents(product, ghRepository, tag);
       updateDependencyContentsFromProductJson(productModuleContent, contents, product);

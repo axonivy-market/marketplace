@@ -71,13 +71,9 @@ public class VersionServiceImpl implements VersionService {
       String version = VersionUtils.getMavenVersionMatchWithTag(releasedVersions, mavenVersion);
 
       if (StringUtils.isNotBlank(version)) {
-        ProductJsonContent json = productJsonRepo.findByProductIdAndVersion(productId, version);
-        json.setRelatedMavenVersions(Set.of(mavenVersion));
-        productJsonRepo.save(json);
-
         ProductModuleContent moduleContent =
             productContentRepo.findByTagAndProductId(VersionUtils.convertVersionToTag(productId, version), productId);
-        moduleContent.setRelatedMavenVersions(Set.of(mavenVersion));
+        moduleContent.setMavenVersions(Set.of(mavenVersion));
         productContentRepo.save(moduleContent);
       }
 

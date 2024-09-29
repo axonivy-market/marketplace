@@ -19,10 +19,10 @@ import com.axonivy.market.repository.MetadataSyncRepository;
 import com.axonivy.market.repository.ProductJsonContentRepository;
 import com.axonivy.market.repository.ProductModuleContentRepository;
 import com.axonivy.market.repository.ProductRepository;
+import com.axonivy.market.service.FileDownloadService;
 import com.axonivy.market.service.ImageService;
 import com.axonivy.market.service.MetadataService;
 import com.axonivy.market.service.ProductJsonContentService;
-import com.axonivy.market.util.FileUnzipUtils;
 import com.axonivy.market.util.MavenUtils;
 import com.axonivy.market.util.MetadataReaderUtils;
 import com.axonivy.market.util.ProductContentUtils;
@@ -32,10 +32,10 @@ import lombok.extern.log4j.Log4j2;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.logging.log4j.util.Strings;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
@@ -50,6 +50,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Stream;
 
 @Service
 @AllArgsConstructor
@@ -63,6 +64,7 @@ public class MetadataServiceImpl implements MetadataService {
   private final ImageService imageService;
   private final ProductModuleContentRepository productModuleContentRepo;
   private final ProductJsonContentService productJsonContentService;
+  private final FileDownloadService fileDownloadService;
 
 
   public void updateMavenArtifactVersionCacheWithModel(MavenArtifactVersion artifactVersionCache,
@@ -208,18 +210,22 @@ public class MetadataServiceImpl implements MetadataService {
     return nonMatchSnapshotVersions;
   }
 
-  private ProductModuleContent getReadmeAndProductContentsFromTag(Product product, String tag,
+  private ProductModuleContent getReadmeAndProductContentsFromTag(Product product, String nonMatchSnapshotVersion,
       Metadata snapShotMetadata, String url) {
-    ProductModuleContent productModuleContent = ProductContentUtils.initializeProductModuleContent(product, tag);
+    ProductModuleContent productModuleContent = ProductContentUtils.initProductModuleContent(product, Strings.EMPTY,
+        Set.of(nonMatchSnapshotVersion));
+    String unzippedFolderPath = Strings.EMPTY;
     try {
-      String unzippedFolderPath = MetadataReaderUtils.downloadAndUnzipFile(url,
-          snapShotMetadata);
+      unzippedFolderPath = fileDownloadService.downloadAndUnzipProductContentFile(url, snapShotMetadata);
       updateDependencyContentsFromProductJson(productModuleContent, product, unzippedFolderPath);
       extractReadMeFileFromContents(product, unzippedFolderPath, productModuleContent);
-      FileUnzipUtils.deleteDirectory(new File(unzippedFolderPath));
     } catch (Exception e) {
       log.error("Cannot get product.json content in {}", e.getMessage());
       return null;
+    } finally {
+      if (StringUtils.isNotBlank(unzippedFolderPath)) {
+        fileDownloadService.deleteDirectory(Path.of(unzippedFolderPath));
+      }
     }
     return productModuleContent;
   }
@@ -229,8 +235,7 @@ public class MetadataServiceImpl implements MetadataService {
     List<Artifact> artifacts = MavenUtils.convertProductJsonToMavenProductInfo(
         Paths.get(unzippedFolderPath));
     ProductContentUtils.updateProductModule(productModuleContent, artifacts);
-
-    String currentVersion = VersionUtils.convertTagToVersion(productModuleContent.getTag());
+    String currentVersion = productModuleContent.getMavenVersions().stream().findAny().orElse(null);
     Path productJsonPath = Paths.get(unzippedFolderPath, ProductJsonConstants.PRODUCT_JSON_FILE);
     String content = extractProductJsonContent(productJsonPath);
     productJsonContentService.updateProductJsonContent(content, currentVersion, product);
@@ -239,12 +244,12 @@ public class MetadataServiceImpl implements MetadataService {
   private void extractReadMeFileFromContents(Product product, String unzippedFolderPath,
       ProductModuleContent productModuleContent) {
     try {
-      List<Path> readmeFiles = Files.walk(Paths.get(unzippedFolderPath))
-          .filter(Files::isRegularFile)
-          .filter(path -> path.getFileName().toString().startsWith(ReadmeConstants.README_FILE_NAME))
-          .toList();
-
+      List<Path> readmeFiles;
       Map<String, Map<String, String>> moduleContents = new HashMap<>();
+      try (Stream<Path> readmePathStream = Files.walk(Paths.get(unzippedFolderPath))) {
+        readmeFiles = readmePathStream.filter(Files::isRegularFile).filter(
+            path -> path.getFileName().toString().startsWith(ReadmeConstants.README_FILE_NAME)).toList();
+      }
       if (ObjectUtils.isNotEmpty(readmeFiles)) {
         for (Path readmeFile : readmeFiles) {
           String readmeContents = Files.readString(readmeFile);
@@ -263,14 +268,16 @@ public class MetadataServiceImpl implements MetadataService {
 
   private String updateImagesWithDownloadUrl(Product product, String unzippedFolderPath,
       String readmeContents) throws IOException {
-    List<Path> allImagePaths = Files.walk(Paths.get(unzippedFolderPath))
-        .filter(Files::isRegularFile)
-        .filter(path -> path.getFileName().toString().toLowerCase().matches(CommonConstants.IMAGE_EXTENSION))
-        .toList();
+    List<Path> allImagePaths;
     Map<String, String> imageUrls = new HashMap<>();
-    allImagePaths.forEach(imagePath -> Optional.of(imageService.mappingImageFromDownloadedFolder(product, imagePath))
-        .ifPresent(image -> imageUrls.put(imagePath.getFileName().toString(),
-            CommonConstants.IMAGE_ID_PREFIX.concat(image.getId()))));
+    try (Stream<Path> imagePathStream = Files.walk(Paths.get(unzippedFolderPath))) {
+      allImagePaths = imagePathStream.filter(Files::isRegularFile).filter(
+          path -> path.getFileName().toString().toLowerCase().matches(CommonConstants.IMAGE_EXTENSION)).toList();
+    }
+    allImagePaths.forEach(
+        imagePath -> Optional.of(imageService.mappingImageFromDownloadedFolder(product, imagePath)).ifPresent(
+            image -> imageUrls.put(imagePath.getFileName().toString(),
+                CommonConstants.IMAGE_ID_PREFIX.concat(image.getId()))));
 
     return ProductContentUtils.replaceImageDirWithImageCustomId(imageUrls, readmeContents);
   }
@@ -278,7 +285,7 @@ public class MetadataServiceImpl implements MetadataService {
   private String extractProductJsonContent(Path filePath) {
     try {
       InputStream contentStream = MavenUtils.extractedContentStream(filePath);
-      return IOUtils.toString(contentStream, StandardCharsets.UTF_8);
+      return IOUtils.toString(Objects.requireNonNull(contentStream), StandardCharsets.UTF_8);
     } catch (Exception e) {
       log.error("Cannot extract product.json file {}", e.getMessage());
       return null;

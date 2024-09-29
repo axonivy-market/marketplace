@@ -9,17 +9,13 @@ import org.xml.sax.InputSource;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
-import java.io.File;
-import java.io.IOException;
 import java.io.StringReader;
-import java.nio.file.Paths;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Objects;
 
 @Log4j2
 public class MetadataReaderUtils {
-  public static final String ZIP_FILE_FORMAT = "%s.%s";
   private MetadataReaderUtils() {
   }
 
@@ -74,16 +70,5 @@ public class MetadataReaderUtils {
       return nodeList.item(0).getTextContent();
     }
     return null;
-  }
-
-  public static String downloadAndUnzipFile(String url, Metadata snapShotMetadata) throws IOException {
-    String zipFilePath =
-        String.format(ZIP_FILE_FORMAT, snapShotMetadata.getArtifactId(), MavenConstants.DEFAULT_PRODUCT_FOLDER_TYPE);
-    FileUnzipUtils.downloadFile(url, zipFilePath);
-
-    String destDir = snapShotMetadata.getArtifactId();
-    FileUnzipUtils.unzipFile(zipFilePath, destDir);
-    FileUnzipUtils.deleteDirectory(new File(zipFilePath));
-    return Paths.get(destDir).toAbsolutePath().toString();
   }
 }
