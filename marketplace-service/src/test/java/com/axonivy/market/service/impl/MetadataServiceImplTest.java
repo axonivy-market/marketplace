@@ -267,4 +267,23 @@ class MetadataServiceImplTest {
     Metadata mockMetadata = getMockMetadata();
     Assertions.assertEquals("https://maven.axonivy.com/com/axonivvy/util/bpmn-statistic/1.0.0-SNAPSHOT/bpmn-statistic-1.0.0-SNAPSHOT.zip",metadataService.buildProductFolderDownloadUrl(mockMetadata,"1.0.0-SNAPSHOT"));
   }
+
+  @Test
+  void testUpdateMavenArtifactVersionData() {
+    List<String> releasedVersion = List.of("1.0.0");
+    Metadata mockMetadata = getMockMetadata();
+    mockMetadata.setUrl("https://maven.axonivy.com/com/axonivvy/util/bpmn-statistic/maven-metadata.xml");
+    Set<Metadata> mockMetadataSet = Set.of(mockMetadata);
+    MavenArtifactVersion mockMavenArtifactVersion = getMockMavenArtifactVersion();
+    metadataService.updateMavenArtifactVersionData(releasedVersion, mockMetadataSet,mockMavenArtifactVersion);
+    Assertions.assertEquals(0, mockMavenArtifactVersion.getAdditionalArtifactsByVersion().size());
+    Assertions.assertEquals(0, mockMavenArtifactVersion.getProductArtifactsByVersion().size());
+    try (MockedStatic<MavenUtils> mockUtils = Mockito.mockStatic(MavenUtils.class)) {
+      mockUtils.when(() -> MavenUtils.getMetadataContentFromUrl(
+          "https://maven.axonivy.com/com/axonivvy/util/bpmn-statistic/maven-metadata.xml")).thenReturn(
+          MOCK_METADATA);
+      metadataService.updateMavenArtifactVersionData(releasedVersion, mockMetadataSet,mockMavenArtifactVersion);
+      Assertions.assertEquals(1, mockMavenArtifactVersion.getProductArtifactsByVersion().size());
+    }
+  }
 }

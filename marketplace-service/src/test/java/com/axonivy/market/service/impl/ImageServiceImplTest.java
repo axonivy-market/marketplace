@@ -65,6 +65,11 @@ class ImageServiceImplTest {
     assertEquals(argumentCaptor.getValue().getProductId(), expectedImage.getProductId());
     assertEquals(argumentCaptor.getValue().getSha(), expectedImage.getSha());
     assertEquals(argumentCaptor.getValue().getImageUrl(), expectedImage.getImageUrl());
+
+    when(imageRepository.findByProductIdAndSha(anyString(), anyString())).thenReturn(expectedImage);
+    Image result  = imageService.mappingImageFromGHContent(mockProduct(), content, false);
+    assertEquals(expectedImage, result);
+
   }
 
   @Test
