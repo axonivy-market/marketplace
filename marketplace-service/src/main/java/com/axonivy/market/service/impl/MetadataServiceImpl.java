@@ -217,7 +217,8 @@ public class MetadataServiceImpl implements MetadataService {
         ProductModuleContent moduleContent =
             productContentRepo.findByTagAndProductId(VersionUtils.convertVersionToTag(productId, matchedVersion),
                 productId);
-        if (moduleContent.getMavenVersions().stream().noneMatch(mavenVersion -> mavenVersion.matches(metaVersion))) {
+        if (ObjectUtils.isNotEmpty(moduleContent) && moduleContent.getMavenVersions().stream().noneMatch(
+            mavenVersion -> mavenVersion.matches(metaVersion))) {
           moduleContent.setMavenVersions(Set.of(metaVersion));
           productContentRepo.save(moduleContent);
         }
