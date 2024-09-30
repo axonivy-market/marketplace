@@ -237,8 +237,8 @@ public class MetadataServiceImpl implements MetadataService {
     String currentVersion = productModuleContent.getMavenVersions().stream().findAny().orElse(null);
     Path productJsonPath = Paths.get(unzippedFolderPath, ProductJsonConstants.PRODUCT_JSON_FILE);
     String content = extractProductJsonContent(productJsonPath);
-    productJsonContentService.updateProductJsonContent(content, currentVersion, ProductJsonConstants.VERSION_VALUE,
-        product);
+    productJsonContentService.updateProductJsonContent(content, null, currentVersion,
+        ProductJsonConstants.VERSION_VALUE, product);
   }
 
   private void extractReadMeFileFromContents(Product product, String unzippedFolderPath,

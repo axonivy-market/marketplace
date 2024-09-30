@@ -44,7 +44,8 @@ public class FileDownloadServiceImpl implements FileDownloadService {
 
   @Override
   public String downloadAndUnzipProductContentFile(String url, Metadata snapShotMetadata) throws IOException {
-    String unzippedFilePath = String.join(File.separator, ROOT_STORAGE, snapShotMetadata.getArtifactId());
+    String unzippedFilePath = String.join(File.separator, ROOT_STORAGE_FOR_PRODUCT_CONTENT,
+        snapShotMetadata.getArtifactId());
     createFolder(unzippedFilePath);
 
     Path tempZipPath = createTempFile();

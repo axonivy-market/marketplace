@@ -383,25 +383,27 @@ public class ProductServiceImpl implements ProductService {
     log.warn("**ProductService: synchronize products from scratch based on the Market repo");
     var gitHubContentMap = axonIvyMarketRepoService.fetchAllMarketItems();
     for (Map.Entry<String, List<GHContent>> ghContentEntity : gitHubContentMap.entrySet()) {
-      Product product = new Product();
-      //update the meta.json first
-      ghContentEntity.getValue()
-          .sort((file1, file2) -> GitHubUtils.sortMetaJsonFirst(file1.getName(), file2.getName()));
-      for (var content : ghContentEntity.getValue()) {
-        ProductFactory.mappingByGHContent(product, content);
-        mappingLogoFromGHContent(product, content);
+      if (ghContentEntity.getKey().equals("market/demos/connectivity")) {
+        Product product = new Product();
+        //update the meta.json first
+        ghContentEntity.getValue()
+            .sort((file1, file2) -> GitHubUtils.sortMetaJsonFirst(file1.getName(), file2.getName()));
+        for (var content : ghContentEntity.getValue()) {
+          ProductFactory.mappingByGHContent(product, content);
+          mappingLogoFromGHContent(product, content);
+        }
+        if (productRepository.findById(product.getId()).isPresent()) {
+          continue;
+        }
+        if (StringUtils.isNotBlank(product.getRepositoryName())) {
+          updateProductCompatibility(product);
+          getProductContents(product);
+        } else {
+          updateProductContentForNonStandardProduct(ghContentEntity, product);
+        }
+        transferComputedDataFromDB(product);
+        productRepository.save(product);
       }
-      if (productRepository.findById(product.getId()).isPresent()) {
-        continue;
-      }
-      if (StringUtils.isNotBlank(product.getRepositoryName())) {
-        updateProductCompatibility(product);
-        getProductContents(product);
-      } else {
-        updateProductContentForNonStandardProduct(ghContentEntity, product);
-      }
-      transferComputedDataFromDB(product);
-      productRepository.save(product);
     }
   }
 
