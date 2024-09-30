@@ -1,4 +1,4 @@
-import { CommonModule } from '@angular/common';
+import { CommonModule, NgOptimizedImage } from '@angular/common';
 import {
   Component,
   ElementRef,
@@ -19,6 +19,7 @@ import { LanguageService } from '../../../core/services/language/language.servic
 import { ThemeService } from '../../../core/services/theme/theme.service';
 import { CommonDropdownComponent } from '../../../shared/components/common-dropdown/common-dropdown.component';
 import {
+  DEFAULT_IMAGE_URL,
   PRODUCT_DETAIL_TABS,
   VERSION
 } from '../../../shared/constants/common.constant';
@@ -72,7 +73,8 @@ const DEFAULT_ACTIVE_TAB = 'description';
     ProductInstallationCountActionComponent,
     ProductTypeIconPipe,
     MissingReadmeContentPipe,
-    CommonDropdownComponent
+    CommonDropdownComponent,
+    NgOptimizedImage
   ],
   providers: [ProductService, MarkdownService],
   templateUrl: './product-detail.component.html',
@@ -99,7 +101,6 @@ export class ProductDetailComponent {
     {} as ProductModuleContent
   );
   productDetailActionType = signal(ProductDetailActionType.STANDARD);
-  detailContent!: DetailTab;
   detailTabs = PRODUCT_DETAIL_TABS;
   activeTab = '';
   displayedTabsSignal: Signal<ItemDropdown[]> = computed(() => {
@@ -113,7 +114,7 @@ export class ProductDetailComponent {
   showPopup!: boolean;
   isMobileMode = signal<boolean>(false);
   installationCount = 0;
-
+  logoUrl = DEFAULT_IMAGE_URL;
   @HostListener('window:popstate', ['$event'])
   onPopState() {
     this.activeTab = window.location.hash.split('#tab-')[1];
@@ -147,12 +148,17 @@ export class ProductDetailComponent {
         this.installationCount = productDetail.installationCount;
         this.handleProductContentVersion();
         this.updateProductDetailActionType(productDetail);
+        this.logoUrl = productDetail.logoUrl;
       });
 
       this.productFeedbackService.initFeedbacks();
       this.productStarRatingService.fetchData();
     }
     this.updateDropdownSelection();
+  }
+
+  onLogoError() {
+    this.logoUrl = DEFAULT_IMAGE_URL;
   }
 
   handleProductContentVersion() {
@@ -170,7 +176,7 @@ export class ProductDetailComponent {
     } else if (this.routingQueryParamService.isDesignerEnv()) {
       this.productDetailActionType.set(ProductDetailActionType.DESIGNER_ENV);
     } else {
-      this.productDetailActionType.set(ProductDetailActionType.STANDARD)
+      this.productDetailActionType.set(ProductDetailActionType.STANDARD);
     }
   }
 
@@ -208,7 +214,7 @@ export class ProductDetailComponent {
   getContent(value: string): boolean {
     const content = this.productModuleContent();
 
-    if (Object.keys(content).length === 0) {
+    if (!content || Object.keys(content).length === 0) {
       return false;
     }
 

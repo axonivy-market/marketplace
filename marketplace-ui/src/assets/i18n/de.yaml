@@ -24,7 +24,7 @@ common:
       demos: Demos
       solution: Lösungen
   error:
-    code: 'ERROR CODE: 404'
+    code: 'ERROR CODE'
     oops: 'Oops!'
     description: 'Unsere Webseite macht eine kleine Pause. Offenbar finden wir die von Dir angefragte Seite nicht.'
     buttonLabel: Zurück zur Startseite
@@ -47,7 +47,7 @@ common:
   footer:
     newVersionsInfo: Neue Version verfügbar für Linux,<br /> Windows und MacOS Betriebssysteme.
     downloadLatestDevVersion: Download V11.3.1
-    ivyCompanyInfo: © 2023 Axon Ivy Inc
+    ivyCompanyInfo: Axon Ivy Inc.
     privacyPolicy: Datenschutzrichtlinie
     termsOfService: Nutzungsbedingungen
   downloadLatestLTSVersion: Download V10.0.23

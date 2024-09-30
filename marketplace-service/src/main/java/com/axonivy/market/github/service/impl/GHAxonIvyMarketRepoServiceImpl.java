@@ -29,10 +29,9 @@ import java.util.Map;
 @Service
 public class GHAxonIvyMarketRepoServiceImpl implements GHAxonIvyMarketRepoService {
   private static final LocalDateTime INITIAL_COMMIT_DATE = LocalDateTime.of(2020, 10, 30, 0, 0);
+  private final GitHubService gitHubService;
   private GHOrganization organization;
   private GHRepository repository;
-
-  private final GitHubService gitHubService;
   @Value("${market.github.market.branch}")
   private String marketRepoBranch;
 

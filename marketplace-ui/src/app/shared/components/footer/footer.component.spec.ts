@@ -3,7 +3,7 @@ import { FooterComponent } from './footer.component';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { By } from '@angular/platform-browser';
 import { Viewport } from 'karma-viewport/dist/adapter/viewport';
-import { SOCIAL_MEDIA_LINK } from '../../constants/common.constant';
+import { IVY_FOOTER_LINKS, SOCIAL_MEDIA_LINK } from '../../constants/common.constant';
 
 declare const viewport: Viewport;
 
@@ -12,6 +12,13 @@ describe('FooterComponent', () => {
   let fixture: ComponentFixture<FooterComponent>;
 
   beforeEach(async () => {
+    let testMockDate: Date;
+
+    jasmine.clock().uninstall();
+    jasmine.clock().install();
+    testMockDate = new Date('2019-09-15T05:00:00Z');
+    jasmine.clock().mockDate(testMockDate);
+
     await TestBed.configureTestingModule({
       imports: [FooterComponent, TranslateModule.forRoot()],
       providers: [TranslateService]
@@ -20,6 +27,10 @@ describe('FooterComponent', () => {
     fixture = TestBed.createComponent(FooterComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
+  });
+
+  afterEach(function() {
+    jasmine.clock().uninstall();
   });
 
   it('should create', () => {
@@ -55,7 +66,7 @@ describe('FooterComponent', () => {
     const ivyTag = fixture.nativeElement.querySelector('.footer__ivy-tag');
 
     const ivyTermOfService = fixture.nativeElement.querySelector(
-      '.footer__ivy-term-of-service-tag'
+      '.footer__ivy-policy-tag'
     );
 
     expect(ivyTag.getBoundingClientRect().top).toBeLessThan(
@@ -72,7 +83,7 @@ describe('FooterComponent', () => {
     expect(getComputedStyle(ivyPolicy.nativeElement).textAlign).toBe('center');
   });
 
-  it('should navigate to the correct URL when the link icon is clicked', () => {
+  it('should navigate to the correct URL when the social link icon is clicked', () => {
     const socialMediaLinks = fixture.debugElement.queryAll(
       By.css('.social-link')
     );
@@ -86,4 +97,38 @@ describe('FooterComponent', () => {
       expect(socialMediaLinkElement.href).toBe(SOCIAL_MEDIA_LINK[index].url);
     }
   });
+
+  it('should navigate to the correct URL when the policy link text is clicked', () => {
+    const policyLinks = fixture.debugElement.queryAll(
+      By.css('.policy-link')
+    );
+
+    const policyLinksFromConstants = IVY_FOOTER_LINKS.filter((element) => element.link.trim().length !== 0);
+
+    for (let index = 0; index < policyLinksFromConstants.length; index++) {
+      const policyLinkElement: HTMLAnchorElement =
+      policyLinks[index].nativeElement;
+
+      policyLinkElement.click();
+
+      expect(policyLinkElement.href).toBe(policyLinksFromConstants[index].link);
+    }
+  });
+
+  it('should get year of mock year', () => {
+    component.getCurrentYear();
+
+    expect(component.year).toBe('2019');
+  })  
+
+  it('should get year of current year', () => {
+    let currentDate = new Date();
+    let currentYear = currentDate.getFullYear();
+
+    jasmine.clock().mockDate(currentDate);
+
+    component.getCurrentYear();
+
+    expect(component.year).toBe(currentYear.toString());
+  })
 });

@@ -3,8 +3,8 @@ package com.axonivy.market.repository.impl;
 import com.axonivy.market.constants.EntityConstants;
 import com.axonivy.market.constants.MongoDBConstants;
 import com.axonivy.market.entity.Product;
-import com.axonivy.market.entity.ProductModuleContent;
 import com.axonivy.market.entity.ProductDesignerInstallation;
+import com.axonivy.market.entity.ProductModuleContent;
 import com.axonivy.market.repository.CustomProductRepository;
 import com.axonivy.market.repository.CustomRepository;
 import com.axonivy.market.repository.ProductModuleContentRepository;
@@ -29,7 +29,7 @@ public class CustomProductRepositoryImpl extends CustomRepository implements Cus
 
   public CustomProductRepositoryImpl(MongoTemplate mongoTemplate, ProductModuleContentRepository contentRepository) {
     this.mongoTemplate = mongoTemplate;
-      this.contentRepository = contentRepository;
+    this.contentRepository = contentRepository;
   }
 
 
@@ -38,14 +38,30 @@ public class CustomProductRepositoryImpl extends CustomRepository implements Cus
         .map(AggregationResults::getUniqueMappedResult).orElse(null);
   }
 
+  public List<Product> queryProductsByAggregation(Aggregation aggregation) {
+    return Optional.of(mongoTemplate.aggregate(aggregation, EntityConstants.PRODUCT, Product.class))
+        .map(AggregationResults::getMappedResults).orElse(Collections.emptyList());
+  }
+
   @Override
-  public Product getProductByIdAndTag(String id, String tag) {
+  public Product getProductByIdWithTagOrVersion(String id, String tag) {
     Product result = findProductById(id);
     if (!Objects.isNull(result)) {
-      ProductModuleContent content = contentRepository.findByTagAndProductId(tag,id);
+      ProductModuleContent content = findByProductIdAndTagOrMavenVersion(id, tag);
       result.setProductModuleContent(content);
     }
     return result;
+  }
+
+  @Override
+  public ProductModuleContent findByProductIdAndTagOrMavenVersion(String productId, String tag) {
+    Criteria productIdCriteria = Criteria.where(MongoDBConstants.PRODUCT_ID).is(productId);
+    Criteria orCriteria = new Criteria().orOperator(
+        Criteria.where(MongoDBConstants.TAG).is(tag),
+        Criteria.where(MongoDBConstants.MAVEN_VERSIONS).in(tag)
+    );
+    Query query = new Query(new Criteria().andOperator(productIdCriteria, orCriteria));
+    return mongoTemplate.findOne(query, ProductModuleContent.class);
   }
 
   private Product findProductById(String id) {
@@ -75,7 +91,8 @@ public class CustomProductRepositoryImpl extends CustomRepository implements Cus
   }
 
   public int updateInitialCount(String productId, int initialCount) {
-    Update update = new Update().inc(MongoDBConstants.INSTALLATION_COUNT, initialCount).set(MongoDBConstants.SYNCHRONIZED_INSTALLATION_COUNT, true);
+    Update update = new Update().inc(MongoDBConstants.INSTALLATION_COUNT, initialCount).set(
+        MongoDBConstants.SYNCHRONIZED_INSTALLATION_COUNT, true);
     mongoTemplate.updateFirst(createQueryById(productId), update, Product.class);
     return Optional.ofNullable(getProductById(productId)).map(Product::getInstallationCount).orElse(0);
   }
@@ -93,11 +110,23 @@ public class CustomProductRepositoryImpl extends CustomRepository implements Cus
   public void increaseInstallationCountForProductByDesignerVersion(String productId, String designerVersion) {
     Update update = new Update().inc(MongoDBConstants.INSTALLATION_COUNT, 1);
     mongoTemplate.upsert(createQueryByProductIdAndDesignerVersion(productId, designerVersion),
-            update, ProductDesignerInstallation.class);
+        update, ProductDesignerInstallation.class);
+  }
+
+  @Override
+  public List<Product> getAllProductsWithIdAndReleaseTagAndArtifact() {
+    return queryProductsByAggregation(
+        createProjectIdAndReleasedVersionsAndArtifactsAggregation());
   }
 
   private Query createQueryByProductIdAndDesignerVersion(String productId, String designerVersion) {
     return new Query(Criteria.where(MongoDBConstants.PRODUCT_ID).is(productId)
-            .andOperator(Criteria.where(MongoDBConstants.DESIGNER_VERSION).is(designerVersion)));
+        .andOperator(Criteria.where(MongoDBConstants.DESIGNER_VERSION).is(designerVersion)));
+  }
+
+  protected Aggregation createProjectIdAndReleasedVersionsAndArtifactsAggregation() {
+    return Aggregation.newAggregation(
+        Aggregation.project(MongoDBConstants.ID, MongoDBConstants.ARTIFACTS, MongoDBConstants.RELEASED_VERSIONS)
+    );
   }
 }

@@ -28,7 +28,7 @@ common:
       demos: Demos
       solution: Solutions
   error:
-    code: 'ERROR CODE: 404'
+    code: 'ERROR CODE'
     oops: 'Oops!'
     description: 'Our website is taking a break. It seems that we cannot find the page you requested.'
     buttonLabel: Back to homepage
@@ -51,7 +51,7 @@ common:
   footer:
     newVersionsInfo: New version release available for Linux,<br /> Window and MacOS operating systems.
     downloadLatestDevVersion: Download V11.3.1
-    ivyCompanyInfo: © 2023 Axon Ivy Inc.
+    ivyCompanyInfo: Axon Ivy Inc.
     privacyPolicy: Privacy Policy
     termsOfService: Terms of Service
   downloadLatestLTSVersion: Download V10.0.23

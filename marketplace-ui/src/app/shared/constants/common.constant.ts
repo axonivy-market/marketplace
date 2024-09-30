@@ -66,13 +66,8 @@ export const IVY_FOOTER_LINKS = [
   {
     containerStyleClass: 'footer__ivy-policy-tag',
     label: 'common.footer.privacyPolicy',
-    link: ''
+    link: 'https://www.axonivy.com/privacy-policy'
   },
-  {
-    containerStyleClass: 'footer__ivy-term-of-service-tag',
-    label: 'common.footer.termsOfService',
-    link: ''
-  }
 ];
 
 export const LANGUAGES = [
@@ -196,7 +191,7 @@ export const VERSION = {
   displayPrefix: 'Version '
 };
 
-export const ERROR_PAGE_PATH = '/error-page';
+export const ERROR_PAGE_PATH = 'error-page';
 export const NOT_FOUND_ERROR_CODE = 404;
 export const INTERNAL_SERVER_ERROR_CODE = 500;
 export const UNDEFINED_ERROR_CODE = 0;
@@ -205,3 +200,5 @@ export const ERROR_CODES = [
   NOT_FOUND_ERROR_CODE,
   INTERNAL_SERVER_ERROR_CODE
 ];
+
+export const DEFAULT_IMAGE_URL = '/assets/images/misc/axonivy-logo-round.png';

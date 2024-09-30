@@ -1,24 +1,31 @@
-import { Component, HostListener, inject, signal } from '@angular/core';
+import { Component, HostListener, inject, OnInit, signal } from '@angular/core';
 import { ThemeService } from '../../../core/services/theme/theme.service';
 import { LanguageService } from '../../../core/services/language/language.service';
 import { CommonModule } from '@angular/common';
 import { TranslateModule } from '@ngx-translate/core';
-import { Router } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 
 @Component({
   selector: 'app-error-page-component',
   standalone: true,
   imports: [CommonModule, TranslateModule],
-  templateUrl: './error-page-component.component.html',
-  styleUrl: './error-page-component.component.scss'
+  templateUrl: './error-page.component.html',
+  styleUrl: './error-page.component.scss'
 })
-export class ErrorPageComponentComponent {
+export class ErrorPageComponent implements OnInit {
   themeService = inject(ThemeService);
   languageService = inject(LanguageService);
   isMobileMode = signal<boolean>(false);
+  route = inject(ActivatedRoute);
+
+  errorId: string | undefined;
 
   constructor(private readonly router: Router) {
     this.checkMediaSize();
+  }
+
+  ngOnInit(): void {
+    this.errorId = this.route.snapshot.params['id'];
   }
 
   backToHomePage() {
