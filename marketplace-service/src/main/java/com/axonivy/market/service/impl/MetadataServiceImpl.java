@@ -231,9 +231,9 @@ public class MetadataServiceImpl implements MetadataService {
         return;
       }
       Set<String> mavenVersions = moduleContent.getMavenVersions();
-      if (!CollectionUtils.isEmpty(mavenVersions) && mavenVersions.stream().noneMatch(
-          mavenVersion -> mavenVersion.matches(metaVersion))) {
-        moduleContent.setMavenVersions(Set.of(metaVersion));
+      if (CollectionUtils.isEmpty(mavenVersions) || !mavenVersions.contains(metaVersion)) {
+        mavenVersions.add(metaVersion);
+        moduleContent.setMavenVersions(mavenVersions);
         productContentRepo.save(moduleContent);
       }
     }
