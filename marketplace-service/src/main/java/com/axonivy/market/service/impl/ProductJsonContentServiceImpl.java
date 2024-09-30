@@ -1,6 +1,5 @@
 package com.axonivy.market.service.impl;
 
-import com.axonivy.market.constants.ProductJsonConstants;
 import com.axonivy.market.entity.Product;
 import com.axonivy.market.entity.ProductJsonContent;
 import com.axonivy.market.factory.ProductFactory;

@@ -3,8 +3,8 @@ package com.axonivy.market.service.impl;
 import com.axonivy.market.bo.Artifact;
 import com.axonivy.market.controller.ProductDetailsController;
 import com.axonivy.market.entity.MavenArtifactVersion;
-import com.axonivy.market.entity.Product;
 import com.axonivy.market.entity.ProductJsonContent;
+import com.axonivy.market.entity.ProductModuleContent;
 import com.axonivy.market.model.MavenArtifactModel;
 import com.axonivy.market.model.MavenArtifactVersionModel;
 import com.axonivy.market.model.VersionAndUrlModel;
@@ -13,6 +13,7 @@ import com.axonivy.market.repository.ProductJsonContentRepository;
 import com.axonivy.market.repository.ProductModuleContentRepository;
 import com.axonivy.market.repository.ProductRepository;
 import com.axonivy.market.service.VersionService;
+import com.axonivy.market.service.ProductJsonContentService;
 import com.axonivy.market.util.MavenUtils;
 import com.axonivy.market.util.VersionUtils;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -20,6 +21,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.AllArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.lang3.ObjectUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.hateoas.Link;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
@@ -29,7 +31,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import static com.axonivy.market.constants.ProductJsonConstants.NAME;
@@ -45,6 +47,7 @@ public class VersionServiceImpl implements VersionService {
   private final ProductRepository productRepo;
   private final ProductJsonContentRepository productJsonRepo;
   private final ProductModuleContentRepository productContentRepo;
+  private final ProductJsonContentService productJsonContentService;
   private final ObjectMapper mapper = new ObjectMapper();
 
   public List<MavenArtifactVersionModel> getArtifactsAndVersionToDisplay(String productId, Boolean isShowDevVersion,
