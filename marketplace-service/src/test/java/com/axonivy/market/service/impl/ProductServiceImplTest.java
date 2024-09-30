@@ -27,6 +27,7 @@ import com.axonivy.market.repository.ProductCustomSortRepository;
 import com.axonivy.market.repository.ProductModuleContentRepository;
 import com.axonivy.market.repository.ProductRepository;
 import com.axonivy.market.service.ImageService;
+import com.axonivy.market.util.MavenUtils;
 import com.axonivy.market.util.VersionUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -39,6 +40,7 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.domain.Page;
@@ -471,13 +473,32 @@ class ProductServiceImplTest extends BaseSetup {
   @Test
   void testFetchBestMatchProductDetailByIdAndVersion() {
     String id = "amazon-comprehend";
-    Product mockProduct = mockResultReturn.getContent().get(0);
-    mockProduct.setSynchronizedInstallationCount(true);
-    when(productRepository.getReleasedVersionsById(id)).thenReturn(List.of("10.0.2", "10.0.1"));
-    when(productRepository.getProductByIdAndTag(id, RELEASE_TAG)).thenReturn(mockProduct);
-    Product result = productService.fetchBestMatchProductDetail(id, "10.0.2");
-    assertEquals(mockProduct, result);
-    verify(productRepository, times(1)).getProductByIdAndTag(id, RELEASE_TAG);
+    String version = "v10.0.2";
+    String bestMatchVersion = "10.0.2";
+
+    MavenArtifactVersion mockMavenArtifactVersion = new MavenArtifactVersion();
+    mockMavenArtifactVersion.getProductArtifactsByVersion().put(bestMatchVersion, Collections.emptyList());
+
+    List<String> mockVersions = Arrays.asList("10.0.1", "10.0.2");
+    when(mavenArtifactVersionRepo.findById(id)).thenReturn(Optional.of(mockMavenArtifactVersion));
+    try (MockedStatic<VersionUtils> mockVersionUtils = Mockito.mockStatic(VersionUtils.class)) {
+      when(MavenUtils.getAllExistingVersions(mockMavenArtifactVersion, true, null)).thenReturn(mockVersions);
+      mockVersionUtils.when(() -> VersionUtils.getBestMatchVersion(mockVersions, version)).thenReturn(bestMatchVersion);
+      mockVersionUtils.when(() -> VersionUtils.convertVersionToTag(id, bestMatchVersion)).thenReturn(version);
+
+      Product mockProduct = new Product();
+      mockProduct.setSynchronizedInstallationCount(true);
+      when(productRepository.getProductByIdWithTagOrVersion(id, version)).thenReturn(mockProduct);
+
+      Product result = productService.fetchBestMatchProductDetail(id, version);
+
+
+      assertEquals(mockProduct, result);
+      assertEquals(bestMatchVersion, result.getBestMatchVersion());
+
+      verify(mavenArtifactVersionRepo, times(1)).findById(id);
+      verify(productRepository, times(1)).getProductByIdWithTagOrVersion(id, version);
+    }
   }
 
   @Test
