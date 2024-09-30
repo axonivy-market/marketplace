@@ -37,10 +37,14 @@ import org.springframework.web.client.RestTemplate;
 
 import java.io.IOException;
 import java.util.Collections;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
+import static com.axonivy.market.constants.GitHubConstants.ATTRIBUTE_ORGANIZATION_NAME;
+import static com.axonivy.market.constants.GitHubConstants.ATTRIBUTE_ORGANIZATION_OBJECT;
+import static com.axonivy.market.constants.GitHubConstants.ATTRIBUTE_TEAM_NAME;
 import static org.apache.commons.lang3.StringUtils.EMPTY;
 
 @Log4j2
@@ -174,6 +178,38 @@ public class GitHubServiceImpl implements GitHubService {
     HttpEntity<String> entity = new HttpEntity<>(headers);
     try {
       ResponseEntity<List<Map<String, Object>>> response = restTemplate.exchange(GitHubConstants.Url.USER_ORGS,
+          HttpMethod.GET, entity, new ParameterizedTypeReference<>() {
+          });
+      return response.getBody();
+    } catch (HttpClientErrorException exception) {
+      throw new UnauthorizedException(ErrorCode.GITHUB_USER_UNAUTHORIZED.getCode(),
+          ErrorCode.GITHUB_USER_UNAUTHORIZED.getHelpText() + CommonConstants.DASH_SEPARATOR
+              + GitHubUtils.extractMessageFromExceptionMessage(exception.getMessage()));
+    }
+  }
+
+  @Override
+  public void validateUser(String accessToken, String team, String organization) throws UnauthorizedException {
+    List<Map<String, Object>> userTeams = getUserTeams(accessToken);
+    for (var userTeam : userTeams) {
+      LinkedHashMap org = (LinkedHashMap) userTeam.get(ATTRIBUTE_ORGANIZATION_OBJECT);
+      if (userTeam.get(ATTRIBUTE_TEAM_NAME).equals(team) && org.get(ATTRIBUTE_ORGANIZATION_NAME).equals(
+          organization)) {
+        return;
+      }
+    }
+
+    throw new UnauthorizedException(ErrorCode.GITHUB_USER_UNAUTHORIZED.getCode(),
+        String.format(ErrorMessageConstants.INVALID_USER_ERROR, ErrorCode.GITHUB_USER_UNAUTHORIZED.getHelpText(),
+            team, organization));
+  }
+
+  public List<Map<String, Object>> getUserTeams(String accessToken) throws UnauthorizedException {
+    try {
+      HttpHeaders headers = new HttpHeaders();
+      headers.setBearerAuth(accessToken);
+      HttpEntity<String> entity = new HttpEntity<>(headers);
+      ResponseEntity<List<Map<String, Object>>> response = restTemplate.exchange(GitHubConstants.Url.USER_TEAMS,
           HttpMethod.GET, entity, new ParameterizedTypeReference<>() {
           });
       return response.getBody();

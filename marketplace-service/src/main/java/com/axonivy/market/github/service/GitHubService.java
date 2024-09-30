@@ -35,4 +35,6 @@ public interface GitHubService {
   User getAndUpdateUser(String accessToken);
 
   void validateUserOrganization(String accessToken, String organization) throws UnauthorizedException;
+
+  void validateUser(String accessToken, String team, String org) throws UnauthorizedException;
 }
