@@ -12,5 +12,7 @@ public interface ImageRepository extends MongoRepository<Image, String> {
 
   List<Image> findByImageUrlEndsWithIgnoreCase(String fileName);
 
+  List<Image> findByProductId(String productId);
+
   void deleteAllByProductId(String productId);
 }

@@ -1,6 +1,6 @@
 package com.axonivy.market.entity;
 
-import com.axonivy.market.github.model.MavenArtifact;
+import com.axonivy.market.bo.Artifact;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -60,7 +60,7 @@ public class Product implements Serializable {
   private String newestReleaseVersion;
   @Transient
   private ProductModuleContent productModuleContent;
-  private List<MavenArtifact> artifacts;
+  private List<Artifact> artifacts;
   private Boolean synchronizedInstallationCount;
   private Integer customOrder;
   private List<String> releasedVersions;
@@ -69,6 +69,8 @@ public class Product implements Serializable {
   private String logoId;
   @LastModifiedDate
   private Date updatedAt;
+  @Transient
+  private String bestMatchVersion;
 
   @Override
   public int hashCode() {
