@@ -13,6 +13,7 @@ import com.axonivy.market.repository.MavenArtifactVersionRepository;
 import com.axonivy.market.repository.ProductJsonContentRepository;
 import com.axonivy.market.repository.ProductModuleContentRepository;
 import com.axonivy.market.repository.ProductRepository;
+import com.axonivy.market.service.ProductJsonContentService;
 import com.axonivy.market.service.VersionService;
 import com.axonivy.market.util.MavenUtils;
 import com.axonivy.market.util.VersionUtils;
@@ -47,6 +48,7 @@ public class VersionServiceImpl implements VersionService {
   private final ProductRepository productRepo;
   private final ProductJsonContentRepository productJsonRepo;
   private final ProductModuleContentRepository productContentRepo;
+  private final ProductJsonContentService productJsonContentService;
   private final ObjectMapper mapper = new ObjectMapper();
 
   public List<MavenArtifactVersionModel> getArtifactsAndVersionToDisplay(String productId, Boolean isShowDevVersion,
@@ -71,6 +73,13 @@ public class VersionServiceImpl implements VersionService {
       String version = VersionUtils.getMavenVersionMatchWithTag(releasedVersions, mavenVersion);
 
       if (StringUtils.isNotBlank(version)) {
+        productJsonRepo.findByProductIdAndVersion(productId,
+            version).stream().findAny().ifPresent(json ->
+            productRepo.findById(productId).ifPresent(product ->
+                productJsonContentService.updateProductJsonContent(json.getContent(), mavenVersion, version, product)
+            )
+        );
+
         ProductModuleContent moduleContent =
             productContentRepo.findByTagAndProductId(VersionUtils.convertVersionToTag(productId, version), productId);
         moduleContent.setMavenVersions(Set.of(mavenVersion));
@@ -87,7 +96,8 @@ public class VersionServiceImpl implements VersionService {
   public Map<String, Object> getProductJsonContentByIdAndTag(String productId, String tag) {
     Map<String, Object> result = new HashMap<>();
     try {
-      ProductJsonContent productJsonContent = productJsonRepo.findByProductIdAndVersion(productId, tag);
+      ProductJsonContent productJsonContent =
+          productJsonRepo.findByProductIdAndVersion(productId, tag).stream().findAny().orElse(null);
       if (ObjectUtils.isEmpty(productJsonContent)) {
         return new HashMap<>();
       }
@@ -137,7 +147,8 @@ public class VersionServiceImpl implements VersionService {
 
   public List<Artifact> getMavenArtifactsFromProductJsonByTag(String tag,
       String productId) {
-    ProductJsonContent productJson = productJsonRepo.findByProductIdAndVersion(productId, tag);
+    ProductJsonContent productJson =
+        productJsonRepo.findByProductIdAndVersion(productId, tag).stream().findAny().orElse(null);
     return MavenUtils.getMavenArtifactsFromProductJson(productJson);
   }
 }

@@ -127,7 +127,8 @@ public class GHAxonIvyProductRepoServiceImpl implements GHAxonIvyProductRepoServ
       ProductContentUtils.updateProductModule(productModuleContent, artifacts);
       String currentVersion = VersionUtils.convertTagToVersion(productModuleContent.getTag());
       String content = extractProductJsonContent(productJsonFile, productModuleContent.getTag());
-      productJsonContentService.updateProductJsonContent(content, currentVersion, product);
+      productJsonContentService.updateProductJsonContent(content, currentVersion, ProductJsonConstants.VERSION_VALUE,
+          product);
     }
   }
 

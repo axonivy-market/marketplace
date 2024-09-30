@@ -18,14 +18,15 @@ public class ProductJsonContentServiceImpl implements ProductJsonContentService 
   private final ProductJsonContentRepository productJsonRepo;
 
   @Override
-  public void updateProductJsonContent(String jsonContent, String currentVersion, Product product) {
+  public void updateProductJsonContent(String jsonContent, String currentVersion,
+      String replaceVersion, Product product) {
     if (ObjectUtils.isNotEmpty(jsonContent)) {
       ProductJsonContent productJsonContent = new ProductJsonContent();
       productJsonContent.setVersion(currentVersion);
       productJsonContent.setProductId(product.getId());
       ProductFactory.mappingIdForProductJsonContent(productJsonContent);
       productJsonContent.setName(product.getNames().get(EN_LANGUAGE));
-      productJsonContent.setContent(jsonContent.replace(ProductJsonConstants.VERSION_VALUE, currentVersion));
+      productJsonContent.setContent(jsonContent.replace(replaceVersion, currentVersion));
       productJsonRepo.save(productJsonContent);
     }
   }

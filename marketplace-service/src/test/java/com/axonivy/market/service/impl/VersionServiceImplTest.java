@@ -114,7 +114,8 @@ class VersionServiceImplTest {
 
   @Test
   void testGetMavenArtifactsFromProductJsonByVersion() {
-    when(productJsonContentRepository.findByProductIdAndVersion("adobe-acrobat-connector", "10.0.20")).thenReturn(null);
+    when(productJsonContentRepository.findByProductIdAndVersion("adobe-acrobat-connector", "10.0.20")).thenReturn(
+        Collections.emptyList());
 
     Assertions.assertEquals(0,
         versionService.getMavenArtifactsFromProductJsonByTag("10.0.20", "adobe-acrobat-connector").size());
@@ -124,13 +125,9 @@ class VersionServiceImplTest {
     ProductJsonContent productJson = new ProductJsonContent();
     productJson.setContent(jsonContent);
     when(productJsonContentRepository.findByProductIdAndVersion("adobe-acrobat-connector", "10.0.20")).thenReturn(
-        productJson);
+        List.of(productJson));
     List<Artifact> results = versionService.getMavenArtifactsFromProductJsonByTag("10.0.20", "adobe-acrobat-connector");
   }
-
-
-
-
 
   @Test
   void testFindArchivedArtifactInfoBestMatchWithVersion() {
@@ -211,7 +208,7 @@ class VersionServiceImplTest {
     mockProductJsonContent.setContent(mockContent);
 
     Mockito.when(productJsonContentRepository.findByProductIdAndVersion(anyString(), anyString()))
-        .thenReturn(mockProductJsonContent);
+        .thenReturn(List.of(mockProductJsonContent));
 
     Map<String, Object> result = versionService.getProductJsonContentByIdAndTag("amazon-comprehend", "11.3.1");
 
@@ -220,7 +217,8 @@ class VersionServiceImplTest {
 
   @Test
   void testGetProductJsonContentByIdAndVersion_noResult() {
-    Mockito.when(productJsonContentRepository.findByProductIdAndVersion(anyString(), anyString())).thenReturn(null);
+    Mockito.when(productJsonContentRepository.findByProductIdAndVersion(anyString(), anyString())).thenReturn(
+        Collections.emptyList());
 
     Map<String, Object> result = versionService.getProductJsonContentByIdAndTag("amazon-comprehend", "11.3.1");
 

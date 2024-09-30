@@ -69,12 +69,6 @@ class GHAxonIvyProductRepoServiceImplTest {
   JsonNode dataNode;
 
   @Mock
-  JsonNode childNode;
-
-  @Mock
-  ProductJsonContentService productJsonContentService;
-
-  @Mock
   GHContent content = new GHContent();
 
   @Mock

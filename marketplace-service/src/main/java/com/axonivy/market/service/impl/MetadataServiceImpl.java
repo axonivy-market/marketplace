@@ -147,7 +147,7 @@ public class MetadataServiceImpl implements MetadataService {
     return nonUpdatedSyncCount;
   }
 
-  private void updateContentsFromNonMatchVersions(List<String> releasedVersions,
+  public void updateContentsFromNonMatchVersions(List<String> releasedVersions,
       Metadata metadata) {
     List<ProductModuleContent> productModuleContents = new ArrayList<>();
     Set<String> nonMatchSnapshotVersions = getNonMatchSnapshotVersions(releasedVersions, metadata.getVersions());
@@ -162,7 +162,7 @@ public class MetadataServiceImpl implements MetadataService {
     }
   }
 
-  private void handleProductArtifact(String productId, String nonMatchSnapshotVersion, Metadata productArtifact,
+  public void handleProductArtifact(String productId, String nonMatchSnapshotVersion, Metadata productArtifact,
       List<ProductModuleContent> productModuleContents) {
     Metadata snapShotMetadata = MavenUtils.buildSnapShotMetadataFromVersion(productArtifact, nonMatchSnapshotVersion);
     MetadataReaderUtils.parseMetadataSnapshotFromString(
@@ -238,7 +238,8 @@ public class MetadataServiceImpl implements MetadataService {
     String currentVersion = productModuleContent.getMavenVersions().stream().findAny().orElse(null);
     Path productJsonPath = Paths.get(unzippedFolderPath, ProductJsonConstants.PRODUCT_JSON_FILE);
     String content = extractProductJsonContent(productJsonPath);
-    productJsonContentService.updateProductJsonContent(content, currentVersion, product);
+    productJsonContentService.updateProductJsonContent(content, currentVersion, ProductJsonConstants.VERSION_VALUE,
+        product);
   }
 
   private void extractReadMeFileFromContents(Product product, String unzippedFolderPath,
@@ -320,7 +321,8 @@ public class MetadataServiceImpl implements MetadataService {
       return artifacts;
     }
     nonSyncedVersions.forEach(version -> {
-      ProductJsonContent productJson = productJsonRepo.findByProductIdAndVersion(productId, version);
+      ProductJsonContent productJson =
+          productJsonRepo.findByProductIdAndVersion(productId, version).stream().findAny().orElse(null);
       List<Artifact> artifactsInVersion = MavenUtils.getMavenArtifactsFromProductJson(productJson);
       artifacts.addAll(artifactsInVersion);
     });

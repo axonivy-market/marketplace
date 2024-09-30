@@ -36,7 +36,8 @@ class ProductJsonContentServiceImplTest {
     names.put(ProductJsonConstants.EN_LANGUAGE, "Test Product");
     product.setNames(names);
 
-    productJsonContentService.updateProductJsonContent(jsonContent, currentVersion, product);
+    productJsonContentService.updateProductJsonContent(jsonContent, currentVersion,
+        ProductJsonConstants.VERSION_VALUE, product);
 
     ArgumentCaptor<ProductJsonContent> captor = ArgumentCaptor.forClass(ProductJsonContent.class);
     verify(productJsonRepo, times(1)).save(captor.capture());
@@ -54,7 +55,8 @@ class ProductJsonContentServiceImplTest {
     String currentVersion = "1.0.0";
     Product product = new Product();
 
-    productJsonContentService.updateProductJsonContent(jsonContent, currentVersion, product);
+    productJsonContentService.updateProductJsonContent(jsonContent, currentVersion,
+        ProductJsonConstants.VERSION_VALUE, product);
 
     verify(productJsonRepo, times(0)).save(any(ProductJsonContent.class));
   }
