@@ -1,5 +1,6 @@
 package com.axonivy.market.repository.impl;
 
+import com.axonivy.market.comparator.LatestVersionComparator;
 import com.axonivy.market.constants.EntityConstants;
 import com.axonivy.market.constants.MongoDBConstants;
 import com.axonivy.market.entity.Product;
@@ -8,6 +9,7 @@ import com.axonivy.market.entity.ProductModuleContent;
 import com.axonivy.market.repository.CustomProductRepository;
 import com.axonivy.market.repository.CustomRepository;
 import com.axonivy.market.repository.ProductModuleContentRepository;
+import com.axonivy.market.util.VersionUtils;
 import lombok.Builder;
 import org.springframework.data.mongodb.core.FindAndModifyOptions;
 import org.springframework.data.mongodb.core.MongoTemplate;
@@ -16,7 +18,7 @@ import org.springframework.data.mongodb.core.aggregation.AggregationResults;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.data.mongodb.core.query.Update;
-
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
@@ -57,12 +59,19 @@ public class CustomProductRepositoryImpl extends CustomRepository implements Cus
   public Product getProductById(String id) {
     Product result = findProductById(id);
     if (!Objects.isNull(result)) {
-      ProductModuleContent content = contentRepository.findByTagAndProductId(
-          result.getNewestReleaseVersion(), id);
+      String newestReleaseTag = Optional.ofNullable(result.getReleasedVersions())
+          .map(Collection::stream)
+          .flatMap(versions -> versions.filter(VersionUtils::isReleasedVersion).min(new LatestVersionComparator()))
+          .map(newestVersion -> VersionUtils.convertVersionToTag(result.getId(), newestVersion))
+          .orElse(result.getNewestReleaseVersion());
+
+      ProductModuleContent content = contentRepository.findByTagAndProductId(newestReleaseTag, id);
+
       result.setProductModuleContent(content);
     }
     return result;
   }
+
 
   @Override
   public List<String> getReleasedVersionsById(String id) {
