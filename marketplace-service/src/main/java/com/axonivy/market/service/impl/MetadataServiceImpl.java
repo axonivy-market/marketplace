@@ -43,6 +43,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -230,8 +231,8 @@ public class MetadataServiceImpl implements MetadataService {
       if (ObjectUtils.isEmpty(moduleContent)) {
         return;
       }
-      Set<String> mavenVersions = moduleContent.getMavenVersions();
-      if (CollectionUtils.isEmpty(mavenVersions) || !mavenVersions.contains(metaVersion)) {
+      Set<String> mavenVersions = Optional.ofNullable(moduleContent.getMavenVersions()).orElse(new HashSet<>());
+      if (!mavenVersions.contains(metaVersion)) {
         mavenVersions.add(metaVersion);
         moduleContent.setMavenVersions(mavenVersions);
         productContentRepo.save(moduleContent);
