@@ -329,8 +329,7 @@ public class MetadataServiceImpl implements MetadataService {
       return;
     }
     metadata.getVersions().forEach(version -> {
-      if (VersionUtils.isSnapshotVersion(version) && !StringUtils.equals(NonStandardProduct.PORTAL.getId(),
-          metadata.getProductId())) {
+      if (VersionUtils.isSnapshotVersion(version)) {
         if (VersionUtils.isOfficialVersionOrUnReleasedDevVersion(metadata.getVersions().stream().toList(), version)) {
           updateMavenArtifactVersionForNonReleaseDevVersion(artifactVersionCache, metadata, version);
         }

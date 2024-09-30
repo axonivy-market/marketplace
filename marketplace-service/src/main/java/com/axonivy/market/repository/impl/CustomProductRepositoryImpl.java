@@ -44,7 +44,7 @@ public class CustomProductRepositoryImpl extends CustomRepository implements Cus
   }
 
   @Override
-  public Product getProductByIdAndTag(String id, String tag) {
+  public Product getProductByIdWithTagOrVersion(String id, String tag) {
     Product result = findProductById(id);
     if (!Objects.isNull(result)) {
       ProductModuleContent content = findByProductIdAndTagOrMavenVersion(id, tag);

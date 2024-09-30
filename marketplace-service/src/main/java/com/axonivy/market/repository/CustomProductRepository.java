@@ -6,7 +6,7 @@ import com.axonivy.market.entity.ProductModuleContent;
 import java.util.List;
 
 public interface CustomProductRepository {
-  Product getProductByIdAndTag(String id, String tag);
+  Product getProductByIdWithTagOrVersion(String id, String tag);
 
   Product getProductById(String id);
 

@@ -52,7 +52,7 @@ public class VersionServiceImpl implements VersionService {
         MavenArtifactVersion.builder().productId(productId).build());
     List<MavenArtifactVersionModel> results = new ArrayList<>();
 
-    for (String mavenVersion : getAllExistingVersions(existingMavenArtifactVersion, isShowDevVersion,
+    for (String mavenVersion : MavenUtils.getAllExistingVersions(existingMavenArtifactVersion, isShowDevVersion,
         designerVersion)) {
       List<MavenArtifactModel> artifactsByVersion = new ArrayList<>();
       artifactsByVersion.addAll(
@@ -68,19 +68,6 @@ public class VersionServiceImpl implements VersionService {
       }
     }
     return results;
-  }
-
-  public List<String> getAllExistingVersions(MavenArtifactVersion existingMavenArtifactVersion,
-      boolean isShowDevVersion, String designerVersion) {
-    Set<String> existingProductsArtifactByVersion =
-        ObjectUtils.isEmpty(existingMavenArtifactVersion.getProductArtifactsByVersion()) ? new HashSet<>() :
-            new HashSet<>(existingMavenArtifactVersion.getProductArtifactsByVersion().keySet());
-    Set<String> existingAdditionalArtifactByVersion = ObjectUtils.isEmpty(
-        existingMavenArtifactVersion.getProductArtifactsByVersion()) ? new HashSet<>() :
-        existingMavenArtifactVersion.getProductArtifactsByVersion().keySet();
-    existingProductsArtifactByVersion.addAll(existingAdditionalArtifactByVersion);
-    return VersionUtils.getVersionsToDisplay(
-        new ArrayList<>(existingProductsArtifactByVersion), isShowDevVersion, designerVersion);
   }
 
   public Map<String, Object> getProductJsonContentByIdAndTag(String productId, String tag) {
@@ -102,7 +89,10 @@ public class VersionServiceImpl implements VersionService {
   @Override
   public List<VersionAndUrlModel> getVersionsForDesigner(String productId) {
     List<VersionAndUrlModel> versionAndUrlList = new ArrayList<>();
-    List<String> versions = productRepo.getReleasedVersionsById(productId);
+    MavenArtifactVersion existingMavenArtifactVersion = mavenArtifactVersionRepository.findById(productId).orElse(
+        MavenArtifactVersion.builder().productId(productId).build());
+    List<String> versions = MavenUtils.getAllExistingVersions(existingMavenArtifactVersion, true,
+        null);
     for (String version : versions) {
       Link link = linkTo(
           methodOn(ProductDetailsController.class).findProductJsonContent(productId, version)).withSelfRel();

@@ -69,6 +69,8 @@ public class Product implements Serializable {
   private String logoId;
   @LastModifiedDate
   private Date updatedAt;
+  @Transient
+  private String bestMatchVersion;
 
   @Override
   public int hashCode() {

@@ -6,6 +6,7 @@ import com.axonivy.market.comparator.MavenVersionComparator;
 import com.axonivy.market.constants.CommonConstants;
 import com.axonivy.market.constants.MavenConstants;
 import com.axonivy.market.constants.ProductJsonConstants;
+import com.axonivy.market.entity.MavenArtifactVersion;
 import com.axonivy.market.entity.Metadata;
 import com.axonivy.market.entity.ProductJsonContent;
 import com.axonivy.market.github.util.GitHubUtils;
@@ -110,7 +111,7 @@ public class MavenUtils {
 
     // Not convert to artifact if id of node is not maven-import or maven-dependency
     List<String> installerIdsToDisplay = List.of(ProductJsonConstants.MAVEN_DEPENDENCY_INSTALLER_ID,
-        ProductJsonConstants.MAVEN_IMPORT_INSTALLER_ID);
+        ProductJsonConstants.MAVEN_IMPORT_INSTALLER_ID, ProductJsonConstants.MAVEN_DROPINS_INSTALLER_ID);
 
     for (JsonNode mavenNode : installersNode) {
       JsonNode dataNode = mavenNode.path(ProductJsonConstants.DATA);
@@ -257,7 +258,7 @@ public class MavenUtils {
     }
   }
 
-  public static boolean isProductArtifactId (String artifactId) {
+  public static boolean isProductArtifactId(String artifactId) {
     return StringUtils.endsWith(artifactId, MavenConstants.PRODUCT_ARTIFACT_POSTFIX);
   }
 
@@ -290,7 +291,18 @@ public class MavenUtils {
     if (CollectionUtils.isEmpty(artifactsFromMeta)) {
       return artifactsFromMeta;
     }
-    return artifactsFromMeta.stream()
-        .filter(artifact -> !artifact.getArtifactId().endsWith(MavenConstants.PRODUCT_ARTIFACT_POSTFIX)).toList();
+    return artifactsFromMeta.stream().filter(
+        artifact -> !artifact.getArtifactId().endsWith(MavenConstants.PRODUCT_ARTIFACT_POSTFIX)).toList();
+  }
+
+  public static List<String> getAllExistingVersions(MavenArtifactVersion existingMavenArtifactVersion,
+      boolean isShowDevVersion, String designerVersion) {
+    Set<String> existingProductsArtifactByVersion =
+        new HashSet<>(existingMavenArtifactVersion.getProductArtifactsByVersion().keySet());
+    Set<String> existingAdditionalArtifactByVersion =
+        existingMavenArtifactVersion.getProductArtifactsByVersion().keySet();
+    existingProductsArtifactByVersion.addAll(existingAdditionalArtifactByVersion);
+    return VersionUtils.getVersionsToDisplay(new ArrayList<>(existingProductsArtifactByVersion), isShowDevVersion,
+        designerVersion);
   }
 }

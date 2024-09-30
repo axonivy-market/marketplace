@@ -7,6 +7,7 @@ import com.axonivy.market.constants.ProductJsonConstants;
 import com.axonivy.market.criteria.ProductSearchCriteria;
 import com.axonivy.market.entity.GitHubRepoMeta;
 import com.axonivy.market.entity.Image;
+import com.axonivy.market.entity.MavenArtifactVersion;
 import com.axonivy.market.entity.Product;
 import com.axonivy.market.entity.ProductCustomSort;
 import com.axonivy.market.entity.ProductModuleContent;
@@ -25,11 +26,13 @@ import com.axonivy.market.github.util.GitHubUtils;
 import com.axonivy.market.model.ProductCustomSortRequest;
 import com.axonivy.market.repository.GitHubRepoMetaRepository;
 import com.axonivy.market.repository.ImageRepository;
+import com.axonivy.market.repository.MavenArtifactVersionRepository;
 import com.axonivy.market.repository.ProductCustomSortRepository;
 import com.axonivy.market.repository.ProductModuleContentRepository;
 import com.axonivy.market.repository.ProductRepository;
 import com.axonivy.market.service.ImageService;
 import com.axonivy.market.service.ProductService;
+import com.axonivy.market.util.MavenUtils;
 import com.axonivy.market.util.VersionUtils;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -88,6 +91,7 @@ public class ProductServiceImpl implements ProductService {
   private final GitHubRepoMetaRepository gitHubRepoMetaRepository;
   private final GitHubService gitHubService;
   private final ProductCustomSortRepository productCustomSortRepository;
+  private final MavenArtifactVersionRepository mavenArtifactVersionRepo;
   private final ImageRepository imageRepository;
   private final ImageService imageService;
   private final MongoTemplate mongoTemplate;
@@ -104,7 +108,8 @@ public class ProductServiceImpl implements ProductService {
       ProductModuleContentRepository productModuleContentRepository,
       GHAxonIvyMarketRepoService axonIvyMarketRepoService, GHAxonIvyProductRepoService axonIvyProductRepoService,
       GitHubRepoMetaRepository gitHubRepoMetaRepository, GitHubService gitHubService,
-      ProductCustomSortRepository productCustomSortRepository, ImageRepository imageRepository1,
+      ProductCustomSortRepository productCustomSortRepository, MavenArtifactVersionRepository mavenArtifactVersionRepo,
+      ImageRepository imageRepository1,
       ImageService imageService, MongoTemplate mongoTemplate) {
     this.productRepository = productRepository;
     this.productModuleContentRepository = productModuleContentRepository;
@@ -113,6 +118,7 @@ public class ProductServiceImpl implements ProductService {
     this.gitHubRepoMetaRepository = gitHubRepoMetaRepository;
     this.gitHubService = gitHubService;
     this.productCustomSortRepository = productCustomSortRepository;
+    this.mavenArtifactVersionRepo = mavenArtifactVersionRepo;
     this.imageRepository = imageRepository1;
     this.imageService = imageService;
     this.mongoTemplate = mongoTemplate;
@@ -499,13 +505,17 @@ public class ProductServiceImpl implements ProductService {
 
   @Override
   public Product fetchBestMatchProductDetail(String id, String version) {
-    List<String> releasedVersions = productRepository.getReleasedVersionsById(id);
-    String bestMatchVersion = VersionUtils.getBestMatchVersion(releasedVersions, version);
+    MavenArtifactVersion existingMavenArtifactVersion = mavenArtifactVersionRepo.findById(id).orElse(
+        MavenArtifactVersion.builder().productId(id).build());
+    List<String> versions = MavenUtils.getAllExistingVersions(existingMavenArtifactVersion, true,
+        null);
+    String bestMatchVersion = VersionUtils.getBestMatchVersion(versions, version);
     String bestMatchTag = VersionUtils.convertVersionToTag(id, bestMatchVersion);
     Product product = StringUtils.isBlank(bestMatchTag) ? productRepository.getProductById(
-        id) : productRepository.getProductByIdAndTag(id, bestMatchTag);
+        id) : productRepository.getProductByIdWithTagOrVersion(id, bestMatchTag);
     return Optional.ofNullable(product).map(productItem -> {
       updateProductInstallationCount(id, productItem);
+      productItem.setBestMatchVersion(bestMatchVersion);
       return productItem;
     }).orElse(null);
   }
@@ -520,8 +530,7 @@ public class ProductServiceImpl implements ProductService {
 
   @Override
   public Product fetchProductDetailByIdAndVersion(String id, String version) {
-    String tag = VersionUtils.convertVersionToTag(id, version);
-    return productRepository.getProductByIdAndTag(id, tag);
+    return productRepository.getProductByIdWithTagOrVersion(id, version);
   }
 
   @Override
