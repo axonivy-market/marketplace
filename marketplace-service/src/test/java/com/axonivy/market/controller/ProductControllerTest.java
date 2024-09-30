@@ -1,7 +1,6 @@
 package com.axonivy.market.controller;
 
 import com.axonivy.market.assembler.ProductModelAssembler;
-import com.axonivy.market.entity.Metadata;
 import com.axonivy.market.entity.Product;
 import com.axonivy.market.enums.ErrorCode;
 import com.axonivy.market.enums.Language;
@@ -144,8 +143,12 @@ class ProductControllerTest {
 
   @Test
   void testSyncMavenVersionSuccess() {
-    var response = productController.syncProductVersions(AUTHORIZATION_HEADER, false);
-
+    var response = productController.syncProductVersions(AUTHORIZATION_HEADER);
+    assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, response.getStatusCode());
+    assertTrue(response.hasBody());
+    assertEquals(ErrorCode.MAVEN_VERSION_SYNC_FAILED.getCode(), Objects.requireNonNull(response.getBody()).getHelpCode());
+    when(metadataService.syncAllProductsMetadata()).thenReturn(1);
+    response = productController.syncProductVersions(AUTHORIZATION_HEADER);
     assertEquals(HttpStatus.OK, response.getStatusCode());
     assertTrue(response.hasBody());
     assertEquals(ErrorCode.SUCCESSFUL.getCode(), Objects.requireNonNull(response.getBody()).getHelpCode());
@@ -159,7 +162,7 @@ class ProductControllerTest {
         .validateUserOrganization(any(String.class), any(String.class));
 
     UnauthorizedException exception = assertThrows(UnauthorizedException.class,
-        () -> productController.syncProductVersions(INVALID_AUTHORIZATION_HEADER, false));
+        () -> productController.syncProductVersions(INVALID_AUTHORIZATION_HEADER));
 
     assertEquals(ErrorCode.GITHUB_USER_UNAUTHORIZED.getHelpText(), exception.getMessage());
   }

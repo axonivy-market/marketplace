@@ -26,6 +26,7 @@ public class ProductJsonContent {
   @JsonIgnore
   private String id;
   private String version;
+  private String relatedTag;
   private String productId;
   private Set<String> relatedMavenVersions;
   private String name;

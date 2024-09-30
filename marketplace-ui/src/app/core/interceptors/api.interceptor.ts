@@ -45,7 +45,7 @@ export const apiInterceptor: HttpInterceptorFn = (req, next) => {
   return next(cloneReq).pipe(
     catchError(error => {
       if (ERROR_CODES.includes(error.status)) {
-        router.navigate([`${ERROR_PAGE_PATH}/error.status`]);
+        router.navigate([`${ERROR_PAGE_PATH}/${error.status}`]);
       } else {
         router.navigate([ERROR_PAGE_PATH]);
       }

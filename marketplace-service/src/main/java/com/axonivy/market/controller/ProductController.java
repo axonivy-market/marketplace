@@ -18,6 +18,7 @@ import io.swagger.v3.oas.annotations.enums.ParameterIn;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
+import lombok.AllArgsConstructor;
 import org.apache.commons.lang3.time.StopWatch;
 import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.data.domain.Page;
@@ -42,6 +43,7 @@ import static org.springframework.http.HttpHeaders.AUTHORIZATION;
 
 @RestController
 @RequestMapping(PRODUCT)
+@AllArgsConstructor
 @Tag(name = "Product Controller", description = "API collection to get and search products")
 public class ProductController {
   private final ProductService productService;
@@ -49,15 +51,6 @@ public class ProductController {
   private final ProductModelAssembler assembler;
   private final PagedResourcesAssembler<Product> pagedResourcesAssembler;
   private final MetadataService metadataService;
-
-  public ProductController(ProductService productService, GitHubService gitHubService, ProductModelAssembler assembler,
-      PagedResourcesAssembler<Product> pagedResourcesAssembler, MetadataService metadataService) {
-    this.productService = productService;
-    this.gitHubService = gitHubService;
-    this.assembler = assembler;
-    this.pagedResourcesAssembler = pagedResourcesAssembler;
-    this.metadataService = metadataService;
-  }
 
   @GetMapping()
   @Operation(summary = "Retrieve a paginated list of all products, optionally filtered by type, keyword, and language",
@@ -119,15 +112,21 @@ public class ProductController {
 
   @PutMapping(SYNC_PRODUCT_VERSION)
   @Operation(hidden = true)
-  public ResponseEntity<Message> syncProductVersions(@RequestHeader(value = AUTHORIZATION) String authorizationHeader,
-      @RequestParam(value = RESET_SYNC, required = false) Boolean resetSync) {
+  public ResponseEntity<Message> syncProductVersions(@RequestHeader(value = AUTHORIZATION) String authorizationHeader) {
     String token = getBearerToken(authorizationHeader);
     gitHubService.validateUserOrganization(token, GitHubConstants.AXONIVY_MARKET_ORGANIZATION_NAME);
-    metadataService.syncAllProductMavenMetadata();
+    int nonSyncResult = metadataService.syncAllProductsMetadata();
     var message = new Message();
-    message.setHelpCode(ErrorCode.SUCCESSFUL.getCode());
-    message.setHelpText(ErrorCode.SUCCESSFUL.getHelpText());
-    return new ResponseEntity<>(message, HttpStatus.OK);
+    HttpStatus statusCode = HttpStatus.OK;
+    if(nonSyncResult == 1) {
+      message.setHelpCode(ErrorCode.SUCCESSFUL.getCode());
+      message.setHelpText(ErrorCode.SUCCESSFUL.getHelpText());
+    } else {
+      statusCode = HttpStatus.INTERNAL_SERVER_ERROR;
+      message.setHelpCode(ErrorCode.MAVEN_VERSION_SYNC_FAILED.getCode());
+      message.setMessageDetails(ErrorCode.MAVEN_VERSION_SYNC_FAILED.getHelpText());
+    }
+    return new ResponseEntity<>(message, statusCode);
   }
 
   @PostMapping(CUSTOM_SORT)

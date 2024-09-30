@@ -1,6 +1,10 @@
 package com.axonivy.market.entity;
 
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
@@ -24,7 +28,6 @@ public class Metadata implements Serializable {
   private static final long serialVersionUID = 1L;
   @Id
   private String url;
-  private String id;
   private String productId;
   private LocalDateTime lastUpdated;
   private String artifactId;

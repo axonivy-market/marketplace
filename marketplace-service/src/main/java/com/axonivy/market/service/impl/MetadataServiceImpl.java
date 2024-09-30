@@ -2,28 +2,22 @@ package com.axonivy.market.service.impl;
 
 import com.axonivy.market.bo.Artifact;
 import com.axonivy.market.constants.CommonConstants;
-import com.axonivy.market.constants.GitHubConstants;
+
 import com.axonivy.market.constants.MavenConstants;
 import com.axonivy.market.constants.ProductJsonConstants;
 import com.axonivy.market.constants.ReadmeConstants;
-import com.axonivy.market.entity.MavenArtifactVersion;
-import com.axonivy.market.entity.Metadata;
-import com.axonivy.market.entity.MetadataSync;
-import com.axonivy.market.entity.Product;
-import com.axonivy.market.entity.ProductJsonContent;
-import com.axonivy.market.entity.ProductModuleContent;
-import com.axonivy.market.enums.Language;
-import com.axonivy.market.enums.NonStandardProduct;
-import com.axonivy.market.factory.ProductFactory;
-import com.axonivy.market.repository.MavenArtifactVersionRepository;
-import com.axonivy.market.repository.MetadataRepository;
-import com.axonivy.market.repository.MetadataSyncRepository;
-import com.axonivy.market.repository.ProductJsonContentRepository;
-import com.axonivy.market.repository.ProductRepository;
+import com.axonivy.market.entity.*;
+import com.axonivy.market.model.MavenArtifactModel;
+import com.axonivy.market.repository.*;
+import com.axonivy.market.service.FileDownloadService;
+import com.axonivy.market.service.ImageService;
 import com.axonivy.market.service.MetadataService;
+import com.axonivy.market.service.ProductJsonContentService;
 import com.axonivy.market.util.MavenUtils;
 import com.axonivy.market.util.MetadataReaderUtils;
+import com.axonivy.market.util.ProductContentUtils;
 import com.axonivy.market.util.VersionUtils;
+import lombok.AllArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.ObjectUtils;
@@ -38,19 +32,11 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Set;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
-import static com.axonivy.market.constants.ProductJsonConstants.EN_LANGUAGE;
+import java.util.*;
+import java.util.stream.Stream;
 
 @Service
+@AllArgsConstructor
 @Log4j2
 public class MetadataServiceImpl implements MetadataService {
   private final ProductRepository productRepo;
@@ -58,344 +44,277 @@ public class MetadataServiceImpl implements MetadataService {
   private final ProductJsonContentRepository productJsonRepo;
   private final MavenArtifactVersionRepository mavenArtifactVersionRepo;
   private final MetadataRepository metadataRepo;
-  public static final String DEMO_SETUP_TITLE = "(?i)## Demo|## Setup";
-  public static final String IMAGE_EXTENSION = "(.*?).(jpeg|jpg|png|gif)";
-  public static final String README_IMAGE_FORMAT = "\\(([^)]*?%s[^)]*?)\\)";
-  public static final String IMAGE_DOWNLOAD_URL_FORMAT = "(%s)";
-  public static final String DESCRIPTION = "description";
-  public static final String DEMO = "demo";
-  public static final String SETUP = "setup";
-  private static final String HASH = "#";
+  private final ImageService imageService;
+  private final ProductJsonContentService productJsonContentService;
+  private final FileDownloadService fileDownloadService;
+  private final ProductModuleContentRepository productContentRepo;
 
 
-  public MetadataServiceImpl(ProductRepository productRepo, MetadataSyncRepository metadataSyncRepo,
-      ProductJsonContentRepository productJsonRepo, MavenArtifactVersionRepository mavenArtifactVersionRepo,
-      MetadataRepository metadataRepo) {
-    this.productRepo = productRepo;
-    this.metadataSyncRepo = metadataSyncRepo;
-    this.productJsonRepo = productJsonRepo;
-    this.mavenArtifactVersionRepo = mavenArtifactVersionRepo;
-    this.metadataRepo = metadataRepo;
-  }
-
-  private static void updateMavenArtifactVersionCacheWithModel(MavenArtifactVersion artifactVersionCache,
+  public void updateMavenArtifactVersionCacheWithModel(MavenArtifactVersion artifactVersionCache,
       String version, Metadata metadata) {
+    List<MavenArtifactModel> artifactModelsInVersion =
+        artifactVersionCache.getProductArtifactsByVersion().computeIfAbsent(
+            version, k -> new ArrayList<>());
     if (metadata.isProductArtifact()) {
-      if (artifactVersionCache.getProductArtifactsByVersion().computeIfAbsent(version,
-          k -> new ArrayList<>()).stream().anyMatch(artifact -> metadata.getName().equals(artifact.getName()))) {
+      if (artifactModelsInVersion.stream().anyMatch(artifact -> StringUtils.equals(metadata.getName(),
+          artifact.getName()))) {
         return;
       }
-      artifactVersionCache.getProductArtifactsByVersion().get(version).add(
-          MavenUtils.buildMavenArtifactModelFromSnapShotMetadata(version, metadata));
+      artifactModelsInVersion.add(
+          MavenUtils.buildMavenArtifactModelFromMetadata(version, metadata));
     } else {
       artifactVersionCache.getAdditionalArtifactsByVersion().computeIfAbsent(version, k -> new ArrayList<>()).add(
-          MavenUtils.buildMavenArtifactModelFromSnapShotMetadata(version, metadata));
+          MavenUtils.buildMavenArtifactModelFromMetadata(version, metadata));
     }
   }
 
-  private void updateMavenArtifactVersionData(Product product, List<String> releasedVersions,
+  public void updateMavenArtifactVersionData(String productId, List<String> releasedVersions,
       Set<Metadata> metadataSet, MavenArtifactVersion artifactVersionCache) {
     for (Metadata metadata : metadataSet) {
       String metadataContent = MavenUtils.getMetadataContentFromUrl(metadata.getUrl());
       if (StringUtils.isBlank(metadataContent)) {
         continue;
       }
-      MetadataReaderUtils.parseMetadataFromString(metadataContent, metadata);
-      updateMavenArtifactVersionFromMetadata(artifactVersionCache, metadata);
-      updateContentsFromNonMatchVersions(product.getId(), releasedVersions, metadata);
+      Metadata metadataWithVersions = MetadataReaderUtils.updateMetadataFromMavenXML(metadataContent, metadata, false);
+      updateMavenArtifactVersionFromMetadata(artifactVersionCache, metadataWithVersions);
+      updateContentsFromNonMatchVersions(productId, releasedVersions, metadataWithVersions);
     }
   }
 
-  public void syncAllProductMavenMetadata() {
-    List<Product> products = productRepo.getAllProductWithIdAndReleaseTagAndArtifact();
+  public int syncAllProductsMetadata() {
+    List<Product> products = productRepo.getAllProductsWithIdAndReleaseTagAndArtifact();
     log.warn("**MetadataService: Start to sync version for {} product(s)", products.size());
+    int nonUpdatedSyncCount = 0;
     for (Product product : products) {
       // Set up cache before sync
       String productId = product.getId();
       Set<Metadata> metadataSet = new HashSet<>(metadataRepo.findByProductId(product.getId()));
       MavenArtifactVersion artifactVersionCache = mavenArtifactVersionRepo.findById(product.getId()).orElse(
-          new MavenArtifactVersion(productId, new HashMap<>(), new HashMap<>()));
+          MavenArtifactVersion.builder().productId(productId).build());
       MetadataSync syncCache = metadataSyncRepo.findById(product.getId()).orElse(
-          MetadataSync.builder().productId(product.getId()).syncedTags(new HashSet<>()).build());
+          MetadataSync.builder().productId(product.getId()).syncedVersions(new HashSet<>()).build());
       Set<Artifact> artifactsFromNewTags = new HashSet<>();
 
-      // Find artifacts form unhandled tags
-      List<String> nonSyncedVersionOfTags = VersionUtils.getNonSyncedVersionOfTagsFromMetadataSync(
-          product.getReleasedVersions(),
-          syncCache);
-      if (!CollectionUtils.isEmpty(nonSyncedVersionOfTags)) {
-        updateArtifactsFromNonSyncedVersion(product.getId(), nonSyncedVersionOfTags, artifactsFromNewTags);
+      // Find artifacts from unhandled tags
+      List<String> nonSyncedVersionOfTags = VersionUtils.removeSyncedVersionsFromReleasedVersions(
+          product.getReleasedVersions(), syncCache.getSyncedVersions());
+      if (ObjectUtils.isNotEmpty(nonSyncedVersionOfTags)) {
+        artifactsFromNewTags.addAll(getArtifactsFromNonSyncedVersion(product.getId(), nonSyncedVersionOfTags));
+        syncCache.getSyncedVersions().addAll(nonSyncedVersionOfTags);
         log.info("**MetadataService: New tags detected: {} in product {}", nonSyncedVersionOfTags.toString(),
             productId);
       }
 
       // Sync versions from maven & update artifacts-version table
-      List<Artifact> additionalArtifactFromMeta = product.getArtifacts();
-//      Artifact productArtifact =
-//          additionalArtifactFromMeta.stream().filter(
-//              a -> a.getArtifactId().contains(MavenConstants.PRODUCT_ARTIFACT_POSTFIX)).findAny().orElse(
-//              new Artifact());
-//      additionalArtifactFromMeta.remove(productArtifact);
       metadataSet.addAll(MavenUtils.convertArtifactsToMetadataSet(artifactsFromNewTags, productId));
-      metadataSet.addAll(
-          MavenUtils.convertArtifactsToMetadataSet(new HashSet<>(additionalArtifactFromMeta), productId));
-
+      if (ObjectUtils.isNotEmpty(product.getArtifacts())) {
+        metadataSet.addAll(
+            MavenUtils.convertArtifactsToMetadataSet(new HashSet<>(product.getArtifacts()), productId));
+      }
       if (CollectionUtils.isEmpty(metadataSet)) {
+        log.info("**MetadataService: No artifact found in product {}", productId);
+        nonUpdatedSyncCount += 1;
         continue;
       }
       artifactVersionCache.setAdditionalArtifactsByVersion(new HashMap<>());
-      updateMavenArtifactVersionData(product, product.getReleasedVersions(), metadataSet, artifactVersionCache);
+      updateMavenArtifactVersionData(productId, product.getReleasedVersions(), metadataSet, artifactVersionCache);
 
       // Persist changed
-      syncCache.getSyncedTags().addAll(nonSyncedVersionOfTags);
       metadataSyncRepo.save(syncCache);
       mavenArtifactVersionRepo.save(artifactVersionCache);
       metadataRepo.saveAll(metadataSet);
     }
     log.warn("**MetadataService: version sync finished");
+    return nonUpdatedSyncCount;
   }
 
-  private void updateContentsFromNonMatchVersions(String productId, List<String> releasedVersions,
+  public void updateContentsFromNonMatchVersions(String productId, List<String> releasedVersions,
       Metadata metadata) {
-    Set<String> notInGHTags = new HashSet<>();
     List<ProductModuleContent> productModuleContents = new ArrayList<>();
-    for (String metaVersion : metadata.getVersions()) {
-      String matchedVersion = VersionUtils.getMavenVersionMatchWithTag(
-          releasedVersions, metaVersion);
-      if (matchedVersion == null && VersionUtils.isSnapshotVersion(metaVersion)) {
-        notInGHTags.add(metaVersion);
+    Set<String> nonMatchSnapshotVersions = getNonMatchSnapshotVersions(productId, releasedVersions,
+        metadata.getVersions());
+
+    for (String nonMatchSnapshotVersion : nonMatchSnapshotVersions) {
+      if (MavenUtils.isProductArtifactId(metadata.getArtifactId())) {
+        handleProductArtifact(metadata.getProductId(), nonMatchSnapshotVersion, metadata, productModuleContents);
       }
     }
-
-    for (String notInGHTag : notInGHTags) {
-      Metadata productArtifact = metadata.getArtifactId().endsWith(MavenConstants.PRODUCT_ARTIFACT_POSTFIX) ?
-          metadata : null;
-      if (Objects.nonNull(productArtifact)) {
-        Metadata snapShotMetadata = MavenUtils.buildSnapShotMetadataFromVersion(productArtifact, notInGHTag);
-        MetadataReaderUtils.parseMetadataSnapshotFromString(
-            MavenUtils.getMetadataContentFromUrl(snapShotMetadata.getUrl()),
-            snapShotMetadata);
-
-        String url = MavenUtils.buildDownloadUrl(snapShotMetadata.getArtifactId(),
-            notInGHTag, MavenConstants.DEFAULT_PRODUCT_FOLDER_TYPE,
-            snapShotMetadata.getRepoUrl(), snapShotMetadata.getGroupId(), snapShotMetadata.getSnapshotVersionValue());
-
-        if (StringUtils.isBlank(url)) {
-          continue;
-        }
-        try {
-          Product product = productRepo.findById(productId).orElse(null);
-          if (Objects.isNull(product)) {
-            continue;
-          }
-          ProductModuleContent productModuleContent = getReadmeAndProductContentsFromTag(product, notInGHTag,
-              snapShotMetadata, url);
-          if (productModuleContent != null) {
-            productModuleContents.add(productModuleContent);
-          }
-        } catch (Exception e) {
-          log.error("Cannot download and unzip file {}", e.getMessage());
-        }
-      }
+    if (ObjectUtils.isNotEmpty(productModuleContents)) {
+      productContentRepo.saveAll(productModuleContents);
     }
-
   }
 
-  public ProductModuleContent getReadmeAndProductContentsFromTag(Product product, String tag,
-      Metadata snapShotMetadata, String url) {
-    ProductModuleContent productModuleContent = new ProductModuleContent();
+  public void handleProductArtifact(String productId, String nonMatchSnapshotVersion, Metadata productArtifact,
+      List<ProductModuleContent> productModuleContents) {
+    Metadata snapShotMetadata = MavenUtils.buildSnapShotMetadataFromVersion(productArtifact, nonMatchSnapshotVersion);
+    MetadataReaderUtils.updateMetadataFromMavenXML(
+        MavenUtils.getMetadataContentFromUrl(snapShotMetadata.getUrl()), snapShotMetadata, true);
+
+    String url = buildProductFolderDownloadUrl(snapShotMetadata, nonMatchSnapshotVersion);
+
+    Product product = productRepo.findById(productId).orElse(null);
+    if (StringUtils.isBlank(url) || Objects.isNull(product)) {
+      return;
+    }
+
     try {
-      String unzippedFolderPath = MetadataReaderUtils.downloadAndUnzipFile(url,
-          snapShotMetadata);
-      productModuleContent.setProductId(product.getId());
-      productModuleContent.setTag(tag);
-      productModuleContent.setRelatedMavenVersions(new HashSet<>());
-      ProductFactory.mappingIdForProductModuleContent(productModuleContent);
+      addProductContent(product, nonMatchSnapshotVersion, snapShotMetadata, url, productModuleContents);
+    } catch (Exception e) {
+      log.error("Cannot download and unzip file {}", e.getMessage());
+    }
+  }
+
+  public String buildProductFolderDownloadUrl(Metadata snapShotMetadata, String nonMatchSnapshotVersion) {
+    return MavenUtils.buildDownloadUrl(
+        snapShotMetadata.getArtifactId(), nonMatchSnapshotVersion,
+        MavenConstants.DEFAULT_PRODUCT_FOLDER_TYPE,
+        snapShotMetadata.getRepoUrl(), snapShotMetadata.getGroupId(),
+        snapShotMetadata.getSnapshotVersionValue());
+  }
+
+  private void addProductContent(Product product, String nonMatchSnapshotVersion, Metadata snapShotMetadata, String url,
+      List<ProductModuleContent> productModuleContents) {
+    ProductModuleContent productModuleContent = getReadmeAndProductContentsFromTag(product, nonMatchSnapshotVersion,
+        snapShotMetadata, url);
+    if (Objects.nonNull(productModuleContent)) {
+      productModuleContents.add(productModuleContent);
+    }
+  }
+
+  public Set<String> getNonMatchSnapshotVersions(String productId, List<String> releasedVersions,
+      Set<String> metaVersions) {
+    Set<String> nonMatchSnapshotVersions = new HashSet<>();
+    for (String metaVersion : metaVersions) {
+      String matchedVersion = VersionUtils.getMavenVersionMatchWithTag(releasedVersions, metaVersion);
+
+      updateProductJsonAndReadmeContents(productId, metaVersion, matchedVersion);
+      if (matchedVersion == null && VersionUtils.isSnapshotVersion(metaVersion)) {
+        nonMatchSnapshotVersions.add(metaVersion);
+      }
+    }
+    return nonMatchSnapshotVersions;
+  }
+
+  private void updateProductJsonAndReadmeContents(String productId, String metaVersion, String matchedVersion) {
+    if (StringUtils.isNotBlank(matchedVersion)) {
+      // Clone new record from matchVersion's values
+      productJsonRepo.findByProductIdAndVersion(productId,
+          matchedVersion).stream().findAny().ifPresent(json ->
+          productRepo.findById(productId).ifPresent(product ->
+              productJsonContentService.updateProductJsonContent(json.getContent(), null, metaVersion,
+                  matchedVersion, product)
+          )
+      );
+
+      // Note metaVersion that get matchTag's contents to display
+      ProductModuleContent moduleContent =
+          productContentRepo.findByTagAndProductId(VersionUtils.convertVersionToTag(productId, matchedVersion),
+              productId);
+      if (ObjectUtils.isEmpty(moduleContent)) {
+        return;
+      }
+      Set<String> mavenVersions = Optional.ofNullable(moduleContent.getMavenVersions()).orElse(new HashSet<>());
+      if (!mavenVersions.contains(metaVersion)) {
+        mavenVersions.add(metaVersion);
+        moduleContent.setMavenVersions(mavenVersions);
+        productContentRepo.save(moduleContent);
+      }
+    }
+  }
+
+  private ProductModuleContent getReadmeAndProductContentsFromTag(Product product, String nonMatchSnapshotVersion,
+      Metadata snapShotMetadata, String url) {
+    ProductModuleContent productModuleContent = ProductContentUtils.initProductModuleContent(product, Strings.EMPTY,
+        Set.of(nonMatchSnapshotVersion));
+    String unzippedFolderPath = Strings.EMPTY;
+    try {
+      unzippedFolderPath = fileDownloadService.downloadAndUnzipProductContentFile(url, snapShotMetadata);
       updateDependencyContentsFromProductJson(productModuleContent, product, unzippedFolderPath);
       extractReadMeFileFromContents(product, unzippedFolderPath, productModuleContent);
     } catch (Exception e) {
       log.error("Cannot get product.json content in {}", e.getMessage());
       return null;
+    } finally {
+      if (StringUtils.isNotBlank(unzippedFolderPath)) {
+        fileDownloadService.deleteDirectory(Path.of(unzippedFolderPath));
+      }
     }
     return productModuleContent;
   }
 
-  public void extractReadMeFileFromContents(Product product, String unzippedFolderPath,
+  private void updateDependencyContentsFromProductJson(ProductModuleContent productModuleContent,
+      Product product, String unzippedFolderPath) throws IOException {
+    List<Artifact> artifacts = MavenUtils.convertProductJsonToMavenProductInfo(
+        Paths.get(unzippedFolderPath));
+    ProductContentUtils.updateProductModule(productModuleContent, artifacts);
+    String currentVersion = productModuleContent.getMavenVersions().stream().findAny().orElse(null);
+    Path productJsonPath = Paths.get(unzippedFolderPath, ProductJsonConstants.PRODUCT_JSON_FILE);
+    String content = extractProductJsonContent(productJsonPath);
+    productJsonContentService.updateProductJsonContent(content, null, currentVersion,
+        ProductJsonConstants.VERSION_VALUE, product);
+  }
+
+  private void extractReadMeFileFromContents(Product product, String unzippedFolderPath,
       ProductModuleContent productModuleContent) {
     try {
-      List<Path> readmeFiles = Files.walk(Paths.get(unzippedFolderPath))
-          .filter(Files::isRegularFile)
-          .filter(path -> path.getFileName().toString().startsWith(ReadmeConstants.README_FILE_NAME))
-          .toList();
-
+      List<Path> readmeFiles;
       Map<String, Map<String, String>> moduleContents = new HashMap<>();
-      if (!readmeFiles.isEmpty()) {
+      try (Stream<Path> readmePathStream = Files.walk(Paths.get(unzippedFolderPath))) {
+        readmeFiles = readmePathStream.filter(Files::isRegularFile).filter(
+            path -> path.getFileName().toString().startsWith(ReadmeConstants.README_FILE_NAME)).toList();
+      }
+      if (ObjectUtils.isNotEmpty(readmeFiles)) {
         for (Path readmeFile : readmeFiles) {
           String readmeContents = Files.readString(readmeFile);
-          if (hasImageDirectives(readmeContents)) {
-            readmeContents = updateImagesWithDownloadUrl(unzippedFolderPath, readmeContents);
+          if (ProductContentUtils.hasImageDirectives(readmeContents)) {
+            readmeContents = updateImagesWithDownloadUrl(product, unzippedFolderPath, readmeContents);
           }
-          String locale = getReadmeFileLocale(readmeFile.getFileName().toString());
-          getExtractedPartsOfReadme(moduleContents, readmeContents, locale);
+          ProductContentUtils.getExtractedPartsOfReadme(moduleContents, readmeContents,
+              readmeFile.getFileName().toString());
         }
-        productModuleContent.setDescription(replaceEmptyContentsWithEnContent(moduleContents.get(DESCRIPTION)));
-        productModuleContent.setDemo(replaceEmptyContentsWithEnContent(moduleContents.get(DEMO)));
-        productModuleContent.setSetup(replaceEmptyContentsWithEnContent(moduleContents.get(SETUP)));
+        ProductContentUtils.updateProductModuleTabContents(productModuleContent, moduleContents);
       }
     } catch (Exception e) {
       log.error("Cannot get README file's content from folder {}: {}", unzippedFolderPath, e.getMessage());
     }
   }
 
-  public Map<String, String> replaceEmptyContentsWithEnContent(Map<String, String> map) {
-    String enValue = map.get(Language.EN.getValue());
-    for (Map.Entry<String, String> entry : map.entrySet()) {
-      if (StringUtils.isBlank(entry.getValue())) {
-        map.put(entry.getKey(), enValue);
-      }
-    }
-    return map;
-  }
-
-  private String updateImagesWithDownloadUrl(String unzippedFolderPath,
+  private String updateImagesWithDownloadUrl(Product product, String unzippedFolderPath,
       String readmeContents) throws IOException {
-    List<Path> imagesAtRootFolder = Files.walk(Paths.get(unzippedFolderPath))
-        .filter(Files::isRegularFile)
-        .filter(path -> path.getFileName().toString().toLowerCase().matches(IMAGE_EXTENSION))
-        .toList();
-
+    List<Path> allImagePaths;
     Map<String, String> imageUrls = new HashMap<>();
-    for (Path image : imagesAtRootFolder) {
-      String imageName = image.getFileName().toString();
-      String imageUrl = CommonConstants.IMAGE_ID_PREFIX.concat(imageName);
-      imageUrls.put(imageName, imageUrl);
+    try (Stream<Path> imagePathStream = Files.walk(Paths.get(unzippedFolderPath))) {
+      allImagePaths = imagePathStream.filter(Files::isRegularFile).filter(
+          path -> path.getFileName().toString().toLowerCase().matches(CommonConstants.IMAGE_EXTENSION)).toList();
     }
+    allImagePaths.forEach(
+        imagePath -> Optional.of(imageService.mappingImageFromDownloadedFolder(product, imagePath)).ifPresent(
+            image -> imageUrls.put(imagePath.getFileName().toString(),
+                CommonConstants.IMAGE_ID_PREFIX.concat(image.getId()))));
 
-    for (Map.Entry<String, String> entry : imageUrls.entrySet()) {
-      String imageUrlPattern = String.format(README_IMAGE_FORMAT, Pattern.quote(entry.getKey()));
-      readmeContents = readmeContents.replaceAll(imageUrlPattern,
-          String.format(IMAGE_DOWNLOAD_URL_FORMAT, entry.getValue()));
-    }
-
-    return readmeContents;
+    return ProductContentUtils.replaceImageDirWithImageCustomId(imageUrls, readmeContents);
   }
 
-  private String getReadmeFileLocale(String readmeFileName) {
-    String result = StringUtils.EMPTY;
-    Pattern pattern = Pattern.compile(GitHubConstants.README_FILE_LOCALE_REGEX);
-    Matcher matcher = pattern.matcher(readmeFileName);
-    if (matcher.find()) {
-      result = matcher.group(1);
-    }
-    return result;
-  }
-
-  private boolean hasImageDirectives(String readmeContents) {
-    Pattern pattern = Pattern.compile(IMAGE_EXTENSION);
-    Matcher matcher = pattern.matcher(readmeContents);
-    return matcher.find();
-  }
-
-  private void getExtractedPartsOfReadme(Map<String, Map<String, String>> moduleContents, String readmeContents,
-      String locale) {
-    String[] parts = readmeContents.split(DEMO_SETUP_TITLE);
-    int demoIndex = readmeContents.indexOf(ReadmeConstants.DEMO_PART);
-    int setupIndex = readmeContents.indexOf(ReadmeConstants.SETUP_PART);
-    String description = Strings.EMPTY;
-    String setup = Strings.EMPTY;
-    String demo = Strings.EMPTY;
-
-    if (parts.length > 0) {
-      description = removeFirstLine(parts[0]);
-    }
-
-    if (demoIndex != -1 && setupIndex != -1) {
-      if (demoIndex < setupIndex) {
-        demo = parts[1];
-        setup = parts[2];
-      } else {
-        setup = parts[1];
-        demo = parts[2];
-      }
-    } else if (demoIndex != -1) {
-      demo = parts[1];
-    } else if (setupIndex != -1) {
-      setup = parts[1];
-    }
-
-    locale = StringUtils.isEmpty(locale) ? Language.EN.getValue() : locale.toLowerCase();
-    addLocaleContent(moduleContents, DESCRIPTION, description.trim(), locale);
-    addLocaleContent(moduleContents, DEMO, demo.trim(), locale);
-    addLocaleContent(moduleContents, SETUP, setup.trim(), locale);
-  }
-
-  private void addLocaleContent(Map<String, Map<String, String>> moduleContents, String type, String content,
-      String locale) {
-    moduleContents.computeIfAbsent(type, key -> new HashMap<>()).put(locale, content);
-  }
-
-  private String removeFirstLine(String text) {
-    String result;
-    if (text.isBlank()) {
-      result = Strings.EMPTY;
-    } else if (text.startsWith(HASH)) {
-      int index = text.indexOf(StringUtils.LF);
-      result = index != StringUtils.INDEX_NOT_FOUND ? text.substring(index + 1).trim() : Strings.EMPTY;
-    } else {
-      result = text;
-    }
-
-    return result;
-  }
-
-
-  private void updateDependencyContentsFromProductJson(ProductModuleContent productModuleContent,
-      Product product, String unzippedFolderPath) throws IOException {
-    List<Artifact> artifacts = MavenUtils.convertProductJsonToMavenProductInfo(
-        Paths.get(unzippedFolderPath));
-
-    Artifact artifact = artifacts.stream().filter(Artifact::getIsDependency).findFirst().orElse(null);
-    if (Objects.nonNull(artifact)) {
-      productModuleContent.setIsDependency(Boolean.TRUE);
-      productModuleContent.setGroupId(artifact.getGroupId());
-      productModuleContent.setArtifactId(artifact.getArtifactId());
-      productModuleContent.setType(artifact.getType());
-      productModuleContent.setName(artifact.getName());
-    }
-
-    String currentVersion = VersionUtils.convertTagToVersion(productModuleContent.getTag());
-    Path productJsonPath = Paths.get(unzippedFolderPath, ProductJsonConstants.PRODUCT_JSON_FILE);
-    String content = extractProductJsonContent(productJsonPath);
-
-    if (ObjectUtils.isNotEmpty(content)) {
-      ProductJsonContent jsonContent = new ProductJsonContent();
-      jsonContent.setVersion(currentVersion);
-      jsonContent.setProductId(product.getId());
-      ProductFactory.mappingIdForProductJsonContent(jsonContent);
-      jsonContent.setName(product.getNames().get(EN_LANGUAGE));
-      jsonContent.setRelatedMavenVersions(new HashSet<>());
-      jsonContent.setContent(content.replace(ProductJsonConstants.VERSION_VALUE, currentVersion));
-      productJsonRepo.save(jsonContent);
-    }
-  }
-
-  public String extractProductJsonContent(Path filePath) {
+  private String extractProductJsonContent(Path filePath) {
     try {
       InputStream contentStream = MavenUtils.extractedContentStream(filePath);
-      return IOUtils.toString(contentStream, StandardCharsets.UTF_8);
-    } catch (Exception exception) {
-      log.error("Here");
+      return IOUtils.toString(Objects.requireNonNull(contentStream), StandardCharsets.UTF_8);
+    } catch (Exception e) {
+      log.error("Cannot extract product.json file {}", e.getMessage());
       return null;
     }
   }
 
   public void updateMavenArtifactVersionFromMetadata(MavenArtifactVersion artifactVersionCache,
       Metadata metadata) {
-    NonStandardProduct currentProduct = NonStandardProduct.findById(metadata.getProductId());
+    // Skip to add new model for product artifact
+    if (MavenUtils.isProductArtifactId(metadata.getArtifactId())) {
+      return;
+    }
     metadata.getVersions().forEach(version -> {
-      if (VersionUtils.isSnapshotVersion(version) && currentProduct != NonStandardProduct.PORTAL) {
+      if (VersionUtils.isSnapshotVersion(version)) {
         if (VersionUtils.isOfficialVersionOrUnReleasedDevVersion(metadata.getVersions().stream().toList(), version)) {
-          updateMavenArtifactVersionForNonReleaseDeVersion(artifactVersionCache, metadata, version);
+          updateMavenArtifactVersionForNonReleaseDevVersion(artifactVersionCache, metadata, version);
         }
       } else {
         updateMavenArtifactVersionCacheWithModel(artifactVersionCache, version, metadata);
@@ -403,23 +322,25 @@ public class MetadataServiceImpl implements MetadataService {
     });
   }
 
-  public void updateMavenArtifactVersionForNonReleaseDeVersion(MavenArtifactVersion artifactVersionCache,
+  public void updateMavenArtifactVersionForNonReleaseDevVersion(MavenArtifactVersion artifactVersionCache,
       Metadata metadata, String version) {
     Metadata snapShotMetadata = MavenUtils.buildSnapShotMetadataFromVersion(metadata, version);
-    MetadataReaderUtils.parseMetadataSnapshotFromString(MavenUtils.getMetadataContentFromUrl(snapShotMetadata.getUrl()),
-        snapShotMetadata);
+    MetadataReaderUtils.updateMetadataFromMavenXML(MavenUtils.getMetadataContentFromUrl(snapShotMetadata.getUrl()),
+        snapShotMetadata, true);
     updateMavenArtifactVersionCacheWithModel(artifactVersionCache, version, snapShotMetadata);
   }
 
-  public void updateArtifactsFromNonSyncedVersion(String productId, List<String> nonSyncedVersions,
-      Set<Artifact> artifacts) {
+  public Set<Artifact> getArtifactsFromNonSyncedVersion(String productId, List<String> nonSyncedVersions) {
+    Set<Artifact> artifacts = new HashSet<>();
     if (CollectionUtils.isEmpty(nonSyncedVersions)) {
-      return;
+      return artifacts;
     }
     nonSyncedVersions.forEach(version -> {
-      ProductJsonContent productJson = productJsonRepo.findByProductIdAndVersion(productId, version);
+      ProductJsonContent productJson =
+          productJsonRepo.findByProductIdAndVersion(productId, version).stream().findAny().orElse(null);
       List<Artifact> artifactsInVersion = MavenUtils.getMavenArtifactsFromProductJson(productJson);
       artifacts.addAll(artifactsInVersion);
     });
+    return artifacts;
   }
 }

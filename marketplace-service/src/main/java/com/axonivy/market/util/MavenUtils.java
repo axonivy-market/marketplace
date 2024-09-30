@@ -6,12 +6,15 @@ import com.axonivy.market.comparator.MavenVersionComparator;
 import com.axonivy.market.constants.CommonConstants;
 import com.axonivy.market.constants.MavenConstants;
 import com.axonivy.market.constants.ProductJsonConstants;
+import com.axonivy.market.entity.MavenArtifactVersion;
 import com.axonivy.market.entity.Metadata;
 import com.axonivy.market.entity.ProductJsonContent;
 import com.axonivy.market.github.util.GitHubUtils;
 import com.axonivy.market.model.MavenArtifactModel;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import lombok.AccessLevel;
+import lombok.NoArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.BooleanUtils;
@@ -28,15 +31,13 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
-import java.util.Optional;
 import java.util.Set;
 
 @Log4j2
+@NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class MavenUtils {
   private static final ObjectMapper objectMapper = new ObjectMapper();
   private static final RestTemplate restTemplate = new RestTemplate();
-
-  private MavenUtils() {}
 
   public static List<Artifact> getMavenArtifactsFromProductJson(ProductJsonContent productJson) {
     if (Objects.isNull(productJson) || StringUtils.isBlank(productJson.getContent())) {
@@ -82,7 +83,6 @@ public class MavenUtils {
   public static List<Artifact> convertProductJsonToMavenProductInfo(Path folderPath) throws IOException {
     Path productJsonPath = folderPath.resolve(ProductJsonConstants.PRODUCT_JSON_FILE);
 
-
     if (!(Files.exists(productJsonPath) && Files.isRegularFile(productJsonPath))) {
       log.warn("product.json file not found in the folder: {}", folderPath);
       return new ArrayList<>();
@@ -109,12 +109,12 @@ public class MavenUtils {
     JsonNode rootNode = objectMapper.readTree(contentStream);
     JsonNode installersNode = rootNode.path(ProductJsonConstants.INSTALLERS);
 
+    // Not convert to artifact if id of node is not maven-import or maven-dependency
+    List<String> installerIdsToDisplay = List.of(ProductJsonConstants.MAVEN_DEPENDENCY_INSTALLER_ID,
+        ProductJsonConstants.MAVEN_IMPORT_INSTALLER_ID, ProductJsonConstants.MAVEN_DROPINS_INSTALLER_ID);
+
     for (JsonNode mavenNode : installersNode) {
       JsonNode dataNode = mavenNode.path(ProductJsonConstants.DATA);
-
-      // Not convert to artifact if id of node is not maven-import or maven-dependency
-      List<String> installerIdsToDisplay = List.of(ProductJsonConstants.MAVEN_DEPENDENCY_INSTALLER_ID,
-          ProductJsonConstants.MAVEN_IMPORT_INSTALLER_ID);
       if (!installerIdsToDisplay.contains(mavenNode.path(ProductJsonConstants.ID).asText())) {
         continue;
       }
@@ -206,7 +206,7 @@ public class MavenUtils {
     if (StringUtils.isAnyBlank(groupId, artifactId)) {
       return StringUtils.EMPTY;
     }
-    repoUrl = Optional.ofNullable(repoUrl).orElse(MavenConstants.DEFAULT_IVY_MAVEN_BASE_URL);
+    repoUrl = StringUtils.defaultIfEmpty(repoUrl, MavenConstants.DEFAULT_IVY_MAVEN_BASE_URL);
     groupId = groupId.replace(CommonConstants.DOT_SEPARATOR, CommonConstants.SLASH);
     return String.join(CommonConstants.SLASH, repoUrl, groupId, artifactId, snapshotVersion,
         MavenConstants.METADATA_URL_POSTFIX);
@@ -216,7 +216,7 @@ public class MavenUtils {
     if (StringUtils.isAnyBlank(groupId, artifactId)) {
       return StringUtils.EMPTY;
     }
-    repoUrl = Optional.ofNullable(repoUrl).orElse(MavenConstants.DEFAULT_IVY_MAVEN_BASE_URL);
+    repoUrl = StringUtils.defaultIfEmpty(repoUrl, MavenConstants.DEFAULT_IVY_MAVEN_BASE_URL);
     groupId = groupId.replace(CommonConstants.DOT_SEPARATOR, CommonConstants.SLASH);
     return String.join(CommonConstants.SLASH, repoUrl, groupId, artifactId, MavenConstants.METADATA_URL_POSTFIX);
   }
@@ -242,12 +242,11 @@ public class MavenUtils {
         metadata.getProductId()).name(metadata.getName()).isProductArtifact(metadata.isProductArtifact()).build();
   }
 
-  public static MavenArtifactModel buildMavenArtifactModelFromSnapShotMetadata(String version,
-      Metadata snapShotMetadata) {
-    return new MavenArtifactModel(snapShotMetadata.getName(),
-        buildDownloadUrl(snapShotMetadata.getArtifactId(), version, snapShotMetadata.getType(),
-            snapShotMetadata.getRepoUrl(), snapShotMetadata.getGroupId(), snapShotMetadata.getSnapshotVersionValue()),
-        snapShotMetadata.getArtifactId().contains(snapShotMetadata.getGroupId()));
+  public static MavenArtifactModel buildMavenArtifactModelFromMetadata(String version, Metadata metadata) {
+    return new MavenArtifactModel(metadata.getName(),
+        buildDownloadUrl(metadata.getArtifactId(), version, metadata.getType(),
+            metadata.getRepoUrl(), metadata.getGroupId(), metadata.getSnapshotVersionValue()),
+        metadata.getArtifactId().contains(metadata.getGroupId()));
   }
 
   public static String getMetadataContentFromUrl(String metadataUrl) {
@@ -259,6 +258,10 @@ public class MavenUtils {
     }
   }
 
+  public static boolean isProductArtifactId(String artifactId) {
+    return StringUtils.endsWith(artifactId, MavenConstants.PRODUCT_ARTIFACT_POSTFIX);
+  }
+
   public static Set<Metadata> convertArtifactsToMetadataSet(Set<Artifact> artifacts, String productId) {
     Set<Metadata> results = new HashSet<>();
     if (!CollectionUtils.isEmpty(artifacts)) {
@@ -266,14 +269,14 @@ public class MavenUtils {
         String metadataUrl = buildMetadataUrlFromArtifactInfo(artifact.getRepoUrl(), artifact.getGroupId(),
             artifact.getArtifactId());
         results.add(convertArtifactToMetadata(productId, artifact, metadataUrl));
-        extractMetaDataFromArchivedArtifacts(productId, artifact, results);
+        results.addAll(extractMetaDataFromArchivedArtifacts(productId, artifact));
       });
     }
     return results;
   }
 
-  public static void extractMetaDataFromArchivedArtifacts(String productId, Artifact artifact,
-      Set<Metadata> results) {
+  public static Set<Metadata> extractMetaDataFromArchivedArtifacts(String productId, Artifact artifact) {
+    Set<Metadata> results = new HashSet<>();
     if (!CollectionUtils.isEmpty(artifact.getArchivedArtifacts())) {
       artifact.getArchivedArtifacts().forEach(archivedArtifact -> {
         String archivedMetadataUrl = buildMetadataUrlFromArtifactInfo(artifact.getRepoUrl(),
@@ -281,13 +284,25 @@ public class MavenUtils {
         results.add(convertArtifactToMetadata(productId, artifact, archivedMetadataUrl));
       });
     }
+    return results;
   }
 
-  public static List<Artifact> filterNonProductArtifactFromMeta(List<Artifact> artifactsFromMeta) {
-    if(CollectionUtils.isEmpty(artifactsFromMeta)) {
+  public static List<Artifact> filterNonProductArtifactFromList(List<Artifact> artifactsFromMeta) {
+    if (CollectionUtils.isEmpty(artifactsFromMeta)) {
       return artifactsFromMeta;
     }
-    return artifactsFromMeta.stream()
-        .filter(artifact -> !artifact.getArtifactId().endsWith(MavenConstants.PRODUCT_ARTIFACT_POSTFIX)).toList();
+    return artifactsFromMeta.stream().filter(
+        artifact -> !artifact.getArtifactId().endsWith(MavenConstants.PRODUCT_ARTIFACT_POSTFIX)).toList();
+  }
+
+  public static List<String> getAllExistingVersions(MavenArtifactVersion existingMavenArtifactVersion,
+      boolean isShowDevVersion, String designerVersion) {
+    Set<String> existingProductsArtifactByVersion =
+        new HashSet<>(existingMavenArtifactVersion.getProductArtifactsByVersion().keySet());
+    Set<String> existingAdditionalArtifactByVersion =
+        existingMavenArtifactVersion.getProductArtifactsByVersion().keySet();
+    existingProductsArtifactByVersion.addAll(existingAdditionalArtifactByVersion);
+    return VersionUtils.getVersionsToDisplay(new ArrayList<>(existingProductsArtifactByVersion), isShowDevVersion,
+        designerVersion);
   }
 }

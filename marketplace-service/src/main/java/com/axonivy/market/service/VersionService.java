@@ -15,7 +15,4 @@ public interface VersionService {
 
   List<VersionAndUrlModel> getVersionsForDesigner(String productId);
 
-  void clearAllProductVersions();
-
-  String getLatestVersionArtifactDownloadUrl(String productId, String version, String artifactId);
 }

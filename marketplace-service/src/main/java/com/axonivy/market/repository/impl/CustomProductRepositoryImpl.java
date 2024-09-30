@@ -44,13 +44,24 @@ public class CustomProductRepositoryImpl extends CustomRepository implements Cus
   }
 
   @Override
-  public Product getProductByIdAndTag(String id, String tag) {
+  public Product getProductByIdWithTagOrVersion(String id, String tag) {
     Product result = findProductById(id);
     if (!Objects.isNull(result)) {
-      ProductModuleContent content = contentRepository.findByTagAndProductId(tag, id);
+      ProductModuleContent content = findByProductIdAndTagOrMavenVersion(id, tag);
       result.setProductModuleContent(content);
     }
     return result;
+  }
+
+  @Override
+  public ProductModuleContent findByProductIdAndTagOrMavenVersion(String productId, String tag) {
+    Criteria productIdCriteria = Criteria.where(MongoDBConstants.PRODUCT_ID).is(productId);
+    Criteria orCriteria = new Criteria().orOperator(
+        Criteria.where(MongoDBConstants.TAG).is(tag),
+        Criteria.where(MongoDBConstants.MAVEN_VERSIONS).in(tag)
+    );
+    Query query = new Query(new Criteria().andOperator(productIdCriteria, orCriteria));
+    return mongoTemplate.findOne(query, ProductModuleContent.class);
   }
 
   private Product findProductById(String id) {
@@ -103,9 +114,10 @@ public class CustomProductRepositoryImpl extends CustomRepository implements Cus
   }
 
   @Override
-  public List<Product> getAllProductWithIdAndReleaseTagAndArtifact() {
+  public List<Product> getAllProductsWithIdAndReleaseTagAndArtifact() {
     return queryProductsByAggregation(
-        createProjectIdAndReleasedVersionsAndAndArtifactsAggregation());
+        createProjectIdAndReleasedVersionsAndArtifactsAggregation());
+
   }
 
   private Query createQueryByProductIdAndDesignerVersion(String productId, String designerVersion) {
@@ -113,7 +125,7 @@ public class CustomProductRepositoryImpl extends CustomRepository implements Cus
         .andOperator(Criteria.where(MongoDBConstants.DESIGNER_VERSION).is(designerVersion)));
   }
 
-  protected Aggregation createProjectIdAndReleasedVersionsAndAndArtifactsAggregation() {
+  protected Aggregation createProjectIdAndReleasedVersionsAndArtifactsAggregation() {
     return Aggregation.newAggregation(
         Aggregation.project(MongoDBConstants.ID, MongoDBConstants.ARTIFACTS, MongoDBConstants.RELEASED_VERSIONS)
     );

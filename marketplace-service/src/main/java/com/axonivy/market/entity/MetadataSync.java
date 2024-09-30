@@ -23,7 +23,7 @@ import static com.axonivy.market.constants.EntityConstants.MAVEN_METADATA_SYNC;
 public class MetadataSync {
   @Id
   private String productId;
-  private Set<String> syncedTags;
+  private Set<String> syncedVersions;
   @LastModifiedDate
   private Date lastSync;
 }

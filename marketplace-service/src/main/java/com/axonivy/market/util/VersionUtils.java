@@ -5,12 +5,11 @@ import com.axonivy.market.comparator.MavenVersionComparator;
 import com.axonivy.market.constants.CommonConstants;
 import com.axonivy.market.constants.GitHubConstants;
 import com.axonivy.market.constants.MavenConstants;
-import com.axonivy.market.entity.Metadata;
-import com.axonivy.market.entity.MetadataSync;
 import com.axonivy.market.entity.Product;
 import com.axonivy.market.enums.NonStandardProduct;
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.lang3.BooleanUtils;
+import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.util.Strings;
 import org.kohsuke.github.GHTag;
@@ -20,13 +19,12 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Stream;
 
 @Log4j2
 public class VersionUtils {
   public static final String NON_NUMERIC_CHAR = "[^0-9.]";
-
-  public static List<String> notInGithubVersions;
 
   private VersionUtils() {
   }
@@ -79,7 +77,9 @@ public class VersionUtils {
       return true;
     }
     String bugfixVersion;
-    if (isSnapshotVersion(version)) {
+    if (!isValidFormatReleasedVersion(version)) {
+      return false;
+    } else if (isSnapshotVersion(version)) {
       bugfixVersion = getBugfixVersion(version.replace(MavenConstants.SNAPSHOT_RELEASE_POSTFIX, StringUtils.EMPTY));
     } else {
       bugfixVersion = getBugfixVersion(version.split(MavenConstants.SPRINT_RELEASE_POSTFIX)[0]);
@@ -97,8 +97,12 @@ public class VersionUtils {
     return version.contains(MavenConstants.SPRINT_RELEASE_POSTFIX);
   }
 
+  public static boolean isValidFormatReleasedVersion(String version) {
+    return StringUtils.isNumeric(version.split(MavenConstants.MAIN_VERSION_REGEX)[0]);
+  }
+
   public static boolean isReleasedVersion(String version) {
-    return !(isSprintVersion(version) || isSnapshotVersion(version));
+    return !(isSprintVersion(version) || isSnapshotVersion(version)) && isValidFormatReleasedVersion(version);
   }
 
   public static boolean isMatchWithDesignerVersion(String version, String designerVersion) {
@@ -161,32 +165,11 @@ public class VersionUtils {
         version -> convertVersionToTag(product.getId(), version)).toList();
   }
 
-  public static List<String> getNonSyncedVersionOfTagsFromMetadataSync(List<String> releasedVersion,
-      MetadataSync cache) {
-    if (!CollectionUtils.isEmpty(cache.getSyncedTags())) {
-      releasedVersion.removeAll(cache.getSyncedTags());
+  public static List<String> removeSyncedVersionsFromReleasedVersions(List<String> releasedVersion,
+      Set<String> syncTags) {
+    if (ObjectUtils.isNotEmpty(syncTags)) {
+      releasedVersion.removeAll(syncTags);
     }
     return releasedVersion;
-  }
-
-  public static String getNumbersOnly(String version) {
-    return StringUtils.defaultIfBlank(version, StringUtils.EMPTY).split(CommonConstants.DASH_SEPARATOR)[0];
-  }
-
-  public static boolean isMajorVersion(String version) {
-    return getNumbersOnly(version).split(CommonConstants.DOT_SEPARATOR).length == 0 && isReleasedVersion(version);
-  }
-
-  public static boolean isMinorVersion(String version) {
-    return getNumbersOnly(version).split(CommonConstants.DOT_SEPARATOR).length == 1 && isReleasedVersion(version);
-  }
-
-  public static boolean isBugFixVersion(String version) {
-    return getNumbersOnly(version).split(CommonConstants.DOT_SEPARATOR).length == 2 && isReleasedVersion(version);
-  }
-
-  public static String getLatestDevVersionFromRange(List<String> versionInRange, String version) {
-    return CollectionUtils.firstElement(versionInRange.stream().sorted(
-        new LatestVersionComparator()).toList());
   }
 }

@@ -123,8 +123,10 @@ public class ProductFactory {
   }
 
   public static void mappingIdForProductModuleContent(ProductModuleContent content) {
-    if (StringUtils.isNotBlank(content.getProductId()) && StringUtils.isNotBlank(content.getTag())) {
-      content.setId(String.format(CommonConstants.ID_WITH_NUMBER_PATTERN, content.getProductId(), content.getTag()));
+    if (StringUtils.isNotBlank(content.getProductId())) {
+      String version = StringUtils.isNotBlank(
+          content.getTag()) ? content.getTag() : content.getMavenVersions().stream().findAny().orElse(null);
+      content.setId(String.format(CommonConstants.ID_WITH_NUMBER_PATTERN, content.getProductId(), version));
     }
   }
 

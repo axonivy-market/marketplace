@@ -13,8 +13,8 @@ import com.axonivy.market.repository.ProductJsonContentRepository;
 import com.axonivy.market.repository.ProductModuleContentRepository;
 import com.axonivy.market.repository.ProductRepository;
 import com.axonivy.market.util.MavenUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -31,13 +31,10 @@ import java.util.Map;
 import java.util.Optional;
 
 import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class VersionServiceImplTest {
-  private List<Artifact> artifactsFromMeta;
-  private Artifact metaProductArtifact;
   @Spy
   @InjectMocks
   private VersionServiceImpl versionService;
@@ -57,34 +54,70 @@ class VersionServiceImplTest {
   @Mock
   private ProductModuleContentRepository productModuleContentRepository;
 
-  @BeforeEach()
-  void prepareBeforeTest() {
-    artifactsFromMeta = new ArrayList<>();
-    metaProductArtifact = new Artifact();
-  }
-
-  private void setUpArtifactFromMeta() {
-    String repoUrl = "https://maven.axonivy.com";
-    String groupId = "com.axonivy.connector.adobe.acrobat.sign";
-    String artifactId = "adobe-acrobat-sign-connector";
-    metaProductArtifact.setGroupId(groupId);
-    metaProductArtifact.setArtifactId(artifactId);
-    metaProductArtifact.setIsProductArtifact(true);
-    Artifact additionalMavenArtifact = new Artifact(repoUrl, "", groupId, artifactId, "", null, null, null,true);
-    artifactsFromMeta.add(metaProductArtifact);
-    artifactsFromMeta.add(additionalMavenArtifact);
+  private ProductJsonContent getMockProductJson() {
+    ProductJsonContent result = new ProductJsonContent();
+    String mockContent = """
+        {
+           "$schema": "https://json-schema.axonivy.com/market/10.0.0/product.json",
+           "installers": [
+             {
+               "id": "maven-import",
+               "data": {
+                 "projects": [
+                   {
+                     "groupId": "com.axonivy.utils.bpmnstatistic",
+                     "artifactId": "bpmn-statistic-demo",
+                     "version": "${version}",
+                     "type": "iar"
+                   }
+                 ],
+                 "repositories": [
+                   {
+                     "id": "maven.axonivy.com",
+                     "url": "https://maven.axonivy.com",
+                     "snapshots": {
+                       "enabled": "true"
+                     }
+                   }
+                 ]
+               }
+             },
+             {
+               "id": "maven-dependency",
+               "data": {
+                 "dependencies": [
+                   {
+                     "groupId": "com.axonivy.utils.bpmnstatistic",
+                     "artifactId": "bpmn-statistic",
+                     "version": "${version}",
+                     "type": "iar"
+                   }
+                 ],
+                 "repositories": [
+                   {
+                     "id": "maven.axonivy.com",
+                     "url": "https://maven.axonivy.com",
+                     "snapshots": {
+                       "enabled": "true"
+                     }
+                   }
+                 ]
+               }
+             }
+           ]
+         }
+        """;
+    result.setContent(mockContent);
+    return result;
   }
 
   @Test
   void testGetArtifactsAndVersionToDisplay() {
-    String productId = "adobe-acrobat-sign-connector";
+    String productId = "bpmn-statistic";
     String targetVersion = "10.0.10";
-    setUpArtifactFromMeta();
-    when(versionService.getArtifactsFromMeta(Mockito.anyString())).thenReturn(artifactsFromMeta);
+
     when(mavenArtifactVersionRepository.findById(Mockito.anyString())).thenReturn(Optional.empty());
-    ArrayList<MavenArtifactModel> artifactsInVersion = new ArrayList<>();
-    artifactsInVersion.add(new MavenArtifactModel());
-    when(mavenArtifactVersionRepository.findById("adobe-acrobat-sign-connector")).thenReturn(
+    when(mavenArtifactVersionRepository.findById("bpmn-statistic")).thenReturn(
         Optional.ofNullable(
             MavenArtifactVersion.builder().productId(productId).productArtifactsByVersion(
                 new HashMap<>()).additionalArtifactsByVersion(new HashMap<>()).build()));
@@ -96,40 +129,29 @@ class VersionServiceImplTest {
     proceededData.getProductArtifactsByVersion().put(targetVersion, new ArrayList<>());
     proceededData.getAdditionalArtifactsByVersion().put(targetVersion, new ArrayList<>());
 
+    MavenArtifactModel mockModel = new MavenArtifactModel();
+    mockModel.setName("bpmn-statistic");
+    mockModel.setDownloadUrl("https://maven.axonivy.com");
+    proceededData.getAdditionalArtifactsByVersion().put("10.0.10", List.of(mockModel));
     when(mavenArtifactVersionRepository.findById(Mockito.anyString())).thenReturn(Optional.of(proceededData));
     Assertions.assertEquals(1, versionService.getArtifactsAndVersionToDisplay(productId, false, targetVersion).size());
   }
 
-  @Test
-  void testGetArtifactsFromMeta() {
-    Product product = new Product();
-    Artifact artifact1 = new Artifact();
-    Artifact artifact2 = new Artifact();
-    List<Artifact> artifacts = List.of(artifact1, artifact2);
-    product.setArtifacts(artifacts);
-    when(productRepository.findById(Mockito.anyString())).thenReturn(Optional.of(product));
-    List<Artifact> result = versionService.getArtifactsFromMeta("portal");
-    Assertions.assertEquals(artifacts, result);
-  }
 
   @Test
   void testGetMavenArtifactsFromProductJsonByVersion() {
-    when(productJsonContentRepository.findByProductIdAndVersion("adobe-acrobat-connector", "10.0.20")).thenReturn(null);
+    when(productJsonContentRepository.findByProductIdAndVersion("bpmn-statistic", "10.0.20")).thenReturn(
+        Collections.emptyList());
 
     Assertions.assertEquals(0,
-        versionService.getMavenArtifactsFromProductJsonByTag("10.0.20", "adobe-acrobat-connector").size());
+        versionService.getMavenArtifactsFromProductJsonByTag("10.0.20", "bpmn-statistic").size());
 
-    String jsonContent = "{ \"installers\": [{ \"id\": \"maven-import\", \"data\": { \"repositories\": [{ \"url\": " +
-        "\"http://repo.url\" }], \"projects\": [], \"dependencies\": [] } }] }";
-    ProductJsonContent productJson = new ProductJsonContent();
-    productJson.setContent(jsonContent);
-    when(productJsonContentRepository.findByProductIdAndVersion("adobe-acrobat-connector", "10.0.20")).thenReturn(
-        productJson);
-    List<Artifact> results = versionService.getMavenArtifactsFromProductJsonByTag("10.0.20", "adobe-acrobat-connector");
+
+    when(productJsonContentRepository.findByProductIdAndVersion("bpmn-statistic", "10.0.20")).thenReturn(
+        List.of(getMockProductJson()));
+    List<Artifact> results = versionService.getMavenArtifactsFromProductJsonByTag("10.0.20", "bpmn-statistic");
+    Assertions.assertEquals(2, results.size());
   }
-
-
-
 
 
   @Test
@@ -169,17 +191,22 @@ class VersionServiceImplTest {
 
   @Test
   void testGetVersionsForDesigner() {
-    Mockito.when(productRepository.getReleasedVersionsById(anyString()))
-        .thenReturn(List.of("11.3.0", "11.1.1", "11.1.0", "10.0.2"));
+    MavenArtifactVersion mockMavenArtifactVersion = new MavenArtifactVersion();
+    mockMavenArtifactVersion.getProductArtifactsByVersion().put("11.3.0-SNAPSHOT", new ArrayList<>());
+    mockMavenArtifactVersion.getProductArtifactsByVersion().put("11.1.1", new ArrayList<>());
+    mockMavenArtifactVersion.getProductArtifactsByVersion().put("11.1.0", new ArrayList<>());
+    mockMavenArtifactVersion.getProductArtifactsByVersion().put("10.0.2", new ArrayList<>());
 
-    List<VersionAndUrlModel> result = versionService.getVersionsForDesigner("11.3.0");
+    when(mavenArtifactVersionRepository.findById("portal")).thenReturn(Optional.of(mockMavenArtifactVersion));
+
+    List<VersionAndUrlModel> result = versionService.getVersionsForDesigner("portal");
 
     Assertions.assertEquals(result.stream().map(VersionAndUrlModel::getVersion).toList(),
-        List.of("11.3.0", "11.1.1", "11.1.0", "10.0.2"));
-    Assertions.assertTrue(result.get(0).getUrl().endsWith("/api/product-details/11.3.0/11.3.0/json"));
-    Assertions.assertTrue(result.get(1).getUrl().endsWith("/api/product-details/11.3.0/11.1.1/json"));
-    Assertions.assertTrue(result.get(2).getUrl().endsWith("/api/product-details/11.3.0/11.1.0/json"));
-    Assertions.assertTrue(result.get(3).getUrl().endsWith("/api/product-details/11.3.0/10.0.2/json"));
+        List.of("11.3.0-SNAPSHOT", "11.1.1", "11.1.0", "10.0.2"));
+    Assertions.assertTrue(result.get(0).getUrl().endsWith("/api/product-details/portal/11.3.0-SNAPSHOT/json"));
+    Assertions.assertTrue(result.get(1).getUrl().endsWith("/api/product-details/portal/11.1.1/json"));
+    Assertions.assertTrue(result.get(2).getUrl().endsWith("/api/product-details/portal/11.1.0/json"));
+    Assertions.assertTrue(result.get(3).getUrl().endsWith("/api/product-details/portal/10.0.2/json"));
   }
 
   @Test
@@ -211,7 +238,7 @@ class VersionServiceImplTest {
     mockProductJsonContent.setContent(mockContent);
 
     Mockito.when(productJsonContentRepository.findByProductIdAndVersion(anyString(), anyString()))
-        .thenReturn(mockProductJsonContent);
+        .thenReturn(List.of(mockProductJsonContent));
 
     Map<String, Object> result = versionService.getProductJsonContentByIdAndTag("amazon-comprehend", "11.3.1");
 
@@ -220,7 +247,8 @@ class VersionServiceImplTest {
 
   @Test
   void testGetProductJsonContentByIdAndVersion_noResult() {
-    Mockito.when(productJsonContentRepository.findByProductIdAndVersion(anyString(), anyString())).thenReturn(null);
+    Mockito.when(productJsonContentRepository.findByProductIdAndVersion(anyString(), anyString())).thenReturn(
+        Collections.emptyList());
 
     Map<String, Object> result = versionService.getProductJsonContentByIdAndTag("amazon-comprehend", "11.3.1");
 
@@ -228,7 +256,7 @@ class VersionServiceImplTest {
   }
 
   @Test
-  void testgetPersistedVersions() {
+  void testGetPersistedVersions() {
     String mockProductId = "portal";
     Assertions.assertEquals(0, versionService.getPersistedVersions(mockProductId).size());
     String mockVersion = "10.0.1";
@@ -241,8 +269,16 @@ class VersionServiceImplTest {
   }
 
   @Test
-  void testClearAllProductVersions() {
-    versionService.clearAllProductVersions();
-    verify(mavenArtifactVersionRepository).deleteAll();
+  void testGetAllExistingVersions() {
+    MavenArtifactVersion mockMavenArtifactVersion = new MavenArtifactVersion();
+    Assertions.assertEquals(0, MavenUtils.getAllExistingVersions(mockMavenArtifactVersion, false,
+        StringUtils.EMPTY).size());
+    Map<String, List<MavenArtifactModel>> mockArtifactModelsByVersion = new HashMap<>();
+    mockArtifactModelsByVersion.put("1.0.0-SNAPSHOT", new ArrayList<>());
+    mockMavenArtifactVersion.setProductArtifactsByVersion(mockArtifactModelsByVersion);
+    Assertions.assertEquals(1, MavenUtils.getAllExistingVersions(mockMavenArtifactVersion, true,
+        StringUtils.EMPTY).size());
+    Assertions.assertEquals(0, MavenUtils.getAllExistingVersions(mockMavenArtifactVersion, false,
+        StringUtils.EMPTY).size());
   }
 }

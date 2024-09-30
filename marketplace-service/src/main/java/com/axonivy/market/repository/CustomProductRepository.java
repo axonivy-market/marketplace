@@ -1,11 +1,12 @@
 package com.axonivy.market.repository;
 
 import com.axonivy.market.entity.Product;
+import com.axonivy.market.entity.ProductModuleContent;
 
 import java.util.List;
 
 public interface CustomProductRepository {
-  Product getProductByIdAndTag(String id, String tag);
+  Product getProductByIdWithTagOrVersion(String id, String tag);
 
   Product getProductById(String id);
 
@@ -17,5 +18,8 @@ public interface CustomProductRepository {
 
   void increaseInstallationCountForProductByDesignerVersion(String productId, String designerVersion);
 
-  List<Product> getAllProductWithIdAndReleaseTagAndArtifact();
+  List<Product> getAllProductsWithIdAndReleaseTagAndArtifact();
+
+  ProductModuleContent findByProductIdAndTagOrMavenVersion(String productId, String tag);
+
 }
