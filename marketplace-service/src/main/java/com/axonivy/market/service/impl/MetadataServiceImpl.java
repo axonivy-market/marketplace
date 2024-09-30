@@ -118,6 +118,7 @@ public class MetadataServiceImpl implements MetadataService {
           product.getReleasedVersions(), syncCache.getSyncedVersions());
       if (ObjectUtils.isNotEmpty(nonSyncedVersionOfTags)) {
         artifactsFromNewTags.addAll(getArtifactsFromNonSyncedVersion(product.getId(), nonSyncedVersionOfTags));
+        syncCache.getSyncedVersions().addAll(nonSyncedVersionOfTags);
         log.info("**MetadataService: New tags detected: {} in product {}", nonSyncedVersionOfTags.toString(),
             productId);
       }
@@ -128,7 +129,6 @@ public class MetadataServiceImpl implements MetadataService {
         metadataSet.addAll(
             MavenUtils.convertArtifactsToMetadataSet(new HashSet<>(product.getArtifacts()), productId));
       }
-
       if (CollectionUtils.isEmpty(metadataSet)) {
         log.info("**MetadataService: No artifact found in product {}", productId);
         nonUpdatedSyncCount +=1;
@@ -138,7 +138,6 @@ public class MetadataServiceImpl implements MetadataService {
       updateMavenArtifactVersionData(product.getReleasedVersions(), metadataSet, artifactVersionCache);
 
       // Persist changed
-      syncCache.getSyncedVersions().addAll(nonSyncedVersionOfTags);
       metadataSyncRepo.save(syncCache);
       mavenArtifactVersionRepo.save(artifactVersionCache);
       metadataRepo.saveAll(metadataSet);
