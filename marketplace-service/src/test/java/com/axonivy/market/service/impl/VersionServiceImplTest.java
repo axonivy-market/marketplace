@@ -7,7 +7,6 @@ import com.axonivy.market.entity.Product;
 import com.axonivy.market.entity.ProductJsonContent;
 import com.axonivy.market.github.service.GHAxonIvyProductRepoService;
 import com.axonivy.market.model.MavenArtifactModel;
-import com.axonivy.market.model.MavenArtifactVersionModel;
 import com.axonivy.market.model.VersionAndUrlModel;
 import com.axonivy.market.repository.MavenArtifactVersionRepository;
 import com.axonivy.market.repository.ProductJsonContentRepository;
@@ -33,7 +32,6 @@ import java.util.Map;
 import java.util.Optional;
 
 import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -63,18 +61,6 @@ class VersionServiceImplTest {
   void prepareBeforeTest() {
     artifactsFromMeta = new ArrayList<>();
     metaProductArtifact = new Artifact();
-  }
-
-  private void setUpArtifactFromMeta() {
-    String repoUrl = "https://maven.axonivy.com";
-    String groupId = "com.axonivy.connector.adobe.acrobat.sign";
-    String artifactId = "adobe-acrobat-sign-connector";
-    metaProductArtifact.setGroupId(groupId);
-    metaProductArtifact.setArtifactId(artifactId);
-    metaProductArtifact.setIsProductArtifact(true);
-    Artifact additionalMavenArtifact = new Artifact(repoUrl, "", groupId, artifactId, "", null, null, null,true);
-    artifactsFromMeta.add(metaProductArtifact);
-    artifactsFromMeta.add(additionalMavenArtifact);
   }
 
   @Test

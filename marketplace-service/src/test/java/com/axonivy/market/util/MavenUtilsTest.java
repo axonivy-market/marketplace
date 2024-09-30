@@ -14,7 +14,6 @@ import org.mockito.Mock;
 import org.springframework.web.client.RestTemplate;
 
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 

@@ -72,7 +72,7 @@ public class FileDownloadServiceImpl implements FileDownloadService {
     return tempZipPath;
   }
 
-  private Path grantPermissionForNonUnixSystem(File tempFile) {
+  public Path grantPermissionForNonUnixSystem(File tempFile) {
     if (tempFile.setReadable(true, false)) {
       log.warn("Cannot grant read permission to {}", tempFile.toPath());
     }
