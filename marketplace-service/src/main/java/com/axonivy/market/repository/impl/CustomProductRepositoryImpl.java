@@ -61,7 +61,6 @@ public class CustomProductRepositoryImpl extends CustomRepository implements Cus
         Criteria.where(MongoDBConstants.MAVEN_VERSIONS).in(tag)
     );
     Query query = new Query(new Criteria().andOperator(productIdCriteria, orCriteria));
-    System.out.println(query);
     return mongoTemplate.findOne(query, ProductModuleContent.class);
   }
 

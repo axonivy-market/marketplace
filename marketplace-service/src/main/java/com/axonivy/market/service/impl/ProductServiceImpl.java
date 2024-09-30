@@ -80,8 +80,6 @@ import static org.apache.commons.lang3.StringUtils.EMPTY;
 @Log4j2
 @Service
 public class ProductServiceImpl implements ProductService {
-
-  public static final String NON_NUMERIC_CHAR = "[^0-9.]";
   private static final String INITIAL_VERSION = "1.0";
   private final ProductRepository productRepository;
   private final ProductModuleContentRepository productModuleContentRepository;

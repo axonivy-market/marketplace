@@ -53,8 +53,6 @@ public class FileDownloadServiceImpl implements FileDownloadService {
 
     unzipFile(tempZipPath.toString(), unzippedFilePath);
 
-    grantNecessaryPermissionsFor(unzippedFilePath);
-
     Files.delete(tempZipPath);
     return unzippedFilePath;
   }
@@ -67,22 +65,9 @@ public class FileDownloadServiceImpl implements FileDownloadService {
       tempZipPath = Files.createTempFile(tempFileName, ZIP_EXTENSION, attr);
     } else {
       File tempFile = Files.createTempFile(tempFileName, ZIP_EXTENSION).toFile();
-      tempZipPath = grantPermissionForNonUnixSystem(tempFile);
+      tempZipPath = tempFile.toPath();
     }
     return tempZipPath;
-  }
-
-  private Path grantPermissionForNonUnixSystem(File tempFile) {
-    if (tempFile.setReadable(true, false)) {
-      log.warn("Cannot grant read permission to {}", tempFile.toPath());
-    }
-    if (tempFile.setWritable(true, false)) {
-      log.warn("Cannot grant write permission to {}", tempFile.toPath());
-    }
-    if (tempFile.setExecutable(true, false)) {
-      log.warn("Cannot grant exec permission to {}", tempFile.toPath());
-    }
-    return tempFile.toPath();
   }
 
   public int unzipFile(String zipFilePath, String location) throws IOException {
@@ -144,22 +129,6 @@ public class FileDownloadServiceImpl implements FileDownloadService {
       Files.createDirectories(folderPath);
     } catch (IOException e) {
       log.error("An error occurred while creating the folder: ", e);
-    }
-    return folderPath;
-  }
-
-  public Path grantNecessaryPermissionsFor(String location) {
-    Path folderPath = Paths.get(location);
-    try {
-      if (SystemUtils.IS_OS_UNIX) {
-        log.warn("UNIX_OS detected: grant permission for {}", location);
-        Files.setPosixFilePermissions(folderPath, PERMS);
-      } else {
-        log.warn("NON_UNIX_OS detected: grant permission for {}", location);
-        folderPath = grantPermissionForNonUnixSystem(folderPath.toFile());
-      }
-    } catch (IOException e) {
-      log.error("An error occurred while granting permission the folder: ", e);
     }
     return folderPath;
   }
