@@ -10,15 +10,11 @@ import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 import org.springframework.web.client.RestTemplate;
 
-import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.stream.Stream;
-
-import static org.mockito.Mockito.*;
-
 
 class FileDownloadServiceImplTest {
 
@@ -32,7 +28,7 @@ class FileDownloadServiceImplTest {
   private static final String EXTRACT_LOCATION = "src/test/resources/zip/data";
 
   @BeforeEach
-  void setUp() throws IOException {
+  void setUp() {
     MockitoAnnotations.openMocks(this);
   }
 
@@ -41,7 +37,7 @@ class FileDownloadServiceImplTest {
     String location = "testFolder";
     Path mockPath = Paths.get(location);
 
-    try (MockedStatic<Files> mockedFiles = mockStatic(Files.class)) {
+    try (MockedStatic<Files> mockedFiles = Mockito.mockStatic(Files.class)) {
       mockedFiles.when(() -> Files.createDirectories(mockPath)).thenReturn(mockPath);
 
       Path resultPath = fileDownloadService.createFolder(location);
@@ -56,7 +52,7 @@ class FileDownloadServiceImplTest {
     String location = "testFolder";
     Path mockPath = Paths.get(location);
 
-    try (MockedStatic<Files> mockedFiles = mockStatic(Files.class)) {
+    try (MockedStatic<Files> mockedFiles = Mockito.mockStatic(Files.class)) {
       mockedFiles.when(() -> Files.createDirectories(mockPath)).thenThrow(
           new IOException("Failed to create directory"));
 
@@ -68,14 +64,14 @@ class FileDownloadServiceImplTest {
   }
 
   @Test
-  void deleteDirectory_shouldDeleteAllFilesAndDirectories() throws IOException {
+  void deleteDirectory_shouldDeleteAllFilesAndDirectories() {
     // Arrange
-    Path mockPath = mock(Path.class);
-    Path file1 = mock(Path.class);
-    Path file2 = mock(Path.class);
+    Path mockPath = Mockito.mock(Path.class);
+    Path file1 = Mockito.mock(Path.class);
+    Path file2 = Mockito.mock(Path.class);
     Stream<Path> mockStream = Stream.of(file1, file2);
 
-    try (MockedStatic<Files> mockedFiles = mockStatic(Files.class)) {
+    try (MockedStatic<Files> mockedFiles = Mockito.mockStatic(Files.class)) {
       mockedFiles.when(() -> Files.walk(mockPath)).thenReturn(mockStream);
 
       fileDownloadService.deleteDirectory(mockPath);

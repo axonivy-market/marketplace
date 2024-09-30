@@ -63,13 +63,70 @@ class VersionServiceImplTest {
     metaProductArtifact = new Artifact();
   }
 
+  private ProductJsonContent getMockProductJson() {
+    ProductJsonContent result = new ProductJsonContent();
+    String mockContent = """
+        {
+           "$schema": "https://json-schema.axonivy.com/market/10.0.0/product.json",
+           "installers": [
+             {
+               "id": "maven-import",
+               "data": {
+                 "projects": [
+                   {
+                     "groupId": "com.axonivy.utils.bpmnstatistic",
+                     "artifactId": "bpmn-statistic-demo",
+                     "version": "${version}",
+                     "type": "iar"
+                   }
+                 ],
+                 "repositories": [
+                   {
+                     "id": "maven.axonivy.com",
+                     "url": "https://maven.axonivy.com",
+                     "snapshots": {
+                       "enabled": "true"
+                     }
+                   }
+                 ]
+               }
+             },
+             {
+               "id": "maven-dependency",
+               "data": {
+                 "dependencies": [
+                   {
+                     "groupId": "com.axonivy.utils.bpmnstatistic",
+                     "artifactId": "bpmn-statistic",
+                     "version": "${version}",
+                     "type": "iar"
+                   }
+                 ],
+                 "repositories": [
+                   {
+                     "id": "maven.axonivy.com",
+                     "url": "https://maven.axonivy.com",
+                     "snapshots": {
+                       "enabled": "true"
+                     }
+                   }
+                 ]
+               }
+             }
+           ]
+         }
+        """;
+    result.setContent(mockContent);
+    return result;
+  }
+
   @Test
   void testGetArtifactsAndVersionToDisplay() {
-    String productId = "adobe-acrobat-sign-connector";
+    String productId = "bpmn-statistic";
     String targetVersion = "10.0.10";
 
     when(mavenArtifactVersionRepository.findById(Mockito.anyString())).thenReturn(Optional.empty());
-    when(mavenArtifactVersionRepository.findById("adobe-acrobat-sign-connector")).thenReturn(
+    when(mavenArtifactVersionRepository.findById("bpmn-statistic")).thenReturn(
         Optional.ofNullable(
             MavenArtifactVersion.builder().productId(productId).productArtifactsByVersion(
                 new HashMap<>()).additionalArtifactsByVersion(new HashMap<>()).build()));
@@ -82,7 +139,7 @@ class VersionServiceImplTest {
     proceededData.getAdditionalArtifactsByVersion().put(targetVersion, new ArrayList<>());
 
     MavenArtifactModel mockModel = new MavenArtifactModel();
-    mockModel.setName("adobe-connector");
+    mockModel.setName("bpmn-statistic");
     mockModel.setDownloadUrl("https://maven.axonivy.com");
     proceededData.getAdditionalArtifactsByVersion().put("10.0.10", List.of(mockModel));
     when(mavenArtifactVersionRepository.findById(Mockito.anyString())).thenReturn(Optional.of(proceededData));
@@ -92,20 +149,19 @@ class VersionServiceImplTest {
 
   @Test
   void testGetMavenArtifactsFromProductJsonByVersion() {
-    when(productJsonContentRepository.findByProductIdAndVersion("adobe-acrobat-connector", "10.0.20")).thenReturn(
+    when(productJsonContentRepository.findByProductIdAndVersion("bpmn-statistic", "10.0.20")).thenReturn(
         Collections.emptyList());
 
     Assertions.assertEquals(0,
-        versionService.getMavenArtifactsFromProductJsonByTag("10.0.20", "adobe-acrobat-connector").size());
+        versionService.getMavenArtifactsFromProductJsonByTag("10.0.20", "bpmn-statistic").size());
 
-    String jsonContent = "{ \"installers\": [{ \"id\": \"maven-import\", \"data\": { \"repositories\": [{ \"url\": " +
-        "\"http://repo.url\" }], \"projects\": [], \"dependencies\": [] } }] }";
-    ProductJsonContent productJson = new ProductJsonContent();
-    productJson.setContent(jsonContent);
-    when(productJsonContentRepository.findByProductIdAndVersion("adobe-acrobat-connector", "10.0.20")).thenReturn(
-        List.of(productJson));
-    List<Artifact> results = versionService.getMavenArtifactsFromProductJsonByTag("10.0.20", "adobe-acrobat-connector");
+
+    when(productJsonContentRepository.findByProductIdAndVersion("bpmn-statistic", "10.0.20")).thenReturn(
+        List.of(getMockProductJson()));
+    List<Artifact> results = versionService.getMavenArtifactsFromProductJsonByTag("10.0.20", "bpmn-statistic");
+    Assertions.assertEquals(2, results.size());
   }
+
 
   @Test
   void testFindArchivedArtifactInfoBestMatchWithVersion() {
