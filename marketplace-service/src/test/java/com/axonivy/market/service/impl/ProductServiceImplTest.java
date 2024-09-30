@@ -492,10 +492,8 @@ class ProductServiceImplTest extends BaseSetup {
 
       Product result = productService.fetchBestMatchProductDetail(id, version);
 
-
       assertEquals(mockProduct, result);
       assertEquals(bestMatchVersion, result.getBestMatchVersion());
-
       verify(mavenArtifactVersionRepo, times(1)).findById(id);
       verify(productRepository, times(1)).getProductByIdWithTagOrVersion(id, version);
     }
