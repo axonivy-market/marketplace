@@ -145,7 +145,7 @@ class ProductControllerTest {
     product.setId("a-trust");
     when(service.renewProductById(any(String.class))).thenReturn(product);
     when(service.syncOneProduct(any(String.class), any(Product.class))).thenReturn(true);
-    var response = productController.syncProductByIdAndPath(AUTHORIZATION_HEADER, PRODUCT_ID_SAMPLE,
+    var response = productController.syncOneProduct(AUTHORIZATION_HEADER, PRODUCT_ID_SAMPLE,
         PRODUCT_PATH_SAMPLE);
     assertEquals(HttpStatus.OK, response.getStatusCode());
     assertTrue(response.hasBody());
@@ -159,7 +159,7 @@ class ProductControllerTest {
         .validateUserOrganization(any(String.class), any(String.class));
 
     UnauthorizedException exception = assertThrows(UnauthorizedException.class,
-        () -> productController.syncProductByIdAndPath(INVALID_AUTHORIZATION_HEADER, PRODUCT_ID_SAMPLE,
+        () -> productController.syncOneProduct(INVALID_AUTHORIZATION_HEADER, PRODUCT_ID_SAMPLE,
             PRODUCT_PATH_SAMPLE));
 
     assertEquals(ErrorCode.GITHUB_USER_UNAUTHORIZED.getHelpText(), exception.getMessage());

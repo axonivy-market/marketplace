@@ -113,9 +113,9 @@ public class ProductController {
     return new ResponseEntity<>(message, HttpStatus.OK);
   }
 
-  @PutMapping(SYNC_PRODUCT_BY_ID)
+  @PutMapping(SYNC_ONE_PRODUCT)
   @Operation(hidden = true)
-  public ResponseEntity<Message> syncProductByIdAndPath(
+  public ResponseEntity<Message> syncOneProduct(
       @RequestHeader(value = AUTHORIZATION) String authorizationHeader,
       @RequestParam(value = ID) @Parameter(
           description = "Product Id is defined in meta.json file", example = "a-trust") String productId,
