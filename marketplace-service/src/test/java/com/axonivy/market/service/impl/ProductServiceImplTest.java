@@ -22,6 +22,7 @@ import com.axonivy.market.github.service.GitHubService;
 import com.axonivy.market.model.ProductCustomSortRequest;
 import com.axonivy.market.repository.GitHubRepoMetaRepository;
 import com.axonivy.market.repository.ProductCustomSortRepository;
+import com.axonivy.market.repository.ProductJsonContentRepository;
 import com.axonivy.market.repository.ProductModuleContentRepository;
 import com.axonivy.market.repository.ProductRepository;
 import com.axonivy.market.service.ImageService;
@@ -99,6 +100,8 @@ class ProductServiceImplTest extends BaseSetup {
   private ProductRepository productRepository;
   @Mock
   private ProductModuleContentRepository productModuleContentRepository;
+  @Mock
+  private ProductJsonContentRepository productJsonContentRepository;
   @Mock
   private GHAxonIvyMarketRepoService marketRepoService;
   @Mock
@@ -306,15 +309,8 @@ class ProductServiceImplTest extends BaseSetup {
     when(mockGHCommit.getCommitDate()).thenReturn(new Date());
 
     when(gitHubService.getRepositoryTags(anyString())).thenReturn(List.of(mockTag));
-    var mockContent = mockGHContentAsMetaJSON();
-    InputStream inputStream = this.getClass().getResourceAsStream(SLASH.concat(META_FILE));
-    when(mockContent.read()).thenReturn(inputStream);
-
-    var mockContentLogo = mockGHContentAsLogo();
-    List<GHContent> mockMetaJsonAndLogoList = new ArrayList<>(List.of(mockContent, mockContentLogo));
-
     Map<String, List<GHContent>> mockGHContentMap = new HashMap<>();
-    mockGHContentMap.put(SAMPLE_PRODUCT_ID, mockMetaJsonAndLogoList);
+    mockGHContentMap.put(SAMPLE_PRODUCT_ID, mockMetaJsonAndLogoList());
     when(marketRepoService.fetchAllMarketItems()).thenReturn(mockGHContentMap);
     when(productModuleContentRepository.saveAll(anyList())).thenReturn(List.of(mockReadmeProductContent()));
 
@@ -668,5 +664,42 @@ class ProductServiceImplTest extends BaseSetup {
     assertFalse(result);
     verify(productRepository, times(1)).deleteById(anyString());
     verify(imageRepository, times(1)).deleteAllByProductId(anyString());
+  }
+
+  @Test
+  void testRenewProductById() {
+    Product mockProduct = new Product();
+    mockProduct.setId(SAMPLE_PRODUCT_ID);
+    mockProduct.setInstallationCount(10);
+    when(productRepository.findById(SAMPLE_PRODUCT_ID)).thenReturn(Optional.of(mockProduct));
+
+    Product foundProduct = productService.renewProductById(SAMPLE_PRODUCT_ID);
+
+    verify(imageRepository, times(1)).deleteAllByProductId(SAMPLE_PRODUCT_ID);
+    verify(productModuleContentRepository, times(1)).deleteAllByProductId(SAMPLE_PRODUCT_ID);
+    verify(productJsonContentRepository, times(1)).deleteAllByProductId(SAMPLE_PRODUCT_ID);
+    verify(productRepository, times(1)).delete(mockProduct);
+    assertEquals(foundProduct.getInstallationCount(), 10);
+  }
+
+  @Test
+  void testSyncOneProduct() throws IOException {
+    Product mockProduct = new Product();
+    mockProduct.setId(SAMPLE_PRODUCT_ID);
+    var mockContents = mockMetaJsonAndLogoList();
+    when(marketRepoService.getMarketItemByPath(anyString())).thenReturn(mockContents);
+    when(productRepository.save(any(Product.class))).thenReturn(mockProduct);
+    // Executes
+    var result = productService.syncOneProduct(SAMPLE_PRODUCT_PATH, mockProduct());
+    assertTrue(result);
+  }
+
+  private List<GHContent> mockMetaJsonAndLogoList() throws IOException {
+    var mockContent = mockGHContentAsMetaJSON();
+    InputStream inputStream = this.getClass().getResourceAsStream(SLASH.concat(META_FILE));
+    when(mockContent.read()).thenReturn(inputStream);
+
+    var mockContentLogo = mockGHContentAsLogo();
+    return new ArrayList<>(List.of(mockContent, mockContentLogo));
   }
 }
