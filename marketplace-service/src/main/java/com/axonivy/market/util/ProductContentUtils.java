@@ -101,9 +101,9 @@ public class ProductContentUtils {
     return matcher.find();
   }
 
-  private static String removeFirstLine(String text) {
+  public static String removeFirstLine(String text) {
     String result;
-    if (text.isBlank()) {
+    if (StringUtils.isBlank(text)) {
       result = Strings.EMPTY;
     } else if (text.startsWith(HASH)) {
       int index = text.indexOf(StringUtils.LF);
