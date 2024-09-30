@@ -16,18 +16,19 @@ import java.util.List;
 import java.util.Set;
 
 class MavenUtilsTest {
-
+  private static final String TEST_GROUP_ID = "com.axonivy.util";
+  private static final String DEFAULT_TEST_MAVEN_URL = "https://maven.axonivy.com/com/axonivy/util/octopus/maven" +
+      "-metadata.xml";
   private static Metadata buildMocKMetadata() {
     return Metadata.builder().url(
-        "https://maven.axonivy.com/com/axonivy/util/octopus/maven-metadata.xml").repoUrl(
-        "https://maven.axonivy.com").groupId("com.axonivy.util").artifactId("octopus").type("zip").productId(
-        "octopus").build();
+        DEFAULT_TEST_MAVEN_URL).repoUrl("https://maven.axonivy.com").groupId(TEST_GROUP_ID).artifactId("octopus").type(
+        "zip").productId("octopus").build();
   }
 
   private static Artifact createMockArtifact() {
     Artifact artifact = new Artifact();
-    artifact.setArtifactId("octopus-demo");
-    artifact.setGroupId("com.axonivy.util");
+    artifact.setArtifactId("octopus");
+    artifact.setGroupId(TEST_GROUP_ID);
     artifact.setRepoUrl(MavenConstants.DEFAULT_IVY_MAVEN_BASE_URL);
     return artifact;
   }
@@ -98,34 +99,34 @@ class MavenUtilsTest {
     Assertions.assertEquals(StringUtils.EMPTY,
         MavenUtils.buildSnapshotMetadataUrlFromArtifactInfo(null, null, null, null));
     Assertions.assertEquals(
-        "https://maven.axonivy.com/com/axonivy/utils/octopus-demo/1.0.0-SNAPSHOT/maven-metadata.xml",
+        "https://maven.axonivy.com/com/axonivy/util/octopus-demo/1.0.0-SNAPSHOT/maven-metadata.xml",
         MavenUtils.buildSnapshotMetadataUrlFromArtifactInfo(MavenConstants.DEFAULT_IVY_MAVEN_BASE_URL,
-            "com.axonivy" + ".utils", "octopus-demo", "1.0.0-SNAPSHOT"));
+            TEST_GROUP_ID, "octopus-demo", "1.0.0-SNAPSHOT"));
   }
 
   @Test
   void testBuildMetadataUrlFromArtifactInfo() {
     Assertions.assertEquals(StringUtils.EMPTY, MavenUtils.buildMetadataUrlFromArtifactInfo(null, null, null));
 
-    Assertions.assertEquals("https://maven.axonivy.com/com/axonivy/utils/octopus-demo/maven-metadata.xml",
-        MavenUtils.buildMetadataUrlFromArtifactInfo(MavenConstants.DEFAULT_IVY_MAVEN_BASE_URL, "com.axonivy" + ".utils",
+    Assertions.assertEquals("https://maven.axonivy.com/com/axonivy/util/octopus-demo/maven-metadata.xml",
+        MavenUtils.buildMetadataUrlFromArtifactInfo(MavenConstants.DEFAULT_IVY_MAVEN_BASE_URL, TEST_GROUP_ID,
             "octopus-demo"));
   }
 
   @Test
   void testConvertArtifactToMetadata() {
     Artifact artifact = createMockArtifact();
-
+    String metadataUrl = "https://maven.axonovy.com/com/axonivy/util/octopus-demo/maven-metadata.xml";
     Metadata result = MavenUtils.convertArtifactToMetadata("octopus", artifact,
-        "https://maven.axonovy" + ".com/com/axonivy/util/octopus-demo/maven-metadata.xml");
+        metadataUrl);
     Assertions.assertEquals(ProductJsonConstants.DEFAULT_PRODUCT_TYPE, result.getType());
-    Assertions.assertEquals("Octopus Demo (iar)", result.getName());
+    Assertions.assertEquals("Octopus (iar)", result.getName());
     Assertions.assertEquals(0, result.getVersions().size());
     Assertions.assertEquals(MavenConstants.DEFAULT_IVY_MAVEN_BASE_URL, result.getRepoUrl());
 
     artifact.setName("octopus demo");
     result = MavenUtils.convertArtifactToMetadata("octopus", artifact,
-        "https://maven.axonovy.com/com/axonivy/util/octopus-demo/maven-metadata.xml");
+        metadataUrl);
     Assertions.assertEquals("octopus demo (iar)", result.getName());
   }
 
@@ -157,8 +158,7 @@ class MavenUtilsTest {
     Artifact artifact = createMockArtifact();
     Set<Metadata> results = MavenUtils.convertArtifactsToMetadataSet(Set.of(artifact), "octopus");
     Assertions.assertEquals(1, results.size());
-    Assertions.assertEquals("https://maven.axonivy.com/com/axonivy/util/octopus-demo/maven-metadata.xml",
-        results.iterator().next().getUrl());
+    Assertions.assertEquals(DEFAULT_TEST_MAVEN_URL, results.iterator().next().getUrl());
     results = MavenUtils.convertArtifactsToMetadataSet(Collections.emptySet(), "octopus");
     Assertions.assertEquals(0, results.size());
 

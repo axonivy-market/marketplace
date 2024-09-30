@@ -520,7 +520,8 @@ public class ProductServiceImpl implements ProductService {
 
   @Override
   public Product fetchProductDetailByIdAndVersion(String id, String version) {
-    return productRepository.getProductByIdAndTag(id, version);
+    String tag = VersionUtils.convertVersionToTag(id, version);
+    return productRepository.getProductByIdAndTag(id, tag);
   }
 
   @Override

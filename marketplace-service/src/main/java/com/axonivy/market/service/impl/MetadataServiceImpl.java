@@ -107,8 +107,7 @@ public class MetadataServiceImpl implements MetadataService {
       String productId = product.getId();
       Set<Metadata> metadataSet = new HashSet<>(metadataRepo.findByProductId(product.getId()));
       MavenArtifactVersion artifactVersionCache = mavenArtifactVersionRepo.findById(product.getId()).orElse(
-          MavenArtifactVersion.builder().productId(productId).productArtifactsByVersion(
-              new HashMap<>()).additionalArtifactsByVersion(new HashMap<>()).build());
+          MavenArtifactVersion.builder().productId(productId).build());
       MetadataSync syncCache = metadataSyncRepo.findById(product.getId()).orElse(
           MetadataSync.builder().productId(product.getId()).syncedVersions(new HashSet<>()).build());
       Set<Artifact> artifactsFromNewTags = new HashSet<>();
@@ -325,6 +324,10 @@ public class MetadataServiceImpl implements MetadataService {
 
   public void updateMavenArtifactVersionFromMetadata(MavenArtifactVersion artifactVersionCache,
       Metadata metadata) {
+    // Skip to add new model for product artifact
+    if (MavenUtils.isProductArtifactId(metadata.getArtifactId())) {
+      return;
+    }
     metadata.getVersions().forEach(version -> {
       if (VersionUtils.isSnapshotVersion(version) && !StringUtils.equals(NonStandardProduct.PORTAL.getId(),
           metadata.getProductId())) {

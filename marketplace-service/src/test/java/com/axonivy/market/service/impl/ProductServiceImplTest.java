@@ -25,6 +25,7 @@ import com.axonivy.market.repository.ProductCustomSortRepository;
 import com.axonivy.market.repository.ProductModuleContentRepository;
 import com.axonivy.market.repository.ProductRepository;
 import com.axonivy.market.service.ImageService;
+import com.axonivy.market.util.VersionUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -451,15 +452,16 @@ class ProductServiceImplTest extends BaseSetup {
   @Test
   void testFetchProductDetailByIdAndVersion() {
     String id = "amazon-comprehend";
-    String tag = "v10.0.2";
+    String version = "10.0.2";
+    String tagByVersion = VersionUtils.convertVersionToTag(id, version);
 
     Product mockProduct = mockResultReturn.getContent().get(0);
-    when(productRepository.getProductByIdAndTag(id, tag)).thenReturn(mockProduct);
+    when(productRepository.getProductByIdAndTag(id, tagByVersion)).thenReturn(mockProduct);
 
-    Product result = productService.fetchProductDetailByIdAndVersion(id, tag);
+    Product result = productService.fetchProductDetailByIdAndVersion(id, version);
 
     assertEquals(mockProduct, result);
-    verify(productRepository, times(1)).getProductByIdAndTag(id, tag);
+    verify(productRepository, times(1)).getProductByIdAndTag(id, tagByVersion);
   }
 
   @Test
