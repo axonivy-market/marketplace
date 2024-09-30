@@ -137,6 +137,12 @@ class MetadataServiceImplTest {
     return result;
   }
 
+  private static ProductModuleContent getMockProductModuleContent() {
+    ProductModuleContent mockProductModuleContent = new ProductModuleContent();
+    mockProductModuleContent.setMavenVersions(new HashSet<>());
+    return mockProductModuleContent;
+  }
+
   private MavenArtifactVersion getMockMavenArtifactVersion() {
     return new MavenArtifactVersion(StringUtils.EMPTY, new HashMap<>(),
         new HashMap<>());
@@ -258,8 +264,9 @@ class MetadataServiceImplTest {
     String productId = "connectivity-demo";
     List<String> releasedVersion = List.of("1.0.0-SNAPSHOT");
     Set<String> metaVersions = Set.of("1.0.0-SNAPSHOT");
+    ProductModuleContent mockProductModuleContent = getMockProductModuleContent();
     Mockito.when(productContentRepo.findByTagAndProductId("v1.0.0-SNAPSHOT", productId)).thenReturn(
-        new ProductModuleContent());
+        mockProductModuleContent);
     Assertions.assertEquals(0,
         metadataService.getNonMatchSnapshotVersions(productId, releasedVersion, metaVersions).size());
     metaVersions = Set.of("2.0.0-SNAPSHOT");
@@ -269,6 +276,7 @@ class MetadataServiceImplTest {
     Assertions.assertEquals(0,
         metadataService.getNonMatchSnapshotVersions(productId, releasedVersion, metaVersions).size());
   }
+
 
   @Test
   void testBuildProductFolderDownloadUrl() {
@@ -294,7 +302,7 @@ class MetadataServiceImplTest {
           "https://maven.axonivy.com/com/axonivvy/util/bpmn-statistic/maven-metadata.xml")).thenReturn(
           MOCK_METADATA);
       Mockito.when(productContentRepo.findByTagAndProductId("v1.0.0",
-          productId)).thenReturn(new ProductModuleContent());
+          productId)).thenReturn(getMockProductModuleContent());
       metadataService.updateMavenArtifactVersionData(productId, releasedVersion, mockMetadataSet,
           mockMavenArtifactVersion);
       Assertions.assertEquals(1, mockMavenArtifactVersion.getProductArtifactsByVersion().size());

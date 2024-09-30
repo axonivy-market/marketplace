@@ -1,5 +1,7 @@
 package com.axonivy.market.service.impl;
 
+import org.apache.commons.lang3.SystemUtils;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -16,9 +18,9 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.stream.Stream;
+import java.util.zip.ZipEntry;
 
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.mockStatic;
+import static org.mockito.Mockito.*;
 
 
 class FileDownloadServiceImplTest {
@@ -28,11 +30,9 @@ class FileDownloadServiceImplTest {
 
   @Mock
   private RestTemplate restTemplate;
-  @Mock
-  private File mockFile;
 
   @BeforeEach
-  void setUp() {
+  void setUp() throws IOException {
     MockitoAnnotations.openMocks(this);
   }
 
@@ -75,18 +75,13 @@ class FileDownloadServiceImplTest {
     Path file2 = mock(Path.class);
     Stream<Path> mockStream = Stream.of(file1, file2);
 
-    // Mock Files.walk to return the stream of files
     try (MockedStatic<Files> mockedFiles = mockStatic(Files.class)) {
       mockedFiles.when(() -> Files.walk(mockPath)).thenReturn(mockStream);
 
-      // Act
       fileDownloadService.deleteDirectory(mockPath);
 
-      // Assert
       mockedFiles.verify(() -> Files.delete(file1), Mockito.times(1));
       mockedFiles.verify(() -> Files.delete(file2), Mockito.times(1));
     }
   }
-
-
 }
