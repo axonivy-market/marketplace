@@ -46,7 +46,7 @@ class FileDownloadServiceImplTest {
 
       Path resultPath = fileDownloadService.createFolder(location);
 
-      mockedFiles.verify(() -> Files.createDirectories(mockPath), times(1));
+      mockedFiles.verify(() -> Files.createDirectories(mockPath), Mockito.times(1));
       Assertions.assertEquals(mockPath, resultPath);
     }
   }
