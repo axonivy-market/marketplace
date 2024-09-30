@@ -56,8 +56,8 @@ class MetadataReaderUtilsTest {
   }
 
   @Test
-  void testUpdateMetadataFromMavenXMLWithValidXml() {
-    Metadata modifiedMetadata = MetadataReaderUtils.updateMetadataFromMavenXML(MOCK_METADATA, metadata);
+  void testUpdateMetadataFromReleasesMavenXML() {
+    Metadata modifiedMetadata = MetadataReaderUtils.updateMetadataFromMavenXML(MOCK_METADATA, metadata, false);
     LocalDateTime expectedLastUpdated = LocalDateTime.parse("20230924010101",
         DateTimeFormatter.ofPattern(MavenConstants.DATE_TIME_FORMAT));
 
@@ -67,16 +67,16 @@ class MetadataReaderUtilsTest {
   }
 
   @Test
-  void testParseInvalidXML() {
-    MetadataReaderUtils.parseMetadataSnapshotFromString(INVALID_METADATA, metadata);
+  void testUpdateMetadataFromInvalidSnapshotMavenXML() {
+    MetadataReaderUtils.updateMetadataFromMavenXML(INVALID_METADATA, metadata, true);
     Assertions.assertNull(metadata.getLatest());
     Assertions.assertNull(metadata.getRelease());
     Assertions.assertNull(metadata.getLastUpdated());
   }
 
   @Test
-  void testParseMetadataSnapshotFromStringWithValidXml() {
-    MetadataReaderUtils.parseMetadataSnapshotFromString(MOCK_SNAPSHOT, metadata);
+  void testUpdateMetadataFromSnapshotXml() {
+    MetadataReaderUtils.updateMetadataFromMavenXML(MOCK_SNAPSHOT, metadata, true);
     Assertions.assertEquals("8.0.5-20221011.124215-170", metadata.getSnapshotVersionValue());
   }
 }

@@ -92,7 +92,7 @@ public class MetadataServiceImpl implements MetadataService {
       if (StringUtils.isBlank(metadataContent)) {
         continue;
       }
-      Metadata metadataWithVersions = MetadataReaderUtils.updateMetadataFromMavenXML(metadataContent, metadata);
+      Metadata metadataWithVersions = MetadataReaderUtils.updateMetadataFromMavenXML(metadataContent, metadata, false);
       updateMavenArtifactVersionFromMetadata(artifactVersionCache, metadataWithVersions);
       updateContentsFromNonMatchVersions(productId, releasedVersions, metadataWithVersions);
     }
@@ -165,8 +165,8 @@ public class MetadataServiceImpl implements MetadataService {
   public void handleProductArtifact(String productId, String nonMatchSnapshotVersion, Metadata productArtifact,
       List<ProductModuleContent> productModuleContents) {
     Metadata snapShotMetadata = MavenUtils.buildSnapShotMetadataFromVersion(productArtifact, nonMatchSnapshotVersion);
-    MetadataReaderUtils.parseMetadataSnapshotFromString(
-        MavenUtils.getMetadataContentFromUrl(snapShotMetadata.getUrl()), snapShotMetadata);
+    MetadataReaderUtils.updateMetadataFromMavenXML(
+        MavenUtils.getMetadataContentFromUrl(snapShotMetadata.getUrl()), snapShotMetadata, true);
 
     String url = buildProductFolderDownloadUrl(snapShotMetadata, nonMatchSnapshotVersion);
 
@@ -340,8 +340,8 @@ public class MetadataServiceImpl implements MetadataService {
   public void updateMavenArtifactVersionForNonReleaseDevVersion(MavenArtifactVersion artifactVersionCache,
       Metadata metadata, String version) {
     Metadata snapShotMetadata = MavenUtils.buildSnapShotMetadataFromVersion(metadata, version);
-    MetadataReaderUtils.parseMetadataSnapshotFromString(MavenUtils.getMetadataContentFromUrl(snapShotMetadata.getUrl()),
-        snapShotMetadata);
+    MetadataReaderUtils.updateMetadataFromMavenXML(MavenUtils.getMetadataContentFromUrl(snapShotMetadata.getUrl()),
+        snapShotMetadata, true);
     updateMavenArtifactVersionCacheWithModel(artifactVersionCache, version, snapShotMetadata);
   }
 
