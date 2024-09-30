@@ -6,6 +6,7 @@ import com.axonivy.market.entity.MavenArtifactVersion;
 import com.axonivy.market.entity.Metadata;
 import com.axonivy.market.entity.Product;
 import com.axonivy.market.entity.ProductJsonContent;
+import com.axonivy.market.entity.ProductModuleContent;
 import com.axonivy.market.model.MavenArtifactModel;
 import com.axonivy.market.repository.MavenArtifactVersionRepository;
 import com.axonivy.market.repository.MetadataRepository;
@@ -14,6 +15,7 @@ import com.axonivy.market.repository.ProductJsonContentRepository;
 import com.axonivy.market.repository.ProductModuleContentRepository;
 import com.axonivy.market.repository.ProductRepository;
 import com.axonivy.market.util.MavenUtils;
+import com.axonivy.market.util.VersionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -257,6 +259,8 @@ class MetadataServiceImplTest {
     String productId = "connectivity-demo";
     List<String> releasedVersion = List.of("1.0.0-SNAPSHOT");
     Set<String> metaVersions = Set.of("1.0.0-SNAPSHOT");
+    Mockito.when(productContentRepo.findByTagAndProductId("v1.0.0-SNAPSHOT", productId)).thenReturn(
+        new ProductModuleContent());
     Assertions.assertEquals(0,
         metadataService.getNonMatchSnapshotVersions(productId, releasedVersion, metaVersions).size());
     metaVersions = Set.of("2.0.0-SNAPSHOT");
@@ -290,6 +294,8 @@ class MetadataServiceImplTest {
       mockUtils.when(() -> MavenUtils.getMetadataContentFromUrl(
           "https://maven.axonivy.com/com/axonivvy/util/bpmn-statistic/maven-metadata.xml")).thenReturn(
           MOCK_METADATA);
+      Mockito.when(productContentRepo.findByTagAndProductId("v1.0.0",
+          productId)).thenReturn(new ProductModuleContent());
       metadataService.updateMavenArtifactVersionData(productId, releasedVersion, mockMetadataSet,
           mockMavenArtifactVersion);
       Assertions.assertEquals(1, mockMavenArtifactVersion.getProductArtifactsByVersion().size());
