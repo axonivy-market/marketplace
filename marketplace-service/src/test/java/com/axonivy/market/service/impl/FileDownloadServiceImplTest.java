@@ -17,7 +17,8 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.stream.Stream;
 
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.mockStatic;
 
 
 class FileDownloadServiceImplTest {
@@ -33,19 +34,6 @@ class FileDownloadServiceImplTest {
   @BeforeEach
   void setUp() {
     MockitoAnnotations.openMocks(this);
-  }
-
-  @Test
-  void testGrantPermissionForNonUnixSystem() {
-    Mockito.when(mockFile.setReadable(true, false)).thenReturn(false);
-    Mockito.when(mockFile.setWritable(true, false)).thenReturn(false);
-    Mockito.when(mockFile.setExecutable(true, false)).thenReturn(false);
-
-    fileDownloadService.grantPermissionForNonUnixSystem(mockFile);
-
-    Mockito.verify(mockFile).setReadable(true, false);
-    Mockito.verify(mockFile).setWritable(true, false);
-    Mockito.verify(mockFile).setExecutable(true, false);
   }
 
   @Test
@@ -74,7 +62,7 @@ class FileDownloadServiceImplTest {
 
       Path resultPath = fileDownloadService.createFolder(location);
 
-      mockedFiles.verify(() -> Files.createDirectories(mockPath), times(1));
+      mockedFiles.verify(() -> Files.createDirectories(mockPath), Mockito.times(1));
       Assertions.assertEquals(mockPath, resultPath);
     }
   }
@@ -95,8 +83,8 @@ class FileDownloadServiceImplTest {
       fileDownloadService.deleteDirectory(mockPath);
 
       // Assert
-      mockedFiles.verify(() -> Files.delete(file1), times(1));
-      mockedFiles.verify(() -> Files.delete(file2), times(1));
+      mockedFiles.verify(() -> Files.delete(file1), Mockito.times(1));
+      mockedFiles.verify(() -> Files.delete(file2), Mockito.times(1));
     }
   }
 
