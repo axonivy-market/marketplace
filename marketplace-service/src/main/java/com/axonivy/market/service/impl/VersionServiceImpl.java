@@ -65,27 +65,10 @@ public class VersionServiceImpl implements VersionService {
       artifactsByVersion.addAll(
           existingMavenArtifactVersion.getAdditionalArtifactsByVersion().computeIfAbsent(mavenVersion,
               k -> new ArrayList<>()));
-      List<String> releasedVersions = productRepo.getReleasedVersionsById(productId);
-      String version = VersionUtils.getMavenVersionMatchWithTag(releasedVersions, mavenVersion);
-
-      if (StringUtils.isNotBlank(version)) {
-        productJsonRepo.findByProductIdAndVersion(productId,
-            version).stream().findAny().ifPresent(json ->
-            productRepo.findById(productId).ifPresent(product ->
-                productJsonContentService.updateProductJsonContent(json.getContent(), null, mavenVersion,
-                    version, product)
-            )
-        );
-
-        ProductModuleContent moduleContent =
-            productContentRepo.findByTagAndProductId(VersionUtils.convertVersionToTag(productId, version), productId);
-        moduleContent.setMavenVersions(Set.of(mavenVersion));
-        productContentRepo.save(moduleContent);
-      }
 
       if (ObjectUtils.isNotEmpty(artifactsByVersion)) {
         artifactsByVersion = artifactsByVersion.stream().distinct().toList();
-        results.add(new MavenArtifactVersionModel(version, artifactsByVersion));
+        results.add(new MavenArtifactVersionModel(mavenVersion, artifactsByVersion));
       }
     }
     return results;
