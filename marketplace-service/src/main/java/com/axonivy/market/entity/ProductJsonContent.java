@@ -28,7 +28,6 @@ public class ProductJsonContent {
   private String version;
   private String relatedTag;
   private String productId;
-  private Set<String> relatedMavenVersions;
   private String name;
   private String content;
   @LastModifiedDate

@@ -18,7 +18,7 @@ public class ScheduledTasks {
 
   private final ProductService productService;
   private final MetadataService metadataService;
-  
+
   @Scheduled(cron = SCHEDULING_TASK_PRODUCTS_CRON)
   public void syncDataForProductFromGitHubRepo() {
     log.warn("Started sync data for product from GitHub repo");
@@ -28,6 +28,7 @@ public class ScheduledTasks {
   @Scheduled(cron = SCHEDULING_TASK_MAVEN_VERSION_CRON)
   public void syncDataForMavenMetadata() {
     log.warn("Started sync data for Maven metadata");
+
     metadataService.syncAllProductsMetadata();
   }
 }
