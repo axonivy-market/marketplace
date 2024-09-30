@@ -39,7 +39,7 @@ public class MetadataReaderUtils {
         metadata.getVersions().add(versionNodes.item(i).getTextContent());
       }
     } catch (Exception e) {
-      log.error("Metadata Reader: can not read the metadata of {}", xmlData);
+      log.error("Metadata Reader: can not read the metadata of {} with error", xmlData, e);
     }
   }
 

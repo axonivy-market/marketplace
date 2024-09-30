@@ -24,6 +24,7 @@ import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -73,8 +74,6 @@ class MetadataServiceImplTest {
           <lastUpdated>20230924010101</lastUpdated>
           <versions>
               <version>1.0.0</version>
-              <version>1.0.1</version>
-              <version>1.0.2</version>
           </versions>
       </metadata>
       """;
@@ -166,7 +165,7 @@ class MetadataServiceImplTest {
   @Test
   void testGetArtifactsFromNonSyncedVersion() {
     Mockito.when(productJsonRepo.findByProductIdAndVersion("bpmn-statistic", "1.0.0")).thenReturn(
-        getMockProductJson());
+        List.of(getMockProductJson()));
     Set<Artifact> artifacts = metadataService.getArtifactsFromNonSyncedVersion("bpmn-statistic",
         Collections.emptyList());
     Assertions.assertEquals(0, artifacts.size());
@@ -272,6 +271,7 @@ class MetadataServiceImplTest {
   void testUpdateMavenArtifactVersionData() {
     List<String> releasedVersion = List.of("1.0.0");
     Metadata mockMetadata = getMockMetadata();
+    mockMetadata.setVersions(new HashSet<>());
     mockMetadata.setUrl("https://maven.axonivy.com/com/axonivvy/util/bpmn-statistic/maven-metadata.xml");
     Set<Metadata> mockMetadataSet = Set.of(mockMetadata);
     MavenArtifactVersion mockMavenArtifactVersion = getMockMavenArtifactVersion();
