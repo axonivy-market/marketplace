@@ -32,7 +32,6 @@ class ProductContentUtilsTest {
   void testRemoveFirstLine() {
     Assertions.assertEquals(StringUtils.EMPTY, ProductContentUtils.removeFirstLine(null));
     Assertions.assertEquals(StringUtils.EMPTY, ProductContentUtils.removeFirstLine(" "));
-    String result = ProductContentUtils.removeFirstLine("#");
     Assertions.assertEquals(StringUtils.EMPTY, ProductContentUtils.removeFirstLine("#"));
     Assertions.assertEquals("Second line", ProductContentUtils.removeFirstLine("#First line\nSecond line"));
   }
