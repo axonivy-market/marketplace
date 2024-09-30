@@ -5,20 +5,9 @@ import com.axonivy.market.constants.CommonConstants;
 import com.axonivy.market.constants.MavenConstants;
 import com.axonivy.market.constants.ProductJsonConstants;
 import com.axonivy.market.constants.ReadmeConstants;
-import com.axonivy.market.entity.MavenArtifactVersion;
-import com.axonivy.market.entity.Metadata;
-import com.axonivy.market.entity.MetadataSync;
-import com.axonivy.market.entity.Product;
-import com.axonivy.market.entity.ProductJsonContent;
-import com.axonivy.market.entity.ProductModuleContent;
-import com.axonivy.market.enums.NonStandardProduct;
+import com.axonivy.market.entity.*;
 import com.axonivy.market.model.MavenArtifactModel;
-import com.axonivy.market.repository.MavenArtifactVersionRepository;
-import com.axonivy.market.repository.MetadataRepository;
-import com.axonivy.market.repository.MetadataSyncRepository;
-import com.axonivy.market.repository.ProductJsonContentRepository;
-import com.axonivy.market.repository.ProductModuleContentRepository;
-import com.axonivy.market.repository.ProductRepository;
+import com.axonivy.market.repository.*;
 import com.axonivy.market.service.FileDownloadService;
 import com.axonivy.market.service.ImageService;
 import com.axonivy.market.service.MetadataService;
@@ -42,14 +31,7 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Stream;
 
 @Service
@@ -130,7 +112,7 @@ public class MetadataServiceImpl implements MetadataService {
       }
       if (CollectionUtils.isEmpty(metadataSet)) {
         log.info("**MetadataService: No artifact found in product {}", productId);
-        nonUpdatedSyncCount +=1;
+        nonUpdatedSyncCount += 1;
         continue;
       }
       artifactVersionCache.setAdditionalArtifactsByVersion(new HashMap<>());
@@ -230,8 +212,8 @@ public class MetadataServiceImpl implements MetadataService {
       if (ObjectUtils.isEmpty(moduleContent)) {
         return;
       }
-      Set<String> mavenVersions = moduleContent.getMavenVersions();
-      if (CollectionUtils.isEmpty(mavenVersions) || !mavenVersions.contains(metaVersion)) {
+      Set<String> mavenVersions = Optional.ofNullable(moduleContent.getMavenVersions()).orElse(new HashSet<>());
+      if (!mavenVersions.contains(metaVersion)) {
         mavenVersions.add(metaVersion);
         moduleContent.setMavenVersions(mavenVersions);
         productContentRepo.save(moduleContent);
