@@ -383,7 +383,6 @@ public class ProductServiceImpl implements ProductService {
     log.warn("**ProductService: synchronize products from scratch based on the Market repo");
     var gitHubContentMap = axonIvyMarketRepoService.fetchAllMarketItems();
     for (Map.Entry<String, List<GHContent>> ghContentEntity : gitHubContentMap.entrySet()) {
-      if (ghContentEntity.getKey().equals("market/demos/connectivity")) {
         Product product = new Product();
         //update the meta.json first
         ghContentEntity.getValue()
@@ -403,7 +402,6 @@ public class ProductServiceImpl implements ProductService {
         }
         transferComputedDataFromDB(product);
         productRepository.save(product);
-      }
     }
   }
 
@@ -524,9 +522,7 @@ public class ProductServiceImpl implements ProductService {
 
   @Override
   public Product fetchProductDetailByIdAndVersion(String id, String version) {
-    List<String> releasedVersions = productRepository.getReleasedVersionsById(id);
-    String receivedVersion = VersionUtils.getMavenVersionMatchWithTag(releasedVersions, version);
-    return productRepository.getProductByIdAndTag(id, VersionUtils.convertVersionToTag(id, receivedVersion));
+    return productRepository.getProductByIdAndTag(id, version);
   }
 
   @Override

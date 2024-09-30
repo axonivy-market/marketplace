@@ -1,6 +1,7 @@
 package com.axonivy.market.repository;
 
 import com.axonivy.market.entity.Product;
+import com.axonivy.market.entity.ProductModuleContent;
 
 import java.util.List;
 
@@ -18,4 +19,6 @@ public interface CustomProductRepository {
   void increaseInstallationCountForProductByDesignerVersion(String productId, String designerVersion);
 
   List<Product> getAllProductsWithIdAndReleaseTagAndArtifact();
+
+  ProductModuleContent findByProductIdAndTagOrMavenVersion(String productId, String tag);
 }

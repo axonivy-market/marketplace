@@ -47,10 +47,22 @@ public class CustomProductRepositoryImpl extends CustomRepository implements Cus
   public Product getProductByIdAndTag(String id, String tag) {
     Product result = findProductById(id);
     if (!Objects.isNull(result)) {
-      ProductModuleContent content = contentRepository.findByTagAndProductId(tag, id);
+      ProductModuleContent content = findByProductIdAndTagOrMavenVersion(id, tag);
       result.setProductModuleContent(content);
     }
     return result;
+  }
+
+  @Override
+  public ProductModuleContent findByProductIdAndTagOrMavenVersion(String productId, String tag) {
+    Criteria productIdCriteria = Criteria.where(MongoDBConstants.PRODUCT_ID).is(productId);
+    Criteria orCriteria = new Criteria().orOperator(
+        Criteria.where(MongoDBConstants.TAG).is(tag),
+        Criteria.where(MongoDBConstants.MAVEN_VERSIONS).in(tag)
+    );
+    Query query = new Query(new Criteria().andOperator(productIdCriteria, orCriteria));
+    System.out.println(query);
+    return mongoTemplate.findOne(query, ProductModuleContent.class);
   }
 
   private Product findProductById(String id) {
