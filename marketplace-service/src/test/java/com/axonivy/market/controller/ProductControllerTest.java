@@ -39,6 +39,8 @@ import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class ProductControllerTest {
+  private static final String PRODUCT_ID_SAMPLE = "a-trust";
+  private static final String PRODUCT_PATH_SAMPLE = "market/connector/a-trust";
   private static final String PRODUCT_NAME_SAMPLE = "Amazon Comprehend";
   private static final String PRODUCT_NAME_DE_SAMPLE = "Amazon Comprehend DE";
   private static final String PRODUCT_DESC_SAMPLE = "Amazon Comprehend is a AI service that uses machine learning to " +
@@ -133,6 +135,32 @@ class ProductControllerTest {
 
     UnauthorizedException exception = assertThrows(UnauthorizedException.class,
         () -> productController.syncProducts(INVALID_AUTHORIZATION_HEADER, false));
+
+    assertEquals(ErrorCode.GITHUB_USER_UNAUTHORIZED.getHelpText(), exception.getMessage());
+  }
+
+  @Test
+  void testSyncOneProductSuccess() {
+    Product product = new Product();
+    product.setId("a-trust");
+    when(service.renewProductById(any(String.class))).thenReturn(product);
+    when(service.syncOneProduct(any(String.class), any(Product.class))).thenReturn(true);
+    var response = productController.syncProductByIdAndPath(AUTHORIZATION_HEADER, PRODUCT_ID_SAMPLE,
+        PRODUCT_PATH_SAMPLE);
+    assertEquals(HttpStatus.OK, response.getStatusCode());
+    assertTrue(response.hasBody());
+    assertEquals("Sync successfully!", response.getBody().getMessageDetails());
+  }
+
+  @Test
+  void testSyncOneProductInvalidToken() {
+    doThrow(new UnauthorizedException(ErrorCode.GITHUB_USER_UNAUTHORIZED.getCode(),
+        ErrorCode.GITHUB_USER_UNAUTHORIZED.getHelpText())).when(gitHubService)
+        .validateUserOrganization(any(String.class), any(String.class));
+
+    UnauthorizedException exception = assertThrows(UnauthorizedException.class,
+        () -> productController.syncProductByIdAndPath(INVALID_AUTHORIZATION_HEADER, PRODUCT_ID_SAMPLE,
+            PRODUCT_PATH_SAMPLE));
 
     assertEquals(ErrorCode.GITHUB_USER_UNAUTHORIZED.getHelpText(), exception.getMessage());
   }

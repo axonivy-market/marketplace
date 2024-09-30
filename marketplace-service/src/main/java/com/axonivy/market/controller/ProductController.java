@@ -113,6 +113,30 @@ public class ProductController {
     return new ResponseEntity<>(message, HttpStatus.OK);
   }
 
+  @PutMapping(SYNC_PRODUCT_BY_ID)
+  @Operation(hidden = true)
+  public ResponseEntity<Message> syncProductByIdAndPath(
+      @RequestHeader(value = AUTHORIZATION) String authorizationHeader,
+      @RequestParam(value = ID) @Parameter(
+          description = "Product Id is defined in meta.json file", example = "a-trust") String productId,
+      @RequestParam(value = MARKET_ITEM_PATH) @Parameter(
+          description = "Item folder path of the market in https://github.com/axonivy-market/market",
+          example = "market/connector/a-trust") String marketItemPath) {
+    String token = getBearerToken(authorizationHeader);
+    gitHubService.validateUserOrganization(token, GitHubConstants.AXONIVY_MARKET_ORGANIZATION_NAME);
+
+    Product product = productService.renewProductById(productId);
+    var isSuccess = productService.syncOneProduct(marketItemPath, product);
+    var message = new Message();
+    message.setHelpCode(ErrorCode.SUCCESSFUL.getCode());
+    if (isSuccess) {
+      message.setMessageDetails("Sync successfully!");
+    } else {
+      message.setMessageDetails("Sync unsuccessfully!");
+    }
+    return new ResponseEntity<>(message, HttpStatus.OK);
+  }
+
   @PostMapping(CUSTOM_SORT)
   @Operation(hidden = true)
   public ResponseEntity<Message> createCustomSortProducts(
