@@ -108,12 +108,12 @@ public class MavenUtils {
     JsonNode rootNode = objectMapper.readTree(contentStream);
     JsonNode installersNode = rootNode.path(ProductJsonConstants.INSTALLERS);
 
+    // Not convert to artifact if id of node is not maven-import or maven-dependency
+    List<String> installerIdsToDisplay = List.of(ProductJsonConstants.MAVEN_DEPENDENCY_INSTALLER_ID,
+        ProductJsonConstants.MAVEN_IMPORT_INSTALLER_ID);
+
     for (JsonNode mavenNode : installersNode) {
       JsonNode dataNode = mavenNode.path(ProductJsonConstants.DATA);
-
-      // Not convert to artifact if id of node is not maven-import or maven-dependency
-      List<String> installerIdsToDisplay = List.of(ProductJsonConstants.MAVEN_DEPENDENCY_INSTALLER_ID,
-          ProductJsonConstants.MAVEN_IMPORT_INSTALLER_ID);
       if (!installerIdsToDisplay.contains(mavenNode.path(ProductJsonConstants.ID).asText())) {
         continue;
       }
