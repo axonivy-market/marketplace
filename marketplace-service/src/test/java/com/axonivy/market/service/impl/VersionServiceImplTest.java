@@ -15,7 +15,6 @@ import com.axonivy.market.repository.ProductRepository;
 import com.axonivy.market.util.MavenUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -36,8 +35,6 @@ import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class VersionServiceImplTest {
-  private List<Artifact> artifactsFromMeta;
-  private Artifact metaProductArtifact;
   @Spy
   @InjectMocks
   private VersionServiceImpl versionService;
@@ -56,12 +53,6 @@ class VersionServiceImplTest {
 
   @Mock
   private ProductModuleContentRepository productModuleContentRepository;
-
-  @BeforeEach()
-  void prepareBeforeTest() {
-    artifactsFromMeta = new ArrayList<>();
-    metaProductArtifact = new Artifact();
-  }
 
   private ProductJsonContent getMockProductJson() {
     ProductJsonContent result = new ProductJsonContent();
@@ -275,14 +266,14 @@ class VersionServiceImplTest {
   @Test
   void testGetAllExistingVersions() {
     MavenArtifactVersion mockMavenArtifactVersion = new MavenArtifactVersion();
-    Assertions.assertEquals(0, versionService.getAllExistingVersions(mockMavenArtifactVersion, false,
+    Assertions.assertEquals(0, MavenUtils.getAllExistingVersions(mockMavenArtifactVersion, false,
         StringUtils.EMPTY).size());
     Map<String, List<MavenArtifactModel>> mockArtifactModelsByVersion = new HashMap<>();
     mockArtifactModelsByVersion.put("1.0.0-SNAPSHOT", new ArrayList<>());
     mockMavenArtifactVersion.setProductArtifactsByVersion(mockArtifactModelsByVersion);
-    Assertions.assertEquals(1, versionService.getAllExistingVersions(mockMavenArtifactVersion, true,
+    Assertions.assertEquals(1, MavenUtils.getAllExistingVersions(mockMavenArtifactVersion, true,
         StringUtils.EMPTY).size());
-    Assertions.assertEquals(0, versionService.getAllExistingVersions(mockMavenArtifactVersion, false,
+    Assertions.assertEquals(0, MavenUtils.getAllExistingVersions(mockMavenArtifactVersion, false,
         StringUtils.EMPTY).size());
   }
 }
