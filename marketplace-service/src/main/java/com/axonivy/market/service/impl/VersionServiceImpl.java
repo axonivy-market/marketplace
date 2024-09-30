@@ -76,7 +76,8 @@ public class VersionServiceImpl implements VersionService {
         productJsonRepo.findByProductIdAndVersion(productId,
             version).stream().findAny().ifPresent(json ->
             productRepo.findById(productId).ifPresent(product ->
-                productJsonContentService.updateProductJsonContent(json.getContent(), mavenVersion, version, product)
+                productJsonContentService.updateProductJsonContent(json.getContent(), null, mavenVersion,
+                    version, product)
             )
         );
 

@@ -29,6 +29,7 @@ class ProductJsonContentServiceImplTest {
   @Test
   void testUpdateProductJsonContent_ValidJsonContent() {
     String jsonContent = "{\"version\":\"${version}\"}";
+    String relatedTag = "v1.0.0";
     String currentVersion = "1.0.0";
     Product product = new Product();
     product.setId("123");
@@ -36,7 +37,7 @@ class ProductJsonContentServiceImplTest {
     names.put(ProductJsonConstants.EN_LANGUAGE, "Test Product");
     product.setNames(names);
 
-    productJsonContentService.updateProductJsonContent(jsonContent, currentVersion,
+    productJsonContentService.updateProductJsonContent(jsonContent, relatedTag, currentVersion,
         ProductJsonConstants.VERSION_VALUE, product);
 
     ArgumentCaptor<ProductJsonContent> captor = ArgumentCaptor.forClass(ProductJsonContent.class);
@@ -52,10 +53,11 @@ class ProductJsonContentServiceImplTest {
   @Test
   void testUpdateProductJsonContent_EmptyJsonContent() {
     String jsonContent = "";
+    String relatedTag = "v1.0.0";
     String currentVersion = "1.0.0";
     Product product = new Product();
 
-    productJsonContentService.updateProductJsonContent(jsonContent, currentVersion,
+    productJsonContentService.updateProductJsonContent(jsonContent, relatedTag, currentVersion,
         ProductJsonConstants.VERSION_VALUE, product);
 
     verify(productJsonRepo, times(0)).save(any(ProductJsonContent.class));
