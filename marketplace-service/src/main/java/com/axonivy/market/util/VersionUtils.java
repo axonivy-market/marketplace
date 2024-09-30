@@ -172,4 +172,25 @@ public class VersionUtils {
     }
     return releasedVersion;
   }
+
+  public static String getNumbersOnly(String version) {
+    return StringUtils.defaultIfBlank(version, StringUtils.EMPTY).split(CommonConstants.DASH_SEPARATOR)[0];
+  }
+
+  public static boolean isMajorVersion(String version) {
+    return getNumbersOnly(version).split(CommonConstants.DOT_SEPARATOR).length == 0 && isReleasedVersion(version);
+  }
+
+  public static boolean isMinorVersion(String version) {
+    return getNumbersOnly(version).split(CommonConstants.DOT_SEPARATOR).length == 1 && isReleasedVersion(version);
+  }
+
+  public static boolean isBugFixVersion(String version) {
+    return getNumbersOnly(version).split(CommonConstants.DOT_SEPARATOR).length == 2 && isReleasedVersion(version);
+  }
+
+  public static String getLatestDevVersionFromRange(List<String> versionInRange, String version) {
+    return CollectionUtils.firstElement(versionInRange.stream().sorted(
+        new LatestVersionComparator()).toList());
+  }
 }
