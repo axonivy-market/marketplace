@@ -205,29 +205,39 @@ public class MetadataServiceImpl implements MetadataService {
     for (String metaVersion : metaVersions) {
       String matchedVersion = VersionUtils.getMavenVersionMatchWithTag(releasedVersions, metaVersion);
 
-      if (StringUtils.isNotBlank(matchedVersion)) {
-        productJsonRepo.findByProductIdAndVersion(productId,
-            matchedVersion).stream().findAny().ifPresent(json ->
-            productRepo.findById(productId).ifPresent(product ->
-                productJsonContentService.updateProductJsonContent(json.getContent(), null, metaVersion,
-                    matchedVersion, product)
-            )
-        );
-
-        ProductModuleContent moduleContent =
-            productContentRepo.findByTagAndProductId(VersionUtils.convertVersionToTag(productId, matchedVersion),
-                productId);
-        if (ObjectUtils.isNotEmpty(moduleContent) && moduleContent.getMavenVersions().stream().noneMatch(
-            mavenVersion -> mavenVersion.matches(metaVersion))) {
-          moduleContent.setMavenVersions(Set.of(metaVersion));
-          productContentRepo.save(moduleContent);
-        }
-      }
+      updateProductJsonAndReadmeContents(productId, metaVersion, matchedVersion);
       if (matchedVersion == null && VersionUtils.isSnapshotVersion(metaVersion)) {
         nonMatchSnapshotVersions.add(metaVersion);
       }
     }
     return nonMatchSnapshotVersions;
+  }
+
+  private void updateProductJsonAndReadmeContents(String productId, String metaVersion, String matchedVersion) {
+    if (StringUtils.isNotBlank(matchedVersion)) {
+      // Clone new record from matchVersion's values
+      productJsonRepo.findByProductIdAndVersion(productId,
+          matchedVersion).stream().findAny().ifPresent(json ->
+          productRepo.findById(productId).ifPresent(product ->
+              productJsonContentService.updateProductJsonContent(json.getContent(), null, metaVersion,
+                  matchedVersion, product)
+          )
+      );
+
+      // Note metaVersion that get matchTag's contents to display
+      ProductModuleContent moduleContent =
+          productContentRepo.findByTagAndProductId(VersionUtils.convertVersionToTag(productId, matchedVersion),
+              productId);
+      if (ObjectUtils.isEmpty(moduleContent)) {
+        return;
+      }
+      Set<String> mavenVersions = moduleContent.getMavenVersions();
+      if (!CollectionUtils.isEmpty(mavenVersions) && mavenVersions.stream().noneMatch(
+          mavenVersion -> mavenVersion.matches(metaVersion))) {
+        moduleContent.setMavenVersions(Set.of(metaVersion));
+        productContentRepo.save(moduleContent);
+      }
+    }
   }
 
   private ProductModuleContent getReadmeAndProductContentsFromTag(Product product, String nonMatchSnapshotVersion,
