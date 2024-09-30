@@ -4,6 +4,7 @@ import com.axonivy.market.BaseSetup;
 import com.axonivy.market.constants.GitHubConstants;
 import com.axonivy.market.criteria.ProductSearchCriteria;
 import com.axonivy.market.entity.GitHubRepoMeta;
+import com.axonivy.market.entity.MavenArtifactVersion;
 import com.axonivy.market.entity.Product;
 import com.axonivy.market.entity.ProductCustomSort;
 import com.axonivy.market.entity.ProductModuleContent;
@@ -21,6 +22,7 @@ import com.axonivy.market.github.service.GitHubService;
 import com.axonivy.market.model.ProductCustomSortRequest;
 import com.axonivy.market.repository.GitHubRepoMetaRepository;
 import com.axonivy.market.repository.ImageRepository;
+import com.axonivy.market.repository.MavenArtifactVersionRepository;
 import com.axonivy.market.repository.ProductCustomSortRepository;
 import com.axonivy.market.repository.ProductModuleContentRepository;
 import com.axonivy.market.repository.ProductRepository;
@@ -53,6 +55,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -116,6 +119,8 @@ class ProductServiceImplTest extends BaseSetup {
   private GHAxonIvyProductRepoService ghAxonIvyProductRepoService;
   @Mock
   private ImageService imageService;
+  @Mock
+  private MavenArtifactVersionRepository mavenArtifactVersionRepo;
   @InjectMocks
   private ProductServiceImpl productService;
 
@@ -453,15 +458,14 @@ class ProductServiceImplTest extends BaseSetup {
   void testFetchProductDetailByIdAndVersion() {
     String id = "amazon-comprehend";
     String version = "10.0.2";
-    String tagByVersion = VersionUtils.convertVersionToTag(id, version);
 
     Product mockProduct = mockResultReturn.getContent().get(0);
-    when(productRepository.getProductByIdAndTag(id, tagByVersion)).thenReturn(mockProduct);
+    when(productRepository.getProductByIdWithTagOrVersion(id, version)).thenReturn(mockProduct);
 
     Product result = productService.fetchProductDetailByIdAndVersion(id, version);
 
     assertEquals(mockProduct, result);
-    verify(productRepository, times(1)).getProductByIdAndTag(id, tagByVersion);
+    verify(productRepository, times(1)).getProductByIdWithTagOrVersion(id, version);
   }
 
   @Test
