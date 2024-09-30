@@ -16,20 +16,23 @@ import java.util.Objects;
 
 @Log4j2
 public class MetadataReaderUtils {
+  private static final DateTimeFormatter DATE_TIME_FORMATTER = DateTimeFormatter.ofPattern(
+      MavenConstants.DATE_TIME_FORMAT);
+  private static final DateTimeFormatter SNAPSHOT_DATE_TIME_FORMATTER = DateTimeFormatter.ofPattern(
+      MavenConstants.SNAPSHOT_LAST_UPDATED_DATE_TIME_FORMAT);
   private MetadataReaderUtils() {
   }
 
-  public static void parseMetadataFromString(String xmlData, Metadata metadata) {
+  public static Metadata updateMetadataFromMavenXML(String xmlData, Metadata metadata) {
     try {
       DocumentBuilder builder = DocumentBuilderFactory.newInstance().newDocumentBuilder();
       Document document = builder.parse(new InputSource(new StringReader(xmlData)));
       document.getDocumentElement().normalize();
-      DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern(MavenConstants.DATE_TIME_FORMAT);
       LocalDateTime lastUpdated = LocalDateTime.parse(
           Objects.requireNonNull(getElementValue(document, MavenConstants.LAST_UPDATED_TAG)),
-          dateTimeFormatter);
+          DATE_TIME_FORMATTER);
       if (lastUpdated.equals(metadata.getLastUpdated())) {
-        return;
+        return metadata;
       }
       metadata.setLastUpdated(lastUpdated);
       metadata.setLatest(getElementValue(document, MavenConstants.LATEST_VERSION_TAG));
@@ -41,6 +44,7 @@ public class MetadataReaderUtils {
     } catch (Exception e) {
       log.error("Metadata Reader: can not read the metadata of {} with error", xmlData, e);
     }
+    return metadata;
   }
 
   public static void parseMetadataSnapshotFromString(String xmlData, Metadata metadata) {
@@ -48,11 +52,9 @@ public class MetadataReaderUtils {
       DocumentBuilder builder = DocumentBuilderFactory.newInstance().newDocumentBuilder();
       Document document = builder.parse(new InputSource(new StringReader(xmlData)));
       document.getDocumentElement().normalize();
-      DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern(
-          MavenConstants.SNAPSHOT_LAST_UPDATED_DATE_TIME_FORMAT);
       LocalDateTime lastUpdated = LocalDateTime.parse(
           Objects.requireNonNull(getElementValue(document, MavenConstants.SNAPSHOT_LAST_UPDATED_TAG)),
-          dateTimeFormatter);
+          SNAPSHOT_DATE_TIME_FORMATTER);
       if (lastUpdated.equals(metadata.getLastUpdated())) {
         return;
       }

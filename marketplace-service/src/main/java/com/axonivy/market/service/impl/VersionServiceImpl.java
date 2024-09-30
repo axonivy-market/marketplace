@@ -29,6 +29,7 @@ import org.springframework.util.CollectionUtils;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -53,22 +54,19 @@ public class VersionServiceImpl implements VersionService {
 
   public List<MavenArtifactVersionModel> getArtifactsAndVersionToDisplay(String productId, Boolean isShowDevVersion,
       String designerVersion) {
-    MavenArtifactVersion cache = mavenArtifactVersionRepository.findById(productId).orElse(
+    MavenArtifactVersion existingMavenArtifactVersion = mavenArtifactVersionRepository.findById(productId).orElse(
         MavenArtifactVersion.builder().productId(productId).build());
-    List<String> versionsToDisplay = VersionUtils.getVersionsToDisplay(new ArrayList<>(cache.getProductArtifactsByVersion().keySet()),
-        isShowDevVersion, designerVersion);
-
-    List<Artifact> artifactsFromMeta = MavenUtils.filterNonProductArtifactFromList(getArtifactsFromMeta(productId));
     List<MavenArtifactVersionModel> results = new ArrayList<>();
 
-    for (String mavenVersion : versionsToDisplay) {
+    for (String mavenVersion : getAllExistingVersions(existingMavenArtifactVersion, isShowDevVersion,
+        designerVersion)) {
       List<MavenArtifactModel> artifactsByVersion = new ArrayList<>();
-      artifactsByVersion.addAll(MavenUtils.convertArtifactsToModels(artifactsFromMeta, mavenVersion));
       artifactsByVersion.addAll(
-          cache.getProductArtifactsByVersion().computeIfAbsent(mavenVersion, k -> new ArrayList<>()));
+          existingMavenArtifactVersion.getProductArtifactsByVersion().computeIfAbsent(mavenVersion,
+              k -> new ArrayList<>()));
       artifactsByVersion.addAll(
-          cache.getAdditionalArtifactsByVersion().computeIfAbsent(mavenVersion, k -> new ArrayList<>()));
-
+          existingMavenArtifactVersion.getAdditionalArtifactsByVersion().computeIfAbsent(mavenVersion,
+              k -> new ArrayList<>()));
       List<String> releasedVersions = productRepo.getReleasedVersionsById(productId);
       String version = VersionUtils.getMavenVersionMatchWithTag(releasedVersions, mavenVersion);
 
@@ -87,11 +85,25 @@ public class VersionServiceImpl implements VersionService {
         productContentRepo.save(moduleContent);
       }
 
-      if (!CollectionUtils.isEmpty(artifactsByVersion)) {
+      if (ObjectUtils.isNotEmpty(artifactsByVersion)) {
+        artifactsByVersion = artifactsByVersion.stream().distinct().toList();
         results.add(new MavenArtifactVersionModel(version, artifactsByVersion));
       }
     }
     return results;
+  }
+
+  public List<String> getAllExistingVersions(MavenArtifactVersion existingMavenArtifactVersion,
+      boolean isShowDevVersion, String designerVersion) {
+    Set<String> existingProductsArtifactByVersion =
+        ObjectUtils.isEmpty(existingMavenArtifactVersion.getProductArtifactsByVersion()) ? new HashSet<>() :
+            new HashSet<>(existingMavenArtifactVersion.getProductArtifactsByVersion().keySet());
+    Set<String> existingAdditionalArtifactByVersion = ObjectUtils.isEmpty(
+        existingMavenArtifactVersion.getProductArtifactsByVersion()) ? new HashSet<>() :
+        existingMavenArtifactVersion.getProductArtifactsByVersion().keySet();
+    existingProductsArtifactByVersion.addAll(existingAdditionalArtifactByVersion);
+    return VersionUtils.getVersionsToDisplay(
+        new ArrayList<>(existingProductsArtifactByVersion), isShowDevVersion, designerVersion);
   }
 
   public Map<String, Object> getProductJsonContentByIdAndTag(String productId, String tag) {
@@ -121,16 +133,6 @@ public class VersionServiceImpl implements VersionService {
       versionAndUrlList.add(versionAndUrlModel);
     }
     return versionAndUrlList;
-  }
-
-  @Override
-  public void clearAllProductVersions() {
-    mavenArtifactVersionRepository.deleteAll();
-  }
-
-  public List<Artifact> getArtifactsFromMeta(String productId) {
-    Product productInfo = productRepo.findById(productId).orElse(new Product());
-    return Optional.ofNullable(productInfo.getArtifacts()).orElse(new ArrayList<>());
   }
 
   public List<String> getPersistedVersions(String productId) {

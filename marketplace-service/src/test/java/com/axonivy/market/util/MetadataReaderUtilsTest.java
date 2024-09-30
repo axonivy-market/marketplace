@@ -56,14 +56,14 @@ class MetadataReaderUtilsTest {
   }
 
   @Test
-  void testParseMetadataFromStringWithValidXml() {
-    MetadataReaderUtils.parseMetadataFromString(MOCK_METADATA, metadata);
+  void testUpdateMetadataFromMavenXMLWithValidXml() {
+    Metadata modifiedMetadata = MetadataReaderUtils.updateMetadataFromMavenXML(MOCK_METADATA, metadata);
     LocalDateTime expectedLastUpdated = LocalDateTime.parse("20230924010101",
         DateTimeFormatter.ofPattern(MavenConstants.DATE_TIME_FORMAT));
 
-    Assertions.assertEquals("1.0.2", metadata.getLatest());
-    Assertions.assertEquals("1.0.1", metadata.getRelease());
-    Assertions.assertEquals(expectedLastUpdated, metadata.getLastUpdated());
+    Assertions.assertEquals("1.0.2", modifiedMetadata.getLatest());
+    Assertions.assertEquals("1.0.1", modifiedMetadata.getRelease());
+    Assertions.assertEquals(expectedLastUpdated, modifiedMetadata.getLastUpdated());
   }
 
   @Test

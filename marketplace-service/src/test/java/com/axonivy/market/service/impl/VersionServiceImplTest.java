@@ -7,12 +7,14 @@ import com.axonivy.market.entity.Product;
 import com.axonivy.market.entity.ProductJsonContent;
 import com.axonivy.market.github.service.GHAxonIvyProductRepoService;
 import com.axonivy.market.model.MavenArtifactModel;
+import com.axonivy.market.model.MavenArtifactVersionModel;
 import com.axonivy.market.model.VersionAndUrlModel;
 import com.axonivy.market.repository.MavenArtifactVersionRepository;
 import com.axonivy.market.repository.ProductJsonContentRepository;
 import com.axonivy.market.repository.ProductModuleContentRepository;
 import com.axonivy.market.repository.ProductRepository;
 import com.axonivy.market.util.MavenUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -79,11 +81,8 @@ class VersionServiceImplTest {
   void testGetArtifactsAndVersionToDisplay() {
     String productId = "adobe-acrobat-sign-connector";
     String targetVersion = "10.0.10";
-    setUpArtifactFromMeta();
-    when(versionService.getArtifactsFromMeta(Mockito.anyString())).thenReturn(artifactsFromMeta);
+
     when(mavenArtifactVersionRepository.findById(Mockito.anyString())).thenReturn(Optional.empty());
-    ArrayList<MavenArtifactModel> artifactsInVersion = new ArrayList<>();
-    artifactsInVersion.add(new MavenArtifactModel());
     when(mavenArtifactVersionRepository.findById("adobe-acrobat-sign-connector")).thenReturn(
         Optional.ofNullable(
             MavenArtifactVersion.builder().productId(productId).productArtifactsByVersion(
@@ -96,21 +95,14 @@ class VersionServiceImplTest {
     proceededData.getProductArtifactsByVersion().put(targetVersion, new ArrayList<>());
     proceededData.getAdditionalArtifactsByVersion().put(targetVersion, new ArrayList<>());
 
+    MavenArtifactModel mockModel = new MavenArtifactModel();
+    mockModel.setName("adobe-connector");
+    mockModel.setDownloadUrl("https://maven.axonivy.com");
+    proceededData.getAdditionalArtifactsByVersion().put("10.0.10", List.of(mockModel));
     when(mavenArtifactVersionRepository.findById(Mockito.anyString())).thenReturn(Optional.of(proceededData));
     Assertions.assertEquals(1, versionService.getArtifactsAndVersionToDisplay(productId, false, targetVersion).size());
   }
 
-  @Test
-  void testGetArtifactsFromMeta() {
-    Product product = new Product();
-    Artifact artifact1 = new Artifact();
-    Artifact artifact2 = new Artifact();
-    List<Artifact> artifacts = List.of(artifact1, artifact2);
-    product.setArtifacts(artifacts);
-    when(productRepository.findById(Mockito.anyString())).thenReturn(Optional.of(product));
-    List<Artifact> result = versionService.getArtifactsFromMeta("portal");
-    Assertions.assertEquals(artifacts, result);
-  }
 
   @Test
   void testGetMavenArtifactsFromProductJsonByVersion() {
@@ -226,7 +218,7 @@ class VersionServiceImplTest {
   }
 
   @Test
-  void testgetPersistedVersions() {
+  void testGetPersistedVersions() {
     String mockProductId = "portal";
     Assertions.assertEquals(0, versionService.getPersistedVersions(mockProductId).size());
     String mockVersion = "10.0.1";
@@ -239,8 +231,16 @@ class VersionServiceImplTest {
   }
 
   @Test
-  void testClearAllProductVersions() {
-    versionService.clearAllProductVersions();
-    verify(mavenArtifactVersionRepository).deleteAll();
+  void testGetAllExistingVersions() {
+    MavenArtifactVersion mockMavenArtifactVersion = new MavenArtifactVersion();
+    Assertions.assertEquals(0, versionService.getAllExistingVersions(mockMavenArtifactVersion, false,
+        StringUtils.EMPTY).size());
+    Map<String, List<MavenArtifactModel>> mockArtifactModelsByVersion = new HashMap<>();
+    mockArtifactModelsByVersion.put("1.0.0-SNAPSHOT", new ArrayList<>());
+    mockMavenArtifactVersion.setProductArtifactsByVersion(mockArtifactModelsByVersion);
+    Assertions.assertEquals(1, versionService.getAllExistingVersions(mockMavenArtifactVersion, true,
+        StringUtils.EMPTY).size());
+    Assertions.assertEquals(0, versionService.getAllExistingVersions(mockMavenArtifactVersion, false,
+        StringUtils.EMPTY).size());
   }
 }

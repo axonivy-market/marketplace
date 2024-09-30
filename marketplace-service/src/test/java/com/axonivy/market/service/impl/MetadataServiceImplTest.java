@@ -6,7 +6,6 @@ import com.axonivy.market.entity.MavenArtifactVersion;
 import com.axonivy.market.entity.Metadata;
 import com.axonivy.market.entity.Product;
 import com.axonivy.market.entity.ProductJsonContent;
-import com.axonivy.market.github.util.GitHubUtils;
 import com.axonivy.market.model.MavenArtifactModel;
 import com.axonivy.market.repository.MavenArtifactVersionRepository;
 import com.axonivy.market.repository.MetadataRepository;
@@ -24,7 +23,6 @@ import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -198,7 +196,7 @@ class MetadataServiceImplTest {
   }
 
   @Test
-  void testUpdateMavenArtifactVersionForNonReleaseDeVersion() {
+  void testUpdateMavenArtifactVersionForNonReleaseDevVersion() {
     Metadata mockMetadata = getMockMetadata();
     String version = "1.0.0-SNAPSHOT";
     MavenArtifactVersion mockMavenArtifactVersion = getMockMavenArtifactVersion();
@@ -208,7 +206,8 @@ class MetadataServiceImplTest {
           "https://maven.axonivy.com/com/axonivvy/util/bpmn-statistic/1.0.0-SNAPSHOT/maven-metadata.xml")).thenReturn(
           MOCK_SNAPSHOT);
       mockUtils.when(() -> MavenUtils.buildSnapShotMetadataFromVersion(mockMetadata, version)).thenReturn(mockMetadata);
-      metadataService.updateMavenArtifactVersionForNonReleaseDeVersion(mockMavenArtifactVersion, mockMetadata, version);
+      metadataService.updateMavenArtifactVersionForNonReleaseDevVersion(mockMavenArtifactVersion, mockMetadata,
+          version);
       Assertions.assertEquals(1, mockMavenArtifactVersion.getProductArtifactsByVersion().entrySet().size());
       Assertions.assertEquals(1, mockMavenArtifactVersion.getProductArtifactsByVersion().get(version).size());
     }

@@ -15,5 +15,4 @@ public interface VersionService {
 
   List<VersionAndUrlModel> getVersionsForDesigner(String productId);
 
-  void clearAllProductVersions();
 }

@@ -179,18 +179,16 @@ class MavenUtilsTest {
 
   @Test
   void testExtractMetaDataFromArchivedArtifacts() {
-    Set<Metadata> results = new HashSet<>();
-    MavenUtils.extractMetaDataFromArchivedArtifacts("octopus", new Artifact(), results);
+    Set<Metadata> results = MavenUtils.extractMetaDataFromArchivedArtifacts("octopus", new Artifact());
     Assertions.assertEquals(0, results.size());
 
     Artifact mockArtifact = createMockArtifact();
     ArchivedArtifact mockArchivedArtifact = new ArchivedArtifact();
     mockArchivedArtifact.setArtifactId("octopus-test");
     mockArchivedArtifact.setGroupId("com.octopus.util");
-
     mockArtifact.setArchivedArtifacts(List.of(mockArchivedArtifact));
 
-    MavenUtils.extractMetaDataFromArchivedArtifacts("octopus", mockArtifact, results);
+    results = MavenUtils.extractMetaDataFromArchivedArtifacts("octopus", mockArtifact);
 
     Assertions.assertEquals(1, results.size());
     Assertions.assertEquals("https://maven.axonivy.com/com/octopus/util/octopus-test/maven-metadata.xml",

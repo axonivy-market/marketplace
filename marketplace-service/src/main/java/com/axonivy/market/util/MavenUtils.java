@@ -269,14 +269,14 @@ public class MavenUtils {
         String metadataUrl = buildMetadataUrlFromArtifactInfo(artifact.getRepoUrl(), artifact.getGroupId(),
             artifact.getArtifactId());
         results.add(convertArtifactToMetadata(productId, artifact, metadataUrl));
-        extractMetaDataFromArchivedArtifacts(productId, artifact, results);
+        results.addAll(extractMetaDataFromArchivedArtifacts(productId, artifact));
       });
     }
     return results;
   }
 
-  public static void extractMetaDataFromArchivedArtifacts(String productId, Artifact artifact,
-      Set<Metadata> results) {
+  public static Set<Metadata> extractMetaDataFromArchivedArtifacts(String productId, Artifact artifact) {
+    Set<Metadata> results = new HashSet<>();
     if (!CollectionUtils.isEmpty(artifact.getArchivedArtifacts())) {
       artifact.getArchivedArtifacts().forEach(archivedArtifact -> {
         String archivedMetadataUrl = buildMetadataUrlFromArtifactInfo(artifact.getRepoUrl(),
@@ -284,6 +284,7 @@ public class MavenUtils {
         results.add(convertArtifactToMetadata(productId, artifact, archivedMetadataUrl));
       });
     }
+    return results;
   }
 
   public static List<Artifact> filterNonProductArtifactFromList(List<Artifact> artifactsFromMeta) {

@@ -92,9 +92,9 @@ public class MetadataServiceImpl implements MetadataService {
       if (StringUtils.isBlank(metadataContent)) {
         continue;
       }
-      MetadataReaderUtils.parseMetadataFromString(metadataContent, metadata);
-      updateMavenArtifactVersionFromMetadata(artifactVersionCache, metadata);
-      updateContentsFromNonMatchVersions(releasedVersions, metadata);
+      Metadata metadataWithVersions = MetadataReaderUtils.updateMetadataFromMavenXML(metadataContent, metadata);
+      updateMavenArtifactVersionFromMetadata(artifactVersionCache, metadataWithVersions);
+      updateContentsFromNonMatchVersions(releasedVersions, metadataWithVersions);
     }
   }
 
@@ -298,7 +298,7 @@ public class MetadataServiceImpl implements MetadataService {
       if (VersionUtils.isSnapshotVersion(version) && !StringUtils.equals(NonStandardProduct.PORTAL.getId(),
           metadata.getProductId())) {
         if (VersionUtils.isOfficialVersionOrUnReleasedDevVersion(metadata.getVersions().stream().toList(), version)) {
-          updateMavenArtifactVersionForNonReleaseDeVersion(artifactVersionCache, metadata, version);
+          updateMavenArtifactVersionForNonReleaseDevVersion(artifactVersionCache, metadata, version);
         }
       } else {
         updateMavenArtifactVersionCacheWithModel(artifactVersionCache, version, metadata);
@@ -306,7 +306,7 @@ public class MetadataServiceImpl implements MetadataService {
     });
   }
 
-  public void updateMavenArtifactVersionForNonReleaseDeVersion(MavenArtifactVersion artifactVersionCache,
+  public void updateMavenArtifactVersionForNonReleaseDevVersion(MavenArtifactVersion artifactVersionCache,
       Metadata metadata, String version) {
     Metadata snapShotMetadata = MavenUtils.buildSnapShotMetadataFromVersion(metadata, version);
     MetadataReaderUtils.parseMetadataSnapshotFromString(MavenUtils.getMetadataContentFromUrl(snapShotMetadata.getUrl()),
