@@ -62,7 +62,6 @@ public class MetadataServiceImpl implements MetadataService {
   private final MavenArtifactVersionRepository mavenArtifactVersionRepo;
   private final MetadataRepository metadataRepo;
   private final ImageService imageService;
-  private final ProductModuleContentRepository productModuleContentRepo;
   private final ProductJsonContentService productJsonContentService;
   private final FileDownloadService fileDownloadService;
   private final ProductModuleContentRepository productContentRepo;
@@ -159,7 +158,7 @@ public class MetadataServiceImpl implements MetadataService {
       }
     }
     if (ObjectUtils.isNotEmpty(productModuleContents)) {
-      productModuleContentRepo.saveAll(productModuleContents);
+      productContentRepo.saveAll(productModuleContents);
     }
   }
 

@@ -11,6 +11,7 @@ import com.axonivy.market.repository.MavenArtifactVersionRepository;
 import com.axonivy.market.repository.MetadataRepository;
 import com.axonivy.market.repository.MetadataSyncRepository;
 import com.axonivy.market.repository.ProductJsonContentRepository;
+import com.axonivy.market.repository.ProductModuleContentRepository;
 import com.axonivy.market.repository.ProductRepository;
 import com.axonivy.market.util.MavenUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -43,6 +44,8 @@ class MetadataServiceImplTest {
   MavenArtifactVersionRepository mavenArtifactVersionRepo;
   @Mock
   MetadataRepository metadataRepo;
+  @Mock
+  ProductModuleContentRepository productContentRepo;
 
   public final String MOCK_SNAPSHOT = """
       <metadata modelVersion="1.1.0">
