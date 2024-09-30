@@ -10,16 +10,12 @@ import com.axonivy.market.model.MavenArtifactModel;
 import org.apache.commons.lang3.StringUtils;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mock;
-import org.springframework.web.client.RestTemplate;
 
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
 class MavenUtilsTest {
-  @Mock
-  private RestTemplate restTemplate;
 
   private static Metadata buildMocKMetadata() {
     return Metadata.builder().url(
@@ -129,7 +125,7 @@ class MavenUtilsTest {
 
     artifact.setName("octopus demo");
     result = MavenUtils.convertArtifactToMetadata("octopus", artifact,
-        "https://maven.axonovy" + ".com/com/axonivy/util/octopus-demo/maven-metadata.xml");
+        "https://maven.axonovy.com/com/axonivy/util/octopus-demo/maven-metadata.xml");
     Assertions.assertEquals("octopus demo (iar)", result.getName());
   }
 
