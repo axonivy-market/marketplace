@@ -191,17 +191,22 @@ class VersionServiceImplTest {
 
   @Test
   void testGetVersionsForDesigner() {
-    Mockito.when(productRepository.getReleasedVersionsById(anyString()))
-        .thenReturn(List.of("11.3.0", "11.1.1", "11.1.0", "10.0.2"));
+    MavenArtifactVersion mockMavenArtifactVersion = new MavenArtifactVersion();
+    mockMavenArtifactVersion.getProductArtifactsByVersion().put("11.3.0-SNAPSHOT", new ArrayList<>());
+    mockMavenArtifactVersion.getProductArtifactsByVersion().put("11.1.1", new ArrayList<>());
+    mockMavenArtifactVersion.getProductArtifactsByVersion().put("11.1.0", new ArrayList<>());
+    mockMavenArtifactVersion.getProductArtifactsByVersion().put("10.0.2", new ArrayList<>());
 
-    List<VersionAndUrlModel> result = versionService.getVersionsForDesigner("11.3.0");
+    when(mavenArtifactVersionRepository.findById("portal")).thenReturn(Optional.of(mockMavenArtifactVersion));
+
+    List<VersionAndUrlModel> result = versionService.getVersionsForDesigner("portal");
 
     Assertions.assertEquals(result.stream().map(VersionAndUrlModel::getVersion).toList(),
-        List.of("11.3.0", "11.1.1", "11.1.0", "10.0.2"));
-    Assertions.assertTrue(result.get(0).getUrl().endsWith("/api/product-details/11.3.0/11.3.0/json"));
-    Assertions.assertTrue(result.get(1).getUrl().endsWith("/api/product-details/11.3.0/11.1.1/json"));
-    Assertions.assertTrue(result.get(2).getUrl().endsWith("/api/product-details/11.3.0/11.1.0/json"));
-    Assertions.assertTrue(result.get(3).getUrl().endsWith("/api/product-details/11.3.0/10.0.2/json"));
+        List.of("11.3.0-SNAPSHOT", "11.1.1", "11.1.0", "10.0.2"));
+    Assertions.assertTrue(result.get(0).getUrl().endsWith("/api/product-details/portal/11.3.0-SNAPSHOT/json"));
+    Assertions.assertTrue(result.get(1).getUrl().endsWith("/api/product-details/portal/11.1.1/json"));
+    Assertions.assertTrue(result.get(2).getUrl().endsWith("/api/product-details/portal/11.1.0/json"));
+    Assertions.assertTrue(result.get(3).getUrl().endsWith("/api/product-details/portal/10.0.2/json"));
   }
 
   @Test
