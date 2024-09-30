@@ -65,6 +65,7 @@ public class MetadataServiceImpl implements MetadataService {
   private final ProductModuleContentRepository productModuleContentRepo;
   private final ProductJsonContentService productJsonContentService;
   private final FileDownloadService fileDownloadService;
+  private final ProductModuleContentRepository productContentRepo;
 
 
   public void updateMavenArtifactVersionCacheWithModel(MavenArtifactVersion artifactVersionCache,
@@ -85,7 +86,7 @@ public class MetadataServiceImpl implements MetadataService {
     }
   }
 
-  public void updateMavenArtifactVersionData(List<String> releasedVersions,
+  public void updateMavenArtifactVersionData(String productId, List<String> releasedVersions,
       Set<Metadata> metadataSet, MavenArtifactVersion artifactVersionCache) {
     for (Metadata metadata : metadataSet) {
       String metadataContent = MavenUtils.getMetadataContentFromUrl(metadata.getUrl());
@@ -135,7 +136,7 @@ public class MetadataServiceImpl implements MetadataService {
         continue;
       }
       artifactVersionCache.setAdditionalArtifactsByVersion(new HashMap<>());
-      updateMavenArtifactVersionData(product.getReleasedVersions(), metadataSet, artifactVersionCache);
+      updateMavenArtifactVersionData(productId, product.getReleasedVersions(), metadataSet, artifactVersionCache);
 
       // Persist changed
       metadataSyncRepo.save(syncCache);
@@ -146,10 +147,11 @@ public class MetadataServiceImpl implements MetadataService {
     return nonUpdatedSyncCount;
   }
 
-  public void updateContentsFromNonMatchVersions(List<String> releasedVersions,
+  public void updateContentsFromNonMatchVersions(String productId, List<String> releasedVersions,
       Metadata metadata) {
     List<ProductModuleContent> productModuleContents = new ArrayList<>();
-    Set<String> nonMatchSnapshotVersions = getNonMatchSnapshotVersions(releasedVersions, metadata.getVersions());
+    Set<String> nonMatchSnapshotVersions = getNonMatchSnapshotVersions(productId, releasedVersions,
+        metadata.getVersions());
 
     for (String nonMatchSnapshotVersion : nonMatchSnapshotVersions) {
       if (MavenUtils.isProductArtifactId(metadata.getArtifactId())) {
@@ -198,10 +200,27 @@ public class MetadataServiceImpl implements MetadataService {
     }
   }
 
-  public Set<String> getNonMatchSnapshotVersions(List<String> releasedVersions, Set<String> metaVersions) {
+  public Set<String> getNonMatchSnapshotVersions(String productId, List<String> releasedVersions,
+      Set<String> metaVersions) {
     Set<String> nonMatchSnapshotVersions = new HashSet<>();
     for (String metaVersion : metaVersions) {
       String matchedVersion = VersionUtils.getMavenVersionMatchWithTag(releasedVersions, metaVersion);
+
+      if (StringUtils.isNotBlank(matchedVersion)) {
+        productJsonRepo.findByProductIdAndVersion(productId,
+            matchedVersion).stream().findAny().ifPresent(json ->
+            productRepo.findById(productId).ifPresent(product ->
+                productJsonContentService.updateProductJsonContent(json.getContent(), null, metaVersion,
+                    matchedVersion, product)
+            )
+        );
+
+        ProductModuleContent moduleContent =
+            productContentRepo.findByTagAndProductId(VersionUtils.convertVersionToTag(productId, matchedVersion),
+                productId);
+        moduleContent.setMavenVersions(Set.of(metaVersion));
+        productContentRepo.save(moduleContent);
+      }
       if (matchedVersion == null && VersionUtils.isSnapshotVersion(metaVersion)) {
         nonMatchSnapshotVersions.add(metaVersion);
       }

@@ -22,6 +22,7 @@ public class ProductJsonContentServiceImpl implements ProductJsonContentService 
       String replaceVersion, Product product) {
     if (ObjectUtils.isNotEmpty(jsonContent)) {
       ProductJsonContent productJsonContent = new ProductJsonContent();
+      productJsonContent.setRelatedTag(relatedTag);
       productJsonContent.setVersion(currentVersion);
       productJsonContent.setProductId(product.getId());
       ProductFactory.mappingIdForProductJsonContent(productJsonContent);
