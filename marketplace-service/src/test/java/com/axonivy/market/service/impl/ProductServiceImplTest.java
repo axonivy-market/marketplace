@@ -679,7 +679,7 @@ class ProductServiceImplTest extends BaseSetup {
     verify(productModuleContentRepository, times(1)).deleteAllByProductId(SAMPLE_PRODUCT_ID);
     verify(productJsonContentRepository, times(1)).deleteAllByProductId(SAMPLE_PRODUCT_ID);
     verify(productRepository, times(1)).delete(mockProduct);
-    assertEquals(foundProduct.getInstallationCount(), 10);
+    assertThat(foundProduct.getInstallationCount()).isEqualTo(10);
   }
 
   @Test
