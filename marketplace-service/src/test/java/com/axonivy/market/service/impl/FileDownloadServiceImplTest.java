@@ -1,7 +1,5 @@
 package com.axonivy.market.service.impl;
 
-import org.apache.commons.lang3.SystemUtils;
-import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -18,7 +16,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.stream.Stream;
-import java.util.zip.ZipEntry;
 
 import static org.mockito.Mockito.*;
 
@@ -30,6 +27,9 @@ class FileDownloadServiceImplTest {
 
   @Mock
   private RestTemplate restTemplate;
+
+  private static final String ZIP_FILE_PATH = "src/test/resources/zip/text.zip";
+  private static final String EXTRACT_LOCATION = "src/test/resources/zip/data";
 
   @BeforeEach
   void setUp() throws IOException {
@@ -83,5 +83,12 @@ class FileDownloadServiceImplTest {
       mockedFiles.verify(() -> Files.delete(file1), Mockito.times(1));
       mockedFiles.verify(() -> Files.delete(file2), Mockito.times(1));
     }
+  }
+
+  @Test
+  void testUnzipFile() throws IOException {
+    int result = fileDownloadService.unzipFile(ZIP_FILE_PATH, EXTRACT_LOCATION);
+    Assertions.assertEquals(7, result);
+    fileDownloadService.deleteDirectory(Paths.get("src/test/resources/zip/data/text"));
   }
 }
