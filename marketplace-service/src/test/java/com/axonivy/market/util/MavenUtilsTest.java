@@ -8,12 +8,17 @@ import com.axonivy.market.constants.MavenConstants;
 import com.axonivy.market.constants.ProductJsonConstants;
 import com.axonivy.market.entity.Metadata;
 import com.axonivy.market.model.MavenArtifactModel;
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.springframework.util.CollectionUtils;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Path;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
@@ -185,7 +190,40 @@ class MavenUtilsTest extends BaseSetup {
 
   @Test
   void testIsProductArtifactId() {
-    Assertions.assertTrue(MavenUtils.isProductArtifactId("bpmn-statistic-product"));
-    Assertions.assertFalse(MavenUtils.isProductArtifactId("bpmn-statistic"));
+    Assertions.assertTrue(MavenUtils.isProductArtifactId(MOCK_PRODUCT_ARTIFACT_ID));
+    Assertions.assertFalse(MavenUtils.isProductArtifactId(MOCK_PRODUCT_ID));
+  }
+
+  @Test
+  void testFilterNonProductArtifactFromList() {
+    Artifact productArtifact = getMockArtifact();
+    productArtifact.setArtifactId(MOCK_PRODUCT_ARTIFACT_ID);
+    List<Artifact> artifacts = List.of(productArtifact, getMockArtifact());
+    List<Artifact> results = MavenUtils.filterNonProductArtifactFromList(artifacts);
+    Assertions.assertEquals(1, results.size());
+    Assertions.assertEquals(MOCK_PRODUCT_ID, results.get(0).getArtifactId());
+  }
+
+  @Test
+  void testExtractedContentStream() throws IOException {
+    Assertions.assertNull(MavenUtils.extractedContentStream(Path.of(INAVALID_FILE_PATH)));
+    InputStream expectedResult = IOUtils.toInputStream(getMockSnapShotMetadataContent(), StandardCharsets.UTF_8);
+    InputStream result = MavenUtils.extractedContentStream(Path.of(MOCK_SNAPSHOT_METADATA_FILE_PATH));
+    Assertions.assertNotNull(result);
+    Assertions.assertTrue(IOUtils.contentEquals(expectedResult, result));
+  }
+
+  @Test
+  void testConvertProductJsonToMavenProductInfo() {
+    try {
+      List<Artifact> result = MavenUtils.convertProductJsonToMavenProductInfo(Path.of(INAVALID_FILE_PATH));
+      Assertions.assertTrue(CollectionUtils.isEmpty(result));
+      result = MavenUtils.convertProductJsonToMavenProductInfo(Path.of(MOCK_PRODUCT_JSON_FILE_PATH));
+      Assertions.assertTrue(CollectionUtils.isEmpty(result));
+      result = MavenUtils.convertProductJsonToMavenProductInfo(Path.of(MOCK_PRODUCT_JSON_DIR_PATH));
+      Assertions.assertEquals(2, result.size());
+    } catch (IOException e) {
+      throw new RuntimeException(e);
+    }
   }
 }
