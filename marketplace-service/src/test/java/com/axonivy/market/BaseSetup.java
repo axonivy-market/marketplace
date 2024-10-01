@@ -10,6 +10,8 @@ import com.axonivy.market.entity.ProductJsonContent;
 import com.axonivy.market.entity.ProductModuleContent;
 import com.axonivy.market.enums.Language;
 import com.axonivy.market.enums.SortOption;
+import com.axonivy.market.model.MavenArtifactModel;
+import com.axonivy.market.model.MavenArtifactVersionModel;
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.data.domain.Page;
@@ -168,7 +170,14 @@ public class BaseSetup {
     mockMetadata.setRelease(MOCK_RELEASED_VERSION);
     mockMetadata.setLatest(MOCK_SPRINT_RELEASED_VERSION);
     mockMetadata.setVersions(
-        Set.of(MOCK_SNAPSHOT_VERSION, MOCK_BUGFIX_VERSION, MOCK_RELEASED_VERSION, MOCK_SPRINT_RELEASED_VERSION));
+        Set.of(MOCK_SNAPSHOT_VERSION, MOCK_RELEASED_VERSION, MOCK_SPRINT_RELEASED_VERSION));
     return mockMetadata;
+  }
+
+  protected MavenArtifactModel getMockMavenArtifactModel() {
+    MavenArtifactModel mockMavenArtifactModel = new MavenArtifactModel();
+    mockMavenArtifactModel.setName(MOCK_ARTIFACT_NAME);
+    mockMavenArtifactModel.setDownloadUrl(MOCK_DOWNLOAD_URL);
+    return mockMavenArtifactModel;
   }
 }

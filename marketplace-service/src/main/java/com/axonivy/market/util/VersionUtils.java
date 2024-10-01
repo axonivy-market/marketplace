@@ -188,9 +188,4 @@ public class VersionUtils {
   public static boolean isBugFixVersion(String version) {
     return getNumbersOnly(version).split(CommonConstants.DOT_SEPARATOR).length == 2 && isReleasedVersion(version);
   }
-
-  public static String getLatestDevVersionFromRange(List<String> versionInRange, String version) {
-    return CollectionUtils.firstElement(versionInRange.stream().sorted(
-        new LatestVersionComparator()).toList());
-  }
 }

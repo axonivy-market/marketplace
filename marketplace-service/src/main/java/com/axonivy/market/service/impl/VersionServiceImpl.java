@@ -140,11 +140,11 @@ public class VersionServiceImpl implements VersionService {
         return StringUtils.EMPTY;
       }
       String downloadUrl =
-          artifactVersionCache.get().getProductArtifactsByVersion().get(targetVersion).stream().filter(
+          artifactVersionCache.get().getProductArtifactsByVersion().computeIfAbsent(targetVersion,key -> new ArrayList<>()).stream().filter(
               artifact -> StringUtils.equals(artifactMetadata.getName(), artifact.getName())).findAny().map(
               MavenArtifactModel::getDownloadUrl).orElse(null);
       if (StringUtils.isBlank(downloadUrl)) {
-        downloadUrl = artifactVersionCache.get().getAdditionalArtifactsByVersion().get(targetVersion).stream().filter(
+        downloadUrl = artifactVersionCache.get().getAdditionalArtifactsByVersion().computeIfAbsent(targetVersion,key -> new ArrayList<>()).stream().filter(
             artifact -> StringUtils.equals(artifactMetadata.getName(), artifact.getName())).findAny().map(
             MavenArtifactModel::getDownloadUrl).orElse(null);
       }

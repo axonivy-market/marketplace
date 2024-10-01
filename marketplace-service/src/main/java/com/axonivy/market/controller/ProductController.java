@@ -19,6 +19,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.time.StopWatch;
 import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.data.domain.Page;
@@ -27,8 +28,10 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PagedResourcesAssembler;
 import org.springframework.hateoas.PagedModel;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -51,6 +54,7 @@ public class ProductController {
   private final ProductModelAssembler assembler;
   private final PagedResourcesAssembler<Product> pagedResourcesAssembler;
   private final MetadataService metadataService;
+  private final VersionService versionService;
 
   @GetMapping()
   @Operation(summary = "Retrieve a paginated list of all products, optionally filtered by type, keyword, and language",
@@ -143,9 +147,11 @@ public class ProductController {
   }
 
   @GetMapping(LATEST_LIB_VERSION_BY_ID_AND_ARTIFACT_ID)
-  public ResponseEntity<String> getLatestArtifactDownloadUrl(@RequestParam(value = ID) String productId,
-      @RequestParam(value = VERSION) String version, @RequestParam(value = ARTIFACT_ID) String artifactId) {
-    return new ResponseEntity<>("", HttpStatus.OK);
+  public ResponseEntity<String> getLatestArtifactDownloadUrl(@PathVariable(value = ID) String productId,
+      @PathVariable(value = VERSION) String version, @RequestParam(value = ARTIFACT_ID) String artifactId) {
+    String downloadUrl = versionService.getLatestVersionArtifactDownloadUrl(productId,version,artifactId);
+    HttpStatusCode statusCode = StringUtils.isBlank(downloadUrl) ? HttpStatus.NOT_FOUND : HttpStatus.OK;
+    return new ResponseEntity<>(versionService.getLatestVersionArtifactDownloadUrl(productId,version,artifactId), statusCode);
   }
 
   @SuppressWarnings("unchecked")
