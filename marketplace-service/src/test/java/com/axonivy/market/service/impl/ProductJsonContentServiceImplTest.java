@@ -1,9 +1,11 @@
 package com.axonivy.market.service.impl;
 
+import com.axonivy.market.BaseSetup;
 import com.axonivy.market.constants.ProductJsonConstants;
 import com.axonivy.market.entity.Product;
 import com.axonivy.market.entity.ProductJsonContent;
 import com.axonivy.market.repository.ProductJsonContentRepository;
+import org.apache.commons.lang3.StringUtils;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
@@ -15,11 +17,12 @@ import java.util.HashMap;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
+
+import org.mockito.Mockito;
+
 
 @ExtendWith(MockitoExtension.class)
-class ProductJsonContentServiceImplTest {
+class ProductJsonContentServiceImplTest extends BaseSetup {
   @Mock
   private ProductJsonContentRepository productJsonRepo;
 
@@ -29,37 +32,31 @@ class ProductJsonContentServiceImplTest {
   @Test
   void testUpdateProductJsonContent_ValidJsonContent() {
     String jsonContent = "{\"version\":\"${version}\"}";
-    String relatedTag = "v1.0.0";
-    String currentVersion = "1.0.0";
     Product product = new Product();
-    product.setId("123");
+    product.setId(MOCK_PRODUCT_ID);
     HashMap<String, String> names = new HashMap<>();
-    names.put(ProductJsonConstants.EN_LANGUAGE, "Test Product");
+    names.put(ProductJsonConstants.EN_LANGUAGE, MOCK_PRODUCT_NAME);
     product.setNames(names);
 
-    productJsonContentService.updateProductJsonContent(jsonContent, relatedTag, currentVersion,
+    productJsonContentService.updateProductJsonContent(jsonContent, MOCK_TAG_FROM_RELEASED_VERSION,
+        MOCK_RELEASED_VERSION,
         ProductJsonConstants.VERSION_VALUE, product);
 
     ArgumentCaptor<ProductJsonContent> captor = ArgumentCaptor.forClass(ProductJsonContent.class);
-    verify(productJsonRepo, times(1)).save(captor.capture());
+    Mockito.verify(productJsonRepo).save(captor.capture());
 
     ProductJsonContent savedContent = captor.getValue();
-    assertEquals(currentVersion, savedContent.getVersion());
-    assertEquals("123", savedContent.getProductId());
-    assertEquals("Test Product", savedContent.getName());
-    assertEquals("{\"version\":\"1.0.0\"}", savedContent.getContent());
+    assertEquals(MOCK_RELEASED_VERSION, savedContent.getVersion());
+    assertEquals(MOCK_PRODUCT_ID, savedContent.getProductId());
+    assertEquals(MOCK_PRODUCT_NAME, savedContent.getName());
+    assertEquals("{\"version\":\"10.0.10\"}", savedContent.getContent());
   }
 
   @Test
   void testUpdateProductJsonContent_EmptyJsonContent() {
-    String jsonContent = "";
-    String relatedTag = "v1.0.0";
-    String currentVersion = "1.0.0";
     Product product = new Product();
-
-    productJsonContentService.updateProductJsonContent(jsonContent, relatedTag, currentVersion,
-        ProductJsonConstants.VERSION_VALUE, product);
-
-    verify(productJsonRepo, times(0)).save(any(ProductJsonContent.class));
+    productJsonContentService.updateProductJsonContent(StringUtils.EMPTY, MOCK_TAG_FROM_SNAPSHOT_VERSION,
+        MOCK_SNAPSHOT_VERSION, ProductJsonConstants.VERSION_VALUE, product);
+    Mockito.verify(productJsonRepo, Mockito.never()).save(any(ProductJsonContent.class));
   }
 }
