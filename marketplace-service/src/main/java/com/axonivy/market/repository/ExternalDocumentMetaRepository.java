@@ -10,4 +10,6 @@ import java.util.List;
 public interface ExternalDocumentMetaRepository extends MongoRepository<ExternalDocumentMeta, String> {
 
   List<ExternalDocumentMeta> findByProductIdAndVersion(String productId, String version);
+
+  List<ExternalDocumentMeta> findByProductId(String productId);
 }

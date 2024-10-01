@@ -36,10 +36,10 @@ public class ExternalDocumentServiceImpl implements ExternalDocumentService {
   @Override
   public void syncDocumentForProduct(String productId, boolean isResetSync) {
     productRepo.findById(productId).ifPresent(product -> {
-      var docArtifacts = Optional.ofNullable(product.getArtifacts()).orElse(List.of()).stream()
-          .filter(artifact -> BooleanUtils.isTrue(artifact.getDoc())).toList();
-      List<String> releasedVersions = Optional.ofNullable(product.getReleasedVersions()).orElse(List.of()).stream()
-          .filter(version -> VersionUtils.isValidFormatReleasedVersion(version)).toList();
+      var docArtifacts = Optional.ofNullable(product.getArtifacts()).orElse(List.of())
+          .stream().filter(Artifact::getDoc).toList();
+      List<String> releasedVersions = Optional.ofNullable(product.getReleasedVersions()).orElse(List.of())
+          .stream().filter(VersionUtils::isValidFormatReleasedVersion).toList();
       if (ObjectUtils.isEmpty(docArtifacts) || ObjectUtils.isEmpty(releasedVersions)) {
         return;
       }
@@ -61,10 +61,10 @@ public class ExternalDocumentServiceImpl implements ExternalDocumentService {
     if (product.isEmpty()) {
       return EMPTY;
     }
-    List<ExternalDocumentMeta> productDocumentMetas = externalDocumentMetaRepo.findAll();
-    String resolvedVersion = VersionFactory.get(productDocumentMetas.stream()
-        .map(ExternalDocumentMeta::getVersion).toList(), version);
-    return productDocumentMetas.stream().filter(meta -> StringUtils.equals(meta.getVersion(), resolvedVersion))
+    List<ExternalDocumentMeta> docMetas = externalDocumentMetaRepo.findByProductId(productId);
+    List<String> docMetaVersion = docMetas.stream().map(ExternalDocumentMeta::getVersion).toList();
+    String resolvedVersion = VersionFactory.get(docMetaVersion, version);
+    return docMetas.stream().filter(meta -> StringUtils.equals(meta.getVersion(), resolvedVersion))
         .map(ExternalDocumentMeta::getRelativeLink).findAny().orElse(EMPTY);
   }
 
