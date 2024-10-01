@@ -5,8 +5,10 @@ import com.axonivy.market.bo.ArchivedArtifact;
 import com.axonivy.market.bo.Artifact;
 import com.axonivy.market.constants.MavenConstants;
 import com.axonivy.market.entity.MavenArtifactVersion;
+import com.axonivy.market.entity.Metadata;
 import com.axonivy.market.entity.Product;
 import com.axonivy.market.entity.ProductJsonContent;
+import com.axonivy.market.enums.RequestedVersion;
 import com.axonivy.market.github.service.GHAxonIvyProductRepoService;
 import com.axonivy.market.model.MavenArtifactModel;
 import com.axonivy.market.model.VersionAndUrlModel;
@@ -33,6 +35,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.when;
@@ -178,5 +181,45 @@ class VersionServiceImplTest extends BaseSetup {
         StringUtils.EMPTY)));
     Assertions.assertTrue(CollectionUtils.isEmpty(MavenUtils.getAllExistingVersions(mockMavenArtifactVersion, false,
         StringUtils.EMPTY)));
+  }
+
+  @Test
+  void testGetLatestVersionOfArtifactByVersionRequest() {
+    Metadata artifactMetadata = getMockMetadataWithVersions();
+    Assertions.assertEquals(MOCK_SPRINT_RELEASED_VERSION,
+        versionService.getLatestVersionOfArtifactByVersionRequest(artifactMetadata, "dev"));
+    Assertions.assertEquals(MOCK_SPRINT_RELEASED_VERSION,
+        versionService.getLatestVersionOfArtifactByVersionRequest(artifactMetadata, "sprint"));
+    Assertions.assertEquals(MOCK_SPRINT_RELEASED_VERSION,
+        versionService.getLatestVersionOfArtifactByVersionRequest(artifactMetadata, "nightly"));
+    Assertions.assertEquals(MOCK_RELEASED_VERSION,
+        versionService.getLatestVersionOfArtifactByVersionRequest(artifactMetadata, "latest"));
+
+    artifactMetadata.setVersions(null);
+    String result = versionService.getLatestVersionOfArtifactByVersionRequest(null, MOCK_RELEASED_VERSION);
+    Assertions.assertTrue(StringUtils.isEmpty(result));
+    Assertions.assertTrue(StringUtils.isEmpty(
+        versionService.getLatestVersionOfArtifactByVersionRequest(artifactMetadata, MOCK_RELEASED_VERSION)));
+
+    artifactMetadata.setVersions(
+        Set.of("1.0.0", "1.0.0-SNAPSHOT", "2.0.0", "2.0.0-m123", "3.0.0-SNAPSHOT", "3.0.0-m123", "3.0.0-m234"));
+
+    Assertions.assertEquals("1.0.0",
+        versionService.getLatestVersionOfArtifactByVersionRequest(artifactMetadata, "1.0-dev"));
+    Assertions.assertEquals("1.0.0",
+        versionService.getLatestVersionOfArtifactByVersionRequest(artifactMetadata, "1.0.0-dev"));
+    Assertions.assertEquals("2.0.0",
+        versionService.getLatestVersionOfArtifactByVersionRequest(artifactMetadata, "2-dev"));
+    Assertions.assertEquals("3.0.0-m234",
+        versionService.getLatestVersionOfArtifactByVersionRequest(artifactMetadata, "3-dev"));
+
+    Assertions.assertEquals("1.0.0",
+        versionService.getLatestVersionOfArtifactByVersionRequest(artifactMetadata, "1.0"));
+    Assertions.assertEquals("2.0.0", versionService.getLatestVersionOfArtifactByVersionRequest(artifactMetadata, "2"));
+    Assertions.assertEquals("3.0.0-m234",
+        versionService.getLatestVersionOfArtifactByVersionRequest(artifactMetadata, "3.0.0"));
+
+    Assertions.assertEquals("3.0.0-SNAPSHOT",
+        versionService.getLatestVersionOfArtifactByVersionRequest(artifactMetadata, "3.0.0-SNAPSHOT"));
   }
 }

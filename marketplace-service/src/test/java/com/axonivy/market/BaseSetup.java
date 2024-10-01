@@ -26,6 +26,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 @Log4j2
 public class BaseSetup {
@@ -160,5 +161,14 @@ public class BaseSetup {
     return Metadata.builder().productId(MOCK_PRODUCT_ID).artifactId(MOCK_ARTIFACT_ID).groupId(
         MOCK_GROUP_ID).isProductArtifact(true).repoUrl(MavenConstants.DEFAULT_IVY_MAVEN_BASE_URL).type(
         MavenConstants.DEFAULT_PRODUCT_FOLDER_TYPE).name(MOCK_ARTIFACT_NAME).build();
+  }
+
+  protected Metadata getMockMetadataWithVersions() {
+    Metadata mockMetadata = getMockMetadata();
+    mockMetadata.setRelease(MOCK_RELEASED_VERSION);
+    mockMetadata.setLatest(MOCK_SPRINT_RELEASED_VERSION);
+    mockMetadata.setVersions(
+        Set.of(MOCK_SNAPSHOT_VERSION, MOCK_BUGFIX_VERSION, MOCK_RELEASED_VERSION, MOCK_SPRINT_RELEASED_VERSION));
+    return mockMetadata;
   }
 }

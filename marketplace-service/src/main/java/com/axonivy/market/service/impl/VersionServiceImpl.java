@@ -131,7 +131,7 @@ public class VersionServiceImpl implements VersionService {
   public String getLatestVersionArtifactDownloadUrl(String productId, String version, String artifactId) {
     Metadata artifactMetadata = metadataRepo.findByProductIdAndArtifactId(productId, artifactId);
 
-    String targetVersion = getLatestVersionOfArtifactByVersionRequest(artifactMetadata, version, artifactId);
+    String targetVersion = getLatestVersionOfArtifactByVersionRequest(artifactMetadata, version);
       if (StringUtils.isBlank(targetVersion)) {
         return StringUtils.EMPTY;
       }
@@ -151,34 +151,39 @@ public class VersionServiceImpl implements VersionService {
       return downloadUrl;
     }
 
-    private String getLatestVersionOfArtifactByVersionRequest(Metadata artifactMetadata, String version, String artifactId) {
-      if (Objects.isNull(artifactMetadata)) {
-        return StringUtils.EMPTY;
-      }
-      List<String> versions = new ArrayList<>(artifactMetadata.getVersions());
-      RequestedVersion VersionType = RequestedVersion.findByText(version);
-      // version in ['dev','nightly','sprint']
-      if (VersionType == RequestedVersion.LATEST) {
-        return artifactMetadata.getLatest();
-      }
-      //version is 'latest'
-      if (VersionType == RequestedVersion.RELEASE) {
-        return artifactMetadata.getRelease();
-      }
-
-      List<String> versionInRange =
-          versions.stream().filter(
-              v -> v.startsWith(VersionUtils.getNumbersOnly(version))).sorted(new LatestVersionComparator()).toList();
-      //version is 10.0-dev
-      if (VersionType == RequestedVersion.LATEST_DEV_OF_VERSION) {
-        return CollectionUtils.firstElement(versionInRange);
-      }
-
-      //version is 10.1 or 10
-      if (VersionUtils.isMajorVersion(version) || VersionUtils.isMinorVersion(version)) {
-        return CollectionUtils.firstElement(versionInRange.stream().filter(VersionUtils::isReleasedVersion).toList());
-      }
-      String matchVersion = CollectionUtils.firstElement(versionInRange);
-      return StringUtils.isBlank(matchVersion) ? artifactMetadata.getLatest() : matchVersion;
+  public String getLatestVersionOfArtifactByVersionRequest(Metadata artifactMetadata, String version) {
+    if (Objects.isNull(artifactMetadata)) {
+      return StringUtils.EMPTY;
     }
+    RequestedVersion versionType = RequestedVersion.findByText(version);
+    // version in ['dev','nightly','sprint']
+    if (versionType == RequestedVersion.LATEST) {
+      return artifactMetadata.getLatest();
+    }
+    //version is 'latest'
+    if (versionType == RequestedVersion.RELEASE) {
+      return artifactMetadata.getRelease();
+    }
+
+    if (CollectionUtils.isEmpty(artifactMetadata.getVersions())) {
+      return StringUtils.EMPTY;
+    }
+
+    List<String> versionInRange = new ArrayList<>(artifactMetadata.getVersions()).stream().filter(
+        v -> v.startsWith(VersionUtils.getNumbersOnly(version))).sorted(new LatestVersionComparator()).toList();
+
+    //version is 10.0-dev
+    if (versionType == RequestedVersion.LATEST_DEV_OF_VERSION) {
+      return CollectionUtils.firstElement(versionInRange);
+    }
+
+    //version is 10.1 or 10
+    if (VersionUtils.isMajorVersion(version) || VersionUtils.isMinorVersion(version)) {
+      String latestReleasedVersionInRange = CollectionUtils.firstElement(
+          versionInRange.stream().filter(VersionUtils::isReleasedVersion).toList());
+      return StringUtils.isBlank(latestReleasedVersionInRange) ? CollectionUtils.firstElement(
+          versionInRange) : latestReleasedVersionInRange;
+    }
+    return version;
+  }
 }
