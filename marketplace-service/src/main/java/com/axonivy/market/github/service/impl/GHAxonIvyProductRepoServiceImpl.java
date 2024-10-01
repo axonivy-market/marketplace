@@ -9,7 +9,6 @@ import com.axonivy.market.constants.ReadmeConstants;
 import com.axonivy.market.entity.Product;
 import com.axonivy.market.entity.ProductModuleContent;
 import com.axonivy.market.enums.NonStandardProduct;
-
 import com.axonivy.market.github.service.GHAxonIvyProductRepoService;
 import com.axonivy.market.github.service.GitHubService;
 import com.axonivy.market.github.util.GitHubUtils;
@@ -46,9 +45,7 @@ public class GHAxonIvyProductRepoServiceImpl implements GHAxonIvyProductRepoServ
   private final GitHubService gitHubService;
   private final ImageService imageService;
   private GHOrganization organization;
-
   private final ProductJsonContentService productJsonContentService;
-
 
   public GHAxonIvyProductRepoServiceImpl(GitHubService gitHubService, ImageService imageService,
       ProductJsonContentService productJsonContentService) {

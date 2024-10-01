@@ -28,7 +28,6 @@ public class ScheduledTasks {
   @Scheduled(cron = SCHEDULING_TASK_MAVEN_VERSION_CRON)
   public void syncDataForMavenMetadata() {
     log.warn("Started sync data for Maven metadata");
-
     metadataService.syncAllProductsMetadata();
   }
 }

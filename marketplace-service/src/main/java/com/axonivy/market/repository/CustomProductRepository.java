@@ -21,5 +21,4 @@ public interface CustomProductRepository {
   List<Product> getAllProductsWithIdAndReleaseTagAndArtifact();
 
   ProductModuleContent findByProductIdAndTagOrMavenVersion(String productId, String tag);
-
 }

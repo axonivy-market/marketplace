@@ -2,7 +2,6 @@ package com.axonivy.market.service.impl;
 
 import com.axonivy.market.bo.Artifact;
 import com.axonivy.market.constants.CommonConstants;
-
 import com.axonivy.market.constants.MavenConstants;
 import com.axonivy.market.constants.ProductJsonConstants;
 import com.axonivy.market.constants.ReadmeConstants;

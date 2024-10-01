@@ -117,7 +117,6 @@ public class CustomProductRepositoryImpl extends CustomRepository implements Cus
   public List<Product> getAllProductsWithIdAndReleaseTagAndArtifact() {
     return queryProductsByAggregation(
         createProjectIdAndReleasedVersionsAndArtifactsAggregation());
-
   }
 
   private Query createQueryByProductIdAndDesignerVersion(String productId, String designerVersion) {
