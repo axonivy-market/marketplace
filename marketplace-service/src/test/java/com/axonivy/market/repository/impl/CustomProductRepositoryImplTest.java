@@ -113,37 +113,9 @@ class CustomProductRepositoryImplTest extends BaseSetup {
 
     when(aggregationResults.getUniqueMappedResult()).thenReturn(mockProduct);
 
-    Product actualProduct = repo.getProductById(ID);
+    Product actualProduct = repo.getProductByIdWithNewestReleaseVersion(ID,false);
 
     verify(contentRepo, times(1)).findByTagAndProductId("v11.3.0", ID);
-    assertEquals(mockProduct, actualProduct);
-  }
-
-  @Test
-  void testGetProductById_andFindProductModuleContentByNewestVersion_noReleaseVersion() {
-    mockAggregation = mock(Aggregation.class);
-    AggregationResults<Product> aggregationResults = mock(AggregationResults.class);
-
-    when(mongoTemplate.aggregate(any(Aggregation.class), eq(MongoDBConstants.PRODUCT_COLLECTION),
-        eq(Product.class))).thenReturn(aggregationResults);
-
-    ProductModuleContent productModuleContent = ProductModuleContent.builder()
-        .productId("bmpn-statistic")
-        .tag("v11.3.0")
-        .build();
-
-    when(contentRepo.findByTagAndProductId(anyString(), anyString())).thenReturn(productModuleContent);
-
-    mockProduct = Product.builder()
-        .id(ID)
-        .newestReleaseVersion("12.0.0-m264")
-        .build();
-
-    when(aggregationResults.getUniqueMappedResult()).thenReturn(mockProduct);
-
-    Product actualProduct = repo.getProductById(ID);
-
-    verify(contentRepo, times(1)).findByTagAndProductId("12.0.0-m264", ID);
     assertEquals(mockProduct, actualProduct);
   }
 

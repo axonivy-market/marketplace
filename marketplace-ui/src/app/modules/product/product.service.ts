@@ -54,9 +54,9 @@ export class ProductService {
     );
   }
 
-  getProductDetails(productId: string): Observable<ProductDetail> {
+  getProductDetails(productId: string, isShowDevVersion: string): Observable<ProductDetail> {
     return this.httpClient.get<ProductDetail>(
-      `api/product-details/${productId}`
+      `api/product-details/${productId}?isShowDevVersion=${isShowDevVersion}`
     );
   }
 

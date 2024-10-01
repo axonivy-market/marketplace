@@ -58,7 +58,7 @@ public class ProductDetailModelAssembler extends RepresentationModelAssemblerSup
           methodOn(ProductDetailsController.class).findBestMatchProductDetailsByVersion(productId, version);
       case RequestMappingConstants.BY_ID_AND_VERSION ->
           methodOn(ProductDetailsController.class).findProductDetailsByVersion(productId, version);
-      default -> methodOn(ProductDetailsController.class).findProductDetails(productId);
+      default -> methodOn(ProductDetailsController.class).findProductDetails(productId, false);
     };
 
     model.add(linkTo(selfLinkWithTag).withSelfRel());

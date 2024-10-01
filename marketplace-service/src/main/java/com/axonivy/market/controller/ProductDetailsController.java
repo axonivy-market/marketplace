@@ -87,8 +87,11 @@ public class ProductDetailsController {
   @Operation(summary = "get product detail by ID", description = "Return product detail by product id (from meta.json)")
   public ResponseEntity<ProductDetailModel> findProductDetails(
       @PathVariable(ID) @Parameter(description = "Product id (from meta.json)", example = "approval-decision-utils",
-          in = ParameterIn.PATH) String id) {
-    var productDetail = productService.fetchProductDetail(id);
+          in = ParameterIn.PATH) String id ,@RequestParam(name = SHOW_DEV_VERSION , required = false) @Parameter(description =
+      "Option to get" +
+      " Dev Version (Snapshot/ sprint release)",
+      in = ParameterIn.QUERY) Boolean isShowDevVersion) {
+    var productDetail = productService.fetchProductDetail(id , isShowDevVersion);
     if (productDetail == null) {
       return new ResponseEntity<>(HttpStatus.NOT_FOUND);
     }

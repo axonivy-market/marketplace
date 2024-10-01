@@ -20,7 +20,7 @@ import { ThemeService } from '../../../core/services/theme/theme.service';
 import { CommonDropdownComponent } from '../../../shared/components/common-dropdown/common-dropdown.component';
 import {
   DEFAULT_IMAGE_URL,
-  PRODUCT_DETAIL_TABS,
+  PRODUCT_DETAIL_TABS, SHOW_DEV_VERSION,
   VERSION
 } from '../../../shared/constants/common.constant';
 import { ItemDropdown } from '../../../shared/models/item-dropdown.model';
@@ -45,6 +45,7 @@ import { ProductDetailService } from './product-detail.service';
 import { ProductInstallationCountActionComponent } from './product-installation-count-action/product-installation-count-action.component';
 import { ProductStarRatingNumberComponent } from './product-star-rating-number/product-star-rating-number.component';
 import { DisplayValue } from '../../../shared/models/display-value.model';
+import { CookieService } from 'ngx-cookie-service';
 
 export interface DetailTab {
   activeClass: string;
@@ -92,6 +93,7 @@ export class ProductDetailComponent {
   appModalService = inject(AppModalService);
   authService = inject(AuthService);
   elementRef = inject(ElementRef);
+  cookieService = inject(CookieService);
   routingQueryParamService = inject(RoutingQueryParamService);
 
   resizeObserver: ResizeObserver;
@@ -140,7 +142,8 @@ export class ProductDetailComponent {
     const productId = this.route.snapshot.params['id'];
     this.productDetailService.productId.set(productId);
     if (productId) {
-      this.getProductById(productId).subscribe(productDetail => {
+      const isShowDevVersion = this.cookieService.get(SHOW_DEV_VERSION);
+      this.getProductById(productId, isShowDevVersion).subscribe(productDetail => {
         this.productDetail.set(productDetail);
         this.productModuleContent.set(productDetail.productModuleContent);
         this.metaProductJsonUrl = productDetail.metaProductJsonUrl;
@@ -184,10 +187,10 @@ export class ProductDetailComponent {
     window.scrollTo({ left: 0, top: 0, behavior: 'instant' });
   }
 
-  getProductById(productId: string): Observable<ProductDetail> {
+  getProductById(productId: string, isShowDevVersion: string): Observable<ProductDetail> {
     const targetVersion = this.routingQueryParamService.getDesignerVersionFromCookie();
     if (!targetVersion) {
-      return this.productService.getProductDetails(productId);
+      return this.productService.getProductDetails(productId, isShowDevVersion);
     }
 
     return this.productService.getBestMatchProductDetailsWithVersion(

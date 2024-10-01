@@ -180,6 +180,7 @@ public class ProductServiceImpl implements ProductService {
     return productRepository.updateInitialCount(key, product.getInstallationCount() + 1);
   }
 
+
   public void syncInstallationCountWithProduct(Product product) {
     log.info("synchronizing installation count for product {}", product.getId());
     try {
@@ -495,8 +496,8 @@ public class ProductServiceImpl implements ProductService {
   }
 
   @Override
-  public Product fetchProductDetail(String id) {
-    Product product = productRepository.getProductById(id);
+  public Product fetchProductDetail(String id, Boolean isShowDevVersion) {
+    Product product = productRepository.getProductByIdWithNewestReleaseVersion(id , isShowDevVersion);
     return Optional.ofNullable(product).map(productItem -> {
       updateProductInstallationCount(id, productItem);
       return productItem;
@@ -511,8 +512,8 @@ public class ProductServiceImpl implements ProductService {
         null);
     String bestMatchVersion = VersionUtils.getBestMatchVersion(versions, version);
     String bestMatchTag = VersionUtils.convertVersionToTag(id, bestMatchVersion);
-    Product product = StringUtils.isBlank(bestMatchTag) ? productRepository.getProductById(
-        id) : productRepository.getProductByIdWithTagOrVersion(id, bestMatchTag);
+    Product product = StringUtils.isBlank(bestMatchTag) ? productRepository.getProductByIdWithNewestReleaseVersion(
+        id, false) : productRepository.getProductByIdWithTagOrVersion(id, bestMatchTag);
     return Optional.ofNullable(product).map(productItem -> {
       updateProductInstallationCount(id, productItem);
       productItem.setBestMatchVersion(bestMatchVersion);
