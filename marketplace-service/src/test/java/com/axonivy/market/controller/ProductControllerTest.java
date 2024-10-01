@@ -9,6 +9,7 @@ import com.axonivy.market.enums.TypeOption;
 import com.axonivy.market.exceptions.model.UnauthorizedException;
 import com.axonivy.market.github.service.GitHubService;
 import com.axonivy.market.model.ProductCustomSortRequest;
+import com.axonivy.market.service.MetadataService;
 import com.axonivy.market.service.ProductService;
 import com.axonivy.market.util.AuthorizationUtils;
 import org.junit.jupiter.api.BeforeEach;
@@ -59,6 +60,9 @@ class ProductControllerTest {
 
   @InjectMocks
   private ProductController productController;
+
+  @Mock
+  private MetadataService metadataService;
 
   @BeforeEach
   void setup() {
@@ -133,6 +137,33 @@ class ProductControllerTest {
 
     assertEquals(ErrorCode.GITHUB_USER_UNAUTHORIZED.getHelpText(), exception.getMessage());
   }
+
+  @Test
+  void testSyncMavenVersionSuccess() {
+    var response = productController.syncProductVersions(AUTHORIZATION_HEADER);
+    assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, response.getStatusCode());
+    assertTrue(response.hasBody());
+    assertEquals(ErrorCode.MAVEN_VERSION_SYNC_FAILED.getCode(), Objects.requireNonNull(response.getBody()).getHelpCode());
+    when(metadataService.syncAllProductsMetadata()).thenReturn(1);
+    response = productController.syncProductVersions(AUTHORIZATION_HEADER);
+    assertEquals(HttpStatus.OK, response.getStatusCode());
+    assertTrue(response.hasBody());
+    assertEquals(ErrorCode.SUCCESSFUL.getCode(), Objects.requireNonNull(response.getBody()).getHelpCode());
+  }
+
+
+  @Test
+  void testSyncMavenVersionWithInvalidToken() {
+    doThrow(new UnauthorizedException(ErrorCode.GITHUB_USER_UNAUTHORIZED.getCode(),
+        ErrorCode.GITHUB_USER_UNAUTHORIZED.getHelpText())).when(gitHubService)
+        .validateUserOrganization(any(String.class), any(String.class));
+
+    UnauthorizedException exception = assertThrows(UnauthorizedException.class,
+        () -> productController.syncProductVersions(INVALID_AUTHORIZATION_HEADER));
+
+    assertEquals(ErrorCode.GITHUB_USER_UNAUTHORIZED.getHelpText(), exception.getMessage());
+  }
+
 
   @Test
   void testCreateCustomSortProductsSuccess() {

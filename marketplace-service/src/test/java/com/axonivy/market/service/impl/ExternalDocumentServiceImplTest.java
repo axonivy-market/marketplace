@@ -1,8 +1,8 @@
 package com.axonivy.market.service.impl;
 
+import com.axonivy.market.bo.Artifact;
 import com.axonivy.market.entity.ExternalDocumentMeta;
 import com.axonivy.market.entity.Product;
-import com.axonivy.market.github.model.MavenArtifact;
 import com.axonivy.market.repository.ExternalDocumentMetaRepository;
 import com.axonivy.market.repository.ProductRepository;
 import com.axonivy.market.service.FileDownloadService;
@@ -103,8 +103,8 @@ class ExternalDocumentServiceImplTest {
         .build();
   }
 
-  private static MavenArtifact mockPortalMavenArtifact() {
-    var artifact = MavenArtifact.builder().artifactId("portal-guide").doc(true).groupId("portal")
+  private static Artifact mockPortalMavenArtifact() {
+    var artifact = Artifact.builder().artifactId("portal-guide").doc(true).groupId("portal")
         .name("Portal Guide").type("zip").build();
     return artifact;
   }

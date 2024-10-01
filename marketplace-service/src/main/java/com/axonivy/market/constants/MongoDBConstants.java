@@ -13,5 +13,10 @@ public class MongoDBConstants {
   public static final String PRODUCT_ID = "productId";
   public static final String DESIGNER_VERSION = "designerVersion";
   public static final String TAG = "tag";
+  public static final String PROJECT_KEY = "$project";
+  public static final String RELEASED_VERSIONS = "releasedVersions";
+  public static final String ARTIFACTS = "artifacts";
+  public static final String MAVEN_VERSIONS = "mavenVersions";
+
   public static final String ARTIFACTS_DOC = "artifacts.doc";
 }

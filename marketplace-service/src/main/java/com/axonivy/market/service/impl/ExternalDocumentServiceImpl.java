@@ -1,15 +1,15 @@
 package com.axonivy.market.service.impl;
 
+import com.axonivy.market.bo.Artifact;
 import com.axonivy.market.constants.DirectoryConstants;
 import com.axonivy.market.entity.ExternalDocumentMeta;
 import com.axonivy.market.entity.Product;
-import com.axonivy.market.factory.MavenArtifactFactory;
 import com.axonivy.market.factory.VersionFactory;
-import com.axonivy.market.github.model.MavenArtifact;
 import com.axonivy.market.repository.ExternalDocumentMetaRepository;
 import com.axonivy.market.repository.ProductRepository;
 import com.axonivy.market.service.ExternalDocumentService;
 import com.axonivy.market.service.FileDownloadService;
+import com.axonivy.market.util.MavenUtils;
 import com.axonivy.market.util.VersionUtils;
 import lombok.AllArgsConstructor;
 import lombok.extern.log4j.Log4j2;
@@ -36,7 +36,7 @@ public class ExternalDocumentServiceImpl implements ExternalDocumentService {
   @Override
   public void syncDocumentForProduct(String productId, boolean isResetSync) {
     productRepo.findById(productId).ifPresent(product -> {
-      List<MavenArtifact> docArtifacts = Optional.ofNullable(product.getArtifacts()).orElse(List.of()).stream()
+      var docArtifacts = Optional.ofNullable(product.getArtifacts()).orElse(List.of()).stream()
           .filter(artifact -> BooleanUtils.isTrue(artifact.getDoc())).toList();
       List<String> releasedVersions = Optional.ofNullable(product.getReleasedVersions()).orElse(List.of()).stream()
           .filter(version -> VersionUtils.isValidFormatReleasedVersion(version)).toList();
@@ -68,7 +68,7 @@ public class ExternalDocumentServiceImpl implements ExternalDocumentService {
         .map(ExternalDocumentMeta::getRelativeLink).findAny().orElse(EMPTY);
   }
 
-  private void syncDocumentationForProduct(String productId, boolean isResetSync, MavenArtifact artifact,
+  private void syncDocumentationForProduct(String productId, boolean isResetSync, Artifact artifact,
       List<String> releasedVersions) {
     for (var version : releasedVersions) {
       List<ExternalDocumentMeta> documentMetas = externalDocumentMetaRepo.findByProductIdAndVersion(productId, version);
@@ -76,7 +76,7 @@ public class ExternalDocumentServiceImpl implements ExternalDocumentService {
         continue;
       }
 
-      String downloadDocUrl = MavenArtifactFactory.buildDownloadUrlByVersion(artifact, version);
+      String downloadDocUrl = MavenUtils.buildDownloadUrl(artifact, version);
       String location = downloadDocAndUnzipToShareFolder(downloadDocUrl, isResetSync);
       if (StringUtils.isNoneBlank(location)) {
         // Remove all old records

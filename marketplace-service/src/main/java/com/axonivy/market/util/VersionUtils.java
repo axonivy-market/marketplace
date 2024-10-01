@@ -6,9 +6,11 @@ import com.axonivy.market.constants.CommonConstants;
 import com.axonivy.market.constants.GitHubConstants;
 import com.axonivy.market.entity.Product;
 import com.axonivy.market.enums.NonStandardProduct;
+import lombok.extern.log4j.Log4j2;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import org.apache.commons.lang3.BooleanUtils;
+import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.util.Strings;
 import org.kohsuke.github.GHTag;
@@ -17,10 +19,11 @@ import org.springframework.util.CollectionUtils;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Stream;
-
 import static com.axonivy.market.constants.MavenConstants.*;
-
+@Log4j2
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class VersionUtils {
   public static final String NON_NUMERIC_CHAR = "[^0-9.]";
@@ -37,6 +40,20 @@ public class VersionUtils {
           new LatestVersionComparator()).toList();
     }
     return versions.stream().filter(VersionUtils::isReleasedVersion).sorted(new LatestVersionComparator()).toList();
+  }
+
+  public static String getMavenVersionMatchWithTag(List<String> releasedVersions, String mavenVersion) {
+    for (String version : releasedVersions) {
+      if (mavenVersion.equals(version)) {
+        return mavenVersion;
+      }
+    }
+    return getAlternativeVersion(releasedVersions, mavenVersion);
+  }
+
+  public static String getAlternativeVersion(List<String> releaseVersions, String version) {
+    return Optional.ofNullable(releaseVersions).orElse(List.of()).stream().filter(
+        version::startsWith).sorted().findAny().orElse(null);
   }
 
   public static String getBestMatchVersion(List<String> versions, String designerVersion) {
@@ -145,5 +162,13 @@ public class VersionUtils {
     }
     return product.getReleasedVersions().stream().map(
         version -> convertVersionToTag(product.getId(), version)).toList();
+  }
+
+  public static List<String> removeSyncedVersionsFromReleasedVersions(List<String> releasedVersion,
+      Set<String> syncTags) {
+    if (ObjectUtils.isNotEmpty(syncTags)) {
+      releasedVersion.removeAll(syncTags);
+    }
+    return releasedVersion;
   }
 }
