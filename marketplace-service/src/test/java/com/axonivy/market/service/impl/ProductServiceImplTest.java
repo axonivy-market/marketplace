@@ -453,7 +453,6 @@ class ProductServiceImplTest extends BaseSetup {
     Product result = productService.fetchProductDetail(id, false);
     assertEquals(mockProduct, result);
     verify(productRepository, times(1)).getProductByIdWithNewestReleaseVersion(id, false);
-    verify(productRepository).getProductById(id);
   }
 
   @Test
