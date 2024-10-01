@@ -206,3 +206,5 @@ export const ERROR_CODES = [
 ];
 
 export const DEFAULT_IMAGE_URL = '/assets/images/misc/axonivy-logo-round.png';
+export const DOWNLOAD_URL = 'https://developer.axonivy.com/download';
+export const SEARCH_URL = 'https://developer.axonivy.com/search';

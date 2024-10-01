@@ -3,7 +3,7 @@ import { FooterComponent } from './footer.component';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { By } from '@angular/platform-browser';
 import { Viewport } from 'karma-viewport/dist/adapter/viewport';
-import { SOCIAL_MEDIA_LINK } from '../../constants/common.constant';
+import { DOWNLOAD_URL, SOCIAL_MEDIA_LINK } from '../../constants/common.constant';
 
 declare const viewport: Viewport;
 
@@ -92,6 +92,6 @@ describe('FooterComponent', () => {
       By.css('.download-button')
     ).nativeElement;
 
-    expect(downloadButton.href).toBe('https://developer.axonivy.com/download');
+    expect(downloadButton.href).toBe(DOWNLOAD_URL);
   });
 });

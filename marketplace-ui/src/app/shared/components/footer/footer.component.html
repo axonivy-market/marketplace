@@ -16,7 +16,7 @@
         class="footer-text text-secondary default-cursor"
         [innerHtml]="'common.footer.newVersionsInfo' | translate"></div>
       <div class="button-container flex-row">
-        <a class="download-button" href="https://developer.axonivy.com/download">
+        <a class="download-button" href="{{ downloadUrl }}">
           <button
             [lang]="languageService.selectedLanguage()"
             class="btn btn-primary border-0"
