@@ -142,7 +142,7 @@ export class ProductDetailComponent {
     const productId = this.route.snapshot.params['id'];
     this.productDetailService.productId.set(productId);
     if (productId) {
-      const isShowDevVersion = this.cookieService.get(SHOW_DEV_VERSION);
+      const isShowDevVersion = CommonUtils.getCookieValue(this.cookieService, SHOW_DEV_VERSION, false);
       this.getProductById(productId, isShowDevVersion).subscribe(productDetail => {
         this.productDetail.set(productDetail);
         this.productModuleContent.set(productDetail.productModuleContent);
@@ -187,7 +187,7 @@ export class ProductDetailComponent {
     window.scrollTo({ left: 0, top: 0, behavior: 'instant' });
   }
 
-  getProductById(productId: string, isShowDevVersion: string): Observable<ProductDetail> {
+  getProductById(productId: string, isShowDevVersion: boolean): Observable<ProductDetail> {
     const targetVersion = this.routingQueryParamService.getDesignerVersionFromCookie();
     if (!targetVersion) {
       return this.productService.getProductDetails(productId, isShowDevVersion);
