@@ -169,7 +169,6 @@ class ProductServiceImplTest extends BaseSetup {
     productService.syncInstallationCountWithProduct(product);
 
     assertEquals(40, product.getInstallationCount());
-    assertEquals(true, product.getSynchronizedInstallationCount());
     assertTrue(product.getSynchronizedInstallationCount());
   }
 
@@ -454,6 +453,7 @@ class ProductServiceImplTest extends BaseSetup {
     Product result = productService.fetchProductDetail(id, false);
     assertEquals(mockProduct, result);
     verify(productRepository, times(1)).getProductByIdWithNewestReleaseVersion(id, false);
+    verify(productRepository).getProductById(id);
   }
 
   @Test
@@ -467,7 +467,7 @@ class ProductServiceImplTest extends BaseSetup {
     Product result = productService.fetchProductDetailByIdAndVersion(id, version);
 
     assertEquals(mockProduct, result);
-    verify(productRepository, times(1)).getProductByIdWithTagOrVersion(id, version);
+    verify(productRepository).getProductByIdWithTagOrVersion(id, version);
   }
 
   @Test
@@ -494,8 +494,8 @@ class ProductServiceImplTest extends BaseSetup {
 
       assertEquals(mockProduct, result);
       assertEquals(bestMatchVersion, result.getBestMatchVersion());
-      verify(mavenArtifactVersionRepo, times(1)).findById(id);
-      verify(productRepository, times(1)).getProductByIdWithTagOrVersion(id, version);
+      verify(mavenArtifactVersionRepo).findById(id);
+      verify(productRepository).getProductByIdWithTagOrVersion(id, version);
     }
   }
 
@@ -557,10 +557,10 @@ class ProductServiceImplTest extends BaseSetup {
 
     productService.addCustomSortProduct(customSortRequest);
 
-    verify(productCustomSortRepository, times(1)).deleteAll();
-    verify(mongoTemplate, times(1)).updateMulti(any(Query.class), any(Update.class), eq(Product.class));
-    verify(productCustomSortRepository, times(1)).save(any(ProductCustomSort.class));
-    verify(productRepository, times(1)).saveAll(productListArgumentCaptor.capture());
+    verify(productCustomSortRepository).deleteAll();
+    verify(mongoTemplate).updateMulti(any(Query.class), any(Update.class), eq(Product.class));
+    verify(productCustomSortRepository).save(any(ProductCustomSort.class));
+    verify(productRepository).saveAll(productListArgumentCaptor.capture());
 
     List<Product> capturedProducts = productListArgumentCaptor.getValue();
     assertEquals(1, capturedProducts.size());

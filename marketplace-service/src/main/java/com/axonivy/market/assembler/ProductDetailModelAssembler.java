@@ -5,7 +5,6 @@ import com.axonivy.market.controller.ProductDetailsController;
 import com.axonivy.market.entity.Product;
 import com.axonivy.market.model.ProductDetailModel;
 import com.axonivy.market.util.ImageUtils;
-import com.axonivy.market.util.VersionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.hateoas.Link;
 import org.springframework.hateoas.server.mvc.RepresentationModelAssemblerSupport;
