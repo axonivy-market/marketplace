@@ -20,15 +20,15 @@ export class FooterComponent implements OnInit {
   socialMediaLinks = SOCIAL_MEDIA_LINK;
   navItems: NavItem[] = NAV_ITEMS;
   ivyFooterLinks = IVY_FOOTER_LINKS;
-  year: string = '';
+  year = '';
 
   ngOnInit(): void {
     this.getCurrentYear();
   }
 
   getCurrentYear() {
-    let currentDate = new Date();
-    let currentYear = currentDate.getFullYear();
+    const currentDate = new Date();
+    const currentYear = currentDate.getFullYear();
     this.year = currentYear.toString();
   }
 }

@@ -47,9 +47,9 @@ public class ProductDetailModelAssembler extends RepresentationModelAssemblerSup
     String productId = Optional.of(product).map(Product::getId).orElse(StringUtils.EMPTY);
 
     if (requestPath.equals(RequestMappingConstants.BEST_MATCH_BY_ID_AND_VERSION)) {
-      String bestMatchVersion = VersionUtils.getBestMatchVersion(product.getReleasedVersions(), version);
       Link link = linkTo(
-          methodOn(ProductDetailsController.class).findProductJsonContent(productId, bestMatchVersion)).withSelfRel();
+          methodOn(ProductDetailsController.class).findProductJsonContent(productId,
+              product.getBestMatchVersion())).withSelfRel();
       model.setMetaProductJsonUrl(link.getHref());
     }
 

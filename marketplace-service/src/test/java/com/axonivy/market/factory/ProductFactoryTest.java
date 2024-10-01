@@ -9,6 +9,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.kohsuke.github.GHContent;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.util.CollectionUtils;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -39,6 +40,8 @@ class ProductFactoryTest {
     assertNotEquals(null, result);
     assertEquals("Amazon Comprehend", result.getNames().get(Language.EN.getValue()));
     assertEquals("Amazon Comprehend DE", result.getNames().get(Language.DE.getValue()));
+    Assertions.assertFalse(CollectionUtils.isEmpty(result.getArtifacts()));
+    Assertions.assertFalse(result.getArtifacts().get(0).isInvalidArtifact());
   }
 
   @Test

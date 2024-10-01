@@ -1,6 +1,7 @@
 package com.axonivy.market;
 
 import com.axonivy.market.service.ProductService;
+import lombok.AllArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.lang3.time.StopWatch;
 import org.springframework.boot.SpringApplication;
@@ -15,13 +16,10 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 @EnableAsync
 @EnableScheduling
 @SpringBootApplication
+@AllArgsConstructor
 public class MarketplaceServiceApplication {
 
   private final ProductService productService;
-
-  public MarketplaceServiceApplication(ProductService productService) {
-    this.productService = productService;
-  }
 
   public static void main(String[] args) {
     SpringApplication.run(MarketplaceServiceApplication.class, args);
