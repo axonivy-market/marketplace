@@ -72,7 +72,6 @@ class ExternalDocumentServiceImplTest {
     var mockVersion = "10.0.0";
     var mockProductDocumentMeta = new ExternalDocumentMeta();
     when(productRepository.findById(PORTAL)).thenReturn(mockPortalProduct());
-    when(externalDocumentMetaRepository.findAll()).thenReturn(List.of(mockProductDocumentMeta));
     var result = service.findExternalDocumentURI(PORTAL, mockVersion);
     verify(productRepository, times(1)).findById(any());
     assertTrue(StringUtils.isEmpty(result));
@@ -80,7 +79,7 @@ class ExternalDocumentServiceImplTest {
     mockProductDocumentMeta.setProductId(PORTAL);
     mockProductDocumentMeta.setVersion(mockVersion);
     mockProductDocumentMeta.setRelativeLink(RELATIVE_LOCATION);
-    when(externalDocumentMetaRepository.findAll()).thenReturn(List.of(mockProductDocumentMeta));
+    when(externalDocumentMetaRepository.findByProductId(PORTAL)).thenReturn(List.of(mockProductDocumentMeta));
     result = service.findExternalDocumentURI(PORTAL, mockVersion);
     assertNotNull(result);
     assertTrue(result.contains("/index.html"));
@@ -104,8 +103,7 @@ class ExternalDocumentServiceImplTest {
   }
 
   private static Artifact mockPortalMavenArtifact() {
-    var artifact = Artifact.builder().artifactId("portal-guide").doc(true).groupId("portal")
+    return Artifact.builder().artifactId("portal-guide").doc(true).groupId("portal")
         .name("Portal Guide").type("zip").build();
-    return artifact;
   }
 }
