@@ -25,7 +25,8 @@ class FileDownloadServiceImplTest {
   private RestTemplate restTemplate;
 
   private static final String ZIP_FILE_PATH = "src/test/resources/zip/text.zip";
-  private static final String EXTRACT_LOCATION = "src/test/resources/zip/data";
+  private static final String EXTRACT_DIR_LOCATION = "src/test/resources/zip/data";
+  private static final String EXTRACTED_DIR_LOCATION = "src/test/resources/zip/data/text";
 
   @BeforeEach
   void setUp() {
@@ -83,8 +84,8 @@ class FileDownloadServiceImplTest {
 
   @Test
   void testUnzipFile() throws IOException {
-    int result = fileDownloadService.unzipFile(ZIP_FILE_PATH, EXTRACT_LOCATION);
+    int result = fileDownloadService.unzipFile(ZIP_FILE_PATH, EXTRACT_DIR_LOCATION);
     Assertions.assertEquals(7, result);
-    fileDownloadService.deleteDirectory(Paths.get("src/test/resources/zip/data/text"));
+    fileDownloadService.deleteDirectory(Paths.get(EXTRACTED_DIR_LOCATION));
   }
 }
