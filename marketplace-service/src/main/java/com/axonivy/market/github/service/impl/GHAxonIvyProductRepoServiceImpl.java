@@ -90,6 +90,7 @@ public class GHAxonIvyProductRepoServiceImpl implements GHAxonIvyProductRepoServ
       List<GHContent> contents = getProductFolderContents(product, ghRepository, tag);
       updateDependencyContentsFromProductJson(productModuleContent, contents, product);
       extractReadMeFileFromContents(product, contents, productModuleContent);
+      gitHubService.updateProductModuleContentSetupFromSetupMd(product,ghRepository , tag);
     } catch (Exception e) {
       log.error("Cannot get product.json content in {} - {}", ghRepository.getName(), e.getMessage());
       return null;
@@ -166,4 +167,5 @@ public class GHAxonIvyProductRepoServiceImpl implements GHAxonIvyProductRepoServ
 
     return ghRepository.getDirectoryContent(productFolderPath, tag);
   }
+
 }

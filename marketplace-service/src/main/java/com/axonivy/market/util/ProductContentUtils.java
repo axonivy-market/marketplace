@@ -90,7 +90,7 @@ public class ProductContentUtils {
     addLocaleContent(moduleContents, SETUP, setup.trim(), locale);
   }
 
-  private static void addLocaleContent(Map<String, Map<String, String>> moduleContents, String type, String content,
+  public static void addLocaleContent(Map<String, Map<String, String>> moduleContents, String type, String content,
       String locale) {
     moduleContents.computeIfAbsent(type, key -> new HashMap<>()).put(locale, content);
   }
@@ -137,11 +137,9 @@ public class ProductContentUtils {
 
   public static void updateProductModuleTabContents(ProductModuleContent productModuleContent,
       Map<String, Map<String, String>> moduleContents) {
-    productModuleContent.setDescription(
-        replaceEmptyContentsWithEnContent(moduleContents.get(DESCRIPTION)));
+    productModuleContent.setDescription(replaceEmptyContentsWithEnContent(moduleContents.get(DESCRIPTION)));
     productModuleContent.setDemo(replaceEmptyContentsWithEnContent(moduleContents.get(DEMO)));
-    productModuleContent.setSetup(replaceEmptyContentsWithEnContent(moduleContents.get
-        (SETUP)));
+    productModuleContent.setSetup(replaceEmptyContentsWithEnContent(moduleContents.get(SETUP)));
   }
 
   public static String replaceImageDirWithImageCustomId(Map<String, String> imageUrls, String readmeContents) {

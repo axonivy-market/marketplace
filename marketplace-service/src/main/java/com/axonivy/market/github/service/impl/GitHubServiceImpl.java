@@ -3,8 +3,11 @@ package com.axonivy.market.github.service.impl;
 import com.axonivy.market.constants.CommonConstants;
 import com.axonivy.market.constants.ErrorMessageConstants;
 import com.axonivy.market.constants.GitHubConstants;
+import com.axonivy.market.entity.Product;
 import com.axonivy.market.entity.User;
 import com.axonivy.market.enums.ErrorCode;
+import com.axonivy.market.enums.Language;
+import com.axonivy.market.enums.NonStandardProduct;
 import com.axonivy.market.exceptions.model.MissingHeaderException;
 import com.axonivy.market.exceptions.model.NotFoundException;
 import com.axonivy.market.exceptions.model.Oauth2ExchangeCodeException;
@@ -14,7 +17,9 @@ import com.axonivy.market.github.model.GitHubProperty;
 import com.axonivy.market.github.service.GitHubService;
 import com.axonivy.market.github.util.GitHubUtils;
 import com.axonivy.market.repository.UserRepository;
+import com.axonivy.market.util.ProductContentUtils;
 import lombok.extern.log4j.Log4j2;
+import org.apache.commons.lang3.ObjectUtils;
 import org.kohsuke.github.GHContent;
 import org.kohsuke.github.GHOrganization;
 import org.kohsuke.github.GHRepository;
@@ -41,6 +46,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
+import static com.axonivy.market.util.ProductContentUtils.SETUP;
 import static org.apache.commons.lang3.StringUtils.EMPTY;
 
 @Log4j2
@@ -166,6 +172,19 @@ public class GitHubServiceImpl implements GitHubService {
     throw new UnauthorizedException(ErrorCode.GITHUB_USER_UNAUTHORIZED.getCode(),
         ErrorCode.GITHUB_USER_UNAUTHORIZED.getHelpText()
             + "-User must be a member of the Axon Ivy Market Organization");
+  }
+
+  @Override
+  public void updateProductModuleContentSetupFromSetupMd(Product product, GHRepository ghRepository,
+      Map<String, Map<String, String>> moduleContents) throws IOException {
+
+    String pathOfSetupFile = NonStandardProduct.getSetupPathForNonStandardProducts(product.getId());
+    GHContent setupFile = GitHubUtils.getPathOfProductFolderContents(ghRepository,pathOfSetupFile);
+
+    if (ObjectUtils.isNotEmpty(setupFile)) {
+      String setupContent = new String(setupFile.read().readAllBytes());
+      ProductContentUtils.addLocaleContent(moduleContents,SETUP, setupContent , Language.EN.getValue());
+    }
   }
 
   public List<Map<String, Object>> getUserOrganizations(String accessToken) throws UnauthorizedException {
