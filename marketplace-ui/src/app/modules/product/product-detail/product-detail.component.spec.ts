@@ -117,7 +117,7 @@ describe('ProductDetailComponent', () => {
     routingQueryParamService.getDesignerVersionFromCookie.and.returnValue(
       targetVersion
     );
-    component.getProductById(productId,"false").subscribe(productDetail => {
+    component.getProductById(productId, 'false').subscribe(productDetail => {
       expect(productDetail).toEqual(MOCK_PRODUCT_DETAIL_BY_VERSION);
     });
   });

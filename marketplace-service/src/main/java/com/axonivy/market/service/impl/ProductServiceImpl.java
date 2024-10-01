@@ -497,7 +497,7 @@ public class ProductServiceImpl implements ProductService {
 
   @Override
   public Product fetchProductDetail(String id, Boolean isShowDevVersion) {
-    Product product = productRepository.getProductByIdWithNewestReleaseVersion(id , isShowDevVersion);
+    Product product = productRepository.getProductByIdWithNewestReleaseVersion(id, isShowDevVersion);
     return Optional.ofNullable(product).map(productItem -> {
       updateProductInstallationCount(id, productItem);
       return productItem;
