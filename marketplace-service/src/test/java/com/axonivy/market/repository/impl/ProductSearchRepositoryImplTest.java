@@ -31,7 +31,7 @@ class ProductSearchRepositoryImplTest extends BaseSetup {
   MongoTemplate mongoTemplate;
 
   @InjectMocks
-  ProductSearchRepositoryImpl productListedRepository;
+  CustomProductRepositoryImpl productListedRepository;
 
   @BeforeEach
   public void setup() {

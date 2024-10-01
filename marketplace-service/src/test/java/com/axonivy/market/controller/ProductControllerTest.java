@@ -11,6 +11,7 @@ import com.axonivy.market.github.service.GitHubService;
 import com.axonivy.market.model.ProductCustomSortRequest;
 import com.axonivy.market.service.MetadataService;
 import com.axonivy.market.service.ProductService;
+import com.axonivy.market.util.AuthorizationUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -27,11 +28,7 @@ import org.springframework.hateoas.PagedModel;
 import org.springframework.hateoas.PagedModel.PageMetadata;
 import org.springframework.http.HttpStatus;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
@@ -107,7 +104,7 @@ class ProductControllerTest {
 
   @Test
   void testSyncProductsSuccess() {
-    when(service.syncLatestDataFromMarketRepo()).thenReturn(true);
+    when(service.syncLatestDataFromMarketRepo()).thenReturn(List.of());
 
     var response = productController.syncProducts(AUTHORIZATION_HEADER, false);
 
@@ -119,14 +116,14 @@ class ProductControllerTest {
 
   @Test
   void testSyncProductsWithResetSuccess() {
-    when(service.syncLatestDataFromMarketRepo()).thenReturn(false);
+    when(service.syncLatestDataFromMarketRepo()).thenReturn(List.of("portal"));
 
     var response = productController.syncProducts(AUTHORIZATION_HEADER, true);
 
     assertEquals(HttpStatus.OK, response.getStatusCode());
     assertTrue(response.hasBody());
     assertEquals(ErrorCode.SUCCESSFUL.getCode(), Objects.requireNonNull(response.getBody()).getHelpCode());
-    assertTrue(response.getBody().getMessageDetails().contains("Finished sync data"));
+    assertTrue(response.getBody().getMessageDetails().contains("Finished sync [[portal]] data in"));
   }
 
   @Test
@@ -181,13 +178,13 @@ class ProductControllerTest {
 
   @Test
   void testGetBearerTokenWithValidHeader() {
-    String token = ProductController.getBearerToken(AUTHORIZATION_HEADER);
+    String token = AuthorizationUtils.getBearerToken(AUTHORIZATION_HEADER);
     assertEquals("valid_token", token);
   }
 
   @Test
   void testGetBearerTokenWithInvalidHeader() {
-    String token = ProductController.getBearerToken("InvalidTokenFormat");
+    String token = AuthorizationUtils.getBearerToken("InvalidTokenFormat");
     assertNull(token);
   }
 

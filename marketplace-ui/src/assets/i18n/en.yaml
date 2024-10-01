@@ -113,3 +113,5 @@ common:
     noFeedbackMessage2: Be the first to share your opinion.
     rateFeedbackBtnLabel: Rate this connector
     reviewLabelNoYet: No reviews yet
+  labels:
+    redirecting: Redirecting ...!
