@@ -11,11 +11,14 @@ import com.axonivy.market.github.service.GitHubService;
 import com.axonivy.market.model.ProductCustomSortRequest;
 import com.axonivy.market.service.MetadataService;
 import com.axonivy.market.service.ProductService;
+import com.axonivy.market.service.VersionService;
+import org.apache.commons.lang3.StringUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
@@ -66,6 +69,9 @@ class ProductControllerTest {
 
   @Mock
   private MetadataService metadataService;
+
+  @Mock
+  private VersionService versionService;
 
   @BeforeEach
   void setup() {
@@ -189,6 +195,19 @@ class ProductControllerTest {
   void testGetBearerTokenWithInvalidHeader() {
     String token = ProductController.getBearerToken("InvalidTokenFormat");
     assertNull(token);
+  }
+
+  @Test
+  void testGetLatestArtifactDownloadUrl() {
+    String mockDownloadUrl = "https://market.axonivy.com";
+    when(versionService.getLatestVersionArtifactDownloadUrl(Mockito.anyString(),Mockito.anyString(),
+        Mockito.anyString())).thenReturn(StringUtils.EMPTY);
+    var response = productController.getLatestArtifactDownloadUrl("portal", "1.0.0", "portal-app");
+    assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode());
+    when(versionService.getLatestVersionArtifactDownloadUrl(Mockito.anyString(),Mockito.anyString(),
+        Mockito.anyString())).thenReturn(mockDownloadUrl);
+    response = productController.getLatestArtifactDownloadUrl("portal", "1.0.0", "portal-app");
+    assertEquals(HttpStatus.OK, response.getStatusCode());
   }
 
   private Product createProductMock() {

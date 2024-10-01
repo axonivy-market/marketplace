@@ -148,7 +148,7 @@ public class ProductController {
 
   @GetMapping(LATEST_LIB_VERSION_BY_ID_AND_ARTIFACT_ID)
   public ResponseEntity<String> getLatestArtifactDownloadUrl(@PathVariable(value = ID) String productId,
-      @PathVariable(value = VERSION) String version, @RequestParam(value = ARTIFACT_ID) String artifactId) {
+      @PathVariable(value = VERSION) String version, @PathVariable(value = ARTIFACT_ID) String artifactId) {
     String downloadUrl = versionService.getLatestVersionArtifactDownloadUrl(productId,version,artifactId);
     HttpStatusCode statusCode = StringUtils.isBlank(downloadUrl) ? HttpStatus.NOT_FOUND : HttpStatus.OK;
     return new ResponseEntity<>(versionService.getLatestVersionArtifactDownloadUrl(productId,version,artifactId), statusCode);
