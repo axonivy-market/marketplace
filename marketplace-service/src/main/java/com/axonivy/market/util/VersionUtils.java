@@ -36,8 +36,8 @@ public class VersionUtils {
           new LatestVersionComparator()).toList();
     }
     if (BooleanUtils.isTrue(isShowDevVersion)) {
-      return versionStream.filter(version -> isOfficialVersionOrUnReleasedDevVersion(versions, version)).sorted(
-          new LatestVersionComparator()).toList();
+      return versionStream.filter(version -> isOfficialVersionOrUnReleasedDevVersion(versions, version))
+          .sorted(new LatestVersionComparator()).toList();
     }
     return versions.stream().filter(VersionUtils::isReleasedVersion).sorted(new LatestVersionComparator()).toList();
   }
@@ -148,9 +148,8 @@ public class VersionUtils {
   public static String getOldestVersion(List<GHTag> tags) {
     String result = StringUtils.EMPTY;
     if (!CollectionUtils.isEmpty(tags)) {
-      List<String> releasedTags = tags.stream().map(
-          tag -> tag.getName().replaceAll(NON_NUMERIC_CHAR, Strings.EMPTY)).distinct().sorted(
-          new LatestVersionComparator()).toList();
+      List<String> releasedTags = tags.stream().map(tag -> tag.getName().replaceAll(NON_NUMERIC_CHAR, Strings.EMPTY))
+          .distinct().sorted(new LatestVersionComparator()).toList();
       return CollectionUtils.lastElement(releasedTags);
     }
     return result;

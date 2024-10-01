@@ -160,7 +160,7 @@ public class ProductServiceImpl implements ProductService {
       syncRepoMetaDataStatus();
     }
     updateLatestReleaseTagContentsFromProductRepo();
-    return syncedProductIds;
+    return syncedProductIds.stream().filter(StringUtils::isNotBlank).toList();
   }
 
   @Override
@@ -191,8 +191,8 @@ public class ProductServiceImpl implements ProductService {
           new TypeReference<HashMap<String, Integer>>() {
           });
       List<String> keyList = mapping.keySet().stream().toList();
-      int currentInstallationCount = keyList.contains(product.getId()) ? mapping.get(product.getId()) : random.nextInt(
-          20, 50);
+      int currentInstallationCount = keyList.contains(product.getId())
+          ? mapping.get(product.getId()) : random.nextInt(20, 50);
       product.setInstallationCount(currentInstallationCount);
       product.setSynchronizedInstallationCount(true);
       log.info("synchronized installation count for product {} successfully", product.getId());
@@ -205,8 +205,8 @@ public class ProductServiceImpl implements ProductService {
     if (lastGHCommit == null) {
       return;
     }
-    String repoURL = Optional.ofNullable(lastGHCommit.getOwner()).map(GHRepository::getUrl).map(URL::getPath).orElse(
-        EMPTY);
+    String repoURL = Optional.ofNullable(lastGHCommit.getOwner()).map(GHRepository::getUrl).map(URL::getPath)
+        .orElse(EMPTY);
     marketRepoMeta.setRepoURL(repoURL);
     marketRepoMeta.setRepoName(GitHubConstants.AXONIVY_MARKETPLACE_REPO_NAME);
     marketRepoMeta.setLastSHA1(lastGHCommit.getSHA1());
@@ -242,7 +242,7 @@ public class ProductServiceImpl implements ProductService {
         syncedProductIds.add(productId);
       }
     });
-    return syncedProductIds.stream().filter(StringUtils::isNotBlank).toList();
+    return syncedProductIds.stream().toList();
   }
 
   private String removeProductAndImage(GitHubFile file) {
@@ -400,10 +400,9 @@ public class ProductServiceImpl implements ProductService {
     List<String> syncedProductIds = new ArrayList<>();
     var gitHubContentMap = axonIvyMarketRepoService.fetchAllMarketItems();
     for (Map.Entry<String, List<GHContent>> ghContentEntity : gitHubContentMap.entrySet()) {
-      Product product = new Product();
+      var product = new Product();
       //update the meta.json first
-      ghContentEntity.getValue().sort(
-          (file1, file2) -> GitHubUtils.sortMetaJsonFirst(file1.getName(), file2.getName()));
+      ghContentEntity.getValue().sort((f1, f2) -> GitHubUtils.sortMetaJsonFirst(f1.getName(), f2.getName()));
       for (var content : ghContentEntity.getValue()) {
         ProductFactory.mappingByGHContent(product, content);
         mappingLogoFromGHContent(product, content);
@@ -425,8 +424,8 @@ public class ProductServiceImpl implements ProductService {
 
   private void mappingLogoFromGHContent(Product product, GHContent ghContent) {
     if (StringUtils.endsWith(ghContent.getName(), LOGO_FILE)) {
-      Optional.ofNullable(imageService.mappingImageFromGHContent(product, ghContent, true)).ifPresent(
-          image -> product.setLogoId(image.getId()));
+      Optional.ofNullable(imageService.mappingImageFromGHContent(product, ghContent, true))
+          .ifPresent(image -> product.setLogoId(image.getId()));
     }
   }
 
@@ -446,8 +445,8 @@ public class ProductServiceImpl implements ProductService {
     ghTags = ghTags.stream().filter(filterNonPersistGhTagName(currentTags)).toList();
 
     for (GHTag ghTag : ghTags) {
-      ProductModuleContent productModuleContent = axonIvyProductRepoService.getReadmeAndProductContentsFromTag(product,
-          productRepo, ghTag.getName());
+      ProductModuleContent productModuleContent =
+          axonIvyProductRepoService.getReadmeAndProductContentsFromTag(product, productRepo, ghTag.getName());
       if (productModuleContent != null) {
         productModuleContents.add(productModuleContent);
       }
@@ -564,8 +563,8 @@ public class ProductServiceImpl implements ProductService {
     productRepository.saveAll(refineOrderedListOfProductsInCustomSort(customSort.getOrderedListOfProducts()));
   }
 
-  public List<Product> refineOrderedListOfProductsInCustomSort(
-      List<String> orderedListOfProducts) throws InvalidParamException {
+  public List<Product> refineOrderedListOfProductsInCustomSort(List<String> orderedListOfProducts)
+      throws InvalidParamException {
     List<Product> productEntries = new ArrayList<>();
 
     int descendingOrder = orderedListOfProducts.size();
@@ -590,8 +589,8 @@ public class ProductServiceImpl implements ProductService {
   }
 
   public void transferComputedDataFromDB(Product product) {
-    productRepository.findById(product.getId()).ifPresent(
-        persistedData -> ProductFactory.transferComputedPersistedDataToProduct(persistedData, product));
+    productRepository.findById(product.getId()).ifPresent(persistedData ->
+        ProductFactory.transferComputedPersistedDataToProduct(persistedData, product));
   }
 
 }

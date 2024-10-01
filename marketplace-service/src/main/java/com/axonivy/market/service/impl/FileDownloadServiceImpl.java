@@ -26,12 +26,12 @@ import static org.apache.commons.lang3.StringUtils.EMPTY;
 @Service
 @Log4j2
 public class FileDownloadServiceImpl implements FileDownloadService {
+  private static final String DOC_DIR = "doc";
   private static final String ZIP_EXTENSION = ".zip";
   private static final Set<PosixFilePermission> PERMS = EnumSet.allOf(PosixFilePermission.class);
   private static final int THRESHOLD_ENTRIES = 10000;
   private static final int THRESHOLD_SIZE = 1000000000;
   private static final double THRESHOLD_RATIO = 10;
-  private static final String DOC_DIR = "doc";
 
   @Override
   public byte[] downloadFile(String url) {
@@ -43,12 +43,10 @@ public class FileDownloadServiceImpl implements FileDownloadService {
     String unzippedFilePath = String.join(File.separator, ROOT_STORAGE_FOR_PRODUCT_CONTENT, metadata.getArtifactId());
     createFolder(unzippedFilePath);
 
-    Path tempZipPath = createTempFile();
-    Files.write(tempZipPath, downloadFile(url));
-
-    unzipFile(tempZipPath.toString(), unzippedFilePath);
-
-    Files.delete(tempZipPath);
+    Path tempZipPath = createTempFileFromUrlAndExtractToLocation(url, unzippedFilePath, true);
+    if (tempZipPath != null) {
+      Files.delete(tempZipPath);
+    }
     return unzippedFilePath;
   }
 
@@ -60,22 +58,28 @@ public class FileDownloadServiceImpl implements FileDownloadService {
     }
 
     String location = generateCacheStorageDirectory(url);
+    Path tempZipPath = createTempFileFromUrlAndExtractToLocation(url, location, isForce);
+    if (tempZipPath != null) {
+      grantNecessaryPermissionsFor(location);
+      Files.delete(tempZipPath);
+    }
+    return location;
+  }
+
+  private Path createTempFileFromUrlAndExtractToLocation(String url, String location,
+      boolean isForce) throws IOException {
     File cacheFolder = new File(location);
     if (cacheFolder.exists() && cacheFolder.isDirectory() && !isForce) {
       log.warn("Data is already in {}", location);
-      return EMPTY;
+      return null;
     } else {
       createFolder(location);
     }
 
     Path tempZipPath = createTempFile();
     Files.write(tempZipPath, downloadFile(url));
-
     unzipFile(tempZipPath.toString(), location);
-    grantNecessaryPermissionsFor(location);
-
-    Files.delete(tempZipPath);
-    return location;
+    return tempZipPath;
   }
 
   private Path createTempFile() throws IOException {
@@ -213,6 +217,6 @@ public class FileDownloadServiceImpl implements FileDownloadService {
       index++;
     } while (index < 3);
     Collections.reverse(paths);
-    return ROOT_STORAGE + File.separator + String.join(File.separator, paths) + File.separator + DOC_DIR;
+    return ROOT_STORAGE_FOR_CACHE + File.separator + String.join(File.separator, paths) + File.separator + DOC_DIR;
   }
 }
