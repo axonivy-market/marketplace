@@ -208,4 +208,10 @@ class MavenUtilsTest {
     Assertions.assertNull(MavenUtils.filterNonProductArtifactFromList(null));
     Assertions.assertEquals(0, MavenUtils.filterNonProductArtifactFromList(Collections.emptyList()).size());
   }
+
+  @Test
+  void testIsProductArtifactId() {
+    Assertions.assertTrue(MavenUtils.isProductArtifactId("bpmn-statistic-product"));
+    Assertions.assertFalse(MavenUtils.isProductArtifactId("bpmn-statistic"));
+  }
 }
