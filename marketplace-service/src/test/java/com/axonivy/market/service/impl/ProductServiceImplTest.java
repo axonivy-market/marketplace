@@ -459,10 +459,10 @@ class ProductServiceImplTest extends BaseSetup {
     String id = "amazon-comprehend";
     Product mockProduct = mockResultReturn.getContent().get(0);
     mockProduct.setSynchronizedInstallationCount(true);
-    when(productRepository.getProductById(id)).thenReturn(mockProduct);
-    Product result = productService.fetchProductDetail(id);
+    when(productRepository.getProductByIdWithNewestReleaseVersion(id, false)).thenReturn(mockProduct);
+    Product result = productService.fetchProductDetail(id, false);
     assertEquals(mockProduct, result);
-    verify(productRepository).getProductById(id);
+    verify(productRepository, times(1)).getProductByIdWithNewestReleaseVersion(id, false);
   }
 
   @Test

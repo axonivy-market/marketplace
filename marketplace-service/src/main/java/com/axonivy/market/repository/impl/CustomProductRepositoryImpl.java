@@ -12,8 +12,10 @@ import com.axonivy.market.enums.TypeOption;
 import com.axonivy.market.repository.CustomProductRepository;
 import com.axonivy.market.repository.CustomRepository;
 import com.axonivy.market.repository.ProductModuleContentRepository;
+import com.axonivy.market.util.VersionUtils;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
+import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.bson.BsonRegularExpression;
 import org.springframework.data.domain.Page;
@@ -59,6 +61,19 @@ public class CustomProductRepositoryImpl extends CustomRepository implements Cus
       ProductModuleContent content = findByProductIdAndTagOrMavenVersion(id, tag);
       result.setProductModuleContent(content);
     }
+    return result;
+  }
+
+  @Override
+  public Product getProductByIdWithNewestReleaseVersion(String id, Boolean isShowDevVersion) {
+    Product result = findProductById(id);
+    if (ObjectUtils.isEmpty(result)) {
+      return null;
+    }
+    List<String> devVersions = VersionUtils.getVersionsToDisplay(result.getReleasedVersions(), isShowDevVersion, null);
+    String currentTag = VersionUtils.convertVersionToTag(result.getId(), devVersions.get(0));
+    ProductModuleContent content = contentRepository.findByTagAndProductId(currentTag, id);
+    result.setProductModuleContent(content);
     return result;
   }
 

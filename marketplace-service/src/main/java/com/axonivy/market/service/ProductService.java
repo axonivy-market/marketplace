@@ -15,7 +15,7 @@ public interface ProductService {
 
   int updateInstallationCountForProduct(String key, String designerVersion);
 
-  Product fetchProductDetail(String id);
+  Product fetchProductDetail(String id, Boolean isShowDevVersion);
 
   String getCompatibilityFromOldestTag(String oldestTag);
 

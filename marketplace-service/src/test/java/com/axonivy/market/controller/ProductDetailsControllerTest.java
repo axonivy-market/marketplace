@@ -60,18 +60,18 @@ class ProductDetailsControllerTest {
 
   @Test
   void testProductDetails() {
-    Mockito.when(productService.fetchProductDetail(Mockito.anyString())).thenReturn(mockProduct());
+    Mockito.when(productService.fetchProductDetail(Mockito.anyString(), anyBoolean())).thenReturn(mockProduct());
     Mockito.when(detailModelAssembler.toModel(mockProduct(), RequestMappingConstants.BY_ID)).thenReturn(
         createProductMockWithDetails());
     ResponseEntity<ProductDetailModel> mockExpectedResult = new ResponseEntity<>(createProductMockWithDetails(),
         HttpStatus.OK);
 
-    ResponseEntity<ProductDetailModel> result = productDetailsController.findProductDetails(DOCKER_CONNECTOR_ID);
+    ResponseEntity<ProductDetailModel> result = productDetailsController.findProductDetails(DOCKER_CONNECTOR_ID, false);
 
     assertEquals(HttpStatus.OK, result.getStatusCode());
     assertEquals(result, mockExpectedResult);
 
-    verify(productService, times(1)).fetchProductDetail(DOCKER_CONNECTOR_ID);
+    verify(productService, times(1)).fetchProductDetail(DOCKER_CONNECTOR_ID, false);
     verify(detailModelAssembler, times(1)).toModel(mockProduct(), RequestMappingConstants.BY_ID);
     assertTrue(result.hasBody());
     assertEquals(DOCKER_CONNECTOR_ID, Objects.requireNonNull(result.getBody()).getId());
@@ -145,15 +145,15 @@ class ProductDetailsControllerTest {
 
   @Test
   void testProductDetailsWithWrongProductId() {
-    Mockito.when(productService.fetchProductDetail(Mockito.anyString())).thenReturn(
+    Mockito.when(productService.fetchProductDetail(Mockito.anyString(), anyBoolean())).thenReturn(
         null);
 
     ResponseEntity<ProductDetailModel> result = productDetailsController.findProductDetails(
-        WRONG_PRODUCT_ID);
+        WRONG_PRODUCT_ID, false);
 
     assertEquals(HttpStatus.NOT_FOUND, result.getStatusCode());
 
-    verify(productService, times(1)).fetchProductDetail(WRONG_PRODUCT_ID);
+    verify(productService, times(1)).fetchProductDetail(WRONG_PRODUCT_ID, false);
   }
 
   @Test
