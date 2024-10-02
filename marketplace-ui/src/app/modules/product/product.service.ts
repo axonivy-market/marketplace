@@ -86,4 +86,10 @@ export class ProductService {
     const url = `api/product-details/${productId}/designerversions`;
     return this.httpClient.get<VersionAndUrl[]>(url, { headers: { 'X-Requested-By': 'ivy' } });
   }
+
+  getLatestArtifactDownloadUrl(productId: string, version: string, artifactId: string) {
+    return this.httpClient.get<string>(
+      `api/product/${productId}/${version}/${artifactId}`
+    );
+  }
 }

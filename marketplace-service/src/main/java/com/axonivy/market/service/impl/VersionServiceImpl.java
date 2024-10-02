@@ -30,6 +30,7 @@ import org.springframework.util.CollectionUtils;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -129,48 +130,54 @@ public class VersionServiceImpl implements VersionService {
   }
 
   public String getLatestVersionArtifactDownloadUrl(String productId, String version, String artifactId) {
-    Metadata artifactMetadata = metadataRepo.findByProductIdAndArtifactId(productId, artifactId);
-
-    String targetVersion = getLatestVersionOfArtifactByVersionRequest(artifactMetadata, version);
-      if (StringUtils.isBlank(targetVersion)) {
-        return StringUtils.EMPTY;
-      }
-      var artifactVersionCache = mavenArtifactVersionRepository.findById(productId);
-      if (artifactVersionCache.isEmpty()) {
-        return StringUtils.EMPTY;
-      }
-      String downloadUrl =
-          artifactVersionCache.get().getProductArtifactsByVersion().computeIfAbsent(targetVersion,key -> new ArrayList<>()).stream().filter(
-              artifact -> StringUtils.equals(artifactMetadata.getName(), artifact.getName())).findAny().map(
-              MavenArtifactModel::getDownloadUrl).orElse(null);
-      if (StringUtils.isBlank(downloadUrl)) {
-        downloadUrl = artifactVersionCache.get().getAdditionalArtifactsByVersion().computeIfAbsent(targetVersion,key -> new ArrayList<>()).stream().filter(
-            artifact -> StringUtils.equals(artifactMetadata.getName(), artifact.getName())).findAny().map(
-            MavenArtifactModel::getDownloadUrl).orElse(null);
-      }
-      return downloadUrl;
-    }
-
-  public String getLatestVersionOfArtifactByVersionRequest(Metadata artifactMetadata, String version) {
-    if (Objects.isNull(artifactMetadata)) {
+    List<Metadata> artifactsMetadata = metadataRepo.findByProductIdAndArtifactId(productId, artifactId);
+    if (CollectionUtils.isEmpty(artifactsMetadata)) {
       return StringUtils.EMPTY;
     }
+    String artifactName = artifactsMetadata.get(0).getName();
+
+    String targetVersion = getLatestVersionOfArtifactByVersionRequest(artifactsMetadata, version);
+    if (StringUtils.isBlank(targetVersion)) {
+      return StringUtils.EMPTY;
+    }
+    var artifactVersionCache = mavenArtifactVersionRepository.findById(productId);
+    if (artifactVersionCache.isEmpty()) {
+      return StringUtils.EMPTY;
+    }
+
+    String downloadUrl = artifactVersionCache.get().getProductArtifactsByVersion().computeIfAbsent(targetVersion,
+        key -> new ArrayList<>()).stream().filter(
+        artifact -> StringUtils.equals(artifactName, artifact.getName())).findAny().map(
+        MavenArtifactModel::getDownloadUrl).orElse(null);
+    if (StringUtils.isBlank(downloadUrl)) {
+      downloadUrl = artifactVersionCache.get().getAdditionalArtifactsByVersion().computeIfAbsent(targetVersion,
+          key -> new ArrayList<>()).stream().filter(
+          artifact -> StringUtils.equals(artifactName, artifact.getName())).findAny().map(
+          MavenArtifactModel::getDownloadUrl).orElse(null);
+    }
+    return downloadUrl;
+  }
+
+  public String getLatestVersionOfArtifactByVersionRequest(List<Metadata> artifactMetadatas, String version) {
+
     RequestedVersion versionType = RequestedVersion.findByText(version);
     // version in ['dev','nightly','sprint']
     if (versionType == RequestedVersion.LATEST) {
-      return artifactMetadata.getLatest();
+      return CollectionUtils.firstElement(
+          artifactMetadatas.stream().map(Metadata::getLatest).sorted(new LatestVersionComparator()).toList());
     }
     //version is 'latest'
     if (versionType == RequestedVersion.RELEASE) {
-      return artifactMetadata.getRelease();
+      return CollectionUtils.firstElement(
+          artifactMetadatas.stream().map(Metadata::getRelease).sorted(new LatestVersionComparator()).toList());
     }
 
-    if (CollectionUtils.isEmpty(artifactMetadata.getVersions())) {
-      return StringUtils.EMPTY;
-    }
+    Set<String> mavenVersion = new HashSet<>();
+    artifactMetadatas.stream().forEach(metadata -> mavenVersion.addAll(metadata.getVersions()));
 
-    List<String> versionInRange = new ArrayList<>(artifactMetadata.getVersions()).stream().filter(
-        v -> v.startsWith(VersionUtils.getNumbersOnly(version))).sorted(new LatestVersionComparator()).toList();
+    Set<String> versionInRange = mavenVersion.stream().filter(
+        v -> v.startsWith(VersionUtils.getNumbersOnly(version))).sorted(new LatestVersionComparator()).collect(
+        Collectors.toSet());
 
     //version is 10.0-dev
     if (versionType == RequestedVersion.LATEST_DEV_OF_VERSION) {
