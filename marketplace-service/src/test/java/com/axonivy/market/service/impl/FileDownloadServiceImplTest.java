@@ -1,36 +1,61 @@
 package com.axonivy.market.service.impl;
 
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.BeforeEach;
+import com.axonivy.market.repository.ExternalDocumentMetaRepository;
+import com.axonivy.market.repository.ProductRepository;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockedStatic;
 import org.mockito.Mockito;
-import org.mockito.MockitoAnnotations;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.web.client.ResourceAccessException;
 import org.springframework.web.client.RestTemplate;
 
+import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.stream.Stream;
 
+import static org.junit.jupiter.api.Assertions.*;
+
+@ExtendWith(MockitoExtension.class)
 class FileDownloadServiceImplTest {
-
-  @InjectMocks
-  private FileDownloadServiceImpl fileDownloadService;
-
-  @Mock
-  private RestTemplate restTemplate;
-
   private static final String ZIP_FILE_PATH = "src/test/resources/zip/text.zip";
   private static final String EXTRACT_DIR_LOCATION = "src/test/resources/zip/data";
   private static final String EXTRACTED_DIR_LOCATION = "src/test/resources/zip/data/text";
+  private static final String DOWNLOAD_URL = "https://repo/axonivy/portal/portal-guide/10.0.0/portal-guide-10.0.0.zip";
+  @Mock
+  ProductRepository productRepository;
+  @Mock
+  ExternalDocumentMetaRepository externalDocumentMetaRepository;
+  @Mock
+  private RestTemplate restTemplate;
+  @InjectMocks
+  private FileDownloadServiceImpl fileDownloadService;
 
-  @BeforeEach
-  void setUp() {
-    MockitoAnnotations.openMocks(this);
+  @Test
+  void testDownloadAndUnzipFileWithEmptyResult() throws IOException {
+    var result = fileDownloadService.downloadAndUnzipFile("", false);
+    assertTrue(result.isEmpty());
+  }
+
+  @Test
+  void testDownloadAndUnzipFileWithIssue() {
+    assertThrows(ResourceAccessException.class, () -> fileDownloadService.downloadAndUnzipFile(DOWNLOAD_URL, true));
+  }
+
+  @Test
+  void testSupportFunctions() throws IOException {
+    var mockFile = fileDownloadService.createFolder("unzip");
+    var grantedPath = fileDownloadService.grantNecessaryPermissionsFor(mockFile.toString());
+    assertNotNull(grantedPath);
+
+    var mockZipFile = new File("src/test/resources/mock-doc.zip");
+    var totalSizeArchive = fileDownloadService.unzipFile(mockZipFile.getPath(), mockFile.toString());
+    assertTrue(totalSizeArchive > 0);
   }
 
   @Test
@@ -44,7 +69,7 @@ class FileDownloadServiceImplTest {
       Path resultPath = fileDownloadService.createFolder(location);
 
       mockedFiles.verify(() -> Files.createDirectories(mockPath), Mockito.times(1));
-      Assertions.assertEquals(mockPath, resultPath);
+      assertEquals(mockPath, resultPath);
     }
   }
 
@@ -60,7 +85,7 @@ class FileDownloadServiceImplTest {
       Path resultPath = fileDownloadService.createFolder(location);
 
       mockedFiles.verify(() -> Files.createDirectories(mockPath), Mockito.times(1));
-      Assertions.assertEquals(mockPath, resultPath);
+      assertEquals(mockPath, resultPath);
     }
   }
 
@@ -85,7 +110,7 @@ class FileDownloadServiceImplTest {
   @Test
   void testUnzipFile() throws IOException {
     int result = fileDownloadService.unzipFile(ZIP_FILE_PATH, EXTRACT_DIR_LOCATION);
-    Assertions.assertEquals(7, result);
+    assertEquals(7, result);
     fileDownloadService.deleteDirectory(Paths.get(EXTRACTED_DIR_LOCATION));
   }
 }

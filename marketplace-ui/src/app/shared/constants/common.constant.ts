@@ -3,7 +3,6 @@ import { FeedbackSortType } from '../enums/feedback-sort-type';
 import { Language } from '../enums/language.enum';
 import { SortOption } from '../enums/sort-option.enum';
 import { NavItem } from '../models/nav-item.model';
-import { DetailTab } from '../../modules/product/product-detail/product-detail.component';
 import { Pageable } from '../models/apis/pageable.model';
 import { ItemDropdown } from '../models/item-dropdown.model';
 

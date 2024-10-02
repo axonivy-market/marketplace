@@ -65,10 +65,12 @@ import java.security.SecureRandom;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
 import java.util.function.Predicate;
 
 import static com.axonivy.market.constants.CommonConstants.SLASH;
@@ -99,8 +101,8 @@ public class ProductServiceImpl implements ProductService {
   private final SecureRandom random = new SecureRandom();
   private GHCommit lastGHCommit;
   private GitHubRepoMeta marketRepoMeta;
-  @Value("${synchronized.installation.counts.path}")
-  private String installationCountPath;
+  @Value("${market.legacy.installation.counts.path}")
+  private String legacyInstallationCountPath;
   @Value("${market.github.market.branch}")
   private String marketRepoBranch;
 
@@ -145,19 +147,20 @@ public class ProductServiceImpl implements ProductService {
   }
 
   @Override
-  public boolean syncLatestDataFromMarketRepo() {
+  public List<String> syncLatestDataFromMarketRepo() {
+    List<String> syncedProductIds = new ArrayList<>();
     var isAlreadyUpToDate = isLastGithubCommitCovered();
     if (!isAlreadyUpToDate) {
       if (marketRepoMeta == null) {
-        syncProductsFromGitHubRepo();
+        syncedProductIds = syncProductsFromGitHubRepo();
         marketRepoMeta = new GitHubRepoMeta();
       } else {
-        updateLatestChangeToProductsFromGithubRepo();
+        syncedProductIds = updateLatestChangeToProductsFromGithubRepo();
       }
       syncRepoMetaDataStatus();
     }
     updateLatestReleaseTagContentsFromProductRepo();
-    return isAlreadyUpToDate;
+    return syncedProductIds.stream().filter(StringUtils::isNotBlank).toList();
   }
 
   @Override
@@ -184,20 +187,18 @@ public class ProductServiceImpl implements ProductService {
   public void syncInstallationCountWithProduct(Product product) {
     log.info("synchronizing installation count for product {}", product.getId());
     try {
-      String installationCounts = Files.readString(Paths.get(installationCountPath));
+      String installationCounts = Files.readString(Paths.get(legacyInstallationCountPath));
       Map<String, Integer> mapping = mapper.readValue(installationCounts,
           new TypeReference<HashMap<String, Integer>>() {
           });
       List<String> keyList = mapping.keySet().stream().toList();
       int currentInstallationCount = keyList.contains(product.getId())
-          ? mapping.get(product.getId())
-          : random.nextInt(20, 50);
+          ? mapping.get(product.getId()) : random.nextInt(20, 50);
       product.setInstallationCount(currentInstallationCount);
       product.setSynchronizedInstallationCount(true);
       log.info("synchronized installation count for product {} successfully", product.getId());
     } catch (IOException ex) {
-      log.error(ex.getMessage());
-      log.error("Could not read the marketplace-installation file to synchronize");
+      log.error("Could not read the marketplace-installation file to synchronize", ex);
     }
   }
 
@@ -215,7 +216,8 @@ public class ProductServiceImpl implements ProductService {
     marketRepoMeta = null;
   }
 
-  private void updateLatestChangeToProductsFromGithubRepo() {
+  private List<String> updateLatestChangeToProductsFromGithubRepo() {
+    Set<String> syncedProductIds = new HashSet<>();
     var fromSHA1 = marketRepoMeta.getLastSHA1();
     var toSHA1 = ofNullable(lastGHCommit).map(GHCommit::getSHA1).orElse(EMPTY);
     log.warn("**ProductService: synchronize products from SHA1 {} to SHA1 {}", fromSHA1, toSHA1);
@@ -232,23 +234,27 @@ public class ProductServiceImpl implements ProductService {
 
     groupGitHubFiles.forEach((key, value) -> {
       for (var file : value) {
+        var productId = EMPTY;
         if (file.getStatus() == MODIFIED || file.getStatus() == ADDED) {
-          modifyProductMetaOrLogo(file, key);
+          productId = modifyProductMetaOrLogo(file, key);
         } else {
-          removeProductAndImage(file);
+          productId = removeProductAndImage(file);
         }
+        syncedProductIds.add(productId);
       }
     });
+    return syncedProductIds.stream().toList();
   }
 
-  private void removeProductAndImage(GitHubFile file) {
+  private String removeProductAndImage(GitHubFile file) {
+    String productId = EMPTY;
     if (FileType.META == file.getType()) {
       String[] splitMetaJsonPath = file.getFileName().split(SLASH);
       String extractMarketDirectory = file.getFileName().replace(splitMetaJsonPath[splitMetaJsonPath.length - 1],
           EMPTY);
       List<Product> productList = productRepository.findByMarketDirectory(extractMarketDirectory);
       if (ObjectUtils.isNotEmpty(productList)) {
-        String productId = productList.get(0).getId();
+        productId = productList.get(0).getId();
         productRepository.deleteById(productId);
         imageRepository.deleteAllByProductId(productId);
       }
@@ -256,34 +262,39 @@ public class ProductServiceImpl implements ProductService {
       List<Image> images = imageRepository.findByImageUrlEndsWithIgnoreCase(file.getFileName());
       if (ObjectUtils.isNotEmpty(images)) {
         Image currentImage = images.get(0);
-        productRepository.deleteById(currentImage.getProductId());
-        imageRepository.deleteAllByProductId(currentImage.getProductId());
+        productId = currentImage.getProductId();
+        productRepository.deleteById(productId);
+        imageRepository.deleteAllByProductId(productId);
       }
     }
+    return productId;
   }
 
-  private void modifyProductMetaOrLogo(GitHubFile file, String parentPath) {
+  private String modifyProductMetaOrLogo(GitHubFile file, String parentPath) {
     try {
       GHContent fileContent = gitHubService.getGHContent(axonIvyMarketRepoService.getRepository(), file.getFileName(),
           marketRepoBranch);
-      updateProductByMetaJsonAndLogo(fileContent, file, parentPath);
+      return updateProductByMetaJsonAndLogo(fileContent, file, parentPath);
     } catch (IOException e) {
       log.error("Get GHContent failed: ", e);
     }
+    return EMPTY;
   }
 
-  private void updateProductByMetaJsonAndLogo(GHContent fileContent, GitHubFile file, String parentPath) {
+  private String updateProductByMetaJsonAndLogo(GHContent fileContent, GitHubFile file, String parentPath) {
+    String productId;
     Product product = new Product();
     ProductFactory.mappingByGHContent(product, fileContent);
     if (FileType.META == file.getType()) {
       transferComputedDataFromDB(product);
-      productRepository.save(product);
+      productId = productRepository.save(product).getId();
     } else {
-      modifyProductLogo(parentPath, fileContent);
+      productId = modifyProductLogo(parentPath, fileContent);
     }
+    return productId;
   }
 
-  private void modifyProductLogo(String parentPath, GHContent fileContent) {
+  private String modifyProductLogo(String parentPath, GHContent fileContent) {
     var searchCriteria = new ProductSearchCriteria();
     searchCriteria.setKeyword(parentPath);
     searchCriteria.setFields(List.of(MARKET_DIRECTORY));
@@ -296,9 +307,10 @@ public class ProductServiceImpl implements ProductService {
         result.setLogoId(image.getId());
         productRepository.save(result);
       });
-    } else {
-      log.info("There is no product to update the logo with path {}", parentPath);
+      return result.getId();
     }
+    log.info("There is no product to update the logo with path {}", parentPath);
+    return EMPTY;
   }
 
   private Pageable refinePagination(String language, Pageable pageable) {
@@ -384,30 +396,31 @@ public class ProductServiceImpl implements ProductService {
     }
   }
 
-  private void syncProductsFromGitHubRepo() {
+  private List<String> syncProductsFromGitHubRepo() {
     log.warn("**ProductService: synchronize products from scratch based on the Market repo");
+    List<String> syncedProductIds = new ArrayList<>();
     var gitHubContentMap = axonIvyMarketRepoService.fetchAllMarketItems();
     for (Map.Entry<String, List<GHContent>> ghContentEntity : gitHubContentMap.entrySet()) {
-        Product product = new Product();
-        //update the meta.json first
-        ghContentEntity.getValue()
-            .sort((file1, file2) -> GitHubUtils.sortMetaJsonFirst(file1.getName(), file2.getName()));
-        for (var content : ghContentEntity.getValue()) {
-          ProductFactory.mappingByGHContent(product, content);
-          mappingLogoFromGHContent(product, content);
-        }
-        if (productRepository.findById(product.getId()).isPresent()) {
-          continue;
-        }
-        if (StringUtils.isNotBlank(product.getRepositoryName())) {
-          updateProductCompatibility(product);
-          getProductContents(product);
-        } else {
-          updateProductContentForNonStandardProduct(ghContentEntity, product);
-        }
-        transferComputedDataFromDB(product);
-        productRepository.save(product);
+      var product = new Product();
+      //update the meta.json first
+      ghContentEntity.getValue().sort((f1, f2) -> GitHubUtils.sortMetaJsonFirst(f1.getName(), f2.getName()));
+      for (var content : ghContentEntity.getValue()) {
+        ProductFactory.mappingByGHContent(product, content);
+        mappingLogoFromGHContent(product, content);
+      }
+      if (productRepository.findById(product.getId()).isPresent()) {
+        continue;
+      }
+      if (StringUtils.isNotBlank(product.getRepositoryName())) {
+        updateProductCompatibility(product);
+        getProductContents(product);
+      } else {
+        updateProductContentForNonStandardProduct(ghContentEntity, product);
+      }
+      transferComputedDataFromDB(product);
+      syncedProductIds.add(productRepository.save(product).getId());
     }
+    return syncedProductIds;
   }
 
   private void mappingLogoFromGHContent(Product product, GHContent ghContent) {
@@ -578,8 +591,7 @@ public class ProductServiceImpl implements ProductService {
 
   public void transferComputedDataFromDB(Product product) {
     productRepository.findById(product.getId()).ifPresent(persistedData ->
-        ProductFactory.transferComputedPersistedDataToProduct(persistedData, product)
-    );
+        ProductFactory.transferComputedPersistedDataToProduct(persistedData, product));
   }
 
 }

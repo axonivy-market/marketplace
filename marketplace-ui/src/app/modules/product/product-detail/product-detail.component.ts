@@ -46,6 +46,7 @@ import { ProductInstallationCountActionComponent } from './product-installation-
 import { ProductStarRatingNumberComponent } from './product-star-rating-number/product-star-rating-number.component';
 import { DisplayValue } from '../../../shared/models/display-value.model';
 import { CookieService } from 'ngx-cookie-service';
+import { ROUTER } from '../../../shared/constants/router.constant';
 
 export interface DetailTab {
   activeClass: string;
@@ -139,7 +140,7 @@ export class ProductDetailComponent {
       replaceUrl: true
     });
 
-    const productId = this.route.snapshot.params['id'];
+    const productId = this.route.snapshot.params[ROUTER.ID];
     this.productDetailService.productId.set(productId);
     if (productId) {
       const isShowDevVersion = CommonUtils.getCookieValue(this.cookieService, SHOW_DEV_VERSION, false);

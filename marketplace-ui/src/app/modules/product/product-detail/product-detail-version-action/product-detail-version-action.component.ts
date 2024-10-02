@@ -31,10 +31,9 @@ import { LoadingSpinnerComponent } from '../../../../shared/components/loading-s
 import { CookieService } from 'ngx-cookie-service';
 import { CommonUtils } from '../../../../shared/utils/common.utils';
 import { ActivatedRoute, Router } from '@angular/router';
+import { ROUTER } from '../../../../shared/constants/router.constant';
 
-const delayTimeBeforeHideMessage = 2000;
 const showDevVersionCookieName = 'showDevVersions';
-export const versionParam = 'version';
 
 @Component({
   selector: 'app-product-version-action',
@@ -124,7 +123,7 @@ export class ProductDetailVersionActionComponent implements AfterViewInit {
   addVersionParamToRoute(selectedVersion: string) {
     this.router.navigate([], {
       relativeTo: this.route,
-      queryParams: { [versionParam]: selectedVersion },
+      queryParams: { [ROUTER.VERSION]: selectedVersion },
       queryParamsHandling: 'merge'
     }).then();
   }
@@ -184,7 +183,7 @@ export class ProductDetailVersionActionComponent implements AfterViewInit {
     if (ignoreRouteVersion) {
       return null;
     }
-    return this.route.snapshot.queryParams[versionParam] || null;
+    return this.route.snapshot.queryParams[ROUTER.VERSION] || null;
   }
 
   getVersionInDesigner(): void {

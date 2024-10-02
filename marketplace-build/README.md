@@ -19,6 +19,8 @@ This command should return the ``OK`` code
 * Run ``docker-compose up -d --build`` to start a Marketplace DEV at the local
 
 #### If you already have MongoDB on your local machine with public port `27017`
+* Create a docker network to connect ui > service > mongodb by run ``docker network create marketplace-network``
+
 * Navigate to ``marketplace-build/dev``
 
 * Run ``docker-compose up -d --build`` to start a Marketplace DEV at the local
