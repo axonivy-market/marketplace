@@ -3,13 +3,15 @@ import { HttpTestingController, provideHttpClientTesting } from '@angular/common
 import { ActivatedRoute, Router } from '@angular/router';
 import { TranslateModule } from '@ngx-translate/core';
 import { ROUTER } from '../../constants/router.constant';
-import { provideHttpClient, withInterceptorsFromDi } from '@angular/common/http';
+import { HttpClient, provideHttpClient, withInterceptorsFromDi } from '@angular/common/http';
 import { ExternalDocumentComponent } from './external-document.component';
+import { of } from 'rxjs';
 
 describe('ExternalDocumentComponent', () => {
   let component: ExternalDocumentComponent;
   let fixture: any;
   let httpMock: HttpTestingController;
+  let httpClient: jasmine.SpyObj<HttpClient>;
   let router: Router;
   let activatedRoute: ActivatedRoute;
 
@@ -17,8 +19,8 @@ describe('ExternalDocumentComponent', () => {
     snapshot: {
       paramMap: {
         get: (key: string) => {
-          if (key === ROUTER.ID) return 'testProduct';
-          if (key === ROUTER.VERSION) return '1.0';
+          if (key === ROUTER.ID) return 'portal';
+          if (key === ROUTER.VERSION) return '10.0';
           return null;
         }
       }
@@ -26,6 +28,7 @@ describe('ExternalDocumentComponent', () => {
   };
 
   beforeEach(() => {
+    httpClient = jasmine.createSpyObj('HttpClient', ['get']);
     TestBed.configureTestingModule({
       imports: [
         TranslateModule.forRoot(),
@@ -34,7 +37,8 @@ describe('ExternalDocumentComponent', () => {
       providers: [
         provideHttpClient(withInterceptorsFromDi()),
         provideHttpClientTesting(),
-        { provide: ActivatedRoute, useValue: mockActivatedRoute }
+        { provide: ActivatedRoute, useValue: mockActivatedRoute },
+        { provide: HttpClient, useValue: httpClient }
       ]
     });
 
@@ -43,11 +47,20 @@ describe('ExternalDocumentComponent', () => {
     httpMock = TestBed.inject(HttpTestingController);
     router = TestBed.inject(Router);
     activatedRoute = TestBed.inject(ActivatedRoute);
-    httpMock.verify();
   });
 
   it('should create the component', () => {
     expect(component).toBeTruthy();
   });
 
+  it('should not redirect if response URL matches current URL', () => {
+    const currentUrl = window.location.href;
+    const mockResponse = currentUrl;
+    httpClient.get.and.returnValue(of(mockResponse));
+
+    component.ngOnInit();
+
+    expect(httpClient.get).toHaveBeenCalledWith(`api/externaldocument/portal/10.0`);
+    expect(window.location.href).toBe(currentUrl);
+  });
 });
