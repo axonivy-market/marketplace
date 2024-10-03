@@ -35,13 +35,15 @@ class ProductDetailModelAssemblerTest {
     ProductDetailModel model = productDetailModelAssembler.toModel(mockProduct);
     Assertions.assertEquals(ID, model.getId());
     Assertions.assertFalse(model.getLinks().isEmpty());
-    Assertions.assertTrue(model.getLink(SELF_RELATION).get().getHref().endsWith("/api/product-details/portal"));
+    Assertions.assertTrue(
+        model.getLink(SELF_RELATION).get().getHref().endsWith("/api/product-details/portal?isShowDevVersion=false"));
   }
 
   @Test
   void testToModelWithRequestPath() {
     ProductDetailModel model = productDetailModelAssembler.toModel(mockProduct, RequestMappingConstants.BY_ID);
-    Assertions.assertTrue(model.getLink(SELF_RELATION).get().getHref().endsWith("/api/product-details/portal"));
+    Assertions.assertTrue(
+        model.getLink(SELF_RELATION).get().getHref().endsWith("/api/product-details/portal?isShowDevVersion=false"));
   }
 
   @Test
@@ -53,10 +55,11 @@ class ProductDetailModelAssemblerTest {
 
   @Test
   void testToModelWithRequestPathAndBestMatchVersion() {
+    mockProduct.setBestMatchVersion("10.0.19");
     ProductDetailModel model = productDetailModelAssembler.toModel(mockProduct, VERSION,
         RequestMappingConstants.BEST_MATCH_BY_ID_AND_VERSION);
     Assertions.assertTrue(
         model.getLink(SELF_RELATION).get().getHref().endsWith("/api/product-details/portal/10.0.19/bestmatch"));
-    Assertions.assertTrue(model.getMetaProductJsonUrl().endsWith("/api/product-details/portal/10.0.8/json"));
+    Assertions.assertTrue(model.getMetaProductJsonUrl().endsWith("/api/product-details/portal/10.0.19/json"));
   }
 }

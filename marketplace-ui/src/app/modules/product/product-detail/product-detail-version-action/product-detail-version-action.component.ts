@@ -23,7 +23,7 @@ import { CommonDropdownComponent } from '../../../../shared/components/common-dr
 import { LanguageService } from '../../../../core/services/language/language.service';
 import { ItemDropdown } from '../../../../shared/models/item-dropdown.model';
 import { environment } from '../../../../../environments/environment';
-import { VERSION } from '../../../../shared/constants/common.constant';
+import { SHOW_DEV_VERSION, VERSION } from '../../../../shared/constants/common.constant';
 import { ProductDetailActionType } from '../../../../shared/enums/product-detail-action-type';
 import { RoutingQueryParamService } from '../../../../shared/services/routing.query.param.service';
 import { ProductDetail } from '../../../../shared/models/product-detail.model';
@@ -31,10 +31,9 @@ import { LoadingSpinnerComponent } from '../../../../shared/components/loading-s
 import { CookieService } from 'ngx-cookie-service';
 import { CommonUtils } from '../../../../shared/utils/common.utils';
 import { ActivatedRoute, Router } from '@angular/router';
+import { ROUTER } from '../../../../shared/constants/router.constant';
 
-const delayTimeBeforeHideMessage = 2000;
 const showDevVersionCookieName = 'showDevVersions';
-export const versionParam = 'version';
 
 @Component({
   selector: 'app-product-version-action',
@@ -105,7 +104,7 @@ export class ProductDetailVersionActionComponent implements AfterViewInit {
   }
 
   private getShowDevVersionFromCookie() {
-    return CommonUtils.getCookieValue(this.cookieService, showDevVersionCookieName, false);
+    return CommonUtils.getCookieValue(this.cookieService, SHOW_DEV_VERSION, false);
   }
 
   private updateSelectedArtifact(version: string) {
@@ -124,7 +123,7 @@ export class ProductDetailVersionActionComponent implements AfterViewInit {
   addVersionParamToRoute(selectedVersion: string) {
     this.router.navigate([], {
       relativeTo: this.route,
-      queryParams: { [versionParam]: selectedVersion },
+      queryParams: { [ROUTER.VERSION]: selectedVersion },
       queryParamsHandling: 'merge'
     }).then();
   }
@@ -151,7 +150,7 @@ export class ProductDetailVersionActionComponent implements AfterViewInit {
     }
     this.isDropDownDisplayed.set(!this.isDropDownDisplayed());
   }
-  
+
   getVersionWithArtifact(ignoreRouteVersion = false) {
     this.isArtifactLoading.set(true);
     this.sanitizeDataBeforeFetching();
@@ -184,7 +183,7 @@ export class ProductDetailVersionActionComponent implements AfterViewInit {
     if (ignoreRouteVersion) {
       return null;
     }
-    return this.route.snapshot.queryParams[versionParam] || null;
+    return this.route.snapshot.queryParams[ROUTER.VERSION] || null;
   }
 
   getVersionInDesigner(): void {
