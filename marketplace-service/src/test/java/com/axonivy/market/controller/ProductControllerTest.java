@@ -130,7 +130,7 @@ class ProductControllerTest {
   void testSyncProductsInvalidToken() {
     doThrow(new UnauthorizedException(ErrorCode.GITHUB_USER_UNAUTHORIZED.getCode(),
         ErrorCode.GITHUB_USER_UNAUTHORIZED.getHelpText())).when(gitHubService)
-        .validateUserOrganization(any(String.class), any(String.class));
+        .validateUser(any(String.class), any(String.class), any(String.class));
 
     UnauthorizedException exception = assertThrows(UnauthorizedException.class,
         () -> productController.syncProducts(INVALID_AUTHORIZATION_HEADER, false));
