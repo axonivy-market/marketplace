@@ -5,7 +5,6 @@ import com.axonivy.market.controller.ProductDetailsController;
 import com.axonivy.market.entity.Product;
 import com.axonivy.market.model.ProductDetailModel;
 import com.axonivy.market.util.ImageUtils;
-import com.axonivy.market.util.VersionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.hateoas.Link;
 import org.springframework.hateoas.server.mvc.RepresentationModelAssemblerSupport;
@@ -58,7 +57,7 @@ public class ProductDetailModelAssembler extends RepresentationModelAssemblerSup
           methodOn(ProductDetailsController.class).findBestMatchProductDetailsByVersion(productId, version);
       case RequestMappingConstants.BY_ID_AND_VERSION ->
           methodOn(ProductDetailsController.class).findProductDetailsByVersion(productId, version);
-      default -> methodOn(ProductDetailsController.class).findProductDetails(productId);
+      default -> methodOn(ProductDetailsController.class).findProductDetails(productId, false);
     };
 
     model.add(linkTo(selfLinkWithTag).withSelfRel());

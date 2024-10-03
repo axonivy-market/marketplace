@@ -109,3 +109,5 @@ common:
     noFeedbackMessage2: ''
     rateFeedbackBtnLabel: Bewerte diesen Konnektor
     reviewLabelNoYet: Noch keine Bewertungen
+  labels:
+    redirecting: Redirecting ...!

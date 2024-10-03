@@ -152,7 +152,7 @@ class ProductServiceImplTest extends BaseSetup {
     Product product = new Product();
     product.setSynchronizedInstallationCount(null);
     product.setId("portal");
-    ReflectionTestUtils.setField(productService, "installationCountPath", INSTALLATION_FILE_PATH);
+    ReflectionTestUtils.setField(productService, "legacyInstallationCountPath", INSTALLATION_FILE_PATH);
 
     productService.syncInstallationCountWithProduct(product);
 
@@ -162,14 +162,13 @@ class ProductServiceImplTest extends BaseSetup {
 
   @Test
   void testSyncInstallationCountWithProduct() {
-    ReflectionTestUtils.setField(productService, "installationCountPath", INSTALLATION_FILE_PATH);
+    ReflectionTestUtils.setField(productService, "legacyInstallationCountPath", INSTALLATION_FILE_PATH);
     Product product = mockProduct();
     product.setSynchronizedInstallationCount(false);
 
     productService.syncInstallationCountWithProduct(product);
 
     assertEquals(40, product.getInstallationCount());
-    assertEquals(true, product.getSynchronizedInstallationCount());
     assertTrue(product.getSynchronizedInstallationCount());
   }
 
@@ -220,10 +219,13 @@ class ProductServiceImplTest extends BaseSetup {
     when(marketRepoService.fetchMarketItemsBySHA1Range(any(), any())).thenReturn(List.of(mockGithubFile));
     var mockGHContent = mockGHContentAsMetaJSON();
     when(gitHubService.getGHContent(any(), anyString(), any())).thenReturn(mockGHContent);
+    when(mockGHContent.read()).thenReturn(this.getClass().getResourceAsStream(EMPTY_SOURCE_URL_META_JSON_FILE));
+    when(productRepository.save(any(Product.class))).thenReturn(new Product());
 
     // Executes
     var result = productService.syncLatestDataFromMarketRepo();
-    assertFalse(result);
+    assertNotNull(result);
+    assertTrue(result.isEmpty());
 
     // Start testing by deleting new meta
     mockCommit = mockGHCommitHasSHA1(UUID.randomUUID().toString());
@@ -232,7 +234,8 @@ class ProductServiceImplTest extends BaseSetup {
     mockGithubFile.setStatus(FileStatus.REMOVED);
     // Executes
     result = productService.syncLatestDataFromMarketRepo();
-    assertFalse(result);
+    assertNotNull(result);
+    assertTrue(result.isEmpty());
   }
 
   @Test
@@ -253,7 +256,8 @@ class ProductServiceImplTest extends BaseSetup {
 
     // Executes
     var result = productService.syncLatestDataFromMarketRepo();
-    assertFalse(result);
+    assertNotNull(result);
+    assertTrue(result.isEmpty());
 
     // Start testing by deleting new logo
     when(mockCommit.getSHA1()).thenReturn(UUID.randomUUID().toString());
@@ -262,7 +266,8 @@ class ProductServiceImplTest extends BaseSetup {
 
     // Executes
     result = productService.syncLatestDataFromMarketRepo();
-    assertFalse(result);
+    assertNotNull(result);
+    assertTrue(result.isEmpty());
   }
 
   @Test
@@ -326,8 +331,9 @@ class ProductServiceImplTest extends BaseSetup {
     when(marketRepoService.fetchAllMarketItems()).thenReturn(mockGHContentMap);
     when(productModuleContentRepository.saveAll(anyList())).thenReturn(List.of(mockReadmeProductContent()));
 
-    Mockito.when(imageService.mappingImageFromGHContent(any(), any(), anyBoolean()))
+    when(imageService.mappingImageFromGHContent(any(), any(), anyBoolean()))
         .thenReturn(GHAxonIvyProductRepoServiceImplTest.mockImage());
+    when(productRepository.save(any(Product.class))).thenReturn(new Product());
     // Executes
     productService.syncLatestDataFromMarketRepo();
     verify(productModuleContentRepository).saveAll(argumentCaptorProductModuleContents.capture());
@@ -354,8 +360,9 @@ class ProductServiceImplTest extends BaseSetup {
     List<GHContent> mockMetaJsonAndLogoList = new ArrayList<>(List.of(mockContent, mockContentLogo));
     mockGHContentMap.put(SAMPLE_PRODUCT_ID, mockMetaJsonAndLogoList);
     when(marketRepoService.fetchAllMarketItems()).thenReturn(mockGHContentMap);
-    Mockito.when(imageService.mappingImageFromGHContent(any(), any(), anyBoolean())).thenReturn(
+    when(imageService.mappingImageFromGHContent(any(), any(), anyBoolean())).thenReturn(
         GHAxonIvyProductRepoServiceImplTest.mockImage());
+    when(productRepository.save(any(Product.class))).thenReturn(new Product());
     // Executes
     productService.syncLatestDataFromMarketRepo();
     verify(productModuleContentRepository).save(argumentCaptorProductModuleContent.capture());
@@ -411,7 +418,8 @@ class ProductServiceImplTest extends BaseSetup {
 
     // Executes
     var result = productService.syncLatestDataFromMarketRepo();
-    assertTrue(result);
+    assertNotNull(result);
+    assertTrue(result.isEmpty());
   }
 
   @Test
@@ -423,6 +431,7 @@ class ProductServiceImplTest extends BaseSetup {
     Map<String, List<GHContent>> mockGHContentMap = new HashMap<>();
     mockGHContentMap.put(SAMPLE_PRODUCT_ID, new ArrayList<>());
     when(marketRepoService.fetchAllMarketItems()).thenReturn(mockGHContentMap);
+    when(productRepository.save(any(Product.class))).thenReturn(new Product());
 
     // Executes
     productService.syncLatestDataFromMarketRepo();
@@ -450,10 +459,10 @@ class ProductServiceImplTest extends BaseSetup {
     String id = "amazon-comprehend";
     Product mockProduct = mockResultReturn.getContent().get(0);
     mockProduct.setSynchronizedInstallationCount(true);
-    when(productRepository.getProductById(id)).thenReturn(mockProduct);
-    Product result = productService.fetchProductDetail(id);
+    when(productRepository.getProductByIdWithNewestReleaseVersion(id, false)).thenReturn(mockProduct);
+    Product result = productService.fetchProductDetail(id, false);
     assertEquals(mockProduct, result);
-    verify(productRepository, times(1)).getProductById(id);
+    verify(productRepository, times(1)).getProductByIdWithNewestReleaseVersion(id, false);
   }
 
   @Test
@@ -467,7 +476,7 @@ class ProductServiceImplTest extends BaseSetup {
     Product result = productService.fetchProductDetailByIdAndVersion(id, version);
 
     assertEquals(mockProduct, result);
-    verify(productRepository, times(1)).getProductByIdWithTagOrVersion(id, version);
+    verify(productRepository).getProductByIdWithTagOrVersion(id, version);
   }
 
   @Test
@@ -494,8 +503,8 @@ class ProductServiceImplTest extends BaseSetup {
 
       assertEquals(mockProduct, result);
       assertEquals(bestMatchVersion, result.getBestMatchVersion());
-      verify(mavenArtifactVersionRepo, times(1)).findById(id);
-      verify(productRepository, times(1)).getProductByIdWithTagOrVersion(id, version);
+      verify(mavenArtifactVersionRepo).findById(id);
+      verify(productRepository).getProductByIdWithTagOrVersion(id, version);
     }
   }
 
@@ -557,10 +566,10 @@ class ProductServiceImplTest extends BaseSetup {
 
     productService.addCustomSortProduct(customSortRequest);
 
-    verify(productCustomSortRepository, times(1)).deleteAll();
-    verify(mongoTemplate, times(1)).updateMulti(any(Query.class), any(Update.class), eq(Product.class));
-    verify(productCustomSortRepository, times(1)).save(any(ProductCustomSort.class));
-    verify(productRepository, times(1)).saveAll(productListArgumentCaptor.capture());
+    verify(productCustomSortRepository).deleteAll();
+    verify(mongoTemplate).updateMulti(any(Query.class), any(Update.class), eq(Product.class));
+    verify(productCustomSortRepository).save(any(ProductCustomSort.class));
+    verify(productRepository).saveAll(productListArgumentCaptor.capture());
 
     List<Product> capturedProducts = productListArgumentCaptor.getValue();
     assertEquals(1, capturedProducts.size());
@@ -572,7 +581,7 @@ class ProductServiceImplTest extends BaseSetup {
     Product product = mockProduct();
     product.setSynchronizedInstallationCount(false);
     String id = product.getId();
-    ReflectionTestUtils.setField(productService, "installationCountPath", INSTALLATION_FILE_PATH);
+    ReflectionTestUtils.setField(productService, "legacyInstallationCountPath", INSTALLATION_FILE_PATH);
 
     when(productRepository.updateInitialCount(eq(id), anyInt())).thenReturn(10);
 
@@ -654,12 +663,13 @@ class ProductServiceImplTest extends BaseSetup {
     mockGitHubFile.setType(FileType.LOGO);
     mockGitHubFile.setStatus(FileStatus.ADDED);
     when(marketRepoService.fetchMarketItemsBySHA1Range(any(), any())).thenReturn(List.of(mockGitHubFile));
-    var mockGHContent = mockGHContentAsMetaJSON();
+    var mockGHContent = mockGHContentAsLogo();
     when(gitHubService.getGHContent(any(), anyString(), any())).thenReturn(mockGHContent);
 
     // Executes
     var result = productService.syncLatestDataFromMarketRepo();
-    assertFalse(result);
+    assertNotNull(result);
+    assertTrue(result.isEmpty());
 
     // Start testing by deleting new logo
     when(mockCommit.getSHA1()).thenReturn(UUID.randomUUID().toString());
@@ -673,7 +683,8 @@ class ProductServiceImplTest extends BaseSetup {
     verify(productRepository, times(1)).deleteById(anyString());
     verify(imageRepository, times(1)).deleteAllByProductId(anyString());
     verify(imageRepository, times(1)).findByImageUrlEndsWithIgnoreCase(anyString());
-    assertFalse(result);
+    assertNotNull(result);
+    assertFalse(result.isEmpty());
   }
 
   @Test
@@ -694,7 +705,8 @@ class ProductServiceImplTest extends BaseSetup {
     // Executes
     var result = productService.syncLatestDataFromMarketRepo();
 
-    assertFalse(result);
+    assertNotNull(result);
+    assertFalse(result.isEmpty());
     verify(productRepository, times(1)).deleteById(anyString());
     verify(imageRepository, times(1)).deleteAllByProductId(anyString());
   }

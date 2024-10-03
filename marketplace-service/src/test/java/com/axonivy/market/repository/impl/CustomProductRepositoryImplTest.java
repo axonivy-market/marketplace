@@ -4,6 +4,7 @@ import com.axonivy.market.BaseSetup;
 import com.axonivy.market.constants.MongoDBConstants;
 import com.axonivy.market.entity.Product;
 import com.axonivy.market.entity.ProductDesignerInstallation;
+import com.axonivy.market.entity.ProductModuleContent;
 import com.axonivy.market.repository.ProductModuleContentRepository;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -85,6 +86,36 @@ class CustomProductRepositoryImplTest extends BaseSetup {
   void testGetProductById() {
     setUpMockAggregateResult();
     Product actualProduct = repo.getProductById(ID);
+    assertEquals(mockProduct, actualProduct);
+  }
+
+  @Test
+  void testGetProductById_andFindProductModuleContentByNewestVersion() {
+    mockAggregation = mock(Aggregation.class);
+    AggregationResults<Product> aggregationResults = mock(AggregationResults.class);
+
+    when(mongoTemplate.aggregate(any(Aggregation.class), eq(MongoDBConstants.PRODUCT_COLLECTION),
+        eq(Product.class))).thenReturn(aggregationResults);
+
+    ProductModuleContent productModuleContent = ProductModuleContent.builder()
+        .productId("bmpn-statistic")
+        .tag("v11.3.0")
+        .build();
+
+    when(contentRepo.findByTagAndProductId("v11.3.0", ID)).thenReturn(productModuleContent);
+
+    mockProduct = Product.builder()
+        .id(ID)
+        .newestReleaseVersion("12.0.0-m264")
+        .releasedVersions(List.of("11.1.1", "11.1.0", "11.3.0"))
+        .productModuleContent(productModuleContent)
+        .build();
+
+    when(aggregationResults.getUniqueMappedResult()).thenReturn(mockProduct);
+
+    Product actualProduct = repo.getProductByIdWithNewestReleaseVersion(ID,false);
+
+    verify(contentRepo, times(1)).findByTagAndProductId("v11.3.0", ID);
     assertEquals(mockProduct, actualProduct);
   }
 
