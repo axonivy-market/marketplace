@@ -1,14 +1,19 @@
 package com.axonivy.market.factory;
 
+import com.axonivy.market.comparator.LatestVersionComparator;
 import com.axonivy.market.comparator.MavenVersionComparator;
+import com.axonivy.market.entity.Metadata;
 import com.axonivy.market.enums.DevelopmentVersion;
+import com.axonivy.market.util.VersionUtils;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
+import org.springframework.util.CollectionUtils;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import static com.axonivy.market.constants.MavenConstants.DEV_RELEASE_POSTFIX;
 import static org.apache.commons.lang3.StringUtils.EMPTY;
@@ -33,6 +38,43 @@ public class VersionFactory {
     return findVersionStartWith(sortedVersions, requestedVersion);
   }
 
+  public static String getFromMetadata(List<Metadata> metadataList, String requestedVersion) {
+    if (CollectionUtils.isEmpty(metadataList)) {
+      return EMPTY;
+    }
+    var version = DevelopmentVersion.of(requestedVersion);
+
+    // Get latest released version from metadata
+    if (version == DevelopmentVersion.LATEST) {
+      return metadataList.stream().map(Metadata::getRelease).sorted(new LatestVersionComparator()).findFirst().orElse(
+          EMPTY);
+    }
+
+    //Get latest dev version from metadata
+    if (List.of(DevelopmentVersion.DEV, DevelopmentVersion.SPRINT, DevelopmentVersion.NIGHTLY).contains(version)) {
+      return metadataList.stream().map(Metadata::getLatest).sorted(new LatestVersionComparator()).findFirst().orElse(
+          EMPTY);
+    }
+
+    List<String> versionsInArtifact = metadataList.stream().flatMap(metadata -> metadata.getVersions().stream()).sorted(
+        new LatestVersionComparator()).collect(Collectors.toList());
+
+    //Get latest dev version from specific version
+    if (requestedVersion.endsWith(DEV_RELEASE_POSTFIX)) {
+      requestedVersion = requestedVersion.replace(DEV_RELEASE_POSTFIX, EMPTY);
+      return findVersionStartWith(versionsInArtifact, requestedVersion);
+    }
+
+    List<String> releasedVersions = versionsInArtifact.stream().filter(VersionUtils::isReleasedVersion).toList();
+    String matchVersion = findVersionStartWith(releasedVersions, requestedVersion);
+
+    // Return latest version of specific version if can not fnd latest release of that version
+    if ((VersionUtils.isMajorVersion(requestedVersion) || VersionUtils.isMinorVersion(
+        requestedVersion)) && !releasedVersions.contains(matchVersion)) {
+      return findVersionStartWith(versionsInArtifact, requestedVersion);
+    }
+    return matchVersion;
+  }
   private static String findVersionStartWith(List<String> releaseVersions, String version) {
     return Optional.ofNullable(releaseVersions).orElse(List.of()).stream().filter(
         ver -> ver.startsWith(version)).findAny().orElse(version);
