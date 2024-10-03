@@ -1,6 +1,5 @@
 package com.axonivy.market.github.service.impl;
 
-import com.axonivy.market.constants.CommonConstants;
 import com.axonivy.market.constants.ErrorMessageConstants;
 import com.axonivy.market.constants.GitHubConstants;
 import com.axonivy.market.entity.User;
@@ -12,7 +11,6 @@ import com.axonivy.market.exceptions.model.UnauthorizedException;
 import com.axonivy.market.github.model.GitHubAccessTokenResponse;
 import com.axonivy.market.github.model.GitHubProperty;
 import com.axonivy.market.github.service.GitHubService;
-import com.axonivy.market.github.util.GitHubUtils;
 import com.axonivy.market.repository.UserRepository;
 import lombok.extern.log4j.Log4j2;
 import org.kohsuke.github.GHContent;
@@ -32,19 +30,14 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
-import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 
 import java.io.IOException;
 import java.util.Collections;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
-import static com.axonivy.market.constants.GitHubConstants.ATTRIBUTE_ORGANIZATION_NAME;
-import static com.axonivy.market.constants.GitHubConstants.ATTRIBUTE_ORGANIZATION_OBJECT;
-import static com.axonivy.market.constants.GitHubConstants.ATTRIBUTE_TEAM_NAME;
 import static org.apache.commons.lang3.StringUtils.EMPTY;
 
 @Log4j2
@@ -66,6 +59,11 @@ public class GitHubServiceImpl implements GitHubService {
   public GitHub getGitHub() throws IOException {
     return new GitHubBuilder().withOAuthToken(
         Optional.ofNullable(gitHubProperty).map(GitHubProperty::getToken).orElse(EMPTY).trim()).build();
+  }
+
+  @Override
+  public GitHub getGitHub(String accessToken) throws IOException {
+    return new GitHubBuilder().withOAuthToken(accessToken).build();
   }
 
   @Override
@@ -160,43 +158,15 @@ public class GitHubServiceImpl implements GitHubService {
   }
 
   @Override
-  public void validateUserOrganization(String accessToken, String organization) throws UnauthorizedException {
-    List<Map<String, Object>> userOrganizations = getUserOrganizations(accessToken);
-    for (var org : userOrganizations) {
-      if (org.get("login").equals(organization)) {
-        return;
-      }
-    }
-    throw new UnauthorizedException(ErrorCode.GITHUB_USER_UNAUTHORIZED.getCode(),
-        ErrorCode.GITHUB_USER_UNAUTHORIZED.getHelpText()
-            + "-User must be a member of the Axon Ivy Market Organization");
-  }
-
-  public List<Map<String, Object>> getUserOrganizations(String accessToken) throws UnauthorizedException {
-    HttpHeaders headers = new HttpHeaders();
-    headers.setBearerAuth(accessToken);
-    HttpEntity<String> entity = new HttpEntity<>(headers);
+  public void validateUserInOrganizationAndTeam(String accessToken, String organization,
+      String team) throws UnauthorizedException {
     try {
-      ResponseEntity<List<Map<String, Object>>> response = restTemplate.exchange(GitHubConstants.Url.USER_ORGS,
-          HttpMethod.GET, entity, new ParameterizedTypeReference<>() {
-          });
-      return response.getBody();
-    } catch (HttpClientErrorException exception) {
-      throw new UnauthorizedException(ErrorCode.GITHUB_USER_UNAUTHORIZED.getCode(),
-          ErrorCode.GITHUB_USER_UNAUTHORIZED.getHelpText() + CommonConstants.DASH_SEPARATOR
-              + GitHubUtils.extractMessageFromExceptionMessage(exception.getMessage()));
-    }
-  }
-
-  @Override
-  public void validateUser(String accessToken, String team, String organization) throws UnauthorizedException {
-    List<Map<String, Object>> userTeams = getUserTeams(accessToken);
-    for (var userTeam : userTeams) {
-      LinkedHashMap<String, String> org = (LinkedHashMap) userTeam.get(ATTRIBUTE_ORGANIZATION_OBJECT);
-      if (userTeam.get(ATTRIBUTE_TEAM_NAME).equals(team) && org.get(ATTRIBUTE_ORGANIZATION_NAME).equals(
-          organization)) {
+      var gitHub = getGitHub(accessToken);
+      if (isUserInOrganizationAndTeam(gitHub, organization, team)) {
         return;
       }
+    } catch (IOException e) {
+      log.error(e.getStackTrace());
     }
 
     throw new UnauthorizedException(ErrorCode.GITHUB_USER_UNAUTHORIZED.getCode(),
@@ -204,19 +174,17 @@ public class GitHubServiceImpl implements GitHubService {
             team, organization));
   }
 
-  public List<Map<String, Object>> getUserTeams(String accessToken) throws UnauthorizedException {
-    try {
-      HttpHeaders headers = new HttpHeaders();
-      headers.setBearerAuth(accessToken);
-      HttpEntity<String> entity = new HttpEntity<>(headers);
-      ResponseEntity<List<Map<String, Object>>> response = restTemplate.exchange(GitHubConstants.Url.USER_TEAMS,
-          HttpMethod.GET, entity, new ParameterizedTypeReference<>() {
-          });
-      return response.getBody();
-    } catch (HttpClientErrorException exception) {
-      throw new UnauthorizedException(ErrorCode.GITHUB_USER_UNAUTHORIZED.getCode(),
-          ErrorCode.GITHUB_USER_UNAUTHORIZED.getHelpText() + CommonConstants.DASH_SEPARATOR
-              + GitHubUtils.extractMessageFromExceptionMessage(exception.getMessage()));
+  private boolean isUserInOrganizationAndTeam(GitHub gitHub, String organization,
+      String team) throws IOException {
+    if (gitHub == null) {
+      return false;
     }
+
+    var ghOrg = gitHub.getOrganization(organization);
+    if (ghOrg == null) {
+      return false;
+    }
+
+    return ghOrg.getTeamByName(team) != null;
   }
 }
