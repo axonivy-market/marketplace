@@ -6,7 +6,7 @@ import com.axonivy.market.controller.ProductDetailsController;
 import com.axonivy.market.entity.MavenArtifactVersion;
 import com.axonivy.market.entity.Metadata;
 import com.axonivy.market.entity.ProductJsonContent;
-import com.axonivy.market.enums.RequestedVersion;
+import com.axonivy.market.factory.VersionFactory;
 import com.axonivy.market.model.MavenArtifactModel;
 import com.axonivy.market.model.MavenArtifactVersionModel;
 import com.axonivy.market.model.VersionAndUrlModel;
@@ -136,7 +136,7 @@ public class VersionServiceImpl implements VersionService {
     }
     String artifactName = artifactsMetadata.get(0).getName();
 
-    String targetVersion = getLatestVersionOfArtifactByVersionRequest(artifactsMetadata, version);
+    String targetVersion = VersionFactory.getFromMetadata(artifactsMetadata, version);
     if (StringUtils.isBlank(targetVersion)) {
       return StringUtils.EMPTY;
     }
@@ -156,41 +156,5 @@ public class VersionServiceImpl implements VersionService {
           MavenArtifactModel::getDownloadUrl).orElse(null);
     }
     return downloadUrl;
-  }
-
-  public String getLatestVersionOfArtifactByVersionRequest(List<Metadata> artifactMetadatas, String version) {
-
-    RequestedVersion versionType = RequestedVersion.findByText(version);
-    // version in ['dev','nightly','sprint']
-    if (versionType == RequestedVersion.LATEST) {
-      return CollectionUtils.firstElement(
-          artifactMetadatas.stream().map(Metadata::getLatest).sorted(new LatestVersionComparator()).toList());
-    }
-    //version is 'latest'
-    if (versionType == RequestedVersion.RELEASE) {
-      return CollectionUtils.firstElement(
-          artifactMetadatas.stream().map(Metadata::getRelease).sorted(new LatestVersionComparator()).toList());
-    }
-
-    Set<String> mavenVersion = new HashSet<>();
-    artifactMetadatas.stream().forEach(metadata -> mavenVersion.addAll(metadata.getVersions()));
-
-    Set<String> versionInRange = mavenVersion.stream().filter(
-        v -> v.startsWith(VersionUtils.getNumbersOnly(version))).sorted(new LatestVersionComparator()).collect(
-        Collectors.toSet());
-
-    //version is 10.0-dev
-    if (versionType == RequestedVersion.LATEST_DEV_OF_VERSION) {
-      return CollectionUtils.firstElement(versionInRange);
-    }
-
-    //version is 10.1 or 10
-    if (VersionUtils.isMajorVersion(version) || VersionUtils.isMinorVersion(version)) {
-      String latestReleasedVersionInRange = CollectionUtils.firstElement(
-          versionInRange.stream().filter(VersionUtils::isReleasedVersion).toList());
-      return StringUtils.isBlank(latestReleasedVersionInRange) ? CollectionUtils.firstElement(
-          versionInRange) : latestReleasedVersionInRange;
-    }
-    return version;
   }
 }
