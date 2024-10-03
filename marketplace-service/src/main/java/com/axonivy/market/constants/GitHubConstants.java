@@ -14,9 +14,6 @@ public class GitHubConstants {
   public static final String README_FILE_LOCALE_REGEX = "_(..)";
   public static final String STANDARD_TAG_PREFIX = "v";
   public static final String COMMON_IMAGES_FOLDER_NAME = "images";
-  public static final String ATTRIBUTE_TEAM_NAME = "slug";
-  public static final String ATTRIBUTE_ORGANIZATION_OBJECT = "organization";
-  public static final String ATTRIBUTE_ORGANIZATION_NAME = "login";
 
   @NoArgsConstructor(access = AccessLevel.PRIVATE)
   public static class Json {
@@ -34,7 +31,5 @@ public class GitHubConstants {
   public static class Url {
     private static final String BASE_URL = "https://api.github.com";
     public static final String USER = BASE_URL + "/user";
-    public static final String USER_ORGS = USER + "/orgs";
-    public static final String USER_TEAMS = USER + "/teams";
   }
 }
