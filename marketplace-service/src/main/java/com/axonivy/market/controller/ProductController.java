@@ -1,7 +1,6 @@
 package com.axonivy.market.controller;
 
 import com.axonivy.market.assembler.ProductModelAssembler;
-import com.axonivy.market.constants.CommonConstants;
 import com.axonivy.market.constants.GitHubConstants;
 import com.axonivy.market.entity.Product;
 import com.axonivy.market.enums.ErrorCode;
@@ -12,6 +11,7 @@ import com.axonivy.market.model.ProductModel;
 import com.axonivy.market.service.MetadataService;
 import com.axonivy.market.service.ProductService;
 import com.axonivy.market.service.VersionService;
+import com.axonivy.market.util.AuthorizationUtils;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.enums.ParameterIn;
@@ -20,6 +20,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.time.StopWatch;
 import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.data.domain.Page;
@@ -30,15 +31,9 @@ import org.springframework.hateoas.PagedModel;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestHeader;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 import static com.axonivy.market.constants.RequestMappingConstants.*;
 import static com.axonivy.market.constants.RequestParamConstants.*;
@@ -93,7 +88,7 @@ public class ProductController {
   @Operation(hidden = true)
   public ResponseEntity<Message> syncProducts(@RequestHeader(value = AUTHORIZATION) String authorizationHeader,
       @RequestParam(value = RESET_SYNC, required = false) Boolean resetSync) {
-    String token = getBearerToken(authorizationHeader);
+    String token = AuthorizationUtils.getBearerToken(authorizationHeader);
     gitHubService.validateUserOrganization(token, GitHubConstants.AXONIVY_MARKET_ORGANIZATION_NAME);
     if (Boolean.TRUE.equals(resetSync)) {
       productService.clearAllProducts();
@@ -101,15 +96,16 @@ public class ProductController {
 
     var stopWatch = new StopWatch();
     stopWatch.start();
-    var isAlreadyUpToDate = productService.syncLatestDataFromMarketRepo();
+    List<String> syncedProductIds = productService.syncLatestDataFromMarketRepo();
     var message = new Message();
     message.setHelpCode(ErrorCode.SUCCESSFUL.getCode());
     message.setHelpText(ErrorCode.SUCCESSFUL.getHelpText());
-    if (isAlreadyUpToDate) {
+    if (ObjectUtils.isEmpty(syncedProductIds)) {
       message.setMessageDetails("Data is already up to date, nothing to sync");
     } else {
       stopWatch.stop();
-      message.setMessageDetails(String.format("Finished sync data in [%s] milliseconds", stopWatch.getTime()));
+      message.setMessageDetails(String.format("Finished sync [%s] data in [%s] milliseconds", syncedProductIds,
+          stopWatch.getTime()));
     }
     return new ResponseEntity<>(message, HttpStatus.OK);
   }
@@ -117,7 +113,7 @@ public class ProductController {
   @PutMapping(SYNC_PRODUCT_VERSION)
   @Operation(hidden = true)
   public ResponseEntity<Message> syncProductVersions(@RequestHeader(value = AUTHORIZATION) String authorizationHeader) {
-    String token = getBearerToken(authorizationHeader);
+    String token = AuthorizationUtils.getBearerToken(authorizationHeader);
     gitHubService.validateUserOrganization(token, GitHubConstants.AXONIVY_MARKET_ORGANIZATION_NAME);
     int nonSyncResult = metadataService.syncAllProductsMetadata();
     var message = new Message();
@@ -138,7 +134,7 @@ public class ProductController {
   public ResponseEntity<Message> createCustomSortProducts(
       @RequestHeader(value = AUTHORIZATION) String authorizationHeader,
       @RequestBody @Valid ProductCustomSortRequest productCustomSortRequest) {
-    String token = getBearerToken(authorizationHeader);
+    String token = AuthorizationUtils.getBearerToken(authorizationHeader);
     gitHubService.validateUserOrganization(token, GitHubConstants.AXONIVY_MARKET_ORGANIZATION_NAME);
     productService.addCustomSortProduct(productCustomSortRequest);
     var message = new Message(ErrorCode.SUCCESSFUL.getCode(), ErrorCode.SUCCESSFUL.getHelpText(),
@@ -159,13 +155,5 @@ public class ProductController {
     var emptyPagedModel = (PagedModel<ProductModel>) pagedResourcesAssembler.toEmptyModel(Page.empty(),
         ProductModel.class);
     return new ResponseEntity<>(emptyPagedModel, HttpStatus.OK);
-  }
-
-  public static String getBearerToken(String authorizationHeader) {
-    String token = null;
-    if (authorizationHeader.startsWith(CommonConstants.BEARER)) {
-      token = authorizationHeader.substring(CommonConstants.BEARER.length()).trim(); // Remove "Bearer " prefix
-    }
-    return token;
   }
 }
