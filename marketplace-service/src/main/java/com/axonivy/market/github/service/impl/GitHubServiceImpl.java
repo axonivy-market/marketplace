@@ -192,7 +192,7 @@ public class GitHubServiceImpl implements GitHubService {
   public void validateUser(String accessToken, String team, String organization) throws UnauthorizedException {
     List<Map<String, Object>> userTeams = getUserTeams(accessToken);
     for (var userTeam : userTeams) {
-      LinkedHashMap org = (LinkedHashMap) userTeam.get(ATTRIBUTE_ORGANIZATION_OBJECT);
+      LinkedHashMap<String, String> org = (LinkedHashMap) userTeam.get(ATTRIBUTE_ORGANIZATION_OBJECT);
       if (userTeam.get(ATTRIBUTE_TEAM_NAME).equals(team) && org.get(ATTRIBUTE_ORGANIZATION_NAME).equals(
           organization)) {
         return;
