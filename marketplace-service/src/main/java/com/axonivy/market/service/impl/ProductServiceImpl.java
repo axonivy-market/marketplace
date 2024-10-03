@@ -383,7 +383,8 @@ public class ProductServiceImpl implements ProductService {
     ProductFactory.mappingIdForProductModuleContent(initialContent);
     product.setReleasedVersions(List.of(INITIAL_VERSION));
     product.setNewestReleaseVersion(INITIAL_VERSION);
-    axonIvyProductRepoService.extractReadMeFileFromContents(product, ghContentEntity.getValue(), initialContent);
+    axonIvyProductRepoService.extractReadMeFileFromContents(product, ghContentEntity.getValue(), initialContent,
+        INITIAL_VERSION);
     productModuleContentRepository.save(initialContent);
   }
 
@@ -417,8 +418,6 @@ public class ProductServiceImpl implements ProductService {
       } else {
         updateProductContentForNonStandardProduct(ghContentEntity, product);
       }
-      transferComputedDataFromDB(product);
-      syncedProductIds.add(productRepository.save(product).getId());
     }
     return syncedProductIds;
   }

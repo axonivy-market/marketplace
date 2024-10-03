@@ -46,6 +46,7 @@ public class GHAxonIvyProductRepoServiceImpl implements GHAxonIvyProductRepoServ
   private final ImageService imageService;
   private GHOrganization organization;
   private final ProductJsonContentService productJsonContentService;
+  private String productFolderPath;
 
   public GHAxonIvyProductRepoServiceImpl(GitHubService gitHubService, ImageService imageService,
       ProductJsonContentService productJsonContentService) {
@@ -89,7 +90,7 @@ public class GHAxonIvyProductRepoServiceImpl implements GHAxonIvyProductRepoServ
     try {
       List<GHContent> contents = getProductFolderContents(product, ghRepository, tag);
       updateDependencyContentsFromProductJson(productModuleContent, contents, product);
-      extractReadMeFileFromContents(product, contents, productModuleContent);
+      extractReadMeFileFromContents(product, contents, productModuleContent, tag);
     } catch (Exception e) {
       log.error("Cannot get product.json content in {} - {}", ghRepository.getName(), e.getMessage());
       return null;
@@ -98,7 +99,7 @@ public class GHAxonIvyProductRepoServiceImpl implements GHAxonIvyProductRepoServ
   }
 
   public void extractReadMeFileFromContents(Product product, List<GHContent> contents,
-      ProductModuleContent productModuleContent) {
+      ProductModuleContent productModuleContent, String tag) {
     try {
       List<GHContent> readmeFiles = contents.stream().filter(GHContent::isFile)
           .filter(content -> content.getName().startsWith(ReadmeConstants.README_FILE_NAME)).toList();
@@ -107,6 +108,10 @@ public class GHAxonIvyProductRepoServiceImpl implements GHAxonIvyProductRepoServ
       if (!CollectionUtils.isEmpty(readmeFiles)) {
         for (GHContent readmeFile : readmeFiles) {
           String readmeContents = new String(readmeFile.read().readAllBytes());
+          if (readmeContents.contains("@variables.yaml@") || readmeContents.contains("config/variables.yaml")) {
+            readmeContents = replaceVariable(readmeContents, product, tag);
+          }
+
           if (ProductContentUtils.hasImageDirectives(readmeContents)) {
             readmeContents = updateImagesWithDownloadUrl(product, contents, readmeContents);
           }
@@ -159,11 +164,51 @@ public class GHAxonIvyProductRepoServiceImpl implements GHAxonIvyProductRepoServ
 
   private List<GHContent> getProductFolderContents(Product product, GHRepository ghRepository, String tag)
       throws IOException {
-    String productFolderPath = ghRepository.getDirectoryContent(CommonConstants.SLASH, tag).stream()
+    this.productFolderPath = ghRepository.getDirectoryContent(CommonConstants.SLASH, tag).stream()
         .filter(GHContent::isDirectory).map(GHContent::getName)
         .filter(content -> content.endsWith(MavenConstants.PRODUCT_ARTIFACT_POSTFIX)).findFirst().orElse(null);
-    productFolderPath = NonStandardProduct.findById(product.getId(), productFolderPath);
+    this.productFolderPath = NonStandardProduct.findById(product.getId(), this.productFolderPath);
 
     return ghRepository.getDirectoryContent(productFolderPath, tag);
+  }
+
+  private String replaceVariable(String readmeContent, Product product, String tag) throws IOException {
+    String parentPath = "";
+    int productIndex = this.productFolderPath.indexOf(MavenConstants.PRODUCT_ARTIFACT_POSTFIX);
+
+    if (productIndex != -1) {
+      parentPath = this.productFolderPath.substring(0, productIndex);
+    }
+
+    GHContent variableFile = findVariableYaml(product, parentPath, tag);
+    String variable = new String(variableFile.read().readAllBytes());
+    if (readmeContent.contains("config/variables.yaml")) {
+      return readmeContent.replace("config/variables.yaml", variable);
+    }
+    return readmeContent.replace("@variables.yaml@", variable);
+  }
+
+  private GHContent findVariableYaml(Product product, String parentPath, String tag) throws IOException {
+    List<GHContent> parentContents = gitHubService.getRepository(product.getRepositoryName())
+        .getDirectoryContent(parentPath, tag)
+        .stream()
+        .filter(content -> !content.getName().startsWith(".") && !"src".equals(content.getName()))
+        .toList();
+
+    for (GHContent content : parentContents) {
+      if (content.isFile() && "variables.yaml".equals(content.getName())) {
+        return content;
+      }
+
+      if (content.isDirectory()) {
+        String subdirectoryPath = content.getPath();
+        GHContent foundFile = findVariableYaml(product, subdirectoryPath, tag);
+
+        if (foundFile != null) {
+          return foundFile;
+        }
+      }
+    }
+    return null;
   }
 }
