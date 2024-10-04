@@ -11,7 +11,5 @@ public interface ProductJsonContentRepository extends MongoRepository<ProductJso
 
   List<ProductJsonContent> findByProductIdAndVersion(String productId, String version);
 
-  ProductJsonContent findByProductIdAndVersion(String productId, String version);
-
   void deleteAllByProductId(String productId);
 }
