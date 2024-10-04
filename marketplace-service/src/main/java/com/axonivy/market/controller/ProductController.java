@@ -144,7 +144,7 @@ public class ProductController {
           description = "Item folder path of the market in https://github.com/axonivy-market/market",
           example = "market/connector/a-trust") String marketItemPath,
       @RequestParam(value = OVERRIDE_MARKET_ITEM_PATH, required = false) Boolean overrideMarketItemPath) {
-    String token = getBearerToken(authorizationHeader);
+    String token = AuthorizationUtils.getBearerToken(authorizationHeader);
     gitHubService.validateUserOrganization(token, GitHubConstants.AXONIVY_MARKET_ORGANIZATION_NAME);
 
     var isSuccess = productService.syncOneProduct(productId, marketItemPath, overrideMarketItemPath);

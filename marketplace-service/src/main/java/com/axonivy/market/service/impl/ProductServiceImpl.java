@@ -617,7 +617,7 @@ public class ProductServiceImpl implements ProductService {
         }
     );
 
-    if (StringUtils.isNotBlank(marketItemPath) && overrideMarketItemPath) {
+    if (StringUtils.isNotBlank(marketItemPath) && Boolean.TRUE.equals(overrideMarketItemPath)) {
       product.setMarketDirectory(marketItemPath);
     }
 
