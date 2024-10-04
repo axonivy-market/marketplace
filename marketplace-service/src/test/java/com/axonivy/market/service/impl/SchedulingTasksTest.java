@@ -23,5 +23,9 @@ class SchedulingTasksTest {
   void testShouldNotTriggerAfterApplicationStarted() {
     Awaitility.await().atMost(Durations.TEN_SECONDS)
         .untilAsserted(() -> verify(tasks, atLeast(0)).syncDataForProductFromGitHubRepo());
+
+    Awaitility.await().atMost(Durations.TEN_SECONDS)
+        .untilAsserted(() -> verify(tasks, atLeast(0)).syncDataForProductDocuments());
   }
+
 }

@@ -1,6 +1,6 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { of } from 'rxjs';
-import { ProductDetailVersionActionComponent, versionParam } from './product-detail-version-action.component';
+import { ProductDetailVersionActionComponent } from './product-detail-version-action.component';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { ProductService } from '../../product.service';
 import { provideHttpClient } from '@angular/common/http';
@@ -9,6 +9,7 @@ import { ItemDropdown } from '../../../../shared/models/item-dropdown.model';
 import { CookieService } from 'ngx-cookie-service';
 import { ActivatedRoute, provideRouter, Router } from '@angular/router';
 import { CommonUtils } from '../../../../shared/utils/common.utils';
+import { ROUTER } from '../../../../shared/constants/router.constant';
 
 class MockElementRef implements ElementRef {
   nativeElement = {
@@ -158,7 +159,7 @@ describe('ProductDetailVersionActionComponent', () => {
     // Expectations
     expect(router.navigate).toHaveBeenCalledWith([], {
       relativeTo: route,
-      queryParams: { [versionParam]: version },
+      queryParams: { [ROUTER.VERSION]: version },
       queryParamsHandling: 'merge'
     });
   });
