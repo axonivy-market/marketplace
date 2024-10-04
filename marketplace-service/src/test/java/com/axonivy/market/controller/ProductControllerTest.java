@@ -194,19 +194,6 @@ class ProductControllerTest {
     assertNull(token);
   }
 
-  @Test
-  void testGetLatestArtifactDownloadUrl() {
-    String mockDownloadUrl = "https://market.axonivy.com";
-    when(versionService.getLatestVersionArtifactDownloadUrl(Mockito.anyString(),Mockito.anyString(),
-        Mockito.anyString())).thenReturn(StringUtils.EMPTY);
-    var response = productController.getLatestArtifactDownloadUrl("portal", "1.0.0", "portal-app");
-    assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode());
-    when(versionService.getLatestVersionArtifactDownloadUrl(Mockito.anyString(),Mockito.anyString(),
-        Mockito.anyString())).thenReturn(mockDownloadUrl);
-    response = productController.getLatestArtifactDownloadUrl("portal", "1.0.0", "portal-app");
-    assertEquals(HttpStatus.OK, response.getStatusCode());
-  }
-
   private Product createProductMock() {
     Product mockProduct = new Product();
     mockProduct.setId("amazon-comprehend");

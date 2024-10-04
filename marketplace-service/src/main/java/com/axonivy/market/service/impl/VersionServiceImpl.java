@@ -130,31 +130,44 @@ public class VersionServiceImpl implements VersionService {
   }
 
   public String getLatestVersionArtifactDownloadUrl(String productId, String version, String artifactId) {
+    String[] artifactParts = artifactId.split("\\.");
+    String fileType = artifactParts[artifactParts.length - 1];
+    artifactId = artifactParts[0];
     List<Metadata> artifactsMetadata = metadataRepo.findByProductIdAndArtifactId(productId, artifactId);
     if (CollectionUtils.isEmpty(artifactsMetadata)) {
       return StringUtils.EMPTY;
     }
-    String artifactName = artifactsMetadata.get(0).getName();
+    List<String> modelArtifactsId = artifactsMetadata.stream().map(Metadata::getArtifactId).toList();
 
     String targetVersion = VersionFactory.getFromMetadata(artifactsMetadata, version);
     if (StringUtils.isBlank(targetVersion)) {
       return StringUtils.EMPTY;
     }
+
     var artifactVersionCache = mavenArtifactVersionRepository.findById(productId);
     if (artifactVersionCache.isEmpty()) {
       return StringUtils.EMPTY;
     }
 
-    String downloadUrl = artifactVersionCache.get().getProductArtifactsByVersion().computeIfAbsent(targetVersion,
-        key -> new ArrayList<>()).stream().filter(
-        artifact -> StringUtils.equals(artifactName, artifact.getName())).findAny().map(
-        MavenArtifactModel::getDownloadUrl).orElse(null);
+    //Find download url first from product artifact model
+    String downloadUrl = getDownloadUrlFromExistingDataByArtifactIdAndVersion(
+        artifactVersionCache.get().getProductArtifactsByVersion(), targetVersion, modelArtifactsId);
+    //Continue to find download url from artifact in meta.json if it is not existed in artifacts of product.json
     if (StringUtils.isBlank(downloadUrl)) {
-      downloadUrl = artifactVersionCache.get().getAdditionalArtifactsByVersion().computeIfAbsent(targetVersion,
-          key -> new ArrayList<>()).stream().filter(
-          artifact -> StringUtils.equals(artifactName, artifact.getName())).findAny().map(
-          MavenArtifactModel::getDownloadUrl).orElse(null);
+      downloadUrl = getDownloadUrlFromExistingDataByArtifactIdAndVersion(
+          artifactVersionCache.get().getAdditionalArtifactsByVersion(), targetVersion, modelArtifactsId);
+    }
+    if (!StringUtils.endsWith(downloadUrl, fileType)) {
+      log.warn("**VersionService: the found downloadUrl {} is not match with file type {}", downloadUrl, fileType);
+      downloadUrl = StringUtils.EMPTY;
     }
     return downloadUrl;
+  }
+
+  private String getDownloadUrlFromExistingDataByArtifactIdAndVersion(
+      Map<String, List<MavenArtifactModel>> existingData, String version, List<String> artifactsId) {
+    return existingData.computeIfAbsent(version, key -> new ArrayList<>()).stream().filter(
+        model -> artifactsId.contains(model.getArtifactId())).findAny().map(MavenArtifactModel::getDownloadUrl).orElse(
+        null);
   }
 }

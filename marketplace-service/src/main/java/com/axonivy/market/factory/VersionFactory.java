@@ -51,7 +51,7 @@ public class VersionFactory {
     }
 
     //Get latest dev version from metadata
-    if (List.of(DevelopmentVersion.DEV, DevelopmentVersion.SPRINT, DevelopmentVersion.NIGHTLY).contains(version)) {
+    if (Objects.nonNull(version)) {
       return metadataList.stream().map(Metadata::getLatest).sorted(new LatestVersionComparator()).findFirst().orElse(
           EMPTY);
     }

@@ -10,7 +10,9 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.enums.ParameterIn;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -126,5 +128,13 @@ public class ProductDetailsController {
   public ResponseEntity<List<VersionAndUrlModel>> findVersionsForDesigner(@PathVariable(ID) String id) {
     List<VersionAndUrlModel> versionList = versionService.getVersionsForDesigner(id);
     return new ResponseEntity<>(versionList, HttpStatus.OK);
+  }
+
+  @GetMapping(LATEST_LIB)
+  public ResponseEntity<String> getLatestArtifactDownloadUrl(@RequestParam(value = ID) String productId,
+      @RequestParam(value = VERSION) String version, @RequestParam(value = ARTIFACT_ID) String artifactId) {
+    String downloadUrl = versionService.getLatestVersionArtifactDownloadUrl(productId,version,artifactId);
+    HttpStatusCode statusCode = StringUtils.isBlank(downloadUrl) ? HttpStatus.NOT_FOUND : HttpStatus.OK;
+    return new ResponseEntity<>(versionService.getLatestVersionArtifactDownloadUrl(productId,version,artifactId), statusCode);
   }
 }
