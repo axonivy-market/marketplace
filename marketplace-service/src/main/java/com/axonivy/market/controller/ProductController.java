@@ -26,6 +26,7 @@ import org.springframework.hateoas.PagedModel;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -113,20 +114,20 @@ public class ProductController {
     return new ResponseEntity<>(message, HttpStatus.OK);
   }
 
-  @PutMapping(SYNC_ONE_PRODUCT)
+  @PutMapping(SYNC_ONE_PRODUCT_BY_ID)
   @Operation(hidden = true)
   public ResponseEntity<Message> syncOneProduct(
       @RequestHeader(value = AUTHORIZATION) String authorizationHeader,
-      @RequestParam(value = ID) @Parameter(
-          description = "Product Id is defined in meta.json file", example = "a-trust") String productId,
+      @PathVariable(ID) @Parameter(description = "Product Id is defined in meta.json file", example = "a-trust",
+          in = ParameterIn.PATH) String productId,
       @RequestParam(value = MARKET_ITEM_PATH) @Parameter(
           description = "Item folder path of the market in https://github.com/axonivy-market/market",
-          example = "market/connector/a-trust") String marketItemPath) {
+          example = "market/connector/a-trust") String marketItemPath,
+      @RequestParam(value = OVERRIDE_MARKET_ITEM_PATH, required = false) Boolean overrideMarketItemPath) {
     String token = getBearerToken(authorizationHeader);
     gitHubService.validateUserOrganization(token, GitHubConstants.AXONIVY_MARKET_ORGANIZATION_NAME);
 
-    Product product = productService.renewProductById(productId);
-    var isSuccess = productService.syncOneProduct(marketItemPath, product);
+    var isSuccess = productService.syncOneProduct(productId, marketItemPath, overrideMarketItemPath);
     var message = new Message();
     message.setHelpCode(ErrorCode.SUCCESSFUL.getCode());
     if (isSuccess) {

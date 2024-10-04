@@ -25,7 +25,5 @@ public interface ProductService {
 
   Product fetchProductDetailByIdAndVersion(String id, String version);
 
-  Product renewProductById(String id);
-
-  boolean syncOneProduct(String marketItemPath, Product product);
+  boolean syncOneProduct(String productId, String marketItemPath, Boolean overrideMarketItemPath);
 }

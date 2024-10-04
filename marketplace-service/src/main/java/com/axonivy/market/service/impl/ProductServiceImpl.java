@@ -54,6 +54,7 @@ import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.data.mongodb.core.query.Update;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 
 import java.io.IOException;
@@ -563,25 +564,16 @@ public class ProductServiceImpl implements ProductService {
   }
 
   @Override
-  public Product renewProductById(String id) {
-    Product product = new Product();
-    productRepository.findById(id).ifPresent(foundProduct -> {
-          ProductFactory.transferComputedPersistedDataToProduct(foundProduct, product);
-          imageRepository.deleteAllByProductId(foundProduct.getId());
-          productModuleContentRepository.deleteAllByProductId(foundProduct.getId());
-          productJsonContentRepository.deleteAllByProductId(foundProduct.getId());
-          productRepository.delete(foundProduct);
-        }
-    );
-
-    return product;
-  }
-
-  @Override
-  public boolean syncOneProduct(String marketItemPath, Product product) {
+  @Transactional
+  public boolean syncOneProduct(String productId, String marketItemPath, Boolean overrideMarketItemPath) {
     try {
-      var gitHubContents = axonIvyMarketRepoService.getMarketItemByPath(marketItemPath);
+      log.info(String.format("Syn product %s", productId));
+      log.info(String.format("Clean up product %s", productId));
+      Product product = renewProductById(productId, marketItemPath, overrideMarketItemPath);
+      log.info(String.format("Get data of product %s from the git hub", productId));
+      var gitHubContents = axonIvyMarketRepoService.getMarketItemByPath(product.getMarketDirectory());
       if (!CollectionUtils.isEmpty(gitHubContents)) {
+        log.info(String.format("Update data of product %s from meta.json and logo files", productId));
         mappingMetaDataAndLogoFromGHContent(gitHubContents, product);
         updateRelatedThingsOfProductFromGHContent(gitHubContents, product);
         productRepository.save(product);
@@ -591,6 +583,24 @@ public class ProductServiceImpl implements ProductService {
       log.error(e.getStackTrace());
     }
     return false;
+  }
+
+  private Product renewProductById(String productId, String marketItemPath, Boolean overrideMarketItemPath) {
+    Product product = new Product();
+    productRepository.findById(productId).ifPresent(foundProduct -> {
+          ProductFactory.transferComputedPersistedDataToProduct(foundProduct, product);
+          imageRepository.deleteAllByProductId(foundProduct.getId());
+          productModuleContentRepository.deleteAllByProductId(foundProduct.getId());
+          productJsonContentRepository.deleteAllByProductId(foundProduct.getId());
+          productRepository.delete(foundProduct);
+        }
+    );
+
+    if (StringUtils.isNotBlank(marketItemPath) && overrideMarketItemPath) {
+      product.setMarketDirectory(marketItemPath);
+    }
+
+    return product;
   }
 
   private void mappingMetaDataAndLogoFromGHContent(List<GHContent> gitHubContent, Product product) {

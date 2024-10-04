@@ -667,30 +667,16 @@ class ProductServiceImplTest extends BaseSetup {
   }
 
   @Test
-  void testRenewProductById() {
-    Product mockProduct = new Product();
-    mockProduct.setId(SAMPLE_PRODUCT_ID);
-    mockProduct.setInstallationCount(10);
-    when(productRepository.findById(SAMPLE_PRODUCT_ID)).thenReturn(Optional.of(mockProduct));
-
-    Product foundProduct = productService.renewProductById(SAMPLE_PRODUCT_ID);
-
-    verify(imageRepository, times(1)).deleteAllByProductId(SAMPLE_PRODUCT_ID);
-    verify(productModuleContentRepository, times(1)).deleteAllByProductId(SAMPLE_PRODUCT_ID);
-    verify(productJsonContentRepository, times(1)).deleteAllByProductId(SAMPLE_PRODUCT_ID);
-    verify(productRepository, times(1)).delete(mockProduct);
-    assertThat(foundProduct.getInstallationCount()).isEqualTo(10);
-  }
-
-  @Test
   void testSyncOneProduct() throws IOException {
     Product mockProduct = new Product();
     mockProduct.setId(SAMPLE_PRODUCT_ID);
+    mockProduct.setMarketDirectory(SAMPLE_PRODUCT_PATH);
+    when(productRepository.findById(anyString())).thenReturn(Optional.of(mockProduct));
     var mockContents = mockMetaJsonAndLogoList();
     when(marketRepoService.getMarketItemByPath(anyString())).thenReturn(mockContents);
     when(productRepository.save(any(Product.class))).thenReturn(mockProduct);
     // Executes
-    var result = productService.syncOneProduct(SAMPLE_PRODUCT_PATH, mockProduct());
+    var result = productService.syncOneProduct(SAMPLE_PRODUCT_PATH, SAMPLE_PRODUCT_ID, false);
     assertTrue(result);
   }
 
