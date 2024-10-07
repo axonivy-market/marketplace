@@ -17,4 +17,5 @@ public class RequestParamConstants {
   public static final String DESIGNER_VERSION = "designerVersion";
   public static final String VERSION = "version";
   public static final String ARTIFACT_ID = "artifactId";
+  public static final String FILE_TYPE = "fileType";
 }

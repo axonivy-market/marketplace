@@ -130,11 +130,12 @@ public class ProductDetailsController {
     return new ResponseEntity<>(versionList, HttpStatus.OK);
   }
 
-  @GetMapping(LATEST_LIB)
-  public ResponseEntity<String> getLatestArtifactDownloadUrl(@RequestParam(value = ID) String productId,
-      @RequestParam(value = VERSION) String version, @RequestParam(value = ARTIFACT_ID) String artifactId) {
-    String downloadUrl = versionService.getLatestVersionArtifactDownloadUrl(productId,version,artifactId);
+  @GetMapping(LATEST_LIB_BY_ID)
+  public ResponseEntity<String> getLatestArtifactDownloadUrl(@PathVariable(value = ID) String productId,
+      @RequestParam(value = VERSION) String version, @RequestParam(value = ARTIFACT_ID) String artifactId,
+      @RequestParam(value = FILE_TYPE) String fileType) {
+    String downloadUrl = versionService.getLatestVersionArtifactDownloadUrl(productId, version, artifactId, fileType);
     HttpStatusCode statusCode = StringUtils.isBlank(downloadUrl) ? HttpStatus.NOT_FOUND : HttpStatus.OK;
-    return new ResponseEntity<>(versionService.getLatestVersionArtifactDownloadUrl(productId,version,artifactId), statusCode);
+    return new ResponseEntity<>(downloadUrl, statusCode);
   }
 }

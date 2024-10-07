@@ -129,10 +129,8 @@ public class VersionServiceImpl implements VersionService {
     return MavenUtils.getMavenArtifactsFromProductJson(productJson);
   }
 
-  public String getLatestVersionArtifactDownloadUrl(String productId, String version, String artifactId) {
-    String[] artifactParts = artifactId.split("\\.");
-    String fileType = artifactParts[artifactParts.length - 1];
-    artifactId = artifactParts[0];
+  public String getLatestVersionArtifactDownloadUrl(String productId, String version, String artifactId,
+      String fileType) {
     List<Metadata> artifactsMetadata = metadataRepo.findByProductIdAndArtifactId(productId, artifactId);
     if (CollectionUtils.isEmpty(artifactsMetadata)) {
       return StringUtils.EMPTY;

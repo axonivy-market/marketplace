@@ -29,7 +29,10 @@ export class ProductService {
         .set(RequestParam.LANGUAGE, `${criteria.language}`)
         .set(RequestParam.PAGE, `${criteria.pageable.page}`)
         .set(RequestParam.SIZE, `${criteria.pageable.size}`)
-        .set(RequestParam.IS_REST_CLIENT_EDITOR, `${criteria.isRESTClientEditor}`);
+        .set(
+          RequestParam.IS_REST_CLIENT_EDITOR,
+          `${criteria.isRESTClientEditor}`
+        );
     }
     return this.httpClient.get<ProductApiResponse>(requestURL, {
       params: requestParams
@@ -54,7 +57,10 @@ export class ProductService {
     );
   }
 
-  getProductDetails(productId: string, isShowDevVersion: boolean): Observable<ProductDetail> {
+  getProductDetails(
+    productId: string,
+    isShowDevVersion: boolean
+  ): Observable<ProductDetail> {
     return this.httpClient.get<ProductDetail>(
       `api/product-details/${productId}?isShowDevVersion=${isShowDevVersion}`
     );
@@ -75,7 +81,10 @@ export class ProductService {
     });
   }
 
-  sendRequestToUpdateInstallationCount(productId: string, designerVersion: string) {
+  sendRequestToUpdateInstallationCount(
+    productId: string,
+    designerVersion: string
+  ) {
     const url = 'api/product-details/installationcount/' + productId;
     const headers = { 'X-Requested-By': 'ivy' };
     const params = new HttpParams().append('designerVersion', designerVersion);
@@ -84,12 +93,25 @@ export class ProductService {
 
   sendRequestToGetProductVersionsForDesigner(productId: string) {
     const url = `api/product-details/${productId}/designerversions`;
-    return this.httpClient.get<VersionAndUrl[]>(url, { headers: { 'X-Requested-By': 'ivy' } });
+    return this.httpClient.get<VersionAndUrl[]>(url, {
+      headers: { 'X-Requested-By': 'ivy' }
+    });
   }
 
-  getLatestArtifactDownloadUrl(productId: string, version: string, artifactId: string) {
-    return this.httpClient.get<string>(
-      `api/product/${productId}/${version}/${artifactId}`
-    );
+  getLatestArtifactDownloadUrl(
+    id: string,
+    version: string,
+    artifactId: string,
+    fileType: string
+  ) {
+    const params = new HttpParams()
+      .append('version', version)
+      .append('artifactId', artifactId)
+      .append('fileType', fileType);
+    const url = `api/product-details/${id}/lib`;
+    return this.httpClient.get<string>(url, {
+      params,
+      responseType: 'text' as 'json'
+    });
   }
 }
