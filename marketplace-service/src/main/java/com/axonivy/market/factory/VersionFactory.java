@@ -39,14 +39,11 @@ public class VersionFactory {
   }
 
   public static String getFromMetadata(List<Metadata> metadataList, String requestedVersion) {
-    if (CollectionUtils.isEmpty(metadataList)) {
-      return EMPTY;
-    }
     var version = DevelopmentVersion.of(requestedVersion);
 
     // Get latest released version from metadata
     if (version == DevelopmentVersion.LATEST) {
-      return metadataList.stream().map(Metadata::getRelease).sorted(new LatestVersionComparator()).findFirst().orElse(
+      return metadataList.stream().map(Metadata::getRelease).max(new LatestVersionComparator()).orElse(
           EMPTY);
     }
 

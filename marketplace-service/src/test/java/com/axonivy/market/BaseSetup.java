@@ -183,4 +183,9 @@ public class BaseSetup {
     mockMavenArtifactModel.setDownloadUrl(MOCK_DOWNLOAD_URL);
     return mockMavenArtifactModel;
   }
+
+  protected MavenArtifactModel getMockMavenArtifactModelWithDownloadUrl() {
+    return MavenArtifactModel.builder().name(MOCK_PRODUCT_NAME).artifactId(MOCK_ARTIFACT_ID).downloadUrl(
+        MOCK_DOWNLOAD_URL).build();
+  }
 }
