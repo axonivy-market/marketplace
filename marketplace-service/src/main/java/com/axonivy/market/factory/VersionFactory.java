@@ -48,7 +48,7 @@ public class VersionFactory {
 
     //Get latest dev version from metadata
     if (Objects.nonNull(version)) {
-      return metadataList.stream().map(Metadata::getLatest).sorted(new LatestVersionComparator()).findFirst().orElse(
+      return metadataList.stream().map(Metadata::getLatest).max(new LatestVersionComparator()).orElse(
           EMPTY);
     }
 
