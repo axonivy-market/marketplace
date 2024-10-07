@@ -7,7 +7,6 @@ import com.axonivy.market.enums.DevelopmentVersion;
 import com.axonivy.market.util.VersionUtils;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
-import org.springframework.util.CollectionUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -54,7 +53,7 @@ public class VersionFactory {
     }
 
     List<String> versionsInArtifact = metadataList.stream().flatMap(metadata -> metadata.getVersions().stream()).sorted(
-        new LatestVersionComparator()).collect(Collectors.toList());
+        new LatestVersionComparator()).toList();
 
     //Get latest dev version from specific version
     if (requestedVersion.endsWith(DEV_RELEASE_POSTFIX)) {
