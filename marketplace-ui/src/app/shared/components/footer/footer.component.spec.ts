@@ -3,7 +3,7 @@ import { FooterComponent } from './footer.component';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { By } from '@angular/platform-browser';
 import { Viewport } from 'karma-viewport/dist/adapter/viewport';
-import { IVY_FOOTER_LINKS, SOCIAL_MEDIA_LINK } from '../../constants/common.constant';
+import { IVY_FOOTER_LINKS, DOWNLOAD_URL, SOCIAL_MEDIA_LINK } from '../../constants/common.constant';
 
 declare const viewport: Viewport;
 
@@ -98,6 +98,14 @@ describe('FooterComponent', () => {
     }
   });
 
+  it('should redirect to download URL when clicking download button', () => {
+    const downloadButton = fixture.debugElement.query(
+      By.css('.download-button')
+    ).nativeElement;
+
+    expect(downloadButton.href).toBe(DOWNLOAD_URL);
+  });
+
   it('should navigate to the correct URL when the policy link text is clicked', () => {
     const policyLinks = fixture.debugElement.queryAll(
       By.css('.policy-link')
@@ -119,7 +127,7 @@ describe('FooterComponent', () => {
     component.getCurrentYear();
 
     expect(component.year).toBe('2019');
-  })  
+  })
 
   it('should get year of current year', () => {
     let currentDate = new Date();
