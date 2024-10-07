@@ -56,7 +56,6 @@ import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.data.mongodb.core.query.Update;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 
 import java.io.IOException;
@@ -585,7 +584,6 @@ public class ProductServiceImpl implements ProductService {
   }
 
   @Override
-  @Transactional
   public boolean syncOneProduct(String productId, String marketItemPath, Boolean overrideMarketItemPath) {
     try {
       log.info("Syn product {}", productId);
