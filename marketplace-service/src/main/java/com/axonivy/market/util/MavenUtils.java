@@ -222,16 +222,22 @@ public class MavenUtils {
   }
 
   public static Metadata convertArtifactToMetadata(String productId, Artifact artifact, String metadataUrl) {
-    String artifactName = artifact.getName();
-    if (StringUtils.isBlank(artifactName)) {
-      artifactName = GitHubUtils.convertArtifactIdToName(artifact.getArtifactId());
-    }
+    return convertArtifactToMetadata(productId, artifact, metadataUrl, null);
+  }
+
+  public static Metadata convertArtifactToMetadata(String productId, Artifact artifact, String metadataUrl,
+      ArchivedArtifact archivedArtifact) {
+    String artifactName = StringUtils.defaultIfBlank(artifact.getName(),
+        GitHubUtils.convertArtifactIdToName(artifact.getArtifactId()));
+    String artifactId = Objects.isNull(archivedArtifact) ? artifact.getArtifactId() : archivedArtifact.getArtifactId();
+    String groupId = Objects.isNull(archivedArtifact) ? artifact.getGroupId() : archivedArtifact.getGroupId();
     String type = StringUtils.defaultIfBlank(artifact.getType(), ProductJsonConstants.DEFAULT_PRODUCT_TYPE);
+    String repoUrl = StringUtils.defaultIfEmpty(artifact.getRepoUrl(), MavenConstants.DEFAULT_IVY_MAVEN_BASE_URL);
     artifactName = String.format(MavenConstants.ARTIFACT_NAME_FORMAT, artifactName, type);
-    return Metadata.builder().groupId(artifact.getGroupId()).versions(new HashSet<>()).productId(productId).artifactId(
-        artifact.getArtifactId()).url(metadataUrl).repoUrl(
-        StringUtils.defaultIfEmpty(artifact.getRepoUrl(), MavenConstants.DEFAULT_IVY_MAVEN_BASE_URL)).type(type).name(
-        artifactName).isProductArtifact(BooleanUtils.isTrue(artifact.getIsProductArtifact())).build();
+
+    return Metadata.builder().groupId(groupId).versions(new HashSet<>()).productId(productId).artifactId(
+        artifactId).url(metadataUrl).repoUrl(repoUrl).type(type).name(artifactName).isProductArtifact(
+        BooleanUtils.isTrue(artifact.getIsProductArtifact())).build();
   }
 
   public static Metadata buildSnapShotMetadataFromVersion(Metadata metadata, String version) {
@@ -281,7 +287,7 @@ public class MavenUtils {
       artifact.getArchivedArtifacts().forEach(archivedArtifact -> {
         String archivedMetadataUrl = buildMetadataUrlFromArtifactInfo(artifact.getRepoUrl(),
             archivedArtifact.getGroupId(), archivedArtifact.getArtifactId());
-        results.add(convertArtifactToMetadata(productId, artifact, archivedMetadataUrl));
+        results.add(convertArtifactToMetadata(productId, artifact, archivedMetadataUrl, archivedArtifact));
       });
     }
     return results;

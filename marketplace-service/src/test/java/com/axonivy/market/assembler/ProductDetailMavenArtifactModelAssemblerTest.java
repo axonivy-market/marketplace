@@ -35,13 +35,15 @@ class ProductDetailModelAssemblerTest {
     ProductDetailModel model = productDetailModelAssembler.toModel(mockProduct);
     Assertions.assertEquals(ID, model.getId());
     Assertions.assertFalse(model.getLinks().isEmpty());
-    Assertions.assertTrue(model.getLink(SELF_RELATION).get().getHref().endsWith("/api/product-details/portal"));
+    Assertions.assertTrue(
+        model.getLink(SELF_RELATION).get().getHref().endsWith("/api/product-details/portal?isShowDevVersion=false"));
   }
 
   @Test
   void testToModelWithRequestPath() {
     ProductDetailModel model = productDetailModelAssembler.toModel(mockProduct, RequestMappingConstants.BY_ID);
-    Assertions.assertTrue(model.getLink(SELF_RELATION).get().getHref().endsWith("/api/product-details/portal"));
+    Assertions.assertTrue(
+        model.getLink(SELF_RELATION).get().getHref().endsWith("/api/product-details/portal?isShowDevVersion=false"));
   }
 
   @Test

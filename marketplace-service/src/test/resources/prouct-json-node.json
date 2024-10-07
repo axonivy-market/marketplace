@@ -1,0 +1,14 @@
+{
+  "dependencies": [
+    {
+      "groupId": "com.axonivy.util",
+      "artifactId": "bpmn-statistic",
+      "version": "10.0.0"
+    },
+    {
+      "groupId": "com.axonivy.util",
+      "artifactId": "bpmn-statistic-demo",
+      "version": "10.0.0"
+    }
+  ]
+}

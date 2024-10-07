@@ -1,5 +1,6 @@
 package com.axonivy.market.util;
 
+import com.axonivy.market.BaseSetup;
 import com.axonivy.market.bo.Artifact;
 import com.axonivy.market.entity.ProductModuleContent;
 import org.apache.commons.lang3.StringUtils;
@@ -11,16 +12,11 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import java.util.List;
 
 @ExtendWith(MockitoExtension.class)
-class ProductContentUtilsTest {
+class ProductContentUtilsTest extends BaseSetup {
   @Test
   void testUpdateProductModule() {
     ProductModuleContent mockProductModuleContent = new ProductModuleContent();
-    Artifact mockArtifact = new Artifact();
-    mockArtifact.setIsDependency(true);
-    mockArtifact.setGroupId("com.axonivy.utils");
-    mockArtifact.setArtifactId("octopus");
-    mockArtifact.setType("zip");
-    mockArtifact.setName("Octopus demo (zip)");
+    Artifact mockArtifact = getMockArtifact();
     ProductContentUtils.updateProductModule(mockProductModuleContent, List.of(mockArtifact));
     Assertions.assertEquals(mockArtifact.getGroupId(), mockProductModuleContent.getGroupId());
     Assertions.assertEquals(mockArtifact.getArtifactId(), mockProductModuleContent.getArtifactId());

@@ -2,10 +2,7 @@ package com.axonivy.market.bo;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 import org.springframework.data.annotation.Transient;
 
 import java.io.Serial;
@@ -15,6 +12,7 @@ import java.util.Objects;
 
 @Getter
 @Setter
+@Builder
 @NoArgsConstructor
 @AllArgsConstructor
 @JsonInclude(JsonInclude.Include.NON_EMPTY)
@@ -31,6 +29,7 @@ public class Artifact implements Serializable {
   @Transient
   private Boolean isProductArtifact;
   private List<ArchivedArtifact> archivedArtifacts;
+  private Boolean doc;
   private boolean isInvalidArtifact;
 
   @Override

@@ -1,5 +1,6 @@
 package com.axonivy.market.util;
 
+import com.axonivy.market.BaseSetup;
 import com.axonivy.market.enums.NonStandardProduct;
 import com.axonivy.market.github.util.GitHubUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -12,14 +13,13 @@ import static com.axonivy.market.constants.MetaConstants.META_FILE;
 import static com.axonivy.market.constants.ProductJsonConstants.LOGO_FILE;
 
 @ExtendWith(MockitoExtension.class)
-class GitHubUtilsTest {
+class GitHubUtilsTest extends BaseSetup {
   private static final String JIRA_CONNECTOR = "Jira Connector";
 
   @Test
   void testConvertArtifactIdToName() {
-    String defaultArtifactId = "adobe-acrobat-sign-connector";
-    String result = GitHubUtils.convertArtifactIdToName(defaultArtifactId);
-    Assertions.assertEquals("Adobe Acrobat Sign Connector", result);
+    String result = GitHubUtils.convertArtifactIdToName(MOCK_ARTIFACT_ID);
+    Assertions.assertEquals("Bpmn Statistic", result);
 
     result = GitHubUtils.convertArtifactIdToName(null);
     Assertions.assertEquals(StringUtils.EMPTY, result);
@@ -119,7 +119,7 @@ class GitHubUtilsTest {
     Assertions.assertEquals(StringUtils.EMPTY, json);
 
     // Test case: empty string
-    exceptionMessage = "";
+    exceptionMessage = StringUtils.EMPTY;
     json = GitHubUtils.extractJson(exceptionMessage);
     Assertions.assertEquals(StringUtils.EMPTY, json);
   }

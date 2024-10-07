@@ -14,8 +14,12 @@
 }
 
 .nav-link {
-  font-weight: 600;
+  font-weight: normal;
   padding: 0 15px;
+}
+
+.nav-link.active {
+  font-weight: 600; // Semi Bold
 }
 
 .button-container {
@@ -34,6 +38,14 @@
 .h5-text {
   font-weight: 400;
   font-size: 16px;
+}
+
+.footer-text {
+  text-wrap: balance;
+}
+
+::ng-deep .footer-text a {
+  color: var(--ivy-primary-bg);
 }
 
 .btn-secondary {
