@@ -1,6 +1,7 @@
 package com.axonivy.market.service.impl;
 
 import com.axonivy.market.bo.Artifact;
+import com.axonivy.market.constants.CommonConstants;
 import com.axonivy.market.constants.DirectoryConstants;
 import com.axonivy.market.entity.ExternalDocumentMeta;
 import com.axonivy.market.entity.Product;
@@ -29,6 +30,7 @@ import static org.apache.commons.lang3.StringUtils.EMPTY;
 public class ExternalDocumentServiceImpl implements ExternalDocumentService {
 
   private static final String DOC_URL_PATTERN = "/%s/index.html";
+  private static final String MS_WIN_SEPARATOR = "\\\\";
   final ProductRepository productRepo;
   final ExternalDocumentMetaRepository externalDocumentMetaRepo;
   final FileDownloadService fileDownloadService;
@@ -56,37 +58,41 @@ public class ExternalDocumentServiceImpl implements ExternalDocumentService {
   }
 
   @Override
-  public String findExternalDocumentURI(String productId, String version) {
+  public ExternalDocumentMeta findExternalDocumentURI(String productId, String version) {
     var product = productRepo.findById(productId);
     if (product.isEmpty()) {
-      return EMPTY;
+      return null;
     }
     List<ExternalDocumentMeta> docMetas = externalDocumentMetaRepo.findByProductId(productId);
     List<String> docMetaVersion = docMetas.stream().map(ExternalDocumentMeta::getVersion).toList();
     String resolvedVersion = VersionFactory.get(docMetaVersion, version);
     return docMetas.stream().filter(meta -> StringUtils.equals(meta.getVersion(), resolvedVersion))
-        .map(ExternalDocumentMeta::getRelativeLink).findAny().orElse(EMPTY);
+        .findAny().orElse(null);
   }
 
   private void syncDocumentationForProduct(String productId, boolean isResetSync, Artifact artifact,
       List<String> releasedVersions) {
     for (var version : releasedVersions) {
-      List<ExternalDocumentMeta> documentMetas = externalDocumentMetaRepo.findByProductIdAndVersion(productId, version);
-      if (!isResetSync && ObjectUtils.isNotEmpty(documentMetas)) {
-        continue;
+      if (isResetSync) {
+        externalDocumentMetaRepo.deleteByProductIdAndVersion(productId, version);
+      } else {
+        if (ObjectUtils.isNotEmpty(externalDocumentMetaRepo.findByProductIdAndVersion(productId, version))) {
+          continue;
+        }
       }
 
       String downloadDocUrl = MavenUtils.buildDownloadUrl(artifact, version);
       String location = downloadDocAndUnzipToShareFolder(downloadDocUrl, isResetSync);
       if (StringUtils.isNoneBlank(location)) {
-        // Remove all old records
-        externalDocumentMetaRepo.deleteAll(documentMetas);
         var documentMeta = new ExternalDocumentMeta();
         documentMeta.setProductId(productId);
         documentMeta.setVersion(version);
         documentMeta.setStorageDirectory(location);
+        // remove prefix 'data' and replace all ms win separator to slash if present
         var locationRelative = location.substring(location.indexOf(DirectoryConstants.CACHE_DIR));
-        documentMeta.setRelativeLink(String.format(DOC_URL_PATTERN, locationRelative));
+        locationRelative = String.format(DOC_URL_PATTERN, locationRelative).replaceAll(MS_WIN_SEPARATOR,
+            CommonConstants.SLASH);
+        documentMeta.setRelativeLink(locationRelative);
         externalDocumentMetaRepo.save(documentMeta);
       }
     }

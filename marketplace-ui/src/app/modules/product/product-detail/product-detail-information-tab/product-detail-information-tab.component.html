@@ -14,7 +14,7 @@
       {{ 'common.product.detail.information.value.version' | translate }}
     </span>
     <span class="text-primary">
-      {{ selectedVersion.replaceAll('Version ', '') }}
+      {{ getDisplayVersion() }}
     </span>
   </div>
   @if(productDetail.compatibility) {
@@ -42,6 +42,15 @@
     </span>
     <span class="text-primary">{{ productDetail.language }}</span>
   </div>
+  @if (externalDocumentLink !== '') {
+    <hr class="border-top-0" />
+  <div class="d-flex flex-row justify-content-between p-0">
+    <span [lang]="languageService.selectedLanguage()" class="text-secondary">
+      {{ 'common.product.detail.information.value.documentation' | translate }}
+    </span>
+    <a class="text-primary" [href]="externalDocumentLink">Doc</a>
+  </div>
+  }
   <hr class="border-top-0" />
   <div class="d-flex flex-row justify-content-between p-0">
     <span [lang]="languageService.selectedLanguage()" class="text-secondary">

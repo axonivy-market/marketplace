@@ -81,6 +81,7 @@ common:
           status: Status
           moreInformation: More Information
           contactUs: Contact us
+          documentation: Documentation
       install:
         buttonLabel: Install Now
         buttonLabelInDesigner: Install

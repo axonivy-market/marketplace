@@ -38,7 +38,7 @@ class ExternalDocumentControllerTest {
   @Test
   void testFindProductDoc() throws URISyntaxException {
     when(service.findExternalDocumentURI(any(), any())).thenReturn("/market-cache/portal/10.0.0/doc/index.html");
-    var result = externalDocumentController.findExternalDocumentURI("portal", "10.0");
+    var result = externalDocumentController.findExternalDocument("portal", "10.0");
     assertEquals(HttpStatus.OK, result.getStatusCode());
     assertTrue(result.hasBody());
     assertTrue(ObjectUtils.isNotEmpty(result.getBody()));
