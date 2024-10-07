@@ -1,5 +1,6 @@
 package com.axonivy.market.service.impl;
 
+import com.axonivy.market.BaseSetup;
 import com.axonivy.market.entity.Image;
 import com.axonivy.market.entity.Product;
 import com.axonivy.market.repository.ImageRepository;
@@ -8,6 +9,7 @@ import org.bson.types.Binary;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.kohsuke.github.GHContent;
+import org.kohsuke.github.PagedIterable;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.InjectMocks;
@@ -23,11 +25,15 @@ import java.nio.file.Path;
 import java.util.Collections;
 import java.util.List;
 
+import static com.axonivy.market.BaseSetup.getMockProducts;
 import static com.axonivy.market.constants.CommonConstants.SLASH;
 import static com.axonivy.market.constants.MetaConstants.META_FILE;
+import static com.axonivy.market.service.impl.GHAxonIvyProductRepoServiceImplTest.IMAGE_NAME;
+import static com.axonivy.market.service.impl.GHAxonIvyProductRepoServiceImplTest.mockImage;
 import static org.bson.assertions.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -148,6 +154,76 @@ class ImageServiceImplTest {
     var result = imageService.mappingImageFromGHContent(mockProduct(), null, true);
     assertNull(result);
   }
+
+  @Test
+  void testGetReadmeAndProductContentFromTag_ImageFromRootFolder() {
+    String readmeContentWithImageFolder = """
+        #Product-name
+        Test README
+        ## Demo
+        Demo content
+        ## Setup
+        Setup content (./image.png)""";
+
+    GHContent mockImageFile = mock(GHContent.class);
+    when(mockImageFile.getName()).thenReturn(IMAGE_NAME);
+    when(imageRepository.save(any())).thenReturn(mockImage());
+
+    String updatedReadme = imageService.updateImagesWithDownloadUrl(getMockProducts().get(0),
+        List.of(mockImageFile), readmeContentWithImageFolder);
+
+    assertEquals("""
+            #Product-name
+            Test README
+            ## Demo
+            Demo content
+            ## Setup
+            Setup content (imageId-66e2b14868f2f95b2f95549a)""",
+        updatedReadme);
+  }
+
+  @Test
+  void testGetReadmeAndProductContentFromTag_ImageFromChildFolder() throws IOException {
+    String readmeContentWithImageFolder = """
+        #Product-name
+        Test README
+        ## Demo
+        Demo content
+        ## Setup
+        Setup content (.doc/img/image.png)""";
+
+    GHContent mockImageFile = mock(GHContent.class);
+    when(mockImageFile.isDirectory()).thenReturn(true);
+
+    GHContent mockImageFile2 = mock(GHContent.class);
+    when(mockImageFile2.isDirectory()).thenReturn(true);
+
+    GHContent mockImageFile3 = mock(GHContent.class);
+    when(mockImageFile3.getName()).thenReturn(IMAGE_NAME);
+
+    PagedIterable<GHContent> pagedIterable = mock(String.valueOf(GHContent.class));
+    when(mockImageFile.listDirectoryContent()).thenReturn(pagedIterable);
+    when(pagedIterable.toList()).thenReturn(List.of(mockImageFile2));
+
+    PagedIterable<GHContent> pagedIterable2 = mock(String.valueOf(GHContent.class));
+    when(mockImageFile2.listDirectoryContent()).thenReturn(pagedIterable2);
+    when(pagedIterable2.toList()).thenReturn(List.of(mockImageFile3));
+
+    when(imageRepository.save(any())).thenReturn(mockImage());
+
+    String updatedReadme = imageService.updateImagesWithDownloadUrl(getMockProducts().get(0),
+        List.of(mockImageFile), readmeContentWithImageFolder);
+
+    assertEquals("""
+            #Product-name
+            Test README
+            ## Demo
+            Demo content
+            ## Setup
+            Setup content (imageId-66e2b14868f2f95b2f95549a)""",
+        updatedReadme);
+  }
+
 
   private Product mockProduct() {
     return Product.builder().id("google-maps-connector")

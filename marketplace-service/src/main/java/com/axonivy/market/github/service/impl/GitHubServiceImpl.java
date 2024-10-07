@@ -3,6 +3,7 @@ package com.axonivy.market.github.service.impl;
 import com.axonivy.market.constants.CommonConstants;
 import com.axonivy.market.constants.ErrorMessageConstants;
 import com.axonivy.market.constants.GitHubConstants;
+import com.axonivy.market.constants.ReadmeConstants;
 import com.axonivy.market.entity.Product;
 import com.axonivy.market.entity.User;
 import com.axonivy.market.enums.ErrorCode;
@@ -46,6 +47,10 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+
+import static com.axonivy.market.constants.DirectoryConstants.MG_GRAPH_IMAGES_FOR_SETUP_FILE;
+import static com.axonivy.market.constants.DirectoryConstants.MS_GRAPH_PRODUCT_DIRECTORY;
+import static com.axonivy.market.constants.ReadmeConstants.SETUP_FILE;
 import static com.axonivy.market.util.ProductContentUtils.SETUP;
 import static org.apache.commons.lang3.StringUtils.EMPTY;
 
@@ -179,28 +184,31 @@ public class GitHubServiceImpl implements GitHubService {
 
   @Override
   public void updateProductModuleContentSetupFromSetupMd(Product product,
-      Map<String, Map<String, String>> moduleContents) throws IOException {
-    if (NonStandardProduct.isMsGraphProduct(product.getId())) {
-      String pathOfSetupFile = "msgraph-connector-product";
-      String pathOfImageForSetupFile = "doc";
+      Map<String, Map<String, String>> moduleContents, String tag) throws IOException {
+    if (!NonStandardProduct.isMsGraphProduct(product.getId())) {
+      return;
+    }
 
-      GHRepository ghRepository = getRepository(product.getRepositoryName());
+    GHRepository ghRepository = getRepository(product.getRepositoryName());
+    List<GHContent> contents = ghRepository.getDirectoryContent(MS_GRAPH_PRODUCT_DIRECTORY, tag);
 
-      List<GHContent> contents = ghRepository.getDirectoryContent(pathOfSetupFile);
+    GHContent setupFile = contents.stream().filter(GHContent::isFile)
+        .filter(content -> content.getName().equalsIgnoreCase(SETUP_FILE))
+        .findFirst().orElse(null);
 
-      GHContent setupFile = contents.stream().filter(GHContent::isFile)
-          .filter(content -> content.getName().equals("setup.md"))
-          .findFirst().orElse(null);
-
-      if (ObjectUtils.isNotEmpty(setupFile)) {
-        String setupContent = new String(setupFile.read().readAllBytes());
-        if (ProductContentUtils.hasImageDirectives(setupContent)) {
-          List<GHContent> setupImagesFolder =
-              contents.stream().filter(content -> content.getName().equals(pathOfImageForSetupFile)).toList();
-          setupContent = imageService.updateImagesWithDownloadUrl(product, setupImagesFolder, setupContent);
-        }
-        ProductContentUtils.addLocaleContent(moduleContents, SETUP, setupContent, Language.EN.getValue());
+    if (ObjectUtils.isNotEmpty(setupFile)) {
+      String setupContent = new String(setupFile.read().readAllBytes());
+      if (ProductContentUtils.hasImageDirectives(setupContent)) {
+        List<GHContent> setupImagesFolder =
+            contents.stream().filter(content -> content.getName().equals(MG_GRAPH_IMAGES_FOR_SETUP_FILE)).toList();
+        setupContent = imageService.updateImagesWithDownloadUrl(product, setupImagesFolder, setupContent);
       }
+
+      if (setupContent.contains(ReadmeConstants.SETUP_PART)) {
+        List<String> extractSetupContent = List.of(setupContent.split(ReadmeConstants.SETUP_PART));
+        setupContent = ProductContentUtils.removeFirstLine(extractSetupContent.get(1));
+      }
+      ProductContentUtils.addLocaleContent(moduleContents, SETUP, setupContent, Language.EN.getValue());
     }
   }
 

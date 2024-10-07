@@ -401,9 +401,9 @@ public class ProductServiceImpl implements ProductService {
     List<String> syncedProductIds = new ArrayList<>();
     var gitHubContentMap = axonIvyMarketRepoService.fetchAllMarketItems();
     for (Map.Entry<String, List<GHContent>> ghContentEntity : gitHubContentMap.entrySet()) {
-      if (!ghContentEntity.getKey().equals("market/connector/microsoft365/chat")) {
-        continue;
-      }
+//      if (!ghContentEntity.getKey().equals("market/connector/microsoft365/chat")) {
+//        continue;
+//      }
       var product = new Product();
       //update the meta.json first
       ghContentEntity.getValue().sort((f1, f2) -> GitHubUtils.sortMetaJsonFirst(f1.getName(), f2.getName()));
