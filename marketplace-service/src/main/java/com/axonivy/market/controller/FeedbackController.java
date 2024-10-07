@@ -8,6 +8,7 @@ import com.axonivy.market.model.FeedbackModelRequest;
 import com.axonivy.market.model.ProductRating;
 import com.axonivy.market.service.FeedbackService;
 import com.axonivy.market.service.JwtService;
+import com.axonivy.market.util.AuthorizationUtils;
 import io.jsonwebtoken.Claims;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -40,13 +41,8 @@ import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 import java.net.URI;
 import java.util.List;
 
-import static com.axonivy.market.constants.RequestMappingConstants.BY_ID;
-import static com.axonivy.market.constants.RequestMappingConstants.FEEDBACK;
-import static com.axonivy.market.constants.RequestMappingConstants.PRODUCT_BY_ID;
-import static com.axonivy.market.constants.RequestMappingConstants.PRODUCT_RATING_BY_ID;
-import static com.axonivy.market.constants.RequestParamConstants.ID;
-import static com.axonivy.market.constants.RequestParamConstants.USER_ID;
-import static com.axonivy.market.constants.RequestParamConstants.X_AUTHORIZATION;
+import static com.axonivy.market.constants.RequestMappingConstants.*;
+import static com.axonivy.market.constants.RequestParamConstants.*;
 
 @RestController
 @RequestMapping(FEEDBACK)
@@ -68,12 +64,19 @@ public class FeedbackController {
   }
 
   @GetMapping(PRODUCT_BY_ID)
-  @Operation(summary = "Find feedbacks by product id with lazy loading", description = "Get all user feedback by product id (from meta.json) with lazy loading", parameters = {
-      @Parameter(name = "page", description = "Page number to retrieve", in = ParameterIn.QUERY, example = "0", required = true),
-      @Parameter(name = "size", description = "Number of items per page", in = ParameterIn.QUERY, example = "20", required = true),
-      @Parameter(name = "sort", description = "Sorting criteria in the format: Sorting criteria(popularity|alphabetically|recent), Sorting order(asc|desc)", in = ParameterIn.QUERY, example = "[\"popularity\",\"asc\"]", required = true) })
+  @Operation(summary = "Find feedbacks by product id with lazy loading",
+      description = "Get all user feedback by product id (from meta.json) with lazy loading", parameters = {
+      @Parameter(name = "page", description = "Page number to retrieve", in = ParameterIn.QUERY, example = "0",
+          required = true),
+      @Parameter(name = "size", description = "Number of items per page", in = ParameterIn.QUERY, example = "20",
+          required = true),
+      @Parameter(name = "sort",
+          description = "Sorting criteria in the format: Sorting criteria(popularity|alphabetically|recent), Sorting " +
+              "order(asc|desc)",
+          in = ParameterIn.QUERY, example = "[\"popularity\",\"asc\"]", required = true)})
   public ResponseEntity<PagedModel<FeedbackModel>> findFeedbacks(
-      @PathVariable(ID) @Parameter(description = "Product id (from meta.json)", example = "portal", in = ParameterIn.PATH) String productId,
+      @PathVariable(ID) @Parameter(description = "Product id (from meta.json)", example = "portal",
+          in = ParameterIn.PATH) String productId,
       @ParameterObject Pageable pageable) {
     Page<Feedback> results = feedbackService.findFeedbacks(productId, pageable);
     if (results.isEmpty()) {
@@ -85,33 +88,39 @@ public class FeedbackController {
   }
 
   @GetMapping(BY_ID)
-  @Operation(summary = "Find all feedbacks by product id", description = "Get all feedbacks by product id(from meta.json) which is used in mobile viewport.")
+  @Operation(summary = "Find all feedbacks by product id",
+      description = "Get all feedbacks by product id(from meta.json) which is used in mobile viewport.")
   public ResponseEntity<FeedbackModel> findFeedback(
-      @PathVariable(ID) @Parameter(description = "Product id (from meta.json)", example = "portal", in = ParameterIn.PATH) String id) {
+      @PathVariable(ID) @Parameter(description = "Product id (from meta.json)", example = "portal",
+          in = ParameterIn.PATH) String id) {
     Feedback feedback = feedbackService.findFeedback(id);
     return ResponseEntity.ok(feedbackModelAssembler.toModel(feedback));
   }
 
   @GetMapping()
-  @Operation(summary = "Find all feedbacks by user id and product id", description = "Get current user feedback on target product.")
+  @Operation(summary = "Find all feedbacks by user id and product id",
+      description = "Get current user feedback on target product.")
   public ResponseEntity<FeedbackModel> findFeedbackByUserIdAndProductId(
-      @RequestParam(USER_ID) @Parameter(description = "Id of current user from DB", example = "1234", in = ParameterIn.QUERY) String userId,
-      @RequestParam("productId") @Parameter(description = "Product id (from meta.json)", example = "portal", in = ParameterIn.QUERY) String productId) {
+      @RequestParam(USER_ID) @Parameter(description = "Id of current user from DB", example = "1234",
+          in = ParameterIn.QUERY) String userId,
+      @RequestParam("productId") @Parameter(description = "Product id (from meta.json)", example = "portal",
+          in = ParameterIn.QUERY) String productId) {
     Feedback feedback = feedbackService.findFeedbackByUserIdAndProductId(userId, productId);
     return ResponseEntity.ok(feedbackModelAssembler.toModel(feedback));
   }
 
   @PostMapping
-  @Operation(summary = "Create user feedback", description = "Save user feedback of product with their token from Github account.")
-  @io.swagger.v3.oas.annotations.parameters.RequestBody(description = "Example request body for feedback", content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE, schema = @Schema(implementation = FeedbackModelRequest.class)))
-  @ApiResponses(value = { @ApiResponse(responseCode = "201", description = "Successfully created user feedback"),
-      @ApiResponse(responseCode = "401", description = "Unauthorized request") })
+  @Operation(summary = "Create user feedback",
+      description = "Save user feedback of product with their token from Github account.")
+  @io.swagger.v3.oas.annotations.parameters.RequestBody(description = "Example request body for feedback",
+      content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE,
+          schema = @Schema(implementation = FeedbackModelRequest.class)))
+  @ApiResponses(value = {@ApiResponse(responseCode = "201", description = "Successfully created user feedback"),
+      @ApiResponse(responseCode = "401", description = "Unauthorized request")})
   public ResponseEntity<Void> createFeedback(@RequestBody @Valid FeedbackModelRequest feedbackRequest,
-      @RequestHeader(value = X_AUTHORIZATION) @Parameter(description = "JWT Bearer token", example = "Bearer 123456", in = ParameterIn.HEADER) String bearerToken) {
-    String token = null;
-    if (bearerToken != null && bearerToken.startsWith(CommonConstants.BEARER)) {
-      token = bearerToken.substring(CommonConstants.BEARER.length()).trim(); // Remove "Bearer " prefix
-    }
+      @RequestHeader(value = X_AUTHORIZATION) @Parameter(description = "JWT Bearer token", example = "Bearer 123456",
+          in = ParameterIn.HEADER) String bearerToken) {
+    String token = AuthorizationUtils.getBearerToken(bearerToken);
 
     // Validate the token
     if (token == null || !jwtService.validateToken(token)) {
@@ -127,10 +136,12 @@ public class FeedbackController {
     return ResponseEntity.created(location).build();
   }
 
-  @Operation(summary = "Find rating information of product by its id.", description = "Get overall rating of product by its id.")
+  @Operation(summary = "Find rating information of product by its id.",
+      description = "Get overall rating of product by its id.")
   @GetMapping(PRODUCT_RATING_BY_ID)
   public ResponseEntity<List<ProductRating>> getProductRating(
-      @PathVariable(ID) @Parameter(description = "Product id (from meta.json)", example = "portal", in = ParameterIn.PATH) String productId) {
+      @PathVariable(ID) @Parameter(description = "Product id (from meta.json)", example = "portal",
+          in = ParameterIn.PATH) String productId) {
     return ResponseEntity.ok(feedbackService.getProductRatingById(productId));
   }
 

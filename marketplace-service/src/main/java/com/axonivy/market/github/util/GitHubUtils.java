@@ -1,7 +1,9 @@
 package com.axonivy.market.github.util;
 
+import com.axonivy.market.bo.Artifact;
 import com.axonivy.market.constants.CommonConstants;
 import com.axonivy.market.enums.NonStandardProduct;
+import com.axonivy.market.util.MavenUtils;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import lombok.extern.log4j.Log4j2;
@@ -11,8 +13,11 @@ import org.kohsuke.github.GHContent;
 import org.kohsuke.github.PagedIterable;
 
 import java.io.IOException;
+import java.io.InputStream;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 import static com.axonivy.market.constants.MetaConstants.META_FILE;
@@ -99,5 +104,41 @@ public class GitHubUtils {
     if (fileName2.endsWith(META_FILE))
       return 1;
     return fileName1.compareTo(fileName2);
+  }
+
+  public static void findImages(List<GHContent> files, List<GHContent> images) {
+    for (GHContent file : files) {
+      if (file.isDirectory()) {
+        findImagesInDirectory(file, images);
+      } else if (file.getName().toLowerCase().matches(CommonConstants.IMAGE_EXTENSION)) {
+        images.add(file);
+      }
+    }
+  }
+
+  private static void findImagesInDirectory(GHContent file, List<GHContent> images) {
+    try {
+      List<GHContent> childrenFiles = file.listDirectoryContent().toList();
+      findImages(childrenFiles, images);
+    } catch (IOException e) {
+      log.error(e.getMessage());
+    }
+  }
+
+  public static List<Artifact> convertProductJsonToMavenProductInfo(GHContent content) throws IOException {
+    InputStream contentStream = extractedContentStream(content);
+    if (Objects.isNull(contentStream)) {
+      return new ArrayList<>();
+    }
+    return MavenUtils.extractMavenArtifactsFromContentStream(contentStream);
+  }
+
+  public static InputStream extractedContentStream(GHContent content) {
+    try {
+      return content.read();
+    } catch (IOException | NullPointerException e) {
+      log.warn("Can not read the current content: {}", e.getMessage());
+      return null;
+    }
   }
 }

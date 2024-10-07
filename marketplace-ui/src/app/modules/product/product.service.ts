@@ -1,12 +1,13 @@
-import { HttpClient, HttpParams } from '@angular/common/http';
+import { HttpClient, HttpContext, HttpParams } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
-import { Observable, tap } from 'rxjs';
+import { Observable } from 'rxjs';
 import { LoadingService } from '../../core/services/loading/loading.service';
 import { RequestParam } from '../../shared/enums/request-param';
 import { ProductApiResponse } from '../../shared/models/apis/product-response.model';
 import { Criteria } from '../../shared/models/criteria.model';
 import { ProductDetail } from '../../shared/models/product-detail.model';
 import { VersionData } from '../../shared/models/vesion-artifact.model';
+import { SkipLoading } from '../../core/interceptors/api.interceptor';
 import { VersionAndUrl } from '../../shared/models/version-and-url';
 
 const PRODUCT_API_URL = 'api/product';
@@ -53,9 +54,9 @@ export class ProductService {
     );
   }
 
-  getProductDetails(productId: string): Observable<ProductDetail> {
+  getProductDetails(productId: string, isShowDevVersion: boolean): Observable<ProductDetail> {
     return this.httpClient.get<ProductDetail>(
-      `api/product-details/${productId}`
+      `api/product-details/${productId}?isShowDevVersion=${isShowDevVersion}`
     );
   }
 
@@ -64,16 +65,14 @@ export class ProductService {
     showDevVersion: boolean,
     designerVersion: string
   ): Observable<VersionData[]> {
-    this.loadingService.show();
     const url = `api/product-details/${productId}/versions`;
     const params = new HttpParams()
       .append('designerVersion', designerVersion)
       .append('isShowDevVersion', showDevVersion);
-    return this.httpClient.get<VersionData[]>(url, { params }).pipe(
-      tap(() => {
-        this.loadingService.hide();
-      })
-    );
+    return this.httpClient.get<VersionData[]>(url, {
+      params,
+      context: new HttpContext().set(SkipLoading, true)
+    });
   }
 
   sendRequestToUpdateInstallationCount(productId: string, designerVersion: string) {

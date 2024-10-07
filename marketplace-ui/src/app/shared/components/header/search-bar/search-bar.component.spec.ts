@@ -3,6 +3,7 @@ import { By } from '@angular/platform-browser';
 import { SearchBarComponent } from './search-bar.component';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { Viewport } from 'karma-viewport/dist/adapter/viewport';
+import { ElementRef } from '@angular/core';
 
 declare const viewport: Viewport;
 
@@ -13,7 +14,9 @@ describe('SearchBarComponent', () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [SearchBarComponent, TranslateModule.forRoot()],
-      providers: [TranslateService]
+      providers: [TranslateService,
+        { provide: ElementRef, useValue: { nativeElement: document.createElement('div') } }
+      ]
     }).compileComponents();
 
     fixture = TestBed.createComponent(SearchBarComponent);
@@ -70,5 +73,58 @@ describe('SearchBarComponent', () => {
     expect(getComputedStyle(desktopSearch.nativeElement).display).not.toBe(
       'none'
     );
+  });
+
+  it('should display the correct text in large screen', () => {
+    viewport.set(1920);
+    fixture.detectChanges();
+
+    const largeScreenButton = fixture.debugElement.query(
+      By.css('.d-none.d-lg-block')
+    ).nativeElement;
+    const smallScreenButton = fixture.debugElement.query(
+      By.css('.d-lg-none')
+    ).nativeElement;
+
+    expect(getComputedStyle(largeScreenButton).display).not.toBe('none');
+    expect(getComputedStyle(smallScreenButton).display).toBe('none');
+
+    expect(largeScreenButton.textContent.trim()).toContain(
+      'common.header.download'
+    );
+  });
+
+  it('should display the correct text in smaller screen', () => {
+    viewport.set(430);
+    fixture.detectChanges();
+
+    const smallScreenButton = fixture.debugElement.query(
+      By.css('.d-lg-none')
+    ).nativeElement;
+    const largeScreenButton = fixture.debugElement.query(
+      By.css('.d-none.d-lg-block')
+    ).nativeElement;
+
+    expect(getComputedStyle(smallScreenButton).display).not.toBe('none');
+    expect(getComputedStyle(largeScreenButton).display).toBe('none');
+
+    expect(smallScreenButton.textContent.trim()).toContain(
+      'common.downloadLatestLTSVersion'
+    );
+  });
+
+  it('should set isSearchBarDisplayed to false when clicking outside', () => {
+    // Set up the DOM
+    const outsideClickEvent = new MouseEvent('click', {
+      bubbles: true,
+      cancelable: true,
+      view: window
+    });
+
+    // Dispatch a click event to the document
+    document.dispatchEvent(outsideClickEvent);
+
+    // Verify the behavior
+    expect(component.isSearchBarDisplayed()).toBeFalse();
   });
 });

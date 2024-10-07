@@ -1,24 +1,23 @@
-package com.axonivy.market.github.model;
+package com.axonivy.market.bo;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 import org.springframework.data.annotation.Transient;
 
 import java.io.Serial;
 import java.io.Serializable;
 import java.util.List;
+import java.util.Objects;
 
 @Getter
 @Setter
+@Builder
 @NoArgsConstructor
 @AllArgsConstructor
 @JsonInclude(JsonInclude.Include.NON_EMPTY)
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class MavenArtifact implements Serializable {
+public class Artifact implements Serializable {
   @Serial
   private static final long serialVersionUID = 1L;
   private String repoUrl;
@@ -30,4 +29,23 @@ public class MavenArtifact implements Serializable {
   @Transient
   private Boolean isProductArtifact;
   private List<ArchivedArtifact> archivedArtifacts;
+  private Boolean doc;
+  private boolean isInvalidArtifact;
+
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) {
+      return true;
+    }
+    if (o == null || getClass() != o.getClass()) {
+      return false;
+    }
+    Artifact that = (Artifact) o;
+    return Objects.equals(groupId, that.groupId) && Objects.equals(artifactId, that.artifactId);
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(groupId, artifactId);
+  }
 }

@@ -14,8 +14,12 @@
 }
 
 .nav-link {
-  font-weight: 600;
+  font-weight: normal;
   padding: 0 15px;
+}
+
+.nav-link.active {
+  font-weight: 600; // Semi Bold
 }
 
 .button-container {

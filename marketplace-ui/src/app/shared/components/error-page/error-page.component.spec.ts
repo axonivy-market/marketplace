@@ -1,39 +1,52 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { ErrorPageComponentComponent } from './error-page-component.component';
+import { ErrorPageComponent } from './error-page.component';
 import { TranslateModule } from '@ngx-translate/core';
 import { Viewport } from 'karma-viewport/dist/adapter/viewport';
 import { By } from '@angular/platform-browser';
-import { Router } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 declare const viewport: Viewport;
 
 describe('ErrorPageComponentComponent', () => {
-  let component: ErrorPageComponentComponent;
-  let fixture: ComponentFixture<ErrorPageComponentComponent>;
+  let component: ErrorPageComponent;
+  let fixture: ComponentFixture<ErrorPageComponent>;
   let router: Router;
 
-  beforeEach(async () => {
-    await TestBed.configureTestingModule({
-      imports: [ErrorPageComponentComponent, TranslateModule.forRoot()]
-    }).compileComponents();
+const setupComponent = (idValue: string | undefined) => {
+  TestBed.configureTestingModule({
+    imports: [ErrorPageComponent, TranslateModule.forRoot()],
+    providers: [
+      {
+        provide: ActivatedRoute,
+        useValue: {
+          snapshot: {
+            params: { id: idValue }
+          }
+        }
+      }
+    ]
+  }).compileComponents();
 
-    fixture = TestBed.createComponent(ErrorPageComponentComponent);
-    component = fixture.componentInstance;
-    router = TestBed.inject(Router);
-    fixture.detectChanges();
-  });
+  fixture = TestBed.createComponent(ErrorPageComponent );
+  component = fixture.componentInstance;
+  router = TestBed.inject(Router);
+  fixture.detectChanges();
+};
 
   it('should create', () => {
+    setupComponent(undefined);
     expect(component).toBeTruthy();
   });
 
   it('should call checkMediaSize on window resize', () => {
+    setupComponent(undefined);
     spyOn(component, 'checkMediaSize');
     component.onResize();
     expect(component.checkMediaSize).toHaveBeenCalled();
   });
 
   it('should display image with the light mode on small and large viewport', () => {
+    setupComponent(undefined);
     component.themeService.isDarkMode.set(false);
     viewport.set(1920);
     component.onResize();
@@ -50,6 +63,7 @@ describe('ErrorPageComponentComponent', () => {
   });
 
   it('should display image with the dark mode on small and large viewport', () => {
+    setupComponent(undefined);
     component.themeService.isDarkMode.set(true);
     viewport.set(1920);
     component.onResize();
@@ -68,6 +82,7 @@ describe('ErrorPageComponentComponent', () => {
   });
 
   it('should back to the home page', () => {
+    setupComponent(undefined);
     spyOn(component, 'backToHomePage');
     let buttonElement = fixture.debugElement.query(By.css('button'));
     buttonElement.nativeElement.click();
@@ -75,8 +90,35 @@ describe('ErrorPageComponentComponent', () => {
   });
 
   it('should redirect to the home page', () => {
+    setupComponent(undefined);
     const navigateSpy = spyOn(router, 'navigate');
     component.backToHomePage();
     expect(navigateSpy).toHaveBeenCalledWith(['/']);
+  });
+
+  describe('when id is undefined', () => {
+    beforeEach(() => {
+      setupComponent(undefined);
+    });
+  
+    it('should set error id to undefined', () => {
+      const errorCode = fixture.debugElement.query(By.css('.error-code'));
+
+      expect(component.errorId).toBeUndefined();
+      expect(errorCode).toBeFalsy();
+    });
+  });
+  
+  describe('when error id is in error codes', () => {
+    beforeEach(() => {
+      setupComponent('404');
+    });
+  
+    it('should set error id to the same as in route param', () => {
+      const errorCode = fixture.debugElement.query(By.css('.error-code'));
+
+      expect(component.errorId).toBe('404');
+      expect(errorCode).toBeTruthy();
+    });
   });
 });

@@ -19,7 +19,7 @@ public class CustomRepository {
     return Aggregation.project(fieldName);
   }
 
-  protected AggregationOperation createFieldMatchOperation(String fieldName, String id) {
-    return Aggregation.match(Criteria.where(fieldName).is(id));
+  protected AggregationOperation createFieldMatchOperation(String fieldName, String value) {
+    return Aggregation.match(Criteria.where(fieldName).is(value));
   }
 }

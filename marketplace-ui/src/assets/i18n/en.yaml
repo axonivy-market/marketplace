@@ -28,7 +28,7 @@ common:
       demos: Demos
       solution: Solutions
   error:
-    code: 'ERROR CODE: 404'
+    code: 'ERROR CODE'
     oops: 'Oops!'
     description: 'Our website is taking a break. It seems that we cannot find the page you requested.'
     buttonLabel: Back to homepage
@@ -51,7 +51,7 @@ common:
       Get the latest stable <a class="link-opacity-100" href="https://developer.axonivy.com/release-cycle">Long Term Support</a> version of the Axon Ivy Platform
       - or download the <a class="link-opacity-100" href="https://developer.axonivy.com/download/leading-edge">Leading Edge</a> version.
     download: Download
-    ivyCompanyInfo: © 2023 Axon Ivy Inc.
+    ivyCompanyInfo: Axon Ivy Inc.
     privacyPolicy: Privacy Policy
     termsOfService: Terms of Service
   product:
@@ -112,3 +112,5 @@ common:
     noFeedbackMessage2: Be the first to share your opinion.
     rateFeedbackBtnLabel: Rate this connector
     reviewLabelNoYet: No reviews yet
+  labels:
+    redirecting: Redirecting ...!

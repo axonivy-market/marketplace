@@ -17,6 +17,18 @@
   height: 43px;
 }
 
+.connector-title-container {
+  width: 70%;
+
+  @media (max-width: 1399px) {
+    width: 60%;
+  }
+
+  @media (max-width: 1199px) {
+    width: 100%;
+  }
+}
+
 .back-link {
   font-weight: 500;
   line-height: 120%;
@@ -177,7 +189,10 @@
   display: none;
 }
 
-.flexible-gap,
+.flexible-gap {
+  gap: 4.5rem;
+}
+
 .module-gap {
   gap: 4.5rem;
 }

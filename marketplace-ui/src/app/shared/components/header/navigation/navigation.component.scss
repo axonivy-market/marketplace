@@ -10,10 +10,11 @@
 .nav-link {
   height: 22px;
   line-height: 22.4px;
+  font-weight: normal;
 }
 
 .nav-link.active {
-  font-weight: bold;
+  font-weight: 600; // Semi Bold
 }
 
 .active-line {
