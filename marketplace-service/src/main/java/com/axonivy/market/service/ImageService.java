@@ -6,6 +6,7 @@ import org.bson.types.Binary;
 import org.kohsuke.github.GHContent;
 
 import java.nio.file.Path;
+import java.util.List;
 
 public interface ImageService {
   Binary getImageBinary(GHContent ghContent);
@@ -13,6 +14,8 @@ public interface ImageService {
   Image mappingImageFromGHContent(Product product, GHContent ghContent, boolean isLogo);
 
   Image mappingImageFromDownloadedFolder(Product product, Path imagePath);
+
+  String updateImagesWithDownloadUrl(Product product, List<GHContent> contents, String readmeContents);
 
   byte[] readImage(String id);
 }

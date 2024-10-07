@@ -17,6 +17,7 @@ import com.axonivy.market.github.model.GitHubProperty;
 import com.axonivy.market.github.service.GitHubService;
 import com.axonivy.market.github.util.GitHubUtils;
 import com.axonivy.market.repository.UserRepository;
+import com.axonivy.market.service.ImageService;
 import com.axonivy.market.util.ProductContentUtils;
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.lang3.ObjectUtils;
@@ -45,7 +46,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-
 import static com.axonivy.market.util.ProductContentUtils.SETUP;
 import static org.apache.commons.lang3.StringUtils.EMPTY;
 
@@ -57,11 +57,14 @@ public class GitHubServiceImpl implements GitHubService {
   private final UserRepository userRepository;
   private final GitHubProperty gitHubProperty;
 
+  private final ImageService imageService;
+
   public GitHubServiceImpl(RestTemplateBuilder restTemplateBuilder, UserRepository userRepository,
-      GitHubProperty gitHubProperty) {
+      GitHubProperty gitHubProperty, ImageService imageService) {
     this.restTemplate = restTemplateBuilder.build();
     this.userRepository = userRepository;
     this.gitHubProperty = gitHubProperty;
+    this.imageService = imageService;
   }
 
   @Override
@@ -175,15 +178,29 @@ public class GitHubServiceImpl implements GitHubService {
   }
 
   @Override
-  public void updateProductModuleContentSetupFromSetupMd(Product product, GHRepository ghRepository,
+  public void updateProductModuleContentSetupFromSetupMd(Product product,
       Map<String, Map<String, String>> moduleContents) throws IOException {
+    if (NonStandardProduct.isMsGraphProduct(product.getId())) {
+      String pathOfSetupFile = "msgraph-connector-product";
+      String pathOfImageForSetupFile = "doc";
 
-    String pathOfSetupFile = NonStandardProduct.getSetupPathForNonStandardProducts(product.getId());
-    GHContent setupFile = GitHubUtils.getPathOfProductFolderContents(ghRepository,pathOfSetupFile);
+      GHRepository ghRepository = getRepository(product.getRepositoryName());
 
-    if (ObjectUtils.isNotEmpty(setupFile)) {
-      String setupContent = new String(setupFile.read().readAllBytes());
-      ProductContentUtils.addLocaleContent(moduleContents,SETUP, setupContent , Language.EN.getValue());
+      List<GHContent> contents = ghRepository.getDirectoryContent(pathOfSetupFile);
+
+      GHContent setupFile = contents.stream().filter(GHContent::isFile)
+          .filter(content -> content.getName().equals("setup.md"))
+          .findFirst().orElse(null);
+
+      if (ObjectUtils.isNotEmpty(setupFile)) {
+        String setupContent = new String(setupFile.read().readAllBytes());
+        if (ProductContentUtils.hasImageDirectives(setupContent)) {
+          List<GHContent> setupImagesFolder =
+              contents.stream().filter(content -> content.getName().equals(pathOfImageForSetupFile)).toList();
+          setupContent = imageService.updateImagesWithDownloadUrl(product, setupImagesFolder, setupContent);
+        }
+        ProductContentUtils.addLocaleContent(moduleContents, SETUP, setupContent, Language.EN.getValue());
+      }
     }
   }
 

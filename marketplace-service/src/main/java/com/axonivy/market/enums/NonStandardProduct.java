@@ -68,13 +68,8 @@ public enum NonStandardProduct {
     return StringUtils.isNotBlank(nonStandardPath) ? nonStandardPath : currentPath;
   }
 
-  public static String getSetupPathForNonStandardProducts(String productId) {
-    List<String> msGraphProducts = List.of(MICROSOFT_REPO_NAME.id, MICROSOFT_365.id,
-        MICROSOFT_CALENDAR.id, MICROSOFT_MAIL.id, MICROSOFT_TEAMS.id, MICROSOFT_TODO.id);
-
-    if (msGraphProducts.contains(productId)) {
-      return "msgraph-connector-product";
-    }
-    return "";
+  public static boolean isMsGraphProduct(String productId) {
+    return List.of(MICROSOFT_REPO_NAME.id, MICROSOFT_365.id,
+        MICROSOFT_CALENDAR.id, MICROSOFT_MAIL.id, MICROSOFT_TEAMS.id, MICROSOFT_TODO.id).contains(productId);
   }
 }

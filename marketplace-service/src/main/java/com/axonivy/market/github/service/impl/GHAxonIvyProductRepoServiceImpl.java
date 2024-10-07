@@ -90,7 +90,6 @@ public class GHAxonIvyProductRepoServiceImpl implements GHAxonIvyProductRepoServ
       List<GHContent> contents = getProductFolderContents(product, ghRepository, tag);
       updateDependencyContentsFromProductJson(productModuleContent, contents, product);
       extractReadMeFileFromContents(product, contents, productModuleContent);
-      gitHubService.updateProductModuleContentSetupFromSetupMd(product,ghRepository , tag);
     } catch (Exception e) {
       log.error("Cannot get product.json content in {} - {}", ghRepository.getName(), e.getMessage());
       return null;
@@ -109,9 +108,10 @@ public class GHAxonIvyProductRepoServiceImpl implements GHAxonIvyProductRepoServ
         for (GHContent readmeFile : readmeFiles) {
           String readmeContents = new String(readmeFile.read().readAllBytes());
           if (ProductContentUtils.hasImageDirectives(readmeContents)) {
-            readmeContents = updateImagesWithDownloadUrl(product, contents, readmeContents);
+            readmeContents = imageService.updateImagesWithDownloadUrl(product, contents, readmeContents);
           }
           ProductContentUtils.getExtractedPartsOfReadme(moduleContents, readmeContents, readmeFile.getName());
+          gitHubService.updateProductModuleContentSetupFromSetupMd(product, moduleContents);
         }
         ProductContentUtils.updateProductModuleTabContents(productModuleContent, moduleContents);
       }
@@ -143,20 +143,20 @@ public class GHAxonIvyProductRepoServiceImpl implements GHAxonIvyProductRepoServ
     }
   }
 
-  public String updateImagesWithDownloadUrl(Product product, List<GHContent> contents, String readmeContents) {
-    List<GHContent> allContentOfImages = getAllImagesFromProductFolder(contents);
-    Map<String, String> imageUrls = new HashMap<>();
-
-    allContentOfImages.forEach(content -> Optional.of(imageService.mappingImageFromGHContent(product, content, false))
-        .ifPresent(image -> imageUrls.put(content.getName(), IMAGE_ID_PREFIX.concat(image.getId()))));
-    return ProductContentUtils.replaceImageDirWithImageCustomId(imageUrls, readmeContents);
-  }
-
-  private List<GHContent> getAllImagesFromProductFolder(List<GHContent> productFolderContents) {
-    List<GHContent> images = new ArrayList<>();
-    GitHubUtils.findImages(productFolderContents, images);
-    return images;
-  }
+//  public String updateImagesWithDownloadUrl(Product product, List<GHContent> contents, String readmeContents) {
+//    List<GHContent> allContentOfImages = getAllImagesFromProductFolder(contents);
+//    Map<String, String> imageUrls = new HashMap<>();
+//
+//    allContentOfImages.forEach(content -> Optional.of(imageService.mappingImageFromGHContent(product, content, false))
+//        .ifPresent(image -> imageUrls.put(content.getName(), IMAGE_ID_PREFIX.concat(image.getId()))));
+//    return ProductContentUtils.replaceImageDirWithImageCustomId(imageUrls, readmeContents);
+//  }
+//
+//  private List<GHContent> getAllImagesFromProductFolder(List<GHContent> productFolderContents) {
+//    List<GHContent> images = new ArrayList<>();
+//    GitHubUtils.findImages(productFolderContents, images);
+//    return images;
+//  }
 
   private List<GHContent> getProductFolderContents(Product product, GHRepository ghRepository, String tag)
       throws IOException {
