@@ -7,12 +7,12 @@ import com.axonivy.market.enums.DevelopmentVersion;
 import com.axonivy.market.util.VersionUtils;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
+import org.springframework.util.CollectionUtils;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 import static com.axonivy.market.constants.MavenConstants.DEV_RELEASE_POSTFIX;
 import static org.apache.commons.lang3.StringUtils.EMPTY;
@@ -62,18 +62,20 @@ public class VersionFactory {
     }
 
     List<String> releasedVersions = versionsInArtifact.stream().filter(VersionUtils::isReleasedVersion).toList();
+//
+//    if()
     String matchVersion = findVersionStartWith(releasedVersions, requestedVersion);
 
     // Return latest version of specific version if can not fnd latest release of that version
     if ((VersionUtils.isMajorVersion(requestedVersion) || VersionUtils.isMinorVersion(
-        requestedVersion)) && !releasedVersions.contains(matchVersion)) {
+        requestedVersion)) && !CollectionUtils.containsInstance(releasedVersions, matchVersion)) {
       return findVersionStartWith(versionsInArtifact, requestedVersion);
     }
     return matchVersion;
   }
-  
+
   private static String findVersionStartWith(List<String> releaseVersions, String version) {
-    return Optional.ofNullable(releaseVersions).orElse(List.of()).stream().filter(
+    return CollectionUtils.isEmpty(releaseVersions) ? version : releaseVersions.stream().filter(
         ver -> ver.startsWith(version)).findAny().orElse(version);
   }
 }
