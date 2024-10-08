@@ -164,21 +164,6 @@ public class GHAxonIvyProductRepoServiceImpl implements GHAxonIvyProductRepoServ
     }
   }
 
-  public String updateImagesWithDownloadUrl(Product product, List<GHContent> contents, String readmeContents) {
-    List<GHContent> allContentOfImages = getAllImagesFromProductFolder(contents);
-    Map<String, String> imageUrls = new HashMap<>();
-
-    allContentOfImages.forEach(content -> Optional.of(imageService.mappingImageFromGHContent(product, content, false))
-        .ifPresent(image -> imageUrls.put(content.getName(), IMAGE_ID_PREFIX.concat(image.getId()))));
-    return ProductContentUtils.replaceImageDirWithImageCustomId(imageUrls, readmeContents);
-  }
-
-  private List<GHContent> getAllImagesFromProductFolder(List<GHContent> productFolderContents) {
-    List<GHContent> images = new ArrayList<>();
-    GitHubUtils.findImages(productFolderContents, images);
-    return images;
-  }
-
   private void updateDependencyContentsFromProductJson(ProductModuleContent productModuleContent,
       List<GHContent> contents, Product product, String tag) throws IOException {
     GHContent productJsonFile = getProductJsonFile(contents, product, tag);
@@ -202,6 +187,21 @@ public class GHAxonIvyProductRepoServiceImpl implements GHAxonIvyProductRepoServ
     }
   }
 
+  public String updateImagesWithDownloadUrl(Product product, List<GHContent> contents, String readmeContents) {
+    List<GHContent> allContentOfImages = getAllImagesFromProductFolder(contents);
+    Map<String, String> imageUrls = new HashMap<>();
+
+    allContentOfImages.forEach(content -> Optional.of(imageService.mappingImageFromGHContent(product, content, false))
+        .ifPresent(image -> imageUrls.put(content.getName(), IMAGE_ID_PREFIX.concat(image.getId()))));
+    return ProductContentUtils.replaceImageDirWithImageCustomId(imageUrls, readmeContents);
+  }
+
+  private List<GHContent> getAllImagesFromProductFolder(List<GHContent> productFolderContents) {
+    List<GHContent> images = new ArrayList<>();
+    GitHubUtils.findImages(productFolderContents, images);
+    return images;
+  }
+
   private List<GHContent> getProductFolderContents(Product product, GHRepository ghRepository, String tag)
       throws IOException {
     String productFolderPath = ghRepository.getDirectoryContent(CommonConstants.SLASH, tag).stream()
@@ -211,5 +211,4 @@ public class GHAxonIvyProductRepoServiceImpl implements GHAxonIvyProductRepoServ
 
     return ghRepository.getDirectoryContent(productFolderPath, tag);
   }
-
 }
