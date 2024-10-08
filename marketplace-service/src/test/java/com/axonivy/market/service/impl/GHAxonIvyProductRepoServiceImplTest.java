@@ -7,6 +7,7 @@ import com.axonivy.market.constants.MavenConstants;
 import com.axonivy.market.constants.ProductJsonConstants;
 import com.axonivy.market.constants.ReadmeConstants;
 import com.axonivy.market.entity.Image;
+import com.axonivy.market.entity.Product;
 import com.axonivy.market.enums.Language;
 import com.axonivy.market.github.service.GitHubService;
 import com.axonivy.market.github.service.impl.GHAxonIvyProductRepoServiceImpl;
@@ -14,6 +15,7 @@ import com.axonivy.market.github.util.GitHubUtils;
 import com.axonivy.market.repository.ProductJsonContentRepository;
 import com.axonivy.market.service.ImageService;
 import com.axonivy.market.util.MavenUtils;
+import com.axonivy.market.util.ProductContentUtils;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -38,11 +40,18 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
+import static com.axonivy.market.constants.DirectoryConstants.MG_GRAPH_IMAGES_FOR_SETUP_FILE;
+import static com.axonivy.market.constants.DirectoryConstants.MS_GRAPH_PRODUCT_DIRECTORY;
+import static com.axonivy.market.constants.MongoDBConstants.TAG;
+import static com.axonivy.market.constants.ProductJsonConstants.EN_LANGUAGE;
+import static com.axonivy.market.constants.ReadmeConstants.SETUP_FILE;
+import static com.axonivy.market.enums.NonStandardProduct.MICROSOFT_TEAMS;
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyBoolean;
+import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -390,5 +399,60 @@ class GHAxonIvyProductRepoServiceImplTest extends BaseSetup {
   void testExtractedContentStream() {
     assertNull(GitHubUtils.extractedContentStream(null));
     assertNull(GitHubUtils.extractedContentStream(content));
+  }
+
+  @Test
+  void testUpdateProductModuleContentSetupFromSetupMd() throws IOException {
+    when(gitHubService.getRepository(anyString())).thenReturn(ghRepository);
+
+    InputStream mockReadmeInputStream = mock(InputStream.class);
+
+    String setupStringContent = """ 
+            ## Setup
+            ### Variables  
+            In order to use this product you must configure multiple variables.
+                    
+            Add the following block to your `config/variables.yaml` file of our\s
+            main Business Project that will make use of this product:
+                    
+            ```
+            @variables.yaml@\s
+            ```
+            ![set-redirect](image.png)""";
+
+    GHContent setupFileContent = mock(GHContent.class);
+    when(setupFileContent.isFile()).thenReturn(true);
+    when(setupFileContent.getName()).thenReturn(SETUP_FILE);
+    when(setupFileContent.read()).thenReturn(mockReadmeInputStream);
+    when(mockReadmeInputStream.readAllBytes()).thenReturn(setupStringContent.getBytes());
+
+    GHContent setupImageContent = mock(GHContent.class);
+    when(setupImageContent.isDirectory()).thenReturn(true);
+    when(setupImageContent.getName()).thenReturn(MG_GRAPH_IMAGES_FOR_SETUP_FILE);
+
+    GHContent mockImageFile3 = mock(GHContent.class);
+    when(mockImageFile3.getName()).thenReturn(IMAGE_NAME);
+
+    PagedIterable<GHContent> pagedIterable = mock(String.valueOf(GHContent.class));
+    when(setupImageContent.listDirectoryContent()).thenReturn(pagedIterable);
+    when(pagedIterable.toList()).thenReturn(List.of(mockImageFile3));
+
+    when(ghRepository.getDirectoryContent(MS_GRAPH_PRODUCT_DIRECTORY, TAG))
+        .thenReturn(List.of(setupFileContent, setupImageContent));
+
+    when(imageService.mappingImageFromGHContent(any(), any(), anyBoolean())).thenReturn(mockImage());
+
+    Product mockProduct = Product.builder()
+        .id(MICROSOFT_TEAMS.getId())
+        .repositoryName("market/connector/microsoft365/chat/")
+        .build();
+    Map<String, Map<String, String>> moduleContents = new HashMap<>();
+
+    moduleContents.put(ProductContentUtils.SETUP, new HashMap<>(Map.of(EN_LANGUAGE, "setup file content")));
+
+    axonivyProductRepoServiceImpl.updateProductModuleContentSetupFromSetupMd(mockProduct, moduleContents, TAG);
+
+    assertTrue(moduleContents.get(ProductContentUtils.SETUP).get(EN_LANGUAGE).contains(ProductContentUtils.removeFirstLine(
+        setupStringContent.replace(IMAGE_NAME, "imageId-66e2b14868f2f95b2f95549a"))));
   }
 }
