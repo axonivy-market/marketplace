@@ -1,7 +1,6 @@
 package com.axonivy.market;
 
 import com.axonivy.market.service.ExternalDocumentService;
-import com.axonivy.market.service.MetadataService;
 import com.axonivy.market.service.ProductService;
 import lombok.AllArgsConstructor;
 import lombok.extern.log4j.Log4j2;
@@ -26,7 +25,6 @@ public class MarketplaceServiceApplication {
 
   final ProductService productService;
   final ExternalDocumentService externalDocumentService;
-  final MetadataService metadataService;
 
   public static void main(String[] args) {
     SpringApplication.run(MarketplaceServiceApplication.class, args);
@@ -35,7 +33,8 @@ public class MarketplaceServiceApplication {
   @Async
   @EventListener(ApplicationStartedEvent.class)
   public void startInitializeSystem() {
-    metadataService.syncAllProductsMetadata();
+    List<String> productIds = syncProductData();
+    syncExternalDocumentData(productIds);
   }
 
   private List<String> syncProductData() {

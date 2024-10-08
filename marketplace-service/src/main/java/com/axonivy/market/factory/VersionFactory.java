@@ -62,8 +62,6 @@ public class VersionFactory {
     }
 
     List<String> releasedVersions = versionsInArtifact.stream().filter(VersionUtils::isReleasedVersion).toList();
-//
-//    if()
     String matchVersion = findVersionStartWith(releasedVersions, requestedVersion);
 
     // Return latest version of specific version if can not fnd latest release of that version
