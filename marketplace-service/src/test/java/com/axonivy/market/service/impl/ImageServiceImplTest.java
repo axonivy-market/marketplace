@@ -1,6 +1,5 @@
 package com.axonivy.market.service.impl;
 
-import com.axonivy.market.BaseSetup;
 import com.axonivy.market.entity.Image;
 import com.axonivy.market.entity.Product;
 import com.axonivy.market.repository.ImageRepository;
@@ -9,7 +8,6 @@ import org.bson.types.Binary;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.kohsuke.github.GHContent;
-import org.kohsuke.github.PagedIterable;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.InjectMocks;
@@ -25,15 +23,11 @@ import java.nio.file.Path;
 import java.util.Collections;
 import java.util.List;
 
-import static com.axonivy.market.BaseSetup.getMockProducts;
 import static com.axonivy.market.constants.CommonConstants.SLASH;
 import static com.axonivy.market.constants.MetaConstants.META_FILE;
-import static com.axonivy.market.service.impl.GHAxonIvyProductRepoServiceImplTest.IMAGE_NAME;
-import static com.axonivy.market.service.impl.GHAxonIvyProductRepoServiceImplTest.mockImage;
 import static org.bson.assertions.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
-import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;

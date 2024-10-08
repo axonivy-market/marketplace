@@ -6,7 +6,6 @@ import org.bson.types.Binary;
 import org.kohsuke.github.GHContent;
 
 import java.nio.file.Path;
-import java.util.List;
 
 public interface ImageService {
   Binary getImageBinary(GHContent ghContent);

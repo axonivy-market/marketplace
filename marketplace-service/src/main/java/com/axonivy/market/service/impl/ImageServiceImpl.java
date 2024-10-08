@@ -6,7 +6,6 @@ import com.axonivy.market.github.util.GitHubUtils;
 import com.axonivy.market.repository.ImageRepository;
 import com.axonivy.market.service.ImageService;
 import com.axonivy.market.util.MavenUtils;
-import com.axonivy.market.util.ProductContentUtils;
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.ObjectUtils;
@@ -17,14 +16,9 @@ import org.springframework.stereotype.Service;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Path;
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
-
-import static com.axonivy.market.constants.CommonConstants.IMAGE_ID_PREFIX;
 
 @Service
 @Log4j2
@@ -93,12 +87,6 @@ public class ImageServiceImpl implements ImageService {
       log.error("Cannot get image from downloaded folder {}", e.getMessage());
       return null;
     }
-  }
-
-  private List<GHContent> getAllImagesFromProductFolder(List<GHContent> productFolderContents) {
-    List<GHContent> images = new ArrayList<>();
-    GitHubUtils.findImages(productFolderContents, images);
-    return images;
   }
 
   @Override

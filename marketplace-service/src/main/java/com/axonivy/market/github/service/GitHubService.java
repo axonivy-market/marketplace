@@ -1,6 +1,5 @@
 package com.axonivy.market.github.service;
 
-import com.axonivy.market.entity.Product;
 import com.axonivy.market.entity.User;
 import com.axonivy.market.exceptions.model.MissingHeaderException;
 import com.axonivy.market.exceptions.model.Oauth2ExchangeCodeException;
@@ -15,7 +14,6 @@ import org.kohsuke.github.GitHub;
 
 import java.io.IOException;
 import java.util.List;
-import java.util.Map;
 
 public interface GitHubService {
 
@@ -37,5 +35,4 @@ public interface GitHubService {
   User getAndUpdateUser(String accessToken);
 
   void validateUserOrganization(String accessToken, String organization) throws UnauthorizedException;
-
 }

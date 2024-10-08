@@ -123,7 +123,7 @@ public class BaseSetup {
     return mockProductModuleContent;
   }
 
-  protected static Artifact getMockArtifact() {
+  protected Artifact getMockArtifact() {
     Artifact mockArtifact = new Artifact();
     mockArtifact.setIsDependency(true);
     mockArtifact.setGroupId(MOCK_GROUP_ID);
@@ -152,7 +152,7 @@ public class BaseSetup {
         new HashMap<>());
   }
 
-  public static List<Product> getMockProducts() {
+  protected List<Product> getMockProducts() {
     Product mockProduct =
         Product.builder().id(MOCK_PRODUCT_ID).releasedVersions(List.of(MOCK_RELEASED_VERSION)).artifacts(
             List.of(getMockArtifact())).build();

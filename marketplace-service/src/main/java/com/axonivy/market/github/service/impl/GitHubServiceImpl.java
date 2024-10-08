@@ -3,12 +3,8 @@ package com.axonivy.market.github.service.impl;
 import com.axonivy.market.constants.CommonConstants;
 import com.axonivy.market.constants.ErrorMessageConstants;
 import com.axonivy.market.constants.GitHubConstants;
-import com.axonivy.market.constants.ReadmeConstants;
-import com.axonivy.market.entity.Product;
 import com.axonivy.market.entity.User;
 import com.axonivy.market.enums.ErrorCode;
-import com.axonivy.market.enums.Language;
-import com.axonivy.market.enums.NonStandardProduct;
 import com.axonivy.market.exceptions.model.MissingHeaderException;
 import com.axonivy.market.exceptions.model.NotFoundException;
 import com.axonivy.market.exceptions.model.Oauth2ExchangeCodeException;
@@ -18,10 +14,7 @@ import com.axonivy.market.github.model.GitHubProperty;
 import com.axonivy.market.github.service.GitHubService;
 import com.axonivy.market.github.util.GitHubUtils;
 import com.axonivy.market.repository.UserRepository;
-import com.axonivy.market.service.ImageService;
-import com.axonivy.market.util.ProductContentUtils;
 import lombok.extern.log4j.Log4j2;
-import org.apache.commons.lang3.ObjectUtils;
 import org.kohsuke.github.GHContent;
 import org.kohsuke.github.GHOrganization;
 import org.kohsuke.github.GHRepository;
@@ -48,10 +41,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
-import static com.axonivy.market.constants.DirectoryConstants.MG_GRAPH_IMAGES_FOR_SETUP_FILE;
-import static com.axonivy.market.constants.DirectoryConstants.MS_GRAPH_PRODUCT_DIRECTORY;
-import static com.axonivy.market.constants.ReadmeConstants.SETUP_FILE;
-import static com.axonivy.market.util.ProductContentUtils.SETUP;
 import static org.apache.commons.lang3.StringUtils.EMPTY;
 
 @Log4j2
@@ -62,9 +51,8 @@ public class GitHubServiceImpl implements GitHubService {
   private final UserRepository userRepository;
   private final GitHubProperty gitHubProperty;
 
-
   public GitHubServiceImpl(RestTemplateBuilder restTemplateBuilder, UserRepository userRepository,
-      GitHubProperty gitHubProperty, ImageService imageService) {
+      GitHubProperty gitHubProperty) {
     this.restTemplate = restTemplateBuilder.build();
     this.userRepository = userRepository;
     this.gitHubProperty = gitHubProperty;

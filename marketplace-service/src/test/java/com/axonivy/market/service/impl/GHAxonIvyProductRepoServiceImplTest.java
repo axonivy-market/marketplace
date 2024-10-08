@@ -302,9 +302,7 @@ class GHAxonIvyProductRepoServiceImplTest extends BaseSetup {
         List.of(mockContent, mockContent2));
     when(ghRepository.getDirectoryContent(DOCUWARE_CONNECTOR_PRODUCT, MOCK_TAG_FROM_RELEASED_VERSION)).thenReturn(
         List.of(mockContent, mockContent2));
-
     when(imageService.mappingImageFromGHContent(any(), any(), anyBoolean())).thenReturn(mockImage());
-
     var result = axonivyProductRepoServiceImpl.getReadmeAndProductContentsFromTag(getMockProducts().get(0),
         ghRepository,
         MOCK_TAG_FROM_RELEASED_VERSION);
