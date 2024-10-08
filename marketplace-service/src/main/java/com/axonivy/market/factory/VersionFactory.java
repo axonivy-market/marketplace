@@ -71,6 +71,7 @@ public class VersionFactory {
     }
     return matchVersion;
   }
+  
   private static String findVersionStartWith(List<String> releaseVersions, String version) {
     return Optional.ofNullable(releaseVersions).orElse(List.of()).stream().filter(
         ver -> ver.startsWith(version)).findAny().orElse(version);
