@@ -15,7 +15,5 @@ public interface ImageService {
 
   Image mappingImageFromDownloadedFolder(Product product, Path imagePath);
 
-  String updateImagesWithDownloadUrl(Product product, List<GHContent> contents, String readmeContents);
-
   byte[] readImage(String id);
 }

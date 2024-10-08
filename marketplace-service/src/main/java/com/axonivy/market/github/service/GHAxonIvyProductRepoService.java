@@ -8,6 +8,7 @@ import org.kohsuke.github.GHTag;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.Map;
 
 public interface GHAxonIvyProductRepoService {
 
@@ -19,4 +20,7 @@ public interface GHAxonIvyProductRepoService {
 
   void extractReadMeFileFromContents(Product product, List<GHContent> contents,
       ProductModuleContent productModuleContent);
+
+  void updateProductModuleContentSetupFromSetupMd(Product product,
+      Map<String, Map<String, String>> moduleContents, String tag) throws IOException;
 }

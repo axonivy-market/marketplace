@@ -95,16 +95,6 @@ public class ImageServiceImpl implements ImageService {
     }
   }
 
-  @Override
-  public String updateImagesWithDownloadUrl(Product product, List<GHContent> contents, String readmeContents) {
-    List<GHContent> allContentOfImages = getAllImagesFromProductFolder(contents);
-    Map<String, String> imageUrls = new HashMap<>();
-
-    allContentOfImages.forEach(content -> Optional.of(mappingImageFromGHContent(product, content, false))
-        .ifPresent(image -> imageUrls.put(content.getName(), IMAGE_ID_PREFIX.concat(image.getId()))));
-    return ProductContentUtils.replaceImageDirWithImageCustomId(imageUrls, readmeContents);
-  }
-
   private List<GHContent> getAllImagesFromProductFolder(List<GHContent> productFolderContents) {
     List<GHContent> images = new ArrayList<>();
     GitHubUtils.findImages(productFolderContents, images);

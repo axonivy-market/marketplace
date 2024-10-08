@@ -8,6 +8,7 @@ import com.axonivy.market.constants.ProductJsonConstants;
 import com.axonivy.market.constants.ReadmeConstants;
 import com.axonivy.market.entity.Product;
 import com.axonivy.market.entity.ProductModuleContent;
+import com.axonivy.market.enums.Language;
 import com.axonivy.market.enums.NonStandardProduct;
 import com.axonivy.market.github.service.GHAxonIvyProductRepoService;
 import com.axonivy.market.github.service.GitHubService;
@@ -18,6 +19,7 @@ import com.axonivy.market.util.ProductContentUtils;
 import com.axonivy.market.util.VersionUtils;
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang3.ObjectUtils;
 import org.kohsuke.github.GHContent;
 import org.kohsuke.github.GHOrganization;
 import org.kohsuke.github.GHRepository;
@@ -37,7 +39,10 @@ import java.util.Objects;
 import java.util.Optional;
 
 import static com.axonivy.market.constants.CommonConstants.IMAGE_ID_PREFIX;
+import static com.axonivy.market.constants.DirectoryConstants.MG_GRAPH_IMAGES_FOR_SETUP_FILE;
 import static com.axonivy.market.constants.DirectoryConstants.MS_GRAPH_PRODUCT_DIRECTORY;
+import static com.axonivy.market.constants.ReadmeConstants.SETUP_FILE;
+import static com.axonivy.market.util.ProductContentUtils.SETUP;
 
 @Log4j2
 @Service
@@ -116,10 +121,10 @@ public class GHAxonIvyProductRepoServiceImpl implements GHAxonIvyProductRepoServ
         for (GHContent readmeFile : readmeFiles) {
           String readmeContents = new String(readmeFile.read().readAllBytes());
           if (ProductContentUtils.hasImageDirectives(readmeContents)) {
-            readmeContents = imageService.updateImagesWithDownloadUrl(product, contents, readmeContents);
+            readmeContents = updateImagesWithDownloadUrl(product, contents, readmeContents);
           }
           ProductContentUtils.getExtractedPartsOfReadme(moduleContents, readmeContents, readmeFile.getName());
-          gitHubService.updateProductModuleContentSetupFromSetupMd(product, moduleContents,
+          updateProductModuleContentSetupFromSetupMd(product, moduleContents,
               productModuleContent.getTag());
         }
         ProductContentUtils.updateProductModuleTabContents(productModuleContent, moduleContents);
@@ -127,6 +132,51 @@ public class GHAxonIvyProductRepoServiceImpl implements GHAxonIvyProductRepoServ
     } catch (Exception e) {
       log.error("Cannot get README file's content {}", e.getMessage());
     }
+  }
+
+  @Override
+  public void updateProductModuleContentSetupFromSetupMd(Product product,
+      Map<String, Map<String, String>> moduleContents, String tag) throws IOException {
+    if (!NonStandardProduct.isMsGraphProduct(product.getId())) {
+      return;
+    }
+
+    GHRepository ghRepository = gitHubService.getRepository(product.getRepositoryName());
+    List<GHContent> contents = ghRepository.getDirectoryContent(MS_GRAPH_PRODUCT_DIRECTORY, tag);
+
+    GHContent setupFile = contents.stream().filter(GHContent::isFile)
+        .filter(content -> content.getName().equalsIgnoreCase(SETUP_FILE))
+        .findFirst().orElse(null);
+
+    if (ObjectUtils.isNotEmpty(setupFile)) {
+      String setupContent = new String(setupFile.read().readAllBytes());
+      if (ProductContentUtils.hasImageDirectives(setupContent)) {
+        List<GHContent> setupImagesFolder =
+            contents.stream().filter(content -> content.getName().equals(MG_GRAPH_IMAGES_FOR_SETUP_FILE)).toList();
+        setupContent = updateImagesWithDownloadUrl(product, setupImagesFolder, setupContent);
+      }
+
+      if (setupContent.contains(ReadmeConstants.SETUP_PART)) {
+        List<String> extractSetupContent = List.of(setupContent.split(ReadmeConstants.SETUP_PART));
+        setupContent = ProductContentUtils.removeFirstLine(extractSetupContent.get(1));
+      }
+      ProductContentUtils.addLocaleContent(moduleContents, SETUP, setupContent, Language.EN.getValue());
+    }
+  }
+
+  public String updateImagesWithDownloadUrl(Product product, List<GHContent> contents, String readmeContents) {
+    List<GHContent> allContentOfImages = getAllImagesFromProductFolder(contents);
+    Map<String, String> imageUrls = new HashMap<>();
+
+    allContentOfImages.forEach(content -> Optional.of(imageService.mappingImageFromGHContent(product, content, false))
+        .ifPresent(image -> imageUrls.put(content.getName(), IMAGE_ID_PREFIX.concat(image.getId()))));
+    return ProductContentUtils.replaceImageDirWithImageCustomId(imageUrls, readmeContents);
+  }
+
+  private List<GHContent> getAllImagesFromProductFolder(List<GHContent> productFolderContents) {
+    List<GHContent> images = new ArrayList<>();
+    GitHubUtils.findImages(productFolderContents, images);
+    return images;
   }
 
   private void updateDependencyContentsFromProductJson(ProductModuleContent productModuleContent,

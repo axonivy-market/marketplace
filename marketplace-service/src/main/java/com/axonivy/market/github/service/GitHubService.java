@@ -38,6 +38,4 @@ public interface GitHubService {
 
   void validateUserOrganization(String accessToken, String organization) throws UnauthorizedException;
 
-  void updateProductModuleContentSetupFromSetupMd(Product product,
-      Map<String, Map<String, String>> moduleContents, String tag) throws IOException;
 }

@@ -62,14 +62,12 @@ public class GitHubServiceImpl implements GitHubService {
   private final UserRepository userRepository;
   private final GitHubProperty gitHubProperty;
 
-  private final ImageService imageService;
 
   public GitHubServiceImpl(RestTemplateBuilder restTemplateBuilder, UserRepository userRepository,
       GitHubProperty gitHubProperty, ImageService imageService) {
     this.restTemplate = restTemplateBuilder.build();
     this.userRepository = userRepository;
     this.gitHubProperty = gitHubProperty;
-    this.imageService = imageService;
   }
 
   @Override
@@ -180,36 +178,6 @@ public class GitHubServiceImpl implements GitHubService {
     throw new UnauthorizedException(ErrorCode.GITHUB_USER_UNAUTHORIZED.getCode(),
         ErrorCode.GITHUB_USER_UNAUTHORIZED.getHelpText()
             + "-User must be a member of the Axon Ivy Market Organization");
-  }
-
-  @Override
-  public void updateProductModuleContentSetupFromSetupMd(Product product,
-      Map<String, Map<String, String>> moduleContents, String tag) throws IOException {
-    if (!NonStandardProduct.isMsGraphProduct(product.getId())) {
-      return;
-    }
-
-    GHRepository ghRepository = getRepository(product.getRepositoryName());
-    List<GHContent> contents = ghRepository.getDirectoryContent(MS_GRAPH_PRODUCT_DIRECTORY, tag);
-
-    GHContent setupFile = contents.stream().filter(GHContent::isFile)
-        .filter(content -> content.getName().equalsIgnoreCase(SETUP_FILE))
-        .findFirst().orElse(null);
-
-    if (ObjectUtils.isNotEmpty(setupFile)) {
-      String setupContent = new String(setupFile.read().readAllBytes());
-      if (ProductContentUtils.hasImageDirectives(setupContent)) {
-        List<GHContent> setupImagesFolder =
-            contents.stream().filter(content -> content.getName().equals(MG_GRAPH_IMAGES_FOR_SETUP_FILE)).toList();
-        setupContent = imageService.updateImagesWithDownloadUrl(product, setupImagesFolder, setupContent);
-      }
-
-      if (setupContent.contains(ReadmeConstants.SETUP_PART)) {
-        List<String> extractSetupContent = List.of(setupContent.split(ReadmeConstants.SETUP_PART));
-        setupContent = ProductContentUtils.removeFirstLine(extractSetupContent.get(1));
-      }
-      ProductContentUtils.addLocaleContent(moduleContents, SETUP, setupContent, Language.EN.getValue());
-    }
   }
 
   public List<Map<String, Object>> getUserOrganizations(String accessToken) throws UnauthorizedException {
