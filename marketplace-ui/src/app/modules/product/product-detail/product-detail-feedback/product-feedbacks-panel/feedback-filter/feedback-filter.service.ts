@@ -1,15 +1,17 @@
 import { Injectable } from '@angular/core';
 import { Subject } from 'rxjs';
+import { ItemDropdown } from '../../../../../../shared/models/item-dropdown.model';
+import { FeedbackSortType } from '../../../../../../shared/enums/feedback-sort-type';
 
 @Injectable({
   providedIn: 'root'
 })
 export class FeedbackFilterService {
-  private sortBySubject = new Subject<any>();
-  data: any = undefined;
+  private readonly sortBySubject = new Subject<ItemDropdown<FeedbackSortType>>();
+  data: ItemDropdown<FeedbackSortType> | undefined;
   event$ = this.sortBySubject.asObservable();
 
-  changeSortByLabel(data: any) {
+  changeSortByLabel(data: ItemDropdown<FeedbackSortType>) {
     this.data = data;
     this.sortBySubject.next(data);
   }

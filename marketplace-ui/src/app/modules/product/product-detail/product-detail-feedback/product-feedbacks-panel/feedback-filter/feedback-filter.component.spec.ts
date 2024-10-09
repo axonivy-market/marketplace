@@ -10,12 +10,21 @@ import { ItemDropdown } from '../../../../../../shared/models/item-dropdown.mode
 import { TypeOption } from '../../../../../../shared/enums/type-option.enum';
 import { SortOption } from '../../../../../../shared/enums/sort-option.enum';
 import { FeedbackSortType } from '../../../../../../shared/enums/feedback-sort-type';
+import { FeedbackFilterService } from './feedback-filter.service';
+import { Subject } from 'rxjs';
 
 describe('FeedbackFilterComponent', () => {
+  const mockEvent = {
+    value: FeedbackSortType.NEWEST,
+    label: 'common.sort.value.newest',
+    sortFn: 'updatedAt,desc'
+  } as ItemDropdown<FeedbackSortType>;
+
   let component: FeedbackFilterComponent;
   let fixture: ComponentFixture<FeedbackFilterComponent>;
   let translateService: jasmine.SpyObj<TranslateService>;
   let productFeedbackService: jasmine.SpyObj<ProductFeedbackService>;
+  let feedbackFilterService: FeedbackFilterService;
 
   beforeEach(async () => {
     const productFeedbackServiceSpy = jasmine.createSpyObj('ProductFeedbackService', ['sort']);
@@ -23,6 +32,14 @@ describe('FeedbackFilterComponent', () => {
     await TestBed.configureTestingModule({
       imports: [FeedbackFilterComponent, FormsModule, TranslateModule.forRoot() ],
       providers: [
+        {
+          provide: FeedbackFilterService,
+          useValue: {
+            event$: new Subject(),
+            data: null,
+            changeSortByLabel: jasmine.createSpy('changeSortByLabel')
+          }
+        },
         TranslateService,
         { provide: ProductFeedbackService, useValue: productFeedbackServiceSpy }
       ]
@@ -31,6 +48,7 @@ describe('FeedbackFilterComponent', () => {
 
     translateService = TestBed.inject(TranslateService) as jasmine.SpyObj<TranslateService>;
     productFeedbackService = TestBed.inject(ProductFeedbackService) as jasmine.SpyObj<ProductFeedbackService>;
+    feedbackFilterService = TestBed.inject(FeedbackFilterService);
   });
 
   beforeEach(() => {
@@ -68,5 +86,18 @@ describe('FeedbackFilterComponent', () => {
   it('should pass the correct items to the dropdown', () => {
     const dropdownComponent = fixture.debugElement.query(By.directive(CommonDropdownComponent)).componentInstance;
     expect(dropdownComponent.items).toBe(component.feedbackSortTypes);
+  });
+
+  it('should emit sortChange event when onSortChange is called', () => {
+    spyOn(component.sortChange, 'emit');
+    component.onSortChange(mockEvent);
+    expect(component.sortChange.emit).toHaveBeenCalledWith(mockEvent.sortFn);
+  });
+
+  it('should listen to feedbackFilterService event$ and call changeSortByLabel', () => {
+    spyOn(component, 'changeSortByLabel').and.callThrough();
+    component.ngOnInit(); // Subscribes to event$
+    (feedbackFilterService.event$ as Subject<any>).next(mockEvent); // Trigger the event
+    expect(component.changeSortByLabel).toHaveBeenCalledWith(mockEvent);
   });
 });

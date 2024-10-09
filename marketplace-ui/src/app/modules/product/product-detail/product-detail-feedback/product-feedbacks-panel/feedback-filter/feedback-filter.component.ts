@@ -43,7 +43,7 @@ export class FeedbackFilterComponent implements OnInit {
     this.feedbackFilterService.changeSortByLabel(event);
   }
 
-  private changeSortByLabel(event: ItemDropdown<FeedbackSortType>): void {
+  changeSortByLabel(event: ItemDropdown<FeedbackSortType>): void {
     this.selectedSortTypeLabel = CommonUtils.getLabel(
       event.value,
       FEEDBACK_SORT_TYPES
