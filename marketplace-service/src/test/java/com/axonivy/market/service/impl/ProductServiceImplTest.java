@@ -28,6 +28,7 @@ import com.axonivy.market.repository.ProductJsonContentRepository;
 import com.axonivy.market.repository.ProductModuleContentRepository;
 import com.axonivy.market.repository.ProductRepository;
 import com.axonivy.market.service.ImageService;
+import com.axonivy.market.service.MetadataService;
 import com.axonivy.market.util.MavenUtils;
 import com.axonivy.market.util.VersionUtils;
 import org.junit.jupiter.api.BeforeEach;
@@ -114,7 +115,8 @@ class ProductServiceImplTest extends BaseSetup {
   private GitHubRepoMetaRepository repoMetaRepository;
   @Mock
   private GitHubService gitHubService;
-
+  @Mock
+  private MetadataService metadataService;
   @Mock
   private ImageRepository imageRepository;
 
@@ -715,6 +717,7 @@ class ProductServiceImplTest extends BaseSetup {
     when(productRepository.findById(anyString())).thenReturn(Optional.of(mockProduct));
     var mockContents = mockMetaJsonAndLogoList();
     when(marketRepoService.getMarketItemByPath(anyString())).thenReturn(mockContents);
+    when(metadataService.syncProductMetadata(any(Product.class))).thenReturn(true);
     when(productRepository.save(any(Product.class))).thenReturn(mockProduct);
     // Executes
     var result = productService.syncOneProduct(SAMPLE_PRODUCT_PATH, SAMPLE_PRODUCT_ID, false);
