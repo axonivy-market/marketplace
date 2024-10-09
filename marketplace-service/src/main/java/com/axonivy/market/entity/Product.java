@@ -71,6 +71,8 @@ public class Product implements Serializable {
   private Date updatedAt;
   @Transient
   private String bestMatchVersion;
+  @Transient
+  private boolean isMavenDropins;
 
   @Override
   public int hashCode() {
