@@ -3,6 +3,7 @@ package com.axonivy.market.github.service.impl;
 import com.axonivy.market.bo.Artifact;
 import com.axonivy.market.constants.CommonConstants;
 import com.axonivy.market.constants.GitHubConstants;
+import com.axonivy.market.constants.MavenConstants;
 import com.axonivy.market.constants.ProductJsonConstants;
 import com.axonivy.market.constants.ReadmeConstants;
 import com.axonivy.market.entity.Product;
@@ -51,12 +52,10 @@ import static com.axonivy.market.constants.MavenConstants.PRODUCT_ARTIFACT_POSTF
 @Log4j2
 @Service
 public class GHAxonIvyProductRepoServiceImpl implements GHAxonIvyProductRepoService {
-  public static final String IMAGE_EXTENSION = "(.*?).(jpeg|jpg|png|gif)";
   private final GitHubService gitHubService;
   private final ImageService imageService;
   private GHOrganization organization;
   private final ProductJsonContentService productJsonContentService;
-  private String productFolderPath;
 
   public GHAxonIvyProductRepoServiceImpl(GitHubService gitHubService, ImageService imageService,
       ProductJsonContentService productJsonContentService) {
@@ -174,15 +173,15 @@ public class GHAxonIvyProductRepoServiceImpl implements GHAxonIvyProductRepoServ
 
   private List<GHContent> getProductFolderContents(Product product, GHRepository ghRepository, String tag)
       throws IOException {
-    this.productFolderPath = ghRepository.getDirectoryContent(CommonConstants.SLASH, tag).stream()
+    String productFolderPath = ghRepository.getDirectoryContent(CommonConstants.SLASH, tag).stream()
         .filter(GHContent::isDirectory).map(GHContent::getName)
-        .filter(content -> content.endsWith(PRODUCT_ARTIFACT_POSTFIX)).findFirst().orElse(null);
-    this.productFolderPath = NonStandardProduct.findById(product.getId(), this.productFolderPath);
+        .filter(content -> content.endsWith(MavenConstants.PRODUCT_ARTIFACT_POSTFIX)).findFirst().orElse(null);
+    productFolderPath = NonStandardProduct.findById(product.getId(), productFolderPath);
 
     return ghRepository.getDirectoryContent(productFolderPath, tag);
   }
 
-  private String replaceVariable(String readmeContent, Product product, String tag) throws IOException {
+  public String replaceVariable(String readmeContent, Product product, String tag) throws IOException {
     GHRepository ghRepository = gitHubService.getRepository(product.getRepositoryName());
 
     Function<Stream<GHContent>, GHContent> getPomFile = ghContents -> ghContents

@@ -2,15 +2,18 @@ package com.axonivy.market.repository.impl;
 
 import com.axonivy.market.constants.EntityConstants;
 import com.axonivy.market.constants.MongoDBConstants;
+import com.axonivy.market.constants.ProductJsonConstants;
 import com.axonivy.market.criteria.ProductSearchCriteria;
 import com.axonivy.market.entity.Product;
 import com.axonivy.market.entity.ProductDesignerInstallation;
+import com.axonivy.market.entity.ProductJsonContent;
 import com.axonivy.market.entity.ProductModuleContent;
 import com.axonivy.market.enums.DocumentField;
 import com.axonivy.market.enums.Language;
 import com.axonivy.market.enums.TypeOption;
 import com.axonivy.market.repository.CustomProductRepository;
 import com.axonivy.market.repository.CustomRepository;
+import com.axonivy.market.repository.ProductJsonContentRepository;
 import com.axonivy.market.repository.ProductModuleContentRepository;
 import com.axonivy.market.util.VersionUtils;
 import lombok.AllArgsConstructor;
@@ -30,7 +33,11 @@ import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.data.mongodb.core.query.Update;
 import org.springframework.util.CollectionUtils;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
 
 import static com.axonivy.market.enums.DocumentField.LISTED;
 import static com.axonivy.market.enums.DocumentField.TYPE;
@@ -43,6 +50,7 @@ public class CustomProductRepositoryImpl extends CustomRepository implements Cus
 
   final MongoTemplate mongoTemplate;
   final ProductModuleContentRepository contentRepository;
+  final ProductJsonContentRepository jsonContentRepository;
 
   public Product queryProductByAggregation(Aggregation aggregation) {
     return Optional.of(mongoTemplate.aggregate(aggregation, EntityConstants.PRODUCT, Product.class))
@@ -73,9 +81,20 @@ public class CustomProductRepositoryImpl extends CustomRepository implements Cus
     List<String> devVersions = VersionUtils.getVersionsToDisplay(result.getReleasedVersions(), isShowDevVersion, null);
     String currentTag = VersionUtils.convertVersionToTag(result.getId(), devVersions.get(0));
     ProductModuleContent content = contentRepository.findByTagAndProductId(currentTag, id);
+    String jsonContent =
+        jsonContentRepository.findByProductIdAndVersion(id, devVersions.get(0)).stream().map(
+            ProductJsonContent::getContent).findFirst().orElse(null);
+    result.setMavenDropins(isJsonContentContainDropins(Objects.requireNonNull(jsonContent)));
     result.setProductModuleContent(content);
     return result;
   }
+
+  private boolean isJsonContentContainDropins(String jsonContent) {
+    return jsonContent.contains(ProductJsonConstants.MAVEN_DROPINS_INSTALLER_ID) && (!jsonContent.contains(
+        ProductJsonConstants.MAVEN_IMPORT_INSTALLER_ID) || !jsonContent.contains(
+        ProductJsonConstants.MAVEN_DEPENDENCY_INSTALLER_ID));
+  }
+
 
   @Override
   public ProductModuleContent findByProductIdAndTagOrMavenVersion(String productId, String tag) {

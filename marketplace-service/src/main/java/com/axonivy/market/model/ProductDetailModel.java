@@ -39,6 +39,7 @@ public class ProductDetailModel extends ProductModel {
   private int installationCount;
   @Schema(description = "The api url to get metadata from product.json")
   private String metaProductJsonUrl;
+  private boolean isMavenDropins;
 
   @Override
   public int hashCode() {
