@@ -1,5 +1,5 @@
 .logo {
-  margin: 0 0 2rem 0;
+  margin: 0 0 3.2rem 0;
 }
 
 .logo__image {
@@ -10,12 +10,13 @@
 }
 
 .nav-item {
-  margin: 0 0 0 30px;
+  margin: 0 0 0 3.2rem;
 }
 
 .nav-link {
   font-weight: normal;
-  padding: 0 15px;
+  font-size: 1.4rem;
+  padding: 0 !important;
 }
 
 .nav-link.active {
@@ -26,22 +27,29 @@
   margin: 24px 0 0 0;
 }
 
+.download-button {
+  font-size: 1.6rem;
+}
+
 .link-icon {
   width: 18px;
   height: 18px;
 }
 
 .link--left {
-  margin: 0 2rem 0 0;
+  margin: 0 3.2rem 0 0;
 }
 
 .h5-text {
   font-weight: 400;
-  font-size: 16px;
+  font-size: 1.6rem;
 }
 
 .footer-text {
+  max-width: 451px;
+  font-size: 1.6rem;
   text-wrap: balance;
+
 }
 
 ::ng-deep .footer-text a {
@@ -59,3 +67,4 @@ border: 0.5px solid var(--header-border-color);
     margin: 0;
   }
 }
+

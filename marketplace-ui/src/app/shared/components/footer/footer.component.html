@@ -19,14 +19,13 @@
         <a class="download-button" href="{{ downloadUrl }}">
           <button
             [lang]="languageService.selectedLanguage()"
-            class="btn btn-primary border-0"
+            class="btn btn-primary border-0 download-button"
             [ngClass]="themeService.isDarkMode() ? 'text-dark' : 'text-light'">
             {{ 'common.footer.download' | translate }}
           </button>
         </a>
       </div>
     </div>
-
     <!-- Right -->
     <div class="footer__navbar d-flex align-items-center d-none d-xl-block">
       <div class="navbar navbar-expand-lg">
