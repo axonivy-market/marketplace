@@ -32,6 +32,7 @@ import com.axonivy.market.repository.ProductJsonContentRepository;
 import com.axonivy.market.repository.ProductModuleContentRepository;
 import com.axonivy.market.repository.ProductRepository;
 import com.axonivy.market.service.ImageService;
+import com.axonivy.market.service.MetadataService;
 import com.axonivy.market.service.ProductService;
 import com.axonivy.market.util.MavenUtils;
 import com.axonivy.market.util.VersionUtils;
@@ -100,6 +101,7 @@ public class ProductServiceImpl implements ProductService {
   private final ImageRepository imageRepository;
   private final ImageService imageService;
   private final MongoTemplate mongoTemplate;
+  private final MetadataService metadataService;
   private final ObjectMapper mapper = new ObjectMapper();
   private final SecureRandom random = new SecureRandom();
   private GHCommit lastGHCommit;
@@ -114,7 +116,7 @@ public class ProductServiceImpl implements ProductService {
       GHAxonIvyMarketRepoService axonIvyMarketRepoService, GHAxonIvyProductRepoService axonIvyProductRepoService,
       GitHubRepoMetaRepository gitHubRepoMetaRepository, GitHubService gitHubService,
       ProductCustomSortRepository productCustomSortRepository, MavenArtifactVersionRepository mavenArtifactVersionRepo,
-      ImageRepository imageRepository,
+      ImageRepository imageRepository, MetadataService metadataService,
       ImageService imageService, MongoTemplate mongoTemplate,
       ProductJsonContentRepository productJsonContentRepository) {
     this.productRepository = productRepository;
@@ -125,6 +127,7 @@ public class ProductServiceImpl implements ProductService {
     this.gitHubService = gitHubService;
     this.productCustomSortRepository = productCustomSortRepository;
     this.mavenArtifactVersionRepo = mavenArtifactVersionRepo;
+    this.metadataService = metadataService;
     this.imageRepository = imageRepository;
     this.imageService = imageService;
     this.mongoTemplate = mongoTemplate;
@@ -586,7 +589,7 @@ public class ProductServiceImpl implements ProductService {
   @Override
   public boolean syncOneProduct(String productId, String marketItemPath, Boolean overrideMarketItemPath) {
     try {
-      log.info("Syn product {}", productId);
+      log.info("Sync product {} is starting ...", productId);
       log.info("Clean up product {}", productId);
       Product product = renewProductById(productId, marketItemPath, overrideMarketItemPath);
       log.info("Get data of product {} from the git hub", productId);
@@ -596,6 +599,8 @@ public class ProductServiceImpl implements ProductService {
         mappingMetaDataAndLogoFromGHContent(gitHubContents, product);
         updateRelatedThingsOfProductFromGHContent(gitHubContents, product);
         productRepository.save(product);
+        metadataService.syncProductMetadata(product);
+        log.info("Sync product {} is finished!", productId);
         return true;
       }
     } catch (Exception e) {
@@ -609,6 +614,7 @@ public class ProductServiceImpl implements ProductService {
     productRepository.findById(productId).ifPresent(foundProduct -> {
           ProductFactory.transferComputedPersistedDataToProduct(foundProduct, product);
           imageRepository.deleteAllByProductId(foundProduct.getId());
+          mavenArtifactVersionRepo.deleteAllById(List.of(foundProduct.getId()));
           productModuleContentRepository.deleteAllByProductId(foundProduct.getId());
           productJsonContentRepository.deleteAllByProductId(foundProduct.getId());
           productRepository.delete(foundProduct);
@@ -618,6 +624,7 @@ public class ProductServiceImpl implements ProductService {
     if (StringUtils.isNotBlank(marketItemPath) && Boolean.TRUE.equals(overrideMarketItemPath)) {
       product.setMarketDirectory(marketItemPath);
     }
+    product.setNewestReleaseVersion(EMPTY);
 
     return product;
   }
