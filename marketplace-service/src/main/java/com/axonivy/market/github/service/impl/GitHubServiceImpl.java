@@ -17,6 +17,7 @@ import org.kohsuke.github.GHContent;
 import org.kohsuke.github.GHOrganization;
 import org.kohsuke.github.GHRepository;
 import org.kohsuke.github.GHTag;
+import org.kohsuke.github.GHTeam;
 import org.kohsuke.github.GitHub;
 import org.kohsuke.github.GitHubBuilder;
 import org.springframework.boot.web.client.RestTemplateBuilder;
@@ -28,6 +29,7 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
+import org.springframework.util.CollectionUtils;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestTemplate;
@@ -175,16 +177,23 @@ public class GitHubServiceImpl implements GitHubService {
   }
 
   private boolean isUserInOrganizationAndTeam(GitHub gitHub, String organization,
-      String team) throws IOException {
+      String teamName) throws IOException {
     if (gitHub == null) {
       return false;
     }
 
-    var ghOrg = gitHub.getOrganization(organization);
-    if (ghOrg == null) {
+    var hashMapTeams = gitHub.getMyTeams();
+    var hashSetTeam = hashMapTeams.get(organization);
+    if (CollectionUtils.isEmpty(hashSetTeam)) {
       return false;
     }
 
-    return ghOrg.getTeamByName(team) != null;
+    for (GHTeam team: hashSetTeam) {
+      if (teamName.equals(team.getName())) {
+        return true;
+      }
+    }
+
+    return false;
   }
 }
