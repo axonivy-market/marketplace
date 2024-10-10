@@ -137,6 +137,7 @@ export class ProductFeedbackService {
   }
 
   changeSort(newSort: string): void {
+    this.feedbacks.set([])
     this.page.set(0);
     this.sort.set(newSort);
     this.findProductFeedbacksByCriteria().subscribe();
