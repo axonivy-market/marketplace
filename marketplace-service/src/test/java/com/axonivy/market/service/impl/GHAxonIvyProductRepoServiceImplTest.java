@@ -407,7 +407,7 @@ class GHAxonIvyProductRepoServiceImplTest extends BaseSetup {
 
     InputStream mockReadmeInputStream = mock(InputStream.class);
 
-    String setupStringContent = SETUP_STRING_CONTENT;
+    String setupStringContent = getMockSetupMd();
 
     GHContent setupFileContent = mock(GHContent.class);
     when(setupFileContent.isFile()).thenReturn(true);
