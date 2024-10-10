@@ -23,6 +23,8 @@ import com.axonivy.market.model.ProductCustomSortRequest;
 import com.axonivy.market.repository.GitHubRepoMetaRepository;
 import com.axonivy.market.repository.ImageRepository;
 import com.axonivy.market.repository.MavenArtifactVersionRepository;
+import com.axonivy.market.repository.MetadataRepository;
+import com.axonivy.market.repository.MetadataSyncRepository;
 import com.axonivy.market.repository.ProductCustomSortRepository;
 import com.axonivy.market.repository.ProductJsonContentRepository;
 import com.axonivy.market.repository.ProductModuleContentRepository;
@@ -119,7 +121,10 @@ class ProductServiceImplTest extends BaseSetup {
   private MetadataService metadataService;
   @Mock
   private ImageRepository imageRepository;
-
+  @Mock
+  private MetadataRepository metadataRepository;
+  @Mock
+  private MetadataSyncRepository metadataSyncRepository;
   @Mock
   private ProductCustomSortRepository productCustomSortRepository;
   @Mock
