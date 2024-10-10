@@ -5,6 +5,7 @@ import com.axonivy.market.entity.ExternalDocumentMeta;
 import com.axonivy.market.entity.Product;
 import com.axonivy.market.enums.ErrorCode;
 import com.axonivy.market.github.service.GitHubService;
+import com.axonivy.market.model.ExternalDocumentModel;
 import com.axonivy.market.model.MavenArtifactModel;
 import com.axonivy.market.model.Message;
 import com.axonivy.market.service.ExternalDocumentService;
@@ -45,18 +46,20 @@ public class ExternalDocumentController {
   final GitHubService gitHubService;
 
   @GetMapping(BY_ID_AND_VERSION)
-  public ResponseEntity<MavenArtifactModel> findExternalDocument(
+  public ResponseEntity<ExternalDocumentModel> findExternalDocument(
       @PathVariable(ID) @Parameter(description = "Product id (from meta.json)", example = "portal",
           in = ParameterIn.PATH) String id,
       @PathVariable(VERSION) @Parameter(description = "Release version (from maven metadata.xml)", example = "10.0.20",
           in = ParameterIn.PATH) String version) {
-    ExternalDocumentMeta externalDocument = externalDocumentService.findExternalDocumentURI(id, version);
+    ExternalDocumentMeta externalDocument = externalDocumentService.findExternalDocument(id, version);
     if (externalDocument == null) {
       return new ResponseEntity<>(HttpStatus.NOT_FOUND);
     }
 
-    MavenArtifactModel model  = new MavenArtifactModel();
-    //model.add(linkTo(methodOn(ExternalDocumentController.class).findExternalDocument(id, version)).withSelfRel());
+    var model = ExternalDocumentModel.builder().productId(externalDocument.getProductId())
+        .version(externalDocument.getVersion()).relativeLink(externalDocument.getRelativeLink())
+        .artifactName(externalDocument.getArtifactName()).build();
+    model.add(linkTo(methodOn(ExternalDocumentController.class).findExternalDocument(id, version)).withSelfRel());
 
     return new ResponseEntity<>(model, HttpStatus.OK);
   }

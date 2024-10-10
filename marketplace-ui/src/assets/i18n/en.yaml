@@ -82,6 +82,7 @@ common:
           moreInformation: More Information
           contactUs: Contact us
           documentation: Documentation
+          defaultDocName: Doc
       install:
         buttonLabel: Install Now
         buttonLabelInDesigner: Install

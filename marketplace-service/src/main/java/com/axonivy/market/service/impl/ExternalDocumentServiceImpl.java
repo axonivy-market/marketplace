@@ -58,7 +58,7 @@ public class ExternalDocumentServiceImpl implements ExternalDocumentService {
   }
 
   @Override
-  public ExternalDocumentMeta findExternalDocumentURI(String productId, String version) {
+  public ExternalDocumentMeta findExternalDocument(String productId, String version) {
     var product = productRepo.findById(productId);
     if (product.isEmpty()) {
       return null;
@@ -86,6 +86,8 @@ public class ExternalDocumentServiceImpl implements ExternalDocumentService {
       if (StringUtils.isNoneBlank(location)) {
         var documentMeta = new ExternalDocumentMeta();
         documentMeta.setProductId(productId);
+        documentMeta.setArtifactId(artifact.getArtifactId());
+        documentMeta.setArtifactName(artifact.getName());
         documentMeta.setVersion(version);
         documentMeta.setStorageDirectory(location);
         // remove prefix 'data' and replace all ms win separator to slash if present

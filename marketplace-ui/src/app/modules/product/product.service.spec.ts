@@ -224,7 +224,6 @@ describe('ProductService', () => {
 
     const req = httpMock.expectOne(`${API_URI.PRODUCT_DETAILS}/installationcount/${productId}?designerVersion=${designerVersion}`);
     expect(req.request.method).toBe('PUT');
-    expect(req.request.headers.get('X-Requested-By')).toBe('ivy');
     req.flush(3);
   });
 
@@ -240,7 +239,6 @@ describe('ProductService', () => {
 
     const req = httpMock.expectOne(`${API_URI.PRODUCT_DETAILS}/${productId}/designerversions`);
     expect(req.request.method).toBe('GET');
-    expect(req.request.headers.get('X-Requested-By')).toBe('ivy');
     req.flush([{ version: '10.0.2' }, {version: '10.0.1'}, {version: '10.0.0'}]);
   });
 

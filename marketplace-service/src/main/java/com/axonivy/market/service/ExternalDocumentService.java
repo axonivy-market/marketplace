@@ -10,5 +10,5 @@ public interface ExternalDocumentService {
 
   List<Product> findAllProductsHaveDocument();
 
-  ExternalDocumentMeta findExternalDocumentURI(String productId, String version);
+  ExternalDocumentMeta findExternalDocument(String productId, String version);
 }

@@ -5,6 +5,7 @@ import { LoadingService } from '../../../core/services/loading/loading.service';
 import { Observable } from 'rxjs';
 import { API_URI } from '../../../shared/constants/api.constant';
 import { ForwardingError } from '../../../core/interceptors/api.interceptor';
+import { ExternalDocument } from '../../../shared/models/external-document.model';
 
 @Injectable({
   providedIn: 'root'
@@ -16,8 +17,8 @@ export class ProductDetailService {
   loadingService = inject(LoadingService);
 
   
-  getExteralDocumentLinkForProductByVersion(productId: string, version: string): Observable<String> {
-    return this.httpClient.get<String>(
+  getExteralDocumentForProductByVersion(productId: string, version: string): Observable<ExternalDocument> {
+    return this.httpClient.get<ExternalDocument>(
       `${API_URI.EXTERNAL_DOCUMENT}/${productId}/${version}`, { context: new HttpContext().set(ForwardingError, true)}
     );
   }

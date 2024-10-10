@@ -14,7 +14,7 @@
       {{ 'common.product.detail.information.value.version' | translate }}
     </span>
     <span class="text-primary">
-      {{ getDisplayVersion() }}
+      {{ displayVersion }}
     </span>
   </div>
   @if(productDetail.compatibility) {
@@ -48,7 +48,9 @@
     <span [lang]="languageService.selectedLanguage()" class="text-secondary">
       {{ 'common.product.detail.information.value.documentation' | translate }}
     </span>
-    <a class="text-primary" [href]="externalDocumentLink">Doc</a>
+    <a class="text-primary" [href]="externalDocumentLink" target="_blank">
+      {{ displayExternalDocName ?? 'common.product.detail.information.value.defaultDocName' | translate }}
+    </a>
   </div>
   }
   <hr class="border-top-0" />

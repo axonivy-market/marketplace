@@ -6,6 +6,8 @@ import { LanguageService } from '../../../../core/services/language/language.ser
 import { ProductDetailService } from '../product-detail.service';
 import { VERSION } from '../../../../shared/constants/common.constant';
 
+const SELECTED_VERSION = 'selectedVersion';
+const PRODUCT_DETAIL = 'productDetail';
 @Component({
   selector: 'app-product-detail-information-tab',
   standalone: true,
@@ -19,16 +21,18 @@ export class ProductDetailInformationTabComponent implements OnChanges {
   @Input()
   selectedVersion!: string;
   externalDocumentLink = '';
+  displayVersion = '';
+  displayExternalDocName: string | null = '';
   languageService = inject(LanguageService);
   productDetailService = inject(ProductDetailService);
 
   ngOnChanges(changes: SimpleChanges): void {
     let version = '';
-    const changedSelectedVersion = changes['selectedVersion'];
+    const changedSelectedVersion = changes[SELECTED_VERSION];
     if (changedSelectedVersion && changedSelectedVersion.currentValue === changedSelectedVersion.previousValue) {
       return;
     }
-    const changedProduct = changes['productDetail'];
+    const changedProduct = changes[PRODUCT_DETAIL];
     if (changedProduct && changedProduct.currentValue !== changedProduct.previousValue) {
       version = this.productDetail.newestReleaseVersion;
     } else {
@@ -39,14 +43,12 @@ export class ProductDetailInformationTabComponent implements OnChanges {
       return;
     }
 
-    this.productDetailService.getExteralDocumentLinkForProductByVersion(this.productDetail.id, this.extractVersionValue(version))
-      .subscribe((repsonse)=> {
-        this.externalDocumentLink = repsonse as string;
+    this.productDetailService.getExteralDocumentForProductByVersion(this.productDetail.id, this.extractVersionValue(version))
+      .subscribe((response) => {
+        this.externalDocumentLink = response.relativeLink;
+        this.displayExternalDocName = response.artifactName;
     });
-  }
-
-  getDisplayVersion() {
-    return this.extractVersionValue(this.selectedVersion);
+    this.displayVersion = this.extractVersionValue(this.selectedVersion);
   }
 
   extractVersionValue(versionDisplayName: string) {
