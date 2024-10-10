@@ -66,6 +66,10 @@ $rowHeight: 37px;
   height: 43px;
 }
 
+.search-input {
+  font-size: 1.4rem;
+}
+
 @media only screen and (max-width: 768px) {
   ::ng-deep .form-select, .sort-order {
     width: 100% !important;
@@ -80,6 +84,6 @@ $rowHeight: 37px;
 
 @media only screen and (max-width: 1366px) {
   .filter-type {
-    font-size: 1rem;
+    font-size: 1.6rem;
   }
 }
