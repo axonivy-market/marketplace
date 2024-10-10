@@ -95,7 +95,7 @@ public class MetadataServiceImpl implements MetadataService {
 
   @Override
   public boolean syncProductMetadata(Product product) {
-    if (product== null) {
+    if (product == null) {
       return false;
     }
 

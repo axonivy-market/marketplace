@@ -3,6 +3,7 @@ package com.axonivy.market.service.impl;
 import com.axonivy.market.comparator.MavenVersionComparator;
 import com.axonivy.market.constants.CommonConstants;
 import com.axonivy.market.constants.GitHubConstants;
+import com.axonivy.market.constants.MetaConstants;
 import com.axonivy.market.constants.ProductJsonConstants;
 import com.axonivy.market.criteria.ProductSearchCriteria;
 import com.axonivy.market.entity.GitHubRepoMeta;
@@ -27,6 +28,8 @@ import com.axonivy.market.model.ProductCustomSortRequest;
 import com.axonivy.market.repository.GitHubRepoMetaRepository;
 import com.axonivy.market.repository.ImageRepository;
 import com.axonivy.market.repository.MavenArtifactVersionRepository;
+import com.axonivy.market.repository.MetadataRepository;
+import com.axonivy.market.repository.MetadataSyncRepository;
 import com.axonivy.market.repository.ProductCustomSortRepository;
 import com.axonivy.market.repository.ProductJsonContentRepository;
 import com.axonivy.market.repository.ProductModuleContentRepository;
@@ -97,6 +100,8 @@ public class ProductServiceImpl implements ProductService {
   private final GitHubService gitHubService;
   private final ProductCustomSortRepository productCustomSortRepository;
   private final MavenArtifactVersionRepository mavenArtifactVersionRepo;
+  private final MetadataSyncRepository metadataSyncRepository;
+  private final MetadataRepository metadataRepository;
   private final ProductJsonContentRepository productJsonContentRepository;
   private final ImageRepository imageRepository;
   private final ImageService imageService;
@@ -116,8 +121,8 @@ public class ProductServiceImpl implements ProductService {
       GHAxonIvyMarketRepoService axonIvyMarketRepoService, GHAxonIvyProductRepoService axonIvyProductRepoService,
       GitHubRepoMetaRepository gitHubRepoMetaRepository, GitHubService gitHubService,
       ProductCustomSortRepository productCustomSortRepository, MavenArtifactVersionRepository mavenArtifactVersionRepo,
-      ImageRepository imageRepository, MetadataService metadataService,
-      ImageService imageService, MongoTemplate mongoTemplate,
+      ImageRepository imageRepository, MetadataService metadataService, MetadataSyncRepository metadataSyncRepository,
+      MetadataRepository metadataRepository, ImageService imageService, MongoTemplate mongoTemplate,
       ProductJsonContentRepository productJsonContentRepository) {
     this.productRepository = productRepository;
     this.productModuleContentRepository = productModuleContentRepository;
@@ -127,6 +132,8 @@ public class ProductServiceImpl implements ProductService {
     this.gitHubService = gitHubService;
     this.productCustomSortRepository = productCustomSortRepository;
     this.mavenArtifactVersionRepo = mavenArtifactVersionRepo;
+    this.metadataSyncRepository = metadataSyncRepository;
+    this.metadataRepository = metadataRepository;
     this.metadataService = metadataService;
     this.imageRepository = imageRepository;
     this.imageService = imageService;
@@ -614,6 +621,8 @@ public class ProductServiceImpl implements ProductService {
     productRepository.findById(productId).ifPresent(foundProduct -> {
           ProductFactory.transferComputedPersistedDataToProduct(foundProduct, product);
           imageRepository.deleteAllByProductId(foundProduct.getId());
+          metadataRepository.deleteAllByProductId(foundProduct.getId());
+          metadataSyncRepository.deleteAllByProductId(foundProduct.getId());
           mavenArtifactVersionRepo.deleteAllById(List.of(foundProduct.getId()));
           productModuleContentRepository.deleteAllByProductId(foundProduct.getId());
           productJsonContentRepository.deleteAllByProductId(foundProduct.getId());

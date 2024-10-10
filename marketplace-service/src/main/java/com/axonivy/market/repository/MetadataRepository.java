@@ -7,4 +7,5 @@ import java.util.List;
 
 public interface MetadataRepository extends MongoRepository<Metadata, String> {
   List<Metadata> findByProductId(String productId);
+  void deleteAllByProductId(String productId);
 }
