@@ -1,22 +1,20 @@
 package com.axonivy.market.assembler;
 
-import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
-import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
-
-import java.util.Optional;
-
+import com.axonivy.market.constants.RequestMappingConstants;
+import com.axonivy.market.controller.ProductDetailsController;
+import com.axonivy.market.entity.Product;
+import com.axonivy.market.model.ProductDetailModel;
+import com.axonivy.market.util.ImageUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.hateoas.Link;
 import org.springframework.hateoas.server.mvc.RepresentationModelAssemblerSupport;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 
-import com.axonivy.market.constants.RequestMappingConstants;
-import com.axonivy.market.controller.ProductDetailsController;
-import com.axonivy.market.entity.Product;
-import com.axonivy.market.model.ProductDetailModel;
-import com.axonivy.market.util.ImageUtils;
-import com.axonivy.market.util.VersionUtils;
+import java.util.Optional;
+
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 
 @Component
 public class ProductDetailModelAssembler extends RepresentationModelAssemblerSupport<Product, ProductDetailModel> {
@@ -48,9 +46,9 @@ public class ProductDetailModelAssembler extends RepresentationModelAssemblerSup
     String productId = Optional.of(product).map(Product::getId).orElse(StringUtils.EMPTY);
 
     if (requestPath.equals(RequestMappingConstants.BEST_MATCH_BY_ID_AND_VERSION)) {
-      String bestMatchVersion = VersionUtils.getBestMatchVersion(product.getReleasedVersions(), version);
       Link link = linkTo(
-          methodOn(ProductDetailsController.class).findProductJsonContent(productId, bestMatchVersion)).withSelfRel();
+          methodOn(ProductDetailsController.class).findProductJsonContent(productId,
+              product.getBestMatchVersion())).withSelfRel();
       model.setMetaProductJsonUrl(link.getHref());
     }
 
@@ -59,7 +57,7 @@ public class ProductDetailModelAssembler extends RepresentationModelAssemblerSup
           methodOn(ProductDetailsController.class).findBestMatchProductDetailsByVersion(productId, version);
       case RequestMappingConstants.BY_ID_AND_VERSION ->
           methodOn(ProductDetailsController.class).findProductDetailsByVersion(productId, version);
-      default -> methodOn(ProductDetailsController.class).findProductDetails(productId);
+      default -> methodOn(ProductDetailsController.class).findProductDetails(productId, false);
     };
 
     model.add(linkTo(selfLinkWithTag).withSelfRel());

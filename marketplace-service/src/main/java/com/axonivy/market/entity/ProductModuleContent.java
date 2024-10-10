@@ -14,6 +14,7 @@ import java.io.Serial;
 import java.io.Serializable;
 import java.util.Date;
 import java.util.Map;
+import java.util.Set;
 
 import static com.axonivy.market.constants.EntityConstants.PRODUCT_MODULE_CONTENT;
 
@@ -32,7 +33,10 @@ public class ProductModuleContent implements Serializable {
   private String productId;
   @Schema(description = "Target release tag", example = "v10.0.25")
   private String tag;
-  @Schema(description = "Product detail description content ", example = "{ \"de\": \"E-Sign-Konnektor\", \"en\": \"E-sign connector\" }")
+  @Schema(description = "Versions in maven", example = "10.0.25-SNAPSHOT")
+  private Set<String> mavenVersions;
+  @Schema(description = "Product detail description content ",
+      example = "{ \"de\": \"E-Sign-Konnektor\", \"en\": \"E-sign connector\" }")
   private Map<String, String> description;
   @Schema(description = "Setup tab content", example = "{ \"de\": \"Setup\", \"en\": \"Setup\" ")
   private Map<String, String> setup;

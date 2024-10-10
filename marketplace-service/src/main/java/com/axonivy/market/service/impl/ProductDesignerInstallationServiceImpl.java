@@ -15,21 +15,24 @@ import java.util.List;
 @Log4j2
 @Service
 public class ProductDesignerInstallationServiceImpl implements ProductDesignerInstallationService {
-    private final ProductDesignerInstallationRepository productDesignerInstallationRepository;
+  private final ProductDesignerInstallationRepository productDesignerInstallationRepository;
 
-    public ProductDesignerInstallationServiceImpl(ProductDesignerInstallationRepository productDesignerInstallationRepository) {
-        this.productDesignerInstallationRepository = productDesignerInstallationRepository;
-    }
+  public ProductDesignerInstallationServiceImpl(
+      ProductDesignerInstallationRepository productDesignerInstallationRepository) {
+    this.productDesignerInstallationRepository = productDesignerInstallationRepository;
+  }
 
-    @Override
-    public List<DesignerInstallation> findByProductId(String productId) {
-        List<DesignerInstallation> designerInstallations = new ArrayList<>();
-        List<ProductDesignerInstallation> productDesignerInstallations =
-                productDesignerInstallationRepository.findByProductId(productId, Sort.by(Sort.Direction.DESC, MongoDBConstants.DESIGNER_VERSION));
-        for (ProductDesignerInstallation productDesignerInstallation : productDesignerInstallations) {
-            DesignerInstallation designerInstallation = new DesignerInstallation(productDesignerInstallation.getDesignerVersion(), productDesignerInstallation.getInstallationCount());
-            designerInstallations.add(designerInstallation);
-        }
-        return designerInstallations;
+  @Override
+  public List<DesignerInstallation> findByProductId(String productId) {
+    List<DesignerInstallation> designerInstallations = new ArrayList<>();
+    List<ProductDesignerInstallation> productDesignerInstallations =
+        productDesignerInstallationRepository.findByProductId(productId,
+            Sort.by(Sort.Direction.DESC, MongoDBConstants.DESIGNER_VERSION));
+    for (ProductDesignerInstallation productDesignerInstallation : productDesignerInstallations) {
+      DesignerInstallation designerInstallation = new DesignerInstallation(
+          productDesignerInstallation.getDesignerVersion(), productDesignerInstallation.getInstallationCount());
+      designerInstallations.add(designerInstallation);
     }
+    return designerInstallations;
+  }
 }

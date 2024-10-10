@@ -48,9 +48,6 @@
     }
   }
 }
-::ng-deep .dropdown-menu {
-  min-width: 100%;
-}
 
 ::ng-deep .dropdown-item {
   font-size: 14px;
@@ -86,11 +83,7 @@
 }
 
 .btn__install {
-  margin-right: 10px;
   border: 0px;
-}
-.btn__download {
-  border: 0.5px solid #ebebeb;
 }
 .primary-color {
   color: var(--ivy-primary-bg);
@@ -105,8 +98,10 @@
   line-height: 16.8px;
 }
 
-::ng-deep .dropdown-menu.menu-bar {
-  margin-top: 4px;
+::ng-deep #download-dropdown-menu .dropdown-menu.menu-bar {
+  margin-top: 0.2rem;
+  height: fit-content;
+  max-height: 176px;
 }
 
 ::ng-deep .install-designer-dropdown {
@@ -115,22 +110,31 @@
   text-align: start;
 }
 
-::ng-deep .dropdown-menu {
+.install-download-button-container {
+  position: relative;
+}
+
+.btn__download {
+  border: 0.5px solid #ebebeb;
+}
+
+::ng-deep #download-dropdown-menu {
+  position: absolute;
+  right: 0;
+  width: 400px;
+  height: 204px;
+  margin-top: 4rem;
+  background-color: var(--bs-body-bg);
+  z-index: 999;
   padding: 10px;
   border-radius: 5px;
-  gap: 15px;
   box-shadow: 0px 4px 30px 0px rgba(0, 0, 0, 0.1);
-  margin-top: 1.2rem;
+
+  @media (max-width: 1399px) {
+    width: 100%;
+  }
+
   &.maven-artifact-version__action {
-    min-width: 400px;
-    min-height: 204px;
-
-    @media (max-width: 500px) {
-      left: auto;
-      right: auto;
-      min-width: 80vw;
-    }
-
     .form-group {
       gap: 7px;
 
@@ -182,17 +186,28 @@
   top: -10px;
   width: 20px;
   height: 20px;
-  left: 50%;
+  right: 12%;
   z-index: 1001;
-  @media (max-width: 767px) {
-    top: -8px;
-    width: 16px;
-    height: 16px;
-  }
   transform: translateX(-50%) rotate(45deg);
   border-right-color: transparent;
   border-bottom-color: transparent;
   background-color: var(--bs-body-bg);
+
+  @media screen and (max-width: 1399px) {
+    right: 14%;
+  }
+  
+  @media screen and (max-width: 1199px) {
+    right: 21%;
+  }
+
+  @media screen and (max-width: 767px) {
+    right: 18%;
+  }
+
+  @media screen and (max-width: 575px) {
+    right: 15%;
+  }
 }
 
 .btn_contact-us {

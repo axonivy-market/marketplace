@@ -1,6 +1,7 @@
 import { Language } from '../enums/language.enum';
 import { ItemDropdown } from '../models/item-dropdown.model';
 import { DisplayValue } from './../models/display-value.model';
+import { CookieService } from 'ngx-cookie-service';
 
 export class CommonUtils {
   static getLabel<T extends string>(value: string, options: ItemDropdown<T>[]): string {
@@ -22,4 +23,26 @@ export class CommonUtils {
 
     return value[Language.EN] !== '' && value[Language.EN] !== undefined;
   }
+  static getCookieValue<T>(
+    cookieService: CookieService,
+    cookieName: string,
+    defaultValue: T
+  ): T {
+    const cookieValue = cookieService.get(cookieName);
+    if (cookieValue === undefined || cookieValue === null || cookieValue === '') {
+      return defaultValue;
+    }
+
+    switch (typeof defaultValue) {
+      case 'boolean': {
+        return (cookieValue.toLowerCase() === 'true') as unknown as T;
+      }
+      case 'number': {
+        return parseFloat(cookieValue) as unknown as T;
+      }
+      default:
+        return cookieValue as unknown as T;
+    }
+  }
+
 }
