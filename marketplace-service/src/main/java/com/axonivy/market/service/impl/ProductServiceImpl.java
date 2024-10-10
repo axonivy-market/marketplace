@@ -3,6 +3,7 @@ package com.axonivy.market.service.impl;
 import com.axonivy.market.comparator.MavenVersionComparator;
 import com.axonivy.market.constants.CommonConstants;
 import com.axonivy.market.constants.GitHubConstants;
+import com.axonivy.market.constants.MetaConstants;
 import com.axonivy.market.constants.ProductJsonConstants;
 import com.axonivy.market.criteria.ProductSearchCriteria;
 import com.axonivy.market.entity.GitHubRepoMeta;
@@ -27,10 +28,14 @@ import com.axonivy.market.model.ProductCustomSortRequest;
 import com.axonivy.market.repository.GitHubRepoMetaRepository;
 import com.axonivy.market.repository.ImageRepository;
 import com.axonivy.market.repository.MavenArtifactVersionRepository;
+import com.axonivy.market.repository.MetadataRepository;
+import com.axonivy.market.repository.MetadataSyncRepository;
 import com.axonivy.market.repository.ProductCustomSortRepository;
+import com.axonivy.market.repository.ProductJsonContentRepository;
 import com.axonivy.market.repository.ProductModuleContentRepository;
 import com.axonivy.market.repository.ProductRepository;
 import com.axonivy.market.service.ImageService;
+import com.axonivy.market.service.MetadataService;
 import com.axonivy.market.service.ProductService;
 import com.axonivy.market.util.MavenUtils;
 import com.axonivy.market.util.VersionUtils;
@@ -74,6 +79,7 @@ import java.util.Set;
 import java.util.function.Predicate;
 
 import static com.axonivy.market.constants.CommonConstants.SLASH;
+import static com.axonivy.market.constants.MetaConstants.META_FILE;
 import static com.axonivy.market.constants.ProductJsonConstants.LOGO_FILE;
 import static com.axonivy.market.enums.DocumentField.MARKET_DIRECTORY;
 import static com.axonivy.market.enums.DocumentField.SHORT_DESCRIPTIONS;
@@ -94,9 +100,13 @@ public class ProductServiceImpl implements ProductService {
   private final GitHubService gitHubService;
   private final ProductCustomSortRepository productCustomSortRepository;
   private final MavenArtifactVersionRepository mavenArtifactVersionRepo;
+  private final MetadataSyncRepository metadataSyncRepository;
+  private final MetadataRepository metadataRepository;
+  private final ProductJsonContentRepository productJsonContentRepository;
   private final ImageRepository imageRepository;
   private final ImageService imageService;
   private final MongoTemplate mongoTemplate;
+  private final MetadataService metadataService;
   private final ObjectMapper mapper = new ObjectMapper();
   private final SecureRandom random = new SecureRandom();
   private GHCommit lastGHCommit;
@@ -111,8 +121,9 @@ public class ProductServiceImpl implements ProductService {
       GHAxonIvyMarketRepoService axonIvyMarketRepoService, GHAxonIvyProductRepoService axonIvyProductRepoService,
       GitHubRepoMetaRepository gitHubRepoMetaRepository, GitHubService gitHubService,
       ProductCustomSortRepository productCustomSortRepository, MavenArtifactVersionRepository mavenArtifactVersionRepo,
-      ImageRepository imageRepository1,
-      ImageService imageService, MongoTemplate mongoTemplate) {
+      ImageRepository imageRepository, MetadataService metadataService, MetadataSyncRepository metadataSyncRepository,
+      MetadataRepository metadataRepository, ImageService imageService, MongoTemplate mongoTemplate,
+      ProductJsonContentRepository productJsonContentRepository) {
     this.productRepository = productRepository;
     this.productModuleContentRepository = productModuleContentRepository;
     this.axonIvyMarketRepoService = axonIvyMarketRepoService;
@@ -121,9 +132,13 @@ public class ProductServiceImpl implements ProductService {
     this.gitHubService = gitHubService;
     this.productCustomSortRepository = productCustomSortRepository;
     this.mavenArtifactVersionRepo = mavenArtifactVersionRepo;
-    this.imageRepository = imageRepository1;
+    this.metadataSyncRepository = metadataSyncRepository;
+    this.metadataRepository = metadataRepository;
+    this.metadataService = metadataService;
+    this.imageRepository = imageRepository;
     this.imageService = imageService;
     this.mongoTemplate = mongoTemplate;
+    this.productJsonContentRepository = productJsonContentRepository;
   }
 
   private static Predicate<GHTag> filterNonPersistGhTagName(List<String> currentTags) {
@@ -375,18 +390,6 @@ public class ProductServiceImpl implements ProductService {
     }
   }
 
-  private void updateProductContentForNonStandardProduct(Map.Entry<String, List<GHContent>> ghContentEntity,
-      Product product) {
-    ProductModuleContent initialContent = new ProductModuleContent();
-    initialContent.setTag(INITIAL_VERSION);
-    initialContent.setProductId(product.getId());
-    ProductFactory.mappingIdForProductModuleContent(initialContent);
-    product.setReleasedVersions(List.of(INITIAL_VERSION));
-    product.setNewestReleaseVersion(INITIAL_VERSION);
-    axonIvyProductRepoService.extractReadMeFileFromContents(product, ghContentEntity.getValue(), initialContent);
-    productModuleContentRepository.save(initialContent);
-  }
-
   private void getProductContents(Product product) {
     try {
       GHRepository productRepo = gitHubService.getRepository(product.getRepositoryName());
@@ -411,12 +414,7 @@ public class ProductServiceImpl implements ProductService {
       if (productRepository.findById(product.getId()).isPresent()) {
         continue;
       }
-      if (StringUtils.isNotBlank(product.getRepositoryName())) {
-        updateProductCompatibility(product);
-        getProductContents(product);
-      } else {
-        updateProductContentForNonStandardProduct(ghContentEntity, product);
-      }
+      updateRelatedThingsOfProductFromGHContent(ghContentEntity.getValue(), product);
       transferComputedDataFromDB(product);
       syncedProductIds.add(productRepository.save(product).getId());
     }
@@ -424,7 +422,7 @@ public class ProductServiceImpl implements ProductService {
   }
 
   private void mappingLogoFromGHContent(Product product, GHContent ghContent) {
-    if (StringUtils.endsWith(ghContent.getName(), LOGO_FILE)) {
+    if (ghContent != null && StringUtils.endsWith(ghContent.getName(), LOGO_FILE)) {
       Optional.ofNullable(imageService.mappingImageFromGHContent(product, ghContent, true))
           .ifPresent(image -> product.setLogoId(image.getId()));
     }
@@ -591,7 +589,82 @@ public class ProductServiceImpl implements ProductService {
 
   public void transferComputedDataFromDB(Product product) {
     productRepository.findById(product.getId()).ifPresent(persistedData ->
-        ProductFactory.transferComputedPersistedDataToProduct(persistedData, product));
+        ProductFactory.transferComputedPersistedDataToProduct(persistedData, product)
+    );
   }
 
+  @Override
+  public boolean syncOneProduct(String productId, String marketItemPath, Boolean overrideMarketItemPath) {
+    try {
+      log.info("Sync product {} is starting ...", productId);
+      log.info("Clean up product {}", productId);
+      Product product = renewProductById(productId, marketItemPath, overrideMarketItemPath);
+      log.info("Get data of product {} from the git hub", productId);
+      var gitHubContents = axonIvyMarketRepoService.getMarketItemByPath(product.getMarketDirectory());
+      if (!CollectionUtils.isEmpty(gitHubContents)) {
+        log.info("Update data of product {} from meta.json and logo files", productId);
+        mappingMetaDataAndLogoFromGHContent(gitHubContents, product);
+        updateRelatedThingsOfProductFromGHContent(gitHubContents, product);
+        productRepository.save(product);
+        metadataService.syncProductMetadata(product);
+        log.info("Sync product {} is finished!", productId);
+        return true;
+      }
+    } catch (Exception e) {
+      log.error(e.getStackTrace());
+    }
+    return false;
+  }
+
+  private Product renewProductById(String productId, String marketItemPath, Boolean overrideMarketItemPath) {
+    Product product = new Product();
+    productRepository.findById(productId).ifPresent(foundProduct -> {
+          ProductFactory.transferComputedPersistedDataToProduct(foundProduct, product);
+          imageRepository.deleteAllByProductId(foundProduct.getId());
+          metadataRepository.deleteAllByProductId(foundProduct.getId());
+          metadataSyncRepository.deleteAllByProductId(foundProduct.getId());
+          mavenArtifactVersionRepo.deleteAllById(List.of(foundProduct.getId()));
+          productModuleContentRepository.deleteAllByProductId(foundProduct.getId());
+          productJsonContentRepository.deleteAllByProductId(foundProduct.getId());
+          productRepository.delete(foundProduct);
+        }
+    );
+
+    if (StringUtils.isNotBlank(marketItemPath) && Boolean.TRUE.equals(overrideMarketItemPath)) {
+      product.setMarketDirectory(marketItemPath);
+    }
+    product.setNewestReleaseVersion(EMPTY);
+
+    return product;
+  }
+
+  private void mappingMetaDataAndLogoFromGHContent(List<GHContent> gitHubContent, Product product) {
+    var gitHubContents = new ArrayList<>(gitHubContent);
+    gitHubContents.sort((f1, f2) -> GitHubUtils.sortMetaJsonFirst(f1.getName(), f2.getName()));
+    for (var content : gitHubContent) {
+      ProductFactory.mappingByGHContent(product, content);
+      mappingLogoFromGHContent(product, content);
+    }
+  }
+
+  private void updateRelatedThingsOfProductFromGHContent(List<GHContent> gitHubContents, Product product) {
+    if (StringUtils.isNotBlank(product.getRepositoryName())) {
+      updateProductCompatibility(product);
+      getProductContents(product);
+    } else {
+      updateProductContentForNonStandardProduct(gitHubContents, product);
+    }
+  }
+
+  private void updateProductContentForNonStandardProduct(List<GHContent> ghContentEntity,
+      Product product) {
+    ProductModuleContent initialContent = new ProductModuleContent();
+    initialContent.setTag(INITIAL_VERSION);
+    initialContent.setProductId(product.getId());
+    ProductFactory.mappingIdForProductModuleContent(initialContent);
+    product.setReleasedVersions(List.of(INITIAL_VERSION));
+    product.setNewestReleaseVersion(INITIAL_VERSION);
+    axonIvyProductRepoService.extractReadMeFileFromContents(product, ghContentEntity, initialContent);
+    productModuleContentRepository.save(initialContent);
+  }
 }

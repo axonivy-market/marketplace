@@ -10,4 +10,6 @@ import java.util.List;
 public interface ProductJsonContentRepository extends MongoRepository<ProductJsonContent, String> {
 
   List<ProductJsonContent> findByProductIdAndVersion(String productId, String version);
+
+  void deleteAllByProductId(String productId);
 }

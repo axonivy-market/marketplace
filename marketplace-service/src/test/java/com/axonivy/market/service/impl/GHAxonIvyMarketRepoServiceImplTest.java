@@ -112,4 +112,14 @@ class GHAxonIvyMarketRepoServiceImplTest {
     var lastCommit = axonIvyMarketRepoServiceImpl.getLastCommit(0L);
     assertNull(lastCommit);
   }
+
+  @Test
+  void testGetMarketItemByPath() throws IOException {
+    var mockGHContent = mock(GHContent.class);
+    List<GHContent> mockGhContents = new ArrayList<>();
+    mockGhContents.add(mockGHContent);
+    when(gitHubService.getDirectoryContent(any(), any(), any())).thenReturn(mockGhContents);
+    var ghContents = axonIvyMarketRepoServiceImpl.getMarketItemByPath("market/connector/a-trust");
+    assertEquals(1, ghContents.size());
+  }
 }

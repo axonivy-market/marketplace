@@ -17,4 +17,6 @@ public interface GHAxonIvyMarketRepoService {
   List<GitHubFile> fetchMarketItemsBySHA1Range(String fromSHA1, String toSHA1);
 
   GHRepository getRepository();
+
+  List<GHContent> getMarketItemByPath(String itemPath);
 }

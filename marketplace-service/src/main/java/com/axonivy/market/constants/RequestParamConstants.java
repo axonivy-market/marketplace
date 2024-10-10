@@ -16,4 +16,7 @@ public class RequestParamConstants {
   public static final String SHOW_DEV_VERSION = "isShowDevVersion";
   public static final String DESIGNER_VERSION = "designerVersion";
   public static final String VERSION = "version";
+  public static final String MARKET_ITEM_PATH = "marketItemPath";
+  public static final String OVERRIDE_MARKET_ITEM_PATH = "overrideMarketItemPath";
+
 }

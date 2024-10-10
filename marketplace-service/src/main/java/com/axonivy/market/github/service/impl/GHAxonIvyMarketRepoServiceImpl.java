@@ -135,4 +135,15 @@ public class GHAxonIvyMarketRepoServiceImpl implements GHAxonIvyMarketRepoServic
     return repository;
   }
 
+  @Override
+  public List<GHContent> getMarketItemByPath(String itemPath) {
+    List<GHContent> ghContent = new ArrayList<>();
+    try {
+      ghContent = gitHubService.getDirectoryContent(getRepository(),
+          itemPath, marketRepoBranch);
+    } catch (Exception e) {
+      log.error("Cannot fetch GHContent: ", e);
+    }
+    return ghContent;
+  }
 }
