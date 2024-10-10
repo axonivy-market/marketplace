@@ -2,7 +2,7 @@ import { CommonModule } from '@angular/common';
 import { Component, inject, OnInit } from '@angular/core';
 import { TranslateModule } from '@ngx-translate/core';
 import { ThemeService } from '../../../core/services/theme/theme.service';
-import { IVY_FOOTER_LINKS, NAV_ITEMS, SOCIAL_MEDIA_LINK } from '../../constants/common.constant';
+import { DOWNLOAD_URL, IVY_FOOTER_LINKS, NAV_ITEMS, SOCIAL_MEDIA_LINK } from '../../constants/common.constant';
 import { NavItem } from '../../models/nav-item.model';
 import { LanguageService } from '../../../core/services/language/language.service';
 
@@ -20,6 +20,7 @@ export class FooterComponent implements OnInit {
   socialMediaLinks = SOCIAL_MEDIA_LINK;
   navItems: NavItem[] = NAV_ITEMS;
   ivyFooterLinks = IVY_FOOTER_LINKS;
+  downloadUrl = DOWNLOAD_URL;
   year = '';
 
   ngOnInit(): void {
