@@ -289,12 +289,12 @@ class ProductDetailsControllerTest {
   void testGetLatestArtifactDownloadUrl() {
     String mockDownloadUrl = "https://market.axonivy.com";
     when(versionService.getLatestVersionArtifactDownloadUrl(Mockito.anyString(),Mockito.anyString(),
-        Mockito.anyString(), Mockito.anyString())).thenReturn(StringUtils.EMPTY);
-    var response = productDetailsController.getLatestArtifactDownloadUrl("portal", "1.0.0", "portal-app", "zip");
+        Mockito.anyString())).thenReturn(StringUtils.EMPTY);
+    var response = productDetailsController.getLatestArtifactDownloadUrl("portal", "1.0.0", "portal-app.zip");
     assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode());
     when(versionService.getLatestVersionArtifactDownloadUrl(Mockito.anyString(),Mockito.anyString(),
-        Mockito.anyString(), Mockito.anyString())).thenReturn(mockDownloadUrl);
-    response = productDetailsController.getLatestArtifactDownloadUrl("portal", "1.0.0", "portal-app", "zip");
+        Mockito.anyString())).thenReturn(mockDownloadUrl);
+    response = productDetailsController.getLatestArtifactDownloadUrl("portal", "1.0.0", "portal-app.zip");
     assertEquals(HttpStatus.OK, response.getStatusCode());
   }
 }

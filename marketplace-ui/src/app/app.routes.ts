@@ -26,7 +26,7 @@ export const routes: Routes = [
     component: RedirectPageComponent
   },
   {
-    path: ':id/:version/:artifact/:fileType',
+    path: ':id/:version/lib/:artifact',
     component: RedirectPageComponent
   },
   {

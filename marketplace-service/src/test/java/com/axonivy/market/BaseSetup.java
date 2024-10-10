@@ -11,7 +11,6 @@ import com.axonivy.market.entity.ProductModuleContent;
 import com.axonivy.market.enums.Language;
 import com.axonivy.market.enums.SortOption;
 import com.axonivy.market.model.MavenArtifactModel;
-import com.axonivy.market.model.MavenArtifactVersionModel;
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.data.domain.Page;
@@ -52,7 +51,7 @@ public class BaseSetup {
   protected static final String MOCK_PRODUCT_JSON_NODE_FILE_PATH = "src/test/resources/prouct-json-node.json";
   protected static final String MOCK_METADATA_FILE_PATH = "src/test/resources/metadata.xml";
   protected static final String MOCK_SNAPSHOT_METADATA_FILE_PATH = "src/test/resources/snapshotMetadata.xml";
-  protected static final String INAVALID_FILE_PATH = "test/file/path";
+  protected static final String INVALID_FILE_PATH = "test/file/path";
   protected static final String MOCK_MAVEN_URL = "https://maven.axonivy.com/com/axonivy/util/bpmn-statistic/maven" +
       "-metadata.xml";
   protected static final String MOCK_SNAPSHOT_MAVEN_URL = "https://maven.axonivy.com/com/axonivy/util/bpmn-statistic" +
@@ -62,6 +61,7 @@ public class BaseSetup {
   protected static final String MOCK_SNAPSHOT_DOWNLOAD_URL = "https://maven.axonivy" +
       ".com/com/axonivy/util/bpmn-statistic/10.0.10-SNAPSHOT/bpmn-statistic-10.0.10-SNAPSHOT.zip";
   protected static final String MOCK_ARTIFACT_NAME = "bpmn statistic (zip)";
+  protected static final String MOCK_ARTIFACT_DOWNLOAD_FILE = "bpmn-statistic.zip";
 
   protected Page<Product> createPageProductsMock() {
     var mockProducts = new ArrayList<Product>();

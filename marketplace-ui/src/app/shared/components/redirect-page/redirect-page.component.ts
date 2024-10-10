@@ -30,11 +30,10 @@ export class RedirectPageComponent implements OnInit {
     const version = this.activeRoute.snapshot.paramMap.get(ROUTER.VERSION);
     const currentUrl = window.location.href;
     const artifact = this.activeRoute.snapshot.paramMap.get(ROUTER.ARTIFACT);
-    const fileType = this.activeRoute.snapshot.paramMap.get(ROUTER.FILE_TYPE);
 
     if (product && version) {
-      if ( artifact && fileType) {
-        this.fetchLatestLibVersionDownloadUrl(product, version, artifact, fileType, currentUrl);
+      if ( artifact ) {
+        this.fetchLatestLibVersionDownloadUrl(product, version, artifact, currentUrl);
         return;
       }
       this.fetchDocumentUrl(product, version, currentUrl);
@@ -51,11 +50,10 @@ export class RedirectPageComponent implements OnInit {
     product: string,
     version: string,
     artifact: string,
-    fileType: string,
     currentUrl: string
   ): void {
     this.productService
-      .getLatestArtifactDownloadUrl(product, version, artifact, fileType)
+      .getLatestArtifactDownloadUrl(product, version, artifact)
       .subscribe(downloadUrl => {
         this.handleRedirection(downloadUrl, currentUrl);
       });

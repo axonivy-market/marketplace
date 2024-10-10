@@ -101,13 +101,11 @@ export class ProductService {
   getLatestArtifactDownloadUrl(
     id: string,
     version: string,
-    artifactId: string,
-    fileType: string
+    artifact: string
   ) {
     const params = new HttpParams()
       .append('version', version)
-      .append('artifactId', artifactId)
-      .append('fileType', fileType);
+      .append('artifact', artifact);
     const url = `api/product-details/${id}/lib`;
     return this.httpClient.get<string>(url, {
       params,
