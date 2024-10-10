@@ -639,18 +639,12 @@ public class ProductServiceImpl implements ProductService {
   }
 
   private void mappingMetaDataAndLogoFromGHContent(List<GHContent> gitHubContent, Product product) {
-    GHContent metaFile = null;
-    GHContent logoFile = null;
+    var gitHubContents = new ArrayList<>(gitHubContent);
+    gitHubContents.sort((f1, f2) -> GitHubUtils.sortMetaJsonFirst(f1.getName(), f2.getName()));
     for (var content : gitHubContent) {
-      if (StringUtils.endsWith(content.getName(), META_FILE)) {
-        metaFile = content;
-      } else {
-        logoFile = content;
-      }
+      ProductFactory.mappingByGHContent(product, content);
+      mappingLogoFromGHContent(product, content);
     }
-
-    ProductFactory.mappingByGHContent(product, metaFile);
-    mappingLogoFromGHContent(product, logoFile);
   }
 
   private void updateRelatedThingsOfProductFromGHContent(List<GHContent> gitHubContents, Product product) {

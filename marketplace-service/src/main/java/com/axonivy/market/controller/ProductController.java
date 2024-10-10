@@ -4,6 +4,7 @@ import com.axonivy.market.assembler.ProductModelAssembler;
 import com.axonivy.market.constants.GitHubConstants;
 import com.axonivy.market.entity.Product;
 import com.axonivy.market.enums.ErrorCode;
+import com.axonivy.market.github.service.GHAxonIvyMarketRepoService;
 import com.axonivy.market.github.service.GitHubService;
 import com.axonivy.market.model.Message;
 import com.axonivy.market.model.ProductCustomSortRequest;
@@ -19,6 +20,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
 import org.apache.commons.lang3.ObjectUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.time.StopWatch;
 import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.data.domain.Page;
@@ -30,6 +32,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
 import java.util.List;
+
+import org.springframework.util.CollectionUtils;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -54,6 +58,7 @@ public class ProductController {
   private final ProductModelAssembler assembler;
   private final PagedResourcesAssembler<Product> pagedResourcesAssembler;
   private final MetadataService metadataService;
+  private final GHAxonIvyMarketRepoService axonIvyMarketRepoService;
 
   @GetMapping()
   @Operation(summary = "Retrieve a paginated list of all products, optionally filtered by type, keyword, and language",
@@ -146,12 +151,21 @@ public class ProductController {
           example = "market/connector/a-trust") String marketItemPath,
       @RequestParam(value = OVERRIDE_MARKET_ITEM_PATH, required = false) Boolean overrideMarketItemPath) {
     String token = AuthorizationUtils.getBearerToken(authorizationHeader);
-    gitHubService.validateUserOrganization(token, GitHubConstants.AXONIVY_MARKET_ORGANIZATION_NAME);
+    gitHubService.validateUserInOrganizationAndTeam(token, GitHubConstants.AXONIVY_MARKET_ORGANIZATION_NAME,
+        GitHubConstants.AXONIVY_MARKET_TEAM_NAME);
+
+    var message = new Message();
+    if (StringUtils.isNotBlank(marketItemPath) && Boolean.TRUE.equals(
+        overrideMarketItemPath) && CollectionUtils.isEmpty(
+        axonIvyMarketRepoService.getMarketItemByPath(marketItemPath))) {
+      message.setHelpCode(ErrorCode.PRODUCT_NOT_FOUND.getCode());
+      message.setMessageDetails(ErrorCode.PRODUCT_NOT_FOUND.getHelpText());
+      return new ResponseEntity<>(message, HttpStatus.OK);
+    }
 
     var isSuccess = productService.syncOneProduct(productId, marketItemPath, overrideMarketItemPath);
-    var message = new Message();
-    message.setHelpCode(ErrorCode.SUCCESSFUL.getCode());
     if (isSuccess) {
+      message.setHelpCode(ErrorCode.SUCCESSFUL.getCode());
       message.setMessageDetails("Sync successfully!");
     } else {
       message.setMessageDetails("Sync unsuccessfully!");
