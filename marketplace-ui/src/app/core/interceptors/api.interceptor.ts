@@ -41,13 +41,13 @@ export const apiInterceptor: HttpInterceptorFn = (req, next) => {
     headers: addIvyHeaders(req.headers)
   });
 
-  if (!req.context.get(SkipLoading) as boolean) {
+  if (!req.context.get(SkipLoading)) {
     loadingService.show();
   }
 
   return next(cloneReq).pipe(
     catchError(error => {
-      if (!req.context.get(ForwardingError) as boolean) {
+      if (!req.context.get(ForwardingError)) {
         if (ERROR_CODES.includes(error.status)) {
           router.navigate([`${ERROR_PAGE_PATH}/${error.status}`]);
         } else {
@@ -57,7 +57,7 @@ export const apiInterceptor: HttpInterceptorFn = (req, next) => {
       return EMPTY;
     }),
     finalize(() => {
-      if (!req.context.get(SkipLoading) as boolean) {
+      if (!req.context.get(SkipLoading)) {
         loadingService.hide();
       }
     })

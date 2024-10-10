@@ -16,6 +16,7 @@ import lombok.AllArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.ObjectUtils;
+import org.apache.commons.lang3.RegExUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 
@@ -92,7 +93,7 @@ public class ExternalDocumentServiceImpl implements ExternalDocumentService {
         documentMeta.setStorageDirectory(location);
         // remove prefix 'data' and replace all ms win separator to slash if present
         var locationRelative = location.substring(location.indexOf(DirectoryConstants.CACHE_DIR));
-        locationRelative = String.format(DOC_URL_PATTERN, locationRelative).replaceAll(MS_WIN_SEPARATOR,
+        locationRelative = RegExUtils.replaceAll(String.format(DOC_URL_PATTERN, locationRelative), MS_WIN_SEPARATOR,
             CommonConstants.SLASH);
         documentMeta.setRelativeLink(locationRelative);
         externalDocumentMetaRepo.save(documentMeta);

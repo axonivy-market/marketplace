@@ -39,12 +39,12 @@ export class ProductDetailInformationTabComponent implements OnChanges {
       version = this.selectedVersion;
     }
     // Invalid version
-    if (version == undefined || version === '') {
+    if (version === undefined || version === '') {
       return;
     }
 
     this.productDetailService.getExteralDocumentForProductByVersion(this.productDetail.id, this.extractVersionValue(version))
-      .subscribe((response) => {
+      .subscribe(response => {
         this.externalDocumentLink = response.relativeLink;
         this.displayExternalDocName = response.artifactName;
     });

@@ -3,7 +3,6 @@ package com.axonivy.market.controller;
 import com.axonivy.market.entity.ExternalDocumentMeta;
 import com.axonivy.market.entity.Product;
 import com.axonivy.market.github.service.GitHubService;
-import com.axonivy.market.model.ExternalDocumentModel;
 import com.axonivy.market.service.ExternalDocumentService;
 import org.apache.commons.lang3.ObjectUtils;
 import org.junit.jupiter.api.Test;
@@ -38,7 +37,7 @@ class ExternalDocumentControllerTest {
 
 
   @Test
-  void testFindProductDoc() throws URISyntaxException {
+  void testFindProductDoc() {
     when(service.findExternalDocument(any(), any())).thenReturn(createExternalDocumentMock());
     var result = externalDocumentController.findExternalDocument("portal", "10.0");
     assertEquals(HttpStatus.OK, result.getStatusCode());
