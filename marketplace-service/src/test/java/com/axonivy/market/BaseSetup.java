@@ -150,6 +150,14 @@ public class BaseSetup {
     return getContentFromTestResourcePath(MOCK_METADATA_FILE_PATH);
   }
 
+  protected String getMockVariablesContent() {
+    return getContentFromTestResourcePath(MOCK_VARIABLES_FILE_PATH);
+  }
+
+  protected String getMockPomContent() {
+    return getContentFromTestResourcePath(MOCK_POM_FILE_PATH);
+  }
+
   protected Metadata buildMocKMetadata() {
     return Metadata.builder().url(
         MOCK_MAVEN_URL).repoUrl(MavenConstants.DEFAULT_IVY_MAVEN_BASE_URL).groupId(MOCK_GROUP_ID).artifactId(

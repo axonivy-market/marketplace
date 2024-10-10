@@ -418,6 +418,8 @@ public class ProductServiceImpl implements ProductService {
       } else {
         updateProductContentForNonStandardProduct(ghContentEntity, product);
       }
+      transferComputedDataFromDB(product);
+      syncedProductIds.add(productRepository.save(product).getId());
     }
     return syncedProductIds;
   }

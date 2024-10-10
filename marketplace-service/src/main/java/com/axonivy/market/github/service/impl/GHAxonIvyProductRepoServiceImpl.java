@@ -20,6 +20,7 @@ import lombok.extern.log4j.Log4j2;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.logging.log4j.util.Strings;
 import org.kohsuke.github.GHContent;
 import org.kohsuke.github.GHOrganization;
 import org.kohsuke.github.GHRepository;
@@ -47,7 +48,6 @@ import java.util.function.Function;
 import java.util.stream.Stream;
 
 import static com.axonivy.market.constants.CommonConstants.IMAGE_ID_PREFIX;
-import static com.axonivy.market.constants.MavenConstants.PRODUCT_ARTIFACT_POSTFIX;
 
 @Log4j2
 @Service
@@ -186,7 +186,7 @@ public class GHAxonIvyProductRepoServiceImpl implements GHAxonIvyProductRepoServ
 
     Function<Stream<GHContent>, GHContent> getPomFile = ghContents -> ghContents
         .filter(GHContent::isFile)
-        .filter(content -> content.getName().equalsIgnoreCase(ReadmeConstants.POM_FILE))
+        .filter(content -> content.getName().equalsIgnoreCase(GitHubConstants.POM_FILE))
         .findFirst()
         .orElse(null);
 
@@ -204,7 +204,7 @@ public class GHAxonIvyProductRepoServiceImpl implements GHAxonIvyProductRepoServ
   private GHContent filterProductFolderContent(List<GHContent> ghContents, String productId) {
     List<GHContent> productFolderContents = ghContents.stream()
         .filter(GHContent::isDirectory)
-        .filter(content -> content.getName().endsWith(PRODUCT_ARTIFACT_POSTFIX))
+        .filter(content -> content.getName().endsWith(MavenConstants.PRODUCT_ARTIFACT_POSTFIX))
         .toList();
 
     if (productFolderContents.size() > 1) {
@@ -247,10 +247,10 @@ public class GHAxonIvyProductRepoServiceImpl implements GHAxonIvyProductRepoServ
       Document document = builder.parse(new java.io.ByteArrayInputStream(content.getBytes()));
 
       // Get the properties element by its tag name
-      NodeList propertiesList = document.getElementsByTagName("variables.yaml.file");
+      NodeList propertiesList = document.getElementsByTagName(GitHubConstants.VARIABLES_FILE_DIR);
       if (propertiesList.getLength() > 0) {
         String variableFileValue = propertiesList.item(0).getTextContent();
-        return variableFileValue.replace("../", "");
+        return variableFileValue.replace(GitHubConstants.VARIABLES_PARENT_PATH, Strings.EMPTY);
       }
     } catch (Exception e) {
       log.error(e.getMessage());
