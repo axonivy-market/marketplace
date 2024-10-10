@@ -60,7 +60,7 @@ public class GHAxonIvyProductRepoServiceImpl implements GHAxonIvyProductRepoServ
     this.productJsonContentService = productJsonContentService;
   }
 
-  private GHContent getProductJsonFile(List<GHContent> contents){
+  private static GHContent getProductJsonFile(List<GHContent> contents) {
     return contents.stream().filter(GHContent::isFile)
         .filter(content -> ProductJsonConstants.PRODUCT_JSON_FILE.equals(content.getName()))
         .findFirst()
