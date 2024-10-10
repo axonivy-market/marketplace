@@ -2,9 +2,23 @@
   min-height: 6em;
 }
 
-.mt-8 {
-  margin-top: 8rem;
+.branch {
+  margin-top: 8.2rem;
   cursor: default;
+}
+
+.branch {
+  margin-bottom: 3.2rem;
+}
+
+.introduction-container {
+  display: flex;
+  flex-direction: row;
+  gap: 3.2rem;
+}
+
+.about, .contribute-link-container{
+  width: 45%;
 }
 
 .not-found-result {
@@ -26,5 +40,14 @@
 
   .not-found-text {
     font-size: 0.875rem;
+  }
+
+  .introduction-container {
+    display: block;
+  }
+
+  .about, .contribute-link-container{
+    width: 100%;
+    flex-direction: column;
   }
 }
