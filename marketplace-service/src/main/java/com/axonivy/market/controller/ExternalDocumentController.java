@@ -59,7 +59,8 @@ public class ExternalDocumentController {
       @RequestHeader(value = AUTHORIZATION) String authorizationHeader,
       @RequestParam(value = RESET_SYNC, required = false) Boolean resetSync) {
     String token = AuthorizationUtils.getBearerToken(authorizationHeader);
-    gitHubService.validateUserOrganization(token, GitHubConstants.AXONIVY_MARKET_ORGANIZATION_NAME);
+    gitHubService.validateUserInOrganizationAndTeam(token, GitHubConstants.AXONIVY_MARKET_ORGANIZATION_NAME,
+        GitHubConstants.AXONIVY_MARKET_TEAM_NAME);
     var message = new Message();
     List<Product> products = externalDocumentService.findAllProductsHaveDocument();
     if (ObjectUtils.isEmpty(products)) {

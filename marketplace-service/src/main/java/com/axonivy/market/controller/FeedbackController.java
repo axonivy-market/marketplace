@@ -1,7 +1,6 @@
 package com.axonivy.market.controller;
 
 import com.axonivy.market.assembler.FeedbackModelAssembler;
-import com.axonivy.market.constants.CommonConstants;
 import com.axonivy.market.entity.Feedback;
 import com.axonivy.market.model.FeedbackModel;
 import com.axonivy.market.model.FeedbackModelRequest;
