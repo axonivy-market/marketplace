@@ -26,7 +26,6 @@ import { environment } from '../../../../../environments/environment';
 import { SHOW_DEV_VERSION, VERSION } from '../../../../shared/constants/common.constant';
 import { ProductDetailActionType } from '../../../../shared/enums/product-detail-action-type';
 import { RoutingQueryParamService } from '../../../../shared/services/routing.query.param.service';
-import { ProductDetail } from '../../../../shared/models/product-detail.model';
 import { LoadingSpinnerComponent } from '../../../../shared/components/loading-spinner/loading-spinner.component';
 import { CookieService } from 'ngx-cookie-service';
 import { CommonUtils } from '../../../../shared/utils/common.utils';
