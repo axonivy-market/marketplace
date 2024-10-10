@@ -3,6 +3,7 @@ import { Component, inject, Input } from '@angular/core';
 import { TranslateModule } from '@ngx-translate/core';
 import { ProductDetail } from '../../../../shared/models/product-detail.model';
 import { LanguageService } from '../../../../core/services/language/language.service';
+import { ThemeService } from '../../../../core/services/theme/theme.service';
 
 @Component({
   selector: 'app-product-detail-information-tab',
@@ -18,4 +19,5 @@ export class ProductDetailInformationTabComponent {
   selectedVersion!: string;
 
   languageService = inject(LanguageService);
+  themeService = inject(ThemeService);
 }
