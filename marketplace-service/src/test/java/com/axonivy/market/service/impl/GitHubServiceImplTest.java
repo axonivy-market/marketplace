@@ -63,4 +63,10 @@ class GitHubServiceImplTest {
     var result = gitHubService.getDirectoryContent(ghRepository, "", "");
     assertEquals(0, result.size());
   }
+
+  @Test
+  void testGithubWithToken() throws IOException {
+    var result = gitHubService.getGitHub("accessToken");
+    assertEquals(DUMMY_API_URL, result.getApiUrl());
+  }
 }
