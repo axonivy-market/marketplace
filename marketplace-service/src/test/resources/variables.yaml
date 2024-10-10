@@ -1,0 +1,6 @@
+Variables:
+  deepl-connector:
+    # DeepL Authentication Key (should end with :fx)
+    # https://www.deepl.com/docs-api/api-access/authentication/
+    # [password]
+    authKey: ''

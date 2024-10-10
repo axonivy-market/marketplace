@@ -18,30 +18,40 @@ import com.axonivy.market.util.ProductContentUtils;
 import com.axonivy.market.util.VersionUtils;
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang3.ObjectUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.logging.log4j.util.Strings;
 import org.kohsuke.github.GHContent;
 import org.kohsuke.github.GHOrganization;
 import org.kohsuke.github.GHRepository;
 import org.kohsuke.github.GHTag;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
+import org.w3c.dom.Document;
+import org.w3c.dom.NodeList;
 
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.function.Function;
+import java.util.stream.Stream;
 
 import static com.axonivy.market.constants.CommonConstants.IMAGE_ID_PREFIX;
 
 @Log4j2
 @Service
 public class GHAxonIvyProductRepoServiceImpl implements GHAxonIvyProductRepoService {
-  public static final String IMAGE_EXTENSION = "(.*?).(jpeg|jpg|png|gif)";
   private final GitHubService gitHubService;
   private final ImageService imageService;
   private GHOrganization organization;
@@ -89,7 +99,7 @@ public class GHAxonIvyProductRepoServiceImpl implements GHAxonIvyProductRepoServ
     try {
       List<GHContent> contents = getProductFolderContents(product, ghRepository, tag);
       updateDependencyContentsFromProductJson(productModuleContent, contents, product);
-      extractReadMeFileFromContents(product, contents, productModuleContent);
+      extractReadMeFileFromContents(product, contents, productModuleContent, tag);
     } catch (Exception e) {
       log.error("Cannot get product.json content in {} - {}", ghRepository.getName(), e.getMessage());
       return null;
@@ -98,7 +108,7 @@ public class GHAxonIvyProductRepoServiceImpl implements GHAxonIvyProductRepoServ
   }
 
   public void extractReadMeFileFromContents(Product product, List<GHContent> contents,
-      ProductModuleContent productModuleContent) {
+      ProductModuleContent productModuleContent, String tag) {
     try {
       List<GHContent> readmeFiles = contents.stream().filter(GHContent::isFile)
           .filter(content -> content.getName().startsWith(ReadmeConstants.README_FILE_NAME)).toList();
@@ -107,6 +117,10 @@ public class GHAxonIvyProductRepoServiceImpl implements GHAxonIvyProductRepoServ
       if (!CollectionUtils.isEmpty(readmeFiles)) {
         for (GHContent readmeFile : readmeFiles) {
           String readmeContents = new String(readmeFile.read().readAllBytes());
+          if (readmeContents.contains(ReadmeConstants.VARIABLE_DIR)) {
+            readmeContents = replaceVariable(readmeContents, product, tag);
+          }
+
           if (ProductContentUtils.hasImageDirectives(readmeContents)) {
             readmeContents = updateImagesWithDownloadUrl(product, contents, readmeContents);
           }
@@ -165,5 +179,82 @@ public class GHAxonIvyProductRepoServiceImpl implements GHAxonIvyProductRepoServ
     productFolderPath = NonStandardProduct.findById(product.getId(), productFolderPath);
 
     return ghRepository.getDirectoryContent(productFolderPath, tag);
+  }
+
+  public String replaceVariable(String readmeContent, Product product, String tag) throws IOException {
+    GHRepository ghRepository = gitHubService.getRepository(product.getRepositoryName());
+
+    Function<Stream<GHContent>, GHContent> getPomFile = ghContents -> ghContents
+        .filter(GHContent::isFile)
+        .filter(content -> content.getName().equalsIgnoreCase(GitHubConstants.POM_FILE))
+        .findFirst()
+        .orElse(null);
+
+    return Optional.ofNullable(ghRepository)
+        .map(ghRepo -> getFolderContentByPath(ghRepo, CommonConstants.SLASH, tag))
+        .map(ghContents -> filterProductFolderContent(ghContents, product.getId()))
+        .map(productFolderContent -> getFolderContentByPath(ghRepository, productFolderContent.getName(), tag))
+        .map(Collection::stream)
+        .map(getPomFile)
+        .filter(ObjectUtils::isNotEmpty)
+        .map(pomFile -> readAndMapThePomFile(pomFile, ghRepository, readmeContent, tag))
+        .orElse(readmeContent);
+  }
+
+  private GHContent filterProductFolderContent(List<GHContent> ghContents, String productId) {
+    List<GHContent> productFolderContents = ghContents.stream()
+        .filter(GHContent::isDirectory)
+        .filter(content -> content.getName().endsWith(MavenConstants.PRODUCT_ARTIFACT_POSTFIX))
+        .toList();
+
+    if (productFolderContents.size() > 1) {
+      return productFolderContents.stream()
+          .filter(content -> content.getName().contains(productId))
+          .findFirst()
+          .orElse(null);
+    }
+    return productFolderContents.isEmpty() ? null : productFolderContents.get(0);
+  }
+
+  private String readAndMapThePomFile(GHContent pomFile, GHRepository ghRepository, String readmeContent,
+      String tag) {
+    try {
+      String pomContent = new String(pomFile.read().readAllBytes());
+      String variableFilePathFromPomXML = extractVariableFilePathFromPomXML(pomContent);
+      GHContent variableFile = ghRepository.getFileContent(variableFilePathFromPomXML, tag);
+      String variableValue = new String(variableFile.read().readAllBytes());
+      return StringUtils.isNotBlank(variableValue) ?
+          readmeContent.replace(ReadmeConstants.VARIABLE_DIR, variableValue) : readmeContent;
+    } catch (IOException e) {
+      log.error(e.getMessage());
+    }
+    return readmeContent;
+  }
+
+  private List<GHContent> getFolderContentByPath(GHRepository ghRepository, String path, String tag) {
+    try {
+      return ghRepository.getDirectoryContent(path, tag);
+    } catch (IOException e) {
+      return Collections.emptyList();
+    }
+  }
+
+  private String extractVariableFilePathFromPomXML(String content) {
+    try {
+      DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+      factory.setNamespaceAware(false);
+      DocumentBuilder builder = factory.newDocumentBuilder();
+      Document document = builder.parse(new java.io.ByteArrayInputStream(content.getBytes()));
+
+      // Get the properties element by its tag name
+      NodeList propertiesList = document.getElementsByTagName(GitHubConstants.VARIABLES_FILE_DIR);
+      if (propertiesList.getLength() > 0) {
+        String variableFileValue = propertiesList.item(0).getTextContent();
+        return variableFileValue.replace(GitHubConstants.VARIABLES_PARENT_PATH, Strings.EMPTY);
+      }
+    } catch (Exception e) {
+      log.error(e.getMessage());
+    }
+    return null;
   }
 }

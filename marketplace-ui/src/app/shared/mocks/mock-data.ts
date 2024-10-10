@@ -260,6 +260,7 @@ export const MOCK_PRODUCT_DETAIL_BY_VERSION: ProductDetail = {
     productId: 'cronjob'
   },
   installationCount: 0,
+  mavenDropins: false,
   _links: {
     self: {
       href: 'http://localhost:8080/api/product-details/cronjob'
@@ -312,6 +313,7 @@ export const MOCK_PRODUCT_DETAIL: ProductDetail = {
     type: 'iar',
     productId: 'jira-connector',
   },
+  mavenDropins: false,
   _links: {
     self: {
       href: 'http://localhost:8082/api/product-details/jira-connector?type=connector'

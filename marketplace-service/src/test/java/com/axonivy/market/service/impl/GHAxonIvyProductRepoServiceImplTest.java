@@ -3,10 +3,12 @@ package com.axonivy.market.service.impl;
 import com.axonivy.market.BaseSetup;
 import com.axonivy.market.bo.Artifact;
 import com.axonivy.market.constants.CommonConstants;
+import com.axonivy.market.constants.GitHubConstants;
 import com.axonivy.market.constants.MavenConstants;
 import com.axonivy.market.constants.ProductJsonConstants;
 import com.axonivy.market.constants.ReadmeConstants;
 import com.axonivy.market.entity.Image;
+import com.axonivy.market.entity.Product;
 import com.axonivy.market.enums.Language;
 import com.axonivy.market.github.service.GitHubService;
 import com.axonivy.market.github.service.impl.GHAxonIvyProductRepoServiceImpl;
@@ -41,8 +43,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyBoolean;
+import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -150,7 +151,7 @@ class GHAxonIvyProductRepoServiceImplTest extends BaseSetup {
 
   @Test
   void testGetOrganization() throws IOException {
-    when(gitHubService.getOrganization(Mockito.anyString())).thenReturn(mockGHOrganization);
+    when(gitHubService.getOrganization(anyString())).thenReturn(mockGHOrganization);
     assertEquals(mockGHOrganization, axonivyProductRepoServiceImpl.getOrganization());
     assertEquals(mockGHOrganization, axonivyProductRepoServiceImpl.getOrganization());
   }
@@ -351,6 +352,47 @@ class GHAxonIvyProductRepoServiceImplTest extends BaseSetup {
         MOCK_TAG_FROM_RELEASED_VERSION);
     assertEquals("Demo content", result.getDemo().get(Language.EN.getValue()));
     assertEquals("Setup content", result.getSetup().get(Language.EN.getValue()));
+  }
+
+  @Test
+  void testReplaceVariable() throws IOException {
+    String readmeContent = """
+        #Product-name
+        Test README
+        ## Demo
+        @variables.yaml@
+        Demo content""";
+
+    GHContent mockGhContentIsProductFolder = mock(GHContent.class);
+    when(mockGhContentIsProductFolder.getName()).thenReturn(MOCK_PRODUCT_ARTIFACT_ID);
+    when(mockGhContentIsProductFolder.isDirectory()).thenReturn(true);
+
+    InputStream mockPomInputStream = mock(InputStream.class);
+    GHContent mockPomFile = mock(GHContent.class);
+    when(mockPomFile.getName()).thenReturn(GitHubConstants.POM_FILE);
+    when(mockPomFile.isFile()).thenReturn(true);
+    when(mockPomFile.read()).thenReturn(mockPomInputStream);
+    when(mockPomInputStream.readAllBytes()).thenReturn(getMockPomContent().getBytes());
+
+    GHContent mockVariableFile = mock(GHContent.class);
+    InputStream mockVariablesInputStream = mock(InputStream.class);
+    when(mockVariableFile.read()).thenReturn(mockVariablesInputStream);
+    when(mockVariablesInputStream.readAllBytes()).thenReturn(getMockVariablesContent().getBytes());
+
+    when(gitHubService.getRepository(anyString())).thenReturn(ghRepository);
+    when(ghRepository.getDirectoryContent(anyString(), anyString())).thenReturn(List.of(mockGhContentIsProductFolder),
+        List.of(mockPomFile));
+    when(ghRepository.getFileContent(anyString(), anyString())).thenReturn(mockVariableFile);
+
+    Product mockProduct =
+        Product.builder().id(MOCK_PRODUCT_ID)
+            .repositoryName("/market").build();
+
+    String updatedReadme = axonivyProductRepoServiceImpl.replaceVariable(readmeContent, mockProduct,
+        MOCK_TAG_FROM_RELEASED_VERSION);
+
+    String expectedResult = readmeContent.replace(ReadmeConstants.VARIABLE_DIR, getMockVariablesContent());
+    assertEquals(updatedReadme, expectedResult);
   }
 
   private static InputStream getMockInputStreamWithOutProjectAndDependency() {

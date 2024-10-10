@@ -13,6 +13,10 @@ public class GitHubConstants {
   public static final String README_FILE_LOCALE_REGEX = "_(..)";
   public static final String STANDARD_TAG_PREFIX = "v";
   public static final String COMMON_IMAGES_FOLDER_NAME = "images";
+  public static final String POM_FILE = "pom.xml";
+  public static final String VARIABLES_FILE_DIR = "variables.yaml.file";
+  public static final String VARIABLES_PARENT_PATH = "../";
+
 
   @NoArgsConstructor(access = AccessLevel.PRIVATE)
   public static class Json {
