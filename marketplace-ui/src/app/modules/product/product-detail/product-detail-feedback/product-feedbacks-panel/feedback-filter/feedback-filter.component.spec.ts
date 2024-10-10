@@ -100,4 +100,18 @@ describe('FeedbackFilterComponent', () => {
     (feedbackFilterService.event$ as Subject<any>).next(mockEvent); // Trigger the event
     expect(component.changeSortByLabel).toHaveBeenCalledWith(mockEvent);
   });
+
+  it('should NOT call changeSortByLabel if feedbackFilterService.data does not exist', () => {
+    feedbackFilterService.data = undefined;
+    spyOn(component, 'changeSortByLabel');
+    component.ngOnInit()
+    expect(component.changeSortByLabel).not.toHaveBeenCalled();
+  });
+
+  it('should call changeSortByLabel if feedbackFilterService.data exists', () => {
+    feedbackFilterService.data = mockEvent;
+    spyOn(component, 'changeSortByLabel');
+    component.ngOnInit()
+    expect(component.changeSortByLabel).toHaveBeenCalledWith(mockEvent);
+  });
 });

@@ -118,14 +118,7 @@ export class ProductFeedbackService {
         tap(response => {
           this.totalPages.set(response.page.totalPages);
           this.totalElements.set(response.page.totalElements);
-          if (page === 0) {
-            this.feedbacks.set(response._embedded.feedbacks);
-          } else {
-            this.feedbacks.set([
-              ...this.feedbacks(),
-              ...response._embedded.feedbacks
-            ]);
-          }
+          this.feedbacks.set([...this.feedbacks(), ...response._embedded.feedbacks]);
         })
       );
   }
