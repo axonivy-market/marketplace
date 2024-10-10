@@ -21,6 +21,6 @@ public interface GHAxonIvyProductRepoService {
   void extractReadMeFileFromContents(Product product, List<GHContent> contents,
       ProductModuleContent productModuleContent);
 
-  void updateProductModuleContentSetupFromSetupMd(Product product,
+  void updateSetupPartForProductModuleContent(Product product,
       Map<String, Map<String, String>> moduleContents, String tag) throws IOException;
 }

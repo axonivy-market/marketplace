@@ -137,9 +137,11 @@ public class ProductContentUtils {
 
   public static void updateProductModuleTabContents(ProductModuleContent productModuleContent,
       Map<String, Map<String, String>> moduleContents) {
-    productModuleContent.setDescription(replaceEmptyContentsWithEnContent(moduleContents.get(DESCRIPTION)));
+    productModuleContent.setDescription(
+        replaceEmptyContentsWithEnContent(moduleContents.get(DESCRIPTION)));
     productModuleContent.setDemo(replaceEmptyContentsWithEnContent(moduleContents.get(DEMO)));
-    productModuleContent.setSetup(replaceEmptyContentsWithEnContent(moduleContents.get(SETUP)));
+    productModuleContent.setSetup(replaceEmptyContentsWithEnContent(moduleContents.get
+        (SETUP)));
   }
 
   public static String replaceImageDirWithImageCustomId(Map<String, String> imageUrls, String readmeContents) {

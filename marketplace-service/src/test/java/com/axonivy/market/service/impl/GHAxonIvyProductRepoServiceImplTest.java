@@ -44,8 +44,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import static com.axonivy.market.constants.DirectoryConstants.MG_GRAPH_IMAGES_FOR_SETUP_FILE;
-import static com.axonivy.market.constants.DirectoryConstants.MS_GRAPH_PRODUCT_DIRECTORY;
+import static com.axonivy.market.constants.GitHubConstants.MG_GRAPH_IMAGES_FOR_SETUP_FILE;
+import static com.axonivy.market.constants.GitHubConstants.MS_GRAPH_PRODUCT_DIRECTORY;
 import static com.axonivy.market.constants.MongoDBConstants.TAG;
 import static com.axonivy.market.constants.ProductJsonConstants.EN_LANGUAGE;
 import static com.axonivy.market.constants.ReadmeConstants.SETUP_FILE;
@@ -407,18 +407,7 @@ class GHAxonIvyProductRepoServiceImplTest extends BaseSetup {
 
     InputStream mockReadmeInputStream = mock(InputStream.class);
 
-    String setupStringContent = """ 
-            ## Setup
-            ### Variables  
-            In order to use this product you must configure multiple variables.
-                    
-            Add the following block to your `config/variables.yaml` file of our\s
-            main Business Project that will make use of this product:
-                    
-            ```
-            @variables.yaml@\s
-            ```
-            ![set-redirect](image.png)""";
+    String setupStringContent = SETUP_STRING_CONTENT;
 
     GHContent setupFileContent = mock(GHContent.class);
     when(setupFileContent.isFile()).thenReturn(true);
@@ -450,7 +439,7 @@ class GHAxonIvyProductRepoServiceImplTest extends BaseSetup {
 
     moduleContents.put(ProductContentUtils.SETUP, new HashMap<>(Map.of(EN_LANGUAGE, "setup file content")));
 
-    axonivyProductRepoServiceImpl.updateProductModuleContentSetupFromSetupMd(mockProduct, moduleContents, TAG);
+    axonivyProductRepoServiceImpl.updateSetupPartForProductModuleContent(mockProduct, moduleContents, TAG);
 
     assertTrue(moduleContents.get(ProductContentUtils.SETUP).get(EN_LANGUAGE).contains(ProductContentUtils.removeFirstLine(
         setupStringContent.replace(IMAGE_NAME, "imageId-66e2b14868f2f95b2f95549a"))));

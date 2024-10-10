@@ -39,8 +39,8 @@ import java.util.Objects;
 import java.util.Optional;
 
 import static com.axonivy.market.constants.CommonConstants.IMAGE_ID_PREFIX;
-import static com.axonivy.market.constants.DirectoryConstants.MG_GRAPH_IMAGES_FOR_SETUP_FILE;
-import static com.axonivy.market.constants.DirectoryConstants.MS_GRAPH_PRODUCT_DIRECTORY;
+import static com.axonivy.market.constants.GitHubConstants.MG_GRAPH_IMAGES_FOR_SETUP_FILE;
+import static com.axonivy.market.constants.GitHubConstants.MS_GRAPH_PRODUCT_DIRECTORY;
 import static com.axonivy.market.constants.ReadmeConstants.SETUP_FILE;
 import static com.axonivy.market.util.ProductContentUtils.SETUP;
 
@@ -60,12 +60,7 @@ public class GHAxonIvyProductRepoServiceImpl implements GHAxonIvyProductRepoServ
     this.productJsonContentService = productJsonContentService;
   }
 
-  private GHContent getProductJsonFile(List<GHContent> contents , Product product , String tag) throws IOException {
-    if (NonStandardProduct.isMsGraphProduct(product.getId())) {
-      GHRepository ghRepository = gitHubService.getRepository(product.getRepositoryName());
-      contents = ghRepository.getDirectoryContent(MS_GRAPH_PRODUCT_DIRECTORY, tag);
-    }
-
+  private GHContent getProductJsonFile(List<GHContent> contents){
     return contents.stream().filter(GHContent::isFile)
         .filter(content -> ProductJsonConstants.PRODUCT_JSON_FILE.equals(content.getName()))
         .findFirst()
@@ -101,7 +96,7 @@ public class GHAxonIvyProductRepoServiceImpl implements GHAxonIvyProductRepoServ
         new HashSet<>());
     try {
       List<GHContent> contents = getProductFolderContents(product, ghRepository, tag);
-      updateDependencyContentsFromProductJson(productModuleContent, contents, product, tag);
+      updateDependencyContentsFromProductJson(productModuleContent, contents, product);
       extractReadMeFileFromContents(product, contents, productModuleContent);
     } catch (Exception e) {
       log.error("Cannot get product.json content in {} - {}", ghRepository.getName(), e.getMessage());
@@ -124,7 +119,7 @@ public class GHAxonIvyProductRepoServiceImpl implements GHAxonIvyProductRepoServ
             readmeContents = updateImagesWithDownloadUrl(product, contents, readmeContents);
           }
           ProductContentUtils.getExtractedPartsOfReadme(moduleContents, readmeContents, readmeFile.getName());
-          updateProductModuleContentSetupFromSetupMd(product, moduleContents,
+          updateSetupPartForProductModuleContent(product, moduleContents,
               productModuleContent.getTag());
         }
         ProductContentUtils.updateProductModuleTabContents(productModuleContent, moduleContents);
@@ -135,7 +130,7 @@ public class GHAxonIvyProductRepoServiceImpl implements GHAxonIvyProductRepoServ
   }
 
   @Override
-  public void updateProductModuleContentSetupFromSetupMd(Product product,
+  public void updateSetupPartForProductModuleContent(Product product,
       Map<String, Map<String, String>> moduleContents, String tag) throws IOException {
     if (!NonStandardProduct.isMsGraphProduct(product.getId())) {
       return;
@@ -165,8 +160,8 @@ public class GHAxonIvyProductRepoServiceImpl implements GHAxonIvyProductRepoServ
   }
 
   private void updateDependencyContentsFromProductJson(ProductModuleContent productModuleContent,
-      List<GHContent> contents, Product product, String tag) throws IOException {
-    GHContent productJsonFile = getProductJsonFile(contents, product, tag);
+      List<GHContent> contents, Product product) throws IOException {
+    GHContent productJsonFile = getProductJsonFile(contents);
     if (Objects.nonNull(productJsonFile)) {
       List<Artifact> artifacts = GitHubUtils.convertProductJsonToMavenProductInfo(productJsonFile);
       ProductContentUtils.updateProductModule(productModuleContent, artifacts);

@@ -60,6 +60,19 @@ public class BaseSetup {
       ".com/com/axonivy/util/bpmn-statistic/10.0.10-SNAPSHOT/bpmn-statistic-10.0.10-SNAPSHOT.zip";
   protected static final String MOCK_ARTIFACT_NAME = "bpmn statistic (zip)";
 
+  protected static final String SETUP_STRING_CONTENT = """ 
+      ## Setup
+      ### Variables  
+      In order to use this product you must configure multiple variables.
+              
+      Add the following block to your `config/variables.yaml` file of our\s
+      main Business Project that will make use of this product:
+              
+      ```
+      @variables.yaml@\s
+      ```
+      ![set-redirect](image.png)""";
+
   protected Page<Product> createPageProductsMock() {
     var mockProducts = new ArrayList<Product>();
     Map<String, String> name = new HashMap<>();
