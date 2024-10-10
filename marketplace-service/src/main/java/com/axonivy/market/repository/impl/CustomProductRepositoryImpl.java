@@ -84,17 +84,16 @@ public class CustomProductRepositoryImpl extends CustomRepository implements Cus
     String jsonContent =
         jsonContentRepository.findByProductIdAndVersion(id, devVersions.get(0)).stream().map(
             ProductJsonContent::getContent).findFirst().orElse(null);
-    result.setMavenDropins(isJsonContentContainDropins(Objects.requireNonNull(jsonContent)));
+    result.setMavenDropins(isJsonContentContainOnlyMavenDropins(Objects.requireNonNull(jsonContent)));
     result.setProductModuleContent(content);
     return result;
   }
 
-  private boolean isJsonContentContainDropins(String jsonContent) {
-    return jsonContent.contains(ProductJsonConstants.MAVEN_DROPINS_INSTALLER_ID) && (!jsonContent.contains(
-        ProductJsonConstants.MAVEN_IMPORT_INSTALLER_ID) || !jsonContent.contains(
-        ProductJsonConstants.MAVEN_DEPENDENCY_INSTALLER_ID));
+  private boolean isJsonContentContainOnlyMavenDropins(String jsonContent) {
+    return jsonContent.contains(ProductJsonConstants.MAVEN_DROPINS_INSTALLER_ID) && !jsonContent.contains(
+        ProductJsonConstants.MAVEN_IMPORT_INSTALLER_ID) && !jsonContent.contains(
+        ProductJsonConstants.MAVEN_DEPENDENCY_INSTALLER_ID);
   }
-
 
   @Override
   public ProductModuleContent findByProductIdAndTagOrMavenVersion(String productId, String tag) {

@@ -5,6 +5,7 @@ import com.axonivy.market.constants.MongoDBConstants;
 import com.axonivy.market.entity.Product;
 import com.axonivy.market.entity.ProductDesignerInstallation;
 import com.axonivy.market.entity.ProductModuleContent;
+import com.axonivy.market.repository.ProductJsonContentRepository;
 import com.axonivy.market.repository.ProductModuleContentRepository;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -30,6 +31,8 @@ class CustomProductRepositoryImplTest extends BaseSetup {
   private static final String TAG = "v10.0.21";
   @Mock
   ProductModuleContentRepository contentRepo;
+  @Mock
+  ProductJsonContentRepository jsonContentRepo;
   private Product mockProduct;
   private Aggregation mockAggregation;
   @Mock
@@ -112,11 +115,16 @@ class CustomProductRepositoryImplTest extends BaseSetup {
         .build();
 
     when(aggregationResults.getUniqueMappedResult()).thenReturn(mockProduct);
+    when(jsonContentRepo.findByProductIdAndVersion(ID, "11.3.0")).thenReturn(
+        List.of(getMockProductJsonContentContainMavenDropins()));
 
-    Product actualProduct = repo.getProductByIdWithNewestReleaseVersion(ID,false);
+    Product actualProduct = repo.getProductByIdWithNewestReleaseVersion(ID, false);
 
     verify(contentRepo, times(1)).findByTagAndProductId("v11.3.0", ID);
+    verify(jsonContentRepo, times(1)).findByProductIdAndVersion(ID, "11.3.0");
+
     assertEquals(mockProduct, actualProduct);
+    assertTrue(actualProduct.isMavenDropins());
   }
 
   @Test

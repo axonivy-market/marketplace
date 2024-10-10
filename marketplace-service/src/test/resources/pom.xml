@@ -1,0 +1,42 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <groupId>com.axonivy.connector.deepl</groupId>
+    <artifactId>deepl-connector-product</artifactId>
+    <version>10.0.9-SNAPSHOT</version>
+    <packaging>pom</packaging>
+
+    <properties>
+        <variables.yaml.file>../deepl-connector/config/variables.yaml</variables.yaml.file>
+    </properties>
+
+    <build>
+        <plugins>
+            <plugin>
+                <artifactId>maven-antrun-plugin</artifactId>
+                <version>1.7</version>
+                <executions>
+                    <execution>
+                        <id>inject.variables.yaml.to.readme</id>
+                        <phase>generate-sources</phase>
+                        <configuration>
+                            <skip>${skip-readme}</skip>
+                            <target>
+                                <copy todir="${project.build.directory}">
+                                    <fileset dir="../../" includes="doc/**"/>
+                                </copy>
+                                <copy file="README.md" tofile="${project.build.directory}/README.md"/>
+                                <loadfile property="variables.yaml" srcFile="${variables.yaml.file}" encoding="UTF-8"/>
+                                <replace file="${project.build.directory}/README.md" token="@variables.yaml@"
+                                         value="${variables.yaml}"/>
+                            </target>
+                        </configuration>
+                        <goals>
+                            <goal>run</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
+</project>

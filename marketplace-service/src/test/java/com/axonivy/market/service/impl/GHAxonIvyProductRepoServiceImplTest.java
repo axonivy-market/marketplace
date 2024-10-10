@@ -7,6 +7,7 @@ import com.axonivy.market.constants.MavenConstants;
 import com.axonivy.market.constants.ProductJsonConstants;
 import com.axonivy.market.constants.ReadmeConstants;
 import com.axonivy.market.entity.Image;
+import com.axonivy.market.entity.Product;
 import com.axonivy.market.enums.Language;
 import com.axonivy.market.github.service.GitHubService;
 import com.axonivy.market.github.service.impl.GHAxonIvyProductRepoServiceImpl;
@@ -41,8 +42,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyBoolean;
+import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -150,7 +150,7 @@ class GHAxonIvyProductRepoServiceImplTest extends BaseSetup {
 
   @Test
   void testGetOrganization() throws IOException {
-    when(gitHubService.getOrganization(Mockito.anyString())).thenReturn(mockGHOrganization);
+    when(gitHubService.getOrganization(anyString())).thenReturn(mockGHOrganization);
     assertEquals(mockGHOrganization, axonivyProductRepoServiceImpl.getOrganization());
     assertEquals(mockGHOrganization, axonivyProductRepoServiceImpl.getOrganization());
   }
@@ -390,5 +390,132 @@ class GHAxonIvyProductRepoServiceImplTest extends BaseSetup {
   void testExtractedContentStream() {
     assertNull(GitHubUtils.extractedContentStream(null));
     assertNull(GitHubUtils.extractedContentStream(content));
+  }
+
+  @Test
+  void testReplaceVariable_whenPomFileIsMissing() throws IOException {
+    String tag = "10.0";
+    String readmeContent = """
+        #Product-name
+        Test README
+        ## Demo
+        @variables.yaml@
+        Demo content""";
+
+    GHContent mockGhContentIsProductFolder = mock(GHContent.class);
+    when(mockGhContentIsProductFolder.getName()).thenReturn("bpmn-statistic-product");
+    when(mockGhContentIsProductFolder.isDirectory()).thenReturn(true);
+
+    when(gitHubService.getRepository(anyString())).thenReturn(ghRepository);
+    when(ghRepository.getDirectoryContent(anyString(), anyString())).thenReturn(List.of(mockGhContentIsProductFolder));
+
+    Product mockProduct = Product.builder()
+        .id(MOCK_PRODUCT_ID)
+        .repositoryName("/market")
+        .releasedVersions(List.of(MOCK_RELEASED_VERSION))
+        .build();
+
+    String updatedReadme = axonivyProductRepoServiceImpl.replaceVariable(readmeContent, mockProduct, tag);
+
+    assertEquals(readmeContent, updatedReadme);
+  }
+
+  @Test
+  void testReplaceVariable_whenVariableFileIsMissing() throws IOException {
+    String tag = "v10.0";
+    String readmeContent = """
+        #Product-name
+        Test README
+        ## Demo
+        @variables.yaml@
+        Demo content""";
+
+    GHContent mockGhContentIsProductFolder = mock(GHContent.class);
+    when(mockGhContentIsProductFolder.getName()).thenReturn("bpmn-statistic-product");
+    when(mockGhContentIsProductFolder.isDirectory()).thenReturn(true);
+
+    String pomFileContent = mockPomFileContent();
+    InputStream mockSetupInputStream = mock(InputStream.class);
+    GHContent mockPomFile = mock(GHContent.class);
+    when(mockPomFile.getName()).thenReturn("pom.xml");
+    when(mockPomFile.isFile()).thenReturn(true);
+    when(mockPomFile.read()).thenReturn(mockSetupInputStream);
+    when(mockSetupInputStream.readAllBytes()).thenReturn(pomFileContent.getBytes());
+
+
+    when(gitHubService.getRepository(anyString())).thenReturn(ghRepository);
+    when(ghRepository.getDirectoryContent(anyString(), anyString())).thenReturn(List.of(mockGhContentIsProductFolder),
+        List.of(mockPomFile));
+    when(ghRepository.getFileContent(anyString(), anyString())).thenThrow(new IOException("Variable file not found"));
+
+    Product mockProduct = Product.builder()
+        .id(MOCK_PRODUCT_ID)
+        .repositoryName("/market")
+        .releasedVersions(List.of(MOCK_RELEASED_VERSION))
+        .build();
+
+    String updatedReadme = axonivyProductRepoServiceImpl.replaceVariable(readmeContent, mockProduct, tag);
+
+    assertEquals(readmeContent, updatedReadme);
+  }
+
+  @Test
+  void testReplaceVariable() throws IOException {
+    String readmeContent = """
+        #Product-name
+        Test README
+        ## Demo
+        @variables.yaml@
+        Demo content""";
+
+    GHContent mockGhContentIsProductFolder = mock(GHContent.class);
+    when(mockGhContentIsProductFolder.getName()).thenReturn("bpmn-statistic-product");
+    when(mockGhContentIsProductFolder.isDirectory()).thenReturn(true);
+
+    InputStream mockSetupInputStream = mock(InputStream.class);
+    String pomFileContent = mockPomFileContent();
+    String variableFileContent = mockVariableContent();
+    GHContent mockPomFile = mock(GHContent.class);
+    when(mockPomFile.getName()).thenReturn("pom.xml");
+    when(mockPomFile.isFile()).thenReturn(true);
+    when(mockPomFile.read()).thenReturn(mockSetupInputStream);
+    when(mockSetupInputStream.readAllBytes()).thenReturn(pomFileContent.getBytes());
+
+    GHContent mockVariableFile = mock(GHContent.class);
+    InputStream mockPomInputStream = mock(InputStream.class);
+    when(mockVariableFile.read()).thenReturn(mockPomInputStream);
+    when(mockPomInputStream.readAllBytes()).thenReturn(variableFileContent.getBytes());
+
+    when(gitHubService.getRepository(anyString())).thenReturn(ghRepository);
+    when(ghRepository.getDirectoryContent(anyString(), anyString())).thenReturn(List.of(mockGhContentIsProductFolder),
+        List.of(mockPomFile));
+    when(ghRepository.getFileContent(anyString(), anyString())).thenReturn(mockVariableFile);
+
+    Product mockProduct =
+        Product.builder().id(MOCK_PRODUCT_ID)
+            .repositoryName("/market")
+            .releasedVersions(List.of(MOCK_RELEASED_VERSION)).build();
+
+    String updatedReadme = axonivyProductRepoServiceImpl.replaceVariable(readmeContent, mockProduct,
+        "tag");
+
+    String expectedResult = readmeContent.replace("@variables.yaml@", mockVariableContent());
+    assertEquals(updatedReadme, expectedResult);
+  }
+
+  private String mockPomFileContent() {
+
+    return "<project><properties>\n" +
+        "    <variables.yaml.file>../deepl-connector/config/variables.yaml</variables.yaml.file>\n" +
+        "  </properties></project>";
+  }
+
+  private String mockVariableContent() {
+    return "Variables:\n" +
+        "  deepl-connector:\n" +
+        "    # DeepL Authentication Key (should end with :fx)\n" +
+        "    # https://www.deepl.com/docs-api/api-access/authentication/\n" +
+        "    # [password]\n" +
+        "    authKey: ''";
   }
 }
