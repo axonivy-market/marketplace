@@ -11,6 +11,7 @@ import com.axonivy.market.github.service.GitHubService;
 import com.axonivy.market.model.ProductCustomSortRequest;
 import com.axonivy.market.service.MetadataService;
 import com.axonivy.market.service.ProductService;
+import com.axonivy.market.service.VersionService;
 import com.axonivy.market.util.AuthorizationUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -63,6 +64,9 @@ class ProductControllerTest {
 
   @Mock
   private MetadataService metadataService;
+
+  @Mock
+  private VersionService versionService;
 
   @BeforeEach
   void setup() {
