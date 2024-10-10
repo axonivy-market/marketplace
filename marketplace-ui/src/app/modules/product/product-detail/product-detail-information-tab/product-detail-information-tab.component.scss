@@ -15,7 +15,18 @@
   }
 
   hr {
-    border-bottom: 1px solid #f8f8f8;
+    border-bottom: 1px solid var(--ivy-secondary-bg);
     margin: 0;
+    opacity: 1;
   }
+}
+
+.logo__vendor__image {
+  max-width: 115px;
+  max-height: 41px;
+}
+
+.vendor-cotnainer {
+  width: 115px;
+  text-align: right;
 }

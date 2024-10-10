@@ -183,7 +183,6 @@ public class ProductServiceImpl implements ProductService {
     return productRepository.updateInitialCount(key, product.getInstallationCount() + 1);
   }
 
-
   public void syncInstallationCountWithProduct(Product product) {
     log.info("synchronizing installation count for product {}", product.getId());
     try {
@@ -283,9 +282,9 @@ public class ProductServiceImpl implements ProductService {
 
   private String updateProductByMetaJsonAndLogo(GHContent fileContent, GitHubFile file, String parentPath) {
     String productId;
-    Product product = new Product();
-    ProductFactory.mappingByGHContent(product, fileContent);
     if (FileType.META == file.getType()) {
+      Product product = new Product();
+      ProductFactory.mappingByGHContent(product, fileContent);
       transferComputedDataFromDB(product);
       productId = productRepository.save(product).getId();
     } else {
@@ -407,6 +406,7 @@ public class ProductServiceImpl implements ProductService {
       for (var content : ghContentEntity.getValue()) {
         ProductFactory.mappingByGHContent(product, content);
         mappingLogoFromGHContent(product, content);
+        mappingVendorImageFromGHContent(product, content);
       }
       if (productRepository.findById(product.getId()).isPresent()) {
         continue;
@@ -427,6 +427,17 @@ public class ProductServiceImpl implements ProductService {
     if (StringUtils.endsWith(ghContent.getName(), LOGO_FILE)) {
       Optional.ofNullable(imageService.mappingImageFromGHContent(product, ghContent, true))
           .ifPresent(image -> product.setLogoId(image.getId()));
+    }
+  }
+
+  private void mappingVendorImageFromGHContent(Product product, GHContent ghContent) {
+    if (ghContent.getName().equals(product.getVendorImage())) {
+      Optional.ofNullable(imageService.mappingImageFromGHContent(product, ghContent, false))
+          .ifPresent(image -> product.setVendorImage(image.getId()));
+    }
+    else if (ghContent.getName().equals(product.getVendorImageDarkMode())) {
+      Optional.ofNullable(imageService.mappingImageFromGHContent(product, ghContent, false))
+          .ifPresent(image -> product.setVendorImageDarkMode(image.getId()));
     }
   }
 

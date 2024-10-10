@@ -2,11 +2,20 @@
   {{ 'common.product.detail.information.label' | translate }}
 </h3>
 <div class="info-container d-flex flex-column p-0 w-100">
-  <div class="d-flex flex-row justify-content-between p-0">
+  <div class="d-flex flex-row justify-content-between align-items-end p-0">
     <span [lang]="languageService.selectedLanguage()" class="text-secondary">
-      {{ 'common.product.detail.information.value.author' | translate }}
+      {{ 'common.product.detail.information.value.implementedBy' | translate }}
     </span>
-    <span class="text-primary">{{ productDetail.vendor }}</span>
+    <a [href]="productDetail.vendorUrl" class="vendor-cotnainer">
+      <img
+      class="logo__vendor__image"
+      [src]="
+        themeService.isDarkMode()
+          ? productDetail.vendorImageDarkMode
+          : productDetail.vendorImage
+      "
+      alt="Logo Vendor"/>
+    </a>
   </div>
   <hr class="border-top-0" />
   <div class="d-flex flex-row justify-content-between p-0">

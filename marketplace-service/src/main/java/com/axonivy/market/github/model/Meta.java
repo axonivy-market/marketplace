@@ -31,6 +31,8 @@ public class Meta {
   private Boolean listed;
   private String version;
   private String vendor;
+  private String vendorImage;
+  private String vendorImageDarkMode;
   private String vendorUrl;
   private List<String> tags;
   private List<Artifact> mavenArtifacts;

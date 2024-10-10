@@ -45,6 +45,8 @@ public class Product implements Serializable {
   private List<String> tags;
   private String vendor;
   private String vendorUrl;
+  private String vendorImage;
+  private String vendorImageDarkMode;
   private String platformReview;
   private String cost;
   private String repositoryName;

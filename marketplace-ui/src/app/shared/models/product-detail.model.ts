@@ -10,6 +10,8 @@ export interface ProductDetail {
   tags: string[];
   vendor: string;
   vendorUrl: string;
+  vendorImage: string;
+  vendorImageDarkMode: string;
   platformReview: string;
   newestReleaseVersion: string;
   cost: string;

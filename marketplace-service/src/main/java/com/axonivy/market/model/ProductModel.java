@@ -31,8 +31,7 @@ public class ProductModel extends RepresentationModel<ProductModel> {
               "from the Axon Ivy platform\" }")
   private Map<String, String> shortDescriptions;
   @Schema(description = "Product's logo url",
-      example = "https://raw.githubusercontent.com/axonivy-market/market/feature/MARP-463-Multilingualism-for-Website" +
-              "/market/connector/jira/logo.png")
+      example = "https://api.example.com/api/image/67079ca57b9ee74b16c18111")
   private String logoUrl;
   @Schema(description = "Type of product", example = "connector")
   private String type;
