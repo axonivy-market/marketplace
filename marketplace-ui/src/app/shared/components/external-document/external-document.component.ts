@@ -4,9 +4,10 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { ROUTER } from '../../constants/router.constant';
 import { TranslateModule } from '@ngx-translate/core';
 import { ERROR_PAGE_PATH } from '../../constants/common.constant';
+import { API_URI } from '../../constants/api.constant';
+import { ExternalDocument } from '../../models/external-document.model';
 
 const INDEX_FILE = '/index.html';
-const DOC_API = 'api/externaldocument';
 
 @Component({
   selector: 'app-external-document',
@@ -32,19 +33,20 @@ export class ExternalDocumentComponent implements OnInit {
   }
 
   fetchDocumentUrl(product: string, version: string, currentUrl: string): void {
-    this.httpClient.get<string>(`${DOC_API}/${product}/${version}`)
+    this.httpClient.get<ExternalDocument>(`${API_URI.EXTERNAL_DOCUMENT}/${product}/${version}`)
       .subscribe({
-        next: (response: string) => this.handleRedirection(response, currentUrl)
+        next: (response: ExternalDocument) => this.handleRedirection(response, currentUrl)
       });
   }
 
-  handleRedirection(response: string, currentUrl: string): void {
-    if (response === null || response === '') {
+  handleRedirection(response: ExternalDocument, currentUrl: string): void {
+    if (response === null || response.relativeLink === '') {
       this.router.navigate([ERROR_PAGE_PATH]);
     }
-    const isSameUrl = currentUrl === response || currentUrl + INDEX_FILE === response;
+    const relativeUrl = response.relativeLink;
+    const isSameUrl = currentUrl === relativeUrl || currentUrl + INDEX_FILE === relativeUrl;
     if (!isSameUrl) {
-      window.location.href = response;
+      window.location.href = relativeUrl;
     }
   }
 }

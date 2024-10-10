@@ -1,15 +1,24 @@
 import { TestBed } from '@angular/core/testing';
 import { ProductDetailService } from './product-detail.service';
 import { DisplayValue } from '../../../shared/models/display-value.model';
+import { HttpClient, provideHttpClient, withInterceptorsFromDi } from '@angular/common/http';
+import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 
 describe('ProductDetailService', () => {
   let service: ProductDetailService;
+  let httpMock: HttpTestingController;
+  let httpClient: jasmine.SpyObj<HttpClient>;
 
   beforeEach(() => {
     TestBed.configureTestingModule({
-      providers: [ProductDetailService]
+      providers: [ProductDetailService,
+        provideHttpClient(withInterceptorsFromDi()),
+        provideHttpClientTesting(),
+        { provide: HttpClient, useValue: httpClient }
+      ]
     });
     service = TestBed.inject(ProductDetailService);
+    httpMock = TestBed.inject(HttpTestingController);
   });
 
   it('should be created', () => {

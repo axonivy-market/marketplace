@@ -76,6 +76,8 @@ common:
           status: Status
           moreInformation: Mehr Informationen
           contactUs: Kontakt
+          documentation: Dokumentation
+          defaultDocName: Doc
       install:
         buttonLabel: Jetzt installieren
         buttonLabelInDesigner: Installieren

@@ -6,7 +6,6 @@ import com.axonivy.market.entity.Product;
 import com.axonivy.market.repository.ExternalDocumentMetaRepository;
 import com.axonivy.market.repository.ProductRepository;
 import com.axonivy.market.service.FileDownloadService;
-import org.apache.commons.lang3.StringUtils;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -47,7 +46,7 @@ class ExternalDocumentServiceImplTest {
     verify(externalDocumentMetaRepository, times(0)).findByProductIdAndVersion(any(), any());
 
     when(productRepository.findById(PORTAL)).thenReturn(mockPortalProduct());
-    service.syncDocumentForProduct(PORTAL, true);
+    service.syncDocumentForProduct(PORTAL, false);
     verify(externalDocumentMetaRepository, times(2)).findByProductIdAndVersion(any(), any());
 
     when(fileDownloadService.downloadAndUnzipFile(any(), anyBoolean())).thenReturn("data" + RELATIVE_LOCATION);
@@ -72,17 +71,17 @@ class ExternalDocumentServiceImplTest {
     var mockVersion = "10.0.0";
     var mockProductDocumentMeta = new ExternalDocumentMeta();
     when(productRepository.findById(PORTAL)).thenReturn(mockPortalProduct());
-    var result = service.findExternalDocumentURI(PORTAL, mockVersion);
+    var result = service.findExternalDocument(PORTAL, mockVersion);
     verify(productRepository, times(1)).findById(any());
-    assertTrue(StringUtils.isEmpty(result));
+    assertNull(result);
 
     mockProductDocumentMeta.setProductId(PORTAL);
     mockProductDocumentMeta.setVersion(mockVersion);
     mockProductDocumentMeta.setRelativeLink(RELATIVE_LOCATION);
     when(externalDocumentMetaRepository.findByProductId(PORTAL)).thenReturn(List.of(mockProductDocumentMeta));
-    result = service.findExternalDocumentURI(PORTAL, mockVersion);
+    result = service.findExternalDocument(PORTAL, mockVersion);
     assertNotNull(result);
-    assertTrue(result.contains("/index.html"));
+    assertTrue(result.getRelativeLink().contains("/index.html"));
   }
 
   private Optional<Product> mockPortalProduct() {
