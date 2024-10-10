@@ -93,14 +93,17 @@ describe('ProductFeedbackService', () => {
   
     service.loadMoreFeedbacks();
     const loadMoreReq = httpMock.expectOne('api/feedback/product/123?page=1&size=8&sort=updatedAt,desc');
-    loadMoreReq.flush({ _embedded: { feedbacks: additionalFeedback } });
-  
+    loadMoreReq.flush({ _embedded: { feedbacks: additionalFeedback }, page: { totalPages: 2, totalElements: 5 } });
+
     expect(service.feedbacks()).toEqual([...initialFeedback, ...additionalFeedback]);
   });
 
   it('should change sort and fetch feedbacks', () => {
     const mockResponse = {
-      _embedded: { feedbacks: [{ content: 'Sorting test', rating: 3, productId: '123' }] }
+      _embedded: {
+        feedbacks: [{ content: 'Sorting test', rating: 3, productId: '123' }]
+      },
+      page: { totalPages: 2, totalElements: 5 }
     };
 
     productDetailService.productId.and.returnValue('123');

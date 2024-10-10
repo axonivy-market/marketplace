@@ -11,7 +11,7 @@ import {
   signal,
   WritableSignal
 } from '@angular/core';
-import { catchError, Observable, of, tap } from 'rxjs';
+import { BehaviorSubject, catchError, concatMap, EMPTY, Observable, of, tap } from 'rxjs';
 import { AuthService } from '../../../../../auth/auth.service';
 import { SkipLoading } from '../../../../../core/interceptors/api.interceptor';
 import { FeedbackApiResponse } from '../../../../../shared/models/apis/feedback-response.model';
@@ -29,6 +29,12 @@ export class ProductFeedbackService {
   private readonly productDetailService = inject(ProductDetailService);
   private readonly productStarRatingService = inject(ProductStarRatingService);
   private readonly http = inject(HttpClient);
+  private readonly feedbackRequestQueue$ = new BehaviorSubject<{
+    productId: string;
+    page: number;
+    sort: string;
+    size: number;
+  } | null>(null);
 
   sort: WritableSignal<string> = signal('updatedAt,desc');
   page: WritableSignal<number> = signal(0);
@@ -44,6 +50,25 @@ export class ProductFeedbackService {
 
   totalPages: WritableSignal<number> = signal(1);
   totalElements: WritableSignal<number> = signal(0);
+
+  constructor() {
+    this.feedbackRequestQueue$
+      .pipe(
+        concatMap(requestParams => {
+          if (requestParams) {
+            return this.executeFindProductFeedbacksByCriteria(
+              requestParams.productId,
+              requestParams.page,
+              requestParams.sort,
+              requestParams.size
+            );
+          } else {
+            return EMPTY;
+          }
+        })
+      )
+      .subscribe();
+  }
 
   submitFeedback(feedback: Feedback): Observable<Feedback> {
     const headers = new HttpHeaders().set(
@@ -69,6 +94,15 @@ export class ProductFeedbackService {
     page: number = this.page(),
     sort: string = this.sort(),
     size: number = SIZE
+  ): void {
+    this.feedbackRequestQueue$.next({ productId, page, sort, size });
+  }
+
+  private executeFindProductFeedbacksByCriteria(
+    productId: string = this.productDetailService.productId(),
+    page: number = this.page(),
+    sort: string = this.sort(),
+    size: number = SIZE
   ): Observable<FeedbackApiResponse> {
     const requestParams = new HttpParams()
       .set('page', page.toString())
@@ -82,14 +116,9 @@ export class ProductFeedbackService {
       })
       .pipe(
         tap(response => {
-          if (page === 0) {
-            this.feedbacks.set(response._embedded.feedbacks);
-          } else {
-            this.feedbacks.set([
-              ...this.feedbacks(),
-              ...response._embedded.feedbacks
-            ]);
-          }
+          this.totalPages.set(response.page.totalPages);
+          this.totalElements.set(response.page.totalElements);
+          this.feedbacks.set([...this.feedbacks(), ...response._embedded.feedbacks]);
         })
       );
   }
@@ -100,10 +129,8 @@ export class ProductFeedbackService {
     const params = new HttpParams()
       .set('productId', productId)
       .set('userId', this.authService.getUserId() ?? '');
-    const requestURL = FEEDBACK_API_URL;
-
     return this.http
-      .get<Feedback>(requestURL, {
+      .get<Feedback>(FEEDBACK_API_URL, {
         params,
         context: new HttpContext().set(SkipLoading, true)
       })
@@ -125,20 +152,18 @@ export class ProductFeedbackService {
 
   initFeedbacks(): void {
     this.page.set(0);
-    this.findProductFeedbacksByCriteria().subscribe(response => {
-      this.totalPages.set(response.page.totalPages);
-      this.totalElements.set(response.page.totalElements);
-    });
+    this.findProductFeedbacksByCriteria();
   }
 
   loadMoreFeedbacks(): void {
     this.page.update(value => value + 1);
-    this.findProductFeedbacksByCriteria().subscribe();
+    this.findProductFeedbacksByCriteria();
   }
 
   changeSort(newSort: string): void {
+    this.feedbacks.set([]);
     this.page.set(0);
     this.sort.set(newSort);
-    this.findProductFeedbacksByCriteria().subscribe();
+    this.findProductFeedbacksByCriteria();
   }
 }
