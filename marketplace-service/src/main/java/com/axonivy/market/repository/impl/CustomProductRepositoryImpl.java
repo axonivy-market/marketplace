@@ -15,7 +15,6 @@ import com.axonivy.market.repository.CustomProductRepository;
 import com.axonivy.market.repository.CustomRepository;
 import com.axonivy.market.repository.MetadataRepository;
 import com.axonivy.market.repository.ProductModuleContentRepository;
-import com.axonivy.market.util.VersionUtils;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import org.apache.commons.lang3.ObjectUtils;
@@ -74,8 +73,9 @@ public class CustomProductRepositoryImpl extends CustomRepository implements Cus
     if (ObjectUtils.isEmpty(result)) {
       return null;
     }
-    String productArtifactId = id + MavenConstants.PRODUCT_ARTIFACT_POSTFIX;
-    Metadata productArtifactMetadata = CollectionUtils.firstElement(metadataRepo.findByProductIdAndArtifactId(id, productArtifactId));
+    Metadata productArtifactMetadata =
+        metadataRepo.findByProductId(id).stream().filter(meta -> StringUtils.endsWith(meta.getArtifactId(),
+            MavenConstants.PRODUCT_ARTIFACT_POSTFIX)).findAny().orElse(new Metadata());
     ProductModuleContent content = findByProductIdAndTagOrMavenVersion(id, productArtifactMetadata.getRelease());
     result.setProductModuleContent(content);
     return result;
