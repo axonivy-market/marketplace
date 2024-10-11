@@ -1,8 +1,10 @@
 package com.axonivy.market.repository.impl;
 
 import com.axonivy.market.constants.EntityConstants;
+import com.axonivy.market.constants.MavenConstants;
 import com.axonivy.market.constants.MongoDBConstants;
 import com.axonivy.market.criteria.ProductSearchCriteria;
+import com.axonivy.market.entity.Metadata;
 import com.axonivy.market.entity.Product;
 import com.axonivy.market.entity.ProductDesignerInstallation;
 import com.axonivy.market.entity.ProductModuleContent;
@@ -11,6 +13,7 @@ import com.axonivy.market.enums.Language;
 import com.axonivy.market.enums.TypeOption;
 import com.axonivy.market.repository.CustomProductRepository;
 import com.axonivy.market.repository.CustomRepository;
+import com.axonivy.market.repository.MetadataRepository;
 import com.axonivy.market.repository.ProductModuleContentRepository;
 import com.axonivy.market.util.VersionUtils;
 import lombok.AllArgsConstructor;
@@ -42,7 +45,8 @@ public class CustomProductRepositoryImpl extends CustomRepository implements Cus
   public static final String LOCALIZE_SEARCH_PATTERN = "%s.%s";
 
   final MongoTemplate mongoTemplate;
-  final ProductModuleContentRepository contentRepository;
+  final ProductModuleContentRepository contentRepo;
+  final MetadataRepository metadataRepo;
 
   public Product queryProductByAggregation(Aggregation aggregation) {
     return Optional.of(mongoTemplate.aggregate(aggregation, EntityConstants.PRODUCT, Product.class))
@@ -70,9 +74,9 @@ public class CustomProductRepositoryImpl extends CustomRepository implements Cus
     if (ObjectUtils.isEmpty(result)) {
       return null;
     }
-    List<String> devVersions = VersionUtils.getVersionsToDisplay(result.getReleasedVersions(), isShowDevVersion, null);
-    String currentTag = VersionUtils.convertVersionToTag(result.getId(), devVersions.get(0));
-    ProductModuleContent content = contentRepository.findByTagAndProductId(currentTag, id);
+    String productArtifactId = id + MavenConstants.PRODUCT_ARTIFACT_POSTFIX;
+    Metadata productArtifactMetadata = CollectionUtils.firstElement(metadataRepo.findByProductIdAndArtifactId(id, productArtifactId));
+    ProductModuleContent content = findByProductIdAndTagOrMavenVersion(id, productArtifactMetadata.getRelease());
     result.setProductModuleContent(content);
     return result;
   }
@@ -97,7 +101,7 @@ public class CustomProductRepositoryImpl extends CustomRepository implements Cus
   public Product getProductById(String id) {
     Product result = findProductById(id);
     if (!Objects.isNull(result)) {
-      ProductModuleContent content = contentRepository.findByTagAndProductId(
+      ProductModuleContent content = contentRepo.findByTagAndProductId(
           result.getNewestReleaseVersion(), id);
       result.setProductModuleContent(content);
     }
