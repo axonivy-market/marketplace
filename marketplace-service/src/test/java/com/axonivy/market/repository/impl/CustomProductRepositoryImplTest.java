@@ -21,7 +21,6 @@ import org.springframework.data.mongodb.core.query.Update;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -113,7 +112,7 @@ class CustomProductRepositoryImplTest extends BaseSetup {
 
     when(aggregationResults.getUniqueMappedResult()).thenReturn(mockProduct);
 
-    Product actualProduct = repo.getProductByIdWithNewestReleaseVersion(ID,false);
+    Product actualProduct = repo.getProductByIdWithNewestReleaseVersion(ID, false);
 
     verify(contentRepo, times(1)).findByTagAndProductId("v11.3.0", ID);
     assertEquals(mockProduct, actualProduct);
