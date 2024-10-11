@@ -7,7 +7,6 @@ import { HttpClient, provideHttpClient, withInterceptorsFromDi } from '@angular/
 import { ExternalDocumentComponent } from './external-document.component';
 import { of } from 'rxjs';
 import { API_URI } from '../../constants/api.constant';
-import { ExternalDocument } from '../../models/external-document.model';
 import { MOCK_EXTERNAL_DOCUMENT } from '../../mocks/mock-data';
 
 describe('ExternalDocumentComponent', () => {
@@ -58,7 +57,7 @@ describe('ExternalDocumentComponent', () => {
 
   it('should not redirect if response URL matches current URL', () => {
     const currentUrl = window.location.href;
-    let mockResponse = MOCK_EXTERNAL_DOCUMENT;
+    let mockResponse = { ...MOCK_EXTERNAL_DOCUMENT };
     mockResponse.relativeLink = currentUrl;
     httpClient.get.and.returnValue(of(mockResponse));
 

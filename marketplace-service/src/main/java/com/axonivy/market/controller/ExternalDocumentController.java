@@ -6,7 +6,6 @@ import com.axonivy.market.entity.Product;
 import com.axonivy.market.enums.ErrorCode;
 import com.axonivy.market.github.service.GitHubService;
 import com.axonivy.market.model.ExternalDocumentModel;
-import com.axonivy.market.model.MavenArtifactModel;
 import com.axonivy.market.model.Message;
 import com.axonivy.market.service.ExternalDocumentService;
 import com.axonivy.market.util.AuthorizationUtils;
@@ -16,7 +15,6 @@ import io.swagger.v3.oas.annotations.enums.ParameterIn;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.AllArgsConstructor;
 import org.apache.commons.lang3.ObjectUtils;
-import org.apache.commons.lang3.StringUtils;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -27,8 +25,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.net.URI;
-import java.net.URISyntaxException;
 import java.util.List;
 
 import static com.axonivy.market.constants.RequestMappingConstants.*;

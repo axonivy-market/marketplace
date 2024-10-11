@@ -7,7 +7,7 @@ import { ProductDetailService } from '../product-detail.service';
 import { LanguageService } from '../../../../core/services/language/language.service';
 import { ProductDetail } from '../../../../shared/models/product-detail.model';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
-import { ExternalDocument } from '../../../../shared/models/external-document.model';
+import { MOCK_EXTERNAL_DOCUMENT } from '../../../../shared/mocks/mock-data';
 
 const TEST_ID = 'portal';
 const TEST_VERSION = 'v10.0.0';
@@ -45,8 +45,7 @@ describe('ProductDetailInformationTabComponent', () => {
   });
 
   it('should set externalDocumentLink and displayExternalDocName on valid version change', () => {
-    const mockResponse = { productId: TEST_ID, version: TEST_VERSION, artifactId: TEST_ARTIFACT_ID, artifactName: TEST_ARTIFACT_NAME, relativeLink: TEST_DOC_URL };
-    productDetailService.getExteralDocumentForProductByVersion.and.returnValue(of(mockResponse));
+    productDetailService.getExteralDocumentForProductByVersion.and.returnValue(of({ ...MOCK_EXTERNAL_DOCUMENT }));
 
     component.productDetail = { id: TEST_ID, newestReleaseVersion: TEST_VERSION } as ProductDetail;
     component.selectedVersion = TEST_VERSION;

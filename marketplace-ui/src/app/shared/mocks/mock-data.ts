@@ -322,8 +322,8 @@ export const MOCK_PRODUCT_DETAIL: ProductDetail = {
 
 export const MOCK_EXTERNAL_DOCUMENT: ExternalDocument = {
   productId: 'portal',
+  version: 'v10.0.0',
   artifactId: 'portal-guide',
   artifactName: 'Portal Guide',
-  version: '10.0.0',
   relativeLink: '/market-cache/portal/portal-guide/10.0.0/doc/index.html'
 };
