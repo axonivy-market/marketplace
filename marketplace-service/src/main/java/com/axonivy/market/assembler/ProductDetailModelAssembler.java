@@ -87,7 +87,7 @@ public class ProductDetailModelAssembler extends RepresentationModelAssemblerSup
     if (StringUtils.isNotBlank(product.getVendorImageDarkMode())) {
       Link vendorDarkModeLink =
           linkTo(methodOn(ImageController.class).findImageById(product.getVendorImageDarkMode())).withSelfRel();
-      model.setVendorImage(vendorDarkModeLink.getHref());
+      model.setVendorImageDarkMode(vendorDarkModeLink.getHref());
     }
   }
 
