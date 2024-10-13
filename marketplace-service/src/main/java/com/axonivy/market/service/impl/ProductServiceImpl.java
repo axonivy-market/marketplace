@@ -3,6 +3,7 @@ package com.axonivy.market.service.impl;
 import com.axonivy.market.comparator.MavenVersionComparator;
 import com.axonivy.market.constants.CommonConstants;
 import com.axonivy.market.constants.GitHubConstants;
+import com.axonivy.market.constants.MetaConstants;
 import com.axonivy.market.constants.ProductJsonConstants;
 import com.axonivy.market.criteria.ProductSearchCriteria;
 import com.axonivy.market.entity.GitHubRepoMeta;
@@ -224,7 +225,7 @@ public class ProductServiceImpl implements ProductService {
     Map<String, List<GitHubFile>> groupGitHubFiles = new HashMap<>();
     for (var file : gitHubFileChanges) {
       String filePath = file.getFileName();
-      var parentPath = filePath.replace(FileType.META.getFileName(), EMPTY).replace(FileType.LOGO.getFileName(), EMPTY);
+      var parentPath = filePath.substring(0, filePath.lastIndexOf('/') + 1);
       var files = groupGitHubFiles.getOrDefault(parentPath, new ArrayList<>());
       files.add(file);
       files.sort((file1, file2) -> GitHubUtils.sortMetaJsonFirst(file1.getFileName(), file2.getFileName()));
@@ -285,6 +286,7 @@ public class ProductServiceImpl implements ProductService {
     if (FileType.META == file.getType()) {
       Product product = new Product();
       ProductFactory.mappingByGHContent(product, fileContent);
+      mappingVendorImageFromGHContent(product, fileContent);
       transferComputedDataFromDB(product);
       productId = productRepository.save(product).getId();
     } else {
@@ -403,10 +405,11 @@ public class ProductServiceImpl implements ProductService {
       var product = new Product();
       //update the meta.json first
       ghContentEntity.getValue().sort((f1, f2) -> GitHubUtils.sortMetaJsonFirst(f1.getName(), f2.getName()));
+
       for (var content : ghContentEntity.getValue()) {
         ProductFactory.mappingByGHContent(product, content);
-        mappingLogoFromGHContent(product, content);
         mappingVendorImageFromGHContent(product, content);
+        mappingLogoFromGHContent(product, content);
       }
       if (productRepository.findById(product.getId()).isPresent()) {
         continue;
@@ -431,13 +434,28 @@ public class ProductServiceImpl implements ProductService {
   }
 
   private void mappingVendorImageFromGHContent(Product product, GHContent ghContent) {
-    if (ghContent.getName().equals(product.getVendorImage())) {
-      Optional.ofNullable(imageService.mappingImageFromGHContent(product, ghContent, false))
-          .ifPresent(image -> product.setVendorImage(image.getId()));
+    if (StringUtils.endsWith(ghContent.getName(), MetaConstants.META_FILE)) {
+      mapVendorImage(product, ghContent, product.getVendorImage(), false);
+      mapVendorImage(product, ghContent, product.getVendorImageDarkMode(), true);
     }
-    else if (ghContent.getName().equals(product.getVendorImageDarkMode())) {
-      Optional.ofNullable(imageService.mappingImageFromGHContent(product, ghContent, false))
-          .ifPresent(image -> product.setVendorImageDarkMode(image.getId()));
+  }
+
+  private void mapVendorImage(Product product, GHContent ghContent, String imageName, boolean isDarkMode) {
+    if (StringUtils.isNotBlank(imageName)) {
+      String imagePath = StringUtils.replace(ghContent.getPath(), MetaConstants.META_FILE, imageName);
+      try {
+        GHContent imageContent = gitHubService.getGHContent(ghContent.getOwner(), imagePath, marketRepoBranch);
+        Optional.ofNullable(imageService.mappingImageFromGHContent(product, imageContent, isDarkMode))
+            .ifPresent(image -> {
+              if (isDarkMode) {
+                product.setVendorImageDarkMode(image.getId());
+              } else {
+                product.setVendorImage(image.getId());
+              }
+            });
+      } catch (IOException e) {
+        log.error("Get Vendor Image{} failed: ", isDarkMode ? " Dark Mode" : "", e);
+      }
     }
   }
 
