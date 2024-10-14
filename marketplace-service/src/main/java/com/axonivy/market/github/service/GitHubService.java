@@ -19,6 +19,8 @@ public interface GitHubService {
 
   GitHub getGitHub() throws IOException;
 
+  GitHub getGitHub(String accessToken) throws IOException;
+
   GHOrganization getOrganization(String orgName) throws IOException;
 
   GHRepository getRepository(String repositoryPath) throws IOException;
@@ -34,5 +36,5 @@ public interface GitHubService {
 
   User getAndUpdateUser(String accessToken);
 
-  void validateUserOrganization(String accessToken, String organization) throws UnauthorizedException;
+  void validateUserInOrganizationAndTeam(String accessToken, String team, String org) throws UnauthorizedException;
 }

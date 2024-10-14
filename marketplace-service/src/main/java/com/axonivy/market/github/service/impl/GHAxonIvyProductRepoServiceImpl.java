@@ -8,6 +8,7 @@ import com.axonivy.market.constants.ProductJsonConstants;
 import com.axonivy.market.constants.ReadmeConstants;
 import com.axonivy.market.entity.Product;
 import com.axonivy.market.entity.ProductModuleContent;
+import com.axonivy.market.enums.Language;
 import com.axonivy.market.enums.NonStandardProduct;
 import com.axonivy.market.github.service.GHAxonIvyProductRepoService;
 import com.axonivy.market.github.service.GitHubService;
@@ -48,6 +49,10 @@ import java.util.function.Function;
 import java.util.stream.Stream;
 
 import static com.axonivy.market.constants.CommonConstants.IMAGE_ID_PREFIX;
+import static com.axonivy.market.constants.GitHubConstants.MG_GRAPH_IMAGES_FOR_SETUP_FILE;
+import static com.axonivy.market.constants.GitHubConstants.MS_GRAPH_PRODUCT_DIRECTORY;
+import static com.axonivy.market.constants.ReadmeConstants.SETUP_FILE;
+import static com.axonivy.market.util.ProductContentUtils.SETUP;
 
 @Log4j2
 @Service
@@ -66,7 +71,9 @@ public class GHAxonIvyProductRepoServiceImpl implements GHAxonIvyProductRepoServ
 
   private static GHContent getProductJsonFile(List<GHContent> contents) {
     return contents.stream().filter(GHContent::isFile)
-        .filter(content -> ProductJsonConstants.PRODUCT_JSON_FILE.equals(content.getName())).findFirst().orElse(null);
+        .filter(content -> ProductJsonConstants.PRODUCT_JSON_FILE.equals(content.getName()))
+        .findFirst()
+        .orElse(null);
   }
 
   @Override
@@ -125,11 +132,43 @@ public class GHAxonIvyProductRepoServiceImpl implements GHAxonIvyProductRepoServ
             readmeContents = updateImagesWithDownloadUrl(product, contents, readmeContents);
           }
           ProductContentUtils.getExtractedPartsOfReadme(moduleContents, readmeContents, readmeFile.getName());
+          updateSetupPartForProductModuleContent(product, moduleContents,
+              productModuleContent.getTag());
         }
         ProductContentUtils.updateProductModuleTabContents(productModuleContent, moduleContents);
       }
     } catch (Exception e) {
       log.error("Cannot get README file's content {}", e.getMessage());
+    }
+  }
+
+  @Override
+  public void updateSetupPartForProductModuleContent(Product product,
+      Map<String, Map<String, String>> moduleContents, String tag) throws IOException {
+    if (!NonStandardProduct.isMsGraphProduct(product.getId())) {
+      return;
+    }
+
+    GHRepository ghRepository = gitHubService.getRepository(product.getRepositoryName());
+    List<GHContent> contents = ghRepository.getDirectoryContent(MS_GRAPH_PRODUCT_DIRECTORY, tag);
+
+    GHContent setupFile = contents.stream().filter(GHContent::isFile)
+        .filter(content -> content.getName().equalsIgnoreCase(SETUP_FILE))
+        .findFirst().orElse(null);
+
+    if (ObjectUtils.isNotEmpty(setupFile)) {
+      String setupContent = new String(setupFile.read().readAllBytes());
+      if (ProductContentUtils.hasImageDirectives(setupContent)) {
+        List<GHContent> setupImagesFolder =
+            contents.stream().filter(content -> content.getName().equals(MG_GRAPH_IMAGES_FOR_SETUP_FILE)).toList();
+        setupContent = updateImagesWithDownloadUrl(product, setupImagesFolder, setupContent);
+      }
+
+      if (setupContent.contains(ReadmeConstants.SETUP_PART)) {
+        List<String> extractSetupContent = List.of(setupContent.split(ReadmeConstants.SETUP_PART));
+        setupContent = ProductContentUtils.removeFirstLine(extractSetupContent.get(1));
+      }
+      ProductContentUtils.addLocaleContent(moduleContents, SETUP, setupContent, Language.EN.getValue());
     }
   }
 
