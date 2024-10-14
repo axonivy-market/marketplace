@@ -26,7 +26,6 @@ import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class CustomProductRepositoryImplTest extends BaseSetup {
-  private static final String TAG = "v10.0.21";
   @Mock
   ProductModuleContentRepository contentRepo;
   private Product mockProduct;
@@ -97,19 +96,8 @@ class CustomProductRepositoryImplTest extends BaseSetup {
 
     when(mongoTemplate.aggregate(any(Aggregation.class), eq(MongoDBConstants.PRODUCT_COLLECTION),
         eq(Product.class))).thenReturn(aggregationResults);
-
-    ProductModuleContent productModuleContent = ProductModuleContent.builder()
-        .productId("bmpn-statistic")
-        .tag("v11.3.0")
-        .build();
     
-    mockProduct = Product.builder()
-        .id(MOCK_PRODUCT_ID)
-        .newestReleaseVersion("12.0.0-m264")
-        .releasedVersions(List.of("11.1.1", "11.1.0", "11.3.0"))
-        .productModuleContent(productModuleContent)
-        .build();
-
+    mockProduct = getMockProducts().get(0);
     when(aggregationResults.getUniqueMappedResult()).thenReturn(mockProduct);
     Product actualProduct = repo.getProductByIdWithNewestReleaseVersion(MOCK_PRODUCT_ID,false);
     assertEquals(mockProduct, actualProduct);
@@ -118,7 +106,7 @@ class CustomProductRepositoryImplTest extends BaseSetup {
   @Test
   void testGetProductByIdAndTag() {
     setUpMockAggregateResult();
-    Product actualProduct = repo.getProductByIdWithTagOrVersion(MOCK_PRODUCT_ID, TAG);
+    Product actualProduct = repo.getProductByIdWithTagOrVersion(MOCK_PRODUCT_ID, MOCK_TAG_FROM_RELEASED_VERSION);
     assertEquals(mockProduct, actualProduct);
   }
 
@@ -156,7 +144,7 @@ class CustomProductRepositoryImplTest extends BaseSetup {
     int initialCount = 10;
     repo.updateInitialCount(MOCK_PRODUCT_ID, initialCount);
     verify(mongoTemplate).updateFirst(any(Query.class),
-        eq(new Update().inc("InstallationCount", initialCount).set("SynchronizedInstallationCount", true)),
+        eq(new Update().inc(MongoDBConstants.INSTALLATION_COUNT, initialCount).set(MongoDBConstants.SYNCHRONIZED_INSTALLATION_COUNT, true)),
         eq(Product.class));
   }
 
