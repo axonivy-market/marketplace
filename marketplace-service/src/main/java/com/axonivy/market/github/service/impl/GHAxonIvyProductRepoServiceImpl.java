@@ -132,8 +132,7 @@ public class GHAxonIvyProductRepoServiceImpl implements GHAxonIvyProductRepoServ
             readmeContents = updateImagesWithDownloadUrl(product, contents, readmeContents);
           }
           ProductContentUtils.getExtractedPartsOfReadme(moduleContents, readmeContents, readmeFile.getName());
-          updateSetupPartForProductModuleContent(product, moduleContents,
-              productModuleContent.getTag());
+          updateSetupPartForProductModuleContent(product, moduleContents, tag);
         }
         ProductContentUtils.updateProductModuleTabContents(productModuleContent, moduleContents);
       }
@@ -167,6 +166,7 @@ public class GHAxonIvyProductRepoServiceImpl implements GHAxonIvyProductRepoServ
       if (setupContent.contains(ReadmeConstants.SETUP_PART)) {
         List<String> extractSetupContent = List.of(setupContent.split(ReadmeConstants.SETUP_PART));
         setupContent = ProductContentUtils.removeFirstLine(extractSetupContent.get(1));
+        setupContent = replaceVariable(setupContent, product, tag);
       }
       ProductContentUtils.addLocaleContent(moduleContents, SETUP, setupContent, Language.EN.getValue());
     }
