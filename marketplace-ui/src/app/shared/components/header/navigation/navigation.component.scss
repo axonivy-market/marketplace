@@ -31,6 +31,10 @@
   border-radius: 10px;
 }
 
+.header-mobile__search input{
+  font-size: 1.4rem;
+}
+
 @media all and (max-width: 992px) {
   .show,
   .min-height-100 {
