@@ -364,7 +364,7 @@ class GHAxonIvyProductRepoServiceImplTest extends BaseSetup {
   }
 
   @Test
-  void testReplaceVariable() throws IOException {
+  void testUpdateVariablesContentInReadmeFile() throws IOException {
     String readmeContent = """
         #Product-name
         Test README
@@ -397,7 +397,7 @@ class GHAxonIvyProductRepoServiceImplTest extends BaseSetup {
         Product.builder().id(MOCK_PRODUCT_ID)
             .repositoryName("/market").build();
 
-    String updatedReadme = axonivyProductRepoServiceImpl.replaceVariable(readmeContent, mockProduct,
+    String updatedReadme = axonivyProductRepoServiceImpl.updateVariablesContentInReadmeFile(readmeContent, mockProduct,
         MOCK_TAG_FROM_RELEASED_VERSION);
 
     String expectedResult = readmeContent.replace(ReadmeConstants.VARIABLE_DIR, getMockVariablesContent());

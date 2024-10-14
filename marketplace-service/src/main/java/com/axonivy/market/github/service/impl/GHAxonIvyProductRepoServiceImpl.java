@@ -33,6 +33,7 @@ import org.w3c.dom.NodeList;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
@@ -125,7 +126,7 @@ public class GHAxonIvyProductRepoServiceImpl implements GHAxonIvyProductRepoServ
         for (GHContent readmeFile : readmeFiles) {
           String readmeContents = new String(readmeFile.read().readAllBytes());
           if (readmeContents.contains(ReadmeConstants.VARIABLE_DIR)) {
-            readmeContents = replaceVariable(readmeContents, product, tag);
+            readmeContents = updateVariablesContentInReadmeFile(readmeContents, product, tag);
           }
 
           if (ProductContentUtils.hasImageDirectives(readmeContents)) {
@@ -166,7 +167,7 @@ public class GHAxonIvyProductRepoServiceImpl implements GHAxonIvyProductRepoServ
       if (setupContent.contains(ReadmeConstants.SETUP_PART)) {
         List<String> extractSetupContent = List.of(setupContent.split(ReadmeConstants.SETUP_PART));
         setupContent = ProductContentUtils.removeFirstLine(extractSetupContent.get(1));
-        setupContent = replaceVariable(setupContent, product, tag);
+        setupContent = updateVariablesContentInReadmeFile(setupContent, product, tag);
       }
       ProductContentUtils.addLocaleContent(moduleContents, SETUP, setupContent, Language.EN.getValue());
     }
@@ -220,7 +221,8 @@ public class GHAxonIvyProductRepoServiceImpl implements GHAxonIvyProductRepoServ
     return ghRepository.getDirectoryContent(productFolderPath, tag);
   }
 
-  public String replaceVariable(String readmeContent, Product product, String tag) throws IOException {
+  public String updateVariablesContentInReadmeFile(String readmeContent, Product product,
+      String tag) throws IOException {
     GHRepository ghRepository = gitHubService.getRepository(product.getRepositoryName());
 
     Function<Stream<GHContent>, GHContent> getPomFile = ghContents -> ghContents
@@ -236,7 +238,7 @@ public class GHAxonIvyProductRepoServiceImpl implements GHAxonIvyProductRepoServ
         .map(Collection::stream)
         .map(getPomFile)
         .filter(ObjectUtils::isNotEmpty)
-        .map(pomFile -> readAndMapThePomFile(pomFile, ghRepository, readmeContent, tag))
+        .map(pomFile -> readAndMapPOMFile(pomFile, ghRepository, readmeContent, tag))
         .orElse(readmeContent);
   }
 
@@ -255,11 +257,11 @@ public class GHAxonIvyProductRepoServiceImpl implements GHAxonIvyProductRepoServ
     return productFolderContents.isEmpty() ? null : productFolderContents.get(0);
   }
 
-  private String readAndMapThePomFile(GHContent pomFile, GHRepository ghRepository, String readmeContent,
+  private String readAndMapPOMFile(GHContent pomFile, GHRepository ghRepository, String readmeContent,
       String tag) {
     try {
       String pomContent = new String(pomFile.read().readAllBytes());
-      String variableFilePathFromPomXML = extractVariableFilePathFromPomXML(pomContent);
+      String variableFilePathFromPomXML = extractVariablesPathFromPOMFile(pomContent);
       GHContent variableFile = ghRepository.getFileContent(variableFilePathFromPomXML, tag);
       String variableValue = new String(variableFile.read().readAllBytes());
       return StringUtils.isNotBlank(variableValue) ?
@@ -278,17 +280,17 @@ public class GHAxonIvyProductRepoServiceImpl implements GHAxonIvyProductRepoServ
     }
   }
 
-  private String extractVariableFilePathFromPomXML(String content) {
+  private String extractVariablesPathFromPOMFile(String content) {
     try {
       DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
       factory.setNamespaceAware(false);
       DocumentBuilder builder = factory.newDocumentBuilder();
-      Document document = builder.parse(new java.io.ByteArrayInputStream(content.getBytes()));
+      Document document = builder.parse(new ByteArrayInputStream(content.getBytes()));
 
       // Get the properties element by its tag name
-      NodeList propertiesList = document.getElementsByTagName(GitHubConstants.VARIABLES_FILE_DIR);
-      if (propertiesList.getLength() > 0) {
-        String variableFileValue = propertiesList.item(0).getTextContent();
+      NodeList properties = document.getElementsByTagName(GitHubConstants.VARIABLES_FILE_DIR);
+      if (properties.getLength() > 0) {
+        String variableFileValue = properties.item(0).getTextContent();
         return variableFileValue.replace(GitHubConstants.VARIABLES_PARENT_PATH, Strings.EMPTY);
       }
     } catch (Exception e) {
