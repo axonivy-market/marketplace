@@ -1,5 +1,6 @@
 package com.axonivy.market.controller;
 
+import com.axonivy.market.entity.ExternalDocumentMeta;
 import com.axonivy.market.entity.Product;
 import com.axonivy.market.github.service.GitHubService;
 import com.axonivy.market.service.ExternalDocumentService;
@@ -11,7 +12,6 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpStatus;
 
-import java.net.URISyntaxException;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -36,9 +36,9 @@ class ExternalDocumentControllerTest {
 
 
   @Test
-  void testFindProductDoc() throws URISyntaxException {
-    when(service.findExternalDocumentURI(any(), any())).thenReturn("/market-cache/portal/10.0.0/doc/index.html");
-    var result = externalDocumentController.findExternalDocumentURI("portal", "10.0");
+  void testFindProductDoc() {
+    when(service.findExternalDocument(any(), any())).thenReturn(createExternalDocumentMock());
+    var result = externalDocumentController.findExternalDocument("portal", "10.0");
     assertEquals(HttpStatus.OK, result.getStatusCode());
     assertTrue(result.hasBody());
     assertTrue(ObjectUtils.isNotEmpty(result.getBody()));
@@ -53,5 +53,11 @@ class ExternalDocumentControllerTest {
     when(service.findAllProductsHaveDocument()).thenReturn(List.of(mockProduct));
     result = externalDocumentController.syncDocumentForProduct(TOKEN, true);
     assertEquals(HttpStatus.OK, result.getStatusCode(), "Should return at least one product");
+  }
+
+  private ExternalDocumentMeta createExternalDocumentMock() {
+    return ExternalDocumentMeta.builder()
+        .relativeLink("/market-cache/portal/10.0.0/doc/index.html")
+        .build();
   }
 }
