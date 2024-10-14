@@ -623,13 +623,13 @@ class ProductServiceImplTest extends BaseSetup {
 
   private GHContent mockGHContentAsMetaJSON() {
     var mockGHContent = mock(GHContent.class);
-    when(mockGHContent.getName()).thenReturn(META_FILE);
+    lenient().when(mockGHContent.getName()).thenReturn(META_FILE);
     return mockGHContent;
   }
 
   private GHContent mockGHContentAsLogo() {
     var mockGHContent = mock(GHContent.class);
-    when(mockGHContent.getName()).thenReturn("logo.png");
+    lenient().when(mockGHContent.getName()).thenReturn("logo.png");
     return mockGHContent;
   }
 
