@@ -13,6 +13,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 import static com.axonivy.market.constants.MavenConstants.DEV_RELEASE_POSTFIX;
 import static org.apache.commons.lang3.StringUtils.EMPTY;
@@ -42,14 +44,15 @@ public class VersionFactory {
 
     // Get latest released version from metadata
     if (version == DevelopmentVersion.LATEST) {
-      return metadataList.stream().map(Metadata::getRelease).max(new LatestVersionComparator()).orElse(
-          EMPTY);
+      Set<String> releasedVersions =
+          metadataList.stream().flatMap(meta -> meta.getVersions().stream()).filter(VersionUtils::isReleasedVersion)
+              .collect(Collectors.toSet());
+      return releasedVersions.stream().max(new LatestVersionComparator()).orElse(EMPTY);
     }
 
     //Get latest dev version from metadata
     if (Objects.nonNull(version)) {
-      return metadataList.stream().map(Metadata::getLatest).max(new LatestVersionComparator()).orElse(
-          EMPTY);
+      return metadataList.stream().map(Metadata::getLatest).max(new LatestVersionComparator()).orElse(EMPTY);
     }
 
     List<String> versionsInArtifact = metadataList.stream().flatMap(metadata -> metadata.getVersions().stream()).sorted(
