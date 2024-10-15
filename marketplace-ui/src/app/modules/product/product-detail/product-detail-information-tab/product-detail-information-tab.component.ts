@@ -5,7 +5,6 @@ import { ProductDetail } from '../../../../shared/models/product-detail.model';
 import { LanguageService } from '../../../../core/services/language/language.service';
 import { ProductDetailService } from '../product-detail.service';
 import { VERSION } from '../../../../shared/constants/common.constant';
-import { error } from 'console';
 import { LoadingService } from '../../../../core/services/loading/loading.service';
 
 const SELECTED_VERSION = 'selectedVersion';
