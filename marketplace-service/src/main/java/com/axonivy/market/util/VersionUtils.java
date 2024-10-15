@@ -176,10 +176,10 @@ public class VersionUtils {
   }
 
   public static boolean isMajorVersion(String version) {
-    return getNumbersOnly(version).split(CommonConstants.DOT_SEPARATOR).length == 1 && isReleasedVersion(version);
+    return getNumbersOnly(version).split(MAIN_VERSION_REGEX).length == 1 && isReleasedVersion(version);
   }
 
   public static boolean isMinorVersion(String version) {
-    return getNumbersOnly(version).split(CommonConstants.DOT_SEPARATOR).length == 2 && isReleasedVersion(version);
+    return getNumbersOnly(version).split(MAIN_VERSION_REGEX).length == 2 && isReleasedVersion(version);
   }
 }
