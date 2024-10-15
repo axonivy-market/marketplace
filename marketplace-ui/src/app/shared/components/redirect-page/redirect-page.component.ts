@@ -33,7 +33,7 @@ export class RedirectPageComponent implements OnInit {
     const artifact = this.activeRoute.snapshot.paramMap.get(ROUTER.ARTIFACT);
 
     if (product && version) {
-      if ( artifact ) {
+      if (artifact) {
         this.fetchLatestLibVersionDownloadUrl(product, version, artifact);
         return;
       }
@@ -48,11 +48,7 @@ export class RedirectPageComponent implements OnInit {
     });
   }
 
-  fetchLatestLibVersionDownloadUrl(
-    product: string,
-    version: string,
-    artifact: string,
-  ): void {
+  fetchLatestLibVersionDownloadUrl( product: string, version: string, artifact: string): void {
     this.productService
       .getLatestArtifactDownloadUrl(product, version, artifact)
       .subscribe(downloadUrl => {
