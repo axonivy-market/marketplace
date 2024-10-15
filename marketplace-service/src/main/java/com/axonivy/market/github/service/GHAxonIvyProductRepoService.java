@@ -2,13 +2,13 @@ package com.axonivy.market.github.service;
 
 import com.axonivy.market.entity.Product;
 import com.axonivy.market.entity.ProductModuleContent;
-import com.axonivy.market.github.model.MavenArtifact;
 import org.kohsuke.github.GHContent;
 import org.kohsuke.github.GHRepository;
 import org.kohsuke.github.GHTag;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.Map;
 
 public interface GHAxonIvyProductRepoService {
 
@@ -18,7 +18,9 @@ public interface GHAxonIvyProductRepoService {
 
   ProductModuleContent getReadmeAndProductContentsFromTag(Product product, GHRepository ghRepository, String tag);
 
-  List<MavenArtifact> convertProductJsonToMavenProductInfo(GHContent content) throws IOException;
+  void extractReadMeFileFromContents(Product product, List<GHContent> contents,
+      ProductModuleContent productModuleContent);
 
-  void extractReadMeFileFromContents(Product product, List<GHContent> contents, ProductModuleContent productModuleContent);
+  void updateSetupPartForProductModuleContent(Product product,
+      Map<String, Map<String, String>> moduleContents, String tag) throws IOException;
 }

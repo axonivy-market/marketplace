@@ -5,14 +5,12 @@ import {
   computed,
   ElementRef,
   EventEmitter,
-  HostListener,
   inject,
   Input,
   model,
   Output,
   Signal,
   signal,
-  ViewChild,
   WritableSignal
 } from '@angular/core';
 import { ThemeService } from '../../../../core/services/theme/theme.service';
@@ -25,10 +23,17 @@ import { CommonDropdownComponent } from '../../../../shared/components/common-dr
 import { LanguageService } from '../../../../core/services/language/language.service';
 import { ItemDropdown } from '../../../../shared/models/item-dropdown.model';
 import { environment } from '../../../../../environments/environment';
-import { VERSION } from '../../../../shared/constants/common.constant';
+import { SHOW_DEV_VERSION, VERSION } from '../../../../shared/constants/common.constant';
 import { ProductDetailActionType } from '../../../../shared/enums/product-detail-action-type';
 import { RoutingQueryParamService } from '../../../../shared/services/routing.query.param.service';
 import { ProductDetail } from '../../../../shared/models/product-detail.model';
+import { LoadingSpinnerComponent } from '../../../../shared/components/loading-spinner/loading-spinner.component';
+import { CookieService } from 'ngx-cookie-service';
+import { CommonUtils } from '../../../../shared/utils/common.utils';
+import { ActivatedRoute, Router } from '@angular/router';
+import { ROUTER } from '../../../../shared/constants/router.constant';
+
+const showDevVersionCookieName = 'showDevVersions';
 
 @Component({
   selector: 'app-product-version-action',
@@ -37,7 +42,8 @@ import { ProductDetail } from '../../../../shared/models/product-detail.model';
     CommonModule,
     TranslateModule,
     FormsModule,
-    CommonDropdownComponent
+    CommonDropdownComponent,
+    LoadingSpinnerComponent
   ],
   templateUrl: './product-detail-version-action.component.html',
   styleUrl: './product-detail-version-action.component.scss'
@@ -47,9 +53,6 @@ export class ProductDetailVersionActionComponent implements AfterViewInit {
   @Output() installationCount = new EventEmitter<number>();
   @Input() productId!: string;
   @Input() actionType!: ProductDetailActionType;
-
-  @ViewChild('artifactDownloadButton') artifactDownloadButton!: ElementRef;
-  @ViewChild('artifactDownloadDialog') artifactDownloadDialog!: ElementRef;
 
   @Input() product!: ProductDetail;
   selectedVersion = model<string>('');
@@ -64,8 +67,8 @@ export class ProductDetailVersionActionComponent implements AfterViewInit {
   versionDropdownInDesigner: ItemDropdown[] = [];
 
   artifacts: WritableSignal<ItemDropdown[]> = signal([]);
-  isDevVersionsDisplayed = signal(false);
   isDropDownDisplayed = signal(false);
+  isArtifactLoading = signal(false);
   designerVersion = '';
   selectedArtifact: string | undefined = '';
   selectedArtifactName: string | undefined = '';
@@ -77,6 +80,11 @@ export class ProductDetailVersionActionComponent implements AfterViewInit {
   languageService = inject(LanguageService);
   routingQueryParamService = inject(RoutingQueryParamService);
   changeDetectorRef = inject(ChangeDetectorRef);
+  cookieService = inject(CookieService);
+  router = inject(Router);
+  route = inject(ActivatedRoute);
+
+  isDevVersionsDisplayed: WritableSignal<boolean> = signal(this.getShowDevVersionFromCookie());
 
   ngAfterViewInit() {
     const tooltipTriggerList = [].slice.call(
@@ -88,12 +96,18 @@ export class ProductDetailVersionActionComponent implements AfterViewInit {
   }
 
   onSelectVersion(version: string) {
-    this.selectedVersion.set(version);
-    this.artifacts.set(this.versionMap.get(this.selectedVersion()) ?? []);
-    this.updateSelectedArtifact();
+    if (this.selectedVersion() !== version) {
+      this.selectedVersion.set(version);
+    }
+    this.artifacts.set(this.versionMap.get(version) ?? []);
+    this.updateSelectedArtifact(version);
   }
 
-  private updateSelectedArtifact() {
+  private getShowDevVersionFromCookie() {
+    return CommonUtils.getCookieValue(this.cookieService, SHOW_DEV_VERSION, false);
+  }
+
+  private updateSelectedArtifact(version: string) {
     this.artifacts().forEach(artifact => {
       if (artifact.name) {
         artifact.label = artifact.name;
@@ -103,6 +117,15 @@ export class ProductDetailVersionActionComponent implements AfterViewInit {
       this.selectedArtifactName = this.artifacts()[0].name ?? '';
       this.selectedArtifact = this.artifacts()[0].downloadUrl ?? '';
     }
+    this.addVersionParamToRoute(version);
+  }
+
+  addVersionParamToRoute(selectedVersion: string) {
+    this.router.navigate([], {
+      relativeTo: this.route,
+      queryParams: { [ROUTER.VERSION]: selectedVersion },
+      queryParamsHandling: 'merge'
+    }).then();
   }
 
   onSelectVersionInDesigner(version: string) {
@@ -116,8 +139,9 @@ export class ProductDetailVersionActionComponent implements AfterViewInit {
 
   onShowDevVersion(event: Event) {
     event.preventDefault();
-    this.isDevVersionsDisplayed.set(!this.isDevVersionsDisplayed());
-    this.getVersionWithArtifact();
+    this.isDevVersionsDisplayed.update(oldValue => !oldValue);
+    this.cookieService.set(showDevVersionCookieName, this.isDevVersionsDisplayed().toString());
+    this.getVersionWithArtifact(true);
   }
 
   onShowVersionAndArtifact() {
@@ -125,50 +149,15 @@ export class ProductDetailVersionActionComponent implements AfterViewInit {
       this.getVersionWithArtifact();
     }
     this.isDropDownDisplayed.set(!this.isDropDownDisplayed());
-    this.changeDetectorRef.detectChanges();
-    this.reLocaleDialog();
   }
 
-  @HostListener('window:resize', ['$event'])
-  onResize() {
-    this.reLocaleDialog();
-  }
-
-  reLocaleDialog() {
-    const buttonPosition = this.getElementPosition(this.artifactDownloadButton);
-    const dialogPosition = this.getElementPosition(this.artifactDownloadDialog);
-    if (buttonPosition && dialogPosition) {
-      const dialogElement = this.artifactDownloadDialog.nativeElement;
-
-      dialogElement.style.position = 'absolute';
-      dialogElement.style.top = `${buttonPosition.y + buttonPosition.height}px`;
-
-      // Align the dialog to the center of the button
-      const dialogWidth = dialogElement.offsetWidth;
-      const buttonCenterX = buttonPosition.x + buttonPosition.width / 2;
-      dialogElement.style.left = `${buttonCenterX - dialogWidth / 2}px`;
-    }
-  }
-
-  getElementPosition(element: ElementRef) {
-    if (element?.nativeElement) {
-      const rect = element.nativeElement.getBoundingClientRect();
-      return {
-        x: rect.left + window.scrollX,
-        y: rect.top + window.scrollY,
-        width: rect.width,
-        height: rect.height
-      };
-    }
-    return null;
-  }
-
-  getVersionWithArtifact() {
+  getVersionWithArtifact(ignoreRouteVersion = false) {
+    this.isArtifactLoading.set(true);
     this.sanitizeDataBeforeFetching();
     this.productService
       .sendRequestToProductDetailVersionAPI(
         this.productId,
-        this.isDevVersionsDisplayed(),
+        this.getShowDevVersionFromCookie(),
         this.designerVersion
       )
       .subscribe(data => {
@@ -184,10 +173,17 @@ export class ProductDetailVersionActionComponent implements AfterViewInit {
           }
         });
         if (this.versions().length !== 0) {
-          this.artifacts.set(this.versionMap.get(this.selectedVersion()) ?? []);
-          this.updateSelectedArtifact();
+          this.onSelectVersion(this.getVersionFromRoute(ignoreRouteVersion) ?? this.versions()[0]);
         }
+        this.isArtifactLoading.set(false);
       });
+  }
+
+  getVersionFromRoute(ignoreRouteVersion: boolean): string | null {
+    if (ignoreRouteVersion) {
+      return null;
+    }
+    return this.route.snapshot.queryParams[ROUTER.VERSION] || null;
   }
 
   getVersionInDesigner(): void {
@@ -217,6 +213,7 @@ export class ProductDetailVersionActionComponent implements AfterViewInit {
   sanitizeDataBeforeFetching() {
     this.versions.set([]);
     this.artifacts.set([]);
+    this.selectedArtifact = '';
   }
 
   downloadArtifact() {

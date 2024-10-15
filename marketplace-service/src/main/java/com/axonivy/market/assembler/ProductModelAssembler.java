@@ -21,7 +21,7 @@ public class ProductModelAssembler extends RepresentationModelAssemblerSupport<P
   @Override
   public ProductModel toModel(Product product) {
     ProductModel resource = new ProductModel();
-    resource.add(linkTo(methodOn(ProductDetailsController.class).findProductDetails(product.getId())).withSelfRel());
+    resource.add(linkTo(methodOn(ProductDetailsController.class).findProductDetails(product.getId(),false)).withSelfRel());
     return createResource(resource, product);
   }
 

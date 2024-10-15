@@ -117,7 +117,7 @@ describe('ProductDetailComponent', () => {
     routingQueryParamService.getDesignerVersionFromCookie.and.returnValue(
       targetVersion
     );
-    component.getProductById(productId).subscribe(productDetail => {
+    component.getProductById(productId, false).subscribe(productDetail => {
       expect(productDetail).toEqual(MOCK_PRODUCT_DETAIL_BY_VERSION);
     });
   });
@@ -245,6 +245,17 @@ describe('ProductDetailComponent', () => {
     const mockContentWithNullDescription: ProductModuleContent =
       MOCK_PRODUCT_MODULE_CONTENT;
     component.productModuleContent.set(mockContentWithNullDescription);
+    expect(component.getContent('description')).toBeFalse();
+  });
+
+  it('should return false for any tab when detail content is undefined or null', () => {
+    component.productModuleContent.set(null as any as ProductModuleContent);
+    expect(component.getContent('description')).toBeFalse();
+    component.productModuleContent.set(
+      undefined as any as ProductModuleContent
+    );
+    expect(component.getContent('description')).toBeFalse();
+    component.productModuleContent.set({} as any as ProductModuleContent);
     expect(component.getContent('description')).toBeFalse();
   });
 
@@ -737,5 +748,30 @@ describe('ProductDetailComponent', () => {
     expect(component.productDetailActionType()).toBe(
       ProductDetailActionType.STANDARD
     );
+  });
+
+  it('displayed tabs array should have size 0 if product module content description, setup, demo, dependcy are all empty', () => {
+    const mockContent: ProductModuleContent = {
+      ...MOCK_PRODUCT_MODULE_CONTENT,
+    };
+    component.productModuleContent.set(mockContent);
+
+    expect(component.displayedTabsSignal().length).toBe(0);
+  });
+
+  it('should hide tab and tab content when all tabs have no content', () => {
+    const mockContent: ProductModuleContent = {
+      ...MOCK_PRODUCT_MODULE_CONTENT,
+    };
+    component.productModuleContent.set(mockContent);
+
+    const tabGroup = fixture.debugElement.query(By.css('.tab-group'));
+    const tabs = tabGroup.query(By.css('.row-tab d-none d-xl-block col-12'));
+    const dropdown = tabGroup.query(By.css('.dropdown-tab d-block d-xl-none d-flex flex-row justify-content-center align-items-center w-100'));
+    const tabContent = tabGroup.query(By.css('.tab-content col-12 default-cursor'));
+
+    expect(tabs).toBeFalsy();
+    expect(dropdown).toBeFalsy();
+    expect(tabContent).toBeFalsy();
   });
 });

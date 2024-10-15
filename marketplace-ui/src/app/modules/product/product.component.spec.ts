@@ -72,7 +72,9 @@ describe('ProductComponent', () => {
         {
           provide: ActivatedRoute,
           useValue: {
-            queryParams: of( {[DESIGNER_COOKIE_VARIABLE.restClientParamName]:true} )
+            queryParams: of({
+              [DESIGNER_COOKIE_VARIABLE.restClientParamName]: true
+            })
           }
         },
         {
@@ -91,7 +93,9 @@ describe('ProductComponent', () => {
         }
       })
       .compileComponents();
-    routingQueryParamService = TestBed.inject(RoutingQueryParamService) as jasmine.SpyObj<RoutingQueryParamService>;
+    routingQueryParamService = TestBed.inject(
+      RoutingQueryParamService
+    ) as jasmine.SpyObj<RoutingQueryParamService>;
 
     fixture = TestBed.createComponent(ProductComponent);
     component = fixture.componentInstance;
@@ -189,14 +193,6 @@ describe('ProductComponent', () => {
 
     expect(component.hasMore).toHaveBeenCalled();
     expect(component.loadProductItems).not.toHaveBeenCalled();
-  });
-
-  it('viewProductDetail should navigate', () => {
-    const productId = 'jira-connector';
-
-    component.viewProductDetail(productId, '');
-
-    expect(router.navigate).toHaveBeenCalledWith(['', productId]);
   });
 
   it('should set isRESTClient true based on query params and designer environment', () => {

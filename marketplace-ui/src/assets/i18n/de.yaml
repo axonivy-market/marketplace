@@ -24,7 +24,7 @@ common:
       demos: Demos
       solution: Lösungen
   error:
-    code: 'ERROR CODE: 404'
+    code: 'ERROR CODE'
     oops: 'Oops!'
     description: 'Unsere Webseite macht eine kleine Pause. Offenbar finden wir die von Dir angefragte Seite nicht.'
     buttonLabel: Zurück zur Startseite
@@ -42,15 +42,14 @@ common:
   search:
     placeholder: Suche
   nothingFound: Leider hat deine Suche keinen Treffer ergeben.<br /> Ändere deinen Suchbegriff oder stöbere in unseren Kategorien nach ähnlichen Themen.
-  header:
-    download: Download
   footer:
-    newVersionsInfo: Neue Version verfügbar für Linux,<br /> Windows und MacOS Betriebssysteme.
-    downloadLatestDevVersion: Download V11.3.1
-    ivyCompanyInfo: © 2023 Axon Ivy Inc
+    newVersionsInfo:
+      Hol Dir die neueste stabile <a class="link-opacity-100" href="https://developer.axonivy.com/release-cycle">Long Term Support</a>-Version der Axon Ivy Plattform -
+      oder schnapp Dir die brandneue <a class="link-opacity-100" href="https://developer.axonivy.com/download/leading-edge">Leading Edge</a>-Version!
+    download: Download
+    ivyCompanyInfo: Axon Ivy Inc.
     privacyPolicy: Datenschutzrichtlinie
     termsOfService: Nutzungsbedingungen
-  downloadLatestLTSVersion: Download V10.0.23
   product:
     detail:
       backToMainPage: Zurück zur Übersicht
@@ -77,6 +76,8 @@ common:
           status: Status
           moreInformation: Mehr Informationen
           contactUs: Kontakt
+          documentation: Dokumentation
+          defaultDocName: Doc
       install:
         buttonLabel: Jetzt installieren
         buttonLabelInDesigner: Installieren
@@ -109,3 +110,5 @@ common:
     noFeedbackMessage2: ''
     rateFeedbackBtnLabel: Bewerte diesen Konnektor
     reviewLabelNoYet: Noch keine Bewertungen
+  labels:
+    redirecting: Redirecting ...!

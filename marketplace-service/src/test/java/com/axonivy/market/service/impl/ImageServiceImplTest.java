@@ -1,16 +1,10 @@
 package com.axonivy.market.service.impl;
 
-import static com.axonivy.market.constants.CommonConstants.SLASH;
-import static com.axonivy.market.constants.MetaConstants.META_FILE;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNull;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
-
-import java.io.IOException;
-import java.io.InputStream;
-
+import com.axonivy.market.entity.Image;
+import com.axonivy.market.entity.Product;
+import com.axonivy.market.repository.ImageRepository;
+import com.axonivy.market.util.MavenUtils;
+import org.bson.types.Binary;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.kohsuke.github.GHContent;
@@ -18,22 +12,38 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.MockedStatic;
+import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import com.axonivy.market.entity.Image;
-import com.axonivy.market.entity.Product;
-import com.axonivy.market.repository.ImageRepository;
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.nio.file.Path;
+import java.util.Collections;
+import java.util.List;
+
+import static com.axonivy.market.constants.CommonConstants.SLASH;
+import static com.axonivy.market.constants.MetaConstants.META_FILE;
+import static org.bson.assertions.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.never;
 
 @ExtendWith(MockitoExtension.class)
 class ImageServiceImplTest {
-  @InjectMocks
-  private ImageServiceImpl imageService;
-
-  @Mock
-  private ImageRepository imageRepository;
-
   @Captor
   ArgumentCaptor<Image> argumentCaptor = ArgumentCaptor.forClass(Image.class);
+  @InjectMocks
+  private ImageServiceImpl imageService;
+  @Mock
+  private ImageRepository imageRepository;
 
   @Test
   void testMappingImageFromGHContent() throws IOException {
@@ -44,7 +54,7 @@ class ImageServiceImplTest {
     InputStream inputStream = this.getClass().getResourceAsStream(SLASH.concat(META_FILE));
     when(content.read()).thenReturn(inputStream);
 
-    imageService.mappingImageFromGHContent(mockProduct(), content , true);
+    imageService.mappingImageFromGHContent(mockProduct(), content, true);
 
     Image expectedImage = new Image();
     expectedImage.setProductId("google-maps-connector");
@@ -53,14 +63,89 @@ class ImageServiceImplTest {
 
     verify(imageRepository).save(argumentCaptor.capture());
 
-    assertEquals(argumentCaptor.getValue().getProductId(),expectedImage.getProductId());
-    assertEquals(argumentCaptor.getValue().getSha(),expectedImage.getSha());
-    assertEquals(argumentCaptor.getValue().getImageUrl(),expectedImage.getImageUrl());
+    assertEquals(argumentCaptor.getValue().getProductId(), expectedImage.getProductId());
+    assertEquals(argumentCaptor.getValue().getSha(), expectedImage.getSha());
+    assertEquals(argumentCaptor.getValue().getImageUrl(), expectedImage.getImageUrl());
+
+    when(imageRepository.findByProductIdAndSha(anyString(), anyString())).thenReturn(expectedImage);
+    Image result  = imageService.mappingImageFromGHContent(mockProduct(), content, false);
+    assertEquals(expectedImage, result);
+
+  }
+
+  @Test
+  void testMappingImageFromDownloadedFolder() {
+    try (MockedStatic<MavenUtils> mockedMavenUtils = Mockito.mockStatic(MavenUtils.class)) {
+      Product product = new Product();
+      product.setId("connectivity-demo");
+
+      byte[] newImageData = "connectivity-image-data".getBytes();
+
+      Path imagePath = Path.of("connectivity-image.png");
+      ByteArrayInputStream inputStream = new ByteArrayInputStream(newImageData);
+      mockedMavenUtils.when(() -> MavenUtils.extractedContentStream(imagePath)).thenReturn(inputStream);
+      when(imageRepository.findByProductId(product.getId())).thenReturn(Collections.emptyList());
+
+      Image newImage = new Image();
+      newImage.setImageData(new Binary(newImageData));
+      newImage.setProductId(product.getId());
+
+      when(imageRepository.save(any(Image.class))).thenReturn(newImage);
+
+      Image result = imageService.mappingImageFromDownloadedFolder(product, imagePath);
+
+      assertNotNull(result);
+      assertEquals(newImage, result);
+      verify(imageRepository).save(any(Image.class));
+    }
+  }
+
+  @Test
+  void testMappingImageFromDownloadedFolderWhenImageExists() {
+    try (MockedStatic<MavenUtils> mockedMavenUtils = Mockito.mockStatic(MavenUtils.class)) {
+      Product product = new Product();
+      product.setId("connectivity-demo");
+
+      byte[] existingImageData = "connectivity-image-data".getBytes();
+      byte[] newImageData = "connectivity-image-data".getBytes();
+
+      Path imagePath = Path.of("connectivity-image.png");
+      ByteArrayInputStream inputStream = new ByteArrayInputStream(newImageData);
+      mockedMavenUtils.when(() -> MavenUtils.extractedContentStream(imagePath)).thenReturn(inputStream);
+
+      Image existingImage = new Image();
+      existingImage.setImageData(new Binary(existingImageData));
+      existingImage.setProductId(product.getId());
+
+      when(imageRepository.findByProductId(product.getId())).thenReturn(List.of(existingImage));
+
+      Image result = imageService.mappingImageFromDownloadedFolder(product, imagePath);
+
+      assertNotNull(result);
+      assertEquals(existingImage, result);
+      verify(imageRepository, never()).save(any(Image.class));
+    }
+  }
+
+  @Test
+  void testMappingImageFromDownloadedFolder_ReturnNull() {
+    try (MockedStatic<MavenUtils> mockedMavenUtils = Mockito.mockStatic(MavenUtils.class)) {
+      Product product = new Product();
+      product.setId("connectivity-demo");
+      Path imagePath = Path.of("connectivity-image.png");
+      mockedMavenUtils.when(() -> MavenUtils.extractedContentStream(imagePath)).thenThrow(
+          new NullPointerException("File not found"));
+
+      Image result = imageService.mappingImageFromDownloadedFolder(product, imagePath);
+
+      assertNull(result);
+      verify(imageRepository, times(0)).save(any(Image.class));
+    }
   }
 
   @Test
   void testMappingImageFromGHContent_noGhContent() {
-    var result = imageService.mappingImageFromGHContent(mockProduct(), null , true);
+    var result = imageService.mappingImageFromGHContent(mockProduct(), null, true);
     assertNull(result);
   }
 

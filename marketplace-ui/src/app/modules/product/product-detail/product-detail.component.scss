@@ -4,15 +4,29 @@
 }
 
 .logo__image {
-  width: 70px;
+  object-fit: contain;
 }
 
 .logo__image-container {
   margin-right: 20px;
+  width: 70px;
+  position: relative !important;
 }
 
 .link-to-main {
   height: 43px;
+}
+
+.connector-title-container {
+  width: 70%;
+
+  @media (max-width: 1399px) {
+    width: 60%;
+  }
+
+  @media (max-width: 1199px) {
+    width: 100%;
+  }
 }
 
 .back-link {
@@ -175,7 +189,10 @@
   display: none;
 }
 
-.flexible-gap,
+.flexible-gap {
+  gap: 4.5rem;
+}
+
 .module-gap {
   gap: 4.5rem;
 }
@@ -226,6 +243,7 @@ hr {
 
   .logo__image {
     width: 41px;
+    object-fit: contain;
   }
 
   .product-analysis {
