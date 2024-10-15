@@ -1,5 +1,6 @@
 package com.axonivy.market.service;
 
+import com.axonivy.market.entity.ExternalDocumentMeta;
 import com.axonivy.market.entity.Product;
 
 import java.util.List;
@@ -9,5 +10,5 @@ public interface ExternalDocumentService {
 
   List<Product> findAllProductsHaveDocument();
 
-  String findExternalDocumentURI(String productId, String version);
+  ExternalDocumentMeta findExternalDocument(String productId, String version);
 }
