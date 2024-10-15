@@ -3,6 +3,7 @@ package com.axonivy.market.exceptions;
 import com.axonivy.market.enums.ErrorCode;
 import com.axonivy.market.exceptions.model.InvalidParamException;
 import com.axonivy.market.exceptions.model.MissingHeaderException;
+import com.axonivy.market.exceptions.model.NoContentException;
 import com.axonivy.market.exceptions.model.NotFoundException;
 import com.axonivy.market.exceptions.model.Oauth2ExchangeCodeException;
 import com.axonivy.market.exceptions.model.UnauthorizedException;
@@ -59,6 +60,14 @@ public class ExceptionHandlers extends ResponseEntityExceptionHandler {
     return new ResponseEntity<>(errorMessage, HttpStatus.NOT_FOUND);
   }
 
+  @ExceptionHandler(NoContentException.class)
+  public ResponseEntity<Object> handleNoContentException(NoContentException noContentException) {
+    var errorMessage = new Message();
+    errorMessage.setHelpCode(noContentException.getCode());
+    errorMessage.setMessageDetails(noContentException.getMessage());
+    return new ResponseEntity<>(errorMessage, HttpStatus.NO_CONTENT);
+  }
+
   @ExceptionHandler(InvalidParamException.class)
   public ResponseEntity<Object> handleInvalidException(InvalidParamException invalidDataException) {
     var errorMessage = new Message();
@@ -75,6 +84,7 @@ public class ExceptionHandlers extends ResponseEntityExceptionHandler {
     errorMessage.setMessageDetails(oauth2ExchangeCodeException.getErrorDescription());
     return new ResponseEntity<>(errorMessage, HttpStatus.BAD_REQUEST);
   }
+
   @ExceptionHandler(UnauthorizedException.class)
   public ResponseEntity<Object> handleUnauthorizedException(
       UnauthorizedException unauthorizedException) {

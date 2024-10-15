@@ -4,6 +4,7 @@ import com.axonivy.market.entity.Feedback;
 import com.axonivy.market.entity.Product;
 import com.axonivy.market.entity.User;
 import com.axonivy.market.enums.ErrorCode;
+import com.axonivy.market.exceptions.model.NoContentException;
 import com.axonivy.market.exceptions.model.NotFoundException;
 import com.axonivy.market.model.FeedbackModel;
 import com.axonivy.market.model.FeedbackModelRequest;
@@ -26,14 +27,8 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
-import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.Mockito.any;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class FeedbackServiceImplTest {
@@ -133,7 +128,7 @@ class FeedbackServiceImplTest {
   }
 
   @Test
-  void testFindFeedbackByUserIdAndProductId() throws NotFoundException {
+  void testFindFeedbackByUserIdAndProductId() {
     String productId = "product1";
 
     when(userRepository.findById(userId)).thenReturn(Optional.of(new User()));
@@ -150,19 +145,28 @@ class FeedbackServiceImplTest {
   }
 
   @Test
-  void testFindFeedbackByUserIdAndProductId_NotFound() {
+  void testFindFeedbackByUserIdAndProductId_NoContent() {
     String productId = "product1";
-
-    when(userRepository.findById(userId)).thenReturn(Optional.of(new User()));
+    userId = "";
     when(productRepository.findById(productId)).thenReturn(Optional.of(new Product()));
     when(feedbackRepository.findByUserIdAndProductId(userId, productId)).thenReturn(null);
 
-    NotFoundException exception = assertThrows(NotFoundException.class,
+    NoContentException exception = assertThrows(NoContentException.class,
         () -> feedbackService.findFeedbackByUserIdAndProductId(userId, productId));
-    assertEquals(ErrorCode.FEEDBACK_NOT_FOUND.getCode(), exception.getCode());
-    verify(userRepository, times(1)).findById(userId);
+    assertEquals(ErrorCode.NO_FEEDBACK_OF_USER_FOR_PRODUCT.getCode(), exception.getCode());
     verify(productRepository, times(1)).findById(productId);
     verify(feedbackRepository, times(1)).findByUserIdAndProductId(userId, productId);
+  }
+
+  @Test
+  void testFindFeedbackByUserIdAndProductId_NotFound() {
+    userId = "notFoundUser";
+
+    when(userRepository.findById(userId)).thenReturn(Optional.empty());
+    NotFoundException exception = assertThrows(NotFoundException.class,
+        () -> feedbackService.findFeedbackByUserIdAndProductId(userId, "product"));
+    assertEquals(ErrorCode.USER_NOT_FOUND.getCode(), exception.getCode());
+    verify(userRepository, times(1)).findById(userId);
   }
 
   @Test

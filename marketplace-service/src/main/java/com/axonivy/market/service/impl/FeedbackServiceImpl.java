@@ -2,6 +2,7 @@ package com.axonivy.market.service.impl;
 
 import com.axonivy.market.entity.Feedback;
 import com.axonivy.market.enums.ErrorCode;
+import com.axonivy.market.exceptions.model.NoContentException;
 import com.axonivy.market.exceptions.model.NotFoundException;
 import com.axonivy.market.model.FeedbackModelRequest;
 import com.axonivy.market.model.ProductRating;
@@ -9,6 +10,7 @@ import com.axonivy.market.repository.FeedbackRepository;
 import com.axonivy.market.repository.ProductRepository;
 import com.axonivy.market.repository.UserRepository;
 import com.axonivy.market.service.FeedbackService;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -45,14 +47,17 @@ public class FeedbackServiceImpl implements FeedbackService {
   }
 
   @Override
-  public Feedback findFeedbackByUserIdAndProductId(String userId, String productId) throws NotFoundException {
-    validateUserExists(userId);
+  public Feedback findFeedbackByUserIdAndProductId(String userId,
+      String productId) throws NotFoundException, NoContentException {
+    if (StringUtils.isNotBlank(userId)) {
+      validateUserExists(userId);
+    }
     validateProductExists(productId);
 
     Feedback existingUserFeedback = feedbackRepository.findByUserIdAndProductId(userId, productId);
     if (existingUserFeedback == null) {
-      throw new NotFoundException(ErrorCode.FEEDBACK_NOT_FOUND,
-          String.format("Not found feedback with user id '%s' and product id '%s'", userId, productId));
+      throw new NoContentException(ErrorCode.NO_FEEDBACK_OF_USER_FOR_PRODUCT,
+          String.format("No feedback with user id '%s' and product id '%s'", userId, productId));
     }
     return existingUserFeedback;
   }

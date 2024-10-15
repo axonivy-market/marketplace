@@ -9,6 +9,9 @@ import org.springdoc.core.models.GroupedOpenApi;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
+import java.util.Arrays;
+import java.util.List;
+
 import static com.axonivy.market.constants.CommonConstants.REQUESTED_BY;
 
 @Configuration
@@ -20,16 +23,21 @@ public class MarketApiDocumentConfig {
 
   @Bean
   public GroupedOpenApi buildMarketCustomHeader() {
-    return GroupedOpenApi.builder().group(DEFAULT_DOC_GROUP).addOpenApiCustomizer(customMarketHeaders())
+    return GroupedOpenApi.builder().group(DEFAULT_DOC_GROUP)
+        .addOpenApiCustomizer(customMarketHeaders())
         .pathsToMatch(PATH_PATTERN).build();
   }
 
   private OpenApiCustomizer customMarketHeaders() {
     return openApi -> openApi.getPaths().values().forEach((PathItem pathItem) -> {
-      for (Operation operation : pathItem.readOperations()) {
-        Parameter headerParameter = new Parameter().in(HEADER_PARAM).schema(new StringSchema()).name(REQUESTED_BY)
-            .description(DEFAULT_PARAM).required(true);
-        operation.addParametersItem(headerParameter);
+      List<Operation> operations = Arrays.asList(pathItem.getPut(), pathItem.getPost(), pathItem.getPatch(),
+          pathItem.getDelete());
+      for (Operation operation : operations) {
+        if (operation != null) {
+          Parameter headerParameter = new Parameter().in(HEADER_PARAM).schema(new StringSchema())
+              .name(REQUESTED_BY).description(DEFAULT_PARAM).required(true);
+          operation.addParametersItem(headerParameter);
+        }
       }
     });
   }

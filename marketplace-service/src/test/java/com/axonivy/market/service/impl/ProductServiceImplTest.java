@@ -1,63 +1,10 @@
 package com.axonivy.market.service.impl;
 
-import static com.axonivy.market.constants.CommonConstants.LOGO_FILE;
-import static com.axonivy.market.constants.CommonConstants.SLASH;
-import static com.axonivy.market.constants.MetaConstants.META_FILE;
-import static com.axonivy.market.enums.DocumentField.SHORT_DESCRIPTIONS;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyInt;
-import static org.mockito.ArgumentMatchers.anyLong;
-import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
-
-import java.io.IOException;
-import java.io.InputStream;
-
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.UUID;
-
-import com.axonivy.market.criteria.ProductSearchCriteria;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.kohsuke.github.GHCommit;
-import org.kohsuke.github.GHContent;
-import org.kohsuke.github.GHRepository;
-import org.kohsuke.github.GHTag;
-import org.mockito.ArgumentCaptor;
-import org.mockito.Captor;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
-import org.springframework.data.mongodb.core.MongoTemplate;
-import org.springframework.data.mongodb.core.query.Query;
-import org.springframework.data.mongodb.core.query.Update;
-import org.springframework.test.util.ReflectionTestUtils;
-
 import com.axonivy.market.BaseSetup;
 import com.axonivy.market.constants.GitHubConstants;
+import com.axonivy.market.criteria.ProductSearchCriteria;
 import com.axonivy.market.entity.GitHubRepoMeta;
+import com.axonivy.market.entity.MavenArtifactVersion;
 import com.axonivy.market.entity.Product;
 import com.axonivy.market.entity.ProductCustomSort;
 import com.axonivy.market.entity.ProductModuleContent;
@@ -74,55 +21,117 @@ import com.axonivy.market.github.service.GHAxonIvyProductRepoService;
 import com.axonivy.market.github.service.GitHubService;
 import com.axonivy.market.model.ProductCustomSortRequest;
 import com.axonivy.market.repository.GitHubRepoMetaRepository;
+import com.axonivy.market.repository.ImageRepository;
+import com.axonivy.market.repository.MavenArtifactVersionRepository;
+import com.axonivy.market.repository.MetadataRepository;
+import com.axonivy.market.repository.MetadataSyncRepository;
 import com.axonivy.market.repository.ProductCustomSortRepository;
+import com.axonivy.market.repository.ProductJsonContentRepository;
+import com.axonivy.market.repository.ProductModuleContentRepository;
 import com.axonivy.market.repository.ProductRepository;
+import com.axonivy.market.service.ImageService;
+import com.axonivy.market.service.MetadataService;
+import com.axonivy.market.util.MavenUtils;
+import com.axonivy.market.util.VersionUtils;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.kohsuke.github.GHCommit;
+import org.kohsuke.github.GHContent;
+import org.kohsuke.github.GHRepository;
+import org.kohsuke.github.GHTag;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Captor;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.MockedStatic;
+import org.mockito.Mockito;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.mongodb.core.MongoTemplate;
+import org.springframework.data.mongodb.core.query.Query;
+import org.springframework.data.mongodb.core.query.Update;
+import org.springframework.test.util.ReflectionTestUtils;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.UUID;
+
+import static com.axonivy.market.constants.CommonConstants.SLASH;
+import static com.axonivy.market.constants.MetaConstants.META_FILE;
+import static com.axonivy.market.constants.ProductJsonConstants.LOGO_FILE;
+import static com.axonivy.market.enums.DocumentField.SHORT_DESCRIPTIONS;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class ProductServiceImplTest extends BaseSetup {
 
+  public static final String RELEASE_TAG = "v10.0.2";
   private static final long LAST_CHANGE_TIME = 1718096290000L;
   private static final Pageable PAGEABLE = PageRequest.of(0, 20,
       Sort.by(SortOption.ALPHABETICALLY.getOption()).descending());
   private static final String SHA1_SAMPLE = "35baa89091b2452b77705da227f1a964ecabc6c8";
-  public static final String RELEASE_TAG = "v10.0.2";
   private static final String INSTALLATION_FILE_PATH = "src/test/resources/installationCount.json";
-
+  private static final String EMPTY_SOURCE_URL_META_JSON_FILE = "/emptySourceUrlMeta.json";
+  @Captor
+  ArgumentCaptor<Product> argumentCaptor = ArgumentCaptor.forClass(Product.class);
+  @Captor
+  ArgumentCaptor<ArrayList<ProductModuleContent>> argumentCaptorProductModuleContents;
+  @Captor
+  ArgumentCaptor<ProductModuleContent> argumentCaptorProductModuleContent;
+  @Captor
+  ArgumentCaptor<ArrayList<Product>> productListArgumentCaptor;
+  @Captor
+  ArgumentCaptor<ProductSearchCriteria> productSearchCriteriaArgumentCaptor;
   private String keyword;
   private String language;
   private Page<Product> mockResultReturn;
-
   @Mock
   private MongoTemplate mongoTemplate;
-
   @Mock
   private GHRepository ghRepository;
-
   @Mock
   private ProductRepository productRepository;
-
+  @Mock
+  private ProductModuleContentRepository productModuleContentRepository;
+  @Mock
+  private ProductJsonContentRepository productJsonContentRepository;
   @Mock
   private GHAxonIvyMarketRepoService marketRepoService;
-
   @Mock
   private GitHubRepoMetaRepository repoMetaRepository;
-
   @Mock
   private GitHubService gitHubService;
-
+  @Mock
+  private MetadataService metadataService;
+  @Mock
+  private ImageRepository imageRepository;
+  @Mock
+  private MetadataRepository metadataRepository;
+  @Mock
+  private MetadataSyncRepository metadataSyncRepository;
   @Mock
   private ProductCustomSortRepository productCustomSortRepository;
-
-  @Captor
-  ArgumentCaptor<Product> argumentCaptor = ArgumentCaptor.forClass(Product.class);
   @Mock
   private GHAxonIvyProductRepoService ghAxonIvyProductRepoService;
-
-  @Captor
-  ArgumentCaptor<ArrayList<Product>> productListArgumentCaptor;
-
-  @Captor
-  ArgumentCaptor<ProductSearchCriteria> productSearchCriteriaArgumentCaptor;
-
+  @Mock
+  private ImageService imageService;
+  @Mock
+  private MavenArtifactVersionRepository mavenArtifactVersionRepo;
   @InjectMocks
   private ProductServiceImpl productService;
 
@@ -133,14 +142,18 @@ class ProductServiceImplTest extends BaseSetup {
 
   @Test
   void testUpdateInstallationCountForProduct() {
-    int result = productService.updateInstallationCountForProduct(null);
+    String designerVersion = "10.0.20";
+    int result = productService.updateInstallationCountForProduct(null, designerVersion);
     assertEquals(0, result);
 
     Product product = mockProduct();
     when(productRepository.getProductById(product.getId())).thenReturn(product);
     when(productRepository.increaseInstallationCount(product.getId())).thenReturn(31);
-    result = productService.updateInstallationCountForProduct(product.getId());
-    assertEquals(31,result);
+    result = productService.updateInstallationCountForProduct(product.getId(), designerVersion);
+    assertEquals(31, result);
+
+    result = productService.updateInstallationCountForProduct(product.getId(), "");
+    assertEquals(31, result);
   }
 
   @Test
@@ -148,7 +161,7 @@ class ProductServiceImplTest extends BaseSetup {
     Product product = new Product();
     product.setSynchronizedInstallationCount(null);
     product.setId("portal");
-    ReflectionTestUtils.setField(productService, "installationCountPath", INSTALLATION_FILE_PATH);
+    ReflectionTestUtils.setField(productService, "legacyInstallationCountPath", INSTALLATION_FILE_PATH);
 
     productService.syncInstallationCountWithProduct(product);
 
@@ -158,14 +171,13 @@ class ProductServiceImplTest extends BaseSetup {
 
   @Test
   void testSyncInstallationCountWithProduct() {
-    ReflectionTestUtils.setField(productService, "installationCountPath", INSTALLATION_FILE_PATH);
+    ReflectionTestUtils.setField(productService, "legacyInstallationCountPath", INSTALLATION_FILE_PATH);
     Product product = mockProduct();
     product.setSynchronizedInstallationCount(false);
 
     productService.syncInstallationCountWithProduct(product);
 
     assertEquals(40, product.getInstallationCount());
-    assertEquals(true, product.getSynchronizedInstallationCount());
     assertTrue(product.getSynchronizedInstallationCount());
   }
 
@@ -216,10 +228,13 @@ class ProductServiceImplTest extends BaseSetup {
     when(marketRepoService.fetchMarketItemsBySHA1Range(any(), any())).thenReturn(List.of(mockGithubFile));
     var mockGHContent = mockGHContentAsMetaJSON();
     when(gitHubService.getGHContent(any(), anyString(), any())).thenReturn(mockGHContent);
+    when(mockGHContent.read()).thenReturn(this.getClass().getResourceAsStream(EMPTY_SOURCE_URL_META_JSON_FILE));
+    when(productRepository.save(any(Product.class))).thenReturn(new Product());
 
     // Executes
     var result = productService.syncLatestDataFromMarketRepo();
-    assertFalse(result);
+    assertNotNull(result);
+    assertTrue(result.isEmpty());
 
     // Start testing by deleting new meta
     mockCommit = mockGHCommitHasSHA1(UUID.randomUUID().toString());
@@ -228,7 +243,8 @@ class ProductServiceImplTest extends BaseSetup {
     mockGithubFile.setStatus(FileStatus.REMOVED);
     // Executes
     result = productService.syncLatestDataFromMarketRepo();
-    assertFalse(result);
+    assertNotNull(result);
+    assertTrue(result.isEmpty());
   }
 
   @Test
@@ -249,18 +265,18 @@ class ProductServiceImplTest extends BaseSetup {
 
     // Executes
     var result = productService.syncLatestDataFromMarketRepo();
-    assertFalse(result);
+    assertNotNull(result);
+    assertTrue(result.isEmpty());
 
     // Start testing by deleting new logo
     when(mockCommit.getSHA1()).thenReturn(UUID.randomUUID().toString());
     mockGitHubFile.setStatus(FileStatus.REMOVED);
     when(marketRepoService.fetchMarketItemsBySHA1Range(any(), any())).thenReturn(List.of(mockGitHubFile));
-    when(gitHubService.getGHContent(any(), anyString(), any())).thenReturn(mockGHContent);
-    when(productRepository.findByLogoUrl(any())).thenReturn(new Product());
 
     // Executes
     result = productService.syncLatestDataFromMarketRepo();
-    assertFalse(result);
+    assertNotNull(result);
+    assertTrue(result.isEmpty());
   }
 
   @Test
@@ -289,8 +305,8 @@ class ProductServiceImplTest extends BaseSetup {
                 && product.getType().equals(TypeOption.CONNECTORS.getCode()))
             .toList()));
     // Executes
-    result =
-        productService.findProducts(TypeOption.CONNECTORS.getOption(), SAMPLE_PRODUCT_NAME, language, false, PAGEABLE);
+    result = productService.findProducts(TypeOption.CONNECTORS.getOption(), SAMPLE_PRODUCT_NAME, language, false,
+        PAGEABLE);
     assertTrue(result.hasContent());
     assertEquals(SAMPLE_PRODUCT_NAME, result.getContent().get(0).getNames().get(Language.EN.getValue()));
   }
@@ -312,21 +328,47 @@ class ProductServiceImplTest extends BaseSetup {
     when(mockGHCommit.getCommitDate()).thenReturn(new Date());
 
     when(gitHubService.getRepositoryTags(anyString())).thenReturn(List.of(mockTag));
-    var mockContent = mockGHContentAsMetaJSON();
-    InputStream inputStream = this.getClass().getResourceAsStream(SLASH.concat(META_FILE));
-    when(mockContent.read()).thenReturn(inputStream);
-
     Map<String, List<GHContent>> mockGHContentMap = new HashMap<>();
-    mockGHContentMap.put(SAMPLE_PRODUCT_ID, List.of(mockContent));
+    mockGHContentMap.put(SAMPLE_PRODUCT_ID, mockMetaJsonAndLogoList());
     when(marketRepoService.fetchAllMarketItems()).thenReturn(mockGHContentMap);
+    when(productModuleContentRepository.saveAll(anyList())).thenReturn(List.of(mockReadmeProductContent()));
 
+    when(imageService.mappingImageFromGHContent(any(), any(), anyBoolean()))
+        .thenReturn(GHAxonIvyProductRepoServiceImplTest.mockImage());
+    when(productRepository.save(any(Product.class))).thenReturn(new Product());
     // Executes
     productService.syncLatestDataFromMarketRepo();
-
+    verify(productModuleContentRepository).saveAll(argumentCaptorProductModuleContents.capture());
     verify(productRepository).save(argumentCaptor.capture());
 
-    assertThat(argumentCaptor.getValue().getProductModuleContents()).usingRecursiveComparison()
-        .isEqualTo(List.of(mockReadmeProductContent()));
+    assertEquals(1, argumentCaptorProductModuleContents.getValue().size());
+    assertThat(argumentCaptorProductModuleContents.getValue().get(0).getId())
+        .isEqualTo(mockReadmeProductContent().getId());
+  }
+
+  @Test
+  void testSyncProductsFirstTimeWithOutSourceUrl() throws IOException {
+    var mockCommit = mockGHCommitHasSHA1(SHA1_SAMPLE);
+    when(marketRepoService.getLastCommit(anyLong())).thenReturn(mockCommit);
+    when(repoMetaRepository.findByRepoName(anyString())).thenReturn(null);
+
+    var mockContent = mockGHContentAsMetaJSON();
+    InputStream inputStream = this.getClass().getResourceAsStream(EMPTY_SOURCE_URL_META_JSON_FILE);
+    when(mockContent.read()).thenReturn(inputStream);
+
+    var mockContentLogo = mockGHContentAsLogo();
+
+    Map<String, List<GHContent>> mockGHContentMap = new HashMap<>();
+    List<GHContent> mockMetaJsonAndLogoList = new ArrayList<>(List.of(mockContent, mockContentLogo));
+    mockGHContentMap.put(SAMPLE_PRODUCT_ID, mockMetaJsonAndLogoList);
+    when(marketRepoService.fetchAllMarketItems()).thenReturn(mockGHContentMap);
+    when(imageService.mappingImageFromGHContent(any(), any(), anyBoolean())).thenReturn(
+        GHAxonIvyProductRepoServiceImplTest.mockImage());
+    when(productRepository.save(any(Product.class))).thenReturn(new Product());
+    // Executes
+    productService.syncLatestDataFromMarketRepo();
+    verify(productModuleContentRepository).save(argumentCaptorProductModuleContent.capture());
+    assertEquals("1.0", argumentCaptorProductModuleContent.getValue().getTag());
   }
 
   @Test
@@ -343,10 +385,10 @@ class ProductServiceImplTest extends BaseSetup {
 
     GHTag mockTag = mock(GHTag.class);
     when(mockTag.getName()).thenReturn("v10.0.2");
-    when(mockTag.getCommit()).thenReturn(mockGHCommit);
 
     GHTag mockTag2 = mock(GHTag.class);
     when(mockTag2.getName()).thenReturn("v10.0.3");
+    when(mockTag2.getCommit()).thenReturn(mockGHCommit);
 
     when(mockGHCommit.getCommitDate()).thenReturn(new Date());
     when(gitHubService.getRepositoryTags(anyString())).thenReturn(Arrays.asList(mockTag, mockTag2));
@@ -356,14 +398,16 @@ class ProductServiceImplTest extends BaseSetup {
 
     when(ghAxonIvyProductRepoService.getReadmeAndProductContentsFromTag(any(), any(), anyString()))
         .thenReturn(mockReturnProductContent);
+    when(productModuleContentRepository.saveAll(anyList()))
+        .thenReturn(List.of(mockReadmeProductContent(), mockReturnProductContent));
 
     // Executes
     productService.syncLatestDataFromMarketRepo();
 
+    verify(productModuleContentRepository).saveAll(argumentCaptorProductModuleContents.capture());
     verify(productRepository).save(argumentCaptor.capture());
-    assertEquals(2, argumentCaptor.getValue().getProductModuleContents().size());
-    assertThat(argumentCaptor.getValue().getProductModuleContents()).usingRecursiveComparison()
-        .isEqualTo(List.of(mockReadmeProductContent(), mockReturnProductContent));
+    assertThat(argumentCaptor.getValue().getProductModuleContent().getId())
+        .isEqualTo(mockReadmeProductContent().getId());
   }
 
   @Test
@@ -376,7 +420,26 @@ class ProductServiceImplTest extends BaseSetup {
 
     // Executes
     var result = productService.syncLatestDataFromMarketRepo();
-    assertTrue(result);
+    assertNotNull(result);
+    assertTrue(result.isEmpty());
+  }
+
+  @Test
+  void testSyncNullProductModuleContent() {
+    var mockCommit = mockGHCommitHasSHA1(SHA1_SAMPLE);
+    when(marketRepoService.getLastCommit(anyLong())).thenReturn(mockCommit);
+    when(repoMetaRepository.findByRepoName(anyString())).thenReturn(null);
+
+    Map<String, List<GHContent>> mockGHContentMap = new HashMap<>();
+    mockGHContentMap.put(SAMPLE_PRODUCT_ID, new ArrayList<>());
+    when(marketRepoService.fetchAllMarketItems()).thenReturn(mockGHContentMap);
+    when(productRepository.save(any(Product.class))).thenReturn(new Product());
+
+    // Executes
+    productService.syncLatestDataFromMarketRepo();
+    verify(productRepository).save(argumentCaptor.capture());
+
+    assertThat(argumentCaptor.getValue().getProductModuleContent()).isNull();
   }
 
   @Test
@@ -398,32 +461,53 @@ class ProductServiceImplTest extends BaseSetup {
     String id = "amazon-comprehend";
     Product mockProduct = mockResultReturn.getContent().get(0);
     mockProduct.setSynchronizedInstallationCount(true);
-    when(productRepository.getProductById(id)).thenReturn(mockProduct);
-    Product result = productService.fetchProductDetail(id);
+    when(productRepository.getProductByIdWithNewestReleaseVersion(id, false)).thenReturn(mockProduct);
+    Product result = productService.fetchProductDetail(id, false);
     assertEquals(mockProduct, result);
-    verify(productRepository, times(1)).getProductById(id);
+    verify(productRepository, times(1)).getProductByIdWithNewestReleaseVersion(id, false);
   }
 
   @Test
   void testFetchProductDetailByIdAndVersion() {
     String id = "amazon-comprehend";
+    String version = "10.0.2";
+
     Product mockProduct = mockResultReturn.getContent().get(0);
-    when(productRepository.getProductByIdAndTag(id, RELEASE_TAG)).thenReturn(mockProduct);
-    Product result = productService.fetchProductDetailByIdAndVersion(id, "10.0.2");
+    when(productRepository.getProductByIdWithTagOrVersion(id, version)).thenReturn(mockProduct);
+
+    Product result = productService.fetchProductDetailByIdAndVersion(id, version);
+
     assertEquals(mockProduct, result);
-    verify(productRepository, times(1)).getProductByIdAndTag(id, RELEASE_TAG);
+    verify(productRepository).getProductByIdWithTagOrVersion(id, version);
   }
 
   @Test
   void testFetchBestMatchProductDetailByIdAndVersion() {
     String id = "amazon-comprehend";
-    Product mockProduct = mockResultReturn.getContent().get(0);
-    mockProduct.setSynchronizedInstallationCount(true);
-    when(productRepository.getReleasedVersionsById(id)).thenReturn(List.of("10.0.2", "10.0.1"));
-    when(productRepository.getProductByIdAndTag(id, RELEASE_TAG)).thenReturn(mockProduct);
-    Product result = productService.fetchBestMatchProductDetail(id, "10.0.2");
-    assertEquals(mockProduct, result);
-    verify(productRepository, times(1)).getProductByIdAndTag(id, RELEASE_TAG);
+    String version = "v10.0.2";
+    String bestMatchVersion = "10.0.2";
+
+    MavenArtifactVersion mockMavenArtifactVersion = new MavenArtifactVersion();
+    mockMavenArtifactVersion.getProductArtifactsByVersion().put(bestMatchVersion, Collections.emptyList());
+
+    List<String> mockVersions = Arrays.asList("10.0.1", "10.0.2");
+    when(mavenArtifactVersionRepo.findById(id)).thenReturn(Optional.of(mockMavenArtifactVersion));
+    try (MockedStatic<VersionUtils> mockVersionUtils = Mockito.mockStatic(VersionUtils.class)) {
+      when(MavenUtils.getAllExistingVersions(mockMavenArtifactVersion, true, null)).thenReturn(mockVersions);
+      mockVersionUtils.when(() -> VersionUtils.getBestMatchVersion(mockVersions, version)).thenReturn(bestMatchVersion);
+      mockVersionUtils.when(() -> VersionUtils.convertVersionToTag(id, bestMatchVersion)).thenReturn(version);
+
+      Product mockProduct = new Product();
+      mockProduct.setSynchronizedInstallationCount(true);
+      when(productRepository.getProductByIdWithTagOrVersion(id, version)).thenReturn(mockProduct);
+
+      Product result = productService.fetchBestMatchProductDetail(id, version);
+
+      assertEquals(mockProduct, result);
+      assertEquals(bestMatchVersion, result.getBestMatchVersion());
+      verify(mavenArtifactVersionRepo).findById(id);
+      verify(productRepository).getProductByIdWithTagOrVersion(id, version);
+    }
   }
 
   @Test
@@ -466,8 +550,8 @@ class ProductServiceImplTest extends BaseSetup {
     List<String> orderedListOfProducts = List.of(SAMPLE_PRODUCT_ID);
     when(productRepository.findById(SAMPLE_PRODUCT_ID)).thenReturn(Optional.empty());
 
-    InvalidParamException exception = assertThrows(InvalidParamException.class, () ->
-        productService.refineOrderedListOfProductsInCustomSort(orderedListOfProducts));
+    InvalidParamException exception = assertThrows(InvalidParamException.class,
+        () -> productService.refineOrderedListOfProductsInCustomSort(orderedListOfProducts));
     assertEquals(ErrorCode.PRODUCT_NOT_FOUND.getCode(), exception.getCode());
   }
 
@@ -484,10 +568,10 @@ class ProductServiceImplTest extends BaseSetup {
 
     productService.addCustomSortProduct(customSortRequest);
 
-    verify(productCustomSortRepository, times(1)).deleteAll();
-    verify(mongoTemplate, times(1)).updateMulti(any(Query.class), any(Update.class), eq(Product.class));
-    verify(productCustomSortRepository, times(1)).save(any(ProductCustomSort.class));
-    verify(productRepository, times(1)).saveAll(productListArgumentCaptor.capture());
+    verify(productCustomSortRepository).deleteAll();
+    verify(mongoTemplate).updateMulti(any(Query.class), any(Update.class), eq(Product.class));
+    verify(productCustomSortRepository).save(any(ProductCustomSort.class));
+    verify(productRepository).saveAll(productListArgumentCaptor.capture());
 
     List<Product> capturedProducts = productListArgumentCaptor.getValue();
     assertEquals(1, capturedProducts.size());
@@ -499,7 +583,7 @@ class ProductServiceImplTest extends BaseSetup {
     Product product = mockProduct();
     product.setSynchronizedInstallationCount(false);
     String id = product.getId();
-    ReflectionTestUtils.setField(productService, "installationCountPath", INSTALLATION_FILE_PATH);
+    ReflectionTestUtils.setField(productService, "legacyInstallationCountPath", INSTALLATION_FILE_PATH);
 
     when(productRepository.updateInitialCount(eq(id), anyInt())).thenReturn(10);
 
@@ -545,8 +629,15 @@ class ProductServiceImplTest extends BaseSetup {
     return mockGHContent;
   }
 
+  private GHContent mockGHContentAsLogo() {
+    var mockGHContent = mock(GHContent.class);
+    when(mockGHContent.getName()).thenReturn("logo.png");
+    return mockGHContent;
+  }
+
   private ProductModuleContent mockReadmeProductContent() {
     ProductModuleContent productModuleContent = new ProductModuleContent();
+    productModuleContent.setId("amazon-comprehendv-10.0.2");
     productModuleContent.setTag("v10.0.2");
     productModuleContent.setName("Amazon Comprehend");
     Map<String, String> description = new HashMap<>();
@@ -556,8 +647,93 @@ class ProductServiceImplTest extends BaseSetup {
   }
 
   private List<Product> mockProducts() {
-    Product product1 = Product.builder().repositoryName("axonivy-market/amazon-comprehend-connector")
-        .productModuleContents(List.of(mockReadmeProductContent())).build();
+    Product product1 = Product.builder().id("amazon-comprehend-connector").repositoryName("axonivy-market/amazon-comprehend-connector")
+        .productModuleContent(mockReadmeProductContent()).build();
     return List.of(product1);
+  }
+
+  @Test
+  void testUpdateNewLogoFromGitHub_removeOldLogo() throws IOException {
+    // Start testing by adding new logo
+    mockMarketRepoMetaStatus();
+    var mockCommit = mockGHCommitHasSHA1(UUID.randomUUID().toString());
+    when(mockCommit.getCommitDate()).thenReturn(new Date());
+    when(marketRepoService.getLastCommit(anyLong())).thenReturn(mockCommit);
+
+    var mockGitHubFile = new GitHubFile();
+    mockGitHubFile.setFileName(LOGO_FILE);
+    mockGitHubFile.setType(FileType.LOGO);
+    mockGitHubFile.setStatus(FileStatus.ADDED);
+    when(marketRepoService.fetchMarketItemsBySHA1Range(any(), any())).thenReturn(List.of(mockGitHubFile));
+    var mockGHContent = mockGHContentAsLogo();
+    when(gitHubService.getGHContent(any(), anyString(), any())).thenReturn(mockGHContent);
+
+    // Executes
+    var result = productService.syncLatestDataFromMarketRepo();
+    assertNotNull(result);
+    assertTrue(result.isEmpty());
+
+    // Start testing by deleting new logo
+    when(mockCommit.getSHA1()).thenReturn(UUID.randomUUID().toString());
+    mockGitHubFile.setStatus(FileStatus.REMOVED);
+    when(marketRepoService.fetchMarketItemsBySHA1Range(any(), any())).thenReturn(List.of(mockGitHubFile));
+    when(imageRepository.findByImageUrlEndsWithIgnoreCase(anyString()))
+        .thenReturn(List.of(GHAxonIvyProductRepoServiceImplTest.mockImage()));
+    // Executes
+    result = productService.syncLatestDataFromMarketRepo();
+
+    verify(productRepository, times(1)).deleteById(anyString());
+    verify(imageRepository, times(1)).deleteAllByProductId(anyString());
+    verify(imageRepository, times(1)).findByImageUrlEndsWithIgnoreCase(anyString());
+    assertNotNull(result);
+    assertFalse(result.isEmpty());
+  }
+
+  @Test
+  void testUpdateNewLogoFromGitHub_ModifyLogo() throws IOException {
+    // Start testing by adding new logo
+    mockMarketRepoMetaStatus();
+    var mockCommit = mockGHCommitHasSHA1(UUID.randomUUID().toString());
+    when(mockCommit.getCommitDate()).thenReturn(new Date());
+    when(marketRepoService.getLastCommit(anyLong())).thenReturn(mockCommit);
+
+    var mockGitHubFile = new GitHubFile();
+    mockGitHubFile.setFileName("meta.json");
+    mockGitHubFile.setType(FileType.META);
+    mockGitHubFile.setStatus(FileStatus.REMOVED);
+    when(marketRepoService.fetchMarketItemsBySHA1Range(any(), any())).thenReturn(List.of(mockGitHubFile));
+    when(productRepository.findByMarketDirectory(anyString())).thenReturn(mockProducts());
+
+    // Executes
+    var result = productService.syncLatestDataFromMarketRepo();
+
+    assertNotNull(result);
+    assertFalse(result.isEmpty());
+    verify(productRepository, times(1)).deleteById(anyString());
+    verify(imageRepository, times(1)).deleteAllByProductId(anyString());
+  }
+
+  @Test
+  void testSyncOneProduct() throws IOException {
+    Product mockProduct = new Product();
+    mockProduct.setId(SAMPLE_PRODUCT_ID);
+    mockProduct.setMarketDirectory(SAMPLE_PRODUCT_PATH);
+    when(productRepository.findById(anyString())).thenReturn(Optional.of(mockProduct));
+    var mockContents = mockMetaJsonAndLogoList();
+    when(marketRepoService.getMarketItemByPath(anyString())).thenReturn(mockContents);
+    when(metadataService.syncProductMetadata(any(Product.class))).thenReturn(true);
+    when(productRepository.save(any(Product.class))).thenReturn(mockProduct);
+    // Executes
+    var result = productService.syncOneProduct(SAMPLE_PRODUCT_PATH, SAMPLE_PRODUCT_ID, false);
+    assertTrue(result);
+  }
+
+  private List<GHContent> mockMetaJsonAndLogoList() throws IOException {
+    var mockContent = mockGHContentAsMetaJSON();
+    InputStream inputStream = this.getClass().getResourceAsStream(SLASH.concat(META_FILE));
+    when(mockContent.read()).thenReturn(inputStream);
+
+    var mockContentLogo = mockGHContentAsLogo();
+    return new ArrayList<>(List.of(mockContent, mockContentLogo));
   }
 }

@@ -1,4 +1,5 @@
 import { ProductApiResponse } from '../models/apis/product-response.model';
+import { ExternalDocument } from '../models/external-document.model';
 import { ProductDetail } from '../models/product-detail.model';
 import { ProductModuleContent } from '../models/product-module-content.model';
 
@@ -211,7 +212,8 @@ export const MOCK_PRODUCT_MODULE_CONTENT: ProductModuleContent = {
   name: 'Jira Connector',
   groupId: 'com.axonivy.connector.jira',
   artifactId: 'jira-connector',
-  type: 'iar'
+  type: 'iar',
+  productId: 'jira-connector'
 };
 
 export const MOCK_PRODUCT_DETAIL_BY_VERSION: ProductDetail = {
@@ -255,7 +257,8 @@ export const MOCK_PRODUCT_DETAIL_BY_VERSION: ProductDetail = {
     name: 'cron job',
     groupId: 'com.axonivy.utils.cronjob',
     artifactId: 'cronjob',
-    type: 'iar'
+    type: 'iar',
+    productId: 'cronjob'
   },
   installationCount: 0,
   _links: {
@@ -307,11 +310,20 @@ export const MOCK_PRODUCT_DETAIL: ProductDetail = {
     name: 'Jira Connector',
     groupId: 'com.axonivy.connector.jira',
     artifactId: 'jira-connector',
-    type: 'iar'
+    type: 'iar',
+    productId: 'jira-connector',
   },
   _links: {
     self: {
       href: 'http://localhost:8082/api/product-details/jira-connector?type=connector'
     }
   }
+};
+
+export const MOCK_EXTERNAL_DOCUMENT: ExternalDocument = {
+  productId: 'portal',
+  version: 'v10.0.0',
+  artifactId: 'portal-guide',
+  artifactName: 'Portal Guide',
+  relativeLink: '/market-cache/portal/portal-guide/10.0.0/doc/index.html'
 };

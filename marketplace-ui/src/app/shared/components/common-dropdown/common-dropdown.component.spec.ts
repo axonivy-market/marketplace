@@ -3,9 +3,11 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { CommonDropdownComponent } from './common-dropdown.component';
 import { By } from '@angular/platform-browser';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
+import { Viewport } from 'karma-viewport/dist/adapter/viewport';
 import { ItemDropdown } from '../../models/item-dropdown.model';
 import { ElementRef } from '@angular/core';
 
+declare const viewport: Viewport;
 describe('CommonDropdownComponent', () => {
   let component: CommonDropdownComponent<string>;
   let fixture: ComponentFixture<CommonDropdownComponent<string>>;
@@ -86,5 +88,35 @@ describe('CommonDropdownComponent', () => {
 
     expect(result).toBeTrue();
     expect(translateService.instant).toHaveBeenCalledWith('originalLabel');
+  });
+
+  it('should apply scrollbar when dropdown is opened and items overflow', () => {
+    viewport.set(1920);
+
+    component.isDropdownOpen = true;
+    fixture.detectChanges();
+
+    const dropdownMenu = fixture.debugElement.query(By.css('.dropdown-menu')).nativeElement;
+
+    const maxHeight = getComputedStyle(dropdownMenu).maxHeight;
+    const overflow = getComputedStyle(dropdownMenu).overflow;
+
+    expect(maxHeight).toBe('440px');
+    expect(overflow).toBe('auto');
+  });
+
+  it('should apply scrollbar when dropdown is opened in smaller screen', () => {
+    viewport.set(430);
+
+    component.isDropdownOpen = true;
+    fixture.detectChanges();
+
+    const dropdownMenu = fixture.debugElement.query(By.css('.dropdown-menu')).nativeElement;
+
+    const maxHeight = getComputedStyle(dropdownMenu).maxHeight;
+    const overflow = getComputedStyle(dropdownMenu).overflow;
+
+    expect(maxHeight).toBe('220px');
+    expect(overflow).toBe('auto');
   });
 });

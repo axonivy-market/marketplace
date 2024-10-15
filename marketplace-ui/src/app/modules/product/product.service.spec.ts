@@ -14,6 +14,7 @@ import { Criteria } from '../../shared/models/criteria.model';
 import { VersionData } from '../../shared/models/vesion-artifact.model';
 import { ProductService } from './product.service';
 import { DEFAULT_PAGEABLE, DEFAULT_PAGEABLE_IN_REST_CLIENT } from '../../shared/constants/common.constant';
+import { API_URI } from '../../shared/constants/api.constant';
 
 describe('ProductService', () => {
   let products = MOCK_PRODUCTS._embedded.products;
@@ -185,7 +186,7 @@ describe('ProductService', () => {
 
     const req = httpMock.expectOne(request => {
       return (
-        request.url === `api/product-details/${productId}/versions` &&
+        request.url === `${API_URI.PRODUCT_DETAILS}/${productId}/versions` &&
         request.params.get('designerVersion') === designerVersion &&
         request.params.get('isShowDevVersion') === showDevVersion.toString()
       );
@@ -194,8 +195,8 @@ describe('ProductService', () => {
     expect(req.request.method).toBe('GET');
     req.flush(mockResponse);
 
-    expect(loadingServiceSpy.show).toHaveBeenCalled();
-    expect(loadingServiceSpy.hide).toHaveBeenCalled();
+    expect(loadingServiceSpy.show).not.toHaveBeenCalled();
+    expect(loadingServiceSpy.hide).not.toHaveBeenCalled();
   });
 
   it('getProductDetailsWithVersion should return a product detail', () => {
@@ -207,7 +208,7 @@ describe('ProductService', () => {
     });
 
     const req = httpMock.expectOne(request => {
-      expect(request.url).toEqual(`api/product-details/${productId}/${tag}`);
+      expect(request.url).toEqual(`${API_URI.PRODUCT_DETAILS}/${productId}/${tag}`);
 
       return true;
     });
@@ -215,14 +216,30 @@ describe('ProductService', () => {
 
   it('sendRequestToUpdateInstallationCount', () => {
     const productId = "google-maps-connector";
+    const designerVersion = "10.0.0";
 
-    service.sendRequestToUpdateInstallationCount(productId).subscribe(response => {
+    service.sendRequestToUpdateInstallationCount(productId, designerVersion).subscribe(response => {
       expect(response).toBe(3);
     });
 
-    const req = httpMock.expectOne(`api/product-details/installationcount/${productId}`);
+    const req = httpMock.expectOne(`${API_URI.PRODUCT_DETAILS}/installationcount/${productId}?designerVersion=${designerVersion}`);
     expect(req.request.method).toBe('PUT');
-    expect(req.request.headers.get('X-Requested-By')).toBe('ivy');
     req.flush(3);
   });
+
+  it('sendRequestToGetProductVersionForDesigner', () => {
+    const productId = 'google-maps-connector';
+
+    service.sendRequestToGetProductVersionsForDesigner(productId).subscribe(response => {
+      expect(response.length).toBe(3);
+      expect(response[0].version).toBe('10.0.2');
+      expect(response[1].version).toBe('10.0.1');
+      expect(response[2].version).toBe('10.0.0');
+    });
+
+    const req = httpMock.expectOne(`${API_URI.PRODUCT_DETAILS}/${productId}/designerversions`);
+    expect(req.request.method).toBe('GET');
+    req.flush([{ version: '10.0.2' }, {version: '10.0.1'}, {version: '10.0.0'}]);
+  });
+
 });

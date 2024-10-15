@@ -6,7 +6,8 @@
       class="card-img-top rounded"
       width="70"
       height="70"
-      [ngSrc]="product | logo"
+      [ngSrc]="logoUrl"
+      (error)="onLogoError()"
       [alt]="
         product.names | multilingualism: languageService.selectedLanguage()
       "

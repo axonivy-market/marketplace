@@ -6,17 +6,25 @@ import {
 import { environment } from '../../../environments/environment';
 import { LoadingService } from '../services/loading/loading.service';
 import { inject } from '@angular/core';
-import { finalize } from 'rxjs';
+import { catchError, EMPTY, finalize } from 'rxjs';
+import { Router } from '@angular/router';
+import { ERROR_CODES, ERROR_PAGE_PATH } from '../../shared/constants/common.constant';
 
 export const REQUEST_BY = 'X-Requested-By';
-export const IVY = 'ivy';
+export const IVY = 'marketplace-website';
 
-/** This is option for exclude loading api
+/** SkipLoading: This option for exclude loading api
  * @Example return httpClient.get('apiEndPoint', { context: new HttpContext().set(SkipLoading, true) })
  */
 export const SkipLoading = new HttpContextToken<boolean>(() => false);
 
+/** ForwardingError: This option for forwarding responce error to the caller
+ * @Example return httpClient.get('apiEndPoint', { context: new HttpContext().set(ForwardingError, true) })
+ */
+export const ForwardingError = new HttpContextToken<boolean>(() => false);
+
 export const apiInterceptor: HttpInterceptorFn = (req, next) => {
+  const router = inject(Router);
   const loadingService = inject(LoadingService);
 
   if (req.url.includes('i18n')) {
@@ -33,15 +41,25 @@ export const apiInterceptor: HttpInterceptorFn = (req, next) => {
     headers: addIvyHeaders(req.headers)
   });
 
-  if (req.context.get(SkipLoading)) {
-    return next(cloneReq);
+  if (!req.context.get(SkipLoading)) {
+    loadingService.show();
   }
 
-  loadingService.show();
-
   return next(cloneReq).pipe(
+    catchError(error => {
+      if (!req.context.get(ForwardingError)) {
+        if (ERROR_CODES.includes(error.status)) {
+          router.navigate([`${ERROR_PAGE_PATH}/${error.status}`]);
+        } else {
+          router.navigate([ERROR_PAGE_PATH]);
+        }
+      }
+      return EMPTY;
+    }),
     finalize(() => {
-      loadingService.hide();
+      if (!req.context.get(SkipLoading)) {
+        loadingService.hide();
+      }
     })
   );
 };

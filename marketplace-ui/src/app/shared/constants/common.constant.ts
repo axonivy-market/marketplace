@@ -3,7 +3,6 @@ import { FeedbackSortType } from '../enums/feedback-sort-type';
 import { Language } from '../enums/language.enum';
 import { SortOption } from '../enums/sort-option.enum';
 import { NavItem } from '../models/nav-item.model';
-import { DetailTab } from '../../modules/product/product-detail/product-detail.component';
 import { Pageable } from '../models/apis/pageable.model';
 import { ItemDropdown } from '../models/item-dropdown.model';
 
@@ -36,21 +35,25 @@ export const NAV_ITEMS: NavItem[] = [
 
 export const SOCIAL_MEDIA_LINK = [
   {
-    styleClass: 'fab fa-linkedin',
-    url: '/'
+    styleClass: 'fa-brands fa-linkedin-in',
+    title: 'Axon Ivy | LinkedIn',
+    url: 'https://www.linkedin.com/company/axon-ivy-ag'
   },
   {
-    styleClass: 'fab fa-xing',
-    url: '/'
+    styleClass: 'fa-brands fa-xing',
+    title: 'Axon Ivy | XING',
+    url: 'https://www.xing.com/companies/axonivyag'
   },
   {
-    styleClass: 'fab fa-youtube',
-    url: '/'
+    styleClass: 'fa-brands fa-facebook-f',
+    title: 'Axon Ivy | Facebook',
+    url: 'https://www.facebook.com/axonivy'
   },
   {
-    styleClass: 'fab fa-facebook',
-    url: '/'
-  }
+    styleClass: 'fa-brands fa-youtube',
+    title: 'Axon Ivy | Youtube',
+    url: 'https://www.youtube.com/channel/UCkoNcDoeDAVM7FB-txy3jnQ'
+  },
 ];
 
 export const IVY_FOOTER_LINKS = [
@@ -62,13 +65,8 @@ export const IVY_FOOTER_LINKS = [
   {
     containerStyleClass: 'footer__ivy-policy-tag',
     label: 'common.footer.privacyPolicy',
-    link: ''
+    link: 'https://www.axonivy.com/privacy-policy'
   },
-  {
-    containerStyleClass: 'footer__ivy-term-of-service-tag',
-    label: 'common.footer.termsOfService',
-    link: ''
-  }
 ];
 
 export const LANGUAGES = [
@@ -186,3 +184,23 @@ export const DEFAULT_PAGEABLE_IN_REST_CLIENT: Pageable = {
   page: 0,
   size: 40
 };
+
+export const VERSION = {
+  tagPrefix: 'v',
+  displayPrefix: 'Version '
+};
+
+export const ERROR_PAGE_PATH = 'error-page';
+export const NOT_FOUND_ERROR_CODE = 404;
+export const INTERNAL_SERVER_ERROR_CODE = 500;
+export const UNDEFINED_ERROR_CODE = 0;
+export const ERROR_CODES = [
+  UNDEFINED_ERROR_CODE,
+  NOT_FOUND_ERROR_CODE,
+  INTERNAL_SERVER_ERROR_CODE
+];
+
+export const DEFAULT_IMAGE_URL = '/assets/images/misc/axonivy-logo-round.png';
+export const DOWNLOAD_URL = 'https://developer.axonivy.com/download';
+export const SEARCH_URL = 'https://developer.axonivy.com/search';
+export const SHOW_DEV_VERSION = "showDevVersions";

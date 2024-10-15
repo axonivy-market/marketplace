@@ -28,6 +28,7 @@ services:
     restart: always
     volumes:
       - ./config/nginx/nginx.conf:/etc/nginx/nginx.conf
+      - marketcache:/usr/share/nginx/html/market-cache
     ports:
       - "4200:80"
     depends_on:
@@ -37,7 +38,8 @@ services:
     container_name: marketplace-service
     restart: always
     volumes:
-      - /home/axonivy/marketplace/data/market-installations.json:/home/data/market-installation.json
+      - /home/axonivy/marketplace/data/market-installations.json:/app/data/market-installation.json
+      - marketcache:/app/data/market-cache
     environment:
       - MONGODB_HOST=${SERVICE_MONGODB_HOST}
       - MONGODB_DATABASE=${SERVICE_MONGODB_DATABASE}
@@ -49,6 +51,7 @@ services:
       - MARKET_GITHUB_OAUTH_APP_CLIENT_SECRET=${MARKET_GITHUB_OAUTH_APP_CLIENT_SECRET}
       - MARKET_JWT_SECRET_KEY=${MARKET_JWT_SECRET_KEY}
       - MARKET_CORS_ALLOWED_ORIGIN=${MARKET_CORS_ALLOWED_ORIGIN}
+      - MARKET_MONGO_LOG_LEVEL=${MARKET_MONGO_LOG_LEVEL}
     build:
       context: ../marketplace-service
       dockerfile: Dockerfile
@@ -61,3 +64,4 @@ services:
 
 volumes:
   mongodata:
+  marketcache:
