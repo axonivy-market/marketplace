@@ -42,21 +42,19 @@ public class VersionFactory {
   public static String getFromMetadata(List<Metadata> metadataList, String requestedVersion) {
     var version = DevelopmentVersion.of(requestedVersion);
 
-    // Get latest released version from metadata
-    if (version == DevelopmentVersion.LATEST) {
-      Set<String> releasedVersions =
-          metadataList.stream().flatMap(meta -> meta.getVersions().stream()).filter(VersionUtils::isReleasedVersion)
-              .collect(Collectors.toSet());
-      return releasedVersions.stream().max(new LatestVersionComparator()).orElse(EMPTY);
-    }
-
     //Get latest dev version from metadata
-    if (Objects.nonNull(version)) {
+    if (Objects.nonNull(version) && version != DevelopmentVersion.LATEST) {
       return metadataList.stream().map(Metadata::getLatest).max(new LatestVersionComparator()).orElse(EMPTY);
     }
 
     List<String> versionsInArtifact = metadataList.stream().flatMap(metadata -> metadata.getVersions().stream()).sorted(
         new LatestVersionComparator()).toList();
+    List<String> releasedVersions = versionsInArtifact.stream().filter(VersionUtils::isReleasedVersion).toList();
+
+    // Get latest released version from metadata
+    if (version == DevelopmentVersion.LATEST) {
+      return releasedVersions.stream().max(new LatestVersionComparator()).orElse(EMPTY);
+    }
 
     //Get latest dev version from specific version
     if (requestedVersion.endsWith(DEV_RELEASE_POSTFIX)) {
@@ -64,7 +62,6 @@ public class VersionFactory {
       return findVersionStartWith(versionsInArtifact, requestedVersion);
     }
 
-    List<String> releasedVersions = versionsInArtifact.stream().filter(VersionUtils::isReleasedVersion).toList();
     String matchVersion = findVersionStartWith(releasedVersions, requestedVersion);
 
     // Return latest version of specific version if can not fnd latest release of that version
