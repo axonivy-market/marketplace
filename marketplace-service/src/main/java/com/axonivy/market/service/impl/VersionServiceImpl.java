@@ -145,10 +145,10 @@ public class VersionServiceImpl implements VersionService {
       return StringUtils.EMPTY;
     }
 
-    //Find download url first from product artifact model
+    // Find download url first from product artifact model
     String downloadUrl = getDownloadUrlFromExistingDataByArtifactIdAndVersion(
         artifactVersionCache.get().getProductArtifactsByVersion(), targetVersion, modelArtifactsId);
-    //Continue to find download url from artifact in meta.json if it is not existed in artifacts of product.json
+    // Continue to find download url from artifact in meta.json if it is not existed in artifacts of product.json
     if (StringUtils.isBlank(downloadUrl)) {
       downloadUrl = getDownloadUrlFromExistingDataByArtifactIdAndVersion(
           artifactVersionCache.get().getAdditionalArtifactsByVersion(), targetVersion, modelArtifactsId);
@@ -161,9 +161,9 @@ public class VersionServiceImpl implements VersionService {
   }
 
   public String getDownloadUrlFromExistingDataByArtifactIdAndVersion(
-      Map<String, List<MavenArtifactModel>> existingData, String version, List<String> artifactsId) {
+      Map<String, List<MavenArtifactModel>> existingData, String version, List<String> artifactsIds) {
     return existingData.computeIfAbsent(version, key -> new ArrayList<>()).stream().filter(
-        model -> artifactsId.contains(model.getArtifactId())).findAny().map(MavenArtifactModel::getDownloadUrl).orElse(
+        model -> artifactsIds.contains(model.getArtifactId())).findAny().map(MavenArtifactModel::getDownloadUrl).orElse(
         null);
   }
 }
