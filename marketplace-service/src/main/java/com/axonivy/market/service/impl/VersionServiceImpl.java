@@ -1,13 +1,17 @@
 package com.axonivy.market.service.impl;
 
 import com.axonivy.market.bo.Artifact;
+import com.axonivy.market.comparator.LatestVersionComparator;
+import com.axonivy.market.constants.MavenConstants;
 import com.axonivy.market.controller.ProductDetailsController;
 import com.axonivy.market.entity.MavenArtifactVersion;
+import com.axonivy.market.entity.Metadata;
 import com.axonivy.market.entity.ProductJsonContent;
 import com.axonivy.market.model.MavenArtifactModel;
 import com.axonivy.market.model.MavenArtifactVersionModel;
 import com.axonivy.market.model.VersionAndUrlModel;
 import com.axonivy.market.repository.MavenArtifactVersionRepository;
+import com.axonivy.market.repository.MetadataRepository;
 import com.axonivy.market.repository.ProductJsonContentRepository;
 import com.axonivy.market.repository.ProductModuleContentRepository;
 import com.axonivy.market.repository.ProductRepository;
@@ -19,6 +23,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.AllArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.lang3.ObjectUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.hateoas.Link;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
@@ -43,6 +48,7 @@ public class VersionServiceImpl implements VersionService {
   private final ProductJsonContentRepository productJsonRepo;
   private final ProductModuleContentRepository productContentRepo;
   private final ObjectMapper mapper = new ObjectMapper();
+  private final MetadataRepository metadataRepo;
 
   public List<MavenArtifactVersionModel> getArtifactsAndVersionToDisplay(String productId, Boolean isShowDevVersion,
       String designerVersion) {
@@ -87,10 +93,11 @@ public class VersionServiceImpl implements VersionService {
   @Override
   public List<VersionAndUrlModel> getVersionsForDesigner(String productId) {
     List<VersionAndUrlModel> versionAndUrlList = new ArrayList<>();
-    MavenArtifactVersion existingMavenArtifactVersion = mavenArtifactVersionRepository.findById(productId).orElse(
-        MavenArtifactVersion.builder().productId(productId).build());
-    List<String> versions = MavenUtils.getAllExistingVersions(existingMavenArtifactVersion, true,
-        null);
+//    MavenArtifactVersion existingMavenArtifactVersion = mavenArtifactVersionRepository.findById(productId).orElse(
+//        MavenArtifactVersion.builder().productId(productId).build());
+    List<String> versions = metadataRepo.findByProductId(productId).stream().filter(
+        metadata -> StringUtils.endsWith(metadata.getArtifactId(),
+            MavenConstants.PRODUCT_ARTIFACT_POSTFIX)).findAny().orElse(new Metadata()).getVersions().stream().sorted(new LatestVersionComparator()).toList();
     for (String version : versions) {
       Link link = linkTo(
           methodOn(ProductDetailsController.class).findProductJsonContent(productId, version)).withSelfRel();
