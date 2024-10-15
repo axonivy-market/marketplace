@@ -50,6 +50,7 @@ export class ProductDetailInformationTabComponent implements OnChanges {
         next: response => {
           this.externalDocumentLink = response.relativeLink;
           this.displayExternalDocName = response.artifactName;
+          this.loadingService.hide();
         },
         error: () => {
           this.externalDocumentLink = '';
