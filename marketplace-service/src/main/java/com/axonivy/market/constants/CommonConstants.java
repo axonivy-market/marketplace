@@ -14,6 +14,7 @@ public class CommonConstants {
   public static final String BEARER = "Bearer";
   public static final String DIGIT_REGEX = "([0-9]+.*)";
   public static final String IMAGE_ID_PREFIX = "imageId-";
+  public static final String IMAGE_EXTENSION = "(.*?).(jpeg|jpg|png|gif)";
   public static final String ID_WITH_NUMBER_PATTERN = "%s-%s";
   public static final String ERROR = "error";
   public static final String MESSAGE = "message";

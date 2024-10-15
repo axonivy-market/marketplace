@@ -2,12 +2,14 @@ package com.axonivy.market.factory;
 
 import com.axonivy.market.constants.ProductJsonConstants;
 import com.axonivy.market.entity.Product;
+import com.axonivy.market.enums.Language;
 import com.axonivy.market.github.model.Meta;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.kohsuke.github.GHContent;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.util.CollectionUtils;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -20,11 +22,10 @@ import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-import com.axonivy.market.enums.Language;
-
 @ExtendWith(MockitoExtension.class)
 class ProductFactoryTest {
-  private static final String DUMMY_LOGO_URL = "https://raw.githubusercontent.com/axonivy-market/market/master/market/connector/amazon-comprehend-connector/logo.png";
+  private static final String DUMMY_LOGO_URL = "https://raw.githubusercontent" +
+      ".com/axonivy-market/market/master/market/connector/amazon-comprehend-connector/logo.png";
 
   @Test
   void testMappingByGHContent() throws IOException {
@@ -39,6 +40,8 @@ class ProductFactoryTest {
     assertNotEquals(null, result);
     assertEquals("Amazon Comprehend", result.getNames().get(Language.EN.getValue()));
     assertEquals("Amazon Comprehend DE", result.getNames().get(Language.DE.getValue()));
+    Assertions.assertFalse(CollectionUtils.isEmpty(result.getArtifacts()));
+    Assertions.assertFalse(result.getArtifacts().get(0).isInvalidArtifact());
   }
 
   @Test
@@ -77,15 +80,15 @@ class ProductFactoryTest {
 
   @Test
   void testTransferComputedData() {
-    String initialVersion ="10.0.2";
+    String initialVersion = "10.0.2";
     Product product = new Product();
     Product persistedData = new Product();
     persistedData.setCustomOrder(1);
     persistedData.setReleasedVersions(List.of(initialVersion));
     persistedData.setNewestReleaseVersion(initialVersion);
 
-    ProductFactory.transferComputedPersistedDataToProduct(persistedData,product);
-    assertEquals(1,product.getCustomOrder());
+    ProductFactory.transferComputedPersistedDataToProduct(persistedData, product);
+    assertEquals(1, product.getCustomOrder());
     assertEquals(initialVersion, product.getNewestReleaseVersion());
     assertEquals(1, product.getReleasedVersions().size());
     assertEquals(initialVersion, product.getReleasedVersions().get(0));

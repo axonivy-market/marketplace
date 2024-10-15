@@ -16,10 +16,7 @@ import org.springframework.web.client.RestTemplate;
 import java.io.IOException;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.lenient;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 
 @ExtendWith(MockitoExtension.class)
@@ -64,5 +61,11 @@ class GitHubServiceImplTest {
   void testGetDirectoryContent() throws IOException {
     var result = gitHubService.getDirectoryContent(ghRepository, "", "");
     assertEquals(0, result.size());
+  }
+
+  @Test
+  void testGithubWithToken() throws IOException {
+    var result = gitHubService.getGitHub("accessToken");
+    assertEquals(DUMMY_API_URL, result.getApiUrl());
   }
 }

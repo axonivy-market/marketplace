@@ -1,6 +1,5 @@
 package com.axonivy.market.github.service.impl;
 
-import com.axonivy.market.constants.CommonConstants;
 import com.axonivy.market.constants.ErrorMessageConstants;
 import com.axonivy.market.constants.GitHubConstants;
 import com.axonivy.market.entity.User;
@@ -12,13 +11,13 @@ import com.axonivy.market.exceptions.model.UnauthorizedException;
 import com.axonivy.market.github.model.GitHubAccessTokenResponse;
 import com.axonivy.market.github.model.GitHubProperty;
 import com.axonivy.market.github.service.GitHubService;
-import com.axonivy.market.github.util.GitHubUtils;
 import com.axonivy.market.repository.UserRepository;
 import lombok.extern.log4j.Log4j2;
 import org.kohsuke.github.GHContent;
 import org.kohsuke.github.GHOrganization;
 import org.kohsuke.github.GHRepository;
 import org.kohsuke.github.GHTag;
+import org.kohsuke.github.GHTeam;
 import org.kohsuke.github.GitHub;
 import org.kohsuke.github.GitHubBuilder;
 import org.springframework.boot.web.client.RestTemplateBuilder;
@@ -30,9 +29,9 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
+import org.springframework.util.CollectionUtils;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
-import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 
 import java.io.IOException;
@@ -62,6 +61,11 @@ public class GitHubServiceImpl implements GitHubService {
   public GitHub getGitHub() throws IOException {
     return new GitHubBuilder().withOAuthToken(
         Optional.ofNullable(gitHubProperty).map(GitHubProperty::getToken).orElse(EMPTY).trim()).build();
+  }
+
+  @Override
+  public GitHub getGitHub(String accessToken) throws IOException {
+    return new GitHubBuilder().withOAuthToken(accessToken).build();
   }
 
   @Override
@@ -156,31 +160,40 @@ public class GitHubServiceImpl implements GitHubService {
   }
 
   @Override
-  public void validateUserOrganization(String accessToken, String organization) throws UnauthorizedException {
-    List<Map<String, Object>> userOrganizations = getUserOrganizations(accessToken);
-    for (var org : userOrganizations) {
-      if (org.get("login").equals(organization)) {
+  public void validateUserInOrganizationAndTeam(String accessToken, String organization,
+      String team) throws UnauthorizedException {
+    try {
+      var gitHub = getGitHub(accessToken);
+      if (isUserInOrganizationAndTeam(gitHub, organization, team)) {
         return;
       }
+    } catch (IOException e) {
+      log.error(e.getStackTrace());
     }
+
     throw new UnauthorizedException(ErrorCode.GITHUB_USER_UNAUTHORIZED.getCode(),
-        ErrorCode.GITHUB_USER_UNAUTHORIZED.getHelpText()
-            + "-User must be a member of the Axon Ivy Market Organization");
+        String.format(ErrorMessageConstants.INVALID_USER_ERROR, ErrorCode.GITHUB_USER_UNAUTHORIZED.getHelpText(),
+            team, organization));
   }
 
-  public List<Map<String, Object>> getUserOrganizations(String accessToken) throws UnauthorizedException {
-    HttpHeaders headers = new HttpHeaders();
-    headers.setBearerAuth(accessToken);
-    HttpEntity<String> entity = new HttpEntity<>(headers);
-    try {
-      ResponseEntity<List<Map<String, Object>>> response = restTemplate.exchange(GitHubConstants.Url.USER_ORGS,
-          HttpMethod.GET, entity, new ParameterizedTypeReference<>() {
-          });
-      return response.getBody();
-    } catch (HttpClientErrorException exception) {
-      throw new UnauthorizedException(ErrorCode.GITHUB_USER_UNAUTHORIZED.getCode(),
-          ErrorCode.GITHUB_USER_UNAUTHORIZED.getHelpText() + CommonConstants.DASH_SEPARATOR
-              + GitHubUtils.extractMessageFromExceptionMessage(exception.getMessage()));
+  private boolean isUserInOrganizationAndTeam(GitHub gitHub, String organization,
+      String teamName) throws IOException {
+    if (gitHub == null) {
+      return false;
     }
+
+    var hashMapTeams = gitHub.getMyTeams();
+    var hashSetTeam = hashMapTeams.get(organization);
+    if (CollectionUtils.isEmpty(hashSetTeam)) {
+      return false;
+    }
+
+    for (GHTeam team: hashSetTeam) {
+      if (teamName.equals(team.getName())) {
+        return true;
+      }
+    }
+
+    return false;
   }
 }
