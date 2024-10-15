@@ -23,10 +23,14 @@ import com.axonivy.market.model.ProductCustomSortRequest;
 import com.axonivy.market.repository.GitHubRepoMetaRepository;
 import com.axonivy.market.repository.ImageRepository;
 import com.axonivy.market.repository.MavenArtifactVersionRepository;
+import com.axonivy.market.repository.MetadataRepository;
+import com.axonivy.market.repository.MetadataSyncRepository;
 import com.axonivy.market.repository.ProductCustomSortRepository;
+import com.axonivy.market.repository.ProductJsonContentRepository;
 import com.axonivy.market.repository.ProductModuleContentRepository;
 import com.axonivy.market.repository.ProductRepository;
 import com.axonivy.market.service.ImageService;
+import com.axonivy.market.service.MetadataService;
 import com.axonivy.market.util.MavenUtils;
 import com.axonivy.market.util.VersionUtils;
 import org.junit.jupiter.api.BeforeEach;
@@ -71,7 +75,6 @@ import static com.axonivy.market.constants.ProductJsonConstants.LOGO_FILE;
 import static com.axonivy.market.enums.DocumentField.SHORT_DESCRIPTIONS;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -107,15 +110,21 @@ class ProductServiceImplTest extends BaseSetup {
   @Mock
   private ProductModuleContentRepository productModuleContentRepository;
   @Mock
+  private ProductJsonContentRepository productJsonContentRepository;
+  @Mock
   private GHAxonIvyMarketRepoService marketRepoService;
   @Mock
   private GitHubRepoMetaRepository repoMetaRepository;
   @Mock
   private GitHubService gitHubService;
-
+  @Mock
+  private MetadataService metadataService;
   @Mock
   private ImageRepository imageRepository;
-
+  @Mock
+  private MetadataRepository metadataRepository;
+  @Mock
+  private MetadataSyncRepository metadataSyncRepository;
   @Mock
   private ProductCustomSortRepository productCustomSortRepository;
   @Mock
@@ -320,15 +329,8 @@ class ProductServiceImplTest extends BaseSetup {
     when(mockGHCommit.getCommitDate()).thenReturn(new Date());
 
     when(gitHubService.getRepositoryTags(anyString())).thenReturn(List.of(mockTag));
-    var mockContent = mockGHContentAsMetaJSON();
-    InputStream inputStream = this.getClass().getResourceAsStream(SLASH.concat(META_FILE));
-    when(mockContent.read()).thenReturn(inputStream);
-
-    var mockContentLogo = mockGHContentAsLogo();
-    List<GHContent> mockMetaJsonAndLogoList = new ArrayList<>(List.of(mockContent, mockContentLogo));
-
     Map<String, List<GHContent>> mockGHContentMap = new HashMap<>();
-    mockGHContentMap.put(SAMPLE_PRODUCT_ID, mockMetaJsonAndLogoList);
+    mockGHContentMap.put(SAMPLE_PRODUCT_ID, mockMetaJsonAndLogoList());
     when(marketRepoService.fetchAllMarketItems()).thenReturn(mockGHContentMap);
     when(productModuleContentRepository.saveAll(anyList())).thenReturn(List.of(mockReadmeProductContent()));
 
@@ -710,6 +712,30 @@ class ProductServiceImplTest extends BaseSetup {
     assertFalse(result.isEmpty());
     verify(productRepository, times(1)).deleteById(anyString());
     verify(imageRepository, times(1)).deleteAllByProductId(anyString());
+  }
+
+  @Test
+  void testSyncOneProduct() throws IOException {
+    Product mockProduct = new Product();
+    mockProduct.setId(SAMPLE_PRODUCT_ID);
+    mockProduct.setMarketDirectory(SAMPLE_PRODUCT_PATH);
+    when(productRepository.findById(anyString())).thenReturn(Optional.of(mockProduct));
+    var mockContents = mockMetaJsonAndLogoList();
+    when(marketRepoService.getMarketItemByPath(anyString())).thenReturn(mockContents);
+    when(metadataService.syncProductMetadata(any(Product.class))).thenReturn(true);
+    when(productRepository.save(any(Product.class))).thenReturn(mockProduct);
+    // Executes
+    var result = productService.syncOneProduct(SAMPLE_PRODUCT_PATH, SAMPLE_PRODUCT_ID, false);
+    assertTrue(result);
+  }
+
+  private List<GHContent> mockMetaJsonAndLogoList() throws IOException {
+    var mockContent = mockGHContentAsMetaJSON();
+    InputStream inputStream = this.getClass().getResourceAsStream(SLASH.concat(META_FILE));
+    when(mockContent.read()).thenReturn(inputStream);
+
+    var mockContentLogo = mockGHContentAsLogo();
+    return new ArrayList<>(List.of(mockContent, mockContentLogo));
   }
 
   @Test

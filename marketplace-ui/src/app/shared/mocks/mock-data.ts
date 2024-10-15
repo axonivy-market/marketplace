@@ -1,4 +1,5 @@
 import { ProductApiResponse } from '../models/apis/product-response.model';
+import { ExternalDocument } from '../models/external-document.model';
 import { ProductDetail } from '../models/product-detail.model';
 import { ProductModuleContent } from '../models/product-module-content.model';
 
@@ -317,4 +318,12 @@ export const MOCK_PRODUCT_DETAIL: ProductDetail = {
   },
   vendorImage: '/assets/images/misc/axonivy-logo-black.svg',
   vendorImageDarkMode: '/assets/images/misc/axonivy-logo.svg'
+};
+
+export const MOCK_EXTERNAL_DOCUMENT: ExternalDocument = {
+  productId: 'portal',
+  version: 'v10.0.0',
+  artifactId: 'portal-guide',
+  artifactName: 'Portal Guide',
+  relativeLink: '/market-cache/portal/portal-guide/10.0.0/doc/index.html'
 };
