@@ -14,6 +14,7 @@ import org.kohsuke.github.GHCompare;
 import org.kohsuke.github.GHContent;
 import org.kohsuke.github.GHOrganization;
 import org.kohsuke.github.GHRepository;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
@@ -28,10 +29,11 @@ import java.util.Map;
 @Service
 public class GHAxonIvyMarketRepoServiceImpl implements GHAxonIvyMarketRepoService {
   private static final LocalDateTime INITIAL_COMMIT_DATE = LocalDateTime.of(2020, 10, 30, 0, 0);
+  private final GitHubService gitHubService;
   private GHOrganization organization;
   private GHRepository repository;
-
-  private final GitHubService gitHubService;
+  @Value("${market.github.market.branch}")
+  private String marketRepoBranch;
 
   public GHAxonIvyMarketRepoServiceImpl(GitHubService gitHubService) {
     this.gitHubService = gitHubService;
@@ -42,7 +44,7 @@ public class GHAxonIvyMarketRepoServiceImpl implements GHAxonIvyMarketRepoServic
     Map<String, List<GHContent>> ghContentMap = new HashMap<>();
     try {
       List<GHContent> directoryContent = gitHubService.getDirectoryContent(getRepository(),
-          GitHubConstants.AXONIVY_MARKETPLACE_PATH, GitHubConstants.DEFAULT_BRANCH);
+          GitHubConstants.AXONIVY_MARKETPLACE_PATH, marketRepoBranch);
       for (var content : directoryContent) {
         extractFileInDirectoryContent(content, ghContentMap);
       }
@@ -82,7 +84,7 @@ public class GHAxonIvyMarketRepoServiceImpl implements GHAxonIvyMarketRepoServic
   }
 
   private GHCommitQueryBuilder createQueryCommitsBuilder(long lastCommitTime) {
-    return getRepository().queryCommits().since(lastCommitTime).from(GitHubConstants.DEFAULT_BRANCH);
+    return getRepository().queryCommits().since(lastCommitTime).from(marketRepoBranch);
   }
 
   @Override

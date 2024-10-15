@@ -1,6 +1,8 @@
-import { Component, Input } from '@angular/core';
+import { Component, inject, Input } from '@angular/core';
 import { TranslateModule } from '@ngx-translate/core';
-import { ProductModuleContent } from '../../../../shared/models/product-module-content.model';
+import { LanguageService } from '../../../../core/services/language/language.service';
+import { Language } from '../../../../shared/enums/language.enum';
+import { ProductDetail } from '../../../../shared/models/product-detail.model';
 
 @Component({
   selector: 'app-product-detail-maven-content',
@@ -11,7 +13,13 @@ import { ProductModuleContent } from '../../../../shared/models/product-module-c
 })
 export class ProductDetailMavenContentComponent {
   @Input()
-  productModuleContent!: ProductModuleContent;
+  productDetail!: ProductDetail;
   @Input()
   selectedVersion!: string;
+
+  languageService = inject(LanguageService);
+
+  getProductName() {
+    return this.productDetail.names[Language.EN];
+  }
 }

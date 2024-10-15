@@ -25,6 +25,12 @@ describe('NavigationComponent', () => {
     expect(component).toBeTruthy();
   });
 
+  it('should call checkMediaSize on window resize', () => {
+    spyOn(component, 'checkMediaSize');
+    component.onResize();
+    expect(component.checkMediaSize).toHaveBeenCalled();
+  });
+
   it('mobile search should display in small screen', () => {
     viewport.set(540);
 

@@ -49,7 +49,11 @@
   }
 }
 
-.fs-md {
+::ng-deep .dropdown-item {
+  font-size: 14px;
+}
+
+::ng-deep .fs-md {
   font-size: 12px;
 }
 
@@ -62,10 +66,13 @@
   line-height: 14.52px;
   text-align: left;
 }
-.border__dropdown {
+
+::ng-deep .border__dropdown {
   border: 0.5px solid var(--ivy-secondary-border-color);
 }
-.btn {
+
+.btn,
+::ng-deep .install-designer-button {
   padding: 12px 32px;
   gap: 10px;
   font-weight: 500;
@@ -74,34 +81,63 @@
   border-radius: 10px;
   border: none;
 }
+
 .btn__install {
-  margin-right: 10px;
   border: 0px;
-}
-.btn__download {
-  border: 0.5px solid #ebebeb;
 }
 .primary-color {
   color: var(--ivy-primary-bg);
 }
 
-.dropdown-menu {
+::ng-deep .item-bar {
+  height: 44px;
+  padding: 15px;
+  gap: 10px;
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 16.8px;
+}
+
+::ng-deep #download-dropdown-menu .dropdown-menu.menu-bar {
+  margin-top: 0.2rem;
+  height: fit-content;
+  max-height: 176px;
+}
+
+::ng-deep .install-designer-dropdown {
+  border-radius: 3px;
+  padding: 10px;
+  text-align: start;
+}
+
+.install-download-button-container {
+  position: relative;
+}
+
+.btn__download {
+  border: 0.5px solid #ebebeb;
+}
+
+::ng-deep #download-dropdown-menu {
+  position: absolute;
+  right: 0;
+  width: 400px;
+  height: 204px;
+  margin-top: 4rem;
+  background-color: var(--bs-body-bg);
+  z-index: 999;
   padding: 10px;
   border-radius: 5px;
-  gap: 15px;
   box-shadow: 0px 4px 30px 0px rgba(0, 0, 0, 0.1);
-  margin-top: 1.2rem;
-  &.maven-artifact-version__action {
-    min-width: 400px;
-    min-height: 204px;
 
-    @media (max-width: 500px) {
-      left: auto;
-      right: auto;
-      min-width: 80vw;
-    }
+  @media (max-width: 1399px) {
+    width: 100%;
+  }
+
+  &.maven-artifact-version__action {
     .form-group {
       gap: 7px;
+
       .form-select {
         height: 32px;
         padding: 9px 10px;
@@ -110,6 +146,7 @@
         line-height: 12px;
         text-align: start !important;
         background-color: var(--ivy-text-normal-color);
+
         option {
           height: 44px;
           padding: 15px;
@@ -143,19 +180,38 @@
     line-height: 16.8px;
   }
 }
+
 .up-arrow {
-  margin-left: 55%;
-  z-index: 1001;
-  margin-top: -3.1rem;
-  @media (max-width: 767px) {
-    margin-left: 80%;
-  }
-  transform: rotate(45deg);
-  top: 2.45rem;
+  margin: 0;
+  top: -10px;
   width: 20px;
   height: 20px;
-  margin-bottom: -0.75rem;
+  right: 12%;
+  z-index: 1001;
+  transform: translateX(-50%) rotate(45deg);
   border-right-color: transparent;
   border-bottom-color: transparent;
   background-color: var(--bs-body-bg);
+
+  @media screen and (max-width: 1399px) {
+    right: 14%;
+  }
+  
+  @media screen and (max-width: 1199px) {
+    right: 21%;
+  }
+
+  @media screen and (max-width: 767px) {
+    right: 18%;
+  }
+
+  @media screen and (max-width: 575px) {
+    right: 15%;
+  }
+}
+
+.btn_contact-us {
+  @media (max-width: 991px) {
+    width: 100%;
+  }
 }

@@ -1,37 +1,52 @@
+import { CommonModule, NgOptimizedImage } from '@angular/common';
 import {
   Component,
   ElementRef,
   HostListener,
+  Signal,
   WritableSignal,
+  computed,
   inject,
   signal
 } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
-import { ProductService } from '../product.service';
+import { NgbNavModule } from '@ng-bootstrap/ng-bootstrap';
 import { TranslateModule } from '@ngx-translate/core';
 import { MarkdownModule, MarkdownService } from 'ngx-markdown';
+import { Observable } from 'rxjs';
+import { AuthService } from '../../../auth/auth.service';
+import { LanguageService } from '../../../core/services/language/language.service';
+import { ThemeService } from '../../../core/services/theme/theme.service';
+import { CommonDropdownComponent } from '../../../shared/components/common-dropdown/common-dropdown.component';
+import {
+  DEFAULT_IMAGE_URL,
+  PRODUCT_DETAIL_TABS, SHOW_DEV_VERSION,
+  VERSION
+} from '../../../shared/constants/common.constant';
+import { ItemDropdown } from '../../../shared/models/item-dropdown.model';
 import { ProductDetail } from '../../../shared/models/product-detail.model';
 import { ProductModuleContent } from '../../../shared/models/product-module-content.model';
-import { ThemeService } from '../../../core/services/theme/theme.service';
-import { CommonModule } from '@angular/common';
-import { ProductDetailInformationTabComponent } from './product-detail-information-tab/product-detail-information-tab.component';
-import { ProductDetailVersionActionComponent } from './product-detail-version-action/product-detail-version-action.component';
-import { ProductDetailMavenContentComponent } from './product-detail-maven-content/product-detail-maven-content.component';
-import { PRODUCT_DETAIL_TABS } from '../../../shared/constants/common.constant';
-import { NgbNavModule } from '@ng-bootstrap/ng-bootstrap';
-import { LanguageService } from '../../../core/services/language/language.service';
+import { ProductTypeIconPipe } from '../../../shared/pipes/icon.pipe';
+import { MissingReadmeContentPipe } from '../../../shared/pipes/missing-readme-content.pipe';
 import { MultilingualismPipe } from '../../../shared/pipes/multilingualism.pipe';
-import { ProductDetailService } from './product-detail.service';
+import { ProductTypePipe } from '../../../shared/pipes/product-type.pipe';
+import { AppModalService } from '../../../shared/services/app-modal.service';
+import { RoutingQueryParamService } from '../../../shared/services/routing.query.param.service';
+import { CommonUtils } from '../../../shared/utils/common.utils';
+import { ProductService } from '../product.service';
 import { ProductDetailFeedbackComponent } from './product-detail-feedback/product-detail-feedback.component';
 import { ProductFeedbackService } from './product-detail-feedback/product-feedbacks-panel/product-feedback.service';
-import { AppModalService } from '../../../shared/services/app-modal.service';
-import { AuthService } from '../../../auth/auth.service';
-import { ProductStarRatingNumberComponent } from './product-star-rating-number/product-star-rating-number.component';
-import { ProductInstallationCountActionComponent } from './product-installation-count-action/product-installation-count-action.component';
-import { ProductTypeIconPipe } from '../../../shared/pipes/icon.pipe';
-import { Observable } from 'rxjs';
 import { ProductStarRatingService } from './product-detail-feedback/product-star-rating-panel/product-star-rating.service';
-import { RoutingQueryParamService } from '../../../shared/services/routing.query.param.service';
+import { ProductDetailActionType } from '../../../shared/enums/product-detail-action-type';
+import { ProductDetailInformationTabComponent } from './product-detail-information-tab/product-detail-information-tab.component';
+import { ProductDetailMavenContentComponent } from './product-detail-maven-content/product-detail-maven-content.component';
+import { ProductDetailVersionActionComponent } from './product-detail-version-action/product-detail-version-action.component';
+import { ProductDetailService } from './product-detail.service';
+import { ProductInstallationCountActionComponent } from './product-installation-count-action/product-installation-count-action.component';
+import { ProductStarRatingNumberComponent } from './product-star-rating-number/product-star-rating-number.component';
+import { DisplayValue } from '../../../shared/models/display-value.model';
+import { CookieService } from 'ngx-cookie-service';
+import { ROUTER } from '../../../shared/constants/router.constant';
 
 export interface DetailTab {
   activeClass: string;
@@ -55,9 +70,13 @@ const DEFAULT_ACTIVE_TAB = 'description';
     ProductDetailMavenContentComponent,
     NgbNavModule,
     MultilingualismPipe,
+    ProductTypePipe,
     ProductDetailFeedbackComponent,
     ProductInstallationCountActionComponent,
-    ProductTypeIconPipe
+    ProductTypeIconPipe,
+    MissingReadmeContentPipe,
+    CommonDropdownComponent,
+    NgOptimizedImage
   ],
   providers: [ProductService, MarkdownService],
   templateUrl: './product-detail.component.html',
@@ -75,6 +94,7 @@ export class ProductDetailComponent {
   appModalService = inject(AppModalService);
   authService = inject(AuthService);
   elementRef = inject(ElementRef);
+  cookieService = inject(CookieService);
   routingQueryParamService = inject(RoutingQueryParamService);
 
   resizeObserver: ResizeObserver;
@@ -83,16 +103,21 @@ export class ProductDetailComponent {
   productModuleContent: WritableSignal<ProductModuleContent> = signal(
     {} as ProductModuleContent
   );
-  detailContent!: DetailTab;
+  productDetailActionType = signal(ProductDetailActionType.STANDARD);
   detailTabs = PRODUCT_DETAIL_TABS;
-  activeTab = DEFAULT_ACTIVE_TAB;
+  activeTab = '';
+  displayedTabsSignal: Signal<ItemDropdown[]> = computed(() => {
+    this.languageService.selectedLanguage();
+    return this.getDisplayedTabsSignal();
+  });
   isDropdownOpen: WritableSignal<boolean> = signal(false);
   isTabDropdownShown: WritableSignal<boolean> = signal(false);
   selectedVersion = '';
+  metaProductJsonUrl: string | undefined = '';
   showPopup!: boolean;
   isMobileMode = signal<boolean>(false);
   installationCount = 0;
-
+  logoUrl = DEFAULT_IMAGE_URL;
   @HostListener('window:popstate', ['$event'])
   onPopState() {
     this.activeTab = window.location.hash.split('#tab-')[1];
@@ -103,40 +128,73 @@ export class ProductDetailComponent {
   }
 
   constructor() {
+    this.scrollToTop();
     this.resizeObserver = new ResizeObserver(() => {
       this.updateDropdownSelection();
     });
   }
 
   ngOnInit(): void {
-    const productId = this.route.snapshot.params['id'];
+    this.router.navigate([], {
+      relativeTo: this.route,
+      replaceUrl: true
+    });
+
+    const productId = this.route.snapshot.params[ROUTER.ID];
     this.productDetailService.productId.set(productId);
     if (productId) {
-      this.getProductById(productId).subscribe(productDetail => {
+      const isShowDevVersion = CommonUtils.getCookieValue(this.cookieService, SHOW_DEV_VERSION, false);
+      this.getProductById(productId, isShowDevVersion).subscribe(productDetail => {
         this.productDetail.set(productDetail);
         this.productModuleContent.set(productDetail.productModuleContent);
+        this.metaProductJsonUrl = productDetail.metaProductJsonUrl;
         this.productDetailService.productNames.set(productDetail.names);
-        localStorage.removeItem(STORAGE_ITEM);
         this.installationCount = productDetail.installationCount;
+        this.handleProductContentVersion();
+        this.updateProductDetailActionType(productDetail);
+        this.logoUrl = productDetail.logoUrl;
       });
+
       this.productFeedbackService.initFeedbacks();
       this.productStarRatingService.fetchData();
-    }
-
-    const savedTab = localStorage.getItem(STORAGE_ITEM);
-    if (savedTab) {
-      this.activeTab = savedTab;
     }
     this.updateDropdownSelection();
   }
 
-  getProductById(productId: string): Observable<ProductDetail> {
-    const targetVersion =
-      this.routingQueryParamService.getDesignerVersionFromCookie();
-    if (!targetVersion) {
-      return this.productService.getProductDetails(productId);
+  onLogoError() {
+    this.logoUrl = DEFAULT_IMAGE_URL;
+  }
+
+  handleProductContentVersion() {
+    if (this.isEmptyProductContent()) {
+      return;
     }
-    return this.productService.getProductDetailsWithVersion(
+    this.selectedVersion = VERSION.displayPrefix.concat(
+      this.convertTagToVersion(this.productModuleContent().tag)
+    );
+  }
+
+  updateProductDetailActionType(productDetail: ProductDetail) {
+    if (productDetail?.sourceUrl === undefined) {
+      this.productDetailActionType.set(ProductDetailActionType.CUSTOM_SOLUTION);
+    } else if (this.routingQueryParamService.isDesignerEnv()) {
+      this.productDetailActionType.set(ProductDetailActionType.DESIGNER_ENV);
+    } else {
+      this.productDetailActionType.set(ProductDetailActionType.STANDARD);
+    }
+  }
+
+  scrollToTop() {
+    window.scrollTo({ left: 0, top: 0, behavior: 'instant' });
+  }
+
+  getProductById(productId: string, isShowDevVersion: boolean): Observable<ProductDetail> {
+    const targetVersion = this.routingQueryParamService.getDesignerVersionFromCookie();
+    if (!targetVersion) {
+      return this.productService.getProductDetails(productId, isShowDevVersion);
+    }
+
+    return this.productService.getBestMatchProductDetailsWithVersion(
       productId,
       targetVersion
     );
@@ -159,20 +217,46 @@ export class ProductDetailComponent {
 
   getContent(value: string): boolean {
     const content = this.productModuleContent();
+
+    if (!content || Object.keys(content).length === 0) {
+      return false;
+    }
+
     const conditions: { [key: string]: boolean } = {
-      description: content.description !== null,
-      demo: content.demo !== null && content.demo !== '',
-      setup: content.setup !== null && content.setup !== '',
+      description:
+        content.description !== null &&
+        CommonUtils.isContentDisplayedBasedOnLanguage(
+          content.description,
+          this.languageService.selectedLanguage()
+        ),
+      demo:
+        content.demo !== null &&
+        CommonUtils.isContentDisplayedBasedOnLanguage(
+          content.demo,
+          this.languageService.selectedLanguage()
+        ),
+      setup:
+        content.setup !== null &&
+        CommonUtils.isContentDisplayedBasedOnLanguage(
+          content.setup,
+          this.languageService.selectedLanguage()
+        ),
       dependency: content.isDependency
     };
 
     return conditions[value] ?? false;
   }
 
+  isEmptyProductContent(): boolean {
+    const content = this.productModuleContent();
+    return !content || Object.keys(content).length === 0;
+  }
+
   loadDetailTabs(selectedVersion: string) {
-    const tag = selectedVersion || this.productDetail().newestReleaseVersion;
+    let version = selectedVersion || this.productDetail().newestReleaseVersion;
+    version = version.replace(VERSION.displayPrefix, '');
     this.productService
-      .getProductDetailsWithVersion(this.productDetail().id, tag)
+      .getProductDetailsWithVersion(this.productDetail().id, version)
       .subscribe(updatedProductDetail => {
         this.productModuleContent.set(
           updatedProductDetail.productModuleContent
@@ -180,11 +264,14 @@ export class ProductDetailComponent {
       });
   }
 
-  onTabChange(event: Event) {
-    const selectedTab = (event.target as HTMLSelectElement).value;
-    this.setActiveTab(selectedTab);
+  onTabChange(event: string) {
+    this.setActiveTab(event);
     this.isTabDropdownShown.update(value => !value);
     this.onTabDropdownShown();
+  }
+
+  getSelectedTabLabel() {
+    return CommonUtils.getLabel(this.activeTab, PRODUCT_DETAIL_TABS);
   }
 
   updateDropdownSelection() {
@@ -207,7 +294,12 @@ export class ProductDetailComponent {
     }
     this.updateDropdownSelection();
 
-    localStorage.setItem(STORAGE_ITEM, tab);
+    const savedTab = {
+      productId: this.productDetail().id,
+      savedActiveTab: this.activeTab
+    };
+
+    localStorage.setItem(STORAGE_ITEM, JSON.stringify(savedTab));
   }
 
   onShowInfoContent() {
@@ -220,10 +312,11 @@ export class ProductDetailComponent {
 
   @HostListener('document:click', ['$event'])
   handleClickOutside(event: MouseEvent) {
+    const formSelect =
+      this.elementRef.nativeElement.querySelector('.form-select');
     if (
-      !this.elementRef.nativeElement
-        .querySelector('.form-select')
-        .contains(event.target) &&
+      formSelect &&
+      !formSelect.contains(event.target) &&
       this.isTabDropdownShown()
     ) {
       this.onTabDropdownShown();
@@ -262,5 +355,29 @@ export class ProductDetailComponent {
       queryParams: { showPopup: null },
       queryParamsHandling: 'merge'
     });
+  }
+
+  convertTagToVersion(tag: string): string {
+    if (tag !== '' && tag.startsWith(VERSION.tagPrefix)) {
+      return tag.substring(1);
+    }
+    return tag;
+  }
+
+  getDisplayedTabsSignal() {
+    const displayedTabs: ItemDropdown[] = [];
+    for (const detailTab of this.detailTabs) {
+      if (this.getContent(detailTab.value)) {
+        displayedTabs.push(detailTab);
+        this.activeTab = displayedTabs[0].value;
+      }
+    }
+    return displayedTabs;
+  }
+
+  getProductModuleContentValue(key: ItemDropdown): DisplayValue | null {
+    type tabName = 'description' | 'demo' | 'setup';
+    const value = key.value as tabName;
+    return this.productModuleContent()[value];
   }
 }

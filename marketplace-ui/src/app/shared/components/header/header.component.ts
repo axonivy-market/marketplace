@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, inject, signal, WritableSignal } from '@angular/core';
+import { Component, inject, model } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { LanguageService } from '../../../core/services/language/language.service';
@@ -27,7 +27,7 @@ import { ThemeSelectionComponent } from './theme-selection/theme-selection.compo
 export class HeaderComponent {
   selectedNav = '/';
 
-  isMobileMenuCollapsed: WritableSignal<boolean> = signal(true);
+  isMobileMenuCollapsed = model<boolean>(true);
 
   themeService = inject(ThemeService);
   translateService = inject(TranslateService);

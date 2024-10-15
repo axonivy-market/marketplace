@@ -6,6 +6,7 @@ img {
 .card {
   background-color: var(--ivy-secondary-bg);
   border: 1px solid var(--ivy-border-color);
+  cursor: pointer;
 }
 
 .card__title {

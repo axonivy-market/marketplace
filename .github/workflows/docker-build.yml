@@ -29,7 +29,8 @@ jobs:
 
     steps:
       - name: Bring down and remove containers and images
-        working-directory: ./marketplace-build
+        continue-on-error: true
+        working-directory: ./marketplace-build/dev
         run: |
           docker compose down --rmi all
 
@@ -46,13 +47,12 @@ jobs:
 
       - name: Update environment variables for .env
         env:
-          ENV_FILE: './marketplace-build/.env'
-          MONGODB_HOST: ${{ secrets.MONGODB_HOST }}
+          ENV_FILE: './marketplace-build/dev/.env'
           ROOT_USERNAME: ${{ secrets.MONGODB_ROOT_USERNAME }}
           ROOT_PASSWORD: ${{ secrets.MONGODB_ROOT_PASSWORD }}
           SERVICE_USERNAME: ${{ secrets.SERVICE_USERNAME }}
           SERVICE_PASSWORD: ${{ secrets.SERVICE_PASSWORD }}
-          MONGODB_DATABASE: ${{ secrets.MONGODB_DATABASE }}
+          GH_MARKET_BRANCH: ${{ secrets.MARKET_GITHUB_MARKET_BRANCH }}
           GH_TOKEN: ${{ secrets.GH_TOKEN }}
           MARKET_JWT_SECRET_KEY: ${{ secrets.MARKET_JWT_SECRET_KEY }}
           MARKET_CORS_ALLOWED_ORIGIN: ${{ secrets.MARKET_CORS_ALLOWED_ORIGIN }}
@@ -67,10 +67,9 @@ jobs:
 
           sed -i "s/^MONGODB_INITDB_ROOT_USERNAME=.*$/MONGODB_INITDB_ROOT_USERNAME=$ROOT_USERNAME/" $ENV_FILE
           sed -i "s/^MONGODB_INITDB_ROOT_PASSWORD=.*$/MONGODB_INITDB_ROOT_PASSWORD=$ROOT_PASSWORD/" $ENV_FILE
-          sed -i "s/^SERVICE_MONGODB_HOST=.*$/SERVICE_MONGODB_HOST=$MONGODB_HOST/" $ENV_FILE
-          sed -i "s/^SERVICE_MONGODB_DATABASE=.*$/SERVICE_MONGODB_DATABASE=$MONGODB_DATABASE/" $ENV_FILE
           sed -i "s/^SERVICE_MONGODB_USER=.*$/SERVICE_MONGODB_USER=$SERVICE_USERNAME/" $ENV_FILE
           sed -i "s/^SERVICE_MONGODB_PASSWORD=.*$/SERVICE_MONGODB_PASSWORD=$SERVICE_PASSWORD/" $ENV_FILE
+          sed -i "s/^MARKET_GITHUB_MARKET_BRANCH=.*$/MARKET_GITHUB_MARKET_BRANCH=$GH_MARKET_BRANCH/" $ENV_FILE
           sed -i "s/^MARKET_GITHUB_TOKEN=.*$/MARKET_GITHUB_TOKEN=$GH_TOKEN/" $ENV_FILE
           sed -i "s/^MARKET_GITHUB_OAUTH_APP_CLIENT_ID=.*$/MARKET_GITHUB_OAUTH_APP_CLIENT_ID=$OAUTH_APP_CLIENT_ID/" $ENV_FILE
           sed -i "s/^MARKET_GITHUB_OAUTH_APP_CLIENT_SECRET=.*$/MARKET_GITHUB_OAUTH_APP_CLIENT_SECRET=$OAUTH_APP_CLIENT_SECRET/" $ENV_FILE
@@ -88,13 +87,13 @@ jobs:
           sed -i 's/"version": "[^"]*"/"version": "${{ inputs.release_version }}"/' $PACKAGE_FILE
 
       - name: Build and bring up containers without cache
-        working-directory: ./marketplace-build
+        working-directory: ./marketplace-build/dev
         run: |
           if [ -n "${{ inputs.release_version }}" ]; then
             BUILD_VERSION="${{ inputs.release_version }}"
           else
-            BUILD_VERSION=$(xml sel -t -v "//_:project/_:version" ../marketplace-service/pom.xml)
+            BUILD_VERSION=$(xml sel -t -v "//_:project/_:version" ../../marketplace-service/pom.xml)
           fi
 
-          docker compose build --no-cache --build-arg BUILD_ENV=${{ inputs.build_env }} --build-arg BUILD_VERSION=$BUILD_VERSION
+          docker compose build --build-arg BUILD_ENV=${{ inputs.build_env }} --build-arg BUILD_VERSION=$BUILD_VERSION
           docker compose up --force-recreate -d

@@ -5,6 +5,7 @@
 }
 
 .bi-search {
+  cursor: pointer;
   font-size: 16.5px;
 }
 
@@ -14,11 +15,6 @@
 
 .header__search-input {
   height: 37px;
-}
-
-.header__download-button {
-  height: 35px;
-  border-radius: 7px;
 }
 
 @media all and (max-width: 992px) {

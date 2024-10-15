@@ -1,7 +1,7 @@
 # Get starts with Marketplace build
 
 ### Set up MongoDB with authentication mode
-* Navigate to ``marketplace-build/config/mongodb`` and execute the ``docker-compose up -d`` to start MongoDB with non-auth mode and create a root admin user.
+* Navigate to ``marketplace-build/config/mongodb`` and execute the ``docker-compose -f non-authen-docker-compose.yml up -d`` to start MongoDB with non-auth mode and create a root admin user.
 
 * [Optional] Execute authentication test for the created user
   ```
@@ -13,9 +13,19 @@ This command should return the ``OK`` code
 * Down the non-authen instance to start the main docker compose file by run ``docker-compose down``
 
 ### Docker build for DEV environment
+#### Start from scratch:
 * Navigate to ``marketplace-build``
 
 * Run ``docker-compose up -d --build`` to start a Marketplace DEV at the local
+
+#### If you already have MongoDB on your local machine with public port `27017`
+* Create a docker network to connect ui > service > mongodb by run ``docker network create marketplace-network``
+
+* Navigate to ``marketplace-build/dev``
+
+* Run ``docker-compose up -d --build`` to start a Marketplace DEV at the local
+
+> In case you want to set up the MongoDB as a standalone compose. Please run `docker-compose -f authen-docker-compose.yml up -d` in ``marketplace-build/config/mongodb``
 
 ### Docker release
 To release a new version for marketplace images, please trigger the ``Docker Release`` actions.

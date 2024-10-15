@@ -1,0 +1,25 @@
+.dropdown-item {
+  cursor: pointer;
+}
+
+.dropdown-menu {
+  max-height: 27.5rem;
+  overflow: auto;
+  @media (max-width: 990px) {
+    max-height: 13.75rem;
+  }
+
+  .dropdown-item {
+    &.active {
+      background-color: var(--ivy-textarea-background-color);
+      font-weight: 500;
+    }
+    &:hover:active {
+      background-color: transparent;
+    }
+  }
+}
+
+.indicator-arrow__up {
+  --bs-form-select-bg-img: var(--ivy-custom-select-indicator);
+}

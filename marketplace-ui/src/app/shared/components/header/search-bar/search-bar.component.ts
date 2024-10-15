@@ -3,6 +3,8 @@ import { Component, ElementRef, HostListener, inject, signal } from '@angular/co
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { LanguageSelectionComponent } from '../language-selection/language-selection.component';
 import { ThemeSelectionComponent } from '../theme-selection/theme-selection.component';
+import { LanguageService } from '../../../../core/services/language/language.service';
+import { SEARCH_URL } from '../../../constants/common.constant';
 
 @Component({
   selector: 'app-search-bar',
@@ -17,10 +19,12 @@ import { ThemeSelectionComponent } from '../theme-selection/theme-selection.comp
   styleUrl: './search-bar.component.scss'
 })
 export class SearchBarComponent {
+  searchUrl = SEARCH_URL;
   isSearchBarDisplayed = signal(false);
 
   translateService = inject(TranslateService);
   elementRef = inject(ElementRef);
+  languageService = inject(LanguageService);
 
   @HostListener('document:click', ['$event'])
   handleClickOutside(event: MouseEvent) {
@@ -35,5 +39,9 @@ export class SearchBarComponent {
 
   onHideSearch() {
     this.isSearchBarDisplayed.set(false);
+  }
+
+  onClickSearchInput() {
+    window.location.href = this.searchUrl;
   }
 }

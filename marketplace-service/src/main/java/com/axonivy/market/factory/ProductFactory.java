@@ -1,8 +1,12 @@
 package com.axonivy.market.factory;
 
+import com.axonivy.market.bo.Artifact;
+import com.axonivy.market.constants.CommonConstants;
+import com.axonivy.market.constants.MetaConstants;
 import com.axonivy.market.entity.Product;
+import com.axonivy.market.entity.ProductJsonContent;
+import com.axonivy.market.entity.ProductModuleContent;
 import com.axonivy.market.github.model.Meta;
-import com.axonivy.market.github.util.GitHubUtils;
 import com.axonivy.market.model.DisplayValue;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.AccessLevel;
@@ -14,15 +18,12 @@ import org.kohsuke.github.GHContent;
 import org.springframework.util.CollectionUtils;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import static com.axonivy.market.constants.CommonConstants.LOGO_FILE;
 import static com.axonivy.market.constants.CommonConstants.SLASH;
-import static com.axonivy.market.constants.MetaConstants.DEFAULT_VENDOR_NAME;
-import static com.axonivy.market.constants.MetaConstants.DEFAULT_VENDOR_URL;
-import static com.axonivy.market.constants.MetaConstants.META_FILE;
 import static org.apache.commons.lang3.StringUtils.EMPTY;
 
 @Log4j2
@@ -36,11 +37,8 @@ public class ProductFactory {
     }
 
     var contentName = content.getName();
-    if (StringUtils.endsWith(contentName, META_FILE)) {
+    if (StringUtils.endsWith(contentName, MetaConstants.META_FILE)) {
       mappingByMetaJSONFile(product, content);
-    }
-    if (StringUtils.endsWith(contentName, LOGO_FILE)) {
-      product.setLogoUrl(GitHubUtils.getDownloadUrl(content));
     }
     return product;
   }
@@ -62,18 +60,32 @@ public class ProductFactory {
     product.setTags(meta.getTags());
     product.setVersion(meta.getVersion());
     product.setShortDescriptions(mappingMultilingualismValueByMetaJSONFile(meta.getDescriptions()));
-    product.setVendor(StringUtils.isBlank(meta.getVendor()) ? DEFAULT_VENDOR_NAME : meta.getVendor());
-    product.setVendorUrl(StringUtils.isBlank(meta.getVendorUrl()) ? DEFAULT_VENDOR_URL : meta.getVendorUrl());
+    product.setVendor(StringUtils.defaultIfEmpty(meta.getVendor(), MetaConstants.DEFAULT_VENDOR_NAME));
+    product.setVendorUrl(StringUtils.defaultIfEmpty(meta.getVendorUrl(), MetaConstants.DEFAULT_VENDOR_URL));
     product.setPlatformReview(meta.getPlatformReview());
     product.setStatusBadgeUrl(meta.getStatusBadgeUrl());
     product.setLanguage(meta.getLanguage());
     product.setIndustry(meta.getIndustry());
     product.setContactUs(BooleanUtils.isTrue(meta.getContactUs()));
-    product.setCost(StringUtils.isBlank(meta.getCost()) ? "Free" : StringUtils.capitalize(meta.getCost()));
+    product.setCost(
+        StringUtils.capitalize(StringUtils.defaultIfEmpty(meta.getCost(), MetaConstants.DEFAULT_COST_VALUE)));
     product.setCompatibility(meta.getCompatibility());
     extractSourceUrl(product, meta);
-    product.setArtifacts(meta.getMavenArtifacts());
+    List<Artifact> artifacts = CollectionUtils.isEmpty(
+        meta.getMavenArtifacts()) ? new ArrayList<>() : meta.getMavenArtifacts();
+    artifacts.stream().forEach(
+        artifact -> artifact.setInvalidArtifact(!artifact.getArtifactId().contains(meta.getId())));
+    product.setArtifacts(artifacts);
+    product.setReleasedVersions(new ArrayList<>());
     return product;
+  }
+
+  public static void transferComputedPersistedDataToProduct(Product persisted, Product product) {
+    product.setCustomOrder(persisted.getCustomOrder());
+    product.setNewestReleaseVersion(persisted.getNewestReleaseVersion());
+    product.setReleasedVersions(persisted.getReleasedVersions());
+    product.setInstallationCount(persisted.getInstallationCount());
+    product.setSynchronizedInstallationCount(persisted.getSynchronizedInstallationCount());
   }
 
   private static Map<String, String> mappingMultilingualismValueByMetaJSONFile(List<DisplayValue> list) {
@@ -83,7 +95,6 @@ public class ProductFactory {
         value.put(name.getLocale(), name.getValue());
       }
     }
-
     return value;
   }
 
@@ -109,5 +120,20 @@ public class ProductFactory {
 
   private static Meta jsonDecode(GHContent ghContent) throws IOException {
     return MAPPER.readValue(ghContent.read().readAllBytes(), Meta.class);
+  }
+
+  public static void mappingIdForProductModuleContent(ProductModuleContent content) {
+    if (StringUtils.isNotBlank(content.getProductId())) {
+      String version = StringUtils.isNotBlank(
+          content.getTag()) ? content.getTag() : content.getMavenVersions().stream().findAny().orElse(null);
+      content.setId(String.format(CommonConstants.ID_WITH_NUMBER_PATTERN, content.getProductId(), version));
+    }
+  }
+
+  public static void mappingIdForProductJsonContent(ProductJsonContent content) {
+    if (StringUtils.isNotBlank(content.getProductId()) && StringUtils.isNotBlank(content.getVersion())) {
+      content.setId(
+          String.format(CommonConstants.ID_WITH_NUMBER_PATTERN, content.getProductId(), content.getVersion()));
+    }
   }
 }

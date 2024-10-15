@@ -1,53 +1,49 @@
 <div class="container">
-  <div class="row col-md-12 mt-8">
-    <h1 class="text-primary">
-      {{ translateService.get('common.branch') | async }}
-    </h1>
-    <div class="d-sm-block col-md-6">
-      <h3 class="text-secondary">
-        {{ translateService.get('common.introduction.about') | async }}
-      </h3>
-    </div>
-    <div class="d-sm-block col-md-6 align-items-center">
-      <h4 class="text-secondary">
-        {{ translateService.get('common.introduction.contribute') | async }}
-      </h4>
-      <h4
-        class="text-secondary"
-        [innerHTML]="
-          translateService.get('common.introduction.link') | async
-        "></h4>
-    </div>
-  </div>
-
-  <app-product-filter
-    (searchChange)="onSearchChanged($event)"
-    (filterChange)="onFilterChange($event)"
-    (sortChange)="onSortChange($event)"></app-product-filter>
-
-  @if (products().length > 0) {
-    <div class="row product-container">
-      @for (product of products(); track $index) {
-        <div
-          (click)="viewProductDetail(product.id, '')"
-          class="col-sm-12 col-md-6 col-lg-4 col-xxl-3 mt-2 mb-2">
-          <app-product-card [product]="product"></app-product-card>
-        </div>
-      }
-    </div>
-  } @else {
-    <div
-      class="d-flex flex-column align-items-center justify-content-center w-100">
-      <div class="not-found-result w-100">
-        <img
-          src="/assets/images/misc/search-off.svg"
-          alt="Search not found"
-          class="no-result-image mx-auto d-block" />
-        <div
-          class="h5 text-center not-found-text"
-          [innerHTML]="'common.nothingFound' | translate"></div>
+  @if (!isRESTClient()) {
+    <div class="row col-md-12 mt-8">
+      <h1 [lang]="languageService.selectedLanguage()" class="text-primary">
+        {{ translateService.get('common.branch') | async }}
+      </h1>
+      <div class="d-sm-block col-md-6">
+        <h3 class="text-secondary">
+          {{ translateService.get('common.introduction.about') | async }}
+        </h3>
+      </div>
+      <div class="d-sm-block col-md-6 align-items-center">
+        <h4 [lang]="languageService.selectedLanguage()" class="text-secondary">
+          {{ translateService.get('common.introduction.contribute') | async }}
+        </h4>
+        <h4
+          [lang]="languageService.selectedLanguage()"
+          class="text-secondary"
+          [innerHTML]="
+            translateService.get('common.introduction.link') | async
+          "></h4>
       </div>
     </div>
+
+    <app-product-filter
+      (searchChange)="onSearchChanged($event)"
+      (filterChange)="onFilterChange($event)"
+      (sortChange)="onSortChange($event)"></app-product-filter>
+  }
+
+  @if (products().length > 0) {
+  <div class="row product-container">
+    @for (product of products(); track product.id) {
+    <div (click)="viewProductDetail(product.id, '')" class="col-sm-12 col-md-6 col-lg-4 col-xxl-3 mt-2 mb-2">
+      <app-product-card [product]="product" [tabIndex]="product.id"></app-product-card>
+    </div>
+    }
+  </div>
+  } @else {
+  <div class="d-flex flex-column align-items-center justify-content-center w-100">
+    <div class="not-found-result w-100">
+      <img src="/assets/images/misc/search-off.svg" alt="Search not found" class="no-result-image mx-auto d-block" />
+      <div [lang]="languageService.selectedLanguage()" class="h5 text-center not-found-text"
+        [innerHTML]="'common.nothingFound' | translate"></div>
+    </div>
+  </div>
   }
 
   <div #observer class="observer"></div>

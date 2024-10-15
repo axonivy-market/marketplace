@@ -6,8 +6,8 @@ services:
       context: ../config/mongodb
       dockerfile: Dockerfile
     restart: always
-    ports:
-      - "27017:27017"
+    expose:
+      - 27017
     environment:
       MONGODB_INITDB_ROOT_USERNAME: ${MONGODB_INITDB_ROOT_USERNAME}
       MONGODB_INITDB_ROOT_PASSWORD: ${MONGODB_INITDB_ROOT_PASSWORD}
@@ -17,6 +17,9 @@ services:
 
   ui:
     image: ghcr.io/axonivy-market/marketplace-ui:${RELEASE_VERSION}
+    volumes:
+      - ../config/nginx/nginx.conf:/etc/nginx/nginx.conf
+      - marketcache:/usr/share/nginx/html/market-cache
     restart: always
     ports:
       - "80:80"
@@ -27,16 +30,20 @@ services:
     expose:
       - 8080
     volumes:
-      - /home/axonivy/marketplace/data/market-installations.json:/home/data/market-installation.json
+      - /home/axonivy/marketplace/data/market-installations.json:/app/data/market-installation.json
+      - marketcache:/app/data/market-cache
     environment:
       - MONGODB_HOST=${SERVICE_MONGODB_HOST}
       - MONGODB_DATABASE=${SERVICE_MONGODB_DATABASE}
       - MONGODB_USERNAME=${SERVICE_MONGODB_USER}
       - MONGODB_PASSWORD=${SERVICE_MONGODB_PASSWORD}
+      - MARKET_GITHUB_MARKET_BRANCH=${MARKET_GITHUB_MARKET_BRANCH}
       - MARKET_GITHUB_TOKEN=${MARKET_GITHUB_TOKEN}
       - MARKET_GITHUB_OAUTH_APP_CLIENT_ID=${MARKET_GITHUB_OAUTH_APP_CLIENT_ID}
       - MARKET_GITHUB_OAUTH_APP_CLIENT_SECRET=${MARKET_GITHUB_OAUTH_APP_CLIENT_SECRET}
       - MARKET_JWT_SECRET_KEY=${MARKET_JWT_SECRET_KEY}
       - MARKET_CORS_ALLOWED_ORIGIN=${MARKET_CORS_ALLOWED_ORIGIN}
+      - MARKET_MONGO_LOG_LEVEL=${MARKET_MONGO_LOG_LEVEL}
 volumes:
   mongodata:
+  marketcache:

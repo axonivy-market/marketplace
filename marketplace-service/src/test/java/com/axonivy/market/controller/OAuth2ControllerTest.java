@@ -1,19 +1,6 @@
 package com.axonivy.market.controller;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.when;
-
-import java.util.Map;
-
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.http.ResponseEntity;
-
+import com.axonivy.market.constants.CommonConstants;
 import com.axonivy.market.entity.User;
 import com.axonivy.market.exceptions.model.MissingHeaderException;
 import com.axonivy.market.exceptions.model.Oauth2ExchangeCodeException;
@@ -21,6 +8,21 @@ import com.axonivy.market.github.model.GitHubAccessTokenResponse;
 import com.axonivy.market.github.service.GitHubService;
 import com.axonivy.market.model.Oauth2AuthorizationCode;
 import com.axonivy.market.service.JwtService;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+
+import java.util.Map;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class OAuth2ControllerTest {
@@ -43,7 +45,7 @@ class OAuth2ControllerTest {
   }
 
   @Test
-  void testGitHubLogin() throws Oauth2ExchangeCodeException, MissingHeaderException {
+  void testGitHubLogin_Success() throws Oauth2ExchangeCodeException, MissingHeaderException {
     String accessToken = "sampleAccessToken";
     User user = createUserMock();
     String jwtToken = "sampleJwtToken";
@@ -56,6 +58,42 @@ class OAuth2ControllerTest {
 
     assertEquals(200, response.getStatusCode().value());
     assertEquals(Map.of("token", jwtToken), response.getBody());
+  }
+
+  @Test
+  void testGitHubLogin_Oauth2ExchangeCodeException() throws Oauth2ExchangeCodeException, MissingHeaderException {
+    when(gitHubService.getAccessToken(any(), any())).thenThrow(
+        new Oauth2ExchangeCodeException("invalid_grant", "Invalid authorization code"));
+
+    ResponseEntity<?> response = oAuth2Controller.gitHubLogin(oauth2AuthorizationCode);
+
+    assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
+    Map<String, String> body = (Map<String, String>) response.getBody();
+    assertEquals("invalid_grant", body.get(CommonConstants.ERROR));
+    assertEquals("Invalid authorization code", body.get(CommonConstants.MESSAGE));
+  }
+
+  @Test
+  void testGitHubLogin_GeneralException() throws Oauth2ExchangeCodeException, MissingHeaderException {
+    when(gitHubService.getAccessToken(any(), any())).thenThrow(new RuntimeException("Unexpected error"));
+
+    ResponseEntity<?> response = oAuth2Controller.gitHubLogin(oauth2AuthorizationCode);
+
+    assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
+    Map<String, String> body = (Map<String, String>) response.getBody();
+    assertTrue(body.containsKey(CommonConstants.MESSAGE));
+    assertEquals("Unexpected error", body.get(CommonConstants.MESSAGE));
+  }
+
+  @Test
+  void testGitHubLogin_EmptyAuthorizationCode() {
+    oauth2AuthorizationCode.setCode(null);
+
+    ResponseEntity<?> response = oAuth2Controller.gitHubLogin(oauth2AuthorizationCode);
+
+    assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
+    Map<String, String> body = (Map<String, String>) response.getBody();
+    assertTrue(body.containsKey(CommonConstants.MESSAGE));
   }
 
   private User createUserMock() {

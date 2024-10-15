@@ -5,22 +5,21 @@ import com.axonivy.market.exceptions.model.MissingHeaderException;
 import io.swagger.v3.oas.models.PathItem.HttpMethod;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import org.springframework.beans.factory.annotation.Value;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Component;
 import org.springframework.web.servlet.HandlerInterceptor;
 
 @Component
 public class MarketHeaderInterceptor implements HandlerInterceptor {
 
-  @Value("${request.header}")
-  private String requestHeader;
-
   @Override
-  public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
+  public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler)
+      throws Exception {
     if (HttpMethod.OPTIONS.name().equalsIgnoreCase(request.getMethod())) {
       return true;
     }
-    if (!requestHeader.equals(request.getHeader(CommonConstants.REQUESTED_BY))) {
+    if (!HttpMethod.GET.name().equalsIgnoreCase(request.getMethod())
+        && StringUtils.isBlank(request.getHeader(CommonConstants.REQUESTED_BY))) {
       throw new MissingHeaderException();
     }
     return true;

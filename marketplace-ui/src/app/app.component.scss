@@ -25,20 +25,19 @@ footer {
   }
 }
 
-.spinner-container {
-  position: fixed;
-  height: 100%;
-  width: 100%;
-  display: flex;
-  justify-content: center;
-  align-items: center;
+.header-mobile {
+  z-index: 1;
+  position: absolute;
+  background: var(--info-dropdown-bg);
   top: 0;
   left: 0;
-  background: rgba(0, 0, 0, 0.32);
-  z-index: 2000;
+  width: 100vw;
+  padding-bottom: 3rem;
 }
 
-.spinner-border {
-  width: 4rem;
-  height: 4rem;
+.header-mobile-container {
+  position: relative;
+  width: 100vw;
+  height: 100vh;
+  overflow: hidden;
 }

@@ -205,13 +205,14 @@ export const MOCK_PRODUCTS_NEXT_PAGE = {
 export const MOCK_PRODUCT_MODULE_CONTENT: ProductModuleContent = {
   tag: 'v10.0.10',
   description: null,
-  demo: '',
-  setup: '',
+  demo: null,
+  setup: null,
   isDependency: false,
   name: 'Jira Connector',
   groupId: 'com.axonivy.connector.jira',
   artifactId: 'jira-connector',
-  type: 'iar'
+  type: 'iar',
+  productId: 'jira-connector'
 };
 
 export const MOCK_PRODUCT_DETAIL_BY_VERSION: ProductDetail = {
@@ -245,14 +246,18 @@ export const MOCK_PRODUCT_DETAIL_BY_VERSION: ProductDetail = {
     description: {
       en: '**Cron Job** is a job-firing schedule that recurs based on calendar-like notions.\n\nThe [Quartz framework](http://www.quartz-scheduler.org/) is used as underlying scheduler framework.\n\nWith Cron Job, you can specify firing-schedules such as “every Friday at noon”, or “every weekday and 9:30 am”, or even “every 5 minutes between 9:00 am and 10:00 am on every Monday, Wednesday and Friday during January”.\n\nFor more details about Cron Expressions please refer to [Lesson 6: CronTrigger](http://www.quartz-scheduler.org/documentation/quartz-2.3.0/tutorials/tutorial-lesson-06.html)'
     },
-    setup:
-      'No special setup is needed for this demo. Only start the Engine and watch out the logging which will be updated every 5 seconds with the following logging entry:\n\n```\n\nCron Job ist started at: 2023-01-27 10:43:20.\n\n```',
-    demo: 'In this demo, the CronByGlobalVariableTriggerStartEventBean is defined as the Java class to be executed in the Ivy Program Start element.\n\n![Program Start Element screenshot](https://raw.githubusercontent.com/axonivy-market/cronjob/v10.0.4/cronjob-product/ProgramStartElement.png)\n\nThis bean gets a cron expression via the variable defined as Cron expression and it will schedule by using the expression.\n\n![custom editor UI screenshot](https://raw.githubusercontent.com/axonivy-market/cronjob/v10.0.4/cronjob-product/customEditorUI.png)\n\nFor this demo, the Cron expression is defining the time to start the cron that simply fires every 5 seconds.\n\n```\n\n  demoStartCronPattern: 0/5 * * * * ?\n\n```',
+    setup: {
+      en: 'No special setup is needed for this demo. Only start the Engine and watch out the logging which will be updated every 5 seconds with the following logging entry:\n\n```\n\nCron Job ist started at: 2023-01-27 10:43:20.\n\n```',
+    },
+    demo: {
+      en: 'In this demo, the CronByGlobalVariableTriggerStartEventBean is defined as the Java class to be executed in the Ivy Program Start element.\n\n![Program Start Element screenshot](https://raw.githubusercontent.com/axonivy-market/cronjob/v10.0.4/cronjob-product/ProgramStartElement.png)\n\nThis bean gets a cron expression via the variable defined as Cron expression and it will schedule by using the expression.\n\n![custom editor UI screenshot](https://raw.githubusercontent.com/axonivy-market/cronjob/v10.0.4/cronjob-product/customEditorUI.png)\n\nFor this demo, the Cron expression is defining the time to start the cron that simply fires every 5 seconds.\n\n```\n\n  demoStartCronPattern: 0/5 * * * * ?\n\n```',
+    },
     isDependency: true,
     name: 'cron job',
     groupId: 'com.axonivy.utils.cronjob',
     artifactId: 'cronjob',
-    type: 'iar'
+    type: 'iar',
+    productId: 'cronjob'
   },
   installationCount: 0,
   _links: {
@@ -294,14 +299,18 @@ export const MOCK_PRODUCT_DETAIL: ProductDetail = {
     description: {
       en: "Axon Ivy's [Atlassian Jira Connector ](https://www.atlassian.com/software/jira) gives you full power to track issues within your process work. The connector:\n\n- Features three main functionalities (create comment, create issue, and get issue).\n- Provides access to the core API of Atlassian Jira.\n- Supports you with an easy-to-copy demo implementation to reduce your integration effort.\n- Enables low code citizen developers to integrate issue tracking tools without writing a single line of code."
     },
-    setup:
-      'Open the `Config/variables.yaml` in your Axon Ivy Designer and paste the\ncode below and adjust the values to your environment.\n\n```\nVariables:\n\n  jira-connector:\n  \n    # Url to the Jira server\n    Url: "https://localhost"\n\n    # Username to connect to the Jira server\n    Username: "admin"\n\n    # Password to connect to the Jira server\n    Password: "1234"\n```',
-    demo: '![jira-connector Demo 1](https://raw.githubusercontent.com/axonivy-market/jira-connector/v10.0.0/jira-connector-product/images/create-issue.png "Create Jira issue")\n![jira-connector Demo 2](https://raw.githubusercontent.com/axonivy-market/jira-connector/v10.0.0/jira-connector-product/images/create-comment.png "Craete Jira comment")',
+    setup: {
+      en: 'Open the `Config/variables.yaml` in your Axon Ivy Designer and paste the\ncode below and adjust the values to your environment.\n\n```\nVariables:\n\n  jira-connector:\n  \n    # Url to the Jira server\n    Url: "https://localhost"\n\n    # Username to connect to the Jira server\n    Username: "admin"\n\n    # Password to connect to the Jira server\n    Password: "1234"\n```',
+    },
+    demo: {
+      en: '![jira-connector Demo 1](https://raw.githubusercontent.com/axonivy-market/jira-connector/v10.0.0/jira-connector-product/images/create-issue.png "Create Jira issue")\n![jira-connector Demo 2](https://raw.githubusercontent.com/axonivy-market/jira-connector/v10.0.0/jira-connector-product/images/create-comment.png "Craete Jira comment")',
+    },
     isDependency: true,
     name: 'Jira Connector',
     groupId: 'com.axonivy.connector.jira',
     artifactId: 'jira-connector',
-    type: 'iar'
+    type: 'iar',
+    productId: 'jira-connector',
   },
   _links: {
     self: {

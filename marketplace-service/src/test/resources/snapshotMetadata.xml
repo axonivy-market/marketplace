@@ -1,0 +1,19 @@
+<metadata modelVersion="1.1.0">
+    <groupId>com.axonivy.util</groupId>
+    <artifactId>bpmn-statistic</artifactId>
+    <version>10.0.10-SNAPSHOT</version>
+    <versioning>
+        <snapshot>
+            <timestamp>20221011.124215</timestamp>
+            <buildNumber>170</buildNumber>
+        </snapshot>
+        <lastUpdated>20221011130000</lastUpdated>
+        <snapshotVersions>
+            <snapshotVersion>
+                <extension>iar</extension>
+                <value>8.0.5-20221011.124215-170</value>
+                <updated>20221011124215</updated>
+            </snapshotVersion>
+        </snapshotVersions>
+    </versioning>
+</metadata>
