@@ -261,8 +261,6 @@ class ProductServiceImplTest extends BaseSetup {
     mockGitHubFile.setType(FileType.LOGO);
     mockGitHubFile.setStatus(FileStatus.ADDED);
     when(marketRepoService.fetchMarketItemsBySHA1Range(any(), any())).thenReturn(List.of(mockGitHubFile));
-    var mockGHContent = mockGHContentAsMetaJSON();
-    when(gitHubService.getGHContent(any(), anyString(), any())).thenReturn(mockGHContent);
 
     // Executes
     var result = productService.syncLatestDataFromMarketRepo();
@@ -626,13 +624,13 @@ class ProductServiceImplTest extends BaseSetup {
 
   private GHContent mockGHContentAsMetaJSON() {
     var mockGHContent = mock(GHContent.class);
-    lenient().when(mockGHContent.getName()).thenReturn(META_FILE);
+    when(mockGHContent.getName()).thenReturn(META_FILE);
     return mockGHContent;
   }
 
   private GHContent mockGHContentAsLogo() {
     var mockGHContent = mock(GHContent.class);
-    lenient().when(mockGHContent.getName()).thenReturn("logo.png");
+    when(mockGHContent.getName()).thenReturn("logo.png");
     return mockGHContent;
   }
 
@@ -666,8 +664,6 @@ class ProductServiceImplTest extends BaseSetup {
     mockGitHubFile.setType(FileType.LOGO);
     mockGitHubFile.setStatus(FileStatus.ADDED);
     when(marketRepoService.fetchMarketItemsBySHA1Range(any(), any())).thenReturn(List.of(mockGitHubFile));
-    var mockGHContent = mockGHContentAsLogo();
-    when(gitHubService.getGHContent(any(), anyString(), any())).thenReturn(mockGHContent);
 
     // Executes
     var result = productService.syncLatestDataFromMarketRepo();
