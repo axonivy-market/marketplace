@@ -159,7 +159,7 @@ class GHAxonIvyProductRepoServiceImplTest extends BaseSetup {
 
   @Test
   void testGetOrganization() throws IOException {
-    when(gitHubService.getOrganization(Mockito.anyString())).thenReturn(mockGHOrganization);
+    when(gitHubService.getOrganization(anyString())).thenReturn(mockGHOrganization);
     assertEquals(mockGHOrganization, axonivyProductRepoServiceImpl.getOrganization());
     assertEquals(mockGHOrganization, axonivyProductRepoServiceImpl.getOrganization());
   }

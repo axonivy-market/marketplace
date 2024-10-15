@@ -47,7 +47,6 @@ import static com.axonivy.market.util.ProductContentUtils.SETUP;
 @Log4j2
 @Service
 public class GHAxonIvyProductRepoServiceImpl implements GHAxonIvyProductRepoService {
-  public static final String IMAGE_EXTENSION = "(.*?).(jpeg|jpg|png|gif)";
   private final GitHubService gitHubService;
   private final ImageService imageService;
   private GHOrganization organization;
@@ -119,8 +118,7 @@ public class GHAxonIvyProductRepoServiceImpl implements GHAxonIvyProductRepoServ
             readmeContents = updateImagesWithDownloadUrl(product, contents, readmeContents);
           }
           ProductContentUtils.getExtractedPartsOfReadme(moduleContents, readmeContents, readmeFile.getName());
-          updateSetupPartForProductModuleContent(product, moduleContents,
-              productModuleContent.getTag());
+          updateSetupPartForProductModuleContent(product, moduleContents, productModuleContent.getTag());
         }
         ProductContentUtils.updateProductModuleTabContents(productModuleContent, moduleContents);
       }

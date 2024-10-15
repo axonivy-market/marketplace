@@ -78,6 +78,7 @@ public class ProductDetailModelAssembler extends RepresentationModelAssemblerSup
     model.setCost(product.getCost());
     model.setInstallationCount(product.getInstallationCount());
     model.setProductModuleContent(ImageUtils.mappingImageForProductModuleContent(product.getProductModuleContent()));
+    model.setMavenDropins(product.isMavenDropins());
   }
 
 }

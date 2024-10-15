@@ -74,6 +74,7 @@
           [(selectedVersion)]="selectedVersion!"
           [(metaDataJsonUrl)]="metaProductJsonUrl!"
           [productId]="productDetail().id"
+          [isMavenDropins]="productDetail().mavenDropins"
           [actionType]="productDetailActionType()"
           (selectedVersionChange)="
             loadDetailTabs($event)
