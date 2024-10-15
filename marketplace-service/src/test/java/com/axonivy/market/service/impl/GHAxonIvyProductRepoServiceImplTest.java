@@ -3,7 +3,6 @@ package com.axonivy.market.service.impl;
 import com.axonivy.market.BaseSetup;
 import com.axonivy.market.bo.Artifact;
 import com.axonivy.market.constants.CommonConstants;
-import com.axonivy.market.constants.GitHubConstants;
 import com.axonivy.market.constants.MavenConstants;
 import com.axonivy.market.constants.ProductJsonConstants;
 import com.axonivy.market.constants.ReadmeConstants;
@@ -361,47 +360,6 @@ class GHAxonIvyProductRepoServiceImplTest extends BaseSetup {
         MOCK_TAG_FROM_RELEASED_VERSION);
     assertEquals("Demo content", result.getDemo().get(Language.EN.getValue()));
     assertEquals("Setup content", result.getSetup().get(Language.EN.getValue()));
-  }
-
-  @Test
-  void testUpdateVariablesContentInReadmeFile() throws IOException {
-    String readmeContent = """
-        #Product-name
-        Test README
-        ## Demo
-        @variables.yaml@
-        Demo content""";
-
-    GHContent mockGhContentIsProductFolder = mock(GHContent.class);
-    when(mockGhContentIsProductFolder.getName()).thenReturn(MOCK_PRODUCT_ARTIFACT_ID);
-    when(mockGhContentIsProductFolder.isDirectory()).thenReturn(true);
-
-    InputStream mockPomInputStream = mock(InputStream.class);
-    GHContent mockPomFile = mock(GHContent.class);
-    when(mockPomFile.getName()).thenReturn(GitHubConstants.POM_FILE);
-    when(mockPomFile.isFile()).thenReturn(true);
-    when(mockPomFile.read()).thenReturn(mockPomInputStream);
-    when(mockPomInputStream.readAllBytes()).thenReturn(getMockPomContent().getBytes());
-
-    GHContent mockVariableFile = mock(GHContent.class);
-    InputStream mockVariablesInputStream = mock(InputStream.class);
-    when(mockVariableFile.read()).thenReturn(mockVariablesInputStream);
-    when(mockVariablesInputStream.readAllBytes()).thenReturn(getMockVariablesContent().getBytes());
-
-    when(gitHubService.getRepository(anyString())).thenReturn(ghRepository);
-    when(ghRepository.getDirectoryContent(anyString(), anyString())).thenReturn(List.of(mockGhContentIsProductFolder),
-        List.of(mockPomFile));
-    when(ghRepository.getFileContent(anyString(), anyString())).thenReturn(mockVariableFile);
-
-    Product mockProduct =
-        Product.builder().id(MOCK_PRODUCT_ID)
-            .repositoryName("/market").build();
-
-    String updatedReadme = axonivyProductRepoServiceImpl.updateVariablesContentInReadmeFile(readmeContent, mockProduct,
-        MOCK_TAG_FROM_RELEASED_VERSION);
-
-    String expectedResult = readmeContent.replace(ReadmeConstants.VARIABLE_DIR, getMockVariablesContent());
-    assertEquals(updatedReadme, expectedResult);
   }
 
   private static InputStream getMockInputStreamWithOutProjectAndDependency() {

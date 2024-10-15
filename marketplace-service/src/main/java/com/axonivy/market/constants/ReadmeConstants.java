@@ -10,5 +10,4 @@ public class ReadmeConstants {
   public static final String DEMO_PART = "## Demo";
   public static final String SETUP_PART = "## Setup";
   public static final String SETUP_FILE = "setup.md";
-  public static final String VARIABLE_DIR = "@variables.yaml@";
 }

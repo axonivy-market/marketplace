@@ -19,7 +19,7 @@ public interface GHAxonIvyProductRepoService {
   ProductModuleContent getReadmeAndProductContentsFromTag(Product product, GHRepository ghRepository, String tag);
 
   void extractReadMeFileFromContents(Product product, List<GHContent> contents,
-      ProductModuleContent productModuleContent, String tag);
+      ProductModuleContent productModuleContent);
 
   void updateSetupPartForProductModuleContent(Product product,
       Map<String, Map<String, String>> moduleContents, String tag) throws IOException;
