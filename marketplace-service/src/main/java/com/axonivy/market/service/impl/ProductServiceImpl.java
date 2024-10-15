@@ -398,7 +398,7 @@ public class ProductServiceImpl implements ProductService {
     ProductFactory.mappingIdForProductModuleContent(initialContent);
     product.setReleasedVersions(List.of(INITIAL_VERSION));
     product.setNewestReleaseVersion(INITIAL_VERSION);
-    axonIvyProductRepoService.extractReadMeFileFromContents(product.getId(), ghContentEntity.getValue(), initialContent);
+    axonIvyProductRepoService.extractReadMeFileFromContents(product, ghContentEntity.getValue(), initialContent);
     productModuleContentRepository.save(initialContent);
   }
 

@@ -47,7 +47,6 @@ import static com.axonivy.market.util.ProductContentUtils.SETUP;
 @Log4j2
 @Service
 public class GHAxonIvyProductRepoServiceImpl implements GHAxonIvyProductRepoService {
-  public static final String IMAGE_EXTENSION = "(.*?).(jpeg|jpg|png|gif)";
   private final GitHubService gitHubService;
   private final ImageService imageService;
   private GHOrganization organization;
@@ -97,7 +96,7 @@ public class GHAxonIvyProductRepoServiceImpl implements GHAxonIvyProductRepoServ
     try {
       List<GHContent> contents = getProductFolderContents(product.getId(), ghRepository, tag);
       updateDependencyContentsFromProductJson(productModuleContent, contents, product);
-      extractReadMeFileFromContents(product.getId(), contents, productModuleContent);
+      extractReadMeFileFromContents(product, contents, productModuleContent);
     } catch (Exception e) {
       log.error("Cannot get product.json content in {} - {}", ghRepository.getName(), e.getMessage());
       return null;
@@ -105,7 +104,7 @@ public class GHAxonIvyProductRepoServiceImpl implements GHAxonIvyProductRepoServ
     return productModuleContent;
   }
 
-  public void extractReadMeFileFromContents(String productId, List<GHContent> contents,
+  public void extractReadMeFileFromContents(Product product, List<GHContent> contents,
       ProductModuleContent productModuleContent) {
     try {
       List<GHContent> readmeFiles = contents.stream().filter(GHContent::isFile)
@@ -116,7 +115,7 @@ public class GHAxonIvyProductRepoServiceImpl implements GHAxonIvyProductRepoServ
         for (GHContent readmeFile : readmeFiles) {
           String readmeContents = new String(readmeFile.read().readAllBytes());
           if (ProductContentUtils.hasImageDirectives(readmeContents)) {
-            readmeContents = updateImagesWithDownloadUrl(productId, contents, readmeContents);
+            readmeContents = updateImagesWithDownloadUrl(product.getId(), contents, readmeContents);
           }
           ProductContentUtils.getExtractedPartsOfReadme(moduleContents, readmeContents, readmeFile.getName());
           updateSetupPartForProductModuleContent(product, moduleContents,
@@ -148,7 +147,7 @@ public class GHAxonIvyProductRepoServiceImpl implements GHAxonIvyProductRepoServ
       if (ProductContentUtils.hasImageDirectives(setupContent)) {
         List<GHContent> setupImagesFolder =
             contents.stream().filter(content -> content.getName().equals(MG_GRAPH_IMAGES_FOR_SETUP_FILE)).toList();
-        setupContent = updateImagesWithDownloadUrl(product, setupImagesFolder, setupContent);
+        setupContent = updateImagesWithDownloadUrl(product.getId(), setupImagesFolder, setupContent);
       }
 
       if (setupContent.contains(ReadmeConstants.SETUP_PART)) {

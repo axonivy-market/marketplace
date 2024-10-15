@@ -18,7 +18,7 @@ public interface GHAxonIvyProductRepoService {
 
   ProductModuleContent getReadmeAndProductContentsFromTag(Product product, GHRepository ghRepository, String tag);
 
-  void extractReadMeFileFromContents(String productId, List<GHContent> contents,
+  void extractReadMeFileFromContents(Product product, List<GHContent> contents,
       ProductModuleContent productModuleContent);
 
   void updateSetupPartForProductModuleContent(Product product,
