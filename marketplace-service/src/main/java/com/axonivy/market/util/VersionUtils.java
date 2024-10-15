@@ -17,6 +17,7 @@ import org.kohsuke.github.GHTag;
 import org.springframework.util.CollectionUtils;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -71,7 +72,7 @@ public class VersionUtils {
     return bestMatchVersion;
   }
 
-  public static boolean isOfficialVersionOrUnReleasedDevVersion(List<String> versions, String version) {
+  public static boolean isOfficialVersionOrUnReleasedDevVersion(Collection<String> versions, String version) {
     if (isReleasedVersion(version)) {
       return true;
     }

@@ -29,9 +29,12 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import static com.axonivy.market.constants.ProductJsonConstants.NAME;
@@ -93,11 +96,15 @@ public class VersionServiceImpl implements VersionService {
   @Override
   public List<VersionAndUrlModel> getVersionsForDesigner(String productId) {
     List<VersionAndUrlModel> versionAndUrlList = new ArrayList<>();
-//    MavenArtifactVersion existingMavenArtifactVersion = mavenArtifactVersionRepository.findById(productId).orElse(
-//        MavenArtifactVersion.builder().productId(productId).build());
-    List<String> versions = metadataRepo.findByProductId(productId).stream().filter(
+    Set<String> releasedVersions= metadataRepo.findByProductId(productId).stream().filter(
         metadata -> StringUtils.endsWith(metadata.getArtifactId(),
-            MavenConstants.PRODUCT_ARTIFACT_POSTFIX)).findAny().orElse(new Metadata()).getVersions().stream().sorted(new LatestVersionComparator()).toList();
+            MavenConstants.PRODUCT_ARTIFACT_POSTFIX)).findAny().map(Metadata::getVersions).orElse(new HashSet<>());
+    if (CollectionUtils.isEmpty(releasedVersions)) {
+      return Collections.emptyList();
+    }
+    List<String> versions = releasedVersions.stream().filter(
+        version -> VersionUtils.isOfficialVersionOrUnReleasedDevVersion(releasedVersions, version)).sorted(
+        new LatestVersionComparator()).toList();
     for (String version : versions) {
       Link link = linkTo(
           methodOn(ProductDetailsController.class).findProductJsonContent(productId, version)).withSelfRel();

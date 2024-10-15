@@ -138,8 +138,10 @@ class VersionServiceImplTest extends BaseSetup {
     for (String version : mockVersions) {
       mockMavenArtifactVersion.getProductArtifactsByVersion().put(version, new ArrayList<>());
     }
-    when(metadataRepo.findByProductId(MOCK_PRODUCT_ID)).thenReturn(List.of(mockMetadata));
     List<VersionAndUrlModel> result = versionService.getVersionsForDesigner(MOCK_PRODUCT_ID);
+    Assertions.assertTrue(CollectionUtils.isEmpty(result));
+    when(metadataRepo.findByProductId(MOCK_PRODUCT_ID)).thenReturn(List.of(mockMetadata));
+    result = versionService.getVersionsForDesigner(MOCK_PRODUCT_ID);
     Assertions.assertEquals(result.stream().map(VersionAndUrlModel::getVersion).toList(), mockVersions);
     Assertions.assertTrue(result.get(0).getUrl().endsWith("/api/product-details/bpmn-statistic/11.3.0-SNAPSHOT/json"));
     Assertions.assertTrue(result.get(1).getUrl().endsWith("/api/product-details/bpmn-statistic/11.1.1/json"));
