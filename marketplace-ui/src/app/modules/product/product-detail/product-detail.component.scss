@@ -170,6 +170,10 @@
   padding: 13.5px 15px;
 }
 
+::ng-deep #tab-group-dropdown .content-tab-dropdown {
+  height: 37px;
+}
+
 .form-select {
   opacity: 80%;
   padding: 10px 15px;

@@ -119,7 +119,7 @@
                   <app-common-dropdown
                     [items]="displayedTabsSignal()"
                     [selectedItem]="getSelectedTabLabel() | translate"
-                    buttonClass="form-select flex-grow-1 text-start"
+                    buttonClass="form-select flex-grow-1 text-start content-tab-dropdown"
                     (itemSelected)="onTabChange($event.value)">
                   </app-common-dropdown>
                 </div>
