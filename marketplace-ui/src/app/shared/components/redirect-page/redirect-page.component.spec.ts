@@ -6,6 +6,8 @@ import { ROUTER } from '../../constants/router.constant';
 import { HttpClient, provideHttpClient, withInterceptorsFromDi } from '@angular/common/http';
 import { RedirectPageComponent } from './redirect-page.component';
 import { of } from 'rxjs';
+import { API_URI } from '../../constants/api.constant';
+import { MOCK_EXTERNAL_DOCUMENT } from '../../mocks/mock-data';
 
 describe('ExternalDocumentComponent', () => {
   let component: RedirectPageComponent;
@@ -52,12 +54,13 @@ describe('ExternalDocumentComponent', () => {
 
   it('should not redirect if response URL matches current URL', () => {
     const currentUrl = window.location.href;
-    const mockResponse = currentUrl;
+    let mockResponse = { ...MOCK_EXTERNAL_DOCUMENT };
+    mockResponse.relativeLink = currentUrl;
     httpClient.get.and.returnValue(of(mockResponse));
 
     component.ngOnInit();
 
-    expect(httpClient.get).toHaveBeenCalledWith(`api/externaldocument/portal/10.0`);
+    expect(httpClient.get).toHaveBeenCalledWith(`${API_URI.EXTERNAL_DOCUMENT}/portal/10.0`);
     expect(window.location.href).toBe(currentUrl);
   });
 });

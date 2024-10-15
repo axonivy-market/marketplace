@@ -5,9 +5,10 @@ import { ROUTER } from '../../constants/router.constant';
 import { TranslateModule } from '@ngx-translate/core';
 import { ERROR_PAGE_PATH } from '../../constants/common.constant';
 import { ProductService } from '../../../modules/product/product.service';
+import { API_URI } from '../../constants/api.constant';
+import { ExternalDocument } from '../../models/external-document.model';
 
 const INDEX_FILE = '/index.html';
-const DOC_API = 'api/externaldocument';
 
 @Component({
   selector: 'redirect-page',
@@ -33,7 +34,7 @@ export class RedirectPageComponent implements OnInit {
 
     if (product && version) {
       if ( artifact ) {
-        this.fetchLatestLibVersionDownloadUrl(product, version, artifact, currentUrl);
+        this.fetchLatestLibVersionDownloadUrl(product, version, artifact);
         return;
       }
       this.fetchDocumentUrl(product, version, currentUrl);
@@ -41,8 +42,9 @@ export class RedirectPageComponent implements OnInit {
   }
 
   fetchDocumentUrl(product: string, version: string, currentUrl: string): void {
-    this.httpClient.get<string>(`${DOC_API}/${product}/${version}`).subscribe({
-      next: (response: string) => this.handleRedirection(response, currentUrl)
+    this.httpClient.get<ExternalDocument>(`${API_URI.EXTERNAL_DOCUMENT}/${product}/${version}`)
+      .subscribe({
+        next: (response: ExternalDocument) => this.handleRedirection(response, currentUrl)
     });
   }
 
@@ -50,22 +52,22 @@ export class RedirectPageComponent implements OnInit {
     product: string,
     version: string,
     artifact: string,
-    currentUrl: string
   ): void {
     this.productService
       .getLatestArtifactDownloadUrl(product, version, artifact)
       .subscribe(downloadUrl => {
-        this.handleRedirection(downloadUrl, currentUrl);
+        window.location.href = downloadUrl;
       });
   }
 
-  handleRedirection(response: string, currentUrl: string): void {
-    if (response === null || response === '') {
+  handleRedirection(response: ExternalDocument, currentUrl: string): void {
+    if (response === null || response.relativeLink === '') {
       this.router.navigate([ERROR_PAGE_PATH]);
     }
-    const isSameUrl = currentUrl === response || currentUrl + INDEX_FILE === response;
+    const relativeUrl = response.relativeLink;
+    const isSameUrl = currentUrl === relativeUrl || currentUrl + INDEX_FILE === relativeUrl;
     if (!isSameUrl) {
-      window.location.href = response;
+      window.location.href = relativeUrl;
     }
   }
 }
