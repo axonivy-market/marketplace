@@ -1,6 +1,7 @@
 package com.axonivy.market.service.impl;
 
 import com.axonivy.market.bo.Artifact;
+import com.axonivy.market.constants.MavenConstants;
 import com.axonivy.market.controller.ProductDetailsController;
 import com.axonivy.market.entity.MavenArtifactVersion;
 import com.axonivy.market.entity.Metadata;
@@ -126,16 +127,20 @@ public class VersionServiceImpl implements VersionService {
   }
 
   public String getLatestVersionArtifactDownloadUrl(String productId, String version, String artifact) {
-    String[] artifactParts = StringUtils.defaultString(artifact).split("\\.");
-    String artifactId = artifactParts[0];
-    String fileType = artifactParts[artifactParts.length -1];
-    List<Metadata> artifactsMetadata = metadataRepo.findByProductIdAndArtifactId(productId, artifactId);
-    if (CollectionUtils.isEmpty(artifactsMetadata)) {
+    String[] artifactParts = StringUtils.defaultString(artifact).split(MavenConstants.MAIN_VERSION_REGEX);
+    if (artifactParts.length < 1) {
       return StringUtils.EMPTY;
     }
-    List<String> modelArtifactsId = artifactsMetadata.stream().map(Metadata::getArtifactId).toList();
 
-    String targetVersion = VersionFactory.getFromMetadata(artifactsMetadata, version);
+    String artifactId = artifactParts[0];
+    String fileType = artifactParts[artifactParts.length - 1];
+    List<Metadata> metadataListetadata = metadataRepo.findByProductIdAndArtifactId(productId, artifactId);
+    if (CollectionUtils.isEmpty(metadataListetadata)) {
+      return StringUtils.EMPTY;
+    }
+
+    List<String> modelArtifactIds = metadataListetadata.stream().map(Metadata::getArtifactId).toList();
+    String targetVersion = VersionFactory.getFromMetadata(metadataListetadata, version);
     if (StringUtils.isBlank(targetVersion)) {
       return StringUtils.EMPTY;
     }
@@ -147,12 +152,13 @@ public class VersionServiceImpl implements VersionService {
 
     // Find download url first from product artifact model
     String downloadUrl = getDownloadUrlFromExistingDataByArtifactIdAndVersion(
-        artifactVersionCache.get().getProductArtifactsByVersion(), targetVersion, modelArtifactsId);
+        artifactVersionCache.get().getProductArtifactsByVersion(), targetVersion, modelArtifactIds);
     // Continue to find download url from artifact in meta.json if it is not existed in artifacts of product.json
     if (StringUtils.isBlank(downloadUrl)) {
       downloadUrl = getDownloadUrlFromExistingDataByArtifactIdAndVersion(
-          artifactVersionCache.get().getAdditionalArtifactsByVersion(), targetVersion, modelArtifactsId);
+          artifactVersionCache.get().getAdditionalArtifactsByVersion(), targetVersion, modelArtifactIds);
     }
+
     if (!StringUtils.endsWith(downloadUrl, fileType)) {
       log.warn("**VersionService: the found downloadUrl {} is not match with file type {}", downloadUrl, fileType);
       downloadUrl = StringUtils.EMPTY;

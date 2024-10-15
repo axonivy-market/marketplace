@@ -130,7 +130,7 @@ public class ProductDetailsController {
     return new ResponseEntity<>(versionList, HttpStatus.OK);
   }
 
-  @GetMapping(LATEST_LIB_BY_ID)
+  @GetMapping(LATEST_ARTIFACT_DOWNLOAD_URL_BY_ID)
   public ResponseEntity<String> getLatestArtifactDownloadUrl(@PathVariable(value = ID) String productId,
       @RequestParam(value = VERSION) String version, @RequestParam(value = ARTIFACT) String artifactId) {
     String downloadUrl = versionService.getLatestVersionArtifactDownloadUrl(productId, version, artifactId);

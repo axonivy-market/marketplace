@@ -96,7 +96,7 @@ export class ProductService {
     const params = new HttpParams()
       .append('version', version)
       .append('artifact', artifact);
-    const url = `${API_URI.PRODUCT_DETAILS}/${id}/lib`;
+    const url = `${API_URI.PRODUCT_DETAILS}/${id}/artifact`;
     return this.httpClient.get<string>(url, {
       params,
       responseType: 'text' as 'json'
