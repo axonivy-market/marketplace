@@ -52,7 +52,7 @@ public class BaseSetup {
   protected static final String MOCK_PRODUCT_JSON_NODE_FILE_PATH = "src/test/resources/prouct-json-node.json";
   protected static final String MOCK_METADATA_FILE_PATH = "src/test/resources/metadata.xml";
   protected static final String MOCK_SNAPSHOT_METADATA_FILE_PATH = "src/test/resources/snapshotMetadata.xml";
-  protected static final String INAVALID_FILE_PATH = "test/file/path";
+  protected static final String INVALID_FILE_PATH = "test/file/path";
   protected static final String MOCK_SETUP_MD_PATH = "src/test/resources/setup.md";
   protected static final String MOCK_MAVEN_URL = "https://maven.axonivy.com/com/axonivy/util/bpmn-statistic/maven" +
       "-metadata.xml";
