@@ -62,8 +62,8 @@ public class ProductFactory {
     product.setShortDescriptions(mappingMultilingualismValueByMetaJSONFile(meta.getDescriptions()));
     product.setVendor(StringUtils.defaultIfEmpty(meta.getVendor(), MetaConstants.DEFAULT_VENDOR_NAME));
     product.setVendorUrl(StringUtils.defaultIfEmpty(meta.getVendorUrl(), MetaConstants.DEFAULT_VENDOR_URL));
-    product.setVendorImage(meta.getVendorImage());
-    product.setVendorImageDarkMode(meta.getVendorImageDarkMode());
+    product.setVendorImagePath(meta.getVendorImage());
+    product.setVendorImageDarkModePath(meta.getVendorImageDarkMode());
     product.setPlatformReview(meta.getPlatformReview());
     product.setStatusBadgeUrl(meta.getStatusBadgeUrl());
     product.setLanguage(meta.getLanguage());

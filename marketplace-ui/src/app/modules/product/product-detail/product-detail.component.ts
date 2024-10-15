@@ -391,7 +391,7 @@ export class ProductDetailComponent {
   private setDefaultVendorImage(productDetail: ProductDetail): ProductDetail {
     const { vendorImage, vendorImageDarkMode } = productDetail;
 
-    if (!productDetail.vendorImage && !productDetail.vendorImageDarkMode) {
+    if (!(productDetail.vendorImage || productDetail.vendorImageDarkMode )) {
       productDetail.vendorImage = DEFAULT_VENDOR_IMAGE_BLACK;
       productDetail.vendorImageDarkMode = DEFAULT_VENDOR_IMAGE;
     }

@@ -84,12 +84,12 @@ public class GHAxonIvyProductRepoServiceImpl implements GHAxonIvyProductRepoServ
   @Override
   public ProductModuleContent getReadmeAndProductContentsFromTag(Product product, GHRepository ghRepository,
       String tag) {
-    ProductModuleContent productModuleContent = ProductContentUtils.initProductModuleContent(product, tag,
+    ProductModuleContent productModuleContent = ProductContentUtils.initProductModuleContent(product.getId(), tag,
         new HashSet<>());
     try {
-      List<GHContent> contents = getProductFolderContents(product, ghRepository, tag);
+      List<GHContent> contents = getProductFolderContents(product.getId(), ghRepository, tag);
       updateDependencyContentsFromProductJson(productModuleContent, contents, product);
-      extractReadMeFileFromContents(product, contents, productModuleContent);
+      extractReadMeFileFromContents(product.getId(), contents, productModuleContent);
     } catch (Exception e) {
       log.error("Cannot get product.json content in {} - {}", ghRepository.getName(), e.getMessage());
       return null;
@@ -97,7 +97,7 @@ public class GHAxonIvyProductRepoServiceImpl implements GHAxonIvyProductRepoServ
     return productModuleContent;
   }
 
-  public void extractReadMeFileFromContents(Product product, List<GHContent> contents,
+  public void extractReadMeFileFromContents(String productId, List<GHContent> contents,
       ProductModuleContent productModuleContent) {
     try {
       List<GHContent> readmeFiles = contents.stream().filter(GHContent::isFile)
@@ -108,7 +108,7 @@ public class GHAxonIvyProductRepoServiceImpl implements GHAxonIvyProductRepoServ
         for (GHContent readmeFile : readmeFiles) {
           String readmeContents = new String(readmeFile.read().readAllBytes());
           if (ProductContentUtils.hasImageDirectives(readmeContents)) {
-            readmeContents = updateImagesWithDownloadUrl(product, contents, readmeContents);
+            readmeContents = updateImagesWithDownloadUrl(productId, contents, readmeContents);
           }
           ProductContentUtils.getExtractedPartsOfReadme(moduleContents, readmeContents, readmeFile.getName());
         }
@@ -142,11 +142,11 @@ public class GHAxonIvyProductRepoServiceImpl implements GHAxonIvyProductRepoServ
     }
   }
 
-  public String updateImagesWithDownloadUrl(Product product, List<GHContent> contents, String readmeContents) {
+  public String updateImagesWithDownloadUrl(String productId, List<GHContent> contents, String readmeContents) {
     List<GHContent> allContentOfImages = getAllImagesFromProductFolder(contents);
     Map<String, String> imageUrls = new HashMap<>();
 
-    allContentOfImages.forEach(content -> Optional.of(imageService.mappingImageFromGHContent(product, content, false))
+    allContentOfImages.forEach(content -> Optional.of(imageService.mappingImageFromGHContent(productId, content, false))
         .ifPresent(image -> imageUrls.put(content.getName(), IMAGE_ID_PREFIX.concat(image.getId()))));
     return ProductContentUtils.replaceImageDirWithImageCustomId(imageUrls, readmeContents);
   }
@@ -157,12 +157,12 @@ public class GHAxonIvyProductRepoServiceImpl implements GHAxonIvyProductRepoServ
     return images;
   }
 
-  private List<GHContent> getProductFolderContents(Product product, GHRepository ghRepository, String tag)
+  private List<GHContent> getProductFolderContents(String productId, GHRepository ghRepository, String tag)
       throws IOException {
     String productFolderPath = ghRepository.getDirectoryContent(CommonConstants.SLASH, tag).stream()
         .filter(GHContent::isDirectory).map(GHContent::getName)
         .filter(content -> content.endsWith(MavenConstants.PRODUCT_ARTIFACT_POSTFIX)).findFirst().orElse(null);
-    productFolderPath = NonStandardProduct.findById(product.getId(), productFolderPath);
+    productFolderPath = NonStandardProduct.findById(productId, productFolderPath);
 
     return ghRepository.getDirectoryContent(productFolderPath, tag);
   }

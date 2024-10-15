@@ -8,10 +8,10 @@ export interface ProductDetail {
   logoUrl: string;
   type: string;
   tags: string[];
-  vendor: string;
-  vendorUrl: string;
-  vendorImage: string;
-  vendorImageDarkMode: string;
+  vendor?: string;
+  vendorUrl?: string;
+  vendorImage?: string;
+  vendorImageDarkMode?: string;
   platformReview: string;
   newestReleaseVersion: string;
   cost: string;

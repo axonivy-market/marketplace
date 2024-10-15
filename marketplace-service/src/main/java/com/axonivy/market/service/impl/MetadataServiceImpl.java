@@ -223,13 +223,13 @@ public class MetadataServiceImpl implements MetadataService {
 
   private ProductModuleContent getReadmeAndProductContentsFromTag(Product product, String nonMatchSnapshotVersion,
       Metadata snapShotMetadata, String url) {
-    ProductModuleContent productModuleContent = ProductContentUtils.initProductModuleContent(product, Strings.EMPTY,
+    ProductModuleContent productModuleContent = ProductContentUtils.initProductModuleContent(product.getId(), Strings.EMPTY,
         Set.of(nonMatchSnapshotVersion));
     String unzippedFolderPath = Strings.EMPTY;
     try {
       unzippedFolderPath = fileDownloadService.downloadAndUnzipProductContentFile(url, snapShotMetadata);
       updateDependencyContentsFromProductJson(productModuleContent, product, unzippedFolderPath);
-      extractReadMeFileFromContents(product, unzippedFolderPath, productModuleContent);
+      extractReadMeFileFromContents(product.getId(), unzippedFolderPath, productModuleContent);
     } catch (Exception e) {
       log.error("Cannot get product.json content in {}", e.getMessage());
       return null;
@@ -253,7 +253,7 @@ public class MetadataServiceImpl implements MetadataService {
         ProductJsonConstants.VERSION_VALUE, product);
   }
 
-  private void extractReadMeFileFromContents(Product product, String unzippedFolderPath,
+  private void extractReadMeFileFromContents(String productId, String unzippedFolderPath,
       ProductModuleContent productModuleContent) {
     try {
       List<Path> readmeFiles;
@@ -266,7 +266,7 @@ public class MetadataServiceImpl implements MetadataService {
         for (Path readmeFile : readmeFiles) {
           String readmeContents = Files.readString(readmeFile);
           if (ProductContentUtils.hasImageDirectives(readmeContents)) {
-            readmeContents = updateImagesWithDownloadUrl(product, unzippedFolderPath, readmeContents);
+            readmeContents = updateImagesWithDownloadUrl(productId, unzippedFolderPath, readmeContents);
           }
           ProductContentUtils.getExtractedPartsOfReadme(moduleContents, readmeContents,
               readmeFile.getFileName().toString());
@@ -278,7 +278,7 @@ public class MetadataServiceImpl implements MetadataService {
     }
   }
 
-  private String updateImagesWithDownloadUrl(Product product, String unzippedFolderPath,
+  private String updateImagesWithDownloadUrl(String productId, String unzippedFolderPath,
       String readmeContents) throws IOException {
     List<Path> allImagePaths;
     Map<String, String> imageUrls = new HashMap<>();
@@ -287,7 +287,7 @@ public class MetadataServiceImpl implements MetadataService {
           path -> path.getFileName().toString().toLowerCase().matches(CommonConstants.IMAGE_EXTENSION)).toList();
     }
     allImagePaths.forEach(
-        imagePath -> Optional.of(imageService.mappingImageFromDownloadedFolder(product, imagePath)).ifPresent(
+        imagePath -> Optional.of(imageService.mappingImageFromDownloadedFolder(productId, imagePath)).ifPresent(
             image -> imageUrls.put(imagePath.getFileName().toString(),
                 CommonConstants.IMAGE_ID_PREFIX.concat(image.getId()))));
 

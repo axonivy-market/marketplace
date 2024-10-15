@@ -225,7 +225,7 @@ public class ProductServiceImpl implements ProductService {
     Map<String, List<GitHubFile>> groupGitHubFiles = new HashMap<>();
     for (var file : gitHubFileChanges) {
       String filePath = file.getFileName();
-      var parentPath = filePath.substring(0, filePath.lastIndexOf('/') + 1);
+      var parentPath = filePath.substring(0, filePath.lastIndexOf(CommonConstants.SLASH) + 1);
       var files = groupGitHubFiles.getOrDefault(parentPath, new ArrayList<>());
       files.add(file);
       files.sort((file1, file2) -> GitHubUtils.sortMetaJsonFirst(file1.getFileName(), file2.getFileName()));
@@ -301,7 +301,7 @@ public class ProductServiceImpl implements ProductService {
     searchCriteria.setFields(List.of(MARKET_DIRECTORY));
     Product result = productRepository.findByCriteria(searchCriteria);
     if (result != null) {
-      Optional.ofNullable(imageService.mappingImageFromGHContent(result, fileContent, true)).ifPresent(image -> {
+      Optional.ofNullable(imageService.mappingImageFromGHContent(result.getId(), fileContent, true)).ifPresent(image -> {
         if (StringUtils.isNotBlank(result.getLogoId())) {
           imageRepository.deleteById(result.getLogoId());
         }
@@ -384,7 +384,7 @@ public class ProductServiceImpl implements ProductService {
     ProductFactory.mappingIdForProductModuleContent(initialContent);
     product.setReleasedVersions(List.of(INITIAL_VERSION));
     product.setNewestReleaseVersion(INITIAL_VERSION);
-    axonIvyProductRepoService.extractReadMeFileFromContents(product, ghContentEntity.getValue(), initialContent);
+    axonIvyProductRepoService.extractReadMeFileFromContents(product.getId(), ghContentEntity.getValue(), initialContent);
     productModuleContentRepository.save(initialContent);
   }
 
@@ -428,35 +428,34 @@ public class ProductServiceImpl implements ProductService {
 
   private void mappingLogoFromGHContent(Product product, GHContent ghContent) {
     if (StringUtils.endsWith(ghContent.getName(), LOGO_FILE)) {
-      Optional.ofNullable(imageService.mappingImageFromGHContent(product, ghContent, true))
+      Optional.ofNullable(imageService.mappingImageFromGHContent(product.getId(), ghContent, true))
           .ifPresent(image -> product.setLogoId(image.getId()));
     }
   }
 
   private void mappingVendorImageFromGHContent(Product product, GHContent ghContent) {
     if (StringUtils.endsWith(ghContent.getName(), MetaConstants.META_FILE)) {
-      mapVendorImage(product, ghContent, product.getVendorImage(), false);
-      mapVendorImage(product, ghContent, product.getVendorImageDarkMode(), true);
+      if (StringUtils.isNotBlank(product.getVendorImagePath())) {
+        product.setVendorImage(mapVendorImage(product.getId(), ghContent, product.getVendorImagePath()));
+      }
+      if (StringUtils.isNotBlank(product.getVendorImageDarkModePath())) {
+        product.setVendorImageDarkMode(mapVendorImage(product.getId(), ghContent, product.getVendorImageDarkModePath()));
+      }
     }
   }
 
-  private void mapVendorImage(Product product, GHContent ghContent, String imageName, boolean isDarkMode) {
+  private String mapVendorImage(String productId, GHContent ghContent, String imageName) {
     if (StringUtils.isNotBlank(imageName)) {
       String imagePath = StringUtils.replace(ghContent.getPath(), MetaConstants.META_FILE, imageName);
       try {
         GHContent imageContent = gitHubService.getGHContent(ghContent.getOwner(), imagePath, marketRepoBranch);
-        Optional.ofNullable(imageService.mappingImageFromGHContent(product, imageContent, isDarkMode))
-            .ifPresent(image -> {
-              if (isDarkMode) {
-                product.setVendorImageDarkMode(image.getId());
-              } else {
-                product.setVendorImage(image.getId());
-              }
-            });
+        return Optional.ofNullable(imageService.mappingImageFromGHContent(productId, imageContent, false))
+            .map(Image::getId).orElse(EMPTY);
       } catch (IOException e) {
-        log.error("Get Vendor Image{} failed: ", isDarkMode ? " Dark Mode" : "", e);
+        log.error("Get Vendor Image failed: ", e);
       }
     }
+    return EMPTY;
   }
 
   private void updateProductFromReleaseTags(Product product, GHRepository productRepo) {

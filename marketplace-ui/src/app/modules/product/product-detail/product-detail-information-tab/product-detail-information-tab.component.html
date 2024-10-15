@@ -9,11 +9,7 @@
     <a [href]="productDetail.vendorUrl" class="vendor-cotnainer">
       <img
       class="logo__vendor__image"
-      [src]="
-        themeService.isDarkMode()
-          ? productDetail.vendorImageDarkMode
-          : productDetail.vendorImage
-      "
+      [src]="productDetail.vendorImage | themeBasedImage:productDetail.vendorImageDarkMode"
       alt="Logo Vendor"/>
     </a>
   </div>
