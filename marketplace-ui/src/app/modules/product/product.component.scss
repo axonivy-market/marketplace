@@ -59,3 +59,18 @@
     padding: 0;
   }
 }
+
+@media (max-width: 767px) {
+  .introduction-container {
+    display: block;
+  }
+
+  .about, .contribute-link-container{
+    width: 100%;
+    flex-direction: column;
+  }
+
+  .contribute-link-container {
+    padding: 0;
+  }
+}

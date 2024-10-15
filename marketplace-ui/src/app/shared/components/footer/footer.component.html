@@ -71,11 +71,11 @@
 
     <div class="d-flex align-items-center justify-content-center footer__social-media">
       <div class="navbar navbar-expand-lg">
-        <ul class="navbar-nav flex-row">
+        <ul class="navbar-nav flex-row social-link-container">
           @for (link of socialMediaLinks; track $index) {
           <li>
             <a
-              class="nav-link social-link text-primary"
+              class="social-link text-primary"
               aria-current="page"
               target="_blank"
               [href]="link.url"

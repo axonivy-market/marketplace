@@ -40,13 +40,22 @@
 }
 
 .download-button {
+  width: 10.1rem;
+  height: 3.5rem;
   font-size: 1.6rem;
 }
 
-.link-icon {
-  width: 18px;
-  height: 18px;
+.social-link-container {
+  gap: 2.4rem;
+}
 
+.social-link {
+  padding: 0;
+  text-decoration: none;
+}
+
+.link-icon {
+  font-size: 1.8rem;
 }
 
 .link--left {
