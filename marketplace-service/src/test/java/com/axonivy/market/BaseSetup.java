@@ -30,6 +30,7 @@ import java.util.Map;
 @Log4j2
 public class BaseSetup {
   protected static final String SAMPLE_PRODUCT_ID = "amazon-comprehend";
+  protected static final String SAMPLE_PRODUCT_PATH = "/market/connector/amazon-comprehend";
   protected static final String SAMPLE_PRODUCT_NAME = "prody Comprehend";
   protected static final Pageable PAGEABLE = PageRequest.of(0, 20,
       Sort.by(SortOption.ALPHABETICALLY.getOption()).descending());
@@ -50,6 +51,7 @@ public class BaseSetup {
   protected static final String MOCK_METADATA_FILE_PATH = "src/test/resources/metadata.xml";
   protected static final String MOCK_SNAPSHOT_METADATA_FILE_PATH = "src/test/resources/snapshotMetadata.xml";
   protected static final String INAVALID_FILE_PATH = "test/file/path";
+  protected static final String MOCK_SETUP_MD_PATH = "src/test/resources/setup.md";
   protected static final String MOCK_MAVEN_URL = "https://maven.axonivy.com/com/axonivy/util/bpmn-statistic/maven" +
       "-metadata.xml";
   protected static final String MOCK_SNAPSHOT_MAVEN_URL = "https://maven.axonivy.com/com/axonivy/util/bpmn-statistic" +
@@ -102,6 +104,10 @@ public class BaseSetup {
     ProductJsonContent result = new ProductJsonContent();
     result.setContent(getContentFromTestResourcePath(MOCK_PRODUCT_JSON_FILE_PATH));
     return result;
+  }
+
+  protected static String getMockSetupMd() {
+    return getContentFromTestResourcePath(MOCK_SETUP_MD_PATH);
   }
 
   private static String getContentFromTestResourcePath(String path) {

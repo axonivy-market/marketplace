@@ -5,6 +5,7 @@ import lombok.Getter;
 import org.apache.commons.lang3.StringUtils;
 
 import java.util.Arrays;
+import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -65,5 +66,10 @@ public enum NonStandardProduct {
   public static String findById(String id, String currentPath) {
     String nonStandardPath = findById(id).pathToProductFolder;
     return StringUtils.isNotBlank(nonStandardPath) ? nonStandardPath : currentPath;
+  }
+
+  public static boolean isMsGraphProduct(String productId) {
+    return List.of(MICROSOFT_REPO_NAME.id, MICROSOFT_365.id,
+        MICROSOFT_CALENDAR.id, MICROSOFT_MAIL.id, MICROSOFT_TEAMS.id, MICROSOFT_TODO.id).contains(productId);
   }
 }
