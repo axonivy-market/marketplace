@@ -252,7 +252,7 @@ public class MavenUtils {
     String downloadUrl = buildDownloadUrl(metadata.getArtifactId(), version, metadata.getType(), metadata.getRepoUrl(),
         metadata.getGroupId(), metadata.getSnapshotVersionValue());
     return MavenArtifactModel.builder().name(metadata.getName()).downloadUrl(downloadUrl).isInvalidArtifact(
-        metadata.getArtifactId().contains(metadata.getGroupId())).build();
+        metadata.getArtifactId().contains(metadata.getGroupId())).artifactId(metadata.getArtifactId()).build();
   }
 
   public static String getMetadataContentFromUrl(String metadataUrl) {

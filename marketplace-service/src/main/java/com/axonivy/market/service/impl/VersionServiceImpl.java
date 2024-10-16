@@ -134,13 +134,13 @@ public class VersionServiceImpl implements VersionService {
 
     String artifactId = artifactParts[0];
     String fileType = artifactParts[artifactParts.length - 1];
-    List<Metadata> metadataListetadata = metadataRepo.findByProductIdAndArtifactId(productId, artifactId);
-    if (CollectionUtils.isEmpty(metadataListetadata)) {
+    List<Metadata> metadataList = metadataRepo.findByProductIdAndArtifactId(productId, artifactId);
+    if (CollectionUtils.isEmpty(metadataList)) {
       return StringUtils.EMPTY;
     }
 
-    List<String> modelArtifactIds = metadataListetadata.stream().map(Metadata::getArtifactId).toList();
-    String targetVersion = VersionFactory.getFromMetadata(metadataListetadata, version);
+    List<String> modelArtifactIds = metadataList.stream().map(Metadata::getArtifactId).toList();
+    String targetVersion = VersionFactory.getFromMetadata(metadataList, version);
     if (StringUtils.isBlank(targetVersion)) {
       return StringUtils.EMPTY;
     }
