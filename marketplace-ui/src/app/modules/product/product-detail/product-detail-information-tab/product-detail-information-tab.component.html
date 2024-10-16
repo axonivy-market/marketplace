@@ -1,4 +1,4 @@
-<h3 [lang]="languageService.selectedLanguage()" class="info-title text-primary mb-3">
+<h3 [lang]="languageService.selectedLanguage()" class="info-title text-primary">
   {{ 'common.product.detail.information.label' | translate }}
 </h3>
 <div class="info-container d-flex flex-column p-0 w-100">
@@ -57,7 +57,7 @@
     <span [lang]="languageService.selectedLanguage()" class="text-secondary">
       {{ 'common.product.detail.information.value.documentation' | translate }}
     </span>
-    <a class="text-primary" [href]="externalDocumentLink" target="_blank">
+    <a class="text-primary d-inline-block text-truncate ps-2" [href]="externalDocumentLink" target="_blank">
       {{ displayExternalDocName ?? 'common.product.detail.information.value.defaultDocName' | translate }}
     </a>
   </div>
