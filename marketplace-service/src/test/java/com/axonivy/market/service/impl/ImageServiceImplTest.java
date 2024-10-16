@@ -146,10 +146,4 @@ class ImageServiceImplTest {
     var result = imageService.mappingImageFromGHContent(GOOGLE_MAPS_CONNECTOR, null, true);
     assertNull(result);
   }
-
-  private Product mockProduct() {
-    return Product.builder().id("google-maps-connector")
-        .language("English")
-        .build();
-  }
 }
