@@ -23,6 +23,8 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
+import static com.axonivy.market.constants.MavenConstants.DEFAULT_IVY_MAVEN_BASE_URL;
+
 class MavenUtilsTest extends BaseSetup {
 
   @Test
@@ -84,6 +86,21 @@ class MavenUtilsTest extends BaseSetup {
     Assertions.assertEquals(MOCK_SNAPSHOT_MAVEN_URL,
         MavenUtils.buildSnapshotMetadataUrlFromArtifactInfo(MavenConstants.DEFAULT_IVY_MAVEN_BASE_URL, MOCK_GROUP_ID,
             MOCK_ARTIFACT_ID, MOCK_SNAPSHOT_VERSION));
+  }
+
+  @Test
+  void testExtractMavenArtifactsFromContentStream() throws IOException {
+    InputStream mockInputStream = getMockInputStream();
+    List<Artifact> result = MavenUtils.extractMavenArtifactsFromContentStream(mockInputStream);
+    for (Artifact artifact : result) {
+      Assertions.assertEquals(artifact.getRepoUrl(), DEFAULT_IVY_MAVEN_BASE_URL);
+    }
+
+    mockInputStream = getMockProductJsonNodeContentInputStream();
+    result = MavenUtils.extractMavenArtifactsFromContentStream(mockInputStream);
+    for (Artifact artifact : result) {
+      Assertions.assertEquals(artifact.getRepoUrl(), DEFAULT_IVY_MAVEN_BASE_URL);
+    }
   }
 
   @Test
