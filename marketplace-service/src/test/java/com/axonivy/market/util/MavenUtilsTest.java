@@ -99,7 +99,7 @@ class MavenUtilsTest extends BaseSetup {
     mockInputStream = getMockProductJsonNodeContentInputStream();
     result = MavenUtils.extractMavenArtifactsFromContentStream(mockInputStream);
     for (Artifact artifact : result) {
-      Assertions.assertEquals(artifact.getRepoUrl(), DEFAULT_IVY_MAVEN_BASE_URL);
+      Assertions.assertEquals(DEFAULT_IVY_MAVEN_BASE_URL, artifact.getRepoUrl());
     }
   }
 
