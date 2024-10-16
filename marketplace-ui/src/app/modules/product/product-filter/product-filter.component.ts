@@ -43,11 +43,13 @@ export class ProductFilterComponent {
       searchString = searchString.trim();
     }
     this.searchChange.next(searchString);
+    if (window._paq) {
+      window._paq.push(['trackSiteSearch', searchString, "Product search", false]);
+    }
   }
 
   onSortChange(sort: SortOption) {
     this.sortChange.next(sort);
     this.selectedSortLabel = CommonUtils.getLabel(sort, this.sorts);
   }
-
 }
