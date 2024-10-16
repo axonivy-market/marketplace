@@ -669,6 +669,7 @@ public class ProductServiceImpl implements ProductService {
     gitHubContents.sort((f1, f2) -> GitHubUtils.sortMetaJsonFirst(f1.getName(), f2.getName()));
     for (var content : gitHubContent) {
       ProductFactory.mappingByGHContent(product, content);
+      mappingVendorImageFromGHContent(product, content);
       mappingLogoFromGHContent(product, content);
     }
   }
