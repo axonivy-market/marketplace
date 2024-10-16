@@ -1,5 +1,5 @@
 .logo {
-  margin: 0 0 2rem 0;
+  margin: 0 0 3.2rem 0;
 }
 
 .logo__image {
@@ -9,12 +9,25 @@
   vertical-align: initial;
 }
 
+.footer__navbar .nav-link {
+  padding: 0;
+}
+
 .nav-item {
-  margin: 0 0 0 30px;
+  margin: 0 0 0 3.2rem;
+}
+
+.social-media-section {
+  padding-top: 5.6rem;
+}
+
+.border-bottom {
+  padding-bottom: 5.6rem !important;
 }
 
 .nav-link {
   font-weight: normal;
+  font-size: 1.4rem;
   padding: 0 15px;
 }
 
@@ -26,22 +39,39 @@
   margin: 24px 0 0 0;
 }
 
+.download-button {
+  width: 10.1rem;
+  height: 3.5rem;
+  font-size: 1.6rem;
+}
+
+.social-link-container {
+  gap: 2.4rem;
+}
+
+.social-link {
+  padding: 0;
+  text-decoration: none;
+}
+
 .link-icon {
-  width: 18px;
-  height: 18px;
+  font-size: 1.8rem;
 }
 
 .link--left {
-  margin: 0 2rem 0 0;
+  margin: 0 3.2rem 0 0;
 }
 
 .h5-text {
   font-weight: 400;
-  font-size: 16px;
+  font-size: 1.6rem;
 }
 
 .footer-text {
+  max-width: 451px;
+  font-size: 1.6rem;
   text-wrap: balance;
+
 }
 
 ::ng-deep .footer-text a {
@@ -59,3 +89,4 @@ border: 0.5px solid var(--header-border-color);
     margin: 0;
   }
 }
+

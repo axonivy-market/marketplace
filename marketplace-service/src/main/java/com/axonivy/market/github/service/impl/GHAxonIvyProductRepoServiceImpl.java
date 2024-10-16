@@ -47,7 +47,6 @@ import static com.axonivy.market.util.ProductContentUtils.SETUP;
 @Log4j2
 @Service
 public class GHAxonIvyProductRepoServiceImpl implements GHAxonIvyProductRepoService {
-  public static final String IMAGE_EXTENSION = "(.*?).(jpeg|jpg|png|gif)";
   private final GitHubService gitHubService;
   private final ImageService imageService;
   private GHOrganization organization;
@@ -92,10 +91,10 @@ public class GHAxonIvyProductRepoServiceImpl implements GHAxonIvyProductRepoServ
   @Override
   public ProductModuleContent getReadmeAndProductContentsFromTag(Product product, GHRepository ghRepository,
       String tag) {
-    ProductModuleContent productModuleContent = ProductContentUtils.initProductModuleContent(product, tag,
+    ProductModuleContent productModuleContent = ProductContentUtils.initProductModuleContent(product.getId(), tag,
         new HashSet<>());
     try {
-      List<GHContent> contents = getProductFolderContents(product, ghRepository, tag);
+      List<GHContent> contents = getProductFolderContents(product.getId(), ghRepository, tag);
       updateDependencyContentsFromProductJson(productModuleContent, contents, product);
       extractReadMeFileFromContents(product, contents, productModuleContent);
     } catch (Exception e) {
@@ -116,7 +115,7 @@ public class GHAxonIvyProductRepoServiceImpl implements GHAxonIvyProductRepoServ
         for (GHContent readmeFile : readmeFiles) {
           String readmeContents = new String(readmeFile.read().readAllBytes());
           if (ProductContentUtils.hasImageDirectives(readmeContents)) {
-            readmeContents = updateImagesWithDownloadUrl(product, contents, readmeContents);
+            readmeContents = updateImagesWithDownloadUrl(product.getId(), contents, readmeContents);
           }
           ProductContentUtils.getExtractedPartsOfReadme(moduleContents, readmeContents, readmeFile.getName());
           updateSetupPartForProductModuleContent(product, moduleContents,
@@ -148,7 +147,7 @@ public class GHAxonIvyProductRepoServiceImpl implements GHAxonIvyProductRepoServ
       if (ProductContentUtils.hasImageDirectives(setupContent)) {
         List<GHContent> setupImagesFolder =
             contents.stream().filter(content -> content.getName().equals(MG_GRAPH_IMAGES_FOR_SETUP_FILE)).toList();
-        setupContent = updateImagesWithDownloadUrl(product, setupImagesFolder, setupContent);
+        setupContent = updateImagesWithDownloadUrl(product.getId(), setupImagesFolder, setupContent);
       }
 
       if (setupContent.contains(ReadmeConstants.SETUP_PART)) {
@@ -182,11 +181,11 @@ public class GHAxonIvyProductRepoServiceImpl implements GHAxonIvyProductRepoServ
     }
   }
 
-  public String updateImagesWithDownloadUrl(Product product, List<GHContent> contents, String readmeContents) {
+  public String updateImagesWithDownloadUrl(String productId, List<GHContent> contents, String readmeContents) {
     List<GHContent> allContentOfImages = getAllImagesFromProductFolder(contents);
     Map<String, String> imageUrls = new HashMap<>();
 
-    allContentOfImages.forEach(content -> Optional.of(imageService.mappingImageFromGHContent(product, content, false))
+    allContentOfImages.forEach(content -> Optional.of(imageService.mappingImageFromGHContent(productId, content, false))
         .ifPresent(image -> imageUrls.put(content.getName(), IMAGE_ID_PREFIX.concat(image.getId()))));
     return ProductContentUtils.replaceImageDirWithImageCustomId(imageUrls, readmeContents);
   }
@@ -197,12 +196,12 @@ public class GHAxonIvyProductRepoServiceImpl implements GHAxonIvyProductRepoServ
     return images;
   }
 
-  private List<GHContent> getProductFolderContents(Product product, GHRepository ghRepository, String tag)
+  private List<GHContent> getProductFolderContents(String productId, GHRepository ghRepository, String tag)
       throws IOException {
     String productFolderPath = ghRepository.getDirectoryContent(CommonConstants.SLASH, tag).stream()
         .filter(GHContent::isDirectory).map(GHContent::getName)
         .filter(content -> content.endsWith(MavenConstants.PRODUCT_ARTIFACT_POSTFIX)).findFirst().orElse(null);
-    productFolderPath = NonStandardProduct.findById(product.getId(), productFolderPath);
+    productFolderPath = NonStandardProduct.findById(productId, productFolderPath);
 
     return ghRepository.getDirectoryContent(productFolderPath, tag);
   }
