@@ -6,6 +6,7 @@ import { LanguageService } from '../../../../core/services/language/language.ser
 import { ProductDetailService } from '../product-detail.service';
 import { VERSION } from '../../../../shared/constants/common.constant';
 import { LoadingService } from '../../../../core/services/loading/loading.service';
+import { ThemeService } from '../../../../core/services/theme/theme.service';
 
 const SELECTED_VERSION = 'selectedVersion';
 const PRODUCT_DETAIL = 'productDetail';
@@ -25,6 +26,7 @@ export class ProductDetailInformationTabComponent implements OnChanges {
   displayVersion = '';
   displayExternalDocName: string | null = '';
   languageService = inject(LanguageService);
+  themeService = inject(ThemeService);
   productDetailService = inject(ProductDetailService);
   loadingService = inject(LoadingService);
 
