@@ -16,7 +16,6 @@ import java.util.Optional;
 
 import static com.axonivy.market.constants.MavenConstants.DEV_RELEASE_POSTFIX;
 import static org.apache.commons.lang3.StringUtils.EMPTY;
-
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class VersionFactory {
 
@@ -42,16 +41,17 @@ public class VersionFactory {
 
     // Get latest dev version from metadata
     if (Objects.nonNull(version) && version != DevelopmentVersion.LATEST) {
-      return metadataList.stream().map(Metadata::getLatest).max(new LatestVersionComparator()).orElse(EMPTY);
+      return metadataList.stream().map(Metadata::getLatest).min(new LatestVersionComparator()).orElse(EMPTY);
     }
 
     List<String> artifactVersions = metadataList.stream().flatMap(metadata -> metadata.getVersions().stream()).sorted(
         new LatestVersionComparator()).toList();
-    List<String> releasedVersions = artifactVersions.stream().filter(VersionUtils::isReleasedVersion).toList();
+    List<String> releasedVersions = artifactVersions.stream().filter(VersionUtils::isReleasedVersion).sorted(
+        new LatestVersionComparator()).toList();
 
     // Get latest released version from metadata
     if (version == DevelopmentVersion.LATEST) {
-      return releasedVersions.stream().max(new LatestVersionComparator()).orElse(EMPTY);
+      return releasedVersions.stream().min(new LatestVersionComparator()).orElse(EMPTY);
     }
 
     // Get latest dev version from specific version
