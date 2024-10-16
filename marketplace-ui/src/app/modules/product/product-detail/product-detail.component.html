@@ -5,7 +5,7 @@
       <div class="link-to-main align-content-center">
         <a
           href=""
-          class="back-link text-decoration-none fs-6"
+          class="back-link text-decoration-none"
           [ngClass]="
             themeService.isDarkMode() ? 'text-light' : 'text-link-blue'
           ">
@@ -119,7 +119,7 @@
                   <app-common-dropdown
                     [items]="displayedTabsSignal()"
                     [selectedItem]="getSelectedTabLabel() | translate"
-                    buttonClass="form-select flex-grow-1 text-start"
+                    buttonClass="form-select flex-grow-1 text-start content-tab-dropdown"
                     (itemSelected)="onTabChange($event.value)">
                   </app-common-dropdown>
                 </div>
@@ -165,7 +165,7 @@
                       [selectedVersion]="selectedVersion">
                     </app-product-detail-maven-content>
                   } @else {
-                    <markdown
+                    <markdown emoji
                       [lang]="languageService.selectedLanguage()"
                       class="readme-content"
                       [data]="
@@ -177,7 +177,7 @@
               }
             }
           </div>
-        } 
+        }
       </div>
 
       <div

@@ -45,14 +45,16 @@ export const apiInterceptor: HttpInterceptorFn = (req, next) => {
     loadingService.show();
   }
 
+  if (req.context.get(ForwardingError)) {
+    return next(cloneReq);
+  }
+
   return next(cloneReq).pipe(
     catchError(error => {
-      if (!req.context.get(ForwardingError)) {
-        if (ERROR_CODES.includes(error.status)) {
-          router.navigate([`${ERROR_PAGE_PATH}/${error.status}`]);
-        } else {
-          router.navigate([ERROR_PAGE_PATH]);
-        }
+      if (ERROR_CODES.includes(error.status)) {
+        router.navigate([`${ERROR_PAGE_PATH}/${error.status}`]);
+      } else {
+        router.navigate([ERROR_PAGE_PATH]);
       }
       return EMPTY;
     }),
