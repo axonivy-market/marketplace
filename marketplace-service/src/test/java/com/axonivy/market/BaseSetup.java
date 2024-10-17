@@ -49,7 +49,7 @@ public class BaseSetup {
   protected static final String MOCK_GROUP_ID = "com.axonivy.util";
   protected static final String MOCK_PRODUCT_NAME = "bpmn statistic";
   protected static final String MOCK_PRODUCT_JSON_FILE_PATH = "src/test/resources/product.json";
-  protected static final String MOCK_PRODUCT_JSON_FILE_PATH_NO_URL = "src/test/resources/product2.json";
+  protected static final String MOCK_PRODUCT_JSON_FILE_PATH_NO_URL = "src/test/resources/productMissingURL.json";
   protected static final String MOCK_PRODUCT_JSON_DIR_PATH = "src/test/resources";
   protected static final String MOCK_PRODUCT_JSON_NODE_FILE_PATH = "src/test/resources/prouct-json-node.json";
   protected static final String MOCK_METADATA_FILE_PATH = "src/test/resources/metadata.xml";
