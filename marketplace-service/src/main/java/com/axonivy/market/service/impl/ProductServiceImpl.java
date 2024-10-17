@@ -563,14 +563,16 @@ public class ProductServiceImpl implements ProductService {
     if(mavenArtifactVersion.isPresent()) {
       versions = MavenUtils.getAllExistingVersions(mavenArtifactVersion.get(), BooleanUtils.isTrue(isShowDevVersion),
           StringUtils.EMPTY);
-      version = CollectionUtils.firstElement(versions);
+      version = VersionUtils.convertVersionToTag(id, CollectionUtils.firstElement(versions));
     }
     if (StringUtils.isBlank(version)) {
+      List<String> test = productRepo.getReleasedVersionsById(id);
+      log.error(test.toString());
       versions = VersionUtils.getVersionsToDisplay(productRepo.getReleasedVersionsById(id), isShowDevVersion,
           StringUtils.EMPTY);
       version = CollectionUtils.firstElement(versions);
     }
-    return productRepo.getProductByIdWithTagOrVersion(id, VersionUtils.convertVersionToTag(id, version));
+    return productRepo.getProductByIdWithTagOrVersion(id, version);
   }
 
   public void updateProductInstallationCount(String id, Product productItem) {
