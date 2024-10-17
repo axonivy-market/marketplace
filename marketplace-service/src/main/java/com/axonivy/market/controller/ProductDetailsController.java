@@ -10,7 +10,9 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.enums.ParameterIn;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -126,5 +128,18 @@ public class ProductDetailsController {
   public ResponseEntity<List<VersionAndUrlModel>> findVersionsForDesigner(@PathVariable(ID) String id) {
     List<VersionAndUrlModel> versionList = versionService.getVersionsForDesigner(id);
     return new ResponseEntity<>(versionList, HttpStatus.OK);
+  }
+
+  @GetMapping(LATEST_ARTIFACT_DOWNLOAD_URL_BY_ID)
+  @Operation(summary = "Get the download url of latest version from artifact by its id and target version",
+      description = "Return the download url of artifact from version and id")
+  public ResponseEntity<String> getLatestArtifactDownloadUrl(
+      @PathVariable(value = ID) @Parameter(in = ParameterIn.PATH, example = "demos-app") String productId,
+      @RequestParam(value = VERSION) @Parameter(in = ParameterIn.QUERY, example = "10.0-dev") String version,
+      @RequestParam(value = ARTIFACT) @Parameter(in = ParameterIn.QUERY,
+          example = "ivy-demos-app.zip") String artifactId) {
+    String downloadUrl = versionService.getLatestVersionArtifactDownloadUrl(productId, version, artifactId);
+    HttpStatusCode statusCode = StringUtils.isBlank(downloadUrl) ? HttpStatus.NOT_FOUND : HttpStatus.OK;
+    return new ResponseEntity<>(downloadUrl, statusCode);
   }
 }

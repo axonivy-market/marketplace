@@ -195,7 +195,7 @@ public class MavenUtils {
     }
     artifact.setType(StringUtils.defaultIfBlank(artifact.getType(), ProductJsonConstants.DEFAULT_PRODUCT_TYPE));
     artifactName = String.format(MavenConstants.ARTIFACT_NAME_FORMAT, artifactName, artifact.getType());
-    return MavenArtifactModel.builder().name(artifactName).downloadUrl(buildDownloadUrl(artifact, version)).build();
+    return MavenArtifactModel.builder().name(artifactName).downloadUrl(buildDownloadUrl(artifact, version)).artifactId(artifact.getArtifactId()).build();
   }
 
   public static List<MavenArtifactModel> convertArtifactsToModels(List<Artifact> artifacts, String version) {
@@ -260,7 +260,7 @@ public class MavenUtils {
     String downloadUrl = buildDownloadUrl(metadata.getArtifactId(), version, metadata.getType(), metadata.getRepoUrl(),
         metadata.getGroupId(), metadata.getSnapshotVersionValue());
     return MavenArtifactModel.builder().name(metadata.getName()).downloadUrl(downloadUrl).isInvalidArtifact(
-        metadata.getArtifactId().contains(metadata.getGroupId())).build();
+        metadata.getArtifactId().contains(metadata.getGroupId())).artifactId(metadata.getArtifactId()).build();
   }
 
   public static String getMetadataContentFromUrl(String metadataUrl) {
