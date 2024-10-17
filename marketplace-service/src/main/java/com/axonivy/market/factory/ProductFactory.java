@@ -62,6 +62,8 @@ public class ProductFactory {
     product.setShortDescriptions(mappingMultilingualismValueByMetaJSONFile(meta.getDescriptions()));
     product.setVendor(StringUtils.defaultIfEmpty(meta.getVendor(), MetaConstants.DEFAULT_VENDOR_NAME));
     product.setVendorUrl(StringUtils.defaultIfEmpty(meta.getVendorUrl(), MetaConstants.DEFAULT_VENDOR_URL));
+    product.setVendorImagePath(meta.getVendorImage());
+    product.setVendorImageDarkModePath(meta.getVendorImageDarkMode());
     product.setPlatformReview(meta.getPlatformReview());
     product.setStatusBadgeUrl(meta.getStatusBadgeUrl());
     product.setLanguage(meta.getLanguage());
@@ -77,10 +79,12 @@ public class ProductFactory {
         artifact -> artifact.setInvalidArtifact(!artifact.getArtifactId().contains(meta.getId())));
     product.setArtifacts(artifacts);
     product.setReleasedVersions(new ArrayList<>());
+
     return product;
   }
 
   public static void transferComputedPersistedDataToProduct(Product persisted, Product product) {
+    product.setMarketDirectory(persisted.getMarketDirectory());
     product.setCustomOrder(persisted.getCustomOrder());
     product.setNewestReleaseVersion(persisted.getNewestReleaseVersion());
     product.setReleasedVersions(persisted.getReleasedVersions());

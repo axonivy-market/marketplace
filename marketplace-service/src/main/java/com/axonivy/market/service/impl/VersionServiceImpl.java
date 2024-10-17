@@ -7,6 +7,7 @@ import com.axonivy.market.controller.ProductDetailsController;
 import com.axonivy.market.entity.MavenArtifactVersion;
 import com.axonivy.market.entity.Metadata;
 import com.axonivy.market.entity.ProductJsonContent;
+import com.axonivy.market.factory.VersionFactory;
 import com.axonivy.market.model.MavenArtifactModel;
 import com.axonivy.market.model.MavenArtifactVersionModel;
 import com.axonivy.market.model.VersionAndUrlModel;
@@ -46,7 +47,7 @@ import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 @AllArgsConstructor
 public class VersionServiceImpl implements VersionService {
 
-  private final MavenArtifactVersionRepository mavenArtifactVersionRepository;
+  private final MavenArtifactVersionRepository mavenArtifactVersionRepo;
   private final ProductRepository productRepo;
   private final ProductJsonContentRepository productJsonRepo;
   private final ProductModuleContentRepository productContentRepo;
@@ -55,7 +56,7 @@ public class VersionServiceImpl implements VersionService {
 
   public List<MavenArtifactVersionModel> getArtifactsAndVersionToDisplay(String productId, Boolean isShowDevVersion,
       String designerVersion) {
-    MavenArtifactVersion existingMavenArtifactVersion = mavenArtifactVersionRepository.findById(productId).orElse(
+    MavenArtifactVersion existingMavenArtifactVersion = mavenArtifactVersionRepo.findById(productId).orElse(
         MavenArtifactVersion.builder().productId(productId).build());
     List<MavenArtifactVersionModel> results = new ArrayList<>();
 
@@ -132,5 +133,52 @@ public class VersionServiceImpl implements VersionService {
     ProductJsonContent productJson =
         productJsonRepo.findByProductIdAndVersion(productId, tag).stream().findAny().orElse(null);
     return MavenUtils.getMavenArtifactsFromProductJson(productJson);
+  }
+
+  public String getLatestVersionArtifactDownloadUrl(String productId, String version, String artifact) {
+    String[] artifactParts = StringUtils.defaultString(artifact).split(MavenConstants.MAIN_VERSION_REGEX);
+    if (artifactParts.length < 1) {
+      return StringUtils.EMPTY;
+    }
+
+    String artifactId = artifactParts[0];
+    String fileType = artifactParts[artifactParts.length - 1];
+    List<Metadata> metadataList = metadataRepo.findByProductIdAndArtifactId(productId, artifactId);
+    if (CollectionUtils.isEmpty(metadataList)) {
+      return StringUtils.EMPTY;
+    }
+
+    List<String> modelArtifactIds = metadataList.stream().map(Metadata::getArtifactId).toList();
+    String targetVersion = VersionFactory.getFromMetadata(metadataList, version);
+    if (StringUtils.isBlank(targetVersion)) {
+      return StringUtils.EMPTY;
+    }
+
+    var artifactVersionCache = mavenArtifactVersionRepo.findById(productId);
+    if (artifactVersionCache.isEmpty()) {
+      return StringUtils.EMPTY;
+    }
+
+    // Find download url first from product artifact model
+    String downloadUrl = getDownloadUrlFromExistingDataByArtifactIdAndVersion(
+        artifactVersionCache.get().getProductArtifactsByVersion(), targetVersion, modelArtifactIds);
+    // Continue to find download url from artifact in meta.json if it is not existed in artifacts of product.json
+    if (StringUtils.isBlank(downloadUrl)) {
+      downloadUrl = getDownloadUrlFromExistingDataByArtifactIdAndVersion(
+          artifactVersionCache.get().getAdditionalArtifactsByVersion(), targetVersion, modelArtifactIds);
+    }
+
+    if (!StringUtils.endsWith(downloadUrl, fileType)) {
+      log.warn("**VersionService: the found downloadUrl {} is not match with file type {}", downloadUrl, fileType);
+      downloadUrl = StringUtils.EMPTY;
+    }
+    return downloadUrl;
+  }
+
+  public String getDownloadUrlFromExistingDataByArtifactIdAndVersion(
+      Map<String, List<MavenArtifactModel>> existingData, String version, List<String> artifactsIds) {
+    return existingData.computeIfAbsent(version, key -> new ArrayList<>()).stream().filter(
+        model -> artifactsIds.contains(model.getArtifactId())).findAny().map(MavenArtifactModel::getDownloadUrl).orElse(
+        null);
   }
 }

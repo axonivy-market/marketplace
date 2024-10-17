@@ -1,4 +1,6 @@
 export const ROUTER = {
   ID: 'id',
-  VERSION: 'version'
+  VERSION: 'version',
+  ARTIFACT: 'artifact',
+  FILE_TYPE: 'fileType'
 }

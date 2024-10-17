@@ -5,6 +5,11 @@ $rowHeight: 37px;
   padding: 0 15px;
 }
 
+.input-group {
+  margin-top: 3rem;
+  margin-bottom: 7.2rem;
+}
+
 .form-control {
   border-radius: 10px;
 }
@@ -54,6 +59,7 @@ $rowHeight: 37px;
   min-width: 100%;
   margin-top: 10px;
   padding: 0;
+  font-size: 1.4rem;
 }
 
 ::ng-deep .dropdown-item {
@@ -64,6 +70,10 @@ $rowHeight: 37px;
 
 .input__search {
   height: 43px;
+}
+
+.search-input {
+  font-size: 1.4rem;
 }
 
 @media only screen and (max-width: 768px) {
@@ -80,6 +90,6 @@ $rowHeight: 37px;
 
 @media only screen and (max-width: 1366px) {
   .filter-type {
-    font-size: 1rem;
+    font-size: 1.6rem;
   }
 }

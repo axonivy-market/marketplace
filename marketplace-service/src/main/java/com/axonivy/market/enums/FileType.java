@@ -1,6 +1,5 @@
 package com.axonivy.market.enums;
 
-import com.axonivy.market.exceptions.model.NotFoundException;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import org.apache.commons.lang3.StringUtils;
@@ -8,7 +7,7 @@ import org.apache.commons.lang3.StringUtils;
 @Getter
 @AllArgsConstructor
 public enum FileType {
-  META("meta.json"), LOGO("logo.png");
+  META("meta.json"), LOGO("logo.png"), OTHER("other");
 
   private final String fileName;
 
@@ -18,6 +17,6 @@ public enum FileType {
         return type;
       }
     }
-    throw new NotFoundException(ErrorCode.GH_FILE_TYPE_INVALID, "FileType: " + name);
+    return OTHER;
   }
 }

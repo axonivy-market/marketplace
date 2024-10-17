@@ -85,46 +85,57 @@ public class MetadataServiceImpl implements MetadataService {
     log.warn("**MetadataService: Start to sync version for {} product(s)", products.size());
     int nonUpdatedSyncCount = 0;
     for (Product product : products) {
-      // Set up cache before sync
-      String productId = product.getId();
-      Set<Metadata> metadataSet = new HashSet<>(metadataRepo.findByProductId(product.getId()));
-      MavenArtifactVersion artifactVersionCache = mavenArtifactVersionRepo.findById(product.getId()).orElse(
-          MavenArtifactVersion.builder().productId(productId).build());
-      MetadataSync syncCache = metadataSyncRepo.findById(product.getId()).orElse(
-          MetadataSync.builder().productId(product.getId()).syncedVersions(new HashSet<>()).build());
-      Set<Artifact> artifactsFromNewTags = new HashSet<>();
-
-      // Find artifacts from unhandled tags
-      List<String> nonSyncedVersionOfTags = VersionUtils.removeSyncedVersionsFromReleasedVersions(
-          product.getReleasedVersions(), syncCache.getSyncedVersions());
-      if (ObjectUtils.isNotEmpty(nonSyncedVersionOfTags)) {
-        artifactsFromNewTags.addAll(getArtifactsFromNonSyncedVersion(product.getId(), nonSyncedVersionOfTags));
-        syncCache.getSyncedVersions().addAll(nonSyncedVersionOfTags);
-        log.info("**MetadataService: New tags detected: {} in product {}", nonSyncedVersionOfTags.toString(),
-            productId);
-      }
-
-      // Sync versions from maven & update artifacts-version table
-      metadataSet.addAll(MavenUtils.convertArtifactsToMetadataSet(artifactsFromNewTags, productId));
-      if (ObjectUtils.isNotEmpty(product.getArtifacts())) {
-        metadataSet.addAll(
-            MavenUtils.convertArtifactsToMetadataSet(new HashSet<>(product.getArtifacts()), productId));
-      }
-      if (CollectionUtils.isEmpty(metadataSet)) {
-        log.info("**MetadataService: No artifact found in product {}", productId);
+      if (!syncProductMetadata(product)) {
         nonUpdatedSyncCount += 1;
-        continue;
       }
-      artifactVersionCache.setAdditionalArtifactsByVersion(new HashMap<>());
-      updateMavenArtifactVersionData(productId, product.getReleasedVersions(), metadataSet, artifactVersionCache);
-
-      // Persist changed
-      metadataSyncRepo.save(syncCache);
-      mavenArtifactVersionRepo.save(artifactVersionCache);
-      metadataRepo.saveAll(metadataSet);
     }
     log.warn("**MetadataService: version sync finished");
     return nonUpdatedSyncCount;
+  }
+
+  @Override
+  public boolean syncProductMetadata(Product product) {
+    if (product == null) {
+      return false;
+    }
+
+    // Set up cache before sync
+    String productId = product.getId();
+    Set<Metadata> metadataSet = new HashSet<>(metadataRepo.findByProductId(product.getId()));
+    MavenArtifactVersion artifactVersionCache = mavenArtifactVersionRepo.findById(product.getId()).orElse(
+        MavenArtifactVersion.builder().productId(productId).build());
+    MetadataSync syncCache = metadataSyncRepo.findById(product.getId()).orElse(
+        MetadataSync.builder().productId(product.getId()).syncedVersions(new HashSet<>()).build());
+    Set<Artifact> artifactsFromNewTags = new HashSet<>();
+
+    // Find artifacts from unhandled tags
+    List<String> nonSyncedVersionOfTags = VersionUtils.removeSyncedVersionsFromReleasedVersions(
+        product.getReleasedVersions(), syncCache.getSyncedVersions());
+    if (ObjectUtils.isNotEmpty(nonSyncedVersionOfTags)) {
+      artifactsFromNewTags.addAll(getArtifactsFromNonSyncedVersion(product.getId(), nonSyncedVersionOfTags));
+      syncCache.getSyncedVersions().addAll(nonSyncedVersionOfTags);
+      log.info("**MetadataService: New tags detected: {} in product {}", nonSyncedVersionOfTags.toString(),
+          productId);
+    }
+
+    // Sync versions from maven & update artifacts-version table
+    metadataSet.addAll(MavenUtils.convertArtifactsToMetadataSet(artifactsFromNewTags, productId));
+    if (ObjectUtils.isNotEmpty(product.getArtifacts())) {
+      metadataSet.addAll(
+          MavenUtils.convertArtifactsToMetadataSet(new HashSet<>(product.getArtifacts()), productId));
+    }
+    if (CollectionUtils.isEmpty(metadataSet)) {
+      log.info("**MetadataService: No artifact found in product {}", productId);
+      return false;
+    }
+    artifactVersionCache.setAdditionalArtifactsByVersion(new HashMap<>());
+    updateMavenArtifactVersionData(productId, product.getReleasedVersions(), metadataSet, artifactVersionCache);
+
+    // Persist changed
+    metadataSyncRepo.save(syncCache);
+    mavenArtifactVersionRepo.save(artifactVersionCache);
+    metadataRepo.saveAll(metadataSet);
+    return true;
   }
 
   public void updateContentsFromNonMatchVersions(String productId, List<String> releasedVersions,
@@ -223,13 +234,13 @@ public class MetadataServiceImpl implements MetadataService {
 
   private ProductModuleContent getReadmeAndProductContentsFromTag(Product product, String nonMatchSnapshotVersion,
       Metadata snapShotMetadata, String url) {
-    ProductModuleContent productModuleContent = ProductContentUtils.initProductModuleContent(product, Strings.EMPTY,
+    ProductModuleContent productModuleContent = ProductContentUtils.initProductModuleContent(product.getId(), Strings.EMPTY,
         Set.of(nonMatchSnapshotVersion));
     String unzippedFolderPath = Strings.EMPTY;
     try {
       unzippedFolderPath = fileDownloadService.downloadAndUnzipProductContentFile(url, snapShotMetadata);
       updateDependencyContentsFromProductJson(productModuleContent, product, unzippedFolderPath);
-      extractReadMeFileFromContents(product, unzippedFolderPath, productModuleContent);
+      extractReadMeFileFromContents(product.getId(), unzippedFolderPath, productModuleContent);
     } catch (Exception e) {
       log.error("Cannot get product.json content in {}", e.getMessage());
       return null;
@@ -253,7 +264,7 @@ public class MetadataServiceImpl implements MetadataService {
         ProductJsonConstants.VERSION_VALUE, product);
   }
 
-  private void extractReadMeFileFromContents(Product product, String unzippedFolderPath,
+  private void extractReadMeFileFromContents(String productId, String unzippedFolderPath,
       ProductModuleContent productModuleContent) {
     try {
       List<Path> readmeFiles;
@@ -266,7 +277,7 @@ public class MetadataServiceImpl implements MetadataService {
         for (Path readmeFile : readmeFiles) {
           String readmeContents = Files.readString(readmeFile);
           if (ProductContentUtils.hasImageDirectives(readmeContents)) {
-            readmeContents = updateImagesWithDownloadUrl(product, unzippedFolderPath, readmeContents);
+            readmeContents = updateImagesWithDownloadUrl(productId, unzippedFolderPath, readmeContents);
           }
           ProductContentUtils.getExtractedPartsOfReadme(moduleContents, readmeContents,
               readmeFile.getFileName().toString());
@@ -278,7 +289,7 @@ public class MetadataServiceImpl implements MetadataService {
     }
   }
 
-  private String updateImagesWithDownloadUrl(Product product, String unzippedFolderPath,
+  private String updateImagesWithDownloadUrl(String productId, String unzippedFolderPath,
       String readmeContents) throws IOException {
     List<Path> allImagePaths;
     Map<String, String> imageUrls = new HashMap<>();
@@ -287,7 +298,7 @@ public class MetadataServiceImpl implements MetadataService {
           path -> path.getFileName().toString().toLowerCase().matches(CommonConstants.IMAGE_EXTENSION)).toList();
     }
     allImagePaths.forEach(
-        imagePath -> Optional.of(imageService.mappingImageFromDownloadedFolder(product, imagePath)).ifPresent(
+        imagePath -> Optional.of(imageService.mappingImageFromDownloadedFolder(productId, imagePath)).ifPresent(
             image -> imageUrls.put(imagePath.getFileName().toString(),
                 CommonConstants.IMAGE_ID_PREFIX.concat(image.getId()))));
 

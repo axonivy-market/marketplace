@@ -1,7 +1,6 @@
 package com.axonivy.market.service.impl;
 
 import com.axonivy.market.entity.Image;
-import com.axonivy.market.entity.Product;
 import com.axonivy.market.github.util.GitHubUtils;
 import com.axonivy.market.repository.ImageRepository;
 import com.axonivy.market.service.ImageService;
@@ -43,21 +42,21 @@ public class ImageServiceImpl implements ImageService {
   }
 
   @Override
-  public Image mappingImageFromGHContent(Product product, GHContent ghContent, boolean isLogo) {
+  public Image mappingImageFromGHContent(String productId, GHContent ghContent, boolean isLogo) {
     if (ObjectUtils.isEmpty(ghContent)) {
-      log.info("There is missing for image content for product {}", product.getId());
+      log.info("There is missing for image content for product {}", productId);
       return null;
     }
 
     if (!isLogo) {
-      Image existsImage = imageRepository.findByProductIdAndSha(product.getId(), ghContent.getSha());
+      Image existsImage = imageRepository.findByProductIdAndSha(productId, ghContent.getSha());
       if (ObjectUtils.isNotEmpty(existsImage)) {
         return existsImage;
       }
     }
     Image image = new Image();
     String currentImageUrl = GitHubUtils.getDownloadUrl(ghContent);
-    image.setProductId(product.getId());
+    image.setProductId(productId);
     image.setImageUrl(currentImageUrl);
     image.setImageData(getImageBinary(ghContent));
     image.setSha(ghContent.getSha());
@@ -65,8 +64,8 @@ public class ImageServiceImpl implements ImageService {
   }
 
   @Override
-  public Image mappingImageFromDownloadedFolder(Product product, Path imagePath) {
-    List<Image> existingImages = imageRepository.findByProductId(product.getId());
+  public Image mappingImageFromDownloadedFolder(String productId, Path imagePath) {
+    List<Image> existingImages = imageRepository.findByProductId(productId);
     try {
       InputStream contentStream = MavenUtils.extractedContentStream(imagePath);
       byte[] sourceBytes = IOUtils.toByteArray(contentStream);
@@ -79,7 +78,7 @@ public class ImageServiceImpl implements ImageService {
       if (ObjectUtils.isEmpty(existedImage)) {
         Image image = new Image();
         image.setImageData(new Binary(sourceBytes));
-        image.setProductId(product.getId());
+        image.setProductId(productId);
         return imageRepository.save(image);
       }
       return existedImage;

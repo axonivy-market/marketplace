@@ -1,6 +1,6 @@
 .navbar-nav {
   height: 60px;
-  padding-top: 0.8rem;
+  padding-top: 1.28rem;
 }
 
 .nav-item {
@@ -11,6 +11,7 @@
   height: 22px;
   line-height: 22.4px;
   font-weight: normal;
+  font-size: 1.6rem;
 }
 
 .nav-link.active {
@@ -20,7 +21,7 @@
 .active-line {
   position: relative;
   height: 2px;
-  top: 2rem;
+  top: 3rem;
   width: inherit;
   background-color: var(--ivy-active-color);
 }
@@ -28,6 +29,10 @@
 .header-mobile__search {
   height: 43px;
   border-radius: 10px;
+}
+
+.header-mobile__search input{
+  font-size: 1.4rem;
 }
 
 @media all and (max-width: 992px) {
@@ -52,7 +57,7 @@
     opacity: 0px;
     line-height: 140%;
     font-weight: 600;
-    font-size: 1.125rem;
+    font-size: 1.8rem;
   }
 
   .nav-link.active {
