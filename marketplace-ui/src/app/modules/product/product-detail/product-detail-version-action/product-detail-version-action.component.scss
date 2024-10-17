@@ -71,6 +71,10 @@
   border: 0.5px solid var(--ivy-secondary-border-color);
 }
 
+.row > app-common-dropdown {
+  padding-left: 0px;
+}
+
 .btn,
 ::ng-deep .install-designer-button {
   padding: 12px 32px;

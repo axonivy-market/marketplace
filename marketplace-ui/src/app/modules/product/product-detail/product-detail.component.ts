@@ -105,6 +105,7 @@ export class ProductDetailComponent {
   productModuleContent: WritableSignal<ProductModuleContent> = signal(
     {} as ProductModuleContent
   );
+  protected ProductDetailActionType = ProductDetailActionType;
   productDetailActionType = signal(ProductDetailActionType.STANDARD);
   detailTabs = PRODUCT_DETAIL_TABS;
   activeTab = '';

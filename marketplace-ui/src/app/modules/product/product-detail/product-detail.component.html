@@ -46,7 +46,7 @@
                 [isShowRateLink]="false"
                 [isShowTotalRatingNumber]="false" />
             </div>
-            @if(productDetailActionType() !== 'customSolution') {
+            @if(productDetailActionType() !== ProductDetailActionType.CUSTOM_SOLUTION) {
               <app-product-installation-count-action
                 id="app-product-installation-count-action"
                 [currentInstallationCount]="installationCount" />
@@ -69,6 +69,7 @@
         </div>
         <!-- installation & download section -->
         <app-product-version-action
+          [ngClass]="{'col-xl-4': productDetailActionType() === ProductDetailActionType.DESIGNER_ENV}"
           class="mt-md-3 m-sm-0"
           (installationCount)="receiveInstallationCountData($event)"
           [(selectedVersion)]="selectedVersion!"
