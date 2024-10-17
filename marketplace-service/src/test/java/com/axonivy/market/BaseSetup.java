@@ -19,7 +19,10 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
@@ -48,6 +51,7 @@ public class BaseSetup {
   protected static final String MOCK_GROUP_ID = "com.axonivy.util";
   protected static final String MOCK_PRODUCT_NAME = "bpmn statistic";
   protected static final String MOCK_PRODUCT_JSON_FILE_PATH = "src/test/resources/product.json";
+  protected static final String MOCK_PRODUCT_JSON_FILE_PATH_NO_URL = "src/test/resources/productMissingURL.json";
   protected static final String MOCK_PRODUCT_JSON_DIR_PATH = "src/test/resources";
   protected static final String MOCK_PRODUCT_JSON_NODE_FILE_PATH = "src/test/resources/prouct-json-node.json";
   protected static final String MOCK_METADATA_FILE_PATH = "src/test/resources/metadata.xml";
@@ -122,7 +126,7 @@ public class BaseSetup {
     }
   }
 
-  protected String getMockProductJsonNodeContent() {
+  protected static String getMockProductJsonNodeContent() {
     return getContentFromTestResourcePath(MOCK_PRODUCT_JSON_NODE_FILE_PATH);
   }
 
@@ -172,6 +176,16 @@ public class BaseSetup {
     return Metadata.builder().productId(MOCK_PRODUCT_ID).artifactId(MOCK_ARTIFACT_ID).groupId(
         MOCK_GROUP_ID).isProductArtifact(true).repoUrl(MavenConstants.DEFAULT_IVY_MAVEN_BASE_URL).type(
         MavenConstants.DEFAULT_PRODUCT_FOLDER_TYPE).name(MOCK_ARTIFACT_NAME).build();
+  }
+
+  protected static InputStream getMockInputStream() {
+    String jsonContent = getMockProductJsonContent().getContent();
+    return new ByteArrayInputStream(jsonContent.getBytes(StandardCharsets.UTF_8));
+  }
+
+  protected static InputStream getMockProductJsonNodeContentInputStream() {
+    String jsonContent = getContentFromTestResourcePath(MOCK_PRODUCT_JSON_FILE_PATH_NO_URL);
+    return new ByteArrayInputStream(jsonContent.getBytes(StandardCharsets.UTF_8));
   }
 
   protected Metadata getMockMetadataWithVersions() {
