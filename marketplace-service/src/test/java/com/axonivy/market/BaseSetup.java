@@ -40,7 +40,7 @@ public class BaseSetup {
   protected static final Pageable PAGEABLE = PageRequest.of(0, 20,
       Sort.by(SortOption.ALPHABETICALLY.getOption()).descending());
   protected static final String MOCK_PRODUCT_ID = "bpmn-statistic";
-  protected static final String MOCK_PRODUCT_ID_WITH_TAG = "bpmn-statistic-10.0.10";
+  protected static final String MOCK_PRODUCT_ID_WITH_TAG = "bpmn-statistic-v10.0.10";
   protected static final String MOCK_ARTIFACT_ID = "bpmn-statistic";
   protected static final String MOCK_PRODUCT_ARTIFACT_ID = "bpmn-statistic-product";
   protected static final String MOCK_RELEASED_VERSION = "10.0.10";
@@ -168,8 +168,10 @@ public class BaseSetup {
   }
 
   protected Product getMockProduct() {
-    return Product.builder().id(MOCK_PRODUCT_ID).releasedVersions(List.of(MOCK_RELEASED_VERSION)).artifacts(
+    Product mockProduct = Product.builder().id(MOCK_PRODUCT_ID).releasedVersions(new ArrayList<>()).artifacts(
         List.of(getMockArtifact())).build();
+    mockProduct.getReleasedVersions().add(MOCK_RELEASED_VERSION);
+    return mockProduct;
   }
 
   protected List<Product> getMockProducts() {

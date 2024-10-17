@@ -364,6 +364,7 @@ class ProductServiceImplTest extends BaseSetup {
   void testSyncProductsSecondTime() throws IOException {
     Product mockProduct = getMockProduct();
     mockProduct.setProductModuleContent(mockReadmeProductContent());
+    mockProduct.setRepositoryName("axonivy-market/bpmn-statistic");
     var gitHubRepoMeta = mock(GitHubRepoMeta.class);
     when(gitHubRepoMeta.getLastSHA1()).thenReturn(SHA1_SAMPLE);
     var mockCommit = mockGHCommitHasSHA1(SHA1_SAMPLE);
@@ -371,17 +372,11 @@ class ProductServiceImplTest extends BaseSetup {
     when(repoMetaRepo.findByRepoName(anyString())).thenReturn(gitHubRepoMeta);
 
     when(productRepo.findAll()).thenReturn(List.of(mockProduct));
-
-    GHCommit mockGHCommit = mock(GHCommit.class);
-
     GHTag mockTag = mock(GHTag.class);
-    when(mockTag.getName()).thenReturn("v10.0.2");
+    when(mockTag.getName()).thenReturn(MOCK_TAG_FROM_RELEASED_VERSION);
 
     GHTag mockTag2 = mock(GHTag.class);
     when(mockTag2.getName()).thenReturn("v10.0.3");
-    when(mockTag2.getCommit()).thenReturn(mockGHCommit);
-
-    when(mockGHCommit.getCommitDate()).thenReturn(new Date());
     when(gitHubService.getRepositoryTags(anyString())).thenReturn(Arrays.asList(mockTag, mockTag2));
 
     ProductModuleContent mockReturnProductContent = mockReadmeProductContent();
