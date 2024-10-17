@@ -53,8 +53,8 @@ export class ProductDetailVersionActionComponent implements AfterViewInit {
   @Output() installationCount = new EventEmitter<number>();
   @Input() productId!: string;
   @Input() actionType!: ProductDetailActionType;
-
   @Input() product!: ProductDetail;
+  ProductDetailActionType = ProductDetailActionType;
   selectedVersion = model<string>('');
   versions: WritableSignal<string[]> = signal([]);
   versionDropdown: Signal<ItemDropdown[]> = computed(() => {

@@ -1,5 +1,5 @@
 @switch (actionType) {
-  @case ('standard') {
+  @case (ProductDetailActionType.STANDARD) {
     <div class="install-download-button-container gap-2 w-100 d-flex">
       <button [lang]="languageService.selectedLanguage()" class="btn btn__install flex-grow-1 me-lg-2" data-bs-toggle="tooltip"
               data-bs-placement="bottom" data-bs-html="true" data-bs-title="<p class='text-primary'>
@@ -88,7 +88,7 @@
       }
   </div>
   }
-  @case ('designerEnv') {
+  @case (ProductDetailActionType.DESIGNER_ENV) {
     <div class="designer-section d-flex justify-content-sm-between w-100 row m-sm-0">
       <app-common-dropdown (click)="getVersionInDesigner()" [items]="versionDropdownInDesigner"
                            [selectedItem]="selectedVersion()"
@@ -111,7 +111,7 @@
       </button>
     </div>
   }
-  @case ('customSolution') {
+  @case (ProductDetailActionType.CUSTOM_SOLUTION) {
     <button [lang]="languageService.selectedLanguage()"
             class="btn row btn_contact-us"
             (click)="onNavigateToContactPage()"
