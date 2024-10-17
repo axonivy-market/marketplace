@@ -170,4 +170,16 @@ public class VersionUtils {
     }
     return releasedVersion;
   }
+
+  public static String getNumbersOnly(String version) {
+    return StringUtils.defaultIfBlank(version, StringUtils.EMPTY).split(CommonConstants.DASH_SEPARATOR)[0];
+  }
+
+  public static boolean isMajorVersion(String version) {
+    return getNumbersOnly(version).split(MAIN_VERSION_REGEX).length == 1 && isReleasedVersion(version);
+  }
+
+  public static boolean isMinorVersion(String version) {
+    return getNumbersOnly(version).split(MAIN_VERSION_REGEX).length == 2 && isReleasedVersion(version);
+  }
 }

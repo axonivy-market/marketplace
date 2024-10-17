@@ -206,7 +206,7 @@ class MavenUtilsTest extends BaseSetup {
 
   @Test
   void testExtractedContentStream() throws IOException {
-    Assertions.assertNull(MavenUtils.extractedContentStream(Path.of(INAVALID_FILE_PATH)));
+    Assertions.assertNull(MavenUtils.extractedContentStream(Path.of(INVALID_FILE_PATH)));
     InputStream expectedResult = IOUtils.toInputStream(getMockSnapShotMetadataContent(), StandardCharsets.UTF_8);
     InputStream result = MavenUtils.extractedContentStream(Path.of(MOCK_SNAPSHOT_METADATA_FILE_PATH));
     Assertions.assertNotNull(result);
@@ -216,7 +216,7 @@ class MavenUtilsTest extends BaseSetup {
   @Test
   void testConvertProductJsonToMavenProductInfo() {
     try {
-      List<Artifact> result = MavenUtils.convertProductJsonToMavenProductInfo(Path.of(INAVALID_FILE_PATH));
+      List<Artifact> result = MavenUtils.convertProductJsonToMavenProductInfo(Path.of(INVALID_FILE_PATH));
       Assertions.assertTrue(CollectionUtils.isEmpty(result));
       result = MavenUtils.convertProductJsonToMavenProductInfo(Path.of(MOCK_PRODUCT_JSON_FILE_PATH));
       Assertions.assertTrue(CollectionUtils.isEmpty(result));
