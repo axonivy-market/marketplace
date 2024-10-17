@@ -15,6 +15,7 @@ import com.axonivy.market.repository.CustomProductRepository;
 import com.axonivy.market.repository.CustomRepository;
 import com.axonivy.market.repository.MetadataRepository;
 import com.axonivy.market.repository.ProductModuleContentRepository;
+import com.axonivy.market.util.MavenUtils;
 import com.axonivy.market.util.VersionUtils;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -75,8 +76,7 @@ public class CustomProductRepositoryImpl extends CustomRepository implements Cus
       return null;
     }
     Metadata productArtifactMetadata =
-        metadataRepo.findByProductId(id).stream().filter(meta -> StringUtils.endsWith(meta.getArtifactId(),
-            MavenConstants.PRODUCT_ARTIFACT_POSTFIX)).findAny().orElse(new Metadata());
+        metadataRepo.findByProductId(id).stream().filter(MavenUtils::isProductMetadata).findAny().orElse(new Metadata());
     String version = isShowDevVersion ? productArtifactMetadata.getLatest() : productArtifactMetadata.getRelease();
     // Handle exception case of employee onboarding
     if (StringUtils.isBlank(version)) {

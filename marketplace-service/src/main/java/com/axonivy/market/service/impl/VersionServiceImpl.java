@@ -97,9 +97,8 @@ public class VersionServiceImpl implements VersionService {
   @Override
   public List<VersionAndUrlModel> getVersionsForDesigner(String productId) {
     List<VersionAndUrlModel> versionAndUrlList = new ArrayList<>();
-    Set<String> releasedVersions= metadataRepo.findByProductId(productId).stream().filter(
-        metadata -> StringUtils.endsWith(metadata.getArtifactId(),
-            MavenConstants.PRODUCT_ARTIFACT_POSTFIX)).findAny().map(Metadata::getVersions).orElse(new HashSet<>());
+    Set<String> releasedVersions = metadataRepo.findByProductId(productId).stream().filter(
+        MavenUtils::isProductMetadata).findAny().map(Metadata::getVersions).orElse(new HashSet<>());
     if (CollectionUtils.isEmpty(releasedVersions)) {
       return Collections.emptyList();
     }

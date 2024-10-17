@@ -1,5 +1,6 @@
 package com.axonivy.market.service.impl;
 
+import com.axonivy.market.comparator.LatestVersionComparator;
 import com.axonivy.market.comparator.MavenVersionComparator;
 import com.axonivy.market.constants.CommonConstants;
 import com.axonivy.market.constants.GitHubConstants;
@@ -9,6 +10,7 @@ import com.axonivy.market.criteria.ProductSearchCriteria;
 import com.axonivy.market.entity.GitHubRepoMeta;
 import com.axonivy.market.entity.Image;
 import com.axonivy.market.entity.MavenArtifactVersion;
+import com.axonivy.market.entity.Metadata;
 import com.axonivy.market.entity.Product;
 import com.axonivy.market.entity.ProductCustomSort;
 import com.axonivy.market.entity.ProductModuleContent;
@@ -77,6 +79,7 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.Predicate;
+import java.util.stream.Collectors;
 
 import static com.axonivy.market.constants.CommonConstants.SLASH;
 import static com.axonivy.market.constants.ProductJsonConstants.LOGO_FILE;
@@ -543,14 +546,15 @@ public class ProductServiceImpl implements ProductService {
 
   @Override
   public Product fetchBestMatchProductDetail(String id, String version) {
-    MavenArtifactVersion existingMavenArtifactVersion = mavenArtifactVersionRepo.findById(id).orElse(
-        MavenArtifactVersion.builder().productId(id).build());
-    List<String> versions = MavenUtils.getAllExistingVersions(existingMavenArtifactVersion, true,
-        null);
-    String bestMatchVersion = VersionUtils.getBestMatchVersion(versions, version);
+    List<String> installableVersions = metadataRepository.findByProductId(id).stream().filter(
+        MavenUtils::isProductMetadata).findAny().map(
+        metadata -> metadata.getVersions().stream().sorted(new LatestVersionComparator()).collect(
+            Collectors.toList())).orElse(new ArrayList<>());
+    String bestMatchVersion = VersionUtils.getBestMatchVersion(installableVersions, version);
     String bestMatchTag = VersionUtils.convertVersionToTag(id, bestMatchVersion);
-    Product product = StringUtils.isBlank(bestMatchTag) ? productRepository.getProductByIdWithNewestReleaseVersion(
-        id, false) : productRepository.getProductByIdWithTagOrVersion(id, bestMatchTag);
+    // Cover exception case of employee onboarding without any product.json file
+    Product product = StringUtils.isBlank(bestMatchTag) ? productRepository.getProductByIdWithNewestReleaseVersion(id,
+        false) : productRepository.getProductByIdWithTagOrVersion(id, bestMatchTag);
     return Optional.ofNullable(product).map(productItem -> {
       updateProductInstallationCount(id, productItem);
       productItem.setBestMatchVersion(bestMatchVersion);
