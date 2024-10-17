@@ -40,6 +40,7 @@ public class BaseSetup {
   protected static final Pageable PAGEABLE = PageRequest.of(0, 20,
       Sort.by(SortOption.ALPHABETICALLY.getOption()).descending());
   protected static final String MOCK_PRODUCT_ID = "bpmn-statistic";
+  protected static final String MOCK_PRODUCT_ID_WITH_TAG = "bpmn-statistic-10.0.10";
   protected static final String MOCK_ARTIFACT_ID = "bpmn-statistic";
   protected static final String MOCK_PRODUCT_ARTIFACT_ID = "bpmn-statistic-product";
   protected static final String MOCK_RELEASED_VERSION = "10.0.10";
@@ -68,6 +69,7 @@ public class BaseSetup {
       ".com/com/axonivy/util/bpmn-statistic/10.0.10-SNAPSHOT/bpmn-statistic-10.0.10-SNAPSHOT.zip";
   protected static final String MOCK_ARTIFACT_NAME = "bpmn statistic (zip)";
   protected static final String MOCK_ARTIFACT_DOWNLOAD_FILE = "bpmn-statistic.zip";
+  protected static final String LEGACY_INSTALLATION_COUNT_PATH_FIELD_NAME = "legacyInstallationCountPath";
 
   protected Page<Product> createPageProductsMock() {
     var mockProducts = new ArrayList<Product>();
@@ -165,11 +167,13 @@ public class BaseSetup {
         new HashMap<>());
   }
 
+  protected Product getMockProduct() {
+    return Product.builder().id(MOCK_PRODUCT_ID).releasedVersions(List.of(MOCK_RELEASED_VERSION)).artifacts(
+        List.of(getMockArtifact())).build();
+  }
+
   protected List<Product> getMockProducts() {
-    Product mockProduct =
-        Product.builder().id(MOCK_PRODUCT_ID).releasedVersions(List.of(MOCK_RELEASED_VERSION)).artifacts(
-            List.of(getMockArtifact())).build();
-    return List.of(mockProduct);
+    return List.of(getMockProduct());
   }
 
   protected Metadata getMockMetadata() {

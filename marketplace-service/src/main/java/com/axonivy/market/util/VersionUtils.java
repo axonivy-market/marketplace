@@ -4,6 +4,7 @@ import com.axonivy.market.comparator.LatestVersionComparator;
 import com.axonivy.market.comparator.MavenVersionComparator;
 import com.axonivy.market.constants.CommonConstants;
 import com.axonivy.market.constants.GitHubConstants;
+import com.axonivy.market.entity.Metadata;
 import com.axonivy.market.entity.Product;
 import com.axonivy.market.enums.NonStandardProduct;
 import lombok.extern.log4j.Log4j2;
@@ -22,6 +23,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import static com.axonivy.market.constants.MavenConstants.*;
 @Log4j2
@@ -182,5 +184,15 @@ public class VersionUtils {
 
   public static boolean isMinorVersion(String version) {
     return getNumbersOnly(version).split(MAIN_VERSION_REGEX).length == 2 && isReleasedVersion(version);
+  }
+
+  public static List<String> getInstallableVersionsFromMetadataList(List<Metadata> metadataList) {
+    List<String> results = new ArrayList<>();
+    if (CollectionUtils.isEmpty(metadataList)) {
+      return results;
+    }
+    return metadataList.stream().filter(MavenUtils::isProductMetadata).findAny().map(
+        metadata -> metadata.getVersions().stream().sorted(new LatestVersionComparator()).collect(
+            Collectors.toList())).orElse(new ArrayList<>());
   }
 }
