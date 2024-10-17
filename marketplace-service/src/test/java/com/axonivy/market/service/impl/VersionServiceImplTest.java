@@ -184,9 +184,7 @@ class VersionServiceImplTest extends BaseSetup {
     MavenArtifactVersion mockMavenArtifactVersion = new MavenArtifactVersion();
     Assertions.assertTrue(CollectionUtils.isEmpty(MavenUtils.getAllExistingVersions(mockMavenArtifactVersion, false,
         StringUtils.EMPTY)));
-    Map<String, List<MavenArtifactModel>> mockArtifactModelsByVersion = new HashMap<>();
-    mockArtifactModelsByVersion.put(MOCK_SNAPSHOT_VERSION, new ArrayList<>());
-    mockMavenArtifactVersion.setProductArtifactsByVersion(mockArtifactModelsByVersion);
+    mockMavenArtifactVersion = getMockMavenArtifactVersionWithData();
     Assertions.assertTrue(ObjectUtils.isNotEmpty(MavenUtils.getAllExistingVersions(mockMavenArtifactVersion, true,
         StringUtils.EMPTY)));
     Assertions.assertTrue(CollectionUtils.isEmpty(MavenUtils.getAllExistingVersions(mockMavenArtifactVersion, false,

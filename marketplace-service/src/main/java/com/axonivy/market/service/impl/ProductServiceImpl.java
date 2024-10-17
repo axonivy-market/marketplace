@@ -36,6 +36,7 @@ import com.axonivy.market.repository.ProductRepository;
 import com.axonivy.market.service.ImageService;
 import com.axonivy.market.service.MetadataService;
 import com.axonivy.market.service.ProductService;
+import com.axonivy.market.util.MavenUtils;
 import com.axonivy.market.util.VersionUtils;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -89,18 +90,18 @@ import static org.apache.commons.lang3.StringUtils.EMPTY;
 @Service
 public class ProductServiceImpl implements ProductService {
   private static final String INITIAL_VERSION = "1.0";
-  private final ProductRepository productRepository;
-  private final ProductModuleContentRepository productModuleContentRepository;
+  private final ProductRepository productRepo;
+  private final ProductModuleContentRepository productModuleContentRepo;
   private final GHAxonIvyMarketRepoService axonIvyMarketRepoService;
   private final GHAxonIvyProductRepoService axonIvyProductRepoService;
-  private final GitHubRepoMetaRepository gitHubRepoMetaRepository;
+  private final GitHubRepoMetaRepository gitHubRepoMetaRepo;
   private final GitHubService gitHubService;
-  private final ProductCustomSortRepository productCustomSortRepository;
+  private final ProductCustomSortRepository productCustomSortRepo;
   private final MavenArtifactVersionRepository mavenArtifactVersionRepo;
-  private final MetadataSyncRepository metadataSyncRepository;
-  private final MetadataRepository metadataRepository;
-  private final ProductJsonContentRepository productJsonContentRepository;
-  private final ImageRepository imageRepository;
+  private final MetadataSyncRepository metadataSyncRepo;
+  private final MetadataRepository metadataRepo;
+  private final ProductJsonContentRepository productJsonContentRepo;
+  private final ImageRepository imageRepo;
   private final ImageService imageService;
   private final MongoTemplate mongoTemplate;
   private final MetadataService metadataService;
@@ -113,29 +114,29 @@ public class ProductServiceImpl implements ProductService {
   @Value("${market.github.market.branch}")
   private String marketRepoBranch;
 
-  public ProductServiceImpl(ProductRepository productRepository,
-      ProductModuleContentRepository productModuleContentRepository,
+  public ProductServiceImpl(ProductRepository productRepo,
+      ProductModuleContentRepository productModuleContentRepo,
       GHAxonIvyMarketRepoService axonIvyMarketRepoService, GHAxonIvyProductRepoService axonIvyProductRepoService,
-      GitHubRepoMetaRepository gitHubRepoMetaRepository, GitHubService gitHubService,
-      ProductCustomSortRepository productCustomSortRepository, MavenArtifactVersionRepository mavenArtifactVersionRepo,
-      ImageRepository imageRepository, MetadataService metadataService, MetadataSyncRepository metadataSyncRepository,
-      MetadataRepository metadataRepository, ImageService imageService, MongoTemplate mongoTemplate,
-      ProductJsonContentRepository productJsonContentRepository) {
-    this.productRepository = productRepository;
-    this.productModuleContentRepository = productModuleContentRepository;
+      GitHubRepoMetaRepository gitHubRepoMetaRepo, GitHubService gitHubService,
+      ProductCustomSortRepository productCustomSortRepo, MavenArtifactVersionRepository mavenArtifactVersionRepo,
+      ImageRepository imageRepo, MetadataService metadataService, MetadataSyncRepository metadataSyncRepo,
+      MetadataRepository metadataRepo, ImageService imageService, MongoTemplate mongoTemplate,
+      ProductJsonContentRepository productJsonContentRepo) {
+    this.productRepo = productRepo;
+    this.productModuleContentRepo = productModuleContentRepo;
     this.axonIvyMarketRepoService = axonIvyMarketRepoService;
     this.axonIvyProductRepoService = axonIvyProductRepoService;
-    this.gitHubRepoMetaRepository = gitHubRepoMetaRepository;
+    this.gitHubRepoMetaRepo = gitHubRepoMetaRepo;
     this.gitHubService = gitHubService;
-    this.productCustomSortRepository = productCustomSortRepository;
+    this.productCustomSortRepo = productCustomSortRepo;
     this.mavenArtifactVersionRepo = mavenArtifactVersionRepo;
-    this.metadataSyncRepository = metadataSyncRepository;
-    this.metadataRepository = metadataRepository;
+    this.metadataSyncRepo = metadataSyncRepo;
+    this.metadataRepo = metadataRepo;
     this.metadataService = metadataService;
-    this.imageRepository = imageRepository;
+    this.imageRepo = imageRepo;
     this.imageService = imageService;
     this.mongoTemplate = mongoTemplate;
-    this.productJsonContentRepository = productJsonContentRepository;
+    this.productJsonContentRepo = productJsonContentRepo;
   }
 
   private static Predicate<GHTag> filterNonPersistGhTagName(List<String> currentTags) {
@@ -155,7 +156,7 @@ public class ProductServiceImpl implements ProductService {
     if (BooleanUtils.isTrue(isRESTClient)) {
       searchCriteria.setExcludeFields(List.of(SHORT_DESCRIPTIONS));
     }
-    return productRepository.searchByCriteria(searchCriteria, searchPageable);
+    return productRepo.searchByCriteria(searchCriteria, searchPageable);
   }
 
   @Override
@@ -177,22 +178,22 @@ public class ProductServiceImpl implements ProductService {
 
   @Override
   public int updateInstallationCountForProduct(String key, String designerVersion) {
-    Product product = productRepository.getProductById(key);
+    Product product = productRepo.getProductById(key);
     if (Objects.isNull(product)) {
       return 0;
     }
 
     log.info("Increase installation count for product {} By Designer Version {}", key, designerVersion);
     if (StringUtils.isNotBlank(designerVersion)) {
-      productRepository.increaseInstallationCountForProductByDesignerVersion(key, designerVersion);
+      productRepo.increaseInstallationCountForProductByDesignerVersion(key, designerVersion);
     }
 
     log.info("updating installation count for product {}", key);
     if (BooleanUtils.isTrue(product.getSynchronizedInstallationCount())) {
-      return productRepository.increaseInstallationCount(key);
+      return productRepo.increaseInstallationCount(key);
     }
     syncInstallationCountWithProduct(product);
-    return productRepository.updateInitialCount(key, product.getInstallationCount() + 1);
+    return productRepo.updateInitialCount(key, product.getInstallationCount() + 1);
   }
 
   public void syncInstallationCountWithProduct(Product product) {
@@ -223,7 +224,7 @@ public class ProductServiceImpl implements ProductService {
     marketRepoMeta.setRepoName(GitHubConstants.AXONIVY_MARKETPLACE_REPO_NAME);
     marketRepoMeta.setLastSHA1(lastGHCommit.getSHA1());
     marketRepoMeta.setLastChange(GitHubUtils.getGHCommitDate(lastGHCommit));
-    gitHubRepoMetaRepository.save(marketRepoMeta);
+    gitHubRepoMetaRepo.save(marketRepoMeta);
     marketRepoMeta = null;
   }
 
@@ -263,19 +264,19 @@ public class ProductServiceImpl implements ProductService {
       String[] splitMetaJsonPath = file.getFileName().split(SLASH);
       String extractMarketDirectory = file.getFileName().replace(splitMetaJsonPath[splitMetaJsonPath.length - 1],
           EMPTY);
-      List<Product> productList = productRepository.findByMarketDirectory(extractMarketDirectory);
+      List<Product> productList = productRepo.findByMarketDirectory(extractMarketDirectory);
       if (ObjectUtils.isNotEmpty(productList)) {
         productId = productList.get(0).getId();
-        productRepository.deleteById(productId);
-        imageRepository.deleteAllByProductId(productId);
+        productRepo.deleteById(productId);
+        imageRepo.deleteAllByProductId(productId);
       }
     } else {
-      List<Image> images = imageRepository.findByImageUrlEndsWithIgnoreCase(file.getFileName());
+      List<Image> images = imageRepo.findByImageUrlEndsWithIgnoreCase(file.getFileName());
       if (ObjectUtils.isNotEmpty(images)) {
         Image currentImage = images.get(0);
         productId = currentImage.getProductId();
-        productRepository.deleteById(productId);
-        imageRepository.deleteAllByProductId(productId);
+        productRepo.deleteById(productId);
+        imageRepo.deleteAllByProductId(productId);
       }
     }
     return productId;
@@ -299,7 +300,7 @@ public class ProductServiceImpl implements ProductService {
       ProductFactory.mappingByGHContent(product, fileContent);
       mappingVendorImageFromGHContent(product, fileContent);
       transferComputedDataFromDB(product);
-      productId = productRepository.save(product).getId();
+      productId = productRepo.save(product).getId();
     } else {
       productId = modifyProductLogo(parentPath, fileContent);
     }
@@ -310,14 +311,14 @@ public class ProductServiceImpl implements ProductService {
     var searchCriteria = new ProductSearchCriteria();
     searchCriteria.setKeyword(parentPath);
     searchCriteria.setFields(List.of(MARKET_DIRECTORY));
-    Product result = productRepository.findByCriteria(searchCriteria);
+    Product result = productRepo.findByCriteria(searchCriteria);
     if (result != null) {
       Optional.ofNullable(imageService.mappingImageFromGHContent(result.getId(), fileContent, true)).ifPresent(image -> {
         if (StringUtils.isNotBlank(result.getLogoId())) {
-          imageRepository.deleteById(result.getLogoId());
+          imageRepo.deleteById(result.getLogoId());
         }
         result.setLogoId(image.getId());
-        productRepository.save(result);
+        productRepo.save(result);
       });
       return result.getId();
     }
@@ -349,7 +350,7 @@ public class ProductServiceImpl implements ProductService {
   }
 
   private Order getExtensionOrder(String language) {
-    List<ProductCustomSort> customSorts = productCustomSortRepository.findAll();
+    List<ProductCustomSort> customSorts = productCustomSortRepo.findAll();
 
     if (!customSorts.isEmpty()) {
       SortOption sortOptionExtension = SortOption.of(customSorts.get(0).getRuleForRemainder());
@@ -361,7 +362,7 @@ public class ProductServiceImpl implements ProductService {
   private boolean isLastGithubCommitCovered() {
     boolean isLastCommitCovered = false;
     long lastCommitTime = 0L;
-    marketRepoMeta = gitHubRepoMetaRepository.findByRepoName(GitHubConstants.AXONIVY_MARKETPLACE_REPO_NAME);
+    marketRepoMeta = gitHubRepoMetaRepo.findByRepoName(GitHubConstants.AXONIVY_MARKETPLACE_REPO_NAME);
     if (marketRepoMeta != null) {
       lastCommitTime = marketRepoMeta.getLastChange();
     }
@@ -374,7 +375,7 @@ public class ProductServiceImpl implements ProductService {
   }
 
   private void updateLatestReleaseTagContentsFromProductRepo() {
-    List<Product> products = productRepository.findAll();
+    List<Product> products = productRepo.findAll();
     if (ObjectUtils.isEmpty(products)) {
       return;
     }
@@ -382,7 +383,7 @@ public class ProductServiceImpl implements ProductService {
     for (Product product : products) {
       if (StringUtils.isNotBlank(product.getRepositoryName())) {
         getProductContents(product);
-        productRepository.save(product);
+        productRepo.save(product);
       }
     }
   }
@@ -410,12 +411,12 @@ public class ProductServiceImpl implements ProductService {
         mappingVendorImageFromGHContent(product, content);
         mappingLogoFromGHContent(product, content);
       }
-      if (productRepository.findById(product.getId()).isPresent()) {
+      if (productRepo.findById(product.getId()).isPresent()) {
         continue;
       }
       updateRelatedThingsOfProductFromGHContent(ghContentEntity.getValue(), product);
       transferComputedDataFromDB(product);
-      syncedProductIds.add(productRepository.save(product).getId());
+      syncedProductIds.add(productRepo.save(product).getId());
     }
     return syncedProductIds;
   }
@@ -463,7 +464,7 @@ public class ProductServiceImpl implements ProductService {
     product.setNewestReleaseVersion(lastTag.getName());
     List<String> currentTags = VersionUtils.getReleaseTagsFromProduct(product);
     if (CollectionUtils.isEmpty(currentTags)) {
-      currentTags = productModuleContentRepository.findTagsByProductId(product.getId());
+      currentTags = productModuleContentRepo.findTagsByProductId(product.getId());
     }
     ghTags = ghTags.stream().filter(filterNonPersistGhTagName(currentTags)).toList();
 
@@ -480,7 +481,7 @@ public class ProductServiceImpl implements ProductService {
       product.getReleasedVersions().add(versionFromTag);
     }
     if (!CollectionUtils.isEmpty(productModuleContents)) {
-      productModuleContentRepository.saveAll(productModuleContents);
+      productModuleContentRepo.saveAll(productModuleContents);
     }
   }
 
@@ -532,7 +533,7 @@ public class ProductServiceImpl implements ProductService {
 
   @Override
   public Product fetchProductDetail(String id, Boolean isShowDevVersion) {
-    Product product = productRepository.getProductByIdWithNewestReleaseVersion(id, isShowDevVersion);
+    Product product = getProductByIdWithNewestReleaseVersion(id, isShowDevVersion);
     return Optional.ofNullable(product).map(productItem -> {
       updateProductInstallationCount(id, productItem);
       return productItem;
@@ -541,13 +542,13 @@ public class ProductServiceImpl implements ProductService {
 
   @Override
   public Product fetchBestMatchProductDetail(String id, String version) {
-    List<String> installableVersions =
-        VersionUtils.getInstallableVersionsFromMetadataList(metadataRepository.findByProductId(id));
+    List<String> installableVersions = VersionUtils.getInstallableVersionsFromMetadataList(
+        metadataRepo.findByProductId(id));
     String bestMatchVersion = VersionUtils.getBestMatchVersion(installableVersions, version);
     String bestMatchTag = VersionUtils.convertVersionToTag(id, bestMatchVersion);
     // Cover exception case of employee onboarding without any product.json file
-    Product product = StringUtils.isBlank(bestMatchTag) ? productRepository.getProductByIdWithNewestReleaseVersion(id,
-        false) : productRepository.getProductByIdWithTagOrVersion(id, bestMatchTag);
+    Product product = StringUtils.isBlank(bestMatchTag) ? getProductByIdWithNewestReleaseVersion(id,
+        false) : productRepo.getProductByIdWithTagOrVersion(id, bestMatchTag);
     return Optional.ofNullable(product).map(productItem -> {
       updateProductInstallationCount(id, productItem);
       productItem.setBestMatchVersion(bestMatchVersion);
@@ -555,23 +556,40 @@ public class ProductServiceImpl implements ProductService {
     }).orElse(null);
   }
 
+  public Product getProductByIdWithNewestReleaseVersion(String id, Boolean isShowDevVersion) {
+    List<String> versions;
+    String version = StringUtils.EMPTY;
+    var mavenArtifactVersion = mavenArtifactVersionRepo.findById(id);
+    if(mavenArtifactVersion.isPresent()) {
+      versions = MavenUtils.getAllExistingVersions(mavenArtifactVersion.get(), BooleanUtils.isTrue(isShowDevVersion),
+          StringUtils.EMPTY);
+      version = CollectionUtils.firstElement(versions);
+    }
+    if (StringUtils.isBlank(version)) {
+      versions = VersionUtils.getVersionsToDisplay(productRepo.getReleasedVersionsById(id), isShowDevVersion,
+          StringUtils.EMPTY);
+      version = CollectionUtils.firstElement(versions);
+    }
+    return productRepo.getProductByIdWithTagOrVersion(id, VersionUtils.convertVersionToTag(id, version));
+  }
+
   public void updateProductInstallationCount(String id, Product productItem) {
     if (!BooleanUtils.isTrue(productItem.getSynchronizedInstallationCount())) {
       syncInstallationCountWithProduct(productItem);
-      int persistedInitialCount = productRepository.updateInitialCount(id, productItem.getInstallationCount());
+      int persistedInitialCount = productRepo.updateInitialCount(id, productItem.getInstallationCount());
       productItem.setInstallationCount(persistedInitialCount);
     }
   }
 
   @Override
   public Product fetchProductDetailByIdAndVersion(String id, String version) {
-    return productRepository.getProductByIdWithTagOrVersion(id, version);
+    return productRepo.getProductByIdWithTagOrVersion(id, version);
   }
 
   @Override
   public void clearAllProducts() {
-    gitHubRepoMetaRepository.deleteAll();
-    productRepository.deleteAll();
+    gitHubRepoMetaRepo.deleteAll();
+    productRepo.deleteAll();
   }
 
   @Override
@@ -579,10 +597,10 @@ public class ProductServiceImpl implements ProductService {
     SortOption.of(customSort.getRuleForRemainder());
 
     ProductCustomSort productCustomSort = new ProductCustomSort(customSort.getRuleForRemainder());
-    productCustomSortRepository.deleteAll();
+    productCustomSortRepo.deleteAll();
     removeFieldFromAllProductDocuments(ProductJsonConstants.CUSTOM_ORDER);
-    productCustomSortRepository.save(productCustomSort);
-    productRepository.saveAll(refineOrderedListOfProductsInCustomSort(customSort.getOrderedListOfProducts()));
+    productCustomSortRepo.save(productCustomSort);
+    productRepo.saveAll(refineOrderedListOfProductsInCustomSort(customSort.getOrderedListOfProducts()));
   }
 
   public List<Product> refineOrderedListOfProductsInCustomSort(List<String> orderedListOfProducts)
@@ -591,14 +609,14 @@ public class ProductServiceImpl implements ProductService {
 
     int descendingOrder = orderedListOfProducts.size();
     for (String productId : orderedListOfProducts) {
-      Optional<Product> productOptional = productRepository.findById(productId);
+      Optional<Product> productOptional = productRepo.findById(productId);
 
       if (productOptional.isEmpty()) {
         throw new InvalidParamException(ErrorCode.PRODUCT_NOT_FOUND, "Not found product with id: " + productId);
       }
       Product product = productOptional.get();
       product.setCustomOrder(descendingOrder--);
-      productRepository.save(product);
+      productRepo.save(product);
       productEntries.add(product);
     }
 
@@ -611,7 +629,7 @@ public class ProductServiceImpl implements ProductService {
   }
 
   public void transferComputedDataFromDB(Product product) {
-    productRepository.findById(product.getId()).ifPresent(persistedData ->
+    productRepo.findById(product.getId()).ifPresent(persistedData ->
         ProductFactory.transferComputedPersistedDataToProduct(persistedData, product)
     );
   }
@@ -628,7 +646,7 @@ public class ProductServiceImpl implements ProductService {
         log.info("Update data of product {} from meta.json and logo files", productId);
         mappingMetaDataAndLogoFromGHContent(gitHubContents, product);
         updateRelatedThingsOfProductFromGHContent(gitHubContents, product);
-        productRepository.save(product);
+        productRepo.save(product);
         metadataService.syncProductMetadata(product);
         log.info("Sync product {} is finished!", productId);
         return true;
@@ -641,15 +659,15 @@ public class ProductServiceImpl implements ProductService {
 
   private Product renewProductById(String productId, String marketItemPath, Boolean overrideMarketItemPath) {
     Product product = new Product();
-    productRepository.findById(productId).ifPresent(foundProduct -> {
+    productRepo.findById(productId).ifPresent(foundProduct -> {
           ProductFactory.transferComputedPersistedDataToProduct(foundProduct, product);
-          imageRepository.deleteAllByProductId(foundProduct.getId());
-          metadataRepository.deleteAllByProductId(foundProduct.getId());
-          metadataSyncRepository.deleteAllByProductId(foundProduct.getId());
+          imageRepo.deleteAllByProductId(foundProduct.getId());
+          metadataRepo.deleteAllByProductId(foundProduct.getId());
+          metadataSyncRepo.deleteAllByProductId(foundProduct.getId());
           mavenArtifactVersionRepo.deleteAllById(List.of(foundProduct.getId()));
-          productModuleContentRepository.deleteAllByProductId(foundProduct.getId());
-          productJsonContentRepository.deleteAllByProductId(foundProduct.getId());
-          productRepository.delete(foundProduct);
+          productModuleContentRepo.deleteAllByProductId(foundProduct.getId());
+          productJsonContentRepo.deleteAllByProductId(foundProduct.getId());
+          productRepo.delete(foundProduct);
         }
     );
 
@@ -689,6 +707,6 @@ public class ProductServiceImpl implements ProductService {
     product.setReleasedVersions(List.of(INITIAL_VERSION));
     product.setNewestReleaseVersion(INITIAL_VERSION);
     axonIvyProductRepoService.extractReadMeFileFromContents(product, ghContentEntity, initialContent);
-    productModuleContentRepository.save(initialContent);
+    productModuleContentRepo.save(initialContent);
   }
 }

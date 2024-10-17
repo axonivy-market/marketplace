@@ -4,6 +4,7 @@ import com.axonivy.market.constants.EntityConstants;
 import com.axonivy.market.constants.MavenConstants;
 import com.axonivy.market.constants.MongoDBConstants;
 import com.axonivy.market.criteria.ProductSearchCriteria;
+import com.axonivy.market.entity.MavenArtifactVersion;
 import com.axonivy.market.entity.Metadata;
 import com.axonivy.market.entity.Product;
 import com.axonivy.market.entity.ProductDesignerInstallation;
@@ -13,12 +14,14 @@ import com.axonivy.market.enums.Language;
 import com.axonivy.market.enums.TypeOption;
 import com.axonivy.market.repository.CustomProductRepository;
 import com.axonivy.market.repository.CustomRepository;
+import com.axonivy.market.repository.MavenArtifactVersionRepository;
 import com.axonivy.market.repository.MetadataRepository;
 import com.axonivy.market.repository.ProductModuleContentRepository;
 import com.axonivy.market.util.MavenUtils;
 import com.axonivy.market.util.VersionUtils;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
+import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.bson.BsonRegularExpression;
@@ -47,7 +50,7 @@ public class CustomProductRepositoryImpl extends CustomRepository implements Cus
 
   final MongoTemplate mongoTemplate;
   final ProductModuleContentRepository contentRepo;
-  final MetadataRepository metadataRepo;
+  final MavenArtifactVersionRepository mavenArtifactVersionRepo;
 
   public Product queryProductByAggregation(Aggregation aggregation) {
     return Optional.of(mongoTemplate.aggregate(aggregation, EntityConstants.PRODUCT, Product.class))
@@ -66,26 +69,6 @@ public class CustomProductRepositoryImpl extends CustomRepository implements Cus
       ProductModuleContent content = findByProductIdAndTagOrMavenVersion(id, tag);
       result.setProductModuleContent(content);
     }
-    return result;
-  }
-
-  @Override
-  public Product getProductByIdWithNewestReleaseVersion(String id, Boolean isShowDevVersion) {
-    Product result = findProductById(id);
-    if (ObjectUtils.isEmpty(result)) {
-      return null;
-    }
-    Metadata productArtifactMetadata =
-        metadataRepo.findByProductId(id).stream().filter(MavenUtils::isProductMetadata).findAny().orElse(new Metadata());
-    String version = isShowDevVersion ? productArtifactMetadata.getLatest() : productArtifactMetadata.getRelease();
-    // Handle exception case of employee onboarding
-    if (StringUtils.isBlank(version)) {
-      List<String> versions = VersionUtils.getVersionsToDisplay(result.getReleasedVersions(), isShowDevVersion,
-          StringUtils.EMPTY);
-      version = VersionUtils.convertVersionToTag(id, CollectionUtils.firstElement(versions));
-    }
-    ProductModuleContent content = findByProductIdAndTagOrMavenVersion(id, version);
-    result.setProductModuleContent(content);
     return result;
   }
 

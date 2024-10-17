@@ -11,13 +11,16 @@ import com.axonivy.market.entity.ProductModuleContent;
 import com.axonivy.market.enums.Language;
 import com.axonivy.market.enums.SortOption;
 import com.axonivy.market.model.MavenArtifactModel;
+import com.axonivy.market.util.MavenUtils;
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.lang3.StringUtils;
+import org.junit.jupiter.api.Assertions;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.util.CollectionUtils;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -165,6 +168,14 @@ public class BaseSetup {
   protected MavenArtifactVersion getMockMavenArtifactVersion() {
     return new MavenArtifactVersion(StringUtils.EMPTY, new HashMap<>(),
         new HashMap<>());
+  }
+
+  protected MavenArtifactVersion getMockMavenArtifactVersionWithData() {
+    MavenArtifactVersion mockMavenArtifactVersion = getMockMavenArtifactVersion();
+    Map<String, List<MavenArtifactModel>> mockArtifactModelsByVersion = new HashMap<>();
+    mockArtifactModelsByVersion.put(MOCK_SNAPSHOT_VERSION, new ArrayList<>());
+    mockMavenArtifactVersion.setProductArtifactsByVersion(mockArtifactModelsByVersion);
+    return mockMavenArtifactVersion;
   }
 
   protected Product getMockProduct() {
