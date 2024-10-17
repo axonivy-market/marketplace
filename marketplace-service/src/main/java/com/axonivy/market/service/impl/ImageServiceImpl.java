@@ -3,6 +3,7 @@ package com.axonivy.market.service.impl;
 import com.axonivy.market.entity.Image;
 import com.axonivy.market.github.util.GitHubUtils;
 import com.axonivy.market.repository.ImageRepository;
+import com.axonivy.market.service.FileDownloadService;
 import com.axonivy.market.service.ImageService;
 import com.axonivy.market.util.MavenUtils;
 import lombok.extern.log4j.Log4j2;
@@ -18,15 +19,18 @@ import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
+import java.util.function.Supplier;
 
 @Service
 @Log4j2
 public class ImageServiceImpl implements ImageService {
 
   private final ImageRepository imageRepository;
+  private final FileDownloadService fileDownloadService;
 
-  public ImageServiceImpl(ImageRepository imageRepository) {
+  public ImageServiceImpl(ImageRepository imageRepository, FileDownloadService fileDownloadService) {
     this.imageRepository = imageRepository;
+    this.fileDownloadService = fileDownloadService;
   }
 
   @Override
@@ -36,7 +40,18 @@ public class ImageServiceImpl implements ImageService {
       byte[] sourceBytes = IOUtils.toByteArray(contentStream);
       return new Binary(sourceBytes);
     } catch (Exception exception) {
-      log.error("Cannot get content of product logo {} ", ghContent.getName());
+      log.error("Cannot get content of product image {} ", ghContent.getName());
+      return null;
+    }
+  }
+
+  private Binary getImageByDownloadUrl(String downloadUrl) {
+    try {
+      byte[] downloadedImage = fileDownloadService.downloadFile(downloadUrl);
+      return new Binary(downloadedImage);
+    }catch (Exception exception) {
+      log.error("Cannot download the image from the url: {}", downloadUrl);
+      log.error(exception.getMessage());
       return null;
     }
   }
@@ -54,11 +69,15 @@ public class ImageServiceImpl implements ImageService {
         return existsImage;
       }
     }
-    Image image = new Image();
+
     String currentImageUrl = GitHubUtils.getDownloadUrl(ghContent);
+    Binary imageContent = Optional.ofNullable(getImageBinary(ghContent))
+        .orElseGet(() -> getImageByDownloadUrl(currentImageUrl));
+
+    Image image = new Image();
     image.setProductId(productId);
     image.setImageUrl(currentImageUrl);
-    image.setImageData(getImageBinary(ghContent));
+    image.setImageData(imageContent);
     image.setSha(ghContent.getSha());
     return imageRepository.save(image);
   }
