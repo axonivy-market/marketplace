@@ -54,7 +54,7 @@ export class ProductDetailVersionActionComponent implements AfterViewInit {
   @Input() productId!: string;
   @Input() actionType!: ProductDetailActionType;
   @Input() product!: ProductDetail;
-  ProductDetailActionType = ProductDetailActionType;
+  protected ProductDetailActionType = ProductDetailActionType;
   selectedVersion = model<string>('');
   versions: WritableSignal<string[]> = signal([]);
   versionDropdown: Signal<ItemDropdown[]> = computed(() => {
