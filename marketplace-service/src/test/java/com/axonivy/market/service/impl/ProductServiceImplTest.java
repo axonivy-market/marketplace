@@ -466,6 +466,7 @@ class ProductServiceImplTest extends BaseSetup {
     assertEquals(mockProduct, result);
     when(mavenArtifactVersionRepo.findById(MOCK_PRODUCT_ID)).thenReturn(Optional.ofNullable(null));
     when(productRepo.getReleasedVersionsById(MOCK_PRODUCT_ID)).thenReturn(List.of(MOCK_SNAPSHOT_VERSION));
+    when(productRepo.getProductByIdWithTagOrVersion(MOCK_PRODUCT_ID, MOCK_SNAPSHOT_VERSION)).thenReturn(mockProduct);
     result = productService.getProductByIdWithNewestReleaseVersion(MOCK_PRODUCT_ID, true);
     assertEquals(mockProduct, result);
   }
