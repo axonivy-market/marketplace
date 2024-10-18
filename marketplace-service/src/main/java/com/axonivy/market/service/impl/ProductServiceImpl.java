@@ -658,6 +658,13 @@ public class ProductServiceImpl implements ProductService {
     return false;
   }
 
+  @Override
+  public void clearAllProductVersion() {
+    metadataRepo.deleteAll();
+    metadataSyncRepo.deleteAll();
+    mavenArtifactVersionRepo.deleteAll();
+  }
+
   private Product renewProductById(String productId, String marketItemPath, Boolean overrideMarketItemPath) {
     Product product = new Product();
     productRepo.findById(productId).ifPresent(foundProduct -> {

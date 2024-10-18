@@ -122,10 +122,14 @@ public class ProductController {
 
   @PutMapping(SYNC_PRODUCT_VERSION)
   @Operation(hidden = true)
-  public ResponseEntity<Message> syncProductVersions(@RequestHeader(value = AUTHORIZATION) String authorizationHeader) {
+  public ResponseEntity<Message> syncProductVersions(@RequestHeader(value = AUTHORIZATION) String authorizationHeader
+      ,@RequestParam(value = RESET_SYNC, required = false) Boolean resetSync) {
     String token = AuthorizationUtils.getBearerToken(authorizationHeader);
     gitHubService.validateUserInOrganizationAndTeam(token, GitHubConstants.AXONIVY_MARKET_ORGANIZATION_NAME,
         GitHubConstants.AXONIVY_MARKET_TEAM_NAME);
+    if (Boolean.TRUE.equals(resetSync)) {
+      productService.clearAllProductVersion();
+    }
     int nonSyncResult = metadataService.syncAllProductsMetadata();
     var message = new Message();
     HttpStatus statusCode = HttpStatus.OK;
