@@ -3,7 +3,6 @@ package com.axonivy.market.github.service;
 import com.axonivy.market.entity.Product;
 import com.axonivy.market.entity.ProductModuleContent;
 import org.kohsuke.github.GHContent;
-import org.kohsuke.github.GHRepository;
 import org.kohsuke.github.GHTag;
 
 import java.io.IOException;
@@ -16,7 +15,7 @@ public interface GHAxonIvyProductRepoService {
 
   List<GHTag> getAllTagsFromRepoName(String repoName) throws IOException;
 
-  ProductModuleContent getReadmeAndProductContentsFromTag(Product product, GHRepository ghRepository, String tag);
+//  ProductModuleContent getReadmeAndProductContentsFromTag(Product product, GHRepository ghRepository, String tag);
 
   void extractReadMeFileFromContents(Product product, List<GHContent> contents,
       ProductModuleContent productModuleContent);

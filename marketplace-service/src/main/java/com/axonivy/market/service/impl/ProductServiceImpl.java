@@ -1,9 +1,13 @@
 package com.axonivy.market.service.impl;
 
+import com.axonivy.market.bo.Artifact;
 import com.axonivy.market.comparator.MavenVersionComparator;
 import com.axonivy.market.constants.CommonConstants;
 import com.axonivy.market.constants.GitHubConstants;
+import com.axonivy.market.constants.MavenConstants;
+import com.axonivy.market.constants.MetaConstants;
 import com.axonivy.market.constants.ProductJsonConstants;
+import com.axonivy.market.constants.ReadmeConstants;
 import com.axonivy.market.criteria.ProductSearchCriteria;
 import com.axonivy.market.entity.GitHubRepoMeta;
 import com.axonivy.market.entity.Image;
@@ -33,14 +37,18 @@ import com.axonivy.market.repository.ProductCustomSortRepository;
 import com.axonivy.market.repository.ProductJsonContentRepository;
 import com.axonivy.market.repository.ProductModuleContentRepository;
 import com.axonivy.market.repository.ProductRepository;
+import com.axonivy.market.service.FileDownloadService;
 import com.axonivy.market.service.ImageService;
 import com.axonivy.market.service.MetadataService;
+import com.axonivy.market.service.ProductJsonContentService;
 import com.axonivy.market.service.ProductService;
 import com.axonivy.market.util.MavenUtils;
+import com.axonivy.market.util.ProductContentUtils;
 import com.axonivy.market.util.VersionUtils;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.log4j.Log4j2;
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -60,10 +68,19 @@ import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.data.mongodb.core.query.Update;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
+import org.w3c.dom.Document;
+import org.w3c.dom.NodeList;
+import org.xml.sax.InputSource;
 
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.StringReader;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.security.SecureRandom;
 import java.util.ArrayList;
@@ -76,6 +93,7 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.Predicate;
+import java.util.stream.Stream;
 
 import static com.axonivy.market.constants.CommonConstants.SLASH;
 import static com.axonivy.market.constants.ProductJsonConstants.LOGO_FILE;
@@ -105,6 +123,8 @@ public class ProductServiceImpl implements ProductService {
   private final ImageService imageService;
   private final MongoTemplate mongoTemplate;
   private final MetadataService metadataService;
+  private final FileDownloadService fileDownloadService;
+  private final ProductJsonContentService productJsonContentService;
   private final ObjectMapper mapper = new ObjectMapper();
   private final SecureRandom random = new SecureRandom();
   private GHCommit lastGHCommit;
@@ -113,6 +133,7 @@ public class ProductServiceImpl implements ProductService {
   private String legacyInstallationCountPath;
   @Value("${market.github.market.branch}")
   private String marketRepoBranch;
+  private static final int EQUAL = 0;
 
   public ProductServiceImpl(ProductRepository productRepository,
       ProductModuleContentRepository productModuleContentRepository,
@@ -121,7 +142,8 @@ public class ProductServiceImpl implements ProductService {
       ProductCustomSortRepository productCustomSortRepository, MavenArtifactVersionRepository mavenArtifactVersionRepo,
       ImageRepository imageRepository, MetadataService metadataService, MetadataSyncRepository metadataSyncRepository,
       MetadataRepository metadataRepository, ImageService imageService, MongoTemplate mongoTemplate,
-      ProductJsonContentRepository productJsonContentRepository) {
+      ProductJsonContentRepository productJsonContentRepository, FileDownloadService fileDownloadService,
+      ProductJsonContentService productJsonContentService) {
     this.productRepository = productRepository;
     this.productModuleContentRepository = productModuleContentRepository;
     this.axonIvyMarketRepoService = axonIvyMarketRepoService;
@@ -137,6 +159,8 @@ public class ProductServiceImpl implements ProductService {
     this.imageService = imageService;
     this.mongoTemplate = mongoTemplate;
     this.productJsonContentRepository = productJsonContentRepository;
+    this.fileDownloadService = fileDownloadService;
+    this.productJsonContentService = productJsonContentService;
   }
 
   private static Predicate<GHTag> filterNonPersistGhTagName(List<String> currentTags) {
@@ -382,18 +406,9 @@ public class ProductServiceImpl implements ProductService {
 
     for (Product product : products) {
       if (StringUtils.isNotBlank(product.getRepositoryName())) {
-        getProductContents(product);
+        updateProductFromReleaseTags(product);
         productRepository.save(product);
       }
-    }
-  }
-
-  private void getProductContents(Product product) {
-    try {
-      GHRepository productRepo = gitHubService.getRepository(product.getRepositoryName());
-      updateProductFromReleaseTags(product, productRepo);
-    } catch (IOException e) {
-      log.error("Cannot find product repository {} {}", product.getRepositoryName(), e);
     }
   }
 
@@ -434,7 +449,8 @@ public class ProductServiceImpl implements ProductService {
         product.setVendorImage(mapVendorImage(product.getId(), ghContent, product.getVendorImagePath()));
       }
       if (StringUtils.isNotBlank(product.getVendorImageDarkModePath())) {
-        product.setVendorImageDarkMode(mapVendorImage(product.getId(), ghContent, product.getVendorImageDarkModePath()));
+        product.setVendorImageDarkMode(
+            mapVendorImage(product.getId(), ghContent, product.getVendorImageDarkModePath()));
       }
     }
   }
@@ -453,35 +469,209 @@ public class ProductServiceImpl implements ProductService {
     return EMPTY;
   }
 
-  private void updateProductFromReleaseTags(Product product, GHRepository productRepo) {
-    List<ProductModuleContent> productModuleContents = new ArrayList<>();
-    List<GHTag> ghTags = getProductReleaseTags(product);
-    GHTag lastTag = MavenVersionComparator.findHighestTag(ghTags);
-    if (lastTag == null || lastTag.getName().equals(product.getNewestReleaseVersion())) {
+  private void updateProductFromReleaseTags(Product product) {
+    Artifact mavenArtifact = product.getArtifacts().stream()
+        .filter(artifact -> artifact.getArtifactId().contains(MavenConstants.PRODUCT_ARTIFACT_POSTFIX))
+        .findAny().orElse(null);
+    if (mavenArtifact == null) {
       return;
     }
-    product.setNewestPublishedDate(getPublishedDateFromLatestTag(lastTag));
-    product.setNewestReleaseVersion(lastTag.getName());
-    List<String> currentTags = VersionUtils.getReleaseTagsFromProduct(product);
-    if (CollectionUtils.isEmpty(currentTags)) {
-      currentTags = productModuleContentRepository.findTagsByProductId(product.getId());
-    }
-    ghTags = ghTags.stream().filter(filterNonPersistGhTagName(currentTags)).toList();
+    String metadataUrl = MavenUtils.buildMetadataUrlFromArtifactInfo(mavenArtifact.getRepoUrl(),
+        mavenArtifact.getGroupId(), mavenArtifact.getArtifactId());
+    String metadataContent = MavenUtils.getMetadataContentFromUrl(metadataUrl);
 
-    for (GHTag ghTag : ghTags) {
-      ProductModuleContent productModuleContent =
-          axonIvyProductRepoService.getReadmeAndProductContentsFromTag(product, productRepo, ghTag.getName());
-      if (productModuleContent != null) {
-        productModuleContents.add(productModuleContent);
+    updateContentsFromMavenXML(product, metadataContent, mavenArtifact);
+  }
+
+  private void updateContentsFromMavenXML(Product product, String metadataContent, Artifact mavenArtifact) {
+    try {
+      DocumentBuilder builder = DocumentBuilderFactory.newInstance().newDocumentBuilder();
+      Document document = builder.parse(new InputSource(new StringReader(metadataContent)));
+      document.getDocumentElement().normalize();
+      NodeList versionNodes = document.getElementsByTagName(MavenConstants.VERSION_TAG);
+
+      String highestVersion = versionNodes.item(0).getTextContent();
+      for (int i = 0; i < versionNodes.getLength(); i++) {
+        if (MavenVersionComparator.compare(versionNodes.item(i).getTextContent(), highestVersion) > EQUAL) {
+          highestVersion = versionNodes.item(i).getTextContent();
+        }
+
+        if (Objects.isNull(product.getReleasedVersions())) {
+          product.setReleasedVersions(new ArrayList<>());
+        }
+        product.getReleasedVersions().add(versionNodes.item(i).getTextContent());
       }
-      String versionFromTag = VersionUtils.convertTagToVersion(ghTag.getName());
-      if (Objects.isNull(product.getReleasedVersions())) {
-        product.setReleasedVersions(new ArrayList<>());
+
+      product.setNewestReleaseVersion(highestVersion);
+
+      List<ProductModuleContent> productModuleContents = new ArrayList<>();
+      for (String version : product.getReleasedVersions()) {
+        handleProductArtifact(version, product, productModuleContents, mavenArtifact);
       }
-      product.getReleasedVersions().add(versionFromTag);
+
+      if (ObjectUtils.isNotEmpty(productModuleContents)) {
+        productModuleContentRepository.saveAll(productModuleContents);
+      }
+
+    } catch (Exception e) {
+      log.error("Metadata Reader: can not read the metadata of {} with error", metadataContent, e);
     }
-    if (!CollectionUtils.isEmpty(productModuleContents)) {
-      productModuleContentRepository.saveAll(productModuleContents);
+
+  }
+
+  //TODO: Set other fields
+
+//    private void updateProductFromReleaseTags1(Product product, GHRepository productRepo) {
+//    List<ProductModuleContent> productModuleContents = new ArrayList<>();
+//    List<GHTag> ghTags = getProductReleaseTags(product);
+//    GHTag lastTag = MavenVersionComparator.findHighestTag(ghTags);
+//    if (lastTag == null || lastTag.getName().equals(product.getNewestReleaseVersion())) {
+//      return;
+//    }
+//    product.setNewestPublishedDate(getPublishedDateFromLatestTag(lastTag));
+//    product.setNewestReleaseVersion(lastTag.getName());
+//    List<String> currentTags = VersionUtils.getReleaseTagsFromProduct(product);
+//    if (CollectionUtils.isEmpty(currentTags)) {
+//      currentTags = productModuleContentRepository.findTagsByProductId(product.getId());
+//    }
+//    ghTags = ghTags.stream().filter(filterNonPersistGhTagName(currentTags)).toList();
+//
+//    for (GHTag ghTag : ghTags) {
+//      ProductModuleContent productModuleContent =
+//          axonIvyProductRepoService.getReadmeAndProductContentsFromTag(product, productRepo, ghTag.getName());
+//      if (productModuleContent != null) {
+//        productModuleContents.add(productModuleContent);
+//      }
+//      String versionFromTag = VersionUtils.convertTagToVersion(ghTag.getName());
+//      if (Objects.isNull(product.getReleasedVersions())) {
+//        product.setReleasedVersions(new ArrayList<>());
+//      }
+//      product.getReleasedVersions().add(versionFromTag);
+//    }
+//    if (!CollectionUtils.isEmpty(productModuleContents)) {
+//      productModuleContentRepository.saveAll(productModuleContents);
+//    }
+//  }
+
+  public void handleProductArtifact(String version, Product product,
+      List<ProductModuleContent> productModuleContents, Artifact mavenArtifact) {
+    // TODO: Snapshot version
+//    if (version.contains(MavenConstants.SNAPSHOT_VERSION)) {
+//      Metadata snapShotMetadata = MavenUtils.buildSnapShotMetadataFromVersion(productArtifact,
+//      nonMatchSnapshotVersion);
+//      MetadataReaderUtils.updateMetadataFromMavenXML(
+//          MavenUtils.getMetadataContentFromUrl(snapShotMetadata.getUrl()), snapShotMetadata, true);
+//
+//      String url = buildProductFolderDownloadUrl(snapShotMetadata, nonMatchSnapshotVersion);
+
+    String url = buildProductFolderDownloadUrl(version, mavenArtifact);
+
+    if (StringUtils.isBlank(url)) {
+      return;
+    }
+
+    try {
+      addProductContent(product, version, url, productModuleContents, mavenArtifact);
+    } catch (Exception e) {
+      log.error("Cannot download and unzip file {}", e.getMessage());
+    }
+  }
+
+  public String buildProductFolderDownloadUrl(String version, Artifact mavenArtifact) {
+    return MavenUtils.buildDownloadUrl(
+        mavenArtifact.getArtifactId(), version,
+        MavenConstants.DEFAULT_PRODUCT_FOLDER_TYPE,
+        mavenArtifact.getRepoUrl(), mavenArtifact.getGroupId(), version);
+  }
+
+  public void addProductContent(Product product, String version, String url,
+      List<ProductModuleContent> productModuleContents, Artifact artifact) {
+    ProductModuleContent productModuleContent = getReadmeAndProductContentsFromTag(product, version, url, artifact);
+    if (Objects.nonNull(productModuleContent)) {
+      productModuleContents.add(productModuleContent);
+    }
+  }
+
+  private ProductModuleContent getReadmeAndProductContentsFromTag(Product product, String version, String url,
+      Artifact artifact) {
+    ProductModuleContent productModuleContent = ProductContentUtils.initProductModuleContent(product.getId(),
+        version);
+    String unzippedFolderPath = Strings.EMPTY;
+    try {
+      unzippedFolderPath = fileDownloadService.downloadAndUnzipProductContentFile(url, artifact);
+      updateDependencyContentsFromProductJson(productModuleContent, product, unzippedFolderPath);
+      extractReadMeFileFromContents(product.getId(), unzippedFolderPath, productModuleContent);
+    } catch (Exception e) {
+      log.error("Cannot get product.json content in {}", e.getMessage());
+      return null;
+    } finally {
+      if (StringUtils.isNotBlank(unzippedFolderPath)) {
+        fileDownloadService.deleteDirectory(Path.of(unzippedFolderPath));
+      }
+    }
+    return productModuleContent;
+  }
+
+  private void updateDependencyContentsFromProductJson(ProductModuleContent productModuleContent,
+      Product product, String unzippedFolderPath) throws IOException {
+    List<Artifact> artifacts = MavenUtils.convertProductJsonToMavenProductInfo(
+        Paths.get(unzippedFolderPath));
+    ProductContentUtils.updateProductModule(productModuleContent, artifacts);
+//    String currentVersion = productModuleContent.getMavenVersions().stream().findAny().orElse(null);
+    Path productJsonPath = Paths.get(unzippedFolderPath, ProductJsonConstants.PRODUCT_JSON_FILE);
+    String content = extractProductJsonContent(productJsonPath);
+    productJsonContentService.updateProductJsonContent(content, null, productModuleContent.getTag(),
+        ProductJsonConstants.VERSION_VALUE, product);
+  }
+
+  private void extractReadMeFileFromContents(String productId, String unzippedFolderPath,
+      ProductModuleContent productModuleContent) {
+    try {
+      List<Path> readmeFiles;
+      Map<String, Map<String, String>> moduleContents = new HashMap<>();
+      try (Stream<Path> readmePathStream = Files.walk(Paths.get(unzippedFolderPath))) {
+        readmeFiles = readmePathStream.filter(Files::isRegularFile).filter(
+            path -> path.getFileName().toString().startsWith(ReadmeConstants.README_FILE_NAME)).toList();
+      }
+      if (ObjectUtils.isNotEmpty(readmeFiles)) {
+        for (Path readmeFile : readmeFiles) {
+          String readmeContents = Files.readString(readmeFile);
+          if (ProductContentUtils.hasImageDirectives(readmeContents)) {
+            readmeContents = updateImagesWithDownloadUrl(productId, unzippedFolderPath, readmeContents);
+          }
+          ProductContentUtils.getExtractedPartsOfReadme(moduleContents, readmeContents,
+              readmeFile.getFileName().toString());
+        }
+        ProductContentUtils.updateProductModuleTabContents(productModuleContent, moduleContents);
+      }
+    } catch (Exception e) {
+      log.error("Cannot get README file's content from folder {}: {}", unzippedFolderPath, e.getMessage());
+    }
+  }
+
+  private String updateImagesWithDownloadUrl(String productId, String unzippedFolderPath,
+      String readmeContents) throws IOException {
+    List<Path> allImagePaths;
+    Map<String, String> imageUrls = new HashMap<>();
+    try (Stream<Path> imagePathStream = Files.walk(Paths.get(unzippedFolderPath))) {
+      allImagePaths = imagePathStream.filter(Files::isRegularFile).filter(
+          path -> path.getFileName().toString().toLowerCase().matches(CommonConstants.IMAGE_EXTENSION)).toList();
+    }
+    allImagePaths.forEach(
+        imagePath -> Optional.of(imageService.mappingImageFromDownloadedFolder(productId, imagePath)).ifPresent(
+            image -> imageUrls.put(imagePath.getFileName().toString(),
+                CommonConstants.IMAGE_ID_PREFIX.concat(image.getId()))));
+
+    return ProductContentUtils.replaceImageDirWithImageCustomId(imageUrls, readmeContents);
+  }
+
+  private String extractProductJsonContent(Path filePath) {
+    try {
+      InputStream contentStream = MavenUtils.extractedContentStream(filePath);
+      return IOUtils.toString(Objects.requireNonNull(contentStream), StandardCharsets.UTF_8);
+    } catch (Exception e) {
+      log.error("Cannot extract product.json file {}", e.getMessage());
+      return null;
     }
   }
 
@@ -676,7 +866,7 @@ public class ProductServiceImpl implements ProductService {
   private void updateRelatedThingsOfProductFromGHContent(List<GHContent> gitHubContents, Product product) {
     if (StringUtils.isNotBlank(product.getRepositoryName())) {
       updateProductCompatibility(product);
-      getProductContents(product);
+      updateProductFromReleaseTags(product);
     } else {
       updateProductContentForNonStandardProduct(gitHubContents, product);
     }

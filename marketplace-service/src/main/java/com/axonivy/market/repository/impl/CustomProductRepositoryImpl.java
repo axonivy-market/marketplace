@@ -78,9 +78,10 @@ public class CustomProductRepositoryImpl extends CustomRepository implements Cus
     if (ObjectUtils.isEmpty(result)) {
       return null;
     }
+    // TODO
     List<String> devVersions = VersionUtils.getVersionsToDisplay(result.getReleasedVersions(), isShowDevVersion, null);
-    String currentTag = VersionUtils.convertVersionToTag(result.getId(), devVersions.get(0));
-    ProductModuleContent content = contentRepository.findByTagAndProductId(currentTag, id);
+//    String currentTag = VersionUtils.convertVersionToTag(result.getId(), devVersions.get(0));
+    ProductModuleContent content = contentRepository.findByTagAndProductId(devVersions.get(0), id);
     jsonContentRepository.findByProductIdAndVersion(id, devVersions.get(0)).stream().map(
         ProductJsonContent::getContent).findFirst().ifPresent(
         jsonContent -> result.setMavenDropins(isJsonContentContainOnlyMavenDropins(jsonContent)));

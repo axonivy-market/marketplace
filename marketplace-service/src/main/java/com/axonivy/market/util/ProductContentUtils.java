@@ -14,7 +14,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -114,11 +113,11 @@ public class ProductContentUtils {
     return result;
   }
 
-  public static ProductModuleContent initProductModuleContent(String productId, String tag, Set<String> mavenVersions) {
+  public static ProductModuleContent initProductModuleContent(String productId, String tag) {
     ProductModuleContent productModuleContent = new ProductModuleContent();
     productModuleContent.setProductId(productId);
     productModuleContent.setTag(tag);
-    productModuleContent.setMavenVersions(mavenVersions);
+//    productModuleContent.setMavenVersions(mavenVersions);
     ProductFactory.mappingIdForProductModuleContent(productModuleContent);
     return productModuleContent;
   }

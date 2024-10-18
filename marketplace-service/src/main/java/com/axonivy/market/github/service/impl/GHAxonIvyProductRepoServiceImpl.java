@@ -32,7 +32,6 @@ import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -88,21 +87,21 @@ public class GHAxonIvyProductRepoServiceImpl implements GHAxonIvyProductRepoServ
     return getOrganization().getRepository(repoName).listTags().toList();
   }
 
-  @Override
-  public ProductModuleContent getReadmeAndProductContentsFromTag(Product product, GHRepository ghRepository,
-      String tag) {
-    ProductModuleContent productModuleContent = ProductContentUtils.initProductModuleContent(product.getId(), tag,
-        new HashSet<>());
-    try {
-      List<GHContent> contents = getProductFolderContents(product.getId(), ghRepository, tag);
-      updateDependencyContentsFromProductJson(productModuleContent, contents, product);
-      extractReadMeFileFromContents(product, contents, productModuleContent);
-    } catch (Exception e) {
-      log.error("Cannot get product.json content in {} - {}", ghRepository.getName(), e.getMessage());
-      return null;
-    }
-    return productModuleContent;
-  }
+//  @Override
+//  public ProductModuleContent getReadmeAndProductContentsFromTag(Product product, GHRepository ghRepository,
+//      String tag) {
+//    ProductModuleContent productModuleContent = ProductContentUtils.initProductModuleContent(product.getId(), tag,
+//        new HashSet<>());
+//    try {
+//      List<GHContent> contents = getProductFolderContents(product.getId(), ghRepository, tag);
+//      updateDependencyContentsFromProductJson(productModuleContent, contents, product);
+//      extractReadMeFileFromContents(product, contents, productModuleContent);
+//    } catch (Exception e) {
+//      log.error("Cannot get product.json content in {} - {}", ghRepository.getName(), e.getMessage());
+//      return null;
+//    }
+//    return productModuleContent;
+//  }
 
   public void extractReadMeFileFromContents(Product product, List<GHContent> contents,
       ProductModuleContent productModuleContent) {
@@ -118,7 +117,8 @@ public class GHAxonIvyProductRepoServiceImpl implements GHAxonIvyProductRepoServ
             readmeContents = updateImagesWithDownloadUrl(product.getId(), contents, readmeContents);
           }
           ProductContentUtils.getExtractedPartsOfReadme(moduleContents, readmeContents, readmeFile.getName());
-          updateSetupPartForProductModuleContent(product, moduleContents, productModuleContent.getTag());
+          updateSetupPartForProductModuleContent(product, moduleContents,
+              productModuleContent.getTag());
         }
         ProductContentUtils.updateProductModuleTabContents(productModuleContent, moduleContents);
       }

@@ -24,6 +24,7 @@ public class MavenVersionComparator {
   private MavenVersionComparator() {
   }
 
+  //TODO: Check highest tag
   public static GHTag findHighestTag(List<GHTag> ghTags) {
     if (CollectionUtils.isEmpty(ghTags)) {
       return null;
