@@ -132,7 +132,7 @@ export class ProductDetailComponent {
     this.updateDropdownSelection();
   }
 
-  constructor(private titleService: Title) {
+  constructor(private readonly titleService: Title) {
     this.scrollToTop();
     this.resizeObserver = new ResizeObserver(() => {
       this.updateDropdownSelection();
