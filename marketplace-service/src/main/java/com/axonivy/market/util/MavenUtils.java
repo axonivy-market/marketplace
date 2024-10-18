@@ -167,6 +167,7 @@ public class MavenUtils {
         groupIdByVersion, StringUtils.EMPTY);
   }
 
+  //TODO: Snapshot
   public static String buildDownloadUrl(String artifactId, String baseVersion, String type, String repoUrl,
       String groupId, String version) {
     groupId = groupId.replace(CommonConstants.DOT_SEPARATOR, CommonConstants.SLASH);

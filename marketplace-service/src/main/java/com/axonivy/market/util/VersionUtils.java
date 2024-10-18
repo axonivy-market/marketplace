@@ -6,9 +6,9 @@ import com.axonivy.market.constants.CommonConstants;
 import com.axonivy.market.constants.GitHubConstants;
 import com.axonivy.market.entity.Product;
 import com.axonivy.market.enums.NonStandardProduct;
-import lombok.extern.log4j.Log4j2;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
+import lombok.extern.log4j.Log4j2;
 import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -22,6 +22,7 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Stream;
+
 import static com.axonivy.market.constants.MavenConstants.*;
 @Log4j2
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
@@ -155,12 +156,20 @@ public class VersionUtils {
     return result;
   }
 
+  //TODO: Remove
   public static List<String> getReleaseTagsFromProduct(Product product) {
     if (Objects.isNull(product) || CollectionUtils.isEmpty(product.getReleasedVersions())) {
       return new ArrayList<>();
     }
     return product.getReleasedVersions().stream().map(
         version -> convertVersionToTag(product.getId(), version)).toList();
+  }
+
+  public static List<String> getReleaseVersionsFromProduct(Product product) {
+    if (Objects.isNull(product) || CollectionUtils.isEmpty(product.getReleasedVersions())) {
+      return new ArrayList<>();
+    }
+    return product.getReleasedVersions();
   }
 
   public static List<String> removeSyncedVersionsFromReleasedVersions(List<String> releasedVersion,

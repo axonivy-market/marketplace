@@ -23,6 +23,7 @@ public class MetadataReaderUtils {
   private MetadataReaderUtils() {
   }
 
+  //TODO: Duplicate
   public static Metadata updateMetadataFromMavenXML(String xmlData, Metadata metadata, boolean isSnapShot) {
     try {
       DocumentBuilder builder = DocumentBuilderFactory.newInstance().newDocumentBuilder();
