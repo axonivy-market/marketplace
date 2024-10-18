@@ -49,6 +49,8 @@ import { ProductStarRatingNumberComponent } from './product-star-rating-number/p
 import { DisplayValue } from '../../../shared/models/display-value.model';
 import { CookieService } from 'ngx-cookie-service';
 import { ROUTER } from '../../../shared/constants/router.constant';
+import { Title } from '@angular/platform-browser';
+import { Language } from '../../../shared/enums/language.enum';
 
 export interface DetailTab {
   activeClass: string;
@@ -130,7 +132,7 @@ export class ProductDetailComponent {
     this.updateDropdownSelection();
   }
 
-  constructor() {
+  constructor(private titleService: Title) {
     this.scrollToTop();
     this.resizeObserver = new ResizeObserver(() => {
       this.updateDropdownSelection();
@@ -156,6 +158,7 @@ export class ProductDetailComponent {
         this.handleProductContentVersion();
         this.updateProductDetailActionType(productDetail);
         this.logoUrl = productDetail.logoUrl;
+        this.titleService.setTitle(productDetail.names[Language.EN]);
       });
 
       this.productFeedbackService.initFeedbacks();

@@ -9,7 +9,7 @@ import {
   TestBed,
   tick
 } from '@angular/core/testing';
-import { By } from '@angular/platform-browser';
+import { By, Title } from '@angular/platform-browser';
 import { ActivatedRoute } from '@angular/router';
 import { TranslateModule } from '@ngx-translate/core';
 import { Viewport } from 'karma-viewport/dist/adapter/viewport';
@@ -38,6 +38,7 @@ describe('ProductDetailComponent', () => {
   let fixture: ComponentFixture<ProductDetailComponent>;
   let routingQueryParamService: jasmine.SpyObj<RoutingQueryParamService>;
   let languageService: jasmine.SpyObj<LanguageService>;
+  let titleService: Title;
 
   beforeEach(async () => {
     const routingQueryParamServiceSpy = jasmine.createSpyObj(
@@ -76,7 +77,8 @@ describe('ProductDetailComponent', () => {
         {
           provide: LanguageService,
           useValue: languageServiceSpy
-        }
+        },
+        Title
       ]
     })
       .overrideComponent(ProductDetailComponent, {
@@ -93,6 +95,8 @@ describe('ProductDetailComponent', () => {
     languageService = TestBed.inject(
       LanguageService
     ) as jasmine.SpyObj<LanguageService>;
+
+    titleService = TestBed.inject(Title);
   });
 
   beforeEach(() => {
@@ -103,6 +107,12 @@ describe('ProductDetailComponent', () => {
 
   it('should create', () => {
     expect(component.productDetail().names['en']).toEqual(
+      MOCK_PRODUCT_DETAIL.names['en']
+    );
+  });
+  
+  it('should have title like the name', () => {
+    expect(titleService.getTitle()).toEqual(
       MOCK_PRODUCT_DETAIL.names['en']
     );
   });
