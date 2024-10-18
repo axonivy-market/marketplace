@@ -70,7 +70,7 @@ common:
       information:
         label: Information
         value:
-          author: Author/Support
+          implementedBy: Implemented by
           version: Version
           compatibility: Compatibility
           cost: Cost
@@ -80,6 +80,8 @@ common:
           status: Status
           moreInformation: More Information
           contactUs: Contact us
+          documentation: Documentation
+          defaultDocName: Doc
       install:
         buttonLabel: Install Now
         buttonLabelInDesigner: Install

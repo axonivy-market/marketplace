@@ -14,6 +14,7 @@ public class RequestMappingConstants {
   public static final String IMAGE = API + "/image";
   public static final String SYNC = "sync";
   public static final String SYNC_PRODUCT_VERSION = SYNC + "/product-version";
+  public static final String SYNC_ONE_PRODUCT_BY_ID = "sync/{id}";
   public static final String SWAGGER_URL = "/swagger-ui/index.html";
   public static final String GIT_HUB_LOGIN = "/github/login";
   public static final String AUTH = "/auth";
@@ -28,5 +29,6 @@ public class RequestMappingConstants {
   public static final String VERSIONS_IN_DESIGNER = "/{id}/designerversions";
   public static final String DESIGNER_INSTALLATION_BY_ID = "/installation/{id}/designer";
   public static final String CUSTOM_SORT = "custom-sort";
+  public static final String LATEST_ARTIFACT_DOWNLOAD_URL_BY_ID = "/{id}/artifact";
   public static final String EXTERNAL_DOCUMENT = API + "/externaldocument";
 }

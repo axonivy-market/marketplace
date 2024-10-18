@@ -1,0 +1,48 @@
+{
+  "$schema": "https://json-schema.axonivy.com/market/10.0.3/meta.json",
+  "id": "jira-connector",
+  "name": "Atlassian Jira",
+  "names": [
+    {
+      "locale": "en",
+      "value": "Atlassian Jira"
+    },
+    {
+      "locale": "de",
+      "value": "Atlassian Jira"
+    }
+  ],
+  "description": "Atlassian's Jira connector lets you track issues directly from the Axon Ivy platform.",
+  "descriptions": [
+    {
+      "locale": "en",
+      "value": "Atlassian's Jira connector lets you track issues directly from the Axon Ivy platform."
+    },
+    {
+      "locale": "de",
+      "value": "Nutze den Jira Connector von Atlassian, um Jira-Tickets direkt von der Axon Ivy Plattform aus zu managen."
+    }
+  ],
+  "type": "connector",
+  "platformReview": "4.5",
+
+  "vendor": "FROX AG",
+  "vendorImage": "frox.png",
+  "vendorImageDarkMode": "frox-dark-mode.png",
+  "vendorUrl": "https://www.frox.ch",
+
+  "sourceUrl": "https://github.com/axonivy-market/jira-connector",
+  "statusBadgeUrl": "https://github.com/axonivy-market/jira-connector/actions/workflows/ci.yml/badge.svg",
+  "language": "English",
+  "industry": "Cross-Industry",
+  "tags": ["helper"],
+  "mavenArtifacts": [
+    {
+      "repoUrl": "https://maven.axonivy.com",
+      "name": "Jira Connector Product",
+      "groupId": "com.axonivy.connector.jira",
+      "artifactId": "jira-connector-product",
+      "type": "zip"
+    }
+  ]
+}

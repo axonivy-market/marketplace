@@ -1,6 +1,6 @@
 .product-detail-container {
-  gap: 6rem;
-  margin-top: 4.5rem;
+  gap: 9.6rem;
+  margin-top: 7.2rem;
 }
 
 .logo__image {
@@ -30,6 +30,7 @@
 }
 
 .back-link {
+  font-size: 1.6rem;
   font-weight: 500;
   line-height: 120%;
 }
@@ -54,7 +55,7 @@
   gap: 4rem;
 
   .tab-title {
-    padding: 0.5rem;
+    padding: 1.5rem;
   }
 }
 
@@ -123,6 +124,8 @@
 .nav-item {
   gap: 10px;
 
+
+
   a {
     font-weight: 400;
     font-size: 22px;
@@ -165,6 +168,11 @@
 
 ::ng-deep .dropdown-menu .dropdown-item {
   padding: 13.5px 15px;
+}
+
+::ng-deep #tab-group-dropdown .content-tab-dropdown {
+  font-size: 1.4rem;
+  height: 37px;
 }
 
 .form-select {
@@ -230,8 +238,8 @@
 }
 
 hr {
-  margin-top: 8rem;
-  margin-bottom: 8rem;
+  margin-top: 12.8rem;
+  margin-bottom: 12.8rem;
   border: 1px solid var(--ivy-border-color);
 }
 
@@ -251,7 +259,7 @@ hr {
   }
 
   .analysis-title {
-    font-size: 1rem;
+    font-size: 1.6rem;
   }
 
   .version-container {

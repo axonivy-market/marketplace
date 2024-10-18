@@ -1,8 +1,9 @@
 package com.axonivy.market.service.impl;
 
+import com.axonivy.market.BaseSetup;
 import com.axonivy.market.entity.Image;
-import com.axonivy.market.entity.Product;
 import com.axonivy.market.repository.ImageRepository;
+import com.axonivy.market.service.FileDownloadService;
 import com.axonivy.market.util.MavenUtils;
 import org.bson.types.Binary;
 import org.junit.jupiter.api.Test;
@@ -37,13 +38,16 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.never;
 
 @ExtendWith(MockitoExtension.class)
-class ImageServiceImplTest {
+class ImageServiceImplTest extends BaseSetup {
   @Captor
   ArgumentCaptor<Image> argumentCaptor = ArgumentCaptor.forClass(Image.class);
   @InjectMocks
   private ImageServiceImpl imageService;
   @Mock
   private ImageRepository imageRepository;
+  @Mock
+  private FileDownloadService fileDownloadService;
+  public static final String GOOGLE_MAPS_CONNECTOR = "google-maps-connector";
 
   @Test
   void testMappingImageFromGHContent() throws IOException {
@@ -54,7 +58,7 @@ class ImageServiceImplTest {
     InputStream inputStream = this.getClass().getResourceAsStream(SLASH.concat(META_FILE));
     when(content.read()).thenReturn(inputStream);
 
-    imageService.mappingImageFromGHContent(mockProduct(), content, true);
+    imageService.mappingImageFromGHContent(GOOGLE_MAPS_CONNECTOR, content, true);
 
     Image expectedImage = new Image();
     expectedImage.setProductId("google-maps-connector");
@@ -68,31 +72,47 @@ class ImageServiceImplTest {
     assertEquals(argumentCaptor.getValue().getImageUrl(), expectedImage.getImageUrl());
 
     when(imageRepository.findByProductIdAndSha(anyString(), anyString())).thenReturn(expectedImage);
-    Image result  = imageService.mappingImageFromGHContent(mockProduct(), content, false);
+    Image result  = imageService.mappingImageFromGHContent(GOOGLE_MAPS_CONNECTOR, content, false);
     assertEquals(expectedImage, result);
+
+  }
+
+  @Test
+  void testMappingImageFromGHContent_getImageFromDownloadUrl() throws IOException {
+    GHContent content = mock(GHContent.class);
+    when(content.getSha()).thenReturn("914d9b6956db7a1404622f14265e435f36db81fa");
+    when(content.getDownloadUrl()).thenReturn(MOCK_MAVEN_URL);
+
+    when(content.read()).thenThrow(new UnsupportedOperationException("Unrecognized encoding"));
+    when(fileDownloadService.downloadFile(MOCK_MAVEN_URL)).thenReturn("content".getBytes());
+
+    imageService.mappingImageFromGHContent(GOOGLE_MAPS_CONNECTOR, content, false);
+
+    verify(imageRepository).save(argumentCaptor.capture());
+    verify(fileDownloadService, times(1)).downloadFile(MOCK_MAVEN_URL);
+    assertEquals(new Binary("content".getBytes()), argumentCaptor.getValue().getImageData());
 
   }
 
   @Test
   void testMappingImageFromDownloadedFolder() {
     try (MockedStatic<MavenUtils> mockedMavenUtils = Mockito.mockStatic(MavenUtils.class)) {
-      Product product = new Product();
-      product.setId("connectivity-demo");
+      String productId = "connectivity-demo";
 
       byte[] newImageData = "connectivity-image-data".getBytes();
 
       Path imagePath = Path.of("connectivity-image.png");
       ByteArrayInputStream inputStream = new ByteArrayInputStream(newImageData);
       mockedMavenUtils.when(() -> MavenUtils.extractedContentStream(imagePath)).thenReturn(inputStream);
-      when(imageRepository.findByProductId(product.getId())).thenReturn(Collections.emptyList());
+      when(imageRepository.findByProductId(productId)).thenReturn(Collections.emptyList());
 
       Image newImage = new Image();
       newImage.setImageData(new Binary(newImageData));
-      newImage.setProductId(product.getId());
+      newImage.setProductId(productId);
 
       when(imageRepository.save(any(Image.class))).thenReturn(newImage);
 
-      Image result = imageService.mappingImageFromDownloadedFolder(product, imagePath);
+      Image result = imageService.mappingImageFromDownloadedFolder(productId, imagePath);
 
       assertNotNull(result);
       assertEquals(newImage, result);
@@ -103,8 +123,7 @@ class ImageServiceImplTest {
   @Test
   void testMappingImageFromDownloadedFolderWhenImageExists() {
     try (MockedStatic<MavenUtils> mockedMavenUtils = Mockito.mockStatic(MavenUtils.class)) {
-      Product product = new Product();
-      product.setId("connectivity-demo");
+      String productId = "connectivity-demo";
 
       byte[] existingImageData = "connectivity-image-data".getBytes();
       byte[] newImageData = "connectivity-image-data".getBytes();
@@ -115,11 +134,11 @@ class ImageServiceImplTest {
 
       Image existingImage = new Image();
       existingImage.setImageData(new Binary(existingImageData));
-      existingImage.setProductId(product.getId());
+      existingImage.setProductId(productId);
 
-      when(imageRepository.findByProductId(product.getId())).thenReturn(List.of(existingImage));
+      when(imageRepository.findByProductId(productId)).thenReturn(List.of(existingImage));
 
-      Image result = imageService.mappingImageFromDownloadedFolder(product, imagePath);
+      Image result = imageService.mappingImageFromDownloadedFolder(productId, imagePath);
 
       assertNotNull(result);
       assertEquals(existingImage, result);
@@ -130,13 +149,12 @@ class ImageServiceImplTest {
   @Test
   void testMappingImageFromDownloadedFolder_ReturnNull() {
     try (MockedStatic<MavenUtils> mockedMavenUtils = Mockito.mockStatic(MavenUtils.class)) {
-      Product product = new Product();
-      product.setId("connectivity-demo");
+      String productId = "connectivity-demo";
       Path imagePath = Path.of("connectivity-image.png");
       mockedMavenUtils.when(() -> MavenUtils.extractedContentStream(imagePath)).thenThrow(
           new NullPointerException("File not found"));
 
-      Image result = imageService.mappingImageFromDownloadedFolder(product, imagePath);
+      Image result = imageService.mappingImageFromDownloadedFolder(productId, imagePath);
 
       assertNull(result);
       verify(imageRepository, times(0)).save(any(Image.class));
@@ -145,13 +163,7 @@ class ImageServiceImplTest {
 
   @Test
   void testMappingImageFromGHContent_noGhContent() {
-    var result = imageService.mappingImageFromGHContent(mockProduct(), null, true);
+    var result = imageService.mappingImageFromGHContent(GOOGLE_MAPS_CONNECTOR, null, true);
     assertNull(result);
-  }
-
-  private Product mockProduct() {
-    return Product.builder().id("google-maps-connector")
-        .language("English")
-        .build();
   }
 }

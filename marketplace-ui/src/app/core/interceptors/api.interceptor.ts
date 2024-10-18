@@ -13,10 +13,15 @@ import { ERROR_CODES, ERROR_PAGE_PATH } from '../../shared/constants/common.cons
 export const REQUEST_BY = 'X-Requested-By';
 export const IVY = 'marketplace-website';
 
-/** This is option for exclude loading api
+/** SkipLoading: This option for exclude loading api
  * @Example return httpClient.get('apiEndPoint', { context: new HttpContext().set(SkipLoading, true) })
  */
 export const SkipLoading = new HttpContextToken<boolean>(() => false);
+
+/** ForwardingError: This option for forwarding responce error to the caller
+ * @Example return httpClient.get('apiEndPoint', { context: new HttpContext().set(ForwardingError, true) })
+ */
+export const ForwardingError = new HttpContextToken<boolean>(() => false);
 
 export const apiInterceptor: HttpInterceptorFn = (req, next) => {
   const router = inject(Router);
@@ -36,11 +41,13 @@ export const apiInterceptor: HttpInterceptorFn = (req, next) => {
     headers: addIvyHeaders(req.headers)
   });
 
-  if (req.context.get(SkipLoading)) {
-    return next(cloneReq);
+  if (!req.context.get(SkipLoading)) {
+    loadingService.show();
   }
 
-  loadingService.show();
+  if (req.context.get(ForwardingError)) {
+    return next(cloneReq);
+  }
 
   return next(cloneReq).pipe(
     catchError(error => {
@@ -52,7 +59,9 @@ export const apiInterceptor: HttpInterceptorFn = (req, next) => {
       return EMPTY;
     }),
     finalize(() => {
-      loadingService.hide();
+      if (!req.context.get(SkipLoading)) {
+        loadingService.hide();
+      }
     })
   );
 };

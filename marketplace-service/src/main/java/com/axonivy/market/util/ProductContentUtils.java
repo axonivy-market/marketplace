@@ -4,7 +4,6 @@ import com.axonivy.market.bo.Artifact;
 import com.axonivy.market.constants.CommonConstants;
 import com.axonivy.market.constants.GitHubConstants;
 import com.axonivy.market.constants.ReadmeConstants;
-import com.axonivy.market.entity.Product;
 import com.axonivy.market.entity.ProductModuleContent;
 import com.axonivy.market.enums.Language;
 import com.axonivy.market.factory.ProductFactory;
@@ -90,7 +89,7 @@ public class ProductContentUtils {
     addLocaleContent(moduleContents, SETUP, setup.trim(), locale);
   }
 
-  private static void addLocaleContent(Map<String, Map<String, String>> moduleContents, String type, String content,
+  public static void addLocaleContent(Map<String, Map<String, String>> moduleContents, String type, String content,
       String locale) {
     moduleContents.computeIfAbsent(type, key -> new HashMap<>()).put(locale, content);
   }
@@ -115,9 +114,9 @@ public class ProductContentUtils {
     return result;
   }
 
-  public static ProductModuleContent initProductModuleContent(Product product, String tag, Set<String> mavenVersions) {
+  public static ProductModuleContent initProductModuleContent(String productId, String tag, Set<String> mavenVersions) {
     ProductModuleContent productModuleContent = new ProductModuleContent();
-    productModuleContent.setProductId(product.getId());
+    productModuleContent.setProductId(productId);
     productModuleContent.setTag(tag);
     productModuleContent.setMavenVersions(mavenVersions);
     ProductFactory.mappingIdForProductModuleContent(productModuleContent);

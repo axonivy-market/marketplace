@@ -13,13 +13,15 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { NgbNavModule } from '@ng-bootstrap/ng-bootstrap';
 import { TranslateModule } from '@ngx-translate/core';
 import { MarkdownModule, MarkdownService } from 'ngx-markdown';
-import { Observable } from 'rxjs';
+import { map, Observable } from 'rxjs';
 import { AuthService } from '../../../auth/auth.service';
 import { LanguageService } from '../../../core/services/language/language.service';
 import { ThemeService } from '../../../core/services/theme/theme.service';
 import { CommonDropdownComponent } from '../../../shared/components/common-dropdown/common-dropdown.component';
 import {
   DEFAULT_IMAGE_URL,
+  DEFAULT_VENDOR_IMAGE,
+  DEFAULT_VENDOR_IMAGE_BLACK,
   PRODUCT_DETAIL_TABS, SHOW_DEV_VERSION,
   VERSION
 } from '../../../shared/constants/common.constant';
@@ -103,6 +105,7 @@ export class ProductDetailComponent {
   productModuleContent: WritableSignal<ProductModuleContent> = signal(
     {} as ProductModuleContent
   );
+  protected ProductDetailActionType = ProductDetailActionType;
   productDetailActionType = signal(ProductDetailActionType.STANDARD);
   detailTabs = PRODUCT_DETAIL_TABS;
   activeTab = '';
@@ -190,13 +193,18 @@ export class ProductDetailComponent {
 
   getProductById(productId: string, isShowDevVersion: boolean): Observable<ProductDetail> {
     const targetVersion = this.routingQueryParamService.getDesignerVersionFromCookie();
+    let productDetail$: Observable<ProductDetail>;
     if (!targetVersion) {
-      return this.productService.getProductDetails(productId, isShowDevVersion);
+      productDetail$ = this.productService.getProductDetails(productId, isShowDevVersion);
     }
-
-    return this.productService.getBestMatchProductDetailsWithVersion(
-      productId,
-      targetVersion
+    else {
+      productDetail$ = this.productService.getBestMatchProductDetailsWithVersion(
+        productId,
+        targetVersion
+      );
+    }
+    return productDetail$.pipe(
+      map((response: ProductDetail) => this.setDefaultVendorImage(response))
     );
   }
 
@@ -379,5 +387,20 @@ export class ProductDetailComponent {
     type tabName = 'description' | 'demo' | 'setup';
     const value = key.value as tabName;
     return this.productModuleContent()[value];
+  }
+
+  private setDefaultVendorImage(productDetail: ProductDetail): ProductDetail {
+    const { vendorImage, vendorImageDarkMode } = productDetail;
+
+    if (!(productDetail.vendorImage || productDetail.vendorImageDarkMode )) {
+      productDetail.vendorImage = DEFAULT_VENDOR_IMAGE_BLACK;
+      productDetail.vendorImageDarkMode = DEFAULT_VENDOR_IMAGE;
+    }
+    else {
+      productDetail.vendorImage = vendorImage || vendorImageDarkMode;
+      productDetail.vendorImageDarkMode = vendorImageDarkMode || vendorImage;
+    }
+  
+    return productDetail;
   }
 }

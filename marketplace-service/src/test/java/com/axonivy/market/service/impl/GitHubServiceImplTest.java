@@ -1,14 +1,12 @@
 package com.axonivy.market.service.impl;
 
 import com.axonivy.market.github.service.impl.GitHubServiceImpl;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.kohsuke.github.GHContent;
 import org.kohsuke.github.GHRepository;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.web.client.RestTemplate;
@@ -16,7 +14,6 @@ import org.springframework.web.client.RestTemplate;
 import java.io.IOException;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
 
@@ -35,12 +32,6 @@ class GitHubServiceImplTest {
 
   @InjectMocks
   private GitHubServiceImpl gitHubService;
-
-  @BeforeEach
-  public void setUp() {
-    MockitoAnnotations.openMocks(this);
-    lenient().when(restTemplateBuilder.build()).thenReturn(restTemplate);
-  }
 
   @Test
   void testGetGithub() throws IOException {
@@ -62,5 +53,11 @@ class GitHubServiceImplTest {
   void testGetDirectoryContent() throws IOException {
     var result = gitHubService.getDirectoryContent(ghRepository, "", "");
     assertEquals(0, result.size());
+  }
+
+  @Test
+  void testGithubWithToken() throws IOException {
+    var result = gitHubService.getGitHub("accessToken");
+    assertEquals(DUMMY_API_URL, result.getApiUrl());
   }
 }

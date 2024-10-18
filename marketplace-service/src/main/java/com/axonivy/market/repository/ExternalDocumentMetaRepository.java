@@ -12,4 +12,6 @@ public interface ExternalDocumentMetaRepository extends MongoRepository<External
   List<ExternalDocumentMeta> findByProductIdAndVersion(String productId, String version);
 
   List<ExternalDocumentMeta> findByProductId(String productId);
+
+  void deleteByProductIdAndVersion(String productId, String version);
 }

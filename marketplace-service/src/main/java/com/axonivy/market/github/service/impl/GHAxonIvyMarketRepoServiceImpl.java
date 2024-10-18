@@ -99,7 +99,7 @@ public class GHAxonIvyMarketRepoServiceImpl implements GHAxonIvyMarketRepoServic
         }
         GitHubUtils.mapPagedIteratorToList(listFiles).forEach(file -> {
           String fullPathName = file.getFileName();
-          if (FileType.of(fullPathName) != null) {
+          if (FileType.of(fullPathName) != FileType.OTHER) {
             var gitHubFile = new GitHubFile();
             gitHubFile.setFileName(fullPathName);
             gitHubFile.setPath(file.getRawUrl().getPath());
@@ -135,4 +135,15 @@ public class GHAxonIvyMarketRepoServiceImpl implements GHAxonIvyMarketRepoServic
     return repository;
   }
 
+  @Override
+  public List<GHContent> getMarketItemByPath(String itemPath) {
+    List<GHContent> ghContent = new ArrayList<>();
+    try {
+      ghContent = gitHubService.getDirectoryContent(getRepository(),
+          itemPath, marketRepoBranch);
+    } catch (Exception e) {
+      log.error("Cannot fetch GHContent: ", e);
+    }
+    return ghContent;
+  }
 }

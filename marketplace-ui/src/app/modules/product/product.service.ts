@@ -9,8 +9,8 @@ import { ProductDetail } from '../../shared/models/product-detail.model';
 import { VersionData } from '../../shared/models/vesion-artifact.model';
 import { SkipLoading } from '../../core/interceptors/api.interceptor';
 import { VersionAndUrl } from '../../shared/models/version-and-url';
+import { API_URI } from '../../shared/constants/api.constant';
 
-const PRODUCT_API_URL = 'api/product';
 @Injectable()
 export class ProductService {
   httpClient = inject(HttpClient);
@@ -18,7 +18,7 @@ export class ProductService {
 
   findProductsByCriteria(criteria: Criteria): Observable<ProductApiResponse> {
     let requestParams = new HttpParams();
-    let requestURL = PRODUCT_API_URL;
+    let requestURL = API_URI.PRODUCT;
     if (criteria.nextPageHref) {
       requestURL = criteria.nextPageHref;
     } else {
@@ -29,7 +29,10 @@ export class ProductService {
         .set(RequestParam.LANGUAGE, `${criteria.language}`)
         .set(RequestParam.PAGE, `${criteria.pageable.page}`)
         .set(RequestParam.SIZE, `${criteria.pageable.size}`)
-        .set(RequestParam.IS_REST_CLIENT_EDITOR, `${criteria.isRESTClientEditor}`);
+        .set(
+          RequestParam.IS_REST_CLIENT_EDITOR,
+          `${criteria.isRESTClientEditor}`
+        );
     }
     return this.httpClient.get<ProductApiResponse>(requestURL, {
       params: requestParams
@@ -41,7 +44,7 @@ export class ProductService {
     tag: string
   ): Observable<ProductDetail> {
     return this.httpClient.get<ProductDetail>(
-      `api/product-details/${productId}/${tag}`
+      `${API_URI.PRODUCT_DETAILS}/${productId}/${tag}`
     );
   }
 
@@ -50,13 +53,16 @@ export class ProductService {
     tag: string
   ): Observable<ProductDetail> {
     return this.httpClient.get<ProductDetail>(
-      `api/product-details/${productId}/${tag}/bestmatch`
+      `${API_URI.PRODUCT_DETAILS}/${productId}/${tag}/bestmatch`
     );
   }
 
-  getProductDetails(productId: string, isShowDevVersion: boolean): Observable<ProductDetail> {
+  getProductDetails(
+    productId: string,
+    isShowDevVersion: boolean
+  ): Observable<ProductDetail> {
     return this.httpClient.get<ProductDetail>(
-      `api/product-details/${productId}?isShowDevVersion=${isShowDevVersion}`
+      `${API_URI.PRODUCT_DETAILS}/${productId}?isShowDevVersion=${isShowDevVersion}`
     );
   }
 
@@ -65,7 +71,7 @@ export class ProductService {
     showDevVersion: boolean,
     designerVersion: string
   ): Observable<VersionData[]> {
-    const url = `api/product-details/${productId}/versions`;
+    const url = `${API_URI.PRODUCT_DETAILS}/${productId}/versions`;
     const params = new HttpParams()
       .append('designerVersion', designerVersion)
       .append('isShowDevVersion', showDevVersion);
@@ -76,14 +82,24 @@ export class ProductService {
   }
 
   sendRequestToUpdateInstallationCount(productId: string, designerVersion: string) {
-    const url = 'api/product-details/installationcount/' + productId;
-    const headers = { 'X-Requested-By': 'ivy' };
+    const url = `${API_URI.PRODUCT_DETAILS}/installationcount/${productId}`;
     const params = new HttpParams().append('designerVersion', designerVersion);
-    return this.httpClient.put<number>(url, null, { headers, params });
+    return this.httpClient.put<number>(url, null, { params });
   }
 
   sendRequestToGetProductVersionsForDesigner(productId: string) {
-    const url = `api/product-details/${productId}/designerversions`;
-    return this.httpClient.get<VersionAndUrl[]>(url, { headers: { 'X-Requested-By': 'ivy' } });
+    const url = `${API_URI.PRODUCT_DETAILS}/${productId}/designerversions`;
+    return this.httpClient.get<VersionAndUrl[]>(url);
+  }
+
+  getLatestArtifactDownloadUrl(id: string, version: string, artifact: string) {
+    const params = new HttpParams()
+      .append('version', version)
+      .append('artifact', artifact);
+    const url = `${API_URI.PRODUCT_DETAILS}/${id}/artifact`;
+    return this.httpClient.get<string>(url, {
+      params,
+      responseType: 'text' as 'json'
+    });
   }
 }
