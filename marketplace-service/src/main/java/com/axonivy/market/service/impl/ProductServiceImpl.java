@@ -401,7 +401,6 @@ public class ProductServiceImpl implements ProductService {
     return isLastCommitCovered;
   }
 
-  //TODO
   private void updateLatestReleaseTagContentsFromProductRepo() {
     List<Product> products = productRepository.findAll();
     if (ObjectUtils.isEmpty(products)) {
@@ -409,7 +408,8 @@ public class ProductServiceImpl implements ProductService {
     }
 
     for (Product product : products) {
-      updateProductFromReleaseTags(product);
+      updateProductFromReleasedVersions(product);
+      productRepository.save(product);
     }
   }
 
@@ -435,7 +435,9 @@ public class ProductServiceImpl implements ProductService {
       if (productRepository.findById(product.getId()).isPresent()) {
         continue;
       }
-      updateRelatedThingsOfProductFromGHContent(ghContentEntity.getValue(), product);
+      updateEmployeeOnboardingContent(ghContentEntity.getValue(), product);
+      updateProductCompatibility(product);
+      updateProductFromReleasedVersions(product);
       transferComputedDataFromDB(product);
       syncedProductIds.add(productRepository.save(product).getId());
     }
@@ -475,7 +477,7 @@ public class ProductServiceImpl implements ProductService {
     return EMPTY;
   }
 
-  private void updateProductFromReleaseTags(Product product) {
+  private void updateProductFromReleasedVersions(Product product) {
     Artifact mavenArtifact = product.getArtifacts().stream()
         .filter(artifact -> artifact.getArtifactId().contains(MavenConstants.PRODUCT_ARTIFACT_POSTFIX))
         .findAny().orElse(null);
@@ -493,11 +495,34 @@ public class ProductServiceImpl implements ProductService {
     return version -> !currentVersions.contains(version);
   }
 
+  private List<String> getMavenVersions(String metadataContent) {
+    List<String> mavenVersions = new ArrayList<>();
+    try {
+      DocumentBuilder builder = DocumentBuilderFactory.newInstance().newDocumentBuilder();
+      Document document = builder.parse(new InputSource(new StringReader(metadataContent)));
+      document.getDocumentElement().normalize();
+
+      NodeList versionNodes = document.getElementsByTagName(MavenConstants.VERSION_TAG);
+      for (int i = 0; i < versionNodes.getLength(); i++) {
+        mavenVersions.add(versionNodes.item(i).getTextContent());
+      }
+    } catch (Exception e) {
+      log.error("Metadata Reader: can not read the metadata of {} with error", metadataContent, e);
+      return null;
+    }
+    return mavenVersions;
+  }
+
   private void updateContentsFromMavenXML(Product product, String metadataContent, Artifact mavenArtifact) {
     try {
       DocumentBuilder builder = DocumentBuilderFactory.newInstance().newDocumentBuilder();
       Document document = builder.parse(new InputSource(new StringReader(metadataContent)));
       document.getDocumentElement().normalize();
+
+      String latestVersion = document.getElementsByTagName("latest").item(0).getTextContent();
+      if (latestVersion.equals(product.getNewestReleaseVersion())) {
+        return;
+      }
 
       //TODO: Published date
       NodeList lastUpdatedDate = document.getElementsByTagName("lastUpdated");
@@ -507,16 +532,12 @@ public class ProductServiceImpl implements ProductService {
       NodeList versionNodes = document.getElementsByTagName(MavenConstants.VERSION_TAG);
       List<String> mavenVersions = new ArrayList<>();
 
-      if (newestPublishedDate.equals(product.getNewestPublishedDate())) {
-        return;
-      }
-
+      product.setNewestPublishedDate(newestPublishedDate);
+      product.setNewestReleaseVersion(latestVersion);
+      //TODO: Optimize
       for (int i = 0; i < versionNodes.getLength(); i++) {
         mavenVersions.add(versionNodes.item(i).getTextContent());
       }
-
-      product.setNewestPublishedDate(newestPublishedDate);
-      product.setNewestReleaseVersion(document.getElementsByTagName("latest").item(0).getTextContent());
 
       List<String> currentVersions = VersionUtils.getReleaseVersionsFromProduct(product);
       if (CollectionUtils.isEmpty(currentVersions)) {
@@ -607,7 +628,6 @@ public class ProductServiceImpl implements ProductService {
     List<Artifact> artifacts = MavenUtils.convertProductJsonToMavenProductInfo(
         Paths.get(unzippedFolderPath));
     ProductContentUtils.updateProductModule(productModuleContent, artifacts);
-//    String currentVersion = productModuleContent.getMavenVersions().stream().findAny().orElse(null);
     Path productJsonPath = Paths.get(unzippedFolderPath, ProductJsonConstants.PRODUCT_JSON_FILE);
     String content = extractProductJsonContent(productJsonPath);
     productJsonContentService.updateProductJsonContent(content, null, productModuleContent.getTag(),
@@ -665,6 +685,7 @@ public class ProductServiceImpl implements ProductService {
     }
   }
 
+  //NOTE: Set value 1 time only
   private void updateProductCompatibility(Product product) {
     if (StringUtils.isNotBlank(product.getCompatibility())) {
       return;
@@ -676,6 +697,7 @@ public class ProductServiceImpl implements ProductService {
     }
   }
 
+  //TODO: Remove
   private List<GHTag> getProductReleaseTags(Product product) {
     try {
       return gitHubService.getRepositoryTags(product.getRepositoryName());
@@ -738,7 +760,7 @@ public class ProductServiceImpl implements ProductService {
 
   @Override
   public Product fetchProductDetailByIdAndVersion(String id, String version) {
-    return productRepository.getProductByIdWithTagOrVersion(id, version);
+    return productRepository.getProductByIdAndTag(id, version);
   }
 
   @Override
@@ -800,7 +822,9 @@ public class ProductServiceImpl implements ProductService {
       if (!CollectionUtils.isEmpty(gitHubContents)) {
         log.info("Update data of product {} from meta.json and logo files", productId);
         mappingMetaDataAndLogoFromGHContent(gitHubContents, product);
-        updateRelatedThingsOfProductFromGHContent(gitHubContents, product);
+        updateEmployeeOnboardingContent(gitHubContents, product);
+        updateProductCompatibility(product);
+        updateProductFromReleasedVersions(product);
         productRepository.save(product);
         metadataService.syncProductMetadata(product);
         log.info("Sync product {} is finished!", productId);
@@ -844,10 +868,17 @@ public class ProductServiceImpl implements ProductService {
     }
   }
 
-  private void updateRelatedThingsOfProductFromGHContent(List<GHContent> gitHubContents, Product product) {
+  //TODO
+  private void updateEmployeeOnboardingContent(List<GHContent> gitHubContents, Product product) {
+    if (StringUtils.isBlank(product.getRepositoryName())) {
+      updateProductContentForNonStandardProduct(gitHubContents, product);
+    }
+  }
+
+  private void updateRelatedThingsOfProductFromGHContent1(List<GHContent> gitHubContents, Product product) {
     if (StringUtils.isNotBlank(product.getRepositoryName())) {
       updateProductCompatibility(product);
-      updateProductFromReleaseTags(product);
+      updateProductFromReleasedVersions(product);
     } else {
       updateProductContentForNonStandardProduct(gitHubContents, product);
     }

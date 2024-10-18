@@ -128,13 +128,13 @@ class VersionUtilsTest extends BaseSetup {
   @Test
   void testGetOldestVersionWithEmptyTags() {
     List<GHTag> tags = List.of();
-    String oldestTag = VersionUtils.getOldestVersion(tags);
+    String oldestTag = VersionUtils.getOldestTag(tags);
     Assertions.assertEquals(StringUtils.EMPTY, oldestTag);
   }
 
   @Test
   void testGetOldestVersionWithNullTags() {
-    String oldestTag = VersionUtils.getOldestVersion(null);
+    String oldestTag = VersionUtils.getOldestTag(null);
     Assertions.assertEquals(StringUtils.EMPTY, oldestTag);
   }
 
@@ -145,7 +145,7 @@ class VersionUtilsTest extends BaseSetup {
     Mockito.when(tag1.getName()).thenReturn("v1.0");
     Mockito.when(tag2.getName()).thenReturn("2.1");
     List<GHTag> tags = Arrays.asList(tag1, tag2);
-    String oldestTag = VersionUtils.getOldestVersion(tags);
+    String oldestTag = VersionUtils.getOldestTag(tags);
     Assertions.assertEquals("1.0", oldestTag);
   }
 

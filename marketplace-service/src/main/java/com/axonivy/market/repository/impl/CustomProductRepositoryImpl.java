@@ -62,6 +62,7 @@ public class CustomProductRepositoryImpl extends CustomRepository implements Cus
         .map(AggregationResults::getMappedResults).orElse(Collections.emptyList());
   }
 
+  //TODO: Remove
   @Override
   public Product getProductByIdWithTagOrVersion(String id, String tag) {
     Product result = findProductById(id);
@@ -72,15 +73,16 @@ public class CustomProductRepositoryImpl extends CustomRepository implements Cus
     return result;
   }
 
+  getProductByIdAndTag
+
   @Override
   public Product getProductByIdWithNewestReleaseVersion(String id, Boolean isShowDevVersion) {
     Product result = findProductById(id);
     if (ObjectUtils.isEmpty(result)) {
       return null;
     }
-    // TODO
+
     List<String> devVersions = VersionUtils.getVersionsToDisplay(result.getReleasedVersions(), isShowDevVersion, null);
-//    String currentTag = VersionUtils.convertVersionToTag(result.getId(), devVersions.get(0));
     ProductModuleContent content = contentRepository.findByTagAndProductId(devVersions.get(0), id);
     jsonContentRepository.findByProductIdAndVersion(id, devVersions.get(0)).stream().map(
         ProductJsonContent::getContent).findFirst().ifPresent(

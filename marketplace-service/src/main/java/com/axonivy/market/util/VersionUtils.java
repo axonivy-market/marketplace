@@ -43,6 +43,7 @@ public class VersionUtils {
     return versions.stream().filter(VersionUtils::isReleasedVersion).sorted(new LatestVersionComparator()).toList();
   }
 
+  //TODO: Check it
   public static String getMavenVersionMatchWithTag(List<String> releasedVersions, String mavenVersion) {
     for (String version : releasedVersions) {
       if (mavenVersion.equals(version)) {
@@ -146,6 +147,17 @@ public class VersionUtils {
     return GitHubConstants.STANDARD_TAG_PREFIX.concat(version);
   }
 
+  //TODO: Remove
+  public static String getOldestTag(List<GHTag> tags) {
+    String result = StringUtils.EMPTY;
+    if (!CollectionUtils.isEmpty(tags)) {
+      List<String> releasedTags = tags.stream().map(tag -> tag.getName().replaceAll(NON_NUMERIC_CHAR, Strings.EMPTY))
+          .distinct().sorted(new LatestVersionComparator()).toList();
+      return CollectionUtils.lastElement(releasedTags);
+    }
+    return result;
+  }
+
   public static String getOldestVersion(List<GHTag> tags) {
     String result = StringUtils.EMPTY;
     if (!CollectionUtils.isEmpty(tags)) {
@@ -155,6 +167,7 @@ public class VersionUtils {
     }
     return result;
   }
+
 
   //TODO: Remove
   public static List<String> getReleaseTagsFromProduct(Product product) {
