@@ -6,6 +6,7 @@ import com.axonivy.market.repository.ImageRepository;
 import com.axonivy.market.service.FileDownloadService;
 import com.axonivy.market.service.ImageService;
 import com.axonivy.market.util.MavenUtils;
+import lombok.AllArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.ObjectUtils;
@@ -23,15 +24,11 @@ import java.util.function.Supplier;
 
 @Service
 @Log4j2
+@AllArgsConstructor
 public class ImageServiceImpl implements ImageService {
 
   private final ImageRepository imageRepository;
   private final FileDownloadService fileDownloadService;
-
-  public ImageServiceImpl(ImageRepository imageRepository, FileDownloadService fileDownloadService) {
-    this.imageRepository = imageRepository;
-    this.fileDownloadService = fileDownloadService;
-  }
 
   @Override
   public Binary getImageBinary(GHContent ghContent) {
@@ -49,9 +46,8 @@ public class ImageServiceImpl implements ImageService {
     try {
       byte[] downloadedImage = fileDownloadService.downloadFile(downloadUrl);
       return new Binary(downloadedImage);
-    }catch (Exception exception) {
-      log.error("Cannot download the image from the url: {}", downloadUrl);
-      log.error(exception.getMessage());
+    } catch (Exception exception) {
+      log.error("Cannot download the image from the url: {} with error {}", downloadUrl, exception.getMessage());
       return null;
     }
   }
