@@ -11,13 +11,16 @@ import com.axonivy.market.entity.ProductModuleContent;
 import com.axonivy.market.enums.Language;
 import com.axonivy.market.enums.SortOption;
 import com.axonivy.market.model.MavenArtifactModel;
+import com.axonivy.market.util.MavenUtils;
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.lang3.StringUtils;
+import org.junit.jupiter.api.Assertions;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.util.CollectionUtils;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -40,6 +43,7 @@ public class BaseSetup {
   protected static final Pageable PAGEABLE = PageRequest.of(0, 20,
       Sort.by(SortOption.ALPHABETICALLY.getOption()).descending());
   protected static final String MOCK_PRODUCT_ID = "bpmn-statistic";
+  protected static final String MOCK_PRODUCT_ID_WITH_TAG = "bpmn-statistic-v10.0.10";
   protected static final String MOCK_ARTIFACT_ID = "bpmn-statistic";
   protected static final String MOCK_PRODUCT_ARTIFACT_ID = "bpmn-statistic-product";
   protected static final String MOCK_RELEASED_VERSION = "10.0.10";
@@ -68,6 +72,7 @@ public class BaseSetup {
       ".com/com/axonivy/util/bpmn-statistic/10.0.10-SNAPSHOT/bpmn-statistic-10.0.10-SNAPSHOT.zip";
   protected static final String MOCK_ARTIFACT_NAME = "bpmn statistic (zip)";
   protected static final String MOCK_ARTIFACT_DOWNLOAD_FILE = "bpmn-statistic.zip";
+  protected static final String LEGACY_INSTALLATION_COUNT_PATH_FIELD_NAME = "legacyInstallationCountPath";
 
   protected Page<Product> createPageProductsMock() {
     var mockProducts = new ArrayList<Product>();
@@ -165,11 +170,23 @@ public class BaseSetup {
         new HashMap<>());
   }
 
+  protected MavenArtifactVersion getMockMavenArtifactVersionWithData() {
+    MavenArtifactVersion mockMavenArtifactVersion = getMockMavenArtifactVersion();
+    Map<String, List<MavenArtifactModel>> mockArtifactModelsByVersion = new HashMap<>();
+    mockArtifactModelsByVersion.put(MOCK_SNAPSHOT_VERSION, new ArrayList<>());
+    mockMavenArtifactVersion.setProductArtifactsByVersion(mockArtifactModelsByVersion);
+    return mockMavenArtifactVersion;
+  }
+
+  protected Product getMockProduct() {
+    Product mockProduct = Product.builder().id(MOCK_PRODUCT_ID).releasedVersions(new ArrayList<>()).artifacts(
+        List.of(getMockArtifact())).build();
+    mockProduct.getReleasedVersions().add(MOCK_RELEASED_VERSION);
+    return mockProduct;
+  }
+
   protected List<Product> getMockProducts() {
-    Product mockProduct =
-        Product.builder().id(MOCK_PRODUCT_ID).releasedVersions(List.of(MOCK_RELEASED_VERSION)).artifacts(
-            List.of(getMockArtifact())).build();
-    return List.of(mockProduct);
+    return List.of(getMockProduct());
   }
 
   protected Metadata getMockMetadata() {
