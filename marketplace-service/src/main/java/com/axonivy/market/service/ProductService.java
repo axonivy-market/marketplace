@@ -13,15 +13,11 @@ public interface ProductService {
 
   List<String> syncLatestDataFromMarketRepo();
 
-  int updateInstallationCountForProduct(String key, String designerVersion);
-
   Product fetchProductDetail(String id, Boolean isShowDevVersion);
 
   String getCompatibilityFromOldestTag(String oldestTag);
 
   void clearAllProducts();
-
-  void addCustomSortProduct(ProductCustomSortRequest customSort) throws InvalidParamException;
 
   Product fetchBestMatchProductDetail(String id, String version);
 

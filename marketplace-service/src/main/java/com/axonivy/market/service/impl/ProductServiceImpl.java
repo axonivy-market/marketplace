@@ -577,37 +577,6 @@ public class ProductServiceImpl implements ProductService {
     productRepository.deleteAll();
   }
 
-  @Override
-  public void addCustomSortProduct(ProductCustomSortRequest customSort) throws InvalidParamException {
-    SortOption.of(customSort.getRuleForRemainder());
-
-    ProductCustomSort productCustomSort = new ProductCustomSort(customSort.getRuleForRemainder());
-    productCustomSortRepository.deleteAll();
-    removeFieldFromAllProductDocuments(ProductJsonConstants.CUSTOM_ORDER);
-    productCustomSortRepository.save(productCustomSort);
-    productRepository.saveAll(refineOrderedListOfProductsInCustomSort(customSort.getOrderedListOfProducts()));
-  }
-
-  public List<Product> refineOrderedListOfProductsInCustomSort(List<String> orderedListOfProducts)
-      throws InvalidParamException {
-    List<Product> productEntries = new ArrayList<>();
-
-    int descendingOrder = orderedListOfProducts.size();
-    for (String productId : orderedListOfProducts) {
-      Optional<Product> productOptional = productRepository.findById(productId);
-
-      if (productOptional.isEmpty()) {
-        throw new InvalidParamException(ErrorCode.PRODUCT_NOT_FOUND, "Not found product with id: " + productId);
-      }
-      Product product = productOptional.get();
-      product.setCustomOrder(descendingOrder--);
-      productRepository.save(product);
-      productEntries.add(product);
-    }
-
-    return productEntries;
-  }
-
   public void removeFieldFromAllProductDocuments(String fieldName) {
     Update update = new Update().unset(fieldName);
     mongoTemplate.updateMulti(new Query(), update, Product.class);

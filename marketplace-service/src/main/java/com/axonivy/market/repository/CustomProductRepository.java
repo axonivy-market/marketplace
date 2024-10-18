@@ -17,12 +17,6 @@ public interface CustomProductRepository {
 
   List<String> getReleasedVersionsById(String id);
 
-  int updateInitialCount(String productId, int initialCount);
-
-  int increaseInstallationCount(String productId);
-
-  void increaseInstallationCountForProductByDesignerVersion(String productId, String designerVersion);
-
   List<Product> getAllProductsWithIdAndReleaseTagAndArtifact();
 
   ProductModuleContent findByProductIdAndTagOrMavenVersion(String productId, String tag);
