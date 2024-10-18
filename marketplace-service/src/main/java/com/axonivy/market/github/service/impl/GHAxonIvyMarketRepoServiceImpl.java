@@ -99,7 +99,7 @@ public class GHAxonIvyMarketRepoServiceImpl implements GHAxonIvyMarketRepoServic
         }
         GitHubUtils.mapPagedIteratorToList(listFiles).forEach(file -> {
           String fullPathName = file.getFileName();
-          if (FileType.of(fullPathName) != null) {
+          if (FileType.of(fullPathName) != FileType.OTHER) {
             var gitHubFile = new GitHubFile();
             gitHubFile.setFileName(fullPathName);
             gitHubFile.setPath(file.getRawUrl().getPath());

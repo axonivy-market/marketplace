@@ -87,6 +87,7 @@ class ProductServiceImplTest extends BaseSetup {
   private static final String SHA1_SAMPLE = "35baa89091b2452b77705da227f1a964ecabc6c8";
   private static final String INSTALLATION_FILE_PATH = "src/test/resources/installationCount.json";
   private static final String EMPTY_SOURCE_URL_META_JSON_FILE = "/emptySourceUrlMeta.json";
+  private static final String META_JSON_FILE_WITH_VENDOR_INFORMATION = "/meta-with-vendor-information.json";
   @Captor
   ArgumentCaptor<Product> argumentCaptor = ArgumentCaptor.forClass(Product.class);
   @Captor
@@ -260,8 +261,6 @@ class ProductServiceImplTest extends BaseSetup {
     mockGitHubFile.setType(FileType.LOGO);
     mockGitHubFile.setStatus(FileStatus.ADDED);
     when(marketRepoService.fetchMarketItemsBySHA1Range(any(), any())).thenReturn(List.of(mockGitHubFile));
-    var mockGHContent = mockGHContentAsMetaJSON();
-    when(gitHubService.getGHContent(any(), anyString(), any())).thenReturn(mockGHContent);
 
     // Executes
     var result = productService.syncLatestDataFromMarketRepo();
@@ -665,8 +664,6 @@ class ProductServiceImplTest extends BaseSetup {
     mockGitHubFile.setType(FileType.LOGO);
     mockGitHubFile.setStatus(FileStatus.ADDED);
     when(marketRepoService.fetchMarketItemsBySHA1Range(any(), any())).thenReturn(List.of(mockGitHubFile));
-    var mockGHContent = mockGHContentAsLogo();
-    when(gitHubService.getGHContent(any(), anyString(), any())).thenReturn(mockGHContent);
 
     // Executes
     var result = productService.syncLatestDataFromMarketRepo();
@@ -735,5 +732,29 @@ class ProductServiceImplTest extends BaseSetup {
 
     var mockContentLogo = mockGHContentAsLogo();
     return new ArrayList<>(List.of(mockContent, mockContentLogo));
+  }
+
+  @Test
+  void testSyncProductsAsUpdateMetaJSONFromGitHub_AddVendorLogo() throws IOException {
+    // Start testing by adding new meta
+    mockMarketRepoMetaStatus();
+    var mockCommit = mockGHCommitHasSHA1(UUID.randomUUID().toString());
+    when(mockCommit.getCommitDate()).thenReturn(new Date());
+    when(marketRepoService.getLastCommit(anyLong())).thenReturn(mockCommit);
+
+    var mockGithubFile = new GitHubFile();
+    mockGithubFile.setFileName(META_FILE);
+    mockGithubFile.setType(FileType.META);
+    mockGithubFile.setStatus(FileStatus.MODIFIED);
+    when(marketRepoService.fetchMarketItemsBySHA1Range(any(), any())).thenReturn(List.of(mockGithubFile));
+    var mockGHContent = mockGHContentAsMetaJSON();
+    when(gitHubService.getGHContent(any(), anyString(), any())).thenReturn(mockGHContent);
+    when(mockGHContent.read()).thenReturn(this.getClass().getResourceAsStream(META_JSON_FILE_WITH_VENDOR_INFORMATION));
+    when(productRepository.save(any(Product.class))).thenReturn(new Product());
+
+    // Executes
+    var result = productService.syncLatestDataFromMarketRepo();
+    assertNotNull(result);
+    assertTrue(result.isEmpty());
   }
 }

@@ -71,12 +71,16 @@
   border: 0.5px solid var(--ivy-secondary-border-color);
 }
 
+.row > app-common-dropdown {
+  padding-left: 0px;
+}
+
 .btn,
 ::ng-deep .install-designer-button {
   padding: 12px 32px;
   gap: 10px;
   font-weight: 500;
-  size: 16px;
+  font-size: 1.6rem;
   line-height: 120%;
   border-radius: 10px;
   border: none;
@@ -123,7 +127,7 @@
   right: 0;
   width: 400px;
   height: 204px;
-  margin-top: 4rem;
+  margin-top: 6.4rem;
   background-color: var(--bs-body-bg);
   z-index: 999;
   padding: 10px;
@@ -196,7 +200,7 @@
   @media screen and (max-width: 1399px) {
     right: 14%;
   }
-  
+
   @media screen and (max-width: 1199px) {
     right: 21%;
   }

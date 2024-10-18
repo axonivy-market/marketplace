@@ -242,4 +242,15 @@ describe('ProductService', () => {
     req.flush([{ version: '10.0.2' }, {version: '10.0.1'}, {version: '10.0.0'}]);
   });
 
+    it('getLatestArtifactDownloadUrl', () => {
+      const productId = 'bpmn-statistic';
+      const version = 'dev';
+      const artifact = 'bpmn-statistic.zip';
+
+      service.getLatestArtifactDownloadUrl(productId, version, artifact).subscribe(response => {
+        expect(response).toBe(
+          'https://maven.axonivy.com/com/axonivy/utils/bpmn-statistic/10.0.20/bpmn-statistic.zip'
+        );
+      });
+    });
 });

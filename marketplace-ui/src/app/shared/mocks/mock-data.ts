@@ -226,8 +226,7 @@ export const MOCK_PRODUCT_DETAIL_BY_VERSION: ProductDetail = {
     de: 'Das Cron-Job-Utility übernimmt die automatische Verwaltung deiner zeitgesteuerten Aufgaben.',
     en: 'Cron Job Utility handles your scheduled jobs autonomously.'
   },
-  logoUrl:
-    'https://raw.githubusercontent.com/axonivy-market/market/feature/MARP-463-Multilingualism-for-Website/market/utils/cronjob/logo.png',
+  logoUrl: 'https://raw.githubusercontent.com/axonivy-market/market/feature/MARP-463-Multilingualism-for-Website/market/utils/cronjob/logo.png',
   type: 'util',
   tags: ['utils'],
   vendor: 'Axon Ivy AG',
@@ -235,8 +234,7 @@ export const MOCK_PRODUCT_DETAIL_BY_VERSION: ProductDetail = {
   newestReleaseVersion: 'v10.0.4',
   cost: 'Free',
   sourceUrl: 'https://github.com/axonivy-market/cronjob',
-  statusBadgeUrl:
-    'https://github.com/axonivy-market/cronjob/actions/workflows/ci.yml/badge.svg',
+  statusBadgeUrl: 'https://github.com/axonivy-market/cronjob/actions/workflows/ci.yml/badge.svg',
   language: 'English',
   industry: 'Cross-Industry',
   compatibility: '10.0+',
@@ -266,7 +264,9 @@ export const MOCK_PRODUCT_DETAIL_BY_VERSION: ProductDetail = {
     self: {
       href: 'http://localhost:8080/api/product-details/cronjob'
     }
-  }
+  },
+  vendorImage: '/assets/images/misc/axonivy-logo-black.svg',
+  vendorImageDarkMode: '/assets/images/misc/axonivy-logo.svg'
 };
 
 export const MOCK_PRODUCT_DETAIL: ProductDetail = {
@@ -280,8 +280,7 @@ export const MOCK_PRODUCT_DETAIL: ProductDetail = {
     de: "TODO Atlassian's Jira connector lets you track issues directly from the Axon Ivy platform."
   },
   installationCount: 1,
-  logoUrl:
-    'https://raw.githubusercontent.com/axonivy-market/market/master/market/connector/jira/logo.png',
+  logoUrl: 'https://raw.githubusercontent.com/axonivy-market/market/master/market/connector/jira/logo.png',
   type: 'connector',
   tags: ['helper'],
   vendor: 'FROX AG',
@@ -290,8 +289,7 @@ export const MOCK_PRODUCT_DETAIL: ProductDetail = {
   newestReleaseVersion: 'v10.0.0',
   cost: 'Free',
   sourceUrl: 'https://github.com/axonivy-market/jira-connector',
-  statusBadgeUrl:
-    'https://github.com/axonivy-market/jira-connector/actions/workflows/ci.yml/badge.svg',
+  statusBadgeUrl: 'https://github.com/axonivy-market/jira-connector/actions/workflows/ci.yml/badge.svg',
   language: 'English',
   industry: 'Cross-Industry',
   compatibility: '9.2+',
@@ -319,7 +317,9 @@ export const MOCK_PRODUCT_DETAIL: ProductDetail = {
     self: {
       href: 'http://localhost:8082/api/product-details/jira-connector?type=connector'
     }
-  }
+  },
+  vendorImage: '/assets/images/misc/axonivy-logo-black.svg',
+  vendorImageDarkMode: '/assets/images/misc/axonivy-logo.svg'
 };
 
 export const MOCK_EXTERNAL_DOCUMENT: ExternalDocument = {

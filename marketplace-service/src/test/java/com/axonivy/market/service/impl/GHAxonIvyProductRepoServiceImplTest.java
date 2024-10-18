@@ -94,11 +94,6 @@ class GHAxonIvyProductRepoServiceImplTest extends BaseSetup {
     when(mockGHOrganization.getRepository(any())).thenReturn(ghRepository);
   }
 
-  private static InputStream getMockInputStream() {
-    String jsonContent = getMockProductJsonContent().getContent();
-    return new ByteArrayInputStream(jsonContent.getBytes(StandardCharsets.UTF_8));
-  }
-
   private static GHContent createMockImage() {
     GHContent mockImage = mock(GHContent.class);
     when(mockImage.isFile()).thenReturn(true);
@@ -237,7 +232,7 @@ class GHAxonIvyProductRepoServiceImplTest extends BaseSetup {
     when(mockImageFile.getName()).thenReturn(IMAGE_NAME);
     when(imageService.mappingImageFromGHContent(any(), any(), anyBoolean())).thenReturn(mockImage());
 
-    String updatedReadme = axonivyProductRepoServiceImpl.updateImagesWithDownloadUrl(getMockProducts().get(0),
+    String updatedReadme = axonivyProductRepoServiceImpl.updateImagesWithDownloadUrl(BaseSetup.MOCK_PRODUCT_ID,
         List.of(mockImageFile), readmeContentWithImageFolder);
 
     assertEquals("""
@@ -279,7 +274,7 @@ class GHAxonIvyProductRepoServiceImplTest extends BaseSetup {
 
     when(imageService.mappingImageFromGHContent(any(), any(), anyBoolean())).thenReturn(mockImage());
 
-    String updatedReadme = axonivyProductRepoServiceImpl.updateImagesWithDownloadUrl(getMockProducts().get(0),
+    String updatedReadme = axonivyProductRepoServiceImpl.updateImagesWithDownloadUrl(BaseSetup.MOCK_PRODUCT_ID,
         List.of(mockImageFile), readmeContentWithImageFolder);
 
     assertEquals("""

@@ -196,7 +196,6 @@ public class ProductServiceImpl implements ProductService {
     return productRepository.updateInitialCount(key, product.getInstallationCount() + 1);
   }
 
-
   public void syncInstallationCountWithProduct(Product product) {
     log.info("synchronizing installation count for product {}", product.getId());
     try {
@@ -238,7 +237,7 @@ public class ProductServiceImpl implements ProductService {
     Map<String, List<GitHubFile>> groupGitHubFiles = new HashMap<>();
     for (var file : gitHubFileChanges) {
       String filePath = file.getFileName();
-      var parentPath = filePath.replace(FileType.META.getFileName(), EMPTY).replace(FileType.LOGO.getFileName(), EMPTY);
+      var parentPath = filePath.substring(0, filePath.lastIndexOf(CommonConstants.SLASH) + 1);
       var files = groupGitHubFiles.getOrDefault(parentPath, new ArrayList<>());
       files.add(file);
       files.sort((file1, file2) -> GitHubUtils.sortMetaJsonFirst(file1.getFileName(), file2.getFileName()));
@@ -296,9 +295,10 @@ public class ProductServiceImpl implements ProductService {
 
   private String updateProductByMetaJsonAndLogo(GHContent fileContent, GitHubFile file, String parentPath) {
     String productId;
-    Product product = new Product();
-    ProductFactory.mappingByGHContent(product, fileContent);
     if (FileType.META == file.getType()) {
+      Product product = new Product();
+      ProductFactory.mappingByGHContent(product, fileContent);
+      mappingVendorImageFromGHContent(product, fileContent);
       transferComputedDataFromDB(product);
       productId = productRepository.save(product).getId();
     } else {
@@ -313,7 +313,7 @@ public class ProductServiceImpl implements ProductService {
     searchCriteria.setFields(List.of(MARKET_DIRECTORY));
     Product result = productRepository.findByCriteria(searchCriteria);
     if (result != null) {
-      Optional.ofNullable(imageService.mappingImageFromGHContent(result, fileContent, true)).ifPresent(image -> {
+      Optional.ofNullable(imageService.mappingImageFromGHContent(result.getId(), fileContent, true)).ifPresent(image -> {
         if (StringUtils.isNotBlank(result.getLogoId())) {
           imageRepository.deleteById(result.getLogoId());
         }
@@ -405,8 +405,10 @@ public class ProductServiceImpl implements ProductService {
       var product = new Product();
       //update the meta.json first
       ghContentEntity.getValue().sort((f1, f2) -> GitHubUtils.sortMetaJsonFirst(f1.getName(), f2.getName()));
+
       for (var content : ghContentEntity.getValue()) {
         ProductFactory.mappingByGHContent(product, content);
+        mappingVendorImageFromGHContent(product, content);
         mappingLogoFromGHContent(product, content);
       }
       if (productRepository.findById(product.getId()).isPresent()) {
@@ -421,9 +423,34 @@ public class ProductServiceImpl implements ProductService {
 
   private void mappingLogoFromGHContent(Product product, GHContent ghContent) {
     if (ghContent != null && StringUtils.endsWith(ghContent.getName(), LOGO_FILE)) {
-      Optional.ofNullable(imageService.mappingImageFromGHContent(product, ghContent, true))
+      Optional.ofNullable(imageService.mappingImageFromGHContent(product.getId(), ghContent, true))
           .ifPresent(image -> product.setLogoId(image.getId()));
     }
+  }
+
+  private void mappingVendorImageFromGHContent(Product product, GHContent ghContent) {
+    if (StringUtils.endsWith(ghContent.getName(), MetaConstants.META_FILE)) {
+      if (StringUtils.isNotBlank(product.getVendorImagePath())) {
+        product.setVendorImage(mapVendorImage(product.getId(), ghContent, product.getVendorImagePath()));
+      }
+      if (StringUtils.isNotBlank(product.getVendorImageDarkModePath())) {
+        product.setVendorImageDarkMode(mapVendorImage(product.getId(), ghContent, product.getVendorImageDarkModePath()));
+      }
+    }
+  }
+
+  private String mapVendorImage(String productId, GHContent ghContent, String imageName) {
+    if (StringUtils.isNotBlank(imageName)) {
+      String imagePath = StringUtils.replace(ghContent.getPath(), MetaConstants.META_FILE, imageName);
+      try {
+        GHContent imageContent = gitHubService.getGHContent(ghContent.getOwner(), imagePath, marketRepoBranch);
+        return Optional.ofNullable(imageService.mappingImageFromGHContent(productId, imageContent, false))
+            .map(Image::getId).orElse(EMPTY);
+      } catch (IOException e) {
+        log.error("Get Vendor Image failed: ", e);
+      }
+    }
+    return EMPTY;
   }
 
   private void updateProductFromReleaseTags(Product product, GHRepository productRepo) {
@@ -641,6 +668,7 @@ public class ProductServiceImpl implements ProductService {
     gitHubContents.sort((f1, f2) -> GitHubUtils.sortMetaJsonFirst(f1.getName(), f2.getName()));
     for (var content : gitHubContent) {
       ProductFactory.mappingByGHContent(product, content);
+      mappingVendorImageFromGHContent(product, content);
       mappingLogoFromGHContent(product, content);
     }
   }
