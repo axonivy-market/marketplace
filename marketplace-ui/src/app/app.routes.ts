@@ -6,11 +6,13 @@ import { RedirectPageComponent } from './shared/components/redirect-page/redirec
 export const routes: Routes = [
   {
     path: 'error-page',
-    component: ErrorPageComponent
+    component: ErrorPageComponent,
+    title: 'Error Page'
   },
   {
     path: 'error-page/:id',
-    component: ErrorPageComponent
+    component: ErrorPageComponent,
+    title: 'Error Page'
   },
   {
     path: '',
