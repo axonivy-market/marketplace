@@ -1,8 +1,11 @@
 package com.axonivy.market.repository.impl;
 
 import com.axonivy.market.constants.EntityConstants;
+import com.axonivy.market.constants.MavenConstants;
 import com.axonivy.market.constants.MongoDBConstants;
 import com.axonivy.market.criteria.ProductSearchCriteria;
+import com.axonivy.market.entity.MavenArtifactVersion;
+import com.axonivy.market.entity.Metadata;
 import com.axonivy.market.entity.Product;
 import com.axonivy.market.entity.ProductDesignerInstallation;
 import com.axonivy.market.entity.ProductModuleContent;
@@ -11,10 +14,14 @@ import com.axonivy.market.enums.Language;
 import com.axonivy.market.enums.TypeOption;
 import com.axonivy.market.repository.CustomProductRepository;
 import com.axonivy.market.repository.CustomRepository;
+import com.axonivy.market.repository.MavenArtifactVersionRepository;
+import com.axonivy.market.repository.MetadataRepository;
 import com.axonivy.market.repository.ProductModuleContentRepository;
+import com.axonivy.market.util.MavenUtils;
 import com.axonivy.market.util.VersionUtils;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
+import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.bson.BsonRegularExpression;
@@ -42,7 +49,8 @@ public class CustomProductRepositoryImpl extends CustomRepository implements Cus
   public static final String LOCALIZE_SEARCH_PATTERN = "%s.%s";
 
   final MongoTemplate mongoTemplate;
-  final ProductModuleContentRepository contentRepository;
+  final ProductModuleContentRepository contentRepo;
+  final MavenArtifactVersionRepository mavenArtifactVersionRepo;
 
   public Product queryProductByAggregation(Aggregation aggregation) {
     return Optional.of(mongoTemplate.aggregate(aggregation, EntityConstants.PRODUCT, Product.class))
@@ -61,19 +69,6 @@ public class CustomProductRepositoryImpl extends CustomRepository implements Cus
       ProductModuleContent content = findByProductIdAndTagOrMavenVersion(id, tag);
       result.setProductModuleContent(content);
     }
-    return result;
-  }
-
-  @Override
-  public Product getProductByIdWithNewestReleaseVersion(String id, Boolean isShowDevVersion) {
-    Product result = findProductById(id);
-    if (ObjectUtils.isEmpty(result)) {
-      return null;
-    }
-    List<String> devVersions = VersionUtils.getVersionsToDisplay(result.getReleasedVersions(), isShowDevVersion, null);
-    String currentTag = VersionUtils.convertVersionToTag(result.getId(), devVersions.get(0));
-    ProductModuleContent content = contentRepository.findByTagAndProductId(currentTag, id);
-    result.setProductModuleContent(content);
     return result;
   }
 
@@ -97,7 +92,7 @@ public class CustomProductRepositoryImpl extends CustomRepository implements Cus
   public Product getProductById(String id) {
     Product result = findProductById(id);
     if (!Objects.isNull(result)) {
-      ProductModuleContent content = contentRepository.findByTagAndProductId(
+      ProductModuleContent content = contentRepo.findByTagAndProductId(
           result.getNewestReleaseVersion(), id);
       result.setProductModuleContent(content);
     }
