@@ -1,11 +1,8 @@
 package com.axonivy.market.repository.impl;
 
 import com.axonivy.market.constants.EntityConstants;
-import com.axonivy.market.constants.MavenConstants;
 import com.axonivy.market.constants.MongoDBConstants;
 import com.axonivy.market.criteria.ProductSearchCriteria;
-import com.axonivy.market.entity.MavenArtifactVersion;
-import com.axonivy.market.entity.Metadata;
 import com.axonivy.market.entity.Product;
 import com.axonivy.market.entity.ProductDesignerInstallation;
 import com.axonivy.market.entity.ProductModuleContent;
@@ -14,15 +11,9 @@ import com.axonivy.market.enums.Language;
 import com.axonivy.market.enums.TypeOption;
 import com.axonivy.market.repository.CustomProductRepository;
 import com.axonivy.market.repository.CustomRepository;
-import com.axonivy.market.repository.MavenArtifactVersionRepository;
-import com.axonivy.market.repository.MetadataRepository;
 import com.axonivy.market.repository.ProductModuleContentRepository;
-import com.axonivy.market.util.MavenUtils;
-import com.axonivy.market.util.VersionUtils;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
-import org.apache.commons.lang3.BooleanUtils;
-import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.bson.BsonRegularExpression;
 import org.springframework.data.domain.Page;
@@ -50,7 +41,6 @@ public class CustomProductRepositoryImpl extends CustomRepository implements Cus
 
   final MongoTemplate mongoTemplate;
   final ProductModuleContentRepository contentRepo;
-  final MavenArtifactVersionRepository mavenArtifactVersionRepo;
 
   public Product queryProductByAggregation(Aggregation aggregation) {
     return Optional.of(mongoTemplate.aggregate(aggregation, EntityConstants.PRODUCT, Product.class))

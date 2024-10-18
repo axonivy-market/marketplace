@@ -565,9 +565,8 @@ public class ProductServiceImpl implements ProductService {
           StringUtils.EMPTY);
       version = VersionUtils.convertVersionToTag(id, CollectionUtils.firstElement(versions));
     }
+    // Cover exception case of employee onboarding without any product.json file
     if (StringUtils.isBlank(version)) {
-      List<String> test = productRepo.getReleasedVersionsById(id);
-      log.error(test.toString());
       versions = VersionUtils.getVersionsToDisplay(productRepo.getReleasedVersionsById(id), isShowDevVersion,
           StringUtils.EMPTY);
       version = CollectionUtils.firstElement(versions);
