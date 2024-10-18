@@ -390,8 +390,8 @@ public class ProductServiceImpl implements ProductService {
 
   private void getProductContents(Product product) {
     try {
-      GHRepository productRepo = gitHubService.getRepository(product.getRepositoryName());
-      updateProductFromReleaseTags(product, productRepo);
+      GHRepository productRepository = gitHubService.getRepository(product.getRepositoryName());
+      updateProductFromReleaseTags(product, productRepository);
     } catch (IOException e) {
       log.error("Cannot find product repository {} {}", product.getRepositoryName(), e);
     }

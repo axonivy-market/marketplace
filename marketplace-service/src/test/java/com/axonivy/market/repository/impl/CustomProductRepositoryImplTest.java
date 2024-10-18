@@ -90,20 +90,6 @@ class CustomProductRepositoryImplTest extends BaseSetup {
     assertEquals(mockProduct, actualProduct);
   }
 
-//  @Test
-//  void testGetProductById_andFindProductModuleContentByNewestVersion() {
-//    mockAggregation = mock(Aggregation.class);
-//    AggregationResults<Product> aggregationResults = mock(AggregationResults.class);
-//
-//    when(mongoTemplate.aggregate(any(Aggregation.class), eq(MongoDBConstants.PRODUCT_COLLECTION),
-//        eq(Product.class))).thenReturn(aggregationResults);
-//
-//    mockProduct = getMockProducts().get(0);
-//    when(aggregationResults.getUniqueMappedResult()).thenReturn(mockProduct);
-//    Product actualProduct = repo.getProductByIdWithNewestReleaseVersion(MOCK_PRODUCT_ID,false);
-//    assertEquals(mockProduct, actualProduct);
-//  }
-
   @Test
   void testGetProductByIdAndTag() {
     setUpMockAggregateResult();
