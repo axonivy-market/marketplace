@@ -2,7 +2,7 @@ p {
   margin-right: 20px;
 }
 
-.form-select {
+::ng-deep .form-select {
   border-radius: 10px;
   font-size: 14px;
   line-height: 120%;
