@@ -50,7 +50,6 @@ import { DisplayValue } from '../../../shared/models/display-value.model';
 import { CookieService } from 'ngx-cookie-service';
 import { ROUTER } from '../../../shared/constants/router.constant';
 import { Title } from '@angular/platform-browser';
-import { Language } from '../../../shared/enums/language.enum';
 
 export interface DetailTab {
   activeClass: string;
@@ -376,7 +375,7 @@ export class ProductDetailComponent {
   }
 
   updateTitle() {
-    let title = this.productDetail().names[this.languageService.selectedLanguage()];
+    const title = this.productDetail().names[this.languageService.selectedLanguage()];
     this.titleService.setTitle(title);
   }
 
