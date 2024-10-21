@@ -90,12 +90,12 @@ class VersionServiceImplTest extends BaseSetup {
   void testGetMavenArtifactsFromProductJsonByVersion() {
     when(productJsonContentRepository.findByProductIdAndVersion(MOCK_PRODUCT_ID, MOCK_RELEASED_VERSION)).thenReturn(
         Collections.emptyList());
-    List<Artifact> results = versionService.getMavenArtifactsFromProductJsonByTag(MOCK_RELEASED_VERSION,
+    List<Artifact> results = versionService.getMavenArtifactsFromProductJsonByVersion(MOCK_RELEASED_VERSION,
         MOCK_PRODUCT_ID);
     Assertions.assertTrue(CollectionUtils.isEmpty(results));
     when(productJsonContentRepository.findByProductIdAndVersion(MOCK_PRODUCT_ID, MOCK_RELEASED_VERSION)).thenReturn(
         List.of(getMockProductJsonContent()));
-    results = versionService.getMavenArtifactsFromProductJsonByTag(MOCK_RELEASED_VERSION, MOCK_PRODUCT_ID);
+    results = versionService.getMavenArtifactsFromProductJsonByVersion(MOCK_RELEASED_VERSION, MOCK_PRODUCT_ID);
     Assertions.assertEquals(2, results.size());
   }
 
@@ -148,7 +148,8 @@ class VersionServiceImplTest extends BaseSetup {
     mockProductJsonContent.setName(MOCK_PRODUCT_NAME);
     Mockito.when(productJsonContentRepository.findByProductIdAndVersion(anyString(), anyString()))
         .thenReturn(List.of(mockProductJsonContent));
-    Map<String, Object> result = versionService.getProductJsonContentByIdAndTag(MOCK_PRODUCT_ID, MOCK_RELEASED_VERSION);
+    Map<String, Object> result = versionService.getProductJsonContentByIdAndVersion(MOCK_PRODUCT_ID,
+        MOCK_RELEASED_VERSION);
     Assertions.assertEquals(MOCK_PRODUCT_NAME, result.get("name"));
   }
 
@@ -156,7 +157,8 @@ class VersionServiceImplTest extends BaseSetup {
   void testGetProductJsonContentByIdAndVersion_noResult() {
     Mockito.when(productJsonContentRepository.findByProductIdAndVersion(anyString(), anyString())).thenReturn(
         Collections.emptyList());
-    Map<String, Object> result = versionService.getProductJsonContentByIdAndTag(MOCK_PRODUCT_ID, MOCK_RELEASED_VERSION);
+    Map<String, Object> result = versionService.getProductJsonContentByIdAndVersion(MOCK_PRODUCT_ID,
+        MOCK_RELEASED_VERSION);
     Assertions.assertEquals(new HashMap<>(), result);
   }
 

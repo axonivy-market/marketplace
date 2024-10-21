@@ -3,9 +3,7 @@ package com.axonivy.market.util;
 import com.axonivy.market.comparator.LatestVersionComparator;
 import com.axonivy.market.comparator.MavenVersionComparator;
 import com.axonivy.market.constants.CommonConstants;
-import com.axonivy.market.constants.GitHubConstants;
 import com.axonivy.market.entity.Product;
-import com.axonivy.market.enums.NonStandardProduct;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import lombok.extern.log4j.Log4j2;
@@ -124,29 +122,6 @@ public class VersionUtils {
     return version;
   }
 
-  public static String convertTagToVersion(String tag) {
-    if (StringUtils.isBlank(tag) || !StringUtils.startsWith(tag, GitHubConstants.STANDARD_TAG_PREFIX)) {
-      return tag;
-    }
-    return tag.substring(1);
-  }
-
-  public static List<String> convertTagsToVersions(List<String> tags) {
-    Objects.requireNonNull(tags);
-    return tags.stream().map(VersionUtils::convertTagToVersion).toList();
-  }
-
-  public static String convertVersionToTag(String productId, String version) {
-    if (StringUtils.isBlank(version)) {
-      return version;
-    }
-    NonStandardProduct product = NonStandardProduct.findById(productId);
-    if (product.isVersionTagNumberOnly()) {
-      return version;
-    }
-    return GitHubConstants.STANDARD_TAG_PREFIX.concat(version);
-  }
-
   //TODO: Remove
   public static String getOldestTag(List<GHTag> tags) {
     String result = StringUtils.EMPTY;
@@ -166,16 +141,6 @@ public class VersionUtils {
       return CollectionUtils.lastElement(releasedTags);
     }
     return result;
-  }
-
-
-  //TODO: Remove
-  public static List<String> getReleaseTagsFromProduct(Product product) {
-    if (Objects.isNull(product) || CollectionUtils.isEmpty(product.getReleasedVersions())) {
-      return new ArrayList<>();
-    }
-    return product.getReleasedVersions().stream().map(
-        version -> convertVersionToTag(product.getId(), version)).toList();
   }
 
   public static List<String> getReleaseVersionsFromProduct(Product product) {

@@ -118,18 +118,6 @@ class GHAxonIvyProductRepoServiceImplTest extends BaseSetup {
   }
 
   @Test
-  void testAllTagsFromRepoName() throws IOException {
-    setup();
-    var mockTag = mock(GHTag.class);
-    when(mockTag.getName()).thenReturn(MOCK_TAG_FROM_RELEASED_VERSION);
-    when(listTags.toList()).thenReturn(List.of(mockTag));
-    when(ghRepository.listTags()).thenReturn(listTags);
-    var result = axonivyProductRepoServiceImpl.getAllTagsFromRepoName(StringUtils.EMPTY);
-    assertEquals(1, result.size());
-    assertEquals(MOCK_TAG_FROM_RELEASED_VERSION, result.get(0).getName());
-  }
-
-  @Test
   void testExtractMavenArtifactFromJsonNode() throws JsonProcessingException {
     List<Artifact> artifacts = new ArrayList<>();
     // Arrange

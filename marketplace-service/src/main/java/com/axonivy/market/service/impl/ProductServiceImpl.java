@@ -417,12 +417,7 @@ public class ProductServiceImpl implements ProductService {
     log.warn("**ProductService: synchronize products from scratch based on the Market repo");
     List<String> syncedProductIds = new ArrayList<>();
     var gitHubContentMap = axonIvyMarketRepoService.fetchAllMarketItems();
-    List<String> msGraph = List.of("market/demos/connectivity");
     for (Map.Entry<String, List<GHContent>> ghContentEntity : gitHubContentMap.entrySet()) {
-      if (!msGraph.contains(ghContentEntity.getKey())) {
-        continue;
-      }
-
       var product = new Product();
       //update the meta.json first
       ghContentEntity.getValue().sort((f1, f2) -> GitHubUtils.sortMetaJsonFirst(f1.getName(), f2.getName()));
@@ -740,9 +735,8 @@ public class ProductServiceImpl implements ProductService {
     List<String> versions = MavenUtils.getAllExistingVersions(existingMavenArtifactVersion, true,
         null);
     String bestMatchVersion = VersionUtils.getBestMatchVersion(versions, version);
-    String bestMatchTag = VersionUtils.convertVersionToTag(id, bestMatchVersion);
-    Product product = StringUtils.isBlank(bestMatchTag) ? productRepository.getProductByIdWithNewestReleaseVersion(
-        id, false) : productRepository.getProductByIdAndTag(id, bestMatchTag);
+    Product product = StringUtils.isBlank(bestMatchVersion) ? productRepository.getProductByIdWithNewestReleaseVersion(
+        id, false) : productRepository.getProductByIdAndTag(id, bestMatchVersion);
     return Optional.ofNullable(product).map(productItem -> {
       updateProductInstallationCount(id, productItem);
       productItem.setBestMatchVersion(bestMatchVersion);
@@ -868,7 +862,6 @@ public class ProductServiceImpl implements ProductService {
     }
   }
 
-  //TODO
   private void updateEmployeeOnboardingContent(List<GHContent> gitHubContents, Product product) {
     if (StringUtils.isBlank(product.getRepositoryName())) {
       updateProductContentForNonStandardProduct(gitHubContents, product);

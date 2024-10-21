@@ -17,7 +17,6 @@ import com.axonivy.market.repository.ProductModuleContentRepository;
 import com.axonivy.market.repository.ProductRepository;
 import com.axonivy.market.service.VersionService;
 import com.axonivy.market.util.MavenUtils;
-import com.axonivy.market.util.VersionUtils;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.AllArgsConstructor;
@@ -32,7 +31,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 import static com.axonivy.market.constants.ProductJsonConstants.NAME;
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
@@ -74,11 +72,11 @@ public class VersionServiceImpl implements VersionService {
     return results;
   }
 
-  public Map<String, Object> getProductJsonContentByIdAndTag(String productId, String tag) {
+  public Map<String, Object> getProductJsonContentByIdAndVersion(String productId, String version) {
     Map<String, Object> result = new HashMap<>();
     try {
       ProductJsonContent productJsonContent =
-          productJsonRepo.findByProductIdAndVersion(productId, tag).stream().findAny().orElse(null);
+          productJsonRepo.findByProductIdAndVersion(productId, version).stream().findAny().orElse(null);
       if (ObjectUtils.isEmpty(productJsonContent)) {
         return new HashMap<>();
       }
@@ -114,15 +112,14 @@ public class VersionServiceImpl implements VersionService {
     }
     if (CollectionUtils.isEmpty(versions)) {
       versions.addAll(productContentRepo.findTagsByProductId(productId));
-      versions = versions.stream().map(VersionUtils::convertTagToVersion).collect(Collectors.toList());
     }
     return versions;
   }
 
-  public List<Artifact> getMavenArtifactsFromProductJsonByTag(String tag,
+  public List<Artifact> getMavenArtifactsFromProductJsonByVersion(String version,
       String productId) {
     ProductJsonContent productJson =
-        productJsonRepo.findByProductIdAndVersion(productId, tag).stream().findAny().orElse(null);
+        productJsonRepo.findByProductIdAndVersion(productId, version).stream().findAny().orElse(null);
     return MavenUtils.getMavenArtifactsFromProductJson(productJson);
   }
 

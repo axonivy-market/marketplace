@@ -117,7 +117,6 @@ public class ProductContentUtils {
     ProductModuleContent productModuleContent = new ProductModuleContent();
     productModuleContent.setProductId(productId);
     productModuleContent.setTag(tag);
-//    productModuleContent.setMavenVersions(mavenVersions);
     ProductFactory.mappingIdForProductModuleContent(productModuleContent);
     return productModuleContent;
   }

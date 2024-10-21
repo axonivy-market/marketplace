@@ -395,7 +395,7 @@ class ProductServiceImplTest extends BaseSetup {
     ProductModuleContent mockReturnProductContent = mockReadmeProductContent();
     mockReturnProductContent.setTag("v10.0.3");
 
-    when(ghAxonIvyProductRepoService.getReadmeAndProductContentsFromTag(any(), any(), anyString()))
+    when(productService.getReadmeAndProductContentsFromTag(any(), any(), anyString()))
         .thenReturn(mockReturnProductContent);
     when(productModuleContentRepository.saveAll(anyList()))
         .thenReturn(List.of(mockReadmeProductContent(), mockReturnProductContent));
@@ -494,7 +494,6 @@ class ProductServiceImplTest extends BaseSetup {
     try (MockedStatic<VersionUtils> mockVersionUtils = Mockito.mockStatic(VersionUtils.class)) {
       when(MavenUtils.getAllExistingVersions(mockMavenArtifactVersion, true, null)).thenReturn(mockVersions);
       mockVersionUtils.when(() -> VersionUtils.getBestMatchVersion(mockVersions, version)).thenReturn(bestMatchVersion);
-      mockVersionUtils.when(() -> VersionUtils.convertVersionToTag(id, bestMatchVersion)).thenReturn(version);
 
       Product mockProduct = new Product();
       mockProduct.setSynchronizedInstallationCount(true);

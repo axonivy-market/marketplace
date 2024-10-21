@@ -27,7 +27,6 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -133,7 +132,6 @@ public class BaseSetup {
 
   protected ProductModuleContent getMockProductModuleContent() {
     ProductModuleContent mockProductModuleContent = new ProductModuleContent();
-    mockProductModuleContent.setMavenVersions(new HashSet<>());
     return mockProductModuleContent;
   }
 

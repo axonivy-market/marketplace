@@ -1,9 +1,6 @@
 package com.axonivy.market.util;
 
 import com.axonivy.market.BaseSetup;
-import com.axonivy.market.entity.Product;
-import com.axonivy.market.enums.NonStandardProduct;
-import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -11,7 +8,6 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.kohsuke.github.GHTag;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.util.CollectionUtils;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -51,15 +47,6 @@ class VersionUtilsTest extends BaseSetup {
 
     String targetVersion = "10.0.9";
     Assertions.assertFalse(VersionUtils.isMatchWithDesignerVersion(targetVersion, MOCK_RELEASED_VERSION));
-  }
-
-  @Test
-  void testConvertVersionToTag() {
-    Assertions.assertEquals(StringUtils.EMPTY, VersionUtils.convertVersionToTag(StringUtils.EMPTY, StringUtils.EMPTY));
-    Assertions.assertEquals(MOCK_RELEASED_VERSION,
-        VersionUtils.convertVersionToTag(NonStandardProduct.PORTAL.getId(), MOCK_RELEASED_VERSION));
-    Assertions.assertEquals(MOCK_TAG_FROM_RELEASED_VERSION,
-        VersionUtils.convertVersionToTag(NonStandardProduct.GRAPHQL_DEMO.getId(), MOCK_RELEASED_VERSION));
   }
 
   @Test
@@ -111,21 +98,6 @@ class VersionUtilsTest extends BaseSetup {
   }
 
   @Test
-  void testConvertTagToVersion() {
-    Assertions.assertEquals(MOCK_RELEASED_VERSION, VersionUtils.convertTagToVersion(MOCK_RELEASED_VERSION));
-    Assertions.assertEquals(MOCK_RELEASED_VERSION, VersionUtils.convertTagToVersion(MOCK_TAG_FROM_RELEASED_VERSION));
-    Assertions.assertEquals(StringUtils.EMPTY, VersionUtils.convertTagToVersion(StringUtils.EMPTY));
-  }
-
-  @Test
-  void testConvertTagsToVersions() {
-    List<String> results = VersionUtils.convertTagsToVersions(List.of("10.0.1", MOCK_TAG_FROM_RELEASED_VERSION));
-    Assertions.assertEquals(2, results.size());
-    Assertions.assertEquals("10.0.1", results.get(0));
-    Assertions.assertEquals(MOCK_RELEASED_VERSION, results.get(1));
-  }
-
-  @Test
   void testGetOldestVersionWithEmptyTags() {
     List<GHTag> tags = List.of();
     String oldestTag = VersionUtils.getOldestTag(tags);
@@ -162,16 +134,5 @@ class VersionUtilsTest extends BaseSetup {
         syncVersion);
     Assertions.assertEquals(1, result.size());
     Assertions.assertEquals("2.0.0", result.get(0));
-  }
-
-  @Test
-  void testGetReleaseTagsFromProduct() {
-    List<String> result = VersionUtils.getReleaseTagsFromProduct(null);
-    Assertions.assertNotNull(result);
-    Assertions.assertTrue(CollectionUtils.isEmpty(result));
-    Product mockProduct = Product.builder().id("portal").releasedVersions(List.of("1.0.0")).build();
-    result = VersionUtils.getReleaseTagsFromProduct(mockProduct);
-    Assertions.assertTrue(ObjectUtils.isNotEmpty(result));
-    Assertions.assertEquals("1.0.0", result.get(0));
   }
 }
