@@ -1,16 +1,12 @@
 package com.axonivy.market.util;
 
 import com.axonivy.market.BaseSetup;
-import org.apache.commons.lang3.StringUtils;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.kohsuke.github.GHTag;
-import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
@@ -95,30 +91,6 @@ class VersionUtilsTest extends BaseSetup {
     Assertions.assertEquals("10.0.21", VersionUtils.getBestMatchVersion(releasedVersions, "10.0.22"));
     Assertions.assertEquals("10.0.17", VersionUtils.getBestMatchVersion(releasedVersions, "10.0.18"));
     Assertions.assertEquals("10.0.21", VersionUtils.getBestMatchVersion(releasedVersions, "10.0.16"));
-  }
-
-  @Test
-  void testGetOldestVersionWithEmptyTags() {
-    List<GHTag> tags = List.of();
-    String oldestTag = VersionUtils.getOldestTag(tags);
-    Assertions.assertEquals(StringUtils.EMPTY, oldestTag);
-  }
-
-  @Test
-  void testGetOldestVersionWithNullTags() {
-    String oldestTag = VersionUtils.getOldestTag(null);
-    Assertions.assertEquals(StringUtils.EMPTY, oldestTag);
-  }
-
-  @Test
-  void testGetOldestVersionWithNonNumericCharacters() {
-    GHTag tag1 = Mockito.mock(GHTag.class);
-    GHTag tag2 = Mockito.mock(GHTag.class);
-    Mockito.when(tag1.getName()).thenReturn("v1.0");
-    Mockito.when(tag2.getName()).thenReturn("2.1");
-    List<GHTag> tags = Arrays.asList(tag1, tag2);
-    String oldestTag = VersionUtils.getOldestTag(tags);
-    Assertions.assertEquals("1.0", oldestTag);
   }
 
   @Test

@@ -18,6 +18,7 @@ import com.axonivy.market.repository.ProductModuleContentRepository;
 import com.axonivy.market.repository.ProductRepository;
 import com.axonivy.market.service.VersionService;
 import com.axonivy.market.util.MavenUtils;
+import com.axonivy.market.util.VersionUtils;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.AllArgsConstructor;

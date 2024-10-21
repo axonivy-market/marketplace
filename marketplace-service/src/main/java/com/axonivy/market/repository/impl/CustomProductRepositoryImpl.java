@@ -2,11 +2,9 @@ package com.axonivy.market.repository.impl;
 
 import com.axonivy.market.constants.EntityConstants;
 import com.axonivy.market.constants.MongoDBConstants;
-import com.axonivy.market.constants.ProductJsonConstants;
 import com.axonivy.market.criteria.ProductSearchCriteria;
 import com.axonivy.market.entity.Product;
 import com.axonivy.market.entity.ProductDesignerInstallation;
-import com.axonivy.market.entity.ProductJsonContent;
 import com.axonivy.market.entity.ProductModuleContent;
 import com.axonivy.market.enums.DocumentField;
 import com.axonivy.market.enums.Language;
@@ -15,10 +13,8 @@ import com.axonivy.market.repository.CustomProductRepository;
 import com.axonivy.market.repository.CustomRepository;
 import com.axonivy.market.repository.ProductJsonContentRepository;
 import com.axonivy.market.repository.ProductModuleContentRepository;
-import com.axonivy.market.util.VersionUtils;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
-import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.bson.BsonRegularExpression;
 import org.springframework.data.domain.Page;
@@ -33,7 +29,11 @@ import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.data.mongodb.core.query.Update;
 import org.springframework.util.CollectionUtils;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
 
 import static com.axonivy.market.enums.DocumentField.LISTED;
 import static com.axonivy.market.enums.DocumentField.TYPE;
@@ -69,28 +69,7 @@ public class CustomProductRepositoryImpl extends CustomRepository implements Cus
   }
 
   @Override
-  public Product getProductByIdWithNewestReleaseVersion(String id, Boolean isShowDevVersion) {
-    Product result = findProductById(id);
-    if (ObjectUtils.isEmpty(result)) {
-      return null;
-    }
-
-    List<String> devVersions = VersionUtils.getVersionsToDisplay(result.getReleasedVersions(), isShowDevVersion, null);
-    ProductModuleContent content = contentRepository.findByTagAndProductId(devVersions.get(0), id);
-    jsonContentRepository.findByProductIdAndVersion(id, devVersions.get(0)).stream().map(
-        ProductJsonContent::getContent).findFirst().ifPresent(
-        jsonContent -> result.setMavenDropins(isJsonContentContainOnlyMavenDropins(jsonContent)));
-    result.setProductModuleContent(content);
-    return result;
-  }
-
-  private boolean isJsonContentContainOnlyMavenDropins(String jsonContent) {
-    return jsonContent.contains(ProductJsonConstants.MAVEN_DROPINS_INSTALLER_ID) && !jsonContent.contains(
-        ProductJsonConstants.MAVEN_IMPORT_INSTALLER_ID) && !jsonContent.contains(
-        ProductJsonConstants.MAVEN_DEPENDENCY_INSTALLER_ID);
-  }
-
-  private Product findProductById(String id) {
+  public Product findProductById(String id) {
     Aggregation aggregation = Aggregation.newAggregation(createIdMatchOperation(id));
     return queryProductByAggregation(aggregation);
   }

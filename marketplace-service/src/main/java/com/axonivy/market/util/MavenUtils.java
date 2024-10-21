@@ -333,4 +333,10 @@ public class MavenUtils {
     return StringUtils.endsWith(Objects.requireNonNullElse(metadata, new Metadata()).getArtifactId(),
         MavenConstants.PRODUCT_ARTIFACT_POSTFIX);
   }
+
+  public static boolean isJsonContentContainOnlyMavenDropins(String jsonContent) {
+    return jsonContent.contains(ProductJsonConstants.MAVEN_DROPINS_INSTALLER_ID) && !jsonContent.contains(
+        ProductJsonConstants.MAVEN_IMPORT_INSTALLER_ID) && !jsonContent.contains(
+        ProductJsonConstants.MAVEN_DEPENDENCY_INSTALLER_ID);
+  }
 }
