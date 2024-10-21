@@ -133,12 +133,13 @@ public class VersionUtils {
     return result;
   }
 
-  public static String getOldestVersion(List<GHTag> tags) {
+  public static String getOldestVersions(List<String> versions) {
     String result = StringUtils.EMPTY;
-    if (!CollectionUtils.isEmpty(tags)) {
-      List<String> releasedTags = tags.stream().map(tag -> tag.getName().replaceAll(NON_NUMERIC_CHAR, Strings.EMPTY))
+    if (!CollectionUtils.isEmpty(versions)) {
+      List<String> releasedVersions = versions.stream().map(
+              version -> version.replaceAll(NON_NUMERIC_CHAR, Strings.EMPTY))
           .distinct().sorted(new LatestVersionComparator()).toList();
-      return CollectionUtils.lastElement(releasedTags);
+      return CollectionUtils.lastElement(releasedVersions);
     }
     return result;
   }

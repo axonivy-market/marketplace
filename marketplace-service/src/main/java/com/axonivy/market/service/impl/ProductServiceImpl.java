@@ -490,24 +490,6 @@ public class ProductServiceImpl implements ProductService {
     return version -> !currentVersions.contains(version);
   }
 
-  private List<String> getMavenVersions(String metadataContent) {
-    List<String> mavenVersions = new ArrayList<>();
-    try {
-      DocumentBuilder builder = DocumentBuilderFactory.newInstance().newDocumentBuilder();
-      Document document = builder.parse(new InputSource(new StringReader(metadataContent)));
-      document.getDocumentElement().normalize();
-
-      NodeList versionNodes = document.getElementsByTagName(MavenConstants.VERSION_TAG);
-      for (int i = 0; i < versionNodes.getLength(); i++) {
-        mavenVersions.add(versionNodes.item(i).getTextContent());
-      }
-    } catch (Exception e) {
-      log.error("Metadata Reader: can not read the metadata of {} with error", metadataContent, e);
-      return null;
-    }
-    return mavenVersions;
-  }
-
   private void updateContentsFromMavenXML(Product product, String metadataContent, Artifact mavenArtifact) {
     try {
       DocumentBuilder builder = DocumentBuilderFactory.newInstance().newDocumentBuilder();
@@ -529,9 +511,17 @@ public class ProductServiceImpl implements ProductService {
 
       product.setNewestPublishedDate(newestPublishedDate);
       product.setNewestReleaseVersion(latestVersion);
-      //TODO: Optimize
+
       for (int i = 0; i < versionNodes.getLength(); i++) {
         mavenVersions.add(versionNodes.item(i).getTextContent());
+      }
+
+      if (StringUtils.isBlank(product.getCompatibility())) {
+        String oldestVersion = VersionUtils.getOldestVersions(mavenVersions);
+        if (oldestVersion != null) {
+          String compatibility = getCompatibilityFromOldestTag(oldestVersion);
+          product.setCompatibility(compatibility);
+        }
       }
 
       List<String> currentVersions = VersionUtils.getReleaseVersionsFromProduct(product);
@@ -557,7 +547,6 @@ public class ProductServiceImpl implements ProductService {
     } catch (Exception e) {
       log.error("Metadata Reader: can not read the metadata of {} with error", metadataContent, e);
     }
-
   }
 
   public void handleProductArtifact(String version, Product product,
@@ -678,28 +667,6 @@ public class ProductServiceImpl implements ProductService {
       log.error("Cannot extract product.json file {}", e.getMessage());
       return null;
     }
-  }
-
-  //NOTE: Set value 1 time only
-  private void updateProductCompatibility(Product product) {
-    if (StringUtils.isNotBlank(product.getCompatibility())) {
-      return;
-    }
-    String oldestVersion = VersionUtils.getOldestVersion(getProductReleaseTags(product));
-    if (oldestVersion != null) {
-      String compatibility = getCompatibilityFromOldestTag(oldestVersion);
-      product.setCompatibility(compatibility);
-    }
-  }
-
-  //TODO: Remove
-  private List<GHTag> getProductReleaseTags(Product product) {
-    try {
-      return gitHubService.getRepositoryTags(product.getRepositoryName());
-    } catch (IOException e) {
-      log.error("Cannot get tag list of product ", e);
-    }
-    return List.of();
   }
 
   // Cover 3 cases after removing non-numeric characters (8, 11.1 and 10.0.2)
@@ -868,6 +835,7 @@ public class ProductServiceImpl implements ProductService {
     }
   }
 
+  //TODO: Check it
   private void updateRelatedThingsOfProductFromGHContent1(List<GHContent> gitHubContents, Product product) {
     if (StringUtils.isNotBlank(product.getRepositoryName())) {
       updateProductCompatibility(product);
