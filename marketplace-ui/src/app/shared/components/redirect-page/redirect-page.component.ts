@@ -7,6 +7,7 @@ import { ERROR_PAGE_PATH } from '../../constants/common.constant';
 import { ProductService } from '../../../modules/product/product.service';
 import { API_URI } from '../../constants/api.constant';
 import { ExternalDocument } from '../../models/external-document.model';
+import { environment } from '../../../../environments/environment';
 
 const INDEX_FILE = '/index.html';
 
@@ -32,9 +33,10 @@ export class RedirectPageComponent implements OnInit {
     const currentUrl = window.location.href;
     const artifact = this.activeRoute.snapshot.paramMap.get(ROUTER.ARTIFACT);
 
+
     if (product && version) {
       if (artifact) {
-        this.fetchLatestLibVersionDownloadUrl(product, version, artifact);
+        window.location.href = `${environment.apiUrl}/${API_URI.PRODUCT_DETAILS}/${product}/artifact/${version}/${artifact}`;
         return;
       }
       this.fetchDocumentUrl(product, version, currentUrl);

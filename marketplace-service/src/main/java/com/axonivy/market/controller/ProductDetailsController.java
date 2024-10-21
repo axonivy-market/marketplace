@@ -133,13 +133,13 @@ public class ProductDetailsController {
   @GetMapping(LATEST_ARTIFACT_DOWNLOAD_URL_BY_ID)
   @Operation(summary = "Get the download url of latest version from artifact by its id and target version",
       description = "Return the download url of artifact from version and id")
-  public ResponseEntity<String> getLatestArtifactDownloadUrl(
+  public ResponseEntity<Void> getLatestArtifactDownloadUrl(
       @PathVariable(value = ID) @Parameter(in = ParameterIn.PATH, example = "demos-app") String productId,
-      @RequestParam(value = VERSION) @Parameter(in = ParameterIn.QUERY, example = "10.0-dev") String version,
-      @RequestParam(value = ARTIFACT) @Parameter(in = ParameterIn.QUERY,
+      @PathVariable(value = VERSION) @Parameter(in = ParameterIn.PATH, example = "10.0-dev") String version,
+      @PathVariable(value = ARTIFACT) @Parameter(in = ParameterIn.PATH,
           example = "ivy-demos-app.zip") String artifactId) {
     String downloadUrl = versionService.getLatestVersionArtifactDownloadUrl(productId, version, artifactId);
-    HttpStatusCode statusCode = StringUtils.isBlank(downloadUrl) ? HttpStatus.NOT_FOUND : HttpStatus.OK;
-    return new ResponseEntity<>(downloadUrl, statusCode);
+    HttpStatusCode statusCode = StringUtils.isBlank(downloadUrl) ? HttpStatus.NOT_FOUND : HttpStatus.FOUND;
+    return ResponseEntity.status(statusCode).header("Location", downloadUrl).build();
   }
 }
