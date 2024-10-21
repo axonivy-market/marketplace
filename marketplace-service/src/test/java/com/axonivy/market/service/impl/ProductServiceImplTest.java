@@ -472,12 +472,12 @@ class ProductServiceImplTest extends BaseSetup {
     String version = "10.0.2";
 
     Product mockProduct = mockResultReturn.getContent().get(0);
-    when(productRepository.getProductByIdWithTagOrVersion(id, version)).thenReturn(mockProduct);
+    when(productRepository.getProductByIdAndTag(id, version)).thenReturn(mockProduct);
 
     Product result = productService.fetchProductDetailByIdAndVersion(id, version);
 
     assertEquals(mockProduct, result);
-    verify(productRepository).getProductByIdWithTagOrVersion(id, version);
+    verify(productRepository).getProductByIdAndTag(id, version);
   }
 
   @Test
@@ -498,14 +498,14 @@ class ProductServiceImplTest extends BaseSetup {
 
       Product mockProduct = new Product();
       mockProduct.setSynchronizedInstallationCount(true);
-      when(productRepository.getProductByIdWithTagOrVersion(id, version)).thenReturn(mockProduct);
+      when(productRepository.getProductByIdAndTag(id, version)).thenReturn(mockProduct);
 
       Product result = productService.fetchBestMatchProductDetail(id, version);
 
       assertEquals(mockProduct, result);
       assertEquals(bestMatchVersion, result.getBestMatchVersion());
       verify(mavenArtifactVersionRepo).findById(id);
-      verify(productRepository).getProductByIdWithTagOrVersion(id, version);
+      verify(productRepository).getProductByIdAndTag(id, version);
     }
   }
 
@@ -646,7 +646,8 @@ class ProductServiceImplTest extends BaseSetup {
   }
 
   private List<Product> mockProducts() {
-    Product product1 = Product.builder().id("amazon-comprehend-connector").repositoryName("axonivy-market/amazon-comprehend-connector")
+    Product product1 = Product.builder().id("amazon-comprehend-connector").repositoryName(
+            "axonivy-market/amazon-comprehend-connector")
         .productModuleContent(mockReadmeProductContent()).build();
     return List.of(product1);
   }

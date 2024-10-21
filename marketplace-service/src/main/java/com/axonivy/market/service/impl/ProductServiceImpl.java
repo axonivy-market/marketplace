@@ -742,7 +742,7 @@ public class ProductServiceImpl implements ProductService {
     String bestMatchVersion = VersionUtils.getBestMatchVersion(versions, version);
     String bestMatchTag = VersionUtils.convertVersionToTag(id, bestMatchVersion);
     Product product = StringUtils.isBlank(bestMatchTag) ? productRepository.getProductByIdWithNewestReleaseVersion(
-        id, false) : productRepository.getProductByIdWithTagOrVersion(id, bestMatchTag);
+        id, false) : productRepository.getProductByIdAndTag(id, bestMatchTag);
     return Optional.ofNullable(product).map(productItem -> {
       updateProductInstallationCount(id, productItem);
       productItem.setBestMatchVersion(bestMatchVersion);
