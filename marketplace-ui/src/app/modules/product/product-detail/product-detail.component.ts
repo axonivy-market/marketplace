@@ -83,8 +83,7 @@ const DEFAULT_ACTIVE_TAB = 'description';
   ],
   providers: [ProductService, MarkdownService],
   templateUrl: './product-detail.component.html',
-  styleUrl: './product-detail.component.scss',
-  changeDetection: ChangeDetectionStrategy.OnPush,
+  styleUrl: './product-detail.component.scss'
 })
 export class ProductDetailComponent {
   themeService = inject(ThemeService);
@@ -324,6 +323,7 @@ export class ProductDetailComponent {
   handleClickOutside(event: MouseEvent) {
     const formSelect =
       this.elementRef.nativeElement.querySelector('.form-select');
+      
     if (
       formSelect &&
       !formSelect.contains(event.target) &&
