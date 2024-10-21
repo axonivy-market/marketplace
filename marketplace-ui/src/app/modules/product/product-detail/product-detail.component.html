@@ -153,7 +153,6 @@
             </div>
           </div>
           <div class="tab-content col-12 default-cursor">
-            @if (!isEmptyProductContent()) {
               @for (displayedTab of displayedTabsSignal(); track $index) {
                 <div
                   class="tab-pane fade show"
@@ -177,7 +176,6 @@
                   }
                 </div>
               }
-            }
           </div>
         }
       </div>

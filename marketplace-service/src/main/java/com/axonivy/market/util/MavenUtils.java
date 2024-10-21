@@ -328,4 +328,9 @@ public class MavenUtils {
     return VersionUtils.getVersionsToDisplay(new ArrayList<>(existingProductsArtifactByVersion), isShowDevVersion,
         designerVersion);
   }
+
+  public static boolean isProductMetadata(Metadata metadata) {
+    return StringUtils.endsWith(Objects.requireNonNullElse(metadata, new Metadata()).getArtifactId(),
+        MavenConstants.PRODUCT_ARTIFACT_POSTFIX);
+  }
 }

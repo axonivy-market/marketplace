@@ -3,6 +3,7 @@ package com.axonivy.market.util;
 import com.axonivy.market.comparator.LatestVersionComparator;
 import com.axonivy.market.comparator.MavenVersionComparator;
 import com.axonivy.market.constants.CommonConstants;
+import com.axonivy.market.entity.Metadata;
 import com.axonivy.market.entity.Product;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
@@ -14,9 +15,11 @@ import org.apache.logging.log4j.util.Strings;
 import org.springframework.util.CollectionUtils;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static com.axonivy.market.constants.MavenConstants.*;
@@ -54,7 +57,7 @@ public class VersionUtils {
     return bestMatchVersion;
   }
 
-  public static boolean isOfficialVersionOrUnReleasedDevVersion(List<String> versions, String version) {
+  public static boolean isOfficialVersionOrUnReleasedDevVersion(Collection<String> versions, String version) {
     if (isReleasedVersion(version)) {
       return true;
     }
@@ -141,5 +144,14 @@ public class VersionUtils {
 
   public static boolean isMinorVersion(String version) {
     return getNumbersOnly(version).split(MAIN_VERSION_REGEX).length == 2 && isReleasedVersion(version);
+  }
+
+  public static List<String> getInstallableVersionsFromMetadataList(List<Metadata> metadataList) {
+    if (CollectionUtils.isEmpty(metadataList)) {
+      return new ArrayList<>();
+    }
+    return metadataList.stream().filter(MavenUtils::isProductMetadata).findAny().map(
+        metadata -> metadata.getVersions().stream().sorted(new LatestVersionComparator()).collect(
+            Collectors.toList())).orElse(new ArrayList<>());
   }
 }

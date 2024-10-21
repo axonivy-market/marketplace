@@ -12,8 +12,6 @@ public interface CustomProductRepository {
 
   Product getProductById(String id);
 
-  Product getProductByIdWithNewestReleaseVersion(String id, Boolean isShowDevVersion);
-
   List<String> getReleasedVersionsById(String id);
 
   int updateInitialCount(String productId, int initialCount);
