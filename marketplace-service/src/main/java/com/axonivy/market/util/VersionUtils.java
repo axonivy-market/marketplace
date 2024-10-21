@@ -11,13 +11,11 @@ import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.util.Strings;
-import org.kohsuke.github.GHTag;
 import org.springframework.util.CollectionUtils;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
-import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Stream;
 
@@ -39,21 +37,6 @@ public class VersionUtils {
           .sorted(new LatestVersionComparator()).toList();
     }
     return versions.stream().filter(VersionUtils::isReleasedVersion).sorted(new LatestVersionComparator()).toList();
-  }
-
-  //TODO: Check it
-  public static String getMavenVersionMatchWithTag(List<String> releasedVersions, String mavenVersion) {
-    for (String version : releasedVersions) {
-      if (mavenVersion.equals(version)) {
-        return mavenVersion;
-      }
-    }
-    return getAlternativeVersion(releasedVersions, mavenVersion);
-  }
-
-  public static String getAlternativeVersion(List<String> releaseVersions, String version) {
-    return Optional.ofNullable(releaseVersions).orElse(List.of()).stream().filter(
-        version::startsWith).sorted().findAny().orElse(null);
   }
 
   public static String getBestMatchVersion(List<String> versions, String designerVersion) {
@@ -120,17 +103,6 @@ public class VersionUtils {
       return segments[0] + CommonConstants.DOT_SEPARATOR + segments[1] + CommonConstants.DOT_SEPARATOR + segments[2];
     }
     return version;
-  }
-
-  //TODO: Remove
-  public static String getOldestTag(List<GHTag> tags) {
-    String result = StringUtils.EMPTY;
-    if (!CollectionUtils.isEmpty(tags)) {
-      List<String> releasedTags = tags.stream().map(tag -> tag.getName().replaceAll(NON_NUMERIC_CHAR, Strings.EMPTY))
-          .distinct().sorted(new LatestVersionComparator()).toList();
-      return CollectionUtils.lastElement(releasedTags);
-    }
-    return result;
   }
 
   public static String getOldestVersions(List<String> versions) {

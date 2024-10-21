@@ -23,7 +23,6 @@ public class MetadataReaderUtils {
   private MetadataReaderUtils() {
   }
 
-  //TODO: Duplicate
   public static Metadata updateMetadataFromMavenXML(String xmlData, Metadata metadata, boolean isSnapShot) {
     try {
       DocumentBuilder builder = DocumentBuilderFactory.newInstance().newDocumentBuilder();
@@ -63,7 +62,7 @@ public class MetadataReaderUtils {
     return LocalDateTime.parse(textValue, lastUpdatedFormatter);
   }
 
-  private static String getElementValue(Document doc, String tagName) {
+  public static String getElementValue(Document doc, String tagName) {
     NodeList nodeList = doc.getElementsByTagName(tagName);
     if (nodeList.getLength() > 0) {
       return nodeList.item(0).getTextContent();

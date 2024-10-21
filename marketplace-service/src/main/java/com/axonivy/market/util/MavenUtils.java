@@ -144,6 +144,16 @@ public class MavenUtils {
     return artifacts;
   }
 
+  public static String extractProductJsonContent(Path filePath) {
+    try {
+      InputStream contentStream = extractedContentStream(filePath);
+      return IOUtils.toString(Objects.requireNonNull(contentStream), StandardCharsets.UTF_8);
+    } catch (Exception e) {
+      log.error("Cannot extract product.json file {}", e.getMessage());
+      return null;
+    }
+  }
+
   public static String buildDownloadUrl(Artifact artifact, String version) {
     String groupIdByVersion = artifact.getGroupId();
     String artifactIdByVersion = artifact.getArtifactId();
@@ -167,7 +177,6 @@ public class MavenUtils {
         groupIdByVersion, StringUtils.EMPTY);
   }
 
-  //TODO: Snapshot
   public static String buildDownloadUrl(String artifactId, String baseVersion, String type, String repoUrl,
       String groupId, String version) {
     groupId = groupId.replace(CommonConstants.DOT_SEPARATOR, CommonConstants.SLASH);
@@ -177,7 +186,6 @@ public class MavenUtils {
     String artifactFileName = String.format(MavenConstants.ARTIFACT_FILE_NAME_FORMAT, artifactId, version, type);
     return String.join(CommonConstants.SLASH, repoUrl, groupId, artifactId, baseVersion, artifactFileName);
   }
-
 
   public static ArchivedArtifact findArchivedArtifactInfoBestMatchWithVersion(String version,
       List<ArchivedArtifact> archivedArtifacts) {

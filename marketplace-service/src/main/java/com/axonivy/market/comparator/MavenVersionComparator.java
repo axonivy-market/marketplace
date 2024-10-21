@@ -3,10 +3,7 @@ package com.axonivy.market.comparator;
 import com.axonivy.market.constants.CommonConstants;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.math.NumberUtils;
-import org.kohsuke.github.GHTag;
-import org.springframework.util.CollectionUtils;
 
-import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -22,29 +19,6 @@ public class MavenVersionComparator {
   private static final int LESS_THAN = -1;
 
   private MavenVersionComparator() {
-  }
-
-  //TODO: Check highest tag
-  public static GHTag findHighestTag(List<GHTag> ghTags) {
-    if (CollectionUtils.isEmpty(ghTags)) {
-      return null;
-    }
-    String highestVersion = findHighestMavenVersion(ghTags.stream().map(GHTag::getName).toList());
-    return ghTags.stream().filter(tag -> tag.getName().equals(highestVersion)).findAny().orElse(null);
-  }
-
-  public static String findHighestMavenVersion(List<String> versions) {
-    if (CollectionUtils.isEmpty(versions)) {
-      return null;
-    }
-
-    String highestVersion = versions.get(0);
-    for (var version : versions) {
-      if (compare(version, highestVersion) > EQUAL) {
-        highestVersion = version;
-      }
-    }
-    return highestVersion;
   }
 
   public static int compare(String version, String otherVersion) {
