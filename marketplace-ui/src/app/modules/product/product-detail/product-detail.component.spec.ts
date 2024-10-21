@@ -110,10 +110,16 @@ describe('ProductDetailComponent', () => {
       MOCK_PRODUCT_DETAIL.names['en']
     );
   });
-  
-  it('should have title like the name', () => {
+
+  it('should have title like the name DE', () => {
+    languageService.selectedLanguage.and.returnValue(
+      Language.DE
+    );
+    component.updateTitle();
+    fixture.detectChanges();
+
     expect(titleService.getTitle()).toEqual(
-      MOCK_PRODUCT_DETAIL.names['en']
+      MOCK_PRODUCT_DETAIL.names[Language.DE]
     );
   });
 

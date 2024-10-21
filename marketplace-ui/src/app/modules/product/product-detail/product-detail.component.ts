@@ -158,7 +158,7 @@ export class ProductDetailComponent {
         this.handleProductContentVersion();
         this.updateProductDetailActionType(productDetail);
         this.logoUrl = productDetail.logoUrl;
-        this.titleService.setTitle(productDetail.names[Language.EN]);
+        this.titleService.setTitle(productDetail.names[this.languageService.selectedLanguage()]);
       });
 
       this.productFeedbackService.initFeedbacks();
@@ -375,7 +375,13 @@ export class ProductDetailComponent {
     return tag;
   }
 
+  updateTitle() {
+    let title = this.productDetail().names[this.languageService.selectedLanguage()];
+    this.titleService.setTitle(title);
+  }
+
   getDisplayedTabsSignal() {
+    this.updateTitle();
     const displayedTabs: ItemDropdown[] = [];
     for (const detailTab of this.detailTabs) {
       if (this.getContent(detailTab.value)) {
