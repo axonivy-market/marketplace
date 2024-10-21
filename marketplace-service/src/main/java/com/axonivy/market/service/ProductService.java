@@ -28,4 +28,6 @@ public interface ProductService {
   Product fetchProductDetailByIdAndVersion(String id, String version);
 
   boolean syncOneProduct(String productId, String marketItemPath, Boolean overrideMarketItemPath);
+
+  void clearAllProductVersion();
 }

@@ -1,6 +1,7 @@
 package com.axonivy.market.service.impl;
 
 import com.axonivy.market.bo.Artifact;
+import com.axonivy.market.comparator.LatestVersionComparator;
 import com.axonivy.market.constants.MavenConstants;
 import com.axonivy.market.controller.ProductDetailsController;
 import com.axonivy.market.entity.MavenArtifactVersion;
@@ -29,6 +30,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -93,10 +95,14 @@ public class VersionServiceImpl implements VersionService {
   @Override
   public List<VersionAndUrlModel> getVersionsForDesigner(String productId) {
     List<VersionAndUrlModel> versionAndUrlList = new ArrayList<>();
-    MavenArtifactVersion existingMavenArtifactVersion = mavenArtifactVersionRepo.findById(productId).orElse(
-        MavenArtifactVersion.builder().productId(productId).build());
-    List<String> versions = MavenUtils.getAllExistingVersions(existingMavenArtifactVersion, true,
-        null);
+    List<String> releasedVersions =
+        VersionUtils.getInstallableVersionsFromMetadataList(metadataRepo.findByProductId(productId));
+    if (CollectionUtils.isEmpty(releasedVersions)) {
+      return Collections.emptyList();
+    }
+    List<String> versions = releasedVersions.stream().filter(
+        version -> VersionUtils.isOfficialVersionOrUnReleasedDevVersion(releasedVersions, version)).sorted(
+        new LatestVersionComparator()).toList();
     for (String version : versions) {
       Link link = linkTo(
           methodOn(ProductDetailsController.class).findProductJsonContent(productId, version)).withSelfRel();

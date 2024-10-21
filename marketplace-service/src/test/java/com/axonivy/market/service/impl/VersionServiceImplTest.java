@@ -5,6 +5,7 @@ import com.axonivy.market.bo.ArchivedArtifact;
 import com.axonivy.market.bo.Artifact;
 import com.axonivy.market.constants.MavenConstants;
 import com.axonivy.market.entity.MavenArtifactVersion;
+import com.axonivy.market.entity.Metadata;
 import com.axonivy.market.entity.Product;
 import com.axonivy.market.entity.ProductJsonContent;
 import com.axonivy.market.enums.DevelopmentVersion;
@@ -32,6 +33,7 @@ import org.springframework.util.CollectionUtils;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -130,11 +132,17 @@ class VersionServiceImplTest extends BaseSetup {
   void testGetVersionsForDesigner() {
     MavenArtifactVersion mockMavenArtifactVersion = new MavenArtifactVersion();
     List<String> mockVersions = List.of("11.3.0-SNAPSHOT", "11.1.1", "11.1.0", "10.0.2");
+    Metadata mockMetadata = getMockMetadata();
+    mockMetadata.setArtifactId(MOCK_PRODUCT_ARTIFACT_ID);
+    mockMetadata.setVersions(new HashSet<>());
+    mockMetadata.getVersions().addAll(mockVersions);
     for (String version : mockVersions) {
       mockMavenArtifactVersion.getProductArtifactsByVersion().put(version, new ArrayList<>());
     }
-    when(mavenArtifactVersionRepo.findById(MOCK_PRODUCT_ID)).thenReturn(Optional.of(mockMavenArtifactVersion));
     List<VersionAndUrlModel> result = versionService.getVersionsForDesigner(MOCK_PRODUCT_ID);
+    Assertions.assertTrue(CollectionUtils.isEmpty(result));
+    when(metadataRepo.findByProductId(MOCK_PRODUCT_ID)).thenReturn(List.of(mockMetadata));
+    result = versionService.getVersionsForDesigner(MOCK_PRODUCT_ID);
     Assertions.assertEquals(result.stream().map(VersionAndUrlModel::getVersion).toList(), mockVersions);
     Assertions.assertTrue(result.get(0).getUrl().endsWith("/api/product-details/bpmn-statistic/11.3.0-SNAPSHOT/json"));
     Assertions.assertTrue(result.get(1).getUrl().endsWith("/api/product-details/bpmn-statistic/11.1.1/json"));
@@ -176,9 +184,7 @@ class VersionServiceImplTest extends BaseSetup {
     MavenArtifactVersion mockMavenArtifactVersion = new MavenArtifactVersion();
     Assertions.assertTrue(CollectionUtils.isEmpty(MavenUtils.getAllExistingVersions(mockMavenArtifactVersion, false,
         StringUtils.EMPTY)));
-    Map<String, List<MavenArtifactModel>> mockArtifactModelsByVersion = new HashMap<>();
-    mockArtifactModelsByVersion.put(MOCK_SNAPSHOT_VERSION, new ArrayList<>());
-    mockMavenArtifactVersion.setProductArtifactsByVersion(mockArtifactModelsByVersion);
+    mockMavenArtifactVersion = getMockMavenArtifactVersionWithData();
     Assertions.assertTrue(ObjectUtils.isNotEmpty(MavenUtils.getAllExistingVersions(mockMavenArtifactVersion, true,
         StringUtils.EMPTY)));
     Assertions.assertTrue(CollectionUtils.isEmpty(MavenUtils.getAllExistingVersions(mockMavenArtifactVersion, false,
