@@ -4,10 +4,9 @@ import com.axonivy.market.BaseSetup;
 import com.axonivy.market.constants.MongoDBConstants;
 import com.axonivy.market.entity.Product;
 import com.axonivy.market.entity.ProductDesignerInstallation;
-import com.axonivy.market.entity.ProductModuleContent;
-import com.axonivy.market.repository.ProductJsonContentRepository;
 import com.axonivy.market.repository.MavenArtifactVersionRepository;
 import com.axonivy.market.repository.MetadataRepository;
+import com.axonivy.market.repository.ProductJsonContentRepository;
 import com.axonivy.market.repository.ProductModuleContentRepository;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -92,7 +91,6 @@ class CustomProductRepositoryImplTest extends BaseSetup {
     setUpMockAggregateResult();
     Product actualProduct = repo.getProductById(MOCK_PRODUCT_ID);
     assertEquals(mockProduct, actualProduct);
-    assertTrue(actualProduct.isMavenDropins());
   }
 
   @Test

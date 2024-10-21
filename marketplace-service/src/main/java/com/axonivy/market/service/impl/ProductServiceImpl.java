@@ -540,7 +540,7 @@ public class ProductServiceImpl implements ProductService {
       List<ProductModuleContent> productModuleContents, Artifact mavenArtifact) throws Exception {
     String snapshotVersionValue = Strings.EMPTY;
     if (version.contains(MavenConstants.SNAPSHOT_VERSION)) {
-      snapshotVersionValue = getSnapshotVersionValue(version, mavenArtifact);
+      snapshotVersionValue = MetadataReaderUtils.getSnapshotVersionValue(version, mavenArtifact);
     }
     String repoUrl = StringUtils.defaultIfBlank(mavenArtifact.getRepoUrl(), DEFAULT_IVY_MAVEN_BASE_URL);
     String url = MavenUtils.buildDownloadUrl(mavenArtifact.getArtifactId(), version, mavenArtifact.getType(),
@@ -555,24 +555,6 @@ public class ProductServiceImpl implements ProductService {
     } catch (Exception e) {
       log.error("Cannot download and unzip file {}", e.getMessage());
     }
-  }
-
-  private static String getSnapshotVersionValue(String version,
-      Artifact mavenArtifact) {
-    String snapshotVersionValue = Strings.EMPTY;
-    String snapShotMetadataUrl = MavenUtils.buildSnapshotMetadataUrlFromArtifactInfo(mavenArtifact.getRepoUrl(),
-        mavenArtifact.getGroupId(), mavenArtifact.getArtifactId(), version);
-    String metadataContent = MavenUtils.getMetadataContentFromUrl(snapShotMetadataUrl);
-    try {
-      DocumentBuilder builder = DocumentBuilderFactory.newInstance().newDocumentBuilder();
-      Document document = builder.parse(new InputSource(new StringReader(metadataContent)));
-      document.getDocumentElement().normalize();
-      snapshotVersionValue = MetadataReaderUtils.getElementValue(document, MavenConstants.VALUE_TAG);
-    } catch (Exception e) {
-      log.error("Cannot get snapshot version value from maven {}", e.getMessage());
-    }
-
-    return snapshotVersionValue;
   }
 
   public void addProductContent(Product product, String version, String url,

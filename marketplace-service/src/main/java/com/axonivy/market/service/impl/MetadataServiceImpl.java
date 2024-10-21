@@ -67,7 +67,6 @@ public class MetadataServiceImpl implements MetadataService {
       }
       Metadata metadataWithVersions = MetadataReaderUtils.updateMetadataFromMavenXML(metadataContent, metadata, false);
       updateMavenArtifactVersionFromMetadata(artifactVersionCache, metadataWithVersions);
-//      updateContentsFromNonMatchVersions(productId, releasedVersions, metadataWithVersions);
     }
   }
 

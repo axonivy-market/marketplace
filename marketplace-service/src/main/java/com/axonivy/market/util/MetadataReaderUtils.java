@@ -1,8 +1,10 @@
 package com.axonivy.market.util;
 
+import com.axonivy.market.bo.Artifact;
 import com.axonivy.market.constants.MavenConstants;
 import com.axonivy.market.entity.Metadata;
 import lombok.extern.log4j.Log4j2;
+import org.apache.logging.log4j.util.Strings;
 import org.w3c.dom.Document;
 import org.w3c.dom.NodeList;
 import org.xml.sax.InputSource;
@@ -68,5 +70,23 @@ public class MetadataReaderUtils {
       return nodeList.item(0).getTextContent();
     }
     return null;
+  }
+
+  public static String getSnapshotVersionValue(String version,
+      Artifact mavenArtifact) {
+    String snapshotVersionValue = Strings.EMPTY;
+    String snapShotMetadataUrl = MavenUtils.buildSnapshotMetadataUrlFromArtifactInfo(mavenArtifact.getRepoUrl(),
+        mavenArtifact.getGroupId(), mavenArtifact.getArtifactId(), version);
+    String metadataContent = MavenUtils.getMetadataContentFromUrl(snapShotMetadataUrl);
+    try {
+      DocumentBuilder builder = DocumentBuilderFactory.newInstance().newDocumentBuilder();
+      Document document = builder.parse(new InputSource(new StringReader(metadataContent)));
+      document.getDocumentElement().normalize();
+      snapshotVersionValue = getElementValue(document, MavenConstants.VALUE_TAG);
+    } catch (Exception e) {
+      log.error("Cannot get snapshot version value from maven {}", e.getMessage());
+    }
+
+    return snapshotVersionValue;
   }
 }

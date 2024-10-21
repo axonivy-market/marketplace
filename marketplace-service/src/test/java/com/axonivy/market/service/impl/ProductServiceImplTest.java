@@ -33,6 +33,7 @@ import com.axonivy.market.repository.ProductRepository;
 import com.axonivy.market.service.ImageService;
 import com.axonivy.market.service.MetadataService;
 import com.axonivy.market.service.ProductContentService;
+import com.axonivy.market.util.MavenUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -45,6 +46,8 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.MockedStatic;
+import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
@@ -72,22 +75,8 @@ import static com.axonivy.market.constants.MetaConstants.META_FILE;
 import static com.axonivy.market.constants.ProductJsonConstants.LOGO_FILE;
 import static com.axonivy.market.enums.DocumentField.SHORT_DESCRIPTIONS;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertNull;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.mockito.Mockito.any;
-import static org.mockito.Mockito.anyBoolean;
-import static org.mockito.Mockito.anyInt;
-import static org.mockito.Mockito.anyList;
-import static org.mockito.Mockito.anyLong;
-import static org.mockito.Mockito.anyString;
-import static org.mockito.Mockito.eq;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class ProductServiceImplTest extends BaseSetup {
@@ -476,16 +465,22 @@ class ProductServiceImplTest extends BaseSetup {
   void testGetProductByIdWithNewestReleaseVersion() {
     MavenArtifactVersion mockMavenArtifactVersion = getMockMavenArtifactVersionWithData();
     Product mockProduct = getMockProduct();
-    when(mavenArtifactVersionRepo.findById(MOCK_PRODUCT_ID)).thenReturn(
-        Optional.ofNullable(mockMavenArtifactVersion));
-    when(productRepo.getProductByIdAndTag(MOCK_PRODUCT_ID, MOCK_TAG_FROM_SNAPSHOT_VERSION)).thenReturn(mockProduct);
-    Product result = productService.getProductByIdWithNewestReleaseVersion(MOCK_PRODUCT_ID, true);
-    assertEquals(mockProduct, result);
-    when(mavenArtifactVersionRepo.findById(MOCK_PRODUCT_ID)).thenReturn(Optional.ofNullable(null));
-    when(productRepo.getReleasedVersionsById(MOCK_PRODUCT_ID)).thenReturn(List.of(MOCK_SNAPSHOT_VERSION));
-    when(productRepo.getProductByIdAndTag(MOCK_PRODUCT_ID, MOCK_SNAPSHOT_VERSION)).thenReturn(mockProduct);
-    result = productService.getProductByIdWithNewestReleaseVersion(MOCK_PRODUCT_ID, true);
-    assertEquals(mockProduct, result);
+    try (MockedStatic<MavenUtils> mockUtils = Mockito.mockStatic(MavenUtils.class)) {
+      when(mavenArtifactVersionRepo.findById(MOCK_PRODUCT_ID)).thenReturn(
+          Optional.ofNullable(mockMavenArtifactVersion));
+      when(productRepo.getProductByIdAndTag(MOCK_PRODUCT_ID, MOCK_SNAPSHOT_VERSION)).thenReturn(mockProduct);
+
+      when(productJsonContentRepo.findByProductIdAndVersion(MOCK_PRODUCT_ID, MOCK_SNAPSHOT_VERSION))
+          .thenReturn(List.of(getMockProductJsonContentContainMavenDropins()));
+
+      Product result = productService.getProductByIdWithNewestReleaseVersion(MOCK_PRODUCT_ID, true);
+      assertEquals(mockProduct, result);
+      when(mavenArtifactVersionRepo.findById(MOCK_PRODUCT_ID)).thenReturn(Optional.empty());
+      when(productRepo.getReleasedVersionsById(MOCK_PRODUCT_ID)).thenReturn(List.of(MOCK_SNAPSHOT_VERSION));
+      when(productRepo.getProductByIdAndTag(MOCK_PRODUCT_ID, MOCK_SNAPSHOT_VERSION)).thenReturn(mockProduct);
+      result = productService.getProductByIdWithNewestReleaseVersion(MOCK_PRODUCT_ID, true);
+      assertEquals(mockProduct, result);
+    }
   }
 
   @Test

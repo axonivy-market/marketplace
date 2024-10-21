@@ -6,9 +6,6 @@ import com.axonivy.market.entity.MavenArtifactVersion;
 import com.axonivy.market.entity.Metadata;
 import com.axonivy.market.entity.Product;
 import com.axonivy.market.model.MavenArtifactModel;
-import com.axonivy.market.repository.MavenArtifactVersionRepository;
-import com.axonivy.market.repository.MetadataRepository;
-import com.axonivy.market.repository.MetadataSyncRepository;
 import com.axonivy.market.repository.ProductJsonContentRepository;
 import com.axonivy.market.repository.ProductModuleContentRepository;
 import com.axonivy.market.repository.ProductRepository;
@@ -37,13 +34,7 @@ class MetadataServiceImplTest extends BaseSetup {
   @Mock
   ProductRepository productRepo;
   @Mock
-  MetadataSyncRepository metadataSyncRepo;
-  @Mock
   ProductJsonContentRepository productJsonRepo;
-  @Mock
-  MavenArtifactVersionRepository mavenArtifactVersionRepo;
-  @Mock
-  MetadataRepository metadataRepo;
   @Mock
   ProductModuleContentRepository productContentRepo;
 
@@ -139,33 +130,6 @@ class MetadataServiceImplTest extends BaseSetup {
     result = metadataService.syncAllProductsMetadata();
     Assertions.assertEquals(0, result);
   }
-
-  //TODO
-//  @Test
-//  void testGetNonMatchSnapshotVersions() {
-//    List<String> releasedVersion = List.of(MOCK_SNAPSHOT_VERSION);
-//    Set<String> metaVersions = Set.of(MOCK_SNAPSHOT_VERSION);
-//    ProductModuleContent mockProductModuleContent = getMockProductModuleContent();
-//    Mockito.when(
-//        productContentRepo.findByTagAndProductId(MOCK_TAG_FROM_SNAPSHOT_VERSION, MOCK_PRODUCT_ID)).thenReturn(
-//        mockProductModuleContent);
-//    Assertions.assertTrue(CollectionUtils.isEmpty(
-//        metadataService.getNonMatchSnapshotVersions(MOCK_PRODUCT_ID, releasedVersion, metaVersions)));
-//    metaVersions = Set.of("2.0.0-SNAPSHOT");
-//    Assertions.assertEquals(1,
-//        metadataService.getNonMatchSnapshotVersions(MOCK_PRODUCT_ID, releasedVersion, metaVersions).size());
-//    metaVersions = Set.of(MOCK_RELEASED_VERSION);
-//    Assertions.assertTrue(CollectionUtils.isEmpty(
-//        metadataService.getNonMatchSnapshotVersions(MOCK_PRODUCT_ID, releasedVersion, metaVersions)));
-//  }
-
-//TODO
-//  @Test
-//  void testBuildProductFolderDownloadUrl() {
-//    Metadata mockMetadata = getMockMetadata();
-//    Assertions.assertEquals(MOCK_SNAPSHOT_DOWNLOAD_URL, metadataService.buildProductFolderDownloadUrl(mockMetadata,
-//        MOCK_SNAPSHOT_VERSION));
-//  }
 
   @Test
   void testUpdateMavenArtifactVersionData() {
