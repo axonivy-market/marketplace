@@ -1,5 +1,6 @@
 import { CommonModule, NgOptimizedImage } from '@angular/common';
 import {
+  ChangeDetectionStrategy,
   Component,
   ElementRef,
   HostListener,
@@ -82,7 +83,8 @@ const DEFAULT_ACTIVE_TAB = 'description';
   ],
   providers: [ProductService, MarkdownService],
   templateUrl: './product-detail.component.html',
-  styleUrl: './product-detail.component.scss'
+  styleUrl: './product-detail.component.scss',
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ProductDetailComponent {
   themeService = inject(ThemeService);
