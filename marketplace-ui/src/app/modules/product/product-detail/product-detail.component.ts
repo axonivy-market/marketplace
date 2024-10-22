@@ -324,6 +324,7 @@ export class ProductDetailComponent {
   handleClickOutside(event: MouseEvent) {
     const formSelect =
       this.elementRef.nativeElement.querySelector('.form-select');
+      
     if (
       formSelect &&
       !formSelect.contains(event.target) &&
