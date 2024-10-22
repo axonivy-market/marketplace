@@ -12,6 +12,7 @@ jobs:
       - uses: actions/checkout@v4
       
       - name: Test defined API Collection with summary report
+        if: always()
         id: run_tests_with_ctrf_report
         run: |
           echo "Run defined api collection & gen ctrf test report with newman cli"
