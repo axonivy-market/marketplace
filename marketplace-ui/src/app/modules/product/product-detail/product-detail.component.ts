@@ -157,7 +157,7 @@ export class ProductDetailComponent {
         this.handleProductContentVersion();
         this.updateProductDetailActionType(productDetail);
         this.logoUrl = productDetail.logoUrl;
-        this.titleService.setTitle(productDetail.names[this.languageService.selectedLanguage()]);
+        this.updateWebBrowserTitle();
       });
 
       this.productFeedbackService.initFeedbacks();
@@ -375,13 +375,15 @@ export class ProductDetailComponent {
     return tag;
   }
 
-  updateTitle() {
-    const title = this.productDetail().names[this.languageService.selectedLanguage()];
-    this.titleService.setTitle(title);
+  updateWebBrowserTitle() {
+    if (this.productDetail().names !== undefined) {
+      const title = this.productDetail().names[this.languageService.selectedLanguage()];
+      this.titleService.setTitle(title);
+    }
   }
 
   getDisplayedTabsSignal() {
-    this.updateTitle();
+    this.updateWebBrowserTitle();
     const displayedTabs: ItemDropdown[] = [];
     for (const detailTab of this.detailTabs) {
       if (this.getContent(detailTab.value)) {

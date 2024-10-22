@@ -115,7 +115,7 @@ describe('ProductDetailComponent', () => {
     languageService.selectedLanguage.and.returnValue(
       Language.DE
     );
-    component.updateTitle();
+    component.updateWebBrowserTitle();
     fixture.detectChanges();
 
     expect(titleService.getTitle()).toEqual(
