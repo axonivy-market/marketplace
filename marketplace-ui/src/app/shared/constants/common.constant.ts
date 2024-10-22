@@ -206,3 +206,10 @@ export const SEARCH_URL = 'https://developer.axonivy.com/search';
 export const SHOW_DEV_VERSION = "showDevVersions";
 export const DEFAULT_VENDOR_IMAGE = '/assets/images/misc/axonivy-logo.svg';
 export const DEFAULT_VENDOR_IMAGE_BLACK = '/assets/images/misc/axonivy-logo-black.svg';
+
+export const SECONDS_IN_A_MINUTE = 60;
+export const MINUTES_IN_A_HOUR = 60;
+export const HOURS_IN_A_DAY = 24;
+export const DAYS_IN_A_WEEK = 7;
+export const DAYS_IN_A_MONTH = 30;
+export const DAYS_IN_A_YEAR = 365;
