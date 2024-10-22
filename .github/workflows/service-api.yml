@@ -11,14 +11,18 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         
+      # - name: Test defined API Collection with html report
+      #   id: run_tests_with_html_report
+      #   run: |
+      #     echo "Run defined api collection & gen html test report with newman cli"
+      #     # newman run "https://api.postman.com/collections/${{ secrets.POSTMAN_COLLECTION_ID }}?access_key=${{ secrets.POSTMAN_API_KEY }}" -r htmlextra --reporter-htmlextra-title "Api Testing Report - Axon Ivy Marketplace" --reporter-htmlextra-browserTitle "Axon Ivy Market Api Testing Report" --reporter-htmlextra-export "./test-report.html"
+
       - name: Test defined API Collection with html report
-        id: run_tests
+        if: always()
+        id: run_tests_with_ctrf_report
         run: |
-          echo "Run defined api collection & gen test report with newman cli"
-          # newman run "https://api.postman.com/collections/${{ secrets.POSTMAN_COLLECTION_ID }}?access_key=${{ secrets.POSTMAN_API_KEY }}" -r htmlextra --reporter-htmlextra-title "Api Testing Report - Axon Ivy Marketplace" --reporter-htmlextra-browserTitle "Axon Ivy Market Api Testing Report" --reporter-htmlextra-export "./test-report.html"
-          newman run "https://api.postman.com/collections/${{ secrets.POSTMAN_COLLECTION_ID }}?access_key=${{ secrets.POSTMAN_API_KEY }}" --reporters json --reporter-json-export ./test-report.json
-          pwd
-          ls -l
+          echo "Run defined api collection & gen ctrf test report with newman cli"
+          newman run "https://api.postman.com/collections/${{ secrets.POSTMAN_COLLECTION_ID }}?access_key=${{ secrets.POSTMAN_API_KEY }}" -r cli,ctrf-json --reporter-ctrf-json-output-file test-report.json --reporter-ctrf-json-test-type api --reporter-ctrf-json-app-name Market Website
 
       # - name: Upload failed report as artifact
       #   if: failure()
