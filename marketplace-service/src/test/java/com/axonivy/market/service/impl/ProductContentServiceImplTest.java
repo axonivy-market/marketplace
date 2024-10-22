@@ -32,69 +32,6 @@ class ProductContentServiceImplTest extends BaseSetup {
   @Mock
   private ProductJsonContentService productJsonContentService;
 
-  //TODO
-//  @Test
-//  void testGetReadmeAndProductContentsFromTag() throws IOException {
-//    String version = "1.0.0";
-//    Artifact mockArtifact = mock(Artifact.class);
-//    Product mockProduct = mock(Product.class);
-//
-//    // Mock Product and its ID
-//    when(mockProduct.getId()).thenReturn("mockProductId");
-//
-//    String readmeContentWithImageFolder = """
-//        # Product-name
-//        Test README
-//        ## Demo
-//        Demo content
-//        ## Setup
-//        Setup content (./image.png)""";
-//
-//    // Create a mock ProductModuleContent with expected values
-//    ProductModuleContent mockProductModuleContent = new ProductModuleContent();
-//    mockProductModuleContent.setTag("v1.0.0");
-//    mockProductModuleContent.setDescription(Map.of(Language.EN.getValue(), "Test README"));
-//    mockProductModuleContent.setDemo(Map.of(Language.EN.getValue(), "Demo content"));
-//    mockProductModuleContent.setSetup(
-//        Map.of(Language.EN.getValue(), "Setup content (imageId-66e2b14868f2f95b2f95549a)"));
-//
-//    // Mock static utility methods
-//    try (MockedStatic<ProductContentUtils> mockedProductContentUtils = Mockito.mockStatic(ProductContentUtils
-//    .class)) {
-//      mockedProductContentUtils.when(() -> ProductContentUtils.initProductModuleContent("mockProductId", version))
-//          .thenReturn(mockProductModuleContent);
-//
-//      // Mock file download and unzipping
-//      when(fileDownloadService.downloadAndUnzipProductContentFile(DOWNLOAD_URL, mockArtifact)).thenReturn(
-//          EXTRACT_DIR_LOCATION);
-//
-//      // Create a mock readme file and its corresponding content
-//      Path readmeFilePath = Paths.get(EXTRACT_DIR_LOCATION, "README.md");
-//      Files.createDirectories(readmeFilePath.getParent());
-//      Files.writeString(readmeFilePath, readmeContentWithImageFolder);
-//
-//      // Mock MavenUtils methods
-//      when(MavenUtils.convertProductJsonToMavenProductInfo(any(Path.class))).thenReturn(new ArrayList<>());
-//      when(MavenUtils.extractProductJsonContent(any(Path.class))).thenReturn("{ \"mock\": \"json\" }");
-//
-//      // Call the method under test
-//      ProductModuleContent result = productContentService.getReadmeAndProductContentsFromTag(mockProduct, version,
-//          DOWNLOAD_URL,
-//          mockArtifact);
-//
-//      // Verify that the returned result is not null and has the expected values
-//      assertEquals("v1.0.0", result.getTag());
-//      assertEquals("Test README", result.getDescription().get(Language.EN.getValue()));
-//      assertEquals("Demo content", result.getDemo().get(Language.EN.getValue()));
-//      assertEquals("Setup content (imageId-66e2b14868f2f95b2f95549a)", result.getSetup().get(Language.EN.getValue()));
-//
-//      // Verify that the expected methods were called
-//      verify(fileDownloadService, times(1)).downloadAndUnzipProductContentFile(DOWNLOAD_URL, mockArtifact);
-//      verify(fileDownloadService, times(1)).deleteDirectory(Path.of(EXTRACT_DIR_LOCATION));
-//
-//    }
-//  }
-
   @Test
   void testUpdateDependencyContentsFromProductJson() throws IOException {
     String mockUnzippedFolderPath = "mock/unzipped/folder/path";
