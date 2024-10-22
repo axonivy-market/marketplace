@@ -23,6 +23,7 @@ jobs:
         run: |
           echo "Run defined api collection & gen ctrf test report with newman cli"
           newman run "https://api.postman.com/collections/${{ secrets.POSTMAN_COLLECTION_ID }}?access_key=${{ secrets.POSTMAN_API_KEY }}" -r cli,ctrf-json --reporter-ctrf-json-output-file test-report.json --reporter-ctrf-json-test-type api --reporter-ctrf-json-app-name Market Website
+          pwd
 
       # - name: Upload failed report as artifact
       #   if: failure()
