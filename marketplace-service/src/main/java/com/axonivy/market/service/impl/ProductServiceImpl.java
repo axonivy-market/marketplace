@@ -65,12 +65,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 import org.w3c.dom.Document;
 import org.w3c.dom.NodeList;
-import org.xml.sax.InputSource;
 
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
 import java.io.IOException;
-import java.io.StringReader;
 import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Paths;
@@ -174,8 +170,8 @@ public class ProductServiceImpl implements ProductService {
   public List<String> syncLatestDataFromMarketRepo(Boolean resetSync) {
     List<String> syncedProductIds = new ArrayList<>();
     var isAlreadyUpToDate = false;
-    if (BooleanUtils.isTrue(resetSync)) {
-      marketRepoMeta = gitHubRepoMetaRepo.findByRepoName(GitHubConstants.AXONIVY_MARKETPLACE_REPO_NAME);
+    marketRepoMeta = gitHubRepoMetaRepo.findByRepoName(GitHubConstants.AXONIVY_MARKETPLACE_REPO_NAME);
+    if (BooleanUtils.isTrue(resetSync) && marketRepoMeta != null) {
       gitHubRepoMetaRepo.delete(marketRepoMeta);
       marketRepoMeta = null;
     } else {
@@ -381,7 +377,6 @@ public class ProductServiceImpl implements ProductService {
   private boolean isLastGithubCommitCovered() {
     boolean isLastCommitCovered = false;
     long lastCommitTime = 0L;
-    marketRepoMeta = gitHubRepoMetaRepo.findByRepoName(GitHubConstants.AXONIVY_MARKETPLACE_REPO_NAME);
     if (marketRepoMeta != null) {
       lastCommitTime = marketRepoMeta.getLastChange();
     }
@@ -483,15 +478,12 @@ public class ProductServiceImpl implements ProductService {
 
   private void updateContentsFromMavenXML(Product product, String metadataContent, Artifact mavenArtifact) {
     try {
-      DocumentBuilder builder = DocumentBuilderFactory.newInstance().newDocumentBuilder();
-      Document document = builder.parse(new InputSource(new StringReader(metadataContent)));
-      document.getDocumentElement().normalize();
+      Document document = MetadataReaderUtils.getDocumentFromXMLContent(metadataContent);
 
       String latestVersion = MetadataReaderUtils.getElementValue(document, MavenConstants.LATEST_VERSION_TAG);
-      if (Objects.requireNonNull(latestVersion).equals(product.getNewestReleaseVersion())) {
+      if (StringUtils.equals(latestVersion, product.getNewestReleaseVersion())) {
         return;
       }
-
       product.setNewestPublishedDate(getNewestPublishedDate(document));
       product.setNewestReleaseVersion(latestVersion);
 
@@ -505,17 +497,14 @@ public class ProductServiceImpl implements ProductService {
 
       List<String> currentVersions = product.getReleasedVersions();
       if (CollectionUtils.isEmpty(currentVersions)) {
+        product.setReleasedVersions(new ArrayList<>());
         currentVersions = productModuleContentRepo.findVersionsByProductId(product.getId());
       }
       mavenVersions = mavenVersions.stream().filter(filterNonPersistVersion(currentVersions)).toList();
 
       List<ProductModuleContent> productModuleContents = new ArrayList<>();
       for (String version : mavenVersions) {
-        if (Objects.isNull(product.getReleasedVersions())) {
-          product.setReleasedVersions(new ArrayList<>());
-        }
         product.getReleasedVersions().add(version);
-
         handleProductArtifact(version, product, productModuleContents, mavenArtifact);
       }
 

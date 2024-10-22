@@ -6,7 +6,6 @@ import com.axonivy.market.entity.Metadata;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import lombok.extern.log4j.Log4j2;
-import org.apache.logging.log4j.util.Strings;
 import org.w3c.dom.Document;
 import org.w3c.dom.NodeList;
 import org.xml.sax.InputSource;
@@ -26,20 +25,15 @@ public class MetadataReaderUtils {
   private static final DateTimeFormatter SNAPSHOT_DATE_TIME_FORMATTER = DateTimeFormatter.ofPattern(
       MavenConstants.SNAPSHOT_LAST_UPDATED_DATE_TIME_FORMAT);
 
-  public static Metadata updateMetadataFromMavenXML(String xmlData, Metadata metadata, boolean isSnapShot) {
-    try {
-      DocumentBuilder builder = DocumentBuilderFactory.newInstance().newDocumentBuilder();
-      Document document = builder.parse(new InputSource(new StringReader(xmlData)));
-      document.getDocumentElement().normalize();
-      LocalDateTime lastUpdated = getLastUpdatedTimeFromDocument(document, isSnapShot);
-      if (lastUpdated.equals(metadata.getLastUpdated())) {
-        return metadata;
-      }
-      metadata.setLastUpdated(lastUpdated);
-      updateMetadataVersions(metadata, document, isSnapShot);
-    } catch (Exception e) {
-      log.error("Metadata Reader: can not read the metadata of {} with error", xmlData, e);
+  public static Metadata updateMetadataFromMavenXML(String xmlData, Metadata metadata,
+      boolean isSnapShot) {
+    Document document = getDocumentFromXMLContent(xmlData);
+    LocalDateTime lastUpdated = getLastUpdatedTimeFromDocument(document, isSnapShot);
+    if (lastUpdated.equals(metadata.getLastUpdated())) {
+      return metadata;
     }
+    metadata.setLastUpdated(lastUpdated);
+    updateMetadataVersions(metadata, document, isSnapShot);
     return metadata;
   }
 
@@ -75,18 +69,22 @@ public class MetadataReaderUtils {
 
   public static String getSnapshotVersionValue(String version,
       Artifact mavenArtifact) {
-    String snapshotVersionValue = Strings.EMPTY;
     String snapShotMetadataUrl = MavenUtils.buildSnapshotMetadataUrlFromArtifactInfo(mavenArtifact.getRepoUrl(),
         mavenArtifact.getGroupId(), mavenArtifact.getArtifactId(), version);
     String metadataContent = MavenUtils.getMetadataContentFromUrl(snapShotMetadataUrl);
+    Document document = getDocumentFromXMLContent(metadataContent);
+    return getElementValue(document, MavenConstants.VALUE_TAG);
+  }
+
+  public static Document getDocumentFromXMLContent(String xmlData) {
+    Document document = null;
     try {
       DocumentBuilder builder = DocumentBuilderFactory.newInstance().newDocumentBuilder();
-      Document document = builder.parse(new InputSource(new StringReader(metadataContent)));
+      document = builder.parse(new InputSource(new StringReader(xmlData)));
       document.getDocumentElement().normalize();
-      snapshotVersionValue = getElementValue(document, MavenConstants.VALUE_TAG);
     } catch (Exception e) {
-      log.error("Cannot get snapshot version value from maven {}", e.getMessage());
+      log.error("Metadata Reader: can not read the metadata of {} with error", xmlData, e);
     }
-    return snapshotVersionValue;
+    return document;
   }
 }
