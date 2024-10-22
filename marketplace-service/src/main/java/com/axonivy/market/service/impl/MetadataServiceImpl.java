@@ -58,8 +58,7 @@ public class MetadataServiceImpl implements MetadataService {
     }
   }
 
-  public void updateMavenArtifactVersionData(String productId, List<String> releasedVersions,
-      Set<Metadata> metadataSet, MavenArtifactVersion artifactVersionCache) {
+  public void updateMavenArtifactVersionData(Set<Metadata> metadataSet, MavenArtifactVersion artifactVersionCache) {
     for (Metadata metadata : metadataSet) {
       String metadataContent = MavenUtils.getMetadataContentFromUrl(metadata.getUrl());
       if (StringUtils.isBlank(metadataContent)) {
@@ -119,7 +118,7 @@ public class MetadataServiceImpl implements MetadataService {
       return false;
     }
     artifactVersionCache.setAdditionalArtifactsByVersion(new HashMap<>());
-    updateMavenArtifactVersionData(productId, product.getReleasedVersions(), metadataSet, artifactVersionCache);
+    updateMavenArtifactVersionData(metadataSet, artifactVersionCache);
 
     // Persist changed
     metadataSyncRepo.save(syncCache);

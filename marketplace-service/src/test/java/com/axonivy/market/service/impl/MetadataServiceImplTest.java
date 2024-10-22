@@ -6,8 +6,10 @@ import com.axonivy.market.entity.MavenArtifactVersion;
 import com.axonivy.market.entity.Metadata;
 import com.axonivy.market.entity.Product;
 import com.axonivy.market.model.MavenArtifactModel;
+import com.axonivy.market.repository.MavenArtifactVersionRepository;
+import com.axonivy.market.repository.MetadataRepository;
+import com.axonivy.market.repository.MetadataSyncRepository;
 import com.axonivy.market.repository.ProductJsonContentRepository;
-import com.axonivy.market.repository.ProductModuleContentRepository;
 import com.axonivy.market.repository.ProductRepository;
 import com.axonivy.market.util.MavenUtils;
 import lombok.extern.log4j.Log4j2;
@@ -21,6 +23,7 @@ import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.util.CollectionUtils;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
@@ -36,7 +39,12 @@ class MetadataServiceImplTest extends BaseSetup {
   @Mock
   ProductJsonContentRepository productJsonRepo;
   @Mock
-  ProductModuleContentRepository productContentRepo;
+  private MetadataRepository metadataRepo;
+  @Mock
+  private MavenArtifactVersionRepository mavenArtifactVersionRepo;
+
+  @Mock
+  private MetadataSyncRepository metadataSyncRepo;
 
   @Test
   void testGetArtifactsFromNonSyncedVersion() {
@@ -124,6 +132,7 @@ class MetadataServiceImplTest extends BaseSetup {
   @Test
   void testSyncAllProductsMetadata() {
     Mockito.when(productRepo.getAllProductsWithIdAndReleaseTagAndArtifact()).thenReturn(List.of(new Product()));
+    Mockito.when(metadataRepo.findByProductId(Mockito.isNull())).thenReturn(new ArrayList<>());
     int result = metadataService.syncAllProductsMetadata();
     Assertions.assertEquals(1, result);
     Mockito.when(productRepo.getAllProductsWithIdAndReleaseTagAndArtifact()).thenReturn(getMockProducts());
@@ -133,22 +142,18 @@ class MetadataServiceImplTest extends BaseSetup {
 
   @Test
   void testUpdateMavenArtifactVersionData() {
-    List<String> releasedVersion = List.of(MOCK_RELEASED_VERSION);
     Metadata mockMetadata = getMockMetadata();
     mockMetadata.setVersions(new HashSet<>());
     mockMetadata.setUrl(MOCK_MAVEN_URL);
     Set<Metadata> mockMetadataSet = Set.of(mockMetadata);
     MavenArtifactVersion mockMavenArtifactVersion = getMockMavenArtifactVersion();
-    metadataService.updateMavenArtifactVersionData(MOCK_PRODUCT_ID, releasedVersion, mockMetadataSet,
+    metadataService.updateMavenArtifactVersionData(mockMetadataSet,
         mockMavenArtifactVersion);
     Assertions.assertEquals(0, mockMavenArtifactVersion.getAdditionalArtifactsByVersion().size());
     Assertions.assertEquals(0, mockMavenArtifactVersion.getProductArtifactsByVersion().size());
     try (MockedStatic<MavenUtils> mockUtils = Mockito.mockStatic(MavenUtils.class)) {
       mockUtils.when(() -> MavenUtils.getMetadataContentFromUrl(MOCK_MAVEN_URL)).thenReturn(getMockMetadataContent());
-      Mockito.when(
-          productContentRepo.findByTagAndProductId(MOCK_TAG_FROM_RELEASED_VERSION, MOCK_PRODUCT_ID)).thenReturn(
-          getMockProductModuleContent());
-      metadataService.updateMavenArtifactVersionData(MOCK_PRODUCT_ID, releasedVersion, mockMetadataSet,
+      metadataService.updateMavenArtifactVersionData(mockMetadataSet,
           mockMavenArtifactVersion);
       Assertions.assertEquals(2, mockMavenArtifactVersion.getProductArtifactsByVersion().size());
     }

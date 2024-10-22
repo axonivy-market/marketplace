@@ -115,10 +115,6 @@ public class BaseSetup {
     return result;
   }
 
-  protected static String getMockSetupMd() {
-    return getContentFromTestResourcePath(MOCK_SETUP_MD_PATH);
-  }
-
   private static String getContentFromTestResourcePath(String path) {
     try {
       return Files.readString(Paths.get(path));

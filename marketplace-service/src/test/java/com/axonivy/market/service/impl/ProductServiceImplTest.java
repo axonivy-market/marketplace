@@ -18,14 +18,12 @@ import com.axonivy.market.enums.TypeOption;
 import com.axonivy.market.exceptions.model.InvalidParamException;
 import com.axonivy.market.github.model.GitHubFile;
 import com.axonivy.market.github.service.GHAxonIvyMarketRepoService;
-import com.axonivy.market.github.service.GHAxonIvyProductRepoService;
 import com.axonivy.market.github.service.GitHubService;
 import com.axonivy.market.model.ProductCustomSortRequest;
 import com.axonivy.market.repository.GitHubRepoMetaRepository;
 import com.axonivy.market.repository.ImageRepository;
 import com.axonivy.market.repository.MavenArtifactVersionRepository;
 import com.axonivy.market.repository.MetadataRepository;
-import com.axonivy.market.repository.MetadataSyncRepository;
 import com.axonivy.market.repository.ProductCustomSortRepository;
 import com.axonivy.market.repository.ProductJsonContentRepository;
 import com.axonivy.market.repository.ProductModuleContentRepository;
@@ -123,11 +121,7 @@ class ProductServiceImplTest extends BaseSetup {
   @Mock
   private MetadataRepository metadataRepo;
   @Mock
-  private MetadataSyncRepository metadataSyncRepo;
-  @Mock
   private ProductCustomSortRepository productCustomSortRepo;
-  @Mock
-  private GHAxonIvyProductRepoService ghAxonIvyProductRepoService;
   @Mock
   private ImageService imageService;
   @Mock
@@ -455,7 +449,7 @@ class ProductServiceImplTest extends BaseSetup {
     Product mockProduct = getMockProduct();
     when(mavenArtifactVersionRepo.findById(MOCK_PRODUCT_ID)).thenReturn(
         Optional.ofNullable(mockMavenArtifactVersion));
-    when(productRepo.getProductByIdAndTag(MOCK_PRODUCT_ID, MOCK_TAG_FROM_SNAPSHOT_VERSION)).thenReturn(null);
+    when(productRepo.getProductByIdAndTag(MOCK_PRODUCT_ID, MOCK_SNAPSHOT_VERSION)).thenReturn(null);
     mockProduct.setSynchronizedInstallationCount(true);
     Product result = productService.fetchProductDetail(MOCK_PRODUCT_ID, true);
     assertNull(result);
@@ -465,16 +459,20 @@ class ProductServiceImplTest extends BaseSetup {
   void testGetProductByIdWithNewestReleaseVersion() {
     MavenArtifactVersion mockMavenArtifactVersion = getMockMavenArtifactVersionWithData();
     Product mockProduct = getMockProduct();
-    try (MockedStatic<MavenUtils> mockUtils = Mockito.mockStatic(MavenUtils.class)) {
-      when(mavenArtifactVersionRepo.findById(MOCK_PRODUCT_ID)).thenReturn(
-          Optional.ofNullable(mockMavenArtifactVersion));
-      when(productRepo.getProductByIdAndTag(MOCK_PRODUCT_ID, MOCK_SNAPSHOT_VERSION)).thenReturn(mockProduct);
 
+    try (MockedStatic<MavenUtils> mockUtils = Mockito.mockStatic(MavenUtils.class)) {
+      mockUtils.when(() -> mavenArtifactVersionRepo.findById(MOCK_PRODUCT_ID)).thenReturn(
+          Optional.of(mockMavenArtifactVersion));
+      when(MavenUtils.getAllExistingVersions(mockMavenArtifactVersion, true, StringUtils.EMPTY))
+          .thenReturn(List.of(MOCK_SNAPSHOT_VERSION));
+
+      when(productRepo.getProductByIdAndTag(MOCK_PRODUCT_ID, MOCK_SNAPSHOT_VERSION)).thenReturn(mockProduct);
       when(productJsonContentRepo.findByProductIdAndVersion(MOCK_PRODUCT_ID, MOCK_SNAPSHOT_VERSION))
           .thenReturn(List.of(getMockProductJsonContentContainMavenDropins()));
 
       Product result = productService.getProductByIdWithNewestReleaseVersion(MOCK_PRODUCT_ID, true);
       assertEquals(mockProduct, result);
+
       when(mavenArtifactVersionRepo.findById(MOCK_PRODUCT_ID)).thenReturn(Optional.empty());
       when(productRepo.getReleasedVersionsById(MOCK_PRODUCT_ID)).thenReturn(List.of(MOCK_SNAPSHOT_VERSION));
       when(productRepo.getProductByIdAndTag(MOCK_PRODUCT_ID, MOCK_SNAPSHOT_VERSION)).thenReturn(mockProduct);
@@ -502,7 +500,7 @@ class ProductServiceImplTest extends BaseSetup {
     Metadata mockMetadata = getMockMetadataWithVersions();
     mockMetadata.setArtifactId(MOCK_PRODUCT_ARTIFACT_ID);
     when(metadataRepo.findByProductId(MOCK_PRODUCT_ID)).thenReturn(List.of(mockMetadata));
-    when(productRepo.getProductByIdAndTag(MOCK_PRODUCT_ID, MOCK_TAG_FROM_RELEASED_VERSION)).thenReturn(mockProduct);
+    when(productRepo.getProductByIdAndTag(MOCK_PRODUCT_ID, MOCK_RELEASED_VERSION)).thenReturn(mockProduct);
     Product result = productService.fetchBestMatchProductDetail(MOCK_PRODUCT_ID, MOCK_RELEASED_VERSION);
     assertEquals(mockProduct, result);
   }

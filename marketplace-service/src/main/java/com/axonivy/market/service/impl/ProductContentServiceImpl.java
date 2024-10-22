@@ -57,7 +57,7 @@ public class ProductContentServiceImpl implements ProductContentService {
     return productModuleContent;
   }
 
-  private void updateDependencyContentsFromProductJson(ProductModuleContent productModuleContent,
+  public void updateDependencyContentsFromProductJson(ProductModuleContent productModuleContent,
       Product product, String unzippedFolderPath) throws IOException {
     List<Artifact> artifacts = MavenUtils.convertProductJsonToMavenProductInfo(
         Paths.get(unzippedFolderPath));
