@@ -14,7 +14,7 @@ jobs:
         id: run_tests
         run: |
           echo "Run defined api collection & gen test report"
-          newman run https://api.postman.com/collections/${{ secrets.POSTMAN_COLLECTION_ID }}?access_key=${{ secrets.POSTMAN_API_KEY }} -r htmlextra --reporter-htmlextra-title "Api Testing Report - Axon Ivy Marketplace" --reporter-htmlextra-browserTitle "Axon Ivy Market Api Testing Report" --reporter-htmlextra-export "./test-report.html"
+          newman run "https://api.postman.com/collections/${{ secrets.POSTMAN_COLLECTION_ID }}?access_key=${{ secrets.POSTMAN_API_KEY }}" -r htmlextra --reporter-htmlextra-title "Api Testing Report - Axon Ivy Marketplace" --reporter-htmlextra-browserTitle "Axon Ivy Market Api Testing Report" --reporter-htmlextra-export "./test-report.html"
           ls -l
 
       - name: Export report
