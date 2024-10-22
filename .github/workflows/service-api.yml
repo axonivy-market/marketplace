@@ -4,7 +4,7 @@ on:
   push:
 
 jobs:
-  test:
+  Test:
     runs-on: self-hosted
 
     steps:
@@ -17,4 +17,4 @@ jobs:
           newman run "https://api.postman.com/collections/${{ secrets.POSTMAN_COLLECTION_ID }}?access_key=${{ secrets.POSTMAN_API_KEY }}" -r htmlextra --reporter-htmlextra-title "Api Testing Report - Axon Ivy Marketplace" --reporter-htmlextra-browserTitle "Axon Ivy Market Api Testing Report" --reporter-htmlextra-export "./test-report.html"
 
       - name: Add report link to summary
-        run: echo "[View Test Report](./artifacts/postman-test-report/test-report.html)" >> $GITHUB_STEP_SUMMARY
+        run: echo "[View Test Report](./test-report.html)" >> $GITHUB_STEP_SUMMARY
