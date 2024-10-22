@@ -171,12 +171,20 @@ public class ProductServiceImpl implements ProductService {
   }
 
   @Override
-  public List<String> syncLatestDataFromMarketRepo() {
+  public List<String> syncLatestDataFromMarketRepo(Boolean resetSync) {
     List<String> syncedProductIds = new ArrayList<>();
-    var isAlreadyUpToDate = isLastGithubCommitCovered();
+    var isAlreadyUpToDate = false;
+    if (BooleanUtils.isTrue(resetSync)) {
+      marketRepoMeta = gitHubRepoMetaRepo.findByRepoName(GitHubConstants.AXONIVY_MARKETPLACE_REPO_NAME);
+      gitHubRepoMetaRepo.delete(marketRepoMeta);
+      marketRepoMeta = null;
+    } else {
+      isAlreadyUpToDate = isLastGithubCommitCovered();
+    }
+
     if (!isAlreadyUpToDate) {
       if (marketRepoMeta == null) {
-        syncedProductIds = syncProductsFromGitHubRepo();
+        syncedProductIds = syncProductsFromGitHubRepo(resetSync);
         marketRepoMeta = new GitHubRepoMeta();
       } else {
         syncedProductIds = updateLatestChangeToProductsFromGithubRepo();
@@ -397,7 +405,7 @@ public class ProductServiceImpl implements ProductService {
     }
   }
 
-  private List<String> syncProductsFromGitHubRepo() {
+  private List<String> syncProductsFromGitHubRepo(Boolean resetSync) {
     log.warn("**ProductService: synchronize products from scratch based on the Market repo");
     List<String> syncedProductIds = new ArrayList<>();
     var gitHubContentMap = axonIvyMarketRepoService.fetchAllMarketItems();
@@ -411,9 +419,10 @@ public class ProductServiceImpl implements ProductService {
         mappingVendorImageFromGHContent(product, content);
         mappingLogoFromGHContent(product, content);
       }
-      if (productRepo.findById(product.getId()).isPresent()) {
+      if (productRepo.findById(product.getId()).isPresent() && BooleanUtils.isNotTrue(resetSync)) {
         continue;
       }
+
       updateProductContentForNonStandardProduct(ghContentEntity.getValue(), product);
       updateProductFromReleasedVersions(product);
       transferComputedDataFromDB(product);
@@ -647,12 +656,6 @@ public class ProductServiceImpl implements ProductService {
   @Override
   public Product fetchProductDetailByIdAndVersion(String id, String version) {
     return productRepo.getProductByIdAndVersion(id, version);
-  }
-
-  @Override
-  public void clearAllProducts() {
-    gitHubRepoMetaRepo.deleteAll();
-    productRepo.deleteAll();
   }
 
   @Override

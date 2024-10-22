@@ -228,7 +228,7 @@ class ProductServiceImplTest extends BaseSetup {
     when(productRepo.save(any(Product.class))).thenReturn(new Product());
 
     // Executes
-    var result = productService.syncLatestDataFromMarketRepo();
+    var result = productService.syncLatestDataFromMarketRepo(false);
     assertNotNull(result);
     assertTrue(result.isEmpty());
 
@@ -238,7 +238,7 @@ class ProductServiceImplTest extends BaseSetup {
     when(marketRepoService.getLastCommit(anyLong())).thenReturn(mockCommit);
     mockGithubFile.setStatus(FileStatus.REMOVED);
     // Executes
-    result = productService.syncLatestDataFromMarketRepo();
+    result = productService.syncLatestDataFromMarketRepo(false);
     assertNotNull(result);
     assertTrue(result.isEmpty());
   }
@@ -258,7 +258,7 @@ class ProductServiceImplTest extends BaseSetup {
     when(marketRepoService.fetchMarketItemsBySHA1Range(any(), any())).thenReturn(List.of(mockGitHubFile));
 
     // Executes
-    var result = productService.syncLatestDataFromMarketRepo();
+    var result = productService.syncLatestDataFromMarketRepo(false);
     assertNotNull(result);
     assertTrue(result.isEmpty());
 
@@ -268,7 +268,7 @@ class ProductServiceImplTest extends BaseSetup {
     when(marketRepoService.fetchMarketItemsBySHA1Range(any(), any())).thenReturn(List.of(mockGitHubFile));
 
     // Executes
-    result = productService.syncLatestDataFromMarketRepo();
+    result = productService.syncLatestDataFromMarketRepo(false);
     assertNotNull(result);
     assertTrue(result.isEmpty());
   }
@@ -323,7 +323,7 @@ class ProductServiceImplTest extends BaseSetup {
         .thenReturn(GHAxonIvyProductRepoServiceImplTest.mockImage());
     when(productRepo.save(any(Product.class))).thenReturn(new Product());
     // Executes
-    productService.syncLatestDataFromMarketRepo();
+    productService.syncLatestDataFromMarketRepo(false);
     verify(productModuleContentRepo).saveAll(argumentCaptorProductModuleContents.capture());
     verify(productRepo).save(argumentCaptor.capture());
 
@@ -352,7 +352,7 @@ class ProductServiceImplTest extends BaseSetup {
         GHAxonIvyProductRepoServiceImplTest.mockImage());
     when(productRepo.save(any(Product.class))).thenReturn(new Product());
     // Executes
-    productService.syncLatestDataFromMarketRepo();
+    productService.syncLatestDataFromMarketRepo(false);
     verify(productModuleContentRepo).save(argumentCaptorProductModuleContent.capture());
     assertEquals("1.0", argumentCaptorProductModuleContent.getValue().getVersion());
   }
@@ -381,7 +381,7 @@ class ProductServiceImplTest extends BaseSetup {
       mockUtils.when(() -> MavenUtils.getMetadataContentFromUrl(any())).thenReturn(getMockMetadataContent());
       when(MavenUtils.buildDownloadUrl(any(), any(), any(), any(), any(), any())).thenReturn(MOCK_DOWNLOAD_URL);
       // Executes
-      productService.syncLatestDataFromMarketRepo();
+      productService.syncLatestDataFromMarketRepo(false);
 
       verify(productModuleContentRepo).saveAll(argumentCaptorProductModuleContents.capture());
       verify(productRepo).save(argumentCaptor.capture());
@@ -399,7 +399,7 @@ class ProductServiceImplTest extends BaseSetup {
     when(repoMetaRepo.findByRepoName(anyString())).thenReturn(gitHubRepoMeta);
 
     // Executes
-    var result = productService.syncLatestDataFromMarketRepo();
+    var result = productService.syncLatestDataFromMarketRepo(false);
     assertNotNull(result);
     assertTrue(result.isEmpty());
   }
@@ -416,7 +416,7 @@ class ProductServiceImplTest extends BaseSetup {
     when(productRepo.save(any(Product.class))).thenReturn(new Product());
 
     // Executes
-    productService.syncLatestDataFromMarketRepo();
+    productService.syncLatestDataFromMarketRepo(false);
     verify(productRepo).save(argumentCaptor.capture());
 
     assertThat(argumentCaptor.getValue().getProductModuleContent()).isNull();
@@ -588,14 +588,6 @@ class ProductServiceImplTest extends BaseSetup {
     assertEquals(SortOption.ALPHABETICALLY.getCode("en"), order.getProperty());
   }
 
-  @Test
-  void testClearAllProducts() {
-    productService.clearAllProducts();
-
-    verify(repoMetaRepo).deleteAll();
-    verify(productRepo).deleteAll();
-  }
-
   private void mockMarketRepoMetaStatus() {
     var mockMarketRepoMeta = new GitHubRepoMeta();
     mockMarketRepoMeta.setRepoURL(GitHubConstants.AXONIVY_MARKETPLACE_REPO_NAME);
@@ -649,7 +641,7 @@ class ProductServiceImplTest extends BaseSetup {
     when(marketRepoService.fetchMarketItemsBySHA1Range(any(), any())).thenReturn(List.of(mockGitHubFile));
 
     // Executes
-    var result = productService.syncLatestDataFromMarketRepo();
+    var result = productService.syncLatestDataFromMarketRepo(false);
     assertNotNull(result);
     assertTrue(result.isEmpty());
 
@@ -660,7 +652,7 @@ class ProductServiceImplTest extends BaseSetup {
     when(imageRepo.findByImageUrlEndsWithIgnoreCase(anyString()))
         .thenReturn(List.of(GHAxonIvyProductRepoServiceImplTest.mockImage()));
     // Executes
-    result = productService.syncLatestDataFromMarketRepo();
+    result = productService.syncLatestDataFromMarketRepo(false);
 
     verify(productRepo).deleteById(anyString());
     verify(imageRepo).deleteAllByProductId(anyString());
@@ -685,7 +677,7 @@ class ProductServiceImplTest extends BaseSetup {
     when(productRepo.findByMarketDirectory(anyString())).thenReturn(getMockProducts());
 
     // Executes
-    var result = productService.syncLatestDataFromMarketRepo();
+    var result = productService.syncLatestDataFromMarketRepo(false);
 
     assertNotNull(result);
     assertFalse(result.isEmpty());
@@ -736,7 +728,7 @@ class ProductServiceImplTest extends BaseSetup {
     when(productRepo.save(any(Product.class))).thenReturn(new Product());
 
     // Executes
-    var result = productService.syncLatestDataFromMarketRepo();
+    var result = productService.syncLatestDataFromMarketRepo(false);
     assertNotNull(result);
     assertTrue(result.isEmpty());
   }

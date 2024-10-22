@@ -1,8 +1,8 @@
 package com.axonivy.market.schedulingtask;
 
-import com.axonivy.market.service.MetadataService;
 import com.axonivy.market.repository.ProductRepository;
 import com.axonivy.market.service.ExternalDocumentService;
+import com.axonivy.market.service.MetadataService;
 import com.axonivy.market.service.ProductService;
 import lombok.AllArgsConstructor;
 import lombok.extern.log4j.Log4j2;
@@ -28,7 +28,7 @@ public class ScheduledTasks {
   @Scheduled(cron = SCHEDULING_TASK_PRODUCTS_CRON)
   public void syncDataForProductFromGitHubRepo() {
     log.warn("Started sync data for product from GitHub repo");
-    productService.syncLatestDataFromMarketRepo();
+    productService.syncLatestDataFromMarketRepo(false);
   }
 
   @Scheduled(cron = SCHEDULING_TASK_MAVEN_VERSION_CRON)

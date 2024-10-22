@@ -11,15 +11,13 @@ import java.util.List;
 public interface ProductService {
   Page<Product> findProducts(String type, String keyword, String language, Boolean isRESTClient, Pageable pageable);
 
-  List<String> syncLatestDataFromMarketRepo();
+  List<String> syncLatestDataFromMarketRepo(Boolean resetSync);
 
   int updateInstallationCountForProduct(String key, String designerVersion);
 
   Product fetchProductDetail(String id, Boolean isShowDevVersion);
 
-  String getCompatibilityFromOldestVersion(String oldestTag);
-
-  void clearAllProducts();
+  String getCompatibilityFromOldestVersion(String oldestVersion);
 
   void addCustomSortProduct(ProductCustomSortRequest customSort) throws InvalidParamException;
 
