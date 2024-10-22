@@ -23,15 +23,14 @@ jobs:
         id: run_tests_with_html_report
         run: |
           echo "Run defined api collection & gen html test report with newman cli"
-          # newman run "https://api.postman.com/collections/${{ secrets.POSTMAN_COLLECTION_ID }}?access_key=${{ secrets.POSTMAN_API_KEY }}" -r htmlextra --reporter-htmlextra-title "Api Testing Report - Axon Ivy Marketplace" --reporter-htmlextra-browserTitle "Axon Ivy Market Api Testing Report" --reporter-htmlextra-export "./test-report.html"
-          ls -l
-        
+          newman run "https://api.postman.com/collections/${{ secrets.POSTMAN_COLLECTION_ID }}?access_key=${{ secrets.POSTMAN_API_KEY }}" -r htmlextra --reporter-htmlextra-title "Api Testing Report - Axon Ivy Marketplace" --reporter-htmlextra-browserTitle "Axon Ivy Market Api Testing Report" --reporter-htmlextra-export "./test-report.html"
+
       - name: Upload failed report as artifact
         if: failure()
         uses: actions/upload-artifact@v3
         with:
           name: postman-test-report
-          path: ./test-report.html
+          path: test-report.html
           retention-days: 2
 
       - name: Export test summary
