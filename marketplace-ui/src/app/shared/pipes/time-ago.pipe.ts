@@ -2,7 +2,14 @@ import { inject, Pipe, PipeTransform } from '@angular/core';
 import { Language } from '../enums/language.enum';
 import { TranslateService } from '@ngx-translate/core';
 import { TimeAgo } from '../enums/time-ago.enum';
-import { DAYS_IN_A_MONTH, DAYS_IN_A_WEEK, DAYS_IN_A_YEAR, HOURS_IN_A_DAY, MINUTES_IN_A_HOUR, SECONDS_IN_A_MINUTE } from '../constants/common.constant';
+import {
+  DAYS_IN_A_MONTH,
+  DAYS_IN_A_WEEK,
+  DAYS_IN_A_YEAR,
+  HOURS_IN_A_DAY,
+  MINUTES_IN_A_HOUR,
+  SECONDS_IN_A_MINUTE
+} from '../constants/common.constant';
 
 @Pipe({
   standalone: true,
@@ -64,11 +71,11 @@ export class TimeAgoPipe implements PipeTransform {
   private getYearsAgoText(years: number) {
     let timeAgo;
     if (years > 1) {
-      timeAgo = `${years} ${this.translateService.instant(TimeAgo.YEARS_AGO)}`;
+      timeAgo = this.getTranslatedTimeAgo(TimeAgo.YEARS_AGO, years);
     } else if (years === 1) {
-      timeAgo = `${years} ${this.translateService.instant(TimeAgo.YEAR_AGO)}`;
+      timeAgo = this.getTranslatedTimeAgo(TimeAgo.YEAR_AGO, years);
     } else {
-      timeAgo = ''
+      timeAgo = '';
     }
 
     return timeAgo;
@@ -77,11 +84,11 @@ export class TimeAgoPipe implements PipeTransform {
   private getMonthsAgoText(months: number) {
     let timeAgo;
     if (months > 1) {
-      timeAgo = `${months} ${this.translateService.instant(TimeAgo.MONTHS_AGO)}`;
+      timeAgo = this.getTranslatedTimeAgo(TimeAgo.MONTHS_AGO, months);
     } else if (months === 1) {
-      timeAgo = `${months} ${this.translateService.instant(TimeAgo.MONTH_AGO)}`;
+      timeAgo = this.getTranslatedTimeAgo(TimeAgo.MONTH_AGO, months);
     } else {
-      timeAgo = ''
+      timeAgo = '';
     }
 
     return timeAgo;
@@ -90,11 +97,11 @@ export class TimeAgoPipe implements PipeTransform {
   private getWeeksAgoText(weeks: number) {
     let timeAgo;
     if (weeks > 1) {
-      timeAgo = `${weeks} ${this.translateService.instant(TimeAgo.WEEKS_AGO)}`;
+      timeAgo = this.getTranslatedTimeAgo(TimeAgo.WEEKS_AGO, weeks);
     } else if (weeks === 1) {
-      timeAgo = `${weeks} ${this.translateService.instant(TimeAgo.WEEK_AGO)}`;
+      timeAgo = this.getTranslatedTimeAgo(TimeAgo.WEEK_AGO, weeks);
     } else {
-      timeAgo = ''
+      timeAgo = '';
     }
 
     return timeAgo;
@@ -103,11 +110,11 @@ export class TimeAgoPipe implements PipeTransform {
   private getDaysAgoText(days: number) {
     let timeAgo;
     if (days > 1) {
-      timeAgo = `${days} ${this.translateService.instant(TimeAgo.DAYS_AGO)}`;
+      timeAgo = this.getTranslatedTimeAgo(TimeAgo.DAYS_AGO, days);
     } else if (days === 1) {
-      timeAgo = `${days} ${this.translateService.instant(TimeAgo.DAY_AGO)}`;
+      timeAgo = this.getTranslatedTimeAgo(TimeAgo.DAY_AGO, days);
     } else {
-      timeAgo = ''
+      timeAgo = '';
     }
 
     return timeAgo;
@@ -116,11 +123,11 @@ export class TimeAgoPipe implements PipeTransform {
   private getHoursAgoText(hours: number) {
     let timeAgo;
     if (hours > 1) {
-      timeAgo = `${hours} ${this.translateService.instant(TimeAgo.HOURS_AGO)}`;
+      timeAgo = this.getTranslatedTimeAgo(TimeAgo.HOURS_AGO, hours);
     } else if (hours === 1) {
-      timeAgo = `${hours} ${this.translateService.instant(TimeAgo.HOUR_AGO)}`;
+      timeAgo = this.getTranslatedTimeAgo(TimeAgo.HOUR_AGO, hours);
     } else {
-      timeAgo = ''
+      timeAgo = '';
     }
 
     return timeAgo;
@@ -129,11 +136,11 @@ export class TimeAgoPipe implements PipeTransform {
   private getMinutesAgoText(minutes: number) {
     let timeAgo;
     if (minutes > 1) {
-      timeAgo = `${minutes} ${this.translateService.instant(TimeAgo.MINUTES_AGO)}`;
+      timeAgo = this.getTranslatedTimeAgo(TimeAgo.MINUTES_AGO, minutes);
     } else if (minutes === 1) {
-      timeAgo = `${minutes} ${this.translateService.instant(TimeAgo.MINUTE_AGO)}`;
+      timeAgo = this.getTranslatedTimeAgo(TimeAgo.MINUTE_AGO, minutes);
     } else {
-      timeAgo = ''
+      timeAgo = '';
     }
 
     return timeAgo;
@@ -142,11 +149,15 @@ export class TimeAgoPipe implements PipeTransform {
   private getSecondsAgoText(seconds: number) {
     let timeAgo;
     if (seconds > 1) {
-      timeAgo = `${seconds} ${this.translateService.instant(TimeAgo.SECONDS_AGO)}`;
+      timeAgo = this.getTranslatedTimeAgo(TimeAgo.SECONDS_AGO, seconds);
     } else {
-      timeAgo = `${seconds} ${this.translateService.instant(TimeAgo.SECOND_AGO)}`;
+      timeAgo = this.getTranslatedTimeAgo(TimeAgo.SECOND_AGO, seconds);
     }
 
     return timeAgo;
+  }
+
+  private getTranslatedTimeAgo(timeAgo: TimeAgo, timeNumber: number) {
+    return this.translateService.instant(timeAgo, { number: timeNumber })
   }
 }

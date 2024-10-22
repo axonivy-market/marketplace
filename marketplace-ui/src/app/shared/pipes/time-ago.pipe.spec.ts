@@ -39,7 +39,7 @@ describe('TimeAgoPipe', () => {
     const oneYearAgo = new Date();
     oneYearAgo.setFullYear(new Date().getFullYear() - 1);
     expect(pipe.transform(oneYearAgo, Language.EN)).toBe(
-      `1 ${translateService.instant(TimeAgo.YEAR_AGO)}`
+      translateService.instant(TimeAgo.YEAR_AGO, { number: 1 })
     );
   });
 
@@ -47,7 +47,7 @@ describe('TimeAgoPipe', () => {
     const twoYearsAgo = new Date();
     twoYearsAgo.setFullYear(new Date().getFullYear() - 2);
     expect(pipe.transform(twoYearsAgo, Language.EN)).toBe(
-      `2 ${translateService.instant(TimeAgo.YEARS_AGO)}`
+      translateService.instant(TimeAgo.YEARS_AGO, { number: 2 })
     );
   });
 
@@ -55,7 +55,7 @@ describe('TimeAgoPipe', () => {
     const oneMonthAgo = new Date();
     oneMonthAgo.setMonth(new Date().getMonth() - 1);
     expect(pipe.transform(oneMonthAgo, Language.EN)).toBe(
-      `1 ${translateService.instant(TimeAgo.MONTH_AGO)}`
+      translateService.instant(TimeAgo.MONTH_AGO, { number: 1 })
     );
   });
 
@@ -63,7 +63,7 @@ describe('TimeAgoPipe', () => {
     const twoMonthsAgo = new Date();
     twoMonthsAgo.setMonth(new Date().getMonth() - 2);
     expect(pipe.transform(twoMonthsAgo, Language.EN)).toBe(
-      `2 ${translateService.instant(TimeAgo.MONTHS_AGO)}`
+      translateService.instant(TimeAgo.MONTHS_AGO, { number: 2 })
     );
   });
 
@@ -71,7 +71,7 @@ describe('TimeAgoPipe', () => {
     const oneWeekAgo = new Date();
     oneWeekAgo.setDate(new Date().getDate() - 7);
     expect(pipe.transform(oneWeekAgo, Language.EN)).toBe(
-      `1 ${translateService.instant(TimeAgo.WEEK_AGO)}`
+      translateService.instant(TimeAgo.WEEK_AGO, { number: 1 })
     );
   });
 
@@ -79,7 +79,7 @@ describe('TimeAgoPipe', () => {
     const twoWeeksAgo = new Date();
     twoWeeksAgo.setDate(new Date().getDate() - 14);
     expect(pipe.transform(twoWeeksAgo, Language.EN)).toBe(
-      `2 ${translateService.instant(TimeAgo.WEEKS_AGO)}`
+      translateService.instant(TimeAgo.WEEKS_AGO, { number: 2 })
     );
   });
 
@@ -87,7 +87,7 @@ describe('TimeAgoPipe', () => {
     const oneDayAgo = new Date();
     oneDayAgo.setDate(new Date().getDate() - 1);
     expect(pipe.transform(oneDayAgo, Language.EN)).toBe(
-      `1 ${translateService.instant(TimeAgo.DAY_AGO)}`
+      translateService.instant(TimeAgo.DAY_AGO, { number: 1 })
     );
   });
 
@@ -95,7 +95,7 @@ describe('TimeAgoPipe', () => {
     const twoDaysAgo = new Date();
     twoDaysAgo.setDate(new Date().getDate() - 2);
     expect(pipe.transform(twoDaysAgo, Language.EN)).toBe(
-      `2 ${translateService.instant(TimeAgo.DAYS_AGO)}`
+      translateService.instant(TimeAgo.DAYS_AGO, { number: 2 })
     );
   });
 
@@ -103,7 +103,7 @@ describe('TimeAgoPipe', () => {
     const oneHourAgo = new Date();
     oneHourAgo.setHours(new Date().getHours() - 1);
     expect(pipe.transform(oneHourAgo, Language.EN)).toBe(
-      `1 ${translateService.instant(TimeAgo.HOUR_AGO)}`
+      translateService.instant(TimeAgo.HOUR_AGO, { number: 1 })
     );
   });
 
@@ -111,7 +111,7 @@ describe('TimeAgoPipe', () => {
     const twoHoursAgo = new Date();
     twoHoursAgo.setHours(new Date().getHours() - 2);
     expect(pipe.transform(twoHoursAgo, Language.EN)).toBe(
-      `2 ${translateService.instant(TimeAgo.HOURS_AGO)}`
+      translateService.instant(TimeAgo.HOURS_AGO, { number: 2 })
     );
   });
 
@@ -119,7 +119,7 @@ describe('TimeAgoPipe', () => {
     const oneMinuteAgo = new Date();
     oneMinuteAgo.setMinutes(new Date().getMinutes() - 1);
     expect(pipe.transform(oneMinuteAgo, Language.EN)).toBe(
-      `1 ${translateService.instant(TimeAgo.MINUTE_AGO)}`
+      translateService.instant(TimeAgo.MINUTE_AGO, { number: 1 })
     );
   });
 
@@ -127,13 +127,13 @@ describe('TimeAgoPipe', () => {
     const twoMinutesAgo = new Date();
     twoMinutesAgo.setMinutes(new Date().getMinutes() - 2);
     expect(pipe.transform(twoMinutesAgo, Language.EN)).toBe(
-      `2 ${translateService.instant(TimeAgo.MINUTES_AGO)}`
+      translateService.instant(TimeAgo.MINUTES_AGO, { number: 2 })
     );
   });
 
   it('should render the text 0 second ago', () => {
     expect(pipe.transform(new Date(), Language.EN)).toBe(
-      `0 ${translateService.instant(TimeAgo.SECOND_AGO)}`
+      translateService.instant(TimeAgo.SECOND_AGO, { number: 0 })
     );
   });
 
@@ -141,7 +141,7 @@ describe('TimeAgoPipe', () => {
     const twoSecondsAgo = new Date();
     twoSecondsAgo.setSeconds(new Date().getSeconds() - 2);
     expect(pipe.transform(twoSecondsAgo, Language.EN)).toBe(
-      `2 ${translateService.instant(TimeAgo.SECONDS_AGO)}`
+      translateService.instant(TimeAgo.SECONDS_AGO, { number: 2 })
     );
   });
 });

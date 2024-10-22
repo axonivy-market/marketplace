@@ -116,17 +116,17 @@ common:
   labels:
     redirecting: Redirecting ...!
   timeAgo:
-    yearAgo: year ago
-    yearsAgo: years ago
-    monthAgo: month ago
-    monthsAgo: months ago
-    weekAgo: week ago
-    weeksAgo: weeks ago
-    dayAgo: day ago
-    daysAgo: days ago
-    hourAgo: hour ago
-    hoursAgo: hours ago
-    minuteAgo: minute ago
-    minutesAgo: minutes ago
-    secondAgo: second ago
-    secondsAgo: seconds ago
+    yearAgo: '{{ number }} year ago'
+    yearsAgo: '{{ number }} years ago'
+    monthAgo: '{{ number }} month ago'
+    monthsAgo: '{{ number }} months ago'
+    weekAgo: '{{ number }} week ago'
+    weeksAgo: '{{ number }} weeks ago'
+    dayAgo: '{{ number }} day ago'
+    daysAgo: '{{ number }} days ago'
+    hourAgo: '{{ number }} hour ago'
+    hoursAgo: '{{ number }} hours ago'
+    minuteAgo: '{{ number }} minute ago'
+    minutesAgo: '{{ number }} minutes ago'
+    secondAgo: '{{ number }} second ago'
+    secondsAgo: '{{ number }} seconds ago'
