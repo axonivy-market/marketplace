@@ -170,13 +170,6 @@ public class MavenUtils {
         StringUtils.EMPTY);
   }
 
-  public static String buildDownloadUrl(Metadata metadata, String version) {
-    String groupIdByVersion = metadata.getGroupId();
-    groupIdByVersion = groupIdByVersion.replace(CommonConstants.DOT_SEPARATOR, CommonConstants.SLASH);
-    return buildDownloadUrl(metadata.getArtifactId(), version, metadata.getType(), metadata.getRepoUrl(),
-        groupIdByVersion, StringUtils.EMPTY);
-  }
-
   public static String buildDownloadUrl(String artifactId, String baseVersion, String type, String repoUrl,
       String groupId, String version) {
     groupId = groupId.replace(CommonConstants.DOT_SEPARATOR, CommonConstants.SLASH);

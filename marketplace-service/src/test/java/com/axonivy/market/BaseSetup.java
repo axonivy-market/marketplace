@@ -47,6 +47,7 @@ public class BaseSetup {
   protected static final String MOCK_SPRINT_RELEASED_VERSION = "10.0.10-m123";
   protected static final String MOCK_GROUP_ID = "com.axonivy.util";
   protected static final String MOCK_PRODUCT_NAME = "bpmn statistic";
+  protected static final String MOCK_PRODUCT_REPOSITORY_NAME = "axonivy-market/bpmn-statistic";
   protected static final String MOCK_PRODUCT_JSON_FILE_PATH = "src/test/resources/product.json";
   protected static final String MOCK_PRODUCT_JSON_FILE_PATH_NO_URL = "src/test/resources/productMissingURL.json";
   protected static final String MOCK_PRODUCT_JSON_WITH_DROPINS_FILE_PATH = "src/test/resources/product-dropins.json";
@@ -61,8 +62,6 @@ public class BaseSetup {
       "/10.0.10-SNAPSHOT/maven-metadata.xml";
   protected static final String MOCK_DOWNLOAD_URL = "https://maven.axonivy.com/com/axonivy/util/bpmn-statistic/10.0" +
       ".10/bpmn-statistic-10.0.10.zip";
-  protected static final String MOCK_SNAPSHOT_DOWNLOAD_URL = "https://maven.axonivy" +
-      ".com/com/axonivy/util/bpmn-statistic/10.0.10-SNAPSHOT/bpmn-statistic-10.0.10-SNAPSHOT.zip";
   protected static final String MOCK_ARTIFACT_NAME = "bpmn statistic (zip)";
   protected static final String MOCK_ARTIFACT_DOWNLOAD_FILE = "bpmn-statistic.zip";
   protected static final String LEGACY_INSTALLATION_COUNT_PATH_FIELD_NAME = "legacyInstallationCountPath";
@@ -205,13 +204,6 @@ public class BaseSetup {
     mockMetadata.setVersions(
         Set.of(MOCK_SNAPSHOT_VERSION, MOCK_RELEASED_VERSION, MOCK_SPRINT_RELEASED_VERSION));
     return mockMetadata;
-  }
-
-  protected MavenArtifactModel getMockMavenArtifactModel() {
-    MavenArtifactModel mockMavenArtifactModel = new MavenArtifactModel();
-    mockMavenArtifactModel.setName(MOCK_ARTIFACT_NAME);
-    mockMavenArtifactModel.setDownloadUrl(MOCK_DOWNLOAD_URL);
-    return mockMavenArtifactModel;
   }
 
   protected MavenArtifactModel getMockMavenArtifactModelWithDownloadUrl() {

@@ -147,7 +147,7 @@ class ProductServiceImplTest extends BaseSetup {
 
     Product product = getMockProduct();
     product.setSynchronizedInstallationCount(true);
-    when(productRepo.getProductById(MOCK_PRODUCT_ID)).thenReturn(product);
+    when(productRepo.getProductWithModuleContent(MOCK_PRODUCT_ID)).thenReturn(product);
     when(productRepo.increaseInstallationCount(MOCK_PRODUCT_ID)).thenReturn(31);
 
     result = productService.updateInstallationCountForProduct(MOCK_PRODUCT_ID, MOCK_RELEASED_VERSION);
@@ -362,7 +362,7 @@ class ProductServiceImplTest extends BaseSetup {
     try (MockedStatic<MavenUtils> mockUtils = Mockito.mockStatic(MavenUtils.class)) {
       Product mockProduct = getMockProduct();
       mockProduct.setProductModuleContent(mockReadmeProductContent());
-      mockProduct.setRepositoryName("axonivy-market/bpmn-statistic");
+      mockProduct.setRepositoryName(MOCK_PRODUCT_REPOSITORY_NAME);
       var gitHubRepoMeta = mock(GitHubRepoMeta.class);
       when(gitHubRepoMeta.getLastSHA1()).thenReturn(SHA1_SAMPLE);
       var mockCommit = mockGHCommitHasSHA1(SHA1_SAMPLE);
@@ -372,16 +372,14 @@ class ProductServiceImplTest extends BaseSetup {
       when(productRepo.findAll()).thenReturn(List.of(mockProduct));
 
       ProductModuleContent mockReturnProductContent = mockReadmeProductContent();
-      mockReturnProductContent.setVersion("10.0.3");
+      mockReturnProductContent.setVersion(MOCK_RELEASED_VERSION);
 
       when(productContentService.getReadmeAndProductContentsFromVersion(any(), anyString(), anyString(), any()))
           .thenReturn(mockReturnProductContent);
       when(productModuleContentRepo.saveAll(anyList()))
           .thenReturn(List.of(mockReadmeProductContent(), mockReturnProductContent));
-      when(MavenUtils.getMetadataContentFromUrl(any())).thenReturn(getMockMetadataContent());
-      when(MavenUtils.buildDownloadUrl(any(), any(), any(), any(), any(), any())).thenReturn(
-          "https://maven.axonivy.com/com/axonivy/demo/connectivity-demos-product/12.0" +
-              ".0-SNAPSHOT/connectivity-demos-product-12.0.0-20241017.220639-51.zip");
+      mockUtils.when(() -> MavenUtils.getMetadataContentFromUrl(any())).thenReturn(getMockMetadataContent());
+      when(MavenUtils.buildDownloadUrl(any(), any(), any(), any(), any(), any())).thenReturn(MOCK_DOWNLOAD_URL);
       // Executes
       productService.syncLatestDataFromMarketRepo();
 

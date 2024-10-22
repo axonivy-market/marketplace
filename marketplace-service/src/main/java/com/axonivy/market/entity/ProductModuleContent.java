@@ -30,6 +30,9 @@ public class ProductModuleContent implements Serializable {
   private static final long serialVersionUID = 1L;
   @Schema(description = "product Id (from meta.json)", example = "portal")
   private String productId;
+  /**
+   * @deprecated
+   */
   @Deprecated(forRemoval = true, since = "1.5.0")
   @Schema(description = "Target release tag", example = "v10.0.25")
   private String tag;

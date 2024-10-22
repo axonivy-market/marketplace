@@ -4,7 +4,6 @@ import com.axonivy.market.comparator.LatestVersionComparator;
 import com.axonivy.market.comparator.MavenVersionComparator;
 import com.axonivy.market.constants.CommonConstants;
 import com.axonivy.market.entity.Metadata;
-import com.axonivy.market.entity.Product;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import lombok.extern.log4j.Log4j2;
@@ -17,7 +16,6 @@ import org.springframework.util.CollectionUtils;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -117,13 +115,6 @@ public class VersionUtils {
       return CollectionUtils.lastElement(releasedVersions);
     }
     return result;
-  }
-
-  public static List<String> getReleaseVersionsFromProduct(Product product) {
-    if (Objects.isNull(product) || CollectionUtils.isEmpty(product.getReleasedVersions())) {
-      return new ArrayList<>();
-    }
-    return product.getReleasedVersions();
   }
 
   public static List<String> removeSyncedVersionsFromReleasedVersions(List<String> releasedVersion,

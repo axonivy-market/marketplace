@@ -4,7 +4,6 @@ import com.axonivy.market.BaseSetup;
 import com.axonivy.market.bo.Artifact;
 import com.axonivy.market.constants.ProductJsonConstants;
 import com.axonivy.market.entity.ProductModuleContent;
-import com.axonivy.market.service.FileDownloadService;
 import com.axonivy.market.service.ProductJsonContentService;
 import com.axonivy.market.util.MavenUtils;
 import org.junit.jupiter.api.Test;
@@ -24,38 +23,30 @@ import static org.mockito.Mockito.*;
 @ExtendWith(MockitoExtension.class)
 class ProductContentServiceImplTest extends BaseSetup {
   private static final String EXTRACT_DIR_LOCATION = "src/test/resources/zip/data";
-  private static final String DOWNLOAD_URL = "https://repo/axonivy/portal/portal-guide/10.0.0/portal-guide-10.0.0.zip";
   @InjectMocks
   private ProductContentServiceImpl productContentService;
-  @Mock
-  private FileDownloadService fileDownloadService;
   @Mock
   private ProductJsonContentService productJsonContentService;
 
   @Test
   void testUpdateDependencyContentsFromProductJson() throws IOException {
-    String mockUnzippedFolderPath = "mock/unzipped/folder/path";
     List<Artifact> mockArtifacts = List.of(mock(Artifact.class));
 
     try (MockedStatic<MavenUtils> mockedMavenUtils = Mockito.mockStatic(MavenUtils.class)) {
 
       mockedMavenUtils.when(
-          () -> MavenUtils.convertProductJsonToMavenProductInfo(Paths.get(mockUnzippedFolderPath))).thenReturn(
+          () -> MavenUtils.convertProductJsonToMavenProductInfo(Paths.get(EXTRACT_DIR_LOCATION))).thenReturn(
           mockArtifacts);
-
-      String mockProductJsonContent = "{\"version\": \"1.0.0\"}";
       when(
-          MavenUtils.extractProductJsonContent(
-              Paths.get(mockUnzippedFolderPath, ProductJsonConstants.PRODUCT_JSON_FILE)))
-          .thenReturn(mockProductJsonContent);
+          MavenUtils.extractProductJsonContent(Paths.get(EXTRACT_DIR_LOCATION, ProductJsonConstants.PRODUCT_JSON_FILE)))
+          .thenReturn(getMockProductJsonNodeContent());
 
       productContentService.updateDependencyContentsFromProductJson(new ProductModuleContent(), getMockProduct(),
-          mockUnzippedFolderPath);
+          EXTRACT_DIR_LOCATION);
 
       verify(productJsonContentService, times(1))
-          .updateProductJsonContent(mockProductJsonContent, new ProductModuleContent().getVersion(),
+          .updateProductJsonContent(getMockProductJsonNodeContent(), new ProductModuleContent().getVersion(),
               ProductJsonConstants.VERSION_VALUE, getMockProduct());
     }
   }
-
 }

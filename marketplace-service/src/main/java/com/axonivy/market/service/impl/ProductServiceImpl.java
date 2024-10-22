@@ -189,7 +189,7 @@ public class ProductServiceImpl implements ProductService {
 
   @Override
   public int updateInstallationCountForProduct(String key, String designerVersion) {
-    Product product = productRepo.getProductById(key);
+    Product product = productRepo.getProductWithModuleContent(key);
     if (Objects.isNull(product)) {
       return 0;
     }
@@ -414,7 +414,7 @@ public class ProductServiceImpl implements ProductService {
       if (productRepo.findById(product.getId()).isPresent()) {
         continue;
       }
-      updateEmployeeOnboardingContent(ghContentEntity.getValue(), product);
+      updateProductContentForNonStandardProduct(ghContentEntity.getValue(), product);
       updateProductFromReleasedVersions(product);
       transferComputedDataFromDB(product);
       syncedProductIds.add(productRepo.save(product).getId());
@@ -494,7 +494,7 @@ public class ProductServiceImpl implements ProductService {
 
       updateProductCompatibility(product, mavenVersions);
 
-      List<String> currentVersions = VersionUtils.getReleaseVersionsFromProduct(product);
+      List<String> currentVersions = product.getReleasedVersions();
       if (CollectionUtils.isEmpty(currentVersions)) {
         currentVersions = productModuleContentRepo.findVersionsByProductId(product.getId());
       }
@@ -708,7 +708,7 @@ public class ProductServiceImpl implements ProductService {
       if (!CollectionUtils.isEmpty(gitHubContents)) {
         log.info("Update data of product {} from meta.json and logo files", productId);
         mappingMetaDataAndLogoFromGHContent(gitHubContents, product);
-        updateEmployeeOnboardingContent(gitHubContents, product);
+        updateProductContentForNonStandardProduct(gitHubContents, product);
         updateProductFromReleasedVersions(product);
         productRepo.save(product);
         metadataService.syncProductMetadata(product);
@@ -760,21 +760,17 @@ public class ProductServiceImpl implements ProductService {
     }
   }
 
-  private void updateEmployeeOnboardingContent(List<GHContent> gitHubContents, Product product) {
-    if (StringUtils.isBlank(product.getRepositoryName())) {
-      updateProductContentForNonStandardProduct(gitHubContents, product);
-    }
-  }
-
   private void updateProductContentForNonStandardProduct(List<GHContent> ghContentEntity,
       Product product) {
-    ProductModuleContent initialContent = new ProductModuleContent();
-    initialContent.setVersion(INITIAL_VERSION);
-    initialContent.setProductId(product.getId());
-    ProductFactory.mappingIdForProductModuleContent(initialContent);
-    product.setReleasedVersions(List.of(INITIAL_VERSION));
-    product.setNewestReleaseVersion(INITIAL_VERSION);
-    axonIvyProductRepoService.extractReadMeFileFromContents(product, ghContentEntity, initialContent);
-    productModuleContentRepo.save(initialContent);
+    if (StringUtils.isBlank(product.getRepositoryName())) {
+      ProductModuleContent initialContent = new ProductModuleContent();
+      initialContent.setVersion(INITIAL_VERSION);
+      initialContent.setProductId(product.getId());
+      ProductFactory.mappingIdForProductModuleContent(initialContent);
+      product.setReleasedVersions(List.of(INITIAL_VERSION));
+      product.setNewestReleaseVersion(INITIAL_VERSION);
+      axonIvyProductRepoService.extractReadMeFileFromContents(product, ghContentEntity, initialContent);
+      productModuleContentRepo.save(initialContent);
+    }
   }
 }

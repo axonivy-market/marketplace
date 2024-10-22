@@ -3,6 +3,8 @@ package com.axonivy.market.util;
 import com.axonivy.market.bo.Artifact;
 import com.axonivy.market.constants.MavenConstants;
 import com.axonivy.market.entity.Metadata;
+import lombok.AccessLevel;
+import lombok.NoArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.apache.logging.log4j.util.Strings;
 import org.w3c.dom.Document;
@@ -17,13 +19,12 @@ import java.time.format.DateTimeFormatter;
 import java.util.Objects;
 
 @Log4j2
+@NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class MetadataReaderUtils {
   private static final DateTimeFormatter DATE_TIME_FORMATTER = DateTimeFormatter.ofPattern(
       MavenConstants.DATE_TIME_FORMAT);
   private static final DateTimeFormatter SNAPSHOT_DATE_TIME_FORMATTER = DateTimeFormatter.ofPattern(
       MavenConstants.SNAPSHOT_LAST_UPDATED_DATE_TIME_FORMAT);
-  private MetadataReaderUtils() {
-  }
 
   public static Metadata updateMetadataFromMavenXML(String xmlData, Metadata metadata, boolean isSnapShot) {
     try {
@@ -86,7 +87,6 @@ public class MetadataReaderUtils {
     } catch (Exception e) {
       log.error("Cannot get snapshot version value from maven {}", e.getMessage());
     }
-
     return snapshotVersionValue;
   }
 }

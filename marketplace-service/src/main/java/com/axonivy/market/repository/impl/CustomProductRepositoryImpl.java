@@ -75,7 +75,7 @@ public class CustomProductRepositoryImpl extends CustomRepository implements Cus
   }
 
   @Override
-  public Product getProductById(String id) {
+  public Product getProductWithModuleContent(String id) {
     Product result = findProductById(id);
     if (!Objects.isNull(result)) {
       ProductModuleContent content = contentRepository.findByVersionAndProductId(
@@ -99,7 +99,7 @@ public class CustomProductRepositoryImpl extends CustomRepository implements Cus
     Update update = new Update().inc(MongoDBConstants.INSTALLATION_COUNT, initialCount).set(
         MongoDBConstants.SYNCHRONIZED_INSTALLATION_COUNT, true);
     mongoTemplate.updateFirst(createQueryById(productId), update, Product.class);
-    return Optional.ofNullable(getProductById(productId)).map(Product::getInstallationCount).orElse(0);
+    return Optional.ofNullable(getProductWithModuleContent(productId)).map(Product::getInstallationCount).orElse(0);
   }
 
   @Override

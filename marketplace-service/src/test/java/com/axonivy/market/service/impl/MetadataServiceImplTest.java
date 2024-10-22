@@ -42,7 +42,6 @@ class MetadataServiceImplTest extends BaseSetup {
   private MetadataRepository metadataRepo;
   @Mock
   private MavenArtifactVersionRepository mavenArtifactVersionRepo;
-
   @Mock
   private MetadataSyncRepository metadataSyncRepo;
 

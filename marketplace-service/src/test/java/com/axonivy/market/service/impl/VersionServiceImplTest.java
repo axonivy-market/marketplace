@@ -6,7 +6,6 @@ import com.axonivy.market.bo.Artifact;
 import com.axonivy.market.constants.MavenConstants;
 import com.axonivy.market.entity.MavenArtifactVersion;
 import com.axonivy.market.entity.Metadata;
-import com.axonivy.market.entity.Product;
 import com.axonivy.market.entity.ProductJsonContent;
 import com.axonivy.market.enums.DevelopmentVersion;
 import com.axonivy.market.github.service.GHAxonIvyProductRepoService;
@@ -15,7 +14,6 @@ import com.axonivy.market.model.VersionAndUrlModel;
 import com.axonivy.market.repository.MavenArtifactVersionRepository;
 import com.axonivy.market.repository.MetadataRepository;
 import com.axonivy.market.repository.ProductJsonContentRepository;
-import com.axonivy.market.repository.ProductModuleContentRepository;
 import com.axonivy.market.repository.ProductRepository;
 import com.axonivy.market.util.MavenUtils;
 import org.apache.commons.lang3.ObjectUtils;
@@ -58,9 +56,6 @@ class VersionServiceImplTest extends BaseSetup {
 
   @Mock
   private ProductJsonContentRepository productJsonContentRepository;
-
-  @Mock
-  private ProductModuleContentRepository productModuleContentRepository;
 
   @Mock
   private MetadataRepository metadataRepo;
@@ -168,17 +163,6 @@ class VersionServiceImplTest extends BaseSetup {
     Map<String, Object> result = versionService.getProductJsonContentByIdAndVersion(MOCK_PRODUCT_ID,
         MOCK_RELEASED_VERSION);
     Assertions.assertEquals(new HashMap<>(), result);
-  }
-
-  @Test
-  void testGetPersistedVersions() {
-    Assertions.assertTrue(CollectionUtils.isEmpty(versionService.getPersistedVersions(MOCK_PRODUCT_ID)));
-    Product mocProduct = new Product();
-    mocProduct.setId(MOCK_PRODUCT_ID);
-    mocProduct.setReleasedVersions(List.of(MOCK_RELEASED_VERSION));
-    when(productRepository.findById(MOCK_PRODUCT_ID)).thenReturn(Optional.of(mocProduct));
-    Assertions.assertTrue(ObjectUtils.isNotEmpty(versionService.getPersistedVersions(MOCK_PRODUCT_ID)));
-    Assertions.assertEquals(MOCK_RELEASED_VERSION, versionService.getPersistedVersions(MOCK_PRODUCT_ID).get(0));
   }
 
   @Test

@@ -111,18 +111,6 @@ public class VersionServiceImpl implements VersionService {
     return versionAndUrlList;
   }
 
-  public List<String> getPersistedVersions(String productId) {
-    var product = productRepo.findById(productId);
-    List<String> versions = new ArrayList<>();
-    if (product.isPresent()) {
-      versions.addAll(product.get().getReleasedVersions());
-    }
-    if (CollectionUtils.isEmpty(versions)) {
-      versions.addAll(productContentRepo.findVersionsByProductId(productId));
-    }
-    return versions;
-  }
-
   public List<Artifact> getMavenArtifactsFromProductJsonByVersion(String version,
       String productId) {
     ProductJsonContent productJson =

@@ -41,7 +41,7 @@ public class ProductDetailModelAssembler extends RepresentationModelAssemblerSup
   }
 
   private ProductDetailModel createModel(Product product, String version, String requestPath) {
-    ResponseEntity<ProductDetailModel> selfLinkWithTag;
+    ResponseEntity<ProductDetailModel> selfLinkWithVersion;
     ProductDetailModel model = instantiateModel(product);
     productModelAssembler.createResource(model, product);
     String productId = Optional.of(product).map(Product::getId).orElse(StringUtils.EMPTY);
@@ -53,7 +53,7 @@ public class ProductDetailModelAssembler extends RepresentationModelAssemblerSup
       model.setMetaProductJsonUrl(link.getHref());
     }
 
-    selfLinkWithTag = switch (requestPath) {
+    selfLinkWithVersion = switch (requestPath) {
       case RequestMappingConstants.BEST_MATCH_BY_ID_AND_VERSION ->
           methodOn(ProductDetailsController.class).findBestMatchProductDetailsByVersion(productId, version);
       case RequestMappingConstants.BY_ID_AND_VERSION ->
@@ -61,7 +61,7 @@ public class ProductDetailModelAssembler extends RepresentationModelAssemblerSup
       default -> methodOn(ProductDetailsController.class).findProductDetails(productId, false);
     };
 
-    model.add(linkTo(selfLinkWithTag).withSelfRel());
+    model.add(linkTo(selfLinkWithVersion).withSelfRel());
     createDetailResource(model, product);
     return model;
   }
@@ -91,5 +91,4 @@ public class ProductDetailModelAssembler extends RepresentationModelAssemblerSup
     }
     model.setMavenDropins(product.isMavenDropins());
   }
-
 }
