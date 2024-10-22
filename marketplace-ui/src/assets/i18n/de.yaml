@@ -112,3 +112,18 @@ common:
     reviewLabelNoYet: Noch keine Bewertungen
   labels:
     redirecting: Redirecting ...!
+  timeAgo:
+    yearAgo: year ago
+    yearsAgo: years ago
+    monthAgo: month ago
+    monthsAgo: months ago
+    weekAgo: week ago
+    weeksAgo: weeks ago
+    dayAgo: day ago
+    daysAgo: days ago
+    hourAgo: hour ago
+    hoursAgo: hours ago
+    minuteAgo: minute ago
+    minutesAgo: minutes ago
+    secondAgo: second ago
+    secondsAgo: seconds ago
