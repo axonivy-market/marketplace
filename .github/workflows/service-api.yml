@@ -17,7 +17,9 @@ jobs:
         id: run_tests
         run: |
           postman collection run "${{ secrets.POSTMAN_COLLECTION_ID }}" --reporter-json export.json || true
-      
+          ls -l
+          pwd
+
       - name: Export report
         run: |
           echo "Test report:"
