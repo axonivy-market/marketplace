@@ -24,7 +24,3 @@ jobs:
           name: postman-test-report
           path: test-report.html
           retention-days: 2
-
-      - name: Add failed report link to summary
-        if: failure()
-        run: echo "[View Test Report](./artifacts/postman-test-report/test-report.html)" >> $GITHUB_STEP_SUMMARY
