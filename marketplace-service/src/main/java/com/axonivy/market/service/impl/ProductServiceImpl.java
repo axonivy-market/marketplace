@@ -455,6 +455,10 @@ public class ProductServiceImpl implements ProductService {
   }
 
   private void updateProductFromReleasedVersions(Product product) {
+    if (ObjectUtils.isEmpty(product.getArtifacts())) {
+      return;
+    }
+
     product.getArtifacts().stream()
         .filter(artifact -> artifact.getArtifactId().contains(MavenConstants.PRODUCT_ARTIFACT_POSTFIX))
         .findAny()

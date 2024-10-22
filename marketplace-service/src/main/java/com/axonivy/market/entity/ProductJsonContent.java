@@ -25,6 +25,8 @@ public class ProductJsonContent {
   @JsonIgnore
   private String id;
   private String version;
+  @Deprecated(forRemoval = true, since = "1.5.0")
+  private String relatedTag;
   private String productId;
   private String name;
   private String content;

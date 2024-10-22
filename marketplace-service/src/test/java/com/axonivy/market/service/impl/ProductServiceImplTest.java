@@ -356,42 +356,40 @@ class ProductServiceImplTest extends BaseSetup {
     assertEquals("1.0", argumentCaptorProductModuleContent.getValue().getTag());
   }
 
-  //TODO
-//  @Test
-//  void testSyncProductsSecondTime() throws IOException {
-//    Product mockProduct = getMockProduct();
-//    mockProduct.setProductModuleContent(mockReadmeProductContent());
-//    mockProduct.setRepositoryName("axonivy-market/bpmn-statistic");
-//    var gitHubRepoMeta = mock(GitHubRepoMeta.class);
-//    when(gitHubRepoMeta.getLastSHA1()).thenReturn(SHA1_SAMPLE);
-//    var mockCommit = mockGHCommitHasSHA1(SHA1_SAMPLE);
-//    when(marketRepoService.getLastCommit(anyLong())).thenReturn(mockCommit);
-//    when(repoMetaRepo.findByRepoName(anyString())).thenReturn(gitHubRepoMeta);
-//
-//    when(productRepo.findAll()).thenReturn(List.of(mockProduct));
-//    GHTag mockTag = mock(GHTag.class);
-//    when(mockTag.getName()).thenReturn(MOCK_TAG_FROM_RELEASED_VERSION);
-//
-//    GHTag mockTag2 = mock(GHTag.class);
-//    when(mockTag2.getName()).thenReturn("v10.0.3");
-//    when(gitHubService.getRepositoryTags(anyString())).thenReturn(Arrays.asList(mockTag, mockTag2));
-//
-//    ProductModuleContent mockReturnProductContent = mockReadmeProductContent();
-//    mockReturnProductContent.setTag("v10.0.3");
-//
-//    when(productContentService.getReadmeAndProductContentsFromTag(any(), anyString(), anyString(), any()))
-//        .thenReturn(mockReturnProductContent);
-//    when(productModuleContentRepo.saveAll(anyList()))
-//        .thenReturn(List.of(mockReadmeProductContent(), mockReturnProductContent));
-//
-//    // Executes
-//    productService.syncLatestDataFromMarketRepo();
-//
-//    verify(productModuleContentRepo).saveAll(argumentCaptorProductModuleContents.capture());
-//    verify(productRepo).save(argumentCaptor.capture());
-//    assertThat(argumentCaptor.getValue().getProductModuleContent().getId())
-//        .isEqualTo(mockReadmeProductContent().getId());
-//  }
+  @Test
+  void testSyncProductsSecondTime() {
+    try (MockedStatic<MavenUtils> mockUtils = Mockito.mockStatic(MavenUtils.class)) {
+      Product mockProduct = getMockProduct();
+      mockProduct.setProductModuleContent(mockReadmeProductContent());
+      mockProduct.setRepositoryName("axonivy-market/bpmn-statistic");
+      var gitHubRepoMeta = mock(GitHubRepoMeta.class);
+      when(gitHubRepoMeta.getLastSHA1()).thenReturn(SHA1_SAMPLE);
+      var mockCommit = mockGHCommitHasSHA1(SHA1_SAMPLE);
+      when(marketRepoService.getLastCommit(anyLong())).thenReturn(mockCommit);
+      when(repoMetaRepo.findByRepoName(anyString())).thenReturn(gitHubRepoMeta);
+
+      when(productRepo.findAll()).thenReturn(List.of(mockProduct));
+
+      ProductModuleContent mockReturnProductContent = mockReadmeProductContent();
+      mockReturnProductContent.setTag("10.0.3");
+
+      when(productContentService.getReadmeAndProductContentsFromTag(any(), anyString(), anyString(), any()))
+          .thenReturn(mockReturnProductContent);
+      when(productModuleContentRepo.saveAll(anyList()))
+          .thenReturn(List.of(mockReadmeProductContent(), mockReturnProductContent));
+      when(MavenUtils.getMetadataContentFromUrl(any())).thenReturn(getMockMetadataContent());
+      when(MavenUtils.buildDownloadUrl(any(), any(), any(), any(), any(), any())).thenReturn(
+          "https://maven.axonivy.com/com/axonivy/demo/connectivity-demos-product/12.0" +
+              ".0-SNAPSHOT/connectivity-demos-product-12.0.0-20241017.220639-51.zip");
+      // Executes
+      productService.syncLatestDataFromMarketRepo();
+
+      verify(productModuleContentRepo).saveAll(argumentCaptorProductModuleContents.capture());
+      verify(productRepo).save(argumentCaptor.capture());
+      assertThat(argumentCaptor.getValue().getProductModuleContent().getId())
+          .isEqualTo(mockReadmeProductContent().getId());
+    }
+  }
 
   @Test
   void testNothingToSync() {
@@ -630,7 +628,7 @@ class ProductServiceImplTest extends BaseSetup {
   private ProductModuleContent mockReadmeProductContent() {
     ProductModuleContent productModuleContent = new ProductModuleContent();
     productModuleContent.setId(MOCK_PRODUCT_ID_WITH_TAG);
-    productModuleContent.setTag(MOCK_TAG_FROM_RELEASED_VERSION);
+    productModuleContent.setTag(MOCK_RELEASED_VERSION);
     productModuleContent.setName(MOCK_PRODUCT_NAME);
     Map<String, String> description = new HashMap<>();
     description.put(Language.EN.getValue(), "testDescription");
