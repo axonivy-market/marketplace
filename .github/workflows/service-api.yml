@@ -4,13 +4,14 @@ on:
   push:
 
 jobs:
-  Test:
+  test:
+    name: API Testing
     runs-on: self-hosted
 
     steps:
       - uses: actions/checkout@v4
         
-      - name: Run API tests
+      - name: Test defined API Collection
         id: run_tests
         run: |
           echo "Run defined api collection & gen test report"
