@@ -10,31 +10,28 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
-        
-      # - name: Test defined API Collection with html report
-      #   id: run_tests_with_html_report
-      #   run: |
-      #     echo "Run defined api collection & gen html test report with newman cli"
-      #     # newman run "https://api.postman.com/collections/${{ secrets.POSTMAN_COLLECTION_ID }}?access_key=${{ secrets.POSTMAN_API_KEY }}" -r htmlextra --reporter-htmlextra-title "Api Testing Report - Axon Ivy Marketplace" --reporter-htmlextra-browserTitle "Axon Ivy Market Api Testing Report" --reporter-htmlextra-export "./test-report.html"
-
-      - name: Test defined API Collection with html report
-        if: always()
+      
+      - name: Test defined API Collection with summary report
         id: run_tests_with_ctrf_report
         run: |
           echo "Run defined api collection & gen ctrf test report with newman cli"
-          pwd
-          ls -l
           newman run "https://api.postman.com/collections/${{ secrets.POSTMAN_COLLECTION_ID }}?access_key=${{ secrets.POSTMAN_API_KEY }}" -r cli,ctrf-json --reporter-ctrf-json-test-type api --reporter-ctrf-json-app-name Market Website
-          
 
-      # - name: Upload failed report as artifact
-      #   if: failure()
-      #   uses: actions/upload-artifact@v3
-      #   with:
-      #     name: postman-test-report
-      #     path: test-report.html
-      #     retention-days: 2
-
-      - name: Export failed test summary
+      - name: Test defined API Collection with html report
         if: failure()
+        id: run_tests_with_html_report
+        run: |
+          echo "Run defined api collection & gen html test report with newman cli"
+          # newman run "https://api.postman.com/collections/${{ secrets.POSTMAN_COLLECTION_ID }}?access_key=${{ secrets.POSTMAN_API_KEY }}" -r htmlextra --reporter-htmlextra-title "Api Testing Report - Axon Ivy Marketplace" --reporter-htmlextra-browserTitle "Axon Ivy Market Api Testing Report" --reporter-htmlextra-export "./test-report.html"
+        
+      - name: Upload failed report as artifact
+        if: failure()
+        uses: actions/upload-artifact@v3
+        with:
+          name: postman-test-report
+          path: test-report.html
+          retention-days: 2
+
+      - name: Export test summary
+        if: always()
         run: npx github-actions-ctrf ./ctrf/ctrf-report.json
