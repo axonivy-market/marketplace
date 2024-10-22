@@ -94,9 +94,9 @@ class CustomProductRepositoryImplTest extends BaseSetup {
   }
 
   @Test
-  void testGetProductByIdAndTag() {
+  void testGetProductByIdAndVersion() {
     setUpMockAggregateResult();
-    Product actualProduct = repo.getProductByIdAndTag(MOCK_PRODUCT_ID, MOCK_TAG_FROM_RELEASED_VERSION);
+    Product actualProduct = repo.getProductByIdAndVersion(MOCK_PRODUCT_ID, MOCK_RELEASED_VERSION);
     assertEquals(mockProduct, actualProduct);
   }
 

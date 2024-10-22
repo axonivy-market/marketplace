@@ -204,7 +204,7 @@ export const MOCK_PRODUCTS_NEXT_PAGE = {
 } as ProductApiResponse;
 
 export const MOCK_PRODUCT_MODULE_CONTENT: ProductModuleContent = {
-  tag: 'v10.0.10',
+  version: '10.0.10',
   description: null,
   demo: null,
   setup: null,
@@ -241,7 +241,7 @@ export const MOCK_PRODUCT_DETAIL_BY_VERSION: ProductDetail = {
   contactUs: false,
   vendorUrl: '',
   productModuleContent: {
-    tag: 'v10.0.4',
+    version: '10.0.4',
     description: {
       en: '**Cron Job** is a job-firing schedule that recurs based on calendar-like notions.\n\nThe [Quartz framework](http://www.quartz-scheduler.org/) is used as underlying scheduler framework.\n\nWith Cron Job, you can specify firing-schedules such as “every Friday at noon”, or “every weekday and 9:30 am”, or even “every 5 minutes between 9:00 am and 10:00 am on every Monday, Wednesday and Friday during January”.\n\nFor more details about Cron Expressions please refer to [Lesson 6: CronTrigger](http://www.quartz-scheduler.org/documentation/quartz-2.3.0/tutorials/tutorial-lesson-06.html)'
     },
@@ -295,7 +295,7 @@ export const MOCK_PRODUCT_DETAIL: ProductDetail = {
   compatibility: '9.2+',
   contactUs: false,
   productModuleContent: {
-    tag: 'v10.0.0',
+    version: '10.0.0',
     description: {
       en: "Axon Ivy's [Atlassian Jira Connector ](https://www.atlassian.com/software/jira) gives you full power to track issues within your process work. The connector:\n\n- Features three main functionalities (create comment, create issue, and get issue).\n- Provides access to the core API of Atlassian Jira.\n- Supports you with an easy-to-copy demo implementation to reduce your integration effort.\n- Enables low code citizen developers to integrate issue tracking tools without writing a single line of code."
     },

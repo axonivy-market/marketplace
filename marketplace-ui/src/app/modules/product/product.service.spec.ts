@@ -201,14 +201,14 @@ describe('ProductService', () => {
 
   it('getProductDetailsWithVersion should return a product detail', () => {
     const productId = 'jira-connector';
-    const tag = 'v10.0.10';
+    const version = '10.0.10';
 
-    service.getProductDetailsWithVersion(productId, tag).subscribe(data => {
+    service.getProductDetailsWithVersion(productId, version).subscribe(data => {
       expect(data).toEqual(MOCK_PRODUCT_DETAIL);
     });
 
     const req = httpMock.expectOne(request => {
-      expect(request.url).toEqual(`${API_URI.PRODUCT_DETAILS}/${productId}/${tag}`);
+      expect(request.url).toEqual(`${API_URI.PRODUCT_DETAILS}/${productId}/${version}`);
 
       return true;
     });

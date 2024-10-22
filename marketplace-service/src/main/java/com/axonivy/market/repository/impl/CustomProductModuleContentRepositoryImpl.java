@@ -21,10 +21,10 @@ public class CustomProductModuleContentRepositoryImpl extends CustomRepository i
   }
 
   @Override
-  public List<String> findTagsByProductId(String id) {
+  public List<String> findVersionsByProductId(String id) {
     Aggregation aggregation = Aggregation.newAggregation(createFieldMatchOperation(MongoDBConstants.PRODUCT_ID, id),
-        createProjectAggregationBySingleFieldName(MongoDBConstants.TAG));
-    return queryProductModuleContentsByAggregation(aggregation).stream().map(ProductModuleContent::getTag).toList();
+        createProjectAggregationBySingleFieldName(MongoDBConstants.VERSION));
+    return queryProductModuleContentsByAggregation(aggregation).stream().map(ProductModuleContent::getVersion).toList();
   }
 
   public List<ProductModuleContent> queryProductModuleContentsByAggregation(Aggregation aggregation) {

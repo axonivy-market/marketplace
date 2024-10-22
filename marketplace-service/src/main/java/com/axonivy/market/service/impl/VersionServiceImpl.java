@@ -118,7 +118,7 @@ public class VersionServiceImpl implements VersionService {
       versions.addAll(product.get().getReleasedVersions());
     }
     if (CollectionUtils.isEmpty(versions)) {
-      versions.addAll(productContentRepo.findTagsByProductId(productId));
+      versions.addAll(productContentRepo.findVersionsByProductId(productId));
     }
     return versions;
   }

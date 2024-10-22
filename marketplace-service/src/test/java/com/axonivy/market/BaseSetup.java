@@ -7,7 +7,6 @@ import com.axonivy.market.entity.Metadata;
 import com.axonivy.market.entity.Product;
 import com.axonivy.market.entity.ProductDesignerInstallation;
 import com.axonivy.market.entity.ProductJsonContent;
-import com.axonivy.market.entity.ProductModuleContent;
 import com.axonivy.market.enums.Language;
 import com.axonivy.market.enums.SortOption;
 import com.axonivy.market.model.MavenArtifactModel;
@@ -39,15 +38,13 @@ public class BaseSetup {
   protected static final Pageable PAGEABLE = PageRequest.of(0, 20,
       Sort.by(SortOption.ALPHABETICALLY.getOption()).descending());
   protected static final String MOCK_PRODUCT_ID = "bpmn-statistic";
-  protected static final String MOCK_PRODUCT_ID_WITH_TAG = "bpmn-statistic-10.0.10";
+  protected static final String MOCK_PRODUCT_ID_WITH_VERSION = "bpmn-statistic-10.0.10";
   protected static final String MOCK_ARTIFACT_ID = "bpmn-statistic";
   protected static final String MOCK_PRODUCT_ARTIFACT_ID = "bpmn-statistic-product";
   protected static final String MOCK_RELEASED_VERSION = "10.0.10";
   protected static final String MOCK_SNAPSHOT_VERSION = "10.0.10-SNAPSHOT";
   protected static final String MOCK_BUGFIX_VERSION = "10.0.10.1";
   protected static final String MOCK_SPRINT_RELEASED_VERSION = "10.0.10-m123";
-  protected static final String MOCK_TAG_FROM_RELEASED_VERSION = "v10.0.10";
-  protected static final String MOCK_TAG_FROM_SNAPSHOT_VERSION = "v10.0.10-SNAPSHOT";
   protected static final String MOCK_GROUP_ID = "com.axonivy.util";
   protected static final String MOCK_PRODUCT_NAME = "bpmn statistic";
   protected static final String MOCK_PRODUCT_JSON_FILE_PATH = "src/test/resources/product.json";
@@ -58,7 +55,6 @@ public class BaseSetup {
   protected static final String MOCK_METADATA_FILE_PATH = "src/test/resources/metadata.xml";
   protected static final String MOCK_SNAPSHOT_METADATA_FILE_PATH = "src/test/resources/snapshotMetadata.xml";
   protected static final String INVALID_FILE_PATH = "test/file/path";
-  protected static final String MOCK_SETUP_MD_PATH = "src/test/resources/setup.md";
   protected static final String MOCK_MAVEN_URL = "https://maven.axonivy.com/com/axonivy/util/bpmn-statistic/maven" +
       "-metadata.xml";
   protected static final String MOCK_SNAPSHOT_MAVEN_URL = "https://maven.axonivy.com/com/axonivy/util/bpmn-statistic" +
@@ -128,16 +124,21 @@ public class BaseSetup {
     return getContentFromTestResourcePath(MOCK_PRODUCT_JSON_NODE_FILE_PATH);
   }
 
-  protected ProductModuleContent getMockProductModuleContent() {
-    ProductModuleContent mockProductModuleContent = new ProductModuleContent();
-    return mockProductModuleContent;
-  }
-
   protected Artifact getMockArtifact() {
     Artifact mockArtifact = new Artifact();
     mockArtifact.setIsDependency(true);
     mockArtifact.setGroupId(MOCK_GROUP_ID);
     mockArtifact.setArtifactId(MOCK_ARTIFACT_ID);
+    mockArtifact.setType("zip");
+    mockArtifact.setName(MOCK_PRODUCT_NAME);
+    return mockArtifact;
+  }
+
+  protected Artifact getMockArtifact2() {
+    Artifact mockArtifact = new Artifact();
+    mockArtifact.setIsDependency(true);
+    mockArtifact.setGroupId(MOCK_GROUP_ID);
+    mockArtifact.setArtifactId(MOCK_PRODUCT_ARTIFACT_ID);
     mockArtifact.setType("zip");
     mockArtifact.setName(MOCK_PRODUCT_NAME);
     return mockArtifact;
@@ -172,7 +173,7 @@ public class BaseSetup {
 
   protected Product getMockProduct() {
     Product mockProduct = Product.builder().id(MOCK_PRODUCT_ID).releasedVersions(new ArrayList<>()).artifacts(
-        List.of(getMockArtifact())).build();
+        List.of(getMockArtifact(), getMockArtifact2())).build();
     mockProduct.getReleasedVersions().add(MOCK_RELEASED_VERSION);
     return mockProduct;
   }

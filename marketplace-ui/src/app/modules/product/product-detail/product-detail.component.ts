@@ -172,9 +172,7 @@ export class ProductDetailComponent {
     if (this.isEmptyProductContent()) {
       return;
     }
-    this.selectedVersion = VERSION.displayPrefix.concat(
-      this.convertTagToVersion(this.productModuleContent().tag)
-    );
+    this.selectedVersion = VERSION.displayPrefix.concat(this.productModuleContent().version);
   }
 
   updateProductDetailActionType(productDetail: ProductDetail) {
@@ -322,7 +320,7 @@ export class ProductDetailComponent {
   handleClickOutside(event: MouseEvent) {
     const formSelect =
       this.elementRef.nativeElement.querySelector('.form-select');
-      
+
     if (
       formSelect &&
       !formSelect.contains(event.target) &&
@@ -366,13 +364,6 @@ export class ProductDetailComponent {
     });
   }
 
-  convertTagToVersion(tag: string): string {
-    if (tag !== '' && tag.startsWith(VERSION.tagPrefix)) {
-      return tag.substring(1);
-    }
-    return tag;
-  }
-
   getDisplayedTabsSignal() {
     const displayedTabs: ItemDropdown[] = [];
     for (const detailTab of this.detailTabs) {
@@ -401,7 +392,7 @@ export class ProductDetailComponent {
       productDetail.vendorImage = vendorImage || vendorImageDarkMode;
       productDetail.vendorImageDarkMode = vendorImageDarkMode || vendorImage;
     }
-  
+
     return productDetail;
   }
 }

@@ -113,10 +113,10 @@ public class ProductContentUtils {
     return result;
   }
 
-  public static ProductModuleContent initProductModuleContent(String productId, String tag) {
+  public static ProductModuleContent initProductModuleContent(String productId, String version) {
     ProductModuleContent productModuleContent = new ProductModuleContent();
     productModuleContent.setProductId(productId);
-    productModuleContent.setTag(tag);
+    productModuleContent.setVersion(version);
     ProductFactory.mappingIdForProductModuleContent(productModuleContent);
     return productModuleContent;
   }

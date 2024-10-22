@@ -53,8 +53,8 @@ class ProductContentServiceImplTest extends BaseSetup {
           mockUnzippedFolderPath);
 
       verify(productJsonContentService, times(1))
-          .updateProductJsonContent(eq(mockProductJsonContent), isNull(), eq(new ProductModuleContent().getTag()),
-              eq(ProductJsonConstants.VERSION_VALUE), eq(getMockProduct()));
+          .updateProductJsonContent(mockProductJsonContent, new ProductModuleContent().getVersion(),
+              ProductJsonConstants.VERSION_VALUE, getMockProduct());
     }
   }
 

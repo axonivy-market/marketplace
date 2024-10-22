@@ -186,7 +186,6 @@ export const DEFAULT_PAGEABLE_IN_REST_CLIENT: Pageable = {
 };
 
 export const VERSION = {
-  tagPrefix: 'v',
   displayPrefix: 'Version '
 };
 

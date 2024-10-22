@@ -310,7 +310,8 @@ class ProductServiceImplTest extends BaseSetup {
     var mockCommit = mockGHCommitHasSHA1(SHA1_SAMPLE);
     when(marketRepoService.getLastCommit(anyLong())).thenReturn(mockCommit);
     when(repoMetaRepo.findByRepoName(anyString())).thenReturn(null);
-    when(productContentService.getReadmeAndProductContentsFromTag(any(), anyString(), anyString(), any())).thenReturn(
+    when(productContentService.getReadmeAndProductContentsFromVersion(any(), anyString(), anyString(),
+        any())).thenReturn(
         mockReadmeProductContent());
 
     Map<String, List<GHContent>> mockGHContentMap = new HashMap<>();
@@ -353,7 +354,7 @@ class ProductServiceImplTest extends BaseSetup {
     // Executes
     productService.syncLatestDataFromMarketRepo();
     verify(productModuleContentRepo).save(argumentCaptorProductModuleContent.capture());
-    assertEquals("1.0", argumentCaptorProductModuleContent.getValue().getTag());
+    assertEquals("1.0", argumentCaptorProductModuleContent.getValue().getVersion());
   }
 
   @Test
@@ -371,9 +372,9 @@ class ProductServiceImplTest extends BaseSetup {
       when(productRepo.findAll()).thenReturn(List.of(mockProduct));
 
       ProductModuleContent mockReturnProductContent = mockReadmeProductContent();
-      mockReturnProductContent.setTag("10.0.3");
+      mockReturnProductContent.setVersion("10.0.3");
 
-      when(productContentService.getReadmeAndProductContentsFromTag(any(), anyString(), anyString(), any()))
+      when(productContentService.getReadmeAndProductContentsFromVersion(any(), anyString(), anyString(), any()))
           .thenReturn(mockReturnProductContent);
       when(productModuleContentRepo.saveAll(anyList()))
           .thenReturn(List.of(mockReadmeProductContent(), mockReturnProductContent));
@@ -405,24 +406,23 @@ class ProductServiceImplTest extends BaseSetup {
     assertTrue(result.isEmpty());
   }
 
-  //TODO
-//  @Test
-//  void testSyncNullProductModuleContent() {
-//    var mockCommit = mockGHCommitHasSHA1(SHA1_SAMPLE);
-//    when(marketRepoService.getLastCommit(anyLong())).thenReturn(mockCommit);
-//    when(repoMetaRepo.findByRepoName(anyString())).thenReturn(null);
-//
-//    Map<String, List<GHContent>> mockGHContentMap = new HashMap<>();
-//    mockGHContentMap.put(SAMPLE_PRODUCT_ID, new ArrayList<>());
-//    when(marketRepoService.fetchAllMarketItems()).thenReturn(mockGHContentMap);
-//    when(productRepo.save(any(Product.class))).thenReturn(new Product());
-//
-//    // Executes
-//    productService.syncLatestDataFromMarketRepo();
-//    verify(productRepo).save(argumentCaptor.capture());
-//
-//    assertThat(argumentCaptor.getValue().getProductModuleContent()).isNull();
-//  }
+  @Test
+  void testSyncNullProductModuleContent() {
+    var mockCommit = mockGHCommitHasSHA1(SHA1_SAMPLE);
+    when(marketRepoService.getLastCommit(anyLong())).thenReturn(mockCommit);
+    when(repoMetaRepo.findByRepoName(anyString())).thenReturn(null);
+
+    Map<String, List<GHContent>> mockGHContentMap = new HashMap<>();
+    mockGHContentMap.put(SAMPLE_PRODUCT_ID, new ArrayList<>());
+    when(marketRepoService.fetchAllMarketItems()).thenReturn(mockGHContentMap);
+    when(productRepo.save(any(Product.class))).thenReturn(new Product());
+
+    // Executes
+    productService.syncLatestDataFromMarketRepo();
+    verify(productRepo).save(argumentCaptor.capture());
+
+    assertThat(argumentCaptor.getValue().getProductModuleContent()).isNull();
+  }
 
   @Test
   void testSearchProducts() {
@@ -444,7 +444,7 @@ class ProductServiceImplTest extends BaseSetup {
     Product mockProduct = getMockProduct();
     when(mavenArtifactVersionRepo.findById(MOCK_PRODUCT_ID)).thenReturn(
         Optional.ofNullable(mockMavenArtifactVersion));
-    when(productRepo.getProductByIdAndTag(MOCK_PRODUCT_ID, MOCK_SNAPSHOT_VERSION)).thenReturn(null);
+    when(productRepo.getProductByIdAndVersion(MOCK_PRODUCT_ID, MOCK_SNAPSHOT_VERSION)).thenReturn(null);
     mockProduct.setSynchronizedInstallationCount(true);
     Product result = productService.fetchProductDetail(MOCK_PRODUCT_ID, true);
     assertNull(result);
@@ -461,7 +461,7 @@ class ProductServiceImplTest extends BaseSetup {
       when(MavenUtils.getAllExistingVersions(mockMavenArtifactVersion, true, StringUtils.EMPTY))
           .thenReturn(List.of(MOCK_SNAPSHOT_VERSION));
 
-      when(productRepo.getProductByIdAndTag(MOCK_PRODUCT_ID, MOCK_SNAPSHOT_VERSION)).thenReturn(mockProduct);
+      when(productRepo.getProductByIdAndVersion(MOCK_PRODUCT_ID, MOCK_SNAPSHOT_VERSION)).thenReturn(mockProduct);
       when(productJsonContentRepo.findByProductIdAndVersion(MOCK_PRODUCT_ID, MOCK_SNAPSHOT_VERSION))
           .thenReturn(List.of(getMockProductJsonContentContainMavenDropins()));
 
@@ -470,7 +470,7 @@ class ProductServiceImplTest extends BaseSetup {
 
       when(mavenArtifactVersionRepo.findById(MOCK_PRODUCT_ID)).thenReturn(Optional.empty());
       when(productRepo.getReleasedVersionsById(MOCK_PRODUCT_ID)).thenReturn(List.of(MOCK_SNAPSHOT_VERSION));
-      when(productRepo.getProductByIdAndTag(MOCK_PRODUCT_ID, MOCK_SNAPSHOT_VERSION)).thenReturn(mockProduct);
+      when(productRepo.getProductByIdAndVersion(MOCK_PRODUCT_ID, MOCK_SNAPSHOT_VERSION)).thenReturn(mockProduct);
       result = productService.getProductByIdWithNewestReleaseVersion(MOCK_PRODUCT_ID, true);
       assertEquals(mockProduct, result);
     }
@@ -480,12 +480,12 @@ class ProductServiceImplTest extends BaseSetup {
   void testFetchProductDetailByIdAndVersion() {
 
     Product mockProduct = mockResultReturn.getContent().get(0);
-    when(productRepo.getProductByIdAndTag(MOCK_PRODUCT_ID, MOCK_RELEASED_VERSION)).thenReturn(mockProduct);
+    when(productRepo.getProductByIdAndVersion(MOCK_PRODUCT_ID, MOCK_RELEASED_VERSION)).thenReturn(mockProduct);
 
     Product result = productService.fetchProductDetailByIdAndVersion(MOCK_PRODUCT_ID, MOCK_RELEASED_VERSION);
 
     assertEquals(mockProduct, result);
-    verify(productRepo).getProductByIdAndTag(MOCK_PRODUCT_ID, MOCK_RELEASED_VERSION);
+    verify(productRepo).getProductByIdAndVersion(MOCK_PRODUCT_ID, MOCK_RELEASED_VERSION);
   }
 
   @Test
@@ -495,21 +495,21 @@ class ProductServiceImplTest extends BaseSetup {
     Metadata mockMetadata = getMockMetadataWithVersions();
     mockMetadata.setArtifactId(MOCK_PRODUCT_ARTIFACT_ID);
     when(metadataRepo.findByProductId(MOCK_PRODUCT_ID)).thenReturn(List.of(mockMetadata));
-    when(productRepo.getProductByIdAndTag(MOCK_PRODUCT_ID, MOCK_RELEASED_VERSION)).thenReturn(mockProduct);
+    when(productRepo.getProductByIdAndVersion(MOCK_PRODUCT_ID, MOCK_RELEASED_VERSION)).thenReturn(mockProduct);
     Product result = productService.fetchBestMatchProductDetail(MOCK_PRODUCT_ID, MOCK_RELEASED_VERSION);
     assertEquals(mockProduct, result);
   }
 
   @Test
-  void testGetCompatibilityFromNumericTag() {
+  void testGetCompatibilityFromNumericVersion() {
 
-    String result = productService.getCompatibilityFromOldestTag("1.0.0");
+    String result = productService.getCompatibilityFromOldestVersion("1.0.0");
     assertEquals("1.0+", result);
 
-    result = productService.getCompatibilityFromOldestTag("8");
+    result = productService.getCompatibilityFromOldestVersion("8");
     assertEquals("8.0+", result);
 
-    result = productService.getCompatibilityFromOldestTag("11.2");
+    result = productService.getCompatibilityFromOldestVersion("11.2");
     assertEquals("11.2+", result);
   }
 
@@ -627,8 +627,8 @@ class ProductServiceImplTest extends BaseSetup {
 
   private ProductModuleContent mockReadmeProductContent() {
     ProductModuleContent productModuleContent = new ProductModuleContent();
-    productModuleContent.setId(MOCK_PRODUCT_ID_WITH_TAG);
-    productModuleContent.setTag(MOCK_RELEASED_VERSION);
+    productModuleContent.setId(MOCK_PRODUCT_ID_WITH_VERSION);
+    productModuleContent.setVersion(MOCK_RELEASED_VERSION);
     productModuleContent.setName(MOCK_PRODUCT_NAME);
     Map<String, String> description = new HashMap<>();
     description.put(Language.EN.getValue(), "testDescription");

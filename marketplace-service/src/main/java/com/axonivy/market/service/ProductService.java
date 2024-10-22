@@ -17,7 +17,7 @@ public interface ProductService {
 
   Product fetchProductDetail(String id, Boolean isShowDevVersion);
 
-  String getCompatibilityFromOldestTag(String oldestTag);
+  String getCompatibilityFromOldestVersion(String oldestTag);
 
   void clearAllProducts();
 

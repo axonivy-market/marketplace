@@ -183,7 +183,7 @@ public class ProductServiceImpl implements ProductService {
       }
       syncRepoMetaDataStatus();
     }
-    updateLatestReleaseTagContentsFromProductRepo();
+    updateLatestReleaseVersionContentsFromProductRepo();
     return syncedProductIds.stream().filter(StringUtils::isNotBlank).toList();
   }
 
@@ -385,7 +385,7 @@ public class ProductServiceImpl implements ProductService {
     return isLastCommitCovered;
   }
 
-  private void updateLatestReleaseTagContentsFromProductRepo() {
+  private void updateLatestReleaseVersionContentsFromProductRepo() {
     List<Product> products = productRepo.findAll();
     if (ObjectUtils.isEmpty(products)) {
       return;
@@ -496,7 +496,7 @@ public class ProductServiceImpl implements ProductService {
 
       List<String> currentVersions = VersionUtils.getReleaseVersionsFromProduct(product);
       if (CollectionUtils.isEmpty(currentVersions)) {
-        currentVersions = productModuleContentRepo.findTagsByProductId(product.getId());
+        currentVersions = productModuleContentRepo.findVersionsByProductId(product.getId());
       }
       mavenVersions = mavenVersions.stream().filter(filterNonPersistVersion(currentVersions)).toList();
 
@@ -530,7 +530,7 @@ public class ProductServiceImpl implements ProductService {
     if (StringUtils.isBlank(product.getCompatibility())) {
       String oldestVersion = VersionUtils.getOldestVersions(mavenVersions);
       if (oldestVersion != null) {
-        String compatibility = getCompatibilityFromOldestTag(oldestVersion);
+        String compatibility = getCompatibilityFromOldestVersion(oldestVersion);
         product.setCompatibility(compatibility);
       }
     }
@@ -541,7 +541,7 @@ public class ProductServiceImpl implements ProductService {
   }
 
   public void handleProductArtifact(String version, Product product,
-      List<ProductModuleContent> productModuleContents, Artifact mavenArtifact) throws Exception {
+      List<ProductModuleContent> productModuleContents, Artifact mavenArtifact) {
     String snapshotVersionValue = Strings.EMPTY;
     if (version.contains(MavenConstants.SNAPSHOT_VERSION)) {
       snapshotVersionValue = MetadataReaderUtils.getSnapshotVersionValue(version, mavenArtifact);
@@ -563,7 +563,7 @@ public class ProductServiceImpl implements ProductService {
 
   public void addProductContent(Product product, String version, String url,
       List<ProductModuleContent> productModuleContents, Artifact artifact) {
-    ProductModuleContent productModuleContent = productContentService.getReadmeAndProductContentsFromTag(product,
+    ProductModuleContent productModuleContent = productContentService.getReadmeAndProductContentsFromVersion(product,
         version, url, artifact);
     if (Objects.nonNull(productModuleContent)) {
       productModuleContents.add(productModuleContent);
@@ -572,19 +572,19 @@ public class ProductServiceImpl implements ProductService {
 
   // Cover 3 cases after removing non-numeric characters (8, 11.1 and 10.0.2)
   @Override
-  public String getCompatibilityFromOldestTag(String oldestTag) {
-    if (StringUtils.isBlank(oldestTag)) {
+  public String getCompatibilityFromOldestVersion(String oldestVersion) {
+    if (StringUtils.isBlank(oldestVersion)) {
       return Strings.EMPTY;
     }
-    if (!oldestTag.contains(CommonConstants.DOT_SEPARATOR)) {
-      return oldestTag + ".0+";
+    if (!oldestVersion.contains(CommonConstants.DOT_SEPARATOR)) {
+      return oldestVersion + ".0+";
     }
-    int firstDot = oldestTag.indexOf(CommonConstants.DOT_SEPARATOR);
-    int secondDot = oldestTag.indexOf(CommonConstants.DOT_SEPARATOR, firstDot + 1);
+    int firstDot = oldestVersion.indexOf(CommonConstants.DOT_SEPARATOR);
+    int secondDot = oldestVersion.indexOf(CommonConstants.DOT_SEPARATOR, firstDot + 1);
     if (secondDot == -1) {
-      return oldestTag.concat(CommonConstants.PLUS);
+      return oldestVersion.concat(CommonConstants.PLUS);
     }
-    return oldestTag.substring(0, secondDot).concat(CommonConstants.PLUS);
+    return oldestVersion.substring(0, secondDot).concat(CommonConstants.PLUS);
   }
 
   @Override
@@ -603,7 +603,7 @@ public class ProductServiceImpl implements ProductService {
     String bestMatchVersion = VersionUtils.getBestMatchVersion(installableVersions, version);
        // Cover exception case of employee onboarding without any product.json file
     Product product = StringUtils.isBlank(bestMatchVersion) ? getProductByIdWithNewestReleaseVersion(id,
-        false) : productRepo.getProductByIdAndTag(id, bestMatchVersion);
+        false) : productRepo.getProductByIdAndVersion(id, bestMatchVersion);
     return Optional.ofNullable(product).map(productItem -> {
       updateProductInstallationCount(id, productItem);
       productItem.setBestMatchVersion(bestMatchVersion);
@@ -629,7 +629,7 @@ public class ProductServiceImpl implements ProductService {
       version = CollectionUtils.firstElement(versions);
     }
 
-    Product product = productRepo.getProductByIdAndTag(id, version);
+    Product product = productRepo.getProductByIdAndVersion(id, version);
     productJsonContentRepo.findByProductIdAndVersion(id, version).stream().map(
         ProductJsonContent::getContent).findFirst().ifPresent(
         jsonContent -> product.setMavenDropins(MavenUtils.isJsonContentContainOnlyMavenDropins(jsonContent)));
@@ -646,7 +646,7 @@ public class ProductServiceImpl implements ProductService {
 
   @Override
   public Product fetchProductDetailByIdAndVersion(String id, String version) {
-    return productRepo.getProductByIdAndTag(id, version);
+    return productRepo.getProductByIdAndVersion(id, version);
   }
 
   @Override
@@ -769,7 +769,7 @@ public class ProductServiceImpl implements ProductService {
   private void updateProductContentForNonStandardProduct(List<GHContent> ghContentEntity,
       Product product) {
     ProductModuleContent initialContent = new ProductModuleContent();
-    initialContent.setTag(INITIAL_VERSION);
+    initialContent.setVersion(INITIAL_VERSION);
     initialContent.setProductId(product.getId());
     ProductFactory.mappingIdForProductModuleContent(initialContent);
     product.setReleasedVersions(List.of(INITIAL_VERSION));

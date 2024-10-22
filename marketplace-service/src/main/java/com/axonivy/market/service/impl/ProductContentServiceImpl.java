@@ -37,7 +37,7 @@ public class ProductContentServiceImpl implements ProductContentService {
   private final ProductJsonContentService productJsonContentService;
   private final ImageService imageService;
 
-  public ProductModuleContent getReadmeAndProductContentsFromTag(Product product, String version, String url,
+  public ProductModuleContent getReadmeAndProductContentsFromVersion(Product product, String version, String url,
       Artifact artifact) {
     ProductModuleContent productModuleContent = ProductContentUtils.initProductModuleContent(product.getId(),
         version);
@@ -64,7 +64,7 @@ public class ProductContentServiceImpl implements ProductContentService {
     ProductContentUtils.updateProductModule(productModuleContent, artifacts);
     Path productJsonPath = Paths.get(unzippedFolderPath, ProductJsonConstants.PRODUCT_JSON_FILE);
     String content = MavenUtils.extractProductJsonContent(productJsonPath);
-    productJsonContentService.updateProductJsonContent(content, null, productModuleContent.getTag(),
+    productJsonContentService.updateProductJsonContent(content, productModuleContent.getVersion(),
         ProductJsonConstants.VERSION_VALUE, product);
   }
 

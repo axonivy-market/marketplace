@@ -59,10 +59,10 @@ public class CustomProductRepositoryImpl extends CustomRepository implements Cus
   }
 
   @Override
-  public Product getProductByIdAndTag(String id, String tag) {
+  public Product getProductByIdAndVersion(String id, String version) {
     Product result = findProductById(id);
     if (!Objects.isNull(result)) {
-      ProductModuleContent content = contentRepository.findByTagAndProductId(tag, id);
+      ProductModuleContent content = contentRepository.findByVersionAndProductId(version, id);
       result.setProductModuleContent(content);
     }
     return result;
@@ -78,7 +78,7 @@ public class CustomProductRepositoryImpl extends CustomRepository implements Cus
   public Product getProductById(String id) {
     Product result = findProductById(id);
     if (!Objects.isNull(result)) {
-      ProductModuleContent content = contentRepository.findByTagAndProductId(
+      ProductModuleContent content = contentRepository.findByVersionAndProductId(
           result.getNewestReleaseVersion(), id);
       result.setProductModuleContent(content);
     }
