@@ -9,30 +9,22 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
-      
-      - name: Login to Postman CLI
-        run: postman login --with-api-key ${{ secrets.POSTMAN_API_KEY }}
         
       - name: Run API tests
         id: run_tests
         run: |
-          postman collection run "${{ secrets.POSTMAN_COLLECTION_ID }}" --reporter-json export.json || true
+          echo "Run defined api collection & gen test report"
+          newman run https://api.postman.com/collections/${{ secrets.POSTMAN_COLLECTION_ID }}?access_key=${{ secrets.POSTMAN_API_KEY }} -r htmlextra --reporter-htmlextra-title "Api Testing Report - Axon Ivy Marketplace" --reporter-htmlextra-browserTitle "Axon Ivy Market Api Testing Report" --reporter-htmlextra-export "./test-report.html"
           ls -l
-          pwd
 
       - name: Export report
         run: |
           echo "Test report:"
-          cat export.json
-          
+          cat test-report.html
+
       - name: Upload report as artifact
         if: always()  # Ensures this step runs regardless of previous step outcome
         uses: actions/upload-artifact@v3
         with:
           name: postman-test-report
-          path: export.json
-
-      - name: Handle failure
-        if: steps.run_tests.outcome == 'failure'
-        run: |
-          echo "Postman tests failed. Check the report above for details."
+          path: test-report.html
