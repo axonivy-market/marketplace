@@ -1,0 +1,36 @@
+name: Service Api testing
+run-name: Postman testing workflow for e2e testing
+on:
+  push:
+
+jobs:
+  test:
+    runs-on: self-hosted
+
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Login to Postman CLI
+        run: postman login --with-api-key ${{ secrets.POSTMAN_API_KEY }}
+        
+      - name: Run API tests
+        id: run_tests
+        run: |
+          postman collection run "${{ secrets.POSTMAN_COLLECTION_ID }}" --reporter-json export.json || true
+      
+      - name: Export report
+        run: |
+          echo "Test report:"
+          cat export.json
+          
+      - name: Upload report as artifact
+        if: always()  # Ensures this step runs regardless of previous step outcome
+        uses: actions/upload-artifact@v3
+        with:
+          name: postman-test-report
+          path: export.json
+
+      - name: Handle failure
+        if: steps.run_tests.outcome == 'failure'
+        run: |
+          echo "Postman tests failed. Check the report above for details."
