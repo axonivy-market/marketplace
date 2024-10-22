@@ -189,6 +189,7 @@ export const VERSION = {
   displayPrefix: 'Version '
 };
 
+export const ERROR_PAGE = 'Error Page';
 export const ERROR_PAGE_PATH = 'error-page';
 export const NOT_FOUND_ERROR_CODE = 404;
 export const INTERNAL_SERVER_ERROR_CODE = 500;
