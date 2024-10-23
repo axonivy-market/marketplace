@@ -166,6 +166,10 @@ export class ProductDetailComponent {
     this.updateDropdownSelection();
   }
 
+  onClickingBackToHomepageButton() {
+    this.router.navigate(['/']);
+  }
+
   onLogoError() {
     this.logoUrl = DEFAULT_IMAGE_URL;
   }
