@@ -164,19 +164,19 @@ class ProductServiceImplTest extends BaseSetup {
     product.setId("portal");
     ReflectionTestUtils.setField(productService, "legacyInstallationCountPath", INSTALLATION_FILE_PATH);
 
-    productService.syncInstallationCountWithProduct(product);
+    productService.getInstallationCountFromFileOrInitializeRandomly(product);
 
     assertTrue(product.getInstallationCount() >= 20 && product.getInstallationCount() <= 50);
     assertTrue(product.getSynchronizedInstallationCount());
   }
 
   @Test
-  void testSyncInstallationCountWithProduct() {
+  void testGetInstallationCountFromFileOrInitializeRandomly() {
     ReflectionTestUtils.setField(productService, "legacyInstallationCountPath", INSTALLATION_FILE_PATH);
     Product product = mockProduct();
     product.setSynchronizedInstallationCount(false);
 
-    productService.syncInstallationCountWithProduct(product);
+    productService.getInstallationCountFromFileOrInitializeRandomly(product);
 
     assertEquals(40, product.getInstallationCount());
     assertTrue(product.getSynchronizedInstallationCount());

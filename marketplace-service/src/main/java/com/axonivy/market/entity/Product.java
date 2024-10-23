@@ -61,14 +61,13 @@ public class Product implements Serializable {
   private String compatibility;
   private Boolean validate;
   private Boolean contactUs;
+  @Transient
   private int installationCount;
   private Date newestPublishedDate;
   private String newestReleaseVersion;
   @Transient
   private ProductModuleContent productModuleContent;
   private List<Artifact> artifacts;
-  private Boolean synchronizedInstallationCount;
-  private Integer customOrder;
   private List<String> releasedVersions;
   @Transient
   private String metaProductJsonUrl;

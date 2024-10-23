@@ -18,4 +18,5 @@ public class EntityConstants {
   public static final String IMAGE = "Image";
   public static final String MAVEN_ARTIFACT_VERSION = "MavenArtifactVersion";
   public static final String EXTERNAL_DOCUMENT_META = "ExternalDocumentMeta";
+  public static final String PRODUCT_MARKETPLACE_DATA = "ProductMarketplaceData";
 }

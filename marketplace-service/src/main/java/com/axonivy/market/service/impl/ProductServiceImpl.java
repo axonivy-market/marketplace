@@ -11,6 +11,7 @@ import com.axonivy.market.entity.Image;
 import com.axonivy.market.entity.MavenArtifactVersion;
 import com.axonivy.market.entity.Product;
 import com.axonivy.market.entity.ProductCustomSort;
+import com.axonivy.market.entity.ProductMarketplaceData;
 import com.axonivy.market.entity.ProductModuleContent;
 import com.axonivy.market.enums.ErrorCode;
 import com.axonivy.market.enums.FileType;
@@ -18,6 +19,7 @@ import com.axonivy.market.enums.Language;
 import com.axonivy.market.enums.SortOption;
 import com.axonivy.market.enums.TypeOption;
 import com.axonivy.market.exceptions.model.InvalidParamException;
+import com.axonivy.market.exceptions.model.NotFoundException;
 import com.axonivy.market.factory.ProductFactory;
 import com.axonivy.market.github.model.GitHubFile;
 import com.axonivy.market.github.service.GHAxonIvyMarketRepoService;
@@ -25,15 +27,7 @@ import com.axonivy.market.github.service.GHAxonIvyProductRepoService;
 import com.axonivy.market.github.service.GitHubService;
 import com.axonivy.market.github.util.GitHubUtils;
 import com.axonivy.market.model.ProductCustomSortRequest;
-import com.axonivy.market.repository.GitHubRepoMetaRepository;
-import com.axonivy.market.repository.ImageRepository;
-import com.axonivy.market.repository.MavenArtifactVersionRepository;
-import com.axonivy.market.repository.MetadataRepository;
-import com.axonivy.market.repository.MetadataSyncRepository;
-import com.axonivy.market.repository.ProductCustomSortRepository;
-import com.axonivy.market.repository.ProductJsonContentRepository;
-import com.axonivy.market.repository.ProductModuleContentRepository;
-import com.axonivy.market.repository.ProductRepository;
+import com.axonivy.market.repository.*;
 import com.axonivy.market.service.ImageService;
 import com.axonivy.market.service.MetadataService;
 import com.axonivy.market.service.ProductService;
@@ -103,6 +97,7 @@ public class ProductServiceImpl implements ProductService {
   private final MetadataRepository metadataRepository;
   private final ProductJsonContentRepository productJsonContentRepository;
   private final ImageRepository imageRepository;
+  private final ProductMarketplaceDataRepository productMarketplaceDataRepository;
   private final ImageService imageService;
   private final MongoTemplate mongoTemplate;
   private final MetadataService metadataService;
@@ -122,7 +117,8 @@ public class ProductServiceImpl implements ProductService {
       ProductCustomSortRepository productCustomSortRepository, MavenArtifactVersionRepository mavenArtifactVersionRepo,
       ImageRepository imageRepository, MetadataService metadataService, MetadataSyncRepository metadataSyncRepository,
       MetadataRepository metadataRepository, ImageService imageService, MongoTemplate mongoTemplate,
-      ProductJsonContentRepository productJsonContentRepository) {
+      ProductJsonContentRepository productJsonContentRepository,
+      ProductMarketplaceDataRepository productMarketplaceDataRepository) {
     this.productRepository = productRepository;
     this.productModuleContentRepository = productModuleContentRepository;
     this.axonIvyMarketRepoService = axonIvyMarketRepoService;
@@ -138,6 +134,7 @@ public class ProductServiceImpl implements ProductService {
     this.imageService = imageService;
     this.mongoTemplate = mongoTemplate;
     this.productJsonContentRepository = productJsonContentRepository;
+    this.productMarketplaceDataRepository = productMarketplaceDataRepository;
   }
 
   private static Predicate<GHTag> filterNonPersistGhTagName(List<String> currentTags) {
@@ -178,41 +175,40 @@ public class ProductServiceImpl implements ProductService {
   }
 
   @Override
-  public int updateInstallationCountForProduct(String key, String designerVersion) {
-    Product product = productRepository.getProductById(key);
-    if (Objects.isNull(product)) {
-      return 0;
-    }
+  public int updateInstallationCountForProduct(String productId, String designerVersion) {
+    validateProductExists(productId);
+    ProductMarketplaceData productMarketplaceData =
+        productMarketplaceDataRepository.findById(productId).orElse(initProductMarketplaceData(productId));
 
-    log.info("Increase installation count for product {} By Designer Version {}", key, designerVersion);
+    log.info("Increase installation count for product {} By Designer Version {}", productId, designerVersion);
     if (StringUtils.isNotBlank(designerVersion)) {
-      productRepository.increaseInstallationCountForProductByDesignerVersion(key, designerVersion);
+      productMarketplaceDataRepository.increaseInstallationCountForProductByDesignerVersion(productId, designerVersion);
     }
 
-    log.info("updating installation count for product {}", key);
-    if (BooleanUtils.isTrue(product.getSynchronizedInstallationCount())) {
-      return productRepository.increaseInstallationCount(key);
+    log.info("updating installation count for product {}", productId);
+    if (BooleanUtils.isTrue(productMarketplaceData.getSynchronizedInstallationCount())) {
+      return productMarketplaceDataRepository.increaseInstallationCount(productId);
     }
-    syncInstallationCountWithProduct(product);
-    return productRepository.updateInitialCount(key, product.getInstallationCount() + 1);
+    int installationCount = getInstallationCountFromFileOrInitializeRandomly(productId);
+    return productMarketplaceDataRepository.updateInitialCount(productId, installationCount + 1);
   }
 
-  public void syncInstallationCountWithProduct(Product product) {
-    log.info("synchronizing installation count for product {}", product.getId());
+  public int getInstallationCountFromFileOrInitializeRandomly(String productId) {
+    log.info("synchronizing installation count for product {}", productId);
+    int result = 0;
     try {
       String installationCounts = Files.readString(Paths.get(legacyInstallationCountPath));
       Map<String, Integer> mapping = mapper.readValue(installationCounts,
           new TypeReference<HashMap<String, Integer>>() {
           });
       List<String> keyList = mapping.keySet().stream().toList();
-      int currentInstallationCount = keyList.contains(product.getId())
-          ? mapping.get(product.getId()) : random.nextInt(20, 50);
-      product.setInstallationCount(currentInstallationCount);
-      product.setSynchronizedInstallationCount(true);
-      log.info("synchronized installation count for product {} successfully", product.getId());
+      result = keyList.contains(productId)
+          ? mapping.get(productId) : random.nextInt(20, 50);
+      log.info("synchronized installation count for product {} successfully", productId);
     } catch (IOException ex) {
       log.error("Could not read the marketplace-installation file to synchronize", ex);
     }
+    return result;
   }
 
   private void syncRepoMetaDataStatus() {
@@ -536,7 +532,8 @@ public class ProductServiceImpl implements ProductService {
   public Product fetchProductDetail(String id, Boolean isShowDevVersion) {
     Product product = productRepository.getProductByIdWithNewestReleaseVersion(id, isShowDevVersion);
     return Optional.ofNullable(product).map(productItem -> {
-      updateProductInstallationCount(id, productItem);
+      int installationCount = updateProductInstallationCount(id);
+      productItem.setInstallationCount(installationCount);
       return productItem;
     }).orElse(null);
   }
@@ -552,18 +549,21 @@ public class ProductServiceImpl implements ProductService {
     Product product = StringUtils.isBlank(bestMatchTag) ? productRepository.getProductByIdWithNewestReleaseVersion(
         id, false) : productRepository.getProductByIdWithTagOrVersion(id, bestMatchTag);
     return Optional.ofNullable(product).map(productItem -> {
-      updateProductInstallationCount(id, productItem);
+      int installationCount = updateProductInstallationCount(id);
+      productItem.setInstallationCount(installationCount);
       productItem.setBestMatchVersion(bestMatchVersion);
       return productItem;
     }).orElse(null);
   }
 
-  public void updateProductInstallationCount(String id, Product productItem) {
-    if (!BooleanUtils.isTrue(productItem.getSynchronizedInstallationCount())) {
-      syncInstallationCountWithProduct(productItem);
-      int persistedInitialCount = productRepository.updateInitialCount(id, productItem.getInstallationCount());
-      productItem.setInstallationCount(persistedInitialCount);
+  public int updateProductInstallationCount(String id) {
+    ProductMarketplaceData productMarketplaceData =
+        productMarketplaceDataRepository.findById(id).orElse(initProductMarketplaceData(id));
+    if (BooleanUtils.isNotTrue(productMarketplaceData.getSynchronizedInstallationCount())) {
+      return productMarketplaceDataRepository.updateInitialCount(id,
+          getInstallationCountFromFileOrInitializeRandomly(id));
     }
+    return productMarketplaceData.getInstallationCount();
   }
 
   @Override
@@ -585,24 +585,21 @@ public class ProductServiceImpl implements ProductService {
     productCustomSortRepository.deleteAll();
     removeFieldFromAllProductDocuments(ProductJsonConstants.CUSTOM_ORDER);
     productCustomSortRepository.save(productCustomSort);
-    productRepository.saveAll(refineOrderedListOfProductsInCustomSort(customSort.getOrderedListOfProducts()));
+    productMarketplaceDataRepository.saveAll(refineOrderedListOfProductsInCustomSort(customSort.getOrderedListOfProducts()));
   }
 
-  public List<Product> refineOrderedListOfProductsInCustomSort(List<String> orderedListOfProducts)
+  public List<ProductMarketplaceData> refineOrderedListOfProductsInCustomSort(List<String> orderedListOfProducts)
       throws InvalidParamException {
-    List<Product> productEntries = new ArrayList<>();
+    List<ProductMarketplaceData> productEntries = new ArrayList<>();
 
     int descendingOrder = orderedListOfProducts.size();
     for (String productId : orderedListOfProducts) {
-      Optional<Product> productOptional = productRepository.findById(productId);
+      validateProductExists(productId);
+      ProductMarketplaceData productMarketplaceData =
+          productMarketplaceDataRepository.findById(productId).orElse(initProductMarketplaceData(productId));
 
-      if (productOptional.isEmpty()) {
-        throw new InvalidParamException(ErrorCode.PRODUCT_NOT_FOUND, "Not found product with id: " + productId);
-      }
-      Product product = productOptional.get();
-      product.setCustomOrder(descendingOrder--);
-      productRepository.save(product);
-      productEntries.add(product);
+      productMarketplaceData.setCustomOrder(descendingOrder--);
+      productEntries.add(productMarketplaceData);
     }
 
     return productEntries;
@@ -693,5 +690,17 @@ public class ProductServiceImpl implements ProductService {
     product.setNewestReleaseVersion(INITIAL_VERSION);
     axonIvyProductRepoService.extractReadMeFileFromContents(product, ghContentEntity, initialContent);
     productModuleContentRepository.save(initialContent);
+  }
+
+  private ProductMarketplaceData initProductMarketplaceData(String productId) {
+    ProductMarketplaceData productMarketplaceData = new ProductMarketplaceData();
+    productMarketplaceData.setId(productId);
+    return productMarketplaceData;
+  }
+
+  public void validateProductExists(String productId) throws NotFoundException {
+    if (productRepository.findById(productId).isEmpty()) {
+      throw new NotFoundException(ErrorCode.PRODUCT_NOT_FOUND, "Not found product with id: " + productId);
+    }
   }
 }
