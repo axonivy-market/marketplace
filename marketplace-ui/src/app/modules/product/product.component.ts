@@ -115,11 +115,7 @@ export class ProductComponent implements AfterViewInit, OnDestroy {
   }
 
   viewProductDetail(productId: string, _productTag: string) {
-    window.location.href = `/${productId}`;
-  }
-
-  viewProductDetailAngularRouting(productId: string, _productTag: string) {
-    this.router.navigate([`/${productId}`]);
+    this.isRESTClient() ? window.location.href = `/${productId}` : this.router.navigate([`/${productId}`]);
   }
 
   onFilterChange(selectedType: ItemDropdown<TypeOption>) {
