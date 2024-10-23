@@ -37,6 +37,7 @@ public class ProductContentServiceImpl implements ProductContentService {
   private final ProductJsonContentService productJsonContentService;
   private final ImageService imageService;
 
+  @Override
   public ProductModuleContent getReadmeAndProductContentsFromVersion(Product product, String version, String url,
       Artifact artifact) {
     ProductModuleContent productModuleContent = ProductContentUtils.initProductModuleContent(product.getId(),
@@ -93,7 +94,8 @@ public class ProductContentServiceImpl implements ProductContentService {
     }
   }
 
-  private String updateImagesWithDownloadUrl(String productId, String unzippedFolderPath,
+  @Override
+  public String updateImagesWithDownloadUrl(String productId, String unzippedFolderPath,
       String readmeContents) throws IOException {
     List<Path> allImagePaths;
     Map<String, String> imageUrls = new HashMap<>();
@@ -101,10 +103,11 @@ public class ProductContentServiceImpl implements ProductContentService {
       allImagePaths = imagePathStream.filter(Files::isRegularFile).filter(
           path -> path.getFileName().toString().toLowerCase().matches(CommonConstants.IMAGE_EXTENSION)).toList();
     }
-    allImagePaths.forEach(
-        imagePath -> Optional.of(imageService.mappingImageFromDownloadedFolder(productId, imagePath)).ifPresent(
-            image -> imageUrls.put(imagePath.getFileName().toString(),
-                CommonConstants.IMAGE_ID_PREFIX.concat(image.getId()))));
+    for (Path imagePath : allImagePaths) {
+      Optional.of(imageService.mappingImageFromDownloadedFolder(productId, imagePath)).ifPresent(
+          image -> imageUrls.put(imagePath.getFileName().toString(),
+              CommonConstants.IMAGE_ID_PREFIX.concat(image.getId())));
+    }
 
     return ProductContentUtils.replaceImageDirWithImageCustomId(imageUrls, readmeContents);
   }

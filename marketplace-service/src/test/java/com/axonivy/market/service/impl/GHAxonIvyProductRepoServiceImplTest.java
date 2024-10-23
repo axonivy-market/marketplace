@@ -153,6 +153,16 @@ class GHAxonIvyProductRepoServiceImplTest extends BaseSetup {
     return image;
   }
 
+  public static Image mockImage2() {
+    Image image = new Image();
+    image.setId("66e2b14868f2f95b2f95550a");
+    image.setSha("914d9b6956db7a1404622f14265e435f36db81fa");
+    image.setProductId("amazon-comprehend");
+    image.setImageUrl(
+        "https://raw.githubusercontent.com/amazon-comprehend-connector-product/images/comprehend-demo-sentiment.png");
+    return image;
+  }
+
   @Test
   void testExtractReadMeFileFromContents_ImageFromRootFolder() {
     String readmeContentWithImageFolder = """

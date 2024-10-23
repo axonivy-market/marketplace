@@ -477,42 +477,38 @@ public class ProductServiceImpl implements ProductService {
   }
 
   private void updateContentsFromMavenXML(Product product, String metadataContent, Artifact mavenArtifact) {
-    try {
-      Document document = MetadataReaderUtils.getDocumentFromXMLContent(metadataContent);
+    Document document = MetadataReaderUtils.getDocumentFromXMLContent(metadataContent);
 
-      String latestVersion = MetadataReaderUtils.getElementValue(document, MavenConstants.LATEST_VERSION_TAG);
-      if (StringUtils.equals(latestVersion, product.getNewestReleaseVersion())) {
-        return;
-      }
-      product.setNewestPublishedDate(getNewestPublishedDate(document));
-      product.setNewestReleaseVersion(latestVersion);
+    String latestVersion = MetadataReaderUtils.getElementValue(document, MavenConstants.LATEST_VERSION_TAG);
+    if (StringUtils.equals(latestVersion, product.getNewestReleaseVersion())) {
+      return;
+    }
+    product.setNewestPublishedDate(getNewestPublishedDate(document));
+    product.setNewestReleaseVersion(latestVersion);
 
-      NodeList versionNodes = document.getElementsByTagName(MavenConstants.VERSION_TAG);
-      List<String> mavenVersions = new ArrayList<>();
-      for (int i = 0; i < versionNodes.getLength(); i++) {
-        mavenVersions.add(versionNodes.item(i).getTextContent());
-      }
+    NodeList versionNodes = document.getElementsByTagName(MavenConstants.VERSION_TAG);
+    List<String> mavenVersions = new ArrayList<>();
+    for (int i = 0; i < versionNodes.getLength(); i++) {
+      mavenVersions.add(versionNodes.item(i).getTextContent());
+    }
 
-      updateProductCompatibility(product, mavenVersions);
+    updateProductCompatibility(product, mavenVersions);
 
-      List<String> currentVersions = product.getReleasedVersions();
-      if (CollectionUtils.isEmpty(currentVersions)) {
-        product.setReleasedVersions(new ArrayList<>());
-        currentVersions = productModuleContentRepo.findVersionsByProductId(product.getId());
-      }
-      mavenVersions = mavenVersions.stream().filter(filterNonPersistVersion(currentVersions)).toList();
+    List<String> currentVersions = product.getReleasedVersions();
+    if (CollectionUtils.isEmpty(currentVersions)) {
+      product.setReleasedVersions(new ArrayList<>());
+      currentVersions = productModuleContentRepo.findVersionsByProductId(product.getId());
+    }
+    mavenVersions = mavenVersions.stream().filter(filterNonPersistVersion(currentVersions)).toList();
 
-      List<ProductModuleContent> productModuleContents = new ArrayList<>();
-      for (String version : mavenVersions) {
-        product.getReleasedVersions().add(version);
-        handleProductArtifact(version, product, productModuleContents, mavenArtifact);
-      }
+    List<ProductModuleContent> productModuleContents = new ArrayList<>();
+    for (String version : mavenVersions) {
+      product.getReleasedVersions().add(version);
+      handleProductArtifact(version, product, productModuleContents, mavenArtifact);
+    }
 
-      if (ObjectUtils.isNotEmpty(productModuleContents)) {
-        productModuleContentRepo.saveAll(productModuleContents);
-      }
-    } catch (Exception e) {
-      log.error("Metadata Reader: can not read the metadata of {} with error", metadataContent, e);
+    if (ObjectUtils.isNotEmpty(productModuleContents)) {
+      productModuleContentRepo.saveAll(productModuleContents);
     }
   }
 

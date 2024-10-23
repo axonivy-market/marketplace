@@ -28,12 +28,16 @@ public class MetadataReaderUtils {
   public static Metadata updateMetadataFromMavenXML(String xmlData, Metadata metadata,
       boolean isSnapShot) {
     Document document = getDocumentFromXMLContent(xmlData);
-    LocalDateTime lastUpdated = getLastUpdatedTimeFromDocument(document, isSnapShot);
-    if (lastUpdated.equals(metadata.getLastUpdated())) {
-      return metadata;
+    try {
+      LocalDateTime lastUpdated = getLastUpdatedTimeFromDocument(document, isSnapShot);
+      if (lastUpdated.equals(metadata.getLastUpdated())) {
+        return metadata;
+      }
+      metadata.setLastUpdated(lastUpdated);
+      updateMetadataVersions(metadata, document, isSnapShot);
+    } catch (Exception e) {
+      log.error("Update metadata from maven failed {}", e.getMessage());
     }
-    metadata.setLastUpdated(lastUpdated);
-    updateMetadataVersions(metadata, document, isSnapShot);
     return metadata;
   }
 
