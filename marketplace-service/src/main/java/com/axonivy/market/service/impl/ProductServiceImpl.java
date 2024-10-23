@@ -504,7 +504,7 @@ public class ProductServiceImpl implements ProductService {
     List<ProductModuleContent> productModuleContents = new ArrayList<>();
     for (String version : mavenVersions) {
       product.getReleasedVersions().add(version);
-      handleProductArtifact(version, product, productModuleContents, mavenArtifact);
+      handleProductArtifact(version, product.getId(), productModuleContents, mavenArtifact);
     }
 
     if (ObjectUtils.isNotEmpty(productModuleContents)) {
@@ -534,7 +534,7 @@ public class ProductServiceImpl implements ProductService {
     return version -> !currentVersions.contains(version);
   }
 
-  public void handleProductArtifact(String version, Product product,
+  public void handleProductArtifact(String version, String productId,
       List<ProductModuleContent> productModuleContents, Artifact mavenArtifact) {
     String snapshotVersionValue = Strings.EMPTY;
     if (version.contains(MavenConstants.SNAPSHOT_VERSION)) {
@@ -549,15 +549,15 @@ public class ProductServiceImpl implements ProductService {
     }
 
     try {
-      addProductContent(product, version, url, productModuleContents, mavenArtifact);
+      addProductContent(productId, version, url, productModuleContents, mavenArtifact);
     } catch (Exception e) {
       log.error("Cannot download and unzip file {}", e.getMessage());
     }
   }
 
-  public void addProductContent(Product product, String version, String url,
+  public void addProductContent(String productId, String version, String url,
       List<ProductModuleContent> productModuleContents, Artifact artifact) {
-    ProductModuleContent productModuleContent = productContentService.getReadmeAndProductContentsFromVersion(product,
+    ProductModuleContent productModuleContent = productContentService.getReadmeAndProductContentsFromVersion(productId,
         version, url, artifact);
     if (Objects.nonNull(productModuleContent)) {
       productModuleContents.add(productModuleContent);

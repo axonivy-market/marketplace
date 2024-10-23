@@ -3,7 +3,6 @@ package com.axonivy.market.service.impl;
 import com.axonivy.market.BaseSetup;
 import com.axonivy.market.bo.Artifact;
 import com.axonivy.market.constants.ProductJsonConstants;
-import com.axonivy.market.entity.Product;
 import com.axonivy.market.entity.ProductModuleContent;
 import com.axonivy.market.service.ImageService;
 import com.axonivy.market.service.ProductJsonContentService;
@@ -39,7 +38,6 @@ class ProductContentServiceImplTest extends BaseSetup {
   @Test
   void testUpdateDependencyContentsFromProductJson() throws IOException {
     List<Artifact> mockArtifacts = List.of(mock(Artifact.class));
-    Product mockProduct = getMockProduct();
     try (MockedStatic<MavenUtils> mockedMavenUtils = Mockito.mockStatic(MavenUtils.class)) {
       mockedMavenUtils.when(
           () -> MavenUtils.convertProductJsonToMavenProductInfo(Paths.get(EXTRACT_DIR_LOCATION))).thenReturn(
@@ -48,12 +46,12 @@ class ProductContentServiceImplTest extends BaseSetup {
           MavenUtils.extractProductJsonContent(Paths.get(EXTRACT_DIR_LOCATION, ProductJsonConstants.PRODUCT_JSON_FILE)))
           .thenReturn(getMockProductJsonNodeContent());
 
-      productContentService.updateDependencyContentsFromProductJson(new ProductModuleContent(), mockProduct,
+      productContentService.updateDependencyContentsFromProductJson(new ProductModuleContent(), MOCK_PRODUCT_ID,
           EXTRACT_DIR_LOCATION);
 
       verify(productJsonContentService, times(1))
           .updateProductJsonContent(getMockProductJsonNodeContent(), new ProductModuleContent().getVersion(),
-              ProductJsonConstants.VERSION_VALUE, mockProduct);
+              ProductJsonConstants.VERSION_VALUE, MOCK_PRODUCT_ID);
     }
   }
 
@@ -70,10 +68,8 @@ class ProductContentServiceImplTest extends BaseSetup {
       mockedFiles.when(() -> Files.isRegularFile(imagePath1)).thenReturn(true);
       mockedFiles.when(() -> Files.isRegularFile(imagePath2)).thenReturn(true);
 
-      when(imageService.mappingImageFromDownloadedFolder(productId, imagePath1)).thenReturn(
-          GHAxonIvyProductRepoServiceImplTest.mockImage());
-      when(imageService.mappingImageFromDownloadedFolder(productId, imagePath2)).thenReturn(
-          GHAxonIvyProductRepoServiceImplTest.mockImage2());
+      when(imageService.mappingImageFromDownloadedFolder(productId, imagePath1)).thenReturn(getMockImage());
+      when(imageService.mappingImageFromDownloadedFolder(productId, imagePath2)).thenReturn(getMockImage2());
 
       String result = productContentService.updateImagesWithDownloadUrl(productId, EXTRACT_DIR_LOCATION,
           readmeContent);

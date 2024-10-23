@@ -4,7 +4,6 @@ import com.axonivy.market.BaseSetup;
 import com.axonivy.market.bo.Artifact;
 import com.axonivy.market.constants.MavenConstants;
 import com.axonivy.market.constants.ProductJsonConstants;
-import com.axonivy.market.entity.Image;
 import com.axonivy.market.entity.ProductModuleContent;
 import com.axonivy.market.github.service.GitHubService;
 import com.axonivy.market.github.service.impl.GHAxonIvyProductRepoServiceImpl;
@@ -143,26 +142,6 @@ class GHAxonIvyProductRepoServiceImplTest extends BaseSetup {
     assertTrue(artifact.getIsProductArtifact());
   }
 
-  public static Image mockImage() {
-    Image image = new Image();
-    image.setId("66e2b14868f2f95b2f95549a");
-    image.setSha("914d9b6956db7a1404622f14265e435f36db81fa");
-    image.setProductId("amazon-comprehend");
-    image.setImageUrl(
-        "https://raw.githubusercontent.com/amazon-comprehend-connector-product/images/comprehend-demo-sentiment.png");
-    return image;
-  }
-
-  public static Image mockImage2() {
-    Image image = new Image();
-    image.setId("66e2b14868f2f95b2f95550a");
-    image.setSha("914d9b6956db7a1404622f14265e435f36db81fa");
-    image.setProductId("amazon-comprehend");
-    image.setImageUrl(
-        "https://raw.githubusercontent.com/amazon-comprehend-connector-product/images/comprehend-demo-sentiment.png");
-    return image;
-  }
-
   @Test
   void testExtractReadMeFileFromContents_ImageFromRootFolder() {
     String readmeContentWithImageFolder = """
@@ -175,7 +154,7 @@ class GHAxonIvyProductRepoServiceImplTest extends BaseSetup {
 
     GHContent mockImageFile = mock(GHContent.class);
     when(mockImageFile.getName()).thenReturn(IMAGE_NAME);
-    when(imageService.mappingImageFromGHContent(any(), any(), anyBoolean())).thenReturn(mockImage());
+    when(imageService.mappingImageFromGHContent(any(), any(), anyBoolean())).thenReturn(getMockImage());
 
     String updatedReadme = axonivyProductRepoServiceImpl.updateImagesWithDownloadUrl(BaseSetup.MOCK_PRODUCT_ID,
         List.of(mockImageFile), readmeContentWithImageFolder);
@@ -217,7 +196,7 @@ class GHAxonIvyProductRepoServiceImplTest extends BaseSetup {
     when(mockImageFile2.listDirectoryContent()).thenReturn(pagedIterable2);
     when(pagedIterable2.toList()).thenReturn(List.of(mockImageFile3));
 
-    when(imageService.mappingImageFromGHContent(any(), any(), anyBoolean())).thenReturn(mockImage());
+    when(imageService.mappingImageFromGHContent(any(), any(), anyBoolean())).thenReturn(getMockImage());
 
     String updatedReadme = axonivyProductRepoServiceImpl.updateImagesWithDownloadUrl(BaseSetup.MOCK_PRODUCT_ID,
         List.of(mockImageFile), readmeContentWithImageFolder);
@@ -247,7 +226,7 @@ class GHAxonIvyProductRepoServiceImplTest extends BaseSetup {
       List<GHContent> contents = List.of(mockReadmeFile, mockImageFile);
 
       when(ProductContentUtils.hasImageDirectives(anyString())).thenReturn(true);
-      when(imageService.mappingImageFromGHContent(anyString(), any(), anyBoolean())).thenReturn(mockImage());
+      when(imageService.mappingImageFromGHContent(anyString(), any(), anyBoolean())).thenReturn(getMockImage());
       ProductModuleContent productModuleContent = new ProductModuleContent();
 
       axonivyProductRepoServiceImpl.extractReadMeFileFromContents(getMockProducts().get(0), contents,

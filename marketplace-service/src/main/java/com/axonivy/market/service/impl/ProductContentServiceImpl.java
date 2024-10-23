@@ -4,7 +4,6 @@ import com.axonivy.market.bo.Artifact;
 import com.axonivy.market.constants.CommonConstants;
 import com.axonivy.market.constants.ProductJsonConstants;
 import com.axonivy.market.constants.ReadmeConstants;
-import com.axonivy.market.entity.Product;
 import com.axonivy.market.entity.ProductModuleContent;
 import com.axonivy.market.service.FileDownloadService;
 import com.axonivy.market.service.ImageService;
@@ -38,15 +37,15 @@ public class ProductContentServiceImpl implements ProductContentService {
   private final ImageService imageService;
 
   @Override
-  public ProductModuleContent getReadmeAndProductContentsFromVersion(Product product, String version, String url,
+  public ProductModuleContent getReadmeAndProductContentsFromVersion(String productId, String version, String url,
       Artifact artifact) {
-    ProductModuleContent productModuleContent = ProductContentUtils.initProductModuleContent(product.getId(),
+    ProductModuleContent productModuleContent = ProductContentUtils.initProductModuleContent(productId,
         version);
     String unzippedFolderPath = Strings.EMPTY;
     try {
       unzippedFolderPath = fileDownloadService.downloadAndUnzipProductContentFile(url, artifact);
-      updateDependencyContentsFromProductJson(productModuleContent, product, unzippedFolderPath);
-      extractReadMeFileFromContents(product.getId(), unzippedFolderPath, productModuleContent);
+      updateDependencyContentsFromProductJson(productModuleContent, productId, unzippedFolderPath);
+      extractReadMeFileFromContents(productId, unzippedFolderPath, productModuleContent);
     } catch (Exception e) {
       log.error("Cannot get product.json content in {}", e.getMessage());
       return null;
@@ -59,14 +58,14 @@ public class ProductContentServiceImpl implements ProductContentService {
   }
 
   public void updateDependencyContentsFromProductJson(ProductModuleContent productModuleContent,
-      Product product, String unzippedFolderPath) throws IOException {
+      String productId, String unzippedFolderPath) throws IOException {
     List<Artifact> artifacts = MavenUtils.convertProductJsonToMavenProductInfo(
         Paths.get(unzippedFolderPath));
     ProductContentUtils.updateProductModule(productModuleContent, artifacts);
     Path productJsonPath = Paths.get(unzippedFolderPath, ProductJsonConstants.PRODUCT_JSON_FILE);
     String content = MavenUtils.extractProductJsonContent(productJsonPath);
     productJsonContentService.updateProductJsonContent(content, productModuleContent.getVersion(),
-        ProductJsonConstants.VERSION_VALUE, product);
+        ProductJsonConstants.VERSION_VALUE, productId);
   }
 
   private void extractReadMeFileFromContents(String productId, String unzippedFolderPath,
@@ -94,7 +93,6 @@ public class ProductContentServiceImpl implements ProductContentService {
     }
   }
 
-  @Override
   public String updateImagesWithDownloadUrl(String productId, String unzippedFolderPath,
       String readmeContents) throws IOException {
     List<Path> allImagePaths;

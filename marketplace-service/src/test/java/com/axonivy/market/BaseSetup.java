@@ -2,6 +2,7 @@ package com.axonivy.market;
 
 import com.axonivy.market.bo.Artifact;
 import com.axonivy.market.constants.MavenConstants;
+import com.axonivy.market.entity.Image;
 import com.axonivy.market.entity.MavenArtifactVersion;
 import com.axonivy.market.entity.Metadata;
 import com.axonivy.market.entity.Product;
@@ -66,6 +67,8 @@ public class BaseSetup {
   protected static final String MOCK_ARTIFACT_NAME = "bpmn statistic (zip)";
   protected static final String MOCK_ARTIFACT_DOWNLOAD_FILE = "bpmn-statistic.zip";
   protected static final String LEGACY_INSTALLATION_COUNT_PATH_FIELD_NAME = "legacyInstallationCountPath";
+  protected static final String MOCK_IMAGE_URL = "https://raw.githubusercontent" +
+      ".com/amazon-comprehend-connector-product/images/comprehend-demo-sentiment.png";
 
   protected Page<Product> createPageProductsMock() {
     var mockProducts = new ArrayList<Product>();
@@ -146,6 +149,24 @@ public class BaseSetup {
     mockArtifact.setType("zip");
     mockArtifact.setName(MOCK_PRODUCT_NAME);
     return mockArtifact;
+  }
+
+  public static Image getMockImage() {
+    Image image = new Image();
+    image.setId("66e2b14868f2f95b2f95549a");
+    image.setSha("914d9b6956db7a1404622f14265e435f36db81fa");
+    image.setProductId(SAMPLE_PRODUCT_ID);
+    image.setImageUrl(MOCK_IMAGE_URL);
+    return image;
+  }
+
+  public static Image getMockImage2() {
+    Image image = new Image();
+    image.setId("66e2b14868f2f95b2f95550a");
+    image.setSha("914d9b6956db7a1404622f14265e435f36db81fa");
+    image.setProductId(SAMPLE_PRODUCT_ID);
+    image.setImageUrl(MOCK_IMAGE_URL);
+    return image;
   }
 
   protected String getMockSnapShotMetadataContent() {

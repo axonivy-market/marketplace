@@ -319,8 +319,7 @@ class ProductServiceImplTest extends BaseSetup {
     when(marketRepoService.fetchAllMarketItems()).thenReturn(mockGHContentMap);
     when(productModuleContentRepo.saveAll(anyList())).thenReturn(List.of(mockReadmeProductContent()));
 
-    when(imageService.mappingImageFromGHContent(any(), any(), anyBoolean()))
-        .thenReturn(GHAxonIvyProductRepoServiceImplTest.mockImage());
+    when(imageService.mappingImageFromGHContent(any(), any(), anyBoolean())).thenReturn(getMockImage());
     when(productRepo.save(any(Product.class))).thenReturn(new Product());
     // Executes
     productService.syncLatestDataFromMarketRepo(false);
@@ -348,8 +347,7 @@ class ProductServiceImplTest extends BaseSetup {
     List<GHContent> mockMetaJsonAndLogoList = new ArrayList<>(List.of(mockContent, mockContentLogo));
     mockGHContentMap.put(SAMPLE_PRODUCT_ID, mockMetaJsonAndLogoList);
     when(marketRepoService.fetchAllMarketItems()).thenReturn(mockGHContentMap);
-    when(imageService.mappingImageFromGHContent(any(), any(), anyBoolean())).thenReturn(
-        GHAxonIvyProductRepoServiceImplTest.mockImage());
+    when(imageService.mappingImageFromGHContent(any(), any(), anyBoolean())).thenReturn(getMockImage());
     when(productRepo.save(any(Product.class))).thenReturn(new Product());
     // Executes
     productService.syncLatestDataFromMarketRepo(false);
@@ -649,8 +647,7 @@ class ProductServiceImplTest extends BaseSetup {
     when(mockCommit.getSHA1()).thenReturn(UUID.randomUUID().toString());
     mockGitHubFile.setStatus(FileStatus.REMOVED);
     when(marketRepoService.fetchMarketItemsBySHA1Range(any(), any())).thenReturn(List.of(mockGitHubFile));
-    when(imageRepo.findByImageUrlEndsWithIgnoreCase(anyString()))
-        .thenReturn(List.of(GHAxonIvyProductRepoServiceImplTest.mockImage()));
+    when(imageRepo.findByImageUrlEndsWithIgnoreCase(anyString())).thenReturn(List.of(getMockImage()));
     // Executes
     result = productService.syncLatestDataFromMarketRepo(false);
 
