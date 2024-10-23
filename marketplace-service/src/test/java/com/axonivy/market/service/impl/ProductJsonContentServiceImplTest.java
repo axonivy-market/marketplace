@@ -16,7 +16,6 @@ import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.HashMap;
-import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
@@ -41,10 +40,8 @@ class ProductJsonContentServiceImplTest extends BaseSetup {
     names.put(ProductJsonConstants.EN_LANGUAGE, MOCK_PRODUCT_NAME);
     product.setNames(names);
 
-    Mockito.when(productRepo.findById(MOCK_PRODUCT_ID)).thenReturn(Optional.of(product));
-
     productJsonContentService.updateProductJsonContent(jsonContent, MOCK_RELEASED_VERSION,
-        ProductJsonConstants.VERSION_VALUE, MOCK_PRODUCT_ID);
+        ProductJsonConstants.VERSION_VALUE, MOCK_PRODUCT_ID, MOCK_PRODUCT_NAME);
 
     ArgumentCaptor<ProductJsonContent> captor = ArgumentCaptor.forClass(ProductJsonContent.class);
     Mockito.verify(productJsonRepo).save(captor.capture());
@@ -59,7 +56,7 @@ class ProductJsonContentServiceImplTest extends BaseSetup {
   @Test
   void testUpdateProductJsonContent_EmptyJsonContent() {
     productJsonContentService.updateProductJsonContent(StringUtils.EMPTY, MOCK_SNAPSHOT_VERSION,
-        ProductJsonConstants.VERSION_VALUE, MOCK_PRODUCT_ID);
+        ProductJsonConstants.VERSION_VALUE, MOCK_PRODUCT_ID, MOCK_PRODUCT_NAME);
     Mockito.verify(productJsonRepo, Mockito.never()).save(any(ProductJsonContent.class));
   }
 }

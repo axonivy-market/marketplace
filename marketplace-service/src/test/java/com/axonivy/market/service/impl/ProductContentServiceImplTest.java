@@ -47,11 +47,11 @@ class ProductContentServiceImplTest extends BaseSetup {
           .thenReturn(getMockProductJsonNodeContent());
 
       productContentService.updateDependencyContentsFromProductJson(new ProductModuleContent(), MOCK_PRODUCT_ID,
-          EXTRACT_DIR_LOCATION);
+          EXTRACT_DIR_LOCATION, MOCK_PRODUCT_NAME);
 
       verify(productJsonContentService, times(1))
           .updateProductJsonContent(getMockProductJsonNodeContent(), new ProductModuleContent().getVersion(),
-              ProductJsonConstants.VERSION_VALUE, MOCK_PRODUCT_ID);
+              ProductJsonConstants.VERSION_VALUE, MOCK_PRODUCT_ID, MOCK_PRODUCT_NAME);
     }
   }
 

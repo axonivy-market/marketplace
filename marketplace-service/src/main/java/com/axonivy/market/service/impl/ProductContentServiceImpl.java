@@ -38,13 +38,13 @@ public class ProductContentServiceImpl implements ProductContentService {
 
   @Override
   public ProductModuleContent getReadmeAndProductContentsFromVersion(String productId, String version, String url,
-      Artifact artifact) {
+      Artifact artifact, String productName) {
     ProductModuleContent productModuleContent = ProductContentUtils.initProductModuleContent(productId,
         version);
     String unzippedFolderPath = Strings.EMPTY;
     try {
       unzippedFolderPath = fileDownloadService.downloadAndUnzipProductContentFile(url, artifact);
-      updateDependencyContentsFromProductJson(productModuleContent, productId, unzippedFolderPath);
+      updateDependencyContentsFromProductJson(productModuleContent, productId, unzippedFolderPath, productName);
       extractReadMeFileFromContents(productId, unzippedFolderPath, productModuleContent);
     } catch (Exception e) {
       log.error("Cannot get product.json content in {}", e.getMessage());
@@ -58,14 +58,14 @@ public class ProductContentServiceImpl implements ProductContentService {
   }
 
   public void updateDependencyContentsFromProductJson(ProductModuleContent productModuleContent,
-      String productId, String unzippedFolderPath) throws IOException {
+      String productId, String unzippedFolderPath, String productName) throws IOException {
     List<Artifact> artifacts = MavenUtils.convertProductJsonToMavenProductInfo(
         Paths.get(unzippedFolderPath));
     ProductContentUtils.updateProductModule(productModuleContent, artifacts);
     Path productJsonPath = Paths.get(unzippedFolderPath, ProductJsonConstants.PRODUCT_JSON_FILE);
     String content = MavenUtils.extractProductJsonContent(productJsonPath);
     productJsonContentService.updateProductJsonContent(content, productModuleContent.getVersion(),
-        ProductJsonConstants.VERSION_VALUE, productId);
+        ProductJsonConstants.VERSION_VALUE, productId, productName);
   }
 
   private void extractReadMeFileFromContents(String productId, String unzippedFolderPath,

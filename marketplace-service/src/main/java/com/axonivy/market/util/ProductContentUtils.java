@@ -17,6 +17,8 @@ import java.util.Objects;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import static com.axonivy.market.constants.ProductJsonConstants.DEFAULT_PRODUCT_TYPE;
+
 public class ProductContentUtils {
   public static final String DEMO_SETUP_TITLE = "(?i)## Demo|## Setup";
   private static final String HASH = "#";
@@ -127,7 +129,7 @@ public class ProductContentUtils {
       productModuleContent.setIsDependency(Boolean.TRUE);
       productModuleContent.setGroupId(artifact.getGroupId());
       productModuleContent.setArtifactId(artifact.getArtifactId());
-      productModuleContent.setType(artifact.getType());
+      productModuleContent.setType(StringUtils.defaultIfBlank(artifact.getType(), DEFAULT_PRODUCT_TYPE));
       productModuleContent.setName(artifact.getName());
     }
   }

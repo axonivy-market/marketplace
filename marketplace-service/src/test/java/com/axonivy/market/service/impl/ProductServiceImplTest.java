@@ -2,6 +2,7 @@ package com.axonivy.market.service.impl;
 
 import com.axonivy.market.BaseSetup;
 import com.axonivy.market.constants.GitHubConstants;
+import com.axonivy.market.constants.ProductJsonConstants;
 import com.axonivy.market.criteria.ProductSearchCriteria;
 import com.axonivy.market.entity.GitHubRepoMeta;
 import com.axonivy.market.entity.MavenArtifactVersion;
@@ -311,7 +312,7 @@ class ProductServiceImplTest extends BaseSetup {
     when(marketRepoService.getLastCommit(anyLong())).thenReturn(mockCommit);
     when(repoMetaRepo.findByRepoName(anyString())).thenReturn(null);
     when(productContentService.getReadmeAndProductContentsFromVersion(any(), anyString(), anyString(),
-        any())).thenReturn(
+        any(), anyString())).thenReturn(
         mockReadmeProductContent());
 
     Map<String, List<GHContent>> mockGHContentMap = new HashMap<>();
@@ -361,6 +362,9 @@ class ProductServiceImplTest extends BaseSetup {
       Product mockProduct = getMockProduct();
       mockProduct.setProductModuleContent(mockReadmeProductContent());
       mockProduct.setRepositoryName(MOCK_PRODUCT_REPOSITORY_NAME);
+      HashMap<String, String> names = new HashMap<>();
+      names.put(ProductJsonConstants.EN_LANGUAGE, MOCK_PRODUCT_NAME);
+      mockProduct.setNames(names);
       var gitHubRepoMeta = mock(GitHubRepoMeta.class);
       when(gitHubRepoMeta.getLastSHA1()).thenReturn(SHA1_SAMPLE);
       var mockCommit = mockGHCommitHasSHA1(SHA1_SAMPLE);
@@ -372,8 +376,8 @@ class ProductServiceImplTest extends BaseSetup {
       ProductModuleContent mockReturnProductContent = mockReadmeProductContent();
       mockReturnProductContent.setVersion(MOCK_RELEASED_VERSION);
 
-      when(productContentService.getReadmeAndProductContentsFromVersion(any(), anyString(), anyString(), any()))
-          .thenReturn(mockReturnProductContent);
+      when(productContentService.getReadmeAndProductContentsFromVersion(any(), anyString(), anyString(), any(),
+          anyString())).thenReturn(mockReturnProductContent);
       when(productModuleContentRepo.saveAll(anyList()))
           .thenReturn(List.of(mockReadmeProductContent(), mockReturnProductContent));
       mockUtils.when(() -> MavenUtils.getMetadataContentFromUrl(any())).thenReturn(getMockMetadataContent());

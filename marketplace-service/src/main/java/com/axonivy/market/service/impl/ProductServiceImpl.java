@@ -86,7 +86,8 @@ import java.util.Set;
 import java.util.function.Predicate;
 
 import static com.axonivy.market.constants.CommonConstants.SLASH;
-import static com.axonivy.market.constants.MavenConstants.DEFAULT_IVY_MAVEN_BASE_URL;
+import static com.axonivy.market.constants.MavenConstants.*;
+import static com.axonivy.market.constants.ProductJsonConstants.EN_LANGUAGE;
 import static com.axonivy.market.constants.ProductJsonConstants.LOGO_FILE;
 import static com.axonivy.market.enums.DocumentField.MARKET_DIRECTORY;
 import static com.axonivy.market.enums.DocumentField.SHORT_DESCRIPTIONS;
@@ -395,7 +396,7 @@ public class ProductServiceImpl implements ProductService {
     }
 
     for (Product product : products) {
-      updateProductFromReleasedVersions(product);
+      updateProductFromReleasedVersions(product, false);
       productRepo.save(product);
     }
   }
@@ -419,7 +420,7 @@ public class ProductServiceImpl implements ProductService {
       }
 
       updateProductContentForNonStandardProduct(ghContentEntity.getValue(), product);
-      updateProductFromReleasedVersions(product);
+      updateProductFromReleasedVersions(product, resetSync);
       transferComputedDataFromDB(product);
       syncedProductIds.add(productRepo.save(product).getId());
     }
@@ -458,11 +459,10 @@ public class ProductServiceImpl implements ProductService {
     return EMPTY;
   }
 
-  private void updateProductFromReleasedVersions(Product product) {
+  private void updateProductFromReleasedVersions(Product product, Boolean resetSync) {
     if (ObjectUtils.isEmpty(product.getArtifacts())) {
       return;
     }
-
     product.getArtifacts().stream()
         .filter(artifact -> artifact.getArtifactId().contains(MavenConstants.PRODUCT_ARTIFACT_POSTFIX))
         .findAny()
@@ -471,12 +471,30 @@ public class ProductServiceImpl implements ProductService {
               mavenArtifact.getGroupId(), mavenArtifact.getArtifactId());
           String metadataContent = MavenUtils.getMetadataContentFromUrl(metadataUrl);
           if (StringUtils.isNotBlank(metadataContent)) {
-            updateContentsFromMavenXML(product, metadataContent, mavenArtifact);
+            updateContentsFromMavenXML(product, metadataContent, mavenArtifact, resetSync);
+          }
+        });
+
+    // Get contents for archive artifacts
+    product.getArtifacts().stream()
+        .filter(artifact -> !CollectionUtils.isEmpty(artifact.getArchivedArtifacts()))
+        .flatMap(artifact -> artifact.getArchivedArtifacts().stream())
+        .forEach(archivedArtifact -> {
+          Artifact artifact =
+              Artifact.builder().groupId(archivedArtifact.getGroupId()).artifactId(
+                  archivedArtifact.getArtifactId()).build();
+          String metadataUrl = MavenUtils.buildMetadataUrlFromArtifactInfo(
+              artifact.getRepoUrl(), artifact.getGroupId(),
+              artifact.getArtifactId().concat(PRODUCT_ARTIFACT_POSTFIX));
+          String metadataContent = MavenUtils.getMetadataContentFromUrl(metadataUrl);
+          if (StringUtils.isNotBlank(metadataContent)) {
+            updateContentsFromMavenXML(product, metadataContent, artifact, resetSync);
           }
         });
   }
 
-  private void updateContentsFromMavenXML(Product product, String metadataContent, Artifact mavenArtifact) {
+  private void updateContentsFromMavenXML(Product product, String metadataContent, Artifact mavenArtifact,
+      Boolean resetSync) {
     Document document = MetadataReaderUtils.getDocumentFromXMLContent(metadataContent);
 
     String latestVersion = MetadataReaderUtils.getElementValue(document, MavenConstants.LATEST_VERSION_TAG);
@@ -501,10 +519,15 @@ public class ProductServiceImpl implements ProductService {
     }
     mavenVersions = mavenVersions.stream().filter(filterNonPersistVersion(currentVersions)).toList();
 
+    if (BooleanUtils.isTrue(resetSync)) {
+      productModuleContentRepo.deleteAllByProductId(product.getId());
+      productJsonContentRepo.deleteAllByProductId(product.getId());
+    }
     List<ProductModuleContent> productModuleContents = new ArrayList<>();
     for (String version : mavenVersions) {
       product.getReleasedVersions().add(version);
-      handleProductArtifact(version, product.getId(), productModuleContents, mavenArtifact);
+      handleProductArtifact(version, product.getId(), productModuleContents, mavenArtifact,
+          product.getNames().get(EN_LANGUAGE));
     }
 
     if (ObjectUtils.isNotEmpty(productModuleContents)) {
@@ -535,13 +558,18 @@ public class ProductServiceImpl implements ProductService {
   }
 
   public void handleProductArtifact(String version, String productId,
-      List<ProductModuleContent> productModuleContents, Artifact mavenArtifact) {
+      List<ProductModuleContent> productModuleContents, Artifact mavenArtifact, String productName) {
     String snapshotVersionValue = Strings.EMPTY;
     if (version.contains(MavenConstants.SNAPSHOT_VERSION)) {
       snapshotVersionValue = MetadataReaderUtils.getSnapshotVersionValue(version, mavenArtifact);
     }
+
     String repoUrl = StringUtils.defaultIfBlank(mavenArtifact.getRepoUrl(), DEFAULT_IVY_MAVEN_BASE_URL);
-    String url = MavenUtils.buildDownloadUrl(mavenArtifact.getArtifactId(), version, mavenArtifact.getType(),
+    String artifactId = mavenArtifact.getArtifactId().contains(PRODUCT_ARTIFACT_POSTFIX)
+        ? mavenArtifact.getArtifactId()
+        : mavenArtifact.getArtifactId().concat(PRODUCT_ARTIFACT_POSTFIX);
+    String type = StringUtils.defaultIfBlank(mavenArtifact.getType(), DEFAULT_PRODUCT_FOLDER_TYPE);
+    String url = MavenUtils.buildDownloadUrl(artifactId, version, type,
         repoUrl, mavenArtifact.getGroupId(), StringUtils.defaultIfBlank(snapshotVersionValue, version));
 
     if (StringUtils.isBlank(url)) {
@@ -549,16 +577,16 @@ public class ProductServiceImpl implements ProductService {
     }
 
     try {
-      addProductContent(productId, version, url, productModuleContents, mavenArtifact);
+      addProductContent(productId, version, url, productModuleContents, mavenArtifact, productName);
     } catch (Exception e) {
       log.error("Cannot download and unzip file {}", e.getMessage());
     }
   }
 
   public void addProductContent(String productId, String version, String url,
-      List<ProductModuleContent> productModuleContents, Artifact artifact) {
+      List<ProductModuleContent> productModuleContents, Artifact artifact, String productName) {
     ProductModuleContent productModuleContent = productContentService.getReadmeAndProductContentsFromVersion(productId,
-        version, url, artifact);
+        version, url, artifact, productName);
     if (Objects.nonNull(productModuleContent)) {
       productModuleContents.add(productModuleContent);
     }
@@ -697,7 +725,7 @@ public class ProductServiceImpl implements ProductService {
         log.info("Update data of product {} from meta.json and logo files", productId);
         mappingMetaDataAndLogoFromGHContent(gitHubContents, product);
         updateProductContentForNonStandardProduct(gitHubContents, product);
-        updateProductFromReleasedVersions(product);
+        updateProductFromReleasedVersions(product, false);
         productRepo.save(product);
         metadataService.syncProductMetadata(product);
         log.info("Sync product {} is finished!", productId);

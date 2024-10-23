@@ -5,5 +5,5 @@ import com.axonivy.market.entity.ProductModuleContent;
 
 public interface ProductContentService {
   ProductModuleContent getReadmeAndProductContentsFromVersion(String productId, String version, String url,
-      Artifact artifact);
+      Artifact artifact, String productName);
 }
