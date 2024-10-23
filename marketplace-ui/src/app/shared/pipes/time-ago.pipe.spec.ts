@@ -39,7 +39,7 @@ describe('TimeAgoPipe', () => {
     const oneYearAgo = new Date();
     oneYearAgo.setFullYear(new Date().getFullYear() - 1);
     expect(pipe.transform(oneYearAgo, Language.EN)).toBe(
-      translateService.instant(TimeAgo.YEAR_AGO, { number: 1 })
+      translateService.instant(TimeAgo.YEAR_AGO)
     );
   });
 
@@ -55,7 +55,7 @@ describe('TimeAgoPipe', () => {
     const oneMonthAgo = new Date();
     oneMonthAgo.setMonth(new Date().getMonth() - 1);
     expect(pipe.transform(oneMonthAgo, Language.EN)).toBe(
-      translateService.instant(TimeAgo.MONTH_AGO, { number: 1 })
+      translateService.instant(TimeAgo.MONTH_AGO)
     );
   });
 
@@ -71,7 +71,7 @@ describe('TimeAgoPipe', () => {
     const oneWeekAgo = new Date();
     oneWeekAgo.setDate(new Date().getDate() - 7);
     expect(pipe.transform(oneWeekAgo, Language.EN)).toBe(
-      translateService.instant(TimeAgo.WEEK_AGO, { number: 1 })
+      translateService.instant(TimeAgo.WEEK_AGO)
     );
   });
 
@@ -87,7 +87,7 @@ describe('TimeAgoPipe', () => {
     const oneDayAgo = new Date();
     oneDayAgo.setDate(new Date().getDate() - 1);
     expect(pipe.transform(oneDayAgo, Language.EN)).toBe(
-      translateService.instant(TimeAgo.DAY_AGO, { number: 1 })
+      translateService.instant(TimeAgo.DAY_AGO)
     );
   });
 
@@ -103,7 +103,7 @@ describe('TimeAgoPipe', () => {
     const oneHourAgo = new Date();
     oneHourAgo.setHours(new Date().getHours() - 1);
     expect(pipe.transform(oneHourAgo, Language.EN)).toBe(
-      translateService.instant(TimeAgo.HOUR_AGO, { number: 1 })
+      translateService.instant(TimeAgo.HOUR_AGO)
     );
   });
 
@@ -119,7 +119,7 @@ describe('TimeAgoPipe', () => {
     const oneMinuteAgo = new Date();
     oneMinuteAgo.setMinutes(new Date().getMinutes() - 1);
     expect(pipe.transform(oneMinuteAgo, Language.EN)).toBe(
-      translateService.instant(TimeAgo.MINUTE_AGO, { number: 1 })
+      translateService.instant(TimeAgo.MINUTE_AGO)
     );
   });
 
@@ -131,9 +131,15 @@ describe('TimeAgoPipe', () => {
     );
   });
 
-  it('should render the text 0 second ago', () => {
+  it('should render the text 1 second ago', () => {
     expect(pipe.transform(new Date(), Language.EN)).toBe(
-      translateService.instant(TimeAgo.SECOND_AGO, { number: 0 })
+      translateService.instant(TimeAgo.SECOND_AGO)
+    );
+
+    const oneSecondAgo = new Date();
+    oneSecondAgo.setSeconds(new Date().getSeconds() - 1);
+    expect(pipe.transform(oneSecondAgo, Language.EN)).toBe(
+      translateService.instant(TimeAgo.SECOND_AGO)
     );
   });
 

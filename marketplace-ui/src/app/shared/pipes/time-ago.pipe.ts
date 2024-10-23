@@ -73,7 +73,7 @@ export class TimeAgoPipe implements PipeTransform {
     if (years > 1) {
       timeAgo = this.getTranslatedTimeAgo(TimeAgo.YEARS_AGO, years);
     } else if (years === 1) {
-      timeAgo = this.getTranslatedTimeAgo(TimeAgo.YEAR_AGO, years);
+      timeAgo = this.getTranslatedTimeAgo(TimeAgo.YEAR_AGO);
     } else {
       timeAgo = '';
     }
@@ -86,7 +86,7 @@ export class TimeAgoPipe implements PipeTransform {
     if (months > 1) {
       timeAgo = this.getTranslatedTimeAgo(TimeAgo.MONTHS_AGO, months);
     } else if (months === 1) {
-      timeAgo = this.getTranslatedTimeAgo(TimeAgo.MONTH_AGO, months);
+      timeAgo = this.getTranslatedTimeAgo(TimeAgo.MONTH_AGO);
     } else {
       timeAgo = '';
     }
@@ -99,7 +99,7 @@ export class TimeAgoPipe implements PipeTransform {
     if (weeks > 1) {
       timeAgo = this.getTranslatedTimeAgo(TimeAgo.WEEKS_AGO, weeks);
     } else if (weeks === 1) {
-      timeAgo = this.getTranslatedTimeAgo(TimeAgo.WEEK_AGO, weeks);
+      timeAgo = this.getTranslatedTimeAgo(TimeAgo.WEEK_AGO);
     } else {
       timeAgo = '';
     }
@@ -112,7 +112,7 @@ export class TimeAgoPipe implements PipeTransform {
     if (days > 1) {
       timeAgo = this.getTranslatedTimeAgo(TimeAgo.DAYS_AGO, days);
     } else if (days === 1) {
-      timeAgo = this.getTranslatedTimeAgo(TimeAgo.DAY_AGO, days);
+      timeAgo = this.getTranslatedTimeAgo(TimeAgo.DAY_AGO);
     } else {
       timeAgo = '';
     }
@@ -125,7 +125,7 @@ export class TimeAgoPipe implements PipeTransform {
     if (hours > 1) {
       timeAgo = this.getTranslatedTimeAgo(TimeAgo.HOURS_AGO, hours);
     } else if (hours === 1) {
-      timeAgo = this.getTranslatedTimeAgo(TimeAgo.HOUR_AGO, hours);
+      timeAgo = this.getTranslatedTimeAgo(TimeAgo.HOUR_AGO);
     } else {
       timeAgo = '';
     }
@@ -138,7 +138,7 @@ export class TimeAgoPipe implements PipeTransform {
     if (minutes > 1) {
       timeAgo = this.getTranslatedTimeAgo(TimeAgo.MINUTES_AGO, minutes);
     } else if (minutes === 1) {
-      timeAgo = this.getTranslatedTimeAgo(TimeAgo.MINUTE_AGO, minutes);
+      timeAgo = this.getTranslatedTimeAgo(TimeAgo.MINUTE_AGO);
     } else {
       timeAgo = '';
     }
@@ -151,13 +151,17 @@ export class TimeAgoPipe implements PipeTransform {
     if (seconds > 1) {
       timeAgo = this.getTranslatedTimeAgo(TimeAgo.SECONDS_AGO, seconds);
     } else {
-      timeAgo = this.getTranslatedTimeAgo(TimeAgo.SECOND_AGO, seconds);
+      timeAgo = this.getTranslatedTimeAgo(TimeAgo.SECOND_AGO);
     }
 
     return timeAgo;
   }
 
-  private getTranslatedTimeAgo(timeAgo: TimeAgo, timeNumber: number) {
-    return this.translateService.instant(timeAgo, { number: timeNumber })
+  private getTranslatedTimeAgo(timeAgo: TimeAgo, timeNumber?: number) {
+    if (timeNumber === undefined) {
+      return this.translateService.instant(timeAgo);
+    } else {
+      return this.translateService.instant(timeAgo, { number: timeNumber });
+    }
   }
 }
