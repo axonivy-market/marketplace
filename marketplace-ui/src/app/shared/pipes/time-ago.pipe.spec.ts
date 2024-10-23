@@ -38,7 +38,7 @@ describe('TimeAgoPipe', () => {
   it('should render the text 1 year ago', () => {
     const oneYearAgo = new Date();
     oneYearAgo.setFullYear(new Date().getFullYear() - 1);
-    expect(pipe.transform(oneYearAgo, Language.EN)).toBe(
+    expect(pipe.getTimeAgoValue(oneYearAgo)).toBe(
       translateService.instant(TimeAgo.YEAR_AGO)
     );
   });
@@ -46,7 +46,7 @@ describe('TimeAgoPipe', () => {
   it('should render the text 2 years ago', () => {
     const twoYearsAgo = new Date();
     twoYearsAgo.setFullYear(new Date().getFullYear() - 2);
-    expect(pipe.transform(twoYearsAgo, Language.EN)).toBe(
+    expect(pipe.getTimeAgoValue(twoYearsAgo)).toBe(
       translateService.instant(TimeAgo.YEARS_AGO, { number: 2 })
     );
   });
@@ -54,7 +54,7 @@ describe('TimeAgoPipe', () => {
   it('should render the text 1 month ago', () => {
     const oneMonthAgo = new Date();
     oneMonthAgo.setMonth(new Date().getMonth() - 1);
-    expect(pipe.transform(oneMonthAgo, Language.EN)).toBe(
+    expect(pipe.getTimeAgoValue(oneMonthAgo)).toBe(
       translateService.instant(TimeAgo.MONTH_AGO)
     );
   });
@@ -62,7 +62,7 @@ describe('TimeAgoPipe', () => {
   it('should render the text 2 months ago', () => {
     const twoMonthsAgo = new Date();
     twoMonthsAgo.setMonth(new Date().getMonth() - 2);
-    expect(pipe.transform(twoMonthsAgo, Language.EN)).toBe(
+    expect(pipe.getTimeAgoValue(twoMonthsAgo)).toBe(
       translateService.instant(TimeAgo.MONTHS_AGO, { number: 2 })
     );
   });
@@ -70,7 +70,7 @@ describe('TimeAgoPipe', () => {
   it('should render the text 1 week ago', () => {
     const oneWeekAgo = new Date();
     oneWeekAgo.setDate(new Date().getDate() - 7);
-    expect(pipe.transform(oneWeekAgo, Language.EN)).toBe(
+    expect(pipe.getTimeAgoValue(oneWeekAgo)).toBe(
       translateService.instant(TimeAgo.WEEK_AGO)
     );
   });
@@ -78,7 +78,7 @@ describe('TimeAgoPipe', () => {
   it('should render the text 2 weeks ago', () => {
     const twoWeeksAgo = new Date();
     twoWeeksAgo.setDate(new Date().getDate() - 14);
-    expect(pipe.transform(twoWeeksAgo, Language.EN)).toBe(
+    expect(pipe.getTimeAgoValue(twoWeeksAgo)).toBe(
       translateService.instant(TimeAgo.WEEKS_AGO, { number: 2 })
     );
   });
@@ -86,7 +86,7 @@ describe('TimeAgoPipe', () => {
   it('should render the text 1 day ago', () => {
     const oneDayAgo = new Date();
     oneDayAgo.setDate(new Date().getDate() - 1);
-    expect(pipe.transform(oneDayAgo, Language.EN)).toBe(
+    expect(pipe.getTimeAgoValue(oneDayAgo)).toBe(
       translateService.instant(TimeAgo.DAY_AGO)
     );
   });
@@ -94,7 +94,7 @@ describe('TimeAgoPipe', () => {
   it('should render the text 2 days ago', () => {
     const twoDaysAgo = new Date();
     twoDaysAgo.setDate(new Date().getDate() - 2);
-    expect(pipe.transform(twoDaysAgo, Language.EN)).toBe(
+    expect(pipe.getTimeAgoValue(twoDaysAgo)).toBe(
       translateService.instant(TimeAgo.DAYS_AGO, { number: 2 })
     );
   });
@@ -102,7 +102,7 @@ describe('TimeAgoPipe', () => {
   it('should render the text 1 hour ago', () => {
     const oneHourAgo = new Date();
     oneHourAgo.setHours(new Date().getHours() - 1);
-    expect(pipe.transform(oneHourAgo, Language.EN)).toBe(
+    expect(pipe.getTimeAgoValue(oneHourAgo)).toBe(
       translateService.instant(TimeAgo.HOUR_AGO)
     );
   });
@@ -110,7 +110,7 @@ describe('TimeAgoPipe', () => {
   it('should render the text 2 hours ago', () => {
     const twoHoursAgo = new Date();
     twoHoursAgo.setHours(new Date().getHours() - 2);
-    expect(pipe.transform(twoHoursAgo, Language.EN)).toBe(
+    expect(pipe.getTimeAgoValue(twoHoursAgo)).toBe(
       translateService.instant(TimeAgo.HOURS_AGO, { number: 2 })
     );
   });
@@ -118,7 +118,7 @@ describe('TimeAgoPipe', () => {
   it('should render the text 1 minute ago', () => {
     const oneMinuteAgo = new Date();
     oneMinuteAgo.setMinutes(new Date().getMinutes() - 1);
-    expect(pipe.transform(oneMinuteAgo, Language.EN)).toBe(
+    expect(pipe.getTimeAgoValue(oneMinuteAgo)).toBe(
       translateService.instant(TimeAgo.MINUTE_AGO)
     );
   });
@@ -126,19 +126,19 @@ describe('TimeAgoPipe', () => {
   it('should render the text 2 minutes ago', () => {
     const twoMinutesAgo = new Date();
     twoMinutesAgo.setMinutes(new Date().getMinutes() - 2);
-    expect(pipe.transform(twoMinutesAgo, Language.EN)).toBe(
+    expect(pipe.getTimeAgoValue(twoMinutesAgo)).toBe(
       translateService.instant(TimeAgo.MINUTES_AGO, { number: 2 })
     );
   });
 
   it('should render the text 1 second ago', () => {
-    expect(pipe.transform(new Date(), Language.EN)).toBe(
-      translateService.instant(TimeAgo.SECOND_AGO)
-    );
+    pipe.transform(new Date(), Language.EN).then(result => {
+      expect(result).toBe(translateService.instant(TimeAgo.SECOND_AGO));
+    });
 
     const oneSecondAgo = new Date();
     oneSecondAgo.setSeconds(new Date().getSeconds() - 1);
-    expect(pipe.transform(oneSecondAgo, Language.EN)).toBe(
+    expect(pipe.getTimeAgoValue(oneSecondAgo)).toBe(
       translateService.instant(TimeAgo.SECOND_AGO)
     );
   });
@@ -146,7 +146,7 @@ describe('TimeAgoPipe', () => {
   it('should render the text 2 seconds ago', () => {
     const twoSecondsAgo = new Date();
     twoSecondsAgo.setSeconds(new Date().getSeconds() - 2);
-    expect(pipe.transform(twoSecondsAgo, Language.EN)).toBe(
+    expect(pipe.getTimeAgoValue(twoSecondsAgo)).toBe(
       translateService.instant(TimeAgo.SECONDS_AGO, { number: 2 })
     );
   });

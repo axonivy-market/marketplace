@@ -15,7 +15,7 @@
           <i class="bi bi-github text-primary icon-feedback"></i>
         </div>
         <p class="feedback-time-text">
-          {{ feedback.updatedAt | timeAgo: languageService.selectedLanguage() }}
+          {{ feedback.updatedAt | timeAgo: languageService.selectedLanguage() | async}}
         </p>
       </div>
     </div>

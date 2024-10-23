@@ -1,7 +1,6 @@
 import { inject, Pipe, PipeTransform } from '@angular/core';
-import { Language } from '../enums/language.enum';
 import { TranslateService } from '@ngx-translate/core';
-import { TimeAgo } from '../enums/time-ago.enum';
+import { firstValueFrom } from 'rxjs';
 import {
   DAYS_IN_A_MONTH,
   DAYS_IN_A_WEEK,
@@ -10,6 +9,8 @@ import {
   MINUTES_IN_A_HOUR,
   SECONDS_IN_A_MINUTE
 } from '../constants/common.constant';
+import { Language } from '../enums/language.enum';
+import { TimeAgo } from '../enums/time-ago.enum';
 
 @Pipe({
   standalone: true,
@@ -17,11 +18,17 @@ import {
 })
 export class TimeAgoPipe implements PipeTransform {
   translateService = inject(TranslateService);
-  transform(value?: Date, language?: Language, _args?: []): string {
-    if (value === undefined || language === null) {
+  async transform(value?: Date, language?: Language, _args?: []): Promise<string> {
+    if (value === undefined || language === undefined) {
       return '';
     }
 
+    this.translateService.setDefaultLang(language);
+    await firstValueFrom(this.translateService.use(language));
+    return this.getTimeAgoValue(value);
+  }
+
+  getTimeAgoValue(value: Date): string {
     const date = new Date(value);
     const now = new Date();
     const diff = now.getTime() - date.getTime();
