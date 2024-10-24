@@ -396,7 +396,7 @@ public class ProductServiceImpl implements ProductService {
     }
 
     for (Product product : products) {
-      updateProductFromReleasedVersions(product, false);
+      updateProductFromReleasedVersions(product);
       productRepo.save(product);
     }
   }
@@ -415,12 +415,16 @@ public class ProductServiceImpl implements ProductService {
         mappingVendorImageFromGHContent(product, content);
         mappingLogoFromGHContent(product, content);
       }
-      if (productRepo.findById(product.getId()).isPresent() && BooleanUtils.isNotTrue(resetSync)) {
+
+      if (BooleanUtils.isTrue(resetSync)) {
+        productModuleContentRepo.deleteAllByProductId(product.getId());
+        productJsonContentRepo.deleteAllByProductId(product.getId());
+      } else if (productRepo.findById(product.getId()).isPresent()) {
         continue;
       }
 
       updateProductContentForNonStandardProduct(ghContentEntity.getValue(), product);
-      updateProductFromReleasedVersions(product, resetSync);
+      updateProductFromReleasedVersions(product);
       transferComputedDataFromDB(product);
       syncedProductIds.add(productRepo.save(product).getId());
     }
@@ -459,7 +463,7 @@ public class ProductServiceImpl implements ProductService {
     return EMPTY;
   }
 
-  private void updateProductFromReleasedVersions(Product product, Boolean resetSync) {
+  private void updateProductFromReleasedVersions(Product product) {
     if (ObjectUtils.isEmpty(product.getArtifacts())) {
       return;
     }
@@ -471,7 +475,7 @@ public class ProductServiceImpl implements ProductService {
               mavenArtifact.getGroupId(), mavenArtifact.getArtifactId());
           String metadataContent = MavenUtils.getMetadataContentFromUrl(metadataUrl);
           if (StringUtils.isNotBlank(metadataContent)) {
-            updateContentsFromMavenXML(product, metadataContent, mavenArtifact, resetSync);
+            updateContentsFromMavenXML(product, metadataContent, mavenArtifact);
           }
         });
 
@@ -488,13 +492,12 @@ public class ProductServiceImpl implements ProductService {
               artifact.getArtifactId().concat(PRODUCT_ARTIFACT_POSTFIX));
           String metadataContent = MavenUtils.getMetadataContentFromUrl(metadataUrl);
           if (StringUtils.isNotBlank(metadataContent)) {
-            updateContentsFromMavenXML(product, metadataContent, artifact, resetSync);
+            updateContentsFromMavenXML(product, metadataContent, artifact);
           }
         });
   }
 
-  private void updateContentsFromMavenXML(Product product, String metadataContent, Artifact mavenArtifact,
-      Boolean resetSync) {
+  private void updateContentsFromMavenXML(Product product, String metadataContent, Artifact mavenArtifact) {
     Document document = MetadataReaderUtils.getDocumentFromXMLContent(metadataContent);
 
     String latestVersion = MetadataReaderUtils.getElementValue(document, MavenConstants.LATEST_VERSION_TAG);
@@ -519,10 +522,6 @@ public class ProductServiceImpl implements ProductService {
     }
     mavenVersions = mavenVersions.stream().filter(filterNonPersistVersion(currentVersions)).toList();
 
-    if (BooleanUtils.isTrue(resetSync)) {
-      productModuleContentRepo.deleteAllByProductId(product.getId());
-      productJsonContentRepo.deleteAllByProductId(product.getId());
-    }
     List<ProductModuleContent> productModuleContents = new ArrayList<>();
     for (String version : mavenVersions) {
       product.getReleasedVersions().add(version);
@@ -725,7 +724,7 @@ public class ProductServiceImpl implements ProductService {
         log.info("Update data of product {} from meta.json and logo files", productId);
         mappingMetaDataAndLogoFromGHContent(gitHubContents, product);
         updateProductContentForNonStandardProduct(gitHubContents, product);
-        updateProductFromReleasedVersions(product, false);
+        updateProductFromReleasedVersions(product);
         productRepo.save(product);
         metadataService.syncProductMetadata(product);
         log.info("Sync product {} is finished!", productId);
