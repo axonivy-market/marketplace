@@ -415,9 +415,7 @@ public class ProductServiceImpl implements ProductService {
         mappingVendorImageFromGHContent(product, content);
         mappingLogoFromGHContent(product, content);
       }
-      if (productRepo.findById(product.getId()).isPresent() && BooleanUtils.isNotTrue(resetSync)) {
-        continue;
-      }
+
       if (BooleanUtils.isTrue(resetSync)) {
         productModuleContentRepo.deleteAllByProductId(product.getId());
         productJsonContentRepo.deleteAllByProductId(product.getId());
