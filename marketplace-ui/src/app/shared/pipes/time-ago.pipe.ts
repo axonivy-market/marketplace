@@ -42,126 +42,25 @@ export class TimeAgoPipe implements PipeTransform {
     const months = Math.floor(days / DAYS_IN_A_MONTH);
     const years = Math.floor(days / DAYS_IN_A_YEAR);
 
-    const yearAgo = this.getYearsAgoText(years);
-    if (yearAgo !== '') {
-      return yearAgo;
+    const timeIntervals = [
+      { value: years, singularKey: TimeAgo.YEAR_AGO, pluralKey: TimeAgo.YEARS_AGO },
+      { value: months, singularKey: TimeAgo.MONTH_AGO, pluralKey: TimeAgo.MONTHS_AGO },
+      { value: weeks, singularKey: TimeAgo.WEEK_AGO, pluralKey: TimeAgo.WEEKS_AGO },
+      { value: days, singularKey: TimeAgo.DAY_AGO, pluralKey: TimeAgo.DAYS_AGO },
+      { value: hours, singularKey: TimeAgo.HOUR_AGO, pluralKey: TimeAgo.HOURS_AGO },
+      { value: minutes, singularKey: TimeAgo.MINUTE_AGO, pluralKey: TimeAgo.MINUTES_AGO },
+      { value: seconds, singularKey: TimeAgo.SECOND_AGO, pluralKey: TimeAgo.SECONDS_AGO }
+    ];
+  
+    for (const timeInterval of timeIntervals) {
+      if (timeInterval.value > 1) {
+        return this.getTranslatedTimeAgo(timeInterval.pluralKey, timeInterval.value);
+      } else if (timeInterval.value === 1) {
+        return this.getTranslatedTimeAgo(timeInterval.singularKey);
+      }
     }
 
-    const monthAgo = this.getMonthsAgoText(months);
-    if (monthAgo !== '') {
-      return monthAgo;
-    }
-
-    const weekAgo = this.getWeeksAgoText(weeks);
-    if (weekAgo !== '') {
-      return weekAgo;
-    }
-
-    const dayAgo = this.getDaysAgoText(days);
-    if (dayAgo !== '') {
-      return dayAgo;
-    }
-
-    const hourAgo = this.getHoursAgoText(hours);
-    if (hourAgo !== '') {
-      return hourAgo;
-    }
-
-    const minuteAgo = this.getMinutesAgoText(minutes);
-    if (minuteAgo !== '') {
-      return minuteAgo;
-    }
-
-    return this.getSecondsAgoText(seconds);
-  }
-
-  private getYearsAgoText(years: number) {
-    let timeAgo;
-    if (years > 1) {
-      timeAgo = this.getTranslatedTimeAgo(TimeAgo.YEARS_AGO, years);
-    } else if (years === 1) {
-      timeAgo = this.getTranslatedTimeAgo(TimeAgo.YEAR_AGO);
-    } else {
-      timeAgo = '';
-    }
-
-    return timeAgo;
-  }
-
-  private getMonthsAgoText(months: number) {
-    let timeAgo;
-    if (months > 1) {
-      timeAgo = this.getTranslatedTimeAgo(TimeAgo.MONTHS_AGO, months);
-    } else if (months === 1) {
-      timeAgo = this.getTranslatedTimeAgo(TimeAgo.MONTH_AGO);
-    } else {
-      timeAgo = '';
-    }
-
-    return timeAgo;
-  }
-
-  private getWeeksAgoText(weeks: number) {
-    let timeAgo;
-    if (weeks > 1) {
-      timeAgo = this.getTranslatedTimeAgo(TimeAgo.WEEKS_AGO, weeks);
-    } else if (weeks === 1) {
-      timeAgo = this.getTranslatedTimeAgo(TimeAgo.WEEK_AGO);
-    } else {
-      timeAgo = '';
-    }
-
-    return timeAgo;
-  }
-
-  private getDaysAgoText(days: number) {
-    let timeAgo;
-    if (days > 1) {
-      timeAgo = this.getTranslatedTimeAgo(TimeAgo.DAYS_AGO, days);
-    } else if (days === 1) {
-      timeAgo = this.getTranslatedTimeAgo(TimeAgo.DAY_AGO);
-    } else {
-      timeAgo = '';
-    }
-
-    return timeAgo;
-  }
-
-  private getHoursAgoText(hours: number) {
-    let timeAgo;
-    if (hours > 1) {
-      timeAgo = this.getTranslatedTimeAgo(TimeAgo.HOURS_AGO, hours);
-    } else if (hours === 1) {
-      timeAgo = this.getTranslatedTimeAgo(TimeAgo.HOUR_AGO);
-    } else {
-      timeAgo = '';
-    }
-
-    return timeAgo;
-  }
-
-  private getMinutesAgoText(minutes: number) {
-    let timeAgo;
-    if (minutes > 1) {
-      timeAgo = this.getTranslatedTimeAgo(TimeAgo.MINUTES_AGO, minutes);
-    } else if (minutes === 1) {
-      timeAgo = this.getTranslatedTimeAgo(TimeAgo.MINUTE_AGO);
-    } else {
-      timeAgo = '';
-    }
-
-    return timeAgo;
-  }
-
-  private getSecondsAgoText(seconds: number) {
-    let timeAgo;
-    if (seconds > 1) {
-      timeAgo = this.getTranslatedTimeAgo(TimeAgo.SECONDS_AGO, seconds);
-    } else {
-      timeAgo = this.getTranslatedTimeAgo(TimeAgo.SECOND_AGO);
-    }
-
-    return timeAgo;
+    return this.getTranslatedTimeAgo(TimeAgo.SECOND_AGO);
   }
 
   private getTranslatedTimeAgo(timeAgo: TimeAgo, timeNumber?: number) {

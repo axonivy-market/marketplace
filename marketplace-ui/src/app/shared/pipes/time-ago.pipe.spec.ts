@@ -132,6 +132,9 @@ describe('TimeAgoPipe', () => {
   });
 
   it('should render the text 1 second ago', () => {
+    expect(pipe.getTimeAgoValue(new Date())).toBe(
+      translateService.instant(TimeAgo.SECOND_AGO)
+    );
     pipe.transform(new Date(), Language.EN).then(result => {
       expect(result).toBe(translateService.instant(TimeAgo.SECOND_AGO));
     });
