@@ -1,13 +1,13 @@
-name: marketplace
+name: hoang-marketplace
 
 services:
   mongodb:
-    container_name: mongodb
+    container_name: hoang-mongodb
     build:
       dockerfile: Dockerfile
     restart: always
     ports:
-      - "27017:27017"
+      - "27018:27017"
     environment:
       MONGODB_INITDB_ROOT_USERNAME: ${MONGODB_INITDB_ROOT_USERNAME}
       MONGODB_INITDB_ROOT_PASSWORD: ${MONGODB_INITDB_ROOT_PASSWORD}
@@ -15,11 +15,11 @@ services:
       - mongodata:/data/db
       - ./mongod.conf:/etc/mongod.conf
     networks:
-      - marketplace-network
+      -  hoang-marketplace-network
 
 volumes:
   mongodata:
 
 networks:
-  marketplace-network:
+  hoang-marketplace-network:
     external: true
