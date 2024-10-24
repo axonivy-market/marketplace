@@ -148,7 +148,7 @@ public class MavenUtils {
     try (InputStream contentStream = extractedContentStream(filePath)) {
       return IOUtils.toString(Objects.requireNonNull(contentStream), StandardCharsets.UTF_8);
     } catch (Exception e) {
-      log.error("Cannot extract product.json file {} {}", filePath, e);
+      log.error("Cannot extract product.json file {}", filePath);
       return null;
     }
   }

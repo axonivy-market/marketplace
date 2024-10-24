@@ -86,8 +86,6 @@ public class ProductFactory {
   public static void transferComputedPersistedDataToProduct(Product persisted, Product product) {
     product.setMarketDirectory(persisted.getMarketDirectory());
     product.setCustomOrder(persisted.getCustomOrder());
-    product.setNewestReleaseVersion(persisted.getNewestReleaseVersion());
-    product.setReleasedVersions(persisted.getReleasedVersions());
     product.setInstallationCount(persisted.getInstallationCount());
     product.setSynchronizedInstallationCount(persisted.getSynchronizedInstallationCount());
   }
