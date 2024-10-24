@@ -111,3 +111,18 @@ common:
     reviewLabelNoYet: Noch keine Bewertungen
   labels:
     redirecting: Redirecting ...!
+  timeAgo:
+    yearAgo: vor einem Jahr
+    yearsAgo: 'vor {{ number }} Jahren'
+    monthAgo: vor einem Monat
+    monthsAgo: 'vor {{ number }} Monaten'
+    weekAgo: vor einer Woche
+    weeksAgo: 'vor {{ number }} Wochen'
+    dayAgo: vor einem Tag
+    daysAgo: 'vor {{ number }} Tagen'
+    hourAgo: vor einer Stunde
+    hoursAgo: 'vor {{ number }} Stunden'
+    minuteAgo: vor einer Minute
+    minutesAgo: 'vor {{ number }} Minuten'
+    secondAgo: vor einer Sekunde
+    secondsAgo: 'vor {{ number }} Sekunden'

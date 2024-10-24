@@ -2,8 +2,8 @@ export interface Feedback {
   username?: string;
   userAvatarUrl?: string;
   userProvider?: string;
-  createdDate?: Date;
-  updatedDate?: Date;
+  createdAt?: Date;
+  updatedAt?: Date;
   content: string;
   rating: number;
   productId: string;
