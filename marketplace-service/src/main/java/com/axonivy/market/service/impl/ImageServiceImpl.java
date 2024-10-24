@@ -52,17 +52,15 @@ public class ImageServiceImpl implements ImageService {
   }
 
   @Override
-  public Image mappingImageFromGHContent(String productId, GHContent ghContent, boolean isLogo) {
+  public Image mappingImageFromGHContent(String productId, GHContent ghContent) {
     if (ObjectUtils.isEmpty(ghContent)) {
       log.info("There is missing for image content for product {}", productId);
       return null;
     }
 
-    if (!isLogo) {
-      Image existsImage = imageRepository.findByProductIdAndSha(productId, ghContent.getSha());
-      if (ObjectUtils.isNotEmpty(existsImage)) {
-        return existsImage;
-      }
+    Image existsImage = imageRepository.findByProductIdAndSha(productId, ghContent.getSha());
+    if (ObjectUtils.isNotEmpty(existsImage)) {
+      return existsImage;
     }
 
     String currentImageUrl = GitHubUtils.getDownloadUrl(ghContent);

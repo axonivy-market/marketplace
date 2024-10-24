@@ -329,7 +329,7 @@ public class ProductServiceImpl implements ProductService {
     searchCriteria.setFields(List.of(MARKET_DIRECTORY));
     Product result = productRepo.findByCriteria(searchCriteria);
     if (result != null) {
-      Optional.ofNullable(imageService.mappingImageFromGHContent(result.getId(), fileContent, true)).ifPresent(image -> {
+      Optional.ofNullable(imageService.mappingImageFromGHContent(result.getId(), fileContent)).ifPresent(image -> {
         if (StringUtils.isNotBlank(result.getLogoId())) {
           imageRepo.deleteById(result.getLogoId());
         }
@@ -415,7 +415,9 @@ public class ProductServiceImpl implements ProductService {
         mappingVendorImageFromGHContent(product, content);
         mappingLogoFromGHContent(product, content);
       }
-
+      if (productRepo.findById(product.getId()).isPresent() && BooleanUtils.isNotTrue(resetSync)) {
+        continue;
+      }
       if (BooleanUtils.isTrue(resetSync)) {
         productModuleContentRepo.deleteAllByProductId(product.getId());
         productJsonContentRepo.deleteAllByProductId(product.getId());
@@ -433,7 +435,7 @@ public class ProductServiceImpl implements ProductService {
 
   private void mappingLogoFromGHContent(Product product, GHContent ghContent) {
     if (ghContent != null && StringUtils.endsWith(ghContent.getName(), LOGO_FILE)) {
-      Optional.ofNullable(imageService.mappingImageFromGHContent(product.getId(), ghContent, true))
+      Optional.ofNullable(imageService.mappingImageFromGHContent(product.getId(), ghContent))
           .ifPresent(image -> product.setLogoId(image.getId()));
     }
   }
@@ -454,7 +456,7 @@ public class ProductServiceImpl implements ProductService {
       String imagePath = StringUtils.replace(ghContent.getPath(), MetaConstants.META_FILE, imageName);
       try {
         GHContent imageContent = gitHubService.getGHContent(ghContent.getOwner(), imagePath, marketRepoBranch);
-        return Optional.ofNullable(imageService.mappingImageFromGHContent(productId, imageContent, false))
+        return Optional.ofNullable(imageService.mappingImageFromGHContent(productId, imageContent))
             .map(Image::getId).orElse(EMPTY);
       } catch (IOException e) {
         log.error("Get Vendor Image failed: ", e);

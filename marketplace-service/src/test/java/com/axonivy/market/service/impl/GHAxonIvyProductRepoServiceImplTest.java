@@ -38,9 +38,16 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.*;
-import static org.mockito.Mockito.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class GHAxonIvyProductRepoServiceImplTest extends BaseSetup {
@@ -154,7 +161,7 @@ class GHAxonIvyProductRepoServiceImplTest extends BaseSetup {
 
     GHContent mockImageFile = mock(GHContent.class);
     when(mockImageFile.getName()).thenReturn(IMAGE_NAME);
-    when(imageService.mappingImageFromGHContent(any(), any(), anyBoolean())).thenReturn(getMockImage());
+    when(imageService.mappingImageFromGHContent(any(), any())).thenReturn(getMockImage());
 
     String updatedReadme = axonivyProductRepoServiceImpl.updateImagesWithDownloadUrl(BaseSetup.MOCK_PRODUCT_ID,
         List.of(mockImageFile), readmeContentWithImageFolder);
@@ -196,7 +203,7 @@ class GHAxonIvyProductRepoServiceImplTest extends BaseSetup {
     when(mockImageFile2.listDirectoryContent()).thenReturn(pagedIterable2);
     when(pagedIterable2.toList()).thenReturn(List.of(mockImageFile3));
 
-    when(imageService.mappingImageFromGHContent(any(), any(), anyBoolean())).thenReturn(getMockImage());
+    when(imageService.mappingImageFromGHContent(any(), any())).thenReturn(getMockImage());
 
     String updatedReadme = axonivyProductRepoServiceImpl.updateImagesWithDownloadUrl(BaseSetup.MOCK_PRODUCT_ID,
         List.of(mockImageFile), readmeContentWithImageFolder);
@@ -226,14 +233,14 @@ class GHAxonIvyProductRepoServiceImplTest extends BaseSetup {
       List<GHContent> contents = List.of(mockReadmeFile, mockImageFile);
 
       when(ProductContentUtils.hasImageDirectives(anyString())).thenReturn(true);
-      when(imageService.mappingImageFromGHContent(anyString(), any(), anyBoolean())).thenReturn(getMockImage());
+      when(imageService.mappingImageFromGHContent(anyString(), any())).thenReturn(getMockImage());
       ProductModuleContent productModuleContent = new ProductModuleContent();
 
       axonivyProductRepoServiceImpl.extractReadMeFileFromContents(getMockProducts().get(0), contents,
           productModuleContent);
 
       verify(mockReadmeFile, times(1)).read();
-      verify(imageService, times(1)).mappingImageFromGHContent(anyString(), eq(mockImageFile), anyBoolean());
+      verify(imageService, times(1)).mappingImageFromGHContent(anyString(), eq(mockImageFile));
       mockedProductContentUtils.verify(
           () -> ProductContentUtils.updateProductModuleTabContents(productModuleContent, new HashMap<>()));
     }

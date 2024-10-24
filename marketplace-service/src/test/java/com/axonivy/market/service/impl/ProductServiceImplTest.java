@@ -320,7 +320,7 @@ class ProductServiceImplTest extends BaseSetup {
     when(marketRepoService.fetchAllMarketItems()).thenReturn(mockGHContentMap);
     when(productModuleContentRepo.saveAll(anyList())).thenReturn(List.of(mockReadmeProductContent()));
 
-    when(imageService.mappingImageFromGHContent(any(), any(), anyBoolean())).thenReturn(getMockImage());
+    when(imageService.mappingImageFromGHContent(any(), any())).thenReturn(getMockImage());
     when(productRepo.save(any(Product.class))).thenReturn(new Product());
     // Executes
     productService.syncLatestDataFromMarketRepo(false);
@@ -348,7 +348,7 @@ class ProductServiceImplTest extends BaseSetup {
     List<GHContent> mockMetaJsonAndLogoList = new ArrayList<>(List.of(mockContent, mockContentLogo));
     mockGHContentMap.put(SAMPLE_PRODUCT_ID, mockMetaJsonAndLogoList);
     when(marketRepoService.fetchAllMarketItems()).thenReturn(mockGHContentMap);
-    when(imageService.mappingImageFromGHContent(any(), any(), anyBoolean())).thenReturn(getMockImage());
+    when(imageService.mappingImageFromGHContent(any(), any())).thenReturn(getMockImage());
     when(productRepo.save(any(Product.class))).thenReturn(new Product());
     // Executes
     productService.syncLatestDataFromMarketRepo(false);
