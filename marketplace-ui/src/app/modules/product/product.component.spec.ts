@@ -6,7 +6,7 @@ import {
 } from '@angular/core/testing';
 
 import { provideHttpClient } from '@angular/common/http';
-import { ActivatedRoute, Router } from '@angular/router';
+import { ActivatedRoute, provideRouter, Router } from '@angular/router';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { of, Subscription } from 'rxjs';
 import { TypeOption } from '../../shared/enums/type-option.enum';
@@ -17,16 +17,17 @@ import { MockProductService } from '../../shared/mocks/mock-services';
 import { RoutingQueryParamService } from '../../shared/services/routing.query.param.service';
 import { DESIGNER_COOKIE_VARIABLE } from '../../shared/constants/common.constant';
 import { ItemDropdown } from '../../shared/models/item-dropdown.model';
-
-const router = {
-  navigate: jasmine.createSpy('navigate')
-};
+import { By } from '@angular/platform-browser';
+import { Location } from '@angular/common';
+import { ProductDetailComponent } from './product-detail/product-detail.component';
 
 describe('ProductComponent', () => {
   let component: ProductComponent;
   let fixture: ComponentFixture<ProductComponent>;
   let mockIntersectionObserver: any;
   let routingQueryParamService: jasmine.SpyObj<RoutingQueryParamService>;
+  let location: Location;
+  let router: Router;
 
   beforeAll(() => {
     mockIntersectionObserver = jasmine.createSpyObj('IntersectionObserver', [
@@ -66,10 +67,6 @@ describe('ProductComponent', () => {
       imports: [ProductComponent, TranslateModule.forRoot()],
       providers: [
         {
-          provide: Router,
-          useValue: router
-        },
-        {
           provide: ActivatedRoute,
           useValue: {
             queryParams: of({
@@ -81,6 +78,12 @@ describe('ProductComponent', () => {
           provide: RoutingQueryParamService,
           useValue: routingQueryParamService
         },
+        provideRouter([
+          {
+            path: ':id',
+            component: ProductDetailComponent
+          }
+        ]),
         ProductService,
         TranslateService,
         provideHttpClient()
@@ -93,12 +96,17 @@ describe('ProductComponent', () => {
         }
       })
       .compileComponents();
+    
+    location = TestBed.inject(Location);
+    router = TestBed.inject(Router);
+
     routingQueryParamService = TestBed.inject(
       RoutingQueryParamService
     ) as jasmine.SpyObj<RoutingQueryParamService>;
 
     fixture = TestBed.createComponent(ProductComponent);
     component = fixture.componentInstance;
+
     fixture.detectChanges();
   });
 
@@ -196,6 +204,10 @@ describe('ProductComponent', () => {
   });
 
   it('should set isRESTClient true based on query params and designer environment', () => {
+    component.route.queryParams = of({
+      [DESIGNER_COOKIE_VARIABLE.restClientParamName]: 'resultsOnly',
+    });
+    
     routingQueryParamService.isDesignerEnv.and.returnValue(true);
     const fixtureTest = TestBed.createComponent(ProductComponent);
     component = fixtureTest.componentInstance;
@@ -214,5 +226,23 @@ describe('ProductComponent', () => {
 
     const compiled = fixture.debugElement.nativeElement;
     expect(compiled.querySelector('.row col-md-12 mt-8')).toBeNull();
+  });
+
+  it('should navigate to product detail page when clicking on a product card', async () => {
+    routingQueryParamService.isDesignerEnv.and.returnValue(false);
+    const fixtureTest = TestBed.createComponent(ProductComponent);
+    component = fixtureTest.componentInstance;
+
+    expect(component.isRESTClient()).toBeFalse();
+
+    const productName = 'amazon-comprehend';
+
+    const productCardComponent = fixture.debugElement.query(
+      By.css('.product-card')
+    ).nativeElement as HTMLDivElement;
+
+    productCardComponent.click();
+    await router.navigate([productName]);
+    expect(location.path()).toBe('/amazon-comprehend');
   });
 });
