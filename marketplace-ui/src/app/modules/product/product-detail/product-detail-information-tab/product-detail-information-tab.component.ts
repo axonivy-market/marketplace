@@ -64,6 +64,6 @@ export class ProductDetailInformationTabComponent implements OnChanges {
   }
 
   extractVersionValue(versionDisplayName: string) {
-    return versionDisplayName.replace(VERSION.displayPrefix, '').replace(VERSION.tagPrefix, '');
+    return versionDisplayName.replace(VERSION.displayPrefix, '');
   }
 }

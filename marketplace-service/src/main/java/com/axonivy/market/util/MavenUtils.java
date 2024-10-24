@@ -144,6 +144,15 @@ public class MavenUtils {
     return artifacts;
   }
 
+  public static String extractProductJsonContent(Path filePath) {
+    try (InputStream contentStream = extractedContentStream(filePath)) {
+      return IOUtils.toString(Objects.requireNonNull(contentStream), StandardCharsets.UTF_8);
+    } catch (Exception e) {
+      log.error("Cannot extract product.json file {}", filePath);
+      return null;
+    }
+  }
+
   public static String buildDownloadUrl(Artifact artifact, String version) {
     String groupIdByVersion = artifact.getGroupId();
     String artifactIdByVersion = artifact.getArtifactId();
@@ -160,13 +169,6 @@ public class MavenUtils {
         StringUtils.EMPTY);
   }
 
-  public static String buildDownloadUrl(Metadata metadata, String version) {
-    String groupIdByVersion = metadata.getGroupId();
-    groupIdByVersion = groupIdByVersion.replace(CommonConstants.DOT_SEPARATOR, CommonConstants.SLASH);
-    return buildDownloadUrl(metadata.getArtifactId(), version, metadata.getType(), metadata.getRepoUrl(),
-        groupIdByVersion, StringUtils.EMPTY);
-  }
-
   public static String buildDownloadUrl(String artifactId, String baseVersion, String type, String repoUrl,
       String groupId, String version) {
     groupId = groupId.replace(CommonConstants.DOT_SEPARATOR, CommonConstants.SLASH);
@@ -176,7 +178,6 @@ public class MavenUtils {
     String artifactFileName = String.format(MavenConstants.ARTIFACT_FILE_NAME_FORMAT, artifactId, version, type);
     return String.join(CommonConstants.SLASH, repoUrl, groupId, artifactId, baseVersion, artifactFileName);
   }
-
 
   public static ArchivedArtifact findArchivedArtifactInfoBestMatchWithVersion(String version,
       List<ArchivedArtifact> archivedArtifacts) {
@@ -323,5 +324,11 @@ public class MavenUtils {
   public static boolean isProductMetadata(Metadata metadata) {
     return StringUtils.endsWith(Objects.requireNonNullElse(metadata, new Metadata()).getArtifactId(),
         MavenConstants.PRODUCT_ARTIFACT_POSTFIX);
+  }
+
+  public static boolean isJsonContentContainOnlyMavenDropins(String jsonContent) {
+    return jsonContent.contains(ProductJsonConstants.MAVEN_DROPINS_INSTALLER_ID) && !jsonContent.contains(
+        ProductJsonConstants.MAVEN_IMPORT_INSTALLER_ID) && !jsonContent.contains(
+        ProductJsonConstants.MAVEN_DEPENDENCY_INSTALLER_ID);
   }
 }

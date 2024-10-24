@@ -1,16 +1,23 @@
 package com.axonivy.market.util;
 
 import com.axonivy.market.BaseSetup;
+import com.axonivy.market.bo.Artifact;
 import com.axonivy.market.constants.MavenConstants;
 import com.axonivy.market.entity.Metadata;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.MockedStatic;
+import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class MetadataReaderUtilsTest extends BaseSetup {
@@ -30,9 +37,9 @@ class MetadataReaderUtilsTest extends BaseSetup {
     LocalDateTime expectedLastUpdated = LocalDateTime.parse("20230924010101",
         DateTimeFormatter.ofPattern(MavenConstants.DATE_TIME_FORMAT));
 
-    Assertions.assertEquals(MOCK_SPRINT_RELEASED_VERSION, modifiedMetadata.getLatest());
-    Assertions.assertEquals(MOCK_RELEASED_VERSION, modifiedMetadata.getRelease());
-    Assertions.assertEquals(expectedLastUpdated, modifiedMetadata.getLastUpdated());
+    assertEquals(MOCK_SPRINT_RELEASED_VERSION, modifiedMetadata.getLatest());
+    assertEquals(MOCK_RELEASED_VERSION, modifiedMetadata.getRelease());
+    assertEquals(expectedLastUpdated, modifiedMetadata.getLastUpdated());
   }
 
   @Test
@@ -46,6 +53,27 @@ class MetadataReaderUtilsTest extends BaseSetup {
   @Test
   void testUpdateMetadataFromSnapshotXml() {
     MetadataReaderUtils.updateMetadataFromMavenXML(getMockSnapShotMetadataContent(), metadata, true);
-    Assertions.assertEquals("8.0.5-20221011.124215-170", metadata.getSnapshotVersionValue());
+    assertEquals("8.0.5-20221011.124215-170", metadata.getSnapshotVersionValue());
+  }
+
+  @Test
+  void testGetSnapshotVersionValue() {
+    try (MockedStatic<MavenUtils> mockUtils = Mockito.mockStatic(MavenUtils.class)) {
+      Artifact mockArtifact = mock(Artifact.class);
+
+      // Mock Artifact properties
+      when(mockArtifact.getRepoUrl()).thenReturn("http://example.com/maven");
+      when(mockArtifact.getGroupId()).thenReturn(MOCK_GROUP_ID);
+      when(mockArtifact.getArtifactId()).thenReturn(MOCK_ARTIFACT_ID);
+
+      String mockMetadataUrl = "http://example.com/maven/metadata.xml";
+
+      mockUtils.when(() -> MavenUtils.buildSnapshotMetadataUrlFromArtifactInfo("http://example.com/maven",
+          MOCK_GROUP_ID, MOCK_ARTIFACT_ID, MOCK_SNAPSHOT_VERSION)).thenReturn(mockMetadataUrl);
+      when(MavenUtils.getMetadataContentFromUrl(mockMetadataUrl)).thenReturn(getMockSnapShotMetadataContent());
+
+      String snapshotVersionValue = MetadataReaderUtils.getSnapshotVersionValue(MOCK_SNAPSHOT_VERSION, mockArtifact);
+      assertEquals("8.0.5-20221011.124215-170", snapshotVersionValue);
+    }
   }
 }

@@ -19,5 +19,4 @@ public class RequestParamConstants {
   public static final String ARTIFACT = "artifact";
   public static final String MARKET_ITEM_PATH = "marketItemPath";
   public static final String OVERRIDE_MARKET_ITEM_PATH = "overrideMarketItemPath";
-
 }

@@ -6,6 +6,7 @@ import com.axonivy.market.entity.Product;
 import com.axonivy.market.entity.ProductDesignerInstallation;
 import com.axonivy.market.repository.MavenArtifactVersionRepository;
 import com.axonivy.market.repository.MetadataRepository;
+import com.axonivy.market.repository.ProductJsonContentRepository;
 import com.axonivy.market.repository.ProductModuleContentRepository;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -21,13 +22,21 @@ import org.springframework.data.mongodb.core.query.Update;
 
 import java.util.List;
 
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.eq;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class CustomProductRepositoryImplTest extends BaseSetup {
   @Mock
   ProductModuleContentRepository contentRepo;
+  @Mock
+  ProductJsonContentRepository jsonContentRepo;
   private Product mockProduct;
   private Aggregation mockAggregation;
   @Mock
@@ -86,14 +95,14 @@ class CustomProductRepositoryImplTest extends BaseSetup {
   @Test
   void testGetProductById() {
     setUpMockAggregateResult();
-    Product actualProduct = repo.getProductById(MOCK_PRODUCT_ID);
+    Product actualProduct = repo.getProductWithModuleContent(MOCK_PRODUCT_ID);
     assertEquals(mockProduct, actualProduct);
   }
 
   @Test
-  void testGetProductByIdAndTag() {
+  void testGetProductByIdAndVersion() {
     setUpMockAggregateResult();
-    Product actualProduct = repo.getProductByIdWithTagOrVersion(MOCK_PRODUCT_ID, MOCK_TAG_FROM_RELEASED_VERSION);
+    Product actualProduct = repo.getProductByIdAndVersion(MOCK_PRODUCT_ID, MOCK_RELEASED_VERSION);
     assertEquals(mockProduct, actualProduct);
   }
 

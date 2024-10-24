@@ -11,6 +11,7 @@ import com.axonivy.market.enums.Language;
 import com.axonivy.market.enums.TypeOption;
 import com.axonivy.market.repository.CustomProductRepository;
 import com.axonivy.market.repository.CustomRepository;
+import com.axonivy.market.repository.ProductJsonContentRepository;
 import com.axonivy.market.repository.ProductModuleContentRepository;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -28,7 +29,11 @@ import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.data.mongodb.core.query.Update;
 import org.springframework.util.CollectionUtils;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
 
 import static com.axonivy.market.enums.DocumentField.LISTED;
 import static com.axonivy.market.enums.DocumentField.TYPE;
@@ -40,7 +45,8 @@ public class CustomProductRepositoryImpl extends CustomRepository implements Cus
   public static final String LOCALIZE_SEARCH_PATTERN = "%s.%s";
 
   final MongoTemplate mongoTemplate;
-  final ProductModuleContentRepository contentRepo;
+  final ProductModuleContentRepository contentRepository;
+  final ProductJsonContentRepository jsonContentRepository;
 
   public Product queryProductByAggregation(Aggregation aggregation) {
     return Optional.of(mongoTemplate.aggregate(aggregation, EntityConstants.PRODUCT, Product.class))
@@ -53,36 +59,26 @@ public class CustomProductRepositoryImpl extends CustomRepository implements Cus
   }
 
   @Override
-  public Product getProductByIdWithTagOrVersion(String id, String tag) {
+  public Product getProductByIdAndVersion(String id, String version) {
     Product result = findProductById(id);
     if (!Objects.isNull(result)) {
-      ProductModuleContent content = findByProductIdAndTagOrMavenVersion(id, tag);
+      ProductModuleContent content = contentRepository.findByVersionAndProductId(version, id);
       result.setProductModuleContent(content);
     }
     return result;
   }
 
   @Override
-  public ProductModuleContent findByProductIdAndTagOrMavenVersion(String productId, String tag) {
-    Criteria productIdCriteria = Criteria.where(MongoDBConstants.PRODUCT_ID).is(productId);
-    Criteria orCriteria = new Criteria().orOperator(
-        Criteria.where(MongoDBConstants.TAG).is(tag),
-        Criteria.where(MongoDBConstants.MAVEN_VERSIONS).in(tag)
-    );
-    Query query = new Query(new Criteria().andOperator(productIdCriteria, orCriteria));
-    return mongoTemplate.findOne(query, ProductModuleContent.class);
-  }
-
-  private Product findProductById(String id) {
+  public Product findProductById(String id) {
     Aggregation aggregation = Aggregation.newAggregation(createIdMatchOperation(id));
     return queryProductByAggregation(aggregation);
   }
 
   @Override
-  public Product getProductById(String id) {
+  public Product getProductWithModuleContent(String id) {
     Product result = findProductById(id);
     if (!Objects.isNull(result)) {
-      ProductModuleContent content = contentRepo.findByTagAndProductId(
+      ProductModuleContent content = contentRepository.findByVersionAndProductId(
           result.getNewestReleaseVersion(), id);
       result.setProductModuleContent(content);
     }
@@ -103,7 +99,7 @@ public class CustomProductRepositoryImpl extends CustomRepository implements Cus
     Update update = new Update().inc(MongoDBConstants.INSTALLATION_COUNT, initialCount).set(
         MongoDBConstants.SYNCHRONIZED_INSTALLATION_COUNT, true);
     mongoTemplate.updateFirst(createQueryById(productId), update, Product.class);
-    return Optional.ofNullable(getProductById(productId)).map(Product::getInstallationCount).orElse(0);
+    return Optional.ofNullable(getProductWithModuleContent(productId)).map(Product::getInstallationCount).orElse(0);
   }
 
   @Override
