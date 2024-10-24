@@ -468,8 +468,8 @@ public class ProductServiceImpl implements ProductService {
       return;
     }
 
-    List<Artifact> mavenArtifacts = product.getArtifacts().stream()
-        .filter(artifact -> artifact.getArtifactId().contains(MavenConstants.PRODUCT_ARTIFACT_POSTFIX))
+    List<Artifact> productArtifacts = product.getArtifacts().stream()
+        .filter(productArtifact -> productArtifact.getArtifactId().contains(MavenConstants.PRODUCT_ARTIFACT_POSTFIX))
         .toList();
 
     List<Artifact> archivedArtifacts = product.getArtifacts().stream()
@@ -481,19 +481,18 @@ public class ProductServiceImpl implements ProductService {
                 .build()))
         .toList();
 
-    List<Artifact> productArtifacts = new ArrayList<>();
-    productArtifacts.addAll(mavenArtifacts);
-    productArtifacts.addAll(archivedArtifacts);
+    List<Artifact> mavenArtifacts = new ArrayList<>();
+    mavenArtifacts.addAll(productArtifacts);
+    mavenArtifacts.addAll(archivedArtifacts);
 
-    for (Artifact artifact : productArtifacts) {
-      getMetadataContent(artifact, product);
+    for (Artifact mavenArtifact : mavenArtifacts) {
+      getMetadataContent(mavenArtifact, product);
     }
   }
 
   private void getMetadataContent(Artifact artifact, Product product) {
-    String metadataUrl = MavenUtils.buildMetadataUrlFromArtifactInfo(
-        artifact.getRepoUrl(), artifact.getGroupId(),
-        updateArtifactId(artifact));
+    String metadataUrl = MavenUtils.buildMetadataUrlFromArtifactInfo(artifact.getRepoUrl(), artifact.getGroupId(),
+        createProductArtifactId(artifact));
     String metadataContent = MavenUtils.getMetadataContentFromUrl(metadataUrl);
     if (StringUtils.isNotBlank(metadataContent)) {
       updateContentsFromMavenXML(product, metadataContent, artifact);
@@ -567,7 +566,7 @@ public class ProductServiceImpl implements ProductService {
     }
 
     String repoUrl = StringUtils.defaultIfBlank(mavenArtifact.getRepoUrl(), DEFAULT_IVY_MAVEN_BASE_URL);
-    String artifactId = updateArtifactId(mavenArtifact);
+    String artifactId = createProductArtifactId(mavenArtifact);
     String type = StringUtils.defaultIfBlank(mavenArtifact.getType(), DEFAULT_PRODUCT_FOLDER_TYPE);
     String url = MavenUtils.buildDownloadUrl(artifactId, version, type,
         repoUrl, mavenArtifact.getGroupId(), StringUtils.defaultIfBlank(snapshotVersionValue, version));
@@ -583,7 +582,7 @@ public class ProductServiceImpl implements ProductService {
     }
   }
 
-  private String updateArtifactId(Artifact mavenArtifact) {
+  private String createProductArtifactId(Artifact mavenArtifact) {
     return mavenArtifact.getArtifactId().contains(PRODUCT_ARTIFACT_POSTFIX) ? mavenArtifact.getArtifactId()
         : mavenArtifact.getArtifactId().concat(PRODUCT_ARTIFACT_POSTFIX);
   }

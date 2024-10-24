@@ -13,6 +13,7 @@ import org.apache.commons.lang3.ObjectUtils;
 import org.bson.types.Binary;
 import org.kohsuke.github.GHContent;
 import org.springframework.stereotype.Service;
+import org.springframework.util.CollectionUtils;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -58,9 +59,13 @@ public class ImageServiceImpl implements ImageService {
       return null;
     }
 
-    Image existsImage = imageRepository.findByProductIdAndSha(productId, ghContent.getSha());
-    if (ObjectUtils.isNotEmpty(existsImage)) {
-      return existsImage;
+    List<Image> existedImages = imageRepository.findByProductIdAndSha(productId, ghContent.getSha());
+    if (!CollectionUtils.isEmpty(existedImages)) {
+      if (existedImages.size() > 1) {
+        List<Image> imagesToDelete = existedImages.subList(1, existedImages.size());
+        imageRepository.deleteAll(imagesToDelete);
+      }
+      return existedImages.get(0);
     }
 
     String currentImageUrl = GitHubUtils.getDownloadUrl(ghContent);

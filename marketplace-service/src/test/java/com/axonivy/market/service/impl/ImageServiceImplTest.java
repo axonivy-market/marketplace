@@ -71,7 +71,7 @@ class ImageServiceImplTest extends BaseSetup {
     assertEquals(argumentCaptor.getValue().getSha(), expectedImage.getSha());
     assertEquals(argumentCaptor.getValue().getImageUrl(), expectedImage.getImageUrl());
 
-    when(imageRepository.findByProductIdAndSha(anyString(), anyString())).thenReturn(expectedImage);
+    when(imageRepository.findByProductIdAndSha(anyString(), anyString())).thenReturn(List.of(expectedImage));
     Image result = imageService.mappingImageFromGHContent(GOOGLE_MAPS_CONNECTOR, content);
     assertEquals(expectedImage, result);
 
