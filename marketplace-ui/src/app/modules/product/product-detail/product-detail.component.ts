@@ -50,6 +50,7 @@ import { DisplayValue } from '../../../shared/models/display-value.model';
 import { CookieService } from 'ngx-cookie-service';
 import { ROUTER } from '../../../shared/constants/router.constant';
 import { Title } from '@angular/platform-browser';
+import { API_URI } from '../../../shared/constants/api.constant';
 
 export interface DetailTab {
   activeClass: string;
@@ -167,7 +168,7 @@ export class ProductDetailComponent {
   }
 
   onClickingBackToHomepageButton() {
-    this.router.navigate(['/']);
+    this.router.navigate([API_URI.APP]);
   }
 
   onLogoError() {
