@@ -13,6 +13,7 @@ import com.axonivy.market.service.ProductDesignerInstallationService;
 import com.axonivy.market.service.ProductService;
 import com.axonivy.market.service.VersionService;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.apache.commons.lang3.StringUtils;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -282,5 +283,18 @@ class ProductDetailsControllerTest {
     jsonContent.setName("aspose-barcode");
 
     return jsonContent;
+  }
+
+  @Test
+  void testGetLatestArtifactDownloadUrl() {
+    String mockDownloadUrl = "https://market.axonivy.com";
+    when(versionService.getLatestVersionArtifactDownloadUrl(Mockito.anyString(),Mockito.anyString(),
+        Mockito.anyString())).thenReturn(StringUtils.EMPTY);
+    var response = productDetailsController.getLatestArtifactDownloadUrl("portal", "1.0.0", "portal-app.zip");
+    assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode());
+    when(versionService.getLatestVersionArtifactDownloadUrl(Mockito.anyString(),Mockito.anyString(),
+        Mockito.anyString())).thenReturn(mockDownloadUrl);
+    response = productDetailsController.getLatestArtifactDownloadUrl("portal", "1.0.0", "portal-app.zip");
+    assertEquals(HttpStatus.OK, response.getStatusCode());
   }
 }

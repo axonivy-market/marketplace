@@ -12,6 +12,7 @@ import com.axonivy.market.github.service.GitHubService;
 import com.axonivy.market.model.ProductCustomSortRequest;
 import com.axonivy.market.service.MetadataService;
 import com.axonivy.market.service.ProductService;
+import com.axonivy.market.service.VersionService;
 import com.axonivy.market.util.AuthorizationUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -33,7 +34,6 @@ import org.springframework.http.HttpStatus;
 import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -66,6 +66,9 @@ class ProductControllerTest {
 
   @Mock
   private MetadataService metadataService;
+
+  @Mock
+  private VersionService versionService;
 
   @Mock
   private GHAxonIvyMarketRepoService axonIvyMarketRepoService;
@@ -146,12 +149,12 @@ class ProductControllerTest {
 
   @Test
   void testSyncMavenVersionSuccess() {
-    var response = productController.syncProductVersions(AUTHORIZATION_HEADER);
+    var response = productController.syncProductVersions(AUTHORIZATION_HEADER, false);
     assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, response.getStatusCode());
     assertTrue(response.hasBody());
     assertEquals(ErrorCode.MAVEN_VERSION_SYNC_FAILED.getCode(), Objects.requireNonNull(response.getBody()).getHelpCode());
     when(metadataService.syncAllProductsMetadata()).thenReturn(1);
-    response = productController.syncProductVersions(AUTHORIZATION_HEADER);
+    response = productController.syncProductVersions(AUTHORIZATION_HEADER, false);
     assertEquals(HttpStatus.OK, response.getStatusCode());
     assertTrue(response.hasBody());
     assertEquals(ErrorCode.SUCCESSFUL.getCode(), Objects.requireNonNull(response.getBody()).getHelpCode());
@@ -165,7 +168,7 @@ class ProductControllerTest {
         .validateUserInOrganizationAndTeam(any(String.class), any(String.class), any(String.class));
 
     UnauthorizedException exception = assertThrows(UnauthorizedException.class,
-        () -> productController.syncProductVersions(INVALID_AUTHORIZATION_HEADER));
+        () -> productController.syncProductVersions(INVALID_AUTHORIZATION_HEADER, false));
 
     assertEquals(ErrorCode.GITHUB_USER_UNAUTHORIZED.getHelpText(), exception.getMessage());
   }

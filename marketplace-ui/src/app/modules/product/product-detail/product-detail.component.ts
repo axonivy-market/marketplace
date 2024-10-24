@@ -49,6 +49,7 @@ import { ProductStarRatingNumberComponent } from './product-star-rating-number/p
 import { DisplayValue } from '../../../shared/models/display-value.model';
 import { CookieService } from 'ngx-cookie-service';
 import { ROUTER } from '../../../shared/constants/router.constant';
+import { Title } from '@angular/platform-browser';
 
 export interface DetailTab {
   activeClass: string;
@@ -105,6 +106,7 @@ export class ProductDetailComponent {
   productModuleContent: WritableSignal<ProductModuleContent> = signal(
     {} as ProductModuleContent
   );
+  protected ProductDetailActionType = ProductDetailActionType;
   productDetailActionType = signal(ProductDetailActionType.STANDARD);
   detailTabs = PRODUCT_DETAIL_TABS;
   activeTab = '';
@@ -129,7 +131,7 @@ export class ProductDetailComponent {
     this.updateDropdownSelection();
   }
 
-  constructor() {
+  constructor(private readonly titleService: Title) {
     this.scrollToTop();
     this.resizeObserver = new ResizeObserver(() => {
       this.updateDropdownSelection();
@@ -155,6 +157,7 @@ export class ProductDetailComponent {
         this.handleProductContentVersion();
         this.updateProductDetailActionType(productDetail);
         this.logoUrl = productDetail.logoUrl;
+        this.updateWebBrowserTitle();
       });
 
       this.productFeedbackService.initFeedbacks();
@@ -321,6 +324,7 @@ export class ProductDetailComponent {
   handleClickOutside(event: MouseEvent) {
     const formSelect =
       this.elementRef.nativeElement.querySelector('.form-select');
+      
     if (
       formSelect &&
       !formSelect.contains(event.target) &&
@@ -371,7 +375,15 @@ export class ProductDetailComponent {
     return tag;
   }
 
+  updateWebBrowserTitle() {
+    if (this.productDetail().names !== undefined) {
+      const title = this.productDetail().names[this.languageService.selectedLanguage()];
+      this.titleService.setTitle(title);
+    }
+  }
+
   getDisplayedTabsSignal() {
+    this.updateWebBrowserTitle();
     const displayedTabs: ItemDropdown[] = [];
     for (const detailTab of this.detailTabs) {
       if (this.getContent(detailTab.value)) {

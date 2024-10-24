@@ -1,16 +1,19 @@
 import { Routes } from '@angular/router';
 import { GithubCallbackComponent } from './auth/github-callback/github-callback.component';
 import { ErrorPageComponent } from './shared/components/error-page/error-page.component';
-import { ExternalDocumentComponent } from './shared/components/external-document/external-document.component';
+import { RedirectPageComponent } from './shared/components/redirect-page/redirect-page.component';
+import { ERROR_PAGE } from './shared/constants/common.constant';
 
 export const routes: Routes = [
   {
     path: 'error-page',
-    component: ErrorPageComponent
+    component: ErrorPageComponent,
+    title: ERROR_PAGE
   },
   {
     path: 'error-page/:id',
-    component: ErrorPageComponent
+    component: ErrorPageComponent,
+    title: ERROR_PAGE
   },
   {
     path: '',
@@ -23,7 +26,11 @@ export const routes: Routes = [
   },
   {
     path: ':id/:version/doc',
-    component: ExternalDocumentComponent
+    component: RedirectPageComponent
+  },
+  {
+    path: ':id/:version/lib/:artifact',
+    component: RedirectPageComponent
   },
   {
     path: 'auth/github/callback',

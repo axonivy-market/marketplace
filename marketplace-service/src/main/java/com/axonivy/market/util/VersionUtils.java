@@ -4,6 +4,7 @@ import com.axonivy.market.comparator.LatestVersionComparator;
 import com.axonivy.market.comparator.MavenVersionComparator;
 import com.axonivy.market.constants.CommonConstants;
 import com.axonivy.market.constants.GitHubConstants;
+import com.axonivy.market.entity.Metadata;
 import com.axonivy.market.entity.Product;
 import com.axonivy.market.enums.NonStandardProduct;
 import lombok.extern.log4j.Log4j2;
@@ -17,10 +18,12 @@ import org.kohsuke.github.GHTag;
 import org.springframework.util.CollectionUtils;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import static com.axonivy.market.constants.MavenConstants.*;
 @Log4j2
@@ -71,7 +74,7 @@ public class VersionUtils {
     return bestMatchVersion;
   }
 
-  public static boolean isOfficialVersionOrUnReleasedDevVersion(List<String> versions, String version) {
+  public static boolean isOfficialVersionOrUnReleasedDevVersion(Collection<String> versions, String version) {
     if (isReleasedVersion(version)) {
       return true;
     }
@@ -150,7 +153,7 @@ public class VersionUtils {
     if (!CollectionUtils.isEmpty(tags)) {
       List<String> releasedTags = tags.stream().map(tag -> tag.getName().replaceAll(NON_NUMERIC_CHAR, Strings.EMPTY))
           .distinct().sorted(new LatestVersionComparator()).toList();
-      return CollectionUtils.lastElement(releasedTags);
+      result = CollectionUtils.lastElement(releasedTags);
     }
     return result;
   }
@@ -169,5 +172,26 @@ public class VersionUtils {
       releasedVersion.removeAll(syncTags);
     }
     return releasedVersion;
+  }
+
+  public static String getNumbersOnly(String version) {
+    return StringUtils.defaultIfBlank(version, StringUtils.EMPTY).split(CommonConstants.DASH_SEPARATOR)[0];
+  }
+
+  public static boolean isMajorVersion(String version) {
+    return getNumbersOnly(version).split(MAIN_VERSION_REGEX).length == 1 && isReleasedVersion(version);
+  }
+
+  public static boolean isMinorVersion(String version) {
+    return getNumbersOnly(version).split(MAIN_VERSION_REGEX).length == 2 && isReleasedVersion(version);
+  }
+
+  public static List<String> getInstallableVersionsFromMetadataList(List<Metadata> metadataList) {
+    if (CollectionUtils.isEmpty(metadataList)) {
+      return new ArrayList<>();
+    }
+    return metadataList.stream().filter(MavenUtils::isProductMetadata).findAny().map(
+        metadata -> metadata.getVersions().stream().sorted(new LatestVersionComparator()).collect(
+            Collectors.toList())).orElse(new ArrayList<>());
   }
 }

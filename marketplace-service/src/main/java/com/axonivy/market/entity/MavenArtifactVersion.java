@@ -46,6 +46,4 @@ public class MavenArtifactVersion implements Serializable {
     }
     return this.additionalArtifactsByVersion;
   }
-
-
 }

@@ -1,7 +1,9 @@
 package com.axonivy.market.service.impl;
 
+import com.axonivy.market.BaseSetup;
 import com.axonivy.market.entity.Image;
 import com.axonivy.market.repository.ImageRepository;
+import com.axonivy.market.service.FileDownloadService;
 import com.axonivy.market.util.MavenUtils;
 import org.bson.types.Binary;
 import org.junit.jupiter.api.Test;
@@ -36,13 +38,15 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.never;
 
 @ExtendWith(MockitoExtension.class)
-class ImageServiceImplTest {
+class ImageServiceImplTest extends BaseSetup {
   @Captor
   ArgumentCaptor<Image> argumentCaptor = ArgumentCaptor.forClass(Image.class);
   @InjectMocks
   private ImageServiceImpl imageService;
   @Mock
   private ImageRepository imageRepository;
+  @Mock
+  private FileDownloadService fileDownloadService;
   public static final String GOOGLE_MAPS_CONNECTOR = "google-maps-connector";
 
   @Test
@@ -70,6 +74,23 @@ class ImageServiceImplTest {
     when(imageRepository.findByProductIdAndSha(anyString(), anyString())).thenReturn(expectedImage);
     Image result  = imageService.mappingImageFromGHContent(GOOGLE_MAPS_CONNECTOR, content, false);
     assertEquals(expectedImage, result);
+
+  }
+
+  @Test
+  void testMappingImageFromGHContent_getImageFromDownloadUrl() throws IOException {
+    GHContent content = mock(GHContent.class);
+    when(content.getSha()).thenReturn("914d9b6956db7a1404622f14265e435f36db81fa");
+    when(content.getDownloadUrl()).thenReturn(MOCK_MAVEN_URL);
+
+    when(content.read()).thenThrow(new UnsupportedOperationException("Unrecognized encoding"));
+    when(fileDownloadService.downloadFile(MOCK_MAVEN_URL)).thenReturn("content".getBytes());
+
+    imageService.mappingImageFromGHContent(GOOGLE_MAPS_CONNECTOR, content, false);
+
+    verify(imageRepository).save(argumentCaptor.capture());
+    verify(fileDownloadService, times(1)).downloadFile(MOCK_MAVEN_URL);
+    assertEquals(new Binary("content".getBytes()), argumentCaptor.getValue().getImageData());
 
   }
 
