@@ -41,19 +41,19 @@ export class ProductService {
 
   getProductDetailsWithVersion(
     productId: string,
-    tag: string
+    version: string
   ): Observable<ProductDetail> {
     return this.httpClient.get<ProductDetail>(
-      `${API_URI.PRODUCT_DETAILS}/${productId}/${tag}`
+      `${API_URI.PRODUCT_DETAILS}/${productId}/${version}`
     );
   }
 
   getBestMatchProductDetailsWithVersion(
     productId: string,
-    tag: string
+    version: string
   ): Observable<ProductDetail> {
     return this.httpClient.get<ProductDetail>(
-      `${API_URI.PRODUCT_DETAILS}/${productId}/${tag}/bestmatch`
+      `${API_URI.PRODUCT_DETAILS}/${productId}/${version}/bestmatch`
     );
   }
 

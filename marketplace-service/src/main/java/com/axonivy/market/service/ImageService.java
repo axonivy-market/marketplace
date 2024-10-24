@@ -9,7 +9,7 @@ import java.nio.file.Path;
 public interface ImageService {
   Binary getImageBinary(GHContent ghContent);
 
-  Image mappingImageFromGHContent(String productId, GHContent ghContent, boolean isLogo);
+  Image mappingImageFromGHContent(String productId, GHContent ghContent);
 
   Image mappingImageFromDownloadedFolder(String productId, Path imagePath);
 

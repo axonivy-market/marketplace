@@ -1,6 +1,6 @@
 package com.axonivy.market.service;
 
-import com.axonivy.market.entity.Metadata;
+import com.axonivy.market.bo.Artifact;
 
 import java.io.File;
 import java.io.IOException;
@@ -14,7 +14,7 @@ public interface FileDownloadService {
 
   byte[] downloadFile(String url);
 
-  String downloadAndUnzipProductContentFile(String url, Metadata snapShotMetadata) throws IOException;
+  String downloadAndUnzipProductContentFile(String url, Artifact artifact) throws IOException;
 
   void deleteDirectory(Path path);
 

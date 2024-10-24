@@ -41,7 +41,7 @@ public class MarketplaceServiceApplication {
     var watch = new StopWatch();
     log.warn("Synchronizing Market repo: Started synchronizing data for Axon Ivy Market repo");
     watch.start();
-    List<String> syncedProductIds = productService.syncLatestDataFromMarketRepo();
+    List<String> syncedProductIds = productService.syncLatestDataFromMarketRepo(false);
     if (ObjectUtils.isEmpty(syncedProductIds)) {
       log.warn("Synchronizing Market repo: Nothing updated");
     } else {

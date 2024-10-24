@@ -186,7 +186,6 @@ export const DEFAULT_PAGEABLE_IN_REST_CLIENT: Pageable = {
 };
 
 export const VERSION = {
-  tagPrefix: 'v',
   displayPrefix: 'Version '
 };
 
@@ -214,3 +213,4 @@ export const HOURS_IN_A_DAY = 24;
 export const DAYS_IN_A_WEEK = 7;
 export const DAYS_IN_A_MONTH = 30;
 export const DAYS_IN_A_YEAR = 365;
+

@@ -3,17 +3,17 @@
     class="product-detail-container d-flex flex-column justify-content-center p-0">
     <div class="flexible-gap d-flex flex-column justify-content-center">
       <div class="link-to-main align-content-center">
-        <a
-          href=""
-          class="back-link text-decoration-none"
+        <div
+          id="back-to-homepage-button"
           [ngClass]="
             themeService.isDarkMode() ? 'text-light' : 'text-link-blue'
-          ">
+          "
+          (click)="onClickingBackToHomepageButton()">
           &lt;
           <span [lang]="languageService.selectedLanguage()">
             {{ 'common.product.detail.backToMainPage' | translate }}
           </span>
-        </a>
+        </div>
       </div>
       <div class="version-gap d-flex flex-column flex-xl-row justify-content-between">
         <div class="connector-title-container d-flex flex-column module-gap">
@@ -75,6 +75,7 @@
           [(selectedVersion)]="selectedVersion!"
           [(metaDataJsonUrl)]="metaProductJsonUrl!"
           [productId]="productDetail().id"
+          [isMavenDropins]="productDetail().mavenDropins"
           [actionType]="productDetailActionType()"
           (selectedVersionChange)="
             loadDetailTabs($event)

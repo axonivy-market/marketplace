@@ -29,10 +29,11 @@
   }
 }
 
-.back-link {
+#back-to-homepage-button {
   font-size: 1.6rem;
   font-weight: 500;
   line-height: 120%;
+  cursor: pointer;
 }
 
 .analysis-container {
@@ -111,6 +112,10 @@
       border-bottom: 1px solid var(--ivy-border-color);
     }
   }
+
+  pre code {
+    font-size: 1.4rem;
+  }
 }
 
 .nav-tabs {
@@ -123,8 +128,6 @@
 
 .nav-item {
   gap: 10px;
-
-
 
   a {
     font-weight: 400;

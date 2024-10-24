@@ -75,7 +75,7 @@ public class ProductFactory {
     extractSourceUrl(product, meta);
     List<Artifact> artifacts = CollectionUtils.isEmpty(
         meta.getMavenArtifacts()) ? new ArrayList<>() : meta.getMavenArtifacts();
-    artifacts.stream().forEach(
+    artifacts.forEach(
         artifact -> artifact.setInvalidArtifact(!artifact.getArtifactId().contains(meta.getId())));
     product.setArtifacts(artifacts);
     product.setReleasedVersions(new ArrayList<>());
@@ -86,8 +86,6 @@ public class ProductFactory {
   public static void transferComputedPersistedDataToProduct(Product persisted, Product product) {
     product.setMarketDirectory(persisted.getMarketDirectory());
     product.setCustomOrder(persisted.getCustomOrder());
-    product.setNewestReleaseVersion(persisted.getNewestReleaseVersion());
-    product.setReleasedVersions(persisted.getReleasedVersions());
     product.setInstallationCount(persisted.getInstallationCount());
     product.setSynchronizedInstallationCount(persisted.getSynchronizedInstallationCount());
   }
@@ -127,10 +125,9 @@ public class ProductFactory {
   }
 
   public static void mappingIdForProductModuleContent(ProductModuleContent content) {
-    if (StringUtils.isNotBlank(content.getProductId())) {
-      String version = StringUtils.isNotBlank(
-          content.getTag()) ? content.getTag() : content.getMavenVersions().stream().findAny().orElse(null);
-      content.setId(String.format(CommonConstants.ID_WITH_NUMBER_PATTERN, content.getProductId(), version));
+    if (StringUtils.isNotBlank(content.getProductId()) && StringUtils.isNotBlank(content.getVersion())) {
+      content.setId(
+          String.format(CommonConstants.ID_WITH_NUMBER_PATTERN, content.getProductId(), content.getVersion()));
     }
   }
 
