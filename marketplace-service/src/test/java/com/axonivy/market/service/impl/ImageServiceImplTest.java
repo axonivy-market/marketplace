@@ -1,7 +1,9 @@
 package com.axonivy.market.service.impl;
 
+import com.axonivy.market.BaseSetup;
 import com.axonivy.market.entity.Image;
 import com.axonivy.market.repository.ImageRepository;
+import com.axonivy.market.service.FileDownloadService;
 import com.axonivy.market.util.MavenUtils;
 import org.bson.types.Binary;
 import org.junit.jupiter.api.Test;
@@ -28,21 +30,23 @@ import static org.bson.assertions.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
 import static org.mockito.Mockito.any;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
-class ImageServiceImplTest {
+class ImageServiceImplTest extends BaseSetup {
   @Captor
   ArgumentCaptor<Image> argumentCaptor = ArgumentCaptor.forClass(Image.class);
   @InjectMocks
   private ImageServiceImpl imageService;
   @Mock
   private ImageRepository imageRepository;
+  @Mock
+  private FileDownloadService fileDownloadService;
   public static final String GOOGLE_MAPS_CONNECTOR = "google-maps-connector";
 
   @Test
@@ -54,7 +58,7 @@ class ImageServiceImplTest {
     InputStream inputStream = this.getClass().getResourceAsStream(SLASH.concat(META_FILE));
     when(content.read()).thenReturn(inputStream);
 
-    imageService.mappingImageFromGHContent(GOOGLE_MAPS_CONNECTOR, content, true);
+    imageService.mappingImageFromGHContent(GOOGLE_MAPS_CONNECTOR, content);
 
     Image expectedImage = new Image();
     expectedImage.setProductId("google-maps-connector");
@@ -67,9 +71,26 @@ class ImageServiceImplTest {
     assertEquals(argumentCaptor.getValue().getSha(), expectedImage.getSha());
     assertEquals(argumentCaptor.getValue().getImageUrl(), expectedImage.getImageUrl());
 
-    when(imageRepository.findByProductIdAndSha(anyString(), anyString())).thenReturn(expectedImage);
-    Image result  = imageService.mappingImageFromGHContent(GOOGLE_MAPS_CONNECTOR, content, false);
+    when(imageRepository.findByProductIdAndSha(anyString(), anyString())).thenReturn(List.of(expectedImage));
+    Image result = imageService.mappingImageFromGHContent(GOOGLE_MAPS_CONNECTOR, content);
     assertEquals(expectedImage, result);
+
+  }
+
+  @Test
+  void testMappingImageFromGHContent_getImageFromDownloadUrl() throws IOException {
+    GHContent content = mock(GHContent.class);
+    when(content.getSha()).thenReturn("914d9b6956db7a1404622f14265e435f36db81fa");
+    when(content.getDownloadUrl()).thenReturn(MOCK_MAVEN_URL);
+
+    when(content.read()).thenThrow(new UnsupportedOperationException("Unrecognized encoding"));
+    when(fileDownloadService.downloadFile(MOCK_MAVEN_URL)).thenReturn("content".getBytes());
+
+    imageService.mappingImageFromGHContent(GOOGLE_MAPS_CONNECTOR, content);
+
+    verify(imageRepository).save(argumentCaptor.capture());
+    verify(fileDownloadService, times(1)).downloadFile(MOCK_MAVEN_URL);
+    assertEquals(new Binary("content".getBytes()), argumentCaptor.getValue().getImageData());
 
   }
 
@@ -142,7 +163,7 @@ class ImageServiceImplTest {
 
   @Test
   void testMappingImageFromGHContent_noGhContent() {
-    var result = imageService.mappingImageFromGHContent(GOOGLE_MAPS_CONNECTOR, null, true);
+    var result = imageService.mappingImageFromGHContent(GOOGLE_MAPS_CONNECTOR, null);
     assertNull(result);
   }
 }

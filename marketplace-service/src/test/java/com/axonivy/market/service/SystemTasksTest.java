@@ -42,6 +42,6 @@ class SystemTasksTest {
   @Test
   void testSyncProduct() {
     tasks.syncDataForProductFromGitHubRepo();
-    verify(productService, times(1)).syncLatestDataFromMarketRepo();
+    verify(productService, times(1)).syncLatestDataFromMarketRepo(false);
   }
 }

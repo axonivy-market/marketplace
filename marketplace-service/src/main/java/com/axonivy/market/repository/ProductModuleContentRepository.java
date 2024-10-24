@@ -7,7 +7,7 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface ProductModuleContentRepository extends MongoRepository<ProductModuleContent, String>,
     CustomProductModuleContentRepository {
-  ProductModuleContent findByTagAndProductId(String tag, String productId);
+  ProductModuleContent findByVersionAndProductId(String version, String productId);
 
   void deleteAllByProductId(String productId);
 }

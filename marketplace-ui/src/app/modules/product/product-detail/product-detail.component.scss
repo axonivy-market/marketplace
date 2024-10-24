@@ -111,6 +111,10 @@
       border-bottom: 1px solid var(--ivy-border-color);
     }
   }
+
+  pre code {
+    font-size: 1.4rem;
+  }
 }
 
 .nav-tabs {
@@ -123,8 +127,6 @@
 
 .nav-item {
   gap: 10px;
-
-
 
   a {
     font-weight: 400;

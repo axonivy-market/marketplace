@@ -4,7 +4,9 @@ import com.axonivy.market.BaseSetup;
 import com.axonivy.market.constants.MongoDBConstants;
 import com.axonivy.market.entity.Product;
 import com.axonivy.market.entity.ProductDesignerInstallation;
-import com.axonivy.market.entity.ProductModuleContent;
+import com.axonivy.market.repository.MavenArtifactVersionRepository;
+import com.axonivy.market.repository.MetadataRepository;
+import com.axonivy.market.repository.ProductJsonContentRepository;
 import com.axonivy.market.repository.ProductModuleContentRepository;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -20,20 +22,29 @@ import org.springframework.data.mongodb.core.query.Update;
 
 import java.util.List;
 
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.eq;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class CustomProductRepositoryImplTest extends BaseSetup {
-  private static final String ID = "bmpn-statistic";
-  private static final String TAG = "v10.0.21";
   @Mock
   ProductModuleContentRepository contentRepo;
+  @Mock
+  ProductJsonContentRepository jsonContentRepo;
   private Product mockProduct;
   private Aggregation mockAggregation;
   @Mock
   private MongoTemplate mongoTemplate;
-
+  @Mock
+  private MetadataRepository metadataRepo;
+  @Mock
+  private MavenArtifactVersionRepository mavenArtifactVersionRepo;
   @InjectMocks
   private CustomProductRepositoryImpl repo;
 
@@ -52,7 +63,7 @@ class CustomProductRepositoryImplTest extends BaseSetup {
     when(mongoTemplate.aggregate(any(Aggregation.class), eq(MongoDBConstants.PRODUCT_COLLECTION),
         eq(Product.class))).thenReturn(aggregationResults);
     mockProduct = new Product();
-    mockProduct.setId(ID);
+    mockProduct.setId(MOCK_PRODUCT_ID);
     when(aggregationResults.getUniqueMappedResult()).thenReturn(mockProduct);
   }
 
@@ -77,70 +88,39 @@ class CustomProductRepositoryImplTest extends BaseSetup {
         eq(Product.class))).thenReturn(aggregationResults);
     when(aggregationResults.getUniqueMappedResult()).thenReturn(null);
 
-    List<String> results = repo.getReleasedVersionsById(ID);
+    List<String> results = repo.getReleasedVersionsById(MOCK_PRODUCT_ID);
     assertEquals(0, results.size());
   }
 
   @Test
   void testGetProductById() {
     setUpMockAggregateResult();
-    Product actualProduct = repo.getProductById(ID);
+    Product actualProduct = repo.getProductWithModuleContent(MOCK_PRODUCT_ID);
     assertEquals(mockProduct, actualProduct);
   }
 
   @Test
-  void testGetProductById_andFindProductModuleContentByNewestVersion() {
-    mockAggregation = mock(Aggregation.class);
-    AggregationResults<Product> aggregationResults = mock(AggregationResults.class);
-
-    when(mongoTemplate.aggregate(any(Aggregation.class), eq(MongoDBConstants.PRODUCT_COLLECTION),
-        eq(Product.class))).thenReturn(aggregationResults);
-
-    ProductModuleContent productModuleContent = ProductModuleContent.builder()
-        .productId("bmpn-statistic")
-        .tag("v11.3.0")
-        .build();
-
-    when(contentRepo.findByTagAndProductId("v11.3.0", ID)).thenReturn(productModuleContent);
-
-    mockProduct = Product.builder()
-        .id(ID)
-        .newestReleaseVersion("12.0.0-m264")
-        .releasedVersions(List.of("11.1.1", "11.1.0", "11.3.0"))
-        .productModuleContent(productModuleContent)
-        .build();
-
-    when(aggregationResults.getUniqueMappedResult()).thenReturn(mockProduct);
-
-    Product actualProduct = repo.getProductByIdWithNewestReleaseVersion(ID, false);
-
-    verify(contentRepo, times(1)).findByTagAndProductId("v11.3.0", ID);
-    assertEquals(mockProduct, actualProduct);
-  }
-
-  @Test
-  void testGetProductByIdAndTag() {
+  void testGetProductByIdAndVersion() {
     setUpMockAggregateResult();
-    Product actualProduct = repo.getProductByIdWithTagOrVersion(ID, TAG);
+    Product actualProduct = repo.getProductByIdAndVersion(MOCK_PRODUCT_ID, MOCK_RELEASED_VERSION);
     assertEquals(mockProduct, actualProduct);
   }
 
   @Test
   void testGetReleasedVersionsById() {
     setUpMockAggregateResult();
-    List<String> actualReleasedVersions = repo.getReleasedVersionsById(ID);
+    List<String> actualReleasedVersions = repo.getReleasedVersionsById(MOCK_PRODUCT_ID);
     assertEquals(mockProduct.getReleasedVersions(), actualReleasedVersions);
   }
 
   @Test
   void testIncreaseInstallationCount() {
-    String productId = "testProductId";
     Product product = new Product();
-    product.setId(productId);
+    product.setId(MOCK_PRODUCT_ID);
     product.setInstallationCount(5);
     when(mongoTemplate.findAndModify(any(Query.class), any(Update.class), any(FindAndModifyOptions.class),
         eq(Product.class))).thenReturn(product);
-    int updatedCount = repo.increaseInstallationCount(productId);
+    int updatedCount = repo.increaseInstallationCount(MOCK_PRODUCT_ID);
     assertEquals(5, updatedCount);
     verify(mongoTemplate).findAndModify(any(Query.class), any(Update.class), any(FindAndModifyOptions.class),
         eq(Product.class));
@@ -150,7 +130,7 @@ class CustomProductRepositoryImplTest extends BaseSetup {
   void testIncreaseInstallationCount_NullProduct() {
     when(mongoTemplate.findAndModify(any(Query.class), any(Update.class), any(FindAndModifyOptions.class),
         eq(Product.class))).thenReturn(null);
-    int updatedCount = repo.increaseInstallationCount(ID);
+    int updatedCount = repo.increaseInstallationCount(MOCK_PRODUCT_ID);
     assertEquals(0, updatedCount);
   }
 
@@ -158,15 +138,15 @@ class CustomProductRepositoryImplTest extends BaseSetup {
   void testUpdateInitialCount() {
     setUpMockAggregateResult();
     int initialCount = 10;
-    repo.updateInitialCount(ID, initialCount);
+    repo.updateInitialCount(MOCK_PRODUCT_ID, initialCount);
     verify(mongoTemplate).updateFirst(any(Query.class),
-        eq(new Update().inc("InstallationCount", initialCount).set("SynchronizedInstallationCount", true)),
+        eq(new Update().inc(MongoDBConstants.INSTALLATION_COUNT, initialCount).set(MongoDBConstants.SYNCHRONIZED_INSTALLATION_COUNT, true)),
         eq(Product.class));
   }
 
   @Test
   void testIncreaseInstallationCountForProductByDesignerVersion() {
-    repo.increaseInstallationCountForProductByDesignerVersion("portal", "10.0.20");
+    repo.increaseInstallationCountForProductByDesignerVersion(MOCK_PRODUCT_ID, MOCK_RELEASED_VERSION);
     verify(mongoTemplate).upsert(any(Query.class), any(Update.class), eq(ProductDesignerInstallation.class));
   }
 }

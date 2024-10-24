@@ -2,24 +2,21 @@ package com.axonivy.market.repository;
 
 import com.axonivy.market.criteria.ProductSearchCriteria;
 import com.axonivy.market.entity.Product;
-import com.axonivy.market.entity.ProductModuleContent;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
 import java.util.List;
 
 public interface CustomProductRepository {
-  Product getProductByIdWithTagOrVersion(String id, String tag);
+  Product getProductByIdAndVersion(String id, String version);
 
-  Product getProductById(String id);
+  Product getProductWithModuleContent(String id);
 
-  Product getProductByIdWithNewestReleaseVersion(String id, Boolean isShowDevVersion);
+  Product findProductById(String id);
 
   List<String> getReleasedVersionsById(String id);
 
   List<Product> getAllProductsWithIdAndReleaseTagAndArtifact();
-
-  ProductModuleContent findByProductIdAndTagOrMavenVersion(String productId, String tag);
 
   Page<Product> searchByCriteria(ProductSearchCriteria criteria, Pageable pageable);
 

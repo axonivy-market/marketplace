@@ -186,10 +186,10 @@ export const DEFAULT_PAGEABLE_IN_REST_CLIENT: Pageable = {
 };
 
 export const VERSION = {
-  tagPrefix: 'v',
   displayPrefix: 'Version '
 };
 
+export const ERROR_PAGE = 'Error Page';
 export const ERROR_PAGE_PATH = 'error-page';
 export const NOT_FOUND_ERROR_CODE = 404;
 export const INTERNAL_SERVER_ERROR_CODE = 500;
