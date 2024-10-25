@@ -4,7 +4,6 @@ import com.axonivy.market.constants.EntityConstants;
 import com.axonivy.market.constants.MongoDBConstants;
 import com.axonivy.market.criteria.ProductSearchCriteria;
 import com.axonivy.market.entity.Product;
-import com.axonivy.market.entity.ProductDesignerInstallation;
 import com.axonivy.market.entity.ProductModuleContent;
 import com.axonivy.market.enums.DocumentField;
 import com.axonivy.market.enums.Language;
@@ -20,13 +19,11 @@ import org.bson.BsonRegularExpression;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.mongodb.core.FindAndModifyOptions;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.aggregation.Aggregation;
 import org.springframework.data.mongodb.core.aggregation.AggregationResults;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
-import org.springframework.data.mongodb.core.query.Update;
 import org.springframework.util.CollectionUtils;
 
 import java.util.ArrayList;
@@ -95,38 +92,10 @@ public class CustomProductRepositoryImpl extends CustomRepository implements Cus
     return product.getReleasedVersions();
   }
 
-  public int updateInitialCount(String productId, int initialCount) {
-    Update update = new Update().inc(MongoDBConstants.INSTALLATION_COUNT, initialCount).set(
-        MongoDBConstants.SYNCHRONIZED_INSTALLATION_COUNT, true);
-    mongoTemplate.updateFirst(createQueryById(productId), update, Product.class);
-    return Optional.ofNullable(getProductWithModuleContent(productId)).map(Product::getInstallationCount).orElse(0);
-  }
-
-  @Override
-  public int increaseInstallationCount(String productId) {
-    Update update = new Update().inc(MongoDBConstants.INSTALLATION_COUNT, 1);
-    Product updatedProduct = mongoTemplate.findAndModify(createQueryById(productId), update,
-        FindAndModifyOptions.options().returnNew(true), Product.class);
-    return updatedProduct != null ? updatedProduct.getInstallationCount() : 0;
-  }
-
-
-  @Override
-  public void increaseInstallationCountForProductByDesignerVersion(String productId, String designerVersion) {
-    Update update = new Update().inc(MongoDBConstants.INSTALLATION_COUNT, 1);
-    mongoTemplate.upsert(createQueryByProductIdAndDesignerVersion(productId, designerVersion),
-        update, ProductDesignerInstallation.class);
-  }
-
   @Override
   public List<Product> getAllProductsWithIdAndReleaseTagAndArtifact() {
     return queryProductsByAggregation(
         createProjectIdAndReleasedVersionsAndArtifactsAggregation());
-  }
-
-  private Query createQueryByProductIdAndDesignerVersion(String productId, String designerVersion) {
-    return new Query(Criteria.where(MongoDBConstants.PRODUCT_ID).is(productId)
-        .andOperator(Criteria.where(MongoDBConstants.DESIGNER_VERSION).is(designerVersion)));
   }
 
   protected Aggregation createProjectIdAndReleasedVersionsAndArtifactsAggregation() {

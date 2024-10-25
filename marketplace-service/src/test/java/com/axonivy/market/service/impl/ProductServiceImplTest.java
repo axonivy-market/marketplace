@@ -165,19 +165,19 @@ class ProductServiceImplTest extends BaseSetup {
     product.setId(MOCK_PRODUCT_ID);
     ReflectionTestUtils.setField(productService, LEGACY_INSTALLATION_COUNT_PATH_FIELD_NAME, INSTALLATION_FILE_PATH);
 
-    productService.syncInstallationCountWithProduct(product);
+    productService.getInstallationCountFromFileOrInitializeRandomly(product.getId());
 
     assertTrue(product.getInstallationCount() >= 20 && product.getInstallationCount() <= 50);
     assertTrue(product.getSynchronizedInstallationCount());
   }
 
   @Test
-  void testSyncInstallationCountWithProduct() {
+  void testGetInstallationCountFromFileOrInitializeRandomly() {
     ReflectionTestUtils.setField(productService, LEGACY_INSTALLATION_COUNT_PATH_FIELD_NAME, INSTALLATION_FILE_PATH);
     Product product = getMockProduct();
     product.setSynchronizedInstallationCount(false);
 
-    productService.syncInstallationCountWithProduct(product);
+    productService.getInstallationCountFromFileOrInitializeRandomly(product.getId());
 
     assertEquals(40, product.getInstallationCount());
     assertTrue(product.getSynchronizedInstallationCount());
@@ -577,7 +577,7 @@ class ProductServiceImplTest extends BaseSetup {
 
     when(productRepo.updateInitialCount(eq(id), anyInt())).thenReturn(10);
 
-    productService.updateProductInstallationCount(id, product);
+    productService.updateProductInstallationCount(id);
 
     assertEquals(10, product.getInstallationCount());
   }
