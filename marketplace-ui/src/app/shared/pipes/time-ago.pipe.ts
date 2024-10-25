@@ -51,20 +51,17 @@ export class TimeAgoPipe implements PipeTransform {
       { value: minutes, singularKey: TimeAgo.MINUTE_AGO, pluralKey: TimeAgo.MINUTES_AGO },
       { value: seconds, singularKey: TimeAgo.SECOND_AGO, pluralKey: TimeAgo.SECONDS_AGO }
     ];
-    let timeValue;
+
     for (const timeInterval of timeIntervals) {
       if (timeInterval.value > 1) {
-        timeValue = this.getTranslatedTimeAgo(
-          timeInterval.pluralKey,
-          timeInterval.value
-        );
-      } else if (timeInterval.value === 1) {
-        timeValue = this.getTranslatedTimeAgo(timeInterval.singularKey);
-      } else {
-        timeValue = this.getTranslatedTimeAgo(TimeAgo.SECOND_AGO);
+        return this.getTranslatedTimeAgo(timeInterval.pluralKey, timeInterval.value);
+      }
+
+      if (timeInterval.value === 1) {
+        return this.getTranslatedTimeAgo(timeInterval.singularKey);
       }
     }
-    return timeValue;
+    return this.getTranslatedTimeAgo(TimeAgo.SECOND_AGO);
   }
 
   private getTranslatedTimeAgo(timeAgo: TimeAgo, timeNumber?: number) {
