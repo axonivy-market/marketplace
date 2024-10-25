@@ -11,7 +11,6 @@ describe('ProductFeedbackComponent', () => {
   let component: ProductFeedbackComponent;
   let fixture: ComponentFixture<ProductFeedbackComponent>;
   let mockElementRef: ElementRef;
-  let translateService: TranslateService;
 
   beforeEach(async () => {
     mockElementRef = {
@@ -47,8 +46,6 @@ describe('ProductFeedbackComponent', () => {
         })
       ]
     });
-
-    translateService = TestBed.inject(TranslateService);
 
     fixture = TestBed.createComponent(ProductFeedbackComponent);
     component = fixture.componentInstance;
