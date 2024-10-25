@@ -3,28 +3,23 @@ package com.axonivy.market.util;
 import com.axonivy.market.comparator.LatestVersionComparator;
 import com.axonivy.market.comparator.MavenVersionComparator;
 import com.axonivy.market.constants.CommonConstants;
-import com.axonivy.market.constants.GitHubConstants;
 import com.axonivy.market.entity.Metadata;
-import com.axonivy.market.entity.Product;
-import com.axonivy.market.enums.NonStandardProduct;
-import lombok.extern.log4j.Log4j2;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
+import lombok.extern.log4j.Log4j2;
 import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.util.Strings;
-import org.kohsuke.github.GHTag;
 import org.springframework.util.CollectionUtils;
 
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+
 import static com.axonivy.market.constants.MavenConstants.*;
 @Log4j2
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
@@ -43,20 +38,6 @@ public class VersionUtils {
           .sorted(new LatestVersionComparator()).toList();
     }
     return versions.stream().filter(VersionUtils::isReleasedVersion).sorted(new LatestVersionComparator()).toList();
-  }
-
-  public static String getMavenVersionMatchWithTag(List<String> releasedVersions, String mavenVersion) {
-    for (String version : releasedVersions) {
-      if (mavenVersion.equals(version)) {
-        return mavenVersion;
-      }
-    }
-    return getAlternativeVersion(releasedVersions, mavenVersion);
-  }
-
-  public static String getAlternativeVersion(List<String> releaseVersions, String version) {
-    return Optional.ofNullable(releaseVersions).orElse(List.of()).stream().filter(
-        version::startsWith).sorted().findAny().orElse(null);
   }
 
   public static String getBestMatchVersion(List<String> versions, String designerVersion) {
@@ -125,45 +106,15 @@ public class VersionUtils {
     return version;
   }
 
-  public static String convertTagToVersion(String tag) {
-    if (StringUtils.isBlank(tag) || !StringUtils.startsWith(tag, GitHubConstants.STANDARD_TAG_PREFIX)) {
-      return tag;
-    }
-    return tag.substring(1);
-  }
-
-  public static List<String> convertTagsToVersions(List<String> tags) {
-    Objects.requireNonNull(tags);
-    return tags.stream().map(VersionUtils::convertTagToVersion).toList();
-  }
-
-  public static String convertVersionToTag(String productId, String version) {
-    if (StringUtils.isBlank(version)) {
-      return version;
-    }
-    NonStandardProduct product = NonStandardProduct.findById(productId);
-    if (product.isVersionTagNumberOnly()) {
-      return version;
-    }
-    return GitHubConstants.STANDARD_TAG_PREFIX.concat(version);
-  }
-
-  public static String getOldestVersion(List<GHTag> tags) {
+  public static String getOldestVersions(List<String> versions) {
     String result = StringUtils.EMPTY;
-    if (!CollectionUtils.isEmpty(tags)) {
-      List<String> releasedTags = tags.stream().map(tag -> tag.getName().replaceAll(NON_NUMERIC_CHAR, Strings.EMPTY))
+    if (!CollectionUtils.isEmpty(versions)) {
+      List<String> releasedVersions = versions.stream().map(
+              version -> version.replaceAll(NON_NUMERIC_CHAR, Strings.EMPTY))
           .distinct().sorted(new LatestVersionComparator()).toList();
-      result = CollectionUtils.lastElement(releasedTags);
+      return CollectionUtils.lastElement(releasedVersions);
     }
     return result;
-  }
-
-  public static List<String> getReleaseTagsFromProduct(Product product) {
-    if (Objects.isNull(product) || CollectionUtils.isEmpty(product.getReleasedVersions())) {
-      return new ArrayList<>();
-    }
-    return product.getReleasedVersions().stream().map(
-        version -> convertVersionToTag(product.getId(), version)).toList();
   }
 
   public static List<String> removeSyncedVersionsFromReleasedVersions(List<String> releasedVersion,

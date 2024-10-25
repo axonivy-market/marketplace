@@ -52,6 +52,7 @@ export class ProductDetailVersionActionComponent implements AfterViewInit {
   protected readonly environment = environment;
   @Output() installationCount = new EventEmitter<number>();
   @Input() productId!: string;
+  @Input() isMavenDropins!: boolean;
   @Input() actionType!: ProductDetailActionType;
   @Input() product!: ProductDetail;
   protected ProductDetailActionType = ProductDetailActionType;

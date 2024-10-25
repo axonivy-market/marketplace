@@ -1,8 +1,13 @@
 @switch (actionType) {
   @case (ProductDetailActionType.STANDARD) {
     <div class="install-download-button-container gap-2 w-100 d-flex">
-      <button [lang]="languageService.selectedLanguage()" class="btn btn__install flex-grow-1 me-lg-2" data-bs-toggle="tooltip"
-              data-bs-placement="bottom" data-bs-html="true" data-bs-title="<p class='text-primary'>
+      <button
+        [lang]="languageService.selectedLanguage()"
+        class="btn btn__install flex-grow-1 me-lg-2"
+        data-bs-toggle="tooltip"
+        data-bs-placement="bottom"
+        data-bs-html="true"
+        data-bs-title="<p class='text-primary'>
               Please open the
               <a href='https://market.axonivy.com' class='ivy__link'>
                 Axon Ivy Market
@@ -13,16 +18,22 @@
               </a>
               (minimum version 9.2.0)
             </p>"
-              data-bs-custom-class="custom-tooltip"
-              [ngClass]="themeService.isDarkMode() ? 'btn-light' : 'btn-primary'">
+        data-bs-custom-class="custom-tooltip"
+        [ngClass]="themeService.isDarkMode() ? 'btn-light' : 'btn-primary'">
         {{ 'common.product.detail.install.buttonLabel' | translate }}
       </button>
-      <button #artifactDownloadButton [lang]="languageService.selectedLanguage()"
-              class="btn btn__download btn-secondary primary-bg flex-grow-1"
-              type="button" (click)="onShowVersionAndArtifact()" aria-expanded="false">
-        {{ 'common.product.detail.download.buttonLabel' | translate }}
-      </button>
-      
+      @if (!isMavenDropins) {
+        <button
+          #artifactDownloadButton
+          [lang]="languageService.selectedLanguage()"
+          class="btn btn__download btn-secondary primary-bg flex-grow-1"
+          type="button"
+          (click)="onShowVersionAndArtifact()"
+          aria-expanded="false">
+          {{ 'common.product.detail.download.buttonLabel' | translate }}
+        </button>
+      }
+
       @if (isDropDownDisplayed()) {
         <div #artifactDownloadDialog id="download-dropdown-menu" class="show maven-artifact-version__action border__dropdown">
           <div class="up-arrow border__dropdown position-absolute"></div>
@@ -34,7 +45,7 @@
                   'common.product.detail.download.artifactSelector.label' | translate
                 }}
               </label>
-      
+
               <div id="artifacts-selector">
                 <app-common-dropdown
                   [items]="artifacts()"
@@ -44,7 +55,7 @@
                   (itemSelected)="onSelectArtifact($event)">
                 </app-common-dropdown>
               </div>
-      
+
             </div>
             <div class="form-group">
               <label for="version-selector" [lang]="languageService.selectedLanguage()"
@@ -53,7 +64,7 @@
                   'common.product.detail.download.versionSelector.label' | translate
                 }}
               </label>
-      
+
               <div id="version-selector">
                 <app-common-dropdown
                   [items]="versionDropdown()"
@@ -86,7 +97,7 @@
           }
         </div>
       }
-  </div>
+    </div>
   }
   @case (ProductDetailActionType.DESIGNER_ENV) {
     <div class="designer-section d-flex justify-content-sm-between w-100 row m-sm-0">

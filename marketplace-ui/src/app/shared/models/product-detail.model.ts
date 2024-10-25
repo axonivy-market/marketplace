@@ -23,6 +23,7 @@ export interface ProductDetail {
   contactUs: boolean;
   installationCount: number;
   productModuleContent: ProductModuleContent;
+  mavenDropins: boolean;
   metaProductJsonUrl?: string;
   _links: {
     self: {

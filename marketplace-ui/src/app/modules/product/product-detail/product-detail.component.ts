@@ -49,6 +49,8 @@ import { ProductStarRatingNumberComponent } from './product-star-rating-number/p
 import { DisplayValue } from '../../../shared/models/display-value.model';
 import { CookieService } from 'ngx-cookie-service';
 import { ROUTER } from '../../../shared/constants/router.constant';
+import { Title } from '@angular/platform-browser';
+import { API_URI } from '../../../shared/constants/api.constant';
 
 export interface DetailTab {
   activeClass: string;
@@ -130,7 +132,7 @@ export class ProductDetailComponent {
     this.updateDropdownSelection();
   }
 
-  constructor() {
+  constructor(private readonly titleService: Title) {
     this.scrollToTop();
     this.resizeObserver = new ResizeObserver(() => {
       this.updateDropdownSelection();
@@ -156,12 +158,17 @@ export class ProductDetailComponent {
         this.handleProductContentVersion();
         this.updateProductDetailActionType(productDetail);
         this.logoUrl = productDetail.logoUrl;
+        this.updateWebBrowserTitle();
       });
 
       this.productFeedbackService.initFeedbacks();
       this.productStarRatingService.fetchData();
     }
     this.updateDropdownSelection();
+  }
+
+  onClickingBackToHomepageButton() {
+    this.router.navigate([API_URI.APP]);
   }
 
   onLogoError() {
@@ -172,9 +179,7 @@ export class ProductDetailComponent {
     if (this.isEmptyProductContent()) {
       return;
     }
-    this.selectedVersion = VERSION.displayPrefix.concat(
-      this.convertTagToVersion(this.productModuleContent().tag)
-    );
+    this.selectedVersion = VERSION.displayPrefix.concat(this.productModuleContent().version);
   }
 
   updateProductDetailActionType(productDetail: ProductDetail) {
@@ -322,6 +327,7 @@ export class ProductDetailComponent {
   handleClickOutside(event: MouseEvent) {
     const formSelect =
       this.elementRef.nativeElement.querySelector('.form-select');
+
     if (
       formSelect &&
       !formSelect.contains(event.target) &&
@@ -365,14 +371,15 @@ export class ProductDetailComponent {
     });
   }
 
-  convertTagToVersion(tag: string): string {
-    if (tag !== '' && tag.startsWith(VERSION.tagPrefix)) {
-      return tag.substring(1);
+  updateWebBrowserTitle() {
+    if (this.productDetail().names !== undefined) {
+      const title = this.productDetail().names[this.languageService.selectedLanguage()];
+      this.titleService.setTitle(title);
     }
-    return tag;
   }
 
   getDisplayedTabsSignal() {
+    this.updateWebBrowserTitle();
     const displayedTabs: ItemDropdown[] = [];
     for (const detailTab of this.detailTabs) {
       if (this.getContent(detailTab.value)) {
@@ -400,7 +407,7 @@ export class ProductDetailComponent {
       productDetail.vendorImage = vendorImage || vendorImageDarkMode;
       productDetail.vendorImageDarkMode = vendorImageDarkMode || vendorImage;
     }
-  
+
     return productDetail;
   }
 }

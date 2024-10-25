@@ -30,12 +30,12 @@ import static org.bson.assertions.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
 import static org.mockito.Mockito.any;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class ImageServiceImplTest extends BaseSetup {
@@ -58,7 +58,7 @@ class ImageServiceImplTest extends BaseSetup {
     InputStream inputStream = this.getClass().getResourceAsStream(SLASH.concat(META_FILE));
     when(content.read()).thenReturn(inputStream);
 
-    imageService.mappingImageFromGHContent(GOOGLE_MAPS_CONNECTOR, content, true);
+    imageService.mappingImageFromGHContent(GOOGLE_MAPS_CONNECTOR, content);
 
     Image expectedImage = new Image();
     expectedImage.setProductId("google-maps-connector");
@@ -71,8 +71,8 @@ class ImageServiceImplTest extends BaseSetup {
     assertEquals(argumentCaptor.getValue().getSha(), expectedImage.getSha());
     assertEquals(argumentCaptor.getValue().getImageUrl(), expectedImage.getImageUrl());
 
-    when(imageRepository.findByProductIdAndSha(anyString(), anyString())).thenReturn(expectedImage);
-    Image result  = imageService.mappingImageFromGHContent(GOOGLE_MAPS_CONNECTOR, content, false);
+    when(imageRepository.findByProductIdAndSha(anyString(), anyString())).thenReturn(List.of(expectedImage));
+    Image result = imageService.mappingImageFromGHContent(GOOGLE_MAPS_CONNECTOR, content);
     assertEquals(expectedImage, result);
 
   }
@@ -86,7 +86,7 @@ class ImageServiceImplTest extends BaseSetup {
     when(content.read()).thenThrow(new UnsupportedOperationException("Unrecognized encoding"));
     when(fileDownloadService.downloadFile(MOCK_MAVEN_URL)).thenReturn("content".getBytes());
 
-    imageService.mappingImageFromGHContent(GOOGLE_MAPS_CONNECTOR, content, false);
+    imageService.mappingImageFromGHContent(GOOGLE_MAPS_CONNECTOR, content);
 
     verify(imageRepository).save(argumentCaptor.capture());
     verify(fileDownloadService, times(1)).downloadFile(MOCK_MAVEN_URL);
@@ -163,7 +163,7 @@ class ImageServiceImplTest extends BaseSetup {
 
   @Test
   void testMappingImageFromGHContent_noGhContent() {
-    var result = imageService.mappingImageFromGHContent(GOOGLE_MAPS_CONNECTOR, null, true);
+    var result = imageService.mappingImageFromGHContent(GOOGLE_MAPS_CONNECTOR, null);
     assertNull(result);
   }
 }

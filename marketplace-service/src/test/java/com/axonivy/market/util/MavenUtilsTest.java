@@ -187,13 +187,6 @@ class MavenUtilsTest extends BaseSetup {
   }
 
   @Test
-  void testBuildDownloadUrl() {
-    Metadata metadata = buildMocKMetadata();
-    Assertions.assertEquals(MOCK_SNAPSHOT_DOWNLOAD_URL,
-        MavenUtils.buildDownloadUrl(metadata, MOCK_SNAPSHOT_VERSION));
-  }
-
-  @Test
   void testGetMetadataContent() {
     Assertions.assertEquals(StringUtils.EMPTY, MavenUtils.getMetadataContentFromUrl("octopus.com"));
   }

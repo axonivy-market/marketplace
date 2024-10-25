@@ -2,12 +2,12 @@ package com.axonivy.market;
 
 import com.axonivy.market.bo.Artifact;
 import com.axonivy.market.constants.MavenConstants;
+import com.axonivy.market.entity.Image;
 import com.axonivy.market.entity.MavenArtifactVersion;
 import com.axonivy.market.entity.Metadata;
 import com.axonivy.market.entity.Product;
 import com.axonivy.market.entity.ProductDesignerInstallation;
 import com.axonivy.market.entity.ProductJsonContent;
-import com.axonivy.market.entity.ProductModuleContent;
 import com.axonivy.market.enums.Language;
 import com.axonivy.market.enums.SortOption;
 import com.axonivy.market.model.MavenArtifactModel;
@@ -27,7 +27,6 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -40,36 +39,36 @@ public class BaseSetup {
   protected static final Pageable PAGEABLE = PageRequest.of(0, 20,
       Sort.by(SortOption.ALPHABETICALLY.getOption()).descending());
   protected static final String MOCK_PRODUCT_ID = "bpmn-statistic";
-  protected static final String MOCK_PRODUCT_ID_WITH_TAG = "bpmn-statistic-v10.0.10";
+  protected static final String MOCK_PRODUCT_ID_WITH_VERSION = "bpmn-statistic-10.0.10";
   protected static final String MOCK_ARTIFACT_ID = "bpmn-statistic";
   protected static final String MOCK_PRODUCT_ARTIFACT_ID = "bpmn-statistic-product";
   protected static final String MOCK_RELEASED_VERSION = "10.0.10";
   protected static final String MOCK_SNAPSHOT_VERSION = "10.0.10-SNAPSHOT";
   protected static final String MOCK_BUGFIX_VERSION = "10.0.10.1";
   protected static final String MOCK_SPRINT_RELEASED_VERSION = "10.0.10-m123";
-  protected static final String MOCK_TAG_FROM_RELEASED_VERSION = "v10.0.10";
-  protected static final String MOCK_TAG_FROM_SNAPSHOT_VERSION = "v10.0.10-SNAPSHOT";
   protected static final String MOCK_GROUP_ID = "com.axonivy.util";
   protected static final String MOCK_PRODUCT_NAME = "bpmn statistic";
+  protected static final String MOCK_PRODUCT_REPOSITORY_NAME = "axonivy-market/bpmn-statistic";
   protected static final String MOCK_PRODUCT_JSON_FILE_PATH = "src/test/resources/product.json";
   protected static final String MOCK_PRODUCT_JSON_FILE_PATH_NO_URL = "src/test/resources/productMissingURL.json";
+  protected static final String MOCK_PRODUCT_JSON_WITH_DROPINS_FILE_PATH = "src/test/resources/product-dropins.json";
   protected static final String MOCK_PRODUCT_JSON_DIR_PATH = "src/test/resources";
   protected static final String MOCK_PRODUCT_JSON_NODE_FILE_PATH = "src/test/resources/prouct-json-node.json";
   protected static final String MOCK_METADATA_FILE_PATH = "src/test/resources/metadata.xml";
   protected static final String MOCK_SNAPSHOT_METADATA_FILE_PATH = "src/test/resources/snapshotMetadata.xml";
+  protected static final String MOCK_README_FILE = "src/test/resources/README.md";
   protected static final String INVALID_FILE_PATH = "test/file/path";
-  protected static final String MOCK_SETUP_MD_PATH = "src/test/resources/setup.md";
   protected static final String MOCK_MAVEN_URL = "https://maven.axonivy.com/com/axonivy/util/bpmn-statistic/maven" +
       "-metadata.xml";
   protected static final String MOCK_SNAPSHOT_MAVEN_URL = "https://maven.axonivy.com/com/axonivy/util/bpmn-statistic" +
       "/10.0.10-SNAPSHOT/maven-metadata.xml";
   protected static final String MOCK_DOWNLOAD_URL = "https://maven.axonivy.com/com/axonivy/util/bpmn-statistic/10.0" +
       ".10/bpmn-statistic-10.0.10.zip";
-  protected static final String MOCK_SNAPSHOT_DOWNLOAD_URL = "https://maven.axonivy" +
-      ".com/com/axonivy/util/bpmn-statistic/10.0.10-SNAPSHOT/bpmn-statistic-10.0.10-SNAPSHOT.zip";
   protected static final String MOCK_ARTIFACT_NAME = "bpmn statistic (zip)";
   protected static final String MOCK_ARTIFACT_DOWNLOAD_FILE = "bpmn-statistic.zip";
   protected static final String LEGACY_INSTALLATION_COUNT_PATH_FIELD_NAME = "legacyInstallationCountPath";
+  protected static final String MOCK_IMAGE_URL = "https://raw.githubusercontent" +
+      ".com/amazon-comprehend-connector-product/images/comprehend-demo-sentiment.png";
 
   protected Page<Product> createPageProductsMock() {
     var mockProducts = new ArrayList<Product>();
@@ -115,10 +114,6 @@ public class BaseSetup {
     return result;
   }
 
-  protected static String getMockSetupMd() {
-    return getContentFromTestResourcePath(MOCK_SETUP_MD_PATH);
-  }
-
   private static String getContentFromTestResourcePath(String path) {
     try {
       return Files.readString(Paths.get(path));
@@ -132,10 +127,8 @@ public class BaseSetup {
     return getContentFromTestResourcePath(MOCK_PRODUCT_JSON_NODE_FILE_PATH);
   }
 
-  protected ProductModuleContent getMockProductModuleContent() {
-    ProductModuleContent mockProductModuleContent = new ProductModuleContent();
-    mockProductModuleContent.setMavenVersions(new HashSet<>());
-    return mockProductModuleContent;
+  protected static String getMockReadmeContent() {
+    return getContentFromTestResourcePath(MOCK_README_FILE);
   }
 
   protected Artifact getMockArtifact() {
@@ -146,6 +139,34 @@ public class BaseSetup {
     mockArtifact.setType("zip");
     mockArtifact.setName(MOCK_PRODUCT_NAME);
     return mockArtifact;
+  }
+
+  protected Artifact getMockArtifact2() {
+    Artifact mockArtifact = new Artifact();
+    mockArtifact.setIsDependency(true);
+    mockArtifact.setGroupId(MOCK_GROUP_ID);
+    mockArtifact.setArtifactId(MOCK_PRODUCT_ARTIFACT_ID);
+    mockArtifact.setType("zip");
+    mockArtifact.setName(MOCK_PRODUCT_NAME);
+    return mockArtifact;
+  }
+
+  public static Image getMockImage() {
+    Image image = new Image();
+    image.setId("66e2b14868f2f95b2f95549a");
+    image.setSha("914d9b6956db7a1404622f14265e435f36db81fa");
+    image.setProductId(SAMPLE_PRODUCT_ID);
+    image.setImageUrl(MOCK_IMAGE_URL);
+    return image;
+  }
+
+  public static Image getMockImage2() {
+    Image image = new Image();
+    image.setId("66e2b14868f2f95b2f95550a");
+    image.setSha("914d9b6956db7a1404622f14265e435f36db81fa");
+    image.setProductId(SAMPLE_PRODUCT_ID);
+    image.setImageUrl(MOCK_IMAGE_URL);
+    return image;
   }
 
   protected String getMockSnapShotMetadataContent() {
@@ -177,7 +198,7 @@ public class BaseSetup {
 
   protected Product getMockProduct() {
     Product mockProduct = Product.builder().id(MOCK_PRODUCT_ID).releasedVersions(new ArrayList<>()).artifacts(
-        List.of(getMockArtifact())).build();
+        List.of(getMockArtifact(), getMockArtifact2())).build();
     mockProduct.getReleasedVersions().add(MOCK_RELEASED_VERSION);
     return mockProduct;
   }
@@ -211,15 +232,14 @@ public class BaseSetup {
     return mockMetadata;
   }
 
-  protected MavenArtifactModel getMockMavenArtifactModel() {
-    MavenArtifactModel mockMavenArtifactModel = new MavenArtifactModel();
-    mockMavenArtifactModel.setName(MOCK_ARTIFACT_NAME);
-    mockMavenArtifactModel.setDownloadUrl(MOCK_DOWNLOAD_URL);
-    return mockMavenArtifactModel;
-  }
-
   protected MavenArtifactModel getMockMavenArtifactModelWithDownloadUrl() {
     return MavenArtifactModel.builder().name(MOCK_PRODUCT_NAME).artifactId(MOCK_ARTIFACT_ID).downloadUrl(
         MOCK_DOWNLOAD_URL).build();
+  }
+
+  protected static ProductJsonContent getMockProductJsonContentContainMavenDropins() {
+    ProductJsonContent result = new ProductJsonContent();
+    result.setContent(getContentFromTestResourcePath(MOCK_PRODUCT_JSON_WITH_DROPINS_FILE_PATH));
+    return result;
   }
 }
