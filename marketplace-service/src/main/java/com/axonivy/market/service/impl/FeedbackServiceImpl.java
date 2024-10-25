@@ -50,7 +50,12 @@ public class FeedbackServiceImpl implements FeedbackService {
   public Feedback findFeedbackByUserIdAndProductId(String userId,
       String productId) throws NotFoundException, NoContentException {
     if (StringUtils.isNotBlank(userId)) {
-      validateUserExists(userId);
+      try {
+        validateUserExists(userId);
+      }
+      catch(NotFoundException e) {
+        return null;
+      }
     }
     validateProductExists(productId);
 
