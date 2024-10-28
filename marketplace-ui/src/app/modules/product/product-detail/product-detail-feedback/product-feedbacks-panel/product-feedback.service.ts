@@ -13,7 +13,7 @@ import {
 } from '@angular/core';
 import { BehaviorSubject, catchError, concatMap, EMPTY, Observable, of, tap } from 'rxjs';
 import { AuthService } from '../../../../../auth/auth.service';
-import { SkipLoading } from '../../../../../core/interceptors/api.interceptor';
+import { ForwardingError, SkipLoading } from '../../../../../core/interceptors/api.interceptor';
 import { FeedbackApiResponse } from '../../../../../shared/models/apis/feedback-response.model';
 import { Feedback } from '../../../../../shared/models/feedback.model';
 import { ProductDetailService } from '../../product-detail.service';
@@ -78,7 +78,7 @@ export class ProductFeedbackService {
     return this.http
       .post<Feedback>(FEEDBACK_API_URL, feedback, {
         headers,
-        context: new HttpContext().set(SkipLoading, true)
+        context: new HttpContext().set(SkipLoading, true).set(ForwardingError, true)
       })
       .pipe(
         tap(() => {
@@ -112,13 +112,17 @@ export class ProductFeedbackService {
     return this.http
       .get<FeedbackApiResponse>(requestURL, {
         params: requestParams,
-        context: new HttpContext().set(SkipLoading, true)
+        context: new HttpContext().set(SkipLoading, true).set(ForwardingError, true)
       })
       .pipe(
         tap(response => {
           this.totalPages.set(response.page.totalPages);
           this.totalElements.set(response.page.totalElements);
           this.feedbacks.set([...this.feedbacks(), ...response._embedded.feedbacks]);
+        }),
+        catchError((e) => {
+          console.log(e);
+          return EMPTY;
         })
       );
   }
@@ -132,7 +136,7 @@ export class ProductFeedbackService {
     return this.http
       .get<Feedback>(FEEDBACK_API_URL, {
         params,
-        context: new HttpContext().set(SkipLoading, true)
+        context: new HttpContext().set(SkipLoading, true).set(ForwardingError, true)
       })
       .pipe(
         tap(feedback => {
