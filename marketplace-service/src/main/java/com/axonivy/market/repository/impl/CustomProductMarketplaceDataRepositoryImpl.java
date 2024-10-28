@@ -15,7 +15,7 @@ import org.springframework.data.mongodb.core.query.Update;
 
 @Builder
 @AllArgsConstructor
-public class CustomProductMarketplaceDataRepositoryImp extends CustomRepository implements CustomProductMarketplaceDataRepository {
+public class CustomProductMarketplaceDataRepositoryImpl extends CustomRepository implements CustomProductMarketplaceDataRepository {
 
   final MongoTemplate mongoTemplate;
 

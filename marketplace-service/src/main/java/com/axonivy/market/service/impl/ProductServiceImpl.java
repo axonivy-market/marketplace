@@ -38,7 +38,6 @@ import com.axonivy.market.util.MetadataReaderUtils;
 import com.axonivy.market.util.VersionUtils;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import lombok.AllArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.ObjectUtils;
@@ -93,7 +92,6 @@ import static org.apache.commons.lang3.StringUtils.EMPTY;
 
 @Log4j2
 @Service
-@AllArgsConstructor
 public class ProductServiceImpl implements ProductService {
   private static final String INITIAL_VERSION = "1.0";
   private final ProductRepository productRepo;
@@ -121,6 +119,33 @@ public class ProductServiceImpl implements ProductService {
   private String legacyInstallationCountPath;
   @Value("${market.github.market.branch}")
   private String marketRepoBranch;
+
+  public ProductServiceImpl(ProductRepository productRepo, ProductModuleContentRepository productModuleContentRepo,
+      GHAxonIvyMarketRepoService axonIvyMarketRepoService, GHAxonIvyProductRepoService axonIvyProductRepoService,
+      GitHubRepoMetaRepository gitHubRepoMetaRepo, GitHubService gitHubService,
+      ProductCustomSortRepository productCustomSortRepo, MavenArtifactVersionRepository mavenArtifactVersionRepo,
+      MetadataSyncRepository metadataSyncRepo, MetadataRepository metadataRepo,
+      ProductJsonContentRepository productJsonContentRepo, ImageRepository imageRepo,
+      ProductMarketplaceDataRepository productMarketplaceDataRepo, ImageService imageService,
+      MongoTemplate mongoTemplate, MetadataService metadataService, ProductContentService productContentService) {
+    this.productRepo = productRepo;
+    this.productModuleContentRepo = productModuleContentRepo;
+    this.axonIvyMarketRepoService = axonIvyMarketRepoService;
+    this.axonIvyProductRepoService = axonIvyProductRepoService;
+    this.gitHubRepoMetaRepo = gitHubRepoMetaRepo;
+    this.gitHubService = gitHubService;
+    this.productCustomSortRepo = productCustomSortRepo;
+    this.mavenArtifactVersionRepo = mavenArtifactVersionRepo;
+    this.metadataSyncRepo = metadataSyncRepo;
+    this.metadataRepo = metadataRepo;
+    this.productJsonContentRepo = productJsonContentRepo;
+    this.imageRepo = imageRepo;
+    this.productMarketplaceDataRepo = productMarketplaceDataRepo;
+    this.imageService = imageService;
+    this.mongoTemplate = mongoTemplate;
+    this.metadataService = metadataService;
+    this.productContentService = productContentService;
+  }
 
   @Override
   public Page<Product> findProducts(String type, String keyword, String language, Boolean isRESTClient,
