@@ -1,9 +1,12 @@
+name: matomo-prod
+
 services:
   matomo-db:
     image: mysql:9.1.0
+    container_name: matomo-db
     restart: always
     volumes:
-      - matomo-data-test-prod:/var/lib/mysql:Z
+      - matomo-data:/var/lib/mysql:Z
     environment:
       - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}
       - MYSQL_DATABASE=${MYSQL_DATABASE}
@@ -16,11 +19,12 @@ services:
 
   matomo-app:
     image: matomo:fpm-alpine
+    container_name: matomo-app
     restart: always
     links:
       - matomo-db
     volumes:
-      - matomo-app-test-prod:/var/www/html:z
+      - matomo:/var/www/html:z
     environment:
       - MATOMO_DATABASE_HOST=matomo-db
       - PHP_MEMORY_LIMIT=2048M
@@ -29,6 +33,7 @@ services:
 
   matomo-web:
     image: nginx:alpine
+    container_name: matomo-web
     restart: always
     volumes:
       - matomo-app-test-prod:/var/www/html:z,ro
@@ -37,5 +42,5 @@ services:
       - 8085:80
 
 volumes:
-  matomo-data-test-prod:
-  matomo-app-test-prod:
+  matomo-data:
+  matomo:
