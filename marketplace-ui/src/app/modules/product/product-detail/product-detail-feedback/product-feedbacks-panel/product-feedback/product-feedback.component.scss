@@ -87,3 +87,8 @@ $aspect-ratio: math.div(1, 1);
   line-height: 21px;
 }
 
+.feedback-time-text {
+  font-size: 1.2rem;
+  line-height: 1.452rem;
+  color: var(--text-feedback-time-color);
+}
