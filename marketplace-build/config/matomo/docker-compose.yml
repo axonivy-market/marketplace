@@ -1,0 +1,41 @@
+services:
+  matomo-db:
+    image: mysql
+    restart: always
+    volumes:
+      - matomo-data:/var/lib/mysql:Z
+    environment:
+      - MYSQL_ROOT_PASSWORD=${MATOMODB_INITDB_ROOT_PASSWORD}
+      - MYSQL_DATABASE=${MATOMODB_INITDB_DB_NAME}
+      - MYSQL_USER=${MATOMODB_INITDB_USERNAME}
+      - MYSQL_PASSWORD=${MATOMODB_INITDB_PASSWORD}
+    ports:
+      - 3306:3306
+    env_file:
+      - ./matomo-db.env
+
+  matomo-app:
+    image: matomo:fpm-alpine
+    restart: always
+    links:
+      - matomo-db
+    volumes:
+      - matomo-app:/var/www/html:z
+    environment:
+      - MATOMO_DATABASE_HOST=matomo-db
+      - PHP_MEMORY_LIMIT=2048M
+    env_file:
+      - ./matomo-db.env
+
+  matomo-web:
+    image: nginx:alpine
+    restart: always
+    volumes:
+      - matomo-app:/var/www/html:z,ro
+      - ./matomo.conf:/etc/nginx/conf.d/default.conf:z,ro
+    ports:
+      - 8085:80
+
+volumes:
+  matomo-data:
+  matomo-app:
