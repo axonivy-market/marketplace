@@ -27,6 +27,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 
 @Service
@@ -83,6 +84,7 @@ public class MetadataServiceImpl implements MetadataService {
   }
 
   @Override
+  @Deprecated(forRemoval = true , since = "1.5.0")
   public boolean syncProductMetadata(Product product) {
     if (product == null) {
       return false;
@@ -127,21 +129,56 @@ public class MetadataServiceImpl implements MetadataService {
     return true;
   }
 
+  @Override
+  public void updateArtifactAndMetaDataForProduct(ProductJsonContent productJsonContent, Artifact productArtifact) {
+    if (ObjectUtils.isEmpty(productJsonContent)) {
+      return;
+    }
+
+    Set<Metadata> metadataSet = new HashSet<>();
+    List<Artifact> artifactsInVersion = MavenUtils.getMavenArtifactsFromProductJson(productJsonContent);
+    Optional.ofNullable(productArtifact).ifPresent(artifactsInVersion::add);
+    log.info("**MetadataService: There are {} artifact(s) found in product {}",
+        artifactsInVersion.size(), productJsonContent.getProductId());
+    for (Artifact artifact : artifactsInVersion) {
+      String metadataUrl = MavenUtils.buildMetadataUrlFromArtifactInfo(artifact.getRepoUrl(), artifact.getGroupId(),
+          artifact.getArtifactId());
+      metadataSet.add(MavenUtils.convertArtifactToMetadata(productJsonContent.getProductId(), artifact, metadataUrl));
+      metadataSet.addAll(MavenUtils.extractMetaDataFromArchivedArtifacts(productJsonContent.getProductId(), artifact));
+    }
+
+    if (CollectionUtils.isEmpty(metadataSet)) {
+      log.info("**MetadataService: No artifact found in product {}", productJsonContent.getProductId());
+      return;
+    }
+
+    MavenArtifactVersion artifactVersionVersion = mavenArtifactVersionRepo.findById(productJsonContent.getProductId())
+        .orElse(MavenArtifactVersion.builder().productId(productJsonContent.getProductId()).build());
+    artifactVersionVersion.setAdditionalArtifactsByVersion(new HashMap<>());
+    updateMavenArtifactVersionData(metadataSet, artifactVersionVersion);
+
+    mavenArtifactVersionRepo.save(artifactVersionVersion);
+    metadataRepo.saveAll(metadataSet);
+  }
+
   public void updateMavenArtifactVersionFromMetadata(MavenArtifactVersion artifactVersionCache,
       Metadata metadata) {
     // Skip to add new model for product artifact
     if (MavenUtils.isProductArtifactId(metadata.getArtifactId())) {
       return;
     }
-    metadata.getVersions().forEach(version -> {
-      if (VersionUtils.isSnapshotVersion(version)) {
-        if (VersionUtils.isOfficialVersionOrUnReleasedDevVersion(metadata.getVersions().stream().toList(), version)) {
-          updateMavenArtifactVersionForNonReleaseDevVersion(artifactVersionCache, metadata, version);
-        }
-      } else {
+
+    for (String version : metadata.getVersions()) {
+      boolean isSnapshotVersion = VersionUtils.isSnapshotVersion(version);
+      boolean isOfficialVersionOrUnReleasedDevVersion =
+          VersionUtils.isOfficialVersionOrUnReleasedDevVersion(metadata.getVersions(), version);
+
+      if (isSnapshotVersion && isOfficialVersionOrUnReleasedDevVersion) {
+        updateMavenArtifactVersionForNonReleaseDevVersion(artifactVersionCache, metadata, version);
+      } else if (!isSnapshotVersion) {
         updateMavenArtifactVersionCacheWithModel(artifactVersionCache, version, metadata);
       }
-    });
+    }
   }
 
   public void updateMavenArtifactVersionForNonReleaseDevVersion(MavenArtifactVersion artifactVersionCache,

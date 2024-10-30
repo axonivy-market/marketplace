@@ -406,7 +406,7 @@ public class ProductServiceImpl implements ProductService {
     List<String> syncedProductIds = new ArrayList<>();
     var gitHubContentMap = axonIvyMarketRepoService.fetchAllMarketItems();
     for (Map.Entry<String, List<GHContent>> ghContentEntity : gitHubContentMap.entrySet()) {
-      if (!ghContentEntity.getKey().equals("market/connector/intellix-connector")) {
+      if (!ghContentEntity.getKey().equals("market/connector/adobe-acrobat-sign-connector")) {
         continue;
       }
       var product = new Product();
@@ -509,6 +509,7 @@ public class ProductServiceImpl implements ProductService {
     if (StringUtils.equals(latestVersion, product.getNewestReleaseVersion())) {
       return;
     }
+
     product.setNewestPublishedDate(getNewestPublishedDate(document));
     product.setNewestReleaseVersion(latestVersion);
 
@@ -734,7 +735,6 @@ public class ProductServiceImpl implements ProductService {
         updateProductContentForNonStandardProduct(gitHubContents, product);
         updateProductFromReleasedVersions(product);
         productRepo.save(product);
-        metadataService.syncProductMetadata(product);
         log.info("Sync product {} is finished!", productId);
         return true;
       }

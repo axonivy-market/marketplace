@@ -13,6 +13,7 @@ import com.axonivy.market.repository.MavenArtifactVersionRepository;
 import com.axonivy.market.repository.MetadataRepository;
 import com.axonivy.market.service.FileDownloadService;
 import com.axonivy.market.service.ImageService;
+import com.axonivy.market.service.MetadataService;
 import com.axonivy.market.service.ProductContentService;
 import com.axonivy.market.service.ProductJsonContentService;
 import com.axonivy.market.util.MavenUtils;
@@ -47,10 +48,7 @@ public class ProductContentServiceImpl implements ProductContentService {
   private final FileDownloadService fileDownloadService;
   private final ProductJsonContentService productJsonContentService;
   private final ImageService imageService;
-  private final MetadataRepository metadataRepo;
-
-  private final MavenArtifactVersionRepository mavenArtifactVersionRepo;
-
+  private final MetadataService metadataService;
   @Override
   public ProductModuleContent getReadmeAndProductContentsFromVersion(String productId, String version, String url,
       Artifact artifact, String productName) {
@@ -83,96 +81,8 @@ public class ProductContentServiceImpl implements ProductContentService {
         productModuleContent.getVersion(),
         ProductJsonConstants.VERSION_VALUE, productId, productName);
 
-    updateArtifactAndMetaDataForProduct(productJsonContent,artifact);
+    metadataService.updateArtifactAndMetaDataForProduct(productJsonContent, artifact);
   }
-
-  private void updateArtifactAndMetaDataForProduct(ProductJsonContent productJsonContent , Artifact productArtifact) {
-    if (ObjectUtils.isEmpty(productJsonContent)) {
-      return;
-    }
-
-    List<Artifact> artifactsInVersion = MavenUtils.getMavenArtifactsFromProductJson(productJsonContent);
-    Set<Metadata> metadataSet = new HashSet<>();
-    for (Artifact artifact : artifactsInVersion) {
-      String metadataUrl = MavenUtils.buildMetadataUrlFromArtifactInfo(artifact.getRepoUrl(), artifact.getGroupId(),
-          artifact.getArtifactId());
-      metadataSet.add(MavenUtils.convertArtifactToMetadata(productJsonContent.getProductId(), artifact, metadataUrl));
-      metadataSet.addAll(MavenUtils.extractMetaDataFromArchivedArtifacts(productJsonContent.getProductId(), artifact));
-    }
-
-    if (ObjectUtils.isNotEmpty(productArtifact)) {
-      metadataSet.addAll(MavenUtils.convertArtifactsToMetadataSet(Set.of(productArtifact),
-          productJsonContent.getProductId()));
-    }
-
-    if (CollectionUtils.isEmpty(metadataSet)) {
-      log.info("**MetadataService: No artifact found in product {}", productJsonContent.getProductId());
-      return;
-    }
-
-    MavenArtifactVersion artifactVersionCache = mavenArtifactVersionRepo.findById(productJsonContent.getProductId())
-        .orElse(MavenArtifactVersion.builder().productId(productJsonContent.getProductId()).build());
-
-    artifactVersionCache.setAdditionalArtifactsByVersion(new HashMap<>());
-    updateMavenArtifactVersionData(metadataSet, artifactVersionCache);
-
-    mavenArtifactVersionRepo.save(artifactVersionCache);
-    metadataRepo.saveAll(metadataSet);
-  }
-
-  public void updateMavenArtifactVersionData(Set<Metadata> metadataSet, MavenArtifactVersion artifactVersionCache) {
-    for (Metadata metadata : metadataSet) {
-      String metadataContent = MavenUtils.getMetadataContentFromUrl(metadata.getUrl());
-      if (StringUtils.isBlank(metadataContent)) {
-        continue;
-      }
-      Metadata metadataWithVersions = MetadataReaderUtils.updateMetadataFromMavenXML(metadataContent, metadata, false);
-      updateMavenArtifactVersionFromMetadata(artifactVersionCache, metadataWithVersions);
-    }
-  }
-
-  public void updateMavenArtifactVersionFromMetadata(MavenArtifactVersion artifactVersionCache,
-      Metadata metadata) {
-    // Skip to add new model for product artifact
-    if (MavenUtils.isProductArtifactId(metadata.getArtifactId())) {
-      return;
-    }
-    metadata.getVersions().forEach(version -> {
-      if (VersionUtils.isSnapshotVersion(version)) {
-        if (VersionUtils.isOfficialVersionOrUnReleasedDevVersion(metadata.getVersions().stream().toList(), version)) {
-          updateMavenArtifactVersionForNonReleaseDevVersion(artifactVersionCache, metadata, version);
-        }
-      } else {
-        updateMavenArtifactVersionCacheWithModel(artifactVersionCache, version, metadata);
-      }
-    });
-  }
-  public void updateMavenArtifactVersionForNonReleaseDevVersion(MavenArtifactVersion artifactVersionCache,
-      Metadata metadata, String version) {
-    Metadata snapShotMetadata = MavenUtils.buildSnapShotMetadataFromVersion(metadata, version);
-    MetadataReaderUtils.updateMetadataFromMavenXML(MavenUtils.getMetadataContentFromUrl(snapShotMetadata.getUrl()),
-        snapShotMetadata, true);
-    updateMavenArtifactVersionCacheWithModel(artifactVersionCache, version, snapShotMetadata);
-  }
-
-  public void updateMavenArtifactVersionCacheWithModel(MavenArtifactVersion artifactVersionCache,
-      String version, Metadata metadata) {
-    List<MavenArtifactModel> artifactModelsInVersion =
-        artifactVersionCache.getProductArtifactsByVersion().computeIfAbsent(
-            version, k -> new ArrayList<>());
-    if (metadata.isProductArtifact()) {
-      if (artifactModelsInVersion.stream().anyMatch(artifact -> StringUtils.equals(metadata.getName(),
-          artifact.getName()))) {
-        return;
-      }
-      artifactModelsInVersion.add(
-          MavenUtils.buildMavenArtifactModelFromMetadata(version, metadata));
-    } else {
-      artifactVersionCache.getAdditionalArtifactsByVersion().computeIfAbsent(version, k -> new ArrayList<>()).add(
-          MavenUtils.buildMavenArtifactModelFromMetadata(version, metadata));
-    }
-  }
-
   private void extractReadMeFileFromContents(String productId, String unzippedFolderPath,
       ProductModuleContent productModuleContent) {
     try {
