@@ -1,8 +1,6 @@
 package com.axonivy.market.service;
 
 import com.axonivy.market.entity.Product;
-import com.axonivy.market.exceptions.model.InvalidParamException;
-import com.axonivy.market.model.ProductCustomSortRequest;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
@@ -18,8 +16,6 @@ public interface ProductService {
   Product fetchProductDetail(String id, Boolean isShowDevVersion);
 
   String getCompatibilityFromOldestVersion(String oldestVersion);
-
-  void addCustomSortProduct(ProductCustomSortRequest customSort) throws InvalidParamException;
 
   Product fetchBestMatchProductDetail(String id, String version);
 

@@ -68,15 +68,9 @@ public class Product implements Serializable {
   @Transient
   private ProductModuleContent productModuleContent;
   private List<Artifact> artifacts;
-  /**
-   * @deprecated
-   */
-  @Deprecated(forRemoval = true, since = "1.5.0")
+  @Transient
   private Boolean synchronizedInstallationCount;
-  /**
-   * @deprecated
-   */
-  @Deprecated(forRemoval = true, since = "1.5.0")
+  @Transient
   private Integer customOrder;
   private List<String> releasedVersions;
   @Transient

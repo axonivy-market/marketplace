@@ -1,5 +1,7 @@
 package com.axonivy.market.entity;
 
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -13,7 +15,9 @@ import static com.axonivy.market.constants.EntityConstants.PRODUCT_MARKETPLACE_D
 
 @Getter
 @Setter
+@Builder
 @NoArgsConstructor
+@AllArgsConstructor
 @Document(PRODUCT_MARKETPLACE_DATA)
 public class ProductMarketplaceData implements Serializable {
 

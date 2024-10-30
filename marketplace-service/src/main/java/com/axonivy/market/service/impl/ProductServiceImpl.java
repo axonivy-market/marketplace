@@ -5,7 +5,6 @@ import com.axonivy.market.constants.CommonConstants;
 import com.axonivy.market.constants.GitHubConstants;
 import com.axonivy.market.constants.MavenConstants;
 import com.axonivy.market.constants.MetaConstants;
-import com.axonivy.market.constants.ProductJsonConstants;
 import com.axonivy.market.criteria.ProductSearchCriteria;
 import com.axonivy.market.entity.GitHubRepoMeta;
 import com.axonivy.market.entity.Image;
@@ -19,7 +18,6 @@ import com.axonivy.market.enums.FileType;
 import com.axonivy.market.enums.Language;
 import com.axonivy.market.enums.SortOption;
 import com.axonivy.market.enums.TypeOption;
-import com.axonivy.market.exceptions.model.InvalidParamException;
 import com.axonivy.market.exceptions.model.NotFoundException;
 import com.axonivy.market.factory.ProductFactory;
 import com.axonivy.market.github.model.GitHubFile;
@@ -27,7 +25,6 @@ import com.axonivy.market.github.service.GHAxonIvyMarketRepoService;
 import com.axonivy.market.github.service.GHAxonIvyProductRepoService;
 import com.axonivy.market.github.service.GitHubService;
 import com.axonivy.market.github.util.GitHubUtils;
-import com.axonivy.market.model.ProductCustomSortRequest;
 import com.axonivy.market.repository.*;
 import com.axonivy.market.service.ImageService;
 import com.axonivy.market.service.MetadataService;
@@ -52,9 +49,6 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.domain.Sort.Order;
-import org.springframework.data.mongodb.core.MongoTemplate;
-import org.springframework.data.mongodb.core.query.Query;
-import org.springframework.data.mongodb.core.query.Update;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 import org.w3c.dom.Document;
@@ -108,7 +102,6 @@ public class ProductServiceImpl implements ProductService {
   private final ImageRepository imageRepo;
   private final ProductMarketplaceDataRepository productMarketplaceDataRepo;
   private final ImageService imageService;
-  private final MongoTemplate mongoTemplate;
   private final MetadataService metadataService;
   private final ProductContentService productContentService;
   private final ObjectMapper mapper = new ObjectMapper();
@@ -127,7 +120,7 @@ public class ProductServiceImpl implements ProductService {
       MetadataSyncRepository metadataSyncRepo, MetadataRepository metadataRepo,
       ProductJsonContentRepository productJsonContentRepo, ImageRepository imageRepo,
       ProductMarketplaceDataRepository productMarketplaceDataRepo, ImageService imageService,
-      MongoTemplate mongoTemplate, MetadataService metadataService, ProductContentService productContentService) {
+      MetadataService metadataService, ProductContentService productContentService) {
     this.productRepo = productRepo;
     this.productModuleContentRepo = productModuleContentRepo;
     this.axonIvyMarketRepoService = axonIvyMarketRepoService;
@@ -142,7 +135,6 @@ public class ProductServiceImpl implements ProductService {
     this.imageRepo = imageRepo;
     this.productMarketplaceDataRepo = productMarketplaceDataRepo;
     this.imageService = imageService;
-    this.mongoTemplate = mongoTemplate;
     this.metadataService = metadataService;
     this.productContentService = productContentService;
   }
@@ -488,7 +480,9 @@ public class ProductServiceImpl implements ProductService {
   private void getMetadataContent(Artifact artifact, Product product) {
     String metadataUrl = MavenUtils.buildMetadataUrlFromArtifactInfo(artifact.getRepoUrl(), artifact.getGroupId(),
         createProductArtifactId(artifact));
+
     String metadataContent = MavenUtils.getMetadataContentFromUrl(metadataUrl);
+
     if (StringUtils.isNotBlank(metadataContent)) {
       updateContentsFromMavenXML(product, metadataContent, artifact);
     }
@@ -672,38 +666,6 @@ public class ProductServiceImpl implements ProductService {
   @Override
   public Product fetchProductDetailByIdAndVersion(String id, String version) {
     return productRepo.getProductByIdAndVersion(id, version);
-  }
-
-  @Override
-  public void addCustomSortProduct(ProductCustomSortRequest customSort) throws InvalidParamException {
-    SortOption.of(customSort.getRuleForRemainder());
-
-    ProductCustomSort productCustomSort = new ProductCustomSort(customSort.getRuleForRemainder());
-    productCustomSortRepo.deleteAll();
-    removeFieldFromAllProductDocuments(ProductJsonConstants.CUSTOM_ORDER);
-    productCustomSortRepo.save(productCustomSort);
-    productMarketplaceDataRepo.saveAll(refineOrderedListOfProductsInCustomSort(customSort.getOrderedListOfProducts()));
-  }
-
-  public List<ProductMarketplaceData> refineOrderedListOfProductsInCustomSort(List<String> orderedListOfProducts)
-      throws InvalidParamException {
-    List<ProductMarketplaceData> productEntries = new ArrayList<>();
-
-    int descendingOrder = orderedListOfProducts.size();
-    for (String productId : orderedListOfProducts) {
-      validateProductExists(productId);
-      ProductMarketplaceData productMarketplaceData =
-          productMarketplaceDataRepo.findById(productId).orElse(initProductMarketplaceData(productId));
-
-      productMarketplaceData.setCustomOrder(descendingOrder--);
-      productEntries.add(productMarketplaceData);
-    }
-    return productEntries;
-  }
-
-  public void removeFieldFromAllProductDocuments(String fieldName) {
-    Update update = new Update().unset(fieldName);
-    mongoTemplate.updateMulti(new Query(), update, Product.class);
   }
 
   public void transferComputedDataFromDB(Product product) {

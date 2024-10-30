@@ -10,6 +10,7 @@ import com.axonivy.market.model.Message;
 import com.axonivy.market.model.ProductCustomSortRequest;
 import com.axonivy.market.model.ProductModel;
 import com.axonivy.market.service.MetadataService;
+import com.axonivy.market.service.ProductMarketplaceDataService;
 import com.axonivy.market.service.ProductService;
 import com.axonivy.market.util.AuthorizationUtils;
 import io.swagger.v3.oas.annotations.Operation;
@@ -58,6 +59,7 @@ public class ProductController {
   private final PagedResourcesAssembler<Product> pagedResourcesAssembler;
   private final MetadataService metadataService;
   private final GHAxonIvyMarketRepoService axonIvyMarketRepoService;
+  private final ProductMarketplaceDataService productMarketplaceDataService;
 
   @GetMapping()
   @Operation(summary = "Retrieve a paginated list of all products, optionally filtered by type, keyword, and language",
@@ -181,7 +183,7 @@ public class ProductController {
     String token = AuthorizationUtils.getBearerToken(authorizationHeader);
     gitHubService.validateUserInOrganizationAndTeam(token, GitHubConstants.AXONIVY_MARKET_ORGANIZATION_NAME,
         GitHubConstants.AXONIVY_MARKET_TEAM_NAME);
-    productService.addCustomSortProduct(productCustomSortRequest);
+    productMarketplaceDataService.addCustomSortProduct(productCustomSortRequest);
     var message = new Message(ErrorCode.SUCCESSFUL.getCode(), ErrorCode.SUCCESSFUL.getHelpText(),
         "Custom product sort order added successfully");
     return new ResponseEntity<>(message, HttpStatus.OK);

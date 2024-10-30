@@ -10,8 +10,6 @@ import java.util.List;
 public interface CustomProductRepository {
   Product getProductByIdAndVersion(String id, String version);
 
-  Product getProductWithModuleContent(String id);
-
   Product findProductById(String id);
 
   List<String> getReleasedVersionsById(String id);
