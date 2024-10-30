@@ -406,9 +406,6 @@ public class ProductServiceImpl implements ProductService {
     List<String> syncedProductIds = new ArrayList<>();
     var gitHubContentMap = axonIvyMarketRepoService.fetchAllMarketItems();
     for (Map.Entry<String, List<GHContent>> ghContentEntity : gitHubContentMap.entrySet()) {
-      if (!ghContentEntity.getKey().equals("market/connector/adobe-acrobat-sign-connector")) {
-        continue;
-      }
       var product = new Product();
       //update the meta.json first
       ghContentEntity.getValue().sort((f1, f2) -> GitHubUtils.sortMetaJsonFirst(f1.getName(), f2.getName()));
@@ -512,7 +509,6 @@ public class ProductServiceImpl implements ProductService {
 
     product.setNewestPublishedDate(getNewestPublishedDate(document));
     product.setNewestReleaseVersion(latestVersion);
-
     NodeList versionNodes = document.getElementsByTagName(MavenConstants.VERSION_TAG);
     List<String> mavenVersions = new ArrayList<>();
     for (int i = 0; i < versionNodes.getLength(); i++) {
