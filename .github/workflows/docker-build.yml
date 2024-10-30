@@ -33,15 +33,17 @@ jobs:
     steps:
       - name: Bring down and remove containers and images
         continue-on-error: true
-        working-directory: ${{ env.BASE_WORKING_DIR }}/publish
+        working-directory: ${{ env.BASE_WORKING_DIR }}
         run: |
-          docker compose down --rmi all
+          docker compose -f publish/docker-compose.yml down --rmi all
       - name: Delete old sources code
         continue-on-error: true
         run: |
           echo "Clean up workspaces ${{ env.BASE_WORKING_DIR }}"
-          rm -rf ${{ env.BASE_WORKING_DIR }}/*
-          mkdir -p ${{ env.BASE_WORKING_DIR }}
+          rm -rf ./marketplace-ui/*
+          rm -rf ./marketplace-service/*
+          rm -rf ./publish/*
+          rm -rf ./config/*
 
   build-and-deploy:
     name: Build and bring up docker containers
