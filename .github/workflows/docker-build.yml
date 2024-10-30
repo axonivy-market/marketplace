@@ -26,21 +26,9 @@ env:
   BASE_WORKING_DIR: /home/axonivy/marketplace/work
 
 jobs:
-  init:
-    name: Checking workspaces environment
-    runs-on: self-hosted
-
-    steps:
-      - run: |
-          if [ -n "${{ inputs.release_version }}" ]; then
-            echo "BASE_WORKING_DIR=/home/axonivy/marketplace/release" >> $GITHUB_ENV
-          fi
-          echo "Set workspaces to ${{ env.BASE_WORKING_DIR }}"
-
   cleanup:
     name: Clean up docker container and images
     runs-on: self-hosted
-    needs: init
 
     steps:
       - name: Bring down and remove containers and images
