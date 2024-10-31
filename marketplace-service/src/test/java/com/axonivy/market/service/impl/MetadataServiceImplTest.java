@@ -5,6 +5,7 @@ import com.axonivy.market.bo.Artifact;
 import com.axonivy.market.entity.MavenArtifactVersion;
 import com.axonivy.market.entity.Metadata;
 import com.axonivy.market.entity.Product;
+import com.axonivy.market.entity.ProductJsonContent;
 import com.axonivy.market.model.MavenArtifactModel;
 import com.axonivy.market.repository.MavenArtifactVersionRepository;
 import com.axonivy.market.repository.MetadataRepository;
@@ -16,6 +17,7 @@ import lombok.extern.log4j.Log4j2;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentMatchers;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockedStatic;
@@ -28,6 +30,10 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+
+import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 
 @Log4j2
 @ExtendWith(MockitoExtension.class)
@@ -44,6 +50,32 @@ class MetadataServiceImplTest extends BaseSetup {
   private MavenArtifactVersionRepository mavenArtifactVersionRepo;
   @Mock
   private MetadataSyncRepository metadataSyncRepo;
+
+  @Test
+  void testUpdateArtifactAndMetaDataForProduct() {
+    ProductJsonContent mockProductJsonContent = getMockProductJsonContent();
+    mockProductJsonContent.setId("amazon-comprehend-9.2.0");
+    mockProductJsonContent.setProductId("amazon-comprehend");
+
+    Artifact mockArtifact = Artifact.builder()
+        .repoUrl("https://maven.com")
+        .name("Amazon Comprehend Product")
+        .groupId("com.axonivy.connector.amazon.comprehend")
+        .artifactId("amazon-comprehend-connector-product")
+        .type("zip").
+        isInvalidArtifact(true)
+        .build();
+    Metadata mockMetadata = buildMocKMetadata();
+    try (MockedStatic<MavenUtils> mockUtils = Mockito.mockStatic(MavenUtils.class)) {
+      mockUtils.when(() -> MavenUtils.getMetadataContentFromUrl(ArgumentMatchers.anyString())).thenReturn(null);
+      mockUtils.when(() -> MavenUtils.convertArtifactToMetadata(any(), any(), any())).thenReturn(mockMetadata);
+
+      metadataService.updateArtifactAndMetaDataForProduct(mockProductJsonContent, mockArtifact);
+
+      verify(mavenArtifactVersionRepo, times(1)).save(any());
+      verify(metadataRepo, times(1)).saveAll(any());
+    }
+  }
 
   @Test
   void testGetArtifactsFromNonSyncedVersion() {
