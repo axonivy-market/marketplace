@@ -129,7 +129,7 @@ public class ProductServiceImpl implements ProductService {
       GHAxonIvyMarketRepoService axonIvyMarketRepoService, GHAxonIvyProductRepoService axonIvyProductRepoService,
       GitHubRepoMetaRepository gitHubRepoMetaRepo, GitHubService gitHubService,
       ProductCustomSortRepository productCustomSortRepo, MavenArtifactVersionRepository mavenArtifactVersionRepo,
-      ProductJsonContentRepository productJsonContentRepo, ImageRepository imageRepo, MetadataService metadataService,
+      ProductJsonContentRepository productJsonContentRepo, ImageRepository imageRepo,
       MetadataSyncRepository metadataSyncRepo, MetadataRepository metadataRepo, ImageService imageService,
       MongoTemplate mongoTemplate, ProductContentService productContentService) {
     this.productRepo = productRepo;
