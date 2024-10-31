@@ -59,7 +59,8 @@ public class MetadataServiceImpl implements MetadataService {
     }
   }
 
-  public void updateMavenArtifactVersionData(Set<Metadata> metadataSet, MavenArtifactVersion artifactVersionCache) {
+  public void updateMavenArtifactVersionData(Set<Metadata> metadataSet,
+      MavenArtifactVersion artifactVersionCache) {
     for (Metadata metadata : metadataSet) {
       String metadataContent = MavenUtils.getMetadataContentFromUrl(metadata.getUrl());
       if (StringUtils.isBlank(metadataContent)) {
@@ -129,30 +130,36 @@ public class MetadataServiceImpl implements MetadataService {
   }
 
   @Override
-  public void updateArtifactAndMetaDataForProduct(ProductJsonContent productJsonContent, Artifact productArtifact) {
+  public void updateArtifactAndMetaDataForProductJsonContent(ProductJsonContent productJsonContent, Artifact productArtifact) {
     if (ObjectUtils.isEmpty(productJsonContent)) {
       return;
     }
 
-    Set<Metadata> metadataSet = new HashSet<>();
     List<Artifact> artifactsInVersion = MavenUtils.getMavenArtifactsFromProductJson(productJsonContent);
     Optional.ofNullable(productArtifact).ifPresent(artifactsInVersion::add);
     log.info("**MetadataService: There are {} artifact(s) found in product {}",
         artifactsInVersion.size(), productJsonContent.getProductId());
-    for (Artifact artifact : artifactsInVersion) {
+    updateArtifactAndMetadata(productJsonContent.getProductId(), artifactsInVersion);
+  }
+
+  @Override
+  public void updateArtifactAndMetadata(String productId, List<Artifact> artifacts) {
+    Set<Metadata> metadataSet = new HashSet<>();
+    for (Artifact artifact : artifacts) {
       String metadataUrl = MavenUtils.buildMetadataUrlFromArtifactInfo(artifact.getRepoUrl(), artifact.getGroupId(),
           artifact.getArtifactId());
-      metadataSet.add(MavenUtils.convertArtifactToMetadata(productJsonContent.getProductId(), artifact, metadataUrl));
-      metadataSet.addAll(MavenUtils.extractMetaDataFromArchivedArtifacts(productJsonContent.getProductId(), artifact));
+      metadataSet.add(MavenUtils.convertArtifactToMetadata(productId, artifact, metadataUrl));
+      metadataSet.addAll(MavenUtils.extractMetaDataFromArchivedArtifacts(productId, artifact));
     }
 
     if (CollectionUtils.isEmpty(metadataSet)) {
-      log.info("**MetadataService: No artifact found in product {}", productJsonContent.getProductId());
+      log.info("**MetadataService: No artifact found in product {}", productId);
       return;
     }
 
-    MavenArtifactVersion artifactVersionVersion = mavenArtifactVersionRepo.findById(productJsonContent.getProductId())
-        .orElse(MavenArtifactVersion.builder().productId(productJsonContent.getProductId()).build());
+    MavenArtifactVersion artifactVersionVersion = mavenArtifactVersionRepo.findById(productId)
+        .orElse(MavenArtifactVersion.builder().productId(productId).build());
+
     artifactVersionVersion.setAdditionalArtifactsByVersion(new HashMap<>());
     updateMavenArtifactVersionData(metadataSet, artifactVersionVersion);
 

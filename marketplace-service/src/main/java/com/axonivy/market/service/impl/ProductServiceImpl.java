@@ -9,6 +9,7 @@ import com.axonivy.market.constants.ProductJsonConstants;
 import com.axonivy.market.criteria.ProductSearchCriteria;
 import com.axonivy.market.entity.GitHubRepoMeta;
 import com.axonivy.market.entity.Image;
+import com.axonivy.market.entity.Metadata;
 import com.axonivy.market.entity.Product;
 import com.axonivy.market.entity.ProductCustomSort;
 import com.axonivy.market.entity.ProductJsonContent;
@@ -117,6 +118,7 @@ public class ProductServiceImpl implements ProductService {
   private final ProductContentService productContentService;
   private final ObjectMapper mapper = new ObjectMapper();
   private final SecureRandom random = new SecureRandom();
+  private final MetadataService metadataService;
   private GHCommit lastGHCommit;
   private GitHubRepoMeta marketRepoMeta;
   @Value("${market.legacy.installation.counts.path}")
@@ -131,7 +133,7 @@ public class ProductServiceImpl implements ProductService {
       ProductCustomSortRepository productCustomSortRepo, MavenArtifactVersionRepository mavenArtifactVersionRepo,
       ProductJsonContentRepository productJsonContentRepo, ImageRepository imageRepo,
       MetadataSyncRepository metadataSyncRepo, MetadataRepository metadataRepo, ImageService imageService,
-      MongoTemplate mongoTemplate, ProductContentService productContentService) {
+      MongoTemplate mongoTemplate, ProductContentService productContentService, MetadataService metadataService) {
     this.productRepo = productRepo;
     this.productModuleContentRepo = productModuleContentRepo;
     this.axonIvyMarketRepoService = axonIvyMarketRepoService;
@@ -147,6 +149,7 @@ public class ProductServiceImpl implements ProductService {
     this.imageService = imageService;
     this.mongoTemplate = mongoTemplate;
     this.productContentService = productContentService;
+    this.metadataService = metadataService;
   }
 
   @Override
@@ -486,6 +489,9 @@ public class ProductServiceImpl implements ProductService {
     for (Artifact mavenArtifact : mavenArtifacts) {
       getMetadataContent(mavenArtifact, product);
     }
+    List<Artifact> additionalArtifacts = new ArrayList<>(product.getArtifacts());
+    additionalArtifacts.removeAll(mavenArtifacts);
+    metadataService.updateArtifactAndMetadata(product.getId(), additionalArtifacts);
   }
 
   private void getMetadataContent(Artifact artifact, Product product) {

@@ -70,7 +70,7 @@ class MetadataServiceImplTest extends BaseSetup {
       mockUtils.when(() -> MavenUtils.getMetadataContentFromUrl(ArgumentMatchers.anyString())).thenReturn(null);
       mockUtils.when(() -> MavenUtils.convertArtifactToMetadata(any(), any(), any())).thenReturn(mockMetadata);
 
-      metadataService.updateArtifactAndMetaDataForProduct(mockProductJsonContent, mockArtifact);
+      metadataService.updateArtifactAndMetaDataForProductJsonContent(mockProductJsonContent, mockArtifact);
 
       verify(mavenArtifactVersionRepo, times(1)).save(any());
       verify(metadataRepo, times(1)).saveAll(any());
