@@ -84,7 +84,6 @@ public class MetadataServiceImpl implements MetadataService {
   }
 
   @Override
-  @Deprecated(forRemoval = true , since = "1.5.0")
   public boolean syncProductMetadata(Product product) {
     if (product == null) {
       return false;

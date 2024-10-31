@@ -114,7 +114,6 @@ public class ProductServiceImpl implements ProductService {
   private final ImageRepository imageRepo;
   private final ImageService imageService;
   private final MongoTemplate mongoTemplate;
-  private final MetadataService metadataService;
   private final ProductContentService productContentService;
   private final ObjectMapper mapper = new ObjectMapper();
   private final SecureRandom random = new SecureRandom();
@@ -144,7 +143,6 @@ public class ProductServiceImpl implements ProductService {
     this.productJsonContentRepo = productJsonContentRepo;
     this.metadataSyncRepo = metadataSyncRepo;
     this.metadataRepo = metadataRepo;
-    this.metadataService = metadataService;
     this.imageRepo = imageRepo;
     this.imageService = imageService;
     this.mongoTemplate = mongoTemplate;
