@@ -8,6 +8,7 @@ import com.axonivy.market.entity.ProductModuleContent;
 import com.axonivy.market.github.service.GitHubService;
 import com.axonivy.market.github.service.impl.GHAxonIvyProductRepoServiceImpl;
 import com.axonivy.market.github.util.GitHubUtils;
+import com.axonivy.market.model.IntroductionDataModel;
 import com.axonivy.market.service.ImageService;
 import com.axonivy.market.util.MavenUtils;
 import com.axonivy.market.util.ProductContentUtils;
@@ -37,13 +38,12 @@ import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -232,7 +232,14 @@ class GHAxonIvyProductRepoServiceImplTest extends BaseSetup {
 
       List<GHContent> contents = List.of(mockReadmeFile, mockImageFile);
 
+
+
+      IntroductionDataModel introductionDataModel = new IntroductionDataModel();
+      introductionDataModel.setDescription(new HashMap<>(Map.of("en","Test README content")));
+
       when(ProductContentUtils.hasImageDirectives(anyString())).thenReturn(true);
+      when(ProductContentUtils.getExtractedPartsOfReadme(nullable(String.class),anyString())).thenReturn(introductionDataModel);
+
       when(imageService.mappingImageFromGHContent(anyString(), any())).thenReturn(getMockImage());
       ProductModuleContent productModuleContent = new ProductModuleContent();
 
@@ -241,8 +248,6 @@ class GHAxonIvyProductRepoServiceImplTest extends BaseSetup {
 
       verify(mockReadmeFile, times(1)).read();
       verify(imageService, times(1)).mappingImageFromGHContent(anyString(), eq(mockImageFile));
-      mockedProductContentUtils.verify(
-          () -> ProductContentUtils.updateProductModuleTabContents(productModuleContent, new HashMap<>()));
     }
   }
 

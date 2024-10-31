@@ -407,6 +407,9 @@ public class ProductServiceImpl implements ProductService {
     List<String> syncedProductIds = new ArrayList<>();
     var gitHubContentMap = axonIvyMarketRepoService.fetchAllMarketItems();
     for (Map.Entry<String, List<GHContent>> ghContentEntity : gitHubContentMap.entrySet()) {
+//      if (!ghContentEntity.getKey().equals("market/doc-factory")) {
+//        continue;
+//      }
       var product = new Product();
       //update the meta.json first
       ghContentEntity.getValue().sort((f1, f2) -> GitHubUtils.sortMetaJsonFirst(f1.getName(), f2.getName()));
@@ -521,18 +524,21 @@ public class ProductServiceImpl implements ProductService {
 
     updateProductCompatibility(product, mavenVersions);
 
-    List<String> currentVersions = product.getReleasedVersions();
-    if (CollectionUtils.isEmpty(currentVersions)) {
-      product.setReleasedVersions(new ArrayList<>());
-      currentVersions = productModuleContentRepo.findVersionsByProductId(product.getId());
-    }
-    mavenVersions = mavenVersions.stream().filter(filterNonPersistVersion(currentVersions)).toList();
+    List<String> currentVersions = ObjectUtils.isNotEmpty(product.getReleasedVersions()) ?
+        product.getReleasedVersions() :
+        productModuleContentRepo.findVersionsByProductId(product.getId());
+
+    mavenVersions = mavenVersions.stream().filter(version -> !currentVersions.contains(version)).toList();
 
     List<ProductModuleContent> productModuleContents = new ArrayList<>();
     for (String version : mavenVersions) {
-      product.getReleasedVersions().add(version);
-      handleProductArtifact(version, product.getId(), productModuleContents, mavenArtifact,
+      Optional.ofNullable(product.getReleasedVersions()).orElseGet(() -> {
+            product.setReleasedVersions(new ArrayList<>());
+            return product.getReleasedVersions();
+          }).add(version);
+      ProductModuleContent productModuleContent = handleProductArtifact(version, product.getId(), mavenArtifact,
           product.getNames().get(EN_LANGUAGE));
+      Optional.ofNullable(productModuleContent).ifPresent(productModuleContents::add);
     }
 
     if (ObjectUtils.isNotEmpty(productModuleContents)) {
@@ -558,12 +564,8 @@ public class ProductServiceImpl implements ProductService {
     }
   }
 
-  private static Predicate<? super String> filterNonPersistVersion(List<String> currentVersions) {
-    return version -> !currentVersions.contains(version);
-  }
-
-  public void handleProductArtifact(String version, String productId,
-      List<ProductModuleContent> productModuleContents, Artifact mavenArtifact, String productName) {
+  public ProductModuleContent handleProductArtifact(String version, String productId, Artifact mavenArtifact,
+      String productName) {
     String snapshotVersionValue = Strings.EMPTY;
     if (version.contains(MavenConstants.SNAPSHOT_VERSION)) {
       snapshotVersionValue = MetadataReaderUtils.getSnapshotVersionValue(version, mavenArtifact);
@@ -576,14 +578,11 @@ public class ProductServiceImpl implements ProductService {
         repoUrl, mavenArtifact.getGroupId(), StringUtils.defaultIfBlank(snapshotVersionValue, version));
 
     if (StringUtils.isBlank(url)) {
-      return;
+      return null;
     }
 
-    try {
-      addProductContent(productId, version, url, productModuleContents, mavenArtifact, productName);
-    } catch (Exception e) {
-      log.error("Cannot download and unzip file {}", e.getMessage());
-    }
+    return productContentService.getReadmeAndProductContentsFromVersion(productId,
+        version, url, mavenArtifact, productName);
   }
 
   private String createProductArtifactId(Artifact mavenArtifact) {
@@ -591,14 +590,6 @@ public class ProductServiceImpl implements ProductService {
         : mavenArtifact.getArtifactId().concat(PRODUCT_ARTIFACT_POSTFIX);
   }
 
-  public void addProductContent(String productId, String version, String url,
-      List<ProductModuleContent> productModuleContents, Artifact artifact, String productName) {
-    ProductModuleContent productModuleContent = productContentService.getReadmeAndProductContentsFromVersion(productId,
-        version, url, artifact, productName);
-    if (Objects.nonNull(productModuleContent)) {
-      productModuleContents.add(productModuleContent);
-    }
-  }
 
   // Cover 3 cases after removing non-numeric characters (8, 11.1 and 10.0.2)
   @Override

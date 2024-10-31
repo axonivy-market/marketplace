@@ -7,6 +7,7 @@ import com.axonivy.market.constants.ReadmeConstants;
 import com.axonivy.market.entity.ProductModuleContent;
 import com.axonivy.market.enums.Language;
 import com.axonivy.market.factory.ProductFactory;
+import com.axonivy.market.model.IntroductionDataModel;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.util.Strings;
 
@@ -57,7 +58,7 @@ public class ProductContentUtils {
 
   // Cover some cases including when demo and setup parts switch positions or
   // missing one of them
-  public static void getExtractedPartsOfReadme(Map<String, Map<String, String>> moduleContents, String readmeContents,
+  public static IntroductionDataModel getExtractedPartsOfReadme( String readmeContents,
       String readmeFileName) {
     String locale = getReadmeFileLocale(readmeFileName);
     String[] parts = readmeContents.split(DEMO_SETUP_TITLE);
@@ -85,14 +86,14 @@ public class ProductContentUtils {
       setup = parts[1];
     }
     locale = StringUtils.isEmpty(locale) ? Language.EN.getValue() : locale.toLowerCase();
-    addLocaleContent(moduleContents, DESCRIPTION, description.trim(), locale);
-    addLocaleContent(moduleContents, DEMO, demo.trim(), locale);
-    addLocaleContent(moduleContents, SETUP, setup.trim(), locale);
-  }
 
-  public static void addLocaleContent(Map<String, Map<String, String>> moduleContents, String type, String content,
-      String locale) {
-    moduleContents.computeIfAbsent(type, key -> new HashMap<>()).put(locale, content);
+
+    IntroductionDataModel introductionDataModel = new IntroductionDataModel();
+    introductionDataModel.setDescription(new HashMap<>(Map.of(locale, description.trim())));
+    introductionDataModel.setDemo(new HashMap<>(Map.of(locale, demo.trim())));
+    introductionDataModel.setSetup(new HashMap<>(Map.of(locale, setup.trim())));
+
+    return introductionDataModel;
   }
 
   public static boolean hasImageDirectives(String readmeContents) {
@@ -136,11 +137,9 @@ public class ProductContentUtils {
 
   public static void updateProductModuleTabContents(ProductModuleContent productModuleContent,
       Map<String, Map<String, String>> moduleContents) {
-    productModuleContent.setDescription(
-        replaceEmptyContentsWithEnContent(moduleContents.get(DESCRIPTION)));
+    productModuleContent.setDescription(replaceEmptyContentsWithEnContent(moduleContents.get(DESCRIPTION)));
     productModuleContent.setDemo(replaceEmptyContentsWithEnContent(moduleContents.get(DEMO)));
-    productModuleContent.setSetup(replaceEmptyContentsWithEnContent(moduleContents.get
-        (SETUP)));
+    productModuleContent.setSetup(replaceEmptyContentsWithEnContent(moduleContents.get(SETUP)));
   }
 
   public static String replaceImageDirWithImageCustomId(Map<String, String> imageUrls, String readmeContents) {
