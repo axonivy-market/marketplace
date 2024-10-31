@@ -31,7 +31,7 @@ public class ScheduledTasks {
     productService.syncLatestDataFromMarketRepo(false);
   }
 
-  @Scheduled(cron = SCHEDULING_TASK_MAVEN_VERSION_CRON)
+  @Deprecated(forRemoval = true , since = "1.5.0")
   public void syncDataForMavenMetadata() {
     log.warn("Started sync data for Maven metadata");
     metadataService.syncAllProductsMetadata();
