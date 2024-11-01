@@ -8,7 +8,7 @@ import java.util.List;
 
 @Repository
 public interface ImageRepository extends MongoRepository<Image, String> {
-  Image findByProductIdAndSha(String productId, String sha);
+  List<Image> findByProductIdAndSha(String productId, String sha);
 
   List<Image> findByImageUrlEndsWithIgnoreCase(String fileName);
 

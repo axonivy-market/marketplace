@@ -5,6 +5,8 @@ import { ProductDetail } from '../../../../shared/models/product-detail.model';
 import { LanguageService } from '../../../../core/services/language/language.service';
 import { ProductDetailService } from '../product-detail.service';
 import { VERSION } from '../../../../shared/constants/common.constant';
+import { LoadingService } from '../../../../core/services/loading/loading.service';
+import { ThemeService } from '../../../../core/services/theme/theme.service';
 
 const SELECTED_VERSION = 'selectedVersion';
 const PRODUCT_DETAIL = 'productDetail';
@@ -24,7 +26,9 @@ export class ProductDetailInformationTabComponent implements OnChanges {
   displayVersion = '';
   displayExternalDocName: string | null = '';
   languageService = inject(LanguageService);
+  themeService = inject(ThemeService);
   productDetailService = inject(ProductDetailService);
+  loadingService = inject(LoadingService);
 
   ngOnChanges(changes: SimpleChanges): void {
     let version = '';
@@ -44,14 +48,22 @@ export class ProductDetailInformationTabComponent implements OnChanges {
     }
 
     this.productDetailService.getExteralDocumentForProductByVersion(this.productDetail.id, this.extractVersionValue(version))
-      .subscribe(response => {
-        this.externalDocumentLink = response.relativeLink;
-        this.displayExternalDocName = response.artifactName;
-    });
+      .subscribe({
+        next: response => {
+          this.externalDocumentLink = response.relativeLink;
+          this.displayExternalDocName = response.artifactName;
+          this.loadingService.hide();
+        },
+        error: () => {
+          this.externalDocumentLink = '';
+          this.displayExternalDocName = '';
+          this.loadingService.hide();
+        }
+      });
     this.displayVersion = this.extractVersionValue(this.selectedVersion);
   }
 
   extractVersionValue(versionDisplayName: string) {
-    return versionDisplayName.replace(VERSION.displayPrefix, '').replace(VERSION.tagPrefix, '');
+    return versionDisplayName.replace(VERSION.displayPrefix, '');
   }
 }

@@ -29,7 +29,10 @@ export class ProductService {
         .set(RequestParam.LANGUAGE, `${criteria.language}`)
         .set(RequestParam.PAGE, `${criteria.pageable.page}`)
         .set(RequestParam.SIZE, `${criteria.pageable.size}`)
-        .set(RequestParam.IS_REST_CLIENT_EDITOR, `${criteria.isRESTClientEditor}`);
+        .set(
+          RequestParam.IS_REST_CLIENT_EDITOR,
+          `${criteria.isRESTClientEditor}`
+        );
     }
     return this.httpClient.get<ProductApiResponse>(requestURL, {
       params: requestParams
@@ -38,23 +41,26 @@ export class ProductService {
 
   getProductDetailsWithVersion(
     productId: string,
-    tag: string
+    version: string
   ): Observable<ProductDetail> {
     return this.httpClient.get<ProductDetail>(
-      `${API_URI.PRODUCT_DETAILS}/${productId}/${tag}`
+      `${API_URI.PRODUCT_DETAILS}/${productId}/${version}`
     );
   }
 
   getBestMatchProductDetailsWithVersion(
     productId: string,
-    tag: string
+    version: string
   ): Observable<ProductDetail> {
     return this.httpClient.get<ProductDetail>(
-      `${API_URI.PRODUCT_DETAILS}/${productId}/${tag}/bestmatch`
+      `${API_URI.PRODUCT_DETAILS}/${productId}/${version}/bestmatch`
     );
   }
 
-  getProductDetails(productId: string, isShowDevVersion: boolean): Observable<ProductDetail> {
+  getProductDetails(
+    productId: string,
+    isShowDevVersion: boolean
+  ): Observable<ProductDetail> {
     return this.httpClient.get<ProductDetail>(
       `${API_URI.PRODUCT_DETAILS}/${productId}?isShowDevVersion=${isShowDevVersion}`
     );
@@ -84,5 +90,16 @@ export class ProductService {
   sendRequestToGetProductVersionsForDesigner(productId: string) {
     const url = `${API_URI.PRODUCT_DETAILS}/${productId}/designerversions`;
     return this.httpClient.get<VersionAndUrl[]>(url);
+  }
+
+  getLatestArtifactDownloadUrl(id: string, version: string, artifact: string) {
+    const params = new HttpParams()
+      .append('version', version)
+      .append('artifact', artifact);
+    const url = `${API_URI.PRODUCT_DETAILS}/${id}/artifact`;
+    return this.httpClient.get<string>(url, {
+      params,
+      responseType: 'text' as 'json'
+    });
   }
 }

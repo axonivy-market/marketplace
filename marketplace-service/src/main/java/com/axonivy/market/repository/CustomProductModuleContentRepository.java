@@ -4,5 +4,5 @@ import java.util.List;
 
 public interface CustomProductModuleContentRepository {
 
-  List<String> findTagsByProductId(String id);
+  List<String> findVersionsByProductId(String id);
 }

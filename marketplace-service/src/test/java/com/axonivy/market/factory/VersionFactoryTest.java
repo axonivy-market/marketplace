@@ -1,5 +1,8 @@
 package com.axonivy.market.factory;
 
+import com.axonivy.market.BaseSetup;
+import com.axonivy.market.enums.DevelopmentVersion;
+import org.apache.commons.lang3.StringUtils;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -9,7 +12,7 @@ import java.util.List;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 @ExtendWith(MockitoExtension.class)
-class VersionFactoryTest {
+class VersionFactoryTest  extends BaseSetup {
 
   final List<String> mockVersions = List.of("10.0.0", "11.4.0-m1", "10.0.1-SNAPSHOT");
 
@@ -32,5 +35,21 @@ class VersionFactoryTest {
 
     resolvedVersion = VersionFactory.get(mockVersions, "dev");
     assertEquals("11.4.0-m1", resolvedVersion, "Should return highest dev release of that minor release");
+  }
+  @Test
+  void testGetFromMetadata() {
+    assertEquals(StringUtils.EMPTY, VersionFactory.getFromMetadata(List.of(), DevelopmentVersion.LATEST.getCode()));
+    assertEquals(StringUtils.EMPTY, VersionFactory.getFromMetadata(List.of(), DevelopmentVersion.DEV.getCode()));
+
+    assertEquals(MOCK_RELEASED_VERSION, VersionFactory.getFromMetadata(List.of(getMockMetadataWithVersions()),
+        DevelopmentVersion.LATEST.getCode()));
+    assertEquals(MOCK_SPRINT_RELEASED_VERSION, VersionFactory.getFromMetadata(List.of(getMockMetadataWithVersions()),
+        DevelopmentVersion.DEV.getCode()));
+    assertEquals(MOCK_RELEASED_VERSION, VersionFactory.getFromMetadata(List.of(getMockMetadataWithVersions()),
+        "10-dev"));
+    assertEquals(MOCK_RELEASED_VERSION, VersionFactory.getFromMetadata(List.of(getMockMetadataWithVersions()),
+        "10"));
+    assertEquals(MOCK_RELEASED_VERSION, VersionFactory.getFromMetadata(List.of(getMockMetadataWithVersions()),
+        "10.0"));
   }
 }

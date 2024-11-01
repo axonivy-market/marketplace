@@ -4,7 +4,6 @@ import com.axonivy.market.bo.Artifact;
 import com.axonivy.market.constants.CommonConstants;
 import com.axonivy.market.constants.GitHubConstants;
 import com.axonivy.market.constants.ReadmeConstants;
-import com.axonivy.market.entity.Product;
 import com.axonivy.market.entity.ProductModuleContent;
 import com.axonivy.market.enums.Language;
 import com.axonivy.market.factory.ProductFactory;
@@ -15,9 +14,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import static com.axonivy.market.constants.ProductJsonConstants.DEFAULT_PRODUCT_TYPE;
 
 public class ProductContentUtils {
   public static final String DEMO_SETUP_TITLE = "(?i)## Demo|## Setup";
@@ -115,11 +115,10 @@ public class ProductContentUtils {
     return result;
   }
 
-  public static ProductModuleContent initProductModuleContent(Product product, String tag, Set<String> mavenVersions) {
+  public static ProductModuleContent initProductModuleContent(String productId, String version) {
     ProductModuleContent productModuleContent = new ProductModuleContent();
-    productModuleContent.setProductId(product.getId());
-    productModuleContent.setTag(tag);
-    productModuleContent.setMavenVersions(mavenVersions);
+    productModuleContent.setProductId(productId);
+    productModuleContent.setVersion(version);
     ProductFactory.mappingIdForProductModuleContent(productModuleContent);
     return productModuleContent;
   }
@@ -130,7 +129,7 @@ public class ProductContentUtils {
       productModuleContent.setIsDependency(Boolean.TRUE);
       productModuleContent.setGroupId(artifact.getGroupId());
       productModuleContent.setArtifactId(artifact.getArtifactId());
-      productModuleContent.setType(artifact.getType());
+      productModuleContent.setType(StringUtils.defaultIfBlank(artifact.getType(), DEFAULT_PRODUCT_TYPE));
       productModuleContent.setName(artifact.getName());
     }
   }

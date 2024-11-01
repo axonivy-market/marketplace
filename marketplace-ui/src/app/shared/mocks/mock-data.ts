@@ -204,7 +204,7 @@ export const MOCK_PRODUCTS_NEXT_PAGE = {
 } as ProductApiResponse;
 
 export const MOCK_PRODUCT_MODULE_CONTENT: ProductModuleContent = {
-  tag: 'v10.0.10',
+  version: '10.0.10',
   description: null,
   demo: null,
   setup: null,
@@ -226,8 +226,7 @@ export const MOCK_PRODUCT_DETAIL_BY_VERSION: ProductDetail = {
     de: 'Das Cron-Job-Utility übernimmt die automatische Verwaltung deiner zeitgesteuerten Aufgaben.',
     en: 'Cron Job Utility handles your scheduled jobs autonomously.'
   },
-  logoUrl:
-    'https://raw.githubusercontent.com/axonivy-market/market/feature/MARP-463-Multilingualism-for-Website/market/utils/cronjob/logo.png',
+  logoUrl: 'https://raw.githubusercontent.com/axonivy-market/market/feature/MARP-463-Multilingualism-for-Website/market/utils/cronjob/logo.png',
   type: 'util',
   tags: ['utils'],
   vendor: 'Axon Ivy AG',
@@ -235,15 +234,14 @@ export const MOCK_PRODUCT_DETAIL_BY_VERSION: ProductDetail = {
   newestReleaseVersion: 'v10.0.4',
   cost: 'Free',
   sourceUrl: 'https://github.com/axonivy-market/cronjob',
-  statusBadgeUrl:
-    'https://github.com/axonivy-market/cronjob/actions/workflows/ci.yml/badge.svg',
+  statusBadgeUrl: 'https://github.com/axonivy-market/cronjob/actions/workflows/ci.yml/badge.svg',
   language: 'English',
   industry: 'Cross-Industry',
   compatibility: '10.0+',
   contactUs: false,
   vendorUrl: '',
   productModuleContent: {
-    tag: 'v10.0.4',
+    version: '10.0.4',
     description: {
       en: '**Cron Job** is a job-firing schedule that recurs based on calendar-like notions.\n\nThe [Quartz framework](http://www.quartz-scheduler.org/) is used as underlying scheduler framework.\n\nWith Cron Job, you can specify firing-schedules such as “every Friday at noon”, or “every weekday and 9:30 am”, or even “every 5 minutes between 9:00 am and 10:00 am on every Monday, Wednesday and Friday during January”.\n\nFor more details about Cron Expressions please refer to [Lesson 6: CronTrigger](http://www.quartz-scheduler.org/documentation/quartz-2.3.0/tutorials/tutorial-lesson-06.html)'
     },
@@ -261,11 +259,14 @@ export const MOCK_PRODUCT_DETAIL_BY_VERSION: ProductDetail = {
     productId: 'cronjob'
   },
   installationCount: 0,
+  mavenDropins: false,
   _links: {
     self: {
       href: 'http://localhost:8080/api/product-details/cronjob'
     }
-  }
+  },
+  vendorImage: '/assets/images/misc/axonivy-logo-black.svg',
+  vendorImageDarkMode: '/assets/images/misc/axonivy-logo.svg'
 };
 
 export const MOCK_PRODUCT_DETAIL: ProductDetail = {
@@ -279,8 +280,7 @@ export const MOCK_PRODUCT_DETAIL: ProductDetail = {
     de: "TODO Atlassian's Jira connector lets you track issues directly from the Axon Ivy platform."
   },
   installationCount: 1,
-  logoUrl:
-    'https://raw.githubusercontent.com/axonivy-market/market/master/market/connector/jira/logo.png',
+  logoUrl: 'https://raw.githubusercontent.com/axonivy-market/market/master/market/connector/jira/logo.png',
   type: 'connector',
   tags: ['helper'],
   vendor: 'FROX AG',
@@ -289,14 +289,13 @@ export const MOCK_PRODUCT_DETAIL: ProductDetail = {
   newestReleaseVersion: 'v10.0.0',
   cost: 'Free',
   sourceUrl: 'https://github.com/axonivy-market/jira-connector',
-  statusBadgeUrl:
-    'https://github.com/axonivy-market/jira-connector/actions/workflows/ci.yml/badge.svg',
+  statusBadgeUrl: 'https://github.com/axonivy-market/jira-connector/actions/workflows/ci.yml/badge.svg',
   language: 'English',
   industry: 'Cross-Industry',
   compatibility: '9.2+',
   contactUs: false,
   productModuleContent: {
-    tag: 'v10.0.0',
+    version: '10.0.0',
     description: {
       en: "Axon Ivy's [Atlassian Jira Connector ](https://www.atlassian.com/software/jira) gives you full power to track issues within your process work. The connector:\n\n- Features three main functionalities (create comment, create issue, and get issue).\n- Provides access to the core API of Atlassian Jira.\n- Supports you with an easy-to-copy demo implementation to reduce your integration effort.\n- Enables low code citizen developers to integrate issue tracking tools without writing a single line of code."
     },
@@ -313,11 +312,14 @@ export const MOCK_PRODUCT_DETAIL: ProductDetail = {
     type: 'iar',
     productId: 'jira-connector',
   },
+  mavenDropins: false,
   _links: {
     self: {
       href: 'http://localhost:8082/api/product-details/jira-connector?type=connector'
     }
-  }
+  },
+  vendorImage: '/assets/images/misc/axonivy-logo-black.svg',
+  vendorImageDarkMode: '/assets/images/misc/axonivy-logo.svg'
 };
 
 export const MOCK_EXTERNAL_DOCUMENT: ExternalDocument = {

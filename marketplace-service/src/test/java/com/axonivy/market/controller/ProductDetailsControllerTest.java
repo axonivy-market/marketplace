@@ -1,5 +1,6 @@
 package com.axonivy.market.controller;
 
+import com.axonivy.market.BaseSetup;
 import com.axonivy.market.assembler.ProductDetailModelAssembler;
 import com.axonivy.market.constants.RequestMappingConstants;
 import com.axonivy.market.entity.Product;
@@ -8,11 +9,10 @@ import com.axonivy.market.enums.Language;
 import com.axonivy.market.model.MavenArtifactVersionModel;
 import com.axonivy.market.model.ProductDetailModel;
 import com.axonivy.market.model.VersionAndUrlModel;
-import com.axonivy.market.service.ImageService;
-import com.axonivy.market.service.ProductDesignerInstallationService;
 import com.axonivy.market.service.ProductService;
 import com.axonivy.market.service.VersionService;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.apache.commons.lang3.StringUtils;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -34,20 +34,11 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
-class ProductDetailsControllerTest {
-  public static final String TAG = "v10.0.6";
+class ProductDetailsControllerTest extends BaseSetup {
   @Mock
   private ProductService productService;
-
-  @Mock
-  private ImageService imageService;
-
   @Mock
   VersionService versionService;
-
-  @Mock
-  ProductDesignerInstallationService productDesignerInstallationService;
-
   @Mock
   private ProductDetailModelAssembler detailModelAssembler;
 
@@ -82,19 +73,19 @@ class ProductDetailsControllerTest {
   void testFindBestMatchProductDetailsByVersion() {
     Mockito.when(productService.fetchBestMatchProductDetail(Mockito.anyString(), Mockito.anyString())).thenReturn(
         mockProduct());
-    Mockito.when(detailModelAssembler.toModel(mockProduct(), TAG,
+    Mockito.when(detailModelAssembler.toModel(mockProduct(), MOCK_RELEASED_VERSION,
         RequestMappingConstants.BEST_MATCH_BY_ID_AND_VERSION)).thenReturn(createProductMockWithDetails());
     ResponseEntity<ProductDetailModel> mockExpectedResult = new ResponseEntity<>(createProductMockWithDetails(),
         HttpStatus.OK);
 
     ResponseEntity<ProductDetailModel> result = productDetailsController.findBestMatchProductDetailsByVersion(
-        DOCKER_CONNECTOR_ID, TAG);
+        DOCKER_CONNECTOR_ID, MOCK_RELEASED_VERSION);
 
     assertEquals(HttpStatus.OK, result.getStatusCode());
     assertEquals(result, mockExpectedResult);
 
-    verify(productService, times(1)).fetchBestMatchProductDetail(DOCKER_CONNECTOR_ID, TAG);
-    verify(detailModelAssembler, times(1)).toModel(mockProduct(), TAG,
+    verify(productService, times(1)).fetchBestMatchProductDetail(DOCKER_CONNECTOR_ID, MOCK_RELEASED_VERSION);
+    verify(detailModelAssembler, times(1)).toModel(mockProduct(), MOCK_RELEASED_VERSION,
         RequestMappingConstants.BEST_MATCH_BY_ID_AND_VERSION);
   }
 
@@ -103,18 +94,19 @@ class ProductDetailsControllerTest {
     Mockito.when(productService.fetchProductDetailByIdAndVersion(Mockito.anyString(), Mockito.anyString())).thenReturn(
         mockProduct());
     Mockito.when(
-        detailModelAssembler.toModel(mockProduct(), TAG, RequestMappingConstants.BY_ID_AND_VERSION)).thenReturn(
+        detailModelAssembler.toModel(mockProduct(), MOCK_RELEASED_VERSION,
+            RequestMappingConstants.BY_ID_AND_VERSION)).thenReturn(
         createProductMockWithDetails());
     ResponseEntity<ProductDetailModel> mockExpectedResult = new ResponseEntity<>(createProductMockWithDetails(),
         HttpStatus.OK);
 
     ResponseEntity<ProductDetailModel> result = productDetailsController.findProductDetailsByVersion(
-        DOCKER_CONNECTOR_ID, TAG);
+        DOCKER_CONNECTOR_ID, MOCK_RELEASED_VERSION);
 
     assertEquals(HttpStatus.OK, result.getStatusCode());
     assertEquals(result, mockExpectedResult);
 
-    verify(productService, times(1)).fetchProductDetailByIdAndVersion(DOCKER_CONNECTOR_ID, TAG);
+    verify(productService, times(1)).fetchProductDetailByIdAndVersion(DOCKER_CONNECTOR_ID, MOCK_RELEASED_VERSION);
   }
 
   @Test
@@ -123,11 +115,11 @@ class ProductDetailsControllerTest {
         null);
 
     ResponseEntity<ProductDetailModel> result = productDetailsController.findProductDetailsByVersion(
-        WRONG_PRODUCT_ID, TAG);
+        WRONG_PRODUCT_ID, MOCK_RELEASED_VERSION);
 
     assertEquals(HttpStatus.NOT_FOUND, result.getStatusCode());
 
-    verify(productService, times(1)).fetchProductDetailByIdAndVersion(WRONG_PRODUCT_ID, TAG);
+    verify(productService, times(1)).fetchProductDetailByIdAndVersion(WRONG_PRODUCT_ID, MOCK_RELEASED_VERSION);
   }
 
   @Test
@@ -136,11 +128,11 @@ class ProductDetailsControllerTest {
         null);
 
     ResponseEntity<ProductDetailModel> result = productDetailsController.findBestMatchProductDetailsByVersion(
-        WRONG_PRODUCT_ID, TAG);
+        WRONG_PRODUCT_ID, MOCK_RELEASED_VERSION);
 
     assertEquals(HttpStatus.NOT_FOUND, result.getStatusCode());
 
-    verify(productService, times(1)).fetchBestMatchProductDetail(WRONG_PRODUCT_ID, TAG);
+    verify(productService, times(1)).fetchBestMatchProductDetail(WRONG_PRODUCT_ID, MOCK_RELEASED_VERSION);
   }
 
   @Test
@@ -209,13 +201,13 @@ class ProductDetailsControllerTest {
   }
 
   @Test
-  void findProductJsonContentByIdAndTag() throws IOException {
+  void findProductJsonContentByIdAndVersion() throws IOException {
     ProductJsonContent productJsonContent = mockProductJsonContent();
     Map<String, Object> map = new ObjectMapper().readValue(productJsonContent.getContent(), Map.class);
-    when(versionService.getProductJsonContentByIdAndTag("bpmnstatistic", "10.0.21")).thenReturn(
+    when(versionService.getProductJsonContentByIdAndVersion(MOCK_PRODUCT_ID, MOCK_RELEASED_VERSION)).thenReturn(
         map);
 
-    var result = productDetailsController.findProductJsonContent("bpmnstatistic", "10.0.21");
+    var result = productDetailsController.findProductJsonContent(MOCK_PRODUCT_ID, MOCK_RELEASED_VERSION);
 
     assertEquals(new ResponseEntity<>(map, HttpStatus.OK), result);
   }
@@ -282,5 +274,18 @@ class ProductDetailsControllerTest {
     jsonContent.setName("aspose-barcode");
 
     return jsonContent;
+  }
+
+  @Test
+  void testGetLatestArtifactDownloadUrl() {
+    String mockDownloadUrl = "https://market.axonivy.com";
+    when(versionService.getLatestVersionArtifactDownloadUrl(Mockito.anyString(),Mockito.anyString(),
+        Mockito.anyString())).thenReturn(StringUtils.EMPTY);
+    var response = productDetailsController.getLatestArtifactDownloadUrl("portal", "1.0.0", "portal-app.zip");
+    assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode());
+    when(versionService.getLatestVersionArtifactDownloadUrl(Mockito.anyString(),Mockito.anyString(),
+        Mockito.anyString())).thenReturn(mockDownloadUrl);
+    response = productDetailsController.getLatestArtifactDownloadUrl("portal", "1.0.0", "portal-app.zip");
+    assertEquals(HttpStatus.OK, response.getStatusCode());
   }
 }

@@ -186,10 +186,10 @@ export const DEFAULT_PAGEABLE_IN_REST_CLIENT: Pageable = {
 };
 
 export const VERSION = {
-  tagPrefix: 'v',
   displayPrefix: 'Version '
 };
 
+export const ERROR_PAGE = 'Error Page';
 export const ERROR_PAGE_PATH = 'error-page';
 export const NOT_FOUND_ERROR_CODE = 404;
 export const INTERNAL_SERVER_ERROR_CODE = 500;
@@ -204,3 +204,13 @@ export const DEFAULT_IMAGE_URL = '/assets/images/misc/axonivy-logo-round.png';
 export const DOWNLOAD_URL = 'https://developer.axonivy.com/download';
 export const SEARCH_URL = 'https://developer.axonivy.com/search';
 export const SHOW_DEV_VERSION = "showDevVersions";
+export const DEFAULT_VENDOR_IMAGE = '/assets/images/misc/axonivy-logo.svg';
+export const DEFAULT_VENDOR_IMAGE_BLACK = '/assets/images/misc/axonivy-logo-black.svg';
+
+export const SECONDS_IN_A_MINUTE = 60;
+export const MINUTES_IN_A_HOUR = 60;
+export const HOURS_IN_A_DAY = 24;
+export const DAYS_IN_A_WEEK = 7;
+export const DAYS_IN_A_MONTH = 30;
+export const DAYS_IN_A_YEAR = 365;
+

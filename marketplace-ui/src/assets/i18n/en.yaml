@@ -59,7 +59,6 @@ common:
       backToMainPage: Back to overview
       review: Review
       installation: Downloads
-      times: Times
       type: Type
       description: Description
       installationGuide: Installation Guide
@@ -70,7 +69,7 @@ common:
       information:
         label: Information
         value:
-          author: Author/Support
+          implementedBy: Implemented by
           version: Version
           compatibility: Compatibility
           cost: Cost
@@ -116,3 +115,18 @@ common:
     reviewLabelNoYet: No reviews yet
   labels:
     redirecting: Redirecting ...!
+  timeAgo:
+    yearAgo: 1 year ago
+    yearsAgo: '{{ number }} years ago'
+    monthAgo: 1 month ago
+    monthsAgo: '{{ number }} months ago'
+    weekAgo: 1 week ago
+    weeksAgo: '{{ number }} weeks ago'
+    dayAgo: 1 day ago
+    daysAgo: '{{ number }} days ago'
+    hourAgo: 1 hour ago
+    hoursAgo: '{{ number }} hours ago'
+    minuteAgo: 1 minute ago
+    minutesAgo: '{{ number }} minutes ago'
+    secondAgo: 1 second ago
+    secondsAgo: '{{ number }} seconds ago'

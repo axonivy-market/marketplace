@@ -1,6 +1,7 @@
 package com.axonivy.market.assembler;
 
 import com.axonivy.market.constants.RequestMappingConstants;
+import com.axonivy.market.controller.ImageController;
 import com.axonivy.market.controller.ProductDetailsController;
 import com.axonivy.market.entity.Product;
 import com.axonivy.market.model.ProductDetailModel;
@@ -40,7 +41,7 @@ public class ProductDetailModelAssembler extends RepresentationModelAssemblerSup
   }
 
   private ProductDetailModel createModel(Product product, String version, String requestPath) {
-    ResponseEntity<ProductDetailModel> selfLinkWithTag;
+    ResponseEntity<ProductDetailModel> selfLinkWithVersion;
     ProductDetailModel model = instantiateModel(product);
     productModelAssembler.createResource(model, product);
     String productId = Optional.of(product).map(Product::getId).orElse(StringUtils.EMPTY);
@@ -52,7 +53,7 @@ public class ProductDetailModelAssembler extends RepresentationModelAssemblerSup
       model.setMetaProductJsonUrl(link.getHref());
     }
 
-    selfLinkWithTag = switch (requestPath) {
+    selfLinkWithVersion = switch (requestPath) {
       case RequestMappingConstants.BEST_MATCH_BY_ID_AND_VERSION ->
           methodOn(ProductDetailsController.class).findBestMatchProductDetailsByVersion(productId, version);
       case RequestMappingConstants.BY_ID_AND_VERSION ->
@@ -60,13 +61,14 @@ public class ProductDetailModelAssembler extends RepresentationModelAssemblerSup
       default -> methodOn(ProductDetailsController.class).findProductDetails(productId, false);
     };
 
-    model.add(linkTo(selfLinkWithTag).withSelfRel());
+    model.add(linkTo(selfLinkWithVersion).withSelfRel());
     createDetailResource(model, product);
     return model;
   }
 
   private void createDetailResource(ProductDetailModel model, Product product) {
     model.setVendor(product.getVendor());
+    model.setVendorUrl(product.getVendorUrl());
     model.setNewestReleaseVersion(product.getNewestReleaseVersion());
     model.setPlatformReview(product.getPlatformReview());
     model.setSourceUrl(product.getSourceUrl());
@@ -78,6 +80,15 @@ public class ProductDetailModelAssembler extends RepresentationModelAssemblerSup
     model.setCost(product.getCost());
     model.setInstallationCount(product.getInstallationCount());
     model.setProductModuleContent(ImageUtils.mappingImageForProductModuleContent(product.getProductModuleContent()));
+    if (StringUtils.isNotBlank(product.getVendorImage())) {
+      Link vendorLink = linkTo(methodOn(ImageController.class).findImageById(product.getVendorImage())).withSelfRel();
+      model.setVendorImage(vendorLink.getHref());
+    }
+    if (StringUtils.isNotBlank(product.getVendorImageDarkMode())) {
+      Link vendorDarkModeLink =
+          linkTo(methodOn(ImageController.class).findImageById(product.getVendorImageDarkMode())).withSelfRel();
+      model.setVendorImageDarkMode(vendorDarkModeLink.getHref());
+    }
+    model.setMavenDropins(product.isMavenDropins());
   }
-
 }

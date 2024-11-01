@@ -1,21 +1,9 @@
-name: marketplace-release_${RELEASE_VERSION}
+# Use for the release build instance (PREVIEW and PROD)
+# The prefix 'preview_' used to detach dev and preview version on 1 docker system
+name: marketplace-preview_${RELEASE_VERSION}
 
 services:
-  mongodb:
-    build:
-      context: ../config/mongodb
-      dockerfile: Dockerfile
-    restart: always
-    expose:
-      - 27017
-    environment:
-      MONGODB_INITDB_ROOT_USERNAME: ${MONGODB_INITDB_ROOT_USERNAME}
-      MONGODB_INITDB_ROOT_PASSWORD: ${MONGODB_INITDB_ROOT_PASSWORD}
-    volumes:
-      - mongodata:/data/db
-      - ../config/mongodb/mongod.conf:/etc/mongod.conf
-
-  ui:
+  preview_ui:
     image: ghcr.io/axonivy-market/marketplace-ui:${RELEASE_VERSION}
     volumes:
       - ../config/nginx/nginx.conf:/etc/nginx/nginx.conf
@@ -23,8 +11,10 @@ services:
     restart: always
     ports:
       - "80:80"
+    networks:
+      - marketplace-network
 
-  service:
+  preview_service:
     image: ghcr.io/axonivy-market/marketplace-service:${RELEASE_VERSION}
     restart: always
     expose:
@@ -44,6 +34,12 @@ services:
       - MARKET_JWT_SECRET_KEY=${MARKET_JWT_SECRET_KEY}
       - MARKET_CORS_ALLOWED_ORIGIN=${MARKET_CORS_ALLOWED_ORIGIN}
       - MARKET_MONGO_LOG_LEVEL=${MARKET_MONGO_LOG_LEVEL}
+    networks:
+      - marketplace-network
+
 volumes:
-  mongodata:
   marketcache:
+
+networks:
+  marketplace-network:
+    external: true
