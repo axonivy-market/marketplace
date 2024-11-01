@@ -56,7 +56,7 @@ jobs:
         with:
           ref: ${{ inputs.release_version || github.ref }}
 
-      - name: Copy resouces to working directory
+      - name: Copy resources to working directory
         run : |
           echo "Copy marketplace-ui to ${{ env.BASE_WORKING_DIR }} directory"
           cp -r marketplace-ui ${{ env.BASE_WORKING_DIR }}/marketplace-ui
