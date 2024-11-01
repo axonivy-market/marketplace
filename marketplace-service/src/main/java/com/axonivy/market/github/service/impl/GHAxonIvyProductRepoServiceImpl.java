@@ -7,7 +7,7 @@ import com.axonivy.market.entity.ProductModuleContent;
 import com.axonivy.market.github.service.GHAxonIvyProductRepoService;
 import com.axonivy.market.github.service.GitHubService;
 import com.axonivy.market.github.util.GitHubUtils;
-import com.axonivy.market.model.IntroductionDataModel;
+import com.axonivy.market.model.ReadmeContentsModel;
 import com.axonivy.market.service.ImageService;
 import com.axonivy.market.util.ProductContentUtils;
 import lombok.extern.log4j.Log4j2;
@@ -68,11 +68,11 @@ public class GHAxonIvyProductRepoServiceImpl implements GHAxonIvyProductRepoServ
           if (ProductContentUtils.hasImageDirectives(readmeContents)) {
             readmeContents = updateImagesWithDownloadUrl(product.getId(), contents, readmeContents);
           }
-          IntroductionDataModel descriptionSetupAndDemo = ProductContentUtils.getExtractedPartsOfReadme(readmeContents,
+          ReadmeContentsModel readmeContentsModel = ProductContentUtils.getExtractedPartsOfReadme(readmeContents,
               readmeFile.getName());
-          moduleContents.put(DESCRIPTION, descriptionSetupAndDemo.getDescription());
-          moduleContents.put(SETUP, descriptionSetupAndDemo.getSetup());
-          moduleContents.put(DEMO, descriptionSetupAndDemo.getDemo());
+          moduleContents.put(DESCRIPTION, readmeContentsModel.getDescription());
+          moduleContents.put(SETUP, readmeContentsModel.getSetup());
+          moduleContents.put(DEMO, readmeContentsModel.getDemo());
         }
         ProductContentUtils.updateProductModuleTabContents(productModuleContent, moduleContents);
       }

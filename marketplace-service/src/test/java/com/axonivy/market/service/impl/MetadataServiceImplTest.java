@@ -57,14 +57,7 @@ class MetadataServiceImplTest extends BaseSetup {
     mockProductJsonContent.setId("amazon-comprehend-9.2.0");
     mockProductJsonContent.setProductId("amazon-comprehend");
 
-    Artifact mockArtifact = Artifact.builder()
-        .repoUrl("https://maven.com")
-        .name("Amazon Comprehend Product")
-        .groupId("com.axonivy.connector.amazon.comprehend")
-        .artifactId("amazon-comprehend-connector-product")
-        .type("zip").
-        isInvalidArtifact(true)
-        .build();
+    Artifact mockArtifact = getMockArtifact();
     Metadata mockMetadata = buildMocKMetadata();
     try (MockedStatic<MavenUtils> mockUtils = Mockito.mockStatic(MavenUtils.class)) {
       mockUtils.when(() -> MavenUtils.getMetadataContentFromUrl(ArgumentMatchers.anyString())).thenReturn(null);

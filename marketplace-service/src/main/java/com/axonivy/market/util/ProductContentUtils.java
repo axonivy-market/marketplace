@@ -7,7 +7,7 @@ import com.axonivy.market.constants.ReadmeConstants;
 import com.axonivy.market.entity.ProductModuleContent;
 import com.axonivy.market.enums.Language;
 import com.axonivy.market.factory.ProductFactory;
-import com.axonivy.market.model.IntroductionDataModel;
+import com.axonivy.market.model.ReadmeContentsModel;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.util.Strings;
 
@@ -58,7 +58,7 @@ public class ProductContentUtils {
 
   // Cover some cases including when demo and setup parts switch positions or
   // missing one of them
-  public static IntroductionDataModel getExtractedPartsOfReadme( String readmeContents,
+  public static ReadmeContentsModel getExtractedPartsOfReadme( String readmeContents,
       String readmeFileName) {
     String locale = getReadmeFileLocale(readmeFileName);
     String[] parts = readmeContents.split(DEMO_SETUP_TITLE);
@@ -87,13 +87,12 @@ public class ProductContentUtils {
     }
     locale = StringUtils.isEmpty(locale) ? Language.EN.getValue() : locale.toLowerCase();
 
+    ReadmeContentsModel readmeContentsModel = new ReadmeContentsModel();
+    readmeContentsModel.setDescription(new HashMap<>(Map.of(locale, description.trim())));
+    readmeContentsModel.setDemo(new HashMap<>(Map.of(locale, demo.trim())));
+    readmeContentsModel.setSetup(new HashMap<>(Map.of(locale, setup.trim())));
 
-    IntroductionDataModel introductionDataModel = new IntroductionDataModel();
-    introductionDataModel.setDescription(new HashMap<>(Map.of(locale, description.trim())));
-    introductionDataModel.setDemo(new HashMap<>(Map.of(locale, demo.trim())));
-    introductionDataModel.setSetup(new HashMap<>(Map.of(locale, setup.trim())));
-
-    return introductionDataModel;
+    return readmeContentsModel;
   }
 
   public static boolean hasImageDirectives(String readmeContents) {

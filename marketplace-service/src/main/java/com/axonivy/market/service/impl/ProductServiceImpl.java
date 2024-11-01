@@ -75,15 +75,7 @@ import java.security.SecureRandom;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 import java.util.function.Predicate;
 
 import static com.axonivy.market.constants.CommonConstants.SLASH;
@@ -407,9 +399,6 @@ public class ProductServiceImpl implements ProductService {
     List<String> syncedProductIds = new ArrayList<>();
     var gitHubContentMap = axonIvyMarketRepoService.fetchAllMarketItems();
     for (Map.Entry<String, List<GHContent>> ghContentEntity : gitHubContentMap.entrySet()) {
-//      if (!ghContentEntity.getKey().equals("market/doc-factory")) {
-//        continue;
-//      }
       var product = new Product();
       //update the meta.json first
       ghContentEntity.getValue().sort((f1, f2) -> GitHubUtils.sortMetaJsonFirst(f1.getName(), f2.getName()));
@@ -530,12 +519,12 @@ public class ProductServiceImpl implements ProductService {
 
     mavenVersions = mavenVersions.stream().filter(version -> !currentVersions.contains(version)).toList();
 
+    Optional.ofNullable(product.getReleasedVersions()).ifPresentOrElse(releasedVersion -> {},
+        () -> product.setReleasedVersions(new ArrayList<>()));
+
     List<ProductModuleContent> productModuleContents = new ArrayList<>();
     for (String version : mavenVersions) {
-      Optional.ofNullable(product.getReleasedVersions()).orElseGet(() -> {
-            product.setReleasedVersions(new ArrayList<>());
-            return product.getReleasedVersions();
-          }).add(version);
+      product.getReleasedVersions().add(version);
       ProductModuleContent productModuleContent = handleProductArtifact(version, product.getId(), mavenArtifact,
           product.getNames().get(EN_LANGUAGE));
       Optional.ofNullable(productModuleContent).ifPresent(productModuleContents::add);
@@ -576,10 +565,6 @@ public class ProductServiceImpl implements ProductService {
     String type = StringUtils.defaultIfBlank(mavenArtifact.getType(), DEFAULT_PRODUCT_FOLDER_TYPE);
     String url = MavenUtils.buildDownloadUrl(artifactId, version, type,
         repoUrl, mavenArtifact.getGroupId(), StringUtils.defaultIfBlank(snapshotVersionValue, version));
-
-    if (StringUtils.isBlank(url)) {
-      return null;
-    }
 
     return productContentService.getReadmeAndProductContentsFromVersion(productId,
         version, url, mavenArtifact, productName);

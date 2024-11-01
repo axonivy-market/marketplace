@@ -117,7 +117,7 @@ public class ProductController {
   }
 
   /**
-   * @deprecated since 1.6.0, for removal in future versions.
+   * @deprecated
    */
   @Deprecated(forRemoval = true , since = "1.6.0")
   @PutMapping(SYNC_PRODUCT_VERSION)

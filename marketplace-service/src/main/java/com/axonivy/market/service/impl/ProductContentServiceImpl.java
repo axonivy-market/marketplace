@@ -7,7 +7,7 @@ import com.axonivy.market.constants.ReadmeConstants;
 import com.axonivy.market.entity.Image;
 import com.axonivy.market.entity.ProductJsonContent;
 import com.axonivy.market.entity.ProductModuleContent;
-import com.axonivy.market.model.IntroductionDataModel;
+import com.axonivy.market.model.ReadmeContentsModel;
 import com.axonivy.market.service.FileDownloadService;
 import com.axonivy.market.service.ImageService;
 import com.axonivy.market.service.MetadataService;
@@ -17,7 +17,6 @@ import com.axonivy.market.util.MavenUtils;
 import com.axonivy.market.util.ProductContentUtils;
 import lombok.AllArgsConstructor;
 import lombok.extern.log4j.Log4j2;
-import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.util.Strings;
 import org.springframework.stereotype.Service;
@@ -26,7 +25,6 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -91,7 +89,7 @@ public class ProductContentServiceImpl implements ProductContentService {
           readmeContents = updateImagesWithDownloadUrl(productId, unzippedFolderPath, readmeContents);
         }
 
-        IntroductionDataModel descriptionSetupAndDemo = ProductContentUtils.getExtractedPartsOfReadme( readmeContents,
+        ReadmeContentsModel descriptionSetupAndDemo = ProductContentUtils.getExtractedPartsOfReadme( readmeContents,
             readmeFile.getFileName().toString());
         moduleContents.put(DESCRIPTION, descriptionSetupAndDemo.getDescription());
         moduleContents.put(SETUP, descriptionSetupAndDemo.getSetup());

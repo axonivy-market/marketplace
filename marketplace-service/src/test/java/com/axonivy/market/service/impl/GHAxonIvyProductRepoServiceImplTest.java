@@ -5,10 +5,11 @@ import com.axonivy.market.bo.Artifact;
 import com.axonivy.market.constants.MavenConstants;
 import com.axonivy.market.constants.ProductJsonConstants;
 import com.axonivy.market.entity.ProductModuleContent;
+import com.axonivy.market.enums.Language;
 import com.axonivy.market.github.service.GitHubService;
 import com.axonivy.market.github.service.impl.GHAxonIvyProductRepoServiceImpl;
 import com.axonivy.market.github.util.GitHubUtils;
-import com.axonivy.market.model.IntroductionDataModel;
+import com.axonivy.market.model.ReadmeContentsModel;
 import com.axonivy.market.service.ImageService;
 import com.axonivy.market.util.MavenUtils;
 import com.axonivy.market.util.ProductContentUtils;
@@ -221,10 +222,11 @@ class GHAxonIvyProductRepoServiceImplTest extends BaseSetup {
   @Test
   void testExtractReadMeFileFromContents() throws IOException {
     try (MockedStatic<ProductContentUtils> mockedProductContentUtils = Mockito.mockStatic(ProductContentUtils.class)) {
+      String mockReadmeContent = "Test README content";
       GHContent mockReadmeFile = mock(GHContent.class);
       when(mockReadmeFile.isFile()).thenReturn(true);
       when(mockReadmeFile.getName()).thenReturn("README.md");
-      when(mockReadmeFile.read()).thenReturn(new ByteArrayInputStream("Test README content".getBytes()));
+      when(mockReadmeFile.read()).thenReturn(new ByteArrayInputStream(mockReadmeContent.getBytes()));
 
       GHContent mockImageFile = mock(GHContent.class);
       when(mockImageFile.isFile()).thenReturn(true);
@@ -232,13 +234,11 @@ class GHAxonIvyProductRepoServiceImplTest extends BaseSetup {
 
       List<GHContent> contents = List.of(mockReadmeFile, mockImageFile);
 
-
-
-      IntroductionDataModel introductionDataModel = new IntroductionDataModel();
-      introductionDataModel.setDescription(new HashMap<>(Map.of("en","Test README content")));
+      ReadmeContentsModel readmeContentsModel = new ReadmeContentsModel();
+      readmeContentsModel.setDescription(new HashMap<>(Map.of(Language.EN.getValue(),mockReadmeContent)));
 
       when(ProductContentUtils.hasImageDirectives(anyString())).thenReturn(true);
-      when(ProductContentUtils.getExtractedPartsOfReadme(nullable(String.class),anyString())).thenReturn(introductionDataModel);
+      when(ProductContentUtils.getExtractedPartsOfReadme(nullable(String.class),anyString())).thenReturn(readmeContentsModel);
 
       when(imageService.mappingImageFromGHContent(anyString(), any())).thenReturn(getMockImage());
       ProductModuleContent productModuleContent = new ProductModuleContent();

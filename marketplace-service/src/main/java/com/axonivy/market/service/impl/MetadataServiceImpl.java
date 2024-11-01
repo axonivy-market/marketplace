@@ -59,8 +59,7 @@ public class MetadataServiceImpl implements MetadataService {
     }
   }
 
-  public void updateMavenArtifactVersionData(Set<Metadata> metadataSet,
-      MavenArtifactVersion artifactVersionCache) {
+  public void updateMavenArtifactVersionData(Set<Metadata> metadataSet, MavenArtifactVersion artifactVersionCache) {
     for (Metadata metadata : metadataSet) {
       String metadataContent = MavenUtils.getMetadataContentFromUrl(metadata.getUrl());
       if (StringUtils.isBlank(metadataContent)) {
@@ -137,8 +136,6 @@ public class MetadataServiceImpl implements MetadataService {
 
     List<Artifact> artifactsInVersion = MavenUtils.getMavenArtifactsFromProductJson(productJsonContent);
     Optional.ofNullable(productArtifact).ifPresent(artifactsInVersion::add);
-    log.info("**MetadataService: There are {} artifact(s) found in product {}",
-        artifactsInVersion.size(), productJsonContent.getProductId());
     updateArtifactAndMetadata(productJsonContent.getProductId(), artifactsInVersion);
   }
 
@@ -149,21 +146,19 @@ public class MetadataServiceImpl implements MetadataService {
       String metadataUrl = MavenUtils.buildMetadataUrlFromArtifactInfo(artifact.getRepoUrl(), artifact.getGroupId(),
           artifact.getArtifactId());
       metadataSet.add(MavenUtils.convertArtifactToMetadata(productId, artifact, metadataUrl));
-      metadataSet.addAll(MavenUtils.extractMetaDataFromArchivedArtifacts(productId, artifact));
     }
 
     if (CollectionUtils.isEmpty(metadataSet)) {
-      log.info("**MetadataService: No artifact found in product {}", productId);
       return;
     }
 
-    MavenArtifactVersion artifactVersionVersion = mavenArtifactVersionRepo.findById(productId)
+    MavenArtifactVersion artifactVersion = mavenArtifactVersionRepo.findById(productId)
         .orElse(MavenArtifactVersion.builder().productId(productId).build());
 
-    artifactVersionVersion.setAdditionalArtifactsByVersion(new HashMap<>());
-    updateMavenArtifactVersionData(metadataSet, artifactVersionVersion);
+    artifactVersion.setAdditionalArtifactsByVersion(new HashMap<>());
+    updateMavenArtifactVersionData(metadataSet, artifactVersion);
 
-    mavenArtifactVersionRepo.save(artifactVersionVersion);
+    mavenArtifactVersionRepo.save(artifactVersion);
     metadataRepo.saveAll(metadataSet);
   }
 

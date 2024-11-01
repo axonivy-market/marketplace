@@ -11,7 +11,7 @@ import java.util.Map;
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
-public class IntroductionDataModel {
+public class ReadmeContentsModel {
   Map<String, String> description;
   Map<String, String> demo;
   Map<String, String> setup;
