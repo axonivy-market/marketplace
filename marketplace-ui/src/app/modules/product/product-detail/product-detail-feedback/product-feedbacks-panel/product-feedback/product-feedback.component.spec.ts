@@ -4,6 +4,8 @@ import { CommonModule } from '@angular/common';
 import { StarRatingComponent } from '../../../../../../shared/components/star-rating/star-rating.component';
 import { ElementRef } from '@angular/core';
 import { Feedback } from '../../../../../../shared/models/feedback.model';
+import { MissingTranslationHandler, TranslateLoader, TranslateModule, TranslateService } from '@ngx-translate/core';
+import { httpLoaderFactory } from '../../../../../../core/configs/translate.config';
 
 describe('ProductFeedbackComponent', () => {
   let component: ProductFeedbackComponent;
@@ -21,12 +23,30 @@ describe('ProductFeedbackComponent', () => {
     await TestBed.configureTestingModule({
       imports: [ProductFeedbackComponent, StarRatingComponent, CommonModule],
       providers: [
-        { provide: ElementRef, useValue: mockElementRef }
+        { provide: ElementRef, useValue: mockElementRef },
+        TranslateService
       ]
     }).compileComponents();
+
+
   });
 
   beforeEach(() => {
+    TestBed.configureTestingModule({
+      imports: [
+        TranslateModule.forRoot({
+          loader: {
+            provide: TranslateLoader,
+            useFactory: httpLoaderFactory,
+          },
+          missingTranslationHandler: {
+            provide: MissingTranslationHandler,
+            useValue: { handle: () => 'Translation missing' }
+          }
+        })
+      ]
+    });
+
     fixture = TestBed.createComponent(ProductFeedbackComponent);
     component = fixture.componentInstance;
     component.feedback = {

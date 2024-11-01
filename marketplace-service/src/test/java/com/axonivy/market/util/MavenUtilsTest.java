@@ -23,6 +23,8 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
+import static com.axonivy.market.constants.MavenConstants.DEFAULT_IVY_MAVEN_BASE_URL;
+
 class MavenUtilsTest extends BaseSetup {
 
   @Test
@@ -84,6 +86,21 @@ class MavenUtilsTest extends BaseSetup {
     Assertions.assertEquals(MOCK_SNAPSHOT_MAVEN_URL,
         MavenUtils.buildSnapshotMetadataUrlFromArtifactInfo(MavenConstants.DEFAULT_IVY_MAVEN_BASE_URL, MOCK_GROUP_ID,
             MOCK_ARTIFACT_ID, MOCK_SNAPSHOT_VERSION));
+  }
+
+  @Test
+  void testExtractMavenArtifactsFromContentStream() throws IOException {
+    InputStream mockInputStream = getMockInputStream();
+    List<Artifact> result = MavenUtils.extractMavenArtifactsFromContentStream(mockInputStream);
+    for (Artifact artifact : result) {
+      Assertions.assertEquals(DEFAULT_IVY_MAVEN_BASE_URL, artifact.getRepoUrl());
+    }
+
+    mockInputStream = getMockProductJsonNodeContentInputStream();
+    result = MavenUtils.extractMavenArtifactsFromContentStream(mockInputStream);
+    for (Artifact artifact : result) {
+      Assertions.assertEquals(DEFAULT_IVY_MAVEN_BASE_URL, artifact.getRepoUrl());
+    }
   }
 
   @Test
@@ -170,13 +187,6 @@ class MavenUtilsTest extends BaseSetup {
   }
 
   @Test
-  void testBuildDownloadUrl() {
-    Metadata metadata = buildMocKMetadata();
-    Assertions.assertEquals(MOCK_SNAPSHOT_DOWNLOAD_URL,
-        MavenUtils.buildDownloadUrl(metadata, MOCK_SNAPSHOT_VERSION));
-  }
-
-  @Test
   void testGetMetadataContent() {
     Assertions.assertEquals(StringUtils.EMPTY, MavenUtils.getMetadataContentFromUrl("octopus.com"));
   }
@@ -206,7 +216,7 @@ class MavenUtilsTest extends BaseSetup {
 
   @Test
   void testExtractedContentStream() throws IOException {
-    Assertions.assertNull(MavenUtils.extractedContentStream(Path.of(INAVALID_FILE_PATH)));
+    Assertions.assertNull(MavenUtils.extractedContentStream(Path.of(INVALID_FILE_PATH)));
     InputStream expectedResult = IOUtils.toInputStream(getMockSnapShotMetadataContent(), StandardCharsets.UTF_8);
     InputStream result = MavenUtils.extractedContentStream(Path.of(MOCK_SNAPSHOT_METADATA_FILE_PATH));
     Assertions.assertNotNull(result);
@@ -216,7 +226,7 @@ class MavenUtilsTest extends BaseSetup {
   @Test
   void testConvertProductJsonToMavenProductInfo() {
     try {
-      List<Artifact> result = MavenUtils.convertProductJsonToMavenProductInfo(Path.of(INAVALID_FILE_PATH));
+      List<Artifact> result = MavenUtils.convertProductJsonToMavenProductInfo(Path.of(INVALID_FILE_PATH));
       Assertions.assertTrue(CollectionUtils.isEmpty(result));
       result = MavenUtils.convertProductJsonToMavenProductInfo(Path.of(MOCK_PRODUCT_JSON_FILE_PATH));
       Assertions.assertTrue(CollectionUtils.isEmpty(result));

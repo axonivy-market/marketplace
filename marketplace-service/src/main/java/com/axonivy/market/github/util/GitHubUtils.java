@@ -2,7 +2,6 @@ package com.axonivy.market.github.util;
 
 import com.axonivy.market.bo.Artifact;
 import com.axonivy.market.constants.CommonConstants;
-import com.axonivy.market.enums.NonStandardProduct;
 import com.axonivy.market.util.MavenUtils;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
@@ -65,14 +64,6 @@ public class GitHubUtils {
     return Arrays.stream(artifactId.split(CommonConstants.DASH_SEPARATOR))
         .map(part -> part.substring(0, 1).toUpperCase() + part.substring(1).toLowerCase())
         .collect(Collectors.joining(CommonConstants.SPACE_SEPARATOR));
-  }
-
-  public static String getNonStandardProductFilePath(String productId) {
-    return NonStandardProduct.findById(productId).getPathToProductFolder();
-  }
-
-  public static String getNonStandardImageFolder(String productId) {
-    return NonStandardProduct.findById(productId).getPathToImageFolder();
   }
 
   public static String extractMessageFromExceptionMessage(String exceptionMessage) {

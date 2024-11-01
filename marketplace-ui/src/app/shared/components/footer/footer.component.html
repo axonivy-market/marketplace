@@ -1,7 +1,7 @@
 <!-- Footer -->
-<div class="mt-5">
+<div class="footer-container container">
   <!-- Section: Ivy Information -->
-  <section class="d-flex justify-content-lg-between justify-content-center py-4 border-bottom">
+  <section class="d-flex justify-content-lg-between justify-content-center border-bottom info_left">
     <div class="flex-column text-center text-lg-start">
       <!-- Left -->
       <div class="logo">
@@ -19,14 +19,13 @@
         <a class="download-button" href="{{ downloadUrl }}">
           <button
             [lang]="languageService.selectedLanguage()"
-            class="btn btn-primary border-0"
+            class="btn btn-primary border-0 download-button"
             [ngClass]="themeService.isDarkMode() ? 'text-dark' : 'text-light'">
             {{ 'common.footer.download' | translate }}
           </button>
         </a>
       </div>
     </div>
-
     <!-- Right -->
     <div class="footer__navbar d-flex align-items-center d-none d-xl-block">
       <div class="navbar navbar-expand-lg">
@@ -49,7 +48,7 @@
     </div>
   </section>
   <!-- Section: Policy & Social Media -->
-  <section class="d-flex flex-lg-row flex-column justify-content-between py-4">
+  <section class="d-flex flex-lg-row flex-column justify-content-between social-media-section">
     <div class="navbar navbar-expand-xl align-self-md-center w-md-100">
       <!-- Left -->
       <div
@@ -72,11 +71,11 @@
 
     <div class="d-flex align-items-center justify-content-center footer__social-media">
       <div class="navbar navbar-expand-lg">
-        <ul class="navbar-nav me-auto mb-lg-0 flex-row">
+        <ul class="navbar-nav flex-row social-link-container">
           @for (link of socialMediaLinks; track $index) {
           <li>
             <a
-              class="nav-link social-link text-primary"
+              class="social-link text-primary"
               aria-current="page"
               target="_blank"
               [href]="link.url"

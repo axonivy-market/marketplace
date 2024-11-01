@@ -2,9 +2,28 @@
   min-height: 6em;
 }
 
-.mt-8 {
-  margin-top: 8rem;
+.branch {
+  margin-top: 8.2rem;
+  margin-bottom: 3.2rem;
   cursor: default;
+
+  @media screen and (max-width: 991px) {
+    margin-top: 4.1rem;
+  }
+}
+
+.introduction-container {
+  display: flex;
+  flex-direction: row;
+  gap: 3.2rem;
+}
+
+.contribute-link-container {
+  padding: 4px 16px 0 16px;
+}
+
+.about, .contribute-link-container{
+  width: 45%;
 }
 
 .not-found-result {
@@ -26,5 +45,33 @@
 
   .not-found-text {
     font-size: 0.875rem;
+  }
+
+  .introduction-container {
+    display: block;
+  }
+
+  .about, .contribute-link-container{
+    width: 100%;
+    flex-direction: column;
+  }
+
+  .contribute-link-container {
+    padding: 0;
+  }
+}
+
+@media (max-width: 767px) {
+  .introduction-container {
+    display: block;
+  }
+
+  .about, .contribute-link-container{
+    width: 100%;
+    flex-direction: column;
+  }
+
+  .contribute-link-container {
+    padding: 0;
   }
 }

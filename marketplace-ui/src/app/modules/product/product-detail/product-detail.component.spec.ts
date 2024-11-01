@@ -9,7 +9,7 @@ import {
   TestBed,
   tick
 } from '@angular/core/testing';
-import { By } from '@angular/platform-browser';
+import { By, Title } from '@angular/platform-browser';
 import { ActivatedRoute } from '@angular/router';
 import { TranslateModule } from '@ngx-translate/core';
 import { Viewport } from 'karma-viewport/dist/adapter/viewport';
@@ -38,13 +38,14 @@ describe('ProductDetailComponent', () => {
   let fixture: ComponentFixture<ProductDetailComponent>;
   let routingQueryParamService: jasmine.SpyObj<RoutingQueryParamService>;
   let languageService: jasmine.SpyObj<LanguageService>;
+  let titleService: Title;
 
   beforeEach(async () => {
     const routingQueryParamServiceSpy = jasmine.createSpyObj(
       'RoutingQueryParamService',
       ['getDesignerVersionFromCookie', 'isDesignerEnv']
     );
-    
+
     const languageServiceSpy = jasmine.createSpyObj(
       'LanguageService',
       ['selectedLanguage']
@@ -76,7 +77,8 @@ describe('ProductDetailComponent', () => {
         {
           provide: LanguageService,
           useValue: languageServiceSpy
-        }
+        },
+        Title
       ]
     })
       .overrideComponent(ProductDetailComponent, {
@@ -93,6 +95,8 @@ describe('ProductDetailComponent', () => {
     languageService = TestBed.inject(
       LanguageService
     ) as jasmine.SpyObj<LanguageService>;
+
+    titleService = TestBed.inject(Title);
   });
 
   beforeEach(() => {
@@ -104,6 +108,18 @@ describe('ProductDetailComponent', () => {
   it('should create', () => {
     expect(component.productDetail().names['en']).toEqual(
       MOCK_PRODUCT_DETAIL.names['en']
+    );
+  });
+
+  it('should have title like the name DE', () => {
+    languageService.selectedLanguage.and.returnValue(
+      Language.DE
+    );
+    component.updateWebBrowserTitle();
+    fixture.detectChanges();
+
+    expect(titleService.getTitle()).toEqual(
+      MOCK_PRODUCT_DETAIL.names[Language.DE]
     );
   });
 
@@ -182,7 +198,7 @@ describe('ProductDetailComponent', () => {
       ...MOCK_PRODUCT_MODULE_CONTENT,
       description: { en: 'Test description' }
     };
-    
+
     const selectedLanguage = Language.EN;
 
     languageService.selectedLanguage.and.returnValue(
@@ -198,7 +214,7 @@ describe('ProductDetailComponent', () => {
       ...MOCK_PRODUCT_MODULE_CONTENT,
       description: { de: 'Test description' }
     };
-    
+
     const selectedLanguage = Language.DE;
 
     languageService.selectedLanguage.and.returnValue(
@@ -214,7 +230,7 @@ describe('ProductDetailComponent', () => {
       ...MOCK_PRODUCT_MODULE_CONTENT,
       description: { en: 'Test description', de: '' }
     };
-    
+
     const selectedLanguage = Language.DE;
 
     languageService.selectedLanguage.and.returnValue(
@@ -230,7 +246,7 @@ describe('ProductDetailComponent', () => {
       ...MOCK_PRODUCT_MODULE_CONTENT,
       description: { en: 'Test description'}
     };
-    
+
     const selectedLanguage = Language.DE;
 
     languageService.selectedLanguage.and.returnValue(
@@ -264,7 +280,7 @@ describe('ProductDetailComponent', () => {
       ...MOCK_PRODUCT_MODULE_CONTENT,
       description: { en: '', de: 'Test description' }
     };
-    
+
     const selectedLanguage = Language.EN;
 
     languageService.selectedLanguage.and.returnValue(
@@ -296,7 +312,7 @@ describe('ProductDetailComponent', () => {
       ...MOCK_PRODUCT_MODULE_CONTENT,
       description: { en: '', de: '' }
     };
-    
+
     const selectedLanguage = Language.EN;
 
     languageService.selectedLanguage.and.returnValue(
@@ -312,7 +328,7 @@ describe('ProductDetailComponent', () => {
       ...MOCK_PRODUCT_MODULE_CONTENT,
       description: {}
     };
-    
+
     const selectedLanguage = Language.EN;
 
     languageService.selectedLanguage.and.returnValue(
@@ -328,7 +344,7 @@ describe('ProductDetailComponent', () => {
       ...MOCK_PRODUCT_MODULE_CONTENT,
       setup: { en: 'Test setup' }
     };
-    
+
     const selectedLanguage = Language.EN;
 
     languageService.selectedLanguage.and.returnValue(
@@ -344,7 +360,7 @@ describe('ProductDetailComponent', () => {
       ...MOCK_PRODUCT_MODULE_CONTENT,
       setup: { de: 'Test setup' }
     };
-    
+
     const selectedLanguage = Language.DE;
 
     languageService.selectedLanguage.and.returnValue(
@@ -360,7 +376,7 @@ describe('ProductDetailComponent', () => {
       ...MOCK_PRODUCT_MODULE_CONTENT,
       setup: { en: 'Test setup', de: '' }
     };
-    
+
     const selectedLanguage = Language.DE;
 
     languageService.selectedLanguage.and.returnValue(
@@ -376,7 +392,7 @@ describe('ProductDetailComponent', () => {
       ...MOCK_PRODUCT_MODULE_CONTENT,
       setup: { en: 'Test setup'}
     };
-    
+
     const selectedLanguage = Language.DE;
 
     languageService.selectedLanguage.and.returnValue(
@@ -431,7 +447,7 @@ describe('ProductDetailComponent', () => {
       ...MOCK_PRODUCT_MODULE_CONTENT,
       setup: { en: '', de: '' }
     };
-    
+
     const selectedLanguage = Language.EN;
 
     languageService.selectedLanguage.and.returnValue(
@@ -447,7 +463,7 @@ describe('ProductDetailComponent', () => {
       ...MOCK_PRODUCT_MODULE_CONTENT,
       setup: {}
     };
-    
+
     const selectedLanguage = Language.EN;
 
     languageService.selectedLanguage.and.returnValue(
@@ -463,7 +479,7 @@ describe('ProductDetailComponent', () => {
       ...MOCK_PRODUCT_MODULE_CONTENT,
       demo: { en: 'Test demo' }
     };
-    
+
     const selectedLanguage = Language.EN;
 
     languageService.selectedLanguage.and.returnValue(
@@ -479,7 +495,7 @@ describe('ProductDetailComponent', () => {
       ...MOCK_PRODUCT_MODULE_CONTENT,
       demo: { de: 'Test demo' }
     };
-    
+
     const selectedLanguage = Language.DE;
 
     languageService.selectedLanguage.and.returnValue(
@@ -495,7 +511,7 @@ describe('ProductDetailComponent', () => {
       ...MOCK_PRODUCT_MODULE_CONTENT,
       demo: { en: 'Test demo', de: '' }
     };
-    
+
     const selectedLanguage = Language.DE;
 
     languageService.selectedLanguage.and.returnValue(
@@ -511,7 +527,7 @@ describe('ProductDetailComponent', () => {
       ...MOCK_PRODUCT_MODULE_CONTENT,
       demo: { en: 'Test demo'}
     };
-    
+
     const selectedLanguage = Language.DE;
 
     languageService.selectedLanguage.and.returnValue(
@@ -534,7 +550,7 @@ describe('ProductDetailComponent', () => {
       ...MOCK_PRODUCT_MODULE_CONTENT,
       demo: { en: '', de: 'Test demo' }
     };
-    
+
     const selectedLanguage = Language.EN;
 
     languageService.selectedLanguage.and.returnValue(
@@ -566,7 +582,7 @@ describe('ProductDetailComponent', () => {
       ...MOCK_PRODUCT_MODULE_CONTENT,
       demo: { en: '', de: '' }
     };
-    
+
     const selectedLanguage = Language.EN;
 
     languageService.selectedLanguage.and.returnValue(
@@ -582,7 +598,7 @@ describe('ProductDetailComponent', () => {
       ...MOCK_PRODUCT_MODULE_CONTENT,
       demo: {}
     };
-    
+
     const selectedLanguage = Language.EN;
 
     languageService.selectedLanguage.and.returnValue(
@@ -707,7 +723,7 @@ describe('ProductDetailComponent', () => {
   it('should be formated selected version if open in designer', () => {
     const mockContent: ProductModuleContent = {
       ...MOCK_PRODUCT_MODULE_CONTENT,
-      tag: '10.0.11'
+      version: '10.0.11'
     };
     component.productModuleContent.set(mockContent);
     routingQueryParamService.isDesignerEnv.and.returnValue(true);

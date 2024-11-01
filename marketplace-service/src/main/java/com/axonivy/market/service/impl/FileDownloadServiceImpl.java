@@ -1,6 +1,6 @@
 package com.axonivy.market.service.impl;
 
-import com.axonivy.market.entity.Metadata;
+import com.axonivy.market.bo.Artifact;
 import com.axonivy.market.service.FileDownloadService;
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.lang3.StringUtils;
@@ -8,14 +8,27 @@ import org.apache.commons.lang3.SystemUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
-import java.io.*;
+import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.attribute.FileAttribute;
 import java.nio.file.attribute.PosixFilePermission;
 import java.nio.file.attribute.PosixFilePermissions;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.EnumSet;
+import java.util.Enumeration;
+import java.util.List;
+import java.util.Set;
+import java.util.UUID;
 import java.util.stream.Stream;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
@@ -39,8 +52,8 @@ public class FileDownloadServiceImpl implements FileDownloadService {
   }
 
   @Override
-  public String downloadAndUnzipProductContentFile(String url, Metadata metadata) throws IOException {
-    String unzippedFilePath = String.join(File.separator, ROOT_STORAGE_FOR_PRODUCT_CONTENT, metadata.getArtifactId());
+  public String downloadAndUnzipProductContentFile(String url, Artifact artifact) throws IOException {
+    String unzippedFilePath = String.join(File.separator, ROOT_STORAGE_FOR_PRODUCT_CONTENT, artifact.getArtifactId());
     createFolder(unzippedFilePath);
 
     Path tempZipPath = createTempFileFromUrlAndExtractToLocation(url, unzippedFilePath, true);

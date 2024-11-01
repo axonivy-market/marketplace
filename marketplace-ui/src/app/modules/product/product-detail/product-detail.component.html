@@ -3,17 +3,17 @@
     class="product-detail-container d-flex flex-column justify-content-center p-0">
     <div class="flexible-gap d-flex flex-column justify-content-center">
       <div class="link-to-main align-content-center">
-        <a
-          href=""
-          class="back-link text-decoration-none fs-6"
+        <div
+          id="back-to-homepage-button"
           [ngClass]="
             themeService.isDarkMode() ? 'text-light' : 'text-link-blue'
-          ">
+          "
+          (click)="onClickingBackToHomepageButton()">
           &lt;
           <span [lang]="languageService.selectedLanguage()">
             {{ 'common.product.detail.backToMainPage' | translate }}
           </span>
-        </a>
+        </div>
       </div>
       <div class="version-gap d-flex flex-column flex-xl-row justify-content-between">
         <div class="connector-title-container d-flex flex-column module-gap">
@@ -46,7 +46,7 @@
                 [isShowRateLink]="false"
                 [isShowTotalRatingNumber]="false" />
             </div>
-            @if(productDetailActionType() !== 'customSolution') {
+            @if(productDetailActionType() !== ProductDetailActionType.CUSTOM_SOLUTION) {
               <app-product-installation-count-action
                 id="app-product-installation-count-action"
                 [currentInstallationCount]="installationCount" />
@@ -69,11 +69,13 @@
         </div>
         <!-- installation & download section -->
         <app-product-version-action
+          [ngClass]="{'col-xl-4': productDetailActionType() === ProductDetailActionType.DESIGNER_ENV}"
           class="mt-md-3 m-sm-0"
           (installationCount)="receiveInstallationCountData($event)"
           [(selectedVersion)]="selectedVersion!"
           [(metaDataJsonUrl)]="metaProductJsonUrl!"
           [productId]="productDetail().id"
+          [isMavenDropins]="productDetail().mavenDropins"
           [actionType]="productDetailActionType()"
           (selectedVersionChange)="
             loadDetailTabs($event)
@@ -119,7 +121,7 @@
                   <app-common-dropdown
                     [items]="displayedTabsSignal()"
                     [selectedItem]="getSelectedTabLabel() | translate"
-                    buttonClass="form-select flex-grow-1 text-start"
+                    buttonClass="form-select flex-grow-1 text-start content-tab-dropdown"
                     (itemSelected)="onTabChange($event.value)">
                   </app-common-dropdown>
                 </div>
@@ -151,7 +153,6 @@
             </div>
           </div>
           <div class="tab-content col-12 default-cursor">
-            @if (!isEmptyProductContent()) {
               @for (displayedTab of displayedTabsSignal(); track $index) {
                 <div
                   class="tab-pane fade show"
@@ -165,7 +166,7 @@
                       [selectedVersion]="selectedVersion">
                     </app-product-detail-maven-content>
                   } @else {
-                    <markdown
+                    <markdown emoji
                       [lang]="languageService.selectedLanguage()"
                       class="readme-content"
                       [data]="
@@ -175,9 +176,8 @@
                   }
                 </div>
               }
-            }
           </div>
-        } 
+        }
       </div>
 
       <div

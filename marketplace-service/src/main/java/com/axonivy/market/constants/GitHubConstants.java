@@ -12,10 +12,6 @@ public class GitHubConstants {
   public static final String GITHUB_PROVIDER_NAME = "GitHub";
   public static final String GITHUB_GET_ACCESS_TOKEN_URL = "https://github.com/login/oauth/access_token";
   public static final String README_FILE_LOCALE_REGEX = "_(..)";
-  public static final String STANDARD_TAG_PREFIX = "v";
-  public static final String COMMON_IMAGES_FOLDER_NAME = "images";
-  public static final String MS_GRAPH_PRODUCT_DIRECTORY = "msgraph-connector-product";
-  public static final String MG_GRAPH_IMAGES_FOR_SETUP_FILE = "doc";
 
   @NoArgsConstructor(access = AccessLevel.PRIVATE)
   public static class Json {

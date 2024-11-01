@@ -68,7 +68,7 @@ describe('ProductCardComponent', () => {
     );
   });
 
-  it('should display product tag in REST client', () => {
+  it('should display product version in REST client', () => {
     component.isShowInRESTClientEditor = true;
     fixture.detectChanges();
 

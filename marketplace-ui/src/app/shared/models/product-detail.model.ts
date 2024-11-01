@@ -10,6 +10,8 @@ export interface ProductDetail {
   tags: string[];
   vendor: string;
   vendorUrl: string;
+  vendorImage: string;
+  vendorImageDarkMode: string;
   platformReview: string;
   newestReleaseVersion: string;
   cost: string;
@@ -21,6 +23,7 @@ export interface ProductDetail {
   contactUs: boolean;
   installationCount: number;
   productModuleContent: ProductModuleContent;
+  mavenDropins: boolean;
   metaProductJsonUrl?: string;
   _links: {
     self: {

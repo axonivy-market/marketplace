@@ -10,9 +10,7 @@ import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { MOCK_EXTERNAL_DOCUMENT } from '../../../../shared/mocks/mock-data';
 
 const TEST_ID = 'portal';
-const TEST_VERSION = 'v10.0.0';
-const TEST_ACTUAL_VERSION = '10.0.0';
-const TEST_ARTIFACT_ID = 'portal-guide';
+const TEST_VERSION = '10.0.0';
 const TEST_ARTIFACT_NAME = 'Portal Guide';
 const TEST_DOC_URL = '/market-cache/portal/portal-guide/10.0.0/doc/index.html';
 
@@ -52,7 +50,7 @@ describe('ProductDetailInformationTabComponent', () => {
     const changes: SimpleChanges = {
       selectedVersion: {
         currentValue: TEST_VERSION,
-        previousValue: 'v8.0.0',
+        previousValue: '8.0.0',
         firstChange: false,
         isFirstChange: () => false
       },
@@ -66,7 +64,7 @@ describe('ProductDetailInformationTabComponent', () => {
 
     component.ngOnChanges(changes);
 
-    expect(productDetailService.getExteralDocumentForProductByVersion).toHaveBeenCalledWith(TEST_ID, TEST_ACTUAL_VERSION);
+    expect(productDetailService.getExteralDocumentForProductByVersion).toHaveBeenCalledWith(TEST_ID, TEST_VERSION);
     expect(component.externalDocumentLink).toBe(TEST_DOC_URL);
     expect(component.displayExternalDocName).toBe(TEST_ARTIFACT_NAME);
   });
@@ -77,7 +75,7 @@ describe('ProductDetailInformationTabComponent', () => {
     const changes: SimpleChanges = {
       selectedVersion: {
         currentValue: '',
-        previousValue: 'v8.0.0',
+        previousValue: '8.0.0',
         firstChange: false,
         isFirstChange: () => false
       },
@@ -97,8 +95,8 @@ describe('ProductDetailInformationTabComponent', () => {
   });
 
   it('should extract version value correctly', () => {
-    const versionDisplayName = TEST_VERSION;
+    const versionDisplayName = "Version 10.0.0";
     const extractedValue = component.extractVersionValue(versionDisplayName);
-    expect(extractedValue).toBe(TEST_ACTUAL_VERSION);
+    expect(extractedValue).toBe(TEST_VERSION);
   });
 });

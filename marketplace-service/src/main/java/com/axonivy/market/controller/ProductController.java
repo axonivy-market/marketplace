@@ -30,9 +30,6 @@ import org.springframework.data.web.PagedResourcesAssembler;
 import org.springframework.hateoas.PagedModel;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-
-import java.util.List;
-
 import org.springframework.util.CollectionUtils;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -43,6 +40,8 @@ import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+
+import java.util.List;
 
 import static com.axonivy.market.constants.RequestMappingConstants.*;
 import static com.axonivy.market.constants.RequestParamConstants.*;
@@ -100,13 +99,10 @@ public class ProductController {
     String token = AuthorizationUtils.getBearerToken(authorizationHeader);
     gitHubService.validateUserInOrganizationAndTeam(token, GitHubConstants.AXONIVY_MARKET_ORGANIZATION_NAME,
         GitHubConstants.AXONIVY_MARKET_TEAM_NAME);
-    if (Boolean.TRUE.equals(resetSync)) {
-      productService.clearAllProducts();
-    }
 
     var stopWatch = new StopWatch();
     stopWatch.start();
-    List<String> syncedProductIds = productService.syncLatestDataFromMarketRepo();
+    List<String> syncedProductIds = productService.syncLatestDataFromMarketRepo(resetSync);
     var message = new Message();
     message.setHelpCode(ErrorCode.SUCCESSFUL.getCode());
     message.setHelpText(ErrorCode.SUCCESSFUL.getHelpText());
@@ -122,10 +118,14 @@ public class ProductController {
 
   @PutMapping(SYNC_PRODUCT_VERSION)
   @Operation(hidden = true)
-  public ResponseEntity<Message> syncProductVersions(@RequestHeader(value = AUTHORIZATION) String authorizationHeader) {
+  public ResponseEntity<Message> syncProductVersions(@RequestHeader(value = AUTHORIZATION) String authorizationHeader
+      ,@RequestParam(value = RESET_SYNC, required = false) Boolean resetSync) {
     String token = AuthorizationUtils.getBearerToken(authorizationHeader);
     gitHubService.validateUserInOrganizationAndTeam(token, GitHubConstants.AXONIVY_MARKET_ORGANIZATION_NAME,
         GitHubConstants.AXONIVY_MARKET_TEAM_NAME);
+    if (Boolean.TRUE.equals(resetSync)) {
+      productService.clearAllProductVersion();
+    }
     int nonSyncResult = metadataService.syncAllProductsMetadata();
     var message = new Message();
     HttpStatus statusCode = HttpStatus.OK;

@@ -4,13 +4,13 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { TranslateModule } from '@ngx-translate/core';
 import { ROUTER } from '../../constants/router.constant';
 import { HttpClient, provideHttpClient, withInterceptorsFromDi } from '@angular/common/http';
-import { ExternalDocumentComponent } from './external-document.component';
+import { RedirectPageComponent } from './redirect-page.component';
 import { of } from 'rxjs';
 import { API_URI } from '../../constants/api.constant';
 import { MOCK_EXTERNAL_DOCUMENT } from '../../mocks/mock-data';
 
 describe('ExternalDocumentComponent', () => {
-  let component: ExternalDocumentComponent;
+  let component: RedirectPageComponent;
   let fixture: any;
   let httpMock: HttpTestingController;
   let httpClient: jasmine.SpyObj<HttpClient>;
@@ -32,10 +32,7 @@ describe('ExternalDocumentComponent', () => {
   beforeEach(() => {
     httpClient = jasmine.createSpyObj('HttpClient', ['get']);
     TestBed.configureTestingModule({
-      imports: [
-        TranslateModule.forRoot(),
-        ExternalDocumentComponent
-      ],
+      imports: [TranslateModule.forRoot(), RedirectPageComponent],
       providers: [
         provideHttpClient(withInterceptorsFromDi()),
         provideHttpClientTesting(),
@@ -44,7 +41,7 @@ describe('ExternalDocumentComponent', () => {
       ]
     });
 
-    fixture = TestBed.createComponent(ExternalDocumentComponent);
+    fixture = TestBed.createComponent(RedirectPageComponent);
     component = fixture.componentInstance;
     httpMock = TestBed.inject(HttpTestingController);
     router = TestBed.inject(Router);

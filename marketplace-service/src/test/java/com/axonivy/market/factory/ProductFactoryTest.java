@@ -13,7 +13,6 @@ import org.springframework.util.CollectionUtils;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.List;
 
 import static com.axonivy.market.constants.CommonConstants.SLASH;
 import static com.axonivy.market.constants.MetaConstants.META_FILE;
@@ -80,17 +79,13 @@ class ProductFactoryTest {
 
   @Test
   void testTransferComputedData() {
-    String initialVersion = "10.0.2";
     Product product = new Product();
     Product persistedData = new Product();
     persistedData.setCustomOrder(1);
-    persistedData.setReleasedVersions(List.of(initialVersion));
-    persistedData.setNewestReleaseVersion(initialVersion);
+    persistedData.setInstallationCount(300);
 
     ProductFactory.transferComputedPersistedDataToProduct(persistedData, product);
     assertEquals(1, product.getCustomOrder());
-    assertEquals(initialVersion, product.getNewestReleaseVersion());
-    assertEquals(1, product.getReleasedVersions().size());
-    assertEquals(initialVersion, product.getReleasedVersions().get(0));
+    assertEquals(300, product.getInstallationCount());
   }
 }

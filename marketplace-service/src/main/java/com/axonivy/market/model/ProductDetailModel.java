@@ -14,6 +14,13 @@ import org.apache.commons.lang3.builder.HashCodeBuilder;
 public class ProductDetailModel extends ProductModel {
   @Schema(description = "Product vendor", example = "Axon Ivy AG")
   private String vendor;
+  @Schema(description = "Product vendor url", example = "https://www.axonivy.com")
+  private String vendorUrl;
+  @Schema(description = "Product vendor image", example = "https://api.example.com/api/image/67079ca57b9ee74b16c18111")
+  private String vendorImage;
+  @Schema(description = "Product vendor image dark mode",
+      example = "https://api.example.com/api/image/67079ca57b9ee74b16c18111")
+  private String vendorImageDarkMode;
   @Schema(description = "Platform review", example = "4.5")
   private String platformReview;
   @Schema(description = "Latest release version from maven", example = "v10.0.25")
@@ -39,6 +46,7 @@ public class ProductDetailModel extends ProductModel {
   private int installationCount;
   @Schema(description = "The api url to get metadata from product.json")
   private String metaProductJsonUrl;
+  private boolean isMavenDropins;
 
   @Override
   public int hashCode() {

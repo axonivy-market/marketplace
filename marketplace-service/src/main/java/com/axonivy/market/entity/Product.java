@@ -45,6 +45,12 @@ public class Product implements Serializable {
   private List<String> tags;
   private String vendor;
   private String vendorUrl;
+  @Transient
+  private String vendorImagePath;
+  @Transient
+  private String vendorImageDarkModePath;
+  private String vendorImage;
+  private String vendorImageDarkMode;
   private String platformReview;
   private String cost;
   private String repositoryName;
@@ -71,6 +77,8 @@ public class Product implements Serializable {
   private Date updatedAt;
   @Transient
   private String bestMatchVersion;
+  @Transient
+  private boolean isMavenDropins;
 
   @Override
   public int hashCode() {

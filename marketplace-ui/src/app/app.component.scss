@@ -14,6 +14,10 @@ footer {
   padding: 0 0 56px 0;
   border-top: 1px solid var(--ivy-secondary-border-color);
   margin-top: 64.14px;
+
+  @media screen and (max-width: 991px) {
+    margin-top: 4rem;
+  }
 }
 
 @media all and (max-width: 992px) {
@@ -32,7 +36,7 @@ footer {
   top: 0;
   left: 0;
   width: 100vw;
-  padding-bottom: 3rem;
+  padding-bottom: 7rem;
 }
 
 .header-mobile-container {

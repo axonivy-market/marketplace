@@ -1,7 +1,7 @@
 import { DisplayValue } from "./display-value.model";
 
 export interface ProductModuleContent {
-  tag: string;
+  version: string;
   description: DisplayValue | null;
   demo: DisplayValue | null;
   setup: DisplayValue | null;
