@@ -22,6 +22,9 @@ on:
         type: string
         default: ''
 
+env:
+  BASE_WORKING_DIR: /home/axonivy/marketplace/work
+
 jobs:
   cleanup:
     name: Clean up docker container and images
@@ -30,9 +33,17 @@ jobs:
     steps:
       - name: Bring down and remove containers and images
         continue-on-error: true
-        working-directory: ./marketplace-build/dev
+        working-directory: ${{ env.BASE_WORKING_DIR }}
         run: |
-          docker compose down --rmi all
+          docker compose -f publish/docker-compose.yml down --rmi all
+      - name: Delete old sources code
+        continue-on-error: true
+        run: |
+          echo "Clean up workspaces ${{ env.BASE_WORKING_DIR }}"
+          rm -rf ./marketplace-ui/*
+          rm -rf ./marketplace-service/*
+          rm -rf ./publish/*
+          rm -rf ./config/*
 
   build-and-deploy:
     name: Build and bring up docker containers
@@ -45,9 +56,24 @@ jobs:
         with:
           ref: ${{ inputs.release_version || github.ref }}
 
+      - name: Copy resources to working directory
+        run : |
+          echo "Copy marketplace-ui to ${{ env.BASE_WORKING_DIR }} directory"
+          cp -r marketplace-ui ${{ env.BASE_WORKING_DIR }}/marketplace-ui
+
+          echo "Copy marketplace-service to ${{ env.BASE_WORKING_DIR }} directory"
+          cp -r marketplace-service ${{ env.BASE_WORKING_DIR }}/marketplace-service
+
+          echo "Copy nginx configs to config directory"
+          mkdir -p ${{ env.BASE_WORKING_DIR }}/config/nginx && cp -r marketplace-build/config/nginx/dev/* ${{ env.BASE_WORKING_DIR }}/config/nginx
+
+          echo "Copy compose configs to publish directory"
+          mkdir -p ${{ env.BASE_WORKING_DIR }}/publish && cp -r marketplace-build/.env ${{ env.BASE_WORKING_DIR }}/publish/.env
+          cp -r marketplace-build/docker-compose.yml ${{ env.BASE_WORKING_DIR }}/publish/docker-compose.yml
+
       - name: Update environment variables for .env
         env:
-          ENV_FILE: './marketplace-build/dev/.env'
+          ENV_FILE: '${{ env.BASE_WORKING_DIR }}/publish/.env'
           ROOT_USERNAME: ${{ secrets.MONGODB_ROOT_USERNAME }}
           ROOT_PASSWORD: ${{ secrets.MONGODB_ROOT_PASSWORD }}
           SERVICE_USERNAME: ${{ secrets.SERVICE_USERNAME }}
@@ -76,23 +102,24 @@ jobs:
           sed -i "s/^MARKET_JWT_SECRET_KEY=.*$/MARKET_JWT_SECRET_KEY=$MARKET_JWT_SECRET_KEY/" $ENV_FILE
           sed -i "s/^MARKET_CORS_ALLOWED_ORIGIN=.*$/MARKET_CORS_ALLOWED_ORIGIN=$MARKET_CORS_ALLOWED_ORIGIN/" $ENV_FILE
 
-      - name: Update version and tagging source
+      - name: Update version
         if: ${{ inputs.release_version != '' }}
         continue-on-error: true
         env:
-          POM_FILE: './marketplace-service/pom.xml'
-          PACKAGE_FILE: './marketplace-ui/package.json'
+          POM_FILE: '${{ env.BASE_WORKING_DIR }}/marketplace-service/pom.xml'
+          PACKAGE_FILE: '${{ env.BASE_WORKING_DIR }}/marketplace-ui/package.json'
         run: |
           xml ed -L -u "//_:project/_:version" -v "${{ inputs.release_version }}" $POM_FILE
           sed -i 's/"version": "[^"]*"/"version": "${{ inputs.release_version }}"/' $PACKAGE_FILE
 
       - name: Build and bring up containers without cache
-        working-directory: ./marketplace-build/dev
+        working-directory: ${{ env.BASE_WORKING_DIR }}/publish
         run: |
           if [ -n "${{ inputs.release_version }}" ]; then
             BUILD_VERSION="${{ inputs.release_version }}"
           else
-            BUILD_VERSION=$(xml sel -t -v "//_:project/_:version" ../../marketplace-service/pom.xml)
+            chmod +r ../marketplace-service/pom.xml
+            BUILD_VERSION=$(xml sel -t -v "//_:project/_:version" ../marketplace-service/pom.xml)
           fi
 
           docker compose build --build-arg BUILD_ENV=${{ inputs.build_env }} --build-arg BUILD_VERSION=$BUILD_VERSION
