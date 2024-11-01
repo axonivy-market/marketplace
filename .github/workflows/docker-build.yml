@@ -37,13 +37,12 @@ jobs:
         run: |
           docker compose -f publish/docker-compose.yml down --rmi all
       - name: Delete old sources code
-        continue-on-error: true
         run: |
           echo "Clean up workspaces ${{ env.BASE_WORKING_DIR }}"
-          rm -rf ./marketplace-ui/*
-          rm -rf ./marketplace-service/*
-          rm -rf ./publish/*
-          rm -rf ./config/*
+          rm -rf ${{ env.BASE_WORKING_DIR }}/marketplace-ui/*
+          rm -rf ${{ env.BASE_WORKING_DIR }}/marketplace-service/*
+          rm -rf ${{ env.BASE_WORKING_DIR }}/publish/*
+          rm -rf ${{ env.BASE_WORKING_DIR }}/config/*
 
   build-and-deploy:
     name: Build and bring up docker containers
@@ -59,10 +58,10 @@ jobs:
       - name: Copy resources to working directory
         run : |
           echo "Copy marketplace-ui to ${{ env.BASE_WORKING_DIR }} directory"
-          cp -r marketplace-ui ${{ env.BASE_WORKING_DIR }}/marketplace-ui
+          cp -r marketplace-ui ${{ env.BASE_WORKING_DIR }}
 
           echo "Copy marketplace-service to ${{ env.BASE_WORKING_DIR }} directory"
-          cp -r marketplace-service ${{ env.BASE_WORKING_DIR }}/marketplace-service
+          cp -r marketplace-service ${{ env.BASE_WORKING_DIR }}
 
           echo "Copy nginx configs to config directory"
           mkdir -p ${{ env.BASE_WORKING_DIR }}/config/nginx && cp -r marketplace-build/config/nginx/dev/* ${{ env.BASE_WORKING_DIR }}/config/nginx
