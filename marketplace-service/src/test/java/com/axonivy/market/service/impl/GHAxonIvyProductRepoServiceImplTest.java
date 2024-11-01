@@ -235,10 +235,10 @@ class GHAxonIvyProductRepoServiceImplTest extends BaseSetup {
       List<GHContent> contents = List.of(mockReadmeFile, mockImageFile);
 
       ReadmeContentsModel readmeContentsModel = new ReadmeContentsModel();
-      readmeContentsModel.setDescription(new HashMap<>(Map.of(Language.EN.getValue(),mockReadmeContent)));
+      readmeContentsModel.setDescription(mockReadmeContent);
 
       when(ProductContentUtils.hasImageDirectives(anyString())).thenReturn(true);
-      when(ProductContentUtils.getExtractedPartsOfReadme(nullable(String.class),anyString())).thenReturn(readmeContentsModel);
+      when(ProductContentUtils.getExtractedPartsOfReadme(nullable(String.class))).thenReturn(readmeContentsModel);
 
       when(imageService.mappingImageFromGHContent(anyString(), any())).thenReturn(getMockImage());
       ProductModuleContent productModuleContent = new ProductModuleContent();

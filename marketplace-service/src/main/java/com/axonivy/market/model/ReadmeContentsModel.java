@@ -12,7 +12,7 @@ import java.util.Map;
 @AllArgsConstructor
 @NoArgsConstructor
 public class ReadmeContentsModel {
-  Map<String, String> description;
-  Map<String, String> demo;
-  Map<String, String> setup;
+  private String description;
+  private String demo;
+  private String setup;
 }

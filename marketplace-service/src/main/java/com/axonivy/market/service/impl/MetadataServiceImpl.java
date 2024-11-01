@@ -146,6 +146,7 @@ public class MetadataServiceImpl implements MetadataService {
       String metadataUrl = MavenUtils.buildMetadataUrlFromArtifactInfo(artifact.getRepoUrl(), artifact.getGroupId(),
           artifact.getArtifactId());
       metadataSet.add(MavenUtils.convertArtifactToMetadata(productId, artifact, metadataUrl));
+      metadataSet.addAll(MavenUtils.extractMetaDataFromArchivedArtifacts(productId, artifact));
     }
 
     if (CollectionUtils.isEmpty(metadataSet)) {

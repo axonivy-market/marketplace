@@ -58,9 +58,7 @@ public class ProductContentUtils {
 
   // Cover some cases including when demo and setup parts switch positions or
   // missing one of them
-  public static ReadmeContentsModel getExtractedPartsOfReadme( String readmeContents,
-      String readmeFileName) {
-    String locale = getReadmeFileLocale(readmeFileName);
+  public static ReadmeContentsModel getExtractedPartsOfReadme( String readmeContents) {
     String[] parts = readmeContents.split(DEMO_SETUP_TITLE);
     int demoIndex = readmeContents.indexOf(ReadmeConstants.DEMO_PART);
     int setupIndex = readmeContents.indexOf(ReadmeConstants.SETUP_PART);
@@ -85,12 +83,11 @@ public class ProductContentUtils {
     } else if (setupIndex != -1) {
       setup = parts[1];
     }
-    locale = StringUtils.isEmpty(locale) ? Language.EN.getValue() : locale.toLowerCase();
-    
+
     ReadmeContentsModel readmeContentsModel = new ReadmeContentsModel();
-    readmeContentsModel.setDescription(new HashMap<>(Map.of(locale, description.trim())));
-    readmeContentsModel.setDemo(new HashMap<>(Map.of(locale, demo.trim())));
-    readmeContentsModel.setSetup(new HashMap<>(Map.of(locale, setup.trim())));
+    readmeContentsModel.setDescription(description.trim());
+    readmeContentsModel.setDemo(demo.trim());
+    readmeContentsModel.setSetup(setup.trim());
 
     return readmeContentsModel;
   }
@@ -148,5 +145,16 @@ public class ProductContentUtils {
           String.format(IMAGE_DOWNLOAD_URL_FORMAT, entry.getValue()));
     }
     return readmeContents;
+  }
+
+  public static void mappingDescriptionSetupAndDemo(Map<String, Map<String, String>> moduleContents,
+      String readmeFileName, ReadmeContentsModel readmeContentsModel) {
+    String locale = getReadmeFileLocale(readmeFileName);
+    locale = StringUtils.isEmpty(locale) ? Language.EN.getValue() : locale.toLowerCase();
+
+    moduleContents.computeIfAbsent(DESCRIPTION, key -> new HashMap<>()).put(locale,
+        readmeContentsModel.getDescription());
+    moduleContents.computeIfAbsent(SETUP, key -> new HashMap<>()).put(locale, readmeContentsModel.getSetup());
+    moduleContents.computeIfAbsent(DEMO, key -> new HashMap<>()).put(locale, readmeContentsModel.getDemo());
   }
 }

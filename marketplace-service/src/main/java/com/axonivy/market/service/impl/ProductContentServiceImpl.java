@@ -7,6 +7,7 @@ import com.axonivy.market.constants.ReadmeConstants;
 import com.axonivy.market.entity.Image;
 import com.axonivy.market.entity.ProductJsonContent;
 import com.axonivy.market.entity.ProductModuleContent;
+import com.axonivy.market.enums.Language;
 import com.axonivy.market.model.ReadmeContentsModel;
 import com.axonivy.market.service.FileDownloadService;
 import com.axonivy.market.service.ImageService;
@@ -91,11 +92,10 @@ public class ProductContentServiceImpl implements ProductContentService {
           readmeContents = updateImagesWithDownloadUrl(productId, unzippedFolderPath, readmeContents);
         }
 
-        ReadmeContentsModel descriptionSetupAndDemo = ProductContentUtils.getExtractedPartsOfReadme( readmeContents,
-            readmeFile.getFileName().toString());
-        moduleContents.put(DESCRIPTION, descriptionSetupAndDemo.getDescription());
-        moduleContents.put(SETUP, descriptionSetupAndDemo.getSetup());
-        moduleContents.put(DEMO, descriptionSetupAndDemo.getDemo());
+        ReadmeContentsModel readmeContentsModel = ProductContentUtils.getExtractedPartsOfReadme(readmeContents);
+
+        ProductContentUtils.mappingDescriptionSetupAndDemo(moduleContents, readmeFile.getFileName().toString(),
+            readmeContentsModel);
       }
       ProductContentUtils.updateProductModuleTabContents(productModuleContent, moduleContents);
     } catch (IOException e) {
