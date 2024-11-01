@@ -41,6 +41,7 @@ public class ProductContentServiceImpl implements ProductContentService {
   private final ProductJsonContentService productJsonContentService;
   private final ImageService imageService;
   private final MetadataService metadataService;
+
   @Override
   public ProductModuleContent getReadmeAndProductContentsFromVersion(String productId, String version, String url,
       Artifact artifact, String productName) {
@@ -48,7 +49,8 @@ public class ProductContentServiceImpl implements ProductContentService {
     String unzippedFolderPath = Strings.EMPTY;
     try {
       unzippedFolderPath = fileDownloadService.downloadAndUnzipProductContentFile(url, artifact);
-      updateDependencyContentsFromProductJson(productModuleContent, productId, unzippedFolderPath, productName , artifact);
+      updateDependencyContentsFromProductJson(productModuleContent, productId,
+          unzippedFolderPath, productName, artifact);
       extractReadMeFileFromContents(productId, unzippedFolderPath, productModuleContent);
     } catch (Exception e) {
       log.error("Cannot get product.json content in {}", e.getMessage());

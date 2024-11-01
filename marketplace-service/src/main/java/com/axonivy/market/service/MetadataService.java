@@ -14,5 +14,5 @@ public interface MetadataService {
 
   void updateArtifactAndMetaDataForProductJsonContent(ProductJsonContent productJsonContent, Artifact productArtifact);
 
-  void updateArtifactAndMetadata(String productId, List<Artifact> artifactList);
+  void updateArtifactAndMetadata(String productId, List<Artifact> artifacts);
 }
