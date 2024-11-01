@@ -86,7 +86,7 @@ public class ProductContentUtils {
       setup = parts[1];
     }
     locale = StringUtils.isEmpty(locale) ? Language.EN.getValue() : locale.toLowerCase();
-
+    
     ReadmeContentsModel readmeContentsModel = new ReadmeContentsModel();
     readmeContentsModel.setDescription(new HashMap<>(Map.of(locale, description.trim())));
     readmeContentsModel.setDemo(new HashMap<>(Map.of(locale, demo.trim())));
