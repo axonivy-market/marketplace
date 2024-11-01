@@ -37,12 +37,13 @@ jobs:
         run: |
           docker compose -f publish/docker-compose.yml down --rmi all
       - name: Delete old sources code
+        working-directory: ${{ env.BASE_WORKING_DIR }}
         run: |
           echo "Clean up workspaces ${{ env.BASE_WORKING_DIR }}"
-          rm -rf ${{ env.BASE_WORKING_DIR }}/marketplace-ui/*
-          rm -rf ${{ env.BASE_WORKING_DIR }}/marketplace-service/*
-          rm -rf ${{ env.BASE_WORKING_DIR }}/publish/*
-          rm -rf ${{ env.BASE_WORKING_DIR }}/config/*
+          rm -rf ./marketplace-ui/*
+          rm -rf ./marketplace-service/*
+          rm -rf ./publish/*
+          rm -rf ./config/*
 
   build-and-deploy:
     name: Build and bring up docker containers
