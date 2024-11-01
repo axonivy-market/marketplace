@@ -15,6 +15,8 @@ services:
       - marketcache:/usr/share/nginx/html/market-cache
     ports:
       - "4200:80"
+    networks:
+      - marketplace-network
 
   service:
     container_name: marketplace-service
@@ -41,7 +43,12 @@ services:
         - BUILD_VERSION=${BUILD_VERSION}
     ports:
       - "8080:8080"
+    networks:
+      - marketplace-network
 
 volumes:
-  mongodata:
   marketcache:
+
+networks:
+  marketplace-network:
+    external: true
