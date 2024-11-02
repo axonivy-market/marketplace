@@ -196,12 +196,13 @@ public class MetadataServiceImpl implements MetadataService {
     if (CollectionUtils.isEmpty(nonSyncedVersions)) {
       return artifacts;
     }
-    nonSyncedVersions.forEach(version -> {
-      ProductJsonContent productJson =
-          productJsonRepo.findByProductIdAndVersion(productId, version).stream().findAny().orElse(null);
-      List<Artifact> artifactsInVersion = MavenUtils.getMavenArtifactsFromProductJson(productJson);
+
+    List<ProductJsonContent> productJsonContents = productJsonRepo.findByProductIdAndVersionIn(productId, nonSyncedVersions);
+    for (ProductJsonContent productJsonContent : productJsonContents) {
+      List<Artifact> artifactsInVersion = MavenUtils.getMavenArtifactsFromProductJson(productJsonContent);
       artifacts.addAll(artifactsInVersion);
-    });
+    }
+
     return artifacts;
   }
 }
