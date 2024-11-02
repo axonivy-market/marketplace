@@ -488,9 +488,6 @@ public class ProductServiceImpl implements ProductService {
     for (Artifact mavenArtifact : mavenArtifacts) {
       getMetadataContent(mavenArtifact, product);
     }
-    List<Artifact> additionalArtifacts = new ArrayList<>(product.getArtifacts());
-    additionalArtifacts.removeAll(mavenArtifacts);
-    metadataService.updateArtifactAndMetadata(product.getId(), additionalArtifacts);
   }
 
   private void getMetadataContent(Artifact artifact, Product product) {
@@ -536,6 +533,7 @@ public class ProductServiceImpl implements ProductService {
           product.getNames().get(EN_LANGUAGE));
       Optional.ofNullable(productModuleContent).ifPresent(productModuleContents::add);
     }
+    metadataService.updateArtifactAndMetadata(product.getId(), mavenVersions, product.getArtifacts());
 
     if (ObjectUtils.isNotEmpty(productModuleContents)) {
       productModuleContentRepo.saveAll(productModuleContents);

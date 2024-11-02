@@ -50,8 +50,7 @@ public class ProductContentServiceImpl implements ProductContentService {
     String unzippedFolderPath = Strings.EMPTY;
     try {
       unzippedFolderPath = fileDownloadService.downloadAndUnzipProductContentFile(url, artifact);
-      updateDependencyContentsFromProductJson(productModuleContent, productId,
-          unzippedFolderPath, productName, artifact);
+      updateDependencyContentsFromProductJson(productModuleContent, productId, unzippedFolderPath, productName);
       extractReadMeFileFromContents(productId, unzippedFolderPath, productModuleContent);
     } catch (Exception e) {
       log.error("Cannot get product.json content in {}", e.getMessage());
@@ -65,18 +64,14 @@ public class ProductContentServiceImpl implements ProductContentService {
   }
 
   public void updateDependencyContentsFromProductJson(ProductModuleContent productModuleContent,
-      String productId, String unzippedFolderPath, String productName, Artifact artifact) throws IOException {
-    List<Artifact> artifacts = MavenUtils.convertProductJsonToMavenProductInfo(
-        Paths.get(unzippedFolderPath));
+      String productId, String unzippedFolderPath, String productName) throws IOException {
+    List<Artifact> artifacts = MavenUtils.convertProductJsonToMavenProductInfo(Paths.get(unzippedFolderPath));
     ProductContentUtils.updateProductModule(productModuleContent, artifacts);
     Path productJsonPath = Paths.get(unzippedFolderPath, ProductJsonConstants.PRODUCT_JSON_FILE);
     String content = MavenUtils.extractProductJsonContent(productJsonPath);
 
-    ProductJsonContent productJsonContent = productJsonContentService.updateProductJsonContent(content,
-        productModuleContent.getVersion(),
+    productJsonContentService.updateProductJsonContent(content, productModuleContent.getVersion(),
         ProductJsonConstants.VERSION_VALUE, productId, productName);
-
-    metadataService.updateArtifactAndMetaDataForProductJsonContent(productJsonContent, artifact);
   }
   private void extractReadMeFileFromContents(String productId, String unzippedFolderPath,
       ProductModuleContent productModuleContent) {

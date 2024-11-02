@@ -59,11 +59,12 @@ class MetadataServiceImplTest extends BaseSetup {
 
     Artifact mockArtifact = getMockArtifact();
     Metadata mockMetadata = buildMocKMetadata();
+    Product mockProduct = getMockProduct();
     try (MockedStatic<MavenUtils> mockUtils = Mockito.mockStatic(MavenUtils.class)) {
       mockUtils.when(() -> MavenUtils.getMetadataContentFromUrl(ArgumentMatchers.anyString())).thenReturn(null);
-      mockUtils.when(() -> MavenUtils.convertArtifactToMetadata(any(), any(), any())).thenReturn(mockMetadata);
+      mockUtils.when(() -> MavenUtils.convertArtifactsToMetadataSet(any(), any())).thenReturn(Set.of(mockMetadata));
 
-      metadataService.updateArtifactAndMetaDataForProductJsonContent(mockProductJsonContent, mockArtifact);
+      metadataService.updateArtifactAndMetadata(mockProduct.getId(), List.of("10.0.1") ,List.of(mockArtifact));
 
       verify(mavenArtifactVersionRepo, times(1)).save(any());
       verify(metadataRepo, times(1)).saveAll(any());
@@ -72,13 +73,12 @@ class MetadataServiceImplTest extends BaseSetup {
 
   @Test
   void testGetArtifactsFromNonSyncedVersion() {
-    Mockito.when(productJsonRepo.findByProductIdAndVersion(MOCK_PRODUCT_ID, MOCK_RELEASED_VERSION)).thenReturn(
+    Mockito.when(productJsonRepo.findByProductIdAndVersionIn(MOCK_PRODUCT_ID, List.of(MOCK_RELEASED_VERSION))).thenReturn(
         List.of(getMockProductJsonContent()));
     Set<Artifact> artifacts = metadataService.getArtifactsFromNonSyncedVersion(MOCK_PRODUCT_ID,
         Collections.emptyList());
     Assertions.assertTrue(CollectionUtils.isEmpty(artifacts));
-    Mockito.verify(productJsonRepo, Mockito.never()).findByProductIdAndVersion(Mockito.anyString(),
-        Mockito.anyString());
+    Mockito.verify(productJsonRepo, Mockito.never()).findByProductIdAndVersionIn(Mockito.anyString(), any());
     artifacts = metadataService.getArtifactsFromNonSyncedVersion(MOCK_PRODUCT_ID, List.of(MOCK_RELEASED_VERSION));
     Assertions.assertEquals(2, artifacts.size());
     Assertions.assertEquals("bpmn-statistic-demo", artifacts.iterator().next().getArtifactId());

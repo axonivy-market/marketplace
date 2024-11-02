@@ -12,7 +12,5 @@ public interface MetadataService {
 
   boolean syncProductMetadata(Product product);
 
-  void updateArtifactAndMetaDataForProductJsonContent(ProductJsonContent productJsonContent, Artifact productArtifact);
-
-  void updateArtifactAndMetadata(String productId, List<Artifact> artifacts);
+  void updateArtifactAndMetadata(String productId , List<String> versions , List<Artifact> artifacts);
 }
