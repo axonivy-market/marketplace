@@ -12,6 +12,8 @@ import { CommonUtils } from '../../../../shared/utils/common.utils';
 import { ROUTER } from '../../../../shared/constants/router.constant';
 import { MatomoConfiguration, MatomoModule, MatomoRouterModule } from 'ngx-matomo-client';
 import { MatomoTestingModule } from 'ngx-matomo-client/testing';
+import { ProductDetailActionType } from '../../../../shared/enums/product-detail-action-type';
+import { MATOMO_TRACKING_ENVIRONMENT } from '../../../../shared/constants/matomo.constant';
 
 class MockElementRef implements ElementRef {
   nativeElement = {
@@ -359,5 +361,26 @@ describe('ProductDetailVersionActionComponent', () => {
     // Assert
     expect(productServiceMock.sendRequestToGetProductVersionsForDesigner).toHaveBeenCalledWith(productId);
     expect(component.versions()).toEqual([]);
+  });
+
+  it('should return the correct tracking environment based on the action type', () => {
+    const testCases = [
+      { actionType: ProductDetailActionType.STANDARD, expected: MATOMO_TRACKING_ENVIRONMENT.standard },
+      { actionType: ProductDetailActionType.DESIGNER_ENV, expected: MATOMO_TRACKING_ENVIRONMENT.designerEnv },
+      { actionType: ProductDetailActionType.CUSTOM_SOLUTION, expected: MATOMO_TRACKING_ENVIRONMENT.customSolution },
+    ];
+  
+    testCases.forEach(({ actionType, expected }) => {
+      component.actionType = actionType;
+
+      const result = component.getTrackingEnvironmentBasedOnActionType();
+      expect(result).toBe(expected);
+    });
+  });
+
+  it('should return empty environment when action type is default', () => {  
+    const result = component.getTrackingEnvironmentBasedOnActionType();
+    
+    expect(result).toBe('');
   });
 });
