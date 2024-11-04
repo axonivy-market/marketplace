@@ -1,3 +1,4 @@
+# Used for the local environment
 name: marketplace
 
 services:
@@ -5,8 +6,6 @@ services:
     container_name: marketplace-ui
     build:
       context: ../../marketplace-ui
-      additional_contexts:
-        assets: ../../marketplace-build/
       dockerfile: Dockerfile
       args:
         - BUILD_ENV=${BUILD_ENV}
@@ -16,8 +15,6 @@ services:
       - marketcache:/usr/share/nginx/html/market-cache
     ports:
       - "4200:80"
-    depends_on:
-      - service
     networks:
       - marketplace-network
 
