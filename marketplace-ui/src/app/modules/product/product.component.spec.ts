@@ -20,7 +20,7 @@ import { ItemDropdown } from '../../shared/models/item-dropdown.model';
 import { By } from '@angular/platform-browser';
 import { Location } from '@angular/common';
 import { ProductDetailComponent } from './product-detail/product-detail.component';
-import { MatomoConfiguration, MatomoModule, MatomoRouterModule } from 'ngx-matomo-client';
+import { MatomoTestingModule } from 'ngx-matomo-client/testing';
 
 describe('ProductComponent', () => {
   let component: ProductComponent;
@@ -68,11 +68,8 @@ describe('ProductComponent', () => {
       imports: [
         ProductComponent, 
         TranslateModule.forRoot(),
-        MatomoModule.forRoot({
-          trackerUrl: '',
-          siteId: '',
-        } as MatomoConfiguration),
-        MatomoRouterModule],
+        MatomoTestingModule.forRoot()
+      ],
       providers: [
         {
           provide: ActivatedRoute,

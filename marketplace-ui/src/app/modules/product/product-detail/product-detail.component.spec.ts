@@ -30,7 +30,7 @@ import { MockProductService } from '../../../shared/mocks/mock-services';
 import { ProductDetailActionType } from '../../../shared/enums/product-detail-action-type';
 import { LanguageService } from '../../../core/services/language/language.service';
 import { Language } from '../../../shared/enums/language.enum';
-import { MatomoConfiguration, MatomoModule, MatomoRouterModule } from 'ngx-matomo-client';
+
 const products = MOCK_PRODUCTS._embedded.products;
 declare const viewport: Viewport;
 
@@ -56,12 +56,7 @@ describe('ProductDetailComponent', () => {
       imports: [
         ProductDetailComponent,
         TranslateModule.forRoot(),
-        MarkdownModule.forRoot(),
-        MatomoModule.forRoot({
-          trackerUrl: '',
-          siteId: '',
-        } as MatomoConfiguration),
-        MatomoRouterModule,
+        MarkdownModule.forRoot()
       ],
       providers: [
         provideHttpClient(withInterceptorsFromDi()),

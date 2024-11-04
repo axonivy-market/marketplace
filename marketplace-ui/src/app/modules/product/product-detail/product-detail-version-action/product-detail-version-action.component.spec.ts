@@ -41,12 +41,8 @@ describe('ProductDetailVersionActionComponent', () => {
     TestBed.configureTestingModule({
       imports: [
         ProductDetailVersionActionComponent, 
-        TranslateModule.forRoot(),
-        MatomoModule.forRoot({
-          trackerUrl: '',
-          siteId: '',
-        } as MatomoConfiguration),
-        MatomoRouterModule],
+        TranslateModule.forRoot()
+      ],
       providers: [
         TranslateService,
         CookieService,
