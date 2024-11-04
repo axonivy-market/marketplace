@@ -1,4 +1,4 @@
-trusted_hosts[] = "localhost:8085"
+trusted_hosts[] = "10.192.8.78:8085"
 trusted_hosts[] = "marketplace.server.ivy-cloud.com:8085/"
 cors_domains[] = *
 
