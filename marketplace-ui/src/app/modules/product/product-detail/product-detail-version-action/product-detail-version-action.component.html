@@ -2,6 +2,10 @@
   @case (ProductDetailActionType.STANDARD) {
     <div class="install-download-button-container gap-2 w-100 d-flex">
       <button
+        id="install-button"
+        #installButton
+        matomoCategory="BUTTON"
+        matomoAction="CLICK"
         [lang]="languageService.selectedLanguage()"
         class="btn btn__install flex-grow-1 me-lg-2"
         data-bs-toggle="tooltip"

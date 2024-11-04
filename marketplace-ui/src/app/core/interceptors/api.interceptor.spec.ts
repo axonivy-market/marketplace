@@ -7,6 +7,8 @@ import { of } from 'rxjs';
 import { ProductComponent } from '../../modules/product/product.component';
 import { DESIGNER_COOKIE_VARIABLE } from '../../shared/constants/common.constant';
 import { apiInterceptor } from './api.interceptor';
+import { MatomoTestingModule } from 'ngx-matomo-client/testing';
+import { MatomoRouterModule } from 'ngx-matomo-client';
 
 describe('AuthInterceptor', () => {
   let productComponent: ProductComponent;
@@ -16,7 +18,11 @@ describe('AuthInterceptor', () => {
 
   beforeEach(() => {
     TestBed.configureTestingModule({
-      imports: [ProductComponent, TranslateModule.forRoot()],
+      imports: [
+        ProductComponent, 
+        TranslateModule.forRoot(), 
+        MatomoTestingModule.forRoot(),
+        MatomoRouterModule.forRoot(),],
       providers: [
         provideHttpClient(withInterceptors([apiInterceptor])),
         HttpTestingController,

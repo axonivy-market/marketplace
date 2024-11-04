@@ -32,6 +32,7 @@ import { CookieService } from 'ngx-cookie-service';
 import { CommonUtils } from '../../../../shared/utils/common.utils';
 import { ActivatedRoute, Router } from '@angular/router';
 import { ROUTER } from '../../../../shared/constants/router.constant';
+import { MATOMO_DIRECTIVES, MatomoTrackClickDirective, MatomoTrackerDirective } from 'ngx-matomo-client';
 
 const showDevVersionCookieName = 'showDevVersions';
 
@@ -43,7 +44,10 @@ const showDevVersionCookieName = 'showDevVersions';
     TranslateModule,
     FormsModule,
     CommonDropdownComponent,
-    LoadingSpinnerComponent
+    LoadingSpinnerComponent,
+    MatomoTrackerDirective,
+    MatomoTrackClickDirective,
+    MATOMO_DIRECTIVES
   ],
   templateUrl: './product-detail-version-action.component.html',
   styleUrl: './product-detail-version-action.component.scss'
