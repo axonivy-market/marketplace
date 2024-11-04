@@ -3,5 +3,7 @@ export const environment = {
   apiUrl: '/marketplace-service',
   githubClientId: 'Ov23liK1GCV3aAmN8kby',
   githubAuthCallbackPath: '/auth/github/callback',
-  dayInMiliseconds: 86400000
+  dayInMiliseconds: 86400000,
+  matomoSiteId: 1,
+  matomoTrackerUrl: '//10.193.8.78:8085/'
 };
