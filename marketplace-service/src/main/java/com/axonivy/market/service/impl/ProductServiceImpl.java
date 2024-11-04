@@ -485,21 +485,23 @@ public class ProductServiceImpl implements ProductService {
     mavenArtifacts.addAll(productArtifacts);
     mavenArtifacts.addAll(archivedArtifacts);
 
+    List<String> nonSyncReleasedVersion = new ArrayList<>();
     for (Artifact mavenArtifact : mavenArtifacts) {
-      getMetadataContent(mavenArtifact, product);
+      getMetadataContent(mavenArtifact, product, nonSyncReleasedVersion);
     }
+    metadataService.updateArtifactAndMetadata(product.getId(), nonSyncReleasedVersion, product.getArtifacts());
   }
 
-  private void getMetadataContent(Artifact artifact, Product product) {
+  private void getMetadataContent(Artifact artifact, Product product, List<String> nonSyncReleasedVersion) {
     String metadataUrl = MavenUtils.buildMetadataUrlFromArtifactInfo(artifact.getRepoUrl(), artifact.getGroupId(),
         createProductArtifactId(artifact));
     String metadataContent = MavenUtils.getMetadataContentFromUrl(metadataUrl);
     if (StringUtils.isNotBlank(metadataContent)) {
-      updateContentsFromMavenXML(product, metadataContent, artifact);
+      updateContentsFromMavenXML(product, metadataContent, artifact, nonSyncReleasedVersion);
     }
   }
 
-  private void updateContentsFromMavenXML(Product product, String metadataContent, Artifact mavenArtifact) {
+  private void updateContentsFromMavenXML(Product product, String metadataContent, Artifact mavenArtifact, List<String> nonSyncReleasedVersion) {
     Document document = MetadataReaderUtils.getDocumentFromXMLContent(metadataContent);
 
     String latestVersion = MetadataReaderUtils.getElementValue(document, MavenConstants.LATEST_VERSION_TAG);
@@ -533,7 +535,7 @@ public class ProductServiceImpl implements ProductService {
           product.getNames().get(EN_LANGUAGE));
       Optional.ofNullable(productModuleContent).ifPresent(productModuleContents::add);
     }
-    metadataService.updateArtifactAndMetadata(product.getId(), mavenVersions, product.getArtifacts());
+    nonSyncReleasedVersion.addAll(mavenVersions);
 
     if (ObjectUtils.isNotEmpty(productModuleContents)) {
       productModuleContentRepo.saveAll(productModuleContents);

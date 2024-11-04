@@ -131,12 +131,16 @@ public class MetadataServiceImpl implements MetadataService {
   @Override
   public void updateArtifactAndMetadata(String productId, List<String> versions, List<Artifact> artifacts) {
     Set<Metadata> metadataSet = new HashSet<>(metadataRepo.findByProductId(productId));
-    List<ProductJsonContent> productJsonContents = productJsonRepo.findByProductIdAndVersionIn(productId, versions);
     Set<Artifact> artifactsFromNewTags = new HashSet<>();
-    for (ProductJsonContent productJsonContent : productJsonContents) {
-      List<Artifact> artifactsFromNonSyncedVersion = MavenUtils.getMavenArtifactsFromProductJson(productJsonContent);
-      artifactsFromNewTags.addAll(artifactsFromNonSyncedVersion);
-    }
+
+    Optional.ofNullable(versions).filter(ObjectUtils::isNotEmpty).ifPresent(mavenVersions -> {
+      List<ProductJsonContent> productJsonContents = productJsonRepo.findByProductIdAndVersionIn(productId, mavenVersions);
+      for (ProductJsonContent productJsonContent : productJsonContents) {
+        List<Artifact> artifactsFromNonSyncedVersion = MavenUtils.getMavenArtifactsFromProductJson(productJsonContent);
+        artifactsFromNewTags.addAll(artifactsFromNonSyncedVersion);
+      }
+    });
+
     log.info("**MetadataService: New tags detected: {} in product {}", versions, productId);
     metadataSet.addAll(MavenUtils.convertArtifactsToMetadataSet(artifactsFromNewTags, productId));
 
