@@ -11,6 +11,7 @@ import { ActivatedRoute, provideRouter, Router } from '@angular/router';
 import { CommonUtils } from '../../../../shared/utils/common.utils';
 import { ROUTER } from '../../../../shared/constants/router.constant';
 import { MatomoConfiguration, MatomoModule, MatomoRouterModule } from 'ngx-matomo-client';
+import { MatomoTestingModule } from 'ngx-matomo-client/testing';
 
 class MockElementRef implements ElementRef {
   nativeElement = {
@@ -41,7 +42,8 @@ describe('ProductDetailVersionActionComponent', () => {
     TestBed.configureTestingModule({
       imports: [
         ProductDetailVersionActionComponent, 
-        TranslateModule.forRoot()
+        TranslateModule.forRoot(),
+        MatomoTestingModule.forRoot()
       ],
       providers: [
         TranslateService,
