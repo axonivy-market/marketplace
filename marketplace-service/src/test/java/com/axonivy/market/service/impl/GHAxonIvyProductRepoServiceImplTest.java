@@ -5,7 +5,6 @@ import com.axonivy.market.bo.Artifact;
 import com.axonivy.market.constants.MavenConstants;
 import com.axonivy.market.constants.ProductJsonConstants;
 import com.axonivy.market.entity.ProductModuleContent;
-import com.axonivy.market.enums.Language;
 import com.axonivy.market.github.service.GitHubService;
 import com.axonivy.market.github.service.impl.GHAxonIvyProductRepoServiceImpl;
 import com.axonivy.market.github.util.GitHubUtils;
@@ -37,9 +36,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
