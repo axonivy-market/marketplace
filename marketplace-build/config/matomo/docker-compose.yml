@@ -25,7 +25,6 @@ services:
       - matomo-db
     volumes:
       - matomo:/var/www/html:z
-      - ./config.ini.php:/var/www/html/config/config.ini.php:z
     environment:
       - MATOMO_DATABASE_HOST=matomo-db
       - PHP_MEMORY_LIMIT=2048M
