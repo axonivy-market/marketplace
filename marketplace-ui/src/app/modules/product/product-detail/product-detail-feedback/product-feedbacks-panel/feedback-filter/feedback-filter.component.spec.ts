@@ -50,7 +50,7 @@ describe('FeedbackFilterComponent', () => {
 
   it('should pass the correct selected item to the dropdown', () => {
     const dropdownComponent = fixture.debugElement.query(By.directive(CommonDropdownComponent)).componentInstance;
-    expect(dropdownComponent.selectedItem).toBe(component.selectedSortTypeLabel);
+    expect(dropdownComponent.selectedItem).toBe(component.selectedSortTypeLabel());
   });
 
   it('should call onSortChange when an item is selected', () => {

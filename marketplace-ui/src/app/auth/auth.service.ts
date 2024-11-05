@@ -61,8 +61,7 @@ export class AuthService {
   handleTokenResponse(token: string, state: string): void {
     this.setTokenAsCookie(token);
     this.router.navigate([`${state}`], {
-      queryParams: { showPopup: 'true' },
-      queryParamsHandling: 'preserve'
+      queryParams: { showPopup: 'true' }
     });
   }
 
