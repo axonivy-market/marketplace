@@ -105,7 +105,10 @@ public class FeedbackController {
       @RequestParam("productId") @Parameter(description = "Product id (from meta.json)", example = "portal",
           in = ParameterIn.QUERY) String productId) {
     Feedback feedback = feedbackService.findFeedbackByUserIdAndProductId(userId, productId);
-    return ResponseEntity.ok(feedbackModelAssembler.toModel(feedback));
+    if (feedback == null) {
+      return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+    }
+    return new ResponseEntity<>(feedbackModelAssembler.toModel(feedback), HttpStatus.OK);
   }
 
   @PostMapping

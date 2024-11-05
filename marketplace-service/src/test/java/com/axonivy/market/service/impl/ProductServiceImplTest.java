@@ -695,7 +695,6 @@ class ProductServiceImplTest extends BaseSetup {
     when(productRepo.findById(anyString())).thenReturn(Optional.of(mockProduct));
     var mockContents = mockMetaJsonAndLogoList();
     when(marketRepoService.getMarketItemByPath(anyString())).thenReturn(mockContents);
-    when(metadataService.syncProductMetadata(any(Product.class))).thenReturn(true);
     when(productRepo.save(any(Product.class))).thenReturn(mockProduct);
     // Executes
     var result = productService.syncOneProduct(SAMPLE_PRODUCT_PATH, SAMPLE_PRODUCT_ID, false);

@@ -7,11 +7,16 @@
         class="rounded-circle img-avatar img-fit-cover"
         [src]="feedback.userAvatarUrl ?? '/assets/images/misc/avatar-default.png'"
         alt="Github user avatar" />
-      <div class="d-flex flex-row align-items-center p-0" style="gap: 10px">
-        <p class="text-primary mb-0">
-          {{ feedback.username ?? 'Github User' }}
+      <div>
+        <div class="d-flex flex-row align-items-center p-0 gap-3">
+          <p class="text-primary mb-0">
+            {{ feedback.username ?? 'Github User' }}
+          </p>
+          <i class="bi bi-github text-primary icon-feedback"></i>
+        </div>
+        <p class="feedback-time-text">
+          {{ feedback.updatedAt | timeAgo: languageService.selectedLanguage() | async}}
         </p>
-        <i class="bi bi-github text-primary icon-feedback"></i>
       </div>
     </div>
     <div class="star-rating-container">

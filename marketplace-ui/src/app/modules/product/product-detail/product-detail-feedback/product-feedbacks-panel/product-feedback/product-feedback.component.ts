@@ -1,12 +1,14 @@
-import { Component, ElementRef, HostListener, Input, signal, ViewChild } from '@angular/core';
+import { Component, ElementRef, HostListener, inject, Input, signal, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { StarRatingComponent } from '../../../../../../shared/components/star-rating/star-rating.component';
 import { Feedback } from '../../../../../../shared/models/feedback.model';
+import { TimeAgoPipe } from '../../../../../../shared/pipes/time-ago.pipe';
+import { LanguageService } from '../../../../../../core/services/language/language.service';
 
 @Component({
   selector: 'app-product-feedback',
   standalone: true,
-  imports: [CommonModule, StarRatingComponent],
+  imports: [CommonModule, StarRatingComponent, TimeAgoPipe],
   templateUrl: './product-feedback.component.html',
   styleUrl: './product-feedback.component.scss'
 })
@@ -16,6 +18,7 @@ export class ProductFeedbackComponent {
 
   showToggle = signal(false);
   isExpanded = signal(false);
+  languageService = inject(LanguageService);
 
   ngAfterViewInit() {
     this.setShowToggle();
