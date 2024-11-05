@@ -146,7 +146,7 @@
             #contactUsButton
             [matomoClickCategory]="MatomoCategory.BUTTON"
             [matomoClickAction]="MatomoAction.CLICK"
-            [matomoClickName]="contactUsButton.name + '-' + getTrackingEnvironmentBasedOnActionType()"
+            [matomoClickName]="contactUsButton.name + ' - ' + getTrackingEnvironmentBasedOnActionType()"
             [lang]="languageService.selectedLanguage()"
             class="btn row btn_contact-us"
             (click)="onNavigateToContactPage()"
