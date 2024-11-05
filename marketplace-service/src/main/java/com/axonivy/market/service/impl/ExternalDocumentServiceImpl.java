@@ -37,18 +37,22 @@ public class ExternalDocumentServiceImpl implements ExternalDocumentService {
   final FileDownloadService fileDownloadService;
 
   @Override
-  public void syncDocumentForProduct(String productId, boolean isResetSync) {
+  public void syncDocumentForProduct(String productId, List<String> releasedVersions, boolean isResetSync) {
     productRepo.findById(productId).ifPresent(product -> {
       var docArtifacts = Optional.ofNullable(product.getArtifacts()).orElse(List.of())
           .stream().filter(artifact -> BooleanUtils.isTrue(artifact.getDoc())).toList();
-      List<String> releasedVersions = Optional.ofNullable(product.getReleasedVersions()).orElse(List.of())
-          .stream().filter(VersionUtils::isValidFormatReleasedVersion).toList();
-      if (ObjectUtils.isEmpty(docArtifacts) || ObjectUtils.isEmpty(releasedVersions)) {
+
+      List<String> updatedReleasedVersions = ObjectUtils.isEmpty(releasedVersions)
+          ? Optional.ofNullable(product.getReleasedVersions()).orElse(List.of())
+          .stream().filter(VersionUtils::isValidFormatReleasedVersion).toList()
+          : releasedVersions;
+
+      if (ObjectUtils.isEmpty(docArtifacts)) {
         return;
       }
 
       for (var artifact : docArtifacts) {
-        syncDocumentationForProduct(productId, isResetSync, artifact, releasedVersions);
+        syncDocumentationForProduct(productId, isResetSync, artifact, updatedReleasedVersions);
       }
     });
   }
