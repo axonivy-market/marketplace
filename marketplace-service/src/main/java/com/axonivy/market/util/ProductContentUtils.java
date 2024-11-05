@@ -150,7 +150,7 @@ public class ProductContentUtils {
 
   public static void mappingDescriptionSetupAndDemo(Map<String, Map<String, String>> moduleContents,
       String readmeFileName, ReadmeContentsModel readmeContentsModel) {
-    String locale = Optional.ofNullable(readmeFileName)
+    String locale = Optional.ofNullable(getReadmeFileLocale(readmeFileName))
         .filter(StringUtils::isNotEmpty)
         .map(String::toLowerCase)
         .orElse(Language.EN.getValue());

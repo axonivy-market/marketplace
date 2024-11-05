@@ -54,8 +54,7 @@ class MetadataServiceImplTest extends BaseSetup {
   @Test
   void testUpdateArtifactAndMetaDataForProduct() {
     ProductJsonContent mockProductJsonContent = getMockProductJsonContent();
-    mockProductJsonContent.setId("amazon-comprehend-9.2.0");
-    mockProductJsonContent.setProductId("amazon-comprehend");
+    mockProductJsonContent.setProductId(MOCK_PRODUCT_ID);
 
     Artifact mockArtifact = getMockArtifact();
     Metadata mockMetadata = buildMocKMetadata();
@@ -64,7 +63,7 @@ class MetadataServiceImplTest extends BaseSetup {
       mockUtils.when(() -> MavenUtils.getMetadataContentFromUrl(ArgumentMatchers.anyString())).thenReturn(null);
       mockUtils.when(() -> MavenUtils.convertArtifactsToMetadataSet(any(), any())).thenReturn(Set.of(mockMetadata));
 
-      metadataService.updateArtifactAndMetadata(mockProduct.getId(), List.of("10.0.1") ,List.of(mockArtifact));
+      metadataService.updateArtifactAndMetadata(mockProduct.getId(), List.of(MOCK_RELEASED_VERSION) ,List.of(mockArtifact));
 
       verify(mavenArtifactVersionRepo, times(1)).save(any());
       verify(metadataRepo, times(1)).saveAll(any());
