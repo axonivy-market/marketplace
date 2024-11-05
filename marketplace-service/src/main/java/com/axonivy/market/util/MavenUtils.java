@@ -236,7 +236,8 @@ public class MavenUtils {
 
   public static Metadata convertArtifactToMetadata(String productId, Artifact artifact, String metadataUrl,
       ArchivedArtifact archivedArtifact) {
-    String artifactName = StringUtils.defaultIfBlank(artifact.getName(), GitHubUtils.convertArtifactIdToName(artifact.getArtifactId()));
+    String artifactName = StringUtils.defaultIfBlank(artifact.getName(),
+        GitHubUtils.convertArtifactIdToName(artifact.getArtifactId()));
     String artifactId = Objects.isNull(archivedArtifact) ? artifact.getArtifactId() : archivedArtifact.getArtifactId();
     String groupId = Objects.isNull(archivedArtifact) ? artifact.getGroupId() : archivedArtifact.getGroupId();
     String type = StringUtils.defaultIfBlank(artifact.getType(), ProductJsonConstants.DEFAULT_PRODUCT_TYPE);

@@ -5,9 +5,7 @@ import com.axonivy.market.constants.CommonConstants;
 import com.axonivy.market.constants.ProductJsonConstants;
 import com.axonivy.market.constants.ReadmeConstants;
 import com.axonivy.market.entity.Image;
-import com.axonivy.market.entity.ProductJsonContent;
 import com.axonivy.market.entity.ProductModuleContent;
-import com.axonivy.market.enums.Language;
 import com.axonivy.market.model.ReadmeContentsModel;
 import com.axonivy.market.service.FileDownloadService;
 import com.axonivy.market.service.ImageService;
@@ -32,8 +30,6 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Stream;
 
-import static com.axonivy.market.util.ProductContentUtils.*;
-
 @Log4j2
 @Service
 @AllArgsConstructor
@@ -41,7 +37,6 @@ public class ProductContentServiceImpl implements ProductContentService {
   private final FileDownloadService fileDownloadService;
   private final ProductJsonContentService productJsonContentService;
   private final ImageService imageService;
-  private final MetadataService metadataService;
 
   @Override
   public ProductModuleContent getReadmeAndProductContentsFromVersion(String productId, String version, String url,
@@ -73,6 +68,7 @@ public class ProductContentServiceImpl implements ProductContentService {
     productJsonContentService.updateProductJsonContent(content, productModuleContent.getVersion(),
         ProductJsonConstants.VERSION_VALUE, productId, productName);
   }
+
   private void extractReadMeFileFromContents(String productId, String unzippedFolderPath,
       ProductModuleContent productModuleContent) {
     Map<String, Map<String, String>> moduleContents = new HashMap<>();

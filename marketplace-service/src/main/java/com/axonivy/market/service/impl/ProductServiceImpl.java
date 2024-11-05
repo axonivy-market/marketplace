@@ -9,7 +9,6 @@ import com.axonivy.market.constants.ProductJsonConstants;
 import com.axonivy.market.criteria.ProductSearchCriteria;
 import com.axonivy.market.entity.GitHubRepoMeta;
 import com.axonivy.market.entity.Image;
-import com.axonivy.market.entity.Metadata;
 import com.axonivy.market.entity.Product;
 import com.axonivy.market.entity.ProductCustomSort;
 import com.axonivy.market.entity.ProductJsonContent;
@@ -485,11 +484,11 @@ public class ProductServiceImpl implements ProductService {
     mavenArtifacts.addAll(productArtifacts);
     mavenArtifacts.addAll(archivedArtifacts);
 
-    List<String> nonSyncReleasedVersion = new ArrayList<>();
+    List<String> nonSyncReleasedVersions = new ArrayList<>();
     for (Artifact mavenArtifact : mavenArtifacts) {
-      getMetadataContent(mavenArtifact, product, nonSyncReleasedVersion);
+      getMetadataContent(mavenArtifact, product, nonSyncReleasedVersions);
     }
-    metadataService.updateArtifactAndMetadata(product.getId(), nonSyncReleasedVersion, product.getArtifacts());
+    metadataService.updateArtifactAndMetadata(product.getId(), nonSyncReleasedVersions, product.getArtifacts());
   }
 
   private void getMetadataContent(Artifact artifact, Product product, List<String> nonSyncReleasedVersion) {

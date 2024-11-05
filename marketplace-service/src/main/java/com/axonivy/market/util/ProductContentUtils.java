@@ -15,6 +15,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -149,8 +150,10 @@ public class ProductContentUtils {
 
   public static void mappingDescriptionSetupAndDemo(Map<String, Map<String, String>> moduleContents,
       String readmeFileName, ReadmeContentsModel readmeContentsModel) {
-    String locale = getReadmeFileLocale(readmeFileName);
-    locale = StringUtils.isEmpty(locale) ? Language.EN.getValue() : locale.toLowerCase();
+    String locale = Optional.ofNullable(readmeFileName)
+        .filter(StringUtils::isNotEmpty)
+        .map(String::toLowerCase)
+        .orElse(Language.EN.getValue());
 
     moduleContents.computeIfAbsent(DESCRIPTION, key -> new HashMap<>()).put(locale,
         readmeContentsModel.getDescription());

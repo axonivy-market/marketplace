@@ -27,7 +27,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Optional;
 import java.util.Set;
 
 @Service
@@ -131,19 +130,18 @@ public class MetadataServiceImpl implements MetadataService {
   @Override
   public void updateArtifactAndMetadata(String productId, List<String> versions, List<Artifact> artifacts) {
     Set<Metadata> metadataSet = new HashSet<>(metadataRepo.findByProductId(productId));
-    Set<Artifact> artifactsFromNewTags = new HashSet<>();
+    Set<Artifact> artifactsFromNewVersions = new HashSet<>();
 
     if (ObjectUtils.isNotEmpty(versions)) {
       List<ProductJsonContent> productJsonContents = productJsonRepo.findByProductIdAndVersionIn(productId, versions);
       for (ProductJsonContent productJsonContent : productJsonContents) {
         List<Artifact> artifactsFromNonSyncedVersion = MavenUtils.getMavenArtifactsFromProductJson(productJsonContent);
-        artifactsFromNewTags.addAll(artifactsFromNonSyncedVersion);
+        artifactsFromNewVersions.addAll(artifactsFromNonSyncedVersion);
       }
+      log.info("**MetadataService: New versions detected: {} in product {}", versions, productId);
     }
 
-    log.info("**MetadataService: New tags detected: {} in product {}", versions, productId);
-    metadataSet.addAll(MavenUtils.convertArtifactsToMetadataSet(artifactsFromNewTags, productId));
-
+    metadataSet.addAll(MavenUtils.convertArtifactsToMetadataSet(artifactsFromNewVersions, productId));
     if (ObjectUtils.isNotEmpty(artifacts)) {
       metadataSet.addAll(MavenUtils.convertArtifactsToMetadataSet(new HashSet<>(artifacts), productId));
     }
