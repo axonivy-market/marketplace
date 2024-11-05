@@ -83,7 +83,6 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
-import java.util.function.Predicate;
 
 import static com.axonivy.market.constants.CommonConstants.SLASH;
 import static com.axonivy.market.constants.MavenConstants.*;
@@ -114,10 +113,10 @@ public class ProductServiceImpl implements ProductService {
   private final ImageRepository imageRepo;
   private final ImageService imageService;
   private final MongoTemplate mongoTemplate;
-  private final MetadataService metadataService;
   private final ProductContentService productContentService;
   private final ObjectMapper mapper = new ObjectMapper();
   private final SecureRandom random = new SecureRandom();
+  private final MetadataService metadataService;
   private GHCommit lastGHCommit;
   private GitHubRepoMeta marketRepoMeta;
   @Value("${market.legacy.installation.counts.path}")
@@ -130,9 +129,9 @@ public class ProductServiceImpl implements ProductService {
       GHAxonIvyMarketRepoService axonIvyMarketRepoService, GHAxonIvyProductRepoService axonIvyProductRepoService,
       GitHubRepoMetaRepository gitHubRepoMetaRepo, GitHubService gitHubService,
       ProductCustomSortRepository productCustomSortRepo, MavenArtifactVersionRepository mavenArtifactVersionRepo,
-      ProductJsonContentRepository productJsonContentRepo, ImageRepository imageRepo, MetadataService metadataService,
+      ProductJsonContentRepository productJsonContentRepo, ImageRepository imageRepo,
       MetadataSyncRepository metadataSyncRepo, MetadataRepository metadataRepo, ImageService imageService,
-      MongoTemplate mongoTemplate, ProductContentService productContentService) {
+      MongoTemplate mongoTemplate, ProductContentService productContentService, MetadataService metadataService) {
     this.productRepo = productRepo;
     this.productModuleContentRepo = productModuleContentRepo;
     this.axonIvyMarketRepoService = axonIvyMarketRepoService;
@@ -144,11 +143,11 @@ public class ProductServiceImpl implements ProductService {
     this.productJsonContentRepo = productJsonContentRepo;
     this.metadataSyncRepo = metadataSyncRepo;
     this.metadataRepo = metadataRepo;
-    this.metadataService = metadataService;
     this.imageRepo = imageRepo;
     this.imageService = imageService;
     this.mongoTemplate = mongoTemplate;
     this.productContentService = productContentService;
+    this.metadataService = metadataService;
   }
 
   @Override
@@ -485,30 +484,32 @@ public class ProductServiceImpl implements ProductService {
     mavenArtifacts.addAll(productArtifacts);
     mavenArtifacts.addAll(archivedArtifacts);
 
+    List<String> nonSyncReleasedVersions = new ArrayList<>();
     for (Artifact mavenArtifact : mavenArtifacts) {
-      getMetadataContent(mavenArtifact, product);
+      getMetadataContent(mavenArtifact, product, nonSyncReleasedVersions);
     }
+    metadataService.updateArtifactAndMetadata(product.getId(), nonSyncReleasedVersions, product.getArtifacts());
   }
 
-  private void getMetadataContent(Artifact artifact, Product product) {
+  private void getMetadataContent(Artifact artifact, Product product, List<String> nonSyncReleasedVersions) {
     String metadataUrl = MavenUtils.buildMetadataUrlFromArtifactInfo(artifact.getRepoUrl(), artifact.getGroupId(),
         createProductArtifactId(artifact));
     String metadataContent = MavenUtils.getMetadataContentFromUrl(metadataUrl);
     if (StringUtils.isNotBlank(metadataContent)) {
-      updateContentsFromMavenXML(product, metadataContent, artifact);
+      updateContentsFromMavenXML(product, metadataContent, artifact, nonSyncReleasedVersions);
     }
   }
 
-  private void updateContentsFromMavenXML(Product product, String metadataContent, Artifact mavenArtifact) {
+  private void updateContentsFromMavenXML(Product product, String metadataContent, Artifact mavenArtifact, List<String> nonSyncReleasedVersions) {
     Document document = MetadataReaderUtils.getDocumentFromXMLContent(metadataContent);
 
     String latestVersion = MetadataReaderUtils.getElementValue(document, MavenConstants.LATEST_VERSION_TAG);
     if (StringUtils.equals(latestVersion, product.getNewestReleaseVersion())) {
       return;
     }
+
     product.setNewestPublishedDate(getNewestPublishedDate(document));
     product.setNewestReleaseVersion(latestVersion);
-
     NodeList versionNodes = document.getElementsByTagName(MavenConstants.VERSION_TAG);
     List<String> mavenVersions = new ArrayList<>();
     for (int i = 0; i < versionNodes.getLength(); i++) {
@@ -517,19 +518,23 @@ public class ProductServiceImpl implements ProductService {
 
     updateProductCompatibility(product, mavenVersions);
 
-    List<String> currentVersions = product.getReleasedVersions();
-    if (CollectionUtils.isEmpty(currentVersions)) {
-      product.setReleasedVersions(new ArrayList<>());
-      currentVersions = productModuleContentRepo.findVersionsByProductId(product.getId());
-    }
-    mavenVersions = mavenVersions.stream().filter(filterNonPersistVersion(currentVersions)).toList();
+    List<String> currentVersions = ObjectUtils.isNotEmpty(product.getReleasedVersions()) ?
+        product.getReleasedVersions() :
+        productModuleContentRepo.findVersionsByProductId(product.getId());
+
+    mavenVersions = mavenVersions.stream().filter(version -> !currentVersions.contains(version)).toList();
+
+    Optional.ofNullable(product.getReleasedVersions()).ifPresentOrElse(releasedVersion -> {},
+        () -> product.setReleasedVersions(new ArrayList<>()));
 
     List<ProductModuleContent> productModuleContents = new ArrayList<>();
     for (String version : mavenVersions) {
       product.getReleasedVersions().add(version);
-      handleProductArtifact(version, product.getId(), productModuleContents, mavenArtifact,
+      ProductModuleContent productModuleContent = handleProductArtifact(version, product.getId(), mavenArtifact,
           product.getNames().get(EN_LANGUAGE));
+      Optional.ofNullable(productModuleContent).ifPresent(productModuleContents::add);
     }
+    nonSyncReleasedVersions.addAll(mavenVersions);
 
     if (ObjectUtils.isNotEmpty(productModuleContents)) {
       productModuleContentRepo.saveAll(productModuleContents);
@@ -554,12 +559,8 @@ public class ProductServiceImpl implements ProductService {
     }
   }
 
-  private static Predicate<? super String> filterNonPersistVersion(List<String> currentVersions) {
-    return version -> !currentVersions.contains(version);
-  }
-
-  public void handleProductArtifact(String version, String productId,
-      List<ProductModuleContent> productModuleContents, Artifact mavenArtifact, String productName) {
+  public ProductModuleContent handleProductArtifact(String version, String productId, Artifact mavenArtifact,
+      String productName) {
     String snapshotVersionValue = Strings.EMPTY;
     if (version.contains(MavenConstants.SNAPSHOT_VERSION)) {
       snapshotVersionValue = MetadataReaderUtils.getSnapshotVersionValue(version, mavenArtifact);
@@ -571,15 +572,8 @@ public class ProductServiceImpl implements ProductService {
     String url = MavenUtils.buildDownloadUrl(artifactId, version, type,
         repoUrl, mavenArtifact.getGroupId(), StringUtils.defaultIfBlank(snapshotVersionValue, version));
 
-    if (StringUtils.isBlank(url)) {
-      return;
-    }
-
-    try {
-      addProductContent(productId, version, url, productModuleContents, mavenArtifact, productName);
-    } catch (Exception e) {
-      log.error("Cannot download and unzip file {}", e.getMessage());
-    }
+    return productContentService.getReadmeAndProductContentsFromVersion(productId,
+        version, url, mavenArtifact, productName);
   }
 
   private String createProductArtifactId(Artifact mavenArtifact) {
@@ -587,14 +581,6 @@ public class ProductServiceImpl implements ProductService {
         : mavenArtifact.getArtifactId().concat(PRODUCT_ARTIFACT_POSTFIX);
   }
 
-  public void addProductContent(String productId, String version, String url,
-      List<ProductModuleContent> productModuleContents, Artifact artifact, String productName) {
-    ProductModuleContent productModuleContent = productContentService.getReadmeAndProductContentsFromVersion(productId,
-        version, url, artifact, productName);
-    if (Objects.nonNull(productModuleContent)) {
-      productModuleContents.add(productModuleContent);
-    }
-  }
 
   // Cover 3 cases after removing non-numeric characters (8, 11.1 and 10.0.2)
   @Override
@@ -731,7 +717,6 @@ public class ProductServiceImpl implements ProductService {
         updateProductContentForNonStandardProduct(gitHubContents, product);
         updateProductFromReleasedVersions(product);
         productRepo.save(product);
-        metadataService.syncProductMetadata(product);
         log.info("Sync product {} is finished!", productId);
         return true;
       }
