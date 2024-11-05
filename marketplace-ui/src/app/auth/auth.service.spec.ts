@@ -6,6 +6,7 @@ import { AuthService } from './auth.service';
 import { environment } from '../../environments/environment';
 import { of } from 'rxjs';
 import { provideHttpClient, withInterceptorsFromDi } from '@angular/common/http';
+import { TOKEN_KEY } from '../shared/constants/common.constant';
 
 describe('AuthService', () => {
   let service: AuthService;
@@ -70,7 +71,7 @@ describe('AuthService', () => {
     service['handleTokenResponse'](token, state);
 
     expect(cookieServiceSpy.set).toHaveBeenCalledWith(
-      service['TOKEN_KEY'],
+      TOKEN_KEY,
       token,
       {expires: jasmine.any(Number), path: '/'}
     );
