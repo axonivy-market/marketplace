@@ -1,6 +1,5 @@
-import { MatomoTestingModule, provideMatomoTesting } from 'ngx-matomo-client/testing';
+import { MatomoTestingModule } from 'ngx-matomo-client/testing';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { MatomoTestingModule, provideMatomoTesting } from 'ngx-matomo-client/testing';
 
 import { By } from '@angular/platform-browser';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';

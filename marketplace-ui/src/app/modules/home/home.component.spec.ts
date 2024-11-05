@@ -23,7 +23,6 @@ describe('HomeComponent', () => {
         MatomoTestingModule.forRoot()
       ],
       providers: [
-        provideMatomoTesting(),
         provideHttpClient(withInterceptorsFromDi()),
         provideHttpClientTesting(),
         TranslateService,
