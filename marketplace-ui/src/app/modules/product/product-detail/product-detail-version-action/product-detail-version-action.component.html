@@ -35,7 +35,7 @@
           #artifactDownloadButton
           [matomoClickCategory]="MatomoCategory.BUTTON"
           [matomoClickAction]="MatomoAction.CLICK"
-          [matomoClickName]="artifactDownloadButton.name + '-' + getTrackingEnvironmentBasedOnActionType()"
+          [matomoClickName]="artifactDownloadButton.name + ' - ' + getTrackingEnvironmentBasedOnActionType()"
           [lang]="languageService.selectedLanguage()"
           class="btn btn__download btn-secondary primary-bg flex-grow-1"
           type="button"
@@ -124,7 +124,7 @@
               #installButton
               [matomoClickCategory]="MatomoCategory.BUTTON"
               [matomoClickAction]="MatomoAction.CLICK"
-              [matomoClickName]="installButton.name + '-' + getTrackingEnvironmentBasedOnActionType()"
+              [matomoClickName]="installButton.name + ' - ' + getTrackingEnvironmentBasedOnActionType()"
               [lang]="languageService.selectedLanguage()"
               class="btn btn__install flex-grow-1 install-designer-button m-0 col-4" id="install-button"
               (click)="onUpdateInstallationCountForDesigner()" onClick="function installInDesigner() {
