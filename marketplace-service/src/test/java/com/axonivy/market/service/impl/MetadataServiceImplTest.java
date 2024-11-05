@@ -5,6 +5,7 @@ import com.axonivy.market.bo.Artifact;
 import com.axonivy.market.entity.MavenArtifactVersion;
 import com.axonivy.market.entity.Metadata;
 import com.axonivy.market.entity.Product;
+import com.axonivy.market.entity.ProductJsonContent;
 import com.axonivy.market.model.MavenArtifactModel;
 import com.axonivy.market.repository.MavenArtifactVersionRepository;
 import com.axonivy.market.repository.MetadataRepository;
@@ -16,6 +17,7 @@ import lombok.extern.log4j.Log4j2;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentMatchers;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockedStatic;
@@ -28,6 +30,10 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+
+import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 
 @Log4j2
 @ExtendWith(MockitoExtension.class)
@@ -46,14 +52,32 @@ class MetadataServiceImplTest extends BaseSetup {
   private MetadataSyncRepository metadataSyncRepo;
 
   @Test
+  void testUpdateArtifactAndMetaDataForProduct() {
+    ProductJsonContent mockProductJsonContent = getMockProductJsonContent();
+    mockProductJsonContent.setProductId(MOCK_PRODUCT_ID);
+
+    Artifact mockArtifact = getMockArtifact();
+    Metadata mockMetadata = buildMocKMetadata();
+    Product mockProduct = getMockProduct();
+    try (MockedStatic<MavenUtils> mockUtils = Mockito.mockStatic(MavenUtils.class)) {
+      mockUtils.when(() -> MavenUtils.getMetadataContentFromUrl(ArgumentMatchers.anyString())).thenReturn(null);
+      mockUtils.when(() -> MavenUtils.convertArtifactsToMetadataSet(any(), any())).thenReturn(Set.of(mockMetadata));
+
+      metadataService.updateArtifactAndMetadata(mockProduct.getId(), List.of(MOCK_RELEASED_VERSION) ,List.of(mockArtifact));
+
+      verify(mavenArtifactVersionRepo, times(1)).save(any());
+      verify(metadataRepo, times(1)).saveAll(any());
+    }
+  }
+
+  @Test
   void testGetArtifactsFromNonSyncedVersion() {
-    Mockito.when(productJsonRepo.findByProductIdAndVersion(MOCK_PRODUCT_ID, MOCK_RELEASED_VERSION)).thenReturn(
+    Mockito.when(productJsonRepo.findByProductIdAndVersionIn(MOCK_PRODUCT_ID, List.of(MOCK_RELEASED_VERSION))).thenReturn(
         List.of(getMockProductJsonContent()));
     Set<Artifact> artifacts = metadataService.getArtifactsFromNonSyncedVersion(MOCK_PRODUCT_ID,
         Collections.emptyList());
     Assertions.assertTrue(CollectionUtils.isEmpty(artifacts));
-    Mockito.verify(productJsonRepo, Mockito.never()).findByProductIdAndVersion(Mockito.anyString(),
-        Mockito.anyString());
+    Mockito.verify(productJsonRepo, Mockito.never()).findByProductIdAndVersionIn(Mockito.anyString(), any());
     artifacts = metadataService.getArtifactsFromNonSyncedVersion(MOCK_PRODUCT_ID, List.of(MOCK_RELEASED_VERSION));
     Assertions.assertEquals(2, artifacts.size());
     Assertions.assertEquals("bpmn-statistic-demo", artifacts.iterator().next().getArtifactId());

@@ -7,6 +7,7 @@ import com.axonivy.market.constants.ReadmeConstants;
 import com.axonivy.market.entity.ProductModuleContent;
 import com.axonivy.market.enums.Language;
 import com.axonivy.market.factory.ProductFactory;
+import com.axonivy.market.model.ReadmeContentsModel;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.util.Strings;
 
@@ -14,6 +15,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -57,9 +59,7 @@ public class ProductContentUtils {
 
   // Cover some cases including when demo and setup parts switch positions or
   // missing one of them
-  public static void getExtractedPartsOfReadme(Map<String, Map<String, String>> moduleContents, String readmeContents,
-      String readmeFileName) {
-    String locale = getReadmeFileLocale(readmeFileName);
+  public static ReadmeContentsModel getExtractedPartsOfReadme( String readmeContents) {
     String[] parts = readmeContents.split(DEMO_SETUP_TITLE);
     int demoIndex = readmeContents.indexOf(ReadmeConstants.DEMO_PART);
     int setupIndex = readmeContents.indexOf(ReadmeConstants.SETUP_PART);
@@ -84,15 +84,13 @@ public class ProductContentUtils {
     } else if (setupIndex != -1) {
       setup = parts[1];
     }
-    locale = StringUtils.isEmpty(locale) ? Language.EN.getValue() : locale.toLowerCase();
-    addLocaleContent(moduleContents, DESCRIPTION, description.trim(), locale);
-    addLocaleContent(moduleContents, DEMO, demo.trim(), locale);
-    addLocaleContent(moduleContents, SETUP, setup.trim(), locale);
-  }
 
-  public static void addLocaleContent(Map<String, Map<String, String>> moduleContents, String type, String content,
-      String locale) {
-    moduleContents.computeIfAbsent(type, key -> new HashMap<>()).put(locale, content);
+    ReadmeContentsModel readmeContentsModel = new ReadmeContentsModel();
+    readmeContentsModel.setDescription(description.trim());
+    readmeContentsModel.setDemo(demo.trim());
+    readmeContentsModel.setSetup(setup.trim());
+
+    return readmeContentsModel;
   }
 
   public static boolean hasImageDirectives(String readmeContents) {
@@ -136,11 +134,9 @@ public class ProductContentUtils {
 
   public static void updateProductModuleTabContents(ProductModuleContent productModuleContent,
       Map<String, Map<String, String>> moduleContents) {
-    productModuleContent.setDescription(
-        replaceEmptyContentsWithEnContent(moduleContents.get(DESCRIPTION)));
+    productModuleContent.setDescription(replaceEmptyContentsWithEnContent(moduleContents.get(DESCRIPTION)));
     productModuleContent.setDemo(replaceEmptyContentsWithEnContent(moduleContents.get(DEMO)));
-    productModuleContent.setSetup(replaceEmptyContentsWithEnContent(moduleContents.get
-        (SETUP)));
+    productModuleContent.setSetup(replaceEmptyContentsWithEnContent(moduleContents.get(SETUP)));
   }
 
   public static String replaceImageDirWithImageCustomId(Map<String, String> imageUrls, String readmeContents) {
@@ -150,5 +146,18 @@ public class ProductContentUtils {
           String.format(IMAGE_DOWNLOAD_URL_FORMAT, entry.getValue()));
     }
     return readmeContents;
+  }
+
+  public static void mappingDescriptionSetupAndDemo(Map<String, Map<String, String>> moduleContents,
+      String readmeFileName, ReadmeContentsModel readmeContentsModel) {
+    String locale = Optional.ofNullable(getReadmeFileLocale(readmeFileName))
+        .filter(StringUtils::isNotEmpty)
+        .map(String::toLowerCase)
+        .orElse(Language.EN.getValue());
+
+    moduleContents.computeIfAbsent(DESCRIPTION, key -> new HashMap<>()).put(locale,
+        readmeContentsModel.getDescription());
+    moduleContents.computeIfAbsent(SETUP, key -> new HashMap<>()).put(locale, readmeContentsModel.getSetup());
+    moduleContents.computeIfAbsent(DEMO, key -> new HashMap<>()).put(locale, readmeContentsModel.getDemo());
   }
 }

@@ -4,12 +4,15 @@ import com.axonivy.market.constants.GitHubConstants;
 import com.axonivy.market.constants.ReadmeConstants;
 import com.axonivy.market.entity.Product;
 import com.axonivy.market.entity.ProductModuleContent;
+import com.axonivy.market.enums.Language;
 import com.axonivy.market.github.service.GHAxonIvyProductRepoService;
 import com.axonivy.market.github.service.GitHubService;
 import com.axonivy.market.github.util.GitHubUtils;
+import com.axonivy.market.model.ReadmeContentsModel;
 import com.axonivy.market.service.ImageService;
 import com.axonivy.market.util.ProductContentUtils;
 import lombok.extern.log4j.Log4j2;
+import org.apache.commons.lang3.StringUtils;
 import org.kohsuke.github.GHContent;
 import org.kohsuke.github.GHOrganization;
 import org.springframework.stereotype.Service;
@@ -23,6 +26,7 @@ import java.util.Map;
 import java.util.Optional;
 
 import static com.axonivy.market.constants.CommonConstants.IMAGE_ID_PREFIX;
+import static com.axonivy.market.util.ProductContentUtils.*;
 
 @Log4j2
 @Service
@@ -66,7 +70,10 @@ public class GHAxonIvyProductRepoServiceImpl implements GHAxonIvyProductRepoServ
           if (ProductContentUtils.hasImageDirectives(readmeContents)) {
             readmeContents = updateImagesWithDownloadUrl(product.getId(), contents, readmeContents);
           }
-          ProductContentUtils.getExtractedPartsOfReadme(moduleContents, readmeContents, readmeFile.getName());
+
+          ReadmeContentsModel readmeContentsModel = ProductContentUtils.getExtractedPartsOfReadme(readmeContents);
+
+          ProductContentUtils.mappingDescriptionSetupAndDemo(moduleContents, readmeFile.getName(), readmeContentsModel);
         }
         ProductContentUtils.updateProductModuleTabContents(productModuleContent, moduleContents);
       }

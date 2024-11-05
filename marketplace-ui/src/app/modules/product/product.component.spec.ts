@@ -71,6 +71,7 @@ describe('ProductComponent', () => {
         MatomoTestingModule.forRoot()
       ],
       providers: [
+        provideMatomoTesting(),
         {
           provide: ActivatedRoute,
           useValue: {

@@ -116,6 +116,10 @@ public class ProductController {
     return new ResponseEntity<>(message, HttpStatus.OK);
   }
 
+  /**
+   * @deprecated
+   */
+  @Deprecated(forRemoval = true , since = "1.6.0")
   @PutMapping(SYNC_PRODUCT_VERSION)
   @Operation(hidden = true)
   public ResponseEntity<Message> syncProductVersions(@RequestHeader(value = AUTHORIZATION) String authorizationHeader
