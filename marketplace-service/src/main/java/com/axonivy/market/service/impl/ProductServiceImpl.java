@@ -491,16 +491,16 @@ public class ProductServiceImpl implements ProductService {
     metadataService.updateArtifactAndMetadata(product.getId(), nonSyncReleasedVersions, product.getArtifacts());
   }
 
-  private void getMetadataContent(Artifact artifact, Product product, List<String> nonSyncReleasedVersion) {
+  private void getMetadataContent(Artifact artifact, Product product, List<String> nonSyncReleasedVersions) {
     String metadataUrl = MavenUtils.buildMetadataUrlFromArtifactInfo(artifact.getRepoUrl(), artifact.getGroupId(),
         createProductArtifactId(artifact));
     String metadataContent = MavenUtils.getMetadataContentFromUrl(metadataUrl);
     if (StringUtils.isNotBlank(metadataContent)) {
-      updateContentsFromMavenXML(product, metadataContent, artifact, nonSyncReleasedVersion);
+      updateContentsFromMavenXML(product, metadataContent, artifact, nonSyncReleasedVersions);
     }
   }
 
-  private void updateContentsFromMavenXML(Product product, String metadataContent, Artifact mavenArtifact, List<String> nonSyncReleasedVersion) {
+  private void updateContentsFromMavenXML(Product product, String metadataContent, Artifact mavenArtifact, List<String> nonSyncReleasedVersions) {
     Document document = MetadataReaderUtils.getDocumentFromXMLContent(metadataContent);
 
     String latestVersion = MetadataReaderUtils.getElementValue(document, MavenConstants.LATEST_VERSION_TAG);
@@ -534,7 +534,7 @@ public class ProductServiceImpl implements ProductService {
           product.getNames().get(EN_LANGUAGE));
       Optional.ofNullable(productModuleContent).ifPresent(productModuleContents::add);
     }
-    nonSyncReleasedVersion.addAll(mavenVersions);
+    nonSyncReleasedVersions.addAll(mavenVersions);
 
     if (ObjectUtils.isNotEmpty(productModuleContents)) {
       productModuleContentRepo.saveAll(productModuleContents);

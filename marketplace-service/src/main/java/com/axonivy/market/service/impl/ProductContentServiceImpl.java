@@ -9,7 +9,6 @@ import com.axonivy.market.entity.ProductModuleContent;
 import com.axonivy.market.model.ReadmeContentsModel;
 import com.axonivy.market.service.FileDownloadService;
 import com.axonivy.market.service.ImageService;
-import com.axonivy.market.service.MetadataService;
 import com.axonivy.market.service.ProductContentService;
 import com.axonivy.market.service.ProductJsonContentService;
 import com.axonivy.market.util.MavenUtils;

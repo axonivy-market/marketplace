@@ -135,8 +135,8 @@ public class MetadataServiceImpl implements MetadataService {
     if (ObjectUtils.isNotEmpty(versions)) {
       List<ProductJsonContent> productJsonContents = productJsonRepo.findByProductIdAndVersionIn(productId, versions);
       for (ProductJsonContent productJsonContent : productJsonContents) {
-        List<Artifact> artifactsFromNonSyncedVersion = MavenUtils.getMavenArtifactsFromProductJson(productJsonContent);
-        artifactsFromNewVersions.addAll(artifactsFromNonSyncedVersion);
+        List<Artifact> artifactsFromNonSyncedVersions = MavenUtils.getMavenArtifactsFromProductJson(productJsonContent);
+        artifactsFromNewVersions.addAll(artifactsFromNonSyncedVersions);
       }
       log.info("**MetadataService: New versions detected: {} in product {}", versions, productId);
     }
