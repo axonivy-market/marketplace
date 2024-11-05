@@ -5,6 +5,7 @@ import com.axonivy.market.bo.Artifact;
 import com.axonivy.market.constants.ProductJsonConstants;
 import com.axonivy.market.entity.ProductModuleContent;
 import com.axonivy.market.service.ImageService;
+import com.axonivy.market.service.MetadataService;
 import com.axonivy.market.service.ProductJsonContentService;
 import com.axonivy.market.util.MavenUtils;
 import org.junit.jupiter.api.Test;
@@ -34,6 +35,8 @@ class ProductContentServiceImplTest extends BaseSetup {
   private ProductJsonContentService productJsonContentService;
   @Mock
   private ImageService imageService;
+  @Mock
+  private MetadataService metadataService;
 
   @Test
   void testUpdateDependencyContentsFromProductJson() throws IOException {
