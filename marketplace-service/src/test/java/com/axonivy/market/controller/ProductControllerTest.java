@@ -9,7 +9,6 @@ import com.axonivy.market.enums.TypeOption;
 import com.axonivy.market.exceptions.model.UnauthorizedException;
 import com.axonivy.market.github.service.GHAxonIvyMarketRepoService;
 import com.axonivy.market.github.service.GitHubService;
-import com.axonivy.market.model.ProductCustomSortRequest;
 import com.axonivy.market.service.MetadataService;
 import com.axonivy.market.service.ProductService;
 import com.axonivy.market.service.VersionService;
@@ -37,6 +36,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
+import static com.axonivy.market.constants.CommonConstants.AUTHORIZATION_HEADER;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
@@ -50,7 +50,6 @@ class ProductControllerTest {
       "uncover information in unstructured data.";
   private static final String PRODUCT_DESC_DE_SAMPLE = "Amazon Comprehend is a AI service that uses machine learning " +
       "to uncover information in unstructured data. DE";
-  private static final String AUTHORIZATION_HEADER = "Bearer valid_token";
   private static final String INVALID_AUTHORIZATION_HEADER = "Bearer invalid_token";
 
   @Mock
@@ -219,17 +218,6 @@ class ProductControllerTest {
   }
 
   @Test
-  void testCreateCustomSortProductsSuccess() {
-    ProductCustomSortRequest mockProductCustomSortRequest = createProductCustomSortRequestMock();
-    var response = productController.createCustomSortProducts(AUTHORIZATION_HEADER, mockProductCustomSortRequest);
-
-    assertEquals(HttpStatus.OK, response.getStatusCode());
-    assertTrue(response.hasBody());
-    assertEquals(ErrorCode.SUCCESSFUL.getCode(), Objects.requireNonNull(response.getBody()).getHelpCode());
-    assertTrue(response.getBody().getMessageDetails().contains("Custom product sort order added successfully"));
-  }
-
-  @Test
   void testGetBearerTokenWithValidHeader() {
     String token = AuthorizationUtils.getBearerToken(AUTHORIZATION_HEADER);
     assertEquals("valid_token", token);
@@ -255,12 +243,5 @@ class ProductControllerTest {
     mockProduct.setType("connector");
     mockProduct.setTags(List.of("AI"));
     return mockProduct;
-  }
-
-  private ProductCustomSortRequest createProductCustomSortRequestMock() {
-    List<String> productIds = new ArrayList<>();
-    productIds.add("a-trust");
-    productIds.add("approval-decision-utils");
-    return new ProductCustomSortRequest(productIds, "recently");
   }
 }

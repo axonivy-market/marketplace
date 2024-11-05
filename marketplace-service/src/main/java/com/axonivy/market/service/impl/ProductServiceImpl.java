@@ -49,9 +49,6 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.domain.Sort.Order;
-import org.springframework.data.mongodb.core.MongoTemplate;
-import org.springframework.data.mongodb.core.query.Query;
-import org.springframework.data.mongodb.core.query.Update;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 import org.w3c.dom.Document;
@@ -121,7 +118,7 @@ public class ProductServiceImpl implements ProductService {
       ProductCustomSortRepository productCustomSortRepo, MavenArtifactVersionRepository mavenArtifactVersionRepo,
       ProductJsonContentRepository productJsonContentRepo, ImageRepository imageRepo,
       MetadataSyncRepository metadataSyncRepo, MetadataRepository metadataRepo, ImageService imageService,
-      MongoTemplate mongoTemplate, ProductContentService productContentService, MetadataService metadataService,
+      ProductContentService productContentService, MetadataService metadataService,
       ProductMarketplaceDataRepository productMarketplaceDataRepo) {
     this.productRepo = productRepo;
     this.productModuleContentRepo = productModuleContentRepo;
@@ -331,7 +328,7 @@ public class ProductServiceImpl implements ProductService {
     return EMPTY;
   }
 
-  private Pageable refinePagination(String language, Pageable pageable) {
+  private Pageable refinePagination1(String language, Pageable pageable) {
     PageRequest pageRequest = (PageRequest) pageable;
     if (pageable != null) {
       List<Order> orders = new ArrayList<>();
@@ -349,6 +346,31 @@ public class ProductServiceImpl implements ProductService {
     }
     return pageRequest;
   }
+
+  private Pageable refinePagination(String language, Pageable pageable) {
+    PageRequest pageRequest = (PageRequest) pageable;
+    if (pageable != null) {
+      List<Order> orders = new ArrayList<>();
+      for (var sort : pageable.getSort()) {
+        SortOption sortOption = SortOption.of(sort.getProperty());
+        Order order;
+        if (SortOption.STANDARD.equals(sortOption)) {
+          order = new Order(sortOption.getDirection(), "marketplaceData.customOrder");
+        } else {
+          order = createOrder(sortOption, language);
+        }
+        orders.add(order);
+        if (SortOption.STANDARD.equals(sortOption)) {
+          orders.add(getExtensionOrder(language));
+        }
+      }
+      Order orderById = createOrder(SortOption.ID, language);
+      orders.add(orderById);
+      pageRequest = PageRequest.of(pageable.getPageNumber(), pageable.getPageSize(), Sort.by(orders));
+    }
+    return pageRequest;
+  }
+
 
   public Order createOrder(SortOption sortOption, String language) {
     return new Order(sortOption.getDirection(), sortOption.getCode(language));

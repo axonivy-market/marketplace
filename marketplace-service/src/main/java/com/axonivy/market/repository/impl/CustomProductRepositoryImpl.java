@@ -7,7 +7,6 @@ import com.axonivy.market.entity.Product;
 import com.axonivy.market.entity.ProductModuleContent;
 import com.axonivy.market.enums.DocumentField;
 import com.axonivy.market.enums.Language;
-import com.axonivy.market.enums.SortOption;
 import com.axonivy.market.enums.TypeOption;
 import com.axonivy.market.repository.CustomProductRepository;
 import com.axonivy.market.repository.CustomRepository;
@@ -20,14 +19,9 @@ import org.bson.BsonRegularExpression;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.aggregation.Aggregation;
 import org.springframework.data.mongodb.core.aggregation.AggregationResults;
-import org.springframework.data.mongodb.core.aggregation.LookupOperation;
-import org.springframework.data.mongodb.core.aggregation.MatchOperation;
-import org.springframework.data.mongodb.core.aggregation.SortOperation;
-import org.springframework.data.mongodb.core.aggregation.UnwindOperation;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.util.CollectionUtils;
@@ -122,69 +116,19 @@ public class CustomProductRepositoryImpl extends CustomRepository implements Cus
 //    var query = new Query(criteria);
 //    query.with(pageable);
 //    List<Product> entities = mongoTemplate.find(query, Product.class);
-    long count = mongoTemplate.count(new Query(criteria), Product.class);
+//    long count = mongoTemplate.count(new Query(criteria), Product.class);
 //    return new PageImpl<>(entities, pageable, count);
 
-// Step 1: Create the MatchOperation with the provided criteria
-    MatchOperation matchOperation = Aggregation.match(criteria);
+    Aggregation aggregation = Aggregation.newAggregation(
+        Aggregation.match(criteria),
+        Aggregation.lookup("ProductMarketplaceData", "_id", "_id", "marketplaceData"),
+        Aggregation.sort(pageable.getSort())
+    );
 
-    // Step 2: Define the $lookup operation
-    LookupOperation lookupOperation = Aggregation.lookup("ProductMarketplaceData", "_id", "_id",
-        "productMarketplaceData");
+    List<Product> products = mongoTemplate.aggregate(aggregation, "Product", Product.class).getMappedResults();
+    long count = mongoTemplate.count(new Query(criteria), Product.class);
 
-    // Step 3: Define the $unwind operation
-    UnwindOperation unwindOperation = Aggregation.unwind("productMarketplaceData",
-        true); // true for preserveNullAndEmptyArrays
-
-    // Step 4: Define the $sort operation
-//    pageable.getSort().stream().findFirst().
-    // Step 4: Define the $sort operation
-    SortOption option;
-    SortOperation sortOperation = null;
-    for (Sort.Order order : pageable.getSort()) {
-      if (order.getProperty().equals(SortOption.STANDARD.getCode())) {
-        sortOperation = Aggregation.sort(
-            Sort.by(Sort.Direction.DESC, "productMarketplaceData.customOrder"));
-        break;
-      }
-      if (order.getProperty().equals(SortOption.ALPHABETICALLY.getCode())) {
-        option = SortOption.ALPHABETICALLY;
-        sortOperation = Aggregation.sort(
-            Sort.by(Sort.Direction.ASC, "names['en']"));
-        break;
-      }
-      if (order.getProperty().equals(SortOption.POPULARITY.getCode())) {
-        sortOperation = Aggregation.sort(
-            Sort.by(Sort.Direction.DESC, "productMarketplaceData.installationCount"));
-        break;
-      }
-      if (order.getProperty().equals(SortOption.RECENT.getCode())) {
-        sortOperation = Aggregation.sort(
-            Sort.by(Sort.Direction.DESC, "newestPublishedDate"));
-        break;
-      }
-    }
-    Aggregation aggregation = Aggregation.newAggregation(matchOperation, lookupOperation, unwindOperation,
-        sortOperation);
-//    if (a) {
-//      sortOperation = Aggregation.sort(
-//          Sort.by(Sort.Direction.DESC, "productMarketplaceData.customOrder"));
-//      aggregation = Aggregation.newAggregation(matchOperation, lookupOperation, unwindOperation,
-//          sortOperation);
-//    } else {
-//      aggregation = Aggregation.newAggregation(matchOperation, lookupOperation, unwindOperation);
-//    }
-
-//    SortOperation sortOperation = Aggregation.sort(
-//        Sort.by(Sort.Direction.DESC, "productMarketplaceData.customOrder"));
-
-//    // Step 5: Combine all operations into an aggregation pipeline
-//    Aggregation aggregation = Aggregation.newAggregation(matchOperation, lookupOperation, unwindOperation,
-//        sortOperation);
-
-    // Step 6: Execute the aggregation and map the results to the Product class
-    AggregationResults<Product> results = mongoTemplate.aggregate(aggregation, "Product", Product.class);
-    return new PageImpl<>(results.getMappedResults(), pageable, count);
+    return new PageImpl<>(products, pageable, count);
   }
 
   private Criteria buildCriteriaSearch(ProductSearchCriteria searchCriteria) {

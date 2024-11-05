@@ -7,10 +7,8 @@ import com.axonivy.market.enums.ErrorCode;
 import com.axonivy.market.github.service.GHAxonIvyMarketRepoService;
 import com.axonivy.market.github.service.GitHubService;
 import com.axonivy.market.model.Message;
-import com.axonivy.market.model.ProductCustomSortRequest;
 import com.axonivy.market.model.ProductModel;
 import com.axonivy.market.service.MetadataService;
-import com.axonivy.market.service.ProductMarketplaceDataService;
 import com.axonivy.market.service.ProductService;
 import com.axonivy.market.util.AuthorizationUtils;
 import io.swagger.v3.oas.annotations.Operation;
@@ -18,7 +16,6 @@ import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.enums.ParameterIn;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -34,9 +31,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.util.CollectionUtils;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -59,7 +54,6 @@ public class ProductController {
   private final PagedResourcesAssembler<Product> pagedResourcesAssembler;
   private final MetadataService metadataService;
   private final GHAxonIvyMarketRepoService axonIvyMarketRepoService;
-  private final ProductMarketplaceDataService productMarketplaceDataService;
 
   @GetMapping()
   @Operation(summary = "Retrieve a paginated list of all products, optionally filtered by type, keyword, and language",
@@ -176,20 +170,6 @@ public class ProductController {
     } else {
       message.setMessageDetails("Sync unsuccessfully!");
     }
-    return new ResponseEntity<>(message, HttpStatus.OK);
-  }
-
-  @PostMapping(CUSTOM_SORT)
-  @Operation(hidden = true)
-  public ResponseEntity<Message> createCustomSortProducts(
-      @RequestHeader(value = AUTHORIZATION) String authorizationHeader,
-      @RequestBody @Valid ProductCustomSortRequest productCustomSortRequest) {
-    String token = AuthorizationUtils.getBearerToken(authorizationHeader);
-    gitHubService.validateUserInOrganizationAndTeam(token, GitHubConstants.AXONIVY_MARKET_ORGANIZATION_NAME,
-        GitHubConstants.AXONIVY_MARKET_TEAM_NAME);
-    productMarketplaceDataService.addCustomSortProduct(productCustomSortRequest);
-    var message = new Message(ErrorCode.SUCCESSFUL.getCode(), ErrorCode.SUCCESSFUL.getHelpText(),
-        "Custom product sort order added successfully");
     return new ResponseEntity<>(message, HttpStatus.OK);
   }
 
