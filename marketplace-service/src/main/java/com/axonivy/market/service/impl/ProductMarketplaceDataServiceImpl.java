@@ -1,7 +1,6 @@
 package com.axonivy.market.service.impl;
 
 import com.axonivy.market.constants.ProductJsonConstants;
-import com.axonivy.market.entity.Product;
 import com.axonivy.market.entity.ProductCustomSort;
 import com.axonivy.market.entity.ProductMarketplaceData;
 import com.axonivy.market.enums.ErrorCode;
@@ -61,7 +60,7 @@ public class ProductMarketplaceDataServiceImpl implements ProductMarketplaceData
 
   public void removeFieldFromAllProductDocuments(String fieldName) {
     Update update = new Update().unset(fieldName);
-    mongoTemplate.updateMulti(new Query(), update, Product.class);
+    mongoTemplate.updateMulti(new Query(), update, ProductMarketplaceData.class);
   }
 
   public void validateProductExists(String productId) throws NotFoundException {

@@ -10,7 +10,6 @@ import com.axonivy.market.enums.Language;
 import com.axonivy.market.enums.TypeOption;
 import com.axonivy.market.repository.CustomProductRepository;
 import com.axonivy.market.repository.CustomRepository;
-import com.axonivy.market.repository.ProductJsonContentRepository;
 import com.axonivy.market.repository.ProductModuleContentRepository;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -43,7 +42,6 @@ public class CustomProductRepositoryImpl extends CustomRepository implements Cus
 
   final MongoTemplate mongoTemplate;
   final ProductModuleContentRepository contentRepository;
-  final ProductJsonContentRepository jsonContentRepository;
 
   public Product queryProductByAggregation(Aggregation aggregation) {
     return Optional.of(mongoTemplate.aggregate(aggregation, EntityConstants.PRODUCT, Product.class))
@@ -113,22 +111,18 @@ public class CustomProductRepositoryImpl extends CustomRepository implements Cus
   }
 
   private Page<Product> getResultAsPageable(Pageable pageable, Criteria criteria) {
-//    var query = new Query(criteria);
-//    query.with(pageable);
-//    List<Product> entities = mongoTemplate.find(query, Product.class);
-//    long count = mongoTemplate.count(new Query(criteria), Product.class);
-//    return new PageImpl<>(entities, pageable, count);
-
     Aggregation aggregation = Aggregation.newAggregation(
         Aggregation.match(criteria),
-        Aggregation.lookup("ProductMarketplaceData", "_id", "_id", "marketplaceData"),
+        Aggregation.lookup(MongoDBConstants.PRODUCT_MARKETPLACE_COLLECTION, MongoDBConstants.ID, MongoDBConstants.ID,
+            MongoDBConstants.MARKETPLACE_DATA),
         Aggregation.sort(pageable.getSort())
     );
 
-    List<Product> products = mongoTemplate.aggregate(aggregation, "Product", Product.class).getMappedResults();
+    List<Product> entities = mongoTemplate.aggregate(aggregation, MongoDBConstants.PRODUCT_COLLECTION,
+        Product.class).getMappedResults();
     long count = mongoTemplate.count(new Query(criteria), Product.class);
 
-    return new PageImpl<>(products, pageable, count);
+    return new PageImpl<>(entities, pageable, count);
   }
 
   private Criteria buildCriteriaSearch(ProductSearchCriteria searchCriteria) {
