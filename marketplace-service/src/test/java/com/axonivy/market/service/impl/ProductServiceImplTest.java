@@ -22,7 +22,6 @@ import com.axonivy.market.repository.ImageRepository;
 import com.axonivy.market.repository.MavenArtifactVersionRepository;
 import com.axonivy.market.repository.MetadataRepository;
 import com.axonivy.market.repository.MetadataSyncRepository;
-import com.axonivy.market.repository.ProductCustomSortRepository;
 import com.axonivy.market.repository.ProductJsonContentRepository;
 import com.axonivy.market.repository.ProductModuleContentRepository;
 import com.axonivy.market.repository.ProductRepository;
@@ -36,7 +35,6 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.kohsuke.github.GHCommit;
 import org.kohsuke.github.GHContent;
-import org.kohsuke.github.GHRepository;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.InjectMocks;
@@ -49,7 +47,6 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
-import org.springframework.data.mongodb.core.MongoTemplate;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -75,7 +72,6 @@ class ProductServiceImplTest extends BaseSetup {
   private static final Pageable PAGEABLE = PageRequest.of(0, 20,
       Sort.by(SortOption.ALPHABETICALLY.getOption()).descending());
   private static final String SHA1_SAMPLE = "35baa89091b2452b77705da227f1a964ecabc6c8";
-  private static final String INSTALLATION_FILE_PATH = "src/test/resources/installationCount.json";
   private static final String EMPTY_SOURCE_URL_META_JSON_FILE = "/emptySourceUrlMeta.json";
   private static final String META_JSON_FILE_WITH_VENDOR_INFORMATION = "/meta-with-vendor-information.json";
   @Captor
@@ -85,16 +81,10 @@ class ProductServiceImplTest extends BaseSetup {
   @Captor
   ArgumentCaptor<ProductModuleContent> argumentCaptorProductModuleContent;
   @Captor
-  ArgumentCaptor<ArrayList<Product>> productListArgumentCaptor;
-  @Captor
   ArgumentCaptor<ProductSearchCriteria> productSearchCriteriaArgumentCaptor;
   private String keyword;
   private String language;
   private Page<Product> mockResultReturn;
-  @Mock
-  private MongoTemplate mongoTemplate;
-  @Mock
-  private GHRepository ghRepository;
   @Mock
   private ProductRepository productRepo;
   @Mock
@@ -114,8 +104,6 @@ class ProductServiceImplTest extends BaseSetup {
   @Mock
   private MetadataRepository metadataRepo;
   @Mock
-  private ProductCustomSortRepository productCustomSortRepo;
-  @Mock
   private ImageService imageService;
   @Mock
   private MavenArtifactVersionRepository mavenArtifactVersionRepo;
@@ -132,51 +120,6 @@ class ProductServiceImplTest extends BaseSetup {
   public void setup() {
     mockResultReturn = createPageProductsMock();
   }
-
-  //TODO
-//  @Test
-//  void testUpdateInstallationCountForProduct() {
-//    int result = productService.updateInstallationCountForProduct(null, MOCK_RELEASED_VERSION);
-//    assertEquals(0, result);
-//
-//    Product product = getMockProduct();
-//    product.setSynchronizedInstallationCount(true);
-//    when(productRepo.getProductWithModuleContent(MOCK_PRODUCT_ID)).thenReturn(product);
-//    when(productRepo.increaseInstallationCount(MOCK_PRODUCT_ID)).thenReturn(31);
-//
-//    result = productService.updateInstallationCountForProduct(MOCK_PRODUCT_ID, MOCK_RELEASED_VERSION);
-//    assertEquals(31, result);
-//
-//    result = productService.updateInstallationCountForProduct(MOCK_PRODUCT_ID, StringUtils.EMPTY);
-//    assertEquals(31, result);
-//  }
-
-  //TODO
-//  @Test
-//  void testSyncInstallationCountWithNewProduct() {
-//    Product product = new Product();
-//    product.setSynchronizedInstallationCount(null);
-//    product.setId(MOCK_PRODUCT_ID);
-//    ReflectionTestUtils.setField(productService, LEGACY_INSTALLATION_COUNT_PATH_FIELD_NAME, INSTALLATION_FILE_PATH);
-//
-//    productService.getInstallationCountFromFileOrInitializeRandomly(product.getId());
-//
-//    assertTrue(product.getInstallationCount() >= 20 && product.getInstallationCount() <= 50);
-//    assertTrue(product.getSynchronizedInstallationCount());
-//  }
-
-  //TODO
-//  @Test
-//  void testGetInstallationCountFromFileOrInitializeRandomly() {
-//    ReflectionTestUtils.setField(productService, LEGACY_INSTALLATION_COUNT_PATH_FIELD_NAME, INSTALLATION_FILE_PATH);
-//    Product product = getMockProduct();
-//    product.setSynchronizedInstallationCount(false);
-//
-//    productService.getInstallationCountFromFileOrInitializeRandomly(product.getId());
-//
-//    assertEquals(40, product.getInstallationCount());
-//    assertTrue(product.getSynchronizedInstallationCount());
-//  }
 
   @Test
   void testFindProducts() {
@@ -508,80 +451,6 @@ class ProductServiceImplTest extends BaseSetup {
     result = productService.getCompatibilityFromOldestVersion("11.2");
     assertEquals("11.2+", result);
   }
-
-  //TODO
-//  @Test
-//  void testRemoveFieldFromAllProductDocuments() {
-//    productService.removeFieldFromAllProductDocuments("customOrder");
-//
-//    verify(mongoTemplate).updateMulti(any(Query.class), any(Update.class), eq(Product.class));
-//  }
-
-  //TODO
-//  @Test
-//  void testRefineOrderedListOfProductsInCustomSort() throws InvalidParamException {
-//    // prepare
-//    List<String> orderedListOfProducts = List.of(SAMPLE_PRODUCT_ID);
-//    Product mockProduct = new Product();
-//    mockProduct.setId(SAMPLE_PRODUCT_ID);
-//    when(productRepo.findById(SAMPLE_PRODUCT_ID)).thenReturn(Optional.of(mockProduct));
-//
-//    List<Product> refinedProducts = productService.refineOrderedListOfProductsInCustomSort(orderedListOfProducts);
-//
-//    assertEquals(1, refinedProducts.size());
-//    assertEquals(1, refinedProducts.get(0).getCustomOrder());
-//    verify(productRepo).findById(SAMPLE_PRODUCT_ID);
-//  }
-
-  //TODO
-//  @Test
-//  void testRefineOrderedListOfProductsInCustomSort_ProductNotFound() {
-//    List<String> orderedListOfProducts = List.of(SAMPLE_PRODUCT_ID);
-//    when(productRepo.findById(SAMPLE_PRODUCT_ID)).thenReturn(Optional.empty());
-//
-//    InvalidParamException exception = assertThrows(InvalidParamException.class,
-//        () -> productService.refineOrderedListOfProductsInCustomSort(orderedListOfProducts));
-//    assertEquals(ErrorCode.PRODUCT_NOT_FOUND.getCode(), exception.getCode());
-//  }
-
-  //TODO
-//  @Test
-//  void testAddCustomSortProduct() throws InvalidParamException {
-//    List<String> orderedListOfProducts = List.of(SAMPLE_PRODUCT_ID);
-//    ProductCustomSortRequest customSortRequest = new ProductCustomSortRequest();
-//    customSortRequest.setOrderedListOfProducts(orderedListOfProducts);
-//    customSortRequest.setRuleForRemainder(SortOption.ALPHABETICALLY.getOption());
-//
-//    Product mockProduct = new Product();
-//    mockProduct.setId(SAMPLE_PRODUCT_ID);
-//    when(productRepo.findById(SAMPLE_PRODUCT_ID)).thenReturn(Optional.of(mockProduct));
-//
-//    productService.addCustomSortProduct(customSortRequest);
-//
-//    verify(productCustomSortRepo).deleteAll();
-//    verify(mongoTemplate).updateMulti(any(Query.class), any(Update.class), eq(Product.class));
-//    verify(productCustomSortRepo).save(any(ProductCustomSort.class));
-//    verify(productRepo).saveAll(productListArgumentCaptor.capture());
-//
-//    List<Product> capturedProducts = productListArgumentCaptor.getValue();
-//    assertEquals(1, capturedProducts.size());
-//    assertEquals(1, capturedProducts.get(0).getCustomOrder());
-//  }
-
-  //TODO
-//  @Test
-//  void testUpdateProductInstallationCountWhenNotSynchronized() {
-//    Product product = getMockProduct();
-//    product.setSynchronizedInstallationCount(false);
-//    String id = product.getId();
-//    ReflectionTestUtils.setField(productService, LEGACY_INSTALLATION_COUNT_PATH_FIELD_NAME, INSTALLATION_FILE_PATH);
-//
-//    when(productRepo.updateInitialCount(eq(id), anyInt())).thenReturn(10);
-//
-//    productService.updateProductInstallationCount(id);
-//
-//    assertEquals(10, product.getInstallationCount());
-//  }
 
   @Test
   void testCreateOrder() {

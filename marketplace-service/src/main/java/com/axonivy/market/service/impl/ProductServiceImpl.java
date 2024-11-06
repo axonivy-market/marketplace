@@ -11,30 +11,34 @@ import com.axonivy.market.entity.Image;
 import com.axonivy.market.entity.Product;
 import com.axonivy.market.entity.ProductCustomSort;
 import com.axonivy.market.entity.ProductJsonContent;
-import com.axonivy.market.entity.ProductMarketplaceData;
 import com.axonivy.market.entity.ProductModuleContent;
-import com.axonivy.market.enums.ErrorCode;
 import com.axonivy.market.enums.FileType;
 import com.axonivy.market.enums.Language;
 import com.axonivy.market.enums.SortOption;
 import com.axonivy.market.enums.TypeOption;
-import com.axonivy.market.exceptions.model.NotFoundException;
 import com.axonivy.market.factory.ProductFactory;
 import com.axonivy.market.github.model.GitHubFile;
 import com.axonivy.market.github.service.GHAxonIvyMarketRepoService;
 import com.axonivy.market.github.service.GHAxonIvyProductRepoService;
 import com.axonivy.market.github.service.GitHubService;
 import com.axonivy.market.github.util.GitHubUtils;
-import com.axonivy.market.repository.*;
+import com.axonivy.market.repository.GitHubRepoMetaRepository;
+import com.axonivy.market.repository.ImageRepository;
+import com.axonivy.market.repository.MavenArtifactVersionRepository;
+import com.axonivy.market.repository.MetadataRepository;
+import com.axonivy.market.repository.MetadataSyncRepository;
+import com.axonivy.market.repository.ProductCustomSortRepository;
+import com.axonivy.market.repository.ProductJsonContentRepository;
+import com.axonivy.market.repository.ProductModuleContentRepository;
+import com.axonivy.market.repository.ProductRepository;
 import com.axonivy.market.service.ImageService;
 import com.axonivy.market.service.MetadataService;
 import com.axonivy.market.service.ProductContentService;
+import com.axonivy.market.service.ProductMarketplaceDataService;
 import com.axonivy.market.service.ProductService;
 import com.axonivy.market.util.MavenUtils;
 import com.axonivy.market.util.MetadataReaderUtils;
 import com.axonivy.market.util.VersionUtils;
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.ObjectUtils;
@@ -56,9 +60,6 @@ import org.w3c.dom.NodeList;
 
 import java.io.IOException;
 import java.net.URL;
-import java.nio.file.Files;
-import java.nio.file.Paths;
-import java.security.SecureRandom;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
@@ -99,16 +100,12 @@ public class ProductServiceImpl implements ProductService {
   private final MetadataRepository metadataRepo;
   private final ProductJsonContentRepository productJsonContentRepo;
   private final ImageRepository imageRepo;
-  private final ProductMarketplaceDataRepository productMarketplaceDataRepo;
   private final ImageService imageService;
   private final MetadataService metadataService;
   private final ProductContentService productContentService;
-  private final ObjectMapper mapper = new ObjectMapper();
-  private final SecureRandom random = new SecureRandom();
+  private final ProductMarketplaceDataService productMarketplaceDataService;
   private GHCommit lastGHCommit;
   private GitHubRepoMeta marketRepoMeta;
-  @Value("${market.legacy.installation.counts.path}")
-  private String legacyInstallationCountPath;
   @Value("${market.github.market.branch}")
   private String marketRepoBranch;
 
@@ -119,7 +116,7 @@ public class ProductServiceImpl implements ProductService {
       ProductJsonContentRepository productJsonContentRepo, ImageRepository imageRepo,
       MetadataSyncRepository metadataSyncRepo, MetadataRepository metadataRepo, ImageService imageService,
       ProductContentService productContentService, MetadataService metadataService,
-      ProductMarketplaceDataRepository productMarketplaceDataRepo) {
+      ProductMarketplaceDataService productMarketplaceDataService) {
     this.productRepo = productRepo;
     this.productModuleContentRepo = productModuleContentRepo;
     this.axonIvyMarketRepoService = axonIvyMarketRepoService;
@@ -132,10 +129,10 @@ public class ProductServiceImpl implements ProductService {
     this.metadataRepo = metadataRepo;
     this.productJsonContentRepo = productJsonContentRepo;
     this.imageRepo = imageRepo;
-    this.productMarketplaceDataRepo = productMarketplaceDataRepo;
     this.imageService = imageService;
     this.metadataService = metadataService;
     this.productContentService = productContentService;
+    this.productMarketplaceDataService = productMarketplaceDataService;
   }
 
   @Override
@@ -177,43 +174,6 @@ public class ProductServiceImpl implements ProductService {
     }
     updateLatestReleaseVersionContentsFromProductRepo();
     return syncedProductIds.stream().filter(StringUtils::isNotBlank).toList();
-  }
-
-  @Override
-  public int updateInstallationCountForProduct(String productId, String designerVersion) {
-    validateProductExists(productId);
-    ProductMarketplaceData productMarketplaceData =
-        productMarketplaceDataRepo.findById(productId).orElse(initProductMarketplaceData(productId));
-
-    log.info("Increase installation count for product {} By Designer Version {}", productId, designerVersion);
-    if (StringUtils.isNotBlank(designerVersion)) {
-      productMarketplaceDataRepo.increaseInstallationCountForProductByDesignerVersion(productId, designerVersion);
-    }
-
-    log.info("updating installation count for product {}", productId);
-    if (BooleanUtils.isTrue(productMarketplaceData.getSynchronizedInstallationCount())) {
-      return productMarketplaceDataRepo.increaseInstallationCount(productId);
-    }
-    int installationCount = getInstallationCountFromFileOrInitializeRandomly(productId);
-    return productMarketplaceDataRepo.updateInitialCount(productId, installationCount + 1);
-  }
-
-  public int getInstallationCountFromFileOrInitializeRandomly(String productId) {
-    log.info("synchronizing installation count for product {}", productId);
-    int result = 0;
-    try {
-      String installationCounts = Files.readString(Paths.get(legacyInstallationCountPath));
-      Map<String, Integer> mapping = mapper.readValue(installationCounts,
-          new TypeReference<HashMap<String, Integer>>() {
-          });
-      List<String> keyList = mapping.keySet().stream().toList();
-      result = keyList.contains(productId)
-          ? mapping.get(productId) : random.nextInt(20, 50);
-      log.info("synchronized installation count for product {} successfully", productId);
-    } catch (IOException ex) {
-      log.error("Could not read the marketplace-installation file to synchronize", ex);
-    }
-    return result;
   }
 
   private void syncRepoMetaDataStatus() {
@@ -326,25 +286,6 @@ public class ProductServiceImpl implements ProductService {
     }
     log.info("There is no product to update the logo with path {}", parentPath);
     return EMPTY;
-  }
-
-  private Pageable refinePagination1(String language, Pageable pageable) {
-    PageRequest pageRequest = (PageRequest) pageable;
-    if (pageable != null) {
-      List<Order> orders = new ArrayList<>();
-      for (var sort : pageable.getSort()) {
-        SortOption sortOption = SortOption.of(sort.getProperty());
-        Order order = createOrder(sortOption, language);
-        orders.add(order);
-        if (SortOption.STANDARD.equals(sortOption)) {
-          orders.add(getExtensionOrder(language));
-        }
-      }
-      Order orderById = createOrder(SortOption.ID, language);
-      orders.add(orderById);
-      pageRequest = PageRequest.of(pageable.getPageNumber(), pageable.getPageSize(), Sort.by(orders));
-    }
-    return pageRequest;
   }
 
   private Pageable refinePagination(String language, Pageable pageable) {
@@ -615,7 +556,7 @@ public class ProductServiceImpl implements ProductService {
   public Product fetchProductDetail(String id, Boolean isShowDevVersion) {
     Product product = getProductByIdWithNewestReleaseVersion(id, isShowDevVersion);
     return Optional.ofNullable(product).map(productItem -> {
-      int installationCount = updateProductInstallationCount(id);
+      int installationCount = productMarketplaceDataService.updateProductInstallationCount(id);
       productItem.setInstallationCount(installationCount);
       return productItem;
     }).orElse(null);
@@ -630,7 +571,7 @@ public class ProductServiceImpl implements ProductService {
     Product product = StringUtils.isBlank(bestMatchVersion) ? getProductByIdWithNewestReleaseVersion(id,
         false) : productRepo.getProductByIdAndVersion(id, bestMatchVersion);
     return Optional.ofNullable(product).map(productItem -> {
-      int installationCount = updateProductInstallationCount(id);
+      int installationCount = productMarketplaceDataService.updateProductInstallationCount(id);
       productItem.setInstallationCount(installationCount);
       productItem.setBestMatchVersion(bestMatchVersion);
       return productItem;
@@ -660,16 +601,6 @@ public class ProductServiceImpl implements ProductService {
         ProductJsonContent::getContent).findFirst().ifPresent(
         jsonContent -> product.setMavenDropins(MavenUtils.isJsonContentContainOnlyMavenDropins(jsonContent)));
     return product;
-  }
-
-  public int updateProductInstallationCount(String id) {
-    ProductMarketplaceData productMarketplaceData =
-        productMarketplaceDataRepo.findById(id).orElse(initProductMarketplaceData(id));
-    if (BooleanUtils.isNotTrue(productMarketplaceData.getSynchronizedInstallationCount())) {
-      return productMarketplaceDataRepo.updateInitialCount(id,
-          getInstallationCountFromFileOrInitializeRandomly(id));
-    }
-    return productMarketplaceData.getInstallationCount();
   }
 
   @Override
@@ -756,18 +687,6 @@ public class ProductServiceImpl implements ProductService {
       product.setNewestReleaseVersion(INITIAL_VERSION);
       axonIvyProductRepoService.extractReadMeFileFromContents(product, ghContentEntity, initialContent);
       productModuleContentRepo.save(initialContent);
-    }
-  }
-
-  private ProductMarketplaceData initProductMarketplaceData(String productId) {
-    ProductMarketplaceData productMarketplaceData = new ProductMarketplaceData();
-    productMarketplaceData.setId(productId);
-    return productMarketplaceData;
-  }
-
-  public void validateProductExists(String productId) throws NotFoundException {
-    if (productRepo.findById(productId).isEmpty()) {
-      throw new NotFoundException(ErrorCode.PRODUCT_NOT_FOUND, "Not found product with id: " + productId);
     }
   }
 }

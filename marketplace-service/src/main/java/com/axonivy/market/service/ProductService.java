@@ -11,8 +11,6 @@ public interface ProductService {
 
   List<String> syncLatestDataFromMarketRepo(Boolean resetSync);
 
-  int updateInstallationCountForProduct(String key, String designerVersion);
-
   Product fetchProductDetail(String id, Boolean isShowDevVersion);
 
   String getCompatibilityFromOldestVersion(String oldestVersion);

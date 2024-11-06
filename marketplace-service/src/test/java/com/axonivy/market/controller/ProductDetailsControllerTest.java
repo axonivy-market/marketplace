@@ -163,15 +163,6 @@ class ProductDetailsControllerTest extends BaseSetup {
   }
 
   @Test
-  void testSyncInstallationCount() {
-    when(productService.updateInstallationCountForProduct("google-maps-connector", "10.0.20")).thenReturn(1);
-
-    var result = productDetailsController.syncInstallationCount("google-maps-connector", "10.0.20");
-
-    assertEquals(1, result.getBody());
-  }
-
-  @Test
   void findProductVersionsById() {
     when(versionService.getVersionsForDesigner("google-maps-connector")).thenReturn(mockVersionAndUrlModels());
 
