@@ -27,6 +27,7 @@ import com.axonivy.market.repository.MetadataSyncRepository;
 import com.axonivy.market.repository.ProductJsonContentRepository;
 import com.axonivy.market.repository.ProductModuleContentRepository;
 import com.axonivy.market.repository.ProductRepository;
+import com.axonivy.market.service.ExternalDocumentService;
 import com.axonivy.market.service.ImageService;
 import com.axonivy.market.service.MetadataService;
 import com.axonivy.market.service.ProductContentService;
@@ -109,6 +110,8 @@ class ProductServiceImplTest extends BaseSetup {
   private MetadataRepository metadataRepo;
   @Mock
   private ImageService imageService;
+  @Mock
+  private ExternalDocumentService externalDocumentService;
   @Mock
   private MavenArtifactVersionRepository mavenArtifactVersionRepo;
   @Mock
