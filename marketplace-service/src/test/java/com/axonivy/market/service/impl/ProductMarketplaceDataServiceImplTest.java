@@ -84,10 +84,7 @@ class ProductMarketplaceDataServiceImplTest extends BaseSetup {
 
   @Test
   void testRefineOrderedListOfProductsInCustomSort() throws InvalidParamException {
-    // prepare
     List<String> orderedListOfProducts = List.of(SAMPLE_PRODUCT_ID);
-    ProductMarketplaceData mockProductMarketplaceData = new ProductMarketplaceData();
-    mockProductMarketplaceData.setId(SAMPLE_PRODUCT_ID);
     when(productRepo.findById(anyString())).thenReturn(Optional.of(getMockProduct()));
 
     List<ProductMarketplaceData> refinedProducts =
@@ -110,8 +107,7 @@ class ProductMarketplaceDataServiceImplTest extends BaseSetup {
 
   @Test
   void testUpdateProductInstallationCountWhenNotSynchronized() {
-    ProductMarketplaceData mockProductMarketplaceData = new ProductMarketplaceData();
-    mockProductMarketplaceData.setId(SAMPLE_PRODUCT_ID);
+    ProductMarketplaceData mockProductMarketplaceData = getMockProductMarketplaceData();
     mockProductMarketplaceData.setSynchronizedInstallationCount(false);
     ReflectionTestUtils.setField(productMarketplaceDataService, LEGACY_INSTALLATION_COUNT_PATH_FIELD_NAME,
         INSTALLATION_FILE_PATH);
@@ -127,35 +123,31 @@ class ProductMarketplaceDataServiceImplTest extends BaseSetup {
 
   @Test
   void testUpdateInstallationCountForProduct() {
-    ProductMarketplaceData mockProductMarketplaceData = new ProductMarketplaceData();
-    mockProductMarketplaceData.setId(SAMPLE_PRODUCT_ID);
+    ProductMarketplaceData mockProductMarketplaceData = getMockProductMarketplaceData();
     mockProductMarketplaceData.setSynchronizedInstallationCount(true);
-    mockProductMarketplaceData.setInstallationCount(30);
     ReflectionTestUtils.setField(productMarketplaceDataService, LEGACY_INSTALLATION_COUNT_PATH_FIELD_NAME,
         INSTALLATION_FILE_PATH);
 
     when(productRepo.findById(SAMPLE_PRODUCT_ID)).thenReturn(Optional.of(new Product()));
     when(productMarketplaceDataRepo.findById(SAMPLE_PRODUCT_ID)).thenReturn(Optional.of(mockProductMarketplaceData));
-    when(productMarketplaceDataRepo.increaseInstallationCount(SAMPLE_PRODUCT_ID)).thenReturn(31);
+    when(productMarketplaceDataRepo.increaseInstallationCount(SAMPLE_PRODUCT_ID)).thenReturn(4);
 
     int result = productMarketplaceDataService.updateInstallationCountForProduct(SAMPLE_PRODUCT_ID,
         MOCK_RELEASED_VERSION);
-    assertEquals(31, result);
+    assertEquals(4, result);
 
     result = productMarketplaceDataService.updateInstallationCountForProduct(SAMPLE_PRODUCT_ID, StringUtils.EMPTY);
-    assertEquals(31, result);
+    assertEquals(4, result);
   }
 
   @Test
   void testSyncInstallationCountWithNewProduct() {
-    ProductMarketplaceData mockProductMarketplaceData = new ProductMarketplaceData();
-    mockProductMarketplaceData.setId(MOCK_PRODUCT_ID);
+    ProductMarketplaceData mockProductMarketplaceData = ProductMarketplaceData.builder().id(MOCK_PRODUCT_ID).build();
     ReflectionTestUtils.setField(productMarketplaceDataService, LEGACY_INSTALLATION_COUNT_PATH_FIELD_NAME,
         INSTALLATION_FILE_PATH);
 
-    int installationCount =
-        productMarketplaceDataService.getInstallationCountFromFileOrInitializeRandomly(
-            mockProductMarketplaceData.getId());
+    int installationCount = productMarketplaceDataService.getInstallationCountFromFileOrInitializeRandomly(
+        mockProductMarketplaceData.getId());
 
     assertTrue(installationCount >= 20 && installationCount <= 50);
   }
@@ -164,10 +156,10 @@ class ProductMarketplaceDataServiceImplTest extends BaseSetup {
   void testGetInstallationCountFromFileOrInitializeRandomly() {
     ReflectionTestUtils.setField(productMarketplaceDataService, LEGACY_INSTALLATION_COUNT_PATH_FIELD_NAME,
         INSTALLATION_FILE_PATH);
-    ProductMarketplaceData product = getMockProductMarketplaceData();
+    ProductMarketplaceData mockProductMarketplaceData = getMockProductMarketplaceData();
 
-    int installationCount =
-        productMarketplaceDataService.getInstallationCountFromFileOrInitializeRandomly(product.getId());
+    int installationCount = productMarketplaceDataService.getInstallationCountFromFileOrInitializeRandomly(
+        mockProductMarketplaceData.getId());
 
     assertEquals(40, installationCount);
   }

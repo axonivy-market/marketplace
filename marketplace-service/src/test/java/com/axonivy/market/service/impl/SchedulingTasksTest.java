@@ -7,8 +7,8 @@ import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.SpyBean;
 
+import static org.mockito.Mockito.atLeast;
 import static org.mockito.Mockito.verify;
-import static org.mockito.internal.verification.VerificationModeFactory.atLeast;
 
 @SpringBootTest(properties = {"MONGODB_USERNAME=user", "MONGODB_PASSWORD=password", "MONGODB_HOST=mongoHost",
     "MONGODB_DATABASE=product", "MARKET_GITHUB_OAUTH_APP_CLIENT_ID=clientId",
