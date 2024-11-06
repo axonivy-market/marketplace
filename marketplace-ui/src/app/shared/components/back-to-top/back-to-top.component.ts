@@ -13,8 +13,8 @@ import { TranslateModule } from '@ngx-translate/core';
   styleUrl: './back-to-top.component.scss'
 })
 export class BackToTopComponent {
-  private readonly backToTopShowThreshold: number = 500;
-  private readonly scrollBehavior: ScrollBehavior = 'smooth';
+  backToTopShowThreshold: number = 500;
+  scrollBehavior: ScrollBehavior = 'smooth';
   showScrollButton: boolean = false;
 
   @HostListener("window:scroll", [])
