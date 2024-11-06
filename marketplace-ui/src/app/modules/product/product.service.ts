@@ -82,7 +82,7 @@ export class ProductService {
   }
 
   sendRequestToUpdateInstallationCount(productId: string, designerVersion: string) {
-    const url = `${API_URI.PRODUCT_DETAILS}/installationcount/${productId}`;
+    const url = `${API_URI.PRODUCT_DATA}/installation-count/${productId}`;
     const params = new HttpParams().append('designerVersion', designerVersion);
     return this.httpClient.put<number>(url, null, { params });
   }
