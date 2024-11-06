@@ -74,8 +74,10 @@ public class ExternalDocumentController {
     if (ObjectUtils.isEmpty(products)) {
       return new ResponseEntity<>(message, HttpStatus.NO_CONTENT);
     }
-    products.forEach(
-        product -> externalDocumentService.syncDocumentForProduct(product.getId(), new ArrayList<>(), resetSync));
+
+    for (Product product : products) {
+      externalDocumentService.syncDocumentForProduct(product.getId(), new ArrayList<>(), resetSync);
+    }
 
     message.setHelpCode(ErrorCode.SUCCESSFUL.getCode());
     message.setHelpText(ErrorCode.SUCCESSFUL.getHelpText());

@@ -20,6 +20,7 @@ import org.apache.commons.lang3.RegExUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -37,22 +38,22 @@ public class ExternalDocumentServiceImpl implements ExternalDocumentService {
   final FileDownloadService fileDownloadService;
 
   @Override
-  public void syncDocumentForProduct(String productId, List<String> releasedVersions, boolean isResetSync) {
+  public void syncDocumentForProduct(String productId, List<String> nonSyncReleasedVersions, boolean isResetSync) {
     productRepo.findById(productId).ifPresent(product -> {
       var docArtifacts = Optional.ofNullable(product.getArtifacts()).orElse(List.of())
           .stream().filter(artifact -> BooleanUtils.isTrue(artifact.getDoc())).toList();
 
-      List<String> updatedReleasedVersions = ObjectUtils.isEmpty(releasedVersions)
-          ? Optional.ofNullable(product.getReleasedVersions()).orElse(List.of())
-          .stream().filter(VersionUtils::isValidFormatReleasedVersion).toList()
-          : releasedVersions;
+      List<String> releasedVersions = ObjectUtils.isEmpty(nonSyncReleasedVersions)
+          ? Optional.ofNullable(product.getReleasedVersions()).orElse(new ArrayList<>())
+          : nonSyncReleasedVersions;
+      releasedVersions = releasedVersions.stream().filter(VersionUtils::isValidFormatReleasedVersion).toList();
 
-      if (ObjectUtils.isEmpty(docArtifacts)) {
+      if (ObjectUtils.isEmpty(docArtifacts) || ObjectUtils.isEmpty(releasedVersions) ) {
         return;
       }
 
       for (var artifact : docArtifacts) {
-        syncDocumentationForProduct(productId, isResetSync, artifact, updatedReleasedVersions);
+        syncDocumentationForProduct(productId, isResetSync, artifact, releasedVersions);
       }
     });
   }

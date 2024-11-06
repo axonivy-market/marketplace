@@ -493,6 +493,7 @@ public class ProductServiceImpl implements ProductService {
       getMetadataContent(mavenArtifact, product, nonSyncReleasedVersions);
     }
     metadataService.updateArtifactAndMetadata(product.getId(), nonSyncReleasedVersions, product.getArtifacts());
+    externalDocumentService.syncDocumentForProduct(product.getId(), nonSyncReleasedVersions, false);
   }
 
   private void getMetadataContent(Artifact artifact, Product product, List<String> nonSyncReleasedVersions) {
@@ -532,8 +533,7 @@ public class ProductServiceImpl implements ProductService {
     }
     updateProductCompatibility(product, mavenVersions);
 
-    Optional.ofNullable(product.getReleasedVersions()).ifPresentOrElse(releasedVersion -> {
-        },
+    Optional.ofNullable(product.getReleasedVersions()).ifPresentOrElse(releasedVersion -> {},
         () -> product.setReleasedVersions(new ArrayList<>()));
 
     List<ProductModuleContent> productModuleContents = new ArrayList<>();
@@ -548,7 +548,6 @@ public class ProductServiceImpl implements ProductService {
     if (ObjectUtils.isNotEmpty(productModuleContents)) {
       productModuleContentRepo.saveAll(productModuleContents);
     }
-    externalDocumentService.syncDocumentForProduct(product.getId(), product.getReleasedVersions(), false);
   }
 
   private Date getLastUpdatedDate(Document document) {
