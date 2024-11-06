@@ -16,10 +16,6 @@ describe('ProductFilterComponent', () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [ProductFilterComponent, TranslateModule.forRoot(),
-        // MatomoModule.forRoot({
-        //   trackerUrl: '',
-        //   siteId: '',
-        // } as MatomoConfiguration),
         MatomoTestingModule.forRoot(),
         MatomoRouterModule.forRoot(),
       ],
