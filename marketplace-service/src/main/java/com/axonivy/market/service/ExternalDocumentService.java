@@ -6,7 +6,7 @@ import com.axonivy.market.entity.Product;
 import java.util.List;
 
 public interface ExternalDocumentService {
-  void syncDocumentForProduct(String productId, boolean isResetSync);
+  void syncDocumentForProduct(String productId, List<String> nonSyncReleasedVersions, boolean isResetSync);
 
   List<Product> findAllProductsHaveDocument();
 

@@ -8,6 +8,8 @@ import lombok.extern.log4j.Log4j2;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
+import java.util.ArrayList;
+
 @Log4j2
 @Component
 @AllArgsConstructor
@@ -31,7 +33,7 @@ public class ScheduledTasks {
   public void syncDataForProductDocuments() {
     log.warn("Started sync data for product document");
     for (var product : productRepo.findAllProductsHaveDocument()) {
-      externalDocumentService.syncDocumentForProduct(product.getId(), false);
+      externalDocumentService.syncDocumentForProduct(product.getId(), new ArrayList<>(), false);
     }
   }
 }

@@ -13,6 +13,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -41,16 +42,16 @@ class ExternalDocumentServiceImplTest {
   @Test
   void testSyncDocumentForProduct() throws IOException {
     when(productRepository.findById(PORTAL)).thenReturn(mockPortalProductHasNoArtifact());
-    service.syncDocumentForProduct(PORTAL, true);
+    service.syncDocumentForProduct(PORTAL, new ArrayList<>(), true);
     verify(productRepository, times(1)).findById(any());
     verify(externalDocumentMetaRepository, times(0)).findByProductIdAndVersion(any(), any());
 
     when(productRepository.findById(PORTAL)).thenReturn(mockPortalProduct());
-    service.syncDocumentForProduct(PORTAL, false);
+    service.syncDocumentForProduct(PORTAL, new ArrayList<>(), false);
     verify(externalDocumentMetaRepository, times(2)).findByProductIdAndVersion(any(), any());
 
     when(fileDownloadService.downloadAndUnzipFile(any(), anyBoolean())).thenReturn("data" + RELATIVE_LOCATION);
-    service.syncDocumentForProduct(PORTAL, true);
+    service.syncDocumentForProduct(PORTAL, new ArrayList<>(), true);
     verify(externalDocumentMetaRepository, times(2)).save(any());
   }
 
