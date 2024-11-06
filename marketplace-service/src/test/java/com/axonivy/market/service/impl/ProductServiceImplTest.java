@@ -6,7 +6,9 @@ import com.axonivy.market.constants.ProductJsonConstants;
 import com.axonivy.market.criteria.ProductSearchCriteria;
 import com.axonivy.market.entity.GitHubRepoMeta;
 import com.axonivy.market.entity.MavenArtifactVersion;
+import com.axonivy.market.entity.Metadata;
 import com.axonivy.market.entity.Product;
+import com.axonivy.market.entity.ProductMarketplaceData;
 import com.axonivy.market.entity.ProductModuleContent;
 import com.axonivy.market.enums.FileStatus;
 import com.axonivy.market.enums.FileType;
@@ -28,6 +30,7 @@ import com.axonivy.market.repository.ProductRepository;
 import com.axonivy.market.service.ImageService;
 import com.axonivy.market.service.MetadataService;
 import com.axonivy.market.service.ProductContentService;
+import com.axonivy.market.service.ProductMarketplaceDataService;
 import com.axonivy.market.util.MavenUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.junit.jupiter.api.BeforeEach;
@@ -47,6 +50,7 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.test.util.ReflectionTestUtils;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -113,6 +117,8 @@ class ProductServiceImplTest extends BaseSetup {
   private GHAxonIvyProductRepoService axonIvyProductRepoService;
   @Mock
   private MetadataSyncRepository metadataSyncRepo;
+  @Mock
+  private ProductMarketplaceDataService productMarketplaceDataService;
   @InjectMocks
   private ProductServiceImpl productService;
 
@@ -426,18 +432,20 @@ class ProductServiceImplTest extends BaseSetup {
     verify(productRepo).getProductByIdAndVersion(MOCK_PRODUCT_ID, MOCK_RELEASED_VERSION);
   }
 
-  //TODO
-//  @Test
-//  void testFetchBestMatchProductDetailByIdAndVersion() {
-//    ReflectionTestUtils.setField(productService, LEGACY_INSTALLATION_COUNT_PATH_FIELD_NAME, INSTALLATION_FILE_PATH);
-//    Product mockProduct = getMockProduct();
-//    Metadata mockMetadata = getMockMetadataWithVersions();
-//    mockMetadata.setArtifactId(MOCK_PRODUCT_ARTIFACT_ID);
-//    when(metadataRepo.findByProductId(MOCK_PRODUCT_ID)).thenReturn(List.of(mockMetadata));
-//    when(productRepo.getProductByIdAndVersion(MOCK_PRODUCT_ID, MOCK_RELEASED_VERSION)).thenReturn(mockProduct);
-//    Product result = productService.fetchBestMatchProductDetail(MOCK_PRODUCT_ID, MOCK_RELEASED_VERSION);
-//    assertEquals(mockProduct, result);
-//  }
+  @Test
+  void testFetchBestMatchProductDetailByIdAndVersion() {
+    ReflectionTestUtils.setField(productService, LEGACY_INSTALLATION_COUNT_PATH_FIELD_NAME, INSTALLATION_FILE_PATH);
+    Product mockProduct = getMockProduct();
+    Metadata mockMetadata = getMockMetadataWithVersions();
+    ProductMarketplaceData mockProductMarketplaceData = getMockProductMarketplaceData();
+    mockMetadata.setArtifactId(MOCK_PRODUCT_ARTIFACT_ID);
+    when(metadataRepo.findByProductId(MOCK_PRODUCT_ID)).thenReturn(List.of(mockMetadata));
+    when(productRepo.getProductByIdAndVersion(MOCK_PRODUCT_ID, MOCK_RELEASED_VERSION)).thenReturn(mockProduct);
+    when(productMarketplaceDataService.updateProductInstallationCount(MOCK_PRODUCT_ID)).thenReturn(
+        mockProductMarketplaceData.getInstallationCount());
+    Product result = productService.fetchBestMatchProductDetail(MOCK_PRODUCT_ID, MOCK_RELEASED_VERSION);
+    assertEquals(mockProduct, result);
+  }
 
   @Test
   void testGetCompatibilityFromNumericVersion() {

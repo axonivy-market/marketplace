@@ -5,7 +5,6 @@ import com.axonivy.market.entity.ProductCustomSort;
 import com.axonivy.market.entity.ProductMarketplaceData;
 import com.axonivy.market.enums.ErrorCode;
 import com.axonivy.market.enums.SortOption;
-import com.axonivy.market.exceptions.model.InvalidParamException;
 import com.axonivy.market.exceptions.model.NotFoundException;
 import com.axonivy.market.model.ProductCustomSortRequest;
 import com.axonivy.market.repository.ProductCustomSortRepository;
@@ -53,7 +52,7 @@ public class ProductMarketplaceDataServiceImpl implements ProductMarketplaceData
   }
 
   @Override
-  public void addCustomSortProduct(ProductCustomSortRequest customSort) throws InvalidParamException {
+  public void addCustomSortProduct(ProductCustomSortRequest customSort) {
     SortOption.of(customSort.getRuleForRemainder());
 
     ProductCustomSort productCustomSort = new ProductCustomSort(customSort.getRuleForRemainder());
@@ -63,8 +62,7 @@ public class ProductMarketplaceDataServiceImpl implements ProductMarketplaceData
     productMarketplaceDataRepo.saveAll(refineOrderedListOfProductsInCustomSort(customSort.getOrderedListOfProducts()));
   }
 
-  public List<ProductMarketplaceData> refineOrderedListOfProductsInCustomSort(List<String> orderedListOfProducts)
-      throws InvalidParamException {
+  public List<ProductMarketplaceData> refineOrderedListOfProductsInCustomSort(List<String> orderedListOfProducts) {
     List<ProductMarketplaceData> productEntries = new ArrayList<>();
 
     int descendingOrder = orderedListOfProducts.size();
@@ -112,8 +110,7 @@ public class ProductMarketplaceDataServiceImpl implements ProductMarketplaceData
           new TypeReference<HashMap<String, Integer>>() {
           });
       List<String> keyList = mapping.keySet().stream().toList();
-      result = keyList.contains(productId)
-          ? mapping.get(productId) : random.nextInt(20, 50);
+      result = keyList.contains(productId) ? mapping.get(productId) : random.nextInt(20, 50);
       log.info("synchronized installation count for product {} successfully", productId);
     } catch (IOException ex) {
       log.error("Could not read the marketplace-installation file to synchronize", ex);
