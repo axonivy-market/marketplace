@@ -14,13 +14,20 @@ import {
 import { catchError, EMPTY, Observable, of, tap } from 'rxjs';
 import { CookieService } from 'ngx-cookie-service';
 import { AuthService } from '../../../../../auth/auth.service';
-import { ForwardingError, SkipLoading } from '../../../../../core/interceptors/api.interceptor';
+import {
+  ForwardingError,
+  SkipLoading
+} from '../../../../../core/interceptors/api.interceptor';
 import { FeedbackApiResponse } from '../../../../../shared/models/apis/feedback-response.model';
 import { Feedback } from '../../../../../shared/models/feedback.model';
 import { ProductDetailService } from '../../product-detail.service';
 import { ProductStarRatingService } from '../product-star-rating-panel/product-star-rating.service';
-import { FEEDBACK_SORT_TYPES, NOT_FOUND_ERROR_CODE, TOKEN_KEY, USER_NOT_FOUND_ERROR_CODE } from '../../../../../shared/constants/common.constant';
-import { CommonUtils } from '../../../../../shared/utils/common.utils';
+import {
+  FEEDBACK_SORT_TYPES,
+  NOT_FOUND_ERROR_CODE,
+  TOKEN_KEY,
+  USER_NOT_FOUND_ERROR_CODE
+} from '../../../../../shared/constants/common.constant';
 
 const FEEDBACK_API_URL = 'api/feedback';
 const SIZE = 8;
@@ -57,7 +64,9 @@ export class ProductFeedbackService {
     return this.http
       .post<Feedback>(FEEDBACK_API_URL, feedback, {
         headers,
-        context: new HttpContext().set(SkipLoading, true).set(ForwardingError, true)
+        context: new HttpContext()
+          .set(SkipLoading, true)
+          .set(ForwardingError, true)
       })
       .pipe(
         tap(() => {
@@ -65,8 +74,11 @@ export class ProductFeedbackService {
           this.findProductFeedbackOfUser().subscribe();
           this.productStarRatingService.fetchData();
         }),
-        catchError((response) => {
-          if (response.status == NOT_FOUND_ERROR_CODE && response.error.helpCode == USER_NOT_FOUND_ERROR_CODE) {
+        catchError(response => {
+          if (
+            response.status === NOT_FOUND_ERROR_CODE &&
+            response.error.helpCode === USER_NOT_FOUND_ERROR_CODE
+          ) {
             this.clearTokenCookie();
           }
           return EMPTY;
@@ -114,14 +126,19 @@ export class ProductFeedbackService {
     return this.http
       .get<Feedback>(requestURL, {
         params,
-        context: new HttpContext().set(SkipLoading, true).set(ForwardingError, true)
+        context: new HttpContext()
+          .set(SkipLoading, true)
+          .set(ForwardingError, true)
       })
       .pipe(
         tap(feedback => {
           this.userFeedback.set(feedback);
         }),
-        catchError((response) => {
-          if (response.status == NOT_FOUND_ERROR_CODE && response.error.helpCode == USER_NOT_FOUND_ERROR_CODE) {
+        catchError(response => {
+          if (
+            response.status === NOT_FOUND_ERROR_CODE &&
+            response.error.helpCode === USER_NOT_FOUND_ERROR_CODE
+          ) {
             this.clearTokenCookie();
           }
           const feedback: Feedback = {
@@ -155,6 +172,6 @@ export class ProductFeedbackService {
   }
 
   private clearTokenCookie(): void {
-    this.cookieService.delete(TOKEN_KEY)
+    this.cookieService.delete(TOKEN_KEY);
   }
 }

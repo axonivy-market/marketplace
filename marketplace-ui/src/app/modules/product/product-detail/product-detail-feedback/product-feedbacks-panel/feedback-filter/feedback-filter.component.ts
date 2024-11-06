@@ -1,4 +1,11 @@
-import { Component, computed, EventEmitter, inject, Output, Signal } from '@angular/core';
+import {
+  Component,
+  computed,
+  EventEmitter,
+  inject,
+  Output,
+  Signal
+} from '@angular/core';
 import { TranslateModule } from '@ngx-translate/core';
 import { FEEDBACK_SORT_TYPES } from '../../../../../../shared/constants/common.constant';
 import { FormsModule } from '@angular/forms';
@@ -23,13 +30,15 @@ export class FeedbackFilterComponent {
 
   productFeedbackService = inject(ProductFeedbackService);
   languageService = inject(LanguageService);
-  selectedSortTypeLabel: Signal<string> = computed(() => {
-    return CommonUtils.getLabel(this.productFeedbackService.sort(), FEEDBACK_SORT_TYPES);
-  });
+  selectedSortTypeLabel: Signal<string> = computed(() =>
+    CommonUtils.getLabel(
+      this.productFeedbackService.sort(),
+      FEEDBACK_SORT_TYPES
+    )
+  );
 
   onSortChange(event: ItemDropdown<FeedbackSortType>): void {
     this.productFeedbackService.sort.set(event.value);
     this.sortChange.emit(event.value);
   }
-
 }
