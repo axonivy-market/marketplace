@@ -121,7 +121,6 @@ public class CustomProductRepositoryImpl extends CustomRepository implements Cus
     List<Product> entities = mongoTemplate.aggregate(aggregation, MongoDBConstants.PRODUCT_COLLECTION,
         Product.class).getMappedResults();
     long count = mongoTemplate.count(new Query(criteria), Product.class);
-
     return new PageImpl<>(entities, pageable, count);
   }
 

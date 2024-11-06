@@ -105,7 +105,6 @@ public class ProductServiceImpl implements ProductService {
   private final ProductContentService productContentService;
   private final ExternalDocumentService externalDocumentService;
   private final MetadataService metadataService;
-  private final ProductContentService productContentService;
   private final ProductMarketplaceDataService productMarketplaceDataService;
   private GHCommit lastGHCommit;
   private GitHubRepoMeta marketRepoMeta;

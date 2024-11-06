@@ -20,10 +20,8 @@ import static com.axonivy.market.constants.EntityConstants.PRODUCT_MARKETPLACE_D
 @AllArgsConstructor
 @Document(PRODUCT_MARKETPLACE_DATA)
 public class ProductMarketplaceData implements Serializable {
-
   @Serial
   private static final long serialVersionUID = -8770801879877277456L;
-
   @Id
   private String id;
   private int installationCount;

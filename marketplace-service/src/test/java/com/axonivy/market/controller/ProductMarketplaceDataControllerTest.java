@@ -1,5 +1,6 @@
 package com.axonivy.market.controller;
 
+import com.axonivy.market.BaseSetup;
 import com.axonivy.market.enums.ErrorCode;
 import com.axonivy.market.github.service.GitHubService;
 import com.axonivy.market.model.ProductCustomSortRequest;
@@ -21,7 +22,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
-class ProductMarketplaceDataControllerTest {
+class ProductMarketplaceDataControllerTest extends BaseSetup {
   @Mock
   private ProductMarketplaceDataService productMarketplaceDataService;
   @Mock
@@ -43,10 +44,9 @@ class ProductMarketplaceDataControllerTest {
 
   @Test
   void testSyncInstallationCount() {
-    when(
-        productMarketplaceDataService.updateInstallationCountForProduct("google-maps-connector", "10.0.20")).thenReturn(
-        1);
-    var result = productMarketplaceDataController.syncInstallationCount("google-maps-connector", "10.0.20");
+    when(productMarketplaceDataService.updateInstallationCountForProduct(MOCK_PRODUCT_ID,
+        MOCK_RELEASED_VERSION)).thenReturn(1);
+    var result = productMarketplaceDataController.syncInstallationCount(MOCK_PRODUCT_ID, MOCK_RELEASED_VERSION);
 
     assertEquals(1, result.getBody());
   }

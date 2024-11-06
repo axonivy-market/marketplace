@@ -24,7 +24,7 @@ public class RequestMappingConstants {
   public static final String VERSIONS_BY_ID = "/{id}/versions";
   public static final String PRODUCT_BY_ID = "/product/{id}";
   public static final String PRODUCT_RATING_BY_ID = "/product/{id}/rating";
-  public static final String INSTALLATION_COUNT_BY_ID = "/installationcount/{id}";
+  public static final String INSTALLATION_COUNT_BY_ID = "/installation-count/{id}";
   public static final String PRODUCT_JSON_CONTENT_BY_PRODUCT_ID_AND_VERSION = "/{id}/{version}/json";
   public static final String VERSIONS_IN_DESIGNER = "/{id}/designerversions";
   public static final String DESIGNER_INSTALLATION_BY_ID = "/installation/{id}/designer";

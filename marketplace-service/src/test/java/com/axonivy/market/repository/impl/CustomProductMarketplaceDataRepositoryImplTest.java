@@ -26,20 +26,13 @@ class CustomProductMarketplaceDataRepositoryImplTest extends BaseSetup {
 
   @Test
   void testIncreaseInstallationCount() {
-    ProductMarketplaceData productMarketplaceData = new ProductMarketplaceData();
-    productMarketplaceData.setId(MOCK_PRODUCT_ID);
-    productMarketplaceData.setInstallationCount(5);
-
-    ProductMarketplaceData updatedProductMarketplaceData = new ProductMarketplaceData();
-    updatedProductMarketplaceData.setId(MOCK_PRODUCT_ID);
-    updatedProductMarketplaceData.setInstallationCount(6);
-
+    ProductMarketplaceData mockProductMarketplaceData = getMockProductMarketplaceData();
     when(mongoTemplate.findAndModify(any(Query.class), any(Update.class), any(FindAndModifyOptions.class),
-        eq(ProductMarketplaceData.class))).thenReturn(updatedProductMarketplaceData);
+        eq(ProductMarketplaceData.class))).thenReturn(mockProductMarketplaceData);
 
     int updatedCount = repo.increaseInstallationCount(MOCK_PRODUCT_ID);
 
-    assertEquals(6, updatedCount);
+    assertEquals(3, updatedCount);
   }
 
 
@@ -53,10 +46,6 @@ class CustomProductMarketplaceDataRepositoryImplTest extends BaseSetup {
 
   @Test
   void testUpdateInitialCount() {
-    ProductMarketplaceData productMarketplaceData = new ProductMarketplaceData();
-    productMarketplaceData.setId(MOCK_PRODUCT_ID);
-    productMarketplaceData.setInstallationCount(1);
-
     int initialCount = 10;
 
     ProductMarketplaceData updatedProductMarketplaceData = new ProductMarketplaceData();
