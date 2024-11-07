@@ -5,7 +5,6 @@ import { By } from '@angular/platform-browser';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { ProductFilterComponent } from './product-filter.component';
 import { Viewport } from 'karma-viewport/dist/adapter/viewport';
-import { MatomoRouterModule } from 'ngx-matomo-client';
 
 declare const viewport: Viewport;
 
