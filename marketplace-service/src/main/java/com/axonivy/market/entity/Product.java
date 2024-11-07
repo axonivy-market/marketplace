@@ -61,10 +61,7 @@ public class Product implements Serializable {
   private String compatibility;
   private Boolean validate;
   private Boolean contactUs;
-  /**
-   * @deprecated
-   */
-  @Deprecated(forRemoval = true, since = "1.6.0")
+  @Transient
   private int installationCount;
   private Date newestPublishedDate;
   private String newestReleaseVersion;
