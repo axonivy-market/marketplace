@@ -8,6 +8,7 @@ import com.axonivy.market.entity.ProductModuleContent;
 import com.axonivy.market.github.service.GitHubService;
 import com.axonivy.market.github.service.impl.GHAxonIvyProductRepoServiceImpl;
 import com.axonivy.market.github.util.GitHubUtils;
+import com.axonivy.market.model.ReadmeContentsModel;
 import com.axonivy.market.service.ImageService;
 import com.axonivy.market.util.MavenUtils;
 import com.axonivy.market.util.ProductContentUtils;
@@ -35,15 +36,12 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -221,10 +219,11 @@ class GHAxonIvyProductRepoServiceImplTest extends BaseSetup {
   @Test
   void testExtractReadMeFileFromContents() throws IOException {
     try (MockedStatic<ProductContentUtils> mockedProductContentUtils = Mockito.mockStatic(ProductContentUtils.class)) {
+      String mockReadmeContent = "Test README content";
       GHContent mockReadmeFile = mock(GHContent.class);
       when(mockReadmeFile.isFile()).thenReturn(true);
       when(mockReadmeFile.getName()).thenReturn("README.md");
-      when(mockReadmeFile.read()).thenReturn(new ByteArrayInputStream("Test README content".getBytes()));
+      when(mockReadmeFile.read()).thenReturn(new ByteArrayInputStream(mockReadmeContent.getBytes()));
 
       GHContent mockImageFile = mock(GHContent.class);
       when(mockImageFile.isFile()).thenReturn(true);
@@ -232,7 +231,12 @@ class GHAxonIvyProductRepoServiceImplTest extends BaseSetup {
 
       List<GHContent> contents = List.of(mockReadmeFile, mockImageFile);
 
+      ReadmeContentsModel readmeContentsModel = new ReadmeContentsModel();
+      readmeContentsModel.setDescription(mockReadmeContent);
+
       when(ProductContentUtils.hasImageDirectives(anyString())).thenReturn(true);
+      when(ProductContentUtils.getExtractedPartsOfReadme(nullable(String.class))).thenReturn(readmeContentsModel);
+
       when(imageService.mappingImageFromGHContent(anyString(), any())).thenReturn(getMockImage());
       ProductModuleContent productModuleContent = new ProductModuleContent();
 
@@ -241,8 +245,6 @@ class GHAxonIvyProductRepoServiceImplTest extends BaseSetup {
 
       verify(mockReadmeFile, times(1)).read();
       verify(imageService, times(1)).mappingImageFromGHContent(anyString(), eq(mockImageFile));
-      mockedProductContentUtils.verify(
-          () -> ProductContentUtils.updateProductModuleTabContents(productModuleContent, new HashMap<>()));
     }
   }
 

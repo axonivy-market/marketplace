@@ -1,3 +1,4 @@
+import { MatomoTestingModule } from 'ngx-matomo-client/testing';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { By } from '@angular/platform-browser';
@@ -13,10 +14,13 @@ describe('ProductFilterComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [ProductFilterComponent, TranslateModule.forRoot()],
+      imports: [
+        ProductFilterComponent, 
+        TranslateModule.forRoot(),
+        MatomoTestingModule.forRoot(),
+      ],
       providers: [TranslateService]
     }).compileComponents();
-
     fixture = TestBed.createComponent(ProductFilterComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();

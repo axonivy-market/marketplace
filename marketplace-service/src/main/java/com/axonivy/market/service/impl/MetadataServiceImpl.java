@@ -127,28 +127,65 @@ public class MetadataServiceImpl implements MetadataService {
     return true;
   }
 
+  @Override
+  public void updateArtifactAndMetadata(String productId, List<String> versions, List<Artifact> artifacts) {
+    Set<Metadata> metadataSet = new HashSet<>(metadataRepo.findByProductId(productId));
+    Set<Artifact> artifactsFromNewVersions = new HashSet<>();
+
+    if (ObjectUtils.isNotEmpty(versions)) {
+      List<ProductJsonContent> productJsonContents = productJsonRepo.findByProductIdAndVersionIn(productId, versions);
+      for (ProductJsonContent productJsonContent : productJsonContents) {
+        List<Artifact> artifactsFromNonSyncedVersions = MavenUtils.getMavenArtifactsFromProductJson(productJsonContent);
+        artifactsFromNewVersions.addAll(artifactsFromNonSyncedVersions);
+      }
+      log.info("**MetadataService: New versions detected: {} in product {}", versions, productId);
+    }
+
+    metadataSet.addAll(MavenUtils.convertArtifactsToMetadataSet(artifactsFromNewVersions, productId));
+    if (ObjectUtils.isNotEmpty(artifacts)) {
+      metadataSet.addAll(MavenUtils.convertArtifactsToMetadataSet(new HashSet<>(artifacts), productId));
+    }
+
+    if (CollectionUtils.isEmpty(metadataSet)) {
+      log.info("**MetadataService: No artifact found in product {}", productId);
+      return;
+    }
+
+    MavenArtifactVersion artifactVersion = mavenArtifactVersionRepo.findById(productId)
+        .orElse(MavenArtifactVersion.builder().productId(productId).build());
+
+    artifactVersion.setAdditionalArtifactsByVersion(new HashMap<>());
+    updateMavenArtifactVersionData(metadataSet, artifactVersion);
+
+    mavenArtifactVersionRepo.save(artifactVersion);
+    metadataRepo.saveAll(metadataSet);
+  }
+
   public void updateMavenArtifactVersionFromMetadata(MavenArtifactVersion artifactVersionCache,
       Metadata metadata) {
     // Skip to add new model for product artifact
     if (MavenUtils.isProductArtifactId(metadata.getArtifactId())) {
       return;
     }
-    metadata.getVersions().forEach(version -> {
-      if (VersionUtils.isSnapshotVersion(version)) {
-        if (VersionUtils.isOfficialVersionOrUnReleasedDevVersion(metadata.getVersions().stream().toList(), version)) {
-          updateMavenArtifactVersionForNonReleaseDevVersion(artifactVersionCache, metadata, version);
-        }
-      } else {
+
+    for (String version : metadata.getVersions()) {
+      boolean isSnapshotVersion = VersionUtils.isSnapshotVersion(version);
+      boolean isOfficialVersionOrUnReleasedDevVersion =
+          VersionUtils.isOfficialVersionOrUnReleasedDevVersion(metadata.getVersions(), version);
+
+      if (isSnapshotVersion && isOfficialVersionOrUnReleasedDevVersion) {
+        updateMavenArtifactVersionForNonReleaseDevVersion(artifactVersionCache, metadata, version);
+      } else if (!isSnapshotVersion) {
         updateMavenArtifactVersionCacheWithModel(artifactVersionCache, version, metadata);
       }
-    });
+    }
   }
 
   public void updateMavenArtifactVersionForNonReleaseDevVersion(MavenArtifactVersion artifactVersionCache,
       Metadata metadata, String version) {
     Metadata snapShotMetadata = MavenUtils.buildSnapShotMetadataFromVersion(metadata, version);
-    MetadataReaderUtils.updateMetadataFromMavenXML(MavenUtils.getMetadataContentFromUrl(snapShotMetadata.getUrl()),
-        snapShotMetadata, true);
+    String xmlDataForSnapshotMetadata = MavenUtils.getMetadataContentFromUrl(snapShotMetadata.getUrl());
+    MetadataReaderUtils.updateMetadataFromMavenXML(xmlDataForSnapshotMetadata, snapShotMetadata, true);
     updateMavenArtifactVersionCacheWithModel(artifactVersionCache, version, snapShotMetadata);
   }
 
@@ -157,12 +194,13 @@ public class MetadataServiceImpl implements MetadataService {
     if (CollectionUtils.isEmpty(nonSyncedVersions)) {
       return artifacts;
     }
-    nonSyncedVersions.forEach(version -> {
-      ProductJsonContent productJson =
-          productJsonRepo.findByProductIdAndVersion(productId, version).stream().findAny().orElse(null);
-      List<Artifact> artifactsInVersion = MavenUtils.getMavenArtifactsFromProductJson(productJson);
+
+    List<ProductJsonContent> productJsonContents = productJsonRepo.findByProductIdAndVersionIn(productId, nonSyncedVersions);
+    for (ProductJsonContent productJsonContent : productJsonContents) {
+      List<Artifact> artifactsInVersion = MavenUtils.getMavenArtifactsFromProductJson(productJsonContent);
       artifacts.addAll(artifactsInVersion);
-    });
+    }
+
     return artifacts;
   }
 }
