@@ -19,12 +19,9 @@ export class BackToTopComponent {
 
   @HostListener("window:scroll", [])
   onWindowScroll() {
-    if (window.scrollY >= this.backToTopShowThreshold || document.documentElement.scrollTop >= this.backToTopShowThreshold) {
-      this.showScrollButton = true;
-    }
-    else {
-      this.showScrollButton = false;
-    }
+    const isWindowScrollTopOverThreshold = window.scrollY >= this.backToTopShowThreshold;
+    const isDocumentScrollTopOverThreshold = document.documentElement.scrollTop >= this.backToTopShowThreshold;
+    this.showScrollButton = isWindowScrollTopOverThreshold || isDocumentScrollTopOverThreshold;
   }
 
   scrollToTop() {

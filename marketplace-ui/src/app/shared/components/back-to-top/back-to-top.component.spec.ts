@@ -65,15 +65,15 @@ describe('BackToTopComponent', () => {
     component.showScrollButton = true;
     fixture.detectChanges();
 
-    const buttonElement = fixture.debugElement.query(By.css('.scroll-to-top'));
-    expect(getComputedStyle(buttonElement.nativeElement).opacity).toEqual('1');
+    const scrollToTopButtonElement = fixture.debugElement.query(By.css('.scroll-to-top'));
+    expect(getComputedStyle(scrollToTopButtonElement.nativeElement).opacity).toEqual('1');
   });
 
   it('should not render the button when showScrollButton is false', () => {
     component.showScrollButton = false;
     fixture.detectChanges();
 
-    const buttonElement = fixture.debugElement.query(By.css('.scroll-to-top'));
-    expect(getComputedStyle(buttonElement.nativeElement).opacity).toEqual('0');
+    const scrollToTopButtonElement = fixture.debugElement.query(By.css('.scroll-to-top'));
+    expect(getComputedStyle(scrollToTopButtonElement.nativeElement).opacity).toEqual('0');
   });
 });
