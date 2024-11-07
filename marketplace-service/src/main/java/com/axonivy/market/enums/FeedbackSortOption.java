@@ -31,6 +31,6 @@ public enum FeedbackSortOption {
         return feedbackSortOption;
       }
     }
-    throw new InvalidParamException(ErrorCode.FEEDBACK_SORT_INVALID, "SortOption: " + option);
+    throw new InvalidParamException(ErrorCode.FEEDBACK_SORT_INVALID, "SortOptions: " + option);
   }
 }
