@@ -2,11 +2,8 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { By } from '@angular/platform-browser';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
-import { TypeOption } from '../../../shared/enums/type-option.enum';
-import { SortOption } from '../../../shared/enums/sort-option.enum';
 import { ProductFilterComponent } from './product-filter.component';
 import { Viewport } from 'karma-viewport/dist/adapter/viewport';
-import { CommonDropdownComponent } from '../../../shared/components/common-dropdown/common-dropdown.component';
 
 declare const viewport: Viewport;
 

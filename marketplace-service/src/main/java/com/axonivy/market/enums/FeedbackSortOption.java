@@ -22,13 +22,13 @@ public enum FeedbackSortOption {
 
   private final String option;
   private final String code;
-  private final List<Sort.Direction> direction;
+  private final List<Sort.Direction> directions;
 
   public static FeedbackSortOption of(String option) {
     option = StringUtils.isBlank(option) ? option : option.trim();
-    for (var sortOption : values()) {
-      if (StringUtils.equalsIgnoreCase(sortOption.option, option)) {
-        return sortOption;
+    for (var feedbackSortOption : values()) {
+      if (StringUtils.equalsIgnoreCase(feedbackSortOption.option, option)) {
+        return feedbackSortOption;
       }
     }
     throw new InvalidParamException(ErrorCode.FEEDBACK_SORT_INVALID, "SortOption: " + option);

@@ -133,7 +133,7 @@ public class FeedbackServiceImpl implements FeedbackService {
 
   public List<Sort.Order> createOrder(FeedbackSortOption feedbackSortOption) {
     String[] fields = feedbackSortOption.getCode().split(StringUtils.SPACE);
-    List<Sort.Direction> directions = feedbackSortOption.getDirection();
+    List<Sort.Direction> directions = feedbackSortOption.getDirections();
 
     if (fields.length != directions.size()) {
       throw new IllegalArgumentException("The number of fields and directions must match.");

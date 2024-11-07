@@ -7,8 +7,6 @@ import { FEEDBACK_SORT_TYPES } from '../../../../../../shared/constants/common.c
 import { By } from '@angular/platform-browser';
 import { CommonDropdownComponent } from '../../../../../../shared/components/common-dropdown/common-dropdown.component';
 import { ItemDropdown } from '../../../../../../shared/models/item-dropdown.model';
-import { TypeOption } from '../../../../../../shared/enums/type-option.enum';
-import { SortOption } from '../../../../../../shared/enums/sort-option.enum';
 import { FeedbackSortType } from '../../../../../../shared/enums/feedback-sort-type';
 
 describe('FeedbackFilterComponent', () => {
