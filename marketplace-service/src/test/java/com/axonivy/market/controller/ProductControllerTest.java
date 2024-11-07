@@ -1,5 +1,6 @@
 package com.axonivy.market.controller;
 
+import com.axonivy.market.BaseSetup;
 import com.axonivy.market.assembler.ProductModelAssembler;
 import com.axonivy.market.entity.Product;
 import com.axonivy.market.enums.ErrorCode;
@@ -35,12 +36,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
-import static com.axonivy.market.constants.CommonConstants.AUTHORIZATION_HEADER;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
-class ProductControllerTest {
+class ProductControllerTest extends BaseSetup {
   private static final String PRODUCT_ID_SAMPLE = "a-trust";
   private static final String PRODUCT_PATH_SAMPLE = "market/connector/a-trust";
   private static final String PRODUCT_NAME_SAMPLE = "Amazon Comprehend";

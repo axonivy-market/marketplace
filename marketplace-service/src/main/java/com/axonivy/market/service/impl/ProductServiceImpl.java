@@ -5,6 +5,7 @@ import com.axonivy.market.constants.CommonConstants;
 import com.axonivy.market.constants.GitHubConstants;
 import com.axonivy.market.constants.MavenConstants;
 import com.axonivy.market.constants.MetaConstants;
+import com.axonivy.market.constants.MongoDBConstants;
 import com.axonivy.market.criteria.ProductSearchCriteria;
 import com.axonivy.market.entity.GitHubRepoMeta;
 import com.axonivy.market.entity.Image;
@@ -266,7 +267,6 @@ public class ProductServiceImpl implements ProductService {
       Product product = new Product();
       ProductFactory.mappingByGHContent(product, fileContent);
       mappingVendorImageFromGHContent(product, fileContent);
-      transferComputedDataFromDB(product);
       productId = productRepo.save(product).getId();
     } else {
       productId = modifyProductLogo(parentPath, fileContent);
@@ -299,12 +299,7 @@ public class ProductServiceImpl implements ProductService {
       List<Order> orders = new ArrayList<>();
       for (var sort : pageable.getSort()) {
         SortOption sortOption = SortOption.of(sort.getProperty());
-        Order order;
-        if (SortOption.STANDARD.equals(sortOption)) {
-          order = new Order(sortOption.getDirection(), "marketplaceData.customOrder");
-        } else {
-          order = createOrder(sortOption, language);
-        }
+        Order order = createOrder(sortOption, language);
         orders.add(order);
         if (SortOption.STANDARD.equals(sortOption)) {
           orders.add(getExtensionOrder(language));
@@ -318,6 +313,9 @@ public class ProductServiceImpl implements ProductService {
   }
 
   public Order createOrder(SortOption sortOption, String language) {
+    if (SortOption.STANDARD.equals(sortOption)) {
+      return new Order(sortOption.getDirection(), MongoDBConstants.MARKETPLACE_DATA_CUSTOM_ORDER);
+    }
     return new Order(sortOption.getDirection(), sortOption.getCode(language));
   }
 
@@ -381,7 +379,6 @@ public class ProductServiceImpl implements ProductService {
 
       updateProductContentForNonStandardProduct(ghContentEntity.getValue(), product);
       updateProductFromReleasedVersions(product);
-      transferComputedDataFromDB(product);
       syncedProductIds.add(productRepo.save(product).getId());
     }
     return syncedProductIds;
@@ -617,12 +614,6 @@ public class ProductServiceImpl implements ProductService {
     return productRepo.getProductByIdAndVersion(id, version);
   }
 
-  public void transferComputedDataFromDB(Product product) {
-    productRepo.findById(product.getId()).ifPresent(persistedData ->
-        ProductFactory.transferComputedPersistedDataToProduct(persistedData, product)
-    );
-  }
-
   @Override
   public boolean syncOneProduct(String productId, String marketItemPath, Boolean overrideMarketItemPath) {
     try {
@@ -656,7 +647,6 @@ public class ProductServiceImpl implements ProductService {
   private Product renewProductById(String productId, String marketItemPath, Boolean overrideMarketItemPath) {
     Product product = new Product();
     productRepo.findById(productId).ifPresent(foundProduct -> {
-          ProductFactory.transferComputedPersistedDataToProduct(foundProduct, product);
           imageRepo.deleteAllByProductId(foundProduct.getId());
           metadataRepo.deleteAllByProductId(foundProduct.getId());
           metadataSyncRepo.deleteAllByProductId(foundProduct.getId());

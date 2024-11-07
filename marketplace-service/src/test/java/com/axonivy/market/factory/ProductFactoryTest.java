@@ -23,9 +23,6 @@ import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class ProductFactoryTest {
-  private static final String DUMMY_LOGO_URL = "https://raw.githubusercontent" +
-      ".com/axonivy-market/market/master/market/connector/amazon-comprehend-connector/logo.png";
-
   @Test
   void testMappingByGHContent() throws IOException {
     Product product = new Product();
@@ -75,17 +72,5 @@ class ProductFactoryTest {
     ProductFactory.extractSourceUrl(product, meta);
     Assertions.assertEquals(sourceUrl, product.getRepositoryName());
     Assertions.assertEquals(sourceUrl, product.getSourceUrl());
-  }
-
-  @Test
-  void testTransferComputedData() {
-    Product product = new Product();
-    Product persistedData = new Product();
-    persistedData.setCustomOrder(1);
-    persistedData.setInstallationCount(300);
-
-    ProductFactory.transferComputedPersistedDataToProduct(persistedData, product);
-    assertEquals(1, product.getCustomOrder());
-    assertEquals(300, product.getInstallationCount());
   }
 }

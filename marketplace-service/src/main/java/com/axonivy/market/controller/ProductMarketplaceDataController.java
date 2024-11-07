@@ -30,7 +30,7 @@ import static com.axonivy.market.constants.RequestParamConstants.ID;
 import static org.springframework.http.HttpHeaders.AUTHORIZATION;
 
 @RestController
-@RequestMapping(PRODUCT_MARKETPLACE)
+@RequestMapping(PRODUCT_DATA)
 @Tag(name = "Product Marketplace Controller", description = "API collection to get product marketplace data")
 @AllArgsConstructor
 public class ProductMarketplaceDataController {

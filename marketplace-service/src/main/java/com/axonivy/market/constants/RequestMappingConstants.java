@@ -31,5 +31,5 @@ public class RequestMappingConstants {
   public static final String CUSTOM_SORT = "custom-sort";
   public static final String LATEST_ARTIFACT_DOWNLOAD_URL_BY_ID = "/{id}/artifact";
   public static final String EXTERNAL_DOCUMENT = API + "/externaldocument";
-  public static final String PRODUCT_MARKETPLACE = API + "/product-data";
+  public static final String PRODUCT_DATA = API + "/product-data";
 }

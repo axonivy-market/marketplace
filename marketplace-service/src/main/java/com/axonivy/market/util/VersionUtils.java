@@ -17,6 +17,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static com.axonivy.market.constants.MavenConstants.*;
@@ -141,7 +142,7 @@ public class VersionUtils {
       return new ArrayList<>();
     }
     return metadataList.stream().filter(MavenUtils::isProductMetadata).findAny().map(
-        metadata -> metadata.getVersions().stream().sorted(new LatestVersionComparator()).toList()).orElse(
-        new ArrayList<>());
+        metadata -> metadata.getVersions().stream().sorted(new LatestVersionComparator()).collect(
+            Collectors.toList())).orElse(new ArrayList<>());
   }
 }
