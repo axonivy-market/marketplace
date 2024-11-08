@@ -11,7 +11,7 @@ import {
   signal,
   WritableSignal
 } from '@angular/core';
-import { catchError, EMPTY, Observable, of, tap, throwError } from 'rxjs';
+import { catchError, Observable, of, tap, throwError } from 'rxjs';
 import { CookieService } from 'ngx-cookie-service';
 import { AuthService } from '../../../../../auth/auth.service';
 import {
