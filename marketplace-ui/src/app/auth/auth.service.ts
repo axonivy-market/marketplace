@@ -5,6 +5,7 @@ import { Router } from '@angular/router';
 import { catchError, Observable, throwError } from 'rxjs';
 import { CookieService } from 'ngx-cookie-service';
 import { jwtDecode } from 'jwt-decode';
+import { TOKEN_KEY } from '../shared/constants/common.constant';
 
 export interface TokenPayload {
   username: string;
@@ -26,7 +27,6 @@ export interface TokenResponse {
 })
 export class AuthService {
   private readonly BASE_URL = environment.apiUrl;
-  private readonly TOKEN_KEY = 'token';
   private readonly githubAuthUrl = 'https://github.com/login/oauth/authorize';
   private readonly githubAuthCallbackUrl = window.location.origin + environment.githubAuthCallbackPath;
 
@@ -66,14 +66,14 @@ export class AuthService {
   }
 
   private setTokenAsCookie(token: string): void {
-    this.cookieService.set(this.TOKEN_KEY, token, {
+    this.cookieService.set(TOKEN_KEY, token, {
       expires: this.extractNumberOfExpiredDay(token),
       path: '/'
     });
   }
 
   getToken(): string | null {
-    const token = this.cookieService.get(this.TOKEN_KEY);
+    const token = this.cookieService.get(TOKEN_KEY);
     if (token && !this.isTokenExpired(token)) {
       return token;
     }

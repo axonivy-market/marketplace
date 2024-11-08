@@ -32,7 +32,9 @@ import { CookieService } from 'ngx-cookie-service';
 import { CommonUtils } from '../../../../shared/utils/common.utils';
 import { ActivatedRoute, Router } from '@angular/router';
 import { ROUTER } from '../../../../shared/constants/router.constant';
-import { MATOMO_DIRECTIVES, MatomoTrackClickDirective, MatomoTrackerDirective } from 'ngx-matomo-client';
+import { MatomoTrackClickDirective } from 'ngx-matomo-client';
+import { MatomoCategory, MatomoAction } from '../../../../shared/enums/matomo-tracking.enum';
+import { MATOMO_TRACKING_ENVIRONMENT } from '../../../../shared/constants/matomo.constant';
 
 const showDevVersionCookieName = 'showDevVersions';
 
@@ -45,9 +47,7 @@ const showDevVersionCookieName = 'showDevVersions';
     FormsModule,
     CommonDropdownComponent,
     LoadingSpinnerComponent,
-    MatomoTrackerDirective,
-    MatomoTrackClickDirective,
-    MATOMO_DIRECTIVES
+    MatomoTrackClickDirective
   ],
   templateUrl: './product-detail-version-action.component.html',
   styleUrl: './product-detail-version-action.component.scss'
@@ -60,6 +60,10 @@ export class ProductDetailVersionActionComponent implements AfterViewInit {
   @Input() actionType!: ProductDetailActionType;
   @Input() product!: ProductDetail;
   protected ProductDetailActionType = ProductDetailActionType;
+  protected MatomoCategory = MatomoCategory;
+  protected MatomoAction = MatomoAction;
+  trackedEnvironmentForMatomo = ''
+
   selectedVersion = model<string>('');
   versions: WritableSignal<string[]> = signal([]);
   versionDropdown: Signal<ItemDropdown[]> = computed(() => {
@@ -252,5 +256,18 @@ export class ProductDetailVersionActionComponent implements AfterViewInit {
       newTab.blur();
     }
     window.focus();
+  }
+
+  getTrackingEnvironmentBasedOnActionType() {
+    switch (this.actionType) {
+      case ProductDetailActionType.STANDARD:
+        return MATOMO_TRACKING_ENVIRONMENT.standard;
+      case ProductDetailActionType.DESIGNER_ENV:
+        return MATOMO_TRACKING_ENVIRONMENT.designerEnv;
+      case ProductDetailActionType.CUSTOM_SOLUTION:
+        return MATOMO_TRACKING_ENVIRONMENT.customSolution;
+      default:
+        return '';  
+    }
   }
 }

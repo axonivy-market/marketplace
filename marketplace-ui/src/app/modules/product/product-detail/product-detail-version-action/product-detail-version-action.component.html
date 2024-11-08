@@ -3,9 +3,11 @@
     <div class="install-download-button-container gap-2 w-100 d-flex">
       <button
         id="install-button"
+        name="Install button"
         #installButton
-        matomoCategory="BUTTON"
-        matomoAction="CLICK"
+        [matomoClickCategory]="MatomoCategory.BUTTON"
+        [matomoClickAction]="MatomoAction.CLICK"
+        [matomoClickName]="installButton.name + ' - ' + getTrackingEnvironmentBasedOnActionType()"
         [lang]="languageService.selectedLanguage()"
         class="btn btn__install flex-grow-1 me-lg-2"
         data-bs-toggle="tooltip"
@@ -28,7 +30,12 @@
       </button>
       @if (!isMavenDropins) {
         <button
+          id="download-button"
+          name="Download button"
           #artifactDownloadButton
+          [matomoClickCategory]="MatomoCategory.BUTTON"
+          [matomoClickAction]="MatomoAction.CLICK"
+          [matomoClickName]="artifactDownloadButton.name + ' - ' + getTrackingEnvironmentBasedOnActionType()"
           [lang]="languageService.selectedLanguage()"
           class="btn btn__download btn-secondary primary-bg flex-grow-1"
           type="button"
@@ -112,7 +119,13 @@
                            [metaDataJsonUrl]="metaDataJsonUrl()"
                            (itemSelected)="onSelectVersionInDesigner($event.value)">
       </app-common-dropdown>
-      <button [lang]="languageService.selectedLanguage()"
+      <button id="install-button"
+              name="Install button"
+              #installButton
+              [matomoClickCategory]="MatomoCategory.BUTTON"
+              [matomoClickAction]="MatomoAction.CLICK"
+              [matomoClickName]="installButton.name + ' - ' + getTrackingEnvironmentBasedOnActionType()"
+              [lang]="languageService.selectedLanguage()"
               class="btn btn__install flex-grow-1 install-designer-button m-0 col-4" id="install-button"
               (click)="onUpdateInstallationCountForDesigner()" onClick="function installInDesigner() {
                   const selectedItemElement = document.querySelector('.install-designer-dropdown');
@@ -127,7 +140,14 @@
     </div>
   }
   @case (ProductDetailActionType.CUSTOM_SOLUTION) {
-    <button [lang]="languageService.selectedLanguage()"
+    <button 
+            id="contact-us-button"
+            name="Contact us button"
+            #contactUsButton
+            [matomoClickCategory]="MatomoCategory.BUTTON"
+            [matomoClickAction]="MatomoAction.CLICK"
+            [matomoClickName]="contactUsButton.name + ' - ' + getTrackingEnvironmentBasedOnActionType()"
+            [lang]="languageService.selectedLanguage()"
             class="btn row btn_contact-us"
             (click)="onNavigateToContactPage()"
             [ngClass]="themeService.isDarkMode() ? 'btn-light' : 'btn-primary'">

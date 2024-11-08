@@ -25,6 +25,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import static com.axonivy.market.constants.RequestMappingConstants.*;
@@ -73,7 +74,10 @@ public class ExternalDocumentController {
     if (ObjectUtils.isEmpty(products)) {
       return new ResponseEntity<>(message, HttpStatus.NO_CONTENT);
     }
-    products.forEach(product -> externalDocumentService.syncDocumentForProduct(product.getId(), resetSync));
+
+    for (Product product : products) {
+      externalDocumentService.syncDocumentForProduct(product.getId(), new ArrayList<>(), resetSync);
+    }
 
     message.setHelpCode(ErrorCode.SUCCESSFUL.getCode());
     message.setHelpText(ErrorCode.SUCCESSFUL.getHelpText());

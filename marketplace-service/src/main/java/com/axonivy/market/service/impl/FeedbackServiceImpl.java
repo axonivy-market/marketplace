@@ -2,6 +2,7 @@ package com.axonivy.market.service.impl;
 
 import com.axonivy.market.entity.Feedback;
 import com.axonivy.market.enums.ErrorCode;
+import com.axonivy.market.enums.FeedbackSortOption;
 import com.axonivy.market.exceptions.model.NoContentException;
 import com.axonivy.market.exceptions.model.NotFoundException;
 import com.axonivy.market.model.FeedbackModelRequest;
@@ -12,9 +13,12 @@ import com.axonivy.market.repository.UserRepository;
 import com.axonivy.market.service.FeedbackService;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -37,7 +41,7 @@ public class FeedbackServiceImpl implements FeedbackService {
   @Override
   public Page<Feedback> findFeedbacks(String productId, Pageable pageable) throws NotFoundException {
     validateProductExists(productId);
-    return feedbackRepository.searchByProductId(productId, pageable);
+    return feedbackRepository.searchByProductId(productId, refinePagination(pageable));
   }
 
   @Override
@@ -111,5 +115,32 @@ public class FeedbackServiceImpl implements FeedbackService {
     if (userRepository.findById(userId).isEmpty()) {
       throw new NotFoundException(ErrorCode.USER_NOT_FOUND, "Not found user with id: " + userId);
     }
+  }
+
+  private Pageable refinePagination(Pageable pageable) {
+    PageRequest pageRequest = (PageRequest) pageable;
+    if (pageable != null) {
+      List<Sort.Order> orders = new ArrayList<>();
+      for (var sort : pageable.getSort()) {
+        FeedbackSortOption feedbackSortOption = FeedbackSortOption.of(sort.getProperty());
+        List<Sort.Order> order = createOrder(feedbackSortOption);
+        orders.addAll(order);
+      }
+      pageRequest = PageRequest.of(pageable.getPageNumber(), pageable.getPageSize(), Sort.by(orders));
+    }
+    return pageRequest;
+  }
+
+  public List<Sort.Order> createOrder(FeedbackSortOption feedbackSortOption) {
+    String[] fields = feedbackSortOption.getCode().split(StringUtils.SPACE);
+    List<Sort.Direction> directions = feedbackSortOption.getDirections();
+
+    if (fields.length != directions.size()) {
+      throw new IllegalArgumentException("The number of fields and directions must match.");
+    }
+
+    return IntStream.range(0, fields.length)
+        .mapToObj(i -> new Sort.Order(directions.get(i), fields[i]))
+        .toList();
   }
 }

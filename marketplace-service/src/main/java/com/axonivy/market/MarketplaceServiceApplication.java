@@ -14,6 +14,7 @@ import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.scheduling.annotation.EnableScheduling;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Log4j2
@@ -60,7 +61,7 @@ public class MarketplaceServiceApplication {
     if (ObjectUtils.isEmpty(productIds)) {
       log.warn("Synchronizing External Document: Nothing updated");
     }
-    productIds.forEach(id -> externalDocumentService.syncDocumentForProduct(id, false));
+    productIds.forEach(id -> externalDocumentService.syncDocumentForProduct(id, new ArrayList<>(), false));
     watch.stop();
     log.warn("Synchronizing External Document: Finished synchronizing data for Document in [{}] milliseconds",
         watch.getTime());

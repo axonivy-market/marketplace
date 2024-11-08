@@ -35,6 +35,7 @@ import com.axonivy.market.repository.ProductCustomSortRepository;
 import com.axonivy.market.repository.ProductJsonContentRepository;
 import com.axonivy.market.repository.ProductModuleContentRepository;
 import com.axonivy.market.repository.ProductRepository;
+import com.axonivy.market.service.ExternalDocumentService;
 import com.axonivy.market.service.ImageService;
 import com.axonivy.market.service.MetadataService;
 import com.axonivy.market.service.ProductContentService;
@@ -114,6 +115,7 @@ public class ProductServiceImpl implements ProductService {
   private final ImageService imageService;
   private final MongoTemplate mongoTemplate;
   private final ProductContentService productContentService;
+  private final ExternalDocumentService externalDocumentService;
   private final ObjectMapper mapper = new ObjectMapper();
   private final SecureRandom random = new SecureRandom();
   private final MetadataService metadataService;
@@ -131,7 +133,8 @@ public class ProductServiceImpl implements ProductService {
       ProductCustomSortRepository productCustomSortRepo, MavenArtifactVersionRepository mavenArtifactVersionRepo,
       ProductJsonContentRepository productJsonContentRepo, ImageRepository imageRepo,
       MetadataSyncRepository metadataSyncRepo, MetadataRepository metadataRepo, ImageService imageService,
-      MongoTemplate mongoTemplate, ProductContentService productContentService, MetadataService metadataService) {
+      MongoTemplate mongoTemplate, ProductContentService productContentService,
+      ExternalDocumentService externalDocumentService, MetadataService metadataService) {
     this.productRepo = productRepo;
     this.productModuleContentRepo = productModuleContentRepo;
     this.axonIvyMarketRepoService = axonIvyMarketRepoService;
@@ -147,6 +150,7 @@ public class ProductServiceImpl implements ProductService {
     this.imageService = imageService;
     this.mongoTemplate = mongoTemplate;
     this.productContentService = productContentService;
+    this.externalDocumentService = externalDocumentService;
     this.metadataService = metadataService;
   }
 
@@ -489,6 +493,7 @@ public class ProductServiceImpl implements ProductService {
       getMetadataContent(mavenArtifact, product, nonSyncReleasedVersions);
     }
     metadataService.updateArtifactAndMetadata(product.getId(), nonSyncReleasedVersions, product.getArtifacts());
+    externalDocumentService.syncDocumentForProduct(product.getId(), nonSyncReleasedVersions, false);
   }
 
   private void getMetadataContent(Artifact artifact, Product product, List<String> nonSyncReleasedVersions) {
@@ -500,29 +505,33 @@ public class ProductServiceImpl implements ProductService {
     }
   }
 
-  private void updateContentsFromMavenXML(Product product, String metadataContent, Artifact mavenArtifact, List<String> nonSyncReleasedVersions) {
+  private void updateContentsFromMavenXML(Product product, String metadataContent, Artifact mavenArtifact,
+      List<String> nonSyncReleasedVersions) {
     Document document = MetadataReaderUtils.getDocumentFromXMLContent(metadataContent);
 
-    String latestVersion = MetadataReaderUtils.getElementValue(document, MavenConstants.LATEST_VERSION_TAG);
-    if (StringUtils.equals(latestVersion, product.getNewestReleaseVersion())) {
-      return;
-    }
-
-    product.setNewestPublishedDate(getNewestPublishedDate(document));
-    product.setNewestReleaseVersion(latestVersion);
     NodeList versionNodes = document.getElementsByTagName(MavenConstants.VERSION_TAG);
     List<String> mavenVersions = new ArrayList<>();
     for (int i = 0; i < versionNodes.getLength(); i++) {
       mavenVersions.add(versionNodes.item(i).getTextContent());
     }
 
-    updateProductCompatibility(product, mavenVersions);
-
+    // Check if having new released version in Maven
     List<String> currentVersions = ObjectUtils.isNotEmpty(product.getReleasedVersions()) ?
         product.getReleasedVersions() :
         productModuleContentRepo.findVersionsByProductId(product.getId());
-
     mavenVersions = mavenVersions.stream().filter(version -> !currentVersions.contains(version)).toList();
+
+    if (ObjectUtils.isEmpty(mavenVersions)) {
+      return;
+    }
+    
+    Date lastUpdated = getLastUpdatedDate(document);
+    if (ObjectUtils.isEmpty(product.getNewestPublishedDate()) || lastUpdated.after(product.getNewestPublishedDate())) {
+      String latestVersion = MetadataReaderUtils.getElementValue(document, MavenConstants.LATEST_VERSION_TAG);
+      product.setNewestPublishedDate(lastUpdated);
+      product.setNewestReleaseVersion(latestVersion);
+    }
+    updateProductCompatibility(product, mavenVersions);
 
     Optional.ofNullable(product.getReleasedVersions()).ifPresentOrElse(releasedVersion -> {},
         () -> product.setReleasedVersions(new ArrayList<>()));
@@ -541,7 +550,7 @@ public class ProductServiceImpl implements ProductService {
     }
   }
 
-  private Date getNewestPublishedDate(Document document) {
+  private Date getLastUpdatedDate(Document document) {
     DateTimeFormatter lastUpdatedFormatter = DateTimeFormatter.ofPattern(MavenConstants.DATE_TIME_FORMAT);
     LocalDateTime newestPublishedDate =
         LocalDateTime.parse(Objects.requireNonNull(MetadataReaderUtils.getElementValue(document,

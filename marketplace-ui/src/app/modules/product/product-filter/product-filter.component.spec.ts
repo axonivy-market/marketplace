@@ -1,11 +1,10 @@
+import { MatomoTestingModule } from 'ngx-matomo-client/testing';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { MatomoTestingModule, provideMatomoTesting } from 'ngx-matomo-client/testing';
 
 import { By } from '@angular/platform-browser';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
-import { Viewport } from 'karma-viewport/dist/adapter/viewport';
-import { MatomoConfiguration, MatomoInitializerService, MatomoModule, MatomoRouterModule, withRouter } from 'ngx-matomo-client';
 import { ProductFilterComponent } from './product-filter.component';
+import { Viewport } from 'karma-viewport/dist/adapter/viewport';
 
 declare const viewport: Viewport;
 
@@ -15,12 +14,12 @@ describe('ProductFilterComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [ProductFilterComponent, TranslateModule.forRoot(),
+      imports: [
+        ProductFilterComponent, 
+        TranslateModule.forRoot(),
         MatomoTestingModule.forRoot(),
-        MatomoRouterModule.forRoot(),
       ],
-      providers: [TranslateService, provideMatomoTesting(), 
-      ]
+      providers: [TranslateService]
     }).compileComponents();
     fixture = TestBed.createComponent(ProductFilterComponent);
     component = fixture.componentInstance;

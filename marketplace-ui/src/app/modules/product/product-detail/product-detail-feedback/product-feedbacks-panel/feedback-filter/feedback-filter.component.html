@@ -5,7 +5,7 @@
   <div class="feedback-dropdown">
     <app-common-dropdown
       [items]="feedbackSortTypes"
-      [selectedItem]="selectedSortTypeLabel | translate"
+      [selectedItem]="selectedSortTypeLabel() | translate"
       buttonClass="form-select border-primary text-primary"
       ariaLabel="sort"
       (itemSelected)="onSortChange($event)">
