@@ -11,7 +11,7 @@ import {
   signal,
   WritableSignal
 } from '@angular/core';
-import { catchError, EMPTY, Observable, of, tap } from 'rxjs';
+import { catchError, Observable, of, tap, throwError } from 'rxjs';
 import { CookieService } from 'ngx-cookie-service';
 import { AuthService } from '../../../../../auth/auth.service';
 import {
@@ -77,11 +77,11 @@ export class ProductFeedbackService {
         catchError(response => {
           if (
             response.status === NOT_FOUND_ERROR_CODE &&
-            response.error.helpCode === USER_NOT_FOUND_ERROR_CODE
+            response.error.helpCode === USER_NOT_FOUND_ERROR_CODE.toString()
           ) {
             this.clearTokenCookie();
           }
-          return EMPTY;
+          return throwError(() => response);
         })
       );
   }
@@ -137,7 +137,7 @@ export class ProductFeedbackService {
         catchError(response => {
           if (
             response.status === NOT_FOUND_ERROR_CODE &&
-            response.error.helpCode === USER_NOT_FOUND_ERROR_CODE
+            response.error.helpCode === USER_NOT_FOUND_ERROR_CODE.toString()
           ) {
             this.clearTokenCookie();
           }
