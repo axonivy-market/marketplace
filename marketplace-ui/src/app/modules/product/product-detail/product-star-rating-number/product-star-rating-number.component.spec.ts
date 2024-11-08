@@ -74,5 +74,6 @@ describe('ProductStarRatingNumberComponent', () => {
     expect(reviewNumber.textContent).toContain('4.5');
     expect(totalComments.textContent).toContain('(10)');
     expect(starRatingComponent).toBeTruthy();
+
   });
 });

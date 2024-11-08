@@ -15,7 +15,7 @@ export class ProductDetailService {
   productNames: WritableSignal<DisplayValue> = signal({} as DisplayValue);
   httpClient = inject(HttpClient);
   loadingService = inject(LoadingService);
-
+  ratingBtnLabel: WritableSignal<string> = signal('');
   
   getExteralDocumentForProductByVersion(productId: string, version: string): Observable<ExternalDocument> {
     return this.httpClient.get<ExternalDocument>(

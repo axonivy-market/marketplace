@@ -215,7 +215,7 @@
             class="btn border-0 btn-primary rate-connector-btn"
             (click)="onClickRateBtn()">
             <h5 class="mb-0" [lang]="languageService.selectedLanguage()">
-              {{ 'common.feedback.rateFeedbackBtnLabel' | translate }}
+              {{ productDetailService.ratingBtnLabel() | translate }}
             </h5>
           </button>
         </div>
