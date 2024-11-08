@@ -1,5 +1,6 @@
 package com.axonivy.market.factory;
 
+import com.axonivy.market.BaseSetup;
 import com.axonivy.market.constants.ProductJsonConstants;
 import com.axonivy.market.entity.Product;
 import com.axonivy.market.enums.Language;
@@ -22,7 +23,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
-class ProductFactoryTest {
+class ProductFactoryTest extends BaseSetup {
   @Test
   void testMappingByGHContent() throws IOException {
     Product product = new Product();
@@ -72,5 +73,15 @@ class ProductFactoryTest {
     ProductFactory.extractSourceUrl(product, meta);
     Assertions.assertEquals(sourceUrl, product.getRepositoryName());
     Assertions.assertEquals(sourceUrl, product.getSourceUrl());
+  }
+
+  @Test
+  void testTransferComputedData() {
+    Product product = new Product();
+    Product persistedData = new Product();
+    persistedData.setMarketDirectory(SAMPLE_PRODUCT_PATH);
+
+    ProductFactory.transferComputedPersistedDataToProduct(persistedData, product);
+    assertEquals(SAMPLE_PRODUCT_PATH, product.getMarketDirectory());
   }
 }

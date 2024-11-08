@@ -575,7 +575,7 @@ class ProductServiceImplTest extends BaseSetup {
     when(marketRepoService.getMarketItemByPath(anyString())).thenReturn(mockContents);
     when(productRepo.save(any(Product.class))).thenReturn(mockProduct);
     // Executes
-    var result = productService.syncOneProduct(SAMPLE_PRODUCT_ID, SAMPLE_PRODUCT_PATH, true);
+    var result = productService.syncOneProduct(SAMPLE_PRODUCT_ID, SAMPLE_PRODUCT_PATH, false);
     assertTrue(result);
   }
 

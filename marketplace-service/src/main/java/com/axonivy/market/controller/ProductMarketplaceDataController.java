@@ -30,8 +30,8 @@ import static com.axonivy.market.constants.RequestParamConstants.ID;
 import static org.springframework.http.HttpHeaders.AUTHORIZATION;
 
 @RestController
-@RequestMapping(PRODUCT_DATA)
-@Tag(name = "Product Marketplace Controller", description = "API collection to get product marketplace data")
+@RequestMapping(PRODUCT_MARKETPLACE_DATA)
+@Tag(name = "Product Marketplace Data Controller", description = "API collection to get product marketplace data")
 @AllArgsConstructor
 public class ProductMarketplaceDataController {
   private final GitHubService gitHubService;
