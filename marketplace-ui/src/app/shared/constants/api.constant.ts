@@ -1,4 +1,3 @@
-
 const API = 'api';
 
 export const API_URI = {
@@ -7,5 +6,5 @@ export const API_URI = {
   PRODUCT_DETAILS: `${API}/product-details`,
   EXTERNAL_DOCUMENT: `${API}/externaldocument`,
   FEEDBACK: `${API}/feedback`,
-  PRODUCT_DATA: `${API}/product-data`
-}
+  PRODUCT_MARKETPLACE_DATA: `${API}/product-marketplace-data`
+};

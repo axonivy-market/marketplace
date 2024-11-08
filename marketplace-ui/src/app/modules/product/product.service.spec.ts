@@ -222,7 +222,7 @@ describe('ProductService', () => {
       expect(response).toBe(3);
     });
 
-    const req = httpMock.expectOne(`${API_URI.PRODUCT_DATA}/installation-count/${productId}?designerVersion=${designerVersion}`);
+    const req = httpMock.expectOne(`${API_URI.PRODUCT_MARKETPLACE_DATA}/installation-count/${productId}?designerVersion=${designerVersion}`);
     expect(req.request.method).toBe('PUT');
     req.flush(3);
   });
