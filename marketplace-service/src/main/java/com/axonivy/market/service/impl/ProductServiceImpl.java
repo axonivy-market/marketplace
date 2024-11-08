@@ -109,8 +109,6 @@ public class ProductServiceImpl implements ProductService {
   private final ProductMarketplaceDataService productMarketplaceDataService;
   private GHCommit lastGHCommit;
   private GitHubRepoMeta marketRepoMeta;
-  @Value("${market.legacy.installation.counts.path}")
-  private String legacyInstallationCountPath;
   @Value("${market.github.market.branch}")
   private String marketRepoBranch;
 

@@ -435,7 +435,6 @@ class ProductServiceImplTest extends BaseSetup {
 
   @Test
   void testFetchBestMatchProductDetailByIdAndVersion() {
-    ReflectionTestUtils.setField(productService, LEGACY_INSTALLATION_COUNT_PATH_FIELD_NAME, INSTALLATION_FILE_PATH);
     Product mockProduct = getMockProduct();
     Metadata mockMetadata = getMockMetadataWithVersions();
     ProductMarketplaceData mockProductMarketplaceData = getMockProductMarketplaceData();
