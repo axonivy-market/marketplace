@@ -68,8 +68,7 @@ public class ProductMarketplaceDataServiceImpl implements ProductMarketplaceData
     int descendingOrder = orderedListOfProducts.size();
     for (String productId : orderedListOfProducts) {
       validateProductExists(productId);
-      ProductMarketplaceData productMarketplaceData =
-          productMarketplaceDataRepo.findById(productId).orElse(ProductMarketplaceData.builder().id(productId).build());
+      ProductMarketplaceData productMarketplaceData = getProductMarketplaceData(productId);
 
       productMarketplaceData.setCustomOrder(descendingOrder--);
       productEntries.add(productMarketplaceData);
@@ -85,8 +84,7 @@ public class ProductMarketplaceDataServiceImpl implements ProductMarketplaceData
   @Override
   public int updateInstallationCountForProduct(String productId, String designerVersion) {
     validateProductExists(productId);
-    ProductMarketplaceData productMarketplaceData =
-        productMarketplaceDataRepo.findById(productId).orElse(initProductMarketplaceData(productId));
+    ProductMarketplaceData productMarketplaceData = getProductMarketplaceData(productId);
 
     log.info("Increase installation count for product {} By Designer Version {}", productId, designerVersion);
     if (StringUtils.isNotBlank(designerVersion)) {
@@ -120,8 +118,7 @@ public class ProductMarketplaceDataServiceImpl implements ProductMarketplaceData
 
   @Override
   public int updateProductInstallationCount(String id) {
-    ProductMarketplaceData productMarketplaceData =
-        productMarketplaceDataRepo.findById(id).orElse(initProductMarketplaceData(id));
+    ProductMarketplaceData productMarketplaceData = getProductMarketplaceData(id);
     if (BooleanUtils.isNotTrue(productMarketplaceData.getSynchronizedInstallationCount())) {
       return productMarketplaceDataRepo.updateInitialCount(id,
           getInstallationCountFromFileOrInitializeRandomly(id));
@@ -129,13 +126,13 @@ public class ProductMarketplaceDataServiceImpl implements ProductMarketplaceData
     return productMarketplaceData.getInstallationCount();
   }
 
-  private ProductMarketplaceData initProductMarketplaceData(String productId) {
-    ProductMarketplaceData productMarketplaceData = new ProductMarketplaceData();
-    productMarketplaceData.setId(productId);
-    return productMarketplaceData;
+  @Override
+  public ProductMarketplaceData getProductMarketplaceData(String productId) {
+    return productMarketplaceDataRepo.findById(productId).orElse(
+        ProductMarketplaceData.builder().id(productId).build());
   }
 
-  public void validateProductExists(String productId) throws NotFoundException {
+  private void validateProductExists(String productId) throws NotFoundException {
     if (productRepo.findById(productId).isEmpty()) {
       throw new NotFoundException(ErrorCode.PRODUCT_NOT_FOUND, "Not found product with id: " + productId);
     }

@@ -12,6 +12,7 @@ import com.axonivy.market.entity.Image;
 import com.axonivy.market.entity.Product;
 import com.axonivy.market.entity.ProductCustomSort;
 import com.axonivy.market.entity.ProductJsonContent;
+import com.axonivy.market.entity.ProductMarketplaceData;
 import com.axonivy.market.entity.ProductModuleContent;
 import com.axonivy.market.enums.FileType;
 import com.axonivy.market.enums.Language;
@@ -23,15 +24,7 @@ import com.axonivy.market.github.service.GHAxonIvyMarketRepoService;
 import com.axonivy.market.github.service.GHAxonIvyProductRepoService;
 import com.axonivy.market.github.service.GitHubService;
 import com.axonivy.market.github.util.GitHubUtils;
-import com.axonivy.market.repository.GitHubRepoMetaRepository;
-import com.axonivy.market.repository.ImageRepository;
-import com.axonivy.market.repository.MavenArtifactVersionRepository;
-import com.axonivy.market.repository.MetadataRepository;
-import com.axonivy.market.repository.MetadataSyncRepository;
-import com.axonivy.market.repository.ProductCustomSortRepository;
-import com.axonivy.market.repository.ProductJsonContentRepository;
-import com.axonivy.market.repository.ProductModuleContentRepository;
-import com.axonivy.market.repository.ProductRepository;
+import com.axonivy.market.repository.*;
 import com.axonivy.market.service.ExternalDocumentService;
 import com.axonivy.market.service.ImageService;
 import com.axonivy.market.service.MetadataService;
@@ -107,6 +100,7 @@ public class ProductServiceImpl implements ProductService {
   private final ExternalDocumentService externalDocumentService;
   private final MetadataService metadataService;
   private final ProductMarketplaceDataService productMarketplaceDataService;
+  private final ProductMarketplaceDataRepository productMarketplaceDataRepo;
   private GHCommit lastGHCommit;
   private GitHubRepoMeta marketRepoMeta;
   @Value("${market.github.market.branch}")
@@ -119,7 +113,8 @@ public class ProductServiceImpl implements ProductService {
       ProductJsonContentRepository productJsonContentRepo, ImageRepository imageRepo,
       MetadataSyncRepository metadataSyncRepo, MetadataRepository metadataRepo, ImageService imageService,
       ProductContentService productContentService, MetadataService metadataService,
-      ProductMarketplaceDataService productMarketplaceDataService, ExternalDocumentService externalDocumentService) {
+      ProductMarketplaceDataService productMarketplaceDataService, ExternalDocumentService externalDocumentService,
+      ProductMarketplaceDataRepository productMarketplaceDataRepo) {
     this.productRepo = productRepo;
     this.productModuleContentRepo = productModuleContentRepo;
     this.axonIvyMarketRepoService = axonIvyMarketRepoService;
@@ -137,6 +132,7 @@ public class ProductServiceImpl implements ProductService {
     this.productContentService = productContentService;
     this.productMarketplaceDataService = productMarketplaceDataService;
     this.externalDocumentService = externalDocumentService;
+    this.productMarketplaceDataRepo = productMarketplaceDataRepo;
   }
 
   @Override
@@ -377,6 +373,7 @@ public class ProductServiceImpl implements ProductService {
       }
 
       updateProductContentForNonStandardProduct(ghContentEntity.getValue(), product);
+      updateProductMarketplaceData(product);
       updateProductFromReleasedVersions(product);
       transferComputedDataFromDB(product);
       syncedProductIds.add(productRepo.save(product).getId());
@@ -632,6 +629,7 @@ public class ProductServiceImpl implements ProductService {
         log.info("Update data of product {} from meta.json and logo files", productId);
         mappingMetaDataAndLogoFromGHContent(gitHubContents, product);
         updateProductContentForNonStandardProduct(gitHubContents, product);
+        updateProductMarketplaceData(product);
         updateProductFromReleasedVersions(product);
         productRepo.save(product);
         log.info("Sync product {} is finished!", productId);
@@ -694,5 +692,11 @@ public class ProductServiceImpl implements ProductService {
       axonIvyProductRepoService.extractReadMeFileFromContents(product, ghContentEntity, initialContent);
       productModuleContentRepo.save(initialContent);
     }
+  }
+
+  private void updateProductMarketplaceData(Product product) {
+    ProductMarketplaceData productMarketplaceData =
+        productMarketplaceDataService.getProductMarketplaceData(product.getId());
+    productMarketplaceDataRepo.save(productMarketplaceData);
   }
 }

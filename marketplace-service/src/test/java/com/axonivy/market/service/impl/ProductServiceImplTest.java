@@ -25,6 +25,7 @@ import com.axonivy.market.repository.MavenArtifactVersionRepository;
 import com.axonivy.market.repository.MetadataRepository;
 import com.axonivy.market.repository.MetadataSyncRepository;
 import com.axonivy.market.repository.ProductJsonContentRepository;
+import com.axonivy.market.repository.ProductMarketplaceDataRepository;
 import com.axonivy.market.repository.ProductModuleContentRepository;
 import com.axonivy.market.repository.ProductRepository;
 import com.axonivy.market.service.ExternalDocumentService;
@@ -51,7 +52,6 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
-import org.springframework.test.util.ReflectionTestUtils;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -87,6 +87,8 @@ class ProductServiceImplTest extends BaseSetup {
   ArgumentCaptor<ProductModuleContent> argumentCaptorProductModuleContent;
   @Captor
   ArgumentCaptor<ProductSearchCriteria> productSearchCriteriaArgumentCaptor;
+  @Captor
+  ArgumentCaptor<ProductMarketplaceData> argumentCaptorProductMarketplaceData;
   private String keyword;
   private String language;
   private Page<Product> mockResultReturn;
@@ -122,6 +124,8 @@ class ProductServiceImplTest extends BaseSetup {
   private MetadataSyncRepository metadataSyncRepo;
   @Mock
   private ProductMarketplaceDataService productMarketplaceDataService;
+  @Mock
+  private ProductMarketplaceDataRepository productMarketplaceDataRepo;
   @InjectMocks
   private ProductServiceImpl productService;
 
@@ -271,7 +275,9 @@ class ProductServiceImplTest extends BaseSetup {
     when(productRepo.save(any(Product.class))).thenReturn(new Product());
     // Executes
     productService.syncLatestDataFromMarketRepo(false);
+
     verify(productModuleContentRepo).saveAll(argumentCaptorProductModuleContents.capture());
+    verify(productMarketplaceDataRepo).save(argumentCaptorProductMarketplaceData.capture());
     verify(productRepo).save(argumentCaptor.capture());
 
     assertEquals(7, argumentCaptorProductModuleContents.getValue().size());
