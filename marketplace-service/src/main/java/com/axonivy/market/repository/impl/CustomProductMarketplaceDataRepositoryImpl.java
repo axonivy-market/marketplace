@@ -43,6 +43,16 @@ public class CustomProductMarketplaceDataRepositoryImpl extends CustomRepository
         update, ProductDesignerInstallation.class);
   }
 
+  @Override
+  public void checkAndInitProductMarketplaceDataIfNotExist(String productId) {
+    Query query = new Query(Criteria.where(MongoDBConstants.ID).is(productId));
+    if (!mongoTemplate.exists(query, ProductMarketplaceData.class)) {
+      ProductMarketplaceData productMarketplaceData = new ProductMarketplaceData();
+      productMarketplaceData.setId(productId);
+      mongoTemplate.insert(productMarketplaceData);
+    }
+  }
+
   private Query createQueryByProductIdAndDesignerVersion(String productId, String designerVersion) {
     return new Query(Criteria.where(MongoDBConstants.PRODUCT_ID).is(productId)
         .andOperator(Criteria.where(MongoDBConstants.DESIGNER_VERSION).is(designerVersion)));

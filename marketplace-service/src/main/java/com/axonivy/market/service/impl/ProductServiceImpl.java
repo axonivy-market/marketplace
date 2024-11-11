@@ -12,7 +12,6 @@ import com.axonivy.market.entity.Image;
 import com.axonivy.market.entity.Product;
 import com.axonivy.market.entity.ProductCustomSort;
 import com.axonivy.market.entity.ProductJsonContent;
-import com.axonivy.market.entity.ProductMarketplaceData;
 import com.axonivy.market.entity.ProductModuleContent;
 import com.axonivy.market.enums.FileType;
 import com.axonivy.market.enums.Language;
@@ -373,9 +372,9 @@ public class ProductServiceImpl implements ProductService {
       }
 
       updateProductContentForNonStandardProduct(ghContentEntity.getValue(), product);
-      updateProductMarketplaceData(product);
       updateProductFromReleasedVersions(product);
       transferComputedDataFromDB(product);
+      productMarketplaceDataRepo.checkAndInitProductMarketplaceDataIfNotExist(product.getId());
       syncedProductIds.add(productRepo.save(product).getId());
     }
     return syncedProductIds;
@@ -629,8 +628,8 @@ public class ProductServiceImpl implements ProductService {
         log.info("Update data of product {} from meta.json and logo files", productId);
         mappingMetaDataAndLogoFromGHContent(gitHubContents, product);
         updateProductContentForNonStandardProduct(gitHubContents, product);
-        updateProductMarketplaceData(product);
         updateProductFromReleasedVersions(product);
+        productMarketplaceDataRepo.checkAndInitProductMarketplaceDataIfNotExist(productId);
         productRepo.save(product);
         log.info("Sync product {} is finished!", productId);
         return true;
@@ -692,11 +691,5 @@ public class ProductServiceImpl implements ProductService {
       axonIvyProductRepoService.extractReadMeFileFromContents(product, ghContentEntity, initialContent);
       productModuleContentRepo.save(initialContent);
     }
-  }
-
-  private void updateProductMarketplaceData(Product product) {
-    ProductMarketplaceData productMarketplaceData =
-        productMarketplaceDataService.getProductMarketplaceData(product.getId());
-    productMarketplaceDataRepo.save(productMarketplaceData);
   }
 }

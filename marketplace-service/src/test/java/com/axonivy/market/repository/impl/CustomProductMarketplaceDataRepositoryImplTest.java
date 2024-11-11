@@ -11,6 +11,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.mongodb.core.FindAndModifyOptions;
 import org.springframework.data.mongodb.core.MongoTemplate;
+import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.data.mongodb.core.query.Update;
 
@@ -34,7 +35,6 @@ class CustomProductMarketplaceDataRepositoryImplTest extends BaseSetup {
 
     assertEquals(3, updatedCount);
   }
-
 
   @Test
   void testIncreaseInstallationCount_NullProduct() {
@@ -64,10 +64,21 @@ class CustomProductMarketplaceDataRepositoryImplTest extends BaseSetup {
     assertEquals(11, updatedCount);
   }
 
-
   @Test
   void testIncreaseInstallationCountForProductByDesignerVersion() {
     repo.increaseInstallationCountForProductByDesignerVersion(MOCK_PRODUCT_ID, MOCK_RELEASED_VERSION);
     verify(mongoTemplate).upsert(any(Query.class), any(Update.class), eq(ProductDesignerInstallation.class));
+  }
+
+  @Test
+  void testCheckAndInitProductMarketplaceDataIfNotExist(){
+    Query query = new Query(Criteria.where(MongoDBConstants.ID).is(MOCK_PRODUCT_ID));
+    when(mongoTemplate.exists(query, ProductMarketplaceData.class)).thenReturn(true);
+    repo.checkAndInitProductMarketplaceDataIfNotExist(MOCK_PRODUCT_ID);
+    verify(mongoTemplate, never()).insert(any(ProductMarketplaceData.class));
+
+    when(mongoTemplate.exists(query, ProductMarketplaceData.class)).thenReturn(false);
+    repo.checkAndInitProductMarketplaceDataIfNotExist(MOCK_PRODUCT_ID);
+    verify(mongoTemplate, times(1)).insert(any(ProductMarketplaceData.class));
   }
 }

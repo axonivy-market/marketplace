@@ -263,8 +263,7 @@ class ProductServiceImplTest extends BaseSetup {
     when(marketRepoService.getLastCommit(anyLong())).thenReturn(mockCommit);
     when(repoMetaRepo.findByRepoName(anyString())).thenReturn(null);
     when(productContentService.getReadmeAndProductContentsFromVersion(any(), anyString(), anyString(),
-        any(), anyString())).thenReturn(
-        mockReadmeProductContent());
+        any(), anyString())).thenReturn(mockReadmeProductContent());
 
     Map<String, List<GHContent>> mockGHContentMap = new HashMap<>();
     mockGHContentMap.put(SAMPLE_PRODUCT_ID, mockMetaJsonAndLogoList());
@@ -277,7 +276,6 @@ class ProductServiceImplTest extends BaseSetup {
     productService.syncLatestDataFromMarketRepo(false);
 
     verify(productModuleContentRepo).saveAll(argumentCaptorProductModuleContents.capture());
-    verify(productMarketplaceDataRepo).save(argumentCaptorProductMarketplaceData.capture());
     verify(productRepo).save(argumentCaptor.capture());
 
     assertEquals(7, argumentCaptorProductModuleContents.getValue().size());
