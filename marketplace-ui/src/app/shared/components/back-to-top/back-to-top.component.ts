@@ -28,6 +28,5 @@ export class BackToTopComponent {
     if (this.showScrollButton) {
       window.scrollTo({ top: 0, behavior: this.scrollBehavior });
     }
-    return;
   }
 }
