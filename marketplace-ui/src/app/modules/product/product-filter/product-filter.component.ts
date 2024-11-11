@@ -10,11 +10,13 @@ import { LanguageService } from '../../../core/services/language/language.servic
 import { CommonDropdownComponent } from '../../../shared/components/common-dropdown/common-dropdown.component';
 import { CommonUtils } from '../../../shared/utils/common.utils';
 import { ItemDropdown } from '../../../shared/models/item-dropdown.model';
+import { MatomoTrackerDirective } from 'ngx-matomo-client';
+import { MatomoAction, MatomoCategory, MatomoTracker } from '../../../shared/enums/matomo-tracking.enum';
 
 @Component({
   selector: 'app-product-filter',
   standalone: true,
-  imports: [CommonModule, FormsModule, TranslateModule, CommonDropdownComponent],
+  imports: [CommonModule, FormsModule, TranslateModule, CommonDropdownComponent, MatomoTrackerDirective],
   templateUrl: './product-filter.component.html',
   styleUrl: './product-filter.component.scss'
 })
@@ -22,6 +24,9 @@ export class ProductFilterComponent {
   @Output() searchChange = new EventEmitter<string>();
   @Output() filterChange = new EventEmitter<ItemDropdown<TypeOption>>();
   @Output() sortChange = new EventEmitter<SortOption>();
+  protected MatomoCategory = MatomoCategory;
+  protected MatomoAction = MatomoAction;
+  protected MatomoTracker = MatomoTracker;
 
   selectedTypeLabel: string = CommonUtils.getLabel(FILTER_TYPES[0].value, FILTER_TYPES);
   selectedSortLabel: string = CommonUtils.getLabel(SORT_TYPES[0].value, SORT_TYPES);

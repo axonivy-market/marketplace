@@ -6,7 +6,6 @@ import { ProductStarRatingService } from '../product-detail-feedback/product-sta
 import { AuthService } from '../../../../auth/auth.service';
 import { ProductDetailService } from '../product-detail.service';
 import { By } from '@angular/platform-browser';
-import { of } from 'rxjs';
 
 describe('ProductStarRatingNumberComponent', () => {
   let component: ProductStarRatingNumberComponent;

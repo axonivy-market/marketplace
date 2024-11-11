@@ -31,6 +31,7 @@ import com.axonivy.market.repository.ProductCustomSortRepository;
 import com.axonivy.market.repository.ProductJsonContentRepository;
 import com.axonivy.market.repository.ProductModuleContentRepository;
 import com.axonivy.market.repository.ProductRepository;
+import com.axonivy.market.service.ExternalDocumentService;
 import com.axonivy.market.service.ImageService;
 import com.axonivy.market.service.MetadataService;
 import com.axonivy.market.service.ProductContentService;
@@ -125,6 +126,8 @@ class ProductServiceImplTest extends BaseSetup {
   private ProductCustomSortRepository productCustomSortRepo;
   @Mock
   private ImageService imageService;
+  @Mock
+  private ExternalDocumentService externalDocumentService;
   @Mock
   private MavenArtifactVersionRepository mavenArtifactVersionRepo;
   @Mock
@@ -694,7 +697,6 @@ class ProductServiceImplTest extends BaseSetup {
     when(productRepo.findById(anyString())).thenReturn(Optional.of(mockProduct));
     var mockContents = mockMetaJsonAndLogoList();
     when(marketRepoService.getMarketItemByPath(anyString())).thenReturn(mockContents);
-    when(metadataService.syncProductMetadata(any(Product.class))).thenReturn(true);
     when(productRepo.save(any(Product.class))).thenReturn(mockProduct);
     // Executes
     var result = productService.syncOneProduct(SAMPLE_PRODUCT_PATH, SAMPLE_PRODUCT_ID, false);

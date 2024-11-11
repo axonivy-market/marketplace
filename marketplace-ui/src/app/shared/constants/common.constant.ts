@@ -148,23 +148,19 @@ export const PRODUCT_DETAIL_TABS: ItemDropdown[] = [
 export const FEEDBACK_SORT_TYPES: ItemDropdown<FeedbackSortType>[] = [
   {
     value: FeedbackSortType.NEWEST,
-    label: 'common.sort.value.newest',
-    sortFn: 'updatedAt,desc'
+    label: 'common.sort.value.newest'
   },
   {
     value: FeedbackSortType.OLDEST,
-    label: 'common.sort.value.oldest',
-    sortFn: 'updatedAt,asc'
+    label: 'common.sort.value.oldest'
   },
   {
     value: FeedbackSortType.HIGHEST,
-    label: 'common.sort.value.highest',
-    sortFn: 'rating,desc'
+    label: 'common.sort.value.highest'
   },
   {
     value: FeedbackSortType.LOWEST,
-    label: 'common.sort.value.lowest',
-    sortFn: 'rating,asc'
+    label: 'common.sort.value.lowest'
   }
 ];
 
@@ -193,12 +189,14 @@ export const ERROR_PAGE = 'Error Page';
 export const ERROR_PAGE_PATH = 'error-page';
 export const NOT_FOUND_ERROR_CODE = 404;
 export const INTERNAL_SERVER_ERROR_CODE = 500;
+export const USER_NOT_FOUND_ERROR_CODE = 2103; 
 export const UNDEFINED_ERROR_CODE = 0;
 export const ERROR_CODES = [
   UNDEFINED_ERROR_CODE,
   NOT_FOUND_ERROR_CODE,
   INTERNAL_SERVER_ERROR_CODE
 ];
+export const TOKEN_KEY = 'token';
 
 export const DEFAULT_IMAGE_URL = '/assets/images/misc/axonivy-logo-round.png';
 export const DOWNLOAD_URL = 'https://developer.axonivy.com/download';

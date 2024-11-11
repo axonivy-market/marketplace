@@ -11,8 +11,8 @@ import { MultilingualismPipe } from '../../../../../../shared/pipes/multilingual
 import { AppModalService } from '../../../../../../shared/services/app-modal.service';
 import { ProductDetailService } from '../../../product-detail.service';
 import { ProductFeedbackService } from '../../product-feedbacks-panel/product-feedback.service';
-import { throwError } from 'rxjs';
 import { CommonDropdownComponent } from '../../../../../../shared/components/common-dropdown/common-dropdown.component';
+import { NOT_FOUND_ERROR_CODE, USER_NOT_FOUND_ERROR_CODE } from '../../../../../../shared/constants/common.constant';
 
 @Component({
   selector: 'app-add-feedback-dialog',
@@ -60,7 +60,14 @@ export class AddFeedbackDialogComponent {
         this.activeModal.close();
         this.appModalService.openSuccessDialog();
       },
-      error: error => throwError(() => error)
+      error: error => {
+        if (
+          error.status === NOT_FOUND_ERROR_CODE &&
+          error.error.helpCode === USER_NOT_FOUND_ERROR_CODE.toString()
+        ) {
+          this.authService.redirectToGitHub(this.feedback.productId);
+        }
+      }
     });
   }
 

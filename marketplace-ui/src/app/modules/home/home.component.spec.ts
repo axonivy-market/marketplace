@@ -9,6 +9,7 @@ import {
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { ActivatedRoute } from '@angular/router';
 import { of } from 'rxjs';
+import { MatomoTestingModule } from 'ngx-matomo-client/testing';
 
 describe('HomeComponent', () => {
   let component: HomeComponent;
@@ -16,7 +17,11 @@ describe('HomeComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [HomeComponent, TranslateModule.forRoot()],
+      imports: [
+        HomeComponent, 
+        TranslateModule.forRoot(),
+        MatomoTestingModule.forRoot()
+      ],
       providers: [
         provideHttpClient(withInterceptorsFromDi()),
         provideHttpClientTesting(),
