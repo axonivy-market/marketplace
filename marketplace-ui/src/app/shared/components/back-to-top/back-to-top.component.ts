@@ -1,5 +1,5 @@
-import { CommonModule, DOCUMENT } from '@angular/common';
-import { Component, HostListener, Inject } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { Component, HostListener } from '@angular/core';
 import { TranslateModule } from '@ngx-translate/core';
 
 @Component({
@@ -13,9 +13,9 @@ import { TranslateModule } from '@ngx-translate/core';
   styleUrl: './back-to-top.component.scss'
 })
 export class BackToTopComponent {
-  backToTopShowThreshold: number = 500;
+  showScrollButton = false;
+  backToTopShowThreshold = 500;
   scrollBehavior: ScrollBehavior = 'smooth';
-  showScrollButton: boolean = false;
 
   @HostListener("window:scroll", [])
   onWindowScroll() {
