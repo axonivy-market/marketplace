@@ -100,7 +100,7 @@ export class ProductFeedbackService {
     return this.http
       .get<FeedbackApiResponse>(requestURL, {
         params: requestParams,
-        context: new HttpContext().set(SkipLoading, true)
+        context: new HttpContext().set(SkipLoading, true).set(ForwardingError, true)
       })
       .pipe(
         tap(response => {
