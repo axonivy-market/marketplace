@@ -160,7 +160,7 @@ export class ProductDetailComponent {
         this.updateProductDetailActionType(productDetail);
         this.logoUrl = productDetail.logoUrl;
         this.updateWebBrowserTitle();
-        let ratingBtn = RATING_BUTTONS.find(button => button.type === productDetail.type);
+        const ratingBtn = RATING_BUTTONS.find(button => button.type === productDetail.type);
         if (ratingBtn !== undefined) {
           this.productDetailService.ratingBtnLabel.set(ratingBtn.btnLabel);
         }
