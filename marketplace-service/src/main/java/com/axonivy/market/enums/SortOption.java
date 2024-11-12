@@ -9,10 +9,10 @@ import org.springframework.data.domain.Sort;
 @Getter
 @AllArgsConstructor
 public enum SortOption {
-  POPULARITY("popularity", "installationCount", Sort.Direction.DESC),
+  POPULARITY("popularity", "marketplaceData.installationCount", Sort.Direction.DESC),
   ALPHABETICALLY("alphabetically", "names", Sort.Direction.ASC),
   RECENT("recent", "newestPublishedDate", Sort.Direction.DESC),
-  STANDARD("standard", "customOrder", Sort.Direction.DESC),
+  STANDARD("standard", "marketplaceData.customOrder", Sort.Direction.DESC),
   ID("id", "_id", Sort.Direction.ASC);
 
   private final String option;

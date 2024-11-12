@@ -8,33 +8,31 @@ import com.axonivy.market.entity.GitHubRepoMeta;
 import com.axonivy.market.entity.MavenArtifactVersion;
 import com.axonivy.market.entity.Metadata;
 import com.axonivy.market.entity.Product;
-import com.axonivy.market.entity.ProductCustomSort;
+import com.axonivy.market.entity.ProductMarketplaceData;
 import com.axonivy.market.entity.ProductModuleContent;
-import com.axonivy.market.enums.ErrorCode;
 import com.axonivy.market.enums.FileStatus;
 import com.axonivy.market.enums.FileType;
 import com.axonivy.market.enums.Language;
 import com.axonivy.market.enums.SortOption;
 import com.axonivy.market.enums.TypeOption;
-import com.axonivy.market.exceptions.model.InvalidParamException;
 import com.axonivy.market.github.model.GitHubFile;
 import com.axonivy.market.github.service.GHAxonIvyMarketRepoService;
 import com.axonivy.market.github.service.GHAxonIvyProductRepoService;
 import com.axonivy.market.github.service.GitHubService;
-import com.axonivy.market.model.ProductCustomSortRequest;
 import com.axonivy.market.repository.GitHubRepoMetaRepository;
 import com.axonivy.market.repository.ImageRepository;
 import com.axonivy.market.repository.MavenArtifactVersionRepository;
 import com.axonivy.market.repository.MetadataRepository;
 import com.axonivy.market.repository.MetadataSyncRepository;
-import com.axonivy.market.repository.ProductCustomSortRepository;
 import com.axonivy.market.repository.ProductJsonContentRepository;
+import com.axonivy.market.repository.ProductMarketplaceDataRepository;
 import com.axonivy.market.repository.ProductModuleContentRepository;
 import com.axonivy.market.repository.ProductRepository;
 import com.axonivy.market.service.ExternalDocumentService;
 import com.axonivy.market.service.ImageService;
 import com.axonivy.market.service.MetadataService;
 import com.axonivy.market.service.ProductContentService;
+import com.axonivy.market.service.ProductMarketplaceDataService;
 import com.axonivy.market.util.MavenUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.junit.jupiter.api.BeforeEach;
@@ -42,7 +40,6 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.kohsuke.github.GHCommit;
 import org.kohsuke.github.GHContent;
-import org.kohsuke.github.GHRepository;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.InjectMocks;
@@ -55,10 +52,6 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
-import org.springframework.data.mongodb.core.MongoTemplate;
-import org.springframework.data.mongodb.core.query.Query;
-import org.springframework.data.mongodb.core.query.Update;
-import org.springframework.test.util.ReflectionTestUtils;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -84,7 +77,6 @@ class ProductServiceImplTest extends BaseSetup {
   private static final Pageable PAGEABLE = PageRequest.of(0, 20,
       Sort.by(SortOption.ALPHABETICALLY.getOption()).descending());
   private static final String SHA1_SAMPLE = "35baa89091b2452b77705da227f1a964ecabc6c8";
-  private static final String INSTALLATION_FILE_PATH = "src/test/resources/installationCount.json";
   private static final String EMPTY_SOURCE_URL_META_JSON_FILE = "/emptySourceUrlMeta.json";
   private static final String META_JSON_FILE_WITH_VENDOR_INFORMATION = "/meta-with-vendor-information.json";
   @Captor
@@ -94,16 +86,12 @@ class ProductServiceImplTest extends BaseSetup {
   @Captor
   ArgumentCaptor<ProductModuleContent> argumentCaptorProductModuleContent;
   @Captor
-  ArgumentCaptor<ArrayList<Product>> productListArgumentCaptor;
-  @Captor
   ArgumentCaptor<ProductSearchCriteria> productSearchCriteriaArgumentCaptor;
+  @Captor
+  ArgumentCaptor<ProductMarketplaceData> argumentCaptorProductMarketplaceData;
   private String keyword;
   private String language;
   private Page<Product> mockResultReturn;
-  @Mock
-  private MongoTemplate mongoTemplate;
-  @Mock
-  private GHRepository ghRepository;
   @Mock
   private ProductRepository productRepo;
   @Mock
@@ -123,8 +111,6 @@ class ProductServiceImplTest extends BaseSetup {
   @Mock
   private MetadataRepository metadataRepo;
   @Mock
-  private ProductCustomSortRepository productCustomSortRepo;
-  @Mock
   private ImageService imageService;
   @Mock
   private ExternalDocumentService externalDocumentService;
@@ -136,54 +122,16 @@ class ProductServiceImplTest extends BaseSetup {
   private GHAxonIvyProductRepoService axonIvyProductRepoService;
   @Mock
   private MetadataSyncRepository metadataSyncRepo;
+  @Mock
+  private ProductMarketplaceDataService productMarketplaceDataService;
+  @Mock
+  private ProductMarketplaceDataRepository productMarketplaceDataRepo;
   @InjectMocks
   private ProductServiceImpl productService;
 
   @BeforeEach
   public void setup() {
     mockResultReturn = createPageProductsMock();
-  }
-
-  @Test
-  void testUpdateInstallationCountForProduct() {
-    int result = productService.updateInstallationCountForProduct(null, MOCK_RELEASED_VERSION);
-    assertEquals(0, result);
-
-    Product product = getMockProduct();
-    product.setSynchronizedInstallationCount(true);
-    when(productRepo.getProductWithModuleContent(MOCK_PRODUCT_ID)).thenReturn(product);
-    when(productRepo.increaseInstallationCount(MOCK_PRODUCT_ID)).thenReturn(31);
-
-    result = productService.updateInstallationCountForProduct(MOCK_PRODUCT_ID, MOCK_RELEASED_VERSION);
-    assertEquals(31, result);
-
-    result = productService.updateInstallationCountForProduct(MOCK_PRODUCT_ID, StringUtils.EMPTY);
-    assertEquals(31, result);
-  }
-
-  @Test
-  void testSyncInstallationCountWithNewProduct() {
-    Product product = new Product();
-    product.setSynchronizedInstallationCount(null);
-    product.setId(MOCK_PRODUCT_ID);
-    ReflectionTestUtils.setField(productService, LEGACY_INSTALLATION_COUNT_PATH_FIELD_NAME, INSTALLATION_FILE_PATH);
-
-    productService.syncInstallationCountWithProduct(product);
-
-    assertTrue(product.getInstallationCount() >= 20 && product.getInstallationCount() <= 50);
-    assertTrue(product.getSynchronizedInstallationCount());
-  }
-
-  @Test
-  void testSyncInstallationCountWithProduct() {
-    ReflectionTestUtils.setField(productService, LEGACY_INSTALLATION_COUNT_PATH_FIELD_NAME, INSTALLATION_FILE_PATH);
-    Product product = getMockProduct();
-    product.setSynchronizedInstallationCount(false);
-
-    productService.syncInstallationCountWithProduct(product);
-
-    assertEquals(40, product.getInstallationCount());
-    assertTrue(product.getSynchronizedInstallationCount());
   }
 
   @Test
@@ -315,8 +263,7 @@ class ProductServiceImplTest extends BaseSetup {
     when(marketRepoService.getLastCommit(anyLong())).thenReturn(mockCommit);
     when(repoMetaRepo.findByRepoName(anyString())).thenReturn(null);
     when(productContentService.getReadmeAndProductContentsFromVersion(any(), anyString(), anyString(),
-        any(), anyString())).thenReturn(
-        mockReadmeProductContent());
+        any(), anyString())).thenReturn(mockReadmeProductContent());
 
     Map<String, List<GHContent>> mockGHContentMap = new HashMap<>();
     mockGHContentMap.put(SAMPLE_PRODUCT_ID, mockMetaJsonAndLogoList());
@@ -327,6 +274,7 @@ class ProductServiceImplTest extends BaseSetup {
     when(productRepo.save(any(Product.class))).thenReturn(new Product());
     // Executes
     productService.syncLatestDataFromMarketRepo(false);
+
     verify(productModuleContentRepo).saveAll(argumentCaptorProductModuleContents.capture());
     verify(productRepo).save(argumentCaptor.capture());
 
@@ -444,11 +392,9 @@ class ProductServiceImplTest extends BaseSetup {
   @Test
   void testFetchProductDetail() {
     MavenArtifactVersion mockMavenArtifactVersion = getMockMavenArtifactVersionWithData();
-    Product mockProduct = getMockProduct();
     when(mavenArtifactVersionRepo.findById(MOCK_PRODUCT_ID)).thenReturn(
         Optional.ofNullable(mockMavenArtifactVersion));
     when(productRepo.getProductByIdAndVersion(MOCK_PRODUCT_ID, MOCK_SNAPSHOT_VERSION)).thenReturn(null);
-    mockProduct.setSynchronizedInstallationCount(true);
     Product result = productService.fetchProductDetail(MOCK_PRODUCT_ID, true);
     assertNull(result);
   }
@@ -493,12 +439,14 @@ class ProductServiceImplTest extends BaseSetup {
 
   @Test
   void testFetchBestMatchProductDetailByIdAndVersion() {
-    ReflectionTestUtils.setField(productService, LEGACY_INSTALLATION_COUNT_PATH_FIELD_NAME, INSTALLATION_FILE_PATH);
     Product mockProduct = getMockProduct();
     Metadata mockMetadata = getMockMetadataWithVersions();
+    ProductMarketplaceData mockProductMarketplaceData = getMockProductMarketplaceData();
     mockMetadata.setArtifactId(MOCK_PRODUCT_ARTIFACT_ID);
     when(metadataRepo.findByProductId(MOCK_PRODUCT_ID)).thenReturn(List.of(mockMetadata));
     when(productRepo.getProductByIdAndVersion(MOCK_PRODUCT_ID, MOCK_RELEASED_VERSION)).thenReturn(mockProduct);
+    when(productMarketplaceDataService.updateProductInstallationCount(MOCK_PRODUCT_ID)).thenReturn(
+        mockProductMarketplaceData.getInstallationCount());
     Product result = productService.fetchBestMatchProductDetail(MOCK_PRODUCT_ID, MOCK_RELEASED_VERSION);
     assertEquals(mockProduct, result);
   }
@@ -514,75 +462,6 @@ class ProductServiceImplTest extends BaseSetup {
 
     result = productService.getCompatibilityFromOldestVersion("11.2");
     assertEquals("11.2+", result);
-  }
-
-  @Test
-  void testRemoveFieldFromAllProductDocuments() {
-    productService.removeFieldFromAllProductDocuments("customOrder");
-
-    verify(mongoTemplate).updateMulti(any(Query.class), any(Update.class), eq(Product.class));
-  }
-
-  @Test
-  void testRefineOrderedListOfProductsInCustomSort() throws InvalidParamException {
-    // prepare
-    List<String> orderedListOfProducts = List.of(SAMPLE_PRODUCT_ID);
-    Product mockProduct = new Product();
-    mockProduct.setId(SAMPLE_PRODUCT_ID);
-    when(productRepo.findById(SAMPLE_PRODUCT_ID)).thenReturn(Optional.of(mockProduct));
-
-    List<Product> refinedProducts = productService.refineOrderedListOfProductsInCustomSort(orderedListOfProducts);
-
-    assertEquals(1, refinedProducts.size());
-    assertEquals(1, refinedProducts.get(0).getCustomOrder());
-    verify(productRepo).findById(SAMPLE_PRODUCT_ID);
-  }
-
-  @Test
-  void testRefineOrderedListOfProductsInCustomSort_ProductNotFound() {
-    List<String> orderedListOfProducts = List.of(SAMPLE_PRODUCT_ID);
-    when(productRepo.findById(SAMPLE_PRODUCT_ID)).thenReturn(Optional.empty());
-
-    InvalidParamException exception = assertThrows(InvalidParamException.class,
-        () -> productService.refineOrderedListOfProductsInCustomSort(orderedListOfProducts));
-    assertEquals(ErrorCode.PRODUCT_NOT_FOUND.getCode(), exception.getCode());
-  }
-
-  @Test
-  void testAddCustomSortProduct() throws InvalidParamException {
-    List<String> orderedListOfProducts = List.of(SAMPLE_PRODUCT_ID);
-    ProductCustomSortRequest customSortRequest = new ProductCustomSortRequest();
-    customSortRequest.setOrderedListOfProducts(orderedListOfProducts);
-    customSortRequest.setRuleForRemainder(SortOption.ALPHABETICALLY.getOption());
-
-    Product mockProduct = new Product();
-    mockProduct.setId(SAMPLE_PRODUCT_ID);
-    when(productRepo.findById(SAMPLE_PRODUCT_ID)).thenReturn(Optional.of(mockProduct));
-
-    productService.addCustomSortProduct(customSortRequest);
-
-    verify(productCustomSortRepo).deleteAll();
-    verify(mongoTemplate).updateMulti(any(Query.class), any(Update.class), eq(Product.class));
-    verify(productCustomSortRepo).save(any(ProductCustomSort.class));
-    verify(productRepo).saveAll(productListArgumentCaptor.capture());
-
-    List<Product> capturedProducts = productListArgumentCaptor.getValue();
-    assertEquals(1, capturedProducts.size());
-    assertEquals(1, capturedProducts.get(0).getCustomOrder());
-  }
-
-  @Test
-  void testUpdateProductInstallationCountWhenNotSynchronized() {
-    Product product = getMockProduct();
-    product.setSynchronizedInstallationCount(false);
-    String id = product.getId();
-    ReflectionTestUtils.setField(productService, LEGACY_INSTALLATION_COUNT_PATH_FIELD_NAME, INSTALLATION_FILE_PATH);
-
-    when(productRepo.updateInitialCount(eq(id), anyInt())).thenReturn(10);
-
-    productService.updateProductInstallationCount(id, product);
-
-    assertEquals(10, product.getInstallationCount());
   }
 
   @Test
@@ -699,7 +578,7 @@ class ProductServiceImplTest extends BaseSetup {
     when(marketRepoService.getMarketItemByPath(anyString())).thenReturn(mockContents);
     when(productRepo.save(any(Product.class))).thenReturn(mockProduct);
     // Executes
-    var result = productService.syncOneProduct(SAMPLE_PRODUCT_PATH, SAMPLE_PRODUCT_ID, false);
+    var result = productService.syncOneProduct(SAMPLE_PRODUCT_ID, SAMPLE_PRODUCT_PATH, false);
     assertTrue(result);
   }
 

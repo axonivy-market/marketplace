@@ -85,9 +85,6 @@ public class ProductFactory {
 
   public static void transferComputedPersistedDataToProduct(Product persisted, Product product) {
     product.setMarketDirectory(persisted.getMarketDirectory());
-    product.setCustomOrder(persisted.getCustomOrder());
-    product.setInstallationCount(persisted.getInstallationCount());
-    product.setSynchronizedInstallationCount(persisted.getSynchronizedInstallationCount());
   }
 
   private static Map<String, String> mappingMultilingualismValueByMetaJSONFile(List<DisplayValue> list) {
