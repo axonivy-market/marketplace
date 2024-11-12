@@ -1,7 +1,7 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { SuccessDialogComponent } from './success-dialog.component';
 import { NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
-import { TranslateModule, TranslateService } from '@ngx-translate/core';
+import { TranslateModule } from '@ngx-translate/core';
 import { AuthService } from '../../../../../../../auth/auth.service';
 import { NgOptimizedImage } from '@angular/common';
 

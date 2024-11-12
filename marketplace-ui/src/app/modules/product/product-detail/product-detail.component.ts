@@ -142,6 +142,7 @@ export class ProductDetailComponent {
   ngOnInit(): void {
     this.router.navigate([], {
       relativeTo: this.route,
+      queryParamsHandling: 'merge',
       replaceUrl: true
     });
 

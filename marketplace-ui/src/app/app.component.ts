@@ -13,11 +13,12 @@ import {
   Event
 } from '@angular/router';
 import { LoadingSpinnerComponent } from "./shared/components/loading-spinner/loading-spinner.component";
+import { BackToTopComponent } from "./shared/components/back-to-top/back-to-top.component";
 
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [RouterOutlet, HeaderComponent, FooterComponent, CommonModule, LoadingSpinnerComponent],
+  imports: [RouterOutlet, HeaderComponent, FooterComponent, CommonModule, LoadingSpinnerComponent, BackToTopComponent],
   templateUrl: './app.component.html',
   styleUrl: './app.component.scss'
 })
