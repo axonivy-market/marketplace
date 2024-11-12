@@ -22,7 +22,7 @@ import {
   DEFAULT_IMAGE_URL,
   DEFAULT_VENDOR_IMAGE,
   DEFAULT_VENDOR_IMAGE_BLACK,
-  PRODUCT_DETAIL_TABS, SHOW_DEV_VERSION,
+  PRODUCT_DETAIL_TABS, RATING_BUTTONS, SHOW_DEV_VERSION,
   VERSION
 } from '../../../shared/constants/common.constant';
 import { ItemDropdown } from '../../../shared/models/item-dropdown.model';
@@ -160,6 +160,10 @@ export class ProductDetailComponent {
         this.updateProductDetailActionType(productDetail);
         this.logoUrl = productDetail.logoUrl;
         this.updateWebBrowserTitle();
+        const ratingBtn = RATING_BUTTONS.find(button => button.type === productDetail.type);
+        if (ratingBtn !== undefined) {
+          this.productDetailService.ratingBtnLabel.set(ratingBtn.btnLabel);
+        }
       });
 
       this.productFeedbackService.initFeedbacks();

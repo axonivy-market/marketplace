@@ -793,4 +793,9 @@ describe('ProductDetailComponent', () => {
     expect(dropdown).toBeFalsy();
     expect(tabContent).toBeFalsy();
   });
+
+  it('should generate right text for the rate connector', () => {
+    const rateConnector = fixture.debugElement.query(By.css('.rate-connector-btn'));
+    expect(rateConnector.childNodes[0].nativeNode.textContent).toContain("common.feedback.rateFeedbackForConnectorBtnLabel");
+  });
 });

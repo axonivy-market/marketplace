@@ -80,6 +80,21 @@ export const LANGUAGES = [
   }
 ];
 
+export const RATING_BUTTONS = [
+  {
+    type: 'connector',
+    btnLabel: 'common.feedback.rateFeedbackForConnectorBtnLabel'
+  },
+  {
+    type: 'solution',
+    btnLabel: 'common.feedback.rateFeedbackForSolutionBtnLabel'
+  },
+  {
+    type: 'util',
+    btnLabel: 'common.feedback.rateFeedbackForUtilityBtnLabel'
+  }
+];
+
 export const FILTER_TYPES: ItemDropdown<TypeOption>[] = [
   {
     value: TypeOption.All_TYPES,

@@ -107,11 +107,12 @@ common:
     loggedGithubAsLabel: Logged in Github as
     reviewLabel: Review
     detailedReviews: Detailed reviews
-    rateLinkLabel: Rate this connector
     showMoreBtnLabel: Show more
     noFeedbackMessage1: There is no feedback for this connector yet.
     noFeedbackMessage2: Be the first to share your opinion.
-    rateFeedbackBtnLabel: Rate this connector
+    rateFeedbackForConnectorBtnLabel: Rate this connector
+    rateFeedbackForSolutionBtnLabel: Rate this solution
+    rateFeedbackForUtilityBtnLabel: Rate this utility
     reviewLabelNoYet: No reviews yet
   labels:
     redirecting: Redirecting ...!

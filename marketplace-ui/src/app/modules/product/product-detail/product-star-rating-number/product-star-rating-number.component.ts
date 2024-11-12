@@ -24,6 +24,7 @@ export class ProductStarRatingNumberComponent {
 
   @Input() isShowRateLink = true;
   @Input() isShowTotalRatingNumber = true;
+  @Input() ratingBtnLabel = '';
   @Output() openAddFeedbackDialog = new EventEmitter<void>();
 
   onClickRateLink() {

@@ -3,7 +3,7 @@
   'grid-50-50': !isRenderInModalDialog,
   'grid-100': isRenderInModalDialog
   }">
-  <app-product-star-rating-number (openAddFeedbackDialog)="openAddFeedbackDialog.emit()" />
+  <app-product-star-rating-number [ratingBtnLabel]="productDetailService.ratingBtnLabel()" (openAddFeedbackDialog)="openAddFeedbackDialog.emit()" />
   <div></div>
   <div>
     <p [lang]="languageService.selectedLanguage()" class="text-secondary mb-1">
