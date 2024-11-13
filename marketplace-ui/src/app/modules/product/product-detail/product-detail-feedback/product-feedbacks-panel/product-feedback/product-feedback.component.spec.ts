@@ -64,10 +64,10 @@ describe('ProductFeedbackComponent', () => {
 
   it('should toggle content visibility when toggleContent is called', () => {
     component.toggleContent();
-    expect(component.isExpanded()).toBe(true);
+    expect(component.feedback.isExpanded).toBe(true);
 
     component.toggleContent();
-    expect(component.isExpanded()).toBe(false);
+    expect(component.feedback.isExpanded).toBe(false);
   });
 });
 

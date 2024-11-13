@@ -12,7 +12,8 @@ import { AppModalService } from '../../../../../../shared/services/app-modal.ser
 import { ProductDetailService } from '../../../product-detail.service';
 import { ProductFeedbackService } from '../../product-feedbacks-panel/product-feedback.service';
 import { CommonDropdownComponent } from '../../../../../../shared/components/common-dropdown/common-dropdown.component';
-import { NOT_FOUND_ERROR_CODE, USER_NOT_FOUND_ERROR_CODE } from '../../../../../../shared/constants/common.constant';
+import { MAX_FEEDBACK_LENGTH, NOT_FOUND_ERROR_CODE, USER_NOT_FOUND_ERROR_CODE } from '../../../../../../shared/constants/common.constant';
+import { NgOptimizedImage } from '@angular/common';
 
 @Component({
   selector: 'app-add-feedback-dialog',
@@ -25,7 +26,8 @@ import { NOT_FOUND_ERROR_CODE, USER_NOT_FOUND_ERROR_CODE } from '../../../../../
     FormsModule,
     TranslateModule,
     MultilingualismPipe,
-    CommonDropdownComponent
+    CommonDropdownComponent,
+    NgOptimizedImage
   ]
 })
 export class AddFeedbackDialogComponent {
@@ -37,6 +39,7 @@ export class AddFeedbackDialogComponent {
   private readonly appModalService = inject(AppModalService);
 
   displayName = '';
+  maxFeedbackLength = MAX_FEEDBACK_LENGTH;
   feedback!: Feedback;
 
   userFeedback: Signal<Feedback | null> =
@@ -75,4 +78,7 @@ export class AddFeedbackDialogComponent {
     this.feedback.rating = newRate;
   }
 
+  get feedbackRemainingCharactersLabel(): string {
+    return `${this.feedback.content.length}/${this.maxFeedbackLength}`;
+  }
 }

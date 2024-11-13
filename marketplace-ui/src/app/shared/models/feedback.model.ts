@@ -7,4 +7,5 @@ export interface Feedback {
   content: string;
   rating: number;
   productId: string;
+  isExpanded?: boolean;
 }
