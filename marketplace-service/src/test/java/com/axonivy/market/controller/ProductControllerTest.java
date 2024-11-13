@@ -1,5 +1,6 @@
 package com.axonivy.market.controller;
 
+import com.axonivy.market.BaseSetup;
 import com.axonivy.market.assembler.ProductModelAssembler;
 import com.axonivy.market.entity.Product;
 import com.axonivy.market.enums.ErrorCode;
@@ -9,10 +10,8 @@ import com.axonivy.market.enums.TypeOption;
 import com.axonivy.market.exceptions.model.UnauthorizedException;
 import com.axonivy.market.github.service.GHAxonIvyMarketRepoService;
 import com.axonivy.market.github.service.GitHubService;
-import com.axonivy.market.model.ProductCustomSortRequest;
 import com.axonivy.market.service.MetadataService;
 import com.axonivy.market.service.ProductService;
-import com.axonivy.market.service.VersionService;
 import com.axonivy.market.util.AuthorizationUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -41,7 +40,7 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
-class ProductControllerTest {
+class ProductControllerTest extends BaseSetup {
   private static final String PRODUCT_ID_SAMPLE = "a-trust";
   private static final String PRODUCT_PATH_SAMPLE = "market/connector/a-trust";
   private static final String PRODUCT_NAME_SAMPLE = "Amazon Comprehend";
@@ -50,7 +49,6 @@ class ProductControllerTest {
       "uncover information in unstructured data.";
   private static final String PRODUCT_DESC_DE_SAMPLE = "Amazon Comprehend is a AI service that uses machine learning " +
       "to uncover information in unstructured data. DE";
-  private static final String AUTHORIZATION_HEADER = "Bearer valid_token";
   private static final String INVALID_AUTHORIZATION_HEADER = "Bearer invalid_token";
 
   @Mock
@@ -70,9 +68,6 @@ class ProductControllerTest {
 
   @Mock
   private MetadataService metadataService;
-
-  @Mock
-  private VersionService versionService;
 
   @Mock
   private GHAxonIvyMarketRepoService axonIvyMarketRepoService;
@@ -219,17 +214,6 @@ class ProductControllerTest {
   }
 
   @Test
-  void testCreateCustomSortProductsSuccess() {
-    ProductCustomSortRequest mockProductCustomSortRequest = createProductCustomSortRequestMock();
-    var response = productController.createCustomSortProducts(AUTHORIZATION_HEADER, mockProductCustomSortRequest);
-
-    assertEquals(HttpStatus.OK, response.getStatusCode());
-    assertTrue(response.hasBody());
-    assertEquals(ErrorCode.SUCCESSFUL.getCode(), Objects.requireNonNull(response.getBody()).getHelpCode());
-    assertTrue(response.getBody().getMessageDetails().contains("Custom product sort order added successfully"));
-  }
-
-  @Test
   void testGetBearerTokenWithValidHeader() {
     String token = AuthorizationUtils.getBearerToken(AUTHORIZATION_HEADER);
     assertEquals("valid_token", token);
@@ -255,12 +239,5 @@ class ProductControllerTest {
     mockProduct.setType("connector");
     mockProduct.setTags(List.of("AI"));
     return mockProduct;
-  }
-
-  private ProductCustomSortRequest createProductCustomSortRequestMock() {
-    List<String> productIds = new ArrayList<>();
-    productIds.add("a-trust");
-    productIds.add("approval-decision-utils");
-    return new ProductCustomSortRequest(productIds, "recently");
   }
 }

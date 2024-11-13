@@ -10,17 +10,9 @@ import java.util.List;
 public interface CustomProductRepository {
   Product getProductByIdAndVersion(String id, String version);
 
-  Product getProductWithModuleContent(String id);
-
   Product findProductById(String id);
 
   List<String> getReleasedVersionsById(String id);
-
-  int updateInitialCount(String productId, int initialCount);
-
-  int increaseInstallationCount(String productId);
-
-  void increaseInstallationCountForProductByDesignerVersion(String productId, String designerVersion);
 
   List<Product> getAllProductsWithIdAndReleaseTagAndArtifact();
 

@@ -8,6 +8,7 @@ import com.axonivy.market.entity.Metadata;
 import com.axonivy.market.entity.Product;
 import com.axonivy.market.entity.ProductDesignerInstallation;
 import com.axonivy.market.entity.ProductJsonContent;
+import com.axonivy.market.entity.ProductMarketplaceData;
 import com.axonivy.market.enums.Language;
 import com.axonivy.market.enums.SortOption;
 import com.axonivy.market.model.MavenArtifactModel;
@@ -33,6 +34,7 @@ import java.util.Set;
 
 @Log4j2
 public class BaseSetup {
+  protected static final String AUTHORIZATION_HEADER = "Bearer valid_token";
   protected static final String SAMPLE_PRODUCT_ID = "amazon-comprehend";
   protected static final String SAMPLE_PRODUCT_PATH = "/market/connector/amazon-comprehend";
   protected static final String SAMPLE_PRODUCT_NAME = "prody Comprehend";
@@ -69,6 +71,7 @@ public class BaseSetup {
   protected static final String LEGACY_INSTALLATION_COUNT_PATH_FIELD_NAME = "legacyInstallationCountPath";
   protected static final String MOCK_IMAGE_URL = "https://raw.githubusercontent" +
       ".com/amazon-comprehend-connector-product/images/comprehend-demo-sentiment.png";
+  protected static final String INSTALLATION_FILE_PATH = "src/test/resources/installationCount.json";
 
   protected Page<Product> createPageProductsMock() {
     var mockProducts = new ArrayList<Product>();
@@ -241,5 +244,9 @@ public class BaseSetup {
     ProductJsonContent result = new ProductJsonContent();
     result.setContent(getContentFromTestResourcePath(MOCK_PRODUCT_JSON_WITH_DROPINS_FILE_PATH));
     return result;
+  }
+
+  protected ProductMarketplaceData getMockProductMarketplaceData() {
+    return ProductMarketplaceData.builder().id(MOCK_PRODUCT_ID).installationCount(3).build();
   }
 }
