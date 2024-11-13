@@ -10,7 +10,7 @@
     }   
     <div class="oops">{{ 'common.error.oops' | translate }}</div>
     <div class="error-description">
-      {{ 'common.error.description' | translate }}
+      {{ 'common.error.fullMessage' | translate: { errorMessage: errorMessageKey | translate, additionalStatement: 'common.error.additionalStatement' | translate } }}
     </div>
     <div class="button-container flex-row">
       <button

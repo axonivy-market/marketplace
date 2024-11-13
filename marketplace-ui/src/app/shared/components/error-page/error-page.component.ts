@@ -2,7 +2,7 @@ import { Component, HostListener, inject, OnInit, signal } from '@angular/core';
 import { ThemeService } from '../../../core/services/theme/theme.service';
 import { LanguageService } from '../../../core/services/language/language.service';
 import { CommonModule } from '@angular/common';
-import { TranslateModule } from '@ngx-translate/core';
+import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { ActivatedRoute, Router } from '@angular/router';
 
 @Component({
@@ -15,9 +15,10 @@ import { ActivatedRoute, Router } from '@angular/router';
 export class ErrorPageComponent implements OnInit {
   themeService = inject(ThemeService);
   languageService = inject(LanguageService);
+  translateService = inject(TranslateService);
   isMobileMode = signal<boolean>(false);
   route = inject(ActivatedRoute);
-
+  errorMessageKey: string = '';
   errorId: string | undefined;
 
   constructor(private readonly router: Router) {
@@ -26,6 +27,12 @@ export class ErrorPageComponent implements OnInit {
 
   ngOnInit(): void {
     this.errorId = this.route.snapshot.params['id'];
+    let errorMessageKey = this.buildI18nKey(this.errorId);
+    this.errorMessageKey = this.translateService.instant(errorMessageKey);
+  }
+
+  private buildI18nKey(key: string | undefined) {
+    return key ? `common.error.description.${key}` : '';
   }
 
   backToHomePage() {

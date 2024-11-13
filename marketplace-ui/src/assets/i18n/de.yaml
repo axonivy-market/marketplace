@@ -26,16 +26,19 @@ common:
   error:
     code: 'ERROR CODE'
     oops: 'Oops!'
+    fullMessage: "{{ errorMessage }} {{ additionalStatement }}"
     description:
-      400: 'Bad Request: The server could not understand the request due to invalid syntax.'
-      401: 'Unauthorized: Authentication is required and has failed or has not been provided.'
-      403: 'Forbidden: The server understood the request but refuses to authorize it.'
-      408: 'Request Timeout: The server timed out waiting for the request.'
-      500: 'Internal Server Error: The server encountered an unexpected condition.'
-      502: 'Bad Gateway: The server received an invalid response from an upstream server.'
-      503: 'Service Unavailable: The server is temporarily unable to handle the request.'
-      504: 'Gateway Timeout: The upstream server failed to send a request in time.'
-      default: Unsere Webseite macht eine kleine Pause. Offenbar finden wir die von Dir angefragte Seite nicht.
+      400: 'Bad Request: Der Server konnte die Anfrage aufgrund fehlerhafter Syntax nicht verstehen..'
+      401: 'Unauthorized: Eine Authentifizierung ist erforderlich und ist fehlgeschlagen oder wurde nicht bereitgestellt.'
+      403: 'Forbidden: Der Server hat die Anfrage verstanden, verweigert jedoch die Autorisierung.'
+      404: 'Not Found: Unsere Webseite macht eine kleine Pause. Offenbar finden wir die von Dir angefragte Seite nicht.'
+      408: 'Request Timeout: Der Server hat das Zeitlimit für die Anfrage überschritten.'
+      500: 'Internal Server Error: Der Server stieß auf ein unerwartetes Problem.'
+      502: 'Bad Gateway: Der Server hat eine ungültige Antwort von einem vorgelagerten Server erhalten.'
+      503: 'Service Unavailable: Der Server kann vorübergehend  die Anfrage nicht bearbeiten.'
+      504: 'Gateway Timeout: Der vorgelagerte Server konnte die Anfrage nicht rechtzeitig beantworten.'
+      default: Unsere Webseite macht eine kleine Pause.
+    additionalStatement: 'Du tust uns einen großen Gefallen, wenn Du es hier meldest: support@axonivy.com'
     buttonLabel: Zurück zur Startseite
   sort:
     label: Sortierung
