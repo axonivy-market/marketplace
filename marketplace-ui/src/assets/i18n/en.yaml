@@ -30,7 +30,7 @@ common:
   error:
     code: 'ERROR CODE'
     oops: 'Oops!'
-    fullMessage: "{{ errorMessage }} {{ additionalStatement }}"
+    fullMessage: "{{ errorMessage }} You would be doing us a great favor by reporting it here: <a href='mailto:{email}'>support@axonivy.com</a>"
     description:
       400: 'Bad Request: The server could not understand the request due to invalid syntax.'
       401: 'Unauthorized: Authentication is required and has failed or has not been provided.'
@@ -42,7 +42,6 @@ common:
       503: 'Service Unavailable: The server is temporarily unable to handle the request.'
       504: 'Gateway Timeout: The upstream server failed to send a request in time.'
       default: Our website is taking a break.
-    additionalStatement: ' You would be doing us a great favor by reporting it here: support@axonivy.com'
     buttonLabel: Back to homepage
   sort:
     label: Sort by

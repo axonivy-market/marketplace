@@ -26,7 +26,7 @@ common:
   error:
     code: 'ERROR CODE'
     oops: 'Oops!'
-    fullMessage: "{{ errorMessage }} {{ additionalStatement }}"
+    fullMessage: "{{ errorMessage }} Du tust uns einen großen Gefallen, wenn Du es hier meldest: <a href='mailto:{email}'>support@axonivy.com</a>"
     description:
       400: 'Bad Request: Der Server konnte die Anfrage aufgrund fehlerhafter Syntax nicht verstehen..'
       401: 'Unauthorized: Eine Authentifizierung ist erforderlich und ist fehlgeschlagen oder wurde nicht bereitgestellt.'
@@ -38,7 +38,6 @@ common:
       503: 'Service Unavailable: Der Server kann vorübergehend  die Anfrage nicht bearbeiten.'
       504: 'Gateway Timeout: Der vorgelagerte Server konnte die Anfrage nicht rechtzeitig beantworten.'
       default: Unsere Webseite macht eine kleine Pause.
-    additionalStatement: 'Du tust uns einen großen Gefallen, wenn Du es hier meldest: support@axonivy.com'
     buttonLabel: Zurück zur Startseite
   sort:
     label: Sortierung

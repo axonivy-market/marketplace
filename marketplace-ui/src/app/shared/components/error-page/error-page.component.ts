@@ -27,8 +27,10 @@ export class ErrorPageComponent implements OnInit {
 
   ngOnInit(): void {
     this.errorId = this.route.snapshot.params['id'];
-    let errorMessageKey = this.buildI18nKey(this.errorId);
-    this.errorMessageKey = this.translateService.instant(errorMessageKey);
+    this.translateService.get('common.error.description').subscribe((errorTranslations) => {
+      let i18nErrorKey = this.errorId && Object.keys(errorTranslations).includes(this.errorId) && this.errorId !== 'default' ? this.errorId : 'default';
+      this.errorMessageKey = this.buildI18nKey(i18nErrorKey);
+    });
   }
 
   private buildI18nKey(key: string | undefined) {
