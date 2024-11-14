@@ -30,14 +30,11 @@ export class ErrorPageComponent implements OnInit {
     this.translateService
       .get('common.error.description')
       .subscribe(errorTranslations => {
-        let i18nErrorKey;
+        let i18nErrorKey = this.errorId;
         if (
-          this.errorId &&
-          Object.keys(errorTranslations).includes(this.errorId) &&
-          this.errorId !== 'default'
+          !i18nErrorKey ||
+          !Object.keys(errorTranslations).includes(i18nErrorKey)
         ) {
-          i18nErrorKey = this.errorId;
-        } else {
           i18nErrorKey = 'default';
         }
         this.errorMessageKey = this.buildI18nKey(i18nErrorKey);
