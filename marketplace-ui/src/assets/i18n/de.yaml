@@ -35,7 +35,7 @@ common:
       408: 'Request Timeout: Der Server hat das Zeitlimit für die Anfrage überschritten.'
       500: 'Internal Server Error: Der Server stieß auf ein unerwartetes Problem.'
       502: 'Bad Gateway: Der Server hat eine ungültige Antwort von einem vorgelagerten Server erhalten.'
-      503: 'Service Unavailable: Der Server kann vorübergehend  die Anfrage nicht bearbeiten.'
+      503: 'Service Unavailable: Der Server kann vorübergehend die Anfrage nicht bearbeiten.'
       504: 'Gateway Timeout: Der vorgelagerte Server konnte die Anfrage nicht rechtzeitig beantworten.'
       default: Unsere Webseite macht eine kleine Pause.
     buttonLabel: Zurück zur Startseite
