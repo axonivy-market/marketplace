@@ -2,8 +2,9 @@ import { Component, HostListener, inject, OnInit, signal } from '@angular/core';
 import { ThemeService } from '../../../core/services/theme/theme.service';
 import { LanguageService } from '../../../core/services/language/language.service';
 import { CommonModule } from '@angular/common';
-import { TranslateModule } from '@ngx-translate/core';
+import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { ActivatedRoute, Router } from '@angular/router';
+import { I18N_DEFAULT_ERROR_CODE, I18N_ERROR_CODE_PATH } from '../../constants/common.constant';
 
 @Component({
   selector: 'app-error-page-component',
@@ -15,9 +16,10 @@ import { ActivatedRoute, Router } from '@angular/router';
 export class ErrorPageComponent implements OnInit {
   themeService = inject(ThemeService);
   languageService = inject(LanguageService);
+  translateService = inject(TranslateService);
   isMobileMode = signal<boolean>(false);
   route = inject(ActivatedRoute);
-
+  errorMessageKey = '';
   errorId: string | undefined;
 
   constructor(private readonly router: Router) {
@@ -26,6 +28,25 @@ export class ErrorPageComponent implements OnInit {
 
   ngOnInit(): void {
     this.errorId = this.route.snapshot.params['id'];
+    this.translateService
+      .get(I18N_ERROR_CODE_PATH)
+      .subscribe(errorTranslations => {
+        let i18nErrorKey = this.errorId;
+        if (
+          !i18nErrorKey ||
+          !Object.keys(errorTranslations).includes(i18nErrorKey)
+        ) {
+          i18nErrorKey = I18N_DEFAULT_ERROR_CODE;
+        }
+        this.errorMessageKey = this.buildI18nKey(i18nErrorKey);
+      });
+  }
+
+  private buildI18nKey(key: string | undefined) {
+    if (key) {
+      return `${I18N_ERROR_CODE_PATH}.${key}`;
+    }
+    return '';
   }
 
   backToHomePage() {
