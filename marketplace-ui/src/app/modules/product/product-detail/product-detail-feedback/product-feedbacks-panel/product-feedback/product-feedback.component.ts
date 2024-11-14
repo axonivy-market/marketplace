@@ -18,8 +18,8 @@ export class ProductFeedbackComponent {
   @ViewChild('content') contentElement!: ElementRef;
 
   private resizeObserver!: ResizeObserver;
-  private scrollHeight = signal(0);
-  private clientHeight = signal(0);
+  private readonly scrollHeight = signal(0);
+  private readonly clientHeight = signal(0);
 
   showToggle = computed(() => this.scrollHeight() > this.clientHeight() || this.feedback.isExpanded);
   languageService = inject(LanguageService);

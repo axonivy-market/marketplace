@@ -1,4 +1,4 @@
-import { CommonModule } from '@angular/common';
+import { CommonModule, NgOptimizedImage } from '@angular/common';
 import { Component, inject, Signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
@@ -13,7 +13,7 @@ import { ProductDetailService } from '../../../product-detail.service';
 import { ProductFeedbackService } from '../../product-feedbacks-panel/product-feedback.service';
 import { CommonDropdownComponent } from '../../../../../../shared/components/common-dropdown/common-dropdown.component';
 import { MAX_FEEDBACK_LENGTH, NOT_FOUND_ERROR_CODE, USER_NOT_FOUND_ERROR_CODE } from '../../../../../../shared/constants/common.constant';
-import { NgOptimizedImage } from '@angular/common';
+import { CharacterCountPipe } from '../../../../../../shared/pipes/character-count.pipe';
 
 @Component({
   selector: 'app-add-feedback-dialog',
@@ -27,7 +27,8 @@ import { NgOptimizedImage } from '@angular/common';
     TranslateModule,
     MultilingualismPipe,
     CommonDropdownComponent,
-    NgOptimizedImage
+    NgOptimizedImage,
+    CharacterCountPipe
   ]
 })
 export class AddFeedbackDialogComponent {
