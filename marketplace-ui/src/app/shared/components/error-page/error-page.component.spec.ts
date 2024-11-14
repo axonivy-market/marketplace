@@ -1,37 +1,38 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { ErrorPageComponent } from './error-page.component';
-import { TranslateModule } from '@ngx-translate/core';
+import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { Viewport } from 'karma-viewport/dist/adapter/viewport';
 import { By } from '@angular/platform-browser';
 import { ActivatedRoute, Router } from '@angular/router';
+import { of } from 'rxjs';
 declare const viewport: Viewport;
 
-describe('ErrorPageComponentComponent', () => {
+fdescribe('ErrorPageComponentComponent', () => {
   let component: ErrorPageComponent;
   let fixture: ComponentFixture<ErrorPageComponent>;
   let router: Router;
 
-const setupComponent = (idValue: string | undefined) => {
-  TestBed.configureTestingModule({
-    imports: [ErrorPageComponent, TranslateModule.forRoot()],
-    providers: [
-      {
-        provide: ActivatedRoute,
-        useValue: {
-          snapshot: {
-            params: { id: idValue }
+  const setupComponent = (idValue: string | undefined) => {
+    TestBed.configureTestingModule({
+      imports: [ErrorPageComponent, TranslateModule.forRoot()],
+      providers: [
+        {
+          provide: ActivatedRoute,
+          useValue: {
+            snapshot: {
+              params: { id: idValue }
+            }
           }
         }
-      }
-    ]
-  }).compileComponents();
+      ]
+    }).compileComponents();
 
-  fixture = TestBed.createComponent(ErrorPageComponent );
-  component = fixture.componentInstance;
-  router = TestBed.inject(Router);
-  fixture.detectChanges();
-};
+    fixture = TestBed.createComponent(ErrorPageComponent);
+    component = fixture.componentInstance;
+    router = TestBed.inject(Router);
+    fixture.detectChanges();
+  };
 
   it('should create', () => {
     setupComponent(undefined);
@@ -100,25 +101,32 @@ const setupComponent = (idValue: string | undefined) => {
     beforeEach(() => {
       setupComponent(undefined);
     });
-  
+
     it('should set error id to undefined', () => {
       const errorCode = fixture.debugElement.query(By.css('.error-code'));
 
       expect(component.errorId).toBeUndefined();
       expect(errorCode).toBeFalsy();
+      expect(component.errorMessageKey).toEqual(
+        'common.error.description.default'
+      );
     });
   });
-  
+
   describe('when error id is in error codes', () => {
     beforeEach(() => {
       setupComponent('404');
     });
-  
-    it('should set error id to the same as in route param', () => {
-      const errorCode = fixture.debugElement.query(By.css('.error-code'));
 
+    it('should set error id to the same as in route param', () => {
+      const translateService = TestBed.inject(TranslateService);
+      spyOn(translateService, 'get').and.returnValue(of({ '404': 'test' }));
+      component.ngOnInit();
+      fixture.detectChanges();
+      const errorCode = fixture.debugElement.query(By.css('.error-code'));
       expect(component.errorId).toBe('404');
       expect(errorCode).toBeTruthy();
+      expect(component.errorMessageKey).toEqual('common.error.description.404');
     });
   });
 });
