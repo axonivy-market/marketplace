@@ -200,16 +200,31 @@ export const VERSION = {
   displayPrefix: 'Version '
 };
 
+export const I18N_ERROR_CODE_PATH = 'common.error.description';
 export const ERROR_PAGE = 'Error Page';
 export const ERROR_PAGE_PATH = 'error-page';
 export const NOT_FOUND_ERROR_CODE = 404;
 export const INTERNAL_SERVER_ERROR_CODE = 500;
-export const USER_NOT_FOUND_ERROR_CODE = 2103; 
+export const USER_NOT_FOUND_ERROR_CODE = 2103;
 export const UNDEFINED_ERROR_CODE = 0;
+export const BAD_REQUEST_ERROR_CODE = 400;
+export const UNAUTHORIZED = 401;
+export const FORBIDDEN = 403;
+export const REQUEST_TIMEOUT = 408;
+export const BAD_GATEWAY = 502;
+export const SERVICE_UNAVAILABLE = 503;
+export const GATEWAY_TIMEOUT = 504;
 export const ERROR_CODES = [
   UNDEFINED_ERROR_CODE,
   NOT_FOUND_ERROR_CODE,
-  INTERNAL_SERVER_ERROR_CODE
+  INTERNAL_SERVER_ERROR_CODE,
+  BAD_REQUEST_ERROR_CODE,
+  UNAUTHORIZED,
+  FORBIDDEN,
+  REQUEST_TIMEOUT,
+  BAD_GATEWAY,
+  SERVICE_UNAVAILABLE,
+  GATEWAY_TIMEOUT
 ];
 export const TOKEN_KEY = 'token';
 

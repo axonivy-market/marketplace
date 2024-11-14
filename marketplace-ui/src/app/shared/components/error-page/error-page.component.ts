@@ -4,6 +4,7 @@ import { LanguageService } from '../../../core/services/language/language.servic
 import { CommonModule } from '@angular/common';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { ActivatedRoute, Router } from '@angular/router';
+import { I18N_ERROR_CODE_PATH } from '../../constants/common.constant';
 
 @Component({
   selector: 'app-error-page-component',
@@ -28,7 +29,7 @@ export class ErrorPageComponent implements OnInit {
   ngOnInit(): void {
     this.errorId = this.route.snapshot.params['id'];
     this.translateService
-      .get('common.error.description')
+      .get(I18N_ERROR_CODE_PATH)
       .subscribe(errorTranslations => {
         let i18nErrorKey = this.errorId;
         if (
@@ -43,7 +44,7 @@ export class ErrorPageComponent implements OnInit {
 
   private buildI18nKey(key: string | undefined) {
     if (key) {
-      return `common.error.description.${key}`;
+      return `${I18N_ERROR_CODE_PATH}.${key}`;
     }
     return '';
   }

@@ -28,7 +28,7 @@ common:
     oops: 'Oops!'
     fullMessage: "{{ errorMessage }} Du tust uns einen großen Gefallen, wenn Du es hier meldest: <a href='mailto:{email}'>support@axonivy.com</a>"
     description:
-      400: 'Bad Request: Der Server konnte die Anfrage aufgrund fehlerhafter Syntax nicht verstehen..'
+      400: 'Bad Request: Der Server konnte die Anfrage aufgrund fehlerhafter Syntax nicht verstehen.'
       401: 'Unauthorized: Eine Authentifizierung ist erforderlich und ist fehlgeschlagen oder wurde nicht bereitgestellt.'
       403: 'Forbidden: Der Server hat die Anfrage verstanden, verweigert jedoch die Autorisierung.'
       404: 'Not Found: Unsere Webseite macht eine kleine Pause. Offenbar finden wir die von Dir angefragte Seite nicht.'
