@@ -244,3 +244,4 @@ export const DAYS_IN_A_WEEK = 7;
 export const DAYS_IN_A_MONTH = 30;
 export const DAYS_IN_A_YEAR = 365;
 
+export const MAX_FEEDBACK_LENGTH =250;
