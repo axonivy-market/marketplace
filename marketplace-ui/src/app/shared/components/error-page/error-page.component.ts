@@ -18,7 +18,7 @@ export class ErrorPageComponent implements OnInit {
   translateService = inject(TranslateService);
   isMobileMode = signal<boolean>(false);
   route = inject(ActivatedRoute);
-  errorMessageKey: string = '';
+  errorMessageKey = '';
   errorId: string | undefined;
 
   constructor(private readonly router: Router) {
@@ -27,14 +27,28 @@ export class ErrorPageComponent implements OnInit {
 
   ngOnInit(): void {
     this.errorId = this.route.snapshot.params['id'];
-    this.translateService.get('common.error.description').subscribe((errorTranslations) => {
-      let i18nErrorKey = this.errorId && Object.keys(errorTranslations).includes(this.errorId) && this.errorId !== 'default' ? this.errorId : 'default';
-      this.errorMessageKey = this.buildI18nKey(i18nErrorKey);
-    });
+    this.translateService
+      .get('common.error.description')
+      .subscribe(errorTranslations => {
+        let i18nErrorKey;
+        if (
+          this.errorId &&
+          Object.keys(errorTranslations).includes(this.errorId) &&
+          this.errorId !== 'default'
+        ) {
+          i18nErrorKey = this.errorId;
+        } else {
+          i18nErrorKey = 'default';
+        }
+        this.errorMessageKey = this.buildI18nKey(i18nErrorKey);
+      });
   }
 
   private buildI18nKey(key: string | undefined) {
-    return key ? `common.error.description.${key}` : '';
+    if (key) {
+      return `common.error.description.${key}`;
+    }
+    return '';
   }
 
   backToHomePage() {
