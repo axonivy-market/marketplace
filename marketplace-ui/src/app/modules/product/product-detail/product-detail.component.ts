@@ -155,6 +155,7 @@ export class ProductDetailComponent {
         this.productModuleContent.set(productDetail.productModuleContent);
         this.metaProductJsonUrl = productDetail.metaProductJsonUrl;
         this.productDetailService.productNames.set(productDetail.names);
+        this.productDetailService.productLogoUrl.set(productDetail.logoUrl);
         this.installationCount = productDetail.installationCount;
         this.handleProductContentVersion();
         this.updateProductDetailActionType(productDetail);

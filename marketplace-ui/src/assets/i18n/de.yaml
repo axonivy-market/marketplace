@@ -127,3 +127,5 @@ common:
     minutesAgo: 'vor {{ number }} Minuten'
     secondAgo: vor einer Sekunde
     secondsAgo: 'vor {{ number }} Sekunden'
+  showLess: Weniger anzeigen
+  showMore: Mehr anzeigen

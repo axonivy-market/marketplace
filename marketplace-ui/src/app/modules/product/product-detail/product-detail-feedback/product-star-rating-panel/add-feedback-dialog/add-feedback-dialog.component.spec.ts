@@ -32,7 +32,8 @@ describe('AddFeedbackDialogComponent', () => {
       ['productId'],
       {
         productNames: signal({ en: 'en', de: 'de' }),
-        productId: signal('mockProductId')
+        productId: signal('mockProductId'),
+        productLogoUrl: signal('logoUrl')
       }
     );
     const activeModalSpy = jasmine.createSpyObj('NgbActiveModal', [
