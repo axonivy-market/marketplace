@@ -131,3 +131,5 @@ common:
     minutesAgo: '{{ number }} minutes ago'
     secondAgo: 1 second ago
     secondsAgo: '{{ number }} seconds ago'
+  showLess: Show less
+  showMore: Show more

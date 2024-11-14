@@ -20,12 +20,12 @@
     </div>
   </div>
   <div>
-    <p #content class="collapsed text-primary mb-0 mt-3" [class.expanded]="feedback.isExpanded" style="white-space: pre-line;"
+    <p #content class="collapsed text-primary mb-0 mt-3 feedback-content" [class.expanded]="feedback.isExpanded"
       [textContent]="feedback.content">
     </p>
     @if (showToggle()) {
       <a class="expand-toggle-link" (click)="toggleContent()">
-        {{ feedback.isExpanded ? 'See less' : 'See more' }}
+        {{ (feedback.isExpanded ? 'common.showLess' : 'common.showMore') | translate }}
       </a>
     }
   </div>

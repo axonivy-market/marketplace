@@ -77,8 +77,4 @@ export class AddFeedbackDialogComponent {
   onRateChange(newRate: number) {
     this.feedback.rating = newRate;
   }
-
-  get feedbackRemainingCharactersLabel(): string {
-    return `${this.feedback.content.length}/${this.maxFeedbackLength}`;
-  }
 }

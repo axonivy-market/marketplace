@@ -81,8 +81,8 @@ p {
   --text-feedback-time-color: #757575;
   --text-error-code-color: #757575;
   --text-error-oops-color: #{$ivyPrimaryTextColorLight};
-  --product-feedback-container-bg-color: #F8F8F8;
-  --product-feedback-container-border-color: #EBEBEB;
+  --product-feedback-container-bg-color: #{$ivySecondaryColorLight};
+  --product-feedback-container-border-color: #{var(--header-border-color)};
 
   .bg-primary {
     background-color: #{$ivyPrimaryColorLight} !important;
@@ -187,8 +187,8 @@ p {
   --text-feedback-time-color: #A3A3A3;
   --text-error-code-color: #A3A3A3;
   --text-error-oops-color: #ffffff;
-  --product-feedback-container-bg-color: #383838;
-  --product-feedback-container-border-color: #4A4A4A;
+  --product-feedback-container-bg-color: #{$ivySecondaryColorDark};
+  --product-feedback-container-border-color: #{$ivySecondaryTextLight};
 
   a {
     color: #{$white};

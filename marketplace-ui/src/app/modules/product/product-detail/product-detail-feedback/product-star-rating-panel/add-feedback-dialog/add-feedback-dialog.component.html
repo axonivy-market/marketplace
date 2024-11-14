@@ -38,7 +38,9 @@
       </p>
       <textarea class="feedback-content-textarea text-primary mb-2" [maxlength]="maxFeedbackLength"
         [(ngModel)]="feedback.content"></textarea>
-      <p class="feedback-remaining-characters-label mb-0">{{ feedbackRemainingCharactersLabel }}</p>
+      <p class="feedback-remaining-characters-label mb-0">
+        {{ feedback.content.length }}/{{ maxFeedbackLength }}
+      </p>
     </div>
     <button [lang]="languageService.selectedLanguage()" class="btn btn-primary border-0 submit-feedback-btn"
       [disabled]="!feedback.content.trim() || feedback.rating <= 0" (click)="onSubmitFeedback()">

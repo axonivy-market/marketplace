@@ -1,14 +1,15 @@
-import { Component, computed, ElementRef, HostListener, inject, Input, signal, ViewChild } from '@angular/core';
+import { Component, computed, ElementRef, inject, Input, signal, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { StarRatingComponent } from '../../../../../../shared/components/star-rating/star-rating.component';
 import { Feedback } from '../../../../../../shared/models/feedback.model';
 import { TimeAgoPipe } from '../../../../../../shared/pipes/time-ago.pipe';
 import { LanguageService } from '../../../../../../core/services/language/language.service';
+import { TranslateModule } from '@ngx-translate/core';
 
 @Component({
   selector: 'app-product-feedback',
   standalone: true,
-  imports: [CommonModule, StarRatingComponent, TimeAgoPipe],
+  imports: [CommonModule, StarRatingComponent, TimeAgoPipe, TranslateModule],
   templateUrl: './product-feedback.component.html',
   styleUrl: './product-feedback.component.scss'
 })
