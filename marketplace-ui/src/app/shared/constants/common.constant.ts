@@ -201,6 +201,8 @@ export const VERSION = {
 };
 
 export const I18N_ERROR_CODE_PATH = 'common.error.description';
+export const I18N_DEFAULT_ERROR_CODE = 'default';
+
 export const ERROR_PAGE = 'Error Page';
 export const ERROR_PAGE_PATH = 'error-page';
 export const NOT_FOUND_ERROR_CODE = 404;

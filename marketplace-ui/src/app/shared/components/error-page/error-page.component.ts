@@ -4,7 +4,7 @@ import { LanguageService } from '../../../core/services/language/language.servic
 import { CommonModule } from '@angular/common';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { ActivatedRoute, Router } from '@angular/router';
-import { I18N_ERROR_CODE_PATH } from '../../constants/common.constant';
+import { I18N_DEFAULT_ERROR_CODE, I18N_ERROR_CODE_PATH } from '../../constants/common.constant';
 
 @Component({
   selector: 'app-error-page-component',
@@ -36,7 +36,7 @@ export class ErrorPageComponent implements OnInit {
           !i18nErrorKey ||
           !Object.keys(errorTranslations).includes(i18nErrorKey)
         ) {
-          i18nErrorKey = 'default';
+          i18nErrorKey = I18N_DEFAULT_ERROR_CODE;
         }
         this.errorMessageKey = this.buildI18nKey(i18nErrorKey);
       });
