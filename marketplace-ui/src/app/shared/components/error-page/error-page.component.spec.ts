@@ -8,7 +8,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { of } from 'rxjs';
 declare const viewport: Viewport;
 
-fdescribe('ErrorPageComponentComponent', () => {
+describe('ErrorPageComponentComponent', () => {
   let component: ErrorPageComponent;
   let fixture: ComponentFixture<ErrorPageComponent>;
   let router: Router;
