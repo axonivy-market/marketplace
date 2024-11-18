@@ -68,10 +68,9 @@ export class ProductDetailInformationTabComponent implements OnChanges {
   }
 
   isProductChanged(changedProduct: SimpleChange) {
-    return changedProduct &&
-      changedProduct.previousValue != undefined &&
+    return !!(changedProduct?.previousValue &&
       Object.keys(changedProduct.previousValue).length > 0 &&
-      changedProduct.currentValue !== changedProduct.previousValue;
+      changedProduct.currentValue !== changedProduct.previousValue);
   }
 
 }
