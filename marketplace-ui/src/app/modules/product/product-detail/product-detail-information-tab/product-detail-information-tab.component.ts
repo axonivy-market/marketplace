@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, inject, Input, OnChanges, SimpleChanges } from '@angular/core';
+import { Component, inject, Input, OnChanges, SimpleChange, SimpleChanges } from '@angular/core';
 import { TranslateModule } from '@ngx-translate/core';
 import { ProductDetail } from '../../../../shared/models/product-detail.model';
 import { LanguageService } from '../../../../core/services/language/language.service';
@@ -37,7 +37,7 @@ export class ProductDetailInformationTabComponent implements OnChanges {
       return;
     }
     const changedProduct = changes[PRODUCT_DETAIL];
-    if (changedProduct && changedProduct.currentValue !== changedProduct.previousValue) {
+    if (this.isProductChanged(changedProduct)) {
       version = this.productDetail.newestReleaseVersion;
     } else {
       version = this.selectedVersion;
@@ -47,7 +47,7 @@ export class ProductDetailInformationTabComponent implements OnChanges {
       return;
     }
 
-    this.productDetailService.getExteralDocumentForProductByVersion(this.productDetail.id, this.extractVersionValue(version))
+    this.productDetailService.getExternalDocumentForProductByVersion(this.productDetail.id, this.extractVersionValue(version))
       .subscribe({
         next: response => {
           this.externalDocumentLink = response.relativeLink;
@@ -66,4 +66,12 @@ export class ProductDetailInformationTabComponent implements OnChanges {
   extractVersionValue(versionDisplayName: string) {
     return versionDisplayName.replace(VERSION.displayPrefix, '');
   }
+
+  isProductChanged(changedProduct: SimpleChange) {
+    return changedProduct &&
+      changedProduct.previousValue != undefined &&
+      Object.keys(changedProduct.previousValue).length > 0 &&
+      changedProduct.currentValue !== changedProduct.previousValue;
+  }
+
 }

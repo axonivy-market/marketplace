@@ -2,7 +2,7 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { ProductDetailInformationTabComponent } from './product-detail-information-tab.component';
 import { of } from 'rxjs';
-import { SimpleChanges } from '@angular/core';
+import { SimpleChange, SimpleChanges } from '@angular/core';
 import { ProductDetailService } from '../product-detail.service';
 import { LanguageService } from '../../../../core/services/language/language.service';
 import { ProductDetail } from '../../../../shared/models/product-detail.model';
@@ -20,7 +20,7 @@ describe('ProductDetailInformationTabComponent', () => {
   let productDetailService: jasmine.SpyObj<ProductDetailService>;
 
   beforeEach(async () => {
-    const productDetailServiceSpy = jasmine.createSpyObj('ProductDetailService', ['getExteralDocumentForProductByVersion']);
+    const productDetailServiceSpy = jasmine.createSpyObj('ProductDetailService', ['getExternalDocumentForProductByVersion']);
 
     await TestBed.configureTestingModule({
       imports: [ProductDetailInformationTabComponent,
@@ -43,7 +43,7 @@ describe('ProductDetailInformationTabComponent', () => {
   });
 
   it('should set externalDocumentLink and displayExternalDocName on valid version change', () => {
-    productDetailService.getExteralDocumentForProductByVersion.and.returnValue(of({ ...MOCK_EXTERNAL_DOCUMENT }));
+    productDetailService.getExternalDocumentForProductByVersion.and.returnValue(of({ ...MOCK_EXTERNAL_DOCUMENT }));
 
     component.productDetail = { id: TEST_ID, newestReleaseVersion: TEST_VERSION } as ProductDetail;
     component.selectedVersion = TEST_VERSION;
@@ -64,7 +64,7 @@ describe('ProductDetailInformationTabComponent', () => {
 
     component.ngOnChanges(changes);
 
-    expect(productDetailService.getExteralDocumentForProductByVersion).toHaveBeenCalledWith(TEST_ID, TEST_VERSION);
+    expect(productDetailService.getExternalDocumentForProductByVersion).toHaveBeenCalledWith(TEST_ID, TEST_VERSION);
     expect(component.externalDocumentLink).toBe(TEST_DOC_URL);
     expect(component.displayExternalDocName).toBe(TEST_ARTIFACT_NAME);
   });
@@ -89,7 +89,7 @@ describe('ProductDetailInformationTabComponent', () => {
 
     component.ngOnChanges(changes);
 
-    expect(productDetailService.getExteralDocumentForProductByVersion).not.toHaveBeenCalled();
+    expect(productDetailService.getExternalDocumentForProductByVersion).not.toHaveBeenCalled();
     expect(component.externalDocumentLink).toBe('');
     expect(component.displayExternalDocName).toBe('');
   });
@@ -98,5 +98,53 @@ describe('ProductDetailInformationTabComponent', () => {
     const versionDisplayName = "Version 10.0.0";
     const extractedValue = component.extractVersionValue(versionDisplayName);
     expect(extractedValue).toBe(TEST_VERSION);
+  });
+
+  it('should check isProductChanged correct', () => {
+    component.productDetail = { id: TEST_ID, newestReleaseVersion: '11.3.0' } as ProductDetail;
+    const productChanged: SimpleChange = {
+      currentValue: component.productDetail,
+      previousValue: undefined,
+      firstChange: true,
+      isFirstChange: () => true
+    };
+
+    const result  = component.isProductChanged(productChanged);
+    expect(result).toBe(false);
+  });
+
+  it('should check isProductChanged correct if the same value', () => {
+    component.productDetail = { id: TEST_ID, newestReleaseVersion: '11.3.0' } as ProductDetail;
+    const productChanged: SimpleChange = {
+      currentValue: component.productDetail,
+      previousValue: component.productDetail.newestReleaseVersion = '12.0.0-m266',
+      firstChange: true,
+      isFirstChange: () => true
+    };
+
+    const result  = component.isProductChanged(productChanged);
+    expect(result).toBe(true);
+  });
+
+  it('should get correct externalDocumentLink by newestReleaseVersion', () => {
+    productDetailService.getExternalDocumentForProductByVersion.and.returnValue(of({ ...MOCK_EXTERNAL_DOCUMENT }));
+    component.productDetail = { id: TEST_ID, newestReleaseVersion: TEST_VERSION } as ProductDetail;
+    component.selectedVersion = TEST_VERSION;
+    const changes: SimpleChanges = {
+      selectedVersion: {
+        currentValue: TEST_VERSION,
+        previousValue: '8.0.0',
+        firstChange: false,
+        isFirstChange: () => false
+      },
+      productDetail: {
+        currentValue: component.productDetail,
+        previousValue: component.productDetail.newestReleaseVersion = '12.0.0-m266',
+        firstChange: true,
+        isFirstChange: () => true
+      }
+    };
+    component.ngOnChanges(changes);
+    expect(productDetailService.getExternalDocumentForProductByVersion).toHaveBeenCalledWith(TEST_ID, '12.0.0-m266');
   });
 });
