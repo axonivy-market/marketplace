@@ -23,12 +23,14 @@ export const appConfig: ApplicationConfig = {
     provideZoneChangeDetection({ eventCoalescing: true }),
     provideRouter(routes, inMemoryScrollingFeature),
     provideHttpClient(withFetch(), withInterceptors([apiInterceptor])),
-    provideMatomo({
-      siteId: environment.matomoSiteId,
-      trackerUrl: environment.matomoTrackerUrl,
-      },
-      withRouter(),
-    ),
+
+    //  Disabled for later HTTPS implementation
+    // provideMatomo({
+    //   siteId: environment.matomoSiteId,
+    //   trackerUrl: environment.matomoTrackerUrl,
+    //   },
+    //   withRouter(),
+    // ),
     importProvidersFrom(
       TranslateModule.forRoot({
         loader: {
