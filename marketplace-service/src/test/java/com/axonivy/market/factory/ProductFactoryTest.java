@@ -1,5 +1,6 @@
 package com.axonivy.market.factory;
 
+import com.axonivy.market.BaseSetup;
 import com.axonivy.market.constants.ProductJsonConstants;
 import com.axonivy.market.entity.Product;
 import com.axonivy.market.enums.Language;
@@ -22,10 +23,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
-class ProductFactoryTest {
-  private static final String DUMMY_LOGO_URL = "https://raw.githubusercontent" +
-      ".com/axonivy-market/market/master/market/connector/amazon-comprehend-connector/logo.png";
-
+class ProductFactoryTest extends BaseSetup {
   @Test
   void testMappingByGHContent() throws IOException {
     Product product = new Product();
@@ -81,11 +79,9 @@ class ProductFactoryTest {
   void testTransferComputedData() {
     Product product = new Product();
     Product persistedData = new Product();
-    persistedData.setCustomOrder(1);
-    persistedData.setInstallationCount(300);
+    persistedData.setMarketDirectory(SAMPLE_PRODUCT_PATH);
 
     ProductFactory.transferComputedPersistedDataToProduct(persistedData, product);
-    assertEquals(1, product.getCustomOrder());
-    assertEquals(300, product.getInstallationCount());
+    assertEquals(SAMPLE_PRODUCT_PATH, product.getMarketDirectory());
   }
 }

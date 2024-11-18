@@ -13,9 +13,10 @@ import { ExternalDocument } from '../../../shared/models/external-document.model
 export class ProductDetailService {
   productId: WritableSignal<string> = signal('');
   productNames: WritableSignal<DisplayValue> = signal({} as DisplayValue);
+  productLogoUrl: WritableSignal<string> = signal('');
   httpClient = inject(HttpClient);
   loadingService = inject(LoadingService);
-
+  ratingBtnLabel: WritableSignal<string> = signal('');
   
   getExteralDocumentForProductByVersion(productId: string, version: string): Observable<ExternalDocument> {
     return this.httpClient.get<ExternalDocument>(

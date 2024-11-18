@@ -10,13 +10,12 @@ import { LanguageService } from '../../../core/services/language/language.servic
 import { CommonDropdownComponent } from '../../../shared/components/common-dropdown/common-dropdown.component';
 import { CommonUtils } from '../../../shared/utils/common.utils';
 import { ItemDropdown } from '../../../shared/models/item-dropdown.model';
-import { MatomoTrackerDirective } from 'ngx-matomo-client';
 import { MatomoAction, MatomoCategory, MatomoTracker } from '../../../shared/enums/matomo-tracking.enum';
 
 @Component({
   selector: 'app-product-filter',
   standalone: true,
-  imports: [CommonModule, FormsModule, TranslateModule, CommonDropdownComponent, MatomoTrackerDirective],
+  imports: [CommonModule, FormsModule, TranslateModule, CommonDropdownComponent],
   templateUrl: './product-filter.component.html',
   styleUrl: './product-filter.component.scss'
 })

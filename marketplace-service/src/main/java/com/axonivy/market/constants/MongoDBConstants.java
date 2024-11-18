@@ -7,6 +7,9 @@ import lombok.NoArgsConstructor;
 public class MongoDBConstants {
   public static final String ID = "_id";
   public static final String PRODUCT_COLLECTION = "Product";
+  public static final String PRODUCT_MARKETPLACE_COLLECTION = "ProductMarketplaceData";
+  public static final String MARKETPLACE_DATA = "marketplaceData";
+  public static final String MARKETPLACE_DATA_CUSTOM_ORDER = "marketplaceData.customOrder";
   public static final String INSTALLATION_COUNT = "InstallationCount";
   public static final String SYNCHRONIZED_INSTALLATION_COUNT = "SynchronizedInstallationCount";
   public static final String PRODUCT_ID = "productId";

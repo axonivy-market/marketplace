@@ -16,7 +16,6 @@ import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -71,18 +70,6 @@ public class ProductDetailsController {
     }
     return new ResponseEntity<>(detailModelAssembler.toModel(productDetail, version, BEST_MATCH_BY_ID_AND_VERSION),
         HttpStatus.OK);
-  }
-
-  @PutMapping(INSTALLATION_COUNT_BY_ID)
-  @Operation(summary = "Update installation count of product",
-      description = "By default, increase installation count when click download product files by users")
-  public ResponseEntity<Integer> syncInstallationCount(
-      @PathVariable(ID) @Parameter(description = "Product id (from meta.json)", example = "approval-decision-utils",
-          in = ParameterIn.PATH) String productId,
-      @RequestParam(name = DESIGNER_VERSION, required = false) @Parameter(in = ParameterIn.QUERY,
-          example = "v10.0.20") String designerVersion) {
-    int result = productService.updateInstallationCountForProduct(productId, designerVersion);
-    return new ResponseEntity<>(result, HttpStatus.OK);
   }
 
   @GetMapping(BY_ID)

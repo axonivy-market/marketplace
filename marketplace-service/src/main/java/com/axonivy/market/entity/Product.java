@@ -61,13 +61,22 @@ public class Product implements Serializable {
   private String compatibility;
   private Boolean validate;
   private Boolean contactUs;
+  @Transient
   private int installationCount;
   private Date newestPublishedDate;
   private String newestReleaseVersion;
   @Transient
   private ProductModuleContent productModuleContent;
   private List<Artifact> artifacts;
+  /**
+   * @deprecated
+   */
+  @Deprecated(forRemoval = true, since = "1.6.0")
   private Boolean synchronizedInstallationCount;
+  /**
+   * @deprecated
+   */
+  @Deprecated(forRemoval = true, since = "1.6.0")
   private Integer customOrder;
   private List<String> releasedVersions;
   @Transient
