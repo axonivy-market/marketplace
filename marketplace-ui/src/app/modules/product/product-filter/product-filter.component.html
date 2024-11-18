@@ -59,11 +59,7 @@
     <input #productFilter autocomplete="on" [(ngModel)]="searchText" (ngModelChange)="onSearchChanged($event)" type="text"
       [lang]="languageService.selectedLanguage()" class="form-control input__search bg-secondary border-0 rounded-start-0 ps-0 search-input"
       [placeholder]="translateService.get('common.search.placeholder') | async"
-      [ariaLabel]="translateService.get('common.search.placeholder') | async" aria-describedby="search" 
-      [matomoTracker]="MatomoTracker.CHANGE"
-      [matomoCategory]="MatomoCategory.INPUT"
-      [matomoAction]="MatomoAction.PRODUCT_SEARCH"
-      [matomoName]="productFilter.value"
+      [ariaLabel]="translateService.get('common.search.placeholder') | async" aria-describedby="search"
     />
   </div>
 </div>
