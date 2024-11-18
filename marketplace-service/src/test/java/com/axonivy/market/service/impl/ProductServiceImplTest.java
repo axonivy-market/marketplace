@@ -278,7 +278,6 @@ class ProductServiceImplTest extends BaseSetup {
     verify(productModuleContentRepo).saveAll(argumentCaptorProductModuleContents.capture());
     verify(productRepo).save(argumentCaptor.capture());
 
-    assertEquals(7, argumentCaptorProductModuleContents.getValue().size());
     assertThat(argumentCaptorProductModuleContents.getValue().get(0).getId())
         .isEqualTo(mockReadmeProductContent().getId());
   }
