@@ -67,6 +67,8 @@ export class ProductDetailInformationTabComponent implements OnChanges {
     return versionDisplayName.replace(VERSION.displayPrefix, '');
   }
 
+  //  To ensure the function always returns a boolean, you can explicitly coerce the result into a boolean using the !! operator or default it to false
+  //  Adding !! in case of changedProduct is undefined, it will return false instead of returning undefined
   isProductChanged(changedProduct: SimpleChange) {
     return !!(changedProduct?.previousValue &&
       Object.keys(changedProduct.previousValue).length > 0 &&
