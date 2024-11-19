@@ -111,11 +111,15 @@ public class CustomProductRepositoryImpl extends CustomRepository implements Cus
   }
 
   private Page<Product> getResultAsPageable(Pageable pageable, Criteria criteria) {
+    int skip = (int) pageable.getOffset();
+    int limit = pageable.getPageSize();
     Aggregation aggregation = Aggregation.newAggregation(
         Aggregation.match(criteria),
         Aggregation.lookup(MongoDBConstants.PRODUCT_MARKETPLACE_COLLECTION, MongoDBConstants.ID, MongoDBConstants.ID,
             MongoDBConstants.MARKETPLACE_DATA),
-        Aggregation.sort(pageable.getSort())
+        Aggregation.sort(pageable.getSort()),
+        Aggregation.skip(skip),
+        Aggregation.limit(limit)
     );
 
     List<Product> entities = mongoTemplate.aggregate(aggregation, MongoDBConstants.PRODUCT_COLLECTION,

@@ -17,8 +17,8 @@ export class ProductDetailService {
   httpClient = inject(HttpClient);
   loadingService = inject(LoadingService);
   ratingBtnLabel: WritableSignal<string> = signal('');
-  
-  getExteralDocumentForProductByVersion(productId: string, version: string): Observable<ExternalDocument> {
+
+  getExternalDocumentForProductByVersion(productId: string, version: string): Observable<ExternalDocument> {
     return this.httpClient.get<ExternalDocument>(
       `${API_URI.EXTERNAL_DOCUMENT}/${productId}/${version}`, { context: new HttpContext().set(ForwardingError, true)}
     );
