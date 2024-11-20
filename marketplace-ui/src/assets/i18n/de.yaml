@@ -115,8 +115,10 @@ common:
     reviewLabel: Überprüfung
     detailedReviews: Ausführliche Bewertungen
     showMoreBtnLabel: Mehr anzeigen
-    noFeedbackMessage1: Deine Meinung ist gefragt.
-    noFeedbackMessage2: ''
+    noFeedbackForConnectorMessage: Zu diesem Konnektor gibt's noch kein Feedback.
+    noFeedbackForSolutionMessage: Zu dieser Lösung gibt's noch kein Feedback.
+    noFeedbackForUtilityMessage: Zu diesem Tool gibt's noch kein Feedback.
+    noFeedbackMessage2: Sag uns was Du denkst.
     rateFeedbackForConnectorBtnLabel: Bewerte diesen Konnektor
     rateFeedbackForSolutionBtnLabel: Bewerte diese Lösung
     rateFeedbackForUtilityBtnLabel: Bewerte dieses Tool

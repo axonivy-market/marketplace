@@ -80,18 +80,21 @@ export const LANGUAGES = [
   }
 ];
 
-export const RATING_BUTTONS = [
+export const RATING_LABELS_BY_TYPE = [
   {
     type: 'connector',
-    btnLabel: 'common.feedback.rateFeedbackForConnectorBtnLabel'
+    btnLabel: 'common.feedback.rateFeedbackForConnectorBtnLabel',
+    noFeedbackLabel: 'common.feedback.noFeedbackForConnectorLabel'
   },
   {
     type: 'solution',
-    btnLabel: 'common.feedback.rateFeedbackForSolutionBtnLabel'
+    btnLabel: 'common.feedback.rateFeedbackForSolutionBtnLabel',
+    noFeedbackLabel: 'common.feedback.noFeedbackForSolutionLabel'
   },
   {
     type: 'util',
-    btnLabel: 'common.feedback.rateFeedbackForUtilityBtnLabel'
+    btnLabel: 'common.feedback.rateFeedbackForUtilityBtnLabel',
+    noFeedbackLabel: 'common.feedback.noFeedbackForUtilityLabel'
   }
 ];
 

@@ -216,7 +216,7 @@ export const MOCK_PRODUCT_MODULE_CONTENT: ProductModuleContent = {
   productId: 'jira-connector'
 };
 
-export const MOCK_PRODUCT_DETAIL_BY_VERSION: ProductDetail = {
+export const MOCK_CRON_JOB_PRODUCT_DETAIL: ProductDetail = {
   id: 'cronjob',
   names: {
     de: 'Cron Job',
