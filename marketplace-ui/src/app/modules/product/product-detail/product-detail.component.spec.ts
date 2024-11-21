@@ -18,7 +18,7 @@ import { of } from 'rxjs';
 import { TypeOption } from '../../../shared/enums/type-option.enum';
 import {
   MOCK_PRODUCT_DETAIL,
-  MOCK_PRODUCT_DETAIL_BY_VERSION,
+  MOCK_CRON_JOB_PRODUCT_DETAIL,
   MOCK_PRODUCT_MODULE_CONTENT,
   MOCK_PRODUCTS
 } from '../../../shared/mocks/mock-data';
@@ -137,7 +137,7 @@ describe('ProductDetailComponent', () => {
       targetVersion
     );
     component.getProductById(productId, false).subscribe(productDetail => {
-      expect(productDetail).toEqual(MOCK_PRODUCT_DETAIL_BY_VERSION);
+      expect(productDetail).toEqual(MOCK_CRON_JOB_PRODUCT_DETAIL);
     });
   });
 
@@ -796,6 +796,18 @@ describe('ProductDetailComponent', () => {
 
   it('should generate right text for the rate connector', () => {
     const rateConnector = fixture.debugElement.query(By.css('.rate-connector-btn'));
+    console.log(rateConnector);
     expect(rateConnector.childNodes[0].nativeNode.textContent).toContain("common.feedback.rateFeedbackForConnectorBtnLabel");
+
+    const rateConnectorEmptyText = fixture.debugElement.query(By.css('.rate-empty-text'));
+    console.log(rateConnectorEmptyText);
+    expect(rateConnectorEmptyText.childNodes[0].nativeNode.textContent).toContain("common.feedback.noFeedbackForConnectorLabel");
+
+    component.route.snapshot.params['id'] = 'cronjob';
+    spyOn(component, 'getProductById').and.returnValue(of(MOCK_CRON_JOB_PRODUCT_DETAIL));
+    component.ngOnInit();
+    fixture.detectChanges();
+    expect(rateConnector.childNodes[0].nativeNode.textContent).toContain("common.feedback.rateFeedbackForUtilityBtnLabel");
+    expect(rateConnectorEmptyText.childNodes[0].nativeNode.textContent).toContain("common.feedback.noFeedbackForUtilityLabel");
   });
 });

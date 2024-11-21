@@ -204,11 +204,11 @@
             alt="Message Star" />
           <p class="rate-empty-text">
             <span [lang]="languageService.selectedLanguage()">
-              {{ 'common.feedback.noFeedbackMessage1' | translate }}
+              {{ productDetailService.noFeedbackLabel() | translate }}
             </span>
             <br />
             <span [lang]="languageService.selectedLanguage()">
-              {{ 'common.feedback.noFeedbackMessage2' | translate }}
+              {{ 'common.feedback.noFeedbackSecondLabel' | translate }}
             </span>
           </p>
           <button
