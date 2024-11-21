@@ -119,10 +119,10 @@ common:
     reviewLabel: Review
     detailedReviews: Detailed reviews
     showMoreBtnLabel: Show more
-    noFeedbackForConnectorMessage: There is no feedback for this connector yet.
-    noFeedbackForSolutionMessage: There is no feedback for this solution yet.
-    noFeedbackForUtilityMessage: There is no feedback for this utility yet.
-    noFeedbackMessage2: Be the first to share your opinion.
+    noFeedbackForConnectorLabel: There is no feedback for this connector yet.
+    noFeedbackForSolutionLabel: There is no feedback for this solution yet.
+    noFeedbackForUtilityLabel: There is no feedback for this utility yet.
+    noFeedbackSecondLabel: Be the first to share your opinion.
     rateFeedbackForConnectorBtnLabel: Rate this connector
     rateFeedbackForSolutionBtnLabel: Rate this solution
     rateFeedbackForUtilityBtnLabel: Rate this utility
