@@ -50,7 +50,7 @@ public class ExternalDocumentController {
           in = ParameterIn.PATH) String version) {
     ExternalDocumentMeta externalDocument = externalDocumentService.findExternalDocument(id, version);
     if (externalDocument == null) {
-      return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+      return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 
     var model = ExternalDocumentModel.builder().productId(externalDocument.getProductId())

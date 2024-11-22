@@ -50,17 +50,25 @@ export class ProductDetailInformationTabComponent implements OnChanges {
     this.productDetailService.getExternalDocumentForProductByVersion(this.productDetail.id, this.extractVersionValue(version))
       .subscribe({
         next: response => {
-          this.externalDocumentLink = response.relativeLink;
-          this.displayExternalDocName = response.artifactName;
+          if (response) {
+            this.externalDocumentLink = response.relativeLink;
+            this.displayExternalDocName = response.artifactName;
+          } else {
+            this.resetValues();
+          }
           this.loadingService.hide();
         },
         error: () => {
-          this.externalDocumentLink = '';
-          this.displayExternalDocName = '';
+          this.resetValues();
           this.loadingService.hide();
         }
       });
     this.displayVersion = this.extractVersionValue(this.selectedVersion);
+  }
+
+  resetValues() {
+    this.externalDocumentLink = '';
+    this.displayExternalDocName = '';
   }
 
   extractVersionValue(versionDisplayName: string) {
