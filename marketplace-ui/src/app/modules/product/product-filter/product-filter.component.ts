@@ -11,11 +11,12 @@ import { CommonDropdownComponent } from '../../../shared/components/common-dropd
 import { CommonUtils } from '../../../shared/utils/common.utils';
 import { ItemDropdown } from '../../../shared/models/item-dropdown.model';
 import { MatomoAction, MatomoCategory, MatomoTracker } from '../../../shared/enums/matomo-tracking.enum';
+import { MATOMO_DIRECTIVES } from 'ngx-matomo-client';
 
 @Component({
   selector: 'app-product-filter',
   standalone: true,
-  imports: [CommonModule, FormsModule, TranslateModule, CommonDropdownComponent],
+  imports: [CommonModule, FormsModule, TranslateModule, CommonDropdownComponent, MATOMO_DIRECTIVES],
   templateUrl: './product-filter.component.html',
   styleUrl: './product-filter.component.scss'
 })
