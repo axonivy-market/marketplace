@@ -796,11 +796,9 @@ describe('ProductDetailComponent', () => {
 
   it('should generate right text for the rate connector', () => {
     const rateConnector = fixture.debugElement.query(By.css('.rate-connector-btn'));
-    console.log(rateConnector);
     expect(rateConnector.childNodes[0].nativeNode.textContent).toContain("common.feedback.rateFeedbackForConnectorBtnLabel");
 
     const rateConnectorEmptyText = fixture.debugElement.query(By.css('.rate-empty-text'));
-    console.log(rateConnectorEmptyText);
     expect(rateConnectorEmptyText.childNodes[0].nativeNode.textContent).toContain("common.feedback.noFeedbackForConnectorLabel");
 
     component.route.snapshot.params['id'] = 'cronjob';
