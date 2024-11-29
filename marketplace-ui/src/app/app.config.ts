@@ -24,7 +24,6 @@ export const appConfig: ApplicationConfig = {
     provideRouter(routes, inMemoryScrollingFeature),
     provideHttpClient(withFetch(), withInterceptors([apiInterceptor])),
 
-    //  Disabled for later HTTPS implementation
     provideMatomo({
       siteId: environment.matomoSiteId,
       trackerUrl: environment.matomoTrackerUrl,
