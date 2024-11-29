@@ -34,6 +34,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { ROUTER } from '../../../../shared/constants/router.constant';
 import { MatomoCategory, MatomoAction } from '../../../../shared/enums/matomo-tracking.enum';
 import { MATOMO_TRACKING_ENVIRONMENT } from '../../../../shared/constants/matomo.constant';
+import { MATOMO_DIRECTIVES } from 'ngx-matomo-client';
 
 const showDevVersionCookieName = 'showDevVersions';
 
@@ -46,6 +47,7 @@ const showDevVersionCookieName = 'showDevVersions';
     FormsModule,
     CommonDropdownComponent,
     LoadingSpinnerComponent,
+    MATOMO_DIRECTIVES
   ],
   templateUrl: './product-detail-version-action.component.html',
   styleUrl: './product-detail-version-action.component.scss'
