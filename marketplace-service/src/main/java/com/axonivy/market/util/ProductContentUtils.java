@@ -71,7 +71,15 @@ public class ProductContentUtils {
       description = removeFirstLine(parts[0]);
     }
 
-    if (demoIndex != -1 && setupIndex != -1) {
+    if (parts.length == 1) {
+      if (demoIndex != -1) {
+        demo = parts[1];
+      } else if (setupIndex != -1) {
+        setup = parts[1];
+      }
+    }
+
+    if (demoIndex != -1 && setupIndex != -1 && parts.length > 1) {
       if (demoIndex < setupIndex) {
         demo = parts[1];
         setup = parts[2];
@@ -79,10 +87,6 @@ public class ProductContentUtils {
         setup = parts[1];
         demo = parts[2];
       }
-    } else if (demoIndex != -1) {
-      demo = parts[1];
-    } else if (setupIndex != -1) {
-      setup = parts[1];
     }
 
     ReadmeContentsModel readmeContentsModel = new ReadmeContentsModel();
