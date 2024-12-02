@@ -1,37 +1,63 @@
-# Employee Onboarding solution
+# Mattermost Connector
 
-Axon Ivy’s Employee Onboarding solution provides best practice guidance to HR
-specialists, ensuring that provisioning and all other aspects of the employee
-onboarding process are handled quickly and efficiently. In addition, HR managers
-and their superiors can capture all the information required to automatically
-set up employees in HR systems. The solution:
+Axon Ivy’s mattermost connector helps you to accelerate process automation initiatives by integrating Mattermost features into your process application within no time.
 
-- ensures timely and personalized communication with new employees from their
-  first day on the job (and even before)
-- guarantees no tasks are left undone
-- helps new hires become productive much faster
-- makes sure that required materials are procured and ready for employees in
-  advance
-- increases employee retention rates
-- contributes to a positive company image
+This connector:
 
-### Summary
-
-You only have one chance to make a first impression. Failing to deliver a smooth
-employee onboarding experience can contribute to high turnover rates and
-inefficiency. A structured onboarding process ensures that employees have all
-the necessary materials and information available when they start work, which
-increases employee satisfaction. Axon Ivy’s Employee Onboarding Solution not
-only coordinates processes within HR departments, it also automates functions
-across external departments and process owners.
-
-### Information
-
-- Industry: All Industries
-- Compatible Version(s):  8.0.x, 10.0.x
+- supports you with a demo implementation to reduce your integration effort.
+- gives you full power to the [Mattermost's APIs](https://api.mattermost.com/).
+- allow you to start the Axon Ivy process by hitting the slash command key from the mattermost's channel.
+- allow you to send a message to the mattermost's channel from the Axon Ivy workplace.
+- notifies users on the channel for new Axon Ivy workflow Tasks.
 
 ## Demo
 
-![Screen 1](screen1.png "Screen 1")
+1. Hit the slash command key on the channel's chat.
+   The Axon Ivy process will be triggered and create a new task.
+   The task's information will be sent to the channel by a message.
 
-![Screen 2](screen2.png "Screen 2")
+![call-slash-command](images/slash-command.png)
+
+### Setup
+
+Mattermost Instance
+
+1. Ref to [Deploy Mattermost](https://docs.mattermost.com/guides/deployment.html).
+2. Create Team, User, ...
+3.Enable Bot Account Creation and create a bot account for sending notification to the channel Axon Ivy. E.g. 
+   axonivy-bot
+4.Create a slash command in the Integrations menu.
+   ![create-slash-command](images/create-slash-command.png)
+
+Add the following `Variables` to your `variables.yaml`:
+
+- `Variables.mattermost.baseUrl`
+- `Variables.mattermost.accessToken`
+- `Variables.mattermost.teamName`
+- `Variables.mattermost.botName`
+
+and replace the values with your given setup.
+
+```
+# == Variables ==
+# 
+# You can define here your project Variables.
+# If you want to define/override a Variable for a specific Environment, 
+# add an additional ‘variables.yaml’ file in a subdirectory in the ‘Config’ folder: 
+# '<project>/Config/_<environment>/variables.yaml
+#
+Variables:
+#  myVariable: value
+  mattermost:
+    # The base URL of matter most
+    baseUrl: ""
+    # Personal access tokens function similarly to session tokens and can be used by integrations to authenticate against the REST API.
+    accessToken: ""
+    # The team name
+    teamName: ""
+    # The name of bot that will inform the task on the channel
+    botName: ""
+    # This variable is used for getting incoming webhook list per page
+    incomingWebhookPerPage: 200
+
+```
