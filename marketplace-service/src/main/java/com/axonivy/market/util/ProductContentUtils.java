@@ -27,7 +27,7 @@ public class ProductContentUtils {
   public static final String DESCRIPTION = "description";
   public static final String DEMO = "demo";
   public static final String SETUP = "setup";
-  public static final String README_IMAGE_FORMAT = "\\(([^)]*?%s[^)]*?)\\)";
+  public static final String README_IMAGE_FORMAT = "\\(([^)]*?/)?%s\\)";
   public static final String IMAGE_DOWNLOAD_URL_FORMAT = "(%s)";
 
   private ProductContentUtils() {

@@ -6,7 +6,7 @@ import {
   MOCK_PRODUCTS_FILTER_CONNECTOR,
   MOCK_PRODUCTS_NEXT_PAGE,
   MOCK_PRODUCT_DETAIL,
-  MOCK_PRODUCT_DETAIL_BY_VERSION
+  MOCK_CRON_JOB_PRODUCT_DETAIL
 } from './mock-data';
 import { ProductApiResponse } from '../models/apis/product-response.model';
 import { ProductDetail } from '../models/product-detail.model';
@@ -30,13 +30,13 @@ export class MockProductService {
     productId: string,
     version: string
   ): Observable<ProductDetail> {
-    return of(MOCK_PRODUCT_DETAIL_BY_VERSION);
+    return of(MOCK_CRON_JOB_PRODUCT_DETAIL);
   }
 
   getBestMatchProductDetailsWithVersion(
     productId: string,
     version: string
   ): Observable<ProductDetail> {
-    return of(MOCK_PRODUCT_DETAIL_BY_VERSION);
+    return of(MOCK_CRON_JOB_PRODUCT_DETAIL);
   }
 }
