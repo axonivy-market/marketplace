@@ -2,6 +2,7 @@ package com.axonivy.market.util;
 
 import com.axonivy.market.BaseSetup;
 import com.axonivy.market.bo.Artifact;
+import com.axonivy.market.constants.CommonConstants;
 import com.axonivy.market.entity.ProductModuleContent;
 import com.axonivy.market.model.ReadmeContentsModel;
 import org.apache.commons.lang3.StringUtils;
@@ -13,8 +14,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 
 @ExtendWith(MockitoExtension.class)
 class ProductContentUtilsTest extends BaseSetup {
@@ -95,5 +95,47 @@ class ProductContentUtilsTest extends BaseSetup {
     assertTrue(StringUtils.isNotBlank(readmeContentsModel.getDescription()));
     assertTrue(StringUtils.isNotBlank(readmeContentsModel.getDemo()));
     assertTrue(StringUtils.isBlank(readmeContentsModel.getSetup()));
+  }
+
+  @Test
+  void testGetExtractedPartsOfReadmeWithOnlyOneDescription() {
+    ReadmeContentsModel readmeContentsModel = ProductContentUtils.getExtractedPartsOfReadme(SAMPLE_PRODUCT_NAME);
+    assertEquals(readmeContentsModel.getDescription(), SAMPLE_PRODUCT_NAME);
+    assertTrue(StringUtils.isBlank(readmeContentsModel.getDemo()));
+    assertTrue(StringUtils.isBlank(readmeContentsModel.getSetup()));
+  }
+
+  @Test
+  void testGetExtractedPartsOfEmptyReadme() {
+    ReadmeContentsModel readmeContentsModel = ProductContentUtils.getExtractedPartsOfReadme(StringUtils.EMPTY);
+    assertTrue(StringUtils.isBlank(readmeContentsModel.getDescription()));
+    assertTrue(StringUtils.isBlank(readmeContentsModel.getDemo()));
+    assertTrue(StringUtils.isBlank(readmeContentsModel.getSetup()));
+  }
+
+  @Test
+  void testHasImageDirectives() {
+    String readmeContents = getMockReadmeContent();
+    assertTrue(ProductContentUtils.hasImageDirectives(readmeContents));
+    assertFalse(ProductContentUtils.hasImageDirectives(StringUtils.EMPTY));
+  }
+
+  @Test
+  void testInitProductModuleContent() {
+    ProductModuleContent productModuleContent = ProductContentUtils.initProductModuleContent(SAMPLE_PRODUCT_ID,
+        MOCK_RELEASED_VERSION);
+    assertEquals(productModuleContent.getProductId(), SAMPLE_PRODUCT_ID);
+    assertEquals(productModuleContent.getVersion(), MOCK_RELEASED_VERSION);
+    assertEquals(productModuleContent.getId(),
+        String.format(CommonConstants.ID_WITH_NUMBER_PATTERN, SAMPLE_PRODUCT_ID, MOCK_RELEASED_VERSION));
+  }
+
+  @Test
+  void testInitProductModuleContentWithoutVersion() {
+    ProductModuleContent productModuleContent = ProductContentUtils.initProductModuleContent(SAMPLE_PRODUCT_ID,
+        StringUtils.EMPTY);
+    assertEquals(productModuleContent.getProductId(), SAMPLE_PRODUCT_ID);
+    assertTrue(StringUtils.isBlank(productModuleContent.getVersion()));
+    assertTrue(StringUtils.isBlank(productModuleContent.getId()));
   }
 }

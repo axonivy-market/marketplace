@@ -74,7 +74,7 @@ public class ProductContentUtils {
     if (parts.length == 2) {
       if (demoIndex != -1) {
         demo = parts[1];
-      } else if (setupIndex != -1) {
+      } else {
         setup = parts[1];
       }
     } else if (demoIndex != -1 && setupIndex != -1 && parts.length > 2) {
