@@ -100,7 +100,7 @@ class ProductContentUtilsTest extends BaseSetup {
   @Test
   void testGetExtractedPartsOfReadmeWithOnlyOneDescription() {
     ReadmeContentsModel readmeContentsModel = ProductContentUtils.getExtractedPartsOfReadme(SAMPLE_PRODUCT_NAME);
-    assertEquals(readmeContentsModel.getDescription(), SAMPLE_PRODUCT_NAME);
+    assertEquals(SAMPLE_PRODUCT_NAME, readmeContentsModel.getDescription());
     assertTrue(StringUtils.isBlank(readmeContentsModel.getDemo()));
     assertTrue(StringUtils.isBlank(readmeContentsModel.getSetup()));
   }
@@ -124,17 +124,17 @@ class ProductContentUtilsTest extends BaseSetup {
   void testInitProductModuleContent() {
     ProductModuleContent productModuleContent = ProductContentUtils.initProductModuleContent(SAMPLE_PRODUCT_ID,
         MOCK_RELEASED_VERSION);
-    assertEquals(productModuleContent.getProductId(), SAMPLE_PRODUCT_ID);
-    assertEquals(productModuleContent.getVersion(), MOCK_RELEASED_VERSION);
-    assertEquals(productModuleContent.getId(),
-        String.format(CommonConstants.ID_WITH_NUMBER_PATTERN, SAMPLE_PRODUCT_ID, MOCK_RELEASED_VERSION));
+    assertEquals(SAMPLE_PRODUCT_ID, productModuleContent.getProductId());
+    assertEquals(MOCK_RELEASED_VERSION, productModuleContent.getVersion());
+    assertEquals(String.format(CommonConstants.ID_WITH_NUMBER_PATTERN, SAMPLE_PRODUCT_ID, MOCK_RELEASED_VERSION),
+        productModuleContent.getId());
   }
 
   @Test
   void testInitProductModuleContentWithoutVersion() {
     ProductModuleContent productModuleContent = ProductContentUtils.initProductModuleContent(SAMPLE_PRODUCT_ID,
         StringUtils.EMPTY);
-    assertEquals(productModuleContent.getProductId(), SAMPLE_PRODUCT_ID);
+    assertEquals(SAMPLE_PRODUCT_ID, productModuleContent.getProductId());
     assertTrue(StringUtils.isBlank(productModuleContent.getVersion()));
     assertTrue(StringUtils.isBlank(productModuleContent.getId()));
   }
