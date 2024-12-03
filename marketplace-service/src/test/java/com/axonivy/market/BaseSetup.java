@@ -61,6 +61,7 @@ public class BaseSetup {
   protected static final String MOCK_METADATA_FILE_PATH = "src/test/resources/metadata.xml";
   protected static final String MOCK_SNAPSHOT_METADATA_FILE_PATH = "src/test/resources/snapshotMetadata.xml";
   protected static final String MOCK_README_FILE = "src/test/resources/README.md";
+  protected static final String MOCK_README_DE_FILE = "src/test/resources/README_DE.md";
   protected static final String MOCK_README_FILE_NO_DEMO_PART = "src/test/resources/README_NO_DEMO_PART.md";
   protected static final String MOCK_README_FILE_NO_SETUP_PART = "src/test/resources/README_NO_SETUP_PART.md";
   protected static final String MOCK_README_FILE_SWAP_DEMO_SETUP_PARTS = "src/test/resources/README_SWAP_DEMO_SETUP.md";

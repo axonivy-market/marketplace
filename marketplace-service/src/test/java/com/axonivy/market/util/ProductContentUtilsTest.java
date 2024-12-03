@@ -4,6 +4,7 @@ import com.axonivy.market.BaseSetup;
 import com.axonivy.market.bo.Artifact;
 import com.axonivy.market.constants.CommonConstants;
 import com.axonivy.market.entity.ProductModuleContent;
+import com.axonivy.market.enums.Language;
 import com.axonivy.market.model.ReadmeContentsModel;
 import org.apache.commons.lang3.StringUtils;
 import org.junit.jupiter.api.Test;
@@ -137,5 +138,31 @@ class ProductContentUtilsTest extends BaseSetup {
     assertEquals(SAMPLE_PRODUCT_ID, productModuleContent.getProductId());
     assertTrue(StringUtils.isBlank(productModuleContent.getVersion()));
     assertTrue(StringUtils.isBlank(productModuleContent.getId()));
+  }
+
+  @Test
+  void testMappingDescriptionSetupDemoAndUpdateProductModuleTabContents() {
+    String readmeContents = getMockReadmeContent();
+    ReadmeContentsModel readmeContentsModel = ProductContentUtils.getExtractedPartsOfReadme(readmeContents);
+    Map<String, Map<String, String>> moduleContents = new HashMap<>();
+    ProductContentUtils.mappingDescriptionSetupAndDemo(moduleContents, MOCK_README_FILE, readmeContentsModel);
+    String readmeDEContents = getMockReadmeContent(MOCK_README_DE_FILE);
+    ReadmeContentsModel readmeDEContentsModel = ProductContentUtils.getExtractedPartsOfReadme(readmeDEContents);
+    ProductContentUtils.mappingDescriptionSetupAndDemo(moduleContents, MOCK_README_DE_FILE, readmeDEContentsModel);
+    ProductModuleContent productModuleContent = new ProductModuleContent();
+    ProductContentUtils.updateProductModuleTabContents(productModuleContent, moduleContents);
+    assertEquals(3, moduleContents.size());
+    assertTrue(productModuleContent.getDescription().get(Language.EN.getValue()).startsWith("Axon Ivy"));
+    assertTrue(productModuleContent.getDescription().get(Language.DE.getValue()).startsWith("Der"));
+    assertTrue(StringUtils.isNotBlank(productModuleContent.getSetup().get(Language.DE.getValue())));
+    assertTrue(StringUtils.equals(productModuleContent.getSetup().get(Language.DE.getValue()),
+        productModuleContent.getSetup().get(Language.EN.getValue())));
+    assertTrue(StringUtils.equals(productModuleContent.getSetup().get(Language.DE.getValue()),
+        productModuleContent.getSetup().get(Language.EN.getValue())));
+    assertTrue(StringUtils.isNotBlank(productModuleContent.getDemo().get(Language.DE.getValue())));
+    assertTrue(StringUtils.equals(productModuleContent.getDemo().get(Language.DE.getValue()),
+        productModuleContent.getDemo().get(Language.EN.getValue())));
+    assertTrue(StringUtils.equals(productModuleContent.getDemo().get(Language.DE.getValue()),
+        productModuleContent.getDemo().get(Language.EN.getValue())));
   }
 }
