@@ -10,14 +10,6 @@ This connector:
 - allow you to send a message to the mattermost's channel from the Axon Ivy workplace.
 - notifies users on the channel for new Axon Ivy workflow Tasks.
 
-## Demo
-
-1. Hit the slash command key on the channel's chat.
-   The Axon Ivy process will be triggered and create a new task.
-   The task's information will be sent to the channel by a message.
-
-![call-slash-command](images/slash-command.png)
-
 ## Setup
 
 Mattermost Instance
@@ -61,3 +53,11 @@ Variables:
     incomingWebhookPerPage: 200
 
 ```
+
+## Demo
+
+1. Hit the slash command key on the channel's chat.
+   The Axon Ivy process will be triggered and create a new task.
+   The task's information will be sent to the channel by a message.
+
+![call-slash-command](images/slash-command.png)

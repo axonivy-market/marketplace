@@ -59,7 +59,7 @@ public class ProductContentUtils {
 
   // Cover some cases including when demo and setup parts switch positions or
   // missing one of them
-  public static ReadmeContentsModel getExtractedPartsOfReadme( String readmeContents) {
+  public static ReadmeContentsModel getExtractedPartsOfReadme(String readmeContents) {
     String[] parts = readmeContents.split(DEMO_SETUP_TITLE);
     int demoIndex = readmeContents.indexOf(ReadmeConstants.DEMO_PART);
     int setupIndex = readmeContents.indexOf(ReadmeConstants.SETUP_PART);
@@ -71,15 +71,13 @@ public class ProductContentUtils {
       description = removeFirstLine(parts[0]);
     }
 
-    if (parts.length == 1) {
+    if (parts.length == 2) {
       if (demoIndex != -1) {
         demo = parts[1];
       } else if (setupIndex != -1) {
         setup = parts[1];
       }
-    }
-
-    if (demoIndex != -1 && setupIndex != -1 && parts.length > 1) {
+    } else if (demoIndex != -1 && setupIndex != -1 && parts.length > 2) {
       if (demoIndex < setupIndex) {
         demo = parts[1];
         setup = parts[2];
