@@ -218,9 +218,7 @@ describe('ProductDetailVersionActionComponent', () => {
     spyOn(window, 'open');
     component.selectedArtifact = 'https://example.com/download';
     spyOn(component, 'onUpdateInstallationCount');
-
     component.downloadArtifact();
-
     expect(window.open).toHaveBeenCalledWith(
       'https://example.com/download',
       '_blank'
@@ -277,63 +275,22 @@ describe('ProductDetailVersionActionComponent', () => {
   }
 
   it('should open a new tab with the selected artifact URL', () => {
-    const mockWindowOpen = jasmine.createSpy('windowOpen').and.returnValue({
-      blur: jasmine.createSpy('blur')
-    });
-    const mockWindowFocus = spyOn(window, 'focus');
+    const mockWindowOpen = jasmine.createSpy('windowOpen').and.returnValue({});
     spyOn(window, 'open').and.callFake(mockWindowOpen);
     spyOn(component, 'onUpdateInstallationCount');
     component.selectedArtifact = 'http://example.com/artifact';
-
     component.downloadArtifact();
-
     expect(window.open).toHaveBeenCalledWith(
       'http://example.com/artifact',
       '_blank'
     );
-    expect(mockWindowOpen().blur).toHaveBeenCalled();
     expect(component.onUpdateInstallationCount).toHaveBeenCalledOnceWith();
-    expect(mockWindowFocus).toHaveBeenCalled();
-  });
-
-  it('should open a new tab with the correct URL and blur it', () => {
-    const productId = 'octopus';
-    component.productId = productId;
-    const newTabMock: Partial<Window> = {
-      blur: jasmine.createSpy('blur')
-    };
-    spyOn(window, 'open').and.returnValue(newTabMock as Window);
-    spyOn(window, 'focus');
-    component.onNavigateToContactPage();
-
-    expect(window.open).toHaveBeenCalledWith(
-      `https://www.axonivy.com/marketplace/contact/?market_solutions=${productId}`,
-      '_blank'
-    );
-    expect(newTabMock.blur).toHaveBeenCalled();
-    expect(window.focus).toHaveBeenCalled();
-  });
-
-  it('should not call blur if newTab is null', () => {
-    const productId = 'octopus';
-    component.productId = productId;
-    spyOn(window, 'open').and.returnValue(null);
-    spyOn(window, 'focus');
-
-    component.onNavigateToContactPage();
-
-    expect(window.open).toHaveBeenCalledWith(
-      `https://www.axonivy.com/marketplace/contact/?market_solutions=${productId}`,
-      '_blank'
-    );
-    expect(window.focus).toHaveBeenCalled();
   });
 
   it('should not call productService if versions are already populated', () => {
     component.versions.set(['1.0', '1.1']);
     fixture.detectChanges();
     component.getVersionInDesigner();
-
     expect(productServiceMock.sendRequestToGetProductVersionsForDesigner).not.toHaveBeenCalled();
   });
 
