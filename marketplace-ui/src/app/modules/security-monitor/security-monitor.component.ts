@@ -9,79 +9,72 @@ import { CommonModule } from '@angular/common';
   standalone: true,
   imports: [CommonModule, FormsModule],
   templateUrl: './security-monitor.component.html',
-  styleUrl: './security-monitor.component.scss',
-  encapsulation: ViewEncapsulation.Emulated
+  styleUrls: ['./security-monitor.component.scss'],
+  encapsulation: ViewEncapsulation.Emulated,
 })
 export class SecurityMonitorComponent {
-  isAuthenticated: boolean = false;
-  token: string = '';
-  errorMessage: string = '';
-  securityMonitorService = inject(SecurityMonitorService);
+  isAuthenticated = false;
+  token = '';
+  errorMessage = '';
   repos: Repo[] = [];
   isLoading = false;
 
-  onSubmit() {
+  private securityMonitorService = inject(SecurityMonitorService);
+  private readonly githubBaseUrl = 'https://github.com/axonivy-market';
+
+  onSubmit(): void {
     if (!this.token) {
       this.errorMessage = 'Token is required';
       return;
     }
+
     this.errorMessage = '';
     this.isLoading = true;
+
     this.securityMonitorService.getSecurityDetails(this.token).subscribe({
-      next: (data) => {
-        this.repos = data;
-        this.isAuthenticated = true;
-      },
-      error: (err) => {
-        this.errorMessage =
-        err.status === 401
-          ? 'Unauthorized access. (The token should contain the "org:read" scope for authentication)'
-          : 'Failed to fetch security data. Check logs for details.';
-        console.error(err);
-        this.isLoading = false;
-      },
-      complete: () => {
-        this.isLoading = false;
-      }
+      next: (data) => this.handleSuccess(data),
+      error: (err) => this.handleError(err),
+      complete: () => (this.isLoading = false),
     });
   }
 
+  private handleSuccess(data: Repo[]): void {
+    this.repos = data;
+    this.isAuthenticated = true;
+    this.isLoading = false;
+  }
+
+  private handleError(err: any): void {
+    this.errorMessage =
+      err.status === 401
+        ? 'Unauthorized access. (The token should contain the "org:read" scope for authentication)'
+        : 'Failed to fetch security data. Check logs for details.';
+    console.error(err);
+    this.isLoading = false;
+  }
+
   formatCommitDate(date: string): string {
-    const now = new Date().getTime();
+    const now = Date.now();
     const targetDate = new Date(date).getTime();
     const diffInSeconds = Math.floor((now - targetDate) / 1000);
-  
-    if (diffInSeconds < 60) {
-      return 'just now';
-    }
-  
+
+    if (diffInSeconds < 60) return 'just now';
     const diffInMinutes = Math.floor(diffInSeconds / 60);
-    if (diffInMinutes < 60) {
-      return `${diffInMinutes} minute${diffInMinutes > 1 ? 's' : ''} ago`;
-    }
-  
+    if (diffInMinutes < 60) return this.formatTime(diffInMinutes, 'minute');
     const diffInHours = Math.floor(diffInMinutes / 60);
-    if (diffInHours < 24) {
-      return `${diffInHours} hour${diffInHours > 1 ? 's' : ''} ago`;
-    }
-  
+    if (diffInHours < 24) return this.formatTime(diffInHours, 'hour');
     const diffInDays = Math.floor(diffInHours / 24);
-    if (diffInDays < 7) {
-      return `${diffInDays} day${diffInDays > 1 ? 's' : ''} ago`;
-    }
-  
+    if (diffInDays < 7) return this.formatTime(diffInDays, 'day');
     const diffInWeeks = Math.floor(diffInDays / 7);
-    if (diffInWeeks < 4) {
-      return `${diffInWeeks} week${diffInWeeks > 1 ? 's' : ''} ago`;
-    }
-  
+    if (diffInWeeks < 4) return this.formatTime(diffInWeeks, 'week');
     const diffInMonths = Math.floor(diffInDays / 30);
-    if (diffInMonths < 12) {
-      return `${diffInMonths} month${diffInMonths > 1 ? 's' : ''} ago`;
-    }
-  
+    if (diffInMonths < 12) return this.formatTime(diffInMonths, 'month');
     const diffInYears = Math.floor(diffInMonths / 12);
-    return `${diffInYears} year${diffInYears > 1 ? 's' : ''} ago`;
+    return this.formatTime(diffInYears, 'year');
+  }
+
+  private formatTime(value: number, unit: string): string {
+    return `${value} ${unit}${value > 1 ? 's' : ''} ago`;
   }
 
   hasAlerts(alerts: Record<string, number>): boolean {
@@ -92,33 +85,32 @@ export class SecurityMonitorComponent {
     return Object.keys(alerts);
   }
 
+  navigateToPage(repoName: string, path: string, additionalPath: string = ''): void {
+    const url = `${this.githubBaseUrl}/${repoName}${path}${additionalPath}`;
+    window.open(url, '_blank');
+  }
+
   navigateToRepoSecurityPage(repoName: string): void {
-    const repoSecurityUrl = `https://github.com/axonivy-market/${repoName}/security`;
-    window.open(repoSecurityUrl, '_blank');
+    this.navigateToPage(repoName, '/security');
   }
 
   navigateToRepoDependabotPage(repoName: string): void {
-    const repoSecurityDependabotUrl = `https://github.com/axonivy-market/${repoName}/security/dependabot`;
-    window.open(repoSecurityDependabotUrl, '_blank');
+    this.navigateToPage(repoName, '/security/dependabot');
   }
 
   navigateToRepoCodeScanningPage(repoName: string): void {
-    const repoSecurityDependabotUrl = `https://github.com/axonivy-market/${repoName}/security/code-scanning`;
-    window.open(repoSecurityDependabotUrl, '_blank');
+    this.navigateToPage(repoName, '/security/code-scanning');
   }
 
   navigateToRepoSecurityScanningPage(repoName: string): void {
-    const repoSecurityDependabotUrl = `https://github.com/axonivy-market/${repoName}/security/security-scanning`;
-    window.open(repoSecurityDependabotUrl, '_blank');
+    this.navigateToPage(repoName, '/security/security-scanning');
   }
 
   navigateToRepoLastCommitPage(repoName: string, lastCommitSHA: string): void {
-    const repoSecurityDependabotUrl = `https://github.com/axonivy-market/${repoName}/commit/${lastCommitSHA}`;
-    window.open(repoSecurityDependabotUrl, '_blank');
+    this.navigateToPage(repoName, '/commit/', lastCommitSHA);
   }
 
-  navigateToRepoBranchesSettingPage(repoName: string, lastCommitSHA: string): void {
-    const repoSecurityDependabotUrl = `https://github.com/axonivy-market/${repoName}/settings/branches`;
-    window.open(repoSecurityDependabotUrl, '_blank');
+  navigateToRepoBranchesSettingPage(repoName: string): void {
+    this.navigateToPage(repoName, '/settings/branches');
   }
 }

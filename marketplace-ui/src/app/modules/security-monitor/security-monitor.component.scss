@@ -44,20 +44,15 @@ body {
   text-decoration: underline;
 }
 
-// .repo-card a {
-//   text-decoration: none;
-//   color: inherit;
-// }
-
 .repo-header {
   display: flex;
   align-items: center;
   margin-bottom: 10px;
-  gap: 10px;
+  gap: 5px;
 
   h3 {
     margin: 0;
-    font-size: 2rem;
+    font-size: 1.6rem;
     color: #007acc;
   }
 
@@ -190,8 +185,8 @@ body {
 
 .error-message {
   color: #f44336;
-  font-size: 1.5rem;
-  width: 500px;
+  font-size: 1.2rem;
+  width: 100%;
 }
 
 button .spinner {

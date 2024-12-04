@@ -1,26 +1,20 @@
-export interface Dependabot {
-  alerts: Record<string, any>;
-  status: string;
-}
-
-export interface CodeScanning {
-  alerts: Record<string, any>;
-  status: string;
-}
-
-export interface SecretsScanning {
-  numberOfAlerts: number | null;
-  status: string;
-}
-
 export interface Repo {
   repoName: string;
   visibility: string;
-  branchProtectionEnabled: boolean;
-  lastCommitDate: string;
-  lastCommitSHA: string;
-  dependabot: Dependabot;
-  secretsScanning: SecretsScanning;
-  codeScanning: CodeScanning;
   archived: boolean;
+  dependabot: {
+    status: string;
+    alerts: Record<string, number>;
+  };
+  codeScanning: {
+    status: string;
+    alerts: Record<string, number>;
+  };
+  secretsScanning: {
+    status: string;
+    numberOfAlerts: number;
+  };
+  branchProtectionEnabled: boolean;
+  lastCommitSHA: string;
+  lastCommitDate: string;
 }
