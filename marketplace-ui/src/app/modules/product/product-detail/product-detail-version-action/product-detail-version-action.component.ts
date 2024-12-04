@@ -227,11 +227,7 @@ export class ProductDetailVersionActionComponent implements AfterViewInit {
 
   downloadArtifact() {
     this.onUpdateInstallationCount();
-    const newTab = window.open(this.selectedArtifact, '_blank');
-    if (newTab) {
-      newTab.blur();
-    }
-    window.focus();
+    window.open(this.selectedArtifact, '_blank');
   }
 
   onUpdateInstallationCount() {
@@ -248,14 +244,10 @@ export class ProductDetailVersionActionComponent implements AfterViewInit {
   }
 
   onNavigateToContactPage() {
-    const newTab = window.open(
+    window.open(
       `https://www.axonivy.com/marketplace/contact/?market_solutions=${this.productId}`,
       '_blank'
     );
-    if (newTab) {
-      newTab.blur();
-    }
-    window.focus();
   }
 
   getTrackingEnvironmentBasedOnActionType() {
