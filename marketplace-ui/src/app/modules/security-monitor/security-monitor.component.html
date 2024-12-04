@@ -1,0 +1,103 @@
+<div class="container">
+  @if (isAuthenticated) {
+    <div class="header">
+      <h2>GitHub Repository Security Monitor</h2>
+      <h3>Keep track of your repositories' security status at a glance.</h3>
+    </div>
+    <div class="repo-grid">
+      @for (repo of repos; track $index) {
+        <div class="repo-card" (click)="navigateToRepoSecurityPage(repo.repoName)">
+          <div class="repo-header">
+            <h3>{{ repo.repoName }}</h3>
+            <span class="visibility text-capitalize">{{ repo.visibility }}</span>
+            @if (repo.archived) {
+              <span class="archived">Archived</span>
+            }
+          </div>
+          <div class="repo-info">
+            <p>🤖 <span><a (click)="navigateToRepoDependabotPage(repo.repoName)">Dependabot</a>:</span>
+              @if (repo.dependabot.status == 'DISABLED') {
+                <span class="badge none">Disabled</span>
+              }
+              @else if (repo.dependabot.status == 'NO_PERMISSION') {
+                <span class="badge no-permission">No permission</span>
+              }
+              @else if (hasAlerts(repo.dependabot.alerts)) {
+                @for (alert of alertKeys(repo.dependabot.alerts); track $index) {
+                  <span [ngClass]="['badge', alert]">
+                    {{ repo.dependabot.alerts[alert] }} {{ alert }}
+                  </span>
+                }
+              }
+              @else {
+                <span class="badge active">No vulnerabilities</span>
+              }
+            </p>
+            <p>🖥️ <span><a (click)="navigateToRepoCodeScanningPage(repo.repoName)">Code Scanning</a>:</span>
+              @if (repo.codeScanning.status == 'DISABLED') {
+                <span class="badge none">Disabled</span>
+              }
+              @else if (repo.codeScanning.status == 'NO_PERMISSION') {
+                <span class="badge no-permission">No permission</span>
+              }
+              @else if (hasAlerts(repo.codeScanning.alerts)) {
+                @for (alert of alertKeys(repo.codeScanning.alerts); track $index) {
+                  <span [ngClass]="['badge', alert]">
+                    {{ repo.codeScanning.alerts[alert] }} {{ alert }}
+                  </span>
+                }
+              }
+              @else {
+                <span class="badge active">No vulnerabilities</span>
+              }
+            </p>
+            <p>🔑 <span><a (click)="navigateToRepoSecurityScanningPage(repo.repoName)">Secrets Scanning</a>:</span>
+              @if (repo.secretsScanning.status == 'DISABLED') {
+                <span class="badge none">Disabled</span>
+              }
+              @else if (repo.secretsScanning.status == 'NO_PERMISSION') {
+                <span class="badge no-permission">No permission</span>
+              }
+              @else if (repo.secretsScanning.numberOfAlerts) {
+                <span class="badge critical">
+                  {{ repo.secretsScanning.numberOfAlerts }} alerts
+                </span>
+              }
+              @else {
+                <span class="badge active">No alerts</span>
+              }
+            </p>
+            <p>🚧 <span><a (click)="navigateToRepoBranchesSettingPage(repo.repoName, repo.lastCommitSHA)">Branch Protection</a>:</span>
+              @if (repo.branchProtectionEnabled) {
+                <span class="badge active">Enabled</span>
+              }
+              @else {
+                <span class="badge none">Disabled</span>
+              }
+            </p>
+            <p>⏱️ <span><a (click)="navigateToRepoLastCommitPage(repo.repoName, repo.lastCommitSHA)">Last Commit</a>:</span> {{ formatCommitDate(repo.lastCommitDate) }}</p>
+          </div>
+        </div>
+      }
+    </div>
+  }
+  @else {
+    <div class="token-input-container">
+      <h3>Please enter your token to access the security page.</h3>
+      <div>
+        <input type="text" [(ngModel)]="token" placeholder="Enter your token" />
+        <button (click)="onSubmit()" [disabled]="isLoading">
+          @if (isLoading) {
+            <span class="spinner"></span>
+          }
+          @else {
+            Submit
+          }
+        </button>
+        @if (errorMessage) {
+          <div class="error-message">{{ errorMessage }}</div>
+        }
+      </div>
+    </div>
+  }
+</div>
