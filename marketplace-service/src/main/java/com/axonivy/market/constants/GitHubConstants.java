@@ -19,10 +19,6 @@ public class GitHubConstants {
     public static final String CLIENT_ID = "client_id";
     public static final String CLIENT_SECRET = "client_secret";
     public static final String CODE = "code";
-    public static final String USER_ID = "id";
-    public static final String USER_NAME = "name";
-    public static final String USER_AVATAR_URL = "avatar_url";
-    public static final String USER_LOGIN_NAME = "login";
     public static final String SEVERITY = "severity";
     public static final String SEVERITY_ADVISORY = "security_advisory";
     public static final String RULE = "rule";

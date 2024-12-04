@@ -16,22 +16,22 @@ import com.axonivy.market.github.model.GitHubProperty;
 import com.axonivy.market.github.model.SecretScanning;
 import com.axonivy.market.github.service.GitHubService;
 import com.axonivy.market.github.model.ProductSecurityInfo;
+import com.axonivy.market.github.util.GitHubUtils;
 import com.axonivy.market.repository.UserRepository;
 import lombok.extern.log4j.Log4j2;
 import org.kohsuke.github.GHCommit;
 import org.kohsuke.github.GHContent;
+import org.kohsuke.github.GHMyself;
 import org.kohsuke.github.GHOrganization;
 import org.kohsuke.github.GHRepository;
 import org.kohsuke.github.GHTag;
 import org.kohsuke.github.GHTeam;
 import org.kohsuke.github.GitHub;
 import org.kohsuke.github.GitHubBuilder;
-import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
@@ -62,14 +62,13 @@ import static org.apache.commons.lang3.StringUtils.EMPTY;
 @Service
 public class GitHubServiceImpl implements GitHubService {
 
-  private final RestTemplate restTemplate;
+  private final RestTemplate restTemplate = new RestTemplate();;
   private final UserRepository userRepository;
   private final GitHubProperty gitHubProperty;
-  private ThreadPoolTaskScheduler taskScheduler;
+  private final ThreadPoolTaskScheduler taskScheduler;
 
-  public GitHubServiceImpl(RestTemplateBuilder restTemplateBuilder, UserRepository userRepository,
+  public GitHubServiceImpl(UserRepository userRepository,
       GitHubProperty gitHubProperty, ThreadPoolTaskScheduler taskScheduler) {
-    this.restTemplate = restTemplateBuilder.build();
     this.userRepository = userRepository;
     this.gitHubProperty = gitHubProperty;
     this.taskScheduler = taskScheduler;
@@ -143,38 +142,26 @@ public class GitHubServiceImpl implements GitHubService {
 
   @Override
   public User getAndUpdateUser(String accessToken) {
-    HttpHeaders headers = new HttpHeaders();
-    headers.setBearerAuth(accessToken);
-    HttpEntity<String> entity = new HttpEntity<>(headers);
+    try {
+      var gitHub = getGitHub(accessToken);
+      GHMyself myself = gitHub.getMyself();
+      String gitHubId = String.valueOf(myself.getId());
+      User user = userRepository.searchByGitHubId(gitHubId);
+      if (user == null) {
+        user = new User();
+      }
+      user.setGitHubId(gitHubId);
+      user.setName(myself.getName());
+      user.setUsername(myself.getLogin());
+      user.setAvatarUrl(myself.getAvatarUrl());
+      user.setProvider(GitHubConstants.GITHUB_PROVIDER_NAME);
 
-    ResponseEntity<Map<String, Object>> response = restTemplate.exchange(GitHubConstants.Url.USER, HttpMethod.GET,
-        entity, new ParameterizedTypeReference<>() {
-        });
-
-    Map<String, Object> userDetails = response.getBody();
-
-    if (userDetails == null) {
+      userRepository.save(user);
+      return user;
+    } catch(IOException e) {
+      log.error(e);
       throw new NotFoundException(ErrorCode.GITHUB_USER_NOT_FOUND, "Failed to fetch user details from GitHub");
     }
-
-    String gitHubId = userDetails.get(GitHubConstants.Json.USER_ID).toString();
-    String name = (String) userDetails.get(GitHubConstants.Json.USER_NAME);
-    String avatarUrl = (String) userDetails.get(GitHubConstants.Json.USER_AVATAR_URL);
-    String username = (String) userDetails.get(GitHubConstants.Json.USER_LOGIN_NAME);
-
-    User user = userRepository.searchByGitHubId(gitHubId);
-    if (user == null) {
-      user = new User();
-    }
-    user.setGitHubId(gitHubId);
-    user.setName(name);
-    user.setUsername(username);
-    user.setAvatarUrl(avatarUrl);
-    user.setProvider(GitHubConstants.GITHUB_PROVIDER_NAME);
-
-    userRepository.save(user);
-
-    return user;
   }
 
   @Override
@@ -259,138 +246,9 @@ public class GitHubServiceImpl implements GitHubService {
     GHCommit latestCommit = repo.getCommit(latestCommitSHA);
     productSecurityInfo.setLatestCommitSHA(latestCommitSHA);
     productSecurityInfo.setLastCommitDate(latestCommit.getCommitDate());
-
-    productSecurityInfo.setVulnerabilities(getVulnerabilitiesMap(repo, organization, accessToken));
-    productSecurityInfo.setDependabot(getDependabotAlerts(repo, organization, accessToken));
-    productSecurityInfo.setSecretsScanning(getNumberOfSecretScanningAlerts(repo, organization, accessToken));
-    productSecurityInfo.setCodeScanning(getCodeScanningAlerts(repo, organization, accessToken));
+    productSecurityInfo.setDependabot(GitHubUtils.getDependabotAlerts(repo, organization, accessToken));
+    productSecurityInfo.setSecretsScanning(GitHubUtils.getNumberOfSecretScanningAlerts(repo, organization, accessToken));
+    productSecurityInfo.setCodeScanning(GitHubUtils.getCodeScanningAlerts(repo, organization, accessToken));
     return productSecurityInfo;
-  }
-
-  private Map<String, Integer> getVulnerabilitiesMap(GHRepository repo, GHOrganization organization,
-      String accessToken) {
-    Map<String, Integer> severityCountMap = new HashMap<>();
-    try {
-      List<Map<String, Object>> combinedAdvisories = new ArrayList<>();
-
-      ResponseEntity<List<Map<String, Object>>> responseDraft = fetchApiResponseAsList(accessToken,
-          String.format(GitHubConstants.Url.REPO_SECURITY_ADVISORIES, organization.getLogin(), repo.getName(), "draft"));
-      ResponseEntity<List<Map<String, Object>>> responseTriage = fetchApiResponseAsList(accessToken,
-          String.format(GitHubConstants.Url.REPO_SECURITY_ADVISORIES, organization.getLogin(), repo.getName(), "triage"));
-
-      if (responseDraft.getBody() != null) {
-        combinedAdvisories.addAll(responseDraft.getBody());
-      }
-      if (responseTriage.getBody() != null) {
-        combinedAdvisories.addAll(responseTriage.getBody());
-      }
-
-      for (Map<String, Object> advisory : combinedAdvisories) {
-        if (advisory != null) {
-          String severity = (String) advisory.get(GitHubConstants.Json.SEVERITY);
-          if (severity != null) {
-            severityCountMap.put(severity, severityCountMap.getOrDefault(severity, 0) + 1);
-          }
-        }
-      }
-    }
-    catch (RestClientException e) {
-      log.warn(e);
-    }
-    return severityCountMap;
-  }
-
-  private Dependabot getDependabotAlerts(GHRepository repo, GHOrganization organization, String accessToken) {
-    Dependabot dependabot = new Dependabot();
-    try {
-      ResponseEntity<List<Map<String, Object>>> response = fetchApiResponseAsList(accessToken,
-          String.format(GitHubConstants.Url.REPO_DEPENDABOT_ALERTS_OPEN, organization.getLogin(), repo.getName()));
-      dependabot.setStatus(AccessLevel.ENABLED);
-      Map<String, Integer> severityMap = new HashMap<>();
-      if (response.getBody() != null) {
-        List<Map<String, Object>> alerts = response.getBody();
-        for (Map<String, Object> alert : alerts) {
-          Object advisoryObj = alert.get(GitHubConstants.Json.SEVERITY_ADVISORY);
-          if (advisoryObj instanceof Map<?, ?> securityAdvisory) {
-            String severity = (String) securityAdvisory.get(GitHubConstants.Json.SEVERITY);
-            if (severity != null) {
-              severityMap.put(severity, severityMap.getOrDefault(severity, 0) + 1);
-            }
-          }
-        }
-      }
-      dependabot.setAlerts(severityMap);
-    }
-    catch (HttpClientErrorException.Forbidden e) {
-      log.warn(e);
-      dependabot.setStatus(AccessLevel.DISABLED);
-    }
-    catch (HttpClientErrorException.NotFound e) {
-      log.warn(e);
-      dependabot.setStatus(AccessLevel.NO_PERMISSION);
-    }
-    return dependabot;
-  }
-
-  private SecretScanning getNumberOfSecretScanningAlerts(GHRepository repo, GHOrganization organization, String accessToken) {
-    SecretScanning secretScanning = new SecretScanning();
-    try {
-      ResponseEntity<List<Map<String, Object>>> response = fetchApiResponseAsList(accessToken,
-          String.format(GitHubConstants.Url.REPO_SECRET_SCANNING_ALERTS_OPEN, organization.getLogin(), repo.getName()));
-      secretScanning.setStatus(AccessLevel.ENABLED);
-      if (response.getBody() != null) {
-        secretScanning.setNumberOfAlerts(response.getBody().size());
-      }
-    }
-    catch (HttpClientErrorException.Forbidden e) {
-      log.warn(e);
-      secretScanning.setStatus(AccessLevel.DISABLED);
-    }
-    catch (HttpClientErrorException.NotFound e) {
-      log.warn(e);
-      secretScanning.setStatus(AccessLevel.NO_PERMISSION);
-    }
-    return secretScanning;
-  }
-
-  private CodeScanning getCodeScanningAlerts(GHRepository repo, GHOrganization organization, String accessToken) {
-    CodeScanning codeScanning = new CodeScanning();
-    try {
-      ResponseEntity<List<Map<String, Object>>> response = fetchApiResponseAsList(accessToken,
-          String.format(GitHubConstants.Url.REPO_CODE_SCANNING_ALERTS_OPEN, organization.getLogin(), repo.getName()));
-      codeScanning.setStatus(AccessLevel.ENABLED);
-      Map<String, Integer> codeScanningMap = new HashMap<>();
-      if (response.getBody() != null) {
-        List<Map<String, Object>> alerts = response.getBody();
-        for (Map<String, Object> alert : alerts) {
-          Object ruleObj = alert.get(GitHubConstants.Json.RULE);
-          if (ruleObj instanceof Map<?, ?> rule) {
-            String severity = (String) rule.get(GitHubConstants.Json.SEVERITY);
-            if (severity != null) {
-              codeScanningMap.put(severity, codeScanningMap.getOrDefault(severity, 0) + 1);
-            }
-          }
-        }
-      }
-      codeScanning.setAlerts(codeScanningMap);
-    }
-    catch (HttpClientErrorException.Forbidden e) {
-      log.warn(e);
-      codeScanning.setStatus(AccessLevel.DISABLED);
-    }
-    catch (HttpClientErrorException.NotFound e) {
-      log.warn(e);
-      codeScanning.setStatus(AccessLevel.NO_PERMISSION);
-    }
-    return codeScanning;
-  }
-
-  private ResponseEntity<List<Map<String, Object>>> fetchApiResponseAsList(String accessToken, String url) {
-    HttpHeaders headers = new HttpHeaders();
-    headers.setBearerAuth(accessToken);
-    HttpEntity<String> entity = new HttpEntity<>(headers);
-
-    return restTemplate.exchange(url, HttpMethod.GET, entity, new ParameterizedTypeReference<>() {
-    });
   }
 }
