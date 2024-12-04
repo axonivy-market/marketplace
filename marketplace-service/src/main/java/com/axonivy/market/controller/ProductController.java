@@ -112,34 +112,6 @@ public class ProductController {
     return new ResponseEntity<>(message, HttpStatus.OK);
   }
 
-  /**
-   * @deprecated
-   */
-  @Deprecated(forRemoval = true , since = "1.6.0")
-  @PutMapping(SYNC_PRODUCT_VERSION)
-  @Operation(hidden = true)
-  public ResponseEntity<Message> syncProductVersions(@RequestHeader(value = AUTHORIZATION) String authorizationHeader
-      ,@RequestParam(value = RESET_SYNC, required = false) Boolean resetSync) {
-    String token = AuthorizationUtils.getBearerToken(authorizationHeader);
-    gitHubService.validateUserInOrganizationAndTeam(token, GitHubConstants.AXONIVY_MARKET_ORGANIZATION_NAME,
-        GitHubConstants.AXONIVY_MARKET_TEAM_NAME);
-    if (Boolean.TRUE.equals(resetSync)) {
-      productService.clearAllProductVersion();
-    }
-    int nonSyncResult = metadataService.syncAllProductsMetadata();
-    var message = new Message();
-    HttpStatus statusCode = HttpStatus.OK;
-    if(nonSyncResult == 1) {
-      message.setHelpCode(ErrorCode.SUCCESSFUL.getCode());
-      message.setHelpText(ErrorCode.SUCCESSFUL.getHelpText());
-    } else {
-      statusCode = HttpStatus.INTERNAL_SERVER_ERROR;
-      message.setHelpCode(ErrorCode.MAVEN_VERSION_SYNC_FAILED.getCode());
-      message.setMessageDetails(ErrorCode.MAVEN_VERSION_SYNC_FAILED.getHelpText());
-    }
-    return new ResponseEntity<>(message, statusCode);
-  }
-
   @PutMapping(SYNC_ONE_PRODUCT_BY_ID)
   @Operation(hidden = true)
   public ResponseEntity<Message> syncOneProduct(
