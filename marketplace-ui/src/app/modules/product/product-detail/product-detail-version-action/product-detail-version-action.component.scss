@@ -14,18 +14,24 @@
   top: 0.8rem !important;
 
   .tooltip-arrow {
-    top: -0.8rem !important;
+    top: -1rem !important;
     width: 0;
     height: 0;
     border-left: 13px solid transparent;
     border-right: 13px solid transparent;
-    border-bottom: 13px solid var(--ivy-secondary-border-color);
+
     &::before {
+      box-sizing: border-box !important;
       width: 0;
       height: 0;
-      border-left: 12px solid transparent !important;
-      border-right: 12px solid transparent !important;
-      border-bottom: 12px solid var(--bs-body-bg) !important;
+      transform: rotate(45deg);
+      border-top-left-radius: 5px !important;
+      border-top: 10px solid var(--bs-body-bg) !important;
+      border-left: 10px solid var(--bs-body-bg) !important;
+      border-right: 10px solid transparent !important;
+      border-bottom: 10px solid transparent !important;
+      //box-shadow: -0.8em -0.8em 1em var(--ivy-secondary-border-color-up-arrow);
+      box-shadow: -0.1em -0.1em 0em white;
       top: 0.15rem !important;
       left: -0.75rem;
     }
