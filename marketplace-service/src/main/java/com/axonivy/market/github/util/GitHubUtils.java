@@ -215,7 +215,7 @@ public class GitHubUtils {
         for (Map<String, Object> alert : alerts) {
           Object ruleObj = alert.get(GitHubConstants.Json.RULE);
           if (ruleObj instanceof Map<?, ?> rule) {
-            String severity = (String) rule.get(GitHubConstants.Json.SEVERITY);
+            String severity = (String) rule.get(GitHubConstants.Json.SECURITY_SEVERITY_LEVEL);
             if (severity != null) {
               codeScanningMap.put(severity, codeScanningMap.getOrDefault(severity, 0) + 1);
             }

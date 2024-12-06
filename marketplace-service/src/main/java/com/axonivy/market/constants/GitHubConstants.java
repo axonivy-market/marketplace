@@ -20,6 +20,7 @@ public class GitHubConstants {
     public static final String CLIENT_SECRET = "client_secret";
     public static final String CODE = "code";
     public static final String SEVERITY = "severity";
+    public static final String SECURITY_SEVERITY_LEVEL = "security_severity_level";
     public static final String SEVERITY_ADVISORY = "security_advisory";
     public static final String RULE = "rule";
   }
