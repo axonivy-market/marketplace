@@ -3,19 +3,20 @@
     <div class="header">
       <h2>GitHub Repository Security Monitor</h2>
       <h3>Keep track of your repositories' security status at a glance.</h3>
+      <h3><a href="#" class="reload-link" title="Reload security data">Reload Security Data</a></h3>
     </div>
     <div class="repo-grid">
       @for (repo of repos; track $index) {
-        <div class="repo-card" (click)="navigateToRepoSecurityPage(repo.repoName)">
+        <div class="repo-card">
           <div class="repo-header">
-            <h3>{{ repo.repoName }}</h3>
+            <h3 (click)="navigateToRepoSecurityPage(repo.repoName)">{{ repo.repoName }}</h3>
             <span class="visibility text-capitalize">{{ repo.visibility }}</span>
             @if (repo.archived) {
               <span class="archived">Archived</span>
             }
           </div>
           <div class="repo-info">
-            <p>🤖 <span><a (click)="navigateToRepoDependabotPage(repo.repoName)">Dependabot</a>:</span>
+            <p><span class="icon">🤖</span><span><a (click)="navigateToRepoDependabotPage(repo.repoName)">Dependabot</a>:</span>
               @if (repo.dependabot.status == 'DISABLED') {
                 <span class="badge none">Disabled</span>
               }
@@ -33,7 +34,7 @@
                 <span class="badge active">No vulnerabilities</span>
               }
             </p>
-            <p>🖥️ <span><a (click)="navigateToRepoCodeScanningPage(repo.repoName)">Code Scanning</a>:</span>
+            <p><span class="icon">🖥️</span><span><a (click)="navigateToRepoCodeScanningPage(repo.repoName)">Code Scanning</a>:</span>
               @if (repo.codeScanning.status == 'DISABLED') {
                 <span class="badge none">Disabled</span>
               }
@@ -51,7 +52,7 @@
                 <span class="badge active">No vulnerabilities</span>
               }
             </p>
-            <p>🔑 <span><a (click)="navigateToRepoSecurityScanningPage(repo.repoName)">Secrets Scanning</a>:</span>
+            <p><span class="icon">🔑</span><span><a (click)="navigateToRepoSecurityScanningPage(repo.repoName)">Secret Scanning</a>:</span>
               @if (repo.secretsScanning.status == 'DISABLED') {
                 <span class="badge none">Disabled</span>
               }
@@ -64,10 +65,10 @@
                 </span>
               }
               @else {
-                <span class="badge active">No alerts</span>
+                <span class="badge active">No vulnerabilities</span>
               }
             </p>
-            <p>🚧 <span><a (click)="navigateToRepoBranchesSettingPage(repo.repoName)">Branch Protection</a>:</span>
+            <p><span class="icon">🚧</span><span><a (click)="navigateToRepoBranchesSettingPage(repo.repoName)">Branch Protection</a>:</span>
               @if (repo.branchProtectionEnabled) {
                 <span class="badge active">Enabled</span>
               }
@@ -75,7 +76,7 @@
                 <span class="badge none">Disabled</span>
               }
             </p>
-            <p>⏱️ <span><a (click)="navigateToRepoLastCommitPage(repo.repoName, repo.lastCommitSHA)">Last Commit</a>:</span> {{ formatCommitDate(repo.lastCommitDate) }}</p>
+            <p><span class="icon">⏱️</span><span><a (click)="navigateToRepoLastCommitPage(repo.repoName, repo.lastCommitSHA)">Last Commit</a>:</span> {{ formatCommitDate(repo.lastCommitDate) }}</p>
           </div>
         </div>
       }

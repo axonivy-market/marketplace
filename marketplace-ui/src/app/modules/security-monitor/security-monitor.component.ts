@@ -22,6 +22,21 @@ export class SecurityMonitorComponent {
   private securityMonitorService = inject(SecurityMonitorService);
   private readonly githubBaseUrl = 'https://github.com/axonivy-market';
 
+  ngOnInit(): void {
+    try {
+      const sessionData = sessionStorage.getItem('security-monitor-data');
+      if (sessionData) {
+        this.repos = JSON.parse(sessionData) as Repo[];
+        this.isAuthenticated = true;
+      }
+    } catch (error) {
+      console.error('Failed to parse session data:', error);
+      sessionStorage.removeItem('security-monitor-data');
+      this.repos = [];
+      this.isAuthenticated = false;
+    }
+  }
+
   onSubmit(): void {
     if (!this.token) {
       this.errorMessage = 'Token is required';
@@ -42,12 +57,14 @@ export class SecurityMonitorComponent {
     this.repos = data;
     this.isAuthenticated = true;
     this.isLoading = false;
+    sessionStorage.setItem('security-monitor-token', this.token);
+    sessionStorage.setItem('security-monitor-data', JSON.stringify(data));
   }
 
   private handleError(err: any): void {
     this.errorMessage =
       err.status === 401
-        ? 'Unauthorized access. (The token should contain the "org:read" scope for authentication)'
+        ? 'Unauthorized access.'
         : 'Failed to fetch security data. Check logs for details.';
     console.error(err);
     this.isLoading = false;
