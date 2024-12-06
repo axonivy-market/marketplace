@@ -26,14 +26,13 @@
       height: 0;
       transform: rotate(45deg);
       border-top-left-radius: 5px !important;
-      border-top: 10px solid var(--bs-body-bg) !important;
-      border-left: 10px solid var(--bs-body-bg) !important;
-      border-right: 10px solid transparent !important;
-      border-bottom: 10px solid transparent !important;
+      border-top: 1rem solid var(--bs-body-bg) !important;
+      border-left: 1rem solid var(--bs-body-bg) !important;
+      border-right: 1rem solid transparent !important;
+      border-bottom: 1rem solid transparent !important;
       box-shadow: -0.05em -0.05em 0em var(--ivy-secondary-border-color-up-arrow);
       top: 0.05rem !important;
       left: -0.75rem;
-
     }
   }
 
