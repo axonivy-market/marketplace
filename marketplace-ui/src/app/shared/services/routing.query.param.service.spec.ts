@@ -70,16 +70,10 @@ describe('RoutingQueryParamService', () => {
   });
 
   it('should set isDesigner to true if session storage matches default designer viewer', () => {
-    // cookieService.get.and.returnValue(
-    //   DESIGNER_SESSION_STORAGE_VARIABLE.defaultDesignerViewer
-    // );
     expect(service.isDesignerViewer()).toBeTrue();
   });
 
   it('should listen to navigation start events', () => {
-    // cookieService.get.and.returnValue(
-    //   DESIGNER_SESSION_STORAGE_VARIABLE.defaultDesignerViewer
-    // );
     eventsSubject.next(new NavigationStart(1, 'testUrl'));
     expect(service.isDesignerViewer()).toBeTrue();
   });
