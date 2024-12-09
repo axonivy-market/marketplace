@@ -3,7 +3,7 @@ import { Router, NavigationStart } from '@angular/router';
 import { CookieService } from 'ngx-cookie-service';
 import { RoutingQueryParamService } from './routing.query.param.service';
 import { Subject } from 'rxjs';
-import { DESIGNER_COOKIE_VARIABLE } from '../constants/common.constant';
+import { DESIGNER_SESSION_STORAGE_VARIABLE } from '../constants/common.constant';
 
 describe('RoutingQueryParamService', () => {
   let service: RoutingQueryParamService;
@@ -37,44 +37,46 @@ describe('RoutingQueryParamService', () => {
     expect(service).toBeTruthy();
   });
 
-  it('should check cookie for designer version', () => {
-    const params = { [DESIGNER_COOKIE_VARIABLE.ivyVersionParamName]: '1.0' };
-    service.checkCookieForDesignerVersion(params);
+  it('should check session storage for designer version', () => {
+    const params = {
+      [DESIGNER_SESSION_STORAGE_VARIABLE.ivyVersionParamName]: '1.0'
+    };
+    service.checkSessionStorageForDesignerVersion(params);
     expect(cookieService.set).toHaveBeenCalledWith(
-      DESIGNER_COOKIE_VARIABLE.ivyVersionParamName,
+      DESIGNER_SESSION_STORAGE_VARIABLE.ivyVersionParamName,
       '1.0'
     );
-    expect(service.getDesignerVersionFromCookie()).toBe('1.0');
+    expect(service.getDesignerVersionFromSessionStorage()).toBe('1.0');
   });
 
-  it('should check cookie for designer env', () => {
+  it('should check session storage for designer env', () => {
     const params = {
-      [DESIGNER_COOKIE_VARIABLE.ivyViewerParamName]:
-        DESIGNER_COOKIE_VARIABLE.defaultDesignerViewer
+      [DESIGNER_SESSION_STORAGE_VARIABLE.ivyViewerParamName]:
+        DESIGNER_SESSION_STORAGE_VARIABLE.defaultDesignerViewer
     };
-    service.checkCookieForDesignerEnv(params);
+    service.checkSessionStorageForDesignerEnv(params);
     expect(cookieService.set).toHaveBeenCalledWith(
-      DESIGNER_COOKIE_VARIABLE.ivyViewerParamName,
-      DESIGNER_COOKIE_VARIABLE.defaultDesignerViewer
+      DESIGNER_SESSION_STORAGE_VARIABLE.ivyViewerParamName,
+      DESIGNER_SESSION_STORAGE_VARIABLE.defaultDesignerViewer
     );
     expect(service.isDesignerViewer()).toBeTrue();
   });
 
-  it('should get designer version from cookie if not set', () => {
+  it('should get designer version from session storage if not set', () => {
     cookieService.get.and.returnValue('1.0');
-    expect(service.getDesignerVersionFromCookie()).toBe('1.0');
+    expect(service.getDesignerVersionFromSessionStorage()).toBe('1.0');
   });
 
-  it('should set isDesigner to true if cookie matches default designer viewer', () => {
+  it('should set isDesigner to true if session storage matches default designer viewer', () => {
     cookieService.get.and.returnValue(
-      DESIGNER_COOKIE_VARIABLE.defaultDesignerViewer
+      DESIGNER_SESSION_STORAGE_VARIABLE.defaultDesignerViewer
     );
     expect(service.isDesignerViewer()).toBeTrue();
   });
 
   it('should listen to navigation start events', () => {
     cookieService.get.and.returnValue(
-      DESIGNER_COOKIE_VARIABLE.defaultDesignerViewer
+      DESIGNER_SESSION_STORAGE_VARIABLE.defaultDesignerViewer
     );
     eventsSubject.next(new NavigationStart(1, 'testUrl'));
     expect(service.isDesignerViewer()).toBeTrue();
