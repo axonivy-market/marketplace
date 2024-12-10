@@ -1,8 +1,10 @@
 import { Component, inject, ViewEncapsulation } from '@angular/core';
 import { FormsModule } from '@angular/forms';
+import { CommonModule } from '@angular/common';
+import { HttpErrorResponse } from '@angular/common/http';
+
 import { SecurityMonitorService } from './security-monitor.service';
 import { ProductSecurityInfo } from '../../shared/models/product-security-info-model';
-import { CommonModule } from '@angular/common';
 import { TimeAgoPipe } from '../../shared/pipes/time-ago.pipe';
 import { GITHUB_MARKET_ORG_URL, UNAUTHORIZED } from '../../shared/constants/common.constant';
 
@@ -20,57 +22,70 @@ export class SecurityMonitorComponent {
   errorMessage = '';
   repos: ProductSecurityInfo[] = [];
 
-  private securityMonitorService = inject(SecurityMonitorService);
+  private readonly securityMonitorService = inject(SecurityMonitorService);
+  private readonly sessionKeys = {
+    data: 'security-monitor-data',
+    token: 'security-monitor-token',
+  };
 
   ngOnInit(): void {
-    try {
-      const sessionData = sessionStorage.getItem('security-monitor-data');
-      if (sessionData) {
-        this.repos = JSON.parse(sessionData) as ProductSecurityInfo[];
-        this.isAuthenticated = true;
-      }
-    } catch (error) {
-      console.error('Failed to parse session data:', error);
-      sessionStorage.removeItem('security-monitor-data');
-      this.repos = [];
-      this.isAuthenticated = false;
-    }
+    this.loadSessionData();
   }
 
   onSubmit(): void {
-    this.token = this.token ?? sessionStorage.getItem('security-monitor-token') ?? '';
+    this.token = this.token || sessionStorage.getItem(this.sessionKeys.token) || '';
     if (!this.token) {
-      this.errorMessage = 'Token is required';
-      this.isAuthenticated = false;
-      sessionStorage.removeItem('security-monitor-token');
-      sessionStorage.removeItem('security-monitor-data');
+      this.handleMissingToken();
       return;
     }
 
     this.errorMessage = '';
+    this.fetchSecurityDetails();
+  }
 
+  private loadSessionData(): void {
+    const sessionData = sessionStorage.getItem(this.sessionKeys.data);
+    if (sessionData) {
+      try {
+        this.repos = JSON.parse(sessionData) as ProductSecurityInfo[];
+        this.isAuthenticated = true;
+      } catch (error) {
+        this.clearSessionData();
+      }
+    }
+  }
+
+  private handleMissingToken(): void {
+    this.errorMessage = 'Token is required';
+    this.isAuthenticated = false;
+    this.clearSessionData();
+  }
+
+  private fetchSecurityDetails(): void {
     this.securityMonitorService.getSecurityDetails(this.token).subscribe({
       next: (data) => this.handleSuccess(data),
-      error: (err) => this.handleError(err),
+      error: (err: HttpErrorResponse) => this.handleError(err),
     });
   }
 
   private handleSuccess(data: ProductSecurityInfo[]): void {
     this.repos = data;
     this.isAuthenticated = true;
-    sessionStorage.setItem('security-monitor-token', this.token);
-    sessionStorage.setItem('security-monitor-data', JSON.stringify(data));
+    sessionStorage.setItem(this.sessionKeys.token, this.token);
+    sessionStorage.setItem(this.sessionKeys.data, JSON.stringify(data));
   }
 
-  private handleError(err: any): void {
-    this.errorMessage =
-      err.status === UNAUTHORIZED
-        ? 'Unauthorized access.'
-        : 'Failed to fetch security data. Check logs for details.';
-    console.error(err);
+  private handleError(err: HttpErrorResponse): void {
+    this.errorMessage = err.status === UNAUTHORIZED 
+      ? 'Unauthorized access.' 
+      : 'Failed to fetch security data. Check logs for details.';
     this.isAuthenticated = false;
-    sessionStorage.removeItem('security-monitor-token');
-    sessionStorage.removeItem('security-monitor-data');
+    this.clearSessionData();
+  }
+
+  private clearSessionData(): void {
+    sessionStorage.removeItem(this.sessionKeys.token);
+    sessionStorage.removeItem(this.sessionKeys.data);
   }
 
   hasAlerts(alerts: Record<string, number>): boolean {
@@ -81,32 +96,32 @@ export class SecurityMonitorComponent {
     return Object.keys(alerts);
   }
 
-  navigateToPage(repoName: string, path: string, additionalPath: string = ''): void {
+  navigateToPage(repoName: string, path: string, additionalPath = ''): void {
     const url = `${GITHUB_MARKET_ORG_URL}/${repoName}${path}${additionalPath}`;
     window.open(url, '_blank');
   }
 
-  navigateToRepoSecurityPage(repoName: string): void {
-    this.navigateToPage(repoName, '/security');
-  }
+  navigateToRepoPage(repoName: string, page: RepoPage, lastCommitSHA?: string): void {
+    const paths: Record<RepoPage, string> = {
+      security: '/security',
+      dependabot: '/security/dependabot',
+      codeScanning: '/security/code-scanning',
+      securityScanning: '/security/security-scanning',
+      branches: '/settings/branches',
+      lastCommit: `/commit/${lastCommitSHA || ''}`,
+    };
 
-  navigateToRepoDependabotPage(repoName: string): void {
-    this.navigateToPage(repoName, '/security/dependabot');
-  }
-
-  navigateToRepoCodeScanningPage(repoName: string): void {
-    this.navigateToPage(repoName, '/security/code-scanning');
-  }
-
-  navigateToRepoSecurityScanningPage(repoName: string): void {
-    this.navigateToPage(repoName, '/security/security-scanning');
-  }
-
-  navigateToRepoLastCommitPage(repoName: string, lastCommitSHA: string): void {
-    this.navigateToPage(repoName, '/commit/', lastCommitSHA);
-  }
-
-  navigateToRepoBranchesSettingPage(repoName: string): void {
-    this.navigateToPage(repoName, '/settings/branches');
+    const path = paths[page];
+    if (path) {
+      this.navigateToPage(repoName, path);
+    }
   }
 }
+
+type RepoPage = 
+  | 'security' 
+  | 'dependabot' 
+  | 'codeScanning' 
+  | 'securityScanning' 
+  | 'branches' 
+  | 'lastCommit';
