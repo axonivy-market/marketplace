@@ -1,4 +1,4 @@
-import { Component, Input } from '@angular/core';
+import { Component } from '@angular/core';
 import { NgClass } from '@angular/common';
 
 @Component({
@@ -11,6 +11,5 @@ import { NgClass } from '@angular/common';
   styleUrl: './loading-spinner.component.scss'
 })
 export class LoadingSpinnerComponent {
-  @Input()
-  isFixPosition = true;
+  spinners = Array(5).fill(null);
 }
