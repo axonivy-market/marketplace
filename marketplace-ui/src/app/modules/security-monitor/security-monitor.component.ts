@@ -33,7 +33,7 @@ export class SecurityMonitorComponent {
   }
 
   onSubmit(): void {
-    this.token = this.token || sessionStorage.getItem(this.sessionKeys.token) || '';
+    this.token = this.token ?? sessionStorage.getItem(this.sessionKeys.token) ?? '';
     if (!this.token) {
       this.handleMissingToken();
       return;
@@ -63,7 +63,7 @@ export class SecurityMonitorComponent {
 
   private fetchSecurityDetails(): void {
     this.securityMonitorService.getSecurityDetails(this.token).subscribe({
-      next: (data) => this.handleSuccess(data),
+      next: data => this.handleSuccess(data),
       error: (err: HttpErrorResponse) => this.handleError(err),
     });
   }
@@ -76,9 +76,12 @@ export class SecurityMonitorComponent {
   }
 
   private handleError(err: HttpErrorResponse): void {
-    this.errorMessage = err.status === UNAUTHORIZED 
-      ? 'Unauthorized access.' 
-      : 'Failed to fetch security data. Check logs for details.';
+    if (err.status === UNAUTHORIZED ) {
+      this.errorMessage = 'Unauthorized access.';
+    }
+    else {
+      this.errorMessage = 'Failed to fetch security data. Check logs for details.';
+    }
     this.isAuthenticated = false;
     this.clearSessionData();
   }
@@ -108,7 +111,7 @@ export class SecurityMonitorComponent {
       codeScanning: '/security/code-scanning',
       secretScanning: '/security/secret-scanning',
       branches: '/settings/branches',
-      lastCommit: `/commit/${lastCommitSHA || ''}`,
+      lastCommit: `/commit/${lastCommitSHA ?? ''}`,
     };
 
     const path = paths[page];
