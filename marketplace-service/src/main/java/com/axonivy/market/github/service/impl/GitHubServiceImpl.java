@@ -3,42 +3,58 @@ package com.axonivy.market.github.service.impl;
 import com.axonivy.market.constants.ErrorMessageConstants;
 import com.axonivy.market.constants.GitHubConstants;
 import com.axonivy.market.entity.User;
+import com.axonivy.market.enums.AccessLevel;
 import com.axonivy.market.enums.ErrorCode;
 import com.axonivy.market.exceptions.model.MissingHeaderException;
 import com.axonivy.market.exceptions.model.NotFoundException;
 import com.axonivy.market.exceptions.model.Oauth2ExchangeCodeException;
 import com.axonivy.market.exceptions.model.UnauthorizedException;
+import com.axonivy.market.github.model.CodeScanning;
+import com.axonivy.market.github.model.Dependabot;
 import com.axonivy.market.github.model.GitHubAccessTokenResponse;
 import com.axonivy.market.github.model.GitHubProperty;
+import com.axonivy.market.github.model.SecretScanning;
 import com.axonivy.market.github.service.GitHubService;
+import com.axonivy.market.github.model.ProductSecurityInfo;
+import com.axonivy.market.github.util.GitHubUtils;
 import com.axonivy.market.repository.UserRepository;
 import lombok.extern.log4j.Log4j2;
+import org.kohsuke.github.GHCommit;
 import org.kohsuke.github.GHContent;
+import org.kohsuke.github.GHMyself;
 import org.kohsuke.github.GHOrganization;
 import org.kohsuke.github.GHRepository;
 import org.kohsuke.github.GHTag;
 import org.kohsuke.github.GHTeam;
 import org.kohsuke.github.GitHub;
 import org.kohsuke.github.GitHubBuilder;
-import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
+import org.springframework.web.client.HttpClientErrorException;
+import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutorService;
+import java.util.stream.Collectors;
 
 import static org.apache.commons.lang3.StringUtils.EMPTY;
 
@@ -46,15 +62,16 @@ import static org.apache.commons.lang3.StringUtils.EMPTY;
 @Service
 public class GitHubServiceImpl implements GitHubService {
 
-  private final RestTemplate restTemplate;
+  private final RestTemplate restTemplate = new RestTemplate();;
   private final UserRepository userRepository;
   private final GitHubProperty gitHubProperty;
+  private final ThreadPoolTaskScheduler taskScheduler;
 
-  public GitHubServiceImpl(RestTemplateBuilder restTemplateBuilder, UserRepository userRepository,
-      GitHubProperty gitHubProperty) {
-    this.restTemplate = restTemplateBuilder.build();
+  public GitHubServiceImpl(UserRepository userRepository,
+      GitHubProperty gitHubProperty, ThreadPoolTaskScheduler taskScheduler) {
     this.userRepository = userRepository;
     this.gitHubProperty = gitHubProperty;
+    this.taskScheduler = taskScheduler;
   }
 
   @Override
@@ -96,8 +113,8 @@ public class GitHubServiceImpl implements GitHubService {
   }
 
   @Override
-  public GitHubAccessTokenResponse getAccessToken(String code, GitHubProperty gitHubProperty)
-      throws Oauth2ExchangeCodeException, MissingHeaderException {
+  public GitHubAccessTokenResponse getAccessToken(String code,
+      GitHubProperty gitHubProperty) throws Oauth2ExchangeCodeException, MissingHeaderException {
     if (gitHubProperty == null) {
       throw new MissingHeaderException();
     }
@@ -125,38 +142,26 @@ public class GitHubServiceImpl implements GitHubService {
 
   @Override
   public User getAndUpdateUser(String accessToken) {
-    HttpHeaders headers = new HttpHeaders();
-    headers.setBearerAuth(accessToken);
-    HttpEntity<String> entity = new HttpEntity<>(headers);
+    try {
+      var gitHub = getGitHub(accessToken);
+      GHMyself myself = gitHub.getMyself();
+      String gitHubId = String.valueOf(myself.getId());
+      User user = userRepository.searchByGitHubId(gitHubId);
+      if (user == null) {
+        user = new User();
+      }
+      user.setGitHubId(gitHubId);
+      user.setName(myself.getName());
+      user.setUsername(myself.getLogin());
+      user.setAvatarUrl(myself.getAvatarUrl());
+      user.setProvider(GitHubConstants.GITHUB_PROVIDER_NAME);
 
-    ResponseEntity<Map<String, Object>> response = restTemplate.exchange(GitHubConstants.Url.USER, HttpMethod.GET,
-        entity, new ParameterizedTypeReference<>() {
-        });
-
-    Map<String, Object> userDetails = response.getBody();
-
-    if (userDetails == null) {
+      userRepository.save(user);
+      return user;
+    } catch(IOException e) {
+      log.error(e);
       throw new NotFoundException(ErrorCode.GITHUB_USER_NOT_FOUND, "Failed to fetch user details from GitHub");
     }
-
-    String gitHubId = userDetails.get(GitHubConstants.Json.USER_ID).toString();
-    String name = (String) userDetails.get(GitHubConstants.Json.USER_NAME);
-    String avatarUrl = (String) userDetails.get(GitHubConstants.Json.USER_AVATAR_URL);
-    String username = (String) userDetails.get(GitHubConstants.Json.USER_LOGIN_NAME);
-
-    User user = userRepository.searchByGitHubId(gitHubId);
-    if (user == null) {
-      user = new User();
-    }
-    user.setGitHubId(gitHubId);
-    user.setName(name);
-    user.setUsername(username);
-    user.setAvatarUrl(avatarUrl);
-    user.setProvider(GitHubConstants.GITHUB_PROVIDER_NAME);
-
-    userRepository.save(user);
-
-    return user;
   }
 
   @Override
@@ -172,12 +177,35 @@ public class GitHubServiceImpl implements GitHubService {
     }
 
     throw new UnauthorizedException(ErrorCode.GITHUB_USER_UNAUTHORIZED.getCode(),
-        String.format(ErrorMessageConstants.INVALID_USER_ERROR, ErrorCode.GITHUB_USER_UNAUTHORIZED.getHelpText(),
-            team, organization));
+        String.format(ErrorMessageConstants.INVALID_USER_ERROR, ErrorCode.GITHUB_USER_UNAUTHORIZED.getHelpText(), team,
+            organization));
   }
 
-  private boolean isUserInOrganizationAndTeam(GitHub gitHub, String organization,
-      String teamName) throws IOException {
+  @Override
+  public List<ProductSecurityInfo> getSecurityDetailsForAllProducts(String accessToken, String orgName) {
+    List<ProductSecurityInfo> securityInfoList;
+    ExecutorService executor = taskScheduler.getScheduledExecutor();
+    try {
+      GitHub gitHub = getGitHub(accessToken);
+      GHOrganization organization = gitHub.getOrganization(orgName);
+
+      List<CompletableFuture<ProductSecurityInfo>> futures = organization.listRepositories().toList().stream()
+          .map(repo -> CompletableFuture.supplyAsync(() -> fetchSecurityInfoSafe(repo, organization, accessToken), executor))
+          .toList();
+
+      securityInfoList = futures.stream()
+          .map(CompletableFuture::join)
+          .collect(Collectors.toList());
+
+      securityInfoList.sort(Comparator.comparing(ProductSecurityInfo::getRepoName));
+    } catch (IOException e) {
+      throw new RuntimeException("Error fetching repository data", e);
+    }
+
+    return securityInfoList;
+  }
+
+  private boolean isUserInOrganizationAndTeam(GitHub gitHub, String organization, String teamName) throws IOException {
     if (gitHub == null) {
       return false;
     }
@@ -188,12 +216,39 @@ public class GitHubServiceImpl implements GitHubService {
       return false;
     }
 
-    for (GHTeam team: hashSetTeam) {
+    for (GHTeam team : hashSetTeam) {
       if (teamName.equals(team.getName())) {
         return true;
       }
     }
 
     return false;
+  }
+
+  private ProductSecurityInfo fetchSecurityInfoSafe(GHRepository repo, GHOrganization organization, String accessToken) {
+    try {
+      return fetchSecurityInfo(repo, organization, accessToken);
+    } catch (IOException e) {
+      log.error("Error fetching security info for repo: " + repo.getName(), e);
+      return new ProductSecurityInfo();
+    }
+  }
+
+  private ProductSecurityInfo fetchSecurityInfo(GHRepository repo, GHOrganization organization,
+      String accessToken) throws IOException {
+    ProductSecurityInfo productSecurityInfo = new ProductSecurityInfo();
+    productSecurityInfo.setRepoName(repo.getName());
+    productSecurityInfo.setVisibility(repo.getVisibility().toString());
+    productSecurityInfo.setArchived(repo.isArchived());
+    String defaultBranch = repo.getDefaultBranch();
+    productSecurityInfo.setBranchProtectionEnabled(repo.getBranch(defaultBranch).isProtected());
+    String latestCommitSHA = repo.getBranches().get(defaultBranch).getSHA1();
+    GHCommit latestCommit = repo.getCommit(latestCommitSHA);
+    productSecurityInfo.setLatestCommitSHA(latestCommitSHA);
+    productSecurityInfo.setLastCommitDate(latestCommit.getCommitDate());
+    productSecurityInfo.setDependabot(GitHubUtils.getDependabotAlerts(repo, organization, accessToken));
+    productSecurityInfo.setSecretsScanning(GitHubUtils.getNumberOfSecretScanningAlerts(repo, organization, accessToken));
+    productSecurityInfo.setCodeScanning(GitHubUtils.getCodeScanningAlerts(repo, organization, accessToken));
+    return productSecurityInfo;
   }
 }
