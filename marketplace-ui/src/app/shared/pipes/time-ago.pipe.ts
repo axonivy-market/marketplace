@@ -18,7 +18,7 @@ import { TimeAgo } from '../enums/time-ago.enum';
 })
 export class TimeAgoPipe implements PipeTransform {
   translateService = inject(TranslateService);
-  async transform(value?: Date, language?: Language, _args?: []): Promise<string> {
+  async transform(value?: Date, language: Language = Language.EN, _args?: []): Promise<string> {
     if (value === undefined || language === undefined) {
       return '';
     }

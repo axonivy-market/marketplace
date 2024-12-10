@@ -3,17 +3,13 @@ package com.axonivy.market.github.service.impl;
 import com.axonivy.market.constants.ErrorMessageConstants;
 import com.axonivy.market.constants.GitHubConstants;
 import com.axonivy.market.entity.User;
-import com.axonivy.market.enums.AccessLevel;
 import com.axonivy.market.enums.ErrorCode;
 import com.axonivy.market.exceptions.model.MissingHeaderException;
 import com.axonivy.market.exceptions.model.NotFoundException;
 import com.axonivy.market.exceptions.model.Oauth2ExchangeCodeException;
 import com.axonivy.market.exceptions.model.UnauthorizedException;
-import com.axonivy.market.github.model.CodeScanning;
-import com.axonivy.market.github.model.Dependabot;
 import com.axonivy.market.github.model.GitHubAccessTokenResponse;
 import com.axonivy.market.github.model.GitHubProperty;
-import com.axonivy.market.github.model.SecretScanning;
 import com.axonivy.market.github.service.GitHubService;
 import com.axonivy.market.github.model.ProductSecurityInfo;
 import com.axonivy.market.github.util.GitHubUtils;
@@ -28,10 +24,8 @@ import org.kohsuke.github.GHTag;
 import org.kohsuke.github.GHTeam;
 import org.kohsuke.github.GitHub;
 import org.kohsuke.github.GitHubBuilder;
-import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
@@ -40,17 +34,12 @@ import org.springframework.util.Assert;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
-import org.springframework.web.client.HttpClientErrorException;
-import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
@@ -62,7 +51,7 @@ import static org.apache.commons.lang3.StringUtils.EMPTY;
 @Service
 public class GitHubServiceImpl implements GitHubService {
 
-  private final RestTemplate restTemplate = new RestTemplate();;
+  private final RestTemplate restTemplate = new RestTemplate();
   private final UserRepository userRepository;
   private final GitHubProperty gitHubProperty;
   private final ThreadPoolTaskScheduler taskScheduler;
@@ -247,7 +236,7 @@ public class GitHubServiceImpl implements GitHubService {
     productSecurityInfo.setLatestCommitSHA(latestCommitSHA);
     productSecurityInfo.setLastCommitDate(latestCommit.getCommitDate());
     productSecurityInfo.setDependabot(GitHubUtils.getDependabotAlerts(repo, organization, accessToken));
-    productSecurityInfo.setSecretsScanning(GitHubUtils.getNumberOfSecretScanningAlerts(repo, organization, accessToken));
+    productSecurityInfo.setSecretScanning(GitHubUtils.getNumberOfSecretScanningAlerts(repo, organization, accessToken));
     productSecurityInfo.setCodeScanning(GitHubUtils.getCodeScanningAlerts(repo, organization, accessToken));
     return productSecurityInfo;
   }

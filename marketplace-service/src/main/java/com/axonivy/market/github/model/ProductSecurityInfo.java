@@ -6,7 +6,6 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.util.Date;
-import java.util.Map;
 
 @Getter
 @Setter
@@ -20,6 +19,6 @@ public class ProductSecurityInfo {
   private Date lastCommitDate;
   private String latestCommitSHA;
   private Dependabot dependabot;
-  private SecretScanning secretsScanning;
+  private SecretScanning secretScanning;
   private CodeScanning codeScanning;
 }

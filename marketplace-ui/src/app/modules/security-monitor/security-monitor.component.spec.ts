@@ -5,6 +5,8 @@ import { of, throwError } from 'rxjs';
 import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { By } from '@angular/platform-browser';
+import { TranslateService } from '@ngx-translate/core';
+import { ProductSecurityInfo } from '../../shared/models/product-security-info-model';
 
 describe('SecurityMonitorComponent', () => {
   let component: SecurityMonitorComponent;
@@ -17,7 +19,8 @@ describe('SecurityMonitorComponent', () => {
     await TestBed.configureTestingModule({
       imports: [CommonModule, FormsModule],
       providers: [
-        { provide: SecurityMonitorService, useValue: spy }
+        { provide: SecurityMonitorService, useValue: spy },
+        { provide: TranslateService, useValue: spy }
       ]
     }).compileComponents();
 
@@ -41,8 +44,16 @@ describe('SecurityMonitorComponent', () => {
   });
 
   it('should call SecurityMonitorService and display repos when token is valid and response is successful', () => {
-    const mockRepos = [
-      { repoName: 'repo1', visibility: 'public', archived: false, dependabot: { status: 'ACTIVE', alerts: {} }, codeScanning: { status: 'ENABLED', alerts: {} }, secretsScanning: { status: 'ENABLED', numberOfAlerts: 0 }, branchProtectionEnabled: true, lastCommitSHA: '12345', lastCommitDate: '2024-12-04' },
+    const mockRepos: ProductSecurityInfo[] = [
+      { 
+        repoName: 'repo1', visibility: 'public', 
+        archived: false, dependabot: { status: 'ENABLED', alerts: {} }, 
+        codeScanning: { status: 'ENABLED', alerts: {} }, 
+        secretScanning: { status: 'ENABLED', numberOfAlerts: 0 }, 
+        branchProtectionEnabled: true, 
+        lastCommitSHA: '12345', 
+        lastCommitDate: new Date() 
+      },
     ];
 
     securityMonitorService.getSecurityDetails.and.returnValue(of(mockRepos));
@@ -63,7 +74,7 @@ describe('SecurityMonitorComponent', () => {
 
   it('should handle error when token is invalid (401 Unauthorized)', () => {
     const mockError = { status: 401 };
-    
+
     securityMonitorService.getSecurityDetails.and.returnValue(throwError(() => mockError));
 
     component.token = 'invalid-token';
@@ -71,8 +82,7 @@ describe('SecurityMonitorComponent', () => {
 
     fixture.detectChanges();
 
-    expect(component.errorMessage).toBe('Unauthorized access. (The token should contain the "org:read" scope for authentication)');
-    expect(component.isLoading).toBeFalse();
+    expect(component.errorMessage).toBe('Unauthorized access.');
   });
 
   it('should handle generic error when fetching security data fails', () => {
@@ -86,6 +96,5 @@ describe('SecurityMonitorComponent', () => {
     fixture.detectChanges();
 
     expect(component.errorMessage).toBe('Failed to fetch security data. Check logs for details.');
-    expect(component.isLoading).toBeFalse();
   });
 });

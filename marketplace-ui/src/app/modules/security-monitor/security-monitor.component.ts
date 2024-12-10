@@ -1,13 +1,15 @@
 import { Component, inject, ViewEncapsulation } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { SecurityMonitorService } from './security-monitor.service';
-import { Repo } from '../../shared/models/security-model';
+import { ProductSecurityInfo } from '../../shared/models/product-security-info-model';
 import { CommonModule } from '@angular/common';
+import { TimeAgoPipe } from '../../shared/pipes/time-ago.pipe';
+import { GITHUB_MARKET_ORG_URL, UNAUTHORIZED } from '../../shared/constants/common.constant';
 
 @Component({
   selector: 'app-security-monitor',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, TimeAgoPipe],
   templateUrl: './security-monitor.component.html',
   styleUrls: ['./security-monitor.component.scss'],
   encapsulation: ViewEncapsulation.Emulated,
@@ -16,17 +18,15 @@ export class SecurityMonitorComponent {
   isAuthenticated = false;
   token = '';
   errorMessage = '';
-  repos: Repo[] = [];
-  isLoading = false;
+  repos: ProductSecurityInfo[] = [];
 
   private securityMonitorService = inject(SecurityMonitorService);
-  private readonly githubBaseUrl = 'https://github.com/axonivy-market';
 
   ngOnInit(): void {
     try {
       const sessionData = sessionStorage.getItem('security-monitor-data');
       if (sessionData) {
-        this.repos = JSON.parse(sessionData) as Repo[];
+        this.repos = JSON.parse(sessionData) as ProductSecurityInfo[];
         this.isAuthenticated = true;
       }
     } catch (error) {
@@ -48,57 +48,29 @@ export class SecurityMonitorComponent {
     }
 
     this.errorMessage = '';
-    this.isLoading = true;
 
     this.securityMonitorService.getSecurityDetails(this.token).subscribe({
       next: (data) => this.handleSuccess(data),
       error: (err) => this.handleError(err),
-      complete: () => (this.isLoading = false),
     });
   }
 
-  private handleSuccess(data: Repo[]): void {
+  private handleSuccess(data: ProductSecurityInfo[]): void {
     this.repos = data;
     this.isAuthenticated = true;
-    this.isLoading = false;
     sessionStorage.setItem('security-monitor-token', this.token);
     sessionStorage.setItem('security-monitor-data', JSON.stringify(data));
   }
 
   private handleError(err: any): void {
     this.errorMessage =
-      err.status === 401
+      err.status === UNAUTHORIZED
         ? 'Unauthorized access.'
         : 'Failed to fetch security data. Check logs for details.';
     console.error(err);
-    this.isLoading = false;
     this.isAuthenticated = false;
     sessionStorage.removeItem('security-monitor-token');
     sessionStorage.removeItem('security-monitor-data');
-  }
-
-  formatCommitDate(date: string): string {
-    const now = Date.now();
-    const targetDate = new Date(date).getTime();
-    const diffInSeconds = Math.floor((now - targetDate) / 1000);
-
-    if (diffInSeconds < 60) return 'just now';
-    const diffInMinutes = Math.floor(diffInSeconds / 60);
-    if (diffInMinutes < 60) return this.formatTime(diffInMinutes, 'minute');
-    const diffInHours = Math.floor(diffInMinutes / 60);
-    if (diffInHours < 24) return this.formatTime(diffInHours, 'hour');
-    const diffInDays = Math.floor(diffInHours / 24);
-    if (diffInDays < 7) return this.formatTime(diffInDays, 'day');
-    const diffInWeeks = Math.floor(diffInDays / 7);
-    if (diffInWeeks < 4) return this.formatTime(diffInWeeks, 'week');
-    const diffInMonths = Math.floor(diffInDays / 30);
-    if (diffInMonths < 12) return this.formatTime(diffInMonths, 'month');
-    const diffInYears = Math.floor(diffInMonths / 12);
-    return this.formatTime(diffInYears, 'year');
-  }
-
-  private formatTime(value: number, unit: string): string {
-    return `${value} ${unit}${value > 1 ? 's' : ''} ago`;
   }
 
   hasAlerts(alerts: Record<string, number>): boolean {
@@ -110,7 +82,7 @@ export class SecurityMonitorComponent {
   }
 
   navigateToPage(repoName: string, path: string, additionalPath: string = ''): void {
-    const url = `${this.githubBaseUrl}/${repoName}${path}${additionalPath}`;
+    const url = `${GITHUB_MARKET_ORG_URL}/${repoName}${path}${additionalPath}`;
     window.open(url, '_blank');
   }
 

@@ -28,8 +28,6 @@ public class GitHubConstants {
   @NoArgsConstructor(access = AccessLevel.PRIVATE)
   public static class Url {
     private static final String BASE_URL = "https://api.github.com";
-    public static final String USER = BASE_URL + "/user";
-    public static final String REPO_SECURITY_ADVISORIES = BASE_URL + "/repos/%s/%s/security-advisories?state=%s";
     public static final String REPO_DEPENDABOT_ALERTS_OPEN = BASE_URL + "/repos/%s/%s/dependabot/alerts?state=open";
     public static final String REPO_SECRET_SCANNING_ALERTS_OPEN =
         BASE_URL + "/repos/%s/%s/secret-scanning/alerts?state=open";

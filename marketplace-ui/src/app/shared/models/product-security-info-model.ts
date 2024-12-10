@@ -1,4 +1,4 @@
-export interface Repo {
+export interface ProductSecurityInfo {
   repoName: string;
   visibility: string;
   archived: boolean;
@@ -10,11 +10,11 @@ export interface Repo {
     status: string;
     alerts: Record<string, number>;
   };
-  secretsScanning: {
+  secretScanning: {
     status: string;
     numberOfAlerts: number;
   };
   branchProtectionEnabled: boolean;
   lastCommitSHA: string;
-  lastCommitDate: string;
+  lastCommitDate: Date;
 }

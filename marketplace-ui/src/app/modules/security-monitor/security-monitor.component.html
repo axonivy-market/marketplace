@@ -1,9 +1,3 @@
-@if (isLoading) {
-  <div class="spinner-overlay">
-    <div class="spinner"></div>
-  </div>
-}
-
 <div class="container">
   <div class="header">
     <h2>GitHub Repository Security Monitor</h2>
@@ -61,15 +55,15 @@
               }
             </p>
             <p><span class="icon">🔑</span><span><a (click)="navigateToRepoSecurityScanningPage(repo.repoName)">Secret Scanning</a>:</span>
-              @if (repo.secretsScanning.status == 'DISABLED') {
+              @if (repo.secretScanning.status == 'DISABLED') {
                 <span class="badge none">Disabled</span>
               }
-              @else if (repo.secretsScanning.status == 'NO_PERMISSION') {
+              @else if (repo.secretScanning.status == 'NO_PERMISSION') {
                 <span class="badge no-permission">No permission</span>
               }
-              @else if (repo.secretsScanning.numberOfAlerts) {
+              @else if (repo.secretScanning.numberOfAlerts) {
                 <span class="badge critical">
-                  {{ repo.secretsScanning.numberOfAlerts }} alerts
+                  {{ repo.secretScanning.numberOfAlerts }} alerts
                 </span>
               }
               @else {
@@ -84,7 +78,7 @@
                 <span class="badge none">Disabled</span>
               }
             </p>
-            <p><span class="icon">⏱️</span><span><a (click)="navigateToRepoLastCommitPage(repo.repoName, repo.lastCommitSHA)">Last Commit</a>:</span> {{ formatCommitDate(repo.lastCommitDate) }}</p>
+            <p><span class="icon">⏱️</span><span><a (click)="navigateToRepoLastCommitPage(repo.repoName, repo.lastCommitSHA)">Last Commit</a>:</span> {{ repo.lastCommitDate | timeAgo | async }}</p>
           </div>
         </div>
       }

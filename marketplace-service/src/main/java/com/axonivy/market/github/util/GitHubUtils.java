@@ -33,6 +33,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.function.Function;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 import static com.axonivy.market.constants.MetaConstants.META_FILE;
@@ -82,29 +84,6 @@ public class GitHubUtils {
         .collect(Collectors.joining(CommonConstants.SPACE_SEPARATOR));
   }
 
-  public static String extractMessageFromExceptionMessage(String exceptionMessage) {
-    String json = extractJson(exceptionMessage);
-    String key = "\"message\":\"";
-    int startIndex = json.indexOf(key);
-    if (startIndex != -1) {
-      startIndex += key.length();
-      int endIndex = json.indexOf("\"", startIndex);
-      if (endIndex != -1) {
-        return json.substring(startIndex, endIndex);
-      }
-    }
-    return StringUtils.EMPTY;
-  }
-
-  public static String extractJson(String text) {
-    int start = text.indexOf("{");
-    int end = text.lastIndexOf("}") + 1;
-    if (start != -1 && end != -1) {
-      return text.substring(start, end);
-    }
-    return StringUtils.EMPTY;
-  }
-
   public static int sortMetaJsonFirst(String fileName1, String fileName2) {
     if (fileName1.endsWith(META_FILE))
       return -1;
@@ -150,92 +129,95 @@ public class GitHubUtils {
   }
 
   public static Dependabot getDependabotAlerts(GHRepository repo, GHOrganization organization, String accessToken) {
-    Dependabot dependabot = new Dependabot();
-    try {
-      ResponseEntity<List<Map<String, Object>>> response = fetchApiResponseAsList(accessToken,
-          String.format(GitHubConstants.Url.REPO_DEPENDABOT_ALERTS_OPEN, organization.getLogin(), repo.getName()));
-      dependabot.setStatus(com.axonivy.market.enums.AccessLevel.ENABLED);
-      Map<String, Integer> severityMap = new HashMap<>();
-      if (response.getBody() != null) {
-        List<Map<String, Object>> alerts = response.getBody();
-        for (Map<String, Object> alert : alerts) {
-          Object advisoryObj = alert.get(GitHubConstants.Json.SEVERITY_ADVISORY);
-          if (advisoryObj instanceof Map<?, ?> securityAdvisory) {
-            String severity = (String) securityAdvisory.get(GitHubConstants.Json.SEVERITY);
-            if (severity != null) {
-              severityMap.put(severity, severityMap.getOrDefault(severity, 0) + 1);
+    return fetchAlerts(
+        accessToken,
+        String.format(GitHubConstants.Url.REPO_DEPENDABOT_ALERTS_OPEN, organization.getLogin(), repo.getName()),
+        (alerts) -> {
+          Dependabot dependabot = new Dependabot();
+          Map<String, Integer> severityMap = new HashMap<>();
+          for (Map<String, Object> alert : alerts) {
+            Object advisoryObj = alert.get(GitHubConstants.Json.SEVERITY_ADVISORY);
+            if (advisoryObj instanceof Map<?, ?> securityAdvisory) {
+              String severity = (String) securityAdvisory.get(GitHubConstants.Json.SEVERITY);
+              if (severity != null) {
+                severityMap.put(severity, severityMap.getOrDefault(severity, 0) + 1);
+              }
             }
           }
-        }
-      }
-      dependabot.setAlerts(severityMap);
-    }
-    catch (HttpClientErrorException.Forbidden e) {
-      log.warn(e);
-      dependabot.setStatus(com.axonivy.market.enums.AccessLevel.DISABLED);
-    }
-    catch (HttpClientErrorException.NotFound e) {
-      log.warn(e);
-      dependabot.setStatus(com.axonivy.market.enums.AccessLevel.NO_PERMISSION);
-    }
-    return dependabot;
+          dependabot.setAlerts(severityMap);
+          return dependabot;
+        },
+        Dependabot::new
+    );
   }
 
-  public static SecretScanning getNumberOfSecretScanningAlerts(GHRepository repo, GHOrganization organization,
-      String accessToken) {
-    SecretScanning secretScanning = new SecretScanning();
-    try {
-      ResponseEntity<List<Map<String, Object>>> response = fetchApiResponseAsList(accessToken,
-          String.format(GitHubConstants.Url.REPO_SECRET_SCANNING_ALERTS_OPEN, organization.getLogin(), repo.getName()));
-      secretScanning.setStatus(com.axonivy.market.enums.AccessLevel.ENABLED);
-      if (response.getBody() != null) {
-        secretScanning.setNumberOfAlerts(response.getBody().size());
-      }
-    }
-    catch (HttpClientErrorException.Forbidden e) {
-      log.warn(e);
-      secretScanning.setStatus(com.axonivy.market.enums.AccessLevel.DISABLED);
-    }
-    catch (HttpClientErrorException.NotFound e) {
-      log.warn(e);
-      secretScanning.setStatus(com.axonivy.market.enums.AccessLevel.NO_PERMISSION);
-    }
-    return secretScanning;
+  public static SecretScanning getNumberOfSecretScanningAlerts(GHRepository repo, GHOrganization organization, String accessToken) {
+    return fetchAlerts(
+        accessToken,
+        String.format(GitHubConstants.Url.REPO_SECRET_SCANNING_ALERTS_OPEN, organization.getLogin(), repo.getName()),
+        (alerts) -> {
+          SecretScanning secretScanning = new SecretScanning();
+          secretScanning.setNumberOfAlerts(alerts.size());
+          return secretScanning;
+        },
+        SecretScanning::new
+    );
   }
 
   public static CodeScanning getCodeScanningAlerts(GHRepository repo, GHOrganization organization, String accessToken) {
-    CodeScanning codeScanning = new CodeScanning();
-    try {
-      ResponseEntity<List<Map<String, Object>>> response = fetchApiResponseAsList(accessToken,
-          String.format(GitHubConstants.Url.REPO_CODE_SCANNING_ALERTS_OPEN, organization.getLogin(), repo.getName()));
-      codeScanning.setStatus(com.axonivy.market.enums.AccessLevel.ENABLED);
-      Map<String, Integer> codeScanningMap = new HashMap<>();
-      if (response.getBody() != null) {
-        List<Map<String, Object>> alerts = response.getBody();
-        for (Map<String, Object> alert : alerts) {
-          Object ruleObj = alert.get(GitHubConstants.Json.RULE);
-          if (ruleObj instanceof Map<?, ?> rule) {
-            String severity = (String) rule.get(GitHubConstants.Json.SECURITY_SEVERITY_LEVEL);
-            if (severity != null) {
-              codeScanningMap.put(severity, codeScanningMap.getOrDefault(severity, 0) + 1);
+    return fetchAlerts(
+        accessToken,
+        String.format(GitHubConstants.Url.REPO_CODE_SCANNING_ALERTS_OPEN, organization.getLogin(), repo.getName()),
+        (alerts) -> {
+          CodeScanning codeScanning = new CodeScanning();
+          Map<String, Integer> codeScanningMap = new HashMap<>();
+          for (Map<String, Object> alert : alerts) {
+            Object ruleObj = alert.get(GitHubConstants.Json.RULE);
+            if (ruleObj instanceof Map<?, ?> rule) {
+              String severity = (String) rule.get(GitHubConstants.Json.SECURITY_SEVERITY_LEVEL);
+              if (severity != null) {
+                codeScanningMap.put(severity, codeScanningMap.getOrDefault(severity, 0) + 1);
+              }
             }
           }
-        }
-      }
-      codeScanning.setAlerts(codeScanningMap);
-    }
-    catch (HttpClientErrorException.Forbidden e) {
-      log.warn(e);
-      codeScanning.setStatus(com.axonivy.market.enums.AccessLevel.DISABLED);
-    }
-    catch (HttpClientErrorException.NotFound e) {
-      log.warn(e);
-      codeScanning.setStatus(com.axonivy.market.enums.AccessLevel.NO_PERMISSION);
-    }
-    return codeScanning;
+          codeScanning.setAlerts(codeScanningMap);
+          return codeScanning;
+        },
+        CodeScanning::new
+    );
   }
 
-  public static ResponseEntity<List<Map<String, Object>>> fetchApiResponseAsList(String accessToken, String url) throws RestClientException {
+  private static <T> T fetchAlerts(
+      String accessToken,
+      String url,
+      Function<List<Map<String, Object>>, T> mapAlerts,
+      Supplier<T> defaultInstanceSupplier
+  ) {
+    T instance = defaultInstanceSupplier.get();
+    try {
+      ResponseEntity<List<Map<String, Object>>> response = fetchApiResponseAsList(accessToken, url);
+      instance = mapAlerts.apply(response.getBody() != null ? response.getBody() : List.of());
+      setStatus(instance, com.axonivy.market.enums.AccessLevel.ENABLED);
+    } catch (HttpClientErrorException.Forbidden e) {
+      setStatus(instance, com.axonivy.market.enums.AccessLevel.DISABLED);
+    } catch (HttpClientErrorException.NotFound e) {
+      setStatus(instance, com.axonivy.market.enums.AccessLevel.NO_PERMISSION);
+    }
+    return instance;
+  }
+
+  private static void setStatus(Object instance, com.axonivy.market.enums.AccessLevel status) {
+    if (instance instanceof Dependabot) {
+      ((Dependabot) instance).setStatus(status);
+    } else if (instance instanceof SecretScanning) {
+      ((SecretScanning) instance).setStatus(status);
+    } else if (instance instanceof CodeScanning) {
+      ((CodeScanning) instance).setStatus(status);
+    }
+  }
+
+  public static ResponseEntity<List<Map<String, Object>>> fetchApiResponseAsList(String accessToken,
+      String url) throws RestClientException {
     HttpHeaders headers = new HttpHeaders();
     headers.setBearerAuth(accessToken);
     HttpEntity<String> entity = new HttpEntity<>(headers);
