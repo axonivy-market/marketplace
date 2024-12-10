@@ -1,9 +1,17 @@
+@if (isLoading) {
+  <div class="spinner-overlay">
+    <div class="spinner"></div>
+  </div>
+}
+
 <div class="container">
+  <div class="header">
+    <h2>GitHub Repository Security Monitor</h2>
+    <h3>Keep track of your repositories' security status at a glance.</h3>
+  </div>
   @if (isAuthenticated) {
     <div class="header">
-      <h2>GitHub Repository Security Monitor</h2>
-      <h3>Keep track of your repositories' security status at a glance.</h3>
-      <!-- <h3><a href="#" class="reload-link" title="Reload security data">Reload Security Data</a></h3> -->
+      <h3><a class="reload-link" title="Reload security data" (click)="onSubmit()">Reload Security Data</a></h3>
     </div>
     <div class="repo-grid">
       @for (repo of repos; track $index) {
@@ -86,14 +94,9 @@
     <div class="token-input-container">
       <h3>Please enter your token to access the security page.</h3>
       <div>
-        <input type="text" [(ngModel)]="token" placeholder="Enter your token" />
-        <button (click)="onSubmit()" [disabled]="isLoading">
-          @if (isLoading) {
-            <span class="spinner"></span>
-          }
-          @else {
-            Submit
-          }
+        <input type="password" [(ngModel)]="token" placeholder="Enter your token" />
+        <button (click)="onSubmit()">
+          Proceed
         </button>
         @if (errorMessage) {
           <div class="error-message">{{ errorMessage }}</div>

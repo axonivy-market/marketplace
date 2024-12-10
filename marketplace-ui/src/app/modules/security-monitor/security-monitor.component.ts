@@ -38,8 +38,12 @@ export class SecurityMonitorComponent {
   }
 
   onSubmit(): void {
+    this.token = this.token ?? sessionStorage.getItem('security-monitor-token') ?? '';
     if (!this.token) {
       this.errorMessage = 'Token is required';
+      this.isAuthenticated = false;
+      sessionStorage.removeItem('security-monitor-token');
+      sessionStorage.removeItem('security-monitor-data');
       return;
     }
 
@@ -68,6 +72,9 @@ export class SecurityMonitorComponent {
         : 'Failed to fetch security data. Check logs for details.';
     console.error(err);
     this.isLoading = false;
+    this.isAuthenticated = false;
+    sessionStorage.removeItem('security-monitor-token');
+    sessionStorage.removeItem('security-monitor-data');
   }
 
   formatCommitDate(date: string): string {
