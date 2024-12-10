@@ -8,6 +8,17 @@
   transform: scale(1.25, 1.25);
   animation: dot-stretching 1s infinite ease-in;
 }
+
+.dot-stretching,
+.dot-stretching::before,
+.dot-stretching::after{
+  width: 10px;
+  height: 10px;
+  border-radius: 5px;
+  background-color: var(--ivy-primary-bg);
+  color: var(--ivy-primary-bg);
+}
+
 .dot-stretching::before,
 .dot-stretching::after {
   content: '';
@@ -15,21 +26,14 @@
   position: absolute;
   top: 0;
 }
+
+
 .dot-stretching::before {
-  width: 10px;
-  height: 10px;
-  border-radius: 5px;
-  background-color: var(--ivy-primary-bg);
-  color: var(--ivy-primary-bg);
-  animation: dot-stretching-before 2s infinite ease-in;
+  animation: dot-stretching-before 1s infinite ease-in;
 }
+
 .dot-stretching::after {
-  width: 10px;
-  height: 10px;
-  border-radius: 5px;
-  background-color: var(--ivy-primary-bg);
-  color: var(--ivy-primary-bg);
-  animation: dot-stretching-after 2s infinite ease-in;
+  animation: dot-stretching-after 1s infinite ease-in;
 }
 
 .stage {
