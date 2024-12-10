@@ -5,7 +5,7 @@ import { ActivatedRoute } from '@angular/router';
 import { TranslateModule } from '@ngx-translate/core';
 import { of } from 'rxjs';
 import { ProductComponent } from '../../modules/product/product.component';
-import { DESIGNER_COOKIE_VARIABLE } from '../../shared/constants/common.constant';
+import { DESIGNER_SESSION_STORAGE_VARIABLE } from '../../shared/constants/common.constant';
 import { apiInterceptor } from './api.interceptor';
 import { MatomoTestingModule } from 'ngx-matomo-client/testing';
 
@@ -29,7 +29,7 @@ describe('AuthInterceptor', () => {
           provide: ActivatedRoute,
           useValue: {
             queryParams: of({
-              [DESIGNER_COOKIE_VARIABLE.restClientParamName]: true
+              [DESIGNER_SESSION_STORAGE_VARIABLE.restClientParamName]: true
             })
           }
         }

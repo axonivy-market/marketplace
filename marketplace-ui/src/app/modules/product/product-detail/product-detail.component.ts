@@ -204,7 +204,7 @@ export class ProductDetailComponent {
   }
 
   getProductById(productId: string, isShowDevVersion: boolean): Observable<ProductDetail> {
-    const targetVersion = this.routingQueryParamService.getDesignerVersionFromCookie();
+    const targetVersion = this.routingQueryParamService.getDesignerVersionFromSessionStorage();
     let productDetail$: Observable<ProductDetail>;
     if (!targetVersion) {
       productDetail$ = this.productService.getProductDetails(productId, isShowDevVersion);
