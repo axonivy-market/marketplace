@@ -11,14 +11,14 @@
       @for (repo of repos; track $index) {
         <div class="repo-card">
           <div class="repo-header">
-            <h3 (click)="navigateToRepoSecurityPage(repo.repoName)">{{ repo.repoName }}</h3>
+            <h3 (click)="navigateToRepoPage(repo.repoName, 'security')">{{ repo.repoName }}</h3>
             <span class="visibility text-capitalize">{{ repo.visibility }}</span>
             @if (repo.archived) {
               <span class="archived">Archived</span>
             }
           </div>
           <div class="repo-info">
-            <p><span class="icon">🤖</span><span><a (click)="navigateToRepoDependabotPage(repo.repoName)">Dependabot</a>:</span>
+            <p><span class="icon">🤖</span><span><a (click)="navigateToRepoPage(repo.repoName, 'dependabot')">Dependabot</a>:</span>
               @if (repo.dependabot.status == 'DISABLED') {
                 <span class="badge none">Disabled</span>
               }
@@ -36,7 +36,7 @@
                 <span class="badge active">No vulnerabilities</span>
               }
             </p>
-            <p><span class="icon">🖥️</span><span><a (click)="navigateToRepoCodeScanningPage(repo.repoName)">Code Scanning</a>:</span>
+            <p><span class="icon">🖥️</span><span><a (click)="navigateToRepoPage(repo.repoName, 'codeScanning')">Code Scanning</a>:</span>
               @if (repo.codeScanning.status == 'DISABLED') {
                 <span class="badge none">Disabled</span>
               }
@@ -54,7 +54,7 @@
                 <span class="badge active">No vulnerabilities</span>
               }
             </p>
-            <p><span class="icon">🔑</span><span><a (click)="navigateToRepoSecurityScanningPage(repo.repoName)">Secret Scanning</a>:</span>
+            <p><span class="icon">🔑</span><span><a (click)="navigateToRepoPage(repo.repoName, 'secretScanning')">Secret Scanning</a>:</span>
               @if (repo.secretScanning.status == 'DISABLED') {
                 <span class="badge none">Disabled</span>
               }
@@ -70,7 +70,7 @@
                 <span class="badge active">No vulnerabilities</span>
               }
             </p>
-            <p><span class="icon">🚧</span><span><a (click)="navigateToRepoBranchesSettingPage(repo.repoName)">Branch Protection</a>:</span>
+            <p><span class="icon">🚧</span><span><a (click)="navigateToRepoPage(repo.repoName, 'branches')">Branch Protection</a>:</span>
               @if (repo.branchProtectionEnabled) {
                 <span class="badge active">Enabled</span>
               }
@@ -78,7 +78,7 @@
                 <span class="badge none">Disabled</span>
               }
             </p>
-            <p><span class="icon">⏱️</span><span><a (click)="navigateToRepoLastCommitPage(repo.repoName, repo.lastCommitSHA)">Last Commit</a>:</span> {{ repo.lastCommitDate | timeAgo | async }}</p>
+            <p><span class="icon">⏱️</span><span><a (click)="navigateToRepoPage(repo.repoName, 'lastCommit', repo.lastCommitSHA)">Last Commit</a>:</span> {{ repo.lastCommitDate | timeAgo | async }}</p>
           </div>
         </div>
       }

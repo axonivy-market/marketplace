@@ -106,7 +106,7 @@ export class SecurityMonitorComponent {
       security: '/security',
       dependabot: '/security/dependabot',
       codeScanning: '/security/code-scanning',
-      securityScanning: '/security/security-scanning',
+      secretScanning: '/security/secret-scanning',
       branches: '/settings/branches',
       lastCommit: `/commit/${lastCommitSHA || ''}`,
     };
@@ -122,6 +122,6 @@ type RepoPage =
   | 'security' 
   | 'dependabot' 
   | 'codeScanning' 
-  | 'securityScanning' 
+  | 'secretScanning' 
   | 'branches' 
   | 'lastCommit';
