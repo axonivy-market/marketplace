@@ -5,8 +5,9 @@ import { of, throwError } from 'rxjs';
 import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { By } from '@angular/platform-browser';
-import { TranslateService } from '@ngx-translate/core';
 import { ProductSecurityInfo } from '../../shared/models/product-security-info-model';
+import { HttpErrorResponse } from '@angular/common/http';
+import { TranslateService } from '@ngx-translate/core';
 
 describe('SecurityMonitorComponent', () => {
   let component: SecurityMonitorComponent;
@@ -21,7 +22,7 @@ describe('SecurityMonitorComponent', () => {
       providers: [
         { provide: SecurityMonitorService, useValue: spy },
         { provide: TranslateService, useValue: spy }
-      ]
+      ],
     }).compileComponents();
 
     securityMonitorService = TestBed.inject(SecurityMonitorService) as jasmine.SpyObj<SecurityMonitorService>;
@@ -37,7 +38,7 @@ describe('SecurityMonitorComponent', () => {
     expect(component).toBeTruthy();
   });
 
-  it('should show error message when token is empty and onSubmit is called', () => {
+  it('should show an error message when token is empty and onSubmit is called', () => {
     component.token = '';
     component.onSubmit();
     expect(component.errorMessage).toBe('Token is required');
@@ -45,14 +46,16 @@ describe('SecurityMonitorComponent', () => {
 
   it('should call SecurityMonitorService and display repos when token is valid and response is successful', () => {
     const mockRepos: ProductSecurityInfo[] = [
-      { 
-        repoName: 'repo1', visibility: 'public', 
-        archived: false, dependabot: { status: 'ENABLED', alerts: {} }, 
-        codeScanning: { status: 'ENABLED', alerts: {} }, 
-        secretScanning: { status: 'ENABLED', numberOfAlerts: 0 }, 
-        branchProtectionEnabled: true, 
-        lastCommitSHA: '12345', 
-        lastCommitDate: new Date() 
+      {
+        repoName: 'repo1',
+        visibility: 'public',
+        archived: false,
+        dependabot: { status: 'ENABLED', alerts: {} },
+        codeScanning: { status: 'ENABLED', alerts: {} },
+        secretScanning: { status: 'ENABLED', numberOfAlerts: 0 },
+        branchProtectionEnabled: true,
+        lastCommitSHA: '12345',
+        lastCommitDate: new Date(),
       },
     ];
 
@@ -72,8 +75,8 @@ describe('SecurityMonitorComponent', () => {
     expect(repoCards[0].nativeElement.querySelector('h3').textContent).toBe('repo1');
   });
 
-  it('should handle error when token is invalid (401 Unauthorized)', () => {
-    const mockError = { status: 401 };
+  it('should handle 401 Unauthorized error correctly', () => {
+    const mockError = new HttpErrorResponse({ status: 401 });
 
     securityMonitorService.getSecurityDetails.and.returnValue(throwError(() => mockError));
 
@@ -85,8 +88,8 @@ describe('SecurityMonitorComponent', () => {
     expect(component.errorMessage).toBe('Unauthorized access.');
   });
 
-  it('should handle generic error when fetching security data fails', () => {
-    const mockError = { status: 500 };
+  it('should handle generic error correctly', () => {
+    const mockError = new HttpErrorResponse({ status: 500 });
 
     securityMonitorService.getSecurityDetails.and.returnValue(throwError(() => mockError));
 
@@ -96,5 +99,30 @@ describe('SecurityMonitorComponent', () => {
     fixture.detectChanges();
 
     expect(component.errorMessage).toBe('Failed to fetch security data. Check logs for details.');
+  });
+
+  it('should navigate to the correct URL for a repo page', () => {
+    spyOn(window, 'open');
+    component.navigateToRepoPage('example-repo', 'secretScanning');
+    expect(window.open).toHaveBeenCalledWith(
+      'https://github.com/axonivy-market/example-repo/security/secret-scanning',
+      '_blank'
+    );
+
+    component.navigateToRepoPage('example-repo', 'lastCommit', 'abc123');
+    expect(window.open).toHaveBeenCalledWith(
+      'https://github.com/axonivy-market/example-repo/commit/abc123',
+      '_blank'
+    );
+  });
+
+  it('should handle empty alerts correctly in hasAlerts', () => {
+    expect(component.hasAlerts({})).toBeFalse();
+    expect(component.hasAlerts({ alert1: 1 })).toBeTrue();
+  });
+
+  it('should return correct alert keys from alertKeys', () => {
+    const alerts = { alert1: 1, alert2: 2 };
+    expect(component.alertKeys(alerts)).toEqual(['alert1', 'alert2']);
   });
 });
