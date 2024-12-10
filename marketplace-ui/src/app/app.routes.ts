@@ -3,6 +3,7 @@ import { GithubCallbackComponent } from './auth/github-callback/github-callback.
 import { ErrorPageComponent } from './shared/components/error-page/error-page.component';
 import { RedirectPageComponent } from './shared/components/redirect-page/redirect-page.component';
 import { ERROR_PAGE } from './shared/constants/common.constant';
+import { SecurityMonitorComponent } from './modules/security-monitor/security-monitor.component';
 
 export const routes: Routes = [
   {
@@ -14,6 +15,10 @@ export const routes: Routes = [
     path: 'error-page/:id',
     component: ErrorPageComponent,
     title: ERROR_PAGE
+  },
+  {
+    path: 'security-monitor',
+    component: SecurityMonitorComponent
   },
   {
     path: '',
