@@ -132,7 +132,7 @@ public class GitHubUtils {
     return fetchAlerts(
         accessToken,
         String.format(GitHubConstants.Url.REPO_DEPENDABOT_ALERTS_OPEN, organization.getLogin(), repo.getName()),
-        (alerts) -> {
+        alerts -> {
           Dependabot dependabot = new Dependabot();
           Map<String, Integer> severityMap = new HashMap<>();
           for (Map<String, Object> alert : alerts) {
@@ -155,7 +155,7 @@ public class GitHubUtils {
     return fetchAlerts(
         accessToken,
         String.format(GitHubConstants.Url.REPO_SECRET_SCANNING_ALERTS_OPEN, organization.getLogin(), repo.getName()),
-        (alerts) -> {
+        alerts -> {
           SecretScanning secretScanning = new SecretScanning();
           secretScanning.setNumberOfAlerts(alerts.size());
           return secretScanning;
@@ -168,7 +168,7 @@ public class GitHubUtils {
     return fetchAlerts(
         accessToken,
         String.format(GitHubConstants.Url.REPO_CODE_SCANNING_ALERTS_OPEN, organization.getLogin(), repo.getName()),
-        (alerts) -> {
+        alerts -> {
           CodeScanning codeScanning = new CodeScanning();
           Map<String, Integer> codeScanningMap = new HashMap<>();
           for (Map<String, Object> alert : alerts) {
@@ -207,12 +207,12 @@ public class GitHubUtils {
   }
 
   private static void setStatus(Object instance, com.axonivy.market.enums.AccessLevel status) {
-    if (instance instanceof Dependabot) {
-      ((Dependabot) instance).setStatus(status);
-    } else if (instance instanceof SecretScanning) {
-      ((SecretScanning) instance).setStatus(status);
-    } else if (instance instanceof CodeScanning) {
-      ((CodeScanning) instance).setStatus(status);
+    if (instance instanceof Dependabot dependabot) {
+      dependabot.setStatus(status);
+    } else if (instance instanceof SecretScanning secretScanning) {
+      secretScanning.setStatus(status);
+    } else if (instance instanceof CodeScanning codeScanning) {
+      codeScanning.setStatus(status);
     }
   }
 

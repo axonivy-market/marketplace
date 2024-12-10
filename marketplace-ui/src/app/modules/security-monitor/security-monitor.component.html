@@ -5,7 +5,7 @@
   </div>
   @if (isAuthenticated) {
     <div class="header">
-      <h3><a class="reload-link" title="Reload security data" (click)="onSubmit()">Reload Security Data</a></h3>
+      <h3><a class="reload-link" title="Reload data" (click)="onSubmit()">Reload Data</a></h3>
     </div>
     <div class="repo-grid">
       @for (repo of repos; track $index) {
