@@ -243,5 +243,4 @@ class ProductControllerTest extends BaseSetup {
     assertEquals(HttpStatus.OK, response.getStatusCode());
     assertEquals(ErrorCode.SUCCESSFUL.getCode(), response.getBody().getHelpCode());
   }
-
 }

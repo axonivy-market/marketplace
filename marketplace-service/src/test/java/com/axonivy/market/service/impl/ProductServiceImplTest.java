@@ -40,12 +40,14 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.kohsuke.github.GHCommit;
 import org.kohsuke.github.GHContent;
+import org.kohsuke.github.GHTag;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockedStatic;
 import org.mockito.Mockito;
+import org.mockito.exceptions.base.MockitoException;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
@@ -56,6 +58,7 @@ import org.springframework.data.domain.Sort;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -612,5 +615,27 @@ class ProductServiceImplTest extends BaseSetup {
     var result = productService.syncLatestDataFromMarketRepo(false);
     assertNotNull(result);
     assertTrue(result.isEmpty());
+  }
+
+  @Test
+  void testSyncFirstPublishedDateOfAllProducts() throws IOException {
+    Product mockProduct = new Product();
+    mockProduct.setId(SAMPLE_PRODUCT_ID);
+    mockProduct.setMarketDirectory(SAMPLE_PRODUCT_PATH);
+    mockProduct.setRepositoryName(SAMPLE_PRODUCT_REPOSITORY_NAME);
+    List<Product> products = Arrays.asList(mockProduct);
+    when(productRepo.findAll()).thenReturn(products);
+    when(productRepo.save(any(Product.class))).thenReturn(mockProduct);
+    GHTag ghTagVersionOne = new GHTag();
+    GHTag ghTagVersionTwo = new GHTag();
+    List<GHTag> tags = Arrays.asList(ghTagVersionOne, ghTagVersionTwo);
+    when(gitHubService.getRepositoryTags(SAMPLE_PRODUCT_REPOSITORY_NAME)).thenReturn(tags);
+    assertTrue(productService.syncFirstPublishedDateOfAllProducts());
+  }
+
+  @Test
+  void testSyncFirstPublishedDateOfAllProductsFailed() {
+    when(productRepo.findAll()).thenThrow(new MockitoException("Sync FirstPublishedDate of all products failed!"));
+    assertFalse(productService.syncFirstPublishedDateOfAllProducts());
   }
 }
