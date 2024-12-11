@@ -41,6 +41,7 @@ import org.apache.logging.log4j.util.Strings;
 import org.kohsuke.github.GHCommit;
 import org.kohsuke.github.GHContent;
 import org.kohsuke.github.GHRepository;
+import org.kohsuke.github.GHTag;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -57,15 +58,7 @@ import java.net.URL;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 
 import static com.axonivy.market.constants.CommonConstants.SLASH;
 import static com.axonivy.market.constants.MavenConstants.*;
@@ -370,8 +363,8 @@ public class ProductServiceImpl implements ProductService {
       } else if (productRepo.findById(product.getId()).isPresent()) {
         continue;
       }
-
       updateProductContentForNonStandardProduct(ghContentEntity.getValue(), product);
+      updateFirstPublishedDate(product);
       updateProductFromReleasedVersions(product);
       transferComputedDataFromDB(product);
       productMarketplaceDataRepo.checkAndInitProductMarketplaceDataIfNotExist(product.getId());
@@ -410,6 +403,49 @@ public class ProductServiceImpl implements ProductService {
       }
     }
     return EMPTY;
+  }
+
+  private void updateFirstPublishedDate(Product product) {
+    try {
+      if (StringUtils.isNotBlank(product.getRepositoryName())) {
+        List<GHTag> gitHubTags = gitHubService.getRepositoryTags(product.getRepositoryName());
+        Date firstTagPublishedDate = getFirstTagPublishedDate(gitHubTags);
+        product.setFirstPublishedDate(firstTagPublishedDate);
+      }
+    } catch (IOException e) {
+      log.error("Get GH Tags failed: ", e);
+    }
+  }
+
+  private Date getFirstTagPublishedDate(List<GHTag> gitHubTags) {
+    Date firstTagPublishedDate = null;
+    try {
+      if (!CollectionUtils.isEmpty(gitHubTags)) {
+        List<GHTag> sortedTags = sortByTagCommitDate(gitHubTags);
+        GHCommit commit = sortedTags.get(0).getCommit();
+        if (commit != null) {
+          firstTagPublishedDate = commit.getCommitDate();
+        }
+      }
+    } catch (IOException e) {
+      throw new RuntimeException(e);
+    }
+
+    return firstTagPublishedDate;
+  }
+
+  private List<GHTag> sortByTagCommitDate(List<GHTag> gitHubTags) {
+    List<GHTag> sortedTags = new ArrayList<>(gitHubTags);
+    sortedTags.sort(Comparator.comparing(this::sortByCommitDate, Comparator.nullsLast(Comparator.naturalOrder())));
+    return sortedTags;
+  }
+
+  private Date sortByCommitDate(GHTag gitHubTag) {
+    try {
+      return gitHubTag.getCommit() != null ? gitHubTag.getCommit().getCommitDate() : null;
+    } catch (IOException e) {
+      throw new RuntimeException(e);
+    }
   }
 
   private void updateProductFromReleasedVersions(Product product) {
@@ -536,7 +572,6 @@ public class ProductServiceImpl implements ProductService {
         : mavenArtifact.getArtifactId().concat(PRODUCT_ARTIFACT_POSTFIX);
   }
 
-
   // Cover 3 cases after removing non-numeric characters (8, 11.1 and 10.0.2)
   @Override
   public String getCompatibilityFromOldestVersion(String oldestVersion) {
@@ -628,6 +663,7 @@ public class ProductServiceImpl implements ProductService {
         log.info("Update data of product {} from meta.json and logo files", productId);
         mappingMetaDataAndLogoFromGHContent(gitHubContents, product);
         updateProductContentForNonStandardProduct(gitHubContents, product);
+        updateFirstPublishedDate(product);
         updateProductFromReleasedVersions(product);
         productMarketplaceDataRepo.checkAndInitProductMarketplaceDataIfNotExist(productId);
         productRepo.save(product);
@@ -638,13 +674,6 @@ public class ProductServiceImpl implements ProductService {
       log.error(e.getStackTrace());
     }
     return false;
-  }
-
-  @Override
-  public void clearAllProductVersion() {
-    metadataRepo.deleteAll();
-    metadataSyncRepo.deleteAll();
-    mavenArtifactVersionRepo.deleteAll();
   }
 
   private Product renewProductById(String productId, String marketItemPath, Boolean overrideMarketItemPath) {
@@ -690,6 +719,30 @@ public class ProductServiceImpl implements ProductService {
       product.setNewestReleaseVersion(INITIAL_VERSION);
       axonIvyProductRepoService.extractReadMeFileFromContents(product, ghContentEntity, initialContent);
       productModuleContentRepo.save(initialContent);
+    }
+  }
+
+  @Override
+  public boolean syncFirstPublishedDateOfAllProducts() {
+    try {
+      List<Product> products = productRepo.findAll();
+      if (!CollectionUtils.isEmpty(products)) {
+        for (Product product : products) {
+          if (product.getFirstPublishedDate() == null) {
+            log.info("sync FirstPublishedDate of product {} is starting ...", product.getId());
+            updateFirstPublishedDate(product);
+            productRepo.save(product);
+            log.info("Sync FirstPublishedDate of product {} is finished!", product.getId());
+          } else {
+            log.info("FirstPublishedDate of product {} is existing!", product.getId());
+          }
+        }
+      }
+      log.info("sync FirstPublishedDate of all products is finished!");
+      return true;
+    } catch (Exception e) {
+      log.error(e.getStackTrace());
+      return false;
     }
   }
 }

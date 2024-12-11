@@ -37,6 +37,7 @@ import java.util.Map;
 import java.util.Objects;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -214,4 +215,33 @@ class ProductControllerTest extends BaseSetup {
     mockProduct.setTags(List.of("AI"));
     return mockProduct;
   }
+
+  @Test
+  void testSyncFirstPublishedDateOfAllProductsInvalidToken() {
+    doThrow(new UnauthorizedException(ErrorCode.GITHUB_USER_UNAUTHORIZED.getCode(),
+        ErrorCode.GITHUB_USER_UNAUTHORIZED.getHelpText())).when(gitHubService)
+        .validateUserInOrganizationAndTeam(any(String.class), any(String.class), any(String.class));
+
+    UnauthorizedException exception = assertThrows(UnauthorizedException.class,
+        () -> productController.syncFirstPublishedDateOfAllProducts(INVALID_AUTHORIZATION_HEADER));
+
+    assertEquals(ErrorCode.GITHUB_USER_UNAUTHORIZED.getHelpText(), exception.getMessage());
+  }
+
+  @Test
+  void testSyncFirstPublishedDateOfAllProductsFailed() {
+    when(service.syncFirstPublishedDateOfAllProducts()).thenReturn(false);
+    var response = productController.syncFirstPublishedDateOfAllProducts(AUTHORIZATION_HEADER);
+    assertEquals(HttpStatus.OK, response.getStatusCode());
+    assertNotEquals(ErrorCode.SUCCESSFUL.getCode(), response.getBody().getHelpCode());
+  }
+
+  @Test
+  void testSyncFirstPublishedDateOfAllProductsSuccess() {
+    when(service.syncFirstPublishedDateOfAllProducts()).thenReturn(true);
+    var response = productController.syncFirstPublishedDateOfAllProducts(AUTHORIZATION_HEADER);
+    assertEquals(HttpStatus.OK, response.getStatusCode());
+    assertEquals(ErrorCode.SUCCESSFUL.getCode(), response.getBody().getHelpCode());
+  }
+
 }
