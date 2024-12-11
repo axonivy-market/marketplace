@@ -428,7 +428,7 @@ public class ProductServiceImpl implements ProductService {
         }
       }
     } catch (IOException e) {
-      throw new RuntimeException(e);
+      log.error("Get first tag published date failed: ", e);
     }
 
     return firstTagPublishedDate;
@@ -441,11 +441,15 @@ public class ProductServiceImpl implements ProductService {
   }
 
   private Date sortByCommitDate(GHTag gitHubTag) {
+    Date commitDate = null;
     try {
-      return gitHubTag.getCommit() != null ? gitHubTag.getCommit().getCommitDate() : null;
+      if (gitHubTag.getCommit() != null) {
+        commitDate = gitHubTag.getCommit().getCommitDate();
+      }
     } catch (IOException e) {
-      throw new RuntimeException(e);
+      log.error("Get first tag published date failed: ", e);
     }
+    return commitDate;
   }
 
   private void updateProductFromReleasedVersions(Product product) {
