@@ -50,6 +50,9 @@ import { CookieService } from 'ngx-cookie-service';
 import { ROUTER } from '../../../shared/constants/router.constant';
 import { Title } from '@angular/platform-browser';
 import { API_URI } from '../../../shared/constants/api.constant';
+import { EmptyProductDetailPipe } from "../../../shared/pipes/empty-product-detail.pipe";
+import { LoadingSpinnerComponent } from "../../../shared/components/loading-spinner/loading-spinner.component";
+import { LoadingComponentId } from '../../../shared/enums/loading-component-id';
 
 export interface DetailTab {
   activeClass: string;
@@ -78,7 +81,9 @@ const DEFAULT_ACTIVE_TAB = 'description';
     ProductInstallationCountActionComponent,
     ProductTypeIconPipe,
     CommonDropdownComponent,
-    NgOptimizedImage
+    NgOptimizedImage,
+    EmptyProductDetailPipe,
+    LoadingSpinnerComponent
   ],
   providers: [ProductService, MarkdownService],
   templateUrl: './product-detail.component.html',
@@ -98,9 +103,8 @@ export class ProductDetailComponent {
   elementRef = inject(ElementRef);
   cookieService = inject(CookieService);
   routingQueryParamService = inject(RoutingQueryParamService);
-
+  protected LoadingComponentId = LoadingComponentId;
   resizeObserver: ResizeObserver;
-
   productDetail: WritableSignal<ProductDetail> = signal({} as ProductDetail);
   productModuleContent: WritableSignal<ProductModuleContent> = signal(
     {} as ProductModuleContent
@@ -143,28 +147,37 @@ export class ProductDetailComponent {
       queryParamsHandling: 'merge',
       replaceUrl: true
     });
-
     const productId = this.route.snapshot.params[ROUTER.ID];
     this.productDetailService.productId.set(productId);
     if (productId) {
-      const isShowDevVersion = CommonUtils.getCookieValue(this.cookieService, SHOW_DEV_VERSION, false);
-      this.getProductById(productId, isShowDevVersion).subscribe(productDetail => {
-        this.productDetail.set(productDetail);
-        this.productModuleContent.set(productDetail.productModuleContent);
-        this.metaProductJsonUrl = productDetail.metaProductJsonUrl;
-        this.productDetailService.productNames.set(productDetail.names);
-        this.productDetailService.productLogoUrl.set(productDetail.logoUrl);
-        this.installationCount = productDetail.installationCount;
-        this.handleProductContentVersion();
-        this.updateProductDetailActionType(productDetail);
-        this.logoUrl = productDetail.logoUrl;
-        this.updateWebBrowserTitle();
-        const ratingLabels = RATING_LABELS_BY_TYPE.find(button => button.type === productDetail.type);
-        if (ratingLabels !== undefined) {
-          this.productDetailService.ratingBtnLabel.set(ratingLabels.btnLabel);
-          this.productDetailService.noFeedbackLabel.set(ratingLabels.noFeedbackLabel);
+      const isShowDevVersion = CommonUtils.getCookieValue(
+        this.cookieService,
+        SHOW_DEV_VERSION,
+        false
+      );
+      this.getProductById(productId, isShowDevVersion).subscribe(
+        productDetail => {
+          this.productDetail.set(productDetail);
+          this.productModuleContent.set(productDetail.productModuleContent);
+          this.metaProductJsonUrl = productDetail.metaProductJsonUrl;
+          this.productDetailService.productNames.set(productDetail.names);
+          this.productDetailService.productLogoUrl.set(productDetail.logoUrl);
+          this.installationCount = productDetail.installationCount;
+          this.handleProductContentVersion();
+          this.updateProductDetailActionType(productDetail);
+          this.logoUrl = productDetail.logoUrl;
+          this.updateWebBrowserTitle();
+          const ratingLabels = RATING_LABELS_BY_TYPE.find(
+            button => button.type === productDetail.type
+          );
+          if (ratingLabels !== undefined) {
+            this.productDetailService.ratingBtnLabel.set(ratingLabels.btnLabel);
+            this.productDetailService.noFeedbackLabel.set(
+              ratingLabels.noFeedbackLabel
+            );
+          }
         }
-      });
+      );
 
       this.productFeedbackService.initFeedbacks();
       this.productStarRatingService.fetchData();
@@ -184,7 +197,9 @@ export class ProductDetailComponent {
     if (this.isEmptyProductContent()) {
       return;
     }
-    this.selectedVersion = VERSION.displayPrefix.concat(this.productModuleContent().version);
+    this.selectedVersion = VERSION.displayPrefix.concat(
+      this.productModuleContent().version
+    );
   }
 
   updateProductDetailActionType(productDetail: ProductDetail) {
@@ -201,17 +216,24 @@ export class ProductDetailComponent {
     window.scrollTo({ left: 0, top: 0, behavior: 'instant' });
   }
 
-  getProductById(productId: string, isShowDevVersion: boolean): Observable<ProductDetail> {
-    const targetVersion = this.routingQueryParamService.getDesignerVersionFromCookie();
+  getProductById(
+    productId: string,
+    isShowDevVersion: boolean
+  ): Observable<ProductDetail> {
+    const targetVersion =
+      this.routingQueryParamService.getDesignerVersionFromCookie();
     let productDetail$: Observable<ProductDetail>;
     if (!targetVersion) {
-      productDetail$ = this.productService.getProductDetails(productId, isShowDevVersion);
-    }
-    else {
-      productDetail$ = this.productService.getBestMatchProductDetailsWithVersion(
+      productDetail$ = this.productService.getProductDetails(
         productId,
-        targetVersion
+        isShowDevVersion
       );
+    } else {
+      productDetail$ =
+        this.productService.getBestMatchProductDetailsWithVersion(
+          productId,
+          targetVersion
+        );
     }
     return productDetail$.pipe(
       map((response: ProductDetail) => this.setDefaultVendorImage(response))
@@ -378,7 +400,8 @@ export class ProductDetailComponent {
 
   updateWebBrowserTitle() {
     if (this.productDetail().names !== undefined) {
-      const title = this.productDetail().names[this.languageService.selectedLanguage()];
+      const title =
+        this.productDetail().names[this.languageService.selectedLanguage()];
       this.titleService.setTitle(title);
     }
   }
@@ -404,11 +427,10 @@ export class ProductDetailComponent {
   private setDefaultVendorImage(productDetail: ProductDetail): ProductDetail {
     const { vendorImage, vendorImageDarkMode } = productDetail;
 
-    if (!(productDetail.vendorImage || productDetail.vendorImageDarkMode )) {
+    if (!(productDetail.vendorImage || productDetail.vendorImageDarkMode)) {
       productDetail.vendorImage = DEFAULT_VENDOR_IMAGE_BLACK;
       productDetail.vendorImageDarkMode = DEFAULT_VENDOR_IMAGE;
-    }
-    else {
+    } else {
       productDetail.vendorImage = vendorImage || vendorImageDarkMode;
       productDetail.vendorImageDarkMode = vendorImageDarkMode || vendorImage;
     }

@@ -65,6 +65,7 @@ export class ProductService {
     productId: string,
     isShowDevVersion: boolean
   ): Observable<ProductDetail> {
+    this.loadingService.showLoading(LoadingComponentId.DETAIL_PAGE);
     return this.httpClient.get<ProductDetail>(
       `${API_URI.PRODUCT_DETAILS}/${productId}?isShowDevVersion=${isShowDevVersion}`
     ).pipe(delay(5000));

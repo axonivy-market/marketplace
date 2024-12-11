@@ -3,12 +3,13 @@ import { ProductDetail } from "../models/product-detail.model";
 
 @Pipe({
   standalone: true,
-  name: 'missingProductInformationContent'
+  name: 'emptyProductDetailPipe'
 })
-export class MissingProductInformationContentPipe
+export class EmptyProductDetailPipe
   implements PipeTransform
 {
   transform(productDetail: ProductDetail): boolean {
+    console.log(!productDetail || Object.keys(productDetail).length === 0);
     return !productDetail || Object.keys(productDetail).length === 0;
   }
 }

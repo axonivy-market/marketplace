@@ -1,4 +1,4 @@
-@if (!(productDetail | missingProductInformationContent)) {
+@if (!(productDetail | emptyProductDetailPipe)) {
   <h3
     [lang]="languageService.selectedLanguage()"
     class="info-title text-primary">

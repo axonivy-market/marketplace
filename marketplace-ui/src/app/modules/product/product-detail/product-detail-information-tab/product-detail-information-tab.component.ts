@@ -15,7 +15,7 @@ import { VERSION } from '../../../../shared/constants/common.constant';
 import { LoadingService } from '../../../../core/services/loading/loading.service';
 import { ThemeService } from '../../../../core/services/theme/theme.service';
 import { finalize } from 'rxjs';
-import { MissingProductInformationContentPipe } from '../../../../shared/pipes/missing-product-Information-content-pipe';
+import { EmptyProductDetailPipe } from '../../../../shared/pipes/empty-product-detail.pipe';
 import { LoadingComponentId } from '../../../../shared/enums/loading-component-id';
 
 const SELECTED_VERSION = 'selectedVersion';
@@ -26,8 +26,8 @@ const PRODUCT_DETAIL = 'productDetail';
   imports: [
     CommonModule,
     TranslateModule,
-    MissingProductInformationContentPipe
-  ],
+    EmptyProductDetailPipe
+],
   templateUrl: './product-detail-information-tab.component.html',
   styleUrl: './product-detail-information-tab.component.scss'
 })
