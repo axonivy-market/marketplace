@@ -29,7 +29,6 @@ import { ItemDropdown } from '../../../shared/models/item-dropdown.model';
 import { ProductDetail } from '../../../shared/models/product-detail.model';
 import { ProductModuleContent } from '../../../shared/models/product-module-content.model';
 import { ProductTypeIconPipe } from '../../../shared/pipes/icon.pipe';
-import { MissingReadmeContentPipe } from '../../../shared/pipes/missing-readme-content.pipe';
 import { MultilingualismPipe } from '../../../shared/pipes/multilingualism.pipe';
 import { ProductTypePipe } from '../../../shared/pipes/product-type.pipe';
 import { AppModalService } from '../../../shared/services/app-modal.service';
@@ -78,7 +77,6 @@ const DEFAULT_ACTIVE_TAB = 'description';
     ProductDetailFeedbackComponent,
     ProductInstallationCountActionComponent,
     ProductTypeIconPipe,
-    MissingReadmeContentPipe,
     CommonDropdownComponent,
     NgOptimizedImage
   ],

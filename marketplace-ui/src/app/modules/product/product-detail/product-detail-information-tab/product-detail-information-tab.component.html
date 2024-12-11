@@ -1,118 +1,150 @@
-<h3 [lang]="languageService.selectedLanguage()" class="info-title text-primary">
-  {{ 'common.product.detail.information.label' | translate }}
-</h3>
-<div class="info-container d-flex flex-column p-0 w-100">
-  <div class="d-flex flex-row justify-content-between align-items-end p-0">
-    <span [lang]="languageService.selectedLanguage()" class="text-secondary">
-      {{ 'common.product.detail.information.value.implementedBy' | translate }}
-    </span>
-    <a [href]="productDetail.vendorUrl" class="vendor-cotnainer">
-      <img
-      class="logo__vendor__image"
-      [src]="
-        themeService.isDarkMode()
-          ? productDetail.vendorImageDarkMode
-          : productDetail.vendorImage
-      "
-      alt="Logo Vendor"/>
-    </a>
-  </div>
-  <hr class="border-top-0" />
-  <div class="d-flex flex-row justify-content-between p-0">
-    <span [lang]="languageService.selectedLanguage()" class="text-secondary">
-      {{ 'common.product.detail.information.value.version' | translate }}
-    </span>
-    <span class="text-primary">
-      {{ displayVersion }}
-    </span>
-  </div>
-  @if(productDetail.compatibility) {
+@if (!(productDetail | missingProductInformationContent)) {
+  <h3
+    [lang]="languageService.selectedLanguage()"
+    class="info-title text-primary">
+    {{ 'common.product.detail.information.label' | translate }}
+  </h3>
+
+  <div class="info-container d-flex flex-column p-0 w-100">
+    <div class="d-flex flex-row justify-content-between align-items-end p-0">
+      <span [lang]="languageService.selectedLanguage()" class="text-secondary">
+        {{
+          'common.product.detail.information.value.implementedBy' | translate
+        }}
+      </span>
+      <a [href]="productDetail.vendorUrl" class="vendor-cotnainer">
+        <img
+          class="logo__vendor__image"
+          [src]="
+            themeService.isDarkMode()
+              ? productDetail.vendorImageDarkMode
+              : productDetail.vendorImage
+          "
+          alt="Logo Vendor" />
+      </a>
+    </div>
     <hr class="border-top-0" />
     <div class="d-flex flex-row justify-content-between p-0">
       <span [lang]="languageService.selectedLanguage()" class="text-secondary">
-        {{ 'common.product.detail.information.value.compatibility' | translate }}
+        {{ 'common.product.detail.information.value.version' | translate }}
       </span>
       <span class="text-primary">
-        {{ productDetail.compatibility }}
+        {{ displayVersion }}
       </span>
     </div>
-  }
-  <hr class="border-top-0" />
-  <div class="d-flex flex-row justify-content-between p-0">
-    <span [lang]="languageService.selectedLanguage()" class="text-secondary">
-      {{ 'common.product.detail.information.value.cost' | translate }}
-    </span>
-    <span class="text-primary">{{ productDetail.cost }}</span>
-  </div>
-  <hr class="border-top-0" />
-  <div class="d-flex flex-row justify-content-between p-0">
-    <span [lang]="languageService.selectedLanguage()" class="text-secondary">
-      {{ 'common.product.detail.information.value.language' | translate }}
-    </span>
-    <span class="text-primary">{{ productDetail.language }}</span>
-  </div>
-  @if (externalDocumentLink !== '') {
-  <hr class="border-top-0" />
-  <div class="d-flex flex-row justify-content-between p-0">
-    <span [lang]="languageService.selectedLanguage()" class="text-secondary">
-      {{ 'common.product.detail.information.value.documentation' | translate }}
-    </span>
-    <a class="text-primary d-inline-block text-truncate ps-2" [href]="externalDocumentLink" target="_blank">
-      {{ displayExternalDocName ?? 'common.product.detail.information.value.defaultDocName' | translate }}
-    </a>
-  </div>
-  }
-  <hr class="border-top-0" />
-  <div class="d-flex flex-row justify-content-between p-0">
-    <span [lang]="languageService.selectedLanguage()" class="text-secondary">
-      {{ 'common.product.detail.type' | translate }}
-    </span>
-    <span class="text-primary text-capitalize">{{ productDetail.type }}</span>
-  </div>
-  <hr class="border-top-0" />
-  <div class="d-flex flex-row justify-content-between p-0">
-    <span [lang]="languageService.selectedLanguage()" class="text-secondary">
-      {{ 'common.product.detail.information.value.tag' | translate }}
-    </span>
-    <span class="text-primary text-capitalize">
-      {{ productDetail.tags ? productDetail.tags!.join(', ') : '' }}
-    </span>
-  </div>
-  @if(productDetail.sourceUrl) {
+    @if (productDetail.compatibility) {
+      <hr class="border-top-0" />
+      <div class="d-flex flex-row justify-content-between p-0">
+        <span
+          [lang]="languageService.selectedLanguage()"
+          class="text-secondary">
+          {{
+            'common.product.detail.information.value.compatibility' | translate
+          }}
+        </span>
+        <span class="text-primary">
+          {{ productDetail.compatibility }}
+        </span>
+      </div>
+    }
     <hr class="border-top-0" />
     <div class="d-flex flex-row justify-content-between p-0">
       <span [lang]="languageService.selectedLanguage()" class="text-secondary">
-        {{ 'common.product.detail.information.value.source' | translate }}
+        {{ 'common.product.detail.information.value.cost' | translate }}
+      </span>
+      <span class="text-primary">{{ productDetail.cost }}</span>
+    </div>
+    <hr class="border-top-0" />
+    <div class="d-flex flex-row justify-content-between p-0">
+      <span [lang]="languageService.selectedLanguage()" class="text-secondary">
+        {{ 'common.product.detail.information.value.language' | translate }}
+      </span>
+      <span class="text-primary">{{ productDetail.language }}</span>
+    </div>
+    @if (externalDocumentLink !== '') {
+      <hr class="border-top-0" />
+      <div class="d-flex flex-row justify-content-between p-0">
+        <span
+          [lang]="languageService.selectedLanguage()"
+          class="text-secondary">
+          {{
+            'common.product.detail.information.value.documentation' | translate
+          }}
+        </span>
+        <a
+          class="text-primary d-inline-block text-truncate ps-2"
+          [href]="externalDocumentLink"
+          target="_blank">
+          {{
+            displayExternalDocName ??
+              'common.product.detail.information.value.defaultDocName'
+              | translate
+          }}
+        </a>
+      </div>
+    }
+    <hr class="border-top-0" />
+    <div class="d-flex flex-row justify-content-between p-0">
+      <span [lang]="languageService.selectedLanguage()" class="text-secondary">
+        {{ 'common.product.detail.type' | translate }}
+      </span>
+      <span class="text-primary text-capitalize">{{ productDetail.type }}</span>
+    </div>
+    <hr class="border-top-0" />
+    <div class="d-flex flex-row justify-content-between p-0">
+      <span [lang]="languageService.selectedLanguage()" class="text-secondary">
+        {{ 'common.product.detail.information.value.tag' | translate }}
+      </span>
+      <span class="text-primary text-capitalize">
+        {{ productDetail.tags ? productDetail.tags!.join(', ') : '' }}
+      </span>
+    </div>
+    @if (productDetail.sourceUrl) {
+      <hr class="border-top-0" />
+      <div class="d-flex flex-row justify-content-between p-0">
+        <span
+          [lang]="languageService.selectedLanguage()"
+          class="text-secondary">
+          {{ 'common.product.detail.information.value.source' | translate }}
+        </span>
+        <span>
+          <a class="text-primary" href="{{ productDetail.sourceUrl }}">
+            github.com
+          </a>
+        </span>
+      </div>
+    }
+    @if (productDetail.statusBadgeUrl) {
+      <hr class="border-top-0" />
+      <div class="d-flex flex-row justify-content-between p-0">
+        <span
+          [lang]="languageService.selectedLanguage()"
+          class="text-secondary">
+          {{ 'common.product.detail.information.value.status' | translate }}
+        </span>
+        <img
+          class="status__image"
+          src="{{ productDetail.statusBadgeUrl }}"
+          [alt]="productDetail.statusBadgeUrl" />
+      </div>
+    }
+    <hr class="border-top-0" />
+    <div class="d-flex flex-row justify-content-between p-0">
+      <span [lang]="languageService.selectedLanguage()" class="text-secondary">
+        {{
+          'common.product.detail.information.value.moreInformation' | translate
+        }}
       </span>
       <span>
-        <a class="text-primary" href="{{ productDetail.sourceUrl }}">
-          github.com
+        <a
+          [lang]="languageService.selectedLanguage()"
+          class="text-primary mx-auto"
+          href="https://www.axonivy.com/marketplace/contact/?market_solutions= + {{
+            productDetail.id
+          }}">
+          {{ 'common.product.detail.information.value.contactUs' | translate }}
         </a>
       </span>
     </div>
-  }
-  @if(productDetail.statusBadgeUrl) {
-    <hr class="border-top-0" />
-    <div class="d-flex flex-row justify-content-between p-0">
-      <span [lang]="languageService.selectedLanguage()" class="text-secondary">
-        {{ 'common.product.detail.information.value.status' | translate }}
-      </span>
-      <img class="status__image" src="{{ productDetail.statusBadgeUrl }}" [alt]="productDetail.statusBadgeUrl" />
-    </div>
-  }
-  <hr class="border-top-0" />
-  <div class="d-flex flex-row justify-content-between p-0">
-    <span [lang]="languageService.selectedLanguage()" class="text-secondary">
-      {{
-      'common.product.detail.information.value.moreInformation' | translate
-      }}
-    </span>
-    <span>
-      <a [lang]="languageService.selectedLanguage()" class="text-primary mx-auto" href="https://www.axonivy.com/marketplace/contact/?market_solutions= + {{
-          productDetail.id
-        }}">
-        {{ 'common.product.detail.information.value.contactUs' | translate }}
-      </a>
-    </span>
   </div>
-</div>
+}

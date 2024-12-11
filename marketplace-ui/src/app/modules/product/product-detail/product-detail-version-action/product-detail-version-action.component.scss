@@ -90,8 +90,13 @@
 .btn__install {
   border: 0px;
 }
+
 .primary-color {
   color: var(--ivy-primary-bg);
+}
+
+.overlay-background{
+  background: rgba(0, 0, 0, 0.32);
 }
 
 ::ng-deep .item-bar {

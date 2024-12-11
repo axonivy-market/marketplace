@@ -7,13 +7,14 @@ import { ProductDetailService } from '../product-detail.service';
 import { VERSION } from '../../../../shared/constants/common.constant';
 import { LoadingService } from '../../../../core/services/loading/loading.service';
 import { ThemeService } from '../../../../core/services/theme/theme.service';
+import { MissingProductInformationContentPipe } from '../../../../shared/pipes/missing-product-Information-content-pipe';
 
 const SELECTED_VERSION = 'selectedVersion';
 const PRODUCT_DETAIL = 'productDetail';
 @Component({
   selector: 'app-product-detail-information-tab',
   standalone: true,
-  imports: [CommonModule, TranslateModule],
+  imports: [CommonModule, TranslateModule, MissingProductInformationContentPipe],
   templateUrl: './product-detail-information-tab.component.html',
   styleUrl: './product-detail-information-tab.component.scss'
 })
