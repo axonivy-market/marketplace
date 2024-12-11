@@ -1,15 +1,15 @@
-import { Component } from '@angular/core';
-import { NgClass } from '@angular/common';
+import { Component, computed, inject, Input } from '@angular/core';
+import { LoadingService } from '../../../core/services/loading/loading.service';
 
 @Component({
   selector: 'app-loading-spinner',
   standalone: true,
-  imports: [
-    NgClass
-  ],
   templateUrl: './loading-spinner.component.html',
   styleUrl: './loading-spinner.component.scss'
 })
 export class LoadingSpinnerComponent {
-  spinners = Array(5).fill(null);
+  @Input() key: string = '';
+  @Input() containerClasses: string = '';
+  loadingService = inject(LoadingService);
+  isLoading = computed(() => this.loadingService.loadingSubject.value[this.key]);
 }

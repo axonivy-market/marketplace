@@ -1,6 +1,6 @@
 import { HttpClient, HttpContext, HttpParams } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
-import { delay, Observable } from 'rxjs';
+import { delay, finalize, Observable } from 'rxjs';
 import { LoadingService } from '../../core/services/loading/loading.service';
 import { RequestParam } from '../../shared/enums/request-param';
 import { ProductApiResponse } from '../../shared/models/apis/product-response.model';
@@ -10,6 +10,7 @@ import { VersionData } from '../../shared/models/vesion-artifact.model';
 import { SkipLoading } from '../../core/interceptors/api.interceptor';
 import { VersionAndUrl } from '../../shared/models/version-and-url';
 import { API_URI } from '../../shared/constants/api.constant';
+import { LoadingComponentId } from '../../shared/enums/loading-component-id';
 
 @Injectable()
 export class ProductService {
@@ -17,6 +18,7 @@ export class ProductService {
   loadingService = inject(LoadingService);
 
   findProductsByCriteria(criteria: Criteria): Observable<ProductApiResponse> {
+    this.loadingService.showLoading(LoadingComponentId.LANDING_PAGE);
     let requestParams = new HttpParams();
     let requestURL = API_URI.PRODUCT;
     if (criteria.nextPageHref) {
@@ -36,7 +38,9 @@ export class ProductService {
     }
     return this.httpClient.get<ProductApiResponse>(requestURL, {
       params: requestParams
-    });
+    }).pipe(finalize(()=> {
+      this.loadingService.hideLoading(LoadingComponentId.LANDING_PAGE);
+    }));
   }
 
   getProductDetailsWithVersion(

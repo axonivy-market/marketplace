@@ -47,10 +47,6 @@
     </div>
   </div>
   }
-
-    @if (loadingService.isLoading()) {
-      <app-loading-spinner />
-    }
-
+  <app-loading-spinner [key]="LoadingComponentId.LANDING_PAGE"/>
   <div #observer class="observer"></div>
 </div>
