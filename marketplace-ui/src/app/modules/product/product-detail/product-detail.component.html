@@ -1,12 +1,9 @@
-<div class="container-fluid">
-    @if (productDetail() | emptyProductDetailPipe) {
-    <div class="min-vh-100">
-        <app-loading-spinner
-          containerClasses="d-flex justify-content-center position-absolute align-items-center w-100 h-100 start-0 rounded overlay-background"
-          [key] = "LoadingComponentId.DETAIL_PAGE"
-          />
+<div class="container-fluid min-vh-100">
+    <div class="">
+      <!-- <app-loading-spinner
+        containerClasses="d-flex justify-content-center position-absolute align-items-center w-100 h-100 start-0 rounded overlay-background"
+        [key]="LoadingComponentId.DETAIL_PAGE" /> -->
     </div>
-  } @else {
     <div
       class="product-detail-container d-flex flex-column justify-content-center p-0">
       <div class="flexible-gap d-flex flex-column justify-content-center">
@@ -23,82 +20,85 @@
             </span>
           </div>
         </div>
-        <div
-          class="version-gap d-flex flex-column flex-xl-row justify-content-between">
-          <div class="connector-title-container d-flex flex-column module-gap">
-            <div class="d-flex">
-              <div class="logo__image-container">
-                <img
-                  fill
+        @if (!(productDetail() | emptyProductDetailPipe)) {
+          <div
+            class="version-gap d-flex flex-column flex-xl-row justify-content-between">
+            <div
+              class="connector-title-container d-flex flex-column module-gap">
+              <div class="d-flex">
+                <div class="logo__image-container">
+                  <img
+                    fill
+                    [lang]="languageService.selectedLanguage()"
+                    class="logo__image"
+                    [ngSrc]="logoUrl"
+                    (error)="onLogoError()"
+                    [alt]="
+                      productDetail().names
+                        | multilingualism: languageService.selectedLanguage()
+                    " />
+                </div>
+                <h1
                   [lang]="languageService.selectedLanguage()"
-                  class="logo__image"
-                  [ngSrc]="logoUrl"
-                  (error)="onLogoError()"
-                  [alt]="
+                  class="product-title align-items-start default-cursor">
+                  {{
                     productDetail().names
                       | multilingualism: languageService.selectedLanguage()
-                  " />
+                  }}
+                </h1>
               </div>
-              <h1
-                [lang]="languageService.selectedLanguage()"
-                class="product-title align-items-start default-cursor">
-                {{
-                  productDetail().names
-                    | multilingualism: languageService.selectedLanguage()
-                }}
-              </h1>
-            </div>
-            <!-- Product review, download count & type bar -->
-            <div
-              class="d-flex flex-row align-items-start module-gap default-cursor">
+              <!-- Product review, download count & type bar -->
               <div
-                class="analysis-container d-flex flex-column align-items-start p-0">
-                <app-product-star-rating-number
-                  [isShowRateLink]="false"
-                  [isShowTotalRatingNumber]="false" />
-              </div>
-              @if (
-                productDetailActionType() !==
-                ProductDetailActionType.CUSTOM_SOLUTION
-              ) {
-                <app-product-installation-count-action
-                  id="app-product-installation-count-action"
-                  [currentInstallationCount]="installationCount" />
-              }
-              <div
-                class="analysis-container d-flex flex-column align-items-start p-0">
-                <h4
-                  [lang]="languageService.selectedLanguage()"
-                  class="analysis-title text-secondary mb-0">
-                  {{ 'common.product.detail.type' | translate }}
-                </h4>
-                <h2 class="product-analysis mb-0">
-                  <i [class]="productDetail().type | productTypeIcon"></i>
-                </h2>
-                <h4 class="analysis-title text-primary text-capitalize mb-0">
-                  {{ productDetail().type | productType | translate }}
-                </h4>
+                class="d-flex flex-row align-items-start module-gap default-cursor">
+                <div
+                  class="analysis-container d-flex flex-column align-items-start p-0">
+                  <app-product-star-rating-number
+                    [isShowRateLink]="false"
+                    [isShowTotalRatingNumber]="false" />
+                </div>
+                @if (
+                  productDetailActionType() !==
+                  ProductDetailActionType.CUSTOM_SOLUTION
+                ) {
+                  <app-product-installation-count-action
+                    id="app-product-installation-count-action"
+                    [currentInstallationCount]="installationCount" />
+                }
+                <div
+                  class="analysis-container d-flex flex-column align-items-start p-0">
+                  <h4
+                    [lang]="languageService.selectedLanguage()"
+                    class="analysis-title text-secondary mb-0">
+                    {{ 'common.product.detail.type' | translate }}
+                  </h4>
+                  <h2 class="product-analysis mb-0">
+                    <i [class]="productDetail().type | productTypeIcon"></i>
+                  </h2>
+                  <h4 class="analysis-title text-primary text-capitalize mb-0">
+                    {{ productDetail().type | productType | translate }}
+                  </h4>
+                </div>
               </div>
             </div>
+            <!-- installation & download section -->
+            <app-product-version-action
+              [ngClass]="{
+                'col-xl-4':
+                  productDetailActionType() ===
+                  ProductDetailActionType.DESIGNER_ENV
+              }"
+              class="mt-md-3 m-sm-0"
+              (installationCount)="receiveInstallationCountData($event)"
+              [(selectedVersion)]="selectedVersion!"
+              [(metaDataJsonUrl)]="metaProductJsonUrl!"
+              [productId]="productDetail().id"
+              [isMavenDropins]="productDetail().mavenDropins"
+              [actionType]="productDetailActionType()"
+              (selectedVersionChange)="
+                loadDetailTabs($event)
+              "></app-product-version-action>
           </div>
-          <!-- installation & download section -->
-          <app-product-version-action
-            [ngClass]="{
-              'col-xl-4':
-                productDetailActionType() ===
-                ProductDetailActionType.DESIGNER_ENV
-            }"
-            class="mt-md-3 m-sm-0"
-            (installationCount)="receiveInstallationCountData($event)"
-            [(selectedVersion)]="selectedVersion!"
-            [(metaDataJsonUrl)]="metaProductJsonUrl!"
-            [productId]="productDetail().id"
-            [isMavenDropins]="productDetail().mavenDropins"
-            [actionType]="productDetailActionType()"
-            (selectedVersionChange)="
-              loadDetailTabs($event)
-            "></app-product-version-action>
-        </div>
+        }
       </div>
 
       <div class="detail-body d-flex flex-row align-items-start p-0 w-100">
@@ -215,36 +215,37 @@
     </div>
     <hr />
     <!-- Product feedback -->
-    <div class="default-cursor" style="margin-bottom: 12.8rem">
-      @if (productDetail() && productFeedbackService.totalElements() > 0) {
-        <app-product-detail-feedback [isMobileMode]="isMobileMode()" />
-      } @else {
-        <div class="d-flex justify-content-center text-center">
-          <div>
-            <img
-              src="/assets/images/misc/message-star.svg"
-              width="72"
-              height="72"
-              alt="Message Star" />
-            <p class="rate-empty-text">
-              <span [lang]="languageService.selectedLanguage()">
-                {{ productDetailService.noFeedbackLabel() | translate }}
-              </span>
-              <br />
-              <span [lang]="languageService.selectedLanguage()">
-                {{ 'common.feedback.noFeedbackSecondLabel' | translate }}
-              </span>
-            </p>
-            <button
-              class="btn border-0 btn-primary rate-connector-btn"
-              (click)="onClickRateBtn()">
-              <h5 class="mb-0" [lang]="languageService.selectedLanguage()">
-                {{ productDetailService.ratingBtnLabel() | translate }}
-              </h5>
-            </button>
+    @if (!(productDetail() | emptyProductDetailPipe)) {
+      <div class="default-cursor" style="margin-bottom: 12.8rem">
+        @if (productDetail() && productFeedbackService.totalElements() > 0) {
+          <app-product-detail-feedback [isMobileMode]="isMobileMode()" />
+        } @else {
+          <div class="d-flex justify-content-center text-center">
+            <div>
+              <img
+                src="/assets/images/misc/message-star.svg"
+                width="72"
+                height="72"
+                alt="Message Star" />
+              <p class="rate-empty-text">
+                <span [lang]="languageService.selectedLanguage()">
+                  {{ productDetailService.noFeedbackLabel() | translate }}
+                </span>
+                <br />
+                <span [lang]="languageService.selectedLanguage()">
+                  {{ 'common.feedback.noFeedbackSecondLabel' | translate }}
+                </span>
+              </p>
+              <button
+                class="btn border-0 btn-primary rate-connector-btn"
+                (click)="onClickRateBtn()">
+                <h5 class="mb-0" [lang]="languageService.selectedLanguage()">
+                  {{ productDetailService.ratingBtnLabel() | translate }}
+                </h5>
+              </button>
+            </div>
           </div>
-        </div>
-      }
-    </div>
-  }
+        }
+      </div>
+    }
 </div>

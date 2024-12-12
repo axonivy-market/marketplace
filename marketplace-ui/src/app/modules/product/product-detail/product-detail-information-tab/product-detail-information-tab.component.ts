@@ -14,7 +14,6 @@ import { ProductDetailService } from '../product-detail.service';
 import { VERSION } from '../../../../shared/constants/common.constant';
 import { LoadingService } from '../../../../core/services/loading/loading.service';
 import { ThemeService } from '../../../../core/services/theme/theme.service';
-import { finalize } from 'rxjs';
 import { EmptyProductDetailPipe } from '../../../../shared/pipes/empty-product-detail.pipe';
 import { LoadingComponentId } from '../../../../shared/enums/loading-component-id';
 
@@ -70,13 +69,6 @@ export class ProductDetailInformationTabComponent implements OnChanges {
       .getExternalDocumentForProductByVersion(
         this.productDetail.id,
         this.extractVersionValue(version)
-      )
-      .pipe(
-        finalize(() => {
-          this.loadingService.hideLoading(
-            LoadingComponentId.DETAIL_INFORMATION_TAB
-          );
-        })
       )
       .subscribe({
         next: response => {

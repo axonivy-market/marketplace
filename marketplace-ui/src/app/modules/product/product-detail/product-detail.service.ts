@@ -6,7 +6,6 @@ import { Observable } from 'rxjs';
 import { API_URI } from '../../../shared/constants/api.constant';
 import { ForwardingError } from '../../../core/interceptors/api.interceptor';
 import { ExternalDocument } from '../../../shared/models/external-document.model';
-import { LoadingComponentId } from '../../../shared/enums/loading-component-id';
 
 @Injectable({
   providedIn: 'root'
@@ -21,7 +20,6 @@ export class ProductDetailService {
   noFeedbackLabel: WritableSignal<string> = signal('');
 
   getExternalDocumentForProductByVersion(productId: string, version: string): Observable<ExternalDocument> {
-    this.loadingService.showLoading(LoadingComponentId.DETAIL_INFORMATION_TAB);
     return this.httpClient.get<ExternalDocument>(
       `${API_URI.EXTERNAL_DOCUMENT}/${productId}/${version}`, { context: new HttpContext().set(ForwardingError, true)}
     );

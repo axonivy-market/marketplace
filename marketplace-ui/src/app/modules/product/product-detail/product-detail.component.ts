@@ -53,6 +53,7 @@ import { API_URI } from '../../../shared/constants/api.constant';
 import { EmptyProductDetailPipe } from "../../../shared/pipes/empty-product-detail.pipe";
 import { LoadingSpinnerComponent } from "../../../shared/components/loading-spinner/loading-spinner.component";
 import { LoadingComponentId } from '../../../shared/enums/loading-component-id';
+import { LoadingService } from '../../../core/services/loading/loading.service';
 
 export interface DetailTab {
   activeClass: string;
@@ -103,13 +104,16 @@ export class ProductDetailComponent {
   elementRef = inject(ElementRef);
   cookieService = inject(CookieService);
   routingQueryParamService = inject(RoutingQueryParamService);
+  loadingService = inject(LoadingService);
+
   protected LoadingComponentId = LoadingComponentId;
+  protected ProductDetailActionType = ProductDetailActionType;
+
   resizeObserver: ResizeObserver;
   productDetail: WritableSignal<ProductDetail> = signal({} as ProductDetail);
   productModuleContent: WritableSignal<ProductModuleContent> = signal(
     {} as ProductModuleContent
   );
-  protected ProductDetailActionType = ProductDetailActionType;
   productDetailActionType = signal(ProductDetailActionType.STANDARD);
   detailTabs = PRODUCT_DETAIL_TABS;
   activeTab = '';
@@ -125,6 +129,7 @@ export class ProductDetailComponent {
   isMobileMode = signal<boolean>(false);
   installationCount = 0;
   logoUrl = DEFAULT_IMAGE_URL;
+
   @HostListener('window:popstate', ['$event'])
   onPopState() {
     this.activeTab = window.location.hash.split('#tab-')[1];
@@ -150,39 +155,63 @@ export class ProductDetailComponent {
     const productId = this.route.snapshot.params[ROUTER.ID];
     this.productDetailService.productId.set(productId);
     if (productId) {
-      const isShowDevVersion = CommonUtils.getCookieValue(
-        this.cookieService,
-        SHOW_DEV_VERSION,
-        false
-      );
-      this.getProductById(productId, isShowDevVersion).subscribe(
-        productDetail => {
-          this.productDetail.set(productDetail);
-          this.productModuleContent.set(productDetail.productModuleContent);
-          this.metaProductJsonUrl = productDetail.metaProductJsonUrl;
-          this.productDetailService.productNames.set(productDetail.names);
-          this.productDetailService.productLogoUrl.set(productDetail.logoUrl);
-          this.installationCount = productDetail.installationCount;
-          this.handleProductContentVersion();
-          this.updateProductDetailActionType(productDetail);
-          this.logoUrl = productDetail.logoUrl;
-          this.updateWebBrowserTitle();
-          const ratingLabels = RATING_LABELS_BY_TYPE.find(
-            button => button.type === productDetail.type
-          );
-          if (ratingLabels !== undefined) {
-            this.productDetailService.ratingBtnLabel.set(ratingLabels.btnLabel);
-            this.productDetailService.noFeedbackLabel.set(
-              ratingLabels.noFeedbackLabel
-            );
-          }
-        }
-      );
-
+      this.loadingService.showLoading(LoadingComponentId.DETAIL_PAGE);
+      this.getProductContent(productId);
       this.productFeedbackService.initFeedbacks();
       this.productStarRatingService.fetchData();
+      this.updateDropdownSelection();
+      this.checkMediaSize();
+      this.getUserFeedBack();
     }
-    this.updateDropdownSelection();
+  }
+  
+  ngAfterViewInit(): void {
+    // this.loadingService.hideLoading(LoadingComponentId.DETAIL_PAGE);
+  }
+
+  getUserFeedBack() {
+    this.productFeedbackService.findProductFeedbackOfUser().subscribe(() => {
+      this.route.queryParams.subscribe(params => {
+        this.showPopup = params['showPopup'] === 'true';
+        if (this.showPopup && this.authService.getToken()) {
+          this.appModalService
+            .openAddFeedbackDialog()
+            .then(() => this.removeQueryParam())
+            .catch(() => this.removeQueryParam())
+        }
+      });
+    });
+  }
+
+  getProductContent(productId: string) {
+    const isShowDevVersion = CommonUtils.getCookieValue(
+      this.cookieService,
+      SHOW_DEV_VERSION,
+      false
+    );
+    this.getProductById(productId, isShowDevVersion).subscribe(
+      productDetail => {
+        this.productDetail.set(productDetail);
+        this.productModuleContent.set(productDetail.productModuleContent);
+        this.metaProductJsonUrl = productDetail.metaProductJsonUrl;
+        this.productDetailService.productNames.set(productDetail.names);
+        this.productDetailService.productLogoUrl.set(productDetail.logoUrl);
+        this.installationCount = productDetail.installationCount;
+        this.handleProductContentVersion();
+        this.updateProductDetailActionType(productDetail);
+        this.logoUrl = productDetail.logoUrl;
+        this.updateWebBrowserTitle();
+        const ratingLabels = RATING_LABELS_BY_TYPE.find(
+          button => button.type === productDetail.type
+        );
+        if (ratingLabels !== undefined) {
+          this.productDetailService.ratingBtnLabel.set(ratingLabels.btnLabel);
+          this.productDetailService.noFeedbackLabel.set(
+            ratingLabels.noFeedbackLabel
+          );
+        }
+      }
+    );
   }
 
   onClickingBackToHomepageButton() {
@@ -238,21 +267,6 @@ export class ProductDetailComponent {
     return productDetail$.pipe(
       map((response: ProductDetail) => this.setDefaultVendorImage(response))
     );
-  }
-
-  ngAfterViewInit(): void {
-    this.checkMediaSize();
-    this.productFeedbackService.findProductFeedbackOfUser().subscribe(() => {
-      this.route.queryParams.subscribe(params => {
-        this.showPopup = params['showPopup'] === 'true';
-        if (this.showPopup && this.authService.getToken()) {
-          this.appModalService
-            .openAddFeedbackDialog()
-            .then(() => this.removeQueryParam())
-            .catch(() => this.removeQueryParam());
-        }
-      });
-    });
   }
 
   getContent(value: string): boolean {

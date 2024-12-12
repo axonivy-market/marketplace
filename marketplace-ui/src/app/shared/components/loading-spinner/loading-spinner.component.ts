@@ -11,5 +11,4 @@ export class LoadingSpinnerComponent {
   @Input() key: string = '';
   @Input() containerClasses: string = '';
   loadingService = inject(LoadingService);
-  isLoading = computed(() => this.loadingService.loadingStates()[this.key]);
 }

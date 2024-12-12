@@ -5,9 +5,13 @@ import {
 } from '@angular/common/http';
 import { environment } from '../../../environments/environment';
 import { inject } from '@angular/core';
-import { catchError, EMPTY } from 'rxjs';
+import { catchError, EMPTY, finalize } from 'rxjs';
 import { Router } from '@angular/router';
-import { ERROR_CODES, ERROR_PAGE_PATH } from '../../shared/constants/common.constant';
+import {
+  ERROR_CODES,
+  ERROR_PAGE_PATH
+} from '../../shared/constants/common.constant';
+import { LoadingService } from '../services/loading/loading.service';
 
 export const REQUEST_BY = 'X-Requested-By';
 export const IVY = 'marketplace-website';
@@ -22,8 +26,15 @@ export const SkipLoading = new HttpContextToken<boolean>(() => false);
  */
 export const ForwardingError = new HttpContextToken<boolean>(() => false);
 
+/** LoadingComponentId: This option for show loading for component which match with id
+ * @Example return httpClient.get('apiEndPoint', { context: new HttpContext().set(LoadingComponentId, "detail-page") })
+ */
+export const LoadingComponentId = new HttpContextToken<string>(() => '');
+
 export const apiInterceptor: HttpInterceptorFn = (req, next) => {
   const router = inject(Router);
+
+  const loadingService = inject(LoadingService);
 
   if (req.url.includes('i18n')) {
     return next(req);
@@ -39,6 +50,10 @@ export const apiInterceptor: HttpInterceptorFn = (req, next) => {
     headers: addIvyHeaders(req.headers)
   });
 
+  if (!req.context.get(SkipLoading)) {
+    loadingService.showLoading(req.context.get(LoadingComponentId));
+  }
+
   if (req.context.get(ForwardingError)) {
     return next(cloneReq);
   }
@@ -51,6 +66,11 @@ export const apiInterceptor: HttpInterceptorFn = (req, next) => {
         router.navigate([ERROR_PAGE_PATH]);
       }
       return EMPTY;
+    }),
+    finalize(() => {
+      if (!req.context.get(SkipLoading)) {
+        loadingService.hideLoading(req.context.get(LoadingComponentId));
+      }
     })
   );
 };

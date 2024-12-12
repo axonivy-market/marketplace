@@ -9,7 +9,6 @@ export class EmptyProductDetailPipe
   implements PipeTransform
 {
   transform(productDetail: ProductDetail): boolean {
-    console.log(!productDetail || Object.keys(productDetail).length === 0);
     return !productDetail || Object.keys(productDetail).length === 0;
   }
 }
