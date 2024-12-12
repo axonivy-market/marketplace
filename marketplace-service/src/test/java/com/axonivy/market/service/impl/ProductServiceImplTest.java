@@ -639,7 +639,7 @@ class ProductServiceImplTest extends BaseSetup {
   }
 
   @Test
-  void testNoSyncFirstPublishedDateForSyncedProducts() throws IOException {
+  void testNoSyncFirstPublishedDateForSyncedProducts() {
     Product mockProduct = new Product();
     mockProduct.setId(SAMPLE_PRODUCT_ID);
     mockProduct.setRepositoryName(SAMPLE_PRODUCT_REPOSITORY_NAME);
