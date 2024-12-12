@@ -130,7 +130,7 @@ describe('ProductDetailComponent', () => {
     expect(component.selectedVersion).toEqual('Version 10.0.0');
   });
 
-  it('should get corresponding version from cookie', () => {
+  it('should get corresponding version from session strorage', () => {
     const targetVersion = '1.0';
     const productId = 'Portal';
     routingQueryParamService.getDesignerVersionFromSessionStorage.and.returnValue(

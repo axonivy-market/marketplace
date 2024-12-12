@@ -1,6 +1,5 @@
 import { TestBed } from '@angular/core/testing';
 import { Router, NavigationStart } from '@angular/router';
-import { CookieService } from 'ngx-cookie-service';
 import { RoutingQueryParamService } from './routing.query.param.service';
 import { Subject } from 'rxjs';
 import { DESIGNER_SESSION_STORAGE_VARIABLE } from '../constants/common.constant';

@@ -89,7 +89,7 @@ describe('AppComponent', () => {
     expect(component).toBeTruthy();
   });
 
-  it('should subscribe to query params and check cookies if not in designer environment', () => {
+  it('should subscribe to query params and check local strorage if not in designer environment', () => {
     routingQueryParamService.isDesignerEnv.and.returnValue(false);
     const params = { someParam: 'someValue' };
 
