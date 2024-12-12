@@ -579,9 +579,8 @@ class ProductServiceImplTest extends BaseSetup {
     var mockContents = mockMetaJsonAndLogoList();
     when(marketRepoService.getMarketItemByPath(anyString())).thenReturn(mockContents);
     when(productRepo.save(any(Product.class))).thenReturn(mockProduct);
-    // Executes
-    var result = productService.syncOneProduct(SAMPLE_PRODUCT_ID, SAMPLE_PRODUCT_PATH, false);
-    assertTrue(result);
+    assertTrue(productService.syncOneProduct(SAMPLE_PRODUCT_ID, SAMPLE_PRODUCT_PATH, false));
+    assertTrue(productService.syncOneProduct(SAMPLE_PRODUCT_ID, SAMPLE_PRODUCT_PATH, true));
   }
 
   private List<GHContent> mockMetaJsonAndLogoList() throws IOException {
@@ -591,6 +590,12 @@ class ProductServiceImplTest extends BaseSetup {
 
     var mockContentLogo = mockGHContentAsLogo();
     return new ArrayList<>(List.of(mockContent, mockContentLogo));
+  }
+
+  @Test
+  void testSyncOneProductFailed() {
+    when(marketRepoService.getMarketItemByPath(anyString())).thenThrow(new MockitoException("Sync a product failed!"));
+    assertFalse(productService.syncOneProduct(StringUtils.EMPTY, StringUtils.EMPTY, true));
   }
 
   @Test
@@ -634,8 +639,24 @@ class ProductServiceImplTest extends BaseSetup {
   }
 
   @Test
+  void testNoSyncFirstPublishedDateForSyncedProducts() throws IOException {
+    Product mockProduct = new Product();
+    mockProduct.setId(SAMPLE_PRODUCT_ID);
+    mockProduct.setRepositoryName(SAMPLE_PRODUCT_REPOSITORY_NAME);
+    mockProduct.setFirstPublishedDate(new Date());
+    when(productRepo.findAll()).thenReturn(Arrays.asList(mockProduct));
+    assertTrue(productService.syncFirstPublishedDateOfAllProducts());
+  }
+
+  @Test
   void testSyncFirstPublishedDateOfAllProductsFailed() {
     when(productRepo.findAll()).thenThrow(new MockitoException("Sync FirstPublishedDate of all products failed!"));
     assertFalse(productService.syncFirstPublishedDateOfAllProducts());
+  }
+
+  @Test
+  void testSyncFirstPublishedDateForNoProduct() {
+    when(productRepo.findAll()).thenReturn(new ArrayList<>());
+    assertTrue(productService.syncFirstPublishedDateOfAllProducts());
   }
 }
