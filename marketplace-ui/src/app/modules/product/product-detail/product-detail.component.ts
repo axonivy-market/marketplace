@@ -13,7 +13,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { NgbNavModule } from '@ng-bootstrap/ng-bootstrap';
 import { TranslateModule } from '@ngx-translate/core';
 import { MarkdownModule, MarkdownService } from 'ngx-markdown';
-import { map, Observable } from 'rxjs';
+import { forkJoin, map, Observable } from 'rxjs';
 import { AuthService } from '../../../auth/auth.service';
 import { LanguageService } from '../../../core/services/language/language.service';
 import { ThemeService } from '../../../core/services/theme/theme.service';
@@ -22,7 +22,9 @@ import {
   DEFAULT_IMAGE_URL,
   DEFAULT_VENDOR_IMAGE,
   DEFAULT_VENDOR_IMAGE_BLACK,
-  PRODUCT_DETAIL_TABS, RATING_LABELS_BY_TYPE, SHOW_DEV_VERSION,
+  PRODUCT_DETAIL_TABS,
+  RATING_LABELS_BY_TYPE,
+  SHOW_DEV_VERSION,
   VERSION
 } from '../../../shared/constants/common.constant';
 import { ItemDropdown } from '../../../shared/models/item-dropdown.model';
@@ -50,8 +52,8 @@ import { CookieService } from 'ngx-cookie-service';
 import { ROUTER } from '../../../shared/constants/router.constant';
 import { Title } from '@angular/platform-browser';
 import { API_URI } from '../../../shared/constants/api.constant';
-import { EmptyProductDetailPipe } from "../../../shared/pipes/empty-product-detail.pipe";
-import { LoadingSpinnerComponent } from "../../../shared/components/loading-spinner/loading-spinner.component";
+import { EmptyProductDetailPipe } from '../../../shared/pipes/empty-product-detail.pipe';
+import { LoadingSpinnerComponent } from '../../../shared/components/loading-spinner/loading-spinner.component';
 import { LoadingComponentId } from '../../../shared/enums/loading-component-id';
 import { LoadingService } from '../../../core/services/loading/loading.service';
 
@@ -155,7 +157,15 @@ export class ProductDetailComponent {
     const productId = this.route.snapshot.params[ROUTER.ID];
     this.productDetailService.productId.set(productId);
     if (productId) {
-      this.loadingService.showLoading(LoadingComponentId.DETAIL_PAGE);
+      const observable = forkJoin({
+        productDetail: this.getProductContentObservable(productId)
+      });
+      // const productDetail = this.getProductContentObservable(productId);
+      forkJoin({
+        productDetail: this.getProductContentObservable(productId)
+      }).subscribe(res => {
+        this.getProductContent(res.productDetail);
+      });
       this.getProductContent(productId);
       this.productFeedbackService.initFeedbacks();
       this.productStarRatingService.fetchData();
@@ -163,10 +173,6 @@ export class ProductDetailComponent {
       this.checkMediaSize();
       this.getUserFeedBack();
     }
-  }
-  
-  ngAfterViewInit(): void {
-    // this.loadingService.hideLoading(LoadingComponentId.DETAIL_PAGE);
   }
 
   getUserFeedBack() {
@@ -177,41 +183,41 @@ export class ProductDetailComponent {
           this.appModalService
             .openAddFeedbackDialog()
             .then(() => this.removeQueryParam())
-            .catch(() => this.removeQueryParam())
+            .catch(() => this.removeQueryParam());
         }
       });
     });
   }
 
-  getProductContent(productId: string) {
+  getProductContentObservable(productId: string) {
     const isShowDevVersion = CommonUtils.getCookieValue(
       this.cookieService,
       SHOW_DEV_VERSION,
       false
     );
-    this.getProductById(productId, isShowDevVersion).subscribe(
-      productDetail => {
-        this.productDetail.set(productDetail);
-        this.productModuleContent.set(productDetail.productModuleContent);
-        this.metaProductJsonUrl = productDetail.metaProductJsonUrl;
-        this.productDetailService.productNames.set(productDetail.names);
-        this.productDetailService.productLogoUrl.set(productDetail.logoUrl);
-        this.installationCount = productDetail.installationCount;
-        this.handleProductContentVersion();
-        this.updateProductDetailActionType(productDetail);
-        this.logoUrl = productDetail.logoUrl;
-        this.updateWebBrowserTitle();
-        const ratingLabels = RATING_LABELS_BY_TYPE.find(
-          button => button.type === productDetail.type
-        );
-        if (ratingLabels !== undefined) {
-          this.productDetailService.ratingBtnLabel.set(ratingLabels.btnLabel);
-          this.productDetailService.noFeedbackLabel.set(
-            ratingLabels.noFeedbackLabel
-          );
-        }
-      }
+    return this.getProductById(productId, isShowDevVersion);
+  }
+
+  getProductContent(productDetail: ProductDetail) {
+    this.productDetail.set(productDetail);
+    this.productModuleContent.set(productDetail.productModuleContent);
+    this.metaProductJsonUrl = productDetail.metaProductJsonUrl;
+    this.productDetailService.productNames.set(productDetail.names);
+    this.productDetailService.productLogoUrl.set(productDetail.logoUrl);
+    this.installationCount = productDetail.installationCount;
+    this.handleProductContentVersion();
+    this.updateProductDetailActionType(productDetail);
+    this.logoUrl = productDetail.logoUrl;
+    this.updateWebBrowserTitle();
+    const ratingLabels = RATING_LABELS_BY_TYPE.find(
+      button => button.type === productDetail.type
     );
+    if (ratingLabels !== undefined) {
+      this.productDetailService.ratingBtnLabel.set(ratingLabels.btnLabel);
+      this.productDetailService.noFeedbackLabel.set(
+        ratingLabels.noFeedbackLabel
+      );
+    }
   }
 
   onClickingBackToHomepageButton() {
