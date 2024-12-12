@@ -40,12 +40,14 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.kohsuke.github.GHCommit;
 import org.kohsuke.github.GHContent;
+import org.kohsuke.github.GHTag;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockedStatic;
 import org.mockito.Mockito;
+import org.mockito.exceptions.base.MockitoException;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
@@ -56,6 +58,7 @@ import org.springframework.data.domain.Sort;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -576,9 +579,8 @@ class ProductServiceImplTest extends BaseSetup {
     var mockContents = mockMetaJsonAndLogoList();
     when(marketRepoService.getMarketItemByPath(anyString())).thenReturn(mockContents);
     when(productRepo.save(any(Product.class))).thenReturn(mockProduct);
-    // Executes
-    var result = productService.syncOneProduct(SAMPLE_PRODUCT_ID, SAMPLE_PRODUCT_PATH, false);
-    assertTrue(result);
+    assertTrue(productService.syncOneProduct(SAMPLE_PRODUCT_ID, SAMPLE_PRODUCT_PATH, false));
+    assertTrue(productService.syncOneProduct(SAMPLE_PRODUCT_ID, SAMPLE_PRODUCT_PATH, true));
   }
 
   private List<GHContent> mockMetaJsonAndLogoList() throws IOException {
@@ -588,6 +590,12 @@ class ProductServiceImplTest extends BaseSetup {
 
     var mockContentLogo = mockGHContentAsLogo();
     return new ArrayList<>(List.of(mockContent, mockContentLogo));
+  }
+
+  @Test
+  void testSyncOneProductFailed() {
+    when(marketRepoService.getMarketItemByPath(anyString())).thenThrow(new MockitoException("Sync a product failed!"));
+    assertFalse(productService.syncOneProduct(StringUtils.EMPTY, StringUtils.EMPTY, true));
   }
 
   @Test
@@ -612,5 +620,104 @@ class ProductServiceImplTest extends BaseSetup {
     var result = productService.syncLatestDataFromMarketRepo(false);
     assertNotNull(result);
     assertTrue(result.isEmpty());
+  }
+
+  @Test
+  void testSyncFirstPublishedDateOfAllProducts() throws IOException {
+    Product mockProduct = new Product();
+    mockProduct.setId(SAMPLE_PRODUCT_ID);
+    mockProduct.setMarketDirectory(SAMPLE_PRODUCT_PATH);
+    mockProduct.setRepositoryName(SAMPLE_PRODUCT_REPOSITORY_NAME);
+    List<Product> products = Arrays.asList(mockProduct);
+    when(productRepo.findAll()).thenReturn(products);
+    when(productRepo.save(any(Product.class))).thenReturn(mockProduct);
+    GHTag ghTagVersionOne = new GHTag();
+    GHTag ghTagVersionTwo = new GHTag();
+    List<GHTag> tags = Arrays.asList(ghTagVersionOne, ghTagVersionTwo);
+    when(gitHubService.getRepositoryTags(SAMPLE_PRODUCT_REPOSITORY_NAME)).thenReturn(tags);
+    assertTrue(productService.syncFirstPublishedDateOfAllProducts());
+  }
+
+  @Test
+  void testNoSyncFirstPublishedDateForSyncedProducts() {
+    Product mockProduct = new Product();
+    mockProduct.setId(SAMPLE_PRODUCT_ID);
+    mockProduct.setRepositoryName(SAMPLE_PRODUCT_REPOSITORY_NAME);
+    mockProduct.setFirstPublishedDate(new Date());
+    when(productRepo.findAll()).thenReturn(Arrays.asList(mockProduct));
+    assertTrue(productService.syncFirstPublishedDateOfAllProducts());
+  }
+
+  @Test
+  void testSyncFirstPublishedDateWithFindingAllProductsFailed() {
+    when(productRepo.findAll()).thenThrow(new MockitoException("Sync FirstPublishedDate of all products failed!"));
+    assertFalse(productService.syncFirstPublishedDateOfAllProducts());
+  }
+
+  @Test
+  void testSyncFirstPublishedDateForNoProduct() {
+    when(productRepo.findAll()).thenReturn(new ArrayList<>());
+    assertTrue(productService.syncFirstPublishedDateOfAllProducts());
+  }
+
+  @Test
+  void testSyncFirstPublishedDateOfAllProductsFailed() throws IOException {
+    Product mockProduct = new Product();
+    mockProduct.setRepositoryName(SAMPLE_PRODUCT_REPOSITORY_NAME);
+    List<Product> products = Arrays.asList(mockProduct);
+    when(productRepo.findAll()).thenReturn(products);
+    when(gitHubService.getRepositoryTags(SAMPLE_PRODUCT_REPOSITORY_NAME)).thenThrow(
+        new IOException("Mocked IOException"));
+    when(productRepo.save(mockProduct)).thenThrow(
+        new MockitoException("Mocked IOException"));
+    assertFalse(productService.syncFirstPublishedDateOfAllProducts());
+  }
+
+  @Test
+  void testSyncFirstPublishedDateOfAllProductsSuccess() throws IOException {
+    Product mockProduct = new Product();
+    mockProduct.setId(SAMPLE_PRODUCT_ID);
+    mockProduct.setMarketDirectory(SAMPLE_PRODUCT_PATH);
+    mockProduct.setRepositoryName(SAMPLE_PRODUCT_REPOSITORY_NAME);
+    List<Product> products = Arrays.asList(mockProduct);
+    when(productRepo.findAll()).thenReturn(products);
+    when(productRepo.save(any(Product.class))).thenReturn(mockProduct);
+    GHTag ghTagVersionOne = mock(GHTag.class);
+    GHCommit commitOfTagVersionOne = mock(GHCommit.class);
+    GHTag ghTagVersionTwo = mock(GHTag.class);
+    GHCommit commitOfTagVersionTwo = mock(GHCommit.class);
+    List<GHTag> tags = Arrays.asList(ghTagVersionOne, ghTagVersionTwo);
+    when(ghTagVersionOne.getCommit()).thenReturn(commitOfTagVersionOne);
+    when(commitOfTagVersionOne.getCommitDate()).thenReturn(new Date());
+    when(ghTagVersionTwo.getCommit()).thenReturn(commitOfTagVersionTwo);
+    when(commitOfTagVersionTwo.getCommitDate()).thenReturn(new Date());
+    when(gitHubService.getRepositoryTags(SAMPLE_PRODUCT_REPOSITORY_NAME)).thenReturn(tags);
+    assertTrue(productService.syncFirstPublishedDateOfAllProducts());
+  }
+
+  @Test
+  void testSyncFirstPublishedDateWithGettingTagCommitFailed() throws IOException {
+    Product mockProduct = new Product();
+    mockProduct.setId(SAMPLE_PRODUCT_ID);
+    mockProduct.setMarketDirectory(SAMPLE_PRODUCT_PATH);
+    mockProduct.setRepositoryName(SAMPLE_PRODUCT_REPOSITORY_NAME);
+    List<Product> products = Arrays.asList(mockProduct);
+    when(productRepo.findAll()).thenReturn(products);
+    GHTag ghTag = mock(GHTag.class);
+    List<GHTag> tags = Arrays.asList(ghTag);
+    GHCommit ghCommit = mock(GHCommit.class);
+    when(ghTag.getCommit()).thenReturn(ghCommit);
+    when(ghCommit.getCommitDate()).thenThrow(
+        new IOException("get commit date of tag commit failed!"));
+    when(gitHubService.getRepositoryTags(SAMPLE_PRODUCT_REPOSITORY_NAME)).thenReturn(tags);
+    assertTrue(productService.syncFirstPublishedDateOfAllProducts());
+
+    GHTag ghTag2 = mock(GHTag.class);
+    List<GHTag> secondTags = Arrays.asList(ghTag, ghTag2);
+    GHCommit ghCommit2 = mock(GHCommit.class);
+    when(ghTag2.getCommit()).thenReturn(ghCommit2);
+    when(ghCommit2.getCommitDate()).thenReturn(new Date());
+    when(gitHubService.getRepositoryTags(SAMPLE_PRODUCT_REPOSITORY_NAME)).thenReturn(secondTags);
+    assertTrue(productService.syncFirstPublishedDateOfAllProducts());
   }
 }

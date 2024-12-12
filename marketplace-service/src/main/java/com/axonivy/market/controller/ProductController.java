@@ -145,6 +145,25 @@ public class ProductController {
     return new ResponseEntity<>(message, HttpStatus.OK);
   }
 
+  @PutMapping(SYNC_FIRST_PUBLISHED_DATE_ALL_PRODUCTS)
+  @Operation(hidden = true)
+  public ResponseEntity<Message> syncFirstPublishedDateOfAllProducts(
+      @RequestHeader(value = AUTHORIZATION) String authorizationHeader) {
+    String token = AuthorizationUtils.getBearerToken(authorizationHeader);
+    gitHubService.validateUserInOrganizationAndTeam(token, GitHubConstants.AXONIVY_MARKET_ORGANIZATION_NAME,
+        GitHubConstants.AXONIVY_MARKET_TEAM_NAME);
+
+    var message = new Message();
+    var isSuccess = productService.syncFirstPublishedDateOfAllProducts();
+    if (isSuccess) {
+      message.setHelpCode(ErrorCode.SUCCESSFUL.getCode());
+      message.setMessageDetails("Sync successfully!");
+    } else {
+      message.setMessageDetails("Sync unsuccessfully!");
+    }
+    return new ResponseEntity<>(message, HttpStatus.OK);
+  }
+
   @SuppressWarnings("unchecked")
   private ResponseEntity<PagedModel<ProductModel>> generateEmptyPagedModel() {
     var emptyPagedModel = (PagedModel<ProductModel>) pagedResourcesAssembler.toEmptyModel(Page.empty(),

@@ -11,7 +11,7 @@ import org.springframework.data.domain.Sort;
 public enum SortOption {
   POPULARITY("popularity", "marketplaceData.installationCount", Sort.Direction.DESC),
   ALPHABETICALLY("alphabetically", "names", Sort.Direction.ASC),
-  RECENT("recent", "newestPublishedDate", Sort.Direction.DESC),
+  RECENT("recent", "firstPublishedDate", Sort.Direction.DESC),
   STANDARD("standard", "marketplaceData.customOrder", Sort.Direction.DESC),
   ID("id", "_id", Sort.Direction.ASC);
 
