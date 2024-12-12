@@ -447,7 +447,7 @@ public class ProductServiceImpl implements ProductService {
         commitDate = gitHubTag.getCommit().getCommitDate();
       }
     } catch (IOException e) {
-      log.error("Get first tag published date failed: ", e);
+      log.error("Get commit date of tag commit failed: ", e);
     }
     return commitDate;
   }
