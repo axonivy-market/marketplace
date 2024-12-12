@@ -31,7 +31,7 @@ import { RoutingQueryParamService } from '../../shared/services/routing.query.pa
 import {
   DEFAULT_PAGEABLE,
   DEFAULT_PAGEABLE_IN_REST_CLIENT,
-  DESIGNER_COOKIE_VARIABLE
+  DESIGNER_SESSION_STORAGE_VARIABLE
 } from '../../shared/constants/common.constant';
 import { ItemDropdown } from '../../shared/models/item-dropdown.model';
 
@@ -80,12 +80,13 @@ export class ProductComponent implements AfterViewInit, OnDestroy {
   constructor() {
     this.route.queryParams.subscribe(params => {
       this.isRESTClient.set(
-        DESIGNER_COOKIE_VARIABLE.restClientParamName in params &&
+        DESIGNER_SESSION_STORAGE_VARIABLE.restClientParamName in params &&
           this.isDesignerEnvironment
       );
 
-      if (params[DESIGNER_COOKIE_VARIABLE.searchParamName] != null) {
-        this.criteria.search = params[DESIGNER_COOKIE_VARIABLE.searchParamName];
+      if (params[DESIGNER_SESSION_STORAGE_VARIABLE.searchParamName] != null) {
+        this.criteria.search =
+          params[DESIGNER_SESSION_STORAGE_VARIABLE.searchParamName];
       }
     });
 

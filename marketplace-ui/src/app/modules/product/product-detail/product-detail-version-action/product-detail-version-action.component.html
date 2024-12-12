@@ -131,10 +131,14 @@
                   const selectedItemElement = document.querySelector('.install-designer-dropdown');
                   if (selectedItemElement) {
                   const metaDataJsonUrl = selectedItemElement.getAttribute('metaDataJsonUrl');
-                  install(metaDataJsonUrl);
+                    try {
+                      install(metaDataJsonUrl);
+                    } catch (error) {
+                      event.stopImmediatePropagation();
+                    }
                   }
                 }
-                installInDesigner();" [ngClass]="themeService.isDarkMode() ? 'btn-light' : 'btn-primary'">
+                installInDesigner(event);" [ngClass]="themeService.isDarkMode() ? 'btn-light' : 'btn-primary'">
         {{ 'common.product.detail.install.buttonLabelInDesigner' | translate }}
       </button>
     </div>

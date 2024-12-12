@@ -31,8 +31,8 @@ describe('AppComponent', () => {
       [
         'getNavigationStartEvent',
         'isDesignerEnv',
-        'checkCookieForDesignerEnv',
-        'checkCookieForDesignerVersion'
+        'checkSessionStorageForDesignerEnv',
+        'checkSessionStorageForDesignerVersion'
       ]
     );
 
@@ -89,7 +89,7 @@ describe('AppComponent', () => {
     expect(component).toBeTruthy();
   });
 
-  it('should subscribe to query params and check cookies if not in designer environment', () => {
+  it('should subscribe to query params and check session strorage if not in designer environment', () => {
     routingQueryParamService.isDesignerEnv.and.returnValue(false);
     const params = { someParam: 'someValue' };
 
@@ -103,10 +103,10 @@ describe('AppComponent', () => {
     navigationStartSubject.next(new NavigationStart(1, 'testUrl'));
 
     expect(
-      routingQueryParamService.checkCookieForDesignerEnv
+      routingQueryParamService.checkSessionStorageForDesignerEnv
     ).toHaveBeenCalledWith(params);
     expect(
-      routingQueryParamService.checkCookieForDesignerVersion
+      routingQueryParamService.checkSessionStorageForDesignerVersion
     ).toHaveBeenCalledWith(params);
   });
 
@@ -117,10 +117,10 @@ describe('AppComponent', () => {
     navigationStartSubject.next(new NavigationStart(1, 'testUrl'));
 
     expect(
-      routingQueryParamService.checkCookieForDesignerEnv
+      routingQueryParamService.checkSessionStorageForDesignerEnv
     ).not.toHaveBeenCalled();
     expect(
-      routingQueryParamService.checkCookieForDesignerVersion
+      routingQueryParamService.checkSessionStorageForDesignerVersion
     ).not.toHaveBeenCalled();
   });
 

@@ -40,8 +40,8 @@ export class AppComponent {
     this.routingQueryParamService.getNavigationStartEvent().subscribe(() => {
       if (!this.routingQueryParamService.isDesignerEnv()) {
         this.route.queryParams.subscribe(params => {
-          this.routingQueryParamService.checkCookieForDesignerEnv(params);
-          this.routingQueryParamService.checkCookieForDesignerVersion(params);
+          this.routingQueryParamService.checkSessionStorageForDesignerEnv(params);
+          this.routingQueryParamService.checkSessionStorageForDesignerVersion(params);
         });
       }
     });
