@@ -132,14 +132,7 @@
                   const selectedItemElement = document.querySelector('.install-designer-dropdown');
                   if (selectedItemElement) {
                     const metaDataJsonUrl = selectedItemElement.getAttribute('metaDataJsonUrl');
-                    try {
-                      install(metaDataJsonUrl);
-                    } catch (error) {
-                      console.log("event");
-
-                      console.log(error);
-                      event.stopImmediatePropagation();
-                    }
+                    install(metaDataJsonUrl);
                   }
                 }
                 installInDesigner(event);" [ngClass]="themeService.isDarkMode() ? 'btn-light' : 'btn-primary'">
