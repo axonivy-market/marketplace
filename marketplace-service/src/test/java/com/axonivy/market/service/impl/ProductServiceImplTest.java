@@ -649,7 +649,7 @@ class ProductServiceImplTest extends BaseSetup {
   }
 
   @Test
-  void testSyncFirstPublishedDateOfAllProductsFailed() {
+  void testSyncFirstPublishedDateWithFindingAllProductsFailed() {
     when(productRepo.findAll()).thenThrow(new MockitoException("Sync FirstPublishedDate of all products failed!"));
     assertFalse(productService.syncFirstPublishedDateOfAllProducts());
   }
@@ -658,5 +658,54 @@ class ProductServiceImplTest extends BaseSetup {
   void testSyncFirstPublishedDateForNoProduct() {
     when(productRepo.findAll()).thenReturn(new ArrayList<>());
     assertTrue(productService.syncFirstPublishedDateOfAllProducts());
+  }
+
+  @Test
+  void testSyncFirstPublishedDateOfAllProductsFailed() throws IOException {
+    Product mockProduct = new Product();
+    mockProduct.setRepositoryName(SAMPLE_PRODUCT_REPOSITORY_NAME);
+    List<Product> products = Arrays.asList(mockProduct);
+    when(productRepo.findAll()).thenReturn(products);
+    when(gitHubService.getRepositoryTags(SAMPLE_PRODUCT_REPOSITORY_NAME)).thenThrow(
+        new MockitoException("Sync a product failed!"));
+    assertFalse(productService.syncFirstPublishedDateOfAllProducts());
+  }
+
+  @Test
+  void testSyncFirstPublishedDateOfAllProductsSuccess() throws IOException {
+    Product mockProduct = new Product();
+    mockProduct.setId(SAMPLE_PRODUCT_ID);
+    mockProduct.setMarketDirectory(SAMPLE_PRODUCT_PATH);
+    mockProduct.setRepositoryName(SAMPLE_PRODUCT_REPOSITORY_NAME);
+    List<Product> products = Arrays.asList(mockProduct);
+    when(productRepo.findAll()).thenReturn(products);
+    when(productRepo.save(any(Product.class))).thenReturn(mockProduct);
+    GHTag ghTagVersionOne = mock(GHTag.class);
+    GHCommit commitOfTagVersionOne = mock(GHCommit.class);
+    GHTag ghTagVersionTwo = mock(GHTag.class);
+    GHCommit commitOfTagVersionTwo = mock(GHCommit.class);
+    List<GHTag> tags = Arrays.asList(ghTagVersionOne, ghTagVersionTwo);
+    when(ghTagVersionOne.getCommit()).thenReturn(commitOfTagVersionOne);
+    when(commitOfTagVersionOne.getCommitDate()).thenReturn(new Date());
+    when(ghTagVersionTwo.getCommit()).thenReturn(commitOfTagVersionTwo);
+    when(commitOfTagVersionTwo.getCommitDate()).thenReturn(new Date());
+    when(gitHubService.getRepositoryTags(SAMPLE_PRODUCT_REPOSITORY_NAME)).thenReturn(tags);
+    assertTrue(productService.syncFirstPublishedDateOfAllProducts());
+  }
+
+  @Test
+  void testSyncFirstPublishedDateWithGettingTagCommitFailed() throws IOException {
+    Product mockProduct = new Product();
+    mockProduct.setId(SAMPLE_PRODUCT_ID);
+    mockProduct.setMarketDirectory(SAMPLE_PRODUCT_PATH);
+    mockProduct.setRepositoryName(SAMPLE_PRODUCT_REPOSITORY_NAME);
+    List<Product> products = Arrays.asList(mockProduct);
+    when(productRepo.findAll()).thenReturn(products);
+    GHTag ghTagVersionOne = mock(GHTag.class);
+    List<GHTag> tags = Arrays.asList(ghTagVersionOne);
+    when(ghTagVersionOne.getCommit()).thenThrow(
+        new MockitoException("get commit of tag failed!"));
+    when(gitHubService.getRepositoryTags(SAMPLE_PRODUCT_REPOSITORY_NAME)).thenReturn(tags);
+    assertFalse(productService.syncFirstPublishedDateOfAllProducts());
   }
 }
