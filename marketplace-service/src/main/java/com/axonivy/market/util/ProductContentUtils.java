@@ -22,7 +22,7 @@ import java.util.regex.Pattern;
 import static com.axonivy.market.constants.ProductJsonConstants.DEFAULT_PRODUCT_TYPE;
 
 public class ProductContentUtils {
-  public static final String DEMO_SETUP_TITLE = "(?i)## Demo|## Setup";
+  public static final String DEMO_SETUP_TITLE = "(?m)^## (Demo|Setup)$";
   private static final String HASH = "#";
   public static final String DESCRIPTION = "description";
   public static final String DEMO = "demo";
