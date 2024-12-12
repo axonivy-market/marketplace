@@ -707,7 +707,7 @@ class ProductServiceImplTest extends BaseSetup {
     List<GHTag> tags = Arrays.asList(ghTag);
     GHCommit ghCommit = mock(GHCommit.class);
     when(ghTag.getCommit()).thenReturn(ghCommit);
-    when(ghTag.getCommit().getCommitDate()).thenThrow(
+    when(ghCommit.getCommitDate()).thenThrow(
         new IOException("get commit date of tag commit failed!"));
     when(gitHubService.getRepositoryTags(SAMPLE_PRODUCT_REPOSITORY_NAME)).thenReturn(tags);
     assertTrue(productService.syncFirstPublishedDateOfAllProducts());
