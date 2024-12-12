@@ -1,13 +1,16 @@
 import { HttpClient, HttpContext, HttpParams } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
-import { delay, finalize, Observable } from 'rxjs';
+import { delay, Observable } from 'rxjs';
 import { LoadingService } from '../../core/services/loading/loading.service';
 import { RequestParam } from '../../shared/enums/request-param';
 import { ProductApiResponse } from '../../shared/models/apis/product-response.model';
 import { Criteria } from '../../shared/models/criteria.model';
 import { ProductDetail } from '../../shared/models/product-detail.model';
 import { VersionData } from '../../shared/models/vesion-artifact.model';
-import { SkipLoading } from '../../core/interceptors/api.interceptor';
+import {
+  SkipLoading,
+  LoadingComponent
+} from '../../core/interceptors/api.interceptor';
 import { VersionAndUrl } from '../../shared/models/version-and-url';
 import { API_URI } from '../../shared/constants/api.constant';
 import { LoadingComponentId } from '../../shared/enums/loading-component-id';
@@ -37,10 +40,12 @@ export class ProductService {
         );
     }
     return this.httpClient.get<ProductApiResponse>(requestURL, {
-      params: requestParams
-    }).pipe(finalize(()=> {
-      this.loadingService.hideLoading(LoadingComponentId.LANDING_PAGE);
-    }));
+      params: requestParams,
+      context: new HttpContext().set(
+        LoadingComponent,
+        LoadingComponentId.LANDING_PAGE
+      )
+    });
   }
 
   getProductDetailsWithVersion(
@@ -48,7 +53,13 @@ export class ProductService {
     version: string
   ): Observable<ProductDetail> {
     return this.httpClient.get<ProductDetail>(
-      `${API_URI.PRODUCT_DETAILS}/${productId}/${version}`
+      `${API_URI.PRODUCT_DETAILS}/${productId}/${version}`,
+      {
+        context: new HttpContext().set(
+          LoadingComponent,
+          LoadingComponentId.PRODUCT_DETAIL_INFORMATION
+        )
+      }
     );
   }
 
@@ -57,7 +68,13 @@ export class ProductService {
     version: string
   ): Observable<ProductDetail> {
     return this.httpClient.get<ProductDetail>(
-      `${API_URI.PRODUCT_DETAILS}/${productId}/${version}/bestmatch`
+      `${API_URI.PRODUCT_DETAILS}/${productId}/${version}/bestmatch`,
+      {
+        context: new HttpContext().set(
+          LoadingComponent,
+          LoadingComponentId.DETAIL_PAGE
+        )
+      }
     );
   }
 
@@ -66,9 +83,17 @@ export class ProductService {
     isShowDevVersion: boolean
   ): Observable<ProductDetail> {
     this.loadingService.showLoading(LoadingComponentId.DETAIL_PAGE);
-    return this.httpClient.get<ProductDetail>(
-      `${API_URI.PRODUCT_DETAILS}/${productId}?isShowDevVersion=${isShowDevVersion}`
-    ).pipe(delay(5000));
+    return this.httpClient
+      .get<ProductDetail>(
+        `${API_URI.PRODUCT_DETAILS}/${productId}?isShowDevVersion=${isShowDevVersion}`,
+        {
+          context: new HttpContext().set(
+            LoadingComponent,
+            LoadingComponentId.PRODUCT_DETAIL_INFORMATION
+          )
+        }
+      )
+      .pipe(delay(5000));
   }
 
   sendRequestToProductDetailVersionAPI(
@@ -82,11 +107,16 @@ export class ProductService {
       .append('isShowDevVersion', showDevVersion);
     return this.httpClient.get<VersionData[]>(url, {
       params,
-      context: new HttpContext().set(SkipLoading, true)
+      context: new HttpContext()
+        .set(SkipLoading, true)
+        .set(LoadingComponent, LoadingComponentId.PRODUCT_DETAIL_INFORMATION)
     });
   }
 
-  sendRequestToUpdateInstallationCount(productId: string, designerVersion: string) {
+  sendRequestToUpdateInstallationCount(
+    productId: string,
+    designerVersion: string
+  ) {
     const url = `${API_URI.PRODUCT_MARKETPLACE_DATA}/installation-count/${productId}`;
     const params = new HttpParams().append('designerVersion', designerVersion);
     return this.httpClient.put<number>(url, null, { params });

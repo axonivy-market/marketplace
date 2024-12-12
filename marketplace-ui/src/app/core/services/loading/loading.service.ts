@@ -1,4 +1,4 @@
-import { computed, Injectable, signal } from '@angular/core';
+import { Injectable, signal } from '@angular/core';
 
 @Injectable({
   providedIn: 'root'
@@ -20,9 +20,5 @@ export class LoadingService {
 
   hideLoading(componentId: string) {
     this.setLoading(componentId, false);
-  }
-
-  isLoading(componentId: string) {
-    return computed(() => this.loadingStates()[componentId]);
   }
 }

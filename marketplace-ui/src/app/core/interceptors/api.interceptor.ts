@@ -29,7 +29,7 @@ export const ForwardingError = new HttpContextToken<boolean>(() => false);
 /** LoadingComponentId: This option for show loading for component which match with id
  * @Example return httpClient.get('apiEndPoint', { context: new HttpContext().set(LoadingComponentId, "detail-page") })
  */
-export const LoadingComponentId = new HttpContextToken<string>(() => '');
+export const LoadingComponent = new HttpContextToken<string>(() => '');
 
 export const apiInterceptor: HttpInterceptorFn = (req, next) => {
   const router = inject(Router);
@@ -51,7 +51,7 @@ export const apiInterceptor: HttpInterceptorFn = (req, next) => {
   });
 
   if (!req.context.get(SkipLoading)) {
-    loadingService.showLoading(req.context.get(LoadingComponentId));
+    loadingService.showLoading(req.context.get(LoadingComponent));
   }
 
   if (req.context.get(ForwardingError)) {
@@ -69,7 +69,7 @@ export const apiInterceptor: HttpInterceptorFn = (req, next) => {
     }),
     finalize(() => {
       if (!req.context.get(SkipLoading)) {
-        loadingService.hideLoading(req.context.get(LoadingComponentId));
+        loadingService.hideLoading(req.context.get(LoadingComponent));
       }
     })
   );
