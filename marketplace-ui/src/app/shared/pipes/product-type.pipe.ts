@@ -6,6 +6,6 @@ import { Pipe, PipeTransform } from '@angular/core';
 })
 export class ProductTypePipe implements PipeTransform {
   transform(type: string, _args?: []): string {
-    return `common.filter.value.${type}`;
+    return type ? `common.filter.value.${type}` : '';
   }
 }

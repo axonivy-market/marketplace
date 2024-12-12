@@ -1,17 +1,24 @@
-import { computed, Injectable, signal } from '@angular/core';
+import { Injectable, signal } from '@angular/core';
 
 @Injectable({
   providedIn: 'root'
 })
 export class LoadingService {
-  private readonly isShow = signal(false);
-  isLoading = computed(() => this.isShow());
+  loadingStates = signal<{ [key: string]: boolean }>({});
 
-  show() {
-    this.isShow.set(true);
+  private setLoading(componentId: string, isLoading: boolean): void {
+    this.loadingStates.update(states => {
+      const updatedStates = { ...states };
+      updatedStates[componentId] = isLoading;
+      return updatedStates;
+    });
   }
 
-  hide() {
-    this.isShow.set(false);
+  showLoading(componentId: string): void {
+    this.setLoading(componentId, true);
+  }
+
+  hideLoading(componentId: string) {
+    this.setLoading(componentId, false);
   }
 }

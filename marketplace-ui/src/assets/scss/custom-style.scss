@@ -56,6 +56,10 @@ p {
   font-size: 14px;
 }
 
+.overlay-background{
+  background: rgba(0, 0, 0, 0.32);
+}
+
 [data-bs-theme='light'] {
   --ivy-primary-bg: #{$ivyPrimaryColorLight};
   --ivy-secondary-bg: #{$ivySecondaryColorLight};
