@@ -12,6 +12,7 @@ This connector:
 
 ## Demo
 
+### Demo sample
 1. Hit the slash command key on the channel's chat.
    The Axon Ivy process will be triggered and create a new task.
    The task's information will be sent to the channel by a message.
@@ -20,6 +21,7 @@ This connector:
 
 ## Setup
 
+### Setup guideline
 Mattermost Instance
 
 1. Ref to [Deploy Mattermost](https://docs.mattermost.com/guides/deployment.html).
