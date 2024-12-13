@@ -157,20 +157,18 @@ export class ProductDetailComponent {
     const productId = this.route.snapshot.params[ROUTER.ID];
     this.productDetailService.productId.set(productId);
     if (productId) {
-      const observable = forkJoin({
-        productDetail: this.getProductContentObservable(productId)
-      });
-      // const productDetail = this.getProductContentObservable(productId);
       forkJoin({
-        productDetail: this.getProductContentObservable(productId)
+        productDetail: this.getProductDetailObservable(productId),
+        productFeedBack: this.productFeedbackService.getInitFeedbacksObservable(),
+        rating: this.productStarRatingService.getRatingObservable(productId),
+        
       }).subscribe(res => {
-        this.getProductContent(res.productDetail);
+        this.handleProductDetail(res.productDetail);
+        this.productFeedbackService.handleFeedbackApiResponse(res.productFeedBack);
+        res.rating;
+        this.updateDropdownSelection();
+        this.checkMediaSize();
       });
-      this.getProductContent(productId);
-      this.productFeedbackService.initFeedbacks();
-      this.productStarRatingService.fetchData();
-      this.updateDropdownSelection();
-      this.checkMediaSize();
       this.getUserFeedBack();
     }
   }
@@ -189,7 +187,7 @@ export class ProductDetailComponent {
     });
   }
 
-  getProductContentObservable(productId: string) {
+  getProductDetailObservable(productId: string): Observable<ProductDetail> {
     const isShowDevVersion = CommonUtils.getCookieValue(
       this.cookieService,
       SHOW_DEV_VERSION,
@@ -198,7 +196,7 @@ export class ProductDetailComponent {
     return this.getProductById(productId, isShowDevVersion);
   }
 
-  getProductContent(productDetail: ProductDetail) {
+  handleProductDetail(productDetail: ProductDetail) {
     this.productDetail.set(productDetail);
     this.productModuleContent.set(productDetail.productModuleContent);
     this.metaProductJsonUrl = productDetail.metaProductJsonUrl;

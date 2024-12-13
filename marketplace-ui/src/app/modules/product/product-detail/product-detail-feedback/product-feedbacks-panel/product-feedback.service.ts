@@ -70,7 +70,7 @@ export class ProductFeedbackService {
       })
       .pipe(
         tap(() => {
-          this.initFeedbacks();
+          this.fetchFeedbacks();
           this.findProductFeedbackOfUser().subscribe();
           this.productStarRatingService.fetchData();
         }),
@@ -100,7 +100,9 @@ export class ProductFeedbackService {
     return this.http
       .get<FeedbackApiResponse>(requestURL, {
         params: requestParams,
-        context: new HttpContext().set(SkipLoading, true).set(ForwardingError, true)
+        context: new HttpContext()
+          .set(SkipLoading, true)
+          .set(ForwardingError, true)
       })
       .pipe(
         tap(response => {
@@ -152,11 +154,9 @@ export class ProductFeedbackService {
       );
   }
 
-  initFeedbacks(): void {
-    this.page.set(0);
-    this.findProductFeedbacksByCriteria().subscribe(response => {
-      this.totalPages.set(response.page.totalPages);
-      this.totalElements.set(response.page.totalElements);
+  fetchFeedbacks(): void {
+    this.getInitFeedbacksObservable().subscribe(response => {
+      this.setInitFeedbacksObservable(response);
     });
   }
 
@@ -173,5 +173,14 @@ export class ProductFeedbackService {
 
   private clearTokenCookie(): void {
     this.cookieService.delete(TOKEN_KEY);
+  }
+
+  handleFeedbackApiResponse(response: FeedbackApiResponse) {
+    this.totalPages.set(response.page.totalPages);
+    this.totalElements.set(response.page.totalElements);
+  }
+  getInitFeedbacksObservable() {
+    this.page.set(0);
+    return this.findProductFeedbacksByCriteria();
   }
 }
