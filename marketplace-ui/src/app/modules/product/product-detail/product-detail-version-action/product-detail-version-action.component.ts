@@ -234,7 +234,7 @@ export class ProductDetailVersionActionComponent implements AfterViewInit {
     this.productService
       .sendRequestToUpdateInstallationCount(
         this.productId,
-        this.routingQueryParamService.getDesignerVersionFromCookie()
+        this.routingQueryParamService.getDesignerVersionFromSessionStorage()
       )
       .subscribe((data: number) => this.installationCount.emit(data));
   }

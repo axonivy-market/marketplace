@@ -45,7 +45,7 @@ describe('ProductDetailComponent', () => {
   beforeEach(async () => {
     const routingQueryParamServiceSpy = jasmine.createSpyObj(
       'RoutingQueryParamService',
-      ['getDesignerVersionFromCookie', 'isDesignerEnv']
+      ['getDesignerVersionFromSessionStorage', 'isDesignerEnv']
     );
 
     const languageServiceSpy = jasmine.createSpyObj(
@@ -130,10 +130,10 @@ describe('ProductDetailComponent', () => {
     expect(component.selectedVersion).toEqual('Version 10.0.0');
   });
 
-  it('should get corresponding version from cookie', () => {
+  it('should get corresponding version from session strorage', () => {
     const targetVersion = '1.0';
     const productId = 'Portal';
-    routingQueryParamService.getDesignerVersionFromCookie.and.returnValue(
+    routingQueryParamService.getDesignerVersionFromSessionStorage.and.returnValue(
       targetVersion
     );
     component.getProductById(productId, false).subscribe(productDetail => {
