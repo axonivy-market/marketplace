@@ -131,8 +131,17 @@
               (click)="onUpdateInstallationCountForDesigner()" onClick="function installInDesigner(event) {
                   const selectedItemElement = document.querySelector('.install-designer-dropdown');
                   if (selectedItemElement) {
+<<<<<<< HEAD
                     const metaDataJsonUrl = selectedItemElement.getAttribute('metaDataJsonUrl');
                     install(metaDataJsonUrl);
+=======
+                  const metaDataJsonUrl = selectedItemElement.getAttribute('metaDataJsonUrl');
+                    try {
+                      install(metaDataJsonUrl);
+                    } catch (error) {
+                      event.stopImmediatePropagation();
+                    }
+>>>>>>> develop
                   }
                 }
                 installInDesigner(event);" [ngClass]="themeService.isDarkMode() ? 'btn-light' : 'btn-primary'">
