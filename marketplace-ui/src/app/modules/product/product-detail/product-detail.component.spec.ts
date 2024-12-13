@@ -808,4 +808,20 @@ describe('ProductDetailComponent', () => {
     expect(rateConnector.childNodes[0].nativeNode.textContent).toContain("common.feedback.rateFeedbackForUtilityBtnLabel");
     expect(rateConnectorEmptyText.childNodes[0].nativeNode.textContent).toContain("common.feedback.noFeedbackForUtilityLabel");
   });
+
+  it('maven tab should not display when product module content is missing', () => {
+    const event = { value: 'dependency' };
+    component.onTabChange(event.value);
+    fixture.detectChanges();
+    let mavenTab = fixture.debugElement.query(
+      By.css('app-product-detail-maven-content')
+    );
+    expect(mavenTab).toBeTruthy();
+    component.productModuleContent.set({} as any as ProductModuleContent);
+    fixture.detectChanges();
+    mavenTab = fixture.debugElement.query(
+      By.css('app-product-detail-maven-content')
+    );
+    expect(mavenTab).toBeFalsy();
+  });
 });
