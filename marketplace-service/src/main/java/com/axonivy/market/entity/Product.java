@@ -64,6 +64,7 @@ public class Product implements Serializable {
   @Transient
   private int installationCount;
   private Date newestPublishedDate;
+  private Date firstPublishedDate;
   private String newestReleaseVersion;
   @Transient
   private ProductModuleContent productModuleContent;
