@@ -78,7 +78,7 @@
                 <span class="badge none">Disabled</span>
               }
             </p>
-            <p><span class="icon">⏱️</span><span><a (click)="navigateToRepoPage(repo.repoName, 'lastCommit', repo.lastCommitSHA)">Last Commit</a>:</span> {{ repo.lastCommitDate | timeAgo | async }}</p>
+            <p><span class="icon">⏱️</span><span><a (click)="navigateToRepoPage(repo.repoName, 'lastCommit', repo.lastCommitSHA)">Last Commit</a>:</span> {{ formatCommitDate(repo.lastCommitDate) }}</p>
           </div>
         </div>
       }

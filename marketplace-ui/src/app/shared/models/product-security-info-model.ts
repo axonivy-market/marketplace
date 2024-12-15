@@ -16,5 +16,5 @@ export interface ProductSecurityInfo {
   };
   branchProtectionEnabled: boolean;
   lastCommitSHA: string;
-  lastCommitDate: Date;
+  lastCommitDate: string;
 }

@@ -43,7 +43,7 @@ describe('SecurityMonitorService', () => {
                 secretScanning: { status: 'ENABLED', numberOfAlerts: 0 },
                 branchProtectionEnabled: true,
                 lastCommitSHA: '12345',
-                lastCommitDate: new Date(),
+                lastCommitDate: '',
             },
         ];
 
