@@ -34,6 +34,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { ROUTER } from '../../../../shared/constants/router.constant';
 import { MatomoCategory, MatomoAction } from '../../../../shared/enums/matomo-tracking.enum';
 import { MATOMO_TRACKING_ENVIRONMENT } from '../../../../shared/constants/matomo.constant';
+import { MATOMO_DIRECTIVES } from 'ngx-matomo-client';
 
 const showDevVersionCookieName = 'showDevVersions';
 
@@ -46,6 +47,7 @@ const showDevVersionCookieName = 'showDevVersions';
     FormsModule,
     CommonDropdownComponent,
     LoadingSpinnerComponent,
+    MATOMO_DIRECTIVES
   ],
   templateUrl: './product-detail-version-action.component.html',
   styleUrl: './product-detail-version-action.component.scss'
@@ -225,18 +227,14 @@ export class ProductDetailVersionActionComponent implements AfterViewInit {
 
   downloadArtifact() {
     this.onUpdateInstallationCount();
-    const newTab = window.open(this.selectedArtifact, '_blank');
-    if (newTab) {
-      newTab.blur();
-    }
-    window.focus();
+    window.open(this.selectedArtifact, '_blank');
   }
 
   onUpdateInstallationCount() {
     this.productService
       .sendRequestToUpdateInstallationCount(
         this.productId,
-        this.routingQueryParamService.getDesignerVersionFromCookie()
+        this.routingQueryParamService.getDesignerVersionFromSessionStorage()
       )
       .subscribe((data: number) => this.installationCount.emit(data));
   }
@@ -246,14 +244,10 @@ export class ProductDetailVersionActionComponent implements AfterViewInit {
   }
 
   onNavigateToContactPage() {
-    const newTab = window.open(
+    window.open(
       `https://www.axonivy.com/marketplace/contact/?market_solutions=${this.productId}`,
       '_blank'
     );
-    if (newTab) {
-      newTab.blur();
-    }
-    window.focus();
   }
 
   getTrackingEnvironmentBasedOnActionType() {

@@ -5,6 +5,9 @@
         id="install-button"
         name="Install button"
         #installButton
+        [matomoClickCategory]="MatomoCategory.BUTTON"
+        [matomoClickAction]="MatomoAction.CLICK"
+        [matomoClickName]="installButton.name + ' - ' + getTrackingEnvironmentBasedOnActionType()"
         [lang]="languageService.selectedLanguage()"
         class="btn btn__install flex-grow-1 me-lg-2"
         data-bs-toggle="tooltip"
@@ -30,6 +33,9 @@
           id="download-button"
           name="Download button"
           #artifactDownloadButton
+          [matomoClickCategory]="MatomoCategory.BUTTON"
+          [matomoClickAction]="MatomoAction.CLICK"
+          [matomoClickName]="artifactDownloadButton.name + ' - ' + getTrackingEnvironmentBasedOnActionType()"
           [lang]="languageService.selectedLanguage()"
           class="btn btn__download btn-secondary primary-bg flex-grow-1"
           type="button"
@@ -116,16 +122,23 @@
       <button id="install-button"
               name="Install button"
               #installButton
+              [matomoClickCategory]="MatomoCategory.BUTTON"
+              [matomoClickAction]="MatomoAction.CLICK"
+              [matomoClickName]="installButton.name + ' - ' + getTrackingEnvironmentBasedOnActionType()"
               [lang]="languageService.selectedLanguage()"
               class="btn btn__install flex-grow-1 install-designer-button m-0 col-4" id="install-button"
               (click)="onUpdateInstallationCountForDesigner()" onClick="function installInDesigner() {
                   const selectedItemElement = document.querySelector('.install-designer-dropdown');
                   if (selectedItemElement) {
                   const metaDataJsonUrl = selectedItemElement.getAttribute('metaDataJsonUrl');
-                  install(metaDataJsonUrl);
+                    try {
+                      install(metaDataJsonUrl);
+                    } catch (error) {
+                      event.stopImmediatePropagation();
+                    }
                   }
                 }
-                installInDesigner();" [ngClass]="themeService.isDarkMode() ? 'btn-light' : 'btn-primary'">
+                installInDesigner(event);" [ngClass]="themeService.isDarkMode() ? 'btn-light' : 'btn-primary'">
         {{ 'common.product.detail.install.buttonLabelInDesigner' | translate }}
       </button>
     </div>
@@ -135,6 +148,9 @@
             id="contact-us-button"
             name="Contact us button"
             #contactUsButton
+            [matomoClickCategory]="MatomoCategory.BUTTON"
+            [matomoClickAction]="MatomoAction.CLICK"
+            [matomoClickName]="contactUsButton.name + ' - ' + getTrackingEnvironmentBasedOnActionType()"
             [lang]="languageService.selectedLanguage()"
             class="btn row btn_contact-us"
             (click)="onNavigateToContactPage()"

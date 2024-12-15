@@ -160,7 +160,7 @@
                   [id]="displayedTab.value"
                   role="tabpanel"
                   [attr.aria-labelledby]="displayedTab.value + '-tab'">
-                  @if (displayedTab.value === 'dependency') {
+                  @if (displayedTab.value === 'dependency' && productDetail().productModuleContent) {
                     <app-product-detail-maven-content
                       [productDetail]="productDetail()"
                       [selectedVersion]="selectedVersion">

@@ -4,7 +4,6 @@ import { Router } from '@angular/router';
 import { CookieService } from 'ngx-cookie-service';
 import { AuthService } from './auth.service';
 import { environment } from '../../environments/environment';
-import { of } from 'rxjs';
 import { provideHttpClient, withInterceptorsFromDi } from '@angular/common/http';
 import { TOKEN_KEY } from '../shared/constants/common.constant';
 

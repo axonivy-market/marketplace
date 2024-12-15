@@ -4,7 +4,6 @@ export const environment = {
   githubClientId: 'Iv23livu9HbsC4Q24eSC',
   githubAuthCallbackPath: '/auth/github/callback',
   dayInMiliseconds: 86400000,
-  // Disabled for later HTTPS implementation
-  // matomoSiteId: 1,
-  // matomoTrackerUrl: '//marketplace.server.ivy-cloud.com:8085'
+  matomoSiteId: 2,
+  matomoTrackerUrl: '//market.axonivy.com/matomo-web'
 };

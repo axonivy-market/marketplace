@@ -7,6 +7,8 @@ import { MARKED_OPTIONS, MarkdownModule } from 'ngx-markdown';
 import { markedOptionsFactory } from './core/configs/markdown.config';
 import { httpLoaderFactory } from './core/configs/translate.config';
 import { apiInterceptor } from './core/interceptors/api.interceptor';
+import { provideMatomo, withRouter } from 'ngx-matomo-client';
+import { environment } from '../environments/environment';
 
 const scrollConfig: InMemoryScrollingOptions = {
   scrollPositionRestoration: 'disabled',
@@ -22,13 +24,12 @@ export const appConfig: ApplicationConfig = {
     provideRouter(routes, inMemoryScrollingFeature),
     provideHttpClient(withFetch(), withInterceptors([apiInterceptor])),
 
-    //  Disabled for later HTTPS implementation
-    // provideMatomo({
-    //   siteId: environment.matomoSiteId,
-    //   trackerUrl: environment.matomoTrackerUrl,
-    //   },
-    //   withRouter(),
-    // ),
+    provideMatomo({
+      siteId: environment.matomoSiteId,
+      trackerUrl: environment.matomoTrackerUrl,
+      },
+      withRouter(),
+    ),
     importProvidersFrom(
       TranslateModule.forRoot({
         loader: {

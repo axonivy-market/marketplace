@@ -147,32 +147,6 @@ class ProductControllerTest extends BaseSetup {
   }
 
   @Test
-  void testSyncMavenVersionSuccess() {
-    var response = productController.syncProductVersions(AUTHORIZATION_HEADER, false);
-    assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, response.getStatusCode());
-    assertTrue(response.hasBody());
-    assertEquals(ErrorCode.MAVEN_VERSION_SYNC_FAILED.getCode(), Objects.requireNonNull(response.getBody()).getHelpCode());
-    when(metadataService.syncAllProductsMetadata()).thenReturn(1);
-    response = productController.syncProductVersions(AUTHORIZATION_HEADER, false);
-    assertEquals(HttpStatus.OK, response.getStatusCode());
-    assertTrue(response.hasBody());
-    assertEquals(ErrorCode.SUCCESSFUL.getCode(), Objects.requireNonNull(response.getBody()).getHelpCode());
-  }
-
-
-  @Test
-  void testSyncMavenVersionWithInvalidToken() {
-    doThrow(new UnauthorizedException(ErrorCode.GITHUB_USER_UNAUTHORIZED.getCode(),
-        ErrorCode.GITHUB_USER_UNAUTHORIZED.getHelpText())).when(gitHubService)
-        .validateUserInOrganizationAndTeam(any(String.class), any(String.class), any(String.class));
-
-    UnauthorizedException exception = assertThrows(UnauthorizedException.class,
-        () -> productController.syncProductVersions(INVALID_AUTHORIZATION_HEADER, false));
-
-    assertEquals(ErrorCode.GITHUB_USER_UNAUTHORIZED.getHelpText(), exception.getMessage());
-  }
-
-  @Test
   void testSyncOneProductInvalidProductPath() {
     Product product = new Product();
     product.setId("a-trust");
@@ -239,5 +213,33 @@ class ProductControllerTest extends BaseSetup {
     mockProduct.setType("connector");
     mockProduct.setTags(List.of("AI"));
     return mockProduct;
+  }
+
+  @Test
+  void testSyncFirstPublishedDateOfAllProductsInvalidToken() {
+    doThrow(new UnauthorizedException(ErrorCode.GITHUB_USER_UNAUTHORIZED.getCode(),
+        ErrorCode.GITHUB_USER_UNAUTHORIZED.getHelpText())).when(gitHubService)
+        .validateUserInOrganizationAndTeam(any(String.class), any(String.class), any(String.class));
+
+    UnauthorizedException exception = assertThrows(UnauthorizedException.class,
+        () -> productController.syncFirstPublishedDateOfAllProducts(INVALID_AUTHORIZATION_HEADER));
+
+    assertEquals(ErrorCode.GITHUB_USER_UNAUTHORIZED.getHelpText(), exception.getMessage());
+  }
+
+  @Test
+  void testSyncFirstPublishedDateOfAllProductsFailed() {
+    when(service.syncFirstPublishedDateOfAllProducts()).thenReturn(false);
+    var response = productController.syncFirstPublishedDateOfAllProducts(AUTHORIZATION_HEADER);
+    assertEquals(HttpStatus.OK, response.getStatusCode());
+    assertNotEquals(ErrorCode.SUCCESSFUL.getCode(), response.getBody().getHelpCode());
+  }
+
+  @Test
+  void testSyncFirstPublishedDateOfAllProductsSuccess() {
+    when(service.syncFirstPublishedDateOfAllProducts()).thenReturn(true);
+    var response = productController.syncFirstPublishedDateOfAllProducts(AUTHORIZATION_HEADER);
+    assertEquals(HttpStatus.OK, response.getStatusCode());
+    assertEquals(ErrorCode.SUCCESSFUL.getCode(), response.getBody().getHelpCode());
   }
 }
