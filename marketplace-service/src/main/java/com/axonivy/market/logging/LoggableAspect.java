@@ -30,7 +30,7 @@ import static com.axonivy.market.util.LoggingUtils.*;
 public class LoggableAspect {
 
   @Value("${loggable.log-path}")
-  private String logFilePath;
+  public String logFilePath;
 
   private static final String REQUESTED_BY = "marketplace-website";
 
@@ -58,7 +58,7 @@ public class LoggableAspect {
         "timestamp", escapeXml(getCurrentTimestamp()),
         "user-agent", escapeXml(request.getHeader(CommonConstants.USER_AGENT)),
         "arguments", escapeXml(getArgumentsString(signature.getParameterNames(), joinPoint.getArgs())),
-        "x-requested-by", escapeXml(request.getHeader(CommonConstants.REQUESTED_BY))
+        "X-Requested-By", escapeXml(request.getHeader(CommonConstants.REQUESTED_BY))
     );
   }
 
