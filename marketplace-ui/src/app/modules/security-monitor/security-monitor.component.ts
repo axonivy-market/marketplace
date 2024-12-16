@@ -123,8 +123,7 @@ export class SecurityMonitorComponent {
     const now = new Date().getTime();
     const targetDate = new Date(date).getTime();
     const diffInSeconds = Math.floor((now - targetDate) / 1000);
-  
-    // Define time units and their labels
+
     const timeUnits = [
       { seconds: 60, singular: 'minute', plural: 'minutes' },
       { seconds: 3600, singular: 'hour', plural: 'hours' },
@@ -138,19 +137,24 @@ export class SecurityMonitorComponent {
       return 'just now';
     }
   
-    // Iterate through time units
-    for (let i = 0; i < timeUnits.length; i++) {
-      const { seconds, singular, plural } = timeUnits[i];
+    for (const { seconds, singular: unitSingular, plural: unitPlural } of timeUnits) {
       if (diffInSeconds < seconds) {
         const value = Math.floor(diffInSeconds / (seconds / 60));
-        return `${value} ${value === 1 ? singular : plural} ago`;
+        if (value === 1) {
+          return `${value} ${unitSingular} ago`;
+        } else {
+          return `${value} ${unitPlural} ago`;
+        }
       }
     }
   
-    // Handle years (last time unit in the array)
-    const { singular, plural } = timeUnits[timeUnits.length - 1];
-    const years = Math.floor(diffInSeconds / timeUnits[timeUnits.length - 1].seconds);
-    return `${years} ${years === 1 ? singular : plural} ago`;
+    const lastUnit = timeUnits[timeUnits.length - 1];
+    const years = Math.floor(diffInSeconds / lastUnit.seconds);
+    if (years === 1) {
+      return `${years} ${lastUnit.singular} ago`;
+    } else {
+      return `${years} ${lastUnit.plural} ago`;
+    }
   }
 }
 
