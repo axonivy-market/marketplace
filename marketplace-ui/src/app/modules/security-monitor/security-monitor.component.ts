@@ -5,7 +5,7 @@ import { HttpErrorResponse } from '@angular/common/http';
 
 import { SecurityMonitorService } from './security-monitor.service';
 import { ProductSecurityInfo } from '../../shared/models/product-security-info-model';
-import { GITHUB_MARKET_ORG_URL, UNAUTHORIZED } from '../../shared/constants/common.constant';
+import { GITHUB_MARKET_ORG_URL, REPO_PAGE_PATHS, SECURITY_MONITOR_MESSAGES, SECURITY_MONITOR_SESSION_KEYS, TIME_UNITS, UNAUTHORIZED } from '../../shared/constants/common.constant';
 
 @Component({
   selector: 'app-security-monitor',
@@ -22,17 +22,13 @@ export class SecurityMonitorComponent {
   repos: ProductSecurityInfo[] = [];
 
   private readonly securityMonitorService = inject(SecurityMonitorService);
-  private readonly sessionKeys = {
-    data: 'security-monitor-data',
-    token: 'security-monitor-token',
-  };
 
   ngOnInit(): void {
     this.loadSessionData();
   }
 
   onSubmit(): void {
-    this.token = this.token ?? sessionStorage.getItem(this.sessionKeys.token) ?? '';
+    this.token = this.token ?? sessionStorage.getItem(SECURITY_MONITOR_SESSION_KEYS.TOKEN) ?? '';
     if (!this.token) {
       this.handleMissingToken();
       return;
@@ -43,7 +39,7 @@ export class SecurityMonitorComponent {
   }
 
   private loadSessionData(): void {
-    const sessionData = sessionStorage.getItem(this.sessionKeys.data);
+    const sessionData = sessionStorage.getItem(SECURITY_MONITOR_SESSION_KEYS.DATA);
     if (sessionData) {
       try {
         this.repos = JSON.parse(sessionData) as ProductSecurityInfo[];
@@ -55,7 +51,7 @@ export class SecurityMonitorComponent {
   }
 
   private handleMissingToken(): void {
-    this.errorMessage = 'Token is required';
+    this.errorMessage = SECURITY_MONITOR_MESSAGES.TOKEN_REQUIRED;
     this.isAuthenticated = false;
     this.clearSessionData();
   }
@@ -70,24 +66,22 @@ export class SecurityMonitorComponent {
   private handleSuccess(data: ProductSecurityInfo[]): void {
     this.repos = data;
     this.isAuthenticated = true;
-    sessionStorage.setItem(this.sessionKeys.token, this.token);
-    sessionStorage.setItem(this.sessionKeys.data, JSON.stringify(data));
+    sessionStorage.setItem(SECURITY_MONITOR_SESSION_KEYS.TOKEN, this.token);
+    sessionStorage.setItem(SECURITY_MONITOR_SESSION_KEYS.DATA, JSON.stringify(data));
   }
 
   private handleError(err: HttpErrorResponse): void {
-    if (err.status === UNAUTHORIZED ) {
-      this.errorMessage = 'Unauthorized access.';
-    }
-    else {
-      this.errorMessage = 'Failed to fetch security data. Check logs for details.';
-    }
+    this.errorMessage = err.status === UNAUTHORIZED
+      ? SECURITY_MONITOR_MESSAGES.UNAUTHORIZED_ACCESS
+      : SECURITY_MONITOR_MESSAGES.FETCH_FAILURE;
+
     this.isAuthenticated = false;
     this.clearSessionData();
   }
 
   private clearSessionData(): void {
-    sessionStorage.removeItem(this.sessionKeys.token);
-    sessionStorage.removeItem(this.sessionKeys.data);
+    sessionStorage.removeItem(SECURITY_MONITOR_SESSION_KEYS.TOKEN);
+    sessionStorage.removeItem(SECURITY_MONITOR_SESSION_KEYS.DATA);
   }
 
   hasAlerts(alerts: Record<string, number>): boolean {
@@ -103,19 +97,10 @@ export class SecurityMonitorComponent {
     window.open(url, '_blank');
   }
 
-  navigateToRepoPage(repoName: string, page: RepoPage, lastCommitSHA?: string): void {
-    const paths: Record<RepoPage, string> = {
-      security: '/security',
-      dependabot: '/security/dependabot',
-      codeScanning: '/security/code-scanning',
-      secretScanning: '/security/secret-scanning',
-      branches: '/settings/branches',
-      lastCommit: `/commit/${lastCommitSHA ?? ''}`,
-    };
-
-    const path = paths[page];
+  navigateToRepoPage(repoName: string, page: keyof typeof REPO_PAGE_PATHS, lastCommitSHA?: string): void {
+    const path = REPO_PAGE_PATHS[page];
     if (path) {
-      this.navigateToPage(repoName, path);
+      this.navigateToPage(repoName, path, page === 'lastCommit' ? lastCommitSHA ?? '' : '');
     }
   }
 
@@ -124,44 +109,18 @@ export class SecurityMonitorComponent {
     const targetDate = new Date(date).getTime();
     const diffInSeconds = Math.floor((now - targetDate) / 1000);
 
-    const timeUnits = [
-      { seconds: 60, singular: 'minute', plural: 'minutes' },
-      { seconds: 3600, singular: 'hour', plural: 'hours' },
-      { seconds: 86400, singular: 'day', plural: 'days' },
-      { seconds: 604800, singular: 'week', plural: 'weeks' },
-      { seconds: 2592000, singular: 'month', plural: 'months' },
-      { seconds: 31536000, singular: 'year', plural: 'years' },
-    ];
-  
     if (diffInSeconds < 60) {
       return 'just now';
     }
-  
-    for (const { seconds, singular: unitSingular, plural: unitPlural } of timeUnits) {
-      if (diffInSeconds < seconds) {
-        const value = Math.floor(diffInSeconds / (seconds / 60));
-        if (value === 1) {
-          return `${value} ${unitSingular} ago`;
-        } else {
-          return `${value} ${unitPlural} ago`;
-        }
+
+    for (const { SECONDS, SINGULAR, PLURAL } of TIME_UNITS) {
+      if (diffInSeconds < SECONDS) {
+        const value = Math.floor(diffInSeconds / (SECONDS / 60));
+        return value === 1 ? `${value} ${SINGULAR} ago` : `${value} ${PLURAL} ago`;
       }
     }
-  
-    const lastUnit = timeUnits[timeUnits.length - 1];
-    const years = Math.floor(diffInSeconds / lastUnit.seconds);
-    if (years === 1) {
-      return `${years} ${lastUnit.singular} ago`;
-    } else {
-      return `${years} ${lastUnit.plural} ago`;
-    }
+
+    const years = Math.floor(diffInSeconds / TIME_UNITS[TIME_UNITS.length - 1].SECONDS);
+    return years === 1 ? `${years} year ago` : `${years} years ago`;
   }
 }
-
-type RepoPage = 
-  | 'security' 
-  | 'dependabot' 
-  | 'codeScanning' 
-  | 'secretScanning' 
-  | 'branches' 
-  | 'lastCommit';
