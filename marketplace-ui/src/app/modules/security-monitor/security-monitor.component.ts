@@ -123,46 +123,34 @@ export class SecurityMonitorComponent {
     const now = new Date().getTime();
     const targetDate = new Date(date).getTime();
     const diffInSeconds = Math.floor((now - targetDate) / 1000);
-    const DAYS_IN_WEEK = 7;
-    const DAYS_IN_MONTH = 30;
-    const MONTHS_IN_YEAR = 12;
-    const SECONDS_IN_A_MINUTE = 60;
-    const SECONDS_IN_AN_HOUR = 60 * SECONDS_IN_A_MINUTE;
-    const SECONDS_IN_A_DAY = 24 * SECONDS_IN_AN_HOUR;
-    const SECONDS_IN_A_WEEK = DAYS_IN_WEEK * SECONDS_IN_A_DAY;
-    const SECONDS_IN_A_MONTH = DAYS_IN_MONTH * SECONDS_IN_A_DAY;
-    const SECONDS_IN_A_YEAR = MONTHS_IN_YEAR * SECONDS_IN_A_MONTH;
   
-    const formatDuration = (diff: number, unit: number, singular: string): string | null => {
-      const plural = singular + 's';
-      const value = Math.floor(diff / unit);
-      if (value < unit) {
-        if (value === 1) {
-          return `${value} ${singular} ago`;
-        } else {
-          return `${value} ${plural} ago`;
-        }
-      }
-      return null;
-    };
+    // Define time units and their labels
+    const timeUnits = [
+      { seconds: 60, singular: 'minute', plural: 'minutes' },
+      { seconds: 3600, singular: 'hour', plural: 'hours' },
+      { seconds: 86400, singular: 'day', plural: 'days' },
+      { seconds: 604800, singular: 'week', plural: 'weeks' },
+      { seconds: 2592000, singular: 'month', plural: 'months' },
+      { seconds: 31536000, singular: 'year', plural: 'years' },
+    ];
   
-    if (diffInSeconds < SECONDS_IN_A_MINUTE) {
+    if (diffInSeconds < 60) {
       return 'just now';
     }
   
-    const formattedDuration =
-      formatDuration(diffInSeconds, SECONDS_IN_A_MINUTE, 'minute') ??
-      formatDuration(diffInSeconds, SECONDS_IN_AN_HOUR, 'hour') ??
-      formatDuration(diffInSeconds, SECONDS_IN_A_DAY, 'day') ??
-      formatDuration(diffInSeconds, SECONDS_IN_A_WEEK, 'week') ??
-      formatDuration(diffInSeconds, SECONDS_IN_A_MONTH, 'month');
-  
-    if (formattedDuration) {
-      return formattedDuration;
+    // Iterate through time units
+    for (let i = 0; i < timeUnits.length; i++) {
+      const { seconds, singular, plural } = timeUnits[i];
+      if (diffInSeconds < seconds) {
+        const value = Math.floor(diffInSeconds / (seconds / 60));
+        return `${value} ${value === 1 ? singular : plural} ago`;
+      }
     }
   
-    const years = Math.floor(diffInSeconds / SECONDS_IN_A_YEAR);
-    return `${years} year${years === 1 ? '' : 's'} ago`;
+    // Handle years (last time unit in the array)
+    const { singular, plural } = timeUnits[timeUnits.length - 1];
+    const years = Math.floor(diffInSeconds / timeUnits[timeUnits.length - 1].seconds);
+    return `${years} ${years === 1 ? singular : plural} ago`;
   }
 }
 
