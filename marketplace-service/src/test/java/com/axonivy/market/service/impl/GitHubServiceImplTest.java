@@ -67,16 +67,14 @@ class GitHubServiceImplTest {
   @Test
   void testGetGitHub_WithValidToken() throws IOException {
     when(gitHubProperty.getToken()).thenReturn("validToken");
-    GitHub gitHub = gitHubService.getGitHub();
-    assertNotNull(gitHub);
+    assertNotNull(gitHubService.getGitHub());
     verify(gitHubProperty).getToken();
   }
 
   @Test
   void testGetGitHub_WithNullToken() throws IOException {
     when(gitHubProperty.getToken()).thenReturn(null);
-    GitHub gitHub = gitHubService.getGitHub();
-    assertNotNull(gitHub);
+    assertNotNull(gitHubService.getGitHub());
   }
 
   @Test
@@ -189,7 +187,7 @@ class GitHubServiceImplTest {
   }
 
   @Test
-  void testGetAccessToken_GitHubErrorResponse() throws Oauth2ExchangeCodeException, MissingHeaderException {
+  void testGetAccessToken_GitHubErrorResponse() throws Oauth2ExchangeCodeException {
     String code = "validCode";
     String clientId = "clientId";
     String clientSecret = "clientSecret";
@@ -217,7 +215,7 @@ class GitHubServiceImplTest {
   }
 
   @Test
-  void testGetAccessToken_SuccessfulResponseWithError() throws Oauth2ExchangeCodeException, MissingHeaderException {
+  void testGetAccessToken_SuccessfulResponseWithError() throws Oauth2ExchangeCodeException {
     String code = "validCode";
     String clientId = "clientId";
     String clientSecret = "clientSecret";
@@ -248,7 +246,6 @@ class GitHubServiceImplTest {
     String organization = "testOrg";
     String team = "devTeam";
 
-    GitHub gitHub = mock(GitHub.class);
     when(gitHubService.getGitHub(accessToken)).thenReturn(gitHub);
 
     when(gitHubService.isUserInOrganizationAndTeam(gitHub, organization, team)).thenReturn(true);
@@ -258,11 +255,11 @@ class GitHubServiceImplTest {
 
   @Test
   void testIsUserInOrganizationAndTeam_NullGitHub() throws IOException {
-    GitHub gitHub = null;
+    GitHub gitHubNullAble = null;
     String organization = "my-org";
     String teamName = "my-team";
 
-    boolean result = gitHubService.isUserInOrganizationAndTeam(gitHub, organization, teamName);
+    boolean result = gitHubService.isUserInOrganizationAndTeam(gitHubNullAble, organization, teamName);
 
     assertFalse(result);
   }

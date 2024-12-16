@@ -124,37 +124,24 @@ export class SecurityMonitorComponent {
     const targetDate = new Date(date).getTime();
     const diffInSeconds = Math.floor((now - targetDate) / 1000);
   
-    if (diffInSeconds < 60) {
-      return 'just now';
-    }
+    const formatDuration = (diff: number, unit: number, singular: string, plural: string): string | null => {
+      const value = Math.floor(diff / unit);
+      if (value < unit) {
+        return `${value} ${value === 1 ? singular : plural} ago`;
+      }
+      return null;
+    };
   
-    const diffInMinutes = Math.floor(diffInSeconds / 60);
-    if (diffInMinutes < 60) {
-      return `${diffInMinutes} minute${diffInMinutes > 1 ? 's' : ''} ago`;
-    }
+    if (diffInSeconds < 60) return 'just now';
   
-    const diffInHours = Math.floor(diffInMinutes / 60);
-    if (diffInHours < 24) {
-      return `${diffInHours} hour${diffInHours > 1 ? 's' : ''} ago`;
-    }
-  
-    const diffInDays = Math.floor(diffInHours / 24);
-    if (diffInDays < 7) {
-      return `${diffInDays} day${diffInDays > 1 ? 's' : ''} ago`;
-    }
-  
-    const diffInWeeks = Math.floor(diffInDays / 7);
-    if (diffInWeeks < 4) {
-      return `${diffInWeeks} week${diffInWeeks > 1 ? 's' : ''} ago`;
-    }
-  
-    const diffInMonths = Math.floor(diffInDays / 30);
-    if (diffInMonths < 12) {
-      return `${diffInMonths} month${diffInMonths > 1 ? 's' : ''} ago`;
-    }
-  
-    const diffInYears = Math.floor(diffInMonths / 12);
-    return `${diffInYears} year${diffInYears > 1 ? 's' : ''} ago`;
+    return (
+      formatDuration(diffInSeconds, 60, 'minute', 'minutes') ??
+      formatDuration(diffInSeconds, 3600, 'hour', 'hours') ??
+      formatDuration(diffInSeconds, 86400, 'day', 'days') ??
+      formatDuration(diffInSeconds, 604800, 'week', 'weeks') ??
+      formatDuration(diffInSeconds, 2592000, 'month', 'months') ??
+      `${Math.floor(diffInSeconds / 31536000)} year${Math.floor(diffInSeconds / 31536000) === 1 ? '' : 's'} ago`
+    );
   }
 }
 
