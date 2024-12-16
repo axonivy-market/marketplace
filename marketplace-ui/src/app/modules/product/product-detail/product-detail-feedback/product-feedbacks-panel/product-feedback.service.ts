@@ -156,7 +156,7 @@ export class ProductFeedbackService {
 
   fetchFeedbacks(): void {
     this.getInitFeedbacksObservable().subscribe(response => {
-      this.setInitFeedbacksObservable(response);
+      this.handleFeedbackApiResponse(response);
     });
   }
 

@@ -53,13 +53,7 @@ export class ProductService {
     version: string
   ): Observable<ProductDetail> {
     return this.httpClient.get<ProductDetail>(
-      `${API_URI.PRODUCT_DETAILS}/${productId}/${version}`,
-      {
-        context: new HttpContext().set(
-          LoadingComponent,
-          LoadingComponentId.PRODUCT_DETAIL_INFORMATION
-        )
-      }
+      `${API_URI.PRODUCT_DETAILS}/${productId}/${version}`
     );
   }
 
@@ -68,13 +62,7 @@ export class ProductService {
     version: string
   ): Observable<ProductDetail> {
     return this.httpClient.get<ProductDetail>(
-      `${API_URI.PRODUCT_DETAILS}/${productId}/${version}/bestmatch`,
-      {
-        context: new HttpContext().set(
-          LoadingComponent,
-          LoadingComponentId.DETAIL_PAGE
-        )
-      }
+      `${API_URI.PRODUCT_DETAILS}/${productId}/${version}/bestmatch`
     );
   }
 
@@ -84,13 +72,7 @@ export class ProductService {
   ): Observable<ProductDetail> {
     return this.httpClient
       .get<ProductDetail>(
-        `${API_URI.PRODUCT_DETAILS}/${productId}?isShowDevVersion=${isShowDevVersion}`,
-        {
-          context: new HttpContext().set(
-            LoadingComponent,
-            LoadingComponentId.DETAIL_PAGE
-          )
-        }
+        `${API_URI.PRODUCT_DETAILS}/${productId}?isShowDevVersion=${isShowDevVersion}`
       )
       .pipe(delay(5000));
   }
@@ -104,12 +86,7 @@ export class ProductService {
     const params = new HttpParams()
       .append('designerVersion', designerVersion)
       .append('isShowDevVersion', showDevVersion);
-    return this.httpClient.get<VersionData[]>(url, {
-      params,
-      context: new HttpContext()
-        .set(SkipLoading, true)
-        .set(LoadingComponent, LoadingComponentId.PRODUCT_DETAIL_INFORMATION)
-    });
+    return this.httpClient.get<VersionData[]>(url, { params });
   }
 
   sendRequestToUpdateInstallationCount(

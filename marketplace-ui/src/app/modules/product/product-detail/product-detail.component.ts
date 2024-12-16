@@ -149,6 +149,7 @@ export class ProductDetailComponent {
   }
 
   ngOnInit(): void {
+    this.loadingService.showLoading(LoadingComponentId.DETAIL_PAGE);
     this.router.navigate([], {
       relativeTo: this.route,
       queryParamsHandling: 'merge',
@@ -161,30 +162,26 @@ export class ProductDetailComponent {
         productDetail: this.getProductDetailObservable(productId),
         productFeedBack: this.productFeedbackService.getInitFeedbacksObservable(),
         rating: this.productStarRatingService.getRatingObservable(productId),
-        
+        userFeedback: this.productFeedbackService.findProductFeedbackOfUser()
       }).subscribe(res => {
         this.handleProductDetail(res.productDetail);
         this.productFeedbackService.handleFeedbackApiResponse(res.productFeedBack);
         res.rating;
         this.updateDropdownSelection();
         this.checkMediaSize();
+        this.route.queryParams.subscribe(params => {
+          this.showPopup = params['showPopup'] === 'true';
+          if (this.showPopup && this.authService.getToken()) {
+            this.appModalService
+              .openAddFeedbackDialog()
+              .then(() => this.removeQueryParam())
+              .catch(() => this.removeQueryParam());
+          }
+        });
+        this.loadingService.hideLoading(LoadingComponentId.DETAIL_PAGE);
       });
-      this.getUserFeedBack();
-    }
-  }
 
-  getUserFeedBack() {
-    this.productFeedbackService.findProductFeedbackOfUser().subscribe(() => {
-      this.route.queryParams.subscribe(params => {
-        this.showPopup = params['showPopup'] === 'true';
-        if (this.showPopup && this.authService.getToken()) {
-          this.appModalService
-            .openAddFeedbackDialog()
-            .then(() => this.removeQueryParam())
-            .catch(() => this.removeQueryParam());
-        }
-      });
-    });
+    }
   }
 
   getProductDetailObservable(productId: string): Observable<ProductDetail> {
