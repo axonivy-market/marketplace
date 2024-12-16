@@ -1,6 +1,7 @@
 package com.axonivy.market.logging;
 
 import com.axonivy.market.constants.CommonConstants;
+import com.axonivy.market.constants.LoggingConstants;
 import com.axonivy.market.exceptions.model.MissingHeaderException;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.log4j.Log4j2;
@@ -18,7 +19,6 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Map;
-import java.util.Objects;
 
 import static com.axonivy.market.util.FileUtils.createFile;
 import static com.axonivy.market.util.FileUtils.writeToFile;
@@ -32,8 +32,6 @@ public class LoggableAspect {
   @Value("${loggable.log-path}")
   public String logFilePath;
 
-  private static final String REQUESTED_BY = "marketplace-website";
-
   @Before("@annotation(com.axonivy.market.logging.Loggable)")
   public void logMethodCall(JoinPoint joinPoint) throws MissingHeaderException {
     MethodSignature signature = (MethodSignature) joinPoint.getSignature();
@@ -45,7 +43,7 @@ public class LoggableAspect {
       saveLogToDailyFile(headersMap);
 
       // block execution if request isn't from Market or Ivy Designer
-      if (!Objects.equals(headersMap.get(CommonConstants.REQUESTED_BY), REQUESTED_BY)) {
+      if (!LoggingConstants.MARKET_WEBSITE.equals(headersMap.get(CommonConstants.REQUESTED_BY))) {
         throw new MissingHeaderException();
       }
     }
@@ -54,11 +52,11 @@ public class LoggableAspect {
   private Map<String, String> extractHeaders(HttpServletRequest request, MethodSignature signature,
       JoinPoint joinPoint) {
     return Map.of(
-        "method", escapeXml(String.valueOf(signature.getMethod())),
-        "timestamp", escapeXml(getCurrentTimestamp()),
-        "user-agent", escapeXml(request.getHeader(CommonConstants.USER_AGENT)),
-        "arguments", escapeXml(getArgumentsString(signature.getParameterNames(), joinPoint.getArgs())),
-        "X-Requested-By", escapeXml(request.getHeader(CommonConstants.REQUESTED_BY))
+        LoggingConstants.METHOD, escapeXml(String.valueOf(signature.getMethod())),
+        LoggingConstants.TIMESTAMP, escapeXml(getCurrentTimestamp()),
+        CommonConstants.USER_AGENT, escapeXml(request.getHeader(CommonConstants.USER_AGENT)),
+        LoggingConstants.ARGUMENTS, escapeXml(getArgumentsString(signature.getParameterNames(), joinPoint.getArgs())),
+        CommonConstants.REQUESTED_BY, escapeXml(request.getHeader(CommonConstants.REQUESTED_BY))
     );
   }
 
@@ -72,14 +70,14 @@ public class LoggableAspect {
         content.append(new String(Files.readAllBytes(logFile.toPath())));
       }
       if (content.isEmpty()) {
-        content.append("<Logs>\n");
+        content.append(LoggingConstants.LOG_START);
       }
-      int lastLogIndex = content.lastIndexOf("</Logs>");
+      int lastLogIndex = content.lastIndexOf(LoggingConstants.LOG_END);
       if (lastLogIndex != -1) {
         content.delete(lastLogIndex, content.length());
       }
       content.append(buildLogEntry(headersMap));
-      content.append("</Logs>\n");
+      content.append(LoggingConstants.LOG_END);
 
       writeToFile(logFile, content.toString());
     } catch (IOException e) {

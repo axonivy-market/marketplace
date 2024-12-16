@@ -1,5 +1,6 @@
 package com.axonivy.market.util;
 
+import com.axonivy.market.constants.LoggingConstants;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -37,9 +38,8 @@ class LoggingUtilsTest {
 
   @Test
   void testGetArgumentsStringOnNullValue() {
-    String expectedValue = "No arguments";
     String result = LoggingUtils.getArgumentsString(null, null);
-    Assertions.assertEquals(expectedValue, result);
+    Assertions.assertEquals(LoggingConstants.NO_ARGUMENTS, result);
   }
 
   @Test
@@ -56,7 +56,6 @@ class LoggingUtilsTest {
         """.indent(2);
 
     var result = LoggingUtils.buildLogEntry(given);
-
     Assertions.assertEquals(expected, result);
   }
 
@@ -64,16 +63,14 @@ class LoggingUtilsTest {
   void testGetCurrentDate() {
     String expectedDate = LocalDate.now().toString();
     String actualDate = LoggingUtils.getCurrentDate();
-
     Assertions.assertEquals(expectedDate, actualDate, "The returned date does not match the current date");
   }
 
   @Test
   void testGetCurrentTimestamp() {
     String expectedTimestamp = LocalDateTime.now()
-        .format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
+        .format(DateTimeFormatter.ofPattern(LoggingConstants.TIMESTAMP_FORMAT));
     String actualTimestamp = LoggingUtils.getCurrentTimestamp();
-
     Assertions.assertEquals(expectedTimestamp.substring(0, 19), actualTimestamp.substring(0, 19),
         "The returned timestamp does not match the expected format or value");
   }

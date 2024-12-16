@@ -1,11 +1,13 @@
 package com.axonivy.market.logging;
 
 import com.axonivy.market.constants.CommonConstants;
+import com.axonivy.market.constants.LoggingConstants;
 import com.axonivy.market.exceptions.model.MissingHeaderException;
 import com.axonivy.market.util.LoggingUtils;
 import jakarta.servlet.http.HttpServletRequest;
 import org.aspectj.lang.JoinPoint;
 import org.aspectj.lang.reflect.MethodSignature;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
@@ -22,7 +24,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-public class LoggableAspectTest {
+class LoggableAspectTest {
 
   @Mock
   private HttpServletRequest request;
@@ -33,21 +35,26 @@ public class LoggableAspectTest {
   void setUp() throws IOException {
     MockitoAnnotations.openMocks(this);
     loggableAspect = new LoggableAspect();
-    loggableAspect.logFilePath = Files.createTempDirectory("logs").toString(); // Use temp directory for tests
+    loggableAspect.logFilePath = Files.createTempDirectory("logs").toString();
+  }
+
+  @AfterEach
+  void tearDown() {
+    RequestContextHolder.resetRequestAttributes();
   }
 
   @Test
   void testLogFileCreation() throws Exception {
-    mockRequestAttributes("marketplace-website", "test-agent");
+    mockRequestAttributes(LoggingConstants.MARKET_WEBSITE, "test-agent");
     MethodSignature signature = mockMethodSignature();
 
     loggableAspect.logMethodCall(mockJoinPoint(signature));
-
     Path logFilePath = Path.of(loggableAspect.logFilePath, "log-" + LoggingUtils.getCurrentDate() + ".xml");
     assertTrue(Files.exists(logFilePath), "Log file should be created");
 
     String content = Files.readString(logFilePath);
-    assertTrue(content.contains("<Logs>"), "Log file should contain log entries");
+    assertTrue(content.contains(LoggingConstants.LOG_START), "Log file should contain log");
+    assertTrue(content.contains(LoggingConstants.ENTRY_START), "Log file should contain log entry");
   }
 
   @Test
@@ -55,15 +62,15 @@ public class LoggableAspectTest {
     mockRequestAttributes("invalid-source", "mock-agent");
     MethodSignature signature = mockMethodSignature();
 
-    assertThrows(MissingHeaderException.class, () -> {
-      loggableAspect.logMethodCall(mockJoinPoint(signature));
-    });
+    assertThrows(MissingHeaderException.class, () ->
+        loggableAspect.logMethodCall(mockJoinPoint(signature))
+    );
   }
 
   private JoinPoint mockJoinPoint(MethodSignature signature) {
     JoinPoint joinPoint = mock(JoinPoint.class);
     when(joinPoint.getSignature()).thenReturn(signature);
-    when(joinPoint.getArgs()).thenReturn(new Object[]{"arg1", "arg2"}); // Example arguments
+    when(joinPoint.getArgs()).thenReturn(new Object[]{"arg1", "arg2"});
     return joinPoint;
   }
 
@@ -75,7 +82,7 @@ public class LoggableAspectTest {
 
   private MethodSignature mockMethodSignature() {
     MethodSignature signature = mock(MethodSignature.class);
-    when(signature.getMethod()).thenReturn(this.getClass().getMethods()[0]); // Use any available method
+    when(signature.getMethod()).thenReturn(this.getClass().getMethods()[0]);
     return signature;
   }
 

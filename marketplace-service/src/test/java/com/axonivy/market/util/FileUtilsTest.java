@@ -20,21 +20,20 @@ class FileUtilsTest {
     File createdFile = FileUtils.createFile(FILE_PATH);
     assertTrue(createdFile.exists(), "File should exist");
     assertTrue(createdFile.isFile(), "Should be a file");
-
     createdFile.delete();
   }
 
   @Test
-  void testFailedToCreateDirectory() throws IOException {
+  void testFailedToCreateDirectory() {
     File createdFile = new File("testDirAsFile");
     try {
       if (!createdFile.exists()) {
         assertTrue(createdFile.createNewFile(), "Setup failed: could not create file");
       }
 
-      IOException exception = assertThrows(IOException.class, () -> {
-        FileUtils.createFile("testDirAsFile/subDir/testFile.txt");
-      });
+      IOException exception = assertThrows(IOException.class, () ->
+          FileUtils.createFile("testDirAsFile/subDir/testFile.txt")
+      );
       assertTrue(exception.getMessage().contains("Failed to create directory"),
           "Exception message does not contain expected text");
     } catch (IOException e) {
@@ -49,10 +48,8 @@ class FileUtilsTest {
     File createdFile = FileUtils.createFile(FILE_PATH);
     String content = "Hello, world!";
     FileUtils.writeToFile(createdFile, content);
-
     String fileContent = Files.readString(createdFile.toPath());
     assertEquals(content, fileContent, "File content should match the written content");
-
     createdFile.delete();
 
   }
