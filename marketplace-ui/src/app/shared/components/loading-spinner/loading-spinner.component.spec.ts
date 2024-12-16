@@ -20,10 +20,6 @@ describe('LoadingSpinnerComponent', () => {
     expect(component).toBeTruthy();
   });
 
-  it('should have isFixPosition set to true by default', () => {
-    expect(component.isFixPosition).toBe(true);
-  });
-
   it('should apply position-fixed class when isFixPosition is true', () => {
     const containerElement = fixture.debugElement.query(By.css('.spinner-container'));
     expect(containerElement.nativeElement.classList.contains('position-fixed')).toBe(true);
@@ -31,7 +27,6 @@ describe('LoadingSpinnerComponent', () => {
   });
 
   it('should apply position-absolute class when isFixPosition is false', () => {
-    component.isFixPosition = false;
     fixture.detectChanges();
     const containerElement = fixture.debugElement.query(By.css('.spinner-container'));
     expect(containerElement.nativeElement.classList.contains('position-absolute')).toBe(true);

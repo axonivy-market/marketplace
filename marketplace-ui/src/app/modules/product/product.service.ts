@@ -1,6 +1,6 @@
 import { HttpClient, HttpContext, HttpParams } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
-import { delay, Observable } from 'rxjs';
+import { Observable } from 'rxjs';
 import { LoadingService } from '../../core/services/loading/loading.service';
 import { RequestParam } from '../../shared/enums/request-param';
 import { ProductApiResponse } from '../../shared/models/apis/product-response.model';
@@ -73,8 +73,7 @@ export class ProductService {
     return this.httpClient
       .get<ProductDetail>(
         `${API_URI.PRODUCT_DETAILS}/${productId}?isShowDevVersion=${isShowDevVersion}`
-      )
-      .pipe(delay(5000));
+      );
   }
 
   sendRequestToProductDetailVersionAPI(

@@ -195,8 +195,8 @@ describe('ProductService', () => {
     expect(req.request.method).toBe('GET');
     req.flush(mockResponse);
 
-    expect(loadingServiceSpy.show).not.toHaveBeenCalled();
-    expect(loadingServiceSpy.hide).not.toHaveBeenCalled();
+    expect(loadingServiceSpy.showLoading).not.toHaveBeenCalled();
+    expect(loadingServiceSpy.hideLoading).not.toHaveBeenCalled();
   });
 
   it('getProductDetailsWithVersion should return a product detail', () => {

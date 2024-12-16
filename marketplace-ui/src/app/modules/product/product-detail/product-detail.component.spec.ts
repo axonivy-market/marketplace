@@ -663,9 +663,9 @@ describe('ProductDetailComponent', () => {
     expect(infoTab).toBeTruthy();
   });
 
-  it('should call checkMediaSize on ngAfterViewInit', fakeAsync(() => {
+  it('should call checkMediaSize on ngOnInit', fakeAsync(() => {
     spyOn(component, 'checkMediaSize');
-    component.ngAfterViewInit();
+    component.ngOnInit();
     tick();
     expect(component.checkMediaSize).toHaveBeenCalled();
   }));
