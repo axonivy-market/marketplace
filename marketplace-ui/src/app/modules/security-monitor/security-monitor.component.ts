@@ -124,24 +124,42 @@ export class SecurityMonitorComponent {
     const targetDate = new Date(date).getTime();
     const diffInSeconds = Math.floor((now - targetDate) / 1000);
   
+    const SECONDS_IN_A_MINUTE = 60;
+    const SECONDS_IN_AN_HOUR = 60 * SECONDS_IN_A_MINUTE;
+    const SECONDS_IN_A_DAY = 24 * SECONDS_IN_AN_HOUR;
+    const SECONDS_IN_A_WEEK = 7 * SECONDS_IN_A_DAY;
+    const SECONDS_IN_A_MONTH = 30 * SECONDS_IN_A_DAY;
+    const SECONDS_IN_A_YEAR = 12 * SECONDS_IN_A_MONTH;
+  
     const formatDuration = (diff: number, unit: number, singular: string, plural: string): string | null => {
       const value = Math.floor(diff / unit);
       if (value < unit) {
-        return `${value} ${value === 1 ? singular : plural} ago`;
+        if (value === 1) {
+          return `${value} ${singular} ago`;
+        } else {
+          return `${value} ${plural} ago`;
+        }
       }
       return null;
     };
   
-    if (diffInSeconds < 60) return 'just now';
+    if (diffInSeconds < SECONDS_IN_A_MINUTE) {
+      return 'just now';
+    }
   
-    return (
-      formatDuration(diffInSeconds, 60, 'minute', 'minutes') ??
-      formatDuration(diffInSeconds, 3600, 'hour', 'hours') ??
-      formatDuration(diffInSeconds, 86400, 'day', 'days') ??
-      formatDuration(diffInSeconds, 604800, 'week', 'weeks') ??
-      formatDuration(diffInSeconds, 2592000, 'month', 'months') ??
-      `${Math.floor(diffInSeconds / 31536000)} year${Math.floor(diffInSeconds / 31536000) === 1 ? '' : 's'} ago`
-    );
+    const formattedDuration =
+      formatDuration(diffInSeconds, SECONDS_IN_A_MINUTE, 'minute', 'minutes') ||
+      formatDuration(diffInSeconds, SECONDS_IN_AN_HOUR, 'hour', 'hours') ||
+      formatDuration(diffInSeconds, SECONDS_IN_A_DAY, 'day', 'days') ||
+      formatDuration(diffInSeconds, SECONDS_IN_A_WEEK, 'week', 'weeks') ||
+      formatDuration(diffInSeconds, SECONDS_IN_A_MONTH, 'month', 'months');
+  
+    if (formattedDuration) {
+      return formattedDuration;
+    }
+  
+    const years = Math.floor(diffInSeconds / SECONDS_IN_A_YEAR);
+    return `${years} year${years === 1 ? '' : 's'} ago`;
   }
 }
 
