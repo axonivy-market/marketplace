@@ -123,15 +123,18 @@ export class SecurityMonitorComponent {
     const now = new Date().getTime();
     const targetDate = new Date(date).getTime();
     const diffInSeconds = Math.floor((now - targetDate) / 1000);
-  
+    const DAYS_IN_WEEK = 7;
+    const DAYS_IN_MONTH = 30;
+    const MONTHS_IN_YEAR = 12;
     const SECONDS_IN_A_MINUTE = 60;
     const SECONDS_IN_AN_HOUR = 60 * SECONDS_IN_A_MINUTE;
     const SECONDS_IN_A_DAY = 24 * SECONDS_IN_AN_HOUR;
-    const SECONDS_IN_A_WEEK = 7 * SECONDS_IN_A_DAY;
-    const SECONDS_IN_A_MONTH = 30 * SECONDS_IN_A_DAY;
-    const SECONDS_IN_A_YEAR = 12 * SECONDS_IN_A_MONTH;
+    const SECONDS_IN_A_WEEK = DAYS_IN_WEEK * SECONDS_IN_A_DAY;
+    const SECONDS_IN_A_MONTH = DAYS_IN_MONTH * SECONDS_IN_A_DAY;
+    const SECONDS_IN_A_YEAR = MONTHS_IN_YEAR * SECONDS_IN_A_MONTH;
   
-    const formatDuration = (diff: number, unit: number, singular: string, plural: string): string | null => {
+    const formatDuration = (diff: number, unit: number, singular: string): string | null => {
+      const plural = singular + 's';
       const value = Math.floor(diff / unit);
       if (value < unit) {
         if (value === 1) {
@@ -148,11 +151,11 @@ export class SecurityMonitorComponent {
     }
   
     const formattedDuration =
-      formatDuration(diffInSeconds, SECONDS_IN_A_MINUTE, 'minute', 'minutes') ||
-      formatDuration(diffInSeconds, SECONDS_IN_AN_HOUR, 'hour', 'hours') ||
-      formatDuration(diffInSeconds, SECONDS_IN_A_DAY, 'day', 'days') ||
-      formatDuration(diffInSeconds, SECONDS_IN_A_WEEK, 'week', 'weeks') ||
-      formatDuration(diffInSeconds, SECONDS_IN_A_MONTH, 'month', 'months');
+      formatDuration(diffInSeconds, SECONDS_IN_A_MINUTE, 'minute') ??
+      formatDuration(diffInSeconds, SECONDS_IN_AN_HOUR, 'hour') ??
+      formatDuration(diffInSeconds, SECONDS_IN_A_DAY, 'day') ??
+      formatDuration(diffInSeconds, SECONDS_IN_A_WEEK, 'week') ??
+      formatDuration(diffInSeconds, SECONDS_IN_A_MONTH, 'month');
   
     if (formattedDuration) {
       return formattedDuration;
