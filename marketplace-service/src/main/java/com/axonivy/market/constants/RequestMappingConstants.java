@@ -32,4 +32,5 @@ public class RequestMappingConstants {
   public static final String LATEST_ARTIFACT_DOWNLOAD_URL_BY_ID = "/{id}/artifact";
   public static final String EXTERNAL_DOCUMENT = API + "/externaldocument";
   public static final String PRODUCT_MARKETPLACE_DATA = API + "/product-marketplace-data";
+  public static final String SECURITY_MONITOR = API + "/security-monitor";
 }
