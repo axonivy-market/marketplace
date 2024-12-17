@@ -149,7 +149,6 @@ export class ProductDetailComponent {
   }
 
   ngOnInit(): void {
-    this.loadingService.showLoading(LoadingComponentId.DETAIL_PAGE);
     this.router.navigate([], {
       relativeTo: this.route,
       queryParamsHandling: 'merge',
@@ -158,29 +157,32 @@ export class ProductDetailComponent {
     const productId = this.route.snapshot.params[ROUTER.ID];
     this.productDetailService.productId.set(productId);
     if (productId) {
+      this.loadingService.showLoading(LoadingComponentId.DETAIL_PAGE);
       forkJoin({
         productDetail: this.getProductDetailObservable(productId),
-        productFeedBack: this.productFeedbackService.getInitFeedbacksObservable(),
+        productFeedBack:
+          this.productFeedbackService.getInitFeedbacksObservable(),
         rating: this.productStarRatingService.getRatingObservable(productId),
-        userFeedback: this.productFeedbackService.findProductFeedbackOfUser()
+        userFeedback: this.productFeedbackService.findProductFeedbackOfUser(),
+        params: this.route.queryParams
       }).subscribe(res => {
         this.handleProductDetail(res.productDetail);
-        this.productFeedbackService.handleFeedbackApiResponse(res.productFeedBack);
-        res.rating;
+        this.productFeedbackService.handleFeedbackApiResponse(
+          res.productFeedBack
+        );
         this.updateDropdownSelection();
         this.checkMediaSize();
-        this.route.queryParams.subscribe(params => {
-          this.showPopup = params['showPopup'] === 'true';
-          if (this.showPopup && this.authService.getToken()) {
-            this.appModalService
-              .openAddFeedbackDialog()
-              .then(() => this.removeQueryParam())
-              .catch(() => this.removeQueryParam());
-          }
-        });
+        this.showPopup = res.params['showPopup'] === 'true';
+        console.log(this.showPopup);
+
+        if (this.showPopup && this.authService.getToken()) {
+          this.appModalService
+            .openAddFeedbackDialog()
+            .then(() => this.removeQueryParam())
+            .catch(() => this.removeQueryParam());
+        }
         this.loadingService.hideLoading(LoadingComponentId.DETAIL_PAGE);
       });
-
     }
   }
 
@@ -193,7 +195,7 @@ export class ProductDetailComponent {
     return this.getProductById(productId, isShowDevVersion);
   }
 
-  handleProductDetail(productDetail: ProductDetail) {
+  handleProductDetail(productDetail: ProductDetail): void {
     this.productDetail.set(productDetail);
     this.productModuleContent.set(productDetail.productModuleContent);
     this.metaProductJsonUrl = productDetail.metaProductJsonUrl;
@@ -215,15 +217,15 @@ export class ProductDetailComponent {
     }
   }
 
-  onClickingBackToHomepageButton() {
+  onClickingBackToHomepageButton(): void {
     this.router.navigate([API_URI.APP]);
   }
 
-  onLogoError() {
+  onLogoError(): void {
     this.logoUrl = DEFAULT_IMAGE_URL;
   }
 
-  handleProductContentVersion() {
+  handleProductContentVersion(): void {
     if (this.isEmptyProductContent()) {
       return;
     }
@@ -232,7 +234,7 @@ export class ProductDetailComponent {
     );
   }
 
-  updateProductDetailActionType(productDetail: ProductDetail) {
+  updateProductDetailActionType(productDetail: ProductDetail): void {
     if (productDetail?.sourceUrl === undefined) {
       this.productDetailActionType.set(ProductDetailActionType.CUSTOM_SOLUTION);
     } else if (this.routingQueryParamService.isDesignerEnv()) {
@@ -242,7 +244,7 @@ export class ProductDetailComponent {
     }
   }
 
-  scrollToTop() {
+  scrollToTop(): void {
     window.scrollTo({ left: 0, top: 0, behavior: 'instant' });
   }
 
@@ -298,7 +300,6 @@ export class ProductDetailComponent {
         ),
       dependency: content.isDependency
     };
-
     return conditions[value] ?? false;
   }
 
@@ -307,7 +308,7 @@ export class ProductDetailComponent {
     return !content || Object.keys(content).length === 0;
   }
 
-  loadDetailTabs(selectedVersion: string) {
+  loadDetailTabs(selectedVersion: string): void {
     let version = selectedVersion || this.productDetail().newestReleaseVersion;
     version = version.replace(VERSION.displayPrefix, '');
     this.productService
@@ -319,17 +320,17 @@ export class ProductDetailComponent {
       });
   }
 
-  onTabChange(event: string) {
+  onTabChange(event: string): void {
     this.setActiveTab(event);
     this.isTabDropdownShown.update(value => !value);
     this.onTabDropdownShown();
   }
 
-  getSelectedTabLabel() {
+  getSelectedTabLabel(): string {
     return CommonUtils.getLabel(this.activeTab, PRODUCT_DETAIL_TABS);
   }
 
-  updateDropdownSelection() {
+  updateDropdownSelection(): void {
     const dropdown = document.getElementById(
       'tab-group-dropdown'
     ) as HTMLSelectElement;
@@ -338,7 +339,7 @@ export class ProductDetailComponent {
     }
   }
 
-  setActiveTab(tab: string) {
+  setActiveTab(tab: string): void {
     this.activeTab = tab;
     const hash = '#tab-' + tab;
     const path = window.location.pathname;
@@ -357,16 +358,16 @@ export class ProductDetailComponent {
     localStorage.setItem(STORAGE_ITEM, JSON.stringify(savedTab));
   }
 
-  onShowInfoContent() {
+  onShowInfoContent(): void {
     this.isDropdownOpen.update(value => !value);
   }
 
-  onTabDropdownShown() {
+  onTabDropdownShown(): void {
     this.isTabDropdownShown.set(!this.isTabDropdownShown());
   }
 
   @HostListener('document:click', ['$event'])
-  handleClickOutside(event: MouseEvent) {
+  handleClickOutside(event: MouseEvent): void {
     const formSelect =
       this.elementRef.nativeElement.querySelector('.form-select');
 
@@ -380,11 +381,11 @@ export class ProductDetailComponent {
   }
 
   @HostListener('window:resize', ['$event'])
-  onResize() {
+  onResize(): void {
     this.checkMediaSize();
   }
 
-  checkMediaSize() {
+  checkMediaSize(): void {
     const mediaQuery = window.matchMedia('(max-width: 767px)');
     if (mediaQuery.matches) {
       this.isMobileMode.set(true);
@@ -393,7 +394,7 @@ export class ProductDetailComponent {
     }
   }
 
-  onClickRateBtn() {
+  onClickRateBtn(): void {
     const productId = this.productDetailService.productId();
     if (this.authService.getToken()) {
       this.appModalService.openAddFeedbackDialog();
@@ -402,7 +403,7 @@ export class ProductDetailComponent {
     }
   }
 
-  receiveInstallationCountData(data: number) {
+  receiveInstallationCountData(data: number): void {
     this.installationCount = data;
   }
 
@@ -421,7 +422,7 @@ export class ProductDetailComponent {
     }
   }
 
-  getDisplayedTabsSignal() {
+  getDisplayedTabsSignal(): ItemDropdown<string>[] {
     this.updateWebBrowserTitle();
     const displayedTabs: ItemDropdown[] = [];
     for (const detailTab of this.detailTabs) {
@@ -449,7 +450,6 @@ export class ProductDetailComponent {
       productDetail.vendorImage = vendorImage || vendorImageDarkMode;
       productDetail.vendorImageDarkMode = vendorImageDarkMode || vendorImage;
     }
-
     return productDetail;
   }
 }

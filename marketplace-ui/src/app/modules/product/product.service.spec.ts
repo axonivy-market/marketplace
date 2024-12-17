@@ -20,25 +20,19 @@ describe('ProductService', () => {
   let products = MOCK_PRODUCTS._embedded.products;
   let service: ProductService;
   let httpMock: HttpTestingController;
-  let loadingServiceSpy: jasmine.SpyObj<LoadingService>;
 
   beforeEach(() => {
-    const spyLoading = jasmine.createSpyObj('LoadingService', ['show', 'hide']);
-
     TestBed.configureTestingModule({
       imports: [],
       providers: [
         ProductService,
         provideHttpClient(withInterceptorsFromDi()),
         provideHttpClientTesting(),
-        { provide: LoadingService, useValue: spyLoading }
+        LoadingService
       ]
     });
     service = TestBed.inject(ProductService);
     httpMock = TestBed.inject(HttpTestingController);
-    loadingServiceSpy = TestBed.inject(
-      LoadingService
-    ) as jasmine.SpyObj<LoadingService>;
   });
 
   it('should be created', () => {
@@ -194,9 +188,6 @@ describe('ProductService', () => {
 
     expect(req.request.method).toBe('GET');
     req.flush(mockResponse);
-
-    expect(loadingServiceSpy.showLoading).not.toHaveBeenCalled();
-    expect(loadingServiceSpy.hideLoading).not.toHaveBeenCalled();
   });
 
   it('getProductDetailsWithVersion should return a product detail', () => {

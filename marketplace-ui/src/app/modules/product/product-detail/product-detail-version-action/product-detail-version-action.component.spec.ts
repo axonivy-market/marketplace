@@ -10,15 +10,12 @@ import { CookieService } from 'ngx-cookie-service';
 import { ActivatedRoute, provideRouter, Router } from '@angular/router';
 import { CommonUtils } from '../../../../shared/utils/common.utils';
 import { ROUTER } from '../../../../shared/constants/router.constant';
-import { MatomoConfiguration, MatomoModule, MatomoRouterModule } from 'ngx-matomo-client';
 import { MatomoTestingModule } from 'ngx-matomo-client/testing';
 import { ProductDetailActionType } from '../../../../shared/enums/product-detail-action-type';
 import { MATOMO_TRACKING_ENVIRONMENT } from '../../../../shared/constants/matomo.constant';
 
 class MockElementRef implements ElementRef {
-  nativeElement = {
-    contains: jasmine.createSpy('contains')
-  };
+  nativeElement = { contains: jasmine.createSpy('contains') };
 }
 
 describe('ProductDetailVersionActionComponent', () => {
@@ -31,10 +28,11 @@ describe('ProductDetailVersionActionComponent', () => {
 
   beforeEach(() => {
     productServiceMock = jasmine.createSpyObj('ProductService', [
-      'sendRequestToProductDetailVersionAPI', 'sendRequestToUpdateInstallationCount', 'sendRequestToGetProductVersionsForDesigner'
+      'sendRequestToProductDetailVersionAPI',
+      'sendRequestToUpdateInstallationCount',
+      'sendRequestToGetProductVersionsForDesigner'
     ]);
-    const commonUtilsSpy = jasmine.createSpyObj('CommonUtils', ['getCookieValue']);
-    // const cookieServiceSpy = jasmine.createSpyObj('CookieService', ['get', 'set']);
+    const commonUtilsSpy = jasmine.createSpyObj('CommonUtils', [ 'getCookieValue' ]);
     const activatedRouteSpy = jasmine.createSpyObj('ActivatedRoute', [], {
       snapshot: {
         queryParams: {}
@@ -43,7 +41,7 @@ describe('ProductDetailVersionActionComponent', () => {
 
     TestBed.configureTestingModule({
       imports: [
-        ProductDetailVersionActionComponent, 
+        ProductDetailVersionActionComponent,
         TranslateModule.forRoot(),
         MatomoTestingModule.forRoot()
       ],
@@ -67,9 +65,7 @@ describe('ProductDetailVersionActionComponent', () => {
     fixture.detectChanges();
   });
 
-  it('should create', () => {
-    expect(component).toBeTruthy();
-  });
+  it('should create', () => { expect(component).toBeTruthy(); });
 
   it('first artifact should be chosen when select corresponding version', () => {
     const selectedVersion = 'Version 10.0.2';
@@ -91,11 +87,13 @@ describe('ProductDetailVersionActionComponent', () => {
 
   it('should update selectedVersion, artifacts, selectedArtifactName, and selectedArtifact, and call addVersionParamToRoute', () => {
     const version = '1.0';
-    const artifacts = [{
-      name: 'Example Artifact',
-      downloadUrl: 'https://example.com/download',
-      isProductArtifact: true
-    } as ItemDropdown];
+    const artifacts = [
+      {
+        name: 'Example Artifact',
+        downloadUrl: 'https://example.com/download',
+        isProductArtifact: true
+      } as ItemDropdown
+    ];
     const versionMap = new Map<string, any[]>();
     versionMap.set(version, artifacts);
 
@@ -172,7 +170,6 @@ describe('ProductDetailVersionActionComponent', () => {
     });
   });
 
-
   it('all of state should be reset before call rest api', () => {
     const selectedVersion = 'Version 10.0.2';
     const artifact = {
@@ -235,6 +232,7 @@ describe('ProductDetailVersionActionComponent', () => {
   });
 
   it('should send Api to get DevVersion', () => {
+    component.isDevVersionsDisplayed.set(false);
     spyOn(component.isDevVersionsDisplayed, 'set');
     expect(component.isDevVersionsDisplayed()).toBeFalse();
     mockApiWithExpectedResponse();
@@ -249,7 +247,8 @@ describe('ProductDetailVersionActionComponent', () => {
     const mockArtifact1 = {
       name: 'Example Artifact1',
       downloadUrl: 'https://example.com/download',
-      isProductArtifact: true, label: 'Example Artifact1'
+      isProductArtifact: true,
+      label: 'Example Artifact1'
     } as ItemDropdown;
     const mockArtifact2 = {
       name: 'Example Artifact2',
@@ -291,42 +290,61 @@ describe('ProductDetailVersionActionComponent', () => {
     component.versions.set(['1.0', '1.1']);
     fixture.detectChanges();
     component.getVersionInDesigner();
-    expect(productServiceMock.sendRequestToGetProductVersionsForDesigner).not.toHaveBeenCalled();
+    expect(
+      productServiceMock.sendRequestToGetProductVersionsForDesigner
+    ).not.toHaveBeenCalled();
   });
 
   it('should call productService and update versions if versions are empty', () => {
     const productId = '123';
     component.versions.set([]);
     const mockVersions = [{ version: '1.0' }, { version: '2.0' }];
-    productServiceMock.sendRequestToGetProductVersionsForDesigner.and.returnValue(of(mockVersions));
+    productServiceMock.sendRequestToGetProductVersionsForDesigner.and.returnValue(
+      of(mockVersions)
+    );
 
     // Act
     component.getVersionInDesigner();
 
     // Assert
-    expect(productServiceMock.sendRequestToGetProductVersionsForDesigner).toHaveBeenCalledWith(productId);
+    expect(
+      productServiceMock.sendRequestToGetProductVersionsForDesigner
+    ).toHaveBeenCalledWith(productId);
     expect(component.versions()).toEqual(['Version 1.0', 'Version 2.0']);
   });
 
   it('should handle empty response from productService', () => {
     component.versions.set([]);
-    productServiceMock.sendRequestToGetProductVersionsForDesigner.and.returnValue(of([]));
+    productServiceMock.sendRequestToGetProductVersionsForDesigner.and.returnValue(
+      of([])
+    );
 
     // Act
     component.getVersionInDesigner();
 
     // Assert
-    expect(productServiceMock.sendRequestToGetProductVersionsForDesigner).toHaveBeenCalledWith(productId);
+    expect(
+      productServiceMock.sendRequestToGetProductVersionsForDesigner
+    ).toHaveBeenCalledWith(productId);
     expect(component.versions()).toEqual([]);
   });
 
   it('should return the correct tracking environment based on the action type', () => {
     const testCases = [
-      { actionType: ProductDetailActionType.STANDARD, expected: MATOMO_TRACKING_ENVIRONMENT.standard },
-      { actionType: ProductDetailActionType.DESIGNER_ENV, expected: MATOMO_TRACKING_ENVIRONMENT.designerEnv },
-      { actionType: ProductDetailActionType.CUSTOM_SOLUTION, expected: MATOMO_TRACKING_ENVIRONMENT.customSolution },
+      {
+        actionType: ProductDetailActionType.STANDARD,
+        expected: MATOMO_TRACKING_ENVIRONMENT.standard
+      },
+      {
+        actionType: ProductDetailActionType.DESIGNER_ENV,
+        expected: MATOMO_TRACKING_ENVIRONMENT.designerEnv
+      },
+      {
+        actionType: ProductDetailActionType.CUSTOM_SOLUTION,
+        expected: MATOMO_TRACKING_ENVIRONMENT.customSolution
+      }
     ];
-  
+
     testCases.forEach(({ actionType, expected }) => {
       component.actionType = actionType;
 
@@ -335,9 +353,8 @@ describe('ProductDetailVersionActionComponent', () => {
     });
   });
 
-  it('should return empty environment when action type is default', () => {  
+  it('should return empty environment when action type is default', () => {
     const result = component.getTrackingEnvironmentBasedOnActionType();
-    
     expect(result).toBe('');
   });
 });

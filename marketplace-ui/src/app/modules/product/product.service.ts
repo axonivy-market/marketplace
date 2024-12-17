@@ -7,10 +7,7 @@ import { ProductApiResponse } from '../../shared/models/apis/product-response.mo
 import { Criteria } from '../../shared/models/criteria.model';
 import { ProductDetail } from '../../shared/models/product-detail.model';
 import { VersionData } from '../../shared/models/vesion-artifact.model';
-import {
-  SkipLoading,
-  LoadingComponent
-} from '../../core/interceptors/api.interceptor';
+import { LoadingComponent } from '../../core/interceptors/api.interceptor';
 import { VersionAndUrl } from '../../shared/models/version-and-url';
 import { API_URI } from '../../shared/constants/api.constant';
 import { LoadingComponentId } from '../../shared/enums/loading-component-id';

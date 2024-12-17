@@ -86,7 +86,7 @@ export class ProductFeedbackService {
       );
   }
 
-  private findProductFeedbacksByCriteria(
+  findProductFeedbacksByCriteria(
     productId: string = this.productDetailService.productId(),
     page: number = this.page(),
     sort: string = this.sort(),
@@ -175,11 +175,12 @@ export class ProductFeedbackService {
     this.cookieService.delete(TOKEN_KEY);
   }
 
-  handleFeedbackApiResponse(response: FeedbackApiResponse) {
+  handleFeedbackApiResponse(response: FeedbackApiResponse): void {
     this.totalPages.set(response.page.totalPages);
     this.totalElements.set(response.page.totalElements);
   }
-  getInitFeedbacksObservable() {
+
+  getInitFeedbacksObservable(): Observable<FeedbackApiResponse> {
     this.page.set(0);
     return this.findProductFeedbacksByCriteria();
   }
