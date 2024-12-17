@@ -76,6 +76,6 @@ export class RoutingQueryParamService {
   getNavigationStartEvent(): Observable<NavigationStart> {
     return this.router.events.pipe(
       filter(event => event instanceof NavigationStart)
-    ) as Observable<NavigationStart>;
+    );
   }
 }

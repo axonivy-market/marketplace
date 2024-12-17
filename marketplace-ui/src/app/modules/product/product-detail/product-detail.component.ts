@@ -173,7 +173,6 @@ export class ProductDetailComponent {
         this.updateDropdownSelection();
         this.checkMediaSize();
         this.showPopup = res.params['showPopup'] === 'true';
-        console.log(this.showPopup);
 
         if (this.showPopup && this.authService.getToken()) {
           this.appModalService
@@ -422,7 +421,7 @@ export class ProductDetailComponent {
     }
   }
 
-  getDisplayedTabsSignal(): ItemDropdown<string>[] {
+  getDisplayedTabsSignal(): ItemDropdown[] {
     this.updateWebBrowserTitle();
     const displayedTabs: ItemDropdown[] = [];
     for (const detailTab of this.detailTabs) {

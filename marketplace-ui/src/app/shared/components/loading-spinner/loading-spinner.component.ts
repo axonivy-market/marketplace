@@ -8,8 +8,8 @@ import { LoadingService } from '../../../core/services/loading/loading.service';
   styleUrl: './loading-spinner.component.scss'
 })
 export class LoadingSpinnerComponent {
-  @Input() key: string = '';
-  @Input() containerClasses: string = '';
+  @Input() key = '';
+  @Input() containerClasses = '';
   loadingService = inject(LoadingService);
   isLoading = computed(() => this.loadingService.loadingStates()[this.key]);
 }

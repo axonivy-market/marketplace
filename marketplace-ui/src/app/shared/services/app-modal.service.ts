@@ -18,7 +18,7 @@ export class AppModalService {
     });
   }
 
-  openAddFeedbackDialog(): Promise<any> {
+  openAddFeedbackDialog() {
     const addFeedbackDialog = this.modalService.open(
       AddFeedbackDialogComponent,
       {
