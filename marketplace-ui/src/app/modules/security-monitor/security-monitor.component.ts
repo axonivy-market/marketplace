@@ -44,7 +44,7 @@ export class SecurityMonitorComponent {
       if (sessionData) {
         this.repos = JSON.parse(sessionData) as ProductSecurityInfo[];
         this.isAuthenticated = true;
-      } 
+      }
     }
     catch (error) {
       this.clearSessionData();
@@ -114,15 +114,18 @@ export class SecurityMonitorComponent {
   formatCommitDate(date: string): string {
     const now = new Date().getTime();
     const targetDate = new Date(date).getTime();
+    console.log('now ' + now);
+    console.log('targetDate ' + targetDate);
     const diffInSeconds = Math.floor((now - targetDate) / 1000);
-  
+    console.log(diffInSeconds);
+
     if (diffInSeconds < 60) {
       return 'just now';
     }
-  
-    for (const { SECONDS, SINGULAR, PLURAL } of TIME_UNITS) {
-      if (diffInSeconds < SECONDS) {
-        const value = Math.floor(diffInSeconds / (SECONDS / 60));
+
+    for (const [index, { SECONDS, SINGULAR, PLURAL }] of TIME_UNITS.entries()) {
+      if (index < TIME_UNITS.length - 1 && diffInSeconds < TIME_UNITS[index + 1].SECONDS) {
+        const value = Math.floor(diffInSeconds / SECONDS);
         if (value === 1) {
           return `${value} ${SINGULAR} ago`;
         } else {
@@ -130,7 +133,7 @@ export class SecurityMonitorComponent {
         }
       }
     }
-  
+
     const years = Math.floor(diffInSeconds / TIME_UNITS[TIME_UNITS.length - 1].SECONDS);
     if (years === 1) {
       return `${years} year ago`;
