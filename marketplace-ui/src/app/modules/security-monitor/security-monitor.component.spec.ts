@@ -8,6 +8,7 @@ import { By } from '@angular/platform-browser';
 import { ProductSecurityInfo } from '../../shared/models/product-security-info-model';
 import { HttpErrorResponse } from '@angular/common/http';
 import { TranslateService } from '@ngx-translate/core';
+import { TIME_UNITS } from '../../shared/constants/common.constant';
 
 describe('SecurityMonitorComponent', () => {
   let component: SecurityMonitorComponent;
@@ -124,5 +125,18 @@ describe('SecurityMonitorComponent', () => {
   it('should return correct alert keys from alertKeys', () => {
     const alerts = { alert1: 1, alert2: 2 };
     expect(component.alertKeys(alerts)).toEqual(['alert1', 'alert2']);
+  });
+
+  it('should return "just now" for dates less than 60 seconds ago', () => {
+    const recentDate = new Date(new Date().getTime() - 30 * 1000).toISOString();
+    const result = component.formatCommitDate(recentDate);
+    expect(result).toBe('just now');
+  });
+
+  it('should return "1 minute ago" for dates 1 minute ago', () => {
+    const oneMinuteAgo = new Date(new Date().getTime() - 60 * 1000).toISOString();
+    TIME_UNITS[0] = { SECONDS: 3600, SINGULAR: 'minute', PLURAL: 'minutes' };
+    const result = component.formatCommitDate(oneMinuteAgo);
+    expect(result).toBe('1 minute ago');
   });
 });
