@@ -47,7 +47,6 @@
 
       @if (isDropDownDisplayed()) {
         <div #artifactDownloadDialog id="download-dropdown-menu" class="show maven-artifact-version__action border__dropdown">
-          <div class="up-arrow border__dropdown position-absolute" [ngClass]="{ 'overlay-background': isArtifactLoading() }"></div>
           <form>
             <div class="form-group">
               <label for="artifacts-selector" [lang]="languageService.selectedLanguage()"
@@ -103,10 +102,9 @@
               </button>
             </div>
           </form>
-          @if (isArtifactLoading()) {
-            <app-loading-spinner
-              class="d-flex justify-content-center position-absolute align-items-center w-100 h-100 fixed-top rounded overlay-background"/>
-          }
+          <app-loading-spinner
+            [key]="LoadingComponentId.PRODUCT_VERSION"
+            [containerClasses]="loadingContainerClasses"/>
         </div>
       }
     </div>
