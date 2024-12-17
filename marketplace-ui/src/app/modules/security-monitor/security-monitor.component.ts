@@ -114,10 +114,7 @@ export class SecurityMonitorComponent {
   formatCommitDate(date: string): string {
     const now = new Date().getTime();
     const targetDate = new Date(date).getTime();
-    console.log('now ' + now);
-    console.log('targetDate ' + targetDate);
     const diffInSeconds = Math.floor((now - targetDate) / 1000);
-    console.log(diffInSeconds);
 
     if (diffInSeconds < 60) {
       return 'just now';
