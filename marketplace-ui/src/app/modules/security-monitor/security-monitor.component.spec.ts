@@ -135,7 +135,7 @@ describe('SecurityMonitorComponent', () => {
 
   it('should return "1 minute ago" for dates 1 minute ago', () => {
     const oneMinuteAgo = new Date(new Date().getTime() - 60 * 1000).toISOString();
-    TIME_UNITS[0] = { SECONDS: 3600, SINGULAR: 'minute', PLURAL: 'minutes' };
+    TIME_UNITS[0] = { SECONDS: 60, SINGULAR: 'minute', PLURAL: 'minutes' };
     const result = component.formatCommitDate(oneMinuteAgo);
     expect(result).toBe('1 minute ago');
   });
