@@ -1,4 +1,4 @@
-import { computed, Injectable, signal } from '@angular/core';
+import { computed, Injectable, Signal, signal } from '@angular/core';
 import { DESIGNER_SESSION_STORAGE_VARIABLE } from '../constants/common.constant';
 import { Router, Params, NavigationStart } from '@angular/router';
 import { Observable } from 'rxjs';
@@ -11,9 +11,7 @@ export class RoutingQueryParamService {
   isDesignerEnv = computed(() => this.isDesigner());
   designerVersion = signal('');
 
-  constructor(
-    private readonly router: Router
-  ) {
+  constructor(private readonly router: Router) {
     this.getNavigationStartEvent().subscribe(() => {
       if (!this.isDesigner()) {
         this.isDesigner.set(
@@ -25,7 +23,7 @@ export class RoutingQueryParamService {
     });
   }
 
-  checkSessionStorageForDesignerVersion(params: Params) {
+  checkSessionStorageForDesignerVersion(params: Params): void {
     const versionParam =
       params[DESIGNER_SESSION_STORAGE_VARIABLE.ivyVersionParamName];
     if (versionParam !== undefined) {
@@ -37,7 +35,7 @@ export class RoutingQueryParamService {
     }
   }
 
-  checkSessionStorageForDesignerEnv(params: Params) {
+  checkSessionStorageForDesignerEnv(params: Params): void {
     const ivyViewerParam =
       params[DESIGNER_SESSION_STORAGE_VARIABLE.ivyViewerParamName];
     if (
@@ -51,7 +49,7 @@ export class RoutingQueryParamService {
     }
   }
 
-  getDesignerVersionFromSessionStorage() {
+  getDesignerVersionFromSessionStorage(): string {
     if (this.designerVersion() === '') {
       this.designerVersion.set(
         sessionStorage.getItem(
@@ -62,7 +60,7 @@ export class RoutingQueryParamService {
     return this.designerVersion();
   }
 
-  isDesignerViewer() {
+  isDesignerViewer(): boolean {
     if (!this.isDesigner()) {
       this.isDesigner.set(
         sessionStorage.getItem(
@@ -73,9 +71,9 @@ export class RoutingQueryParamService {
     return this.isDesigner();
   }
 
-  getNavigationStartEvent(): Observable<NavigationStart> {
+  getNavigationStartEvent() {
     return this.router.events.pipe(
       filter(event => event instanceof NavigationStart)
-    );
+    ) as Observable<NavigationStart>;
   }
 }
