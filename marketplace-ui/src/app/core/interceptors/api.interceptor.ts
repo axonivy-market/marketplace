@@ -4,11 +4,11 @@ import {
   HttpInterceptorFn
 } from '@angular/common/http';
 import { environment } from '../../../environments/environment';
+import { LoadingService } from '../services/loading/loading.service';
 import { inject } from '@angular/core';
 import { catchError, EMPTY, finalize } from 'rxjs';
 import { Router } from '@angular/router';
 import { ERROR_CODES, ERROR_PAGE_PATH } from '../../shared/constants/common.constant';
-import { LoadingService } from '../services/loading/loading.service';
 
 export const REQUEST_BY = 'X-Requested-By';
 export const IVY = 'marketplace-website';

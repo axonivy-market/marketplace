@@ -15,7 +15,7 @@ import { ProductDetailActionType } from '../../../../shared/enums/product-detail
 import { MATOMO_TRACKING_ENVIRONMENT } from '../../../../shared/constants/matomo.constant';
 
 class MockElementRef implements ElementRef {
-  nativeElement = { 
+  nativeElement = {
     contains: jasmine.createSpy('contains')
   };
 }
@@ -292,64 +292,44 @@ describe('ProductDetailVersionActionComponent', () => {
     component.versions.set(['1.0', '1.1']);
     fixture.detectChanges();
     component.getVersionInDesigner();
-    expect(
-      productServiceMock.sendRequestToGetProductVersionsForDesigner
-    ).not.toHaveBeenCalled();
+    expect(productServiceMock.sendRequestToGetProductVersionsForDesigner).not.toHaveBeenCalled();
   });
 
   it('should call productService and update versions if versions are empty', () => {
     const productId = '123';
     component.versions.set([]);
     const mockVersions = [{ version: '1.0' }, { version: '2.0' }];
-    productServiceMock.sendRequestToGetProductVersionsForDesigner.and.returnValue(
-      of(mockVersions)
-    );
+    productServiceMock.sendRequestToGetProductVersionsForDesigner.and.returnValue(of(mockVersions));
 
     // Act
     component.getVersionInDesigner();
 
     // Assert
-    expect(
-      productServiceMock.sendRequestToGetProductVersionsForDesigner
-    ).toHaveBeenCalledWith(productId);
+    expect(productServiceMock.sendRequestToGetProductVersionsForDesigner).toHaveBeenCalledWith(productId);
     expect(component.versions()).toEqual(['Version 1.0', 'Version 2.0']);
   });
 
   it('should handle empty response from productService', () => {
     component.versions.set([]);
-    productServiceMock.sendRequestToGetProductVersionsForDesigner.and.returnValue(
-      of([])
-    );
+    productServiceMock.sendRequestToGetProductVersionsForDesigner.and.returnValue(of([]));
 
     // Act
     component.getVersionInDesigner();
 
     // Assert
-    expect(
-      productServiceMock.sendRequestToGetProductVersionsForDesigner
-    ).toHaveBeenCalledWith(productId);
+    expect(productServiceMock.sendRequestToGetProductVersionsForDesigner).toHaveBeenCalledWith(productId);
     expect(component.versions()).toEqual([]);
   });
 
   it('should return the correct tracking environment based on the action type', () => {
     const testCases = [
-      {
-        actionType: ProductDetailActionType.STANDARD,
-        expected: MATOMO_TRACKING_ENVIRONMENT.standard
-      },
-      {
-        actionType: ProductDetailActionType.DESIGNER_ENV,
-        expected: MATOMO_TRACKING_ENVIRONMENT.designerEnv
-      },
-      {
-        actionType: ProductDetailActionType.CUSTOM_SOLUTION,
-        expected: MATOMO_TRACKING_ENVIRONMENT.customSolution
-      }
+      { actionType: ProductDetailActionType.STANDARD, expected: MATOMO_TRACKING_ENVIRONMENT.standard },
+      { actionType: ProductDetailActionType.DESIGNER_ENV, expected: MATOMO_TRACKING_ENVIRONMENT.designerEnv },
+      { actionType: ProductDetailActionType.CUSTOM_SOLUTION, expected: MATOMO_TRACKING_ENVIRONMENT.customSolution }
     ];
 
     testCases.forEach(({ actionType, expected }) => {
       component.actionType = actionType;
-
       const result = component.getTrackingEnvironmentBasedOnActionType();
       expect(result).toBe(expected);
     });

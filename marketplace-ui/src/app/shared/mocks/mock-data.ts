@@ -356,9 +356,3 @@ export const MOCK_FEEDBACK_API_RESPONSE: FeedbackApiResponse = {
     number: 0
   }
 };
-
-export const MOCK_RATING_STAR: StarRatingCounting[] = [
-  { starRating: 0 },
-  { starRating: 4 },
-  { starRating: 3 }
-];
