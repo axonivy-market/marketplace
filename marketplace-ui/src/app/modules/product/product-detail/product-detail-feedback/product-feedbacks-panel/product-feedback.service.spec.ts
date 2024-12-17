@@ -62,26 +62,20 @@ describe('ProductFeedbackService', () => {
 
   it('should initialize feedbacks', () => {
     const mockResponse = {
-      _embedded: {
-        feedbacks: [{ content: 'Great product!', rating: 5, productId: '123' }]
-      },
+      _embedded: { feedbacks: [{ content: 'Great product!', rating: 5, productId: '123' }] },
       page: { totalPages: 2, totalElements: 5 }
     };
 
     productDetailService.productId.and.returnValue('123');
 
     service.fetchFeedbacks();
-    const req = httpMock.expectOne(
-      'api/feedback/product/123?page=0&size=8&sort=newest'
-    );
+    const req = httpMock.expectOne( 'api/feedback/product/123?page=0&size=8&sort=newest' );
     expect(req.request.method).toBe('GET');
     req.flush(mockResponse);
 
     expect(service.totalPages()).toBe(2);
     expect(service.totalElements()).toBe(5);
-    expect(service.feedbacks()).toEqual([
-      { content: 'Great product!', rating: 5, productId: '123' }
-    ]);
+    expect(service.feedbacks()).toEqual([{ content: 'Great product!', rating: 5, productId: '123' }]);
   });
 
   it('should load more feedbacks', () => {
@@ -94,24 +88,14 @@ describe('ProductFeedbackService', () => {
 
     productDetailService.productId.and.returnValue('123');
     service.fetchFeedbacks();
-    const initReq = httpMock.expectOne(
-      'api/feedback/product/123?page=0&size=8&sort=newest'
-    );
-    initReq.flush({
-      _embedded: { feedbacks: initialFeedback },
-      page: { totalPages: 2, totalElements: 5 }
-    });
+    const initReq = httpMock.expectOne( 'api/feedback/product/123?page=0&size=8&sort=newest' );
+    initReq.flush({ _embedded: { feedbacks: initialFeedback }, page: { totalPages: 2, totalElements: 5 } });
 
     service.loadMoreFeedbacks();
-    const loadMoreReq = httpMock.expectOne(
-      'api/feedback/product/123?page=1&size=8&sort=newest'
-    );
+    const loadMoreReq = httpMock.expectOne( 'api/feedback/product/123?page=1&size=8&sort=newest' );
     loadMoreReq.flush({ _embedded: { feedbacks: additionalFeedback } });
 
-    expect(service.feedbacks()).toEqual([
-      ...initialFeedback,
-      ...additionalFeedback
-    ]);
+    expect(service.feedbacks()).toEqual([...initialFeedback, ...additionalFeedback]);
   });
 
   it('should change sort and fetch feedbacks', () => {

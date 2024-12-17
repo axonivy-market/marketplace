@@ -15,7 +15,9 @@ import { ProductDetailActionType } from '../../../../shared/enums/product-detail
 import { MATOMO_TRACKING_ENVIRONMENT } from '../../../../shared/constants/matomo.constant';
 
 class MockElementRef implements ElementRef {
-  nativeElement = { contains: jasmine.createSpy('contains') };
+  nativeElement = { 
+    contains: jasmine.createSpy('contains')
+  };
 }
 
 describe('ProductDetailVersionActionComponent', () => {
