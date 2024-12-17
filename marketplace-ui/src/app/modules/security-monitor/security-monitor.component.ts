@@ -39,14 +39,15 @@ export class SecurityMonitorComponent {
   }
 
   private loadSessionData(): void {
-    const sessionData = sessionStorage.getItem(SECURITY_MONITOR_SESSION_KEYS.DATA);
-    if (sessionData) {
-      try {
+    try {
+      const sessionData = sessionStorage.getItem(SECURITY_MONITOR_SESSION_KEYS.DATA);
+      if (sessionData) {
         this.repos = JSON.parse(sessionData) as ProductSecurityInfo[];
         this.isAuthenticated = true;
-      } catch (error) {
-        this.clearSessionData();
-      }
+      } 
+    }
+    catch (error) {
+      this.clearSessionData();
     }
   }
 
@@ -71,9 +72,11 @@ export class SecurityMonitorComponent {
   }
 
   private handleError(err: HttpErrorResponse): void {
-    this.errorMessage = err.status === UNAUTHORIZED
-      ? SECURITY_MONITOR_MESSAGES.UNAUTHORIZED_ACCESS
-      : SECURITY_MONITOR_MESSAGES.FETCH_FAILURE;
+    if (err.status === UNAUTHORIZED) {
+      this.errorMessage = SECURITY_MONITOR_MESSAGES.UNAUTHORIZED_ACCESS;
+    } else {
+      this.errorMessage = SECURITY_MONITOR_MESSAGES.FETCH_FAILURE;
+    }
 
     this.isAuthenticated = false;
     this.clearSessionData();
@@ -99,8 +102,12 @@ export class SecurityMonitorComponent {
 
   navigateToRepoPage(repoName: string, page: keyof typeof REPO_PAGE_PATHS, lastCommitSHA?: string): void {
     const path = REPO_PAGE_PATHS[page];
+    let additionalPath = '';
+    if (page === 'lastCommit') {
+      additionalPath = lastCommitSHA ?? '';
+    }
     if (path) {
-      this.navigateToPage(repoName, path, page === 'lastCommit' ? lastCommitSHA ?? '' : '');
+      this.navigateToPage(repoName, path, additionalPath);
     }
   }
 
@@ -108,19 +115,27 @@ export class SecurityMonitorComponent {
     const now = new Date().getTime();
     const targetDate = new Date(date).getTime();
     const diffInSeconds = Math.floor((now - targetDate) / 1000);
-
+  
     if (diffInSeconds < 60) {
       return 'just now';
     }
-
+  
     for (const { SECONDS, SINGULAR, PLURAL } of TIME_UNITS) {
       if (diffInSeconds < SECONDS) {
         const value = Math.floor(diffInSeconds / (SECONDS / 60));
-        return value === 1 ? `${value} ${SINGULAR} ago` : `${value} ${PLURAL} ago`;
+        if (value === 1) {
+          return `${value} ${SINGULAR} ago`;
+        } else {
+          return `${value} ${PLURAL} ago`;
+        }
       }
     }
-
+  
     const years = Math.floor(diffInSeconds / TIME_UNITS[TIME_UNITS.length - 1].SECONDS);
-    return years === 1 ? `${years} year ago` : `${years} years ago`;
+    if (years === 1) {
+      return `${years} year ago`;
+    } else {
+      return `${years} years ago`;
+    }
   }
 }
