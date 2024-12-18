@@ -9,6 +9,7 @@ This connector:
 - allow you to start the Axon Ivy process by hitting the slash command key from the mattermost's channel.
 - allow you to send a message to the mattermost's channel from the Axon Ivy workplace.
 - notifies users on the channel for new Axon Ivy workflow Tasks.
+  ![Restful Person Manager](screen2.png "Restful Person Manager")
 
 ## Demo
 
