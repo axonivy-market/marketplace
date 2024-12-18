@@ -23,6 +23,7 @@ import com.axonivy.market.github.service.GHAxonIvyMarketRepoService;
 import com.axonivy.market.github.service.GHAxonIvyProductRepoService;
 import com.axonivy.market.github.service.GitHubService;
 import com.axonivy.market.github.util.GitHubUtils;
+import com.axonivy.market.model.VersionAndUrlModel;
 import com.axonivy.market.repository.*;
 import com.axonivy.market.service.ExternalDocumentService;
 import com.axonivy.market.service.ImageService;
@@ -30,6 +31,7 @@ import com.axonivy.market.service.MetadataService;
 import com.axonivy.market.service.ProductContentService;
 import com.axonivy.market.service.ProductMarketplaceDataService;
 import com.axonivy.market.service.ProductService;
+import com.axonivy.market.service.VersionService;
 import com.axonivy.market.util.MavenUtils;
 import com.axonivy.market.util.MetadataReaderUtils;
 import com.axonivy.market.util.VersionUtils;
@@ -94,6 +96,7 @@ public class ProductServiceImpl implements ProductService {
   private final ProductMarketplaceDataService productMarketplaceDataService;
   private final ProductMarketplaceDataRepository productMarketplaceDataRepo;
   private GHCommit lastGHCommit;
+  private VersionService versionService;
   private GitHubRepoMeta marketRepoMeta;
   @Value("${market.github.market.branch}")
   private String marketRepoBranch;
@@ -106,7 +109,7 @@ public class ProductServiceImpl implements ProductService {
       MetadataSyncRepository metadataSyncRepo, MetadataRepository metadataRepo, ImageService imageService,
       ProductContentService productContentService, MetadataService metadataService,
       ProductMarketplaceDataService productMarketplaceDataService, ExternalDocumentService externalDocumentService,
-      ProductMarketplaceDataRepository productMarketplaceDataRepo) {
+      ProductMarketplaceDataRepository productMarketplaceDataRepo, VersionService versionService) {
     this.productRepo = productRepo;
     this.productModuleContentRepo = productModuleContentRepo;
     this.axonIvyMarketRepoService = axonIvyMarketRepoService;
@@ -125,6 +128,7 @@ public class ProductServiceImpl implements ProductService {
     this.productMarketplaceDataService = productMarketplaceDataService;
     this.externalDocumentService = externalDocumentService;
     this.productMarketplaceDataRepo = productMarketplaceDataRepo;
+    this.versionService = versionService;
   }
 
   @Override
@@ -599,6 +603,10 @@ public class ProductServiceImpl implements ProductService {
     return Optional.ofNullable(product).map(productItem -> {
       int installationCount = productMarketplaceDataService.updateProductInstallationCount(id);
       productItem.setInstallationCount(installationCount);
+
+      String compatibilityRange = getCompatibilityRange(id);
+      productItem.setCompatibilityRange(compatibilityRange);
+
       return productItem;
     }).orElse(null);
   }
@@ -614,6 +622,10 @@ public class ProductServiceImpl implements ProductService {
     return Optional.ofNullable(product).map(productItem -> {
       int installationCount = productMarketplaceDataService.updateProductInstallationCount(id);
       productItem.setInstallationCount(installationCount);
+
+      String compatibilityRange = getCompatibilityRange(id);
+      productItem.setCompatibilityRange(compatibilityRange);
+
       productItem.setBestMatchVersion(bestMatchVersion);
       return productItem;
     }).orElse(null);
@@ -748,5 +760,33 @@ public class ProductServiceImpl implements ProductService {
       log.error(e.getStackTrace());
       return false;
     }
+  }
+
+  private String getCompatibilityRange(String productId) {
+    List<String> versions =
+        versionService.getVersionsForDesigner(productId).stream().map(VersionAndUrlModel::getVersion).toList();
+    if (ObjectUtils.isEmpty(versions)) {
+      return null;
+    }
+
+    if (versions.size() == 1) {
+      return splitVersion(versions.get(0));
+    }
+
+    boolean isMoreThanVersion = versions.stream()
+        .filter(version -> {
+          String currentVersion = versions.get(0);
+          return version.startsWith(currentVersion.substring(0, currentVersion.indexOf(".")));
+        }).toList().size() > 1;
+
+    String maxValue = isMoreThanVersion ? splitVersion(versions.get(0)).concat("+") : splitVersion(versions.get(0));
+    String minValue = splitVersion(versions.get(versions.size() - 1));
+    return minValue.concat("-").concat(maxValue);
+  }
+
+  private String splitVersion(String version) {
+    int firstDot = version.indexOf('.');
+    int secondDot = version.indexOf('.', firstDot + 1);
+    return version.substring(0, secondDot);
   }
 }

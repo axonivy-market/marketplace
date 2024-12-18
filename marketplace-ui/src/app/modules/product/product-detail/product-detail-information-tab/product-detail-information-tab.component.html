@@ -17,23 +17,14 @@
       alt="Logo Vendor"/>
     </a>
   </div>
-  <hr class="border-top-0" />
-  <div class="d-flex flex-row justify-content-between p-0">
-    <span [lang]="languageService.selectedLanguage()" class="text-secondary">
-      {{ 'common.product.detail.information.value.version' | translate }}
-    </span>
-    <span class="text-primary">
-      {{ displayVersion }}
-    </span>
-  </div>
-  @if(productDetail.compatibility) {
+  @if(productDetail?.compatibilityRange) {
     <hr class="border-top-0" />
     <div class="d-flex flex-row justify-content-between p-0">
       <span [lang]="languageService.selectedLanguage()" class="text-secondary">
         {{ 'common.product.detail.information.value.compatibility' | translate }}
       </span>
       <span class="text-primary">
-        {{ productDetail.compatibility }}
+        {{ productDetail.compatibilityRange }}
       </span>
     </div>
   }
@@ -68,6 +59,15 @@
       {{ 'common.product.detail.type' | translate }}
     </span>
     <span class="text-primary text-capitalize">{{ productDetail.type }}</span>
+  </div>
+  <hr class="border-top-0" />
+  <div class="d-flex flex-row justify-content-between p-0">
+    <span [lang]="languageService.selectedLanguage()" class="text-secondary">
+      {{ 'common.product.detail.information.value.version' | translate }}
+    </span>
+    <span class="text-primary">
+      {{ displayVersion }}
+    </span>
   </div>
   <hr class="border-top-0" />
   <div class="d-flex flex-row justify-content-between p-0">

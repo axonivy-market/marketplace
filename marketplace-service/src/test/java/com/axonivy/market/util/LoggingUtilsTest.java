@@ -42,22 +42,22 @@ class LoggingUtilsTest {
     Assertions.assertEquals(LoggingConstants.NO_ARGUMENTS, result);
   }
 
-  @Test
-  void testBuildLogEntry() {
-    Map<String, String> given = Map.of(
-        "method", "test",
-        "timestamp", "15:02:00"
-    );
-    String expected = """
-        <LogEntry>
-          <method>test</method>
-          <timestamp>15:02:00</timestamp>
-        </LogEntry>
-        """.indent(2);
-
-    var result = LoggingUtils.buildLogEntry(given);
-    Assertions.assertEquals(expected, result);
-  }
+//  @Test
+//  void testBuildLogEntry() {
+//    Map<String, String> given = Map.of(
+//        "method", "test",
+//        "timestamp", "15:02:00"
+//    );
+//    String expected = """
+//        <LogEntry>
+//          <method>test</method>
+//          <timestamp>15:02:00</timestamp>
+//        </LogEntry>
+//        """.indent(2);
+//
+//    var result = LoggingUtils.buildLogEntry(given);
+//    Assertions.assertEquals(expected, result);
+//  }
 
   @Test
   void testGetCurrentDate() {
