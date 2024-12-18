@@ -58,7 +58,7 @@ class GitHubServiceImplTest {
   private GitHubAccessTokenResponse gitHubAccessTokenResponse;
 
   @Mock
-  private GHTeam team1;
+  private GHTeam ghTeam;
 
   @Spy
   @InjectMocks
@@ -281,7 +281,7 @@ class GitHubServiceImplTest {
     String organization = "my-org";
     String teamName = "my-team";
     Set<GHTeam> teams = new HashSet<>();
-    teams.add(team1);
+    teams.add(ghTeam);
     Map<String, Set<GHTeam>> hashMapTeams = new HashMap<>();
     hashMapTeams.put(organization, teams);
     when(gitHub.getMyTeams()).thenReturn(hashMapTeams);
@@ -296,8 +296,8 @@ class GitHubServiceImplTest {
     String organization = "my-org";
     String teamName = "my-team";
     Set<GHTeam> teams = new HashSet<>();
-    when(team1.getName()).thenReturn(teamName);
-    teams.add(team1);
+    when(ghTeam.getName()).thenReturn(teamName);
+    teams.add(ghTeam);
     Map<String, Set<GHTeam>> hashMapTeams = new HashMap<>();
     hashMapTeams.put(organization, teams);
     when(gitHub.getMyTeams()).thenReturn(hashMapTeams);
@@ -510,5 +510,18 @@ class GitHubServiceImplTest {
     ).thenThrow(HttpClientErrorException.Forbidden.class);
     Dependabot result = gitHubService.getDependabotAlerts(ghRepository, ghOrganization, accessToken);
     assertEquals(AccessLevel.DISABLED, result.getStatus());
+  }
+
+  @Test
+  void testGetSecurityDetailsForAllProducts() throws Exception {
+    String accessToken = "mockAccessToken";
+    String orgName = "mockOrganization";
+    GHOrganization ghOrganization = mock(GHOrganization.class);
+    when(gitHubService.getGitHub(accessToken)).thenReturn(gitHub);
+    when(gitHub.getOrganization(orgName)).thenReturn(ghOrganization);
+    PagedIterable<GHRepository> mockPagedIterable = mock(PagedIterable.class);
+    when(ghOrganization.listRepositories()).thenReturn(mockPagedIterable);
+    List<ProductSecurityInfo> result = gitHubService.getSecurityDetailsForAllProducts(accessToken, orgName);
+    assertEquals(0, result.size());
   }
 }
