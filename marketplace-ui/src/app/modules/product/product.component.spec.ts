@@ -15,7 +15,7 @@ import { ProductComponent } from './product.component';
 import { ProductService } from './product.service';
 import { MockProductService } from '../../shared/mocks/mock-services';
 import { RoutingQueryParamService } from '../../shared/services/routing.query.param.service';
-import { DESIGNER_COOKIE_VARIABLE } from '../../shared/constants/common.constant';
+import { DESIGNER_SESSION_STORAGE_VARIABLE } from '../../shared/constants/common.constant';
 import { ItemDropdown } from '../../shared/models/item-dropdown.model';
 import { By } from '@angular/platform-browser';
 import { Location } from '@angular/common';
@@ -59,8 +59,8 @@ describe('ProductComponent', () => {
         'getNavigationStartEvent',
         'isDesigner',
         'isDesignerEnv',
-        'checkCookieForDesignerEnv',
-        'checkCookieForDesignerVersion'
+        'checkSessionStorageForDesignerEnv',
+        'checkSessionStorageForDesignerVersion'
       ]
     );
 
@@ -75,7 +75,7 @@ describe('ProductComponent', () => {
           provide: ActivatedRoute,
           useValue: {
             queryParams: of({
-              [DESIGNER_COOKIE_VARIABLE.restClientParamName]: true
+              [DESIGNER_SESSION_STORAGE_VARIABLE.restClientParamName]: true
             })
           }
         },
@@ -210,7 +210,7 @@ describe('ProductComponent', () => {
 
   it('should set isRESTClient true based on query params and designer environment', () => {
     component.route.queryParams = of({
-      [DESIGNER_COOKIE_VARIABLE.restClientParamName]: 'resultsOnly',
+      [DESIGNER_SESSION_STORAGE_VARIABLE.restClientParamName]: 'resultsOnly',
     });
     
     routingQueryParamService.isDesignerEnv.and.returnValue(true);
@@ -222,8 +222,8 @@ describe('ProductComponent', () => {
 
   it('should not display marketplace introduction in designer', () => {
     component.route.queryParams = of({
-      [DESIGNER_COOKIE_VARIABLE.restClientParamName]: 'resultsOnly',
-      [DESIGNER_COOKIE_VARIABLE.searchParamName]: 'search'
+      [DESIGNER_SESSION_STORAGE_VARIABLE.restClientParamName]: 'resultsOnly',
+      [DESIGNER_SESSION_STORAGE_VARIABLE.searchParamName]: 'search'
     });
 
     component.isDesignerEnvironment = true;

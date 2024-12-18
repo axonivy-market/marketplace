@@ -3,13 +3,12 @@ package com.axonivy.market.controller;
 import com.axonivy.market.constants.GitHubConstants;
 import com.axonivy.market.enums.ErrorCode;
 import com.axonivy.market.github.service.GitHubService;
+import com.axonivy.market.logging.Loggable;
 import com.axonivy.market.model.Message;
 import com.axonivy.market.model.ProductCustomSortRequest;
 import com.axonivy.market.service.ProductMarketplaceDataService;
 import com.axonivy.market.util.AuthorizationUtils;
 import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.Parameter;
-import io.swagger.v3.oas.annotations.enums.ParameterIn;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
@@ -36,7 +35,7 @@ import static org.springframework.http.HttpHeaders.AUTHORIZATION;
 public class ProductMarketplaceDataController {
   private final GitHubService gitHubService;
   private final ProductMarketplaceDataService productMarketplaceDataService;
-  
+
   @PostMapping(CUSTOM_SORT)
   @Operation(hidden = true)
   public ResponseEntity<Message> createCustomSortProducts(
@@ -51,15 +50,14 @@ public class ProductMarketplaceDataController {
     return new ResponseEntity<>(message, HttpStatus.OK);
   }
 
+  @Loggable
+  @Operation(hidden = true)
   @PutMapping(INSTALLATION_COUNT_BY_ID)
-  @Operation(summary = "Update installation count of product",
-      description = "By default, increase installation count when click download product files by users")
   public ResponseEntity<Integer> syncInstallationCount(
-      @PathVariable(ID) @Parameter(description = "Product id (from meta.json)", example = "approval-decision-utils",
-          in = ParameterIn.PATH) String productId,
-      @RequestParam(name = DESIGNER_VERSION, required = false) @Parameter(in = ParameterIn.QUERY,
-          example = "v10.0.20") String designerVersion) {
+      @PathVariable(ID) String productId,
+      @RequestParam(name = DESIGNER_VERSION, required = false) String designerVersion) {
     int result = productMarketplaceDataService.updateInstallationCountForProduct(productId, designerVersion);
     return new ResponseEntity<>(result, HttpStatus.OK);
   }
+
 }

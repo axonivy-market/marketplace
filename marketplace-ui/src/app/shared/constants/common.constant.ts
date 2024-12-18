@@ -182,7 +182,7 @@ export const FEEDBACK_SORT_TYPES: ItemDropdown<FeedbackSortType>[] = [
   }
 ];
 
-export const DESIGNER_COOKIE_VARIABLE = {
+export const DESIGNER_SESSION_STORAGE_VARIABLE = {
   ivyViewerParamName: 'ivy-viewer',
   ivyVersionParamName: 'ivy-version',
   defaultDesignerViewer: 'designer-market',
@@ -236,6 +236,7 @@ export const TOKEN_KEY = 'token';
 export const DEFAULT_IMAGE_URL = '/assets/images/misc/axonivy-logo-round.png';
 export const DOWNLOAD_URL = 'https://developer.axonivy.com/download';
 export const SEARCH_URL = 'https://developer.axonivy.com/search';
+export const GITHUB_MARKET_ORG_URL = 'https://github.com/axonivy-market';
 export const SHOW_DEV_VERSION = "showDevVersions";
 export const DEFAULT_VENDOR_IMAGE = '/assets/images/misc/axonivy-logo.svg';
 export const DEFAULT_VENDOR_IMAGE_BLACK = '/assets/images/misc/axonivy-logo-black.svg';
@@ -248,3 +249,32 @@ export const DAYS_IN_A_MONTH = 30;
 export const DAYS_IN_A_YEAR = 365;
 
 export const MAX_FEEDBACK_LENGTH =250;
+
+export const SECURITY_MONITOR_SESSION_KEYS = {
+  DATA: 'security-monitor-data',
+  TOKEN: 'security-monitor-token',
+};
+
+export const SECURITY_MONITOR_MESSAGES = {
+  TOKEN_REQUIRED: 'Token is required',
+  UNAUTHORIZED_ACCESS: 'Unauthorized access.',
+  FETCH_FAILURE: 'Failed to fetch security data. Check logs for details.',
+};
+
+export const TIME_UNITS = [
+  { SECONDS: 60, SINGULAR: 'minute', PLURAL: 'minutes' },
+  { SECONDS: 3600, SINGULAR: 'hour', PLURAL: 'hours' },
+  { SECONDS: 86400, SINGULAR: 'day', PLURAL: 'days' },
+  { SECONDS: 604800, SINGULAR: 'week', PLURAL: 'weeks' },
+  { SECONDS: 2592000, SINGULAR: 'month', PLURAL: 'months' },
+  { SECONDS: 31536000, SINGULAR: 'year', PLURAL: 'years' },
+];
+
+export const REPO_PAGE_PATHS: Record<string, string> = {
+  security: '/security',
+  dependabot: '/security/dependabot',
+  codeScanning: '/security/code-scanning',
+  secretScanning: '/security/secret-scanning',
+  branches: '/settings/branches',
+  lastCommit: '/commit/',
+};
