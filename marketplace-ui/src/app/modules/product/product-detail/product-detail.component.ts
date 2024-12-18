@@ -163,8 +163,7 @@ export class ProductDetailComponent {
         productFeedBack:
           this.productFeedbackService.getInitFeedbacksObservable(),
         rating: this.productStarRatingService.getRatingObservable(productId),
-        userFeedback: this.productFeedbackService.findProductFeedbackOfUser(),
-        params: this.route.queryParams
+        userFeedback: this.productFeedbackService.findProductFeedbackOfUser()
       }).subscribe(res => {
         this.handleProductDetail(res.productDetail);
         this.productFeedbackService.handleFeedbackApiResponse(
@@ -172,14 +171,15 @@ export class ProductDetailComponent {
         );
         this.updateDropdownSelection();
         this.checkMediaSize();
-        this.showPopup = res.params['showPopup'] === 'true';
-
-        if (this.showPopup && this.authService.getToken()) {
-          this.appModalService
-            .openAddFeedbackDialog()
-            .then(() => this.removeQueryParam())
-            .catch(() => this.removeQueryParam());
-        }
+        this.route.queryParams.subscribe(params => {
+          this.showPopup = params['showPopup'] === 'true';
+          if (this.showPopup && this.authService.getToken()) {
+            this.appModalService
+              .openAddFeedbackDialog()
+              .then(() => this.removeQueryParam())
+              .catch(() => this.removeQueryParam());
+          }
+        });
         this.loadingService.hideLoading(LoadingComponentId.DETAIL_PAGE);
       });
     }
