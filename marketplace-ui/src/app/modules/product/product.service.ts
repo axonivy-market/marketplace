@@ -7,9 +7,10 @@ import { ProductApiResponse } from '../../shared/models/apis/product-response.mo
 import { Criteria } from '../../shared/models/criteria.model';
 import { ProductDetail } from '../../shared/models/product-detail.model';
 import { VersionData } from '../../shared/models/vesion-artifact.model';
-import { SkipLoading } from '../../core/interceptors/api.interceptor';
+import { LoadingComponent } from '../../core/interceptors/api.interceptor';
 import { VersionAndUrl } from '../../shared/models/version-and-url';
 import { API_URI } from '../../shared/constants/api.constant';
+import { LoadingComponentId } from '../../shared/enums/loading-component-id';
 
 @Injectable()
 export class ProductService {
@@ -17,6 +18,7 @@ export class ProductService {
   loadingService = inject(LoadingService);
 
   findProductsByCriteria(criteria: Criteria): Observable<ProductApiResponse> {
+    this.loadingService.showLoading(LoadingComponentId.LANDING_PAGE);
     let requestParams = new HttpParams();
     let requestURL = API_URI.PRODUCT;
     if (criteria.nextPageHref) {
@@ -35,7 +37,11 @@ export class ProductService {
         );
     }
     return this.httpClient.get<ProductApiResponse>(requestURL, {
-      params: requestParams
+      params: requestParams,
+      context: new HttpContext().set(
+        LoadingComponent,
+        LoadingComponentId.LANDING_PAGE
+      )
     });
   }
 
@@ -61,9 +67,10 @@ export class ProductService {
     productId: string,
     isShowDevVersion: boolean
   ): Observable<ProductDetail> {
-    return this.httpClient.get<ProductDetail>(
-      `${API_URI.PRODUCT_DETAILS}/${productId}?isShowDevVersion=${isShowDevVersion}`
-    );
+    return this.httpClient
+      .get<ProductDetail>(
+        `${API_URI.PRODUCT_DETAILS}/${productId}?isShowDevVersion=${isShowDevVersion}`
+      );
   }
 
   sendRequestToProductDetailVersionAPI(
@@ -75,13 +82,13 @@ export class ProductService {
     const params = new HttpParams()
       .append('designerVersion', designerVersion)
       .append('isShowDevVersion', showDevVersion);
-    return this.httpClient.get<VersionData[]>(url, {
-      params,
-      context: new HttpContext().set(SkipLoading, true)
-    });
+    return this.httpClient.get<VersionData[]>(url, { params });
   }
 
-  sendRequestToUpdateInstallationCount(productId: string, designerVersion: string) {
+  sendRequestToUpdateInstallationCount(
+    productId: string,
+    designerVersion: string
+  ) {
     const url = `${API_URI.PRODUCT_MARKETPLACE_DATA}/installation-count/${productId}`;
     const params = new HttpParams().append('designerVersion', designerVersion);
     return this.httpClient.put<number>(url, null, { params });

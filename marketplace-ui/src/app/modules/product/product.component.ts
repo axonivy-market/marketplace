@@ -34,6 +34,9 @@ import {
   DESIGNER_SESSION_STORAGE_VARIABLE
 } from '../../shared/constants/common.constant';
 import { ItemDropdown } from '../../shared/models/item-dropdown.model';
+import { LoadingSpinnerComponent } from '../../shared/components/loading-spinner/loading-spinner.component';
+import { LoadingService } from '../../core/services/loading/loading.service';
+import { LoadingComponentId } from '../../shared/enums/loading-component-id';
 
 const SEARCH_DEBOUNCE_TIME = 500;
 
@@ -41,6 +44,7 @@ const SEARCH_DEBOUNCE_TIME = 500;
   selector: 'app-product',
   standalone: true,
   imports: [
+    LoadingSpinnerComponent,
     CommonModule,
     FormsModule,
     TranslateModule,
@@ -52,10 +56,12 @@ const SEARCH_DEBOUNCE_TIME = 500;
   styleUrl: './product.component.scss'
 })
 export class ProductComponent implements AfterViewInit, OnDestroy {
+  protected LoadingComponentId = LoadingComponentId;
   products: WritableSignal<Product[]> = signal([]);
   productDetail!: ProductDetail;
   subscriptions: Subscription[] = [];
   searchTextChanged = new Subject<string>();
+  loadingService = inject(LoadingService);
   criteria: Criteria = {
     search: '',
     type: TypeOption.All_TYPES,
@@ -116,7 +122,7 @@ export class ProductComponent implements AfterViewInit, OnDestroy {
   }
 
   viewProductDetail(productId: string, _productTag: string) {
-    if(this.isRESTClient()) {
+    if (this.isRESTClient()) {
       window.location.href = `/${productId}`;
     }
     this.router.navigate([`/${productId}`]);

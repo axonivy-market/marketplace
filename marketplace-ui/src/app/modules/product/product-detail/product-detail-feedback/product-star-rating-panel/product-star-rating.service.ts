@@ -7,10 +7,9 @@ import {
   signal,
   WritableSignal
 } from '@angular/core';
-import { tap } from 'rxjs';
+import { Observable, tap } from 'rxjs';
 import { StarRatingCounting } from '../../../../../shared/models/star-rating-counting.model';
 import { ProductDetailService } from '../../product-detail.service';
-import { SkipLoading } from '../../../../../core/interceptors/api.interceptor';
 
 @Injectable({
   providedIn: 'root'
@@ -28,16 +27,7 @@ export class ProductStarRatingService {
   );
 
   fetchData(productId: string = this.productDetailService.productId()): void {
-    const requestURL = `api/feedback/product/${productId}/rating`;
-    this.http
-      .get<StarRatingCounting[]>(requestURL, {context: new HttpContext().set(SkipLoading, true)})
-      .pipe(
-        tap(data => {
-          this.sortByStar(data);
-          this.starRatings.set(data);
-        })
-      )
-      .subscribe();
+    this.getRatingObservable(productId).subscribe();
   }
 
   private sortByStar(starRatings: StarRatingCounting[]): void {
@@ -63,5 +53,17 @@ export class ProductStarRatingService {
     }
 
     return Math.round(reviewNumber * 10) / 10;
+  }
+
+  getRatingObservable(id: string): Observable<StarRatingCounting[]> {
+    const requestURL = `api/feedback/product/${id}/rating`;
+    return this.http
+      .get<StarRatingCounting[]>(requestURL, { context: new HttpContext() })
+      .pipe(
+        tap(data => {
+          this.sortByStar(data);
+          this.starRatings.set(data);
+        })
+      );
   }
 }
