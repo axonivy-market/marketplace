@@ -16,8 +16,11 @@ import org.springframework.web.context.request.ServletRequestAttributes;
 
 import java.io.File;
 import java.io.IOException;
+import java.lang.reflect.Method;
+import java.lang.reflect.Parameter;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Arrays;
 import java.util.Map;
 
 import static com.axonivy.market.util.FileUtils.createFile;
@@ -38,8 +41,9 @@ public class LoggableAspect {
     ServletRequestAttributes attributes =
         (ServletRequestAttributes) RequestContextHolder.getRequestAttributes();
     if (attributes != null) {
+      Method method = signature.getMethod();
       HttpServletRequest request = attributes.getRequest();
-      Map<String, String> headersMap = extractHeaders(request, signature, joinPoint);
+      Map<String, String> headersMap = extractHeaders(request, method, joinPoint);
       saveLogToDailyFile(headersMap);
 
       // block execution if request isn't from Market or Ivy Designer
@@ -49,13 +53,16 @@ public class LoggableAspect {
     }
   }
 
-  private Map<String, String> extractHeaders(HttpServletRequest request, MethodSignature signature,
+  private Map<String, String> extractHeaders(HttpServletRequest request, Method method,
       JoinPoint joinPoint) {
     return Map.of(
-        LoggingConstants.METHOD, escapeXml(String.valueOf(signature.getMethod())),
+        LoggingConstants.METHOD, escapeXml(String.valueOf(method)),
         LoggingConstants.TIMESTAMP, escapeXml(getCurrentTimestamp()),
         CommonConstants.USER_AGENT, escapeXml(request.getHeader(CommonConstants.USER_AGENT)),
-        LoggingConstants.ARGUMENTS, escapeXml(getArgumentsString(signature.getParameterNames(), joinPoint.getArgs())),
+        LoggingConstants.ARGUMENTS,
+        escapeXml(getArgumentsString(
+            Arrays.stream(method.getParameters()).map(Parameter::getName).toArray(String[]::new),
+            joinPoint.getArgs())),
         CommonConstants.REQUESTED_BY, escapeXml(request.getHeader(CommonConstants.REQUESTED_BY))
     );
   }
