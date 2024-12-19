@@ -12,6 +12,7 @@ import com.axonivy.market.entity.ProductMarketplaceData;
 import com.axonivy.market.enums.Language;
 import com.axonivy.market.enums.SortOption;
 import com.axonivy.market.model.MavenArtifactModel;
+import com.axonivy.market.model.VersionAndUrlModel;
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.data.domain.Page;
@@ -263,5 +264,57 @@ public class BaseSetup {
 
   protected ProductMarketplaceData getMockProductMarketplaceData() {
     return ProductMarketplaceData.builder().id(MOCK_PRODUCT_ID).installationCount(3).build();
+  }
+
+  protected List<VersionAndUrlModel> mockVersionAndUrlModels() {
+    VersionAndUrlModel versionAndUrlModel = VersionAndUrlModel.builder()
+        .version("10.0.21")
+        .url("/api/product-details/productjsoncontent/portal/10.0.21")
+        .build();
+
+    VersionAndUrlModel versionAndUrlModel2 = VersionAndUrlModel.builder()
+        .version("10.0.22")
+        .url("/api/product-details/productjsoncontent/portal/10.0.22")
+        .build();
+
+    return List.of(versionAndUrlModel, versionAndUrlModel2);
+  }
+
+  protected List<VersionAndUrlModel> mockVersionModels() {
+    VersionAndUrlModel versionAndUrlModel = VersionAndUrlModel.builder()
+        .version("11.3.1")
+        .build();
+
+    VersionAndUrlModel versionAndUrlModel2 = VersionAndUrlModel.builder()
+        .version("10.0.22")
+        .build();
+
+    return List.of(versionAndUrlModel, versionAndUrlModel2);
+  }
+
+  protected List<VersionAndUrlModel> mockVersionModels2() {
+    VersionAndUrlModel versionAndUrlModel = VersionAndUrlModel.builder()
+        .version("11.3.2")
+        .build();
+
+    List<VersionAndUrlModel> versionAndUrlModels = new ArrayList<>(mockVersionModels());
+    versionAndUrlModels.add(0,versionAndUrlModel);
+
+    return versionAndUrlModels;
+  }
+
+  protected List<VersionAndUrlModel> mockVersionModels3() {
+    VersionAndUrlModel versionAndUrlModel = VersionAndUrlModel.builder()
+        .version("11.3.2")
+        .build();
+
+    VersionAndUrlModel versionAndUrlModel2 = VersionAndUrlModel.builder()
+        .version("12.0.0")
+        .build();
+
+    List<VersionAndUrlModel> versionAndUrlModels = new ArrayList<>(mockVersionModels());
+    versionAndUrlModels.add(0,versionAndUrlModel);
+    versionAndUrlModels.add(0,versionAndUrlModel2);
+    return versionAndUrlModels;
   }
 }

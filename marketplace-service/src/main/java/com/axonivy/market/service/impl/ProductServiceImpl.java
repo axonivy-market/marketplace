@@ -62,7 +62,7 @@ import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 
-import static com.axonivy.market.constants.CommonConstants.SLASH;
+import static com.axonivy.market.constants.CommonConstants.*;
 import static com.axonivy.market.constants.MavenConstants.*;
 import static com.axonivy.market.constants.ProductJsonConstants.EN_LANGUAGE;
 import static com.axonivy.market.constants.ProductJsonConstants.LOGO_FILE;
@@ -586,15 +586,15 @@ public class ProductServiceImpl implements ProductService {
     if (StringUtils.isBlank(oldestVersion)) {
       return Strings.EMPTY;
     }
-    if (!oldestVersion.contains(CommonConstants.DOT_SEPARATOR)) {
+    if (!oldestVersion.contains(DOT_SEPARATOR)) {
       return oldestVersion + ".0+";
     }
-    int firstDot = oldestVersion.indexOf(CommonConstants.DOT_SEPARATOR);
-    int secondDot = oldestVersion.indexOf(CommonConstants.DOT_SEPARATOR, firstDot + 1);
+    int firstDot = oldestVersion.indexOf(DOT_SEPARATOR);
+    int secondDot = oldestVersion.indexOf(DOT_SEPARATOR, firstDot + 1);
     if (secondDot == -1) {
-      return oldestVersion.concat(CommonConstants.PLUS);
+      return oldestVersion.concat(PLUS);
     }
-    return oldestVersion.substring(0, secondDot).concat(CommonConstants.PLUS);
+    return oldestVersion.substring(0, secondDot).concat(PLUS);
   }
 
   @Override
@@ -773,20 +773,27 @@ public class ProductServiceImpl implements ProductService {
       return splitVersion(versions.get(0));
     }
 
-    boolean isMoreThanVersion = versions.stream()
-        .filter(version -> {
-          String currentVersion = versions.get(0);
-          return version.startsWith(currentVersion.substring(0, currentVersion.indexOf(".")));
-        }).toList().size() > 1;
+    String currentMaxVersion = versions.get(0);
+    boolean isMoreThan1InMaxVersion = versions.stream()
+        .filter(version -> version.startsWith(
+            currentMaxVersion.substring(0, currentMaxVersion.indexOf(DOT_SEPARATOR)))).toList().size() > 1;
 
-    String maxValue = isMoreThanVersion ? splitVersion(versions.get(0)).concat("+") : splitVersion(versions.get(0));
+    String maxValue = isMoreThan1InMaxVersion ? splitVersion(currentMaxVersion).concat(PLUS) : splitVersion(
+        currentMaxVersion);
     String minValue = splitVersion(versions.get(versions.size() - 1));
-    return minValue.concat("-").concat(maxValue);
+
+    return getPrefixOfVersion(minValue).equals(getPrefixOfVersion(maxValue)) ?
+        minValue.concat(PLUS) :
+        minValue.concat(DASH_SEPARATOR).concat(maxValue);
   }
 
   private String splitVersion(String version) {
-    int firstDot = version.indexOf('.');
-    int secondDot = version.indexOf('.', firstDot + 1);
+    int firstDot = version.indexOf(DOT_SEPARATOR);
+    int secondDot = version.indexOf(DOT_SEPARATOR, firstDot + 1);
     return version.substring(0, secondDot);
+  }
+
+  private String getPrefixOfVersion(String version) {
+    return version.substring(0, version.indexOf(DOT_SEPARATOR));
   }
 }

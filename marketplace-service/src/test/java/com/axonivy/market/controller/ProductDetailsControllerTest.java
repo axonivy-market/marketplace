@@ -177,19 +177,7 @@ class ProductDetailsControllerTest extends BaseSetup {
         Objects.requireNonNull(result.getBody()).get(1).getUrl());
   }
 
-  private List<VersionAndUrlModel> mockVersionAndUrlModels() {
-    VersionAndUrlModel versionAndUrlModel = VersionAndUrlModel.builder()
-        .version("10.0.21")
-        .url("/api/product-details/productjsoncontent/portal/10.0.21")
-        .build();
 
-    VersionAndUrlModel versionAndUrlModel2 = VersionAndUrlModel.builder()
-        .version("10.0.22")
-        .url("/api/product-details/productjsoncontent/portal/10.0.22")
-        .build();
-
-    return List.of(versionAndUrlModel, versionAndUrlModel2);
-  }
 
   @Test
   void findProductJsonContentByIdAndVersion() throws IOException {
