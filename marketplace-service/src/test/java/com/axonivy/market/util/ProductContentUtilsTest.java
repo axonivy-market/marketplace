@@ -50,10 +50,11 @@ class ProductContentUtilsTest extends BaseSetup {
     Map<String, String> imageUrls = new HashMap<>();
     imageUrls.put("slash-command.png", MOCK_IMAGE_ID_FORMAT_1);
     imageUrls.put("create-slash-command.png", MOCK_IMAGE_ID_FORMAT_2);
+    imageUrls.put("screen2.png", MOCK_IMAGE_ID_FORMAT_3);
 
     String expectedResult = readmeContents.replace("images/slash-command.png",
         MOCK_IMAGE_ID_FORMAT_1).replace("images/create-slash-command.png",
-        MOCK_IMAGE_ID_FORMAT_2);
+        MOCK_IMAGE_ID_FORMAT_2).replace("screen2.png \"Restful Person Manager\"", MOCK_IMAGE_ID_FORMAT_3);
     String updatedContents = ProductContentUtils.replaceImageDirWithImageCustomId(imageUrls, readmeContents);
 
     assertEquals(expectedResult, updatedContents);
@@ -112,6 +113,40 @@ class ProductContentUtilsTest extends BaseSetup {
     assertTrue(StringUtils.isBlank(readmeContentsModel.getDescription()));
     assertTrue(StringUtils.isBlank(readmeContentsModel.getDemo()));
     assertTrue(StringUtils.isBlank(readmeContentsModel.getSetup()));
+  }
+
+  @Test
+  void testGetExtractedPartsOfReadmeAtCorrectHeadings() {
+    String readmeContents = getMockReadmeContent();
+    ReadmeContentsModel readmeContentsModel = ProductContentUtils.getExtractedPartsOfReadme(readmeContents);
+    assertTrue(readmeContentsModel.getDescription().startsWith("Axon Ivy’s mattermost connector"));
+    assertTrue(readmeContentsModel.getDemo().startsWith("### Demo sample"));
+    assertTrue(readmeContentsModel.getSetup().startsWith("### Setup guideline"));
+  }
+
+  @Test
+  void testGetExtractedPartsOfReadmeWithInconsistentFormats() {
+    String readmeContentsWithHeading3 = """
+        #Product-name
+        Test README
+        ### Setup
+        Setup content (./image.png)""";
+    ReadmeContentsModel readmeContentsModel = ProductContentUtils.getExtractedPartsOfReadme(readmeContentsWithHeading3);
+    assertTrue(readmeContentsModel.getDescription().startsWith("Test README"));
+    assertTrue(readmeContentsModel.getSetup().startsWith("Setup content (./image.png)"));
+
+    String readmeContentsWithSpaceHeading = """
+        #Product-name
+        Test README
+        ##Demo
+        ### Demo project
+        Demo content
+           ## Setup
+        Setup content (./image.png)""";
+    ReadmeContentsModel readmeContentsModel1 =
+        ProductContentUtils.getExtractedPartsOfReadme(readmeContentsWithSpaceHeading);
+    assertTrue(readmeContentsModel1.getDemo().startsWith("### Demo project"));
+    assertTrue(readmeContentsModel1.getSetup().startsWith("Setup content (./image.png)"));
   }
 
   @Test

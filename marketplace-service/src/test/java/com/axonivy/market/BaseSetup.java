@@ -55,6 +55,7 @@ public class BaseSetup {
   protected static final String MOCK_PRODUCT_REPOSITORY_NAME = "axonivy-market/bpmn-statistic";
   protected static final String MOCK_IMAGE_ID_FORMAT_1 = "imageId-66e2b14868f2f95b2f95549a";
   protected static final String MOCK_IMAGE_ID_FORMAT_2 = "imageId-66e2b14868f2f95b2f95550a";
+  protected static final String MOCK_IMAGE_ID_FORMAT_3 = "imageId-66e2b14868f2f95b2f95551a";
   protected static final String MOCK_PRODUCT_JSON_FILE_PATH = "src/test/resources/product.json";
   protected static final String MOCK_PRODUCT_JSON_FILE_PATH_NO_URL = "src/test/resources/productMissingURL.json";
   protected static final String MOCK_PRODUCT_JSON_WITH_DROPINS_FILE_PATH = "src/test/resources/product-dropins.json";
