@@ -22,12 +22,16 @@ import java.util.regex.Pattern;
 import static com.axonivy.market.constants.ProductJsonConstants.DEFAULT_PRODUCT_TYPE;
 
 public class ProductContentUtils {
-  public static final String DEMO_SETUP_TITLE = "(?i)## Demo|## Setup";
+  /*
+   * Accept any combination of #, can be ## or ###, and whitespaces before Demo/Setup word
+   * Match exactly Demo or Setup
+   */
+  public static final String DEMO_SETUP_TITLE = "(?m)^[#\\s]*##?\\s*(Demo|Setup)\\s*$";
   private static final String HASH = "#";
   public static final String DESCRIPTION = "description";
   public static final String DEMO = "demo";
   public static final String SETUP = "setup";
-  public static final String README_IMAGE_FORMAT = "\\(([^)]*?/)?%s\\)";
+  public static final String README_IMAGE_FORMAT = "\\(([^)]*?/)?%s(\\s+\"[^\"]+\")?\\)";
   public static final String IMAGE_DOWNLOAD_URL_FORMAT = "(%s)";
 
   private ProductContentUtils() {
@@ -141,6 +145,11 @@ public class ProductContentUtils {
     productModuleContent.setSetup(replaceEmptyContentsWithEnContent(moduleContents.get(SETUP)));
   }
 
+  /**
+   * Cover some inconsistent cases:
+   * Products contain image names in round brackets (employee-onboarding, demo-projects, etc.)
+   * Image with name contains in other images' (mattermost)
+   */
   public static String replaceImageDirWithImageCustomId(Map<String, String> imageUrls, String readmeContents) {
     for (Map.Entry<String, String> entry : imageUrls.entrySet()) {
       String imagePattern = String.format(README_IMAGE_FORMAT, Pattern.quote(entry.getKey()));

@@ -42,7 +42,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutorService;
 import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
@@ -173,11 +172,13 @@ public class GitHubServiceImpl implements GitHubService {
       GitHub gitHub = getGitHub(accessToken);
       GHOrganization organization = gitHub.getOrganization(orgName);
 
-      return organization.listRepositories().toList().stream()
-          .map(repo -> CompletableFuture.supplyAsync(() -> fetchSecurityInfoSafe(repo, organization, accessToken), taskScheduler.getScheduledExecutor()))
-          .map(CompletableFuture::join)
-          .sorted(Comparator.comparing(ProductSecurityInfo::getRepoName))
-          .collect(Collectors.toList());
+      List<CompletableFuture<ProductSecurityInfo>> futures = organization.listRepositories().toList().stream()
+          .map(repo -> CompletableFuture.supplyAsync(() -> fetchSecurityInfoSafe(repo, organization, accessToken),
+              taskScheduler.getScheduledExecutor())).toList();
+
+      return CompletableFuture.allOf(futures.toArray(new CompletableFuture[0]))
+          .thenApply(v -> futures.stream().map(CompletableFuture::join).sorted(
+              Comparator.comparing(ProductSecurityInfo::getRepoName)).collect(Collectors.toList())).join();
     } catch (IOException e) {
       log.error(e.getStackTrace());
       return Collections.emptyList();

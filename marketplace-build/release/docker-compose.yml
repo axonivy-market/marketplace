@@ -22,7 +22,7 @@ services:
     volumes:
       - /home/axonivy/marketplace/data/market-installations.json:/app/data/market-installation.json
       - marketcache:/app/data/market-cache
-      - ./logs:/app/logs
+      - ../logs:/app/logs
     environment:
       - MONGODB_HOST=${SERVICE_MONGODB_HOST}
       - MONGODB_DATABASE=${SERVICE_MONGODB_DATABASE}
