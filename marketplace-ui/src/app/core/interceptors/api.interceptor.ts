@@ -13,11 +13,6 @@ import { ERROR_CODES, ERROR_PAGE_PATH } from '../../shared/constants/common.cons
 export const REQUEST_BY = 'X-Requested-By';
 export const IVY = 'marketplace-website';
 
-/** SkipLoading: This option for exclude loading api
- * @Example return httpClient.get('apiEndPoint', { context: new HttpContext().set(SkipLoading, true) })
- */
-export const SkipLoading = new HttpContextToken<boolean>(() => false);
-
 /** ForwardingError: This option for forwarding responce error to the caller
  * @Example return httpClient.get('apiEndPoint', { context: new HttpContext().set(ForwardingError, true) })
  */
@@ -47,9 +42,6 @@ export const apiInterceptor: HttpInterceptorFn = (req, next) => {
     headers: addIvyHeaders(req.headers)
   });
 
-  if (!req.context.get(SkipLoading)) {
-    loadingService.showLoading(req.context.get(LoadingComponent));
-  }
 
   if (req.context.get(ForwardingError)) {
     return next(cloneReq);
@@ -65,7 +57,7 @@ export const apiInterceptor: HttpInterceptorFn = (req, next) => {
       return EMPTY;
     }),
     finalize(() => {
-      if (!req.context.get(SkipLoading)) {
+      if (req.context.get(LoadingComponent)) {
         loadingService.hideLoading(req.context.get(LoadingComponent));
       }
     })

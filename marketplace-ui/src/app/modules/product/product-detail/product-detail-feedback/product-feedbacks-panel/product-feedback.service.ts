@@ -14,10 +14,7 @@ import {
 import { catchError, Observable, of, tap, throwError } from 'rxjs';
 import { CookieService } from 'ngx-cookie-service';
 import { AuthService } from '../../../../../auth/auth.service';
-import {
-  ForwardingError,
-  SkipLoading
-} from '../../../../../core/interceptors/api.interceptor';
+import { ForwardingError } from '../../../../../core/interceptors/api.interceptor';
 import { FeedbackApiResponse } from '../../../../../shared/models/apis/feedback-response.model';
 import { Feedback } from '../../../../../shared/models/feedback.model';
 import { ProductDetailService } from '../../product-detail.service';
@@ -64,9 +61,7 @@ export class ProductFeedbackService {
     return this.http
       .post<Feedback>(FEEDBACK_API_URL, feedback, {
         headers,
-        context: new HttpContext()
-          .set(SkipLoading, true)
-          .set(ForwardingError, true)
+        context: new HttpContext().set(ForwardingError, true)
       })
       .pipe(
         tap(() => {
@@ -100,7 +95,7 @@ export class ProductFeedbackService {
     return this.http
       .get<FeedbackApiResponse>(requestURL, {
         params: requestParams,
-        context: new HttpContext().set(SkipLoading, true).set(ForwardingError, true)
+        context: new HttpContext().set(ForwardingError, true)
       })
       .pipe(
         tap(response => {
@@ -126,9 +121,7 @@ export class ProductFeedbackService {
     return this.http
       .get<Feedback>(requestURL, {
         params,
-        context: new HttpContext()
-          .set(SkipLoading, true)
-          .set(ForwardingError, true)
+        context: new HttpContext().set(ForwardingError, true)
       })
       .pipe(
         tap(feedback => {

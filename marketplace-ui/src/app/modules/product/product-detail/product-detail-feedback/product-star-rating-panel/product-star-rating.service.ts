@@ -10,7 +10,6 @@ import {
 import { Observable, tap } from 'rxjs';
 import { StarRatingCounting } from '../../../../../shared/models/star-rating-counting.model';
 import { ProductDetailService } from '../../product-detail.service';
-import { SkipLoading } from '../../../../../core/interceptors/api.interceptor';
 
 @Injectable({
   providedIn: 'root'
@@ -59,9 +58,7 @@ export class ProductStarRatingService {
   getRatingObservable(id: string): Observable<StarRatingCounting[]> {
     const requestURL = `api/feedback/product/${id}/rating`;
     return this.http
-      .get<StarRatingCounting[]>(requestURL, {
-        context: new HttpContext().set(SkipLoading, true)
-      })
+      .get<StarRatingCounting[]>(requestURL, { context: new HttpContext() })
       .pipe(
         tap(data => {
           this.sortByStar(data);
