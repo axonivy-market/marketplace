@@ -80,6 +80,8 @@ public class Product implements Serializable {
   private String bestMatchVersion;
   @Transient
   private boolean isMavenDropins;
+  @Transient
+  private String compatibilityRange;
 
   @Override
   public int hashCode() {

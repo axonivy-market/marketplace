@@ -6,12 +6,14 @@ import com.axonivy.market.controller.ProductDetailsController;
 import com.axonivy.market.entity.Product;
 import com.axonivy.market.model.ProductDetailModel;
 import com.axonivy.market.util.ImageUtils;
+import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.hateoas.Link;
 import org.springframework.hateoas.server.mvc.RepresentationModelAssemblerSupport;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 
+import java.util.List;
 import java.util.Optional;
 
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
@@ -79,6 +81,7 @@ public class ProductDetailModelAssembler extends RepresentationModelAssemblerSup
     model.setContactUs(product.getContactUs());
     model.setCost(product.getCost());
     model.setInstallationCount(product.getInstallationCount());
+    model.setCompatibilityRange(product.getCompatibilityRange());
     model.setProductModuleContent(ImageUtils.mappingImageForProductModuleContent(product.getProductModuleContent()));
     if (StringUtils.isNotBlank(product.getVendorImage())) {
       Link vendorLink = linkTo(methodOn(ImageController.class).findImageById(product.getVendorImage())).withSelfRel();

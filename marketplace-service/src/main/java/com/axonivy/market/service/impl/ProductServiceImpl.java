@@ -23,6 +23,7 @@ import com.axonivy.market.github.service.GHAxonIvyMarketRepoService;
 import com.axonivy.market.github.service.GHAxonIvyProductRepoService;
 import com.axonivy.market.github.service.GitHubService;
 import com.axonivy.market.github.util.GitHubUtils;
+import com.axonivy.market.model.VersionAndUrlModel;
 import com.axonivy.market.repository.*;
 import com.axonivy.market.service.ExternalDocumentService;
 import com.axonivy.market.service.ImageService;
@@ -30,6 +31,7 @@ import com.axonivy.market.service.MetadataService;
 import com.axonivy.market.service.ProductContentService;
 import com.axonivy.market.service.ProductMarketplaceDataService;
 import com.axonivy.market.service.ProductService;
+import com.axonivy.market.service.VersionService;
 import com.axonivy.market.util.MavenUtils;
 import com.axonivy.market.util.MetadataReaderUtils;
 import com.axonivy.market.util.VersionUtils;
@@ -60,7 +62,7 @@ import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 
-import static com.axonivy.market.constants.CommonConstants.SLASH;
+import static com.axonivy.market.constants.CommonConstants.*;
 import static com.axonivy.market.constants.MavenConstants.*;
 import static com.axonivy.market.constants.ProductJsonConstants.EN_LANGUAGE;
 import static com.axonivy.market.constants.ProductJsonConstants.LOGO_FILE;
@@ -94,6 +96,7 @@ public class ProductServiceImpl implements ProductService {
   private final ProductMarketplaceDataService productMarketplaceDataService;
   private final ProductMarketplaceDataRepository productMarketplaceDataRepo;
   private GHCommit lastGHCommit;
+  private VersionService versionService;
   private GitHubRepoMeta marketRepoMeta;
   @Value("${market.github.market.branch}")
   private String marketRepoBranch;
@@ -106,7 +109,7 @@ public class ProductServiceImpl implements ProductService {
       MetadataSyncRepository metadataSyncRepo, MetadataRepository metadataRepo, ImageService imageService,
       ProductContentService productContentService, MetadataService metadataService,
       ProductMarketplaceDataService productMarketplaceDataService, ExternalDocumentService externalDocumentService,
-      ProductMarketplaceDataRepository productMarketplaceDataRepo) {
+      ProductMarketplaceDataRepository productMarketplaceDataRepo, VersionService versionService) {
     this.productRepo = productRepo;
     this.productModuleContentRepo = productModuleContentRepo;
     this.axonIvyMarketRepoService = axonIvyMarketRepoService;
@@ -125,6 +128,7 @@ public class ProductServiceImpl implements ProductService {
     this.productMarketplaceDataService = productMarketplaceDataService;
     this.externalDocumentService = externalDocumentService;
     this.productMarketplaceDataRepo = productMarketplaceDataRepo;
+    this.versionService = versionService;
   }
 
   @Override
@@ -582,15 +586,15 @@ public class ProductServiceImpl implements ProductService {
     if (StringUtils.isBlank(oldestVersion)) {
       return Strings.EMPTY;
     }
-    if (!oldestVersion.contains(CommonConstants.DOT_SEPARATOR)) {
+    if (!oldestVersion.contains(DOT_SEPARATOR)) {
       return oldestVersion + ".0+";
     }
-    int firstDot = oldestVersion.indexOf(CommonConstants.DOT_SEPARATOR);
-    int secondDot = oldestVersion.indexOf(CommonConstants.DOT_SEPARATOR, firstDot + 1);
+    int firstDot = oldestVersion.indexOf(DOT_SEPARATOR);
+    int secondDot = oldestVersion.indexOf(DOT_SEPARATOR, firstDot + 1);
     if (secondDot == -1) {
-      return oldestVersion.concat(CommonConstants.PLUS);
+      return oldestVersion.concat(PLUS);
     }
-    return oldestVersion.substring(0, secondDot).concat(CommonConstants.PLUS);
+    return oldestVersion.substring(0, secondDot).concat(PLUS);
   }
 
   @Override
@@ -599,6 +603,10 @@ public class ProductServiceImpl implements ProductService {
     return Optional.ofNullable(product).map(productItem -> {
       int installationCount = productMarketplaceDataService.updateProductInstallationCount(id);
       productItem.setInstallationCount(installationCount);
+
+      String compatibilityRange = getCompatibilityRange(id);
+      productItem.setCompatibilityRange(compatibilityRange);
+
       return productItem;
     }).orElse(null);
   }
@@ -614,6 +622,10 @@ public class ProductServiceImpl implements ProductService {
     return Optional.ofNullable(product).map(productItem -> {
       int installationCount = productMarketplaceDataService.updateProductInstallationCount(id);
       productItem.setInstallationCount(installationCount);
+
+      String compatibilityRange = getCompatibilityRange(id);
+      productItem.setCompatibilityRange(compatibilityRange);
+
       productItem.setBestMatchVersion(bestMatchVersion);
       return productItem;
     }).orElse(null);
@@ -748,5 +760,40 @@ public class ProductServiceImpl implements ProductService {
       log.error(e.getStackTrace());
       return false;
     }
+  }
+
+  private String getCompatibilityRange(String productId) {
+    List<String> versions =
+        versionService.getVersionsForDesigner(productId).stream().map(VersionAndUrlModel::getVersion).toList();
+    if (ObjectUtils.isEmpty(versions)) {
+      return null;
+    }
+
+    if (versions.size() == 1) {
+      return splitVersion(versions.get(0));
+    }
+
+    String currentMaxVersion = versions.get(0);
+    boolean isMoreThan1InMaxVersion = versions.stream()
+        .filter(version -> version.startsWith(
+            currentMaxVersion.substring(0, currentMaxVersion.indexOf(DOT_SEPARATOR)))).toList().size() > 1;
+
+    String maxValue = isMoreThan1InMaxVersion ? splitVersion(currentMaxVersion).concat(PLUS) : splitVersion(
+        currentMaxVersion);
+    String minValue = splitVersion(versions.get(versions.size() - 1));
+
+    return getPrefixOfVersion(minValue).equals(getPrefixOfVersion(maxValue)) ?
+        minValue.concat(PLUS) :
+        minValue.concat(DASH_SEPARATOR).concat(maxValue);
+  }
+
+  private String splitVersion(String version) {
+    int firstDot = version.indexOf(DOT_SEPARATOR);
+    int secondDot = version.indexOf(DOT_SEPARATOR, firstDot + 1);
+    return version.substring(0, secondDot);
+  }
+
+  private String getPrefixOfVersion(String version) {
+    return version.substring(0, version.indexOf(DOT_SEPARATOR));
   }
 }
