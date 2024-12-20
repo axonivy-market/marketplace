@@ -420,10 +420,10 @@ export class ProductDetailComponent {
     return productDetail;
   }
 
-  renderGithubAlert(value : string ): SafeHtml {
+  renderGithubAlert(value: string): SafeHtml {
     const md = MarkdownIt();
     md.use(MarkdownItGitHubAlerts);
-    const result = md.render(value)
+    const result = md.render(value);
     return this.sanitizer.bypassSecurityTrustHtml(result);
   }
 }
