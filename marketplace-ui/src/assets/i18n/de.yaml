@@ -3,6 +3,11 @@ common:
   language:
     english: Englisch
     german: Deutsch
+  preview:
+    title: Vorschau auf die Produktfreigabe
+    description: Vorschau der Beschreibung Ihres Produkts
+    buttonLabel: Hochladen  
+    hint: Es sind nur .zip-Dateien erlaubt und die Dateigröße sollte kleiner als 20 MB sein.
   nav:
     news: News
     doc: Dokumentation

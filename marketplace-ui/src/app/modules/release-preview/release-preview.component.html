@@ -1,0 +1,104 @@
+<div class="body">
+  <div class="header">
+    <h2 [lang]="languageService.selectedLanguage()" class="text-secondary">
+      {{ translateService.get('common.preview.title') | async }}
+    </h2>
+    <h3 [lang]="languageService.selectedLanguage()" class="text-secondary">
+      {{ translateService.get('common.preview.description') | async }}
+    </h3>
+  </div>
+  <div class="container mt-5">
+    <form (submit)="onSubmit()">
+      <div class="form-group">
+        <!-- <label for="fileInput">Choose a zip file:</label> -->
+        <input
+          type="file"
+          id="fileInput"
+          (change)="onFileSelected($event)"
+          accept=".zip"
+          class="form-control" />
+        <small
+          [lang]="languageService.selectedLanguage()"
+          class="text-secondary">
+          {{ translateService.get('common.preview.hint') | async }}
+        </small>
+      </div>
+      <button
+        type="submit"
+        class="btn btn-primary"
+        [disabled]="!selectedFile || !isZipFile"
+        [lang]="languageService.selectedLanguage()"
+        [ngClass]="themeService.isDarkMode() ? 'btn-light' : 'btn-primary'">
+        {{ 'common.preview.buttonLabel' | translate }}
+      </button>
+    </form>
+    <div class="detail-body d-flex flex-row align-items-start p-0 w-100">
+      <div
+        class="tab-group d-flex flex-column justify-content-center align-items-start p-0 col-12">
+        @if (displayedTabsSignal().length > 0) {
+          <div class="row-tab d-none d-xl-block col-12">
+            <ul ngbNav class="nav nav-tabs form-tabs">
+              @for (displayedTab of displayedTabsSignal(); track $index) {
+                <li
+                  ngbNavItem
+                  class="nav-item d-flex flex-row position-relative border-bottom-1 p-2 justify-content-center align-items-start">
+                  <a
+                    [lang]="languageService.selectedLanguage()"
+                    ngbNavLink
+                    class="nav-link tab-title border-0 bg-transparent"
+                    [class.active]="activeTab === displayedTab.value"
+                    [id]="displayedTab.tabId"
+                    (click)="setActiveTab(displayedTab.value)"
+                    role="tab"
+                    [ngClass]="{
+                      'text-secondary': themeService.isDarkMode(),
+                      'text-dark': !themeService.isDarkMode()
+                    }">
+                    {{ displayedTab.label | translate }}
+                  </a>
+                </li>
+              }
+            </ul>
+          </div>
+          <!-- For smaller screens -->
+          <div
+            class="dropdown-tab d-block d-xl-none d-flex flex-row justify-content-center align-items-center w-100">
+            <div class="dropdown-row flex-row align-items-center w-100">
+              <div
+                class="dropdown-container position-relative d-flex align-items-center w-100">
+                <div id="tab-group-dropdown" class="flex-grow-1 w-100">
+                  <app-common-dropdown
+                    [items]="displayedTabsSignal()"
+                    [selectedItem]="getSelectedTabLabel() | translate"
+                    buttonClass="form-select flex-grow-1 text-start content-tab-dropdown"
+                    (itemSelected)="
+                      onTabChange($event.value)
+                    "></app-common-dropdown>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="tab-content col-12 default-cursor">
+            @for (displayedTab of displayedTabsSignal(); track $index) {
+              <div
+                class="tab-pane fade show"
+                [class.active]="activeTab === displayedTab.value"
+                [id]="displayedTab.value"
+                role="tabpanel"
+                [attr.aria-labelledby]="displayedTab.value + '-tab'">
+                <markdown
+                  emoji
+                  [lang]="languageService.selectedLanguage()"
+                  class="readme-content"
+                  [data]="
+                    getProductModuleContentValue(displayedTab)
+                      | multilingualism: languageService.selectedLanguage()
+                  "></markdown>
+              </div>
+            }
+          </div>
+        }
+      </div>
+    </div>
+  </div>
+</div>

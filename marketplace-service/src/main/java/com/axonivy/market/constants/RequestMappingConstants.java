@@ -19,6 +19,7 @@ public class RequestMappingConstants {
   public static final String GIT_HUB_LOGIN = "/github/login";
   public static final String AUTH = "/auth";
   public static final String BY_ID = "/{id}";
+  public static final String BY_FILE_NAME = "/preview/{imageName}";
   public static final String BY_ID_AND_VERSION = "/{id}/{version}";
   public static final String BEST_MATCH_BY_ID_AND_VERSION = "/{id}/{version}/bestmatch";
   public static final String VERSIONS_BY_ID = "/{id}/versions";
@@ -33,4 +34,5 @@ public class RequestMappingConstants {
   public static final String EXTERNAL_DOCUMENT = API + "/externaldocument";
   public static final String PRODUCT_MARKETPLACE_DATA = API + "/product-marketplace-data";
   public static final String SECURITY_MONITOR = API + "/security-monitor";
+  public static final String RELEASE_PREVIEW = API + "/release-preview";
 }

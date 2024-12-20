@@ -4,6 +4,7 @@ import { ErrorPageComponent } from './shared/components/error-page/error-page.co
 import { RedirectPageComponent } from './shared/components/redirect-page/redirect-page.component';
 import { ERROR_PAGE } from './shared/constants/common.constant';
 import { SecurityMonitorComponent } from './modules/security-monitor/security-monitor.component';
+import { ReleasePreviewComponent } from './modules/release-preview/release-preview.component';
 
 export const routes: Routes = [
   {
@@ -19,6 +20,10 @@ export const routes: Routes = [
   {
     path: 'security-monitor',
     component: SecurityMonitorComponent
+  },
+  {
+    path: 'release-preview',
+    component: ReleasePreviewComponent
   },
   {
     path: '',
