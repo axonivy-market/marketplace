@@ -4,6 +4,11 @@ common:
     english: English
     french: Français
     german: Deutsch
+  preview:
+    title: Product Release Preview
+    description: Preview your product's description
+    buttonLabel: Upload
+    hint: Only .zip files are allowed and file size should smaller than 20MB.
   nav:
     news: News
     doc: Doc

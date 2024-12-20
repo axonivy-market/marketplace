@@ -14,4 +14,6 @@ public interface ImageService {
   Image mappingImageFromDownloadedFolder(String productId, Path imagePath);
 
   byte[] readImage(String id);
+
+  byte[] readPreviewImageByName(String imageName);
 }
