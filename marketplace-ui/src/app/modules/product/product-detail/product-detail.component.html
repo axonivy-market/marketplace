@@ -1,158 +1,178 @@
-<div class="container-fluid">
-  <div
-    class="product-detail-container d-flex flex-column justify-content-center p-0">
-    <div class="flexible-gap d-flex flex-column justify-content-center">
-      <div class="link-to-main align-content-center">
-        <div
-          id="back-to-homepage-button"
-          [ngClass]="
-            themeService.isDarkMode() ? 'text-light' : 'text-link-blue'
-          "
-          (click)="onClickingBackToHomepageButton()">
-          &lt;
-          <span [lang]="languageService.selectedLanguage()">
-            {{ 'common.product.detail.backToMainPage' | translate }}
-          </span>
-        </div>
-      </div>
-      <div class="version-gap d-flex flex-column flex-xl-row justify-content-between">
-        <div class="connector-title-container d-flex flex-column module-gap">
-          <div class="d-flex">
-            <div class="logo__image-container">
-              <img
-                fill
-                [lang]="languageService.selectedLanguage()"
-                class="logo__image"
-                [ngSrc]="logoUrl"
-                (error)="onLogoError()"
-                [alt]="
-                  productDetail().names
-                    | multilingualism: languageService.selectedLanguage()
-                "/>
-            </div>
-            <h1
-              [lang]="languageService.selectedLanguage()"
-              class="product-title align-items-start default-cursor">{{
-                productDetail().names
-                  | multilingualism: languageService.selectedLanguage()
-              }}
-            </h1>
-          </div>
-          <div
-            class="d-flex flex-row align-items-start module-gap default-cursor">
-            <div
-              class="analysis-container d-flex flex-column align-items-start p-0">
-              <app-product-star-rating-number
-                [isShowRateLink]="false"
-                [isShowTotalRatingNumber]="false" />
-            </div>
-            @if(productDetailActionType() !== ProductDetailActionType.CUSTOM_SOLUTION) {
-              <app-product-installation-count-action
-                id="app-product-installation-count-action"
-                [currentInstallationCount]="installationCount" />
-            }
-            <div
-              class="analysis-container d-flex flex-column align-items-start p-0">
-              <h4
-                [lang]="languageService.selectedLanguage()"
-                class="analysis-title text-secondary mb-0">
-                {{ 'common.product.detail.type' | translate }}
-              </h4>
-              <h2 class="product-analysis mb-0">
-                <i [class]="productDetail().type | productTypeIcon"></i>
-              </h2>
-              <h4 class="analysis-title text-primary text-capitalize mb-0">
-                {{ productDetail().type | productType | translate }}
-              </h4>
-            </div>
-          </div>
-        </div>
-        <!-- installation & download section -->
-        <app-product-version-action
-          [ngClass]="{'col-xl-4': productDetailActionType() === ProductDetailActionType.DESIGNER_ENV}"
-          class="mt-md-3 m-sm-0"
-          (installationCount)="receiveInstallationCountData($event)"
-          [(selectedVersion)]="selectedVersion!"
-          [(metaDataJsonUrl)]="metaProductJsonUrl!"
-          [productId]="productDetail().id"
-          [isMavenDropins]="productDetail().mavenDropins"
-          [actionType]="productDetailActionType()"
-          (selectedVersionChange)="
-            loadDetailTabs($event)
-          "></app-product-version-action>
-      </div>
+<div class="container-fluid min-vh-100">
+    <div>
+      <app-loading-spinner
+        containerClasses="d-flex justify-content-center position-fixed align-items-center top-0 end-0 bottom-0 start-0 rounded overlay-background z-1"
+        [key]="LoadingComponentId.DETAIL_PAGE" />
     </div>
-
-    <div class="detail-body d-flex flex-row align-items-start p-0 w-100">
-      <div
-        class="tab-group d-flex flex-column justify-content-center align-items-start p-0 col-12 col-xl-8">
-        @if (displayedTabsSignal().length > 0) {
-          <div class="row-tab d-none d-xl-block col-12">
-            <ul ngbNav class="nav nav-tabs form-tabs">
-              @for (displayedTab of displayedTabsSignal(); track $index) {
-                <li
-                  ngbNavItem
-                  class="nav-item d-flex flex-row position-relative border-bottom-1 p-2 justify-content-center align-items-start">
-                  <a
-                    [lang]="languageService.selectedLanguage()"
-                    ngbNavLink
-                    class="nav-link tab-title border-0 bg-transparent"
-                    [class.active]="activeTab === displayedTab.value"
-                    [id]="displayedTab.tabId"
-                    (click)="setActiveTab(displayedTab.value)"
-                    role="tab"
-                    [ngClass]="{
-                      'text-secondary': themeService.isDarkMode(),
-                      'text-dark': !themeService.isDarkMode()
-                    }">
-                    {{ displayedTab.label | translate }}
-                  </a>
-                </li>
-              }
-            </ul>
-          </div>
-          <!-- For smaller screens -->
+    <div
+      class="product-detail-container d-flex flex-column justify-content-center p-0">
+      <div class="flexible-gap d-flex flex-column justify-content-center">
+        <div class="link-to-main align-content-center">
           <div
-            class="dropdown-tab d-block d-xl-none d-flex flex-row justify-content-center align-items-center w-100">
-            <div class="dropdown-row flex-row align-items-center w-100">
-              <div
-                class="dropdown-container position-relative d-flex align-items-center w-100">
-                <div id="tab-group-dropdown" class="flex-grow-1 w-100">
-                  <app-common-dropdown
-                    [items]="displayedTabsSignal()"
-                    [selectedItem]="getSelectedTabLabel() | translate"
-                    buttonClass="form-select flex-grow-1 text-start content-tab-dropdown"
-                    (itemSelected)="onTabChange($event.value)">
-                  </app-common-dropdown>
+            id="back-to-homepage-button"
+            [ngClass]="
+              themeService.isDarkMode() ? 'text-light' : 'text-link-blue'
+            "
+            (click)="onClickingBackToHomepageButton()">
+            &lt;
+            <span [lang]="languageService.selectedLanguage()">
+              {{ 'common.product.detail.backToMainPage' | translate }}
+            </span>
+          </div>
+        </div>
+        @if (!(productDetail() | emptyProductDetailPipe)) {
+          <div
+            class="version-gap d-flex flex-column flex-xl-row justify-content-between">
+            <div
+              class="connector-title-container d-flex flex-column module-gap">
+              <div class="d-flex">
+                <div class="logo__image-container">
+                  <img
+                    fill
+                    [lang]="languageService.selectedLanguage()"
+                    class="logo__image"
+                    [ngSrc]="logoUrl"
+                    (error)="onLogoError()"
+                    [alt]="
+                      productDetail().names
+                        | multilingualism: languageService.selectedLanguage()
+                    " />
                 </div>
-
-                <button
-                  class="bg-transparent border-0"
-                  (click)="onShowInfoContent()">
-                  <i
-                    class="info-icon bi bi-info-circle"
-                    [ngClass]="{
-                      'text-primary': themeService.isDarkMode(),
-                      'text-secondary':
-                        themeService.isDarkMode() && isDropdownOpen(),
-                      'text-dark': !themeService.isDarkMode()
-                    }"></i>
-                </button>
+                <h1
+                  [lang]="languageService.selectedLanguage()"
+                  class="product-title align-items-start default-cursor">
+                  {{
+                    productDetail().names
+                      | multilingualism: languageService.selectedLanguage()
+                  }}
+                </h1>
+              </div>
+              <!-- Product review, download count & type bar -->
+              <div
+                class="d-flex flex-row align-items-start module-gap default-cursor">
                 <div
-                  class="info-dropdown w-100"
-                  [ngClass]="{
-                    show: isDropdownOpen()
-                  }">
-                  <app-product-detail-information-tab
-                    [productDetail]="productDetail()"
-                    [selectedVersion]="
-                      selectedVersion
-                    "></app-product-detail-information-tab>
+                  class="analysis-container d-flex flex-column align-items-start p-0">
+                  <app-product-star-rating-number
+                    [isShowRateLink]="false"
+                    [isShowTotalRatingNumber]="false" />
+                </div>
+                @if (
+                  productDetailActionType() !==
+                  ProductDetailActionType.CUSTOM_SOLUTION
+                ) {
+                  <app-product-installation-count-action
+                    id="app-product-installation-count-action"
+                    [currentInstallationCount]="installationCount" />
+                }
+                <div
+                  class="analysis-container d-flex flex-column align-items-start p-0">
+                  <h4
+                    [lang]="languageService.selectedLanguage()"
+                    class="analysis-title text-secondary mb-0">
+                    {{ 'common.product.detail.type' | translate }}
+                  </h4>
+                  <h2 class="product-analysis mb-0">
+                    <i [class]="productDetail().type | productTypeIcon"></i>
+                  </h2>
+                  <h4 class="analysis-title text-primary text-capitalize mb-0">
+                    {{ productDetail().type | productType | translate }}
+                  </h4>
                 </div>
               </div>
             </div>
+            <!-- installation & download section -->
+            <app-product-version-action
+              [ngClass]="{
+                'col-xl-4':
+                  productDetailActionType() ===
+                  ProductDetailActionType.DESIGNER_ENV
+              }"
+              class="mt-md-3 m-sm-0"
+              (installationCount)="receiveInstallationCountData($event)"
+              [(selectedVersion)]="selectedVersion!"
+              [(metaDataJsonUrl)]="metaProductJsonUrl!"
+              [productId]="productDetail().id"
+              [isMavenDropins]="productDetail().mavenDropins"
+              [actionType]="productDetailActionType()"
+              (selectedVersionChange)="
+                loadDetailTabs($event)
+              "></app-product-version-action>
           </div>
-          <div class="tab-content col-12 default-cursor">
+        }
+      </div>
+
+      <div class="detail-body d-flex flex-row align-items-start p-0 w-100">
+        <!-- ReadMe tab -->
+        <div
+          class="tab-group d-flex flex-column justify-content-center align-items-start p-0 col-12 col-xl-8">
+          @if (displayedTabsSignal().length > 0) {
+            <div class="row-tab d-none d-xl-block col-12">
+              <ul ngbNav class="nav nav-tabs form-tabs">
+                @for (displayedTab of displayedTabsSignal(); track $index) {
+                  <li
+                    ngbNavItem
+                    class="nav-item d-flex flex-row position-relative border-bottom-1 p-2 justify-content-center align-items-start">
+                    <a
+                      [lang]="languageService.selectedLanguage()"
+                      ngbNavLink
+                      class="nav-link tab-title border-0 bg-transparent"
+                      [class.active]="activeTab === displayedTab.value"
+                      [id]="displayedTab.tabId"
+                      (click)="setActiveTab(displayedTab.value)"
+                      role="tab"
+                      [ngClass]="{
+                        'text-secondary': themeService.isDarkMode(),
+                        'text-dark': !themeService.isDarkMode()
+                      }">
+                      {{ displayedTab.label | translate }}
+                    </a>
+                  </li>
+                }
+              </ul>
+            </div>
+            <!-- For smaller screens -->
+            <div
+              class="dropdown-tab d-block d-xl-none d-flex flex-row justify-content-center align-items-center w-100">
+              <div class="dropdown-row flex-row align-items-center w-100">
+                <div
+                  class="dropdown-container position-relative d-flex align-items-center w-100">
+                  <div id="tab-group-dropdown" class="flex-grow-1 w-100">
+                    <app-common-dropdown
+                      [items]="displayedTabsSignal()"
+                      [selectedItem]="getSelectedTabLabel() | translate"
+                      buttonClass="form-select flex-grow-1 text-start content-tab-dropdown"
+                      (itemSelected)="
+                        onTabChange($event.value)
+                      "></app-common-dropdown>
+                  </div>
+
+                  <button
+                    class="bg-transparent border-0"
+                    (click)="onShowInfoContent()">
+                    <i
+                      class="info-icon bi bi-info-circle"
+                      [ngClass]="{
+                        'text-primary': themeService.isDarkMode(),
+                        'text-secondary':
+                          themeService.isDarkMode() && isDropdownOpen(),
+                        'text-dark': !themeService.isDarkMode()
+                      }"></i>
+                  </button>
+                  <div
+                    class="info-dropdown w-100"
+                    [ngClass]="{
+                      show: isDropdownOpen()
+                    }">
+                    <app-product-detail-information-tab
+                      [productDetail]="productDetail()"
+                      [selectedVersion]="
+                        selectedVersion
+                      "></app-product-detail-information-tab>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="tab-content col-12 default-cursor">
               @for (displayedTab of displayedTabsSignal(); track $index) {
                 <div
                   class="tab-pane fade show"
@@ -163,58 +183,63 @@
                   @if (displayedTab.value === 'dependency' && productDetail().productModuleContent) {
                     <app-product-detail-maven-content
                       [productDetail]="productDetail()"
-                      [selectedVersion]="selectedVersion">
-                    </app-product-detail-maven-content>
+                      [selectedVersion]="
+                        selectedVersion
+                      "></app-product-detail-maven-content>
                   } @else {
                     <div class="readme-content" [innerHtml]="renderGithubAlert(getProductModuleContentValue(displayedTab)
                           | multilingualism: languageService.selectedLanguage())"></div>
                   }
                 </div>
               }
+            </div>
+          }
+        </div>
+
+        <!-- Side information Tab -->
+        <div
+          class="info-tab d-none d-xl-block d-flex flex-column flex-grow-1 align-items-start col-xl-3 default-cursor">
+          <app-product-detail-information-tab
+            [productDetail]="productDetail()"
+            [selectedVersion]="
+              selectedVersion
+            "></app-product-detail-information-tab>
+        </div>
+      </div>
+    </div>
+    <hr />
+    <!-- Product feedback -->
+    @if (!(productDetail() | emptyProductDetailPipe)) {
+      <div class="default-cursor" style="margin-bottom: 12.8rem">
+        @if (productDetail() && productFeedbackService.totalElements() > 0) {
+          <app-product-detail-feedback [isMobileMode]="isMobileMode()" />
+        } @else {
+          <div class="d-flex justify-content-center text-center">
+            <div>
+              <img
+                src="/assets/images/misc/message-star.svg"
+                width="72"
+                height="72"
+                alt="Message Star" />
+              <p class="rate-empty-text">
+                <span [lang]="languageService.selectedLanguage()">
+                  {{ productDetailService.noFeedbackLabel() | translate }}
+                </span>
+                <br />
+                <span [lang]="languageService.selectedLanguage()">
+                  {{ 'common.feedback.noFeedbackSecondLabel' | translate }}
+                </span>
+              </p>
+              <button
+                class="btn border-0 btn-primary rate-connector-btn"
+                (click)="onClickRateBtn()">
+                <h5 class="mb-0" [lang]="languageService.selectedLanguage()">
+                  {{ productDetailService.ratingBtnLabel() | translate }}
+                </h5>
+              </button>
+            </div>
           </div>
         }
       </div>
-
-      <div
-        class="info-tab d-none d-xl-block d-flex flex-column flex-grow-1 align-items-start col-xl-3 default-cursor">
-        <app-product-detail-information-tab
-          [productDetail]="productDetail()"
-          [selectedVersion]="
-            selectedVersion
-          "></app-product-detail-information-tab>
-      </div>
-    </div>
-  </div>
-  <hr />
-  <div class="default-cursor" style="margin-bottom: 12.8rem">
-    @if (productDetail() && productFeedbackService.totalElements() > 0) {
-      <app-product-detail-feedback [isMobileMode]="isMobileMode()" />
-    } @else {
-      <div class="d-flex justify-content-center text-center">
-        <div>
-          <img
-            src="/assets/images/misc/message-star.svg"
-            width="72"
-            height="72"
-            alt="Message Star" />
-          <p class="rate-empty-text">
-            <span [lang]="languageService.selectedLanguage()">
-              {{ productDetailService.noFeedbackLabel() | translate }}
-            </span>
-            <br />
-            <span [lang]="languageService.selectedLanguage()">
-              {{ 'common.feedback.noFeedbackSecondLabel' | translate }}
-            </span>
-          </p>
-          <button
-            class="btn border-0 btn-primary rate-connector-btn"
-            (click)="onClickRateBtn()">
-            <h5 class="mb-0" [lang]="languageService.selectedLanguage()">
-              {{ productDetailService.ratingBtnLabel() | translate }}
-            </h5>
-          </button>
-        </div>
-      </div>
     }
-  </div>
 </div>

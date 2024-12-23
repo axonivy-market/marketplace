@@ -1,3 +1,9 @@
-<div class="spinner-container" [ngClass]="isFixPosition ? 'position-fixed' : 'position-absolute'">
-  <div class="spinner-border"></div>
-</div>
+@if (isLoading()) {
+  <div [className]="containerClasses">
+    <div class="d-flex justify-content-center" data-title="dot-stretching">
+      <div class="stage">
+        <div class="dot-stretching"></div>
+      </div>
+    </div>
+  </div>
+}

@@ -20,7 +20,8 @@ import {
   MOCK_PRODUCT_DETAIL,
   MOCK_CRON_JOB_PRODUCT_DETAIL,
   MOCK_PRODUCT_MODULE_CONTENT,
-  MOCK_PRODUCTS
+  MOCK_PRODUCTS,
+  MOCK_FEEDBACK_API_RESPONSE
 } from '../../../shared/mocks/mock-data';
 import { ProductService } from '../product.service';
 import { ProductDetailComponent } from './product-detail.component';
@@ -34,6 +35,13 @@ import { MatomoTestingModule } from 'ngx-matomo-client/testing';
 import * as MarkdownIt from 'markdown-it';
 import * as MarkdownItGitHubAlerts from 'markdown-it-github-alerts';
 import { SafeHtml } from '@angular/platform-browser';
+import { AuthService } from '../../../auth/auth.service';
+import { AppModalService } from '../../../shared/services/app-modal.service';
+import { ProductFeedbackService } from './product-detail-feedback/product-feedbacks-panel/product-feedback.service';
+import { ProductStarRatingService } from './product-detail-feedback/product-star-rating-panel/product-star-rating.service';
+import { FeedbackApiResponse } from '../../../shared/models/apis/feedback-response.model';
+import { StarRatingCounting } from '../../../shared/models/star-rating-counting.model';
+import { Feedback } from '../../../shared/models/feedback.model';
 
 const products = MOCK_PRODUCTS._embedded.products;
 declare const viewport: Viewport;
@@ -45,6 +53,10 @@ describe('ProductDetailComponent', () => {
   let languageService: jasmine.SpyObj<LanguageService>;
   let titleService: Title;
   let sanitizerSpy: jasmine.SpyObj<DomSanitizer>;
+  let mockProductFeedbackService: jasmine.SpyObj<ProductFeedbackService>;
+  let mockProductStarRatingService: jasmine.SpyObj<ProductStarRatingService>;
+  let mockAuthService: jasmine.SpyObj<AuthService>;
+  let mockAppModalService: jasmine.SpyObj<AppModalService>;
 
   beforeEach(async () => {
     const spy = jasmine.createSpyObj('DomSanitizer', ['bypassSecurityTrustHtml']);
@@ -53,9 +65,27 @@ describe('ProductDetailComponent', () => {
       ['getDesignerVersionFromSessionStorage', 'isDesignerEnv']
     );
 
-    const languageServiceSpy = jasmine.createSpyObj(
-      'LanguageService',
-      ['selectedLanguage']
+    const languageServiceSpy = jasmine.createSpyObj('LanguageService', [
+      'selectedLanguage'
+    ]);
+
+    mockProductFeedbackService = jasmine.createSpyObj(
+      'ProductFeedbackService',
+      [
+        'getInitFeedbacksObservable',
+        'findProductFeedbacksByCriteria',
+        'handleFeedbackApiResponse',
+        'findProductFeedbackOfUser',
+        'totalElements'
+      ]
+    );
+    mockAuthService = jasmine.createSpyObj('AuthService', ['getToken']);
+    mockAppModalService = jasmine.createSpyObj('AppModalService', [
+      'openAddFeedbackDialog'
+    ]);
+    mockProductStarRatingService = jasmine.createSpyObj(
+      'ProductStarRatingService',
+      ['getRatingObservable', 'starRatings', 'totalComments', 'reviewNumber']
     );
 
     await TestBed.configureTestingModule({
@@ -66,15 +96,24 @@ describe('ProductDetailComponent', () => {
         MatomoTestingModule.forRoot()
       ],
       providers: [
+        ProductStarRatingService,
         provideHttpClient(withInterceptorsFromDi()),
         provideHttpClientTesting(),
         {
+          provide: ProductStarRatingService,
+          useValue: mockProductStarRatingService
+        },
+        {
+          provide: ProductFeedbackService,
+          useValue: mockProductFeedbackService
+        },
+        { provide: AuthService, useValue: mockAuthService },
+        { provide: AppModalService, useValue: mockAppModalService },
+        {
           provide: ActivatedRoute,
           useValue: {
-            snapshot: {
-              params: { id: products[0].id },
-              queryParams: { type: TypeOption.CONNECTORS }
-            },
+            snapshot: { params: { id: products[0].id } },
+            queryParams: of({ type: TypeOption.CONNECTORS }),
             fragment: of('description')
           }
         },
@@ -108,6 +147,20 @@ describe('ProductDetailComponent', () => {
     sanitizerSpy = TestBed.inject(DomSanitizer) as jasmine.SpyObj<DomSanitizer>;
 
     titleService = TestBed.inject(Title);
+    mockProductFeedbackService.getInitFeedbacksObservable.and.returnValue(
+      of([MOCK_FEEDBACK_API_RESPONSE] as any as FeedbackApiResponse)
+    );
+
+    mockProductFeedbackService.findProductFeedbackOfUser.and.returnValue(
+      of({} as any as Feedback)
+    );
+    mockAppModalService.openAddFeedbackDialog.and.returnValue(
+      Promise.resolve()
+    );
+    mockAuthService.getToken.and.returnValue('token');
+    mockProductStarRatingService.getRatingObservable.and.returnValue(
+      of([] as any as StarRatingCounting[])
+    );
   });
 
   beforeEach(() => {
@@ -123,9 +176,7 @@ describe('ProductDetailComponent', () => {
   });
 
   it('should have title like the name DE', () => {
-    languageService.selectedLanguage.and.returnValue(
-      Language.DE
-    );
+    languageService.selectedLanguage.and.returnValue(Language.DE);
     component.updateWebBrowserTitle();
     fixture.detectChanges();
 
@@ -201,8 +252,7 @@ describe('ProductDetailComponent', () => {
     fixture.detectChanges();
     const description = fixture.debugElement.query(By.css('#description'));
     expect(description).toBeFalsy();
-    }
-  )
+  });
 
   it('should return true for description when in EN language it is not null and not undefined and not empty', () => {
     const mockContent: ProductModuleContent = {
@@ -212,9 +262,7 @@ describe('ProductDetailComponent', () => {
 
     const selectedLanguage = Language.EN;
 
-    languageService.selectedLanguage.and.returnValue(
-      selectedLanguage
-    );
+    languageService.selectedLanguage.and.returnValue(selectedLanguage);
 
     component.productModuleContent.set(mockContent);
     expect(component.getContent('description')).toBeTrue();
@@ -228,9 +276,7 @@ describe('ProductDetailComponent', () => {
 
     const selectedLanguage = Language.DE;
 
-    languageService.selectedLanguage.and.returnValue(
-      selectedLanguage
-    );
+    languageService.selectedLanguage.and.returnValue(selectedLanguage);
 
     component.productModuleContent.set(mockContent);
     expect(component.getContent('description')).toBeTrue();
@@ -244,9 +290,7 @@ describe('ProductDetailComponent', () => {
 
     const selectedLanguage = Language.DE;
 
-    languageService.selectedLanguage.and.returnValue(
-      selectedLanguage
-    );
+    languageService.selectedLanguage.and.returnValue(selectedLanguage);
 
     component.productModuleContent.set(mockContent);
     expect(component.getContent('description')).toBeTrue();
@@ -255,14 +299,12 @@ describe('ProductDetailComponent', () => {
   it('should return true for description when in DE language it is undefined but in EN language it has value', () => {
     const mockContent: ProductModuleContent = {
       ...MOCK_PRODUCT_MODULE_CONTENT,
-      description: { en: 'Test description'}
+      description: { en: 'Test description' }
     };
 
     const selectedLanguage = Language.DE;
 
-    languageService.selectedLanguage.and.returnValue(
-      selectedLanguage
-    );
+    languageService.selectedLanguage.and.returnValue(selectedLanguage);
 
     component.productModuleContent.set(mockContent);
     expect(component.getContent('description')).toBeTrue();
@@ -294,9 +336,7 @@ describe('ProductDetailComponent', () => {
 
     const selectedLanguage = Language.EN;
 
-    languageService.selectedLanguage.and.returnValue(
-      selectedLanguage
-    );
+    languageService.selectedLanguage.and.returnValue(selectedLanguage);
 
     component.productModuleContent.set(mockContent);
     expect(component.getContent('description')).toBeFalse();
@@ -305,14 +345,12 @@ describe('ProductDetailComponent', () => {
   it('should return false for description when in EN language it is undefined', () => {
     const mockContent: ProductModuleContent = {
       ...MOCK_PRODUCT_MODULE_CONTENT,
-      description: { de: "Test description" }
+      description: { de: 'Test description' }
     };
 
     const selectedLanguage = Language.EN;
 
-    languageService.selectedLanguage.and.returnValue(
-      selectedLanguage
-    );
+    languageService.selectedLanguage.and.returnValue(selectedLanguage);
 
     component.productModuleContent.set(mockContent);
     expect(component.getContent('description')).toBeFalse();
@@ -326,9 +364,7 @@ describe('ProductDetailComponent', () => {
 
     const selectedLanguage = Language.EN;
 
-    languageService.selectedLanguage.and.returnValue(
-      selectedLanguage
-    );
+    languageService.selectedLanguage.and.returnValue(selectedLanguage);
 
     component.productModuleContent.set(mockContent);
     expect(component.getContent('description')).toBeFalse();
@@ -342,9 +378,7 @@ describe('ProductDetailComponent', () => {
 
     const selectedLanguage = Language.EN;
 
-    languageService.selectedLanguage.and.returnValue(
-      selectedLanguage
-    );
+    languageService.selectedLanguage.and.returnValue(selectedLanguage);
 
     component.productModuleContent.set(mockContent);
     expect(component.getContent('description')).toBeFalse();
@@ -358,9 +392,7 @@ describe('ProductDetailComponent', () => {
 
     const selectedLanguage = Language.EN;
 
-    languageService.selectedLanguage.and.returnValue(
-      selectedLanguage
-    );
+    languageService.selectedLanguage.and.returnValue(selectedLanguage);
 
     component.productModuleContent.set(mockContent);
     expect(component.getContent('setup')).toBeTrue();
@@ -374,9 +406,7 @@ describe('ProductDetailComponent', () => {
 
     const selectedLanguage = Language.DE;
 
-    languageService.selectedLanguage.and.returnValue(
-      selectedLanguage
-    );
+    languageService.selectedLanguage.and.returnValue(selectedLanguage);
 
     component.productModuleContent.set(mockContent);
     expect(component.getContent('setup')).toBeTrue();
@@ -390,9 +420,7 @@ describe('ProductDetailComponent', () => {
 
     const selectedLanguage = Language.DE;
 
-    languageService.selectedLanguage.and.returnValue(
-      selectedLanguage
-    );
+    languageService.selectedLanguage.and.returnValue(selectedLanguage);
 
     component.productModuleContent.set(mockContent);
     expect(component.getContent('setup')).toBeTrue();
@@ -401,14 +429,12 @@ describe('ProductDetailComponent', () => {
   it('should return true for setup when in DE language it is undefined but in EN language it has value', () => {
     const mockContent: ProductModuleContent = {
       ...MOCK_PRODUCT_MODULE_CONTENT,
-      setup: { en: 'Test setup'}
+      setup: { en: 'Test setup' }
     };
 
     const selectedLanguage = Language.DE;
 
-    languageService.selectedLanguage.and.returnValue(
-      selectedLanguage
-    );
+    languageService.selectedLanguage.and.returnValue(selectedLanguage);
 
     component.productModuleContent.set(mockContent);
     expect(component.getContent('setup')).toBeTrue();
@@ -424,14 +450,12 @@ describe('ProductDetailComponent', () => {
   it('should return false for setup when in EN language it is an empty string', () => {
     const mockContent: ProductModuleContent = {
       ...MOCK_PRODUCT_MODULE_CONTENT,
-      setup: { en: '', de: "Test setup" }
+      setup: { en: '', de: 'Test setup' }
     };
 
     const selectedLanguage = Language.EN;
 
-    languageService.selectedLanguage.and.returnValue(
-      selectedLanguage
-    );
+    languageService.selectedLanguage.and.returnValue(selectedLanguage);
 
     component.productModuleContent.set(mockContent);
     expect(component.getContent('setup')).toBeFalse();
@@ -440,14 +464,12 @@ describe('ProductDetailComponent', () => {
   it('should return false for setup when in EN language it is undefined', () => {
     const mockContent: ProductModuleContent = {
       ...MOCK_PRODUCT_MODULE_CONTENT,
-      setup: { de: "Test setup" }
+      setup: { de: 'Test setup' }
     };
 
     const selectedLanguage = Language.EN;
 
-    languageService.selectedLanguage.and.returnValue(
-      selectedLanguage
-    );
+    languageService.selectedLanguage.and.returnValue(selectedLanguage);
 
     component.productModuleContent.set(mockContent);
     expect(component.getContent('setup')).toBeFalse();
@@ -461,9 +483,7 @@ describe('ProductDetailComponent', () => {
 
     const selectedLanguage = Language.EN;
 
-    languageService.selectedLanguage.and.returnValue(
-      selectedLanguage
-    );
+    languageService.selectedLanguage.and.returnValue(selectedLanguage);
 
     component.productModuleContent.set(mockContent);
     expect(component.getContent('setup')).toBeFalse();
@@ -477,9 +497,7 @@ describe('ProductDetailComponent', () => {
 
     const selectedLanguage = Language.EN;
 
-    languageService.selectedLanguage.and.returnValue(
-      selectedLanguage
-    );
+    languageService.selectedLanguage.and.returnValue(selectedLanguage);
 
     component.productModuleContent.set(mockContent);
     expect(component.getContent('setup')).toBeFalse();
@@ -493,9 +511,7 @@ describe('ProductDetailComponent', () => {
 
     const selectedLanguage = Language.EN;
 
-    languageService.selectedLanguage.and.returnValue(
-      selectedLanguage
-    );
+    languageService.selectedLanguage.and.returnValue(selectedLanguage);
 
     component.productModuleContent.set(mockContent);
     expect(component.getContent('demo')).toBeTrue();
@@ -509,9 +525,7 @@ describe('ProductDetailComponent', () => {
 
     const selectedLanguage = Language.DE;
 
-    languageService.selectedLanguage.and.returnValue(
-      selectedLanguage
-    );
+    languageService.selectedLanguage.and.returnValue(selectedLanguage);
 
     component.productModuleContent.set(mockContent);
     expect(component.getContent('demo')).toBeTrue();
@@ -525,9 +539,7 @@ describe('ProductDetailComponent', () => {
 
     const selectedLanguage = Language.DE;
 
-    languageService.selectedLanguage.and.returnValue(
-      selectedLanguage
-    );
+    languageService.selectedLanguage.and.returnValue(selectedLanguage);
 
     component.productModuleContent.set(mockContent);
     expect(component.getContent('demo')).toBeTrue();
@@ -536,14 +548,12 @@ describe('ProductDetailComponent', () => {
   it('should return true for demo when in DE language it is undefined but in EN language it has value', () => {
     const mockContent: ProductModuleContent = {
       ...MOCK_PRODUCT_MODULE_CONTENT,
-      demo: { en: 'Test demo'}
+      demo: { en: 'Test demo' }
     };
 
     const selectedLanguage = Language.DE;
 
-    languageService.selectedLanguage.and.returnValue(
-      selectedLanguage
-    );
+    languageService.selectedLanguage.and.returnValue(selectedLanguage);
 
     component.productModuleContent.set(mockContent);
     expect(component.getContent('demo')).toBeTrue();
@@ -564,9 +574,7 @@ describe('ProductDetailComponent', () => {
 
     const selectedLanguage = Language.EN;
 
-    languageService.selectedLanguage.and.returnValue(
-      selectedLanguage
-    );
+    languageService.selectedLanguage.and.returnValue(selectedLanguage);
 
     component.productModuleContent.set(mockContent);
     expect(component.getContent('demo')).toBeFalse();
@@ -575,14 +583,12 @@ describe('ProductDetailComponent', () => {
   it('should return false for demo when in EN language it is undefined', () => {
     const mockContent: ProductModuleContent = {
       ...MOCK_PRODUCT_MODULE_CONTENT,
-      demo: { de: "Test demo" }
+      demo: { de: 'Test demo' }
     };
 
     const selectedLanguage = Language.EN;
 
-    languageService.selectedLanguage.and.returnValue(
-      selectedLanguage
-    );
+    languageService.selectedLanguage.and.returnValue(selectedLanguage);
 
     component.productModuleContent.set(mockContent);
     expect(component.getContent('demo')).toBeFalse();
@@ -596,9 +602,7 @@ describe('ProductDetailComponent', () => {
 
     const selectedLanguage = Language.EN;
 
-    languageService.selectedLanguage.and.returnValue(
-      selectedLanguage
-    );
+    languageService.selectedLanguage.and.returnValue(selectedLanguage);
 
     component.productModuleContent.set(mockContent);
     expect(component.getContent('demo')).toBeFalse();
@@ -612,14 +616,11 @@ describe('ProductDetailComponent', () => {
 
     const selectedLanguage = Language.EN;
 
-    languageService.selectedLanguage.and.returnValue(
-      selectedLanguage
-    );
+    languageService.selectedLanguage.and.returnValue(selectedLanguage);
 
     component.productModuleContent.set(mockContent);
     expect(component.getContent('demo')).toBeFalse();
   });
-
 
   it('should display dropdown horizontally on small viewport', () => {
     viewport.set(540);
@@ -671,9 +672,9 @@ describe('ProductDetailComponent', () => {
     expect(infoTab).toBeTruthy();
   });
 
-  it('should call checkMediaSize on ngAfterViewInit', fakeAsync(() => {
+  it('should call checkMediaSize on ngOnInit', fakeAsync(() => {
     spyOn(component, 'checkMediaSize');
-    component.ngAfterViewInit();
+    component.ngOnInit();
     tick();
     expect(component.checkMediaSize).toHaveBeenCalled();
   }));
@@ -745,7 +746,7 @@ describe('ProductDetailComponent', () => {
   it('should return DESIGNER_ENV as acction type in Designer Env', () => {
     routingQueryParamService.isDesignerEnv.and.returnValue(true);
 
-    component.updateProductDetailActionType({ sourceUrl: 'some-url'} as any);
+    component.updateProductDetailActionType({ sourceUrl: 'some-url' } as any);
     expect(component.productDetailActionType()).toBe(
       ProductDetailActionType.DESIGNER_ENV
     );
@@ -764,7 +765,6 @@ describe('ProductDetailComponent', () => {
       By.css('#app-product-installation-count-action')
     );
     expect(installationCount).toBeFalsy();
-
   });
 
   it('should return STANDARD as acction type when when productDetail.sourceUrl is defined', () => {
@@ -779,7 +779,7 @@ describe('ProductDetailComponent', () => {
 
   it('displayed tabs array should have size 0 if product module content description, setup, demo, dependcy are all empty', () => {
     const mockContent: ProductModuleContent = {
-      ...MOCK_PRODUCT_MODULE_CONTENT,
+      ...MOCK_PRODUCT_MODULE_CONTENT
     };
     component.productModuleContent.set(mockContent);
 
@@ -788,14 +788,20 @@ describe('ProductDetailComponent', () => {
 
   it('should hide tab and tab content when all tabs have no content', () => {
     const mockContent: ProductModuleContent = {
-      ...MOCK_PRODUCT_MODULE_CONTENT,
+      ...MOCK_PRODUCT_MODULE_CONTENT
     };
     component.productModuleContent.set(mockContent);
 
     const tabGroup = fixture.debugElement.query(By.css('.tab-group'));
     const tabs = tabGroup.query(By.css('.row-tab d-none d-xl-block col-12'));
-    const dropdown = tabGroup.query(By.css('.dropdown-tab d-block d-xl-none d-flex flex-row justify-content-center align-items-center w-100'));
-    const tabContent = tabGroup.query(By.css('.tab-content col-12 default-cursor'));
+    const dropdown = tabGroup.query(
+      By.css(
+        '.dropdown-tab d-block d-xl-none d-flex flex-row justify-content-center align-items-center w-100'
+      )
+    );
+    const tabContent = tabGroup.query(
+      By.css('.tab-content col-12 default-cursor')
+    );
 
     expect(tabs).toBeFalsy();
     expect(dropdown).toBeFalsy();
@@ -803,18 +809,32 @@ describe('ProductDetailComponent', () => {
   });
 
   it('should generate right text for the rate connector', () => {
-    const rateConnector = fixture.debugElement.query(By.css('.rate-connector-btn'));
-    expect(rateConnector.childNodes[0].nativeNode.textContent).toContain("common.feedback.rateFeedbackForConnectorBtnLabel");
+    const rateConnector = fixture.debugElement.query(
+      By.css('.rate-connector-btn')
+    );
+    expect(rateConnector.childNodes[0].nativeNode.textContent).toContain(
+      'common.feedback.rateFeedbackForConnectorBtnLabel'
+    );
 
-    const rateConnectorEmptyText = fixture.debugElement.query(By.css('.rate-empty-text'));
-    expect(rateConnectorEmptyText.childNodes[0].nativeNode.textContent).toContain("common.feedback.noFeedbackForConnectorLabel");
+    const rateConnectorEmptyText = fixture.debugElement.query(
+      By.css('.rate-empty-text')
+    );
+    expect(
+      rateConnectorEmptyText.childNodes[0].nativeNode.textContent
+    ).toContain('common.feedback.noFeedbackForConnectorLabel');
 
     component.route.snapshot.params['id'] = 'cronjob';
-    spyOn(component, 'getProductById').and.returnValue(of(MOCK_CRON_JOB_PRODUCT_DETAIL));
+    spyOn(component, 'getProductById').and.returnValue(
+      of(MOCK_CRON_JOB_PRODUCT_DETAIL)
+    );
     component.ngOnInit();
     fixture.detectChanges();
-    expect(rateConnector.childNodes[0].nativeNode.textContent).toContain("common.feedback.rateFeedbackForUtilityBtnLabel");
-    expect(rateConnectorEmptyText.childNodes[0].nativeNode.textContent).toContain("common.feedback.noFeedbackForUtilityLabel");
+    expect(rateConnector.childNodes[0].nativeNode.textContent).toContain(
+      'common.feedback.rateFeedbackForUtilityBtnLabel'
+    );
+    expect(
+      rateConnectorEmptyText.childNodes[0].nativeNode.textContent
+    ).toContain('common.feedback.noFeedbackForUtilityLabel');
   });
 
   it('maven tab should not display when product module content is missing', () => {
@@ -824,6 +844,7 @@ describe('ProductDetailComponent', () => {
     let mavenTab = fixture.debugElement.query(
       By.css('app-product-detail-maven-content')
     );
+
     expect(mavenTab).toBeTruthy();
     component.productModuleContent.set({} as any as ProductModuleContent);
     fixture.detectChanges();
