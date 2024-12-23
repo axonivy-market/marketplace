@@ -1,6 +1,5 @@
 import { FooterComponent } from './shared/components/footer/footer.component';
 import { HeaderComponent } from './shared/components/header/header.component';
-import { LoadingService } from './core/services/loading/loading.service';
 import { RoutingQueryParamService } from './shared/services/routing.query.param.service';
 import { CommonModule } from '@angular/common';
 import { ERROR_PAGE_PATH } from './shared/constants/common.constant';
@@ -12,18 +11,16 @@ import {
   RouterOutlet,
   Event
 } from '@angular/router';
-import { LoadingSpinnerComponent } from "./shared/components/loading-spinner/loading-spinner.component";
 import { BackToTopComponent } from "./shared/components/back-to-top/back-to-top.component";
 
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [RouterOutlet, HeaderComponent, FooterComponent, CommonModule, LoadingSpinnerComponent, BackToTopComponent],
+  imports: [RouterOutlet, HeaderComponent, FooterComponent, CommonModule, BackToTopComponent],
   templateUrl: './app.component.html',
   styleUrl: './app.component.scss'
 })
 export class AppComponent {
-  loadingService = inject(LoadingService);
   routingQueryParamService = inject(RoutingQueryParamService);
   route = inject(ActivatedRoute);
   isMobileMenuCollapsed = true;
@@ -40,8 +37,8 @@ export class AppComponent {
     this.routingQueryParamService.getNavigationStartEvent().subscribe(() => {
       if (!this.routingQueryParamService.isDesignerEnv()) {
         this.route.queryParams.subscribe(params => {
-          this.routingQueryParamService.checkCookieForDesignerEnv(params);
-          this.routingQueryParamService.checkCookieForDesignerVersion(params);
+          this.routingQueryParamService.checkSessionStorageForDesignerEnv(params);
+          this.routingQueryParamService.checkSessionStorageForDesignerVersion(params);
         });
       }
     });

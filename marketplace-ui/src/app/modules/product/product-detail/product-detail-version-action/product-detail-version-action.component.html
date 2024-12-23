@@ -47,7 +47,6 @@
 
       @if (isDropDownDisplayed()) {
         <div #artifactDownloadDialog id="download-dropdown-menu" class="show maven-artifact-version__action border__dropdown">
-          <div class="up-arrow border__dropdown position-absolute"></div>
           <form>
             <div class="form-group">
               <label for="artifacts-selector" [lang]="languageService.selectedLanguage()"
@@ -103,9 +102,9 @@
               </button>
             </div>
           </form>
-          @if (isArtifactLoading()) {
-            <app-loading-spinner [isFixPosition]="false" />
-          }
+          <app-loading-spinner
+            [key]="LoadingComponentId.PRODUCT_VERSION"
+            [containerClasses]="loadingContainerClasses"/>
         </div>
       }
     </div>
@@ -127,14 +126,18 @@
               [matomoClickName]="installButton.name + ' - ' + getTrackingEnvironmentBasedOnActionType()"
               [lang]="languageService.selectedLanguage()"
               class="btn btn__install flex-grow-1 install-designer-button m-0 col-4" id="install-button"
-              (click)="onUpdateInstallationCountForDesigner()" onClick="function installInDesigner() {
+              (click)="onUpdateInstallationCountForDesigner()" onClick="function installInDesigner(event) {
                   const selectedItemElement = document.querySelector('.install-designer-dropdown');
                   if (selectedItemElement) {
                   const metaDataJsonUrl = selectedItemElement.getAttribute('metaDataJsonUrl');
-                  install(metaDataJsonUrl);
+                    try {
+                      install(metaDataJsonUrl);
+                    } catch (error) {
+                      event.stopImmediatePropagation();
+                    }
                   }
                 }
-                installInDesigner();" [ngClass]="themeService.isDarkMode() ? 'btn-light' : 'btn-primary'">
+                installInDesigner(event);" [ngClass]="themeService.isDarkMode() ? 'btn-light' : 'btn-primary'">
         {{ 'common.product.detail.install.buttonLabelInDesigner' | translate }}
       </button>
     </div>
@@ -153,5 +156,7 @@
             [ngClass]="themeService.isDarkMode() ? 'btn-light' : 'btn-primary'">
       {{ 'common.product.detail.contactUs.label' | translate }}
     </button>
+  }
+  @default {
   }
 }

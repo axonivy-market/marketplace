@@ -69,9 +69,11 @@ describe('ProductStarRatingNumberComponent', () => {
     const reviewNumber = fixture.debugElement.query(By.css('.total-rating-number')).nativeElement;
     const totalComments = fixture.debugElement.query(By.css('h4.d-inline-block')).nativeElement;
     const starRatingComponent = fixture.debugElement.query(By.directive(StarRatingComponent));
+    const reviewLabel = fixture.debugElement.query(By.css('.text-secondary.review-label-detail-page')).nativeElement;
 
     expect(reviewNumber.textContent).toContain('4.5');
     expect(totalComments.textContent).toContain('(10)');
+    expect(reviewLabel.textContent).toContain('common.feedback.reviewLabel');
     expect(starRatingComponent).toBeTruthy();
   });
 });

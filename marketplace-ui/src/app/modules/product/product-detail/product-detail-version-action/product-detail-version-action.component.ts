@@ -35,6 +35,8 @@ import { ROUTER } from '../../../../shared/constants/router.constant';
 import { MatomoCategory, MatomoAction } from '../../../../shared/enums/matomo-tracking.enum';
 import { MATOMO_TRACKING_ENVIRONMENT } from '../../../../shared/constants/matomo.constant';
 import { MATOMO_DIRECTIVES } from 'ngx-matomo-client';
+import { LoadingComponentId } from '../../../../shared/enums/loading-component-id';
+import { LoadingService } from '../../../../core/services/loading/loading.service';
 
 const showDevVersionCookieName = 'showDevVersions';
 
@@ -62,7 +64,7 @@ export class ProductDetailVersionActionComponent implements AfterViewInit {
   protected ProductDetailActionType = ProductDetailActionType;
   protected MatomoCategory = MatomoCategory;
   protected MatomoAction = MatomoAction;
-  trackedEnvironmentForMatomo = ''
+  trackedEnvironmentForMatomo = '';
 
   selectedVersion = model<string>('');
   versions: WritableSignal<string[]> = signal([]);
@@ -77,12 +79,16 @@ export class ProductDetailVersionActionComponent implements AfterViewInit {
 
   artifacts: WritableSignal<ItemDropdown[]> = signal([]);
   isDropDownDisplayed = signal(false);
-  isArtifactLoading = signal(false);
+
+  protected LoadingComponentId = LoadingComponentId;
+  loadingContainerClasses =
+    'd-flex justify-content-center position-absolute align-items-center w-100 h-100 fixed-top rounded overlay-background';
   designerVersion = '';
   selectedArtifact: string | undefined = '';
   selectedArtifactName: string | undefined = '';
   versionMap: Map<string, ItemDropdown[]> = new Map();
 
+  loadingService = inject(LoadingService);
   themeService = inject(ThemeService);
   productService = inject(ProductService);
   elementRef = inject(ElementRef);
@@ -93,7 +99,9 @@ export class ProductDetailVersionActionComponent implements AfterViewInit {
   router = inject(Router);
   route = inject(ActivatedRoute);
 
-  isDevVersionsDisplayed: WritableSignal<boolean> = signal(this.getShowDevVersionFromCookie());
+  isDevVersionsDisplayed: WritableSignal<boolean> = signal(
+    this.getShowDevVersionFromCookie()
+  );
 
   ngAfterViewInit() {
     const tooltipTriggerList = [].slice.call(
@@ -113,7 +121,11 @@ export class ProductDetailVersionActionComponent implements AfterViewInit {
   }
 
   private getShowDevVersionFromCookie() {
-    return CommonUtils.getCookieValue(this.cookieService, SHOW_DEV_VERSION, false);
+    return CommonUtils.getCookieValue(
+      this.cookieService,
+      SHOW_DEV_VERSION,
+      false
+    );
   }
 
   private updateSelectedArtifact(version: string) {
@@ -130,11 +142,13 @@ export class ProductDetailVersionActionComponent implements AfterViewInit {
   }
 
   addVersionParamToRoute(selectedVersion: string) {
-    this.router.navigate([], {
-      relativeTo: this.route,
-      queryParams: { [ROUTER.VERSION]: selectedVersion },
-      queryParamsHandling: 'merge'
-    }).then();
+    this.router
+      .navigate([], {
+        relativeTo: this.route,
+        queryParams: { [ROUTER.VERSION]: selectedVersion },
+        queryParamsHandling: 'merge'
+      })
+      .then();
   }
 
   onSelectVersionInDesigner(version: string) {
@@ -149,7 +163,10 @@ export class ProductDetailVersionActionComponent implements AfterViewInit {
   onShowDevVersion(event: Event) {
     event.preventDefault();
     this.isDevVersionsDisplayed.update(oldValue => !oldValue);
-    this.cookieService.set(showDevVersionCookieName, this.isDevVersionsDisplayed().toString());
+    this.cookieService.set(
+      showDevVersionCookieName,
+      this.isDevVersionsDisplayed().toString()
+    );
     this.getVersionWithArtifact(true);
   }
 
@@ -161,7 +178,7 @@ export class ProductDetailVersionActionComponent implements AfterViewInit {
   }
 
   getVersionWithArtifact(ignoreRouteVersion = false) {
-    this.isArtifactLoading.set(true);
+    this.loadingService.showLoading(LoadingComponentId.PRODUCT_VERSION);
     this.sanitizeDataBeforeFetching();
     this.productService
       .sendRequestToProductDetailVersionAPI(
@@ -182,9 +199,11 @@ export class ProductDetailVersionActionComponent implements AfterViewInit {
           }
         });
         if (this.versions().length !== 0) {
-          this.onSelectVersion(this.getVersionFromRoute(ignoreRouteVersion) ?? this.versions()[0]);
+          this.onSelectVersion(
+            this.getVersionFromRoute(ignoreRouteVersion) ?? this.versions()[0]
+          );
         }
-        this.isArtifactLoading.set(false);
+        this.loadingService.hideLoading(LoadingComponentId.PRODUCT_VERSION);
       });
   }
 
@@ -219,43 +238,35 @@ export class ProductDetailVersionActionComponent implements AfterViewInit {
     }
   }
 
-  sanitizeDataBeforeFetching() {
+  sanitizeDataBeforeFetching(): void {
     this.versions.set([]);
     this.artifacts.set([]);
     this.selectedArtifact = '';
   }
 
-  downloadArtifact() {
+  downloadArtifact(): void {
     this.onUpdateInstallationCount();
-    const newTab = window.open(this.selectedArtifact, '_blank');
-    if (newTab) {
-      newTab.blur();
-    }
-    window.focus();
+    window.open(this.selectedArtifact, '_blank');
   }
 
-  onUpdateInstallationCount() {
+  onUpdateInstallationCount(): void {
     this.productService
       .sendRequestToUpdateInstallationCount(
         this.productId,
-        this.routingQueryParamService.getDesignerVersionFromCookie()
+        this.routingQueryParamService.getDesignerVersionFromSessionStorage()
       )
       .subscribe((data: number) => this.installationCount.emit(data));
   }
 
-  onUpdateInstallationCountForDesigner() {
+  onUpdateInstallationCountForDesigner(): void {
     this.onUpdateInstallationCount();
   }
 
-  onNavigateToContactPage() {
-    const newTab = window.open(
+  onNavigateToContactPage(): void {
+    window.open(
       `https://www.axonivy.com/marketplace/contact/?market_solutions=${this.productId}`,
       '_blank'
     );
-    if (newTab) {
-      newTab.blur();
-    }
-    window.focus();
   }
 
   getTrackingEnvironmentBasedOnActionType() {
@@ -267,7 +278,7 @@ export class ProductDetailVersionActionComponent implements AfterViewInit {
       case ProductDetailActionType.CUSTOM_SOLUTION:
         return MATOMO_TRACKING_ENVIRONMENT.customSolution;
       default:
-        return '';  
+        return '';
     }
   }
 }

@@ -66,29 +66,6 @@ public class GitHubUtils {
         .collect(Collectors.joining(CommonConstants.SPACE_SEPARATOR));
   }
 
-  public static String extractMessageFromExceptionMessage(String exceptionMessage) {
-    String json = extractJson(exceptionMessage);
-    String key = "\"message\":\"";
-    int startIndex = json.indexOf(key);
-    if (startIndex != -1) {
-      startIndex += key.length();
-      int endIndex = json.indexOf("\"", startIndex);
-      if (endIndex != -1) {
-        return json.substring(startIndex, endIndex);
-      }
-    }
-    return StringUtils.EMPTY;
-  }
-
-  public static String extractJson(String text) {
-    int start = text.indexOf("{");
-    int end = text.lastIndexOf("}") + 1;
-    if (start != -1 && end != -1) {
-      return text.substring(start, end);
-    }
-    return StringUtils.EMPTY;
-  }
-
   public static int sortMetaJsonFirst(String fileName1, String fileName2) {
     if (fileName1.endsWith(META_FILE))
       return -1;

@@ -9,17 +9,20 @@ This connector:
 - allow you to start the Axon Ivy process by hitting the slash command key from the mattermost's channel.
 - allow you to send a message to the mattermost's channel from the Axon Ivy workplace.
 - notifies users on the channel for new Axon Ivy workflow Tasks.
+  ![Restful Person Manager](screen2.png "Restful Person Manager")
 
 ## Demo
 
+### Demo sample
 1. Hit the slash command key on the channel's chat.
    The Axon Ivy process will be triggered and create a new task.
    The task's information will be sent to the channel by a message.
 
 ![call-slash-command](images/slash-command.png)
 
-### Setup
+## Setup
 
+### Setup guideline
 Mattermost Instance
 
 1. Ref to [Deploy Mattermost](https://docs.mattermost.com/guides/deployment.html).

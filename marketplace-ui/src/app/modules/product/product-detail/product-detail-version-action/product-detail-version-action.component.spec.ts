@@ -10,7 +10,6 @@ import { CookieService } from 'ngx-cookie-service';
 import { ActivatedRoute, provideRouter, Router } from '@angular/router';
 import { CommonUtils } from '../../../../shared/utils/common.utils';
 import { ROUTER } from '../../../../shared/constants/router.constant';
-import { MatomoConfiguration, MatomoModule, MatomoRouterModule } from 'ngx-matomo-client';
 import { MatomoTestingModule } from 'ngx-matomo-client/testing';
 import { ProductDetailActionType } from '../../../../shared/enums/product-detail-action-type';
 import { MATOMO_TRACKING_ENVIRONMENT } from '../../../../shared/constants/matomo.constant';
@@ -31,10 +30,11 @@ describe('ProductDetailVersionActionComponent', () => {
 
   beforeEach(() => {
     productServiceMock = jasmine.createSpyObj('ProductService', [
-      'sendRequestToProductDetailVersionAPI', 'sendRequestToUpdateInstallationCount', 'sendRequestToGetProductVersionsForDesigner'
+      'sendRequestToProductDetailVersionAPI',
+      'sendRequestToUpdateInstallationCount',
+      'sendRequestToGetProductVersionsForDesigner'
     ]);
-    const commonUtilsSpy = jasmine.createSpyObj('CommonUtils', ['getCookieValue']);
-    // const cookieServiceSpy = jasmine.createSpyObj('CookieService', ['get', 'set']);
+    const commonUtilsSpy = jasmine.createSpyObj('CommonUtils', [ 'getCookieValue' ]);
     const activatedRouteSpy = jasmine.createSpyObj('ActivatedRoute', [], {
       snapshot: {
         queryParams: {}
@@ -43,7 +43,7 @@ describe('ProductDetailVersionActionComponent', () => {
 
     TestBed.configureTestingModule({
       imports: [
-        ProductDetailVersionActionComponent, 
+        ProductDetailVersionActionComponent,
         TranslateModule.forRoot(),
         MatomoTestingModule.forRoot()
       ],
@@ -67,9 +67,7 @@ describe('ProductDetailVersionActionComponent', () => {
     fixture.detectChanges();
   });
 
-  it('should create', () => {
-    expect(component).toBeTruthy();
-  });
+  it('should create', () => { expect(component).toBeTruthy(); });
 
   it('first artifact should be chosen when select corresponding version', () => {
     const selectedVersion = 'Version 10.0.2';
@@ -91,11 +89,13 @@ describe('ProductDetailVersionActionComponent', () => {
 
   it('should update selectedVersion, artifacts, selectedArtifactName, and selectedArtifact, and call addVersionParamToRoute', () => {
     const version = '1.0';
-    const artifacts = [{
-      name: 'Example Artifact',
-      downloadUrl: 'https://example.com/download',
-      isProductArtifact: true
-    } as ItemDropdown];
+    const artifacts = [
+      {
+        name: 'Example Artifact',
+        downloadUrl: 'https://example.com/download',
+        isProductArtifact: true
+      } as ItemDropdown
+    ];
     const versionMap = new Map<string, any[]>();
     versionMap.set(version, artifacts);
 
@@ -172,7 +172,6 @@ describe('ProductDetailVersionActionComponent', () => {
     });
   });
 
-
   it('all of state should be reset before call rest api', () => {
     const selectedVersion = 'Version 10.0.2';
     const artifact = {
@@ -218,9 +217,7 @@ describe('ProductDetailVersionActionComponent', () => {
     spyOn(window, 'open');
     component.selectedArtifact = 'https://example.com/download';
     spyOn(component, 'onUpdateInstallationCount');
-
     component.downloadArtifact();
-
     expect(window.open).toHaveBeenCalledWith(
       'https://example.com/download',
       '_blank'
@@ -237,6 +234,7 @@ describe('ProductDetailVersionActionComponent', () => {
   });
 
   it('should send Api to get DevVersion', () => {
+    component.isDevVersionsDisplayed.set(false);
     spyOn(component.isDevVersionsDisplayed, 'set');
     expect(component.isDevVersionsDisplayed()).toBeFalse();
     mockApiWithExpectedResponse();
@@ -251,7 +249,8 @@ describe('ProductDetailVersionActionComponent', () => {
     const mockArtifact1 = {
       name: 'Example Artifact1',
       downloadUrl: 'https://example.com/download',
-      isProductArtifact: true, label: 'Example Artifact1'
+      isProductArtifact: true,
+      label: 'Example Artifact1'
     } as ItemDropdown;
     const mockArtifact2 = {
       name: 'Example Artifact2',
@@ -277,63 +276,22 @@ describe('ProductDetailVersionActionComponent', () => {
   }
 
   it('should open a new tab with the selected artifact URL', () => {
-    const mockWindowOpen = jasmine.createSpy('windowOpen').and.returnValue({
-      blur: jasmine.createSpy('blur')
-    });
-    const mockWindowFocus = spyOn(window, 'focus');
+    const mockWindowOpen = jasmine.createSpy('windowOpen').and.returnValue({});
     spyOn(window, 'open').and.callFake(mockWindowOpen);
     spyOn(component, 'onUpdateInstallationCount');
     component.selectedArtifact = 'http://example.com/artifact';
-
     component.downloadArtifact();
-
     expect(window.open).toHaveBeenCalledWith(
       'http://example.com/artifact',
       '_blank'
     );
-    expect(mockWindowOpen().blur).toHaveBeenCalled();
     expect(component.onUpdateInstallationCount).toHaveBeenCalledOnceWith();
-    expect(mockWindowFocus).toHaveBeenCalled();
-  });
-
-  it('should open a new tab with the correct URL and blur it', () => {
-    const productId = 'octopus';
-    component.productId = productId;
-    const newTabMock: Partial<Window> = {
-      blur: jasmine.createSpy('blur')
-    };
-    spyOn(window, 'open').and.returnValue(newTabMock as Window);
-    spyOn(window, 'focus');
-    component.onNavigateToContactPage();
-
-    expect(window.open).toHaveBeenCalledWith(
-      `https://www.axonivy.com/marketplace/contact/?market_solutions=${productId}`,
-      '_blank'
-    );
-    expect(newTabMock.blur).toHaveBeenCalled();
-    expect(window.focus).toHaveBeenCalled();
-  });
-
-  it('should not call blur if newTab is null', () => {
-    const productId = 'octopus';
-    component.productId = productId;
-    spyOn(window, 'open').and.returnValue(null);
-    spyOn(window, 'focus');
-
-    component.onNavigateToContactPage();
-
-    expect(window.open).toHaveBeenCalledWith(
-      `https://www.axonivy.com/marketplace/contact/?market_solutions=${productId}`,
-      '_blank'
-    );
-    expect(window.focus).toHaveBeenCalled();
   });
 
   it('should not call productService if versions are already populated', () => {
     component.versions.set(['1.0', '1.1']);
     fixture.detectChanges();
     component.getVersionInDesigner();
-
     expect(productServiceMock.sendRequestToGetProductVersionsForDesigner).not.toHaveBeenCalled();
   });
 
@@ -367,20 +325,18 @@ describe('ProductDetailVersionActionComponent', () => {
     const testCases = [
       { actionType: ProductDetailActionType.STANDARD, expected: MATOMO_TRACKING_ENVIRONMENT.standard },
       { actionType: ProductDetailActionType.DESIGNER_ENV, expected: MATOMO_TRACKING_ENVIRONMENT.designerEnv },
-      { actionType: ProductDetailActionType.CUSTOM_SOLUTION, expected: MATOMO_TRACKING_ENVIRONMENT.customSolution },
+      { actionType: ProductDetailActionType.CUSTOM_SOLUTION, expected: MATOMO_TRACKING_ENVIRONMENT.customSolution }
     ];
-  
+
     testCases.forEach(({ actionType, expected }) => {
       component.actionType = actionType;
-
       const result = component.getTrackingEnvironmentBasedOnActionType();
       expect(result).toBe(expected);
     });
   });
 
-  it('should return empty environment when action type is default', () => {  
+  it('should return empty environment when action type is default', () => {
     const result = component.getTrackingEnvironmentBasedOnActionType();
-    
     expect(result).toBe('');
   });
 });

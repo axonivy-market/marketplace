@@ -26,7 +26,7 @@ common:
   error:
     code: 'ERROR CODE'
     oops: 'Oops!'
-    fullMessage: "{{ errorMessage }} Du tust uns einen großen Gefallen, wenn Du es hier meldest: <a href='mailto:{email}'>support@axonivy.com</a>"
+    fullMessage: "{{ errorMessage }} Du tust uns einen großen Gefallen, wenn Du es hier meldest: <a href='mailto:support@axonivy.com'>support@axonivy.com</a>"
     description:
       400: 'Bad Request: Der Server konnte die Anfrage aufgrund fehlerhafter Syntax nicht verstehen.'
       401: 'Unauthorized: Eine Authentifizierung ist erforderlich und ist fehlgeschlagen oder wurde nicht bereitgestellt.'
@@ -112,7 +112,7 @@ common:
     commentLabel: Einen Kommentar abgeben
     submitBtnLabel: Bewertung abgeben
     loggedGithubAsLabel: Eingeloggt bei Github als
-    reviewLabel: Überprüfung
+    reviewLabel: Bewertung
     detailedReviews: Ausführliche Bewertungen
     showMoreBtnLabel: Mehr anzeigen
     noFeedbackForConnectorLabel: Zu diesem Konnektor gibt's noch kein Feedback.

@@ -24,6 +24,7 @@ services:
     volumes:
       - /home/axonivy/marketplace/data/market-installations.json:/app/data/market-installation.json
       - marketcache:/app/data/market-cache
+      - ../logs:/app/logs
     environment:
       - MONGODB_HOST=${SERVICE_MONGODB_HOST}
       - MONGODB_DATABASE=${SERVICE_MONGODB_DATABASE}
@@ -36,6 +37,7 @@ services:
       - MARKET_JWT_SECRET_KEY=${MARKET_JWT_SECRET_KEY}
       - MARKET_CORS_ALLOWED_ORIGIN=${MARKET_CORS_ALLOWED_ORIGIN}
       - MARKET_MONGO_LOG_LEVEL=${MARKET_MONGO_LOG_LEVEL}
+      - MARKET_LOG_PATH=${MARKET_LOG_PATH}
     build:
       context: ../../marketplace-service
       dockerfile: Dockerfile

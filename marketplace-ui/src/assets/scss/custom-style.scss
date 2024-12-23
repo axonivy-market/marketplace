@@ -56,6 +56,10 @@ p {
   font-size: 14px;
 }
 
+.overlay-background{
+  background: rgba(0, 0, 0, 0.32);
+}
+
 [data-bs-theme='light'] {
   --ivy-primary-bg: #{$ivyPrimaryColorLight};
   --ivy-secondary-bg: #{$ivySecondaryColorLight};
@@ -69,6 +73,7 @@ p {
   --header-border-color: #ebebeb;
   --footer-border-color: #e7e7e7;
   --ivy-secondary-border-color: #e7e7e7;
+  --ivy-secondary-border-color-up-arrow: #0000001a;
   --ivy-custom-select-indicator: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%23343a40' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M2 11 8 5 14 11'/%3e%3c/svg%3e") !important;
   --active-tab-indicator-color: #{$ivyPrimaryTextColorLight};
   --info-dropdown-bg: #ffffff;
@@ -177,6 +182,7 @@ p {
   --header-border-color: #{$ivySecondaryTextLight};
   --footer-border-color: #4f4e4e;
   --ivy-secondary-border-color: #4f4e4e;
+  --ivy-secondary-border-color-up-arrow: #4f4e4e;
   --ivy-custom-select-indicator: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%23dee2e6' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M2 11 8 5 14 11'/%3e%3c/svg%3e") !important;
   --active-tab-indicator-color: #{$white};
   --info-dropdown-bg: #{$ivyBodyBackgroundDark};

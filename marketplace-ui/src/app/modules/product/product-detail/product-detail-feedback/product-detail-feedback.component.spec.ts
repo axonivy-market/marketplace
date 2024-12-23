@@ -39,13 +39,13 @@ describe('ProductDetailFeedbackComponent', () => {
     mockProductFeedbackService = jasmine.createSpyObj(
       'ProductFeedbackService',
       [
-        'initFeedbacks',
+        'fetchFeedbacks',
         'findProductFeedbackOfUser',
         'loadMoreFeedbacks',
         'areAllFeedbacksLoaded',
         'totalElements'
       ],
-      {feedbacks: signal([] as Feedback[]), sort: signal('updatedAt,desc')}
+      { feedbacks: signal([] as Feedback[]), sort: signal('updatedAt,desc') }
     );
     mockProductStarRatingService = jasmine.createSpyObj(
       'ProductStarRatingService',

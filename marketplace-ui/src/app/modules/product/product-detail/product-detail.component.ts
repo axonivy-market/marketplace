@@ -13,7 +13,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { NgbNavModule } from '@ng-bootstrap/ng-bootstrap';
 import { TranslateModule } from '@ngx-translate/core';
 import { MarkdownModule, MarkdownService } from 'ngx-markdown';
-import { map, Observable } from 'rxjs';
+import { forkJoin, map, Observable } from 'rxjs';
 import { AuthService } from '../../../auth/auth.service';
 import { LanguageService } from '../../../core/services/language/language.service';
 import { ThemeService } from '../../../core/services/theme/theme.service';
@@ -22,14 +22,15 @@ import {
   DEFAULT_IMAGE_URL,
   DEFAULT_VENDOR_IMAGE,
   DEFAULT_VENDOR_IMAGE_BLACK,
-  PRODUCT_DETAIL_TABS, RATING_LABELS_BY_TYPE, SHOW_DEV_VERSION,
+  PRODUCT_DETAIL_TABS,
+  RATING_LABELS_BY_TYPE,
+  SHOW_DEV_VERSION,
   VERSION
 } from '../../../shared/constants/common.constant';
 import { ItemDropdown } from '../../../shared/models/item-dropdown.model';
 import { ProductDetail } from '../../../shared/models/product-detail.model';
 import { ProductModuleContent } from '../../../shared/models/product-module-content.model';
 import { ProductTypeIconPipe } from '../../../shared/pipes/icon.pipe';
-import { MissingReadmeContentPipe } from '../../../shared/pipes/missing-readme-content.pipe';
 import { MultilingualismPipe } from '../../../shared/pipes/multilingualism.pipe';
 import { ProductTypePipe } from '../../../shared/pipes/product-type.pipe';
 import { AppModalService } from '../../../shared/services/app-modal.service';
@@ -51,6 +52,10 @@ import { CookieService } from 'ngx-cookie-service';
 import { ROUTER } from '../../../shared/constants/router.constant';
 import { Title } from '@angular/platform-browser';
 import { API_URI } from '../../../shared/constants/api.constant';
+import { EmptyProductDetailPipe } from '../../../shared/pipes/empty-product-detail.pipe';
+import { LoadingSpinnerComponent } from '../../../shared/components/loading-spinner/loading-spinner.component';
+import { LoadingComponentId } from '../../../shared/enums/loading-component-id';
+import { LoadingService } from '../../../core/services/loading/loading.service';
 
 export interface DetailTab {
   activeClass: string;
@@ -78,9 +83,10 @@ const DEFAULT_ACTIVE_TAB = 'description';
     ProductDetailFeedbackComponent,
     ProductInstallationCountActionComponent,
     ProductTypeIconPipe,
-    MissingReadmeContentPipe,
     CommonDropdownComponent,
-    NgOptimizedImage
+    NgOptimizedImage,
+    EmptyProductDetailPipe,
+    LoadingSpinnerComponent
   ],
   providers: [ProductService, MarkdownService],
   templateUrl: './product-detail.component.html',
@@ -100,14 +106,16 @@ export class ProductDetailComponent {
   elementRef = inject(ElementRef);
   cookieService = inject(CookieService);
   routingQueryParamService = inject(RoutingQueryParamService);
+  loadingService = inject(LoadingService);
+
+  protected LoadingComponentId = LoadingComponentId;
+  protected ProductDetailActionType = ProductDetailActionType;
 
   resizeObserver: ResizeObserver;
-
   productDetail: WritableSignal<ProductDetail> = signal({} as ProductDetail);
   productModuleContent: WritableSignal<ProductModuleContent> = signal(
     {} as ProductModuleContent
   );
-  protected ProductDetailActionType = ProductDetailActionType;
   productDetailActionType = signal(ProductDetailActionType.STANDARD);
   detailTabs = PRODUCT_DETAIL_TABS;
   activeTab = '';
@@ -123,6 +131,7 @@ export class ProductDetailComponent {
   isMobileMode = signal<boolean>(false);
   installationCount = 0;
   logoUrl = DEFAULT_IMAGE_URL;
+
   @HostListener('window:popstate', ['$event'])
   onPopState() {
     this.activeTab = window.location.hash.split('#tab-')[1];
@@ -145,51 +154,86 @@ export class ProductDetailComponent {
       queryParamsHandling: 'merge',
       replaceUrl: true
     });
-
     const productId = this.route.snapshot.params[ROUTER.ID];
     this.productDetailService.productId.set(productId);
     if (productId) {
-      const isShowDevVersion = CommonUtils.getCookieValue(this.cookieService, SHOW_DEV_VERSION, false);
-      this.getProductById(productId, isShowDevVersion).subscribe(productDetail => {
-        this.productDetail.set(productDetail);
-        this.productModuleContent.set(productDetail.productModuleContent);
-        this.metaProductJsonUrl = productDetail.metaProductJsonUrl;
-        this.productDetailService.productNames.set(productDetail.names);
-        this.productDetailService.productLogoUrl.set(productDetail.logoUrl);
-        this.installationCount = productDetail.installationCount;
-        this.handleProductContentVersion();
-        this.updateProductDetailActionType(productDetail);
-        this.logoUrl = productDetail.logoUrl;
-        this.updateWebBrowserTitle();
-        const ratingLabels = RATING_LABELS_BY_TYPE.find(button => button.type === productDetail.type);
-        if (ratingLabels !== undefined) {
-          this.productDetailService.ratingBtnLabel.set(ratingLabels.btnLabel);
-          this.productDetailService.noFeedbackLabel.set(ratingLabels.noFeedbackLabel);
-        }
+      this.loadingService.showLoading(LoadingComponentId.DETAIL_PAGE);
+      forkJoin({
+        productDetail: this.getProductDetailObservable(productId),
+        productFeedBack:
+          this.productFeedbackService.getInitFeedbacksObservable(),
+        rating: this.productStarRatingService.getRatingObservable(productId),
+        userFeedback: this.productFeedbackService.findProductFeedbackOfUser()
+      }).subscribe(res => {
+        this.handleProductDetail(res.productDetail);
+        this.productFeedbackService.handleFeedbackApiResponse(
+          res.productFeedBack
+        );
+        this.updateDropdownSelection();
+        this.checkMediaSize();
+        this.route.queryParams.subscribe(params => {
+          this.showPopup = params['showPopup'] === 'true';
+          if (this.showPopup && this.authService.getToken()) {
+            this.appModalService
+              .openAddFeedbackDialog()
+              .then(() => this.removeQueryParam())
+              .catch(() => this.removeQueryParam());
+          }
+        });
+        this.loadingService.hideLoading(LoadingComponentId.DETAIL_PAGE);
       });
-
-      this.productFeedbackService.initFeedbacks();
-      this.productStarRatingService.fetchData();
     }
-    this.updateDropdownSelection();
   }
 
-  onClickingBackToHomepageButton() {
+  getProductDetailObservable(productId: string): Observable<ProductDetail> {
+    const isShowDevVersion = CommonUtils.getCookieValue(
+      this.cookieService,
+      SHOW_DEV_VERSION,
+      false
+    );
+    return this.getProductById(productId, isShowDevVersion);
+  }
+
+  handleProductDetail(productDetail: ProductDetail): void {
+    this.productDetail.set(productDetail);
+    this.productModuleContent.set(productDetail.productModuleContent);
+    this.metaProductJsonUrl = productDetail.metaProductJsonUrl;
+    this.productDetailService.productNames.set(productDetail.names);
+    this.productDetailService.productLogoUrl.set(productDetail.logoUrl);
+    this.installationCount = productDetail.installationCount;
+    this.handleProductContentVersion();
+    this.updateProductDetailActionType(productDetail);
+    this.logoUrl = productDetail.logoUrl;
+    this.updateWebBrowserTitle();
+    const ratingLabels = RATING_LABELS_BY_TYPE.find(
+      button => button.type === productDetail.type
+    );
+    if (ratingLabels !== undefined) {
+      this.productDetailService.ratingBtnLabel.set(ratingLabels.btnLabel);
+      this.productDetailService.noFeedbackLabel.set(
+        ratingLabels.noFeedbackLabel
+      );
+    }
+  }
+
+  onClickingBackToHomepageButton(): void {
     this.router.navigate([API_URI.APP]);
   }
 
-  onLogoError() {
+  onLogoError(): void {
     this.logoUrl = DEFAULT_IMAGE_URL;
   }
 
-  handleProductContentVersion() {
+  handleProductContentVersion(): void {
     if (this.isEmptyProductContent()) {
       return;
     }
-    this.selectedVersion = VERSION.displayPrefix.concat(this.productModuleContent().version);
+    this.selectedVersion = VERSION.displayPrefix.concat(
+      this.productModuleContent().version
+    );
   }
 
-  updateProductDetailActionType(productDetail: ProductDetail) {
+  updateProductDetailActionType(productDetail: ProductDetail): void {
     if (productDetail?.sourceUrl === undefined) {
       this.productDetailActionType.set(ProductDetailActionType.CUSTOM_SOLUTION);
     } else if (this.routingQueryParamService.isDesignerEnv()) {
@@ -199,40 +243,32 @@ export class ProductDetailComponent {
     }
   }
 
-  scrollToTop() {
+  scrollToTop(): void {
     window.scrollTo({ left: 0, top: 0, behavior: 'instant' });
   }
 
-  getProductById(productId: string, isShowDevVersion: boolean): Observable<ProductDetail> {
-    const targetVersion = this.routingQueryParamService.getDesignerVersionFromCookie();
+  getProductById(
+    productId: string,
+    isShowDevVersion: boolean
+  ): Observable<ProductDetail> {
+    const targetVersion =
+      this.routingQueryParamService.getDesignerVersionFromSessionStorage();
     let productDetail$: Observable<ProductDetail>;
     if (!targetVersion) {
-      productDetail$ = this.productService.getProductDetails(productId, isShowDevVersion);
-    }
-    else {
-      productDetail$ = this.productService.getBestMatchProductDetailsWithVersion(
+      productDetail$ = this.productService.getProductDetails(
         productId,
-        targetVersion
+        isShowDevVersion
       );
+    } else {
+      productDetail$ =
+        this.productService.getBestMatchProductDetailsWithVersion(
+          productId,
+          targetVersion
+        );
     }
     return productDetail$.pipe(
       map((response: ProductDetail) => this.setDefaultVendorImage(response))
     );
-  }
-
-  ngAfterViewInit(): void {
-    this.checkMediaSize();
-    this.productFeedbackService.findProductFeedbackOfUser().subscribe(() => {
-      this.route.queryParams.subscribe(params => {
-        this.showPopup = params['showPopup'] === 'true';
-        if (this.showPopup && this.authService.getToken()) {
-          this.appModalService
-            .openAddFeedbackDialog()
-            .then(() => this.removeQueryParam())
-            .catch(() => this.removeQueryParam());
-        }
-      });
-    });
   }
 
   getContent(value: string): boolean {
@@ -263,7 +299,6 @@ export class ProductDetailComponent {
         ),
       dependency: content.isDependency
     };
-
     return conditions[value] ?? false;
   }
 
@@ -272,7 +307,7 @@ export class ProductDetailComponent {
     return !content || Object.keys(content).length === 0;
   }
 
-  loadDetailTabs(selectedVersion: string) {
+  loadDetailTabs(selectedVersion: string): void {
     let version = selectedVersion || this.productDetail().newestReleaseVersion;
     version = version.replace(VERSION.displayPrefix, '');
     this.productService
@@ -284,17 +319,17 @@ export class ProductDetailComponent {
       });
   }
 
-  onTabChange(event: string) {
+  onTabChange(event: string): void {
     this.setActiveTab(event);
     this.isTabDropdownShown.update(value => !value);
     this.onTabDropdownShown();
   }
 
-  getSelectedTabLabel() {
+  getSelectedTabLabel(): string {
     return CommonUtils.getLabel(this.activeTab, PRODUCT_DETAIL_TABS);
   }
 
-  updateDropdownSelection() {
+  updateDropdownSelection(): void {
     const dropdown = document.getElementById(
       'tab-group-dropdown'
     ) as HTMLSelectElement;
@@ -303,7 +338,7 @@ export class ProductDetailComponent {
     }
   }
 
-  setActiveTab(tab: string) {
+  setActiveTab(tab: string): void {
     this.activeTab = tab;
     const hash = '#tab-' + tab;
     const path = window.location.pathname;
@@ -322,16 +357,16 @@ export class ProductDetailComponent {
     localStorage.setItem(STORAGE_ITEM, JSON.stringify(savedTab));
   }
 
-  onShowInfoContent() {
+  onShowInfoContent(): void {
     this.isDropdownOpen.update(value => !value);
   }
 
-  onTabDropdownShown() {
+  onTabDropdownShown(): void {
     this.isTabDropdownShown.set(!this.isTabDropdownShown());
   }
 
   @HostListener('document:click', ['$event'])
-  handleClickOutside(event: MouseEvent) {
+  handleClickOutside(event: MouseEvent): void {
     const formSelect =
       this.elementRef.nativeElement.querySelector('.form-select');
 
@@ -345,11 +380,11 @@ export class ProductDetailComponent {
   }
 
   @HostListener('window:resize', ['$event'])
-  onResize() {
+  onResize(): void {
     this.checkMediaSize();
   }
 
-  checkMediaSize() {
+  checkMediaSize(): void {
     const mediaQuery = window.matchMedia('(max-width: 767px)');
     if (mediaQuery.matches) {
       this.isMobileMode.set(true);
@@ -358,7 +393,7 @@ export class ProductDetailComponent {
     }
   }
 
-  onClickRateBtn() {
+  onClickRateBtn(): void {
     const productId = this.productDetailService.productId();
     if (this.authService.getToken()) {
       this.appModalService.openAddFeedbackDialog();
@@ -367,7 +402,7 @@ export class ProductDetailComponent {
     }
   }
 
-  receiveInstallationCountData(data: number) {
+  receiveInstallationCountData(data: number): void {
     this.installationCount = data;
   }
 
@@ -380,12 +415,13 @@ export class ProductDetailComponent {
 
   updateWebBrowserTitle() {
     if (this.productDetail().names !== undefined) {
-      const title = this.productDetail().names[this.languageService.selectedLanguage()];
+      const title =
+        this.productDetail().names[this.languageService.selectedLanguage()];
       this.titleService.setTitle(title);
     }
   }
 
-  getDisplayedTabsSignal() {
+  getDisplayedTabsSignal(): ItemDropdown[] {
     this.updateWebBrowserTitle();
     const displayedTabs: ItemDropdown[] = [];
     for (const detailTab of this.detailTabs) {
@@ -406,15 +442,13 @@ export class ProductDetailComponent {
   private setDefaultVendorImage(productDetail: ProductDetail): ProductDetail {
     const { vendorImage, vendorImageDarkMode } = productDetail;
 
-    if (!(productDetail.vendorImage || productDetail.vendorImageDarkMode )) {
+    if (!(productDetail.vendorImage || productDetail.vendorImageDarkMode)) {
       productDetail.vendorImage = DEFAULT_VENDOR_IMAGE_BLACK;
       productDetail.vendorImageDarkMode = DEFAULT_VENDOR_IMAGE;
-    }
-    else {
+    } else {
       productDetail.vendorImage = vendorImage || vendorImageDarkMode;
       productDetail.vendorImageDarkMode = vendorImageDarkMode || vendorImage;
     }
-
     return productDetail;
   }
 }

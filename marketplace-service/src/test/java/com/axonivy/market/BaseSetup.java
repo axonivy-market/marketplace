@@ -38,6 +38,7 @@ public class BaseSetup {
   protected static final String SAMPLE_PRODUCT_ID = "amazon-comprehend";
   protected static final String SAMPLE_PRODUCT_PATH = "/market/connector/amazon-comprehend";
   protected static final String SAMPLE_PRODUCT_NAME = "prody Comprehend";
+  protected static final String SAMPLE_PRODUCT_REPOSITORY_NAME = "axonivy-market/amazon-comprehend";
   protected static final Pageable PAGEABLE = PageRequest.of(0, 20,
       Sort.by(SortOption.ALPHABETICALLY.getOption()).descending());
   protected static final String MOCK_PRODUCT_ID = "bpmn-statistic";
@@ -53,6 +54,7 @@ public class BaseSetup {
   protected static final String MOCK_PRODUCT_REPOSITORY_NAME = "axonivy-market/bpmn-statistic";
   protected static final String MOCK_IMAGE_ID_FORMAT_1 = "imageId-66e2b14868f2f95b2f95549a";
   protected static final String MOCK_IMAGE_ID_FORMAT_2 = "imageId-66e2b14868f2f95b2f95550a";
+  protected static final String MOCK_IMAGE_ID_FORMAT_3 = "imageId-66e2b14868f2f95b2f95551a";
   protected static final String MOCK_PRODUCT_JSON_FILE_PATH = "src/test/resources/product.json";
   protected static final String MOCK_PRODUCT_JSON_FILE_PATH_NO_URL = "src/test/resources/productMissingURL.json";
   protected static final String MOCK_PRODUCT_JSON_WITH_DROPINS_FILE_PATH = "src/test/resources/product-dropins.json";
@@ -61,6 +63,10 @@ public class BaseSetup {
   protected static final String MOCK_METADATA_FILE_PATH = "src/test/resources/metadata.xml";
   protected static final String MOCK_SNAPSHOT_METADATA_FILE_PATH = "src/test/resources/snapshotMetadata.xml";
   protected static final String MOCK_README_FILE = "src/test/resources/README.md";
+  protected static final String MOCK_README_DE_FILE = "src/test/resources/README_DE.md";
+  protected static final String MOCK_README_FILE_NO_DEMO_PART = "src/test/resources/README_NO_DEMO_PART.md";
+  protected static final String MOCK_README_FILE_NO_SETUP_PART = "src/test/resources/README_NO_SETUP_PART.md";
+  protected static final String MOCK_README_FILE_SWAP_DEMO_SETUP_PARTS = "src/test/resources/README_SWAP_DEMO_SETUP.md";
   protected static final String INVALID_FILE_PATH = "test/file/path";
   protected static final String MOCK_MAVEN_URL = "https://maven.axonivy.com/com/axonivy/util/bpmn-statistic/maven" +
       "-metadata.xml";
@@ -134,6 +140,14 @@ public class BaseSetup {
 
   protected static String getMockReadmeContent() {
     return getContentFromTestResourcePath(MOCK_README_FILE);
+  }
+
+  protected static String getMockReadmeContent(String filePath) {
+    if (StringUtils.isBlank(filePath)) {
+      return getMockReadmeContent();
+    }
+
+    return getContentFromTestResourcePath(filePath);
   }
 
   protected Artifact getMockArtifact() {

@@ -30,7 +30,7 @@ common:
   error:
     code: 'ERROR CODE'
     oops: 'Oops!'
-    fullMessage: "{{ errorMessage }} You would be doing us a great favor by reporting it here: <a href='mailto:{email}'>support@axonivy.com</a>"
+    fullMessage: "{{ errorMessage }} You would be doing us a great favor by reporting it here: <a href='mailto:support@axonivy.com'>support@axonivy.com</a>"
     description:
       400: 'Bad Request: The server could not understand the request due to invalid syntax.'
       401: 'Unauthorized: Authentication is required and has failed or has not been provided.'
