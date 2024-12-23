@@ -8,7 +8,6 @@ import com.axonivy.market.entity.ProductJsonContent;
 import com.axonivy.market.enums.Language;
 import com.axonivy.market.model.MavenArtifactVersionModel;
 import com.axonivy.market.model.ProductDetailModel;
-import com.axonivy.market.model.VersionAndUrlModel;
 import com.axonivy.market.service.ProductService;
 import com.axonivy.market.service.VersionService;
 import com.fasterxml.jackson.databind.ObjectMapper;

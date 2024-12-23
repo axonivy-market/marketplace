@@ -414,20 +414,20 @@ class ProductServiceImplTest extends BaseSetup {
     when(productRepo.getProductByIdAndVersion(MOCK_PRODUCT_ID, MOCK_SNAPSHOT_VERSION))
         .thenReturn(getMockProduct());
     when(versionService.getVersionsForDesigner(MOCK_PRODUCT_ID))
-        .thenReturn(mockVersionAndUrlModels(),mockVersionModels(),mockVersionModels2(),mockVersionModels3());
+        .thenReturn(mockVersionAndUrlModels(), mockVersionModels(), mockVersionModels2(), mockVersionModels3());
 
 
     Product result = productService.fetchProductDetail(MOCK_PRODUCT_ID, true);
-    assertEquals(result.getCompatibilityRange(),"10.0+");
+    assertEquals("10.0+", result.getCompatibilityRange());
 
     result = productService.fetchProductDetail(MOCK_PRODUCT_ID, true);
-    assertEquals(result.getCompatibilityRange(),"10.0-11.3+");
+    assertEquals("10.0-11.3+", result.getCompatibilityRange());
 
     result = productService.fetchProductDetail(MOCK_PRODUCT_ID, true);
-    assertEquals(result.getCompatibilityRange(),"10.0-11.3+");
+    assertEquals("10.0-11.3+", result.getCompatibilityRange());
 
     result = productService.fetchProductDetail(MOCK_PRODUCT_ID, true);
-    assertEquals(result.getCompatibilityRange(),"10.0-12.0+");
+    assertEquals("10.0-12.0+", result.getCompatibilityRange());
   }
 
   @Test
