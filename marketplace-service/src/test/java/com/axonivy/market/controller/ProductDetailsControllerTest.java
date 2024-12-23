@@ -169,10 +169,10 @@ class ProductDetailsControllerTest extends BaseSetup {
 
     assertEquals(2, Objects.requireNonNull(result.getBody()).size());
     assertEquals("10.0.21", Objects.requireNonNull(result.getBody()).get(0).getVersion());
-    assertEquals("/api/product-details/productjsoncontent/portal/10.0.21",
+    assertEquals("/api/product-details/portal/10.0.21/json",
         Objects.requireNonNull(result.getBody()).get(0).getUrl());
     assertEquals("10.0.22", Objects.requireNonNull(result.getBody()).get(1).getVersion());
-    assertEquals("/api/product-details/productjsoncontent/portal/10.0.22",
+    assertEquals("/api/product-details/portal/10.0.22/json",
         Objects.requireNonNull(result.getBody()).get(1).getUrl());
   }
 

@@ -270,12 +270,12 @@ public class BaseSetup {
   protected List<VersionAndUrlModel> mockVersionAndUrlModels() {
     VersionAndUrlModel versionAndUrlModel = VersionAndUrlModel.builder()
         .version("10.0.21")
-        .url("/api/product-details/productjsoncontent/portal/10.0.21")
+        .url("/api/product-details/portal/10.0.21/json")
         .build();
 
     VersionAndUrlModel versionAndUrlModel2 = VersionAndUrlModel.builder()
         .version("10.0.22")
-        .url("/api/product-details/productjsoncontent/portal/10.0.22")
+        .url("/api/product-details/portal/10.0.22/json")
         .build();
 
     return List.of(versionAndUrlModel, versionAndUrlModel2);

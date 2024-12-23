@@ -1,7 +1,6 @@
 package com.axonivy.market.service.impl;
 
 import com.axonivy.market.bo.Artifact;
-import com.axonivy.market.constants.CommonConstants;
 import com.axonivy.market.constants.GitHubConstants;
 import com.axonivy.market.constants.MavenConstants;
 import com.axonivy.market.constants.MetaConstants;
@@ -70,6 +69,7 @@ import static com.axonivy.market.enums.DocumentField.MARKET_DIRECTORY;
 import static com.axonivy.market.enums.DocumentField.SHORT_DESCRIPTIONS;
 import static com.axonivy.market.enums.FileStatus.ADDED;
 import static com.axonivy.market.enums.FileStatus.MODIFIED;
+import static com.axonivy.market.util.VersionUtils.getPrefixOfVersion;
 import static java.util.Optional.ofNullable;
 import static org.apache.commons.lang3.StringUtils.EMPTY;
 
@@ -96,7 +96,7 @@ public class ProductServiceImpl implements ProductService {
   private final ProductMarketplaceDataService productMarketplaceDataService;
   private final ProductMarketplaceDataRepository productMarketplaceDataRepo;
   private GHCommit lastGHCommit;
-  private VersionService versionService;
+  private final VersionService versionService;
   private GitHubRepoMeta marketRepoMeta;
   @Value("${market.github.market.branch}")
   private String marketRepoBranch;
@@ -195,7 +195,7 @@ public class ProductServiceImpl implements ProductService {
     Map<String, List<GitHubFile>> groupGitHubFiles = new HashMap<>();
     for (var file : gitHubFileChanges) {
       String filePath = file.getFileName();
-      var parentPath = filePath.substring(0, filePath.lastIndexOf(CommonConstants.SLASH) + 1);
+      var parentPath = filePath.substring(0, filePath.lastIndexOf(SLASH) + 1);
       var files = groupGitHubFiles.getOrDefault(parentPath, new ArrayList<>());
       files.add(file);
       files.sort((file1, file2) -> GitHubUtils.sortMetaJsonFirst(file1.getFileName(), file2.getFileName()));
@@ -762,6 +762,11 @@ public class ProductServiceImpl implements ProductService {
     }
   }
 
+  /**
+   * MARP-975: Retrieve the list containing all versions for the designer and
+   * split the versions to obtain the first prefix,then format them for compatibility range.
+   * ex: 11.0+ , 10.0 - 12.0+ , ...
+   */
   private String getCompatibilityRange(String productId) {
     return Optional.of(versionService.getVersionsForDesigner(productId))
         .filter(ObjectUtils::isNotEmpty)
@@ -770,11 +775,10 @@ public class ProductServiceImpl implements ProductService {
           if (versions.size() == 1) {
             return splitVersion(versions.get(0)).concat(PLUS);
           }
-          String maxValue = splitVersion(versions.get(0)).concat(PLUS);
-          String minValue = splitVersion(versions.get(versions.size() - 1));
-          return getPrefixOfVersion(minValue).equals(getPrefixOfVersion(maxValue)) ?
-              minValue.concat(PLUS) :
-              minValue.concat(DASH_SEPARATOR).concat(maxValue);
+          String maxVersion = splitVersion(versions.get(0)).concat(PLUS);
+          String minVersion = splitVersion(versions.get(versions.size() - 1));
+          return getPrefixOfVersion(minVersion).equals(getPrefixOfVersion(maxVersion)) ?
+              minVersion.concat(PLUS) : String.format(COMPATIBILITY_RANGE_FORMAT, minVersion, maxVersion);
         }).orElse(null);
   }
 
@@ -784,7 +788,4 @@ public class ProductServiceImpl implements ProductService {
     return version.substring(0, secondDot);
   }
 
-  private String getPrefixOfVersion(String version) {
-    return version.substring(0, version.indexOf(DOT_SEPARATOR));
-  }
 }
