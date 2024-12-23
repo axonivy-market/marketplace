@@ -421,13 +421,13 @@ class ProductServiceImplTest extends BaseSetup {
     assertEquals(result.getCompatibilityRange(),"10.0+");
 
     result = productService.fetchProductDetail(MOCK_PRODUCT_ID, true);
-    assertEquals(result.getCompatibilityRange(),"10.0-11.3");
+    assertEquals(result.getCompatibilityRange(),"10.0-11.3+");
 
     result = productService.fetchProductDetail(MOCK_PRODUCT_ID, true);
     assertEquals(result.getCompatibilityRange(),"10.0-11.3+");
 
     result = productService.fetchProductDetail(MOCK_PRODUCT_ID, true);
-    assertEquals(result.getCompatibilityRange(),"10.0-12.0");
+    assertEquals(result.getCompatibilityRange(),"10.0-12.0+");
   }
 
   @Test

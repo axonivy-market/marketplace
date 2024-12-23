@@ -763,28 +763,19 @@ public class ProductServiceImpl implements ProductService {
   }
 
   private String getCompatibilityRange(String productId) {
-    List<String> versions =
-        versionService.getVersionsForDesigner(productId).stream().map(VersionAndUrlModel::getVersion).toList();
-    if (ObjectUtils.isEmpty(versions)) {
-      return null;
-    }
-
-    if (versions.size() == 1) {
-      return splitVersion(versions.get(0));
-    }
-
-    String currentMaxVersion = versions.get(0);
-    boolean isMoreThan1InMaxVersion = versions.stream()
-        .filter(version -> version.startsWith(
-            currentMaxVersion.substring(0, currentMaxVersion.indexOf(DOT_SEPARATOR)))).toList().size() > 1;
-
-    String maxValue = isMoreThan1InMaxVersion ? splitVersion(currentMaxVersion).concat(PLUS) : splitVersion(
-        currentMaxVersion);
-    String minValue = splitVersion(versions.get(versions.size() - 1));
-
-    return getPrefixOfVersion(minValue).equals(getPrefixOfVersion(maxValue)) ?
-        minValue.concat(PLUS) :
-        minValue.concat(DASH_SEPARATOR).concat(maxValue);
+    return Optional.of(versionService.getVersionsForDesigner(productId))
+        .filter(ObjectUtils::isNotEmpty)
+        .map(versions -> versions.stream().map(VersionAndUrlModel::getVersion).toList())
+        .map(versions -> {
+          if (versions.size() == 1) {
+            return splitVersion(versions.get(0)).concat(PLUS);
+          }
+          String maxValue = splitVersion(versions.get(0)).concat(PLUS);
+          String minValue = splitVersion(versions.get(versions.size() - 1));
+          return getPrefixOfVersion(minValue).equals(getPrefixOfVersion(maxValue)) ?
+              minValue.concat(PLUS) :
+              minValue.concat(DASH_SEPARATOR).concat(maxValue);
+        }).orElse(null);
   }
 
   private String splitVersion(String version) {
