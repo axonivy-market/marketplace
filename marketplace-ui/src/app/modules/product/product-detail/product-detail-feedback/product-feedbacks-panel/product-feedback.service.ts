@@ -14,10 +14,7 @@ import {
 import { catchError, Observable, of, tap, throwError } from 'rxjs';
 import { CookieService } from 'ngx-cookie-service';
 import { AuthService } from '../../../../../auth/auth.service';
-import {
-  ForwardingError,
-  SkipLoading
-} from '../../../../../core/interceptors/api.interceptor';
+import { ForwardingError } from '../../../../../core/interceptors/api.interceptor';
 import { FeedbackApiResponse } from '../../../../../shared/models/apis/feedback-response.model';
 import { Feedback } from '../../../../../shared/models/feedback.model';
 import { ProductDetailService } from '../../product-detail.service';
@@ -64,13 +61,11 @@ export class ProductFeedbackService {
     return this.http
       .post<Feedback>(FEEDBACK_API_URL, feedback, {
         headers,
-        context: new HttpContext()
-          .set(SkipLoading, true)
-          .set(ForwardingError, true)
+        context: new HttpContext().set(ForwardingError, true)
       })
       .pipe(
         tap(() => {
-          this.initFeedbacks();
+          this.fetchFeedbacks();
           this.findProductFeedbackOfUser().subscribe();
           this.productStarRatingService.fetchData();
         }),
@@ -86,7 +81,7 @@ export class ProductFeedbackService {
       );
   }
 
-  private findProductFeedbacksByCriteria(
+  findProductFeedbacksByCriteria(
     productId: string = this.productDetailService.productId(),
     page: number = this.page(),
     sort: string = this.sort(),
@@ -100,7 +95,7 @@ export class ProductFeedbackService {
     return this.http
       .get<FeedbackApiResponse>(requestURL, {
         params: requestParams,
-        context: new HttpContext().set(SkipLoading, true).set(ForwardingError, true)
+        context: new HttpContext().set(ForwardingError, true)
       })
       .pipe(
         tap(response => {
@@ -126,9 +121,7 @@ export class ProductFeedbackService {
     return this.http
       .get<Feedback>(requestURL, {
         params,
-        context: new HttpContext()
-          .set(SkipLoading, true)
-          .set(ForwardingError, true)
+        context: new HttpContext().set(ForwardingError, true)
       })
       .pipe(
         tap(feedback => {
@@ -152,11 +145,9 @@ export class ProductFeedbackService {
       );
   }
 
-  initFeedbacks(): void {
-    this.page.set(0);
-    this.findProductFeedbacksByCriteria().subscribe(response => {
-      this.totalPages.set(response.page.totalPages);
-      this.totalElements.set(response.page.totalElements);
+  fetchFeedbacks(): void {
+    this.getInitFeedbacksObservable().subscribe(response => {
+      this.handleFeedbackApiResponse(response);
     });
   }
 
@@ -173,5 +164,15 @@ export class ProductFeedbackService {
 
   private clearTokenCookie(): void {
     this.cookieService.delete(TOKEN_KEY);
+  }
+
+  handleFeedbackApiResponse(response: FeedbackApiResponse): void {
+    this.totalPages.set(response.page.totalPages);
+    this.totalElements.set(response.page.totalElements);
+  }
+
+  getInitFeedbacksObservable(): Observable<FeedbackApiResponse> {
+    this.page.set(0);
+    return this.findProductFeedbacksByCriteria();
   }
 }

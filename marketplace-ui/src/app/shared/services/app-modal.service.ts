@@ -10,7 +10,7 @@ import { SuccessDialogComponent } from '../../modules/product/product-detail/pro
 export class AppModalService {
   private readonly modalService = inject(NgbModal);
 
-  openShowFeedbacksDialog() {
+  openShowFeedbacksDialog(): void {
     this.modalService.open(ShowFeedbacksDialogComponent, {
       centered: true,
       modalDialogClass: 'show-feedbacks-modal-dialog',
@@ -30,7 +30,7 @@ export class AppModalService {
     return addFeedbackDialog.result;
   }
 
-  openSuccessDialog() {
+  openSuccessDialog(): void {
     this.modalService.open(SuccessDialogComponent, {
       fullscreen: 'md',
       centered: true,

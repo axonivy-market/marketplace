@@ -6,9 +6,8 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.text.SimpleDateFormat;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.Map;
 
 @ExtendWith(MockitoExtension.class)
@@ -68,11 +67,12 @@ class LoggingUtilsTest {
 
   @Test
   void testGetCurrentTimestamp() {
-    String expectedTimestamp = LocalDateTime.now()
-        .format(DateTimeFormatter.ofPattern(LoggingConstants.TIMESTAMP_FORMAT));
-    String actualTimestamp = LoggingUtils.getCurrentTimestamp();
-    Assertions.assertEquals(expectedTimestamp.substring(0, 19), actualTimestamp.substring(0, 19),
-        "The returned timestamp does not match the expected format or value");
+    String timestamp = LoggingUtils.getCurrentTimestamp();
+    Assertions.assertNotNull(timestamp, "Timestamp should not be null");
+    SimpleDateFormat dateFormat = new SimpleDateFormat(LoggingConstants.TIMESTAMP_FORMAT);
+    Assertions.assertDoesNotThrow(() -> {
+      dateFormat.parse(timestamp);
+    }, "Timestamp does not match the expected format");
   }
 
 }

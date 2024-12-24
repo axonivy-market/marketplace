@@ -1,6 +1,7 @@
 import { TestBed } from '@angular/core/testing';
 
 import { LoadingService } from './loading.service';
+import { LoadingComponentId } from '../../../shared/enums/loading-component-id';
 
 describe('LoadingService', () => {
   let service: LoadingService;
@@ -15,12 +16,12 @@ describe('LoadingService', () => {
   });
 
   it('show should update isLoading to true', () => {
-    service.show();
-    expect(service.isLoading()).toBeTrue();
+    service.showLoading(LoadingComponentId.DETAIL_PAGE);
+    expect(service.loadingStates()[LoadingComponentId.DETAIL_PAGE]).toBeTrue();
   })
 
   it('hide should update isLoading to false', () => {
-    service.hide();
-    expect(service.isLoading()).toBeFalse();
+    service.hideLoading(LoadingComponentId.DETAIL_PAGE);
+    expect(service.loadingStates()[LoadingComponentId.DETAIL_PAGE]).toBeFalse();
   })
 });
