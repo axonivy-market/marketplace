@@ -9,7 +9,7 @@ import {
   TestBed,
   tick
 } from '@angular/core/testing';
-import { By, Title } from '@angular/platform-browser';
+import { By, DomSanitizer, Title } from '@angular/platform-browser';
 import { ActivatedRoute } from '@angular/router';
 import { TranslateModule } from '@ngx-translate/core';
 import { Viewport } from 'karma-viewport/dist/adapter/viewport';
@@ -32,6 +32,9 @@ import { ProductDetailActionType } from '../../../shared/enums/product-detail-ac
 import { LanguageService } from '../../../core/services/language/language.service';
 import { Language } from '../../../shared/enums/language.enum';
 import { MatomoTestingModule } from 'ngx-matomo-client/testing';
+import * as MarkdownIt from 'markdown-it';
+import * as MarkdownItGitHubAlerts from 'markdown-it-github-alerts';
+import { SafeHtml } from '@angular/platform-browser';
 import { AuthService } from '../../../auth/auth.service';
 import { AppModalService } from '../../../shared/services/app-modal.service';
 import { ProductFeedbackService } from './product-detail-feedback/product-feedbacks-panel/product-feedback.service';
@@ -49,12 +52,14 @@ describe('ProductDetailComponent', () => {
   let routingQueryParamService: jasmine.SpyObj<RoutingQueryParamService>;
   let languageService: jasmine.SpyObj<LanguageService>;
   let titleService: Title;
+  let sanitizerSpy: jasmine.SpyObj<DomSanitizer>;
   let mockProductFeedbackService: jasmine.SpyObj<ProductFeedbackService>;
   let mockProductStarRatingService: jasmine.SpyObj<ProductStarRatingService>;
   let mockAuthService: jasmine.SpyObj<AuthService>;
   let mockAppModalService: jasmine.SpyObj<AppModalService>;
 
   beforeEach(async () => {
+    const spy = jasmine.createSpyObj('DomSanitizer', ['bypassSecurityTrustHtml']);
     const routingQueryParamServiceSpy = jasmine.createSpyObj(
       'RoutingQueryParamService',
       ['getDesignerVersionFromSessionStorage', 'isDesignerEnv']
@@ -120,7 +125,8 @@ describe('ProductDetailComponent', () => {
           provide: LanguageService,
           useValue: languageServiceSpy
         },
-        Title
+        Title,
+        { provide: DomSanitizer, useValue: spy }
       ]
     })
       .overrideComponent(ProductDetailComponent, {
@@ -137,6 +143,8 @@ describe('ProductDetailComponent', () => {
     languageService = TestBed.inject(
       LanguageService
     ) as jasmine.SpyObj<LanguageService>;
+
+    sanitizerSpy = TestBed.inject(DomSanitizer) as jasmine.SpyObj<DomSanitizer>;
 
     titleService = TestBed.inject(Title);
     mockProductFeedbackService.getInitFeedbacksObservable.and.returnValue(
@@ -844,5 +852,16 @@ describe('ProductDetailComponent', () => {
       By.css('app-product-detail-maven-content')
     );
     expect(mavenTab).toBeFalsy();
+  });
+
+  it('should render GitHub alert as safe HTML', () => {
+    // Arrange
+    const value = '**This is a test**';
+    const mockedRenderedHtml = '<strong>This is a test</strong>';
+    sanitizerSpy.bypassSecurityTrustHtml.and.returnValue(mockedRenderedHtml);
+
+    const result = component.renderGithubAlert(value);
+
+    expect(result).toBe(mockedRenderedHtml);
   });
 });

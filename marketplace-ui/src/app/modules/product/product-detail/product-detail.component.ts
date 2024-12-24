@@ -1,4 +1,6 @@
 import { CommonModule, NgOptimizedImage } from '@angular/common';
+import MarkdownIt from 'markdown-it';
+import MarkdownItGitHubAlerts from 'markdown-it-github-alerts';
 import {
   Component,
   ElementRef,
@@ -50,7 +52,7 @@ import { ProductStarRatingNumberComponent } from './product-star-rating-number/p
 import { DisplayValue } from '../../../shared/models/display-value.model';
 import { CookieService } from 'ngx-cookie-service';
 import { ROUTER } from '../../../shared/constants/router.constant';
-import { Title } from '@angular/platform-browser';
+import { SafeHtml, Title ,DomSanitizer} from '@angular/platform-browser';
 import { API_URI } from '../../../shared/constants/api.constant';
 import { EmptyProductDetailPipe } from '../../../shared/pipes/empty-product-detail.pipe';
 import { LoadingSpinnerComponent } from '../../../shared/components/loading-spinner/loading-spinner.component';
@@ -141,7 +143,7 @@ export class ProductDetailComponent {
     this.updateDropdownSelection();
   }
 
-  constructor(private readonly titleService: Title) {
+  constructor(private readonly titleService: Title, private sanitizer: DomSanitizer) {
     this.scrollToTop();
     this.resizeObserver = new ResizeObserver(() => {
       this.updateDropdownSelection();
@@ -450,5 +452,12 @@ export class ProductDetailComponent {
       productDetail.vendorImageDarkMode = vendorImageDarkMode || vendorImage;
     }
     return productDetail;
+  }
+
+  renderGithubAlert(value: string): SafeHtml {
+    const md = MarkdownIt();
+    md.use(MarkdownItGitHubAlerts);
+    const result = md.render(value);
+    return this.sanitizer.bypassSecurityTrustHtml(result);
   }
 }
