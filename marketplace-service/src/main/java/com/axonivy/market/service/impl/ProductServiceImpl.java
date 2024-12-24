@@ -69,7 +69,6 @@ import static com.axonivy.market.enums.DocumentField.MARKET_DIRECTORY;
 import static com.axonivy.market.enums.DocumentField.SHORT_DESCRIPTIONS;
 import static com.axonivy.market.enums.FileStatus.ADDED;
 import static com.axonivy.market.enums.FileStatus.MODIFIED;
-import static com.axonivy.market.util.VersionUtils.getPrefixOfVersion;
 import static java.util.Optional.ofNullable;
 import static org.apache.commons.lang3.StringUtils.EMPTY;
 
@@ -777,7 +776,7 @@ public class ProductServiceImpl implements ProductService {
           }
           String maxVersion = splitVersion(versions.get(0)).concat(PLUS);
           String minVersion = splitVersion(versions.get(versions.size() - 1));
-          return getPrefixOfVersion(minVersion).equals(getPrefixOfVersion(maxVersion)) ?
+          return VersionUtils.getPrefixOfVersion(minVersion).equals(VersionUtils.getPrefixOfVersion(maxVersion)) ?
               minVersion.concat(PLUS) : String.format(COMPATIBILITY_RANGE_FORMAT, minVersion, maxVersion);
         }).orElse(null);
   }
