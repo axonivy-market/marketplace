@@ -20,15 +20,7 @@ import java.nio.file.Paths;
 import java.nio.file.attribute.FileAttribute;
 import java.nio.file.attribute.PosixFilePermission;
 import java.nio.file.attribute.PosixFilePermissions;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.EnumSet;
-import java.util.Enumeration;
-import java.util.List;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 import java.util.stream.Stream;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
@@ -82,7 +74,8 @@ public class FileDownloadServiceImpl implements FileDownloadService {
   private Path createTempFileFromUrlAndExtractToLocation(String url, String location,
       boolean isForce) throws IOException {
     File cacheFolder = new File(location);
-    if (cacheFolder.exists() && cacheFolder.isDirectory() && !isForce) {
+    if (cacheFolder.exists() && cacheFolder.isDirectory() && Objects.requireNonNull(
+        cacheFolder.listFiles()).length > 0 && !isForce) {
       log.warn("Data is already in {}", location);
       return null;
     } else {
