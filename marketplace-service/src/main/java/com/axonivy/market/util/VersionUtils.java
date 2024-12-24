@@ -20,6 +20,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import static com.axonivy.market.constants.CommonConstants.DOT_SEPARATOR;
 import static com.axonivy.market.constants.MavenConstants.*;
 @Log4j2
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
@@ -144,5 +145,9 @@ public class VersionUtils {
     return metadataList.stream().filter(MavenUtils::isProductMetadata).findAny().map(
         metadata -> metadata.getVersions().stream().sorted(new LatestVersionComparator()).collect(
             Collectors.toList())).orElse(new ArrayList<>());
+  }
+
+  public static String getPrefixOfVersion(String version) {
+    return version.substring(0, version.indexOf(DOT_SEPARATOR));
   }
 }
