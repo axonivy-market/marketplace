@@ -1,11 +1,11 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { ReleasePreviewComponent } from './release-preview.component';
 import { ReleasePreviewService } from './release-preview.service';
-import { of, throwError } from 'rxjs';
+import { of } from 'rxjs';
 import { LanguageService } from '../../core/services/language/language.service';
 import { Language } from '../../shared/enums/language.enum';
 import { TranslateModule } from '@ngx-translate/core';
-import { MarkdownModule } from 'ngx-markdown';
+import { DomSanitizer } from '@angular/platform-browser';
 import {
   provideHttpClient,
   withInterceptorsFromDi
@@ -17,13 +17,10 @@ describe('ReleasePreviewComponent', () => {
   let fixture: ComponentFixture<ReleasePreviewComponent>;
   let releasePreviewService: ReleasePreviewService;
   let languageService: jasmine.SpyObj<LanguageService>;
+  let sanitizerSpy: jasmine.SpyObj<DomSanitizer>;
+  const spy = jasmine.createSpyObj('DomSanitizer', ['bypassSecurityTrustHtml']);
 
   beforeEach(async () => {
-    const routingQueryParamServiceSpy = jasmine.createSpyObj(
-      'RoutingQueryParamService',
-      ['getDesignerVersionFromSessionStorage', 'isDesignerEnv']
-    );
-
     const languageServiceSpy = jasmine.createSpyObj('LanguageService', [
       'selectedLanguage'
     ]);
@@ -32,7 +29,6 @@ describe('ReleasePreviewComponent', () => {
       imports: [
         ReleasePreviewComponent,
         TranslateModule.forRoot(),
-        MarkdownModule.forRoot()
       ],
       providers: [
         provideHttpClient(withInterceptorsFromDi()),
@@ -40,12 +36,14 @@ describe('ReleasePreviewComponent', () => {
         {
           provide: LanguageService,
           useValue: languageServiceSpy
-        }
+        },
+        { provide: DomSanitizer, useValue: spy }
       ]
     }).compileComponents();
     languageService = TestBed.inject(
       LanguageService
     ) as jasmine.SpyObj<LanguageService>;
+    sanitizerSpy = TestBed.inject(DomSanitizer) as jasmine.SpyObj<DomSanitizer>;
   });
 
   beforeEach(() => {
@@ -155,5 +153,13 @@ describe('ReleasePreviewComponent', () => {
   it('should set activeTab when setActiveTab is called', () => {
     component.setActiveTab('setup');
     expect(component.activeTab).toBe('setup');
+  });
+
+  it('should render readme content as safe HTML', () => {
+    const value = '**This is a test**';
+    const mockedRenderedHtml = '<strong>This is a test</strong>';
+    sanitizerSpy.bypassSecurityTrustHtml.and.returnValue(mockedRenderedHtml);
+    const result = component.renderReadmeContent(value);
+    expect(result).toBe(mockedRenderedHtml);
   });
 });

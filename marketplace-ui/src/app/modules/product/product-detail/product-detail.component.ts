@@ -6,6 +6,7 @@ import {
   Component,
   ElementRef,
   HostListener,
+  SecurityContext,
   Signal,
   WritableSignal,
   computed,
@@ -52,7 +53,7 @@ import { ProductStarRatingNumberComponent } from './product-star-rating-number/p
 import { DisplayValue } from '../../../shared/models/display-value.model';
 import { CookieService } from 'ngx-cookie-service';
 import { ROUTER } from '../../../shared/constants/router.constant';
-import { SafeHtml, Title ,DomSanitizer} from '@angular/platform-browser';
+import { SafeHtml, Title, DomSanitizer } from '@angular/platform-browser';
 import { API_URI } from '../../../shared/constants/api.constant';
 import { EmptyProductDetailPipe } from '../../../shared/pipes/empty-product-detail.pipe';
 import { LoadingSpinnerComponent } from '../../../shared/components/loading-spinner/loading-spinner.component';
@@ -142,7 +143,10 @@ export class ProductDetailComponent {
     this.updateDropdownSelection();
   }
 
-  constructor(private readonly titleService: Title, private sanitizer: DomSanitizer) {
+  constructor(
+    private readonly titleService: Title,
+    private readonly sanitizer: DomSanitizer
+  ) {
     this.scrollToTop();
     this.resizeObserver = new ResizeObserver(() => {
       this.updateDropdownSelection();
@@ -457,6 +461,9 @@ export class ProductDetailComponent {
     md.use(MarkdownItGitHubAlerts);
     md.use(full); // Add emoji support
     const result = md.render(value);
-    return this.sanitizer.bypassSecurityTrustHtml(result);
+    const safeContent = this.sanitizer.sanitize(SecurityContext.HTML, result);
+    return safeContent
+      ? this.sanitizer.bypassSecurityTrustHtml(safeContent)
+      : '';
   }
 }

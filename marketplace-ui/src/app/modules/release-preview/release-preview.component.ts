@@ -5,7 +5,8 @@ import {
   Signal,
   WritableSignal,
   computed,
-  signal
+  signal,
+  SecurityContext
 } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
@@ -18,7 +19,9 @@ import { PRODUCT_DETAIL_TABS } from '../../shared/constants/common.constant';
 import { ItemDropdown } from '../../shared/models/item-dropdown.model';
 import { CommonDropdownComponent } from '../../shared/components/common-dropdown/common-dropdown.component';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
-import { MarkdownModule, MarkdownService } from 'ngx-markdown';
+import { SafeHtml, DomSanitizer } from '@angular/platform-browser';
+import MarkdownIt from 'markdown-it';
+import { full } from 'markdown-it-emoji';
 import { DisplayValue } from '../../shared/models/display-value.model';
 import { MultilingualismPipe } from '../../shared/pipes/multilingualism.pipe';
 
@@ -31,12 +34,10 @@ const DEFAULT_ACTIVE_TAB = 'description';
     FormsModule,
     CommonDropdownComponent,
     TranslateModule,
-    MarkdownModule,
     MultilingualismPipe
   ],
   templateUrl: './release-preview.component.html',
   styleUrls: ['./release-preview.component.scss'],
-  providers: [MarkdownService],
   encapsulation: ViewEncapsulation.Emulated
 })
 export class ReleasePreviewComponent {
@@ -55,6 +56,7 @@ export class ReleasePreviewComponent {
     this.languageService.selectedLanguage();
     return this.getDisplayedTabsSignal();
   });
+  private readonly sanitizer = inject(DomSanitizer);
 
   private readonly releasePreviewService = inject(ReleasePreviewService);
 
@@ -74,12 +76,8 @@ export class ReleasePreviewComponent {
     this.handlePreviewPage();
   }
 
-  setActiveTab(tab: string): void {
-    this.activeTab = tab;
-  }
-
-  onTabChange(event: string) {
-    this.setActiveTab(event);
+  setActiveTab(event: string): void {
+    this.activeTab = event;
   }
 
   handlePreviewPage(): void {
@@ -108,32 +106,15 @@ export class ReleasePreviewComponent {
   getContent(value: string): boolean {
     const content = this.readmeContent();
 
-    if (!content || Object.keys(content).length === 0) {
-      return false;
-    }
-
-    const conditions: { [key: string]: boolean } = {
-      description:
-        content.description !== null &&
-        CommonUtils.isContentDisplayedBasedOnLanguage(
-          content.description,
-          this.languageService.selectedLanguage()
-        ),
-      demo:
-        content.demo !== null &&
-        CommonUtils.isContentDisplayedBasedOnLanguage(
-          content.demo,
-          this.languageService.selectedLanguage()
-        ),
-      setup:
-        content.setup !== null &&
-        CommonUtils.isContentDisplayedBasedOnLanguage(
-          content.setup,
-          this.languageService.selectedLanguage()
-        )
-    };
-
-    return conditions[value] ?? false;
+    const tabContent = content?.[value as keyof ReleasePreviewData];
+    return (
+      !!tabContent &&
+      Object.keys(tabContent).length > 0 &&
+      CommonUtils.isContentDisplayedBasedOnLanguage(
+        tabContent,
+        this.languageService.selectedLanguage()
+      )
+    );
   }
 
   getSelectedTabLabel() {
@@ -144,5 +125,16 @@ export class ReleasePreviewComponent {
     type tabName = 'description' | 'demo' | 'setup';
     const value = key.value as tabName;
     return this.readmeContent()[value];
+  }
+
+  renderReadmeContent(value: string): SafeHtml {
+    const md = MarkdownIt();
+    md.use(full);
+    const result = md.render(value);
+    const safeContent = this.sanitizer.sanitize(SecurityContext.HTML, result);
+
+    return safeContent
+      ? this.sanitizer.bypassSecurityTrustHtml(safeContent)
+      : '';
   }
 }

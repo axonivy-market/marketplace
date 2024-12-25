@@ -72,7 +72,7 @@
                     [selectedItem]="getSelectedTabLabel() | translate"
                     buttonClass="form-select flex-grow-1 text-start content-tab-dropdown"
                     (itemSelected)="
-                      onTabChange($event.value)
+                      setActiveTab($event.value)
                     "></app-common-dropdown>
                 </div>
               </div>
@@ -86,14 +86,14 @@
                 [id]="displayedTab.value"
                 role="tabpanel"
                 [attr.aria-labelledby]="displayedTab.value + '-tab'">
-                <markdown
-                  emoji
-                  [lang]="languageService.selectedLanguage()"
+                <div
                   class="readme-content"
-                  [data]="
-                    getReadmeContentValue(displayedTab)
-                      | multilingualism: languageService.selectedLanguage()
-                  "></markdown>
+                  [innerHtml]="
+                    renderReadmeContent(
+                      getReadmeContentValue(displayedTab)
+                        | multilingualism: languageService.selectedLanguage()
+                    )
+                  "></div>
               </div>
             }
           </div>
