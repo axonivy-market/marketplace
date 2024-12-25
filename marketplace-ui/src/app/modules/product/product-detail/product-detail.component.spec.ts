@@ -853,7 +853,6 @@ describe('ProductDetailComponent', () => {
   });
 
   it('should render GitHub alert as safe HTML', () => {
-    // Arrange
     const value = '**This is a test**';
     const mockedRenderedHtml = '<strong>This is a test</strong>';
     sanitizerSpy.bypassSecurityTrustHtml.and.returnValue(mockedRenderedHtml);
