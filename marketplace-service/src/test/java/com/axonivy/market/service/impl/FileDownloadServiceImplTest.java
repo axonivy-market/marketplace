@@ -3,7 +3,6 @@ package com.axonivy.market.service.impl;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
-import org.mockito.Mock;
 import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -39,15 +38,6 @@ class FileDownloadServiceImplTest {
     assertThrows(ResourceAccessException.class, () -> fileDownloadService.downloadAndUnzipFile(DOWNLOAD_URL, true));
   }
 
-
-  @Test
-  void testCreateTempFileFromUrlAndExtractToLocation() throws IOException {
-    Path result = fileDownloadService.createTempFileFromUrlAndExtractToLocation(DOWNLOAD_URL, EXTRACT_DIR_LOCATION,
-        false);
-
-    assertNull(result);
-  }
-  
   @Test
   void testCreateTempFileFromUrlAndExtractToLocation_ReturnsNull() throws IOException {
     Path result = fileDownloadService.createTempFileFromUrlAndExtractToLocation(DOWNLOAD_URL, EXTRACT_DIR_LOCATION,
