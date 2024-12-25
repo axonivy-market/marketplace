@@ -85,7 +85,8 @@ class FileUtilsTest {
     Path tempDirectory = Files.createTempDirectory("test-dir");
     String mockFileName = "test.zip";
     byte[] zipContent = createMockZipContent();
-    MockMultipartFile mockMultipartFile = new MockMultipartFile("file", mockFileName, "application/zip", zipContent);
+    MockMultipartFile mockMultipartFile = new MockMultipartFile("file", mockFileName,
+        "application/zip", zipContent);
     try (MockedStatic<Files> mockedFiles = mockStatic(Files.class)) {
       mockedFiles.when(() -> Files.exists(tempDirectory)).thenReturn(false);
       mockedFiles.when(() -> Files.createDirectories(tempDirectory)).thenReturn(null);
