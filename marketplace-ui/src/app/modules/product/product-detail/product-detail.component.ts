@@ -14,7 +14,6 @@ import {
 import { ActivatedRoute, Router } from '@angular/router';
 import { NgbNavModule } from '@ng-bootstrap/ng-bootstrap';
 import { TranslateModule } from '@ngx-translate/core';
-import { MarkdownModule, MarkdownService } from 'ngx-markdown';
 import { forkJoin, map, Observable } from 'rxjs';
 import { AuthService } from '../../../auth/auth.service';
 import { LanguageService } from '../../../core/services/language/language.service';
@@ -76,7 +75,6 @@ const DEFAULT_ACTIVE_TAB = 'description';
     CommonModule,
     ProductStarRatingNumberComponent,
     TranslateModule,
-    MarkdownModule,
     ProductDetailInformationTabComponent,
     ProductDetailMavenContentComponent,
     NgbNavModule,
@@ -90,7 +88,7 @@ const DEFAULT_ACTIVE_TAB = 'description';
     EmptyProductDetailPipe,
     LoadingSpinnerComponent
   ],
-  providers: [ProductService, MarkdownService],
+  providers: [ProductService],
   templateUrl: './product-detail.component.html',
   styleUrl: './product-detail.component.scss'
 })

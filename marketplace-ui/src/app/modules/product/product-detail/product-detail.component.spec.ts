@@ -13,7 +13,6 @@ import { By, DomSanitizer, Title } from '@angular/platform-browser';
 import { ActivatedRoute } from '@angular/router';
 import { TranslateModule } from '@ngx-translate/core';
 import { Viewport } from 'karma-viewport/dist/adapter/viewport';
-import { MarkdownModule } from 'ngx-markdown';
 import { of } from 'rxjs';
 import { TypeOption } from '../../../shared/enums/type-option.enum';
 import {
@@ -92,7 +91,6 @@ describe('ProductDetailComponent', () => {
       imports: [
         ProductDetailComponent,
         TranslateModule.forRoot(),
-        MarkdownModule.forRoot(),
         MatomoTestingModule.forRoot()
       ],
       providers: [
