@@ -24,7 +24,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
-import static com.axonivy.market.constants.DirectoryConstants.PREVIEW_DIR;
+import static com.axonivy.market.constants.PreviewConstants.PREVIEW_DIR;
 
 @Service
 @Log4j2
@@ -121,7 +121,6 @@ public class ImageServiceImpl implements ImageService {
       log.info("#readPreviewImageByName: Preview folder not found");
     }
     try {
-
       Optional<Path> imagePath = Files.walk(previewPath)
           .filter(Files::isRegularFile)
           .filter(path -> path.getFileName().toString().equalsIgnoreCase(imageName))
