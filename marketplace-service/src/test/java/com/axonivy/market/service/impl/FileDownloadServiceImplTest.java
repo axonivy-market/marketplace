@@ -3,6 +3,7 @@ package com.axonivy.market.service.impl;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
+import org.mockito.Mock;
 import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -16,6 +17,7 @@ import java.nio.file.Paths;
 import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class FileDownloadServiceImplTest {
@@ -35,6 +37,23 @@ class FileDownloadServiceImplTest {
   @Test
   void testDownloadAndUnzipFileWithIssue() {
     assertThrows(ResourceAccessException.class, () -> fileDownloadService.downloadAndUnzipFile(DOWNLOAD_URL, true));
+  }
+
+
+  @Test
+  void testCreateTempFileFromUrlAndExtractToLocation() throws IOException {
+    Path result = fileDownloadService.createTempFileFromUrlAndExtractToLocation(DOWNLOAD_URL, EXTRACT_DIR_LOCATION,
+        false);
+
+    assertNull(result);
+  }
+  
+  @Test
+  void testCreateTempFileFromUrlAndExtractToLocation_ReturnsNull() throws IOException {
+    Path result = fileDownloadService.createTempFileFromUrlAndExtractToLocation(DOWNLOAD_URL, EXTRACT_DIR_LOCATION,
+        false);
+
+    assertNull(result);
   }
 
   @Test
@@ -82,9 +101,9 @@ class FileDownloadServiceImplTest {
   @Test
   void deleteDirectory_shouldDeleteAllFilesAndDirectories() {
     // Arrange
-    Path mockPath = Mockito.mock(Path.class);
-    Path file1 = Mockito.mock(Path.class);
-    Path file2 = Mockito.mock(Path.class);
+    Path mockPath = mock(Path.class);
+    Path file1 = mock(Path.class);
+    Path file2 = mock(Path.class);
     Stream<Path> mockStream = Stream.of(file1, file2);
 
     try (MockedStatic<Files> mockedFiles = Mockito.mockStatic(Files.class)) {

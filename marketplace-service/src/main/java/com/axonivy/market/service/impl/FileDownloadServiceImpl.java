@@ -71,7 +71,7 @@ public class FileDownloadServiceImpl implements FileDownloadService {
     return location;
   }
 
-  private Path createTempFileFromUrlAndExtractToLocation(String url, String location,
+  public Path createTempFileFromUrlAndExtractToLocation(String url, String location,
       boolean isForce) throws IOException {
     File cacheFolder = new File(location);
     if (cacheFolder.exists() && cacheFolder.isDirectory() && Objects.requireNonNull(
