@@ -12,6 +12,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Comparator;
+import java.util.stream.Stream;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
@@ -21,9 +22,7 @@ public class FileUtils {
   public static File createFile(String fileName) throws IOException {
     File file = new File(fileName);
     File parentDir = file.getParentFile();
-    if (parentDir != null && !parentDir.exists() && !parentDir.mkdirs()) {
-      throw new IOException("Failed to create directory: " + parentDir.getAbsolutePath());
-    }
+    createDirectoryFromFile(parentDir);
     if (!file.exists() && !file.createNewFile()) {
       throw new IOException("Failed to create file: " + file.getAbsolutePath());
     }
@@ -46,22 +45,16 @@ public class FileUtils {
         Path entryPath = Paths.get(entry.getName()).normalize();
         Path resolvedPath = extractDir.toPath().resolve(entryPath).normalize();
 
-        // Ensure the resolved path is within the target directory
         if (!resolvedPath.startsWith(extractDir.toPath())) {
           throw new IOException("Entry is outside the target dir: " + entry.getName());
         }
 
         File outFile = resolvedPath.toFile();
         if (entry.isDirectory()) {
-          if (!outFile.mkdirs() && !outFile.isDirectory()) {
-            throw new IOException("Failed to create directory: " + outFile);
-          }
+          createDirectoryFromFile(outFile);
         } else {
           File parentDir = outFile.getParentFile();
-          if (parentDir != null && !parentDir.exists() && !parentDir.mkdirs()) {
-            throw new IOException("Failed to create parent directory: " + parentDir);
-          }
-
+          createDirectoryFromFile(parentDir);
           try (FileOutputStream fos = new FileOutputStream(outFile)) {
             byte[] buffer = new byte[1024];
             int length;
@@ -77,6 +70,11 @@ public class FileUtils {
     }
   }
 
+  private static void createDirectoryFromFile(File file) throws IOException {
+    if (file != null && !file.mkdirs() && !file.isDirectory()) {
+      throw new IOException("Failed to create directory: " + file);
+    }
+  }
 
   public static void prepareUnZipDirectory(Path directory) throws IOException {
     clearDirectory(directory);
@@ -85,10 +83,11 @@ public class FileUtils {
 
   public static void clearDirectory(Path path) throws IOException {
     if (Files.exists(path)) {
-      Files.walk(path)
-          .sorted(Comparator.reverseOrder())
-          .map(Path::toFile)
-          .forEach(java.io.File::delete);
+      try (Stream<Path> paths = Files.walk(path)) {
+        paths.sorted(Comparator.reverseOrder())
+            .map(Path::toFile)
+            .forEach(File::delete);
+      }
     }
   }
 
