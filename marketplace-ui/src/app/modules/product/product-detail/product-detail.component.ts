@@ -1,4 +1,7 @@
 import { CommonModule, NgOptimizedImage } from '@angular/common';
+import MarkdownIt from 'markdown-it';
+import MarkdownItGitHubAlerts from 'markdown-it-github-alerts';
+import { full } from 'markdown-it-emoji';
 import {
   Component,
   ElementRef,
@@ -12,7 +15,6 @@ import {
 import { ActivatedRoute, Router } from '@angular/router';
 import { NgbNavModule } from '@ng-bootstrap/ng-bootstrap';
 import { TranslateModule } from '@ngx-translate/core';
-import { MarkdownModule, MarkdownService } from 'ngx-markdown';
 import { forkJoin, map, Observable } from 'rxjs';
 import { AuthService } from '../../../auth/auth.service';
 import { LanguageService } from '../../../core/services/language/language.service';
@@ -50,7 +52,7 @@ import { ProductStarRatingNumberComponent } from './product-star-rating-number/p
 import { DisplayValue } from '../../../shared/models/display-value.model';
 import { CookieService } from 'ngx-cookie-service';
 import { ROUTER } from '../../../shared/constants/router.constant';
-import { Title } from '@angular/platform-browser';
+import { SafeHtml, Title ,DomSanitizer} from '@angular/platform-browser';
 import { API_URI } from '../../../shared/constants/api.constant';
 import { EmptyProductDetailPipe } from '../../../shared/pipes/empty-product-detail.pipe';
 import { LoadingSpinnerComponent } from '../../../shared/components/loading-spinner/loading-spinner.component';
@@ -74,7 +76,6 @@ const DEFAULT_ACTIVE_TAB = 'description';
     CommonModule,
     ProductStarRatingNumberComponent,
     TranslateModule,
-    MarkdownModule,
     ProductDetailInformationTabComponent,
     ProductDetailMavenContentComponent,
     NgbNavModule,
@@ -88,7 +89,7 @@ const DEFAULT_ACTIVE_TAB = 'description';
     EmptyProductDetailPipe,
     LoadingSpinnerComponent
   ],
-  providers: [ProductService, MarkdownService],
+  providers: [ProductService],
   templateUrl: './product-detail.component.html',
   styleUrl: './product-detail.component.scss'
 })
@@ -141,7 +142,7 @@ export class ProductDetailComponent {
     this.updateDropdownSelection();
   }
 
-  constructor(private readonly titleService: Title) {
+  constructor(private readonly titleService: Title, private sanitizer: DomSanitizer) {
     this.scrollToTop();
     this.resizeObserver = new ResizeObserver(() => {
       this.updateDropdownSelection();
@@ -450,5 +451,13 @@ export class ProductDetailComponent {
       productDetail.vendorImageDarkMode = vendorImageDarkMode || vendorImage;
     }
     return productDetail;
+  }
+
+  renderGithubAlert(value: string): SafeHtml {
+    const md = MarkdownIt();
+    md.use(MarkdownItGitHubAlerts);
+    md.use(full); // Add emoji support
+    const result = md.render(value);
+    return this.sanitizer.bypassSecurityTrustHtml(result);
   }
 }

@@ -1,7 +1,6 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { ProductInstallationCountActionComponent } from './product-installation-count-action.component';
-import {MarkdownModule} from "ngx-markdown";
 import {TranslateModule} from "@ngx-translate/core";
 
 describe('ProductInstallationCountActionComponent', () => {
@@ -12,8 +11,7 @@ describe('ProductInstallationCountActionComponent', () => {
     await TestBed.configureTestingModule({
       imports: [
         ProductInstallationCountActionComponent,
-        TranslateModule.forRoot(),
-        MarkdownModule.forRoot()
+        TranslateModule.forRoot()
       ]
     })
     .compileComponents();

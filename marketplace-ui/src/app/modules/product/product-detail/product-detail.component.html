@@ -187,14 +187,8 @@
                         selectedVersion
                       "></app-product-detail-maven-content>
                   } @else {
-                    <markdown
-                      emoji
-                      [lang]="languageService.selectedLanguage()"
-                      class="readme-content"
-                      [data]="
-                        getProductModuleContentValue(displayedTab)
-                          | multilingualism: languageService.selectedLanguage()
-                      "></markdown>
+                    <div class="readme-content" [innerHtml]="renderGithubAlert(getProductModuleContentValue(displayedTab)
+                          | multilingualism: languageService.selectedLanguage())"></div>
                   }
                 </div>
               }
