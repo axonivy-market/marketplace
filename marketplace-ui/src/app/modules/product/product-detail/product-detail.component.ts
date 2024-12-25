@@ -1,6 +1,7 @@
 import { CommonModule, NgOptimizedImage } from '@angular/common';
 import MarkdownIt from 'markdown-it';
 import MarkdownItGitHubAlerts from 'markdown-it-github-alerts';
+import * as MarkdownItEmoji from 'markdown-it-emoji';
 import {
   Component,
   ElementRef,
@@ -455,6 +456,7 @@ export class ProductDetailComponent {
   renderGithubAlert(value: string): SafeHtml {
     const md = MarkdownIt();
     md.use(MarkdownItGitHubAlerts);
+    md.use(MarkdownItEmoji.full || MarkdownItEmoji); // Add emoji support
     const result = md.render(value);
     return this.sanitizer.bypassSecurityTrustHtml(result);
   }
