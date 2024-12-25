@@ -33,6 +33,7 @@ import com.axonivy.market.service.ImageService;
 import com.axonivy.market.service.MetadataService;
 import com.axonivy.market.service.ProductContentService;
 import com.axonivy.market.service.ProductMarketplaceDataService;
+import com.axonivy.market.service.VersionService;
 import com.axonivy.market.util.MavenUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.junit.jupiter.api.BeforeEach;
@@ -129,6 +130,8 @@ class ProductServiceImplTest extends BaseSetup {
   private ProductMarketplaceDataService productMarketplaceDataService;
   @Mock
   private ProductMarketplaceDataRepository productMarketplaceDataRepo;
+  @Mock
+  private VersionService versionService;
   @InjectMocks
   private ProductServiceImpl productService;
 
@@ -399,6 +402,32 @@ class ProductServiceImplTest extends BaseSetup {
     when(productRepo.getProductByIdAndVersion(MOCK_PRODUCT_ID, MOCK_SNAPSHOT_VERSION)).thenReturn(null);
     Product result = productService.fetchProductDetail(MOCK_PRODUCT_ID, true);
     assertNull(result);
+  }
+
+  @Test
+  void testGetCompatibilityRangeAfterFetchProductDetail() {
+    MavenArtifactVersion mockMavenArtifactVersion = getMockMavenArtifactVersionWithData();
+    when(mavenArtifactVersionRepo.findById(MOCK_PRODUCT_ID)).thenReturn(
+        Optional.ofNullable(mockMavenArtifactVersion));
+
+
+    when(productRepo.getProductByIdAndVersion(MOCK_PRODUCT_ID, MOCK_SNAPSHOT_VERSION))
+        .thenReturn(getMockProduct());
+    when(versionService.getVersionsForDesigner(MOCK_PRODUCT_ID))
+        .thenReturn(mockVersionAndUrlModels(), mockVersionModels(), mockVersionModels2(), mockVersionModels3());
+
+
+    Product result = productService.fetchProductDetail(MOCK_PRODUCT_ID, true);
+    assertEquals("10.0+", result.getCompatibilityRange());
+
+    result = productService.fetchProductDetail(MOCK_PRODUCT_ID, true);
+    assertEquals("10.0 - 11.3+", result.getCompatibilityRange());
+
+    result = productService.fetchProductDetail(MOCK_PRODUCT_ID, true);
+    assertEquals("10.0 - 11.3+", result.getCompatibilityRange());
+
+    result = productService.fetchProductDetail(MOCK_PRODUCT_ID, true);
+    assertEquals("10.0 - 12.0+", result.getCompatibilityRange());
   }
 
   @Test
