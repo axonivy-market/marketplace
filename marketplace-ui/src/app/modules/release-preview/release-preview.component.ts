@@ -41,14 +41,10 @@ const DEFAULT_ACTIVE_TAB = 'description';
 })
 export class ReleasePreviewComponent {
   selectedFile: File | null = null;
-  tabs: { label: string; content: string }[] = [];
-  loading = false;
   activeTab = DEFAULT_ACTIVE_TAB;
-  errorMessage = '';
-  availableLanguages = ['en', 'de'];
   selectedLanguage = 'en';
   isZipFile = false;
-  productModuleContent: WritableSignal<ReleasePreviewData> = signal(
+  readmeContent: WritableSignal<ReleasePreviewData> = signal(
     {} as ReleasePreviewData
   );
   languageService = inject(LanguageService);
@@ -71,65 +67,29 @@ export class ReleasePreviewComponent {
       // Check if the selected file is a ZIP file
       this.isZipFile =
         file.type === 'application/zip' || file.name.endsWith('.zip');
-
-      if (!this.isZipFile) {
-        this.errorMessage = 'Please upload a valid ZIP file.';
-      } else {
-        this.errorMessage = '';
-      }
     }
   }
 
   onSubmit(): void {
-    this.loading = true;
     this.handlePreviewPage();
   }
 
-  setActiveTab(index: string): void {
-    this.activeTab = index;
+  setActiveTab(tab: string): void {
+    this.activeTab = tab;
   }
 
   onTabChange(event: string) {
     this.setActiveTab(event);
   }
 
-  updateTabs(response: ReleasePreviewData): void {
-    if (response) {
-      this.tabs = [
-        {
-          label: 'Description',
-          content: response.description[this.selectedLanguage] || ''
-        },
-        {
-          label: 'Setup',
-          content: response.setup[this.selectedLanguage] || ''
-        },
-        { label: 'Demo', content: response.demo[this.selectedLanguage] || '' }
-      ];
-      this.activeTab = DEFAULT_ACTIVE_TAB;
-    }
-  }
-
-  private handlePreviewPage(): void {
-    if (!this.selectedFile) {
-      this.errorMessage = 'Please select a file to upload.';
+  handlePreviewPage(): void {
+    if (!this.selectedFile || !this.isZipFile) {
       return;
     }
 
-    if (!this.isZipFile) {
-      this.errorMessage = 'Only ZIP files are allowed.';
-      return;
-    }
-    this.errorMessage = '';
     this.releasePreviewService.extractZipDetails(this.selectedFile).subscribe({
       next: response => {
-        this.loading = false;
-        this.productModuleContent.set(response);
-        this.updateTabs(response);
-      },
-      error: error => {
-        this.loading = false;
-        this.errorMessage = error.message || 'An error occurred.';
+        this.readmeContent.set(response);
       }
     });
   }
@@ -146,7 +106,7 @@ export class ReleasePreviewComponent {
   }
 
   getContent(value: string): boolean {
-    const content = this.productModuleContent();
+    const content = this.readmeContent();
 
     if (!content || Object.keys(content).length === 0) {
       return false;
@@ -180,9 +140,9 @@ export class ReleasePreviewComponent {
     return CommonUtils.getLabel(this.activeTab, PRODUCT_DETAIL_TABS);
   }
 
-  getProductModuleContentValue(key: ItemDropdown): DisplayValue | null {
+  getReadmeContentValue(key: ItemDropdown): DisplayValue | null {
     type tabName = 'description' | 'demo' | 'setup';
     const value = key.value as tabName;
-    return this.productModuleContent()[value];
+    return this.readmeContent()[value];
   }
 }
