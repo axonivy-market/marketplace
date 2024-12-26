@@ -28,4 +28,7 @@ public class FileUtils {
     }
   }
 
+  public static File createNewFile(String location) {
+    return new File(location);
+  }
 }

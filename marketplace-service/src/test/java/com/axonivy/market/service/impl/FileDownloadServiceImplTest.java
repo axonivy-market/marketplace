@@ -1,6 +1,6 @@
 package com.axonivy.market.service.impl;
 
-import org.apache.commons.lang3.ObjectUtils;
+import com.axonivy.market.util.FileUtils;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -42,8 +42,16 @@ class FileDownloadServiceImplTest {
   @Test
   void testDownloadAndUnzipFileWithNullTempZipPath() throws IOException {
     try (MockedStatic<Files> mockedFiles = Mockito.mockStatic(Files.class);
-         MockedStatic<ObjectUtils> mockedObjectUtils = Mockito.mockStatic(ObjectUtils.class)) {
-      mockedObjectUtils.when(() -> ObjectUtils.isNotEmpty(any())).thenReturn(true);
+         MockedStatic<FileUtils> mockFileUtils = Mockito.mockStatic(FileUtils.class)) {
+
+      File mockChildFile = Mockito.mock(File.class);
+
+      File mockFile = Mockito.mock(File.class);
+      Mockito.when(mockFile.exists()).thenReturn(true);
+      Mockito.when(mockFile.isDirectory()).thenReturn(true);
+      Mockito.when(mockFile.listFiles()).thenReturn(new File[]{mockChildFile});
+
+      mockFileUtils.when(() -> FileUtils.createNewFile(Mockito.anyString())).thenReturn(mockFile);
 
       var result = fileDownloadService.downloadAndUnzipFile(DOWNLOAD_URL, false);
       assertFalse(result.isEmpty());
