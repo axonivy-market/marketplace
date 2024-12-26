@@ -6,7 +6,6 @@ import {
   Component,
   ElementRef,
   HostListener,
-  SecurityContext,
   Signal,
   WritableSignal,
   computed,
@@ -461,7 +460,6 @@ export class ProductDetailComponent {
     md.use(MarkdownItGitHubAlerts);
     md.use(full); // Add emoji support
     const result = md.render(value);
-    this.sanitizer.sanitize(SecurityContext.HTML, result);
     return this.sanitizer.bypassSecurityTrustHtml(result);
   }
 }

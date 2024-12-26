@@ -8,7 +8,7 @@ common:
     title: Product Release Preview
     description: Preview your product's details
     buttonLabel: Upload
-    noTabs: Seem like there's a problem with your Zip file.
+    noTabs: Seems like there's a problem with your Zip file.
     hint: Only .zip file is allowed and file size should be smaller than 20MB.
     link: See how to configure a valid README.
     hintContent: <p>

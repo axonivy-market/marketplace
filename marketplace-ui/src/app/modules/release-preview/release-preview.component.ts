@@ -5,8 +5,7 @@ import {
   Signal,
   WritableSignal,
   computed,
-  signal,
-  SecurityContext
+  signal
 } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
@@ -21,6 +20,7 @@ import { CommonDropdownComponent } from '../../shared/components/common-dropdown
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { SafeHtml, DomSanitizer } from '@angular/platform-browser';
 import MarkdownIt from 'markdown-it';
+import MarkdownItGitHubAlerts from 'markdown-it-github-alerts';
 import { full } from 'markdown-it-emoji';
 import { DisplayValue } from '../../shared/models/display-value.model';
 import { MultilingualismPipe } from '../../shared/pipes/multilingualism.pipe';
@@ -137,8 +137,8 @@ export class ReleasePreviewComponent {
   renderReadmeContent(value: string): SafeHtml {
     const md = MarkdownIt();
     md.use(full);
+    md.use(MarkdownItGitHubAlerts);
     const result = md.render(value);
-    this.sanitizer.sanitize(SecurityContext.HTML, result);
     return this.sanitizer.bypassSecurityTrustHtml(result);
   }
 }
