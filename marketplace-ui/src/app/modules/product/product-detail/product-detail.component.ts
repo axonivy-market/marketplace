@@ -162,14 +162,11 @@ export class ProductDetailComponent {
       forkJoin({
         productDetail: this.getProductDetailObservable(productId),
         productFeedBack:
-          this.productFeedbackService.getInitFeedbacksObservable(),
-        rating: this.productStarRatingService.getRatingObservable(productId),
-        userFeedback: this.productFeedbackService.findProductFeedbackOfUser()
+          this.productFeedbackService.getInitFeedbacksObservable()
       }).subscribe(res => {
         this.handleProductDetail(res.productDetail);
         this.productFeedbackService.handleFeedbackApiResponse(
-          res.productFeedBack
-        );
+          res.productFeedBack);
         this.updateDropdownSelection();
         this.checkMediaSize();
         this.route.queryParams.subscribe(params => {
@@ -181,8 +178,8 @@ export class ProductDetailComponent {
               .catch(() => this.removeQueryParam());
           }
         });
-        this.loadingService.hideLoading(LoadingComponentId.DETAIL_PAGE);
       });
+      this.loadingService.hideLoading(LoadingComponentId.DETAIL_PAGE);
     }
   }
 
