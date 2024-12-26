@@ -3,6 +3,7 @@ package com.axonivy.market.service.impl;
 import com.axonivy.market.bo.Artifact;
 import com.axonivy.market.service.FileDownloadService;
 import lombok.extern.log4j.Log4j2;
+import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.SystemUtils;
 import org.springframework.stereotype.Service;
@@ -71,11 +72,11 @@ public class FileDownloadServiceImpl implements FileDownloadService {
     return location;
   }
 
-  public Path createTempFileFromUrlAndExtractToLocation(String url, String location,
+  private Path createTempFileFromUrlAndExtractToLocation(String url, String location,
       boolean isForce) throws IOException {
     File cacheFolder = new File(location);
-    if (cacheFolder.exists() && cacheFolder.isDirectory() && Objects.requireNonNull(
-        cacheFolder.listFiles()).length > 0 && !isForce) {
+    if (cacheFolder.exists() && cacheFolder.isDirectory() && ObjectUtils.isNotEmpty(
+        cacheFolder.listFiles()) && !isForce) {
       log.warn("Data is already in {}", location);
       return null;
     } else {

@@ -1,5 +1,6 @@
 package com.axonivy.market.service.impl;
 
+import org.apache.commons.lang3.ObjectUtils;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -16,7 +17,7 @@ import java.nio.file.Paths;
 import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.*;
+import static org.mockito.ArgumentMatchers.any;
 
 @ExtendWith(MockitoExtension.class)
 class FileDownloadServiceImplTest {
@@ -39,11 +40,15 @@ class FileDownloadServiceImplTest {
   }
 
   @Test
-  void testCreateTempFileFromUrlAndExtractToLocation_ReturnsNull() throws IOException {
-    Path result = fileDownloadService.createTempFileFromUrlAndExtractToLocation(DOWNLOAD_URL, EXTRACT_DIR_LOCATION,
-        false);
+  void testDownloadAndUnzipFileWithNullTempZipPath() throws IOException {
+    try (MockedStatic<Files> mockedFiles = Mockito.mockStatic(Files.class);
+         MockedStatic<ObjectUtils> mockedObjectUtils = Mockito.mockStatic(ObjectUtils.class)) {
+      mockedObjectUtils.when(() -> ObjectUtils.isNotEmpty(any())).thenReturn(true);
 
-    assertNull(result);
+      var result = fileDownloadService.downloadAndUnzipFile(DOWNLOAD_URL, false);
+      assertFalse(result.isEmpty());
+      mockedFiles.verify(() -> Files.delete(any()), Mockito.times(0));
+    }
   }
 
   @Test
@@ -91,9 +96,9 @@ class FileDownloadServiceImplTest {
   @Test
   void deleteDirectory_shouldDeleteAllFilesAndDirectories() {
     // Arrange
-    Path mockPath = mock(Path.class);
-    Path file1 = mock(Path.class);
-    Path file2 = mock(Path.class);
+    Path mockPath = Mockito.mock(Path.class);
+    Path file1 = Mockito.mock(Path.class);
+    Path file2 = Mockito.mock(Path.class);
     Stream<Path> mockStream = Stream.of(file1, file2);
 
     try (MockedStatic<Files> mockedFiles = Mockito.mockStatic(Files.class)) {
