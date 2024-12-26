@@ -18,7 +18,10 @@ describe('ReleasePreviewComponent', () => {
   let releasePreviewService: ReleasePreviewService;
   let languageService: jasmine.SpyObj<LanguageService>;
   let sanitizerSpy: jasmine.SpyObj<DomSanitizer>;
-  const spy = jasmine.createSpyObj('DomSanitizer', ['bypassSecurityTrustHtml']);
+  const spy = jasmine.createSpyObj('DomSanitizer', [
+    'bypassSecurityTrustHtml',
+    'sanitize'
+  ]);
 
   beforeEach(async () => {
     const languageServiceSpy = jasmine.createSpyObj('LanguageService', [
@@ -26,10 +29,7 @@ describe('ReleasePreviewComponent', () => {
     ]);
 
     await TestBed.configureTestingModule({
-      imports: [
-        ReleasePreviewComponent,
-        TranslateModule.forRoot(),
-      ],
+      imports: [ReleasePreviewComponent, TranslateModule.forRoot()],
       providers: [
         provideHttpClient(withInterceptorsFromDi()),
         provideHttpClientTesting(),

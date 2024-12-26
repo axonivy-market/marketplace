@@ -31,9 +31,6 @@ import { ProductDetailActionType } from '../../../shared/enums/product-detail-ac
 import { LanguageService } from '../../../core/services/language/language.service';
 import { Language } from '../../../shared/enums/language.enum';
 import { MatomoTestingModule } from 'ngx-matomo-client/testing';
-import * as MarkdownIt from 'markdown-it';
-import * as MarkdownItGitHubAlerts from 'markdown-it-github-alerts';
-import { SafeHtml } from '@angular/platform-browser';
 import { AuthService } from '../../../auth/auth.service';
 import { AppModalService } from '../../../shared/services/app-modal.service';
 import { ProductFeedbackService } from './product-detail-feedback/product-feedbacks-panel/product-feedback.service';
@@ -58,7 +55,10 @@ describe('ProductDetailComponent', () => {
   let mockAppModalService: jasmine.SpyObj<AppModalService>;
 
   beforeEach(async () => {
-    const spy = jasmine.createSpyObj('DomSanitizer', ['bypassSecurityTrustHtml']);
+    const spy = jasmine.createSpyObj('DomSanitizer', [
+      'bypassSecurityTrustHtml',
+      'sanitize'
+    ]);
     const routingQueryParamServiceSpy = jasmine.createSpyObj(
       'RoutingQueryParamService',
       ['getDesignerVersionFromSessionStorage', 'isDesignerEnv']

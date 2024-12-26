@@ -461,9 +461,7 @@ export class ProductDetailComponent {
     md.use(MarkdownItGitHubAlerts);
     md.use(full); // Add emoji support
     const result = md.render(value);
-    const safeContent = this.sanitizer.sanitize(SecurityContext.HTML, result);
-    return safeContent
-      ? this.sanitizer.bypassSecurityTrustHtml(safeContent)
-      : '';
+    this.sanitizer.sanitize(SecurityContext.HTML, result);
+    return this.sanitizer.bypassSecurityTrustHtml(result);
   }
 }

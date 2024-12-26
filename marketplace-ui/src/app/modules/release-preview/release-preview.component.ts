@@ -131,10 +131,7 @@ export class ReleasePreviewComponent {
     const md = MarkdownIt();
     md.use(full);
     const result = md.render(value);
-    const safeContent = this.sanitizer.sanitize(SecurityContext.HTML, result);
-
-    return safeContent
-      ? this.sanitizer.bypassSecurityTrustHtml(safeContent)
-      : '';
+    this.sanitizer.sanitize(SecurityContext.HTML, result);
+    return this.sanitizer.bypassSecurityTrustHtml(result);
   }
 }
