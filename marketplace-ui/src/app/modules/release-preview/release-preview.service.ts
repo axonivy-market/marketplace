@@ -16,25 +16,4 @@ export class ReleasePreviewService {
 
     return this.http.post<ReleasePreviewData>(this.apiUrl, formData);
   }
-
-  getMockResponse(): Observable<ReleasePreviewData> {
-    return of({
-      description: {
-        English: 'This is a description in English.',
-        Spanish: 'Esta es una descripción en español.',
-        French: 'Ceci est une description en français.'
-      },
-      setup: {
-        English: 'To set up the application, follow these steps...',
-        Spanish: 'Para configurar la aplicación, siga estos pasos...',
-        French: "Pour configurer l'application, suivez ces étapes..."
-      },
-      demo: {
-        English: 'To demo the app, use the following commands...',
-        Spanish: 'Para mostrar la aplicación, use los siguientes comandos...',
-        French:
-          "Pour démontrer l'application, utilisez les commandes suivantes..."
-      }
-    });
-  }
 }

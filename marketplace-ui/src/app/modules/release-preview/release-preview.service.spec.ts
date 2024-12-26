@@ -4,6 +4,7 @@ import { ReleasePreviewService } from './release-preview.service';
 import { environment } from '../../../environments/environment';
 import { provideHttpClient, withInterceptorsFromDi } from '@angular/common/http';
 import { ReleasePreviewData } from '../../shared/models/release-preview-data.model';
+import { MOCK_RELEASE_PREVIEW_DATA } from '../../shared/mocks/mock-data';
 
 describe('SecurityMonitorService', () => {
     let service: ReleasePreviewService;
@@ -35,25 +36,7 @@ describe('SecurityMonitorService', () => {
         const mockFile = new File(['content'], 'test.zip', {
           type: 'application/zip'
         });
-        const mockResponse: ReleasePreviewData = {
-          description: {
-            English: 'This is a description in English.',
-            Spanish: 'Esta es una descripción en español.',
-            French: 'Ceci est une description en français.'
-          },
-          setup: {
-            English: 'To set up the application, follow these steps...',
-            Spanish: 'Para configurar la aplicación, siga estos pasos...',
-            French: "Pour configurer l'application, suivez ces étapes..."
-          },
-          demo: {
-            English: 'To demo the app, use the following commands...',
-            Spanish:
-              'Para mostrar la aplicación, use los siguientes comandos...',
-            French:
-              "Pour démontrer l'application, utilisez les commandes suivantes..."
-          }
-        };
+        const mockResponse: ReleasePreviewData = MOCK_RELEASE_PREVIEW_DATA
 
         service.extractZipDetails(mockFile).subscribe(data => {
           expect(data).toEqual(mockResponse);

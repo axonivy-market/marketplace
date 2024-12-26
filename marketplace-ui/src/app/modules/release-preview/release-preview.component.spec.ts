@@ -11,6 +11,7 @@ import {
   withInterceptorsFromDi
 } from '@angular/common/http';
 import { provideHttpClientTesting } from '@angular/common/http/testing';
+import { MOCK_RELEASE_PREVIEW_DATA } from '../../shared/mocks/mock-data';
 
 describe('ReleasePreviewComponent', () => {
   let component: ReleasePreviewComponent;
@@ -129,11 +130,7 @@ describe('ReleasePreviewComponent', () => {
   });
 
   it('should handle successful file upload', () => {
-    const mockResponse = {
-      description: { en: 'Description content' },
-      setup: { en: 'Setup content' },
-      demo: { en: 'Demo content' }
-    };
+    const mockResponse = MOCK_RELEASE_PREVIEW_DATA
     spyOn(releasePreviewService, 'extractZipDetails').and.returnValue(
       of(mockResponse)
     );

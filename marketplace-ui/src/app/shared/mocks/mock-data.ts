@@ -3,6 +3,7 @@ import { ProductApiResponse } from '../models/apis/product-response.model';
 import { ExternalDocument } from '../models/external-document.model';
 import { ProductDetail } from '../models/product-detail.model';
 import { ProductModuleContent } from '../models/product-module-content.model';
+import { ReleasePreviewData } from '../models/release-preview-data.model';
 import { StarRatingCounting } from '../models/star-rating-counting.model';
 
 export const MOCK_PRODUCTS = {
@@ -334,6 +335,24 @@ export const MOCK_EXTERNAL_DOCUMENT: ExternalDocument = {
   artifactId: 'portal-guide',
   artifactName: 'Portal Guide',
   relativeLink: '/market-cache/portal/portal-guide/10.0.0/doc/index.html'
+};
+
+export const MOCK_RELEASE_PREVIEW_DATA: ReleasePreviewData = {
+  description: {
+    English: 'This is a description in English.',
+    Spanish: 'Esta es una descripción en español.',
+    French: 'Ceci est une description en français.'
+  },
+  setup: {
+    English: 'To set up the application, follow these steps...',
+    Spanish: 'Para configurar la aplicación, siga estos pasos...',
+    French: "Pour configurer l'application, suivez ces étapes..."
+  },
+  demo: {
+    English: 'To demo the app, use the following commands...',
+    Spanish: 'Para mostrar la aplicación, use los siguientes comandos...',
+    French: "Pour démontrer l'application, utilisez les commandes suivantes..."
+  }
 };
 
 export const MOCK_FEEDBACK_API_RESPONSE: FeedbackApiResponse = {

@@ -45,6 +45,8 @@ export class ReleasePreviewComponent {
   activeTab = DEFAULT_ACTIVE_TAB;
   selectedLanguage = 'en';
   isZipFile = false;
+  isUploaded = false;
+  shouldShowHint = false;
   readmeContent: WritableSignal<ReleasePreviewData> = signal(
     {} as ReleasePreviewData
   );
@@ -72,6 +74,10 @@ export class ReleasePreviewComponent {
     }
   }
 
+  toggleHint() {
+    this.shouldShowHint = !this.shouldShowHint;
+  }
+
   onSubmit(): void {
     this.handlePreviewPage();
   }
@@ -84,10 +90,11 @@ export class ReleasePreviewComponent {
     if (!this.selectedFile || !this.isZipFile) {
       return;
     }
-
     this.releasePreviewService.extractZipDetails(this.selectedFile).subscribe({
       next: response => {
         this.readmeContent.set(response);
+        this.isUploaded = true;
+        this.shouldShowHint = false;
       }
     });
   }
