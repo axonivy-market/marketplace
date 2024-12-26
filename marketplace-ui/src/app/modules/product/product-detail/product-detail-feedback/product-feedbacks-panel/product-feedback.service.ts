@@ -93,10 +93,7 @@ export class ProductFeedbackService {
       .set('sort', sort);
     const requestURL = `${FEEDBACK_API_URL}/product/${productId}`;
     return this.http
-      .get<FeedbackApiResponse>(requestURL, {
-        params: requestParams,
-        context: new HttpContext().set(ForwardingError, true)
-      })
+      .get<FeedbackApiResponse>(requestURL, { params: requestParams })
       .pipe(
         tap(response => {
           if (page === 0) {
