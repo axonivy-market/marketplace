@@ -44,6 +44,9 @@ jobs:
           rm -rf ./marketplace-service/*
           rm -rf ./publish/*
           rm -rf ./config/*
+      - name: Delete old network
+        run: |
+          docker network rm marketplace-network
 
   build-and-deploy:
     name: Build and bring up docker containers
@@ -111,6 +114,10 @@ jobs:
         run: |
           xml ed -L -u "//_:project/_:version" -v "${{ inputs.release_version }}" $POM_FILE
           sed -i 's/"version": "[^"]*"/"version": "${{ inputs.release_version }}"/' $PACKAGE_FILE
+
+      - name: Create new network
+        run: |
+          docker network create -d bridge marketplace-network
 
       - name: Build and bring up containers without cache
         working-directory: ${{ env.BASE_WORKING_DIR }}/publish
