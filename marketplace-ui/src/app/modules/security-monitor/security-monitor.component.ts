@@ -6,21 +6,26 @@ import { HttpErrorResponse } from '@angular/common/http';
 import { SecurityMonitorService } from './security-monitor.service';
 import { ProductSecurityInfo } from '../../shared/models/product-security-info-model';
 import { GITHUB_MARKET_ORG_URL, REPO_PAGE_PATHS, SECURITY_MONITOR_MESSAGES, SECURITY_MONITOR_SESSION_KEYS, TIME_UNITS, UNAUTHORIZED } from '../../shared/constants/common.constant';
+import { LoadingComponentId } from '../../shared/enums/loading-component-id';
+import { LoadingService } from '../../core/services/loading/loading.service';
+import { finalize } from 'rxjs';
+import { LoadingSpinnerComponent } from '../../shared/components/loading-spinner/loading-spinner.component';
 
 @Component({
   selector: 'app-security-monitor',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, LoadingSpinnerComponent],
   templateUrl: './security-monitor.component.html',
   styleUrls: ['./security-monitor.component.scss'],
-  encapsulation: ViewEncapsulation.Emulated,
+  encapsulation: ViewEncapsulation.Emulated
 })
 export class SecurityMonitorComponent {
   isAuthenticated = false;
   token = '';
   errorMessage = '';
   repos: ProductSecurityInfo[] = [];
-
+  protected LoadingComponentId = LoadingComponentId;
+  loadingService = inject(LoadingService);
   private readonly securityMonitorService = inject(SecurityMonitorService);
 
   ngOnInit(): void {
@@ -45,8 +50,7 @@ export class SecurityMonitorComponent {
         this.repos = JSON.parse(sessionData) as ProductSecurityInfo[];
         this.isAuthenticated = true;
       }
-    }
-    catch (error) {
+    } catch (error) {
       this.clearSessionData();
     }
   }
@@ -58,10 +62,18 @@ export class SecurityMonitorComponent {
   }
 
   private fetchSecurityDetails(): void {
-    this.securityMonitorService.getSecurityDetails(this.token).subscribe({
-      next: data => this.handleSuccess(data),
-      error: (err: HttpErrorResponse) => this.handleError(err),
-    });
+    this.loadingService.showLoading(LoadingComponentId.SECURITY_MONITOR);
+    this.securityMonitorService
+      .getSecurityDetails(this.token)
+      .pipe(
+        finalize(() =>
+          this.loadingService.hideLoading(LoadingComponentId.SECURITY_MONITOR)
+        )
+      )
+      .subscribe({
+        next: data => this.handleSuccess(data),
+        error: (err: HttpErrorResponse) => this.handleError(err)
+      });
   }
 
   private handleSuccess(data: ProductSecurityInfo[]): void {
