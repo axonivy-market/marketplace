@@ -18,7 +18,6 @@ export class ProductService {
   loadingService = inject(LoadingService);
 
   findProductsByCriteria(criteria: Criteria): Observable<ProductApiResponse> {
-    this.loadingService.showLoading(LoadingComponentId.LANDING_PAGE);
     let requestParams = new HttpParams();
     let requestURL = API_URI.PRODUCT;
     if (criteria.nextPageHref) {
@@ -82,7 +81,13 @@ export class ProductService {
     const params = new HttpParams()
       .append('designerVersion', designerVersion)
       .append('isShowDevVersion', showDevVersion);
-    return this.httpClient.get<VersionData[]>(url, { params });
+    return this.httpClient.get<VersionData[]>(url, {
+      params,
+      context: new HttpContext().set(
+        LoadingComponent,
+        LoadingComponentId.PRODUCT_VERSION
+      )
+    });
   }
 
   sendRequestToUpdateInstallationCount(
