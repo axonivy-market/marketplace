@@ -30,18 +30,18 @@ import static com.axonivy.market.constants.PreviewConstants.PREVIEW_DIR;
 @AllArgsConstructor
 public class ReleasePreviewServiceImpl implements ReleasePreviewService {
 
-
   @Override
   public ReleasePreview extract(MultipartFile file, String baseUrl) {
     try {
       FileUtils.unzip(file, PREVIEW_DIR);
     } catch (IOException e){
       log.info("#extract Error extracting zip file, message: {}", e.getMessage());
+      return null;
     }
-    return extractREADME(baseUrl, PREVIEW_DIR);
+    return extractReadme(baseUrl, PREVIEW_DIR);
   }
 
-  public ReleasePreview extractREADME(String baseUrl, String location) {
+  public ReleasePreview extractReadme(String baseUrl, String location) {
     Map<String, Map<String, String>> moduleContents = new HashMap<>();
     try (Stream<Path> readmePathStream = Files.walk(Paths.get(location))) {
       List<Path> readmeFiles = readmePathStream.filter(Files::isRegularFile)

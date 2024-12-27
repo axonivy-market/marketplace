@@ -18,7 +18,9 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import static com.axonivy.market.constants.RequestMappingConstants.*;
+import static com.axonivy.market.constants.RequestMappingConstants.BY_ID;
+import static com.axonivy.market.constants.RequestMappingConstants.IMAGE;
+import static com.axonivy.market.constants.RequestMappingConstants.BY_FILE_NAME;
 import static com.axonivy.market.constants.RequestParamConstants.ID;
 
 @RestController
@@ -55,6 +57,12 @@ public class ImageController {
   }
 
   @GetMapping(BY_FILE_NAME)
+  @Operation(summary = "Get the preview image content by file name",
+          description = "Collect the byte[] of image with contentType in header is PNG")
+  @ApiResponse(responseCode = "200", description = "Image found and returned",
+          content = @Content(mediaType = MediaType.IMAGE_PNG_VALUE, schema = @Schema(implementation = Image.class)))
+  @ApiResponse(responseCode = "404", description = "Image not found")
+  @ApiResponse(responseCode = "204", description = "No content (image empty)")
   public ResponseEntity<byte[]> findPreviewImageByName(
       @PathVariable("imageName") String imageName) {
     HttpHeaders headers = new HttpHeaders();

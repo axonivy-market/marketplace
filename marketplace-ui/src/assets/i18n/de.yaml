@@ -8,7 +8,7 @@ common:
     description: Vorschau der Beschreibung Ihres Produkts
     buttonLabel: Hochladen
     hint: Es sind nur .zip-Dateien erlaubt und die Dateigröße sollte kleiner als 20 MB sein.
-    noTabs: Seem like there's a problem with your Zip file.
+    noTabs: Es scheint ein Problem mit Ihrer Zip-Datei zu geben.
     link: So erstellen Sie eine gültige README.
     hintContent: <p>
       Befolgen Sie die README-Vorlage strikt. Stellen Sie Folgendes sicher.

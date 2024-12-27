@@ -93,7 +93,7 @@ class ReleasePreviewServiceImplTest {
   }
 
   @Test
-  void testExtractREADME_Success() throws IOException {
+  void testExtractReadme_Success() throws IOException {
     String parentPath = tempDirectory.getParent().toString();
     Path readmeFile = FileUtils.createFile(parentPath + "/README.md").toPath();
     Files.writeString(readmeFile, readmeContent);
@@ -108,7 +108,7 @@ class ReleasePreviewServiceImplTest {
       when(releasePreviewService.updateImagesWithDownloadUrl(any(), anyString(), anyString())).thenReturn(
           updatedReadme);
 
-      ReleasePreview result = releasePreviewService.extractREADME(baseUrl, tempDirectory.toString());
+      ReleasePreview result = releasePreviewService.extractReadme(baseUrl, tempDirectory.toString());
       assertNotNull(result);
     }
     Files.deleteIfExists(readmeFile);
@@ -120,21 +120,21 @@ class ReleasePreviewServiceImplTest {
       mockedFiles.when(() -> Files.walk(tempDirectory))
           .thenReturn(Stream.empty());
 
-      ReleasePreview result = releasePreviewService.extractREADME(baseUrl, tempDirectory.toString());
+      ReleasePreview result = releasePreviewService.extractReadme(baseUrl, tempDirectory.toString());
       assertNull(result);
     }
   }
 
   @Test
-  void testExtractREADME_IOException() {
+  void testExtractReadme_IOException() {
     try (MockedStatic<Files> mockedFiles = mockStatic(Files.class)) {
       mockedFiles.when(() -> Files.walk(tempDirectory))
           .thenThrow(new IOException("Simulated IOException"));
 
-      ReleasePreview result = releasePreviewService.extractREADME(baseUrl, tempDirectory.toString());
+      ReleasePreview result = releasePreviewService.extractReadme(baseUrl, tempDirectory.toString());
       assertNull(result);
       assertDoesNotThrow(
-          () -> releasePreviewService.extractREADME(baseUrl, tempDirectory.toString()));
+              () -> releasePreviewService.extractReadme(baseUrl, tempDirectory.toString()));
     }
   }
 

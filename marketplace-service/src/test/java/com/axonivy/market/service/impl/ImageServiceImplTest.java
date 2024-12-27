@@ -165,7 +165,7 @@ class ImageServiceImplTest extends BaseSetup {
 
   @Test
   void testReadPreviewImageByName_ImageExists() {
-    Path imagePath = Path.of("test.png");
+    Path imagePath = Path.of(IMAGE_NAME);
 
     try (MockedStatic<Files> mockedFiles = mockStatic(Files.class);
          MockedStatic<MavenUtils> mockedMavenUtils = mockStatic(MavenUtils.class)) {
@@ -177,7 +177,7 @@ class ImageServiceImplTest extends BaseSetup {
       InputStream mockedInputStream = new ByteArrayInputStream("mocked image content".getBytes());
       mockedMavenUtils.when(() -> MavenUtils.extractedContentStream(imagePath)).thenReturn(mockedInputStream);
 
-      byte[] result = imageService.readPreviewImageByName("test.png");
+      byte[] result = imageService.readPreviewImageByName(IMAGE_NAME);
 
       assertNotNull(result);
       assertArrayEquals("mocked image content".getBytes(), result);
@@ -188,7 +188,7 @@ class ImageServiceImplTest extends BaseSetup {
   void testReadPreviewImageByName_NotFoundDirectory() {
     try (MockedStatic<Files> mockedFiles = mockStatic(Files.class)) {
       mockedFiles.when(() -> Files.exists(any())).thenReturn(false);
-      byte[] result = imageService.readPreviewImageByName("test.png");
+      byte[] result = imageService.readPreviewImageByName(IMAGE_NAME);
 
       assertNull(result);
     }
@@ -196,7 +196,7 @@ class ImageServiceImplTest extends BaseSetup {
 
   @Test
   void testReadPreviewImageByName_NotFoundImage() {
-    Path imagePath = Path.of("test.png");
+    Path imagePath = Path.of(IMAGE_NAME);
 
     try (MockedStatic<Files> mockedFiles = mockStatic(Files.class);
          MockedStatic<MavenUtils> mockedMavenUtils = mockStatic(MavenUtils.class)) {
@@ -221,7 +221,7 @@ class ImageServiceImplTest extends BaseSetup {
       mockedFiles.when(() -> Files.isRegularFile(any())).thenReturn(true);
       mockedFiles.when(() -> Files.walk(any())).thenThrow(new IOException("Exception!!"));
 
-      assertDoesNotThrow(() -> imageService.readPreviewImageByName("test.png"));
+      assertDoesNotThrow(() -> imageService.readPreviewImageByName(IMAGE_NAME));
     }
   }
 

@@ -56,7 +56,7 @@ public class FileUtils {
           File parentDir = outFile.getParentFile();
           createDirectoryFromFile(parentDir);
           try (FileOutputStream fos = new FileOutputStream(outFile)) {
-            byte[] buffer = new byte[1024];
+            byte[] buffer = new byte[4096];
             int length;
             while ((length = zipInputStream.read(buffer)) > 0) {
               fos.write(buffer, 0, length);

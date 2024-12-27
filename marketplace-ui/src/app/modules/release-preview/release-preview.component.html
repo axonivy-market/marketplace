@@ -16,14 +16,10 @@
           (change)="onFileSelected($event)"
           accept=".zip"
           class="form-control" />
-        <small
-          [lang]="languageService.selectedLanguage()"
-          class="hint-text">
+        <small [lang]="languageService.selectedLanguage()" class="hint-text">
           {{ translateService.get('common.preview.hint') | async }}
         </small>
-        <small
-          [lang]="languageService.selectedLanguage()"
-          class="hint-text">
+        <small [lang]="languageService.selectedLanguage()" class="hint-text">
           <a
             href="javascript:void(0)"
             (click)="toggleHint()"
@@ -116,9 +112,7 @@
         } @else {
           <div class="no-tabs d-xl-block col-12">
             @if (isUploaded) {
-              <p
-                [lang]="languageService.selectedLanguage()"
-                class="text-secondary">
+              <p [lang]="languageService.selectedLanguage()">
                 {{ translateService.get('common.preview.noTabs') | async }}
               </p>
             }
