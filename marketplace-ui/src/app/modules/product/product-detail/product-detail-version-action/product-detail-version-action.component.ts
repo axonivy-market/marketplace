@@ -285,8 +285,7 @@ export class ProductDetailVersionActionComponent implements AfterViewInit {
 
   @HostListener('document:click', ['$event'])
     handleClickOutside(event: MouseEvent): void {
-      let nativeElement = this.elementRef.nativeElement;
-      if (!nativeElement
+      if (!this.elementRef.nativeElement
             .querySelector('#download-dropdown-menu')
             .contains(event.target)
         &&
