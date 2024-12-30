@@ -168,8 +168,7 @@ export class ProductDetailComponent {
       }).subscribe(res => {
         this.handleProductDetail(res.productDetail);
         this.productFeedbackService.handleFeedbackApiResponse(
-          res.productFeedBack
-        );
+          res.productFeedBack);
         this.updateDropdownSelection();
         this.checkMediaSize();
         this.route.queryParams.subscribe(params => {
@@ -181,8 +180,8 @@ export class ProductDetailComponent {
               .catch(() => this.removeQueryParam());
           }
         });
-        this.loadingService.hideLoading(LoadingComponentId.DETAIL_PAGE);
       });
+      this.loadingService.hideLoading(LoadingComponentId.DETAIL_PAGE);
     }
   }
 
