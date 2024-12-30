@@ -125,7 +125,6 @@ export class ProductDetailComponent {
     return this.getDisplayedTabsSignal();
   });
   isDropdownOpen: WritableSignal<boolean> = signal(false);
-  isTabDropdownShown: WritableSignal<boolean> = signal(false);
   selectedVersion = '';
   metaProductJsonUrl: string | undefined = '';
   showPopup!: boolean;
@@ -321,8 +320,6 @@ export class ProductDetailComponent {
 
   onTabChange(event: string): void {
     this.setActiveTab(event);
-    this.isTabDropdownShown.update(value => !value);
-    this.onTabDropdownShown();
   }
 
   getSelectedTabLabel(): string {
@@ -361,22 +358,8 @@ export class ProductDetailComponent {
     this.isDropdownOpen.update(value => !value);
   }
 
-  onTabDropdownShown(): void {
-    this.isTabDropdownShown.set(!this.isTabDropdownShown());
-  }
-
   @HostListener('document:click', ['$event'])
   handleClickOutside(event: MouseEvent): void {
-    const formSelect =
-      this.elementRef.nativeElement.querySelector('.form-select');
-
-    if (
-      formSelect &&
-      !formSelect.contains(event.target) &&
-      this.isTabDropdownShown()
-    ) {
-      this.onTabDropdownShown();
-    }
   }
 
   @HostListener('window:resize', ['$event'])
