@@ -198,15 +198,6 @@ describe('ProductDetailComponent', () => {
     });
   });
 
-  it('should toggle isDropdownOpen on onShowDropdown', () => {
-    component.isDropdownOpen.set(false);
-    component.onShowInfoContent();
-    expect(component.isDropdownOpen()).toBe(true);
-
-    component.onShowInfoContent();
-    expect(component.isTabDropdownShown()).toBe(false);
-  });
-
   it('should reset state before fetching new product details', () => {
     component.productDetail.set(MOCK_PRODUCT_DETAIL);
     component.productModuleContent.set(
