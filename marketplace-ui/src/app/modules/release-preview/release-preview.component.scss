@@ -20,17 +20,17 @@
 }
 
 .hint-text {
-  font-size: 10px;
+  font-size: 1rem;
 }
 
 /* Form Styles */
 .form-group {
-  font-size: 18px;
+  font-size: 1.8rem;
   margin-bottom: 15px;
 }
 
 /* File Input Styles */
-#fileInput {
+#file-input {
   border: 1px solid #ced4da;
   padding: 10px;
   width: 100%;
@@ -38,7 +38,7 @@
   margin-top: 10px;
 }
 
-#fileInput:focus {
+#file-input:focus {
   outline: none;
   border-color: #5b9bd5;
 }
@@ -61,13 +61,12 @@ button:disabled {
 .no-tabs {
   text-align: center;
   padding: 50px;
-  font-size: 1.2rem;
-  color: #6c757d;
 }
 
 .no-tabs p {
   margin: 0;
-  color: #6c757d;
+  font-size: 1.2rem;
+  color: var(--text-no-rating-color);
 }
 
 /* Hint content styling */
@@ -111,21 +110,21 @@ button:disabled {
 
 .readme-content ::ng-deep {
   h1 {
-    font-size: 24px;
+    font-size: 2.4rem;
   }
 
   h2 {
-    font-size: 22px;
+    font-size: 2.2rem;
   }
 
   h3 {
-    font-size: 20px;
+    font-size: 2rem;
   }
 
   p,
   ul,
   li {
-    font-size: 18px;
+    font-size: 1.8rem;
     font-weight: 400;
     color: var(--ivy-text-primary-color);
   }
@@ -156,7 +155,7 @@ button:disabled {
       padding: 8px;
       word-wrap: break-word;
       white-space: normal;
-      font-size: 12px;
+      font-size: 1.2rem;
     }
 
     tr {
@@ -182,7 +181,7 @@ button:disabled {
 
   a {
     font-weight: 400;
-    font-size: 22px;
+    font-size: 2.2rem;
   }
 
   a.active {
@@ -231,15 +230,4 @@ button:disabled {
 
 .dropdown-tab {
   margin-top: 10px;
-}
-
-.tab-group {
-  gap: 40px;
-
-  .tab-content {
-    .tab-pane {
-      opacity: 1;
-      transition: none;
-    }
-  }
 }

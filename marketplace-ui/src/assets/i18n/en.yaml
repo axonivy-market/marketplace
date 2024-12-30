@@ -5,6 +5,7 @@ common:
     french: Français
     german: Deutsch
   preview:
+    pageTitle: Release Preview
     title: Product Release Preview
     description: Preview your product's details
     buttonLabel: Upload

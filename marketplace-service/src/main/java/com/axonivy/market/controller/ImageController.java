@@ -57,12 +57,7 @@ public class ImageController {
   }
 
   @GetMapping(BY_FILE_NAME)
-  @Operation(summary = "Get the preview image content by file name",
-          description = "Collect the byte[] of image with contentType in header is PNG")
-  @ApiResponse(responseCode = "200", description = "Image found and returned",
-          content = @Content(mediaType = MediaType.IMAGE_PNG_VALUE, schema = @Schema(implementation = Image.class)))
-  @ApiResponse(responseCode = "404", description = "Image not found")
-  @ApiResponse(responseCode = "204", description = "No content (image empty)")
+  @Operation(hidden = true)
   public ResponseEntity<byte[]> findPreviewImageByName(
       @PathVariable("imageName") String imageName) {
     HttpHeaders headers = new HttpHeaders();

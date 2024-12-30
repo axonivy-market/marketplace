@@ -18,7 +18,7 @@ import { PRODUCT_DETAIL_TABS } from '../../shared/constants/common.constant';
 import { ItemDropdown } from '../../shared/models/item-dropdown.model';
 import { CommonDropdownComponent } from '../../shared/components/common-dropdown/common-dropdown.component';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
-import { SafeHtml,Title , DomSanitizer } from '@angular/platform-browser';
+import { SafeHtml, Title, DomSanitizer } from '@angular/platform-browser';
 import MarkdownIt from 'markdown-it';
 import MarkdownItGitHubAlerts from 'markdown-it-github-alerts';
 import { full } from 'markdown-it-emoji';
@@ -26,7 +26,6 @@ import { DisplayValue } from '../../shared/models/display-value.model';
 import { MultilingualismPipe } from '../../shared/pipes/multilingualism.pipe';
 
 const DEFAULT_ACTIVE_TAB = 'description';
-const PAGE_TITLE = 'Release Preview';
 @Component({
   selector: 'app-release-preview',
   standalone: true,
@@ -65,7 +64,21 @@ export class ReleasePreviewComponent {
   private readonly releasePreviewService = inject(ReleasePreviewService);
 
   ngOnInit(): void {
-    this.titleService.setTitle(PAGE_TITLE);
+    // Set the title initially
+    this.updateHomePageTitle();
+
+    // Update the title whenever the language changes
+    this.translateService.onLangChange.subscribe(() => {
+      this.updateHomePageTitle();
+    });
+  }
+
+  private updateHomePageTitle(): void {
+    this.translateService
+      .get('common.preview.pageTitle')
+      .subscribe((translatedTitle: string) => {
+        this.titleService.setTitle(translatedTitle);
+      });
   }
 
   onFileSelected(event: Event): void {
@@ -76,7 +89,8 @@ export class ReleasePreviewComponent {
 
       // Check if the selected file is a ZIP file
       this.isZipFile =
-        file.type === 'application/zip' || file.name.endsWith('.zip') && file.size < 20 * 1024 * 1024;
+        file.type === 'application/zip' ||
+        (file.name.endsWith('.zip') && file.size < 20 * 1024 * 1024);
     }
   }
 
