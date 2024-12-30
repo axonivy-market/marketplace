@@ -162,7 +162,9 @@ export class ProductDetailComponent {
       forkJoin({
         productDetail: this.getProductDetailObservable(productId),
         productFeedBack:
-          this.productFeedbackService.getInitFeedbacksObservable()
+          this.productFeedbackService.getInitFeedbacksObservable(),
+        rating: this.productStarRatingService.getRatingObservable(productId),
+        userFeedback: this.productFeedbackService.findProductFeedbackOfUser()
       }).subscribe(res => {
         this.handleProductDetail(res.productDetail);
         this.productFeedbackService.handleFeedbackApiResponse(
