@@ -852,4 +852,15 @@ describe('ProductDetailComponent', () => {
 
     expect(result).toBe(mockedRenderedHtml);
   });
+
+  it('should close the dropdown when clicking outside', () => {
+    component.isDropdownOpen.set(true);
+    fixture.detectChanges();
+
+    const event = new MouseEvent('click');
+    document.dispatchEvent(event);
+    fixture.detectChanges();
+
+    expect(component.isDropdownOpen()).toBeFalse();
+  });
 });

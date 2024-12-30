@@ -360,6 +360,14 @@ export class ProductDetailComponent {
 
   @HostListener('document:click', ['$event'])
   handleClickOutside(event: MouseEvent): void {
+    let nativeElement = this.elementRef.nativeElement;
+    if (!(
+        nativeElement.querySelector('.info-dropdown').contains(event.target) ||
+        nativeElement.querySelector('#info-content-dropdown__icon').contains(event.target)
+      ) && this.isDropdownOpen()
+    ) {
+      this.onShowInfoContent();
+    }
   }
 
   @HostListener('window:resize', ['$event'])
