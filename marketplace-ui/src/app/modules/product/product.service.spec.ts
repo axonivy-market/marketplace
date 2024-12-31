@@ -2,7 +2,6 @@ import { TestBed } from '@angular/core/testing';
 
 import { provideHttpClient, withInterceptorsFromDi } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
-import { LoadingService } from '../../core/services/loading/loading.service';
 import { Language } from '../../shared/enums/language.enum';
 import { SortOption } from '../../shared/enums/sort-option.enum';
 import { TypeOption } from '../../shared/enums/type-option.enum';
@@ -27,8 +26,7 @@ describe('ProductService', () => {
       providers: [
         ProductService,
         provideHttpClient(withInterceptorsFromDi()),
-        provideHttpClientTesting(),
-        LoadingService
+        provideHttpClientTesting()
       ]
     });
     service = TestBed.inject(ProductService);

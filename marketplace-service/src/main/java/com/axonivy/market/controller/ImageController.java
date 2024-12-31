@@ -20,6 +20,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import static com.axonivy.market.constants.RequestMappingConstants.BY_ID;
 import static com.axonivy.market.constants.RequestMappingConstants.IMAGE;
+import static com.axonivy.market.constants.RequestMappingConstants.BY_FILE_NAME;
 import static com.axonivy.market.constants.RequestParamConstants.ID;
 
 @RestController
@@ -49,6 +50,19 @@ public class ImageController {
       return new ResponseEntity<>(HttpStatus.NOT_FOUND);
     }
 
+    if (imageData.length == 0) {
+      return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+    }
+    return new ResponseEntity<>(imageData, headers, HttpStatus.OK);
+  }
+
+  @GetMapping(BY_FILE_NAME)
+  @Operation(hidden = true)
+  public ResponseEntity<byte[]> findPreviewImageByName(
+      @PathVariable("imageName") String imageName) {
+    HttpHeaders headers = new HttpHeaders();
+    headers.setContentType(MediaType.IMAGE_PNG);
+    byte[] imageData = imageService.readPreviewImageByName(imageName);
     if (imageData.length == 0) {
       return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
