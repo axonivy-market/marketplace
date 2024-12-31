@@ -27,7 +27,7 @@ public class ReleasePreviewController {
   private final ReleasePreviewService previewService;
 
   @PostMapping
-  @Operation()
+  @Operation(hidden = true)
   public ResponseEntity<Object> extractZipFile(@RequestParam(value = "file") MultipartFile file) {
     String baseUrl = ServletUriComponentsBuilder.fromCurrentContextPath().build().toUriString();
     ReleasePreview preview = previewService.extract(file, baseUrl);
