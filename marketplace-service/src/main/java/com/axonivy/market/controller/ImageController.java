@@ -63,9 +63,6 @@ public class ImageController {
     HttpHeaders headers = new HttpHeaders();
     headers.setContentType(MediaType.IMAGE_PNG);
     byte[] imageData = imageService.readPreviewImageByName(imageName);
-    if (imageData == null) {
-      return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-    }
     if (imageData.length == 0) {
       return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }

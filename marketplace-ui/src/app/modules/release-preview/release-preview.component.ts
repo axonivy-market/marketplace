@@ -85,12 +85,13 @@ export class ReleasePreviewComponent {
     const input = event.target as HTMLInputElement;
     if (input.files && input.files.length > 0) {
       const file = input.files[0];
+      const maxFileSize = 20 * 1024 * 1024;
       this.selectedFile = file;
 
       // Check if the selected file is a ZIP file
       this.isZipFile =
         file.type === 'application/zip' ||
-        (file.name.endsWith('.zip') && file.size < 20 * 1024 * 1024);
+        (file.name.endsWith('.zip') && file.size < maxFileSize);
     }
   }
 

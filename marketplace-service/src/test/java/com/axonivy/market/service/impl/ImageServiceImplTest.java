@@ -190,7 +190,7 @@ class ImageServiceImplTest extends BaseSetup {
       mockedFiles.when(() -> Files.exists(any())).thenReturn(false);
       byte[] result = imageService.readPreviewImageByName(IMAGE_NAME);
 
-      assertNull(result);
+      assertEquals(0, result.length);
     }
   }
 
@@ -208,7 +208,7 @@ class ImageServiceImplTest extends BaseSetup {
 
       byte[] result = imageService.readPreviewImageByName("wrong.png");
 
-      assertNull(result);
+      assertEquals(0, result.length);
     }
   }
 

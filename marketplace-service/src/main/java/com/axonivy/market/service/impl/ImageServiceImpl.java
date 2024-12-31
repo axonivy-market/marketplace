@@ -127,13 +127,13 @@ public class ImageServiceImpl implements ImageService {
           .findFirst();
       if (imagePath.isEmpty()) {
         log.info("#readPreviewImageByName: Image with name {} is missing", imageName);
-        return null;
+        return new byte[0];
       }
       InputStream contentStream = MavenUtils.extractedContentStream(imagePath.get());
       return IOUtils.toByteArray(contentStream);
     } catch (IOException e) {
       log.error("#readPreviewImageByName: Error when read preview image {}: {}", imageName, e.getMessage());
-      return null;
+      return new byte[0];
     }
   }
 
