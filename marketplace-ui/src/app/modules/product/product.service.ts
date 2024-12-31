@@ -1,7 +1,6 @@
 import { HttpClient, HttpContext, HttpParams } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
 import { Observable } from 'rxjs';
-import { LoadingService } from '../../core/services/loading/loading.service';
 import { RequestParam } from '../../shared/enums/request-param';
 import { ProductApiResponse } from '../../shared/models/apis/product-response.model';
 import { Criteria } from '../../shared/models/criteria.model';
@@ -15,7 +14,6 @@ import { LoadingComponentId } from '../../shared/enums/loading-component-id';
 @Injectable()
 export class ProductService {
   httpClient = inject(HttpClient);
-  loadingService = inject(LoadingService);
 
   findProductsByCriteria(criteria: Criteria): Observable<ProductApiResponse> {
     let requestParams = new HttpParams();
