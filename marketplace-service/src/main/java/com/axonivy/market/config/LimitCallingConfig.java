@@ -2,6 +2,7 @@ package com.axonivy.market.config;
 
 import io.github.bucket4j.Bandwidth;
 import io.github.bucket4j.Bucket;
+import io.micrometer.common.util.StringUtils;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -59,7 +60,7 @@ public class LimitCallingConfig extends OncePerRequestFilter {
 
   private String getClientIp(HttpServletRequest request) {
     String forwardedFor = request.getHeader(REQUEST_HEADER);
-    if (forwardedFor != null && !forwardedFor.isEmpty()) {
+    if (StringUtils.isNotEmpty(forwardedFor)) {
       return forwardedFor.split(",")[0];
     }
     return request.getRemoteAddr();
