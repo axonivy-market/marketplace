@@ -82,6 +82,8 @@ jobs:
           GH_TOKEN: ${{ secrets.GH_TOKEN }}
           MARKET_JWT_SECRET_KEY: ${{ secrets.MARKET_JWT_SECRET_KEY }}
           MARKET_CORS_ALLOWED_ORIGIN: ${{ secrets.MARKET_CORS_ALLOWED_ORIGIN }}
+          MARKET_CLICK_LIMIT: ${{secrets.MARKET_CLICK_LIMIT}}
+          MARKET_LIMITED_REQUEST_PATHS: ${{secrets.MARKET_LIMITED_REQUEST_PATHS}}
         run: |
           if [ "${{ inputs.build_env }}" == "production" ]; then
             OAUTH_APP_CLIENT_ID=${{ secrets.OAUTH_APP_CLIENT_ID }}
@@ -101,6 +103,8 @@ jobs:
           sed -i "s/^MARKET_GITHUB_OAUTH_APP_CLIENT_SECRET=.*$/MARKET_GITHUB_OAUTH_APP_CLIENT_SECRET=$OAUTH_APP_CLIENT_SECRET/" $ENV_FILE
           sed -i "s/^MARKET_JWT_SECRET_KEY=.*$/MARKET_JWT_SECRET_KEY=$MARKET_JWT_SECRET_KEY/" $ENV_FILE
           sed -i "s/^MARKET_CORS_ALLOWED_ORIGIN=.*$/MARKET_CORS_ALLOWED_ORIGIN=$MARKET_CORS_ALLOWED_ORIGIN/" $ENV_FILE
+          sed -i "s/^MARKET_CLICK_LIMIT=.*$/MARKET_CLICK_LIMIT=$MARKET_CLICK_LIMIT/" $ENV_FILE
+          sed -i "s/^MARKET_LIMITED_REQUEST_PATHS=.*$/MARKET_LIMITED_REQUEST_PATHS=$MARKET_LIMITED_REQUEST_PATHS/" $ENV_FILE
 
       - name: Update version
         if: ${{ inputs.release_version != '' }}
