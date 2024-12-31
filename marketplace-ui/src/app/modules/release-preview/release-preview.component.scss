@@ -1,0 +1,233 @@
+/* Container */
+.container {
+  max-width: 100%;
+  margin: 0 auto;
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  margin-top: 40px;
+}
+
+.header {
+  text-align: center;
+  padding: 20px 0;
+
+  h2 {
+    text-align: center;
+    font-size: 4rem;
+    margin-bottom: 20px;
+  }
+}
+
+.hint-text {
+  font-size: 1rem;
+}
+
+/* Form Styles */
+.form-group {
+  font-size: 1.8rem;
+  margin-bottom: 15px;
+}
+
+/* File Input Styles */
+#file-input {
+  border: 1px solid #ced4da;
+  padding: 10px;
+  width: 100%;
+  border-radius: 5px;
+  margin-top: 10px;
+}
+
+#file-input:focus {
+  outline: none;
+  border-color: #5b9bd5;
+}
+
+/* Button Styles */
+button {
+  width: 10.1rem;
+  height: 3.5rem;
+  font-size: 1.6rem;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+button:disabled {
+  cursor: not-allowed;
+}
+
+.no-tabs {
+  text-align: center;
+  padding: 50px;
+}
+
+.no-tabs p {
+  margin: 0;
+  font-size: 1.2rem;
+  color: var(--text-no-rating-color);
+}
+
+/* Hint content styling */
+.hint-content {
+  width: 100%;
+  border-left: 4px solid #007bff;
+  padding: 10px 15px;
+  margin-top: 10px;
+  font-size: 1.2rem;
+  border-radius: 4px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+/* List styling */
+.hint-content ul {
+  padding-left: 20px; /* Indent list items */
+  margin: 0;
+}
+
+.hint-content ul li {
+  margin-bottom: 5px; /* Spacing between list items */
+}
+
+/* Code block styling */
+.hint-content code {
+  padding: 2px 4px; /* Padding inside code block */
+  border-radius: 3px; /* Rounded corners */
+  color: #d63384;
+  white-space: pre-wrap;
+  border: 1px solid #e6dedf; /* Subtle border */
+  overflow-x: auto;
+}
+
+.detail-body {
+  gap: 4rem;
+
+  .tab-title {
+    padding: 1.5rem;
+  }
+}
+
+.readme-content ::ng-deep {
+  h1 {
+    font-size: 2.4rem;
+  }
+
+  h2 {
+    font-size: 2.2rem;
+  }
+
+  h3 {
+    font-size: 2rem;
+  }
+
+  p,
+  ul,
+  li {
+    font-size: 1.8rem;
+    font-weight: 400;
+    color: var(--ivy-text-primary-color);
+  }
+
+  ul,
+  li {
+    margin: 25.2px 0;
+  }
+
+  a {
+    word-break: break-all;
+  }
+
+  img {
+    max-width: 100%;
+  }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    border-spacing: 0;
+    overflow-x: auto;
+    display: block;
+
+    th,
+    td {
+      text-align: left;
+      padding: 8px;
+      word-wrap: break-word;
+      white-space: normal;
+      font-size: 1.2rem;
+    }
+
+    tr {
+      border-bottom: 1px solid var(--ivy-border-color);
+    }
+  }
+
+  pre code {
+    font-size: 1.4rem;
+  }
+}
+
+.nav-tabs {
+  gap: 2rem;
+}
+
+.nav-tabs a:hover {
+  cursor: pointer;
+}
+
+.nav-item {
+  gap: 10px;
+
+  a {
+    font-weight: 400;
+    font-size: 2.2rem;
+  }
+
+  a.active {
+    font-weight: 600;
+  }
+
+  a.text-secondary.active {
+    color: #ffffff !important;
+  }
+}
+
+.nav-tabs .nav-link.active::after {
+  content: '';
+  position: absolute;
+  bottom: -1px;
+  left: 0;
+  width: 100%;
+  height: 2px;
+  background-color: var(--active-tab-indicator-color);
+  z-index: 1;
+}
+
+.tab-group {
+  gap: 40px;
+
+  .tab-content {
+    .tab-pane {
+      opacity: 1;
+      transition: none;
+    }
+  }
+}
+
+::ng-deep .dropdown-menu.menu-bar {
+  padding: 0;
+}
+
+::ng-deep .dropdown-menu .dropdown-item {
+  padding: 13.5px 15px;
+}
+
+::ng-deep #tab-group-dropdown .content-tab-dropdown {
+  font-size: 1.4rem;
+  height: 37px;
+}
+
+.dropdown-tab {
+  margin-top: 10px;
+}

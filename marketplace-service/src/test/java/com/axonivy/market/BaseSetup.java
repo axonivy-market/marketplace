@@ -81,6 +81,7 @@ public class BaseSetup {
   protected static final String MOCK_IMAGE_URL = "https://raw.githubusercontent" +
       ".com/amazon-comprehend-connector-product/images/comprehend-demo-sentiment.png";
   protected static final String INSTALLATION_FILE_PATH = "src/test/resources/installationCount.json";
+  protected static final String IMAGE_NAME = "test.png";
 
   protected Page<Product> createPageProductsMock() {
     var mockProducts = new ArrayList<Product>();
