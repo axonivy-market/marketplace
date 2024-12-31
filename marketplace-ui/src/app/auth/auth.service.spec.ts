@@ -1,9 +1,11 @@
 import { TestBed } from '@angular/core/testing';
-import { HttpClientTestingModule, HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
+import {
+  HttpTestingController,
+  provideHttpClientTesting
+} from '@angular/common/http/testing';
 import { Router } from '@angular/router';
 import { CookieService } from 'ngx-cookie-service';
 import { AuthService } from './auth.service';
-import { environment } from '../../environments/environment';
 import { provideHttpClient, withInterceptorsFromDi } from '@angular/common/http';
 import { TOKEN_KEY } from '../shared/constants/common.constant';
 

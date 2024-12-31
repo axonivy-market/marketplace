@@ -25,12 +25,16 @@ export const LoadingComponent = new HttpContextToken<string>(() => '');
 
 export const apiInterceptor: HttpInterceptorFn = (req, next) => {
   const router = inject(Router);
-
   const loadingService = inject(LoadingService);
 
   if (req.url.includes('i18n')) {
     return next(req);
   }
+
+  if (req.context.get(LoadingComponent)) {
+    loadingService.showLoading(req.context.get(LoadingComponent));
+  }
+
   let requestURL = req.url;
   const apiURL = environment.apiUrl;
   if (!requestURL.includes(apiURL)) {
