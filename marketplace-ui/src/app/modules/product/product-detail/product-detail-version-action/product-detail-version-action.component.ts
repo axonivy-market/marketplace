@@ -283,11 +283,13 @@ export class ProductDetailVersionActionComponent implements AfterViewInit {
 
   @HostListener('document:click', ['$event'])
     handleClickOutside(event: MouseEvent): void {
-      if (!this.elementRef.nativeElement
-            .querySelector('#download-dropdown-menu')
-            .contains(event.target)
-        &&
-        this.isDropDownDisplayed()
+      const downloadDialog = this.elementRef.nativeElement.querySelector(
+        '#download-dropdown-menu'
+      );
+      if (
+        this.isDropDownDisplayed() &&
+        downloadDialog &&
+        !downloadDialog.contains(event.target)
       ) {
         this.isDropDownDisplayed.set(!this.isDropDownDisplayed());
       }
