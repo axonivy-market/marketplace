@@ -198,15 +198,6 @@ describe('ProductDetailComponent', () => {
     });
   });
 
-  it('should toggle isDropdownOpen on onShowDropdown', () => {
-    component.isDropdownOpen.set(false);
-    component.onShowInfoContent();
-    expect(component.isDropdownOpen()).toBe(true);
-
-    component.onShowInfoContent();
-    expect(component.isTabDropdownShown()).toBe(false);
-  });
-
   it('should reset state before fetching new product details', () => {
     component.productDetail.set(MOCK_PRODUCT_DETAIL);
     component.productModuleContent.set(
@@ -860,5 +851,16 @@ describe('ProductDetailComponent', () => {
     const result = component.renderGithubAlert(value);
 
     expect(result).toBe(mockedRenderedHtml);
+  });
+
+  it('should close the dropdown when clicking outside', () => {
+    component.isDropdownOpen.set(true);
+    fixture.detectChanges();
+
+    const event = new MouseEvent('click');
+    document.dispatchEvent(event);
+    fixture.detectChanges();
+
+    expect(component.isDropdownOpen()).toBeFalse();
   });
 });

@@ -5,6 +5,7 @@ import {
   computed,
   ElementRef,
   EventEmitter,
+  HostListener,
   inject,
   Input,
   model,
@@ -279,4 +280,18 @@ export class ProductDetailVersionActionComponent implements AfterViewInit {
         return '';
     }
   }
+
+  @HostListener('document:click', ['$event'])
+    handleClickOutside(event: MouseEvent): void {
+      const downloadDialog = this.elementRef.nativeElement.querySelector(
+        '#download-dropdown-menu'
+      );
+      if (
+        this.isDropDownDisplayed() &&
+        downloadDialog &&
+        !downloadDialog.contains(event.target)
+      ) {
+        this.isDropDownDisplayed.set(!this.isDropDownDisplayed());
+      }
+    }
 }
