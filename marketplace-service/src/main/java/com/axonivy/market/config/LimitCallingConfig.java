@@ -35,18 +35,9 @@ public class LimitCallingConfig extends OncePerRequestFilter {
 
     String clientIp = getClientIp(request);
     String apiPath = request.getRequestURI();
-    log.warn("apiPath: {}", apiPath);
-    log.warn("requestPaths: {}", requestPaths.toString());
 
-    boolean asd = false;
-    for (String requestPath : requestPaths) {
-      asd = apiPath.contains(requestPath);
-      if (asd) {
-        break;
-      }
-    }
-
-    if (asd) {
+    boolean isRequestPathMatched = requestPaths.stream().anyMatch(apiPath::contains);
+    if (isRequestPathMatched) {
       Bucket bucket = buckets.computeIfAbsent(clientIp, this::createNewBucket);
 
       if (bucket.tryConsume(1)) {

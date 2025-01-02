@@ -14,7 +14,8 @@ import static org.mockito.Mockito.verify;
     "MONGODB_DATABASE=product", "MARKET_GITHUB_OAUTH_APP_CLIENT_ID=clientId",
     "MARKET_GITHUB_OAUTH_APP_CLIENT_SECRET=clientSecret", "MARKET_JWT_SECRET_KEY=jwtSecret",
     "MARKET_CORS_ALLOWED_ORIGIN=*", "MARKET_GITHUB_MARKET_BRANCH=master", "MARKET_MONGO_LOG_LEVEL=DEBUG",
-        "MARKET_LOG_PATH=logs"})
+    "MARKET_LOG_PATH=logs", "MARKET_GITHUB_TOKEN=test", "MARKET_CLICK_LIMIT=5",
+    "MARKET_LIMITED_REQUEST_PATHS=/api/test"})
 class SchedulingTasksTest {
 
   @SpyBean
