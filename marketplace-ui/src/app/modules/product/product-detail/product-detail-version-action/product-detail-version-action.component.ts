@@ -178,7 +178,6 @@ export class ProductDetailVersionActionComponent implements AfterViewInit {
   }
 
   getVersionWithArtifact(ignoreRouteVersion = false) {
-    this.loadingService.showLoading(LoadingComponentId.PRODUCT_VERSION);
     this.sanitizeDataBeforeFetching();
     this.productService
       .sendRequestToProductDetailVersionAPI(
@@ -203,7 +202,6 @@ export class ProductDetailVersionActionComponent implements AfterViewInit {
             this.getVersionFromRoute(ignoreRouteVersion) ?? this.versions()[0]
           );
         }
-        this.loadingService.hideLoading(LoadingComponentId.PRODUCT_VERSION);
       });
   }
 

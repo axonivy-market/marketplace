@@ -1,7 +1,6 @@
 import { HttpClient, HttpContext, HttpParams } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
 import { Observable } from 'rxjs';
-import { LoadingService } from '../../core/services/loading/loading.service';
 import { RequestParam } from '../../shared/enums/request-param';
 import { ProductApiResponse } from '../../shared/models/apis/product-response.model';
 import { Criteria } from '../../shared/models/criteria.model';
@@ -15,10 +14,8 @@ import { LoadingComponentId } from '../../shared/enums/loading-component-id';
 @Injectable()
 export class ProductService {
   httpClient = inject(HttpClient);
-  loadingService = inject(LoadingService);
 
   findProductsByCriteria(criteria: Criteria): Observable<ProductApiResponse> {
-    this.loadingService.showLoading(LoadingComponentId.LANDING_PAGE);
     let requestParams = new HttpParams();
     let requestURL = API_URI.PRODUCT;
     if (criteria.nextPageHref) {
@@ -82,7 +79,13 @@ export class ProductService {
     const params = new HttpParams()
       .append('designerVersion', designerVersion)
       .append('isShowDevVersion', showDevVersion);
-    return this.httpClient.get<VersionData[]>(url, { params });
+    return this.httpClient.get<VersionData[]>(url, {
+      params,
+      context: new HttpContext().set(
+        LoadingComponent,
+        LoadingComponentId.PRODUCT_VERSION
+      )
+    });
   }
 
   sendRequestToUpdateInstallationCount(
