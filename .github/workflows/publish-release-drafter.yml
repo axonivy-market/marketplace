@@ -2,7 +2,7 @@ name: Publish Release Drafter
 
 on:
   workflow_run:
-    workflows: ["Release-Build"]
+    workflows: ["Release Build"]
     types:
       - completed
 
