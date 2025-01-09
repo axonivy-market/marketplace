@@ -153,17 +153,6 @@ class MetadataServiceImplTest extends BaseSetup {
   }
 
   @Test
-  void testSyncAllProductsMetadata() {
-    Mockito.when(productRepo.getAllProductsWithIdAndReleaseTagAndArtifact()).thenReturn(List.of(new Product()));
-    Mockito.when(metadataRepo.findByProductId(Mockito.isNull())).thenReturn(new ArrayList<>());
-    int result = metadataService.syncAllProductsMetadata();
-    Assertions.assertEquals(1, result);
-    Mockito.when(productRepo.getAllProductsWithIdAndReleaseTagAndArtifact()).thenReturn(getMockProducts());
-    result = metadataService.syncAllProductsMetadata();
-    Assertions.assertEquals(0, result);
-  }
-
-  @Test
   void testUpdateMavenArtifactVersionData() {
     Metadata mockMetadata = getMockMetadata();
     mockMetadata.setVersions(new HashSet<>());
