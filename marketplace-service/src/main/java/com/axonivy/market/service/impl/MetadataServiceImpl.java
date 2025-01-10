@@ -3,15 +3,11 @@ package com.axonivy.market.service.impl;
 import com.axonivy.market.bo.Artifact;
 import com.axonivy.market.entity.MavenArtifactVersion;
 import com.axonivy.market.entity.Metadata;
-import com.axonivy.market.entity.MetadataSync;
-import com.axonivy.market.entity.Product;
 import com.axonivy.market.entity.ProductJsonContent;
 import com.axonivy.market.model.MavenArtifactModel;
 import com.axonivy.market.repository.MavenArtifactVersionRepository;
 import com.axonivy.market.repository.MetadataRepository;
-import com.axonivy.market.repository.MetadataSyncRepository;
 import com.axonivy.market.repository.ProductJsonContentRepository;
-import com.axonivy.market.repository.ProductRepository;
 import com.axonivy.market.service.MetadataService;
 import com.axonivy.market.util.MavenUtils;
 import com.axonivy.market.util.MetadataReaderUtils;
@@ -33,29 +29,33 @@ import java.util.Set;
 @AllArgsConstructor
 @Log4j2
 public class MetadataServiceImpl implements MetadataService {
-  private final ProductRepository productRepo;
-  private final MetadataSyncRepository metadataSyncRepo;
   private final ProductJsonContentRepository productJsonRepo;
   private final MavenArtifactVersionRepository mavenArtifactVersionRepo;
   private final MetadataRepository metadataRepo;
 
-
-  public void updateMavenArtifactVersionCacheWithModel(MavenArtifactVersion artifactVersionCache,
-      String version, Metadata metadata) {
-    List<MavenArtifactModel> artifactModelsInVersion =
+public void updateMavenArtifactVersionCacheWithModel(MavenArtifactVersion artifactVersionCache,
+    String version, Metadata metadata) {
+  List<MavenArtifactModel> artifactModelsInVersion;
+  if (metadata.isProductArtifact()) {
+    artifactModelsInVersion =
         artifactVersionCache.getProductArtifactsByVersion().computeIfAbsent(
             version, k -> new ArrayList<>());
-    if (metadata.isProductArtifact()) {
-      if (artifactModelsInVersion.stream().anyMatch(artifact -> StringUtils.equals(metadata.getName(),
-          artifact.getName()))) {
-        return;
-      }
-      artifactModelsInVersion.add(
-          MavenUtils.buildMavenArtifactModelFromMetadata(version, metadata));
-    } else {
-      artifactVersionCache.getAdditionalArtifactsByVersion().computeIfAbsent(version, k -> new ArrayList<>()).add(
-          MavenUtils.buildMavenArtifactModelFromMetadata(version, metadata));
+  } else {
+    artifactModelsInVersion = artifactVersionCache.getAdditionalArtifactsByVersion().computeIfAbsent(version,
+        k -> new ArrayList<>());
+  }
+  updateMavenArtifactVersionModel(artifactModelsInVersion, version, metadata);
+}
+
+  public void updateMavenArtifactVersionModel(List<MavenArtifactModel> artifactModelsInVersions, String version,
+      Metadata metadata) {
+    MavenArtifactModel model = MavenUtils.buildMavenArtifactModelFromMetadata(version, metadata);
+    // Always update the download url for snapshot artifacts
+    if (!VersionUtils.isMajorVersion(version)) {
+      artifactModelsInVersions.removeIf(existingModel -> StringUtils.equals(existingModel.getArtifactId(),
+          metadata.getArtifactId()));
     }
+    artifactModelsInVersions.add(model);
   }
 
   public void updateMavenArtifactVersionData(Set<Metadata> metadataSet, MavenArtifactVersion artifactVersionCache) {

@@ -509,7 +509,10 @@ public class ProductServiceImpl implements ProductService {
         product.getReleasedVersions() :
         productModuleContentRepo.findVersionsByProductId(product.getId());
     List<String> versionChanges =
-        mavenVersions.stream().filter(version -> !currentVersions.contains(version)|| (VersionUtils.isOfficialVersionOrUnReleasedDevVersion(mavenVersions,version) && !VersionUtils.isReleasedVersion(version))).toList();
+        mavenVersions.stream().filter(
+            version -> !currentVersions.contains(version) || (!VersionUtils.isReleasedVersion(
+                version) && VersionUtils.isOfficialVersionOrUnReleasedDevVersion(
+                mavenVersions, version))).toList();
 
     if (ObjectUtils.isEmpty(versionChanges)) {
       return;
