@@ -45,6 +45,7 @@ public class BaseSetup {
   protected static final String MOCK_PRODUCT_ID = "bpmn-statistic";
   protected static final String MOCK_PRODUCT_ID_WITH_VERSION = "bpmn-statistic-10.0.10";
   protected static final String MOCK_ARTIFACT_ID = "bpmn-statistic";
+  protected static final String MOCK_DEMO_ARTIFACT_ID = "bpmn-statistic-demo";
   protected static final String MOCK_PRODUCT_ARTIFACT_ID = "bpmn-statistic-product";
   protected static final String MOCK_RELEASED_VERSION = "10.0.10";
   protected static final String MOCK_SNAPSHOT_VERSION = "10.0.10-SNAPSHOT";

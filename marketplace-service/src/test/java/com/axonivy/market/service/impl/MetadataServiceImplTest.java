@@ -99,15 +99,28 @@ class MetadataServiceImplTest extends BaseSetup {
     Assertions.assertEquals(1, additionalArtifacts.size());
     Assertions.assertTrue(CollectionUtils.isEmpty(productArtifacts));
 
-    // Simulate add new artifact to the same version in additional list
+    // Simulate add one new duplicated artifact to the same version in additional list
+    metadataService.updateMavenArtifactVersionCacheWithModel(mockMavenArtifactVersion, MOCK_RELEASED_VERSION,
+        mockMetadata);
+    Assertions.assertEquals(1, additionalArtifacts.size());
+    productArtifacts = mockMavenArtifactVersion.getProductArtifactsByVersion().get(
+        MOCK_RELEASED_VERSION);
+    Assertions.assertTrue(CollectionUtils.isEmpty(productArtifacts));
+
+    // Simulate add one new non-duplicated artifact to the same version in additional list
+    mockMetadata.setArtifactId(MOCK_DEMO_ARTIFACT_ID);
     metadataService.updateMavenArtifactVersionCacheWithModel(mockMavenArtifactVersion, MOCK_RELEASED_VERSION,
         mockMetadata);
     Assertions.assertEquals(2, additionalArtifacts.size());
+    productArtifacts = mockMavenArtifactVersion.getProductArtifactsByVersion().get(
+        MOCK_RELEASED_VERSION);
     Assertions.assertTrue(CollectionUtils.isEmpty(productArtifacts));
 
     mockMetadata.setProductArtifact(true);
     metadataService.updateMavenArtifactVersionCacheWithModel(mockMavenArtifactVersion, MOCK_RELEASED_VERSION,
         mockMetadata);
+    productArtifacts = mockMavenArtifactVersion.getProductArtifactsByVersion().get(
+        MOCK_RELEASED_VERSION);
     Assertions.assertEquals(1, productArtifacts.size());
   }
 
