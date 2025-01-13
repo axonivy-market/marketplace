@@ -2,6 +2,8 @@ name: Lighthouse Accessibility CI
 
 on:
   workflow_dispatch:
+  schedule:
+    - cron: '0 0 * * *'
 
 env:
   API_URL: "https://market.axonivy.com/marketplace-service/api/product?type=all&language=en&isRESTClient=false"
@@ -18,9 +20,8 @@ jobs:
         id: collect-urls
         run: |
           PAGE=0
-          EXTERNAL_URLS="${BASE_URL},${BASE_URL}/security-monitor,${BASE_URL}/release-preview"
           URLS_BATCHES="[]"
-          URLS_BATCHES=$(echo "$URLS_BATCHES" | jq --arg external_urls "\"$EXTERNAL_URLS\"" '. + [$external_urls]')
+          URLS_BATCHES=$(echo "$URLS_BATCHES" | jq --arg external_urls "\"$BASE_URL,${{ vars.ACCESSIBILITY_CHECK_EXTERNAL_URLS }}\"" '. + [$external_urls]')
 
           while true; do
             RESPONSE=$(curl -s "$API_URL&size=$BATCH_SIZE&page=$PAGE&sort=alphabetically")
