@@ -18,8 +18,9 @@ jobs:
         id: collect-urls
         run: |
           PAGE=0
+          EXTERNAL_URLS="${BASE_URL},${BASE_URL}/security-monitor,${BASE_URL}/release-preview"
           URLS_BATCHES="[]"
-          URLS_BATCHES=$(echo "$URLS_BATCHES" | jq --arg base_url "\"$BASE_URL\"" '. + [$base_url]')
+          URLS_BATCHES=$(echo "$URLS_BATCHES" | jq --arg external_urls "\"$EXTERNAL_URLS\"" '. + [$external_urls]')
 
           while true; do
             RESPONSE=$(curl -s "$API_URL&size=$BATCH_SIZE&page=$PAGE&sort=alphabetically")
@@ -34,7 +35,6 @@ jobs:
             URLS_BATCHES=$(echo "$URLS_BATCHES" | jq --arg batch "$BATCH_URLS" '. + [$batch]')
             PAGE=$((PAGE + 1))
           done
-          echo "urls_batches=$URLS_BATCHES"
           URLS_BATCHES=$(echo "$URLS_BATCHES" | jq -c 'map(fromjson)')
           echo "urls_batches=$URLS_BATCHES" >> "$GITHUB_OUTPUT"
 
@@ -72,7 +72,6 @@ jobs:
           mkdir -p ${{ github.workspace }}/final-artifacts/lighthouse
           RESULTS_FILE="${{ github.workspace }}/final-artifacts/lighthouse/results.json"
           SUMMARY_FILE="${{ github.workspace }}/final-artifacts/summary.html"
-          ls ${{ github.workspace }}/combined-artifacts/lighthouse-results-0 -l
           # Initialize results file
           echo "[]" > $RESULTS_FILE
 
