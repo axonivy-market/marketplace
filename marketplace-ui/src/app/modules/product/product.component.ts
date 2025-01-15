@@ -135,6 +135,15 @@ export class ProductComponent implements AfterViewInit, OnDestroy {
       type: selectedType.value
     };
     this.loadProductItems(true);
+    const queryParams = selectedType.value !== TypeOption.All_TYPES
+    ? { type: this.criteria.type }
+    : { type: null };
+
+    this.router.navigate([], {
+      relativeTo: this.route,
+      queryParams: queryParams,
+      queryParamsHandling: 'merge'
+    });
   }
 
   onSortChange(selectedSort: SortOption) {
@@ -147,7 +156,21 @@ export class ProductComponent implements AfterViewInit, OnDestroy {
   }
 
   onSearchChanged(searchString: string) {
+    this.criteria = {
+      ...this.criteria,
+      search: searchString
+    };
     this.searchTextChanged.next(searchString);
+
+    const queryParams = searchString
+    ? { search: this.criteria.search }
+    : { search: null };
+
+    this.router.navigate([], {
+      relativeTo: this.route,
+      queryParams: queryParams,
+      queryParamsHandling: 'merge'
+    });
   }
 
   loadProductItems(shouldCleanData = false) {
