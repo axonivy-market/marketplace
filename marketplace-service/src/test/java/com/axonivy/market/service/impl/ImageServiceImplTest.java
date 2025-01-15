@@ -30,7 +30,6 @@ import static com.axonivy.market.constants.CommonConstants.SLASH;
 import static com.axonivy.market.constants.MetaConstants.META_FILE;
 import static org.bson.assertions.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)

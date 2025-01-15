@@ -25,7 +25,6 @@ import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.util.CollectionUtils;
 
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
@@ -57,7 +56,7 @@ class MetadataServiceImplTest extends BaseSetup {
     mockProductJsonContent.setProductId(MOCK_PRODUCT_ID);
 
     Artifact mockArtifact = getMockArtifact();
-    Metadata mockMetadata = buildMocKMetadata();
+    Metadata mockMetadata = buildMockMetadata();
     Product mockProduct = getMockProduct();
     try (MockedStatic<MavenUtils> mockUtils = Mockito.mockStatic(MavenUtils.class)) {
       mockUtils.when(() -> MavenUtils.getMetadataContentFromUrl(ArgumentMatchers.anyString())).thenReturn(null);
@@ -87,7 +86,7 @@ class MetadataServiceImplTest extends BaseSetup {
   @Test
   void testUpdateMavenArtifactVersionCacheWithModel() {
     MavenArtifactVersion mockMavenArtifactVersion = getMockMavenArtifactVersion();
-    Metadata mockMetadata = buildMocKMetadata();
+    Metadata mockMetadata = buildMockMetadata();
     metadataService.updateMavenArtifactVersionCacheWithModel(mockMavenArtifactVersion, MOCK_RELEASED_VERSION,
         mockMetadata);
     List<MavenArtifactModel> additionalArtifacts = mockMavenArtifactVersion.getAdditionalArtifactsByVersion().get(

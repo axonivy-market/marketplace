@@ -33,28 +33,27 @@ public class MetadataServiceImpl implements MetadataService {
   private final MavenArtifactVersionRepository mavenArtifactVersionRepo;
   private final MetadataRepository metadataRepo;
 
-public void updateMavenArtifactVersionCacheWithModel(MavenArtifactVersion artifactVersionCache,
-    String version, Metadata metadata) {
-  List<MavenArtifactModel> artifactModelsInVersion;
-  if (metadata.isProductArtifact()) {
-    artifactModelsInVersion =
-        artifactVersionCache.getProductArtifactsByVersion().computeIfAbsent(
-            version, k -> new ArrayList<>());
-  } else {
-    artifactModelsInVersion = artifactVersionCache.getAdditionalArtifactsByVersion().computeIfAbsent(version,
-        k -> new ArrayList<>());
+  public void updateMavenArtifactVersionCacheWithModel(MavenArtifactVersion artifactVersionCache,
+      String version, Metadata metadata) {
+    List<MavenArtifactModel> artifactModelsInVersion;
+    if (metadata.isProductArtifact()) {
+      artifactModelsInVersion =
+          artifactVersionCache.getProductArtifactsByVersion().computeIfAbsent(version, k -> new ArrayList<>());
+    } else {
+      artifactModelsInVersion = artifactVersionCache.getAdditionalArtifactsByVersion().computeIfAbsent(version,
+          k -> new ArrayList<>());
+    }
+    updateMavenArtifactVersionModel(artifactModelsInVersion, version, metadata);
   }
-  updateMavenArtifactVersionModel(artifactModelsInVersion, version, metadata);
-}
 
   public void updateMavenArtifactVersionModel(List<MavenArtifactModel> artifactModelsInVersions, String version,
       Metadata metadata) {
-    MavenArtifactModel model = MavenUtils.buildMavenArtifactModelFromMetadata(version, metadata);
     // Always update the download url for snapshot artifacts
     if (!VersionUtils.isMajorVersion(version)) {
       artifactModelsInVersions.removeIf(existingModel -> StringUtils.equals(existingModel.getArtifactId(),
           metadata.getArtifactId()));
     }
+    MavenArtifactModel model = MavenUtils.buildMavenArtifactModelFromMetadata(version, metadata);
     artifactModelsInVersions.add(model);
   }
 

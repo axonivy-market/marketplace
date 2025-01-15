@@ -199,7 +199,7 @@ public class BaseSetup {
     return getContentFromTestResourcePath(MOCK_METADATA_FILE_PATH);
   }
 
-  protected Metadata buildMocKMetadata() {
+  protected Metadata buildMockMetadata() {
     return Metadata.builder().url(
         MOCK_MAVEN_URL).repoUrl(MavenConstants.DEFAULT_IVY_MAVEN_BASE_URL).groupId(MOCK_GROUP_ID).artifactId(
         MOCK_ARTIFACT_ID).type(MavenConstants.DEFAULT_PRODUCT_FOLDER_TYPE).productId(MOCK_PRODUCT_ID).build();

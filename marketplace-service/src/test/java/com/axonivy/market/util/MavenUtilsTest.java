@@ -130,7 +130,7 @@ class MavenUtilsTest extends BaseSetup {
 
   @Test
   void testBuildSnapShotMetadataFromVersion() {
-    Metadata originalMetadata = buildMocKMetadata();
+    Metadata originalMetadata = buildMockMetadata();
     Metadata snapShotMetadata = MavenUtils.buildSnapShotMetadataFromVersion(originalMetadata,
         MOCK_SNAPSHOT_VERSION);
     Assertions.assertEquals(originalMetadata.getRepoUrl(), snapShotMetadata.getRepoUrl());
@@ -143,7 +143,7 @@ class MavenUtilsTest extends BaseSetup {
 
   @Test
   void testBuildMavenArtifactModelFromMetadata() {
-    Metadata mocKMetadata = buildMocKMetadata();
+    Metadata mocKMetadata = buildMockMetadata();
     mocKMetadata.setSnapshotVersionValue("20241111-111111");
     MavenArtifactModel result = MavenUtils.buildMavenArtifactModelFromMetadata(MOCK_SNAPSHOT_VERSION,
         mocKMetadata);
