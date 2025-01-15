@@ -45,6 +45,7 @@ public class BaseSetup {
   protected static final String MOCK_PRODUCT_ID = "bpmn-statistic";
   protected static final String MOCK_PRODUCT_ID_WITH_VERSION = "bpmn-statistic-10.0.10";
   protected static final String MOCK_ARTIFACT_ID = "bpmn-statistic";
+  protected static final String MOCK_DEMO_ARTIFACT_ID = "bpmn-statistic-demo";
   protected static final String MOCK_PRODUCT_ARTIFACT_ID = "bpmn-statistic-product";
   protected static final String MOCK_RELEASED_VERSION = "10.0.10";
   protected static final String MOCK_SNAPSHOT_VERSION = "10.0.10-SNAPSHOT";
@@ -198,7 +199,7 @@ public class BaseSetup {
     return getContentFromTestResourcePath(MOCK_METADATA_FILE_PATH);
   }
 
-  protected Metadata buildMocKMetadata() {
+  protected Metadata buildMockMetadata() {
     return Metadata.builder().url(
         MOCK_MAVEN_URL).repoUrl(MavenConstants.DEFAULT_IVY_MAVEN_BASE_URL).groupId(MOCK_GROUP_ID).artifactId(
         MOCK_ARTIFACT_ID).type(MavenConstants.DEFAULT_PRODUCT_FOLDER_TYPE).productId(MOCK_PRODUCT_ID).build();

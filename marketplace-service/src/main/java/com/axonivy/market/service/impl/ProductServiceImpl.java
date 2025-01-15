@@ -504,13 +504,17 @@ public class ProductServiceImpl implements ProductService {
       mavenVersions.add(versionNodes.item(i).getTextContent());
     }
 
-    // Check if having new released version in Maven
+    // Check if having new released version or unreleased dev version in Maven
     List<String> currentVersions = ObjectUtils.isNotEmpty(product.getReleasedVersions()) ?
         product.getReleasedVersions() :
         productModuleContentRepo.findVersionsByProductId(product.getId());
-    mavenVersions = mavenVersions.stream().filter(version -> !currentVersions.contains(version)).toList();
+    List<String> versionChanges =
+        mavenVersions.stream().filter(
+            version -> !currentVersions.contains(version) || (!VersionUtils.isReleasedVersion(
+                version) && VersionUtils.isOfficialVersionOrUnReleasedDevVersion(
+                mavenVersions, version))).toList();
 
-    if (ObjectUtils.isEmpty(mavenVersions)) {
+    if (ObjectUtils.isEmpty(versionChanges)) {
       return;
     }
 
@@ -520,19 +524,19 @@ public class ProductServiceImpl implements ProductService {
       product.setNewestPublishedDate(lastUpdated);
       product.setNewestReleaseVersion(latestVersion);
     }
-    updateProductCompatibility(product, mavenVersions);
+    updateProductCompatibility(product, versionChanges);
 
     Optional.ofNullable(product.getReleasedVersions()).ifPresentOrElse(releasedVersion -> {},
         () -> product.setReleasedVersions(new ArrayList<>()));
 
     List<ProductModuleContent> productModuleContents = new ArrayList<>();
-    for (String version : mavenVersions) {
+    for (String version : versionChanges) {
       product.getReleasedVersions().add(version);
       ProductModuleContent productModuleContent = handleProductArtifact(version, product.getId(), mavenArtifact,
           product.getNames().get(EN_LANGUAGE));
       Optional.ofNullable(productModuleContent).ifPresent(productModuleContents::add);
     }
-    nonSyncReleasedVersions.addAll(mavenVersions);
+    nonSyncReleasedVersions.addAll(versionChanges);
 
     if (ObjectUtils.isNotEmpty(productModuleContents)) {
       productModuleContentRepo.saveAll(productModuleContents);
