@@ -2,7 +2,9 @@ package com.axonivy.market.service.impl;
 
 import com.axonivy.market.bo.Artifact;
 import com.axonivy.market.service.FileDownloadService;
+import com.axonivy.market.util.FileUtils;
 import lombok.extern.log4j.Log4j2;
+import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.SystemUtils;
 import org.springframework.stereotype.Service;
@@ -20,15 +22,7 @@ import java.nio.file.Paths;
 import java.nio.file.attribute.FileAttribute;
 import java.nio.file.attribute.PosixFilePermission;
 import java.nio.file.attribute.PosixFilePermissions;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.EnumSet;
-import java.util.Enumeration;
-import java.util.List;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 import java.util.stream.Stream;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
@@ -81,8 +75,9 @@ public class FileDownloadServiceImpl implements FileDownloadService {
 
   private Path createTempFileFromUrlAndExtractToLocation(String url, String location,
       boolean isForce) throws IOException {
-    File cacheFolder = new File(location);
-    if (cacheFolder.exists() && cacheFolder.isDirectory() && !isForce) {
+    File cacheFolder = FileUtils.createNewFile(location);
+    if (cacheFolder.exists() && cacheFolder.isDirectory() && ObjectUtils.isNotEmpty(
+        cacheFolder.listFiles()) && !isForce) {
       log.warn("Data is already in {}", location);
       return null;
     } else {

@@ -12,6 +12,7 @@ import com.axonivy.market.entity.ProductMarketplaceData;
 import com.axonivy.market.enums.Language;
 import com.axonivy.market.enums.SortOption;
 import com.axonivy.market.model.MavenArtifactModel;
+import com.axonivy.market.model.VersionAndUrlModel;
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.data.domain.Page;
@@ -44,6 +45,7 @@ public class BaseSetup {
   protected static final String MOCK_PRODUCT_ID = "bpmn-statistic";
   protected static final String MOCK_PRODUCT_ID_WITH_VERSION = "bpmn-statistic-10.0.10";
   protected static final String MOCK_ARTIFACT_ID = "bpmn-statistic";
+  protected static final String MOCK_DEMO_ARTIFACT_ID = "bpmn-statistic-demo";
   protected static final String MOCK_PRODUCT_ARTIFACT_ID = "bpmn-statistic-product";
   protected static final String MOCK_RELEASED_VERSION = "10.0.10";
   protected static final String MOCK_SNAPSHOT_VERSION = "10.0.10-SNAPSHOT";
@@ -80,6 +82,7 @@ public class BaseSetup {
   protected static final String MOCK_IMAGE_URL = "https://raw.githubusercontent" +
       ".com/amazon-comprehend-connector-product/images/comprehend-demo-sentiment.png";
   protected static final String INSTALLATION_FILE_PATH = "src/test/resources/installationCount.json";
+  protected static final String IMAGE_NAME = "test.png";
 
   protected Page<Product> createPageProductsMock() {
     var mockProducts = new ArrayList<Product>();
@@ -196,7 +199,7 @@ public class BaseSetup {
     return getContentFromTestResourcePath(MOCK_METADATA_FILE_PATH);
   }
 
-  protected Metadata buildMocKMetadata() {
+  protected Metadata buildMockMetadata() {
     return Metadata.builder().url(
         MOCK_MAVEN_URL).repoUrl(MavenConstants.DEFAULT_IVY_MAVEN_BASE_URL).groupId(MOCK_GROUP_ID).artifactId(
         MOCK_ARTIFACT_ID).type(MavenConstants.DEFAULT_PRODUCT_FOLDER_TYPE).productId(MOCK_PRODUCT_ID).build();
@@ -264,5 +267,57 @@ public class BaseSetup {
 
   protected ProductMarketplaceData getMockProductMarketplaceData() {
     return ProductMarketplaceData.builder().id(MOCK_PRODUCT_ID).installationCount(3).build();
+  }
+
+  protected List<VersionAndUrlModel> mockVersionAndUrlModels() {
+    VersionAndUrlModel versionAndUrlModel = VersionAndUrlModel.builder()
+        .version("10.0.21")
+        .url("/api/product-details/portal/10.0.21/json")
+        .build();
+
+    VersionAndUrlModel versionAndUrlModel2 = VersionAndUrlModel.builder()
+        .version("10.0.22")
+        .url("/api/product-details/portal/10.0.22/json")
+        .build();
+
+    return List.of(versionAndUrlModel, versionAndUrlModel2);
+  }
+
+  protected List<VersionAndUrlModel> mockVersionModels() {
+    VersionAndUrlModel versionAndUrlModel = VersionAndUrlModel.builder()
+        .version("11.3.1")
+        .build();
+
+    VersionAndUrlModel versionAndUrlModel2 = VersionAndUrlModel.builder()
+        .version("10.0.22")
+        .build();
+
+    return List.of(versionAndUrlModel, versionAndUrlModel2);
+  }
+
+  protected List<VersionAndUrlModel> mockVersionModels2() {
+    VersionAndUrlModel versionAndUrlModel = VersionAndUrlModel.builder()
+        .version("11.3.2")
+        .build();
+
+    List<VersionAndUrlModel> versionAndUrlModels = new ArrayList<>(mockVersionModels());
+    versionAndUrlModels.add(0,versionAndUrlModel);
+
+    return versionAndUrlModels;
+  }
+
+  protected List<VersionAndUrlModel> mockVersionModels3() {
+    VersionAndUrlModel versionAndUrlModel = VersionAndUrlModel.builder()
+        .version("11.3.2")
+        .build();
+
+    VersionAndUrlModel versionAndUrlModel2 = VersionAndUrlModel.builder()
+        .version("12.0.0")
+        .build();
+
+    List<VersionAndUrlModel> versionAndUrlModels = new ArrayList<>(mockVersionModels());
+    versionAndUrlModels.add(0,versionAndUrlModel);
+    versionAndUrlModels.add(0,versionAndUrlModel2);
+    return versionAndUrlModels;
   }
 }

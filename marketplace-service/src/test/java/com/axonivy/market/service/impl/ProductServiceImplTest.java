@@ -33,6 +33,7 @@ import com.axonivy.market.service.ImageService;
 import com.axonivy.market.service.MetadataService;
 import com.axonivy.market.service.ProductContentService;
 import com.axonivy.market.service.ProductMarketplaceDataService;
+import com.axonivy.market.service.VersionService;
 import com.axonivy.market.util.MavenUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.junit.jupiter.api.BeforeEach;
@@ -59,6 +60,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -129,6 +131,8 @@ class ProductServiceImplTest extends BaseSetup {
   private ProductMarketplaceDataService productMarketplaceDataService;
   @Mock
   private ProductMarketplaceDataRepository productMarketplaceDataRepo;
+  @Mock
+  private VersionService versionService;
   @InjectMocks
   private ProductServiceImpl productService;
 
@@ -402,6 +406,32 @@ class ProductServiceImplTest extends BaseSetup {
   }
 
   @Test
+  void testGetCompatibilityRangeAfterFetchProductDetail() {
+    MavenArtifactVersion mockMavenArtifactVersion = getMockMavenArtifactVersionWithData();
+    when(mavenArtifactVersionRepo.findById(MOCK_PRODUCT_ID)).thenReturn(
+        Optional.ofNullable(mockMavenArtifactVersion));
+
+
+    when(productRepo.getProductByIdAndVersion(MOCK_PRODUCT_ID, MOCK_SNAPSHOT_VERSION))
+        .thenReturn(getMockProduct());
+    when(versionService.getVersionsForDesigner(MOCK_PRODUCT_ID))
+        .thenReturn(mockVersionAndUrlModels(), mockVersionModels(), mockVersionModels2(), mockVersionModels3());
+
+
+    Product result = productService.fetchProductDetail(MOCK_PRODUCT_ID, true);
+    assertEquals("10.0+", result.getCompatibilityRange());
+
+    result = productService.fetchProductDetail(MOCK_PRODUCT_ID, true);
+    assertEquals("10.0 - 11.3+", result.getCompatibilityRange());
+
+    result = productService.fetchProductDetail(MOCK_PRODUCT_ID, true);
+    assertEquals("10.0 - 11.3+", result.getCompatibilityRange());
+
+    result = productService.fetchProductDetail(MOCK_PRODUCT_ID, true);
+    assertEquals("10.0 - 12.0+", result.getCompatibilityRange());
+  }
+
+  @Test
   void testGetProductByIdWithNewestReleaseVersion() {
     MavenArtifactVersion mockMavenArtifactVersion = getMockMavenArtifactVersionWithData();
     Product mockProduct = getMockProduct();
@@ -628,7 +658,7 @@ class ProductServiceImplTest extends BaseSetup {
     mockProduct.setId(SAMPLE_PRODUCT_ID);
     mockProduct.setMarketDirectory(SAMPLE_PRODUCT_PATH);
     mockProduct.setRepositoryName(SAMPLE_PRODUCT_REPOSITORY_NAME);
-    List<Product> products = Arrays.asList(mockProduct);
+    List<Product> products = List.of(mockProduct);
     when(productRepo.findAll()).thenReturn(products);
     when(productRepo.save(any(Product.class))).thenReturn(mockProduct);
     GHTag ghTagVersionOne = new GHTag();
@@ -644,7 +674,7 @@ class ProductServiceImplTest extends BaseSetup {
     mockProduct.setId(SAMPLE_PRODUCT_ID);
     mockProduct.setRepositoryName(SAMPLE_PRODUCT_REPOSITORY_NAME);
     mockProduct.setFirstPublishedDate(new Date());
-    when(productRepo.findAll()).thenReturn(Arrays.asList(mockProduct));
+    when(productRepo.findAll()).thenReturn(List.of(mockProduct));
     assertTrue(productService.syncFirstPublishedDateOfAllProducts());
   }
 
@@ -664,7 +694,7 @@ class ProductServiceImplTest extends BaseSetup {
   void testSyncFirstPublishedDateOfAllProductsFailed() throws IOException {
     Product mockProduct = new Product();
     mockProduct.setRepositoryName(SAMPLE_PRODUCT_REPOSITORY_NAME);
-    List<Product> products = Arrays.asList(mockProduct);
+    List<Product> products = List.of(mockProduct);
     when(productRepo.findAll()).thenReturn(products);
     when(gitHubService.getRepositoryTags(SAMPLE_PRODUCT_REPOSITORY_NAME)).thenThrow(
         new IOException("Mocked IOException"));
@@ -679,7 +709,7 @@ class ProductServiceImplTest extends BaseSetup {
     mockProduct.setId(SAMPLE_PRODUCT_ID);
     mockProduct.setMarketDirectory(SAMPLE_PRODUCT_PATH);
     mockProduct.setRepositoryName(SAMPLE_PRODUCT_REPOSITORY_NAME);
-    List<Product> products = Arrays.asList(mockProduct);
+    List<Product> products = List.of(mockProduct);
     when(productRepo.findAll()).thenReturn(products);
     when(productRepo.save(any(Product.class))).thenReturn(mockProduct);
     GHTag ghTagVersionOne = mock(GHTag.class);
@@ -701,10 +731,10 @@ class ProductServiceImplTest extends BaseSetup {
     mockProduct.setId(SAMPLE_PRODUCT_ID);
     mockProduct.setMarketDirectory(SAMPLE_PRODUCT_PATH);
     mockProduct.setRepositoryName(SAMPLE_PRODUCT_REPOSITORY_NAME);
-    List<Product> products = Arrays.asList(mockProduct);
+    List<Product> products = List.of(mockProduct);
     when(productRepo.findAll()).thenReturn(products);
     GHTag ghTag = mock(GHTag.class);
-    List<GHTag> tags = Arrays.asList(ghTag);
+    List<GHTag> tags = Collections.singletonList(ghTag);
     GHCommit ghCommit = mock(GHCommit.class);
     when(ghTag.getCommit()).thenReturn(ghCommit);
     when(ghCommit.getCommitDate()).thenThrow(

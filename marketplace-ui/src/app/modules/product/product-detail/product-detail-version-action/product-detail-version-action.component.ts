@@ -5,6 +5,7 @@ import {
   computed,
   ElementRef,
   EventEmitter,
+  HostListener,
   inject,
   Input,
   model,
@@ -178,7 +179,6 @@ export class ProductDetailVersionActionComponent implements AfterViewInit {
   }
 
   getVersionWithArtifact(ignoreRouteVersion = false) {
-    this.loadingService.showLoading(LoadingComponentId.PRODUCT_VERSION);
     this.sanitizeDataBeforeFetching();
     this.productService
       .sendRequestToProductDetailVersionAPI(
@@ -203,7 +203,6 @@ export class ProductDetailVersionActionComponent implements AfterViewInit {
             this.getVersionFromRoute(ignoreRouteVersion) ?? this.versions()[0]
           );
         }
-        this.loadingService.hideLoading(LoadingComponentId.PRODUCT_VERSION);
       });
   }
 
@@ -281,4 +280,18 @@ export class ProductDetailVersionActionComponent implements AfterViewInit {
         return '';
     }
   }
+
+  @HostListener('document:click', ['$event'])
+    handleClickOutside(event: MouseEvent): void {
+      const downloadDialog = this.elementRef.nativeElement.querySelector(
+        '#download-dropdown-menu'
+      );
+      if (
+        this.isDropDownDisplayed() &&
+        downloadDialog &&
+        !downloadDialog.contains(event.target)
+      ) {
+        this.isDropDownDisplayed.set(!this.isDropDownDisplayed());
+      }
+    }
 }

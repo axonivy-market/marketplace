@@ -1,5 +1,6 @@
 package com.axonivy.market.controller;
 
+import com.axonivy.market.logging.Loggable;
 import com.axonivy.market.model.DesignerInstallation;
 import com.axonivy.market.service.ProductDesignerInstallationService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -30,6 +31,7 @@ public class ProductDesignerInstallationController {
     this.productDesignerInstallationService = productDesignerInstallationService;
   }
 
+  @Loggable
   @GetMapping(DESIGNER_INSTALLATION_BY_ID)
   @Operation(summary = "Get designer installation count by product id.",
       description = "get designer installation count by product id")

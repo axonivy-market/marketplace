@@ -9,11 +9,10 @@ import {
   TestBed,
   tick
 } from '@angular/core/testing';
-import { By, Title } from '@angular/platform-browser';
+import { By, DomSanitizer, Title } from '@angular/platform-browser';
 import { ActivatedRoute } from '@angular/router';
 import { TranslateModule } from '@ngx-translate/core';
 import { Viewport } from 'karma-viewport/dist/adapter/viewport';
-import { MarkdownModule } from 'ngx-markdown';
 import { of } from 'rxjs';
 import { TypeOption } from '../../../shared/enums/type-option.enum';
 import {
@@ -49,12 +48,17 @@ describe('ProductDetailComponent', () => {
   let routingQueryParamService: jasmine.SpyObj<RoutingQueryParamService>;
   let languageService: jasmine.SpyObj<LanguageService>;
   let titleService: Title;
+  let sanitizerSpy: jasmine.SpyObj<DomSanitizer>;
   let mockProductFeedbackService: jasmine.SpyObj<ProductFeedbackService>;
   let mockProductStarRatingService: jasmine.SpyObj<ProductStarRatingService>;
   let mockAuthService: jasmine.SpyObj<AuthService>;
   let mockAppModalService: jasmine.SpyObj<AppModalService>;
 
   beforeEach(async () => {
+    const spy = jasmine.createSpyObj('DomSanitizer', [
+      'bypassSecurityTrustHtml',
+      'sanitize'
+    ]);
     const routingQueryParamServiceSpy = jasmine.createSpyObj(
       'RoutingQueryParamService',
       ['getDesignerVersionFromSessionStorage', 'isDesignerEnv']
@@ -87,7 +91,6 @@ describe('ProductDetailComponent', () => {
       imports: [
         ProductDetailComponent,
         TranslateModule.forRoot(),
-        MarkdownModule.forRoot(),
         MatomoTestingModule.forRoot()
       ],
       providers: [
@@ -120,7 +123,8 @@ describe('ProductDetailComponent', () => {
           provide: LanguageService,
           useValue: languageServiceSpy
         },
-        Title
+        Title,
+        { provide: DomSanitizer, useValue: spy }
       ]
     })
       .overrideComponent(ProductDetailComponent, {
@@ -137,6 +141,8 @@ describe('ProductDetailComponent', () => {
     languageService = TestBed.inject(
       LanguageService
     ) as jasmine.SpyObj<LanguageService>;
+
+    sanitizerSpy = TestBed.inject(DomSanitizer) as jasmine.SpyObj<DomSanitizer>;
 
     titleService = TestBed.inject(Title);
     mockProductFeedbackService.getInitFeedbacksObservable.and.returnValue(
@@ -190,15 +196,6 @@ describe('ProductDetailComponent', () => {
     component.getProductById(productId, false).subscribe(productDetail => {
       expect(productDetail).toEqual(MOCK_CRON_JOB_PRODUCT_DETAIL);
     });
-  });
-
-  it('should toggle isDropdownOpen on onShowDropdown', () => {
-    component.isDropdownOpen.set(false);
-    component.onShowInfoContent();
-    expect(component.isDropdownOpen()).toBe(true);
-
-    component.onShowInfoContent();
-    expect(component.isTabDropdownShown()).toBe(false);
   });
 
   it('should reset state before fetching new product details', () => {
@@ -844,5 +841,26 @@ describe('ProductDetailComponent', () => {
       By.css('app-product-detail-maven-content')
     );
     expect(mavenTab).toBeFalsy();
+  });
+
+  it('should render GitHub alert as safe HTML', () => {
+    const value = '**This is a test**';
+    const mockedRenderedHtml = '<strong>This is a test</strong>';
+    sanitizerSpy.bypassSecurityTrustHtml.and.returnValue(mockedRenderedHtml);
+
+    const result = component.renderGithubAlert(value);
+
+    expect(result).toBe(mockedRenderedHtml);
+  });
+
+  it('should close the dropdown when clicking outside', () => {
+    component.isDropdownOpen.set(true);
+    fixture.detectChanges();
+
+    const event = new MouseEvent('click');
+    document.dispatchEvent(event);
+    fixture.detectChanges();
+
+    expect(component.isDropdownOpen()).toBeFalse();
   });
 });

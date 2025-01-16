@@ -19,4 +19,5 @@ public class CommonConstants {
   public static final String ID_WITH_NUMBER_PATTERN = "%s-%s";
   public static final String ERROR = "error";
   public static final String MESSAGE = "message";
+  public static final String COMPATIBILITY_RANGE_FORMAT = "%s - %s";
 }

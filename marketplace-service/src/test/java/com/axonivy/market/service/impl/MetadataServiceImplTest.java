@@ -25,7 +25,6 @@ import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.util.CollectionUtils;
 
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
@@ -57,7 +56,7 @@ class MetadataServiceImplTest extends BaseSetup {
     mockProductJsonContent.setProductId(MOCK_PRODUCT_ID);
 
     Artifact mockArtifact = getMockArtifact();
-    Metadata mockMetadata = buildMocKMetadata();
+    Metadata mockMetadata = buildMockMetadata();
     Product mockProduct = getMockProduct();
     try (MockedStatic<MavenUtils> mockUtils = Mockito.mockStatic(MavenUtils.class)) {
       mockUtils.when(() -> MavenUtils.getMetadataContentFromUrl(ArgumentMatchers.anyString())).thenReturn(null);
@@ -87,7 +86,7 @@ class MetadataServiceImplTest extends BaseSetup {
   @Test
   void testUpdateMavenArtifactVersionCacheWithModel() {
     MavenArtifactVersion mockMavenArtifactVersion = getMockMavenArtifactVersion();
-    Metadata mockMetadata = buildMocKMetadata();
+    Metadata mockMetadata = buildMockMetadata();
     metadataService.updateMavenArtifactVersionCacheWithModel(mockMavenArtifactVersion, MOCK_RELEASED_VERSION,
         mockMetadata);
     List<MavenArtifactModel> additionalArtifacts = mockMavenArtifactVersion.getAdditionalArtifactsByVersion().get(
@@ -99,15 +98,28 @@ class MetadataServiceImplTest extends BaseSetup {
     Assertions.assertEquals(1, additionalArtifacts.size());
     Assertions.assertTrue(CollectionUtils.isEmpty(productArtifacts));
 
-    // Simulate add new artifact to the same version in additional list
+    // Simulate add one new duplicated artifact to the same version in additional list
+    metadataService.updateMavenArtifactVersionCacheWithModel(mockMavenArtifactVersion, MOCK_RELEASED_VERSION,
+        mockMetadata);
+    Assertions.assertEquals(1, additionalArtifacts.size());
+    productArtifacts = mockMavenArtifactVersion.getProductArtifactsByVersion().get(
+        MOCK_RELEASED_VERSION);
+    Assertions.assertTrue(CollectionUtils.isEmpty(productArtifacts));
+
+    // Simulate add one new non-duplicated artifact to the same version in additional list
+    mockMetadata.setArtifactId(MOCK_DEMO_ARTIFACT_ID);
     metadataService.updateMavenArtifactVersionCacheWithModel(mockMavenArtifactVersion, MOCK_RELEASED_VERSION,
         mockMetadata);
     Assertions.assertEquals(2, additionalArtifacts.size());
+    productArtifacts = mockMavenArtifactVersion.getProductArtifactsByVersion().get(
+        MOCK_RELEASED_VERSION);
     Assertions.assertTrue(CollectionUtils.isEmpty(productArtifacts));
 
     mockMetadata.setProductArtifact(true);
     metadataService.updateMavenArtifactVersionCacheWithModel(mockMavenArtifactVersion, MOCK_RELEASED_VERSION,
         mockMetadata);
+    productArtifacts = mockMavenArtifactVersion.getProductArtifactsByVersion().get(
+        MOCK_RELEASED_VERSION);
     Assertions.assertEquals(1, productArtifacts.size());
   }
 
@@ -150,17 +162,6 @@ class MetadataServiceImplTest extends BaseSetup {
       metadataService.updateMavenArtifactVersionFromMetadata(mockMavenArtifactVersion, mockMetadata);
       Assertions.assertEquals(2, mockMavenArtifactVersion.getAdditionalArtifactsByVersion().entrySet().size());
     }
-  }
-
-  @Test
-  void testSyncAllProductsMetadata() {
-    Mockito.when(productRepo.getAllProductsWithIdAndReleaseTagAndArtifact()).thenReturn(List.of(new Product()));
-    Mockito.when(metadataRepo.findByProductId(Mockito.isNull())).thenReturn(new ArrayList<>());
-    int result = metadataService.syncAllProductsMetadata();
-    Assertions.assertEquals(1, result);
-    Mockito.when(productRepo.getAllProductsWithIdAndReleaseTagAndArtifact()).thenReturn(getMockProducts());
-    result = metadataService.syncAllProductsMetadata();
-    Assertions.assertEquals(0, result);
   }
 
   @Test

@@ -4,6 +4,43 @@ common:
     english: English
     french: Français
     german: Deutsch
+  preview:
+    pageTitle: Release Preview
+    title: Product Release Preview
+    description: Preview your product's details
+    buttonLabel: Upload
+    noTabs: Seems like there's a problem with your Zip file.
+    hint: Only .zip file is allowed and file size should be smaller than 20MB.
+    link: See how to configure a valid README.
+    hintContent: <p>
+      Follow the README template strictly. Ensure the following.
+      </p></br>
+      <code># Your Product Name
+      </br></br>
+      Hello, this is our connector.
+      </br></br>## Demo
+      </br></br>
+      You should show the demo content here.
+      </br></br>## Setup
+      </br></br>
+      This session should show how to download, setup your product,...
+      </br></br>
+      ```</br>
+      @variables.yaml@</br>
+      ```
+      </code>
+      <div>
+      <ul>
+      <li>In case you want to pass variables to README file, put in template as above and declare a file name <code>variables.yaml</code></li>
+      <li><b>SETUP AND DEMO</b> These headings should always be in English, regardless of the language.</li>
+      <li>
+      Ensure <b>SETUP AND DEMO</b> follow the template's predefined headings and structure.
+      </li>
+      <li>
+      Images should use the following format
+      <code>![image-name](image-directory.png)</code>
+      </li>
+      </ul>
   nav:
     news: News
     doc: Doc

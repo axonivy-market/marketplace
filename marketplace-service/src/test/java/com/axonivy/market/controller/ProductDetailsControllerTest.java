@@ -8,7 +8,6 @@ import com.axonivy.market.entity.ProductJsonContent;
 import com.axonivy.market.enums.Language;
 import com.axonivy.market.model.MavenArtifactVersionModel;
 import com.axonivy.market.model.ProductDetailModel;
-import com.axonivy.market.model.VersionAndUrlModel;
 import com.axonivy.market.service.ProductService;
 import com.axonivy.market.service.VersionService;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -170,26 +169,14 @@ class ProductDetailsControllerTest extends BaseSetup {
 
     assertEquals(2, Objects.requireNonNull(result.getBody()).size());
     assertEquals("10.0.21", Objects.requireNonNull(result.getBody()).get(0).getVersion());
-    assertEquals("/api/product-details/productjsoncontent/portal/10.0.21",
+    assertEquals("/api/product-details/portal/10.0.21/json",
         Objects.requireNonNull(result.getBody()).get(0).getUrl());
     assertEquals("10.0.22", Objects.requireNonNull(result.getBody()).get(1).getVersion());
-    assertEquals("/api/product-details/productjsoncontent/portal/10.0.22",
+    assertEquals("/api/product-details/portal/10.0.22/json",
         Objects.requireNonNull(result.getBody()).get(1).getUrl());
   }
 
-  private List<VersionAndUrlModel> mockVersionAndUrlModels() {
-    VersionAndUrlModel versionAndUrlModel = VersionAndUrlModel.builder()
-        .version("10.0.21")
-        .url("/api/product-details/productjsoncontent/portal/10.0.21")
-        .build();
 
-    VersionAndUrlModel versionAndUrlModel2 = VersionAndUrlModel.builder()
-        .version("10.0.22")
-        .url("/api/product-details/productjsoncontent/portal/10.0.22")
-        .build();
-
-    return List.of(versionAndUrlModel, versionAndUrlModel2);
-  }
 
   @Test
   void findProductJsonContentByIdAndVersion() throws IOException {

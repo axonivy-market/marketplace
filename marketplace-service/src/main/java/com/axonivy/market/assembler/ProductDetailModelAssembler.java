@@ -79,6 +79,7 @@ public class ProductDetailModelAssembler extends RepresentationModelAssemblerSup
     model.setContactUs(product.getContactUs());
     model.setCost(product.getCost());
     model.setInstallationCount(product.getInstallationCount());
+    model.setCompatibilityRange(product.getCompatibilityRange());
     model.setProductModuleContent(ImageUtils.mappingImageForProductModuleContent(product.getProductModuleContent()));
     if (StringUtils.isNotBlank(product.getVendorImage())) {
       Link vendorLink = linkTo(methodOn(ImageController.class).findImageById(product.getVendorImage())).withSelfRel();

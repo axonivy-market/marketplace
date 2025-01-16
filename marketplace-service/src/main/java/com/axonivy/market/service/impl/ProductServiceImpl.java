@@ -1,7 +1,6 @@
 package com.axonivy.market.service.impl;
 
 import com.axonivy.market.bo.Artifact;
-import com.axonivy.market.constants.CommonConstants;
 import com.axonivy.market.constants.GitHubConstants;
 import com.axonivy.market.constants.MavenConstants;
 import com.axonivy.market.constants.MetaConstants;
@@ -23,6 +22,7 @@ import com.axonivy.market.github.service.GHAxonIvyMarketRepoService;
 import com.axonivy.market.github.service.GHAxonIvyProductRepoService;
 import com.axonivy.market.github.service.GitHubService;
 import com.axonivy.market.github.util.GitHubUtils;
+import com.axonivy.market.model.VersionAndUrlModel;
 import com.axonivy.market.repository.*;
 import com.axonivy.market.service.ExternalDocumentService;
 import com.axonivy.market.service.ImageService;
@@ -30,6 +30,7 @@ import com.axonivy.market.service.MetadataService;
 import com.axonivy.market.service.ProductContentService;
 import com.axonivy.market.service.ProductMarketplaceDataService;
 import com.axonivy.market.service.ProductService;
+import com.axonivy.market.service.VersionService;
 import com.axonivy.market.util.MavenUtils;
 import com.axonivy.market.util.MetadataReaderUtils;
 import com.axonivy.market.util.VersionUtils;
@@ -60,7 +61,10 @@ import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 
+import static com.axonivy.market.constants.CommonConstants.DOT_SEPARATOR;
 import static com.axonivy.market.constants.CommonConstants.SLASH;
+import static com.axonivy.market.constants.CommonConstants.PLUS;
+import static com.axonivy.market.constants.CommonConstants.COMPATIBILITY_RANGE_FORMAT;
 import static com.axonivy.market.constants.MavenConstants.*;
 import static com.axonivy.market.constants.ProductJsonConstants.EN_LANGUAGE;
 import static com.axonivy.market.constants.ProductJsonConstants.LOGO_FILE;
@@ -94,6 +98,7 @@ public class ProductServiceImpl implements ProductService {
   private final ProductMarketplaceDataService productMarketplaceDataService;
   private final ProductMarketplaceDataRepository productMarketplaceDataRepo;
   private GHCommit lastGHCommit;
+  private final VersionService versionService;
   private GitHubRepoMeta marketRepoMeta;
   @Value("${market.github.market.branch}")
   private String marketRepoBranch;
@@ -106,7 +111,7 @@ public class ProductServiceImpl implements ProductService {
       MetadataSyncRepository metadataSyncRepo, MetadataRepository metadataRepo, ImageService imageService,
       ProductContentService productContentService, MetadataService metadataService,
       ProductMarketplaceDataService productMarketplaceDataService, ExternalDocumentService externalDocumentService,
-      ProductMarketplaceDataRepository productMarketplaceDataRepo) {
+      ProductMarketplaceDataRepository productMarketplaceDataRepo, VersionService versionService) {
     this.productRepo = productRepo;
     this.productModuleContentRepo = productModuleContentRepo;
     this.axonIvyMarketRepoService = axonIvyMarketRepoService;
@@ -125,6 +130,7 @@ public class ProductServiceImpl implements ProductService {
     this.productMarketplaceDataService = productMarketplaceDataService;
     this.externalDocumentService = externalDocumentService;
     this.productMarketplaceDataRepo = productMarketplaceDataRepo;
+    this.versionService = versionService;
   }
 
   @Override
@@ -191,7 +197,7 @@ public class ProductServiceImpl implements ProductService {
     Map<String, List<GitHubFile>> groupGitHubFiles = new HashMap<>();
     for (var file : gitHubFileChanges) {
       String filePath = file.getFileName();
-      var parentPath = filePath.substring(0, filePath.lastIndexOf(CommonConstants.SLASH) + 1);
+      var parentPath = filePath.substring(0, filePath.lastIndexOf(SLASH) + 1);
       var files = groupGitHubFiles.getOrDefault(parentPath, new ArrayList<>());
       files.add(file);
       files.sort((file1, file2) -> GitHubUtils.sortMetaJsonFirst(file1.getFileName(), file2.getFileName()));
@@ -501,13 +507,17 @@ public class ProductServiceImpl implements ProductService {
       mavenVersions.add(versionNodes.item(i).getTextContent());
     }
 
-    // Check if having new released version in Maven
+    // Check if having new released version or unreleased dev version in Maven
     List<String> currentVersions = ObjectUtils.isNotEmpty(product.getReleasedVersions()) ?
         product.getReleasedVersions() :
         productModuleContentRepo.findVersionsByProductId(product.getId());
-    mavenVersions = mavenVersions.stream().filter(version -> !currentVersions.contains(version)).toList();
+    List<String> versionChanges =
+        mavenVersions.stream().filter(
+            version -> !currentVersions.contains(version) || (!VersionUtils.isReleasedVersion(
+                version) && VersionUtils.isOfficialVersionOrUnReleasedDevVersion(
+                mavenVersions, version))).toList();
 
-    if (ObjectUtils.isEmpty(mavenVersions)) {
+    if (ObjectUtils.isEmpty(versionChanges)) {
       return;
     }
 
@@ -517,19 +527,19 @@ public class ProductServiceImpl implements ProductService {
       product.setNewestPublishedDate(lastUpdated);
       product.setNewestReleaseVersion(latestVersion);
     }
-    updateProductCompatibility(product, mavenVersions);
+    updateProductCompatibility(product, versionChanges);
 
     Optional.ofNullable(product.getReleasedVersions()).ifPresentOrElse(releasedVersion -> {},
         () -> product.setReleasedVersions(new ArrayList<>()));
 
     List<ProductModuleContent> productModuleContents = new ArrayList<>();
-    for (String version : mavenVersions) {
+    for (String version : versionChanges) {
       product.getReleasedVersions().add(version);
       ProductModuleContent productModuleContent = handleProductArtifact(version, product.getId(), mavenArtifact,
           product.getNames().get(EN_LANGUAGE));
       Optional.ofNullable(productModuleContent).ifPresent(productModuleContents::add);
     }
-    nonSyncReleasedVersions.addAll(mavenVersions);
+    nonSyncReleasedVersions.addAll(versionChanges);
 
     if (ObjectUtils.isNotEmpty(productModuleContents)) {
       productModuleContentRepo.saveAll(productModuleContents);
@@ -582,15 +592,15 @@ public class ProductServiceImpl implements ProductService {
     if (StringUtils.isBlank(oldestVersion)) {
       return Strings.EMPTY;
     }
-    if (!oldestVersion.contains(CommonConstants.DOT_SEPARATOR)) {
+    if (!oldestVersion.contains(DOT_SEPARATOR)) {
       return oldestVersion + ".0+";
     }
-    int firstDot = oldestVersion.indexOf(CommonConstants.DOT_SEPARATOR);
-    int secondDot = oldestVersion.indexOf(CommonConstants.DOT_SEPARATOR, firstDot + 1);
+    int firstDot = oldestVersion.indexOf(DOT_SEPARATOR);
+    int secondDot = oldestVersion.indexOf(DOT_SEPARATOR, firstDot + 1);
     if (secondDot == -1) {
-      return oldestVersion.concat(CommonConstants.PLUS);
+      return oldestVersion.concat(PLUS);
     }
-    return oldestVersion.substring(0, secondDot).concat(CommonConstants.PLUS);
+    return oldestVersion.substring(0, secondDot).concat(PLUS);
   }
 
   @Override
@@ -599,6 +609,10 @@ public class ProductServiceImpl implements ProductService {
     return Optional.ofNullable(product).map(productItem -> {
       int installationCount = productMarketplaceDataService.updateProductInstallationCount(id);
       productItem.setInstallationCount(installationCount);
+
+      String compatibilityRange = getCompatibilityRange(id);
+      productItem.setCompatibilityRange(compatibilityRange);
+
       return productItem;
     }).orElse(null);
   }
@@ -614,6 +628,10 @@ public class ProductServiceImpl implements ProductService {
     return Optional.ofNullable(product).map(productItem -> {
       int installationCount = productMarketplaceDataService.updateProductInstallationCount(id);
       productItem.setInstallationCount(installationCount);
+
+      String compatibilityRange = getCompatibilityRange(id);
+      productItem.setCompatibilityRange(compatibilityRange);
+
       productItem.setBestMatchVersion(bestMatchVersion);
       return productItem;
     }).orElse(null);
@@ -749,4 +767,31 @@ public class ProductServiceImpl implements ProductService {
       return false;
     }
   }
+
+  /**
+   * MARP-975: Retrieve the list containing all versions for the designer and
+   * split the versions to obtain the first prefix,then format them for compatibility range.
+   * ex: 11.0+ , 10.0 - 12.0+ , ...
+   */
+  private String getCompatibilityRange(String productId) {
+    return Optional.of(versionService.getVersionsForDesigner(productId))
+        .filter(ObjectUtils::isNotEmpty)
+        .map(versions -> versions.stream().map(VersionAndUrlModel::getVersion).toList())
+        .map(versions -> {
+          if (versions.size() == 1) {
+            return splitVersion(versions.get(0)).concat(PLUS);
+          }
+          String maxVersion = splitVersion(versions.get(0)).concat(PLUS);
+          String minVersion = splitVersion(versions.get(versions.size() - 1));
+          return VersionUtils.getPrefixOfVersion(minVersion).equals(VersionUtils.getPrefixOfVersion(maxVersion)) ?
+              minVersion.concat(PLUS) : String.format(COMPATIBILITY_RANGE_FORMAT, minVersion, maxVersion);
+        }).orElse(null);
+  }
+
+  private String splitVersion(String version) {
+    int firstDot = version.indexOf(DOT_SEPARATOR);
+    int secondDot = version.indexOf(DOT_SEPARATOR, firstDot + 1);
+    return version.substring(0, secondDot);
+  }
+
 }

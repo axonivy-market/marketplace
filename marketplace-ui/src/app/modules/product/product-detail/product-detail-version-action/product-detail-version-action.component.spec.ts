@@ -339,4 +339,16 @@ describe('ProductDetailVersionActionComponent', () => {
     const result = component.getTrackingEnvironmentBasedOnActionType();
     expect(result).toBe('');
   });
+
+  it('should close the dropdown when clicking outside', () => {
+    component.isDropDownDisplayed.set(true);
+    component.actionType = ProductDetailActionType.STANDARD;
+    fixture.detectChanges();
+
+    const event = new MouseEvent('click');
+    document.dispatchEvent(event);
+    fixture.detectChanges();
+
+    expect(component.isDropDownDisplayed()).toBeFalse();
+  });
 });

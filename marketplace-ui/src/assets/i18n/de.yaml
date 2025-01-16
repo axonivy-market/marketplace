@@ -3,6 +3,43 @@ common:
   language:
     english: Englisch
     german: Deutsch
+  preview:
+    pageTitle: Veröffentlichungsvorschau
+    title: Vorschau auf die Produktfreigabe
+    description: Vorschau der Beschreibung Ihres Produkts
+    buttonLabel: Hochladen
+    hint: Es sind nur .zip-Dateien erlaubt und die Dateigröße sollte kleiner als 20 MB sein.
+    noTabs: Es scheint ein Problem mit Ihrer Zip-Datei zu geben.
+    link: So erstellen Sie eine gültige README.
+    hintContent: <p>
+      Befolgen Sie die README-Vorlage strikt. Stellen Sie Folgendes sicher.
+      </p></br>
+      <code># Name Ihres Produkts
+      </br></br>
+      Hallo, dies ist unser Connector.
+      </br></br>## Demo
+      </br></br>
+      Hier sollten Sie die Demo-Inhalte zeigen.
+      </br></br>## Setup
+      </br></br>
+      Dieser Abschnitt sollte zeigen, wie Sie Ihr Produkt herunterladen und einrichten, ..
+      </br></br>
+      ```</br>
+      @variables.yaml@</br>
+      ```
+      </code>
+      <div>
+      <ul>
+      <li>Falls Sie Variablen in die README-Datei einfügen möchten, platzieren Sie sie wie in der oben angegebenen Vorlage und deklarieren Sie eine Datei mit dem Namen <code>variables.yaml</code></li>
+      <li><b>SETUP AND DEMO</b> Diese Überschriften sollten immer auf Englisch sein, unabhängig von der Sprache.</li>
+      <li>
+      Stellen Sie sicher, dass <b>SETUP AND DEMO</b> den vordefinierten Überschriften und der Struktur der Vorlage folgen.
+      </li>
+      <li>
+      Bilder sollten das folgende Format verwenden
+      <code>![image-name](image-directory.png)</code>
+      </li>
+      </ul>
   nav:
     news: News
     doc: Dokumentation

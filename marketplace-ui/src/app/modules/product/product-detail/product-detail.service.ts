@@ -1,7 +1,6 @@
 import { inject, Injectable, signal, WritableSignal } from '@angular/core';
 import { DisplayValue } from '../../../shared/models/display-value.model';
 import { HttpClient, HttpContext } from '@angular/common/http';
-import { LoadingService } from '../../../core/services/loading/loading.service';
 import { Observable } from 'rxjs';
 import { API_URI } from '../../../shared/constants/api.constant';
 import { ForwardingError } from '../../../core/interceptors/api.interceptor';
@@ -15,7 +14,6 @@ export class ProductDetailService {
   productNames: WritableSignal<DisplayValue> = signal({} as DisplayValue);
   productLogoUrl: WritableSignal<string> = signal('');
   httpClient = inject(HttpClient);
-  loadingService = inject(LoadingService);
   ratingBtnLabel: WritableSignal<string> = signal('');
   noFeedbackLabel: WritableSignal<string> = signal('');
 
