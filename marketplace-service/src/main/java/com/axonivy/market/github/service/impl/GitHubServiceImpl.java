@@ -15,6 +15,7 @@ import com.axonivy.market.github.model.GitHubProperty;
 import com.axonivy.market.github.model.SecretScanning;
 import com.axonivy.market.github.service.GitHubService;
 import com.axonivy.market.github.model.ProductSecurityInfo;
+import com.axonivy.market.model.GithubReleaseModel;
 import com.axonivy.market.repository.UserRepository;
 import lombok.extern.log4j.Log4j2;
 import org.kohsuke.github.*;
@@ -35,6 +36,9 @@ import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 
 import java.io.IOException;
+import java.time.LocalDate;
+import java.time.ZoneId;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -88,7 +92,7 @@ public class GitHubServiceImpl implements GitHubService {
   }
 
   @Override
-  public GHRepository getRepository(String repositoryPath) throws IOException {
+  public GHRepository  getRepository(String repositoryPath) throws IOException {
     return getGitHub().getRepository(repositoryPath);
   }
 
@@ -335,5 +339,29 @@ public class GitHubServiceImpl implements GitHubService {
 
     return restTemplate.exchange(url, HttpMethod.GET, entity, new ParameterizedTypeReference<>() {
     });
+  }
+
+  @Override
+  public List<GithubReleaseModel> getReleases(String repositoryPath) throws IOException {
+    System.out.println(repositoryPath);
+    List<GHRelease> ghReleases = this.getRepository(repositoryPath).listReleases().toList();
+    List<GithubReleaseModel> githubReleaseModels = new ArrayList<>();
+    if (ghReleases.isEmpty()) {
+      return null;
+    }
+    for(GHRelease ghRelease : ghReleases) {
+      GithubReleaseModel githubReleaseModel = new GithubReleaseModel();
+      LocalDate localDate = ghRelease.getPublished_at().toInstant()
+          .atZone(ZoneId.systemDefault())
+          .toLocalDate();
+
+      githubReleaseModel.setBody(ghRelease.getBody());
+      githubReleaseModel.setName(ghRelease.getName());
+      githubReleaseModel.setPublishedAt(localDate);
+
+      githubReleaseModels.add(githubReleaseModel);
+    }
+
+    return githubReleaseModels;
   }
 }

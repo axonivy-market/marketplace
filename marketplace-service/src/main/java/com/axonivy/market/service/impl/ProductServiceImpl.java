@@ -787,4 +787,8 @@ public class ProductServiceImpl implements ProductService {
     return version.substring(0, secondDot);
   }
 
+  @Override
+  public Product findProductById(String id) {
+    return productRepo.findProductById(id);
+  }
 }

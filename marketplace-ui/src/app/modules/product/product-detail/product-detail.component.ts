@@ -58,6 +58,8 @@ import { EmptyProductDetailPipe } from '../../../shared/pipes/empty-product-deta
 import { LoadingSpinnerComponent } from '../../../shared/components/loading-spinner/loading-spinner.component';
 import { LoadingComponentId } from '../../../shared/enums/loading-component-id';
 import { LoadingService } from '../../../core/services/loading/loading.service';
+import { ProductRelease } from '../../../shared/models/apis/product-release.mode';
+import LinkifyIt from 'linkify-it';
 
 export interface DetailTab {
   activeClass: string;
@@ -131,6 +133,7 @@ export class ProductDetailComponent {
   isMobileMode = signal<boolean>(false);
   installationCount = 0;
   logoUrl = DEFAULT_IMAGE_URL;
+  changelogs: ProductRelease[] = [];
 
   @HostListener('window:popstate', ['$event'])
   onPopState() {
@@ -159,15 +162,19 @@ export class ProductDetailComponent {
     });
     const productId = this.route.snapshot.params[ROUTER.ID];
     this.productDetailService.productId.set(productId);
-    if (productId) {
+    if (productId) {      
       this.loadingService.showLoading(LoadingComponentId.DETAIL_PAGE);
       forkJoin({
         productDetail: this.getProductDetailObservable(productId),
         productFeedBack:
           this.productFeedbackService.getInitFeedbacksObservable(),
         rating: this.productStarRatingService.getRatingObservable(productId),
-        userFeedback: this.productFeedbackService.findProductFeedbackOfUser()
+        userFeedback: this.productFeedbackService.findProductFeedbackOfUser(),
+        changelog: this.productService.getChangelogs(productId),
       }).subscribe(res => {
+        console.log(res.changelog);
+        this.changelogs = res.changelog;
+        
         this.handleProductDetail(res.productDetail);
         this.productFeedbackService.handleFeedbackApiResponse(res.productFeedBack);
         this.updateDropdownSelection();
@@ -298,8 +305,10 @@ export class ProductDetailComponent {
           content.setup,
           this.languageService.selectedLanguage()
         ),
-      dependency: content.isDependency
+      dependency: content.isDependency,
+      changelog: this.changelogs.length != 0,
     };
+    
     return conditions[value] ?? false;
   }
 
@@ -419,6 +428,9 @@ export class ProductDetailComponent {
     const displayedTabs: ItemDropdown[] = [];
     for (const detailTab of this.detailTabs) {
       if (this.getContent(detailTab.value)) {
+        if(detailTab.value === 'changelog') {
+          console.log("Handling changelog");       
+        }
         displayedTabs.push(detailTab);
         this.activeTab = displayedTabs[0].value;
       }
@@ -445,11 +457,60 @@ export class ProductDetailComponent {
     return productDetail;
   }
 
-  renderGithubAlert(value: string): SafeHtml {
+  renderGithubAlert(value: string): SafeHtml {    
     const md = MarkdownIt();
     md.use(MarkdownItGitHubAlerts);
     md.use(full); // Add emoji support
     const result = md.render(value);
+    
     return this.sanitizer.bypassSecurityTrustHtml(result);
+  }
+
+  
+  renderChangelogContent(value: string): SafeHtml {
+    const md = MarkdownIt();
+    md.use(MarkdownItGitHubAlerts);
+    md.use(full);
+    
+    const test = `## Changes
+
+- Add code owner file @octopus-axonivy (#34)
+- Release @github-actions (#33)
+
+## 🚀 Features
+
+- [MARP-1053](https://1ivy.atlassian.net/browse/MARP-1053) Update release drafter and publisher workflows for branch master @ndkhanh-axonivy (#46)
+- [MARP-1703](https://1ivy.atlassian.net/browse/MARP-1703) end2 end testing tryout with adding a new test to call to real endpoint @ntqdinh-axonivy (#35)
+`
+    const result = md.render(value);
+    console.log(result);
+    const safeHTML = this.sanitizer.bypassSecurityTrustHtml(this.linkifyText(result));
+    // console.log(safeHTML);
+    
+    return safeHTML;
+  }
+
+  // private handleGithubAutoGenLink(string: string): string {
+
+  // }
+
+  linkifyText(text: string): string {
+    const linkify = new LinkifyIt();
+    const matches = linkify.match(text);
+
+    if (!matches) {
+      return text; // No links found, return the original text.
+    }
+
+    let result = text;
+    matches.reverse().forEach(match => {
+      const url = match.url;
+      const start = match.index;
+      const end = start + match.lastIndex - match.index;
+      const link = `<a href="${url}" target="_blank" rel="noopener noreferrer">${url}</a>`;
+      result = result.slice(0, start) + link + result.slice(end);
+    });
+
+    return result;
   }
 }
