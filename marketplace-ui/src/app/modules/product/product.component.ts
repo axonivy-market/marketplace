@@ -153,6 +153,15 @@ export class ProductComponent implements AfterViewInit, OnDestroy {
       sort: selectedSort
     };
     this.loadProductItems(true);
+    const queryParams = selectedSort !== SortOption.STANDARD
+    ? { sort: this.criteria.sort }
+    : { sort: null };
+
+    this.router.navigate([], {
+      relativeTo: this.route,
+      queryParams: queryParams,
+      queryParamsHandling: 'merge'
+    });
   }
 
   onSearchChanged(searchString: string) {
