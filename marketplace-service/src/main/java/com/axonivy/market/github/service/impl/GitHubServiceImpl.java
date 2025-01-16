@@ -2,6 +2,7 @@ package com.axonivy.market.github.service.impl;
 
 import com.axonivy.market.constants.ErrorMessageConstants;
 import com.axonivy.market.constants.GitHubConstants;
+import com.axonivy.market.entity.Product;
 import com.axonivy.market.entity.User;
 import com.axonivy.market.enums.ErrorCode;
 import com.axonivy.market.exceptions.model.MissingHeaderException;
@@ -48,6 +49,8 @@ import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Function;
 import java.util.function.Supplier;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import static org.apache.commons.lang3.StringUtils.EMPTY;
@@ -342,9 +345,9 @@ public class GitHubServiceImpl implements GitHubService {
   }
 
   @Override
-  public List<GithubReleaseModel> getReleases(String repositoryPath) throws IOException {
-    System.out.println(repositoryPath);
-    List<GHRelease> ghReleases = this.getRepository(repositoryPath).listReleases().toList();
+  public List<GithubReleaseModel> getReleases(Product product) throws IOException {
+    System.out.println(product.getRepositoryName());
+    List<GHRelease> ghReleases = this.getRepository(product.getRepositoryName()).listReleases().toList();
     List<GithubReleaseModel> githubReleaseModels = new ArrayList<>();
     if (ghReleases.isEmpty()) {
       return null;
@@ -355,7 +358,7 @@ public class GitHubServiceImpl implements GitHubService {
           .atZone(ZoneId.systemDefault())
           .toLocalDate();
 
-      githubReleaseModel.setBody(ghRelease.getBody());
+      githubReleaseModel.setBody(convertGithubShortLinkToFullLink(ghRelease.getBody(), product.getSourceUrl()));
       githubReleaseModel.setName(ghRelease.getName());
       githubReleaseModel.setPublishedAt(localDate);
 
@@ -363,5 +366,28 @@ public class GitHubServiceImpl implements GitHubService {
     }
 
     return githubReleaseModels;
+  }
+
+  private String convertGithubShortLinkToFullLink(String githubRelease, String productSourceUrl) {
+
+    // Regular expression to match # followed by digits
+    String regex = "#(\\d+)";
+
+    // Compile the pattern
+    Pattern pattern = Pattern.compile(regex);
+
+    // Create the matcher
+    Matcher matcher = pattern.matcher(githubRelease);
+
+//    String productSourceUrl = product.getSourceUrl();
+    StringBuilder productPullRequestUrl = new StringBuilder();
+    productPullRequestUrl.append(productSourceUrl).append("/pull/");
+
+    // Replace all occurrences of the pattern
+    String result = matcher.replaceAll(productPullRequestUrl + "$1");
+
+    // Print the result
+    System.out.println(result);
+    return result;
   }
 }

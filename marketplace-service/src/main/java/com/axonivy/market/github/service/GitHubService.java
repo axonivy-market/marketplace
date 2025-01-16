@@ -1,5 +1,6 @@
 package com.axonivy.market.github.service;
 
+import com.axonivy.market.entity.Product;
 import com.axonivy.market.entity.User;
 import com.axonivy.market.exceptions.model.MissingHeaderException;
 import com.axonivy.market.exceptions.model.Oauth2ExchangeCodeException;
@@ -43,5 +44,5 @@ public interface GitHubService {
 
   List<ProductSecurityInfo> getSecurityDetailsForAllProducts(String accessToken, String orgName);
 
-  List<GithubReleaseModel> getReleases(String repositoryPath) throws IOException;
+  List<GithubReleaseModel> getReleases(Product product) throws IOException;
 }
