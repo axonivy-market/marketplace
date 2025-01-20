@@ -190,9 +190,10 @@
                 </div>
               </div>
             </div>
-            <div class="tab-content col-12 default-cursor">
+            <div #tabContent class="tab-content col-12 default-cursor">
               @for (displayedTab of displayedTabsSignal(); track $index) {
                 <div
+                  
                   class="tab-pane fade show"
                   [class.active]="activeTab === displayedTab.value"
                   [id]="displayedTab.value"
@@ -206,14 +207,14 @@
                       "></app-product-detail-maven-content>
                   } @else if (displayedTab.value === 'changelog') {
                     @for (changelog of changelogs; track changelog.name) {
-                      <div class="readme-content">
-                      <h2 class="mb-5">v{{changelog.name}}</h2>
-                      <div [innerHtml]="renderChangelogContent(changelog.body)">
-
-                      </div></div>
+                      <div #changelogContainer class="changelog-container mb-5 p-4">
+                        <h2 class="release-version mb-3">{{changelog.name}}</h2>
+                        <h2 class="release-published-date mb-5">{{changelog.publishedAt | date: 'MMM dd, yyyy'}}</h2>
+                        <div class="changelog-content" [innerHtml]=""></div>
+                      </div>
+                      <!-- {{renderChangelogContent(changelog.body)}} -->
                     }
                   }
-                  
                   @else {
                     <div class="readme-content" [innerHtml]="renderGithubAlert(getProductModuleContentValue(displayedTab)
                           | multilingualism: languageService.selectedLanguage())"></div>

@@ -3,7 +3,7 @@ import { HeaderComponent } from './shared/components/header/header.component';
 import { RoutingQueryParamService } from './shared/services/routing.query.param.service';
 import { CommonModule } from '@angular/common';
 import { ERROR_PAGE_PATH } from './shared/constants/common.constant';
-import { Component, inject } from '@angular/core';
+import { Component, ElementRef, inject, Renderer2 } from '@angular/core';
 import {
   ActivatedRoute,
   NavigationError,
@@ -25,9 +25,22 @@ export class AppComponent {
   route = inject(ActivatedRoute);
   isMobileMenuCollapsed = true;
 
-  constructor(private readonly router: Router) {}
+  constructor(private readonly router: Router, private renderer: Renderer2, private elRef: ElementRef) {}
 
   ngOnInit(): void {
+    // const appContainer = this.elRef.nativeElement.querySelector('.app-container');
+    // if (appContainer) {
+    //   const links = appContainer.querySelectorAll('a'); // Find all <a> tags
+    //   console.log(links);
+      
+    //   links.forEach((link: HTMLElement) => {
+    //     this.renderer.listen(link, 'click', (event: MouseEvent) => {
+    //       event.preventDefault(); // Prevent default navigation
+    //       console.log('Link prevented:', (event.target as HTMLAnchorElement).href);
+    //       // You can handle the click here (e.g., custom routing or actions)
+    //     });
+    //   });
+    // }
     this.router.events.subscribe((event: Event) => {
       if (event instanceof NavigationError) {
         this.router.navigate([ERROR_PAGE_PATH]);

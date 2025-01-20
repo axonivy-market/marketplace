@@ -146,7 +146,7 @@ public class ProductDetailsController {
     System.out.println(product.getRepositoryName());
 
     List<GithubReleaseModel> githubReleaseModels =
-        gitHubService.getReleases(product.getRepositoryName());
+        gitHubService.getReleases(product);
 
     return new ResponseEntity<>(githubReleaseModels,
         HttpStatus.OK);

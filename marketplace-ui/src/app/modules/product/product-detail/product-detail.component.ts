@@ -6,7 +6,9 @@ import {
   Component,
   ElementRef,
   HostListener,
+  Renderer2,
   Signal,
+  ViewChild,
   WritableSignal,
   computed,
   inject,
@@ -60,6 +62,7 @@ import { LoadingComponentId } from '../../../shared/enums/loading-component-id';
 import { LoadingService } from '../../../core/services/loading/loading.service';
 import { ProductRelease } from '../../../shared/models/apis/product-release.mode';
 import LinkifyIt from 'linkify-it';
+import { PreventDefaultDirective } from '../../../directives/prevent-default.directive';
 
 export interface DetailTab {
   activeClass: string;
@@ -89,7 +92,8 @@ const DEFAULT_ACTIVE_TAB = 'description';
     CommonDropdownComponent,
     NgOptimizedImage,
     EmptyProductDetailPipe,
-    LoadingSpinnerComponent
+    LoadingSpinnerComponent,
+    PreventDefaultDirective
   ],
   providers: [ProductService],
   templateUrl: './product-detail.component.html',
@@ -134,6 +138,7 @@ export class ProductDetailComponent {
   installationCount = 0;
   logoUrl = DEFAULT_IMAGE_URL;
   changelogs: ProductRelease[] = [];
+  md: MarkdownIt;
 
   @HostListener('window:popstate', ['$event'])
   onPopState() {
@@ -146,7 +151,9 @@ export class ProductDetailComponent {
 
   constructor(
     private readonly titleService: Title,
-    private readonly sanitizer: DomSanitizer
+    private readonly sanitizer: DomSanitizer,
+    private renderer: Renderer2, 
+    private elRef: ElementRef
   ) {
     this.scrollToTop();
     this.resizeObserver = new ResizeObserver(() => {
@@ -154,12 +161,31 @@ export class ProductDetailComponent {
     });
   }
 
-  ngOnInit(): void {
+  ngOnInit(): void {    
     this.router.navigate([], {
       relativeTo: this.route,
       queryParamsHandling: 'merge',
       replaceUrl: true
     });
+    
+    // const tabContentComponent = this.elRef.nativeElement.querySelector('#tabContent');
+    // if (tabContentComponent) {
+      // console.log("there is change log container");
+      
+      // const links = tabContentComponent.querySelectorAll('a'); // Find all <a> tags
+      // console.log(links);
+      
+      // links.forEach((link: HTMLElement) => {
+      //   this.renderer.listen(link, 'click', (event: MouseEvent) => {
+      //     event.preventDefault(); // Prevent default navigation
+      //     console.log('Link prevented:', (event.target as HTMLAnchorElement).href);
+      //     // You can handle the click here (e.g., custom routing or actions)
+      //   });
+      // });
+    // }
+
+
+
     const productId = this.route.snapshot.params[ROUTER.ID];
     this.productDetailService.productId.set(productId);
     if (productId) {      
@@ -172,9 +198,7 @@ export class ProductDetailComponent {
         userFeedback: this.productFeedbackService.findProductFeedbackOfUser(),
         changelog: this.productService.getChangelogs(productId),
       }).subscribe(res => {
-        console.log(res.changelog);
         this.changelogs = res.changelog;
-        
         this.handleProductDetail(res.productDetail);
         this.productFeedbackService.handleFeedbackApiResponse(res.productFeedBack);
         this.updateDropdownSelection();
@@ -428,9 +452,6 @@ export class ProductDetailComponent {
     const displayedTabs: ItemDropdown[] = [];
     for (const detailTab of this.detailTabs) {
       if (this.getContent(detailTab.value)) {
-        if(detailTab.value === 'changelog') {
-          console.log("Handling changelog");       
-        }
         displayedTabs.push(detailTab);
         this.activeTab = displayedTabs[0].value;
       }
@@ -467,34 +488,43 @@ export class ProductDetailComponent {
   }
 
   
-  renderChangelogContent(value: string): SafeHtml {
+  renderChangelogContent(value: string) {
+    let sampleRelease = "- [IVYPORTAL-18316](https://1ivy.atlassian.net/browse/IVYPORTAL-18316) Update the Avatar " +
+    "component to auto convert email to lower cases for 12 @mnhnam-axonivy (#1440)";
+    
     const md = MarkdownIt();
+    // const md = MarkdownIt({
+    //   linkify: true,
+    // });
     md.use(MarkdownItGitHubAlerts);
     md.use(full);
+    // md.use(this.customLinkifyPlugin, this.linkifyText);
     
-    const test = `## Changes
+    const result = md.render(sampleRelease);
 
-- Add code owner file @octopus-axonivy (#34)
-- Release @github-actions (#33)
-
-## 🚀 Features
-
-- [MARP-1053](https://1ivy.atlassian.net/browse/MARP-1053) Update release drafter and publisher workflows for branch master @ndkhanh-axonivy (#46)
-- [MARP-1703](https://1ivy.atlassian.net/browse/MARP-1703) end2 end testing tryout with adding a new test to call to real endpoint @ntqdinh-axonivy (#35)
-`
-    const result = md.render(value);
-    console.log(result);
-    const safeHTML = this.sanitizer.bypassSecurityTrustHtml(this.linkifyText(result));
-    // console.log(safeHTML);
+    const safeHTML = this.sanitizer.bypassSecurityTrustHtml(result);
+    // const safeHTML = this.sanitizer.bypassSecurityTrustHtml(result);
     
     return safeHTML;
   }
 
-  // private handleGithubAutoGenLink(string: string): string {
+  private customLinkifyPlugin(md: MarkdownIt, linkifyText: (text: string) => string) {
+    // Override the `core` rule to apply your linkifyText logic
+    md.core.ruler.after('inline', 'custom_linkify', (state) => {
+      state.tokens.forEach((blockToken) => {
+        if (blockToken.type === 'inline') {
+          blockToken.children?.forEach((token) => {
+            if (token.type === 'text') {
+              // Apply the custom linkify function to the text content
+              token.content = linkifyText(token.content);
+            }
+          });
+        }
+      });
+    });
+  };
 
-  // }
-
-  linkifyText(text: string): string {
+  private linkifyText(text: string): string {
     const linkify = new LinkifyIt();
     const matches = linkify.match(text);
 
@@ -505,12 +535,24 @@ export class ProductDetailComponent {
     let result = text;
     matches.reverse().forEach(match => {
       const url = match.url;
+      const pullNumberMatch = url.match(/pull\/(\d+)/);
+      let pullNumber = null;
+
+      if (pullNumberMatch) {
+        pullNumber = pullNumberMatch[1]; // The first capturing group
+      } 
       const start = match.index;
       const end = start + match.lastIndex - match.index;
-      const link = `<a href="${url}" target="_blank" rel="noopener noreferrer">${url}</a>`;
+      // const link = `<a href="${url}" target="_blank">#${pullNumber ?? pullNumber}</a>`;
+      const link = `#${pullNumber ?? pullNumber}`;
+
       result = result.slice(0, start) + link + result.slice(end);
     });
 
     return result;
+  }
+
+  private convertShortLinkToFullPRUrl(release: string) {
+
   }
 }

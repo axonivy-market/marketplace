@@ -358,7 +358,9 @@ public class GitHubServiceImpl implements GitHubService {
           .atZone(ZoneId.systemDefault())
           .toLocalDate();
 
-      githubReleaseModel.setBody(convertGithubShortLinkToFullLink(ghRelease.getBody(), product.getSourceUrl()));
+//      githubReleaseModel.setBody(convertGithubShortLinkToFullLink(ghRelease.getBody(), product.getSourceUrl()));
+      githubReleaseModel.setBody(ghRelease.getBody());
+
       githubReleaseModel.setName(ghRelease.getName());
       githubReleaseModel.setPublishedAt(localDate);
 
@@ -369,7 +371,8 @@ public class GitHubServiceImpl implements GitHubService {
   }
 
   private String convertGithubShortLinkToFullLink(String githubRelease, String productSourceUrl) {
-
+      String sampleRelease = "- [IVYPORTAL-18316](https://1ivy.atlassian.net/browse/IVYPORTAL-18316) Update the Avatar " +
+          "component to auto convert email to lower cases for 12 @mnhnam-axonivy (#1440)";
     // Regular expression to match # followed by digits
     String regex = "#(\\d+)";
 
