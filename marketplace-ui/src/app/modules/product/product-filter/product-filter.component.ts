@@ -3,7 +3,7 @@ import { Component, EventEmitter, inject, Output } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { ThemeService } from '../../../core/services/theme/theme.service';
-import { FILTER_TYPES, SORT_TYPES, DESIGNER_SESSION_STORAGE_VARIABLE } from '../../../shared/constants/common.constant';
+import { FILTER_TYPES, SORT_TYPES } from '../../../shared/constants/common.constant';
 import { TypeOption } from '../../../shared/enums/type-option.enum';
 import { SortOption } from '../../../shared/enums/sort-option.enum';
 import { LanguageService } from '../../../core/services/language/language.service';
@@ -41,44 +41,44 @@ export class ProductFilterComponent {
   route = inject(ActivatedRoute);
   router = inject(Router);
 
-  constructor() {
+  ngOnInit() {
     this.route.queryParams.subscribe(params => {
-      const type = params['type'] || FILTER_TYPES[0].value;
+      const queryParams = { ...params };
 
+      // Update type value, remove invalid type from query params if any
       const validTypeValues = Object.values(TypeOption);
-      const isValidType = validTypeValues.includes(params['type']);
-      const queryParams = isValidType
-        ? { type: type }
-        : { type: null };
+      const type = queryParams['type'];
+      const isValidType = validTypeValues.includes(type);
 
-      this.router.navigate([], {
-        relativeTo: this.route,
-        queryParams: queryParams,
-        queryParamsHandling: 'merge'
-      });
+      if (!isValidType) {
+        delete queryParams['type'];
+      }
 
-      const selectedType = this.types.find(t => t.value === type);
+      const selectedType = this.types.find(t => t.value === (isValidType ? type : FILTER_TYPES[0].value));
       if (selectedType) {
         this.filterChange.emit(selectedType);
       }
 
-      this.searchText = params['search'] || '';
-
+       // Update sort value, remove invalid sort from query params if any
       const validSortValues = Object.values(SortOption);
-      if (params['sort'] && validSortValues.includes(params['sort'])) {
-        this.onSortChange(params['sort']);
-      } else {
-        this.onSortChange(SortOption.STANDARD);
-        const queryParams = validSortValues.includes(params['sort'])
-          ? { sort: params['sort'] }
-          : { sort: null };
+      const sort = queryParams['sort'];
+      const isValidSort = validSortValues.includes(sort);
 
-        this.router.navigate([], {
-          relativeTo: this.route,
-          queryParams: queryParams,
-          queryParamsHandling: 'merge'
-        });
+      if (!isValidSort) {
+        delete queryParams['sort'];
+        this.onSortChange(SortOption.STANDARD);
+      } else {
+        this.onSortChange(sort);
       }
+
+      // Update search text
+      this.searchText = queryParams['search'] || '';
+
+      this.router.navigate([], {
+        relativeTo: this.route,
+        queryParams,
+        queryParamsHandling: ''
+      });
     });
   }
 
