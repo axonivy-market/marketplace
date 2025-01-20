@@ -346,7 +346,6 @@ public class GitHubServiceImpl implements GitHubService {
 
   @Override
   public List<GithubReleaseModel> getReleases(Product product) throws IOException {
-    System.out.println(product.getRepositoryName());
     List<GHRelease> ghReleases = this.getRepository(product.getRepositoryName()).listReleases().toList();
     List<GithubReleaseModel> githubReleaseModels = new ArrayList<>();
     if (ghReleases.isEmpty()) {
@@ -358,8 +357,8 @@ public class GitHubServiceImpl implements GitHubService {
           .atZone(ZoneId.systemDefault())
           .toLocalDate();
 
-//      githubReleaseModel.setBody(convertGithubShortLinkToFullLink(ghRelease.getBody(), product.getSourceUrl()));
-      githubReleaseModel.setBody(ghRelease.getBody());
+      githubReleaseModel.setBody(convertGithubShortLinkToFullLink(ghRelease.getBody(), product.getSourceUrl()));
+//      githubReleaseModel.setBody(ghRelease.getBody());
 
       githubReleaseModel.setName(ghRelease.getName());
       githubReleaseModel.setPublishedAt(localDate);

@@ -60,21 +60,24 @@
   }
 }
 
-.changelog-content h2 ::ng-deep {
-  border-bottom: solid 1px gray;
-  color: red;
-}
-
 .changelog-container ::ng-deep {
   border: solid 1px gray;
   border-radius: 1rem;
+
   .changelog-content h2 {
     padding-bottom: 0.5rem;
-    border-bottom: solid 1px gray;
+    margin-bottom: 2rem;
+    border-bottom: solid 1px var(--ivy-text-secondary-color);
   }
 
-  h1, h2:not(.release-version, .release-published-date), h3 {
-    border-bottom: solid 1px gray;
+  .release-published-date {
+    color: var(--ivy-text-secondary-color);
+  }
+
+  .latest-release {
+    color: var(--product-latest-release);
+    border: 1px solid var(--product-latest-release-border);
+    border-radius: 3rem;
   }
 
   h1 {
@@ -87,6 +90,14 @@
 
   h3 {
     font-size: 20px;
+  }
+
+  h4 {
+    font-size: 18px;
+  }
+
+  h5 {
+    font-size: 1.2rem;
   }
 
   p,

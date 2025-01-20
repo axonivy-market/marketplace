@@ -62,7 +62,7 @@ import { LoadingComponentId } from '../../../shared/enums/loading-component-id';
 import { LoadingService } from '../../../core/services/loading/loading.service';
 import { ProductRelease } from '../../../shared/models/apis/product-release.mode';
 import LinkifyIt from 'linkify-it';
-import { PreventDefaultDirective } from '../../../directives/prevent-default.directive';
+import { ProductReleaseSafeHtml } from '../../../shared/models/product-release-safe-html.model';
 
 export interface DetailTab {
   activeClass: string;
@@ -93,7 +93,6 @@ const DEFAULT_ACTIVE_TAB = 'description';
     NgOptimizedImage,
     EmptyProductDetailPipe,
     LoadingSpinnerComponent,
-    PreventDefaultDirective
   ],
   providers: [ProductService],
   templateUrl: './product-detail.component.html',
@@ -137,8 +136,8 @@ export class ProductDetailComponent {
   isMobileMode = signal<boolean>(false);
   installationCount = 0;
   logoUrl = DEFAULT_IMAGE_URL;
-  changelogs: ProductRelease[] = [];
   md: MarkdownIt;
+  productReleaseSafeHtmls: ProductReleaseSafeHtml[] = [];
 
   @HostListener('window:popstate', ['$event'])
   onPopState() {
@@ -152,8 +151,6 @@ export class ProductDetailComponent {
   constructor(
     private readonly titleService: Title,
     private readonly sanitizer: DomSanitizer,
-    private renderer: Renderer2, 
-    private elRef: ElementRef
   ) {
     this.scrollToTop();
     this.resizeObserver = new ResizeObserver(() => {
@@ -161,31 +158,27 @@ export class ProductDetailComponent {
     });
   }
 
-  ngOnInit(): void {    
+  ngOnInit(): void {
+    this.md = new MarkdownIt();
+    this.md
+      .use(MarkdownItGitHubAlerts)
+      .use(full)
+      .use(this.customLinkifyPlugin, this.linkifyText)
+      .set({
+        typographer: true,
+        linkify: true,
+        xhtmlOut: true,
+        html: false,
+      })
+      .enable(['smartquotes', 'replacements', 'image']);
+
+    
     this.router.navigate([], {
       relativeTo: this.route,
       queryParamsHandling: 'merge',
       replaceUrl: true
     });
     
-    // const tabContentComponent = this.elRef.nativeElement.querySelector('#tabContent');
-    // if (tabContentComponent) {
-      // console.log("there is change log container");
-      
-      // const links = tabContentComponent.querySelectorAll('a'); // Find all <a> tags
-      // console.log(links);
-      
-      // links.forEach((link: HTMLElement) => {
-      //   this.renderer.listen(link, 'click', (event: MouseEvent) => {
-      //     event.preventDefault(); // Prevent default navigation
-      //     console.log('Link prevented:', (event.target as HTMLAnchorElement).href);
-      //     // You can handle the click here (e.g., custom routing or actions)
-      //   });
-      // });
-    // }
-
-
-
     const productId = this.route.snapshot.params[ROUTER.ID];
     this.productDetailService.productId.set(productId);
     if (productId) {      
@@ -196,9 +189,9 @@ export class ProductDetailComponent {
           this.productFeedbackService.getInitFeedbacksObservable(),
         rating: this.productStarRatingService.getRatingObservable(productId),
         userFeedback: this.productFeedbackService.findProductFeedbackOfUser(),
-        changelog: this.productService.getChangelogs(productId),
+        changelogs: this.productService.getChangelogs(productId),
       }).subscribe(res => {
-        this.changelogs = res.changelog;
+        this.productReleaseSafeHtmls = this.renderChangelogContent2(res.changelogs);
         this.handleProductDetail(res.productDetail);
         this.productFeedbackService.handleFeedbackApiResponse(res.productFeedBack);
         this.updateDropdownSelection();
@@ -330,7 +323,7 @@ export class ProductDetailComponent {
           this.languageService.selectedLanguage()
         ),
       dependency: content.isDependency,
-      changelog: this.changelogs != null && this.changelogs.length != 0,
+      changelog: this.productReleaseSafeHtmls != null && this.productReleaseSafeHtmls.length != 0,
     };
     
     return conditions[value] ?? false;
@@ -478,7 +471,7 @@ export class ProductDetailComponent {
     return productDetail;
   }
 
-  renderGithubAlert(value: string): SafeHtml {    
+  renderGithubAlert(value: string): SafeHtml {
     const md = MarkdownIt();
     md.use(MarkdownItGitHubAlerts);
     md.use(full); // Add emoji support
@@ -488,10 +481,7 @@ export class ProductDetailComponent {
   }
 
   
-  renderChangelogContent(value: string) {
-    let sampleRelease = "- [IVYPORTAL-18316](https://1ivy.atlassian.net/browse/IVYPORTAL-18316) Update the Avatar " +
-    "component to auto convert email to lower cases for 12 @mnhnam-axonivy (#1440)";
-    
+  renderChangelogContent(value: string) {    
     const md = MarkdownIt();
     // const md = MarkdownIt({
     //   linkify: true,
@@ -500,12 +490,27 @@ export class ProductDetailComponent {
     md.use(full);
     // md.use(this.customLinkifyPlugin, this.linkifyText);
     
-    const result = md.render(sampleRelease);
+    const result = md.render(value);
 
     const safeHTML = this.sanitizer.bypassSecurityTrustHtml(result);
     // const safeHTML = this.sanitizer.bypassSecurityTrustHtml(result);
     
     return safeHTML;
+  }
+
+  renderChangelogContent2(releases: ProductRelease[]): ProductReleaseSafeHtml[] {
+    return releases.map((release) => {
+      return {
+        name: release.name,
+        body: this.bypassSecurityTrustHtml(release.body),
+        publishedAt: release.publishedAt,
+      };
+    });
+  }
+
+  private bypassSecurityTrustHtml(value: string): SafeHtml {
+    let markdownContent = this.md.render(value);    
+    return this.sanitizer.bypassSecurityTrustHtml(markdownContent);
   }
 
   private customLinkifyPlugin(md: MarkdownIt, linkifyText: (text: string) => string) {
