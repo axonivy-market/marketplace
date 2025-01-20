@@ -56,10 +56,10 @@ export class ProductFilterComponent {
 
       const selectedType = this.types.find(t => t.value === (isValidType ? type : FILTER_TYPES[0].value));
       if (selectedType) {
-        this.filterChange.emit(selectedType);
+        this.onSelectType(selectedType);
       }
 
-       // Update sort value, remove invalid sort from query params if any
+      // Update sort value, remove invalid sort from query params if any
       const validSortValues = Object.values(SortOption);
       const sort = queryParams['sort'];
       const isValidSort = validSortValues.includes(sort);

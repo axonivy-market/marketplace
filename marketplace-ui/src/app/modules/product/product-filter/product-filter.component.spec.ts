@@ -90,18 +90,13 @@ describe('ProductFilterComponent', () => {
   it('should initialize with default type and sort if query params are empty', () => {
     activatedRoute.queryParams = of({});
 
-    // const params = { someParam: 'someValue' };
-
-    // // Mock the queryParams observable to emit params
-    // (activatedRoute.queryParams as any) = of(params);
-
     component.ngOnInit();
 
     expect(component.selectedTypeLabel).toBe(FILTER_TYPES[0].label);
     expect(component.selectedSortLabel).toBe(SORT_TYPES[0].label);
     expect(routerSpy.navigate).toHaveBeenCalledWith([], {
       relativeTo: jasmine.anything(),
-      queryParams: { type: null, sort: null },
+      queryParams: {},
       queryParamsHandling: ''
     });
   });
@@ -115,7 +110,11 @@ describe('ProductFilterComponent', () => {
 
     expect(component.selectedTypeLabel).toBe(FILTER_TYPES[1].label);
     expect(component.selectedSortLabel).toBe(SORT_TYPES[1].label);
-    expect(routerSpy.navigate).not.toHaveBeenCalled(); // No need to update valid params
+    expect(routerSpy.navigate).toHaveBeenCalledWith([], {
+      relativeTo: jasmine.anything(),
+      queryParams: { type: validType, sort: validSort },
+      queryParamsHandling: ''
+    });
   });
 
   it('should revert to default type and sort if query params are invalid', () => {
@@ -126,19 +125,20 @@ describe('ProductFilterComponent', () => {
     expect(component.selectedSortLabel).toBe(SORT_TYPES[0].label);
     expect(routerSpy.navigate).toHaveBeenCalledWith([], {
       relativeTo: jasmine.anything(),
-      queryParams: { type: null, sort: null },
+      queryParams: {},
       queryParamsHandling: ''
     });
   });
 
   it('should remove invalid type and sort from the URI', () => {
-    activatedRoute.queryParams = of({ type: 'invalidType', sort: 'invalidSort' });
+    const validSort = SORT_TYPES[1].value;
+    activatedRoute.queryParams = of({ type: 'invalidType', sort: validSort });
 
     component.ngOnInit();
 
     expect(routerSpy.navigate).toHaveBeenCalledWith([], {
       relativeTo: jasmine.anything(),
-      queryParams: { type: null, sort: null },
+      queryParams: { sort: validSort },
       queryParamsHandling: ''
     });
   });
@@ -151,44 +151,4 @@ describe('ProductFilterComponent', () => {
 
     expect(component.searchText).toBe(searchValue);
   });
-
-
-
-  // it('should emit filterChange event on valid type', () => {
-  //   spyOn(component.filterChange, 'emit');
-  //   const validType = FILTER_TYPES[1].value;
-  //   activatedRoute.queryParams = of({ type: validType });
-
-  //   component.ngOnInit();
-
-  //   expect(component.filterChange.emit).toHaveBeenCalledWith(jasmine.objectContaining({ value: validType }));
-  // });
-
-  // it('should emit sortChange event on valid sort', () => {
-  //   spyOn(component.sortChange, 'emit');
-  //   const validSort = SORT_TYPES[1].value;
-  //   activatedRoute.queryParams = of({ sort: validSort });
-
-  //   component.ngOnInit();
-
-  //   expect(component.sortChange.emit).toHaveBeenCalledWith(validSort);
-  // });
-
-  // it('should emit default filterChange event on invalid type', () => {
-  //   spyOn(component.filterChange, 'emit');
-  //   activatedRoute.queryParams = of({ type: 'invalidType' });
-
-  //   component.ngOnInit();
-
-  //   expect(component.filterChange.emit).toHaveBeenCalledWith(jasmine.objectContaining({ value: FILTER_TYPES[0].value }));
-  // });
-
-  // it('should emit default sortChange event on invalid sort', () => {
-  //   spyOn(component.sortChange, 'emit');
-  //   activatedRoute.queryParams = of({ sort: 'invalidSort' });
-
-  //   component.ngOnInit();
-
-  //   expect(component.sortChange.emit).toHaveBeenCalledWith(SortOption.STANDARD);
-  // });
 });
