@@ -6,9 +6,7 @@ import {
   Component,
   ElementRef,
   HostListener,
-  Renderer2,
   Signal,
-  ViewChild,
   WritableSignal,
   computed,
   inject,
@@ -73,6 +71,8 @@ export interface DetailTab {
 
 const STORAGE_ITEM = 'activeTab';
 const DEFAULT_ACTIVE_TAB = 'description';
+const GITHUB_BASE_URL = 'https://github.com/';
+const BASE_MARKET_REPO = 'axonivy-market/';
 @Component({
   selector: 'app-product-detail',
   standalone: true,
@@ -159,29 +159,15 @@ export class ProductDetailComponent {
   }
 
   ngOnInit(): void {
-    this.md = new MarkdownIt();
-    this.md
-      .use(MarkdownItGitHubAlerts)
-      .use(full)
-      .use(this.customLinkifyPlugin, this.linkifyText)
-      .set({
-        typographer: true,
-        linkify: true,
-        xhtmlOut: true,
-        html: false,
-      })
-      .enable(['smartquotes', 'replacements', 'image']);
-
-    
     this.router.navigate([], {
       relativeTo: this.route,
       queryParamsHandling: 'merge',
       replaceUrl: true
     });
-    
+
     const productId = this.route.snapshot.params[ROUTER.ID];
     this.productDetailService.productId.set(productId);
-    if (productId) {      
+    if (productId) {
       this.loadingService.showLoading(LoadingComponentId.DETAIL_PAGE);
       forkJoin({
         productDetail: this.getProductDetailObservable(productId),
@@ -191,7 +177,18 @@ export class ProductDetailComponent {
         userFeedback: this.productFeedbackService.findProductFeedbackOfUser(),
         changelogs: this.productService.getChangelogs(productId),
       }).subscribe(res => {
-        this.productReleaseSafeHtmls = this.renderChangelogContent2(res.changelogs);
+        this.md = new MarkdownIt();
+        this.md.use(this.linkifyPullRequests, productId)
+          .set({
+            typographer: true,
+            linkify: true,
+            xhtmlOut: true,
+            html: false,
+          })
+          .enable(['smartquotes', 'replacements', 'image']);
+        if (res.changelogs != null) {
+          this.productReleaseSafeHtmls = this.renderChangelogContent(res.changelogs);
+        }
         this.handleProductDetail(res.productDetail);
         this.productFeedbackService.handleFeedbackApiResponse(res.productFeedBack);
         this.updateDropdownSelection();
@@ -325,7 +322,7 @@ export class ProductDetailComponent {
       dependency: content.isDependency,
       changelog: this.productReleaseSafeHtmls != null && this.productReleaseSafeHtmls.length != 0,
     };
-    
+
     return conditions[value] ?? false;
   }
 
@@ -476,29 +473,11 @@ export class ProductDetailComponent {
     md.use(MarkdownItGitHubAlerts);
     md.use(full); // Add emoji support
     const result = md.render(value);
-    
+
     return this.sanitizer.bypassSecurityTrustHtml(result);
   }
 
-  
-  renderChangelogContent(value: string) {    
-    const md = MarkdownIt();
-    // const md = MarkdownIt({
-    //   linkify: true,
-    // });
-    md.use(MarkdownItGitHubAlerts);
-    md.use(full);
-    // md.use(this.customLinkifyPlugin, this.linkifyText);
-    
-    const result = md.render(value);
-
-    const safeHTML = this.sanitizer.bypassSecurityTrustHtml(result);
-    // const safeHTML = this.sanitizer.bypassSecurityTrustHtml(result);
-    
-    return safeHTML;
-  }
-
-  renderChangelogContent2(releases: ProductRelease[]): ProductReleaseSafeHtml[] {
+  renderChangelogContent(releases: ProductRelease[]): ProductReleaseSafeHtml[] {
     return releases.map((release) => {
       return {
         name: release.name,
@@ -509,55 +488,47 @@ export class ProductDetailComponent {
   }
 
   private bypassSecurityTrustHtml(value: string): SafeHtml {
-    let markdownContent = this.md.render(value);    
+    let markdownContent = this.md.render(value);
     return this.sanitizer.bypassSecurityTrustHtml(markdownContent);
   }
 
-  private customLinkifyPlugin(md: MarkdownIt, linkifyText: (text: string) => string) {
-    // Override the `core` rule to apply your linkifyText logic
-    md.core.ruler.after('inline', 'custom_linkify', (state) => {
-      state.tokens.forEach((blockToken) => {
-        if (blockToken.type === 'inline') {
-          blockToken.children?.forEach((token) => {
-            if (token.type === 'text') {
-              // Apply the custom linkify function to the text content
-              token.content = linkifyText(token.content);
-            }
-          });
+  private linkifyPullRequests(md: MarkdownIt, productId: string) {
+    md.renderer.rules.text = (tokens, idx) => {
+      const content = tokens[idx].content;
+      const linkify = new LinkifyIt();
+      const matches = linkify.match(content);
+
+      if (!matches) {
+        return content;
+      }
+
+      let result = content;
+      matches.reverse().forEach(match => {
+        const url = match.url;
+
+        if (url.startsWith(`${GITHUB_BASE_URL}${BASE_MARKET_REPO}${productId}/compare/`)) {
+          return;
+        } else if (url.startsWith(`${GITHUB_BASE_URL}${BASE_MARKET_REPO}`)) {
+          const pullNumberMatch = url.match(/pull\/(\d+)/);
+          let pullNumber = null;
+
+          if (pullNumberMatch) {
+            pullNumber = pullNumberMatch[1];
+          }
+          const start = match.index;
+          const end = start + match.lastIndex - match.index;
+          const link = `#${pullNumber ?? pullNumber}`;
+
+          result = result.slice(0, start) + link + result.slice(end);
+        } else if (url.startsWith(GITHUB_BASE_URL)) {
+          const username = url.replace(GITHUB_BASE_URL, '');
+
+          const mention = `@${username}`;
+          result = result.replace(url, mention);
         }
       });
-    });
-  };
 
-  private linkifyText(text: string): string {
-    const linkify = new LinkifyIt();
-    const matches = linkify.match(text);
-
-    if (!matches) {
-      return text; // No links found, return the original text.
-    }
-
-    let result = text;
-    matches.reverse().forEach(match => {
-      const url = match.url;
-      const pullNumberMatch = url.match(/pull\/(\d+)/);
-      let pullNumber = null;
-
-      if (pullNumberMatch) {
-        pullNumber = pullNumberMatch[1]; // The first capturing group
-      } 
-      const start = match.index;
-      const end = start + match.lastIndex - match.index;
-      // const link = `<a href="${url}" target="_blank">#${pullNumber ?? pullNumber}</a>`;
-      const link = `#${pullNumber ?? pullNumber}`;
-
-      result = result.slice(0, start) + link + result.slice(end);
-    });
-
-    return result;
-  }
-
-  private convertShortLinkToFullPRUrl(release: string) {
-
+      return result;
+    };
   }
 }

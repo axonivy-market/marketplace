@@ -63,7 +63,10 @@ public class GitHubServiceImpl implements GitHubService {
   private final UserRepository userRepository;
   private final GitHubProperty gitHubProperty;
   private final ThreadPoolTaskScheduler taskScheduler;
-  private final String GITHUB_PULL_REQUEST_LINK = "/pull/";
+  private static final String GITHUB_PULL_REQUEST_NUMBER_REGEX = "#(\\d+)";
+  private static final String GITHUB_PULL_REQUEST_LINK = "/pull/";
+  private static final String GITHUB_USERNAME_REGEX = "@([a-zA-Z0-9\\-]+)";
+  private static final String GITHUB_MAIN_LINK = "https://github.com/";
 
   public GitHubServiceImpl(RestTemplate restTemplate, UserRepository userRepository,
       GitHubProperty gitHubProperty, ThreadPoolTaskScheduler taskScheduler) {
@@ -349,16 +352,22 @@ public class GitHubServiceImpl implements GitHubService {
   public List<GithubReleaseModel> getReleases(Product product) throws IOException {
     List<GHRelease> ghReleases = this.getRepository(product.getRepositoryName()).listReleases().toList();
     List<GithubReleaseModel> githubReleaseModels = new ArrayList<>();
+
     if (ghReleases.isEmpty()) {
       return null;
     }
+
     for(GHRelease ghRelease : ghReleases) {
       GithubReleaseModel githubReleaseModel = new GithubReleaseModel();
       LocalDate localDate = ghRelease.getPublished_at().toInstant()
           .atZone(ZoneId.systemDefault())
           .toLocalDate();
 
-      githubReleaseModel.setBody(convertGithubShortPRLinkToFullPRLink(ghRelease.getBody(), product.getSourceUrl()));
+      String modifiedBody = convertGithubShortPRLinkToFullPRLink(ghRelease.getBody(), product.getSourceUrl());
+      modifiedBody = convertGithubUsernameToFullProfileLink(modifiedBody);
+
+//      githubReleaseModel.setBody(convertGithubShortPRLinkToFullPRLink(ghRelease.getBody(), product.getSourceUrl()));
+      githubReleaseModel.setBody(modifiedBody);
       githubReleaseModel.setName(ghRelease.getName());
       githubReleaseModel.setPublishedAt(localDate);
 
@@ -368,11 +377,17 @@ public class GitHubServiceImpl implements GitHubService {
     return githubReleaseModels;
   }
 
-  private String convertGithubShortPRLinkToFullPRLink(String githubRelease, String productSourceUrl) {
-    String regex = "#(\\d+)";
-    Pattern pattern = Pattern.compile(regex);
-    Matcher matcher = pattern.matcher(githubRelease);
+  private String convertGithubShortPRLinkToFullPRLink(String githubReleaseBody, String productSourceUrl) {
+    Pattern prNumberPattern = Pattern.compile(GITHUB_PULL_REQUEST_NUMBER_REGEX);
+    Matcher prNumberMatcher = prNumberPattern.matcher(githubReleaseBody);
 
-    return matcher.replaceAll(productSourceUrl + GITHUB_PULL_REQUEST_LINK + "$1");
+    return prNumberMatcher.replaceAll(productSourceUrl + GITHUB_PULL_REQUEST_LINK + "$1");
+  }
+
+  private String convertGithubUsernameToFullProfileLink(String githubReleaseBody) {
+    Pattern pattern = Pattern.compile(GITHUB_USERNAME_REGEX);
+    Matcher matcher = pattern.matcher(githubReleaseBody);
+
+    return matcher.replaceAll(GITHUB_MAIN_LINK + "$1");
   }
 }

@@ -214,10 +214,6 @@
                             <h5 class="latest-release px-3 py-2">Latest</h5>
                           }
                         </div>
-                        <!-- <h2 class="release-version mb-3 inline">{{productReleaseSafeHtml.name}}</h2>
-                        @if ($index == 0) {
-                          <span><h2>Latest</h2></span>
-                        } -->
                         <h5 class="release-published-date mb-5">{{productReleaseSafeHtml.publishedAt | date: "MMM dd, yyyy"}}</h5>
                         <div class="changelog-content" [innerHtml]="productReleaseSafeHtml.body"></div>
                       </div>

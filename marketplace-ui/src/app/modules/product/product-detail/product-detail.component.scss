@@ -61,6 +61,10 @@
 }
 
 .changelog-container ::ng-deep {
+  a {
+    color: var(--ivy-primary-bg);
+  }
+  
   border: solid 1px gray;
   border-radius: 1rem;
 
