@@ -63,6 +63,7 @@ public class GitHubServiceImpl implements GitHubService {
   private final UserRepository userRepository;
   private final GitHubProperty gitHubProperty;
   private final ThreadPoolTaskScheduler taskScheduler;
+  private final String GITHUB_PULL_REQUEST_LINK = "/pull/";
 
   public GitHubServiceImpl(RestTemplate restTemplate, UserRepository userRepository,
       GitHubProperty gitHubProperty, ThreadPoolTaskScheduler taskScheduler) {
@@ -357,9 +358,7 @@ public class GitHubServiceImpl implements GitHubService {
           .atZone(ZoneId.systemDefault())
           .toLocalDate();
 
-      githubReleaseModel.setBody(convertGithubShortLinkToFullLink(ghRelease.getBody(), product.getSourceUrl()));
-//      githubReleaseModel.setBody(ghRelease.getBody());
-
+      githubReleaseModel.setBody(convertGithubShortPRLinkToFullPRLink(ghRelease.getBody(), product.getSourceUrl()));
       githubReleaseModel.setName(ghRelease.getName());
       githubReleaseModel.setPublishedAt(localDate);
 
@@ -369,27 +368,11 @@ public class GitHubServiceImpl implements GitHubService {
     return githubReleaseModels;
   }
 
-  private String convertGithubShortLinkToFullLink(String githubRelease, String productSourceUrl) {
-      String sampleRelease = "- [IVYPORTAL-18316](https://1ivy.atlassian.net/browse/IVYPORTAL-18316) Update the Avatar " +
-          "component to auto convert email to lower cases for 12 @mnhnam-axonivy (#1440)";
-    // Regular expression to match # followed by digits
+  private String convertGithubShortPRLinkToFullPRLink(String githubRelease, String productSourceUrl) {
     String regex = "#(\\d+)";
-
-    // Compile the pattern
     Pattern pattern = Pattern.compile(regex);
-
-    // Create the matcher
     Matcher matcher = pattern.matcher(githubRelease);
 
-//    String productSourceUrl = product.getSourceUrl();
-    StringBuilder productPullRequestUrl = new StringBuilder();
-    productPullRequestUrl.append(productSourceUrl).append("/pull/");
-
-    // Replace all occurrences of the pattern
-    String result = matcher.replaceAll(productPullRequestUrl + "$1");
-
-    // Print the result
-    System.out.println(result);
-    return result;
+    return matcher.replaceAll(productSourceUrl + GITHUB_PULL_REQUEST_LINK + "$1");
   }
 }
