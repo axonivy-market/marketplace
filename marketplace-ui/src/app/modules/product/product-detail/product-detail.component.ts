@@ -72,7 +72,6 @@ export interface DetailTab {
 const STORAGE_ITEM = 'activeTab';
 const DEFAULT_ACTIVE_TAB = 'description';
 const GITHUB_BASE_URL = 'https://github.com/';
-const BASE_MARKET_REPO = 'axonivy-market/';
 @Component({
   selector: 'app-product-detail',
   standalone: true,
@@ -178,7 +177,7 @@ export class ProductDetailComponent {
         changelogs: this.productService.getChangelogs(productId),
       }).subscribe(res => {
         this.md = new MarkdownIt();
-        this.md.use(this.linkifyPullRequests, productId)
+        this.md.use(this.linkifyPullRequests, res.productDetail.sourceUrl)
           .set({
             typographer: true,
             linkify: true,
@@ -492,7 +491,7 @@ export class ProductDetailComponent {
     return this.sanitizer.bypassSecurityTrustHtml(markdownContent);
   }
 
-  private linkifyPullRequests(md: MarkdownIt, productId: string) {
+  private linkifyPullRequests(md: MarkdownIt, sourceURL: string) {
     md.renderer.rules.text = (tokens, idx) => {
       const content = tokens[idx].content;
       const linkify = new LinkifyIt();
@@ -506,9 +505,9 @@ export class ProductDetailComponent {
       matches.reverse().forEach(match => {
         const url = match.url;
 
-        if (url.startsWith(`${GITHUB_BASE_URL}${BASE_MARKET_REPO}${productId}/compare/`)) {
+        if (url.startsWith(`${sourceURL}/compare/`)) {
           return;
-        } else if (url.startsWith(`${GITHUB_BASE_URL}${BASE_MARKET_REPO}`)) {
+        } else if (url.startsWith(sourceURL)) {
           const pullNumberMatch = url.match(/pull\/(\d+)/);
           let pullNumber = null;
 
