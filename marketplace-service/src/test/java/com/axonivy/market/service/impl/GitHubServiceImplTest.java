@@ -152,7 +152,7 @@ class GitHubServiceImplTest {
   }
 
   @Test
-  void testGetAccessToken_ValidCodeAndGitHubProperty() throws Oauth2ExchangeCodeException, MissingHeaderException {
+  void testGetAccessToken_ValidCodeAndGitHubProperty() throws Exception {
     String code = "validCode";
     String clientId = "clientId";
     String clientSecret = "clientSecret";
@@ -241,7 +241,7 @@ class GitHubServiceImplTest {
   }
 
   @Test
-  void testValidateUserInOrganizationAndTeam_Valid() throws UnauthorizedException, IOException {
+  void testValidateUserInOrganizationAndTeam_Valid() throws Exception {
     String accessToken = "validToken";
     String organization = "testOrg";
     String team = "devTeam";

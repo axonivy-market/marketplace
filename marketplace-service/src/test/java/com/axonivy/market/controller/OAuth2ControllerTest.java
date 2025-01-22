@@ -2,7 +2,6 @@ package com.axonivy.market.controller;
 
 import com.axonivy.market.constants.CommonConstants;
 import com.axonivy.market.entity.User;
-import com.axonivy.market.exceptions.model.MissingHeaderException;
 import com.axonivy.market.exceptions.model.Oauth2ExchangeCodeException;
 import com.axonivy.market.github.model.GitHubAccessTokenResponse;
 import com.axonivy.market.github.service.GitHubService;
@@ -45,7 +44,7 @@ class OAuth2ControllerTest {
   }
 
   @Test
-  void testGitHubLogin_Success() throws Oauth2ExchangeCodeException, MissingHeaderException {
+  void testGitHubLogin_Success() throws Exception {
     String accessToken = "sampleAccessToken";
     User user = createUserMock();
     String jwtToken = "sampleJwtToken";
@@ -61,7 +60,7 @@ class OAuth2ControllerTest {
   }
 
   @Test
-  void testGitHubLogin_Oauth2ExchangeCodeException() throws Oauth2ExchangeCodeException, MissingHeaderException {
+  void testGitHubLogin_Oauth2ExchangeCodeException() throws Exception {
     when(gitHubService.getAccessToken(any(), any())).thenThrow(
         new Oauth2ExchangeCodeException("invalid_grant", "Invalid authorization code"));
 
@@ -74,7 +73,7 @@ class OAuth2ControllerTest {
   }
 
   @Test
-  void testGitHubLogin_GeneralException() throws Oauth2ExchangeCodeException, MissingHeaderException {
+  void testGitHubLogin_GeneralException() throws Exception {
     when(gitHubService.getAccessToken(any(), any())).thenThrow(new RuntimeException("Unexpected error"));
 
     ResponseEntity<?> response = oAuth2Controller.gitHubLogin(oauth2AuthorizationCode);
