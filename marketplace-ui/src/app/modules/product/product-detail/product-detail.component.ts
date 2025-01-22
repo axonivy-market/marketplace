@@ -135,7 +135,7 @@ export class ProductDetailComponent {
   isMobileMode = signal<boolean>(false);
   installationCount = 0;
   logoUrl = DEFAULT_IMAGE_URL;
-  // md: MarkdownIt | undefined;
+  md: MarkdownIt | undefined;
   productReleaseSafeHtmls: ProductReleaseSafeHtml[] = [];
 
   @HostListener('window:popstate', ['$event'])
@@ -176,15 +176,15 @@ export class ProductDetailComponent {
         userFeedback: this.productFeedbackService.findProductFeedbackOfUser(),
         changelogs: this.productService.getChangelogs(productId),
       }).subscribe(res => {
-        // this.md = new MarkdownIt();
-        // this.md.use(this.linkifyPullRequests, res.productDetail.sourceUrl)
-        //   .set({
-        //     typographer: true,
-        //     linkify: true,
-        //     xhtmlOut: true,
-        //     html: false,
-        //   })
-        //   .enable(['smartquotes', 'replacements', 'image']);
+        this.md = new MarkdownIt();
+        this.md.use(this.linkifyPullRequests, res.productDetail.sourceUrl)
+          .set({
+            typographer: true,
+            linkify: true,
+            xhtmlOut: true,
+            html: false,
+          })
+          .enable(['smartquotes', 'replacements', 'image']);
         if (res.changelogs != null) {
           this.productReleaseSafeHtmls = this.renderChangelogContent(res.changelogs);
         }
@@ -487,18 +487,7 @@ export class ProductDetailComponent {
   }
 
   private bypassSecurityTrustHtml(value: string): SafeHtml {
-    const md = MarkdownIt();
-    md.use(MarkdownItGitHubAlerts);
-    md.use(this.linkifyPullRequests)
-          .set({
-            typographer: true,
-            linkify: true,
-            xhtmlOut: true,
-            html: false,
-          })
-          .enable(['smartquotes', 'replacements', 'image']);
-    // let markdownContent = this.md!.render(value);
-    let markdownContent = md.render(value);
+    let markdownContent = this.md!.render(value);
     return this.sanitizer.bypassSecurityTrustHtml(markdownContent);
   }
 
