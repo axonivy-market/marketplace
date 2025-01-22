@@ -1,6 +1,5 @@
 package com.axonivy.market.assembler;
 
-import com.axonivy.market.github.service.GitHubService;
 import com.axonivy.market.model.GithubReleaseModel;
 import lombok.extern.log4j.Log4j2;
 import org.kohsuke.github.GHRelease;
