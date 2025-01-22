@@ -135,7 +135,7 @@ export class ProductDetailComponent {
   isMobileMode = signal<boolean>(false);
   installationCount = 0;
   logoUrl = DEFAULT_IMAGE_URL;
-  md: MarkdownIt;
+  md: MarkdownIt | undefined;
   productReleaseSafeHtmls: ProductReleaseSafeHtml[] = [];
 
   @HostListener('window:popstate', ['$event'])
@@ -487,7 +487,7 @@ export class ProductDetailComponent {
   }
 
   private bypassSecurityTrustHtml(value: string): SafeHtml {
-    let markdownContent = this.md.render(value);
+    let markdownContent = this.md!.render(value);
     return this.sanitizer.bypassSecurityTrustHtml(markdownContent);
   }
 
