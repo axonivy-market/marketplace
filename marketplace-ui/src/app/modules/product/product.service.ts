@@ -114,8 +114,8 @@ export class ProductService {
     });
   }
 
-  getChangelogs(id: string): Observable<ProductRelease[]> {
-    const url = `${API_URI.PRODUCT_DETAILS}/${id}/releases`;    
+  getChangelogs(productId: string): Observable<ProductRelease[]> {
+    const url = `${API_URI.PRODUCT_DETAILS}/${productId}/releases`;    
     return this.httpClient.get<ProductRelease[]>(url);
   }
 }

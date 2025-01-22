@@ -1,4 +1,5 @@
 import { FeedbackApiResponse } from '../models/apis/feedback-response.model';
+import { ProductRelease } from '../models/apis/product-release.mode';
 import { ProductApiResponse } from '../models/apis/product-response.model';
 import { ExternalDocument } from '../models/external-document.model';
 import { ProductDetail } from '../models/product-detail.model';
@@ -375,3 +376,5 @@ export const MOCK_FEEDBACK_API_RESPONSE: FeedbackApiResponse = {
     number: 0
   }
 };
+
+export const MOCK_PRODUCT_RELEASES: ProductRelease[] = [];
