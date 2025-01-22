@@ -135,7 +135,7 @@ export class ProductDetailComponent {
   isMobileMode = signal<boolean>(false);
   installationCount = 0;
   logoUrl = DEFAULT_IMAGE_URL;
-  md: MarkdownIt | undefined;
+  md: MarkdownIt = new MarkdownIt();
   productReleaseSafeHtmls: ProductReleaseSafeHtml[] = [];
 
   @HostListener('window:popstate', ['$event'])
@@ -176,7 +176,6 @@ export class ProductDetailComponent {
         userFeedback: this.productFeedbackService.findProductFeedbackOfUser(),
         changelogs: this.productService.getChangelogs(productId),
       }).subscribe(res => {
-        this.md = new MarkdownIt();
         this.md.use(this.linkifyPullRequests, res.productDetail.sourceUrl)
           .set({
             typographer: true,
@@ -487,11 +486,11 @@ export class ProductDetailComponent {
   }
 
   private bypassSecurityTrustHtml(value: string): SafeHtml {
-    let markdownContent = this.md!.render(value);
+    const markdownContent = this.md.render(value);
     return this.sanitizer.bypassSecurityTrustHtml(markdownContent);
   }
 
-  private linkifyPullRequests(md: MarkdownIt) {
+  private linkifyPullRequests(md: MarkdownIt, sourceURL: string) {
     md.renderer.rules.text = (tokens, idx) => {
       const content = tokens[idx].content;
       const linkify = new LinkifyIt();
@@ -505,9 +504,9 @@ export class ProductDetailComponent {
       matches.reverse().forEach(match => {
         const url = match.url;
 
-        if (url.startsWith(`${'sourceURL'}/compare/`)) {
+        if (url.startsWith(`${sourceURL}/compare/`)) {
           return;
-        } else if (url.startsWith('sourceURL')) {
+        } else if (url.startsWith(sourceURL)) {
           const pullNumberMatch = url.match(/pull\/(\d+)/);
           let pullNumber = null;
 
