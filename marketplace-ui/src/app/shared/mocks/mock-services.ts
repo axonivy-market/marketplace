@@ -41,7 +41,7 @@ export class MockProductService {
     return of(MOCK_CRON_JOB_PRODUCT_DETAIL);
   }
 
-  getChangelogs(productId: string) {
+  getProductChangelogs(productId: string) {
     return of(MOCK_PRODUCT_RELEASES);
   }
 }

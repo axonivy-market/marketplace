@@ -143,7 +143,6 @@ public class ProductDetailsController {
   public ResponseEntity<List<GithubReleaseModel>> getGithubPublicReleases(
       @PathVariable(value = ID) @Parameter(in = ParameterIn.PATH, example = "demos-app") String productId) throws IOException {
     Product product = productService.findProductById(productId);
-    System.out.println(product.getRepositoryName());
 
     List<GithubReleaseModel> githubReleaseModels =
         gitHubService.getReleases(product);

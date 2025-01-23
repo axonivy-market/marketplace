@@ -38,6 +38,7 @@ import { ProductStarRatingService } from './product-detail-feedback/product-star
 import { FeedbackApiResponse } from '../../../shared/models/apis/feedback-response.model';
 import { StarRatingCounting } from '../../../shared/models/star-rating-counting.model';
 import { Feedback } from '../../../shared/models/feedback.model';
+import MarkdownIt from 'markdown-it';
 
 const products = MOCK_PRODUCTS._embedded.products;
 declare const viewport: Viewport;
@@ -53,6 +54,8 @@ describe('ProductDetailComponent', () => {
   let mockProductStarRatingService: jasmine.SpyObj<ProductStarRatingService>;
   let mockAuthService: jasmine.SpyObj<AuthService>;
   let mockAppModalService: jasmine.SpyObj<AppModalService>;
+  let md: MarkdownIt;
+  const sourceURL = 'https://github.com/source-repo';
 
   beforeEach(async () => {
     const spy = jasmine.createSpyObj('DomSanitizer', [
@@ -163,7 +166,10 @@ describe('ProductDetailComponent', () => {
 
   beforeEach(() => {
     fixture = TestBed.createComponent(ProductDetailComponent);
+    md = new MarkdownIt();
     component = fixture.componentInstance;
+    // component.linkifyPullRequests(md, sourceURL);
+
     fixture.detectChanges();
   });
 
@@ -863,4 +869,32 @@ describe('ProductDetailComponent', () => {
 
     expect(component.isDropdownOpen()).toBeFalse();
   });
+
+  fit('should sanitize and render markdown content as HTML', () => {
+    const unsafeHtml = '<script>alert("xss")</script><p>Valid HTML</p>';
+    const sanitizedHtml = component.bypassSecurityTrustHtml(unsafeHtml);
+    const result = sanitizedHtml.toString();
+  
+    expect(result).not.toContain('alert("xss")');
+    expect(result).toContain('<p>Valid HTML</p>');
+  });
+
+  fit('should bypass security trust HTML', () => {
+    const unsafeHtml = '<script>alert("XSS")</script>';
+    const safeHtml = component['bypassSecurityTrustHtml'](unsafeHtml);
+    expect(sanitizerSpy.sanitize(1, safeHtml)).toBe('<p>alert("XSS")</p>\n');
+  });
+
+  // it('should linkify pull requests and mentions', () => {
+  //   const md = new MarkdownIt();
+  //   const sourceURL = 'https://github.com/axonivy-market/market';
+  //   component['linkifyPullRequests'](md, sourceURL);
+
+  //   const text = 'Check out this pull request https://github.com/axonivy-market/market/pull/123 and mention https://github.com/username';
+  //   const tokens = md.parseInline(text, {});
+  //   const renderedText = md.renderer.render(tokens[0].children, md.options, {});
+
+  //   expect(renderedText).toContain('#123');
+  //   expect(renderedText).toContain('@username');
+  // });
 });

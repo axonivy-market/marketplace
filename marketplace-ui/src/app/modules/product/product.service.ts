@@ -114,7 +114,7 @@ export class ProductService {
     });
   }
 
-  getChangelogs(productId: string): Observable<ProductRelease[]> {
+  getProductChangelogs(productId: string): Observable<ProductRelease[]> {
     const url = `${API_URI.PRODUCT_DETAILS}/${productId}/releases`;    
     return this.httpClient.get<ProductRelease[]>(url);
   }
