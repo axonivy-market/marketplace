@@ -41,7 +41,7 @@ export class ProductFilterComponent {
   route = inject(ActivatedRoute);
   router = inject(Router);
 
-  ngOnInit() {
+  constructor() {
     this.route.queryParams.subscribe(params => {
       const queryParams = { ...params };
 

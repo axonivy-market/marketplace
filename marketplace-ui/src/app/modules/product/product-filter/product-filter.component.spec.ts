@@ -88,10 +88,6 @@ describe('ProductFilterComponent', () => {
   });
 
   it('should initialize with default type and sort if query params are empty', () => {
-    activatedRoute.queryParams = of({});
-
-    component.ngOnInit();
-
     expect(component.selectedTypeLabel).toBe(FILTER_TYPES[0].label);
     expect(component.selectedSortLabel).toBe(SORT_TYPES[0].label);
     expect(routerSpy.navigate).toHaveBeenCalledWith([], {
@@ -106,7 +102,9 @@ describe('ProductFilterComponent', () => {
     const validSort = SORT_TYPES[1].value;
     activatedRoute.queryParams = of({ type: validType, sort: validSort });
 
-    component.ngOnInit();
+    fixture = TestBed.createComponent(ProductFilterComponent);
+    component = fixture.componentInstance;
+    fixture.detectChanges();
 
     expect(component.selectedTypeLabel).toBe(FILTER_TYPES[1].label);
     expect(component.selectedSortLabel).toBe(SORT_TYPES[1].label);
@@ -119,7 +117,6 @@ describe('ProductFilterComponent', () => {
 
   it('should revert to default type and sort if query params are invalid', () => {
     activatedRoute.queryParams = of({ type: 'invalidType', sort: 'invalidSort' });
-    component.ngOnInit();
 
     expect(component.selectedTypeLabel).toBe(FILTER_TYPES[0].label);
     expect(component.selectedSortLabel).toBe(SORT_TYPES[0].label);
@@ -134,7 +131,9 @@ describe('ProductFilterComponent', () => {
     const validSort = SORT_TYPES[1].value;
     activatedRoute.queryParams = of({ type: 'invalidType', sort: validSort });
 
-    component.ngOnInit();
+    fixture = TestBed.createComponent(ProductFilterComponent);
+    component = fixture.componentInstance;
+    fixture.detectChanges();
 
     expect(routerSpy.navigate).toHaveBeenCalledWith([], {
       relativeTo: jasmine.anything(),
@@ -147,7 +146,9 @@ describe('ProductFilterComponent', () => {
     const searchValue = 'search query';
     activatedRoute.queryParams = of({ search: searchValue });
 
-    component.ngOnInit();
+    fixture = TestBed.createComponent(ProductFilterComponent);
+    component = fixture.componentInstance;
+    fixture.detectChanges();
 
     expect(component.searchText).toBe(searchValue);
   });
