@@ -174,13 +174,12 @@ export class ProductDetailComponent {
           this.productFeedbackService.getInitFeedbacksObservable(),
         rating: this.productStarRatingService.getRatingObservable(productId),
         userFeedback: this.productFeedbackService.findProductFeedbackOfUser(),
-        changelogs: this.productService.getChangelogs(productId),
+        changelogs: this.productService.getProductChangelogs(productId),
       }).subscribe(res => {
         this.md.use(this.linkifyPullRequests, res.productDetail.sourceUrl)
           .set({
             typographer: true,
             linkify: true,
-            xhtmlOut: true,
             html: false,
           })
           .enable(['smartquotes', 'replacements', 'image']);
