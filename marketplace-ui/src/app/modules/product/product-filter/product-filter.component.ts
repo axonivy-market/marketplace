@@ -53,8 +53,8 @@ export class ProductFilterComponent {
       if (!isValidType) {
         delete queryParams['type'];
       }
-
-      const selectedType = this.types.find(t => t.value === (isValidType ? type : FILTER_TYPES[0].value));
+      const typeValue = isValidType ? type : FILTER_TYPES[0].value;
+      const selectedType = this.types.find(t => t.value === typeValue);
       if (selectedType) {
         this.onSelectType(selectedType);
       }
@@ -76,8 +76,8 @@ export class ProductFilterComponent {
 
       this.router.navigate([], {
         relativeTo: this.route,
-        queryParams,
-        queryParamsHandling: ''
+        queryParamsHandling: '',
+        queryParams
       });
     });
   }
