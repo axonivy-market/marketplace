@@ -83,6 +83,7 @@ public class BaseSetup {
       ".com/amazon-comprehend-connector-product/images/comprehend-demo-sentiment.png";
   protected static final String INSTALLATION_FILE_PATH = "src/test/resources/installationCount.json";
   protected static final String IMAGE_NAME = "test.png";
+  protected static final String SAMPLE_LOGO_ID = "1234";
 
   protected Page<Product> createPageProductsMock() {
     var mockProducts = new ArrayList<Product>();
