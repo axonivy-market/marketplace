@@ -34,6 +34,7 @@ export class ProductFilterComponent {
   types = FILTER_TYPES;
   sorts = SORT_TYPES;
   searchText = '';
+  typeValue = '';
 
   themeService = inject(ThemeService);
   translateService = inject(TranslateService);
@@ -52,9 +53,12 @@ export class ProductFilterComponent {
 
       if (!isValidType) {
         delete queryParams['type'];
+        this.typeValue = FILTER_TYPES[0].value;
+      } else {
+        this.typeValue = type;
       }
-      const typeValue = isValidType ? type : FILTER_TYPES[0].value;
-      const selectedType = this.types.find(t => t.value === typeValue);
+
+      const selectedType = this.types.find(t => t.value === this.typeValue);
       if (selectedType) {
         this.onSelectType(selectedType);
       }
