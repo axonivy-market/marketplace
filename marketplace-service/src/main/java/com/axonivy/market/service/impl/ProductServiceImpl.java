@@ -61,7 +61,10 @@ import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 
-import static com.axonivy.market.constants.CommonConstants.*;
+import static com.axonivy.market.constants.CommonConstants.DOT_SEPARATOR;
+import static com.axonivy.market.constants.CommonConstants.SLASH;
+import static com.axonivy.market.constants.CommonConstants.PLUS;
+import static com.axonivy.market.constants.CommonConstants.COMPATIBILITY_RANGE_FORMAT;
 import static com.axonivy.market.constants.MavenConstants.*;
 import static com.axonivy.market.constants.ProductJsonConstants.EN_LANGUAGE;
 import static com.axonivy.market.constants.ProductJsonConstants.LOGO_FILE;

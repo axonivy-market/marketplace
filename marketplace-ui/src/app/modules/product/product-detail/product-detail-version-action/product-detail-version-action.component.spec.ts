@@ -351,4 +351,21 @@ describe('ProductDetailVersionActionComponent', () => {
 
     expect(component.isDropDownDisplayed()).toBeFalse();
   });
+  it('should shows the hint when app artifact available', () => {
+    const selectedVersion = 'Version 10.0.2';
+    component.onSelectVersion(selectedVersion);
+    expect(component.artifacts().length).toBe(0);
+    const artifact = {
+      name: 'Sample App (zip)',
+      downloadUrl: 'https://example.com/download/sample-app/10.0.2/sample-app-10.0.2.zip',
+      isProductArtifact: true
+    } as ItemDropdown;
+    component.versions.set([selectedVersion]);
+    component.versionMap.set(selectedVersion, [artifact]);
+    component.selectedVersion.set(selectedVersion);
+    component.onSelectVersion(selectedVersion);
+
+    expect(component.artifacts().length).toBe(1);
+    expect(component.hasAppArtifacts()).toBeTrue();
+  });
 });
