@@ -61,6 +61,7 @@ import { LoadingService } from '../../../core/services/loading/loading.service';
 import { ProductRelease } from '../../../shared/models/apis/product-release.mode';
 import LinkifyIt from 'linkify-it';
 import { ProductReleaseSafeHtml } from '../../../shared/models/product-release-safe-html.model';
+import { MOCK_PRODUCT_RELEASES } from '../../../shared/mocks/mock-data';
 
 export interface DetailTab {
   activeClass: string;
@@ -179,7 +180,6 @@ export class ProductDetailComponent {
         this.md.use(this.linkifyPullRequests, res.productDetail.sourceUrl)
           .set({
             typographer: true,
-            linkify: true,
             html: false,
           })
           .enable(['smartquotes', 'replacements', 'image']);

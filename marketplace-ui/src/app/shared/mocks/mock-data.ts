@@ -382,10 +382,5 @@ export const MOCK_PRODUCT_RELEASES: ProductRelease[] = [
     "name": "12.0.3",
     "body": "## Changes\r\n\r\n## 🚀 Features\r\n\r\n- [IVYPORTAL-18158](https://1ivy.atlassian.net/browse/IVYPORTAL-18158) Implement File Preview to Portal Components https://github.com/nhthinh-axonivy (https://github.com/axonivy-market/portal/pull/1443)\r\n",
     "publishedAt": "2025-01-20"
-  },
-  {
-    "name": "12.0.2",
-    "body": "## Changes\r\n\r\n## 🚀 Features\r\n\r\n- [IVYPORTAL-18157](https://1ivy.atlassian.net/browse/IVYPORTAL-18158) Implement File Preview to Portal Components https://github.com/vhhoang-axonivy (https://github.com/axonivy-market/portal/pull/1442)\r\n",
-    "publishedAt": "2025-01-20"
-  },
+  }
 ];

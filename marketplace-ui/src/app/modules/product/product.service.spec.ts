@@ -245,16 +245,20 @@ describe('ProductService', () => {
     });
   });
 
-  // it('getProductChangelogs', () => {
-  //   const productId = 'portal';
-  //   const mockResponse: ProductRelease[] = MOCK_PRODUCT_RELEASES;
+  it('getProductChangelogs', () => {
+    const productId = 'portal';
+    const mockResponse: ProductRelease[] = MOCK_PRODUCT_RELEASES;
 
-  //   service.getProductChangelogs(productId).subscribe(response => {
-  //     expect(response.length).toEqual(mockResponse.length);
-  //   });
+    service.getProductChangelogs(productId).subscribe(response => {
+      expect(response.length).toEqual(mockResponse.length);
+    });
 
-  //   const req = httpMock.expectOne(`${API_URI.PRODUCT_DETAILS}/${productId}/releases`);
-  //   expect(req.request.method).toBe('GET');
-  //   req.flush([{ version: '10.0.0' }]);
-  // });
+    const req = httpMock.expectOne(`${API_URI.PRODUCT_DETAILS}/${productId}/releases`);
+    expect(req.request.method).toBe('GET');
+    req.flush([{
+      name: "12.0.3",
+      body: "## Changes\r\n\r\n## 🚀 Features\r\n\r\n- [IVYPORTAL-18158](https://1ivy.atlassian.net/browse/IVYPORTAL-18158) Implement File Preview to Portal Components https://github.com/nhthinh-axonivy (https://github.com/axonivy-market/portal/pull/1443)\r\n",
+      publishedAt: "2025-01-20"
+    }]);
+  });
 });

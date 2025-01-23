@@ -20,7 +20,8 @@ import {
   MOCK_CRON_JOB_PRODUCT_DETAIL,
   MOCK_PRODUCT_MODULE_CONTENT,
   MOCK_PRODUCTS,
-  MOCK_FEEDBACK_API_RESPONSE
+  MOCK_FEEDBACK_API_RESPONSE,
+  MOCK_PRODUCT_RELEASES
 } from '../../../shared/mocks/mock-data';
 import { ProductService } from '../product.service';
 import { ProductDetailComponent } from './product-detail.component';
@@ -868,5 +869,20 @@ describe('ProductDetailComponent', () => {
     fixture.detectChanges();
 
     expect(component.isDropdownOpen()).toBeFalse();
+  });
+
+  it('should return product release with body as SafeHtml when calling renderChangelogContent', () => {
+    const mockReleases = MOCK_PRODUCT_RELEASES;
+    const mockReleasesWithSafeHtmlBody = '<h2>Changes</h2><h2>🚀 Features</h2><ul><li><a href="https://1ivy.atlassian.net/browse/IVYPORTAL-18158">IVYPORTAL-18158</a> Implement File Preview to Portal Components <a href="https://github.com/nhthinh-axonivy">@nhthinh-axonivy</a> (<a href="https://github.com/axonivy-market/portal/pull/1443">#1443</a>)</li></ul>';
+    sanitizerSpy.bypassSecurityTrustHtml.and.returnValue(mockReleasesWithSafeHtmlBody);
+    const result = component.renderChangelogContent(mockReleases);
+
+    expect(result).toEqual([
+      {
+        name: '12.0.3',
+        body: mockReleasesWithSafeHtmlBody,
+        publishedAt: '2025-01-20',
+      },
+    ]);
   });
 });
