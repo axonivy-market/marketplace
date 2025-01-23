@@ -179,7 +179,7 @@ export class ProductDetailComponent {
         this.md.use(this.linkifyPullRequests, res.productDetail.sourceUrl)
           .set({
             typographer: true,
-            html: false,
+            linkify: true,
           })
           .enable(['smartquotes', 'replacements', 'image']);
         if (res.changelogs != null) {
