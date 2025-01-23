@@ -899,11 +899,12 @@ describe('ProductDetailComponent', () => {
     ]);
   });
 
-  fit('should return product release with unchange body content as SafeHtml when calling renderChangelogContent if body has github compare link', () => {
+  it('should return product release with unchange body content as SafeHtml when calling renderChangelogContent if body has github compare link', () => {
     const mockReleases = MOCK_PRODUCT_RELEASES_WITH_COMPARE_LINK;
+
     const mockReleasesWithSafeHtmlBody = '<p><strong>Full Changelog</strong>: <a href="https://github.com/axonivy-market/portal/compare/11.3.0...11.3.1">https://github.com/axonivy-market/portal/compare/11.3.0...11.3.1</a></p>';
     sanitizerSpy.bypassSecurityTrustHtml.and.returnValue(mockReleasesWithSafeHtmlBody);
-    const result = component.renderChangelogContent(mockReleases);
+    const result = component.renderChangelogContent(mockReleases);   
 
     expect(result).toEqual([
       {

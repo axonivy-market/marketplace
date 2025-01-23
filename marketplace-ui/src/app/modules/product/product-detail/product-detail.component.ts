@@ -489,7 +489,7 @@ export class ProductDetailComponent {
     return this.sanitizer.bypassSecurityTrustHtml(markdownContent);
   }
 
-  private linkifyPullRequests(md: MarkdownIt, sourceURL: string) {
+  linkifyPullRequests(md: MarkdownIt, sourceURL: string) {
     md.renderer.rules.text = (tokens, idx) => {
       const content = tokens[idx].content;
       const linkify = new LinkifyIt();
