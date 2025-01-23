@@ -61,7 +61,6 @@ import { LoadingService } from '../../../core/services/loading/loading.service';
 import { ProductRelease } from '../../../shared/models/apis/product-release.mode';
 import LinkifyIt from 'linkify-it';
 import { ProductReleaseSafeHtml } from '../../../shared/models/product-release-safe-html.model';
-import { MOCK_PRODUCT_RELEASES } from '../../../shared/mocks/mock-data';
 
 export interface DetailTab {
   activeClass: string;
@@ -443,6 +442,7 @@ export class ProductDetailComponent {
         this.activeTab = displayedTabs[0].value;
       }
     }
+    
     return displayedTabs;
   }
 

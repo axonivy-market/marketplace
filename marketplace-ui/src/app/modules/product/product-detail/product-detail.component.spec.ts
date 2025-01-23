@@ -618,6 +618,17 @@ describe('ProductDetailComponent', () => {
     expect(component.getContent('demo')).toBeFalse();
   });
 
+  it('should return false for changelog when productReleaseSafeHtmls is empty', () => {
+    const mockContent: ProductModuleContent = {
+      ...MOCK_PRODUCT_MODULE_CONTENT,
+    };
+
+    component.productReleaseSafeHtmls = [];
+
+    component.productModuleContent.set(mockContent);
+    expect(component.getContent('changelog')).toBeFalse();
+  });
+
   it('should display dropdown horizontally on small viewport', () => {
     viewport.set(540);
     const tabGroup = fixture.debugElement.query(By.css('.row-tab'));
@@ -773,11 +784,12 @@ describe('ProductDetailComponent', () => {
     );
   });
 
-  it('displayed tabs array should have size 0 if product module content description, setup, demo, dependcy are all empty', () => {
+  it('displayed tabs array should have size 0 if product module content description, setup, demo, dependency, and changelog are all empty', () => {
     const mockContent: ProductModuleContent = {
       ...MOCK_PRODUCT_MODULE_CONTENT
     };
     component.productModuleContent.set(mockContent);
+    component.productReleaseSafeHtmls = [];
 
     expect(component.displayedTabsSignal().length).toBe(0);
   });

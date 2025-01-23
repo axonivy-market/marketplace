@@ -28,19 +28,6 @@ export class AppComponent {
   constructor(private readonly router: Router, private renderer: Renderer2, private elRef: ElementRef) {}
 
   ngOnInit(): void {
-    // const appContainer = this.elRef.nativeElement.querySelector('.app-container');
-    // if (appContainer) {
-    //   const links = appContainer.querySelectorAll('a'); // Find all <a> tags
-    //   console.log(links);
-      
-    //   links.forEach((link: HTMLElement) => {
-    //     this.renderer.listen(link, 'click', (event: MouseEvent) => {
-    //       event.preventDefault(); // Prevent default navigation
-    //       console.log('Link prevented:', (event.target as HTMLAnchorElement).href);
-    //       // You can handle the click here (e.g., custom routing or actions)
-    //     });
-    //   });
-    // }
     this.router.events.subscribe((event: Event) => {
       if (event instanceof NavigationError) {
         this.router.navigate([ERROR_PAGE_PATH]);
