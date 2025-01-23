@@ -505,7 +505,8 @@ export class ProductDetailComponent {
 
         if (url.startsWith(`${sourceURL}/compare/`)) {
           return;
-        } else if (url.startsWith(sourceURL)) {
+        } 
+        if (url.startsWith(sourceURL)) {
           const pullNumberMatch = url.match(/pull\/(\d+)/);
           let pullNumber = null;
 
