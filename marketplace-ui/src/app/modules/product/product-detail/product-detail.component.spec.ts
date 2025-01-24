@@ -879,7 +879,7 @@ describe('ProductDetailComponent', () => {
     expect(component.isDropdownOpen()).toBeFalse();
   });
 
-  fit('should replace GitHub URLs with appropriate links in linkifyPullRequests', () => {
+  it('should replace GitHub URLs with appropriate links in linkifyPullRequests', () => {
     const md = new MarkdownIt();
     const sourceUrl = 'https://github.com/source-repo';
     component.linkifyPullRequests(md, sourceUrl);
@@ -891,7 +891,20 @@ describe('ProductDetailComponent', () => {
     expect(result).toContain(expectedOutput);
   });
 
-  fit('should render changelog content with safe HTML', () => {
+  it('should keep GitHub URLs if they contain compare string in linkifyPullRequests', () => {
+    const md = new MarkdownIt();
+    const sourceUrl = 'https://github.com/source-repo';
+    component.linkifyPullRequests(md, sourceUrl);
+
+    const inputText = 'Check out this PR: https://github.com/source-repo/compare/123';
+    const expectedOutput = 'Check out this PR: https://github.com/source-repo/compare/123';
+    const result = md.renderInline(inputText);
+
+    expect(result).toContain(expectedOutput);
+  });
+
+
+  it('should render changelog content with safe HTML', () => {
     const mockReleases = [
       {
         name: '1.0.0',
