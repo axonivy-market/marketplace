@@ -146,8 +146,7 @@ public class VersionUtils {
     metadataList.stream().filter(
         metadata -> MavenUtils.isProductMetadata(metadata) && ObjectUtils.isNotEmpty(metadata.getVersions())).forEach(
         productMeta -> installableVersions.addAll(productMeta.getVersions()));
-    return installableVersions.stream().distinct().sorted(new LatestVersionComparator()).collect(
-            Collectors.toList());
+    return installableVersions.stream().distinct().sorted(new LatestVersionComparator()).toList();
   }
 
   public static String getPrefixOfVersion(String version) {
