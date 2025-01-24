@@ -384,11 +384,3 @@ export const MOCK_PRODUCT_RELEASES: ProductRelease[] = [
     "publishedAt": "2025-01-20"
   }
 ];
-
-export const MOCK_PRODUCT_RELEASES_WITH_COMPARE_LINK: ProductRelease[] = [
-  {
-    "name": "12.0.3",
-    "body": "**Full Changelog**: https://github.com/axonivy-market/portal/compare/11.3.0...11.3.1",
-    "publishedAt": "2025-01-20"
-  }
-];
