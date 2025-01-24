@@ -56,7 +56,7 @@ describe('ProductDetailComponent', () => {
   let mockProductStarRatingService: jasmine.SpyObj<ProductStarRatingService>;
   let mockAuthService: jasmine.SpyObj<AuthService>;
   let mockAppModalService: jasmine.SpyObj<AppModalService>;
-  let md: MarkdownIt;
+  let md: MarkdownIt = new MarkdownIt();
   const sourceURL = 'https://github.com/source-repo';
 
   beforeEach(async () => {
@@ -898,30 +898,59 @@ describe('ProductDetailComponent', () => {
   //   ]);
   // });
 
-  // fit('should return product release with unchange body content as SafeHtml when calling renderChangelogContent if body has github compare link', () => {
+  it('should return product release with unchange body content as SafeHtml when calling renderChangelogContent if body has github compare link', () => {
 
-  //   const mockReleases = MOCK_PRODUCT_RELEASES_WITH_COMPARE_LINK;
-  //   md.use(component.linkifyPullRequests, 'https://github.com/axonivy-market/portal').set({
-  //     typographer: true,
-  //     linkify: true,
-  //   })
-  //   .enable(['smartquotes', 'replacements', 'image']);
-  //   component.ngOnInit();
-  //   spyOn(component, 'linkifyPullRequests');
-  //   spyOn(component, 'isPullRequestContainsCompare');
-  //   const mockReleasesWithSafeHtmlBody = '<p><strong>Full Changelog</strong>: <a href="https://github.com/axonivy-market/portal/compare/11.3.0...11.3.1">https://github.com/axonivy-market/portal/compare/11.3.0...11.3.1</a></p>';
-  //   sanitizerSpy.bypassSecurityTrustHtml.and.returnValue(mockReleasesWithSafeHtmlBody);
-  //   const result = component.renderChangelogContent(mockReleases);   
+    const mockReleases = MOCK_PRODUCT_RELEASES_WITH_COMPARE_LINK;
+    md.use(component.linkifyPullRequests, 'https://github.com/axonivy-market/portal')
+    .set({
+      typographer: true,
+      linkify: true,
+    })
+    .enable(['smartquotes', 'replacements', 'image']);
+    spyOn(component, 'linkifyPullRequests');
+    // spyOn(component, 'isPullRequestContainsCompare');
+    const mockReleasesWithSafeHtmlBody = '<p><strong>Full Changelog</strong>: <a href="https://github.com/axonivy-market/portal/compare/11.3.0...11.3.1">https://github.com/axonivy-market/portal/compare/11.3.0...11.3.1</a></p>';
+    component.ngOnInit();
+    sanitizerSpy.bypassSecurityTrustHtml.and.returnValue(mockReleasesWithSafeHtmlBody);
+    const result = component.renderChangelogContent(mockReleases);   
 
-  //   expect(component.linkifyPullRequests).toHaveBeenCalled();
-  //   expect(component.isPullRequestContainsCompare).toHaveBeenCalledWith('https://github.com/axonivy-market/portal', sourceURL);
+    expect(component.linkifyPullRequests).toHaveBeenCalledWith(md, sourceURL);
+    // expect(component.isPullRequestContainsCompare).toHaveBeenCalledWith('https://github.com/axonivy-market/portal', sourceURL);
 
-  //   expect(result).toEqual([
-  //     {
-  //       name: '12.0.3',
-  //       body: mockReleasesWithSafeHtmlBody,
-  //       publishedAt: '2025-01-20',
-  //     },
-  //   ]);
-  // });
+    expect(result).toEqual([
+      {
+        name: '12.0.3',
+        body: mockReleasesWithSafeHtmlBody,
+        publishedAt: '2025-01-20',
+      },
+    ]);
+  });
+
+  fit('should replace GitHub URLs with appropriate links in linkifyPullRequests', () => {
+    const md = new MarkdownIt();
+    const sourceUrl = 'https://github.com/source-repo';
+    component.linkifyPullRequests(md, sourceUrl);
+
+    const inputText = 'Check out this PR: https://github.com/source-repo/pull/123';
+    const expectedOutput = 'Check out this PR: #123';
+    const result = md.renderInline(inputText);
+
+    expect(result).toContain(expectedOutput);
+  });
+
+  fit('should render changelog content with safe HTML', () => {
+    const mockReleases = [
+      {
+        name: '1.0.0',
+        body: 'Initial release',
+        publishedAt: '2023-01-01',
+      },
+    ];
+    const expectedSafeHtml = '<p>Initial release</p>';
+    sanitizerSpy.bypassSecurityTrustHtml.and.returnValue(expectedSafeHtml);
+
+    const result = component.renderChangelogContent(mockReleases);
+
+    expect(result[0].body).toBe(expectedSafeHtml);
+  });
 });

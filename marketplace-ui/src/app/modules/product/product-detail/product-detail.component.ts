@@ -504,7 +504,7 @@ export class ProductDetailComponent {
 
       matches.reverse().forEach(match => {
         const url = match.url;
-        
+
         if (url.startsWith(`${sourceUrl}/compare/`)) {
           return;
         }
@@ -530,11 +530,5 @@ export class ProductDetailComponent {
 
       return result;
     };
-  }
-
-  isPullRequestContainsCompare = (url: string, sourceUrl: string) => {
-    console.log("called here");
-    
-    return url.startsWith(`${sourceUrl}/compare/`);
   }
 }
