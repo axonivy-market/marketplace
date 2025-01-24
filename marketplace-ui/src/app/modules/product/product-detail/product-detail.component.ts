@@ -1,3 +1,4 @@
+import { ProductDetail } from './../../../shared/models/product-detail.model';
 import { CommonModule, NgOptimizedImage } from '@angular/common';
 import MarkdownIt from 'markdown-it';
 import MarkdownItGitHubAlerts from 'markdown-it-github-alerts';
@@ -30,7 +31,6 @@ import {
   VERSION
 } from '../../../shared/constants/common.constant';
 import { ItemDropdown } from '../../../shared/models/item-dropdown.model';
-import { ProductDetail } from '../../../shared/models/product-detail.model';
 import { ProductModuleContent } from '../../../shared/models/product-module-content.model';
 import { ProductTypeIconPipe } from '../../../shared/pipes/icon.pipe';
 import { MultilingualismPipe } from '../../../shared/pipes/multilingualism.pipe';
@@ -489,6 +489,7 @@ export class ProductDetailComponent {
     return this.sanitizer.bypassSecurityTrustHtml(markdownContent);
   }
 
+
   linkifyPullRequests(md: MarkdownIt, sourceUrl: string) {
     md.renderer.rules.text = (tokens, idx) => {
       const content = tokens[idx].content;
@@ -500,15 +501,13 @@ export class ProductDetailComponent {
       }
 
       let result = content;
+
       matches.reverse().forEach(match => {
         const url = match.url;
-
-        // if (url.startsWith(`${sourceUrl}/compare/`)) {
-        //   return;
-        // } 
-        if (this.isPullRequestContainsCompare(url, sourceUrl)) {
+        
+        if (url.startsWith(`${sourceUrl}/compare/`)) {
           return;
-        } 
+        }
         if (url.startsWith(sourceUrl)) {
           const pullNumberMatch = url.match(/pull\/(\d+)/);
           let pullNumber = null;
@@ -533,21 +532,9 @@ export class ProductDetailComponent {
     };
   }
 
-  isPullRequestContainsCompare(url: string, sourceUrl: string) {
-    return url.startsWith(`${sourceUrl}/compare/`)
+  isPullRequestContainsCompare = (url: string, sourceUrl: string) => {
+    console.log("called here");
+    
+    return url.startsWith(`${sourceUrl}/compare/`);
   }
-
-  // transformPullRequestShortLink(url: string, sourceUrl: string, result: string) {
-  //   const pullNumberMatch = url.match(/pull\/(\d+)/);
-  //   let pullNumber = null;
-
-  //   if (pullNumberMatch) {
-  //     pullNumber = pullNumberMatch[1];
-  //   }
-  //   const start = match.index;
-  //   const end = start + match.lastIndex - match.index;
-  //   const link = `#${pullNumber ?? pullNumber}`;
-
-  //   result = result.slice(0, start) + link + result.slice(end);
-  // }
 }
