@@ -514,12 +514,12 @@ export class ProductDetailComponent {
 
           if (pullNumberMatch) {
             pullNumber = pullNumberMatch[1];
+            const start = match.index;
+            const end = start + match.lastIndex - match.index;
+            const link = `#${pullNumber}`;
+  
+            result = result.slice(0, start) + link + result.slice(end);
           }
-          const start = match.index;
-          const end = start + match.lastIndex - match.index;
-          const link = `#${pullNumber ?? pullNumber}`;
-
-          result = result.slice(0, start) + link + result.slice(end);
         } else if (url.startsWith(GITHUB_BASE_URL)) {
           const username = url.replace(GITHUB_BASE_URL, '');
 
