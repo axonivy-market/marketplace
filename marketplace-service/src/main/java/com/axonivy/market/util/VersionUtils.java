@@ -139,12 +139,15 @@ public class VersionUtils {
   }
 
   public static List<String> getInstallableVersionsFromMetadataList(List<Metadata> metadataList) {
+    List<String> installableVersions = new ArrayList<>();
     if (CollectionUtils.isEmpty(metadataList)) {
-      return new ArrayList<>();
+      return installableVersions;
     }
-    return metadataList.stream().filter(MavenUtils::isProductMetadata).findAny().map(
-        metadata -> metadata.getVersions().stream().sorted(new LatestVersionComparator()).collect(
-            Collectors.toList())).orElse(new ArrayList<>());
+    metadataList.stream().filter(
+        metadata -> MavenUtils.isProductMetadata(metadata) && ObjectUtils.isNotEmpty(metadata.getVersions())).forEach(
+        productMeta -> installableVersions.addAll(productMeta.getVersions()));
+    return installableVersions.stream().distinct().sorted(new LatestVersionComparator()).collect(
+            Collectors.toList());
   }
 
   public static String getPrefixOfVersion(String version) {
