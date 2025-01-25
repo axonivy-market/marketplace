@@ -157,7 +157,7 @@ export class ReleasePreviewComponent {
   }
 
   renderReadmeContent(value: string): SafeHtml {
-    const md = MarkdownIt();
+    const md = MarkdownIt({ html: true });
     md.use(full);
     md.use(MarkdownItGitHubAlerts);
     const result = md.render(value);
