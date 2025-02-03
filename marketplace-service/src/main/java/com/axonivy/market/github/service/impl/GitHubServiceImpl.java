@@ -393,8 +393,6 @@ public class GitHubServiceImpl implements GitHubService {
 //  }
 
   public Page<GithubReleaseModel> getReleases2(Product product, Pageable pageable) throws IOException {
-//    validateProductExists(productId);
-//    Product product = productService.findProductById(productId);
     List<GithubReleaseModel> githubReleaseModels = new ArrayList<>();
     List<GHRelease> ghReleases =
         this.getRepository(product.getRepositoryName()).listReleases().toList().stream().filter(
