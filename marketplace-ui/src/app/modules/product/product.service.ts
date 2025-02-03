@@ -10,7 +10,6 @@ import { LoadingComponent } from '../../core/interceptors/api.interceptor';
 import { VersionAndUrl } from '../../shared/models/version-and-url';
 import { API_URI } from '../../shared/constants/api.constant';
 import { LoadingComponentId } from '../../shared/enums/loading-component-id';
-import { ProductRelease } from '../../shared/models/apis/product-release.model';
 import { ProductReleaseApiResponse } from '../../shared/models/apis/product-release-response.model';
 
 @Injectable()
