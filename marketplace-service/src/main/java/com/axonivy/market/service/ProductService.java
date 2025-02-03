@@ -29,5 +29,5 @@ public interface ProductService {
 
   Page<GithubReleaseModel> getGitHubReleaseModels(String productId, Pageable pageable) throws IOException;
 
-  GithubReleaseModel getGitHubReleaseModelById(String productId, Long releaseId) throws IOException;
+  GithubReleaseModel getGitHubReleaseModelByProductIdAndReleaseId(String productId, Long releaseId) throws IOException;
 }

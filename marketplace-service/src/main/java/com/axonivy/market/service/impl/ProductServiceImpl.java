@@ -811,11 +811,11 @@ public class ProductServiceImpl implements ProductService {
   }
 
   @Override
-  public GithubReleaseModel getGitHubReleaseModelById(String productId, Long releaseId) throws IOException {
+  public GithubReleaseModel getGitHubReleaseModelByProductIdAndReleaseId(String productId, Long releaseId) throws IOException {
     validateProductExists(productId);
     Product product = this.findProductById(productId);
 
-    return this.gitHubService.getGitHubReleaseModelById(product, releaseId);
+    return this.gitHubService.getGitHubReleaseModelByProductIdAndReleaseId(product, releaseId);
   }
 
   public void validateProductExists(String productId) throws NotFoundException {

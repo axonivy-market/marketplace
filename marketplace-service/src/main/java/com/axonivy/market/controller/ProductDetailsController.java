@@ -2,10 +2,7 @@ package com.axonivy.market.controller;
 
 import com.axonivy.market.assembler.GithubReleaseModelAssembler;
 import com.axonivy.market.assembler.ProductDetailModelAssembler;
-import com.axonivy.market.entity.Feedback;
-import com.axonivy.market.entity.Product;
 import com.axonivy.market.github.service.GitHubService;
-import com.axonivy.market.model.FeedbackModel;
 import com.axonivy.market.model.GithubReleaseModel;
 import com.axonivy.market.model.MavenArtifactVersionModel;
 import com.axonivy.market.model.ProductDetailModel;
@@ -17,7 +14,6 @@ import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.enums.ParameterIn;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.apache.commons.lang3.StringUtils;
-import org.kohsuke.github.GHRelease;
 import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
@@ -174,12 +170,12 @@ public class ProductDetailsController {
   @GetMapping(PRODUCT_PUBLIC_RELEASE_BY_RELEASE_ID)
   @Operation(summary = "Find release by id",
       description = "Get release by release id.")
-  public ResponseEntity<GithubReleaseModel> findGithubPublicReleaseById(
+  public ResponseEntity<GithubReleaseModel> findGithubPublicReleaseByProductIdAndReleaseId(
       @PathVariable(ID) @Parameter(description = "Product id", example = "portal",
           in = ParameterIn.PATH) String productId,
       @PathVariable(RELEASE_ID) @Parameter(description = "Release id", example = "67a08dd6e23661019dc92376",
           in = ParameterIn.PATH) Long releaseId) throws IOException {
-    GithubReleaseModel githubReleaseModel = productService.getGitHubReleaseModelById(productId, releaseId);
+    GithubReleaseModel githubReleaseModel = productService.getGitHubReleaseModelByProductIdAndReleaseId(productId, releaseId);
     return ResponseEntity.ok(githubReleaseModelAssembler.toModel(githubReleaseModel));
   }
 

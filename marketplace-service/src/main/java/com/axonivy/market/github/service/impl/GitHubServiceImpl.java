@@ -363,14 +363,6 @@ public class GitHubServiceImpl implements GitHubService {
             ghRelease -> !ghRelease.isDraft()).toList();
 
     for (GHRelease ghRelease : ghReleases) {
-//      GithubReleaseModel githubReleaseModel = new GithubReleaseModel();
-//      String modifiedBody = transformGithubReleaseBody(ghRelease.getBody(), product.getSourceUrl());
-//      githubReleaseModel.setBody(modifiedBody);
-//      githubReleaseModel.setName(ghRelease.getName());
-//      githubReleaseModel.setPublishedAt(ghRelease.getPublished_at());
-//      githubReleaseModel.add(linkTo(methodOn(ProductDetailsController.class).findGithubPublicReleaseById(product.getId(),
-//          ghRelease.getId())).withSelfRel());
-//      githubReleaseModels.add(githubReleaseModel);
       githubReleaseModels.add(this.toGitHubReleaseModel(ghRelease, product));
     }
 
@@ -378,19 +370,8 @@ public class GitHubServiceImpl implements GitHubService {
   }
 
   @Override
-  public GithubReleaseModel getGitHubReleaseModelById(Product product, Long releaseId) throws IOException {
-    GHRelease ghRelease =  this.getRepository(product.getRepositoryName()).getRelease(releaseId);
-
-//    GithubReleaseModel githubReleaseModel = new GithubReleaseModel();
-//    String modifiedBody = transformGithubReleaseBody(ghRelease.getBody(), product.getSourceUrl());
-//    githubReleaseModel.setBody(modifiedBody);
-//    githubReleaseModel.setName(ghRelease.getName());
-//    githubReleaseModel.setPublishedAt(ghRelease.getPublished_at());
-//    githubReleaseModel.add(linkTo(methodOn(ProductDetailsController.class).findGithubPublicReleaseById(product.getId(),
-//        ghRelease.getId())).withSelfRel());
-
-//    return githubReleaseModel;
-
+  public GithubReleaseModel getGitHubReleaseModelByProductIdAndReleaseId(Product product, Long releaseId) throws IOException {
+    GHRelease ghRelease = this.getRepository(product.getRepositoryName()).getRelease(releaseId);
     return this.toGitHubReleaseModel(ghRelease, product);
   }
 
@@ -405,7 +386,7 @@ public class GitHubServiceImpl implements GitHubService {
     githubReleaseModel.setBody(modifiedBody);
     githubReleaseModel.setName(ghRelease.getName());
     githubReleaseModel.setPublishedAt(ghRelease.getPublished_at());
-    githubReleaseModel.add(linkTo(methodOn(ProductDetailsController.class).findGithubPublicReleaseById(product.getId(),
+    githubReleaseModel.add(linkTo(methodOn(ProductDetailsController.class).findGithubPublicReleaseByProductIdAndReleaseId(product.getId(),
         ghRelease.getId())).withSelfRel());
 
     return githubReleaseModel;

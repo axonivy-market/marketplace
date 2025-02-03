@@ -11,7 +11,6 @@ import com.axonivy.market.github.model.ProductSecurityInfo;
 import com.axonivy.market.model.GithubReleaseModel;
 import org.kohsuke.github.GHContent;
 import org.kohsuke.github.GHOrganization;
-import org.kohsuke.github.GHRelease;
 import org.kohsuke.github.GHRepository;
 import org.kohsuke.github.GHTag;
 import org.kohsuke.github.GitHub;
@@ -48,6 +47,6 @@ public interface GitHubService {
 
   Page<GithubReleaseModel> getGitHubReleaseModels(Product product, Pageable pageable) throws IOException;
 
-  GithubReleaseModel getGitHubReleaseModelById(Product product, Long releaseId) throws IOException;
+  GithubReleaseModel getGitHubReleaseModelByProductIdAndReleaseId(Product product, Long releaseId) throws IOException;
 
 }
