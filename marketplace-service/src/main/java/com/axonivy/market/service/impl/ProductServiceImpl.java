@@ -12,16 +12,19 @@ import com.axonivy.market.entity.Product;
 import com.axonivy.market.entity.ProductCustomSort;
 import com.axonivy.market.entity.ProductJsonContent;
 import com.axonivy.market.entity.ProductModuleContent;
+import com.axonivy.market.enums.ErrorCode;
 import com.axonivy.market.enums.FileType;
 import com.axonivy.market.enums.Language;
 import com.axonivy.market.enums.SortOption;
 import com.axonivy.market.enums.TypeOption;
+import com.axonivy.market.exceptions.model.NotFoundException;
 import com.axonivy.market.factory.ProductFactory;
 import com.axonivy.market.github.model.GitHubFile;
 import com.axonivy.market.github.service.GHAxonIvyMarketRepoService;
 import com.axonivy.market.github.service.GHAxonIvyProductRepoService;
 import com.axonivy.market.github.service.GitHubService;
 import com.axonivy.market.github.util.GitHubUtils;
+import com.axonivy.market.model.GithubReleaseModel;
 import com.axonivy.market.model.VersionAndUrlModel;
 import com.axonivy.market.repository.*;
 import com.axonivy.market.service.ExternalDocumentService;
@@ -797,5 +800,19 @@ public class ProductServiceImpl implements ProductService {
   @Override
   public Product findProductById(String id) {
     return productRepo.findProductById(id);
+  }
+
+  @Override
+  public Page<GithubReleaseModel> getReleaseInProductService(String productId, Pageable pageable) throws IOException {
+    validateProductExists(productId);
+    Product product = this.findProductById(productId);
+
+    return this.gitHubService.getReleases2(product, pageable);
+  }
+
+  public void validateProductExists(String productId) throws NotFoundException {
+    if (productRepo.findById(productId).isEmpty()) {
+      throw new NotFoundException(ErrorCode.PRODUCT_NOT_FOUND, "Not found product with id: " + productId);
+    }
   }
 }

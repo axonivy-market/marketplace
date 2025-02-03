@@ -58,7 +58,7 @@ import { EmptyProductDetailPipe } from '../../../shared/pipes/empty-product-deta
 import { LoadingSpinnerComponent } from '../../../shared/components/loading-spinner/loading-spinner.component';
 import { LoadingComponentId } from '../../../shared/enums/loading-component-id';
 import { LoadingService } from '../../../core/services/loading/loading.service';
-import { ProductRelease } from '../../../shared/models/apis/product-release.mode';
+import { ProductRelease } from '../../../shared/models/apis/product-release.model';
 import LinkifyIt from 'linkify-it';
 import { ProductReleaseSafeHtml } from '../../../shared/models/product-release-safe-html.model';
 
@@ -182,8 +182,9 @@ export class ProductDetailComponent {
             linkify: true,
           })
           .enable(['smartquotes', 'replacements', 'image']);
-        if (res.changelogs != null) {
-          this.productReleaseSafeHtmls = this.renderChangelogContent(res.changelogs);
+          
+        if (res.changelogs._embedded.githubReleaseModelList != null && res.changelogs._embedded.githubReleaseModelList.length != 0) {
+          this.productReleaseSafeHtmls = this.renderChangelogContent(res.changelogs._embedded.githubReleaseModelList);
         }
         this.handleProductDetail(res.productDetail);
         this.productFeedbackService.handleFeedbackApiResponse(res.productFeedBack);

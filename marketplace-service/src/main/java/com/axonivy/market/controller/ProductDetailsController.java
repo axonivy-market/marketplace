@@ -1,8 +1,11 @@
 package com.axonivy.market.controller;
 
+import com.axonivy.market.assembler.GithubReleaseModelAssembler;
 import com.axonivy.market.assembler.ProductDetailModelAssembler;
+import com.axonivy.market.entity.Feedback;
 import com.axonivy.market.entity.Product;
 import com.axonivy.market.github.service.GitHubService;
+import com.axonivy.market.model.FeedbackModel;
 import com.axonivy.market.model.GithubReleaseModel;
 import com.axonivy.market.model.MavenArtifactVersionModel;
 import com.axonivy.market.model.ProductDetailModel;
@@ -15,6 +18,12 @@ import io.swagger.v3.oas.annotations.enums.ParameterIn;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.apache.commons.lang3.StringUtils;
 import org.kohsuke.github.GHRelease;
+import org.springdoc.core.annotations.ParameterObject;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PagedResourcesAssembler;
+import org.springframework.hateoas.PagedModel;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
@@ -39,13 +48,19 @@ public class ProductDetailsController {
   private final ProductService productService;
   private final ProductDetailModelAssembler detailModelAssembler;
   private final GitHubService gitHubService;
+  private final GithubReleaseModelAssembler githubReleaseModelAssembler;
+  private final PagedResourcesAssembler<GithubReleaseModel> pagedResourcesAssembler;
 
   public ProductDetailsController(VersionService versionService, ProductService productService,
-      ProductDetailModelAssembler detailModelAssembler, GitHubService gitHubService) {
+      ProductDetailModelAssembler detailModelAssembler, GitHubService gitHubService,
+      GithubReleaseModelAssembler githubReleaseModelAssembler,
+      PagedResourcesAssembler<GithubReleaseModel> pagedResourcesAssembler) {
     this.versionService = versionService;
     this.productService = productService;
     this.detailModelAssembler = detailModelAssembler;
     this.gitHubService = gitHubService;
+    this.pagedResourcesAssembler = pagedResourcesAssembler;
+    this.githubReleaseModelAssembler = githubReleaseModelAssembler;
   }
 
   @GetMapping(BY_ID_AND_VERSION)
@@ -137,17 +152,46 @@ public class ProductDetailsController {
     return new ResponseEntity<>(downloadUrl, statusCode);
   }
 
+//  @GetMapping(PRODUCT_PUBLIC_RELEASES)
+//  @Operation(summary = "Get the list of public releases changelog by its id",
+//      description = "Return the list of public releases changelog and id")
+//  public ResponseEntity<List<GithubReleaseModel>> getGithubPublicReleases(
+//      @PathVariable(value = ID) @Parameter(in = ParameterIn.PATH, example = "demos-app") String productId) throws IOException {
+//    Product product = productService.findProductById(productId);
+//
+//    List<GithubReleaseModel> githubReleaseModels =
+//        gitHubService.getReleases(product);
+//
+//    return new ResponseEntity<>(githubReleaseModels,
+//        HttpStatus.OK);
+//  }
+
   @GetMapping(PRODUCT_PUBLIC_RELEASES)
-  @Operation(summary = "Get the list of public releases changelog by its id",
-      description = "Return the list of public releases changelog and id")
-  public ResponseEntity<List<GithubReleaseModel>> getGithubPublicReleases(
-      @PathVariable(value = ID) @Parameter(in = ParameterIn.PATH, example = "demos-app") String productId) throws IOException {
-    Product product = productService.findProductById(productId);
+  @Operation(summary = "Find public releases by product id",
+      description = "Get all public releases product id", parameters = {
+      @Parameter(name = "page", description = "Page number to retrieve", in = ParameterIn.QUERY, example = "0",
+          required = true),
+      @Parameter(name = "size", description = "Number of items per page", in = ParameterIn.QUERY, example = "20",
+          required = true)})
+  public ResponseEntity<PagedModel<GithubReleaseModel>> findGithubPublicReleases(
+      @PathVariable(ID) @Parameter(description = "Product id", example = "portal",
+          in = ParameterIn.PATH) String productId,
+      @ParameterObject Pageable pageable) throws IOException {
+//    Page<GithubReleaseModel> results = gitHubService.getReleases2(productId, pageable);
+    Page<GithubReleaseModel> results = productService.getReleaseInProductService(productId, pageable);
 
-    List<GithubReleaseModel> githubReleaseModels =
-        gitHubService.getReleases(product);
+    if (results.isEmpty()) {
+      return generateReleasesEmptyPagedModel();
+    }
+    var responseContent = new PageImpl<>(results.getContent(), pageable, results.getTotalElements());
+    var pageResources = pagedResourcesAssembler.toModel(responseContent, githubReleaseModelAssembler);
+    return new ResponseEntity<>(pageResources, HttpStatus.OK);
+  }
 
-    return new ResponseEntity<>(githubReleaseModels,
-        HttpStatus.OK);
+  @SuppressWarnings("unchecked")
+  private ResponseEntity<PagedModel<GithubReleaseModel>> generateReleasesEmptyPagedModel() {
+    var emptyPagedModel = (PagedModel<GithubReleaseModel>) pagedResourcesAssembler.toEmptyModel(Page.empty(),
+        GithubReleaseModel.class);
+    return new ResponseEntity<>(emptyPagedModel, HttpStatus.OK);
   }
 }

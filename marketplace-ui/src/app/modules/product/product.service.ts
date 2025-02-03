@@ -10,7 +10,8 @@ import { LoadingComponent } from '../../core/interceptors/api.interceptor';
 import { VersionAndUrl } from '../../shared/models/version-and-url';
 import { API_URI } from '../../shared/constants/api.constant';
 import { LoadingComponentId } from '../../shared/enums/loading-component-id';
-import { ProductRelease } from '../../shared/models/apis/product-release.mode';
+import { ProductRelease } from '../../shared/models/apis/product-release.model';
+import { ProductReleaseApiResponse } from '../../shared/models/apis/product-release-response.model';
 
 @Injectable()
 export class ProductService {
@@ -114,8 +115,9 @@ export class ProductService {
     });
   }
 
-  getProductChangelogs(productId: string): Observable<ProductRelease[]> {
-    const url = `${API_URI.PRODUCT_DETAILS}/${productId}/releases`;    
-    return this.httpClient.get<ProductRelease[]>(url);
+  getProductChangelogs(productId: string): Observable<ProductReleaseApiResponse> {
+    const url = `${API_URI.PRODUCT_DETAILS}/${productId}/releases`;
+    
+    return this.httpClient.get<ProductReleaseApiResponse>(url);
   }
 }

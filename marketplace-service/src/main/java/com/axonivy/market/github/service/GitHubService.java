@@ -15,6 +15,8 @@ import org.kohsuke.github.GHRelease;
 import org.kohsuke.github.GHRepository;
 import org.kohsuke.github.GHTag;
 import org.kohsuke.github.GitHub;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 import java.io.IOException;
 import java.util.List;
@@ -44,5 +46,10 @@ public interface GitHubService {
 
   List<ProductSecurityInfo> getSecurityDetailsForAllProducts(String accessToken, String orgName);
 
-  List<GithubReleaseModel> getReleases(Product product) throws IOException;
+//  List<GithubReleaseModel> getReleases(Product product) throws IOException;
+
+//  Page<GHRelease> getReleases2(String productId, Pageable pageable) throws IOException;
+
+  Page<GithubReleaseModel> getReleases2(Product product, Pageable pageable) throws IOException;
+
 }

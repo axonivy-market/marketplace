@@ -9,7 +9,7 @@ import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.springframework.hateoas.RepresentationModel;
 
-import java.time.LocalDate;
+import java.util.Date;
 
 @Getter
 @Setter
@@ -23,7 +23,7 @@ public class GithubReleaseModel extends RepresentationModel<GithubReleaseModel> 
   private String body;
 
   @Schema(description = "Published date of release", example = "2025-01-20")
-  private LocalDate publishedAt;
+  private Date publishedAt;
 
   @Override
   public int hashCode() {

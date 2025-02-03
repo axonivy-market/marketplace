@@ -2,9 +2,17 @@ package com.axonivy.market.github.service.impl;
 
 import com.axonivy.market.constants.ErrorMessageConstants;
 import com.axonivy.market.constants.GitHubConstants;
+import com.axonivy.market.controller.ProductDetailsController;
+import com.axonivy.market.criteria.ProductSearchCriteria;
 import com.axonivy.market.entity.Product;
 import com.axonivy.market.entity.User;
+
+import static com.axonivy.market.enums.DocumentField.SHORT_DESCRIPTIONS;
+
 import com.axonivy.market.enums.ErrorCode;
+import com.axonivy.market.enums.FeedbackSortOption;
+import com.axonivy.market.enums.Language;
+import com.axonivy.market.enums.TypeOption;
 import com.axonivy.market.exceptions.model.MissingHeaderException;
 import com.axonivy.market.exceptions.model.NotFoundException;
 import com.axonivy.market.exceptions.model.Oauth2ExchangeCodeException;
@@ -17,10 +25,22 @@ import com.axonivy.market.github.model.SecretScanning;
 import com.axonivy.market.github.service.GitHubService;
 import com.axonivy.market.github.model.ProductSecurityInfo;
 import com.axonivy.market.model.GithubReleaseModel;
+import com.axonivy.market.repository.ProductRepository;
 import com.axonivy.market.repository.UserRepository;
 import lombok.extern.log4j.Log4j2;
+import org.apache.commons.lang3.BooleanUtils;
 import org.kohsuke.github.*;
 import org.springframework.core.ParameterizedTypeReference;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
+
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
+
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
@@ -63,17 +83,21 @@ public class GitHubServiceImpl implements GitHubService {
   private final UserRepository userRepository;
   private final GitHubProperty gitHubProperty;
   private final ThreadPoolTaskScheduler taskScheduler;
+//  private final ProductRepository productRepository;
+//  private final ProductService productService;
   private static final String GITHUB_PULL_REQUEST_NUMBER_REGEX = "#(\\d+)";
   private static final String GITHUB_PULL_REQUEST_LINK = "/pull/";
   private static final String GITHUB_USERNAME_REGEX = "@([a-zA-Z0-9\\-]+)";
   private static final String GITHUB_MAIN_LINK = "https://github.com/";
 
   public GitHubServiceImpl(RestTemplate restTemplate, UserRepository userRepository,
-      GitHubProperty gitHubProperty, ThreadPoolTaskScheduler taskScheduler) {
+      GitHubProperty gitHubProperty, ThreadPoolTaskScheduler taskScheduler, ProductRepository productRepository) {
     this.restTemplate = restTemplate;
     this.userRepository = userRepository;
     this.gitHubProperty = gitHubProperty;
     this.taskScheduler = taskScheduler;
+//    this.productRepository = productRepository;
+//    this.productService = productService;
   }
 
   @Override
@@ -348,37 +372,65 @@ public class GitHubServiceImpl implements GitHubService {
     });
   }
 
-  @Override
-  public List<GithubReleaseModel> getReleases(Product product) throws IOException {
+//  @Override
+//  public List<GithubReleaseModel> getReleases(Product product) throws IOException {
+//    List<GHRelease> ghReleases =
+//        this.getRepository(product.getRepositoryName()).listReleases().toList().stream().filter(
+//            ghRelease -> !ghRelease.isDraft()).toList();
+//    List<GithubReleaseModel> githubReleaseModels = new ArrayList<>();
+//
+//    if (ghReleases.isEmpty()) {
+//      return null;
+//    }
+//
+//    for (GHRelease ghRelease : ghReleases) {
+//      GithubReleaseModel githubReleaseModel = new GithubReleaseModel();
+//      LocalDate localDate = ghRelease.getPublished_at().toInstant()
+//          .atZone(ZoneId.systemDefault())
+//          .toLocalDate();
+//
+//      String modifiedBody = transformGithubReleaseBody(ghRelease.getBody(), product.getSourceUrl());
+//
+//      githubReleaseModel.setBody(modifiedBody);
+//      githubReleaseModel.setName(ghRelease.getName());
+//      githubReleaseModel.setPublishedAt(localDate);
+//
+//      githubReleaseModels.add(githubReleaseModel);
+//    }
+//
+//    return githubReleaseModels;
+//  }
+
+  public Page<GithubReleaseModel> getReleases2(Product product, Pageable pageable) throws IOException {
+//    validateProductExists(productId);
+//    Product product = productService.findProductById(productId);
+    List<GithubReleaseModel> githubReleaseModels = new ArrayList<>();
     List<GHRelease> ghReleases =
         this.getRepository(product.getRepositoryName()).listReleases().toList().stream().filter(
             ghRelease -> !ghRelease.isDraft()).toList();
-    List<GithubReleaseModel> githubReleaseModels = new ArrayList<>();
-
-    if (ghReleases.isEmpty()) {
-      return null;
-    }
 
     for (GHRelease ghRelease : ghReleases) {
       GithubReleaseModel githubReleaseModel = new GithubReleaseModel();
-      LocalDate localDate = ghRelease.getPublished_at().toInstant()
-          .atZone(ZoneId.systemDefault())
-          .toLocalDate();
-
       String modifiedBody = transformGithubReleaseBody(ghRelease.getBody(), product.getSourceUrl());
-
       githubReleaseModel.setBody(modifiedBody);
       githubReleaseModel.setName(ghRelease.getName());
-      githubReleaseModel.setPublishedAt(localDate);
-
+      githubReleaseModel.setPublishedAt(ghRelease.getPublished_at());
+      githubReleaseModel.add(linkTo(methodOn(ProductDetailsController.class).findGithubPublicReleases(product.getId(),
+          pageable)).withSelfRel());
       githubReleaseModels.add(githubReleaseModel);
     }
 
-    return githubReleaseModels;
+    return new PageImpl<>(githubReleaseModels, pageable, githubReleaseModels.size());
   }
 
   public String transformGithubReleaseBody(String githubReleaseBody, String productSourceUrl) {
     return githubReleaseBody.replaceAll(GITHUB_PULL_REQUEST_NUMBER_REGEX,
         productSourceUrl + GITHUB_PULL_REQUEST_LINK + "$1").replaceAll(GITHUB_USERNAME_REGEX, GITHUB_MAIN_LINK + "$1");
   }
+
+//  public void validateProductExists(String productId) throws NotFoundException {
+//    if (productRepository.findById(productId).isEmpty()) {
+//      throw new NotFoundException(ErrorCode.PRODUCT_NOT_FOUND, "Not found product with id: " + productId);
+//    }
+//  }
 }

@@ -54,7 +54,7 @@ describe('ProductDetailComponent', () => {
   let mockProductStarRatingService: jasmine.SpyObj<ProductStarRatingService>;
   let mockAuthService: jasmine.SpyObj<AuthService>;
   let mockAppModalService: jasmine.SpyObj<AppModalService>;
-  const sourceURL = 'https://github.com/source-repo';
+  let mockProductService: jasmine.SpyObj<ProductService>;
 
   beforeEach(async () => {
     const spy = jasmine.createSpyObj('DomSanitizer', [
@@ -88,6 +88,12 @@ describe('ProductDetailComponent', () => {
       'ProductStarRatingService',
       ['getRatingObservable', 'starRatings', 'totalComments', 'reviewNumber']
     );
+    // mockProductService = jasmine.createSpyObj(
+    //   'ProductService',
+    //   [
+    //     'getProductChangelogs',
+    //   ]
+    // );
 
     await TestBed.configureTestingModule({
       imports: [

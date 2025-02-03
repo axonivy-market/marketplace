@@ -8,14 +8,16 @@ import { TypeOption } from '../../shared/enums/type-option.enum';
 import {
   MOCK_PRODUCTS,
   MOCK_PRODUCT_DETAIL,
-  MOCK_PRODUCT_RELEASES
+  MOCK_PRODUCT_RELEASES,
+  MOCK_PRODUCT_RELEASES_2
 } from '../../shared/mocks/mock-data';
 import { Criteria } from '../../shared/models/criteria.model';
 import { VersionData } from '../../shared/models/vesion-artifact.model';
 import { ProductService } from './product.service';
 import { DEFAULT_PAGEABLE, DEFAULT_PAGEABLE_IN_REST_CLIENT } from '../../shared/constants/common.constant';
 import { API_URI } from '../../shared/constants/api.constant';
-import { ProductRelease } from '../../shared/models/apis/product-release.mode';
+import { ProductRelease } from '../../shared/models/apis/product-release.model';
+import { ProductReleaseApiResponse } from '../../shared/models/apis/product-release-response.model';
 
 describe('ProductService', () => {
   let products = MOCK_PRODUCTS._embedded.products;
@@ -247,18 +249,15 @@ describe('ProductService', () => {
 
   it('getProductChangelogs', () => {
     const productId = 'portal';
-    const mockResponse: ProductRelease[] = MOCK_PRODUCT_RELEASES;
+    const mockResponse: ProductReleaseApiResponse = MOCK_PRODUCT_RELEASES_2;
 
     service.getProductChangelogs(productId).subscribe(response => {
-      expect(response.length).toEqual(mockResponse.length);
+      let productReleaseModelList = response._embedded.githubReleaseModelList;
+      expect(productReleaseModelList.length).toEqual(mockResponse._embedded.githubReleaseModelList.length);
     });
 
     const req = httpMock.expectOne(`${API_URI.PRODUCT_DETAILS}/${productId}/releases`);
     expect(req.request.method).toBe('GET');
-    req.flush([{
-      name: "12.0.3",
-      body: "## Changes\r\n\r\n## 🚀 Features\r\n\r\n- [IVYPORTAL-18158](https://1ivy.atlassian.net/browse/IVYPORTAL-18158) Implement File Preview to Portal Components https://github.com/nhthinh-axonivy (https://github.com/axonivy-market/portal/pull/1443)\r\n",
-      publishedAt: "2025-01-20"
-    }]);
+    req.flush(mockResponse);
   });
 });
