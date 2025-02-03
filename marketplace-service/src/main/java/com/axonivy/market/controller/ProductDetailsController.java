@@ -171,6 +171,18 @@ public class ProductDetailsController {
     return new ResponseEntity<>(pageResources, HttpStatus.OK);
   }
 
+  @GetMapping(PRODUCT_PUBLIC_RELEASE_BY_RELEASE_ID)
+  @Operation(summary = "Find release by id",
+      description = "Get release by release id.")
+  public ResponseEntity<GithubReleaseModel> findGithubPublicReleaseById(
+      @PathVariable(ID) @Parameter(description = "Product id", example = "portal",
+          in = ParameterIn.PATH) String productId,
+      @PathVariable(RELEASE_ID) @Parameter(description = "Release id", example = "67a08dd6e23661019dc92376",
+          in = ParameterIn.PATH) Long releaseId) throws IOException {
+    GithubReleaseModel githubReleaseModel = productService.getGitHubReleaseModelById(productId, releaseId);
+    return ResponseEntity.ok(githubReleaseModelAssembler.toModel(githubReleaseModel));
+  }
+
   @SuppressWarnings("unchecked")
   private ResponseEntity<PagedModel<GithubReleaseModel>> generateReleasesEmptyPagedModel() {
     var emptyPagedModel = (PagedModel<GithubReleaseModel>) pagedResourcesAssembler.toEmptyModel(Page.empty(),

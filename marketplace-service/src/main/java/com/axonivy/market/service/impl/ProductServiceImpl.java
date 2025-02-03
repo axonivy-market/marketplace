@@ -810,6 +810,14 @@ public class ProductServiceImpl implements ProductService {
     return this.gitHubService.getGitHubReleaseModels(product, pageable);
   }
 
+  @Override
+  public GithubReleaseModel getGitHubReleaseModelById(String productId, Long releaseId) throws IOException {
+    validateProductExists(productId);
+    Product product = this.findProductById(productId);
+
+    return this.gitHubService.getGitHubReleaseModelById(product, releaseId);
+  }
+
   public void validateProductExists(String productId) throws NotFoundException {
     if (productRepo.findById(productId).isEmpty()) {
       throw new NotFoundException(ErrorCode.PRODUCT_NOT_FOUND, "Not found product with id: " + productId);

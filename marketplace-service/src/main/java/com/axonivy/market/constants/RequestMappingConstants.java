@@ -36,4 +36,5 @@ public class RequestMappingConstants {
   public static final String SECURITY_MONITOR = API + "/security-monitor";
   public static final String RELEASE_PREVIEW = API + "/release-preview";
   public static final String PRODUCT_PUBLIC_RELEASES = "/{id}/releases";
+  public static final String PRODUCT_PUBLIC_RELEASE_BY_RELEASE_ID = "/{id}/releases/{release-id}";
 }

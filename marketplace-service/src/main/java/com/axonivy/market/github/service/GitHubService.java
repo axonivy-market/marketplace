@@ -48,4 +48,6 @@ public interface GitHubService {
 
   Page<GithubReleaseModel> getGitHubReleaseModels(Product product, Pageable pageable) throws IOException;
 
+  GithubReleaseModel getGitHubReleaseModelById(Product product, Long releaseId) throws IOException;
+
 }

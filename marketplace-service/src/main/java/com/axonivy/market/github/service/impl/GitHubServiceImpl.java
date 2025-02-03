@@ -363,21 +363,51 @@ public class GitHubServiceImpl implements GitHubService {
             ghRelease -> !ghRelease.isDraft()).toList();
 
     for (GHRelease ghRelease : ghReleases) {
-      GithubReleaseModel githubReleaseModel = new GithubReleaseModel();
-      String modifiedBody = transformGithubReleaseBody(ghRelease.getBody(), product.getSourceUrl());
-      githubReleaseModel.setBody(modifiedBody);
-      githubReleaseModel.setName(ghRelease.getName());
-      githubReleaseModel.setPublishedAt(ghRelease.getPublished_at());
-      githubReleaseModel.add(linkTo(methodOn(ProductDetailsController.class).findGithubPublicReleases(product.getId(),
-          pageable)).withSelfRel());
-      githubReleaseModels.add(githubReleaseModel);
+//      GithubReleaseModel githubReleaseModel = new GithubReleaseModel();
+//      String modifiedBody = transformGithubReleaseBody(ghRelease.getBody(), product.getSourceUrl());
+//      githubReleaseModel.setBody(modifiedBody);
+//      githubReleaseModel.setName(ghRelease.getName());
+//      githubReleaseModel.setPublishedAt(ghRelease.getPublished_at());
+//      githubReleaseModel.add(linkTo(methodOn(ProductDetailsController.class).findGithubPublicReleaseById(product.getId(),
+//          ghRelease.getId())).withSelfRel());
+//      githubReleaseModels.add(githubReleaseModel);
+      githubReleaseModels.add(this.toGitHubReleaseModel(ghRelease, product));
     }
 
     return new PageImpl<>(githubReleaseModels, pageable, githubReleaseModels.size());
   }
 
+  @Override
+  public GithubReleaseModel getGitHubReleaseModelById(Product product, Long releaseId) throws IOException {
+    GHRelease ghRelease =  this.getRepository(product.getRepositoryName()).getRelease(releaseId);
+
+//    GithubReleaseModel githubReleaseModel = new GithubReleaseModel();
+//    String modifiedBody = transformGithubReleaseBody(ghRelease.getBody(), product.getSourceUrl());
+//    githubReleaseModel.setBody(modifiedBody);
+//    githubReleaseModel.setName(ghRelease.getName());
+//    githubReleaseModel.setPublishedAt(ghRelease.getPublished_at());
+//    githubReleaseModel.add(linkTo(methodOn(ProductDetailsController.class).findGithubPublicReleaseById(product.getId(),
+//        ghRelease.getId())).withSelfRel());
+
+//    return githubReleaseModel;
+
+    return this.toGitHubReleaseModel(ghRelease, product);
+  }
+
   public String transformGithubReleaseBody(String githubReleaseBody, String productSourceUrl) {
     return githubReleaseBody.replaceAll(GITHUB_PULL_REQUEST_NUMBER_REGEX,
         productSourceUrl + GITHUB_PULL_REQUEST_LINK + "$1").replaceAll(GITHUB_USERNAME_REGEX, GITHUB_MAIN_LINK + "$1");
+  }
+
+  public GithubReleaseModel toGitHubReleaseModel(GHRelease ghRelease, Product product) throws IOException {
+    GithubReleaseModel githubReleaseModel = new GithubReleaseModel();
+    String modifiedBody = transformGithubReleaseBody(ghRelease.getBody(), product.getSourceUrl());
+    githubReleaseModel.setBody(modifiedBody);
+    githubReleaseModel.setName(ghRelease.getName());
+    githubReleaseModel.setPublishedAt(ghRelease.getPublished_at());
+    githubReleaseModel.add(linkTo(methodOn(ProductDetailsController.class).findGithubPublicReleaseById(product.getId(),
+        ghRelease.getId())).withSelfRel());
+
+    return githubReleaseModel;
   }
 }
