@@ -803,11 +803,11 @@ public class ProductServiceImpl implements ProductService {
   }
 
   @Override
-  public Page<GithubReleaseModel> getReleaseInProductService(String productId, Pageable pageable) throws IOException {
+  public Page<GithubReleaseModel> getGitHubReleaseModels(String productId, Pageable pageable) throws IOException {
     validateProductExists(productId);
     Product product = this.findProductById(productId);
 
-    return this.gitHubService.getReleases2(product, pageable);
+    return this.gitHubService.getGitHubReleaseModels(product, pageable);
   }
 
   public void validateProductExists(String productId) throws NotFoundException {

@@ -48,8 +48,6 @@ import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 
 import java.io.IOException;
-import java.time.LocalDate;
-import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -60,8 +58,6 @@ import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Function;
 import java.util.function.Supplier;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import static org.apache.commons.lang3.StringUtils.EMPTY;
@@ -74,8 +70,6 @@ public class GitHubServiceImpl implements GitHubService {
   private final UserRepository userRepository;
   private final GitHubProperty gitHubProperty;
   private final ThreadPoolTaskScheduler taskScheduler;
-//  private final ProductRepository productRepository;
-//  private final ProductService productService;
   private static final String GITHUB_PULL_REQUEST_NUMBER_REGEX = "#(\\d+)";
   private static final String GITHUB_PULL_REQUEST_LINK = "/pull/";
   private static final String GITHUB_USERNAME_REGEX = "@([a-zA-Z0-9\\-]+)";
@@ -87,8 +81,6 @@ public class GitHubServiceImpl implements GitHubService {
     this.userRepository = userRepository;
     this.gitHubProperty = gitHubProperty;
     this.taskScheduler = taskScheduler;
-//    this.productRepository = productRepository;
-//    this.productService = productService;
   }
 
   @Override
@@ -363,36 +355,8 @@ public class GitHubServiceImpl implements GitHubService {
     });
   }
 
-//  @Override
-//  public List<GithubReleaseModel> getReleases(Product product) throws IOException {
-//    List<GHRelease> ghReleases =
-//        this.getRepository(product.getRepositoryName()).listReleases().toList().stream().filter(
-//            ghRelease -> !ghRelease.isDraft()).toList();
-//    List<GithubReleaseModel> githubReleaseModels = new ArrayList<>();
-//
-//    if (ghReleases.isEmpty()) {
-//      return null;
-//    }
-//
-//    for (GHRelease ghRelease : ghReleases) {
-//      GithubReleaseModel githubReleaseModel = new GithubReleaseModel();
-//      LocalDate localDate = ghRelease.getPublished_at().toInstant()
-//          .atZone(ZoneId.systemDefault())
-//          .toLocalDate();
-//
-//      String modifiedBody = transformGithubReleaseBody(ghRelease.getBody(), product.getSourceUrl());
-//
-//      githubReleaseModel.setBody(modifiedBody);
-//      githubReleaseModel.setName(ghRelease.getName());
-//      githubReleaseModel.setPublishedAt(localDate);
-//
-//      githubReleaseModels.add(githubReleaseModel);
-//    }
-//
-//    return githubReleaseModels;
-//  }
-
-  public Page<GithubReleaseModel> getReleases2(Product product, Pageable pageable) throws IOException {
+  @Override
+  public Page<GithubReleaseModel> getGitHubReleaseModels(Product product, Pageable pageable) throws IOException {
     List<GithubReleaseModel> githubReleaseModels = new ArrayList<>();
     List<GHRelease> ghReleases =
         this.getRepository(product.getRepositoryName()).listReleases().toList().stream().filter(
@@ -416,10 +380,4 @@ public class GitHubServiceImpl implements GitHubService {
     return githubReleaseBody.replaceAll(GITHUB_PULL_REQUEST_NUMBER_REGEX,
         productSourceUrl + GITHUB_PULL_REQUEST_LINK + "$1").replaceAll(GITHUB_USERNAME_REGEX, GITHUB_MAIN_LINK + "$1");
   }
-
-//  public void validateProductExists(String productId) throws NotFoundException {
-//    if (productRepository.findById(productId).isEmpty()) {
-//      throw new NotFoundException(ErrorCode.PRODUCT_NOT_FOUND, "Not found product with id: " + productId);
-//    }
-//  }
 }

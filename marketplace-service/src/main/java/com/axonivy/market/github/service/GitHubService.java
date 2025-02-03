@@ -46,10 +46,6 @@ public interface GitHubService {
 
   List<ProductSecurityInfo> getSecurityDetailsForAllProducts(String accessToken, String orgName);
 
-//  List<GithubReleaseModel> getReleases(Product product) throws IOException;
-
-//  Page<GHRelease> getReleases2(String productId, Pageable pageable) throws IOException;
-
-  Page<GithubReleaseModel> getReleases2(Product product, Pageable pageable) throws IOException;
+  Page<GithubReleaseModel> getGitHubReleaseModels(Product product, Pageable pageable) throws IOException;
 
 }

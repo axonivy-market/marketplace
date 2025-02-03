@@ -47,7 +47,6 @@ public class ProductDetailsController {
   private final VersionService versionService;
   private final ProductService productService;
   private final ProductDetailModelAssembler detailModelAssembler;
-  private final GitHubService gitHubService;
   private final GithubReleaseModelAssembler githubReleaseModelAssembler;
   private final PagedResourcesAssembler<GithubReleaseModel> pagedResourcesAssembler;
 
@@ -58,7 +57,6 @@ public class ProductDetailsController {
     this.versionService = versionService;
     this.productService = productService;
     this.detailModelAssembler = detailModelAssembler;
-    this.gitHubService = gitHubService;
     this.pagedResourcesAssembler = pagedResourcesAssembler;
     this.githubReleaseModelAssembler = githubReleaseModelAssembler;
   }
@@ -152,20 +150,6 @@ public class ProductDetailsController {
     return new ResponseEntity<>(downloadUrl, statusCode);
   }
 
-//  @GetMapping(PRODUCT_PUBLIC_RELEASES)
-//  @Operation(summary = "Get the list of public releases changelog by its id",
-//      description = "Return the list of public releases changelog and id")
-//  public ResponseEntity<List<GithubReleaseModel>> getGithubPublicReleases(
-//      @PathVariable(value = ID) @Parameter(in = ParameterIn.PATH, example = "demos-app") String productId) throws IOException {
-//    Product product = productService.findProductById(productId);
-//
-//    List<GithubReleaseModel> githubReleaseModels =
-//        gitHubService.getReleases(product);
-//
-//    return new ResponseEntity<>(githubReleaseModels,
-//        HttpStatus.OK);
-//  }
-
   @GetMapping(PRODUCT_PUBLIC_RELEASES)
   @Operation(summary = "Find public releases by product id",
       description = "Get all public releases product id", parameters = {
@@ -177,8 +161,7 @@ public class ProductDetailsController {
       @PathVariable(ID) @Parameter(description = "Product id", example = "portal",
           in = ParameterIn.PATH) String productId,
       @ParameterObject Pageable pageable) throws IOException {
-//    Page<GithubReleaseModel> results = gitHubService.getReleases2(productId, pageable);
-    Page<GithubReleaseModel> results = productService.getReleaseInProductService(productId, pageable);
+    Page<GithubReleaseModel> results = productService.getGitHubReleaseModels(productId, pageable);
 
     if (results.isEmpty()) {
       return generateReleasesEmptyPagedModel();
