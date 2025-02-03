@@ -1,6 +1,7 @@
 package com.axonivy.market.service.impl;
 
 import com.axonivy.market.constants.GitHubConstants;
+import com.axonivy.market.entity.Product;
 import com.axonivy.market.enums.AccessLevel;
 import com.axonivy.market.exceptions.model.MissingHeaderException;
 import com.axonivy.market.exceptions.model.Oauth2ExchangeCodeException;
@@ -12,6 +13,7 @@ import com.axonivy.market.github.model.GitHubProperty;
 import com.axonivy.market.github.model.ProductSecurityInfo;
 import com.axonivy.market.github.model.SecretScanning;
 import com.axonivy.market.github.service.impl.GitHubServiceImpl;
+import com.axonivy.market.model.GithubReleaseModel;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.kohsuke.github.*;
@@ -523,5 +525,36 @@ class GitHubServiceImplTest {
     when(ghOrganization.listRepositories()).thenReturn(mockPagedIterable);
     List<ProductSecurityInfo> result = gitHubService.getSecurityDetailsForAllProducts(accessToken, orgName);
     assertEquals(0, result.size());
+  }
+
+  @Test
+  void testTransformGithubReleaseBody() {
+    String githubReleaseBody = "This is a release body with PR #123 and user @johndoe";
+    String productSourceUrl = "http://example.com";
+
+    String result = gitHubService.transformGithubReleaseBody(githubReleaseBody, productSourceUrl);
+
+    assertNotNull(result);
+    assertTrue(result.contains("http://example.com/pull/123"));
+    assertTrue(result.contains("https://github.com/johndoe"));
+  }
+
+  @Test
+  void testToGitHubReleaseModel() throws IOException {
+    GHRelease ghRelease = mock(GHRelease.class);
+    Product product = mock(Product.class);
+    Long releaseId = 1L;
+
+    when(ghRelease.getBody()).thenReturn("This is a release body with PR #123 and user @johndoe");
+    when(ghRelease.getName()).thenReturn("v1.0.0");
+    when(ghRelease.getPublished_at()).thenReturn(new Date());
+    when(product.getSourceUrl()).thenReturn("http://example.com");
+
+    GithubReleaseModel result = gitHubService.toGitHubReleaseModel(ghRelease, product, releaseId);
+    System.out.println(result.getBody());
+
+    assertNotNull(result);
+    assertEquals("v1.0.0", result.getName());
+    assertTrue(result.getBody().contains("http://example.com"));
   }
 }
