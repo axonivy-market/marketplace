@@ -3,16 +3,10 @@ package com.axonivy.market.github.service.impl;
 import com.axonivy.market.constants.ErrorMessageConstants;
 import com.axonivy.market.constants.GitHubConstants;
 import com.axonivy.market.controller.ProductDetailsController;
-import com.axonivy.market.criteria.ProductSearchCriteria;
 import com.axonivy.market.entity.Product;
 import com.axonivy.market.entity.User;
 
-import static com.axonivy.market.enums.DocumentField.SHORT_DESCRIPTIONS;
-
 import com.axonivy.market.enums.ErrorCode;
-import com.axonivy.market.enums.FeedbackSortOption;
-import com.axonivy.market.enums.Language;
-import com.axonivy.market.enums.TypeOption;
 import com.axonivy.market.exceptions.model.MissingHeaderException;
 import com.axonivy.market.exceptions.model.NotFoundException;
 import com.axonivy.market.exceptions.model.Oauth2ExchangeCodeException;
@@ -28,14 +22,11 @@ import com.axonivy.market.model.GithubReleaseModel;
 import com.axonivy.market.repository.ProductRepository;
 import com.axonivy.market.repository.UserRepository;
 import lombok.extern.log4j.Log4j2;
-import org.apache.commons.lang3.BooleanUtils;
 import org.kohsuke.github.*;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
 
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
 
