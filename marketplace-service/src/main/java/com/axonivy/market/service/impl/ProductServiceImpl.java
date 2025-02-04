@@ -811,24 +811,10 @@ public class ProductServiceImpl implements ProductService {
     Product product = this.findProductById(productId);
 
     PagedIterable<GHRelease> ghReleasePagedIterable =  this.gitHubService.getRepository(product.getRepositoryName()).listReleases();
-//    List<Long> ghReleaseIds = ghReleasePagedIterable.toList().stream().map(GHObject::getId).toList();
-    List<Long> ghReleaseIds = this.getGhReleaseIds(ghReleasePagedIterable);
-
-//    while(ghReleasePagedIterable.toList().) {
-//
-//    }
-    for (int i = 0; i < ghReleasePagedIterable.toList().size(); i++) {
-
-    }
+    List<Long> ghReleaseIds = ghReleasePagedIterable.toList().stream().map(GHObject::getId).toList();
 
     return this.gitHubService.getGitHubReleaseModels(product, ghReleasePagedIterable, pageable, ghReleaseIds);
   }
-
-  @Override
-  public List<Long> getGhReleaseIds(PagedIterable<GHRelease> ghReleasePagedIterable) throws IOException {
-    return ghReleasePagedIterable.toList().stream().map(GHRelease::getId).toList();
-  }
-
 
   @Override
   public GithubReleaseModel getGitHubReleaseModelByProductIdAndReleaseId(String productId, Long releaseId) throws IOException {

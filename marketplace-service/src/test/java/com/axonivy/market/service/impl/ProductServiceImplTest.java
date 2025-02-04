@@ -767,20 +767,42 @@ class ProductServiceImplTest extends BaseSetup {
 
   @Test
   void testGetGitHubReleaseModelByProductIdAndReleaseId() throws IOException {
-    String productId = "testProductId";
+    String mockProductId = "testProductId";
     String mockRepositoryName = "axonivy-market/portal";
-    Long releaseId = 1L;
+    Long mockReleaseId = 1L;
     Product mockProduct = new Product();
-    mockProduct.setId(productId);
+    mockProduct.setId(mockProductId);
     mockProduct.setRepositoryName(mockRepositoryName);
-    when(productRepo.findById(productId)).thenReturn(Optional.of(mockProduct));
-    when(productService.findProductById(productId)).thenReturn(mockProduct);
-    when(gitHubService.getGitHubReleaseModelByProductIdAndReleaseId(mockProduct, releaseId))
+    when(productRepo.findById(mockProductId)).thenReturn(Optional.of(mockProduct));
+    when(productService.findProductById(mockProductId)).thenReturn(mockProduct);
+    when(gitHubService.getGitHubReleaseModelByProductIdAndReleaseId(mockProduct, mockReleaseId))
         .thenReturn(new GithubReleaseModel());
 
-    GithubReleaseModel result = productService.getGitHubReleaseModelByProductIdAndReleaseId(productId, releaseId);
+    GithubReleaseModel result = productService.getGitHubReleaseModelByProductIdAndReleaseId(mockProductId, mockReleaseId);
 
     assertNotNull(result);
     verify(gitHubService).getGitHubReleaseModelByProductIdAndReleaseId(any(Product.class), anyLong());
+  }
+
+  @Test
+  void testGetGitHubReleaseModels() throws IOException {
+    String mockProductId = "testProductId";
+    String mockRepositoryName = "axonivy-market/portal";
+    Pageable mockPageable = mock(Pageable.class);
+    Long mockReleaseId = 1L;
+    Product mockProduct = new Product();
+    mockProduct.setId(mockProductId);
+    mockProduct.setRepositoryName(mockRepositoryName);
+    when(productRepo.findById(anyString())).thenReturn(Optional.of(mockProduct));
+    PagedIterable<GHRelease> ghReleasePagedIterable = mock(PagedIterable.class);
+    when(gitHubService.getRepository(anyString())).thenReturn(mock(GHRepository.class));
+    when(gitHubService.getRepository(anyString()).listReleases()).thenReturn(ghReleasePagedIterable);
+    when(gitHubService.getGitHubReleaseModels(any(Product.class), any(PagedIterable.class), any(Pageable.class), anyList()))
+        .thenReturn(Page.empty());
+
+    Page<GithubReleaseModel> result = productService.getGitHubReleaseModels(mockProductId, mockPageable);
+
+    assertNotNull(result);
+    verify(gitHubService).getGitHubReleaseModels(any(Product.class), any(PagedIterable.class), any(Pageable.class), anyList());
   }
 }

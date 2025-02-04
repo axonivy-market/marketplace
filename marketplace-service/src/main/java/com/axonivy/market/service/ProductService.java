@@ -33,5 +33,4 @@ public interface ProductService {
 
   GithubReleaseModel getGitHubReleaseModelByProductIdAndReleaseId(String productId, Long releaseId) throws IOException;
 
-  List<Long> getGhReleaseIds(PagedIterable<GHRelease> ghReleasePagedIterable) throws IOException;
 }
