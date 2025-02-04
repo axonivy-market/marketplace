@@ -789,14 +789,18 @@ class ProductServiceImplTest extends BaseSetup {
     String mockProductId = "testProductId";
     String mockRepositoryName = "axonivy-market/portal";
     Pageable mockPageable = mock(Pageable.class);
-    Long mockReleaseId = 1L;
+    GHRepository mockRepository = mock(GHRepository.class);
     Product mockProduct = new Product();
     mockProduct.setId(mockProductId);
     mockProduct.setRepositoryName(mockRepositoryName);
-    when(productRepo.findById(anyString())).thenReturn(Optional.of(mockProduct));
-    PagedIterable<GHRelease> ghReleasePagedIterable = mock(PagedIterable.class);
-    when(gitHubService.getRepository(anyString())).thenReturn(mock(GHRepository.class));
-    when(gitHubService.getRepository(anyString()).listReleases()).thenReturn(ghReleasePagedIterable);
+
+    when(productRepo.findById(mockProductId)).thenReturn(Optional.of(mockProduct));
+    when(productService.findProductById(mockProductId)).thenReturn(mockProduct);
+
+    PagedIterable<GHRelease> mockGhReleasePagedIterable = mock(PagedIterable.class);
+
+    when(gitHubService.getRepository(anyString())).thenReturn(mockRepository);
+    when(gitHubService.getRepository(anyString()).listReleases()).thenReturn(mockGhReleasePagedIterable);
     when(gitHubService.getGitHubReleaseModels(any(Product.class), any(PagedIterable.class), any(Pageable.class), anyList()))
         .thenReturn(Page.empty());
 
