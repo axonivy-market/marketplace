@@ -11,9 +11,11 @@ import com.axonivy.market.github.model.ProductSecurityInfo;
 import com.axonivy.market.model.GithubReleaseModel;
 import org.kohsuke.github.GHContent;
 import org.kohsuke.github.GHOrganization;
+import org.kohsuke.github.GHRelease;
 import org.kohsuke.github.GHRepository;
 import org.kohsuke.github.GHTag;
 import org.kohsuke.github.GitHub;
+import org.kohsuke.github.PagedIterable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
@@ -45,7 +47,8 @@ public interface GitHubService {
 
   List<ProductSecurityInfo> getSecurityDetailsForAllProducts(String accessToken, String orgName);
 
-  Page<GithubReleaseModel> getGitHubReleaseModels(Product product, Pageable pageable) throws IOException;
+  Page<GithubReleaseModel> getGitHubReleaseModels(Product product, PagedIterable<GHRelease> ghReleasePagedIterable,
+      Pageable pageable, List<Long> ghReleaseIds) throws IOException;
 
   GithubReleaseModel getGitHubReleaseModelByProductIdAndReleaseId(Product product, Long releaseId) throws IOException;
 

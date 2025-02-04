@@ -44,8 +44,11 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.util.Strings;
 import org.kohsuke.github.GHCommit;
 import org.kohsuke.github.GHContent;
+import org.kohsuke.github.GHObject;
+import org.kohsuke.github.GHRelease;
 import org.kohsuke.github.GHRepository;
 import org.kohsuke.github.GHTag;
+import org.kohsuke.github.PagedIterable;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -807,7 +810,12 @@ public class ProductServiceImpl implements ProductService {
     validateProductExists(productId);
     Product product = this.findProductById(productId);
 
-    return this.gitHubService.getGitHubReleaseModels(product, pageable);
+    PagedIterable<GHRelease> ghReleasePagedIterable =  this.gitHubService.getRepository(product.getRepositoryName()).listReleases();
+//    List<Long> ghReleaseIds =
+//        this.gitHubService.getRepository(product.getRepositoryName()).listReleases().toList().stream().map(GHObject::getId).toList();
+    List<Long> ghReleaseIds = ghReleasePagedIterable.toList().stream().map(GHObject::getId).toList();
+
+    return this.gitHubService.getGitHubReleaseModels(product, ghReleasePagedIterable, pageable, ghReleaseIds);
   }
 
   @Override

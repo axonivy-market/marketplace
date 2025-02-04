@@ -356,28 +356,22 @@ public class GitHubServiceImpl implements GitHubService {
   }
 
   @Override
-  public Page<GithubReleaseModel> getGitHubReleaseModels(Product product, Pageable pageable) throws IOException {
+  public Page<GithubReleaseModel> getGitHubReleaseModels(Product product,
+      PagedIterable<GHRelease> ghReleasePagedIterable,
+      Pageable pageable, List<Long> ghReleaseIds) throws IOException {
     List<GithubReleaseModel> githubReleaseModels = new ArrayList<>();
-    List<GHRelease> ghReleases =
-        this.getRepository(product.getRepositoryName()).listReleases().toList().stream().filter(
-            ghRelease -> !ghRelease.isDraft()).toList();
+    List<GHRelease> ghReleases = ghReleasePagedIterable.toList().stream().filter(ghRelease -> !ghRelease.isDraft()).toList();
+//    for (GHRelease ghRelease : ghReleases) {
+////      Long id = ghRelease.getId();
+//      githubReleaseModels.add(this.toGitHubReleaseModel(ghRelease, product, 1L));
+//    }
+//    List<Long> ghReleaseIds = ghReleasePagedIterable.toList().stream().map(GHObject::getId).toList();
 
-    for (GHRelease ghRelease : ghReleases) {
-      githubReleaseModels.add(this.toGitHubReleaseModel(ghRelease, product, ghRelease.getId()));
+    for (int i = 0; i < ghReleases.size(); i++) {
+      githubReleaseModels.add(this.toGitHubReleaseModel(ghReleases.get(i), product, ghReleaseIds.get(i)));
     }
 
     return new PageImpl<>(githubReleaseModels, pageable, githubReleaseModels.size());
-  }
-
-  @Override
-  public GithubReleaseModel getGitHubReleaseModelByProductIdAndReleaseId(Product product, Long releaseId) throws IOException {
-    GHRelease ghRelease = this.getRepository(product.getRepositoryName()).getRelease(releaseId);
-    return this.toGitHubReleaseModel(ghRelease, product, releaseId);
-  }
-
-  public String transformGithubReleaseBody(String githubReleaseBody, String productSourceUrl) {
-    return githubReleaseBody.replaceAll(GITHUB_PULL_REQUEST_NUMBER_REGEX,
-        productSourceUrl + GITHUB_PULL_REQUEST_LINK + "$1").replaceAll(GITHUB_USERNAME_REGEX, GITHUB_MAIN_LINK + "$1");
   }
 
   public GithubReleaseModel toGitHubReleaseModel(GHRelease ghRelease, Product product, Long releaseId) throws IOException {
@@ -390,5 +384,17 @@ public class GitHubServiceImpl implements GitHubService {
         releaseId)).withSelfRel());
 
     return githubReleaseModel;
+  }
+
+  @Override
+  public GithubReleaseModel getGitHubReleaseModelByProductIdAndReleaseId(Product product, Long releaseId) throws IOException {
+    System.out.println(product.getRepositoryName());
+    GHRelease ghRelease = this.getRepository(product.getRepositoryName()).getRelease(releaseId);
+    return this.toGitHubReleaseModel(ghRelease, product, releaseId);
+  }
+
+  public String transformGithubReleaseBody(String githubReleaseBody, String productSourceUrl) {
+    return githubReleaseBody.replaceAll(GITHUB_PULL_REQUEST_NUMBER_REGEX,
+        productSourceUrl + GITHUB_PULL_REQUEST_LINK + "$1").replaceAll(GITHUB_USERNAME_REGEX, GITHUB_MAIN_LINK + "$1");
   }
 }
