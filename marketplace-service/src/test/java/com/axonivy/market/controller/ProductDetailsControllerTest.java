@@ -1,11 +1,13 @@
 package com.axonivy.market.controller;
 
 import com.axonivy.market.BaseSetup;
+import com.axonivy.market.assembler.GithubReleaseModelAssembler;
 import com.axonivy.market.assembler.ProductDetailModelAssembler;
 import com.axonivy.market.constants.RequestMappingConstants;
 import com.axonivy.market.entity.Product;
 import com.axonivy.market.entity.ProductJsonContent;
 import com.axonivy.market.enums.Language;
+import com.axonivy.market.model.GithubReleaseModel;
 import com.axonivy.market.model.MavenArtifactVersionModel;
 import com.axonivy.market.model.ProductDetailModel;
 import com.axonivy.market.service.ProductService;
@@ -19,6 +21,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.web.PagedResourcesAssembler;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
@@ -40,6 +43,11 @@ class ProductDetailsControllerTest extends BaseSetup {
   VersionService versionService;
   @Mock
   private ProductDetailModelAssembler detailModelAssembler;
+  @Mock
+  private PagedResourcesAssembler pagedResourcesAssembler;;
+  @Mock
+  private GithubReleaseModelAssembler githubReleaseModelAssembler;
+
 
   @InjectMocks
   private ProductDetailsController productDetailsController;
@@ -265,5 +273,18 @@ class ProductDetailsControllerTest extends BaseSetup {
         Mockito.anyString())).thenReturn(mockDownloadUrl);
     response = productDetailsController.getLatestArtifactDownloadUrl("portal", "1.0.0", "portal-app.zip");
     assertEquals(HttpStatus.OK, response.getStatusCode());
+  }
+
+  @Test
+  void testFindGithubPublicReleaseByProductIdAndReleaseId() throws IOException {
+    GithubReleaseModel githubReleaseModel = new GithubReleaseModel();
+    when(productService.getGitHubReleaseModelByProductIdAndReleaseId(Mockito.anyString(), Mockito.anyLong()))
+        .thenReturn(githubReleaseModel);
+    when(githubReleaseModelAssembler.toModel(Mockito.any(GithubReleaseModel.class))).thenReturn(githubReleaseModel);
+
+    var result = productDetailsController.findGithubPublicReleaseByProductIdAndReleaseId("portal", 1L);
+
+    assertEquals(HttpStatus.OK, result.getStatusCode());
+    assertEquals(githubReleaseModel, result.getBody());
   }
 }
