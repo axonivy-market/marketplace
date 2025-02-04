@@ -2,8 +2,6 @@ package com.axonivy.market.service;
 
 import com.axonivy.market.entity.Product;
 import com.axonivy.market.model.GithubReleaseModel;
-import org.kohsuke.github.GHRelease;
-import org.kohsuke.github.PagedIterable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 

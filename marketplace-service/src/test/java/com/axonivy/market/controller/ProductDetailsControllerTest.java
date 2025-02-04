@@ -48,7 +48,7 @@ class ProductDetailsControllerTest extends BaseSetup {
   @Mock
   private ProductDetailModelAssembler detailModelAssembler;
   @Mock
-  private PagedResourcesAssembler pagedResourcesAssembler;;
+  private PagedResourcesAssembler pagedResourcesAssembler;
   @Mock
   private GithubReleaseModelAssembler githubReleaseModelAssembler;
 
