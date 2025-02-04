@@ -528,6 +528,34 @@ class GitHubServiceImplTest {
   }
 
   @Test
+  void testGetGitHubReleaseModelByProductIdAndReleaseId() throws IOException {
+    String mockGithubReleaseBody = "This is a release body with PR #123 and user @johndoe";
+    String mockProductSourceUrl = "http://example.com";
+    String mockRepositoryName = "axonivy-market/portal";
+    String mockVersion = "v1.0.0";
+
+    Product mockProduct = mock(Product.class);
+    GHRepository mockRepository = mock(GHRepository.class);
+    GHRelease mockRelease = mock(GHRelease.class);
+
+    when(mockProduct.getRepositoryName()).thenReturn(mockRepositoryName);
+    when(gitHubService.getGitHub()).thenReturn(mock(GitHub.class));
+    when(gitHubService.getGitHub().getRepository(mockRepositoryName)).thenReturn(mockRepository);
+    when(mockRepository.getRelease(1L)).thenReturn(mockRelease);
+    when(mockRelease.getBody()).thenReturn(mockGithubReleaseBody);
+    when(mockRelease.getName()).thenReturn(mockVersion);
+    when(mockRelease.getPublished_at()).thenReturn(new Date());
+    when(mockProduct.getSourceUrl()).thenReturn(mockProductSourceUrl);
+    when(gitHubService.toGitHubReleaseModel(mockRelease, mockProduct, 1L)).thenReturn(new GithubReleaseModel());
+
+    GithubReleaseModel result = gitHubService.getGitHubReleaseModelByProductIdAndReleaseId(mockProduct, 1L);
+
+    assertNotNull(result);
+    verify(gitHubService).getRepository(mockRepositoryName);
+    verify(mockRepository).getRelease(1L);
+  }
+
+  @Test
   void testTransformGithubReleaseBody() {
     String githubReleaseBody = "This is a release body with PR #123 and user @johndoe";
     String productSourceUrl = "http://example.com";
@@ -541,17 +569,16 @@ class GitHubServiceImplTest {
 
   @Test
   void testToGitHubReleaseModel() throws IOException {
-    GHRelease ghRelease = mock(GHRelease.class);
-    Product product = mock(Product.class);
+    GHRelease mockGhRelease = mock(GHRelease.class);
+    Product mockProduct = mock(Product.class);
     Long releaseId = 1L;
 
-    when(ghRelease.getBody()).thenReturn("This is a release body with PR #123 and user @johndoe");
-    when(ghRelease.getName()).thenReturn("v1.0.0");
-    when(ghRelease.getPublished_at()).thenReturn(new Date());
-    when(product.getSourceUrl()).thenReturn("http://example.com");
+    when(mockGhRelease.getBody()).thenReturn("This is a release body with PR #123 and user @johndoe");
+    when(mockGhRelease.getName()).thenReturn("v1.0.0");
+    when(mockGhRelease.getPublished_at()).thenReturn(new Date());
+    when(mockProduct.getSourceUrl()).thenReturn("http://example.com");
 
-    GithubReleaseModel result = gitHubService.toGitHubReleaseModel(ghRelease, product, releaseId);
-    System.out.println(result.getBody());
+    GithubReleaseModel result = gitHubService.toGitHubReleaseModel(mockGhRelease, mockProduct, releaseId);
 
     assertNotNull(result);
     assertEquals("v1.0.0", result.getName());
