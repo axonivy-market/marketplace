@@ -23,7 +23,6 @@ import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpMethod;
@@ -531,128 +530,17 @@ class GitHubServiceImplTest {
     assertEquals(0, result.size());
   }
 
-//  @Test
-//  void testGetGitHubReleaseModels() throws IOException {
-//    String mockProductSourceUrl = "http://example.com";
-//    Product mockProduct = mock(Product.class);
-//    Pageable mockPageable = mock(Pageable.class);
-//    GHRepository mockRepository = mock(GHRepository.class);
-//    GHRelease mockRelease1 = mock(GHRelease.class);
-//    GHRelease mockRelease2 = mock(GHRelease.class);
-//    String mockGithubReleaseBody1 = "This is a release body 1 with PR #1231 and user @johndoe";
-//    String mockGithubReleaseBody2 = "This is a release body 2 with PR #1232 and user @janedoe";
-//    String mockVersion1 = "v1.0.0";
-//    String mockVersion2 = "v2.0.0";
-//    Long releaseId1 = 1L;
-//    Long releaseId2 = 2L;
-//    GithubReleaseModel mockGithubReleaseModel1 = mock(GithubReleaseModel.class);
-//    GithubReleaseModel mockGithubReleaseModel2 = mock(GithubReleaseModel.class);
-//    List<GHRelease> mockReleases = List.of(mockRelease1, mockRelease2);
-//    List<Long> mockIds = List.of(releaseId1, releaseId2);
-//    List<GithubReleaseModel> mockGithubReleaseModels = List.of(mockGithubReleaseModel1, mockGithubReleaseModel2);
-//    String mockRepositoryName = "axonivy-market/portal";
-//
-//    when(mockProduct.getRepositoryName()).thenReturn(mockRepositoryName);
-//
-//    when(gitHubService.getGitHub()).thenReturn(mock(GitHub.class));
-//    when(gitHubService.getGitHub().getRepository(mockRepositoryName)).thenReturn(mockRepository);
-//    when(gitHubService.getRepository("axonivy-market/portal")).thenReturn(mockRepository);
-//
-//
-//    when(mockRepository.getRelease(1L)).thenReturn(mockRelease1);
-//    when(mockRelease1.getBody()).thenReturn(mockGithubReleaseBody1);
-//    when(mockRelease1.getName()).thenReturn(mockVersion1);
-//    when(mockRelease1.getPublished_at()).thenReturn(new Date());
-//    when(mockProduct.getSourceUrl()).thenReturn(mockProductSourceUrl);
-//    when(gitHubService.toGitHubReleaseModel(mockRelease1, mockProduct, releaseId1)).thenReturn(new GithubReleaseModel());
-//
-//    when(mockRepository.getRelease(2L)).thenReturn(mockRelease2);
-//    when(mockRelease2.getBody()).thenReturn(mockGithubReleaseBody2);
-//    when(mockRelease2.getName()).thenReturn(mockVersion2);
-//    when(mockRelease2.getPublished_at()).thenReturn(new Date());
-//    when(mockProduct.getSourceUrl()).thenReturn(mockProductSourceUrl);
-//    when(gitHubService.toGitHubReleaseModel(mockRelease2, mockProduct, releaseId2)).thenReturn(new GithubReleaseModel());
-//
-//
-//
-//    when(mockRepository.listReleases()).thenReturn(mock(PagedIterable.class));
-//    when(mockRepository.listReleases().toList()).thenReturn(mockReleases);
-//    when(mockRelease1.isDraft()).thenReturn(false);
-//    when(mockRelease2.isDraft()).thenReturn(false);
-////    when(gitHubService.toGitHubReleaseModel(any(GHRelease.class), eq(mockProduct), anyLong())).thenReturn(new GithubReleaseModel());
-////    when(gitHubService.getGitHubReleaseModels(mockProduct, mockPageable)).thenReturn(new PageImpl<>(githubReleaseModels, pageable, githubReleaseModels.size()));
-//    when(gitHubService.toGitHubReleaseModel(mockRelease1, mockProduct, releaseId1)).thenReturn(mockGithubReleaseModel1);
-//    when(gitHubService.toGitHubReleaseModel(mockRelease2, mockProduct, releaseId2)).thenReturn(mockGithubReleaseModel2);
-////    when(gitHubService.getGitHubReleaseModels(mockProduct, mockPageable)).thenReturn(new PageImpl<>(mockGithubReleaseModels, mockPageable, mockGithubReleaseModels.size()));
-//
-//    Page<GithubReleaseModel> result = gitHubService.getGitHubReleaseModels(mockProduct, mockPageable, mockIds);
-//
-//    assertNotNull(result);
-//    assertEquals(2, result.getTotalElements());
-//    verify(gitHubService).getRepository(mockRepositoryName);
-//    verify(mockRepository).listReleases();
-//  }
-
-//  @Test
-//  void testGetGitHubReleaseModels_SomeDraftReleases() throws IOException {
-//    String mockGithubReleaseBody = "This is a release body with PR #123 and user @johndoe";
-//    String mockProductSourceUrl = "http://example.com";
-//    String mockVersion = "v1.0.0";
-//    Product mockProduct = mock(Product.class);
-//    Pageable mockPageable = mock(Pageable.class);
-//    GHRepository mockRepository = mock(GHRepository.class);
-//    GHRelease mockRelease1 = mock(GHRelease.class);
-//    GHRelease mockRelease2 = mock(GHRelease.class);
-//    List<GHRelease> mockReleases = List.of(mockRelease1, mockRelease2);
-//    List<Long> mockIds = List.of(1L);
-//    String mockRepositoryName = "axonivy-market/portal";
-//
-//    PagedIterable<GHRelease> pagedIterableMock = mock(PagedIterable.class);
-//
-//    when(mockProduct.getRepositoryName()).thenReturn(mockRepositoryName);
-//    when(gitHubService.getGitHub()).thenReturn(mock(GitHub.class));
-//    when(gitHubService.getGitHub().getRepository(mockRepositoryName)).thenReturn(mockRepository);
-//    when(mockRepository.getRelease(1L)).thenReturn(mockRelease1);
-//    when(mockRelease1.isDraft()).thenReturn(false);
-//    when(mockRelease2.isDraft()).thenReturn(true);
-//    when(mockRelease1.getBody()).thenReturn(mockGithubReleaseBody);
-//    when(mockRelease1.getName()).thenReturn(mockVersion);
-//    when(mockRelease1.getPublished_at()).thenReturn(new Date());
-//    when(mockProduct.getSourceUrl()).thenReturn(mockProductSourceUrl);
-//    when(mockRepository.listReleases()).thenReturn(pagedIterableMock);
-////    when(mockRepository.listReleases().toList()).thenReturn(mockReleases);
-//    List<GHRelease> releases = mockRepository.listReleases().toList();
-//    when(releases).thenReturn(mockReleases);
-//    when(gitHubService.toGitHubReleaseModel(mockRelease1, mockProduct, 1L)).thenReturn(new GithubReleaseModel());
-//
-//    Page<GithubReleaseModel> result = gitHubService.getGitHubReleaseModels(mockProduct, pagedIterableMock,
-//        mockPageable, mockIds);
-//
-//    assertNotNull(result);
-//    assertEquals(1, result.getTotalElements());
-//    verify(gitHubService).getRepository(mockRepositoryName);
-//    verify(mockRepository).listReleases();
-////    verify(mockRepository, atLeastOnce()).listReleases();
-//  }
-
   @Test
-  void testGetGitHubReleaseModels_MixedReleases() throws IOException {
+  void testGetGitHubReleaseModelsWithMixedReleases() throws IOException {
     Product mockProduct = mock(Product.class);
     PagedIterable<GHRelease> mockPagedIterable = mock(PagedIterable.class);
     String mockGithubReleaseBody = "This is a release body with PR #123 and user @johndoe";
     String mockProductSourceUrl = "http://example.com";
     String mockVersion = "v1.0.0";
     Pageable mockPageable = mock(Pageable.class);
-    GHRepository mockRepository = mock(GHRepository.class);
     GHRelease mockRelease1 = mock(GHRelease.class);
     GHRelease mockRelease2 = mock(GHRelease.class);
-    List<GHRelease> mockReleases = List.of(mockRelease1, mockRelease2);
     List<Long> mockIds = List.of(1L);
-    String mockRepositoryName = "axonivy-market/portal";
-//    when(mockProduct.getRepositoryName()).thenReturn(mockRepositoryName);
-//    when(gitHubService.getGitHub()).thenReturn(mock(GitHub.class));
-//    when(gitHubService.getGitHub().getRepository(mockRepositoryName)).thenReturn(mockRepository);
-//    when(mockRepository.getRelease(1L)).thenReturn(mockRelease1);
     when(mockRelease1.isDraft()).thenReturn(false);
     when(mockRelease2.isDraft()).thenReturn(true);
     when(mockRelease1.getBody()).thenReturn(mockGithubReleaseBody);

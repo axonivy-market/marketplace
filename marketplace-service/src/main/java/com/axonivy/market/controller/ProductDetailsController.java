@@ -2,7 +2,6 @@ package com.axonivy.market.controller;
 
 import com.axonivy.market.assembler.GithubReleaseModelAssembler;
 import com.axonivy.market.assembler.ProductDetailModelAssembler;
-import com.axonivy.market.github.service.GitHubService;
 import com.axonivy.market.model.GithubReleaseModel;
 import com.axonivy.market.model.MavenArtifactVersionModel;
 import com.axonivy.market.model.ProductDetailModel;
@@ -47,7 +46,7 @@ public class ProductDetailsController {
   private final PagedResourcesAssembler<GithubReleaseModel> pagedResourcesAssembler;
 
   public ProductDetailsController(VersionService versionService, ProductService productService,
-      ProductDetailModelAssembler detailModelAssembler, GitHubService gitHubService,
+      ProductDetailModelAssembler detailModelAssembler,
       GithubReleaseModelAssembler githubReleaseModelAssembler,
       PagedResourcesAssembler<GithubReleaseModel> pagedResourcesAssembler) {
     this.versionService = versionService;

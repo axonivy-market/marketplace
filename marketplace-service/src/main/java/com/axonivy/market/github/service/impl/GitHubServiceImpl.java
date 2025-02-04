@@ -19,7 +19,6 @@ import com.axonivy.market.github.model.SecretScanning;
 import com.axonivy.market.github.service.GitHubService;
 import com.axonivy.market.github.model.ProductSecurityInfo;
 import com.axonivy.market.model.GithubReleaseModel;
-import com.axonivy.market.repository.ProductRepository;
 import com.axonivy.market.repository.UserRepository;
 import lombok.extern.log4j.Log4j2;
 import org.kohsuke.github.*;
@@ -76,7 +75,7 @@ public class GitHubServiceImpl implements GitHubService {
   private static final String GITHUB_MAIN_LINK = "https://github.com/";
 
   public GitHubServiceImpl(RestTemplate restTemplate, UserRepository userRepository,
-      GitHubProperty gitHubProperty, ThreadPoolTaskScheduler taskScheduler, ProductRepository productRepository) {
+      GitHubProperty gitHubProperty, ThreadPoolTaskScheduler taskScheduler) {
     this.restTemplate = restTemplate;
     this.userRepository = userRepository;
     this.gitHubProperty = gitHubProperty;
@@ -361,11 +360,6 @@ public class GitHubServiceImpl implements GitHubService {
       Pageable pageable, List<Long> ghReleaseIds) throws IOException {
     List<GithubReleaseModel> githubReleaseModels = new ArrayList<>();
     List<GHRelease> ghReleases = ghReleasePagedIterable.toList().stream().filter(ghRelease -> !ghRelease.isDraft()).toList();
-//    for (GHRelease ghRelease : ghReleases) {
-////      Long id = ghRelease.getId();
-//      githubReleaseModels.add(this.toGitHubReleaseModel(ghRelease, product, 1L));
-//    }
-//    List<Long> ghReleaseIds = ghReleasePagedIterable.toList().stream().map(GHObject::getId).toList();
 
     for (int i = 0; i < ghReleases.size(); i++) {
       githubReleaseModels.add(this.toGitHubReleaseModel(ghReleases.get(i), product, ghReleaseIds.get(i)));
@@ -388,7 +382,6 @@ public class GitHubServiceImpl implements GitHubService {
 
   @Override
   public GithubReleaseModel getGitHubReleaseModelByProductIdAndReleaseId(Product product, Long releaseId) throws IOException {
-    System.out.println(product.getRepositoryName());
     GHRelease ghRelease = this.getRepository(product.getRepositoryName()).getRelease(releaseId);
     return this.toGitHubReleaseModel(ghRelease, product, releaseId);
   }
