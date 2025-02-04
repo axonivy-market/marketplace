@@ -48,7 +48,7 @@ class ProductDetailsControllerTest extends BaseSetup {
   @Mock
   private ProductDetailModelAssembler detailModelAssembler;
   @Mock
-  private PagedResourcesAssembler pagedResourcesAssembler;
+  private PagedResourcesAssembler<GithubReleaseModel> pagedResourcesAssembler;
   @Mock
   private GithubReleaseModelAssembler githubReleaseModelAssembler;
 
@@ -303,5 +303,17 @@ class ProductDetailsControllerTest extends BaseSetup {
 
     assertEquals(HttpStatus.OK, result.getStatusCode());
     assertEquals(1, Objects.requireNonNull(result.getBody()).getContent().size());
+  }
+
+  @Test
+  void testFindGithubPublicReleasesWithEmptyResult() throws IOException {
+    Page<GithubReleaseModel> emptyPage = Page.empty();
+    when(productService.getGitHubReleaseModels(Mockito.anyString(), Mockito.any(Pageable.class))).thenReturn(emptyPage);
+    when(pagedResourcesAssembler.toEmptyModel(Mockito.any(Page.class), Mockito.any())).thenReturn(PagedModel.empty());
+
+    var result = productDetailsController.findGithubPublicReleases("portal", Pageable.ofSize(1));
+
+    assertEquals(HttpStatus.OK, result.getStatusCode());
+    assertTrue(Objects.requireNonNull(result.getBody()).getContent().isEmpty());
   }
 }
