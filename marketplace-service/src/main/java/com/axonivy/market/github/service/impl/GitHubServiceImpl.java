@@ -367,7 +367,7 @@ public class GitHubServiceImpl implements GitHubService {
 
     return new PageImpl<>(githubReleaseModels, pageable, githubReleaseModels.size());
   }
-
+  
   public GithubReleaseModel toGitHubReleaseModel(GHRelease ghRelease, Product product, Long releaseId) throws IOException {
     GithubReleaseModel githubReleaseModel = new GithubReleaseModel();
     String modifiedBody = transformGithubReleaseBody(ghRelease.getBody(), product.getSourceUrl());

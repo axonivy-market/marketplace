@@ -15,10 +15,12 @@ import com.axonivy.market.enums.FileType;
 import com.axonivy.market.enums.Language;
 import com.axonivy.market.enums.SortOption;
 import com.axonivy.market.enums.TypeOption;
+import com.axonivy.market.exceptions.model.NotFoundException;
 import com.axonivy.market.github.model.GitHubFile;
 import com.axonivy.market.github.service.GHAxonIvyMarketRepoService;
 import com.axonivy.market.github.service.GHAxonIvyProductRepoService;
 import com.axonivy.market.github.service.GitHubService;
+import com.axonivy.market.model.GithubReleaseModel;
 import com.axonivy.market.repository.GitHubRepoMetaRepository;
 import com.axonivy.market.repository.ImageRepository;
 import com.axonivy.market.repository.MavenArtifactVersionRepository;
@@ -41,7 +43,10 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.kohsuke.github.GHCommit;
 import org.kohsuke.github.GHContent;
+import org.kohsuke.github.GHRelease;
+import org.kohsuke.github.GHRepository;
 import org.kohsuke.github.GHTag;
+import org.kohsuke.github.PagedIterable;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.InjectMocks;
@@ -58,6 +63,7 @@ import org.springframework.data.domain.Sort;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -749,5 +755,32 @@ class ProductServiceImplTest extends BaseSetup {
     when(ghCommit2.getCommitDate()).thenReturn(new Date());
     when(gitHubService.getRepositoryTags(SAMPLE_PRODUCT_REPOSITORY_NAME)).thenReturn(secondTags);
     assertTrue(productService.syncFirstPublishedDateOfAllProducts());
+  }
+
+  @Test
+  void testValidateProductExists() {
+    String productId = "testProductId";
+    when(productRepo.findById(anyString())).thenReturn(Optional.empty());
+
+    assertThrows(NotFoundException.class, () -> productService.validateProductExists(productId));
+  }
+
+  @Test
+  void testGetGitHubReleaseModelByProductIdAndReleaseId() throws IOException {
+    String productId = "testProductId";
+    String mockRepositoryName = "axonivy-market/portal";
+    Long releaseId = 1L;
+    Product mockProduct = new Product();
+    mockProduct.setId(productId);
+    mockProduct.setRepositoryName(mockRepositoryName);
+    when(productRepo.findById(productId)).thenReturn(Optional.of(mockProduct));
+    when(productService.findProductById(productId)).thenReturn(mockProduct);
+    when(gitHubService.getGitHubReleaseModelByProductIdAndReleaseId(mockProduct, releaseId))
+        .thenReturn(new GithubReleaseModel());
+
+    GithubReleaseModel result = productService.getGitHubReleaseModelByProductIdAndReleaseId(productId, releaseId);
+
+    assertNotNull(result);
+    verify(gitHubService).getGitHubReleaseModelByProductIdAndReleaseId(any(Product.class), anyLong());
   }
 }
