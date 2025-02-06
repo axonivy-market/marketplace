@@ -87,7 +87,7 @@ export class ProductComponent implements AfterViewInit, OnDestroy {
     this.route.queryParams.subscribe(params => {
       this.isRESTClient.set(
         DESIGNER_SESSION_STORAGE_VARIABLE.restClientParamName in params &&
-          this.isDesignerEnvironment
+        this.isDesignerEnvironment
       );
 
       if (params[DESIGNER_SESSION_STORAGE_VARIABLE.searchParamName] != null) {
@@ -107,6 +107,16 @@ export class ProductComponent implements AfterViewInit, OnDestroy {
             search: value
           };
           this.loadProductItems(true);
+
+          const queryParams = value
+            ? { search: this.criteria.search }
+            : { search: null };
+
+          this.router.navigate([], {
+            relativeTo: this.route,
+            queryParamsHandling: 'merge',
+            queryParams
+          });
         })
     );
     this.router.events?.subscribe(event => {
@@ -135,6 +145,15 @@ export class ProductComponent implements AfterViewInit, OnDestroy {
       type: selectedType.value
     };
     this.loadProductItems(true);
+    const queryParams = selectedType.value !== TypeOption.All_TYPES
+      ? { type: this.criteria.type }
+      : { type: null };
+
+    this.router.navigate([], {
+      relativeTo: this.route,
+      queryParamsHandling: 'merge',
+      queryParams
+    });
   }
 
   onSortChange(selectedSort: SortOption) {
@@ -144,6 +163,18 @@ export class ProductComponent implements AfterViewInit, OnDestroy {
       sort: selectedSort
     };
     this.loadProductItems(true);
+    let queryParams = null;
+    if (SortOption.STANDARD !== selectedSort) {
+      queryParams = { sort: this.criteria.sort };
+    } else {
+      queryParams = { sort: null };
+    }
+
+    this.router.navigate([], {
+      relativeTo: this.route,
+      queryParamsHandling: 'merge',
+      queryParams
+    });
   }
 
   onSearchChanged(searchString: string) {
