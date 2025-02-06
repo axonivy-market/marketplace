@@ -114,8 +114,8 @@ export class ProductComponent implements AfterViewInit, OnDestroy {
 
           this.router.navigate([], {
             relativeTo: this.route,
-            queryParams,
-            queryParamsHandling: 'merge'
+            queryParamsHandling: 'merge',
+            queryParams
           });
         })
     );
@@ -151,8 +151,8 @@ export class ProductComponent implements AfterViewInit, OnDestroy {
 
     this.router.navigate([], {
       relativeTo: this.route,
-      queryParams,
-      queryParamsHandling: 'merge'
+      queryParamsHandling: 'merge',
+      queryParams
     });
   }
 
@@ -164,7 +164,7 @@ export class ProductComponent implements AfterViewInit, OnDestroy {
     };
     this.loadProductItems(true);
     let queryParams = null;
-    if (selectedSort !== SortOption.STANDARD) {
+    if (SortOption.STANDARD !== selectedSort) {
       queryParams = { sort: this.criteria.sort };
     } else {
       queryParams = { sort: null };
