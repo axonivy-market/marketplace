@@ -88,12 +88,6 @@ describe('ProductDetailComponent', () => {
       'ProductStarRatingService',
       ['getRatingObservable', 'starRatings', 'totalComments', 'reviewNumber']
     );
-    // mockProductService = jasmine.createSpyObj(
-    //   'ProductService',
-    //   [
-    //     'getProductChangelogs',
-    //   ]
-    // );
 
     await TestBed.configureTestingModule({
       imports: [

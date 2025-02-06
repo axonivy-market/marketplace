@@ -27,6 +27,9 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 
+import org.springframework.hateoas.Link;
+import org.springframework.hateoas.server.mvc.WebMvcLinkBuilder;
+
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
 
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
@@ -374,10 +377,14 @@ public class GitHubServiceImpl implements GitHubService {
     githubReleaseModel.setBody(modifiedBody);
     githubReleaseModel.setName(ghRelease.getName());
     githubReleaseModel.setPublishedAt(ghRelease.getPublished_at());
-    githubReleaseModel.add(linkTo(methodOn(ProductDetailsController.class).findGithubPublicReleaseByProductIdAndReleaseId(product.getId(),
-        releaseId)).withSelfRel());
+    githubReleaseModel.add(this.createSelfLinkForGithubReleaseModel(product, releaseId));
 
     return githubReleaseModel;
+  }
+
+  private Link createSelfLinkForGithubReleaseModel(Product product, Long releaseId) throws IOException {
+    return linkTo(methodOn(ProductDetailsController.class).findGithubPublicReleaseByProductIdAndReleaseId(product.getId(),
+        releaseId)).withSelfRel();
   }
 
   @Override

@@ -170,7 +170,7 @@ public class ProductDetailsController {
   @Operation(summary = "Find release by id",
       description = "Get release by release id.")
   public ResponseEntity<GithubReleaseModel> findGithubPublicReleaseByProductIdAndReleaseId(
-      @PathVariable(ID) @Parameter(description = "Product id", example = "portal",
+      @PathVariable(PRODUCT_ID) @Parameter(description = "Product id", example = "portal",
           in = ParameterIn.PATH) String productId,
       @PathVariable(RELEASE_ID) @Parameter(description = "Release id", example = "67a08dd6e23661019dc92376",
           in = ParameterIn.PATH) Long releaseId) throws IOException {
