@@ -107,6 +107,16 @@ export class ProductComponent implements AfterViewInit, OnDestroy {
             search: value
           };
           this.loadProductItems(true);
+
+          const queryParams = value
+            ? { search: this.criteria.search }
+            : { search: null };
+
+          this.router.navigate([], {
+            relativeTo: this.route,
+            queryParams,
+            queryParamsHandling: 'merge'
+          });
         })
     );
     this.router.events?.subscribe(event => {
@@ -141,7 +151,7 @@ export class ProductComponent implements AfterViewInit, OnDestroy {
 
     this.router.navigate([], {
       relativeTo: this.route,
-      queryParams: queryParams,
+      queryParams,
       queryParamsHandling: 'merge'
     });
   }
@@ -173,16 +183,6 @@ export class ProductComponent implements AfterViewInit, OnDestroy {
       search: searchString
     };
     this.searchTextChanged.next(searchString);
-
-    const queryParams = searchString
-      ? { search: this.criteria.search }
-      : { search: null };
-
-    this.router.navigate([], {
-      relativeTo: this.route,
-      queryParams: queryParams,
-      queryParamsHandling: 'merge'
-    });
   }
 
   loadProductItems(shouldCleanData = false) {
