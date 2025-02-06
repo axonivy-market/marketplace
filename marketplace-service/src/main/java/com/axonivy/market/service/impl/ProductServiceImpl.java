@@ -801,11 +801,6 @@ public class ProductServiceImpl implements ProductService {
   }
 
   @Override
-  public Product findProductById(String id) {
-    return productRepo.findProductById(id);
-  }
-
-  @Override
   public Page<GithubReleaseModel> getGitHubReleaseModels(String productId, Pageable pageable) throws IOException {
     Product product = productRepo.findProductById(productId);
 
