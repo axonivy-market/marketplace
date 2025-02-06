@@ -178,10 +178,6 @@ export class ProductComponent implements AfterViewInit, OnDestroy {
   }
 
   onSearchChanged(searchString: string) {
-    this.criteria = {
-      ...this.criteria,
-      search: searchString
-    };
     this.searchTextChanged.next(searchString);
   }
 
