@@ -757,14 +757,6 @@ class ProductServiceImplTest extends BaseSetup {
   }
 
   @Test
-  void testValidateProductExists() {
-    String productId = "testProductId";
-    when(productRepo.findById(anyString())).thenReturn(Optional.empty());
-
-    assertThrows(NotFoundException.class, () -> productService.validateProductExists(productId));
-  }
-
-  @Test
   void testGetGitHubReleaseModelByProductIdAndReleaseId() throws IOException {
     String mockProductId = "testProductId";
     String mockRepositoryName = "axonivy-market/portal";
@@ -772,8 +764,7 @@ class ProductServiceImplTest extends BaseSetup {
     Product mockProduct = new Product();
     mockProduct.setId(mockProductId);
     mockProduct.setRepositoryName(mockRepositoryName);
-    when(productRepo.findById(mockProductId)).thenReturn(Optional.of(mockProduct));
-    when(productService.findProductById(mockProductId)).thenReturn(mockProduct);
+    when(productRepo.findProductById(mockProductId)).thenReturn(mockProduct);
     when(gitHubService.getGitHubReleaseModelByProductIdAndReleaseId(mockProduct, mockReleaseId))
         .thenReturn(new GithubReleaseModel());
 
@@ -793,8 +784,7 @@ class ProductServiceImplTest extends BaseSetup {
     mockProduct.setId(mockProductId);
     mockProduct.setRepositoryName(mockRepositoryName);
 
-    when(productRepo.findById(mockProductId)).thenReturn(Optional.of(mockProduct));
-    when(productService.findProductById(mockProductId)).thenReturn(mockProduct);
+    when(productRepo.findProductById(mockProductId)).thenReturn(mockProduct);
 
     PagedIterable<GHRelease> mockGhReleasePagedIterable = mock(PagedIterable.class);
 

@@ -807,8 +807,7 @@ public class ProductServiceImpl implements ProductService {
 
   @Override
   public Page<GithubReleaseModel> getGitHubReleaseModels(String productId, Pageable pageable) throws IOException {
-    validateProductExists(productId);
-    Product product = this.findProductById(productId);
+    Product product = productRepo.findProductById(productId);
 
     PagedIterable<GHRelease> ghReleasePagedIterable =  this.gitHubService.getRepository(product.getRepositoryName()).listReleases();
     List<Long> ghReleaseIds = ghReleasePagedIterable.toList().stream().map(GHObject::getId).toList();
@@ -818,15 +817,8 @@ public class ProductServiceImpl implements ProductService {
 
   @Override
   public GithubReleaseModel getGitHubReleaseModelByProductIdAndReleaseId(String productId, Long releaseId) throws IOException {
-    validateProductExists(productId);
-    Product product = this.findProductById(productId);
+    Product product = productRepo.findProductById(productId);
 
     return this.gitHubService.getGitHubReleaseModelByProductIdAndReleaseId(product, releaseId);
-  }
-
-  public void validateProductExists(String productId) throws NotFoundException {
-    if (productRepo.findById(productId).isEmpty()) {
-      throw new NotFoundException(ErrorCode.PRODUCT_NOT_FOUND, "Not found product with id: " + productId);
-    }
   }
 }
