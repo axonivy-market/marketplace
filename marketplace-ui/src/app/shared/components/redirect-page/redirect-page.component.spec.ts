@@ -25,7 +25,8 @@ describe('ExternalDocumentComponent', () => {
           if (key === ROUTER.VERSION) return '10.0';
           return null;
         }
-      }
+      },
+      fragment: 'portal'
     }
   };
 
