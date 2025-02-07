@@ -98,6 +98,8 @@ const GITHUB_BASE_URL = 'https://github.com/';
   styleUrl: './product-detail.component.scss'
 })
 export class ProductDetailComponent {
+  private GITHUB_PULL_REQUEST_NUMBER_REGEX: RegExp = (/pull\/(\d+)/);
+
   themeService = inject(ThemeService);
   route = inject(ActivatedRoute);
   router = inject(Router);
@@ -176,7 +178,7 @@ export class ProductDetailComponent {
         userFeedback: this.productFeedbackService.findProductFeedbackOfUser(),
         changelogs: this.productService.getProductChangelogs(productId),
       }).subscribe(res => {
-        this.md.use(this.linkifyPullRequests, res.productDetail.sourceUrl)
+        this.md.use(this.linkifyPullRequests, res.productDetail.sourceUrl, this.GITHUB_PULL_REQUEST_NUMBER_REGEX)
           .set({
             typographer: true,
             linkify: true,
@@ -495,7 +497,7 @@ export class ProductDetailComponent {
   }
 
 
-  linkifyPullRequests(md: MarkdownIt, sourceUrl: string) {
+  linkifyPullRequests(md: MarkdownIt, sourceUrl: string, prNumberRegex: RegExp) {
     md.renderer.rules.text = (tokens, idx) => {
       const content = tokens[idx].content;
       const linkify = new LinkifyIt();
@@ -514,7 +516,7 @@ export class ProductDetailComponent {
           return;
         }
         if (url.startsWith(sourceUrl)) {
-          const pullNumberMatch = url.match(/pull\/(\d+)/);
+          const pullNumberMatch = prNumberRegex.exec(url);
           let pullNumber = null;
 
           if (pullNumberMatch) {
