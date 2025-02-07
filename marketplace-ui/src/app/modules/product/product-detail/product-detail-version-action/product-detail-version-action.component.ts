@@ -15,7 +15,7 @@ import {
   WritableSignal
 } from '@angular/core';
 import { ThemeService } from '../../../../core/services/theme/theme.service';
-import { TranslateModule, TranslateService } from '@ngx-translate/core';
+import { TranslateModule } from '@ngx-translate/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ProductService } from '../../product.service';
@@ -38,10 +38,8 @@ import { MATOMO_TRACKING_ENVIRONMENT } from '../../../../shared/constants/matomo
 import { MATOMO_DIRECTIVES } from 'ngx-matomo-client';
 import { LoadingComponentId } from '../../../../shared/enums/loading-component-id';
 import { LoadingService } from '../../../../core/services/loading/loading.service';
-import { forkJoin } from 'rxjs';
 
 const showDevVersionCookieName = 'showDevVersions';
-const APP_ARTIFACT_REGEX = /^.*?-app-(\d+(\.\d+)+)\.zip$/;
 
 @Component({
   selector: 'app-product-version-action',
@@ -91,7 +89,6 @@ export class ProductDetailVersionActionComponent implements AfterViewInit {
   selectedArtifactName: string | undefined = '';
   versionMap: Map<string, ItemDropdown[]> = new Map();
 
-  translateService = inject(TranslateService);
   loadingService = inject(LoadingService);
   themeService = inject(ThemeService);
   productService = inject(ProductService);
@@ -106,10 +103,6 @@ export class ProductDetailVersionActionComponent implements AfterViewInit {
   isDevVersionsDisplayed: WritableSignal<boolean> = signal(
     this.getShowDevVersionFromCookie()
   );
-  
-  hasAppArtifacts = signal(false);
-  downloadArtifactHints = signal('');
-  appArtifacts!: String[];
 
   ngAfterViewInit() {
     const tooltipTriggerList = [].slice.call(
@@ -142,48 +135,11 @@ export class ProductDetailVersionActionComponent implements AfterViewInit {
         artifact.label = artifact.name;
       }
     });
-    if (this.isAppArtifactAvailable()) {
-      this.updateDownloadHints();
-    }
     if (this.artifacts().length !== 0) {
       this.selectedArtifactName = this.artifacts()[0].name ?? '';
       this.selectedArtifact = this.artifacts()[0].downloadUrl ?? '';
     }
     this.addVersionParamToRoute(version);
-  }
-
-  private isAppArtifactAvailable() : boolean {
-    // Reset value before looping the artifacts
-    this.hasAppArtifacts.set(false);
-    this.appArtifacts = [];
-    let foundAppArtifact = false;
-    this.artifacts().forEach(artifact => {
-      const match = artifact.downloadUrl?.match(APP_ARTIFACT_REGEX);
-      if (match) {
-        foundAppArtifact = true;
-        if (artifact.name) {
-          this.appArtifacts.push(artifact.name);
-        }
-      }
-    });
-    this.hasAppArtifacts.set(foundAppArtifact);
-    return foundAppArtifact;
-  }
-
-  updateDownloadHints() {
-    forkJoin({
-      orTranslation: this.translateService.get('common.labels.or'),
-      artifactHintTranslation: this.translateService.get('common.product.detail.download.appArtifactHint'),
-    }).subscribe({
-      next: ({ orTranslation, artifactHintTranslation }) => {
-        const artifactNames = this.appArtifacts.join(orTranslation);
-        const downloadHint = `${artifactNames} ${artifactHintTranslation}`;
-        this.downloadArtifactHints.set(downloadHint);
-      },
-      error: (err) => {
-        console.error('Error fetching translations', err);
-      },
-    });
   }
 
   addVersionParamToRoute(selectedVersion: string) {
@@ -285,8 +241,6 @@ export class ProductDetailVersionActionComponent implements AfterViewInit {
     this.versions.set([]);
     this.artifacts.set([]);
     this.selectedArtifact = '';
-    this.hasAppArtifacts.set(false);
-    this.downloadArtifactHints.set('');
   }
 
   downloadArtifact(): void {
