@@ -61,9 +61,18 @@ export class RedirectPageComponent implements OnInit {
       this.router.navigate([ERROR_PAGE_PATH]);
     }
     const relativeUrl = response.relativeLink;
+    const currentHash = window.location.hash;
     const isSameUrl = currentUrl === relativeUrl || currentUrl + INDEX_FILE === relativeUrl;
     if (!isSameUrl) {
-      window.location.href = relativeUrl;
+      let link = relativeUrl;
+      if (!relativeUrl.includes('#')) {
+        window.location.href = relativeUrl + currentHash;
+      }
+      this.redirectToLink(link);
     }
+  }
+
+  redirectToLink(link: string): void {
+    window.location.href = link;
   }
 }

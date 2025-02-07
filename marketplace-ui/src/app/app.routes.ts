@@ -39,6 +39,10 @@ export const routes: Routes = [
     component: RedirectPageComponent
   },
   {
+    path: ':id/:version/doc/index.html',
+    component: RedirectPageComponent
+  },
+  {
     path: ':id/:version/lib/:artifact',
     component: RedirectPageComponent
   },
