@@ -98,7 +98,7 @@ const GITHUB_BASE_URL = 'https://github.com/';
   styleUrl: './product-detail.component.scss'
 })
 export class ProductDetailComponent {
-  private GITHUB_PULL_REQUEST_NUMBER_REGEX: RegExp = (/pull\/(\d+)/);
+  githubPullRequestNumberRegex: RegExp = (/pull\/(\d+)/);
 
   themeService = inject(ThemeService);
   route = inject(ActivatedRoute);
@@ -178,7 +178,7 @@ export class ProductDetailComponent {
         userFeedback: this.productFeedbackService.findProductFeedbackOfUser(),
         changelogs: this.productService.getProductChangelogs(productId),
       }).subscribe(res => {
-        this.md.use(this.linkifyPullRequests, res.productDetail.sourceUrl, this.GITHUB_PULL_REQUEST_NUMBER_REGEX)
+        this.md.use(this.linkifyPullRequests, res.productDetail.sourceUrl, this.githubPullRequestNumberRegex)
           .set({
             typographer: true,
             linkify: true,
@@ -509,7 +509,7 @@ export class ProductDetailComponent {
 
       let result = content;
 
-      matches.reverse().forEach(match => {
+      matches.forEach(match => {
         const url = match.url;
 
         if (url.startsWith(`${sourceUrl}/compare/`)) {
