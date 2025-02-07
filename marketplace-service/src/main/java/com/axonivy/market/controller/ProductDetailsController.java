@@ -152,14 +152,16 @@ public class ProductDetailsController {
           required = true),
       @Parameter(name = "size", description = "Number of items per page", in = ParameterIn.QUERY, example = "20",
           required = true)})
-  public ResponseEntity<PagedModel<GithubReleaseModel>> findGithubPublicReleases(
+  public ResponseEntity<PagedModel<?>> findGithubPublicReleases(
       @PathVariable(ID) @Parameter(description = "Product id", example = "portal",
           in = ParameterIn.PATH) String productId,
       @ParameterObject Pageable pageable) throws IOException {
     Page<GithubReleaseModel> results = productService.getGitHubReleaseModels(productId, pageable);
 
     if (results.isEmpty()) {
-      return generateReleasesEmptyPagedModel();
+      var emptyPagedModel = pagedResourcesAssembler.toEmptyModel(Page.empty(),
+          GithubReleaseModel.class);
+      return new ResponseEntity<>(emptyPagedModel, HttpStatus.OK);
     }
     var responseContent = new PageImpl<>(results.getContent(), pageable, results.getTotalElements());
     var pageResources = pagedResourcesAssembler.toModel(responseContent, githubReleaseModelAssembler);
@@ -176,12 +178,5 @@ public class ProductDetailsController {
           in = ParameterIn.PATH) Long releaseId) throws IOException {
     GithubReleaseModel githubReleaseModel = productService.getGitHubReleaseModelByProductIdAndReleaseId(productId, releaseId);
     return ResponseEntity.ok(githubReleaseModelAssembler.toModel(githubReleaseModel));
-  }
-
-  @SuppressWarnings("unchecked")
-  private ResponseEntity<PagedModel<GithubReleaseModel>> generateReleasesEmptyPagedModel() {
-    var emptyPagedModel = (PagedModel<GithubReleaseModel>) pagedResourcesAssembler.toEmptyModel(Page.empty(),
-        GithubReleaseModel.class);
-    return new ResponseEntity<>(emptyPagedModel, HttpStatus.OK);
   }
 }
