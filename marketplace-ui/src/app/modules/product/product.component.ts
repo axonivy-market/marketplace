@@ -108,9 +108,11 @@ export class ProductComponent implements AfterViewInit, OnDestroy {
           };
           this.loadProductItems(true);
 
-          const queryParams = value
-            ? { search: this.criteria.search }
-            : { search: null };
+          let queryParams: { search: string | null } = { search: null };
+
+          if (value) {
+            queryParams = { search: this.criteria.search };
+          }
 
           this.router.navigate([], {
             relativeTo: this.route,
@@ -145,9 +147,12 @@ export class ProductComponent implements AfterViewInit, OnDestroy {
       type: selectedType.value
     };
     this.loadProductItems(true);
-    const queryParams = selectedType.value !== TypeOption.All_TYPES
-      ? { type: this.criteria.type }
-      : { type: null };
+
+    let queryParams: { type: TypeOption | null } = { type: null };
+
+    if (selectedType.value !== TypeOption.All_TYPES) {
+      queryParams = { type: this.criteria.type }
+    }
 
     this.router.navigate([], {
       relativeTo: this.route,

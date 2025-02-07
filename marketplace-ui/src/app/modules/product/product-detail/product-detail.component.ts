@@ -480,7 +480,7 @@ export class ProductDetailComponent {
   }
 
   renderChangelogContent(releases: ProductRelease[]): ProductReleaseSafeHtml[] {
-    return releases.map((release) => {
+    return releases.map(release => {
       return {
         name: release.name,
         body: this.bypassSecurityTrustHtml(release.body),
