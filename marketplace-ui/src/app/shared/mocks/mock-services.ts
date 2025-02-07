@@ -6,7 +6,9 @@ import {
   MOCK_PRODUCTS_FILTER_CONNECTOR,
   MOCK_PRODUCTS_NEXT_PAGE,
   MOCK_PRODUCT_DETAIL,
-  MOCK_CRON_JOB_PRODUCT_DETAIL
+  MOCK_CRON_JOB_PRODUCT_DETAIL,
+  MOCK_PRODUCT_RELEASES,
+  MOCK_PRODUCT_RELEASES_2
 } from './mock-data';
 import { ProductApiResponse } from '../models/apis/product-response.model';
 import { ProductDetail } from '../models/product-detail.model';
@@ -38,5 +40,9 @@ export class MockProductService {
     version: string
   ): Observable<ProductDetail> {
     return of(MOCK_CRON_JOB_PRODUCT_DETAIL);
+  }
+
+  getProductChangelogs(productId: string) {
+    return of(MOCK_PRODUCT_RELEASES_2);
   }
 }
