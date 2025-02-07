@@ -530,6 +530,8 @@ export class ProductDetailComponent {
 
           const mention = `@${username}`;
           result = result.replace(url, mention);
+        } else {
+          return;
         }
       });
 
