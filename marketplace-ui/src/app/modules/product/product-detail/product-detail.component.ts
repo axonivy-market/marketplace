@@ -321,7 +321,7 @@ export class ProductDetailComponent {
           this.languageService.selectedLanguage()
         ),
       dependency: content.isDependency,
-      changelog: this.productReleaseSafeHtmls != null && this.productReleaseSafeHtmls.length != 0,
+      changelog: this.productReleaseSafeHtmls != null && this.productReleaseSafeHtmls.length !== 0,
     };
 
     return conditions[value] ?? false;
