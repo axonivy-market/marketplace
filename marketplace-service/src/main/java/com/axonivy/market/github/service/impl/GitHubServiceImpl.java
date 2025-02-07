@@ -358,10 +358,6 @@ public class GitHubServiceImpl implements GitHubService {
     List<GithubReleaseModel> githubReleaseModels = new ArrayList<>();
     List<GHRelease> ghReleases = ghReleasePagedIterable.toList().stream().filter(ghRelease -> !ghRelease.isDraft()).toList();
 
-//    for (int i = 0; i < ghReleases.size(); i++) {
-//      githubReleaseModels.add(this.toGitHubReleaseModel(ghReleases.get(i), product, ghReleaseIds.get(i)));
-//    }
-
     for (GHRelease ghRelease : ghReleases) {
       githubReleaseModels.add(this.toGitHubReleaseModel(ghRelease, product));
     }
