@@ -64,4 +64,12 @@ describe('ExternalDocumentComponent', () => {
     expect(httpClient.get).toHaveBeenCalledWith(`${API_URI.EXTERNAL_DOCUMENT}/portal/10.0`);
     expect(window.location.href).toBe(currentUrl);
   });
+
+  it('should redirect to the correct relative URL including the fragment', () => {
+    const mockResponse = { ...MOCK_EXTERNAL_DOCUMENT };
+
+    httpClient.get.and.returnValue(of(mockResponse));
+    component.ngOnInit();
+    expect(httpClient.get).toHaveBeenCalledWith(`${API_URI.EXTERNAL_DOCUMENT}/portal/10.0`);
+  });
 });
