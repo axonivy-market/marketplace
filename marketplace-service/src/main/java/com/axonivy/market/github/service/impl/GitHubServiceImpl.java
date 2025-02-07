@@ -2,7 +2,6 @@ package com.axonivy.market.github.service.impl;
 
 import com.axonivy.market.constants.ErrorMessageConstants;
 import com.axonivy.market.constants.GitHubConstants;
-import com.axonivy.market.controller.ProductDetailsController;
 import com.axonivy.market.entity.Product;
 import com.axonivy.market.entity.User;
 
@@ -18,6 +17,7 @@ import com.axonivy.market.github.model.GitHubProperty;
 import com.axonivy.market.github.model.SecretScanning;
 import com.axonivy.market.github.service.GitHubService;
 import com.axonivy.market.github.model.ProductSecurityInfo;
+import com.axonivy.market.github.util.GitHubUtils;
 import com.axonivy.market.model.GithubReleaseModel;
 import com.axonivy.market.repository.UserRepository;
 import lombok.extern.log4j.Log4j2;
@@ -26,12 +26,6 @@ import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
-
-import org.springframework.hateoas.Link;
-
-import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
-
-import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
@@ -360,37 +354,36 @@ public class GitHubServiceImpl implements GitHubService {
   @Override
   public Page<GithubReleaseModel> getGitHubReleaseModels(Product product,
       PagedIterable<GHRelease> ghReleasePagedIterable,
-      Pageable pageable, List<Long> ghReleaseIds) throws IOException {
+      Pageable pageable) throws IOException {
     List<GithubReleaseModel> githubReleaseModels = new ArrayList<>();
     List<GHRelease> ghReleases = ghReleasePagedIterable.toList().stream().filter(ghRelease -> !ghRelease.isDraft()).toList();
 
-    for (int i = 0; i < ghReleases.size(); i++) {
-      githubReleaseModels.add(this.toGitHubReleaseModel(ghReleases.get(i), product, ghReleaseIds.get(i)));
+//    for (int i = 0; i < ghReleases.size(); i++) {
+//      githubReleaseModels.add(this.toGitHubReleaseModel(ghReleases.get(i), product, ghReleaseIds.get(i)));
+//    }
+
+    for (GHRelease ghRelease : ghReleases) {
+      githubReleaseModels.add(this.toGitHubReleaseModel(ghRelease, product));
     }
 
     return new PageImpl<>(githubReleaseModels, pageable, githubReleaseModels.size());
   }
   
-  public GithubReleaseModel toGitHubReleaseModel(GHRelease ghRelease, Product product, Long releaseId) throws IOException {
+  public GithubReleaseModel toGitHubReleaseModel(GHRelease ghRelease, Product product) throws IOException {
     GithubReleaseModel githubReleaseModel = new GithubReleaseModel();
     String modifiedBody = transformGithubReleaseBody(ghRelease.getBody(), product.getSourceUrl());
     githubReleaseModel.setBody(modifiedBody);
     githubReleaseModel.setName(ghRelease.getName());
     githubReleaseModel.setPublishedAt(ghRelease.getPublished_at());
-    githubReleaseModel.add(this.createSelfLinkForGithubReleaseModel(product, releaseId));
+    githubReleaseModel.add(GitHubUtils.createSelfLinkForGithubReleaseModel(product, ghRelease));
 
     return githubReleaseModel;
-  }
-
-  private Link createSelfLinkForGithubReleaseModel(Product product, Long releaseId) throws IOException {
-    return linkTo(methodOn(ProductDetailsController.class).findGithubPublicReleaseByProductIdAndReleaseId(product.getId(),
-        releaseId)).withSelfRel();
   }
 
   @Override
   public GithubReleaseModel getGitHubReleaseModelByProductIdAndReleaseId(Product product, Long releaseId) throws IOException {
     GHRelease ghRelease = this.getRepository(product.getRepositoryName()).getRelease(releaseId);
-    return this.toGitHubReleaseModel(ghRelease, product, releaseId);
+    return this.toGitHubReleaseModel(ghRelease, product);
   }
 
   public String transformGithubReleaseBody(String githubReleaseBody, String productSourceUrl) {

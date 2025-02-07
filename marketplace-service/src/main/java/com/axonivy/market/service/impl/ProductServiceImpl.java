@@ -12,12 +12,10 @@ import com.axonivy.market.entity.Product;
 import com.axonivy.market.entity.ProductCustomSort;
 import com.axonivy.market.entity.ProductJsonContent;
 import com.axonivy.market.entity.ProductModuleContent;
-import com.axonivy.market.enums.ErrorCode;
 import com.axonivy.market.enums.FileType;
 import com.axonivy.market.enums.Language;
 import com.axonivy.market.enums.SortOption;
 import com.axonivy.market.enums.TypeOption;
-import com.axonivy.market.exceptions.model.NotFoundException;
 import com.axonivy.market.factory.ProductFactory;
 import com.axonivy.market.github.model.GitHubFile;
 import com.axonivy.market.github.service.GHAxonIvyMarketRepoService;
@@ -44,7 +42,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.util.Strings;
 import org.kohsuke.github.GHCommit;
 import org.kohsuke.github.GHContent;
-import org.kohsuke.github.GHObject;
 import org.kohsuke.github.GHRelease;
 import org.kohsuke.github.GHRepository;
 import org.kohsuke.github.GHTag;
@@ -803,11 +800,10 @@ public class ProductServiceImpl implements ProductService {
   @Override
   public Page<GithubReleaseModel> getGitHubReleaseModels(String productId, Pageable pageable) throws IOException {
     Product product = productRepo.findProductById(productId);
-
     PagedIterable<GHRelease> ghReleasePagedIterable =  this.gitHubService.getRepository(product.getRepositoryName()).listReleases();
-    List<Long> ghReleaseIds = ghReleasePagedIterable.toList().stream().map(GHObject::getId).toList();
+//    List<Long> ghReleaseIds = ghReleasePagedIterable.toList().stream().map(GHObject::getId).toList();
 
-    return this.gitHubService.getGitHubReleaseModels(product, ghReleasePagedIterable, pageable, ghReleaseIds);
+    return this.gitHubService.getGitHubReleaseModels(product, ghReleasePagedIterable, pageable);
   }
 
   @Override

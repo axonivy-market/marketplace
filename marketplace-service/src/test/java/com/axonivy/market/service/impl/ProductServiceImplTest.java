@@ -15,7 +15,6 @@ import com.axonivy.market.enums.FileType;
 import com.axonivy.market.enums.Language;
 import com.axonivy.market.enums.SortOption;
 import com.axonivy.market.enums.TypeOption;
-import com.axonivy.market.exceptions.model.NotFoundException;
 import com.axonivy.market.github.model.GitHubFile;
 import com.axonivy.market.github.service.GHAxonIvyMarketRepoService;
 import com.axonivy.market.github.service.GHAxonIvyProductRepoService;
@@ -790,12 +789,12 @@ class ProductServiceImplTest extends BaseSetup {
 
     when(gitHubService.getRepository(anyString())).thenReturn(mockRepository);
     when(gitHubService.getRepository(anyString()).listReleases()).thenReturn(mockGhReleasePagedIterable);
-    when(gitHubService.getGitHubReleaseModels(any(Product.class), any(PagedIterable.class), any(Pageable.class), anyList()))
+    when(gitHubService.getGitHubReleaseModels(any(Product.class), any(PagedIterable.class), any(Pageable.class)))
         .thenReturn(Page.empty());
 
     Page<GithubReleaseModel> result = productService.getGitHubReleaseModels(mockProductId, mockPageable);
 
     assertNotNull(result);
-    verify(gitHubService).getGitHubReleaseModels(any(Product.class), any(PagedIterable.class), any(Pageable.class), anyList());
+    verify(gitHubService).getGitHubReleaseModels(any(Product.class), any(PagedIterable.class), any(Pageable.class));
   }
 }

@@ -2,6 +2,8 @@ package com.axonivy.market.github.util;
 
 import com.axonivy.market.bo.Artifact;
 import com.axonivy.market.constants.CommonConstants;
+import com.axonivy.market.controller.ProductDetailsController;
+import com.axonivy.market.entity.Product;
 import com.axonivy.market.util.MavenUtils;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
@@ -9,6 +11,7 @@ import lombok.extern.log4j.Log4j2;
 import org.apache.commons.lang3.StringUtils;
 import org.kohsuke.github.GHCommit;
 import org.kohsuke.github.GHContent;
+import org.kohsuke.github.GHRelease;
 import org.kohsuke.github.PagedIterable;
 
 import java.io.IOException;
@@ -20,6 +23,11 @@ import java.util.Objects;
 import java.util.stream.Collectors;
 
 import static com.axonivy.market.constants.MetaConstants.META_FILE;
+
+import org.springframework.hateoas.Link;
+
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 
 @Log4j2
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
@@ -108,5 +116,10 @@ public class GitHubUtils {
       log.warn("Can not read the current content: {}", e.getMessage());
       return null;
     }
+  }
+
+  public static Link createSelfLinkForGithubReleaseModel(Product product, GHRelease ghRelease) throws IOException {
+    return linkTo(methodOn(ProductDetailsController.class).findGithubPublicReleaseByProductIdAndReleaseId(product.getId(),
+        ghRelease.getId())).withSelfRel();
   }
 }
