@@ -467,6 +467,10 @@ export class ProductDetailComponent {
   }
 
   renderGithubAlert(value: string): SafeHtml {
+    console.log("Render github alert here");
+    console.log("Test comment");
+    
+    
     const md = MarkdownIt();
     md.use(MarkdownItGitHubAlerts);
     md.use(full); // Add emoji support
