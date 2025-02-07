@@ -1,6 +1,5 @@
 package com.axonivy.market.assembler;
 
-import com.axonivy.market.entity.Product;
 import com.axonivy.market.model.GithubReleaseModel;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -10,10 +9,9 @@ import org.mockito.InjectMocks;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.Date;
-import java.util.List;
 
 @ExtendWith(MockitoExtension.class)
-public class GithubReleaseModelAssemblerTest {
+class GithubReleaseModelAssemblerTest {
   @InjectMocks
   private GithubReleaseModelAssembler githubReleaseModelAssembler;
 
