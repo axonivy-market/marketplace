@@ -25,8 +25,7 @@ describe('ExternalDocumentComponent', () => {
           if (key === ROUTER.VERSION) return '10.0';
           return null;
         }
-      },
-      fragment: 'portal'
+      }
     }
   };
 
@@ -66,8 +65,18 @@ describe('ExternalDocumentComponent', () => {
   });
 
   it('should redirect to the correct relative URL including the fragment', () => {
+    const currentUrl = window.location.href;
     const mockResponse = { ...MOCK_EXTERNAL_DOCUMENT };
+    mockResponse.relativeLink = currentUrl;
+    Object.defineProperty(window.location.constructor.prototype, 'href', {
+      value: '/portal/10.0/doc/index.html#portal',
+      configurable: true,
+    });
 
+    Object.defineProperty(window.location.constructor.prototype, 'hash', {
+      value: '#portal',
+      configurable: true,
+    });
     httpClient.get.and.returnValue(of(mockResponse));
     component.ngOnInit();
     expect(httpClient.get).toHaveBeenCalledWith(`${API_URI.EXTERNAL_DOCUMENT}/portal/10.0`);
