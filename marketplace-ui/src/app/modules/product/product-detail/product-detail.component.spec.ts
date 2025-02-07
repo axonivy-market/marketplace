@@ -54,7 +54,6 @@ describe('ProductDetailComponent', () => {
   let mockProductStarRatingService: jasmine.SpyObj<ProductStarRatingService>;
   let mockAuthService: jasmine.SpyObj<AuthService>;
   let mockAppModalService: jasmine.SpyObj<AppModalService>;
-  let mockProductService: jasmine.SpyObj<ProductService>;
 
   beforeEach(async () => {
     const spy = jasmine.createSpyObj('DomSanitizer', [
@@ -882,7 +881,7 @@ describe('ProductDetailComponent', () => {
   it('should replace GitHub URLs with appropriate links in linkifyPullRequests', () => {
     const md = new MarkdownIt();
     const sourceUrl = 'https://github.com/source-repo';
-    component.linkifyPullRequests(md, sourceUrl);
+    component.linkifyPullRequests(md, sourceUrl, component.githubPullRequestNumberRegex);
 
     const inputText = 'Check out this PR: https://github.com/source-repo/pull/123';
     const expectedOutput = 'Check out this PR: #123';
@@ -894,7 +893,7 @@ describe('ProductDetailComponent', () => {
   it('should keep GitHub URLs if they contain compare string in linkifyPullRequests', () => {
     const md = new MarkdownIt();
     const sourceUrl = 'https://github.com/source-repo';
-    component.linkifyPullRequests(md, sourceUrl);
+    component.linkifyPullRequests(md, sourceUrl, component.githubPullRequestNumberRegex);
 
     const inputText = 'Check out this PR: https://github.com/source-repo/compare/123';
     const expectedOutput = 'Check out this PR: https://github.com/source-repo/compare/123';
