@@ -109,7 +109,7 @@ export class ProductDetailVersionActionComponent implements AfterViewInit {
   
   hasAppArtifacts = signal(false);
   downloadArtifactHints = signal('');
-  appArtifacts!: String[];
+  appArtifacts!: string[];
 
   ngAfterViewInit() {
     const tooltipTriggerList = [].slice.call(
@@ -180,7 +180,7 @@ export class ProductDetailVersionActionComponent implements AfterViewInit {
         const downloadHint = `${artifactNames} ${artifactHintTranslation}`;
         this.downloadArtifactHints.set(downloadHint);
       },
-      error: (err) => {
+      error: err => {
         console.error('Error fetching translations', err);
       },
     });
