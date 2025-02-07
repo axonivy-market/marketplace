@@ -60,10 +60,12 @@ export class RedirectPageComponent implements OnInit {
     if (response === null || response.relativeLink === '') {
       this.router.navigate([ERROR_PAGE_PATH]);
     }
-    const relativeUrl = response.relativeLink + window.location.hash;
+    const relativeUrl = response.relativeLink;
+    const currentHash = window.location.hash;
     const isSameUrl = currentUrl === relativeUrl || currentUrl + INDEX_FILE === relativeUrl;
     if (!isSameUrl) {
       window.location.href = relativeUrl;
+      window.location.hash = currentHash;
     }
   }
 }
