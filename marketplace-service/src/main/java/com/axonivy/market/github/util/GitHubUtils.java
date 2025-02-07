@@ -119,7 +119,8 @@ public class GitHubUtils {
   }
 
   public static Link createSelfLinkForGithubReleaseModel(Product product, GHRelease ghRelease) throws IOException {
-    return linkTo(methodOn(ProductDetailsController.class).findGithubPublicReleaseByProductIdAndReleaseId(product.getId(),
-        ghRelease.getId())).withSelfRel();
+    return linkTo(
+        methodOn(ProductDetailsController.class).findGithubPublicReleaseByProductIdAndReleaseId(product.getId(),
+            ghRelease.getId())).withSelfRel();
   }
 }
