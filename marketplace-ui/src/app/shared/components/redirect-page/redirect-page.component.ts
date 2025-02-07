@@ -64,7 +64,12 @@ export class RedirectPageComponent implements OnInit {
     const currentHash = window.location.hash;
     const isSameUrl = currentUrl === relativeUrl || currentUrl + INDEX_FILE === relativeUrl;
     if (!isSameUrl) {
-      window.location.href = relativeUrl.includes('#') ? relativeUrl : relativeUrl + currentHash;
+      if (relativeUrl.includes('#')) {
+        window.location.href = relativeUrl;
+      }
+      else {
+        window.location.href = relativeUrl + currentHash;
+      }
     }
   }
 }
