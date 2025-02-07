@@ -98,7 +98,7 @@ const GITHUB_BASE_URL = 'https://github.com/';
   styleUrl: './product-detail.component.scss'
 })
 export class ProductDetailComponent {
-  githubPullRequestNumberRegex: RegExp = (/pull\/(\d+)/);
+  githubPullRequestNumberRegex = (/pull\/(\d+)/);
 
   themeService = inject(ThemeService);
   route = inject(ActivatedRoute);
