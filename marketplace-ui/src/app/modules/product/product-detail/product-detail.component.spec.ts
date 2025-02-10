@@ -867,6 +867,53 @@ describe('ProductDetailComponent', () => {
     expect(result).toBe(mockedRenderedHtml);
   });
 
+  it('should return README content when not loaded yet', () => {
+    const value = '**This is a content**';
+    const mockedRenderedHtml = '<strong>This is a content</strong>';
+
+    spyOn(component, 'renderGithubAlert').and.returnValue(mockedRenderedHtml);
+
+    const result = component.getProcessedGithubAlert(value);
+
+    expect(component.renderGithubAlert).toHaveBeenCalledWith(value);
+    expect(component.loadedReadmeContent[value]).toBe(mockedRenderedHtml);
+    expect(result).toBe(mockedRenderedHtml);
+  });
+
+  it('should return loaded README content when it is already processed', () => {
+    const value = '**This is a loaded content**';
+    const loadedHtml = '<strong>This is a loaded content</strong>';
+
+    component.loadedReadmeContent[value] = loadedHtml;
+
+    spyOn(component, 'renderGithubAlert');
+
+    const result = component.getProcessedGithubAlert(value);
+
+    expect(component.renderGithubAlert).not.toHaveBeenCalled();
+    expect(result).toBe(loadedHtml);
+  });
+
+  it('should process and cache multiple different README content values', () => {
+    const value1 = '**First**';
+    const value2 = '**Second**';
+    const renderedHtml1 = '<strong>This is a content 1</strong>';
+    const renderedHtml2 = '<strong>This is a content 2</strong>';
+
+    spyOn(component, 'renderGithubAlert').and.callFake((value: string) => {
+      return value === value1 ? renderedHtml1 : renderedHtml2;
+    });
+
+    const result1 = component.getProcessedGithubAlert(value1);
+    const result2 = component.getProcessedGithubAlert(value2);
+
+    expect(component.renderGithubAlert).toHaveBeenCalledTimes(2);
+    expect(component.loadedReadmeContent[value1]).toBe(renderedHtml1);
+    expect(component.loadedReadmeContent[value2]).toBe(renderedHtml2);
+    expect(result1).toBe(renderedHtml1);
+    expect(result2).toBe(renderedHtml2);
+  });
+
   it('should close the dropdown when clicking outside', () => {
     component.isDropdownOpen.set(true);
     fixture.detectChanges();

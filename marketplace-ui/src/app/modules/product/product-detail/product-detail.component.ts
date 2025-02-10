@@ -139,6 +139,7 @@ export class ProductDetailComponent {
   logoUrl = DEFAULT_IMAGE_URL;
   md: MarkdownIt = new MarkdownIt();
   productReleaseSafeHtmls: ProductReleaseSafeHtml[] = [];
+  loadedReadmeContent: { [key: string]: SafeHtml } = {};
 
   @HostListener('window:popstate', ['$event'])
   onPopState() {
@@ -184,7 +185,7 @@ export class ProductDetailComponent {
             linkify: true,
           })
           .enable(['smartquotes', 'replacements', 'image']);
-          
+
         if (res.changelogs._embedded.githubReleaseModelList !== null && res.changelogs._embedded.githubReleaseModelList.length !== 0) {
           this.productReleaseSafeHtmls = this.renderChangelogContent(res.changelogs._embedded.githubReleaseModelList);
         }
@@ -449,7 +450,7 @@ export class ProductDetailComponent {
         this.activeTab = displayedTabs[0].value;
       }
     }
-    
+
     return displayedTabs;
   }
 
@@ -472,7 +473,14 @@ export class ProductDetailComponent {
     return productDetail;
   }
 
-  renderGithubAlert(value: string): SafeHtml {    
+  getProcessedGithubAlert(value: string): SafeHtml {
+    if (!this.loadedReadmeContent[value]) {
+      this.loadedReadmeContent[value] = this.renderGithubAlert(value);
+    }
+    return this.loadedReadmeContent[value];
+  }
+
+  renderGithubAlert(value: string): SafeHtml {
     const md = MarkdownIt();
     md.use(MarkdownItGitHubAlerts);
     md.use(full); // Add emoji support
@@ -524,7 +532,7 @@ export class ProductDetailComponent {
             const start = match.index;
             const end = start + match.lastIndex - match.index;
             const link = `#${pullNumber}`;
-  
+
             result = result.slice(0, start) + link + result.slice(end);
           }
         } else if (url.startsWith(GITHUB_BASE_URL)) {
