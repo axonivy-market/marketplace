@@ -15,7 +15,7 @@ import {
   WritableSignal
 } from '@angular/core';
 import { ThemeService } from '../../../../core/services/theme/theme.service';
-import { TranslateModule, TranslateService } from '@ngx-translate/core';
+import { TranslateModule } from '@ngx-translate/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ProductService } from '../../product.service';
@@ -94,7 +94,6 @@ export class ProductDetailVersionActionComponent implements AfterViewInit {
   selectedArtifactName: string | undefined = '';
   versionMap: Map<string, ItemDropdown[]> = new Map();
 
-  translateService = inject(TranslateService);
   loadingService = inject(LoadingService);
   themeService = inject(ThemeService);
   productService = inject(ProductService);
@@ -305,16 +304,16 @@ export class ProductDetailVersionActionComponent implements AfterViewInit {
   }
 
   @HostListener('document:click', ['$event'])
-  handleClickOutside(event: MouseEvent): void {
-    const downloadDialog = this.elementRef.nativeElement.querySelector(
-      '#download-dropdown-menu'
-    );
-    if (
-      this.isDropDownDisplayed() &&
-      downloadDialog &&
-      !downloadDialog.contains(event.target)
-    ) {
-      this.isDropDownDisplayed.set(!this.isDropDownDisplayed());
+    handleClickOutside(event: MouseEvent): void {
+      const downloadDialog = this.elementRef.nativeElement.querySelector(
+        '#download-dropdown-menu'
+      );
+      if (
+        this.isDropDownDisplayed() &&
+        downloadDialog &&
+        !downloadDialog.contains(event.target)
+      ) {
+        this.isDropDownDisplayed.set(!this.isDropDownDisplayed());
+      }
     }
-  }
 }

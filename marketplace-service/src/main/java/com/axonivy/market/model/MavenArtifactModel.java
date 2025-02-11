@@ -29,6 +29,5 @@ public class MavenArtifactModel implements Serializable {
   private String downloadUrl;
   @JsonIgnore
   private boolean isInvalidArtifact;
-//  @JsonIgnore
   private String artifactId;
 }

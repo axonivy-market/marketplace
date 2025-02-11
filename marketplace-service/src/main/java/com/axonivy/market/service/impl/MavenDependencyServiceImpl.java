@@ -52,20 +52,19 @@ public class MavenDependencyServiceImpl implements MavenDependencyService {
   final FileDownloadService fileDownloadService;
 
   private static Model convertPomToModel(File pomFile) throws XmlPullParserException {
-    if (pomFile == null) {
-      return null;
-    }
-    try (var inputStream = new FileInputStream(pomFile)) {
-      return new MavenXpp3Reader().read(inputStream);
-    } catch (IOException e) {
-      log.error("Cannot read data from GHContent {}", e.getMessage());
+    if (pomFile != null) {
+      try (var inputStream = new FileInputStream(pomFile)) {
+        return new MavenXpp3Reader().read(inputStream);
+      } catch (IOException e) {
+        log.error("Cannot read data from GHContent {}", e.getMessage());
+      }
     }
     return null;
   }
 
   @Override
   public int syncIARDependenciesForProducts() {
-    List<String> syncedIds = new ArrayList<>();
+    List<String> syncedProductIds = new ArrayList<>();
     List<String> missingProductIds = getMissingProductIds();
     for (var productId : missingProductIds) {
       Optional<MavenArtifactVersion> mavenArtifactVersion = mavenArtifactVersionRepository.findById(productId);
@@ -92,9 +91,9 @@ public class MavenDependencyServiceImpl implements MavenDependencyService {
 
       dependenciesOfArtifact.entrySet().removeIf(entry -> entry.getValue().isEmpty());
       var savedItem = productDependencyRepository.save(productDependency);
-      syncedIds.add(savedItem.getProductId());
+      syncedProductIds.add(savedItem.getProductId());
     }
-    return syncedIds.size();
+    return syncedProductIds.size();
   }
 
   private void computeIARDependencies(String productId, String version, MavenArtifactModel artifact,

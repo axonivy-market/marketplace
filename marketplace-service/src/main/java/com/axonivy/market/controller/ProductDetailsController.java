@@ -172,8 +172,7 @@ public class ProductDetailsController {
           in = ParameterIn.PATH) String productId,
       @PathVariable(RELEASE_ID) @Parameter(description = "Release id", example = "67a08dd6e23661019dc92376",
           in = ParameterIn.PATH) Long releaseId) throws IOException {
-    GithubReleaseModel githubReleaseModel = productService.getGitHubReleaseModelByProductIdAndReleaseId(productId,
-        releaseId);
+    GithubReleaseModel githubReleaseModel = productService.getGitHubReleaseModelByProductIdAndReleaseId(productId, releaseId);
     return ResponseEntity.ok(githubReleaseModelAssembler.toModel(githubReleaseModel));
   }
 
@@ -203,7 +202,7 @@ public class ProductDetailsController {
           // Prepare the response
           String filename = artifactId.concat(APP_ZIP_POSTFIX);
           HttpHeaders headers = new HttpHeaders();
-          headers.add(HttpHeaders.CONTENT_DISPOSITION, ATTACHMENT.formatted(filename));
+          headers.add(HttpHeaders.CONTENT_DISPOSITION, ATTACHMENT_HEADER.formatted(filename));
           headers.add(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_OCTET_STREAM_VALUE);
 
           return ResponseEntity.ok().headers(headers).contentType(MediaType.APPLICATION_OCTET_STREAM).body(emitter);
