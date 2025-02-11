@@ -19,7 +19,6 @@ import org.mockito.Mock;
 import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.http.HttpStatus;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -103,7 +102,8 @@ class ProductContentServiceImplTest extends BaseSetup {
   void testDownloadZipArtifactFile() throws ExecutionException, InterruptedException, TimeoutException {
     Map<String, List<MavenDependency>> dependenciesOfArtifact = new HashMap<>();
     List<MavenDependency> mavenDependencies = new ArrayList<>();
-    mavenDependencies.add(MavenDependency.builder().artifactId(MOCK_DEMO_ARTIFACT_ID).downloadUrl(MOCK_DOWNLOAD_URL).version(
+    mavenDependencies.add(
+        MavenDependency.builder().artifactId(MOCK_DEMO_ARTIFACT_ID).downloadUrl(MOCK_DOWNLOAD_URL).version(
             MOCK_RELEASED_VERSION).build());
     dependenciesOfArtifact.put(MOCK_DEMO_ARTIFACT_ID, mavenDependencies);
     var productDependency = ProductDependency.builder().productId(MOCK_PRODUCT_ID).dependenciesOfArtifact(
