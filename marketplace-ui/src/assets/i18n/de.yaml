@@ -140,6 +140,7 @@ common:
         appArtifactHint2: Um alle notwendigen und verwendbaren Abhängigkeiten einzubinden, um direkt auf der Axon Ivy Engine zu deployen, aktivieren Sie bitte diese Checkbox!
       contactUs:
         label: Kontakt
+      changelog: Änderungsliste
   feedback:
     label: Rückmeldung
     successMessage: Ihr Feedback wurde erfolgreich übermittelt!

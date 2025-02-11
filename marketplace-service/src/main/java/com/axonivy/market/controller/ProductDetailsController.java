@@ -1,6 +1,8 @@
 package com.axonivy.market.controller;
 
+import com.axonivy.market.assembler.GithubReleaseModelAssembler;
 import com.axonivy.market.assembler.ProductDetailModelAssembler;
+import com.axonivy.market.model.GithubReleaseModel;
 import com.axonivy.market.model.MavenArtifactVersionModel;
 import com.axonivy.market.model.ProductDetailModel;
 import com.axonivy.market.model.VersionAndUrlModel;
@@ -13,7 +15,12 @@ import io.swagger.v3.oas.annotations.enums.ParameterIn;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.AllArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
-import org.springframework.http.HttpHeaders;
+import org.springdoc.core.annotations.ParameterObject;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PagedResourcesAssembler;
+import org.springframework.hateoas.PagedModel;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.MediaType;
@@ -25,6 +32,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseBodyEmitter;
 
+import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
@@ -42,6 +50,8 @@ public class ProductDetailsController {
   private final ProductService productService;
   private final ProductContentService productContentService;
   private final ProductDetailModelAssembler detailModelAssembler;
+  private final GithubReleaseModelAssembler githubReleaseModelAssembler;
+  private final PagedResourcesAssembler<GithubReleaseModel> pagedResourcesAssembler;
 
   @GetMapping(BY_ID_AND_VERSION)
   @Operation(summary = "Find product detail by product id and release version.",
@@ -130,6 +140,46 @@ public class ProductDetailsController {
     String downloadUrl = versionService.getLatestVersionArtifactDownloadUrl(productId, version, artifactId);
     HttpStatusCode statusCode = StringUtils.isBlank(downloadUrl) ? HttpStatus.NOT_FOUND : HttpStatus.OK;
     return new ResponseEntity<>(downloadUrl, statusCode);
+  }
+
+  @GetMapping(PRODUCT_PUBLIC_RELEASES)
+  @Operation(summary = "Find public releases by product id",
+      description = "Get all public releases product id", parameters = {
+      @Parameter(name = "page", description = "Page number to retrieve", in = ParameterIn.QUERY, example = "0",
+          required = true),
+      @Parameter(name = "size", description = "Number of items per page", in = ParameterIn.QUERY, example = "20",
+          required = true)})
+  public ResponseEntity<PagedModel<GithubReleaseModel>> findGithubPublicReleases(
+      @PathVariable(ID) @Parameter(description = "Product id", example = "portal",
+          in = ParameterIn.PATH) String productId,
+      @ParameterObject Pageable pageable) throws IOException {
+    Page<GithubReleaseModel> results = productService.getGitHubReleaseModels(productId, pageable);
+
+    if (results.isEmpty()) {
+      return generateReleasesEmptyPagedModel();
+    }
+    var responseContent = new PageImpl<>(results.getContent(), pageable, results.getTotalElements());
+    var pageResources = pagedResourcesAssembler.toModel(responseContent, githubReleaseModelAssembler);
+    return new ResponseEntity<>(pageResources, HttpStatus.OK);
+  }
+
+  @GetMapping(PRODUCT_PUBLIC_RELEASE_BY_RELEASE_ID)
+  @Operation(summary = "Find release by id",
+      description = "Get release by release id.")
+  public ResponseEntity<GithubReleaseModel> findGithubPublicReleaseByProductIdAndReleaseId(
+      @PathVariable(PRODUCT_ID) @Parameter(description = "Product id", example = "portal",
+          in = ParameterIn.PATH) String productId,
+      @PathVariable(RELEASE_ID) @Parameter(description = "Release id", example = "67a08dd6e23661019dc92376",
+          in = ParameterIn.PATH) Long releaseId) throws IOException {
+    GithubReleaseModel githubReleaseModel = productService.getGitHubReleaseModelByProductIdAndReleaseId(productId, releaseId);
+    return ResponseEntity.ok(githubReleaseModelAssembler.toModel(githubReleaseModel));
+  }
+
+  @SuppressWarnings("unchecked")
+  private ResponseEntity<PagedModel<GithubReleaseModel>> generateReleasesEmptyPagedModel() {
+    var emptyPagedModel = (PagedModel<GithubReleaseModel>) pagedResourcesAssembler.toEmptyModel(Page.empty(),
+        GithubReleaseModel.class);
+    return new ResponseEntity<>(emptyPagedModel, HttpStatus.OK);
   }
 
   @GetMapping(ARTIFACTS_AS_ZIP)

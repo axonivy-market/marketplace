@@ -19,6 +19,7 @@ import com.axonivy.market.github.model.GitHubFile;
 import com.axonivy.market.github.service.GHAxonIvyMarketRepoService;
 import com.axonivy.market.github.service.GHAxonIvyProductRepoService;
 import com.axonivy.market.github.service.GitHubService;
+import com.axonivy.market.model.GithubReleaseModel;
 import com.axonivy.market.repository.GitHubRepoMetaRepository;
 import com.axonivy.market.repository.ImageRepository;
 import com.axonivy.market.repository.MavenArtifactVersionRepository;
@@ -41,7 +42,10 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.kohsuke.github.GHCommit;
 import org.kohsuke.github.GHContent;
+import org.kohsuke.github.GHRelease;
+import org.kohsuke.github.GHRepository;
 import org.kohsuke.github.GHTag;
+import org.kohsuke.github.PagedIterable;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.InjectMocks;
@@ -749,5 +753,48 @@ class ProductServiceImplTest extends BaseSetup {
     when(ghCommit2.getCommitDate()).thenReturn(new Date());
     when(gitHubService.getRepositoryTags(SAMPLE_PRODUCT_REPOSITORY_NAME)).thenReturn(secondTags);
     assertTrue(productService.syncFirstPublishedDateOfAllProducts());
+  }
+
+  @Test
+  void testGetGitHubReleaseModelByProductIdAndReleaseId() throws IOException {
+    String mockProductId = "testProductId";
+    String mockRepositoryName = "axonivy-market/portal";
+    Long mockReleaseId = 1L;
+    Product mockProduct = new Product();
+    mockProduct.setId(mockProductId);
+    mockProduct.setRepositoryName(mockRepositoryName);
+    when(productRepo.findProductById(mockProductId)).thenReturn(mockProduct);
+    when(gitHubService.getGitHubReleaseModelByProductIdAndReleaseId(mockProduct, mockReleaseId))
+        .thenReturn(new GithubReleaseModel());
+
+    GithubReleaseModel result = productService.getGitHubReleaseModelByProductIdAndReleaseId(mockProductId, mockReleaseId);
+
+    assertNotNull(result);
+    verify(gitHubService).getGitHubReleaseModelByProductIdAndReleaseId(any(Product.class), anyLong());
+  }
+
+  @Test
+  void testGetGitHubReleaseModels() throws IOException {
+    String mockProductId = "testProductId";
+    String mockRepositoryName = "axonivy-market/portal";
+    Pageable mockPageable = mock(Pageable.class);
+    GHRepository mockRepository = mock(GHRepository.class);
+    Product mockProduct = new Product();
+    mockProduct.setId(mockProductId);
+    mockProduct.setRepositoryName(mockRepositoryName);
+
+    when(productRepo.findProductById(mockProductId)).thenReturn(mockProduct);
+
+    PagedIterable<GHRelease> mockGhReleasePagedIterable = mock(PagedIterable.class);
+
+    when(gitHubService.getRepository(anyString())).thenReturn(mockRepository);
+    when(gitHubService.getRepository(anyString()).listReleases()).thenReturn(mockGhReleasePagedIterable);
+    when(gitHubService.getGitHubReleaseModels(any(Product.class), any(PagedIterable.class), any(Pageable.class)))
+        .thenReturn(Page.empty());
+
+    Page<GithubReleaseModel> result = productService.getGitHubReleaseModels(mockProductId, mockPageable);
+
+    assertNotNull(result);
+    verify(gitHubService).getGitHubReleaseModels(any(Product.class), any(PagedIterable.class), any(Pageable.class));
   }
 }

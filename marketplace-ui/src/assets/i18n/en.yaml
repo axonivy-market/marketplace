@@ -144,6 +144,7 @@ common:
         zipAppArtifactLabel: Create a ZIP file to deploy on the Axon Ivy Engine
       contactUs:
         label: Contact us
+      changelog: Changelog
   feedback:
     label: Feedback
     successMessage: Your feedback has been successfully submitted!

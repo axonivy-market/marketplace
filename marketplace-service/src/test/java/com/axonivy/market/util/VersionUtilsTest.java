@@ -1,6 +1,7 @@
 package com.axonivy.market.util;
 
 import com.axonivy.market.BaseSetup;
+import com.axonivy.market.entity.Metadata;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -106,5 +107,22 @@ class VersionUtilsTest extends BaseSetup {
         syncVersion);
     Assertions.assertEquals(1, result.size());
     Assertions.assertEquals("2.0.0", result.get(0));
+  }
+
+  @Test
+  void testGetInstallableVersionsFromMetadataList() {
+    Metadata mockProductMeta1 = getMockMetadataWithVersions();
+    mockProductMeta1.setArtifactId(MOCK_PRODUCT_ARTIFACT_ID);
+    Metadata mockProductMeta2 = getMockMetadataWithVersions();
+    mockProductMeta2.setArtifactId(MOCK_PRODUCT_ARTIFACT_ID);
+    mockProductMeta2.setVersions(Set.of(MOCK_BUGFIX_VERSION));
+
+    Assertions.assertEquals(3, mockProductMeta1.getVersions().size());
+    Assertions.assertEquals(1, mockProductMeta2.getVersions().size());
+
+
+    List<String> results = VersionUtils.getInstallableVersionsFromMetadataList(
+        List.of(mockProductMeta1, mockProductMeta2));
+    Assertions.assertEquals(4, results.size());
   }
 }
