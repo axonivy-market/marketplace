@@ -9,7 +9,6 @@ import com.axonivy.market.github.service.GitHubService;
 import com.axonivy.market.model.Message;
 import com.axonivy.market.model.ProductModel;
 import com.axonivy.market.service.MavenDependencyService;
-import com.axonivy.market.service.MetadataService;
 import com.axonivy.market.service.ProductService;
 import com.axonivy.market.util.AuthorizationUtils;
 import io.swagger.v3.oas.annotations.Operation;
@@ -65,7 +64,7 @@ public class ProductController {
           required = true),
       @Parameter(name = "sort",
           description = "Sorting criteria in the format: Sorting criteria(popularity|alphabetically|recent), Sorting " +
-                  "order(asc|desc)",
+              "order(asc|desc)",
           in = ParameterIn.QUERY, example = "[\"popularity\",\"asc\"]", required = true)})
   public ResponseEntity<PagedModel<ProductModel>> findProducts(
       @RequestParam(name = TYPE) @Parameter(description = "Type of product.", in = ParameterIn.QUERY,
