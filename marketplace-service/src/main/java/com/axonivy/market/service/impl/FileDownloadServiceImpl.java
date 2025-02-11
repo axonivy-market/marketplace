@@ -161,7 +161,7 @@ public class FileDownloadServiceImpl implements FileDownloadService {
     try {
       Files.createDirectories(folderPath);
     } catch (IOException e) {
-      log.error("An error occurred while creating the folder: ", e);
+      log.error("An error occurred while creating the folder: {}", e.getMessage());
     }
     return folderPath;
   }
