@@ -39,9 +39,12 @@ import { MATOMO_DIRECTIVES } from 'ngx-matomo-client';
 import { LoadingComponentId } from '../../../../shared/enums/loading-component-id';
 import { LoadingService } from '../../../../core/services/loading/loading.service';
 import { forkJoin } from 'rxjs';
+import { API_URI } from '../../../../shared/constants/api.constant';
+import { HttpParams } from '@angular/common/http';
 
 const showDevVersionCookieName = 'showDevVersions';
-const APP_ARTIFACT_REGEX = /^.*?-app-(\d+(\.\d+)+)\.zip$/;
+const ARTIFACT_ZIP_URL = 'artifact/zip-file';
+const TARGET_BLANK = '_blank';
 
 @Component({
   selector: 'app-product-version-action',
@@ -87,6 +90,7 @@ export class ProductDetailVersionActionComponent implements AfterViewInit {
   loadingContainerClasses =
     'd-flex justify-content-center position-absolute align-items-center w-100 h-100 fixed-top rounded overlay-background';
   designerVersion = '';
+  selectedArtifactId: string | undefined = '';
   selectedArtifact: string | undefined = '';
   selectedArtifactName: string | undefined = '';
   versionMap: Map<string, ItemDropdown[]> = new Map();
@@ -106,10 +110,7 @@ export class ProductDetailVersionActionComponent implements AfterViewInit {
   isDevVersionsDisplayed: WritableSignal<boolean> = signal(
     this.getShowDevVersionFromCookie()
   );
-  
-  hasAppArtifacts = signal(false);
-  downloadArtifactHints = signal('');
-  appArtifacts!: String[];
+  isCheckedAppForEngine!: boolean;
 
   ngAfterViewInit() {
     const tooltipTriggerList = [].slice.call(
@@ -142,48 +143,12 @@ export class ProductDetailVersionActionComponent implements AfterViewInit {
         artifact.label = artifact.name;
       }
     });
-    if (this.isAppArtifactAvailable()) {
-      this.updateDownloadHints();
-    }
     if (this.artifacts().length !== 0) {
+      this.selectedArtifactId = this.artifacts()[0].artifactId ?? '';
       this.selectedArtifactName = this.artifacts()[0].name ?? '';
       this.selectedArtifact = this.artifacts()[0].downloadUrl ?? '';
     }
     this.addVersionParamToRoute(version);
-  }
-
-  private isAppArtifactAvailable() : boolean {
-    // Reset value before looping the artifacts
-    this.hasAppArtifacts.set(false);
-    this.appArtifacts = [];
-    let foundAppArtifact = false;
-    this.artifacts().forEach(artifact => {
-      const match = artifact.downloadUrl?.match(APP_ARTIFACT_REGEX);
-      if (match) {
-        foundAppArtifact = true;
-        if (artifact.name) {
-          this.appArtifacts.push(artifact.name);
-        }
-      }
-    });
-    this.hasAppArtifacts.set(foundAppArtifact);
-    return foundAppArtifact;
-  }
-
-  updateDownloadHints() {
-    forkJoin({
-      orTranslation: this.translateService.get('common.labels.or'),
-      artifactHintTranslation: this.translateService.get('common.product.detail.download.appArtifactHint'),
-    }).subscribe({
-      next: ({ orTranslation, artifactHintTranslation }) => {
-        const artifactNames = this.appArtifacts.join(orTranslation);
-        const downloadHint = `${artifactNames} ${artifactHintTranslation}`;
-        this.downloadArtifactHints.set(downloadHint);
-      },
-      error: (err) => {
-        console.error('Error fetching translations', err);
-      },
-    });
   }
 
   addVersionParamToRoute(selectedVersion: string) {
@@ -203,6 +168,7 @@ export class ProductDetailVersionActionComponent implements AfterViewInit {
   onSelectArtifact(artifact: ItemDropdown) {
     this.selectedArtifactName = artifact.name;
     this.selectedArtifact = artifact.downloadUrl;
+    this.selectedArtifactId = artifact.artifactId;
   }
 
   onShowDevVersion(event: Event) {
@@ -284,14 +250,21 @@ export class ProductDetailVersionActionComponent implements AfterViewInit {
   sanitizeDataBeforeFetching(): void {
     this.versions.set([]);
     this.artifacts.set([]);
+    this.selectedArtifactId = '';
     this.selectedArtifact = '';
-    this.hasAppArtifacts.set(false);
-    this.downloadArtifactHints.set('');
   }
 
   downloadArtifact(): void {
     this.onUpdateInstallationCount();
-    window.open(this.selectedArtifact, '_blank');
+    if (this.isCheckedAppForEngine) {
+      let version = this.selectedVersion().replace(VERSION.displayPrefix, '');
+      const params = new HttpParams()
+        .set(ROUTER.VERSION, version)
+        .set(ROUTER.ARTIFACT, this.selectedArtifactId ?? '');
+      window.open(environment.apiUrl + `${API_URI.PRODUCT_DETAILS}${this.productId}/${ARTIFACT_ZIP_URL}?${params.toString()}`, TARGET_BLANK);
+    } else {
+      window.open(this.selectedArtifact, TARGET_BLANK);
+    }
   }
 
   onUpdateInstallationCount(): void {
@@ -328,16 +301,16 @@ export class ProductDetailVersionActionComponent implements AfterViewInit {
   }
 
   @HostListener('document:click', ['$event'])
-    handleClickOutside(event: MouseEvent): void {
-      const downloadDialog = this.elementRef.nativeElement.querySelector(
-        '#download-dropdown-menu'
-      );
-      if (
-        this.isDropDownDisplayed() &&
-        downloadDialog &&
-        !downloadDialog.contains(event.target)
-      ) {
-        this.isDropDownDisplayed.set(!this.isDropDownDisplayed());
-      }
+  handleClickOutside(event: MouseEvent): void {
+    const downloadDialog = this.elementRef.nativeElement.querySelector(
+      '#download-dropdown-menu'
+    );
+    if (
+      this.isDropDownDisplayed() &&
+      downloadDialog &&
+      !downloadDialog.contains(event.target)
+    ) {
+      this.isDropDownDisplayed.set(!this.isDropDownDisplayed());
     }
+  }
 }

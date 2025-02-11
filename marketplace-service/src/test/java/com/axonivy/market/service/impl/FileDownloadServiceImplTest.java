@@ -1,5 +1,6 @@
 package com.axonivy.market.service.impl;
 
+import com.axonivy.market.bo.DownloadOption;
 import com.axonivy.market.util.FileUtils;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -30,13 +31,14 @@ class FileDownloadServiceImplTest {
 
   @Test
   void testDownloadAndUnzipFileWithEmptyResult() throws IOException {
-    var result = fileDownloadService.downloadAndUnzipFile("", false);
+    var result = fileDownloadService.downloadAndUnzipFile("", any());
     assertTrue(result.isEmpty());
   }
 
   @Test
   void testDownloadAndUnzipFileWithIssue() {
-    assertThrows(ResourceAccessException.class, () -> fileDownloadService.downloadAndUnzipFile(DOWNLOAD_URL, true));
+    assertThrows(ResourceAccessException.class, () -> fileDownloadService.downloadAndUnzipFile(DOWNLOAD_URL,
+        DownloadOption.builder().isForced(true).build()));
   }
 
   @Test
@@ -53,7 +55,7 @@ class FileDownloadServiceImplTest {
 
       mockFileUtils.when(() -> FileUtils.createNewFile(Mockito.anyString())).thenReturn(mockFile);
 
-      var result = fileDownloadService.downloadAndUnzipFile(DOWNLOAD_URL, false);
+      var result = fileDownloadService.downloadAndUnzipFile(DOWNLOAD_URL, any());
       assertFalse(result.isEmpty());
       mockedFiles.verify(() -> Files.delete(any()), Mockito.times(0));
     }

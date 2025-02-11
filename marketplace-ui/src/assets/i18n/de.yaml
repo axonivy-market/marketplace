@@ -136,6 +136,8 @@ common:
           label: Zielplattform
         artifactSelector:
           label: Artefakt
+        appArtifactHint: enthält alle notwendigen Abhängigkeiten und ist so konzipiert, dass sie direkt auf der AxonIvy Engine eingesetzt werden kann!
+        appArtifactHint2: Um alle notwendigen und verwendbaren Abhängigkeiten einzubinden, um direkt auf der Axon Ivy Engine zu deployen, aktivieren Sie bitte diese Checkbox!
       contactUs:
         label: Kontakt
   feedback:
@@ -162,6 +164,7 @@ common:
     reviewLabelNoYet: Noch keine Bewertungen
   labels:
     redirecting: Redirecting ...!
+    or: oder
   timeAgo:
     yearAgo: vor einem Jahr
     yearsAgo: 'vor {{ number }} Jahren'

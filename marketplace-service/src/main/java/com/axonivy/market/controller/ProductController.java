@@ -8,6 +8,7 @@ import com.axonivy.market.github.service.GHAxonIvyMarketRepoService;
 import com.axonivy.market.github.service.GitHubService;
 import com.axonivy.market.model.Message;
 import com.axonivy.market.model.ProductModel;
+import com.axonivy.market.service.MavenDependencyService;
 import com.axonivy.market.service.MetadataService;
 import com.axonivy.market.service.ProductService;
 import com.axonivy.market.util.AuthorizationUtils;
@@ -52,8 +53,8 @@ public class ProductController {
   private final GitHubService gitHubService;
   private final ProductModelAssembler assembler;
   private final PagedResourcesAssembler<Product> pagedResourcesAssembler;
-  private final MetadataService metadataService;
   private final GHAxonIvyMarketRepoService axonIvyMarketRepoService;
+  private final MavenDependencyService mavenDependencyService;
 
   @GetMapping()
   @Operation(summary = "Retrieve a paginated list of all products, optionally filtered by type, keyword, and language",
@@ -169,5 +170,15 @@ public class ProductController {
     var emptyPagedModel = (PagedModel<ProductModel>) pagedResourcesAssembler.toEmptyModel(Page.empty(),
         ProductModel.class);
     return new ResponseEntity<>(emptyPagedModel, HttpStatus.OK);
+  }
+
+  @Operation(hidden = true)
+  @PutMapping(SYNC_ZIP_ARTIFACTS)
+  public ResponseEntity<String> syncProductArtifacts() {
+    int syncIds = mavenDependencyService.syncIARDependenciesForProducts();
+    if (syncIds > 0) {
+      return ResponseEntity.status(HttpStatus.OK).body("Synced %d artifact(s)".formatted(syncIds));
+    }
+    return ResponseEntity.status(HttpStatus.NO_CONTENT).body("Nothing to sync");
   }
 }

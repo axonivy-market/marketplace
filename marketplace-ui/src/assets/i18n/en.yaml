@@ -140,6 +140,8 @@ common:
           label: Choose target platform
         artifactSelector:
           label: Choose artifact
+        appArtifactHint: To include all necessary and usable dependencies to deploy directly to Axon Ivy Engine, please check this checkbox!
+        zipAppArtifactLabel: Create a ZIP file to deploy on the Axon Ivy Engine
       contactUs:
         label: Contact us
   feedback:
@@ -166,6 +168,7 @@ common:
     reviewLabelNoYet: No reviews yet
   labels:
     redirecting: Redirecting ...!
+    or: or
   timeAgo:
     yearAgo: 1 year ago
     yearsAgo: '{{ number }} years ago'

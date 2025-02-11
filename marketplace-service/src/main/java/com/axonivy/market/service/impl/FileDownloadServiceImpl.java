@@ -1,6 +1,6 @@
 package com.axonivy.market.service.impl;
 
-import com.axonivy.market.bo.Artifact;
+import com.axonivy.market.bo.DownloadOption;
 import com.axonivy.market.service.FileDownloadService;
 import com.axonivy.market.util.FileUtils;
 import lombok.extern.log4j.Log4j2;
@@ -22,7 +22,15 @@ import java.nio.file.Paths;
 import java.nio.file.attribute.FileAttribute;
 import java.nio.file.attribute.PosixFilePermission;
 import java.nio.file.attribute.PosixFilePermissions;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.EnumSet;
+import java.util.Enumeration;
+import java.util.List;
+import java.util.Set;
+import java.util.UUID;
 import java.util.stream.Stream;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
@@ -46,26 +54,19 @@ public class FileDownloadServiceImpl implements FileDownloadService {
   }
 
   @Override
-  public String downloadAndUnzipProductContentFile(String url, Artifact artifact) throws IOException {
-    String unzippedFilePath = String.join(File.separator, ROOT_STORAGE_FOR_PRODUCT_CONTENT, artifact.getArtifactId());
-    createFolder(unzippedFilePath);
-
-    Path tempZipPath = createTempFileFromUrlAndExtractToLocation(url, unzippedFilePath, true);
-    if (tempZipPath != null) {
-      Files.delete(tempZipPath);
-    }
-    return unzippedFilePath;
-  }
-
-  @Override
-  public String downloadAndUnzipFile(String url, boolean isForce) throws IOException {
-    if (StringUtils.isBlank(url) || !url.endsWith(ZIP_EXTENSION)) {
+  public String downloadAndUnzipFile(String url, DownloadOption downloadOption) throws IOException {
+    if (StringUtils.isBlank(url) || !StringUtils.endsWithAny(url, ZIP_EXTENSION, "iar")) {
       log.warn("Request URL not a ZIP file - {}", url);
       return EMPTY;
     }
 
-    String location = generateCacheStorageDirectory(url);
-    Path tempZipPath = createTempFileFromUrlAndExtractToLocation(url, location, isForce);
+    String location;
+    if (downloadOption != null && StringUtils.isNotBlank(downloadOption.getWorkingDirectory())) {
+      location = downloadOption.getWorkingDirectory();
+    } else {
+      location = generateCacheStorageDirectory(url);
+    }
+    Path tempZipPath = createTempFileFromUrlAndExtractToLocation(url, location, downloadOption);
     if (tempZipPath != null) {
       grantNecessaryPermissionsFor(location);
       Files.delete(tempZipPath);
@@ -74,10 +75,10 @@ public class FileDownloadServiceImpl implements FileDownloadService {
   }
 
   private Path createTempFileFromUrlAndExtractToLocation(String url, String location,
-      boolean isForce) throws IOException {
+      DownloadOption downloadOption) throws IOException {
     File cacheFolder = FileUtils.createNewFile(location);
     if (cacheFolder.exists() && cacheFolder.isDirectory() && ObjectUtils.isNotEmpty(
-        cacheFolder.listFiles()) && !isForce) {
+        cacheFolder.listFiles()) && downloadOption != null && !downloadOption.isForced()) {
       log.warn("Data is already in {}", location);
       return null;
     } else {

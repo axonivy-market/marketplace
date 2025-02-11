@@ -16,6 +16,7 @@ import java.util.Map;
 import java.util.Objects;
 
 import static com.axonivy.market.constants.EntityConstants.MAVEN_ARTIFACT_VERSION;
+
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
@@ -28,10 +29,6 @@ public class MavenArtifactVersion implements Serializable {
   private String productId;
   private Map<String, List<MavenArtifactModel>> productArtifactsByVersion;
   private Map<String, List<MavenArtifactModel>> additionalArtifactsByVersion;
-
-  public String getProductId() {
-    return productId;
-  }
 
   public Map<String, List<MavenArtifactModel>> getProductArtifactsByVersion() {
     if (Objects.isNull(productArtifactsByVersion)) {

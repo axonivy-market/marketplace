@@ -4,42 +4,44 @@ import com.axonivy.market.assembler.ProductDetailModelAssembler;
 import com.axonivy.market.model.MavenArtifactVersionModel;
 import com.axonivy.market.model.ProductDetailModel;
 import com.axonivy.market.model.VersionAndUrlModel;
+import com.axonivy.market.service.ProductContentService;
 import com.axonivy.market.service.ProductService;
 import com.axonivy.market.service.VersionService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.enums.ParameterIn;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import lombok.AllArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.servlet.mvc.method.annotation.ResponseBodyEmitter;
 
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.CompletableFuture;
 
+import static com.axonivy.market.constants.MavenConstants.APP_ZIP_POSTFIX;
 import static com.axonivy.market.constants.RequestMappingConstants.*;
 import static com.axonivy.market.constants.RequestParamConstants.*;
 
+@AllArgsConstructor
 @RestController
 @RequestMapping(PRODUCT_DETAILS)
 @Tag(name = "Product Detail Controllers", description = "API collection to get product's detail.")
 public class ProductDetailsController {
   private final VersionService versionService;
   private final ProductService productService;
+  private final ProductContentService productContentService;
   private final ProductDetailModelAssembler detailModelAssembler;
-
-  public ProductDetailsController(VersionService versionService, ProductService productService,
-      ProductDetailModelAssembler detailModelAssembler) {
-    this.versionService = versionService;
-    this.productService = productService;
-    this.detailModelAssembler = detailModelAssembler;
-  }
 
   @GetMapping(BY_ID_AND_VERSION)
   @Operation(summary = "Find product detail by product id and release version.",
@@ -128,5 +130,31 @@ public class ProductDetailsController {
     String downloadUrl = versionService.getLatestVersionArtifactDownloadUrl(productId, version, artifactId);
     HttpStatusCode statusCode = StringUtils.isBlank(downloadUrl) ? HttpStatus.NOT_FOUND : HttpStatus.OK;
     return new ResponseEntity<>(downloadUrl, statusCode);
+  }
+
+  @GetMapping(ARTIFACTS_AS_ZIP)
+  @Operation(summary = "Get the download steam of artifact and it's dependencies by it's id and target version",
+      description = "Return the download url of artifact from version and id")
+  public CompletableFuture<ResponseEntity<ResponseBodyEmitter>> downloadZipArtifact(
+      @PathVariable(value = ID) @Parameter(in = ParameterIn.PATH, example = "demos") String id,
+      @RequestParam(value = VERSION) @Parameter(in = ParameterIn.QUERY, example = "10.0") String version,
+      @RequestParam(value = ARTIFACT) @Parameter(in = ParameterIn.QUERY, example = "demos-app") String artifactId) {
+    // Open stream as async to save the server resources
+    return productContentService.downloadZipArtifactFile(id, artifactId, version)
+        .thenApply(emitter -> {
+          if (emitter == null) {
+            var noDataBody = new ResponseBodyEmitter();
+            noDataBody.complete();
+            return ResponseEntity.status(HttpStatus.NO_CONTENT).body(noDataBody);
+          }
+
+          // Prepare the response
+          String filename = artifactId.concat(APP_ZIP_POSTFIX);
+          HttpHeaders headers = new HttpHeaders();
+          headers.add(HttpHeaders.CONTENT_DISPOSITION, ATTACHMENT.formatted(filename));
+          headers.add(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_OCTET_STREAM_VALUE);
+
+          return ResponseEntity.ok().headers(headers).contentType(MediaType.APPLICATION_OCTET_STREAM).body(emitter);
+        });
   }
 }

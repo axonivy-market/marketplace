@@ -1,6 +1,7 @@
 package com.axonivy.market.service.impl;
 
 import com.axonivy.market.bo.Artifact;
+import com.axonivy.market.bo.DownloadOption;
 import com.axonivy.market.constants.CommonConstants;
 import com.axonivy.market.constants.DirectoryConstants;
 import com.axonivy.market.entity.ExternalDocumentMeta;
@@ -48,7 +49,7 @@ public class ExternalDocumentServiceImpl implements ExternalDocumentService {
           : nonSyncReleasedVersions;
       releasedVersions = releasedVersions.stream().filter(VersionUtils::isValidFormatReleasedVersion).toList();
 
-      if (ObjectUtils.isEmpty(docArtifacts) || ObjectUtils.isEmpty(releasedVersions) ) {
+      if (ObjectUtils.isEmpty(docArtifacts) || ObjectUtils.isEmpty(releasedVersions)) {
         return;
       }
 
@@ -108,7 +109,8 @@ public class ExternalDocumentServiceImpl implements ExternalDocumentService {
 
   private String downloadDocAndUnzipToShareFolder(String downloadDocUrl, boolean isResetSync) {
     try {
-      return fileDownloadService.downloadAndUnzipFile(downloadDocUrl, isResetSync);
+      return fileDownloadService.downloadAndUnzipFile(downloadDocUrl,
+          DownloadOption.builder().isForced(isResetSync).build());
     } catch (Exception e) {
       log.error("Cannot download doc", e);
     }
