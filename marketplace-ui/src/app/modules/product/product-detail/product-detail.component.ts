@@ -128,6 +128,7 @@ export class ProductDetailComponent {
   activeTab = '';
   displayedTabsSignal: Signal<ItemDropdown[]> = computed(() => {
     this.languageService.selectedLanguage();
+    this.getProcessedGithubAlert();
     return this.getDisplayedTabsSignal();
   });
   isDropdownOpen: WritableSignal<boolean> = signal(false);
@@ -190,6 +191,7 @@ export class ProductDetailComponent {
           this.productReleaseSafeHtmls = this.renderChangelogContent(res.changelogs._embedded.githubReleaseModelList);
         }
         this.handleProductDetail(res.productDetail);
+        this.getProcessedGithubAlert();
         this.productFeedbackService.handleFeedbackApiResponse(res.productFeedBack);
         this.updateDropdownSelection();
         this.checkMediaSize();
@@ -473,11 +475,18 @@ export class ProductDetailComponent {
     return productDetail;
   }
 
-  getProcessedGithubAlert(value: string): SafeHtml {
-    if (!this.loadedReadmeContent[value]) {
-      this.loadedReadmeContent[value] = this.renderGithubAlert(value);
-    }
-    return this.loadedReadmeContent[value];
+  getProcessedGithubAlert() {
+    this.detailTabs.forEach((tab) => {
+      const contentValue = this.getProductModuleContentValue(tab);
+      if (contentValue) {
+        const translatedContent = new MultilingualismPipe().transform(
+          contentValue,
+          this.languageService.selectedLanguage()
+        );
+
+        this.loadedReadmeContent[tab.value] = this.renderGithubAlert(translatedContent);
+      }
+    });
   }
 
   renderGithubAlert(value: string): SafeHtml {

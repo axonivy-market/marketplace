@@ -202,8 +202,7 @@
                     }
                   }
                   @else {
-                    <div class="readme-content" [innerHtml]="getProcessedGithubAlert(getProductModuleContentValue(displayedTab)
-                          | multilingualism: languageService.selectedLanguage())"></div>
+                    <div class="readme-content" [innerHtml]="loadedReadmeContent[displayedTab.value]"></div>
                   }
                 </div>
               }
