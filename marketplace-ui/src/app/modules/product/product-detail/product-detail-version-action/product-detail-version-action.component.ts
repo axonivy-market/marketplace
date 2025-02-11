@@ -38,7 +38,6 @@ import { MATOMO_TRACKING_ENVIRONMENT } from '../../../../shared/constants/matomo
 import { MATOMO_DIRECTIVES } from 'ngx-matomo-client';
 import { LoadingComponentId } from '../../../../shared/enums/loading-component-id';
 import { LoadingService } from '../../../../core/services/loading/loading.service';
-import { forkJoin } from 'rxjs';
 import { API_URI } from '../../../../shared/constants/api.constant';
 import { HttpParams } from '@angular/common/http';
 
@@ -257,11 +256,16 @@ export class ProductDetailVersionActionComponent implements AfterViewInit {
   downloadArtifact(): void {
     this.onUpdateInstallationCount();
     if (this.isCheckedAppForEngine) {
-      let version = this.selectedVersion().replace(VERSION.displayPrefix, '');
+      let marketplaceServiceUrl = environment.apiUrl;
+      if (!marketplaceServiceUrl.startsWith('http')) {
+        marketplaceServiceUrl = window.location.origin.concat(marketplaceServiceUrl);
+      }
+      const version = this.selectedVersion().replace(VERSION.displayPrefix, '');
       const params = new HttpParams()
         .set(ROUTER.VERSION, version)
         .set(ROUTER.ARTIFACT, this.selectedArtifactId ?? '');
-      window.open(environment.apiUrl + `${API_URI.PRODUCT_DETAILS}${this.productId}/${ARTIFACT_ZIP_URL}?${params.toString()}`, TARGET_BLANK);
+
+      window.open(`${marketplaceServiceUrl}/${API_URI.PRODUCT_DETAILS}/${this.productId}/${ARTIFACT_ZIP_URL}?${params.toString()}`, TARGET_BLANK);
     } else {
       window.open(this.selectedArtifact, TARGET_BLANK);
     }

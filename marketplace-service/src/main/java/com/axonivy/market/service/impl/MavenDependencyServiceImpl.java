@@ -40,7 +40,7 @@ import java.util.Optional;
 
 import static com.axonivy.market.constants.CommonConstants.*;
 import static com.axonivy.market.constants.DirectoryConstants.*;
-import static com.axonivy.market.constants.MavenConstants.POM;
+import static com.axonivy.market.constants.MavenConstants.*;
 
 @Log4j2
 @AllArgsConstructor
@@ -99,6 +99,10 @@ public class MavenDependencyServiceImpl implements MavenDependencyService {
 
   private void computeIARDependencies(String productId, String version, MavenArtifactModel artifact,
       Map<String, List<MavenDependency>> dependenciesOfArtifact) {
+    if (artifact == null || StringUtils.endsWith(artifact.getArtifactId(), DOC)
+        || StringUtils.endsWith(artifact.getDownloadUrl(), DEFAULT_PRODUCT_FOLDER_TYPE)) {
+      return;
+    }
     List<Dependency> dependencyModels = extractMavenDependencies(artifact);
     dependenciesOfArtifact.putIfAbsent(artifact.getArtifactId(), new ArrayList<>());
     var artifactDependency = MavenDependency.builder()

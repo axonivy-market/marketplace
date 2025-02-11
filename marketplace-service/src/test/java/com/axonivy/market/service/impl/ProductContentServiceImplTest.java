@@ -2,8 +2,12 @@ package com.axonivy.market.service.impl;
 
 import com.axonivy.market.BaseSetup;
 import com.axonivy.market.bo.Artifact;
+import com.axonivy.market.bo.MavenDependency;
 import com.axonivy.market.constants.ProductJsonConstants;
+import com.axonivy.market.entity.ProductDependency;
 import com.axonivy.market.entity.ProductModuleContent;
+import com.axonivy.market.repository.ProductDependencyRepository;
+import com.axonivy.market.service.FileDownloadService;
 import com.axonivy.market.service.ImageService;
 import com.axonivy.market.service.MetadataService;
 import com.axonivy.market.service.ProductJsonContentService;
@@ -15,15 +19,23 @@ import org.mockito.Mock;
 import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.http.HttpStatus;
 
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -37,6 +49,10 @@ class ProductContentServiceImplTest extends BaseSetup {
   private ImageService imageService;
   @Mock
   private MetadataService metadataService;
+  @Mock
+  private ProductDependencyRepository productDependencyRepository;
+  @Mock
+  private FileDownloadService fileDownloadService;
 
   @Test
   void testUpdateDependencyContentsFromProductJson() throws IOException {
@@ -81,5 +97,24 @@ class ProductContentServiceImplTest extends BaseSetup {
           MOCK_IMAGE_ID_FORMAT_2);
       assertEquals(expectedResult, result);
     }
+  }
+
+  @Test
+  void testDownloadZipArtifactFile() throws ExecutionException, InterruptedException, TimeoutException {
+    Map<String, List<MavenDependency>> dependenciesOfArtifact = new HashMap<>();
+    List<MavenDependency> mavenDependencies = new ArrayList<>();
+    mavenDependencies.add(MavenDependency.builder().artifactId(MOCK_DEMO_ARTIFACT_ID).downloadUrl(MOCK_DOWNLOAD_URL).version(
+            MOCK_RELEASED_VERSION).build());
+    dependenciesOfArtifact.put(MOCK_DEMO_ARTIFACT_ID, mavenDependencies);
+    var productDependency = ProductDependency.builder().productId(MOCK_PRODUCT_ID).dependenciesOfArtifact(
+        dependenciesOfArtifact).build();
+    when(productDependencyRepository.findProductDependencies(MOCK_PRODUCT_ID, MOCK_DEMO_ARTIFACT_ID,
+        MOCK_RELEASED_VERSION)).thenReturn(List.of(productDependency));
+    when(fileDownloadService.downloadFile(MOCK_DOWNLOAD_URL)).thenReturn(MOCK_DOWNLOAD_URL.getBytes());
+    var zipArtifact = productContentService.downloadZipArtifactFile(MOCK_PRODUCT_ID, MOCK_DEMO_ARTIFACT_ID,
+        MOCK_RELEASED_VERSION);
+    assertNotNull(zipArtifact);
+    var responseEntity = zipArtifact.get(2, TimeUnit.SECONDS);
+    assertNotNull(responseEntity);
   }
 }

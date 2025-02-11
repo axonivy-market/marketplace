@@ -44,6 +44,6 @@ public class CustomProductDependencyRepositoryImpl implements CustomProductDepen
   }
 
   private static void includeFirstMatchFilter(Query query, String field) {
-    query.fields().include(field + FIRST_MATCH_REGEX).exclude(ID);
+    query.fields().include(field + FIRST_MATCH_REGEX);
   }
 }
