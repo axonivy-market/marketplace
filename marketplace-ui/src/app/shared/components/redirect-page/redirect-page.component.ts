@@ -68,11 +68,7 @@ export class RedirectPageComponent implements OnInit {
       if (!relativeUrl.includes('#')) {
         link = relativeUrl + currentHash;
       }
-      this.redirectToLink(link);
+      window.location.href = link;
     }
-  }
-
-  redirectToLink(link: string): void {
-    window.location.href = link;
   }
 }
