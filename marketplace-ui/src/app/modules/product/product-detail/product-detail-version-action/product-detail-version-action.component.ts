@@ -44,6 +44,9 @@ import { HttpParams } from '@angular/common/http';
 const showDevVersionCookieName = 'showDevVersions';
 const ARTIFACT_ZIP_URL = 'artifact/zip-file';
 const TARGET_BLANK = '_blank';
+const HTTP = 'http';
+const DOC = '-doc';
+const ZIP = '.zip';
 
 @Component({
   selector: 'app-product-version-action',
@@ -254,9 +257,11 @@ export class ProductDetailVersionActionComponent implements AfterViewInit {
 
   downloadArtifact(): void {
     this.onUpdateInstallationCount();
-    if (this.isCheckedAppForEngine) {
+    if (!this.isCheckedAppForEngine || this.selectedArtifactId?.endsWith(DOC) || this.selectedArtifact?.endsWith(ZIP)) {
+      window.open(this.selectedArtifact, TARGET_BLANK);
+    } else if (this.isCheckedAppForEngine) {
       let marketplaceServiceUrl = environment.apiUrl;
-      if (!marketplaceServiceUrl.startsWith('http')) {
+      if (!marketplaceServiceUrl.startsWith(HTTP)) {
         marketplaceServiceUrl = window.location.origin.concat(marketplaceServiceUrl);
       }
       const version = this.selectedVersion().replace(VERSION.displayPrefix, '');
@@ -265,8 +270,6 @@ export class ProductDetailVersionActionComponent implements AfterViewInit {
         .set(ROUTER.ARTIFACT, this.selectedArtifactId ?? '');
 
       window.open(`${marketplaceServiceUrl}/${API_URI.PRODUCT_DETAILS}/${this.productId}/${ARTIFACT_ZIP_URL}?${params.toString()}`, TARGET_BLANK);
-    } else {
-      window.open(this.selectedArtifact, TARGET_BLANK);
     }
   }
 
