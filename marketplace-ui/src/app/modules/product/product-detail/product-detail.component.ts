@@ -476,7 +476,7 @@ export class ProductDetailComponent {
   }
 
   getReadmeContent() {
-    this.detailTabs.forEach((tab) => {
+    this.detailTabs.forEach(tab => {
       const contentValue = this.getProductModuleContentValue(tab);
       if (contentValue) {
         const translatedContent = new MultilingualismPipe().transform(
