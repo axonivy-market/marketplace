@@ -128,7 +128,7 @@ export class ProductDetailComponent {
   activeTab = '';
   displayedTabsSignal: Signal<ItemDropdown[]> = computed(() => {
     this.languageService.selectedLanguage();
-    this.getProcessedGithubAlert();
+    this.getReadmeContent();
     return this.getDisplayedTabsSignal();
   });
   isDropdownOpen: WritableSignal<boolean> = signal(false);
@@ -191,7 +191,7 @@ export class ProductDetailComponent {
           this.productReleaseSafeHtmls = this.renderChangelogContent(res.changelogs._embedded.githubReleaseModelList);
         }
         this.handleProductDetail(res.productDetail);
-        this.getProcessedGithubAlert();
+        this.getReadmeContent();
         this.productFeedbackService.handleFeedbackApiResponse(res.productFeedBack);
         this.updateDropdownSelection();
         this.checkMediaSize();
@@ -475,7 +475,7 @@ export class ProductDetailComponent {
     return productDetail;
   }
 
-  getProcessedGithubAlert() {
+  getReadmeContent() {
     this.detailTabs.forEach((tab) => {
       const contentValue = this.getProductModuleContentValue(tab);
       if (contentValue) {

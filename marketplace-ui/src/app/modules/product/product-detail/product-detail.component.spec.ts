@@ -880,7 +880,7 @@ describe('ProductDetailComponent', () => {
     spyOn(MultilingualismPipe.prototype, 'transform').and.callFake((content) => `${content}`);
     spyOn(component, 'renderGithubAlert').and.callFake((content: string) => `${content}` as SafeHtml);
 
-    component.getProcessedGithubAlert();
+    component.getReadmeContent();
 
     expect(component.loadedReadmeContent['description']).toBe(
       `${MOCK_PRODUCT_DETAIL.productModuleContent.description}`
@@ -898,7 +898,7 @@ describe('ProductDetailComponent', () => {
     spyOn(component, 'getProductModuleContentValue').and.returnValue(null);
     spyOn(component, 'renderGithubAlert');
 
-    component.getProcessedGithubAlert();
+    component.getReadmeContent();
 
     expect(component.getProductModuleContentValue).toHaveBeenCalledTimes(PRODUCT_DETAIL_TABS.length);
     expect(component.renderGithubAlert).not.toHaveBeenCalled();
