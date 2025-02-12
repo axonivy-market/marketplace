@@ -80,7 +80,7 @@ class MavenDependencyServiceImplTest extends BaseSetup {
   @Test
   void testNothingToSync() {
     when(productRepository.searchByCriteria(any(), any(Pageable.class))).thenReturn(new PageImpl<>(List.of()));
-    when(productDependencyRepository.findAll(any(Pageable.class))).thenReturn(new PageImpl<>(List.of()));
+    when(productDependencyRepository.findAll()).thenReturn(List.of());
     int totalSynced = mavenDependencyService.syncIARDependenciesForProducts();
     assertEquals(0, totalSynced, "Expected no product was synced but service returned something");
   }

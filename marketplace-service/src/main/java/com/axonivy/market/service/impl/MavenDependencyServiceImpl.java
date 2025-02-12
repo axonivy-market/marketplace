@@ -129,7 +129,7 @@ public class MavenDependencyServiceImpl implements MavenDependencyService {
 
     List<String> availableProductIds = productRepository.searchByCriteria(productSearchCriteria, pageable)
         .map(Product::getId).toList();
-    List<String> syncedProductIds = productDependencyRepository.findAll(pageable)
+    List<String> syncedProductIds = productDependencyRepository.findAll().stream()
         .map(ProductDependency::getProductId).toList();
 
     // Subtract existing product id
