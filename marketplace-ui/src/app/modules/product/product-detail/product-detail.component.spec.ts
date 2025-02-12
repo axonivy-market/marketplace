@@ -9,7 +9,7 @@ import {
   TestBed,
   tick
 } from '@angular/core/testing';
-import { By, DomSanitizer, Title } from '@angular/platform-browser';
+import { By, DomSanitizer, SafeHtml, Title } from '@angular/platform-browser';
 import { ActivatedRoute } from '@angular/router';
 import { TranslateModule } from '@ngx-translate/core';
 import { Viewport } from 'karma-viewport/dist/adapter/viewport';
@@ -39,6 +39,8 @@ import { FeedbackApiResponse } from '../../../shared/models/apis/feedback-respon
 import { StarRatingCounting } from '../../../shared/models/star-rating-counting.model';
 import { Feedback } from '../../../shared/models/feedback.model';
 import MarkdownIt from 'markdown-it';
+import { PRODUCT_DETAIL_TABS } from '../../../shared/constants/common.constant';
+import { MultilingualismPipe } from '../../../shared/pipes/multilingualism.pipe';
 
 const products = MOCK_PRODUCTS._embedded.products;
 declare const viewport: Viewport;
@@ -867,51 +869,39 @@ describe('ProductDetailComponent', () => {
     expect(result).toBe(mockedRenderedHtml);
   });
 
-  it('should return README content when not loaded yet', () => {
-    const value = '**This is a content**';
-    const mockedRenderedHtml = '<strong>This is a content</strong>';
+  it('should process README content correctly with different values per tab', () => {
+    languageService.selectedLanguage.and.returnValue(Language.EN);
 
-    spyOn(component, 'renderGithubAlert').and.returnValue(mockedRenderedHtml);
-
-    const result = component.getProcessedGithubAlert(value);
-
-    expect(component.renderGithubAlert).toHaveBeenCalledWith(value);
-    expect(component.loadedReadmeContent[value]).toBe(mockedRenderedHtml);
-    expect(result).toBe(mockedRenderedHtml);
-  });
-
-  it('should return loaded README content when it is already processed', () => {
-    const value = '**This is a loaded content**';
-    const loadedHtml = '<strong>This is a loaded content</strong>';
-
-    component.loadedReadmeContent[value] = loadedHtml;
-
-    spyOn(component, 'renderGithubAlert');
-
-    const result = component.getProcessedGithubAlert(value);
-
-    expect(component.renderGithubAlert).not.toHaveBeenCalled();
-    expect(result).toBe(loadedHtml);
-  });
-
-  it('should process and cache multiple different README content values', () => {
-    const value1 = '**First**';
-    const value2 = '**Second**';
-    const renderedHtml1 = '<strong>This is a content 1</strong>';
-    const renderedHtml2 = '<strong>This is a content 2</strong>';
-
-    spyOn(component, 'renderGithubAlert').and.callFake((value: string) => {
-      return value === value1 ? renderedHtml1 : renderedHtml2;
+    spyOn(component, 'getProductModuleContentValue').and.callFake((tab) => {
+      const key = tab.value as keyof ProductModuleContent;
+      return MOCK_PRODUCT_DETAIL.productModuleContent[key] as { en: string };
     });
 
-    const result1 = component.getProcessedGithubAlert(value1);
-    const result2 = component.getProcessedGithubAlert(value2);
+    spyOn(MultilingualismPipe.prototype, 'transform').and.callFake((content) => `${content}`);
+    spyOn(component, 'renderGithubAlert').and.callFake((content: string) => `${content}` as SafeHtml);
 
-    expect(component.renderGithubAlert).toHaveBeenCalledTimes(2);
-    expect(component.loadedReadmeContent[value1]).toBe(renderedHtml1);
-    expect(component.loadedReadmeContent[value2]).toBe(renderedHtml2);
-    expect(result1).toBe(renderedHtml1);
-    expect(result2).toBe(renderedHtml2);
+    component.getProcessedGithubAlert();
+
+    expect(component.loadedReadmeContent['description']).toBe(
+      `${MOCK_PRODUCT_DETAIL.productModuleContent.description}`
+    );
+    expect(component.loadedReadmeContent['demo']).toBe(
+      `${MOCK_PRODUCT_DETAIL.productModuleContent.demo}`
+    );
+
+    expect(component.getProductModuleContentValue).toHaveBeenCalled();
+    expect(MultilingualismPipe.prototype.transform).toHaveBeenCalled();
+    expect(component.renderGithubAlert).toHaveBeenCalled();
+  });
+
+  it('should not process content if getProductModuleContentValue returns null', () => {
+    spyOn(component, 'getProductModuleContentValue').and.returnValue(null);
+    spyOn(component, 'renderGithubAlert');
+
+    component.getProcessedGithubAlert();
+
+    expect(component.getProductModuleContentValue).toHaveBeenCalledTimes(PRODUCT_DETAIL_TABS.length);
+    expect(component.renderGithubAlert).not.toHaveBeenCalled();
   });
 
   it('should close the dropdown when clicking outside', () => {
