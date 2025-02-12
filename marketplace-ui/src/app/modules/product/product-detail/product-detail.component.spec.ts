@@ -9,7 +9,7 @@ import {
   TestBed,
   tick
 } from '@angular/core/testing';
-import { By, DomSanitizer, Title } from '@angular/platform-browser';
+import { By, DomSanitizer, SafeHtml, Title } from '@angular/platform-browser';
 import { ActivatedRoute } from '@angular/router';
 import { TranslateModule } from '@ngx-translate/core';
 import { Viewport } from 'karma-viewport/dist/adapter/viewport';
@@ -39,6 +39,8 @@ import { FeedbackApiResponse } from '../../../shared/models/apis/feedback-respon
 import { StarRatingCounting } from '../../../shared/models/star-rating-counting.model';
 import { Feedback } from '../../../shared/models/feedback.model';
 import MarkdownIt from 'markdown-it';
+import { PRODUCT_DETAIL_TABS } from '../../../shared/constants/common.constant';
+import { MultilingualismPipe } from '../../../shared/pipes/multilingualism.pipe';
 
 const products = MOCK_PRODUCTS._embedded.products;
 declare const viewport: Viewport;
@@ -865,6 +867,41 @@ describe('ProductDetailComponent', () => {
     const result = component.renderGithubAlert(value);
 
     expect(result).toBe(mockedRenderedHtml);
+  });
+
+  it('should process README content correctly with different values per tab', () => {
+    languageService.selectedLanguage.and.returnValue(Language.EN);
+
+    spyOn(component, 'getProductModuleContentValue').and.callFake((tab) => {
+      const key = tab.value as keyof ProductModuleContent;
+      return MOCK_PRODUCT_DETAIL.productModuleContent[key] as { en: string };
+    });
+
+    spyOn(MultilingualismPipe.prototype, 'transform').and.callFake((content) => `${content}`);
+    spyOn(component, 'renderGithubAlert').and.callFake((content: string) => `${content}` as SafeHtml);
+
+    component.getReadmeContent();
+
+    expect(component.loadedReadmeContent['description']).toBe(
+      `${MOCK_PRODUCT_DETAIL.productModuleContent.description}`
+    );
+    expect(component.loadedReadmeContent['demo']).toBe(
+      `${MOCK_PRODUCT_DETAIL.productModuleContent.demo}`
+    );
+
+    expect(component.getProductModuleContentValue).toHaveBeenCalled();
+    expect(MultilingualismPipe.prototype.transform).toHaveBeenCalled();
+    expect(component.renderGithubAlert).toHaveBeenCalled();
+  });
+
+  it('should not process content if getProductModuleContentValue returns null', () => {
+    spyOn(component, 'getProductModuleContentValue').and.returnValue(null);
+    spyOn(component, 'renderGithubAlert');
+
+    component.getReadmeContent();
+
+    expect(component.getProductModuleContentValue).toHaveBeenCalledTimes(PRODUCT_DETAIL_TABS.length);
+    expect(component.renderGithubAlert).not.toHaveBeenCalled();
   });
 
   it('should close the dropdown when clicking outside', () => {
