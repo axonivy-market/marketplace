@@ -43,7 +43,7 @@ public class CustomProductDependencyRepositoryImpl implements CustomProductDepen
     return mongoTemplate.find(query, MavenArtifactVersion.class, EntityConstants.MAVEN_ARTIFACT_VERSION);
   }
 
-  private static void includeFirstMatchFilter(Query query, String field) {
+  private void includeFirstMatchFilter(Query query, String field) {
     query.fields().include(field + FIRST_MATCH_REGEX);
   }
 }

@@ -23,7 +23,6 @@ import org.apache.maven.model.Model;
 import org.apache.maven.model.io.xpp3.MavenXpp3Reader;
 import org.codehaus.plexus.util.xml.pull.XmlPullParserException;
 import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
@@ -31,12 +30,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 
 import static com.axonivy.market.constants.CommonConstants.*;
 import static com.axonivy.market.constants.DirectoryConstants.*;
@@ -67,9 +61,9 @@ public class MavenDependencyServiceImpl implements MavenDependencyService {
     List<String> syncedProductIds = new ArrayList<>();
     List<String> missingProductIds = getMissingProductIds();
     for (var productId : missingProductIds) {
-      Optional<MavenArtifactVersion> mavenArtifactVersion = mavenArtifactVersionRepository.findById(productId);
+      MavenArtifactVersion mavenArtifactVersion = mavenArtifactVersionRepository.findById(productId).orElse(null);
       // If no data in MavenArtifactVersion table then skip this product
-      if (mavenArtifactVersion.isEmpty()) {
+      if (mavenArtifactVersion == null) {
         continue;
       }
       Map<String, List<MavenDependency>> dependenciesOfArtifact = new HashMap<>();
@@ -78,13 +72,15 @@ public class MavenDependencyServiceImpl implements MavenDependencyService {
           .dependenciesOfArtifact(dependenciesOfArtifact).build();
 
       // Base on version, loop the artifacts and maps its dependencies
-      for (var version : mavenArtifactVersion.get().getProductArtifactsByVersion().keySet()) {
-        for (var artifact : mavenArtifactVersion.get().getProductArtifactsByVersion().get(version)) {
+      var productArtifactsByVersion = mavenArtifactVersion.getProductArtifactsByVersion();
+      for (var version : productArtifactsByVersion.keySet()) {
+        for (var artifact : productArtifactsByVersion.get(version)) {
           computeIARDependencies(productId, version, artifact, dependenciesOfArtifact);
         }
       }
-      for (var version : mavenArtifactVersion.get().getAdditionalArtifactsByVersion().keySet()) {
-        for (var artifact : mavenArtifactVersion.get().getAdditionalArtifactsByVersion().get(version)) {
+      var additionalArtifactsByVersion = mavenArtifactVersion.getAdditionalArtifactsByVersion();
+      for (var version : additionalArtifactsByVersion.keySet()) {
+        for (var artifact : additionalArtifactsByVersion.get(version)) {
           computeIARDependencies(productId, version, artifact, dependenciesOfArtifact);
         }
       }
@@ -97,7 +93,7 @@ public class MavenDependencyServiceImpl implements MavenDependencyService {
   }
 
   private void computeIARDependencies(String productId, String version, MavenArtifactModel artifact,
-      Map<String, List<MavenDependency>> dependenciesOfArtifact) {
+                                      Map<String, List<MavenDependency>> dependenciesOfArtifact) {
     if (artifact == null || StringUtils.endsWith(artifact.getArtifactId(), DOC)
         || StringUtils.endsWith(artifact.getDownloadUrl(), DEFAULT_PRODUCT_FOLDER_TYPE)) {
       return;
@@ -125,10 +121,8 @@ public class MavenDependencyServiceImpl implements MavenDependencyService {
     var productSearchCriteria = new ProductSearchCriteria();
     productSearchCriteria.setListed(true);
     var orderById = new Sort.Order(SortOption.ID.getDirection(), SortOption.ID.getCode());
-    Pageable pageable = PageRequest.of(0, 1000, Sort.by(orderById));
-
-    List<String> availableProductIds = productRepository.searchByCriteria(productSearchCriteria, pageable)
-        .map(Product::getId).toList();
+    List<String> availableProductIds = productRepository.searchByCriteria(productSearchCriteria,
+        PageRequest.of(0, 1000, Sort.by(orderById))).map(Product::getId).toList();
     List<String> syncedProductIds = productDependencyRepository.findAll().stream()
         .map(ProductDependency::getProductId).toList();
 
