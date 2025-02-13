@@ -284,3 +284,5 @@ export const REPO_PAGE_PATHS: Record<string, string> = {
   branches: '/settings/branches',
   lastCommit: '/commit/',
 };
+
+export const HASH_SYMBOL = '#';

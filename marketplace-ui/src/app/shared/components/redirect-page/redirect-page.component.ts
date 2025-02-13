@@ -3,7 +3,7 @@ import { Component, inject, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { ROUTER } from '../../constants/router.constant';
 import { TranslateModule } from '@ngx-translate/core';
-import { ERROR_PAGE_PATH } from '../../constants/common.constant';
+import { ERROR_PAGE_PATH, HASH_SYMBOL } from '../../constants/common.constant';
 import { ProductService } from '../../../modules/product/product.service';
 import { API_URI } from '../../constants/api.constant';
 import { ExternalDocument } from '../../models/external-document.model';
@@ -65,8 +65,8 @@ export class RedirectPageComponent implements OnInit {
     const currentHash = window.location.hash;
     if (!isSameUrl) {
       let link = relativeUrl;
-      if (!relativeUrl.includes('#')) {
-        link = relativeUrl + currentHash;
+      if (!relativeUrl.includes(HASH_SYMBOL)) {
+        link += currentHash;
       }
       window.location.href = link;
     }
