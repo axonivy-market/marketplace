@@ -253,9 +253,9 @@ export class ProductDetailComponent {
   }
 
   navigateToHomePageWithLastSearch() {
-    let queryParams: Record<string, any> = {};
+    const queryParams: Record<string, string | SortOption | TypeOption> = {};
     if (this.historyService.lastSearchType() !== TypeOption.All_TYPES) {
-      queryParams['type'] = this.historyService.lastSearchType();
+      queryParams['type'] = this.historyService.lastSearchType() as string;
     }
 
     if (this.historyService.lastSortOption() !== SortOption.STANDARD) {
@@ -263,7 +263,7 @@ export class ProductDetailComponent {
     }
 
     if (this.historyService.lastSearchText() !== "") {
-      queryParams['search'] = this.historyService.lastSearchText();
+      queryParams['search'] = this.historyService.lastSearchText() as string;
     }
 
     this.router.navigate([API_URI.APP], {
