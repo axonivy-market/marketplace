@@ -1,6 +1,7 @@
 package com.axonivy.market.service.impl;
 
 import com.axonivy.market.constants.GitHubConstants;
+import com.axonivy.market.entity.Product;
 import com.axonivy.market.enums.AccessLevel;
 import com.axonivy.market.exceptions.model.MissingHeaderException;
 import com.axonivy.market.exceptions.model.Oauth2ExchangeCodeException;
@@ -12,14 +13,21 @@ import com.axonivy.market.github.model.GitHubProperty;
 import com.axonivy.market.github.model.ProductSecurityInfo;
 import com.axonivy.market.github.model.SecretScanning;
 import com.axonivy.market.github.service.impl.GitHubServiceImpl;
+import com.axonivy.market.github.util.GitHubUtils;
+import com.axonivy.market.model.GithubReleaseModel;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.kohsuke.github.*;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.MockedStatic;
+import org.mockito.Mockito;
 import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.core.ParameterizedTypeReference;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.hateoas.Link;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
@@ -523,5 +531,105 @@ class GitHubServiceImplTest {
     when(ghOrganization.listRepositories()).thenReturn(mockPagedIterable);
     List<ProductSecurityInfo> result = gitHubService.getSecurityDetailsForAllProducts(accessToken, orgName);
     assertEquals(0, result.size());
+  }
+
+  @Test
+  void testGetGitHubReleaseModelsWithMixedReleases() throws IOException {
+    try(MockedStatic<GitHubUtils> gitHubUtilsMockedStatic = Mockito.mockStatic(GitHubUtils.class)) {
+      Link mockLink = mock(Link.class);
+      gitHubUtilsMockedStatic.when(() -> GitHubUtils.createSelfLinkForGithubReleaseModel(any(), any())).thenReturn(mockLink);
+
+      Product mockProduct = mock(Product.class);
+      PagedIterable<GHRelease> mockPagedIterable = mock(PagedIterable.class);
+      String mockGithubReleaseBody = "This is a release body with PR #123 and user @johndoe";
+      String mockProductSourceUrl = "http://example.com";
+      String mockVersion = "v1.0.0";
+      Pageable mockPageable = mock(Pageable.class);
+      GHRelease mockRelease1 = mock(GHRelease.class);
+      GHRelease mockRelease2 = mock(GHRelease.class);
+      when(mockRelease1.isDraft()).thenReturn(false);
+      when(mockRelease2.isDraft()).thenReturn(true);
+      when(mockRelease1.getBody()).thenReturn(mockGithubReleaseBody);
+      when(mockRelease1.getName()).thenReturn(mockVersion);
+      when(mockRelease1.getPublished_at()).thenReturn(new Date());
+      when(mockProduct.getSourceUrl()).thenReturn(mockProductSourceUrl);
+      when(mockPagedIterable.toList()).thenReturn(List.of(mockRelease1, mockRelease2));
+      when(mockRelease1.isDraft()).thenReturn(false);
+      when(mockRelease2.isDraft()).thenReturn(true);
+      when(gitHubService.toGitHubReleaseModel(mockRelease1, mockProduct)).thenReturn(new GithubReleaseModel());
+
+      Page<GithubReleaseModel> result = gitHubService.getGitHubReleaseModels(mockProduct, mockPagedIterable, mockPageable);
+
+      assertNotNull(result);
+      assertEquals(1, result.getTotalElements());
+    }
+  }
+
+
+  @Test
+  void testGetGitHubReleaseModelByProductIdAndReleaseId() throws IOException {
+    try(MockedStatic<GitHubUtils> gitHubUtilsMockedStatic = Mockito.mockStatic(GitHubUtils.class)) {
+      Link mockLink = mock(Link.class);
+      gitHubUtilsMockedStatic.when(() -> GitHubUtils.createSelfLinkForGithubReleaseModel(any(), any())).thenReturn(mockLink);
+
+      String mockGithubReleaseBody = "This is a release body with PR #123 and user @johndoe";
+      String mockProductSourceUrl = "http://example.com";
+      String mockRepositoryName = "axonivy-market/portal";
+      String mockVersion = "v1.0.0";
+
+      Product mockProduct = mock(Product.class);
+      GHRepository mockRepository = mock(GHRepository.class);
+      GHRelease mockRelease = mock(GHRelease.class);
+
+      when(mockProduct.getRepositoryName()).thenReturn(mockRepositoryName);
+      when(gitHubService.getGitHub()).thenReturn(mock(GitHub.class));
+      when(gitHubService.getGitHub().getRepository(mockRepositoryName)).thenReturn(mockRepository);
+      when(mockRepository.getRelease(1L)).thenReturn(mockRelease);
+      when(mockRelease.getBody()).thenReturn(mockGithubReleaseBody);
+      when(mockRelease.getName()).thenReturn(mockVersion);
+      when(mockRelease.getPublished_at()).thenReturn(new Date());
+      when(mockProduct.getSourceUrl()).thenReturn(mockProductSourceUrl);
+      when(gitHubService.toGitHubReleaseModel(mockRelease, mockProduct)).thenReturn(new GithubReleaseModel());
+
+      GithubReleaseModel result = gitHubService.getGitHubReleaseModelByProductIdAndReleaseId(mockProduct, 1L);
+
+      assertNotNull(result);
+      verify(gitHubService).getRepository(mockRepositoryName);
+      verify(mockRepository).getRelease(1L);
+    }
+  }
+
+  @Test
+  void testTransformGithubReleaseBody() {
+    String githubReleaseBody = "This is a release body with PR #123 and user @johndoe";
+    String productSourceUrl = "http://example.com";
+
+    String result = gitHubService.transformGithubReleaseBody(githubReleaseBody, productSourceUrl);
+
+    assertNotNull(result);
+    assertTrue(result.contains("http://example.com/pull/123"));
+    assertTrue(result.contains("https://github.com/johndoe"));
+  }
+
+  @Test
+  void testToGitHubReleaseModel() throws IOException {
+    try(MockedStatic<GitHubUtils> gitHubUtilsMockedStatic = Mockito.mockStatic(GitHubUtils.class)) {
+      Link mockLink = mock(Link.class);
+      gitHubUtilsMockedStatic.when(() -> GitHubUtils.createSelfLinkForGithubReleaseModel(any(), any())).thenReturn(mockLink);
+
+      GHRelease mockGhRelease = mock(GHRelease.class);
+      Product mockProduct = mock(Product.class);
+
+      when(mockGhRelease.getBody()).thenReturn("This is a release body with PR #123 and user @johndoe");
+      when(mockGhRelease.getName()).thenReturn("v1.0.0");
+      when(mockGhRelease.getPublished_at()).thenReturn(new Date());
+      when(mockProduct.getSourceUrl()).thenReturn("http://example.com");
+
+      GithubReleaseModel result = gitHubService.toGitHubReleaseModel(mockGhRelease, mockProduct);
+
+      assertNotNull(result);
+      assertEquals("v1.0.0", result.getName());
+      assertTrue(result.getBody().contains("http://example.com"));
+    }
   }
 }

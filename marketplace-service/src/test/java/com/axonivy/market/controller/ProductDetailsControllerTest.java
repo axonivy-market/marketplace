@@ -1,11 +1,13 @@
 package com.axonivy.market.controller;
 
 import com.axonivy.market.BaseSetup;
+import com.axonivy.market.assembler.GithubReleaseModelAssembler;
 import com.axonivy.market.assembler.ProductDetailModelAssembler;
 import com.axonivy.market.constants.RequestMappingConstants;
 import com.axonivy.market.entity.Product;
 import com.axonivy.market.entity.ProductJsonContent;
 import com.axonivy.market.enums.Language;
+import com.axonivy.market.model.GithubReleaseModel;
 import com.axonivy.market.model.MavenArtifactVersionModel;
 import com.axonivy.market.model.ProductDetailModel;
 import com.axonivy.market.service.ProductService;
@@ -19,6 +21,11 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PagedResourcesAssembler;
+import org.springframework.hateoas.PagedModel;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
@@ -40,6 +47,11 @@ class ProductDetailsControllerTest extends BaseSetup {
   VersionService versionService;
   @Mock
   private ProductDetailModelAssembler detailModelAssembler;
+  @Mock
+  private PagedResourcesAssembler<GithubReleaseModel> pagedResourcesAssembler;
+  @Mock
+  private GithubReleaseModelAssembler githubReleaseModelAssembler;
+
 
   @InjectMocks
   private ProductDetailsController productDetailsController;
@@ -265,5 +277,43 @@ class ProductDetailsControllerTest extends BaseSetup {
         Mockito.anyString())).thenReturn(mockDownloadUrl);
     response = productDetailsController.getLatestArtifactDownloadUrl("portal", "1.0.0", "portal-app.zip");
     assertEquals(HttpStatus.OK, response.getStatusCode());
+  }
+
+  @Test
+  void testFindGithubPublicReleaseByProductIdAndReleaseId() throws IOException {
+    GithubReleaseModel githubReleaseModel = new GithubReleaseModel();
+    when(productService.getGitHubReleaseModelByProductIdAndReleaseId(Mockito.anyString(), Mockito.anyLong()))
+        .thenReturn(githubReleaseModel);
+    when(githubReleaseModelAssembler.toModel(Mockito.any(GithubReleaseModel.class))).thenReturn(githubReleaseModel);
+
+    var result = productDetailsController.findGithubPublicReleaseByProductIdAndReleaseId("portal", 1L);
+
+    assertEquals(HttpStatus.OK, result.getStatusCode());
+    assertEquals(githubReleaseModel, result.getBody());
+  }
+
+  @Test
+  void testFindGithubPublicReleases() throws IOException {
+    Page<GithubReleaseModel> page = new PageImpl<>(List.of(new GithubReleaseModel()));
+    when(productService.getGitHubReleaseModels(Mockito.anyString(), Mockito.any(Pageable.class))).thenReturn(page);
+    when(pagedResourcesAssembler.toModel(Mockito.any(Page.class), Mockito.any(GithubReleaseModelAssembler.class)))
+        .thenReturn(PagedModel.of(List.of(new GithubReleaseModel()), new PagedModel.PageMetadata(1, 0, 1)));
+
+    var result = productDetailsController.findGithubPublicReleases("portal", Pageable.ofSize(1));
+
+    assertEquals(HttpStatus.OK, result.getStatusCode());
+    assertEquals(1, Objects.requireNonNull(result.getBody()).getContent().size());
+  }
+
+  @Test
+  void testFindGithubPublicReleasesWithEmptyResult() throws IOException {
+    Page<GithubReleaseModel> emptyPage = Page.empty();
+    when(productService.getGitHubReleaseModels(Mockito.anyString(), Mockito.any(Pageable.class))).thenReturn(emptyPage);
+    when(pagedResourcesAssembler.toEmptyModel(Mockito.any(Page.class), Mockito.any())).thenReturn(PagedModel.empty());
+
+    var result = productDetailsController.findGithubPublicReleases("portal", Pageable.ofSize(1));
+
+    assertEquals(HttpStatus.OK, result.getStatusCode());
+    assertTrue(Objects.requireNonNull(result.getBody()).getContent().isEmpty());
   }
 }

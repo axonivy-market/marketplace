@@ -1,3 +1,4 @@
+import { ProductDetail } from './../../../shared/models/product-detail.model';
 import { CommonModule, NgOptimizedImage } from '@angular/common';
 import MarkdownIt from 'markdown-it';
 import MarkdownItGitHubAlerts from 'markdown-it-github-alerts';
@@ -30,7 +31,6 @@ import {
   VERSION
 } from '../../../shared/constants/common.constant';
 import { ItemDropdown } from '../../../shared/models/item-dropdown.model';
-import { ProductDetail } from '../../../shared/models/product-detail.model';
 import { ProductModuleContent } from '../../../shared/models/product-module-content.model';
 import { ProductTypeIconPipe } from '../../../shared/pipes/icon.pipe';
 import { MultilingualismPipe } from '../../../shared/pipes/multilingualism.pipe';
@@ -58,6 +58,9 @@ import { EmptyProductDetailPipe } from '../../../shared/pipes/empty-product-deta
 import { LoadingSpinnerComponent } from '../../../shared/components/loading-spinner/loading-spinner.component';
 import { LoadingComponentId } from '../../../shared/enums/loading-component-id';
 import { LoadingService } from '../../../core/services/loading/loading.service';
+import { ProductRelease } from '../../../shared/models/apis/product-release.model';
+import LinkifyIt from 'linkify-it';
+import { ProductReleaseSafeHtml } from '../../../shared/models/product-release-safe-html.model';
 
 export interface DetailTab {
   activeClass: string;
@@ -68,6 +71,7 @@ export interface DetailTab {
 
 const STORAGE_ITEM = 'activeTab';
 const DEFAULT_ACTIVE_TAB = 'description';
+const GITHUB_BASE_URL = 'https://github.com/';
 @Component({
   selector: 'app-product-detail',
   standalone: true,
@@ -87,13 +91,15 @@ const DEFAULT_ACTIVE_TAB = 'description';
     CommonDropdownComponent,
     NgOptimizedImage,
     EmptyProductDetailPipe,
-    LoadingSpinnerComponent
+    LoadingSpinnerComponent,
   ],
   providers: [ProductService],
   templateUrl: './product-detail.component.html',
   styleUrl: './product-detail.component.scss'
 })
 export class ProductDetailComponent {
+  githubPullRequestNumberRegex = (/pull\/(\d+)/);
+
   themeService = inject(ThemeService);
   route = inject(ActivatedRoute);
   router = inject(Router);
@@ -122,6 +128,7 @@ export class ProductDetailComponent {
   activeTab = '';
   displayedTabsSignal: Signal<ItemDropdown[]> = computed(() => {
     this.languageService.selectedLanguage();
+    this.getReadmeContent();
     return this.getDisplayedTabsSignal();
   });
   isDropdownOpen: WritableSignal<boolean> = signal(false);
@@ -131,6 +138,9 @@ export class ProductDetailComponent {
   isMobileMode = signal<boolean>(false);
   installationCount = 0;
   logoUrl = DEFAULT_IMAGE_URL;
+  md: MarkdownIt = new MarkdownIt();
+  productReleaseSafeHtmls: ProductReleaseSafeHtml[] = [];
+  loadedReadmeContent: { [key: string]: SafeHtml } = {};
 
   @HostListener('window:popstate', ['$event'])
   onPopState() {
@@ -143,7 +153,7 @@ export class ProductDetailComponent {
 
   constructor(
     private readonly titleService: Title,
-    private readonly sanitizer: DomSanitizer
+    private readonly sanitizer: DomSanitizer,
   ) {
     this.scrollToTop();
     this.resizeObserver = new ResizeObserver(() => {
@@ -157,6 +167,7 @@ export class ProductDetailComponent {
       queryParamsHandling: 'merge',
       replaceUrl: true
     });
+
     const productId = this.route.snapshot.params[ROUTER.ID];
     this.productDetailService.productId.set(productId);
     if (productId) {
@@ -166,9 +177,21 @@ export class ProductDetailComponent {
         productFeedBack:
           this.productFeedbackService.getInitFeedbacksObservable(),
         rating: this.productStarRatingService.getRatingObservable(productId),
-        userFeedback: this.productFeedbackService.findProductFeedbackOfUser()
+        userFeedback: this.productFeedbackService.findProductFeedbackOfUser(),
+        changelogs: this.productService.getProductChangelogs(productId),
       }).subscribe(res => {
+        this.md.use(this.linkifyPullRequests, res.productDetail.sourceUrl, this.githubPullRequestNumberRegex)
+          .set({
+            typographer: true,
+            linkify: true,
+          })
+          .enable(['smartquotes', 'replacements', 'image']);
+
+        if (res.changelogs._embedded.githubReleaseModelList !== null && res.changelogs._embedded.githubReleaseModelList.length !== 0) {
+          this.productReleaseSafeHtmls = this.renderChangelogContent(res.changelogs._embedded.githubReleaseModelList);
+        }
         this.handleProductDetail(res.productDetail);
+        this.getReadmeContent();
         this.productFeedbackService.handleFeedbackApiResponse(res.productFeedBack);
         this.updateDropdownSelection();
         this.checkMediaSize();
@@ -218,7 +241,11 @@ export class ProductDetailComponent {
   }
 
   onClickingBackToHomepageButton(): void {
-    this.router.navigate([API_URI.APP]);
+    if (window.history.length > 1) {
+      window.history.back();
+    } else {
+      this.router.navigate([API_URI.APP]);
+    }
   }
 
   onLogoError(): void {
@@ -298,8 +325,10 @@ export class ProductDetailComponent {
           content.setup,
           this.languageService.selectedLanguage()
         ),
-      dependency: content.isDependency
+      dependency: content.isDependency,
+      changelog: this.productReleaseSafeHtmls != null && this.productReleaseSafeHtmls.length !== 0,
     };
+
     return conditions[value] ?? false;
   }
 
@@ -423,6 +452,7 @@ export class ProductDetailComponent {
         this.activeTab = displayedTabs[0].value;
       }
     }
+
     return displayedTabs;
   }
 
@@ -445,11 +475,86 @@ export class ProductDetailComponent {
     return productDetail;
   }
 
+  getReadmeContent() {
+    this.detailTabs.forEach(tab => {
+      const contentValue = this.getProductModuleContentValue(tab);
+      if (contentValue) {
+        const translatedContent = new MultilingualismPipe().transform(
+          contentValue,
+          this.languageService.selectedLanguage()
+        );
+
+        this.loadedReadmeContent[tab.value] = this.renderGithubAlert(translatedContent);
+      }
+    });
+  }
+
   renderGithubAlert(value: string): SafeHtml {
     const md = MarkdownIt({ html: true });
     md.use(MarkdownItGitHubAlerts);
     md.use(full); // Add emoji support
     const result = md.render(value);
+
     return this.sanitizer.bypassSecurityTrustHtml(result);
+  }
+
+  renderChangelogContent(releases: ProductRelease[]): ProductReleaseSafeHtml[] {
+    return releases.map(release => {
+      return {
+        name: release.name,
+        body: this.bypassSecurityTrustHtml(release.body),
+        publishedAt: release.publishedAt,
+      };
+    });
+  }
+
+  private bypassSecurityTrustHtml(value: string): SafeHtml {
+    const markdownContent = this.md.render(value);
+    return this.sanitizer.bypassSecurityTrustHtml(markdownContent);
+  }
+
+
+  linkifyPullRequests(md: MarkdownIt, sourceUrl: string, prNumberRegex: RegExp) {
+    md.renderer.rules.text = (tokens, idx) => {
+      const content = tokens[idx].content;
+      const linkify = new LinkifyIt();
+      const matches = linkify.match(content);
+
+      if (!matches) {
+        return content;
+      }
+
+      let result = content;
+
+      matches.forEach(match => {
+        const url = match.url;
+
+        if (url.startsWith(`${sourceUrl}/compare/`)) {
+          return;
+        }
+        if (url.startsWith(sourceUrl)) {
+          const pullNumberMatch = prNumberRegex.exec(url);
+          let pullNumber = null;
+
+          if (pullNumberMatch) {
+            pullNumber = pullNumberMatch[1];
+            const start = match.index;
+            const end = start + match.lastIndex - match.index;
+            const link = `#${pullNumber}`;
+
+            result = result.slice(0, start) + link + result.slice(end);
+          }
+        } else if (url.startsWith(GITHUB_BASE_URL)) {
+          const username = url.replace(GITHUB_BASE_URL, '');
+
+          const mention = `@${username}`;
+          result = result.replace(url, mention);
+        } else {
+          return;
+        }
+      });
+
+      return result;
+    };
   }
 }

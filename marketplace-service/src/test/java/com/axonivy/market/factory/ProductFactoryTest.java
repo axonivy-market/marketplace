@@ -80,8 +80,10 @@ class ProductFactoryTest extends BaseSetup {
     Product product = new Product();
     Product persistedData = new Product();
     persistedData.setMarketDirectory(SAMPLE_PRODUCT_PATH);
+    persistedData.setLogoId(SAMPLE_LOGO_ID);
 
     ProductFactory.transferComputedPersistedDataToProduct(persistedData, product);
     assertEquals(SAMPLE_PRODUCT_PATH, product.getMarketDirectory());
+    assertEquals(SAMPLE_LOGO_ID, product.getLogoId());
   }
 }

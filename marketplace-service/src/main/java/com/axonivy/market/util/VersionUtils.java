@@ -17,7 +17,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Set;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static com.axonivy.market.constants.CommonConstants.DOT_SEPARATOR;
@@ -139,12 +138,14 @@ public class VersionUtils {
   }
 
   public static List<String> getInstallableVersionsFromMetadataList(List<Metadata> metadataList) {
+    List<String> installableVersions = new ArrayList<>();
     if (CollectionUtils.isEmpty(metadataList)) {
-      return new ArrayList<>();
+      return installableVersions;
     }
-    return metadataList.stream().filter(MavenUtils::isProductMetadata).findAny().map(
-        metadata -> metadata.getVersions().stream().sorted(new LatestVersionComparator()).collect(
-            Collectors.toList())).orElse(new ArrayList<>());
+    metadataList.stream().filter(
+        metadata -> MavenUtils.isProductMetadata(metadata) && ObjectUtils.isNotEmpty(metadata.getVersions())).forEach(
+        productMeta -> installableVersions.addAll(productMeta.getVersions()));
+    return installableVersions.stream().distinct().sorted(new LatestVersionComparator()).toList();
   }
 
   public static String getPrefixOfVersion(String version) {
