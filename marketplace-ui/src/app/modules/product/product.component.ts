@@ -37,6 +37,8 @@ import { ItemDropdown } from '../../shared/models/item-dropdown.model';
 import { LoadingSpinnerComponent } from '../../shared/components/loading-spinner/loading-spinner.component';
 import { LoadingService } from '../../core/services/loading/loading.service';
 import { LoadingComponentId } from '../../shared/enums/loading-component-id';
+import { HistoryService } from '../../core/services/history/history.service';
+import { log } from 'node:console';
 
 const SEARCH_DEBOUNCE_TIME = 500;
 
@@ -74,7 +76,7 @@ export class ProductComponent implements AfterViewInit, OnDestroy {
   responsePage!: Page;
   isRESTClient: WritableSignal<boolean> = signal(false);
   isDesignerEnvironment = inject(RoutingQueryParamService).isDesignerEnv();
-
+  historyService = inject(HistoryService);
   productService = inject(ProductService);
   themeService = inject(ThemeService);
   translateService = inject(TranslateService);
@@ -133,7 +135,7 @@ export class ProductComponent implements AfterViewInit, OnDestroy {
     this.setupIntersectionObserver();
   }
 
-  viewProductDetail(productId: string, _productTag: string) {
+  viewProductDetail(productId: string) {
     if (this.isRESTClient()) {
       window.location.href = `/${productId}`;
     }
@@ -147,7 +149,7 @@ export class ProductComponent implements AfterViewInit, OnDestroy {
       type: selectedType.value
     };
     this.loadProductItems(true);
-
+    this.historyService.lastSearchType.set(selectedType.value);
     let queryParams: { type: TypeOption | null } = { type: null };
 
     if (selectedType.value !== TypeOption.All_TYPES) {
@@ -169,6 +171,7 @@ export class ProductComponent implements AfterViewInit, OnDestroy {
     };
     this.loadProductItems(true);
     let queryParams = null;
+    this.historyService.lastSortOption.set(selectedSort);
     if (SortOption.STANDARD !== selectedSort) {
       queryParams = { sort: this.criteria.sort };
     } else {
@@ -183,6 +186,7 @@ export class ProductComponent implements AfterViewInit, OnDestroy {
   }
 
   onSearchChanged(searchString: string) {
+    this.historyService.lastSearchText.set(searchString);
     this.searchTextChanged.next(searchString);
   }
 
