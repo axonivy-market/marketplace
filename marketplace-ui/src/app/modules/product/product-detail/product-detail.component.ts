@@ -132,6 +132,7 @@ export class ProductDetailComponent {
   activeTab = '';
   displayedTabsSignal: Signal<ItemDropdown[]> = computed(() => {
     this.languageService.selectedLanguage();
+    this.getReadmeContent();
     return this.getDisplayedTabsSignal();
   });
   isDropdownOpen: WritableSignal<boolean> = signal(false);
@@ -143,6 +144,7 @@ export class ProductDetailComponent {
   logoUrl = DEFAULT_IMAGE_URL;
   md: MarkdownIt = new MarkdownIt();
   productReleaseSafeHtmls: ProductReleaseSafeHtml[] = [];
+  loadedReadmeContent: { [key: string]: SafeHtml } = {};
 
   @HostListener('window:popstate', ['$event'])
   onPopState() {
@@ -188,11 +190,12 @@ export class ProductDetailComponent {
             linkify: true,
           })
           .enable(['smartquotes', 'replacements', 'image']);
-          
+
         if (res.changelogs._embedded.githubReleaseModelList !== null && res.changelogs._embedded.githubReleaseModelList.length !== 0) {
           this.productReleaseSafeHtmls = this.renderChangelogContent(res.changelogs._embedded.githubReleaseModelList);
         }
         this.handleProductDetail(res.productDetail);
+        this.getReadmeContent();
         this.productFeedbackService.handleFeedbackApiResponse(res.productFeedBack);
         this.updateDropdownSelection();
         this.checkMediaSize();
@@ -474,7 +477,7 @@ export class ProductDetailComponent {
         this.activeTab = displayedTabs[0].value;
       }
     }
-    
+
     return displayedTabs;
   }
 
@@ -497,7 +500,21 @@ export class ProductDetailComponent {
     return productDetail;
   }
 
-  renderGithubAlert(value: string): SafeHtml {    
+  getReadmeContent() {
+    this.detailTabs.forEach(tab => {
+      const contentValue = this.getProductModuleContentValue(tab);
+      if (contentValue) {
+        const translatedContent = new MultilingualismPipe().transform(
+          contentValue,
+          this.languageService.selectedLanguage()
+        );
+
+        this.loadedReadmeContent[tab.value] = this.renderGithubAlert(translatedContent);
+      }
+    });
+  }
+
+  renderGithubAlert(value: string): SafeHtml {
     const md = MarkdownIt();
     md.use(MarkdownItGitHubAlerts);
     md.use(full); // Add emoji support
@@ -549,7 +566,7 @@ export class ProductDetailComponent {
             const start = match.index;
             const end = start + match.lastIndex - match.index;
             const link = `#${pullNumber}`;
-  
+
             result = result.slice(0, start) + link + result.slice(end);
           }
         } else if (url.startsWith(GITHUB_BASE_URL)) {
