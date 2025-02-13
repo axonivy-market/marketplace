@@ -50,7 +50,7 @@ export const apiInterceptor: HttpInterceptorFn = (req, next) => {
   if (req.context.get(ForwardingError)) {
     return next(cloneReq);
   }
-
+  
   return next(cloneReq).pipe(
     catchError(error => {
       if (ERROR_CODES.includes(error.status)) {
