@@ -38,7 +38,6 @@ import { LoadingSpinnerComponent } from '../../shared/components/loading-spinner
 import { LoadingService } from '../../core/services/loading/loading.service';
 import { LoadingComponentId } from '../../shared/enums/loading-component-id';
 import { HistoryService } from '../../core/services/history/history.service';
-import { log } from 'node:console';
 
 const SEARCH_DEBOUNCE_TIME = 500;
 
