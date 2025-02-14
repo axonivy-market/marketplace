@@ -21,6 +21,7 @@ import org.apache.maven.model.Model;
 import org.apache.maven.model.io.xpp3.MavenXpp3Reader;
 import org.codehaus.plexus.util.xml.pull.XmlPullParserException;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.HttpClientErrorException;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -183,8 +184,9 @@ public class MavenDependencyServiceImpl implements MavenDependencyService {
   private List<Dependency> extractMavenDependencies(MavenArtifactModel artifact) {
     List<Dependency> dependencies = new ArrayList<>();
     try {
+      var unzipPath = String.join(File.separator, DATA_DIR, WORK_DIR, MAVEN_DIR, artifact.getArtifactId());
       String location = fileDownloadService.downloadAndUnzipFile(artifact.getDownloadUrl(),
-          new DownloadOption(true, String.join(File.separator, DATA_DIR, WORK_DIR, MAVEN_DIR, artifact.getArtifactId())));
+          new DownloadOption(true,unzipPath));
       if (StringUtils.isBlank(location)) {
         return List.of();
       }
@@ -196,8 +198,10 @@ public class MavenDependencyServiceImpl implements MavenDependencyService {
           .toList();
       // Delete work folder
       fileDownloadService.deleteDirectory(Path.of(location));
+    } catch (HttpClientErrorException e) {
+      log.error("Cannot extract maven dependencies {}", e.getStatusCode());
     } catch (Exception e) {
-      log.error("Cannot extract maven dependencies {}", e.getMessage());
+      log.error("Exception during unzip", e);
     }
     return dependencies;
   }

@@ -20,7 +20,9 @@ import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.RegExUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.HttpClientErrorException;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -111,8 +113,10 @@ public class ExternalDocumentServiceImpl implements ExternalDocumentService {
     try {
       return fileDownloadService.downloadAndUnzipFile(downloadDocUrl,
           DownloadOption.builder().isForced(isResetSync).build());
+    } catch (HttpClientErrorException e) {
+      log.error("Cannot download doc {}", e.getStatusCode());
     } catch (Exception e) {
-      log.error("Cannot download doc", e);
+      log.error("Exception during unzip", e);
     }
     return EMPTY;
   }
