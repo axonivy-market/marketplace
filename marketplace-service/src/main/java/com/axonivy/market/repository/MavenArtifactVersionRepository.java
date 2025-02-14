@@ -5,5 +5,7 @@ import org.springframework.data.mongodb.repository.MongoRepository;
 import org.springframework.stereotype.Repository;
 
 @Repository
-public interface MavenArtifactVersionRepository extends MongoRepository<MavenArtifactVersion, String> {
+public interface MavenArtifactVersionRepository extends MongoRepository<MavenArtifactVersion, String>,
+    CustomProductDependencyRepository {
+
 }

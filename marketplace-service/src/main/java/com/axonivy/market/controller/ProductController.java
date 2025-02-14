@@ -8,7 +8,7 @@ import com.axonivy.market.github.service.GHAxonIvyMarketRepoService;
 import com.axonivy.market.github.service.GitHubService;
 import com.axonivy.market.model.Message;
 import com.axonivy.market.model.ProductModel;
-import com.axonivy.market.service.MetadataService;
+import com.axonivy.market.service.MavenDependencyService;
 import com.axonivy.market.service.ProductService;
 import com.axonivy.market.util.AuthorizationUtils;
 import io.swagger.v3.oas.annotations.Operation;
@@ -52,8 +52,8 @@ public class ProductController {
   private final GitHubService gitHubService;
   private final ProductModelAssembler assembler;
   private final PagedResourcesAssembler<Product> pagedResourcesAssembler;
-  private final MetadataService metadataService;
   private final GHAxonIvyMarketRepoService axonIvyMarketRepoService;
+  private final MavenDependencyService mavenDependencyService;
 
   @GetMapping()
   @Operation(summary = "Retrieve a paginated list of all products, optionally filtered by type, keyword, and language",
@@ -64,7 +64,7 @@ public class ProductController {
           required = true),
       @Parameter(name = "sort",
           description = "Sorting criteria in the format: Sorting criteria(popularity|alphabetically|recent), Sorting " +
-                  "order(asc|desc)",
+              "order(asc|desc)",
           in = ParameterIn.QUERY, example = "[\"popularity\",\"asc\"]", required = true)})
   public ResponseEntity<PagedModel<ProductModel>> findProducts(
       @RequestParam(name = TYPE) @Parameter(description = "Type of product.", in = ParameterIn.QUERY,
@@ -169,5 +169,23 @@ public class ProductController {
     var emptyPagedModel = (PagedModel<ProductModel>) pagedResourcesAssembler.toEmptyModel(Page.empty(),
         ProductModel.class);
     return new ResponseEntity<>(emptyPagedModel, HttpStatus.OK);
+  }
+
+  @Operation(hidden = true)
+  @PutMapping(SYNC_ZIP_ARTIFACTS)
+  public ResponseEntity<Message> syncProductArtifacts(@RequestHeader(value = AUTHORIZATION) String authorizationHeader,
+      @RequestParam(value = RESET_SYNC, required = false) Boolean resetSync) {
+    String token = AuthorizationUtils.getBearerToken(authorizationHeader);
+    gitHubService.validateUserInOrganizationAndTeam(token, GitHubConstants.AXONIVY_MARKET_ORGANIZATION_NAME,
+        GitHubConstants.AXONIVY_MARKET_TEAM_NAME);
+
+    var message = new Message();
+    int syncIds = mavenDependencyService.syncIARDependenciesForProducts(resetSync);
+    if (syncIds > 0) {
+      message.setMessageDetails("Synced %d artifact(s)".formatted(syncIds));
+      return ResponseEntity.status(HttpStatus.OK).body(message);
+    }
+    message.setMessageDetails("Nothing to sync");
+    return ResponseEntity.status(HttpStatus.NO_CONTENT).body(message);
   }
 }

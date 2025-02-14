@@ -50,7 +50,7 @@ class ExternalDocumentServiceImplTest {
     service.syncDocumentForProduct(PORTAL, new ArrayList<>(), false);
     verify(externalDocumentMetaRepository, times(2)).findByProductIdAndVersion(any(), any());
 
-    when(fileDownloadService.downloadAndUnzipFile(any(), anyBoolean())).thenReturn("data" + RELATIVE_LOCATION);
+    when(fileDownloadService.downloadAndUnzipFile(any(), any())).thenReturn("data" + RELATIVE_LOCATION);
     service.syncDocumentForProduct(PORTAL, new ArrayList<>(), true);
     verify(externalDocumentMetaRepository, times(2)).save(any());
   }

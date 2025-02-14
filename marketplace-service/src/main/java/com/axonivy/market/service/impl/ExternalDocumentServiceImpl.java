@@ -1,6 +1,7 @@
 package com.axonivy.market.service.impl;
 
 import com.axonivy.market.bo.Artifact;
+import com.axonivy.market.bo.DownloadOption;
 import com.axonivy.market.constants.CommonConstants;
 import com.axonivy.market.constants.DirectoryConstants;
 import com.axonivy.market.entity.ExternalDocumentMeta;
@@ -19,7 +20,9 @@ import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.RegExUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.HttpClientErrorException;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -48,7 +51,7 @@ public class ExternalDocumentServiceImpl implements ExternalDocumentService {
           : nonSyncReleasedVersions;
       releasedVersions = releasedVersions.stream().filter(VersionUtils::isValidFormatReleasedVersion).toList();
 
-      if (ObjectUtils.isEmpty(docArtifacts) || ObjectUtils.isEmpty(releasedVersions) ) {
+      if (ObjectUtils.isEmpty(docArtifacts) || ObjectUtils.isEmpty(releasedVersions)) {
         return;
       }
 
@@ -108,9 +111,12 @@ public class ExternalDocumentServiceImpl implements ExternalDocumentService {
 
   private String downloadDocAndUnzipToShareFolder(String downloadDocUrl, boolean isResetSync) {
     try {
-      return fileDownloadService.downloadAndUnzipFile(downloadDocUrl, isResetSync);
+      return fileDownloadService.downloadAndUnzipFile(downloadDocUrl,
+          DownloadOption.builder().isForced(isResetSync).build());
+    } catch (HttpClientErrorException e) {
+      log.error("Cannot download doc {}", e.getStatusCode());
     } catch (Exception e) {
-      log.error("Cannot download doc", e);
+      log.error("Exception during unzip", e);
     }
     return EMPTY;
   }

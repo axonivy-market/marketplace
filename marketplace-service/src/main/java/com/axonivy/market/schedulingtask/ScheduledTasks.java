@@ -2,6 +2,7 @@ package com.axonivy.market.schedulingtask;
 
 import com.axonivy.market.repository.ProductRepository;
 import com.axonivy.market.service.ExternalDocumentService;
+import com.axonivy.market.service.MavenDependencyService;
 import com.axonivy.market.service.ProductService;
 import lombok.AllArgsConstructor;
 import lombok.extern.log4j.Log4j2;
@@ -22,6 +23,7 @@ public class ScheduledTasks {
   final ProductRepository productRepo;
   final ProductService productService;
   final ExternalDocumentService externalDocumentService;
+  final MavenDependencyService mavenDependencyService;
 
   @Scheduled(cron = SCHEDULING_TASK_PRODUCTS_CRON)
   public void syncDataForProductFromGitHubRepo() {
@@ -35,5 +37,11 @@ public class ScheduledTasks {
     for (var product : productRepo.findAllProductsHaveDocument()) {
       externalDocumentService.syncDocumentForProduct(product.getId(), new ArrayList<>(), false);
     }
+  }
+
+  @Scheduled(cron = SCHEDULING_TASK_PRODUCTS_CRON)
+  public void syncDataForProductMavenDependencies() {
+    log.warn("Started sync data for product maven dependencies");
+    mavenDependencyService.syncIARDependenciesForProducts(false);
   }
 }
