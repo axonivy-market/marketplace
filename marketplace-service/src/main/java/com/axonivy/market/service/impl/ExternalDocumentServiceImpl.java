@@ -116,7 +116,7 @@ public class ExternalDocumentServiceImpl implements ExternalDocumentService {
     } catch (HttpClientErrorException e) {
       log.error("Cannot download doc {}", e.getStatusCode());
     } catch (Exception e) {
-      log.error("Exception during unzip", e);
+      log.error("Exception during unzip");
     }
     return EMPTY;
   }
