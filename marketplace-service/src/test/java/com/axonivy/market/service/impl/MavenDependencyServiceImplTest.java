@@ -13,8 +13,6 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.data.domain.PageImpl;
-import org.springframework.data.domain.Pageable;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -43,14 +41,14 @@ class MavenDependencyServiceImplTest extends BaseSetup {
   @Test
   void testSyncIARDependencies() {
     prepareDataForTest(true);
-    int totalSynced = mavenDependencyService.syncIARDependenciesForProducts();
+    int totalSynced = mavenDependencyService.syncIARDependenciesForProducts(false);
     assertTrue(totalSynced > 0, "Expected at least one product was synced but service returned nothing");
   }
 
   private void prepareDataForTest(boolean isProductArtifact) {
     var mavenArtifactVersionMock = createMavenArtifactVersionMock(isProductArtifact);
-    when(productRepository.searchByCriteria(any(), any(Pageable.class))).thenReturn(createPageProductsMock());
-    when(productDependencyRepository.findAll(any(Pageable.class))).thenReturn(new PageImpl<>(List.of()));
+    when(productRepository.findAll()).thenReturn(createPageProductsMock().getContent());
+    when(productDependencyRepository.findAll()).thenReturn(List.of());
     when(mavenArtifactVersionRepository.findById(any())).thenReturn(Optional.of(mavenArtifactVersionMock));
     when(productDependencyRepository.save(any())).thenReturn(
         ProductDependency.builder().productId(SAMPLE_PRODUCT_ID).build());
@@ -60,7 +58,7 @@ class MavenDependencyServiceImplTest extends BaseSetup {
   void testSyncIARDependenciesWithAdditionArtifacts() throws IOException {
     prepareDataForTest(false);
     when(fileDownloadService.downloadAndUnzipFile(any(), any())).thenReturn(SAMPLE_PRODUCT_PATH);
-    int totalSynced = mavenDependencyService.syncIARDependenciesForProducts();
+    int totalSynced = mavenDependencyService.syncIARDependenciesForProducts(false);
     assertTrue(totalSynced > 0, "Expected at least one product was synced but service returned nothing");
   }
 
@@ -79,9 +77,8 @@ class MavenDependencyServiceImplTest extends BaseSetup {
 
   @Test
   void testNothingToSync() {
-    when(productRepository.searchByCriteria(any(), any(Pageable.class))).thenReturn(new PageImpl<>(List.of()));
-    when(productDependencyRepository.findAll()).thenReturn(List.of());
-    int totalSynced = mavenDependencyService.syncIARDependenciesForProducts();
+    when(productRepository.findAll()).thenReturn(List.of());
+    int totalSynced = mavenDependencyService.syncIARDependenciesForProducts(true);
     assertEquals(0, totalSynced, "Expected no product was synced but service returned something");
   }
 
