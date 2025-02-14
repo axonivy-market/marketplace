@@ -2,7 +2,7 @@ import { CommonModule, NgOptimizedImage } from '@angular/common';
 import { Component, inject, Signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
-import { TranslateModule } from '@ngx-translate/core';
+import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { AuthService } from '../../../../../../auth/auth.service';
 import { LanguageService } from '../../../../../../core/services/language/language.service';
 import { StarRatingComponent } from '../../../../../../shared/components/star-rating/star-rating.component';
@@ -36,6 +36,7 @@ export class AddFeedbackDialogComponent {
   productDetailService = inject(ProductDetailService);
   activeModal = inject(NgbActiveModal);
   languageService = inject(LanguageService);
+  translateService = inject(TranslateService);
   private readonly authService = inject(AuthService);
   private readonly appModalService = inject(AppModalService);
 

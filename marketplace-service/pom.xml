@@ -86,11 +86,27 @@
        <artifactId>bucket4j_jdk17-core</artifactId>
        <version>8.14.0</version>
     </dependency>
-      <dependency>
+    <dependency>
           <groupId>org.apache.maven</groupId>
           <artifactId>maven-model</artifactId>
           <version>3.9.9</version>
-      </dependency>
+    </dependency>
+
+    <dependency>
+        <groupId>ai.djl</groupId>
+        <artifactId>api</artifactId>
+        <version>0.25.0</version>
+    </dependency>
+    <dependency>
+        <groupId>ai.djl.huggingface</groupId>
+        <artifactId>tokenizers</artifactId>
+        <version>0.25.0</version>
+    </dependency>
+    <dependency>
+        <groupId>ai.djl.pytorch</groupId>
+        <artifactId>pytorch-engine</artifactId>
+        <version>0.25.0</version>
+    </dependency>
   </dependencies>
 
   <build>

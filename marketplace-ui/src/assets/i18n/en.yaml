@@ -150,10 +150,19 @@ common:
     successMessage: Your feedback has been successfully submitted!
     thankMessage: Thank you for your contribution
     addFeedbackTitle: Give your feedback!
-    addFeedbackDescription: By giving your feedback you are enabling us to constantly improve our products and always deliver the best quality to both you and your team.
-    currentProductTitle: Currently reviewing
+    addFeedbackDescription:
+      By providing your feedback, you enable us to continuously improve our products and consistently deliver the best quality to you. Of course, our Code of Conduct applies here as well:</br>
+      <ul>
+      <li>Be friendly and patient.</li>
+      <li>Be welcoming.</li>
+      <li>Be considerate.</li>
+      <li>Be respectful.</li>
+      <li>Be careful in the words that you choose.</li>
+      <li>When we disagree, try to understand why.</li>
+      </ul>
+    currentProductTitle: Under review
     starRatingTitle: Stars rating
-    commentLabel: Let a comment
+    commentLabel: Please leave a comment
     submitBtnLabel: Submit review
     loggedGithubAsLabel: Logged in Github as
     reviewLabel: Review

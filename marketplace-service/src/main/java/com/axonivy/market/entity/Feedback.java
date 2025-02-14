@@ -29,7 +29,7 @@ public class Feedback implements Serializable {
   private String productId;
   private String content;
   private Integer rating;
-
+  private boolean isApproved;
   @CreatedDate
   private Date createdAt;
 

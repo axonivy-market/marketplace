@@ -7,7 +7,7 @@
       {{ 'common.feedback.addFeedbackTitle' | translate }}
     </h4>
     <h5 [lang]="languageService.selectedLanguage()" class="text-secondary">
-      {{ 'common.feedback.addFeedbackDescription' | translate }}
+      {{ translateService.get('common.feedback.addFeedbackDescription') | async }}
     </h5>
     <div>
       <p [lang]="languageService.selectedLanguage()" class="text-secondary mb-2">

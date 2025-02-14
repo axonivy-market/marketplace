@@ -78,10 +78,12 @@ public class FeedbackServiceImpl implements FeedbackService {
       newFeedback.setProductId(feedback.getProductId());
       newFeedback.setRating(feedback.getRating());
       newFeedback.setContent(feedback.getContent());
+      newFeedback.setApproved(false);
       return feedbackRepository.save(newFeedback);
     } else {
       existingUserFeedback.setRating(feedback.getRating());
       existingUserFeedback.setContent(feedback.getContent());
+      existingUserFeedback.setApproved(false);
       return feedbackRepository.save(existingUserFeedback);
     }
   }
