@@ -8,6 +8,6 @@ export interface ItemDropdown<T extends string = string> {
   name?: string;
   downloadUrl?: string;
   isProductArtifact?: boolean | null;
-
+  artifactId?: string;
   metaDataJsonUrl?: string;
 }

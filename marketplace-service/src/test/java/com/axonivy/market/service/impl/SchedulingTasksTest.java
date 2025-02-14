@@ -28,6 +28,9 @@ class SchedulingTasksTest {
 
     Awaitility.await().atMost(Durations.TEN_SECONDS)
         .untilAsserted(() -> verify(tasks, atLeast(0)).syncDataForProductDocuments());
+
+    Awaitility.await().atMost(Durations.TEN_SECONDS)
+        .untilAsserted(() -> verify(tasks, atLeast(0)).syncDataForProductMavenDependencies());
   }
 
 }
