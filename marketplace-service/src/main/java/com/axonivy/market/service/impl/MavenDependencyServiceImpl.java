@@ -201,7 +201,7 @@ public class MavenDependencyServiceImpl implements MavenDependencyService {
     } catch (HttpClientErrorException e) {
       log.error("Cannot extract maven dependencies {}", e.getStatusCode());
     } catch (Exception e) {
-      log.error("Exception during unzip", e);
+      log.error("Exception during unzip");
     }
     return dependencies;
   }
