@@ -6,8 +6,7 @@
     <h4 [lang]="languageService.selectedLanguage()" class="add-feedback-title text-primary">
       {{ 'common.feedback.addFeedbackTitle' | translate }}
     </h4>
-    <h5 [lang]="languageService.selectedLanguage()" class="text-secondary">
-      {{ translateService.get('common.feedback.addFeedbackDescription') | async }}
+    <h5 [lang]="languageService.selectedLanguage()" class="text-secondary" [innerHTML]="'common.feedback.addFeedbackDescription' | translate">
     </h5>
     <div>
       <p [lang]="languageService.selectedLanguage()" class="text-secondary mb-2">
@@ -28,9 +27,6 @@
       </div>
     </div>
     <div class="d-flex flex-column flex-grow-1">
-      <p [lang]="languageService.selectedLanguage()" class="text-secondary mb-2">
-        {{ 'common.feedback.starRatingTitle' | translate }}
-      </p>
       <app-star-rating [rate]="feedback.rating" (rateChange)="onRateChange($event)" [starClass]="'adding-feedback-star'"
         [ratingStarsClass]="'rating-stars'" />
       <p [lang]="languageService.selectedLanguage()" class="text-secondary mb-0 mt-3">

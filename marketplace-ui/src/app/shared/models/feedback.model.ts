@@ -8,4 +8,5 @@ export interface Feedback {
   rating: number;
   productId: string;
   isExpanded?: boolean;
+  isApproved?: boolean;
 }

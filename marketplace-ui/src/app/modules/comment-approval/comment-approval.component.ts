@@ -27,12 +27,8 @@ export class CommentApprovalComponent {
   authService = inject(AuthService);
   appModalService = inject(AppModalService);
 
-  ngOnInIt(): void {
-    // if (this.authService.getToken()) {
-    if(this.isAuthenticated){
-      // this.appModalService.openAddFeedbackDialog();
-      console.log("token " + this.authService.getToken());
-    } else {
+  ngOnInit(): void {
+    if (!this.authService.getToken()) {
       this.authService.redirectToGitHub('comment-approval');
     }
   }

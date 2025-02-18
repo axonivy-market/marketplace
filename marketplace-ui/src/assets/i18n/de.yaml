@@ -157,7 +157,6 @@ common:
       <li>Wenn wir Deine Meinung nicht teilen, versuche zu verstehen warum.</li>
       </ul>
     currentProductTitle: In Prüfung
-    starRatingTitle: Sterne Bewertung
     commentLabel: Du kannst gerne einen Kommentar hinterlassen
     submitBtnLabel: Bewertung abgeben
     loggedGithubAsLabel: Eingeloggt bei Github als
@@ -172,6 +171,7 @@ common:
     rateFeedbackForSolutionBtnLabel: Bewerte diese Lösung
     rateFeedbackForUtilityBtnLabel: Bewerte dieses Tool
     reviewLabelNoYet: Noch keine Bewertungen
+    approvalPending: Approval pending
   labels:
     redirecting: Redirecting ...!
   timeAgo:

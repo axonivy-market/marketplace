@@ -1,26 +1,33 @@
-<div class="d-flex flex-column p-0">
+<div class="d-flex flex-column p-0" [ngClass]="!feedback.isApproved ? 'feedback-unapproved' : 'text-primary'">
   <div class="d-flex flex-row align-items-center justify-content-between p-0 feedback-header">
     <div class="d-flex flex-row align-items-center justify-content-between p-0 h-100 feedback-username">
       <img class="rounded-circle img-avatar img-fit-cover"
         [src]="feedback.userAvatarUrl ?? '/assets/images/misc/avatar-default.png'" alt="Github user avatar" />
       <div>
         <div class="d-flex flex-row align-items-center p-0 gap-3">
-          <p class="text-primary mb-0">
+          <p class="mb-0">
             {{ feedback.username ?? 'Github User' }}
           </p>
-          <i class="bi bi-github text-primary icon-feedback"></i>
+          <i class="bi bi-github icon-feedback"></i>
         </div>
         <p class="feedback-time-text">
           {{ feedback.updatedAt | timeAgo: languageService.selectedLanguage() | async}}
         </p>
       </div>
     </div>
-    <div class="star-rating-container">
-      <app-star-rating [isReadOnly]="true" [rate]="feedback.rating" />
+    <div>
+      <div class="star-rating-container mb-2">
+        <app-star-rating [isReadOnly]="true" [rate]="feedback.rating" />
+      </div>
+      @if (!feedback.isApproved) {
+        <div>
+          <p class="feedback-time-text mt-1"> {{ 'common.feedback.approvalPending' | translate }}</p>
+        </div>
+      }
     </div>
   </div>
   <div>
-    <p #content class="collapsed text-primary mb-0 mt-3 feedback-content" [class.expanded]="feedback.isExpanded"
+    <p #content class="collapsed mb-0 mt-3 feedback-content" [class.expanded]="feedback.isExpanded"
       [textContent]="feedback.content">
     </p>
     @if (showToggle()) {

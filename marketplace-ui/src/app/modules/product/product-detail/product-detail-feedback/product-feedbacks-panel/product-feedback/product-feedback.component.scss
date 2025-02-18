@@ -96,3 +96,7 @@ $aspect-ratio: math.div(1, 1);
 .feedback-content {
   white-space: pre-line;
 }
+
+.feedback-unapproved {
+  color: grey;
+}

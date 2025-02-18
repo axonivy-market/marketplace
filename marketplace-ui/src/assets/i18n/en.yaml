@@ -161,7 +161,6 @@ common:
       <li>When we disagree, try to understand why.</li>
       </ul>
     currentProductTitle: Under review
-    starRatingTitle: Stars rating
     commentLabel: Please leave a comment
     submitBtnLabel: Submit review
     loggedGithubAsLabel: Logged in Github as
@@ -176,6 +175,7 @@ common:
     rateFeedbackForSolutionBtnLabel: Rate this solution
     rateFeedbackForUtilityBtnLabel: Rate this utility
     reviewLabelNoYet: No reviews yet
+    approvalPending: Approval pending
   labels:
     redirecting: Redirecting ...!
   timeAgo:

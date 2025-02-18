@@ -1,6 +1,3 @@
-@if (isAuthenticated) {
-
-}
-@else {
-  <h1>Hi</h1>
+@if (this.authService.getToken()) {
+<h1>Hi</h1>
 }
