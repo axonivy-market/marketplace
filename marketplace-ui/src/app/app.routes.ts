@@ -5,7 +5,7 @@ import { RedirectPageComponent } from './shared/components/redirect-page/redirec
 import { ERROR_PAGE } from './shared/constants/common.constant';
 import { SecurityMonitorComponent } from './modules/security-monitor/security-monitor.component';
 import { ReleasePreviewComponent } from './modules/release-preview/release-preview.component';
-import { CommentApprovalComponent } from './modules/comment-approval/comment-approval.component';
+import { FeedbackApprovalComponent } from './modules/feedback-approval/feedback-approval.component';
 
 export const routes: Routes = [
   {
@@ -27,8 +27,8 @@ export const routes: Routes = [
     component: ReleasePreviewComponent
   },
   {
-    path: 'comment-approval',
-    component: CommentApprovalComponent
+    path: 'feedback-approval',
+    component: FeedbackApprovalComponent
   },
   {
     path: '',

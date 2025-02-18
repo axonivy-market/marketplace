@@ -1,5 +1,6 @@
 package com.axonivy.market.model;
 
+import com.axonivy.market.enums.FeedbackStatus;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Getter;
@@ -47,6 +48,9 @@ public class FeedbackModel extends RepresentationModel<FeedbackModel> {
 
   @Schema(description = "Latest feedback/rating updating timestamp", example = "2024-06-24T00:00:00.000Z")
   private Date updatedAt;
+
+  @Schema(description = "User's feedback status", example = "APPROVED")
+  private FeedbackStatus feedbackStatus;
 
   @Override
   public int hashCode() {

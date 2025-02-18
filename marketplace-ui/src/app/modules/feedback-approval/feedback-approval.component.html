@@ -1,0 +1,36 @@
+@if (this.authService.getToken()) {
+<h1>Here</h1>
+<div class="d-flex flex-column p-0" style="gap: 48px">
+  <div class="grid-feedbacks-container">
+    @for (feedback of feedbacks(); track $index) {
+      <div class="d-flex flex-column p-0" [ngClass]="!feedback.feedbackStatus ? 'feedback-unapproved' : 'text-primary'">
+        <div class="d-flex flex-row align-items-center justify-content-between p-0 feedback-header">
+          <div class="d-flex flex-row align-items-center justify-content-between p-0 h-100 feedback-username">
+            <img class="rounded-circle img-avatar img-fit-cover"
+              [src]="feedback.userAvatarUrl ?? '/assets/images/misc/avatar-default.png'" alt="Github user avatar" />
+            <div>
+              <div class="d-flex flex-row align-items-center p-0 gap-3">
+                <p class="mb-0">
+                  {{ feedback.username ?? 'Github User' }}
+                </p>
+                <i class="bi bi-github icon-feedback"></i>
+              </div>
+              <!-- <p class="feedback-time-text">
+                {{ feedback.updatedAt | timeAgo: languageService.selectedLanguage() | async}}
+              </p> -->
+            </div>
+          </div>
+          <div>
+            @if (!feedback.feedbackStatus) {
+              <div>
+                <p class="feedback-time-text mt-1"> {{ 'common.feedback.approvalPending' | translate }}</p>
+              </div>
+            }
+          </div>
+        </div>
+      </div>
+    }
+  </div>
+</div>
+
+}

@@ -14,6 +14,7 @@ import { ProductFeedbackService } from '../../product-feedbacks-panel/product-fe
 import { CommonDropdownComponent } from '../../../../../../shared/components/common-dropdown/common-dropdown.component';
 import { MAX_FEEDBACK_LENGTH, NOT_FOUND_ERROR_CODE, USER_NOT_FOUND_ERROR_CODE } from '../../../../../../shared/constants/common.constant';
 import { CharacterCountPipe } from '../../../../../../shared/pipes/character-count.pipe';
+import { FeedbackStatus } from '../../../../../../shared/enums/feedback-status.enum';
 
 @Component({
   selector: 'app-add-feedback-dialog',
@@ -55,7 +56,8 @@ export class AddFeedbackDialogComponent {
     this.feedback = {
       content: this.userFeedback()?.content ?? '',
       rating: this.userFeedback()?.rating ?? 0,
-      productId: this.productDetailService.productId()
+      productId: this.productDetailService.productId(),
+      feedbackStatus: this.userFeedback()?.feedbackStatus ?? FeedbackStatus.PENDING
     };
   }
 

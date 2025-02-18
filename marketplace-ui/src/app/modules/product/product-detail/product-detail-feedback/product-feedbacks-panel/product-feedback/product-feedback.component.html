@@ -1,4 +1,4 @@
-<div class="d-flex flex-column p-0" [ngClass]="!feedback.isApproved ? 'feedback-unapproved' : 'text-primary'">
+<div class="d-flex flex-column p-0" [ngClass]="!isApproveds() ? 'feedback-unapproved' : 'text-primary'">
   <div class="d-flex flex-row align-items-center justify-content-between p-0 feedback-header">
     <div class="d-flex flex-row align-items-center justify-content-between p-0 h-100 feedback-username">
       <img class="rounded-circle img-avatar img-fit-cover"
@@ -19,7 +19,7 @@
       <div class="star-rating-container mb-2">
         <app-star-rating [isReadOnly]="true" [rate]="feedback.rating" />
       </div>
-      @if (!feedback.isApproved) {
+      @if (isApproveds()) {
         <div>
           <p class="feedback-time-text mt-1"> {{ 'common.feedback.approvalPending' | translate }}</p>
         </div>

@@ -1,3 +1,5 @@
+import { FeedbackStatus } from "../enums/feedback-status.enum";
+
 export interface Feedback {
   username?: string;
   userAvatarUrl?: string;
@@ -8,5 +10,5 @@ export interface Feedback {
   rating: number;
   productId: string;
   isExpanded?: boolean;
-  isApproved?: boolean;
+  feedbackStatus: FeedbackStatus;
 }

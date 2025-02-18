@@ -9,6 +9,7 @@ import com.axonivy.market.exceptions.model.NotFoundException;
 import com.axonivy.market.model.FeedbackModel;
 import com.axonivy.market.model.FeedbackModelRequest;
 import com.axonivy.market.model.ProductRating;
+import com.axonivy.market.repository.CustomFeedbackRepository;
 import com.axonivy.market.repository.FeedbackRepository;
 import com.axonivy.market.repository.ProductRepository;
 import com.axonivy.market.repository.UserRepository;
@@ -35,6 +36,9 @@ class FeedbackServiceImplTest {
 
   @Mock
   private FeedbackRepository feedbackRepository;
+
+  @Mock
+  private CustomFeedbackRepository customFeedbackRepository;
 
   @Mock
   private UserRepository userRepository;
@@ -81,13 +85,13 @@ class FeedbackServiceImplTest {
     Page<Feedback> page = new PageImpl<>(Collections.singletonList(feedback));
 
     when(productRepository.findById(productId)).thenReturn(Optional.of(new Product()));
-    when(feedbackRepository.searchByProductId(productId, pageable)).thenReturn(page);
+    when(customFeedbackRepository.searchByProductId(productId, pageable)).thenReturn(page);
 
     Page<Feedback> result = feedbackService.findFeedbacks(productId, pageable);
     assertNotNull(result);
     assertEquals(1, result.getTotalElements());
     verify(productRepository, times(1)).findById(productId);
-    verify(feedbackRepository, times(1)).searchByProductId(productId, pageable);
+    verify(customFeedbackRepository, times(1)).searchByProductId(productId, pageable);
   }
 
   @Test
@@ -101,7 +105,7 @@ class FeedbackServiceImplTest {
         () -> feedbackService.findFeedbacks(productId, pageable));
     assertEquals(ErrorCode.PRODUCT_NOT_FOUND.getCode(), exception.getCode());
     verify(productRepository, times(1)).findById(productId);
-    verify(feedbackRepository, times(0)).searchByProductId(productId, pageable);
+    verify(customFeedbackRepository, times(0)).searchByProductId(productId, pageable);
   }
 
   @Test
@@ -133,7 +137,7 @@ class FeedbackServiceImplTest {
 
     when(userRepository.findById(userId)).thenReturn(Optional.of(new User()));
     when(productRepository.findById(productId)).thenReturn(Optional.of(new Product()));
-    when(feedbackRepository.findByUserIdAndProductId(userId, productId)).thenReturn(feedback);
+    when(customFeedbackRepository.findByUserIdAndProductId(userId, productId)).thenReturn(feedback);
 
     Feedback result = feedbackService.findFeedbackByUserIdAndProductId(userId, productId);
     assertNotNull(result);
@@ -141,7 +145,7 @@ class FeedbackServiceImplTest {
     assertEquals(productId, result.getProductId());
     verify(userRepository, times(1)).findById(userId);
     verify(productRepository, times(1)).findById(productId);
-    verify(feedbackRepository, times(1)).findByUserIdAndProductId(userId, productId);
+    verify(customFeedbackRepository, times(1)).findByUserIdAndProductId(userId, productId);
   }
 
   @Test
@@ -149,13 +153,13 @@ class FeedbackServiceImplTest {
     String productId = "product1";
     userId = "";
     when(productRepository.findById(productId)).thenReturn(Optional.of(new Product()));
-    when(feedbackRepository.findByUserIdAndProductId(userId, productId)).thenReturn(null);
+    when(customFeedbackRepository.findByUserIdAndProductId(userId, productId)).thenReturn(null);
 
     NoContentException exception = assertThrows(NoContentException.class,
         () -> feedbackService.findFeedbackByUserIdAndProductId(userId, productId));
     assertEquals(ErrorCode.NO_FEEDBACK_OF_USER_FOR_PRODUCT.getCode(), exception.getCode());
     verify(productRepository, times(1)).findById(productId);
-    verify(feedbackRepository, times(1)).findByUserIdAndProductId(userId, productId);
+    verify(customFeedbackRepository, times(1)).findByUserIdAndProductId(userId, productId);
   }
 
   @Test
@@ -174,7 +178,7 @@ class FeedbackServiceImplTest {
     String productId = "product1";
 
     when(userRepository.findById(userId)).thenReturn(Optional.of(new User()));
-    when(feedbackRepository.findByUserIdAndProductId(userId, productId)).thenReturn(null);
+    when(customFeedbackRepository.findByUserIdAndProductId(userId, productId)).thenReturn(null);
     when(feedbackRepository.save(any(Feedback.class))).thenReturn(feedback);
 
     Feedback result = feedbackService.upsertFeedback(feedbackModelRequest, userId);
@@ -184,7 +188,7 @@ class FeedbackServiceImplTest {
     assertEquals(feedbackModel.getRating(), result.getRating());
     assertEquals(feedbackModel.getContent(), result.getContent());
     verify(userRepository, times(1)).findById(userId);
-    verify(feedbackRepository, times(1)).findByUserIdAndProductId(userId, productId);
+    verify(customFeedbackRepository, times(1)).findByUserIdAndProductId(userId, productId);
     verify(feedbackRepository, times(1)).save(any(Feedback.class));
   }
 
@@ -193,7 +197,7 @@ class FeedbackServiceImplTest {
     String productId = "product1";
 
     when(userRepository.findById(userId)).thenReturn(Optional.of(new User()));
-    when(feedbackRepository.findByUserIdAndProductId(userId, productId)).thenReturn(feedback);
+    when(customFeedbackRepository.findByUserIdAndProductId(userId, productId)).thenReturn(feedback);
     when(feedbackRepository.save(any(Feedback.class))).thenReturn(feedback);
 
     Feedback result = feedbackService.upsertFeedback(feedbackModelRequest, userId);
@@ -203,7 +207,7 @@ class FeedbackServiceImplTest {
     assertEquals(feedbackModel.getRating(), result.getRating());
     assertEquals(feedbackModel.getContent(), result.getContent());
     verify(userRepository, times(1)).findById(userId);
-    verify(feedbackRepository, times(1)).findByUserIdAndProductId(userId, productId);
+    verify(customFeedbackRepository, times(1)).findByUserIdAndProductId(userId, productId);
     verify(feedbackRepository, times(1)).save(any(Feedback.class));
   }
 

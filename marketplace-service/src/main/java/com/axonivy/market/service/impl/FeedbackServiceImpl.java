@@ -3,10 +3,12 @@ package com.axonivy.market.service.impl;
 import com.axonivy.market.entity.Feedback;
 import com.axonivy.market.enums.ErrorCode;
 import com.axonivy.market.enums.FeedbackSortOption;
+import com.axonivy.market.enums.FeedbackStatus;
 import com.axonivy.market.exceptions.model.NoContentException;
 import com.axonivy.market.exceptions.model.NotFoundException;
 import com.axonivy.market.model.FeedbackModelRequest;
 import com.axonivy.market.model.ProductRating;
+import com.axonivy.market.repository.CustomFeedbackRepository;
 import com.axonivy.market.repository.FeedbackRepository;
 import com.axonivy.market.repository.ProductRepository;
 import com.axonivy.market.repository.UserRepository;
@@ -30,18 +32,25 @@ public class FeedbackServiceImpl implements FeedbackService {
   private final FeedbackRepository feedbackRepository;
   private final UserRepository userRepository;
   private final ProductRepository productRepository;
+  private final CustomFeedbackRepository customFeedbackRepository;
 
   public FeedbackServiceImpl(FeedbackRepository feedbackRepository, UserRepository userRepository,
-      ProductRepository productRepository) {
+      ProductRepository productRepository, CustomFeedbackRepository customFeedbackRepository) {
     this.feedbackRepository = feedbackRepository;
     this.userRepository = userRepository;
     this.productRepository = productRepository;
+    this.customFeedbackRepository = customFeedbackRepository;
+  }
+
+  @Override
+  public Page<Feedback> findAllFeedbacks(Pageable pageable) {
+    return feedbackRepository.findAll(refinePagination(pageable));
   }
 
   @Override
   public Page<Feedback> findFeedbacks(String productId, Pageable pageable) throws NotFoundException {
     validateProductExists(productId);
-    return feedbackRepository.searchByProductId(productId, refinePagination(pageable));
+    return customFeedbackRepository.searchByProductId(productId, refinePagination(pageable));
   }
 
   @Override
@@ -58,7 +67,7 @@ public class FeedbackServiceImpl implements FeedbackService {
     }
     validateProductExists(productId);
 
-    Feedback existingUserFeedback = feedbackRepository.findByUserIdAndProductId(userId, productId);
+    Feedback existingUserFeedback = customFeedbackRepository.findByUserIdAndProductId(userId, productId);
     if (existingUserFeedback == null) {
       throw new NoContentException(ErrorCode.NO_FEEDBACK_OF_USER_FOR_PRODUCT,
           String.format("No feedback with user id '%s' and product id '%s'", userId, productId));
@@ -70,7 +79,7 @@ public class FeedbackServiceImpl implements FeedbackService {
   public Feedback upsertFeedback(FeedbackModelRequest feedback, String userId) throws NotFoundException {
     validateUserExists(userId);
 
-    Feedback existingUserFeedback = feedbackRepository.findByUserIdAndProductId(userId,
+    Feedback existingUserFeedback = customFeedbackRepository.findByUserIdAndProductId(userId,
         feedback.getProductId());
     if (existingUserFeedback == null) {
       Feedback newFeedback = new Feedback();
@@ -78,12 +87,12 @@ public class FeedbackServiceImpl implements FeedbackService {
       newFeedback.setProductId(feedback.getProductId());
       newFeedback.setRating(feedback.getRating());
       newFeedback.setContent(feedback.getContent());
-      newFeedback.setApproved(false);
+      newFeedback.setFeedbackStatus(FeedbackStatus.PENDING);
       return feedbackRepository.save(newFeedback);
     } else {
       existingUserFeedback.setRating(feedback.getRating());
       existingUserFeedback.setContent(feedback.getContent());
-      existingUserFeedback.setApproved(false);
+      existingUserFeedback.setFeedbackStatus(FeedbackStatus.PENDING);
       return feedbackRepository.save(existingUserFeedback);
     }
   }

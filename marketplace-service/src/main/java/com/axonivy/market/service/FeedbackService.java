@@ -10,6 +10,8 @@ import org.springframework.data.domain.Pageable;
 import java.util.List;
 
 public interface FeedbackService {
+  Page<Feedback> findAllFeedbacks(Pageable pageable);
+
   Page<Feedback> findFeedbacks(String productId, Pageable pageable) throws NotFoundException;
 
   Feedback findFeedback(String id) throws NotFoundException;

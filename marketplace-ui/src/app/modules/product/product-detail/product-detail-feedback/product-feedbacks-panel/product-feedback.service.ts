@@ -25,6 +25,7 @@ import {
   TOKEN_KEY,
   USER_NOT_FOUND_ERROR_CODE
 } from '../../../../../shared/constants/common.constant';
+import { FeedbackStatus } from '../../../../../shared/enums/feedback-status.enum';
 
 const FEEDBACK_API_URL = 'api/feedback';
 const SIZE = 8;
@@ -123,6 +124,15 @@ export class ProductFeedbackService {
       .pipe(
         tap(feedback => {
           this.userFeedback.set(feedback);
+          console.log(feedback);
+          if (feedback.feedbackStatus.valueOf() == FeedbackStatus.PENDING) {
+            this.feedbacks.set([
+              feedback,
+              ...this.feedbacks()
+            ]);
+          }
+          // console.log(this.userFeedback());
+          console.log(this.feedbacks());
         }),
         catchError(response => {
           if (
@@ -134,6 +144,7 @@ export class ProductFeedbackService {
           const feedback: Feedback = {
             content: '',
             rating: 0,
+            feedbackStatus: FeedbackStatus.PENDING,
             productId
           };
           this.userFeedback.set(feedback);

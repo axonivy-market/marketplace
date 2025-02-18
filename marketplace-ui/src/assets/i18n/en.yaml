@@ -151,7 +151,7 @@ common:
     thankMessage: Thank you for your contribution
     addFeedbackTitle: Give your feedback!
     addFeedbackDescription:
-      By providing your feedback, you enable us to continuously improve our products and consistently deliver the best quality to you. Of course, our Code of Conduct applies here as well:</br>
+      By providing your feedback, you enable us to continuously improve our products and consistently deliver the best quality to you. Of course, our <a class="link-opacity-100" href="https://github.com/axonivy-market/market?tab=coc-ov-file">Code of Conduct</a> applies here as well:</br>
       <ul>
       <li>Be friendly and patient.</li>
       <li>Be welcoming.</li>
