@@ -351,4 +351,36 @@ describe('ProductDetailVersionActionComponent', () => {
 
     expect(component.isDropDownDisplayed()).toBeFalse();
   });
+
+  it('should set selected artifact properties correctly when onSelectArtifact is called', () => {
+    const mockArtifact1 = {
+      name: 'Example Artifact1',
+      downloadUrl: 'https://example.com/download',
+      isProductArtifact: true,
+      label: 'Example Artifact1'
+    } as ItemDropdown;
+    component.onSelectArtifact(mockArtifact1);
+    expect(component.selectedArtifactName).toBe(mockArtifact1.name);
+    expect(component.selectedArtifact).toBe(mockArtifact1.downloadUrl);
+    expect(component.selectedArtifactId).toBe(mockArtifact1.artifactId);
+  });
+
+  it('should call selectedVersion.set with the correct version', () => {
+    const testVersion = '1.2.3';
+    component.onSelectVersionInDesigner(testVersion);
+    expect(component.selectedVersion.set).toHaveBeenCalledWith(testVersion);
+  });
+
+  it('should call onUpdateInstallationCount and open artifact URL when conditions are met (ZIP file)', () => {
+    component.onUpdateInstallationCount = jasmine.createSpy(
+      'onUpdateInstallationCount'
+    );
+    spyOn(window, 'open');
+    component.downloadArtifact();
+    expect(component.onUpdateInstallationCount).toHaveBeenCalled();
+    expect(window.open).toHaveBeenCalledWith(
+      component.selectedArtifact,
+      '_blank'
+    );
+  });
 });
