@@ -105,6 +105,11 @@ export class ProductFeedbackService {
               ...response._embedded.feedbacks
             ]);
           }
+
+          const userFeedback = this.userFeedback();
+          if (userFeedback && userFeedback.feedbackStatus.valueOf() === 'PENDING') {
+            this.feedbacks.set([userFeedback, ...this.feedbacks()]);
+          }
         })
       );
   }
@@ -124,15 +129,6 @@ export class ProductFeedbackService {
       .pipe(
         tap(feedback => {
           this.userFeedback.set(feedback);
-          console.log(feedback);
-          if (feedback.feedbackStatus.valueOf() == FeedbackStatus.PENDING) {
-            this.feedbacks.set([
-              feedback,
-              ...this.feedbacks()
-            ]);
-          }
-          // console.log(this.userFeedback());
-          console.log(this.feedbacks());
         }),
         catchError(response => {
           if (
@@ -157,6 +153,34 @@ export class ProductFeedbackService {
     this.getInitFeedbacksObservable().subscribe(response => {
       this.handleFeedbackApiResponse(response);
     });
+  }
+
+  findProductFeedbacks(
+    page: number = this.page(),
+    sort: string = this.sort(),
+    size: number = SIZE
+  ): Observable<FeedbackApiResponse> {
+    const requestParams = new HttpParams()
+      .set('page', page.toString())
+      .set('size', size.toString())
+      .set('sort', sort);
+    const requestURL = `${FEEDBACK_API_URL}/feedback-approval`;
+    return this.http
+      .get<FeedbackApiResponse>(requestURL, { params: requestParams })
+      .pipe(
+        tap(response => {
+          if (page === 0) {
+            this.feedbacks.set(response._embedded.feedbacks);
+          } else {
+            this.feedbacks.set([
+              ...this.feedbacks(),
+              ...response._embedded.feedbacks
+            ]);
+          }
+          console.log(this.feedbacks());
+          
+        })
+      );
   }
 
   loadMoreFeedbacks(): void {

@@ -108,7 +108,7 @@ public class FeedbackController {
     return new ResponseEntity<>(feedbackModelAssembler.toModel(feedback), HttpStatus.OK);
   }
 
-  @GetMapping()
+  @GetMapping(FEEDBACK_APPROVAL)
   @Operation(summary = "Find all feedbacks",
       description = "Get feedbacks on target product", parameters = {
       @Parameter(name = "page", description = "Page number to retrieve", in = ParameterIn.QUERY, example = "0",
@@ -116,9 +116,8 @@ public class FeedbackController {
       @Parameter(name = "size", description = "Number of items per page", in = ParameterIn.QUERY, example = "20",
           required = true),
       @Parameter(name = "sort",
-          description = "Sorting criteria in the format: Sorting criteria(popularity|alphabetically|recent), Sorting " +
-              "order(asc|desc)",
-          in = ParameterIn.QUERY, example = "[\"popularity\",\"asc\"]", required = true)})
+          description = "Sorting criteria in the format: Sorting criteria(newest|oldest|highest|lowest)",
+          in = ParameterIn.QUERY, example = "[\"newest\"]", required = true)})
   public ResponseEntity<PagedModel<FeedbackModel>> findAllFeedbacks(@ParameterObject Pageable pageable) {
     Page<Feedback> results = feedbackService.findAllFeedbacks(pageable);
     if (results.isEmpty()) {
