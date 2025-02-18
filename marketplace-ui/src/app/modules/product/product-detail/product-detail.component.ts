@@ -255,15 +255,15 @@ export class ProductDetailComponent {
   navigateToHomePageWithLastSearch() {
     const queryParams: Record<string, string | SortOption | TypeOption> = {};
     if (this.historyService.lastSearchType() !== TypeOption.All_TYPES) {
-      queryParams['type'] = this.historyService.lastSearchType() as string;
+      queryParams['type'] = this.historyService.lastSearchType();
     }
 
     if (this.historyService.lastSortOption() !== SortOption.STANDARD) {
       queryParams['sort'] = this.historyService.lastSortOption();
     }
 
-    if (this.historyService.lastSearchText() !== "") {
-      queryParams['search'] = this.historyService.lastSearchText() as string;
+    if (this.historyService.lastSearchText() !== '') {
+      queryParams['search'] = this.historyService.lastSearchText();
     }
 
     this.router.navigate([API_URI.APP], {
