@@ -270,6 +270,8 @@ export class ProductDetailVersionActionComponent implements AfterViewInit {
         .set(ROUTER.ARTIFACT, this.selectedArtifactId ?? '');
 
       window.open(`${marketplaceServiceUrl}/${API_URI.PRODUCT_DETAILS}/${this.productId}/${ARTIFACT_ZIP_URL}?${params.toString()}`, TARGET_BLANK);
+    } else {
+      return;
     }
   }
 
