@@ -145,6 +145,7 @@ common:
     label: Rückmeldung
     successMessage: Ihr Feedback wurde erfolgreich übermittelt!
     thankMessage: Vielen Dank für Ihren Beitrag
+    informMessage: Dein Kommentar wird nach einer kurzen Begutachtung veröffentlicht.
     addFeedbackTitle: Geben Sie Ihr Feedback!
     addFeedbackDescription:
       Dein Feedback hilft uns, unsere Produkte stetig zu verbessern und die beste Qualität für Dich zu gewährleisten. Dabei gilt selbstverständlich unser <a class="link-opacity-100" href="https://github.com/axonivy-market/market?tab=coc-ov-file">Code of Conduct</a>:</br>
@@ -171,7 +172,7 @@ common:
     rateFeedbackForSolutionBtnLabel: Bewerte diese Lösung
     rateFeedbackForUtilityBtnLabel: Bewerte dieses Tool
     reviewLabelNoYet: Noch keine Bewertungen
-    approvalPending: Approval pending
+    approvalPending: Freigabe ausstehend
   labels:
     redirecting: Redirecting ...!
   timeAgo:

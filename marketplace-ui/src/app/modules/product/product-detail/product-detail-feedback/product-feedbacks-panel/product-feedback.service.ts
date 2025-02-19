@@ -26,6 +26,7 @@ import {
   USER_NOT_FOUND_ERROR_CODE
 } from '../../../../../shared/constants/common.constant';
 import { FeedbackStatus } from '../../../../../shared/enums/feedback-status.enum';
+import { API_URI } from '../../../../../shared/constants/api.constant';
 
 const FEEDBACK_API_URL = 'api/feedback';
 const SIZE = 8;
@@ -44,6 +45,7 @@ export class ProductFeedbackService {
 
   userFeedback: WritableSignal<Feedback | null> = signal(null);
   feedbacks: WritableSignal<Feedback[]> = signal([]);
+  allFeedbacks: WritableSignal<Feedback[]> = signal([]);
   areAllFeedbacksLoaded = computed(() => {
     if (this.page() >= this.totalPages() - 1) {
       return true;
@@ -53,6 +55,35 @@ export class ProductFeedbackService {
 
   totalPages: WritableSignal<number> = signal(1);
   totalElements: WritableSignal<number> = signal(0);
+
+  findProductFeedbacks(
+    page: number = this.page(),
+    sort: string = this.sort(),
+    size: number = SIZE
+  ): Observable<FeedbackApiResponse> {
+    const requestParams = new HttpParams()
+      .set('page', page.toString())
+      .set('size', size.toString())
+      .set('sort', sort);
+    const requestURL = `${API_URI.FEEDBACK_APPROVAL}`;
+    return this.http
+      .get<FeedbackApiResponse>(requestURL, { params: requestParams })
+      .pipe(
+        tap(response => {
+          if (page === 0) {
+            this.allFeedbacks.set(response._embedded.feedbacks);
+          } else {
+            this.allFeedbacks.set([
+              ...this.feedbacks(),
+              ...response._embedded.feedbacks
+            ]);
+          }
+          console.log(this.feedbacks());
+          console.log(this.allFeedbacks());
+          
+        })
+      );
+  }
 
   submitFeedback(feedback: Feedback): Observable<Feedback> {
     const headers = new HttpHeaders().set(
@@ -110,6 +141,7 @@ export class ProductFeedbackService {
           if (userFeedback && userFeedback.feedbackStatus.valueOf() === 'PENDING') {
             this.feedbacks.set([userFeedback, ...this.feedbacks()]);
           }
+          console.log(this.feedbacks());
         })
       );
   }
@@ -155,34 +187,6 @@ export class ProductFeedbackService {
     });
   }
 
-  findProductFeedbacks(
-    page: number = this.page(),
-    sort: string = this.sort(),
-    size: number = SIZE
-  ): Observable<FeedbackApiResponse> {
-    const requestParams = new HttpParams()
-      .set('page', page.toString())
-      .set('size', size.toString())
-      .set('sort', sort);
-    const requestURL = `${FEEDBACK_API_URL}/feedback-approval`;
-    return this.http
-      .get<FeedbackApiResponse>(requestURL, { params: requestParams })
-      .pipe(
-        tap(response => {
-          if (page === 0) {
-            this.feedbacks.set(response._embedded.feedbacks);
-          } else {
-            this.feedbacks.set([
-              ...this.feedbacks(),
-              ...response._embedded.feedbacks
-            ]);
-          }
-          console.log(this.feedbacks());
-          
-        })
-      );
-  }
-
   loadMoreFeedbacks(): void {
     this.page.update(value => value + 1);
     this.findProductFeedbacksByCriteria().subscribe();
@@ -207,4 +211,10 @@ export class ProductFeedbackService {
     this.page.set(0);
     return this.findProductFeedbacksByCriteria();
   }
+
+  getInitAllFeedbacksObservable(): Observable<FeedbackApiResponse> {
+    this.page.set(0);
+    return this.findProductFeedbacks();
+  }
+  
 }

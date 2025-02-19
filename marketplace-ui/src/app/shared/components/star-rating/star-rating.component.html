@@ -7,7 +7,7 @@
   <ng-template let-fill="fill">
     <i class="bi-star-fill star-feedback" [class]="starClass">
       @if (fill > 0) {
-        <i class="bi-star-fill filled" [style.width.%]="fill"></i>
+        <i class="bi-star-fill filled" [style.width.%]="fill" [style.color]="isPending ? 'grey' : 'var(--star-filled-color)'"></i>
       }
     </i>
   </ng-template>

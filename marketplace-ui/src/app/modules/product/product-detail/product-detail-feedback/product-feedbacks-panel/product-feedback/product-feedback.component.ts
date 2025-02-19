@@ -21,16 +21,18 @@ export class ProductFeedbackComponent {
   private readonly scrollHeight = signal(0);
   private readonly clientHeight = signal(0);
 
-  private readonly isApproved = signal(false);
-  isApproveds = computed(() => this.isApproved());
+  private readonly isPending = signal(false);
+  isFeedbackPending = computed(() => this.isPending());
 
   showToggle = computed(() => this.scrollHeight() > this.clientHeight() || this.feedback.isExpanded);
   languageService = inject(LanguageService);
 
   ngOnInit(): void {
-    if (this.feedback.feedbackStatus.valueOf() == 'APPROVED') {
-      this.isApproved.set(true);
-    }
+    if(this.feedback){
+      if (this.feedback.feedbackStatus.valueOf() === 'PENDING') {
+        this.isPending.set(true);
+      }
+    }    
   }
 
   ngAfterViewInit() {

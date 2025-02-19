@@ -6,6 +6,7 @@ import com.axonivy.market.enums.FeedbackSortOption;
 import com.axonivy.market.enums.FeedbackStatus;
 import com.axonivy.market.exceptions.model.NoContentException;
 import com.axonivy.market.exceptions.model.NotFoundException;
+import com.axonivy.market.model.FeedbackModel;
 import com.axonivy.market.model.FeedbackModelRequest;
 import com.axonivy.market.model.ProductRating;
 import com.axonivy.market.repository.CustomFeedbackRepository;
@@ -43,7 +44,14 @@ public class FeedbackServiceImpl implements FeedbackService {
   }
 
   @Override
-  public Page<Feedback> findAllFeedbacks(Pageable pageable) {
+  public Page<Feedback> findAllFeedbacks(Pageable pageable, Boolean isApproved, String id) {
+    if (id != null && isApproved != null) {
+      Feedback existingUserFeedback = feedbackRepository.findById(id).orElse(null);
+      if (existingUserFeedback != null) {
+        existingUserFeedback.setFeedbackStatus(isApproved ? FeedbackStatus.APPROVED : FeedbackStatus.REJECTED);
+        feedbackRepository.save(existingUserFeedback);
+      }
+    }
     return feedbackRepository.findAll(refinePagination(pageable));
   }
 
@@ -73,6 +81,16 @@ public class FeedbackServiceImpl implements FeedbackService {
           String.format("No feedback with user id '%s' and product id '%s'", userId, productId));
     }
     return existingUserFeedback;
+  }
+
+  @Override
+  public Feedback updateFeedbackWithNewStatus(FeedbackModel feedback, FeedbackStatus status) {
+    Feedback existingUserFeedback = feedbackRepository.findById(feedback.getId())
+        .orElseThrow(() -> new NotFoundException(ErrorCode.PRODUCT_NOT_FOUND,
+            "Feedback not found " + feedback.getId()));
+
+    existingUserFeedback.setFeedbackStatus(status);
+    return feedbackRepository.save(existingUserFeedback);
   }
 
   @Override

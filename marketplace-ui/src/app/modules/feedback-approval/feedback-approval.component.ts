@@ -8,6 +8,9 @@ import { AuthService } from "../../auth/auth.service";
 import { AppModalService } from "../../shared/services/app-modal.service";
 import { Feedback } from "../../shared/models/feedback.model";
 import { ProductFeedbackService } from "../product/product-detail/product-detail-feedback/product-feedbacks-panel/product-feedback.service";
+import { TimeAgoPipe } from "../../shared/pipes/time-ago.pipe";
+import { LanguageService } from "../../core/services/language/language.service";
+import { ThemeService } from "../../core/services/theme/theme.service";
 
 @Component({
   selector: 'app-feedback-approval',
@@ -17,7 +20,8 @@ import { ProductFeedbackService } from "../product/product-detail/product-detail
     FormsModule,
     CommonDropdownComponent,
     TranslateModule,
-    MultilingualismPipe
+    MultilingualismPipe,
+    TimeAgoPipe
   ],
   templateUrl: './feedback-approval.component.html',
   styleUrls: ['./feedback-approval.component.scss'],
@@ -27,17 +31,39 @@ export class FeedbackApprovalComponent {
   authService = inject(AuthService);
   appModalService = inject(AppModalService);
   productFeedbackService = inject(ProductFeedbackService);
+  languageService = inject(LanguageService);
+  themeService = inject(ThemeService); 
 
   feedbacks: Signal<Feedback[] | undefined> =
-    this.productFeedbackService.feedbacks;
+    this.productFeedbackService.allFeedbacks;
+
+    // showToggle = computed(() => this.scrollHeight() > this.clientHeight() || this.feedback.isExpanded);
 
   ngOnInit(): void {
-    console.log(this.feedbacks);
-    if (this.authService.getToken()) {
-      console.log("Here");
-      // this.appModalService.openFeedbacksDialog();
-    } else {
+    console.log("Initializing FeedbackApprovalComponent...");
+
+    if (!this.authService.getToken()) {
+      console.log("User not authenticated, redirecting to GitHub login...");
       this.authService.redirectToGitHub('feedback-approval');
     }
+
+    this.productFeedbackService.getInitAllFeedbacksObservable().subscribe(response => {
+      console.log("Feedbacks loaded:", response._embedded.feedbacks);
+      this.productFeedbackService.allFeedbacks.set(response._embedded.feedbacks);
+    });
   }
+
+    onClickingApproveButton(): void {
+      this.productFeedbackService.getInitAllFeedbacksObservable().subscribe(response => {
+        console.log("Feedbacks loaded:", response._embedded.feedbacks);
+        this.productFeedbackService.allFeedbacks.set(response._embedded.feedbacks);
+      });
+    }
+
+    onClickingRejectButton(): void {
+      this.productFeedbackService.getInitAllFeedbacksObservable().subscribe(response => {
+        console.log("Feedbacks loaded:", response._embedded.feedbacks);
+        this.productFeedbackService.allFeedbacks.set(response._embedded.feedbacks);
+      });
+    }
 }

@@ -1,7 +1,9 @@
 package com.axonivy.market.service;
 
 import com.axonivy.market.entity.Feedback;
+import com.axonivy.market.enums.FeedbackStatus;
 import com.axonivy.market.exceptions.model.NotFoundException;
+import com.axonivy.market.model.FeedbackModel;
 import com.axonivy.market.model.FeedbackModelRequest;
 import com.axonivy.market.model.ProductRating;
 import org.springframework.data.domain.Page;
@@ -17,6 +19,8 @@ public interface FeedbackService {
   Feedback findFeedback(String id) throws NotFoundException;
 
   Feedback findFeedbackByUserIdAndProductId(String userId, String productId) throws NotFoundException;
+
+  Feedback updateFeedbackWithNewStatus(FeedbackModel feedback, FeedbackStatus status);
 
   Feedback upsertFeedback(FeedbackModelRequest feedback, String userId) throws NotFoundException;
 
