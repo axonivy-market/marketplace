@@ -41,5 +41,5 @@ public class RequestMappingConstants {
   public static final String PRODUCT_PUBLIC_RELEASE_BY_RELEASE_ID = "/{product-id}/releases/{release-id}";
   public static final String PRODUCT_ID = "product-id";
   public static final String RELEASE_ID = "release-id";
-  public static final String FEEDBACK_APPROVAL = "/approval";
+  public static final String FEEDBACK_REVIEW = "/review";
 }

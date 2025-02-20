@@ -50,6 +50,8 @@ public class FeedbackModelAssembler extends RepresentationModelAssemblerSupport<
     model.setCreatedAt(feedback.getCreatedAt());
     model.setUpdatedAt(feedback.getUpdatedAt());
     model.setFeedbackStatus(feedback.getFeedbackStatus());
+    model.setModeratorId(feedback.getModeratorId());
+    model.setReviewDate(feedback.getReviewDate());
     return model;
   }
 

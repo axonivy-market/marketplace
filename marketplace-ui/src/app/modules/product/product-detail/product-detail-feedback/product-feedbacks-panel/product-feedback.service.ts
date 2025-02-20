@@ -46,6 +46,7 @@ export class ProductFeedbackService {
   userFeedback: WritableSignal<Feedback | null> = signal(null);
   feedbacks: WritableSignal<Feedback[]> = signal([]);
   allFeedbacks: WritableSignal<Feedback[]> = signal([]);
+  pendingFeedbacks: WritableSignal<Feedback[]> = signal([]);
   areAllFeedbacksLoaded = computed(() => {
     if (this.page() >= this.totalPages() - 1) {
       return true;
@@ -61,11 +62,11 @@ export class ProductFeedbackService {
     sort: string = this.sort(),
     size: number = SIZE
   ): Observable<FeedbackApiResponse> {
-    const requestParams = new HttpParams()
+    let requestParams = new HttpParams()
       .set('page', page.toString())
       .set('size', size.toString())
       .set('sort', sort);
-    const requestURL = `${API_URI.FEEDBACK_APPROVAL}`;
+    const requestURL = `${API_URI.FEEDBACK_REVIEW}`;
     return this.http
       .get<FeedbackApiResponse>(requestURL, { params: requestParams })
       .pipe(
@@ -78,11 +79,40 @@ export class ProductFeedbackService {
               ...response._embedded.feedbacks
             ]);
           }
+          this.pendingFeedbacks.set(this.allFeedbacks().filter(f => f?.feedbackStatus === FeedbackStatus.PENDING));
+          console.log(response._embedded.feedbacks[0].id);
           console.log(this.feedbacks());
           console.log(this.allFeedbacks());
-          
+          console.log(this.pendingFeedbacks());
+          // console.log(this.pendingFeedbacks()[0].id);
+
         })
       );
+  }
+
+  updateFeedbackStatus(feedbackId: string, isApproved: boolean, moderatorId: string): Observable<Feedback> {
+    const requestBody = {
+      feedbackId,
+      isApproved,
+      moderatorId
+    };
+    const requestURL = `${API_URI.FEEDBACK_REVIEW}`;
+
+    return this.http.put<Feedback>(requestURL, requestBody).pipe(
+      tap(updatedFeedback => {
+        console.log("Feedback updated:", updatedFeedback);
+
+        // Update local lists
+        this.allFeedbacks.set(
+          this.allFeedbacks().map(fb => fb.id === updatedFeedback.id ? updatedFeedback : fb)
+        );
+
+        // Recalculate pending & reviewed lists
+        this.pendingFeedbacks.set(
+          this.allFeedbacks().filter(fb => fb.feedbackStatus === FeedbackStatus.PENDING)
+        );
+      })
+    );
   }
 
   submitFeedback(feedback: Feedback): Observable<Feedback> {
@@ -173,6 +203,7 @@ export class ProductFeedbackService {
             content: '',
             rating: 0,
             feedbackStatus: FeedbackStatus.PENDING,
+            moderatorId: '',
             productId
           };
           this.userFeedback.set(feedback);
@@ -214,7 +245,6 @@ export class ProductFeedbackService {
 
   getInitAllFeedbacksObservable(): Observable<FeedbackApiResponse> {
     this.page.set(0);
-    return this.findProductFeedbacks();
+    return this.findProductFeedbacks(); // Fetch all feedbacks
   }
-  
 }

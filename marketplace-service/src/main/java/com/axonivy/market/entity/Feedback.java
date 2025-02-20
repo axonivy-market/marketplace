@@ -31,6 +31,8 @@ public class Feedback implements Serializable {
   private String content;
   private Integer rating;
   private FeedbackStatus feedbackStatus;
+  private String moderatorId;
+  private Date reviewDate;
   @CreatedDate
   private Date createdAt;
 

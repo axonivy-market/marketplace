@@ -6,7 +6,7 @@
     <h4 [lang]="languageService.selectedLanguage()" class="add-feedback-title text-primary">
       {{ 'common.feedback.addFeedbackTitle' | translate }}
     </h4>
-    <h5 [lang]="languageService.selectedLanguage()" class="text-secondary" [innerHTML]="'common.feedback.addFeedbackDescription' | translate">
+    <h5 [lang]="languageService.selectedLanguage()" class="text-secondary" [innerHTML]="translateService.get('common.feedback.addFeedbackDescription') | async">
     </h5>
     <div>
       <p [lang]="languageService.selectedLanguage()" class="text-secondary mb-2">

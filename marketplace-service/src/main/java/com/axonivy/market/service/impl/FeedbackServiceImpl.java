@@ -6,14 +6,15 @@ import com.axonivy.market.enums.FeedbackSortOption;
 import com.axonivy.market.enums.FeedbackStatus;
 import com.axonivy.market.exceptions.model.NoContentException;
 import com.axonivy.market.exceptions.model.NotFoundException;
-import com.axonivy.market.model.FeedbackModel;
 import com.axonivy.market.model.FeedbackModelRequest;
+import com.axonivy.market.model.ReviewFeedbackModel;
 import com.axonivy.market.model.ProductRating;
 import com.axonivy.market.repository.CustomFeedbackRepository;
 import com.axonivy.market.repository.FeedbackRepository;
 import com.axonivy.market.repository.ProductRepository;
 import com.axonivy.market.repository.UserRepository;
 import com.axonivy.market.service.FeedbackService;
+import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -22,6 +23,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -44,14 +46,7 @@ public class FeedbackServiceImpl implements FeedbackService {
   }
 
   @Override
-  public Page<Feedback> findAllFeedbacks(Pageable pageable, Boolean isApproved, String id) {
-    if (id != null && isApproved != null) {
-      Feedback existingUserFeedback = feedbackRepository.findById(id).orElse(null);
-      if (existingUserFeedback != null) {
-        existingUserFeedback.setFeedbackStatus(isApproved ? FeedbackStatus.APPROVED : FeedbackStatus.REJECTED);
-        feedbackRepository.save(existingUserFeedback);
-      }
-    }
+  public Page<Feedback> findAllFeedbacks(Pageable pageable) {
     return feedbackRepository.findAll(refinePagination(pageable));
   }
 
@@ -84,13 +79,17 @@ public class FeedbackServiceImpl implements FeedbackService {
   }
 
   @Override
-  public Feedback updateFeedbackWithNewStatus(FeedbackModel feedback, FeedbackStatus status) {
-    Feedback existingUserFeedback = feedbackRepository.findById(feedback.getId())
-        .orElseThrow(() -> new NotFoundException(ErrorCode.PRODUCT_NOT_FOUND,
-            "Feedback not found " + feedback.getId()));
+  public Feedback updateFeedbackWithNewStatus(ReviewFeedbackModel reviewFeedback) {
+    Feedback existingUserFeedback = feedbackRepository.findById(reviewFeedback.getFeedbackId()).orElse(null);
+    if (existingUserFeedback != null) {
+      existingUserFeedback.setFeedbackStatus(
+          BooleanUtils.isTrue(reviewFeedback.getIsApproved()) ? FeedbackStatus.APPROVED : FeedbackStatus.REJECTED);
+      existingUserFeedback.setModeratorId(reviewFeedback.getModeratorId());
+      existingUserFeedback.setReviewDate(new Date());
+      feedbackRepository.save(existingUserFeedback);
+    }
 
-    existingUserFeedback.setFeedbackStatus(status);
-    return feedbackRepository.save(existingUserFeedback);
+    return existingUserFeedback;
   }
 
   @Override

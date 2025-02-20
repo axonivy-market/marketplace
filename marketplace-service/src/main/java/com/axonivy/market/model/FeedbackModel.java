@@ -52,6 +52,12 @@ public class FeedbackModel extends RepresentationModel<FeedbackModel> {
   @Schema(description = "User's feedback status", example = "APPROVED")
   private FeedbackStatus feedbackStatus;
 
+  @Schema(description = "Moderator name reviewed feedback", example = "ntqdinh-axonivy")
+  private String moderatorId;
+
+  @Schema(description = "Feedback reviewing timestamp", example = "2024-06-24T00:00:00.000Z")
+  private Date reviewDate;
+
   @Override
   public int hashCode() {
     return new HashCodeBuilder().append(id).hashCode();

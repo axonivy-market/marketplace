@@ -27,7 +27,7 @@ export const routes: Routes = [
     component: ReleasePreviewComponent
   },
   {
-    path: 'feedback-approval',
+    path: 'feedback-review',
     component: FeedbackApprovalComponent
   },
   {

@@ -5,6 +5,7 @@ import com.axonivy.market.entity.Feedback;
 import com.axonivy.market.model.FeedbackModel;
 import com.axonivy.market.model.FeedbackModelRequest;
 import com.axonivy.market.model.ProductRating;
+import com.axonivy.market.model.ReviewFeedbackModel;
 import com.axonivy.market.service.FeedbackService;
 import com.axonivy.market.service.JwtService;
 import com.axonivy.market.util.AuthorizationUtils;
@@ -30,6 +31,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -108,7 +110,7 @@ public class FeedbackController {
     return new ResponseEntity<>(feedbackModelAssembler.toModel(feedback), HttpStatus.OK);
   }
 
-  @GetMapping(FEEDBACK_APPROVAL)
+  @GetMapping(FEEDBACK_REVIEW)
   @Operation(summary = "Find all feedbacks",
       description = "Get feedbacks on target product", parameters = {
       @Parameter(name = "page", description = "Page number to retrieve", in = ParameterIn.QUERY, example = "0",
@@ -126,6 +128,14 @@ public class FeedbackController {
     var responseContent = new PageImpl<>(results.getContent(), pageable, results.getTotalElements());
     var pageResources = pagedResourcesAssembler.toModel(responseContent, feedbackModelAssembler);
     return new ResponseEntity<>(pageResources, HttpStatus.OK);
+  }
+
+  @PutMapping(FEEDBACK_REVIEW)
+  @Operation(hidden = true)
+  public ResponseEntity<FeedbackModel> updateFeedbackWithNewStatus(
+      @RequestBody @Valid ReviewFeedbackModel reviewFeedback) {
+    Feedback feedback = feedbackService.updateFeedbackWithNewStatus(reviewFeedback);
+    return new ResponseEntity<>(feedbackModelAssembler.toModel(feedback), HttpStatus.OK);
   }
 
   @PostMapping

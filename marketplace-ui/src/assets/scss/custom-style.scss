@@ -60,7 +60,7 @@ p {
   font-size: 14px;
 }
 
-.overlay-background{
+.overlay-background {
   background: rgba(0, 0, 0, 0.32);
 }
 
@@ -93,7 +93,7 @@ p {
   --product-feedback-container-bg-color: #{$ivySecondaryColorLight};
   --product-feedback-container-border-color: #{var(--header-border-color)};
 
-  
+
   --product-latest-release: #{$ivyLatestReleaseColor};
   --product-latest-release-border: #{$ivyLatestReleaseBorderColor};
 
@@ -160,10 +160,12 @@ p {
 
   .star-rating-counting-line {
     background-color: #{$ivySecondaryColorLight} !important;
+
     .star-rating-percent {
       background-color: #{$ivyPrimaryColorLight} !important;
     }
   }
+
   /** End Star Rating Summary **/
 }
 
@@ -269,12 +271,15 @@ p {
 
   .star-rating-counting-line {
     background-color: #383838 !important;
+
     .star-rating-percent {
       background-color: #FAFAFA !important;
     }
   }
+
   /** End Star Rating Summary **/
 }
+
 .default-cursor {
   cursor: default;
 }
@@ -325,6 +330,7 @@ p {
   .container {
     min-width: 1505px;
   }
+
   .col-xxl-3 {
     flex: 0 0 auto;
     width: 25% !important;
