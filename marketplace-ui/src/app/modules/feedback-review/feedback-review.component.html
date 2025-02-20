@@ -1,17 +1,17 @@
 <div class="container">
   <!-- @if (this.authService.getToken()) { -->
   <div class="row col-md-12">
-    <h1 class="text-primary approval" [lang]="languageService.selectedLanguage()">
-      {{ translateService.get('common.approval.approvalTitle') | async }}</h1>
+    <h1 class="text-primary review" [lang]="languageService.selectedLanguage()">
+      {{ translateService.get('common.review.approvalTitle') | async }}</h1>
     <div class="introduction-container">
       <div class="d-sm-block about">
-        <h3 class="text-primary">
-          {{ translateService.get('common.approval.about') | async }}
+        <h3 class="text-secondary">
+          {{ translateService.get('common.review.about') | async }}
         </h3>
       </div>
       <div class="d-sm-block align-items-center contribute-link-container flex-fill">
         <h4 [lang]="languageService.selectedLanguage()" class="text-secondary"
-          [innerHTML]="translateService.get('common.approval.instruction') | async">
+          [innerHTML]="translateService.get('common.review.instruction') | async">
         </h4>
       </div>
     </div>
@@ -59,44 +59,43 @@
         <!-- Review Feedback Content -->
         <div class="tab-pane fade show active" role="tabpanel" aria-labelledby="review-tab" [ngClass]="{'show active': activeTab === 'review'}">
 
-          <div class="table-responsive mt-5">
+          <div class="table-responsive">
             <table class="table">
               <thead>
                 <tr>
-                  <th>Username</th>
-                  <th>Content</th>
-                  <th>Rating</th>
-                  <th>Status</th>
-                  <th>Created At</th>
-                  <th>Updated At</th>
-                  <th>Action</th>
+                  <th class="text-primary username-column">Username</th>
+                  <th class="text-primary">Content</th>
+                  <th class="text-primary rating-column">Rating</th>
+                  <th class="text-primary status-column">Status</th>
+                  <th class="text-primary created-date-column">Created At</th>
+                  <th class="text-primary updated-date-column">Updated At</th>
+                  <th class="text-primary fixed-width">Action</th>
                 </tr>
               </thead>
               <tbody>
                 @for (feedback of pendingFeedbacks(); track $index) {
                 <tr>
-                  <td>
+                  <td class="username-column">
                     <img class="rounded-circle img-avatar img-fit-cover"
                     [src]="feedback.userAvatarUrl ?? '/assets/images/misc/avatar-default.png'"
-                    alt="Github user avatar" width="40" height="40" />
-                    {{ feedback.username ?? 'Github User' }}
+                    alt="Github user avatar" />
+                   <span class="text-primary feedback-username"> {{ feedback.username ?? 'Github User' }}</span>
                   </td>
-                  <td class="text-primary">{{ feedback.content }}</td>
-                  <td>{{ feedback.rating }}</td>
-                  <td>{{ feedback.feedbackStatus }}</td>
-                  <td>{{ feedback.createdAt | date: 'short' }}</td>
-                  <td>{{ feedback.updatedAt | date: 'short' }}</td>
+                  <td><p class="text-primary m-0 content-column">{{ feedback.content }}</p></td>
+                  <td><p class="text-primary m-0 rating rating-column">{{ feedback.rating }}</p></td>
+                  <td><p class="text-primary m-0 status-column">{{ feedback.feedbackStatus }}</p></td>
+                  <td><p class="text-primary m-0 created-date-column">{{ feedback.createdAt | date: 'short' }}</p></td>
+                  <td><p class="text-primary m-0 updated-date-column">{{ feedback.updatedAt | date: 'short' }}</p></td>
 
-                  <td>
-                    <div id="approve-button" style="display: inline-block; margin-right: 10px;"
-
+                  <td class="action-buttons fixed-width">
+                    <div id="approve-button"
                       (click)="onClickingApproveButton(feedback)">
-                      <span [lang]="languageService.selectedLanguage()">Approve</span>
+                      <p class="mb-0" [lang]="languageService.selectedLanguage()">Approve</p>
                     </div>
 
-                    <div id="reject-button" style="display: inline-block;"
+                    <div id="reject-button"
                       (click)="onClickingRejectButton(feedback)">
-                      <span [lang]="languageService.selectedLanguage()">Reject</span>
+                      <p class="mb-0" [lang]="languageService.selectedLanguage()">Reject</p>
                     </div>
                   </td>
                 </tr>
@@ -109,40 +108,36 @@
 
         <!-- History Content -->
         <div class="tab-pane fade" role="tabpanel" aria-labelledby="history-tab" [ngClass]="{'show active': activeTab === 'history'}">
-          <div class="table-responsive mt-5">
+          <div class="table-responsive">
             <table class="table">
               <thead>
                 <tr>
-                  <th>Username</th>
-                  <th>Content</th>
-                  <th>Rating</th>
-                  <th>Status</th>
-                  <th>Created At</th>
-                  <th>Updated At</th>
-                  <th>Moderator name</th>
-                  <th>Review date</th>
+                  <th class="text-primary username-column">Username</th>
+                  <th class="text-primary">Content</th>
+                  <th class="text-primary rating-column">Rating</th>
+                  <th class="text-primary status-column">Status</th>
+                  <th class="text-primary created-date-column">Created At</th>
+                  <th class="text-primary updated-date-column">Updated At</th>
+                  <th class="text-primary">Moderator Name</th>
+                  <th class="text-primary">Review Date</th>
                 </tr>
               </thead>
               <tbody>
                 @for (feedback of feedbacks(); track $index) {
                 <tr>
-                  <td>
+                  <td class="username-column">
                     <img class="rounded-circle img-avatar img-fit-cover"
                     [src]="feedback.userAvatarUrl ?? '/assets/images/misc/avatar-default.png'"
-                    alt="Github user avatar" width="40" height="40" />
-                    {{ feedback.username ?? 'Github User' }}
+                    alt="Github user avatar" />
+                    <span class="text-primary feedback-username">{{ feedback.username ?? 'Github User' }}</span>
                   </td>
-                  <td class="text-primary">{{ feedback.content }}</td>
-                  <td>{{ feedback.rating }}</td>
-                  <td>{{ feedback.feedbackStatus }}</td>
-                  <td>{{ feedback.createdAt | date: 'short' }}</td>
-                  <td>{{ feedback.updatedAt | date: 'short' }}</td>
-                  <td>
-                    {{ feedback.moderatorId }}
-                  </td>
-                  <td>
-                    {{ feedback.reviewDate }}
-                  </td>
+                  <td><p class="text-primary m-0">{{ feedback.content }}</p></td>
+                  <td><p class="text-primary m-0 rating rating-column">{{ feedback.rating }}</p></td>
+                  <td><p class="text-primary m-0 status-column">{{ feedback.feedbackStatus }}</p></td>
+                  <td><p class="text-primary m-0 created-date-column">{{ feedback.createdAt | date: 'short' }}</p></td>
+                  <td><p class="text-primary m-0 updated-date-column">{{ feedback.updatedAt | date: 'short' }}</p></td>
+                  <td><p class="text-primary m-0">{{ feedback.moderatorId }}</p></td>
+                  <td><p class="text-primary m-0">{{ feedback.reviewDate | date: 'short' }}</p></td>
                 </tr>
                 }
               </tbody>

@@ -1,37 +1,29 @@
 import { CommonModule } from "@angular/common";
 import { FormsModule } from "@angular/forms";
-import { CommonDropdownComponent } from "../../shared/components/common-dropdown/common-dropdown.component";
 import { TranslateModule, TranslateService } from "@ngx-translate/core";
-import { MultilingualismPipe } from "../../shared/pipes/multilingualism.pipe";
 import { Component, computed, inject, Signal, ViewEncapsulation } from "@angular/core";
 import { AuthService } from "../../auth/auth.service";
 import { AppModalService } from "../../shared/services/app-modal.service";
 import { Feedback } from "../../shared/models/feedback.model";
 import { ProductFeedbackService } from "../product/product-detail/product-detail-feedback/product-feedbacks-panel/product-feedback.service";
-import { TimeAgoPipe } from "../../shared/pipes/time-ago.pipe";
 import { LanguageService } from "../../core/services/language/language.service";
 import { ThemeService } from "../../core/services/theme/theme.service";
-import { ItemDropdown } from "../../shared/models/item-dropdown.model";
-import { APPROVAL_TABS } from "../../shared/constants/common.constant";
-import { log } from "console";
+import { FEEDBACK_REVIEW_TABS } from "../../shared/constants/common.constant";
 import { FeedbackStatus } from "../../shared/enums/feedback-status.enum";
 
 @Component({
-  selector: 'app-feedback-approval',
+  selector: 'app-feedback-review',
   standalone: true,
   imports: [
     CommonModule,
     FormsModule,
-    CommonDropdownComponent,
-    TranslateModule,
-    MultilingualismPipe,
-    TimeAgoPipe
+    TranslateModule
   ],
-  templateUrl: './feedback-approval.component.html',
-  styleUrls: ['./feedback-approval.component.scss'],
+  templateUrl: './feedback-review.component.html',
+  styleUrls: ['./feedback-review.component.scss'],
   encapsulation: ViewEncapsulation.Emulated
 })
-export class FeedbackApprovalComponent {
+export class FeedbackReviewComponent {
   authService = inject(AuthService);
   appModalService = inject(AppModalService);
   productFeedbackService = inject(ProductFeedbackService);
@@ -39,13 +31,9 @@ export class FeedbackApprovalComponent {
   themeService = inject(ThemeService);
   translateService = inject(TranslateService);
 
-  detailTabs = APPROVAL_TABS;
-  activeTab = 'review'; // Default to 'review'
-  // displayedTabsSignal: Signal<ItemDropdown[]> = computed(() => {
-  //   this.languageService.selectedLanguage();
+  detailTabs = FEEDBACK_REVIEW_TABS;
+  activeTab = 'review';
 
-  //   return this.getDisplayedTabsSignal();
-  // });
   // showToggle = computed(() => this.scrollHeight() > this.clientHeight() || this.feedback.isExpanded);
   feedbacks: Signal<Feedback[] | undefined> =
     this.productFeedbackService.allFeedbacks;
@@ -54,7 +42,7 @@ export class FeedbackApprovalComponent {
     this.productFeedbackService.pendingFeedbacks;
 
   ngOnInit(): void {
-    console.log("Initializing FeedbackApprovalComponent...");
+    console.log("Initializing FeedbackReviewComponent...");
 
     if (!this.authService.getToken()) {
       console.log("User not authenticated, redirecting to GitHub login...");
@@ -67,15 +55,20 @@ export class FeedbackApprovalComponent {
         console.log("Feedbacks loaded:", response._embedded.feedbacks);
 
         // Set all feedbacks
-        this.productFeedbackService.allFeedbacks.set(response._embedded.feedbacks);
+        this.productFeedbackService.allFeedbacks.set(response._embedded.feedbacks.sort((a, b) => 
+          (b.reviewDate ? new Date(b.reviewDate).getTime() : 0) - 
+          (a.reviewDate ? new Date(a.reviewDate).getTime() : 0)
+        ));
 
         // Filter and set pending feedbacks
         this.productFeedbackService.pendingFeedbacks.set(
-          response._embedded.feedbacks.filter(fb => fb.feedbackStatus === FeedbackStatus.PENDING)
+          response._embedded.feedbacks.filter(fb => fb.feedbackStatus === FeedbackStatus.PENDING).sort((a, b) => 
+            (b.updatedAt ? new Date(b.updatedAt).getTime() : 0) - 
+            (a.updatedAt ? new Date(a.updatedAt).getTime() : 0)
+          )
         );
       });
     }
-
   }
 
   onClickingApproveButton(feedback: Feedback): void {
