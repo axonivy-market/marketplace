@@ -68,6 +68,12 @@
   border: solid 1px gray;
   border-radius: 1rem;
 
+  .custom-accordion-button {
+    background: none;
+    box-shadow: none;
+    color: var(--ivy-text-primary-color);
+  }
+
   .changelog-content h2 {
     padding-bottom: 0.5rem;
     margin-bottom: 2rem;

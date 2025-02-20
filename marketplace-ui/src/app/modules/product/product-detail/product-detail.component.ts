@@ -14,7 +14,7 @@ import {
   signal
 } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
-import { NgbNavModule } from '@ng-bootstrap/ng-bootstrap';
+import { NgbAccordionModule, NgbNavModule } from '@ng-bootstrap/ng-bootstrap';
 import { TranslateModule } from '@ngx-translate/core';
 import { forkJoin, map, Observable } from 'rxjs';
 import { AuthService } from '../../../auth/auth.service';
@@ -95,6 +95,7 @@ const GITHUB_BASE_URL = 'https://github.com/';
     NgOptimizedImage,
     EmptyProductDetailPipe,
     LoadingSpinnerComponent,
+    NgbAccordionModule
   ],
   providers: [ProductService],
   templateUrl: './product-detail.component.html',
