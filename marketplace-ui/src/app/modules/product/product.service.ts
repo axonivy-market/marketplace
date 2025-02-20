@@ -6,10 +6,11 @@ import { ProductApiResponse } from '../../shared/models/apis/product-response.mo
 import { Criteria } from '../../shared/models/criteria.model';
 import { ProductDetail } from '../../shared/models/product-detail.model';
 import { VersionData } from '../../shared/models/vesion-artifact.model';
-import { LoadingComponent } from '../../core/interceptors/api.interceptor';
+import { ForwardingError, LoadingComponent } from '../../core/interceptors/api.interceptor';
 import { VersionAndUrl } from '../../shared/models/version-and-url';
 import { API_URI } from '../../shared/constants/api.constant';
 import { LoadingComponentId } from '../../shared/enums/loading-component-id';
+import { ProductReleaseApiResponse } from '../../shared/models/apis/product-release-response.model';
 
 @Injectable()
 export class ProductService {
@@ -111,5 +112,11 @@ export class ProductService {
       params,
       responseType: 'text' as 'json'
     });
+  }
+
+  getProductChangelogs(productId: string): Observable<ProductReleaseApiResponse> {
+    const url = `${API_URI.PRODUCT_DETAILS}/${productId}/releases`;
+
+    return this.httpClient.get<ProductReleaseApiResponse>(url, { context: new HttpContext().set(ForwardingError, true) });
   }
 }

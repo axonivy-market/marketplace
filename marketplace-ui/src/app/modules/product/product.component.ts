@@ -37,7 +37,6 @@ import { ItemDropdown } from '../../shared/models/item-dropdown.model';
 import { LoadingSpinnerComponent } from '../../shared/components/loading-spinner/loading-spinner.component';
 import { LoadingService } from '../../core/services/loading/loading.service';
 import { LoadingComponentId } from '../../shared/enums/loading-component-id';
-
 const SEARCH_DEBOUNCE_TIME = 500;
 
 @Component({
@@ -74,7 +73,6 @@ export class ProductComponent implements AfterViewInit, OnDestroy {
   responsePage!: Page;
   isRESTClient: WritableSignal<boolean> = signal(false);
   isDesignerEnvironment = inject(RoutingQueryParamService).isDesignerEnv();
-
   productService = inject(ProductService);
   themeService = inject(ThemeService);
   translateService = inject(TranslateService);
@@ -87,7 +85,7 @@ export class ProductComponent implements AfterViewInit, OnDestroy {
     this.route.queryParams.subscribe(params => {
       this.isRESTClient.set(
         DESIGNER_SESSION_STORAGE_VARIABLE.restClientParamName in params &&
-          this.isDesignerEnvironment
+        this.isDesignerEnvironment
       );
 
       if (params[DESIGNER_SESSION_STORAGE_VARIABLE.searchParamName] != null) {
@@ -107,6 +105,18 @@ export class ProductComponent implements AfterViewInit, OnDestroy {
             search: value
           };
           this.loadProductItems(true);
+
+          let queryParams: { search: string | null } = { search: null };
+
+          if (value) {
+            queryParams = { search: this.criteria.search };
+          }
+
+          this.router.navigate([], {
+            relativeTo: this.route,
+            queryParamsHandling: 'merge',
+            queryParams
+          });
         })
     );
     this.router.events?.subscribe(event => {
@@ -121,7 +131,7 @@ export class ProductComponent implements AfterViewInit, OnDestroy {
     this.setupIntersectionObserver();
   }
 
-  viewProductDetail(productId: string, _productTag: string) {
+  viewProductDetail(productId: string) {
     if (this.isRESTClient()) {
       window.location.href = `/${productId}`;
     }
@@ -135,6 +145,17 @@ export class ProductComponent implements AfterViewInit, OnDestroy {
       type: selectedType.value
     };
     this.loadProductItems(true);
+    let queryParams: { type: TypeOption | null } = { type: null };
+
+    if (selectedType.value !== TypeOption.All_TYPES) {
+      queryParams = { type: this.criteria.type }
+    }
+
+    this.router.navigate([], {
+      relativeTo: this.route,
+      queryParamsHandling: 'merge',
+      queryParams
+    });
   }
 
   onSortChange(selectedSort: SortOption) {
@@ -144,6 +165,18 @@ export class ProductComponent implements AfterViewInit, OnDestroy {
       sort: selectedSort
     };
     this.loadProductItems(true);
+    let queryParams = null;
+    if (SortOption.STANDARD !== selectedSort) {
+      queryParams = { sort: this.criteria.sort };
+    } else {
+      queryParams = { sort: null };
+    }
+
+    this.router.navigate([], {
+      relativeTo: this.route,
+      queryParamsHandling: 'merge',
+      queryParams
+    });
   }
 
   onSearchChanged(searchString: string) {

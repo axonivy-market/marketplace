@@ -8,6 +8,9 @@
   src: url(../fonts/inter.ttf) format('truetype');
 }
 
+$ivyLatestReleaseBorderColor: #238636;
+$ivyLatestReleaseColor: #3fb950;
+
 // Light
 $ivyPrimaryColorLight: #007095;
 $ivyPrimaryColorHoverLight: #00445c;
@@ -88,6 +91,10 @@ p {
   --text-error-oops-color: #{$ivyPrimaryTextColorLight};
   --product-feedback-container-bg-color: #{$ivySecondaryColorLight};
   --product-feedback-container-border-color: #{var(--header-border-color)};
+
+  
+  --product-latest-release: #{$ivyLatestReleaseColor};
+  --product-latest-release-border: #{$ivyLatestReleaseBorderColor};
 
   .bg-primary {
     background-color: #{$ivyPrimaryColorLight} !important;
@@ -195,6 +202,9 @@ p {
   --text-error-oops-color: #ffffff;
   --product-feedback-container-bg-color: #{$ivySecondaryColorDark};
   --product-feedback-container-border-color: #{$ivySecondaryTextLight};
+
+  --product-latest-release: #{$ivyLatestReleaseColor};
+  --product-latest-release-border: #{$ivyLatestReleaseBorderColor};
 
   a {
     color: #{$white};

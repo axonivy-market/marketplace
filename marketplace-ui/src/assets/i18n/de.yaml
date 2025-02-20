@@ -136,8 +136,11 @@ common:
           label: Zielplattform
         artifactSelector:
           label: Artefakt
+        appArtifactHint: Um alle notwendigen und verwendbaren Abhängigkeiten einzubinden, um direkt auf der Axon Ivy Engine zu deployen, aktivieren Sie bitte diese Checkbox!
+        zipAppArtifactLabel: Erstellen Sie eine ZIP-Datei für die Bereitstellung auf der Axon Ivy Engine
       contactUs:
         label: Kontakt
+      changelog: Änderungsliste
   feedback:
     label: Rückmeldung
     successMessage: Ihr Feedback wurde erfolgreich übermittelt!

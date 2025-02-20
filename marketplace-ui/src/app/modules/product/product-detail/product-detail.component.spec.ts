@@ -9,8 +9,8 @@ import {
   TestBed,
   tick
 } from '@angular/core/testing';
-import { By, DomSanitizer, Title } from '@angular/platform-browser';
-import { ActivatedRoute } from '@angular/router';
+import { By, DomSanitizer, SafeHtml, Title } from '@angular/platform-browser';
+import { ActivatedRoute, Router } from '@angular/router';
 import { TranslateModule } from '@ngx-translate/core';
 import { Viewport } from 'karma-viewport/dist/adapter/viewport';
 import { of } from 'rxjs';
@@ -20,7 +20,7 @@ import {
   MOCK_CRON_JOB_PRODUCT_DETAIL,
   MOCK_PRODUCT_MODULE_CONTENT,
   MOCK_PRODUCTS,
-  MOCK_FEEDBACK_API_RESPONSE
+  MOCK_FEEDBACK_API_RESPONSE,
 } from '../../../shared/mocks/mock-data';
 import { ProductService } from '../product.service';
 import { ProductDetailComponent } from './product-detail.component';
@@ -38,6 +38,12 @@ import { ProductStarRatingService } from './product-detail-feedback/product-star
 import { FeedbackApiResponse } from '../../../shared/models/apis/feedback-response.model';
 import { StarRatingCounting } from '../../../shared/models/star-rating-counting.model';
 import { Feedback } from '../../../shared/models/feedback.model';
+import MarkdownIt from 'markdown-it';
+import { PRODUCT_DETAIL_TABS } from '../../../shared/constants/common.constant';
+import { MultilingualismPipe } from '../../../shared/pipes/multilingualism.pipe';
+import { HistoryService } from '../../../core/services/history/history.service';
+import { SortOption } from '../../../shared/enums/sort-option.enum';
+import { API_URI } from '../../../shared/constants/api.constant';
 
 const products = MOCK_PRODUCTS._embedded.products;
 declare const viewport: Viewport;
@@ -53,6 +59,8 @@ describe('ProductDetailComponent', () => {
   let mockProductStarRatingService: jasmine.SpyObj<ProductStarRatingService>;
   let mockAuthService: jasmine.SpyObj<AuthService>;
   let mockAppModalService: jasmine.SpyObj<AppModalService>;
+  let mockHistoryService: jasmine.SpyObj<HistoryService>;
+  let mockRouter: jasmine.SpyObj<Router>;
 
   beforeEach(async () => {
     const spy = jasmine.createSpyObj('DomSanitizer', [
@@ -68,6 +76,13 @@ describe('ProductDetailComponent', () => {
       'selectedLanguage'
     ]);
 
+    mockHistoryService = jasmine.createSpyObj('HistoryService', [
+      'lastSearchType',
+      'lastSortOption',
+      'lastSearchText',
+      'isLastSearchChanged'
+    ]);
+
     mockProductFeedbackService = jasmine.createSpyObj(
       'ProductFeedbackService',
       [
@@ -78,6 +93,9 @@ describe('ProductDetailComponent', () => {
         'totalElements'
       ]
     );
+
+    mockRouter = jasmine.createSpyObj('Router', ['navigate']);
+
     mockAuthService = jasmine.createSpyObj('AuthService', ['getToken']);
     mockAppModalService = jasmine.createSpyObj('AppModalService', [
       'openAddFeedbackDialog'
@@ -119,6 +137,8 @@ describe('ProductDetailComponent', () => {
           provide: RoutingQueryParamService,
           useValue: routingQueryParamServiceSpy
         },
+        { provide: Router, useValue: mockRouter },
+        { provide: HistoryService, useValue: mockHistoryService },
         {
           provide: LanguageService,
           useValue: languageServiceSpy
@@ -164,6 +184,7 @@ describe('ProductDetailComponent', () => {
   beforeEach(() => {
     fixture = TestBed.createComponent(ProductDetailComponent);
     component = fixture.componentInstance;
+
     fixture.detectChanges();
   });
 
@@ -611,6 +632,17 @@ describe('ProductDetailComponent', () => {
     expect(component.getContent('demo')).toBeFalse();
   });
 
+  it('should return false for changelog when productReleaseSafeHtmls is empty', () => {
+    const mockContent: ProductModuleContent = {
+      ...MOCK_PRODUCT_MODULE_CONTENT,
+    };
+
+    component.productReleaseSafeHtmls = [];
+
+    component.productModuleContent.set(mockContent);
+    expect(component.getContent('changelog')).toBeFalse();
+  });
+
   it('should display dropdown horizontally on small viewport', () => {
     viewport.set(540);
     const tabGroup = fixture.debugElement.query(By.css('.row-tab'));
@@ -766,11 +798,12 @@ describe('ProductDetailComponent', () => {
     );
   });
 
-  it('displayed tabs array should have size 0 if product module content description, setup, demo, dependcy are all empty', () => {
+  it('displayed tabs array should have size 0 if product module content description, setup, demo, dependency, and changelog are all empty', () => {
     const mockContent: ProductModuleContent = {
       ...MOCK_PRODUCT_MODULE_CONTENT
     };
     component.productModuleContent.set(mockContent);
+    component.productReleaseSafeHtmls = [];
 
     expect(component.displayedTabsSignal().length).toBe(0);
   });
@@ -853,6 +886,41 @@ describe('ProductDetailComponent', () => {
     expect(result).toBe(mockedRenderedHtml);
   });
 
+  it('should process README content correctly with different values per tab', () => {
+    languageService.selectedLanguage.and.returnValue(Language.EN);
+
+    spyOn(component, 'getProductModuleContentValue').and.callFake((tab) => {
+      const key = tab.value as keyof ProductModuleContent;
+      return MOCK_PRODUCT_DETAIL.productModuleContent[key] as { en: string };
+    });
+
+    spyOn(MultilingualismPipe.prototype, 'transform').and.callFake((content) => `${content}`);
+    spyOn(component, 'renderGithubAlert').and.callFake((content: string) => `${content}` as SafeHtml);
+
+    component.getReadmeContent();
+
+    expect(component.loadedReadmeContent['description']).toBe(
+      `${MOCK_PRODUCT_DETAIL.productModuleContent.description}`
+    );
+    expect(component.loadedReadmeContent['demo']).toBe(
+      `${MOCK_PRODUCT_DETAIL.productModuleContent.demo}`
+    );
+
+    expect(component.getProductModuleContentValue).toHaveBeenCalled();
+    expect(MultilingualismPipe.prototype.transform).toHaveBeenCalled();
+    expect(component.renderGithubAlert).toHaveBeenCalled();
+  });
+
+  it('should not process content if getProductModuleContentValue returns null', () => {
+    spyOn(component, 'getProductModuleContentValue').and.returnValue(null);
+    spyOn(component, 'renderGithubAlert');
+
+    component.getReadmeContent();
+
+    expect(component.getProductModuleContentValue).toHaveBeenCalledTimes(PRODUCT_DETAIL_TABS.length);
+    expect(component.renderGithubAlert).not.toHaveBeenCalled();
+  });
+
   it('should close the dropdown when clicking outside', () => {
     component.isDropdownOpen.set(true);
     fixture.detectChanges();
@@ -863,4 +931,88 @@ describe('ProductDetailComponent', () => {
 
     expect(component.isDropdownOpen()).toBeFalse();
   });
+
+  it('should replace GitHub URLs with appropriate links in linkifyPullRequests', () => {
+    const md = new MarkdownIt();
+    const sourceUrl = 'https://github.com/source-repo';
+    component.linkifyPullRequests(md, sourceUrl, component.githubPullRequestNumberRegex);
+
+    const inputText = 'Check out this PR: https://github.com/source-repo/pull/123';
+    const expectedOutput = 'Check out this PR: #123';
+    const result = md.renderInline(inputText);
+
+    expect(result).toContain(expectedOutput);
+  });
+
+  it('should keep GitHub URLs if they contain compare string in linkifyPullRequests', () => {
+    const md = new MarkdownIt();
+    const sourceUrl = 'https://github.com/source-repo';
+    component.linkifyPullRequests(md, sourceUrl, component.githubPullRequestNumberRegex);
+
+    const inputText = 'Check out this PR: https://github.com/source-repo/compare/123';
+    const expectedOutput = 'Check out this PR: https://github.com/source-repo/compare/123';
+    const result = md.renderInline(inputText);
+
+    expect(result).toContain(expectedOutput);
+  });
+
+
+  it('should render changelog content with safe HTML', () => {
+    const mockReleases = [
+      {
+        name: '1.0.0',
+        body: 'Initial release',
+        publishedAt: '2023-01-01',
+      },
+    ];
+    const expectedSafeHtml = '<p>Initial release</p>';
+    sanitizerSpy.bypassSecurityTrustHtml.and.returnValue(expectedSafeHtml);
+
+    const result = component.renderChangelogContent(mockReleases);
+
+    expect(result[0].body).toBe(expectedSafeHtml);
+  });
+
+  it('should navigate with correct query parameters when last recorded values differ from defaults', () => {
+    mockHistoryService.lastSearchType.and.returnValue(TypeOption.CONNECTORS);
+    mockHistoryService.lastSortOption.and.returnValue(SortOption.POPULARITY);
+    mockHistoryService.lastSearchText.and.returnValue('test-search');
+
+    component.navigateToHomePageWithLastSearch();
+
+    expect(mockRouter.navigate).toHaveBeenCalledWith([API_URI.APP], {
+      relativeTo: jasmine.anything(),
+      queryParamsHandling: 'merge',
+      queryParams: {
+        type: TypeOption.CONNECTORS,
+        sort: SortOption.POPULARITY,
+        search: 'test-search'
+      }
+    });
+  });
+
+  it('should navigate with empty query params when defaults are present', () => {
+    mockHistoryService.lastSearchType.and.returnValue(TypeOption.All_TYPES);
+    mockHistoryService.lastSortOption.and.returnValue(SortOption.STANDARD);
+    mockHistoryService.lastSearchText.and.returnValue('');
+
+    component.navigateToHomePageWithLastSearch();
+
+    expect(mockRouter.navigate).toHaveBeenCalledWith([API_URI.APP], {
+      relativeTo: jasmine.anything(),
+      queryParamsHandling: 'merge',
+      queryParams: {}
+    });
+  });
+
+  it('should navigate to home page when click back to button regardless history',() => {
+    mockHistoryService.lastSearchType.and.returnValue(TypeOption.All_TYPES);
+    mockHistoryService.lastSortOption.and.returnValue(SortOption.STANDARD);
+    mockHistoryService.lastSearchText.and.returnValue("");
+    component.setActiveTab("description");
+    component.setActiveTab("demo")
+    component.setActiveTab("setup")
+    component.onClickingBackToHomepageButton();
+    expect(mockRouter.navigate).toHaveBeenCalledWith([API_URI.APP]);
+  })
 });

@@ -21,7 +21,7 @@ public class FeedbackModelAssembler extends RepresentationModelAssemblerSupport<
   private final UserService userService;
 
   public FeedbackModelAssembler(UserService userService) {
-    super(Feedback.class, FeedbackModel.class);
+    super(FeedbackController.class, FeedbackModel.class);
     this.userService = userService;
   }
 

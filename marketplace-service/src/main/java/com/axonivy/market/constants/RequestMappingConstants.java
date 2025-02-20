@@ -31,8 +31,14 @@ public class RequestMappingConstants {
   public static final String DESIGNER_INSTALLATION_BY_ID = "/installation/{id}/designer";
   public static final String CUSTOM_SORT = "custom-sort";
   public static final String LATEST_ARTIFACT_DOWNLOAD_URL_BY_ID = "/{id}/artifact";
+  public static final String ARTIFACTS_AS_ZIP = LATEST_ARTIFACT_DOWNLOAD_URL_BY_ID + "/zip-file";
+  public static final String SYNC_ZIP_ARTIFACTS = "zip-sync";
   public static final String EXTERNAL_DOCUMENT = API + "/externaldocument";
   public static final String PRODUCT_MARKETPLACE_DATA = API + "/product-marketplace-data";
   public static final String SECURITY_MONITOR = API + "/security-monitor";
   public static final String RELEASE_PREVIEW = API + "/release-preview";
+  public static final String PRODUCT_PUBLIC_RELEASES = "/{id}/releases";
+  public static final String PRODUCT_PUBLIC_RELEASE_BY_RELEASE_ID = "/{product-id}/releases/{release-id}";
+  public static final String PRODUCT_ID = "product-id";
+  public static final String RELEASE_ID = "release-id";
 }

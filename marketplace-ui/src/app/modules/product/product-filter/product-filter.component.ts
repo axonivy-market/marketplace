@@ -12,6 +12,8 @@ import { CommonUtils } from '../../../shared/utils/common.utils';
 import { ItemDropdown } from '../../../shared/models/item-dropdown.model';
 import { MatomoAction, MatomoCategory, MatomoTracker } from '../../../shared/enums/matomo-tracking.enum';
 import { MATOMO_DIRECTIVES } from 'ngx-matomo-client';
+import { ActivatedRoute, Router } from '@angular/router';
+import { HistoryService } from '../../../core/services/history/history.service';
 
 @Component({
   selector: 'app-product-filter',
@@ -33,13 +35,68 @@ export class ProductFilterComponent {
   types = FILTER_TYPES;
   sorts = SORT_TYPES;
   searchText = '';
+  typeValue = '';
 
   themeService = inject(ThemeService);
   translateService = inject(TranslateService);
   languageService = inject(LanguageService);
+  route = inject(ActivatedRoute);
+  router = inject(Router);
+  historyService = inject(HistoryService);
+
+  constructor() {
+    this.route.queryParams.subscribe(params => {
+      const queryParams = { ...params };
+
+      // Update type value, remove invalid type from query params if any
+      const validTypeValues = Object.values(TypeOption);
+      const type = queryParams['type'];
+      const isValidType = validTypeValues.includes(type);
+
+      if (!isValidType) {
+        delete queryParams['type'];
+        this.typeValue = FILTER_TYPES[0].value;
+      } else {
+        this.typeValue = type;
+      }
+      this.historyService.lastSearchType.set(this.typeValue);
+
+
+      const selectedType = this.types.find(t => t.value === this.typeValue);
+      if (selectedType) {
+        this.onSelectType(selectedType);
+      }
+
+      // Update sort value, remove invalid sort from query params if any
+      const validSortValues = Object.values(SortOption);
+      const sort = queryParams['sort'];
+      const isValidSort = validSortValues.includes(sort);
+
+      let sortValue;
+      if (!isValidSort) {
+        delete queryParams['sort'];
+        sortValue = SortOption.STANDARD;
+      } else {
+        sortValue = sort;
+      }
+      this.onSortChange(sortValue);
+      this.historyService.lastSortOption.set(sortValue);
+
+
+      // Update search text
+      this.searchText = queryParams['search'] || '';
+      this.historyService.lastSearchText.set(this.searchText);
+
+      this.router.navigate([], {
+        relativeTo: this.route,
+        queryParamsHandling: '',
+        queryParams
+      });
+    });
+  }
 
   onSelectType(type: ItemDropdown<TypeOption>) {
-    this.selectedTypeLabel = CommonUtils.getLabel(type.value , this.types);
+    this.selectedTypeLabel = CommonUtils.getLabel(type.value, this.types);
     this.filterChange.emit(type);
   }
 
