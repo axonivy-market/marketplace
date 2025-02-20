@@ -133,7 +133,20 @@ public class CustomProductRepositoryImpl extends CustomRepository implements Cus
 
   @Override
   public Product findByCriteria(ProductSearchCriteria criteria) {
-    return null;
+    CriteriaBuilder cb = em.getCriteriaBuilder();
+    CriteriaQuery<Product> cq = cb.createQuery(Product.class);
+    Root<Product> productRoot = cq.from(Product.class);
+
+    Predicate searchCriteria = buildCriteriaSearch(criteria, cb, productRoot);
+    cq.where(searchCriteria);
+
+    List<Product> results = em.createQuery(cq).getResultList();
+
+    return results.isEmpty() ? null : results.get(0);
+  }
+
+  private CriteriaBuilder createCriteriaBuilder(){
+    return em.getCriteriaBuilder();
   }
 
   @Override
@@ -143,23 +156,23 @@ public class CustomProductRepositoryImpl extends CustomRepository implements Cus
     return mongoTemplate.find(new Query(criteria), Product.class);
   }
 
-  private Page<Product> getResultAsPageable(Pageable pageable, Criteria criteria) {
-    int skip = (int) pageable.getOffset();
-    int limit = pageable.getPageSize();
-    Aggregation aggregation = Aggregation.newAggregation(
-        Aggregation.match(criteria),
-        Aggregation.lookup(MongoDBConstants.PRODUCT_MARKETPLACE_COLLECTION, MongoDBConstants.ID, MongoDBConstants.ID,
-            MongoDBConstants.MARKETPLACE_DATA),
-        Aggregation.sort(pageable.getSort()),
-        Aggregation.skip(skip),
-        Aggregation.limit(limit)
-    );
-
-    List<Product> entities = mongoTemplate.aggregate(aggregation, MongoDBConstants.PRODUCT_COLLECTION,
-        Product.class).getMappedResults();
-    long count = mongoTemplate.count(new Query(criteria), Product.class);
-    return new PageImpl<>(entities, pageable, count);
-  }
+//  private Page<Product> getResultAsPageable(Pageable pageable, Criteria criteria) {
+//    int skip = (int) pageable.getOffset();
+//    int limit = pageable.getPageSize();
+//    Aggregation aggregation = Aggregation.newAggregation(
+//        Aggregation.match(criteria),
+//        Aggregation.lookup(MongoDBConstants.PRODUCT_MARKETPLACE_COLLECTION, MongoDBConstants.ID, MongoDBConstants.ID,
+//            MongoDBConstants.MARKETPLACE_DATA),
+//        Aggregation.sort(pageable.getSort()),
+//        Aggregation.skip(skip),
+//        Aggregation.limit(limit)
+//    );
+//
+//    List<Product> entities = mongoTemplate.aggregate(aggregation, MongoDBConstants.PRODUCT_COLLECTION,
+//        Product.class).getMappedResults();
+//    long count = mongoTemplate.count(new Query(criteria), Product.class);
+//    return new PageImpl<>(entities, pageable, count);
+//  }
 
   public Predicate buildCriteriaSearch(ProductSearchCriteria searchCriteria, CriteriaBuilder cb,
       Root<Product> productRoot) {
@@ -202,32 +215,25 @@ public class CustomProductRepositoryImpl extends CustomRepository implements Cus
     }
 
     for (DocumentField property : filterProperties) {
-      Path<String> fieldPath;
       if (property.isLocalizedSupport()) {
-//        fieldPath = root.get(String.format(LOCALIZE_SEARCH_PATTERN, property.getFieldName(), language));
-        
+        if (StringUtils.isNotBlank(searchCriteria.getKeyword())) {
+          String keywordPattern = "%" + searchCriteria.getKeyword().toLowerCase() + "%";
+          // Correctly join the Map<String, String> names collection
+          MapJoin<Product, String, String> namesJoin = productRoot.joinMap(property.getFieldName());
+          // Extract key (language) and value (name)
+          Path<String> languageKey = namesJoin.key();
+          Path<String> nameValue = namesJoin.value();
+          // Filter by language key
+          Predicate languageFilter = cb.equal(languageKey, language.name().toLowerCase());
+          // Apply keyword search on product names (value)
+          Predicate keywordFilter = cb.like(cb.lower(nameValue), keywordPattern);
+          // Combine conditions
+          filters.add(cb.and(languageFilter, keywordFilter));
+        }
       } else {
-        fieldPath = root.get(property.getFieldName());
+        filters.add(cb.equal(productRoot.get(property.getFieldName()), searchCriteria.getKeyword()));
       }
-
-      Predicate predicate = cb.like(cb.lower(fieldPath), keywordPattern.toLowerCase());
-      predicates.add(predicate);
     }
-
-//    if (StringUtils.isNotBlank(searchCriteria.getKeyword())) {
-//      String keywordPattern = "%" + searchCriteria.getKeyword().toLowerCase() + "%"; // Emulating regex with LIKE
-//      // Correctly join the Map<String, String> names collection
-//      MapJoin<Product, String, String> namesJoin = productRoot.joinMap("names");
-//      // Extract key (language) and value (name)
-//      Path<String> languageKey = namesJoin.key();
-//      Path<String> nameValue = namesJoin.value();
-//      // Filter by language key
-//      Predicate languageFilter = cb.equal(languageKey, language.name().toLowerCase());
-//      // Apply keyword search on product names (value)
-//      Predicate keywordFilter = cb.like(cb.lower(nameValue), keywordPattern);
-//      // Combine conditions
-//      filters.add(cb.and(languageFilter, keywordFilter));
-//    }
     return cb.or(filters.toArray(new Predicate[0])); // Return OR condition for broader match
   }
 }
