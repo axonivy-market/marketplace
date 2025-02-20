@@ -14,8 +14,6 @@ public interface CustomProductRepository {
 
   List<String> getReleasedVersionsById(String id);
 
-  List<Product> getAllProductsWithIdAndReleaseTagAndArtifact();
-
   Page<Product> searchByCriteria(ProductSearchCriteria criteria, Pageable pageable);
 
   Product findByCriteria(ProductSearchCriteria criteria);

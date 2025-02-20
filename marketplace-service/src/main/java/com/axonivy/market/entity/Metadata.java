@@ -1,12 +1,17 @@
 package com.axonivy.market.entity;
 
+import jakarta.persistence.CollectionTable;
+import jakarta.persistence.Column;
+import jakarta.persistence.ElementCollection;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import org.springframework.data.annotation.Id;
-import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.io.Serial;
 import java.io.Serializable;
@@ -22,7 +27,8 @@ import static com.axonivy.market.constants.EntityConstants.METADATA;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-@Document(METADATA)
+@Entity
+@Table(name = METADATA)
 public class Metadata implements Serializable {
   @Serial
   private static final long serialVersionUID = 1L;
@@ -34,7 +40,11 @@ public class Metadata implements Serializable {
   private String groupId;
   private String latest;
   private String release;
+  @ElementCollection
+  @CollectionTable(name = "metadata_versions", joinColumns = @JoinColumn(name = "product_url"))
+  @Column(name = "versions")
   private Set<String> versions;
+
   private String repoUrl;
   private String type;
   private String name;

@@ -1,7 +1,9 @@
 package com.axonivy.market.entity;
 
 import com.axonivy.market.bo.Artifact;
+import com.axonivy.market.converter.StringListConverter;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -9,10 +11,8 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
-import org.springframework.data.annotation.Id;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.annotation.Transient;
-import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.io.Serial;
 import java.io.Serializable;
@@ -27,24 +27,49 @@ import static com.axonivy.market.constants.EntityConstants.PRODUCT;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-@Document(PRODUCT)
+@Entity
+@Table(name = PRODUCT)
 public class Product implements Serializable {
   @Serial
   private static final long serialVersionUID = -8770801877877277258L;
   @Id
   private String id;
   private String marketDirectory;
+
   @JsonProperty
+  @ElementCollection
+  @CollectionTable(name = "product_names", joinColumns = @JoinColumn(name = "product_id"))
+  @MapKeyColumn(name = "language")
+  @Column(name = "name", columnDefinition = "TEXT")
   private Map<String, String> names;
-  private String version;
+
   @JsonProperty
+  @ElementCollection
+  @CollectionTable(name = "product_descriptions", joinColumns = @JoinColumn(name = "product_id"))
+  @MapKeyColumn(name = "language")
+  @Column(name = "shortDescription", columnDefinition = "TEXT")
   private Map<String, String> shortDescriptions;
+
+  @Convert(converter = StringListConverter.class)
+  @Column(name = "tags", nullable = false)
+  private List<String> tags;
+
+  @Convert(converter = StringListConverter.class)
+  @Column(name = "released_versions", nullable = false)
+  private List<String> releasedVersions;
+
+//  @ElementCollection
+//  @CollectionTable(name = "product_artifacts", joinColumns = @JoinColumn(name = "product_id"))
+  @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
+  @JoinColumn(name = "product_id") // Foreign key column in `artifact`
+  private List<Artifact> artifacts;
+
   private String logoUrl;
   private Boolean listed;
   private String type;
-  private List<String> tags;
   private String vendor;
   private String vendorUrl;
+  private String version;
   @Transient
   private String vendorImagePath;
   @Transient
@@ -68,9 +93,7 @@ public class Product implements Serializable {
   private String newestReleaseVersion;
   @Transient
   private ProductModuleContent productModuleContent;
-  private List<Artifact> artifacts;
   private Boolean synchronizedInstallationCount;
-  private List<String> releasedVersions;
   @Transient
   private String metaProductJsonUrl;
   private String logoId;
@@ -95,5 +118,4 @@ public class Product implements Serializable {
     }
     return new EqualsBuilder().append(id, ((Product) obj).getId()).isEquals();
   }
-
 }

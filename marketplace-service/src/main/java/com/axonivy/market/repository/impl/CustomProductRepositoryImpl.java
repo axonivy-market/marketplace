@@ -11,6 +11,15 @@ import com.axonivy.market.enums.TypeOption;
 import com.axonivy.market.repository.CustomProductRepository;
 import com.axonivy.market.repository.CustomRepository;
 import com.axonivy.market.repository.ProductModuleContentRepository;
+import com.axonivy.market.repository.ProductRepository;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.NoResultException;
+import jakarta.persistence.TypedQuery;
+import jakarta.persistence.criteria.CriteriaBuilder;
+import jakarta.persistence.criteria.CriteriaQuery;
+import jakarta.persistence.criteria.JoinType;
+import jakarta.persistence.criteria.Predicate;
+import jakarta.persistence.criteria.Root;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import org.apache.commons.lang3.StringUtils;
@@ -42,6 +51,8 @@ public class CustomProductRepositoryImpl extends CustomRepository implements Cus
 
   final MongoTemplate mongoTemplate;
   final ProductModuleContentRepository contentRepository;
+  EntityManager em;
+
 
   public Product queryProductByAggregation(Aggregation aggregation) {
     return Optional.of(mongoTemplate.aggregate(aggregation, EntityConstants.PRODUCT, Product.class))
@@ -63,10 +74,36 @@ public class CustomProductRepositoryImpl extends CustomRepository implements Cus
     return result;
   }
 
+/*  private Product findProductByIdCriteria(String id) {
+    CriteriaBuilder cb = em.getCriteriaBuilder();
+    CriteriaQuery<Product> cq = cb.createQuery(Product.class);
+    Root<Product> product = cq.from(Product.class);
+
+    cq.where(cb.equal(product.get("id"), id));
+
+    try {
+      return em.createQuery(cq).getSingleResult();
+    } catch (NoResultException e) {
+      return null;
+    }
+  }*/
+
+
   @Override
   public Product findProductById(String id) {
-    Aggregation aggregation = Aggregation.newAggregation(createIdMatchOperation(id));
-    return queryProductByAggregation(aggregation);
+//    Aggregation aggregation = Aggregation.newAggregation(createIdMatchOperation(id));
+//    return queryProductByAggregation(aggregation);
+    CriteriaBuilder cb = em.getCriteriaBuilder();
+    CriteriaQuery<Product> cq = cb.createQuery(Product.class);
+    Root<Product> product = cq.from(Product.class);
+
+    cq.where(cb.equal(product.get("id"), id));
+
+    try {
+      return em.createQuery(cq).getSingleResult();
+    } catch (NoResultException e) {
+      return null;
+    }
   }
 
   @Override
@@ -77,18 +114,6 @@ public class CustomProductRepositoryImpl extends CustomRepository implements Cus
       return Collections.emptyList();
     }
     return product.getReleasedVersions();
-  }
-
-  @Override
-  public List<Product> getAllProductsWithIdAndReleaseTagAndArtifact() {
-    return queryProductsByAggregation(
-        createProjectIdAndReleasedVersionsAndArtifactsAggregation());
-  }
-
-  protected Aggregation createProjectIdAndReleasedVersionsAndArtifactsAggregation() {
-    return Aggregation.newAggregation(
-        Aggregation.project(MongoDBConstants.ID, MongoDBConstants.ARTIFACTS, MongoDBConstants.RELEASED_VERSIONS)
-    );
   }
 
   @Override
