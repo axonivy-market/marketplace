@@ -109,8 +109,6 @@ public class ProductServiceImpl implements ProductService {
   @Value("${market.github.market.branch}")
   private String marketRepoBranch;
 
-  private final CacheManager cacheManager;
-
   public ProductServiceImpl(ProductRepository productRepo, ProductModuleContentRepository productModuleContentRepo,
       GHAxonIvyMarketRepoService axonIvyMarketRepoService, GHAxonIvyProductRepoService axonIvyProductRepoService,
       GitHubRepoMetaRepository gitHubRepoMetaRepo, GitHubService gitHubService,
@@ -119,7 +117,7 @@ public class ProductServiceImpl implements ProductService {
       MetadataSyncRepository metadataSyncRepo, MetadataRepository metadataRepo, ImageService imageService,
       ProductContentService productContentService, MetadataService metadataService,
       ProductMarketplaceDataService productMarketplaceDataService, ExternalDocumentService externalDocumentService,
-      ProductMarketplaceDataRepository productMarketplaceDataRepo, VersionService versionService, CacheManager cacheManager) {
+      ProductMarketplaceDataRepository productMarketplaceDataRepo, VersionService versionService) {
     this.productRepo = productRepo;
     this.productModuleContentRepo = productModuleContentRepo;
     this.axonIvyMarketRepoService = axonIvyMarketRepoService;
@@ -139,7 +137,6 @@ public class ProductServiceImpl implements ProductService {
     this.externalDocumentService = externalDocumentService;
     this.productMarketplaceDataRepo = productMarketplaceDataRepo;
     this.versionService = versionService;
-    this.cacheManager = cacheManager;
   }
 
   @Override
