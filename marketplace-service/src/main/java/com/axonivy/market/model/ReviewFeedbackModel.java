@@ -10,5 +10,5 @@ public class ReviewFeedbackModel {
 
   private Boolean isApproved;
 
-  private String moderatorId;
+  private String moderatorName;
 }

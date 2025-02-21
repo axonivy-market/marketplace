@@ -68,18 +68,18 @@ export class FeedbackReviewComponent {
           )
         );
       });
-    
+
   }
 
   onClickingApproveButton(feedback: Feedback): void {
     console.log(feedback);
-    this.productFeedbackService.updateFeedbackStatus(feedback.id!, true, this.authService.getUserId()!).subscribe(response => {
+    this.productFeedbackService.updateFeedbackStatus(feedback.id!, true, this.authService.getDisplayName()!).subscribe(response => {
       console.log("Feedback approved:", response);
     });
   }
 
   onClickingRejectButton(feedback: Feedback): void {
-    this.productFeedbackService.updateFeedbackStatus(feedback.id!, false, this.authService.getUserId()!).subscribe(response => {
+    this.productFeedbackService.updateFeedbackStatus(feedback.id!, false, this.authService.getDisplayName()!).subscribe(response => {
       console.log("Feedback rejected:", response);
     });
   }

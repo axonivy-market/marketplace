@@ -53,7 +53,7 @@ public class FeedbackModel extends RepresentationModel<FeedbackModel> {
   private FeedbackStatus feedbackStatus;
 
   @Schema(description = "Moderator name reviewed feedback", example = "ntqdinh-axonivy")
-  private String moderatorId;
+  private String moderatorName;
 
   @Schema(description = "Feedback reviewing timestamp", example = "2024-06-24T00:00:00.000Z")
   private Date reviewDate;

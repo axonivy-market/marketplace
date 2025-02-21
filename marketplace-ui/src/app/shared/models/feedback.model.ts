@@ -12,6 +12,6 @@ export interface Feedback {
   productId: string;
   isExpanded?: boolean;
   feedbackStatus: FeedbackStatus;
-  moderatorId: string;
+  moderatorName: string;
   reviewDate?: Date;
 }

@@ -88,11 +88,11 @@ export class ProductFeedbackService {
       );
   }
 
-  updateFeedbackStatus(feedbackId: string, isApproved: boolean, moderatorId: string): Observable<Feedback> {
+  updateFeedbackStatus(feedbackId: string, isApproved: boolean, moderatorName: string): Observable<Feedback> {
     const requestBody = {
       feedbackId,
       isApproved,
-      moderatorId
+      moderatorName
     };
     const requestURL = `${API_URI.FEEDBACK_REVIEW}`;
 
@@ -126,7 +126,7 @@ export class ProductFeedbackService {
       .pipe(
         tap(() => {
           this.fetchFeedbacks();
-          this.findProductFeedbackOfUser().subscribe();
+          // this.findProductFeedbackOfUser().subscribe();
           this.productStarRatingService.fetchData();
         }),
         catchError(response => {
@@ -165,11 +165,15 @@ export class ProductFeedbackService {
             ]);
           }
 
-          console.log(this.feedbacks.length);
-          const userFeedback = this.userFeedback();
-          if (userFeedback && userFeedback.feedbackStatus == FeedbackStatus.PENDING) {
-            this.feedbacks.set([userFeedback, ...this.feedbacks()]);
-          }
+          // if(this.userFeedback() && this.userFeedback()!.feedbackStatus === FeedbackStatus.PENDING) {
+          //   // this.feedbacks().push(this.userFeedback()!);
+          //   if (this.feedbacks().length > 0) {
+          //     this.feedbacks().push(this.userFeedback()!);
+          //   } else {
+          //     this.feedbacks.set([this.userFeedback()!]);
+          //   }
+          //   // this.feedbacks.set(this.feedbacks().length > 0 ? [this.userFeedback(), ...this.feedbacks()] : [this.userFeedback()]);
+          // }
 
 //           const userFeedback = this.userFeedback();
 // if (userFeedback && userFeedback.feedbackStatus === FeedbackStatus.PENDING) {
@@ -179,6 +183,10 @@ export class ProductFeedbackService {
 
           // console.log(userFeedback);
           // console.log(this.feedbacks());
+        })
+      ).pipe(
+        tap(response => {
+          this.findProductFeedbackOfUser().subscribe();
         })
       );
   }
@@ -198,20 +206,21 @@ export class ProductFeedbackService {
       .pipe(
         tap(feedback => {
           this.userFeedback.set(feedback);
-
           // const userFeedback = this.userFeedback();
-          // if (userFeedback && userFeedback.feedbackStatus == FeedbackStatus.PENDING) {
-          //   this.feedbacks.set([userFeedback, ...this.feedbacks()]);
+          // if (userFeedback && userFeedback.feedbackStatus === FeedbackStatus.PENDING) {
+          //   const currentFeedbacks = this.feedbacks(); // Get current feedbacks
+          //   this.feedbacks.set(currentFeedbacks.length > 0 ? [userFeedback, ...currentFeedbacks] : [userFeedback]);
           // }
 
-          const userFeedback = this.userFeedback();
-          if (userFeedback && userFeedback.feedbackStatus === FeedbackStatus.PENDING) {
-            const currentFeedbacks = this.feedbacks(); // Get current feedbacks
-            this.feedbacks.set(currentFeedbacks.length ? [userFeedback, ...currentFeedbacks] : [userFeedback]);
+          if(this.userFeedback() && this.userFeedback()!.feedbackStatus === FeedbackStatus.PENDING) {
+            // this.feedbacks().push(this.userFeedback()!);
+            if (this.feedbacks().length > 0) {
+              this.feedbacks().push(this.userFeedback()!);
+            } else {
+              this.feedbacks.set([this.userFeedback()!]);
+            }
+            // this.feedbacks.set(this.feedbacks().length > 0 ? [this.userFeedback(), ...this.feedbacks()] : [this.userFeedback()]);
           }
-console.log(userFeedback);
-          console.log(this.userFeedback());
-          console.log(feedback);
         }),
         catchError(response => {
           if (
@@ -224,7 +233,7 @@ console.log(userFeedback);
             content: '',
             rating: 0,
             feedbackStatus: FeedbackStatus.PENDING,
-            moderatorId: '',
+            moderatorName: '',
             productId
           };
           this.userFeedback.set(feedback);

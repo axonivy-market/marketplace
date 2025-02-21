@@ -85,7 +85,7 @@ public class FeedbackServiceImpl implements FeedbackService {
     if (existingUserFeedback != null) {
       existingUserFeedback.setFeedbackStatus(
           BooleanUtils.isTrue(reviewFeedback.getIsApproved()) ? FeedbackStatus.APPROVED : FeedbackStatus.REJECTED);
-      existingUserFeedback.setModeratorId(reviewFeedback.getModeratorId());
+      existingUserFeedback.setModeratorName(reviewFeedback.getModeratorName());
       existingUserFeedback.setReviewDate(new Date());
       feedbackRepository.save(existingUserFeedback);
     }
