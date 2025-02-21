@@ -35,6 +35,7 @@ import com.axonivy.market.service.VersionService;
 import com.axonivy.market.util.MavenUtils;
 import com.axonivy.market.util.MetadataReaderUtils;
 import com.axonivy.market.util.VersionUtils;
+import jakarta.transaction.Transactional;
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.ObjectUtils;
@@ -677,6 +678,7 @@ public class ProductServiceImpl implements ProductService {
   }
 
   @Override
+  @Transactional
   public boolean syncOneProduct(String productId, String marketItemPath, Boolean overrideMarketItemPath) {
     try {
       log.info("Sync product {} is starting ...", productId);
@@ -701,7 +703,8 @@ public class ProductServiceImpl implements ProductService {
     return false;
   }
 
-  private Product renewProductById(String productId, String marketItemPath, Boolean overrideMarketItemPath) {
+  @Transactional
+  public Product renewProductById(String productId, String marketItemPath, Boolean overrideMarketItemPath) {
     Product product = new Product();
     productRepo.findById(productId).ifPresent(foundProduct -> {
           ProductFactory.transferComputedPersistedDataToProduct(foundProduct, product);

@@ -64,11 +64,6 @@ public class CustomProductRepositoryImpl extends CustomRepository implements Cus
         .map(AggregationResults::getUniqueMappedResult).orElse(null);
   }
 
-  public List<Product> queryProductsByAggregation(Aggregation aggregation) {
-    return Optional.of(mongoTemplate.aggregate(aggregation, EntityConstants.PRODUCT, Product.class))
-        .map(AggregationResults::getMappedResults).orElse(Collections.emptyList());
-  }
-
   @Override
   public Product getProductByIdAndVersion(String id, String version) {
     Product result = findProductById(id);
@@ -94,12 +89,9 @@ public class CustomProductRepositoryImpl extends CustomRepository implements Cus
 
   @Override
   public List<String> getReleasedVersionsById(String id) {
-    Aggregation aggregation = Aggregation.newAggregation(createIdMatchOperation(id));
-    Product product = queryProductByAggregation(aggregation);
-    if (Objects.isNull(product)) {
-      return Collections.emptyList();
-    }
-    return product.getReleasedVersions();
+    return Optional.ofNullable(findProductById(id))
+        .map(Product::getReleasedVersions)
+        .orElse(Collections.emptyList());
   }
 
   @Override
@@ -145,34 +137,12 @@ public class CustomProductRepositoryImpl extends CustomRepository implements Cus
     return results.isEmpty() ? null : results.get(0);
   }
 
-  private CriteriaBuilder createCriteriaBuilder(){
-    return em.getCriteriaBuilder();
-  }
-
   @Override
   public List<Product> findAllProductsHaveDocument() {
     var criteria = new Criteria();
     criteria.andOperator(Criteria.where(MongoDBConstants.ARTIFACTS_DOC).is(true));
     return mongoTemplate.find(new Query(criteria), Product.class);
   }
-
-//  private Page<Product> getResultAsPageable(Pageable pageable, Criteria criteria) {
-//    int skip = (int) pageable.getOffset();
-//    int limit = pageable.getPageSize();
-//    Aggregation aggregation = Aggregation.newAggregation(
-//        Aggregation.match(criteria),
-//        Aggregation.lookup(MongoDBConstants.PRODUCT_MARKETPLACE_COLLECTION, MongoDBConstants.ID, MongoDBConstants.ID,
-//            MongoDBConstants.MARKETPLACE_DATA),
-//        Aggregation.sort(pageable.getSort()),
-//        Aggregation.skip(skip),
-//        Aggregation.limit(limit)
-//    );
-//
-//    List<Product> entities = mongoTemplate.aggregate(aggregation, MongoDBConstants.PRODUCT_COLLECTION,
-//        Product.class).getMappedResults();
-//    long count = mongoTemplate.count(new Query(criteria), Product.class);
-//    return new PageImpl<>(entities, pageable, count);
-//  }
 
   public Predicate buildCriteriaSearch(ProductSearchCriteria searchCriteria, CriteriaBuilder cb,
       Root<Product> productRoot) {
@@ -216,20 +186,18 @@ public class CustomProductRepositoryImpl extends CustomRepository implements Cus
 
     for (DocumentField property : filterProperties) {
       if (property.isLocalizedSupport()) {
-        if (StringUtils.isNotBlank(searchCriteria.getKeyword())) {
-          String keywordPattern = "%" + searchCriteria.getKeyword().toLowerCase() + "%";
-          // Correctly join the Map<String, String> names collection
-          MapJoin<Product, String, String> namesJoin = productRoot.joinMap(property.getFieldName());
-          // Extract key (language) and value (name)
-          Path<String> languageKey = namesJoin.key();
-          Path<String> nameValue = namesJoin.value();
-          // Filter by language key
-          Predicate languageFilter = cb.equal(languageKey, language.name().toLowerCase());
-          // Apply keyword search on product names (value)
-          Predicate keywordFilter = cb.like(cb.lower(nameValue), keywordPattern);
-          // Combine conditions
-          filters.add(cb.and(languageFilter, keywordFilter));
-        }
+        String keywordPattern = "%" + searchCriteria.getKeyword().toLowerCase() + "%";
+        // Correctly join the Map<String, String> names collection
+        MapJoin<Product, String, String> namesJoin = productRoot.joinMap(property.getFieldName());
+        // Extract key (language) and value (name)
+        Path<String> languageKey = namesJoin.key();
+        Path<String> nameValue = namesJoin.value();
+        // Filter by language key
+        Predicate languageFilter = cb.equal(languageKey, language.name().toLowerCase());
+        // Apply keyword search on product names (value)
+        Predicate keywordFilter = cb.like(cb.lower(nameValue), keywordPattern);
+        // Combine conditions
+        filters.add(cb.and(languageFilter, keywordFilter));
       } else {
         filters.add(cb.equal(productRoot.get(property.getFieldName()), searchCriteria.getKeyword()));
       }
