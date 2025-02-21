@@ -5,6 +5,7 @@ import { Feedback } from '../../../../../../shared/models/feedback.model';
 import { TimeAgoPipe } from '../../../../../../shared/pipes/time-ago.pipe';
 import { LanguageService } from '../../../../../../core/services/language/language.service';
 import { TranslateModule } from '@ngx-translate/core';
+import { FeedbackStatus } from '../../../../../../shared/enums/feedback-status.enum';
 
 @Component({
   selector: 'app-product-feedback',
@@ -29,10 +30,10 @@ export class ProductFeedbackComponent {
 
   ngOnInit(): void {
     if(this.feedback){
-      if (this.feedback.feedbackStatus.valueOf() === 'PENDING') {
+      if (this.feedback.feedbackStatus == FeedbackStatus.PENDING) {
         this.isPending.set(true);
       }
-    }    
+    }
   }
 
   ngAfterViewInit() {

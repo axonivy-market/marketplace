@@ -84,8 +84,6 @@ export class ProductFeedbackService {
           console.log(this.feedbacks());
           console.log(this.allFeedbacks());
           console.log(this.pendingFeedbacks());
-          // console.log(this.pendingFeedbacks()[0].id);
-
         })
       );
   }
@@ -167,11 +165,20 @@ export class ProductFeedbackService {
             ]);
           }
 
+          console.log(this.feedbacks.length);
           const userFeedback = this.userFeedback();
-          if (userFeedback && userFeedback.feedbackStatus.valueOf() === 'PENDING') {
+          if (userFeedback && userFeedback.feedbackStatus == FeedbackStatus.PENDING) {
             this.feedbacks.set([userFeedback, ...this.feedbacks()]);
           }
-          console.log(this.feedbacks());
+
+//           const userFeedback = this.userFeedback();
+// if (userFeedback && userFeedback.feedbackStatus === FeedbackStatus.PENDING) {
+//   const currentFeedbacks = this.feedbacks(); // Get current feedbacks
+//   this.feedbacks.set(currentFeedbacks.length ? [userFeedback, ...currentFeedbacks] : [userFeedback]);
+// }
+
+          // console.log(userFeedback);
+          // console.log(this.feedbacks());
         })
       );
   }
@@ -191,6 +198,20 @@ export class ProductFeedbackService {
       .pipe(
         tap(feedback => {
           this.userFeedback.set(feedback);
+
+          // const userFeedback = this.userFeedback();
+          // if (userFeedback && userFeedback.feedbackStatus == FeedbackStatus.PENDING) {
+          //   this.feedbacks.set([userFeedback, ...this.feedbacks()]);
+          // }
+
+          const userFeedback = this.userFeedback();
+          if (userFeedback && userFeedback.feedbackStatus === FeedbackStatus.PENDING) {
+            const currentFeedbacks = this.feedbacks(); // Get current feedbacks
+            this.feedbacks.set(currentFeedbacks.length ? [userFeedback, ...currentFeedbacks] : [userFeedback]);
+          }
+console.log(userFeedback);
+          console.log(this.userFeedback());
+          console.log(feedback);
         }),
         catchError(response => {
           if (

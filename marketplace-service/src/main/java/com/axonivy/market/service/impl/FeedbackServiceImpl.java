@@ -39,7 +39,7 @@ public class FeedbackServiceImpl implements FeedbackService {
   private final CustomFeedbackRepository customFeedbackRepository;
 
   public FeedbackServiceImpl(FeedbackRepository feedbackRepository, UserRepository userRepository,
-      ProductRepository productRepository, CustomFeedbackRepository cuastomFeedbackRepository) {
+      ProductRepository productRepository, CustomFeedbackRepository customFeedbackRepository) {
     this.feedbackRepository = feedbackRepository;
     this.userRepository = userRepository;
     this.productRepository = productRepository;
@@ -82,7 +82,7 @@ public class FeedbackServiceImpl implements FeedbackService {
   @Override
   public Feedback updateFeedbackWithNewStatus(ReviewFeedbackModel reviewFeedback) {
     Feedback existingUserFeedback = feedbackRepository.findById(reviewFeedback.getFeedbackId()).orElse(null);
-    if (ObjectUtils.isNotEmpty(existingUserFeedback)) {
+    if (existingUserFeedback != null) {
       existingUserFeedback.setFeedbackStatus(
           BooleanUtils.isTrue(reviewFeedback.getIsApproved()) ? FeedbackStatus.APPROVED : FeedbackStatus.REJECTED);
       existingUserFeedback.setModeratorId(reviewFeedback.getModeratorId());
@@ -117,7 +117,9 @@ public class FeedbackServiceImpl implements FeedbackService {
 
   @Override
   public List<ProductRating> getProductRatingById(String productId) {
-    List<Feedback> feedbacks = feedbackRepository.findByProductId(productId);
+    List<Feedback> feedbacks =
+        feedbackRepository.findByProductId(productId).stream().filter(
+            FeedbackServiceImpl::isFeedbackApproved).toList();
     int totalFeedbacks = feedbacks.size();
 
     if (totalFeedbacks == 0) {
@@ -132,6 +134,11 @@ public class FeedbackServiceImpl implements FeedbackService {
       int percent = (int) ((count * 100) / totalFeedbacks);
       return new ProductRating(star, Math.toIntExact(count), percent);
     }).toList();
+  }
+
+  private static boolean isFeedbackApproved(Feedback feedback) {
+    return FeedbackStatus.PENDING != feedback.getFeedbackStatus()
+         && FeedbackStatus.REJECTED != feedback.getFeedbackStatus();
   }
 
   public void validateProductExists(String productId) throws NotFoundException {

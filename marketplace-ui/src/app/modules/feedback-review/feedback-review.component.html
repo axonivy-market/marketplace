@@ -1,5 +1,5 @@
 <div class="container">
-  <!-- @if (this.authService.getToken()) { -->
+  @if (this.authService.getToken()) {
   <div class="row col-md-12">
     <h1 class="text-primary review" [lang]="languageService.selectedLanguage()">
       {{ translateService.get('common.review.approvalTitle') | async }}</h1>
@@ -25,27 +25,27 @@
         <ul ngbNav class="nav nav-tabs form-tabs">
 
           <!-- Review Feedback Tab -->
-          <li class="nav-item d-flex flex-row position-relative border-bottom-1 p-2 justify-content-center align-items-start">
-            <a id="review-tab" [lang]="languageService.selectedLanguage()" ngbNavLink class="nav-link tab-title border-0 bg-transparent active"
-              role="tab" [ngClass]="{
+          <li
+            class="nav-item d-flex flex-row position-relative border-bottom-1 p-2 justify-content-center align-items-start">
+            <a id="review-tab" [lang]="languageService.selectedLanguage()" ngbNavLink
+              class="nav-link tab-title border-0 bg-transparent active" role="tab" [ngClass]="{
                 'text-secondary': themeService.isDarkMode(),
                 'text-dark': !themeService.isDarkMode()
               }" data-bs-toggle="tab" data-bs-target="#review" aria-controls="review" aria-selected="true"
-              (click)="setActiveTab('review')"
-              [ngClass]="{'active': activeTab === 'review'}">
+              (click)="setActiveTab('review')" [ngClass]="{'active': activeTab === 'review'}">
               Review Feedback
             </a>
           </li>
 
           <!-- History Tab -->
-          <li class="nav-item d-flex flex-row position-relative border-bottom-1 p-2 justify-content-center align-items-start">
-            <a id="history-tab" [lang]="languageService.selectedLanguage()" ngbNavLink class="nav-link tab-title border-0 bg-transparent"
-              role="tab" [ngClass]="{
+          <li
+            class="nav-item d-flex flex-row position-relative border-bottom-1 p-2 justify-content-center align-items-start">
+            <a id="history-tab" [lang]="languageService.selectedLanguage()" ngbNavLink
+              class="nav-link tab-title border-0 bg-transparent" role="tab" [ngClass]="{
                 'text-secondary': themeService.isDarkMode(),
                 'text-dark': !themeService.isDarkMode()
               }" data-bs-toggle="tab" data-bs-target="#history" aria-controls="history" aria-selected="false"
-              (click)="setActiveTab('history')"
-              [ngClass]="{'active': activeTab === 'history'}">
+              (click)="setActiveTab('history')" [ngClass]="{'active': activeTab === 'history'}">
               History
             </a>
           </li>
@@ -57,7 +57,8 @@
       <div class="tab-content col-12 default-cursor">
 
         <!-- Review Feedback Content -->
-        <div class="tab-pane fade show active" role="tabpanel" aria-labelledby="review-tab" [ngClass]="{'show active': activeTab === 'review'}">
+        <div class="tab-pane fade show active" role="tabpanel" aria-labelledby="review-tab"
+          [ngClass]="{'show active': activeTab === 'review'}">
 
           <div class="table-responsive">
             <table class="table">
@@ -77,24 +78,32 @@
                 <tr>
                   <td class="username-column">
                     <img class="rounded-circle img-avatar img-fit-cover"
-                    [src]="feedback.userAvatarUrl ?? '/assets/images/misc/avatar-default.png'"
-                    alt="Github user avatar" />
-                   <span class="text-primary feedback-username"> {{ feedback.username ?? 'Github User' }}</span>
+                      [src]="feedback.userAvatarUrl ?? '/assets/images/misc/avatar-default.png'"
+                      alt="Github user avatar" />
+                    <span class="text-primary feedback-username"> {{ feedback.username ?? 'Github User' }}</span>
                   </td>
-                  <td><p class="text-primary m-0 content-column">{{ feedback.content }}</p></td>
-                  <td><p class="text-primary m-0 rating rating-column">{{ feedback.rating }}</p></td>
-                  <td><p class="text-primary m-0 status-column">{{ feedback.feedbackStatus }}</p></td>
-                  <td><p class="text-primary m-0 created-date-column">{{ feedback.createdAt | date: 'short' }}</p></td>
-                  <td><p class="text-primary m-0 updated-date-column">{{ feedback.updatedAt | date: 'short' }}</p></td>
+                  <td>
+                    <p class="text-primary m-0 content-column">{{ feedback.content }}</p>
+                  </td>
+                  <td>
+                    <p class="text-primary m-0 rating rating-column">{{ feedback.rating }}</p>
+                  </td>
+                  <td>
+                    <p class="text-primary m-0 status-column">{{ feedback.feedbackStatus }}</p>
+                  </td>
+                  <td>
+                    <p class="text-primary m-0 created-date-column">{{ feedback.createdAt | date: 'short' }}</p>
+                  </td>
+                  <td>
+                    <p class="text-primary m-0 updated-date-column">{{ feedback.updatedAt | date: 'short' }}</p>
+                  </td>
 
                   <td class="action-buttons fixed-width">
-                    <div id="approve-button"
-                      (click)="onClickingApproveButton(feedback)">
+                    <div id="approve-button" (click)="onClickingApproveButton(feedback)">
                       <p class="mb-0" [lang]="languageService.selectedLanguage()">Approve</p>
                     </div>
 
-                    <div id="reject-button"
-                      (click)="onClickingRejectButton(feedback)">
+                    <div id="reject-button" (click)="onClickingRejectButton(feedback)">
                       <p class="mb-0" [lang]="languageService.selectedLanguage()">Reject</p>
                     </div>
                   </td>
@@ -107,7 +116,8 @@
         </div>
 
         <!-- History Content -->
-        <div class="tab-pane fade" role="tabpanel" aria-labelledby="history-tab" [ngClass]="{'show active': activeTab === 'history'}">
+        <div class="tab-pane fade" role="tabpanel" aria-labelledby="history-tab"
+          [ngClass]="{'show active': activeTab === 'history'}">
           <div class="table-responsive">
             <table class="table">
               <thead>
@@ -127,27 +137,39 @@
                 <tr>
                   <td class="username-column">
                     <img class="rounded-circle img-avatar img-fit-cover"
-                    [src]="feedback.userAvatarUrl ?? '/assets/images/misc/avatar-default.png'"
-                    alt="Github user avatar" />
+                      [src]="feedback.userAvatarUrl ?? '/assets/images/misc/avatar-default.png'"
+                      alt="Github user avatar" />
                     <span class="text-primary feedback-username">{{ feedback.username ?? 'Github User' }}</span>
                   </td>
-                  <td><p class="text-primary m-0">{{ feedback.content }}</p></td>
-                  <td><p class="text-primary m-0 rating rating-column">{{ feedback.rating }}</p></td>
-                  <td><p class="text-primary m-0 status-column">{{ feedback.feedbackStatus }}</p></td>
-                  <td><p class="text-primary m-0 created-date-column">{{ feedback.createdAt | date: 'short' }}</p></td>
-                  <td><p class="text-primary m-0 updated-date-column">{{ feedback.updatedAt | date: 'short' }}</p></td>
-                  <td><p class="text-primary m-0">{{ feedback.moderatorId }}</p></td>
-                  <td><p class="text-primary m-0">{{ feedback.reviewDate | date: 'short' }}</p></td>
+                  <td>
+                    <p class="text-primary m-0">{{ feedback.content }}</p>
+                  </td>
+                  <td>
+                    <p class="text-primary m-0 rating rating-column">{{ feedback.rating }}</p>
+                  </td>
+                  <td>
+                    <p class="text-primary m-0 status-column">{{ feedback.feedbackStatus }}</p>
+                  </td>
+                  <td>
+                    <p class="text-primary m-0 created-date-column">{{ feedback.createdAt | date: 'short' }}</p>
+                  </td>
+                  <td>
+                    <p class="text-primary m-0 updated-date-column">{{ feedback.updatedAt | date: 'short' }}</p>
+                  </td>
+                  <td>
+                    <p class="text-primary m-0">{{ feedback.moderatorId }}</p>
+                  </td>
+                  <td>
+                    <p class="text-primary m-0">{{ feedback.reviewDate | date: 'short' }}</p>
+                  </td>
                 </tr>
                 }
               </tbody>
             </table>
           </div>
         </div>
-
       </div>
-
     </div>
   </div>
-  <!-- } -->
+  }
 </div>

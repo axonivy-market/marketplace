@@ -48,27 +48,27 @@ export class FeedbackReviewComponent {
       console.log("User not authenticated, redirecting to GitHub login...");
       this.authService.redirectToGitHub('feedback-review');
       // return;
-    } else {
+    }
 
       // Load feedbacks initially
       this.productFeedbackService.findProductFeedbacks().subscribe(response => {
         console.log("Feedbacks loaded:", response._embedded.feedbacks);
 
         // Set all feedbacks
-        this.productFeedbackService.allFeedbacks.set(response._embedded.feedbacks.sort((a, b) => 
-          (b.reviewDate ? new Date(b.reviewDate).getTime() : 0) - 
+        this.productFeedbackService.allFeedbacks.set(response._embedded.feedbacks.sort((a, b) =>
+          (b.reviewDate ? new Date(b.reviewDate).getTime() : 0) -
           (a.reviewDate ? new Date(a.reviewDate).getTime() : 0)
         ));
 
         // Filter and set pending feedbacks
         this.productFeedbackService.pendingFeedbacks.set(
-          response._embedded.feedbacks.filter(fb => fb.feedbackStatus === FeedbackStatus.PENDING).sort((a, b) => 
-            (b.updatedAt ? new Date(b.updatedAt).getTime() : 0) - 
+          response._embedded.feedbacks.filter(fb => fb.feedbackStatus === FeedbackStatus.PENDING).sort((a, b) =>
+            (b.updatedAt ? new Date(b.updatedAt).getTime() : 0) -
             (a.updatedAt ? new Date(a.updatedAt).getTime() : 0)
           )
         );
       });
-    }
+    
   }
 
   onClickingApproveButton(feedback: Feedback): void {

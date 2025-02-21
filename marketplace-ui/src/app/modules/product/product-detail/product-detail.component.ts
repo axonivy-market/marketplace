@@ -174,10 +174,10 @@ export class ProductDetailComponent {
       this.loadingService.showLoading(LoadingComponentId.DETAIL_PAGE);
       forkJoin({
         productDetail: this.getProductDetailObservable(productId),
+        userFeedback: this.productFeedbackService.findProductFeedbackOfUser(),
         productFeedBack:
           this.productFeedbackService.getInitFeedbacksObservable(),
         rating: this.productStarRatingService.getRatingObservable(productId),
-        userFeedback: this.productFeedbackService.findProductFeedbackOfUser(),
         changelogs: this.productService.getProductChangelogs(productId),
       }).subscribe(res => {
         this.md.use(this.linkifyPullRequests, res.productDetail.sourceUrl, this.githubPullRequestNumberRegex)
@@ -192,7 +192,12 @@ export class ProductDetailComponent {
         }
         this.handleProductDetail(res.productDetail);
         this.getReadmeContent();
+        // console.log(res.userFeedback);
+        // console.log(res.productFeedBack);
         this.productFeedbackService.handleFeedbackApiResponse(res.productFeedBack);
+
+        console.log('User Feedback:', this.productFeedbackService.userFeedback());
+        console.log('Final Feedbacks:', this.productFeedbackService.feedbacks());
         this.updateDropdownSelection();
         this.checkMediaSize();
         this.route.queryParams.subscribe(params => {

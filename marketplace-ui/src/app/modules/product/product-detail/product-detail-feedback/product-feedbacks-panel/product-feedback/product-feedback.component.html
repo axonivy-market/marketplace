@@ -21,7 +21,7 @@
       </div>
       @if (isFeedbackPending()) {
         <div>
-          <p class="text-primary mt-1" [lang]="languageService.selectedLanguage()"> {{ 'common.feedback.approvalPending' | translate }}</p>
+          <p class="mt-1 pending-text" [lang]="languageService.selectedLanguage()"> {{ 'common.feedback.approvalPending' | translate }}</p>
         </div>
       }
     </div>
