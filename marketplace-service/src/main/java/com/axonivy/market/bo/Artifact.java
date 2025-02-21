@@ -1,7 +1,10 @@
 package com.axonivy.market.bo;
 
+import com.axonivy.market.entity.Product;
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import lombok.*;
 import org.springframework.data.annotation.Transient;
@@ -35,11 +38,13 @@ public class Artifact implements Serializable {
   @Transient
   private Boolean isProductArtifact;
 
-//  @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
-//  @JoinColumn(name = "artifact_id") // Foreign key column in `archived_artifact`
-//  private List<ArchivedArtifact> archivedArtifacts;
+  @ManyToOne
+  @JoinColumn(name = "product_id", nullable = false)
+  @JsonBackReference
+  private Product product;
 
-  @OneToMany(mappedBy = "artifact", cascade = CascadeType.ALL, orphanRemoval = true)
+  @OneToMany(mappedBy = "artifact", cascade = CascadeType.ALL, fetch = FetchType.EAGER, orphanRemoval = true)
+  @JsonManagedReference
   private List<ArchivedArtifact> archivedArtifacts;
 
   private Boolean doc;

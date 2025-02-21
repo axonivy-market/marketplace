@@ -357,6 +357,9 @@ public class ProductServiceImpl implements ProductService {
     List<String> syncedProductIds = new ArrayList<>();
     var gitHubContentMap = axonIvyMarketRepoService.fetchAllMarketItems();
     for (Map.Entry<String, List<GHContent>> ghContentEntity : gitHubContentMap.entrySet()) {
+//      if (!ghContentEntity.getKey().equals("market/connector/adobe-acrobat-sign-connector")) {
+//        continue;
+//      }
       var product = new Product();
       //update the meta.json first
       ghContentEntity.getValue().sort((f1, f2) -> GitHubUtils.sortMetaJsonFirst(f1.getName(), f2.getName()));
@@ -396,7 +399,8 @@ public class ProductServiceImpl implements ProductService {
         product.setVendorImage(mapVendorImage(product.getId(), ghContent, product.getVendorImagePath()));
       }
       if (StringUtils.isNotBlank(product.getVendorImageDarkModePath())) {
-        product.setVendorImageDarkMode(mapVendorImage(product.getId(), ghContent, product.getVendorImageDarkModePath()));
+        product.setVendorImageDarkMode(
+            mapVendorImage(product.getId(), ghContent, product.getVendorImageDarkModePath()));
       }
     }
   }
@@ -473,11 +477,14 @@ public class ProductServiceImpl implements ProductService {
 
     List<Artifact> archivedArtifacts = product.getArtifacts().stream()
         .filter(artifact -> !CollectionUtils.isEmpty(artifact.getArchivedArtifacts()))
-        .flatMap(artifact -> artifact.getArchivedArtifacts().stream()
-            .map(archivedArtifact -> Artifact.builder()
-                .groupId(archivedArtifact.getGroupId())
-                .artifactId(archivedArtifact.getArtifactId())
-                .build()))
+        .flatMap(artifact ->
+            artifact.getArchivedArtifacts().stream()
+                .peek(archivedArtifact -> archivedArtifact.setArtifact(artifact))
+                .map(archivedArtifact -> Artifact.builder()
+                    .groupId(archivedArtifact.getGroupId())
+                    .artifactId(archivedArtifact.getArtifactId())
+                    .build())
+        )
         .toList();
 
     List<Artifact> mavenArtifacts = new ArrayList<>();
@@ -488,8 +495,8 @@ public class ProductServiceImpl implements ProductService {
     for (Artifact mavenArtifact : mavenArtifacts) {
       getMetadataContent(mavenArtifact, product, nonSyncReleasedVersions);
     }
-    metadataService.updateArtifactAndMetadata(product.getId(), nonSyncReleasedVersions, product.getArtifacts());
-    externalDocumentService.syncDocumentForProduct(product.getId(), nonSyncReleasedVersions, false);
+//    metadataService.updateArtifactAndMetadata(product.getId(), nonSyncReleasedVersions, product.getArtifacts());
+//    externalDocumentService.syncDocumentForProduct(product.getId(), nonSyncReleasedVersions, false);
   }
 
   private void getMetadataContent(Artifact artifact, Product product, List<String> nonSyncReleasedVersions) {
@@ -533,7 +540,8 @@ public class ProductServiceImpl implements ProductService {
     }
     updateProductCompatibility(product, versionChanges);
 
-    Optional.ofNullable(product.getReleasedVersions()).ifPresentOrElse(releasedVersion -> {},
+    Optional.ofNullable(product.getReleasedVersions()).ifPresentOrElse(releasedVersion -> {
+        },
         () -> product.setReleasedVersions(new ArrayList<>()));
 
     List<ProductModuleContent> productModuleContents = new ArrayList<>();
@@ -803,13 +811,15 @@ public class ProductServiceImpl implements ProductService {
   @Override
   public Page<GithubReleaseModel> getGitHubReleaseModels(String productId, Pageable pageable) throws IOException {
     Product product = productRepo.findProductById(productId);
-    PagedIterable<GHRelease> ghReleasePagedIterable =  this.gitHubService.getRepository(product.getRepositoryName()).listReleases();
+    PagedIterable<GHRelease> ghReleasePagedIterable = this.gitHubService.getRepository(
+        product.getRepositoryName()).listReleases();
 
     return this.gitHubService.getGitHubReleaseModels(product, ghReleasePagedIterable, pageable);
   }
 
   @Override
-  public GithubReleaseModel getGitHubReleaseModelByProductIdAndReleaseId(String productId, Long releaseId) throws IOException {
+  public GithubReleaseModel getGitHubReleaseModelByProductIdAndReleaseId(String productId,
+      Long releaseId) throws IOException {
     Product product = productRepo.findProductById(productId);
 
     return this.gitHubService.getGitHubReleaseModelByProductIdAndReleaseId(product, releaseId);

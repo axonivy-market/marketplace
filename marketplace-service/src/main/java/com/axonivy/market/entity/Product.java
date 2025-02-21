@@ -2,6 +2,7 @@ package com.axonivy.market.entity;
 
 import com.axonivy.market.bo.Artifact;
 import com.axonivy.market.converter.StringListConverter;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -58,10 +59,8 @@ public class Product implements Serializable {
   @Column(name = "released_versions", nullable = false, columnDefinition = "TEXT")
   private List<String> releasedVersions;
 
-//  @ElementCollection
-//  @CollectionTable(name = "product_artifacts", joinColumns = @JoinColumn(name = "product_id"))
-  @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
-  @JoinColumn(name = "product_id") // Foreign key column in `artifact`
+  @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, fetch = FetchType.EAGER, orphanRemoval = true)
+  @JsonManagedReference
   private List<Artifact> artifacts;
 
   private String logoUrl;

@@ -1,5 +1,6 @@
 package com.axonivy.market.bo;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import jakarta.persistence.Embeddable;
@@ -37,7 +38,8 @@ public class ArchivedArtifact implements Serializable {
   private String artifactId;
 
   @ManyToOne
-  @JoinColumn(name = "artifact_fk", nullable = false) // Renaming foreign key to avoid conflict
+  @JoinColumn(name = "artifact_id_fk", nullable = false)
+  @JsonBackReference
   private Artifact artifact;
 
   @PrePersist
