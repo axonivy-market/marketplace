@@ -47,6 +47,8 @@ import org.kohsuke.github.GHRepository;
 import org.kohsuke.github.GHTag;
 import org.kohsuke.github.PagedIterable;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.cache.CacheManager;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
@@ -107,6 +109,8 @@ public class ProductServiceImpl implements ProductService {
   @Value("${market.github.market.branch}")
   private String marketRepoBranch;
 
+  private final CacheManager cacheManager;
+
   public ProductServiceImpl(ProductRepository productRepo, ProductModuleContentRepository productModuleContentRepo,
       GHAxonIvyMarketRepoService axonIvyMarketRepoService, GHAxonIvyProductRepoService axonIvyProductRepoService,
       GitHubRepoMetaRepository gitHubRepoMetaRepo, GitHubService gitHubService,
@@ -115,7 +119,7 @@ public class ProductServiceImpl implements ProductService {
       MetadataSyncRepository metadataSyncRepo, MetadataRepository metadataRepo, ImageService imageService,
       ProductContentService productContentService, MetadataService metadataService,
       ProductMarketplaceDataService productMarketplaceDataService, ExternalDocumentService externalDocumentService,
-      ProductMarketplaceDataRepository productMarketplaceDataRepo, VersionService versionService) {
+      ProductMarketplaceDataRepository productMarketplaceDataRepo, VersionService versionService, CacheManager cacheManager) {
     this.productRepo = productRepo;
     this.productModuleContentRepo = productModuleContentRepo;
     this.axonIvyMarketRepoService = axonIvyMarketRepoService;
@@ -135,6 +139,7 @@ public class ProductServiceImpl implements ProductService {
     this.externalDocumentService = externalDocumentService;
     this.productMarketplaceDataRepo = productMarketplaceDataRepo;
     this.versionService = versionService;
+    this.cacheManager = cacheManager;
   }
 
   @Override
@@ -798,8 +803,10 @@ public class ProductServiceImpl implements ProductService {
     return version.substring(0, secondDot);
   }
 
+  @Cacheable(value = "GithubPublicReleasesCache", key="{#productId}")
   @Override
   public Page<GithubReleaseModel> getGitHubReleaseModels(String productId, Pageable pageable) throws IOException {
+    System.out.println("Product id: " + productId);
     Product product = productRepo.findProductById(productId);
     if (StringUtils.isBlank(product.getRepositoryName()) || StringUtils.isBlank(product.getSourceUrl())) {
       return new PageImpl<>(new ArrayList<>(), pageable, 0);
