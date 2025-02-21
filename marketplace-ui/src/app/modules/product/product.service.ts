@@ -119,10 +119,4 @@ export class ProductService {
 
     return this.httpClient.get<ProductReleasesApiResponse>(url, { context: new HttpContext().set(ForwardingError, true) });
   }
-
-  getProductChangelogByProductIdAndReleaseId(productId: string, releaseId: string): Observable<ProductReleasesApiResponse> {
-    const url = `${API_URI.PRODUCT_DETAILS}/${productId}/releases`;
-
-    return this.httpClient.get<ProductReleasesApiResponse>(url, { context: new HttpContext().set(ForwardingError, true) });
-  }
 }

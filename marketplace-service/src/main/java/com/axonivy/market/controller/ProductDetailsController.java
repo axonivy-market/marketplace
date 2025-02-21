@@ -177,8 +177,8 @@ public class ProductDetailsController {
   }
 
   @GetMapping(PRODUCT_PUBLIC_RELEASE_BY_RELEASE_ID)
-  @Operation(summary = "Find release by id",
-      description = "Get release by release id.")
+  @Operation(summary = "Find release by product id and release id",
+      description = "Get release by product id and release id")
   public ResponseEntity<GithubReleaseModel> findGithubPublicReleaseByProductIdAndReleaseId(
       @PathVariable(PRODUCT_ID) @Parameter(description = "Product id", example = "portal",
           in = ParameterIn.PATH) String productId,

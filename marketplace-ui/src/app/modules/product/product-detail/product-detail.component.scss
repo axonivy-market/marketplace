@@ -72,6 +72,14 @@
     background: none;
     box-shadow: none;
     color: var(--ivy-text-primary-color);
+
+    a.release-name {
+      text-decoration: none;
+
+      &:hover {
+        text-decoration: underline;
+      }
+    }
   }
 
   .changelog-content h2 {

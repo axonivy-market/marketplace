@@ -532,6 +532,7 @@ export class ProductDetailComponent {
         name: release.name,
         body: this.bypassSecurityTrustHtml(release.body),
         publishedAt: release.publishedAt,
+        htmlUrl: release.htmlUrl
       };
     });
   }
