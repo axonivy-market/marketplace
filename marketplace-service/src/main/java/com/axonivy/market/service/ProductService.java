@@ -29,4 +29,5 @@ public interface ProductService {
 
   GithubReleaseModel getGitHubReleaseModelByProductIdAndReleaseId(String productId, Long releaseId) throws IOException;
 
+  List<String> getProductIdList();
 }

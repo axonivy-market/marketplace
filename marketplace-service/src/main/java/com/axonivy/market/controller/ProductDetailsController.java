@@ -2,6 +2,7 @@ package com.axonivy.market.controller;
 
 import com.axonivy.market.assembler.GithubReleaseModelAssembler;
 import com.axonivy.market.assembler.ProductDetailModelAssembler;
+import com.axonivy.market.entity.Product;
 import com.axonivy.market.model.GithubReleaseModel;
 import com.axonivy.market.model.MavenArtifactVersionModel;
 import com.axonivy.market.model.ProductDetailModel;
@@ -18,7 +19,9 @@ import org.apache.commons.lang3.StringUtils;
 import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PagedResourcesAssembler;
 import org.springframework.hateoas.PagedModel;
 import org.springframework.http.HttpHeaders;
@@ -145,7 +148,7 @@ public class ProductDetailsController {
 
   @GetMapping(PRODUCT_PUBLIC_RELEASES)
   @Operation(summary = "Find public releases by product id",
-      description = "Get all public releases product id", parameters = {
+      description = "Get all public releases by product id", parameters = {
       @Parameter(name = "page", description = "Page number to retrieve", in = ParameterIn.QUERY, example = "0",
           required = true),
       @Parameter(name = "size", description = "Number of items per page", in = ParameterIn.QUERY, example = "20",
@@ -162,6 +165,15 @@ public class ProductDetailsController {
     var responseContent = new PageImpl<>(results.getContent(), pageable, results.getTotalElements());
     var pageResources = pagedResourcesAssembler.toModel(responseContent, githubReleaseModelAssembler);
     return new ResponseEntity<>(pageResources, HttpStatus.OK);
+  }
+
+  @GetMapping("/cron-job")
+  public void triggerCronjob() throws IOException {
+    Pageable pageable = PageRequest.of(0, 20, Sort.unsorted());
+    List<String> productIdList = this.productService.getProductIdList();
+    for(String productId : productIdList) {
+      this.productService.getGitHubReleaseModels(productId, pageable);
+    }
   }
 
   @GetMapping(PRODUCT_PUBLIC_RELEASE_BY_RELEASE_ID)
