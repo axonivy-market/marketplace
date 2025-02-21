@@ -51,11 +51,11 @@ public class Product implements Serializable {
   private Map<String, String> shortDescriptions;
 
   @Convert(converter = StringListConverter.class)
-  @Column(name = "tags", nullable = false)
+  @Column(name = "tags", nullable = false, columnDefinition = "TEXT")
   private List<String> tags;
 
   @Convert(converter = StringListConverter.class)
-  @Column(name = "released_versions", nullable = false)
+  @Column(name = "released_versions", nullable = false, columnDefinition = "TEXT")
   private List<String> releasedVersions;
 
 //  @ElementCollection

@@ -96,6 +96,7 @@ public class CustomProductMarketplaceDataRepositoryImpl extends CustomRepository
 
 
   @Override
+  @Transactional
   public void checkAndInitProductMarketplaceDataIfNotExist(String productId) {
     CriteriaBuilder cb = em.getCriteriaBuilder();
     CriteriaQuery<Long> query = cb.createQuery(Long.class);
