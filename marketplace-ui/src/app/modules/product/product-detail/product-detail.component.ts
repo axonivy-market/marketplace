@@ -185,7 +185,9 @@ export class ProductDetailComponent {
         userFeedback: this.productFeedbackService.findProductFeedbackOfUser(),
         changelogs: this.productService.getProductChangelogs(productId),
       }).subscribe(res => {
-        this.md.use(this.linkifyPullRequests, res.productDetail.sourceUrl, this.githubPullRequestNumberRegex)
+        this.md
+          .use(full)
+          .use(this.linkifyPullRequests, res.productDetail.sourceUrl, this.githubPullRequestNumberRegex)
           .set({
             typographer: true,
             linkify: true,
