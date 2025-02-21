@@ -36,6 +36,7 @@ import com.axonivy.market.service.ProductContentService;
 import com.axonivy.market.service.ProductMarketplaceDataService;
 import com.axonivy.market.service.VersionService;
 import com.axonivy.market.util.MavenUtils;
+import com.axonivy.market.util.VersionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -440,10 +441,10 @@ class ProductServiceImplTest extends BaseSetup {
     MavenArtifactVersion mockMavenArtifactVersion = getMockMavenArtifactVersionWithData();
     Product mockProduct = getMockProduct();
 
-    try (MockedStatic<MavenUtils> mockUtils = Mockito.mockStatic(MavenUtils.class)) {
+    try (MockedStatic<VersionUtils> mockUtils = Mockito.mockStatic(VersionUtils.class)) {
       mockUtils.when(() -> mavenArtifactVersionRepo.findById(MOCK_PRODUCT_ID)).thenReturn(
           Optional.of(mockMavenArtifactVersion));
-      when(MavenUtils.getAllExistingVersions(mockMavenArtifactVersion, true, StringUtils.EMPTY))
+      when(VersionUtils.getAllExistingVersions(mockMavenArtifactVersion, true, StringUtils.EMPTY))
           .thenReturn(List.of(MOCK_SNAPSHOT_VERSION));
 
       when(productRepo.getProductByIdAndVersion(MOCK_PRODUCT_ID, MOCK_SNAPSHOT_VERSION)).thenReturn(mockProduct);
