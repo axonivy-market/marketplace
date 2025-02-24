@@ -36,6 +36,9 @@ import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 
 import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
@@ -534,7 +537,7 @@ class GitHubServiceImplTest {
   }
 
   @Test
-  void testGetGitHubReleaseModelsWithMixedReleases() throws IOException {
+  void testGetGitHubReleaseModelsWithMixedReleases() throws IOException, URISyntaxException {
     try(MockedStatic<GitHubUtils> gitHubUtilsMockedStatic = Mockito.mockStatic(GitHubUtils.class)) {
       Link mockLink = mock(Link.class);
       gitHubUtilsMockedStatic.when(() -> GitHubUtils.createSelfLinkForGithubReleaseModel(any(), any())).thenReturn(mockLink);
@@ -544,6 +547,7 @@ class GitHubServiceImplTest {
       String mockGithubReleaseBody = "This is a release body with PR #123 and user @johndoe";
       String mockProductSourceUrl = "http://example.com";
       String mockVersion = "v1.0.0";
+      URL mockHtmlUrl1 = new URI("http://example.com/portal/releases/tag/next-12.0").toURL();
       Pageable mockPageable = mock(Pageable.class);
       GHRelease mockRelease1 = mock(GHRelease.class);
       GHRelease mockRelease2 = mock(GHRelease.class);
@@ -552,6 +556,7 @@ class GitHubServiceImplTest {
       when(mockRelease1.getBody()).thenReturn(mockGithubReleaseBody);
       when(mockRelease1.getName()).thenReturn(mockVersion);
       when(mockRelease1.getPublished_at()).thenReturn(new Date());
+      when(mockRelease1.getHtmlUrl()).thenReturn(mockHtmlUrl1);
       when(mockProduct.getSourceUrl()).thenReturn(mockProductSourceUrl);
       when(mockPagedIterable.toList()).thenReturn(List.of(mockRelease1, mockRelease2));
       when(mockRelease1.isDraft()).thenReturn(false);
@@ -567,7 +572,7 @@ class GitHubServiceImplTest {
 
 
   @Test
-  void testGetGitHubReleaseModelByProductIdAndReleaseId() throws IOException {
+  void testGetGitHubReleaseModelByProductIdAndReleaseId() throws IOException, URISyntaxException {
     try(MockedStatic<GitHubUtils> gitHubUtilsMockedStatic = Mockito.mockStatic(GitHubUtils.class)) {
       Link mockLink = mock(Link.class);
       gitHubUtilsMockedStatic.when(() -> GitHubUtils.createSelfLinkForGithubReleaseModel(any(), any())).thenReturn(mockLink);
@@ -575,6 +580,7 @@ class GitHubServiceImplTest {
       String mockGithubReleaseBody = "This is a release body with PR #123 and user @johndoe";
       String mockProductSourceUrl = "http://example.com";
       String mockRepositoryName = "axonivy-market/portal";
+      URL mockHtmlUrl = new URI("http://example.com/portal/releases/tag/next-12.0").toURL();
       String mockVersion = "v1.0.0";
 
       Product mockProduct = mock(Product.class);
@@ -588,6 +594,7 @@ class GitHubServiceImplTest {
       when(mockRelease.getBody()).thenReturn(mockGithubReleaseBody);
       when(mockRelease.getName()).thenReturn(mockVersion);
       when(mockRelease.getPublished_at()).thenReturn(new Date());
+      when(mockRelease.getHtmlUrl()).thenReturn(mockHtmlUrl);
       when(mockProduct.getSourceUrl()).thenReturn(mockProductSourceUrl);
       when(gitHubService.toGitHubReleaseModel(mockRelease, mockProduct)).thenReturn(new GithubReleaseModel());
 
@@ -612,17 +619,19 @@ class GitHubServiceImplTest {
   }
 
   @Test
-  void testToGitHubReleaseModel() throws IOException {
+  void testToGitHubReleaseModel() throws IOException, URISyntaxException {
     try(MockedStatic<GitHubUtils> gitHubUtilsMockedStatic = Mockito.mockStatic(GitHubUtils.class)) {
       Link mockLink = mock(Link.class);
       gitHubUtilsMockedStatic.when(() -> GitHubUtils.createSelfLinkForGithubReleaseModel(any(), any())).thenReturn(mockLink);
 
       GHRelease mockGhRelease = mock(GHRelease.class);
       Product mockProduct = mock(Product.class);
+      URL mockHtmlUrl = new URI("http://example.com/portal/releases/tag/next-12.0").toURL();
 
       when(mockGhRelease.getBody()).thenReturn("This is a release body with PR #123 and user @johndoe");
       when(mockGhRelease.getName()).thenReturn("v1.0.0");
       when(mockGhRelease.getPublished_at()).thenReturn(new Date());
+      when(mockGhRelease.getHtmlUrl()).thenReturn(mockHtmlUrl);
       when(mockProduct.getSourceUrl()).thenReturn("http://example.com");
 
       GithubReleaseModel result = gitHubService.toGitHubReleaseModel(mockGhRelease, mockProduct);

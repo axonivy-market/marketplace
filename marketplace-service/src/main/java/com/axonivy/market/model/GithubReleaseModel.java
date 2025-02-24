@@ -25,6 +25,9 @@ public class GithubReleaseModel extends RepresentationModel<GithubReleaseModel> 
   @Schema(description = "Published date of release", example = "2025-01-20")
   private Date publishedAt;
 
+  @Schema(description = "Link of release", example = "https://github.com/axonivy-market/portal/releases/tag/next-12.0")
+  private String htmlUrl;
+
   @Override
   public int hashCode() {
     return new HashCodeBuilder().append(name).hashCode();

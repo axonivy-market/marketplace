@@ -9,6 +9,7 @@ import org.apache.commons.lang3.time.StopWatch;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.context.event.ApplicationStartedEvent;
+import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.context.event.EventListener;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.annotation.EnableAsync;
@@ -22,6 +23,7 @@ import java.util.List;
 @EnableScheduling
 @SpringBootApplication
 @AllArgsConstructor
+@EnableCaching
 public class MarketplaceServiceApplication {
 
   final ProductService productService;

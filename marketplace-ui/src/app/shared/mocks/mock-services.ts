@@ -8,7 +8,6 @@ import {
   MOCK_PRODUCT_DETAIL,
   MOCK_CRON_JOB_PRODUCT_DETAIL,
   MOCK_PRODUCT_RELEASES,
-  MOCK_PRODUCT_RELEASES_2
 } from './mock-data';
 import { ProductApiResponse } from '../models/apis/product-response.model';
 import { ProductDetail } from '../models/product-detail.model';
@@ -43,6 +42,6 @@ export class MockProductService {
   }
 
   getProductChangelogs(productId: string) {
-    return of(MOCK_PRODUCT_RELEASES_2);
+    return of(MOCK_PRODUCT_RELEASES);
   }
 }

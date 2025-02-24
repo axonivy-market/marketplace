@@ -10,6 +10,7 @@ import com.axonivy.market.enums.Language;
 import com.axonivy.market.model.GithubReleaseModel;
 import com.axonivy.market.model.MavenArtifactVersionModel;
 import com.axonivy.market.model.ProductDetailModel;
+import com.axonivy.market.service.ProductContentService;
 import com.axonivy.market.service.ProductService;
 import com.axonivy.market.service.VersionService;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -23,7 +24,9 @@ import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PagedResourcesAssembler;
 import org.springframework.hateoas.PagedModel;
 import org.springframework.http.HttpStatus;
@@ -34,10 +37,13 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.concurrent.CompletableFuture;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.*;
+
+import org.springframework.web.servlet.mvc.method.annotation.ResponseBodyEmitter;
 
 @ExtendWith(MockitoExtension.class)
 class ProductDetailsControllerTest extends BaseSetup {
@@ -51,6 +57,8 @@ class ProductDetailsControllerTest extends BaseSetup {
   private PagedResourcesAssembler<GithubReleaseModel> pagedResourcesAssembler;
   @Mock
   private GithubReleaseModelAssembler githubReleaseModelAssembler;
+  @Mock
+  private ProductContentService productContentService;
 
 
   @InjectMocks
@@ -315,5 +323,41 @@ class ProductDetailsControllerTest extends BaseSetup {
 
     assertEquals(HttpStatus.OK, result.getStatusCode());
     assertTrue(Objects.requireNonNull(result.getBody()).getContent().isEmpty());
+  }
+
+  @Test
+  void testSyncLatestReleasesForProducts() throws IOException {
+    List<String> productIdList = List.of(DOCKER_CONNECTOR_ID);
+    when(productService.getProductIdList()).thenReturn(productIdList);
+    when(productService.getGitHubReleaseModels(Mockito.anyString(), Mockito.any(Pageable.class))).thenReturn(Page.empty());
+
+    productDetailsController.syncLatestReleasesForProducts();
+
+    verify(productService, times(1)).getProductIdList();
+    verify(productService, times(1)).getGitHubReleaseModels(DOCKER_CONNECTOR_ID, PageRequest.of(0, 20, Sort.unsorted()));
+  }
+
+  @Test
+  void testDownloadZipArtifact() throws Exception {
+    ResponseBodyEmitter emitter = new ResponseBodyEmitter();
+    when(productContentService.downloadZipArtifactFile(Mockito.anyString(), Mockito.anyString(), Mockito.anyString())).thenReturn(CompletableFuture.completedFuture(emitter));
+
+    CompletableFuture<ResponseEntity<ResponseBodyEmitter>> result = productDetailsController.downloadZipArtifact(DOCKER_CONNECTOR_ID, MOCK_RELEASED_VERSION, "artifact");
+
+    assertEquals(HttpStatus.OK, result.get().getStatusCode());
+    assertEquals(emitter, result.get().getBody());
+
+    verify(productContentService, times(1)).downloadZipArtifactFile(DOCKER_CONNECTOR_ID, "artifact", MOCK_RELEASED_VERSION);
+  }
+
+  @Test
+  void testDownloadZipArtifact_NoContent() throws Exception {
+    when(productContentService.downloadZipArtifactFile(Mockito.anyString(), Mockito.anyString(), Mockito.anyString())).thenReturn(CompletableFuture.completedFuture(null));
+
+    CompletableFuture<ResponseEntity<ResponseBodyEmitter>> result = productDetailsController.downloadZipArtifact(DOCKER_CONNECTOR_ID, MOCK_RELEASED_VERSION, "artifact");
+
+    assertEquals(HttpStatus.NO_CONTENT, result.get().getStatusCode());
+
+    verify(productContentService, times(1)).downloadZipArtifactFile(DOCKER_CONNECTOR_ID, "artifact", MOCK_RELEASED_VERSION);
   }
 }

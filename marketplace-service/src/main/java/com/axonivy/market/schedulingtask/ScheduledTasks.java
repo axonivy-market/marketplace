@@ -1,5 +1,6 @@
 package com.axonivy.market.schedulingtask;
 
+import com.axonivy.market.controller.ProductDetailsController;
 import com.axonivy.market.repository.ProductRepository;
 import com.axonivy.market.service.ExternalDocumentService;
 import com.axonivy.market.service.MavenDependencyService;
@@ -9,6 +10,7 @@ import lombok.extern.log4j.Log4j2;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
+import java.io.IOException;
 import java.util.ArrayList;
 
 @Log4j2
@@ -22,6 +24,7 @@ public class ScheduledTasks {
 
   final ProductRepository productRepo;
   final ProductService productService;
+  final ProductDetailsController productDetailsController;
   final ExternalDocumentService externalDocumentService;
   final MavenDependencyService mavenDependencyService;
 
@@ -43,5 +46,11 @@ public class ScheduledTasks {
   public void syncDataForProductMavenDependencies() {
     log.warn("Started sync data for product maven dependencies");
     mavenDependencyService.syncIARDependenciesForProducts(false);
+  }
+
+  @Scheduled(cron = SCHEDULING_TASK_PRODUCTS_CRON)
+  public void syncDataForProductReleases() throws IOException {
+    log.warn("Started sync data for product releases");
+    productDetailsController.syncLatestReleasesForProducts();
   }
 }
