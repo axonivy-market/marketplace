@@ -137,39 +137,40 @@ public class ProductContentServiceImpl implements ProductContentService {
   @Override
   public CompletableFuture<ResponseBodyEmitter> downloadZipArtifactFile(String productId, String artifactId,
       String version) {
-    List<ProductDependency> existingProductDependencies = productDependencyRepository.findProductDependencies(
-        productId, artifactId, version);
-    List<MavenDependency> mavenDependencies = Optional.ofNullable(existingProductDependencies).orElse(List.of())
-        .stream().map(ProductDependency::getDependenciesOfArtifact).map(Map::values)
-        .flatMap(Collection::stream).flatMap(List::stream).toList();
-    // Validate product
-    if (ObjectUtils.isEmpty(mavenDependencies)) {
-      return null;
-    }
-
-    // Create a ZIP file
-    var emitter = new ResponseBodyEmitter();
-    try {
-      var byteArrayOutputStream = new ByteArrayOutputStream();
-      try (var zipOut = new ZipOutputStream(byteArrayOutputStream)) {
-        for (var mavenArtifact : mavenDependencies) {
-          zipArtifact(version, mavenArtifact, zipOut);
-          // Zip dependencies
-          for (var dependency : Optional.ofNullable(mavenArtifact.getDependencies()).orElse(List.of())) {
-            zipArtifact(version, dependency, zipOut);
-          }
-        }
-        zipConfigurationOptions(zipOut);
-        zipOut.closeEntry();
-      }
-      emitter.send(byteArrayOutputStream.toByteArray());
-      emitter.complete();
-    } catch (IOException e) {
-      log.error("Cannot create ZIP file {}", e.getMessage());
-      emitter.completeWithError(e);
-    }
-
-    return CompletableFuture.completedFuture(emitter);
+    return null;
+//    List<ProductDependency> existingProductDependencies = productDependencyRepository.findProductDependencies(
+//        productId, artifactId, version);
+//    List<MavenDependency> mavenDependencies = Optional.ofNullable(existingProductDependencies).orElse(List.of())
+//        .stream().map(ProductDependency::getDependenciesOfArtifact).map(Map::values)
+//        .flatMap(Collection::stream).flatMap(List::stream).toList();
+//    // Validate product
+//    if (ObjectUtils.isEmpty(mavenDependencies)) {
+//      return null;
+//    }
+//
+//    // Create a ZIP file
+//    var emitter = new ResponseBodyEmitter();
+//    try {
+//      var byteArrayOutputStream = new ByteArrayOutputStream();
+//      try (var zipOut = new ZipOutputStream(byteArrayOutputStream)) {
+//        for (var mavenArtifact : mavenDependencies) {
+//          zipArtifact(version, mavenArtifact, zipOut);
+//          // Zip dependencies
+//          for (var dependency : Optional.ofNullable(mavenArtifact.getDependencies()).orElse(List.of())) {
+//            zipArtifact(version, dependency, zipOut);
+//          }
+//        }
+//        zipConfigurationOptions(zipOut);
+//        zipOut.closeEntry();
+//      }
+//      emitter.send(byteArrayOutputStream.toByteArray());
+//      emitter.complete();
+//    } catch (IOException e) {
+//      log.error("Cannot create ZIP file {}", e.getMessage());
+//      emitter.completeWithError(e);
+//    }
+//
+//    return CompletableFuture.completedFuture(emitter);
   }
 
   private void zipConfigurationOptions(ZipOutputStream zipOut) throws IOException {

@@ -39,9 +39,9 @@ public class ScheduledTasks {
     }
   }
 
-  @Scheduled(cron = SCHEDULING_TASK_PRODUCTS_CRON)
-  public void syncDataForProductMavenDependencies() {
-    log.warn("Started sync data for product maven dependencies");
-    mavenDependencyService.syncIARDependenciesForProducts(false);
-  }
+//  @Scheduled(cron = SCHEDULING_TASK_PRODUCTS_CRON)
+//  public void syncDataForProductMavenDependencies() {
+//    log.warn("Started sync data for product maven dependencies");
+//    mavenDependencyService.syncIARDependenciesForProducts(false);
+//  }
 }

@@ -82,21 +82,6 @@
 //        versionService.getArtifactsAndVersionToDisplay(MOCK_PRODUCT_ID, false, MOCK_RELEASED_VERSION)));
 //  }
 //
-//
-//  @Test
-//  void testGetMavenArtifactsFromProductJsonByVersion() {
-//    when(productJsonContentRepository.findByProductIdAndVersion(MOCK_PRODUCT_ID, MOCK_RELEASED_VERSION)).thenReturn(
-//        Collections.emptyList());
-//    List<Artifact> results = versionService.getMavenArtifactsFromProductJsonByVersion(MOCK_RELEASED_VERSION,
-//        MOCK_PRODUCT_ID);
-//    Assertions.assertTrue(CollectionUtils.isEmpty(results));
-//    when(productJsonContentRepository.findByProductIdAndVersion(MOCK_PRODUCT_ID, MOCK_RELEASED_VERSION)).thenReturn(
-//        List.of(getMockProductJsonContent()));
-//    results = versionService.getMavenArtifactsFromProductJsonByVersion(MOCK_RELEASED_VERSION, MOCK_PRODUCT_ID);
-//    Assertions.assertEquals(2, results.size());
-//  }
-//
-//
 //  @Test
 //  void testFindArchivedArtifactInfoBestMatchWithVersion() {
 //    ArchivedArtifact result = MavenUtils.findArchivedArtifactInfoBestMatchWithVersion(MOCK_RELEASED_VERSION,

@@ -8,6 +8,7 @@ import com.axonivy.market.constants.MongoDBConstants;
 import com.axonivy.market.criteria.ProductSearchCriteria;
 import com.axonivy.market.entity.GitHubRepoMeta;
 import com.axonivy.market.entity.Image;
+import com.axonivy.market.entity.MavenArtifactVersion;
 import com.axonivy.market.entity.Product;
 import com.axonivy.market.entity.ProductCustomSort;
 import com.axonivy.market.entity.ProductJsonContent;
@@ -649,9 +650,9 @@ public class ProductServiceImpl implements ProductService {
     List<String> versions;
     String version = StringUtils.EMPTY;
 
-    var mavenArtifactVersion = mavenArtifactVersionRepo.findById(id);
-    if (mavenArtifactVersion.isPresent()) {
-      versions = MavenUtils.getAllExistingVersions(mavenArtifactVersion.get(), BooleanUtils.isTrue(isShowDevVersion),
+    MavenArtifactVersion mavenArtifactVersion = mavenArtifactVersionRepo.findById(id).orElse(null);
+    if (ObjectUtils.isNotEmpty(mavenArtifactVersion)) {
+      versions = MavenUtils.getAllExistingVersions(mavenArtifactVersion, BooleanUtils.isTrue(isShowDevVersion),
           StringUtils.EMPTY);
       version = CollectionUtils.firstElement(versions);
     }

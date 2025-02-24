@@ -1,8 +1,11 @@
 package com.axonivy.market.entity;
 
 import com.axonivy.market.bo.MavenDependency;
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -28,9 +31,13 @@ import static com.axonivy.market.constants.EntityConstants.PRODUCT_DEPENDENCY;
 public class ProductDependency {
   @Id
   private String productId;
-  private Map<String, List<MavenDependency>> dependenciesOfArtifact;
+//  private Map<String, List<MavenDependency>> dependenciesOfArtifact;
   @CreatedDate
   private Date createdAt;
   @LastModifiedDate
   private Date modifiedAt;
+
+  @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
+  @JoinColumn(name = "product_id_fk")
+  private List<MavenDependency> dependenciesOfArtifactTest;
 }

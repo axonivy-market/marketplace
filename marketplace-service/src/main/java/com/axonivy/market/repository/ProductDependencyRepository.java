@@ -6,6 +6,6 @@ import org.springframework.data.mongodb.repository.MongoRepository;
 import org.springframework.stereotype.Repository;
 
 @Repository
-public interface ProductDependencyRepository extends MongoRepository<ProductDependency, String>, CustomProductDependencyRepository {
+public interface ProductDependencyRepository extends JpaRepository<ProductDependency, String>, CustomProductDependencyRepository {
 
 }

@@ -33,6 +33,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import static com.axonivy.market.constants.MavenConstants.DEFAULT_IVY_MAVEN_BASE_URL;
 
@@ -260,8 +261,14 @@ public class MavenUtils {
   public static MavenArtifactModel buildMavenArtifactModelFromMetadata(String version, Metadata metadata) {
     String downloadUrl = buildDownloadUrl(metadata.getArtifactId(), version, metadata.getType(), metadata.getRepoUrl(),
         metadata.getGroupId(), metadata.getSnapshotVersionValue());
-    return MavenArtifactModel.builder().name(metadata.getName()).downloadUrl(downloadUrl).isInvalidArtifact(
-        metadata.getArtifactId().contains(metadata.getGroupId())).artifactId(metadata.getArtifactId()).build();
+
+    return MavenArtifactModel.builder()
+        .name(metadata.getName())
+        .downloadUrl(downloadUrl)
+        .isInvalidArtifact(metadata.getArtifactId().contains(metadata.getGroupId()))
+        .artifactId(metadata.getArtifactId())
+        .productVersion(version)
+        .build();
   }
 
   public static String getMetadataContentFromUrl(String metadataUrl) {
@@ -312,11 +319,18 @@ public class MavenUtils {
 
   public static List<String> getAllExistingVersions(MavenArtifactVersion existingMavenArtifactVersion,
       boolean isShowDevVersion, String designerVersion) {
-    Set<String> existingProductsArtifactByVersion =
-        new HashSet<>(existingMavenArtifactVersion.getProductArtifactsByVersion().keySet());
-    Set<String> existingAdditionalArtifactByVersion =
-        existingMavenArtifactVersion.getProductArtifactsByVersion().keySet();
+    Set<String> existingProductsArtifactByVersion = existingMavenArtifactVersion.getProductArtifactsByVersionTest()
+        .stream()
+        .map(MavenArtifactModel::getProductVersion)
+        .collect(Collectors.toSet());
+
+    Set<String> existingAdditionalArtifactByVersion = existingMavenArtifactVersion.getAdditionalArtifactsByVersionTest()
+        .stream()
+        .map(MavenArtifactModel::getProductVersion)
+        .collect(Collectors.toSet());
+
     existingProductsArtifactByVersion.addAll(existingAdditionalArtifactByVersion);
+
     return VersionUtils.getVersionsToDisplay(new ArrayList<>(existingProductsArtifactByVersion), isShowDevVersion,
         designerVersion);
   }
