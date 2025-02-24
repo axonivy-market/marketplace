@@ -180,9 +180,9 @@ export class ProductDetailComponent {
         productDetail: this.getProductDetailObservable(productId),
         productFeedBack:
           this.productFeedbackService.getInitFeedbacksObservable(),
-        // rating: this.productStarRatingService.getRatingObservable(productId),
-        // userFeedback: this.productFeedbackService.findProductFeedbackOfUser(),
-        // changelogs: this.productService.getProductChangelogs(productId),
+        rating: this.productStarRatingService.getRatingObservable(productId),
+        userFeedback: this.productFeedbackService.findProductFeedbackOfUser(),
+        changelogs: this.productService.getProductChangelogs(productId),
       }).subscribe(res => {
         this.md.use(this.linkifyPullRequests, res.productDetail.sourceUrl, this.githubPullRequestNumberRegex)
           .set({
@@ -190,13 +190,13 @@ export class ProductDetailComponent {
             linkify: true,
           })
           .enable(['smartquotes', 'replacements', 'image']);
-        //
-        // if (res.changelogs._embedded.githubReleaseModelList !== null && res.changelogs._embedded.githubReleaseModelList.length !== 0) {
-        //   this.productReleaseSafeHtmls = this.renderChangelogContent(res.changelogs._embedded.githubReleaseModelList);
-        // }
+
+        if (res.changelogs._embedded.githubReleaseModelList !== null && res.changelogs._embedded.githubReleaseModelList.length !== 0) {
+          this.productReleaseSafeHtmls = this.renderChangelogContent(res.changelogs._embedded.githubReleaseModelList);
+        }
         this.handleProductDetail(res.productDetail);
         this.getReadmeContent();
-        // this.productFeedbackService.handleFeedbackApiResponse(res.productFeedBack);
+        this.productFeedbackService.handleFeedbackApiResponse(res.productFeedBack);
         this.updateDropdownSelection();
         this.checkMediaSize();
         this.route.queryParams.subscribe(params => {
