@@ -441,8 +441,9 @@ class ProductServiceImplTest extends BaseSetup {
     MavenArtifactVersion mockMavenArtifactVersion = getMockMavenArtifactVersionWithData();
     Product mockProduct = getMockProduct();
 
-    try (MockedStatic<VersionUtils> mockUtils = Mockito.mockStatic(VersionUtils.class)) {
-      mockUtils.when(() -> mavenArtifactVersionRepo.findById(MOCK_PRODUCT_ID)).thenReturn(
+    try (MockedStatic<MavenUtils> mockMavenUtils = Mockito.mockStatic(MavenUtils.class);
+         MockedStatic<VersionUtils> mockVersionUtils = Mockito.mockStatic(VersionUtils.class)) {
+      mockMavenUtils.when(() -> mavenArtifactVersionRepo.findById(MOCK_PRODUCT_ID)).thenReturn(
           Optional.of(mockMavenArtifactVersion));
       when(VersionUtils.getAllExistingVersions(mockMavenArtifactVersion, true, StringUtils.EMPTY))
           .thenReturn(List.of(MOCK_SNAPSHOT_VERSION));
@@ -453,13 +454,21 @@ class ProductServiceImplTest extends BaseSetup {
 
       Product result = productService.getProductByIdWithNewestReleaseVersion(MOCK_PRODUCT_ID, true);
       assertEquals(mockProduct, result);
-
-      when(mavenArtifactVersionRepo.findById(MOCK_PRODUCT_ID)).thenReturn(Optional.empty());
-      when(productRepo.getReleasedVersionsById(MOCK_PRODUCT_ID)).thenReturn(List.of(MOCK_SNAPSHOT_VERSION));
-      when(productRepo.getProductByIdAndVersion(MOCK_PRODUCT_ID, MOCK_SNAPSHOT_VERSION)).thenReturn(mockProduct);
-      result = productService.getProductByIdWithNewestReleaseVersion(MOCK_PRODUCT_ID, true);
-      assertEquals(mockProduct, result);
     }
+  }
+
+  @Test
+  void testGetProductByIdWithNewestReleaseVersionWithEmptyArtifact() {
+    Product mockProduct = getMockProduct();
+    when(productJsonContentRepo.findByProductIdAndVersion(MOCK_PRODUCT_ID, MOCK_SNAPSHOT_VERSION))
+            .thenReturn(List.of(getMockProductJsonContentContainMavenDropins()));
+    when(mavenArtifactVersionRepo.findById(MOCK_PRODUCT_ID)).thenReturn(Optional.empty());
+    when(productRepo.getReleasedVersionsById(MOCK_PRODUCT_ID)).thenReturn(List.of(MOCK_SNAPSHOT_VERSION));
+    when(productRepo.getProductByIdAndVersion(MOCK_PRODUCT_ID, MOCK_SNAPSHOT_VERSION)).thenReturn(mockProduct);
+    
+    Product result = productService.getProductByIdWithNewestReleaseVersion(MOCK_PRODUCT_ID, true);
+    assertEquals(mockProduct, result);
+
   }
 
   @Test
