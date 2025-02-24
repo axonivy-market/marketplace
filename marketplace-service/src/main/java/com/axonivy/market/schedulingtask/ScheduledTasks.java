@@ -49,7 +49,7 @@ public class ScheduledTasks {
     mavenDependencyService.syncIARDependenciesForProducts(false);
   }
 
-  @Scheduled(cron = SCHEDULING_TASK_PRODUCT_RELEASES_CRON)
+  @Scheduled(cron = SCHEDULING_TASK_PRODUCTS_CRON)
   public void syncDataForProductReleases() throws IOException {
     log.warn("Started sync data for product releases");
     productDetailsController.syncLatestReleasesForProducts();
