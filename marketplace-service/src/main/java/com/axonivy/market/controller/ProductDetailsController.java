@@ -166,8 +166,8 @@ public class ProductDetailsController {
     return new ResponseEntity<>(pageResources, HttpStatus.OK);
   }
 
-  @GetMapping("/cron-job")
-  public void triggerCronjob() throws IOException {
+  @GetMapping(SYNC_RELEASE_FOR_PRODUCTS)
+  public void syncLatestReleasesForProducts() throws IOException {
     Pageable pageable = PageRequest.of(0, 20, Sort.unsorted());
     List<String> productIdList = this.productService.getProductIdList();
     for(String productId : productIdList) {
