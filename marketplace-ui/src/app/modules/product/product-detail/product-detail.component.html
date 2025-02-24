@@ -193,7 +193,7 @@
                         <div ngbAccordionItem [collapsed]="$index != 0 && true" class="changelog-container mb-5 p-4">
                           <div ngbAccordionHeader>
                             <button ngbAccordionButton class="p-0 mb-3 custom-accordion-button">
-                              <h1><a class="me-4 release-name" [href]="productReleaseSafeHtml.htmlUrl" target="_blank">{{productReleaseSafeHtml.name}}</a></h1>
+                              <h1><a class="me-4 release-name" [href]="productReleaseSafeHtml.htmlUrl" target="_blank" (click)="$event.stopPropagation()">{{productReleaseSafeHtml.name}}</a></h1>
                               @if ($index == 0) {
                                 <h5 class="latest-release px-3 py-2">Latest</h5>
                               }
