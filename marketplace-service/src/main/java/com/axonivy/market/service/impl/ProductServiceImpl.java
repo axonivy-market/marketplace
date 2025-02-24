@@ -49,6 +49,7 @@ import org.kohsuke.github.GHTag;
 import org.kohsuke.github.PagedIterable;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -396,8 +397,7 @@ public class ProductServiceImpl implements ProductService {
         product.setVendorImage(mapVendorImage(product.getId(), ghContent, product.getVendorImagePath()));
       }
       if (StringUtils.isNotBlank(product.getVendorImageDarkModePath())) {
-        product.setVendorImageDarkMode(
-            mapVendorImage(product.getId(), ghContent, product.getVendorImageDarkModePath()));
+        product.setVendorImageDarkMode(mapVendorImage(product.getId(), ghContent, product.getVendorImageDarkModePath()));
       }
     }
   }
@@ -537,8 +537,7 @@ public class ProductServiceImpl implements ProductService {
     }
     updateProductCompatibility(product, versionChanges);
 
-    Optional.ofNullable(product.getReleasedVersions()).ifPresentOrElse(releasedVersion -> {
-        },
+    Optional.ofNullable(product.getReleasedVersions()).ifPresentOrElse(releasedVersion -> {},
         () -> product.setReleasedVersions(new ArrayList<>()));
 
     List<ProductModuleContent> productModuleContents = new ArrayList<>();
@@ -808,15 +807,16 @@ public class ProductServiceImpl implements ProductService {
   @Override
   public Page<GithubReleaseModel> getGitHubReleaseModels(String productId, Pageable pageable) throws IOException {
     Product product = productRepo.findProductById(productId);
-    PagedIterable<GHRelease> ghReleasePagedIterable = this.gitHubService.getRepository(
-        product.getRepositoryName()).listReleases();
+    if (StringUtils.isBlank(product.getRepositoryName()) || StringUtils.isBlank(product.getSourceUrl())) {
+      return new PageImpl<>(new ArrayList<>(), pageable, 0);
+    }
+    PagedIterable<GHRelease> ghReleasePagedIterable =  this.gitHubService.getRepository(product.getRepositoryName()).listReleases();
 
     return this.gitHubService.getGitHubReleaseModels(product, ghReleasePagedIterable, pageable);
   }
 
   @Override
-  public GithubReleaseModel getGitHubReleaseModelByProductIdAndReleaseId(String productId,
-      Long releaseId) throws IOException {
+  public GithubReleaseModel getGitHubReleaseModelByProductIdAndReleaseId(String productId, Long releaseId) throws IOException {
     Product product = productRepo.findProductById(productId);
 
     return this.gitHubService.getGitHubReleaseModelByProductIdAndReleaseId(product, releaseId);
