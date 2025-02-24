@@ -8,22 +8,22 @@ import { Feedback } from "../../shared/models/feedback.model";
 import { ProductFeedbackService } from "../product/product-detail/product-detail-feedback/product-feedbacks-panel/product-feedback.service";
 import { LanguageService } from "../../core/services/language/language.service";
 import { ThemeService } from "../../core/services/theme/theme.service";
-import { FEEDBACK_REVIEW_TABS } from "../../shared/constants/common.constant";
+import { FEEDBACK_APPROVAL_TABS } from "../../shared/constants/common.constant";
 import { FeedbackStatus } from "../../shared/enums/feedback-status.enum";
 
 @Component({
-  selector: 'app-feedback-review',
+  selector: 'app-feedback-approval',
   standalone: true,
   imports: [
     CommonModule,
     FormsModule,
     TranslateModule
   ],
-  templateUrl: './feedback-review.component.html',
-  styleUrls: ['./feedback-review.component.scss'],
+  templateUrl: './feedback-approval.component.html',
+  styleUrls: ['./feedback-approval.component.scss'],
   encapsulation: ViewEncapsulation.Emulated
 })
-export class FeedbackReviewComponent {
+export class FeedbackApprovalComponent {
   authService = inject(AuthService);
   appModalService = inject(AppModalService);
   productFeedbackService = inject(ProductFeedbackService);
@@ -31,7 +31,7 @@ export class FeedbackReviewComponent {
   themeService = inject(ThemeService);
   translateService = inject(TranslateService);
 
-  detailTabs = FEEDBACK_REVIEW_TABS;
+  detailTabs = FEEDBACK_APPROVAL_TABS;
   activeTab = 'review';
 
   // showToggle = computed(() => this.scrollHeight() > this.clientHeight() || this.feedback.isExpanded);

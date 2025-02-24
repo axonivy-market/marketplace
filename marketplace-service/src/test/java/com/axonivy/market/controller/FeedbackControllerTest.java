@@ -1,8 +1,10 @@
 package com.axonivy.market.controller;
 
+import com.axonivy.market.BaseSetup;
 import com.axonivy.market.assembler.FeedbackModelAssembler;
 import com.axonivy.market.entity.Feedback;
 import com.axonivy.market.entity.User;
+import com.axonivy.market.enums.FeedbackStatus;
 import com.axonivy.market.model.FeedbackModelRequest;
 import com.axonivy.market.service.FeedbackService;
 import com.axonivy.market.service.JwtService;
@@ -24,6 +26,7 @@ import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
 
+import java.util.Date;
 import java.util.List;
 import java.util.Objects;
 
@@ -33,7 +36,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
-class FeedbackControllerTest {
+class FeedbackControllerTest extends BaseSetup {
 
   private static final String PRODUCT_ID_SAMPLE = "product-id";
   private static final String FEEDBACK_ID_SAMPLE = "feedback-id";
@@ -120,6 +123,32 @@ class FeedbackControllerTest {
     assertEquals(USER_NAME_SAMPLE, Objects.requireNonNull(result.getBody()).getUsername());
   }
 
+//  @Test
+//  void testUpdateFeedbackWithNewStatus() {
+//    FeedbackApprovalModel mockReviewFeedback = mockFeedbackApproval();
+//
+//    Feedback mockFeedback = createFeedbackMock();
+//    User mockUser = createUserMock();
+////    feedback.setId("67b35ebdcbbb4301f8fe25d3");
+////    feedback.setFeedbackStatus(FeedbackStatus.APPROVED);
+////    feedback.setModeratorName("Admin");
+////    feedback.setReviewDate(new Date());
+//
+////    FeedbackModel feedbackModel = new FeedbackModel();
+//    when(service.findFeedback(FEEDBACK_ID_SAMPLE)).thenReturn(mockFeedback);
+//    when(userService.findUser(any())).thenReturn(mockUser);
+//    when(service.updateFeedbackWithNewStatus(mockReviewFeedback)).thenReturn(feedback);
+////    when(feedbackModelAssembler.toModel(feedback)).thenReturn(feedbackModel);
+//
+//    var result = feedbackController.updateFeedbackWithNewStatus(mockReviewFeedback);
+//
+//    assertEquals(HttpStatus.OK, result.getStatusCode());
+//    assertTrue(result.hasBody());
+//
+////    verify(feedbackService, times(1)).updateFeedbackWithNewStatus(reviewFeedback);
+////    verify(feedbackModelAssembler, times(1)).toModel(feedback);
+//  }
+
   @Test
   void testCreateFeedback() {
     FeedbackModelRequest mockFeedbackModel = createFeedbackModelRequestMock();
@@ -143,6 +172,9 @@ class FeedbackControllerTest {
     mockFeedback.setProductId(PRODUCT_ID_SAMPLE);
     mockFeedback.setContent("Great product!");
     mockFeedback.setRating(5);
+    mockFeedback.setFeedbackStatus(FeedbackStatus.APPROVED);
+    mockFeedback.setModeratorName("Admin");
+    mockFeedback.setReviewDate(new Date());
     return mockFeedback;
   }
 

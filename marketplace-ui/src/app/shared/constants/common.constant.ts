@@ -169,7 +169,7 @@ export const PRODUCT_DETAIL_TABS: ItemDropdown[] = [
   }
 ];
 
-export const FEEDBACK_REVIEW_TABS: ItemDropdown[] = [
+export const FEEDBACK_APPROVAL_TABS: ItemDropdown[] = [
   {
     activeClass: "activeTab === 'review'",
     tabId: 'review-tab',

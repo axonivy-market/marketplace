@@ -66,7 +66,7 @@ export class ProductFeedbackService {
       .set('page', page.toString())
       .set('size', size.toString())
       .set('sort', sort);
-    const requestURL = `${API_URI.FEEDBACK_REVIEW}`;
+    const requestURL = `${API_URI.FEEDBACK_APPROVAL}`;
     return this.http
       .get<FeedbackApiResponse>(requestURL, { params: requestParams })
       .pipe(
@@ -80,10 +80,6 @@ export class ProductFeedbackService {
             ]);
           }
           this.pendingFeedbacks.set(this.allFeedbacks().filter(f => f?.feedbackStatus === FeedbackStatus.PENDING));
-          console.log(response._embedded.feedbacks[0].id);
-          console.log(this.feedbacks());
-          console.log(this.allFeedbacks());
-          console.log(this.pendingFeedbacks());
         })
       );
   }
@@ -94,7 +90,7 @@ export class ProductFeedbackService {
       isApproved,
       moderatorName
     };
-    const requestURL = `${API_URI.FEEDBACK_REVIEW}`;
+    const requestURL = `${API_URI.FEEDBACK_APPROVAL}`;
 
     return this.http.put<Feedback>(requestURL, requestBody).pipe(
       tap(updatedFeedback => {

@@ -2,10 +2,10 @@ package com.axonivy.market.controller;
 
 import com.axonivy.market.assembler.FeedbackModelAssembler;
 import com.axonivy.market.entity.Feedback;
+import com.axonivy.market.model.FeedbackApprovalModel;
 import com.axonivy.market.model.FeedbackModel;
 import com.axonivy.market.model.FeedbackModelRequest;
 import com.axonivy.market.model.ProductRating;
-import com.axonivy.market.model.ReviewFeedbackModel;
 import com.axonivy.market.service.FeedbackService;
 import com.axonivy.market.service.JwtService;
 import com.axonivy.market.util.AuthorizationUtils;
@@ -110,7 +110,7 @@ public class FeedbackController {
     return new ResponseEntity<>(feedbackModelAssembler.toModel(feedback), HttpStatus.OK);
   }
 
-  @GetMapping(FEEDBACK_REVIEW)
+  @GetMapping(FEEDBACK_APPROVAL)
   @Operation(summary = "Find all feedbacks",
       description = "Get feedbacks on target product", parameters = {
       @Parameter(name = "page", description = "Page number to retrieve", in = ParameterIn.QUERY, example = "0",
@@ -130,11 +130,11 @@ public class FeedbackController {
     return new ResponseEntity<>(pageResources, HttpStatus.OK);
   }
 
-  @PutMapping(FEEDBACK_REVIEW)
+  @PutMapping(FEEDBACK_APPROVAL)
   @Operation(hidden = true)
   public ResponseEntity<FeedbackModel> updateFeedbackWithNewStatus(
-      @RequestBody @Valid ReviewFeedbackModel reviewFeedback) {
-    Feedback feedback = feedbackService.updateFeedbackWithNewStatus(reviewFeedback);
+      @RequestBody @Valid FeedbackApprovalModel feedbackApproval) {
+    Feedback feedback = feedbackService.updateFeedbackWithNewStatus(feedbackApproval);
     return new ResponseEntity<>(feedbackModelAssembler.toModel(feedback), HttpStatus.OK);
   }
 

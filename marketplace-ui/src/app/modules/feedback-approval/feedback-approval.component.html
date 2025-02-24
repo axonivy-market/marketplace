@@ -1,17 +1,17 @@
 <div class="container">
   @if (this.authService.getToken()) {
   <div class="row col-md-12">
-    <h1 class="text-primary review" [lang]="languageService.selectedLanguage()">
-      {{ translateService.get('common.review.approvalTitle') | async }}</h1>
+    <h1 class="text-primary approval" [lang]="languageService.selectedLanguage()">
+      {{ translateService.get('common.approval.approvalTitle') | async }}</h1>
     <div class="introduction-container">
       <div class="d-sm-block about">
         <h3 class="text-secondary">
-          {{ translateService.get('common.review.about') | async }}
+          {{ translateService.get('common.approval.about') | async }}
         </h3>
       </div>
       <div class="d-sm-block align-items-center contribute-link-container flex-fill">
         <h4 [lang]="languageService.selectedLanguage()" class="text-secondary"
-          [innerHTML]="translateService.get('common.review.instruction') | async">
+          [innerHTML]="translateService.get('common.approval.instruction') | async">
         </h4>
       </div>
     </div>
@@ -32,8 +32,8 @@
                 'text-secondary': themeService.isDarkMode(),
                 'text-dark': !themeService.isDarkMode()
               }" data-bs-toggle="tab" data-bs-target="#review" aria-controls="review" aria-selected="true"
-              (click)="setActiveTab('review')" [ngClass]="{'active': activeTab === 'review'}">
-              Review Feedback
+              (click)="setActiveTab('review')" [ngClass]="{'active': activeTab === 'review'}" [lang]="languageService.selectedLanguage()">
+              {{ 'common.approval.reviewFeedback' | translate }}
             </a>
           </li>
 
@@ -45,8 +45,8 @@
                 'text-secondary': themeService.isDarkMode(),
                 'text-dark': !themeService.isDarkMode()
               }" data-bs-toggle="tab" data-bs-target="#history" aria-controls="history" aria-selected="false"
-              (click)="setActiveTab('history')" [ngClass]="{'active': activeTab === 'history'}">
-              History
+              (click)="setActiveTab('history')" [ngClass]="{'active': activeTab === 'history'}" [lang]="languageService.selectedLanguage()">
+              {{ 'common.approval.history' | translate }}
             </a>
           </li>
 
@@ -64,13 +64,13 @@
             <table class="table">
               <thead>
                 <tr>
-                  <th class="text-primary username-column">Username</th>
-                  <th class="text-primary">Content</th>
-                  <th class="text-primary rating-column">Rating</th>
-                  <th class="text-primary status-column">Status</th>
-                  <th class="text-primary created-date-column">Created At</th>
-                  <th class="text-primary updated-date-column">Updated At</th>
-                  <th class="text-primary fixed-width">Action</th>
+                  <th class="text-primary username-column" [lang]="languageService.selectedLanguage()">{{ 'common.approval.username' | translate }}</th>
+                  <th class="text-primary" [lang]="languageService.selectedLanguage()">{{ 'common.approval.content' | translate }}</th>
+                  <th class="text-primary rating-column" [lang]="languageService.selectedLanguage()">{{ 'common.approval.rating' | translate }}</th>
+                  <th class="text-primary status-column" [lang]="languageService.selectedLanguage()">{{ 'common.approval.status' | translate }}</th>
+                  <th class="text-primary created-date-column" [lang]="languageService.selectedLanguage()">{{ 'common.approval.createdAt' | translate }}</th>
+                  <th class="text-primary updated-date-column" [lang]="languageService.selectedLanguage()">{{ 'common.approval.updatedAt' | translate }}</th>
+                  <th class="text-primary fixed-width" [lang]="languageService.selectedLanguage()">{{ 'common.approval.action' | translate }}</th>
                 </tr>
               </thead>
               <tbody>
@@ -122,14 +122,14 @@
             <table class="table">
               <thead>
                 <tr>
-                  <th class="text-primary username-column">Username</th>
-                  <th class="text-primary">Content</th>
-                  <th class="text-primary rating-column">Rating</th>
-                  <th class="text-primary status-column">Status</th>
-                  <th class="text-primary created-date-column">Created At</th>
-                  <th class="text-primary updated-date-column">Updated At</th>
-                  <th class="text-primary">Moderator Name</th>
-                  <th class="text-primary">Review Date</th>
+                  <th class="text-primary username-column" [lang]="languageService.selectedLanguage()">{{ 'common.approval.username' | translate }}</th>
+                  <th class="text-primary" [lang]="languageService.selectedLanguage()">{{ 'common.approval.content' | translate }}</th>
+                  <th class="text-primary rating-column" [lang]="languageService.selectedLanguage()">{{ 'common.approval.rating' | translate }}</th>
+                  <th class="text-primary status-column" [lang]="languageService.selectedLanguage()">{{ 'common.approval.status' | translate }}</th>
+                  <th class="text-primary created-date-column" [lang]="languageService.selectedLanguage()">{{ 'common.approval.createdAt' | translate }}</th>
+                  <th class="text-primary updated-date-column" [lang]="languageService.selectedLanguage()">{{ 'common.approval.updatedAt' | translate }}</th>
+                  <th class="text-primary" [lang]="languageService.selectedLanguage()">{{ 'common.approval.moderator' | translate }}</th>
+                  <th class="text-primary" [lang]="languageService.selectedLanguage()">{{ 'common.approval.reviewDate' | translate }}</th>
                 </tr>
               </thead>
               <tbody>

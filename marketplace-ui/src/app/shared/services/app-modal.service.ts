@@ -3,7 +3,7 @@ import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { ShowFeedbacksDialogComponent } from '../../modules/product/product-detail/product-detail-feedback/show-feedbacks-dialog/show-feedbacks-dialog.component';
 import { AddFeedbackDialogComponent } from '../../modules/product/product-detail/product-detail-feedback/product-star-rating-panel/add-feedback-dialog/add-feedback-dialog.component';
 import { SuccessDialogComponent } from '../../modules/product/product-detail/product-detail-feedback/product-star-rating-panel/add-feedback-dialog/success-dialog/success-dialog.component';
-import { FeedbackReviewComponent } from '../../modules/feedback-review/feedback-review.component';
+import { FeedbackApprovalComponent } from '../../modules/feedback-approval/feedback-approval.component';
 
 @Injectable({
   providedIn: 'root'
@@ -41,7 +41,7 @@ export class AppModalService {
 
   openFeedbacksDialog() {
 this.modalService.open(
-  FeedbackReviewComponent,
+  FeedbackApprovalComponent,
       {
         fullscreen: 'md',
         centered: true,

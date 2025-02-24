@@ -6,16 +6,15 @@ import com.axonivy.market.enums.FeedbackSortOption;
 import com.axonivy.market.enums.FeedbackStatus;
 import com.axonivy.market.exceptions.model.NoContentException;
 import com.axonivy.market.exceptions.model.NotFoundException;
+import com.axonivy.market.model.FeedbackApprovalModel;
 import com.axonivy.market.model.FeedbackModelRequest;
 import com.axonivy.market.model.ProductRating;
-import com.axonivy.market.model.ReviewFeedbackModel;
 import com.axonivy.market.repository.CustomFeedbackRepository;
 import com.axonivy.market.repository.FeedbackRepository;
 import com.axonivy.market.repository.ProductRepository;
 import com.axonivy.market.repository.UserRepository;
 import com.axonivy.market.service.FeedbackService;
 import org.apache.commons.lang3.BooleanUtils;
-import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -80,12 +79,12 @@ public class FeedbackServiceImpl implements FeedbackService {
   }
 
   @Override
-  public Feedback updateFeedbackWithNewStatus(ReviewFeedbackModel reviewFeedback) {
-    Feedback existingUserFeedback = feedbackRepository.findById(reviewFeedback.getFeedbackId()).orElse(null);
+  public Feedback updateFeedbackWithNewStatus(FeedbackApprovalModel feedbackApproval) {
+    Feedback existingUserFeedback = feedbackRepository.findById(feedbackApproval.getFeedbackId()).orElse(null);
     if (existingUserFeedback != null) {
       existingUserFeedback.setFeedbackStatus(
-          BooleanUtils.isTrue(reviewFeedback.getIsApproved()) ? FeedbackStatus.APPROVED : FeedbackStatus.REJECTED);
-      existingUserFeedback.setModeratorName(reviewFeedback.getModeratorName());
+          BooleanUtils.isTrue(feedbackApproval.getIsApproved()) ? FeedbackStatus.APPROVED : FeedbackStatus.REJECTED);
+      existingUserFeedback.setModeratorName(feedbackApproval.getModeratorName());
       existingUserFeedback.setReviewDate(new Date());
       feedbackRepository.save(existingUserFeedback);
     }
@@ -138,7 +137,7 @@ public class FeedbackServiceImpl implements FeedbackService {
 
   private static boolean isFeedbackApproved(Feedback feedback) {
     return FeedbackStatus.PENDING != feedback.getFeedbackStatus()
-         && FeedbackStatus.REJECTED != feedback.getFeedbackStatus();
+        && FeedbackStatus.REJECTED != feedback.getFeedbackStatus();
   }
 
   public void validateProductExists(String productId) throws NotFoundException {

@@ -6,7 +6,7 @@ export const API_URI = {
   PRODUCT_DETAILS: `${API}/product-details`,
   EXTERNAL_DOCUMENT: `${API}/externaldocument`,
   FEEDBACK: `${API}/feedback`,
-  FEEDBACK_REVIEW: `${API}/feedback/review`,
+  FEEDBACK_APPROVAL: `${API}/feedback/approval`,
   PRODUCT_MARKETPLACE_DATA: `${API}/product-marketplace-data`,
   PREVIEW_RELEASE: `${API}/release-preview`
 };

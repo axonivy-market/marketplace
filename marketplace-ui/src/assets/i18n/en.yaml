@@ -196,9 +196,18 @@ common:
     secondsAgo: '{{ number }} seconds ago'
   showLess: Show less
   showMore: Show more
-  review:
+  approval:
     approvalTitle: Feedback Approval
-    about: Please review the feedback given by people using our connectors.
-    instruction: The feedback given should follow our <a class="link-opacity-100" href="https://github.com/axonivy-market/market?tab=coc-ov-file">Code of Conduct</a> to be approved. On this page you can also view the feedback approval history.
+    about: Please review the feedback from a user.
+    instruction: The feedback given should follow our <a class="link-opacity-100" href="https://github.com/axonivy-market/market?tab=coc-ov-file">Code of Conduct</a> to be approved.
     reviewFeedback: Review Feedback
     history: History
+    username: Username
+    content: Content
+    rating: Rating
+    status: Status
+    createdAt: Created At
+    updatedAt: Updated At
+    action: Action
+    moderator: Moderator
+    reviewDate: Review Date

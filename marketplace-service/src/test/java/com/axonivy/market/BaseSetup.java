@@ -11,6 +11,7 @@ import com.axonivy.market.entity.ProductJsonContent;
 import com.axonivy.market.entity.ProductMarketplaceData;
 import com.axonivy.market.enums.Language;
 import com.axonivy.market.enums.SortOption;
+import com.axonivy.market.model.FeedbackApprovalModel;
 import com.axonivy.market.model.MavenArtifactModel;
 import com.axonivy.market.model.VersionAndUrlModel;
 import lombok.extern.log4j.Log4j2;
@@ -302,7 +303,7 @@ public class BaseSetup {
         .build();
 
     List<VersionAndUrlModel> versionAndUrlModels = new ArrayList<>(mockVersionModels());
-    versionAndUrlModels.add(0,versionAndUrlModel);
+    versionAndUrlModels.add(0, versionAndUrlModel);
 
     return versionAndUrlModels;
   }
@@ -317,8 +318,15 @@ public class BaseSetup {
         .build();
 
     List<VersionAndUrlModel> versionAndUrlModels = new ArrayList<>(mockVersionModels());
-    versionAndUrlModels.add(0,versionAndUrlModel);
-    versionAndUrlModels.add(0,versionAndUrlModel2);
+    versionAndUrlModels.add(0, versionAndUrlModel);
+    versionAndUrlModels.add(0, versionAndUrlModel2);
     return versionAndUrlModels;
+  }
+
+  protected FeedbackApprovalModel mockFeedbackApproval() {
+    return FeedbackApprovalModel.builder()
+        .feedbackId("67b35ebdcbbb4301f8fe25d3")
+        .moderatorName("Admin")
+        .build();
   }
 }
