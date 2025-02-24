@@ -31,28 +31,28 @@ public class MarketplaceServiceApplication {
     SpringApplication.run(MarketplaceServiceApplication.class, args);
   }
 
-//  @Async
-//  @EventListener(ApplicationStartedEvent.class)
-//  public void startInitializeSystem() {
-//    List<String> productIds = syncProductData();
-//    syncExternalDocumentData(productIds);
-//  }
-//
-//  private List<String> syncProductData() {
-//    var watch = new StopWatch();
-//    log.warn("Synchronizing Market repo: Started synchronizing data for Axon Ivy Market repo");
-//    watch.start();
-//    List<String> syncedProductIds = productService.syncLatestDataFromMarketRepo(false);
-//    if (ObjectUtils.isEmpty(syncedProductIds)) {
-//      log.warn("Synchronizing Market repo: Nothing updated");
-//    } else {
-//      watch.stop();
-//      log.warn("Synchronizing Market repo: Finished synchronizing data for Axon Ivy Market repo in [{}] milliseconds",
-//          watch.getTime());
-//      log.warn("Synchronizing Market repo: Synced products [{}]", syncedProductIds);
-//    }
-//    return syncedProductIds;
-//  }
+  @Async
+  @EventListener(ApplicationStartedEvent.class)
+  public void startInitializeSystem() {
+    List<String> productIds = syncProductData();
+    syncExternalDocumentData(productIds);
+  }
+
+  private List<String> syncProductData() {
+    var watch = new StopWatch();
+    log.warn("Synchronizing Market repo: Started synchronizing data for Axon Ivy Market repo");
+    watch.start();
+    List<String> syncedProductIds = productService.syncLatestDataFromMarketRepo(false);
+    if (ObjectUtils.isEmpty(syncedProductIds)) {
+      log.warn("Synchronizing Market repo: Nothing updated");
+    } else {
+      watch.stop();
+      log.warn("Synchronizing Market repo: Finished synchronizing data for Axon Ivy Market repo in [{}] milliseconds",
+          watch.getTime());
+      log.warn("Synchronizing Market repo: Synced products [{}]", syncedProductIds);
+    }
+    return syncedProductIds;
+  }
 
   private void syncExternalDocumentData(List<String> productIds) {
     var watch = new StopWatch();
