@@ -99,7 +99,9 @@ describe('AddFeedbackDialogComponent', () => {
       content: 'Test feedback content',
       rating: 4,
       productId: 'mockProductId',
-      feedbackStatus: FeedbackStatus.APPROVED
+      feedbackStatus: FeedbackStatus.APPROVED,
+      moderatorName: 'admin',
+      reviewDate: new Date()
     };
 
     productFeedbackServiceMock.userFeedback.set(mockFeedback);
@@ -114,7 +116,9 @@ describe('AddFeedbackDialogComponent', () => {
       content: 'Test feedback content',
       rating: 4,
       productId: 'mockProductId',
-      feedbackStatus: FeedbackStatus.APPROVED
+      feedbackStatus: FeedbackStatus.APPROVED,
+      moderatorName: 'admin',
+      reviewDate: new Date()
     };
 
     component.feedback = mockFeedback;
