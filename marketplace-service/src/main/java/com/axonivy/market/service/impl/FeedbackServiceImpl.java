@@ -3,14 +3,18 @@ package com.axonivy.market.service.impl;
 import com.axonivy.market.entity.Feedback;
 import com.axonivy.market.enums.ErrorCode;
 import com.axonivy.market.enums.FeedbackSortOption;
+import com.axonivy.market.enums.FeedbackStatus;
 import com.axonivy.market.exceptions.model.NoContentException;
 import com.axonivy.market.exceptions.model.NotFoundException;
+import com.axonivy.market.model.FeedbackApprovalModel;
 import com.axonivy.market.model.FeedbackModelRequest;
 import com.axonivy.market.model.ProductRating;
+import com.axonivy.market.repository.CustomFeedbackRepository;
 import com.axonivy.market.repository.FeedbackRepository;
 import com.axonivy.market.repository.ProductRepository;
 import com.axonivy.market.repository.UserRepository;
 import com.axonivy.market.service.FeedbackService;
+import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -19,6 +23,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -30,18 +35,25 @@ public class FeedbackServiceImpl implements FeedbackService {
   private final FeedbackRepository feedbackRepository;
   private final UserRepository userRepository;
   private final ProductRepository productRepository;
+  private final CustomFeedbackRepository customFeedbackRepository;
 
   public FeedbackServiceImpl(FeedbackRepository feedbackRepository, UserRepository userRepository,
-      ProductRepository productRepository) {
+      ProductRepository productRepository, CustomFeedbackRepository customFeedbackRepository) {
     this.feedbackRepository = feedbackRepository;
     this.userRepository = userRepository;
     this.productRepository = productRepository;
+    this.customFeedbackRepository = customFeedbackRepository;
+  }
+
+  @Override
+  public Page<Feedback> findAllFeedbacks(Pageable pageable) {
+    return feedbackRepository.findAll(refinePagination(pageable));
   }
 
   @Override
   public Page<Feedback> findFeedbacks(String productId, Pageable pageable) throws NotFoundException {
     validateProductExists(productId);
-    return feedbackRepository.searchByProductId(productId, refinePagination(pageable));
+    return customFeedbackRepository.searchByProductId(productId, refinePagination(pageable));
   }
 
   @Override
@@ -58,7 +70,7 @@ public class FeedbackServiceImpl implements FeedbackService {
     }
     validateProductExists(productId);
 
-    Feedback existingUserFeedback = feedbackRepository.findByUserIdAndProductId(userId, productId);
+    Feedback existingUserFeedback = customFeedbackRepository.findByUserIdAndProductId(userId, productId);
     if (existingUserFeedback == null) {
       throw new NoContentException(ErrorCode.NO_FEEDBACK_OF_USER_FOR_PRODUCT,
           String.format("No feedback with user id '%s' and product id '%s'", userId, productId));
@@ -67,10 +79,24 @@ public class FeedbackServiceImpl implements FeedbackService {
   }
 
   @Override
+  public Feedback updateFeedbackWithNewStatus(FeedbackApprovalModel feedbackApproval) {
+    Feedback existingUserFeedback = feedbackRepository.findById(feedbackApproval.getFeedbackId()).orElse(null);
+    if (existingUserFeedback != null) {
+      existingUserFeedback.setFeedbackStatus(
+          BooleanUtils.isTrue(feedbackApproval.getIsApproved()) ? FeedbackStatus.APPROVED : FeedbackStatus.REJECTED);
+      existingUserFeedback.setModeratorName(feedbackApproval.getModeratorName());
+      existingUserFeedback.setReviewDate(new Date());
+      feedbackRepository.save(existingUserFeedback);
+    }
+
+    return existingUserFeedback;
+  }
+
+  @Override
   public Feedback upsertFeedback(FeedbackModelRequest feedback, String userId) throws NotFoundException {
     validateUserExists(userId);
 
-    Feedback existingUserFeedback = feedbackRepository.findByUserIdAndProductId(userId,
+    Feedback existingUserFeedback = customFeedbackRepository.findByUserIdAndProductId(userId,
         feedback.getProductId());
     if (existingUserFeedback == null) {
       Feedback newFeedback = new Feedback();
@@ -78,17 +104,21 @@ public class FeedbackServiceImpl implements FeedbackService {
       newFeedback.setProductId(feedback.getProductId());
       newFeedback.setRating(feedback.getRating());
       newFeedback.setContent(feedback.getContent());
+      newFeedback.setFeedbackStatus(FeedbackStatus.PENDING);
       return feedbackRepository.save(newFeedback);
     } else {
       existingUserFeedback.setRating(feedback.getRating());
       existingUserFeedback.setContent(feedback.getContent());
+      existingUserFeedback.setFeedbackStatus(FeedbackStatus.PENDING);
       return feedbackRepository.save(existingUserFeedback);
     }
   }
 
   @Override
   public List<ProductRating> getProductRatingById(String productId) {
-    List<Feedback> feedbacks = feedbackRepository.findByProductId(productId);
+    List<Feedback> feedbacks =
+        feedbackRepository.findByProductId(productId).stream().filter(
+            FeedbackServiceImpl::isFeedbackApproved).toList();
     int totalFeedbacks = feedbacks.size();
 
     if (totalFeedbacks == 0) {
@@ -103,6 +133,11 @@ public class FeedbackServiceImpl implements FeedbackService {
       int percent = (int) ((count * 100) / totalFeedbacks);
       return new ProductRating(star, Math.toIntExact(count), percent);
     }).toList();
+  }
+
+  private static boolean isFeedbackApproved(Feedback feedback) {
+    return FeedbackStatus.PENDING != feedback.getFeedbackStatus()
+        && FeedbackStatus.REJECTED != feedback.getFeedbackStatus();
   }
 
   public void validateProductExists(String productId) throws NotFoundException {

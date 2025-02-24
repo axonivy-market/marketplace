@@ -25,6 +25,8 @@ import {
   TOKEN_KEY,
   USER_NOT_FOUND_ERROR_CODE
 } from '../../../../../shared/constants/common.constant';
+import { FeedbackStatus } from '../../../../../shared/enums/feedback-status.enum';
+import { API_URI } from '../../../../../shared/constants/api.constant';
 
 const FEEDBACK_API_URL = 'api/feedback';
 const SIZE = 8;
@@ -43,6 +45,8 @@ export class ProductFeedbackService {
 
   userFeedback: WritableSignal<Feedback | null> = signal(null);
   feedbacks: WritableSignal<Feedback[]> = signal([]);
+  allFeedbacks: WritableSignal<Feedback[]> = signal([]);
+  pendingFeedbacks: WritableSignal<Feedback[]> = signal([]);
   areAllFeedbacksLoaded = computed(() => {
     if (this.page() >= this.totalPages() - 1) {
       return true;
@@ -52,6 +56,58 @@ export class ProductFeedbackService {
 
   totalPages: WritableSignal<number> = signal(1);
   totalElements: WritableSignal<number> = signal(0);
+
+  findProductFeedbacks(
+    page: number = this.page(),
+    sort: string = this.sort(),
+    size: number = SIZE
+  ): Observable<FeedbackApiResponse> {
+    let requestParams = new HttpParams()
+      .set('page', page.toString())
+      .set('size', size.toString())
+      .set('sort', sort);
+    const requestURL = `${API_URI.FEEDBACK_APPROVAL}`;
+    return this.http
+      .get<FeedbackApiResponse>(requestURL, { params: requestParams })
+      .pipe(
+        tap(response => {
+          if (page === 0) {
+            this.allFeedbacks.set(response._embedded.feedbacks);
+          } else {
+            this.allFeedbacks.set([
+              ...this.feedbacks(),
+              ...response._embedded.feedbacks
+            ]);
+          }
+          this.pendingFeedbacks.set(this.allFeedbacks().filter(f => f?.feedbackStatus === FeedbackStatus.PENDING));
+        })
+      );
+  }
+
+  updateFeedbackStatus(feedbackId: string, isApproved: boolean, moderatorName: string): Observable<Feedback> {
+    const requestBody = {
+      feedbackId,
+      isApproved,
+      moderatorName
+    };
+    const requestURL = `${API_URI.FEEDBACK_APPROVAL}`;
+
+    return this.http.put<Feedback>(requestURL, requestBody).pipe(
+      tap(updatedFeedback => {
+        console.log("Feedback updated:", updatedFeedback);
+
+        // Update local lists
+        this.allFeedbacks.set(
+          this.allFeedbacks().map(fb => fb.id === updatedFeedback.id ? updatedFeedback : fb)
+        );
+
+        // Recalculate pending & reviewed lists
+        this.pendingFeedbacks.set(
+          this.allFeedbacks().filter(fb => fb.feedbackStatus === FeedbackStatus.PENDING)
+        );
+      })
+    );
+  }
 
   submitFeedback(feedback: Feedback): Observable<Feedback> {
     const headers = new HttpHeaders().set(
@@ -66,7 +122,7 @@ export class ProductFeedbackService {
       .pipe(
         tap(() => {
           this.fetchFeedbacks();
-          this.findProductFeedbackOfUser().subscribe();
+          // this.findProductFeedbackOfUser().subscribe();
           this.productStarRatingService.fetchData();
         }),
         catchError(response => {
@@ -104,6 +160,29 @@ export class ProductFeedbackService {
               ...response._embedded.feedbacks
             ]);
           }
+
+          // if(this.userFeedback() && this.userFeedback()!.feedbackStatus === FeedbackStatus.PENDING) {
+          //   // this.feedbacks().push(this.userFeedback()!);
+          //   if (this.feedbacks().length > 0) {
+          //     this.feedbacks().push(this.userFeedback()!);
+          //   } else {
+          //     this.feedbacks.set([this.userFeedback()!]);
+          //   }
+          //   // this.feedbacks.set(this.feedbacks().length > 0 ? [this.userFeedback(), ...this.feedbacks()] : [this.userFeedback()]);
+          // }
+
+//           const userFeedback = this.userFeedback();
+// if (userFeedback && userFeedback.feedbackStatus === FeedbackStatus.PENDING) {
+//   const currentFeedbacks = this.feedbacks(); // Get current feedbacks
+//   this.feedbacks.set(currentFeedbacks.length ? [userFeedback, ...currentFeedbacks] : [userFeedback]);
+// }
+
+          // console.log(userFeedback);
+          // console.log(this.feedbacks());
+        })
+      ).pipe(
+        tap(response => {
+          this.findProductFeedbackOfUser().subscribe();
         })
       );
   }
@@ -123,6 +202,21 @@ export class ProductFeedbackService {
       .pipe(
         tap(feedback => {
           this.userFeedback.set(feedback);
+          // const userFeedback = this.userFeedback();
+          // if (userFeedback && userFeedback.feedbackStatus === FeedbackStatus.PENDING) {
+          //   const currentFeedbacks = this.feedbacks(); // Get current feedbacks
+          //   this.feedbacks.set(currentFeedbacks.length > 0 ? [userFeedback, ...currentFeedbacks] : [userFeedback]);
+          // }
+
+          if(this.userFeedback() && this.userFeedback()!.feedbackStatus === FeedbackStatus.PENDING) {
+            // this.feedbacks().push(this.userFeedback()!);
+            if (this.feedbacks().length > 0) {
+              this.feedbacks().unshift(this.userFeedback()!);
+            } else {
+              this.feedbacks.set([this.userFeedback()!]);
+            }
+            // this.feedbacks.set(this.feedbacks().length > 0 ? [this.userFeedback(), ...this.feedbacks()] : [this.userFeedback()]);
+          }
         }),
         catchError(response => {
           if (
@@ -134,6 +228,8 @@ export class ProductFeedbackService {
           const feedback: Feedback = {
             content: '',
             rating: 0,
+            feedbackStatus: FeedbackStatus.PENDING,
+            moderatorName: '',
             productId
           };
           this.userFeedback.set(feedback);
@@ -171,5 +267,10 @@ export class ProductFeedbackService {
   getInitFeedbacksObservable(): Observable<FeedbackApiResponse> {
     this.page.set(0);
     return this.findProductFeedbacksByCriteria();
+  }
+
+  getInitAllFeedbacksObservable(): Observable<FeedbackApiResponse> {
+    this.page.set(0);
+    return this.findProductFeedbacks(); // Fetch all feedbacks
   }
 }

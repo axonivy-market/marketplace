@@ -6,6 +6,7 @@ import { ProductStarRatingService } from '../product-star-rating-panel/product-s
 import { ProductFeedbackService } from './product-feedback.service';
 import { provideHttpClient, withInterceptorsFromDi } from '@angular/common/http';
 import { Feedback } from '../../../../../shared/models/feedback.model';
+import { FeedbackStatus } from '../../../../../shared/enums/feedback-status.enum';
 
 describe('ProductFeedbackService', () => {
   let service: ProductFeedbackService;
@@ -45,7 +46,10 @@ describe('ProductFeedbackService', () => {
     const feedback: Feedback = {
       content: 'Great product!',
       rating: 5,
-      productId: '123'
+      productId: '123',
+      feedbackStatus: FeedbackStatus.APPROVED,
+      moderatorName: 'admin',
+      reviewDate: new Date()
     };
     authService.getToken.and.returnValue('mockToken');
 
@@ -62,7 +66,7 @@ describe('ProductFeedbackService', () => {
 
   it('should initialize feedbacks', () => {
     const mockResponse = {
-      _embedded: { feedbacks: [{ content: 'Great product!', rating: 5, productId: '123' }] },
+      _embedded: { feedbacks: [{ content: 'Great product!', rating: 5, productId: '123', feedbackStatus: FeedbackStatus.PENDING, moderatorName: 'admin', reviewDate: new Date() }] },
       page: { totalPages: 2, totalElements: 5 }
     };
 
@@ -75,15 +79,15 @@ describe('ProductFeedbackService', () => {
 
     expect(service.totalPages()).toBe(2);
     expect(service.totalElements()).toBe(5);
-    expect(service.feedbacks()).toEqual([{ content: 'Great product!', rating: 5, productId: '123' }]);
+    expect(service.feedbacks()).toEqual([{ content: 'Great product!', rating: 5, productId: '123', feedbackStatus: FeedbackStatus.PENDING, moderatorName: 'admin', reviewDate: new Date() }]);
   });
 
   it('should load more feedbacks', () => {
     const initialFeedback: Feedback[] = [
-      { content: 'Great product!', rating: 5, productId: '123' }
+      { content: 'Great product!', rating: 5, productId: '123', feedbackStatus: FeedbackStatus.APPROVED, moderatorName: 'admin', reviewDate: new Date() }
     ];
     const additionalFeedback: Feedback[] = [
-      { content: 'Another review', rating: 4, productId: '123' }
+      { content: 'Another review', rating: 4, productId: '123', feedbackStatus: FeedbackStatus.APPROVED, moderatorName: 'admin', reviewDate: new Date() }
     ];
 
     productDetailService.productId.and.returnValue('123');
@@ -100,7 +104,7 @@ describe('ProductFeedbackService', () => {
 
   it('should change sort and fetch feedbacks', () => {
     const mockResponse = {
-      _embedded: { feedbacks: [{ content: 'Sorting test', rating: 3, productId: '123' }] }
+      _embedded: { feedbacks: [{ content: 'Sorting test', rating: 3, productId: '123', feedbackStatus: FeedbackStatus.PENDING, moderatorName: 'admin', reviewDate: new Date() }] }
     };
 
     productDetailService.productId.and.returnValue('123');
@@ -110,6 +114,6 @@ describe('ProductFeedbackService', () => {
     expect(req.request.method).toBe('GET');
     req.flush(mockResponse);
 
-    expect(service.feedbacks()).toEqual([{ content: 'Sorting test', rating: 3, productId: '123' }]);
+    expect(service.feedbacks()).toEqual([{ content: 'Sorting test', rating: 3, productId: '123', feedbackStatus: FeedbackStatus.PENDING, moderatorName: 'admin', reviewDate: new Date() }]);
   });
 });

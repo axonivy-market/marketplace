@@ -13,6 +13,7 @@ export class StarRatingComponent {
   @Input() isReadOnly = false;
   @Input() starClass = '';
   @Input() ratingStarsClass = '';
+  @Input() isPending = false;
 
   @Output() rateChange = new EventEmitter<number>();
 

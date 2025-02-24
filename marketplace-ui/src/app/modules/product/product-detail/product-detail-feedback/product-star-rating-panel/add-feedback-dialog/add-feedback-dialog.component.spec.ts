@@ -9,6 +9,7 @@ import { AddFeedbackDialogComponent } from './add-feedback-dialog.component';
 import { Feedback } from '../../../../../../shared/models/feedback.model';
 import { signal } from '@angular/core';
 import { of } from 'rxjs';
+import { FeedbackStatus } from '../../../../../../shared/enums/feedback-status.enum';
 
 describe('AddFeedbackDialogComponent', () => {
   let component: AddFeedbackDialogComponent;
@@ -97,7 +98,10 @@ describe('AddFeedbackDialogComponent', () => {
     const mockFeedback: Feedback = {
       content: 'Test feedback content',
       rating: 4,
-      productId: 'mockProductId'
+      productId: 'mockProductId',
+      feedbackStatus: FeedbackStatus.APPROVED,
+      moderatorName: 'admin',
+      reviewDate: new Date()
     };
 
     productFeedbackServiceMock.userFeedback.set(mockFeedback);
@@ -111,15 +115,18 @@ describe('AddFeedbackDialogComponent', () => {
     const mockFeedback: Feedback = {
       content: 'Test feedback content',
       rating: 4,
-      productId: 'mockProductId'
+      productId: 'mockProductId',
+      feedbackStatus: FeedbackStatus.APPROVED,
+      moderatorName: 'admin',
+      reviewDate: new Date()
     };
-  
+
     component.feedback = mockFeedback;
-  
+
     productFeedbackServiceMock.submitFeedback.and.returnValue(of(mockFeedback));
-  
+
     component.onSubmitFeedback();
-  
+
     expect(productFeedbackServiceMock.submitFeedback).toHaveBeenCalledWith(mockFeedback);
     expect(activeModalMock.close).toHaveBeenCalled();
   });

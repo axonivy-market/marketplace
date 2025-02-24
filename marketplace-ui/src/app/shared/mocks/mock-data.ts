@@ -1,3 +1,4 @@
+import { FeedbackStatus } from '../enums/feedback-status.enum';
 import { FeedbackApiResponse } from '../models/apis/feedback-response.model';
 import { ProductReleaseApiResponse } from '../models/apis/product-release-response.model';
 import { ProductRelease } from '../models/apis/product-release.model';
@@ -363,7 +364,10 @@ export const MOCK_FEEDBACK_API_RESPONSE: FeedbackApiResponse = {
       {
         content: 'cool stuff',
         rating: 5,
-        productId: 'portal'
+        productId: 'portal',
+        feedbackStatus: FeedbackStatus.PENDING,
+        moderatorName: 'admin',
+        reviewDate: new Date()
       }
     ]
   },

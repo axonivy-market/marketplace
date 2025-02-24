@@ -2,6 +2,7 @@ package com.axonivy.market.controller;
 
 import com.axonivy.market.assembler.FeedbackModelAssembler;
 import com.axonivy.market.entity.Feedback;
+import com.axonivy.market.model.FeedbackApprovalModel;
 import com.axonivy.market.model.FeedbackModel;
 import com.axonivy.market.model.FeedbackModelRequest;
 import com.axonivy.market.model.ProductRating;
@@ -30,6 +31,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -105,6 +107,34 @@ public class FeedbackController {
       @RequestParam("productId") @Parameter(description = "Product id (from meta.json)", example = "portal",
           in = ParameterIn.QUERY) String productId) {
     Feedback feedback = feedbackService.findFeedbackByUserIdAndProductId(userId, productId);
+    return new ResponseEntity<>(feedbackModelAssembler.toModel(feedback), HttpStatus.OK);
+  }
+
+  @GetMapping(FEEDBACK_APPROVAL)
+  @Operation(summary = "Find all feedbacks",
+      description = "Get feedbacks on target product", parameters = {
+      @Parameter(name = "page", description = "Page number to retrieve", in = ParameterIn.QUERY, example = "0",
+          required = true),
+      @Parameter(name = "size", description = "Number of items per page", in = ParameterIn.QUERY, example = "20",
+          required = true),
+      @Parameter(name = "sort",
+          description = "Sorting criteria in the format: Sorting criteria(newest|oldest|highest|lowest)",
+          in = ParameterIn.QUERY, example = "[\"newest\"]", required = true)})
+  public ResponseEntity<PagedModel<FeedbackModel>> findAllFeedbacks(@ParameterObject Pageable pageable) {
+    Page<Feedback> results = feedbackService.findAllFeedbacks(pageable);
+    if (results.isEmpty()) {
+      return generateEmptyPagedModel();
+    }
+    var responseContent = new PageImpl<>(results.getContent(), pageable, results.getTotalElements());
+    var pageResources = pagedResourcesAssembler.toModel(responseContent, feedbackModelAssembler);
+    return new ResponseEntity<>(pageResources, HttpStatus.OK);
+  }
+
+  @PutMapping(FEEDBACK_APPROVAL)
+  @Operation(hidden = true)
+  public ResponseEntity<FeedbackModel> updateFeedbackWithNewStatus(
+      @RequestBody @Valid FeedbackApprovalModel feedbackApproval) {
+    Feedback feedback = feedbackService.updateFeedbackWithNewStatus(feedbackApproval);
     return new ResponseEntity<>(feedbackModelAssembler.toModel(feedback), HttpStatus.OK);
   }
 
