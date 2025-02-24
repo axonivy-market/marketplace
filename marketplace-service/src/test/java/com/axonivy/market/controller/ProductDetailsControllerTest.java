@@ -23,7 +23,9 @@ import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PagedResourcesAssembler;
 import org.springframework.hateoas.PagedModel;
 import org.springframework.http.HttpStatus;
@@ -315,5 +317,17 @@ class ProductDetailsControllerTest extends BaseSetup {
 
     assertEquals(HttpStatus.OK, result.getStatusCode());
     assertTrue(Objects.requireNonNull(result.getBody()).getContent().isEmpty());
+  }
+
+  @Test
+  void testSyncLatestReleasesForProducts() throws IOException {
+    List<String> productIdList = List.of("portal");
+    when(productService.getProductIdList()).thenReturn(productIdList);
+    when(productService.getGitHubReleaseModels(Mockito.anyString(), Mockito.any(Pageable.class))).thenReturn(Page.empty());
+
+    productDetailsController.syncLatestReleasesForProducts();
+
+    verify(productService, times(1)).getProductIdList();
+    verify(productService, times(1)).getGitHubReleaseModels("portal", PageRequest.of(0, 20, Sort.unsorted()));
   }
 }
