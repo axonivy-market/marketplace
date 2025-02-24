@@ -2,7 +2,6 @@ package com.axonivy.market.util;
 
 import com.axonivy.market.BaseSetup;
 import com.axonivy.market.github.util.GitHubUtils;
-import org.apache.commons.lang3.StringUtils;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -13,21 +12,6 @@ import static com.axonivy.market.constants.ProductJsonConstants.LOGO_FILE;
 
 @ExtendWith(MockitoExtension.class)
 class GitHubUtilsTest extends BaseSetup {
-
-  @Test
-  void testConvertArtifactIdToName() {
-    String result = GitHubUtils.convertArtifactIdToName(MOCK_ARTIFACT_ID);
-    Assertions.assertEquals("Bpmn Statistic", result);
-
-    result = GitHubUtils.convertArtifactIdToName(null);
-    Assertions.assertEquals(StringUtils.EMPTY, result);
-
-    result = GitHubUtils.convertArtifactIdToName(StringUtils.EMPTY);
-    Assertions.assertEquals(StringUtils.EMPTY, result);
-
-    result = GitHubUtils.convertArtifactIdToName(" ");
-    Assertions.assertEquals(StringUtils.EMPTY, result);
-  }
 
   @Test
   void testSortMetaJsonFirst() {

@@ -13,19 +13,15 @@ import org.kohsuke.github.GHCommit;
 import org.kohsuke.github.GHContent;
 import org.kohsuke.github.GHRelease;
 import org.kohsuke.github.PagedIterable;
+import org.springframework.hateoas.Link;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
-import java.util.stream.Collectors;
 
 import static com.axonivy.market.constants.MetaConstants.META_FILE;
-
-import org.springframework.hateoas.Link;
-
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 
@@ -63,15 +59,6 @@ public class GitHubUtils {
       }
     }
     return List.of();
-  }
-
-  public static String convertArtifactIdToName(String artifactId) {
-    if (StringUtils.isBlank(artifactId)) {
-      return StringUtils.EMPTY;
-    }
-    return Arrays.stream(artifactId.split(CommonConstants.DASH_SEPARATOR))
-        .map(part -> part.substring(0, 1).toUpperCase() + part.substring(1).toLowerCase())
-        .collect(Collectors.joining(CommonConstants.SPACE_SEPARATOR));
   }
 
   public static int sortMetaJsonFirst(String fileName1, String fileName2) {
