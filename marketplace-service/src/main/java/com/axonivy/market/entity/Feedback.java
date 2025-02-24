@@ -1,12 +1,13 @@
 package com.axonivy.market.entity;
 
+import jakarta.persistence.Entity;
+import jakarta.persistence.Id;
+import jakarta.persistence.Table;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.springframework.data.annotation.CreatedDate;
-import org.springframework.data.annotation.Id;
 import org.springframework.data.annotation.LastModifiedDate;
-import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.io.Serial;
 import java.io.Serializable;
@@ -17,7 +18,8 @@ import static com.axonivy.market.constants.EntityConstants.FEEDBACK;
 @Getter
 @Setter
 @NoArgsConstructor
-@Document(FEEDBACK)
+@Entity
+@Table(name = FEEDBACK)
 public class Feedback implements Serializable {
 
   @Serial

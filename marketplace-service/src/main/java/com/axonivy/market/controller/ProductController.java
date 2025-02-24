@@ -171,21 +171,21 @@ public class ProductController {
     return new ResponseEntity<>(emptyPagedModel, HttpStatus.OK);
   }
 
-  @Operation(hidden = true)
-  @PutMapping(SYNC_ZIP_ARTIFACTS)
-  public ResponseEntity<Message> syncProductArtifacts(@RequestHeader(value = AUTHORIZATION) String authorizationHeader,
-      @RequestParam(value = RESET_SYNC, required = false) Boolean resetSync) {
-    String token = AuthorizationUtils.getBearerToken(authorizationHeader);
-    gitHubService.validateUserInOrganizationAndTeam(token, GitHubConstants.AXONIVY_MARKET_ORGANIZATION_NAME,
-        GitHubConstants.AXONIVY_MARKET_TEAM_NAME);
-
-    var message = new Message();
-    int syncIds = mavenDependencyService.syncIARDependenciesForProducts(resetSync);
-    if (syncIds > 0) {
-      message.setMessageDetails("Synced %d artifact(s)".formatted(syncIds));
-      return ResponseEntity.status(HttpStatus.OK).body(message);
-    }
-    message.setMessageDetails("Nothing to sync");
-    return ResponseEntity.status(HttpStatus.NO_CONTENT).body(message);
-  }
+//  @Operation(hidden = true)
+//  @PutMapping(SYNC_ZIP_ARTIFACTS)
+//  public ResponseEntity<Message> syncProductArtifacts(@RequestHeader(value = AUTHORIZATION) String authorizationHeader,
+//      @RequestParam(value = RESET_SYNC, required = false) Boolean resetSync) {
+//    String token = AuthorizationUtils.getBearerToken(authorizationHeader);
+//    gitHubService.validateUserInOrganizationAndTeam(token, GitHubConstants.AXONIVY_MARKET_ORGANIZATION_NAME,
+//        GitHubConstants.AXONIVY_MARKET_TEAM_NAME);
+//
+//    var message = new Message();
+//    int syncIds = mavenDependencyService.syncIARDependenciesForProducts(resetSync);
+//    if (syncIds > 0) {
+//      message.setMessageDetails("Synced %d artifact(s)".formatted(syncIds));
+//      return ResponseEntity.status(HttpStatus.OK).body(message);
+//    }
+//    message.setMessageDetails("Nothing to sync");
+//    return ResponseEntity.status(HttpStatus.NO_CONTENT).body(message);
+//  }
 }

@@ -8,6 +8,7 @@ import com.axonivy.market.constants.MongoDBConstants;
 import com.axonivy.market.criteria.ProductSearchCriteria;
 import com.axonivy.market.entity.GitHubRepoMeta;
 import com.axonivy.market.entity.Image;
+import com.axonivy.market.entity.MavenArtifactVersion;
 import com.axonivy.market.entity.Product;
 import com.axonivy.market.entity.ProductCustomSort;
 import com.axonivy.market.entity.ProductJsonContent;
@@ -35,6 +36,7 @@ import com.axonivy.market.service.VersionService;
 import com.axonivy.market.util.MavenUtils;
 import com.axonivy.market.util.MetadataReaderUtils;
 import com.axonivy.market.util.VersionUtils;
+import jakarta.transaction.Transactional;
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.ObjectUtils;
@@ -473,11 +475,14 @@ public class ProductServiceImpl implements ProductService {
 
     List<Artifact> archivedArtifacts = product.getArtifacts().stream()
         .filter(artifact -> !CollectionUtils.isEmpty(artifact.getArchivedArtifacts()))
-        .flatMap(artifact -> artifact.getArchivedArtifacts().stream()
-            .map(archivedArtifact -> Artifact.builder()
-                .groupId(archivedArtifact.getGroupId())
-                .artifactId(archivedArtifact.getArtifactId())
-                .build()))
+        .flatMap(artifact ->
+            artifact.getArchivedArtifacts().stream()
+                .peek(archivedArtifact -> archivedArtifact.setArtifact(artifact))
+                .map(archivedArtifact -> Artifact.builder()
+                    .groupId(archivedArtifact.getGroupId())
+                    .artifactId(archivedArtifact.getArtifactId())
+                    .build())
+        )
         .toList();
 
     List<Artifact> mavenArtifacts = new ArrayList<>();
@@ -645,9 +650,9 @@ public class ProductServiceImpl implements ProductService {
     List<String> versions;
     String version = StringUtils.EMPTY;
 
-    var mavenArtifactVersion = mavenArtifactVersionRepo.findById(id);
-    if (mavenArtifactVersion.isPresent()) {
-      versions = MavenUtils.getAllExistingVersions(mavenArtifactVersion.get(), BooleanUtils.isTrue(isShowDevVersion),
+    MavenArtifactVersion mavenArtifactVersion = mavenArtifactVersionRepo.findById(id).orElse(null);
+    if (ObjectUtils.isNotEmpty(mavenArtifactVersion)) {
+      versions = MavenUtils.getAllExistingVersions(mavenArtifactVersion, BooleanUtils.isTrue(isShowDevVersion),
           StringUtils.EMPTY);
       version = CollectionUtils.firstElement(versions);
     }
@@ -678,6 +683,7 @@ public class ProductServiceImpl implements ProductService {
   }
 
   @Override
+  @Transactional
   public boolean syncOneProduct(String productId, String marketItemPath, Boolean overrideMarketItemPath) {
     try {
       log.info("Sync product {} is starting ...", productId);
@@ -702,7 +708,8 @@ public class ProductServiceImpl implements ProductService {
     return false;
   }
 
-  private Product renewProductById(String productId, String marketItemPath, Boolean overrideMarketItemPath) {
+  @Transactional
+  public Product renewProductById(String productId, String marketItemPath, Boolean overrideMarketItemPath) {
     Product product = new Product();
     productRepo.findById(productId).ifPresent(foundProduct -> {
           ProductFactory.transferComputedPersistedDataToProduct(foundProduct, product);

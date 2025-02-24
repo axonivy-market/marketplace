@@ -1,13 +1,14 @@
 package com.axonivy.market.repository;
 
 import com.axonivy.market.entity.Image;
+import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.mongodb.repository.MongoRepository;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
 
 @Repository
-public interface ImageRepository extends MongoRepository<Image, String> {
+public interface ImageRepository extends JpaRepository<Image, String> {
   List<Image> findByProductIdAndSha(String productId, String sha);
 
   List<Image> findByImageUrlEndsWithIgnoreCase(String fileName);
