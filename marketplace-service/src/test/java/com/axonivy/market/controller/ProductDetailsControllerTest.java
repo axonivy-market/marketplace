@@ -3,7 +3,6 @@ package com.axonivy.market.controller;
 import com.axonivy.market.BaseSetup;
 import com.axonivy.market.assembler.GithubReleaseModelAssembler;
 import com.axonivy.market.assembler.ProductDetailModelAssembler;
-import com.axonivy.market.constants.RequestMappingConstants;
 import com.axonivy.market.entity.Product;
 import com.axonivy.market.entity.ProductJsonContent;
 import com.axonivy.market.enums.Language;
@@ -63,7 +62,7 @@ class ProductDetailsControllerTest extends BaseSetup {
   @Test
   void testProductDetails() {
     Mockito.when(productService.fetchProductDetail(Mockito.anyString(), anyBoolean())).thenReturn(mockProduct());
-    Mockito.when(detailModelAssembler.toModel(mockProduct(), RequestMappingConstants.BY_ID)).thenReturn(
+    Mockito.when(detailModelAssembler.toModel(mockProduct())).thenReturn(
         createProductMockWithDetails());
     ResponseEntity<ProductDetailModel> mockExpectedResult = new ResponseEntity<>(createProductMockWithDetails(),
         HttpStatus.OK);
@@ -74,7 +73,7 @@ class ProductDetailsControllerTest extends BaseSetup {
     assertEquals(result, mockExpectedResult);
 
     verify(productService, times(1)).fetchProductDetail(DOCKER_CONNECTOR_ID, false);
-    verify(detailModelAssembler, times(1)).toModel(mockProduct(), RequestMappingConstants.BY_ID);
+    verify(detailModelAssembler, times(1)).toModel(mockProduct());
     assertTrue(result.hasBody());
     assertEquals(DOCKER_CONNECTOR_ID, Objects.requireNonNull(result.getBody()).getId());
   }
@@ -84,8 +83,7 @@ class ProductDetailsControllerTest extends BaseSetup {
   void testFindBestMatchProductDetailsByVersion() {
     Mockito.when(productService.fetchBestMatchProductDetail(Mockito.anyString(), Mockito.anyString())).thenReturn(
         mockProduct());
-    Mockito.when(detailModelAssembler.toModel(mockProduct(), MOCK_RELEASED_VERSION,
-        RequestMappingConstants.BEST_MATCH_BY_ID_AND_VERSION)).thenReturn(createProductMockWithDetails());
+    Mockito.when(detailModelAssembler.toModel(mockProduct())).thenReturn(createProductMockWithDetails());
     ResponseEntity<ProductDetailModel> mockExpectedResult = new ResponseEntity<>(createProductMockWithDetails(),
         HttpStatus.OK);
 
@@ -96,8 +94,7 @@ class ProductDetailsControllerTest extends BaseSetup {
     assertEquals(result, mockExpectedResult);
 
     verify(productService, times(1)).fetchBestMatchProductDetail(DOCKER_CONNECTOR_ID, MOCK_RELEASED_VERSION);
-    verify(detailModelAssembler, times(1)).toModel(mockProduct(), MOCK_RELEASED_VERSION,
-        RequestMappingConstants.BEST_MATCH_BY_ID_AND_VERSION);
+    verify(detailModelAssembler, times(1)).toModel(mockProduct());
   }
 
   @Test
@@ -105,8 +102,7 @@ class ProductDetailsControllerTest extends BaseSetup {
     Mockito.when(productService.fetchProductDetailByIdAndVersion(Mockito.anyString(), Mockito.anyString())).thenReturn(
         mockProduct());
     Mockito.when(
-        detailModelAssembler.toModel(mockProduct(), MOCK_RELEASED_VERSION,
-            RequestMappingConstants.BY_ID_AND_VERSION)).thenReturn(
+        detailModelAssembler.toModel(mockProduct())).thenReturn(
         createProductMockWithDetails());
     ResponseEntity<ProductDetailModel> mockExpectedResult = new ResponseEntity<>(createProductMockWithDetails(),
         HttpStatus.OK);
