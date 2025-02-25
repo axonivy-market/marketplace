@@ -2,6 +2,8 @@ package com.axonivy.market.controller;
 
 import com.axonivy.market.assembler.GithubReleaseModelAssembler;
 import com.axonivy.market.assembler.ProductDetailModelAssembler;
+import com.axonivy.market.constants.RequestMappingConstants;
+import com.axonivy.market.entity.Product;
 import com.axonivy.market.model.GithubReleaseModel;
 import com.axonivy.market.model.MavenArtifactVersionModel;
 import com.axonivy.market.model.ProductDetailModel;
@@ -20,6 +22,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PagedResourcesAssembler;
+import org.springframework.hateoas.Link;
 import org.springframework.hateoas.PagedModel;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -36,11 +39,14 @@ import org.springframework.web.servlet.mvc.method.annotation.ResponseBodyEmitter
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 
 import static com.axonivy.market.constants.MavenConstants.APP_ZIP_POSTFIX;
 import static com.axonivy.market.constants.RequestMappingConstants.*;
 import static com.axonivy.market.constants.RequestParamConstants.*;
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 
 @AllArgsConstructor
 @RestController
@@ -66,7 +72,9 @@ public class ProductDetailsController {
     if (productDetail == null) {
       return new ResponseEntity<>(HttpStatus.NOT_FOUND);
     }
-    return new ResponseEntity<>(detailModelAssembler.toModel(productDetail, version, BY_ID_AND_VERSION), HttpStatus.OK);
+    ProductDetailModel model = detailModelAssembler.toModel(productDetail);
+    addModelLinks(model, productDetail, version, BY_ID_AND_VERSION);
+    return new ResponseEntity<>(model, HttpStatus.OK);
   }
 
   @GetMapping(BEST_MATCH_BY_ID_AND_VERSION)
@@ -81,12 +89,12 @@ public class ProductDetailsController {
     if (productDetail == null) {
       return new ResponseEntity<>(HttpStatus.NOT_FOUND);
     }
-    return new ResponseEntity<>(detailModelAssembler.toModel(productDetail, version, BEST_MATCH_BY_ID_AND_VERSION),
-        HttpStatus.OK);
+    ProductDetailModel model = detailModelAssembler.toModel(productDetail);
+    addModelLinks(model, productDetail, version, BEST_MATCH_BY_ID_AND_VERSION);
+    return new ResponseEntity<>(model, HttpStatus.OK);
   }
 
-  @GetMapping(BY_ID)
-  @Operation(summary = "get product detail by ID", description = "Return product detail by product id (from meta.json)")
+  @GetMapping(BY_ID)  @Operation(summary = "get product detail by ID", description = "Return product detail by product id (from meta.json)")
   public ResponseEntity<ProductDetailModel> findProductDetails(
       @PathVariable(ID) @Parameter(description = "Product id (from meta.json)", example = "approval-decision-utils",
           in = ParameterIn.PATH) String id,
@@ -96,7 +104,9 @@ public class ProductDetailsController {
     if (productDetail == null) {
       return new ResponseEntity<>(HttpStatus.NOT_FOUND);
     }
-    return new ResponseEntity<>(detailModelAssembler.toModel(productDetail, BY_ID), HttpStatus.OK);
+    ProductDetailModel model = detailModelAssembler.toModel(productDetail);
+    addModelLinks(model, productDetail, StringUtils.EMPTY, BY_ID);
+    return new ResponseEntity<>(model, HttpStatus.OK);
   }
 
   @GetMapping(VERSIONS_BY_ID)
@@ -208,4 +218,28 @@ public class ProductDetailsController {
           return ResponseEntity.ok().headers(headers).contentType(MediaType.APPLICATION_OCTET_STREAM).body(emitter);
         });
   }
+
+  private void addModelLinks(ProductDetailModel model, Product product, String version, String path){
+    String productId = Optional.of(product).map(Product::getId).orElse(StringUtils.EMPTY);
+    if (path.equals(RequestMappingConstants.BEST_MATCH_BY_ID_AND_VERSION)) {
+      Link link = linkTo(
+              methodOn(ProductDetailsController.class).findProductJsonContent(productId,
+                      product.getBestMatchVersion())).withSelfRel();
+      model.setMetaProductJsonUrl(link.getHref());
+    }
+    model.add(getSelfLinkForProduct(productId, version, path));
+  }
+
+  public Link getSelfLinkForProduct(String productId, String version, String path){
+    ResponseEntity<ProductDetailModel> selfLinkWithVersion;
+    selfLinkWithVersion = switch (path) {
+      case RequestMappingConstants.BEST_MATCH_BY_ID_AND_VERSION ->
+              methodOn(ProductDetailsController.class).findBestMatchProductDetailsByVersion(productId, version);
+      case RequestMappingConstants.BY_ID_AND_VERSION ->
+              methodOn(ProductDetailsController.class).findProductDetailsByVersion(productId, version);
+      default -> methodOn(ProductDetailsController.class).findProductDetails(productId, false);
+    };
+    return linkTo(selfLinkWithVersion).withSelfRel();
+  }
+
 }

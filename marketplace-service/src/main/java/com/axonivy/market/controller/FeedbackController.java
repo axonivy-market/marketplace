@@ -42,6 +42,8 @@ import java.util.List;
 
 import static com.axonivy.market.constants.RequestMappingConstants.*;
 import static com.axonivy.market.constants.RequestParamConstants.*;
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 
 @RestController
 @RequestMapping(FEEDBACK)
@@ -93,7 +95,9 @@ public class FeedbackController {
       @PathVariable(ID) @Parameter(description = "Product id (from meta.json)", example = "portal",
           in = ParameterIn.PATH) String id) {
     Feedback feedback = feedbackService.findFeedback(id);
-    return ResponseEntity.ok(feedbackModelAssembler.toModel(feedback));
+    FeedbackModel model = feedbackModelAssembler.toModel(feedback);
+    addModelLinks(model, feedback);
+    return ResponseEntity.ok(model);
   }
 
   @GetMapping()
@@ -105,7 +109,9 @@ public class FeedbackController {
       @RequestParam("productId") @Parameter(description = "Product id (from meta.json)", example = "portal",
           in = ParameterIn.QUERY) String productId) {
     Feedback feedback = feedbackService.findFeedbackByUserIdAndProductId(userId, productId);
-    return new ResponseEntity<>(feedbackModelAssembler.toModel(feedback), HttpStatus.OK);
+    FeedbackModel model = feedbackModelAssembler.toModel(feedback);
+    addModelLinks(model, feedback);
+    return new ResponseEntity<>(model, HttpStatus.OK);
   }
 
   @PostMapping
@@ -149,5 +155,9 @@ public class FeedbackController {
     var emptyPagedModel = (PagedModel<FeedbackModel>) pagedResourcesAssembler.toEmptyModel(Page.empty(),
         FeedbackModel.class);
     return new ResponseEntity<>(emptyPagedModel, HttpStatus.OK);
+  }
+
+  private void addModelLinks(FeedbackModel model, Feedback feedback){
+    model.add(linkTo(methodOn(FeedbackController.class).findFeedback(feedback.getId())).withSelfRel());
   }
 }
