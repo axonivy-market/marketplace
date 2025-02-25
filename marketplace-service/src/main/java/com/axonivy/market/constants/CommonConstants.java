@@ -8,6 +8,7 @@ public class CommonConstants {
   public static final String REQUESTED_BY = "X-Requested-By";
   public static final String USER_AGENT = "user-agent";
   public static final String SLASH = "/";
+  public static final String UNDERSCORE = "_";
   public static final String DOT_SEPARATOR = ".";
   public static final String PLUS = "+";
   public static final String DASH_SEPARATOR = "-";

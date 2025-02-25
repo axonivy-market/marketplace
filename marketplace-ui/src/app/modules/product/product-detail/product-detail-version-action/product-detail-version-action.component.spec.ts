@@ -3,7 +3,7 @@ import { of } from 'rxjs';
 import { ProductDetailVersionActionComponent } from './product-detail-version-action.component';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { ProductService } from '../../product.service';
-import { provideHttpClient } from '@angular/common/http';
+import { HttpParams, provideHttpClient } from '@angular/common/http';
 import { ElementRef } from '@angular/core';
 import { ItemDropdown } from '../../../../shared/models/item-dropdown.model';
 import { CookieService } from 'ngx-cookie-service';
@@ -13,6 +13,8 @@ import { ROUTER } from '../../../../shared/constants/router.constant';
 import { MatomoTestingModule } from 'ngx-matomo-client/testing';
 import { ProductDetailActionType } from '../../../../shared/enums/product-detail-action-type';
 import { MATOMO_TRACKING_ENVIRONMENT } from '../../../../shared/constants/matomo.constant';
+import { environment } from '../../../../../environments/environment';
+import { API_URI } from '../../../../shared/constants/api.constant';
 
 class MockElementRef implements ElementRef {
   nativeElement = {
@@ -350,5 +352,63 @@ describe('ProductDetailVersionActionComponent', () => {
     fixture.detectChanges();
 
     expect(component.isDropDownDisplayed()).toBeFalse();
+  });
+
+  it('should set selected artifact properties correctly when onSelectArtifact is called', () => {
+    const mockArtifact1 = {
+      name: 'Example Artifact1',
+      downloadUrl: 'https://example.com/download',
+      isProductArtifact: true,
+      label: 'Example Artifact1'
+    } as ItemDropdown;
+    component.onSelectArtifact(mockArtifact1);
+    expect(component.selectedArtifactName).toBe(mockArtifact1.name);
+    expect(component.selectedArtifact).toBe(mockArtifact1.downloadUrl);
+    expect(component.selectedArtifactId).toBe(mockArtifact1.artifactId);
+  });
+
+  it('should call selectedVersion.set with the correct version', () => {
+    const testVersion = '1.2.3';
+    component.onSelectVersionInDesigner(testVersion);
+    expect(component.selectedVersion()).toBe(testVersion);
+  });
+
+  it('should call onUpdateInstallationCount and open artifact URL when conditions are met (ZIP file)', () => {
+    component.onUpdateInstallationCount = jasmine.createSpy(
+      'onUpdateInstallationCount'
+    );
+    spyOn(window, 'open');
+    component.downloadArtifact();
+    expect(component.onUpdateInstallationCount).toHaveBeenCalled();
+    expect(window.open).toHaveBeenCalledWith(
+      component.selectedArtifact,
+      '_blank'
+    );
+  });
+
+  it('should open constructed URL when isCheckedAppForEngine is true', () => {
+    component.isCheckedAppForEngine = true;
+    component.onUpdateInstallationCount = jasmine.createSpy(
+      'onUpdateInstallationCount'
+    );
+    spyOn(window, 'open');
+    const expectedVersion = '1.2.3';
+    component.selectedVersion.set(expectedVersion);
+    const HTTP = 'http';
+    let marketplaceServiceUrl = environment.apiUrl;
+    if (!marketplaceServiceUrl.startsWith(HTTP)) {
+      marketplaceServiceUrl = window.location.origin.concat(
+        marketplaceServiceUrl
+      );
+    }
+    const expectedParams = new HttpParams()
+      .set(ROUTER.VERSION, expectedVersion)
+      .set(ROUTER.ARTIFACT, component.selectedArtifactId ?? '')
+      .toString();
+    const expectedUrl = `${marketplaceServiceUrl}/${API_URI.PRODUCT_DETAILS}/${component.productId}/artifact/zip-file?${expectedParams}`;
+
+    component.downloadArtifact();
+
+    expect(window.open).toHaveBeenCalledWith(expectedUrl, '_blank');
   });
 });

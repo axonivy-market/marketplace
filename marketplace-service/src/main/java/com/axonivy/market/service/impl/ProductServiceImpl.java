@@ -48,6 +48,7 @@ import org.kohsuke.github.GHTag;
 import org.kohsuke.github.PagedIterable;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -800,6 +801,9 @@ public class ProductServiceImpl implements ProductService {
   @Override
   public Page<GithubReleaseModel> getGitHubReleaseModels(String productId, Pageable pageable) throws IOException {
     Product product = productRepo.findProductById(productId);
+    if (StringUtils.isBlank(product.getRepositoryName()) || StringUtils.isBlank(product.getSourceUrl())) {
+      return new PageImpl<>(new ArrayList<>(), pageable, 0);
+    }
     PagedIterable<GHRelease> ghReleasePagedIterable =  this.gitHubService.getRepository(product.getRepositoryName()).listReleases();
 
     return this.gitHubService.getGitHubReleaseModels(product, ghReleasePagedIterable, pageable);

@@ -1,6 +1,6 @@
 package com.axonivy.market.service;
 
-import com.axonivy.market.bo.Artifact;
+import com.axonivy.market.bo.DownloadOption;
 
 import java.io.File;
 import java.io.IOException;
@@ -14,9 +14,7 @@ public interface FileDownloadService {
 
   byte[] downloadFile(String url);
 
-  String downloadAndUnzipProductContentFile(String url, Artifact artifact) throws IOException;
-
   void deleteDirectory(Path path);
 
-  String downloadAndUnzipFile(String url, boolean isForce) throws IOException;
+  String downloadAndUnzipFile(String url, DownloadOption downloadOption) throws IOException;
 }
