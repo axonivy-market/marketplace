@@ -1,5 +1,6 @@
 package com.axonivy.market.repository.impl;
 
+import com.axonivy.market.bo.Artifact;
 import com.axonivy.market.constants.EntityConstants;
 import com.axonivy.market.constants.MongoDBConstants;
 import com.axonivy.market.criteria.ProductSearchCriteria;
@@ -139,9 +140,12 @@ public class CustomProductRepositoryImpl extends CustomRepository implements Cus
 
   @Override
   public List<Product> findAllProductsHaveDocument() {
-    var criteria = new Criteria();
-    criteria.andOperator(Criteria.where(MongoDBConstants.ARTIFACTS_DOC).is(true));
-    return mongoTemplate.find(new Query(criteria), Product.class);
+    CriteriaBuilder cb = em.getCriteriaBuilder();
+    CriteriaQuery<Product> cq = cb.createQuery(Product.class);
+    Root<Product> productRoot = cq.from(Product.class);
+    Join<Product, Artifact> artifact = productRoot.join("artifacts");
+    cq.select(productRoot).distinct(true).where(cb.isTrue(artifact.get("doc")));
+    return em.createQuery(cq).getResultList();
   }
 
   public Predicate buildCriteriaSearch(ProductSearchCriteria searchCriteria, CriteriaBuilder cb,
