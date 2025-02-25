@@ -21,6 +21,7 @@ import lombok.AllArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.hibernate.Hibernate;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
@@ -33,12 +34,14 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
+import java.util.function.Predicate;
 import java.util.stream.Stream;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
@@ -137,40 +140,45 @@ public class ProductContentServiceImpl implements ProductContentService {
   @Override
   public CompletableFuture<ResponseBodyEmitter> downloadZipArtifactFile(String productId, String artifactId,
       String version) {
-    return null;
-//    List<ProductDependency> existingProductDependencies = productDependencyRepository.findProductDependencies(
-//        productId, artifactId, version);
-//    List<MavenDependency> mavenDependencies = Optional.ofNullable(existingProductDependencies).orElse(List.of())
-//        .stream().map(ProductDependency::getDependenciesOfArtifact).map(Map::values)
-//        .flatMap(Collection::stream).flatMap(List::stream).toList();
-//    // Validate product
-//    if (ObjectUtils.isEmpty(mavenDependencies)) {
-//      return null;
-//    }
-//
-//    // Create a ZIP file
-//    var emitter = new ResponseBodyEmitter();
-//    try {
-//      var byteArrayOutputStream = new ByteArrayOutputStream();
-//      try (var zipOut = new ZipOutputStream(byteArrayOutputStream)) {
-//        for (var mavenArtifact : mavenDependencies) {
-//          zipArtifact(version, mavenArtifact, zipOut);
-//          // Zip dependencies
-//          for (var dependency : Optional.ofNullable(mavenArtifact.getDependencies()).orElse(List.of())) {
-//            zipArtifact(version, dependency, zipOut);
-//          }
-//        }
-//        zipConfigurationOptions(zipOut);
-//        zipOut.closeEntry();
-//      }
-//      emitter.send(byteArrayOutputStream.toByteArray());
-//      emitter.complete();
-//    } catch (IOException e) {
-//      log.error("Cannot create ZIP file {}", e.getMessage());
-//      emitter.completeWithError(e);
-//    }
-//
-//    return CompletableFuture.completedFuture(emitter);
+    Predicate<MavenDependency> filterByArtifactAndVersion =
+        dependency -> dependency.getArtifactId().equals(artifactId) &&
+            dependency.getVersion().equals(version);
+
+    ProductDependency productDependencies = productDependencyRepository.findById(productId).orElse(null);
+    List<MavenDependency> mavenDependencies = Optional.ofNullable(productDependencies)
+        .map(ProductDependency::getDependenciesOfArtifactTest)
+        .map(Collection::stream)
+        .map(dependencies -> dependencies.filter(filterByArtifactAndVersion).toList())
+        .orElse(new ArrayList<>());
+
+    // Validate product
+    if (ObjectUtils.isEmpty(mavenDependencies)) {
+      return null;
+    }
+
+    // Create a ZIP file
+    var emitter = new ResponseBodyEmitter();
+    try {
+      var byteArrayOutputStream = new ByteArrayOutputStream();
+      try (var zipOut = new ZipOutputStream(byteArrayOutputStream)) {
+        for (var mavenArtifact : mavenDependencies) {
+          zipArtifact(version, mavenArtifact, zipOut);
+          // Zip dependencies
+          for (var dependency : Optional.ofNullable(mavenArtifact.getDependencies()).orElse(List.of())) {
+            zipArtifact(version, dependency, zipOut);
+          }
+        }
+        zipConfigurationOptions(zipOut);
+        zipOut.closeEntry();
+      }
+      emitter.send(byteArrayOutputStream.toByteArray());
+      emitter.complete();
+    } catch (IOException e) {
+      log.error("Cannot create ZIP file {}", e.getMessage());
+      emitter.completeWithError(e);
+    }
+
+    return CompletableFuture.completedFuture(emitter);
   }
 
   private void zipConfigurationOptions(ZipOutputStream zipOut) throws IOException {

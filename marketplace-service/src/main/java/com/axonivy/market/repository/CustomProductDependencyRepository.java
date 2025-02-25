@@ -7,6 +7,4 @@ import java.util.List;
 
 public interface CustomProductDependencyRepository {
   List<ProductDependency> findProductDependencies(String productId, String artifactId, String version);
-
-  List<MavenArtifactVersion> findMavenArtifactVersions(String productId, String artifactId, String version);
 }

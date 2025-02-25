@@ -1,11 +1,9 @@
 package com.axonivy.market.repository.impl;
 
 import com.axonivy.market.constants.EntityConstants;
-import com.axonivy.market.entity.MavenArtifactVersion;
 import com.axonivy.market.entity.ProductDependency;
 import com.axonivy.market.repository.CustomProductDependencyRepository;
 import lombok.AllArgsConstructor;
-import org.apache.commons.lang3.StringUtils;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
@@ -14,7 +12,6 @@ import org.springframework.stereotype.Repository;
 import java.util.List;
 
 import static com.axonivy.market.constants.CommonConstants.DOT_SEPARATOR;
-import static com.axonivy.market.constants.CommonConstants.UNDERSCORE;
 import static com.axonivy.market.constants.MongoDBConstants.*;
 
 @AllArgsConstructor
@@ -33,17 +30,8 @@ public class CustomProductDependencyRepositoryImpl implements CustomProductDepen
     return mongoTemplate.find(query, ProductDependency.class, EntityConstants.PRODUCT_DEPENDENCY);
   }
 
-  @Override
-  public List<MavenArtifactVersion> findMavenArtifactVersions(String productId, String artifactId, String version) {
-    String artifactKey = PRODUCT_ARTIFACTS_BY_VERSION + DOT_SEPARATOR + StringUtils.replace(version, DOT_SEPARATOR,
-        UNDERSCORE);
-    var query = new Query();
-    query.addCriteria(Criteria.where(ID).is(productId).and(artifactKey + DOT_SEPARATOR + ARTIFACT_ID).is(artifactId));
-    includeFirstMatchFilter(query, artifactKey);
-    return mongoTemplate.find(query, MavenArtifactVersion.class, EntityConstants.MAVEN_ARTIFACT_VERSION);
-  }
-
   private void includeFirstMatchFilter(Query query, String field) {
     query.fields().include(field + FIRST_MATCH_REGEX);
   }
+
 }
