@@ -317,7 +317,7 @@ public class MavenUtils {
         artifact -> !artifact.getArtifactId().endsWith(MavenConstants.PRODUCT_ARTIFACT_POSTFIX)).toList();
   }
 
-  public static List<String> getAllExistingVersions(MavenArtifactVersion existingMavenArtifactVersion,
+  public static List<String> extractAllVersions(MavenArtifactVersion existingMavenArtifactVersion,
       boolean isShowDevVersion, String designerVersion) {
     Set<String> existingProductsArtifactByVersion = existingMavenArtifactVersion.getProductArtifactsByVersionTest()
         .stream()

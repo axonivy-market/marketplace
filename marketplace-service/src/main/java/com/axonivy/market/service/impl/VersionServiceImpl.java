@@ -1,6 +1,5 @@
 package com.axonivy.market.service.impl;
 
-import com.axonivy.market.bo.Artifact;
 import com.axonivy.market.comparator.LatestVersionComparator;
 import com.axonivy.market.constants.MavenConstants;
 import com.axonivy.market.controller.ProductDetailsController;
@@ -49,17 +48,16 @@ public class VersionServiceImpl implements VersionService {
 
   public List<MavenArtifactVersionModel> getArtifactsAndVersionToDisplay(String productId, Boolean isShowDevVersion,
       String designerVersion) {
-    MavenArtifactVersion existingMavenArtifactVersion = mavenArtifactVersionRepo.findById(productId)
+    MavenArtifactVersion mavenArtifactVersion = mavenArtifactVersionRepo.findById(productId)
         .orElse(MavenArtifactVersion.builder().productId(productId).build());
     List<MavenArtifactVersionModel> results = new ArrayList<>();
-    List<String> mavenVersions = MavenUtils.getAllExistingVersions(existingMavenArtifactVersion, isShowDevVersion,
-        designerVersion);
+    List<String> mavenVersions = MavenUtils.extractAllVersions(mavenArtifactVersion, isShowDevVersion, designerVersion);
     for (String mavenVersion : mavenVersions) {
       List<MavenArtifactModel> artifactsByVersion = new ArrayList<>();
       artifactsByVersion.addAll(
-          filterArtifactByVersion(existingMavenArtifactVersion.getProductArtifactsByVersionTest(), mavenVersion));
+          filterArtifactByVersion(mavenArtifactVersion.getProductArtifactsByVersionTest(), mavenVersion));
       artifactsByVersion.addAll(
-          filterArtifactByVersion(existingMavenArtifactVersion.getAdditionalArtifactsByVersionTest(), mavenVersion));
+          filterArtifactByVersion(mavenArtifactVersion.getAdditionalArtifactsByVersionTest(), mavenVersion));
 
       if (ObjectUtils.isNotEmpty(artifactsByVersion)) {
         artifactsByVersion = artifactsByVersion.stream().distinct().toList();
