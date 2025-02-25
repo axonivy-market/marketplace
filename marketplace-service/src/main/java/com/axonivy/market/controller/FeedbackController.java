@@ -1,7 +1,9 @@
 package com.axonivy.market.controller;
 
 import com.axonivy.market.assembler.FeedbackModelAssembler;
+import com.axonivy.market.constants.GitHubConstants;
 import com.axonivy.market.entity.Feedback;
+import com.axonivy.market.github.service.GitHubService;
 import com.axonivy.market.model.FeedbackApprovalModel;
 import com.axonivy.market.model.FeedbackModel;
 import com.axonivy.market.model.FeedbackModelRequest;
@@ -44,6 +46,7 @@ import java.util.List;
 
 import static com.axonivy.market.constants.RequestMappingConstants.*;
 import static com.axonivy.market.constants.RequestParamConstants.*;
+import static org.springframework.http.HttpHeaders.AUTHORIZATION;
 
 @RestController
 @RequestMapping(FEEDBACK)
@@ -52,14 +55,16 @@ public class FeedbackController {
 
   private final FeedbackService feedbackService;
   private final JwtService jwtService;
+  private final GitHubService gitHubService;
   private final FeedbackModelAssembler feedbackModelAssembler;
 
   private final PagedResourcesAssembler<Feedback> pagedResourcesAssembler;
 
-  public FeedbackController(FeedbackService feedbackService, JwtService jwtService,
+  public FeedbackController(FeedbackService feedbackService, JwtService jwtService, GitHubService gitHubService,
       FeedbackModelAssembler feedbackModelAssembler, PagedResourcesAssembler<Feedback> pagedResourcesAssembler) {
     this.feedbackService = feedbackService;
     this.jwtService = jwtService;
+    this.gitHubService = gitHubService;
     this.feedbackModelAssembler = feedbackModelAssembler;
     this.pagedResourcesAssembler = pagedResourcesAssembler;
   }
@@ -111,16 +116,13 @@ public class FeedbackController {
   }
 
   @GetMapping(FEEDBACK_APPROVAL)
-  @Operation(summary = "Find all feedbacks",
-      description = "Get feedbacks on target product", parameters = {
-      @Parameter(name = "page", description = "Page number to retrieve", in = ParameterIn.QUERY, example = "0",
-          required = true),
-      @Parameter(name = "size", description = "Number of items per page", in = ParameterIn.QUERY, example = "20",
-          required = true),
-      @Parameter(name = "sort",
-          description = "Sorting criteria in the format: Sorting criteria(newest|oldest|highest|lowest)",
-          in = ParameterIn.QUERY, example = "[\"newest\"]", required = true)})
-  public ResponseEntity<PagedModel<FeedbackModel>> findAllFeedbacks(@ParameterObject Pageable pageable) {
+  @Operation(hidden = true)
+  public ResponseEntity<PagedModel<FeedbackModel>> findAllFeedbacks(
+      @RequestHeader(value = AUTHORIZATION) String authorizationHeader, @ParameterObject Pageable pageable) {
+    String token = AuthorizationUtils.getBearerToken(authorizationHeader);
+    System.out.println(token);
+    gitHubService.validateUserInOrganizationAndTeam(token, GitHubConstants.AXONIVY_MARKET_ORGANIZATION_NAME,
+        GitHubConstants.AXONIVY_MARKET_TEAM_NAME);
     Page<Feedback> results = feedbackService.findAllFeedbacks(pageable);
     if (results.isEmpty()) {
       return generateEmptyPagedModel();

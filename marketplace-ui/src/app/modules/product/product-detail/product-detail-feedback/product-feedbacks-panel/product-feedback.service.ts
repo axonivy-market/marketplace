@@ -57,18 +57,21 @@ export class ProductFeedbackService {
   totalPages: WritableSignal<number> = signal(1);
   totalElements: WritableSignal<number> = signal(0);
 
-  findProductFeedbacks(
+
+  findProductFeedbacks1(
+    token: string,
     page: number = this.page(),
     sort: string = this.sort(),
-    size: number = SIZE
+    size: number = 20
   ): Observable<FeedbackApiResponse> {
+    const headers = new HttpHeaders().set('Authorization', `Bearer ${token}`);
     let requestParams = new HttpParams()
       .set('page', page.toString())
       .set('size', size.toString())
       .set('sort', sort);
     const requestURL = `${API_URI.FEEDBACK_APPROVAL}`;
     return this.http
-      .get<FeedbackApiResponse>(requestURL, { params: requestParams })
+      .get<FeedbackApiResponse>(requestURL, {headers, params: requestParams })
       .pipe(
         tap(response => {
           if (page === 0) {
@@ -84,6 +87,64 @@ export class ProductFeedbackService {
       );
   }
 
+  findProductFeedbacks(
+    token: string,
+    page: number = this.page(),
+    sort: string = this.sort(),
+    size: number = 20
+  ): Observable<FeedbackApiResponse> {
+    console.log('Token:', token);
+    console.log('URL:', `${API_URI.FEEDBACK_APPROVAL}`);
+    const headers = new HttpHeaders().set('Authorization', `Bearer ${token}`);
+    console.log('Headers:', headers.get('Authorization'));
+  
+    const requestParams = new HttpParams()
+      .set('page', page.toString())
+      .set('size', size.toString())
+      .set('sort', sort);
+  
+    return this.http.get<FeedbackApiResponse>(`${API_URI.FEEDBACK_APPROVAL}`, {
+      headers,
+      params: requestParams
+    }).pipe(
+      tap(response => {
+        console.log('Response:', response);
+        const feedbacks = response._embedded?.feedbacks || [];
+
+        const sortedFeedbacks = feedbacks.sort((a, b) =>
+          (b.reviewDate ? new Date(b.reviewDate).getTime() : 0) -
+          (a.reviewDate ? new Date(a.reviewDate).getTime() : 0)
+        );
+  
+        if (page === 0) {
+          this.allFeedbacks.set(sortedFeedbacks);
+        } else {
+          this.allFeedbacks.set([...this.allFeedbacks(), ...sortedFeedbacks]);
+        }
+  
+        this.pendingFeedbacks.set(
+          this.allFeedbacks()
+            .filter(f => f?.feedbackStatus === FeedbackStatus.PENDING)
+            .sort((a, b) =>
+              (b.updatedAt ? new Date(b.updatedAt).getTime() : 0) -
+              (a.updatedAt ? new Date(a.updatedAt).getTime() : 0)
+            )
+        );
+      }),
+      catchError(response => {
+        console.error('Error:', response.status, response.error);
+        if (
+          response.status === NOT_FOUND_ERROR_CODE &&
+          response.error.helpCode === USER_NOT_FOUND_ERROR_CODE.toString()
+        ) {
+          this.clearTokenCookie();
+        }
+        return throwError(() => response);
+      })
+    );
+  }
+  
+
   updateFeedbackStatus(feedbackId: string, isApproved: boolean, moderatorName: string): Observable<Feedback> {
     const requestBody = {
       feedbackId,
@@ -94,14 +155,10 @@ export class ProductFeedbackService {
 
     return this.http.put<Feedback>(requestURL, requestBody).pipe(
       tap(updatedFeedback => {
-        console.log("Feedback updated:", updatedFeedback);
-
-        // Update local lists
-        this.allFeedbacks.set(
+          this.allFeedbacks.set(
           this.allFeedbacks().map(fb => fb.id === updatedFeedback.id ? updatedFeedback : fb)
         );
 
-        // Recalculate pending & reviewed lists
         this.pendingFeedbacks.set(
           this.allFeedbacks().filter(fb => fb.feedbackStatus === FeedbackStatus.PENDING)
         );
@@ -122,7 +179,7 @@ export class ProductFeedbackService {
       .pipe(
         tap(() => {
           this.fetchFeedbacks();
-          // this.findProductFeedbackOfUser().subscribe();
+          this.findProductFeedbackOfUser().subscribe();
           this.productStarRatingService.fetchData();
         }),
         catchError(response => {
@@ -160,25 +217,6 @@ export class ProductFeedbackService {
               ...response._embedded.feedbacks
             ]);
           }
-
-          // if(this.userFeedback() && this.userFeedback()!.feedbackStatus === FeedbackStatus.PENDING) {
-          //   // this.feedbacks().push(this.userFeedback()!);
-          //   if (this.feedbacks().length > 0) {
-          //     this.feedbacks().push(this.userFeedback()!);
-          //   } else {
-          //     this.feedbacks.set([this.userFeedback()!]);
-          //   }
-          //   // this.feedbacks.set(this.feedbacks().length > 0 ? [this.userFeedback(), ...this.feedbacks()] : [this.userFeedback()]);
-          // }
-
-//           const userFeedback = this.userFeedback();
-// if (userFeedback && userFeedback.feedbackStatus === FeedbackStatus.PENDING) {
-//   const currentFeedbacks = this.feedbacks(); // Get current feedbacks
-//   this.feedbacks.set(currentFeedbacks.length ? [userFeedback, ...currentFeedbacks] : [userFeedback]);
-// }
-
-          // console.log(userFeedback);
-          // console.log(this.feedbacks());
         })
       ).pipe(
         tap(response => {
@@ -202,20 +240,12 @@ export class ProductFeedbackService {
       .pipe(
         tap(feedback => {
           this.userFeedback.set(feedback);
-          // const userFeedback = this.userFeedback();
-          // if (userFeedback && userFeedback.feedbackStatus === FeedbackStatus.PENDING) {
-          //   const currentFeedbacks = this.feedbacks(); // Get current feedbacks
-          //   this.feedbacks.set(currentFeedbacks.length > 0 ? [userFeedback, ...currentFeedbacks] : [userFeedback]);
-          // }
-
           if(this.userFeedback() && this.userFeedback()!.feedbackStatus === FeedbackStatus.PENDING) {
-            // this.feedbacks().push(this.userFeedback()!);
             if (this.feedbacks().length > 0) {
               this.feedbacks().unshift(this.userFeedback()!);
             } else {
               this.feedbacks.set([this.userFeedback()!]);
             }
-            // this.feedbacks.set(this.feedbacks().length > 0 ? [this.userFeedback(), ...this.feedbacks()] : [this.userFeedback()]);
           }
         }),
         catchError(response => {
@@ -267,10 +297,5 @@ export class ProductFeedbackService {
   getInitFeedbacksObservable(): Observable<FeedbackApiResponse> {
     this.page.set(0);
     return this.findProductFeedbacksByCriteria();
-  }
-
-  getInitAllFeedbacksObservable(): Observable<FeedbackApiResponse> {
-    this.page.set(0);
-    return this.findProductFeedbacks();
   }
 }

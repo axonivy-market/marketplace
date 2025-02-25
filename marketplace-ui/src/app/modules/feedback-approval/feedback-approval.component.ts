@@ -8,7 +8,7 @@ import { Feedback } from "../../shared/models/feedback.model";
 import { ProductFeedbackService } from "../product/product-detail/product-detail-feedback/product-feedbacks-panel/product-feedback.service";
 import { LanguageService } from "../../core/services/language/language.service";
 import { ThemeService } from "../../core/services/theme/theme.service";
-import { FEEDBACK_APPROVAL_TABS } from "../../shared/constants/common.constant";
+import { FEEDBACK_APPROVAL_TABS, SECURITY_MONITOR_SESSION_KEYS } from "../../shared/constants/common.constant";
 import { FeedbackStatus } from "../../shared/enums/feedback-status.enum";
 
 @Component({
@@ -31,6 +31,8 @@ export class FeedbackApprovalComponent {
   themeService = inject(ThemeService);
   translateService = inject(TranslateService);
 
+  token = '';
+  isAuthenticated = false;
   detailTabs = FEEDBACK_APPROVAL_TABS;
   activeTab = 'review';
 
@@ -40,35 +42,49 @@ export class FeedbackApprovalComponent {
   pendingFeedbacks: Signal<Feedback[] | undefined> =
     this.productFeedbackService.pendingFeedbacks;
 
-  ngOnInit(): void {
-    console.log("Initializing FeedbackReviewComponent...");
+    ngOnInit(): void {
+      this.loadSessionData(); // Check session first
+      // if (this.token) {
+      //   // this.appModalService.openFeedbacksDialog();
+      //   this.fetchFeedbacks();
+      // } else {
+      //   this.authService.redirectToGitHub('feedback-approval');
+      // }
+      if (!this.token) {
+        console.log("User not authenticated, redirecting to GitHub login...");
+        this.authService.redirectToGitHub('feedback-approval');
+      }
 
-    if (!this.authService.getToken()) {
-      console.log("User not authenticated, redirecting to GitHub login...");
-      this.authService.redirectToGitHub('feedback-review');
-      // return;
+        this.fetchFeedbacks(); // Fetch only if token exists
+    
     }
-
-      // Load feedbacks initially
-      this.productFeedbackService.findProductFeedbacks().subscribe(response => {
-        console.log("Feedbacks loaded:", response._embedded.feedbacks);
-
-        // Set all feedbacks
-        this.productFeedbackService.allFeedbacks.set(response._embedded.feedbacks.sort((a, b) =>
-          (b.reviewDate ? new Date(b.reviewDate).getTime() : 0) -
-          (a.reviewDate ? new Date(a.reviewDate).getTime() : 0)
-        ));
-
-        // Filter and set pending feedbacks
-        this.productFeedbackService.pendingFeedbacks.set(
-          response._embedded.feedbacks.filter(fb => fb.feedbackStatus === FeedbackStatus.PENDING).sort((a, b) =>
-            (b.updatedAt ? new Date(b.updatedAt).getTime() : 0) -
-            (a.updatedAt ? new Date(a.updatedAt).getTime() : 0)
-          )
-        );
+  
+    private loadSessionData(): void {
+      this.token = sessionStorage.getItem(SECURITY_MONITOR_SESSION_KEYS.TOKEN) ?? '';
+      this.isAuthenticated = !!this.token;
+    }
+  
+    private fetchFeedbacks(): void {
+      console.log("Fetching feedbacks with token:", this.token);
+      
+      this.productFeedbackService.findProductFeedbacks(this.token).subscribe({
+        next: (response) => {
+          console.log("Feedbacks loaded:", response._embedded.feedbacks);
+          this.isAuthenticated = true;
+          sessionStorage.setItem(SECURITY_MONITOR_SESSION_KEYS.TOKEN, this.token); // Persist token
+        },
+        error: (err) => {
+          this.clearSessionData();
+        }
       });
-
-  }
+    }
+    
+  
+    private clearSessionData(): void {
+      sessionStorage.removeItem(SECURITY_MONITOR_SESSION_KEYS.TOKEN);
+      this.token = '';
+      this.isAuthenticated = false;
+    }
 
   onClickingApproveButton(feedback: Feedback): void {
     this.productFeedbackService.updateFeedbackStatus(feedback.id!, true, this.authService.getDisplayName()!).subscribe(response => {

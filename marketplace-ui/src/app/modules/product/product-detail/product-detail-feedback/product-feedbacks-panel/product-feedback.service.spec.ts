@@ -117,4 +117,55 @@ describe('ProductFeedbackService', () => {
 
     expect(service.feedbacks()).toEqual([{ content: 'Sorting test', rating: 3, productId: '123', feedbackStatus: FeedbackStatus.PENDING, moderatorName: 'admin', reviewDate: mockDate }]);
   });
+
+  it('should fetch feedbacks with token', () => {
+    const mockDate = new Date();
+    const mockResponse = {
+      _embedded: { feedbacks: [{ content: 'Sorting test', rating: 3, productId: '123', feedbackStatus: FeedbackStatus.PENDING, moderatorName: 'admin', reviewDate: mockDate }] }
+    };
+    const token = 'mockToken';
+
+    service.findProductFeedbacks(token).subscribe(response => {
+      expect(service.allFeedbacks().length).toBe(1);
+      expect(service.pendingFeedbacks().length).toBe(1);
+    });
+
+    const req = httpMock.expectOne(r => r.url.includes('feedback/approval'));
+    expect(req.request.method).toBe('GET');
+    expect(req.request.headers.get('Authorization')).toBe(`Bearer ${token}`);
+    req.flush(mockResponse);
+  });
+
+  it('should update feedback status and reflect in signals', () => {
+    const initialFeedback: Feedback = { 
+      id: '1',
+      content: 'Test',
+      rating: 0,
+      feedbackStatus: FeedbackStatus.PENDING,
+      productId: '',
+      moderatorName: ''
+    };
+
+    const initialArray: Feedback[] = [initialFeedback];
+    service.allFeedbacks.set(initialArray);
+    
+    const updatedFeedback: Feedback = { 
+      id: '1',
+      content: 'Test',
+      rating: 0,
+      feedbackStatus: FeedbackStatus.APPROVED,
+      productId: '',
+      moderatorName: 'admin'
+    };
+    
+    service.updateFeedbackStatus('1', true, 'admin').subscribe(response => {
+      expect(response).toEqual(updatedFeedback);
+      expect(service.allFeedbacks()[0].feedbackStatus).toBe(FeedbackStatus.APPROVED);
+      expect(service.pendingFeedbacks().length).toBe(0);
+    });
+  
+    const req = httpMock.expectOne('api/feedback/approval');
+    expect(req.request.method).toBe('PUT');
+    req.flush(updatedFeedback);
+  });
 });

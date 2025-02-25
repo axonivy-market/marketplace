@@ -1,5 +1,5 @@
 <div class="container">
-  @if (this.authService.getToken()) {
+  @if (isAuthenticated) {
   <div class="row col-md-12">
     <h1 class="text-primary approval" [lang]="languageService.selectedLanguage()">
       {{ translateService.get('common.approval.approvalTitle') | async }}</h1>

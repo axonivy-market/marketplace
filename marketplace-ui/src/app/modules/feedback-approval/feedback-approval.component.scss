@@ -1,12 +1,6 @@
 @use 'sass:math';
 
 // Variables for commonly used values
-$font-size: 12.91px;
-$icon-size: 18.56px;
-$gap-large: 13px;
-$gap-small: 10px;
-$height-small: 19px;
-$height-large: 40px;
 $aspect-ratio: math.div(1, 1);
 
 .approval {
@@ -14,10 +8,6 @@ $aspect-ratio: math.div(1, 1);
   margin-top: 7.2rem;
   margin-bottom: 3.2rem;
   cursor: default;
-
-  @media screen and (max-width: 991px) {
-    margin-top: 4.1rem;
-  }
 }
 
 .introduction-container {
