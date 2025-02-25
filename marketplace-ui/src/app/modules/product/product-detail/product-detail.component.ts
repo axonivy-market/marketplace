@@ -515,7 +515,7 @@ export class ProductDetailComponent {
   }
 
   renderGithubAlert(value: string): SafeHtml {
-    let result = this.markdownService.parseMarkdown(value);
+    const result = this.markdownService.parseMarkdown(value);
     return this.sanitizer.bypassSecurityTrustHtml(result);
   }
 
