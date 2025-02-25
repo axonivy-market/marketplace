@@ -26,7 +26,7 @@ describe('AddFeedbackDialogComponent', () => {
     const productFeedbackServiceSpy = jasmine.createSpyObj(
       'ProductFeedbackService',
       ['submitFeedback'],
-      { userFeedback: signal({}) }
+      { userFeedback: signal({}), feedbacks: signal([]) }
     );
     const productDetailServiceSpy = jasmine.createSpyObj(
       'ProductDetailService',
@@ -95,13 +95,14 @@ describe('AddFeedbackDialogComponent', () => {
   });
 
   it('should initialize feedback object on ngOnInit', () => {
+    const mockDate = new Date('2025-02-25T17:51:56+07:00');
     const mockFeedback: Feedback = {
       content: 'Test feedback content',
       rating: 4,
       productId: 'mockProductId',
       feedbackStatus: FeedbackStatus.APPROVED,
       moderatorName: 'admin',
-      reviewDate: new Date()
+      reviewDate: mockDate
     };
 
     productFeedbackServiceMock.userFeedback.set(mockFeedback);

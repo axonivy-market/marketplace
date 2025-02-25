@@ -1,7 +1,7 @@
 import { CommonModule } from "@angular/common";
 import { FormsModule } from "@angular/forms";
 import { TranslateModule, TranslateService } from "@ngx-translate/core";
-import { Component, computed, inject, Signal, ViewEncapsulation } from "@angular/core";
+import { Component, inject, Signal, ViewEncapsulation } from "@angular/core";
 import { AuthService } from "../../auth/auth.service";
 import { AppModalService } from "../../shared/services/app-modal.service";
 import { Feedback } from "../../shared/models/feedback.model";
@@ -34,7 +34,6 @@ export class FeedbackApprovalComponent {
   detailTabs = FEEDBACK_APPROVAL_TABS;
   activeTab = 'review';
 
-  // showToggle = computed(() => this.scrollHeight() > this.clientHeight() || this.feedback.isExpanded);
   feedbacks: Signal<Feedback[] | undefined> =
     this.productFeedbackService.allFeedbacks;
 
@@ -72,15 +71,12 @@ export class FeedbackApprovalComponent {
   }
 
   onClickingApproveButton(feedback: Feedback): void {
-    console.log(feedback);
     this.productFeedbackService.updateFeedbackStatus(feedback.id!, true, this.authService.getDisplayName()!).subscribe(response => {
-      console.log("Feedback approved:", response);
     });
   }
 
   onClickingRejectButton(feedback: Feedback): void {
     this.productFeedbackService.updateFeedbackStatus(feedback.id!, false, this.authService.getDisplayName()!).subscribe(response => {
-      console.log("Feedback rejected:", response);
     });
   }
 

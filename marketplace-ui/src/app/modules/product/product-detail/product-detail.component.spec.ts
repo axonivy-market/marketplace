@@ -44,6 +44,7 @@ import { MultilingualismPipe } from '../../../shared/pipes/multilingualism.pipe'
 import { HistoryService } from '../../../core/services/history/history.service';
 import { SortOption } from '../../../shared/enums/sort-option.enum';
 import { API_URI } from '../../../shared/constants/api.constant';
+import { signal } from '@angular/core';
 
 const products = MOCK_PRODUCTS._embedded.products;
 declare const viewport: Viewport;
@@ -91,7 +92,11 @@ describe('ProductDetailComponent', () => {
         'handleFeedbackApiResponse',
         'findProductFeedbackOfUser',
         'totalElements'
-      ]
+      ],
+      {
+        feedbacks: signal([]),
+        totalElements: signal(0)
+      }
     );
 
     mockRouter = jasmine.createSpyObj('Router', ['navigate']);

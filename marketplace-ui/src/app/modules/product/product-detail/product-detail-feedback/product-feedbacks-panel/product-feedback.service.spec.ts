@@ -103,8 +103,9 @@ describe('ProductFeedbackService', () => {
   });
 
   it('should change sort and fetch feedbacks', () => {
+    const mockDate = new Date();
     const mockResponse = {
-      _embedded: { feedbacks: [{ content: 'Sorting test', rating: 3, productId: '123', feedbackStatus: FeedbackStatus.PENDING, moderatorName: 'admin', reviewDate: new Date() }] }
+      _embedded: { feedbacks: [{ content: 'Sorting test', rating: 3, productId: '123', feedbackStatus: FeedbackStatus.PENDING, moderatorName: 'admin', reviewDate: mockDate }] }
     };
 
     productDetailService.productId.and.returnValue('123');
@@ -114,6 +115,6 @@ describe('ProductFeedbackService', () => {
     expect(req.request.method).toBe('GET');
     req.flush(mockResponse);
 
-    expect(service.feedbacks()).toEqual([{ content: 'Sorting test', rating: 3, productId: '123', feedbackStatus: FeedbackStatus.PENDING, moderatorName: 'admin', reviewDate: new Date() }]);
+    expect(service.feedbacks()).toEqual([{ content: 'Sorting test', rating: 3, productId: '123', feedbackStatus: FeedbackStatus.PENDING, moderatorName: 'admin', reviewDate: mockDate }]);
   });
 });

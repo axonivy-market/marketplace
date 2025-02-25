@@ -64,6 +64,7 @@ import { ProductReleaseSafeHtml } from '../../../shared/models/product-release-s
 import { HistoryService } from '../../../core/services/history/history.service';
 import { TypeOption } from '../../../shared/enums/type-option.enum';
 import { SortOption } from '../../../shared/enums/sort-option.enum';
+import { Feedback } from '../../../shared/models/feedback.model';
 
 export interface DetailTab {
   activeClass: string;
@@ -145,7 +146,8 @@ export class ProductDetailComponent {
   md: MarkdownIt = new MarkdownIt();
   productReleaseSafeHtmls: ProductReleaseSafeHtml[] = [];
   loadedReadmeContent: { [key: string]: SafeHtml } = {};
-
+  feedbacksList: WritableSignal<Feedback[]> = signal([] as Feedback[]);
+  // feedbacks: WritableSignal<Feedback[]> = signal([]);
   @HostListener('window:popstate', ['$event'])
   onPopState() {
     this.activeTab = window.location.hash.split('#tab-')[1];
@@ -196,12 +198,13 @@ export class ProductDetailComponent {
         }
         this.handleProductDetail(res.productDetail);
         this.getReadmeContent();
-        // console.log(res.userFeedback);
-        // console.log(res.productFeedBack);
         this.productFeedbackService.handleFeedbackApiResponse(res.productFeedBack);
-
-        console.log('User Feedback:', this.productFeedbackService.userFeedback());
-        console.log('Final Feedbacks:', this.productFeedbackService.feedbacks());
+        console.log(this.productFeedbackService.feedbacks().length);
+        // this.feedbacksList = [...(this.productFeedbackService.feedbacks)];
+        this.feedbacksList = this.productFeedbackService.feedbacks;
+        // console.log(this.feedbacksList);
+        console.log(this.productFeedbackService.totalElements());
+        
         this.updateDropdownSelection();
         this.checkMediaSize();
         this.route.queryParams.subscribe(params => {

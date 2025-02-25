@@ -44,7 +44,7 @@ export class ProductFeedbackService {
   page: WritableSignal<number> = signal(0);
 
   userFeedback: WritableSignal<Feedback | null> = signal(null);
-  feedbacks: WritableSignal<Feedback[]> = signal([]);
+  feedbacks: WritableSignal<Feedback[]> = signal([] );
   allFeedbacks: WritableSignal<Feedback[]> = signal([]);
   pendingFeedbacks: WritableSignal<Feedback[]> = signal([]);
   areAllFeedbacksLoaded = computed(() => {
@@ -271,6 +271,6 @@ export class ProductFeedbackService {
 
   getInitAllFeedbacksObservable(): Observable<FeedbackApiResponse> {
     this.page.set(0);
-    return this.findProductFeedbacks(); // Fetch all feedbacks
+    return this.findProductFeedbacks();
   }
 }
