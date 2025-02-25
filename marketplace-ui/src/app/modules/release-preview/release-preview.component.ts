@@ -19,11 +19,9 @@ import { ItemDropdown } from '../../shared/models/item-dropdown.model';
 import { CommonDropdownComponent } from '../../shared/components/common-dropdown/common-dropdown.component';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { SafeHtml, Title, DomSanitizer } from '@angular/platform-browser';
-import MarkdownIt from 'markdown-it';
-import MarkdownItGitHubAlerts from 'markdown-it-github-alerts';
-import { full } from 'markdown-it-emoji';
 import { DisplayValue } from '../../shared/models/display-value.model';
 import { MultilingualismPipe } from '../../shared/pipes/multilingualism.pipe';
+import { MarkdownService } from '../../shared/services/markdown.service';
 
 const DEFAULT_ACTIVE_TAB = 'description';
 const MAX_FILE_SIZE_MB = 20;
@@ -63,6 +61,7 @@ export class ReleasePreviewComponent {
   private readonly sanitizer = inject(DomSanitizer);
 
   private readonly releasePreviewService = inject(ReleasePreviewService);
+  private readonly markdownService = inject(MarkdownService);
 
   ngOnInit(): void {
     // Set the title initially
@@ -157,10 +156,7 @@ export class ReleasePreviewComponent {
   }
 
   renderReadmeContent(value: string): SafeHtml {
-    const md = MarkdownIt();
-    md.use(full);
-    md.use(MarkdownItGitHubAlerts);
-    const result = md.render(value);
+    const result = this.markdownService.parseMarkdown(value);
     return this.sanitizer.bypassSecurityTrustHtml(result);
   }
 }
