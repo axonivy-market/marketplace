@@ -199,12 +199,8 @@ export class ProductDetailComponent {
         this.handleProductDetail(res.productDetail);
         this.getReadmeContent();
         this.productFeedbackService.handleFeedbackApiResponse(res.productFeedBack);
-        console.log(this.productFeedbackService.feedbacks().length);
-        // this.feedbacksList = [...(this.productFeedbackService.feedbacks)];
         this.feedbacksList = this.productFeedbackService.feedbacks;
-        // console.log(this.feedbacksList);
-        console.log(this.productFeedbackService.totalElements());
-        
+
         this.updateDropdownSelection();
         this.checkMediaSize();
         this.route.queryParams.subscribe(params => {

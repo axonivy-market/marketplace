@@ -93,35 +93,30 @@ export class ProductFeedbackService {
     sort: string = this.sort(),
     size: number = 20
   ): Observable<FeedbackApiResponse> {
-    console.log('Token:', token);
-    console.log('URL:', `${API_URI.FEEDBACK_APPROVAL}`);
     const headers = new HttpHeaders().set('Authorization', `Bearer ${token}`);
-    console.log('Headers:', headers.get('Authorization'));
-  
     const requestParams = new HttpParams()
       .set('page', page.toString())
       .set('size', size.toString())
       .set('sort', sort);
-  
+
     return this.http.get<FeedbackApiResponse>(`${API_URI.FEEDBACK_APPROVAL}`, {
       headers,
       params: requestParams
     }).pipe(
       tap(response => {
-        console.log('Response:', response);
         const feedbacks = response._embedded?.feedbacks || [];
 
         const sortedFeedbacks = feedbacks.sort((a, b) =>
           (b.reviewDate ? new Date(b.reviewDate).getTime() : 0) -
           (a.reviewDate ? new Date(a.reviewDate).getTime() : 0)
         );
-  
+
         if (page === 0) {
           this.allFeedbacks.set(sortedFeedbacks);
         } else {
           this.allFeedbacks.set([...this.allFeedbacks(), ...sortedFeedbacks]);
         }
-  
+
         this.pendingFeedbacks.set(
           this.allFeedbacks()
             .filter(f => f?.feedbackStatus === FeedbackStatus.PENDING)
@@ -132,7 +127,6 @@ export class ProductFeedbackService {
         );
       }),
       catchError(response => {
-        console.error('Error:', response.status, response.error);
         if (
           response.status === NOT_FOUND_ERROR_CODE &&
           response.error.helpCode === USER_NOT_FOUND_ERROR_CODE.toString()
@@ -143,7 +137,7 @@ export class ProductFeedbackService {
       })
     );
   }
-  
+
 
   updateFeedbackStatus(feedbackId: string, isApproved: boolean, moderatorName: string): Observable<Feedback> {
     const requestBody = {

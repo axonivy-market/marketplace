@@ -121,8 +121,6 @@ export class AuthService {
     if (token) {
       const decoded = this.decodeToken(token);
       if (decoded) {
-        console.log("object");
-        console.log(decoded);
         return decoded.sub;
       }
       return null;
