@@ -2,6 +2,7 @@ package com.axonivy.market.entity;
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
+import jakarta.persistence.PrePersist;
 import jakarta.persistence.Table;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -12,6 +13,7 @@ import org.springframework.data.mongodb.core.index.Indexed;
 
 import java.io.Serial;
 import java.io.Serializable;
+import java.util.UUID;
 
 import static com.axonivy.market.constants.EntityConstants.USER;
 
@@ -46,5 +48,12 @@ public class User implements Serializable {
       return false;
     }
     return new EqualsBuilder().append(id, ((User) obj).getId()).isEquals();
+  }
+
+  @PrePersist
+  private void ensureId() {
+    if (this.id == null) {
+      this.id = UUID.randomUUID().toString();
+    }
   }
 }

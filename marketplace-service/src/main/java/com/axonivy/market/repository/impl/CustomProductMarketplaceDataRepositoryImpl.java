@@ -1,10 +1,8 @@
 package com.axonivy.market.repository.impl;
 
-import com.axonivy.market.constants.MongoDBConstants;
 import com.axonivy.market.entity.ProductDesignerInstallation;
 import com.axonivy.market.entity.ProductMarketplaceData;
 import com.axonivy.market.repository.CustomProductMarketplaceDataRepository;
-import com.axonivy.market.repository.CustomRepository;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.Query;
 import jakarta.persistence.criteria.CriteriaBuilder;
@@ -15,17 +13,13 @@ import jakarta.transaction.Transactional;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import org.apache.commons.lang3.ObjectUtils;
-import org.springframework.data.mongodb.core.FindAndModifyOptions;
 import org.springframework.data.mongodb.core.MongoTemplate;
-import org.springframework.data.mongodb.core.query.Criteria;
-import org.springframework.data.mongodb.core.query.Update;
 
 import java.util.List;
-import java.util.Optional;
 
 @Builder
 @AllArgsConstructor
-public class CustomProductMarketplaceDataRepositoryImpl extends CustomRepository implements CustomProductMarketplaceDataRepository {
+public class CustomProductMarketplaceDataRepositoryImpl implements CustomProductMarketplaceDataRepository {
 
   private static final String INCREASE_INSTALLATION_COUNT_VIA_PRODUCT_ID = "UPDATE product_marketplace_data SET " +
       "installation_count = installation_count + 1 WHERE id = :productId RETURNING installation_count";
@@ -72,8 +66,7 @@ public class CustomProductMarketplaceDataRepositoryImpl extends CustomRepository
   public void increaseInstallationCountForProductByDesignerVersion(String productId, String designerVersion) {
     CriteriaBuilder cb = em.getCriteriaBuilder();
     CriteriaQuery<ProductDesignerInstallation> cbQuery = cb.createQuery(ProductDesignerInstallation.class);
-    Root<ProductDesignerInstallation> productDesignerInstallationRoot = cbQuery.from(
-        ProductDesignerInstallation.class);
+    Root<ProductDesignerInstallation> productDesignerInstallationRoot = cbQuery.from(ProductDesignerInstallation.class);
 
     cbQuery.where(cb.equal(productDesignerInstallationRoot.get("productId"), productId),
         cb.equal(productDesignerInstallationRoot.get("designerVersion"), designerVersion));

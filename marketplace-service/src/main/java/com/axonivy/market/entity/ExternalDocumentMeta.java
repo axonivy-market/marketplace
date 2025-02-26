@@ -2,6 +2,7 @@ package com.axonivy.market.entity;
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
+import jakarta.persistence.PrePersist;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -12,6 +13,7 @@ import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
 
 import java.util.Date;
+import java.util.UUID;
 
 import static com.axonivy.market.constants.EntityConstants.EXTERNAL_DOCUMENT_META;
 
@@ -35,4 +37,11 @@ public class ExternalDocumentMeta {
   private Date createdAt;
   @LastModifiedDate
   private Date modifiedAt;
+
+  @PrePersist
+  private void ensureId() {
+    if (this.id == null) {
+      this.id = UUID.randomUUID().toString();
+    }
+  }
 }

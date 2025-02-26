@@ -2,6 +2,7 @@ package com.axonivy.market.entity;
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
+import jakarta.persistence.PrePersist;
 import jakarta.persistence.Table;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -12,6 +13,7 @@ import org.springframework.data.annotation.LastModifiedDate;
 import java.io.Serial;
 import java.io.Serializable;
 import java.util.Date;
+import java.util.UUID;
 
 import static com.axonivy.market.constants.EntityConstants.FEEDBACK;
 
@@ -40,5 +42,12 @@ public class Feedback implements Serializable {
 
   public void setContent(String content) {
     this.content = content != null ? content.trim() : null;
+  }
+
+  @PrePersist
+  private void ensureId() {
+    if (this.id == null) {
+      this.id = UUID.randomUUID().toString();
+    }
   }
 }
