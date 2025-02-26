@@ -58,11 +58,11 @@ export class ProductFeedbackService {
   totalElements: WritableSignal<number> = signal(0);
 
   findProductFeedbacks(
-    token: string,
     page: number = this.page(),
     sort: string = this.sort(),
     size: number = 20
   ): Observable<FeedbackApiResponse> {
+    const token = this.authService.decodeToken(this.cookieService.get(TOKEN_KEY))?.accessToken;
     const headers = new HttpHeaders().set('Authorization', `Bearer ${token}`);
     const requestParams = new HttpParams()
       .set('page', page.toString())
@@ -81,7 +81,6 @@ export class ProductFeedbackService {
           (a.reviewDate ? new Date(a.reviewDate).getTime() : 0)
         );
 
-        // Split feedbacks into two lists
         const nonPendingFeedbacks = sortedFeedbacks.filter(f => 
           f?.feedbackStatus !== FeedbackStatus.PENDING
         );
@@ -89,7 +88,6 @@ export class ProductFeedbackService {
           f?.feedbackStatus === FeedbackStatus.PENDING
         );
 
-        // Update signals based on page
         if (page === 0) {
           this.allFeedbacks.set(nonPendingFeedbacks);
           this.pendingFeedbacks.set(pendingFeedbacks);
@@ -98,7 +96,6 @@ export class ProductFeedbackService {
           this.pendingFeedbacks.set([...this.pendingFeedbacks(), ...pendingFeedbacks]);
         }
 
-        // Sort pending feedbacks by updatedAt
         this.pendingFeedbacks.set(
           this.pendingFeedbacks().sort((a, b) =>
             (b.updatedAt ? new Date(b.updatedAt).getTime() : 0) -

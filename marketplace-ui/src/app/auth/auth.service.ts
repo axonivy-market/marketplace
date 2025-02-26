@@ -12,6 +12,7 @@ export interface TokenPayload {
   name: string;
   sub: string;
   exp: number;
+  accessToken: string;
 }
 
 export interface RequestBody {
@@ -60,9 +61,13 @@ export class AuthService {
 
   handleTokenResponse(token: string, state: string): void {
     this.setTokenAsCookie(token);
-    this.router.navigate([`${state}`], {
-      queryParams: { showPopup: 'true' }
-    });
+    if(state == 'feedback-approval'){
+      this.router.navigate([`${state}`]);
+    } else {
+      this.router.navigate([`${state}`], {
+        queryParams: { showPopup: 'true' }
+      });
+    }
   }
 
   private setTokenAsCookie(token: string): void {
@@ -80,7 +85,7 @@ export class AuthService {
     return null;
   }
 
-  private decodeToken(token: string): TokenPayload | null {
+  decodeToken(token: string): TokenPayload | null {
     try {
       return jwtDecode(token);
     } catch (error) {

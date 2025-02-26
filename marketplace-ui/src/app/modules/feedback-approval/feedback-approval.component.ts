@@ -8,7 +8,7 @@ import { Feedback } from "../../shared/models/feedback.model";
 import { ProductFeedbackService } from "../product/product-detail/product-detail-feedback/product-feedbacks-panel/product-feedback.service";
 import { LanguageService } from "../../core/services/language/language.service";
 import { ThemeService } from "../../core/services/theme/theme.service";
-import { FEEDBACK_APPROVAL_TABS, SECURITY_MONITOR_SESSION_KEYS } from "../../shared/constants/common.constant";
+import { FEEDBACK_APPROVAL_TABS } from "../../shared/constants/common.constant";
 import { ActivatedRoute } from "@angular/router";
 
 @Component({
@@ -44,21 +44,8 @@ export class FeedbackApprovalComponent {
     this.productFeedbackService.pendingFeedbacks;
 
   ngOnInit(): void {
-    this.loadSessionData();
-
-    // if (this.token) {
-    //   this.fetchFeedbacks();
-    // } else {
-    //   this.authService.redirectToGitHub('feedback-approval');
-    // }
-
-    this.loadSessionData();
     let token = this.authService.getToken();
-    console.log(token);
     if(token) {
-      this.token = token;
-      console.log("Get feedback here");
-      
       this.fetchFeedbacks();
     } 
     else {
@@ -66,15 +53,10 @@ export class FeedbackApprovalComponent {
     }
   }
 
-  private loadSessionData(): void {
-    this.token = sessionStorage.getItem(SECURITY_MONITOR_SESSION_KEYS.TOKEN) ?? '';
-    this.isAuthenticated = !!this.token;
-  }
-
   private fetchFeedbacks(): void {
-    this.productFeedbackService.findProductFeedbacks(this.token).subscribe({
+    this.productFeedbackService.findProductFeedbacks().subscribe({
       next: () => {
-        sessionStorage.setItem(SECURITY_MONITOR_SESSION_KEYS.TOKEN, this.token);
+        this.isAuthenticated = true;
       },
       error: (err) => {
         this.isAuthenticated = false;

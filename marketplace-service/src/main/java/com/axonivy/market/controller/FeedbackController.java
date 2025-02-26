@@ -120,8 +120,8 @@ public class FeedbackController {
   public ResponseEntity<PagedModel<FeedbackModel>> findAllFeedbacks(
       @RequestHeader(value = AUTHORIZATION) String authorizationHeader, @ParameterObject Pageable pageable) {
     String token = AuthorizationUtils.getBearerToken(authorizationHeader);
-    System.out.println(token);
-    gitHubService.validateUserInOrganizationAndTeam(token, GitHubConstants.AXONIVY_MARKET_ORGANIZATION_NAME,
+    gitHubService.validateUserInOrganizationAndTeam(token,
+        GitHubConstants.AXONIVY_MARKET_ORGANIZATION_NAME,
         GitHubConstants.AXONIVY_MARKET_TEAM_NAME);
     Page<Feedback> results = feedbackService.findAllFeedbacks(pageable);
     if (results.isEmpty()) {

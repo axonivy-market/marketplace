@@ -4,6 +4,7 @@ import com.axonivy.market.entity.Feedback;
 import com.axonivy.market.entity.Product;
 import com.axonivy.market.entity.User;
 import com.axonivy.market.enums.ErrorCode;
+import com.axonivy.market.enums.FeedbackStatus;
 import com.axonivy.market.exceptions.model.NoContentException;
 import com.axonivy.market.exceptions.model.NotFoundException;
 import com.axonivy.market.model.FeedbackModel;
@@ -24,6 +25,7 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
@@ -215,22 +217,25 @@ class FeedbackServiceImplTest {
   void testGetProductRatingById() {
     String productId = "product1";
     List<Feedback> feedbacks = Collections.singletonList(feedback);
-
-    when(feedbackRepository.findByProductId(productId)).thenReturn(feedbacks);
+    List<FeedbackStatus> feedbackStatuses = Arrays.asList(FeedbackStatus.PENDING, FeedbackStatus.REJECTED);
+    when(feedbackRepository.findByProductIdAndFeedbackStatusNotIn(productId,
+        feedbackStatuses)).thenReturn(feedbacks);
 
     List<ProductRating> ratings = feedbackService.getProductRatingById(productId);
     assertNotNull(ratings);
     assertEquals(5, ratings.size());
     assertEquals(1, ratings.get(4).getCommentNumber());
     assertEquals(100, ratings.get(4).getPercent());
-    verify(feedbackRepository, times(1)).findByProductId(productId);
+    verify(feedbackRepository, times(1)).findByProductIdAndFeedbackStatusNotIn(productId,
+        feedbackStatuses);
   }
 
   @Test
   void testGetProductRatingById_NoFeedbacks() {
     String productId = "product1";
 
-    when(feedbackRepository.findByProductId(productId)).thenReturn(Collections.emptyList());
+    when(feedbackRepository.findByProductIdAndFeedbackStatusNotIn(eq(productId), anyList()))
+        .thenReturn(Collections.emptyList());
 
     List<ProductRating> ratings = feedbackService.getProductRatingById(productId);
     assertNotNull(ratings);
@@ -239,7 +244,7 @@ class FeedbackServiceImplTest {
       assertEquals(0, rating.getCommentNumber());
       assertEquals(0, rating.getPercent());
     }
-    verify(feedbackRepository, times(1)).findByProductId(productId);
+    verify(feedbackRepository, times(1)).findByProductIdAndFeedbackStatusNotIn(eq(productId), anyList());
   }
 
   @Test
