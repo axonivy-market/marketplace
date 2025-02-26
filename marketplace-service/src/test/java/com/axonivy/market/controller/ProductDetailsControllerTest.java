@@ -10,6 +10,7 @@ import com.axonivy.market.enums.Language;
 import com.axonivy.market.model.GithubReleaseModel;
 import com.axonivy.market.model.MavenArtifactVersionModel;
 import com.axonivy.market.model.ProductDetailModel;
+import com.axonivy.market.service.ProductContentService;
 import com.axonivy.market.service.ProductService;
 import com.axonivy.market.service.VersionService;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -26,17 +27,20 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PagedResourcesAssembler;
 import org.springframework.hateoas.PagedModel;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.servlet.mvc.method.annotation.ResponseBodyEmitter;
 
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -51,7 +55,8 @@ class ProductDetailsControllerTest extends BaseSetup {
   private PagedResourcesAssembler<GithubReleaseModel> pagedResourcesAssembler;
   @Mock
   private GithubReleaseModelAssembler githubReleaseModelAssembler;
-
+  @Mock
+  private ProductContentService productContentService;
 
   @InjectMocks
   private ProductDetailsController productDetailsController;
@@ -315,5 +320,21 @@ class ProductDetailsControllerTest extends BaseSetup {
 
     assertEquals(HttpStatus.OK, result.getStatusCode());
     assertTrue(Objects.requireNonNull(result.getBody()).getContent().isEmpty());
+  }
+
+  @Test
+  void testDownloadZipArtifact() throws ExecutionException, InterruptedException {
+    var emitter = new ResponseBodyEmitter();
+    when(productContentService.downloadZipArtifactFile(MOCK_PRODUCT_ID, MOCK_DEMO_ARTIFACT_ID, MOCK_RELEASED_VERSION))
+        .thenReturn(CompletableFuture.completedFuture(emitter));
+    var result = productDetailsController.downloadZipArtifact(MOCK_PRODUCT_ID, MOCK_RELEASED_VERSION, MOCK_DEMO_ARTIFACT_ID);
+    assertNotNull(result);
+    assertNotNull(result.get());
+    assertEquals(HttpStatus.OK, result.get().getStatusCode());
+    HttpHeaders returnedHeader = result.get().getHeaders();
+    assertNotNull(returnedHeader);
+    String contentDispositions = Objects.requireNonNull(returnedHeader.get(HttpHeaders.CONTENT_DISPOSITION)).get(0);
+    assertTrue(StringUtils.contains(contentDispositions, MOCK_RELEASED_VERSION));
+    assertTrue(StringUtils.contains(contentDispositions, MOCK_DEMO_ARTIFACT_ID));
   }
 }
