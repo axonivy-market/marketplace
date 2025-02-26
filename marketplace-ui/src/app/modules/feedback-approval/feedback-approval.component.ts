@@ -46,9 +46,22 @@ export class FeedbackApprovalComponent {
   ngOnInit(): void {
     this.loadSessionData();
 
-    if (this.token) {
+    // if (this.token) {
+    //   this.fetchFeedbacks();
+    // } else {
+    //   this.authService.redirectToGitHub('feedback-approval');
+    // }
+
+    this.loadSessionData();
+    let token = this.authService.getToken();
+    console.log(token);
+    if(token) {
+      this.token = token;
+      console.log("Get feedback here");
+      
       this.fetchFeedbacks();
-    } else {
+    } 
+    else {
       this.authService.redirectToGitHub('feedback-approval');
     }
   }

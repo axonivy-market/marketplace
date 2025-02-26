@@ -81,19 +81,29 @@ export class ProductFeedbackService {
           (a.reviewDate ? new Date(a.reviewDate).getTime() : 0)
         );
 
+        // Split feedbacks into two lists
+        const nonPendingFeedbacks = sortedFeedbacks.filter(f => 
+          f?.feedbackStatus !== FeedbackStatus.PENDING
+        );
+        const pendingFeedbacks = sortedFeedbacks.filter(f => 
+          f?.feedbackStatus === FeedbackStatus.PENDING
+        );
+
+        // Update signals based on page
         if (page === 0) {
-          this.allFeedbacks.set(sortedFeedbacks);
+          this.allFeedbacks.set(nonPendingFeedbacks);
+          this.pendingFeedbacks.set(pendingFeedbacks);
         } else {
-          this.allFeedbacks.set([...this.allFeedbacks(), ...sortedFeedbacks]);
+          this.allFeedbacks.set([...this.allFeedbacks(), ...nonPendingFeedbacks]);
+          this.pendingFeedbacks.set([...this.pendingFeedbacks(), ...pendingFeedbacks]);
         }
 
+        // Sort pending feedbacks by updatedAt
         this.pendingFeedbacks.set(
-          this.allFeedbacks()
-            .filter(f => f?.feedbackStatus === FeedbackStatus.PENDING)
-            .sort((a, b) =>
-              (b.updatedAt ? new Date(b.updatedAt).getTime() : 0) -
-              (a.updatedAt ? new Date(a.updatedAt).getTime() : 0)
-            )
+          this.pendingFeedbacks().sort((a, b) =>
+            (b.updatedAt ? new Date(b.updatedAt).getTime() : 0) -
+            (a.updatedAt ? new Date(a.updatedAt).getTime() : 0)
+          )
         );
       }),
       catchError(response => {
@@ -118,7 +128,10 @@ export class ProductFeedbackService {
 
     return this.http.put<Feedback>(requestURL, requestBody).pipe(
       tap(updatedFeedback => {
-        const updatedAllFeedbacks = this.allFeedbacks().map(feedback => feedback.id === updatedFeedback.id ? updatedFeedback : feedback);
+        const updatedAllFeedbacks = this.allFeedbacks().map(feedback => feedback.id === updatedFeedback.id ? updatedFeedback : feedback).sort((a, b) =>
+          (b.updatedAt ? new Date(b.updatedAt).getTime() : 0) -
+          (a.updatedAt ? new Date(a.updatedAt).getTime() : 0)
+        );
         this.allFeedbacks.set(updatedAllFeedbacks);
 
         const filteredPendingFeedbacks = this.allFeedbacks().filter(feedback =>

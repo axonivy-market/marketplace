@@ -6,5 +6,6 @@ import org.springframework.data.domain.Pageable;
 
 public interface CustomFeedbackRepository {
   Page<Feedback> searchByProductId(String productId, Pageable pageable);
+
   Feedback findByUserIdAndProductId(String userId, String productId);
 }

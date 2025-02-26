@@ -15,7 +15,6 @@ import com.axonivy.market.repository.ProductRepository;
 import com.axonivy.market.repository.UserRepository;
 import com.axonivy.market.service.FeedbackService;
 import org.apache.commons.lang3.BooleanUtils;
-import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -24,6 +23,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -117,9 +117,8 @@ public class FeedbackServiceImpl implements FeedbackService {
 
   @Override
   public List<ProductRating> getProductRatingById(String productId) {
-    List<Feedback> feedbacks =
-        feedbackRepository.findByProductId(productId).stream().filter(
-            FeedbackServiceImpl::isFeedbackApproved).toList();
+    List<Feedback> feedbacks = feedbackRepository.findByProductIdAndFeedbackStatusNotIn(productId,
+        Arrays.asList(FeedbackStatus.PENDING, FeedbackStatus.REJECTED));
     int totalFeedbacks = feedbacks.size();
 
     if (totalFeedbacks == 0) {
@@ -134,11 +133,6 @@ public class FeedbackServiceImpl implements FeedbackService {
       int percent = (int) ((count * 100) / totalFeedbacks);
       return new ProductRating(star, Math.toIntExact(count), percent);
     }).toList();
-  }
-
-  private static boolean isFeedbackApproved(Feedback feedback) {
-    return FeedbackStatus.APPROVED == feedback.getFeedbackStatus()
-        || ObjectUtils.isEmpty(feedback.getFeedbackStatus());
   }
 
   public void validateProductExists(String productId) throws NotFoundException {

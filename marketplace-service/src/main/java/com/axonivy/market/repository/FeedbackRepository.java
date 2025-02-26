@@ -10,5 +10,6 @@ import java.util.List;
 @Repository
 public interface FeedbackRepository extends MongoRepository<Feedback, String> {
   List<Feedback> findByProductId(String productId);
-  List<Feedback> findByProductIdAndFeedbackStatus(String productId, FeedbackStatus feedbackStatus);
+
+  List<Feedback> findByProductIdAndFeedbackStatusNotIn(String productId, List<FeedbackStatus> feedbackStatuses);
 }
