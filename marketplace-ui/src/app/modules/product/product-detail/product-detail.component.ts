@@ -1,8 +1,6 @@
 import { ProductDetail } from './../../../shared/models/product-detail.model';
 import { CommonModule, NgOptimizedImage } from '@angular/common';
 import MarkdownIt from 'markdown-it';
-import MarkdownItGitHubAlerts from 'markdown-it-github-alerts';
-import { full } from 'markdown-it-emoji';
 import {
   Component,
   ElementRef,
@@ -65,6 +63,7 @@ import { HistoryService } from '../../../core/services/history/history.service';
 import { TypeOption } from '../../../shared/enums/type-option.enum';
 import { SortOption } from '../../../shared/enums/sort-option.enum';
 import { Feedback } from '../../../shared/models/feedback.model';
+import { MarkdownService } from '../../../shared/services/markdown.service';
 
 export interface DetailTab {
   activeClass: string;
@@ -119,6 +118,7 @@ export class ProductDetailComponent {
   routingQueryParamService = inject(RoutingQueryParamService);
   loadingService = inject(LoadingService);
   historyService = inject(HistoryService);
+  markdownService = inject(MarkdownService);
 
   protected LoadingComponentId = LoadingComponentId;
   protected ProductDetailActionType = ProductDetailActionType;
@@ -519,11 +519,7 @@ export class ProductDetailComponent {
   }
 
   renderGithubAlert(value: string): SafeHtml {
-    const md = MarkdownIt();
-    md.use(MarkdownItGitHubAlerts);
-    md.use(full); // Add emoji support
-    const result = md.render(value);
-
+    const result = this.markdownService.parseMarkdown(value);
     return this.sanitizer.bypassSecurityTrustHtml(result);
   }
 
