@@ -50,8 +50,12 @@ public class ScheduledTasks {
   }
 
   @Scheduled(cron = SCHEDULING_TASK_PRODUCT_RELEASE_NOTES_CRON)
-  public void syncDataForProductReleases() throws IOException {
-    log.warn("Started sync data for product releases");
-    productDetailsController.syncLatestReleasesForProducts();
+  public void syncDataForProductReleases() {
+    log.warn("Started sync data for product release notes");
+    try {
+      productDetailsController.syncLatestReleasesForProducts();
+    } catch (IOException e) {
+      log.error("Failed to sync data for product release notes: ",  e);
+    }
   }
 }
