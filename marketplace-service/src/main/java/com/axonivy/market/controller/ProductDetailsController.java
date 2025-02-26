@@ -166,11 +166,11 @@ public class ProductDetailsController {
     return new ResponseEntity<>(pageResources, HttpStatus.OK);
   }
 
-  @GetMapping(SYNC_RELEASE_FOR_PRODUCTS)
+  @GetMapping(SYNC_RELEASE_NOTES_FOR_PRODUCTS)
   public void syncLatestReleasesForProducts() throws IOException {
     Pageable pageable = PageRequest.of(0, 20, Sort.unsorted());
     List<String> productIdList = this.productService.getProductIdList();
-    for(String productId : productIdList) {
+    for (String productId : productIdList) {
       this.productService.getGitHubReleaseModels(productId, pageable);
     }
   }

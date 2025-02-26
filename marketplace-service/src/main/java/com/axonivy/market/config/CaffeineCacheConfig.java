@@ -13,15 +13,14 @@ import java.util.concurrent.TimeUnit;
 @EnableCaching
 public class CaffeineCacheConfig {
   private static final int EXPIRED_HOURS = 24;
-
   private static final int MAXIMUM_SIZE = 100;
 
   @Bean
   public CacheManager cacheManager() {
     CaffeineCacheManager caffeineCacheManager = new CaffeineCacheManager();
     caffeineCacheManager.setCaffeine(Caffeine.newBuilder()
-        .expireAfterWrite(EXPIRED_HOURS, TimeUnit.HOURS)  // Entries expire after 10 minutes
-        .maximumSize(MAXIMUM_SIZE)  // Maximum 100 entries
+        .expireAfterWrite(EXPIRED_HOURS, TimeUnit.HOURS)
+        .maximumSize(MAXIMUM_SIZE)
     );
     return caffeineCacheManager;
   }
