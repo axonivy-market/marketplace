@@ -356,15 +356,8 @@ public class ProductServiceImpl implements ProductService {
     log.warn("**ProductService: synchronize products from scratch based on the Market repo");
     List<String> syncedProductIds = new ArrayList<>();
     var gitHubContentMap = axonIvyMarketRepoService.fetchAllMarketItems();
-    List<String> msGraph = List.of("market/connector/vertexai-google","market/connector/amazon-comprehend");
-
-
-
     for (Map.Entry<String, List<GHContent>> ghContentEntity : gitHubContentMap.entrySet()) {
       var product = new Product();
-      if (!msGraph.contains(ghContentEntity.getKey())) {
-        continue;
-      }
       //update the meta.json first
       ghContentEntity.getValue().sort((f1, f2) -> GitHubUtils.sortMetaJsonFirst(f1.getName(), f2.getName()));
 

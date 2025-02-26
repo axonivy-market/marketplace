@@ -15,6 +15,7 @@ import com.axonivy.market.repository.ProductRepository;
 import com.axonivy.market.repository.UserRepository;
 import com.axonivy.market.service.FeedbackService;
 import org.apache.commons.lang3.BooleanUtils;
+import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -47,7 +48,7 @@ public class FeedbackServiceImpl implements FeedbackService {
 
   @Override
   public Page<Feedback> findAllFeedbacks(Pageable pageable) {
-    return feedbackRepository.findAll(refinePagination(pageable));
+    return feedbackRepository.findAll(pageable);
   }
 
   @Override
@@ -136,8 +137,8 @@ public class FeedbackServiceImpl implements FeedbackService {
   }
 
   private static boolean isFeedbackApproved(Feedback feedback) {
-    return FeedbackStatus.PENDING != feedback.getFeedbackStatus()
-        && FeedbackStatus.REJECTED != feedback.getFeedbackStatus();
+    return FeedbackStatus.APPROVED == feedback.getFeedbackStatus()
+        || ObjectUtils.isEmpty(feedback.getFeedbackStatus());
   }
 
   public void validateProductExists(String productId) throws NotFoundException {

@@ -62,7 +62,6 @@ import { ProductReleaseSafeHtml } from '../../../shared/models/product-release-s
 import { HistoryService } from '../../../core/services/history/history.service';
 import { TypeOption } from '../../../shared/enums/type-option.enum';
 import { SortOption } from '../../../shared/enums/sort-option.enum';
-import { Feedback } from '../../../shared/models/feedback.model';
 import { MarkdownService } from '../../../shared/services/markdown.service';
 
 export interface DetailTab {
@@ -146,8 +145,7 @@ export class ProductDetailComponent {
   md: MarkdownIt = new MarkdownIt();
   productReleaseSafeHtmls: ProductReleaseSafeHtml[] = [];
   loadedReadmeContent: { [key: string]: SafeHtml } = {};
-  feedbacksList: WritableSignal<Feedback[]> = signal([] as Feedback[]);
-  // feedbacks: WritableSignal<Feedback[]> = signal([]);
+
   @HostListener('window:popstate', ['$event'])
   onPopState() {
     this.activeTab = window.location.hash.split('#tab-')[1];
@@ -199,8 +197,6 @@ export class ProductDetailComponent {
         this.handleProductDetail(res.productDetail);
         this.getReadmeContent();
         this.productFeedbackService.handleFeedbackApiResponse(res.productFeedBack);
-        this.feedbacksList = this.productFeedbackService.feedbacks;
-
         this.updateDropdownSelection();
         this.checkMediaSize();
         this.route.queryParams.subscribe(params => {

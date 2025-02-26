@@ -43,45 +43,34 @@ export class FeedbackApprovalComponent {
   pendingFeedbacks: Signal<Feedback[] | undefined> =
     this.productFeedbackService.pendingFeedbacks;
 
-    ngOnInit(): void {
-      this.loadSessionData();
+  ngOnInit(): void {
+    this.loadSessionData();
 
-      this.activatedRoute.queryParams.subscribe(params => {
-        if (params['code']) {
-          this.authService.handleGitHubCallback(params['code'], 'feedback-approval');
-          this.loadSessionData();
-        }
-
-        if (this.token) {
-          this.fetchFeedbacks();
-        } else {
-          this.authService.redirectToGitHub('feedback-approval');
-        }
-      });
+    if (this.token) {
+      this.fetchFeedbacks();
+    } else {
+      this.authService.redirectToGitHub('feedback-approval');
     }
-
-    private loadSessionData(): void {
-      this.token = sessionStorage.getItem(SECURITY_MONITOR_SESSION_KEYS.TOKEN) ?? '';
-      this.isAuthenticated = !!this.token;
-    }
-
-    private fetchFeedbacks(): void {
-      this.productFeedbackService.findProductFeedbacks(this.token).subscribe({
-        next: () => {
-          sessionStorage.setItem(SECURITY_MONITOR_SESSION_KEYS.TOKEN, this.token);
-        },
-        error: (err) => {
-          this.isAuthenticated = false;
-        }
-      });
-    }
-
-  onClickingApproveButton(feedback: Feedback): void {
-    this.productFeedbackService.updateFeedbackStatus(feedback.id!, true, this.authService.getDisplayName()!).subscribe();
   }
 
-  onClickingRejectButton(feedback: Feedback): void {
-    this.productFeedbackService.updateFeedbackStatus(feedback.id!, false, this.authService.getDisplayName()!).subscribe();
+  private loadSessionData(): void {
+    this.token = sessionStorage.getItem(SECURITY_MONITOR_SESSION_KEYS.TOKEN) ?? '';
+    this.isAuthenticated = !!this.token;
+  }
+
+  private fetchFeedbacks(): void {
+    this.productFeedbackService.findProductFeedbacks(this.token).subscribe({
+      next: () => {
+        sessionStorage.setItem(SECURITY_MONITOR_SESSION_KEYS.TOKEN, this.token);
+      },
+      error: (err) => {
+        this.isAuthenticated = false;
+      }
+    });
+  }
+
+  onClickReviewButton(feedback: Feedback, isApproved: boolean): void {
+    this.productFeedbackService.updateFeedbackStatus(feedback.id!, isApproved, this.authService.getDisplayName()!).subscribe();
   }
 
   setActiveTab(tab: string): void {

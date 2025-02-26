@@ -44,7 +44,7 @@ export class ProductFeedbackService {
   page: WritableSignal<number> = signal(0);
 
   userFeedback: WritableSignal<Feedback | null> = signal(null);
-  feedbacks: WritableSignal<Feedback[]> = signal([] );
+  feedbacks: WritableSignal<Feedback[]> = signal([]);
   allFeedbacks: WritableSignal<Feedback[]> = signal([]);
   pendingFeedbacks: WritableSignal<Feedback[]> = signal([]);
   areAllFeedbacksLoaded = computed(() => {
@@ -56,36 +56,6 @@ export class ProductFeedbackService {
 
   totalPages: WritableSignal<number> = signal(1);
   totalElements: WritableSignal<number> = signal(0);
-
-
-  findProductFeedbacks1(
-    token: string,
-    page: number = this.page(),
-    sort: string = this.sort(),
-    size: number = 20
-  ): Observable<FeedbackApiResponse> {
-    const headers = new HttpHeaders().set('Authorization', `Bearer ${token}`);
-    let requestParams = new HttpParams()
-      .set('page', page.toString())
-      .set('size', size.toString())
-      .set('sort', sort);
-    const requestURL = `${API_URI.FEEDBACK_APPROVAL}`;
-    return this.http
-      .get<FeedbackApiResponse>(requestURL, {headers, params: requestParams })
-      .pipe(
-        tap(response => {
-          if (page === 0) {
-            this.allFeedbacks.set(response._embedded.feedbacks);
-          } else {
-            this.allFeedbacks.set([
-              ...this.feedbacks(),
-              ...response._embedded.feedbacks
-            ]);
-          }
-          this.pendingFeedbacks.set(this.allFeedbacks().filter(f => f?.feedbackStatus === FeedbackStatus.PENDING));
-        })
-      );
-  }
 
   findProductFeedbacks(
     token: string,
@@ -138,7 +108,6 @@ export class ProductFeedbackService {
     );
   }
 
-
   updateFeedbackStatus(feedbackId: string, isApproved: boolean, moderatorName: string): Observable<Feedback> {
     const requestBody = {
       feedbackId,
@@ -149,13 +118,13 @@ export class ProductFeedbackService {
 
     return this.http.put<Feedback>(requestURL, requestBody).pipe(
       tap(updatedFeedback => {
-          this.allFeedbacks.set(
-          this.allFeedbacks().map(fb => fb.id === updatedFeedback.id ? updatedFeedback : fb)
-        );
+        const updatedAllFeedbacks = this.allFeedbacks().map(feedback => feedback.id === updatedFeedback.id ? updatedFeedback : feedback);
+        this.allFeedbacks.set(updatedAllFeedbacks);
 
-        this.pendingFeedbacks.set(
-          this.allFeedbacks().filter(fb => fb.feedbackStatus === FeedbackStatus.PENDING)
+        const filteredPendingFeedbacks = this.allFeedbacks().filter(feedback =>
+          feedback.feedbackStatus == FeedbackStatus.PENDING
         );
+        this.pendingFeedbacks.set(filteredPendingFeedbacks);
       })
     );
   }
@@ -173,7 +142,6 @@ export class ProductFeedbackService {
       .pipe(
         tap(() => {
           this.fetchFeedbacks();
-          this.findProductFeedbackOfUser().subscribe();
           this.productStarRatingService.fetchData();
         }),
         catchError(response => {
@@ -234,7 +202,7 @@ export class ProductFeedbackService {
       .pipe(
         tap(feedback => {
           this.userFeedback.set(feedback);
-          if(this.userFeedback() && this.userFeedback()!.feedbackStatus === FeedbackStatus.PENDING) {
+          if (this.userFeedback() && this.userFeedback()!.feedbackStatus === FeedbackStatus.PENDING) {
             if (this.feedbacks().length > 0) {
               this.feedbacks().unshift(this.userFeedback()!);
             } else {

@@ -29,10 +29,8 @@ export class ProductFeedbackComponent {
   languageService = inject(LanguageService);
 
   ngOnInit(): void {
-    if(this.feedback){
-      if (this.feedback.feedbackStatus == FeedbackStatus.PENDING) {
-        this.isPending.set(true);
-      }
+    if (this.feedback && this.feedback.feedbackStatus == FeedbackStatus.PENDING) {
+      this.isPending.set(true);
     }
   }
 

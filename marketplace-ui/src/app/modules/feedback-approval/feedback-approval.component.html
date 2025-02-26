@@ -99,11 +99,11 @@
                   </td>
 
                   <td class="action-buttons fixed-width">
-                    <div id="approve-button" (click)="onClickingApproveButton(feedback)">
+                    <div id="approve-button" (click)="onClickReviewButton(feedback, true)">
                       <p class="mb-0" [lang]="languageService.selectedLanguage()">Approve</p>
                     </div>
 
-                    <div id="reject-button" (click)="onClickingRejectButton(feedback)">
+                    <div id="reject-button" (click)="onClickReviewButton(feedback, false)">
                       <p class="mb-0" [lang]="languageService.selectedLanguage()">Reject</p>
                     </div>
                   </td>
