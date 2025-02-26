@@ -21,6 +21,7 @@ public class ScheduledTasks {
   private static final String SCHEDULING_TASK_PRODUCTS_CRON = "0 0 0/1 ? * *";
   // External documentation sync will start at 00:40 in order to prevent running at the same time with other
   private static final String SCHEDULING_TASK_DOCUMENTS_CRON = "0 40 0 * * *";
+  private static final String SCHEDULING_TASK_PRODUCT_RELEASE_NOTES_CRON = "0 0 0 * * ?";
 
   final ProductRepository productRepo;
   final ProductService productService;
@@ -48,7 +49,7 @@ public class ScheduledTasks {
     mavenDependencyService.syncIARDependenciesForProducts(false);
   }
 
-  @Scheduled(cron = SCHEDULING_TASK_PRODUCTS_CRON)
+  @Scheduled(cron = SCHEDULING_TASK_PRODUCT_RELEASE_NOTES_CRON)
   public void syncDataForProductReleases() throws IOException {
     log.warn("Started sync data for product releases");
     productDetailsController.syncLatestReleasesForProducts();

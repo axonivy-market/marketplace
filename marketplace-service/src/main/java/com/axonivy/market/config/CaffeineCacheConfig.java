@@ -13,7 +13,7 @@ import java.util.concurrent.TimeUnit;
 @EnableCaching
 public class CaffeineCacheConfig {
   private static final int EXPIRED_HOURS = 24;
-  private static final int MAXIMUM_SIZE = 100;
+  private static final int MAXIMUM_SIZE = 1000;
 
   @Bean
   public CacheManager cacheManager() {
