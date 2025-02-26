@@ -10,6 +10,8 @@ import { LanguageService } from "../../core/services/language/language.service";
 import { ThemeService } from "../../core/services/theme/theme.service";
 import { FEEDBACK_APPROVAL_TABS, SECURITY_MONITOR_SESSION_KEYS } from "../../shared/constants/common.constant";
 import { FeedbackStatus } from "../../shared/enums/feedback-status.enum";
+import { log } from "console";
+import { ActivatedRoute } from "@angular/router";
 
 @Component({
   selector: 'app-feedback-approval',
@@ -30,8 +32,9 @@ export class FeedbackApprovalComponent {
   languageService = inject(LanguageService);
   themeService = inject(ThemeService);
   translateService = inject(TranslateService);
+  activatedRoute = inject(ActivatedRoute);
 
-  token = '';
+  token: string = '';
   isAuthenticated = false;
   detailTabs = FEEDBACK_APPROVAL_TABS;
   activeTab = 'review';
@@ -43,57 +46,48 @@ export class FeedbackApprovalComponent {
     this.productFeedbackService.pendingFeedbacks;
 
     ngOnInit(): void {
-      this.loadSessionData(); // Check session first
-      // if (this.token) {
-      //   // this.appModalService.openFeedbacksDialog();
-      //   this.fetchFeedbacks();
-      // } else {
-      //   this.authService.redirectToGitHub('feedback-approval');
-      // }
-      if (!this.token) {
-        console.log("User not authenticated, redirecting to GitHub login...");
-        this.authService.redirectToGitHub('feedback-approval');
-      }
-
-        this.fetchFeedbacks(); // Fetch only if token exists
-    
-    }
-  
-    private loadSessionData(): void {
-      this.token = sessionStorage.getItem(SECURITY_MONITOR_SESSION_KEYS.TOKEN) ?? '';
-      this.isAuthenticated = !!this.token;
-    }
-  
-    private fetchFeedbacks(): void {
-      console.log("Fetching feedbacks with token:", this.token);
+      this.loadSessionData();
       
-      this.productFeedbackService.findProductFeedbacks(this.token).subscribe({
-        next: (response) => {
-          console.log("Feedbacks loaded:", response._embedded.feedbacks);
-          this.isAuthenticated = true;
-          sessionStorage.setItem(SECURITY_MONITOR_SESSION_KEYS.TOKEN, this.token); // Persist token
-        },
-        error: (err) => {
-          this.clearSessionData();
+      this.activatedRoute.queryParams.subscribe(params => {
+        if (params['code']) {
+          this.authService.handleGitHubCallback(params['code'], 'feedback-approval');
+          this.loadSessionData();
+        }
+        
+        if (this.token) {
+          this.fetchFeedbacks();
+        } else {
+          this.authService.redirectToGitHub('feedback-approval');
         }
       });
     }
-    
   
-    private clearSessionData(): void {
-      sessionStorage.removeItem(SECURITY_MONITOR_SESSION_KEYS.TOKEN);
-      this.token = '';
-      this.isAuthenticated = false;
+    private loadSessionData(): void {
+      this.token = sessionStorage.getItem(SECURITY_MONITOR_SESSION_KEYS.TOKEN) || '';
+      this.isAuthenticated = !!this.token;
+      console.log('Token:', this.token);
+    }
+    
+    private fetchFeedbacks(): void {
+      this.productFeedbackService.findProductFeedbacks(this.token).subscribe({
+        next: () => {
+          sessionStorage.setItem(SECURITY_MONITOR_SESSION_KEYS.TOKEN, this.token);
+          console.log('Feedbacks fetched');
+        },
+        error: (err) => {
+          console.error('Fetch error:', err);
+          this.isAuthenticated = false;
+          // Optionally clear token and redirect again
+        }
+      });
     }
 
   onClickingApproveButton(feedback: Feedback): void {
-    this.productFeedbackService.updateFeedbackStatus(feedback.id!, true, this.authService.getDisplayName()!).subscribe(response => {
-    });
+    this.productFeedbackService.updateFeedbackStatus(feedback.id!, true, this.authService.getDisplayName()!).subscribe();
   }
 
   onClickingRejectButton(feedback: Feedback): void {
-    this.productFeedbackService.updateFeedbackStatus(feedback.id!, false, this.authService.getDisplayName()!).subscribe(response => {
-    });
+    this.productFeedbackService.updateFeedbackStatus(feedback.id!, false, this.authService.getDisplayName()!).subscribe();
   }
 
   setActiveTab(tab: string): void {
