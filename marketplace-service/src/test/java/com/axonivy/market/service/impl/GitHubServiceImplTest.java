@@ -549,7 +549,6 @@ class GitHubServiceImplTest {
       String mockVersion = "v1.0.0";
       URL mockHtmlUrl1 = new URI("http://example.com/portal/releases/tag/next-12.0").toURL();
       Pageable mockPageable = mock(Pageable.class);
-      String mockProductId1 = "portal";
       GHRelease mockRelease1 = mock(GHRelease.class);
       GHRelease mockRelease2 = mock(GHRelease.class);
       when(mockRelease1.isDraft()).thenReturn(false);
@@ -564,7 +563,7 @@ class GitHubServiceImplTest {
       when(mockRelease2.isDraft()).thenReturn(true);
       when(gitHubService.toGitHubReleaseModel(mockRelease1, mockProduct)).thenReturn(new GithubReleaseModel());
 
-      Page<GithubReleaseModel> result = gitHubService.getGitHubReleaseModels(mockProductId1, mockProduct,
+      Page<GithubReleaseModel> result = gitHubService.getGitHubReleaseModels(mockProduct,
           mockPagedIterable, mockPageable);
 
       assertNotNull(result);
