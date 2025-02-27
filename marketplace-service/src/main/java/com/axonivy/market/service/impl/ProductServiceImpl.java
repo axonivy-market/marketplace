@@ -820,13 +820,6 @@ public class ProductServiceImpl implements ProductService {
   }
 
   @Override
-  public GithubReleaseModel getGitHubLatestReleaseModelByProductId(String productId) throws IOException {
-    Product product = productRepo.findProductById(productId);
-
-    return this.gitHubService.getGitHubLatestReleaseModelByProductId(product);
-  }
-
-  @Override
   public List<String> getProductIdList() {
     return this.productRepo.findAll().stream().map(Product::getId).toList();
   }

@@ -52,5 +52,4 @@ public interface GitHubService {
 
   GithubReleaseModel getGitHubReleaseModelByProductIdAndReleaseId(Product product, Long releaseId) throws IOException;
 
-  GithubReleaseModel getGitHubLatestReleaseModelByProductId(Product product) throws IOException;
 }

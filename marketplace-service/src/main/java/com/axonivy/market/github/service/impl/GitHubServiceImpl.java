@@ -359,18 +359,15 @@ public class GitHubServiceImpl implements GitHubService {
     List<GHRelease> ghReleases = ghReleasePagedIterable.toList().stream().filter(ghRelease -> !ghRelease.isDraft()).toList();
     GHRelease latestGithubRelease = this.getGitHubLatestReleaseByProductId(product);
 
-//    for (GHRelease ghRelease : ghReleases) {
-//      githubReleaseModels.add(this.toGitHubReleaseModel(ghRelease, product));
-//    }
     for (GHRelease ghRelease : ghReleases) {
-      githubReleaseModels.add(this.toGitHubReleaseModel2(ghRelease, product, latestGithubRelease));
+      githubReleaseModels.add(this.toGitHubReleaseModel(ghRelease, product, latestGithubRelease));
     }
 
 
     return new PageImpl<>(githubReleaseModels, pageable, githubReleaseModels.size());
   }
 
-  public GithubReleaseModel toGitHubReleaseModel(GHRelease ghRelease, Product product) throws IOException {
+  public GithubReleaseModel toGitHubReleaseModel(GHRelease ghRelease, Product product, GHRelease githubLatestRelease) throws IOException {
     GithubReleaseModel githubReleaseModel = new GithubReleaseModel();
     String modifiedBody = transformGithubReleaseBody(ghRelease.getBody(), product.getSourceUrl());
     githubReleaseModel.setBody(modifiedBody);
@@ -378,19 +375,7 @@ public class GitHubServiceImpl implements GitHubService {
     githubReleaseModel.setPublishedAt(ghRelease.getPublished_at());
     githubReleaseModel.setHtmlUrl(ghRelease.getHtmlUrl().toString());
     githubReleaseModel.add(GitHubUtils.createSelfLinkForGithubReleaseModel(product, ghRelease));
-
-    return githubReleaseModel;
-  }
-
-  public GithubReleaseModel toGitHubReleaseModel2(GHRelease ghRelease, Product product, GHRelease latestGithubRelease) throws IOException {
-    GithubReleaseModel githubReleaseModel = new GithubReleaseModel();
-    String modifiedBody = transformGithubReleaseBody(ghRelease.getBody(), product.getSourceUrl());
-    githubReleaseModel.setBody(modifiedBody);
-    githubReleaseModel.setName(ghRelease.getName());
-    githubReleaseModel.setPublishedAt(ghRelease.getPublished_at());
-    githubReleaseModel.setHtmlUrl(ghRelease.getHtmlUrl().toString());
-    githubReleaseModel.add(GitHubUtils.createSelfLinkForGithubReleaseModel(product, ghRelease));
-    githubReleaseModel.setLatestRelease(ghRelease.getName().equals(latestGithubRelease.getName()));
+    githubReleaseModel.setLatestRelease(ghRelease.getName().equals(githubLatestRelease.getName()));
 
     return githubReleaseModel;
   }
@@ -398,14 +383,8 @@ public class GitHubServiceImpl implements GitHubService {
   @Override
   public GithubReleaseModel getGitHubReleaseModelByProductIdAndReleaseId(Product product, Long releaseId) throws IOException {
     GHRelease ghRelease = this.getRepository(product.getRepositoryName()).getRelease(releaseId);
-    return this.toGitHubReleaseModel(ghRelease, product);
-  }
-
-  @Override
-  public GithubReleaseModel getGitHubLatestReleaseModelByProductId(Product product) throws IOException {
-//    GHRelease ghRelease = this.getRepository(product.getRepositoryName()).getLatestRelease();
-    GHRelease ghRelease = getGitHubLatestReleaseByProductId(product);
-    return this.toGitHubReleaseModel(ghRelease, product);
+    GHRelease githubLatestRelease = getGitHubLatestReleaseByProductId(product);
+    return this.toGitHubReleaseModel(ghRelease, product, githubLatestRelease);
   }
 
   public String transformGithubReleaseBody(String githubReleaseBody, String productSourceUrl) {

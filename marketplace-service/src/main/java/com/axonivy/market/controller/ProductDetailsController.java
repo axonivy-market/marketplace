@@ -187,16 +187,6 @@ public class ProductDetailsController {
     return ResponseEntity.ok(githubReleaseModelAssembler.toModel(githubReleaseModel));
   }
 
-  @GetMapping(PRODUCT_LATEST_PUBLIC_RELEASE)
-  @Operation(summary = "Find latest release by product id",
-      description = "Get latest release by product id")
-  public ResponseEntity<GithubReleaseModel> findGithubLatestPublicReleaseByProductId(
-      @PathVariable(PRODUCT_ID) @Parameter(description = "Product id", example = "portal",
-          in = ParameterIn.PATH) String productId) throws IOException {
-    GithubReleaseModel githubReleaseModel = productService.getGitHubLatestReleaseModelByProductId(productId);
-    return ResponseEntity.ok(githubReleaseModelAssembler.toModel(githubReleaseModel));
-  }
-
   @SuppressWarnings("unchecked")
   private ResponseEntity<PagedModel<GithubReleaseModel>> generateReleasesEmptyPagedModel() {
     var emptyPagedModel = (PagedModel<GithubReleaseModel>) pagedResourcesAssembler.toEmptyModel(Page.empty(),
