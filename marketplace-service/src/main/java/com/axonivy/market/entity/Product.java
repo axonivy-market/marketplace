@@ -105,6 +105,10 @@ public class Product implements Serializable {
   @Transient
   private String compatibilityRange;
 
+  @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+  @JoinColumn(name = "id", referencedColumnName = "id") // Assuming IDs match in both tables
+  private ProductMarketplaceData productMarketplaceData;
+
   @Override
   public int hashCode() {
     return new HashCodeBuilder().append(id).hashCode();

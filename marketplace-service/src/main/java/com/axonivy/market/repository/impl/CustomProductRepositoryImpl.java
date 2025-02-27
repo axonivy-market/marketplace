@@ -1,13 +1,18 @@
 package com.axonivy.market.repository.impl;
 
 import com.axonivy.market.bo.Artifact;
+import com.axonivy.market.constants.MongoDBConstants;
 import com.axonivy.market.criteria.ProductSearchCriteria;
 import com.axonivy.market.entity.Product;
+import com.axonivy.market.entity.ProductCustomSort;
+import com.axonivy.market.entity.ProductMarketplaceData;
 import com.axonivy.market.entity.ProductModuleContent;
 import com.axonivy.market.enums.DocumentField;
 import com.axonivy.market.enums.Language;
+import com.axonivy.market.enums.SortOption;
 import com.axonivy.market.enums.TypeOption;
 import com.axonivy.market.repository.CustomProductRepository;
+import com.axonivy.market.repository.ProductCustomSortRepository;
 import com.axonivy.market.repository.ProductModuleContentRepository;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.NoResultException;
@@ -15,7 +20,9 @@ import jakarta.persistence.TypedQuery;
 import jakarta.persistence.criteria.CriteriaBuilder;
 import jakarta.persistence.criteria.CriteriaQuery;
 import jakarta.persistence.criteria.Join;
+import jakarta.persistence.criteria.JoinType;
 import jakarta.persistence.criteria.MapJoin;
+import jakarta.persistence.criteria.Order;
 import jakarta.persistence.criteria.Path;
 import jakarta.persistence.criteria.Predicate;
 import jakarta.persistence.criteria.Root;
@@ -25,7 +32,9 @@ import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -39,6 +48,7 @@ public class CustomProductRepositoryImpl implements CustomProductRepository {
   public static final String CASE_INSENSITIVITY_OPTION = "i";
   public static final String LOCALIZE_SEARCH_PATTERN = "%s.%s";
 
+  final ProductCustomSortRepository productCustomSortRepo;
   final ProductModuleContentRepository contentRepository;
   EntityManager em;
 
@@ -75,10 +85,16 @@ public class CustomProductRepositoryImpl implements CustomProductRepository {
   @Override
   public Page<Product> searchByCriteria(ProductSearchCriteria searchCriteria, Pageable pageable) {
     ProductCriteriaBuilder<CriteriaBuilder, CriteriaQuery<Product>, Root<Product>> jpaBuilder = createCriteriaQuery();
+    PageRequest pageRequest = (PageRequest) pageable;
 
     Predicate predicate = buildCriteriaSearch(searchCriteria, jpaBuilder.cb(), jpaBuilder.root());
 
     jpaBuilder.cq().where(predicate);
+
+    if (pageRequest.getSort().isSorted()) {
+      sortByOrders(jpaBuilder,pageRequest);
+    }
+
     // Create query
     TypedQuery<Product> query = em.createQuery(jpaBuilder.cq());
     // Apply pagination
@@ -90,6 +106,73 @@ public class CustomProductRepositoryImpl implements CustomProductRepository {
     long total = getTotalCount(jpaBuilder.cb(), searchCriteria);
 
     return new PageImpl<>(resultList, pageable, total);
+  }
+
+  private void sortByOrders(
+      ProductCriteriaBuilder<CriteriaBuilder, CriteriaQuery<Product>, Root<Product>> jpaBuilder,
+      PageRequest pageRequest) {
+
+    if (pageRequest != null) {
+      Sort.Order order = pageRequest.getSort().stream().findFirst().orElse(null);
+      SortOption sortOption = SortOption.of(order.getProperty());
+      if (SortOption.ALPHABETICALLY == sortOption) {
+        sortByAlphabet(jpaBuilder);
+      } else if (SortOption.RECENT == sortOption) {
+        sortByRecent(jpaBuilder);
+      } else if (SortOption.POPULARITY == sortOption) {
+        sortByPopularity(jpaBuilder);
+      } else if (SortOption.STANDARD == sortOption) {
+        sortByStandard(jpaBuilder);
+      } else {
+        sortByStandard(jpaBuilder);
+      }
+    }
+  }
+
+  private void sortByStandard(
+      ProductCriteriaBuilder<CriteriaBuilder, CriteriaQuery<Product>, Root<Product>> jpaBuilder) {
+    List<ProductCustomSort> customSorts = productCustomSortRepo.findAll();
+    if (!customSorts.isEmpty()) {
+      SortOption sortOptionExtension = SortOption.of(customSorts.get(0).getRuleForRemainder());
+      if (SortOption.ALPHABETICALLY == sortOptionExtension) {
+        sortByAlphabet(jpaBuilder);
+      } else if (SortOption.RECENT == sortOptionExtension) {
+        sortByRecent(jpaBuilder);
+      } else if (SortOption.POPULARITY == sortOptionExtension) {
+        sortByPopularity(jpaBuilder);
+      }
+    }
+    Join<Product, ProductMarketplaceData> marketplaceJoin = jpaBuilder.root.join("productMarketplaceData",
+        JoinType.LEFT);
+    Order order = jpaBuilder.cb.asc(marketplaceJoin.get("customOrder"));
+    jpaBuilder.cq().orderBy(order);
+  }
+
+  private void sortByPopularity(
+      ProductCriteriaBuilder<CriteriaBuilder, CriteriaQuery<Product>, Root<Product>> jpaBuilder) {
+    Join<Product, ProductMarketplaceData> marketplaceJoin = jpaBuilder.root.join("productMarketplaceData",
+        JoinType.LEFT);
+    Order order = jpaBuilder.cb.desc(marketplaceJoin.get("installationCount"));
+    jpaBuilder.cq().orderBy(order);
+  }
+
+  private void sortByAlphabet(
+      ProductCriteriaBuilder<CriteriaBuilder, CriteriaQuery<Product>, Root<Product>> jpaBuilder) {
+    MapJoin<Product, String, String> namesJoin = jpaBuilder.root().joinMap("names");
+    // Extract key (language) and value (name)
+    Path<String> languageKey = namesJoin.key();
+    Path<String> nameValue = namesJoin.value();
+
+    Predicate languagePredicate = jpaBuilder.cb.equal(namesJoin.key(), languageKey);
+    // Define sorting order
+    Order order = jpaBuilder.cb.asc(nameValue);
+    jpaBuilder.cq().orderBy(order);
+  }
+
+  private void sortByRecent(
+      ProductCriteriaBuilder<CriteriaBuilder, CriteriaQuery<Product>, Root<Product>> jpaBuilder) {
+    Order order = jpaBuilder.cb.desc(jpaBuilder.root().get("firstPublishedDate"));
+    jpaBuilder.cq().orderBy(order);
   }
 
   private long getTotalCount(CriteriaBuilder cb, ProductSearchCriteria searchCriteria) {
@@ -189,5 +272,6 @@ public class CustomProductRepositoryImpl implements CustomProductRepository {
     return new ProductCriteriaBuilder<>(cb, cq, productRoot);
   }
 
-  record ProductCriteriaBuilder<T1, T2, T3>(T1 cb, T2 cq, T3 root) { }
+  record ProductCriteriaBuilder<T1, T2, T3>(T1 cb, T2 cq, T3 root) {
+  }
 }

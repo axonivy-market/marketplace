@@ -145,7 +145,6 @@ public class ProductServiceImpl implements ProductService {
   public Page<Product> findProducts(String type, String keyword, String language, Boolean isRESTClient,
       Pageable pageable) {
     final var typeOption = TypeOption.of(type);
-    final var searchPageable = refinePagination(language, pageable);
     var searchCriteria = new ProductSearchCriteria();
     searchCriteria.setListed(true);
     searchCriteria.setKeyword(keyword);
@@ -154,7 +153,7 @@ public class ProductServiceImpl implements ProductService {
     if (BooleanUtils.isTrue(isRESTClient)) {
       searchCriteria.setExcludeFields(List.of(SHORT_DESCRIPTIONS));
     }
-    return productRepo.searchByCriteria(searchCriteria, searchPageable);
+    return productRepo.searchByCriteria(searchCriteria, pageable);
   }
 
   @Override
