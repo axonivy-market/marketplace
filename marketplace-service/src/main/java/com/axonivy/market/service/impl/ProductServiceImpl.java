@@ -85,6 +85,7 @@ import static org.apache.commons.lang3.StringUtils.EMPTY;
 
 @Log4j2
 @Service
+@Cacheable(cacheNames = "GithubPublicReleasesCache")
 public class ProductServiceImpl implements ProductService {
   private static final String INITIAL_VERSION = "1.0";
   private final ProductRepository productRepo;
@@ -805,6 +806,7 @@ public class ProductServiceImpl implements ProductService {
     return version.substring(0, secondDot);
   }
 
+  @Cacheable(cacheNames = "GithubPublicReleasesCache", key="{#productId}")
   @Override
   public Page<GithubReleaseModel> getGitHubReleaseModels(String productId, Pageable pageable) throws IOException {
     log.fatal("PRODUCT ID: " + productId);
@@ -815,7 +817,7 @@ public class ProductServiceImpl implements ProductService {
 
     PagedIterable<GHRelease> ghReleasePagedIterable =  this.gitHubService.getRepository(product.getRepositoryName()).listReleases();
 
-    return this.gitHubService.getGitHubReleaseModels(productId, product, ghReleasePagedIterable, pageable);
+    return this.gitHubService.getGitHubReleaseModels(product, ghReleasePagedIterable, pageable);
   }
 
   @Override

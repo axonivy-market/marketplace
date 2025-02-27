@@ -791,13 +791,13 @@ class ProductServiceImplTest extends BaseSetup {
 
     when(gitHubService.getRepository(anyString())).thenReturn(mockRepository);
     when(gitHubService.getRepository(anyString()).listReleases()).thenReturn(mockGhReleasePagedIterable);
-    when(gitHubService.getGitHubReleaseModels(mockProductId, any(Product.class), any(PagedIterable.class), any(Pageable.class)))
+    when(gitHubService.getGitHubReleaseModels(any(Product.class), any(PagedIterable.class), any(Pageable.class)))
         .thenReturn(Page.empty());
 
     Page<GithubReleaseModel> result = productService.getGitHubReleaseModels(mockProductId, mockPageable);
 
     assertNotNull(result);
-    verify(gitHubService).getGitHubReleaseModels(mockProductId, any(Product.class), any(PagedIterable.class), any(Pageable.class));
+    verify(gitHubService).getGitHubReleaseModels(any(Product.class), any(PagedIterable.class), any(Pageable.class));
   }
 
   @Test
