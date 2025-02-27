@@ -830,10 +830,11 @@ public class ProductServiceImpl implements ProductService {
   }
 
   @Override
-  public void getProductCache(String productId) {
+  public Object getProductCache(String productId) {
     Cache cache = cacheManager.getCache("GithubPublicReleasesCache"); // Match cache name in @Cacheable
     if (cache != null) {
-      System.out.println(cache.get(productId, Object.class)); // Get value from cache
+      return cache.get(productId, Object.class); // Get value from cache
     }
+    return null;
   }
 }

@@ -31,5 +31,5 @@ public interface ProductService {
 
   List<String> getProductIdList();
 
-  void getProductCache(String productId);
+  Object getProductCache(String productId);
 }

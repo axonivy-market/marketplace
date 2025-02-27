@@ -221,9 +221,9 @@ public class ProductDetailsController {
   }
 
   @GetMapping("/get-cache/{product-id}")
-  public void getProductCache(
+  public Object getProductCache(
       @PathVariable(PRODUCT_ID) @Parameter(description = "Product id", example = "portal",
-          in = ParameterIn.PATH) String productId) throws IOException {
-    productService.getProductCache(productId);
+          in = ParameterIn.PATH) String productId) {
+    return productService.getProductCache(productId);
   }
 }
