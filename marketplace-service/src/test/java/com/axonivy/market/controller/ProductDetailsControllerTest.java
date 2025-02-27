@@ -40,13 +40,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
-
-import org.springframework.web.servlet.mvc.method.annotation.ResponseBodyEmitter;
 
 @ExtendWith(MockitoExtension.class)
 class ProductDetailsControllerTest extends BaseSetup {
@@ -174,7 +171,7 @@ class ProductDetailsControllerTest extends BaseSetup {
     List<MavenArtifactVersionModel> models = List.of(new MavenArtifactVersionModel());
     Mockito.when(
             versionService.getArtifactsAndVersionToDisplay(Mockito.anyString(), Mockito.anyBoolean(),
-                    Mockito.anyString()))
+                Mockito.anyString()))
         .thenReturn(models);
     ResponseEntity<List<MavenArtifactVersionModel>> result = productDetailsController.findProductVersionsById("portal",
         true, "10.0.1");
@@ -197,7 +194,6 @@ class ProductDetailsControllerTest extends BaseSetup {
     assertEquals("/api/product-details/portal/10.0.22/json",
         Objects.requireNonNull(result.getBody()).get(1).getUrl());
   }
-
 
 
   @Test
@@ -279,11 +275,11 @@ class ProductDetailsControllerTest extends BaseSetup {
   @Test
   void testGetLatestArtifactDownloadUrl() {
     String mockDownloadUrl = "https://market.axonivy.com";
-    when(versionService.getLatestVersionArtifactDownloadUrl(Mockito.anyString(),Mockito.anyString(),
+    when(versionService.getLatestVersionArtifactDownloadUrl(Mockito.anyString(), Mockito.anyString(),
         Mockito.anyString())).thenReturn(StringUtils.EMPTY);
     var response = productDetailsController.getLatestArtifactDownloadUrl("portal", "1.0.0", "portal-app.zip");
     assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode());
-    when(versionService.getLatestVersionArtifactDownloadUrl(Mockito.anyString(),Mockito.anyString(),
+    when(versionService.getLatestVersionArtifactDownloadUrl(Mockito.anyString(), Mockito.anyString(),
         Mockito.anyString())).thenReturn(mockDownloadUrl);
     response = productDetailsController.getLatestArtifactDownloadUrl("portal", "1.0.0", "portal-app.zip");
     assertEquals(HttpStatus.OK, response.getStatusCode());
@@ -331,36 +327,28 @@ class ProductDetailsControllerTest extends BaseSetup {
   void testSyncLatestReleasesForProducts() throws IOException {
     List<String> productIdList = List.of(DOCKER_CONNECTOR_ID);
     when(productService.getProductIdList()).thenReturn(productIdList);
-    when(productService.getGitHubReleaseModels(Mockito.anyString(), Mockito.any(Pageable.class))).thenReturn(Page.empty());
+    when(productService.getGitHubReleaseModels(Mockito.anyString(), Mockito.any(Pageable.class))).thenReturn(
+        Page.empty());
 
     productDetailsController.syncLatestReleasesForProducts();
 
     verify(productService, times(1)).getProductIdList();
-    verify(productService, times(1)).getGitHubReleaseModels(DOCKER_CONNECTOR_ID, PageRequest.of(0, 20, Sort.unsorted()));
-  }
-
-  @Test
-  void testDownloadZipArtifact() throws Exception {
-    ResponseBodyEmitter emitter = new ResponseBodyEmitter();
-    when(productContentService.downloadZipArtifactFile(Mockito.anyString(), Mockito.anyString(), Mockito.anyString())).thenReturn(CompletableFuture.completedFuture(emitter));
-
-    CompletableFuture<ResponseEntity<ResponseBodyEmitter>> result = productDetailsController.downloadZipArtifact(DOCKER_CONNECTOR_ID, MOCK_RELEASED_VERSION, "artifact");
-
-    assertEquals(HttpStatus.OK, result.get().getStatusCode());
-    assertEquals(emitter, result.get().getBody());
-
-    verify(productContentService, times(1)).downloadZipArtifactFile(DOCKER_CONNECTOR_ID, "artifact", MOCK_RELEASED_VERSION);
+    verify(productService, times(1)).getGitHubReleaseModels(DOCKER_CONNECTOR_ID,
+        PageRequest.of(0, 20, Sort.unsorted()));
   }
 
   @Test
   void testDownloadZipArtifact_NoContent() throws Exception {
-    when(productContentService.downloadZipArtifactFile(Mockito.anyString(), Mockito.anyString(), Mockito.anyString())).thenReturn(CompletableFuture.completedFuture(null));
+    when(productContentService.downloadZipArtifactFile(Mockito.anyString(), Mockito.anyString(),
+        Mockito.anyString())).thenReturn(CompletableFuture.completedFuture(null));
 
-    CompletableFuture<ResponseEntity<ResponseBodyEmitter>> result = productDetailsController.downloadZipArtifact(DOCKER_CONNECTOR_ID, MOCK_RELEASED_VERSION, "artifact");
+    CompletableFuture<ResponseEntity<ResponseBodyEmitter>> result = productDetailsController.downloadZipArtifact(
+        DOCKER_CONNECTOR_ID, MOCK_RELEASED_VERSION, "artifact");
 
     assertEquals(HttpStatus.NO_CONTENT, result.get().getStatusCode());
 
-    verify(productContentService, times(1)).downloadZipArtifactFile(DOCKER_CONNECTOR_ID, "artifact", MOCK_RELEASED_VERSION);
+    verify(productContentService, times(1)).downloadZipArtifactFile(DOCKER_CONNECTOR_ID, "artifact",
+        MOCK_RELEASED_VERSION);
   }
 
   @Test
@@ -368,7 +356,8 @@ class ProductDetailsControllerTest extends BaseSetup {
     var emitter = new ResponseBodyEmitter();
     when(productContentService.downloadZipArtifactFile(MOCK_PRODUCT_ID, MOCK_DEMO_ARTIFACT_ID, MOCK_RELEASED_VERSION))
         .thenReturn(CompletableFuture.completedFuture(emitter));
-    var result = productDetailsController.downloadZipArtifact(MOCK_PRODUCT_ID, MOCK_RELEASED_VERSION, MOCK_DEMO_ARTIFACT_ID);
+    var result = productDetailsController.downloadZipArtifact(MOCK_PRODUCT_ID, MOCK_RELEASED_VERSION,
+        MOCK_DEMO_ARTIFACT_ID);
     assertNotNull(result);
     assertNotNull(result.get());
     assertEquals(HttpStatus.OK, result.get().getStatusCode());
