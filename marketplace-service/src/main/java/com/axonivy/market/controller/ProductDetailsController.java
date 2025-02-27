@@ -221,9 +221,9 @@ public class ProductDetailsController {
   }
 
   @GetMapping("/get-cache/{product-id}")
-  public Object getProductCache(
+  public ResponseEntity<Object> getProductCache(
       @PathVariable(PRODUCT_ID) @Parameter(description = "Product id", example = "portal",
           in = ParameterIn.PATH) String productId) {
-    return productService.getProductCache(productId);
+    return new ResponseEntity<>(productService.getProductCache(productId), HttpStatus.OK);
   }
 }

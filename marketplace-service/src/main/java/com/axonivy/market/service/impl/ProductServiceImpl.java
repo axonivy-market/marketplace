@@ -50,6 +50,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cache.Cache;
 import org.springframework.cache.CacheManager;
 import org.springframework.cache.annotation.Cacheable;
+import org.springframework.cache.caffeine.CaffeineCache;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
@@ -831,9 +832,22 @@ public class ProductServiceImpl implements ProductService {
 
   @Override
   public Object getProductCache(String productId) {
+
     Cache cache = cacheManager.getCache("GithubPublicReleasesCache"); // Match cache name in @Cacheable
+    if (cache instanceof CaffeineCache) {
+      com.github.benmanes.caffeine.cache.Cache<Object, Object> nativeCache =
+          ((CaffeineCache) cache).getNativeCache();
+
+      Map<Object, Object> cacheMap = nativeCache.asMap();
+
+      log.fatal("Cache Entries:");
+      cacheMap.forEach((key, value) -> log.fatal(key + " -> " + value));
+    } else {
+      log.fatal("Cache is null or not a Caffeine cache.");
+    }
     if (cache != null) {
-      return cache.get(productId, Object.class); // Get value from cache
+      log.fatal(cache.getNativeCache());
+      return cache.get(cache.getNativeCache());
     }
     return null;
   }
