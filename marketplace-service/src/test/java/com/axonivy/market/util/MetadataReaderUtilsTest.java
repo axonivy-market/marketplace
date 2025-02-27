@@ -53,7 +53,7 @@ class MetadataReaderUtilsTest extends BaseSetup {
   @Test
   void testUpdateMetadataFromSnapshotXml() {
     MetadataReaderUtils.updateMetadataFromMavenXML(getMockSnapShotMetadataContent(), metadata, true);
-    assertEquals("8.0.5-20221011.124215-170", metadata.getSnapshotVersionValue());
+    assertEquals("12.0.2-20250224.083844-2", metadata.getSnapshotVersionValue());
   }
 
   @Test

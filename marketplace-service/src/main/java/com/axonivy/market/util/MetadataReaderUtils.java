@@ -6,6 +6,7 @@ import com.axonivy.market.entity.Metadata;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import lombok.extern.log4j.Log4j2;
+import org.apache.commons.lang3.ObjectUtils;
 import org.w3c.dom.Document;
 import org.w3c.dom.NodeList;
 import org.xml.sax.InputSource;
@@ -15,7 +16,9 @@ import javax.xml.parsers.DocumentBuilderFactory;
 import java.io.StringReader;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.List;
 import java.util.Objects;
+import java.util.stream.IntStream;
 
 @Log4j2
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
@@ -43,8 +46,15 @@ public class MetadataReaderUtils {
 
   private static void updateMetadataVersions(Metadata metadata, Document document, boolean isSnapShot) {
     if (isSnapShot) {
-      String value = document.getElementsByTagName(MavenConstants.VALUE_TAG).item(0).getTextContent();
-      metadata.setSnapshotVersionValue(value);
+      NodeList valueNodes = document.getElementsByTagName(MavenConstants.VALUE_TAG);
+      String lastUpdatedTag = getElementValue(document, MavenConstants.SNAPSHOT_LAST_UPDATED_TAG);
+      List<String> values = IntStream.range(0, valueNodes.getLength())
+          .mapToObj(i -> valueNodes.item(i).getTextContent())
+          .filter(text -> text.contains(Objects.requireNonNull(lastUpdatedTag))).toList();
+
+      if (ObjectUtils.isNotEmpty(values)) {
+        metadata.setSnapshotVersionValue(values.get(0));
+      }
       return;
     }
     metadata.setLatest(getElementValue(document, MavenConstants.LATEST_VERSION_TAG));
