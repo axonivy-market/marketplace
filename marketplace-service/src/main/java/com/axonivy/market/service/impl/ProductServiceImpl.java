@@ -47,6 +47,8 @@ import org.kohsuke.github.GHRepository;
 import org.kohsuke.github.GHTag;
 import org.kohsuke.github.PagedIterable;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.cache.Cache;
+import org.springframework.cache.CacheManager;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
@@ -107,6 +109,7 @@ public class ProductServiceImpl implements ProductService {
   private GitHubRepoMeta marketRepoMeta;
   @Value("${market.github.market.branch}")
   private String marketRepoBranch;
+  private final CacheManager cacheManager;
 
   public ProductServiceImpl(ProductRepository productRepo, ProductModuleContentRepository productModuleContentRepo,
       GHAxonIvyMarketRepoService axonIvyMarketRepoService, GHAxonIvyProductRepoService axonIvyProductRepoService,
@@ -116,7 +119,8 @@ public class ProductServiceImpl implements ProductService {
       MetadataSyncRepository metadataSyncRepo, MetadataRepository metadataRepo, ImageService imageService,
       ProductContentService productContentService, MetadataService metadataService,
       ProductMarketplaceDataService productMarketplaceDataService, ExternalDocumentService externalDocumentService,
-      ProductMarketplaceDataRepository productMarketplaceDataRepo, VersionService versionService) {
+      ProductMarketplaceDataRepository productMarketplaceDataRepo, VersionService versionService,
+      CacheManager cacheManager) {
     this.productRepo = productRepo;
     this.productModuleContentRepo = productModuleContentRepo;
     this.axonIvyMarketRepoService = axonIvyMarketRepoService;
@@ -136,6 +140,7 @@ public class ProductServiceImpl implements ProductService {
     this.externalDocumentService = externalDocumentService;
     this.productMarketplaceDataRepo = productMarketplaceDataRepo;
     this.versionService = versionService;
+    this.cacheManager = cacheManager;
   }
 
   @Override
@@ -822,5 +827,13 @@ public class ProductServiceImpl implements ProductService {
   @Override
   public List<String> getProductIdList() {
     return this.productRepo.findAll().stream().map(Product::getId).toList();
+  }
+
+  @Override
+  public void getProductCache(String productId) {
+    Cache cache = cacheManager.getCache("GithubPublicReleasesCache"); // Match cache name in @Cacheable
+    if (cache != null) {
+      System.out.println(cache.get(productId, Object.class)); // Get value from cache
+    }
   }
 }
