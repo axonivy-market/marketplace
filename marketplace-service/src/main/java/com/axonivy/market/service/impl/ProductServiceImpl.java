@@ -834,9 +834,9 @@ public class ProductServiceImpl implements ProductService {
   public Object getProductCache(String productId) {
 
     Cache cache = cacheManager.getCache("GithubPublicReleasesCache"); // Match cache name in @Cacheable
-    if (cache instanceof CaffeineCache) {
+    if (cache instanceof CaffeineCache caffeinecache) {
       com.github.benmanes.caffeine.cache.Cache<Object, Object> nativeCache =
-          ((CaffeineCache) cache).getNativeCache();
+          caffeinecache.getNativeCache();
 
       Map<Object, Object> cacheMap = nativeCache.asMap();
 
