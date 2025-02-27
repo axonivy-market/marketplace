@@ -805,7 +805,7 @@ public class ProductServiceImpl implements ProductService {
     return version.substring(0, secondDot);
   }
 
-  @Cacheable(value = "GithubPublicReleasesCache", key="{#productId}")
+  @Cacheable(value = "GithubPublicReleasesCache", key="#productId")
   @Override
   public Page<GithubReleaseModel> getGitHubReleaseModels(String productId, Pageable pageable) throws IOException {
     Product product = productRepo.findProductById(productId);
