@@ -47,7 +47,10 @@ import org.kohsuke.github.GHRepository;
 import org.kohsuke.github.GHTag;
 import org.kohsuke.github.PagedIterable;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.cache.Cache;
+import org.springframework.cache.CacheManager;
 import org.springframework.cache.annotation.Cacheable;
+import org.springframework.cache.caffeine.CaffeineCache;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
@@ -82,6 +85,7 @@ import static org.apache.commons.lang3.StringUtils.EMPTY;
 
 @Log4j2
 @Service
+@Cacheable(cacheNames = "GithubPublicReleasesCache")
 public class ProductServiceImpl implements ProductService {
   private static final String INITIAL_VERSION = "1.0";
   private final ProductRepository productRepo;
@@ -107,6 +111,7 @@ public class ProductServiceImpl implements ProductService {
   private GitHubRepoMeta marketRepoMeta;
   @Value("${market.github.market.branch}")
   private String marketRepoBranch;
+  private final CacheManager cacheManager;
 
   public ProductServiceImpl(ProductRepository productRepo, ProductModuleContentRepository productModuleContentRepo,
       GHAxonIvyMarketRepoService axonIvyMarketRepoService, GHAxonIvyProductRepoService axonIvyProductRepoService,
@@ -116,7 +121,8 @@ public class ProductServiceImpl implements ProductService {
       MetadataSyncRepository metadataSyncRepo, MetadataRepository metadataRepo, ImageService imageService,
       ProductContentService productContentService, MetadataService metadataService,
       ProductMarketplaceDataService productMarketplaceDataService, ExternalDocumentService externalDocumentService,
-      ProductMarketplaceDataRepository productMarketplaceDataRepo, VersionService versionService) {
+      ProductMarketplaceDataRepository productMarketplaceDataRepo, VersionService versionService,
+      CacheManager cacheManager) {
     this.productRepo = productRepo;
     this.productModuleContentRepo = productModuleContentRepo;
     this.axonIvyMarketRepoService = axonIvyMarketRepoService;
@@ -136,6 +142,7 @@ public class ProductServiceImpl implements ProductService {
     this.externalDocumentService = externalDocumentService;
     this.productMarketplaceDataRepo = productMarketplaceDataRepo;
     this.versionService = versionService;
+    this.cacheManager = cacheManager;
   }
 
   @Override
@@ -799,9 +806,10 @@ public class ProductServiceImpl implements ProductService {
     return version.substring(0, secondDot);
   }
 
-  @Cacheable(value = "GithubPublicReleasesCache", key="{#productId}")
+  @Cacheable(cacheNames = "GithubPublicReleasesCache", key="{#productId}")
   @Override
   public Page<GithubReleaseModel> getGitHubReleaseModels(String productId, Pageable pageable) throws IOException {
+    log.fatal("PRODUCT ID: " + productId);
     Product product = productRepo.findProductById(productId);
     if (StringUtils.isBlank(product.getRepositoryName()) || StringUtils.isBlank(product.getSourceUrl())) {
       return new PageImpl<>(new ArrayList<>(), pageable, 0);
@@ -822,5 +830,28 @@ public class ProductServiceImpl implements ProductService {
   @Override
   public List<String> getProductIdList() {
     return this.productRepo.findAll().stream().map(Product::getId).toList();
+  }
+
+  @Override
+  public Object getProductCache(String productId) {
+    log.fatal("PRODUCT ID: " + productId);
+    Cache cache = cacheManager.getCache("GithubPublicReleasesCache"); // Match cache name in @Cacheable
+    if (cache instanceof CaffeineCache caffeinecache) {
+      log.fatal("THERE IS GithubPublicReleasesCache CAFFEINE CACHE");
+      com.github.benmanes.caffeine.cache.Cache<Object, Object> nativeCache =
+          caffeinecache.getNativeCache();
+
+      Map<Object, Object> cacheMap = nativeCache.asMap();
+
+      log.fatal("Cache Entries:");
+      cacheMap.forEach((key, value) -> log.fatal(key + " -> " + value));
+    } else {
+      log.fatal("Cache is null or not a Caffeine cache.");
+    }
+    if (cache != null) {
+      log.fatal(cache.getNativeCache());
+      return cache.get(cache.getNativeCache());
+    }
+    return null;
   }
 }

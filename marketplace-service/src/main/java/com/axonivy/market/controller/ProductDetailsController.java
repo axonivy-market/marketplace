@@ -219,4 +219,11 @@ public class ProductDetailsController {
           return ResponseEntity.ok().headers(headers).contentType(MediaType.APPLICATION_OCTET_STREAM).body(emitter);
         });
   }
+
+  @GetMapping("/get-cache/{product-id}")
+  public ResponseEntity<Object> getProductCache(
+      @PathVariable(PRODUCT_ID) @Parameter(description = "Product id", example = "portal",
+          in = ParameterIn.PATH) String productId) {
+    return new ResponseEntity<>(productService.getProductCache(productId), HttpStatus.OK);
+  }
 }

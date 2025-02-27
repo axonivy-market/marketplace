@@ -563,7 +563,8 @@ class GitHubServiceImplTest {
       when(mockRelease2.isDraft()).thenReturn(true);
       when(gitHubService.toGitHubReleaseModel(mockRelease1, mockProduct)).thenReturn(new GithubReleaseModel());
 
-      Page<GithubReleaseModel> result = gitHubService.getGitHubReleaseModels(mockProduct, mockPagedIterable, mockPageable);
+      Page<GithubReleaseModel> result = gitHubService.getGitHubReleaseModels(mockProduct,
+          mockPagedIterable, mockPageable);
 
       assertNotNull(result);
       assertEquals(1, result.getTotalElements());
