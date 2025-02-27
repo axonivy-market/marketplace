@@ -67,7 +67,7 @@ public class MetadataServiceImpl implements MetadataService {
   public void updateMavenArtifactVersionData(Set<Metadata> metadataSet, String productId) {
     MavenArtifactVersion artifactVersion = mavenArtifactVersionRepo.findById(productId)
         .orElse(MavenArtifactVersion.builder().productId(productId).build());
-    artifactVersion.setAdditionalArtifactsByVersionTest(new ArrayList<>());
+    artifactVersion.getAdditionalArtifactsByVersionTest().clear();
 
     for (Metadata metadata : metadataSet) {
       String metadataContent = MavenUtils.getMetadataContentFromUrl(metadata.getUrl());

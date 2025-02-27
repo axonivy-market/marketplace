@@ -157,6 +157,7 @@ public class ProductServiceImpl implements ProductService {
   }
 
   @Override
+  @Transactional
   public List<String> syncLatestDataFromMarketRepo(Boolean resetSync) {
     List<String> syncedProductIds = new ArrayList<>();
     var isAlreadyUpToDate = false;
