@@ -371,6 +371,7 @@ public class GitHubServiceImpl implements GitHubService {
     githubReleaseModel.setBody(modifiedBody);
     githubReleaseModel.setName(ghRelease.getName());
     githubReleaseModel.setPublishedAt(ghRelease.getPublished_at());
+    githubReleaseModel.setHtmlUrl(ghRelease.getHtmlUrl().toString());
     githubReleaseModel.add(GitHubUtils.createSelfLinkForGithubReleaseModel(product, ghRelease));
 
     return githubReleaseModel;
