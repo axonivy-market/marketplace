@@ -805,7 +805,6 @@ public class ProductServiceImpl implements ProductService {
     return version.substring(0, secondDot);
   }
 
-  @Cacheable(cacheNames = "GithubPublicReleasesCache", key="{#productId}")
   @Override
   public Page<GithubReleaseModel> getGitHubReleaseModels(String productId, Pageable pageable) throws IOException {
     log.fatal("PRODUCT ID: " + productId);
@@ -816,7 +815,7 @@ public class ProductServiceImpl implements ProductService {
 
     PagedIterable<GHRelease> ghReleasePagedIterable =  this.gitHubService.getRepository(product.getRepositoryName()).listReleases();
 
-    return this.gitHubService.getGitHubReleaseModels(product, ghReleasePagedIterable, pageable);
+    return this.gitHubService.getGitHubReleaseModels(productId, product, ghReleasePagedIterable, pageable);
   }
 
   @Override

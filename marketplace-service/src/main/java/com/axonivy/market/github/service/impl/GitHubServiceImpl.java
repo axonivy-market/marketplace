@@ -22,6 +22,7 @@ import com.axonivy.market.model.GithubReleaseModel;
 import com.axonivy.market.repository.UserRepository;
 import lombok.extern.log4j.Log4j2;
 import org.kohsuke.github.*;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
@@ -351,8 +352,9 @@ public class GitHubServiceImpl implements GitHubService {
     });
   }
 
+  @Cacheable(cacheNames = "GithubPublicReleasesCache", key="{#productId}")
   @Override
-  public Page<GithubReleaseModel> getGitHubReleaseModels(Product product,
+  public Page<GithubReleaseModel> getGitHubReleaseModels(String productId, Product product,
       PagedIterable<GHRelease> ghReleasePagedIterable,
       Pageable pageable) throws IOException {
     List<GithubReleaseModel> githubReleaseModels = new ArrayList<>();
