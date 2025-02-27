@@ -63,6 +63,7 @@ import { HistoryService } from '../../../core/services/history/history.service';
 import { TypeOption } from '../../../shared/enums/type-option.enum';
 import { SortOption } from '../../../shared/enums/sort-option.enum';
 import { MarkdownService } from '../../../shared/services/markdown.service';
+import { full } from 'markdown-it-emoji';
 
 export interface DetailTab {
   activeClass: string;
