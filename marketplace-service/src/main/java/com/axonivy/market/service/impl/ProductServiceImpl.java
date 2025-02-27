@@ -805,7 +805,7 @@ public class ProductServiceImpl implements ProductService {
     return version.substring(0, secondDot);
   }
 
-  @Cacheable(value = "GithubPublicReleasesCache", key="{#productId}")
+  @Cacheable(value = "GithubPublicReleasesCache", key="{# productId}")
   @Override
   public Page<GithubReleaseModel> getGitHubReleaseModels(String productId, Pageable pageable) throws IOException {
     Product product = productRepo.findProductById(productId);
@@ -832,9 +832,10 @@ public class ProductServiceImpl implements ProductService {
 
   @Override
   public Object getProductCache(String productId) {
-
+    log.fatal("PRODUCT ID: " + productId);
     Cache cache = cacheManager.getCache("GithubPublicReleasesCache"); // Match cache name in @Cacheable
     if (cache instanceof CaffeineCache caffeinecache) {
+      log.fatal("THERE IS GithubPublicReleasesCache CAFFEINE CACHE");
       com.github.benmanes.caffeine.cache.Cache<Object, Object> nativeCache =
           caffeinecache.getNativeCache();
 
