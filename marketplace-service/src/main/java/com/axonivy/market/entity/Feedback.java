@@ -1,6 +1,8 @@
 package com.axonivy.market.entity;
 
 import com.axonivy.market.enums.FeedbackStatus;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -17,6 +19,8 @@ import static com.axonivy.market.constants.EntityConstants.FEEDBACK;
 
 @Getter
 @Setter
+@Builder
+@AllArgsConstructor
 @NoArgsConstructor
 @Document(FEEDBACK)
 public class Feedback implements Serializable {

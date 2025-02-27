@@ -72,7 +72,7 @@ public class FeedbackServiceImpl implements FeedbackService {
     }
     validateProductExists(productId);
 
-    List<Feedback> existingUserFeedback = customFeedbackRepository.findFeedbackByUser(userId, productId);
+    List<Feedback> existingUserFeedback = customFeedbackRepository.findByUserIdAndProductId(userId, productId);
     if (existingUserFeedback == null) {
       throw new NoContentException(ErrorCode.NO_FEEDBACK_OF_USER_FOR_PRODUCT,
           String.format("No feedback with user id '%s' and product id '%s'", userId, productId));
@@ -97,7 +97,7 @@ public class FeedbackServiceImpl implements FeedbackService {
   @Override
   public Feedback upsertFeedback(FeedbackModelRequest feedback, String userId) throws NotFoundException {
     validateUserExists(userId);
-    List<Feedback> feedbacks = customFeedbackRepository.findFeedbackByUser(userId,
+    List<Feedback> feedbacks = customFeedbackRepository.findByUserIdAndProductId(userId,
         feedback.getProductId());
 
     if (feedbacks.isEmpty()) {

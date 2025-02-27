@@ -7,37 +7,17 @@ import { CommonModule } from '@angular/common';
 import { Feedback } from '../../../shared/models/feedback.model';
 import { By } from '@angular/platform-browser';
 import { FeedbackStatus } from '../../../shared/enums/feedback-status.enum';
-
-// Mock LanguageService
-class MockLanguageService {
-  selectedLanguage() {
-    return 'en';
-  }
-}
+import { MOCK_FEEDBACKS } from '../../../shared/mocks/mock-data';
 
 describe('FeedbackTableComponent', () => {
   let component: FeedbackTableComponent;
   let fixture: ComponentFixture<FeedbackTableComponent>;
-  let languageService: LanguageService;
-
-  // Sample feedback data
-  const mockFeedbacks: Feedback[] = [
-    {
-      id: '1',
-      username: 'testUser',
-      userAvatarUrl: 'http://test.com/avatar.jpg',
-      content: 'Great product!',
-      rating: 5,
-      feedbackStatus: FeedbackStatus.PENDING,
-      createdAt: new Date('2025-01-01'),
-      updatedAt: new Date('2025-01-02'),
-      moderatorName: 'mod1',
-      reviewDate: new Date('2025-01-03'),
-      productId: '123'
-    }
-  ];
+  let languageService: jasmine.SpyObj<LanguageService>;
 
   beforeEach(async () => {
+    const languageServiceSpy = jasmine.createSpyObj('LanguageService', [
+      'selectedLanguage'
+    ]);
     await TestBed.configureTestingModule({
       imports: [
         CommonModule,
@@ -46,19 +26,24 @@ describe('FeedbackTableComponent', () => {
         FeedbackTableComponent
       ],
       providers: [
-        { provide: LanguageService, useClass: MockLanguageService },
+        {
+          provide: LanguageService,
+          useValue: languageServiceSpy
+        },
         TranslateService
       ]
     }).compileComponents();
-
+    languageService = TestBed.inject(
+      LanguageService
+    ) as jasmine.SpyObj<LanguageService>;
     fixture = TestBed.createComponent(FeedbackTableComponent);
     component = fixture.componentInstance;
-    component.feedbacks = mockFeedbacks;
+    component.feedbacks = MOCK_FEEDBACKS;
     fixture.detectChanges();
   });
 
   it('should emit reviewAction with correct feedback and approval status when called', () => {
-    const feedback = mockFeedbacks[0];
+    const feedback = MOCK_FEEDBACKS[0];
     const approveSpy = spyOn(component.reviewAction, 'emit');
 
     component.handleReviewAction(feedback, true);
@@ -70,7 +55,7 @@ describe('FeedbackTableComponent', () => {
   });
 
   it('should emit reviewAction with false approval status when rejected', () => {
-    const feedback = mockFeedbacks[0];
+    const feedback = MOCK_FEEDBACKS[0];
     const rejectSpy = spyOn(component.reviewAction, 'emit');
 
     component.handleReviewAction(feedback, false);
@@ -81,14 +66,15 @@ describe('FeedbackTableComponent', () => {
     });
   });
 
-
   it('should display all table headers when isHistory is false', () => {
     component.isHistoryTab = false;
     fixture.detectChanges();
 
     const headers = fixture.debugElement.queryAll(By.css('th'));
-    expect(headers.length).toBe(7); // 6 standard + 1 action column
-    expect(headers[6].nativeElement.textContent).toContain('common.approval.action');
+    expect(headers.length).toBe(7);
+    expect(headers[6].nativeElement.textContent).toContain(
+      'common.approval.action'
+    );
   });
 
   it('should display history-specific headers when isHistory is true', () => {
@@ -96,9 +82,13 @@ describe('FeedbackTableComponent', () => {
     fixture.detectChanges();
 
     const headers = fixture.debugElement.queryAll(By.css('th'));
-    expect(headers.length).toBe(8); // 6 standard + 2 history columns
-    expect(headers[6].nativeElement.textContent).toContain('common.approval.moderator');
-    expect(headers[7].nativeElement.textContent).toContain('common.approval.reviewDate');
+    expect(headers.length).toBe(8);
+    expect(headers[6].nativeElement.textContent).toContain(
+      'common.approval.moderator'
+    );
+    expect(headers[7].nativeElement.textContent).toContain(
+      'common.approval.reviewDate'
+    );
   });
 
   it('should render feedback data correctly', () => {
@@ -106,10 +96,14 @@ describe('FeedbackTableComponent', () => {
     expect(rows.length).toBe(1);
 
     const cells = rows[0].queryAll(By.css('td'));
-    expect(cells[0].query(By.css('.feedback-username')).nativeElement.textContent).toContain('testUser');
+    expect(
+      cells[0].query(By.css('.feedback-username')).nativeElement.textContent
+    ).toContain('testUser');
     expect(cells[1].nativeElement.textContent).toContain('Great product!');
     expect(cells[2].nativeElement.textContent).toContain('5');
-    expect(cells[3].nativeElement.textContent).toContain(FeedbackStatus.PENDING);
+    expect(cells[3].nativeElement.textContent).toContain(
+      FeedbackStatus.PENDING
+    );
   });
 
   it('should show action buttons when isHistory is false', () => {
@@ -130,7 +124,10 @@ describe('FeedbackTableComponent', () => {
     const approveButton = fixture.debugElement.query(By.css('#approve-button'));
     approveButton.triggerEventHandler('click', null);
 
-    expect(component.handleReviewAction).toHaveBeenCalledWith(mockFeedbacks[0], true);
+    expect(component.handleReviewAction).toHaveBeenCalledWith(
+      MOCK_FEEDBACKS[0],
+      true
+    );
   });
 
   it('should call handleReviewAction when reject button is clicked', () => {
@@ -141,6 +138,9 @@ describe('FeedbackTableComponent', () => {
     const rejectButton = fixture.debugElement.query(By.css('#reject-button'));
     rejectButton.triggerEventHandler('click', null);
 
-    expect(component.handleReviewAction).toHaveBeenCalledWith(mockFeedbacks[0], false);
+    expect(component.handleReviewAction).toHaveBeenCalledWith(
+      MOCK_FEEDBACKS[0],
+      false
+    );
   });
 });

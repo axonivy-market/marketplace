@@ -13,7 +13,6 @@ import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.stereotype.Repository;
-import org.springframework.util.CollectionUtils;
 
 import java.util.List;
 
@@ -37,18 +36,7 @@ public class CustomFeedbackRepositoryImpl extends CustomRepository implements Cu
   }
 
   @Override
-  public Feedback findByUserIdAndProductId(String userId, String productId) {
-    Query query = new Query();
-    query.addCriteria(Criteria.where(PRODUCT_ID).is(productId)
-        .andOperator(Criteria.where(USER_ID).is(userId),
-            Criteria.where(FEEDBACK_STATUS).ne(FeedbackStatus.REJECTED)));
-
-    List<Feedback> feedbacks = mongoTemplate.find(query, Feedback.class, EntityConstants.FEEDBACK);
-    return CollectionUtils.isEmpty(feedbacks) ? null : feedbacks.get(0);
-  }
-
-  @Override
-  public List<Feedback> findFeedbackByUser(String userId, String productId) {
+  public List<Feedback> findByUserIdAndProductId(String userId, String productId) {
     Query query = new Query();
     query.addCriteria(Criteria.where(PRODUCT_ID).is(productId)
         .andOperator(Criteria.where(USER_ID).is(userId),

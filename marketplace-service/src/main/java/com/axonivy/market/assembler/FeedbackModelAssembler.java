@@ -11,6 +11,9 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.hateoas.server.mvc.RepresentationModelAssemblerSupport;
 import org.springframework.stereotype.Component;
 
+import java.util.List;
+import java.util.stream.Collectors;
+
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 
@@ -30,6 +33,12 @@ public class FeedbackModelAssembler extends RepresentationModelAssemblerSupport<
     FeedbackModel resource = new FeedbackModel();
     resource.add(linkTo(methodOn(FeedbackController.class).findFeedback(feedback.getId())).withSelfRel());
     return createResource(resource, feedback);
+  }
+
+  public List<FeedbackModel> toModel(List<Feedback> feedbacks) {
+    return feedbacks.stream()
+        .map(this::toModel)
+        .collect(Collectors.toList());
   }
 
   private FeedbackModel createResource(FeedbackModel model, Feedback feedback) {

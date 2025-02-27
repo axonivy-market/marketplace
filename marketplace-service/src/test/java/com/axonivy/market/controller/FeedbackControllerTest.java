@@ -123,12 +123,12 @@ class FeedbackControllerTest extends BaseSetup {
   void testFindFeedbackByUserIdAndProductId() {
     Feedback mockFeedback = createFeedbackMock();
     User mockUser = createUserMock();
-    when(service.findFeedbackByUserIdAndProductId(any(), any())).thenReturn(mockFeedback);
+    when(service.findFeedbackByUserIdAndProductId(any(), any())).thenReturn(List.of(mockFeedback));
     when(userService.findUser(any())).thenReturn(mockUser);
     var result = feedbackController.findFeedbackByUserIdAndProductId(USER_ID_SAMPLE, PRODUCT_ID_SAMPLE);
     assertEquals(HttpStatus.OK, result.getStatusCode());
     assertTrue(result.hasBody());
-    assertEquals(USER_NAME_SAMPLE, Objects.requireNonNull(result.getBody()).getUsername());
+    assertEquals(USER_NAME_SAMPLE, Objects.requireNonNull(result.getBody()).get(0).getUsername());
   }
 
   @Test

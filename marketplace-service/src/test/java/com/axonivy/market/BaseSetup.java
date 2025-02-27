@@ -2,6 +2,7 @@ package com.axonivy.market;
 
 import com.axonivy.market.bo.Artifact;
 import com.axonivy.market.constants.MavenConstants;
+import com.axonivy.market.entity.Feedback;
 import com.axonivy.market.entity.Image;
 import com.axonivy.market.entity.MavenArtifactVersion;
 import com.axonivy.market.entity.Metadata;
@@ -9,6 +10,7 @@ import com.axonivy.market.entity.Product;
 import com.axonivy.market.entity.ProductDesignerInstallation;
 import com.axonivy.market.entity.ProductJsonContent;
 import com.axonivy.market.entity.ProductMarketplaceData;
+import com.axonivy.market.enums.FeedbackStatus;
 import com.axonivy.market.enums.Language;
 import com.axonivy.market.enums.SortOption;
 import com.axonivy.market.model.FeedbackApprovalModel;
@@ -324,9 +326,30 @@ public class BaseSetup {
     return versionAndUrlModels;
   }
 
+  protected Feedback mockFeedback() {
+    return Feedback.builder()
+        .id("1")
+        .userId("user1")
+        .productId("product1")
+        .feedbackStatus(FeedbackStatus.APPROVED)
+        .build();
+  }
+
+  protected List<Feedback> mockFeedbacks() {
+    Feedback updatedFeedback = Feedback.builder()
+        .id("1")
+        .userId("user1")
+        .productId("product1")
+        .feedbackStatus(FeedbackStatus.APPROVED)
+        .moderatorName("Admin")
+        .build();
+
+    return List.of(updatedFeedback);
+  }
+
   protected FeedbackApprovalModel mockFeedbackApproval() {
     return FeedbackApprovalModel.builder()
-        .feedbackId("67b35ebdcbbb4301f8fe25d3")
+        .feedbackId("1")
         .moderatorName("Admin")
         .build();
   }
