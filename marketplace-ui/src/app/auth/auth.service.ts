@@ -5,7 +5,7 @@ import { Router } from '@angular/router';
 import { catchError, Observable, throwError } from 'rxjs';
 import { CookieService } from 'ngx-cookie-service';
 import { jwtDecode } from 'jwt-decode';
-import { TOKEN_KEY } from '../shared/constants/common.constant';
+import { FEEDBACK_APPROVAL_STATE, TOKEN_KEY } from '../shared/constants/common.constant';
 
 export interface TokenPayload {
   username: string;
@@ -61,7 +61,7 @@ export class AuthService {
 
   handleTokenResponse(token: string, state: string): void {
     this.setTokenAsCookie(token);
-    if(state == 'feedback-approval'){
+    if(state == FEEDBACK_APPROVAL_STATE){
       this.router.navigate([`${state}`]);
     } else {
       this.router.navigate([`${state}`], {

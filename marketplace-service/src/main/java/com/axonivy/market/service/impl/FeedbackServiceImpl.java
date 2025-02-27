@@ -27,6 +27,7 @@ import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
@@ -64,14 +65,14 @@ public class FeedbackServiceImpl implements FeedbackService {
   }
 
   @Override
-  public Feedback findFeedbackByUserIdAndProductId(String userId,
+  public List<Feedback> findFeedbackByUserIdAndProductId(String userId,
       String productId) throws NotFoundException, NoContentException {
     if (StringUtils.isNotBlank(userId)) {
       validateUserExists(userId);
     }
     validateProductExists(productId);
 
-    Feedback existingUserFeedback = customFeedbackRepository.findByUserIdAndProductId(userId, productId);
+    List<Feedback> existingUserFeedback = customFeedbackRepository.findFeedbackByUser(userId, productId);
     if (existingUserFeedback == null) {
       throw new NoContentException(ErrorCode.NO_FEEDBACK_OF_USER_FOR_PRODUCT,
           String.format("No feedback with user id '%s' and product id '%s'", userId, productId));
@@ -96,23 +97,38 @@ public class FeedbackServiceImpl implements FeedbackService {
   @Override
   public Feedback upsertFeedback(FeedbackModelRequest feedback, String userId) throws NotFoundException {
     validateUserExists(userId);
-
-    Feedback existingUserFeedback = customFeedbackRepository.findByUserIdAndProductId(userId,
+    List<Feedback> feedbacks = customFeedbackRepository.findFeedbackByUser(userId,
         feedback.getProductId());
-    if (existingUserFeedback == null) {
+
+    if (feedbacks.isEmpty()) {
       Feedback newFeedback = new Feedback();
       newFeedback.setUserId(userId);
       newFeedback.setProductId(feedback.getProductId());
       newFeedback.setRating(feedback.getRating());
       newFeedback.setContent(feedback.getContent());
       newFeedback.setFeedbackStatus(FeedbackStatus.PENDING);
-      return feedbackRepository.save(newFeedback);
-    } else {
-      existingUserFeedback.setRating(feedback.getRating());
-      existingUserFeedback.setContent(feedback.getContent());
-      existingUserFeedback.setFeedbackStatus(FeedbackStatus.PENDING);
-      return feedbackRepository.save(existingUserFeedback);
+      return feedbackRepository.insert(newFeedback);
     }
+
+    boolean haveApprovedFeedback =
+        feedbacks.stream().anyMatch(fb -> fb.getFeedbackStatus() == FeedbackStatus.APPROVED);
+    Feedback currentPendingFeedback =
+        feedbacks.stream().filter(f -> f.getFeedbackStatus() == FeedbackStatus.PENDING).findFirst().orElse(null);
+
+    if (haveApprovedFeedback && currentPendingFeedback == null) {
+      Feedback newFeedback = new Feedback();
+      newFeedback.setUserId(userId);
+      newFeedback.setProductId(feedback.getProductId());
+      newFeedback.setRating(feedback.getRating());
+      newFeedback.setContent(feedback.getContent());
+      newFeedback.setFeedbackStatus(FeedbackStatus.PENDING);
+      return feedbackRepository.insert(newFeedback);
+    }
+
+    Objects.requireNonNull(currentPendingFeedback).setRating(feedback.getRating());
+    currentPendingFeedback.setContent(feedback.getContent());
+    currentPendingFeedback.setFeedbackStatus(FeedbackStatus.PENDING);
+    return feedbackRepository.save(currentPendingFeedback);
   }
 
   @Override

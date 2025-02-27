@@ -41,6 +41,7 @@ public class FeedbackModelAssembler extends RepresentationModelAssemblerSupport<
       user = new User();
     }
     model.setId(feedback.getId());
+    model.setUserId(user.getId());
     model.setUsername(StringUtils.isBlank(user.getName()) ? user.getUsername() : user.getName());
     model.setUserAvatarUrl(user.getAvatarUrl());
     model.setUserProvider(user.getProvider());

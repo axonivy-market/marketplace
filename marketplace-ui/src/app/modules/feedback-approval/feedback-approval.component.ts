@@ -1,15 +1,16 @@
 import { CommonModule } from "@angular/common";
 import { FormsModule } from "@angular/forms";
 import { TranslateModule, TranslateService } from "@ngx-translate/core";
-import { Component, inject, Signal, ViewEncapsulation } from "@angular/core";
+import { Component, computed, inject, Signal, ViewEncapsulation } from "@angular/core";
 import { AuthService } from "../../auth/auth.service";
 import { AppModalService } from "../../shared/services/app-modal.service";
 import { Feedback } from "../../shared/models/feedback.model";
 import { ProductFeedbackService } from "../product/product-detail/product-detail-feedback/product-feedbacks-panel/product-feedback.service";
 import { LanguageService } from "../../core/services/language/language.service";
 import { ThemeService } from "../../core/services/theme/theme.service";
-import { FEEDBACK_APPROVAL_TABS } from "../../shared/constants/common.constant";
+import { FEEDBACK_APPROVAL_STATE, FEEDBACK_APPROVAL_TABS } from "../../shared/constants/common.constant";
 import { ActivatedRoute } from "@angular/router";
+import { FeedbackTableComponent } from "./feedback-table/feedback-table.component";
 
 @Component({
   selector: 'app-feedback-approval',
@@ -17,7 +18,8 @@ import { ActivatedRoute } from "@angular/router";
   imports: [
     CommonModule,
     FormsModule,
-    TranslateModule
+    TranslateModule,
+    FeedbackTableComponent
   ],
   templateUrl: './feedback-approval.component.html',
   styleUrls: ['./feedback-approval.component.scss'],
@@ -43,17 +45,20 @@ export class FeedbackApprovalComponent {
   pendingFeedbacks: Signal<Feedback[] | undefined> =
     this.productFeedbackService.pendingFeedbacks;
 
+  allFeedbacks = computed(() => this.feedbacks() ?? []);
+  reviewingFeedbacks = computed(() => this.pendingFeedbacks() ?? []);
+
   ngOnInit(): void {
     let token = this.authService.getToken();
-    if(token) {
+    if (token) {
       this.fetchFeedbacks();
-    } 
+    }
     else {
-      this.authService.redirectToGitHub('feedback-approval');
+      this.authService.redirectToGitHub(FEEDBACK_APPROVAL_STATE);
     }
   }
 
-  private fetchFeedbacks(): void {
+  fetchFeedbacks(): void {
     this.productFeedbackService.findProductFeedbacks().subscribe({
       next: () => {
         this.isAuthenticated = true;
@@ -65,7 +70,10 @@ export class FeedbackApprovalComponent {
   }
 
   onClickReviewButton(feedback: Feedback, isApproved: boolean): void {
-    this.productFeedbackService.updateFeedbackStatus(feedback.id!, isApproved, this.authService.getDisplayName()!).subscribe();
+    this.productFeedbackService.updateFeedbackStatus(feedback.id!, isApproved, this.authService.getDisplayName()!)
+      .subscribe(() => {
+        this.fetchFeedbacks();
+      });
   }
 
   setActiveTab(tab: string): void {

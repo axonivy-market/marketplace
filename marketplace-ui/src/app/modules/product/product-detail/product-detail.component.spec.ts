@@ -175,7 +175,7 @@ describe('ProductDetailComponent', () => {
     );
 
     mockProductFeedbackService.findProductFeedbackOfUser.and.returnValue(
-      of({} as any as Feedback)
+      of({} as any as Feedback[])
     );
     mockAppModalService.openAddFeedbackDialog.and.returnValue(
       Promise.resolve()

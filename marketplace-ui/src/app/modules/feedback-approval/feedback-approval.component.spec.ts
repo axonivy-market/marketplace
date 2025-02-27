@@ -1,132 +1,146 @@
-import { ComponentFixture, TestBed } from "@angular/core/testing";
-import { FeedbackApprovalComponent } from "./feedback-approval.component";
-import { ProductFeedbackService } from "../product/product-detail/product-detail-feedback/product-feedbacks-panel/product-feedback.service";
-import { TranslateModule, TranslateService } from "@ngx-translate/core";
-import { CommonModule } from "@angular/common";
-import { AuthService } from "../../auth/auth.service";
-import { By } from "@angular/platform-browser";
-import { ThemeService } from "../../core/services/theme/theme.service";
-import { provideHttpClient, withInterceptorsFromDi } from '@angular/common/http';
-import { provideHttpClientTesting } from '@angular/common/http/testing';
-import { signal } from "@angular/core";
+import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { FeedbackApprovalComponent } from './feedback-approval.component';
+import { FeedbackTableComponent } from './feedback-table/feedback-table.component';
+import { TranslateModule } from '@ngx-translate/core';
+import { AuthService } from '../../auth/auth.service';
+import { AppModalService } from '../../shared/services/app-modal.service';
+import { ProductFeedbackService } from '../product/product-detail/product-detail-feedback/product-feedbacks-panel/product-feedback.service';
+import { LanguageService } from '../../core/services/language/language.service';
+import { ThemeService } from '../../core/services/theme/theme.service';
+import { ActivatedRoute } from '@angular/router';
+import { of, throwError } from 'rxjs';
+import { By } from '@angular/platform-browser';
 
 describe('FeedbackApprovalComponent', () => {
-let component: FeedbackApprovalComponent;
+  let component: FeedbackApprovalComponent;
   let fixture: ComponentFixture<FeedbackApprovalComponent>;
-  let productFeedbackService: ProductFeedbackService;
-  let translateService: TranslateService;
-  let authService: jasmine.SpyObj<AuthService>;
-  let themeService: jasmine.SpyObj<ThemeService>;
-  let mockProductFeedbackService: jasmine.SpyObj<ProductFeedbackService>;
+  let authServiceMock: any;
+  let productFeedbackServiceMock: any;
 
   beforeEach(async () => {
-    const authSpy = jasmine.createSpyObj('AuthService', ['getToken', 'redirectToGitHub']);
-    const themeSpy = jasmine.createSpyObj('ThemeService', ['isDarkMode']);
-    mockProductFeedbackService = jasmine.createSpyObj(
-          'ProductFeedbackService',
-          [
-            'getInitFeedbacksObservable',
-            'findProductFeedbacksByCriteria',
-            'handleFeedbackApiResponse',
-            'findProductFeedbackOfUser',
-            'totalElements'
-          ],
-          {
-            feedbacks: signal([]),
-            totalElements: signal(0)
-          }
-        );
+    authServiceMock = {
+      getToken: jasmine.createSpy().and.returnValue('mockToken'),
+      redirectToGitHub: jasmine.createSpy(),
+      getDisplayName: jasmine.createSpy().and.returnValue('TestUser')
+    };
+
+    productFeedbackServiceMock = {
+      allFeedbacks: of([]),
+      pendingFeedbacks: of([]),
+      findProductFeedbacks: jasmine.createSpy().and.returnValue(of([])),
+      updateFeedbackStatus: jasmine.createSpy().and.returnValue(of(null))
+    };
+
     await TestBed.configureTestingModule({
-      imports: [ FeedbackApprovalComponent, CommonModule, TranslateModule.forRoot() ],
+      imports: [TranslateModule.forRoot()],
+      declarations: [FeedbackApprovalComponent, FeedbackTableComponent],
       providers: [
-        ProductFeedbackService,
-        TranslateService,
-        provideHttpClient(withInterceptorsFromDi()),
-        provideHttpClientTesting(),
-        { provide: AuthService, useValue: authSpy },
-        { provide: ThemeService, useValue: themeSpy }
+        { provide: AuthService, useValue: authServiceMock },
+        { provide: AppModalService, useValue: {} },
+        { provide: ProductFeedbackService, useValue: productFeedbackServiceMock },
+        { provide: LanguageService, useValue: {} },
+        { provide: ThemeService, useValue: { isDarkMode: () => false } },
+        { provide: ActivatedRoute, useValue: {} }
       ],
     }).compileComponents();
 
     fixture = TestBed.createComponent(FeedbackApprovalComponent);
     component = fixture.componentInstance;
-    productFeedbackService = TestBed.inject(ProductFeedbackService);
-    authService = TestBed.inject(AuthService) as jasmine.SpyObj<AuthService>;
-    themeService = TestBed.inject(ThemeService) as jasmine.SpyObj<ThemeService>;
-    spyOn(productFeedbackService, 'changeSort').and.callThrough();
     fixture.detectChanges();
   });
 
-  it('should create', () => {
+
+  it('should create the component', () => {
     expect(component).toBeTruthy();
   });
 
-  it('should render when authenticated', () => {
-    fixture.detectChanges();
-    const container = fixture.debugElement.query(By.css('.container'));
-    expect(container).toBeTruthy();
+
+  it('should call fetchFeedbacks on ngOnInit if token exists', () => {
+    spyOn(component, 'fetchFeedbacks');
+    component.ngOnInit();
+    expect(component.fetchFeedbacks).toHaveBeenCalled();
   });
 
-  it('should not render when not authenticated', () => {
-    authService.getToken.and.returnValue(null);
-    fixture.detectChanges();
-    const container = fixture.debugElement.query(By.css('.container'));
-    expect(container.children.length).toBe(0);
+
+  it('should call redirectToGitHub if no token', () => {
+    authServiceMock.getToken.and.returnValue(null);
+    component.ngOnInit();
+    expect(authServiceMock.redirectToGitHub).toHaveBeenCalledWith('feedback-approval');
   });
 
-  it('should display tabs correctly', () => {
-    fixture.detectChanges();
-    const tabs = fixture.debugElement.queryAll(By.css('.nav-tabs .nav-item'));
-    expect(tabs.length).toBe(2);
-    
-    const reviewTab = tabs[0].query(By.css('a'));
-    const historyTab = tabs[1].query(By.css('a'));
-    
-    expect(reviewTab.nativeElement.textContent.trim()).toBe('Review Feedback');
-    expect(historyTab.nativeElement.textContent.trim()).toBe('History');
+
+  it('should call findProductFeedbacks on fetchFeedbacks and set isAuthenticated', () => {
+    component.fetchFeedbacks();
+    expect(productFeedbackServiceMock.findProductFeedbacks).toHaveBeenCalled();
+    expect(component.isAuthenticated).toBeTrue();
   });
 
-  it('should switch tabs when clicked', () => {
+
+  it('should set isAuthenticated to false on fetchFeedbacks error', () => {
+    productFeedbackServiceMock.findProductFeedbacks.and.returnValue(throwError(() => new Error('Error')));
+    component.fetchFeedbacks();
+    expect(component.isAuthenticated).toBeFalse();
+  });
+
+
+  it('should call updateFeedbackStatus on onClickReviewButton', () => {
+    const mockFeedback = { id: 1 } as any;
+    component.onClickReviewButton(mockFeedback, true);
+    expect(productFeedbackServiceMock.updateFeedbackStatus).toHaveBeenCalledWith(1, true, 'TestUser');
+  });
+
+
+  it('should update activeTab when setActiveTab is called', () => {
+    component.setActiveTab('history');
+    expect(component.activeTab).toBe('history');
+  });
+
+
+  it('should render review and history tabs', () => {
     fixture.detectChanges();
-    
-    // Initially review tab should be active
-    expect(component.activeTab).toBe('review');
-    
-    // Click history tab
+    const reviewTab = fixture.debugElement.query(By.css('#review-tab'));
+    const historyTab = fixture.debugElement.query(By.css('#history-tab'));
+
+    expect(reviewTab.nativeElement.textContent.trim()).toContain('common.approval.reviewFeedback');
+    expect(historyTab.nativeElement.textContent.trim()).toContain('common.approval.history');
+  });
+
+
+  it('should change activeTab when clicking tabs', () => {
     const historyTab = fixture.debugElement.query(By.css('#history-tab'));
     historyTab.triggerEventHandler('click', null);
     fixture.detectChanges();
-    
+
     expect(component.activeTab).toBe('history');
-    const historyContent = fixture.debugElement.query(By.css('.tab-pane.show.active'));
-    expect(historyContent).toBeTruthy();
   });
 
-  it('should display pending feedbacks table', () => {
+
+  it('should pass correct feedbacks to FeedbackTableComponent', () => {
+    const mockPendingFeedbacks = [{ id: 1, content: 'Great product!' }];
+    const mockFeedbacks = [{ id: 2, content: 'Awesome service!' }];
+    productFeedbackServiceMock.pendingFeedbacks = of(mockPendingFeedbacks);
+    productFeedbackServiceMock.allFeedbacks = of(mockFeedbacks);
     fixture.detectChanges();
-    const tableRows = fixture.debugElement.queryAll(By.css('.table-responsive:first-child tbody tr'));
-    expect(tableRows.length).toBe(1);
-    
-    const cells = tableRows[0].queryAll(By.css('td'));
-    expect(cells.length).toBe(7);
-    expect(cells[0].query(By.css('.feedback-username')).nativeElement.textContent.trim()).toBe('testUser');
+
+    const reviewTable = fixture.debugElement.queryAll(By.directive(FeedbackTableComponent))[0];
+    const historyTable = fixture.debugElement.queryAll(By.directive(FeedbackTableComponent))[1];
+
+    expect(reviewTable.componentInstance.feedbacks).toEqual(mockPendingFeedbacks);
+    expect(historyTable.componentInstance.feedbacks).toEqual(mockFeedbacks);
   });
 
-  it('should trigger approve button click', () => {
-    spyOn(component, 'onClickingApproveButton');
+
+  it('should trigger onClickReviewButton when review button is clicked', () => {
+    spyOn(component, 'onClickReviewButton');
+
+    const mockFeedback = { id: 1 } as any;
+    productFeedbackServiceMock.pendingFeedbacks = of([mockFeedback]);
     fixture.detectChanges();
-    
+
     const approveButton = fixture.debugElement.query(By.css('#approve-button'));
     approveButton.triggerEventHandler('click', null);
-    expect(component.onClickingApproveButton).toHaveBeenCalled();
-  });
-
-  it('should trigger reject button click', () => {
-    spyOn(component, 'onClickingRejectButton');
     fixture.detectChanges();
-    
-    const rejectButton = fixture.debugElement.query(By.css('#reject-button'));
-    rejectButton.triggerEventHandler('click', null);
-    expect(component.onClickingRejectButton).toHaveBeenCalled();
+
+    expect(component.onClickReviewButton).toHaveBeenCalledWith(mockFeedback, true);
   });
 });

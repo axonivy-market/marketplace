@@ -2,7 +2,6 @@ package com.axonivy.market.repository.impl;
 
 import com.axonivy.market.constants.EntityConstants;
 import com.axonivy.market.entity.Feedback;
-import com.axonivy.market.entity.Product;
 import com.axonivy.market.enums.FeedbackStatus;
 import com.axonivy.market.repository.CustomFeedbackRepository;
 import com.axonivy.market.repository.CustomRepository;
@@ -29,7 +28,7 @@ public class CustomFeedbackRepositoryImpl extends CustomRepository implements Cu
   public Page<Feedback> searchByProductId(String productId, Pageable pageable) {
     Query query = new Query().with(pageable);
     query.addCriteria(Criteria.where(PRODUCT_ID).is(productId)
-            .and(FEEDBACK_STATUS).nin(FeedbackStatus.REJECTED, FeedbackStatus.PENDING));
+        .and(FEEDBACK_STATUS).nin(FeedbackStatus.REJECTED, FeedbackStatus.PENDING));
 
     List<Feedback> feedbacks = mongoTemplate.find(query, Feedback.class, EntityConstants.FEEDBACK);
     long count = mongoTemplate.count(Query.of(query).limit(-1).skip(-1), Feedback.class);
@@ -46,5 +45,15 @@ public class CustomFeedbackRepositoryImpl extends CustomRepository implements Cu
 
     List<Feedback> feedbacks = mongoTemplate.find(query, Feedback.class, EntityConstants.FEEDBACK);
     return CollectionUtils.isEmpty(feedbacks) ? null : feedbacks.get(0);
+  }
+
+  @Override
+  public List<Feedback> findFeedbackByUser(String userId, String productId) {
+    Query query = new Query();
+    query.addCriteria(Criteria.where(PRODUCT_ID).is(productId)
+        .andOperator(Criteria.where(USER_ID).is(userId),
+            Criteria.where(FEEDBACK_STATUS).ne(FeedbackStatus.REJECTED)));
+
+    return mongoTemplate.find(query, Feedback.class, EntityConstants.FEEDBACK);
   }
 }

@@ -106,13 +106,13 @@ public class FeedbackController {
   @GetMapping()
   @Operation(summary = "Find all feedbacks by user id and product id",
       description = "Get current user feedback on target product.")
-  public ResponseEntity<FeedbackModel> findFeedbackByUserIdAndProductId(
+  public ResponseEntity<List<FeedbackModel>> findFeedbackByUserIdAndProductId(
       @RequestParam(USER_ID) @Parameter(description = "Id of current user from DB", example = "1234",
           in = ParameterIn.QUERY) String userId,
       @RequestParam("productId") @Parameter(description = "Product id (from meta.json)", example = "portal",
           in = ParameterIn.QUERY) String productId) {
-    Feedback feedback = feedbackService.findFeedbackByUserIdAndProductId(userId, productId);
-    return new ResponseEntity<>(feedbackModelAssembler.toModel(feedback), HttpStatus.OK);
+    List<Feedback> feedbacks = feedbackService.findFeedbackByUserIdAndProductId(userId, productId);
+    return new ResponseEntity<>(feedbackModelAssembler.toModel(feedbacks), HttpStatus.OK);
   }
 
   @GetMapping(FEEDBACK_APPROVAL)

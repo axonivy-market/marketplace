@@ -207,3 +207,5 @@ common:
     action: Aktion
     moderator: Moderator
     reviewDate: Überprüfungsdatum
+    approveBtnLabel: Genehmigen
+    rejectBtnLabel: Ablehnen

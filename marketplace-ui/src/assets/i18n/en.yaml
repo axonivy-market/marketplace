@@ -211,3 +211,5 @@ common:
     action: Action
     moderator: Moderator
     reviewDate: Review Date
+    approveBtnLabel: Approve
+    rejectBtnLabel: Reject

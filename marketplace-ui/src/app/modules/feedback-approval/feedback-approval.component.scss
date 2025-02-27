@@ -1,8 +1,3 @@
-@use 'sass:math';
-
-// Variables for commonly used values
-$aspect-ratio: math.div(1, 1);
-
 .approval {
   line-height: 110%;
   margin-top: 7.2rem;
@@ -34,7 +29,6 @@ $aspect-ratio: math.div(1, 1);
 }
 
 .feedback-container {
-  display: flex;
   flex-direction: row;
   margin-top: 9.6rem;
 }
@@ -52,9 +46,9 @@ $aspect-ratio: math.div(1, 1);
 
   a {
     font-weight: 400;
-    font-size: 22px;
+    font-size: 2.2rem;
 
-    color: var(--active-tab-indicator-color);;
+    color: var(--active-tab-indicator-color);
   }
 
   a.active {
@@ -62,7 +56,7 @@ $aspect-ratio: math.div(1, 1);
   }
 
   a.text-secondary.active {
-    color: #ffffff !important;
+    color: #{white} !important;
   }
 }
 
@@ -86,106 +80,4 @@ $aspect-ratio: math.div(1, 1);
       transition: none;
     }
   }
-}
-
-th {
-  height: 4.5rem;
-  font-weight: 600;
-  font-size: 16px;
-  line-height: 140%;
-  vertical-align: middle;
-}
-
-td {
-  height: 5rem;
-  vertical-align: middle;
-}
-
-.username-column{
-  width: 204px;
-}
-
-.rating {
-  text-align: center;
-}
-
-.rating-column{
-  width: 82px;
-  text-align: center;
-}
-
-.status-column{
-  width: 98px;
-}
-
-.created-date-column{
-  width: 140px;
-}
-
-.updated-date-column{
-  width: 142px;
-}
-
-.moderator-column{
-  width: 118px;
-}
-
-.content-column {
-  white-space: normal;
-  word-break: break-word;
-}
-
-.fixed-width {
-  width: 160px;
-  min-width: 160px;
-  max-width: 160px;
-  white-space: nowrap;
-}
-
-#approve-button, #reject-button {
-  display: inline-block;
-  text-align: center;
-  padding: 5px 10px;
-  border-radius: 5px;
-  color: #ffffff;
-  cursor: pointer;
-}
-
-#approve-button {
-  background-color: #47c46b;
-  margin-right: 1.1rem;
-  vertical-align: middle;
-}
-
-#approve-button::ng-deep, #reject-button::ng-deep {
-  vertical-align: middle;
-}
-
-#approve-button:hover, #reject-button:hover {
-  opacity: 0.8;
-}
-
-#reject-button {
-  background-color: #e5151c;
-}
-
-.rounded-circle {
-  border-radius: 50%;
-}
-
-.img-fit-cover {
-  object-fit: cover;
-  aspect-ratio: $aspect-ratio;
-}
-
-.img-avatar {
-  height: 100%;
-  width: 2.8rem;
-  height: 2.8rem;
-}
-
-.feedback-username {
-  font-weight: 400;
-  font-size: 1.4rem;
-  margin-left: 0.8rem;
 }

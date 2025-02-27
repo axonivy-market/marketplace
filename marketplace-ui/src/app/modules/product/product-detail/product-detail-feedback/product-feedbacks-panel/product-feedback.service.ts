@@ -68,7 +68,6 @@ export class ProductFeedbackService {
       .set('page', page.toString())
       .set('size', size.toString())
       .set('sort', sort);
-
     return this.http.get<FeedbackApiResponse>(`${API_URI.FEEDBACK_APPROVAL}`, {
       headers,
       params: requestParams
@@ -81,10 +80,10 @@ export class ProductFeedbackService {
           (a.reviewDate ? new Date(a.reviewDate).getTime() : 0)
         );
 
-        const nonPendingFeedbacks = sortedFeedbacks.filter(f => 
+        const nonPendingFeedbacks = sortedFeedbacks.filter(f =>
           f?.feedbackStatus !== FeedbackStatus.PENDING
         );
-        const pendingFeedbacks = sortedFeedbacks.filter(f => 
+        const pendingFeedbacks = sortedFeedbacks.filter(f =>
           f?.feedbackStatus === FeedbackStatus.PENDING
         );
 
@@ -116,28 +115,27 @@ export class ProductFeedbackService {
   }
 
   updateFeedbackStatus(feedbackId: string, isApproved: boolean, moderatorName: string): Observable<Feedback> {
-    const requestBody = {
-      feedbackId,
-      isApproved,
-      moderatorName
-    };
+    const requestBody = { feedbackId, isApproved, moderatorName };
     const requestURL = `${API_URI.FEEDBACK_APPROVAL}`;
 
     return this.http.put<Feedback>(requestURL, requestBody).pipe(
       tap(updatedFeedback => {
-        const updatedAllFeedbacks = this.allFeedbacks().map(feedback => feedback.id === updatedFeedback.id ? updatedFeedback : feedback).sort((a, b) =>
+        const updatedAllFeedbacks = this.allFeedbacks().map(feedback =>
+          feedback.id === updatedFeedback.id ? updatedFeedback : feedback
+        ).sort((a, b) =>
           (b.updatedAt ? new Date(b.updatedAt).getTime() : 0) -
           (a.updatedAt ? new Date(a.updatedAt).getTime() : 0)
         );
-        this.allFeedbacks.set(updatedAllFeedbacks);
+        this.allFeedbacks.set([...updatedAllFeedbacks]);
 
-        const filteredPendingFeedbacks = this.allFeedbacks().filter(feedback =>
-          feedback.feedbackStatus == FeedbackStatus.PENDING
+        const filteredPendingFeedbacks = updatedAllFeedbacks.filter(feedback =>
+          feedback.feedbackStatus === FeedbackStatus.PENDING
         );
-        this.pendingFeedbacks.set(filteredPendingFeedbacks);
+        this.pendingFeedbacks.set([...filteredPendingFeedbacks]);
       })
     );
   }
+
 
   submitFeedback(feedback: Feedback): Observable<Feedback> {
     const headers = new HttpHeaders().set(
@@ -181,63 +179,83 @@ export class ProductFeedbackService {
       .get<FeedbackApiResponse>(requestURL, { params: requestParams })
       .pipe(
         tap(response => {
+          const approvedFeedbacks = (response._embedded?.feedbacks || []).filter(f => f.feedbackStatus === FeedbackStatus.APPROVED);
+          console.log(approvedFeedbacks);
           if (page === 0) {
-            this.feedbacks.set(response._embedded.feedbacks);
+            this.feedbacks.set(approvedFeedbacks);
           } else {
             this.feedbacks.set([
               ...this.feedbacks(),
-              ...response._embedded.feedbacks
+              ...approvedFeedbacks
             ]);
           }
-        })
-      ).pipe(
+        }),
         tap(response => {
-          this.findProductFeedbackOfUser().subscribe();
+          this.findProductFeedbackOfUser().subscribe(userFeedbacks => {
+            if (userFeedbacks && userFeedbacks.length > 0) {
+              const feedback = userFeedbacks[0];
+
+              if (feedback.userId === this.authService.getUserId()) {
+                if (feedback.feedbackStatus === FeedbackStatus.PENDING) {
+                  const currentFeedbacks = this.feedbacks();
+                  const hasApprovedFeedback = currentFeedbacks.some(f =>
+                    f.userId === feedback.userId &&
+                    f.feedbackStatus === FeedbackStatus.APPROVED
+                  );
+
+                  if (hasApprovedFeedback && userFeedbacks.length === 2) {
+                    // Case 1: User has both approved and pending, replace approved with pending
+                    this.feedbacks.set([
+                      feedback,
+                      ...currentFeedbacks.filter(f => f.userId !== feedback.userId)
+                    ]);
+                  } else if (userFeedbacks.length === 2 && currentFeedbacks.length === 0) {
+                    // Case 2: User has both approved and pending but current feedbacks empty, add pending
+                    this.feedbacks.set([feedback]);
+                  } else {
+                    // Case 3: User has only one pending feedback
+                    this.feedbacks.set([feedback, ...currentFeedbacks]);
+                  }
+                }
+              }
+            }
+          });
         })
       );
   }
 
   findProductFeedbackOfUser(
     productId: string = this.productDetailService.productId()
-  ): Observable<Feedback> {
+  ): Observable<Feedback[]> {
     const params = new HttpParams()
       .set('productId', productId)
       .set('userId', this.authService.getUserId() ?? '');
     const requestURL = FEEDBACK_API_URL;
-    return this.http
-      .get<Feedback>(requestURL, {
-        params,
-        context: new HttpContext().set(ForwardingError, true)
+    return this.http.get<Feedback[]>(requestURL, {
+      params,
+      context: new HttpContext().set(ForwardingError, true),
+    }).pipe(
+      tap(feedbacks => {
+        this.userFeedback.set(feedbacks[0] || null);
+      }),
+      catchError(response => {
+        if (
+          response.status === NOT_FOUND_ERROR_CODE &&
+          response.error.helpCode === USER_NOT_FOUND_ERROR_CODE.toString()
+        ) {
+          this.clearTokenCookie();
+        }
+        const defaultFeedback: Feedback = {
+          content: '',
+          rating: 0,
+          feedbackStatus: FeedbackStatus.PENDING,
+          moderatorName: '',
+          productId,
+        };
+        this.userFeedback.set(defaultFeedback);
+        return of([defaultFeedback]);
       })
-      .pipe(
-        tap(feedback => {
-          this.userFeedback.set(feedback);
-          if (this.userFeedback() && this.userFeedback()!.feedbackStatus === FeedbackStatus.PENDING) {
-            if (this.feedbacks().length > 0) {
-              this.feedbacks().unshift(this.userFeedback()!);
-            } else {
-              this.feedbacks.set([this.userFeedback()!]);
-            }
-          }
-        }),
-        catchError(response => {
-          if (
-            response.status === NOT_FOUND_ERROR_CODE &&
-            response.error.helpCode === USER_NOT_FOUND_ERROR_CODE.toString()
-          ) {
-            this.clearTokenCookie();
-          }
-          const feedback: Feedback = {
-            content: '',
-            rating: 0,
-            feedbackStatus: FeedbackStatus.PENDING,
-            moderatorName: '',
-            productId
-          };
-          this.userFeedback.set(feedback);
-          return of(feedback);
-        })
-      );
+    );
   }
 
   fetchFeedbacks(): void {

@@ -17,155 +17,42 @@
     </div>
   </div>
 
-  <div class="feedback-container">
+  <div class="feedback-container d-flex">
     <div class="tab-group d-flex flex-column justify-content-center align-items-start p-0 col-12">
-
-      <!-- Tabs -->
       <div class="row-tab col-12">
         <ul ngbNav class="nav nav-tabs form-tabs">
-
-          <!-- Review Feedback Tab -->
           <li
             class="nav-item d-flex flex-row position-relative border-bottom-1 p-2 justify-content-center align-items-start">
-            <a id="review-tab" [lang]="languageService.selectedLanguage()" ngbNavLink
-              class="nav-link tab-title border-0 bg-transparent active" role="tab" [ngClass]="{
-                'text-secondary': themeService.isDarkMode(),
-                'text-dark': !themeService.isDarkMode()
-              }" data-bs-toggle="tab" data-bs-target="#review" aria-controls="review" aria-selected="true"
-              (click)="setActiveTab('review')" [ngClass]="{'active': activeTab === 'review'}" [lang]="languageService.selectedLanguage()">
+            <a id="review-tab" ngbNavLink class="nav-link tab-title border-0 bg-transparent active" role="tab"
+              [ngClass]="{'text-secondary': themeService.isDarkMode(), 'text-dark': !themeService.isDarkMode()}"
+              data-bs-toggle="tab" data-bs-target="#review" (click)="setActiveTab('review')"
+              [ngClass]="{'active': activeTab === 'review'}" [lang]="languageService.selectedLanguage()">
               {{ 'common.approval.reviewFeedback' | translate }}
             </a>
           </li>
-
-          <!-- History Tab -->
           <li
             class="nav-item d-flex flex-row position-relative border-bottom-1 p-2 justify-content-center align-items-start">
-            <a id="history-tab" [lang]="languageService.selectedLanguage()" ngbNavLink
-              class="nav-link tab-title border-0 bg-transparent" role="tab" [ngClass]="{
-                'text-secondary': themeService.isDarkMode(),
-                'text-dark': !themeService.isDarkMode()
-              }" data-bs-toggle="tab" data-bs-target="#history" aria-controls="history" aria-selected="false"
-              (click)="setActiveTab('history')" [ngClass]="{'active': activeTab === 'history'}" [lang]="languageService.selectedLanguage()">
+            <a id="history-tab" ngbNavLink class="nav-link tab-title border-0 bg-transparent" role="tab"
+              [ngClass]="{'text-secondary': themeService.isDarkMode(), 'text-dark': !themeService.isDarkMode()}"
+              data-bs-toggle="tab" data-bs-target="#history" (click)="setActiveTab('history')"
+              [ngClass]="{'active': activeTab === 'history'}" [lang]="languageService.selectedLanguage()">
               {{ 'common.approval.history' | translate }}
             </a>
           </li>
-
         </ul>
       </div>
 
-      <!-- Tab Content -->
       <div class="tab-content col-12 default-cursor">
-
-        <!-- Review Feedback Content -->
         <div class="tab-pane fade show active" role="tabpanel" aria-labelledby="review-tab"
           [ngClass]="{'show active': activeTab === 'review'}">
+          <app-feedback-table [feedbacks]="reviewingFeedbacks()" [isHistoryTab]="false"
+            (reviewAction)="onClickReviewButton($event.feedback, $event.approved)">
+          </app-feedback-table>
 
-          <div class="table-responsive">
-            <table class="table">
-              <thead>
-                <tr>
-                  <th class="text-primary username-column" [lang]="languageService.selectedLanguage()">{{ 'common.approval.username' | translate }}</th>
-                  <th class="text-primary" [lang]="languageService.selectedLanguage()">{{ 'common.approval.content' | translate }}</th>
-                  <th class="text-primary rating-column" [lang]="languageService.selectedLanguage()">{{ 'common.approval.rating' | translate }}</th>
-                  <th class="text-primary status-column" [lang]="languageService.selectedLanguage()">{{ 'common.approval.status' | translate }}</th>
-                  <th class="text-primary created-date-column" [lang]="languageService.selectedLanguage()">{{ 'common.approval.createdAt' | translate }}</th>
-                  <th class="text-primary updated-date-column" [lang]="languageService.selectedLanguage()">{{ 'common.approval.updatedAt' | translate }}</th>
-                  <th class="text-primary fixed-width" [lang]="languageService.selectedLanguage()">{{ 'common.approval.action' | translate }}</th>
-                </tr>
-              </thead>
-              <tbody>
-                @for (feedback of pendingFeedbacks(); track $index) {
-                <tr>
-                  <td class="username-column">
-                    <img class="rounded-circle img-avatar img-fit-cover"
-                      [src]="feedback.userAvatarUrl ?? '/assets/images/misc/avatar-default.png'"
-                      alt="Github user avatar" />
-                    <span class="text-primary feedback-username"> {{ feedback.username ?? 'Github User' }}</span>
-                  </td>
-                  <td>
-                    <p class="text-primary m-0 content-column">{{ feedback.content }}</p>
-                  </td>
-                  <td>
-                    <p class="text-primary m-0 rating rating-column">{{ feedback.rating }}</p>
-                  </td>
-                  <td>
-                    <p class="text-primary m-0 status-column">{{ feedback.feedbackStatus }}</p>
-                  </td>
-                  <td>
-                    <p class="text-primary m-0 created-date-column">{{ feedback.createdAt | date: 'short' }}</p>
-                  </td>
-                  <td>
-                    <p class="text-primary m-0 updated-date-column">{{ feedback.updatedAt | date: 'short' }}</p>
-                  </td>
-
-                  <td class="action-buttons fixed-width">
-                    <div id="approve-button" (click)="onClickReviewButton(feedback, true)">
-                      <p class="mb-0" [lang]="languageService.selectedLanguage()">Approve</p>
-                    </div>
-
-                    <div id="reject-button" (click)="onClickReviewButton(feedback, false)">
-                      <p class="mb-0" [lang]="languageService.selectedLanguage()">Reject</p>
-                    </div>
-                  </td>
-                </tr>
-                }
-              </tbody>
-            </table>
-          </div>
         </div>
-
-        <!-- History Content -->
         <div class="tab-pane fade" role="tabpanel" aria-labelledby="history-tab"
           [ngClass]="{'show active': activeTab === 'history'}">
-          <div class="table-responsive">
-            <table class="table">
-              <thead>
-                <tr>
-                  <th class="text-primary username-column" [lang]="languageService.selectedLanguage()">{{ 'common.approval.username' | translate }}</th>
-                  <th class="text-primary" [lang]="languageService.selectedLanguage()">{{ 'common.approval.content' | translate }}</th>
-                  <th class="text-primary rating-column" [lang]="languageService.selectedLanguage()">{{ 'common.approval.rating' | translate }}</th>
-                  <th class="text-primary status-column" [lang]="languageService.selectedLanguage()">{{ 'common.approval.status' | translate }}</th>
-                  <th class="text-primary created-date-column" [lang]="languageService.selectedLanguage()">{{ 'common.approval.createdAt' | translate }}</th>
-                  <th class="text-primary updated-date-column" [lang]="languageService.selectedLanguage()">{{ 'common.approval.updatedAt' | translate }}</th>
-                  <th class="text-primary moderator-column" [lang]="languageService.selectedLanguage()">{{ 'common.approval.moderator' | translate }}</th>
-                  <th class="text-primary created-date-column" [lang]="languageService.selectedLanguage()">{{ 'common.approval.reviewDate' | translate }}</th>
-                </tr>
-              </thead>
-              <tbody>
-                @for (feedback of feedbacks(); track $index) {
-                <tr>
-                  <td class="username-column">
-                    <img class="rounded-circle img-avatar img-fit-cover"
-                      [src]="feedback.userAvatarUrl ?? '/assets/images/misc/avatar-default.png'"
-                      alt="Github user avatar" />
-                    <span class="text-primary feedback-username">{{ feedback.username ?? 'Github User' }}</span>
-                  </td>
-                  <td>
-                    <p class="text-primary m-0">{{ feedback.content }}</p>
-                  </td>
-                  <td>
-                    <p class="text-primary m-0 rating rating-column">{{ feedback.rating }}</p>
-                  </td>
-                  <td>
-                    <p class="text-primary m-0 status-column">{{ feedback.feedbackStatus }}</p>
-                  </td>
-                  <td>
-                    <p class="text-primary m-0 created-date-column">{{ feedback.createdAt | date: 'short' }}</p>
-                  </td>
-                  <td>
-                    <p class="text-primary m-0 updated-date-column">{{ feedback.updatedAt | date: 'short' }}</p>
-                  </td>
-                  <td>
-                    <p class="text-primary m-0">{{ feedback.moderatorName }}</p>
-                  </td>
-                  <td>
-                    <p class="text-primary m-0">{{ feedback.reviewDate | date: 'short' }}</p>
-                  </td>
-                </tr>
-                }
-              </tbody>
-            </table>
-          </div>
+          <app-feedback-table [feedbacks]="allFeedbacks()" [isHistoryTab]="true"></app-feedback-table>
         </div>
       </div>
     </div>
