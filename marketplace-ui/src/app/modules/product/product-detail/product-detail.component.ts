@@ -12,7 +12,7 @@ import {
   signal
 } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
-import { NgbNavModule } from '@ng-bootstrap/ng-bootstrap';
+import { NgbAccordionModule, NgbNavModule } from '@ng-bootstrap/ng-bootstrap';
 import { TranslateModule } from '@ngx-translate/core';
 import { forkJoin, map, Observable } from 'rxjs';
 import { AuthService } from '../../../auth/auth.service';
@@ -63,6 +63,7 @@ import { HistoryService } from '../../../core/services/history/history.service';
 import { TypeOption } from '../../../shared/enums/type-option.enum';
 import { SortOption } from '../../../shared/enums/sort-option.enum';
 import { MarkdownService } from '../../../shared/services/markdown.service';
+import { full } from 'markdown-it-emoji';
 
 export interface DetailTab {
   activeClass: string;
@@ -94,6 +95,7 @@ const GITHUB_BASE_URL = 'https://github.com/';
     NgOptimizedImage,
     EmptyProductDetailPipe,
     LoadingSpinnerComponent,
+    NgbAccordionModule
   ],
   providers: [ProductService],
   templateUrl: './product-detail.component.html',
@@ -184,7 +186,9 @@ export class ProductDetailComponent {
         userFeedback: this.productFeedbackService.findProductFeedbackOfUser(),
         changelogs: this.productService.getProductChangelogs(productId),
       }).subscribe(res => {
-        this.md.use(this.linkifyPullRequests, res.productDetail.sourceUrl, this.githubPullRequestNumberRegex)
+        this.md
+          .use(full)
+          .use(this.linkifyPullRequests, res.productDetail.sourceUrl, this.githubPullRequestNumberRegex)
           .set({
             typographer: true,
             linkify: true,
@@ -525,6 +529,7 @@ export class ProductDetailComponent {
         name: release.name,
         body: this.bypassSecurityTrustHtml(release.body),
         publishedAt: release.publishedAt,
+        htmlUrl: release.htmlUrl
       };
     });
   }
