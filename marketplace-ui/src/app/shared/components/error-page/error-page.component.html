@@ -7,7 +7,7 @@
       <div class="error-code">
         {{ 'common.error.code' | translate }}: {{ errorId }}
       </div>
-    }   
+    }
     <div class="oops">{{ 'common.error.oops' | translate }}</div>
     <div class="error-description" [innerHTML]="'common.error.fullMessage' | translate: { errorMessage: (errorMessageKey | translate) }">
     </div>
