@@ -108,7 +108,7 @@ common:
       installation: Downloads
       type: Typ
       description: Beschreibung
-      installationGuide: Installationsanleitung
+      installationGuide: Installation
       demo: Demo
       maven:
         label: Maven
@@ -143,7 +143,7 @@ common:
         zipAppArtifactLabel: Erstellen Sie eine ZIP-Datei für die Bereitstellung auf der Axon Ivy Engine
       contactUs:
         label: Kontakt
-      changelog: Änderungsliste
+      changelog: Änderungen
   feedback:
     label: Rückmeldung
     successMessage: Ihr Feedback wurde erfolgreich übermittelt!
