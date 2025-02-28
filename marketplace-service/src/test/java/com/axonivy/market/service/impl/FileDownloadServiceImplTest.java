@@ -37,8 +37,9 @@ class FileDownloadServiceImplTest {
 
   @Test
   void testDownloadAndUnzipFileWithIssue() {
+    DownloadOption option = DownloadOption.builder().isForced(true).build();
     assertThrows(ResourceAccessException.class, () -> fileDownloadService.downloadAndUnzipFile(DOWNLOAD_URL,
-        DownloadOption.builder().isForced(true).build()));
+            option));
   }
 
   @Test
