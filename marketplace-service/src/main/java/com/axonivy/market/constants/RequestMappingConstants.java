@@ -39,6 +39,7 @@ public class RequestMappingConstants {
   public static final String RELEASE_PREVIEW = API + "/release-preview";
   public static final String PRODUCT_PUBLIC_RELEASES = "/{id}/releases";
   public static final String PRODUCT_PUBLIC_RELEASE_BY_RELEASE_ID = "/{product-id}/releases/{release-id}";
+  public static final String SYNC_RELEASE_NOTES_FOR_PRODUCTS = "/sync-release-notes";
   public static final String PRODUCT_ID = "product-id";
   public static final String RELEASE_ID = "release-id";
   public static final String FEEDBACK_APPROVAL = "/approval";
