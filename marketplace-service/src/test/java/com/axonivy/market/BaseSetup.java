@@ -207,14 +207,14 @@ public class BaseSetup {
   }
 
   protected MavenArtifactVersion getMockMavenArtifactVersion() {
-    return new MavenArtifactVersion(StringUtils.EMPTY, new HashMap<>(),
-        new HashMap<>());
+    return new MavenArtifactVersion(StringUtils.EMPTY, new ArrayList<>(),
+        new ArrayList<>());
   }
 
   protected MavenArtifactVersion getMockMavenArtifactVersionWithData() {
     MavenArtifactVersion mockMavenArtifactVersion = getMockMavenArtifactVersion();
-    Map<String, List<MavenArtifactModel>> mockArtifactModelsByVersion = new HashMap<>();
-    mockArtifactModelsByVersion.put(MOCK_SNAPSHOT_VERSION, new ArrayList<>());
+    List<MavenArtifactModel> mockArtifactModelsByVersion = new ArrayList<>();
+//    mockArtifactModelsByVersion.put(MOCK_SNAPSHOT_VERSION, new ArrayList<>());
     mockMavenArtifactVersion.setProductArtifactsByVersion(mockArtifactModelsByVersion);
     return mockMavenArtifactVersion;
   }

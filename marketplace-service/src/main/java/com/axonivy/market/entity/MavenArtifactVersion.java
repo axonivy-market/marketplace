@@ -16,9 +16,7 @@ import lombok.Setter;
 import java.io.Serial;
 import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
 
 import static com.axonivy.market.constants.EntityConstants.MAVEN_ARTIFACT_VERSION;
@@ -37,23 +35,23 @@ public class MavenArtifactVersion implements Serializable {
 
   @OneToMany(mappedBy = "productVersionReference", cascade = CascadeType.ALL, fetch = FetchType.EAGER, orphanRemoval = true)
   @JsonManagedReference("productVersionReference")
-  private List<MavenArtifactModel> productArtifactsByVersionTest;
+  private List<MavenArtifactModel> productArtifactsByVersion;
 
   @OneToMany(mappedBy = "additionalVersionReference", cascade = CascadeType.ALL, fetch = FetchType.EAGER ,orphanRemoval = true)
   @JsonManagedReference("additionalVersionReference")
-  private List<MavenArtifactModel> additionalArtifactsByVersionTest;;
+  private List<MavenArtifactModel> additionalArtifactsByVersion;;
 
-  public List<MavenArtifactModel> getProductArtifactsByVersionTest() {
-    if (Objects.isNull(productArtifactsByVersionTest)) {
-      productArtifactsByVersionTest = new ArrayList<>();
+  public List<MavenArtifactModel> getProductArtifactsByVersion() {
+    if (Objects.isNull(productArtifactsByVersion)) {
+      productArtifactsByVersion = new ArrayList<>();
     }
-    return productArtifactsByVersionTest;
+    return productArtifactsByVersion;
   }
 
-  public List<MavenArtifactModel> getAdditionalArtifactsByVersionTest() {
-    if (Objects.isNull(additionalArtifactsByVersionTest)) {
-      additionalArtifactsByVersionTest = new ArrayList<>();
+  public List<MavenArtifactModel> getAdditionalArtifactsByVersion() {
+    if (Objects.isNull(additionalArtifactsByVersion)) {
+      additionalArtifactsByVersion = new ArrayList<>();
     }
-    return additionalArtifactsByVersionTest;
+    return additionalArtifactsByVersion;
   }
 }

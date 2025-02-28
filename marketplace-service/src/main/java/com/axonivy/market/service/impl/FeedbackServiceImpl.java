@@ -40,6 +40,7 @@ public class FeedbackServiceImpl implements FeedbackService {
 
   @Override
   public Page<Feedback> findFeedbacks(String productId, Pageable pageable)  {
+    validateProductExists(productId);
     return feedbackRepository.searchByProductId(productId, refinePagination(pageable));
   }
 

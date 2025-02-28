@@ -12,22 +12,16 @@ import com.axonivy.market.service.MetadataService;
 import com.axonivy.market.util.MavenUtils;
 import com.axonivy.market.util.MetadataReaderUtils;
 import com.axonivy.market.util.VersionUtils;
-import jakarta.transaction.Transactional;
 import lombok.AllArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.hibernate.Hibernate;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
-import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.function.Function;
-import java.util.function.Predicate;
-import java.util.stream.Collectors;
 
 @Service
 @AllArgsConstructor
@@ -42,8 +36,8 @@ public class MetadataServiceImpl implements MetadataService {
       String version, Metadata metadata) {
 
     List<MavenArtifactModel> artifactModelsInVersions = metadata.isProductArtifact() ?
-        artifactVersion.getProductArtifactsByVersionTest() :
-        artifactVersion.getAdditionalArtifactsByVersionTest();
+        artifactVersion.getProductArtifactsByVersion() :
+        artifactVersion.getAdditionalArtifactsByVersion();
 
     if (!VersionUtils.isMajorVersion(version)) {
       artifactModelsInVersions.removeIf(
@@ -56,18 +50,18 @@ public class MetadataServiceImpl implements MetadataService {
     if (metadata.isProductArtifact()) {
       model.setProductVersionReference(artifactVersion);
       artifactModelsInVersions.add(model);
-      artifactVersion.setProductArtifactsByVersionTest(artifactModelsInVersions);
+      artifactVersion.setProductArtifactsByVersion(artifactModelsInVersions);
     } else {
       model.setAdditionalVersionReference(artifactVersion);
       artifactModelsInVersions.add(model);
-      artifactVersion.setAdditionalArtifactsByVersionTest(artifactModelsInVersions);
+      artifactVersion.setAdditionalArtifactsByVersion(artifactModelsInVersions);
     }
   }
 
   public void updateMavenArtifactVersionData(Set<Metadata> metadataSet, String productId) {
     MavenArtifactVersion artifactVersion = mavenArtifactVersionRepo.findById(productId)
         .orElse(MavenArtifactVersion.builder().productId(productId).build());
-    artifactVersion.getAdditionalArtifactsByVersionTest().clear();
+    artifactVersion.getAdditionalArtifactsByVersion().clear();
 
     for (Metadata metadata : metadataSet) {
       String metadataContent = MavenUtils.getMetadataContentFromUrl(metadata.getUrl());

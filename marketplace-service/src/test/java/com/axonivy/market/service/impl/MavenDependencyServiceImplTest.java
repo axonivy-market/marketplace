@@ -66,18 +66,18 @@ class MavenDependencyServiceImplTest extends BaseSetup {
     var mavenArtifactVersionMock = getMockMavenArtifactVersionWithData();
     mavenArtifactVersionMock.setProductId(SAMPLE_PRODUCT_ID);
     List<MavenArtifactModel> mockArtifactModels = new ArrayList<>();
-    mockArtifactModels.add(MavenArtifactModel.builder().artifactId(MOCK_ARTIFACT_ID).build());
+    mockArtifactModels.add(MavenArtifactModel.builder().artifactId(MOCK_ARTIFACT_ID).productVersion(MOCK_SNAPSHOT_VERSION).build());
     if (isProductArtifact) {
-      mavenArtifactVersionMock.getProductArtifactsByVersion().put(MOCK_SNAPSHOT_VERSION, mockArtifactModels);
+      mavenArtifactVersionMock.getProductArtifactsByVersion().addAll(mockArtifactModels);
     } else {
-      mavenArtifactVersionMock.getAdditionalArtifactsByVersion().put(MOCK_SNAPSHOT_VERSION, mockArtifactModels);
+      mavenArtifactVersionMock.getAdditionalArtifactsByVersion().addAll(mockArtifactModels);
     }
     return mavenArtifactVersionMock;
   }
 
   @Test
   void testNothingToSync() {
-    when(productRepository.findAll()).thenReturn(List.of());
+    when(productRepository.findAllProductIds()).thenReturn(List.of());
     int totalSynced = mavenDependencyService.syncIARDependenciesForProducts(true);
     assertEquals(0, totalSynced, "Expected no product was synced but service returned something");
   }

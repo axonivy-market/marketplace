@@ -55,9 +55,9 @@ public class VersionServiceImpl implements VersionService {
     for (String mavenVersion : mavenVersions) {
       List<MavenArtifactModel> artifactsByVersion = new ArrayList<>();
       artifactsByVersion.addAll(
-          filterArtifactByVersion(mavenArtifactVersion.getProductArtifactsByVersionTest(), mavenVersion));
+          filterArtifactByVersion(mavenArtifactVersion.getProductArtifactsByVersion(), mavenVersion));
       artifactsByVersion.addAll(
-          filterArtifactByVersion(mavenArtifactVersion.getAdditionalArtifactsByVersionTest(), mavenVersion));
+          filterArtifactByVersion(mavenArtifactVersion.getAdditionalArtifactsByVersion(), mavenVersion));
 
       if (ObjectUtils.isNotEmpty(artifactsByVersion)) {
         artifactsByVersion = artifactsByVersion.stream().distinct().toList();
@@ -136,12 +136,12 @@ public class VersionServiceImpl implements VersionService {
 
     // Find download url first from product artifact model
     String downloadUrl = getDownloadUrlFromExistingDataByArtifactIdAndVersion(
-        artifactVersionCache.getProductArtifactsByVersionTest(), targetVersion, modelArtifactIds);
+        artifactVersionCache.getProductArtifactsByVersion(), targetVersion, modelArtifactIds);
 
     // Continue to find download url from artifact in meta.json if it is not existed in artifacts of product.json
     if (StringUtils.isBlank(downloadUrl)) {
       downloadUrl = getDownloadUrlFromExistingDataByArtifactIdAndVersion(
-          artifactVersionCache.getAdditionalArtifactsByVersionTest(), targetVersion, modelArtifactIds);
+          artifactVersionCache.getAdditionalArtifactsByVersion(), targetVersion, modelArtifactIds);
     }
 
     if (!StringUtils.endsWith(downloadUrl, fileType)) {

@@ -4,7 +4,6 @@ import com.axonivy.market.bo.DownloadOption;
 import com.axonivy.market.bo.MavenDependency;
 import com.axonivy.market.constants.ProductJsonConstants;
 import com.axonivy.market.entity.MavenArtifactVersion;
-import com.axonivy.market.entity.Product;
 import com.axonivy.market.entity.ProductDependency;
 import com.axonivy.market.model.MavenArtifactModel;
 import com.axonivy.market.repository.MavenArtifactVersionRepository;
@@ -76,10 +75,10 @@ public class MavenDependencyServiceImpl implements MavenDependencyService {
       List<MavenDependency> dependenciesOfArtifact = new ArrayList<>();
       // Base on version, loop the artifacts and maps its dependencies
       // Loops in ProductArtifactsByVersion
-      collectIARDependenciesByArtifactVersion(productId, mavenArtifactVersion.getProductArtifactsByVersionTest(),
+      collectIARDependenciesByArtifactVersion(productId, mavenArtifactVersion.getProductArtifactsByVersion(),
           dependenciesOfArtifact);
       // Loops in AdditionalArtifactsByVersion
-      collectIARDependenciesByArtifactVersion(productId, mavenArtifactVersion.getAdditionalArtifactsByVersionTest(),
+      collectIARDependenciesByArtifactVersion(productId, mavenArtifactVersion.getAdditionalArtifactsByVersion(),
           dependenciesOfArtifact);
 
       ProductDependency productDependency = ProductDependency.builder()
@@ -178,10 +177,10 @@ public class MavenDependencyServiceImpl implements MavenDependencyService {
     }
 
     MavenArtifactModel productArtifacts = filterMavenArtifactVersionByArtifactId(version, requestArtifactId,
-        mavenArtifactVersion.getProductArtifactsByVersionTest());
+        mavenArtifactVersion.getProductArtifactsByVersion());
 
     MavenArtifactModel additionalArtifact = filterMavenArtifactVersionByArtifactId(version, requestArtifactId,
-        mavenArtifactVersion.getAdditionalArtifactsByVersionTest());
+        mavenArtifactVersion.getAdditionalArtifactsByVersion());
 
     return Optional.ofNullable(productArtifacts).orElse(additionalArtifact);
   }

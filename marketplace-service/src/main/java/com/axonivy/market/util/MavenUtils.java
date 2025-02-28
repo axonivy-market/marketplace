@@ -319,12 +319,12 @@ public class MavenUtils {
 
   public static List<String> extractAllVersions(MavenArtifactVersion existingMavenArtifactVersion,
       boolean isShowDevVersion, String designerVersion) {
-    Set<String> existingProductsArtifactByVersion = existingMavenArtifactVersion.getProductArtifactsByVersionTest()
+    Set<String> existingProductsArtifactByVersion = existingMavenArtifactVersion.getProductArtifactsByVersion()
         .stream()
         .map(MavenArtifactModel::getProductVersion)
         .collect(Collectors.toSet());
 
-    Set<String> existingAdditionalArtifactByVersion = existingMavenArtifactVersion.getAdditionalArtifactsByVersionTest()
+    Set<String> existingAdditionalArtifactByVersion = existingMavenArtifactVersion.getAdditionalArtifactsByVersion()
         .stream()
         .map(MavenArtifactModel::getProductVersion)
         .collect(Collectors.toSet());
