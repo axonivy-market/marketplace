@@ -3,6 +3,7 @@ export interface ProductRelease {
     body: string;
     publishedAt: string;
     htmlUrl: string;
+    latestRelease: boolean;
     _links?: {
       self: {
         href: string;
