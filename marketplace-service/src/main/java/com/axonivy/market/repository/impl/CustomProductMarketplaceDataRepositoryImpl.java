@@ -33,6 +33,7 @@ public class CustomProductMarketplaceDataRepositoryImpl implements CustomProduct
   EntityManager em;
 
   @Override
+  @Transactional
   public int updateInitialCount(String productId, int initialCount) {
     CriteriaBuilder cb = em.getCriteriaBuilder();
     CriteriaUpdate<ProductMarketplaceData> updateQuery = cb.createCriteriaUpdate(ProductMarketplaceData.class);

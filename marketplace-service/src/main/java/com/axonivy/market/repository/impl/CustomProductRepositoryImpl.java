@@ -30,11 +30,13 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.hibernate.Hibernate;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -56,7 +58,13 @@ public class CustomProductRepositoryImpl implements CustomProductRepository {
   public Product getProductByIdAndVersion(String id, String version) {
     Product result = findProductById(id);
     if (!Objects.isNull(result)) {
+      Hibernate.initialize(result.getNames());
+      Hibernate.initialize(result.getShortDescriptions());
+
       ProductModuleContent content = contentRepository.findByVersionAndProductId(version, id);
+      Hibernate.initialize(content.getDescription());
+      Hibernate.initialize(content.getSetup());
+      Hibernate.initialize(content.getDemo());
       result.setProductModuleContent(content);
     }
     return result;
