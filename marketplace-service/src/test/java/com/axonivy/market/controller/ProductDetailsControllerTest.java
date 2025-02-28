@@ -62,8 +62,7 @@ class ProductDetailsControllerTest extends BaseSetup {
   @Test
   void testProductDetails() {
     Mockito.when(productService.fetchProductDetail(Mockito.anyString(), anyBoolean())).thenReturn(mockProduct());
-    Mockito.when(detailModelAssembler.toModel(mockProduct())).thenReturn(
-        createProductMockWithDetails());
+    Mockito.when(detailModelAssembler.toModel(mockProduct())).thenReturn(createProductMockWithDetails());
     ResponseEntity<ProductDetailModel> mockExpectedResult = new ResponseEntity<>(createProductMockWithDetails(),
         HttpStatus.OK);
 
@@ -73,7 +72,7 @@ class ProductDetailsControllerTest extends BaseSetup {
     assertEquals(result, mockExpectedResult);
 
     verify(productService, times(1)).fetchProductDetail(DOCKER_CONNECTOR_ID, false);
-    verify(detailModelAssembler, times(1)).toModel(mockProduct());
+    verify(detailModelAssembler).toModel(mockProduct());
     assertTrue(result.hasBody());
     assertEquals(DOCKER_CONNECTOR_ID, Objects.requireNonNull(result.getBody()).getId());
   }
@@ -101,9 +100,7 @@ class ProductDetailsControllerTest extends BaseSetup {
   void testProductDetailsWithVersion() {
     Mockito.when(productService.fetchProductDetailByIdAndVersion(Mockito.anyString(), Mockito.anyString())).thenReturn(
         mockProduct());
-    Mockito.when(
-        detailModelAssembler.toModel(mockProduct())).thenReturn(
-        createProductMockWithDetails());
+    Mockito.when(detailModelAssembler.toModel(mockProduct())).thenReturn(createProductMockWithDetails());
     ResponseEntity<ProductDetailModel> mockExpectedResult = new ResponseEntity<>(createProductMockWithDetails(),
         HttpStatus.OK);
 

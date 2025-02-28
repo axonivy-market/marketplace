@@ -157,9 +157,9 @@ public class VersionUtils {
   public static List<String> getAllExistingVersions(MavenArtifactVersion existingMavenArtifactVersion,
                                                     boolean isShowDevVersion, String designerVersion) {
     Set<String> existingProductsArtifactByVersion =
-            new HashSet<>(existingMavenArtifactVersion.getProductArtifactsByVersion().keySet());
+        new HashSet<>(existingMavenArtifactVersion.getProductArtifactsByVersion().keySet());
     Set<String> existingAdditionalArtifactByVersion =
-            existingMavenArtifactVersion.getProductArtifactsByVersion().keySet();
+        existingMavenArtifactVersion.getProductArtifactsByVersion().keySet();
     existingProductsArtifactByVersion.addAll(existingAdditionalArtifactByVersion);
     return VersionUtils.getVersionsToDisplay(new ArrayList<>(existingProductsArtifactByVersion), isShowDevVersion,
             designerVersion);
