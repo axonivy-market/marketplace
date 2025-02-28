@@ -1,14 +1,18 @@
 package com.axonivy.market.entity;
 
 import io.swagger.v3.oas.annotations.media.Schema;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Id;
+import jakarta.persistence.PrePersist;
+import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.bson.types.Binary;
-import org.springframework.data.annotation.Id;
-import org.springframework.data.mongodb.core.mapping.Document;
+
+import java.util.UUID;
 
 import static com.axonivy.market.constants.EntityConstants.IMAGE;
 
@@ -17,7 +21,8 @@ import static com.axonivy.market.constants.EntityConstants.IMAGE;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-@Document(IMAGE)
+@Entity
+@Table(name = IMAGE)
 public class Image {
   @Id
   private String id;
@@ -31,4 +36,11 @@ public class Image {
   private Binary imageData;
   @Schema(description = "The SHA from github", example = "93b1e2f1595d3a85e51b01")
   private String sha;
+
+  @PrePersist
+  private void ensureId() {
+    if (this.id == null) {
+      this.id = UUID.randomUUID().toString();
+    }
+  }
 }

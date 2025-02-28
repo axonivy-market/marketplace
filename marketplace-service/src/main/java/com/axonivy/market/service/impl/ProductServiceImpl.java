@@ -8,6 +8,7 @@ import com.axonivy.market.constants.MongoDBConstants;
 import com.axonivy.market.criteria.ProductSearchCriteria;
 import com.axonivy.market.entity.GitHubRepoMeta;
 import com.axonivy.market.entity.Image;
+import com.axonivy.market.entity.MavenArtifactVersion;
 import com.axonivy.market.entity.Product;
 import com.axonivy.market.entity.ProductCustomSort;
 import com.axonivy.market.entity.ProductJsonContent;
@@ -35,11 +36,13 @@ import com.axonivy.market.service.VersionService;
 import com.axonivy.market.util.MavenUtils;
 import com.axonivy.market.util.MetadataReaderUtils;
 import com.axonivy.market.util.VersionUtils;
+import org.springframework.transaction.annotation.Transactional;
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.util.Strings;
+import org.hibernate.Hibernate;
 import org.kohsuke.github.GHCommit;
 import org.kohsuke.github.GHContent;
 import org.kohsuke.github.GHRelease;
@@ -55,6 +58,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.domain.Sort.Order;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.util.CollectionUtils;
 import org.w3c.dom.Document;
 import org.w3c.dom.NodeList;
@@ -142,7 +146,6 @@ public class ProductServiceImpl implements ProductService {
   public Page<Product> findProducts(String type, String keyword, String language, Boolean isRESTClient,
       Pageable pageable) {
     final var typeOption = TypeOption.of(type);
-    final var searchPageable = refinePagination(language, pageable);
     var searchCriteria = new ProductSearchCriteria();
     searchCriteria.setListed(true);
     searchCriteria.setKeyword(keyword);
@@ -151,10 +154,11 @@ public class ProductServiceImpl implements ProductService {
     if (BooleanUtils.isTrue(isRESTClient)) {
       searchCriteria.setExcludeFields(List.of(SHORT_DESCRIPTIONS));
     }
-    return productRepo.searchByCriteria(searchCriteria, searchPageable);
+    return productRepo.searchByCriteria(searchCriteria, pageable);
   }
 
   @Override
+  @Transactional
   public List<String> syncLatestDataFromMarketRepo(Boolean resetSync) {
     List<String> syncedProductIds = new ArrayList<>();
     var isAlreadyUpToDate = false;
@@ -474,11 +478,14 @@ public class ProductServiceImpl implements ProductService {
 
     List<Artifact> archivedArtifacts = product.getArtifacts().stream()
         .filter(artifact -> !CollectionUtils.isEmpty(artifact.getArchivedArtifacts()))
-        .flatMap(artifact -> artifact.getArchivedArtifacts().stream()
-            .map(archivedArtifact -> Artifact.builder()
-                .groupId(archivedArtifact.getGroupId())
-                .artifactId(archivedArtifact.getArtifactId())
-                .build()))
+        .flatMap(artifact ->
+            artifact.getArchivedArtifacts().stream()
+                .peek(archivedArtifact -> archivedArtifact.setArtifact(artifact))
+                .map(archivedArtifact -> Artifact.builder()
+                    .groupId(archivedArtifact.getGroupId())
+                    .artifactId(archivedArtifact.getArtifactId())
+                    .build())
+        )
         .toList();
 
     List<Artifact> mavenArtifacts = new ArrayList<>();
@@ -646,9 +653,9 @@ public class ProductServiceImpl implements ProductService {
     List<String> versions;
     String version = StringUtils.EMPTY;
 
-    var mavenArtifactVersion = mavenArtifactVersionRepo.findById(id);
-    if (mavenArtifactVersion.isPresent()) {
-      versions = MavenUtils.getAllExistingVersions(mavenArtifactVersion.get(), BooleanUtils.isTrue(isShowDevVersion),
+    MavenArtifactVersion mavenArtifactVersion = mavenArtifactVersionRepo.findById(id).orElse(null);
+    if (ObjectUtils.isNotEmpty(mavenArtifactVersion)) {
+      versions = MavenUtils.extractAllVersions(mavenArtifactVersion, BooleanUtils.isTrue(isShowDevVersion),
           StringUtils.EMPTY);
       version = CollectionUtils.firstElement(versions);
     }
@@ -679,6 +686,7 @@ public class ProductServiceImpl implements ProductService {
   }
 
   @Override
+  @Transactional
   public boolean syncOneProduct(String productId, String marketItemPath, Boolean overrideMarketItemPath) {
     try {
       log.info("Sync product {} is starting ...", productId);
@@ -703,7 +711,8 @@ public class ProductServiceImpl implements ProductService {
     return false;
   }
 
-  private Product renewProductById(String productId, String marketItemPath, Boolean overrideMarketItemPath) {
+  @Transactional
+  public Product renewProductById(String productId, String marketItemPath, Boolean overrideMarketItemPath) {
     Product product = new Product();
     productRepo.findById(productId).ifPresent(foundProduct -> {
           ProductFactory.transferComputedPersistedDataToProduct(foundProduct, product);

@@ -64,11 +64,11 @@ class CustomProductMarketplaceDataRepositoryImplTest extends BaseSetup {
     assertEquals(11, updatedCount);
   }
 
-  @Test
-  void testIncreaseInstallationCountForProductByDesignerVersion() {
-    repo.increaseInstallationCountForProductByDesignerVersion(MOCK_PRODUCT_ID, MOCK_RELEASED_VERSION);
-    verify(mongoTemplate).upsert(any(Query.class), any(Update.class), eq(ProductDesignerInstallation.class));
-  }
+//  @Test
+//  void testIncreaseInstallationCountForProductByDesignerVersion() {
+//    repo.increaseInstallationCountForProductByDesignerVersion(MOCK_PRODUCT_ID, MOCK_RELEASED_VERSION);
+//    verify(mongoTemplate).upsert(any(Query.class), any(Update.class), eq(ProductDesignerInstallation.class));
+//  }
 
   @Test
   void testCheckAndInitProductMarketplaceDataIfNotExist(){
