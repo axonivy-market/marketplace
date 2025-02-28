@@ -22,7 +22,7 @@ import com.axonivy.market.github.service.GHAxonIvyMarketRepoService;
 import com.axonivy.market.github.service.GHAxonIvyProductRepoService;
 import com.axonivy.market.github.service.GitHubService;
 import com.axonivy.market.github.util.GitHubUtils;
-import com.axonivy.market.model.GithubReleaseModel;
+import com.axonivy.market.model.GitHubReleaseModel;
 import com.axonivy.market.model.VersionAndUrlModel;
 import com.axonivy.market.repository.*;
 import com.axonivy.market.service.ExternalDocumentService;
@@ -802,7 +802,7 @@ public class ProductServiceImpl implements ProductService {
 
   @Cacheable(value = "GithubPublicReleasesCache", key="{#productId}")
   @Override
-  public Page<GithubReleaseModel> getGitHubReleaseModels(String productId, Pageable pageable) throws IOException {
+  public Page<GitHubReleaseModel> getGitHubReleaseModels(String productId, Pageable pageable) throws IOException {
     Product product = productRepo.findProductById(productId);
     if (StringUtils.isBlank(product.getRepositoryName()) || StringUtils.isBlank(product.getSourceUrl())) {
       return new PageImpl<>(new ArrayList<>(), pageable, 0);
@@ -815,12 +815,12 @@ public class ProductServiceImpl implements ProductService {
 
   @CachePut(value = "GithubPublicReleasesCache", key="{#productId}")
   @Override
-  public Page<GithubReleaseModel> syncGitHubReleaseModels(String productId, Pageable pageable) throws IOException {
+  public Page<GitHubReleaseModel> syncGitHubReleaseModels(String productId, Pageable pageable) throws IOException {
     return this.getGitHubReleaseModels(productId, pageable);
   }
 
   @Override
-  public GithubReleaseModel getGitHubReleaseModelByProductIdAndReleaseId(String productId, Long releaseId) throws IOException {
+  public GitHubReleaseModel getGitHubReleaseModelByProductIdAndReleaseId(String productId, Long releaseId) throws IOException {
     Product product = productRepo.findProductById(productId);
 
     return this.gitHubService.getGitHubReleaseModelByProductIdAndReleaseId(product, releaseId);

@@ -7,7 +7,7 @@ import com.axonivy.market.constants.RequestMappingConstants;
 import com.axonivy.market.entity.Product;
 import com.axonivy.market.entity.ProductJsonContent;
 import com.axonivy.market.enums.Language;
-import com.axonivy.market.model.GithubReleaseModel;
+import com.axonivy.market.model.GitHubReleaseModel;
 import com.axonivy.market.model.MavenArtifactVersionModel;
 import com.axonivy.market.model.ProductDetailModel;
 import com.axonivy.market.service.ProductContentService;
@@ -54,7 +54,7 @@ class ProductDetailsControllerTest extends BaseSetup {
   @Mock
   private ProductDetailModelAssembler detailModelAssembler;
   @Mock
-  private PagedResourcesAssembler<GithubReleaseModel> pagedResourcesAssembler;
+  private PagedResourcesAssembler<GitHubReleaseModel> pagedResourcesAssembler;
   @Mock
   private GithubReleaseModelAssembler githubReleaseModelAssembler;
   @Mock
@@ -289,10 +289,10 @@ class ProductDetailsControllerTest extends BaseSetup {
 
   @Test
   void testFindGithubPublicReleaseByProductIdAndReleaseId() throws IOException {
-    GithubReleaseModel githubReleaseModel = new GithubReleaseModel();
+    GitHubReleaseModel githubReleaseModel = new GitHubReleaseModel();
     when(productService.getGitHubReleaseModelByProductIdAndReleaseId(Mockito.anyString(), Mockito.anyLong()))
         .thenReturn(githubReleaseModel);
-    when(githubReleaseModelAssembler.toModel(Mockito.any(GithubReleaseModel.class))).thenReturn(githubReleaseModel);
+    when(githubReleaseModelAssembler.toModel(Mockito.any(GitHubReleaseModel.class))).thenReturn(githubReleaseModel);
 
     var result = productDetailsController.findGithubPublicReleaseByProductIdAndReleaseId("portal", 1L);
 
@@ -302,10 +302,10 @@ class ProductDetailsControllerTest extends BaseSetup {
 
   @Test
   void testFindGithubPublicReleases() throws IOException {
-    Page<GithubReleaseModel> page = new PageImpl<>(List.of(new GithubReleaseModel()));
+    Page<GitHubReleaseModel> page = new PageImpl<>(List.of(new GitHubReleaseModel()));
     when(productService.getGitHubReleaseModels(Mockito.anyString(), Mockito.any(Pageable.class))).thenReturn(page);
     when(pagedResourcesAssembler.toModel(Mockito.any(Page.class), Mockito.any(GithubReleaseModelAssembler.class)))
-        .thenReturn(PagedModel.of(List.of(new GithubReleaseModel()), new PagedModel.PageMetadata(1, 0, 1)));
+        .thenReturn(PagedModel.of(List.of(new GitHubReleaseModel()), new PagedModel.PageMetadata(1, 0, 1)));
 
     var result = productDetailsController.findGithubPublicReleases("portal", Pageable.ofSize(1));
 
@@ -315,7 +315,7 @@ class ProductDetailsControllerTest extends BaseSetup {
 
   @Test
   void testFindGithubPublicReleasesWithEmptyResult() throws IOException {
-    Page<GithubReleaseModel> emptyPage = Page.empty();
+    Page<GitHubReleaseModel> emptyPage = Page.empty();
     when(productService.getGitHubReleaseModels(Mockito.anyString(), Mockito.any(Pageable.class))).thenReturn(emptyPage);
     when(pagedResourcesAssembler.toEmptyModel(Mockito.any(Page.class), Mockito.any())).thenReturn(PagedModel.empty());
 

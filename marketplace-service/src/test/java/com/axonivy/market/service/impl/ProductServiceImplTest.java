@@ -19,7 +19,7 @@ import com.axonivy.market.github.model.GitHubFile;
 import com.axonivy.market.github.service.GHAxonIvyMarketRepoService;
 import com.axonivy.market.github.service.GHAxonIvyProductRepoService;
 import com.axonivy.market.github.service.GitHubService;
-import com.axonivy.market.model.GithubReleaseModel;
+import com.axonivy.market.model.GitHubReleaseModel;
 import com.axonivy.market.repository.GitHubRepoMetaRepository;
 import com.axonivy.market.repository.ImageRepository;
 import com.axonivy.market.repository.MavenArtifactVersionRepository;
@@ -767,9 +767,9 @@ class ProductServiceImplTest extends BaseSetup {
     mockProduct.setRepositoryName(mockRepositoryName);
     when(productRepo.findProductById(mockProductId)).thenReturn(mockProduct);
     when(gitHubService.getGitHubReleaseModelByProductIdAndReleaseId(mockProduct, mockReleaseId))
-        .thenReturn(new GithubReleaseModel());
+        .thenReturn(new GitHubReleaseModel());
 
-    GithubReleaseModel result = productService.getGitHubReleaseModelByProductIdAndReleaseId(mockProductId, mockReleaseId);
+    GitHubReleaseModel result = productService.getGitHubReleaseModelByProductIdAndReleaseId(mockProductId, mockReleaseId);
 
     assertNotNull(result);
     verify(gitHubService).getGitHubReleaseModelByProductIdAndReleaseId(any(Product.class), anyLong());
@@ -796,7 +796,7 @@ class ProductServiceImplTest extends BaseSetup {
     when(gitHubService.getGitHubReleaseModels(any(Product.class), any(PagedIterable.class), any(Pageable.class)))
         .thenReturn(Page.empty());
 
-    Page<GithubReleaseModel> result = productService.getGitHubReleaseModels(mockProductId, mockPageable);
+    Page<GitHubReleaseModel> result = productService.getGitHubReleaseModels(mockProductId, mockPageable);
 
     assertNotNull(result);
     verify(gitHubService).getGitHubReleaseModels(any(Product.class), any(PagedIterable.class), any(Pageable.class));
@@ -812,7 +812,7 @@ class ProductServiceImplTest extends BaseSetup {
     mockProduct.setSourceUrl("");
     when(productRepo.findProductById(mockProductId)).thenReturn(mockProduct);
 
-    Page<GithubReleaseModel> result = productService.getGitHubReleaseModels(mockProductId, mockPageable);
+    Page<GitHubReleaseModel> result = productService.getGitHubReleaseModels(mockProductId, mockPageable);
 
     assertNotNull(result);
     assertEquals(0, result.getTotalElements());
@@ -830,7 +830,7 @@ class ProductServiceImplTest extends BaseSetup {
     mockProduct.setSourceUrl("https://github.com/axonivy-market/portal");
     when(productRepo.findProductById(mockProductId)).thenReturn(mockProduct);
 
-    Page<GithubReleaseModel> result = productService.getGitHubReleaseModels(mockProductId, mockPageable);
+    Page<GitHubReleaseModel> result = productService.getGitHubReleaseModels(mockProductId, mockPageable);
 
     assertNotNull(result);
     assertEquals(0, result.getTotalElements());

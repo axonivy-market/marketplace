@@ -14,7 +14,7 @@ import com.axonivy.market.github.model.ProductSecurityInfo;
 import com.axonivy.market.github.model.SecretScanning;
 import com.axonivy.market.github.service.impl.GitHubServiceImpl;
 import com.axonivy.market.github.util.GitHubUtils;
-import com.axonivy.market.model.GithubReleaseModel;
+import com.axonivy.market.model.GitHubReleaseModel;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.kohsuke.github.*;
@@ -571,9 +571,9 @@ class GitHubServiceImplTest {
       when(mockProduct.getSourceUrl()).thenReturn(mockProductSourceUrl);
       when(mockPagedIterable.toList()).thenReturn(List.of(mockRelease1, mockRelease2));
       when(mockLatestRelease.getName()).thenReturn(mockVersion);
-      when(gitHubService.toGitHubReleaseModel(mockRelease1, mockProduct, mockLatestRelease.getName())).thenReturn(new GithubReleaseModel());
+      when(gitHubService.toGitHubReleaseModel(mockRelease1, mockProduct, mockLatestRelease.getName())).thenReturn(new GitHubReleaseModel());
 
-      Page<GithubReleaseModel> result = gitHubService.getGitHubReleaseModels(mockProduct, mockPagedIterable, mockPageable);
+      Page<GitHubReleaseModel> result = gitHubService.getGitHubReleaseModels(mockProduct, mockPagedIterable, mockPageable);
 
       assertNotNull(result);
       assertEquals(1, result.getTotalElements());
@@ -607,9 +607,9 @@ class GitHubServiceImplTest {
       when(mockRelease.getPublished_at()).thenReturn(new Date());
       when(mockRelease.getHtmlUrl()).thenReturn(mockHtmlUrl);
       when(mockProduct.getSourceUrl()).thenReturn(mockProductSourceUrl);
-      when(gitHubService.toGitHubReleaseModel(mockRelease, mockProduct, mockLatestRelease.getName())).thenReturn(new GithubReleaseModel());
+      when(gitHubService.toGitHubReleaseModel(mockRelease, mockProduct, mockLatestRelease.getName())).thenReturn(new GitHubReleaseModel());
 
-      GithubReleaseModel result = gitHubService.getGitHubReleaseModelByProductIdAndReleaseId(mockProduct, 1L);
+      GitHubReleaseModel result = gitHubService.getGitHubReleaseModelByProductIdAndReleaseId(mockProduct, 1L);
 
       assertNotNull(result);
       verify(gitHubService, atLeastOnce()).getRepository(mockRepositoryName);
@@ -646,7 +646,7 @@ class GitHubServiceImplTest {
       when(mockGhRelease.getHtmlUrl()).thenReturn(mockHtmlUrl);
       when(mockProduct.getSourceUrl()).thenReturn("http://example.com");
 
-      GithubReleaseModel result = gitHubService.toGitHubReleaseModel(mockGhRelease, mockProduct, mockLatestRelease.getName());
+      GitHubReleaseModel result = gitHubService.toGitHubReleaseModel(mockGhRelease, mockProduct, mockLatestRelease.getName());
 
       assertNotNull(result);
       assertEquals("v1.0.0", result.getName());

@@ -18,7 +18,7 @@ import com.axonivy.market.github.model.SecretScanning;
 import com.axonivy.market.github.service.GitHubService;
 import com.axonivy.market.github.model.ProductSecurityInfo;
 import com.axonivy.market.github.util.GitHubUtils;
-import com.axonivy.market.model.GithubReleaseModel;
+import com.axonivy.market.model.GitHubReleaseModel;
 import com.axonivy.market.repository.UserRepository;
 import lombok.extern.log4j.Log4j2;
 import org.kohsuke.github.*;
@@ -352,36 +352,36 @@ public class GitHubServiceImpl implements GitHubService {
   }
 
   @Override
-  public Page<GithubReleaseModel> getGitHubReleaseModels(Product product,
+  public Page<GitHubReleaseModel> getGitHubReleaseModels(Product product,
       PagedIterable<GHRelease> ghReleasePagedIterable,
       Pageable pageable) throws IOException {
-    List<GithubReleaseModel> githubReleaseModels = new ArrayList<>();
+    List<GitHubReleaseModel> gitHubReleaseModels = new ArrayList<>();
     List<GHRelease> ghReleases = ghReleasePagedIterable.toList().stream().filter(ghRelease -> !ghRelease.isDraft()).toList();
-    String latestGithubReleaseName = this.getGitHubLatestReleaseByProductId(product).getName();
+    String latestGitHubReleaseName = this.getGitHubLatestReleaseByProductId(product).getName();
 
     for (GHRelease ghRelease : ghReleases) {
-      githubReleaseModels.add(this.toGitHubReleaseModel(ghRelease, product, latestGithubReleaseName));
+      gitHubReleaseModels.add(this.toGitHubReleaseModel(ghRelease, product, latestGitHubReleaseName));
     }
 
 
-    return new PageImpl<>(githubReleaseModels, pageable, githubReleaseModels.size());
+    return new PageImpl<>(gitHubReleaseModels, pageable, gitHubReleaseModels.size());
   }
 
-  public GithubReleaseModel toGitHubReleaseModel(GHRelease ghRelease, Product product, String latestGithubReleaseName) throws IOException {
-    GithubReleaseModel githubReleaseModel = new GithubReleaseModel();
+  public GitHubReleaseModel toGitHubReleaseModel(GHRelease ghRelease, Product product, String latestGitHubReleaseName) throws IOException {
+    GitHubReleaseModel gitHubReleaseModel = new GitHubReleaseModel();
     String modifiedBody = transformGithubReleaseBody(ghRelease.getBody(), product.getSourceUrl());
-    githubReleaseModel.setBody(modifiedBody);
-    githubReleaseModel.setName(ghRelease.getName());
-    githubReleaseModel.setPublishedAt(ghRelease.getPublished_at());
-    githubReleaseModel.setHtmlUrl(ghRelease.getHtmlUrl().toString());
-    githubReleaseModel.add(GitHubUtils.createSelfLinkForGithubReleaseModel(product, ghRelease));
-    githubReleaseModel.setLatestRelease(ghRelease.getName().equals(latestGithubReleaseName));
+    gitHubReleaseModel.setBody(modifiedBody);
+    gitHubReleaseModel.setName(ghRelease.getName());
+    gitHubReleaseModel.setPublishedAt(ghRelease.getPublished_at());
+    gitHubReleaseModel.setHtmlUrl(ghRelease.getHtmlUrl().toString());
+    gitHubReleaseModel.add(GitHubUtils.createSelfLinkForGithubReleaseModel(product, ghRelease));
+    gitHubReleaseModel.setLatestRelease(ghRelease.getName().equals(latestGitHubReleaseName));
 
-    return githubReleaseModel;
+    return gitHubReleaseModel;
   }
 
   @Override
-  public GithubReleaseModel getGitHubReleaseModelByProductIdAndReleaseId(Product product, Long releaseId) throws IOException {
+  public GitHubReleaseModel getGitHubReleaseModelByProductIdAndReleaseId(Product product, Long releaseId) throws IOException {
     GHRelease ghRelease = this.getRepository(product.getRepositoryName()).getRelease(releaseId);
     GHRelease githubLatestRelease = getGitHubLatestReleaseByProductId(product);
     return this.toGitHubReleaseModel(ghRelease, product, githubLatestRelease.getName());

@@ -15,7 +15,7 @@ import java.util.Date;
 @Setter
 @NoArgsConstructor
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public class GithubReleaseModel extends RepresentationModel<GithubReleaseModel> {
+public class GitHubReleaseModel extends RepresentationModel<GitHubReleaseModel> {
   @Schema(description = "Version of release", example = "12.0.3")
   private String name;
 
@@ -41,6 +41,6 @@ public class GithubReleaseModel extends RepresentationModel<GithubReleaseModel> 
     if (obj == null || this.getClass() != obj.getClass()) {
       return false;
     }
-    return new EqualsBuilder().append(name, ((GithubReleaseModel) obj).getName()).isEquals();
+    return new EqualsBuilder().append(name, ((GitHubReleaseModel) obj).getName()).isEquals();
   }
 }
