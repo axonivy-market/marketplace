@@ -193,64 +193,56 @@ export class ProductFeedbackService {
       .set('size', size.toString())
       .set('sort', sort);
     const requestURL = `${FEEDBACK_API_URL}/product/${productId}`;
-    return this.http
-      .get<FeedbackApiResponse>(requestURL, { params: requestParams })
-      .pipe(
-        tap(response => {
-          const approvedFeedbacks = (
-            response._embedded?.feedbacks || []
-          ).filter(f => f.feedbackStatus === FeedbackStatus.APPROVED);
-          console.log(approvedFeedbacks);
-          if (page === 0) {
-            this.feedbacks.set(approvedFeedbacks);
-          } else {
-            this.feedbacks.set([...this.feedbacks(), ...approvedFeedbacks]);
-          }
-        }),
-        tap(response => {
-          this.findProductFeedbackOfUser().subscribe(userFeedbacks => {
-            if (userFeedbacks && userFeedbacks.length > 0) {
-              const feedback =
-                userFeedbacks.find(
-                  f => f.feedbackStatus === FeedbackStatus.PENDING
-                ) || userFeedbacks[0];
-              if (feedback.userId === this.authService.getUserId()) {
-                const currentFeedbacks = this.feedbacks();
-                const hasApprovedFeedback = currentFeedbacks.some(
-                  f =>
-                    f.userId === feedback.userId &&
-                    f.feedbackStatus === FeedbackStatus.APPROVED
-                );
+  
+    return this.http.get<FeedbackApiResponse>(requestURL, { params: requestParams }).pipe(
+      tap(response => {
+        // Update approved feedbacks
+        const allFeedbacks = response._embedded?.feedbacks || [];
+        const approvedFeedbacks = allFeedbacks.filter(f => f.feedbackStatus === FeedbackStatus.APPROVED);
+        console.log('Approved feedbacks:', approvedFeedbacks);
+  
+        const updatedFeedbacks = page === 0 ? approvedFeedbacks : [...this.feedbacks(), ...approvedFeedbacks];
+        this.feedbacks.set(updatedFeedbacks);
 
-                if (feedback.feedbackStatus === FeedbackStatus.PENDING) {
-                  if (hasApprovedFeedback && userFeedbacks.length === 2) {
-                    // Case 1: Replace approved with pending
-                    this.feedbacks.set([
-                      feedback,
-                      ...currentFeedbacks.filter(
-                        f => f.userId !== feedback.userId
-                      )
-                    ]);
-                  } else if (
-                    userFeedbacks.length === 1 &&
-                    hasApprovedFeedback
-                  ) {
-                    // Case 2: Prepend pending when only pending and approved exists in list
-                    this.feedbacks.set([feedback, ...currentFeedbacks]);
-                  } else if (
-                    !hasApprovedFeedback ||
-                    currentFeedbacks.length === 0
-                  ) {
-                    // Case 4: Prepend pending when no approved or list is empty
-                    this.feedbacks.set([feedback, ...currentFeedbacks]);
-                  }
-                }
-                // Case 3: Do nothing if feedback is APPROVED (implicit)
-              }
-            }
-          });
-        })
-      );
+        this.findProductFeedbackOfUser().subscribe(userFeedbacks => {
+          if (!userFeedbacks || userFeedbacks.length === 0) return;
+
+          const selectedFeedback =
+            userFeedbacks.find(f => f.feedbackStatus === FeedbackStatus.PENDING) || userFeedbacks[0];
+          const currentUserId = this.authService.getUserId();
+
+          if (selectedFeedback.userId !== currentUserId || selectedFeedback.feedbackStatus !== FeedbackStatus.PENDING) {
+            return; // Skip if not current user or feedback is APPROVED
+          }
+
+          this.updateFeedbacksWithUserFeedback(selectedFeedback, updatedFeedbacks);
+        });
+      })
+    );
+  }
+
+  /**
+   * Updates the feedbacks with the user feedbacks based on specific scenarios.
+   */
+  private updateFeedbacksWithUserFeedback(userFeedback: Feedback, currentFeedbacks: Feedback[]): void {
+    const hasApprovedFeedback = currentFeedbacks.some(
+      f => f.userId === userFeedback.userId && f.feedbackStatus === FeedbackStatus.APPROVED
+    );
+
+    if (hasApprovedFeedback && currentFeedbacks.length === 2) {
+      // Case 1: Replace approved with pending when exactly 2 feedbacks exist
+      this.feedbacks.set([
+        userFeedback,
+        ...currentFeedbacks.filter(f => f.userId !== userFeedback.userId)
+      ]);
+    } else if (hasApprovedFeedback && currentFeedbacks.length === 1) {
+      // Case 2: Prepend pending when only one approved feedback exists
+      this.feedbacks.set([userFeedback, ...currentFeedbacks]);
+    } else if (!hasApprovedFeedback || currentFeedbacks.length === 0) {
+      // Case 4: Prepend pending when no approved feedback or list is empty
+      this.feedbacks.set([userFeedback, ...currentFeedbacks]);
+    }
+    // Case 3: Do nothing if feedback is APPROVED (handled by early return)
   }
 
   findProductFeedbackOfUser(
