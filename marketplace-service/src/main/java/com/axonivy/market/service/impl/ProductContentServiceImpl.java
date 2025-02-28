@@ -137,16 +137,10 @@ public class ProductContentServiceImpl implements ProductContentService {
   @Override
   public CompletableFuture<ResponseBodyEmitter> downloadZipArtifactFile(String productId, String artifactId,
       String version) {
-    List<ProductDependency> existingProductDependencies = productDependencyRepository.findProductDependencies(
-        productId, artifactId, version);
-    List<MavenDependency> mavenDependencies = Optional.ofNullable(existingProductDependencies).orElse(List.of())
-        .stream().map(ProductDependency::getDependenciesOfArtifact).map(Map::values)
-        .flatMap(Collection::stream).flatMap(List::stream).toList();
-    // Validate product
+    List<MavenDependency> mavenDependencies = getMavenDependenciesOfProduct(productId, artifactId, version);
     if (ObjectUtils.isEmpty(mavenDependencies)) {
       return null;
     }
-
     // Create a ZIP file
     var emitter = new ResponseBodyEmitter();
     try {
@@ -154,10 +148,7 @@ public class ProductContentServiceImpl implements ProductContentService {
       try (var zipOut = new ZipOutputStream(byteArrayOutputStream)) {
         for (var mavenArtifact : mavenDependencies) {
           zipArtifact(version, mavenArtifact, zipOut);
-          // Zip dependencies
-          for (var dependency : Optional.ofNullable(mavenArtifact.getDependencies()).orElse(List.of())) {
-            zipArtifact(version, dependency, zipOut);
-          }
+          zipDependencyArtifacts(version, mavenArtifact, zipOut);
         }
         zipConfigurationOptions(zipOut);
         zipOut.closeEntry();
@@ -170,6 +161,25 @@ public class ProductContentServiceImpl implements ProductContentService {
     }
 
     return CompletableFuture.completedFuture(emitter);
+  }
+
+  private void zipDependencyArtifacts(String version, MavenDependency mavenArtifact, ZipOutputStream zipOut)
+      throws IOException {
+    if (mavenArtifact == null || ObjectUtils.isEmpty(mavenArtifact.getDependencies())) {
+      return;
+    }
+    for (var dependency : Optional.ofNullable(mavenArtifact.getDependencies()).orElse(List.of())) {
+      zipArtifact(version, dependency, zipOut);
+    }
+  }
+
+  private List<MavenDependency> getMavenDependenciesOfProduct(String productId, String artifactId, String version) {
+    List<ProductDependency> existingProductDependencies = productDependencyRepository.findProductDependencies(
+        productId, artifactId, version);
+    return Optional.ofNullable(existingProductDependencies).orElse(List.of())
+        .stream().map(ProductDependency::getDependenciesOfArtifact)
+        .map(Map::values).flatMap(Collection::stream).flatMap(List::stream)
+        .toList();
   }
 
   private void zipConfigurationOptions(ZipOutputStream zipOut) throws IOException {
