@@ -15,7 +15,7 @@ import java.util.Date;
 @Setter
 @NoArgsConstructor
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public class GithubReleaseModel extends RepresentationModel<GithubReleaseModel> {
+public class GitHubReleaseModel extends RepresentationModel<GitHubReleaseModel> {
   @Schema(description = "Version of release", example = "12.0.3")
   private String name;
 
@@ -28,6 +28,9 @@ public class GithubReleaseModel extends RepresentationModel<GithubReleaseModel> 
   @Schema(description = "Link of release", example = "https://github.com/axonivy-market/portal/releases/tag/next-12.0")
   private String htmlUrl;
 
+  @Schema(description = "Latest version", example = "true")
+  private boolean latestRelease;
+
   @Override
   public int hashCode() {
     return new HashCodeBuilder().append(name).hashCode();
@@ -38,6 +41,6 @@ public class GithubReleaseModel extends RepresentationModel<GithubReleaseModel> 
     if (obj == null || this.getClass() != obj.getClass()) {
       return false;
     }
-    return new EqualsBuilder().append(name, ((GithubReleaseModel) obj).getName()).isEquals();
+    return new EqualsBuilder().append(name, ((GitHubReleaseModel) obj).getName()).isEquals();
   }
 }

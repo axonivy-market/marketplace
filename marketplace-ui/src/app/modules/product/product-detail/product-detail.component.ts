@@ -529,7 +529,8 @@ export class ProductDetailComponent {
         name: release.name,
         body: this.bypassSecurityTrustHtml(release.body),
         publishedAt: release.publishedAt,
-        htmlUrl: release.htmlUrl
+        htmlUrl: release.htmlUrl,
+        latestRelease: release.latestRelease
       };
     });
   }

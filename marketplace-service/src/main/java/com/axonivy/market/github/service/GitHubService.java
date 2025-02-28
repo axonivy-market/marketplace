@@ -8,7 +8,7 @@ import com.axonivy.market.exceptions.model.UnauthorizedException;
 import com.axonivy.market.github.model.GitHubAccessTokenResponse;
 import com.axonivy.market.github.model.GitHubProperty;
 import com.axonivy.market.github.model.ProductSecurityInfo;
-import com.axonivy.market.model.GithubReleaseModel;
+import com.axonivy.market.model.GitHubReleaseModel;
 import org.kohsuke.github.GHContent;
 import org.kohsuke.github.GHOrganization;
 import org.kohsuke.github.GHRelease;
@@ -47,9 +47,9 @@ public interface GitHubService {
 
   List<ProductSecurityInfo> getSecurityDetailsForAllProducts(String accessToken, String orgName);
 
-  Page<GithubReleaseModel> getGitHubReleaseModels(Product product, PagedIterable<GHRelease> ghReleasePagedIterable,
+  Page<GitHubReleaseModel> getGitHubReleaseModels(Product product, PagedIterable<GHRelease> ghReleasePagedIterable,
       Pageable pageable) throws IOException;
 
-  GithubReleaseModel getGitHubReleaseModelByProductIdAndReleaseId(Product product, Long releaseId) throws IOException;
+  GitHubReleaseModel getGitHubReleaseModelByProductIdAndReleaseId(Product product, Long releaseId) throws IOException;
 
 }

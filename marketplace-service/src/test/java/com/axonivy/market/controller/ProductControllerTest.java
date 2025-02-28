@@ -10,6 +10,7 @@ import com.axonivy.market.enums.TypeOption;
 import com.axonivy.market.exceptions.model.UnauthorizedException;
 import com.axonivy.market.github.service.GHAxonIvyMarketRepoService;
 import com.axonivy.market.github.service.GitHubService;
+import com.axonivy.market.service.MavenDependencyService;
 import com.axonivy.market.service.MetadataService;
 import com.axonivy.market.service.ProductService;
 import com.axonivy.market.util.AuthorizationUtils;
@@ -71,6 +72,9 @@ class ProductControllerTest extends BaseSetup {
 
   @Mock
   private GHAxonIvyMarketRepoService axonIvyMarketRepoService;
+
+  @Mock
+  private MavenDependencyService mavenDependencyService;
 
   @BeforeEach
   void setup() {
@@ -241,5 +245,39 @@ class ProductControllerTest extends BaseSetup {
     var response = productController.syncFirstPublishedDateOfAllProducts(AUTHORIZATION_HEADER);
     assertEquals(HttpStatus.OK, response.getStatusCode());
     assertEquals(ErrorCode.SUCCESSFUL.getCode(), response.getBody().getHelpCode());
+  }
+
+  @Test
+  void testSyncProductArtifactsSuccess() {
+    when(mavenDependencyService.syncIARDependenciesForProducts(false)).thenReturn(5);
+
+    var response = productController.syncProductArtifacts(AUTHORIZATION_HEADER, false);
+
+    assertEquals(HttpStatus.OK, response.getStatusCode());
+    assertTrue(response.hasBody());
+    assertEquals("Synced 5 artifact(s)", Objects.requireNonNull(response.getBody()).getMessageDetails());
+  }
+
+  @Test
+  void testSyncProductArtifactsNothingToSync() {
+    when(mavenDependencyService.syncIARDependenciesForProducts(false)).thenReturn(0);
+
+    var response = productController.syncProductArtifacts(AUTHORIZATION_HEADER, false);
+
+    assertEquals(HttpStatus.NO_CONTENT, response.getStatusCode());
+    assertTrue(response.hasBody());
+    assertEquals("Nothing to sync", Objects.requireNonNull(response.getBody()).getMessageDetails());
+  }
+
+  @Test
+  void testSyncProductArtifactsInvalidToken() {
+    doThrow(new UnauthorizedException(ErrorCode.GITHUB_USER_UNAUTHORIZED.getCode(),
+        ErrorCode.GITHUB_USER_UNAUTHORIZED.getHelpText())).when(gitHubService)
+        .validateUserInOrganizationAndTeam(any(String.class), any(String.class), any(String.class));
+
+    UnauthorizedException exception = assertThrows(UnauthorizedException.class,
+        () -> productController.syncProductArtifacts(INVALID_AUTHORIZATION_HEADER, false));
+
+    assertEquals(ErrorCode.GITHUB_USER_UNAUTHORIZED.getHelpText(), exception.getMessage());
   }
 }
