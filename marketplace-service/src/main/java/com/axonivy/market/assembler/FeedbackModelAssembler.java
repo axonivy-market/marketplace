@@ -38,7 +38,7 @@ public class FeedbackModelAssembler extends RepresentationModelAssemblerSupport<
   public List<FeedbackModel> toModel(List<Feedback> feedbacks) {
     return feedbacks.stream()
         .map(this::toModel)
-        .collect(Collectors.toList());
+        .toList();
   }
 
   private FeedbackModel createResource(FeedbackModel model, Feedback feedback) {

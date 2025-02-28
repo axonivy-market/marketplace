@@ -48,7 +48,7 @@ class CustomFeedbackRepositoryImplTest extends BaseSetup {
         Criteria.where(MongoDBConstants.PRODUCT_ID).is(PRODUCT_ID).and(MongoDBConstants.FEEDBACK_STATUS).nin(
             FeedbackStatus.REJECTED, FeedbackStatus.PENDING));
 
-    when(mongoTemplate.find(eq(expectedQuery), eq(Feedback.class), eq(EntityConstants.FEEDBACK))).thenReturn(
+    when(mongoTemplate.find(expectedQuery, eq(Feedback.class), eq(EntityConstants.FEEDBACK))).thenReturn(
         feedbackList);
     when(mongoTemplate.count(any(Query.class), eq(Feedback.class))).thenReturn(totalCount);
 
@@ -59,7 +59,7 @@ class CustomFeedbackRepositoryImplTest extends BaseSetup {
     assertEquals(1, result.getContent().size());
     assertEquals(feedback, result.getContent().get(0));
 
-    verify(mongoTemplate, times(1)).find(eq(expectedQuery), eq(Feedback.class), eq(EntityConstants.FEEDBACK));
+    verify(mongoTemplate, times(1)).find(expectedQuery, eq(Feedback.class), eq(EntityConstants.FEEDBACK));
     verify(mongoTemplate, times(1)).count(any(Query.class), eq(Feedback.class));
   }
 
@@ -75,7 +75,7 @@ class CustomFeedbackRepositoryImplTest extends BaseSetup {
             Criteria.where(MongoDBConstants.USER_ID).is(USER_ID),
             Criteria.where(MongoDBConstants.FEEDBACK_STATUS).ne(FeedbackStatus.REJECTED)));
 
-    when(mongoTemplate.find(eq(expectedQuery), eq(Feedback.class), eq(EntityConstants.FEEDBACK))).thenReturn(
+    when(mongoTemplate.find(expectedQuery, eq(Feedback.class), eq(EntityConstants.FEEDBACK))).thenReturn(
         expectedList);
 
     List<Feedback> result = customFeedbackRepository.findByUserIdAndProductId(USER_ID, PRODUCT_ID);
@@ -84,6 +84,6 @@ class CustomFeedbackRepositoryImplTest extends BaseSetup {
     assertEquals(1, result.size());
     assertEquals(feedback, result.get(0));
 
-    verify(mongoTemplate, times(1)).find(eq(expectedQuery), eq(Feedback.class), eq(EntityConstants.FEEDBACK));
+    verify(mongoTemplate, times(1)).find(expectedQuery, eq(Feedback.class), eq(EntityConstants.FEEDBACK));
   }
 }

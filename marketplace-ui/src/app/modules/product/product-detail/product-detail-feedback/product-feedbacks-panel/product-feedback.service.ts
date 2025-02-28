@@ -193,14 +193,13 @@ export class ProductFeedbackService {
       .set('size', size.toString())
       .set('sort', sort);
     const requestURL = `${FEEDBACK_API_URL}/product/${productId}`;
-  
+
     return this.http.get<FeedbackApiResponse>(requestURL, { params: requestParams }).pipe(
       tap(response => {
-        // Update approved feedbacks
         const allFeedbacks = response._embedded?.feedbacks || [];
         const approvedFeedbacks = allFeedbacks.filter(f => f.feedbackStatus === FeedbackStatus.APPROVED);
         console.log('Approved feedbacks:', approvedFeedbacks);
-  
+
         const updatedFeedbacks = page === 0 ? approvedFeedbacks : [...this.feedbacks(), ...approvedFeedbacks];
         this.feedbacks.set(updatedFeedbacks);
 

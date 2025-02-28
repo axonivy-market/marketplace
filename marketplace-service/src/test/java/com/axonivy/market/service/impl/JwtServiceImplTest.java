@@ -35,7 +35,7 @@ class JwtServiceImplTest extends BaseSetup {
     user.setName("John Doe");
     user.setUsername("johndoe");
 
-    String token = jwtService.generateToken(user, accessToken);
+    String token = jwtService.generateToken(user, ACCESS_TOKEN);
 
     assertNotNull(token);
     assertFalse(token.isEmpty());
@@ -53,7 +53,7 @@ class JwtServiceImplTest extends BaseSetup {
     user.setName("John Doe");
     user.setUsername("johndoe");
 
-    String validToken = jwtService.generateToken(user, accessToken);
+    String validToken = jwtService.generateToken(user, ACCESS_TOKEN);
     assertTrue(jwtService.validateToken(validToken));
 
     String invalidToken = "invalid.token.here";
@@ -67,7 +67,7 @@ class JwtServiceImplTest extends BaseSetup {
     user.setName("John Doe");
     user.setUsername("johndoe");
 
-    String token = jwtService.generateToken(user, accessToken);
+    String token = jwtService.generateToken(user, ACCESS_TOKEN);
 
     Claims claims = jwtService.getClaimsFromToken(token);
     assertNotNull(claims);
@@ -83,7 +83,7 @@ class JwtServiceImplTest extends BaseSetup {
     user.setName("John Doe");
     user.setUsername("johndoe");
 
-    String token = jwtService.generateToken(user, accessToken);
+    String token = jwtService.generateToken(user, ACCESS_TOKEN);
 
     Jws<Claims> claimsJws = jwtService.getClaimsJws(token);
     assertNotNull(claimsJws);

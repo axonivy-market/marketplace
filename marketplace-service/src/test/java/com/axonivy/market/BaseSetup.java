@@ -39,7 +39,7 @@ import java.util.Set;
 @Log4j2
 public class BaseSetup {
   protected static final String AUTHORIZATION_HEADER = "Bearer valid_token";
-  protected static final String accessToken = "sampleAccessToken";
+  protected static final String ACCESS_TOKEN = "sampleAccessToken";
   protected static final String SAMPLE_PRODUCT_ID = "amazon-comprehend";
   protected static final String SAMPLE_PRODUCT_PATH = "/market/connector/amazon-comprehend";
   protected static final String SAMPLE_PRODUCT_NAME = "prody Comprehend";
