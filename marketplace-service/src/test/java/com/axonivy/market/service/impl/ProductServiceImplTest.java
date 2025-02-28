@@ -845,4 +845,13 @@ class ProductServiceImplTest extends BaseSetup {
     verify(productRepo).findProductById(mockProductId);
     verifyNoInteractions(gitHubService);
   }
+
+  @Test
+  void testGetProductIdList() {
+    List<Product> products = List.of(new Product(), new Product());
+    when(productRepo.findAll()).thenReturn(products);
+
+    List<String> result = productService.getProductIdList();
+    assertEquals(products.size(), result.size());
+  }
 }

@@ -91,6 +91,15 @@
           <artifactId>maven-model</artifactId>
           <version>3.9.9</version>
       </dependency>
+    <dependency>
+       <groupId>com.github.ben-manes.caffeine</groupId>
+       <artifactId>caffeine</artifactId>
+       <version>3.2.0</version>
+    </dependency>
+    <dependency>
+       <groupId>org.springframework.boot</groupId>
+       <artifactId>spring-boot-starter-cache</artifactId>
+    </dependency>
   </dependencies>
 
   <build>
@@ -111,6 +120,11 @@
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-compiler-plugin</artifactId>
         <version>3.8.1</version>
+          <configuration>
+              <compilerArgs>
+                  <arg>-parameters</arg>
+              </compilerArgs>
+          </configuration>
       </plugin>
       <plugin>
         <groupId>org.sonarsource.scanner.maven</groupId>

@@ -1,5 +1,6 @@
 package com.axonivy.market.service;
 
+import com.axonivy.market.controller.ProductDetailsController;
 import com.axonivy.market.entity.Product;
 import com.axonivy.market.repository.ProductRepository;
 import com.axonivy.market.schedulingtask.ScheduledTasks;
@@ -9,6 +10,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -28,6 +30,9 @@ class SystemTasksTest {
   @Mock
   ProductService productService;
 
+  @Mock
+  ProductDetailsController productDetailsController;
+
   @InjectMocks
   ScheduledTasks tasks;
 
@@ -44,5 +49,11 @@ class SystemTasksTest {
   void testSyncProduct() {
     tasks.syncDataForProductFromGitHubRepo();
     verify(productService, times(1)).syncLatestDataFromMarketRepo(false);
+  }
+
+  @Test
+  void testSyncDataForProductReleases() throws IOException {
+    tasks.syncDataForProductReleases();
+    verify(productDetailsController, atLeast(1)).syncLatestReleasesForProducts();
   }
 }
