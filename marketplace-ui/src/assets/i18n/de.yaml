@@ -49,7 +49,10 @@ common:
     market: Marktplatz
   introduction:
     about: Durch die vielfältigen Angebote des Axon Ivy Marktplatzes wird die Prozessautomatisierung umfassend erweitert.
-    contribute: Mit leistungsstarken Konnektoren, beispielsweise zur Einbindung von ChatGPT, MS Office oder den gängigen Datenbanken wird die Prozessautomatisierung komfortabel einfach.
+    contribute: 
+      Hier findest du Konnektoren zu Standard-Softwarelösungen führender Anbieter wie Microsoft,
+      Amazon oder Adobe sowie fertige Prozessmodelle, Geschäftslösungen
+      und praktische Werkzeuge zur Dokumentenverarbeitung, -speicherung oder Signierung.
     link: Werde Teil der Community und
       <a class="link-opacity-100" href="https://github.com/axonivy-market/market/wiki" aria-label="Github - How to contribute"> baue deinen eigenen Konnektor.</a>
   filter:
