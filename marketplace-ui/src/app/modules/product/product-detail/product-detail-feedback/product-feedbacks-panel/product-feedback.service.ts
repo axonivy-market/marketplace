@@ -11,7 +11,7 @@ import {
   signal,
   WritableSignal
 } from '@angular/core';
-import { catchError, Observable, of, tap, throwError } from 'rxjs';
+import { catchError, map, Observable, of, switchMap, tap, throwError } from 'rxjs';
 import { CookieService } from 'ngx-cookie-service';
 import { AuthService } from '../../../../../auth/auth.service';
 import { ForwardingError } from '../../../../../core/interceptors/api.interceptor';
@@ -65,6 +65,7 @@ export class ProductFeedbackService {
     const token = this.authService.decodeToken(
       this.cookieService.get(TOKEN_KEY)
     )?.accessToken;
+    console.log(token);
     const headers = new HttpHeaders().set('Authorization', `Bearer ${token}`);
     const requestParams = new HttpParams()
       .set('page', page.toString())
@@ -193,55 +194,61 @@ export class ProductFeedbackService {
       .set('size', size.toString())
       .set('sort', sort);
     const requestURL = `${FEEDBACK_API_URL}/product/${productId}`;
-
-    return this.http.get<FeedbackApiResponse>(requestURL, { params: requestParams }).pipe(
-      tap(response => {
-        const allFeedbacks = response._embedded?.feedbacks || [];
-        const approvedFeedbacks = allFeedbacks.filter(f => f.feedbackStatus === FeedbackStatus.APPROVED);
-        console.log('Approved feedbacks:', approvedFeedbacks);
-
-        const updatedFeedbacks = page === 0 ? approvedFeedbacks : [...this.feedbacks(), ...approvedFeedbacks];
-        this.feedbacks.set(updatedFeedbacks);
-
-        this.findProductFeedbackOfUser().subscribe(userFeedbacks => {
-          if (!userFeedbacks || userFeedbacks.length === 0) return;
-
-          const selectedFeedback =
-            userFeedbacks.find(f => f.feedbackStatus === FeedbackStatus.PENDING) || userFeedbacks[0];
-          const currentUserId = this.authService.getUserId();
-
-          if (selectedFeedback.userId !== currentUserId || selectedFeedback.feedbackStatus !== FeedbackStatus.PENDING) {
-            return; // Skip if not current user or feedback is APPROVED
+    return this.http
+      .get<FeedbackApiResponse>(requestURL, { params: requestParams })
+      .pipe(
+        tap(response => {
+          const approvedFeedbacks = (response._embedded?.feedbacks || []).filter(f => f.feedbackStatus === FeedbackStatus.APPROVED);
+          console.log(approvedFeedbacks);
+          if (page === 0) {
+            this.feedbacks.set(approvedFeedbacks);
+          } else {
+            this.feedbacks.set([
+              ...this.feedbacks(),
+              ...approvedFeedbacks
+            ]);
           }
+        }),
+        tap(response => {
+          this.findProductFeedbackOfUser().subscribe(userFeedbacks => {
+            if (userFeedbacks && userFeedbacks.length > 0) {
+              console.log(userFeedbacks);
+              const feedback = userFeedbacks[0];
 
-          this.updateFeedbacksWithUserFeedback(selectedFeedback, updatedFeedbacks);
-        });
-      })
-    );
-  }
-
-  /**
-   * Updates the feedbacks with the user feedbacks based on specific scenarios.
-   */
-  private updateFeedbacksWithUserFeedback(userFeedback: Feedback, currentFeedbacks: Feedback[]): void {
-    const hasApprovedFeedback = currentFeedbacks.some(
-      f => f.userId === userFeedback.userId && f.feedbackStatus === FeedbackStatus.APPROVED
-    );
-
-    if (hasApprovedFeedback && currentFeedbacks.length === 2) {
-      // Case 1: Replace approved with pending when exactly 2 feedbacks exist
-      this.feedbacks.set([
-        userFeedback,
-        ...currentFeedbacks.filter(f => f.userId !== userFeedback.userId)
-      ]);
-    } else if (hasApprovedFeedback && currentFeedbacks.length === 1) {
-      // Case 2: Prepend pending when only one approved feedback exists
-      this.feedbacks.set([userFeedback, ...currentFeedbacks]);
-    } else if (!hasApprovedFeedback || currentFeedbacks.length === 0) {
-      // Case 4: Prepend pending when no approved feedback or list is empty
-      this.feedbacks.set([userFeedback, ...currentFeedbacks]);
-    }
-    // Case 3: Do nothing if feedback is APPROVED (handled by early return)
+              if (feedback.userId === this.authService.getUserId()) {
+                if (userFeedbacks.find(f => f.feedbackStatus === FeedbackStatus.PENDING)) {
+                  const currentFeedbacks = this.feedbacks();
+                  const hasApprovedFeedback = currentFeedbacks.some(f =>
+                    f.userId === feedback.userId &&
+                    f.feedbackStatus === FeedbackStatus.APPROVED
+                  );
+                  console.log(hasApprovedFeedback);
+                  if (hasApprovedFeedback && userFeedbacks.length === 2) {
+                    // Case 1: User has both approved and pending, replace approved with pending
+                    const pending = userFeedbacks.filter(f => f.feedbackStatus === FeedbackStatus.PENDING)[0];
+                    this.feedbacks.set([
+                      pending,
+                      ...currentFeedbacks.filter(f => f.userId !== feedback.userId)
+                    ]);
+                    console.log(feedback);
+                    console.log(pending);
+                    console.log(this.feedbacks());
+                  } else if (userFeedbacks.length === 2 && currentFeedbacks.length === 0) {
+                    console.log("here");
+                    console.log(feedback);
+                    // Case 2: User has both approved and pending but current feedbacks empty, add pending
+                    this.feedbacks.set([feedback]);
+                  } else {
+                    // Case 3: User has only one pending feedback
+                    this.feedbacks.set([feedback, ...currentFeedbacks]);
+                  }
+                }
+              }
+            }
+            console.log(this.feedbacks());
+          });
+        })
+      );
   }
 
   findProductFeedbackOfUser(
@@ -258,7 +265,10 @@ export class ProductFeedbackService {
       })
       .pipe(
         tap(feedbacks => {
-          this.userFeedback.set(feedbacks[0] || null);
+          const prioritizedUserFeedback = feedbacks.find(f => f.feedbackStatus === FeedbackStatus.PENDING) ||
+            feedbacks.find(f => f.feedbackStatus === FeedbackStatus.APPROVED) ||
+            null;
+          this.userFeedback.set(prioritizedUserFeedback);
         }),
         catchError(response => {
           if (

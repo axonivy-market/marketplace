@@ -20,22 +20,22 @@
   <div class="feedback-container d-flex">
     <div class="tab-group d-flex flex-column justify-content-center align-items-start p-0 col-12">
       <div class="row-tab col-12">
-        <ul ngbNav class="nav nav-tabs form-tabs">
+        <ul class="nav nav-tabs form-tabs">
           <li
             class="nav-item d-flex flex-row position-relative border-bottom-1 p-2 justify-content-center align-items-start">
-            <a id="review-tab" ngbNavLink class="nav-link tab-title border-0 bg-transparent active" role="tab"
-              [ngClass]="{'text-secondary': themeService.isDarkMode(), 'text-dark': !themeService.isDarkMode()}"
+            <a id="review-tab" class="nav-link tab-title border-0 bg-transparent active" role="tab"
+              [ngClass]="{'text-secondary': themeService.isDarkMode(), 'text-dark': !themeService.isDarkMode(), 'active': activeTab === 'review'}"
               data-bs-toggle="tab" data-bs-target="#review" (click)="setActiveTab('review')"
-              [ngClass]="{'active': activeTab === 'review'}" [lang]="languageService.selectedLanguage()">
+              [lang]="languageService.selectedLanguage()">
               {{ 'common.approval.reviewFeedback' | translate }}
             </a>
           </li>
           <li
             class="nav-item d-flex flex-row position-relative border-bottom-1 p-2 justify-content-center align-items-start">
-            <a id="history-tab" ngbNavLink class="nav-link tab-title border-0 bg-transparent" role="tab"
-              [ngClass]="{'text-secondary': themeService.isDarkMode(), 'text-dark': !themeService.isDarkMode()}"
+            <a id="history-tab" class="nav-link tab-title border-0 bg-transparent" role="tab"
+              [ngClass]="{'text-secondary': themeService.isDarkMode(), 'text-dark': !themeService.isDarkMode(), 'active': activeTab === 'history'}"
               data-bs-toggle="tab" data-bs-target="#history" (click)="setActiveTab('history')"
-              [ngClass]="{'active': activeTab === 'history'}" [lang]="languageService.selectedLanguage()">
+              [lang]="languageService.selectedLanguage()">
               {{ 'common.approval.history' | translate }}
             </a>
           </li>

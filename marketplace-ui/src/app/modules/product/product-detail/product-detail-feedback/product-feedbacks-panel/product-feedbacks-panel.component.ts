@@ -49,6 +49,12 @@ export class ProductFeedbacksPanelComponent {
   feedbacks: Signal<Feedback[] | undefined> =
     this.productFeedbackService.feedbacks;
 
+ngOnInit(): void {
+// console.log(this.feedbacks());
+// this.productFeedbackService.getInitFeedbacksObservable().subscribe();
+console.log(this.feedbacks());
+}
+
   onSortChange(sort: string): void {
     this.productFeedbackService.changeSort(sort);
   }
