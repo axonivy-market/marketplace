@@ -169,6 +169,21 @@ export const PRODUCT_DETAIL_TABS: ItemDropdown[] = [
   }
 ];
 
+export const FEEDBACK_APPROVAL_TABS: ItemDropdown[] = [
+  {
+    activeClass: "activeTab === 'review'",
+    tabId: 'review-tab',
+    value: 'review',
+    label: 'Review feedback'
+  },
+  {
+    activeClass: "activeTab === 'history'",
+    tabId: 'history-tab',
+    value: 'history',
+    label: 'History'
+  }
+];
+
 export const FEEDBACK_SORT_TYPES: ItemDropdown<FeedbackSortType>[] = [
   {
     value: FeedbackSortType.NEWEST,
@@ -286,3 +301,5 @@ export const REPO_PAGE_PATHS: Record<string, string> = {
 };
 
 export const HASH_SYMBOL = '#';
+
+export const FEEDBACK_APPROVAL_STATE = 'feedback-approval';

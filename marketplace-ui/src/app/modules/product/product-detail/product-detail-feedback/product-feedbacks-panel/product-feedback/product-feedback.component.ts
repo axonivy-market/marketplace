@@ -5,6 +5,7 @@ import { Feedback } from '../../../../../../shared/models/feedback.model';
 import { TimeAgoPipe } from '../../../../../../shared/pipes/time-ago.pipe';
 import { LanguageService } from '../../../../../../core/services/language/language.service';
 import { TranslateModule } from '@ngx-translate/core';
+import { FeedbackStatus } from '../../../../../../shared/enums/feedback-status.enum';
 
 @Component({
   selector: 'app-product-feedback',
@@ -21,8 +22,17 @@ export class ProductFeedbackComponent {
   private readonly scrollHeight = signal(0);
   private readonly clientHeight = signal(0);
 
+  private readonly isPending = signal(false);
+  isFeedbackPending = computed(() => this.isPending());
+
   showToggle = computed(() => this.scrollHeight() > this.clientHeight() || this.feedback.isExpanded);
   languageService = inject(LanguageService);
+
+  ngOnInit(): void {
+    if (this.feedback && this.feedback.feedbackStatus == FeedbackStatus.PENDING) {
+      this.isPending.set(true);
+    }
+  }
 
   ngAfterViewInit() {
     this.initializeResizeObserver();

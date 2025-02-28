@@ -10,6 +10,9 @@
 
 $ivyLatestReleaseBorderColor: #238636;
 $ivyLatestReleaseColor: #3fb950;
+$ivyApproveButtonColor: #47c46b;
+$ivyRejectButtonColor: #e5151c;
+
 
 // Light
 $ivyPrimaryColorLight: #007095;
@@ -59,7 +62,7 @@ p {
   font-size: 14px;
 }
 
-.overlay-background{
+.overlay-background {
   background: rgba(0, 0, 0, 0.32);
 }
 
@@ -91,8 +94,9 @@ p {
   --text-error-oops-color: #{$ivyPrimaryTextColorLight};
   --product-feedback-container-bg-color: #{$ivySecondaryColorLight};
   --product-feedback-container-border-color: #{var(--header-border-color)};
+  --product-feedback-approve-button-color: #{$ivyApproveButtonColor};
+  --product-feedback-reject-button-color: #{$ivyRejectButtonColor};
 
-  
   --product-latest-release: #{$ivyLatestReleaseColor};
   --product-latest-release-border: #{$ivyLatestReleaseBorderColor};
 
@@ -159,10 +163,12 @@ p {
 
   .star-rating-counting-line {
     background-color: #{$ivySecondaryColorLight} !important;
+
     .star-rating-percent {
       background-color: #{$ivyPrimaryColorLight} !important;
     }
   }
+
   /** End Star Rating Summary **/
 }
 
@@ -202,6 +208,8 @@ p {
   --text-error-oops-color: #ffffff;
   --product-feedback-container-bg-color: #{$ivySecondaryColorDark};
   --product-feedback-container-border-color: #{$ivySecondaryTextLight};
+  --product-feedback-approve-button-color: #{$ivyApproveButtonColor};
+  --product-feedback-reject-button-color: #{$ivyRejectButtonColor};
 
   --product-latest-release: #{$ivyLatestReleaseColor};
   --product-latest-release-border: #{$ivyLatestReleaseBorderColor};
@@ -268,12 +276,15 @@ p {
 
   .star-rating-counting-line {
     background-color: #383838 !important;
+
     .star-rating-percent {
       background-color: #FAFAFA !important;
     }
   }
+
   /** End Star Rating Summary **/
 }
+
 .default-cursor {
   cursor: default;
 }
@@ -324,6 +335,7 @@ p {
   .container {
     min-width: 1505px;
   }
+
   .col-xxl-3 {
     flex: 0 0 auto;
     width: 25% !important;

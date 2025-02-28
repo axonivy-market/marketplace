@@ -5,13 +5,14 @@ import { Router } from '@angular/router';
 import { catchError, Observable, throwError } from 'rxjs';
 import { CookieService } from 'ngx-cookie-service';
 import { jwtDecode } from 'jwt-decode';
-import { TOKEN_KEY } from '../shared/constants/common.constant';
+import { FEEDBACK_APPROVAL_STATE, TOKEN_KEY } from '../shared/constants/common.constant';
 
 export interface TokenPayload {
   username: string;
   name: string;
   sub: string;
   exp: number;
+  accessToken: string;
 }
 
 export interface RequestBody {
@@ -60,9 +61,13 @@ export class AuthService {
 
   handleTokenResponse(token: string, state: string): void {
     this.setTokenAsCookie(token);
-    this.router.navigate([`${state}`], {
-      queryParams: { showPopup: 'true' }
-    });
+    if(state == FEEDBACK_APPROVAL_STATE){
+      this.router.navigate([`${state}`]);
+    } else {
+      this.router.navigate([`${state}`], {
+        queryParams: { showPopup: 'true' }
+      });
+    }
   }
 
   private setTokenAsCookie(token: string): void {
@@ -80,7 +85,7 @@ export class AuthService {
     return null;
   }
 
-  private decodeToken(token: string): TokenPayload | null {
+  decodeToken(token: string): TokenPayload | null {
     try {
       return jwtDecode(token);
     } catch (error) {

@@ -1,5 +1,6 @@
 package com.axonivy.market.service.impl;
 
+import com.axonivy.market.BaseSetup;
 import com.axonivy.market.entity.User;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jws;
@@ -13,7 +14,7 @@ import org.springframework.test.util.ReflectionTestUtils;
 import static org.junit.jupiter.api.Assertions.*;
 
 @ExtendWith(MockitoExtension.class)
-class JwtServiceImplTest {
+class JwtServiceImplTest extends BaseSetup {
 
   private static final String SECRET = "mySecret";
   private static final long EXPIRATION = 7L; // 7 days
@@ -34,7 +35,7 @@ class JwtServiceImplTest {
     user.setName("John Doe");
     user.setUsername("johndoe");
 
-    String token = jwtService.generateToken(user);
+    String token = jwtService.generateToken(user, ACCESS_TOKEN);
 
     assertNotNull(token);
     assertFalse(token.isEmpty());
@@ -52,7 +53,7 @@ class JwtServiceImplTest {
     user.setName("John Doe");
     user.setUsername("johndoe");
 
-    String validToken = jwtService.generateToken(user);
+    String validToken = jwtService.generateToken(user, ACCESS_TOKEN);
     assertTrue(jwtService.validateToken(validToken));
 
     String invalidToken = "invalid.token.here";
@@ -66,7 +67,7 @@ class JwtServiceImplTest {
     user.setName("John Doe");
     user.setUsername("johndoe");
 
-    String token = jwtService.generateToken(user);
+    String token = jwtService.generateToken(user, ACCESS_TOKEN);
 
     Claims claims = jwtService.getClaimsFromToken(token);
     assertNotNull(claims);
@@ -82,7 +83,7 @@ class JwtServiceImplTest {
     user.setName("John Doe");
     user.setUsername("johndoe");
 
-    String token = jwtService.generateToken(user);
+    String token = jwtService.generateToken(user, ACCESS_TOKEN);
 
     Jws<Claims> claimsJws = jwtService.getClaimsJws(token);
     assertNotNull(claimsJws);

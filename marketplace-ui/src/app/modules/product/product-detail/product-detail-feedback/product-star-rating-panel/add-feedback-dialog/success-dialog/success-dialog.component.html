@@ -9,5 +9,8 @@
     </h4>
     <h4 [lang]="languageService.selectedLanguage()" class="text-primary">{{ 'common.feedback.thankMessage' | translate
       }} {{ authService.getDisplayName() ?? '' }}</h4>
+    <h4 [lang]="languageService.selectedLanguage()" class="text-primary">
+      {{ 'common.feedback.informMessage' | translate }}
+    </h4>
   </div>
 </div>

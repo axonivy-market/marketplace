@@ -3,14 +3,18 @@ package com.axonivy.market.service.impl;
 import com.axonivy.market.entity.Feedback;
 import com.axonivy.market.enums.ErrorCode;
 import com.axonivy.market.enums.FeedbackSortOption;
+import com.axonivy.market.enums.FeedbackStatus;
 import com.axonivy.market.exceptions.model.NoContentException;
 import com.axonivy.market.exceptions.model.NotFoundException;
+import com.axonivy.market.model.FeedbackApprovalModel;
 import com.axonivy.market.model.FeedbackModelRequest;
 import com.axonivy.market.model.ProductRating;
+import com.axonivy.market.repository.CustomFeedbackRepository;
 import com.axonivy.market.repository.FeedbackRepository;
 import com.axonivy.market.repository.ProductRepository;
 import com.axonivy.market.repository.UserRepository;
 import com.axonivy.market.service.FeedbackService;
+import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -19,8 +23,11 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
@@ -30,18 +37,25 @@ public class FeedbackServiceImpl implements FeedbackService {
   private final FeedbackRepository feedbackRepository;
   private final UserRepository userRepository;
   private final ProductRepository productRepository;
+  private final CustomFeedbackRepository customFeedbackRepository;
 
   public FeedbackServiceImpl(FeedbackRepository feedbackRepository, UserRepository userRepository,
-      ProductRepository productRepository) {
+      ProductRepository productRepository, CustomFeedbackRepository customFeedbackRepository) {
     this.feedbackRepository = feedbackRepository;
     this.userRepository = userRepository;
     this.productRepository = productRepository;
+    this.customFeedbackRepository = customFeedbackRepository;
+  }
+
+  @Override
+  public Page<Feedback> findAllFeedbacks(Pageable pageable) {
+    return feedbackRepository.findAll(pageable);
   }
 
   @Override
   public Page<Feedback> findFeedbacks(String productId, Pageable pageable) throws NotFoundException {
     validateProductExists(productId);
-    return feedbackRepository.searchByProductId(productId, refinePagination(pageable));
+    return customFeedbackRepository.searchByProductId(productId, refinePagination(pageable));
   }
 
   @Override
@@ -51,14 +65,14 @@ public class FeedbackServiceImpl implements FeedbackService {
   }
 
   @Override
-  public Feedback findFeedbackByUserIdAndProductId(String userId,
+  public List<Feedback> findFeedbackByUserIdAndProductId(String userId,
       String productId) throws NotFoundException, NoContentException {
     if (StringUtils.isNotBlank(userId)) {
       validateUserExists(userId);
     }
     validateProductExists(productId);
 
-    Feedback existingUserFeedback = feedbackRepository.findByUserIdAndProductId(userId, productId);
+    List<Feedback> existingUserFeedback = customFeedbackRepository.findByUserIdAndProductId(userId, productId);
     if (existingUserFeedback == null) {
       throw new NoContentException(ErrorCode.NO_FEEDBACK_OF_USER_FOR_PRODUCT,
           String.format("No feedback with user id '%s' and product id '%s'", userId, productId));
@@ -67,28 +81,60 @@ public class FeedbackServiceImpl implements FeedbackService {
   }
 
   @Override
+  public Feedback updateFeedbackWithNewStatus(FeedbackApprovalModel feedbackApproval) {
+    Feedback existingUserFeedback = feedbackRepository.findById(feedbackApproval.getFeedbackId()).orElse(null);
+    if (existingUserFeedback != null) {
+      existingUserFeedback.setFeedbackStatus(
+          BooleanUtils.isTrue(feedbackApproval.getIsApproved()) ? FeedbackStatus.APPROVED : FeedbackStatus.REJECTED);
+      existingUserFeedback.setModeratorName(feedbackApproval.getModeratorName());
+      existingUserFeedback.setReviewDate(new Date());
+      feedbackRepository.save(existingUserFeedback);
+    }
+
+    return existingUserFeedback;
+  }
+
+  @Override
   public Feedback upsertFeedback(FeedbackModelRequest feedback, String userId) throws NotFoundException {
     validateUserExists(userId);
-
-    Feedback existingUserFeedback = feedbackRepository.findByUserIdAndProductId(userId,
+    List<Feedback> feedbacks = customFeedbackRepository.findByUserIdAndProductId(userId,
         feedback.getProductId());
-    if (existingUserFeedback == null) {
+
+    if (feedbacks.isEmpty()) {
       Feedback newFeedback = new Feedback();
       newFeedback.setUserId(userId);
       newFeedback.setProductId(feedback.getProductId());
       newFeedback.setRating(feedback.getRating());
       newFeedback.setContent(feedback.getContent());
-      return feedbackRepository.save(newFeedback);
-    } else {
-      existingUserFeedback.setRating(feedback.getRating());
-      existingUserFeedback.setContent(feedback.getContent());
-      return feedbackRepository.save(existingUserFeedback);
+      newFeedback.setFeedbackStatus(FeedbackStatus.PENDING);
+      return feedbackRepository.insert(newFeedback);
     }
+
+    boolean haveApprovedFeedback =
+        feedbacks.stream().anyMatch(fb -> fb.getFeedbackStatus() == FeedbackStatus.APPROVED);
+    Feedback currentPendingFeedback =
+        feedbacks.stream().filter(f -> f.getFeedbackStatus() == FeedbackStatus.PENDING).findFirst().orElse(null);
+
+    if (haveApprovedFeedback && currentPendingFeedback == null) {
+      Feedback newFeedback = new Feedback();
+      newFeedback.setUserId(userId);
+      newFeedback.setProductId(feedback.getProductId());
+      newFeedback.setRating(feedback.getRating());
+      newFeedback.setContent(feedback.getContent());
+      newFeedback.setFeedbackStatus(FeedbackStatus.PENDING);
+      return feedbackRepository.insert(newFeedback);
+    }
+
+    Objects.requireNonNull(currentPendingFeedback).setRating(feedback.getRating());
+    currentPendingFeedback.setContent(feedback.getContent());
+    currentPendingFeedback.setFeedbackStatus(FeedbackStatus.PENDING);
+    return feedbackRepository.save(currentPendingFeedback);
   }
 
   @Override
   public List<ProductRating> getProductRatingById(String productId) {
-    List<Feedback> feedbacks = feedbackRepository.findByProductId(productId);
+    List<Feedback> feedbacks = feedbackRepository.findByProductIdAndFeedbackStatusNotIn(productId,
+        Arrays.asList(FeedbackStatus.PENDING, FeedbackStatus.REJECTED));
     int totalFeedbacks = feedbacks.size();
 
     if (totalFeedbacks == 0) {
