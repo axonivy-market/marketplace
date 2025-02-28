@@ -556,7 +556,7 @@ class GitHubServiceImplTest {
       when(mockProduct.getRepositoryName()).thenReturn(mockRepositoryName);
       when(gitHubService.getGitHub()).thenReturn(mock(GitHub.class));
       when(gitHubService.getGitHub().getRepository(mockRepositoryName)).thenReturn(mockRepository);
-      when(gitHubService.getGitHubLatestReleaseByProductId(mockProduct)).thenReturn(mockLatestRelease);
+      when(gitHubService.getGitHubLatestReleaseByProductId(mockProduct.getRepositoryName())).thenReturn(mockLatestRelease);
 
       Pageable mockPageable = mock(Pageable.class);
       GHRelease mockRelease1 = mock(GHRelease.class);
@@ -600,7 +600,7 @@ class GitHubServiceImplTest {
       when(mockProduct.getRepositoryName()).thenReturn(mockRepositoryName);
       when(gitHubService.getGitHub()).thenReturn(mock(GitHub.class));
       when(gitHubService.getGitHub().getRepository(mockRepositoryName)).thenReturn(mockRepository);
-      when(gitHubService.getGitHubLatestReleaseByProductId(mockProduct)).thenReturn(mockLatestRelease);
+      when(gitHubService.getGitHubLatestReleaseByProductId(mockProduct.getRepositoryName())).thenReturn(mockLatestRelease);
       when(mockRepository.getRelease(1L)).thenReturn(mockRelease);
       when(mockRelease.getBody()).thenReturn(mockGithubReleaseBody);
       when(mockRelease.getName()).thenReturn(mockVersion);

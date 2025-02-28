@@ -357,7 +357,7 @@ public class GitHubServiceImpl implements GitHubService {
       Pageable pageable) throws IOException {
     List<GitHubReleaseModel> gitHubReleaseModels = new ArrayList<>();
     List<GHRelease> ghReleases = ghReleasePagedIterable.toList().stream().filter(ghRelease -> !ghRelease.isDraft()).toList();
-    String latestGitHubReleaseName = this.getGitHubLatestReleaseByProductId(product).getName();
+    String latestGitHubReleaseName = this.getGitHubLatestReleaseByProductId(product.getRepositoryName()).getName();
 
     for (GHRelease ghRelease : ghReleases) {
       gitHubReleaseModels.add(this.toGitHubReleaseModel(ghRelease, product, latestGitHubReleaseName));
@@ -383,7 +383,7 @@ public class GitHubServiceImpl implements GitHubService {
   @Override
   public GitHubReleaseModel getGitHubReleaseModelByProductIdAndReleaseId(Product product, Long releaseId) throws IOException {
     GHRelease ghRelease = this.getRepository(product.getRepositoryName()).getRelease(releaseId);
-    GHRelease githubLatestRelease = getGitHubLatestReleaseByProductId(product);
+    GHRelease githubLatestRelease = getGitHubLatestReleaseByProductId(product.getRepositoryName());
     return this.toGitHubReleaseModel(ghRelease, product, githubLatestRelease.getName());
   }
 
@@ -392,7 +392,7 @@ public class GitHubServiceImpl implements GitHubService {
         productSourceUrl + GITHUB_PULL_REQUEST_LINK + FIRST_REGEX_CAPTURING_GROUP).replaceAll(GITHUB_USERNAME_REGEX, GITHUB_MAIN_LINK + FIRST_REGEX_CAPTURING_GROUP);
   }
 
-  public GHRelease getGitHubLatestReleaseByProductId(Product product) throws IOException {
-    return this.getRepository(product.getRepositoryName()).getLatestRelease();
+  public GHRelease getGitHubLatestReleaseByProductId(String repositoryName) throws IOException {
+    return this.getRepository(repositoryName).getLatestRelease();
   }
 }
