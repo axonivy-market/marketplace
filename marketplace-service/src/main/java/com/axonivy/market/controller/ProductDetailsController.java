@@ -171,7 +171,7 @@ public class ProductDetailsController {
     Pageable pageable = PageRequest.of(0, 20, Sort.unsorted());
     List<String> productIdList = this.productService.getProductIdList();
     for (String productId : productIdList) {
-      this.productService.getGitHubReleaseModels(productId, pageable);
+      this.productService.syncGitHubReleaseModels(productId, pageable);
     }
   }
 

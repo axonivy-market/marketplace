@@ -47,6 +47,7 @@ import org.kohsuke.github.GHRepository;
 import org.kohsuke.github.GHTag;
 import org.kohsuke.github.PagedIterable;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.cache.annotation.CachePut;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
@@ -810,6 +811,12 @@ public class ProductServiceImpl implements ProductService {
     PagedIterable<GHRelease> ghReleasePagedIterable =  this.gitHubService.getRepository(product.getRepositoryName()).listReleases();
 
     return this.gitHubService.getGitHubReleaseModels(product, ghReleasePagedIterable, pageable);
+  }
+
+  @CachePut(value = "GithubPublicReleasesCache", key="{#productId}")
+  @Override
+  public Page<GithubReleaseModel> syncGitHubReleaseModels(String productId, Pageable pageable) throws IOException {
+    return this.getGitHubReleaseModels(productId, pageable);
   }
 
   @Override

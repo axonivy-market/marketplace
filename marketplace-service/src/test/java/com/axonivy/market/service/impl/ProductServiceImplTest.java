@@ -52,6 +52,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockedStatic;
 import org.mockito.Mockito;
+import org.mockito.Spy;
 import org.mockito.exceptions.base.MockitoException;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.domain.Page;
@@ -137,6 +138,7 @@ class ProductServiceImplTest extends BaseSetup {
   private ProductMarketplaceDataRepository productMarketplaceDataRepo;
   @Mock
   private VersionService versionService;
+  @Spy
   @InjectMocks
   private ProductServiceImpl productService;
 
@@ -843,5 +845,19 @@ class ProductServiceImplTest extends BaseSetup {
 
     List<String> result = productService.getProductIdList();
     assertEquals(products.size(), result.size());
+  }
+
+  @Test
+  void testSyncGitHubReleaseModels() throws IOException {
+    Product mockProduct = new Product();
+    mockProduct.setId("portal");
+    mockProduct.setRepositoryName(SAMPLE_PRODUCT_REPOSITORY_NAME);
+    mockProduct.setSourceUrl("https://github.com/axonivy-market/portal");
+    when(productRepo.findProductById(anyString())).thenReturn(mockProduct);
+    when(gitHubService.getRepository(anyString())).thenReturn(mock(GHRepository.class));
+
+    productService.syncGitHubReleaseModels(SAMPLE_PRODUCT_ID, PAGEABLE);
+
+    verify(productService, times(1)).getGitHubReleaseModels(SAMPLE_PRODUCT_ID, PAGEABLE);
   }
 }

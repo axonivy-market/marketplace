@@ -329,12 +329,12 @@ class ProductDetailsControllerTest extends BaseSetup {
   void testSyncLatestReleasesForProducts() throws IOException {
     List<String> productIdList = List.of(DOCKER_CONNECTOR_ID);
     when(productService.getProductIdList()).thenReturn(productIdList);
-    when(productService.getGitHubReleaseModels(Mockito.anyString(), Mockito.any(Pageable.class))).thenReturn(Page.empty());
+    when(productService.syncGitHubReleaseModels(Mockito.anyString(), Mockito.any(Pageable.class))).thenReturn(Page.empty());
 
     productDetailsController.syncLatestReleasesForProducts();
 
     verify(productService, times(1)).getProductIdList();
-    verify(productService, times(1)).getGitHubReleaseModels(DOCKER_CONNECTOR_ID, PageRequest.of(0, 20, Sort.unsorted()));
+    verify(productService, times(1)).syncGitHubReleaseModels(DOCKER_CONNECTOR_ID, PageRequest.of(0, 20, Sort.unsorted()));
   }
 
   @Test
