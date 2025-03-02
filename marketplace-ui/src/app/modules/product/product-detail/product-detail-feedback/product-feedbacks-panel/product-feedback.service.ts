@@ -199,57 +199,38 @@ export class ProductFeedbackService {
       .pipe(
         tap(response => {
           const approvedFeedbacks = (response._embedded?.feedbacks || []).filter(f => f.feedbackStatus === FeedbackStatus.APPROVED);
-          console.log(approvedFeedbacks);
           if (page === 0) {
             this.feedbacks.set(approvedFeedbacks);
           } else {
-            this.feedbacks.set([
-              ...this.feedbacks(),
-              ...approvedFeedbacks
-            ]);
+            this.feedbacks.set([...this.feedbacks(), ...approvedFeedbacks]);
           }
         }),
-        tap(response => {
+        tap(() => {
           this.findProductFeedbackOfUser().subscribe(userFeedbacks => {
-            if (userFeedbacks && userFeedbacks.length > 0) {
-              console.log(userFeedbacks);
+            if (userFeedbacks?.length) {
               const feedback = userFeedbacks[0];
 
               if (feedback.userId === this.authService.getUserId()) {
-                if (userFeedbacks.find(f => f.feedbackStatus === FeedbackStatus.PENDING)) {
-                  const currentFeedbacks = this.feedbacks();
-                  const hasApprovedFeedback = currentFeedbacks.some(f =>
-                    f.userId === feedback.userId &&
-                    f.feedbackStatus === FeedbackStatus.APPROVED
-                  );
-                  console.log(hasApprovedFeedback);
-                  if (hasApprovedFeedback && userFeedbacks.length === 2) {
-                    // Case 1: User has both approved and pending, replace approved with pending
-                    const pending = userFeedbacks.filter(f => f.feedbackStatus === FeedbackStatus.PENDING)[0];
+                const pendingFeedbacks = userFeedbacks.filter(f => f.feedbackStatus === FeedbackStatus.PENDING);
+                const approvedExists = this.feedbacks().some(f => f.userId === feedback.userId && f.feedbackStatus === FeedbackStatus.APPROVED);
+                
+                if (pendingFeedbacks.length) {
+                  if (approvedExists && userFeedbacks.length === 2) {
                     this.feedbacks.set([
-                      pending,
-                      ...currentFeedbacks.filter(f => f.userId !== feedback.userId)
+                      pendingFeedbacks[0],
+                      ...this.feedbacks().filter(f => f.userId !== feedback.userId)
                     ]);
-                    console.log(feedback);
-                    console.log(pending);
-                    console.log(this.feedbacks());
-                  } else if (userFeedbacks.length === 2 && currentFeedbacks.length === 0) {
-                    console.log("here");
-                    console.log(feedback);
-                    // Case 2: User has both approved and pending but current feedbacks empty, add pending
-                    this.feedbacks.set([feedback]);
                   } else {
-                    // Case 3: User has only one pending feedback
-                    this.feedbacks.set([feedback, ...currentFeedbacks]);
+                    this.feedbacks.set([...pendingFeedbacks, ...this.feedbacks()]);
                   }
                 }
               }
             }
-            console.log(this.feedbacks());
           });
         })
       );
   }
+
 
   findProductFeedbackOfUser(
     productId: string = this.productDetailService.productId()
