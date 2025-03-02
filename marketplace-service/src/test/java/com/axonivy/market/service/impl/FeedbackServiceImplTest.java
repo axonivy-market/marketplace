@@ -12,7 +12,6 @@ import com.axonivy.market.model.FeedbackApprovalModel;
 import com.axonivy.market.model.FeedbackModel;
 import com.axonivy.market.model.FeedbackModelRequest;
 import com.axonivy.market.model.ProductRating;
-import com.axonivy.market.repository.CustomFeedbackRepository;
 import com.axonivy.market.repository.FeedbackRepository;
 import com.axonivy.market.repository.ProductRepository;
 import com.axonivy.market.repository.UserRepository;
@@ -40,9 +39,6 @@ class FeedbackServiceImplTest extends BaseSetup {
 
   @Mock
   private FeedbackRepository feedbackRepository;
-
-  @Mock
-  private CustomFeedbackRepository customFeedbackRepository;
 
   @Mock
   private UserRepository userRepository;

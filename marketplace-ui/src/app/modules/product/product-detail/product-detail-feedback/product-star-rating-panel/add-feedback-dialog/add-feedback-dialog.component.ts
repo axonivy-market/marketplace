@@ -53,7 +53,6 @@ export class AddFeedbackDialogComponent {
     if (displayName) {
       this.displayName = displayName;
     }
-    console.log(this.userFeedback());
     this.feedback = {
       content: this.userFeedback()?.content ?? '',
       rating: this.userFeedback()?.rating ?? 0,
@@ -62,11 +61,9 @@ export class AddFeedbackDialogComponent {
       moderatorName: this.userFeedback()?.moderatorName ?? '',
       reviewDate: this.userFeedback()?.reviewDate
     };
-    console.log(this.feedback);
   }
 
   onSubmitFeedback(): void {
-    console.log(this.feedback);
     this.productFeedbackService.submitFeedback(this.feedback).subscribe({
       complete: () => {
         this.activeModal.close();

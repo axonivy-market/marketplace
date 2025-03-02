@@ -39,7 +39,7 @@ export class AuthService {
 
   redirectToGitHub(originalUrl: string): void {
     const state = encodeURIComponent(originalUrl);
-    const authUrl = `${this.githubAuthUrl}?client_id=${environment.githubClientId}&redirect_uri=${this.githubAuthCallbackUrl}&state=${state}`;
+    const authUrl = `${this.githubAuthUrl}?client_id=${environment.githubClientId}&redirect_uri=${this.githubAuthCallbackUrl}&state=${state}&scope=read:org user`;
     window.location.href = authUrl;
   }
 

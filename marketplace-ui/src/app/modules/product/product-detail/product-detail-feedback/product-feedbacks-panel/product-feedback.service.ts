@@ -11,7 +11,7 @@ import {
   signal,
   WritableSignal
 } from '@angular/core';
-import { catchError, map, Observable, of, switchMap, tap, throwError } from 'rxjs';
+import { catchError, Observable, of, tap, throwError } from 'rxjs';
 import { CookieService } from 'ngx-cookie-service';
 import { AuthService } from '../../../../../auth/auth.service';
 import { ForwardingError } from '../../../../../core/interceptors/api.interceptor';
@@ -230,7 +230,6 @@ export class ProductFeedbackService {
         })
       );
   }
-
 
   findProductFeedbackOfUser(
     productId: string = this.productDetailService.productId()

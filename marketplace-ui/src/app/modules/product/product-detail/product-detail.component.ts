@@ -200,7 +200,6 @@ export class ProductDetailComponent {
         }
         this.handleProductDetail(res.productDetail);
         this.getReadmeContent();
-        console.log(res.productFeedBack);
         this.productFeedbackService.handleFeedbackApiResponse(res.productFeedBack);
         this.updateDropdownSelection();
         this.checkMediaSize();

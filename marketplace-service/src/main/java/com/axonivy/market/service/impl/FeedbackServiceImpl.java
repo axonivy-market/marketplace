@@ -9,7 +9,6 @@ import com.axonivy.market.exceptions.model.NotFoundException;
 import com.axonivy.market.model.FeedbackApprovalModel;
 import com.axonivy.market.model.FeedbackModelRequest;
 import com.axonivy.market.model.ProductRating;
-import com.axonivy.market.repository.CustomFeedbackRepository;
 import com.axonivy.market.repository.FeedbackRepository;
 import com.axonivy.market.repository.ProductRepository;
 import com.axonivy.market.repository.UserRepository;
@@ -36,14 +35,12 @@ public class FeedbackServiceImpl implements FeedbackService {
   private final FeedbackRepository feedbackRepository;
   private final UserRepository userRepository;
   private final ProductRepository productRepository;
-  private final CustomFeedbackRepository customFeedbackRepository;
 
   public FeedbackServiceImpl(FeedbackRepository feedbackRepository, UserRepository userRepository,
-      ProductRepository productRepository, CustomFeedbackRepository customFeedbackRepository) {
+      ProductRepository productRepository) {
     this.feedbackRepository = feedbackRepository;
     this.userRepository = userRepository;
     this.productRepository = productRepository;
-    this.customFeedbackRepository = customFeedbackRepository;
   }
 
   @Override
@@ -54,7 +51,9 @@ public class FeedbackServiceImpl implements FeedbackService {
   @Override
   public Page<Feedback> findFeedbacks(String productId, Pageable pageable) throws NotFoundException {
     validateProductExists(productId);
-    return customFeedbackRepository.searchByProductId(productId, refinePagination(pageable));
+    return feedbackRepository.findByProductIdAndFeedbackStatusNotIn(productId,
+        List.of(FeedbackStatus.REJECTED, FeedbackStatus.PENDING
+        ), refinePagination(pageable));
   }
 
   @Override
@@ -71,7 +70,9 @@ public class FeedbackServiceImpl implements FeedbackService {
     }
     validateProductExists(productId);
 
-    List<Feedback> existingUserFeedback = customFeedbackRepository.findByUserIdAndProductId(userId, productId);
+    List<Feedback> existingUserFeedback =
+        feedbackRepository.findByProductIdAndUserIdAndFeedbackStatusNotIn(productId, userId,
+            List.of(FeedbackStatus.REJECTED));
     if (existingUserFeedback == null) {
       throw new NoContentException(ErrorCode.NO_FEEDBACK_OF_USER_FOR_PRODUCT,
           String.format("No feedback with user id '%s' and product id '%s'", userId, productId));
@@ -83,8 +84,9 @@ public class FeedbackServiceImpl implements FeedbackService {
   public Feedback updateFeedbackWithNewStatus(FeedbackApprovalModel feedbackApproval) {
     return feedbackRepository.findById(feedbackApproval.getFeedbackId())
         .map(existingFeedback -> {
-          List<Feedback> existingFeedbacks = customFeedbackRepository
-              .findByUserIdAndProductId(existingFeedback.getUserId(), existingFeedback.getProductId());
+          List<Feedback> existingFeedbacks = feedbackRepository
+              .findByProductIdAndUserIdAndFeedbackStatusNotIn(existingFeedback.getProductId(),
+                  existingFeedback.getUserId(), List.of(FeedbackStatus.REJECTED));
 
           boolean isApproved = BooleanUtils.isTrue(feedbackApproval.getIsApproved());
           FeedbackStatus newFeedbackStatus = isApproved ? FeedbackStatus.APPROVED : FeedbackStatus.REJECTED;
@@ -105,7 +107,9 @@ public class FeedbackServiceImpl implements FeedbackService {
   @Override
   public Feedback upsertFeedback(FeedbackModelRequest feedback, String userId) throws NotFoundException {
     validateUserExists(userId);
-    List<Feedback> feedbacks = customFeedbackRepository.findByUserIdAndProductId(userId, feedback.getProductId());
+    List<Feedback> feedbacks =
+        feedbackRepository.findByProductIdAndUserIdAndFeedbackStatusNotIn(feedback.getProductId(), userId,
+            List.of(FeedbackStatus.REJECTED));
 
     Feedback approvedFeedback = feedbacks.stream()
         .filter(fb -> fb.getFeedbackStatus() == FeedbackStatus.APPROVED)
@@ -117,21 +121,11 @@ public class FeedbackServiceImpl implements FeedbackService {
         .findFirst()
         .orElse(null);
 
-    Feedback rejectedFeedback = feedbacks.stream()
-        .filter(fb -> fb.getFeedbackStatus() == FeedbackStatus.REJECTED)
-        .filter(fb -> isMatchingFeedback(fb, feedback)) // Check if content & rating match
-        .findFirst()
-        .orElse(null);
-
     if (approvedFeedback != null && isMatchingFeedback(approvedFeedback, feedback)) {
       if (pendingFeedback != null) {
         feedbackRepository.delete(pendingFeedback);
       }
       return approvedFeedback;
-    }
-
-    if (rejectedFeedback != null) {
-      return rejectedFeedback; // Return existing rejected feedback instead of creating a new pending one
     }
 
     return saveOrUpdatePendingFeedback(pendingFeedback, feedback, userId);

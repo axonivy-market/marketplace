@@ -6,6 +6,7 @@ import { TimeAgoPipe } from '../../../../../../shared/pipes/time-ago.pipe';
 import { LanguageService } from '../../../../../../core/services/language/language.service';
 import { TranslateModule } from '@ngx-translate/core';
 import { FeedbackStatus } from '../../../../../../shared/enums/feedback-status.enum';
+import { ProductFeedbackService } from '../product-feedback.service';
 
 @Component({
   selector: 'app-product-feedback',
@@ -18,6 +19,7 @@ export class ProductFeedbackComponent {
   @Input() feedback!: Feedback;
   @ViewChild('content') contentElement!: ElementRef;
 
+  productFeedbackService = inject(ProductFeedbackService);
   private resizeObserver!: ResizeObserver;
   private readonly scrollHeight = signal(0);
   private readonly clientHeight = signal(0);
@@ -29,12 +31,12 @@ export class ProductFeedbackComponent {
   languageService = inject(LanguageService);
 
   ngOnInit(): void {
-    if (this.feedback && this.feedback.feedbackStatus === FeedbackStatus.PENDING) {
+    const userFeedback = this.productFeedbackService.userFeedback();
+    if (userFeedback && userFeedback.feedbackStatus === FeedbackStatus.PENDING) {
       this.isPending.set(true);
+    } else {
+      this.isPending.set(false);
     }
-    console.log(this.feedback.feedbackStatus);
-    console.log(this.feedback.feedbackStatus == FeedbackStatus.PENDING);
-    console.log(this.isFeedbackPending());
   }
 
   ngAfterViewInit() {
