@@ -128,9 +128,10 @@ export class ProductFeedbackService {
   updateFeedbackStatus(
     feedbackId: string,
     isApproved: boolean,
-    moderatorName: string
+    moderatorName: string,
+    version: number
   ): Observable<Feedback> {
-    const requestBody = { feedbackId, isApproved, moderatorName };
+    const requestBody = { feedbackId, isApproved, moderatorName, version };
     const requestURL = `${API_URI.FEEDBACK_APPROVAL}`;
 
     return this.http.put<Feedback>(requestURL, requestBody).pipe(
