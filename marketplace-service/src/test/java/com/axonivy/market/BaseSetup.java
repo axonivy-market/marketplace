@@ -9,6 +9,7 @@ import com.axonivy.market.entity.Product;
 import com.axonivy.market.entity.ProductDesignerInstallation;
 import com.axonivy.market.entity.ProductJsonContent;
 import com.axonivy.market.entity.ProductMarketplaceData;
+import com.axonivy.market.entity.ProductModuleContent;
 import com.axonivy.market.enums.Language;
 import com.axonivy.market.enums.SortOption;
 import com.axonivy.market.model.MavenArtifactModel;
@@ -268,6 +269,31 @@ public class BaseSetup {
 
   protected ProductMarketplaceData getMockProductMarketplaceData() {
     return ProductMarketplaceData.builder().id(MOCK_PRODUCT_ID).installationCount(3).build();
+  }
+
+  protected ProductModuleContent getMockProductModuleContent() {
+    ProductModuleContent productModuleContent = new ProductModuleContent();
+    productModuleContent.setDescription(mockDescriptionForProductModuleContent());
+    productModuleContent.setDemo(null);
+    productModuleContent.setSetup(mockDescriptionForProductModuleContent());
+
+    return productModuleContent;
+  }
+
+  private ProductModuleContent mockProductModuleContent() {
+    ProductModuleContent productModuleContent = new ProductModuleContent();
+    productModuleContent.setDescription(mockDescriptionForProductModuleContent());
+    productModuleContent.setDemo(null);
+    productModuleContent.setSetup(mockDescriptionForProductModuleContent());
+
+    return productModuleContent;
+  }
+
+  private Map<String, String> mockDescriptionForProductModuleContent() {
+    Map<String, String> mutableMap = new HashMap<>();
+    mutableMap.put("en", "Login or create a new account.[demo-process](imageId-66e2b13c68f2f95b2f95548c)");
+    mutableMap.put("de", "Login or create a new account.[demo-process](imageId-66e2b13c68f2f95b2f95548c)");
+    return mutableMap;
   }
 
   protected List<VersionAndUrlModel> mockVersionAndUrlModels() {
