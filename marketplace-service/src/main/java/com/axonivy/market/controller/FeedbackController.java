@@ -116,11 +116,7 @@ public class FeedbackController {
       @RequestParam("productId") @Parameter(description = "Product id (from meta.json)", example = "portal",
           in = ParameterIn.QUERY) String productId) {
     List<Feedback> feedbacks = feedbackService.findFeedbackByUserIdAndProductId(userId, productId);
-    Feedback feedback = feedbackService.findFeedbackByUserIdAndProductId(userId, productId);
-    FeedbackModel model = feedbackModelAssembler.toModel(feedback);
-    addModelLinks(model, feedback);
-    return new ResponseEntity<>(model, HttpStatus.OK);
-//    return new ResponseEntity<>(feedbackModelAssembler.toModel(feedbacks), HttpStatus.OK);
+    return new ResponseEntity<>(feedbackModelAssembler.toModel(feedbacks), HttpStatus.OK);
   }
 
   @GetMapping(FEEDBACK_APPROVAL)
