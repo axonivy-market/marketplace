@@ -8,9 +8,12 @@ import org.springframework.data.mongodb.repository.MongoRepository;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface FeedbackRepository extends MongoRepository<Feedback, String> {
+  Optional<Feedback> findByIdAndVersion(String id, int version);
+
   List<Feedback> findByProductId(String productId);
 
   List<Feedback> findByProductIdAndFeedbackStatusNotIn(String productId, List<FeedbackStatus> feedbackStatuses);

@@ -55,6 +55,7 @@ public class FeedbackModelAssembler implements RepresentationModelAssembler<Feed
     model.setFeedbackStatus(feedback.getFeedbackStatus());
     model.setModeratorName(feedback.getModeratorName());
     model.setReviewDate(feedback.getReviewDate());
+    model.setVersion(feedback.getVersion());
     return model;
   }
 

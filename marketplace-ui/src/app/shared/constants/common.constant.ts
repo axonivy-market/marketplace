@@ -303,3 +303,5 @@ export const REPO_PAGE_PATHS: Record<string, string> = {
 export const HASH_SYMBOL = '#';
 
 export const FEEDBACK_APPROVAL_STATE = 'feedback-approval';
+
+export const FEEDBACK_APPROVAL_SESSION_TOKEN = 'feedback-approval-token';

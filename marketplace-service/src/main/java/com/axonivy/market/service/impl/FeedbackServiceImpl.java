@@ -82,7 +82,7 @@ public class FeedbackServiceImpl implements FeedbackService {
 
   @Override
   public Feedback updateFeedbackWithNewStatus(FeedbackApprovalModel feedbackApproval) {
-    return feedbackRepository.findById(feedbackApproval.getFeedbackId())
+    return feedbackRepository.findByIdAndVersion(feedbackApproval.getFeedbackId(), feedbackApproval.getVersion())
         .map(existingFeedback -> {
           List<Feedback> existingFeedbacks = feedbackRepository
               .findByProductIdAndUserIdAndFeedbackStatusNotIn(existingFeedback.getProductId(),

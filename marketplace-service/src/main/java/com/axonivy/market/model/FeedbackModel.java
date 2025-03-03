@@ -58,6 +58,9 @@ public class FeedbackModel extends RepresentationModel<FeedbackModel> {
   @Schema(description = "Feedback reviewing timestamp", example = "2024-06-24T00:00:00.000Z")
   private Date reviewDate;
 
+  @Schema(description = "Feedback modification version", example = "3")
+  private int version;
+
   @Override
   public int hashCode() {
     return new HashCodeBuilder().append(id).hashCode();

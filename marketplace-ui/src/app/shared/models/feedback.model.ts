@@ -15,4 +15,5 @@ export interface Feedback {
   feedbackStatus: FeedbackStatus;
   moderatorName: string;
   reviewDate?: Date;
+  version?: number;
 }

@@ -65,6 +65,7 @@ class FeedbackServiceImplTest extends BaseSetup {
     feedback.setRating(5);
     feedback.setContent("Great product!");
     feedback.setFeedbackStatus(FeedbackStatus.PENDING);
+    feedback.setVersion(3);
 
     feedbackModel = new FeedbackModel();
     feedbackModel.setUserId(userId);
@@ -215,16 +216,19 @@ class FeedbackServiceImplTest extends BaseSetup {
   @Test
   void testUpdateFeedbackWithNewStatus_ApprovedWithExisting() {
     String feedbackId = "1";
+    int version = 3;
     FeedbackApprovalModel approvalModel = mockFeedbackApproval();
     approvalModel.setIsApproved(true);
+    approvalModel.setVersion(3);
 
     Feedback existingApproved = new Feedback();
     existingApproved.setId("2");
     existingApproved.setFeedbackStatus(FeedbackStatus.APPROVED);
     existingApproved.setProductId("product1");
     existingApproved.setUserId("user1");
+    existingApproved.setVersion(4);
 
-    when(feedbackRepository.findById(feedbackId)).thenReturn(Optional.of(feedback));
+    when(feedbackRepository.findByIdAndVersion(feedbackId, version)).thenReturn(Optional.of(feedback));
     when(feedbackRepository.findByProductIdAndUserIdAndFeedbackStatusNotIn("product1", "user1",
         List.of(FeedbackStatus.REJECTED))).thenReturn(List.of(existingApproved));
     when(feedbackRepository.save(any(Feedback.class))).thenReturn(feedback);
@@ -237,7 +241,7 @@ class FeedbackServiceImplTest extends BaseSetup {
     assertEquals(approvalModel.getModeratorName(), result.getModeratorName());
     assertNotNull(result.getReviewDate());
 
-    verify(feedbackRepository, times(1)).findById(feedbackId);
+    verify(feedbackRepository, times(1)).findByIdAndVersion(feedbackId, version);
     verify(feedbackRepository, times(1)).findByProductIdAndUserIdAndFeedbackStatusNotIn("product1", "user1",
         List.of(FeedbackStatus.REJECTED));
     verify(feedbackRepository, times(1)).delete(existingApproved);
@@ -247,8 +251,10 @@ class FeedbackServiceImplTest extends BaseSetup {
   @Test
   void testUpdateFeedbackWithNewStatus_Rejected() {
     String feedbackId = "1";
+    int version = 3;
     FeedbackApprovalModel approvalModel = mockFeedbackApproval();
     approvalModel.setIsApproved(false);
+    approvalModel.setVersion(3);
 
     Feedback existingPending = new Feedback();
     existingPending.setId("2");
@@ -256,7 +262,7 @@ class FeedbackServiceImplTest extends BaseSetup {
     existingPending.setProductId("product1");
     existingPending.setUserId("user1");
 
-    when(feedbackRepository.findById(feedbackId)).thenReturn(Optional.of(feedback));
+    when(feedbackRepository.findByIdAndVersion(feedbackId, version)).thenReturn(Optional.of(feedback));
     when(feedbackRepository.findByProductIdAndUserIdAndFeedbackStatusNotIn("product1", "user1",
         List.of(FeedbackStatus.REJECTED))).thenReturn(List.of(existingPending));
     when(feedbackRepository.save(any(Feedback.class))).thenReturn(feedback);
@@ -269,7 +275,7 @@ class FeedbackServiceImplTest extends BaseSetup {
     assertEquals(approvalModel.getModeratorName(), result.getModeratorName());
     assertNotNull(result.getReviewDate());
 
-    verify(feedbackRepository, times(1)).findById(feedbackId);
+    verify(feedbackRepository, times(1)).findByIdAndVersion(feedbackId, version);
     verify(feedbackRepository, times(1)).findByProductIdAndUserIdAndFeedbackStatusNotIn("product1", "user1",
         List.of(FeedbackStatus.REJECTED));
     verify(feedbackRepository, times(1)).delete(existingPending);

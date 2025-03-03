@@ -8,7 +8,7 @@ import { Feedback } from "../../shared/models/feedback.model";
 import { ProductFeedbackService } from "../product/product-detail/product-detail-feedback/product-feedbacks-panel/product-feedback.service";
 import { LanguageService } from "../../core/services/language/language.service";
 import { ThemeService } from "../../core/services/theme/theme.service";
-import { FEEDBACK_APPROVAL_STATE, FEEDBACK_APPROVAL_TABS } from "../../shared/constants/common.constant";
+import { FEEDBACK_APPROVAL_SESSION_TOKEN, FEEDBACK_APPROVAL_TABS, SECURITY_MONITOR_MESSAGES } from "../../shared/constants/common.constant";
 import { ActivatedRoute } from "@angular/router";
 import { FeedbackTableComponent } from "./feedback-table/feedback-table.component";
 
@@ -35,6 +35,7 @@ export class FeedbackApprovalComponent {
   activatedRoute = inject(ActivatedRoute);
 
   token: string = '';
+  errorMessage = '';
   isAuthenticated = false;
   detailTabs = FEEDBACK_APPROVAL_TABS;
   activeTab = 'review';
@@ -48,17 +49,20 @@ export class FeedbackApprovalComponent {
   allFeedbacks = computed(() => this.feedbacks() ?? []);
   reviewingFeedbacks = computed(() => this.pendingFeedbacks() ?? []);
 
-  ngOnInit(): void {
-    let token = this.authService.getToken();
-    if (token) {
-      this.fetchFeedbacks();
+  onSubmit(): void {
+    this.token = this.token ?? sessionStorage.getItem(FEEDBACK_APPROVAL_SESSION_TOKEN) ?? '';
+    if (!this.token) {
+      this.errorMessage = SECURITY_MONITOR_MESSAGES.TOKEN_REQUIRED;
+      this.isAuthenticated = false;
+      return;
     }
-    else {
-      this.authService.redirectToGitHub(FEEDBACK_APPROVAL_STATE);
-    }
+
+    this.errorMessage = '';
+    this.fetchFeedbacks();
   }
 
   fetchFeedbacks(): void {
+    sessionStorage.setItem(FEEDBACK_APPROVAL_SESSION_TOKEN, this.token);
     this.productFeedbackService.findProductFeedbacks().subscribe({
       next: () => {
         this.isAuthenticated = true;

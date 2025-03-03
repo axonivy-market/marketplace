@@ -141,7 +141,9 @@ public class FeedbackController {
   public ResponseEntity<FeedbackModel> updateFeedbackWithNewStatus(
       @RequestBody @Valid FeedbackApprovalModel feedbackApproval) {
     Feedback feedback = feedbackService.updateFeedbackWithNewStatus(feedbackApproval);
-    return new ResponseEntity<>(feedbackModelAssembler.toModel(feedback), HttpStatus.OK);
+    FeedbackModel model = feedbackModelAssembler.toModel(feedback);
+    addModelLinks(model, feedback);
+    return ResponseEntity.ok(model);
   }
 
   @PostMapping

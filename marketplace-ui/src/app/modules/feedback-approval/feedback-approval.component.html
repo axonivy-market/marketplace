@@ -1,5 +1,4 @@
 <div class="container">
-  @if (isAuthenticated) {
   <div class="row col-md-12">
     <h1 class="text-primary approval" [lang]="languageService.selectedLanguage()">
       {{ translateService.get('common.approval.approvalTitle') | async }}</h1>
@@ -17,6 +16,7 @@
     </div>
   </div>
 
+  @if (isAuthenticated) {
   <div class="feedback-container d-flex">
     <div class="tab-group d-flex flex-column justify-content-center align-items-start p-0 col-12">
       <div class="row-tab col-12">
@@ -55,6 +55,20 @@
           <app-feedback-table [feedbacks]="allFeedbacks()" [isHistoryTab]="true"></app-feedback-table>
         </div>
       </div>
+    </div>
+  </div>
+  }
+  @else {
+  <div class="token-input-container">
+    <h3>Please enter your token to access the fedback approval page.</h3>
+    <div>
+      <input type="password" [(ngModel)]="token" placeholder="Enter your token" />
+      <button (click)="onSubmit()">
+        Proceed
+      </button>
+      @if (errorMessage) {
+      <div class="error-message">{{ errorMessage }}</div>
+      }
     </div>
   </div>
   }

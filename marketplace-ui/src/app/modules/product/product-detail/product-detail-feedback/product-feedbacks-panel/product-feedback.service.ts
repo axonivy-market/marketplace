@@ -20,6 +20,7 @@ import { Feedback } from '../../../../../shared/models/feedback.model';
 import { ProductDetailService } from '../../product-detail.service';
 import { ProductStarRatingService } from '../product-star-rating-panel/product-star-rating.service';
 import {
+  FEEDBACK_APPROVAL_SESSION_TOKEN,
   FEEDBACK_SORT_TYPES,
   NOT_FOUND_ERROR_CODE,
   TOKEN_KEY,
@@ -62,10 +63,7 @@ export class ProductFeedbackService {
     sort: string = this.sort(),
     size: number = 20
   ): Observable<FeedbackApiResponse> {
-    const token = this.authService.decodeToken(
-      this.cookieService.get(TOKEN_KEY)
-    )?.accessToken;
-    console.log(token);
+    const token = sessionStorage.getItem(FEEDBACK_APPROVAL_SESSION_TOKEN);
     const headers = new HttpHeaders().set('Authorization', `Bearer ${token}`);
     const requestParams = new HttpParams()
       .set('page', page.toString())
@@ -213,7 +211,7 @@ export class ProductFeedbackService {
               if (feedback.userId === this.authService.getUserId()) {
                 const pendingFeedbacks = userFeedbacks.filter(f => f.feedbackStatus === FeedbackStatus.PENDING);
                 const approvedExists = this.feedbacks().some(f => f.userId === feedback.userId && f.feedbackStatus === FeedbackStatus.APPROVED);
-                
+
                 if (pendingFeedbacks.length) {
                   if (approvedExists && userFeedbacks.length === 2) {
                     this.feedbacks.set([
