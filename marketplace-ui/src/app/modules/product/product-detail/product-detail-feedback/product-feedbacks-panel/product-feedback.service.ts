@@ -197,7 +197,7 @@ export class ProductFeedbackService {
       .get<FeedbackApiResponse>(requestURL, { params: requestParams })
       .pipe(
         tap(response => {
-          const approvedFeedbacks = (response._embedded?.feedbacks || []).filter(f => f.feedbackStatus === FeedbackStatus.APPROVED);
+          const approvedFeedbacks = (response._embedded?.feedbacks || []).filter(f => f.feedbackStatus === FeedbackStatus.APPROVED || !f.feedbackStatus);
           if (page === 0) {
             this.feedbacks.set(approvedFeedbacks);
           } else {
@@ -211,7 +211,7 @@ export class ProductFeedbackService {
 
               if (feedback.userId === this.authService.getUserId()) {
                 const pendingFeedbacks = userFeedbacks.filter(f => f.feedbackStatus === FeedbackStatus.PENDING);
-                const approvedExists = this.feedbacks().some(f => f.userId === feedback.userId && f.feedbackStatus === FeedbackStatus.APPROVED);
+                const approvedExists = this.feedbacks().some(f => f.userId === feedback.userId && (f.feedbackStatus === FeedbackStatus.APPROVED || !f.feedbackStatus));
 
                 if (pendingFeedbacks.length) {
                   if (approvedExists && userFeedbacks.length === 2) {
@@ -246,6 +246,7 @@ export class ProductFeedbackService {
         tap(feedbacks => {
           const prioritizedUserFeedback = feedbacks.find(f => f.feedbackStatus === FeedbackStatus.PENDING) ||
             feedbacks.find(f => f.feedbackStatus === FeedbackStatus.APPROVED) ||
+            feedbacks.find(f => !f.feedbackStatus) ||
             null;
           this.userFeedback.set(prioritizedUserFeedback);
         }),
