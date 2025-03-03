@@ -14,7 +14,7 @@ import com.axonivy.market.github.model.ProductSecurityInfo;
 import com.axonivy.market.github.model.SecretScanning;
 import com.axonivy.market.github.service.impl.GitHubServiceImpl;
 import com.axonivy.market.github.util.GitHubUtils;
-import com.axonivy.market.model.GithubReleaseModel;
+import com.axonivy.market.model.GitHubReleaseModel;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.kohsuke.github.*;
@@ -543,14 +543,25 @@ class GitHubServiceImplTest {
       gitHubUtilsMockedStatic.when(() -> GitHubUtils.createSelfLinkForGithubReleaseModel(any(), any())).thenReturn(mockLink);
 
       Product mockProduct = mock(Product.class);
+      GHRepository mockRepository = mock(GHRepository.class);
       PagedIterable<GHRelease> mockPagedIterable = mock(PagedIterable.class);
+      GHRelease mockLatestRelease = mock(GHRelease.class);
+
       String mockGithubReleaseBody = "This is a release body with PR #123 and user @johndoe";
       String mockProductSourceUrl = "http://example.com";
       String mockVersion = "v1.0.0";
+      String mockRepositoryName = "axonivy-market/portal";
       URL mockHtmlUrl1 = new URI("http://example.com/portal/releases/tag/next-12.0").toURL();
+
+      when(mockProduct.getRepositoryName()).thenReturn(mockRepositoryName);
+      when(gitHubService.getGitHub()).thenReturn(mock(GitHub.class));
+      when(gitHubService.getGitHub().getRepository(mockRepositoryName)).thenReturn(mockRepository);
+      when(gitHubService.getGitHubLatestReleaseByProductId(mockProduct.getRepositoryName())).thenReturn(mockLatestRelease);
+
       Pageable mockPageable = mock(Pageable.class);
       GHRelease mockRelease1 = mock(GHRelease.class);
       GHRelease mockRelease2 = mock(GHRelease.class);
+
       when(mockRelease1.isDraft()).thenReturn(false);
       when(mockRelease2.isDraft()).thenReturn(true);
       when(mockRelease1.getBody()).thenReturn(mockGithubReleaseBody);
@@ -559,21 +570,19 @@ class GitHubServiceImplTest {
       when(mockRelease1.getHtmlUrl()).thenReturn(mockHtmlUrl1);
       when(mockProduct.getSourceUrl()).thenReturn(mockProductSourceUrl);
       when(mockPagedIterable.toList()).thenReturn(List.of(mockRelease1, mockRelease2));
-      when(mockRelease1.isDraft()).thenReturn(false);
-      when(mockRelease2.isDraft()).thenReturn(true);
-      when(gitHubService.toGitHubReleaseModel(mockRelease1, mockProduct)).thenReturn(new GithubReleaseModel());
+      when(mockLatestRelease.getName()).thenReturn(mockVersion);
+      when(gitHubService.toGitHubReleaseModel(mockRelease1, mockProduct, mockLatestRelease.getName())).thenReturn(new GitHubReleaseModel());
 
-      Page<GithubReleaseModel> result = gitHubService.getGitHubReleaseModels(mockProduct, mockPagedIterable, mockPageable);
+      Page<GitHubReleaseModel> result = gitHubService.getGitHubReleaseModels(mockProduct, mockPagedIterable, mockPageable);
 
       assertNotNull(result);
       assertEquals(1, result.getTotalElements());
     }
   }
 
-
   @Test
   void testGetGitHubReleaseModelByProductIdAndReleaseId() throws IOException, URISyntaxException {
-    try(MockedStatic<GitHubUtils> gitHubUtilsMockedStatic = Mockito.mockStatic(GitHubUtils.class)) {
+    try (MockedStatic<GitHubUtils> gitHubUtilsMockedStatic = Mockito.mockStatic(GitHubUtils.class)) {
       Link mockLink = mock(Link.class);
       gitHubUtilsMockedStatic.when(() -> GitHubUtils.createSelfLinkForGithubReleaseModel(any(), any())).thenReturn(mockLink);
 
@@ -586,22 +595,24 @@ class GitHubServiceImplTest {
       Product mockProduct = mock(Product.class);
       GHRepository mockRepository = mock(GHRepository.class);
       GHRelease mockRelease = mock(GHRelease.class);
+      GHRelease mockLatestRelease = mock(GHRelease.class);
 
       when(mockProduct.getRepositoryName()).thenReturn(mockRepositoryName);
       when(gitHubService.getGitHub()).thenReturn(mock(GitHub.class));
       when(gitHubService.getGitHub().getRepository(mockRepositoryName)).thenReturn(mockRepository);
+      when(gitHubService.getGitHubLatestReleaseByProductId(mockProduct.getRepositoryName())).thenReturn(mockLatestRelease);
       when(mockRepository.getRelease(1L)).thenReturn(mockRelease);
       when(mockRelease.getBody()).thenReturn(mockGithubReleaseBody);
       when(mockRelease.getName()).thenReturn(mockVersion);
       when(mockRelease.getPublished_at()).thenReturn(new Date());
       when(mockRelease.getHtmlUrl()).thenReturn(mockHtmlUrl);
       when(mockProduct.getSourceUrl()).thenReturn(mockProductSourceUrl);
-      when(gitHubService.toGitHubReleaseModel(mockRelease, mockProduct)).thenReturn(new GithubReleaseModel());
+      when(gitHubService.toGitHubReleaseModel(mockRelease, mockProduct, mockLatestRelease.getName())).thenReturn(new GitHubReleaseModel());
 
-      GithubReleaseModel result = gitHubService.getGitHubReleaseModelByProductIdAndReleaseId(mockProduct, 1L);
+      GitHubReleaseModel result = gitHubService.getGitHubReleaseModelByProductIdAndReleaseId(mockProduct, 1L);
 
       assertNotNull(result);
-      verify(gitHubService).getRepository(mockRepositoryName);
+      verify(gitHubService, atLeastOnce()).getRepository(mockRepositoryName);
       verify(mockRepository).getRelease(1L);
     }
   }
@@ -625,6 +636,7 @@ class GitHubServiceImplTest {
       gitHubUtilsMockedStatic.when(() -> GitHubUtils.createSelfLinkForGithubReleaseModel(any(), any())).thenReturn(mockLink);
 
       GHRelease mockGhRelease = mock(GHRelease.class);
+      GHRelease mockLatestRelease = mock(GHRelease.class);
       Product mockProduct = mock(Product.class);
       URL mockHtmlUrl = new URI("http://example.com/portal/releases/tag/next-12.0").toURL();
 
@@ -634,7 +646,7 @@ class GitHubServiceImplTest {
       when(mockGhRelease.getHtmlUrl()).thenReturn(mockHtmlUrl);
       when(mockProduct.getSourceUrl()).thenReturn("http://example.com");
 
-      GithubReleaseModel result = gitHubService.toGitHubReleaseModel(mockGhRelease, mockProduct);
+      GitHubReleaseModel result = gitHubService.toGitHubReleaseModel(mockGhRelease, mockProduct, mockLatestRelease.getName());
 
       assertNotNull(result);
       assertEquals("v1.0.0", result.getName());
