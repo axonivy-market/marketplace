@@ -215,7 +215,7 @@ public class BaseSetup {
   protected MavenArtifactVersion getMockMavenArtifactVersionWithData() {
     MavenArtifactVersion mockMavenArtifactVersion = getMockMavenArtifactVersion();
     List<MavenArtifactModel> mockArtifactModelsByVersion = new ArrayList<>();
-//    mockArtifactModelsByVersion.put(MOCK_SNAPSHOT_VERSION, new ArrayList<>());
+    mockArtifactModelsByVersion.add(MavenArtifactModel.builder().productVersion(MOCK_SNAPSHOT_VERSION).build());
     mockMavenArtifactVersion.setProductArtifactsByVersion(mockArtifactModelsByVersion);
     return mockMavenArtifactVersion;
   }

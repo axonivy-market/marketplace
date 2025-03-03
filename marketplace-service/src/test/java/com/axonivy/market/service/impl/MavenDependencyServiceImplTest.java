@@ -2,6 +2,7 @@ package com.axonivy.market.service.impl;
 
 import com.axonivy.market.BaseSetup;
 import com.axonivy.market.entity.MavenArtifactVersion;
+import com.axonivy.market.entity.Product;
 import com.axonivy.market.entity.ProductDependency;
 import com.axonivy.market.model.MavenArtifactModel;
 import com.axonivy.market.repository.MavenArtifactVersionRepository;
@@ -47,7 +48,10 @@ class MavenDependencyServiceImplTest extends BaseSetup {
 
   private void prepareDataForTest(boolean isProductArtifact) {
     var mavenArtifactVersionMock = createMavenArtifactVersionMock(isProductArtifact);
-    when(productRepository.findAll()).thenReturn(createPageProductsMock().getContent());
+    List<String> allListedProductIds = createPageProductsMock().getContent().stream()
+        .filter(product -> Boolean.FALSE != product.getListed())
+        .map(Product::getId).toList();
+    when(productRepository.findAllProductIds()).thenReturn(allListedProductIds);
     when(productDependencyRepository.findAll()).thenReturn(List.of());
     when(mavenArtifactVersionRepository.findById(any())).thenReturn(Optional.of(mavenArtifactVersionMock));
     when(productDependencyRepository.save(any())).thenReturn(
