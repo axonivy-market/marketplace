@@ -276,7 +276,7 @@ export const SECURITY_MONITOR_SESSION_KEYS = {
   TOKEN: 'security-monitor-token',
 };
 
-export const SECURITY_MONITOR_MESSAGES = {
+export const ERROR_MESSAGES = {
   TOKEN_REQUIRED: 'Token is required',
   UNAUTHORIZED_ACCESS: 'Unauthorized access.',
   FETCH_FAILURE: 'Failed to fetch security data. Check logs for details.',

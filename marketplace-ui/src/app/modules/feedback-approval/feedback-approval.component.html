@@ -1,75 +1,128 @@
-<div class="container">
-  <div class="row col-md-12">
-    <h1 class="text-primary approval" [lang]="languageService.selectedLanguage()">
-      {{ translateService.get('common.approval.approvalTitle') | async }}</h1>
-    <div class="introduction-container">
-      <div class="d-sm-block about">
-        <h3 class="text-secondary">
-          {{ translateService.get('common.approval.about') | async }}
-        </h3>
-      </div>
-      <div class="d-sm-block align-items-center contribute-link-container flex-fill">
-        <h4 [lang]="languageService.selectedLanguage()" class="text-secondary"
-          [innerHTML]="translateService.get('common.approval.instruction') | async">
-        </h4>
-      </div>
-    </div>
-  </div>
-
-  @if (isAuthenticated) {
-  <div class="feedback-container d-flex">
-    <div class="tab-group d-flex flex-column justify-content-center align-items-start p-0 col-12">
-      <div class="row-tab col-12">
-        <ul class="nav nav-tabs form-tabs">
-          <li
-            class="nav-item d-flex flex-row position-relative border-bottom-1 p-2 justify-content-center align-items-start">
-            <a id="review-tab" class="nav-link tab-title border-0 bg-transparent active" role="tab"
-              [ngClass]="{'text-secondary': themeService.isDarkMode(), 'text-dark': !themeService.isDarkMode(), 'active': activeTab === 'review'}"
-              data-bs-toggle="tab" data-bs-target="#review" (click)="setActiveTab('review')"
-              [lang]="languageService.selectedLanguage()">
-              {{ 'common.approval.reviewFeedback' | translate }}
-            </a>
-          </li>
-          <li
-            class="nav-item d-flex flex-row position-relative border-bottom-1 p-2 justify-content-center align-items-start">
-            <a id="history-tab" class="nav-link tab-title border-0 bg-transparent" role="tab"
-              [ngClass]="{'text-secondary': themeService.isDarkMode(), 'text-dark': !themeService.isDarkMode(), 'active': activeTab === 'history'}"
-              data-bs-toggle="tab" data-bs-target="#history" (click)="setActiveTab('history')"
-              [lang]="languageService.selectedLanguage()">
-              {{ 'common.approval.history' | translate }}
-            </a>
-          </li>
-        </ul>
-      </div>
-
-      <div class="tab-content col-12 default-cursor">
-        <div class="tab-pane fade show active" role="tabpanel" aria-labelledby="review-tab"
-          [ngClass]="{'show active': activeTab === 'review'}">
-          <app-feedback-table [feedbacks]="reviewingFeedbacks()" [isHistoryTab]="false"
-            (reviewAction)="onClickReviewButton($event.feedback, $event.approved)">
-          </app-feedback-table>
-
+@if (isAuthenticated) {
+  <div class="container">
+    <div class="row col-md-12">
+      <h1
+        class="text-primary approval"
+        [lang]="languageService.selectedLanguage()">
+        {{ translateService.get('common.approval.approvalTitle') | async }}
+      </h1>
+      <div class="introduction-container">
+        <div class="d-sm-block about">
+          <h3 class="text-secondary">
+            {{ translateService.get('common.approval.about') | async }}
+          </h3>
         </div>
-        <div class="tab-pane fade" role="tabpanel" aria-labelledby="history-tab"
-          [ngClass]="{'show active': activeTab === 'history'}">
-          <app-feedback-table [feedbacks]="allFeedbacks()" [isHistoryTab]="true"></app-feedback-table>
+        <div
+          class="d-sm-block align-items-center contribute-link-container flex-fill">
+          <h4
+            [lang]="languageService.selectedLanguage()"
+            class="text-secondary"
+            [innerHTML]="
+              translateService.get('common.approval.instruction') | async
+            "></h4>
         </div>
       </div>
     </div>
-  </div>
-  }
-  @else {
-  <div class="token-input-container">
-    <h3>Please enter your token to access the feedback approval page.</h3>
-    <div>
-      <input type="password" [(ngModel)]="token" placeholder="Enter your token" />
-      <button (click)="onSubmit()">
-        Proceed
-      </button>
-      @if (errorMessage) {
-      <div class="error-message">{{ errorMessage }}</div>
-      }
+    <div class="feedback-container d-flex">
+      <div
+        class="tab-group d-flex flex-column justify-content-center align-items-start p-0 col-12">
+        <div class="row-tab col-12">
+          <ul class="nav nav-tabs form-tabs">
+            <li
+              class="nav-item d-flex flex-row position-relative border-bottom-1 p-2 justify-content-center align-items-start">
+              <a
+                id="review-tab"
+                class="nav-link tab-title border-0 bg-transparent active"
+                role="tab"
+                [ngClass]="{
+                  'text-secondary': themeService.isDarkMode(),
+                  'text-dark': !themeService.isDarkMode(),
+                  active: activeTab === 'review'
+                }"
+                data-bs-toggle="tab"
+                data-bs-target="#review"
+                (click)="setActiveTab('review')"
+                [lang]="languageService.selectedLanguage()">
+                {{ 'common.approval.reviewFeedback' | translate }}
+              </a>
+            </li>
+            <li
+              class="nav-item d-flex flex-row position-relative border-bottom-1 p-2 justify-content-center align-items-start">
+              <a
+                id="history-tab"
+                class="nav-link tab-title border-0 bg-transparent"
+                role="tab"
+                [ngClass]="{
+                  'text-secondary': themeService.isDarkMode(),
+                  'text-dark': !themeService.isDarkMode(),
+                  active: activeTab === 'history'
+                }"
+                data-bs-toggle="tab"
+                data-bs-target="#history"
+                (click)="setActiveTab('history')"
+                [lang]="languageService.selectedLanguage()">
+                {{ 'common.approval.history' | translate }}
+              </a>
+            </li>
+          </ul>
+        </div>
+
+        <div class="tab-content col-12 default-cursor">
+          <div
+            class="tab-pane fade show active"
+            role="tabpanel"
+            aria-labelledby="review-tab"
+            [ngClass]="{ 'show active': activeTab === 'review' }">
+            <app-feedback-table
+              [feedbacks]="reviewingFeedbacks()"
+              [isHistoryTab]="false"
+              (reviewAction)="
+                onClickReviewButton($event.feedback, $event.approved)
+              "></app-feedback-table>
+          </div>
+          <div
+            class="tab-pane fade"
+            role="tabpanel"
+            aria-labelledby="history-tab"
+            [ngClass]="{ 'show active': activeTab === 'history' }">
+            <app-feedback-table
+              [feedbacks]="allFeedbacks()"
+              [isHistoryTab]="true"></app-feedback-table>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
-  }
-</div>
+} @else {
+  <div class="token-container">
+    <div class="header">
+      <h2 class="text-primary text-center">
+        {{ 'common.approval.pageTitle' | translate }}
+      </h2>
+      <h3 class="text-primary text-center">
+        {{ 'common.approval.description' | translate }}
+      </h3>
+    </div>
+    <div class="token-input-container">
+      <h3 class="text-primary">
+        {{ 'common.approval.enterToken' | translate }}
+      </h3>
+      <div>
+        <input
+          id="token-input"
+          type="password"
+          [(ngModel)]="token"
+          [attr.placeholder]="'common.approval.enterTokenPlaceholder' | translate" />
+        <button
+          class="btn-primary"
+          (click)="onSubmit()"
+          [ngClass]="themeService.isDarkMode() ? 'text-dark' : 'text-light'">
+          {{ 'common.approval.proceedBtnLabel' | translate }}
+        </button>
+        @if (errorMessage) {
+          <div class="error-message">{{ errorMessage }}</div>
+        }
+      </div>
+    </div>
+  </div>
+}

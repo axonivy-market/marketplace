@@ -213,3 +213,8 @@ common:
     reviewDate: Review Date
     approveBtnLabel: Approve
     rejectBtnLabel: Reject
+    pageTitle: Effortless Feedback Approval Management
+    description: Ensure only the best feedback moves forward.
+    enterToken: Please enter your token to access the feedback approval page.
+    enterTokenPlaceholder: Enter your token
+    proceedBtnLabel: Proceed

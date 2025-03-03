@@ -78,14 +78,6 @@ describe('FeedbackApprovalComponent', () => {
     expect(component.fetchFeedbacks).toHaveBeenCalled();
   });
 
-  it('should call redirectToGitHub if no token', () => {
-    authServiceMock.getToken.and.returnValue(null);
-    component.ngOnInit();
-    expect(authServiceMock.redirectToGitHub).toHaveBeenCalledWith(
-      'feedback-approval'
-    );
-  });
-
   it('should call findProductFeedbacks on fetchFeedbacks and set isAuthenticated', () => {
     component.fetchFeedbacks();
     expect(productFeedbackServiceMock.findProductFeedbacks).toHaveBeenCalled();
@@ -105,7 +97,7 @@ describe('FeedbackApprovalComponent', () => {
     component.onClickReviewButton(mockFeedback, true);
     expect(
       productFeedbackServiceMock.updateFeedbackStatus
-    ).toHaveBeenCalledWith(1, true, 'TestUser');
+    ).toHaveBeenCalledWith(1, true, 'TestUser', 1);
   });
 
   it('should update activeTab when setActiveTab is called', () => {
@@ -170,14 +162,6 @@ describe('FeedbackApprovalComponent', () => {
       mockFeedback,
       true
     );
-  });
-
-  it('should render nothing when not authenticated', () => {
-    component.isAuthenticated = false;
-    fixture.detectChanges();
-
-    const container = fixture.debugElement.query(By.css('.container'));
-    expect(container.children.length).toBe(0);
   });
 
   it('should switch to history tab when clicked', fakeAsync(() => {

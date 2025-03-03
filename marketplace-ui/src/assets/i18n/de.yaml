@@ -212,3 +212,9 @@ common:
     reviewDate: Überprüfungsdatum
     approveBtnLabel: Genehmigen
     rejectBtnLabel: Ablehnen
+    pageTitle: Mühelose Verwaltung der Feedback Genehmigung  
+    description: Stellen Sie sicher, dass nur das beste Feedback weitergeleitet wird.  
+    enterToken: Bitte geben Sie Ihren Token ein, um auf die Feedback Genehmigung zuzugreifen.
+    enterTokenPlaceholder: Geben Sie Ihren Token ein
+    proceedBtnLabel: Weiter  
+

@@ -1,26 +1,33 @@
-import { CommonModule } from "@angular/common";
-import { FormsModule } from "@angular/forms";
-import { TranslateModule, TranslateService } from "@ngx-translate/core";
-import { Component, computed, inject, Signal, ViewEncapsulation } from "@angular/core";
-import { AuthService } from "../../auth/auth.service";
-import { AppModalService } from "../../shared/services/app-modal.service";
-import { Feedback } from "../../shared/models/feedback.model";
-import { ProductFeedbackService } from "../product/product-detail/product-detail-feedback/product-feedbacks-panel/product-feedback.service";
-import { LanguageService } from "../../core/services/language/language.service";
-import { ThemeService } from "../../core/services/theme/theme.service";
-import { FEEDBACK_APPROVAL_SESSION_TOKEN, FEEDBACK_APPROVAL_TABS, SECURITY_MONITOR_MESSAGES } from "../../shared/constants/common.constant";
-import { ActivatedRoute } from "@angular/router";
-import { FeedbackTableComponent } from "./feedback-table/feedback-table.component";
+import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
+import { TranslateModule, TranslateService } from '@ngx-translate/core';
+import {
+  Component,
+  computed,
+  inject,
+  Signal,
+  ViewEncapsulation
+} from '@angular/core';
+import { AuthService } from '../../auth/auth.service';
+import { AppModalService } from '../../shared/services/app-modal.service';
+import { Feedback } from '../../shared/models/feedback.model';
+import { ProductFeedbackService } from '../product/product-detail/product-detail-feedback/product-feedbacks-panel/product-feedback.service';
+import { LanguageService } from '../../core/services/language/language.service';
+import { ThemeService } from '../../core/services/theme/theme.service';
+import {
+  FEEDBACK_APPROVAL_SESSION_TOKEN,
+  FEEDBACK_APPROVAL_TABS,
+  ERROR_MESSAGES,
+  UNAUTHORIZED
+} from '../../shared/constants/common.constant';
+import { ActivatedRoute } from '@angular/router';
+import { FeedbackTableComponent } from './feedback-table/feedback-table.component';
+import { HttpErrorResponse } from '@angular/common/http';
 
 @Component({
   selector: 'app-feedback-approval',
   standalone: true,
-  imports: [
-    CommonModule,
-    FormsModule,
-    TranslateModule,
-    FeedbackTableComponent
-  ],
+  imports: [CommonModule, FormsModule, TranslateModule, FeedbackTableComponent],
   templateUrl: './feedback-approval.component.html',
   styleUrls: ['./feedback-approval.component.scss'],
   encapsulation: ViewEncapsulation.Emulated
@@ -49,10 +56,17 @@ export class FeedbackApprovalComponent {
   allFeedbacks = computed(() => this.feedbacks() ?? []);
   reviewingFeedbacks = computed(() => this.pendingFeedbacks() ?? []);
 
+  ngOnInit() {
+    this.token = sessionStorage.getItem(FEEDBACK_APPROVAL_SESSION_TOKEN) ?? '';
+    if (this.token) {
+      this.isAuthenticated = true;
+      this.fetchFeedbacks();
+    }
+  }
+
   onSubmit(): void {
-    this.token = this.token ?? sessionStorage.getItem(FEEDBACK_APPROVAL_SESSION_TOKEN) ?? '';
     if (!this.token) {
-      this.errorMessage = SECURITY_MONITOR_MESSAGES.TOKEN_REQUIRED;
+      this.errorMessage = ERROR_MESSAGES.TOKEN_REQUIRED;
       this.isAuthenticated = false;
       return;
     }
@@ -67,14 +81,32 @@ export class FeedbackApprovalComponent {
       next: () => {
         this.isAuthenticated = true;
       },
-      error: (err) => {
-        this.isAuthenticated = false;
+      error: err => {
+        this.handleError(err);
       }
     });
   }
 
+  private handleError(err: HttpErrorResponse): void {
+      if (err.status === UNAUTHORIZED) {
+        this.errorMessage = ERROR_MESSAGES.UNAUTHORIZED_ACCESS;
+      } else {
+        this.errorMessage = ERROR_MESSAGES.FETCH_FAILURE;
+      }
+  
+      this.isAuthenticated = false;
+      sessionStorage.removeItem(FEEDBACK_APPROVAL_SESSION_TOKEN);
+    }
+
+
   onClickReviewButton(feedback: Feedback, isApproved: boolean): void {
-    this.productFeedbackService.updateFeedbackStatus(feedback.id!, isApproved, this.authService.getDisplayName()!, feedback.version!)
+    this.productFeedbackService
+      .updateFeedbackStatus(
+        feedback.id!,
+        isApproved,
+        this.authService.getDisplayName()!,
+        feedback.version!
+      )
       .subscribe(() => {
         this.fetchFeedbacks();
       });

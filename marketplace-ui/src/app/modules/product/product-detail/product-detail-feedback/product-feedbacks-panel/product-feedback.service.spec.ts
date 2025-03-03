@@ -139,7 +139,7 @@ describe('ProductFeedbackService', () => {
     const token = 'mockToken';
 
     cookieService.get.and.returnValue('mockCookie');
-    authService.decodeToken.and.returnValue({ username: 'testuser', name: 'Test User', sub: 'user123', exp: Math.floor(Date.now() / 1000) + 3600, accessToken: token });
+    authService.decodeToken.and.returnValue({ username: 'testuser', name: 'Test User', sub: 'user123', exp: Math.floor(Date.now() / 1000) + 3600 });
 
     service.findProductFeedbacks().subscribe(() => {
       expect(service.allFeedbacks().length).toBe(0);
@@ -164,7 +164,7 @@ describe('ProductFeedbackService', () => {
 
     const initialArray: Feedback[] = [initialFeedback];
     service.allFeedbacks.set(initialArray);
-    
+
     const updatedFeedback: Feedback = { 
       id: '1',
       content: 'Test',
@@ -174,7 +174,7 @@ describe('ProductFeedbackService', () => {
       moderatorName: 'admin'
     };
     
-    service.updateFeedbackStatus('1', true, 'admin').subscribe(response => {
+    service.updateFeedbackStatus('1', true, 'admin', 1).subscribe(response => {
       expect(response).toEqual(updatedFeedback);
       expect(service.allFeedbacks()[0].feedbackStatus).toBe(FeedbackStatus.APPROVED);
       expect(service.pendingFeedbacks().length).toBe(0);

@@ -12,7 +12,6 @@ export interface TokenPayload {
   name: string;
   sub: string;
   exp: number;
-  accessToken: string;
 }
 
 export interface RequestBody {

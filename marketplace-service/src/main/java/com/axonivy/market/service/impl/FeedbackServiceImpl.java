@@ -52,14 +52,13 @@ public class FeedbackServiceImpl implements FeedbackService {
   public Page<Feedback> findFeedbacks(String productId, Pageable pageable) throws NotFoundException {
     validateProductExists(productId);
     return feedbackRepository.findByProductIdAndFeedbackStatusNotIn(productId,
-        List.of(FeedbackStatus.REJECTED, FeedbackStatus.PENDING
-        ), refinePagination(pageable));
+        List.of(FeedbackStatus.REJECTED, FeedbackStatus.PENDING), refinePagination(pageable));
   }
 
   @Override
   public Feedback findFeedback(String id) throws NotFoundException {
-    return feedbackRepository.findById(id)
-        .orElseThrow(() -> new NotFoundException(ErrorCode.FEEDBACK_NOT_FOUND, "Not found feedback with id: " + id));
+    return feedbackRepository.findById(id).orElseThrow(
+        () -> new NotFoundException(ErrorCode.FEEDBACK_NOT_FOUND, "Not found feedback with id: " + id));
   }
 
   @Override
@@ -70,9 +69,8 @@ public class FeedbackServiceImpl implements FeedbackService {
     }
     validateProductExists(productId);
 
-    List<Feedback> existingUserFeedback =
-        feedbackRepository.findByProductIdAndUserIdAndFeedbackStatusNotIn(productId, userId,
-            List.of(FeedbackStatus.REJECTED));
+    List<Feedback> existingUserFeedback = feedbackRepository.findByProductIdAndUserIdAndFeedbackStatusNotIn(productId,
+        userId, List.of(FeedbackStatus.REJECTED));
     if (existingUserFeedback == null) {
       throw new NoContentException(ErrorCode.NO_FEEDBACK_OF_USER_FOR_PRODUCT,
           String.format("No feedback with user id '%s' and product id '%s'", userId, productId));
@@ -82,26 +80,24 @@ public class FeedbackServiceImpl implements FeedbackService {
 
   @Override
   public Feedback updateFeedbackWithNewStatus(FeedbackApprovalModel feedbackApproval) {
-    return feedbackRepository.findByIdAndVersion(feedbackApproval.getFeedbackId(), feedbackApproval.getVersion())
-        .map(existingFeedback -> {
-          List<Feedback> existingFeedbacks = feedbackRepository
-              .findByProductIdAndUserIdAndFeedbackStatusNotIn(existingFeedback.getProductId(),
-                  existingFeedback.getUserId(), List.of(FeedbackStatus.REJECTED));
+    return feedbackRepository.findByIdAndVersion(feedbackApproval.getFeedbackId(), feedbackApproval.getVersion()).map(
+        existingFeedback -> {
+          List<Feedback> existingFeedbacks = feedbackRepository.findByProductIdAndUserIdAndFeedbackStatusNotIn(
+              existingFeedback.getProductId(), existingFeedback.getUserId(), List.of(FeedbackStatus.REJECTED));
 
           boolean isApproved = BooleanUtils.isTrue(feedbackApproval.getIsApproved());
           FeedbackStatus newFeedbackStatus = isApproved ? FeedbackStatus.APPROVED : FeedbackStatus.REJECTED;
-          existingFeedbacks.stream()
-              .filter(f -> f.getFeedbackStatus() == (isApproved ? FeedbackStatus.APPROVED : FeedbackStatus.PENDING))
-              .filter(f -> !f.getId().equals(existingFeedback.getId()))
-              .findFirst().ifPresent(feedbackRepository::delete);
+          existingFeedbacks.stream().filter(
+              f -> f.getFeedbackStatus() == (isApproved ? FeedbackStatus.APPROVED : FeedbackStatus.PENDING) && !f.getId().equals(
+                  existingFeedback.getId())).findFirst().ifPresent(feedbackRepository::delete);
 
           existingFeedback.setFeedbackStatus(newFeedbackStatus);
           existingFeedback.setModeratorName(feedbackApproval.getModeratorName());
           existingFeedback.setReviewDate(new Date());
 
           return feedbackRepository.save(existingFeedback);
-        })
-        .orElse(null);
+        }).orElseThrow(() -> new NotFoundException(ErrorCode.FEEDBACK_NOT_FOUND,
+        "Not found feedback with id: " + feedbackApproval.getFeedbackId()));
   }
 
   @Override
@@ -131,22 +127,21 @@ public class FeedbackServiceImpl implements FeedbackService {
   }
 
   private boolean isMatchingWithExistingFeedback(Feedback approvedFeedback, FeedbackModelRequest feedback) {
-    return approvedFeedback.getContent().equals(feedback.getContent()) &&
+    return approvedFeedback.getContent().trim().equals(feedback.getContent().trim()) &&
         approvedFeedback.getRating().equals(feedback.getRating());
   }
 
-  private Feedback saveOrUpdateFeedback(Feedback feedback, FeedbackModelRequest feedbackModel, String userId) {
-    if (feedback == null) {
-      feedback = new Feedback();
-      feedback.setUserId(userId);
-      feedback.setProductId(feedbackModel.getProductId());
-      feedback.setFeedbackStatus(FeedbackStatus.PENDING);
+  private Feedback saveOrUpdateFeedback(Feedback pendingFeedback, FeedbackModelRequest feedbackModel, String userId) {
+    if (pendingFeedback == null) {
+      pendingFeedback = new Feedback();
+      pendingFeedback.setUserId(userId);
+      pendingFeedback.setProductId(feedbackModel.getProductId());
+      pendingFeedback.setFeedbackStatus(FeedbackStatus.PENDING);
     }
-    feedback.setRating(feedbackModel.getRating());
-    feedback.setContent(feedbackModel.getContent());
+    pendingFeedback.setRating(feedbackModel.getRating());
+    pendingFeedback.setContent(feedbackModel.getContent());
 
-    return feedback.getId() == null ? feedbackRepository.insert(feedback) : feedbackRepository.save(
-        feedback);
+    return feedbackRepository.save(pendingFeedback);
   }
 
   @Override

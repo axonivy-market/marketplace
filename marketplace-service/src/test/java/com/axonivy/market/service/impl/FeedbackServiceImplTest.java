@@ -289,7 +289,7 @@ class FeedbackServiceImplTest extends BaseSetup {
     when(userRepository.findById(userId)).thenReturn(Optional.of(new User()));
     when(feedbackRepository.findByProductIdAndUserIdAndFeedbackStatusNotIn(productId, userId,
         List.of(FeedbackStatus.REJECTED))).thenReturn(Collections.emptyList());
-    when(feedbackRepository.insert(any(Feedback.class))).thenReturn(feedback);
+    when(feedbackRepository.save(any(Feedback.class))).thenReturn(feedback);
 
     Feedback result = feedbackService.upsertFeedback(feedbackModelRequest, userId);
 
@@ -301,7 +301,7 @@ class FeedbackServiceImplTest extends BaseSetup {
     verify(userRepository, times(1)).findById(userId);
     verify(feedbackRepository, times(1)).findByProductIdAndUserIdAndFeedbackStatusNotIn(productId, userId,
         List.of(FeedbackStatus.REJECTED));
-    verify(feedbackRepository, times(1)).insert(any(Feedback.class));
+    verify(feedbackRepository, times(1)).save(any(Feedback.class));
   }
 
   @Test
@@ -373,7 +373,7 @@ class FeedbackServiceImplTest extends BaseSetup {
     when(userRepository.findById(userId)).thenReturn(Optional.of(new User()));
     when(feedbackRepository.findByProductIdAndUserIdAndFeedbackStatusNotIn(productId, userId,
         List.of(FeedbackStatus.REJECTED))).thenReturn(List.of(existingApproved));
-    when(feedbackRepository.insert(any(Feedback.class))).thenReturn(feedback);
+    when(feedbackRepository.save(any(Feedback.class))).thenReturn(feedback);
 
     Feedback result = feedbackService.upsertFeedback(feedbackModelRequest, userId);
 
@@ -385,8 +385,7 @@ class FeedbackServiceImplTest extends BaseSetup {
     verify(userRepository, times(1)).findById(userId);
     verify(feedbackRepository, times(1)).findByProductIdAndUserIdAndFeedbackStatusNotIn(productId, userId,
         List.of(FeedbackStatus.REJECTED));
-    verify(feedbackRepository, times(1)).insert(any(Feedback.class));
-    verify(feedbackRepository, never()).save(any(Feedback.class));
+    verify(feedbackRepository, times(1)).save(any(Feedback.class));
   }
 
   @Test
