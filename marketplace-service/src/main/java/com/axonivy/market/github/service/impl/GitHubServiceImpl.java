@@ -357,12 +357,12 @@ public class GitHubServiceImpl implements GitHubService {
       Pageable pageable) throws IOException {
     List<GitHubReleaseModel> gitHubReleaseModels = new ArrayList<>();
     List<GHRelease> ghReleases = ghReleasePagedIterable.toList().stream().filter(ghRelease -> !ghRelease.isDraft()).toList();
-    String latestGitHubReleaseName = this.getGitHubLatestReleaseByProductId(product.getRepositoryName()).getName();
-
-    for (GHRelease ghRelease : ghReleases) {
-      gitHubReleaseModels.add(this.toGitHubReleaseModel(ghRelease, product, latestGitHubReleaseName));
+    if (!ghReleases.isEmpty()) {
+      String latestGitHubReleaseName = this.getGitHubLatestReleaseByProductId(product.getRepositoryName()).getName();
+      for (GHRelease ghRelease : ghReleases) {
+        gitHubReleaseModels.add(this.toGitHubReleaseModel(ghRelease, product, latestGitHubReleaseName));
+      }
     }
-
 
     return new PageImpl<>(gitHubReleaseModels, pageable, gitHubReleaseModels.size());
   }

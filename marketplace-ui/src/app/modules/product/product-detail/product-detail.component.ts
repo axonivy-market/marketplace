@@ -195,8 +195,8 @@ export class ProductDetailComponent {
           })
           .enable(['smartquotes', 'replacements', 'image']);
 
-        if (res.changelogs._embedded.githubReleaseModelList !== null && res.changelogs._embedded.githubReleaseModelList.length !== 0) {
-          this.productReleaseSafeHtmls = this.renderChangelogContent(res.changelogs._embedded.githubReleaseModelList);
+        if (res.changelogs._embedded.gitHubReleaseModelList !== null && res.changelogs._embedded.gitHubReleaseModelList.length !== 0) {
+          this.productReleaseSafeHtmls = this.renderChangelogContent(res.changelogs._embedded.gitHubReleaseModelList);
         }
         this.handleProductDetail(res.productDetail);
         this.getReadmeContent();

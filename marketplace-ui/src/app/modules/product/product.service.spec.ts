@@ -251,8 +251,8 @@ describe('ProductService', () => {
     const mockResponse: ProductReleasesApiResponse = MOCK_PRODUCT_RELEASES;
 
     service.getProductChangelogs(productId).subscribe(response => {
-      let productReleaseModelList = response._embedded.githubReleaseModelList;
-      expect(productReleaseModelList.length).toEqual(mockResponse._embedded.githubReleaseModelList.length);
+      let productReleaseModelList = response._embedded.gitHubReleaseModelList;
+      expect(productReleaseModelList.length).toEqual(mockResponse._embedded.gitHubReleaseModelList.length);
     });
 
     const req = httpMock.expectOne(`${API_URI.PRODUCT_DETAILS}/${productId}/releases`);

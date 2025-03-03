@@ -4,7 +4,7 @@ import { ProductRelease } from "./product-release.model";
 
 export interface ProductReleasesApiResponse {
     _embedded: {
-        githubReleaseModelList: ProductRelease[];
+        gitHubReleaseModelList: ProductRelease[];
     };
     _links: Link;
     page: Page;
