@@ -107,49 +107,46 @@ public class FeedbackServiceImpl implements FeedbackService {
   @Override
   public Feedback upsertFeedback(FeedbackModelRequest feedback, String userId) throws NotFoundException {
     validateUserExists(userId);
-    List<Feedback> feedbacks =
-        feedbackRepository.findByProductIdAndUserIdAndFeedbackStatusNotIn(feedback.getProductId(), userId,
-            List.of(FeedbackStatus.REJECTED));
+    List<Feedback> feedbacks = feedbackRepository.findByProductIdAndUserIdAndFeedbackStatusNotIn(
+        feedback.getProductId(), userId, List.of(FeedbackStatus.REJECTED));
 
-    Feedback approvedFeedback = feedbacks.stream()
-        .filter(fb -> fb.getFeedbackStatus() == FeedbackStatus.APPROVED)
-        .findFirst()
-        .orElse(null);
+    Feedback approvedFeedback = findFeedbackByStatus(feedbacks, FeedbackStatus.APPROVED);
+    Feedback pendingFeedback = findFeedbackByStatus(feedbacks, FeedbackStatus.PENDING);
 
-    Feedback pendingFeedback = feedbacks.stream()
-        .filter(fb -> fb.getFeedbackStatus() == FeedbackStatus.PENDING)
-        .findFirst()
-        .orElse(null);
-
-    if (approvedFeedback != null && isMatchingFeedback(approvedFeedback, feedback)) {
+    if (approvedFeedback != null && isMatchingWithExistingFeedback(approvedFeedback, feedback)) {
       if (pendingFeedback != null) {
         feedbackRepository.delete(pendingFeedback);
       }
       return approvedFeedback;
     }
 
-    return saveOrUpdatePendingFeedback(pendingFeedback, feedback, userId);
+    return saveOrUpdateFeedback(pendingFeedback, feedback, userId);
   }
 
-  private boolean isMatchingFeedback(Feedback approvedFeedback, FeedbackModelRequest feedback) {
+  private Feedback findFeedbackByStatus(List<Feedback> feedbacks, FeedbackStatus status) {
+    return feedbacks.stream()
+        .filter(feedback -> feedback.getFeedbackStatus() == status)
+        .findFirst()
+        .orElse(null);
+  }
+
+  private boolean isMatchingWithExistingFeedback(Feedback approvedFeedback, FeedbackModelRequest feedback) {
     return approvedFeedback.getContent().equals(feedback.getContent()) &&
         approvedFeedback.getRating().equals(feedback.getRating());
   }
 
-  private Feedback saveOrUpdatePendingFeedback(Feedback pendingFeedback, FeedbackModelRequest feedback, String userId) {
-    if (pendingFeedback == null) {
-      pendingFeedback = new Feedback();
-      pendingFeedback.setUserId(userId);
-      pendingFeedback.setProductId(feedback.getProductId());
-      pendingFeedback.setFeedbackStatus(FeedbackStatus.PENDING);
-      pendingFeedback.setRating(feedback.getRating());
-      pendingFeedback.setContent(feedback.getContent());
-      return feedbackRepository.insert(pendingFeedback);
+  private Feedback saveOrUpdateFeedback(Feedback feedback, FeedbackModelRequest feedbackModel, String userId) {
+    if (feedback == null) {
+      feedback = new Feedback();
+      feedback.setUserId(userId);
+      feedback.setProductId(feedbackModel.getProductId());
+      feedback.setFeedbackStatus(FeedbackStatus.PENDING);
     }
+    feedback.setRating(feedbackModel.getRating());
+    feedback.setContent(feedbackModel.getContent());
 
-    pendingFeedback.setRating(feedback.getRating());
-    pendingFeedback.setContent(feedback.getContent());
-    return feedbackRepository.save(pendingFeedback);
+    return feedback.getId() == null ? feedbackRepository.insert(feedback) : feedbackRepository.save(
+        feedback);
   }
 
   @Override
