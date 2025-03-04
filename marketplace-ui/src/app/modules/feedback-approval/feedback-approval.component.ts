@@ -47,9 +47,7 @@ export class FeedbackApprovalComponent {
   isAuthenticated = false;
   detailTabs = FEEDBACK_APPROVAL_TABS;
   activeTab = 'review';
-  userInfo: any;
-  displayName$!: Observable<string | null>;
-  username$!: Observable<string | null>;
+  displayName!: Observable<string | null>;
 
   feedbacks: Signal<Feedback[] | undefined> =
     this.productFeedbackService.allFeedbacks;
@@ -70,9 +68,8 @@ export class FeedbackApprovalComponent {
 
   fetchUserInfo(): void {
     this.authService.getUserInfo(this.token).subscribe({
-      next: (data) => {
-        this.userInfo = data;
-        this.displayName$ = this.authService.getDisplayNameFromAccessToken(this.token);
+      next: () => {
+        this.displayName = this.authService.getDisplayNameFromAccessToken(this.token);
       },
       error: (err) => {
         this.handleError(err);
@@ -115,18 +112,14 @@ export class FeedbackApprovalComponent {
     sessionStorage.removeItem(FEEDBACK_APPROVAL_SESSION_TOKEN);
   }
 
-
   onClickReviewButton(feedback: Feedback, isApproved: boolean): void {
-    this.productFeedbackService
-      .updateFeedbackStatus(
-        feedback.id!,
-        isApproved,
-        this.authService.getDisplayName()!,
-        feedback.version!
-      )
-      .subscribe(() => {
-        this.fetchFeedbacks();
-      });
+    this.displayName.subscribe((name) => {
+      if (name && feedback.id && feedback.version) {
+        this.productFeedbackService
+          .updateFeedbackStatus(feedback.id, isApproved, name, feedback.version)
+          .subscribe(() => this.fetchFeedbacks());
+      }
+    });
   }
 
   setActiveTab(tab: string): void {

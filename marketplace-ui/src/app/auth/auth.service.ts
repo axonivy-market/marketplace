@@ -22,6 +22,11 @@ export interface TokenResponse {
   token: string;
 }
 
+export interface GitHubUser {
+  login: string;
+  name: string | null;
+}
+
 @Injectable({
   providedIn: 'root'
 })
@@ -65,7 +70,7 @@ export class AuthService {
 
   handleTokenResponse(token: string, state: string): void {
     this.setTokenAsCookie(token);
-    if(FEEDBACK_APPROVAL_STATE === state){
+    if (FEEDBACK_APPROVAL_STATE === state) {
       this.router.navigate([`${state}`]);
     } else {
       this.router.navigate([`${state}`], {
@@ -147,18 +152,17 @@ export class AuthService {
     return Math.ceil(diffTime / environment.dayInMiliseconds);
   }
 
-  getUserInfo(token: string): Observable<{ login: string; name: string | null }> {
+  getUserInfo(token: string): Observable<GitHubUser> {
     const headers = new HttpHeaders({
       'Authorization': `Bearer ${token}`,
       'Accept': 'application/vnd.github+json'
     });
-    return this.httpClientWithoutInterceptor.get<any>(this.userApiUrl, { headers }).pipe(
+    return this.httpClientWithoutInterceptor.get<GitHubUser>(this.userApiUrl, { headers }).pipe(
       map(response => ({
         login: response.login,
         name: response.name
       })),
-      catchError(error => {
-        console.error('Error fetching user info:', error);
+      catchError(() => {
         return of({ login: '', name: null });
       })
     );
