@@ -59,7 +59,7 @@ public class FeedbackModel extends RepresentationModel<FeedbackModel> {
   private Date reviewDate;
 
   @Schema(description = "Feedback modification version", example = "3")
-  private int version;
+  private Integer version;
 
   @Override
   public int hashCode() {

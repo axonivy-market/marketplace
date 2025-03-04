@@ -23,6 +23,7 @@ import {
 import { ActivatedRoute } from '@angular/router';
 import { FeedbackTableComponent } from './feedback-table/feedback-table.component';
 import { HttpErrorResponse } from '@angular/common/http';
+import { Observable } from 'rxjs';
 
 @Component({
   selector: 'app-feedback-approval',
@@ -46,6 +47,9 @@ export class FeedbackApprovalComponent {
   isAuthenticated = false;
   detailTabs = FEEDBACK_APPROVAL_TABS;
   activeTab = 'review';
+  userInfo: any;
+  displayName$!: Observable<string | null>;
+  username$!: Observable<string | null>;
 
   feedbacks: Signal<Feedback[] | undefined> =
     this.productFeedbackService.allFeedbacks;
@@ -59,8 +63,22 @@ export class FeedbackApprovalComponent {
   ngOnInit() {
     this.token = sessionStorage.getItem(FEEDBACK_APPROVAL_SESSION_TOKEN) ?? '';
     if (this.token) {
+      console.log(this.token);
       this.isAuthenticated = true;
       this.fetchFeedbacks();
+      this.authService.getUserInfo(this.token).subscribe({
+        next: (data) => {
+          this.userInfo = data;
+          console.log(this.userInfo);
+        },
+        error: (err) => {
+          this.handleError(err);
+        }
+      });
+      // Set up Observables for display name and username
+      this.displayName$ = this.authService.getPATDisplayName(this.token);
+      console.log(this.displayName$);
+      // this.username$ = this.authService.getPATUsername(this.token);
     }
   }
 
@@ -93,7 +111,7 @@ export class FeedbackApprovalComponent {
       } else {
         this.errorMessage = ERROR_MESSAGES.FETCH_FAILURE;
       }
-  
+
       this.isAuthenticated = false;
       sessionStorage.removeItem(FEEDBACK_APPROVAL_SESSION_TOKEN);
     }

@@ -1,8 +1,8 @@
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { environment } from '../../environments/environment';
 import { Router } from '@angular/router';
-import { catchError, Observable, throwError } from 'rxjs';
+import { catchError, map, Observable, of, throwError } from 'rxjs';
 import { CookieService } from 'ngx-cookie-service';
 import { jwtDecode } from 'jwt-decode';
 import { FEEDBACK_APPROVAL_STATE, TOKEN_KEY } from '../shared/constants/common.constant';
@@ -29,6 +29,7 @@ export class AuthService {
   private readonly BASE_URL = environment.apiUrl;
   private readonly githubAuthUrl = 'https://github.com/login/oauth/authorize';
   private readonly githubAuthCallbackUrl = window.location.origin + environment.githubAuthCallbackPath;
+  private readonly userApiUrl = 'https://api.github.com/user';
 
   constructor(
     private readonly http: HttpClient,
@@ -141,4 +142,30 @@ export class AuthService {
     const diffTime = Math.abs(expDate.getTime() - currentDate.getTime());
     return Math.ceil(diffTime / environment.dayInMiliseconds);
   }
+
+  getUserInfo(token: string): Observable<{ login: string; name: string | null }> {
+    const headers = new HttpHeaders({
+      'Authorization': `Bearer ${token}`,
+      'Accept': 'application/vnd.github+json'
+    });
+
+    return this.http.get<any>(this.userApiUrl, { headers }).pipe(
+      map(response => ({
+        login: response.login,
+        name: response.name
+      })),
+      catchError(error => {
+        console.error('Error fetching user info:', error);
+        return of({ login: '', name: null }); // Fallback on error
+      })
+    );
+  }
+
+  getPATDisplayName(token: string): Observable<string | null> {
+    return this.getUserInfo(token).pipe(
+      map(userInfo => userInfo.name || userInfo.login || null)
+    );
+  }
+
+
 }

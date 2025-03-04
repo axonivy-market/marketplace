@@ -39,7 +39,7 @@ public class Feedback implements Serializable {
   private String moderatorName;
   private Date reviewDate;
   @Version
-  private int version;
+  private Integer version;
   @CreatedDate
   private Date createdAt;
 

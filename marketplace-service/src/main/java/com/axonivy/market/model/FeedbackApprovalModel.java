@@ -18,5 +18,5 @@ public class FeedbackApprovalModel {
 
   private String moderatorName;
 
-  private int version;
+  private Integer version;
 }
