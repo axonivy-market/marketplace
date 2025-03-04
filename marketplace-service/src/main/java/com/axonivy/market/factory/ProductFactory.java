@@ -75,8 +75,6 @@ public class ProductFactory {
     extractSourceUrl(product, meta);
     List<Artifact> artifacts = CollectionUtils.isEmpty(
         meta.getMavenArtifacts()) ? new ArrayList<>() : meta.getMavenArtifacts();
-//    artifacts.forEach(
-//        artifact -> artifact.setInvalidArtifact(!artifact.getArtifactId().contains(meta.getId())));
 
     for (Artifact artifact : artifacts) {
       artifact.setInvalidArtifact(!artifact.getArtifactId().contains(meta.getId()));

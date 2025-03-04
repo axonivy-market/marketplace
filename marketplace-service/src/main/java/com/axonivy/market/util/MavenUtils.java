@@ -197,7 +197,11 @@ public class MavenUtils {
     }
     artifact.setType(StringUtils.defaultIfBlank(artifact.getType(), ProductJsonConstants.DEFAULT_PRODUCT_TYPE));
     artifactName = String.format(MavenConstants.ARTIFACT_NAME_FORMAT, artifactName, artifact.getType());
-    return MavenArtifactModel.builder().name(artifactName).downloadUrl(buildDownloadUrl(artifact, version)).artifactId(artifact.getArtifactId()).build();
+    return MavenArtifactModel.builder()
+        .name(artifactName)
+        .downloadUrl(buildDownloadUrl(artifact, version))
+        .artifactId(artifact.getArtifactId())
+        .build();
   }
 
   public static List<MavenArtifactModel> convertArtifactsToModels(List<Artifact> artifacts, String version) {
