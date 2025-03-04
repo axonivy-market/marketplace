@@ -21,7 +21,6 @@ import lombok.AllArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.hibernate.Hibernate;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
@@ -146,7 +145,7 @@ public class ProductContentServiceImpl implements ProductContentService {
 
     ProductDependency productDependencies = productDependencyRepository.findById(productId).orElse(null);
     List<MavenDependency> mavenDependencies = Optional.ofNullable(productDependencies)
-        .map(ProductDependency::getDependenciesOfArtifactTest)
+        .map(ProductDependency::getDependenciesOfArtifact)
         .map(Collection::stream)
         .map(dependencies -> dependencies.filter(filterByArtifactAndVersion).toList())
         .orElse(new ArrayList<>());
