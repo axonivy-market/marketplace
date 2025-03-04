@@ -40,6 +40,7 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -652,5 +653,19 @@ class GitHubServiceImplTest {
       assertEquals("v1.0.0", result.getName());
       assertTrue(result.getBody().contains("http://example.com"));
     }
+  }
+
+  @Test
+  void testGetGitHubReleaseModelsWithMEmptyReleases() throws IOException {
+    Product mockProduct = mock(Product.class);
+    PagedIterable<GHRelease> mockPagedIterable = mock(PagedIterable.class);
+    Pageable mockPageable = mock(Pageable.class);
+
+    when(mockPagedIterable.toList()).thenReturn(Collections.emptyList());
+
+    Page<GitHubReleaseModel> result = gitHubService.getGitHubReleaseModels(mockProduct, mockPagedIterable, mockPageable);
+
+    assertNotNull(result);
+    assertTrue(result.isEmpty());
   }
 }

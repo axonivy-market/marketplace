@@ -194,9 +194,10 @@ export class ProductDetailComponent {
             linkify: true,
           })
           .enable(['smartquotes', 'replacements', 'image']);
-
-        if (res.changelogs._embedded.githubReleaseModelList !== null && res.changelogs._embedded.githubReleaseModelList.length !== 0) {
-          this.productReleaseSafeHtmls = this.renderChangelogContent(res.changelogs._embedded.githubReleaseModelList);
+          
+        const gitHubReleaseModelList = res.changelogs?._embedded?.gitHubReleaseModelList ?? [];
+        if (gitHubReleaseModelList.length > 0) {
+          this.productReleaseSafeHtmls = this.renderChangelogContent(gitHubReleaseModelList);
         }
         this.handleProductDetail(res.productDetail);
         this.getReadmeContent();
