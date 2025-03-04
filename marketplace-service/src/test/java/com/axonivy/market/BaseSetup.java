@@ -208,8 +208,7 @@ public class BaseSetup {
   }
 
   protected MavenArtifactVersion getMockMavenArtifactVersion() {
-    return new MavenArtifactVersion(StringUtils.EMPTY, new ArrayList<>(),
-        new ArrayList<>());
+    return new MavenArtifactVersion(StringUtils.EMPTY, new ArrayList<>(), new ArrayList<>());
   }
 
   protected MavenArtifactVersion getMockMavenArtifactVersionWithData() {
