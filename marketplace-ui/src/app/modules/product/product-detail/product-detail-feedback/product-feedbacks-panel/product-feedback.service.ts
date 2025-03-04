@@ -79,11 +79,7 @@ export class ProductFeedbackService {
         tap(response => {
           const feedbacks = response._embedded?.feedbacks || [];
 
-          const sortedFeedbacks = feedbacks.sort(
-            (a, b) =>
-              (b.reviewDate ? new Date(b.reviewDate).getTime() : 0) -
-              (a.reviewDate ? new Date(a.reviewDate).getTime() : 0)
-          );
+          const sortedFeedbacks = this.sortByDate(feedbacks, 'reviewDate');
 
           const nonPendingFeedbacks = sortedFeedbacks.filter(
             f => f?.feedbackStatus !== FeedbackStatus.PENDING
@@ -107,11 +103,7 @@ export class ProductFeedbackService {
           }
 
           this.pendingFeedbacks.set(
-            this.pendingFeedbacks().sort(
-              (a, b) =>
-                (b.updatedAt ? new Date(b.updatedAt).getTime() : 0) -
-                (a.updatedAt ? new Date(a.updatedAt).getTime() : 0)
-            )
+            this.sortByDate(this.pendingFeedbacks(), 'updatedAt')
           );
         }),
         catchError(response => {
@@ -137,20 +129,18 @@ export class ProductFeedbackService {
 
     return this.http.put<Feedback>(requestURL, requestBody).pipe(
       tap(updatedFeedback => {
-        const updatedAllFeedbacks = this.allFeedbacks()
-          .map(feedback =>
-            feedback.id === updatedFeedback.id ? updatedFeedback : feedback
-          )
-          .sort(
-            (a, b) =>
-              (b.updatedAt ? new Date(b.updatedAt).getTime() : 0) -
-              (a.updatedAt ? new Date(a.updatedAt).getTime() : 0)
-          );
-        this.allFeedbacks.set([...updatedAllFeedbacks]);
+        const updatedAllFeedbacks = this.allFeedbacks().map(feedback =>
+          feedback.id === updatedFeedback.id ? updatedFeedback : feedback
+        );
+
+        this.allFeedbacks.set(
+          this.sortByDate(updatedAllFeedbacks, 'updatedAt')
+        );
 
         const filteredPendingFeedbacks = updatedAllFeedbacks.filter(
           feedback => feedback.feedbackStatus === FeedbackStatus.PENDING
         );
+
         this.pendingFeedbacks.set([...filteredPendingFeedbacks]);
       })
     );
@@ -198,7 +188,12 @@ export class ProductFeedbackService {
       .get<FeedbackApiResponse>(requestURL, { params: requestParams })
       .pipe(
         tap(response => {
-          const approvedFeedbacks = (response._embedded?.feedbacks || []).filter(f => f.feedbackStatus === FeedbackStatus.APPROVED || !f.feedbackStatus);
+          const approvedFeedbacks = (
+            response._embedded?.feedbacks || []
+          ).filter(
+            f =>
+              f.feedbackStatus === FeedbackStatus.APPROVED || !f.feedbackStatus
+          );
           if (page === 0) {
             this.feedbacks.set(approvedFeedbacks);
           } else {
@@ -211,17 +206,29 @@ export class ProductFeedbackService {
               const feedback = userFeedbacks[0];
 
               if (feedback.userId === this.authService.getUserId()) {
-                const pendingFeedbacks = userFeedbacks.filter(f => f.feedbackStatus === FeedbackStatus.PENDING);
-                const approvedExists = this.feedbacks().some(f => f.userId === feedback.userId && (f.feedbackStatus === FeedbackStatus.APPROVED || !f.feedbackStatus));
+                const pendingFeedbacks = userFeedbacks.filter(
+                  f => f.feedbackStatus === FeedbackStatus.PENDING
+                );
+                const approvedExists = this.feedbacks().some(
+                  f =>
+                    f.userId === feedback.userId &&
+                    (f.feedbackStatus === FeedbackStatus.APPROVED ||
+                      !f.feedbackStatus)
+                );
 
                 if (pendingFeedbacks.length) {
                   if (approvedExists && userFeedbacks.length === 2) {
                     this.feedbacks.set([
                       pendingFeedbacks[0],
-                      ...this.feedbacks().filter(f => f.userId !== feedback.userId)
+                      ...this.feedbacks().filter(
+                        f => f.userId !== feedback.userId
+                      )
                     ]);
                   } else {
-                    this.feedbacks.set([...pendingFeedbacks, ...this.feedbacks()]);
+                    this.feedbacks.set([
+                      ...pendingFeedbacks,
+                      ...this.feedbacks()
+                    ]);
                   }
                 }
               }
@@ -245,7 +252,8 @@ export class ProductFeedbackService {
       })
       .pipe(
         tap(feedbacks => {
-          const prioritizedUserFeedback = feedbacks.find(f => f.feedbackStatus === FeedbackStatus.PENDING) ||
+          const prioritizedUserFeedback =
+            feedbacks.find(f => f.feedbackStatus === FeedbackStatus.PENDING) ||
             feedbacks.find(f => f.feedbackStatus === FeedbackStatus.APPROVED) ||
             feedbacks.find(f => !f.feedbackStatus) ||
             null;
@@ -300,5 +308,13 @@ export class ProductFeedbackService {
   getInitFeedbacksObservable(): Observable<FeedbackApiResponse> {
     this.page.set(0);
     return this.findProductFeedbacksByCriteria();
+  }
+
+  private sortByDate<T>(items: T[], dateKey: keyof T): T[] {
+    return [...items].sort((a, b) => {
+      const dateA = new Date((a[dateKey] ?? 0) as any).getTime();
+      const dateB = new Date((b[dateKey] ?? 0) as any).getTime();
+      return dateB - dateA;
+    });
   }
 }
