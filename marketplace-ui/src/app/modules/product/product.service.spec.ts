@@ -259,4 +259,20 @@ describe('ProductService', () => {
     expect(req.request.method).toBe('GET');
     req.flush(mockResponse);
   });
+
+  fit('getProductChangelogs should handle error and return empty response', () => {
+    const productId = 'portal';
+  
+    service.getProductChangelogs(productId).subscribe(response => {
+      expect(response).toEqual({} as ProductReleasesApiResponse);
+    });
+  
+    const req = httpMock.expectOne(`${API_URI.PRODUCT_DETAILS}/${productId}/releases`);
+    expect(req.request.method).toBe('GET');
+
+    req.flush(null, { 
+      status: 0, 
+      statusText: 'Unknown Error' 
+    });
+  });
 });
