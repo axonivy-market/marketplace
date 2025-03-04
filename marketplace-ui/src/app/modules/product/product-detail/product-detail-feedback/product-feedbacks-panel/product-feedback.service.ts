@@ -31,6 +31,7 @@ import { API_URI } from '../../../../../shared/constants/api.constant';
 
 const FEEDBACK_API_URL = 'api/feedback';
 const SIZE = 8;
+const ALL_FEEDBACKS_SIZE = 40;
 @Injectable({
   providedIn: 'root'
 })
@@ -61,7 +62,7 @@ export class ProductFeedbackService {
   findProductFeedbacks(
     page: number = this.page(),
     sort: string = this.sort(),
-    size: number = 20
+    size: number = ALL_FEEDBACKS_SIZE
   ): Observable<FeedbackApiResponse> {
     const token = sessionStorage.getItem(FEEDBACK_APPROVAL_SESSION_TOKEN);
     const headers = new HttpHeaders().set('Authorization', `Bearer ${token}`);

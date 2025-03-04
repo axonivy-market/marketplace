@@ -4,7 +4,6 @@ import { LanguageService } from '../../../core/services/language/language.servic
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
-import { Feedback } from '../../../shared/models/feedback.model';
 import { By } from '@angular/platform-browser';
 import { FeedbackStatus } from '../../../shared/enums/feedback-status.enum';
 import { MOCK_FEEDBACKS } from '../../../shared/mocks/mock-data';

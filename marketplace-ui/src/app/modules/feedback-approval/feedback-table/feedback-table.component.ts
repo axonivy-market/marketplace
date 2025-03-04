@@ -22,15 +22,15 @@ import { Feedback } from '../../../shared/models/feedback.model';
 })
 export class FeedbackTableComponent {
   @Input() feedbacks: Feedback[] = [];
-  @Input() isHistoryTab: boolean = false;
+  @Input() isHistoryTab = false;
   @Output() reviewAction = new EventEmitter<{
-    feedback: any;
+    feedback: Feedback;
     approved: boolean;
   }>();
 
   languageService = inject(LanguageService);
 
-  handleReviewAction(feedback: any, approved: boolean) {
+  handleReviewAction(feedback: Feedback, approved: boolean) {
     this.reviewAction.emit({ feedback, approved });
   }
 }

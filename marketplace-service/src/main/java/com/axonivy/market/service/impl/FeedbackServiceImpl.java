@@ -88,16 +88,24 @@ public class FeedbackServiceImpl implements FeedbackService {
           boolean isApproved = BooleanUtils.isTrue(feedbackApproval.getIsApproved());
           FeedbackStatus newFeedbackStatus = isApproved ? FeedbackStatus.APPROVED : FeedbackStatus.REJECTED;
           existingFeedbacks.stream().filter(
-              f -> f.getFeedbackStatus() == (isApproved ? FeedbackStatus.APPROVED : FeedbackStatus.PENDING) && !f.getId().equals(
-                  existingFeedback.getId())).findFirst().ifPresent(feedbackRepository::delete);
+              feedback -> isFeedbackEligibleForDeletion(feedback, existingFeedback.getId(), isApproved)).findFirst().ifPresent(
+              feedbackRepository::delete);
 
           existingFeedback.setFeedbackStatus(newFeedbackStatus);
           existingFeedback.setModeratorName(feedbackApproval.getModeratorName());
           existingFeedback.setReviewDate(new Date());
-
           return feedbackRepository.save(existingFeedback);
         }).orElseThrow(() -> new NotFoundException(ErrorCode.FEEDBACK_NOT_FOUND,
         "Not found feedback with id: " + feedbackApproval.getFeedbackId()));
+  }
+
+  private boolean isFeedbackEligibleForDeletion(Feedback feedback, String updatingFeedbackId, boolean isApproved) {
+    FeedbackStatus status = feedback.getFeedbackStatus();
+    boolean isTargetStatus = isApproved
+        ? (status == FeedbackStatus.APPROVED || status == null)
+        : status == FeedbackStatus.PENDING;
+
+    return isTargetStatus && !feedback.getId().equals(updatingFeedbackId);
   }
 
   @Override
@@ -106,8 +114,8 @@ public class FeedbackServiceImpl implements FeedbackService {
     List<Feedback> feedbacks = feedbackRepository.findByProductIdAndUserIdAndFeedbackStatusNotIn(
         feedback.getProductId(), userId, List.of(FeedbackStatus.REJECTED));
 
-    Feedback approvedFeedback = findFeedbackByStatus(feedbacks, FeedbackStatus.APPROVED);
-    Feedback pendingFeedback = findFeedbackByStatus(feedbacks, FeedbackStatus.PENDING);
+    Feedback approvedFeedback = findApprovedFeedback(feedbacks);
+    Feedback pendingFeedback = findPendingFeedback(feedbacks);
 
     if (approvedFeedback != null && isMatchingWithExistingFeedback(approvedFeedback, feedback)) {
       if (pendingFeedback != null) {
@@ -119,9 +127,17 @@ public class FeedbackServiceImpl implements FeedbackService {
     return saveOrUpdateFeedback(pendingFeedback, feedback, userId);
   }
 
-  private Feedback findFeedbackByStatus(List<Feedback> feedbacks, FeedbackStatus status) {
+  private Feedback findPendingFeedback(List<Feedback> feedbacks) {
     return feedbacks.stream()
-        .filter(feedback -> feedback.getFeedbackStatus() == status)
+        .filter(feedback -> feedback.getFeedbackStatus() == FeedbackStatus.PENDING)
+        .findFirst()
+        .orElse(null);
+  }
+
+  private Feedback findApprovedFeedback(List<Feedback> feedbacks) {
+    return feedbacks.stream()
+        .filter(
+            feedback -> feedback.getFeedbackStatus() == FeedbackStatus.APPROVED || feedback.getFeedbackStatus() == null)
         .findFirst()
         .orElse(null);
   }

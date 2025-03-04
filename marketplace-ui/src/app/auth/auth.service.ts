@@ -1,4 +1,4 @@
-import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { HttpBackend, HttpClient, HttpHeaders } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { environment } from '../../environments/environment';
 import { Router } from '@angular/router';
@@ -29,13 +29,17 @@ export class AuthService {
   private readonly BASE_URL = environment.apiUrl;
   private readonly githubAuthUrl = 'https://github.com/login/oauth/authorize';
   private readonly githubAuthCallbackUrl = window.location.origin + environment.githubAuthCallbackPath;
-  private readonly userApiUrl = 'https://api.github.com/user';
+  private readonly userApiUrl = environment.githubApiUrl + '/user';
+  private readonly httpClientWithoutInterceptor: HttpClient;
 
   constructor(
     private readonly http: HttpClient,
     private readonly router: Router,
-    private readonly cookieService: CookieService
-  ) {}
+    private readonly cookieService: CookieService,
+    private readonly httpBackend: HttpBackend
+  ) {
+    this.httpClientWithoutInterceptor = new HttpClient(httpBackend);
+  }
 
   redirectToGitHub(originalUrl: string): void {
     const state = encodeURIComponent(originalUrl);
@@ -61,7 +65,7 @@ export class AuthService {
 
   handleTokenResponse(token: string, state: string): void {
     this.setTokenAsCookie(token);
-    if(state == FEEDBACK_APPROVAL_STATE){
+    if(FEEDBACK_APPROVAL_STATE === state){
       this.router.navigate([`${state}`]);
     } else {
       this.router.navigate([`${state}`], {
@@ -148,24 +152,21 @@ export class AuthService {
       'Authorization': `Bearer ${token}`,
       'Accept': 'application/vnd.github+json'
     });
-
-    return this.http.get<any>(this.userApiUrl, { headers }).pipe(
+    return this.httpClientWithoutInterceptor.get<any>(this.userApiUrl, { headers }).pipe(
       map(response => ({
         login: response.login,
         name: response.name
       })),
       catchError(error => {
         console.error('Error fetching user info:', error);
-        return of({ login: '', name: null }); // Fallback on error
+        return of({ login: '', name: null });
       })
     );
   }
 
-  getPATDisplayName(token: string): Observable<string | null> {
+  getDisplayNameFromAccessToken(token: string): Observable<string | null> {
     return this.getUserInfo(token).pipe(
-      map(userInfo => userInfo.name || userInfo.login || null)
+      map(userInfo => userInfo.name ?? userInfo.login ?? null)
     );
   }
-
-
 }

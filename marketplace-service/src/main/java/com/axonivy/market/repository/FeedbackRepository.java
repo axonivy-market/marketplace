@@ -12,7 +12,7 @@ import java.util.Optional;
 
 @Repository
 public interface FeedbackRepository extends MongoRepository<Feedback, String> {
-  Optional<Feedback> findByIdAndVersion(String id, int version);
+  Optional<Feedback> findByIdAndVersion(String id, Integer version);
 
   List<Feedback> findByProductId(String productId);
 

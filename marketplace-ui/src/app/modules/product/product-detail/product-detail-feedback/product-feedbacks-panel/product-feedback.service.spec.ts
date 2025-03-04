@@ -15,13 +15,11 @@ describe('ProductFeedbackService', () => {
   let authService: jasmine.SpyObj<AuthService>;
   let productDetailService: jasmine.SpyObj<ProductDetailService>;
   let productStarRatingService: jasmine.SpyObj<ProductStarRatingService>;
-  let cookieService: jasmine.SpyObj<CookieService>;
 
   beforeEach(() => {
-    const authServiceSpy = jasmine.createSpyObj('AuthService', ['getToken', 'getUserId', 'decodeToken']);
+    const authServiceSpy = jasmine.createSpyObj('AuthService', ['getToken', 'getUserId']);
     const productDetailServiceSpy = jasmine.createSpyObj('ProductDetailService', ['productId']);
     const productStarRatingServiceSpy = jasmine.createSpyObj('ProductStarRatingService', ['fetchData']);
-    const cookieServiceSpy = jasmine.createSpyObj('CookieService', ['get', 'delete']);
 
     TestBed.configureTestingModule({
       providers: [
@@ -30,8 +28,7 @@ describe('ProductFeedbackService', () => {
         provideHttpClientTesting(),
         { provide: AuthService, useValue: authServiceSpy },
         { provide: ProductDetailService, useValue: productDetailServiceSpy },
-        { provide: ProductStarRatingService, useValue: productStarRatingServiceSpy },
-        { provide: CookieService, useValue: cookieServiceSpy }
+        { provide: ProductStarRatingService, useValue: productStarRatingServiceSpy }
       ]
     });
 
@@ -40,7 +37,6 @@ describe('ProductFeedbackService', () => {
     authService = TestBed.inject(AuthService) as jasmine.SpyObj<AuthService>;
     productDetailService = TestBed.inject(ProductDetailService) as jasmine.SpyObj<ProductDetailService>;
     productStarRatingService = TestBed.inject(ProductStarRatingService) as jasmine.SpyObj<ProductStarRatingService>;
-    cookieService = TestBed.inject(CookieService) as jasmine.SpyObj<CookieService>;
   });
 
   it('should be created', () => {
@@ -138,22 +134,20 @@ describe('ProductFeedbackService', () => {
     };
     const token = 'mockToken';
 
-    cookieService.get.and.returnValue('mockCookie');
-    authService.decodeToken.and.returnValue({ username: 'testuser', name: 'Test User', sub: 'user123', exp: Math.floor(Date.now() / 1000) + 3600 });
-
+    spyOn(sessionStorage, 'getItem').and.returnValue(token);
     service.findProductFeedbacks().subscribe(() => {
       expect(service.allFeedbacks().length).toBe(0);
       expect(service.pendingFeedbacks().length).toBe(1);
     });
 
-    const req = httpMock.expectOne('api/feedback/approval?page=0&size=20&sort=newest');
+    const req = httpMock.expectOne('api/feedback/approval?page=0&size=40&sort=newest');
     expect(req.request.method).toBe('GET');
     expect(req.request.headers.get('Authorization')).toBe(`Bearer ${token}`);
     req.flush(mockResponse);
   });
 
   it('should update feedback status and reflect in signals', () => {
-    const initialFeedback: Feedback = { 
+    const initialFeedback: Feedback = {
       id: '1',
       content: 'Test',
       rating: 0,
@@ -165,7 +159,7 @@ describe('ProductFeedbackService', () => {
     const initialArray: Feedback[] = [initialFeedback];
     service.allFeedbacks.set(initialArray);
 
-    const updatedFeedback: Feedback = { 
+    const updatedFeedback: Feedback = {
       id: '1',
       content: 'Test',
       rating: 0,
@@ -173,13 +167,13 @@ describe('ProductFeedbackService', () => {
       productId: '',
       moderatorName: 'admin'
     };
-    
+
     service.updateFeedbackStatus('1', true, 'admin', 1).subscribe(response => {
       expect(response).toEqual(updatedFeedback);
       expect(service.allFeedbacks()[0].feedbackStatus).toBe(FeedbackStatus.APPROVED);
       expect(service.pendingFeedbacks().length).toBe(0);
     });
-  
+
     const req = httpMock.expectOne('api/feedback/approval');
     expect(req.request.method).toBe('PUT');
     req.flush(updatedFeedback);

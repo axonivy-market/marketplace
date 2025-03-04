@@ -42,7 +42,7 @@ export class FeedbackApprovalComponent {
   translateService = inject(TranslateService);
   activatedRoute = inject(ActivatedRoute);
 
-  token: string = '';
+  token = '';
   errorMessage = '';
   isAuthenticated = false;
   detailTabs = FEEDBACK_APPROVAL_TABS;
@@ -63,23 +63,21 @@ export class FeedbackApprovalComponent {
   ngOnInit() {
     this.token = sessionStorage.getItem(FEEDBACK_APPROVAL_SESSION_TOKEN) ?? '';
     if (this.token) {
-      console.log(this.token);
       this.isAuthenticated = true;
       this.fetchFeedbacks();
-      this.authService.getUserInfo(this.token).subscribe({
-        next: (data) => {
-          this.userInfo = data;
-          console.log(this.userInfo);
-        },
-        error: (err) => {
-          this.handleError(err);
-        }
-      });
-      // Set up Observables for display name and username
-      this.displayName$ = this.authService.getPATDisplayName(this.token);
-      console.log(this.displayName$);
-      // this.username$ = this.authService.getPATUsername(this.token);
     }
+  }
+
+  fetchUserInfo(): void {
+    this.authService.getUserInfo(this.token).subscribe({
+      next: (data) => {
+        this.userInfo = data;
+        this.displayName$ = this.authService.getDisplayNameFromAccessToken(this.token);
+      },
+      error: (err) => {
+        this.handleError(err);
+      }
+    });
   }
 
   onSubmit(): void {
@@ -95,6 +93,7 @@ export class FeedbackApprovalComponent {
 
   fetchFeedbacks(): void {
     sessionStorage.setItem(FEEDBACK_APPROVAL_SESSION_TOKEN, this.token);
+    this.fetchUserInfo();
     this.productFeedbackService.findProductFeedbacks().subscribe({
       next: () => {
         this.isAuthenticated = true;
@@ -106,15 +105,15 @@ export class FeedbackApprovalComponent {
   }
 
   private handleError(err: HttpErrorResponse): void {
-      if (err.status === UNAUTHORIZED) {
-        this.errorMessage = ERROR_MESSAGES.UNAUTHORIZED_ACCESS;
-      } else {
-        this.errorMessage = ERROR_MESSAGES.FETCH_FAILURE;
-      }
-
-      this.isAuthenticated = false;
-      sessionStorage.removeItem(FEEDBACK_APPROVAL_SESSION_TOKEN);
+    if (err.status === UNAUTHORIZED) {
+      this.errorMessage = ERROR_MESSAGES.UNAUTHORIZED_ACCESS;
+    } else {
+      this.errorMessage = ERROR_MESSAGES.FETCH_FAILURE;
     }
+
+    this.isAuthenticated = false;
+    sessionStorage.removeItem(FEEDBACK_APPROVAL_SESSION_TOKEN);
+  }
 
 
   onClickReviewButton(feedback: Feedback, isApproved: boolean): void {
