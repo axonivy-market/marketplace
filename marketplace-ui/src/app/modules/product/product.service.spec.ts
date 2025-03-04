@@ -260,7 +260,7 @@ describe('ProductService', () => {
     req.flush(mockResponse);
   });
 
-  fit('getProductChangelogs should handle error and return empty response', () => {
+  it('getProductChangelogs should handle error and return empty response', () => {
     const productId = 'portal';
   
     service.getProductChangelogs(productId).subscribe(response => {
