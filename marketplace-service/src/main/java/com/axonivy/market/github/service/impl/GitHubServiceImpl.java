@@ -21,6 +21,7 @@ import com.axonivy.market.github.util.GitHubUtils;
 import com.axonivy.market.model.GitHubReleaseModel;
 import com.axonivy.market.repository.UserRepository;
 import lombok.extern.log4j.Log4j2;
+import org.apache.commons.lang3.ObjectUtils;
 import org.kohsuke.github.*;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.data.domain.Page;
@@ -357,7 +358,7 @@ public class GitHubServiceImpl implements GitHubService {
       Pageable pageable) throws IOException {
     List<GitHubReleaseModel> gitHubReleaseModels = new ArrayList<>();
     List<GHRelease> ghReleases = ghReleasePagedIterable.toList().stream().filter(ghRelease -> !ghRelease.isDraft()).toList();
-    if (!ghReleases.isEmpty()) {
+    if (ObjectUtils.isNotEmpty(ghReleases)) {
       String latestGitHubReleaseName = this.getGitHubLatestReleaseByProductId(product.getRepositoryName()).getName();
       for (GHRelease ghRelease : ghReleases) {
         gitHubReleaseModels.add(this.toGitHubReleaseModel(ghRelease, product, latestGitHubReleaseName));
