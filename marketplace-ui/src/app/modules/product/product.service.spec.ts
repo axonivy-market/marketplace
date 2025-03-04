@@ -15,7 +15,6 @@ import { VersionData } from '../../shared/models/vesion-artifact.model';
 import { ProductService } from './product.service';
 import { DEFAULT_PAGEABLE, DEFAULT_PAGEABLE_IN_REST_CLIENT } from '../../shared/constants/common.constant';
 import { API_URI } from '../../shared/constants/api.constant';
-import { ProductRelease } from '../../shared/models/apis/product-release.model';
 import { ProductReleasesApiResponse } from '../../shared/models/apis/product-releases-response.model';
 
 describe('ProductService', () => {
