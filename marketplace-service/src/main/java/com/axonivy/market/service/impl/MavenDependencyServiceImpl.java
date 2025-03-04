@@ -83,7 +83,7 @@ public class MavenDependencyServiceImpl implements MavenDependencyService {
 
       ProductDependency productDependency = ProductDependency.builder()
           .productId(productId)
-          .dependenciesOfArtifactTest(dependenciesOfArtifact)
+          .dependenciesOfArtifact(dependenciesOfArtifact)
           .build();
 
       productDependencyRepository.save(productDependency);

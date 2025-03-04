@@ -151,11 +151,11 @@ public class VersionServiceImpl implements VersionService {
     return downloadUrl;
   }
 
-  private String getDownloadUrlFromExistingDataByArtifactIdAndVersion(List<MavenArtifactModel> existingData,
+  public String getDownloadUrlFromExistingDataByArtifactIdAndVersion(List<MavenArtifactModel> existingData,
       String version, List<String> artifactsIds) {
     return existingData.stream()
         .filter(
-            artifact -> artifact.getProductVersion().equals(version) && artifactsIds.contains(artifact.getArtifactId())
+            artifact -> version.equals(artifact.getProductVersion()) && artifactsIds.contains(artifact.getArtifactId())
         )
         .findAny()
         .map(MavenArtifactModel::getDownloadUrl)

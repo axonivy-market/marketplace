@@ -105,7 +105,7 @@ class ProductContentServiceImplTest extends BaseSetup {
 
     ProductDependency productDependency = ProductDependency.builder()
         .productId(MOCK_PRODUCT_ID)
-        .dependenciesOfArtifactTest(mavenDependencies)
+        .dependenciesOfArtifact(mavenDependencies)
         .build();
 
     when(productDependencyRepository.findById(MOCK_PRODUCT_ID)).thenReturn(Optional.ofNullable(productDependency));
