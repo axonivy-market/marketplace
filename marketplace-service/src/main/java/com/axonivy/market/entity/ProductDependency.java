@@ -31,7 +31,7 @@ import static com.axonivy.market.constants.EntityConstants.PRODUCT_DEPENDENCY;
 public class ProductDependency {
   @Id
   private String productId;
-//  private Map<String, List<MavenDependency>> dependenciesOfArtifact;
+
   @CreatedDate
   private Date createdAt;
   @LastModifiedDate
@@ -39,5 +39,5 @@ public class ProductDependency {
 
   @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
   @JoinColumn(name = "product_id_fk")
-  private List<MavenDependency> dependenciesOfArtifactTest;
+  private List<MavenDependency> dependenciesOfArtifact;
 }
