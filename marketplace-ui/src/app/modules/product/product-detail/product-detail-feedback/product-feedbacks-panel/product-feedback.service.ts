@@ -200,43 +200,39 @@ export class ProductFeedbackService {
             this.feedbacks.set([...this.feedbacks(), ...approvedFeedbacks]);
           }
         }),
-        tap(() => {
-          this.findProductFeedbackOfUser().subscribe(userFeedbacks => {
-            if (userFeedbacks?.length) {
-              const feedback = userFeedbacks[0];
-
-              if (feedback.userId === this.authService.getUserId()) {
-                const pendingFeedbacks = userFeedbacks.filter(
-                  f => f.feedbackStatus === FeedbackStatus.PENDING
-                );
-                const approvedExists = this.feedbacks().some(
-                  f =>
-                    f.userId === feedback.userId &&
-                    (f.feedbackStatus === FeedbackStatus.APPROVED ||
-                      !f.feedbackStatus)
-                );
-
-                if (pendingFeedbacks.length) {
-                  if (approvedExists && userFeedbacks.length === 2) {
-                    this.feedbacks.set([
-                      pendingFeedbacks[0],
-                      ...this.feedbacks().filter(
-                        f => f.userId !== feedback.userId
-                      )
-                    ]);
-                  } else {
-                    this.feedbacks.set([
-                      ...pendingFeedbacks,
-                      ...this.feedbacks()
-                    ]);
-                  }
-                }
-              }
-            }
-          });
-        })
+        tap(() => this.processUserFeedbacks())
       );
   }
+
+  private processUserFeedbacks(): void {
+    this.findProductFeedbackOfUser().subscribe(userFeedbacks => {
+      if (!userFeedbacks?.length) return;
+  
+      const feedback = userFeedbacks[0];
+      if (feedback.userId !== this.authService.getUserId()) return;
+  
+      const pendingFeedbacks = userFeedbacks.filter(f => f.feedbackStatus === FeedbackStatus.PENDING);
+      if (!pendingFeedbacks.length) return;
+  
+      const hasApprovedFeedback = this.feedbacks().some(
+        f => f.userId === feedback.userId && (f.feedbackStatus === FeedbackStatus.APPROVED || !f.feedbackStatus)
+      );
+  
+      this.updateFeedbacks(pendingFeedbacks, hasApprovedFeedback, feedback.userId, userFeedbacks.length);
+    });
+  }
+  
+  private updateFeedbacks(pendingFeedbacks: Feedback[], hasApprovedFeedback: boolean, userId: string, userFeedbackCount: number): void {
+    if (hasApprovedFeedback && userFeedbackCount === 2) {
+      this.feedbacks.set([
+        pendingFeedbacks[0],
+        ...this.feedbacks().filter(f => f.userId !== userId)
+      ]);
+    } else {
+      this.feedbacks.set([...pendingFeedbacks, ...this.feedbacks()]);
+    }
+  }
+  
 
   findProductFeedbackOfUser(
     productId: string = this.productDetailService.productId()
