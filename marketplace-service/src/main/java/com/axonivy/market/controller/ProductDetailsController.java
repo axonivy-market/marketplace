@@ -2,7 +2,6 @@ package com.axonivy.market.controller;
 
 import com.axonivy.market.assembler.GithubReleaseModelAssembler;
 import com.axonivy.market.assembler.ProductDetailModelAssembler;
-import com.axonivy.market.constants.RequestMappingConstants;
 import com.axonivy.market.entity.Product;
 import com.axonivy.market.model.GitHubReleaseModel;
 import com.axonivy.market.model.MavenArtifactVersionModel;
@@ -232,7 +231,7 @@ public class ProductDetailsController {
 
   private void addModelLinks(ProductDetailModel model, Product product, String version, String path){
     String productId = Optional.of(product).map(Product::getId).orElse(StringUtils.EMPTY);
-    if (path.equals(RequestMappingConstants.BEST_MATCH_BY_ID_AND_VERSION)) {
+    if (path.equals(BEST_MATCH_BY_ID_AND_VERSION)) {
       Link link = linkTo(
               methodOn(ProductDetailsController.class).findProductJsonContent(productId,
                       product.getBestMatchVersion())).withSelfRel();
@@ -244,9 +243,9 @@ public class ProductDetailsController {
   public Link getSelfLinkForProduct(String productId, String version, String path){
     ResponseEntity<ProductDetailModel> selfLinkWithVersion;
     selfLinkWithVersion = switch (path) {
-      case RequestMappingConstants.BEST_MATCH_BY_ID_AND_VERSION ->
+      case BEST_MATCH_BY_ID_AND_VERSION ->
               methodOn(ProductDetailsController.class).findBestMatchProductDetailsByVersion(productId, version);
-      case RequestMappingConstants.BY_ID_AND_VERSION ->
+      case BY_ID_AND_VERSION ->
               methodOn(ProductDetailsController.class).findProductDetailsByVersion(productId, version);
       default -> methodOn(ProductDetailsController.class).findProductDetails(productId, false);
     };

@@ -23,6 +23,7 @@ import java.util.stream.Stream;
 
 import static com.axonivy.market.constants.CommonConstants.DOT_SEPARATOR;
 import static com.axonivy.market.constants.MavenConstants.*;
+
 @Log4j2
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class VersionUtils {
@@ -155,14 +156,14 @@ public class VersionUtils {
   }
 
   public static List<String> getAllExistingVersions(MavenArtifactVersion existingMavenArtifactVersion,
-                                                    boolean isShowDevVersion, String designerVersion) {
+      boolean isShowDevVersion, String designerVersion) {
     Set<String> existingProductsArtifactByVersion =
         new HashSet<>(existingMavenArtifactVersion.getProductArtifactsByVersion().keySet());
     Set<String> existingAdditionalArtifactByVersion =
         existingMavenArtifactVersion.getProductArtifactsByVersion().keySet();
     existingProductsArtifactByVersion.addAll(existingAdditionalArtifactByVersion);
     return VersionUtils.getVersionsToDisplay(new ArrayList<>(existingProductsArtifactByVersion), isShowDevVersion,
-            designerVersion);
+        designerVersion);
   }
 
 }
