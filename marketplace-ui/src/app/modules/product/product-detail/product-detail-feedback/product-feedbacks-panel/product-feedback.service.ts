@@ -78,33 +78,18 @@ export class ProductFeedbackService {
       .pipe(
         tap(response => {
           const feedbacks = response._embedded?.feedbacks || [];
-
           const sortedFeedbacks = this.sortByDate(feedbacks, 'reviewDate');
 
-          const nonPendingFeedbacks = sortedFeedbacks.filter(
-            f => f?.feedbackStatus !== FeedbackStatus.PENDING
-          );
-          const pendingFeedbacks = sortedFeedbacks.filter(
-            f => f?.feedbackStatus === FeedbackStatus.PENDING
-          );
-
+          const nonPendingFeedbacks = sortedFeedbacks.filter(f => f?.feedbackStatus !== FeedbackStatus.PENDING);
+          const pendingFeedbacks = sortedFeedbacks.filter(f => f?.feedbackStatus === FeedbackStatus.PENDING);
           if (page === 0) {
             this.allFeedbacks.set(nonPendingFeedbacks);
             this.pendingFeedbacks.set(pendingFeedbacks);
           } else {
-            this.allFeedbacks.set([
-              ...this.allFeedbacks(),
-              ...nonPendingFeedbacks
-            ]);
-            this.pendingFeedbacks.set([
-              ...this.pendingFeedbacks(),
-              ...pendingFeedbacks
-            ]);
+            this.allFeedbacks.set([...this.allFeedbacks(), ...nonPendingFeedbacks]);
+            this.pendingFeedbacks.set([...this.pendingFeedbacks(), ...pendingFeedbacks]);
           }
-
-          this.pendingFeedbacks.set(
-            this.sortByDate(this.pendingFeedbacks(), 'updatedAt')
-          );
+          this.pendingFeedbacks.set(this.sortByDate(this.pendingFeedbacks(), 'updatedAt'));
         }),
         catchError(response => {
           if (
@@ -135,15 +120,10 @@ export class ProductFeedbackService {
           }
           return feedback;
         });
-
-        this.allFeedbacks.set(
-          this.sortByDate(updatedAllFeedbacks, 'updatedAt')
-        );
-
+        this.allFeedbacks.set(this.sortByDate(updatedAllFeedbacks, 'updatedAt'));
         const filteredPendingFeedbacks = updatedAllFeedbacks.filter(
           feedback => feedback.feedbackStatus === FeedbackStatus.PENDING
         );
-
         this.pendingFeedbacks.set([...filteredPendingFeedbacks]);
       })
     );
@@ -194,8 +174,7 @@ export class ProductFeedbackService {
           const approvedFeedbacks = (
             response._embedded?.feedbacks || []
           ).filter(
-            f =>
-              f.feedbackStatus === FeedbackStatus.APPROVED || !f.feedbackStatus
+            f => f.feedbackStatus === FeedbackStatus.APPROVED || !f.feedbackStatus
           );
           if (page === 0) {
             this.feedbacks.set(approvedFeedbacks);
@@ -236,10 +215,7 @@ export class ProductFeedbackService {
   }
 
   private updateFeedbacks(pendingFeedbacks: Feedback[], userId: string): void {
-    this.feedbacks.set([
-      pendingFeedbacks[0],
-      ...this.feedbacks().filter(f => f.userId !== userId)
-    ]);
+    this.feedbacks.set([pendingFeedbacks[0], ...this.feedbacks().filter(f => f.userId !== userId)]);
   }
 
   findProductFeedbackOfUser(
@@ -256,11 +232,8 @@ export class ProductFeedbackService {
       })
       .pipe(
         tap(feedbacks => {
-          const prioritizedUserFeedback =
-            feedbacks.find(f => f.feedbackStatus === FeedbackStatus.PENDING) ||
-            feedbacks.find(f => f.feedbackStatus === FeedbackStatus.APPROVED) ||
-            feedbacks.find(f => !f.feedbackStatus) ||
-            null;
+          const prioritizedStatuses = [FeedbackStatus.PENDING, FeedbackStatus.APPROVED, null];
+          const prioritizedUserFeedback = feedbacks.find(f => prioritizedStatuses.includes(f.feedbackStatus)) || null;
           this.userFeedback.set(prioritizedUserFeedback);
         }),
         catchError(response => {

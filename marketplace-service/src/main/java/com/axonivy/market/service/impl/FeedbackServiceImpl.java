@@ -14,6 +14,7 @@ import com.axonivy.market.repository.ProductRepository;
 import com.axonivy.market.repository.UserRepository;
 import com.axonivy.market.service.FeedbackService;
 import org.apache.commons.lang3.BooleanUtils;
+import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -35,6 +36,7 @@ public class FeedbackServiceImpl implements FeedbackService {
   private final FeedbackRepository feedbackRepository;
   private final UserRepository userRepository;
   private final ProductRepository productRepository;
+  private static final String ERROR_MESSAGE_FORMAT = "Not found feedback with id %s and version %s";
 
   public FeedbackServiceImpl(FeedbackRepository feedbackRepository, UserRepository userRepository,
       ProductRepository productRepository) {
@@ -96,7 +98,7 @@ public class FeedbackServiceImpl implements FeedbackService {
           existingFeedback.setReviewDate(new Date());
           return feedbackRepository.save(existingFeedback);
         }).orElseThrow(() -> new NotFoundException(ErrorCode.FEEDBACK_NOT_FOUND,
-        "Not found feedback with id: " + feedbackApproval.getFeedbackId()));
+        String.format(ERROR_MESSAGE_FORMAT, feedbackApproval.getFeedbackId(), feedbackApproval.getVersion())));
   }
 
   private boolean isFeedbackEligibleForDeletion(Feedback feedback, String updatingFeedbackId, boolean isApproved) {
@@ -114,8 +116,8 @@ public class FeedbackServiceImpl implements FeedbackService {
     List<Feedback> feedbacks = feedbackRepository.findByProductIdAndUserIdAndFeedbackStatusNotIn(
         feedback.getProductId(), userId, List.of(FeedbackStatus.REJECTED));
 
-    Feedback approvedFeedback = findApprovedFeedback(feedbacks);
-    Feedback pendingFeedback = findPendingFeedback(feedbacks);
+    Feedback approvedFeedback = findFeedbackByStatus(feedbacks, FeedbackStatus.APPROVED);
+    Feedback pendingFeedback = findFeedbackByStatus(feedbacks, FeedbackStatus.PENDING);
 
     if (approvedFeedback != null && isMatchingWithExistingFeedback(approvedFeedback, feedback)) {
       if (pendingFeedback != null) {
@@ -127,17 +129,14 @@ public class FeedbackServiceImpl implements FeedbackService {
     return saveOrUpdateFeedback(pendingFeedback, feedback, userId);
   }
 
-  private Feedback findPendingFeedback(List<Feedback> feedbacks) {
+  private Feedback findFeedbackByStatus(List<Feedback> feedbacks, FeedbackStatus feedbackStatus) {
     return feedbacks.stream()
-        .filter(feedback -> feedback.getFeedbackStatus() == FeedbackStatus.PENDING)
-        .findFirst()
-        .orElse(null);
-  }
-
-  private Feedback findApprovedFeedback(List<Feedback> feedbacks) {
-    return feedbacks.stream()
-        .filter(
-            feedback -> feedback.getFeedbackStatus() == FeedbackStatus.APPROVED || feedback.getFeedbackStatus() == null)
+        .filter(feedback -> {
+          if (FeedbackStatus.APPROVED == feedbackStatus) {
+            return feedbackStatus == feedback.getFeedbackStatus() || feedback.getFeedbackStatus() == null;
+          }
+          return feedbackStatus == feedback.getFeedbackStatus();
+        })
         .findFirst()
         .orElse(null);
   }

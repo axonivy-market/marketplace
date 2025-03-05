@@ -44,7 +44,6 @@ export class FeedbackApprovalComponent {
   token = '';
   errorMessage = '';
   isAuthenticated = false;
-  detailTabs = FEEDBACK_APPROVAL_TABS;
   activeTab = 'review';
   moderatorName!: string | null;
 
@@ -68,9 +67,7 @@ export class FeedbackApprovalComponent {
   fetchUserInfo(): void {
     this.authService.getUserInfo(this.token).subscribe({
       next: () => {
-        this.authService.getDisplayNameFromAccessToken(this.token).subscribe(name =>
-          this.moderatorName = name
-        );
+        this.authService.getDisplayNameFromAccessToken(this.token).subscribe(name => this.moderatorName = name);
       },
       error: err => {
         this.handleError(err);
@@ -79,12 +76,6 @@ export class FeedbackApprovalComponent {
   }
 
   onSubmit(): void {
-    if (!this.token) {
-      this.errorMessage = ERROR_MESSAGES.TOKEN_REQUIRED;
-      this.isAuthenticated = false;
-      return;
-    }
-
     this.errorMessage = '';
     this.fetchFeedbacks();
   }
@@ -114,7 +105,7 @@ export class FeedbackApprovalComponent {
   }
 
   onClickReviewButton(feedback: Feedback, isApproved: boolean): void {
-    if (this.moderatorName && feedback.id && feedback.version === 0) {
+    if (this.moderatorName && feedback.id && (feedback.version === 0 || feedback.version)) {
       this.productFeedbackService
         .updateFeedbackStatus(feedback.id, isApproved, this.moderatorName, feedback.version)
         .subscribe(() => this.fetchFeedbacks());
