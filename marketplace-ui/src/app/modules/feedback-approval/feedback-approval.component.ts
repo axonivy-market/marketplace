@@ -71,7 +71,7 @@ export class FeedbackApprovalComponent {
       next: () => {
         this.displayName = this.authService.getDisplayNameFromAccessToken(this.token);
       },
-      error: (err) => {
+      error: err => {
         this.handleError(err);
       }
     });

@@ -111,7 +111,7 @@ export class ProductFeedbackService {
             response.status === NOT_FOUND_ERROR_CODE &&
             response.error.helpCode === USER_NOT_FOUND_ERROR_CODE.toString()
           ) {
-            this.clearTokenCookie();
+            sessionStorage.removeItem(FEEDBACK_APPROVAL_SESSION_TOKEN);
           }
           return throwError(() => response);
         })
@@ -129,9 +129,12 @@ export class ProductFeedbackService {
 
     return this.http.put<Feedback>(requestURL, requestBody).pipe(
       tap(updatedFeedback => {
-        const updatedAllFeedbacks = this.allFeedbacks().map(feedback =>
-          feedback.id === updatedFeedback.id ? updatedFeedback : feedback
-        );
+        const updatedAllFeedbacks = this.allFeedbacks().map(feedback => {
+          if (feedback.id === updatedFeedback.id) {
+            return updatedFeedback;
+          }
+          return feedback;
+        });
 
         this.allFeedbacks.set(
           this.sortByDate(updatedAllFeedbacks, 'updatedAt')
@@ -316,13 +319,20 @@ export class ProductFeedbackService {
       const dateA = a[dateKey];
       const dateB = b[dateKey];
 
-      const timeA = dateA instanceof Date
-        ? dateA.getTime()
-        : new Date(dateA as string | number | undefined ?? 0).getTime();
-      const timeB = dateB instanceof Date
-        ? dateB.getTime()
-        : new Date(dateB as string | number | undefined ?? 0).getTime();
+      let timeA: number;
+      let timeB: number;
 
+      if (dateA instanceof Date) {
+        timeA = dateA.getTime()
+      } else {
+        timeA = new Date(dateA as string | number | undefined ?? 0).getTime();
+      }
+
+      if (dateB instanceof Date) {
+        timeB = dateB.getTime()
+      } else {
+        timeB = new Date(dateA as string | number | undefined ?? 0).getTime();
+      }
       return timeB - timeA;
     });
   }
