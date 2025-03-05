@@ -969,6 +969,7 @@ describe('ProductDetailComponent', () => {
         body: 'Initial release',
         publishedAt: '2023-01-01',
         htmlUrl: 'https://github.com/axonivy-market/portal/releases/tag/1.0.0',
+        latestRelease: true
       },
     ];
     const expectedSafeHtml = '<p>Initial release</p>';

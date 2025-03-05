@@ -5,4 +5,5 @@ export interface ProductReleaseSafeHtml {
     body: SafeHtml;
     publishedAt: string;
     htmlUrl: string;
+    latestRelease: boolean;
 }

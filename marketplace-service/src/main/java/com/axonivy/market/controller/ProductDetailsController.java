@@ -4,7 +4,7 @@ import com.axonivy.market.assembler.GithubReleaseModelAssembler;
 import com.axonivy.market.assembler.ProductDetailModelAssembler;
 import com.axonivy.market.constants.RequestMappingConstants;
 import com.axonivy.market.entity.Product;
-import com.axonivy.market.model.GithubReleaseModel;
+import com.axonivy.market.model.GitHubReleaseModel;
 import com.axonivy.market.model.MavenArtifactVersionModel;
 import com.axonivy.market.model.ProductDetailModel;
 import com.axonivy.market.model.VersionAndUrlModel;
@@ -60,7 +60,7 @@ public class ProductDetailsController {
   private final ProductContentService productContentService;
   private final ProductDetailModelAssembler detailModelAssembler;
   private final GithubReleaseModelAssembler githubReleaseModelAssembler;
-  private final PagedResourcesAssembler<GithubReleaseModel> pagedResourcesAssembler;
+  private final PagedResourcesAssembler<GitHubReleaseModel> pagedResourcesAssembler;
 
   @GetMapping(BY_ID_AND_VERSION)
   @Operation(summary = "Find product detail by product id and release version.",
@@ -162,11 +162,11 @@ public class ProductDetailsController {
           required = true),
       @Parameter(name = "size", description = "Number of items per page", in = ParameterIn.QUERY, example = "20",
           required = true)})
-  public ResponseEntity<PagedModel<GithubReleaseModel>> findGithubPublicReleases(
+  public ResponseEntity<PagedModel<GitHubReleaseModel>> findGithubPublicReleases(
       @PathVariable(ID) @Parameter(description = "Product id", example = "portal",
           in = ParameterIn.PATH) String productId,
       @ParameterObject Pageable pageable) throws IOException {
-    Page<GithubReleaseModel> results = productService.getGitHubReleaseModels(productId, pageable);
+    Page<GitHubReleaseModel> results = productService.getGitHubReleaseModels(productId, pageable);
 
     if (results.isEmpty()) {
       return generateReleasesEmptyPagedModel();
@@ -181,26 +181,26 @@ public class ProductDetailsController {
     Pageable pageable = PageRequest.of(0, 20, Sort.unsorted());
     List<String> productIdList = this.productService.getProductIdList();
     for (String productId : productIdList) {
-      this.productService.getGitHubReleaseModels(productId, pageable);
+      this.productService.syncGitHubReleaseModels(productId, pageable);
     }
   }
 
   @GetMapping(PRODUCT_PUBLIC_RELEASE_BY_RELEASE_ID)
   @Operation(summary = "Find release by product id and release id",
       description = "Get release by product id and release id")
-  public ResponseEntity<GithubReleaseModel> findGithubPublicReleaseByProductIdAndReleaseId(
+  public ResponseEntity<GitHubReleaseModel> findGithubPublicReleaseByProductIdAndReleaseId(
       @PathVariable(PRODUCT_ID) @Parameter(description = "Product id", example = "portal",
           in = ParameterIn.PATH) String productId,
       @PathVariable(RELEASE_ID) @Parameter(description = "Release id", example = "67a08dd6e23661019dc92376",
           in = ParameterIn.PATH) Long releaseId) throws IOException {
-    GithubReleaseModel githubReleaseModel = productService.getGitHubReleaseModelByProductIdAndReleaseId(productId, releaseId);
+    GitHubReleaseModel githubReleaseModel = productService.getGitHubReleaseModelByProductIdAndReleaseId(productId, releaseId);
     return ResponseEntity.ok(githubReleaseModelAssembler.toModel(githubReleaseModel));
   }
 
   @SuppressWarnings("unchecked")
-  private ResponseEntity<PagedModel<GithubReleaseModel>> generateReleasesEmptyPagedModel() {
-    var emptyPagedModel = (PagedModel<GithubReleaseModel>) pagedResourcesAssembler.toEmptyModel(Page.empty(),
-        GithubReleaseModel.class);
+  private ResponseEntity<PagedModel<GitHubReleaseModel>> generateReleasesEmptyPagedModel() {
+    var emptyPagedModel = (PagedModel<GitHubReleaseModel>) pagedResourcesAssembler.toEmptyModel(Page.empty(),
+        GitHubReleaseModel.class);
     return new ResponseEntity<>(emptyPagedModel, HttpStatus.OK);
   }
 

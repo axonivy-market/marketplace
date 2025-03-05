@@ -15,6 +15,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static org.mockito.Mockito.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 @ExtendWith(MockitoExtension.class)
 class SystemTasksTest {
@@ -32,6 +33,9 @@ class SystemTasksTest {
 
   @Mock
   ProductDetailsController productDetailsController;
+
+  @Mock
+  MavenDependencyService mavenDependencyService;
 
   @InjectMocks
   ScheduledTasks tasks;
@@ -52,8 +56,22 @@ class SystemTasksTest {
   }
 
   @Test
+  void testSyncDataForProductMavenDependencies() {
+    tasks.syncDataForProductMavenDependencies();
+    verify(mavenDependencyService, times(1)).syncIARDependenciesForProducts(false);
+  }
+
+  @Test
   void testSyncDataForProductReleases() throws IOException {
     tasks.syncDataForProductReleases();
     verify(productDetailsController, atLeast(1)).syncLatestReleasesForProducts();
+  }
+
+  @Test
+  void testFailedToSyncDataForProductReleasesWith() throws IOException {
+    doThrow(new IOException()).when(productDetailsController).syncLatestReleasesForProducts();
+    tasks.syncDataForProductReleases();
+
+    assertThrows(IOException.class, () -> productDetailsController.syncLatestReleasesForProducts());
   }
 }

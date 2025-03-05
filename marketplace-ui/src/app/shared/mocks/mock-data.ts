@@ -399,12 +399,13 @@ export const MOCK_FEEDBACKS: Feedback[] = [
 
 export const MOCK_PRODUCT_RELEASES: ProductReleasesApiResponse = {
   _embedded: {
-    githubReleaseModelList: [
+    gitHubReleaseModelList: [
       {
         "name": "12.0.3",
         "body": "## Changes\r\n\r\n## 🚀 Features\r\n\r\n- [IVYPORTAL-18158](https://1ivy.atlassian.net/browse/IVYPORTAL-18158) Implement File Preview to Portal Components https://github.com/nhthinh-axonivy (https://github.com/axonivy-market/portal/pull/1443)\r\n",
         "publishedAt": "2025-01-20T10:19:19.000+00:00",
-        "htmlUrl": "https://github.com/axonivy-market/portal/releases/tag/12.0.3"
+        "htmlUrl": "https://github.com/axonivy-market/portal/releases/tag/12.0.3",
+        "latestRelease" : true
       }
     ]
   },
