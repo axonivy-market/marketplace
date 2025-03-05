@@ -80,8 +80,8 @@ export class ProductFeedbackService {
           const feedbacks = response._embedded?.feedbacks || [];
           const sortedFeedbacks = this.sortByDate(feedbacks, 'reviewDate');
 
-          const nonPendingFeedbacks = sortedFeedbacks.filter(f => f?.feedbackStatus !== FeedbackStatus.PENDING);
-          const pendingFeedbacks = sortedFeedbacks.filter(f => f?.feedbackStatus === FeedbackStatus.PENDING);
+          const nonPendingFeedbacks = sortedFeedbacks.filter(f => f?.feedbackStatus && f.feedbackStatus !== FeedbackStatus.PENDING);
+          const pendingFeedbacks = sortedFeedbacks.filter(f => f.feedbackStatus === FeedbackStatus.PENDING);
           if (page === 0) {
             this.allFeedbacks.set(nonPendingFeedbacks);
             this.pendingFeedbacks.set(pendingFeedbacks);
