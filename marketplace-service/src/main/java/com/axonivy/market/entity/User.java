@@ -9,7 +9,6 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
-import org.springframework.data.mongodb.core.index.Indexed;
 
 import java.io.Serial;
 import java.io.Serializable;
@@ -28,10 +27,7 @@ public class User implements Serializable {
 
   @Id
   private String id;
-
-  @Indexed(unique = true)
   private String gitHubId;
-
   private String provider;
   private String username;
   private String name;

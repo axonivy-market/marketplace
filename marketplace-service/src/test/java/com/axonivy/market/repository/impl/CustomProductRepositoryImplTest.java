@@ -16,16 +16,11 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.data.mongodb.core.MongoTemplate;
-import org.springframework.data.mongodb.core.aggregation.Aggregation;
-import org.springframework.data.mongodb.core.aggregation.AggregationResults;
 
 import java.util.List;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.*;
 
@@ -34,9 +29,6 @@ class CustomProductRepositoryImplTest extends BaseSetup {
   @Mock
   ProductModuleContentRepository contentRepo;
   private Product mockProduct;
-  private Aggregation mockAggregation;
-  @Mock
-  private MongoTemplate mongoTemplate;
   @Mock
   private MetadataRepository metadataRepo;
   @Mock
@@ -47,27 +39,9 @@ class CustomProductRepositoryImplTest extends BaseSetup {
   @Mock
   private EntityManager em;
 
-  private void setUpMockAggregateResult() {
-    mockAggregation = mock(Aggregation.class);
-    AggregationResults<Product> aggregationResults = mock(AggregationResults.class);
-
-    when(mongoTemplate.aggregate(any(Aggregation.class), eq(MongoDBConstants.PRODUCT_COLLECTION),
-        eq(Product.class))).thenReturn(aggregationResults);
-    mockProduct = new Product();
-    mockProduct.setId(MOCK_PRODUCT_ID);
-    when(aggregationResults.getUniqueMappedResult()).thenReturn(mockProduct);
-  }
-
-
 
   @Test
   void testGetProductByIdAndVersion() {
-//    setUpMockAggregateResult();
-//    Product actualProduct = repo.getProductByIdAndVersion(MOCK_PRODUCT_ID, MOCK_RELEASED_VERSION);
-//    assertEquals(mockProduct, actualProduct);
-
-//    setUpMockAggregateResult();
-
     when(contentRepo.findByVersionAndProductId(anyString(),anyString())).thenReturn(getMockProductModuleContent());
     List<String> expectedVersions = List.of("1.0", "1.1");
     mockProduct = new Product();

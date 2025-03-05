@@ -13,7 +13,6 @@ import jakarta.transaction.Transactional;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import org.apache.commons.lang3.ObjectUtils;
-import org.springframework.data.mongodb.core.MongoTemplate;
 
 import java.util.List;
 
@@ -29,7 +28,6 @@ public class CustomProductMarketplaceDataRepositoryImpl implements CustomProduct
       "and" +
       " designer_version = :designerVersion";
 
-  final MongoTemplate mongoTemplate;
   EntityManager em;
 
   @Override

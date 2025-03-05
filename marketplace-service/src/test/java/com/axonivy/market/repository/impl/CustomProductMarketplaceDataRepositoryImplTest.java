@@ -17,16 +17,12 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.data.mongodb.core.MongoTemplate;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class CustomProductMarketplaceDataRepositoryImplTest extends BaseSetup {
-  @Mock
-  private MongoTemplate mongoTemplate;
-
   @Mock
   private EntityManager em;
 
