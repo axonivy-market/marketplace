@@ -1,22 +1,18 @@
 package com.axonivy.market.assembler;
 
-import com.axonivy.market.controller.ProductDetailsController;
-import com.axonivy.market.model.GithubReleaseModel;
+import com.axonivy.market.model.GitHubReleaseModel;
 import lombok.extern.log4j.Log4j2;
-import org.springframework.hateoas.server.mvc.RepresentationModelAssemblerSupport;
+import org.springframework.hateoas.server.RepresentationModelAssembler;
 
 import org.springframework.stereotype.Component;
 
 @Log4j2
 @Component
-public class GithubReleaseModelAssembler extends RepresentationModelAssemblerSupport<GithubReleaseModel, GithubReleaseModel> {
-
-  public GithubReleaseModelAssembler() {
-    super(ProductDetailsController.class, GithubReleaseModel.class);
-  }
+public class GithubReleaseModelAssembler implements RepresentationModelAssembler<GitHubReleaseModel,
+    GitHubReleaseModel> {
 
   @Override
-  public GithubReleaseModel toModel(GithubReleaseModel githubReleaseModel) {
+  public GitHubReleaseModel toModel(GitHubReleaseModel githubReleaseModel) {
     return githubReleaseModel;
   }
 }

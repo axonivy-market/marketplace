@@ -9,7 +9,6 @@ import com.axonivy.market.constants.ProductJsonConstants;
 import com.axonivy.market.entity.MavenArtifactVersion;
 import com.axonivy.market.entity.Metadata;
 import com.axonivy.market.entity.ProductJsonContent;
-import com.axonivy.market.github.util.GitHubUtils;
 import com.axonivy.market.model.MavenArtifactModel;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -33,6 +32,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
+import java.util.Arrays;
 import java.util.stream.Collectors;
 
 import static com.axonivy.market.constants.MavenConstants.DEFAULT_IVY_MAVEN_BASE_URL;
@@ -193,7 +193,7 @@ public class MavenUtils {
   public static MavenArtifactModel convertMavenArtifactToModel(Artifact artifact, String version) {
     String artifactName = artifact.getName();
     if (StringUtils.isBlank(artifactName)) {
-      artifactName = GitHubUtils.convertArtifactIdToName(artifact.getArtifactId());
+      artifactName = convertArtifactIdToName(artifact.getArtifactId());
     }
     artifact.setType(StringUtils.defaultIfBlank(artifact.getType(), ProductJsonConstants.DEFAULT_PRODUCT_TYPE));
     artifactName = String.format(MavenConstants.ARTIFACT_NAME_FORMAT, artifactName, artifact.getType());
@@ -242,7 +242,7 @@ public class MavenUtils {
   public static Metadata convertArtifactToMetadata(String productId, Artifact artifact, String metadataUrl,
       ArchivedArtifact archivedArtifact) {
     String artifactName = StringUtils.defaultIfBlank(artifact.getName(),
-        GitHubUtils.convertArtifactIdToName(artifact.getArtifactId()));
+        convertArtifactIdToName(artifact.getArtifactId()));
     String artifactId = Objects.isNull(archivedArtifact) ? artifact.getArtifactId() : archivedArtifact.getArtifactId();
     String groupId = Objects.isNull(archivedArtifact) ? artifact.getGroupId() : archivedArtifact.getGroupId();
     String type = StringUtils.defaultIfBlank(artifact.getType(), ProductJsonConstants.DEFAULT_PRODUCT_TYPE);
@@ -252,6 +252,15 @@ public class MavenUtils {
     return Metadata.builder().groupId(groupId).versions(new HashSet<>()).productId(productId).artifactId(
         artifactId).url(metadataUrl).repoUrl(repoUrl).type(type).name(artifactName).isProductArtifact(
         BooleanUtils.isTrue(artifact.getIsProductArtifact())).build();
+  }
+
+  public static String convertArtifactIdToName(String artifactId) {
+    if (StringUtils.isBlank(artifactId)) {
+      return StringUtils.EMPTY;
+    }
+    return Arrays.stream(artifactId.split(CommonConstants.DASH_SEPARATOR))
+            .map(part -> part.substring(0, 1).toUpperCase() + part.substring(1).toLowerCase())
+            .collect(Collectors.joining(CommonConstants.SPACE_SEPARATOR));
   }
 
   public static Metadata buildSnapShotMetadataFromVersion(Metadata metadata, String version) {

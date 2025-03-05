@@ -245,4 +245,19 @@ class MavenUtilsTest extends BaseSetup {
       throw new RuntimeException(e);
     }
   }
+
+  @Test
+  void testConvertArtifactIdToName() {
+    String result = MavenUtils.convertArtifactIdToName(MOCK_ARTIFACT_ID);
+    Assertions.assertEquals("Bpmn Statistic", result);
+
+    result = MavenUtils.convertArtifactIdToName(null);
+    Assertions.assertEquals(StringUtils.EMPTY, result);
+
+    result = MavenUtils.convertArtifactIdToName(StringUtils.EMPTY);
+    Assertions.assertEquals(StringUtils.EMPTY, result);
+
+    result = MavenUtils.convertArtifactIdToName(" ");
+    Assertions.assertEquals(StringUtils.EMPTY, result);
+  }
 }

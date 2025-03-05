@@ -7,14 +7,13 @@ import com.axonivy.market.entity.MavenArtifactVersion;
 import com.axonivy.market.entity.Metadata;
 import com.axonivy.market.entity.ProductJsonContent;
 import com.axonivy.market.enums.DevelopmentVersion;
-import com.axonivy.market.github.service.GHAxonIvyProductRepoService;
 import com.axonivy.market.model.MavenArtifactModel;
 import com.axonivy.market.model.VersionAndUrlModel;
 import com.axonivy.market.repository.MavenArtifactVersionRepository;
 import com.axonivy.market.repository.MetadataRepository;
 import com.axonivy.market.repository.ProductJsonContentRepository;
-import com.axonivy.market.repository.ProductRepository;
 import com.axonivy.market.util.MavenUtils;
+import com.axonivy.market.util.VersionUtils;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.junit.jupiter.api.Assertions;
@@ -45,13 +44,7 @@ class VersionServiceImplTest extends BaseSetup {
   private VersionServiceImpl versionService;
 
   @Mock
-  private GHAxonIvyProductRepoService gitHubService;
-
-  @Mock
   private MavenArtifactVersionRepository mavenArtifactVersionRepo;
-
-  @Mock
-  private ProductRepository productRepository;
 
   @Mock
   private ProductJsonContentRepository productJsonContentRepository;

@@ -1,6 +1,6 @@
 package com.axonivy.market.assembler;
 
-import com.axonivy.market.model.GithubReleaseModel;
+import com.axonivy.market.model.GitHubReleaseModel;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -11,7 +11,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import java.util.Date;
 
 @ExtendWith(MockitoExtension.class)
-class GithubReleaseModelAssemblerTest {
+class GitHubReleaseModelAssemblerTest {
   @InjectMocks
   private GithubReleaseModelAssembler githubReleaseModelAssembler;
 
@@ -22,11 +22,11 @@ class GithubReleaseModelAssemblerTest {
 
   @Test
   void testToModel() {
-    GithubReleaseModel model = new GithubReleaseModel();
+    GitHubReleaseModel model = new GitHubReleaseModel();
     model.setBody("Github body");
     model.setName("v1.0.0");
     model.setPublishedAt(new Date());
-    GithubReleaseModel result = githubReleaseModelAssembler.toModel(model);
+    GitHubReleaseModel result = githubReleaseModelAssembler.toModel(model);
     Assertions.assertEquals(model.getBody(), result.getBody());
     Assertions.assertEquals(model.getName(), result.getName());
     Assertions.assertEquals(model.getPublishedAt(), result.getPublishedAt());
