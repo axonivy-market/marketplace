@@ -206,33 +206,38 @@ export class ProductFeedbackService {
 
   private processUserFeedbacks(): void {
     this.findProductFeedbackOfUser().subscribe(userFeedbacks => {
-      if (!userFeedbacks?.length) return;
-  
+      if (!userFeedbacks?.length) {
+        return;
+      }
+
       const feedback = userFeedbacks[0];
-      if (feedback.userId !== this.authService.getUserId()) return;
-  
+      if (feedback.userId !== this.authService.getUserId()) {
+        return;
+      }
+
       const pendingFeedbacks = userFeedbacks.filter(f => f.feedbackStatus === FeedbackStatus.PENDING);
-      if (!pendingFeedbacks.length) return;
-  
+      if (!pendingFeedbacks.length) {
+        return;
+      }
+
       const hasApprovedFeedback = this.feedbacks().some(
         f => f.userId === feedback.userId && (f.feedbackStatus === FeedbackStatus.APPROVED || !f.feedbackStatus)
       );
-  
-      this.updateFeedbacks(pendingFeedbacks, hasApprovedFeedback, feedback.userId, userFeedbacks.length);
+
+      if (hasApprovedFeedback && userFeedbacks.length === 2) {
+        this.updateFeedbacks(pendingFeedbacks, feedback.userId);
+      } else {
+        this.feedbacks.set([...pendingFeedbacks, ...this.feedbacks()]);
+      }
     });
   }
-  
-  private updateFeedbacks(pendingFeedbacks: Feedback[], hasApprovedFeedback: boolean, userId: string, userFeedbackCount: number): void {
-    if (hasApprovedFeedback && userFeedbackCount === 2) {
-      this.feedbacks.set([
-        pendingFeedbacks[0],
-        ...this.feedbacks().filter(f => f.userId !== userId)
-      ]);
-    } else {
-      this.feedbacks.set([...pendingFeedbacks, ...this.feedbacks()]);
-    }
+
+  private updateFeedbacks(pendingFeedbacks: Feedback[], userId: string): void {
+    this.feedbacks.set([
+      pendingFeedbacks[0],
+      ...this.feedbacks().filter(f => f.userId !== userId)
+    ]);
   }
-  
 
   findProductFeedbackOfUser(
     productId: string = this.productDetailService.productId()
@@ -308,9 +313,17 @@ export class ProductFeedbackService {
 
   private sortByDate<T>(items: T[], dateKey: keyof T): T[] {
     return [...items].sort((a, b) => {
-      const dateA = new Date((a[dateKey] ?? 0) as any).getTime();
-      const dateB = new Date((b[dateKey] ?? 0) as any).getTime();
-      return dateB - dateA;
+      const dateA = a[dateKey];
+      const dateB = b[dateKey];
+
+      const timeA = dateA instanceof Date
+        ? dateA.getTime()
+        : new Date(dateA as string | number | undefined ?? 0).getTime();
+      const timeB = dateB instanceof Date
+        ? dateB.getTime()
+        : new Date(dateB as string | number | undefined ?? 0).getTime();
+
+      return timeB - timeA;
     });
   }
 }

@@ -162,9 +162,7 @@ export class AuthService {
         login: response.login,
         name: response.name
       })),
-      catchError(() => {
-        return of({ login: '', name: null });
-      })
+      catchError(() => of({ login: '', name: null }))
     );
   }
 
