@@ -232,8 +232,11 @@ export class ProductFeedbackService {
       })
       .pipe(
         tap(feedbacks => {
-          const prioritizedStatuses = [FeedbackStatus.PENDING, FeedbackStatus.APPROVED, null];
-          const prioritizedUserFeedback = feedbacks.find(f => prioritizedStatuses.includes(f.feedbackStatus)) || null;
+          const prioritizedUserFeedback =
+            feedbacks.find(f => f.feedbackStatus === FeedbackStatus.PENDING) ||
+            feedbacks.find(f => f.feedbackStatus === FeedbackStatus.APPROVED) ||
+            feedbacks.find(f => !f.feedbackStatus) ||
+            null;
           this.userFeedback.set(prioritizedUserFeedback);
         }),
         catchError(response => {

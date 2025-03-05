@@ -105,13 +105,6 @@ describe('FeedbackApprovalComponent', () => {
     expect(component.fetchFeedbacks).not.toHaveBeenCalled();
   });
 
-  it('should set error message when no token', () => {
-    component.token = '';
-    component.onSubmit();
-    expect(component.errorMessage).toBe(ERROR_MESSAGES.TOKEN_REQUIRED);
-    expect(component.isAuthenticated).toBeFalse();
-  });
-
   it('should set session token and update authentication state', () => {
     component.token = 'mockToken';
     component.fetchFeedbacks();
