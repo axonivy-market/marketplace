@@ -59,7 +59,8 @@ export class AddFeedbackDialogComponent {
       productId: this.productDetailService.productId(),
       feedbackStatus: this.userFeedback()?.feedbackStatus ?? FeedbackStatus.PENDING,
       moderatorName: this.userFeedback()?.moderatorName ?? '',
-      reviewDate: this.userFeedback()?.reviewDate
+      reviewDate: this.userFeedback()?.reviewDate,
+      version: this.userFeedback()?.version ?? 0
     };
   }
 

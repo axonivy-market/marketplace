@@ -168,7 +168,8 @@ export class AuthService {
 
   getDisplayNameFromAccessToken(token: string): Observable<string | null> {
     return this.getUserInfo(token).pipe(
-      map(userInfo => userInfo.name ?? userInfo.login ?? null)
+      map(userInfo =>
+        userInfo.name ?? userInfo.login ?? null)
     );
   }
 }

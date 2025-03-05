@@ -141,7 +141,7 @@ describe('FeedbackApprovalComponent', () => {
   it('should update feedback status and refresh', fakeAsync(() => {
     const feedback: Feedback = {
       id: '1',
-      version: 1,
+      version: 0,
       content: 'Test feedback',
       rating: 5,
       productId: '123',
@@ -157,16 +157,14 @@ describe('FeedbackApprovalComponent', () => {
       of(updatedFeedback)
     );
 
-    component.displayName = of('TestUser');
-
+    component.moderatorName = ('TestUser');
     spyOn(component, 'fetchFeedbacks');
-
     component.onClickReviewButton(feedback, true);
     tick();
 
     expect(
       productFeedbackServiceMock.updateFeedbackStatus
-    ).toHaveBeenCalledWith('1', true, 'TestUser', 1);
+    ).toHaveBeenCalledWith('1', true, 'TestUser', 0);
     expect(component.fetchFeedbacks).toHaveBeenCalled();
   }));
 

@@ -71,7 +71,8 @@ describe('ProductFeedbackService', () => {
       productId: '123',
       feedbackStatus: FeedbackStatus.APPROVED,
       moderatorName: 'admin',
-      reviewDate: new Date()
+      reviewDate: new Date(),
+      version: 0
     };
     authService.getToken.and.returnValue('mockToken');
 
@@ -95,7 +96,8 @@ describe('ProductFeedbackService', () => {
             rating: 5,
             productId: '123',
             feedbackStatus: FeedbackStatus.APPROVED,
-            moderatorName: 'admin'
+            moderatorName: 'admin',
+            version: 0
           }
         ]
       },
@@ -127,7 +129,8 @@ describe('ProductFeedbackService', () => {
         productId: '123',
         feedbackStatus: FeedbackStatus.APPROVED,
         moderatorName: 'admin',
-        reviewDate: new Date()
+        reviewDate: new Date(),
+        version: 0
       }
     ];
     const additionalFeedback: Feedback[] = [
@@ -137,7 +140,8 @@ describe('ProductFeedbackService', () => {
         productId: '123',
         feedbackStatus: FeedbackStatus.APPROVED,
         moderatorName: 'admin',
-        reviewDate: new Date()
+        reviewDate: new Date(),
+        version: 0
       }
     ];
 
@@ -174,7 +178,8 @@ describe('ProductFeedbackService', () => {
             productId: '123',
             feedbackStatus: FeedbackStatus.APPROVED,
             moderatorName: 'admin',
-            reviewDate: mockDate
+            reviewDate: mockDate,
+            version: 0
           }
         ]
       },
@@ -234,7 +239,8 @@ describe('ProductFeedbackService', () => {
       rating: 0,
       feedbackStatus: FeedbackStatus.PENDING,
       productId: '',
-      moderatorName: ''
+      moderatorName: '',
+      version: 0
     };
 
     const initialArray: Feedback[] = [initialFeedback];
@@ -246,7 +252,8 @@ describe('ProductFeedbackService', () => {
       rating: 0,
       feedbackStatus: FeedbackStatus.APPROVED,
       productId: '',
-      moderatorName: 'admin'
+      moderatorName: 'admin',
+      version: 1
     };
 
     service.updateFeedbackStatus('1', true, 'admin', 1).subscribe(response => {
@@ -291,7 +298,8 @@ describe('ProductFeedbackService', () => {
         rating: 0,
         productId: '',
         feedbackStatus: FeedbackStatus.APPROVED,
-        moderatorName: ''
+        moderatorName: '',
+        version: 0
       },
       {
         id: '2',
@@ -300,7 +308,8 @@ describe('ProductFeedbackService', () => {
         rating: 0,
         productId: '',
         feedbackStatus: FeedbackStatus.APPROVED,
-        moderatorName: ''
+        moderatorName: '',
+        version: 0
       }
     ];
 
@@ -318,7 +327,8 @@ describe('ProductFeedbackService', () => {
         productId: '123',
         feedbackStatus: FeedbackStatus.PENDING,
         moderatorName: '',
-        userId: 'user1'
+        userId: 'user1',
+        version: 1
       }
     ];
     productDetailService.productId.and.returnValue('123');
@@ -364,7 +374,8 @@ describe('ProductFeedbackService', () => {
         productId: '123',
         feedbackStatus: FeedbackStatus.APPROVED,
         moderatorName: '',
-        userId: 'user1'
+        userId: 'user1',
+        version: 1
       },
       {
         id: '2',
@@ -373,7 +384,8 @@ describe('ProductFeedbackService', () => {
         productId: '123',
         feedbackStatus: FeedbackStatus.PENDING,
         moderatorName: '',
-        userId: 'user1'
+        userId: 'user1',
+        version: 0
       }
     ];
     productDetailService.productId.and.returnValue('123');
@@ -458,7 +470,8 @@ describe('ProductFeedbackService', () => {
         productId: '123',
         feedbackStatus: FeedbackStatus.PENDING,
         moderatorName: '',
-        userId: 'user2'
+        userId: 'user2',
+        version: 0
       }
     ];
     authService.getUserId.and.returnValue('user1');
@@ -479,7 +492,8 @@ describe('ProductFeedbackService', () => {
         productId: '123',
         feedbackStatus: FeedbackStatus.APPROVED,
         moderatorName: '',
-        userId: 'user1'
+        userId: 'user1',
+        version: 1
       }
     ];
     authService.getUserId.and.returnValue('user1');
@@ -499,7 +513,8 @@ describe('ProductFeedbackService', () => {
       productId: '123',
       feedbackStatus: FeedbackStatus.APPROVED,
       moderatorName: '',
-      userId: 'user1'
+      userId: 'user1',
+      version: 1
     };
     const pendingFeedback: Feedback = {
       id: '2',
@@ -508,7 +523,8 @@ describe('ProductFeedbackService', () => {
       productId: '123',
       feedbackStatus: FeedbackStatus.PENDING,
       moderatorName: '',
-      userId: 'user1'
+      userId: 'user1',
+      version: 0
     };
     service.feedbacks.set([approvedFeedback]);
     authService.getUserId.and.returnValue('user1');
@@ -521,13 +537,13 @@ describe('ProductFeedbackService', () => {
 
   it('should handle invalid dates in sortByDate', () => {
     const feedbacks: Feedback[] = [
-      { id: '1', content: 'First', reviewDate: null as any, rating: 0, productId: '', feedbackStatus: FeedbackStatus.APPROVED, moderatorName: '' },
-      { id: '2', content: 'Second', reviewDate: new Date('2023-01-01'), rating: 0, productId: '', feedbackStatus: FeedbackStatus.APPROVED, moderatorName: '' }
+      { id: '1', content: 'First', reviewDate: null as any, rating: 0, productId: '', feedbackStatus: FeedbackStatus.APPROVED, moderatorName: '', version: 0 },
+      { id: '2', content: 'Second', reviewDate: new Date('2023-01-01'), rating: 0, productId: '', feedbackStatus: FeedbackStatus.APPROVED, moderatorName: '', version: 0 }
     ];
 
     const sorted = service['sortByDate'](feedbacks, 'reviewDate');
-    expect(sorted[0].id).toBe('1');
-    expect(sorted[1].id).toBe('2');
+    expect(sorted[0].id).toBe('2');
+    expect(sorted[1].id).toBe('1');
   });
 
   it('should reset page to 0 in getInitFeedbacksObservable', () => {

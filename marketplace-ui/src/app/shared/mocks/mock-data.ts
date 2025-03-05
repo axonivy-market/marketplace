@@ -366,7 +366,8 @@ export const MOCK_FEEDBACK_API_RESPONSE: FeedbackApiResponse = {
         productId: 'portal',
         feedbackStatus: FeedbackStatus.PENDING,
         moderatorName: 'admin',
-        reviewDate: new Date()
+        reviewDate: new Date(),
+        version: 0
       }
     ]
   },
@@ -393,7 +394,8 @@ export const MOCK_FEEDBACKS: Feedback[] = [
     updatedAt: new Date('2025-01-02'),
     moderatorName: 'mod1',
     reviewDate: new Date('2025-01-03'),
-    productId: '123'
+    productId: '123',
+    version: 0
   }
 ];
 

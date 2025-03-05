@@ -23,7 +23,6 @@ import {
 import { ActivatedRoute } from '@angular/router';
 import { FeedbackTableComponent } from './feedback-table/feedback-table.component';
 import { HttpErrorResponse } from '@angular/common/http';
-import { Observable } from 'rxjs';
 
 @Component({
   selector: 'app-feedback-approval',
@@ -47,7 +46,7 @@ export class FeedbackApprovalComponent {
   isAuthenticated = false;
   detailTabs = FEEDBACK_APPROVAL_TABS;
   activeTab = 'review';
-  displayName!: Observable<string | null>;
+  moderatorName!: string | null;
 
   feedbacks: Signal<Feedback[] | undefined> =
     this.productFeedbackService.allFeedbacks;
@@ -69,7 +68,9 @@ export class FeedbackApprovalComponent {
   fetchUserInfo(): void {
     this.authService.getUserInfo(this.token).subscribe({
       next: () => {
-        this.displayName = this.authService.getDisplayNameFromAccessToken(this.token);
+        this.authService.getDisplayNameFromAccessToken(this.token).subscribe(name =>
+          this.moderatorName = name
+        );
       },
       error: err => {
         this.handleError(err);
@@ -113,13 +114,11 @@ export class FeedbackApprovalComponent {
   }
 
   onClickReviewButton(feedback: Feedback, isApproved: boolean): void {
-    this.displayName.subscribe(name => {
-      if (name && feedback.id && feedback.version) {
-        this.productFeedbackService
-          .updateFeedbackStatus(feedback.id, isApproved, name, feedback.version)
-          .subscribe(() => this.fetchFeedbacks());
-      }
-    });
+    if (this.moderatorName && feedback.id && feedback.version == 0) {
+      this.productFeedbackService
+        .updateFeedbackStatus(feedback.id, isApproved, this.moderatorName, feedback.version)
+        .subscribe(() => this.fetchFeedbacks());
+    }
   }
 
   setActiveTab(tab: string): void {

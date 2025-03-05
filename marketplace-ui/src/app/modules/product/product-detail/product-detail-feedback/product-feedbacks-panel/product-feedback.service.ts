@@ -275,6 +275,7 @@ export class ProductFeedbackService {
             rating: 0,
             feedbackStatus: FeedbackStatus.PENDING,
             moderatorName: '',
+            version: 0,
             productId
           };
           this.userFeedback.set(defaultFeedback);
@@ -316,24 +317,9 @@ export class ProductFeedbackService {
 
   private sortByDate<T>(items: T[], dateKey: keyof T): T[] {
     return [...items].sort((a, b) => {
-      const dateA = a[dateKey];
-      const dateB = b[dateKey];
-
-      let timeA: number;
-      let timeB: number;
-
-      if (dateA instanceof Date) {
-        timeA = dateA.getTime()
-      } else {
-        timeA = new Date(dateA as string | number | undefined ?? 0).getTime();
-      }
-
-      if (dateB instanceof Date) {
-        timeB = dateB.getTime()
-      } else {
-        timeB = new Date(dateA as string | number | undefined ?? 0).getTime();
-      }
-      return timeB - timeA;
+      const dateA = new Date((a[dateKey] ?? 0) as string | number | Date).getTime();
+      const dateB = new Date((b[dateKey] ?? 0) as string | number | Date).getTime();
+      return dateB - dateA;
     });
   }
 }
