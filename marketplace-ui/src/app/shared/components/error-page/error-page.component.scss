@@ -42,6 +42,10 @@
   }
 }
 
+::ng-deep a {
+  color: var(--ivy-primary-bg);
+}
+
 .module-gap {
   gap: 3.2rem;
 

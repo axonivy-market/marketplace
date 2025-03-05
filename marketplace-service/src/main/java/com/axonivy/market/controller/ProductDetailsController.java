@@ -2,7 +2,8 @@ package com.axonivy.market.controller;
 
 import com.axonivy.market.assembler.GithubReleaseModelAssembler;
 import com.axonivy.market.assembler.ProductDetailModelAssembler;
-import com.axonivy.market.model.GithubReleaseModel;
+import com.axonivy.market.entity.Product;
+import com.axonivy.market.model.GitHubReleaseModel;
 import com.axonivy.market.model.MavenArtifactVersionModel;
 import com.axonivy.market.model.ProductDetailModel;
 import com.axonivy.market.model.VersionAndUrlModel;
@@ -18,8 +19,11 @@ import org.apache.commons.lang3.StringUtils;
 import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PagedResourcesAssembler;
+import org.springframework.hateoas.Link;
 import org.springframework.hateoas.PagedModel;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -36,11 +40,14 @@ import org.springframework.web.servlet.mvc.method.annotation.ResponseBodyEmitter
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 
 import static com.axonivy.market.constants.MavenConstants.APP_ZIP_POSTFIX;
 import static com.axonivy.market.constants.RequestMappingConstants.*;
 import static com.axonivy.market.constants.RequestParamConstants.*;
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 
 @AllArgsConstructor
 @RestController
@@ -52,7 +59,7 @@ public class ProductDetailsController {
   private final ProductContentService productContentService;
   private final ProductDetailModelAssembler detailModelAssembler;
   private final GithubReleaseModelAssembler githubReleaseModelAssembler;
-  private final PagedResourcesAssembler<GithubReleaseModel> pagedResourcesAssembler;
+  private final PagedResourcesAssembler<GitHubReleaseModel> pagedResourcesAssembler;
 
   @GetMapping(BY_ID_AND_VERSION)
   @Operation(summary = "Find product detail by product id and release version.",
@@ -66,7 +73,9 @@ public class ProductDetailsController {
     if (productDetail == null) {
       return new ResponseEntity<>(HttpStatus.NOT_FOUND);
     }
-    return new ResponseEntity<>(detailModelAssembler.toModel(productDetail, version, BY_ID_AND_VERSION), HttpStatus.OK);
+    ProductDetailModel model = detailModelAssembler.toModel(productDetail);
+    addModelLinks(model, productDetail, version, BY_ID_AND_VERSION);
+    return new ResponseEntity<>(model, HttpStatus.OK);
   }
 
   @GetMapping(BEST_MATCH_BY_ID_AND_VERSION)
@@ -81,12 +90,12 @@ public class ProductDetailsController {
     if (productDetail == null) {
       return new ResponseEntity<>(HttpStatus.NOT_FOUND);
     }
-    return new ResponseEntity<>(detailModelAssembler.toModel(productDetail, version, BEST_MATCH_BY_ID_AND_VERSION),
-        HttpStatus.OK);
+    ProductDetailModel model = detailModelAssembler.toModel(productDetail);
+    addModelLinks(model, productDetail, version, BEST_MATCH_BY_ID_AND_VERSION);
+    return new ResponseEntity<>(model, HttpStatus.OK);
   }
 
-  @GetMapping(BY_ID)
-  @Operation(summary = "get product detail by ID", description = "Return product detail by product id (from meta.json)")
+  @GetMapping(BY_ID)  @Operation(summary = "get product detail by ID", description = "Return product detail by product id (from meta.json)")
   public ResponseEntity<ProductDetailModel> findProductDetails(
       @PathVariable(ID) @Parameter(description = "Product id (from meta.json)", example = "approval-decision-utils",
           in = ParameterIn.PATH) String id,
@@ -96,7 +105,9 @@ public class ProductDetailsController {
     if (productDetail == null) {
       return new ResponseEntity<>(HttpStatus.NOT_FOUND);
     }
-    return new ResponseEntity<>(detailModelAssembler.toModel(productDetail, BY_ID), HttpStatus.OK);
+    ProductDetailModel model = detailModelAssembler.toModel(productDetail);
+    addModelLinks(model, productDetail, StringUtils.EMPTY, BY_ID);
+    return new ResponseEntity<>(model, HttpStatus.OK);
   }
 
   @GetMapping(VERSIONS_BY_ID)
@@ -145,16 +156,16 @@ public class ProductDetailsController {
 
   @GetMapping(PRODUCT_PUBLIC_RELEASES)
   @Operation(summary = "Find public releases by product id",
-      description = "Get all public releases product id", parameters = {
+      description = "Get all public releases by product id", parameters = {
       @Parameter(name = "page", description = "Page number to retrieve", in = ParameterIn.QUERY, example = "0",
           required = true),
       @Parameter(name = "size", description = "Number of items per page", in = ParameterIn.QUERY, example = "20",
           required = true)})
-  public ResponseEntity<PagedModel<GithubReleaseModel>> findGithubPublicReleases(
+  public ResponseEntity<PagedModel<GitHubReleaseModel>> findGithubPublicReleases(
       @PathVariable(ID) @Parameter(description = "Product id", example = "portal",
           in = ParameterIn.PATH) String productId,
       @ParameterObject Pageable pageable) throws IOException {
-    Page<GithubReleaseModel> results = productService.getGitHubReleaseModels(productId, pageable);
+    Page<GitHubReleaseModel> results = productService.getGitHubReleaseModels(productId, pageable);
 
     if (results.isEmpty()) {
       return generateReleasesEmptyPagedModel();
@@ -164,22 +175,31 @@ public class ProductDetailsController {
     return new ResponseEntity<>(pageResources, HttpStatus.OK);
   }
 
+  @GetMapping(SYNC_RELEASE_NOTES_FOR_PRODUCTS)
+  public void syncLatestReleasesForProducts() throws IOException {
+    Pageable pageable = PageRequest.of(0, 20, Sort.unsorted());
+    List<String> productIdList = this.productService.getProductIdList();
+    for (String productId : productIdList) {
+      this.productService.syncGitHubReleaseModels(productId, pageable);
+    }
+  }
+
   @GetMapping(PRODUCT_PUBLIC_RELEASE_BY_RELEASE_ID)
-  @Operation(summary = "Find release by id",
-      description = "Get release by release id.")
-  public ResponseEntity<GithubReleaseModel> findGithubPublicReleaseByProductIdAndReleaseId(
+  @Operation(summary = "Find release by product id and release id",
+      description = "Get release by product id and release id")
+  public ResponseEntity<GitHubReleaseModel> findGithubPublicReleaseByProductIdAndReleaseId(
       @PathVariable(PRODUCT_ID) @Parameter(description = "Product id", example = "portal",
           in = ParameterIn.PATH) String productId,
       @PathVariable(RELEASE_ID) @Parameter(description = "Release id", example = "67a08dd6e23661019dc92376",
           in = ParameterIn.PATH) Long releaseId) throws IOException {
-    GithubReleaseModel githubReleaseModel = productService.getGitHubReleaseModelByProductIdAndReleaseId(productId, releaseId);
+    GitHubReleaseModel githubReleaseModel = productService.getGitHubReleaseModelByProductIdAndReleaseId(productId, releaseId);
     return ResponseEntity.ok(githubReleaseModelAssembler.toModel(githubReleaseModel));
   }
 
   @SuppressWarnings("unchecked")
-  private ResponseEntity<PagedModel<GithubReleaseModel>> generateReleasesEmptyPagedModel() {
-    var emptyPagedModel = (PagedModel<GithubReleaseModel>) pagedResourcesAssembler.toEmptyModel(Page.empty(),
-        GithubReleaseModel.class);
+  private ResponseEntity<PagedModel<GitHubReleaseModel>> generateReleasesEmptyPagedModel() {
+    var emptyPagedModel = (PagedModel<GitHubReleaseModel>) pagedResourcesAssembler.toEmptyModel(Page.empty(),
+        GitHubReleaseModel.class);
     return new ResponseEntity<>(emptyPagedModel, HttpStatus.OK);
   }
 
@@ -208,4 +228,28 @@ public class ProductDetailsController {
           return ResponseEntity.ok().headers(headers).contentType(MediaType.APPLICATION_OCTET_STREAM).body(emitter);
         });
   }
+
+  private void addModelLinks(ProductDetailModel model, Product product, String version, String path){
+    String productId = Optional.of(product).map(Product::getId).orElse(StringUtils.EMPTY);
+    if (path.equals(BEST_MATCH_BY_ID_AND_VERSION)) {
+      Link link = linkTo(
+              methodOn(ProductDetailsController.class).findProductJsonContent(productId,
+                      product.getBestMatchVersion())).withSelfRel();
+      model.setMetaProductJsonUrl(link.getHref());
+    }
+    model.add(getSelfLinkForProduct(productId, version, path));
+  }
+
+  public Link getSelfLinkForProduct(String productId, String version, String path){
+    ResponseEntity<ProductDetailModel> selfLinkWithVersion;
+    selfLinkWithVersion = switch (path) {
+      case BEST_MATCH_BY_ID_AND_VERSION ->
+              methodOn(ProductDetailsController.class).findBestMatchProductDetailsByVersion(productId, version);
+      case BY_ID_AND_VERSION ->
+              methodOn(ProductDetailsController.class).findProductDetailsByVersion(productId, version);
+      default -> methodOn(ProductDetailsController.class).findProductDetails(productId, false);
+    };
+    return linkTo(selfLinkWithVersion).withSelfRel();
+  }
+
 }

@@ -80,6 +80,10 @@ $rowHeight: 37px;
   font-size: 1.4rem;
 }
 
+.search-icon {
+  font-size: 1.5rem;
+}
+
 @media only screen and (max-width: 768px) {
   ::ng-deep .form-select, .sort-order {
     width: 100% !important;

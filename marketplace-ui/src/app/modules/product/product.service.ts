@@ -1,6 +1,6 @@
 import { HttpClient, HttpContext, HttpParams } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
-import { Observable } from 'rxjs';
+import { catchError, Observable, of } from 'rxjs';
 import { RequestParam } from '../../shared/enums/request-param';
 import { ProductApiResponse } from '../../shared/models/apis/product-response.model';
 import { Criteria } from '../../shared/models/criteria.model';
@@ -10,7 +10,7 @@ import { ForwardingError, LoadingComponent } from '../../core/interceptors/api.i
 import { VersionAndUrl } from '../../shared/models/version-and-url';
 import { API_URI } from '../../shared/constants/api.constant';
 import { LoadingComponentId } from '../../shared/enums/loading-component-id';
-import { ProductReleaseApiResponse } from '../../shared/models/apis/product-release-response.model';
+import { ProductReleasesApiResponse } from '../../shared/models/apis/product-releases-response.model';
 
 @Injectable()
 export class ProductService {
@@ -114,9 +114,14 @@ export class ProductService {
     });
   }
 
-  getProductChangelogs(productId: string): Observable<ProductReleaseApiResponse> {
+  getProductChangelogs(productId: string): Observable<ProductReleasesApiResponse> {
     const url = `${API_URI.PRODUCT_DETAILS}/${productId}/releases`;
 
-    return this.httpClient.get<ProductReleaseApiResponse>(url, { context: new HttpContext().set(ForwardingError, true) });
+    return this.httpClient.get<ProductReleasesApiResponse>(url, { context: new HttpContext().set(ForwardingError, true) }).pipe(
+      catchError(() => {
+        const productReleasesApiResponse = {} as ProductReleasesApiResponse;
+        return of(productReleasesApiResponse);
+      })
+    );
   }
 }

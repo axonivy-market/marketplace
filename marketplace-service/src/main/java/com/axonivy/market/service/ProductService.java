@@ -1,7 +1,7 @@
 package com.axonivy.market.service;
 
 import com.axonivy.market.entity.Product;
-import com.axonivy.market.model.GithubReleaseModel;
+import com.axonivy.market.model.GitHubReleaseModel;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
@@ -25,8 +25,10 @@ public interface ProductService {
 
   boolean syncFirstPublishedDateOfAllProducts();
 
-  Page<GithubReleaseModel> getGitHubReleaseModels(String productId, Pageable pageable) throws IOException;
+  Page<GitHubReleaseModel> getGitHubReleaseModels(String productId, Pageable pageable) throws IOException;
+  Page<GitHubReleaseModel> syncGitHubReleaseModels(String productId, Pageable pageable) throws IOException;
 
-  GithubReleaseModel getGitHubReleaseModelByProductIdAndReleaseId(String productId, Long releaseId) throws IOException;
+  GitHubReleaseModel getGitHubReleaseModelByProductIdAndReleaseId(String productId, Long releaseId) throws IOException;
 
+  List<String> getProductIdList();
 }

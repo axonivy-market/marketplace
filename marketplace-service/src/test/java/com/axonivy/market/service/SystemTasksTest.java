@@ -1,5 +1,6 @@
 package com.axonivy.market.service;
 
+import com.axonivy.market.controller.ProductDetailsController;
 import com.axonivy.market.entity.Product;
 import com.axonivy.market.repository.ProductRepository;
 import com.axonivy.market.schedulingtask.ScheduledTasks;
@@ -9,10 +10,12 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
 import static org.mockito.Mockito.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 @ExtendWith(MockitoExtension.class)
 class SystemTasksTest {
@@ -27,6 +30,12 @@ class SystemTasksTest {
 
   @Mock
   ProductService productService;
+
+  @Mock
+  ProductDetailsController productDetailsController;
+
+  @Mock
+  MavenDependencyService mavenDependencyService;
 
   @InjectMocks
   ScheduledTasks tasks;
@@ -44,5 +53,25 @@ class SystemTasksTest {
   void testSyncProduct() {
     tasks.syncDataForProductFromGitHubRepo();
     verify(productService, times(1)).syncLatestDataFromMarketRepo(false);
+  }
+
+  @Test
+  void testSyncDataForProductMavenDependencies() {
+    tasks.syncDataForProductMavenDependencies();
+    verify(mavenDependencyService, times(1)).syncIARDependenciesForProducts(false);
+  }
+
+  @Test
+  void testSyncDataForProductReleases() throws IOException {
+    tasks.syncDataForProductReleases();
+    verify(productDetailsController, atLeast(1)).syncLatestReleasesForProducts();
+  }
+
+  @Test
+  void testFailedToSyncDataForProductReleasesWith() throws IOException {
+    doThrow(new IOException()).when(productDetailsController).syncLatestReleasesForProducts();
+    tasks.syncDataForProductReleases();
+
+    assertThrows(IOException.class, () -> productDetailsController.syncLatestReleasesForProducts());
   }
 }

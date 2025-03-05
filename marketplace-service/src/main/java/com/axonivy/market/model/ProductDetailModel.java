@@ -1,12 +1,20 @@
 package com.axonivy.market.model;
 
+import com.axonivy.market.controller.ImageController;
+import com.axonivy.market.entity.Product;
 import com.axonivy.market.entity.ProductModuleContent;
+import com.axonivy.market.util.ImageUtils;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
+import org.springframework.hateoas.Link;
+
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 
 @Getter
 @Setter
@@ -61,4 +69,39 @@ public class ProductDetailModel extends ProductModel {
     }
     return new EqualsBuilder().append(getId(), ((ProductDetailModel) obj).getId()).isEquals();
   }
+
+  public static ProductDetailModel createModel(Product product) {
+    ProductDetailModel model = new ProductDetailModel();
+    ProductModel.createResource(model, product);
+    createDetailResource(model, product);
+    return model;
+  }
+
+  public static void createDetailResource(ProductDetailModel model, Product product) {
+    model.setVendor(product.getVendor());
+    model.setVendorUrl(product.getVendorUrl());
+    model.setNewestReleaseVersion(product.getNewestReleaseVersion());
+    model.setPlatformReview(product.getPlatformReview());
+    model.setSourceUrl(product.getSourceUrl());
+    model.setStatusBadgeUrl(product.getStatusBadgeUrl());
+    model.setLanguage(product.getLanguage());
+    model.setIndustry(product.getIndustry());
+    model.setCompatibility(product.getCompatibility());
+    model.setContactUs(product.getContactUs());
+    model.setCost(product.getCost());
+    model.setInstallationCount(product.getInstallationCount());
+    model.setCompatibilityRange(product.getCompatibilityRange());
+    model.setProductModuleContent(ImageUtils.mappingImageForProductModuleContent(product.getProductModuleContent()));
+    if (StringUtils.isNotBlank(product.getVendorImage())) {
+      Link vendorLink = linkTo(methodOn(ImageController.class).findImageById(product.getVendorImage())).withSelfRel();
+      model.setVendorImage(vendorLink.getHref());
+    }
+    if (StringUtils.isNotBlank(product.getVendorImageDarkMode())) {
+      Link vendorDarkModeLink =
+              linkTo(methodOn(ImageController.class).findImageById(product.getVendorImageDarkMode())).withSelfRel();
+      model.setVendorImageDarkMode(vendorDarkModeLink.getHref());
+    }
+    model.setMavenDropins(product.isMavenDropins());
+  }
+
 }

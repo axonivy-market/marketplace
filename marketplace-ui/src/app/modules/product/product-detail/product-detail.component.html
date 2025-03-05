@@ -188,18 +188,25 @@
                         selectedVersion
                       "></app-product-detail-maven-content>
                   } @else if (displayedTab.value === 'changelog') {
-                    @for (productReleaseSafeHtml of productReleaseSafeHtmls; track $index) {
-                      <div #changelogContainer class="changelog-container mb-5 p-4">
-                        <div class="release-version mb-3 d-flex">
-                          <h1 class="me-4">{{productReleaseSafeHtml.name}}</h1>
-                          @if ($index == 0) {
-                            <h5 class="latest-release px-3 py-2">Latest</h5>
-                          }
+                    <div ngbAccordion>
+                      @for (productReleaseSafeHtml of productReleaseSafeHtmls; track productReleaseSafeHtml.name) {
+                        <div ngbAccordionItem [collapsed]="!productReleaseSafeHtml.isLatestRelease" class="changelog-container mb-5 p-4">
+                          <div ngbAccordionHeader>
+                            <button ngbAccordionButton class="p-0 mb-3 custom-accordion-button">
+                              <h1><a class="me-4 release-name" [href]="productReleaseSafeHtml.htmlUrl" target="_blank"
+                                  (click)="$event.stopPropagation()">{{productReleaseSafeHtml.name}}</a></h1>
+                              @if (productReleaseSafeHtml.isLatestRelease) {
+                                <h5 class="latest-release px-3 py-2">Latest</h5>
+                              }
+                            </button>
+                          </div>
+                          <h5 class="release-published-date">{{productReleaseSafeHtml.publishedAt | date: "MMM dd, yyyy"}}</h5>
+                          <div ngbAccordionCollapse>
+                            <div ngbAccordionBody class="ps-0 changelog-content" [innerHtml]="productReleaseSafeHtml.body"></div>
+                          </div>
                         </div>
-                        <h5 class="release-published-date mb-5">{{productReleaseSafeHtml.publishedAt | date: "MMM dd, yyyy"}}</h5>
-                        <div class="changelog-content" [innerHtml]="productReleaseSafeHtml.body"></div>
-                      </div>
-                    }
+                      }
+                    </div>
                   }
                   @else {
                     <div class="readme-content" [innerHtml]="loadedReadmeContent[displayedTab.value]"></div>

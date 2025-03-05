@@ -1,8 +1,6 @@
 import { ProductDetail } from './../../../shared/models/product-detail.model';
 import { CommonModule, NgOptimizedImage } from '@angular/common';
 import MarkdownIt from 'markdown-it';
-import MarkdownItGitHubAlerts from 'markdown-it-github-alerts';
-import { full } from 'markdown-it-emoji';
 import {
   Component,
   ElementRef,
@@ -14,7 +12,7 @@ import {
   signal
 } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
-import { NgbNavModule } from '@ng-bootstrap/ng-bootstrap';
+import { NgbAccordionModule, NgbNavModule } from '@ng-bootstrap/ng-bootstrap';
 import { TranslateModule } from '@ngx-translate/core';
 import { forkJoin, map, Observable } from 'rxjs';
 import { AuthService } from '../../../auth/auth.service';
@@ -64,6 +62,8 @@ import { ProductReleaseSafeHtml } from '../../../shared/models/product-release-s
 import { HistoryService } from '../../../core/services/history/history.service';
 import { TypeOption } from '../../../shared/enums/type-option.enum';
 import { SortOption } from '../../../shared/enums/sort-option.enum';
+import { MarkdownService } from '../../../shared/services/markdown.service';
+import { full } from 'markdown-it-emoji';
 
 export interface DetailTab {
   activeClass: string;
@@ -95,6 +95,7 @@ const GITHUB_BASE_URL = 'https://github.com/';
     NgOptimizedImage,
     EmptyProductDetailPipe,
     LoadingSpinnerComponent,
+    NgbAccordionModule
   ],
   providers: [ProductService],
   templateUrl: './product-detail.component.html',
@@ -118,6 +119,7 @@ export class ProductDetailComponent {
   routingQueryParamService = inject(RoutingQueryParamService);
   loadingService = inject(LoadingService);
   historyService = inject(HistoryService);
+  markdownService = inject(MarkdownService);
 
   protected LoadingComponentId = LoadingComponentId;
   protected ProductDetailActionType = ProductDetailActionType;
@@ -184,15 +186,18 @@ export class ProductDetailComponent {
         userFeedback: this.productFeedbackService.findProductFeedbackOfUser(),
         changelogs: this.productService.getProductChangelogs(productId),
       }).subscribe(res => {
-        this.md.use(this.linkifyPullRequests, res.productDetail.sourceUrl, this.githubPullRequestNumberRegex)
+        this.md
+          .use(full)
+          .use(this.linkifyPullRequests, res.productDetail.sourceUrl, this.githubPullRequestNumberRegex)
           .set({
             typographer: true,
             linkify: true,
           })
           .enable(['smartquotes', 'replacements', 'image']);
-
-        if (res.changelogs._embedded.githubReleaseModelList !== null && res.changelogs._embedded.githubReleaseModelList.length !== 0) {
-          this.productReleaseSafeHtmls = this.renderChangelogContent(res.changelogs._embedded.githubReleaseModelList);
+          
+        const gitHubReleaseModelList = res.changelogs?._embedded?.gitHubReleaseModelList ?? [];
+        if (gitHubReleaseModelList.length > 0) {
+          this.productReleaseSafeHtmls = this.renderChangelogContent(gitHubReleaseModelList);
         }
         this.handleProductDetail(res.productDetail);
         this.getReadmeContent();
@@ -515,11 +520,7 @@ export class ProductDetailComponent {
   }
 
   renderGithubAlert(value: string): SafeHtml {
-    const md = MarkdownIt();
-    md.use(MarkdownItGitHubAlerts);
-    md.use(full); // Add emoji support
-    const result = md.render(value);
-
+    const result = this.markdownService.parseMarkdown(value);
     return this.sanitizer.bypassSecurityTrustHtml(result);
   }
 
@@ -529,6 +530,8 @@ export class ProductDetailComponent {
         name: release.name,
         body: this.bypassSecurityTrustHtml(release.body),
         publishedAt: release.publishedAt,
+        htmlUrl: release.htmlUrl,
+        isLatestRelease: release.latestRelease
       };
     });
   }
