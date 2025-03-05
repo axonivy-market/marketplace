@@ -279,15 +279,6 @@ public class BaseSetup {
     return productModuleContent;
   }
 
-  private ProductModuleContent mockProductModuleContent() {
-    ProductModuleContent productModuleContent = new ProductModuleContent();
-    productModuleContent.setDescription(mockDescriptionForProductModuleContent());
-    productModuleContent.setDemo(null);
-    productModuleContent.setSetup(mockDescriptionForProductModuleContent());
-
-    return productModuleContent;
-  }
-
   private Map<String, String> mockDescriptionForProductModuleContent() {
     Map<String, String> mutableMap = new HashMap<>();
     mutableMap.put("en", "Login or create a new account.[demo-process](imageId-66e2b13c68f2f95b2f95548c)");
