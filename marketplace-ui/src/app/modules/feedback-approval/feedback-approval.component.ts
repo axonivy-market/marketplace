@@ -16,7 +16,6 @@ import { LanguageService } from '../../core/services/language/language.service';
 import { ThemeService } from '../../core/services/theme/theme.service';
 import {
   FEEDBACK_APPROVAL_SESSION_TOKEN,
-  FEEDBACK_APPROVAL_TABS,
   ERROR_MESSAGES,
   UNAUTHORIZED
 } from '../../shared/constants/common.constant';
