@@ -7,7 +7,7 @@ import com.axonivy.market.entity.MavenArtifactVersion;
 import com.axonivy.market.entity.Metadata;
 import com.axonivy.market.entity.ProductJsonContent;
 import com.axonivy.market.factory.VersionFactory;
-import com.axonivy.market.model.MavenArtifactModel;
+import com.axonivy.market.entity.MavenArtifactModel;
 import com.axonivy.market.model.MavenArtifactVersionModel;
 import com.axonivy.market.model.VersionAndUrlModel;
 import com.axonivy.market.repository.MavenArtifactVersionRepository;

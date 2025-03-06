@@ -1,6 +1,5 @@
-package com.axonivy.market.model;
+package com.axonivy.market.entity;
 
-import com.axonivy.market.entity.MavenArtifactVersion;
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -20,13 +19,15 @@ import java.io.Serial;
 import java.io.Serializable;
 import java.util.UUID;
 
+import static com.axonivy.market.constants.EntityConstants.MAVEN_ARTIFACT_MODEL;
+
 @AllArgsConstructor
 @NoArgsConstructor
 @Setter
 @Getter
 @Builder
 @Entity
-@Table(name = "maven_artifact_model")
+@Table(name = MAVEN_ARTIFACT_MODEL)
 public class MavenArtifactModel implements Serializable {
   @Serial
   private static final long serialVersionUID = 1L;

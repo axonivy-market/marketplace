@@ -12,7 +12,7 @@ import com.axonivy.market.entity.ProductMarketplaceData;
 import com.axonivy.market.entity.ProductModuleContent;
 import com.axonivy.market.enums.Language;
 import com.axonivy.market.enums.SortOption;
-import com.axonivy.market.model.MavenArtifactModel;
+import com.axonivy.market.entity.MavenArtifactModel;
 import com.axonivy.market.model.VersionAndUrlModel;
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.lang3.StringUtils;

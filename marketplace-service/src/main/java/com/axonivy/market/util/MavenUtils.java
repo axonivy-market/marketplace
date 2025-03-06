@@ -9,7 +9,7 @@ import com.axonivy.market.constants.ProductJsonConstants;
 import com.axonivy.market.entity.MavenArtifactVersion;
 import com.axonivy.market.entity.Metadata;
 import com.axonivy.market.entity.ProductJsonContent;
-import com.axonivy.market.model.MavenArtifactModel;
+import com.axonivy.market.entity.MavenArtifactModel;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.AccessLevel;

@@ -335,7 +335,7 @@ class ProductServiceImplTest extends BaseSetup {
       when(marketRepoService.getLastCommit(anyLong())).thenReturn(mockCommit);
       when(repoMetaRepo.findByRepoName(anyString())).thenReturn(gitHubRepoMeta);
 
-      when(productRepo.findAll()).thenReturn(List.of(mockProduct));
+      when(productRepo.findAllProductsWithNamesAndShortDescriptions()).thenReturn(List.of(mockProduct));
 
       ProductModuleContent mockReturnProductContent = mockReadmeProductContent();
       mockReturnProductContent.setVersion(MOCK_RELEASED_VERSION);

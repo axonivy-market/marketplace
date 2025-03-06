@@ -1,6 +1,5 @@
 package com.axonivy.market.entity;
 
-import com.axonivy.market.model.MavenArtifactModel;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Entity;

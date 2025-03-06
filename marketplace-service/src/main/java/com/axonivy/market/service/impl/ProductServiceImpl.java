@@ -159,7 +159,6 @@ public class ProductServiceImpl implements ProductService {
   }
 
   @Override
-//  @Transactional
   public List<String> syncLatestDataFromMarketRepo(Boolean resetSync) {
     List<String> syncedProductIds = new ArrayList<>();
     var isAlreadyUpToDate = false;
@@ -346,8 +345,9 @@ public class ProductServiceImpl implements ProductService {
     return isLastCommitCovered;
   }
 
+
   private void updateLatestReleaseVersionContentsFromProductRepo() {
-    List<Product> products = productRepo.findAll();
+    List<Product> products = productRepo.findAllProductsWithNamesAndShortDescriptions();
     if (ObjectUtils.isEmpty(products)) {
       return;
     }
@@ -363,9 +363,6 @@ public class ProductServiceImpl implements ProductService {
     List<String> syncedProductIds = new ArrayList<>();
     var gitHubContentMap = axonIvyMarketRepoService.fetchAllMarketItems();
     for (Map.Entry<String, List<GHContent>> ghContentEntity : gitHubContentMap.entrySet()) {
-//      if (!ghContentEntity.getKey().equals("market/connector/amazon-comprehend")){
-//        continue;
-//      }
       var product = new Product();
       //update the meta.json first
       ghContentEntity.getValue().sort((f1, f2) -> GitHubUtils.sortMetaJsonFirst(f1.getName(), f2.getName()));

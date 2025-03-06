@@ -5,7 +5,7 @@ import com.axonivy.market.bo.MavenDependency;
 import com.axonivy.market.constants.ProductJsonConstants;
 import com.axonivy.market.entity.MavenArtifactVersion;
 import com.axonivy.market.entity.ProductDependency;
-import com.axonivy.market.model.MavenArtifactModel;
+import com.axonivy.market.entity.MavenArtifactModel;
 import com.axonivy.market.repository.MavenArtifactVersionRepository;
 import com.axonivy.market.repository.ProductDependencyRepository;
 import com.axonivy.market.repository.ProductRepository;
