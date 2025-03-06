@@ -39,7 +39,7 @@ describe('SuccessDialogComponent', () => {
     mockAuthService.getDisplayName.and.returnValue(mockDisplayName);
     fixture.detectChanges();
     const compiled = fixture.nativeElement;
-    const thankMessageElement = compiled.querySelector('.modal-body h4.text-primary:last-child');
+    const thankMessageElement = compiled.querySelector('.modal-body h4.text-primary:nth-child(3)');
     expect(thankMessageElement).toBeTruthy();
     expect(thankMessageElement.textContent.trim()).toContain(`common.feedback.thankMessage ${mockDisplayName}`);
   });

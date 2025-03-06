@@ -232,7 +232,7 @@
     <!-- Product feedback -->
     @if (!(productDetail() | emptyProductDetailPipe)) {
       <div class="default-cursor" style="margin-bottom: 12.8rem">
-        @if (productDetail() && productFeedbackService.totalElements() > 0) {
+        @if (productDetail() && productFeedbackService.feedbacks().length > 0) {
           <app-product-detail-feedback [isMobileMode]="isMobileMode()" />
         } @else {
           <div class="d-flex justify-content-center text-center">

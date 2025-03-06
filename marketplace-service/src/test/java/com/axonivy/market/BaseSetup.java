@@ -2,6 +2,7 @@ package com.axonivy.market;
 
 import com.axonivy.market.bo.Artifact;
 import com.axonivy.market.constants.MavenConstants;
+import com.axonivy.market.entity.Feedback;
 import com.axonivy.market.entity.Image;
 import com.axonivy.market.entity.MavenArtifactVersion;
 import com.axonivy.market.entity.Metadata;
@@ -9,8 +10,10 @@ import com.axonivy.market.entity.Product;
 import com.axonivy.market.entity.ProductDesignerInstallation;
 import com.axonivy.market.entity.ProductJsonContent;
 import com.axonivy.market.entity.ProductMarketplaceData;
+import com.axonivy.market.enums.FeedbackStatus;
 import com.axonivy.market.enums.Language;
 import com.axonivy.market.enums.SortOption;
+import com.axonivy.market.model.FeedbackApprovalModel;
 import com.axonivy.market.model.MavenArtifactModel;
 import com.axonivy.market.model.VersionAndUrlModel;
 import lombok.extern.log4j.Log4j2;
@@ -36,6 +39,7 @@ import java.util.Set;
 @Log4j2
 public class BaseSetup {
   protected static final String AUTHORIZATION_HEADER = "Bearer valid_token";
+  protected static final String ACCESS_TOKEN = "sampleAccessToken";
   protected static final String SAMPLE_PRODUCT_ID = "amazon-comprehend";
   protected static final String SAMPLE_PRODUCT_PATH = "/market/connector/amazon-comprehend";
   protected static final String SAMPLE_PRODUCT_NAME = "prody Comprehend";
@@ -302,7 +306,7 @@ public class BaseSetup {
         .build();
 
     List<VersionAndUrlModel> versionAndUrlModels = new ArrayList<>(mockVersionModels());
-    versionAndUrlModels.add(0,versionAndUrlModel);
+    versionAndUrlModels.add(0, versionAndUrlModel);
 
     return versionAndUrlModels;
   }
@@ -317,8 +321,36 @@ public class BaseSetup {
         .build();
 
     List<VersionAndUrlModel> versionAndUrlModels = new ArrayList<>(mockVersionModels());
-    versionAndUrlModels.add(0,versionAndUrlModel);
-    versionAndUrlModels.add(0,versionAndUrlModel2);
+    versionAndUrlModels.add(0, versionAndUrlModel);
+    versionAndUrlModels.add(0, versionAndUrlModel2);
     return versionAndUrlModels;
+  }
+
+  protected Feedback mockFeedback() {
+    return Feedback.builder()
+        .id("1")
+        .userId("user1")
+        .productId("product1")
+        .feedbackStatus(FeedbackStatus.APPROVED)
+        .build();
+  }
+
+  protected List<Feedback> mockFeedbacks() {
+    Feedback updatedFeedback = Feedback.builder()
+        .id("1")
+        .userId("user1")
+        .productId("product1")
+        .feedbackStatus(FeedbackStatus.APPROVED)
+        .moderatorName("Admin")
+        .build();
+
+    return List.of(updatedFeedback);
+  }
+
+  protected FeedbackApprovalModel mockFeedbackApproval() {
+    return FeedbackApprovalModel.builder()
+        .feedbackId("1")
+        .moderatorName("Admin")
+        .build();
   }
 }

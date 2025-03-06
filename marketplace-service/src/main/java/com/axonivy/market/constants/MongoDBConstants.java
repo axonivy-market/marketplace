@@ -20,4 +20,6 @@ public class MongoDBConstants {
   public static final String ARTIFACTS = "artifacts";
   public static final String ARTIFACTS_DOC = "artifacts.doc";
   public static final String FIRST_MATCH_REGEX = ".$";
+  public static final String FEEDBACK_STATUS = "feedbackStatus";
+  public static final String USER_ID = "userId";
 }

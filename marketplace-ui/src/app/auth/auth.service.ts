@@ -1,11 +1,11 @@
-import { HttpClient } from '@angular/common/http';
+import { HttpBackend, HttpClient, HttpHeaders } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { environment } from '../../environments/environment';
 import { Router } from '@angular/router';
-import { catchError, Observable, throwError } from 'rxjs';
+import { catchError, map, Observable, of, throwError } from 'rxjs';
 import { CookieService } from 'ngx-cookie-service';
 import { jwtDecode } from 'jwt-decode';
-import { TOKEN_KEY } from '../shared/constants/common.constant';
+import { FEEDBACK_APPROVAL_STATE, TOKEN_KEY } from '../shared/constants/common.constant';
 
 export interface TokenPayload {
   username: string;
@@ -22,6 +22,11 @@ export interface TokenResponse {
   token: string;
 }
 
+export interface GitHubUser {
+  login: string;
+  name: string | null;
+}
+
 @Injectable({
   providedIn: 'root'
 })
@@ -29,12 +34,17 @@ export class AuthService {
   private readonly BASE_URL = environment.apiUrl;
   private readonly githubAuthUrl = 'https://github.com/login/oauth/authorize';
   private readonly githubAuthCallbackUrl = window.location.origin + environment.githubAuthCallbackPath;
+  private readonly userApiUrl = environment.githubApiUrl + '/user';
+  private readonly httpClientWithoutInterceptor: HttpClient;
 
   constructor(
     private readonly http: HttpClient,
     private readonly router: Router,
-    private readonly cookieService: CookieService
-  ) {}
+    private readonly cookieService: CookieService,
+    private readonly httpBackend: HttpBackend
+  ) {
+    this.httpClientWithoutInterceptor = new HttpClient(httpBackend);
+  }
 
   redirectToGitHub(originalUrl: string): void {
     const state = encodeURIComponent(originalUrl);
@@ -60,9 +70,13 @@ export class AuthService {
 
   handleTokenResponse(token: string, state: string): void {
     this.setTokenAsCookie(token);
-    this.router.navigate([`${state}`], {
-      queryParams: { showPopup: 'true' }
-    });
+    if (FEEDBACK_APPROVAL_STATE === state) {
+      this.router.navigate([`${state}`]);
+    } else {
+      this.router.navigate([`${state}`], {
+        queryParams: { showPopup: 'true' }
+      });
+    }
   }
 
   private setTokenAsCookie(token: string): void {
@@ -80,7 +94,7 @@ export class AuthService {
     return null;
   }
 
-  private decodeToken(token: string): TokenPayload | null {
+  decodeToken(token: string): TokenPayload | null {
     try {
       return jwtDecode(token);
     } catch (error) {
@@ -136,5 +150,26 @@ export class AuthService {
 
     const diffTime = Math.abs(expDate.getTime() - currentDate.getTime());
     return Math.ceil(diffTime / environment.dayInMiliseconds);
+  }
+
+  getUserInfo(token: string): Observable<GitHubUser> {
+    const headers = new HttpHeaders({
+      'Authorization': `Bearer ${token}`,
+      'Accept': 'application/vnd.github+json'
+    });
+    return this.httpClientWithoutInterceptor.get<GitHubUser>(this.userApiUrl, { headers }).pipe(
+      map(response => ({
+        login: response.login,
+        name: response.name
+      })),
+      catchError(() => of({ login: '', name: null }))
+    );
+  }
+
+  getDisplayNameFromAccessToken(token: string): Observable<string | null> {
+    return this.getUserInfo(token).pipe(
+      map(userInfo =>
+        userInfo.name ?? userInfo.login ?? null)
+    );
   }
 }

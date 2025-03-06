@@ -180,10 +180,10 @@ export class ProductDetailComponent {
       this.loadingService.showLoading(LoadingComponentId.DETAIL_PAGE);
       forkJoin({
         productDetail: this.getProductDetailObservable(productId),
+        userFeedback: this.productFeedbackService.findProductFeedbackOfUser(),
         productFeedBack:
           this.productFeedbackService.getInitFeedbacksObservable(),
         rating: this.productStarRatingService.getRatingObservable(productId),
-        userFeedback: this.productFeedbackService.findProductFeedbackOfUser(),
         changelogs: this.productService.getProductChangelogs(productId),
       }).subscribe(res => {
         this.md

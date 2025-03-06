@@ -1,11 +1,15 @@
 package com.axonivy.market.entity;
 
+import com.axonivy.market.enums.FeedbackStatus;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.annotation.LastModifiedDate;
+import org.springframework.data.annotation.Version;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.io.Serial;
@@ -16,6 +20,8 @@ import static com.axonivy.market.constants.EntityConstants.FEEDBACK;
 
 @Getter
 @Setter
+@Builder
+@AllArgsConstructor
 @NoArgsConstructor
 @Document(FEEDBACK)
 public class Feedback implements Serializable {
@@ -29,7 +35,11 @@ public class Feedback implements Serializable {
   private String productId;
   private String content;
   private Integer rating;
-
+  private FeedbackStatus feedbackStatus;
+  private String moderatorName;
+  private Date reviewDate;
+  @Version
+  private Integer version;
   @CreatedDate
   private Date createdAt;
 

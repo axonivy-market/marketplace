@@ -5,6 +5,7 @@ import { RedirectPageComponent } from './shared/components/redirect-page/redirec
 import { ERROR_PAGE } from './shared/constants/common.constant';
 import { SecurityMonitorComponent } from './modules/security-monitor/security-monitor.component';
 import { ReleasePreviewComponent } from './modules/release-preview/release-preview.component';
+import { FeedbackApprovalComponent } from './modules/feedback-approval/feedback-approval.component';
 
 export const routes: Routes = [
   {
@@ -24,6 +25,10 @@ export const routes: Routes = [
   {
     path: 'release-preview',
     component: ReleasePreviewComponent
+  },
+  {
+    path: 'feedback-approval',
+    component: FeedbackApprovalComponent
   },
   {
     path: '',

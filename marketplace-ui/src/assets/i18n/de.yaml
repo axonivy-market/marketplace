@@ -148,11 +148,20 @@ common:
     label: Rückmeldung
     successMessage: Ihr Feedback wurde erfolgreich übermittelt!
     thankMessage: Vielen Dank für Ihren Beitrag
+    informMessage: Dein Kommentar wird nach einer kurzen Begutachtung veröffentlicht.
     addFeedbackTitle: Geben Sie Ihr Feedback!
-    addFeedbackDescription: Durch Ihr Feedback ermöglichen Sie uns, unsere Produkte ständig zu verbessern und Ihnen und Ihrem Team stets die beste Qualität zu liefern.
-    currentProductTitle: Derzeitige Überprüfung
-    starRatingTitle: Sterne Bewertung
-    commentLabel: Einen Kommentar abgeben
+    addFeedbackDescription:
+      Dein Feedback hilft uns, unsere Produkte stetig zu verbessern und die beste Qualität für Dich zu gewährleisten. Dabei gilt selbstverständlich unser <a class="link-opacity-100" href="https://github.com/axonivy-market/market?tab=coc-ov-file">Code of Conduct</a>:</br>
+      <ul>
+      <li>Bleib freundlich und gelassen.</li>
+      <li>Bleib offen.</li>
+      <li>Bleib rücksichtsvoll.</li>
+      <li>Bleib respektvoll.</li>
+      <li>Wähle Deine Worte achtsam.</li>
+      <li>Wenn wir Deine Meinung nicht teilen, versuche zu verstehen warum.</li>
+      </ul>
+    currentProductTitle: In Prüfung
+    commentLabel: Du kannst gerne einen Kommentar hinterlassen
     submitBtnLabel: Bewertung abgeben
     loggedGithubAsLabel: Eingeloggt bei Github als
     reviewLabel: Bewertung
@@ -166,6 +175,7 @@ common:
     rateFeedbackForSolutionBtnLabel: Bewerte diese Lösung
     rateFeedbackForUtilityBtnLabel: Bewerte dieses Tool
     reviewLabelNoYet: Noch keine Bewertungen
+    approvalPending: Freigabe ausstehend
   labels:
     redirecting: Redirecting ...!
   timeAgo:
@@ -185,3 +195,26 @@ common:
     secondsAgo: 'vor {{ number }} Sekunden'
   showLess: Weniger anzeigen
   showMore: Mehr anzeigen
+  approval:
+    approvalTitle: Feedback Genehmigung
+    about: Bitte überprüfe und genehmige das Feedback eines/r NutzerIn.
+    instruction: Das Feedback sollte unserem <a class="link-opacity-100" href="https://github.com/axonivy-market/market?tab=coc-ov-file">Code of Conduct</a> entsprechen.
+    reviewFeedback: Feedback überprüfen
+    history: Historie
+    username: Benutzername
+    content: Inhalt
+    rating: Bewertung
+    status: Status
+    createdAt: Erstellt am
+    updatedAt: Aktualisiert am
+    action: Aktion
+    moderator: Moderator
+    reviewDate: Überprüfungsdatum
+    approveBtnLabel: Genehmigen
+    rejectBtnLabel: Ablehnen
+    pageTitle: Mühelose Verwaltung der Feedback Genehmigung  
+    description: Stellen Sie sicher, dass nur das beste Feedback weitergeleitet wird.  
+    enterToken: Bitte geben Sie Ihren Token ein, um auf die Feedback Genehmigung zuzugreifen.
+    enterTokenPlaceholder: Geben Sie Ihren Token ein
+    proceedBtnLabel: Weiter  
+

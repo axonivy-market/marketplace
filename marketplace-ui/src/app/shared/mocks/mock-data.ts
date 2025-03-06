@@ -1,7 +1,9 @@
+import { FeedbackStatus } from '../enums/feedback-status.enum';
 import { FeedbackApiResponse } from '../models/apis/feedback-response.model';
 import { ProductReleasesApiResponse } from '../models/apis/product-releases-response.model';
 import { ProductApiResponse } from '../models/apis/product-response.model';
 import { ExternalDocument } from '../models/external-document.model';
+import { Feedback } from '../models/feedback.model';
 import { ProductDetail } from '../models/product-detail.model';
 import { ProductModuleContent } from '../models/product-module-content.model';
 import { ReleasePreviewData } from '../models/release-preview-data.model';
@@ -361,7 +363,11 @@ export const MOCK_FEEDBACK_API_RESPONSE: FeedbackApiResponse = {
       {
         content: 'cool stuff',
         rating: 5,
-        productId: 'portal'
+        productId: 'portal',
+        feedbackStatus: FeedbackStatus.PENDING,
+        moderatorName: 'admin',
+        reviewDate: new Date(),
+        version: 0
       }
     ]
   },
@@ -375,6 +381,23 @@ export const MOCK_FEEDBACK_API_RESPONSE: FeedbackApiResponse = {
     number: 0
   }
 };
+
+export const MOCK_FEEDBACKS: Feedback[] = [
+  {
+    id: '1',
+    username: 'testUser',
+    userAvatarUrl: 'http://test.com/avatar.jpg',
+    content: 'Great product!',
+    rating: 5,
+    feedbackStatus: FeedbackStatus.PENDING,
+    createdAt: new Date('2025-01-01'),
+    updatedAt: new Date('2025-01-02'),
+    moderatorName: 'mod1',
+    reviewDate: new Date('2025-01-03'),
+    productId: '123',
+    version: 0
+  }
+];
 
 export const MOCK_PRODUCT_RELEASES: ProductReleasesApiResponse = {
   _embedded: {
