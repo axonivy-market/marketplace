@@ -3,6 +3,7 @@ package com.axonivy.market.util;
 import com.axonivy.market.comparator.LatestVersionComparator;
 import com.axonivy.market.comparator.MavenVersionComparator;
 import com.axonivy.market.constants.CommonConstants;
+import com.axonivy.market.entity.MavenArtifactVersion;
 import com.axonivy.market.entity.Metadata;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
@@ -17,10 +18,12 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Set;
+import java.util.HashSet;
 import java.util.stream.Stream;
 
 import static com.axonivy.market.constants.CommonConstants.DOT_SEPARATOR;
 import static com.axonivy.market.constants.MavenConstants.*;
+
 @Log4j2
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class VersionUtils {
@@ -151,4 +154,16 @@ public class VersionUtils {
   public static String getPrefixOfVersion(String version) {
     return version.substring(0, version.indexOf(DOT_SEPARATOR));
   }
+
+  public static List<String> getAllExistingVersions(MavenArtifactVersion existingMavenArtifactVersion,
+      boolean isShowDevVersion, String designerVersion) {
+    Set<String> existingProductsArtifactByVersion =
+        new HashSet<>(existingMavenArtifactVersion.getProductArtifactsByVersion().keySet());
+    Set<String> existingAdditionalArtifactByVersion =
+        existingMavenArtifactVersion.getProductArtifactsByVersion().keySet();
+    existingProductsArtifactByVersion.addAll(existingAdditionalArtifactByVersion);
+    return VersionUtils.getVersionsToDisplay(new ArrayList<>(existingProductsArtifactByVersion), isShowDevVersion,
+        designerVersion);
+  }
+
 }

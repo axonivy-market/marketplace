@@ -66,6 +66,7 @@ $aspect-ratio: math.div(1, 1);
 .star-rating-container {
   height: $height-small;
   font-size: $font-size;
+  text-align: end;
 }
 
 .collapsed {
@@ -95,4 +96,14 @@ $aspect-ratio: math.div(1, 1);
 
 .feedback-content {
   white-space: pre-line;
+}
+
+.feedback-unapproved {
+  color: var(--text-feedback-time-color);
+}
+
+.pending-text {
+  font-size: 1.2rem;
+  line-height: 1.452rem;
+  color: var(--text-feedback-time-color);
 }

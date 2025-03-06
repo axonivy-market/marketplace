@@ -1,8 +1,13 @@
 package com.axonivy.market.controller;
 
+import com.axonivy.market.BaseSetup;
 import com.axonivy.market.assembler.FeedbackModelAssembler;
 import com.axonivy.market.entity.Feedback;
 import com.axonivy.market.entity.User;
+import com.axonivy.market.enums.FeedbackStatus;
+import com.axonivy.market.github.service.GitHubService;
+import com.axonivy.market.model.FeedbackApprovalModel;
+import com.axonivy.market.model.FeedbackModel;
 import com.axonivy.market.model.FeedbackModelRequest;
 import com.axonivy.market.service.FeedbackService;
 import com.axonivy.market.service.JwtService;
@@ -24,6 +29,8 @@ import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
 
+import java.util.Collections;
+import java.util.Date;
 import java.util.List;
 import java.util.Objects;
 
@@ -33,7 +40,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
-class FeedbackControllerTest {
+class FeedbackControllerTest extends BaseSetup {
 
   private static final String PRODUCT_ID_SAMPLE = "product-id";
   private static final String FEEDBACK_ID_SAMPLE = "feedback-id";
@@ -51,6 +58,9 @@ class FeedbackControllerTest {
   private UserService userService;
 
   @Mock
+  private GitHubService gitHubService;
+
+  @Mock
   private FeedbackModelAssembler feedbackModelAssembler;
 
   @Mock
@@ -62,7 +72,8 @@ class FeedbackControllerTest {
   @BeforeEach
   void setup() {
     feedbackModelAssembler = new FeedbackModelAssembler(userService);
-    feedbackController = new FeedbackController(service, jwtService, feedbackModelAssembler, pagedResourcesAssembler);
+    feedbackController = new FeedbackController(service, jwtService, gitHubService, feedbackModelAssembler,
+        pagedResourcesAssembler);
   }
 
   @Test
@@ -112,12 +123,73 @@ class FeedbackControllerTest {
   void testFindFeedbackByUserIdAndProductId() {
     Feedback mockFeedback = createFeedbackMock();
     User mockUser = createUserMock();
-    when(service.findFeedbackByUserIdAndProductId(any(), any())).thenReturn(mockFeedback);
+    when(service.findFeedbackByUserIdAndProductId(any(), any())).thenReturn(List.of(mockFeedback));
     when(userService.findUser(any())).thenReturn(mockUser);
     var result = feedbackController.findFeedbackByUserIdAndProductId(USER_ID_SAMPLE, PRODUCT_ID_SAMPLE);
     assertEquals(HttpStatus.OK, result.getStatusCode());
     assertTrue(result.hasBody());
-    assertEquals(USER_NAME_SAMPLE, Objects.requireNonNull(result.getBody()).getUsername());
+    assertEquals(USER_NAME_SAMPLE, Objects.requireNonNull(result.getBody()).get(0).getUsername());
+  }
+
+  @Test
+  void testFindAllFeedbacks() {
+    PageRequest pageable = PageRequest.of(0, 20);
+    Feedback mockFeedback = createFeedbackMock();
+    String authHeader = "Bearer sample-token";
+    User mockUser = createUserMock();
+
+    Page<Feedback> mockFeedbacks = new PageImpl<>(List.of(mockFeedback), pageable, 1);
+    when(service.findAllFeedbacks(any())).thenReturn(mockFeedbacks);
+    when(userService.findUser(any())).thenReturn(mockUser);
+    var mockFeedbackModel = feedbackModelAssembler.toModel(mockFeedback);
+    var mockPagedModel = PagedModel.of(List.of(mockFeedbackModel), new PagedModel.PageMetadata(1, 0, 1));
+    when(pagedResourcesAssembler.toModel(any(), any(FeedbackModelAssembler.class))).thenReturn(mockPagedModel);
+
+    var result = feedbackController.findAllFeedbacks(authHeader, pageable);
+
+    assertEquals(HttpStatus.OK, result.getStatusCode());
+    assertTrue(result.hasBody());
+    assertEquals(1, Objects.requireNonNull(result.getBody()).getContent().size());
+    assertEquals(FEEDBACK_ID_SAMPLE, result.getBody().getContent().iterator().next().getId());
+  }
+
+  @Test
+  void testFindAllFeedbacksEmpty() {
+    PageRequest pageable = PageRequest.of(0, 20);
+    Page<Feedback> emptyPage = new PageImpl<>(Collections.emptyList(), pageable, 0);
+    String authHeader = "Bearer sample-token";
+
+    when(service.findAllFeedbacks(pageable)).thenReturn(emptyPage);
+    when(pagedResourcesAssembler.toEmptyModel(any(), any())).thenReturn(PagedModel.empty());
+
+    var result = feedbackController.findAllFeedbacks(authHeader, pageable);
+
+    assertEquals(HttpStatus.OK, result.getStatusCode());
+    assertTrue(result.hasBody());
+    assertEquals(0, Objects.requireNonNull(result.getBody()).getContent().size());
+  }
+
+  @Test
+  void testUpdateFeedbackWithNewStatus() {
+    FeedbackApprovalModel feedbackApproval = new FeedbackApprovalModel();
+    feedbackApproval.setFeedbackId(FEEDBACK_ID_SAMPLE);
+    feedbackApproval.setIsApproved(true);
+
+    Feedback updatedFeedback = createFeedbackMock();
+    User mockUser = createUserMock();
+    FeedbackModel mockFeedbackModel = new FeedbackModel();
+    mockFeedbackModel.setId(FEEDBACK_ID_SAMPLE);
+    mockFeedbackModel.setUsername(USER_NAME_SAMPLE);
+
+    when(service.updateFeedbackWithNewStatus(feedbackApproval)).thenReturn(updatedFeedback);
+    when(userService.findUser(any())).thenReturn(mockUser);
+
+    var result = feedbackController.updateFeedbackWithNewStatus(feedbackApproval);
+
+    assertEquals(HttpStatus.OK, result.getStatusCode());
+    assertTrue(result.hasBody());
+    assertEquals(FEEDBACK_ID_SAMPLE, Objects.requireNonNull(result.getBody()).getId());
+    assertEquals(FeedbackStatus.APPROVED, result.getBody().getFeedbackStatus());
   }
 
   @Test
@@ -143,6 +215,9 @@ class FeedbackControllerTest {
     mockFeedback.setProductId(PRODUCT_ID_SAMPLE);
     mockFeedback.setContent("Great product!");
     mockFeedback.setRating(5);
+    mockFeedback.setFeedbackStatus(FeedbackStatus.APPROVED);
+    mockFeedback.setModeratorName("Admin");
+    mockFeedback.setReviewDate(new Date());
     return mockFeedback;
   }
 

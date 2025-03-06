@@ -44,6 +44,7 @@ import { MultilingualismPipe } from '../../../shared/pipes/multilingualism.pipe'
 import { HistoryService } from '../../../core/services/history/history.service';
 import { SortOption } from '../../../shared/enums/sort-option.enum';
 import { API_URI } from '../../../shared/constants/api.constant';
+import { signal } from '@angular/core';
 
 const products = MOCK_PRODUCTS._embedded.products;
 declare const viewport: Viewport;
@@ -91,7 +92,11 @@ describe('ProductDetailComponent', () => {
         'handleFeedbackApiResponse',
         'findProductFeedbackOfUser',
         'totalElements'
-      ]
+      ],
+      {
+        feedbacks: signal([]),
+        totalElements: signal(0)
+      }
     );
 
     mockRouter = jasmine.createSpyObj('Router', ['navigate']);
@@ -170,7 +175,7 @@ describe('ProductDetailComponent', () => {
     );
 
     mockProductFeedbackService.findProductFeedbackOfUser.and.returnValue(
-      of({} as any as Feedback)
+      of({} as any as Feedback[])
     );
     mockAppModalService.openAddFeedbackDialog.and.returnValue(
       Promise.resolve()
@@ -964,6 +969,7 @@ describe('ProductDetailComponent', () => {
         body: 'Initial release',
         publishedAt: '2023-01-01',
         htmlUrl: 'https://github.com/axonivy-market/portal/releases/tag/1.0.0',
+        latestRelease: true
       },
     ];
     const expectedSafeHtml = '<p>Initial release</p>';

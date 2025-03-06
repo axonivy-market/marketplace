@@ -9,6 +9,7 @@ import { AddFeedbackDialogComponent } from './add-feedback-dialog.component';
 import { Feedback } from '../../../../../../shared/models/feedback.model';
 import { signal } from '@angular/core';
 import { of } from 'rxjs';
+import { FeedbackStatus } from '../../../../../../shared/enums/feedback-status.enum';
 
 describe('AddFeedbackDialogComponent', () => {
   let component: AddFeedbackDialogComponent;
@@ -25,7 +26,7 @@ describe('AddFeedbackDialogComponent', () => {
     const productFeedbackServiceSpy = jasmine.createSpyObj(
       'ProductFeedbackService',
       ['submitFeedback'],
-      { userFeedback: signal({}) }
+      { userFeedback: signal({}), feedbacks: signal([]) }
     );
     const productDetailServiceSpy = jasmine.createSpyObj(
       'ProductDetailService',
@@ -94,10 +95,15 @@ describe('AddFeedbackDialogComponent', () => {
   });
 
   it('should initialize feedback object on ngOnInit', () => {
+    const mockDate = new Date('2025-02-25T17:51:56+07:00');
     const mockFeedback: Feedback = {
       content: 'Test feedback content',
       rating: 4,
-      productId: 'mockProductId'
+      productId: 'mockProductId',
+      feedbackStatus: FeedbackStatus.APPROVED,
+      moderatorName: 'admin',
+      reviewDate: mockDate,
+      version: 0
     };
 
     productFeedbackServiceMock.userFeedback.set(mockFeedback);
@@ -111,15 +117,19 @@ describe('AddFeedbackDialogComponent', () => {
     const mockFeedback: Feedback = {
       content: 'Test feedback content',
       rating: 4,
-      productId: 'mockProductId'
+      productId: 'mockProductId',
+      feedbackStatus: FeedbackStatus.APPROVED,
+      moderatorName: 'admin',
+      reviewDate: new Date(),
+      version: 0
     };
-  
+
     component.feedback = mockFeedback;
-  
+
     productFeedbackServiceMock.submitFeedback.and.returnValue(of(mockFeedback));
-  
+
     component.onSubmitFeedback();
-  
+
     expect(productFeedbackServiceMock.submitFeedback).toHaveBeenCalledWith(mockFeedback);
     expect(activeModalMock.close).toHaveBeenCalled();
   });

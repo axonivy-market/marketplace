@@ -1,5 +1,9 @@
+import { FeedbackStatus } from "../enums/feedback-status.enum";
+
 export interface Feedback {
+  id?: string;
   username?: string;
+  userId?: string;
   userAvatarUrl?: string;
   userProvider?: string;
   createdAt?: Date;
@@ -8,4 +12,8 @@ export interface Feedback {
   rating: number;
   productId: string;
   isExpanded?: boolean;
+  feedbackStatus: FeedbackStatus;
+  moderatorName: string;
+  reviewDate?: Date;
+  version: number;
 }

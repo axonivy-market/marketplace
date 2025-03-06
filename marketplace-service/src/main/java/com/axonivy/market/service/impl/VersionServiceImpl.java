@@ -14,8 +14,6 @@ import com.axonivy.market.model.VersionAndUrlModel;
 import com.axonivy.market.repository.MavenArtifactVersionRepository;
 import com.axonivy.market.repository.MetadataRepository;
 import com.axonivy.market.repository.ProductJsonContentRepository;
-import com.axonivy.market.repository.ProductModuleContentRepository;
-import com.axonivy.market.repository.ProductRepository;
 import com.axonivy.market.service.VersionService;
 import com.axonivy.market.util.MavenUtils;
 import com.axonivy.market.util.VersionUtils;
@@ -45,9 +43,7 @@ import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 public class VersionServiceImpl implements VersionService {
 
   private final MavenArtifactVersionRepository mavenArtifactVersionRepo;
-  private final ProductRepository productRepo;
   private final ProductJsonContentRepository productJsonRepo;
-  private final ProductModuleContentRepository productContentRepo;
   private final ObjectMapper mapper = new ObjectMapper();
   private final MetadataRepository metadataRepo;
 
@@ -57,7 +53,7 @@ public class VersionServiceImpl implements VersionService {
         MavenArtifactVersion.builder().productId(productId).build());
     List<MavenArtifactVersionModel> results = new ArrayList<>();
 
-    for (String mavenVersion : MavenUtils.getAllExistingVersions(existingMavenArtifactVersion, isShowDevVersion,
+    for (String mavenVersion : VersionUtils.getAllExistingVersions(existingMavenArtifactVersion, isShowDevVersion,
         designerVersion)) {
       List<MavenArtifactModel> artifactsByVersion = new ArrayList<>();
       artifactsByVersion.addAll(

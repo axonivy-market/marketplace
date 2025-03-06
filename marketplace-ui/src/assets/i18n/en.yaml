@@ -51,9 +51,9 @@ common:
   introduction:
     about: The Axon Ivy market offers a unique experience to accelerate process automation.
     contribute:
-      From standard connectors of leading providers to, ready-to-use process
-      models, business solutions and many utilities such as document
-      generation and workflow user interfaces.
+      Here you will find connectors to standard software solutions from leading providers such as Microsoft,
+      Amazon, or Adobe, as well as ready-made process models, business solutions,
+      and practical tools for document processing, storage, or signing.
     link: Contribute to the community and
       <a class="link-opacity-100" href="https://github.com/axonivy-market/market/wiki" aria-label="Github - How to contribute">build your own connector!</a>
   filter:
@@ -149,11 +149,20 @@ common:
     label: Feedback
     successMessage: Your feedback has been successfully submitted!
     thankMessage: Thank you for your contribution
+    informMessage: Your comment will be published after approval.
     addFeedbackTitle: Give your feedback!
-    addFeedbackDescription: By giving your feedback you are enabling us to constantly improve our products and always deliver the best quality to both you and your team.
-    currentProductTitle: Currently reviewing
-    starRatingTitle: Stars rating
-    commentLabel: Let a comment
+    addFeedbackDescription:
+      By providing your feedback, you enable us to continuously improve our products and consistently deliver the best quality to you. Of course, our <a class="link-opacity-100" href="https://github.com/axonivy-market/market?tab=coc-ov-file">Code of Conduct</a> applies here as well:</br>
+      <ul>
+      <li>Be friendly and patient.</li>
+      <li>Be welcoming.</li>
+      <li>Be considerate.</li>
+      <li>Be respectful.</li>
+      <li>Be careful in the words that you choose.</li>
+      <li>When we disagree, try to understand why.</li>
+      </ul>
+    currentProductTitle: Under review
+    commentLabel: Please leave a comment
     submitBtnLabel: Submit review
     loggedGithubAsLabel: Logged in Github as
     reviewLabel: Review
@@ -167,6 +176,7 @@ common:
     rateFeedbackForSolutionBtnLabel: Rate this solution
     rateFeedbackForUtilityBtnLabel: Rate this utility
     reviewLabelNoYet: No reviews yet
+    approvalPending: Approval pending
   labels:
     redirecting: Redirecting ...!
   timeAgo:
@@ -186,3 +196,25 @@ common:
     secondsAgo: '{{ number }} seconds ago'
   showLess: Show less
   showMore: Show more
+  approval:
+    approvalTitle: Feedback Approval
+    about: Please review the feedback from a user.
+    instruction: The feedback given should follow our <a class="link-opacity-100" href="https://github.com/axonivy-market/market?tab=coc-ov-file">Code of Conduct</a> to be approved.
+    reviewFeedback: Review Feedback
+    history: History
+    username: Username
+    content: Content
+    rating: Rating
+    status: Status
+    createdAt: Created At
+    updatedAt: Updated At
+    action: Action
+    moderator: Moderator
+    reviewDate: Review Date
+    approveBtnLabel: Approve
+    rejectBtnLabel: Reject
+    pageTitle: Effortless Feedback Approval Management
+    description: Ensure only the best feedback moves forward.
+    enterToken: Please enter your token to access the feedback approval page.
+    enterTokenPlaceholder: Enter your token
+    proceedBtnLabel: Proceed
