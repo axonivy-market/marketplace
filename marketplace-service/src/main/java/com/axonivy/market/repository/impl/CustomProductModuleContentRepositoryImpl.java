@@ -10,6 +10,9 @@ import lombok.Builder;
 
 import java.util.List;
 
+import static com.axonivy.market.constants.PostgresDBConstants.PRODUCT_ID;
+import static com.axonivy.market.constants.PostgresDBConstants.VERSION;
+
 @Builder
 public class CustomProductModuleContentRepositoryImpl implements CustomProductModuleContentRepository {
 
@@ -20,7 +23,7 @@ public class CustomProductModuleContentRepositoryImpl implements CustomProductMo
     CriteriaBuilder cb = em.getCriteriaBuilder();
     CriteriaQuery<String> cq = cb.createQuery(String.class);
     Root<ProductModuleContent> root = cq.from(ProductModuleContent.class);
-    cq.select(root.get("version")).where(cb.equal(root.get("productId"), id));
+    cq.select(root.get(VERSION)).where(cb.equal(root.get(PRODUCT_ID), id));
     return em.createQuery(cq).getResultList();
   }
 

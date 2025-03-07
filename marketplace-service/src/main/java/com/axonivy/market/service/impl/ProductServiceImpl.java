@@ -1,11 +1,10 @@
 package com.axonivy.market.service.impl;
 
-import com.axonivy.market.bo.ArchivedArtifact;
 import com.axonivy.market.bo.Artifact;
 import com.axonivy.market.constants.GitHubConstants;
 import com.axonivy.market.constants.MavenConstants;
 import com.axonivy.market.constants.MetaConstants;
-import com.axonivy.market.constants.MongoDBConstants;
+import com.axonivy.market.constants.PostgresDBConstants;
 import com.axonivy.market.criteria.ProductSearchCriteria;
 import com.axonivy.market.entity.GitHubRepoMeta;
 import com.axonivy.market.entity.Image;
@@ -297,7 +296,7 @@ public class ProductServiceImpl implements ProductService {
 
   public Order createOrder(SortOption sortOption, String language) {
     if (SortOption.STANDARD.equals(sortOption)) {
-      return new Order(sortOption.getDirection(), MongoDBConstants.MARKETPLACE_DATA_CUSTOM_ORDER);
+      return new Order(sortOption.getDirection(), PostgresDBConstants.MARKETPLACE_DATA_CUSTOM_ORDER);
     }
     return new Order(sortOption.getDirection(), sortOption.getCode(language));
   }
@@ -346,9 +345,6 @@ public class ProductServiceImpl implements ProductService {
     List<String> syncedProductIds = new ArrayList<>();
     var gitHubContentMap = axonIvyMarketRepoService.fetchAllMarketItems();
     for (Map.Entry<String, List<GHContent>> ghContentEntity : gitHubContentMap.entrySet()) {
-//      if (!ghContentEntity.getKey().equals("market/connector/x-connector")) {
-//        continue;
-//      }
       var product = new Product();
       //update the meta.json first
       ghContentEntity.getValue().sort((f1, f2) -> GitHubUtils.sortMetaJsonFirst(f1.getName(), f2.getName()));

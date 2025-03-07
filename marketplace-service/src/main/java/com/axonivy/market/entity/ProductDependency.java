@@ -3,6 +3,7 @@ package com.axonivy.market.entity;
 import com.axonivy.market.bo.MavenDependency;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EntityListeners;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
@@ -15,6 +16,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.util.Date;
 import java.util.List;
@@ -28,6 +30,7 @@ import static com.axonivy.market.constants.EntityConstants.PRODUCT_DEPENDENCY;
 @Builder
 @Entity
 @Table(name = PRODUCT_DEPENDENCY)
+@EntityListeners(AuditingEntityListener.class)
 public class ProductDependency {
   @Id
   private String productId;

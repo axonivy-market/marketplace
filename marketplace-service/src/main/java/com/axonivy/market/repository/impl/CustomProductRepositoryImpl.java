@@ -42,12 +42,11 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 
+import static com.axonivy.market.constants.PostgresDBConstants.*;
+
 @Builder
 @AllArgsConstructor
 public class CustomProductRepositoryImpl implements CustomProductRepository {
-  public static final String CASE_INSENSITIVITY_OPTION = "i";
-  public static final String LOCALIZE_SEARCH_PATTERN = "%s.%s";
-
   final ProductCustomSortRepository productCustomSortRepo;
   final ProductModuleContentRepository contentRepository;
   EntityManager em;
@@ -73,11 +72,11 @@ public class CustomProductRepositoryImpl implements CustomProductRepository {
     CriteriaQuery<Product> cq = cb.createQuery(Product.class);
     Root<Product> product = cq.from(Product.class);
 
-    product.fetch("names", JoinType.LEFT);
-    product.fetch("shortDescriptions", JoinType.LEFT);
-    product.fetch("artifacts", JoinType.LEFT);
+    product.fetch(PRODUCT_NAMES, JoinType.LEFT);
+    product.fetch(PRODUCT_SHORT_DESCRIPTION, JoinType.LEFT);
+    product.fetch(PRODUCT_ARTIFACT, JoinType.LEFT);
 
-    cq.where(cb.equal(product.get("id"), id));
+    cq.where(cb.equal(product.get(ID), id));
     try {
       return em.createQuery(cq).getSingleResult();
     } catch (NoResultException e) {
@@ -152,23 +151,23 @@ public class CustomProductRepositoryImpl implements CustomProductRepository {
         sortByPopularity(jpaBuilder);
       }
     }
-    Join<Product, ProductMarketplaceData> marketplaceJoin = jpaBuilder.root.join("productMarketplaceData",
+    Join<Product, ProductMarketplaceData> marketplaceJoin = jpaBuilder.root.join(PRODUCT_MARKETPLACE_DATA,
         JoinType.LEFT);
-    Order order = jpaBuilder.cb.asc(marketplaceJoin.get("customOrder"));
+    Order order = jpaBuilder.cb.asc(marketplaceJoin.get(CUSTOM_ORDER));
     jpaBuilder.cq().orderBy(order);
   }
 
   private void sortByPopularity(
       ProductCriteriaBuilder<CriteriaBuilder, CriteriaQuery<Product>, Root<Product>> jpaBuilder) {
-    Join<Product, ProductMarketplaceData> marketplaceJoin = jpaBuilder.root.join("productMarketplaceData",
+    Join<Product, ProductMarketplaceData> marketplaceJoin = jpaBuilder.root.join(PRODUCT_MARKETPLACE_DATA,
         JoinType.LEFT);
-    Order order = jpaBuilder.cb.desc(marketplaceJoin.get("installationCount"));
+    Order order = jpaBuilder.cb.desc(marketplaceJoin.get(INSTALLATION_COUNT));
     jpaBuilder.cq().orderBy(order);
   }
 
   private void sortByAlphabet(
       ProductCriteriaBuilder<CriteriaBuilder, CriteriaQuery<Product>, Root<Product>> jpaBuilder) {
-    MapJoin<Product, String, String> namesJoin = jpaBuilder.root().joinMap("names");
+    MapJoin<Product, String, String> namesJoin = jpaBuilder.root().joinMap(PRODUCT_NAMES);
     // Extract key (language) and value (name)
     Path<String> languageKey = namesJoin.key();
     Path<String> nameValue = namesJoin.value();
@@ -181,7 +180,7 @@ public class CustomProductRepositoryImpl implements CustomProductRepository {
 
   private void sortByRecent(
       ProductCriteriaBuilder<CriteriaBuilder, CriteriaQuery<Product>, Root<Product>> jpaBuilder) {
-    Order order = jpaBuilder.cb.desc(jpaBuilder.root().get("firstPublishedDate"));
+    Order order = jpaBuilder.cb.desc(jpaBuilder.root().get(FIRST_PUBLISHED_DATE));
     jpaBuilder.cq().orderBy(order);
   }
 
@@ -209,8 +208,8 @@ public class CustomProductRepositoryImpl implements CustomProductRepository {
   @Override
   public List<Product> findAllProductsHaveDocument() {
     ProductCriteriaBuilder<CriteriaBuilder, CriteriaQuery<Product>, Root<Product>> jpaBuilder = createCriteriaQuery();
-    Join<Product, Artifact> artifact = jpaBuilder.root().join("artifacts");
-    jpaBuilder.cq().select(jpaBuilder.root()).distinct(true).where(jpaBuilder.cb().isTrue(artifact.get("doc")));
+    Join<Product, Artifact> artifact = jpaBuilder.root().join(PRODUCT_ARTIFACT);
+    jpaBuilder.cq().select(jpaBuilder.root()).distinct(true).where(jpaBuilder.cb().isTrue(artifact.get(DOC)));
     return em.createQuery(jpaBuilder.cq()).getResultList();
   }
 
@@ -221,13 +220,13 @@ public class CustomProductRepositoryImpl implements CustomProductRepository {
     // Query by Listed (Assuming "listed" is a boolean field)
     if (searchCriteria.isListed()) {
       predicates.add(
-          cb.or(cb.notEqual(productRoot.get("listed"), false), cb.isNull(productRoot.get("listed")))
+          cb.or(cb.notEqual(productRoot.get(LISTED), false), cb.isNull(productRoot.get(LISTED)))
       );
     }
 
     // Query by Type (Assuming "type" is stored as a string or enum code)
     if (searchCriteria.getType() != null && TypeOption.ALL != searchCriteria.getType()) {
-      predicates.add(cb.equal(productRoot.get("type"), searchCriteria.getType().getCode()));
+      predicates.add(cb.equal(productRoot.get(TYPE), searchCriteria.getType().getCode()));
     }
 
     // Query by Keyword (Using LIKE for partial matching)

@@ -7,12 +7,14 @@ import com.axonivy.market.constants.DirectoryConstants;
 import com.axonivy.market.entity.ExternalDocumentMeta;
 import com.axonivy.market.entity.Product;
 import com.axonivy.market.factory.VersionFactory;
+import com.axonivy.market.repository.ArtifactRepository;
 import com.axonivy.market.repository.ExternalDocumentMetaRepository;
 import com.axonivy.market.repository.ProductRepository;
 import com.axonivy.market.service.ExternalDocumentService;
 import com.axonivy.market.service.FileDownloadService;
 import com.axonivy.market.util.MavenUtils;
 import com.axonivy.market.util.VersionUtils;
+import jakarta.transaction.Transactional;
 import lombok.AllArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.lang3.BooleanUtils;
@@ -26,6 +28,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import static org.apache.commons.lang3.StringUtils.EMPTY;
 
@@ -39,11 +42,15 @@ public class ExternalDocumentServiceImpl implements ExternalDocumentService {
   final ProductRepository productRepo;
   final ExternalDocumentMetaRepository externalDocumentMetaRepo;
   final FileDownloadService fileDownloadService;
+  final ArtifactRepository artifactRepo;
 
   @Override
+  @Transactional
   public void syncDocumentForProduct(String productId, List<String> nonSyncReleasedVersions, boolean isResetSync) {
     Optional.ofNullable(productRepo.findProductByIdAndRelatedData(productId)).ifPresent(product -> {
-      var docArtifacts = Optional.ofNullable(product.getArtifacts()).orElse(List.of())
+      List<Artifact> allArtifacts = fetchAchievedArtifact(product.getArtifacts());
+
+      List<Artifact> docArtifacts = Optional.ofNullable(allArtifacts).orElse(List.of())
           .stream().filter(artifact -> BooleanUtils.isTrue(artifact.getDoc())).toList();
 
       List<String> releasedVersions = ObjectUtils.isEmpty(nonSyncReleasedVersions)
@@ -55,7 +62,7 @@ public class ExternalDocumentServiceImpl implements ExternalDocumentService {
         return;
       }
 
-      for (var artifact : docArtifacts) {
+      for (Artifact artifact : docArtifacts) {
         syncDocumentationForProduct(productId, isResetSync, artifact, releasedVersions);
       }
     });
@@ -119,5 +126,10 @@ public class ExternalDocumentServiceImpl implements ExternalDocumentService {
       log.error("Exception during unzip");
     }
     return EMPTY;
+  }
+
+  private List<Artifact> fetchAchievedArtifact(List<Artifact> artifacts) {
+    List<String> ids = artifacts.stream().map(Artifact::getId).collect(Collectors.toList());
+    return artifactRepo.findAllByIdInAndFetchArchivedArtifacts(ids);
   }
 }

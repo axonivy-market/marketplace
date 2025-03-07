@@ -16,6 +16,8 @@ import org.apache.commons.lang3.ObjectUtils;
 
 import java.util.List;
 
+import static com.axonivy.market.constants.PostgresDBConstants.*;
+
 @Builder
 @AllArgsConstructor
 public class CustomProductMarketplaceDataRepositoryImpl implements CustomProductMarketplaceDataRepository {
@@ -38,10 +40,10 @@ public class CustomProductMarketplaceDataRepositoryImpl implements CustomProduct
     Root<ProductMarketplaceData> root = updateQuery.from(ProductMarketplaceData.class);
 
     // Set the fields
-    updateQuery.set(root.get("installationCount"), initialCount);
-    updateQuery.set(root.get("synchronizedInstallationCount"), true);
+    updateQuery.set(root.get(INSTALLATION_COUNT), initialCount);
+    updateQuery.set(root.get(SYNCHRONIZED_INSTALLATION_COUNT), true);
     // Where condition (filter by productId)
-    updateQuery.where(cb.equal(root.get("id"), productId));
+    updateQuery.where(cb.equal(root.get(ID), productId));
     // Execute the update
     int updatedRows = em.createQuery(updateQuery).executeUpdate();
     em.clear();
@@ -56,7 +58,7 @@ public class CustomProductMarketplaceDataRepositoryImpl implements CustomProduct
   @Transactional
   public int increaseInstallationCount(String productId) {
     Query query = em.createNativeQuery(INCREASE_INSTALLATION_COUNT_VIA_PRODUCT_ID);
-    query.setParameter("productId", productId);
+    query.setParameter(PRODUCT_ID, productId);
     return ((Number) query.getSingleResult()).intValue();
   }
 
@@ -67,8 +69,8 @@ public class CustomProductMarketplaceDataRepositoryImpl implements CustomProduct
     CriteriaQuery<ProductDesignerInstallation> cbQuery = cb.createQuery(ProductDesignerInstallation.class);
     Root<ProductDesignerInstallation> productDesignerInstallationRoot = cbQuery.from(ProductDesignerInstallation.class);
 
-    cbQuery.where(cb.equal(productDesignerInstallationRoot.get("productId"), productId),
-        cb.equal(productDesignerInstallationRoot.get("designerVersion"), designerVersion));
+    cbQuery.where(cb.equal(productDesignerInstallationRoot.get(PRODUCT_ID), productId),
+        cb.equal(productDesignerInstallationRoot.get(DESIGNER_VERSION), designerVersion));
 
     List<ProductDesignerInstallation> existsDesignerInstallation = em.createQuery(cbQuery).getResultList();
 
@@ -80,8 +82,8 @@ public class CustomProductMarketplaceDataRepositoryImpl implements CustomProduct
       em.persist(installation);
     } else {
       Query query = em.createNativeQuery(INCREASE_INSTALLATION_COUNT_VIA_PRODUCT_ID_FOR_DESIGNER_VERSION);
-      query.setParameter("productId", productId);
-      query.setParameter("designerVersion", designerVersion);
+      query.setParameter(PRODUCT_ID, productId);
+      query.setParameter(DESIGNER_VERSION, designerVersion);
       query.executeUpdate();
     }
   }
@@ -93,7 +95,7 @@ public class CustomProductMarketplaceDataRepositoryImpl implements CustomProduct
     CriteriaBuilder cb = em.getCriteriaBuilder();
     CriteriaQuery<Long> query = cb.createQuery(Long.class);
     Root<ProductMarketplaceData> root = query.from(ProductMarketplaceData.class);
-    query.select(cb.count(root)).where(cb.equal(root.get("id"), productId));
+    query.select(cb.count(root)).where(cb.equal(root.get(ID), productId));
     Long count = em.createQuery(query).getSingleResult();
     boolean marketPlaceExists = count > 0;
     if (!marketPlaceExists) {

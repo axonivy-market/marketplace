@@ -5,6 +5,7 @@ import jakarta.persistence.CollectionTable;
 import jakarta.persistence.Column;
 import jakarta.persistence.ElementCollection;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EntityListeners;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.MapKeyColumn;
 import jakarta.persistence.Table;
@@ -15,6 +16,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import jakarta.persistence.Id;
 import org.springframework.data.annotation.LastModifiedDate;
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.io.Serial;
 import java.io.Serializable;
@@ -30,6 +32,7 @@ import static com.axonivy.market.constants.EntityConstants.PRODUCT_MODULE_CONTEN
 @Builder
 @Entity
 @Table(name = PRODUCT_MODULE_CONTENT)
+@EntityListeners(AuditingEntityListener.class)
 public class ProductModuleContent implements Serializable {
   @Id
   private String id;

@@ -14,6 +14,7 @@ import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.annotation.Transient;
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.io.Serial;
 import java.io.Serializable;
@@ -30,6 +31,7 @@ import static com.axonivy.market.constants.EntityConstants.PRODUCT;
 @Builder
 @Entity
 @Table(name = PRODUCT)
+@EntityListeners(AuditingEntityListener.class)
 public class Product implements Serializable {
   @Serial
   private static final long serialVersionUID = -8770801877877277258L;

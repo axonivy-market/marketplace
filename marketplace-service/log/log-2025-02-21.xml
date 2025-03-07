@@ -1,9 +1,0 @@
-<Logs>
-  <LogEntry>
-    <X-Requested-By>marketplace-website</X-Requested-By>
-    <arguments>productId: vertexai-google, designerVersion: </arguments>
-    <method>public org.springframework.http.ResponseEntity com.axonivy.market.controller.ProductMarketplaceDataController.syncInstallationCount(java.lang.String,java.lang.String)</method>
-    <timestamp>2025-02-21 17:10:31</timestamp>
-    <user-agent>Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/133.0.0.0 Safari/537.36</user-agent>
-  </LogEntry>
-</Logs>
