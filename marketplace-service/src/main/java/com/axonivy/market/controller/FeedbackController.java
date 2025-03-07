@@ -1,7 +1,10 @@
 package com.axonivy.market.controller;
 
 import com.axonivy.market.assembler.FeedbackModelAssembler;
+import com.axonivy.market.constants.GitHubConstants;
 import com.axonivy.market.entity.Feedback;
+import com.axonivy.market.github.service.GitHubService;
+import com.axonivy.market.model.FeedbackApprovalModel;
 import com.axonivy.market.model.FeedbackModel;
 import com.axonivy.market.model.FeedbackModelRequest;
 import com.axonivy.market.model.ProductRating;
@@ -30,6 +33,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -42,6 +46,7 @@ import java.util.List;
 
 import static com.axonivy.market.constants.RequestMappingConstants.*;
 import static com.axonivy.market.constants.RequestParamConstants.*;
+import static org.springframework.http.HttpHeaders.AUTHORIZATION;
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 
@@ -52,14 +57,16 @@ public class FeedbackController {
 
   private final FeedbackService feedbackService;
   private final JwtService jwtService;
+  private final GitHubService gitHubService;
   private final FeedbackModelAssembler feedbackModelAssembler;
 
   private final PagedResourcesAssembler<Feedback> pagedResourcesAssembler;
 
-  public FeedbackController(FeedbackService feedbackService, JwtService jwtService,
+  public FeedbackController(FeedbackService feedbackService, JwtService jwtService, GitHubService gitHubService,
       FeedbackModelAssembler feedbackModelAssembler, PagedResourcesAssembler<Feedback> pagedResourcesAssembler) {
     this.feedbackService = feedbackService;
     this.jwtService = jwtService;
+    this.gitHubService = gitHubService;
     this.feedbackModelAssembler = feedbackModelAssembler;
     this.pagedResourcesAssembler = pagedResourcesAssembler;
   }
@@ -103,15 +110,40 @@ public class FeedbackController {
   @GetMapping()
   @Operation(summary = "Find all feedbacks by user id and product id",
       description = "Get current user feedback on target product.")
-  public ResponseEntity<FeedbackModel> findFeedbackByUserIdAndProductId(
+  public ResponseEntity<List<FeedbackModel>> findFeedbackByUserIdAndProductId(
       @RequestParam(USER_ID) @Parameter(description = "Id of current user from DB", example = "1234",
           in = ParameterIn.QUERY) String userId,
       @RequestParam("productId") @Parameter(description = "Product id (from meta.json)", example = "portal",
           in = ParameterIn.QUERY) String productId) {
-    Feedback feedback = feedbackService.findFeedbackByUserIdAndProductId(userId, productId);
+    List<Feedback> feedbacks = feedbackService.findFeedbackByUserIdAndProductId(userId, productId);
+    return new ResponseEntity<>(feedbackModelAssembler.toModel(feedbacks), HttpStatus.OK);
+  }
+
+  @GetMapping(FEEDBACK_APPROVAL)
+  @Operation(hidden = true)
+  public ResponseEntity<PagedModel<FeedbackModel>> findAllFeedbacks(
+      @RequestHeader(value = AUTHORIZATION) String authorizationHeader, @ParameterObject Pageable pageable) {
+    String token = AuthorizationUtils.getBearerToken(authorizationHeader);
+    gitHubService.validateUserInOrganizationAndTeam(token,
+        GitHubConstants.AXONIVY_MARKET_ORGANIZATION_NAME,
+        GitHubConstants.AXONIVY_MARKET_TEAM_NAME);
+    Page<Feedback> results = feedbackService.findAllFeedbacks(pageable);
+    if (results.isEmpty()) {
+      return generateEmptyPagedModel();
+    }
+    var responseContent = new PageImpl<>(results.getContent(), pageable, results.getTotalElements());
+    var pageResources = pagedResourcesAssembler.toModel(responseContent, feedbackModelAssembler);
+    return new ResponseEntity<>(pageResources, HttpStatus.OK);
+  }
+
+  @PutMapping(FEEDBACK_APPROVAL)
+  @Operation(hidden = true)
+  public ResponseEntity<FeedbackModel> updateFeedbackWithNewStatus(
+      @RequestBody @Valid FeedbackApprovalModel feedbackApproval) {
+    Feedback feedback = feedbackService.updateFeedbackWithNewStatus(feedbackApproval);
     FeedbackModel model = feedbackModelAssembler.toModel(feedback);
     addModelLinks(model, feedback);
-    return new ResponseEntity<>(model, HttpStatus.OK);
+    return ResponseEntity.ok(model);
   }
 
   @PostMapping

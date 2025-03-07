@@ -5,12 +5,16 @@ import jakarta.persistence.EntityListeners;
 import jakarta.persistence.Id;
 import jakarta.persistence.PrePersist;
 import jakarta.persistence.Table;
+import com.axonivy.market.enums.FeedbackStatus;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
+import org.springframework.data.annotation.Version;
 
 import java.io.Serial;
 import java.io.Serializable;
@@ -21,6 +25,8 @@ import static com.axonivy.market.constants.EntityConstants.FEEDBACK;
 
 @Getter
 @Setter
+@Builder
+@AllArgsConstructor
 @NoArgsConstructor
 @Entity
 @Table(name = FEEDBACK)
@@ -36,7 +42,11 @@ public class Feedback implements Serializable {
   private String productId;
   private String content;
   private Integer rating;
-
+  private FeedbackStatus feedbackStatus;
+  private String moderatorName;
+  private Date reviewDate;
+  @Version
+  private Integer version;
   @CreatedDate
   private Date createdAt;
 

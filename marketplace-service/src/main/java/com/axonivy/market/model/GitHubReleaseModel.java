@@ -29,7 +29,7 @@ public class GitHubReleaseModel extends RepresentationModel<GitHubReleaseModel> 
   private String htmlUrl;
 
   @Schema(description = "Latest version", example = "true")
-  private boolean latestRelease;
+  private boolean isLatestRelease;
 
   @Override
   public int hashCode() {

@@ -5,7 +5,7 @@ import { HttpErrorResponse } from '@angular/common/http';
 
 import { SecurityMonitorService } from './security-monitor.service';
 import { ProductSecurityInfo } from '../../shared/models/product-security-info-model';
-import { GITHUB_MARKET_ORG_URL, REPO_PAGE_PATHS, SECURITY_MONITOR_MESSAGES, SECURITY_MONITOR_SESSION_KEYS, TIME_UNITS, UNAUTHORIZED } from '../../shared/constants/common.constant';
+import { GITHUB_MARKET_ORG_URL, REPO_PAGE_PATHS, ERROR_MESSAGES, SECURITY_MONITOR_SESSION_KEYS, TIME_UNITS, UNAUTHORIZED } from '../../shared/constants/common.constant';
 import { LoadingComponentId } from '../../shared/enums/loading-component-id';
 import { LoadingSpinnerComponent } from '../../shared/components/loading-spinner/loading-spinner.component';
 
@@ -53,7 +53,7 @@ export class SecurityMonitorComponent {
   }
 
   private handleMissingToken(): void {
-    this.errorMessage = SECURITY_MONITOR_MESSAGES.TOKEN_REQUIRED;
+    this.errorMessage = ERROR_MESSAGES.TOKEN_REQUIRED;
     this.isAuthenticated = false;
     this.clearSessionData();
   }
@@ -76,9 +76,9 @@ export class SecurityMonitorComponent {
 
   private handleError(err: HttpErrorResponse): void {
     if (err.status === UNAUTHORIZED) {
-      this.errorMessage = SECURITY_MONITOR_MESSAGES.UNAUTHORIZED_ACCESS;
+      this.errorMessage = ERROR_MESSAGES.UNAUTHORIZED_ACCESS;
     } else {
-      this.errorMessage = SECURITY_MONITOR_MESSAGES.FETCH_FAILURE;
+      this.errorMessage = ERROR_MESSAGES.FETCH_FAILURE;
     }
 
     this.isAuthenticated = false;

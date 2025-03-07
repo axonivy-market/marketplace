@@ -55,7 +55,7 @@ public class ScheduledTasks {
     try {
       productDetailsController.syncLatestReleasesForProducts();
     } catch (IOException e) {
-      log.error("Failed to sync data for product release notes: ",  e);
+      log.error("Failed to sync data for product release notes: ", e);
     }
   }
 }

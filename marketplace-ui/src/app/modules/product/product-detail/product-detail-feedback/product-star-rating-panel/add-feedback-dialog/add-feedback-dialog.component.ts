@@ -2,7 +2,7 @@ import { CommonModule, NgOptimizedImage } from '@angular/common';
 import { Component, inject, Signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
-import { TranslateModule } from '@ngx-translate/core';
+import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { AuthService } from '../../../../../../auth/auth.service';
 import { LanguageService } from '../../../../../../core/services/language/language.service';
 import { StarRatingComponent } from '../../../../../../shared/components/star-rating/star-rating.component';
@@ -14,6 +14,7 @@ import { ProductFeedbackService } from '../../product-feedbacks-panel/product-fe
 import { CommonDropdownComponent } from '../../../../../../shared/components/common-dropdown/common-dropdown.component';
 import { MAX_FEEDBACK_LENGTH, NOT_FOUND_ERROR_CODE, USER_NOT_FOUND_ERROR_CODE } from '../../../../../../shared/constants/common.constant';
 import { CharacterCountPipe } from '../../../../../../shared/pipes/character-count.pipe';
+import { FeedbackStatus } from '../../../../../../shared/enums/feedback-status.enum';
 
 @Component({
   selector: 'app-add-feedback-dialog',
@@ -36,6 +37,7 @@ export class AddFeedbackDialogComponent {
   productDetailService = inject(ProductDetailService);
   activeModal = inject(NgbActiveModal);
   languageService = inject(LanguageService);
+  translateService = inject(TranslateService);
   private readonly authService = inject(AuthService);
   private readonly appModalService = inject(AppModalService);
 
@@ -54,7 +56,11 @@ export class AddFeedbackDialogComponent {
     this.feedback = {
       content: this.userFeedback()?.content ?? '',
       rating: this.userFeedback()?.rating ?? 0,
-      productId: this.productDetailService.productId()
+      productId: this.productDetailService.productId(),
+      feedbackStatus: this.userFeedback()?.feedbackStatus ?? FeedbackStatus.PENDING,
+      moderatorName: this.userFeedback()?.moderatorName ?? '',
+      reviewDate: this.userFeedback()?.reviewDate,
+      version: this.userFeedback()?.version ?? 0
     };
   }
 

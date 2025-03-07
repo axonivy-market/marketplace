@@ -2,6 +2,7 @@ package com.axonivy.market;
 
 import com.axonivy.market.bo.Artifact;
 import com.axonivy.market.constants.MavenConstants;
+import com.axonivy.market.entity.Feedback;
 import com.axonivy.market.entity.Image;
 import com.axonivy.market.entity.MavenArtifactVersion;
 import com.axonivy.market.entity.Metadata;
@@ -10,9 +11,11 @@ import com.axonivy.market.entity.ProductDesignerInstallation;
 import com.axonivy.market.entity.ProductJsonContent;
 import com.axonivy.market.entity.ProductMarketplaceData;
 import com.axonivy.market.entity.ProductModuleContent;
+import com.axonivy.market.enums.FeedbackStatus;
 import com.axonivy.market.enums.Language;
 import com.axonivy.market.enums.SortOption;
 import com.axonivy.market.entity.MavenArtifactModel;
+import com.axonivy.market.model.FeedbackApprovalModel;
 import com.axonivy.market.model.VersionAndUrlModel;
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.lang3.StringUtils;
@@ -37,6 +40,7 @@ import java.util.Set;
 @Log4j2
 public class BaseSetup {
   protected static final String AUTHORIZATION_HEADER = "Bearer valid_token";
+  protected static final String ACCESS_TOKEN = "sampleAccessToken";
   protected static final String SAMPLE_PRODUCT_ID = "amazon-comprehend";
   protected static final String SAMPLE_PRODUCT_PATH = "/market/connector/amazon-comprehend";
   protected static final String SAMPLE_PRODUCT_NAME = "prody Comprehend";
@@ -95,6 +99,7 @@ public class BaseSetup {
     mockProduct.setNames(name);
     mockProduct.setType("connector");
     mockProduct.setMarketDirectory(SAMPLE_PRODUCT_ID);
+    mockProduct.setReleasedVersions(List.of(MOCK_RELEASED_VERSION));
     mockProducts.add(mockProduct);
 
     mockProduct = new Product();
@@ -104,6 +109,7 @@ public class BaseSetup {
     mockProduct.setNames(name);
     mockProduct.setType("util");
     mockProduct.setMarketDirectory(SAMPLE_PRODUCT_ID);
+    mockProduct.setReleasedVersions(List.of(MOCK_RELEASED_VERSION));
     mockProducts.add(mockProduct);
     return new PageImpl<>(mockProducts);
   }
@@ -318,7 +324,7 @@ public class BaseSetup {
         .build();
 
     List<VersionAndUrlModel> versionAndUrlModels = new ArrayList<>(mockVersionModels());
-    versionAndUrlModels.add(0,versionAndUrlModel);
+    versionAndUrlModels.add(0, versionAndUrlModel);
 
     return versionAndUrlModels;
   }
@@ -333,8 +339,36 @@ public class BaseSetup {
         .build();
 
     List<VersionAndUrlModel> versionAndUrlModels = new ArrayList<>(mockVersionModels());
-    versionAndUrlModels.add(0,versionAndUrlModel);
-    versionAndUrlModels.add(0,versionAndUrlModel2);
+    versionAndUrlModels.add(0, versionAndUrlModel);
+    versionAndUrlModels.add(0, versionAndUrlModel2);
     return versionAndUrlModels;
+  }
+
+  protected Feedback mockFeedback() {
+    return Feedback.builder()
+        .id("1")
+        .userId("user1")
+        .productId("product1")
+        .feedbackStatus(FeedbackStatus.APPROVED)
+        .build();
+  }
+
+  protected List<Feedback> mockFeedbacks() {
+    Feedback updatedFeedback = Feedback.builder()
+        .id("1")
+        .userId("user1")
+        .productId("product1")
+        .feedbackStatus(FeedbackStatus.APPROVED)
+        .moderatorName("Admin")
+        .build();
+
+    return List.of(updatedFeedback);
+  }
+
+  protected FeedbackApprovalModel mockFeedbackApproval() {
+    return FeedbackApprovalModel.builder()
+        .feedbackId("1")
+        .moderatorName("Admin")
+        .build();
   }
 }

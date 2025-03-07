@@ -2,7 +2,6 @@ package com.axonivy.market.controller;
 
 import com.axonivy.market.assembler.GithubReleaseModelAssembler;
 import com.axonivy.market.assembler.ProductDetailModelAssembler;
-import com.axonivy.market.constants.RequestMappingConstants;
 import com.axonivy.market.entity.Product;
 import com.axonivy.market.model.GitHubReleaseModel;
 import com.axonivy.market.model.MavenArtifactVersionModel;
@@ -44,7 +43,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 
-import static com.axonivy.market.constants.MavenConstants.APP_ZIP_POSTFIX;
+import static com.axonivy.market.constants.MavenConstants.APP_ZIP_FORMAT;
 import static com.axonivy.market.constants.RequestMappingConstants.*;
 import static com.axonivy.market.constants.RequestParamConstants.*;
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
@@ -211,28 +210,31 @@ public class ProductDetailsController {
       @PathVariable(value = ID) @Parameter(in = ParameterIn.PATH, example = "demos") String id,
       @RequestParam(value = VERSION) @Parameter(in = ParameterIn.QUERY, example = "10.0") String version,
       @RequestParam(value = ARTIFACT) @Parameter(in = ParameterIn.QUERY, example = "demos-app") String artifactId) {
+    // Prepare the response
+    String filename = String.format(APP_ZIP_FORMAT, artifactId, version);
+    HttpHeaders headers = new HttpHeaders();
+    headers.add(HttpHeaders.CONTENT_DISPOSITION, ATTACHMENT_HEADER.formatted(filename));
+    headers.add(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_OCTET_STREAM_VALUE);
     // Open stream as async to save the server resources
     return productContentService.downloadZipArtifactFile(id, artifactId, version)
         .thenApply(emitter -> {
+          HttpStatus status = HttpStatus.OK;
           if (emitter == null) {
-            var noDataBody = new ResponseBodyEmitter();
-            noDataBody.complete();
-            return ResponseEntity.status(HttpStatus.NO_CONTENT).body(noDataBody);
+            status = HttpStatus.NO_CONTENT;
+            emitter = new ResponseBodyEmitter();
+            emitter.complete();
           }
 
-          // Prepare the response
-          String filename = artifactId.concat(APP_ZIP_POSTFIX);
-          HttpHeaders headers = new HttpHeaders();
-          headers.add(HttpHeaders.CONTENT_DISPOSITION, ATTACHMENT_HEADER.formatted(filename));
-          headers.add(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_OCTET_STREAM_VALUE);
-
-          return ResponseEntity.ok().headers(headers).contentType(MediaType.APPLICATION_OCTET_STREAM).body(emitter);
+          return ResponseEntity.status(status)
+              .headers(headers)
+              .contentType(MediaType.APPLICATION_OCTET_STREAM)
+              .body(emitter);
         });
   }
 
   private void addModelLinks(ProductDetailModel model, Product product, String version, String path){
     String productId = Optional.of(product).map(Product::getId).orElse(StringUtils.EMPTY);
-    if (path.equals(RequestMappingConstants.BEST_MATCH_BY_ID_AND_VERSION)) {
+    if (path.equals(BEST_MATCH_BY_ID_AND_VERSION)) {
       Link link = linkTo(
               methodOn(ProductDetailsController.class).findProductJsonContent(productId,
                       product.getBestMatchVersion())).withSelfRel();
@@ -244,9 +246,9 @@ public class ProductDetailsController {
   public Link getSelfLinkForProduct(String productId, String version, String path){
     ResponseEntity<ProductDetailModel> selfLinkWithVersion;
     selfLinkWithVersion = switch (path) {
-      case RequestMappingConstants.BEST_MATCH_BY_ID_AND_VERSION ->
+      case BEST_MATCH_BY_ID_AND_VERSION ->
               methodOn(ProductDetailsController.class).findBestMatchProductDetailsByVersion(productId, version);
-      case RequestMappingConstants.BY_ID_AND_VERSION ->
+      case BY_ID_AND_VERSION ->
               methodOn(ProductDetailsController.class).findProductDetailsByVersion(productId, version);
       default -> methodOn(ProductDetailsController.class).findProductDetails(productId, false);
     };

@@ -23,6 +23,7 @@ import java.util.stream.Stream;
 
 import static com.axonivy.market.constants.CommonConstants.DOT_SEPARATOR;
 import static com.axonivy.market.constants.MavenConstants.*;
+
 @Log4j2
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class VersionUtils {

@@ -10,6 +10,8 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.hateoas.server.RepresentationModelAssembler;
 import org.springframework.stereotype.Component;
 
+import java.util.List;
+
 @Log4j2
 @Component
 public class FeedbackModelAssembler implements RepresentationModelAssembler<Feedback, FeedbackModel> {
@@ -26,6 +28,12 @@ public class FeedbackModelAssembler implements RepresentationModelAssembler<Feed
     return createResource(resource, feedback);
   }
 
+  public List<FeedbackModel> toModel(List<Feedback> feedbacks) {
+    return feedbacks.stream()
+        .map(this::toModel)
+        .toList();
+  }
+
   private FeedbackModel createResource(FeedbackModel model, Feedback feedback) {
     User user;
     try {
@@ -35,6 +43,7 @@ public class FeedbackModelAssembler implements RepresentationModelAssembler<Feed
       user = new User();
     }
     model.setId(feedback.getId());
+    model.setUserId(user.getId());
     model.setUsername(StringUtils.isBlank(user.getName()) ? user.getUsername() : user.getName());
     model.setUserAvatarUrl(user.getAvatarUrl());
     model.setUserProvider(user.getProvider());
@@ -43,6 +52,10 @@ public class FeedbackModelAssembler implements RepresentationModelAssembler<Feed
     model.setRating(feedback.getRating());
     model.setCreatedAt(feedback.getCreatedAt());
     model.setUpdatedAt(feedback.getUpdatedAt());
+    model.setFeedbackStatus(feedback.getFeedbackStatus());
+    model.setModeratorName(feedback.getModeratorName());
+    model.setReviewDate(feedback.getReviewDate());
+    model.setVersion(feedback.getVersion());
     return model;
   }
 

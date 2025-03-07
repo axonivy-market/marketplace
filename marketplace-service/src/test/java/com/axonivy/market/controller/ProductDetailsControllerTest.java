@@ -14,22 +14,20 @@ import com.axonivy.market.service.ProductService;
 import com.axonivy.market.service.VersionService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.lang3.StringUtils;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PagedResourcesAssembler;
 import org.springframework.hateoas.PagedModel;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.servlet.mvc.method.annotation.ResponseBodyEmitter;
 
 import java.io.IOException;
 import java.util.HashMap;
@@ -37,12 +35,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
-
-import org.springframework.web.servlet.mvc.method.annotation.ResponseBodyEmitter;
 
 @ExtendWith(MockitoExtension.class)
 class ProductDetailsControllerTest extends BaseSetup {
@@ -59,7 +55,6 @@ class ProductDetailsControllerTest extends BaseSetup {
   @Mock
   private ProductContentService productContentService;
 
-
   @InjectMocks
   private ProductDetailsController productDetailsController;
   private static final String PRODUCT_NAME_SAMPLE = "Docker";
@@ -69,8 +64,8 @@ class ProductDetailsControllerTest extends BaseSetup {
 
   @Test
   void testProductDetails() {
-    Mockito.when(productService.fetchProductDetail(Mockito.anyString(), anyBoolean())).thenReturn(mockProduct());
-    Mockito.when(detailModelAssembler.toModel(mockProduct())).thenReturn(createProductMockWithDetails());
+    when(productService.fetchProductDetail(anyString(), anyBoolean())).thenReturn(mockProduct());
+    when(detailModelAssembler.toModel(mockProduct())).thenReturn(createProductMockWithDetails());
     ResponseEntity<ProductDetailModel> mockExpectedResult = new ResponseEntity<>(createProductMockWithDetails(),
         HttpStatus.OK);
 
@@ -88,9 +83,9 @@ class ProductDetailsControllerTest extends BaseSetup {
 
   @Test
   void testFindBestMatchProductDetailsByVersion() {
-    Mockito.when(productService.fetchBestMatchProductDetail(Mockito.anyString(), Mockito.anyString())).thenReturn(
+    when(productService.fetchBestMatchProductDetail(anyString(), anyString())).thenReturn(
         mockProduct());
-    Mockito.when(detailModelAssembler.toModel(mockProduct())).thenReturn(createProductMockWithDetails());
+    when(detailModelAssembler.toModel(mockProduct())).thenReturn(createProductMockWithDetails());
     ResponseEntity<ProductDetailModel> mockExpectedResult = new ResponseEntity<>(createProductMockWithDetails(),
         HttpStatus.OK);
 
@@ -106,9 +101,9 @@ class ProductDetailsControllerTest extends BaseSetup {
 
   @Test
   void testProductDetailsWithVersion() {
-    Mockito.when(productService.fetchProductDetailByIdAndVersion(Mockito.anyString(), Mockito.anyString())).thenReturn(
+    when(productService.fetchProductDetailByIdAndVersion(anyString(), anyString())).thenReturn(
         mockProduct());
-    Mockito.when(detailModelAssembler.toModel(mockProduct())).thenReturn(createProductMockWithDetails());
+    when(detailModelAssembler.toModel(mockProduct())).thenReturn(createProductMockWithDetails());
     ResponseEntity<ProductDetailModel> mockExpectedResult = new ResponseEntity<>(createProductMockWithDetails(),
         HttpStatus.OK);
 
@@ -123,7 +118,7 @@ class ProductDetailsControllerTest extends BaseSetup {
 
   @Test
   void testProductDetailsWithVersionWithWrongProductId() {
-    Mockito.when(productService.fetchProductDetailByIdAndVersion(Mockito.anyString(), Mockito.anyString())).thenReturn(
+    when(productService.fetchProductDetailByIdAndVersion(anyString(), anyString())).thenReturn(
         null);
 
     ResponseEntity<ProductDetailModel> result = productDetailsController.findProductDetailsByVersion(
@@ -136,7 +131,7 @@ class ProductDetailsControllerTest extends BaseSetup {
 
   @Test
   void testBestMatchProductDetailsWithVersionWithWrongProductId() {
-    Mockito.when(productService.fetchBestMatchProductDetail(Mockito.anyString(), Mockito.anyString())).thenReturn(
+    when(productService.fetchBestMatchProductDetail(anyString(), anyString())).thenReturn(
         null);
 
     ResponseEntity<ProductDetailModel> result = productDetailsController.findBestMatchProductDetailsByVersion(
@@ -149,7 +144,7 @@ class ProductDetailsControllerTest extends BaseSetup {
 
   @Test
   void testProductDetailsWithWrongProductId() {
-    Mockito.when(productService.fetchProductDetail(Mockito.anyString(), anyBoolean())).thenReturn(
+    when(productService.fetchProductDetail(anyString(), anyBoolean())).thenReturn(
         null);
 
     ResponseEntity<ProductDetailModel> result = productDetailsController.findProductDetails(
@@ -163,15 +158,14 @@ class ProductDetailsControllerTest extends BaseSetup {
   @Test
   void testFindProductVersionsById() {
     List<MavenArtifactVersionModel> models = List.of(new MavenArtifactVersionModel());
-    Mockito.when(
-            versionService.getArtifactsAndVersionToDisplay(Mockito.anyString(), Mockito.anyBoolean(),
-                    Mockito.anyString()))
+    when(versionService.getArtifactsAndVersionToDisplay(anyString(), anyBoolean(),
+        anyString()))
         .thenReturn(models);
     ResponseEntity<List<MavenArtifactVersionModel>> result = productDetailsController.findProductVersionsById("portal",
         true, "10.0.1");
-    Assertions.assertEquals(HttpStatus.OK, result.getStatusCode());
-    Assertions.assertEquals(1, Objects.requireNonNull(result.getBody()).size());
-    Assertions.assertEquals(models, result.getBody());
+    assertEquals(HttpStatus.OK, result.getStatusCode());
+    assertEquals(1, Objects.requireNonNull(result.getBody()).size());
+    assertEquals(models, result.getBody());
   }
 
   @Test
@@ -188,8 +182,6 @@ class ProductDetailsControllerTest extends BaseSetup {
     assertEquals("/api/product-details/portal/10.0.22/json",
         Objects.requireNonNull(result.getBody()).get(1).getUrl());
   }
-
-
 
   @Test
   void findProductJsonContentByIdAndVersion() throws IOException {
@@ -270,12 +262,12 @@ class ProductDetailsControllerTest extends BaseSetup {
   @Test
   void testGetLatestArtifactDownloadUrl() {
     String mockDownloadUrl = "https://market.axonivy.com";
-    when(versionService.getLatestVersionArtifactDownloadUrl(Mockito.anyString(),Mockito.anyString(),
-        Mockito.anyString())).thenReturn(StringUtils.EMPTY);
+    when(versionService.getLatestVersionArtifactDownloadUrl(anyString(), anyString(),
+        anyString())).thenReturn(StringUtils.EMPTY);
     var response = productDetailsController.getLatestArtifactDownloadUrl("portal", "1.0.0", "portal-app.zip");
     assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode());
-    when(versionService.getLatestVersionArtifactDownloadUrl(Mockito.anyString(),Mockito.anyString(),
-        Mockito.anyString())).thenReturn(mockDownloadUrl);
+    when(versionService.getLatestVersionArtifactDownloadUrl(anyString(), anyString(),
+        anyString())).thenReturn(mockDownloadUrl);
     response = productDetailsController.getLatestArtifactDownloadUrl("portal", "1.0.0", "portal-app.zip");
     assertEquals(HttpStatus.OK, response.getStatusCode());
   }
@@ -283,9 +275,9 @@ class ProductDetailsControllerTest extends BaseSetup {
   @Test
   void testFindGithubPublicReleaseByProductIdAndReleaseId() throws IOException {
     GitHubReleaseModel githubReleaseModel = new GitHubReleaseModel();
-    when(productService.getGitHubReleaseModelByProductIdAndReleaseId(Mockito.anyString(), Mockito.anyLong()))
+    when(productService.getGitHubReleaseModelByProductIdAndReleaseId(anyString(), anyLong()))
         .thenReturn(githubReleaseModel);
-    when(githubReleaseModelAssembler.toModel(Mockito.any(GitHubReleaseModel.class))).thenReturn(githubReleaseModel);
+    when(githubReleaseModelAssembler.toModel(any(GitHubReleaseModel.class))).thenReturn(githubReleaseModel);
 
     var result = productDetailsController.findGithubPublicReleaseByProductIdAndReleaseId("portal", 1L);
 
@@ -296,8 +288,8 @@ class ProductDetailsControllerTest extends BaseSetup {
   @Test
   void testFindGithubPublicReleases() throws IOException {
     Page<GitHubReleaseModel> page = new PageImpl<>(List.of(new GitHubReleaseModel()));
-    when(productService.getGitHubReleaseModels(Mockito.anyString(), Mockito.any(Pageable.class))).thenReturn(page);
-    when(pagedResourcesAssembler.toModel(Mockito.any(Page.class), Mockito.any(GithubReleaseModelAssembler.class)))
+    when(productService.getGitHubReleaseModels(anyString(), any(Pageable.class))).thenReturn(page);
+    when(pagedResourcesAssembler.toModel(any(Page.class), any(GithubReleaseModelAssembler.class)))
         .thenReturn(PagedModel.of(List.of(new GitHubReleaseModel()), new PagedModel.PageMetadata(1, 0, 1)));
 
     var result = productDetailsController.findGithubPublicReleases("portal", Pageable.ofSize(1));
@@ -309,8 +301,8 @@ class ProductDetailsControllerTest extends BaseSetup {
   @Test
   void testFindGithubPublicReleasesWithEmptyResult() throws IOException {
     Page<GitHubReleaseModel> emptyPage = Page.empty();
-    when(productService.getGitHubReleaseModels(Mockito.anyString(), Mockito.any(Pageable.class))).thenReturn(emptyPage);
-    when(pagedResourcesAssembler.toEmptyModel(Mockito.any(Page.class), Mockito.any())).thenReturn(PagedModel.empty());
+    when(productService.getGitHubReleaseModels(anyString(), any(Pageable.class))).thenReturn(emptyPage);
+    when(pagedResourcesAssembler.toEmptyModel(any(Page.class), any())).thenReturn(PagedModel.empty());
 
     var result = productDetailsController.findGithubPublicReleases("portal", Pageable.ofSize(1));
 
@@ -322,35 +314,42 @@ class ProductDetailsControllerTest extends BaseSetup {
   void testSyncLatestReleasesForProducts() throws IOException {
     List<String> productIdList = List.of(DOCKER_CONNECTOR_ID);
     when(productService.getProductIdList()).thenReturn(productIdList);
-    when(productService.syncGitHubReleaseModels(Mockito.anyString(), Mockito.any(Pageable.class))).thenReturn(Page.empty());
+    when(productService.syncGitHubReleaseModels(anyString(), any(Pageable.class))).thenReturn(
+        Page.empty());
 
     productDetailsController.syncLatestReleasesForProducts();
 
     verify(productService, times(1)).getProductIdList();
-    verify(productService, times(1)).syncGitHubReleaseModels(DOCKER_CONNECTOR_ID, PageRequest.of(0, 20, Sort.unsorted()));
-  }
-
-  @Test
-  void testDownloadZipArtifact() throws Exception {
-    ResponseBodyEmitter emitter = new ResponseBodyEmitter();
-    when(productContentService.downloadZipArtifactFile(Mockito.anyString(), Mockito.anyString(), Mockito.anyString())).thenReturn(CompletableFuture.completedFuture(emitter));
-
-    CompletableFuture<ResponseEntity<ResponseBodyEmitter>> result = productDetailsController.downloadZipArtifact(DOCKER_CONNECTOR_ID, MOCK_RELEASED_VERSION, "artifact");
-
-    assertEquals(HttpStatus.OK, result.get().getStatusCode());
-    assertEquals(emitter, result.get().getBody());
-
-    verify(productContentService, times(1)).downloadZipArtifactFile(DOCKER_CONNECTOR_ID, "artifact", MOCK_RELEASED_VERSION);
   }
 
   @Test
   void testDownloadZipArtifact_NoContent() throws Exception {
-    when(productContentService.downloadZipArtifactFile(Mockito.anyString(), Mockito.anyString(), Mockito.anyString())).thenReturn(CompletableFuture.completedFuture(null));
+    when(productContentService.downloadZipArtifactFile(anyString(), anyString(),
+        anyString())).thenReturn(CompletableFuture.completedFuture(null));
 
-    CompletableFuture<ResponseEntity<ResponseBodyEmitter>> result = productDetailsController.downloadZipArtifact(DOCKER_CONNECTOR_ID, MOCK_RELEASED_VERSION, "artifact");
+    CompletableFuture<ResponseEntity<ResponseBodyEmitter>> result = productDetailsController.downloadZipArtifact(
+        DOCKER_CONNECTOR_ID, MOCK_RELEASED_VERSION, "artifact");
 
     assertEquals(HttpStatus.NO_CONTENT, result.get().getStatusCode());
 
-    verify(productContentService, times(1)).downloadZipArtifactFile(DOCKER_CONNECTOR_ID, "artifact", MOCK_RELEASED_VERSION);
+    verify(productContentService, times(1)).downloadZipArtifactFile(DOCKER_CONNECTOR_ID, "artifact",
+        MOCK_RELEASED_VERSION);
+  }
+
+  @Test
+  void testDownloadZipArtifact() throws ExecutionException, InterruptedException {
+    var emitter = new ResponseBodyEmitter();
+    when(productContentService.downloadZipArtifactFile(MOCK_PRODUCT_ID, MOCK_DEMO_ARTIFACT_ID, MOCK_RELEASED_VERSION))
+        .thenReturn(CompletableFuture.completedFuture(emitter));
+    var result = productDetailsController.downloadZipArtifact(MOCK_PRODUCT_ID, MOCK_RELEASED_VERSION,
+        MOCK_DEMO_ARTIFACT_ID);
+    assertNotNull(result);
+    assertNotNull(result.get());
+    assertEquals(HttpStatus.OK, result.get().getStatusCode());
+    HttpHeaders returnedHeader = result.get().getHeaders();
+    assertNotNull(returnedHeader);
+    String contentDispositions = Objects.requireNonNull(returnedHeader.get(HttpHeaders.CONTENT_DISPOSITION)).get(0);
+    assertTrue(StringUtils.contains(contentDispositions, MOCK_RELEASED_VERSION));
+    assertTrue(StringUtils.contains(contentDispositions, MOCK_DEMO_ARTIFACT_ID));
   }
 }

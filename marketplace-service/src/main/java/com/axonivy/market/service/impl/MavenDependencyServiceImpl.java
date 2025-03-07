@@ -11,6 +11,7 @@ import com.axonivy.market.repository.ProductDependencyRepository;
 import com.axonivy.market.repository.ProductRepository;
 import com.axonivy.market.service.FileDownloadService;
 import com.axonivy.market.service.MavenDependencyService;
+import com.axonivy.market.util.VersionUtils;
 import lombok.AllArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.lang3.ObjectUtils;
@@ -28,6 +29,8 @@ import java.io.IOException;
 import java.nio.file.Path;
 import java.util.*;
 import java.util.function.Predicate;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static com.axonivy.market.constants.CommonConstants.*;
 import static com.axonivy.market.constants.DirectoryConstants.*;
@@ -72,6 +75,7 @@ public class MavenDependencyServiceImpl implements MavenDependencyService {
       if (mavenArtifactVersion == null) {
         continue;
       }
+      productDependencyRepository.deleteById(productId);
       List<MavenDependency> dependenciesOfArtifact = new ArrayList<>();
       // Base on version, loop the artifacts and maps its dependencies
       // Loops in ProductArtifactsByVersion
@@ -152,20 +156,61 @@ public class MavenDependencyServiceImpl implements MavenDependencyService {
   }
 
   private List<String> getMissingProductIds(boolean resetSync) {
-    List<String> availableProductIds = productRepository.findAllProductIds();
-    List<String> syncedProductIds = new ArrayList<>();
+    List<Product> availableProducts = getAllListedProductIds();
+    List<ProductDependency> syncedProducts = new ArrayList<>();
     if (resetSync) {
       log.warn("Remove all ProductDependency documents due to force sync");
       productDependencyRepository.deleteAll();
     } else {
-      syncedProductIds = productDependencyRepository.findAll().stream()
-          .map(ProductDependency::getProductId).toList();
+      syncedProducts = productDependencyRepository.findAll();
     }
 
     // Subtract existing product id
+    List<String> availableProductIds = availableProducts.stream().map(Product::getId).toList();
+    List<String> syncedProductIds = syncedProducts.stream().map(ProductDependency::getProductId).toList();
     List<String> missingProductIds = new ArrayList<>(availableProductIds);
     missingProductIds.removeAll(syncedProductIds);
-    return missingProductIds;
+    missingProductIds.addAll(collectProductMismatchVersion(availableProducts, syncedProducts));
+    return missingProductIds.stream().distinct().toList();
+  }
+
+  private List<String> collectProductMismatchVersion(List<Product> availableProducts,
+      List<ProductDependency> syncedProducts) {
+    List<String> mismatchVersionIds = new ArrayList<>();
+    for (var product : availableProducts) {
+      List<String> releasedVersions = product.getReleasedVersions();
+      // If product has any SNAPSHOT version, then must sync data for it
+      if (isContainAnySnapshotVersion(releasedVersions).isPresent()) {
+        mismatchVersionIds.add(product.getId());
+      } else {
+        filterProductBySyncedVersionsAndReleaseVersions(syncedProducts, product, releasedVersions,
+            mismatchVersionIds);
+      }
+    }
+    return mismatchVersionIds;
+  }
+
+  private static void filterProductBySyncedVersionsAndReleaseVersions(List<ProductDependency> syncedProducts,
+      Product product, List<String> releasedVersions, List<String> mismatchingVersionIds) {
+    syncedProducts.stream()
+        .filter(productDependency -> productDependency.getProductId().equals(product.getId()))
+        .findAny().ifPresent(syncedProduct -> {
+          var syncedVersions = syncedProduct.getDependenciesOfArtifact().values().stream().flatMap(List::stream)
+              .map(MavenDependency::getVersion).collect(Collectors.toSet());
+          if (VersionUtils.removeSyncedVersionsFromReleasedVersions(releasedVersions, syncedVersions).isEmpty()) {
+            mismatchingVersionIds.add(syncedProduct.getProductId());
+          }
+        });
+  }
+
+  private Optional<String> isContainAnySnapshotVersion(List<String> versions) {
+    return Stream.ofNullable(versions).flatMap(List::stream).filter(VersionUtils::isSnapshotVersion).findAny();
+  }
+
+  private List<Product> getAllListedProductIds() {
+    return productRepository.findAll().stream()
+        .filter(product -> Boolean.FALSE != product.getListed())
+        .toList();
   }
 
   private MavenArtifactModel findDownloadURLForDependency(String productId, String version, Dependency dependency) {

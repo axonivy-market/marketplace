@@ -1,8 +1,6 @@
 package com.axonivy.market.model;
 
-import com.axonivy.market.constants.RequestMappingConstants;
 import com.axonivy.market.controller.ImageController;
-import com.axonivy.market.controller.ProductDetailsController;
 import com.axonivy.market.entity.Product;
 import com.axonivy.market.entity.ProductModuleContent;
 import com.axonivy.market.util.ImageUtils;
@@ -14,9 +12,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.springframework.hateoas.Link;
-import org.springframework.http.ResponseEntity;
-
-import java.util.Optional;
 
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
