@@ -43,7 +43,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 
-import static com.axonivy.market.constants.MavenConstants.APP_ZIP_POSTFIX;
+import static com.axonivy.market.constants.MavenConstants.APP_ZIP_FORMAT;
 import static com.axonivy.market.constants.RequestMappingConstants.*;
 import static com.axonivy.market.constants.RequestParamConstants.*;
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
@@ -210,22 +210,25 @@ public class ProductDetailsController {
       @PathVariable(value = ID) @Parameter(in = ParameterIn.PATH, example = "demos") String id,
       @RequestParam(value = VERSION) @Parameter(in = ParameterIn.QUERY, example = "10.0") String version,
       @RequestParam(value = ARTIFACT) @Parameter(in = ParameterIn.QUERY, example = "demos-app") String artifactId) {
+    // Prepare the response
+    String filename = String.format(APP_ZIP_FORMAT, artifactId, version);
+    HttpHeaders headers = new HttpHeaders();
+    headers.add(HttpHeaders.CONTENT_DISPOSITION, ATTACHMENT_HEADER.formatted(filename));
+    headers.add(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_OCTET_STREAM_VALUE);
     // Open stream as async to save the server resources
     return productContentService.downloadZipArtifactFile(id, artifactId, version)
         .thenApply(emitter -> {
+          HttpStatus status = HttpStatus.OK;
           if (emitter == null) {
-            var noDataBody = new ResponseBodyEmitter();
-            noDataBody.complete();
-            return ResponseEntity.status(HttpStatus.NO_CONTENT).body(noDataBody);
+            status = HttpStatus.NO_CONTENT;
+            emitter = new ResponseBodyEmitter();
+            emitter.complete();
           }
 
-          // Prepare the response
-          String filename = artifactId.concat(APP_ZIP_POSTFIX);
-          HttpHeaders headers = new HttpHeaders();
-          headers.add(HttpHeaders.CONTENT_DISPOSITION, ATTACHMENT_HEADER.formatted(filename));
-          headers.add(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_OCTET_STREAM_VALUE);
-
-          return ResponseEntity.ok().headers(headers).contentType(MediaType.APPLICATION_OCTET_STREAM).body(emitter);
+          return ResponseEntity.status(status)
+              .headers(headers)
+              .contentType(MediaType.APPLICATION_OCTET_STREAM)
+              .body(emitter);
         });
   }
 

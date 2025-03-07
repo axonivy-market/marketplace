@@ -98,6 +98,7 @@ public class BaseSetup {
     mockProduct.setNames(name);
     mockProduct.setType("connector");
     mockProduct.setMarketDirectory(SAMPLE_PRODUCT_ID);
+    mockProduct.setReleasedVersions(List.of(MOCK_RELEASED_VERSION));
     mockProducts.add(mockProduct);
 
     mockProduct = new Product();
@@ -107,6 +108,7 @@ public class BaseSetup {
     mockProduct.setNames(name);
     mockProduct.setType("util");
     mockProduct.setMarketDirectory(SAMPLE_PRODUCT_ID);
+    mockProduct.setReleasedVersions(List.of(MOCK_RELEASED_VERSION));
     mockProducts.add(mockProduct);
     return new PageImpl<>(mockProducts);
   }
