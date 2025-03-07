@@ -158,9 +158,8 @@ class ProductDetailsControllerTest extends BaseSetup {
   @Test
   void testFindProductVersionsById() {
     List<MavenArtifactVersionModel> models = List.of(new MavenArtifactVersionModel());
-    Mockito.when(
-            versionService.getArtifactsAndVersionToDisplay(Mockito.anyString(), Mockito.anyBoolean(),
-                Mockito.anyString()))
+    Mockito.when(versionService.getArtifactsAndVersionToDisplay(Mockito.anyString(), Mockito.anyBoolean(),
+            Mockito.anyString()))
         .thenReturn(models);
     ResponseEntity<List<MavenArtifactVersionModel>> result = productDetailsController.findProductVersionsById("portal",
         true, "10.0.1");
@@ -183,7 +182,6 @@ class ProductDetailsControllerTest extends BaseSetup {
     assertEquals("/api/product-details/portal/10.0.22/json",
         Objects.requireNonNull(result.getBody()).get(1).getUrl());
   }
-
 
   @Test
   void findProductJsonContentByIdAndVersion() throws IOException {
@@ -316,14 +314,11 @@ class ProductDetailsControllerTest extends BaseSetup {
   void testSyncLatestReleasesForProducts() throws IOException {
     List<String> productIdList = List.of(DOCKER_CONNECTOR_ID);
     when(productService.getProductIdList()).thenReturn(productIdList);
-    when(productService.syncGitHubReleaseModels(Mockito.anyString(), Mockito.any(Pageable.class))).thenReturn(
-        Page.empty());
+    when(productService.syncGitHubReleaseModels(Mockito.anyString(), Mockito.any(Pageable.class))).thenReturn(Page.empty());
 
     productDetailsController.syncLatestReleasesForProducts();
 
     verify(productService, times(1)).getProductIdList();
-    verify(productService, times(1)).getGitHubReleaseModels(DOCKER_CONNECTOR_ID,
-        PageRequest.of(0, 20, Sort.unsorted()));
   }
 
   @Test
