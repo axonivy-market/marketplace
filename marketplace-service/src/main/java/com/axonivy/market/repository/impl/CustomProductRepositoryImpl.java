@@ -126,7 +126,8 @@ public class CustomProductRepositoryImpl implements CustomProductRepository {
         switch (sortOption) {
           case ALPHABETICALLY -> orders.add(sortByAlphabet(jpaBuilder));
           case RECENT -> orders.add(sortByRecent(jpaBuilder));
-          default -> orders.add(sortByPopularity(jpaBuilder));
+          case POPULARITY -> orders.add(sortByPopularity(jpaBuilder));
+          default -> orders.addAll(sortByStandard(jpaBuilder));
         }
       });
     }
@@ -147,7 +148,7 @@ public class CustomProductRepositoryImpl implements CustomProductRepository {
       switch (sortOptionExtension) {
         case ALPHABETICALLY -> orders.add(sortByAlphabet(jpaBuilder));
         case RECENT -> orders.add(sortByRecent(jpaBuilder));
-        case POPULARITY -> orders.add(sortByPopularity(jpaBuilder));
+        default -> orders.add(sortByPopularity(jpaBuilder));
       }
     }
     return orders;
