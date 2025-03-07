@@ -176,12 +176,17 @@ public class ProductContentServiceImpl implements ProductContentService {
   }
 
   private List<MavenDependency> getMavenDependenciesOfProduct(String productId, String artifactId, String version) {
-    List<ProductDependency> existingProductDependencies = productDependencyRepository.findProductDependencies(
-        productId, artifactId, version);
-    return Optional.ofNullable(existingProductDependencies).orElse(List.of())
-        .stream().map(ProductDependency::getDependenciesOfArtifact)
-        .map(Map::values).flatMap(Collection::stream).flatMap(List::stream)
-        .toList();
+    Predicate<MavenDependency> filterByArtifactAndVersion =
+        dependency -> dependency.getArtifactId().equals(artifactId) &&
+            dependency.getVersion().equals(version);
+
+    ProductDependency productDependencies = productDependencyRepository.findById(productId).orElse(null);
+
+    return Optional.ofNullable(productDependencies)
+        .map(ProductDependency::getDependenciesOfArtifact)
+        .map(Collection::stream)
+        .map(dependencies -> dependencies.filter(filterByArtifactAndVersion).toList())
+        .orElse(new ArrayList<>());
   }
 
   private void zipConfigurationOptions(ZipOutputStream zipOut) throws IOException {

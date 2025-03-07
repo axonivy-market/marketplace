@@ -4,6 +4,7 @@ import com.axonivy.market.bo.DownloadOption;
 import com.axonivy.market.bo.MavenDependency;
 import com.axonivy.market.constants.ProductJsonConstants;
 import com.axonivy.market.entity.MavenArtifactVersion;
+import com.axonivy.market.entity.Product;
 import com.axonivy.market.entity.ProductDependency;
 import com.axonivy.market.entity.MavenArtifactModel;
 import com.axonivy.market.repository.MavenArtifactVersionRepository;
@@ -195,7 +196,7 @@ public class MavenDependencyServiceImpl implements MavenDependencyService {
     syncedProducts.stream()
         .filter(productDependency -> productDependency.getProductId().equals(product.getId()))
         .findAny().ifPresent(syncedProduct -> {
-          var syncedVersions = syncedProduct.getDependenciesOfArtifact().values().stream().flatMap(List::stream)
+          var syncedVersions = syncedProduct.getDependenciesOfArtifact().stream()
               .map(MavenDependency::getVersion).collect(Collectors.toSet());
           if (VersionUtils.removeSyncedVersionsFromReleasedVersions(releasedVersions, syncedVersions).isEmpty()) {
             mismatchingVersionIds.add(syncedProduct.getProductId());

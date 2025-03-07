@@ -48,16 +48,16 @@ class MavenDependencyServiceImplTest extends BaseSetup {
   }
 
   private void prepareDataForTest(boolean isProductArtifact) {
-    var mockProductDenpendency = ProductDependency.builder().productId(SAMPLE_PRODUCT_ID)
-        .dependenciesOfArtifact(Map.of(MOCK_RELEASED_VERSION, List.of()))
+    ProductDependency mockProductDependency = ProductDependency.builder().productId(SAMPLE_PRODUCT_ID)
+        .dependenciesOfArtifact(List.of())
         .build();
     var mavenArtifactVersionMock = createMavenArtifactVersionMock(isProductArtifact);
     when(productRepository.findAll()).thenReturn(createPageProductsMock().getContent());
-    when(productDependencyRepository.findAll()).thenReturn(List.of(mockProductDenpendency));
-    List<String> allListedProductIds = createPageProductsMock().getContent().stream()
+    when(productDependencyRepository.findAll()).thenReturn(List.of(mockProductDependency));
+    List<Product> mockProducts = createPageProductsMock().getContent().stream()
         .filter(product -> Boolean.FALSE != product.getListed())
-        .map(Product::getId).toList();
-    when(productRepository.findAllProductIds()).thenReturn(allListedProductIds);
+        .toList();
+    when(productRepository.findAll()).thenReturn(mockProducts);
     when(productDependencyRepository.findAll()).thenReturn(List.of());
     when(mavenArtifactVersionRepository.findById(any())).thenReturn(Optional.of(mavenArtifactVersionMock));
     when(productDependencyRepository.save(any())).thenReturn(
@@ -87,7 +87,7 @@ class MavenDependencyServiceImplTest extends BaseSetup {
 
   @Test
   void testNothingToSync() {
-    when(productRepository.findAllProductIds()).thenReturn(List.of());
+    when(productRepository.findAll()).thenReturn(List.of());
     int totalSynced = mavenDependencyService.syncIARDependenciesForProducts(true);
     assertEquals(0, totalSynced, "Expected no product was synced but service returned something");
   }
