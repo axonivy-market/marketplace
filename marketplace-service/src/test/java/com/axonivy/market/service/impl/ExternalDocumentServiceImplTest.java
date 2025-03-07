@@ -3,6 +3,7 @@ package com.axonivy.market.service.impl;
 import com.axonivy.market.bo.Artifact;
 import com.axonivy.market.entity.ExternalDocumentMeta;
 import com.axonivy.market.entity.Product;
+import com.axonivy.market.repository.ArtifactRepository;
 import com.axonivy.market.repository.ExternalDocumentMetaRepository;
 import com.axonivy.market.repository.ProductRepository;
 import com.axonivy.market.service.FileDownloadService;
@@ -36,6 +37,9 @@ class ExternalDocumentServiceImplTest {
   @Mock
   FileDownloadService fileDownloadService;
 
+  @Mock
+  ArtifactRepository artifactRepository;
+
   @InjectMocks
   ExternalDocumentServiceImpl service;
 
@@ -46,6 +50,7 @@ class ExternalDocumentServiceImplTest {
     verify(productRepository, times(1)).findProductByIdAndRelatedData(any());
     verify(externalDocumentMetaRepository, times(0)).findByProductIdAndVersion(any(), any());
 
+    when(artifactRepository.findAllByIdInAndFetchArchivedArtifacts(any())).thenReturn(mockPortalProduct().get().getArtifacts());
     when(productRepository.findProductByIdAndRelatedData(PORTAL)).thenReturn(mockPortalProduct().get());
     service.syncDocumentForProduct(PORTAL, new ArrayList<>(), false);
     verify(externalDocumentMetaRepository, times(2)).findByProductIdAndVersion(any(), any());

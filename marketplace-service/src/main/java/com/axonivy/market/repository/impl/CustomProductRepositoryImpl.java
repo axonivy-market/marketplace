@@ -117,26 +117,20 @@ public class CustomProductRepositoryImpl implements CustomProductRepository {
     return new PageImpl<>(resultList, pageable, total);
   }
 
-  private void sortByOrders(
-      ProductCriteriaBuilder<CriteriaBuilder, CriteriaQuery<Product>, Root<Product>> jpaBuilder,
+  private void sortByOrders(ProductCriteriaBuilder<CriteriaBuilder, CriteriaQuery<Product>, Root<Product>> jpaBuilder,
       PageRequest pageRequest) {
     List<Order> orders = new ArrayList<>();
     if (pageRequest != null) {
-      Sort.Order order = pageRequest.getSort().stream().findFirst().orElse(null);
-      SortOption sortOption = SortOption.of(order.getProperty());
-      if (SortOption.ALPHABETICALLY == sortOption) {
-        orders.add(sortByAlphabet(jpaBuilder));
-      } else if (SortOption.RECENT == sortOption) {
-        orders.add(sortByRecent(jpaBuilder));
-      } else if (SortOption.POPULARITY == sortOption) {
-        orders.add(sortByPopularity(jpaBuilder));
-      } else if (SortOption.STANDARD == sortOption) {
-        orders.addAll(sortByStandard(jpaBuilder));
-      } else {
-        orders.addAll(sortByStandard(jpaBuilder));
-      }
+      pageRequest.getSort().stream().findFirst().ifPresent(order -> {
+        SortOption sortOption = SortOption.of(order.getProperty());
+        switch (sortOption) {
+          case ALPHABETICALLY -> orders.add(sortByAlphabet(jpaBuilder));
+          case RECENT -> orders.add(sortByRecent(jpaBuilder));
+          default -> orders.add(sortByPopularity(jpaBuilder));
+        }
+      });
     }
-    orders.add(sortById(jpaBuilder));
+    orders.add(sortById(jpaBuilder)); // Always sort by ID as a fallback
     jpaBuilder.cq.orderBy(orders);
   }
 
@@ -148,14 +142,12 @@ public class CustomProductRepositoryImpl implements CustomProductRepository {
     List<Order> orders = new ArrayList<>();
     Order order = jpaBuilder.cb.asc(marketplaceJoin.get(CUSTOM_ORDER));
     orders.add(order);
-    if (!customSorts.isEmpty()) {
+    if (ObjectUtils.isNotEmpty(customSorts)) {
       SortOption sortOptionExtension = SortOption.of(customSorts.get(0).getRuleForRemainder());
-      if (SortOption.ALPHABETICALLY == sortOptionExtension) {
-        orders.add(sortByAlphabet(jpaBuilder));
-      } else if (SortOption.RECENT == sortOptionExtension) {
-        orders.add(sortByRecent(jpaBuilder));
-      } else if (SortOption.POPULARITY == sortOptionExtension) {
-        orders.add(sortByPopularity(jpaBuilder));
+      switch (sortOptionExtension) {
+        case ALPHABETICALLY -> orders.add(sortByAlphabet(jpaBuilder));
+        case RECENT -> orders.add(sortByRecent(jpaBuilder));
+        case POPULARITY -> orders.add(sortByPopularity(jpaBuilder));
       }
     }
     return orders;

@@ -66,10 +66,7 @@ class ProductSearchRepositoryImplTest extends BaseSetup {
     MapJoin<Product, String, String> namesJoin = mock(MapJoin.class);
     Mockito.<MapJoin<Product, String, String>>when(productRoot.joinMap(any())).thenReturn(namesJoin);
 
-    Path<String> languageKey = mock(Path.class);
     Path<String> nameValue = mock(Path.class);
-
-    when(namesJoin.key()).thenReturn(languageKey);
     when(namesJoin.value()).thenReturn(nameValue);
 
     when(cb.createQuery(Long.class)).thenReturn(countQuery);
