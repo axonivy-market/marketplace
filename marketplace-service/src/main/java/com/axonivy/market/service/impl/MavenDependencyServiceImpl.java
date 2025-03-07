@@ -188,15 +188,14 @@ public class MavenDependencyServiceImpl implements MavenDependencyService {
   }
 
   private static void filterProductBySyncedVersionsAndReleaseVersions(List<ProductDependency> syncedProducts,
-      Product product, List<String> releasedVersions,
-      List<String> missmatchingVersionIds) {
+      Product product, List<String> releasedVersions, List<String> mismatchingVersionIds) {
     syncedProducts.stream()
         .filter(productDependency -> productDependency.getProductId().equals(product.getId()))
         .findAny().ifPresent(syncedProduct -> {
           var syncedVersions = syncedProduct.getDependenciesOfArtifact().values().stream().flatMap(List::stream)
               .map(MavenDependency::getVersion).collect(Collectors.toSet());
           if (VersionUtils.removeSyncedVersionsFromReleasedVersions(releasedVersions, syncedVersions).isEmpty()) {
-            missmatchingVersionIds.add(syncedProduct.getProductId());
+            mismatchingVersionIds.add(syncedProduct.getProductId());
           }
         });
   }
