@@ -120,68 +120,68 @@ public class CustomProductRepositoryImpl implements CustomProductRepository {
   private void sortByOrders(
       ProductCriteriaBuilder<CriteriaBuilder, CriteriaQuery<Product>, Root<Product>> jpaBuilder,
       PageRequest pageRequest) {
-
+    List<Order> orders = new ArrayList<>();
     if (pageRequest != null) {
       Sort.Order order = pageRequest.getSort().stream().findFirst().orElse(null);
       SortOption sortOption = SortOption.of(order.getProperty());
       if (SortOption.ALPHABETICALLY == sortOption) {
-        sortByAlphabet(jpaBuilder);
+        orders.add(sortByAlphabet(jpaBuilder));
       } else if (SortOption.RECENT == sortOption) {
-        sortByRecent(jpaBuilder);
+        orders.add(sortByRecent(jpaBuilder));
       } else if (SortOption.POPULARITY == sortOption) {
-        sortByPopularity(jpaBuilder);
+        orders.add(sortByPopularity(jpaBuilder));
       } else if (SortOption.STANDARD == sortOption) {
-        sortByStandard(jpaBuilder);
+        orders.addAll(sortByStandard(jpaBuilder));
       } else {
-        sortByStandard(jpaBuilder);
+        orders.addAll(sortByStandard(jpaBuilder));
       }
     }
+    orders.add(sortById(jpaBuilder));
+    jpaBuilder.cq.orderBy(orders);
   }
 
-  private void sortByStandard(
+  private List<Order> sortByStandard(
       ProductCriteriaBuilder<CriteriaBuilder, CriteriaQuery<Product>, Root<Product>> jpaBuilder) {
     List<ProductCustomSort> customSorts = productCustomSortRepo.findAll();
+    Join<Product, ProductMarketplaceData> marketplaceJoin = jpaBuilder.root.join(PRODUCT_MARKETPLACE_DATA,
+        JoinType.LEFT);
+    List<Order> orders = new ArrayList<>();
+    Order order = jpaBuilder.cb.asc(marketplaceJoin.get(CUSTOM_ORDER));
+    orders.add(order);
     if (!customSorts.isEmpty()) {
       SortOption sortOptionExtension = SortOption.of(customSorts.get(0).getRuleForRemainder());
       if (SortOption.ALPHABETICALLY == sortOptionExtension) {
-        sortByAlphabet(jpaBuilder);
+        orders.add(sortByAlphabet(jpaBuilder));
       } else if (SortOption.RECENT == sortOptionExtension) {
-        sortByRecent(jpaBuilder);
+        orders.add(sortByRecent(jpaBuilder));
       } else if (SortOption.POPULARITY == sortOptionExtension) {
-        sortByPopularity(jpaBuilder);
+        orders.add(sortByPopularity(jpaBuilder));
       }
     }
-    Join<Product, ProductMarketplaceData> marketplaceJoin = jpaBuilder.root.join(PRODUCT_MARKETPLACE_DATA,
-        JoinType.LEFT);
-    Order order = jpaBuilder.cb.asc(marketplaceJoin.get(CUSTOM_ORDER));
-    jpaBuilder.cq().orderBy(order);
+    return orders;
   }
 
-  private void sortByPopularity(
+  private Order sortByPopularity(
       ProductCriteriaBuilder<CriteriaBuilder, CriteriaQuery<Product>, Root<Product>> jpaBuilder) {
     Join<Product, ProductMarketplaceData> marketplaceJoin = jpaBuilder.root.join(PRODUCT_MARKETPLACE_DATA,
         JoinType.LEFT);
-    Order order = jpaBuilder.cb.desc(marketplaceJoin.get(INSTALLATION_COUNT));
-    jpaBuilder.cq().orderBy(order);
+    return jpaBuilder.cb.desc(marketplaceJoin.get(INSTALLATION_COUNT));
   }
 
-  private void sortByAlphabet(
+  private Order sortByAlphabet(
       ProductCriteriaBuilder<CriteriaBuilder, CriteriaQuery<Product>, Root<Product>> jpaBuilder) {
     MapJoin<Product, String, String> namesJoin = jpaBuilder.root().joinMap(PRODUCT_NAMES);
-    // Extract key (language) and value (name)
-    Path<String> languageKey = namesJoin.key();
     Path<String> nameValue = namesJoin.value();
-
-    Predicate languagePredicate = jpaBuilder.cb.equal(namesJoin.key(), languageKey);
-    // Define sorting order
-    Order order = jpaBuilder.cb.asc(nameValue);
-    jpaBuilder.cq().orderBy(order);
+    return jpaBuilder.cb.asc(nameValue);
   }
 
-  private void sortByRecent(
+  private Order sortById(ProductCriteriaBuilder<CriteriaBuilder, CriteriaQuery<Product>, Root<Product>> jpaBuilder){
+    return jpaBuilder.cb.asc(jpaBuilder.root().get(ID));
+  }
+
+  private Order sortByRecent(
       ProductCriteriaBuilder<CriteriaBuilder, CriteriaQuery<Product>, Root<Product>> jpaBuilder) {
-    Order order = jpaBuilder.cb.desc(jpaBuilder.root().get(FIRST_PUBLISHED_DATE));
-    jpaBuilder.cq().orderBy(order);
+    return jpaBuilder.cb.desc(jpaBuilder.root().get(FIRST_PUBLISHED_DATE));
   }
 
   private long getTotalCount(CriteriaBuilder cb, ProductSearchCriteria searchCriteria) {

@@ -108,7 +108,7 @@ public class Product implements Serializable {
   private String compatibilityRange;
 
   @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
-  @JoinColumn(name = "id", referencedColumnName = "id") // Assuming IDs match in both tables
+  @JoinColumn(name = "id", referencedColumnName = "id")
   private ProductMarketplaceData productMarketplaceData;
 
   @Override
