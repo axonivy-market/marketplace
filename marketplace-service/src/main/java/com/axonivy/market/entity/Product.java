@@ -59,7 +59,7 @@ public class Product implements Serializable {
   @Column(name = "released_versions", nullable = false, columnDefinition = "TEXT")
   private List<String> releasedVersions;
 
-  @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, fetch = FetchType.EAGER, orphanRemoval = true)
+  @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
   @JsonManagedReference
   private List<Artifact> artifacts;
 

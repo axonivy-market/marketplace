@@ -1,5 +1,6 @@
 package com.axonivy.market.service.impl;
 
+import com.axonivy.market.bo.ArchivedArtifact;
 import com.axonivy.market.bo.Artifact;
 import com.axonivy.market.constants.GitHubConstants;
 import com.axonivy.market.constants.MavenConstants;
@@ -42,7 +43,6 @@ import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.util.Strings;
-import org.hibernate.Hibernate;
 import org.kohsuke.github.GHCommit;
 import org.kohsuke.github.GHContent;
 import org.kohsuke.github.GHRelease;
@@ -54,12 +54,9 @@ import org.springframework.cache.annotation.CachePut;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
 import org.springframework.data.domain.Sort.Order;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Propagation;
 import org.springframework.util.CollectionUtils;
 import org.w3c.dom.Document;
 import org.w3c.dom.NodeList;
@@ -70,6 +67,7 @@ import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
+import java.util.stream.Collectors;
 
 import static com.axonivy.market.constants.CommonConstants.DOT_SEPARATOR;
 import static com.axonivy.market.constants.CommonConstants.SLASH;
@@ -107,6 +105,7 @@ public class ProductServiceImpl implements ProductService {
   private final MetadataService metadataService;
   private final ProductMarketplaceDataService productMarketplaceDataService;
   private final ProductMarketplaceDataRepository productMarketplaceDataRepo;
+  private final ArtifactRepository artifactRepo;
   private GHCommit lastGHCommit;
   private final VersionService versionService;
   private GitHubRepoMeta marketRepoMeta;
@@ -121,7 +120,7 @@ public class ProductServiceImpl implements ProductService {
       MetadataSyncRepository metadataSyncRepo, MetadataRepository metadataRepo, ImageService imageService,
       ProductContentService productContentService, MetadataService metadataService,
       ProductMarketplaceDataService productMarketplaceDataService, ExternalDocumentService externalDocumentService,
-      ProductMarketplaceDataRepository productMarketplaceDataRepo, VersionService versionService) {
+      ProductMarketplaceDataRepository productMarketplaceDataRepo, ArtifactRepository artifactRepo, VersionService versionService) {
     this.productRepo = productRepo;
     this.productModuleContentRepo = productModuleContentRepo;
     this.axonIvyMarketRepoService = axonIvyMarketRepoService;
@@ -140,6 +139,7 @@ public class ProductServiceImpl implements ProductService {
     this.productMarketplaceDataService = productMarketplaceDataService;
     this.externalDocumentService = externalDocumentService;
     this.productMarketplaceDataRepo = productMarketplaceDataRepo;
+    this.artifactRepo = artifactRepo;
     this.versionService = versionService;
   }
 
@@ -295,25 +295,6 @@ public class ProductServiceImpl implements ProductService {
     return EMPTY;
   }
 
-  private Pageable refinePagination(String language, Pageable pageable) {
-    PageRequest pageRequest = (PageRequest) pageable;
-    if (pageable != null) {
-      List<Order> orders = new ArrayList<>();
-      for (var sort : pageable.getSort()) {
-        SortOption sortOption = SortOption.of(sort.getProperty());
-        Order order = createOrder(sortOption, language);
-        orders.add(order);
-        if (SortOption.STANDARD.equals(sortOption)) {
-          orders.add(getExtensionOrder(language));
-        }
-      }
-      Order orderById = createOrder(SortOption.ID, language);
-      orders.add(orderById);
-      pageRequest = PageRequest.of(pageable.getPageNumber(), pageable.getPageSize(), Sort.by(orders));
-    }
-    return pageRequest;
-  }
-
   public Order createOrder(SortOption sortOption, String language) {
     if (SortOption.STANDARD.equals(sortOption)) {
       return new Order(sortOption.getDirection(), MongoDBConstants.MARKETPLACE_DATA_CUSTOM_ORDER);
@@ -353,6 +334,8 @@ public class ProductServiceImpl implements ProductService {
     }
 
     for (Product product : products) {
+      List<Artifact> allArtifacts = fetchAchievedArtifact(product.getArtifacts());
+      product.setArtifacts(allArtifacts);
       updateProductFromReleasedVersions(product);
       productRepo.save(product);
     }
@@ -363,6 +346,9 @@ public class ProductServiceImpl implements ProductService {
     List<String> syncedProductIds = new ArrayList<>();
     var gitHubContentMap = axonIvyMarketRepoService.fetchAllMarketItems();
     for (Map.Entry<String, List<GHContent>> ghContentEntity : gitHubContentMap.entrySet()) {
+//      if (!ghContentEntity.getKey().equals("market/connector/x-connector")) {
+//        continue;
+//      }
       var product = new Product();
       //update the meta.json first
       ghContentEntity.getValue().sort((f1, f2) -> GitHubUtils.sortMetaJsonFirst(f1.getName(), f2.getName()));
@@ -499,6 +485,11 @@ public class ProductServiceImpl implements ProductService {
     }
     metadataService.updateArtifactAndMetadata(product.getId(), nonSyncReleasedVersions, product.getArtifacts());
     externalDocumentService.syncDocumentForProduct(product.getId(), nonSyncReleasedVersions, false);
+  }
+
+  private List<Artifact> fetchAchievedArtifact(List<Artifact> artifacts) {
+    List<String> ids = artifacts.stream().map(Artifact::getId).collect(Collectors.toList());
+    return artifactRepo.findAllByIdInAndFetchArchivedArtifacts(ids);
   }
 
   private void getMetadataContent(Artifact artifact, Product product, List<String> nonSyncReleasedVersions) {
@@ -812,7 +803,7 @@ public class ProductServiceImpl implements ProductService {
   @Cacheable(value = "GithubPublicReleasesCache", key="{#productId}")
   @Override
   public Page<GitHubReleaseModel> getGitHubReleaseModels(String productId, Pageable pageable) throws IOException {
-    Product product = productRepo.findProductById(productId);
+    Product product = productRepo.findProductByIdAndRelatedData(productId);
     if (StringUtils.isBlank(product.getRepositoryName()) || StringUtils.isBlank(product.getSourceUrl())) {
       return new PageImpl<>(new ArrayList<>(), pageable, 0);
     }
@@ -830,7 +821,7 @@ public class ProductServiceImpl implements ProductService {
 
   @Override
   public GitHubReleaseModel getGitHubReleaseModelByProductIdAndReleaseId(String productId, Long releaseId) throws IOException {
-    Product product = productRepo.findProductById(productId);
+    Product product = productRepo.findProductByIdAndRelatedData(productId);
 
     return this.gitHubService.getGitHubReleaseModelByProductIdAndReleaseId(product, releaseId);
   }

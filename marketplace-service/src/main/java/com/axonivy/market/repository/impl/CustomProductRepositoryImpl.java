@@ -1,7 +1,6 @@
 package com.axonivy.market.repository.impl;
 
 import com.axonivy.market.bo.Artifact;
-import com.axonivy.market.constants.MongoDBConstants;
 import com.axonivy.market.criteria.ProductSearchCriteria;
 import com.axonivy.market.entity.Product;
 import com.axonivy.market.entity.ProductCustomSort;
@@ -55,25 +54,29 @@ public class CustomProductRepositoryImpl implements CustomProductRepository {
 
   @Override
   public Product getProductByIdAndVersion(String id, String version) {
-    Product result = findProductById(id);
+    Product result = findProductByIdAndRelatedData(id);
     if (!Objects.isNull(result)) {
-      Hibernate.initialize(result.getNames());
-      Hibernate.initialize(result.getShortDescriptions());
-
       ProductModuleContent content = contentRepository.findByVersionAndProductId(version, id);
-      Hibernate.initialize(content.getDescription());
-      Hibernate.initialize(content.getSetup());
-      Hibernate.initialize(content.getDemo());
-      result.setProductModuleContent(content);
+      if (content != null) {
+        Hibernate.initialize(content.getDescription());
+        Hibernate.initialize(content.getSetup());
+        Hibernate.initialize(content.getDemo());
+        result.setProductModuleContent(content);
+      }
     }
     return result;
   }
 
   @Override
-  public Product findProductById(String id) {
+  public Product findProductByIdAndRelatedData(String id) {
     CriteriaBuilder cb = em.getCriteriaBuilder();
     CriteriaQuery<Product> cq = cb.createQuery(Product.class);
     Root<Product> product = cq.from(Product.class);
+
+    product.fetch("names", JoinType.LEFT);
+    product.fetch("shortDescriptions", JoinType.LEFT);
+    product.fetch("artifacts", JoinType.LEFT);
+
     cq.where(cb.equal(product.get("id"), id));
     try {
       return em.createQuery(cq).getSingleResult();
@@ -84,7 +87,7 @@ public class CustomProductRepositoryImpl implements CustomProductRepository {
 
   @Override
   public List<String> getReleasedVersionsById(String id) {
-    return Optional.ofNullable(findProductById(id))
+    return Optional.ofNullable(findProductByIdAndRelatedData(id))
         .map(Product::getReleasedVersions)
         .orElse(Collections.emptyList());
   }

@@ -42,7 +42,7 @@ public class ExternalDocumentServiceImpl implements ExternalDocumentService {
 
   @Override
   public void syncDocumentForProduct(String productId, List<String> nonSyncReleasedVersions, boolean isResetSync) {
-    productRepo.findById(productId).ifPresent(product -> {
+    Optional.ofNullable(productRepo.findProductByIdAndRelatedData(productId)).ifPresent(product -> {
       var docArtifacts = Optional.ofNullable(product.getArtifacts()).orElse(List.of())
           .stream().filter(artifact -> BooleanUtils.isTrue(artifact.getDoc())).toList();
 

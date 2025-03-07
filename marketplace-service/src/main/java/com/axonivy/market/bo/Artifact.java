@@ -43,7 +43,7 @@ public class Artifact implements Serializable {
   @JsonBackReference
   private Product product;
 
-  @OneToMany(mappedBy = "artifact", cascade = CascadeType.ALL, fetch = FetchType.EAGER, orphanRemoval = true)
+  @OneToMany(mappedBy = "artifact", cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
   @JsonManagedReference
   private List<ArchivedArtifact> archivedArtifacts;
 

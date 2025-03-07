@@ -37,7 +37,7 @@ public class ProductDependency {
   @LastModifiedDate
   private Date modifiedAt;
 
-  @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
+  @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
   @JoinColumn(name = "product_id_fk")
   private List<MavenDependency> dependenciesOfArtifact;
 }

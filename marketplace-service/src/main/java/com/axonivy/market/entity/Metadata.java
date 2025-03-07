@@ -41,7 +41,8 @@ public class Metadata implements Serializable {
   private String groupId;
   private String latest;
   private String release;
-  @ElementCollection(fetch = FetchType.EAGER)
+
+  @ElementCollection(fetch = FetchType.LAZY)
   @CollectionTable(name = "metadata_versions", joinColumns = @JoinColumn(name = "product_url"))
   @Column(name = "versions")
   private Set<String> versions;

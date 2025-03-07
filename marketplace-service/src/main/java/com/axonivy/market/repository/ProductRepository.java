@@ -14,6 +14,6 @@ public interface ProductRepository extends JpaRepository<Product, String>, Custo
   @Query("SELECT id FROM Product WHERE listed != false or listed IS NULL")
   List<String> findAllProductIds();
 
-  @Query("SELECT p FROM Product p LEFT JOIN FETCH p.names LEFT JOIN FETCH p.shortDescriptions")
+  @Query("SELECT p FROM Product p LEFT JOIN FETCH p.names LEFT JOIN FETCH p.shortDescriptions LEFT JOIN FETCH p.artifacts")
   List<Product> findAllProductsWithNamesAndShortDescriptions();
 }
