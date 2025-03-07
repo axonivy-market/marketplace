@@ -17,6 +17,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -46,9 +47,12 @@ class MavenDependencyServiceImplTest extends BaseSetup {
   }
 
   private void prepareDataForTest(boolean isProductArtifact) {
+    var mockProductDenpendency = ProductDependency.builder().productId(SAMPLE_PRODUCT_ID)
+        .dependenciesOfArtifact(Map.of(MOCK_RELEASED_VERSION, List.of()))
+        .build();
     var mavenArtifactVersionMock = createMavenArtifactVersionMock(isProductArtifact);
     when(productRepository.findAll()).thenReturn(createPageProductsMock().getContent());
-    when(productDependencyRepository.findAll()).thenReturn(List.of());
+    when(productDependencyRepository.findAll()).thenReturn(List.of(mockProductDenpendency));
     when(mavenArtifactVersionRepository.findById(any())).thenReturn(Optional.of(mavenArtifactVersionMock));
     when(productDependencyRepository.save(any())).thenReturn(
         ProductDependency.builder().productId(SAMPLE_PRODUCT_ID).build());
