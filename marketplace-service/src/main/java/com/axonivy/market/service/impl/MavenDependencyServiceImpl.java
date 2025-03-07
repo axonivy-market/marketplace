@@ -30,6 +30,7 @@ import java.nio.file.Path;
 import java.util.*;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static com.axonivy.market.constants.CommonConstants.*;
 import static com.axonivy.market.constants.DirectoryConstants.*;
@@ -201,7 +202,7 @@ public class MavenDependencyServiceImpl implements MavenDependencyService {
   }
 
   private Optional<String> isContainAnySnapshotVersion(List<String> versions) {
-    return versions.stream().filter(VersionUtils::isSnapshotVersion).findAny();
+    return Stream.ofNullable(versions).flatMap(List::stream).filter(VersionUtils::isSnapshotVersion).findAny();
   }
 
   private List<Product> getAllListedProductIds() {
