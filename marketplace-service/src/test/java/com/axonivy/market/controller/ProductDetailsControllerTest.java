@@ -21,7 +21,9 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.data.domain.*;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PagedResourcesAssembler;
 import org.springframework.hateoas.PagedModel;
 import org.springframework.http.HttpHeaders;
@@ -314,7 +316,8 @@ class ProductDetailsControllerTest extends BaseSetup {
   void testSyncLatestReleasesForProducts() throws IOException {
     List<String> productIdList = List.of(DOCKER_CONNECTOR_ID);
     when(productService.getProductIdList()).thenReturn(productIdList);
-    when(productService.syncGitHubReleaseModels(Mockito.anyString(), Mockito.any(Pageable.class))).thenReturn(Page.empty());
+    when(productService.syncGitHubReleaseModels(Mockito.anyString(), Mockito.any(Pageable.class))).thenReturn(
+        Page.empty());
 
     productDetailsController.syncLatestReleasesForProducts();
 
