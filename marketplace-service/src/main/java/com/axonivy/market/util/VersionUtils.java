@@ -3,7 +3,6 @@ package com.axonivy.market.util;
 import com.axonivy.market.comparator.LatestVersionComparator;
 import com.axonivy.market.comparator.MavenVersionComparator;
 import com.axonivy.market.constants.CommonConstants;
-import com.axonivy.market.entity.MavenArtifactVersion;
 import com.axonivy.market.entity.Metadata;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
@@ -18,7 +17,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Set;
-import java.util.HashSet;
 import java.util.stream.Stream;
 
 import static com.axonivy.market.constants.CommonConstants.DOT_SEPARATOR;

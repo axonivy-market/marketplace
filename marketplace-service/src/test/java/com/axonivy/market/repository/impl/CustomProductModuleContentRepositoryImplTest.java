@@ -1,7 +1,6 @@
 package com.axonivy.market.repository.impl;
 
 import com.axonivy.market.BaseSetup;
-import com.axonivy.market.entity.Product;
 import com.axonivy.market.entity.ProductModuleContent;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.TypedQuery;

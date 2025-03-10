@@ -1,33 +1,25 @@
 package com.axonivy.market.repository.impl;
 
 import com.axonivy.market.BaseSetup;
-import com.axonivy.market.bo.Artifact;
 import com.axonivy.market.criteria.ProductSearchCriteria;
-import com.axonivy.market.entity.Image;
 import com.axonivy.market.entity.Product;
-import com.axonivy.market.entity.ProductCustomSort;
-import com.axonivy.market.entity.ProductMarketplaceData;
 import com.axonivy.market.enums.DocumentField;
 import com.axonivy.market.enums.Language;
 import com.axonivy.market.repository.ProductCustomSortRepository;
 import jakarta.persistence.EntityManager;
-import jakarta.persistence.FetchType;
 import jakarta.persistence.TypedQuery;
 import jakarta.persistence.criteria.*;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
-import org.mockito.Captor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.domain.Page;
 
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 
 import static com.axonivy.market.constants.PostgresDBConstants.*;
 import static org.junit.jupiter.api.Assertions.*;
