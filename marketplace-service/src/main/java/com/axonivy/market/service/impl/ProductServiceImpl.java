@@ -480,7 +480,7 @@ public class ProductServiceImpl implements ProductService {
       getMetadataContent(mavenArtifact, product, nonSyncReleasedVersions);
     }
     metadataService.updateArtifactAndMetadata(product.getId(), nonSyncReleasedVersions, product.getArtifacts());
-    externalDocumentService.syncDocumentForProduct(product.getId(), nonSyncReleasedVersions, false);
+    externalDocumentService.syncDocumentForProduct(product.getId(), false);
   }
 
   private List<Artifact> fetchAchievedArtifact(List<Artifact> artifacts) {

@@ -39,7 +39,7 @@ public class ScheduledTasks {
   public void syncDataForProductDocuments() {
     log.warn("Started sync data for product document");
     for (var product : productRepo.findAllProductsHaveDocument()) {
-      externalDocumentService.syncDocumentForProduct(product.getId(), new ArrayList<>(), false);
+      externalDocumentService.syncDocumentForProduct(product.getId(),  false);
     }
   }
 

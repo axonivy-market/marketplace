@@ -48,10 +48,14 @@ public class ExternalDocumentServiceImpl implements ExternalDocumentService {
 
   @Override
   @Transactional
-  public void syncDocumentForProduct(String productId, List<String> nonSyncReleasedVersions, boolean isResetSync) {
+  public void syncDocumentForProduct(String productId, boolean isResetSync) {
     Optional.ofNullable(productRepo.findProductByIdAndRelatedData(productId)).ifPresent(product -> {
       List<Artifact> docArtifacts = fetchDocArtifacts(product.getArtifacts());
-      List<String> releasedVersions = getReleasedVersions(product);
+
+      List<String> releasedVersions = product.getReleasedVersions().stream()
+          .filter(VersionUtils::isValidFormatReleasedVersion)
+          .distinct()
+          .toList();
 
       if (ObjectUtils.isEmpty(docArtifacts) || ObjectUtils.isEmpty(releasedVersions)) return;
 

@@ -46,17 +46,17 @@ class ExternalDocumentServiceImplTest {
   @Test
   void testSyncDocumentForProduct() throws IOException {
     when(productRepository.findProductByIdAndRelatedData(PORTAL)).thenReturn(mockPortalProductHasNoArtifact().get());
-    service.syncDocumentForProduct(PORTAL, new ArrayList<>(), true);
+    service.syncDocumentForProduct(PORTAL,  true);
     verify(productRepository, times(1)).findProductByIdAndRelatedData(any());
     verify(externalDocumentMetaRepository, times(0)).findByProductIdAndVersion(any(), any());
 
     when(artifactRepository.findAllByIdInAndFetchArchivedArtifacts(any())).thenReturn(mockPortalProduct().get().getArtifacts());
     when(productRepository.findProductByIdAndRelatedData(PORTAL)).thenReturn(mockPortalProduct().get());
-    service.syncDocumentForProduct(PORTAL, new ArrayList<>(), false);
+    service.syncDocumentForProduct(PORTAL,  false);
     verify(externalDocumentMetaRepository, times(1)).findByProductIdAndVersionIn(any(), any());
 
     when(fileDownloadService.downloadAndUnzipFile(any(), any())).thenReturn("data" + RELATIVE_LOCATION);
-    service.syncDocumentForProduct(PORTAL, new ArrayList<>(), true);
+    service.syncDocumentForProduct(PORTAL,  true);
     verify(externalDocumentMetaRepository, times(2)).saveAll(any());
   }
 

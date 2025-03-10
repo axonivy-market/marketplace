@@ -76,7 +76,7 @@ public class ExternalDocumentController {
     }
 
     for (Product product : products) {
-      externalDocumentService.syncDocumentForProduct(product.getId(), new ArrayList<>(), resetSync);
+      externalDocumentService.syncDocumentForProduct(product.getId(), resetSync);
     }
 
     message.setHelpCode(ErrorCode.SUCCESSFUL.getCode());
