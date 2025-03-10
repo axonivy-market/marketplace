@@ -32,13 +32,15 @@ public class MavenArtifactVersion implements Serializable {
   @Id
   private String productId;
 
-  @OneToMany(mappedBy = "productVersionReference", cascade = CascadeType.ALL, fetch = FetchType.EAGER, orphanRemoval = true)
+  @OneToMany(mappedBy = "productVersionReference", cascade = CascadeType.ALL, fetch = FetchType.EAGER,
+      orphanRemoval = true)
   @JsonManagedReference("productVersionReference")
   private List<MavenArtifactModel> productArtifactsByVersion;
 
-  @OneToMany(mappedBy = "additionalVersionReference", cascade = CascadeType.ALL, fetch = FetchType.EAGER ,orphanRemoval = true)
+  @OneToMany(mappedBy = "additionalVersionReference", cascade = CascadeType.ALL, fetch = FetchType.EAGER,
+      orphanRemoval = true)
   @JsonManagedReference("additionalVersionReference")
-  private List<MavenArtifactModel> additionalArtifactsByVersion;;
+  private List<MavenArtifactModel> additionalArtifactsByVersion;
 
   public List<MavenArtifactModel> getProductArtifactsByVersion() {
     if (Objects.isNull(productArtifactsByVersion)) {

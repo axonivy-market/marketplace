@@ -18,7 +18,9 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import static com.axonivy.market.constants.RequestMappingConstants.*;
+import static com.axonivy.market.constants.RequestMappingConstants.BY_ID;
+import static com.axonivy.market.constants.RequestMappingConstants.IMAGE;
+import static com.axonivy.market.constants.RequestMappingConstants.BY_FILE_NAME;
 import static com.axonivy.market.constants.RequestParamConstants.ID;
 
 @RestController

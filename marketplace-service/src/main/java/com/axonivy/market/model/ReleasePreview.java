@@ -9,7 +9,10 @@ import lombok.Setter;
 
 import java.util.Map;
 
-import static com.axonivy.market.util.ProductContentUtils.*;
+import static com.axonivy.market.util.ProductContentUtils.DESCRIPTION;
+import static com.axonivy.market.util.ProductContentUtils.DEMO;
+import static com.axonivy.market.util.ProductContentUtils.SETUP;
+import static com.axonivy.market.util.ProductContentUtils.replaceEmptyContentsWithEnContent;
 
 @Getter
 @Setter

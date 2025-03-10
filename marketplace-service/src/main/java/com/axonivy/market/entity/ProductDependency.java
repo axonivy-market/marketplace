@@ -34,7 +34,6 @@ import static com.axonivy.market.constants.EntityConstants.PRODUCT_DEPENDENCY;
 public class ProductDependency {
   @Id
   private String productId;
-
   @CreatedDate
   private Date createdAt;
   @LastModifiedDate
