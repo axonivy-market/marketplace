@@ -94,13 +94,13 @@ public class CustomProductRepositoryImpl implements CustomProductRepository {
   public Page<Product> searchByCriteria(ProductSearchCriteria searchCriteria, Pageable pageable) {
     ProductCriteriaBuilder<CriteriaBuilder, CriteriaQuery<Product>, Root<Product>> jpaBuilder = createCriteriaQuery();
     PageRequest pageRequest = (PageRequest) pageable;
-
+    Language language = searchCriteria.getLanguage() != null ? searchCriteria.getLanguage() : Language.EN;
     Predicate predicate = buildCriteriaSearch(searchCriteria, jpaBuilder.cb(), jpaBuilder.root());
 
     jpaBuilder.cq().where(predicate);
 
     if (pageRequest.getSort().isSorted()) {
-      sortByOrders(jpaBuilder,pageRequest);
+      sortByOrders(jpaBuilder,pageRequest, language.getValue());
     }
 
     // Create query
@@ -117,16 +117,16 @@ public class CustomProductRepositoryImpl implements CustomProductRepository {
   }
 
   private void sortByOrders(ProductCriteriaBuilder<CriteriaBuilder, CriteriaQuery<Product>, Root<Product>> jpaBuilder,
-      PageRequest pageRequest) {
+      PageRequest pageRequest, String language) {
     List<Order> orders = new ArrayList<>();
     if (pageRequest != null) {
       pageRequest.getSort().stream().findFirst().ifPresent(order -> {
         SortOption sortOption = SortOption.of(order.getProperty());
         switch (sortOption) {
-          case ALPHABETICALLY -> orders.add(sortByAlphabet(jpaBuilder));
+          case ALPHABETICALLY -> orders.add(sortByAlphabet(jpaBuilder,language));
           case RECENT -> orders.add(sortByRecent(jpaBuilder));
           case POPULARITY -> orders.add(sortByPopularity(jpaBuilder));
-          default -> orders.addAll(sortByStandard(jpaBuilder));
+          default -> orders.addAll(sortByStandard(jpaBuilder, language));
         }
       });
     }
@@ -135,7 +135,7 @@ public class CustomProductRepositoryImpl implements CustomProductRepository {
   }
 
   private List<Order> sortByStandard(
-      ProductCriteriaBuilder<CriteriaBuilder, CriteriaQuery<Product>, Root<Product>> jpaBuilder) {
+      ProductCriteriaBuilder<CriteriaBuilder, CriteriaQuery<Product>, Root<Product>> jpaBuilder, String language) {
     List<ProductCustomSort> customSorts = productCustomSortRepo.findAll();
     Join<Product, ProductMarketplaceData> marketplaceJoin = jpaBuilder.root.join(PRODUCT_MARKETPLACE_DATA,
         JoinType.LEFT);
@@ -145,7 +145,7 @@ public class CustomProductRepositoryImpl implements CustomProductRepository {
     if (ObjectUtils.isNotEmpty(customSorts)) {
       SortOption sortOptionExtension = SortOption.of(customSorts.get(0).getRuleForRemainder());
       switch (sortOptionExtension) {
-        case ALPHABETICALLY -> orders.add(sortByAlphabet(jpaBuilder));
+        case ALPHABETICALLY -> orders.add(sortByAlphabet(jpaBuilder, language));
         case RECENT -> orders.add(sortByRecent(jpaBuilder));
         default -> orders.add(sortByPopularity(jpaBuilder));
       }
@@ -161,10 +161,18 @@ public class CustomProductRepositoryImpl implements CustomProductRepository {
   }
 
   private Order sortByAlphabet(
-      ProductCriteriaBuilder<CriteriaBuilder, CriteriaQuery<Product>, Root<Product>> jpaBuilder) {
-    MapJoin<Product, String, String> namesJoin = jpaBuilder.root().joinMap(PRODUCT_NAMES);
+      ProductCriteriaBuilder<CriteriaBuilder, CriteriaQuery<Product>, Root<Product>> jpaBuilder, String language) {
+
+    // Join only for sorting (not affecting the main query)
+    MapJoin<Product, String, String> namesJoin = jpaBuilder.root().joinMap(PRODUCT_NAMES, JoinType.LEFT);
+
+    // Filter by a specific language (e.g., English)
+    Predicate languageFilter = jpaBuilder.cb().equal(namesJoin.key(), language);
+    jpaBuilder.cq().where(languageFilter);
+
+    // Use coalesce to handle NULL values (if no English name exists)
     Path<String> nameValue = namesJoin.value();
-    return jpaBuilder.cb.asc(nameValue);
+    return jpaBuilder.cb().asc(jpaBuilder.cb().coalesce(nameValue, ""));
   }
 
   private Order sortById(ProductCriteriaBuilder<CriteriaBuilder, CriteriaQuery<Product>, Root<Product>> jpaBuilder){
