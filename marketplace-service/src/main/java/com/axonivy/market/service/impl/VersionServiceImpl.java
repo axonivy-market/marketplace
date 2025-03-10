@@ -155,8 +155,7 @@ public class VersionServiceImpl implements VersionService {
       String version, List<String> artifactsIds) {
     return existingData.stream()
         .filter(
-            artifact -> version.equals(artifact.getProductVersion()) && artifactsIds.contains(artifact.getArtifactId())
-        )
+            artifact -> version.equals(artifact.getProductVersion()) && artifactsIds.contains(artifact.getArtifactId()))
         .findAny()
         .map(MavenArtifactModel::getDownloadUrl)
         .orElse(null);

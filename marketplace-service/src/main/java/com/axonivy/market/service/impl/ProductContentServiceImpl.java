@@ -180,9 +180,9 @@ public class ProductContentServiceImpl implements ProductContentService {
         dependency -> dependency.getArtifactId().equals(artifactId) &&
             dependency.getVersion().equals(version);
 
-    ProductDependency productDependencies = productDependencyRepository.findById(productId).orElse(null);
+    ProductDependency productDependency = productDependencyRepository.findById(productId).orElse(null);
 
-    return Optional.ofNullable(productDependencies)
+    return Optional.ofNullable(productDependency)
         .map(ProductDependency::getDependenciesOfArtifact)
         .map(Collection::stream)
         .map(dependencies -> dependencies.filter(filterByArtifactAndVersion).toList())

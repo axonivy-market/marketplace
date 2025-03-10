@@ -68,7 +68,10 @@ import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.stream.Collectors;
 
-import static com.axonivy.market.constants.CommonConstants.*;
+import static com.axonivy.market.constants.CommonConstants.DOT_SEPARATOR;
+import static com.axonivy.market.constants.CommonConstants.SLASH;
+import static com.axonivy.market.constants.CommonConstants.PLUS;
+import static com.axonivy.market.constants.CommonConstants.COMPATIBILITY_RANGE_FORMAT;
 import static com.axonivy.market.constants.MavenConstants.*;
 import static com.axonivy.market.constants.ProductJsonConstants.EN_LANGUAGE;
 import static com.axonivy.market.constants.ProductJsonConstants.LOGO_FILE;
@@ -330,7 +333,7 @@ public class ProductServiceImpl implements ProductService {
     }
 
     for (Product product : products) {
-      List<Artifact> allArtifacts = fetchAchievedArtifact(product.getArtifacts());
+      List<Artifact> allArtifacts = fetchArtifacts(product.getArtifacts());
       product.setArtifacts(allArtifacts);
       updateProductFromReleasedVersions(product);
       productRepo.save(product);
@@ -480,7 +483,7 @@ public class ProductServiceImpl implements ProductService {
     externalDocumentService.syncDocumentForProduct(product.getId(), false);
   }
 
-  private List<Artifact> fetchAchievedArtifact(List<Artifact> artifacts) {
+  private List<Artifact> fetchArtifacts(List<Artifact> artifacts) {
     List<String> ids = artifacts.stream().map(Artifact::getId).collect(Collectors.toList());
     return artifactRepo.findAllByIdInAndFetchArchivedArtifacts(ids);
   }
