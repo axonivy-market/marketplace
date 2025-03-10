@@ -108,7 +108,7 @@ class ProductContentServiceImplTest extends BaseSetup {
         .dependenciesOfArtifact(mavenDependencies)
         .build();
 
-    when(productDependencyRepository.findById(MOCK_PRODUCT_ID)).thenReturn(Optional.ofNullable(productDependency));
+    when(productDependencyRepository.findByIdWithDependencies(MOCK_PRODUCT_ID)).thenReturn(productDependency);
 
     when(fileDownloadService.downloadFile(MOCK_DOWNLOAD_URL)).thenReturn(MOCK_DOWNLOAD_URL.getBytes());
 
