@@ -136,13 +136,6 @@ public class ExternalDocumentServiceImpl implements ExternalDocumentService {
     return allArtifacts.stream().filter(artifact -> BooleanUtils.isTrue(artifact.getDoc())).toList();
   }
 
-  private List<String> getReleasedVersions(Product product) {
-    return product.getReleasedVersions().stream()
-        .filter(VersionUtils::isValidFormatReleasedVersion)
-        .distinct()
-        .toList();
-  }
-
   private String downloadDocAndUnzipToShareFolder(String downloadDocUrl, boolean isResetSync) {
     try {
       return fileDownloadService.downloadAndUnzipFile(downloadDocUrl,

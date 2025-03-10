@@ -47,6 +47,8 @@ public class BaseSetup {
   protected static final String SAMPLE_PRODUCT_REPOSITORY_NAME = "axonivy-market/amazon-comprehend";
   protected static final Pageable PAGEABLE = PageRequest.of(0, 20,
       Sort.by(SortOption.ALPHABETICALLY.getOption()).descending());
+  protected static final Pageable PAGEABLE2 = PageRequest.of(0, 20,
+      Sort.by(SortOption.STANDARD.getOption()).descending());
   protected static final String MOCK_PRODUCT_ID = "bpmn-statistic";
   protected static final String MOCK_PRODUCT_ID_WITH_VERSION = "bpmn-statistic-10.0.10";
   protected static final String MOCK_ARTIFACT_ID = "bpmn-statistic";

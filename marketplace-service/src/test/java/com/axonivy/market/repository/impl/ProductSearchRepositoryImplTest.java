@@ -1,39 +1,47 @@
 package com.axonivy.market.repository.impl;
 
 import com.axonivy.market.BaseSetup;
+import com.axonivy.market.bo.Artifact;
 import com.axonivy.market.criteria.ProductSearchCriteria;
+import com.axonivy.market.entity.Image;
 import com.axonivy.market.entity.Product;
+import com.axonivy.market.entity.ProductCustomSort;
+import com.axonivy.market.entity.ProductMarketplaceData;
 import com.axonivy.market.enums.DocumentField;
 import com.axonivy.market.enums.Language;
+import com.axonivy.market.repository.ProductCustomSortRepository;
 import jakarta.persistence.EntityManager;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.TypedQuery;
-import jakarta.persistence.criteria.CriteriaBuilder;
-import jakarta.persistence.criteria.CriteriaQuery;
-import jakarta.persistence.criteria.Expression;
-import jakarta.persistence.criteria.MapJoin;
-import jakarta.persistence.criteria.Path;
-import jakarta.persistence.criteria.Root;
+import jakarta.persistence.criteria.*;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Captor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.domain.Page;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
+import static com.axonivy.market.constants.PostgresDBConstants.*;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class ProductSearchRepositoryImplTest extends BaseSetup {
 
   Page<Product> mockResultReturn;
   ProductSearchCriteria searchCriteria;
+
+  @Mock
+  ProductCustomSortRepository productCustomSortRepo;
 
   @Mock
   private EntityManager em;
@@ -86,6 +94,89 @@ class ProductSearchRepositoryImplTest extends BaseSetup {
     assertTrue(result.getContent().get(0).getNames().containsValue(SAMPLE_PRODUCT_NAME),
         "Expected product name not found in the result");
   }
+
+  @Test
+  void testSearchByCriteriaWithCustomSort() {
+    TypedQuery<Product> query = mock(TypedQuery.class);
+    CriteriaBuilder cb = mock(CriteriaBuilder.class);
+    CriteriaQuery<Product> criteriaQuery = mock(CriteriaQuery.class);
+    Root<Product> productRoot = mock(Root.class);
+
+    CriteriaQuery<Long> countQuery = mock(CriteriaQuery.class);
+    Root<Product> countRoot = mock(Root.class);
+
+    when(em.getCriteriaBuilder()).thenReturn(cb);
+    when(cb.createQuery(Product.class)).thenReturn(criteriaQuery);
+    when(criteriaQuery.from(Product.class)).thenReturn(productRoot);
+    when(em.createQuery(criteriaQuery)).thenReturn(query);
+    when(query.getResultList()).thenReturn(mockResultReturn.getContent()); // Mocking a result
+
+    MapJoin<Product, String, String> namesJoin = mock(MapJoin.class);
+//    Mockito.<MapJoin<Product, String, String>>when(productRoot.joinMap(any())).thenReturn(namesJoin);
+
+    Path<String> nameValue = mock(Path.class);
+//    when(namesJoin.value()).thenReturn(nameValue);
+
+    when(cb.createQuery(Long.class)).thenReturn(countQuery);
+    when(countQuery.from(Product.class)).thenReturn(countRoot);
+    Expression<Long> countExpression = mock(Expression.class);
+    when(cb.count(any())).thenReturn(countExpression);
+    when(countQuery.select(countExpression)).thenReturn(countQuery);
+    TypedQuery<Long> typedCountQuery = mock(TypedQuery.class);
+    when(em.createQuery(countQuery)).thenReturn(typedCountQuery);
+    when(typedCountQuery.getSingleResult()).thenReturn((long) mockResultReturn.getSize());
+
+    var marketplaceJoin = mock(Join.class);
+    var mockPath = mock(Path.class);
+    var mockOrder = mock(Order.class);
+    when(productRoot.join(PRODUCT_MARKETPLACE_DATA, JoinType.LEFT)).thenReturn(marketplaceJoin);
+    when(marketplaceJoin.get(CUSTOM_ORDER)).thenReturn(mockPath);
+    when(cb.asc(mockPath)).thenReturn(mockOrder);
+
+    ArgumentCaptor<List<Order>> argumentCaptor = ArgumentCaptor.forClass(List.class);
+
+
+    Page<Product> result = productListedRepository.searchByCriteria(searchCriteria, PAGEABLE2);
+    verify(criteriaQuery).orderBy(argumentCaptor.capture());
+    assertTrue(argumentCaptor.getValue().size() == 2);
+    assertFalse(result.isEmpty(), "Result is empty");
+    assertTrue(result.isFirst(), "Result is not on the first page");
+    assertEquals(2, result.getContent().size(), "Unexpected number of products");
+    assertTrue(result.getContent().get(0).getNames().containsValue(SAMPLE_PRODUCT_NAME),
+        "Expected product name not found in the result");
+  }
+
+
+
+  @Test
+  void testFindAllProductsHaveDocument() {
+    TypedQuery<Product> query = mock(TypedQuery.class);
+    CriteriaBuilder mockCriteriaBuilder = mock(CriteriaBuilder.class);
+    CriteriaQuery<Product> criteriaQuery = mock(CriteriaQuery.class);
+    Root<Product> productRoot = mock(Root.class);
+
+    Predicate predicate = mock(Predicate.class);
+
+    when(em.getCriteriaBuilder()).thenReturn(mockCriteriaBuilder);
+    when(mockCriteriaBuilder.createQuery(Product.class)).thenReturn(criteriaQuery);
+    when(criteriaQuery.from(Product.class)).thenReturn(productRoot);
+
+    var artifactJoin = mock(Join.class);
+
+    when(productRoot.join(PRODUCT_ARTIFACT)).thenReturn(artifactJoin);
+    when(mockCriteriaBuilder.isTrue(artifactJoin.get("doc"))).thenReturn(predicate);
+    when(criteriaQuery.select(productRoot)).thenReturn(criteriaQuery);
+    when(criteriaQuery.distinct(true)).thenReturn(criteriaQuery);
+    when(criteriaQuery.where(predicate)).thenReturn(criteriaQuery);
+
+    when(em.createQuery(criteriaQuery)).thenReturn(query);
+    when(query.getResultList()).thenReturn(List.of(Product.builder().id("asd").build()));
+
+    List<Product> result = productListedRepository.findAllProductsHaveDocument();
+
+    assertEquals(1, result.size());
+  }
+
 
   @Test
   void testFindByCriteria() {
