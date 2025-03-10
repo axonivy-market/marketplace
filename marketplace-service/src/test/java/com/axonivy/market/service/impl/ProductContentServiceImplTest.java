@@ -25,9 +25,8 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
@@ -100,17 +99,19 @@ class ProductContentServiceImplTest extends BaseSetup {
 
   @Test
   void testDownloadZipArtifactFile() throws ExecutionException, InterruptedException, TimeoutException {
-    Map<String, List<MavenDependency>> dependenciesOfArtifact = new HashMap<>();
     List<MavenDependency> mavenDependencies = new ArrayList<>();
-    mavenDependencies.add(
-        MavenDependency.builder().artifactId(MOCK_DEMO_ARTIFACT_ID).downloadUrl(MOCK_DOWNLOAD_URL).version(
-            MOCK_RELEASED_VERSION).build());
-    dependenciesOfArtifact.put(MOCK_DEMO_ARTIFACT_ID, mavenDependencies);
-    var productDependency = ProductDependency.builder().productId(MOCK_PRODUCT_ID).dependenciesOfArtifact(
-        dependenciesOfArtifact).build();
-    when(productDependencyRepository.findProductDependencies(MOCK_PRODUCT_ID, MOCK_DEMO_ARTIFACT_ID,
-        MOCK_RELEASED_VERSION)).thenReturn(List.of(productDependency));
+    mavenDependencies.add(MavenDependency.builder().artifactId(MOCK_DEMO_ARTIFACT_ID).downloadUrl(MOCK_DOWNLOAD_URL)
+        .version(MOCK_RELEASED_VERSION).build());
+
+    ProductDependency productDependency = ProductDependency.builder()
+        .productId(MOCK_PRODUCT_ID)
+        .dependenciesOfArtifact(mavenDependencies)
+        .build();
+
+    when(productDependencyRepository.findByIdWithDependencies(MOCK_PRODUCT_ID)).thenReturn(productDependency);
+
     when(fileDownloadService.downloadFile(MOCK_DOWNLOAD_URL)).thenReturn(MOCK_DOWNLOAD_URL.getBytes());
+
     var zipArtifact = productContentService.downloadZipArtifactFile(MOCK_PRODUCT_ID, MOCK_DEMO_ARTIFACT_ID,
         MOCK_RELEASED_VERSION);
     assertNotNull(zipArtifact);

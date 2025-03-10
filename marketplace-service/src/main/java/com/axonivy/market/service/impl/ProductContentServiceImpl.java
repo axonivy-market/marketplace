@@ -33,12 +33,14 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
+import java.util.function.Predicate;
 import java.util.stream.Stream;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
@@ -174,12 +176,17 @@ public class ProductContentServiceImpl implements ProductContentService {
   }
 
   private List<MavenDependency> getMavenDependenciesOfProduct(String productId, String artifactId, String version) {
-    List<ProductDependency> existingProductDependencies = productDependencyRepository.findProductDependencies(
-        productId, artifactId, version);
-    return Optional.ofNullable(existingProductDependencies).orElse(List.of())
-        .stream().map(ProductDependency::getDependenciesOfArtifact)
-        .map(Map::values).flatMap(Collection::stream).flatMap(List::stream)
-        .toList();
+    Predicate<MavenDependency> filterByArtifactAndVersion =
+        dependency -> dependency.getArtifactId().equals(artifactId) &&
+            dependency.getVersion().equals(version);
+
+    ProductDependency productDependency = productDependencyRepository.findByIdWithDependencies(productId);
+
+    return Optional.ofNullable(productDependency)
+        .map(ProductDependency::getDependenciesOfArtifact)
+        .map(Collection::stream)
+        .map(dependencies -> dependencies.filter(filterByArtifactAndVersion).toList())
+        .orElse(new ArrayList<>());
   }
 
   private void zipConfigurationOptions(ZipOutputStream zipOut) throws IOException {

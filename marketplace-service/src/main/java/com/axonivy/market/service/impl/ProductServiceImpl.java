@@ -4,10 +4,11 @@ import com.axonivy.market.bo.Artifact;
 import com.axonivy.market.constants.GitHubConstants;
 import com.axonivy.market.constants.MavenConstants;
 import com.axonivy.market.constants.MetaConstants;
-import com.axonivy.market.constants.MongoDBConstants;
+import com.axonivy.market.constants.PostgresDBConstants;
 import com.axonivy.market.criteria.ProductSearchCriteria;
 import com.axonivy.market.entity.GitHubRepoMeta;
 import com.axonivy.market.entity.Image;
+import com.axonivy.market.entity.MavenArtifactVersion;
 import com.axonivy.market.entity.Product;
 import com.axonivy.market.entity.ProductCustomSort;
 import com.axonivy.market.entity.ProductJsonContent;
@@ -51,11 +52,10 @@ import org.springframework.cache.annotation.CachePut;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
 import org.springframework.data.domain.Sort.Order;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 import org.w3c.dom.Document;
 import org.w3c.dom.NodeList;
@@ -66,6 +66,7 @@ import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
+import java.util.stream.Collectors;
 
 import static com.axonivy.market.constants.CommonConstants.DOT_SEPARATOR;
 import static com.axonivy.market.constants.CommonConstants.SLASH;
@@ -103,6 +104,7 @@ public class ProductServiceImpl implements ProductService {
   private final MetadataService metadataService;
   private final ProductMarketplaceDataService productMarketplaceDataService;
   private final ProductMarketplaceDataRepository productMarketplaceDataRepo;
+  private final ArtifactRepository artifactRepo;
   private GHCommit lastGHCommit;
   private final VersionService versionService;
   private GitHubRepoMeta marketRepoMeta;
@@ -117,7 +119,7 @@ public class ProductServiceImpl implements ProductService {
       MetadataSyncRepository metadataSyncRepo, MetadataRepository metadataRepo, ImageService imageService,
       ProductContentService productContentService, MetadataService metadataService,
       ProductMarketplaceDataService productMarketplaceDataService, ExternalDocumentService externalDocumentService,
-      ProductMarketplaceDataRepository productMarketplaceDataRepo, VersionService versionService) {
+      ProductMarketplaceDataRepository productMarketplaceDataRepo, ArtifactRepository artifactRepo, VersionService versionService) {
     this.productRepo = productRepo;
     this.productModuleContentRepo = productModuleContentRepo;
     this.axonIvyMarketRepoService = axonIvyMarketRepoService;
@@ -136,6 +138,7 @@ public class ProductServiceImpl implements ProductService {
     this.productMarketplaceDataService = productMarketplaceDataService;
     this.externalDocumentService = externalDocumentService;
     this.productMarketplaceDataRepo = productMarketplaceDataRepo;
+    this.artifactRepo = artifactRepo;
     this.versionService = versionService;
   }
 
@@ -143,7 +146,6 @@ public class ProductServiceImpl implements ProductService {
   public Page<Product> findProducts(String type, String keyword, String language, Boolean isRESTClient,
       Pageable pageable) {
     final var typeOption = TypeOption.of(type);
-    final var searchPageable = refinePagination(language, pageable);
     var searchCriteria = new ProductSearchCriteria();
     searchCriteria.setListed(true);
     searchCriteria.setKeyword(keyword);
@@ -152,7 +154,7 @@ public class ProductServiceImpl implements ProductService {
     if (BooleanUtils.isTrue(isRESTClient)) {
       searchCriteria.setExcludeFields(List.of(SHORT_DESCRIPTIONS));
     }
-    return productRepo.searchByCriteria(searchCriteria, searchPageable);
+    return productRepo.searchByCriteria(searchCriteria, pageable);
   }
 
   @Override
@@ -292,28 +294,9 @@ public class ProductServiceImpl implements ProductService {
     return EMPTY;
   }
 
-  private Pageable refinePagination(String language, Pageable pageable) {
-    PageRequest pageRequest = (PageRequest) pageable;
-    if (pageable != null) {
-      List<Order> orders = new ArrayList<>();
-      for (var sort : pageable.getSort()) {
-        SortOption sortOption = SortOption.of(sort.getProperty());
-        Order order = createOrder(sortOption, language);
-        orders.add(order);
-        if (SortOption.STANDARD.equals(sortOption)) {
-          orders.add(getExtensionOrder(language));
-        }
-      }
-      Order orderById = createOrder(SortOption.ID, language);
-      orders.add(orderById);
-      pageRequest = PageRequest.of(pageable.getPageNumber(), pageable.getPageSize(), Sort.by(orders));
-    }
-    return pageRequest;
-  }
-
   public Order createOrder(SortOption sortOption, String language) {
     if (SortOption.STANDARD.equals(sortOption)) {
-      return new Order(sortOption.getDirection(), MongoDBConstants.MARKETPLACE_DATA_CUSTOM_ORDER);
+      return new Order(sortOption.getDirection(), PostgresDBConstants.MARKETPLACE_DATA_CUSTOM_ORDER);
     }
     return new Order(sortOption.getDirection(), sortOption.getCode(language));
   }
@@ -342,13 +325,16 @@ public class ProductServiceImpl implements ProductService {
     return isLastCommitCovered;
   }
 
+
   private void updateLatestReleaseVersionContentsFromProductRepo() {
-    List<Product> products = productRepo.findAll();
+    List<Product> products = productRepo.findAllProductsWithNamesAndShortDescriptions();
     if (ObjectUtils.isEmpty(products)) {
       return;
     }
 
     for (Product product : products) {
+      List<Artifact> allArtifacts = fetchArtifacts(product.getArtifacts());
+      product.setArtifacts(allArtifacts);
       updateProductFromReleasedVersions(product);
       productRepo.save(product);
     }
@@ -475,11 +461,14 @@ public class ProductServiceImpl implements ProductService {
 
     List<Artifact> archivedArtifacts = product.getArtifacts().stream()
         .filter(artifact -> !CollectionUtils.isEmpty(artifact.getArchivedArtifacts()))
-        .flatMap(artifact -> artifact.getArchivedArtifacts().stream()
-            .map(archivedArtifact -> Artifact.builder()
-                .groupId(archivedArtifact.getGroupId())
-                .artifactId(archivedArtifact.getArtifactId())
-                .build()))
+        .flatMap(artifact ->
+            artifact.getArchivedArtifacts().stream()
+                .peek(archivedArtifact -> archivedArtifact.setArtifact(artifact))
+                .map(archivedArtifact -> Artifact.builder()
+                    .groupId(archivedArtifact.getGroupId())
+                    .artifactId(archivedArtifact.getArtifactId())
+                    .build())
+        )
         .toList();
 
     List<Artifact> mavenArtifacts = new ArrayList<>();
@@ -491,7 +480,12 @@ public class ProductServiceImpl implements ProductService {
       getMetadataContent(mavenArtifact, product, nonSyncReleasedVersions);
     }
     metadataService.updateArtifactAndMetadata(product.getId(), nonSyncReleasedVersions, product.getArtifacts());
-    externalDocumentService.syncDocumentForProduct(product.getId(), nonSyncReleasedVersions, false);
+    externalDocumentService.syncDocumentForProduct(product.getId(), false);
+  }
+
+  private List<Artifact> fetchArtifacts(List<Artifact> artifacts) {
+    List<String> ids = artifacts.stream().map(Artifact::getId).collect(Collectors.toList());
+    return artifactRepo.findAllByIdInAndFetchArchivedArtifacts(ids);
   }
 
   private void getMetadataContent(Artifact artifact, Product product, List<String> nonSyncReleasedVersions) {
@@ -647,9 +641,9 @@ public class ProductServiceImpl implements ProductService {
     List<String> versions;
     String version = StringUtils.EMPTY;
 
-    var mavenArtifactVersion = mavenArtifactVersionRepo.findById(id);
-    if (mavenArtifactVersion.isPresent()) {
-      versions = VersionUtils.getAllExistingVersions(mavenArtifactVersion.get(), BooleanUtils.isTrue(isShowDevVersion),
+    MavenArtifactVersion mavenArtifactVersion = mavenArtifactVersionRepo.findById(id).orElse(null);
+    if (ObjectUtils.isNotEmpty(mavenArtifactVersion)) {
+      versions = MavenUtils.extractAllVersions(mavenArtifactVersion, BooleanUtils.isTrue(isShowDevVersion),
           StringUtils.EMPTY);
       version = CollectionUtils.firstElement(versions);
     }
@@ -680,6 +674,7 @@ public class ProductServiceImpl implements ProductService {
   }
 
   @Override
+  @Transactional
   public boolean syncOneProduct(String productId, String marketItemPath, Boolean overrideMarketItemPath) {
     try {
       log.info("Sync product {} is starting ...", productId);
@@ -704,7 +699,8 @@ public class ProductServiceImpl implements ProductService {
     return false;
   }
 
-  private Product renewProductById(String productId, String marketItemPath, Boolean overrideMarketItemPath) {
+  @Transactional
+  public Product renewProductById(String productId, String marketItemPath, Boolean overrideMarketItemPath) {
     Product product = new Product();
     productRepo.findById(productId).ifPresent(foundProduct -> {
           ProductFactory.transferComputedPersistedDataToProduct(foundProduct, product);
@@ -803,7 +799,7 @@ public class ProductServiceImpl implements ProductService {
   @Cacheable(value = "GithubPublicReleasesCache", key="{#productId}")
   @Override
   public Page<GitHubReleaseModel> getGitHubReleaseModels(String productId, Pageable pageable) throws IOException {
-    Product product = productRepo.findProductById(productId);
+    Product product = productRepo.findProductByIdAndRelatedData(productId);
     if (StringUtils.isBlank(product.getRepositoryName()) || StringUtils.isBlank(product.getSourceUrl())) {
       return new PageImpl<>(new ArrayList<>(), pageable, 0);
     }
@@ -821,7 +817,7 @@ public class ProductServiceImpl implements ProductService {
 
   @Override
   public GitHubReleaseModel getGitHubReleaseModelByProductIdAndReleaseId(String productId, Long releaseId) throws IOException {
-    Product product = productRepo.findProductById(productId);
+    Product product = productRepo.findProductByIdAndRelatedData(productId);
 
     return this.gitHubService.getGitHubReleaseModelByProductIdAndReleaseId(product, releaseId);
   }

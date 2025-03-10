@@ -10,11 +10,9 @@ import java.util.List;
 public interface CustomProductRepository {
   Product getProductByIdAndVersion(String id, String version);
 
-  Product findProductById(String id);
+  Product findProductByIdAndRelatedData(String id);
 
   List<String> getReleasedVersionsById(String id);
-
-  List<Product> getAllProductsWithIdAndReleaseTagAndArtifact();
 
   Page<Product> searchByCriteria(ProductSearchCriteria criteria, Pageable pageable);
 

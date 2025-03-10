@@ -1,7 +1,6 @@
 package com.axonivy.market.service.impl;
 
 import com.axonivy.market.BaseSetup;
-import com.axonivy.market.constants.ProductJsonConstants;
 import com.axonivy.market.entity.Product;
 import com.axonivy.market.entity.ProductCustomSort;
 import com.axonivy.market.entity.ProductMarketplaceData;
@@ -17,34 +16,23 @@ import org.apache.commons.lang3.StringUtils;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
-import org.mockito.ArgumentMatchers;
 import org.mockito.Captor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.data.mongodb.core.MongoTemplate;
-import org.springframework.data.mongodb.core.query.Query;
-import org.springframework.data.mongodb.core.query.Update;
 import org.springframework.test.util.ReflectionTestUtils;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyInt;
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class ProductMarketplaceDataServiceImplTest extends BaseSetup {
-  @Mock
-  private MongoTemplate mongoTemplate;
   @Mock
   private ProductRepository productRepo;
   @Mock
@@ -55,14 +43,6 @@ class ProductMarketplaceDataServiceImplTest extends BaseSetup {
   private ProductMarketplaceDataServiceImpl productMarketplaceDataService;
   @Captor
   ArgumentCaptor<ArrayList<ProductMarketplaceData>> productListArgumentCaptor;
-
-  @Test
-  void testRemoveFieldFromAllProductDocuments() {
-    productMarketplaceDataService.removeFieldFromAllProductDocuments(ProductJsonConstants.CUSTOM_ORDER);
-
-    verify(mongoTemplate).updateMulti(ArgumentMatchers.any(Query.class), ArgumentMatchers.any(Update.class),
-        eq(ProductMarketplaceData.class));
-  }
 
   @Test
   void testAddCustomSortProduct() throws InvalidParamException {
@@ -78,7 +58,7 @@ class ProductMarketplaceDataServiceImplTest extends BaseSetup {
     productMarketplaceDataService.addCustomSortProduct(customSortRequest);
 
     verify(productCustomSortRepo).deleteAll();
-    verify(mongoTemplate).updateMulti(any(Query.class), any(Update.class), eq(ProductMarketplaceData.class));
+    verify(productMarketplaceDataRepo).resetCustomOrderForAllProducts();
     verify(productCustomSortRepo).save(any(ProductCustomSort.class));
     verify(productMarketplaceDataRepo).saveAll(productListArgumentCaptor.capture());
 

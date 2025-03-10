@@ -69,7 +69,6 @@ export class ProductFeedbackService {
     const requestParams = new HttpParams()
       .set('page', page.toString())
       .set('size', size.toString())
-      .set('sort', sort);
     return this.http
       .get<FeedbackApiResponse>(`${API_URI.FEEDBACK_APPROVAL}`, {
         headers,

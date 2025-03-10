@@ -355,7 +355,6 @@ class FeedbackServiceImplTest extends BaseSetup {
         List.of(FeedbackStatus.REJECTED));
     verify(feedbackRepository, times(1)).delete(existingPending);
     verify(feedbackRepository, never()).save(any(Feedback.class));
-    verify(feedbackRepository, never()).insert(any(Feedback.class));
   }
 
   @Test

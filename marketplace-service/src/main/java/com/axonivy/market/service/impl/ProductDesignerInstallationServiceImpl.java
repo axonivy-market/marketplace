@@ -1,6 +1,6 @@
 package com.axonivy.market.service.impl;
 
-import com.axonivy.market.constants.MongoDBConstants;
+import com.axonivy.market.constants.PostgresDBConstants;
 import com.axonivy.market.entity.ProductDesignerInstallation;
 import com.axonivy.market.model.DesignerInstallation;
 import com.axonivy.market.repository.ProductDesignerInstallationRepository;
@@ -27,7 +27,7 @@ public class ProductDesignerInstallationServiceImpl implements ProductDesignerIn
     List<DesignerInstallation> designerInstallations = new ArrayList<>();
     List<ProductDesignerInstallation> productDesignerInstallations =
         productDesignerInstallationRepository.findByProductId(productId,
-            Sort.by(Sort.Direction.DESC, MongoDBConstants.DESIGNER_VERSION));
+            Sort.by(Sort.Direction.DESC, PostgresDBConstants.DESIGNER_VERSION));
     for (ProductDesignerInstallation productDesignerInstallation : productDesignerInstallations) {
       DesignerInstallation designerInstallation = new DesignerInstallation(
           productDesignerInstallation.getDesignerVersion(), productDesignerInstallation.getInstallationCount());
