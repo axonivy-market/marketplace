@@ -22,9 +22,6 @@ import org.mockito.Captor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.data.mongodb.core.MongoTemplate;
-import org.springframework.data.mongodb.core.query.Query;
-import org.springframework.data.mongodb.core.query.Update;
 import org.springframework.test.util.ReflectionTestUtils;
 
 import java.util.ArrayList;
@@ -44,8 +41,6 @@ import static org.mockito.Mockito.when;
 @ExtendWith(MockitoExtension.class)
 class ProductMarketplaceDataServiceImplTest extends BaseSetup {
   @Mock
-  private MongoTemplate mongoTemplate;
-  @Mock
   private ProductRepository productRepo;
   @Mock
   private ProductCustomSortRepository productCustomSortRepo;
@@ -55,14 +50,6 @@ class ProductMarketplaceDataServiceImplTest extends BaseSetup {
   private ProductMarketplaceDataServiceImpl productMarketplaceDataService;
   @Captor
   ArgumentCaptor<ArrayList<ProductMarketplaceData>> productListArgumentCaptor;
-
-  @Test
-  void testRemoveFieldFromAllProductDocuments() {
-    productMarketplaceDataService.removeFieldFromAllProductDocuments(ProductJsonConstants.CUSTOM_ORDER);
-
-    verify(mongoTemplate).updateMulti(ArgumentMatchers.any(Query.class), ArgumentMatchers.any(Update.class),
-        eq(ProductMarketplaceData.class));
-  }
 
   @Test
   void testAddCustomSortProduct() throws InvalidParamException {
@@ -78,7 +65,7 @@ class ProductMarketplaceDataServiceImplTest extends BaseSetup {
     productMarketplaceDataService.addCustomSortProduct(customSortRequest);
 
     verify(productCustomSortRepo).deleteAll();
-    verify(mongoTemplate).updateMulti(any(Query.class), any(Update.class), eq(ProductMarketplaceData.class));
+    verify(productMarketplaceDataRepo).resetCustomOrderForAllProducts();
     verify(productCustomSortRepo).save(any(ProductCustomSort.class));
     verify(productMarketplaceDataRepo).saveAll(productListArgumentCaptor.capture());
 

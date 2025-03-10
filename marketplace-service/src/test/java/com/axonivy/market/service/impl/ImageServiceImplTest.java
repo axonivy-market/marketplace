@@ -5,7 +5,6 @@ import com.axonivy.market.entity.Image;
 import com.axonivy.market.repository.ImageRepository;
 import com.axonivy.market.service.FileDownloadService;
 import com.axonivy.market.util.MavenUtils;
-import org.bson.types.Binary;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.kohsuke.github.GHContent;
@@ -28,11 +27,7 @@ import java.util.stream.Stream;
 
 import static com.axonivy.market.constants.CommonConstants.SLASH;
 import static com.axonivy.market.constants.MetaConstants.META_FILE;
-import static org.bson.assertions.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNull;
-import static org.junit.jupiter.api.Assertions.assertArrayEquals;
-import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 import static org.mockito.Mockito.verify;
@@ -88,14 +83,15 @@ class ImageServiceImplTest extends BaseSetup {
     when(content.getSha()).thenReturn("914d9b6956db7a1404622f14265e435f36db81fa");
     when(content.getDownloadUrl()).thenReturn(MOCK_MAVEN_URL);
 
+    byte[] mockResult = "content".getBytes();
     when(content.read()).thenThrow(new UnsupportedOperationException("Unrecognized encoding"));
-    when(fileDownloadService.downloadFile(MOCK_MAVEN_URL)).thenReturn("content".getBytes());
+    when(fileDownloadService.downloadFile(MOCK_MAVEN_URL)).thenReturn(mockResult);
 
     imageService.mappingImageFromGHContent(GOOGLE_MAPS_CONNECTOR, content);
 
     verify(imageRepository).save(argumentCaptor.capture());
     verify(fileDownloadService, times(1)).downloadFile(MOCK_MAVEN_URL);
-    assertEquals(new Binary("content".getBytes()), argumentCaptor.getValue().getImageData());
+    assertEquals(mockResult, argumentCaptor.getValue().getImageData());
 
   }
 
@@ -112,7 +108,7 @@ class ImageServiceImplTest extends BaseSetup {
       when(imageRepository.findByProductId(productId)).thenReturn(Collections.emptyList());
 
       Image newImage = new Image();
-      newImage.setImageData(new Binary(newImageData));
+      newImage.setImageData(newImageData);
       newImage.setProductId(productId);
 
       when(imageRepository.save(any(Image.class))).thenReturn(newImage);
@@ -138,7 +134,7 @@ class ImageServiceImplTest extends BaseSetup {
       mockedMavenUtils.when(() -> MavenUtils.extractedContentStream(imagePath)).thenReturn(inputStream);
 
       Image existingImage = new Image();
-      existingImage.setImageData(new Binary(existingImageData));
+      existingImage.setImageData(existingImageData);
       existingImage.setProductId(productId);
 
       when(imageRepository.findByProductId(productId)).thenReturn(List.of(existingImage));

@@ -1,18 +1,21 @@
 package com.axonivy.market.entity;
 
-import com.axonivy.market.model.MavenArtifactModel;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
+import jakarta.persistence.CascadeType;
+import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.Id;
+import jakarta.persistence.OneToMany;
+import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import org.springframework.data.annotation.Id;
-import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.io.Serial;
 import java.io.Serializable;
-import java.util.HashMap;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
 
 import static com.axonivy.market.constants.EntityConstants.MAVEN_ARTIFACT_VERSION;
@@ -21,26 +24,33 @@ import static com.axonivy.market.constants.EntityConstants.MAVEN_ARTIFACT_VERSIO
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-@Document(MAVEN_ARTIFACT_VERSION)
+@Entity
+@Table(name = MAVEN_ARTIFACT_VERSION)
 public class MavenArtifactVersion implements Serializable {
   @Serial
   private static final long serialVersionUID = -6492612804634492078L;
   @Id
   private String productId;
-  private Map<String, List<MavenArtifactModel>> productArtifactsByVersion;
-  private Map<String, List<MavenArtifactModel>> additionalArtifactsByVersion;
 
-  public Map<String, List<MavenArtifactModel>> getProductArtifactsByVersion() {
+  @OneToMany(mappedBy = "productVersionReference", cascade = CascadeType.ALL, fetch = FetchType.EAGER, orphanRemoval = true)
+  @JsonManagedReference("productVersionReference")
+  private List<MavenArtifactModel> productArtifactsByVersion;
+
+  @OneToMany(mappedBy = "additionalVersionReference", cascade = CascadeType.ALL, fetch = FetchType.EAGER ,orphanRemoval = true)
+  @JsonManagedReference("additionalVersionReference")
+  private List<MavenArtifactModel> additionalArtifactsByVersion;;
+
+  public List<MavenArtifactModel> getProductArtifactsByVersion() {
     if (Objects.isNull(productArtifactsByVersion)) {
-      this.productArtifactsByVersion = new HashMap<>();
+      productArtifactsByVersion = new ArrayList<>();
     }
-    return this.productArtifactsByVersion;
+    return productArtifactsByVersion;
   }
 
-  public Map<String, List<MavenArtifactModel>> getAdditionalArtifactsByVersion() {
-    if (Objects.isNull(this.additionalArtifactsByVersion)) {
-      this.additionalArtifactsByVersion = new HashMap<>();
+  public List<MavenArtifactModel> getAdditionalArtifactsByVersion() {
+    if (Objects.isNull(additionalArtifactsByVersion)) {
+      additionalArtifactsByVersion = new ArrayList<>();
     }
-    return this.additionalArtifactsByVersion;
+    return additionalArtifactsByVersion;
   }
 }

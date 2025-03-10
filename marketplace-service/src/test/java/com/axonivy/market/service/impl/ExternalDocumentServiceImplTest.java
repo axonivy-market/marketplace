@@ -3,6 +3,7 @@ package com.axonivy.market.service.impl;
 import com.axonivy.market.bo.Artifact;
 import com.axonivy.market.entity.ExternalDocumentMeta;
 import com.axonivy.market.entity.Product;
+import com.axonivy.market.repository.ArtifactRepository;
 import com.axonivy.market.repository.ExternalDocumentMetaRepository;
 import com.axonivy.market.repository.ProductRepository;
 import com.axonivy.market.service.FileDownloadService;
@@ -36,23 +37,27 @@ class ExternalDocumentServiceImplTest {
   @Mock
   FileDownloadService fileDownloadService;
 
+  @Mock
+  ArtifactRepository artifactRepository;
+
   @InjectMocks
   ExternalDocumentServiceImpl service;
 
   @Test
   void testSyncDocumentForProduct() throws IOException {
-    when(productRepository.findById(PORTAL)).thenReturn(mockPortalProductHasNoArtifact());
+    when(productRepository.findProductByIdAndRelatedData(PORTAL)).thenReturn(mockPortalProductHasNoArtifact().get());
     service.syncDocumentForProduct(PORTAL, new ArrayList<>(), true);
-    verify(productRepository, times(1)).findById(any());
+    verify(productRepository, times(1)).findProductByIdAndRelatedData(any());
     verify(externalDocumentMetaRepository, times(0)).findByProductIdAndVersion(any(), any());
 
-    when(productRepository.findById(PORTAL)).thenReturn(mockPortalProduct());
+    when(artifactRepository.findAllByIdInAndFetchArchivedArtifacts(any())).thenReturn(mockPortalProduct().get().getArtifacts());
+    when(productRepository.findProductByIdAndRelatedData(PORTAL)).thenReturn(mockPortalProduct().get());
     service.syncDocumentForProduct(PORTAL, new ArrayList<>(), false);
-    verify(externalDocumentMetaRepository, times(2)).findByProductIdAndVersion(any(), any());
+    verify(externalDocumentMetaRepository, times(1)).findByProductIdAndVersionIn(any(), any());
 
     when(fileDownloadService.downloadAndUnzipFile(any(), any())).thenReturn("data" + RELATIVE_LOCATION);
     service.syncDocumentForProduct(PORTAL, new ArrayList<>(), true);
-    verify(externalDocumentMetaRepository, times(2)).save(any());
+    verify(externalDocumentMetaRepository, times(2)).saveAll(any());
   }
 
   @Test

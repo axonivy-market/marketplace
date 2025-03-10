@@ -11,6 +11,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.context.event.ApplicationStartedEvent;
 import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.context.event.EventListener;
+import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.scheduling.annotation.EnableScheduling;
@@ -24,6 +25,7 @@ import java.util.List;
 @SpringBootApplication
 @AllArgsConstructor
 @EnableCaching
+@EnableJpaAuditing
 public class MarketplaceServiceApplication {
 
   final ProductService productService;

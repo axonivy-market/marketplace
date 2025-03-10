@@ -10,11 +10,12 @@ import com.axonivy.market.entity.Product;
 import com.axonivy.market.entity.ProductDesignerInstallation;
 import com.axonivy.market.entity.ProductJsonContent;
 import com.axonivy.market.entity.ProductMarketplaceData;
+import com.axonivy.market.entity.ProductModuleContent;
 import com.axonivy.market.enums.FeedbackStatus;
 import com.axonivy.market.enums.Language;
 import com.axonivy.market.enums.SortOption;
+import com.axonivy.market.entity.MavenArtifactModel;
 import com.axonivy.market.model.FeedbackApprovalModel;
-import com.axonivy.market.model.MavenArtifactModel;
 import com.axonivy.market.model.VersionAndUrlModel;
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.lang3.StringUtils;
@@ -213,14 +214,13 @@ public class BaseSetup {
   }
 
   protected MavenArtifactVersion getMockMavenArtifactVersion() {
-    return new MavenArtifactVersion(StringUtils.EMPTY, new HashMap<>(),
-        new HashMap<>());
+    return new MavenArtifactVersion(StringUtils.EMPTY, new ArrayList<>(), new ArrayList<>());
   }
 
   protected MavenArtifactVersion getMockMavenArtifactVersionWithData() {
     MavenArtifactVersion mockMavenArtifactVersion = getMockMavenArtifactVersion();
-    Map<String, List<MavenArtifactModel>> mockArtifactModelsByVersion = new HashMap<>();
-    mockArtifactModelsByVersion.put(MOCK_SNAPSHOT_VERSION, new ArrayList<>());
+    List<MavenArtifactModel> mockArtifactModelsByVersion = new ArrayList<>();
+    mockArtifactModelsByVersion.add(MavenArtifactModel.builder().productVersion(MOCK_SNAPSHOT_VERSION).build());
     mockMavenArtifactVersion.setProductArtifactsByVersion(mockArtifactModelsByVersion);
     return mockMavenArtifactVersion;
   }
@@ -274,6 +274,22 @@ public class BaseSetup {
 
   protected ProductMarketplaceData getMockProductMarketplaceData() {
     return ProductMarketplaceData.builder().id(MOCK_PRODUCT_ID).installationCount(3).build();
+  }
+
+  protected ProductModuleContent getMockProductModuleContent() {
+    ProductModuleContent productModuleContent = new ProductModuleContent();
+    productModuleContent.setDescription(mockDescriptionForProductModuleContent());
+    productModuleContent.setDemo(null);
+    productModuleContent.setSetup(mockDescriptionForProductModuleContent());
+
+    return productModuleContent;
+  }
+
+  private Map<String, String> mockDescriptionForProductModuleContent() {
+    Map<String, String> mutableMap = new HashMap<>();
+    mutableMap.put("en", "Login or create a new account.[demo-process](imageId-66e2b13c68f2f95b2f95548c)");
+    mutableMap.put("de", "Login or create a new account.[demo-process](imageId-66e2b13c68f2f95b2f95548c)");
+    return mutableMap;
   }
 
   protected List<VersionAndUrlModel> mockVersionAndUrlModels() {
