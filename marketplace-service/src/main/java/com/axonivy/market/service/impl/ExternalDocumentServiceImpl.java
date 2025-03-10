@@ -24,10 +24,12 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.HttpClientErrorException;
 
-import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import static org.apache.commons.lang3.StringUtils.EMPTY;
@@ -48,23 +50,20 @@ public class ExternalDocumentServiceImpl implements ExternalDocumentService {
   @Transactional
   public void syncDocumentForProduct(String productId, List<String> nonSyncReleasedVersions, boolean isResetSync) {
     Optional.ofNullable(productRepo.findProductByIdAndRelatedData(productId)).ifPresent(product -> {
-      List<Artifact> allArtifacts = fetchAchievedArtifact(product.getArtifacts());
+      List<Artifact> docArtifacts = fetchDocArtifacts(product.getArtifacts());
+      List<String> releasedVersions = getReleasedVersions(product);
 
-      List<Artifact> docArtifacts = Optional.ofNullable(allArtifacts).orElse(List.of())
-          .stream().filter(artifact -> BooleanUtils.isTrue(artifact.getDoc())).toList();
+      if (ObjectUtils.isEmpty(docArtifacts) || ObjectUtils.isEmpty(releasedVersions)) return;
 
-      List<String> releasedVersions = ObjectUtils.isEmpty(nonSyncReleasedVersions)
-          ? Optional.ofNullable(product.getReleasedVersions()).orElse(new ArrayList<>())
-          : nonSyncReleasedVersions;
-      releasedVersions = releasedVersions.stream().filter(VersionUtils::isValidFormatReleasedVersion).toList();
+      if (isResetSync) externalDocumentMetaRepo.deleteByProductIdAndVersionIn(productId, releasedVersions);
 
-      if (ObjectUtils.isEmpty(docArtifacts) || ObjectUtils.isEmpty(releasedVersions)) {
-        return;
-      }
-
+      Set<ExternalDocumentMeta> externalDocumentMetas = new HashSet<>();
       for (Artifact artifact : docArtifacts) {
-        syncDocumentationForProduct(productId, isResetSync, artifact, releasedVersions);
+        List<ExternalDocumentMeta> newDocs = createDocumentationForProduct(productId, isResetSync, artifact,
+            releasedVersions);
+        externalDocumentMetas.addAll(newDocs);
       }
+      externalDocumentMetaRepo.saveAll(externalDocumentMetas);
     });
   }
 
@@ -86,34 +85,58 @@ public class ExternalDocumentServiceImpl implements ExternalDocumentService {
         .findAny().orElse(null);
   }
 
-  private void syncDocumentationForProduct(String productId, boolean isResetSync, Artifact artifact,
-      List<String> releasedVersions) {
-    for (var version : releasedVersions) {
-      if (isResetSync) {
-        externalDocumentMetaRepo.deleteByProductIdAndVersion(productId, version);
-      } else {
-        if (ObjectUtils.isNotEmpty(externalDocumentMetaRepo.findByProductIdAndVersion(productId, version))) {
-          continue;
-        }
-      }
+  private List<ExternalDocumentMeta> createDocumentationForProduct(String productId, boolean isResetSync,
+      Artifact artifact, List<String> releasedVersions) {
+    List<ExternalDocumentMeta> docMetas = externalDocumentMetaRepo.findByProductIdAndVersionIn(productId,
+        releasedVersions);
 
-      String downloadDocUrl = MavenUtils.buildDownloadUrl(artifact, version);
-      String location = downloadDocAndUnzipToShareFolder(downloadDocUrl, isResetSync);
-      if (StringUtils.isNoneBlank(location)) {
-        var documentMeta = new ExternalDocumentMeta();
-        documentMeta.setProductId(productId);
-        documentMeta.setArtifactId(artifact.getArtifactId());
-        documentMeta.setArtifactName(artifact.getName());
-        documentMeta.setVersion(version);
-        documentMeta.setStorageDirectory(location);
-        // remove prefix 'data' and replace all ms win separator to slash if present
-        var locationRelative = location.substring(location.indexOf(DirectoryConstants.CACHE_DIR));
-        locationRelative = RegExUtils.replaceAll(String.format(DOC_URL_PATTERN, locationRelative), MS_WIN_SEPARATOR,
-            CommonConstants.SLASH);
-        documentMeta.setRelativeLink(locationRelative);
-        externalDocumentMetaRepo.save(documentMeta);
-      }
+    if (docMetas.isEmpty()) {
+      return releasedVersions.stream()
+          .map(version -> createDocumentMeta(productId, artifact, version, isResetSync))
+          .filter(Objects::nonNull)
+          .toList();
     }
+
+    return docMetas.stream()
+        .map(ExternalDocumentMeta::getVersion)
+        .filter(version -> !releasedVersions.contains(version))
+        .map(version -> createDocumentMeta(productId, artifact, version, isResetSync))
+        .filter(Objects::nonNull)
+        .toList();
+  }
+
+
+  private ExternalDocumentMeta createDocumentMeta(String productId, Artifact artifact, String version,
+      boolean isResetSync) {
+    String downloadDocUrl = MavenUtils.buildDownloadUrl(artifact, version);
+    String location = downloadDocAndUnzipToShareFolder(downloadDocUrl, isResetSync);
+    if (StringUtils.isBlank(location)) return null;
+
+    String locationRelative = location.substring(location.indexOf(DirectoryConstants.CACHE_DIR));
+    locationRelative = RegExUtils.replaceAll(String.format(DOC_URL_PATTERN, locationRelative), MS_WIN_SEPARATOR,
+        CommonConstants.SLASH);
+
+    return ExternalDocumentMeta.builder()
+        .productId(productId)
+        .artifactId(artifact.getArtifactId())
+        .artifactName(artifact.getName())
+        .version(version)
+        .storageDirectory(location)
+        .relativeLink(locationRelative)
+        .build();
+  }
+
+  private List<Artifact> fetchDocArtifacts(List<Artifact> artifacts) {
+    List<String> artifactIds = artifacts.stream().map(Artifact::getId).collect(Collectors.toList());
+    List<Artifact> allArtifacts = artifactRepo.findAllByIdInAndFetchArchivedArtifacts(artifactIds);
+    return allArtifacts.stream().filter(artifact -> BooleanUtils.isTrue(artifact.getDoc())).toList();
+  }
+
+  private List<String> getReleasedVersions(Product product) {
+    return product.getReleasedVersions().stream()
+        .filter(VersionUtils::isValidFormatReleasedVersion)
+        .distinct()
+        .toList();
   }
 
   private String downloadDocAndUnzipToShareFolder(String downloadDocUrl, boolean isResetSync) {
@@ -126,10 +149,5 @@ public class ExternalDocumentServiceImpl implements ExternalDocumentService {
       log.error("Exception during unzip");
     }
     return EMPTY;
-  }
-
-  private List<Artifact> fetchAchievedArtifact(List<Artifact> artifacts) {
-    List<String> ids = artifacts.stream().map(Artifact::getId).collect(Collectors.toList());
-    return artifactRepo.findAllByIdInAndFetchArchivedArtifacts(ids);
   }
 }

@@ -2,6 +2,8 @@ package com.axonivy.market.entity;
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.EntityListeners;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.Id;
 import jakarta.persistence.PrePersist;
 import jakarta.persistence.Table;
@@ -42,6 +44,7 @@ public class Feedback implements Serializable {
   private String productId;
   private String content;
   private Integer rating;
+  @Enumerated(EnumType.STRING)
   private FeedbackStatus feedbackStatus;
   private String moderatorName;
   private Date reviewDate;

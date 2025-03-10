@@ -14,4 +14,8 @@ public interface ExternalDocumentMetaRepository extends JpaRepository<ExternalDo
   List<ExternalDocumentMeta> findByProductId(String productId);
 
   void deleteByProductIdAndVersion(String productId, String version);
+
+  void deleteByProductIdAndVersionIn(String productId, List<String> versions);
+
+  List<ExternalDocumentMeta> findByProductIdAndVersionIn(String productId, List<String> versions);
 }

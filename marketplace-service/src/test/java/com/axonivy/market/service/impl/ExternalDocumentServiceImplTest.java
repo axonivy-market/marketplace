@@ -53,11 +53,11 @@ class ExternalDocumentServiceImplTest {
     when(artifactRepository.findAllByIdInAndFetchArchivedArtifacts(any())).thenReturn(mockPortalProduct().get().getArtifacts());
     when(productRepository.findProductByIdAndRelatedData(PORTAL)).thenReturn(mockPortalProduct().get());
     service.syncDocumentForProduct(PORTAL, new ArrayList<>(), false);
-    verify(externalDocumentMetaRepository, times(2)).findByProductIdAndVersion(any(), any());
+    verify(externalDocumentMetaRepository, times(1)).findByProductIdAndVersionIn(any(), any());
 
     when(fileDownloadService.downloadAndUnzipFile(any(), any())).thenReturn("data" + RELATIVE_LOCATION);
     service.syncDocumentForProduct(PORTAL, new ArrayList<>(), true);
-    verify(externalDocumentMetaRepository, times(2)).save(any());
+    verify(externalDocumentMetaRepository, times(2)).saveAll(any());
   }
 
   @Test
