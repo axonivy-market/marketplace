@@ -22,7 +22,6 @@ import java.util.Set;
 
 import static com.axonivy.market.constants.EntityConstants.METADATA;
 
-
 @Getter
 @Setter
 @NoArgsConstructor
