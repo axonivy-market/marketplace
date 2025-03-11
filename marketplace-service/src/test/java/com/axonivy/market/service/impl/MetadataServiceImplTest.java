@@ -9,7 +9,6 @@ import com.axonivy.market.entity.Product;
 import com.axonivy.market.entity.ProductJsonContent;
 import com.axonivy.market.repository.MavenArtifactVersionRepository;
 import com.axonivy.market.repository.MetadataRepository;
-import com.axonivy.market.repository.MetadataSyncRepository;
 import com.axonivy.market.repository.ProductJsonContentRepository;
 import com.axonivy.market.repository.ProductRepository;
 import com.axonivy.market.util.MavenUtils;
@@ -50,8 +49,6 @@ class MetadataServiceImplTest extends BaseSetup {
   private MetadataRepository metadataRepo;
   @Mock
   private MavenArtifactVersionRepository mavenArtifactVersionRepo;
-  @Mock
-  private MetadataSyncRepository metadataSyncRepo;
 
   @Test
   void testUpdateArtifactAndMetaDataForProduct() {

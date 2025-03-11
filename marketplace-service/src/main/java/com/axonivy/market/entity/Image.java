@@ -14,6 +14,7 @@ import lombok.Setter;
 
 import java.util.UUID;
 
+import static com.axonivy.market.constants.EntityConstants.BYTEA_TYPE;
 import static com.axonivy.market.constants.EntityConstants.IMAGE;
 
 @Getter
@@ -34,7 +35,7 @@ public class Image {
 
   @Schema(description = "The image content as binary type",
       example = "Binary(Buffer.from(\"89504e470d0a1a0a0000000d\", \"hex\"), 0)")
-  @Column(name = "image_data", columnDefinition = "BYTEA")
+  @Column(columnDefinition = BYTEA_TYPE)
   private byte[] imageData;
 
   @Schema(description = "The SHA from github", example = "93b1e2f1595d3a85e51b01")

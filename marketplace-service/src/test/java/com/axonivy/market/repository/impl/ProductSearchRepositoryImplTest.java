@@ -71,7 +71,7 @@ class ProductSearchRepositoryImplTest extends BaseSetup {
 
     var caseExpression = mock(CriteriaBuilder.Case.class);
     when(cb.selectCase()).thenReturn(caseExpression);
-    
+
     when(caseExpression.when(any(), any())).thenReturn(caseExpression);
     when(caseExpression.otherwise(any())).thenReturn(nameValue); // Should return a valid expression
 

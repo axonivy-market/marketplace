@@ -22,7 +22,8 @@ import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
-import static com.axonivy.market.constants.EntityConstants.PRODUCT;
+import static com.axonivy.market.constants.EntityConstants.*;
+import static com.axonivy.market.constants.PostgresDBConstants.ID;
 
 @Getter
 @Setter
@@ -41,27 +42,27 @@ public class Product implements Serializable {
 
   @JsonProperty
   @ElementCollection
-  @CollectionTable(name = "product_names", joinColumns = @JoinColumn(name = "product_id"))
-  @MapKeyColumn(name = "language")
-  @Column(name = "name", columnDefinition = "TEXT")
+  @CollectionTable(name = PRODUCT_NAMES, joinColumns = @JoinColumn(name = PRODUCT_ID))
+  @MapKeyColumn(name = LANGUAGE)
+  @Column(name = NAME, columnDefinition = TEXT_TYPE)
   private Map<String, String> names;
 
   @JsonProperty
   @ElementCollection
-  @CollectionTable(name = "product_descriptions", joinColumns = @JoinColumn(name = "product_id"))
-  @MapKeyColumn(name = "language")
-  @Column(name = "shortDescription", columnDefinition = "TEXT")
+  @CollectionTable(name = PRODUCT_DESCRIPTIONS, joinColumns = @JoinColumn(name = PRODUCT_ID))
+  @MapKeyColumn(name = LANGUAGE)
+  @Column(name = SHORT_DESCRIPTION, columnDefinition = TEXT_TYPE)
   private Map<String, String> shortDescriptions;
 
   @Convert(converter = StringListConverter.class)
-  @Column(name = "tags", nullable = false, columnDefinition = "TEXT")
+  @Column(nullable = false, columnDefinition = TEXT_TYPE)
   private List<String> tags;
 
   @Convert(converter = StringListConverter.class)
-  @Column(name = "released_versions", nullable = false, columnDefinition = "TEXT")
+  @Column(nullable = false, columnDefinition = TEXT_TYPE)
   private List<String> releasedVersions;
 
-  @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
+  @OneToMany(mappedBy = PRODUCT, cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
   @JsonManagedReference
   private List<Artifact> artifacts;
 
@@ -108,7 +109,7 @@ public class Product implements Serializable {
   private String compatibilityRange;
 
   @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
-  @JoinColumn(name = "id", referencedColumnName = "id")
+  @JoinColumn(name = ID, referencedColumnName = ID)
   private ProductMarketplaceData productMarketplaceData;
 
   @Override

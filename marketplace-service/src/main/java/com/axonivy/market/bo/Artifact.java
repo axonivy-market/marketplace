@@ -27,6 +27,8 @@ import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
 
+import static com.axonivy.market.constants.EntityConstants.ARTIFACT;
+
 @Getter
 @Setter
 @Builder
@@ -35,7 +37,7 @@ import java.util.UUID;
 @JsonInclude(JsonInclude.Include.NON_EMPTY)
 @JsonIgnoreProperties(ignoreUnknown = true)
 @Entity
-@Table(name = "artifact")
+@Table(name = ARTIFACT)
 public class Artifact implements Serializable {
   @Id
   private String id;
@@ -55,7 +57,7 @@ public class Artifact implements Serializable {
   @JsonBackReference
   private Product product;
 
-  @OneToMany(mappedBy = "artifact", cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
+  @OneToMany(mappedBy = ARTIFACT, cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
   @JsonManagedReference
   private List<ArchivedArtifact> archivedArtifacts;
 

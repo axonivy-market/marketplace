@@ -18,7 +18,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
-import static com.axonivy.market.constants.EntityConstants.MAVEN_ARTIFACT_VERSION;
+import static com.axonivy.market.constants.EntityConstants.*;
 
 @Setter
 @AllArgsConstructor
@@ -32,14 +32,14 @@ public class MavenArtifactVersion implements Serializable {
   @Id
   private String productId;
 
-  @OneToMany(mappedBy = "productVersionReference", cascade = CascadeType.ALL, fetch = FetchType.EAGER,
+  @OneToMany(mappedBy = PRODUCT_VERSION_REFERENCE, cascade = CascadeType.ALL, fetch = FetchType.EAGER,
       orphanRemoval = true)
-  @JsonManagedReference("productVersionReference")
+  @JsonManagedReference(PRODUCT_VERSION_REFERENCE)
   private List<MavenArtifactModel> productArtifactsByVersion;
 
-  @OneToMany(mappedBy = "additionalVersionReference", cascade = CascadeType.ALL, fetch = FetchType.EAGER,
+  @OneToMany(mappedBy = ADDITIONAL_VERSION_REFERENCE, cascade = CascadeType.ALL, fetch = FetchType.EAGER,
       orphanRemoval = true)
-  @JsonManagedReference("additionalVersionReference")
+  @JsonManagedReference(ADDITIONAL_VERSION_REFERENCE)
   private List<MavenArtifactModel> additionalArtifactsByVersion;
 
   public List<MavenArtifactModel> getProductArtifactsByVersion() {

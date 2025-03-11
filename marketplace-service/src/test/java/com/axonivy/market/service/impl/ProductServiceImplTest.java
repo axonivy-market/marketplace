@@ -123,8 +123,6 @@ class ProductServiceImplTest extends BaseSetup {
   @Mock
   private GHAxonIvyProductRepoService axonIvyProductRepoService;
   @Mock
-  private MetadataSyncRepository metadataSyncRepo;
-  @Mock
   private ProductMarketplaceDataService productMarketplaceDataService;
   @Mock
   private ProductMarketplaceDataRepository productMarketplaceDataRepo;

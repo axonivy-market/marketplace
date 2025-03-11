@@ -18,6 +18,9 @@ import java.io.Serial;
 import java.io.Serializable;
 import java.util.UUID;
 
+import static com.axonivy.market.constants.EntityConstants.ARCHIVED_ARTIFACT;
+import static com.axonivy.market.constants.EntityConstants.ARTIFACT_ID_FK;
+
 @Getter
 @Setter
 @NoArgsConstructor
@@ -25,7 +28,7 @@ import java.util.UUID;
 @JsonInclude(JsonInclude.Include.NON_EMPTY)
 @JsonIgnoreProperties(ignoreUnknown = true)
 @Entity
-@Table(name = "archived_artifact")
+@Table(name = ARCHIVED_ARTIFACT)
 public class ArchivedArtifact implements Serializable {
   @Id
   private String id;
@@ -37,7 +40,7 @@ public class ArchivedArtifact implements Serializable {
   private String artifactId;
 
   @ManyToOne
-  @JoinColumn(name = "artifact_id_fk", nullable = false)
+  @JoinColumn(name = ARTIFACT_ID_FK, nullable = false)
   @JsonBackReference
   private Artifact artifact;
 

@@ -17,6 +17,7 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 import java.util.Date;
 
 import static com.axonivy.market.constants.EntityConstants.PRODUCT_JSON_CONTENT;
+import static com.axonivy.market.constants.EntityConstants.TEXT_TYPE;
 
 @Getter
 @Setter
@@ -33,7 +34,7 @@ public class ProductJsonContent {
   private String version;
   private String productId;
   private String name;
-  @Column(columnDefinition = "TEXT")
+  @Column(columnDefinition = TEXT_TYPE)
   private String content;
   @LastModifiedDate
   private Date updatedAt;

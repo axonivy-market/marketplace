@@ -23,7 +23,7 @@ import java.io.Serializable;
 import java.util.Date;
 import java.util.Map;
 
-import static com.axonivy.market.constants.EntityConstants.PRODUCT_MODULE_CONTENT;
+import static com.axonivy.market.constants.EntityConstants.*;
 
 @Getter
 @Setter
@@ -46,26 +46,26 @@ public class ProductModuleContent implements Serializable {
   @Schema(description = "Product detail description content ",
       example = "{ \"de\": \"E-Sign-Konnektor\", \"en\": \"E-sign connector\" }")
   @ElementCollection
-  @CollectionTable(name = "product_module_content_description", joinColumns = @JoinColumn(name =
-      "product_module_content_id"))
-  @MapKeyColumn(name = "language")
-  @Column(name = "description", columnDefinition = "TEXT")
+  @CollectionTable(name = PRODUCT_MODULE_CONTENT_DESCRIPTION,
+      joinColumns = @JoinColumn(name = PRODUCT_MODULE_CONTENT_ID))
+  @MapKeyColumn(name = LANGUAGE)
+  @Column(name = DESCRIPTION, columnDefinition = TEXT_TYPE)
   private Map<String, String> description;
 
   @Schema(description = "Setup tab content", example = "{ \"de\": \"Setup\", \"en\": \"Setup\" ")
   @ElementCollection
-  @CollectionTable(name = "product_module_content_setup", joinColumns = @JoinColumn(name =
-      "product_module_content_id"))
-  @MapKeyColumn(name = "language")
-  @Column(name = "setup", columnDefinition = "TEXT")
+  @CollectionTable(name = PRODUCT_MODULE_CONTENT_SETUP, joinColumns = @JoinColumn(name =
+      PRODUCT_MODULE_CONTENT_ID))
+  @MapKeyColumn(name = LANGUAGE)
+  @Column(name = SETUP, columnDefinition = TEXT_TYPE)
   private Map<String, String> setup;
 
   @Schema(description = "Demo tab content", example = "{ \"de\": \"Demo\", \"en\": \"Demo\" ")
   @ElementCollection
-  @CollectionTable(name = "product_module_content_demo", joinColumns = @JoinColumn(name =
-      "product_module_content_id"))
-  @MapKeyColumn(name = "language")
-  @Column(name = "demo", columnDefinition = "TEXT")
+  @CollectionTable(name = PRODUCT_MODULE_CONTENT_DEMO, joinColumns = @JoinColumn(name =
+      PRODUCT_MODULE_CONTENT_ID))
+  @MapKeyColumn(name = LANGUAGE)
+  @Column(name = DEMO, columnDefinition = TEXT_TYPE)
   private Map<String, String> demo;
 
   @Schema(description = "Is dependency artifact", example = "true")

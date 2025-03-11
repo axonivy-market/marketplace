@@ -22,6 +22,7 @@ import java.util.Date;
 import java.util.List;
 
 import static com.axonivy.market.constants.EntityConstants.PRODUCT_DEPENDENCY;
+import static com.axonivy.market.constants.EntityConstants.PRODUCT_ID_FK;
 
 @Getter
 @Setter
@@ -40,6 +41,6 @@ public class ProductDependency {
   private Date modifiedAt;
 
   @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
-  @JoinColumn(name = "product_id_fk")
+  @JoinColumn(name = PRODUCT_ID_FK)
   private List<MavenDependency> dependenciesOfArtifact;
 }

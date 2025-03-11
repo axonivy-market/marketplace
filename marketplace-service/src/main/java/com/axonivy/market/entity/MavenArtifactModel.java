@@ -19,7 +19,7 @@ import java.io.Serial;
 import java.io.Serializable;
 import java.util.UUID;
 
-import static com.axonivy.market.constants.EntityConstants.MAVEN_ARTIFACT_MODEL;
+import static com.axonivy.market.constants.EntityConstants.*;
 
 @AllArgsConstructor
 @NoArgsConstructor
@@ -50,13 +50,13 @@ public class MavenArtifactModel implements Serializable {
   private String productVersion;
 
   @ManyToOne
-  @JoinColumn(name = "product_version_id")
-  @JsonBackReference("productVersionReference")
+  @JoinColumn(name = PRODUCT_VERSION_ID)
+  @JsonBackReference(PRODUCT_VERSION_REFERENCE)
   private MavenArtifactVersion productVersionReference;
 
   @ManyToOne
-  @JoinColumn(name = "additional_product_version_id")
-  @JsonBackReference("additionalVersionReference")
+  @JoinColumn(name = ADDITIONAL_PRODUCT_VERSION_ID)
+  @JsonBackReference(ADDITIONAL_VERSION_REFERENCE)
   private MavenArtifactVersion additionalVersionReference;
 
   @PrePersist

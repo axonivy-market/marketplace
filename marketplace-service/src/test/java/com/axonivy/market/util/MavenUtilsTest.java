@@ -36,14 +36,8 @@ class MavenUtilsTest extends BaseSetup {
     Assertions.assertTrue(CollectionUtils.isEmpty(result));
 
     Artifact targetArtifact = new Artifact(null, null, null, MOCK_GROUP_ID,
-        MOCK_ARTIFACT_ID,
-        MavenConstants.DEFAULT_PRODUCT_FOLDER_TYPE,
-        null,
-        null,
-        null,
-        null,
-        false,
-        false);
+        MOCK_ARTIFACT_ID, MavenConstants.DEFAULT_PRODUCT_FOLDER_TYPE, null, null, null,
+        null, false, false);
 
     result = MavenUtils.convertArtifactsToModels(List.of(targetArtifact), MOCK_RELEASED_VERSION);
 

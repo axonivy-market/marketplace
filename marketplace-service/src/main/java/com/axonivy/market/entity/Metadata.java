@@ -20,7 +20,7 @@ import java.time.LocalDateTime;
 import java.util.Objects;
 import java.util.Set;
 
-import static com.axonivy.market.constants.EntityConstants.METADATA;
+import static com.axonivy.market.constants.EntityConstants.*;
 
 @Getter
 @Setter
@@ -42,8 +42,8 @@ public class Metadata implements Serializable {
   private String release;
 
   @ElementCollection(fetch = FetchType.LAZY)
-  @CollectionTable(name = "metadata_versions", joinColumns = @JoinColumn(name = "product_url"))
-  @Column(name = "versions")
+  @CollectionTable(name = METADATA_VERSIONS, joinColumns = @JoinColumn(name = PRODUCT_URL))
+  @Column
   private Set<String> versions;
 
   private String repoUrl;

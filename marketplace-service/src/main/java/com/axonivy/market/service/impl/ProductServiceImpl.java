@@ -94,7 +94,6 @@ public class ProductServiceImpl implements ProductService {
   private final GitHubService gitHubService;
   private final ProductCustomSortRepository productCustomSortRepo;
   private final MavenArtifactVersionRepository mavenArtifactVersionRepo;
-  private final MetadataSyncRepository metadataSyncRepo;
   private final MetadataRepository metadataRepo;
   private final ProductJsonContentRepository productJsonContentRepo;
   private final ImageRepository imageRepo;
@@ -116,10 +115,11 @@ public class ProductServiceImpl implements ProductService {
       GitHubRepoMetaRepository gitHubRepoMetaRepo, GitHubService gitHubService,
       ProductCustomSortRepository productCustomSortRepo, MavenArtifactVersionRepository mavenArtifactVersionRepo,
       ProductJsonContentRepository productJsonContentRepo, ImageRepository imageRepo,
-      MetadataSyncRepository metadataSyncRepo, MetadataRepository metadataRepo, ImageService imageService,
+      MetadataRepository metadataRepo, ImageService imageService,
       ProductContentService productContentService, MetadataService metadataService,
       ProductMarketplaceDataService productMarketplaceDataService, ExternalDocumentService externalDocumentService,
-      ProductMarketplaceDataRepository productMarketplaceDataRepo, ArtifactRepository artifactRepo, VersionService versionService) {
+      ProductMarketplaceDataRepository productMarketplaceDataRepo, ArtifactRepository artifactRepo,
+      VersionService versionService) {
     this.productRepo = productRepo;
     this.productModuleContentRepo = productModuleContentRepo;
     this.axonIvyMarketRepoService = axonIvyMarketRepoService;
@@ -128,7 +128,6 @@ public class ProductServiceImpl implements ProductService {
     this.gitHubService = gitHubService;
     this.productCustomSortRepo = productCustomSortRepo;
     this.mavenArtifactVersionRepo = mavenArtifactVersionRepo;
-    this.metadataSyncRepo = metadataSyncRepo;
     this.metadataRepo = metadataRepo;
     this.productJsonContentRepo = productJsonContentRepo;
     this.imageRepo = imageRepo;
@@ -706,7 +705,6 @@ public class ProductServiceImpl implements ProductService {
           ProductFactory.transferComputedPersistedDataToProduct(foundProduct, product);
           imageRepo.deleteAllByProductId(foundProduct.getId());
           metadataRepo.deleteAllByProductId(foundProduct.getId());
-          metadataSyncRepo.deleteAllByProductId(foundProduct.getId());
           mavenArtifactVersionRepo.deleteAllById(List.of(foundProduct.getId()));
           productModuleContentRepo.deleteAllByProductId(foundProduct.getId());
           productJsonContentRepo.deleteAllByProductId(foundProduct.getId());

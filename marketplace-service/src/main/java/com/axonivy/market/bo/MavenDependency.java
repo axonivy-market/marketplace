@@ -17,13 +17,16 @@ import lombok.Setter;
 import java.util.List;
 import java.util.UUID;
 
+import static com.axonivy.market.constants.EntityConstants.MAVEN_DEPENDENCY;
+import static com.axonivy.market.constants.EntityConstants.PARENT_DEPENDENCY_ID;
+
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
 @Getter
 @Setter
 @Entity
-@Table(name = "maven_dependency")
+@Table(name = MAVEN_DEPENDENCY)
 public class MavenDependency {
   @Id
   private String id;
@@ -33,7 +36,7 @@ public class MavenDependency {
   private String downloadUrl;
 
   @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
-  @JoinColumn(name = "parent_dependency_id") // Foreign key in MavenDependency table
+  @JoinColumn(name = PARENT_DEPENDENCY_ID)
   private List<MavenDependency> dependencies;
 
   @PrePersist
