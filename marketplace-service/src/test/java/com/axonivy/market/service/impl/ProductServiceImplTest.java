@@ -510,14 +510,6 @@ class ProductServiceImplTest extends BaseSetup {
     assertEquals("11.2+", result);
   }
 
-  @Test
-  void testCreateOrder() {
-    Sort.Order order = productService.createOrder(SortOption.ALPHABETICALLY, "en");
-
-    assertEquals(Sort.Direction.ASC, order.getDirection());
-    assertEquals(SortOption.ALPHABETICALLY.getCode("en"), order.getProperty());
-  }
-
   private void mockMarketRepoMetaStatus() {
     var mockMarketRepoMeta = new GitHubRepoMeta();
     mockMarketRepoMeta.setRepoURL(GitHubConstants.AXONIVY_MARKETPLACE_REPO_NAME);

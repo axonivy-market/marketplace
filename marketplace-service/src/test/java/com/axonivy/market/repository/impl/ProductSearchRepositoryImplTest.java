@@ -138,7 +138,7 @@ class ProductSearchRepositoryImplTest extends BaseSetup {
 
     Page<Product> result = productListedRepository.searchByCriteria(searchCriteria, PAGEABLE2);
     verify(criteriaQuery).orderBy(argumentCaptor.capture());
-    assertTrue(argumentCaptor.getValue().size() == 2);
+    assertEquals(2, argumentCaptor.getValue().size());
     assertFalse(result.isEmpty(), "Result is empty");
     assertTrue(result.isFirst(), "Result is not on the first page");
     assertEquals(2, result.getContent().size(), "Unexpected number of products");

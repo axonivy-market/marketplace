@@ -28,7 +28,7 @@ import static org.mockito.Mockito.when;
 
 
 @ExtendWith(MockitoExtension.class)
-public class CustomProductModuleContentRepositoryImplTest extends BaseSetup {
+class CustomProductModuleContentRepositoryImplTest extends BaseSetup {
   @Mock
   private EntityManager em;
 

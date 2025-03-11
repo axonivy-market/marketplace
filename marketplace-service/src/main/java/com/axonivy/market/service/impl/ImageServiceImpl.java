@@ -85,9 +85,7 @@ public class ImageServiceImpl implements ImageService {
   @Override
   public Image mappingImageFromDownloadedFolder(String productId, Path imagePath) {
     List<Image> existingImages = imageRepository.findByProductId(productId);
-    existingImages.forEach(image -> {
-      Hibernate.initialize(image.getImageData());
-    });
+    existingImages.forEach(image -> Hibernate.initialize(image.getImageData()));
     try {
       InputStream contentStream = MavenUtils.extractedContentStream(imagePath);
       byte[] sourceBytes = IOUtils.toByteArray(contentStream);

@@ -293,23 +293,6 @@ public class ProductServiceImpl implements ProductService {
     return EMPTY;
   }
 
-  public Order createOrder(SortOption sortOption, String language) {
-    if (SortOption.STANDARD.equals(sortOption)) {
-      return new Order(sortOption.getDirection(), PostgresDBConstants.MARKETPLACE_DATA_CUSTOM_ORDER);
-    }
-    return new Order(sortOption.getDirection(), sortOption.getCode(language));
-  }
-
-  private Order getExtensionOrder(String language) {
-    List<ProductCustomSort> customSorts = productCustomSortRepo.findAll();
-
-    if (!customSorts.isEmpty()) {
-      SortOption sortOptionExtension = SortOption.of(customSorts.get(0).getRuleForRemainder());
-      return createOrder(sortOptionExtension, language);
-    }
-    return createOrder(SortOption.POPULARITY, language);
-  }
-
   private boolean isLastGithubCommitCovered() {
     boolean isLastCommitCovered = false;
     long lastCommitTime = 0L;
@@ -483,7 +466,7 @@ public class ProductServiceImpl implements ProductService {
   }
 
   private List<Artifact> fetchArtifacts(List<Artifact> artifacts) {
-    List<String> ids = artifacts.stream().map(Artifact::getId).collect(Collectors.toList());
+    List<String> ids = artifacts.stream().map(Artifact::getId).toList();
     return artifactRepo.findAllByIdInAndFetchArchivedArtifacts(ids);
   }
 
