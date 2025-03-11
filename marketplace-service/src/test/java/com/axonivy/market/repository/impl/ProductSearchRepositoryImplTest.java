@@ -118,19 +118,19 @@ class ProductSearchRepositoryImplTest extends BaseSetup {
     when(em.createQuery(countQuery)).thenReturn(typedCountQuery);
     when(typedCountQuery.getSingleResult()).thenReturn((long) mockResultReturn.getSize());
 
-    // ✅ Mock joins and paths
+    // Mock joins and paths
     var marketplaceJoin = mock(Join.class);
     var mockPath = mock(Path.class);
     var mockOrder = mock(Order.class);
-    var mockCoalesce = mock(Expression.class); // ✅ Mock the coalesce expression
+    var mockCoalesce = mock(Expression.class); //  Mock the coalesce expression
 
     when(productRoot.join(PRODUCT_MARKETPLACE_DATA, JoinType.LEFT)).thenReturn(marketplaceJoin);
     when(marketplaceJoin.get(CUSTOM_ORDER)).thenReturn(mockPath);
 
-    // ✅ Mock coalesce expression
+    // Mock coalesce expression
     when(cb.coalesce(mockPath, Integer.MIN_VALUE)).thenReturn(mockCoalesce);
 
-    // ✅ Mock descending order with coalesce
+    // Mock descending order with coalesce
     when(cb.desc(mockCoalesce)).thenReturn(mockOrder);
 
     ArgumentCaptor<List<Order>> argumentCaptor = ArgumentCaptor.forClass(List.class);
