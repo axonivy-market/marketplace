@@ -1,6 +1,5 @@
 package com.axonivy.market.service.impl;
 
-import com.axonivy.market.constants.ProductJsonConstants;
 import com.axonivy.market.entity.ProductCustomSort;
 import com.axonivy.market.entity.ProductMarketplaceData;
 import com.axonivy.market.enums.ErrorCode;
@@ -17,9 +16,6 @@ import lombok.extern.log4j.Log4j2;
 import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.data.mongodb.core.MongoTemplate;
-import org.springframework.data.mongodb.core.query.Query;
-import org.springframework.data.mongodb.core.query.Update;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
@@ -36,7 +32,6 @@ import java.util.Map;
 public class ProductMarketplaceDataServiceImpl implements ProductMarketplaceDataService {
   private final ProductMarketplaceDataRepository productMarketplaceDataRepo;
   private final ProductCustomSortRepository productCustomSortRepo;
-  private final MongoTemplate mongoTemplate;
   private final ProductRepository productRepo;
   private final ObjectMapper mapper = new ObjectMapper();
   private final SecureRandom random = new SecureRandom();
@@ -44,10 +39,9 @@ public class ProductMarketplaceDataServiceImpl implements ProductMarketplaceData
   private String legacyInstallationCountPath;
 
   public ProductMarketplaceDataServiceImpl(ProductMarketplaceDataRepository productMarketplaceDataRepo,
-      ProductCustomSortRepository productCustomSortRepo, MongoTemplate mongoTemplate, ProductRepository productRepo) {
+      ProductCustomSortRepository productCustomSortRepo, ProductRepository productRepo) {
     this.productMarketplaceDataRepo = productMarketplaceDataRepo;
     this.productCustomSortRepo = productCustomSortRepo;
-    this.mongoTemplate = mongoTemplate;
     this.productRepo = productRepo;
   }
 
@@ -57,7 +51,7 @@ public class ProductMarketplaceDataServiceImpl implements ProductMarketplaceData
 
     ProductCustomSort productCustomSort = new ProductCustomSort(customSort.getRuleForRemainder());
     productCustomSortRepo.deleteAll();
-    removeFieldFromAllProductDocuments(ProductJsonConstants.CUSTOM_ORDER);
+    productMarketplaceDataRepo.resetCustomOrderForAllProducts();
     productCustomSortRepo.save(productCustomSort);
     productMarketplaceDataRepo.saveAll(refineOrderedListOfProductsInCustomSort(customSort.getOrderedListOfProducts()));
   }
@@ -74,11 +68,6 @@ public class ProductMarketplaceDataServiceImpl implements ProductMarketplaceData
       productEntries.add(productMarketplaceData);
     }
     return productEntries;
-  }
-
-  public void removeFieldFromAllProductDocuments(String fieldName) {
-    Update update = new Update().unset(fieldName);
-    mongoTemplate.updateMulti(new Query(), update, ProductMarketplaceData.class);
   }
 
   @Override

@@ -226,7 +226,7 @@ describe('ProductFeedbackService', () => {
       expect(service.pendingFeedbacks().length).toBe(1);
     });
 
-    const req = httpMock.expectOne('api/feedback/approval?page=0&size=40&sort=newest');
+    const req = httpMock.expectOne('api/feedback/approval?page=0&size=40');
     expect(req.request.method).toBe('GET');
     expect(req.request.headers.get('Authorization')).toBe(`Bearer ${token}`);
     req.flush(mockResponse);

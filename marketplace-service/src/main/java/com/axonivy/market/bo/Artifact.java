@@ -1,14 +1,33 @@
 package com.axonivy.market.bo;
 
+import com.axonivy.market.entity.Product;
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
-import lombok.*;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
+import jakarta.persistence.CascadeType;
+import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToMany;
+import jakarta.persistence.PrePersist;
+import jakarta.persistence.Table;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 import org.springframework.data.annotation.Transient;
 
 import java.io.Serial;
 import java.io.Serializable;
 import java.util.List;
 import java.util.Objects;
+import java.util.UUID;
+
+import static com.axonivy.market.constants.EntityConstants.ARTIFACT;
 
 @Getter
 @Setter
@@ -17,7 +36,11 @@ import java.util.Objects;
 @AllArgsConstructor
 @JsonInclude(JsonInclude.Include.NON_EMPTY)
 @JsonIgnoreProperties(ignoreUnknown = true)
+@Entity
+@Table(name = ARTIFACT)
 public class Artifact implements Serializable {
+  @Id
+  private String id;
   @Serial
   private static final long serialVersionUID = 1L;
   private String repoUrl;
@@ -28,7 +51,16 @@ public class Artifact implements Serializable {
   private Boolean isDependency;
   @Transient
   private Boolean isProductArtifact;
+
+  @ManyToOne
+  @JoinColumn(name = "product_id", nullable = false)
+  @JsonBackReference
+  private Product product;
+
+  @OneToMany(mappedBy = ARTIFACT, cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
+  @JsonManagedReference
   private List<ArchivedArtifact> archivedArtifacts;
+
   private Boolean doc;
   private boolean isInvalidArtifact;
 
@@ -47,5 +79,12 @@ public class Artifact implements Serializable {
   @Override
   public int hashCode() {
     return Objects.hash(groupId, artifactId);
+  }
+
+  @PrePersist
+  private void ensureId() {
+    if (this.id == null) {
+      this.id = UUID.randomUUID().toString();
+    }
   }
 }

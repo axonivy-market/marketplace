@@ -6,9 +6,10 @@ import com.axonivy.market.comparator.MavenVersionComparator;
 import com.axonivy.market.constants.CommonConstants;
 import com.axonivy.market.constants.MavenConstants;
 import com.axonivy.market.constants.ProductJsonConstants;
+import com.axonivy.market.entity.MavenArtifactModel;
+import com.axonivy.market.entity.MavenArtifactVersion;
 import com.axonivy.market.entity.Metadata;
 import com.axonivy.market.entity.ProductJsonContent;
-import com.axonivy.market.model.MavenArtifactModel;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.AccessLevel;
@@ -26,12 +27,12 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
-import java.util.Arrays;
 import java.util.stream.Collectors;
 
 import static com.axonivy.market.constants.MavenConstants.DEFAULT_IVY_MAVEN_BASE_URL;
@@ -196,7 +197,11 @@ public class MavenUtils {
     }
     artifact.setType(StringUtils.defaultIfBlank(artifact.getType(), ProductJsonConstants.DEFAULT_PRODUCT_TYPE));
     artifactName = String.format(MavenConstants.ARTIFACT_NAME_FORMAT, artifactName, artifact.getType());
-    return MavenArtifactModel.builder().name(artifactName).downloadUrl(buildDownloadUrl(artifact, version)).artifactId(artifact.getArtifactId()).build();
+    return MavenArtifactModel.builder()
+        .name(artifactName)
+        .downloadUrl(buildDownloadUrl(artifact, version))
+        .artifactId(artifact.getArtifactId())
+        .build();
   }
 
   public static List<MavenArtifactModel> convertArtifactsToModels(List<Artifact> artifacts, String version) {
@@ -269,8 +274,14 @@ public class MavenUtils {
   public static MavenArtifactModel buildMavenArtifactModelFromMetadata(String version, Metadata metadata) {
     String downloadUrl = buildDownloadUrl(metadata.getArtifactId(), version, metadata.getType(), metadata.getRepoUrl(),
         metadata.getGroupId(), metadata.getSnapshotVersionValue());
-    return MavenArtifactModel.builder().name(metadata.getName()).downloadUrl(downloadUrl).isInvalidArtifact(
-        metadata.getArtifactId().contains(metadata.getGroupId())).artifactId(metadata.getArtifactId()).build();
+
+    return MavenArtifactModel.builder()
+        .name(metadata.getName())
+        .downloadUrl(downloadUrl)
+        .isInvalidArtifact(metadata.getArtifactId().contains(metadata.getGroupId()))
+        .artifactId(metadata.getArtifactId())
+        .productVersion(version)
+        .build();
   }
 
   public static String getMetadataContentFromUrl(String metadataUrl) {
@@ -317,6 +328,24 @@ public class MavenUtils {
     }
     return artifactsFromMeta.stream().filter(
         artifact -> !artifact.getArtifactId().endsWith(MavenConstants.PRODUCT_ARTIFACT_POSTFIX)).toList();
+  }
+
+  public static List<String> extractAllVersions(MavenArtifactVersion existingMavenArtifactVersion,
+      boolean isShowDevVersion, String designerVersion) {
+    Set<String> existingProductsArtifactByVersion = existingMavenArtifactVersion.getProductArtifactsByVersion()
+        .stream()
+        .map(MavenArtifactModel::getProductVersion)
+        .collect(Collectors.toSet());
+
+    Set<String> existingAdditionalArtifactByVersion = existingMavenArtifactVersion.getAdditionalArtifactsByVersion()
+        .stream()
+        .map(MavenArtifactModel::getProductVersion)
+        .collect(Collectors.toSet());
+
+    existingProductsArtifactByVersion.addAll(existingAdditionalArtifactByVersion);
+
+    return VersionUtils.getVersionsToDisplay(new ArrayList<>(existingProductsArtifactByVersion), isShowDevVersion,
+        designerVersion);
   }
 
   public static boolean isProductMetadata(Metadata metadata) {

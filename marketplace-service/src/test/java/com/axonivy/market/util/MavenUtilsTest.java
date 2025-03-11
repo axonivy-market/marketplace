@@ -6,8 +6,8 @@ import com.axonivy.market.bo.Artifact;
 import com.axonivy.market.constants.CommonConstants;
 import com.axonivy.market.constants.MavenConstants;
 import com.axonivy.market.constants.ProductJsonConstants;
+import com.axonivy.market.entity.MavenArtifactModel;
 import com.axonivy.market.entity.Metadata;
-import com.axonivy.market.model.MavenArtifactModel;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -34,16 +34,19 @@ class MavenUtilsTest extends BaseSetup {
     Assertions.assertTrue(CollectionUtils.isEmpty(result));
     result = MavenUtils.convertArtifactsToModels(null, MOCK_RELEASED_VERSION);
     Assertions.assertTrue(CollectionUtils.isEmpty(result));
-    Artifact targetArtifact = new Artifact(null, null, MOCK_GROUP_ID,
-        MOCK_ARTIFACT_ID, MavenConstants.DEFAULT_PRODUCT_FOLDER_TYPE, null, null, null, false, false);
+
+    Artifact targetArtifact = new Artifact(null, null, null, MOCK_GROUP_ID,
+        MOCK_ARTIFACT_ID, MavenConstants.DEFAULT_PRODUCT_FOLDER_TYPE, null, null, null,
+        null, false, false);
+
     result = MavenUtils.convertArtifactsToModels(List.of(targetArtifact), MOCK_RELEASED_VERSION);
+
     Assertions.assertTrue(ObjectUtils.isNotEmpty(result));
     Assertions.assertEquals(MOCK_DOWNLOAD_URL, result.get(0).getDownloadUrl());
   }
 
   @Test
   void testBuildDownloadUrlFromArtifactAndVersion() {
-
     Artifact targetArtifact = getMockArtifact();
     String artifactFileName = String.format(MavenConstants.ARTIFACT_FILE_NAME_FORMAT, MOCK_ARTIFACT_ID,
         MOCK_RELEASED_VERSION, MavenConstants.DEFAULT_PRODUCT_FOLDER_TYPE);
@@ -55,10 +58,10 @@ class MavenUtilsTest extends BaseSetup {
     Assertions.assertEquals(expectedResult, result);
 
     // Assert case with artifact not match & use custom repo
-    ArchivedArtifact adobeArchivedArtifactVersion9 = new ArchivedArtifact("10.0.9", "com.axonivy.adobe.connector",
-        "adobe-connector");
-    ArchivedArtifact adobeArchivedArtifactVersion8 = new ArchivedArtifact("10.0.8", "com.axonivy.adobe.sign.connector",
-        "adobe-sign-connector");
+    ArchivedArtifact adobeArchivedArtifactVersion9 = new ArchivedArtifact("df23423523", "10.0.9",
+        "com.axonivy.adobe.connector", "adobe-connector", targetArtifact);
+    ArchivedArtifact adobeArchivedArtifactVersion8 = new ArchivedArtifact("uhfgsedg", "10.0.8",
+        "com.axonivy.adobe.sign.connector", "adobe-sign-connector", targetArtifact);
     String customRepoUrl = "https://nexus.axonivy.com";
     targetArtifact.setRepoUrl(customRepoUrl);
     targetArtifact.setArchivedArtifacts(List.of(adobeArchivedArtifactVersion9, adobeArchivedArtifactVersion8));
@@ -74,8 +77,8 @@ class MavenUtilsTest extends BaseSetup {
     result = MavenUtils.buildDownloadUrl(targetArtifact, "10.0.9");
     artifactFileName = String.format(MavenConstants.ARTIFACT_FILE_NAME_FORMAT, "adobe-connector", "10.0.9",
         MavenConstants.DEFAULT_PRODUCT_FOLDER_TYPE);
-    expectedResult = String.join(CommonConstants.SLASH, customRepoUrl, "com/axonivy/adobe/connector", "adobe-connector",
-        "10.0.9", artifactFileName);
+    expectedResult = String.join(CommonConstants.SLASH, customRepoUrl, "com/axonivy/adobe/connector",
+        "adobe-connector", "10.0.9", artifactFileName);
     Assertions.assertEquals(expectedResult, result);
   }
 

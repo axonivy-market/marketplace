@@ -11,14 +11,13 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
-import java.util.ArrayList;
 
 @Log4j2
 @Component
 @AllArgsConstructor
 public class ScheduledTasks {
 
-  private static final String SCHEDULING_TASK_PRODUCTS_CRON = "0 0 0/1 ? * *";
+  private static final String SCHEDULING_TASK_PRODUCTS_CRON = "0 0 0/2 ? * *";
   // External documentation sync will start at 00:40 in order to prevent running at the same time with other
   private static final String SCHEDULING_TASK_DOCUMENTS_CRON = "0 40 0 * * *";
   private static final String SCHEDULING_TASK_PRODUCT_RELEASE_NOTES_CRON = "0 0 0 * * ?";
@@ -39,7 +38,7 @@ public class ScheduledTasks {
   public void syncDataForProductDocuments() {
     log.warn("Started sync data for product document");
     for (var product : productRepo.findAllProductsHaveDocument()) {
-      externalDocumentService.syncDocumentForProduct(product.getId(), new ArrayList<>(), false);
+      externalDocumentService.syncDocumentForProduct(product.getId(), false);
     }
   }
 

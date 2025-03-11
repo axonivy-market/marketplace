@@ -10,7 +10,7 @@ import lombok.AllArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.ObjectUtils;
-import org.bson.types.Binary;
+import org.hibernate.Hibernate;
 import org.kohsuke.github.GHContent;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
@@ -35,21 +35,19 @@ public class ImageServiceImpl implements ImageService {
   private final FileDownloadService fileDownloadService;
 
   @Override
-  public Binary getImageBinary(GHContent ghContent) {
+  public byte[] getImageBinary(GHContent ghContent) {
     try {
       InputStream contentStream = ghContent.read();
-      byte[] sourceBytes = IOUtils.toByteArray(contentStream);
-      return new Binary(sourceBytes);
+      return IOUtils.toByteArray(contentStream);
     } catch (Exception exception) {
       log.error("Cannot get content of product image {} ", ghContent.getName());
       return null;
     }
   }
 
-  private Binary getImageByDownloadUrl(String downloadUrl) {
+  private byte[] getImageByDownloadUrl(String downloadUrl) {
     try {
-      byte[] downloadedImage = fileDownloadService.downloadFile(downloadUrl);
-      return new Binary(downloadedImage);
+      return fileDownloadService.downloadFile(downloadUrl);
     } catch (Exception exception) {
       log.error("Cannot download the image from the url: {} with error {}", downloadUrl, exception.getMessage());
       return null;
@@ -73,7 +71,7 @@ public class ImageServiceImpl implements ImageService {
     }
 
     String currentImageUrl = GitHubUtils.getDownloadUrl(ghContent);
-    Binary imageContent = Optional.ofNullable(getImageBinary(ghContent))
+    byte[] imageContent = Optional.ofNullable(getImageBinary(ghContent))
         .orElseGet(() -> getImageByDownloadUrl(currentImageUrl));
 
     Image image = new Image();
@@ -87,18 +85,19 @@ public class ImageServiceImpl implements ImageService {
   @Override
   public Image mappingImageFromDownloadedFolder(String productId, Path imagePath) {
     List<Image> existingImages = imageRepository.findByProductId(productId);
+    existingImages.forEach(image -> Hibernate.initialize(image.getImageData()));
     try {
       InputStream contentStream = MavenUtils.extractedContentStream(imagePath);
       byte[] sourceBytes = IOUtils.toByteArray(contentStream);
 
       Image existedImage = existingImages.stream().filter(image -> {
-        byte[] imageData = Optional.of(image).map(Image::getImageData).map(Binary::getData).orElse(null);
+        byte[] imageData = Optional.of(image).map(Image::getImageData).orElse(null);
         return ObjectUtils.isNotEmpty(imageData) && Arrays.equals(imageData, sourceBytes);
       }).findAny().orElse(null);
 
       if (ObjectUtils.isEmpty(existedImage)) {
         Image image = new Image();
-        image.setImageData(new Binary(sourceBytes));
+        image.setImageData(sourceBytes);
         image.setProductId(productId);
         return imageRepository.save(image);
       }
@@ -111,7 +110,7 @@ public class ImageServiceImpl implements ImageService {
 
   @Override
   public byte[] readImage(String id) {
-    return imageRepository.findById(id).map(Image::getImageData).map(Binary::getData).orElse(null);
+    return imageRepository.findById(id).map(Image::getImageData).orElse(null);
   }
 
   @Override

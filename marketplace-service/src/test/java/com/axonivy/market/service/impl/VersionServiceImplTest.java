@@ -2,19 +2,17 @@ package com.axonivy.market.service.impl;
 
 import com.axonivy.market.BaseSetup;
 import com.axonivy.market.bo.ArchivedArtifact;
-import com.axonivy.market.bo.Artifact;
 import com.axonivy.market.constants.MavenConstants;
+import com.axonivy.market.entity.MavenArtifactModel;
 import com.axonivy.market.entity.MavenArtifactVersion;
 import com.axonivy.market.entity.Metadata;
 import com.axonivy.market.entity.ProductJsonContent;
 import com.axonivy.market.enums.DevelopmentVersion;
-import com.axonivy.market.model.MavenArtifactModel;
 import com.axonivy.market.model.VersionAndUrlModel;
 import com.axonivy.market.repository.MavenArtifactVersionRepository;
 import com.axonivy.market.repository.MetadataRepository;
 import com.axonivy.market.repository.ProductJsonContentRepository;
 import com.axonivy.market.util.MavenUtils;
-import com.axonivy.market.util.VersionUtils;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.junit.jupiter.api.Assertions;
@@ -57,48 +55,36 @@ class VersionServiceImplTest extends BaseSetup {
   void testGetArtifactsAndVersionToDisplay() {
     when(mavenArtifactVersionRepo.findById(Mockito.anyString())).thenReturn(Optional.empty());
     when(mavenArtifactVersionRepo.findById(MOCK_PRODUCT_ID)).thenReturn(
-        Optional.ofNullable(MavenArtifactVersion.builder().productId(MOCK_PRODUCT_ID).productArtifactsByVersion(
-            new HashMap<>()).additionalArtifactsByVersion(new HashMap<>()).build()));
+        Optional.ofNullable(MavenArtifactVersion.builder().productId(MOCK_PRODUCT_ID)
+            .productArtifactsByVersion(new ArrayList<>())
+            .additionalArtifactsByVersion(new ArrayList<>())
+            .build()));
+
     Assertions.assertTrue(CollectionUtils.isEmpty(
         versionService.getArtifactsAndVersionToDisplay(MOCK_PRODUCT_ID, false, MOCK_RELEASED_VERSION)));
-    MavenArtifactVersion proceededData =
-        MavenArtifactVersion.builder().productArtifactsByVersion(new HashMap<>()).additionalArtifactsByVersion(
-            new HashMap<>()).build();
-    proceededData.getProductArtifactsByVersion().put(MOCK_RELEASED_VERSION, new ArrayList<>());
-    proceededData.getAdditionalArtifactsByVersion().put(MOCK_RELEASED_VERSION, new ArrayList<>());
+
+    MavenArtifactVersion proceededData = MavenArtifactVersion.builder().productArtifactsByVersion(new ArrayList<>())
+        .additionalArtifactsByVersion(new ArrayList<>()).build();
+
     MavenArtifactModel mockModel = new MavenArtifactModel();
     mockModel.setName(MOCK_PRODUCT_ID);
     mockModel.setDownloadUrl(MavenConstants.DEFAULT_IVY_MAVEN_BASE_URL);
-    proceededData.getAdditionalArtifactsByVersion().put(MOCK_RELEASED_VERSION, List.of(mockModel));
+    mockModel.setProductVersion(MOCK_RELEASED_VERSION);
+    proceededData.getAdditionalArtifactsByVersion().add(mockModel);
     when(mavenArtifactVersionRepo.findById(Mockito.anyString())).thenReturn(Optional.of(proceededData));
     Assertions.assertTrue(ObjectUtils.isNotEmpty(
         versionService.getArtifactsAndVersionToDisplay(MOCK_PRODUCT_ID, false, MOCK_RELEASED_VERSION)));
   }
-
-
-  @Test
-  void testGetMavenArtifactsFromProductJsonByVersion() {
-    when(productJsonContentRepository.findByProductIdAndVersion(MOCK_PRODUCT_ID, MOCK_RELEASED_VERSION)).thenReturn(
-        Collections.emptyList());
-    List<Artifact> results = versionService.getMavenArtifactsFromProductJsonByVersion(MOCK_RELEASED_VERSION,
-        MOCK_PRODUCT_ID);
-    Assertions.assertTrue(CollectionUtils.isEmpty(results));
-    when(productJsonContentRepository.findByProductIdAndVersion(MOCK_PRODUCT_ID, MOCK_RELEASED_VERSION)).thenReturn(
-        List.of(getMockProductJsonContent()));
-    results = versionService.getMavenArtifactsFromProductJsonByVersion(MOCK_RELEASED_VERSION, MOCK_PRODUCT_ID);
-    Assertions.assertEquals(2, results.size());
-  }
-
 
   @Test
   void testFindArchivedArtifactInfoBestMatchWithVersion() {
     ArchivedArtifact result = MavenUtils.findArchivedArtifactInfoBestMatchWithVersion(MOCK_RELEASED_VERSION,
         Collections.emptyList());
     Assertions.assertNull(result);
-    ArchivedArtifact adobeArchivedArtifactVersion8 = new ArchivedArtifact("10.0.8", MOCK_GROUP_ID,
-        "bpmn-connector");
-    ArchivedArtifact adobeArchivedArtifactVersion9 = new ArchivedArtifact("10.0.9", MOCK_GROUP_ID,
-        "process-mining-connector");
+    ArchivedArtifact adobeArchivedArtifactVersion8 = new ArchivedArtifact("id","10.0.8", MOCK_GROUP_ID,
+        "bpmn-connector",null);
+    ArchivedArtifact adobeArchivedArtifactVersion9 = new ArchivedArtifact("id2","10.0.9", MOCK_GROUP_ID,
+        "process-mining-connector", null);
     List<ArchivedArtifact> archivedArtifacts = new ArrayList<>();
     archivedArtifacts.add(adobeArchivedArtifactVersion8);
     archivedArtifacts.add(adobeArchivedArtifactVersion9);
@@ -108,8 +94,9 @@ class VersionServiceImplTest extends BaseSetup {
     result = MavenUtils.findArchivedArtifactInfoBestMatchWithVersion("10.0.7",
         archivedArtifacts);
     Assertions.assertEquals(adobeArchivedArtifactVersion8, result);
-    ArchivedArtifact adobeArchivedArtifactVersion10 = new ArchivedArtifact(MOCK_RELEASED_VERSION, MOCK_GROUP_ID,
-        "adobe-sign-connector");
+    ArchivedArtifact adobeArchivedArtifactVersion10 = new ArchivedArtifact("testId",MOCK_RELEASED_VERSION,
+        MOCK_GROUP_ID,
+        "adobe-sign-connector",null);
     archivedArtifacts.add(adobeArchivedArtifactVersion10);
     result = MavenUtils.findArchivedArtifactInfoBestMatchWithVersion(MOCK_RELEASED_VERSION,
         archivedArtifacts);
@@ -118,15 +105,11 @@ class VersionServiceImplTest extends BaseSetup {
 
   @Test
   void testGetVersionsForDesigner() {
-    MavenArtifactVersion mockMavenArtifactVersion = new MavenArtifactVersion();
     List<String> mockVersions = List.of("11.3.0-SNAPSHOT", "11.1.1", "11.1.0", "10.0.2");
     Metadata mockMetadata = getMockMetadata();
     mockMetadata.setArtifactId(MOCK_PRODUCT_ARTIFACT_ID);
     mockMetadata.setVersions(new HashSet<>());
     mockMetadata.getVersions().addAll(mockVersions);
-    for (String version : mockVersions) {
-      mockMavenArtifactVersion.getProductArtifactsByVersion().put(version, new ArrayList<>());
-    }
     List<VersionAndUrlModel> result = versionService.getVersionsForDesigner(MOCK_PRODUCT_ID);
     Assertions.assertTrue(CollectionUtils.isEmpty(result));
     when(metadataRepo.findByProductId(MOCK_PRODUCT_ID)).thenReturn(List.of(mockMetadata));
@@ -161,23 +144,31 @@ class VersionServiceImplTest extends BaseSetup {
   @Test
   void testGetAllExistingVersions() {
     MavenArtifactVersion mockMavenArtifactVersion = new MavenArtifactVersion();
-    Assertions.assertTrue(CollectionUtils.isEmpty(VersionUtils.getAllExistingVersions(mockMavenArtifactVersion, false,
+    Assertions.assertTrue(CollectionUtils.isEmpty(MavenUtils.extractAllVersions(mockMavenArtifactVersion, false,
         StringUtils.EMPTY)));
     mockMavenArtifactVersion = getMockMavenArtifactVersionWithData();
-    Assertions.assertTrue(ObjectUtils.isNotEmpty(VersionUtils.getAllExistingVersions(mockMavenArtifactVersion, true,
+    Assertions.assertTrue(ObjectUtils.isNotEmpty(MavenUtils.extractAllVersions(mockMavenArtifactVersion, true,
         StringUtils.EMPTY)));
-    Assertions.assertTrue(CollectionUtils.isEmpty(VersionUtils.getAllExistingVersions(mockMavenArtifactVersion, false,
+    Assertions.assertTrue(CollectionUtils.isEmpty(MavenUtils.extractAllVersions(mockMavenArtifactVersion, false,
         StringUtils.EMPTY)));
   }
 
   @Test
   void testGetDownloadUrlFromExistingDataByArtifactIdAndVersion() {
-    Map<String, List<MavenArtifactModel>> existingData = getMockMavenArtifactVersion().getProductArtifactsByVersion();
-    existingData.put(MOCK_RELEASED_VERSION, List.of(getMockMavenArtifactModelWithDownloadUrl()));
+    List<MavenArtifactModel> existingData = getMockMavenArtifactVersion().getProductArtifactsByVersion();
+
+    MavenArtifactModel mockMavenArtifactModel = getMockMavenArtifactModelWithDownloadUrl();
+    mockMavenArtifactModel.setProductVersion("MOCK_SNAPSHOT_VERSION");
+
+    existingData.add(getMockMavenArtifactModelWithDownloadUrl());
     Assertions.assertNull(versionService.getDownloadUrlFromExistingDataByArtifactIdAndVersion(existingData,
         MOCK_SNAPSHOT_VERSION, List.of(MOCK_ARTIFACT_ID)));
-    Assertions.assertEquals(MOCK_DOWNLOAD_URL,versionService.getDownloadUrlFromExistingDataByArtifactIdAndVersion(existingData,
-        MOCK_RELEASED_VERSION, List.of(MOCK_ARTIFACT_ID)));
+    mockMavenArtifactModel.setProductVersion(MOCK_RELEASED_VERSION);
+    existingData.clear();
+    existingData.add(mockMavenArtifactModel);
+    Assertions.assertEquals(MOCK_DOWNLOAD_URL,
+        versionService.getDownloadUrlFromExistingDataByArtifactIdAndVersion(existingData,
+            MOCK_RELEASED_VERSION, List.of(MOCK_ARTIFACT_ID)));
   }
 
   @Test
@@ -185,17 +176,23 @@ class VersionServiceImplTest extends BaseSetup {
     Assertions.assertEquals(StringUtils.EMPTY, versionService.getLatestVersionArtifactDownloadUrl(MOCK_PRODUCT_ID,
         DevelopmentVersion.LATEST.getCode(), MOCK_ARTIFACT_DOWNLOAD_FILE));
 
-    when(metadataRepo.findByProductIdAndArtifactId(MOCK_PRODUCT_ID, MOCK_ARTIFACT_ID)).thenReturn(List.of(getMockMetadataWithVersions()));
+    when(metadataRepo.findByProductIdAndArtifactId(MOCK_PRODUCT_ID, MOCK_ARTIFACT_ID)).thenReturn(
+        List.of(getMockMetadataWithVersions()));
     Assertions.assertEquals(StringUtils.EMPTY, versionService.getLatestVersionArtifactDownloadUrl(MOCK_PRODUCT_ID,
         DevelopmentVersion.LATEST.getCode(), MOCK_ARTIFACT_DOWNLOAD_FILE));
 
     MavenArtifactVersion mockMavenArtifactVersion = getMockMavenArtifactVersion();
-    when(mavenArtifactVersionRepo.findById(anyString())).thenReturn(Optional.ofNullable(mockMavenArtifactVersion));
+    MavenArtifactVersion mockMavenArtifactVersion2 = getMockMavenArtifactVersion();
+
+    MavenArtifactModel mockMavenArtifactModelWithDownloadUrl = getMockMavenArtifactModelWithDownloadUrl();
+    mockMavenArtifactModelWithDownloadUrl.setProductVersion("10.0.10");
+    mockMavenArtifactVersion2.getProductArtifactsByVersion().add(mockMavenArtifactModelWithDownloadUrl);
+
+    when(mavenArtifactVersionRepo.findById(anyString())).thenReturn(Optional.of(mockMavenArtifactVersion),
+        Optional.of(mockMavenArtifactVersion2));
     Assertions.assertEquals(StringUtils.EMPTY, versionService.getLatestVersionArtifactDownloadUrl(MOCK_PRODUCT_ID,
         DevelopmentVersion.LATEST.getCode(), MOCK_ARTIFACT_DOWNLOAD_FILE));
 
-    mockMavenArtifactVersion.getProductArtifactsByVersion().put(MOCK_RELEASED_VERSION,
-        List.of(getMockMavenArtifactModelWithDownloadUrl()));
     Assertions.assertEquals(MOCK_DOWNLOAD_URL, versionService.getLatestVersionArtifactDownloadUrl(MOCK_PRODUCT_ID,
         DevelopmentVersion.LATEST.getCode(), MOCK_ARTIFACT_DOWNLOAD_FILE));
   }

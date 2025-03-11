@@ -34,7 +34,6 @@ class ImageUtilsTest {
     mutableMap.put("en", "Login or create a new account.[demo-process](imageId-66e2b13c68f2f95b2f95548c)");
     mutableMap.put("de", "Login or create a new account.[demo-process](imageId-66e2b13c68f2f95b2f95548c)");
     return mutableMap;
-
   }
 
 }
