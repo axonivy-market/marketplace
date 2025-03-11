@@ -109,12 +109,6 @@ class ProductSearchRepositoryImplTest extends BaseSetup {
     when(em.createQuery(criteriaQuery)).thenReturn(query);
     when(query.getResultList()).thenReturn(mockResultReturn.getContent()); // Mocking a result
 
-    MapJoin<Product, String, String> namesJoin = mock(MapJoin.class);
-//    Mockito.<MapJoin<Product, String, String>>when(productRoot.joinMap(any())).thenReturn(namesJoin);
-
-    Path<String> nameValue = mock(Path.class);
-//    when(namesJoin.value()).thenReturn(nameValue);
-
     when(cb.createQuery(Long.class)).thenReturn(countQuery);
     when(countQuery.from(Product.class)).thenReturn(countRoot);
     Expression<Long> countExpression = mock(Expression.class);
@@ -124,12 +118,20 @@ class ProductSearchRepositoryImplTest extends BaseSetup {
     when(em.createQuery(countQuery)).thenReturn(typedCountQuery);
     when(typedCountQuery.getSingleResult()).thenReturn((long) mockResultReturn.getSize());
 
+    // ✅ Mock joins and paths
     var marketplaceJoin = mock(Join.class);
     var mockPath = mock(Path.class);
     var mockOrder = mock(Order.class);
+    var mockCoalesce = mock(Expression.class); // ✅ Mock the coalesce expression
+
     when(productRoot.join(PRODUCT_MARKETPLACE_DATA, JoinType.LEFT)).thenReturn(marketplaceJoin);
     when(marketplaceJoin.get(CUSTOM_ORDER)).thenReturn(mockPath);
-    when(cb.asc(mockPath)).thenReturn(mockOrder);
+
+    // ✅ Mock coalesce expression
+    when(cb.coalesce(mockPath, Integer.MIN_VALUE)).thenReturn(mockCoalesce);
+
+    // ✅ Mock descending order with coalesce
+    when(cb.desc(mockCoalesce)).thenReturn(mockOrder);
 
     ArgumentCaptor<List<Order>> argumentCaptor = ArgumentCaptor.forClass(List.class);
 

@@ -132,7 +132,9 @@ public class CustomProductRepositoryImpl implements CustomProductRepository {
     Join<Product, ProductMarketplaceData> marketplaceJoin = jpaBuilder.root.join(PRODUCT_MARKETPLACE_DATA,
         JoinType.LEFT);
     List<Order> orders = new ArrayList<>();
-    Order order = jpaBuilder.cb.asc(marketplaceJoin.get(CUSTOM_ORDER));
+    Order order = jpaBuilder.cb.desc(
+        jpaBuilder.cb.coalesce(marketplaceJoin.get(CUSTOM_ORDER), Integer.MIN_VALUE)
+    );
     orders.add(order);
     if (ObjectUtils.isNotEmpty(customSorts)) {
       SortOption sortOptionExtension = SortOption.of(customSorts.get(0).getRuleForRemainder());
