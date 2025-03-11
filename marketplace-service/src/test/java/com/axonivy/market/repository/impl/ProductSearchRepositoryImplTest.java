@@ -69,6 +69,12 @@ class ProductSearchRepositoryImplTest extends BaseSetup {
     Path<String> nameValue = mock(Path.class);
     when(namesJoin.value()).thenReturn(nameValue);
 
+    var caseExpression = mock(CriteriaBuilder.Case.class);
+    when(cb.selectCase()).thenReturn(caseExpression);
+    
+    when(caseExpression.when(any(), any())).thenReturn(caseExpression);
+    when(caseExpression.otherwise(any())).thenReturn(nameValue); // Should return a valid expression
+
     when(cb.createQuery(Long.class)).thenReturn(countQuery);
     when(countQuery.from(Product.class)).thenReturn(countRoot);
     Expression<Long> countExpression = mock(Expression.class);

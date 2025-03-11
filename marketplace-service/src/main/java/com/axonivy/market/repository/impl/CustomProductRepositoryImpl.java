@@ -16,15 +16,7 @@ import com.axonivy.market.repository.ProductModuleContentRepository;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.NoResultException;
 import jakarta.persistence.TypedQuery;
-import jakarta.persistence.criteria.CriteriaBuilder;
-import jakarta.persistence.criteria.CriteriaQuery;
-import jakarta.persistence.criteria.Join;
-import jakarta.persistence.criteria.JoinType;
-import jakarta.persistence.criteria.MapJoin;
-import jakarta.persistence.criteria.Order;
-import jakarta.persistence.criteria.Path;
-import jakarta.persistence.criteria.Predicate;
-import jakarta.persistence.criteria.Root;
+import jakarta.persistence.criteria.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import org.apache.commons.lang3.ObjectUtils;
@@ -162,17 +154,15 @@ public class CustomProductRepositoryImpl implements CustomProductRepository {
 
   private Order sortByAlphabet(
       ProductCriteriaBuilder<CriteriaBuilder, CriteriaQuery<Product>, Root<Product>> jpaBuilder, String language) {
-
-    // Join only for sorting (not affecting the main query)
     MapJoin<Product, String, String> namesJoin = jpaBuilder.root().joinMap(PRODUCT_NAMES, JoinType.LEFT);
+    Expression<Object> nameValue = jpaBuilder.cb().coalesce(
+        jpaBuilder.cb().selectCase()
+            .when(jpaBuilder.cb().equal(namesJoin.key(), language), namesJoin.value())
+            .otherwise(jpaBuilder.cb().literal("")), jpaBuilder.cb().literal("")
+    );
 
-    // Filter by a specific language (e.g., English)
-    Predicate languageFilter = jpaBuilder.cb().equal(namesJoin.key(), language);
-    jpaBuilder.cq().where(languageFilter);
-
-    // Use coalesce to handle NULL values (if no English name exists)
-    Path<String> nameValue = namesJoin.value();
-    return jpaBuilder.cb().asc(jpaBuilder.cb().coalesce(nameValue, ""));
+    // Return sorting order (ascending)
+    return jpaBuilder.cb().asc(nameValue);
   }
 
   private Order sortById(ProductCriteriaBuilder<CriteriaBuilder, CriteriaQuery<Product>, Root<Product>> jpaBuilder){
