@@ -84,6 +84,9 @@ jobs:
           MARKET_CORS_ALLOWED_ORIGIN: ${{ secrets.MARKET_CORS_ALLOWED_ORIGIN }}
           MARKET_CLICK_LIMIT: ${{ secrets.MARKET_CLICK_LIMIT }}
           MARKET_LIMITED_REQUEST_PATHS: ${{ secrets.MARKET_LIMITED_REQUEST_PATHS }}
+          POSTGRES_HOST_URL: ${{ secrets.POSTGRES_HOST_URL }}
+          POSTGRES_USERNAME: ${{ secrets.POSTGRES_USERNAME }}
+          POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
         run: |
           if [ "${{ inputs.build_env }}" == "production" ]; then
             OAUTH_APP_CLIENT_ID=${{ secrets.OAUTH_APP_CLIENT_ID }}
@@ -105,6 +108,9 @@ jobs:
           sed -i "s/^MARKET_CORS_ALLOWED_ORIGIN=.*$/MARKET_CORS_ALLOWED_ORIGIN=$MARKET_CORS_ALLOWED_ORIGIN/" $ENV_FILE
           sed -i "s/^MARKET_CLICK_LIMIT=.*$/MARKET_CLICK_LIMIT=$MARKET_CLICK_LIMIT/" $ENV_FILE
           sed -i "s|^MARKET_LIMITED_REQUEST_PATHS=.*$|MARKET_LIMITED_REQUEST_PATHS=\"$MARKET_LIMITED_REQUEST_PATHS\"|" $ENV_FILE
+          sed -i "s/^POSTGRES_HOST_URL=.*$/POSTGRES_HOST_URL=$POSTGRES_HOST_URL/" $ENV_FILE
+          sed -i "s/^POSTGRES_USERNAME=.*$/POSTGRES_USERNAME=$POSTGRES_USERNAME/" $ENV_FILE
+          sed -i "s/^POSTGRES_PASSWORD=.*$/POSTGRES_PASSWORD=$POSTGRES_PASSWORD/" $ENV_FILE
 
       - name: Update version
         if: ${{ inputs.release_version != '' }}
