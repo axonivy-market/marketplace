@@ -9,6 +9,7 @@ import com.axonivy.market.model.ProductCustomSortRequest;
 import com.axonivy.market.repository.ProductCustomSortRepository;
 import com.axonivy.market.repository.ProductMarketplaceDataRepository;
 import com.axonivy.market.repository.ProductRepository;
+import com.axonivy.market.service.FileDownloadService;
 import com.axonivy.market.service.ProductMarketplaceDataService;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -16,7 +17,13 @@ import lombok.extern.log4j.Log4j2;
 import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.io.ByteArrayResource;
+import org.springframework.core.io.InputStreamResource;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestTemplate;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -33,16 +40,19 @@ public class ProductMarketplaceDataServiceImpl implements ProductMarketplaceData
   private final ProductMarketplaceDataRepository productMarketplaceDataRepo;
   private final ProductCustomSortRepository productCustomSortRepo;
   private final ProductRepository productRepo;
+  private final FileDownloadService fileDownloadService;
   private final ObjectMapper mapper = new ObjectMapper();
   private final SecureRandom random = new SecureRandom();
   @Value("${market.legacy.installation.counts.path}")
   private String legacyInstallationCountPath;
 
   public ProductMarketplaceDataServiceImpl(ProductMarketplaceDataRepository productMarketplaceDataRepo,
-      ProductCustomSortRepository productCustomSortRepo, ProductRepository productRepo) {
+      ProductCustomSortRepository productCustomSortRepo, ProductRepository productRepo,
+      FileDownloadService fileDownloadService) {
     this.productMarketplaceDataRepo = productMarketplaceDataRepo;
     this.productCustomSortRepo = productCustomSortRepo;
     this.productRepo = productRepo;
+    this.fileDownloadService = fileDownloadService;
   }
 
   @Override
@@ -68,6 +78,24 @@ public class ProductMarketplaceDataServiceImpl implements ProductMarketplaceData
       productEntries.add(productMarketplaceData);
     }
     return productEntries;
+  }
+
+  @Override
+  public ByteArrayResource downloadArtifact(String artifactUrl, String productId) {
+    try {
+      byte[] fileData = fileDownloadService.downloadFile(artifactUrl);
+
+      if (fileData == null || fileData.length == 0) {
+        return null;
+      }
+
+      updateInstallationCountForProduct(productId, null);
+
+      return new ByteArrayResource(fileData);
+    } catch (Exception e) {
+      log.error("Error downloading file from URL {}: {}", artifactUrl, e.getMessage());
+      return null;
+    }
   }
 
   @Override

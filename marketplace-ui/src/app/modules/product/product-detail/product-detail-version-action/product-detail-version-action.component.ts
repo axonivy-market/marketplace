@@ -256,9 +256,19 @@ export class ProductDetailVersionActionComponent implements AfterViewInit {
   }
 
   downloadArtifact(): void {
-    this.onUpdateInstallationCount();
+    // this.onUpdateInstallationCount();
     if (!this.isCheckedAppForEngine || this.selectedArtifactId?.endsWith(DOC) || this.selectedArtifact?.endsWith(ZIP)) {
-      window.open(this.selectedArtifact, TARGET_BLANK);
+      // window.open(this.selectedArtifact, TARGET_BLANK);
+      console.log(this.selectedArtifact);
+      // this.onUpdateInstallationCount('https://example.zip');
+      // this.onDownloadUrl(this.selectedArtifact!);
+      let marketplaceServiceUrl = environment.apiUrl;
+      if (!marketplaceServiceUrl.startsWith(HTTP)) {
+        marketplaceServiceUrl = window.location.origin.concat(marketplaceServiceUrl);
+      }
+      const downloadUrl = `${marketplaceServiceUrl}/api/product-marketplace-data/zip-file/${this.productId}?url=${this.selectedArtifact!}`;
+      console.log(downloadUrl);
+      window.open(downloadUrl, TARGET_BLANK);
     } else if (this.isCheckedAppForEngine) {
       let marketplaceServiceUrl = environment.apiUrl;
       if (!marketplaceServiceUrl.startsWith(HTTP)) {
@@ -268,7 +278,7 @@ export class ProductDetailVersionActionComponent implements AfterViewInit {
       const params = new HttpParams()
         .set(ROUTER.VERSION, version)
         .set(ROUTER.ARTIFACT, this.selectedArtifactId ?? '');
-
+      console.log(`${marketplaceServiceUrl}/${API_URI.PRODUCT_DETAILS}/${this.productId}/${ARTIFACT_ZIP_URL}?${params.toString()}`);
       window.open(`${marketplaceServiceUrl}/${API_URI.PRODUCT_DETAILS}/${this.productId}/${ARTIFACT_ZIP_URL}?${params.toString()}`, TARGET_BLANK);
     } else {
       return;
@@ -287,6 +297,12 @@ export class ProductDetailVersionActionComponent implements AfterViewInit {
   onUpdateInstallationCountForDesigner(): void {
     this.onUpdateInstallationCount();
   }
+
+
+  onDownloadUrl(url: string): void {
+    this.productService.sendRequestZipFile(this.productId, url).subscribe();
+  }
+
 
   onNavigateToContactPage(): void {
     window.open(
@@ -309,16 +325,16 @@ export class ProductDetailVersionActionComponent implements AfterViewInit {
   }
 
   @HostListener('document:click', ['$event'])
-    handleClickOutside(event: MouseEvent): void {
-      const downloadDialog = this.elementRef.nativeElement.querySelector(
-        '#download-dropdown-menu'
-      );
-      if (
-        this.isDropDownDisplayed() &&
-        downloadDialog &&
-        !downloadDialog.contains(event.target)
-      ) {
-        this.isDropDownDisplayed.set(!this.isDropDownDisplayed());
-      }
+  handleClickOutside(event: MouseEvent): void {
+    const downloadDialog = this.elementRef.nativeElement.querySelector(
+      '#download-dropdown-menu'
+    );
+    if (
+      this.isDropDownDisplayed() &&
+      downloadDialog &&
+      !downloadDialog.contains(event.target)
+    ) {
+      this.isDropDownDisplayed.set(!this.isDropDownDisplayed());
     }
+  }
 }
