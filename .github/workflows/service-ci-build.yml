@@ -45,6 +45,8 @@ jobs:
                 -Dsonar.projectKey=${{ env.SONAR_PROJECT_KEY }} \
                 -Dsonar.projectName="AxonIvy Market Service" \
                 -Dsonar.token=${{ env.SONAR_TOKEN }} \
+                -Dsonar.branch.name=${{ github.ref_name }} \
+                -Dsonar.scanner.force-deprecated-cleanup=true
       - name: SonarQube Quality Gate check
         id: sonarqube-quality-gate-check
         uses: sonarsource/sonarqube-quality-gate-action@master
