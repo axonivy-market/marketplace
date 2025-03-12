@@ -35,13 +35,13 @@ public class ImageServiceImpl implements ImageService {
   private final FileDownloadService fileDownloadService;
 
   @Override
-  public byte[] getImageBinary(GHContent ghContent) {
+  public byte[] getImageBinary(GHContent ghContent, String downloadUrl) {
     try {
       InputStream contentStream = ghContent.read();
       return IOUtils.toByteArray(contentStream);
     } catch (Exception exception) {
       log.error("Cannot get content of product image {} ", ghContent.getName());
-      return null;
+      return getImageByDownloadUrl(downloadUrl);
     }
   }
 
@@ -50,7 +50,7 @@ public class ImageServiceImpl implements ImageService {
       return fileDownloadService.downloadFile(downloadUrl);
     } catch (Exception exception) {
       log.error("Cannot download the image from the url: {} with error {}", downloadUrl, exception.getMessage());
-      return null;
+      return new byte[0];
     }
   }
 
@@ -71,8 +71,8 @@ public class ImageServiceImpl implements ImageService {
     }
 
     String currentImageUrl = GitHubUtils.getDownloadUrl(ghContent);
-    byte[] imageContent = Optional.ofNullable(getImageBinary(ghContent))
-        .orElseGet(() -> getImageByDownloadUrl(currentImageUrl));
+    byte[] imageContent = Optional.of(getImageBinary(ghContent, currentImageUrl))
+        .filter(ObjectUtils::isNotEmpty).orElse(null);
 
     Image image = new Image();
     image.setProductId(productId);
