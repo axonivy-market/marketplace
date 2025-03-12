@@ -516,11 +516,14 @@ public class ProductServiceImpl implements ProductService {
 
     List<ProductModuleContent> productModuleContents = new ArrayList<>();
     for (String version : versionChanges) {
-      product.getReleasedVersions().add(version);
+      if (!product.getReleasedVersions().contains(version)) {
+        product.getReleasedVersions().add(version);
+      }
       ProductModuleContent productModuleContent = handleProductArtifact(version, product.getId(), mavenArtifact,
           product.getNames().get(EN_LANGUAGE));
       Optional.ofNullable(productModuleContent).ifPresent(productModuleContents::add);
     }
+    product.setReleasedVersions(product.getReleasedVersions().stream().distinct().toList());
     nonSyncReleasedVersions.addAll(versionChanges);
 
     if (ObjectUtils.isNotEmpty(productModuleContents)) {
