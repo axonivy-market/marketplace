@@ -95,6 +95,12 @@ export class ProductFilterComponent {
     });
   }
 
+  ngAfterViewInit(): void {
+    if (window.google && window.google.search) {
+      window.google.search.cse.element.render('gcse-search');
+    }
+  }
+
   onSelectType(type: ItemDropdown<TypeOption>) {
     this.selectedTypeLabel = CommonUtils.getLabel(type.value, this.types);
     this.filterChange.emit(type);

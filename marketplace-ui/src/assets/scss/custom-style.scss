@@ -159,6 +159,14 @@ p {
     border-color: #{$ivyPrimaryTextColorLight} !important;
   }
 
+  .google-search-svg-primary {
+    svg {
+      width: 1.6rem;
+      height: 1.6rem;
+      fill: black;
+    }
+  }
+
   /** Star Rating Summary **/
 
   .star-rating-counting-line {
@@ -270,6 +278,14 @@ p {
 
   .border-light {
     border-color: #{$white} !important;
+  }
+
+  .google-search-svg-primary {
+    svg {
+      width: 1.6rem;
+      height: 1.6rem;
+      fill: white;
+    }
   }
 
   /** Star Rating Summary **/

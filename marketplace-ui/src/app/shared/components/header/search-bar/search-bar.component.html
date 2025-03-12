@@ -1,11 +1,17 @@
+<!-- <script async src="https://cse.google.com/cse.js?cx=036cea36d5dbf4f2b">
+</script>
+<div class="gcse-search"></div> -->
 <ul
   class="navbar-nav navbar-nav--right mr-auto flex-lg-row flex-column-reverse align-items-lg-center align-items-sm-stretch header__action">
+  <app-google-search-component [ngStyle]="{'display' : isGoogleSearchBarDisplayed() ? 'block' : 'none'}"></app-google-search-component>
+  
   @if (isSearchBarDisplayed()) {
+    <!-- <app-google-search-component></app-google-search-component> -->
     <li>
       <div class="input-group bg-secondary">
         <div class="input-group-prepend">
           <span
-            class="input-group-text text-primary h-100 border-0 bg-secondary">
+            class="input-group-text text-primary h-100 border-0 bg-secondary" (click)="submitSearch()">
             <i class="bi bi-search"></i>
           </span>
         </div>
@@ -18,15 +24,16 @@
             translateService.get('common.search.placeholder') | async"
           [ariaLabel]="
             translateService.get('common.search.placeholder') | async"
-          (click)="onClickSearchInput()" />
+            [(ngModel)]="inputValue" (ngModelChange)="onSearchInputChange()"
+          />
 
-      <div class="input-group-prepend search__cancel-button" (click)="onHideSearch()">
-        <span class="input-group-text text-primary h-100 border-0 bg-secondary">
-          <i class="bi bi-x-lg"></i>
-        </span>
+        <div class="input-group-prepend search__cancel-button" (click)="onHideSearch()">
+          <span class="input-group-text text-primary h-100 border-0 bg-secondary">
+            <i class="bi bi-x-lg"></i>
+          </span>
+        </div>
       </div>
-    </div>
-  </li>
+    </li>
   } @else {
   <!-- Language Selection -->
   <div class="d-flex flex-row-reverse flex-lg-row justify-content-between border-top-md-gray header__button">
@@ -54,7 +61,8 @@
               translateService.get('common.search.placeholder') | async
             " [ariaLabel]="
               translateService.get('common.search.placeholder') | async
-            " />
+            " 
+            [(ngModel)]="inputValue" (ngModelChange)="onSearchInputChange()"/>
         </div>
       } @else {
         <div class="search-icon">
