@@ -1,6 +1,7 @@
 <div class="header__navigation">
   <!-- Mobile Search Input -->
-  <div class="input-group d-lg-none header-mobile__search bg-secondary">
+   <app-google-search-component></app-google-search-component>
+  <!-- <div class="input-group d-lg-none header-mobile__search bg-secondary">
     <div class="input-group-prepend">
       <span class="input-group-text h-100 rounded-start-4 rounded-end-0 border-0">
         <i class="bi bi-search"></i>
@@ -14,7 +15,7 @@
       [placeholder]="translateService.get('common.search.placeholder') | async"
       [ariaLabel]="translateService.get('common.search.placeholder') | async"
       (click)="onClickSearchInput()" />
-  </div>
+  </div> -->
 
   <!-- Navigation -->
   <ul class="navbar-nav">

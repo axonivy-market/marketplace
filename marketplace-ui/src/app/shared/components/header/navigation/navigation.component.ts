@@ -4,11 +4,12 @@ import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { NAV_ITEMS, SEARCH_URL } from '../../../constants/common.constant';
 import { NavItem } from '../../../models/nav-item.model';
 import { LanguageService } from '../../../../core/services/language/language.service';
+import { GoogleSearchComponentComponent } from "../../google-search-component/google-search-component.component";
 
 @Component({
   selector: 'app-navigation',
   standalone: true,
-  imports: [CommonModule, TranslateModule],
+  imports: [CommonModule, TranslateModule, GoogleSearchComponentComponent],
   templateUrl: './navigation.component.html',
   styleUrl: './navigation.component.scss'
 })
