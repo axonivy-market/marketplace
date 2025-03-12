@@ -166,7 +166,7 @@ public class MavenDependencyServiceImpl implements MavenDependencyService {
       log.warn("Remove all ProductDependency documents due to force sync");
       productDependencyRepository.deleteAll();
     } else {
-      syncedProducts = productDependencyRepository.findAll();
+      syncedProducts = productDependencyRepository.findAllWithDependencies();
     }
 
     // Subtract existing product id
