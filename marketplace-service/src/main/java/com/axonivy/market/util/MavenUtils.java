@@ -330,24 +330,6 @@ public class MavenUtils {
         artifact -> !artifact.getArtifactId().endsWith(MavenConstants.PRODUCT_ARTIFACT_POSTFIX)).toList();
   }
 
-  public static List<String> extractAllVersions(MavenArtifactVersion existingMavenArtifactVersion,
-      boolean isShowDevVersion, String designerVersion) {
-    Set<String> existingProductsArtifactByVersion = existingMavenArtifactVersion.getProductArtifactsByVersion()
-        .stream()
-        .map(MavenArtifactModel::getProductVersion)
-        .collect(Collectors.toSet());
-
-    Set<String> existingAdditionalArtifactByVersion = existingMavenArtifactVersion.getAdditionalArtifactsByVersion()
-        .stream()
-        .map(MavenArtifactModel::getProductVersion)
-        .collect(Collectors.toSet());
-
-    existingProductsArtifactByVersion.addAll(existingAdditionalArtifactByVersion);
-
-    return VersionUtils.getVersionsToDisplay(new ArrayList<>(existingProductsArtifactByVersion), isShowDevVersion,
-        designerVersion);
-  }
-
   public static boolean isProductMetadata(Metadata metadata) {
     return StringUtils.endsWith(Objects.requireNonNullElse(metadata, new Metadata()).getArtifactId(),
         MavenConstants.PRODUCT_ARTIFACT_POSTFIX);

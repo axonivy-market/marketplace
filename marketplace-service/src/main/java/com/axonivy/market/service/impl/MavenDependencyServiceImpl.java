@@ -219,12 +219,10 @@ public class MavenDependencyServiceImpl implements MavenDependencyService {
 
   private MavenArtifactModel findDownloadURLForDependency(String productId, String version, Dependency dependency) {
     String requestArtifactId = dependency.getArtifactId();
-
     MavenArtifactVersion mavenArtifactVersion = mavenArtifactVersionRepository.findById(productId).orElse(null);
-    if (ObjectUtils.isEmpty(mavenArtifactVersion)) {
+    if (Objects.isNull(mavenArtifactVersion)) {
       return null;
     }
-
     MavenArtifactModel productArtifacts = filterMavenArtifactVersionByArtifactId(version, requestArtifactId,
         mavenArtifactVersion.getProductArtifactsByVersion());
 

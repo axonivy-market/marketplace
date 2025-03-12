@@ -443,15 +443,15 @@ public class ProductServiceImpl implements ProductService {
 
     List<Artifact> archivedArtifacts = product.getArtifacts().stream()
         .filter(artifact -> !CollectionUtils.isEmpty(artifact.getArchivedArtifacts()))
-        .flatMap(artifact ->
-            artifact.getArchivedArtifacts().stream()
-                .peek(archivedArtifact -> archivedArtifact.setArtifact(artifact))
-                .map(archivedArtifact -> Artifact.builder()
-                    .groupId(archivedArtifact.getGroupId())
-                    .artifactId(archivedArtifact.getArtifactId())
-                    .build())
-        )
-        .toList();
+        .flatMap(artifact -> {
+              artifact.getArchivedArtifacts().forEach(archivedArtifact -> archivedArtifact.setArtifact(artifact));
+              return artifact.getArchivedArtifacts().stream()
+                  .map(archivedArtifact -> Artifact.builder()
+                      .groupId(archivedArtifact.getGroupId())
+                      .artifactId(archivedArtifact.getArtifactId())
+                      .build());
+            }
+        ).toList();
 
     List<Artifact> mavenArtifacts = new ArrayList<>();
     mavenArtifacts.addAll(productArtifacts);
@@ -625,7 +625,7 @@ public class ProductServiceImpl implements ProductService {
 
     MavenArtifactVersion mavenArtifactVersion = mavenArtifactVersionRepo.findById(id).orElse(null);
     if (ObjectUtils.isNotEmpty(mavenArtifactVersion)) {
-      versions = MavenUtils.extractAllVersions(mavenArtifactVersion, BooleanUtils.isTrue(isShowDevVersion),
+      versions = VersionUtils.extractAllVersions(mavenArtifactVersion, BooleanUtils.isTrue(isShowDevVersion),
           StringUtils.EMPTY);
       version = CollectionUtils.firstElement(versions);
     }
