@@ -364,4 +364,10 @@ public class BaseSetup {
         .moderatorName("Admin")
         .build();
   }
+
+  protected ExternalDocumentMeta createExternalDocumentMock() {
+    return ExternalDocumentMeta.builder()
+        .relativeLink("/market-cache/portal/10.0.0/doc/index.html")
+        .build();
+  }
 }

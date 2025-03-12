@@ -30,7 +30,6 @@ import com.axonivy.market.service.VersionService;
 import com.axonivy.market.util.MavenUtils;
 import com.axonivy.market.util.VersionUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.h2.command.dml.MergeUsing;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -138,7 +137,7 @@ class ProductServiceImplTest extends BaseSetup {
   private ProductServiceImpl productService;
 
   @BeforeEach
-  public void setup() {
+  void setup() {
     mockResultReturn = createPageProductsMock();
   }
 
