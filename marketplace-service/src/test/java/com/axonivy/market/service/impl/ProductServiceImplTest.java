@@ -333,7 +333,8 @@ class ProductServiceImplTest extends BaseSetup {
   @Test
   void testSyncProductsSecondTime_andThereIsNoDuplicatedValueInReleasedVersion() {
     try (MockedStatic<MavenUtils> mockUtils = Mockito.mockStatic(MavenUtils.class)) {
-      List<String> mockVersions = Arrays.asList("10.0.10", "10.0.10-SNAPSHOT", "10.0.10-m123", "10.0.11-SNAPSHOT");
+      List<String> mockVersions = Arrays.asList("10.0.10", "10.0.10-SNAPSHOT", "10.0.10-m123", "10.0.11-SNAPSHOT",
+          "10.0.12-SNAPSHOT", "10.0.13-SNAPSHOT");
       Product mockProduct = getMockProduct();
       mockProduct.getReleasedVersions().add("10.0.10-SNAPSHOT");
       mockProduct.setProductModuleContent(mockReadmeProductContent());
