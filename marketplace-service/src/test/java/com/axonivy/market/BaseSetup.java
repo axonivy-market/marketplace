@@ -61,6 +61,7 @@ public class BaseSetup {
   protected static final String MOCK_PRODUCT_JSON_DIR_PATH = "src/test/resources";
   protected static final String MOCK_PRODUCT_JSON_NODE_FILE_PATH = "src/test/resources/prouct-json-node.json";
   protected static final String MOCK_METADATA_FILE_PATH = "src/test/resources/metadata.xml";
+  protected static final String MOCK_METADATA_FILE_PATH2 = "src/test/resources/metadata2.xml";
   protected static final String MOCK_SNAPSHOT_METADATA_FILE_PATH = "src/test/resources/snapshotMetadata.xml";
   protected static final String MOCK_README_FILE = "src/test/resources/README.md";
   protected static final String MOCK_README_DE_FILE = "src/test/resources/README_DE.md";
@@ -198,6 +199,10 @@ public class BaseSetup {
 
   protected String getMockMetadataContent() {
     return getContentFromTestResourcePath(MOCK_METADATA_FILE_PATH);
+  }
+
+  protected String getMockMetadataContent2() {
+    return getContentFromTestResourcePath(MOCK_METADATA_FILE_PATH2);
   }
 
   protected Metadata buildMockMetadata() {

@@ -514,6 +514,7 @@ public class ProductServiceImpl implements ProductService {
           product.getNames().get(EN_LANGUAGE));
       Optional.ofNullable(productModuleContent).ifPresent(productModuleContents::add);
     }
+    product.setReleasedVersions(product.getReleasedVersions().stream().distinct().toList());
     nonSyncReleasedVersions.addAll(versionChanges);
 
     if (ObjectUtils.isNotEmpty(productModuleContents)) {
