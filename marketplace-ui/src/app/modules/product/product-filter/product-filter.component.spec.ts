@@ -22,7 +22,7 @@ describe('ProductFilterComponent', () => {
       imports: [
         ProductFilterComponent,
         TranslateModule.forRoot(),
-        MatomoTestingModule.forRoot(),
+        MatomoTestingModule.forRoot()
       ],
       providers: [TranslateService,
         {
@@ -151,5 +151,29 @@ describe('ProductFilterComponent', () => {
     fixture.detectChanges();
 
     expect(component.searchText).toBe(searchValue);
+  });
+
+  it('should adapt classes correctly when switching light, dark and light mode with different selected types', () => {
+    component.themeService.isDarkMode.set(false);
+    component.selectedTypeLabel = FILTER_TYPES[1].label;
+    fixture.detectChanges();
+
+    component.themeService.isDarkMode.set(true);
+    fixture.detectChanges();
+
+    component.themeService.isDarkMode.set(false);
+    component.selectedTypeLabel = FILTER_TYPES[2].label;
+    fixture.detectChanges();
+
+    const filterElements = fixture.debugElement.queryAll(By.css('.filter-type'));
+    // Check type connectors (not selected)
+    expect(filterElements[0].nativeElement.classList).toContain('border-dark');
+    expect(filterElements[0].nativeElement.classList).toContain('text-dark');
+    expect(filterElements[0].nativeElement.classList).not.toContain('text-light');
+
+    // Check type util (selected)
+    expect(filterElements[2].nativeElement.classList).toContain('text-light');
+    expect(filterElements[2].nativeElement.classList).toContain('border-0');
+    expect(filterElements[2].nativeElement.classList).not.toContain('text-dark');
   });
 });
