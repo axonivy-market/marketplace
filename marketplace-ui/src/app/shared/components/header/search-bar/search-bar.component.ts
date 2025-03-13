@@ -8,6 +8,7 @@ import { LanguageService } from '../../../../core/services/language/language.ser
 import { SEARCH_URL } from '../../../constants/common.constant';
 import { FormsModule } from '@angular/forms';
 import { GoogleSearchComponentComponent } from '../../google-search-component/google-search-component.component';
+import { GoogleSearchBarUtils } from '../../../utils/google-search-bar.utils';
 
 @Component({
   selector: 'app-search-bar',
@@ -37,62 +38,9 @@ export class SearchBarComponent {
 
   constructor(private renderer: Renderer2) { }
 
-  // ngAfterViewInit(): void {
-  //   if (!document.getElementById('googleCSEScript')) {
-
-  //     console.log("Main");
-  //     const script = this.renderer.createElement('script');
-  //     script.id = 'googleCSEScript';
-  //     script.type = 'text/javascript';
-  //     script.async = true;
-  //     script.src = 'https://cse.google.com/cse.js?cx=036cea36d5dbf4f2b';
-  //     console.log(script);
-
-  //     this.renderer.appendChild(document.body, script);
-  //   } 
-  //   else {
-  //     console.log("Else");
-
-  //     if (window.hasOwnProperty('google') && (window as any).google.search) {
-  //       (window as any).google.search.cse.element.render('gcse-search');
-  //     }
-  //   }
-  // }
-
-  // search(query: string): void {
-  //   if (window.hasOwnProperty('google') && (window as any).google.search) {
-  //     (window as any).google.search.cse.element.getElement('gcse-search').execute(query);
-  //   }
-  // }
-
-  // ngAfterViewInit(): void {
-  //   if (!document.getElementById('googleCSEScript')) {
-  //     const script = this.renderer.createElement('script');
-  //     script.id = 'googleCSEScript';
-  //     script.type = 'text/javascript';
-  //     script.async = true;
-  //     script.src = 'https://cse.google.com/cse.js?cx=036cea36d5dbf4f2b';
-  //     script.onload = () => {
-  //       this.isGoogleLoaded = true; // Mark script as loaded
-  //     };
-  //     this.renderer.appendChild(document.body, script);
-  //   } else {
-  //     this.isGoogleLoaded = true;
-  //   }
-  // }
-
-  // search(query: string): void {
-  //   if (this.isGoogleLoaded && (window as any).google?.search?.cse) {
-  //     const searchElement = (window as any).google.search.cse.element.getElement('gcse-search');
-  //     if (searchElement) {
-  //       searchElement.execute(query);
-  //     } else {
-  //       console.warn('Google Search Element not found.');
-  //     }
-  //   } else {
-  //     console.warn('Google Search API is not ready yet.');
-  //   }
-  // }
+  ngAfterViewInit(): void {
+    GoogleSearchBarUtils.renderGoogleSearchBar(this.renderer);
+  }
 
   submitSearch(): void {
     console.log('Submit input:', this.inputValue);
@@ -109,8 +57,8 @@ export class SearchBarComponent {
   handleClickOutside(event: MouseEvent) {
     // this.isGoogleSearchBarDisplayed.set(false);
     if (!this.elementRef.nativeElement.contains(event.target)) {
-    this.isGoogleSearchBarDisplayed.set(false);
-    this.isSearchBarDisplayed.set(false);
+      this.isGoogleSearchBarDisplayed.set(false);
+      this.isSearchBarDisplayed.set(false);
     }
   }
 

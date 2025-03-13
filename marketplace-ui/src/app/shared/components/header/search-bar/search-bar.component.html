@@ -1,8 +1,12 @@
 <ul
   class="navbar-nav navbar-nav--right mr-auto flex-lg-row flex-column-reverse align-items-lg-center align-items-sm-stretch header__action">
-  <app-google-search-component class="me-5" [ngStyle]="{'display' : isGoogleSearchBarDisplayed() ? 'block' : 'none'}"></app-google-search-component>
+  <!-- <app-google-search-component class="me-5" [ngStyle]="{'display' : isGoogleSearchBarDisplayed() ? 'block' : 'none'}"></app-google-search-component> -->
+  <div class="google-search-container text-primary google-search-svg-primary"
+    [ngStyle]="{'display' : isGoogleSearchBarDisplayed() ? 'block' : 'none'}">
+    <div class="gcse-search"></div>
+  </div>
   @if (isGoogleSearchBarDisplayed() == false) {
-     <!-- Language Selection -->
+  <!-- Language Selection -->
   <div class="d-flex flex-row-reverse flex-lg-row justify-content-between border-top-md-gray header__button">
     <li class="header__button--right">
       <app-language-selection></app-language-selection>
@@ -17,16 +21,14 @@
   <!-- Collapse Search -->
   <li class="d-none d-lg-flex header__button--right">
     @if (isGoogleSearchBarDisplayed()) {
-      <app-google-search-component></app-google-search-component>
+    <app-google-search-component></app-google-search-component>
     }
     @else {
-      <div class="search-icon">
-        <i
-          class="bi bi-search header__search-button"
-          (click)="onClickSearchIcon()"></i>
-      </div>
+    <div class="search-icon">
+      <i class="bi bi-search header__search-button" (click)="onClickSearchIcon()"></i>
+    </div>
     }
-    </li>
+  </li>
   }
   <!-- @if (isSearchBarDisplayed()) {
     <li>

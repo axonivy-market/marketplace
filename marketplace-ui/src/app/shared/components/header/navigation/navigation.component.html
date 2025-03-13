@@ -1,6 +1,10 @@
 <div class="header__navigation">
   <!-- Mobile Search Input -->
-   <app-google-search-component></app-google-search-component>
+  <div class="google-search-container text-primary google-search-svg-primary"
+    [ngStyle]="{'display' : isMobileMode() ? 'block' : 'none'}">
+    <div class="gcse-search"></div>
+  </div>
+    <!-- <app-google-search-component [ngStyle]="{'display' : isMobileMode() ? 'block' : 'none'}"></app-google-search-component> -->
   <!-- <div class="input-group d-lg-none header-mobile__search bg-secondary">
     <div class="input-group-prepend">
       <span class="input-group-text h-100 rounded-start-4 rounded-end-0 border-0">
@@ -20,23 +24,16 @@
   <!-- Navigation -->
   <ul class="navbar-nav">
     @for (item of navItems; track $index) {
-      <li class="nav-item">
-        <a
-          [lang]="languageService.selectedLanguage()"
-          class="nav-link"
-          [ngClass]="{
+    <li class="nav-item">
+      <a [lang]="languageService.selectedLanguage()" class="nav-link" [ngClass]="{
             'text-primary': item.link === '/' || isMobileMode(),
             'text-secondary': item.link !== '/' && !isMobileMode(),
             active: item.link === '/'
-          }"
-          aria-current="page"
-          [href]="item.link">
-          {{ item.label | translate }}
-        </a>
-        <div
-          class="active-line d-none"
-          [ngClass]="{ 'd-lg-block': item.link === '/' }"></div>
-      </li>
+          }" aria-current="page" [href]="item.link">
+        {{ item.label | translate }}
+      </a>
+      <div class="active-line d-none" [ngClass]="{ 'd-lg-block': item.link === '/' }"></div>
+    </li>
     }
   </ul>
 </div>

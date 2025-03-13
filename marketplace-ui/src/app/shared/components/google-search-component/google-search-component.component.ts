@@ -33,21 +33,13 @@ export class GoogleSearchComponentComponent {
         this.addCustomClassToSearchBar();
       };
       this.renderer.appendChild(document.body, script);
-    } else {
+    } 
+    else {
       console.log("Else case");
       // If script is already loaded, manually trigger reinitialization
-      // if (window.hasOwnProperty('google') && (window as any).google.search) {
-      //   (window as any).google.search.cse.element.render('gcse-search');
-      // }
-      const script = this.renderer.createElement('script');
-      script.id = 'googleCSEScript';
-      script.type = 'text/javascript';
-      script.async = true;
-      script.src = 'https://cse.google.com/cse.js?cx=036cea36d5dbf4f2b';
-      script.onload = () => {
-        this.addCustomClassToSearchBar();
-      };
-      this.renderer.appendChild(document.body, script);
+      if (window.hasOwnProperty('google') && (window as any).google.search) {
+        (window as any).google.search.cse.element.render('gcse-search');
+      }
     }
   }
 
@@ -55,7 +47,7 @@ export class GoogleSearchComponentComponent {
     setTimeout(() => {
       const searchBox = document.querySelector('.gsc-control-cse'); // Google's search bar container
       if (searchBox) {
-        this.renderer.addClass(searchBox, 'bg-secondary');
+        // this.renderer.addClass(searchBox, 'bg-secondary');
       }
     }, 1000); // Give Google time to load
   }
