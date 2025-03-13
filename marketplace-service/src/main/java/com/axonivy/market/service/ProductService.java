@@ -26,9 +26,12 @@ public interface ProductService {
   boolean syncFirstPublishedDateOfAllProducts();
 
   Page<GitHubReleaseModel> getGitHubReleaseModels(String productId, Pageable pageable) throws IOException;
+
   Page<GitHubReleaseModel> syncGitHubReleaseModels(String productId, Pageable pageable) throws IOException;
 
   GitHubReleaseModel getGitHubReleaseModelByProductIdAndReleaseId(String productId, Long releaseId) throws IOException;
 
   List<String> getProductIdList();
+
+  Product renewProductById(String productId, String marketItemPath, Boolean overrideMarketItemPath);
 }

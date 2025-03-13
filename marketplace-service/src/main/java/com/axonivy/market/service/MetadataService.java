@@ -1,6 +1,6 @@
 package com.axonivy.market.service;
 
-import com.axonivy.market.bo.Artifact;
+import com.axonivy.market.entity.Artifact;
 
 import java.util.List;
 

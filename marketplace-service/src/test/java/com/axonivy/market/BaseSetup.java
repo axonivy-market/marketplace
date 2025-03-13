@@ -1,6 +1,6 @@
 package com.axonivy.market;
 
-import com.axonivy.market.bo.Artifact;
+import com.axonivy.market.entity.Artifact;
 import com.axonivy.market.constants.MavenConstants;
 import com.axonivy.market.entity.*;
 import com.axonivy.market.enums.FeedbackStatus;
@@ -362,6 +362,12 @@ public class BaseSetup {
     return FeedbackApprovalModel.builder()
         .feedbackId("1")
         .moderatorName("Admin")
+        .build();
+  }
+
+  protected ExternalDocumentMeta createExternalDocumentMock() {
+    return ExternalDocumentMeta.builder()
+        .relativeLink("/market-cache/portal/10.0.0/doc/index.html")
         .build();
   }
 }

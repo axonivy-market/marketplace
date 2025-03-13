@@ -1,7 +1,7 @@
 package com.axonivy.market.util;
 
 import com.axonivy.market.BaseSetup;
-import com.axonivy.market.bo.Artifact;
+import com.axonivy.market.entity.Artifact;
 import com.axonivy.market.constants.CommonConstants;
 import com.axonivy.market.entity.ProductModuleContent;
 import com.axonivy.market.enums.Language;
