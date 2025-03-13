@@ -1,5 +1,6 @@
 package com.axonivy.market.service;
 
+import com.axonivy.market.bo.VersionDownload;
 import com.axonivy.market.entity.ProductMarketplaceData;
 import com.axonivy.market.model.ProductCustomSortRequest;
 import org.springframework.core.io.ByteArrayResource;
@@ -15,5 +16,5 @@ public interface ProductMarketplaceDataService {
 
   ProductMarketplaceData getProductMarketplaceData(String id);
 
-  ByteArrayResource downloadArtifact(String artifactUrl, String productId) throws IOException;
+  VersionDownload downloadArtifact(String artifactUrl, String productId) throws IOException;
 }

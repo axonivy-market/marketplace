@@ -39,7 +39,8 @@ import { MATOMO_DIRECTIVES } from 'ngx-matomo-client';
 import { LoadingComponentId } from '../../../../shared/enums/loading-component-id';
 import { LoadingService } from '../../../../core/services/loading/loading.service';
 import { API_URI } from '../../../../shared/constants/api.constant';
-import { HttpParams } from '@angular/common/http';
+import { HttpClient, HttpParams } from '@angular/common/http';
+import { VersionDownload } from '../../../../shared/models/version-download.model';
 
 const showDevVersionCookieName = 'showDevVersions';
 const ARTIFACT_ZIP_URL = 'artifact/zip-file';
@@ -107,6 +108,7 @@ export class ProductDetailVersionActionComponent implements AfterViewInit {
   cookieService = inject(CookieService);
   router = inject(Router);
   route = inject(ActivatedRoute);
+  httpClient = inject(HttpClient);
 
   isDevVersionsDisplayed: WritableSignal<boolean> = signal(
     this.getShowDevVersionFromCookie()
@@ -256,19 +258,40 @@ export class ProductDetailVersionActionComponent implements AfterViewInit {
   }
 
   downloadArtifact(): void {
-    // this.onUpdateInstallationCount();
     if (!this.isCheckedAppForEngine || this.selectedArtifactId?.endsWith(DOC) || this.selectedArtifact?.endsWith(ZIP)) {
-      // window.open(this.selectedArtifact, TARGET_BLANK);
-      console.log(this.selectedArtifact);
-      // this.onUpdateInstallationCount('https://example.zip');
-      // this.onDownloadUrl(this.selectedArtifact!);
       let marketplaceServiceUrl = environment.apiUrl;
       if (!marketplaceServiceUrl.startsWith(HTTP)) {
         marketplaceServiceUrl = window.location.origin.concat(marketplaceServiceUrl);
       }
-      const downloadUrl = `${marketplaceServiceUrl}/api/product-marketplace-data/zip-file/${this.productId}?url=${this.selectedArtifact!}`;
-      console.log(downloadUrl);
-      window.open(downloadUrl, TARGET_BLANK);
+      const downloadUrl = `${marketplaceServiceUrl}/api/product-marketplace-data/version-download/${this.productId}?url=${this.selectedArtifact!}`;
+      this.httpClient.get<VersionDownload>(downloadUrl).subscribe(
+        (response) => {
+          if (!response || !response.fileData) {
+            console.error('No file data received');
+            return;
+          }
+          this.installationCount.emit(response.installationCount);
+
+          const fileName = this.selectedArtifact!.substring(this.selectedArtifact!.lastIndexOf("/") + 1);
+          const byteCharacters = atob(response.fileData);
+          const byteNumbers = new Array(byteCharacters.length);
+          for (let i = 0; i < byteCharacters.length; i++) {
+            byteNumbers[i] = byteCharacters.charCodeAt(i);
+          }
+          const byteArray = new Uint8Array(byteNumbers);
+          const blob = new Blob([byteArray], { type: "application/octet-stream" });
+
+          const blobUrl = URL.createObjectURL(blob);
+
+          const a = document.createElement("a");
+          a.href = blobUrl;
+          a.download = fileName;
+          document.body.appendChild(a);
+          a.click();
+          document.body.removeChild(a);
+
+          setTimeout(() => URL.revokeObjectURL(blobUrl), 10000);
+        });
     } else if (this.isCheckedAppForEngine) {
       let marketplaceServiceUrl = environment.apiUrl;
       if (!marketplaceServiceUrl.startsWith(HTTP)) {
@@ -277,10 +300,10 @@ export class ProductDetailVersionActionComponent implements AfterViewInit {
       const version = this.selectedVersion().replace(VERSION.displayPrefix, '');
       const params = new HttpParams()
         .set(ROUTER.VERSION, version)
-        .set(ROUTER.ARTIFACT, this.selectedArtifactId ?? '');
-      console.log(`${marketplaceServiceUrl}/${API_URI.PRODUCT_DETAILS}/${this.productId}/${ARTIFACT_ZIP_URL}?${params.toString()}`);
       window.open(`${marketplaceServiceUrl}/${API_URI.PRODUCT_DETAILS}/${this.productId}/${ARTIFACT_ZIP_URL}?${params.toString()}`, TARGET_BLANK);
+      this.onUpdateInstallationCount();
     } else {
+      this.onUpdateInstallationCount();
       return;
     }
   }
@@ -297,12 +320,6 @@ export class ProductDetailVersionActionComponent implements AfterViewInit {
   onUpdateInstallationCountForDesigner(): void {
     this.onUpdateInstallationCount();
   }
-
-
-  onDownloadUrl(url: string): void {
-    this.productService.sendRequestZipFile(this.productId, url).subscribe();
-  }
-
 
   onNavigateToContactPage(): void {
     window.open(

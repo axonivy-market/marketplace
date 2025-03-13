@@ -1,5 +1,6 @@
 package com.axonivy.market.service.impl;
 
+import com.axonivy.market.bo.VersionDownload;
 import com.axonivy.market.entity.ProductCustomSort;
 import com.axonivy.market.entity.ProductMarketplaceData;
 import com.axonivy.market.enums.ErrorCode;
@@ -30,6 +31,7 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.security.SecureRandom;
 import java.util.ArrayList;
+import java.util.Base64;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -81,17 +83,17 @@ public class ProductMarketplaceDataServiceImpl implements ProductMarketplaceData
   }
 
   @Override
-  public ByteArrayResource downloadArtifact(String artifactUrl, String productId) {
+  public VersionDownload downloadArtifact(String artifactUrl, String productId) {
     try {
       byte[] fileData = fileDownloadService.downloadFile(artifactUrl);
 
       if (fileData == null || fileData.length == 0) {
         return null;
       }
+      int installationCount = updateInstallationCountForProduct(productId, null);
+      String base64FileData = Base64.getEncoder().encodeToString(fileData);
 
-      updateInstallationCountForProduct(productId, null);
-
-      return new ByteArrayResource(fileData);
+      return VersionDownload.builder().fileData(base64FileData.getBytes()).installationCount(installationCount).build();
     } catch (Exception e) {
       log.error("Error downloading file from URL {}: {}", artifactUrl, e.getMessage());
       return null;

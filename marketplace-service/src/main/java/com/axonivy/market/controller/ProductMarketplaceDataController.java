@@ -1,5 +1,6 @@
 package com.axonivy.market.controller;
 
+import com.axonivy.market.bo.VersionDownload;
 import com.axonivy.market.constants.GitHubConstants;
 import com.axonivy.market.enums.ErrorCode;
 import com.axonivy.market.github.service.GitHubService;
@@ -68,26 +69,16 @@ public class ProductMarketplaceDataController {
   }
 
   @Operation(hidden = true)
-  @GetMapping(value = "/zip-file/{id}", produces = "application/octet-stream")
-  public ResponseEntity<Object> extractUrlFile(
+  @GetMapping(VERSION_DOWNLOAD_BY_ID)
+  public ResponseEntity<VersionDownload> extractUrlFile(
       @PathVariable(ID) String productId,
       @RequestParam(name = "url") String artifactUrl) throws IOException {
-    ByteArrayResource resource = productMarketplaceDataService.downloadArtifact(artifactUrl, productId);
+    VersionDownload resource = productMarketplaceDataService.downloadArtifact(artifactUrl, productId);
 
     if (resource == null) {
-      return ResponseEntity.status(HttpStatus.NO_CONTENT).body("File not found or download failed.");
+      return ResponseEntity.status(HttpStatus.NO_CONTENT).body(null);
     }
-
-    HttpHeaders headers = new HttpHeaders();
-    headers.setContentType(MediaType.APPLICATION_OCTET_STREAM);
-    headers.setContentDisposition(ContentDisposition.attachment()
-        .filename(getFileNameFromUrl(artifactUrl))
-        .build());
-
-    return ResponseEntity.ok()
-        .headers(headers)
-        .contentLength(resource.contentLength())
-        .body(resource);
+    return ResponseEntity.ok(resource);
   }
 
   private String getFileNameFromUrl(String artifactUrl) {
