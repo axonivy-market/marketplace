@@ -1,8 +1,8 @@
 package com.axonivy.market.util;
 
 import com.axonivy.market.BaseSetup;
-import com.axonivy.market.bo.ArchivedArtifact;
-import com.axonivy.market.bo.Artifact;
+import com.axonivy.market.entity.ArchivedArtifact;
+import com.axonivy.market.entity.Artifact;
 import com.axonivy.market.constants.CommonConstants;
 import com.axonivy.market.constants.MavenConstants;
 import com.axonivy.market.constants.ProductJsonConstants;

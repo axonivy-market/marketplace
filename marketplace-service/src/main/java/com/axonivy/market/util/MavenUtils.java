@@ -1,13 +1,12 @@
 package com.axonivy.market.util;
 
-import com.axonivy.market.bo.ArchivedArtifact;
-import com.axonivy.market.bo.Artifact;
+import com.axonivy.market.entity.ArchivedArtifact;
+import com.axonivy.market.entity.Artifact;
 import com.axonivy.market.comparator.MavenVersionComparator;
 import com.axonivy.market.constants.CommonConstants;
 import com.axonivy.market.constants.MavenConstants;
 import com.axonivy.market.constants.ProductJsonConstants;
 import com.axonivy.market.entity.MavenArtifactModel;
-import com.axonivy.market.entity.MavenArtifactVersion;
 import com.axonivy.market.entity.Metadata;
 import com.axonivy.market.entity.ProductJsonContent;
 import com.fasterxml.jackson.databind.JsonNode;

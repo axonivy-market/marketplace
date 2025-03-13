@@ -1,6 +1,5 @@
-package com.axonivy.market.bo;
+package com.axonivy.market.entity;
 
-import com.axonivy.market.entity.Product;
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
@@ -28,6 +27,7 @@ import java.util.Objects;
 import java.util.UUID;
 
 import static com.axonivy.market.constants.EntityConstants.ARTIFACT;
+import static com.axonivy.market.constants.EntityConstants.PRODUCT_ID;
 
 @Getter
 @Setter
@@ -53,7 +53,7 @@ public class Artifact implements Serializable {
   private Boolean isProductArtifact;
 
   @ManyToOne
-  @JoinColumn(name = "product_id", nullable = false)
+  @JoinColumn(name = PRODUCT_ID, nullable = false)
   @JsonBackReference
   private Product product;
 

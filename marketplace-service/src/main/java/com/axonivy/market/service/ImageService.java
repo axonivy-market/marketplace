@@ -2,8 +2,6 @@ package com.axonivy.market.service;
 
 import com.axonivy.market.entity.Image;
 import org.kohsuke.github.GHContent;
-
-import java.io.IOException;
 import java.nio.file.Path;
 
 public interface ImageService {

@@ -1,6 +1,6 @@
 package com.axonivy.market.factory;
 
-import com.axonivy.market.bo.Artifact;
+import com.axonivy.market.entity.Artifact;
 import com.axonivy.market.constants.CommonConstants;
 import com.axonivy.market.constants.MetaConstants;
 import com.axonivy.market.entity.Product;

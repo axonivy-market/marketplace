@@ -1,6 +1,6 @@
 package com.axonivy.market.service.impl;
 
-import com.axonivy.market.bo.Artifact;
+import com.axonivy.market.entity.Artifact;
 import com.axonivy.market.constants.GitHubConstants;
 import com.axonivy.market.constants.MavenConstants;
 import com.axonivy.market.constants.MetaConstants;
@@ -47,7 +47,6 @@ import org.kohsuke.github.PagedIterable;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cache.annotation.CachePut;
 import org.springframework.cache.annotation.Cacheable;
-import org.springframework.context.annotation.Lazy;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;

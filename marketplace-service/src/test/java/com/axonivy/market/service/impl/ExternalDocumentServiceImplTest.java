@@ -1,7 +1,7 @@
 package com.axonivy.market.service.impl;
 
 import com.axonivy.market.BaseSetup;
-import com.axonivy.market.bo.Artifact;
+import com.axonivy.market.entity.Artifact;
 import com.axonivy.market.entity.ExternalDocumentMeta;
 import com.axonivy.market.entity.Product;
 import com.axonivy.market.repository.ArtifactRepository;
