@@ -1,6 +1,6 @@
 package com.axonivy.market.github.model;
 
-import com.axonivy.market.bo.Artifact;
+import com.axonivy.market.entity.Artifact;
 import com.axonivy.market.model.DisplayValue;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;

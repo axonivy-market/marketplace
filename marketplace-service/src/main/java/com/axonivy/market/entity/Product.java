@@ -1,6 +1,5 @@
 package com.axonivy.market.entity;
 
-import com.axonivy.market.bo.Artifact;
 import com.axonivy.market.converter.StringListConverter;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.fasterxml.jackson.annotation.JsonProperty;

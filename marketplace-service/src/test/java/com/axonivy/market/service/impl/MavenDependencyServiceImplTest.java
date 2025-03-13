@@ -52,12 +52,12 @@ class MavenDependencyServiceImplTest extends BaseSetup {
         .build();
     var mavenArtifactVersionMock = createMavenArtifactVersionMock(isProductArtifact);
     when(productRepository.findAll()).thenReturn(createPageProductsMock().getContent());
-    when(productDependencyRepository.findAll()).thenReturn(List.of(mockProductDependency));
+    when(productDependencyRepository.findAllWithDependencies()).thenReturn(List.of(mockProductDependency));
     List<Product> mockProducts = createPageProductsMock().getContent().stream()
         .filter(product -> Boolean.FALSE != product.getListed())
         .toList();
     when(productRepository.findAll()).thenReturn(mockProducts);
-    when(productDependencyRepository.findAll()).thenReturn(List.of());
+    when(productDependencyRepository.findAllWithDependencies()).thenReturn(List.of());
     when(mavenArtifactVersionRepository.findById(any())).thenReturn(Optional.of(mavenArtifactVersionMock));
     when(productDependencyRepository.save(any())).thenReturn(
         ProductDependency.builder().productId(SAMPLE_PRODUCT_ID).build());

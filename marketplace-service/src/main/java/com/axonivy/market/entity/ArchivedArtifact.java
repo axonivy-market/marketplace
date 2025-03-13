@@ -1,4 +1,4 @@
-package com.axonivy.market.bo;
+package com.axonivy.market.entity;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
