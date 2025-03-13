@@ -293,4 +293,22 @@ describe('ProductComponent', () => {
     await router.navigate([productName]);
     expect(location.path()).toBe('/amazon-comprehend');
   });
+
+  it('should set query params back to criteria', fakeAsync(() => {
+    spyOn(component.router, 'navigate');
+
+    component.route.queryParams = of({
+      search: 'asana',
+      type: TypeOption.CONNECTORS,
+      sort: SortOption.ALPHABETICALLY
+    });
+
+    const newFixture = TestBed.createComponent(ProductComponent);
+    const newComponent = newFixture.componentInstance;
+    newFixture.detectChanges();
+
+    expect(newComponent.criteria.search).toEqual('asana');
+    expect(newComponent.criteria.type).toEqual(TypeOption.CONNECTORS);
+    expect(newComponent.criteria.sort).toEqual(SortOption.ALPHABETICALLY);
+  }));
 });
