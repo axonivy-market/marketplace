@@ -22,4 +22,5 @@ public class CommonConstants {
   public static final String ERROR = "error";
   public static final String MESSAGE = "message";
   public static final String COMPATIBILITY_RANGE_FORMAT = "%s - %s";
+  public static final String DEFAULT_DATE_TIME = "1900-01-01 00:00:00";
 }
