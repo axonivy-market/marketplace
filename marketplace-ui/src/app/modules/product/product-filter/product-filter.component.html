@@ -7,14 +7,10 @@
     <div class="filter-container__button d-none d-md-flex">
       @for (type of types; track $index) {
       <div (click)="onSelectType(type)" class="filter-type border" [ngClass]="{
-            'border-light text-light':
-              selectedTypeLabel !== type.label && themeService.isDarkMode(),
-            'border-dark text-dark':
-              selectedTypeLabel !== type.label && !themeService.isDarkMode(),
-            'bg-light text-dark':
-              selectedTypeLabel === type.label && themeService.isDarkMode(),
-            'bg-primary border-0 text-light':
-              selectedTypeLabel === type.label && !themeService.isDarkMode()
+            'border-light text-light': selectedTypeLabel !== type.label && themeService.isDarkMode(),
+            'border-dark text-dark': selectedTypeLabel !== type.label && !themeService.isDarkMode(),
+            'bg-light text-dark': selectedTypeLabel === type.label && themeService.isDarkMode(),
+            'bg-primary border-0 text-light': selectedTypeLabel === type.label && !themeService.isDarkMode()
           }">
         <p [lang]="languageService.selectedLanguage()">
           {{ type.label | translate }}
