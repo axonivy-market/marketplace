@@ -1,21 +1,18 @@
 package com.axonivy.market.service.impl;
 
-import com.axonivy.market.bo.Artifact;
+import com.axonivy.market.entity.Artifact;
 import com.axonivy.market.constants.GitHubConstants;
 import com.axonivy.market.constants.MavenConstants;
 import com.axonivy.market.constants.MetaConstants;
-import com.axonivy.market.constants.PostgresDBConstants;
 import com.axonivy.market.criteria.ProductSearchCriteria;
 import com.axonivy.market.entity.GitHubRepoMeta;
 import com.axonivy.market.entity.Image;
 import com.axonivy.market.entity.MavenArtifactVersion;
 import com.axonivy.market.entity.Product;
-import com.axonivy.market.entity.ProductCustomSort;
 import com.axonivy.market.entity.ProductJsonContent;
 import com.axonivy.market.entity.ProductModuleContent;
 import com.axonivy.market.enums.FileType;
 import com.axonivy.market.enums.Language;
-import com.axonivy.market.enums.SortOption;
 import com.axonivy.market.enums.TypeOption;
 import com.axonivy.market.factory.ProductFactory;
 import com.axonivy.market.github.model.GitHubFile;
@@ -53,7 +50,6 @@ import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort.Order;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
@@ -66,7 +62,6 @@ import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
-import java.util.stream.Collectors;
 
 import static com.axonivy.market.constants.CommonConstants.DOT_SEPARATOR;
 import static com.axonivy.market.constants.CommonConstants.SLASH;
@@ -92,7 +87,6 @@ public class ProductServiceImpl implements ProductService {
   private final GHAxonIvyProductRepoService axonIvyProductRepoService;
   private final GitHubRepoMetaRepository gitHubRepoMetaRepo;
   private final GitHubService gitHubService;
-  private final ProductCustomSortRepository productCustomSortRepo;
   private final MavenArtifactVersionRepository mavenArtifactVersionRepo;
   private final MetadataRepository metadataRepo;
   private final ProductJsonContentRepository productJsonContentRepo;
@@ -113,7 +107,7 @@ public class ProductServiceImpl implements ProductService {
   public ProductServiceImpl(ProductRepository productRepo, ProductModuleContentRepository productModuleContentRepo,
       GHAxonIvyMarketRepoService axonIvyMarketRepoService, GHAxonIvyProductRepoService axonIvyProductRepoService,
       GitHubRepoMetaRepository gitHubRepoMetaRepo, GitHubService gitHubService,
-      ProductCustomSortRepository productCustomSortRepo, MavenArtifactVersionRepository mavenArtifactVersionRepo,
+      MavenArtifactVersionRepository mavenArtifactVersionRepo,
       ProductJsonContentRepository productJsonContentRepo, ImageRepository imageRepo,
       MetadataRepository metadataRepo, ImageService imageService,
       ProductContentService productContentService, MetadataService metadataService,
@@ -126,7 +120,6 @@ public class ProductServiceImpl implements ProductService {
     this.axonIvyProductRepoService = axonIvyProductRepoService;
     this.gitHubRepoMetaRepo = gitHubRepoMetaRepo;
     this.gitHubService = gitHubService;
-    this.productCustomSortRepo = productCustomSortRepo;
     this.mavenArtifactVersionRepo = mavenArtifactVersionRepo;
     this.metadataRepo = metadataRepo;
     this.productJsonContentRepo = productJsonContentRepo;
@@ -443,15 +436,15 @@ public class ProductServiceImpl implements ProductService {
 
     List<Artifact> archivedArtifacts = product.getArtifacts().stream()
         .filter(artifact -> !CollectionUtils.isEmpty(artifact.getArchivedArtifacts()))
-        .flatMap(artifact ->
-            artifact.getArchivedArtifacts().stream()
-                .peek(archivedArtifact -> archivedArtifact.setArtifact(artifact))
-                .map(archivedArtifact -> Artifact.builder()
-                    .groupId(archivedArtifact.getGroupId())
-                    .artifactId(archivedArtifact.getArtifactId())
-                    .build())
-        )
-        .toList();
+        .flatMap(artifact -> {
+              artifact.getArchivedArtifacts().forEach(archivedArtifact -> archivedArtifact.setArtifact(artifact));
+              return artifact.getArchivedArtifacts().stream()
+                  .map(archivedArtifact -> Artifact.builder()
+                      .groupId(archivedArtifact.getGroupId())
+                      .artifactId(archivedArtifact.getArtifactId())
+                      .build());
+            }
+        ).toList();
 
     List<Artifact> mavenArtifacts = new ArrayList<>();
     mavenArtifacts.addAll(productArtifacts);
@@ -626,7 +619,7 @@ public class ProductServiceImpl implements ProductService {
 
     MavenArtifactVersion mavenArtifactVersion = mavenArtifactVersionRepo.findById(id).orElse(null);
     if (ObjectUtils.isNotEmpty(mavenArtifactVersion)) {
-      versions = MavenUtils.extractAllVersions(mavenArtifactVersion, BooleanUtils.isTrue(isShowDevVersion),
+      versions = VersionUtils.extractAllVersions(mavenArtifactVersion, BooleanUtils.isTrue(isShowDevVersion),
           StringUtils.EMPTY);
       version = CollectionUtils.firstElement(versions);
     }
@@ -682,7 +675,7 @@ public class ProductServiceImpl implements ProductService {
     return false;
   }
 
-  @Transactional
+  @Override
   public Product renewProductById(String productId, String marketItemPath, Boolean overrideMarketItemPath) {
     Product product = new Product();
     productRepo.findById(productId).ifPresent(foundProduct -> {

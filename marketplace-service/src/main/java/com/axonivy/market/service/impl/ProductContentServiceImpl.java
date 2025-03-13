@@ -1,6 +1,6 @@
 package com.axonivy.market.service.impl;
 
-import com.axonivy.market.bo.Artifact;
+import com.axonivy.market.entity.Artifact;
 import com.axonivy.market.bo.DownloadOption;
 import com.axonivy.market.bo.MavenDependency;
 import com.axonivy.market.constants.CommonConstants;

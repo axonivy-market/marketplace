@@ -166,7 +166,7 @@ public class MavenDependencyServiceImpl implements MavenDependencyService {
       log.warn("Remove all ProductDependency documents due to force sync");
       productDependencyRepository.deleteAll();
     } else {
-      syncedProducts = productDependencyRepository.findAll();
+      syncedProducts = productDependencyRepository.findAllWithDependencies();
     }
 
     // Subtract existing product id
@@ -219,12 +219,10 @@ public class MavenDependencyServiceImpl implements MavenDependencyService {
 
   private MavenArtifactModel findDownloadURLForDependency(String productId, String version, Dependency dependency) {
     String requestArtifactId = dependency.getArtifactId();
-
     MavenArtifactVersion mavenArtifactVersion = mavenArtifactVersionRepository.findById(productId).orElse(null);
-    if (ObjectUtils.isEmpty(mavenArtifactVersion)) {
+    if (Objects.isNull(mavenArtifactVersion)) {
       return null;
     }
-
     MavenArtifactModel productArtifacts = filterMavenArtifactVersionByArtifactId(version, requestArtifactId,
         mavenArtifactVersion.getProductArtifactsByVersion());
 
