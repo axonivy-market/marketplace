@@ -4,6 +4,8 @@ import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
@@ -33,6 +35,7 @@ public class MavenArtifactModel implements Serializable {
   private static final long serialVersionUID = 1L;
 
   @Id
+  @GeneratedValue(strategy = GenerationType.UUID)
   private String id;
 
   @Schema(description = "Display name and type of artifact", example = "Adobe Acrobat Sign Connector (.iar)")
@@ -58,11 +61,4 @@ public class MavenArtifactModel implements Serializable {
   @JoinColumn(name = ADDITIONAL_PRODUCT_VERSION_ID)
   @JsonBackReference(ADDITIONAL_VERSION_REFERENCE)
   private MavenArtifactVersion additionalVersionReference;
-
-  @PrePersist
-  private void ensureId() {
-    if (this.id == null) {
-      this.id = UUID.randomUUID().toString();
-    }
-  }
 }

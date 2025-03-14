@@ -32,8 +32,7 @@ import static com.axonivy.market.constants.EntityConstants.*;
 @Builder
 @Entity
 @Table(name = PRODUCT_MODULE_CONTENT)
-@EntityListeners(AuditingEntityListener.class)
-public class ProductModuleContent implements Serializable {
+public class ProductModuleContent extends BaseEntity implements Serializable {
   @Id
   private String id;
   @Serial
@@ -78,6 +77,4 @@ public class ProductModuleContent implements Serializable {
   private String artifactId;
   @Schema(description = "Artifact file type", example = "iar")
   private String type;
-  @LastModifiedDate
-  private Date updatedAt;
 }

@@ -25,9 +25,8 @@ import static com.axonivy.market.constants.EntityConstants.TEXT_TYPE;
 @NoArgsConstructor
 @Entity
 @Table(name = PRODUCT_JSON_CONTENT)
-@EntityListeners(AuditingEntityListener.class)
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public class ProductJsonContent {
+public class ProductJsonContent extends BaseEntity {
   @Id
   @JsonIgnore
   private String id;
@@ -36,6 +35,4 @@ public class ProductJsonContent {
   private String name;
   @Column(columnDefinition = TEXT_TYPE)
   private String content;
-  @LastModifiedDate
-  private Date updatedAt;
 }

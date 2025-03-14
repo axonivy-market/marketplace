@@ -3,6 +3,8 @@ package com.axonivy.market.entity;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.PrePersist;
 import jakarta.persistence.Table;
@@ -26,6 +28,7 @@ import static com.axonivy.market.constants.EntityConstants.IMAGE;
 @Table(name = IMAGE)
 public class Image {
   @Id
+  @GeneratedValue(strategy = GenerationType.UUID)
   private String id;
   @Schema(description = "Product id", example = "jira-connector")
   private String productId;
@@ -41,10 +44,4 @@ public class Image {
   @Schema(description = "The SHA from github", example = "93b1e2f1595d3a85e51b01")
   private String sha;
 
-  @PrePersist
-  private void ensureId() {
-    if (this.id == null) {
-      this.id = UUID.randomUUID().toString();
-    }
-  }
 }

@@ -17,13 +17,10 @@ import static com.axonivy.market.constants.EntityConstants.GH_REPO_META;
 @Setter
 @Entity
 @Table(name = GH_REPO_META)
-@EntityListeners(AuditingEntityListener.class)
 public class GitHubRepoMeta {
   @Id
   private String repoURL;
   private String repoName;
   private Long lastChange;
   private String lastSHA1;
-  @LastModifiedDate
-  private Date updatedAt;
 }

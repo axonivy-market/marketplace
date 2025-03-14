@@ -62,6 +62,7 @@ import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
+import java.util.stream.Collectors;
 
 import static com.axonivy.market.constants.CommonConstants.DOT_SEPARATOR;
 import static com.axonivy.market.constants.CommonConstants.SLASH;
@@ -315,7 +316,7 @@ public class ProductServiceImpl implements ProductService {
     }
   }
 
-  private List<String> syncProductsFromGitHubRepo(Boolean resetSync) {
+  private synchronized List<String> syncProductsFromGitHubRepo(Boolean resetSync) {
     log.warn("**ProductService: synchronize products from scratch based on the Market repo");
     List<String> syncedProductIds = new ArrayList<>();
     var gitHubContentMap = axonIvyMarketRepoService.fetchAllMarketItems();

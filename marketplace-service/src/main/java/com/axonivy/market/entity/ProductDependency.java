@@ -31,14 +31,9 @@ import static com.axonivy.market.constants.EntityConstants.PRODUCT_ID_FK;
 @Builder
 @Entity
 @Table(name = PRODUCT_DEPENDENCY)
-@EntityListeners(AuditingEntityListener.class)
-public class ProductDependency {
+public class ProductDependency extends BaseEntity {
   @Id
   private String productId;
-  @CreatedDate
-  private Date createdAt;
-  @LastModifiedDate
-  private Date modifiedAt;
 
   @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
   @JoinColumn(name = PRODUCT_ID_FK)

@@ -4,6 +4,8 @@ import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
@@ -31,6 +33,7 @@ import static com.axonivy.market.constants.EntityConstants.ARTIFACT_ID_FK;
 @Table(name = ARCHIVED_ARTIFACT)
 public class ArchivedArtifact implements Serializable {
   @Id
+  @GeneratedValue(strategy = GenerationType.UUID)
   private String id;
 
   @Serial
@@ -43,11 +46,5 @@ public class ArchivedArtifact implements Serializable {
   @JoinColumn(name = ARTIFACT_ID_FK, nullable = false)
   @JsonBackReference
   private Artifact artifact;
-
-  @PrePersist
-  private void ensureId() {
-    if (this.id == null) {
-      this.id = UUID.randomUUID().toString();
-    }
-  }
+  
 }

@@ -1,6 +1,8 @@
 package com.axonivy.market.entity;
 
 import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.PrePersist;
 import jakarta.persistence.Table;
@@ -26,6 +28,7 @@ public class User implements Serializable {
   private static final long serialVersionUID = -1244486023332931059L;
 
   @Id
+  @GeneratedValue(strategy = GenerationType.UUID)
   private String id;
   private String gitHubId;
   private String provider;
@@ -44,12 +47,5 @@ public class User implements Serializable {
       return false;
     }
     return new EqualsBuilder().append(id, ((User) obj).getId()).isEquals();
-  }
-
-  @PrePersist
-  private void ensureId() {
-    if (this.id == null) {
-      this.id = UUID.randomUUID().toString();
-    }
   }
 }

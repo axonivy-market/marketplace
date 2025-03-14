@@ -2,6 +2,8 @@ package com.axonivy.market.entity;
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.EntityListeners;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.PrePersist;
 import jakarta.persistence.Table;
@@ -26,9 +28,9 @@ import static com.axonivy.market.constants.EntityConstants.EXTERNAL_DOCUMENT_MET
 @Builder
 @Entity
 @Table(name = EXTERNAL_DOCUMENT_META)
-@EntityListeners(AuditingEntityListener.class)
-public class ExternalDocumentMeta {
+public class ExternalDocumentMeta extends BaseEntity {
   @Id
+  @GeneratedValue(strategy = GenerationType.UUID)
   private String id;
   private String productId;
   private String artifactId;
@@ -36,15 +38,4 @@ public class ExternalDocumentMeta {
   private String version;
   private String storageDirectory;
   private String relativeLink;
-  @CreatedDate
-  private Date createdAt;
-  @LastModifiedDate
-  private Date modifiedAt;
-
-  @PrePersist
-  private void ensureId() {
-    if (this.id == null) {
-      this.id = UUID.randomUUID().toString();
-    }
-  }
 }
