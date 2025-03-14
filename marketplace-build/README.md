@@ -11,7 +11,7 @@
               -d -p 5432:5432 \
               -v marketplace_service_data:/var/lib/postgresql/data postgres``
 
-Remember to replace *${POSTGRES_USERNAME}*, *${POSTGRES_PASSWORD}* with the credentials specified in [`marketplace-build/docker-compose.yml`](marketplace-build/docker-compose.yml). Additionally, set *{MARKETPLACE_DB}* to the database name specified in *${POSTGRES_HOST_URL}* within the same file.
+Remember to replace *${POSTGRES_USERNAME}*, *${POSTGRES_PASSWORD}* with the credentials specified in [`marketplace-build/docker-compose.yml`](marketplace-build/docker-compose.yml). Additionally, set *${MARKETPLACE_DB}* to the database name specified in *${POSTGRES_HOST_URL}* within the same file.
 
 ### Docker build for local environment
 #### Update the PostgreSQL configuration for env
