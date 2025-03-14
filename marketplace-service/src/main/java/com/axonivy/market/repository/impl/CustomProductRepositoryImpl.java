@@ -156,12 +156,13 @@ public class CustomProductRepositoryImpl implements CustomProductRepository {
 
   private Order sortByAlphabet(
       ProductCriteriaBuilder<CriteriaBuilder, CriteriaQuery<Product>, Root<Product>> jpaBuilder, String language) {
-    MapJoin<Product, String, String> namesJoin = jpaBuilder.root().joinMap(PRODUCT_NAMES, JoinType.LEFT);
-    Expression<Object> nameValue = jpaBuilder.cb().coalesce(
-        jpaBuilder.cb().selectCase()
-            .when(jpaBuilder.cb().equal(namesJoin.key(), language), namesJoin.value())
-            .otherwise(jpaBuilder.cb().literal("")), jpaBuilder.cb().literal("")
-    );
+    Subquery<String> subquery = jpaBuilder.cq().subquery(String.class);
+    Root<Product> subRoot = subquery.correlate(jpaBuilder.root());
+    MapJoin<Product, String, String> subNamesJoin = subRoot.joinMap(PRODUCT_NAMES, JoinType.LEFT);
+    subquery.select(subNamesJoin.value())
+        .where(jpaBuilder.cb().equal(subNamesJoin.key(), language));
+
+    Expression<String> nameValue = jpaBuilder.cb().coalesce(subquery, jpaBuilder.cb().literal(""));
 
     // Return sorting order (ascending)
     return jpaBuilder.cb().asc(nameValue);
