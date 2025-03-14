@@ -19,6 +19,7 @@ import static org.mockito.Mockito.verify;
     "MARKET_GITHUB_TOKEN=test",
     "MARKET_CLICK_LIMIT=5",
     "MARKET_LIMITED_REQUEST_PATHS=/api/test",
+    "SHOW_SQL=false",
     "spring.datasource.url=jdbc:h2:mem:testdb",
     "spring.datasource.username=sa",
     "spring.datasource.password=password",
