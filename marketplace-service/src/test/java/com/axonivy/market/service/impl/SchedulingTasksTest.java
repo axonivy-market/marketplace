@@ -15,7 +15,6 @@ import static org.mockito.Mockito.verify;
     "MARKET_JWT_SECRET_KEY=jwtSecret",
     "MARKET_CORS_ALLOWED_ORIGIN=*",
     "MARKET_GITHUB_MARKET_BRANCH=master",
-    "MARKET_MONGO_LOG_LEVEL=DEBUG",
     "MARKET_LOG_PATH=logs",
     "MARKET_GITHUB_TOKEN=test",
     "MARKET_CLICK_LIMIT=5",
