@@ -152,7 +152,7 @@ export class ReleasePreviewComponent {
   getReadmeContentValue(key: ItemDropdown): DisplayValue | null {
     type tabName = 'description' | 'demo' | 'setup';
     const value = key.value as tabName;
-    return this.readmeContent()[value];
+    return this.readmeContent()?.[value] ?? null;
   }
 
   renderReadmeContent(value: string): SafeHtml {
