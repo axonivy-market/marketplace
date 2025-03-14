@@ -156,15 +156,17 @@ public class VersionUtils {
     return version.substring(0, version.indexOf(DOT_SEPARATOR));
   }
 
-  public static List<String> extractAllVersions(MavenArtifactVersion existingMavenArtifactVersion,
+  public static List<String> extractAllVersions(List<MavenArtifactModel> existingMavenArtifactVersion,
       boolean isShowDevVersion, String designerVersion) {
-    Set<String> existingProductsArtifactByVersion = existingMavenArtifactVersion.getProductArtifactsByVersion()
+    Set<String> existingProductsArtifactByVersion = existingMavenArtifactVersion
         .stream()
+        .filter(model -> !model.isAdditionalVersion())
         .map(MavenArtifactModel::getProductVersion)
         .collect(Collectors.toSet());
 
-    Set<String> existingAdditionalArtifactByVersion = existingMavenArtifactVersion.getAdditionalArtifactsByVersion()
+    Set<String> existingAdditionalArtifactByVersion = existingMavenArtifactVersion
         .stream()
+        .filter(MavenArtifactModel::isAdditionalVersion)
         .map(MavenArtifactModel::getProductVersion)
         .collect(Collectors.toSet());
 
@@ -172,6 +174,17 @@ public class VersionUtils {
 
     return getVersionsToDisplay(new ArrayList<>(existingProductsArtifactByVersion), isShowDevVersion,
         designerVersion);
+  }
+
+  public static List<String> extractAllVersions(List<MavenArtifactModel> productArtifactVersion,
+      List<MavenArtifactModel> additionalArtifactVersion,
+      boolean isShowDevVersion, String designerVersion) {
+    List<MavenArtifactModel> allArtifactVersions = new ArrayList<>();
+    allArtifactVersions.addAll(productArtifactVersion);
+    allArtifactVersions.addAll(additionalArtifactVersion);
+    List<String> versions = allArtifactVersions.stream().map(MavenArtifactModel::getProductVersion).distinct().toList();
+
+    return getVersionsToDisplay(versions, isShowDevVersion, designerVersion);
   }
 
 }

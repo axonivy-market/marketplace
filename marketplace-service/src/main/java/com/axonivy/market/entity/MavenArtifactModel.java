@@ -11,6 +11,7 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.PrePersist;
 import jakarta.persistence.Table;
+import jakarta.persistence.UniqueConstraint;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -29,7 +30,7 @@ import static com.axonivy.market.constants.EntityConstants.*;
 @Getter
 @Builder
 @Entity
-@Table(name = MAVEN_ARTIFACT_MODEL)
+@Table(name = MAVEN_ARTIFACT_MODEL, uniqueConstraints = @UniqueConstraint(columnNames = {"artifactId", "productVersion", "isAdditionalVersion"}))
 public class MavenArtifactModel implements Serializable {
   @Serial
   private static final long serialVersionUID = 1L;
@@ -51,14 +52,6 @@ public class MavenArtifactModel implements Serializable {
 
   private String artifactId;
   private String productVersion;
-
-  @ManyToOne
-  @JoinColumn(name = PRODUCT_VERSION_ID)
-  @JsonBackReference(PRODUCT_VERSION_REFERENCE)
-  private MavenArtifactVersion productVersionReference;
-
-  @ManyToOne
-  @JoinColumn(name = ADDITIONAL_PRODUCT_VERSION_ID)
-  @JsonBackReference(ADDITIONAL_VERSION_REFERENCE)
-  private MavenArtifactVersion additionalVersionReference;
+  private String productId;
+  private boolean isAdditionalVersion;
 }

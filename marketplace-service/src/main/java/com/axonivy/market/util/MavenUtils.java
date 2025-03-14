@@ -33,6 +33,7 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 import static com.axonivy.market.constants.MavenConstants.DEFAULT_IVY_MAVEN_BASE_URL;
 
@@ -280,6 +281,8 @@ public class MavenUtils {
         .isInvalidArtifact(metadata.getArtifactId().contains(metadata.getGroupId()))
         .artifactId(metadata.getArtifactId())
         .productVersion(version)
+        .isAdditionalVersion(!metadata.isProductArtifact())
+        .productId(metadata.getProductId())
         .build();
   }
 
@@ -339,4 +342,5 @@ public class MavenUtils {
         ProductJsonConstants.MAVEN_IMPORT_INSTALLER_ID) && !jsonContent.contains(
         ProductJsonConstants.MAVEN_DEPENDENCY_INSTALLER_ID);
   }
+
 }

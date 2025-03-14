@@ -32,27 +32,27 @@ public class MavenArtifactVersion implements Serializable {
   @Id
   private String productId;
 
-  @OneToMany(mappedBy = PRODUCT_VERSION_REFERENCE, cascade = CascadeType.ALL, fetch = FetchType.EAGER,
-      orphanRemoval = true)
-  @JsonManagedReference(PRODUCT_VERSION_REFERENCE)
-  private List<MavenArtifactModel> productArtifactsByVersion;
+//  @OneToMany(mappedBy = PRODUCT_VERSION_REFERENCE, cascade = CascadeType.ALL, fetch = FetchType.EAGER,
+//      orphanRemoval = true)
+//  @JsonManagedReference(PRODUCT_VERSION_REFERENCE)
+//  private List<MavenArtifactModel> productArtifactsByVersion;
+//
+//  @OneToMany(mappedBy = ADDITIONAL_VERSION_REFERENCE, cascade = CascadeType.ALL, fetch = FetchType.EAGER,
+//      orphanRemoval = true)
+//  @JsonManagedReference(ADDITIONAL_VERSION_REFERENCE)
+//  private List<MavenArtifactModel> additionalArtifactsByVersion;
 
-  @OneToMany(mappedBy = ADDITIONAL_VERSION_REFERENCE, cascade = CascadeType.ALL, fetch = FetchType.EAGER,
-      orphanRemoval = true)
-  @JsonManagedReference(ADDITIONAL_VERSION_REFERENCE)
-  private List<MavenArtifactModel> additionalArtifactsByVersion;
-
-  public List<MavenArtifactModel> getProductArtifactsByVersion() {
-    if (Objects.isNull(productArtifactsByVersion)) {
-      productArtifactsByVersion = new ArrayList<>();
-    }
-    return productArtifactsByVersion;
-  }
-
-  public List<MavenArtifactModel> getAdditionalArtifactsByVersion() {
-    if (Objects.isNull(additionalArtifactsByVersion)) {
-      additionalArtifactsByVersion = new ArrayList<>();
-    }
-    return additionalArtifactsByVersion;
-  }
+//  public List<MavenArtifactModel> getProductArtifactsByVersion() {
+//    if (Objects.isNull(productArtifactsByVersion)) {
+//      productArtifactsByVersion = new ArrayList<>();
+//    }
+//    return productArtifactsByVersion;
+//  }
+//
+//  public List<MavenArtifactModel> getAdditionalArtifactsByVersion() {
+//    if (Objects.isNull(additionalArtifactsByVersion)) {
+//      additionalArtifactsByVersion = new ArrayList<>();
+//    }
+//    return additionalArtifactsByVersion;
+//  }
 }

@@ -7,6 +7,7 @@ import com.axonivy.market.constants.MetaConstants;
 import com.axonivy.market.criteria.ProductSearchCriteria;
 import com.axonivy.market.entity.GitHubRepoMeta;
 import com.axonivy.market.entity.Image;
+import com.axonivy.market.entity.MavenArtifactModel;
 import com.axonivy.market.entity.MavenArtifactVersion;
 import com.axonivy.market.entity.Product;
 import com.axonivy.market.entity.ProductJsonContent;
@@ -98,6 +99,7 @@ public class ProductServiceImpl implements ProductService {
   private final MetadataService metadataService;
   private final ProductMarketplaceDataService productMarketplaceDataService;
   private final ProductMarketplaceDataRepository productMarketplaceDataRepo;
+  private final MavenArtifactModelRepository mavenArtifactModelRepository;
   private final ArtifactRepository artifactRepo;
   private GHCommit lastGHCommit;
   private final VersionService versionService;
@@ -113,7 +115,8 @@ public class ProductServiceImpl implements ProductService {
       MetadataRepository metadataRepo, ImageService imageService,
       ProductContentService productContentService, MetadataService metadataService,
       ProductMarketplaceDataService productMarketplaceDataService, ExternalDocumentService externalDocumentService,
-      ProductMarketplaceDataRepository productMarketplaceDataRepo, ArtifactRepository artifactRepo,
+      ProductMarketplaceDataRepository productMarketplaceDataRepo,
+      MavenArtifactModelRepository mavenArtifactModelRepository, ArtifactRepository artifactRepo,
       VersionService versionService) {
     this.productRepo = productRepo;
     this.productModuleContentRepo = productModuleContentRepo;
@@ -131,6 +134,7 @@ public class ProductServiceImpl implements ProductService {
     this.productMarketplaceDataService = productMarketplaceDataService;
     this.externalDocumentService = externalDocumentService;
     this.productMarketplaceDataRepo = productMarketplaceDataRepo;
+    this.mavenArtifactModelRepository = mavenArtifactModelRepository;
     this.artifactRepo = artifactRepo;
     this.versionService = versionService;
   }
@@ -321,6 +325,9 @@ public class ProductServiceImpl implements ProductService {
     List<String> syncedProductIds = new ArrayList<>();
     var gitHubContentMap = axonIvyMarketRepoService.fetchAllMarketItems();
     for (Map.Entry<String, List<GHContent>> ghContentEntity : gitHubContentMap.entrySet()) {
+      if (!ghContentEntity.getKey().equals("market/utils/portal")) {
+        continue;
+      }
       var product = new Product();
       //update the meta.json first
       ghContentEntity.getValue().sort((f1, f2) -> GitHubUtils.sortMetaJsonFirst(f1.getName(), f2.getName()));
@@ -455,6 +462,7 @@ public class ProductServiceImpl implements ProductService {
     for (Artifact mavenArtifact : mavenArtifacts) {
       getMetadataContent(mavenArtifact, product, nonSyncReleasedVersions);
     }
+    product.setReleasedVersions(product.getReleasedVersions().stream().distinct().toList());
     metadataService.updateArtifactAndMetadata(product.getId(), nonSyncReleasedVersions, product.getArtifacts());
     externalDocumentService.syncDocumentForProduct(product.getId(), false);
   }
@@ -515,7 +523,6 @@ public class ProductServiceImpl implements ProductService {
           product.getNames().get(EN_LANGUAGE));
       Optional.ofNullable(productModuleContent).ifPresent(productModuleContents::add);
     }
-    product.setReleasedVersions(product.getReleasedVersions().stream().distinct().toList());
     nonSyncReleasedVersions.addAll(versionChanges);
 
     if (ObjectUtils.isNotEmpty(productModuleContents)) {
@@ -618,9 +625,10 @@ public class ProductServiceImpl implements ProductService {
     List<String> versions;
     String version = StringUtils.EMPTY;
 
-    MavenArtifactVersion mavenArtifactVersion = mavenArtifactVersionRepo.findById(id).orElse(null);
-    if (ObjectUtils.isNotEmpty(mavenArtifactVersion)) {
-      versions = VersionUtils.extractAllVersions(mavenArtifactVersion, BooleanUtils.isTrue(isShowDevVersion),
+    List<MavenArtifactModel> mavenArtifactModels = mavenArtifactModelRepository.findByProductId(id);
+
+    if (ObjectUtils.isNotEmpty(mavenArtifactModels)) {
+      versions = VersionUtils.extractAllVersions(mavenArtifactModels, BooleanUtils.isTrue(isShowDevVersion),
           StringUtils.EMPTY);
       version = CollectionUtils.firstElement(versions);
     }

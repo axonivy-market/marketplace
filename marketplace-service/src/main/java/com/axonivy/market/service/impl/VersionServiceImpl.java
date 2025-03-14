@@ -9,10 +9,13 @@ import com.axonivy.market.entity.Metadata;
 import com.axonivy.market.entity.ProductJsonContent;
 import com.axonivy.market.factory.VersionFactory;
 import com.axonivy.market.model.MavenArtifactVersionModel;
+import com.axonivy.market.model.MavenModel;
 import com.axonivy.market.model.VersionAndUrlModel;
+import com.axonivy.market.repository.MavenArtifactModelRepository;
 import com.axonivy.market.repository.MavenArtifactVersionRepository;
 import com.axonivy.market.repository.MetadataRepository;
 import com.axonivy.market.repository.ProductJsonContentRepository;
+import com.axonivy.market.service.MavenArtifactModelService;
 import com.axonivy.market.service.VersionService;
 import com.axonivy.market.util.MavenUtils;
 import com.axonivy.market.util.VersionUtils;
@@ -45,19 +48,20 @@ public class VersionServiceImpl implements VersionService {
   private final ProductJsonContentRepository productJsonRepo;
   private final ObjectMapper mapper = new ObjectMapper();
   private final MetadataRepository metadataRepo;
+  private final MavenArtifactModelRepository mavenArtifactModelRepo;
+  private final MavenArtifactModelService mavenArtifactModelService;
 
   public List<MavenArtifactVersionModel> getArtifactsAndVersionToDisplay(String productId, Boolean isShowDevVersion,
       String designerVersion) {
-    MavenArtifactVersion mavenArtifactVersion = mavenArtifactVersionRepo.findById(productId)
-        .orElse(MavenArtifactVersion.builder().productId(productId).build());
+    MavenModel mavenModel = mavenArtifactModelService.fetchMavenArtifactModels(productId);
+    List<String> mavenVersions = VersionUtils.extractAllVersions(mavenModel.getProductArtifacts(),
+        mavenModel.getAdditionalArtifacts(), isShowDevVersion, designerVersion);
+
     List<MavenArtifactVersionModel> results = new ArrayList<>();
-    List<String> mavenVersions = VersionUtils.extractAllVersions(mavenArtifactVersion, isShowDevVersion, designerVersion);
     for (String mavenVersion : mavenVersions) {
       List<MavenArtifactModel> artifactsByVersion = new ArrayList<>();
-      artifactsByVersion.addAll(
-          filterArtifactByVersion(mavenArtifactVersion.getProductArtifactsByVersion(), mavenVersion));
-      artifactsByVersion.addAll(
-          filterArtifactByVersion(mavenArtifactVersion.getAdditionalArtifactsByVersion(), mavenVersion));
+      artifactsByVersion.addAll(filterArtifactByVersion(mavenModel.getProductArtifacts(), mavenVersion));
+      artifactsByVersion.addAll(filterArtifactByVersion(mavenModel.getAdditionalArtifacts(), mavenVersion));
 
       if (ObjectUtils.isNotEmpty(artifactsByVersion)) {
         artifactsByVersion = artifactsByVersion.stream().distinct().toList();
@@ -67,8 +71,7 @@ public class VersionServiceImpl implements VersionService {
     return results;
   }
 
-  private List<MavenArtifactModel> filterArtifactByVersion(List<MavenArtifactModel> mavenArtifactModels,
-      String mavenVersion) {
+  private List<MavenArtifactModel> filterArtifactByVersion(List<MavenArtifactModel> mavenArtifactModels, String mavenVersion) {
     return mavenArtifactModels.stream()
         .filter(artifact -> artifact.getProductVersion().equals(mavenVersion))
         .toList();
@@ -129,19 +132,19 @@ public class VersionServiceImpl implements VersionService {
       return StringUtils.EMPTY;
     }
 
-    MavenArtifactVersion artifactVersionCache = mavenArtifactVersionRepo.findById(productId).orElse(null);
-    if (ObjectUtils.isEmpty(artifactVersionCache)) {
+    MavenModel mavenModel = mavenArtifactModelService.fetchMavenArtifactModels(productId);
+    if (ObjectUtils.isEmpty(mavenModel)) {
       return StringUtils.EMPTY;
     }
 
     // Find download url first from product artifact model
     String downloadUrl = getDownloadUrlFromExistingDataByArtifactIdAndVersion(
-        artifactVersionCache.getProductArtifactsByVersion(), targetVersion, modelArtifactIds);
+        mavenModel.getProductArtifacts(), targetVersion, modelArtifactIds);
 
     // Continue to find download url from artifact in meta.json if it is not existed in artifacts of product.json
     if (StringUtils.isBlank(downloadUrl)) {
       downloadUrl = getDownloadUrlFromExistingDataByArtifactIdAndVersion(
-          artifactVersionCache.getAdditionalArtifactsByVersion(), targetVersion, modelArtifactIds);
+          mavenModel.getAdditionalArtifacts(), targetVersion, modelArtifactIds);
     }
 
     if (!StringUtils.endsWith(downloadUrl, fileType)) {
