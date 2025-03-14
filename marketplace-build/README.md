@@ -1,31 +1,8 @@
 # Get starts with Marketplace build
 
-### Create docker network
-For the marketplace-ui, marketplace-service, and marketplace MongoDB to be able to connect to each other. They must be in a same network.
-To create a docker network for the marketplace, please run:
-
-* ``docker network create marketplace-network``
-
-### Set up MongoDB with authentication mode
-#### Init a admin user for MongoDb volume
-* Navigate to ``marketplace-build/config/mongodb`` and execute the ``docker-compose -f non-authen-docker-compose.yml up -d`` to start MongoDB with non-auth mode and create a root admin user.
-
-* [Optional] Execute authentication test for the created user
-  ```
-  use admin
-  db.auth('username','password')
-  ```
-This command should return the ``OK`` code
-
-* Down the non-authen instance to start the main docker compose file by run ``docker-compose down``
-
-#### Start MongoDB container
-
-* Start the authen instance by run ``docker-compose -f authen-docker-compose.yml up -d`` to start mongodb
-
 ### Docker build for local environment
-#### Update the MongoDB configuration for env
-* Navigate to ``marketplace-build/dev`` and edit ``.env`` base on your mongo configuration
+#### Update the PostgreSQL configuration for env
+* Navigate to ``marketplace-build/dev`` and edit ``.env`` base on your postgreSQL configuration
 
 * Navigate to ``marketplace-build/dev``
 

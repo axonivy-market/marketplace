@@ -11,8 +11,6 @@ services:
     restart: always
     ports:
       - "80:80"
-    networks:
-      - marketplace-network
 
   preview_service:
     image: ghcr.io/axonivy-market/marketplace-service:${RELEASE_VERSION}
@@ -24,29 +22,18 @@ services:
       - marketcache:/app/data/market-cache
       - ../logs:/app/logs
     environment:
-      - MONGODB_HOST=${SERVICE_MONGODB_HOST}
-      - MONGODB_DATABASE=${SERVICE_MONGODB_DATABASE}
-      - MONGODB_USERNAME=${SERVICE_MONGODB_USER}
-      - MONGODB_PASSWORD=${SERVICE_MONGODB_PASSWORD}
       - MARKET_GITHUB_MARKET_BRANCH=${MARKET_GITHUB_MARKET_BRANCH}
       - MARKET_GITHUB_TOKEN=${MARKET_GITHUB_TOKEN}
       - MARKET_GITHUB_OAUTH_APP_CLIENT_ID=${MARKET_GITHUB_OAUTH_APP_CLIENT_ID}
       - MARKET_GITHUB_OAUTH_APP_CLIENT_SECRET=${MARKET_GITHUB_OAUTH_APP_CLIENT_SECRET}
       - MARKET_JWT_SECRET_KEY=${MARKET_JWT_SECRET_KEY}
       - MARKET_CORS_ALLOWED_ORIGIN=${MARKET_CORS_ALLOWED_ORIGIN}
-      - MARKET_MONGO_LOG_LEVEL=${MARKET_MONGO_LOG_LEVEL}
       - MARKET_LOG_PATH=${MARKET_LOG_PATH}
       - MARKET_CLICK_LIMIT=${MARKET_CLICK_LIMIT}
       - MARKET_LIMITED_REQUEST_PATHS=${MARKET_LIMITED_REQUEST_PATHS}
       - POSTGRES_HOST_URL=${POSTGRES_HOST_URL}
       - POSTGRES_USERNAME=${POSTGRES_USERNAME}
       - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
-    networks:
-      - marketplace-network
 
 volumes:
   marketcache:
-
-networks:
-  marketplace-network:
-    external: true
