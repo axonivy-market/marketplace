@@ -8,7 +8,6 @@ import com.axonivy.market.criteria.ProductSearchCriteria;
 import com.axonivy.market.entity.GitHubRepoMeta;
 import com.axonivy.market.entity.Image;
 import com.axonivy.market.entity.MavenArtifactModel;
-import com.axonivy.market.entity.MavenArtifactVersion;
 import com.axonivy.market.entity.Product;
 import com.axonivy.market.entity.ProductJsonContent;
 import com.axonivy.market.entity.ProductModuleContent;
@@ -63,7 +62,6 @@ import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
-import java.util.stream.Collectors;
 
 import static com.axonivy.market.constants.CommonConstants.DOT_SEPARATOR;
 import static com.axonivy.market.constants.CommonConstants.SLASH;
@@ -89,7 +87,6 @@ public class ProductServiceImpl implements ProductService {
   private final GHAxonIvyProductRepoService axonIvyProductRepoService;
   private final GitHubRepoMetaRepository gitHubRepoMetaRepo;
   private final GitHubService gitHubService;
-  private final MavenArtifactVersionRepository mavenArtifactVersionRepo;
   private final MetadataRepository metadataRepo;
   private final ProductJsonContentRepository productJsonContentRepo;
   private final ImageRepository imageRepo;
@@ -110,7 +107,6 @@ public class ProductServiceImpl implements ProductService {
   public ProductServiceImpl(ProductRepository productRepo, ProductModuleContentRepository productModuleContentRepo,
       GHAxonIvyMarketRepoService axonIvyMarketRepoService, GHAxonIvyProductRepoService axonIvyProductRepoService,
       GitHubRepoMetaRepository gitHubRepoMetaRepo, GitHubService gitHubService,
-      MavenArtifactVersionRepository mavenArtifactVersionRepo,
       ProductJsonContentRepository productJsonContentRepo, ImageRepository imageRepo,
       MetadataRepository metadataRepo, ImageService imageService,
       ProductContentService productContentService, MetadataService metadataService,
@@ -124,7 +120,6 @@ public class ProductServiceImpl implements ProductService {
     this.axonIvyProductRepoService = axonIvyProductRepoService;
     this.gitHubRepoMetaRepo = gitHubRepoMetaRepo;
     this.gitHubService = gitHubService;
-    this.mavenArtifactVersionRepo = mavenArtifactVersionRepo;
     this.metadataRepo = metadataRepo;
     this.productJsonContentRepo = productJsonContentRepo;
     this.imageRepo = imageRepo;
@@ -325,7 +320,7 @@ public class ProductServiceImpl implements ProductService {
     List<String> syncedProductIds = new ArrayList<>();
     var gitHubContentMap = axonIvyMarketRepoService.fetchAllMarketItems();
     for (Map.Entry<String, List<GHContent>> ghContentEntity : gitHubContentMap.entrySet()) {
-      if (!ghContentEntity.getKey().equals("market/demos/connectivity")) {
+      if (!ghContentEntity.getKey().equals("market/connector/google-maps-connector")) {
         continue;
       }
       var product = new Product();
@@ -691,7 +686,7 @@ public class ProductServiceImpl implements ProductService {
           ProductFactory.transferComputedPersistedDataToProduct(foundProduct, product);
           imageRepo.deleteAllByProductId(foundProduct.getId());
           metadataRepo.deleteAllByProductId(foundProduct.getId());
-          mavenArtifactVersionRepo.deleteAllById(List.of(foundProduct.getId()));
+          mavenArtifactModelRepository.deleteAllByProductId(foundProduct.getId());
           productModuleContentRepo.deleteAllByProductId(foundProduct.getId());
           productJsonContentRepo.deleteAllByProductId(foundProduct.getId());
           productRepo.delete(foundProduct);

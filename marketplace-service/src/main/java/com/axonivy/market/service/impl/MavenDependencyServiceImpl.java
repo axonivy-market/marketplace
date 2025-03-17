@@ -4,11 +4,9 @@ import com.axonivy.market.bo.DownloadOption;
 import com.axonivy.market.bo.MavenDependency;
 import com.axonivy.market.constants.ProductJsonConstants;
 import com.axonivy.market.entity.MavenArtifactModel;
-import com.axonivy.market.entity.MavenArtifactVersion;
 import com.axonivy.market.entity.Product;
 import com.axonivy.market.entity.ProductDependency;
 import com.axonivy.market.model.MavenModel;
-import com.axonivy.market.repository.MavenArtifactVersionRepository;
 import com.axonivy.market.repository.ProductDependencyRepository;
 import com.axonivy.market.repository.ProductRepository;
 import com.axonivy.market.service.FileDownloadService;
@@ -17,7 +15,6 @@ import com.axonivy.market.service.MavenDependencyService;
 import com.axonivy.market.util.VersionUtils;
 import lombok.AllArgsConstructor;
 import lombok.extern.log4j.Log4j2;
-import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.maven.model.Dependency;
 import org.apache.maven.model.Model;
@@ -47,7 +44,6 @@ import static com.axonivy.market.constants.MavenConstants.*;
 @Service
 public class MavenDependencyServiceImpl implements MavenDependencyService {
   final ProductRepository productRepository;
-  final MavenArtifactVersionRepository mavenArtifactVersionRepository;
   final ProductDependencyRepository productDependencyRepository;
   final FileDownloadService fileDownloadService;
   final MavenArtifactModelService mavenArtifactModelService;

@@ -4,7 +4,6 @@ import com.axonivy.market.comparator.LatestVersionComparator;
 import com.axonivy.market.constants.MavenConstants;
 import com.axonivy.market.controller.ProductDetailsController;
 import com.axonivy.market.entity.MavenArtifactModel;
-import com.axonivy.market.entity.MavenArtifactVersion;
 import com.axonivy.market.entity.Metadata;
 import com.axonivy.market.entity.ProductJsonContent;
 import com.axonivy.market.factory.VersionFactory;
@@ -12,12 +11,10 @@ import com.axonivy.market.model.MavenArtifactVersionModel;
 import com.axonivy.market.model.MavenModel;
 import com.axonivy.market.model.VersionAndUrlModel;
 import com.axonivy.market.repository.MavenArtifactModelRepository;
-import com.axonivy.market.repository.MavenArtifactVersionRepository;
 import com.axonivy.market.repository.MetadataRepository;
 import com.axonivy.market.repository.ProductJsonContentRepository;
 import com.axonivy.market.service.MavenArtifactModelService;
 import com.axonivy.market.service.VersionService;
-import com.axonivy.market.util.MavenUtils;
 import com.axonivy.market.util.VersionUtils;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -34,6 +31,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import static com.axonivy.market.constants.ProductJsonConstants.NAME;
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
@@ -44,7 +42,6 @@ import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 @AllArgsConstructor
 public class VersionServiceImpl implements VersionService {
 
-  private final MavenArtifactVersionRepository mavenArtifactVersionRepo;
   private final ProductJsonContentRepository productJsonRepo;
   private final ObjectMapper mapper = new ObjectMapper();
   private final MetadataRepository metadataRepo;
@@ -53,15 +50,13 @@ public class VersionServiceImpl implements VersionService {
 
   public List<MavenArtifactVersionModel> getArtifactsAndVersionToDisplay(String productId, Boolean isShowDevVersion,
       String designerVersion) {
-    MavenModel mavenModel = mavenArtifactModelService.fetchMavenArtifactModels(productId);
-    List<String> mavenVersions = VersionUtils.extractAllVersions(mavenModel.getProductArtifacts(),
-        mavenModel.getAdditionalArtifacts(), isShowDevVersion, designerVersion);
+    List<MavenArtifactModel> mavenArtifactModels = mavenArtifactModelRepo.findByProductId(productId);
+
+    List<String> mavenVersions = VersionUtils.extractAllVersions(mavenArtifactModels, isShowDevVersion, designerVersion);
 
     List<MavenArtifactVersionModel> results = new ArrayList<>();
     for (String mavenVersion : mavenVersions) {
-      List<MavenArtifactModel> artifactsByVersion = new ArrayList<>();
-      artifactsByVersion.addAll(filterArtifactByVersion(mavenModel.getProductArtifacts(), mavenVersion));
-      artifactsByVersion.addAll(filterArtifactByVersion(mavenModel.getAdditionalArtifacts(), mavenVersion));
+      List<MavenArtifactModel> artifactsByVersion =filterArtifactByVersion(mavenArtifactModels, mavenVersion);
 
       if (ObjectUtils.isNotEmpty(artifactsByVersion)) {
         artifactsByVersion = artifactsByVersion.stream().distinct().toList();
@@ -71,12 +66,11 @@ public class VersionServiceImpl implements VersionService {
     return results;
   }
 
-  private List<MavenArtifactModel> filterArtifactByVersion(List<MavenArtifactModel> mavenArtifactModels, String mavenVersion) {
+  private List<MavenArtifactModel> filterArtifactByVersion(List<MavenArtifactModel> mavenArtifactModels,
+      String mavenVersion) {
     return mavenArtifactModels.stream()
         .filter(artifact -> artifact.getId().getProductVersion().equals(mavenVersion))
-        .toList();
-
-
+        .collect(Collectors.toCollection(ArrayList::new));
   }
 
   public Map<String, Object> getProductJsonContentByIdAndVersion(String productId, String version) {

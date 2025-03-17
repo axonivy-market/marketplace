@@ -10,4 +10,5 @@ import java.util.List;
 public interface MavenArtifactModelRepository extends JpaRepository<MavenArtifactModel, String> {
   List<MavenArtifactModel> findByProductId(String productId);
 
+  void deleteAllByProductId(String productId);
 }

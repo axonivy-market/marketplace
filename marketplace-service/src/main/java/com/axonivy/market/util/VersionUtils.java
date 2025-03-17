@@ -4,7 +4,6 @@ import com.axonivy.market.comparator.LatestVersionComparator;
 import com.axonivy.market.comparator.MavenVersionComparator;
 import com.axonivy.market.constants.CommonConstants;
 import com.axonivy.market.entity.MavenArtifactModel;
-import com.axonivy.market.entity.MavenArtifactVersion;
 import com.axonivy.market.entity.Metadata;
 import com.axonivy.market.model.MavenArtifactKey;
 import lombok.AccessLevel;
@@ -159,38 +158,13 @@ public class VersionUtils {
 
   public static List<String> extractAllVersions(List<MavenArtifactModel> existingMavenArtifactVersion,
       boolean isShowDevVersion, String designerVersion) {
-    Set<String> existingProductsArtifactByVersion = existingMavenArtifactVersion
-        .stream()
-        .filter(model -> !model.getId().isAdditionalVersion())
-        .map(model -> model.getId().getProductVersion())
-        .collect(Collectors.toSet());
-
-    Set<String> existingAdditionalArtifactByVersion = existingMavenArtifactVersion
-        .stream()
-        .filter(model -> model.getId().isAdditionalVersion())
-        .map(model -> model.getId().getProductVersion())
-        .collect(Collectors.toSet());
-
-    existingProductsArtifactByVersion.addAll(existingAdditionalArtifactByVersion);
-
-    return getVersionsToDisplay(new ArrayList<>(existingProductsArtifactByVersion), isShowDevVersion,
-        designerVersion);
-  }
-
-  public static List<String> extractAllVersions(List<MavenArtifactModel> productArtifactVersion,
-      List<MavenArtifactModel> additionalArtifactVersion,
-      boolean isShowDevVersion, String designerVersion) {
-    List<MavenArtifactModel> allArtifactVersions = new ArrayList<>();
-    allArtifactVersions.addAll(productArtifactVersion);
-    allArtifactVersions.addAll(additionalArtifactVersion);
-    
-    List<String> versions = allArtifactVersions.stream()
+    Set<String> versions = existingMavenArtifactVersion.stream()
         .map(MavenArtifactModel::getId)
         .map(MavenArtifactKey::getProductVersion)
-        .distinct()
-        .toList();
+        .collect(Collectors.toSet());
 
-    return getVersionsToDisplay(versions, isShowDevVersion, designerVersion);
+    return getVersionsToDisplay(new ArrayList<>(versions), isShowDevVersion,
+        designerVersion);
   }
 
 }
