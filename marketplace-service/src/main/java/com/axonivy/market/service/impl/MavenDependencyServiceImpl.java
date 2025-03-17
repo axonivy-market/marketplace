@@ -1,7 +1,7 @@
 package com.axonivy.market.service.impl;
 
 import com.axonivy.market.bo.DownloadOption;
-import com.axonivy.market.bo.MavenDependency;
+import com.axonivy.market.entity.MavenDependency;
 import com.axonivy.market.constants.ProductJsonConstants;
 import com.axonivy.market.entity.MavenArtifactModel;
 import com.axonivy.market.entity.Product;
@@ -30,6 +30,7 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -62,13 +63,14 @@ public class MavenDependencyServiceImpl implements MavenDependencyService {
 
   /**
    * The job will find all data in {@link MavenArtifactVersion} table:
-   ** Base on version of product and then loop the artifacts:
-   *  ** Download the artifact from maven repo by {@link MavenArtifactModel#getDownloadUrl()} to collect
-   *    dependencies in type IAR in pom.xml file.
-   *  ** If found, system will find that dependency by ID in the MavenArtifactVersion table:
-   *     *** Must loop over ProductArtifactsByVersion and AdditionalArtifactsByVersion property
-   ** At the end, system will save a new collection to DB, that is {@link ProductDependency}:
-   *  ** Include all required IAR dependencies of the request product artifact
+   * * Base on version of product and then loop the artifacts:
+   * ** Download the artifact from maven repo by {@link MavenArtifactModel#getDownloadUrl()} to collect
+   * dependencies in type IAR in pom.xml file.
+   * ** If found, system will find that dependency by ID in the MavenArtifactVersion table:
+   * *** Must loop over ProductArtifactsByVersion and AdditionalArtifactsByVersion property
+   * * At the end, system will save a new collection to DB, that is {@link ProductDependency}:
+   * ** Include all required IAR dependencies of the request product artifact
+   *
    * @param resetSync is indicator that should system delete data first then sync everything from scratch
    * @return total product synced
    */
@@ -76,7 +78,10 @@ public class MavenDependencyServiceImpl implements MavenDependencyService {
   public int syncIARDependenciesForProducts(Boolean resetSync) {
     int totalSyncedProductIds = 0;
     for (String productId : getMissingProductIds(resetSync)) {
-      List<MavenArtifactModel> mavenArtifactVersion = mavenArtifactModelRepository.findByProductId(productId);
+      List<MavenArtifactModel> mavenArtifactVersion = mavenArtifactModelRepository.findByProductId(productId)
+          .stream()
+          .sorted(Comparator.comparing(artifactModel -> artifactModel.getId().isAdditionalVersion()))
+          .collect(Collectors.toCollection(ArrayList::new));
 
       // If no data in MavenArtifactVersion table then skip this product
       if (ObjectUtils.isEmpty(mavenArtifactVersion)) {
