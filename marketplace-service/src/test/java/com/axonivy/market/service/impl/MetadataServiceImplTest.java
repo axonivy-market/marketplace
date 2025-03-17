@@ -2,12 +2,12 @@ package com.axonivy.market.service.impl;
 
 import com.axonivy.market.BaseSetup;
 import com.axonivy.market.entity.Artifact;
-import com.axonivy.market.entity.MavenArtifactModel;
+import com.axonivy.market.entity.MavenArtifactVersion;
 import com.axonivy.market.entity.Metadata;
 import com.axonivy.market.entity.Product;
 import com.axonivy.market.entity.ProductJsonContent;
 import com.axonivy.market.model.MavenArtifactKey;
-import com.axonivy.market.repository.MavenArtifactModelRepository;
+import com.axonivy.market.repository.MavenArtifactVersionRepository;
 import com.axonivy.market.repository.MetadataRepository;
 import com.axonivy.market.repository.ProductJsonContentRepository;
 import com.axonivy.market.repository.ProductRepository;
@@ -26,7 +26,6 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.util.CollectionUtils;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -51,7 +50,7 @@ class MetadataServiceImplTest extends BaseSetup {
   private MetadataRepository metadataRepo;
 
   @Mock
-  private MavenArtifactModelRepository mavenArtifactModelRepo;
+  private MavenArtifactVersionRepository mavenArtifactVersionRepo;
 
   @Test
   void testUpdateArtifactAndMetaDataForProduct() {
@@ -68,14 +67,14 @@ class MetadataServiceImplTest extends BaseSetup {
       metadataService.updateArtifactAndMetadata(mockProduct.getId(), List.of(MOCK_RELEASED_VERSION),
           List.of(mockArtifact));
 
-      verify(mavenArtifactModelRepo, times(1)).saveAll(any());
+      verify(mavenArtifactVersionRepo, times(1)).saveAll(any());
       verify(metadataRepo, times(1)).saveAll(any());
     }
   }
 
   @Test
   void testUpdateMavenArtifactVersionCacheWithModel() {
-    List<MavenArtifactModel> mockMavenArtifactVersion = new ArrayList<>();
+    List<MavenArtifactVersion> mockMavenArtifactVersion = new ArrayList<>();
     Metadata mockMetadata = buildMockMetadata();
     metadataService.updateMavenArtifactVersionWithModel(mockMavenArtifactVersion, MOCK_RELEASED_VERSION,
         mockMetadata);
@@ -89,7 +88,7 @@ class MetadataServiceImplTest extends BaseSetup {
         mockMetadata);
     Assertions.assertEquals(1, mockMavenArtifactVersion.size());
 
-    List<MavenArtifactModel> productArtifacts = getProductArtifacts(mockMavenArtifactVersion);
+    List<MavenArtifactVersion> productArtifacts = getProductArtifacts(mockMavenArtifactVersion);
 
     Assertions.assertTrue(CollectionUtils.isEmpty(productArtifacts));
 
@@ -98,7 +97,7 @@ class MetadataServiceImplTest extends BaseSetup {
     metadataService.updateMavenArtifactVersionWithModel(mockMavenArtifactVersion, MOCK_RELEASED_VERSION,
         mockMetadata);
 
-    List<MavenArtifactModel> additionalArtifacts = getAdditionalProductArtifacts(mockMavenArtifactVersion);
+    List<MavenArtifactVersion> additionalArtifacts = getAdditionalProductArtifacts(mockMavenArtifactVersion);
 
     Assertions.assertEquals(2, additionalArtifacts.size());
 
@@ -117,15 +116,15 @@ class MetadataServiceImplTest extends BaseSetup {
   @Test
   void testUpdateMavenArtifactVersionForNonReleaseDevVersion() {
     Metadata mockMetadata = getMockMetadata();
-    List<MavenArtifactModel> mockMavenArtifactVersion = getMockMavenArtifactVersion();
+    List<MavenArtifactVersion> mockMavenArtifactVersion = getMockMavenArtifactVersion();
     try (MockedStatic<MavenUtils> mockUtils = Mockito.mockStatic(MavenUtils.class)) {
       MavenArtifactKey mavenArtifactKey = MavenArtifactKey.builder().productVersion(MOCK_SNAPSHOT_VERSION).build();
 
       mockUtils.when(() -> MavenUtils.buildSnapShotMetadataFromVersion(mockMetadata, MOCK_SNAPSHOT_VERSION))
           .thenReturn(mockMetadata);
 
-      mockUtils.when(() -> MavenUtils.buildMavenArtifactModelFromMetadata(MOCK_SNAPSHOT_VERSION, mockMetadata))
-          .thenReturn(MavenArtifactModel.builder().id(mavenArtifactKey).build());
+      mockUtils.when(() -> MavenUtils.buildMavenArtifactVersionFromMetadata(MOCK_SNAPSHOT_VERSION, mockMetadata))
+          .thenReturn(MavenArtifactVersion.builder().id(mavenArtifactKey).build());
 
       metadataService.updateMavenArtifactVersionForNonReleaseDevVersion(mockMavenArtifactVersion, mockMetadata,
           MOCK_SNAPSHOT_VERSION);
@@ -137,7 +136,7 @@ class MetadataServiceImplTest extends BaseSetup {
   void testUpdateMavenArtifactVersionFromMetadata() {
     Metadata mockMetadata = getMockMetadata();
     mockMetadata.setVersions(Set.of(MOCK_RELEASED_VERSION));
-    List<MavenArtifactModel> mockMavenArtifactVersion = getMockMavenArtifactVersion();
+    List<MavenArtifactVersion> mockMavenArtifactVersion = getMockMavenArtifactVersion();
     metadataService.updateMavenArtifactVersionFromMetadata(mockMavenArtifactVersion, mockMetadata);
 
     Assertions.assertEquals(1, getProductArtifacts(mockMavenArtifactVersion).size());
@@ -148,12 +147,12 @@ class MetadataServiceImplTest extends BaseSetup {
     try (MockedStatic<MavenUtils> mockUtils = Mockito.mockStatic(MavenUtils.class)) {
       mockUtils.when(() -> MavenUtils.buildSnapShotMetadataFromVersion(mockMetadata, snapshotVersion)).thenReturn(
           mockMetadata);
-      mockUtils.when(() -> MavenUtils.buildMavenArtifactModelFromMetadata(anyString(), any()))
+      mockUtils.when(() -> MavenUtils.buildMavenArtifactVersionFromMetadata(anyString(), any()))
           .thenReturn(
-              mockMavenArtifactModel(MOCK_SNAPSHOT_VERSION,null),
-              mockMavenArtifactModel(MOCK_SNAPSHOT_VERSION,null),
-              mockAdditionalMavenArtifactModel(MOCK_SNAPSHOT_VERSION,null),
-              mockAdditionalMavenArtifactModel(MOCK_RELEASED_VERSION,null)
+              mockMavenArtifactVersion(MOCK_SNAPSHOT_VERSION,null),
+              mockMavenArtifactVersion(MOCK_SNAPSHOT_VERSION,null),
+              mockAdditionalMavenArtifactVersion(MOCK_SNAPSHOT_VERSION,null),
+              mockAdditionalMavenArtifactVersion(MOCK_RELEASED_VERSION,null)
           );
 
       metadataService.updateMavenArtifactVersionFromMetadata(mockMavenArtifactVersion, mockMetadata);
@@ -171,35 +170,35 @@ class MetadataServiceImplTest extends BaseSetup {
     mockMetadata.setVersions(new HashSet<>());
     mockMetadata.setUrl(MOCK_MAVEN_URL);
     Set<Metadata> mockMetadataSet = Set.of(mockMetadata);
-    List<MavenArtifactModel> mockMavenArtifactVersion = getMockMavenArtifactVersion();
+    List<MavenArtifactVersion> mockMavenArtifactVersion = getMockMavenArtifactVersion();
     metadataService.updateMavenArtifactVersionData(mockMetadataSet, MOCK_PRODUCT_ID);
     Assertions.assertEquals(0, getProductArtifacts(mockMavenArtifactVersion).size());
     Assertions.assertEquals(0, getAdditionalProductArtifacts(mockMavenArtifactVersion).size());
 
     try (MockedStatic<MavenUtils> mockUtils = Mockito.mockStatic(MavenUtils.class)) {
       mockUtils.when(() -> MavenUtils.getMetadataContentFromUrl(MOCK_MAVEN_URL)).thenReturn(getMockMetadataContent());
-      mockUtils.when(() -> MavenUtils.buildMavenArtifactModelFromMetadata(anyString(), any()))
-          .thenReturn(mockMavenArtifactModel(MOCK_SNAPSHOT_VERSION,null),
-              mockMavenArtifactModel(MOCK_RELEASED_VERSION,null));
+      mockUtils.when(() -> MavenUtils.buildMavenArtifactVersionFromMetadata(anyString(), any()))
+          .thenReturn(mockMavenArtifactVersion(MOCK_SNAPSHOT_VERSION,null),
+              mockMavenArtifactVersion(MOCK_RELEASED_VERSION,null));
 
-      ArgumentCaptor<List<MavenArtifactModel>> captor = ArgumentCaptor.forClass(List.class);
+      ArgumentCaptor<List<MavenArtifactVersion>> captor = ArgumentCaptor.forClass(List.class);
 
 
       metadataService.updateMavenArtifactVersionData(mockMetadataSet, MOCK_PRODUCT_ID);
 
-      verify(mavenArtifactModelRepo, times(2)).saveAll(captor.capture());
-      List<MavenArtifactModel> savedArtifactVersion = captor.getValue();
+      verify(mavenArtifactVersionRepo, times(2)).saveAll(captor.capture());
+      List<MavenArtifactVersion> savedArtifactVersion = captor.getValue();
       assertNotNull(savedArtifactVersion);
       Assertions.assertEquals(2, getProductArtifacts(savedArtifactVersion).size());
     }
   }
 
-  private List<MavenArtifactModel> getProductArtifacts(List<MavenArtifactModel> models) {
+  private List<MavenArtifactVersion> getProductArtifacts(List<MavenArtifactVersion> models) {
     return models.stream().filter(model -> !model.getId().isAdditionalVersion())
         .collect(Collectors.toCollection(ArrayList::new));
   }
 
-  private List<MavenArtifactModel> getAdditionalProductArtifacts(List<MavenArtifactModel> models) {
+  private List<MavenArtifactVersion> getAdditionalProductArtifacts(List<MavenArtifactVersion> models) {
     return models.stream().filter(model -> model.getId().isAdditionalVersion())
         .collect(Collectors.toCollection(ArrayList::new));
   }

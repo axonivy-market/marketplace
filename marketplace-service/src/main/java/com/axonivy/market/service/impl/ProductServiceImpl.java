@@ -7,7 +7,7 @@ import com.axonivy.market.constants.MetaConstants;
 import com.axonivy.market.criteria.ProductSearchCriteria;
 import com.axonivy.market.entity.GitHubRepoMeta;
 import com.axonivy.market.entity.Image;
-import com.axonivy.market.entity.MavenArtifactModel;
+import com.axonivy.market.entity.MavenArtifactVersion;
 import com.axonivy.market.entity.Product;
 import com.axonivy.market.entity.ProductJsonContent;
 import com.axonivy.market.entity.ProductModuleContent;
@@ -97,7 +97,7 @@ public class ProductServiceImpl implements ProductService {
   private final MetadataService metadataService;
   private final ProductMarketplaceDataService productMarketplaceDataService;
   private final ProductMarketplaceDataRepository productMarketplaceDataRepo;
-  private final MavenArtifactModelRepository mavenArtifactModelRepository;
+  private final MavenArtifactVersionRepository mavenArtifactVersionRepository;
   private final ArtifactRepository artifactRepo;
   private GHCommit lastGHCommit;
   private final VersionService versionService;
@@ -113,7 +113,7 @@ public class ProductServiceImpl implements ProductService {
       ProductContentService productContentService, MetadataService metadataService,
       ProductMarketplaceDataService productMarketplaceDataService, ExternalDocumentService externalDocumentService,
       ProductMarketplaceDataRepository productMarketplaceDataRepo,
-      MavenArtifactModelRepository mavenArtifactModelRepository, ArtifactRepository artifactRepo,
+      MavenArtifactVersionRepository mavenArtifactVersionRepository, ArtifactRepository artifactRepo,
       VersionService versionService) {
     this.productRepo = productRepo;
     this.productModuleContentRepo = productModuleContentRepo;
@@ -130,7 +130,7 @@ public class ProductServiceImpl implements ProductService {
     this.productMarketplaceDataService = productMarketplaceDataService;
     this.externalDocumentService = externalDocumentService;
     this.productMarketplaceDataRepo = productMarketplaceDataRepo;
-    this.mavenArtifactModelRepository = mavenArtifactModelRepository;
+    this.mavenArtifactVersionRepository = mavenArtifactVersionRepository;
     this.artifactRepo = artifactRepo;
     this.versionService = versionService;
   }
@@ -619,10 +619,10 @@ public class ProductServiceImpl implements ProductService {
     List<String> versions;
     String version = StringUtils.EMPTY;
 
-    List<MavenArtifactModel> mavenArtifactModels = mavenArtifactModelRepository.findByProductId(id);
+    List<MavenArtifactVersion> mavenArtifactVersions = mavenArtifactVersionRepository.findByProductId(id);
 
-    if (ObjectUtils.isNotEmpty(mavenArtifactModels)) {
-      versions = VersionUtils.extractAllVersions(mavenArtifactModels, BooleanUtils.isTrue(isShowDevVersion),
+    if (ObjectUtils.isNotEmpty(mavenArtifactVersions)) {
+      versions = VersionUtils.extractAllVersions(mavenArtifactVersions, BooleanUtils.isTrue(isShowDevVersion),
           StringUtils.EMPTY);
       version = CollectionUtils.firstElement(versions);
     }
@@ -685,7 +685,7 @@ public class ProductServiceImpl implements ProductService {
           ProductFactory.transferComputedPersistedDataToProduct(foundProduct, product);
           imageRepo.deleteAllByProductId(foundProduct.getId());
           metadataRepo.deleteAllByProductId(foundProduct.getId());
-          mavenArtifactModelRepository.deleteAllByProductId(foundProduct.getId());
+          mavenArtifactVersionRepository.deleteAllByProductId(foundProduct.getId());
           productModuleContentRepo.deleteAllByProductId(foundProduct.getId());
           productJsonContentRepo.deleteAllByProductId(foundProduct.getId());
           productRepo.delete(foundProduct);

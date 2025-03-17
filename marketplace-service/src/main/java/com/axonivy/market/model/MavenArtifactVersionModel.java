@@ -1,6 +1,6 @@
 package com.axonivy.market.model;
 
-import com.axonivy.market.entity.MavenArtifactModel;
+import com.axonivy.market.entity.MavenArtifactVersion;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -16,5 +16,5 @@ import java.util.List;
 public class MavenArtifactVersionModel {
   @Schema(description = "Target version", example = "10.0.19")
   private String version;
-  private List<MavenArtifactModel> artifactsByVersion;
+  private List<MavenArtifactVersion> artifactsByVersion;
 }

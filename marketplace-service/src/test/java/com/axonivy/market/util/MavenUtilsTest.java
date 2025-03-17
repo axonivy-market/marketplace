@@ -6,7 +6,7 @@ import com.axonivy.market.entity.Artifact;
 import com.axonivy.market.constants.CommonConstants;
 import com.axonivy.market.constants.MavenConstants;
 import com.axonivy.market.constants.ProductJsonConstants;
-import com.axonivy.market.entity.MavenArtifactModel;
+import com.axonivy.market.entity.MavenArtifactVersion;
 import com.axonivy.market.entity.Metadata;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.ObjectUtils;
@@ -127,10 +127,10 @@ class MavenUtilsTest extends BaseSetup {
   }
 
   @Test
-  void testBuildMavenArtifactModelFromMetadata() {
+  void testBuildMavenArtifactVersionFromMetadata() {
     Metadata mocKMetadata = buildMockMetadata();
     mocKMetadata.setSnapshotVersionValue("20241111-111111");
-    MavenArtifactModel result = MavenUtils.buildMavenArtifactModelFromMetadata(MOCK_SNAPSHOT_VERSION,
+    MavenArtifactVersion result = MavenUtils.buildMavenArtifactVersionFromMetadata(MOCK_SNAPSHOT_VERSION,
         mocKMetadata);
     Assertions.assertEquals(
         "https://maven.axonivy.com/com/axonivy/util/bpmn-statistic/10.0.10-SNAPSHOT/bpmn-statistic-20241111-111111.zip",

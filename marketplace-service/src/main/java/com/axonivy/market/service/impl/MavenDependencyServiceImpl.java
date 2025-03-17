@@ -3,10 +3,10 @@ package com.axonivy.market.service.impl;
 import com.axonivy.market.bo.DownloadOption;
 import com.axonivy.market.entity.MavenDependency;
 import com.axonivy.market.constants.ProductJsonConstants;
-import com.axonivy.market.entity.MavenArtifactModel;
+import com.axonivy.market.entity.MavenArtifactVersion;
 import com.axonivy.market.entity.Product;
 import com.axonivy.market.entity.ProductDependency;
-import com.axonivy.market.repository.MavenArtifactModelRepository;
+import com.axonivy.market.repository.MavenArtifactVersionRepository;
 import com.axonivy.market.repository.ProductDependencyRepository;
 import com.axonivy.market.repository.ProductRepository;
 import com.axonivy.market.service.FileDownloadService;
@@ -47,7 +47,7 @@ public class MavenDependencyServiceImpl implements MavenDependencyService {
   final ProductRepository productRepository;
   final ProductDependencyRepository productDependencyRepository;
   final FileDownloadService fileDownloadService;
-  final MavenArtifactModelRepository mavenArtifactModelRepository;
+  final MavenArtifactVersionRepository mavenArtifactVersionRepository;
 
   private static Model convertPomToModel(File pomFile) {
     try (var inputStream = new FileInputStream(pomFile)) {
@@ -61,7 +61,7 @@ public class MavenDependencyServiceImpl implements MavenDependencyService {
   /**
    * The job will find all data in {@link MavenArtifactVersion} table:
    * * Base on version of product and then loop the artifacts:
-   * ** Download the artifact from maven repo by {@link MavenArtifactModel#getDownloadUrl()} to collect
+   * ** Download the artifact from maven repo by {@link MavenArtifactVersion#getDownloadUrl()} to collect
    * dependencies in type IAR in pom.xml file.
    * ** If found, system will find that dependency by ID in the MavenArtifactVersion table:
    * *** Must loop over ProductArtifactsByVersion and AdditionalArtifactsByVersion property
@@ -75,7 +75,7 @@ public class MavenDependencyServiceImpl implements MavenDependencyService {
   public int syncIARDependenciesForProducts(Boolean resetSync) {
     int totalSyncedProductIds = 0;
     for (String productId : getMissingProductIds(resetSync)) {
-      List<MavenArtifactModel> mavenArtifactVersion = mavenArtifactModelRepository.findByProductId(productId)
+      List<MavenArtifactVersion> mavenArtifactVersion = mavenArtifactVersionRepository.findByProductId(productId)
           .stream()
           .sorted(Comparator.comparing(artifactModel -> artifactModel.getId().isAdditionalVersion()))
           .collect(Collectors.toCollection(ArrayList::new));
@@ -103,29 +103,29 @@ public class MavenDependencyServiceImpl implements MavenDependencyService {
   }
 
   private List<MavenDependency> collectIARDependenciesByArtifactVersion(String productId,
-      List<MavenArtifactModel> productArtifactsByVersion) {
+      List<MavenArtifactVersion> productArtifactsByVersion) {
     List<MavenDependency> dependenciesOfArtifact = new ArrayList<>();
-    List<MavenArtifactModel> mavenArtifactModels = productArtifactsByVersion.stream()
+    List<MavenArtifactVersion> mavenArtifactVersions = productArtifactsByVersion.stream()
         .filter(Objects::nonNull)
         .filter(filterNotDocArtifactOrZipArtifact())
         .toList();
 
-    for (MavenArtifactModel mavenArtifactModel : mavenArtifactModels) {
+    for (MavenArtifactVersion mavenArtifactVersion : mavenArtifactVersions) {
       MavenDependency mavenDependency = computeIARDependencies(productId,
-          mavenArtifactModel.getId().getProductVersion(),
-          mavenArtifactModel);
+          mavenArtifactVersion.getId().getProductVersion(),
+          mavenArtifactVersion);
       dependenciesOfArtifact.add(mavenDependency);
     }
     return dependenciesOfArtifact;
   }
 
 
-  private static Predicate<MavenArtifactModel> filterNotDocArtifactOrZipArtifact() {
+  private static Predicate<MavenArtifactVersion> filterNotDocArtifactOrZipArtifact() {
     return artifact -> !StringUtils.endsWith(artifact.getId().getArtifactId(), DOC)
         && !StringUtils.endsWith(artifact.getDownloadUrl(), DEFAULT_PRODUCT_FOLDER_TYPE);
   }
 
-  private MavenDependency computeIARDependencies(String productId, String version, MavenArtifactModel artifact) {
+  private MavenDependency computeIARDependencies(String productId, String version, MavenArtifactVersion artifact) {
     var artifactId = artifact.getId().getArtifactId();
     List<Dependency> dependencyModels = extractMavenPOMDependencies(artifact);
     List<MavenDependency> mavenDependencies = new ArrayList<>();
@@ -144,7 +144,7 @@ public class MavenDependencyServiceImpl implements MavenDependencyService {
       List<Dependency> dependencyModels) {
     for (var dependencyModel : dependencyModels) {
       MavenDependency dependency = MavenDependency.builder().artifactId(dependencyModel.getArtifactId()).build();
-      MavenArtifactModel dependencyArtifact = findDownloadURLForDependency(productId, version, dependencyModel);
+      MavenArtifactVersion dependencyArtifact = findDownloadURLForDependency(productId, version, dependencyModel);
       if (dependencyArtifact != null && StringUtils.isNotBlank(dependencyArtifact.getDownloadUrl())) {
         dependency.setDownloadUrl(dependencyArtifact.getDownloadUrl());
         mavenDependencies.add(dependency);
@@ -214,9 +214,9 @@ public class MavenDependencyServiceImpl implements MavenDependencyService {
         .toList();
   }
 
-  private MavenArtifactModel findDownloadURLForDependency(String productId, String version, Dependency dependency) {
+  private MavenArtifactVersion findDownloadURLForDependency(String productId, String version, Dependency dependency) {
     String requestArtifactId = dependency.getArtifactId();
-    List<MavenArtifactModel> mavenArtifactVersion = mavenArtifactModelRepository.findByProductId(productId)
+    List<MavenArtifactVersion> mavenArtifactVersion = mavenArtifactVersionRepository.findByProductId(productId)
         .stream()
         .sorted(Comparator.comparing(artifactModel -> artifactModel.getId().isAdditionalVersion()))
         .collect(Collectors.toCollection(ArrayList::new));
@@ -228,8 +228,8 @@ public class MavenDependencyServiceImpl implements MavenDependencyService {
     return filterMavenArtifactVersionByArtifactId(version, requestArtifactId, mavenArtifactVersion);
   }
 
-  private MavenArtifactModel filterMavenArtifactVersionByArtifactId(String version, String compareArtifactId,
-      List<MavenArtifactModel> artifactsByVersion) {
+  private MavenArtifactVersion filterMavenArtifactVersionByArtifactId(String version, String compareArtifactId,
+      List<MavenArtifactVersion> artifactsByVersion) {
     return artifactsByVersion.stream()
         .filter(artifact -> artifact.getId().getProductVersion().equals(version) &&
             artifact.getId().getArtifactId().equals(compareArtifactId))
@@ -237,7 +237,7 @@ public class MavenDependencyServiceImpl implements MavenDependencyService {
         .orElse(null);
   }
 
-  private List<Dependency> extractMavenPOMDependencies(MavenArtifactModel artifact) {
+  private List<Dependency> extractMavenPOMDependencies(MavenArtifactVersion artifact) {
     List<Dependency> dependencies = new ArrayList<>();
     String location = downloadArtifactToLocal(artifact);
     if (StringUtils.isNotBlank(location)) {
@@ -253,7 +253,7 @@ public class MavenDependencyServiceImpl implements MavenDependencyService {
     return dependencies;
   }
 
-  private String downloadArtifactToLocal(MavenArtifactModel artifact) {
+  private String downloadArtifactToLocal(MavenArtifactVersion artifact) {
     var location = "";
     try {
       var unzipPath = String.join(File.separator, DATA_DIR, WORK_DIR, MAVEN_DIR, artifact.getId().getArtifactId());

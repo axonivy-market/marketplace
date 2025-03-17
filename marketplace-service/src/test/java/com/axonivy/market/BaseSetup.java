@@ -212,13 +212,13 @@ public class BaseSetup {
         MOCK_ARTIFACT_ID).type(MavenConstants.DEFAULT_PRODUCT_FOLDER_TYPE).productId(MOCK_PRODUCT_ID).build();
   }
 
-  protected List<MavenArtifactModel> getMockMavenArtifactVersion() {
+  protected List<MavenArtifactVersion> getMockMavenArtifactVersion() {
     return new ArrayList<>();
   }
 
-  protected List<MavenArtifactModel> getMockMavenArtifactVersionWithData() {
-    List<MavenArtifactModel> mockMavenArtifactVersion = getMockMavenArtifactVersion();
-    mockMavenArtifactVersion.add(mockMavenArtifactModel(MOCK_SNAPSHOT_VERSION, null));
+  protected List<MavenArtifactVersion> getMockMavenArtifactVersionWithData() {
+    List<MavenArtifactVersion> mockMavenArtifactVersion = getMockMavenArtifactVersion();
+    mockMavenArtifactVersion.add(mockMavenArtifactVersion(MOCK_SNAPSHOT_VERSION, null));
     return mockMavenArtifactVersion;
   }
 
@@ -258,9 +258,9 @@ public class BaseSetup {
     return mockMetadata;
   }
 
-  protected MavenArtifactModel getMockMavenArtifactModelWithDownloadUrl() {
+  protected MavenArtifactVersion getMockMavenArtifactVersionWithDownloadUrl() {
     MavenArtifactKey key = MavenArtifactKey.builder().artifactId(MOCK_ARTIFACT_ID).build();
-    return MavenArtifactModel.builder().name(MOCK_PRODUCT_NAME)
+    return MavenArtifactVersion.builder().name(MOCK_PRODUCT_NAME)
         .id(key)
         .downloadUrl(MOCK_DOWNLOAD_URL).build();
   }
@@ -377,21 +377,21 @@ public class BaseSetup {
         .build();
   }
 
-  protected MavenArtifactModel mockMavenArtifactModel(String version, String artifactId) {
+  protected MavenArtifactVersion mockMavenArtifactVersion(String version, String artifactId) {
     MavenArtifactKey mavenArtifactKey = MavenArtifactKey.builder()
         .productVersion(version)
         .artifactId(artifactId)
         .build();
 
-    return MavenArtifactModel.builder().id(mavenArtifactKey).build();
+    return MavenArtifactVersion.builder().id(mavenArtifactKey).build();
   }
 
-  protected MavenArtifactModel mockAdditionalMavenArtifactModel(String version, String artifactId) {
+  protected MavenArtifactVersion mockAdditionalMavenArtifactVersion(String version, String artifactId) {
     MavenArtifactKey mavenArtifactKey = MavenArtifactKey.builder()
         .productVersion(version)
         .artifactId(artifactId)
         .isAdditionalVersion(true)
         .build();
-    return MavenArtifactModel.builder().id(mavenArtifactKey).build();
+    return MavenArtifactVersion.builder().id(mavenArtifactKey).build();
   }
 }

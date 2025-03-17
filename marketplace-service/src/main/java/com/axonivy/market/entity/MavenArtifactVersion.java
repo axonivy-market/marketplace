@@ -1,7 +1,6 @@
 package com.axonivy.market.entity;
 
 import com.axonivy.market.model.MavenArtifactKey;
-import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.persistence.*;
@@ -13,7 +12,6 @@ import lombok.Setter;
 
 import java.io.Serial;
 import java.io.Serializable;
-import java.util.UUID;
 
 import static com.axonivy.market.constants.EntityConstants.*;
 
@@ -23,13 +21,13 @@ import static com.axonivy.market.constants.EntityConstants.*;
 @Getter
 @Builder
 @Entity
-@Table(name = MAVEN_ARTIFACT_MODEL)
-public class MavenArtifactModel implements Serializable {
+@Table(name = MAVEN_ARTIFACT_VERSION)
+public class MavenArtifactVersion implements Serializable {
   @Serial
   private static final long serialVersionUID = 1L;
 
   @EmbeddedId
-  private MavenArtifactKey id;  // Use composite key
+  private MavenArtifactKey id;
 
   @Schema(description = "Display name and type of artifact", example = "Adobe Acrobat Sign Connector (.iar)")
   private String name;

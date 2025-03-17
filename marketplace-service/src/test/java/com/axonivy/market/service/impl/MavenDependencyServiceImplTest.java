@@ -1,10 +1,10 @@
 package com.axonivy.market.service.impl;
 
 import com.axonivy.market.BaseSetup;
-import com.axonivy.market.entity.MavenArtifactModel;
+import com.axonivy.market.entity.MavenArtifactVersion;
 import com.axonivy.market.entity.Product;
 import com.axonivy.market.entity.ProductDependency;
-import com.axonivy.market.repository.MavenArtifactModelRepository;
+import com.axonivy.market.repository.MavenArtifactVersionRepository;
 import com.axonivy.market.repository.ProductDependencyRepository;
 import com.axonivy.market.repository.ProductRepository;
 import com.axonivy.market.service.FileDownloadService;
@@ -15,9 +15,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -34,7 +32,7 @@ class MavenDependencyServiceImplTest extends BaseSetup {
   @Mock
   ProductDependencyRepository productDependencyRepository;
   @Mock
-  MavenArtifactModelRepository mavenArtifactVersionRepository;
+  MavenArtifactVersionRepository mavenArtifactVersionRepository;
   @InjectMocks
   MavenDependencyServiceImpl mavenDependencyService;
 
@@ -49,7 +47,7 @@ class MavenDependencyServiceImplTest extends BaseSetup {
     ProductDependency mockProductDependency = ProductDependency.builder().productId(SAMPLE_PRODUCT_ID)
         .dependenciesOfArtifact(List.of())
         .build();
-    List<MavenArtifactModel> mavenArtifactVersionMock = createMavenArtifactVersionMock(isProductArtifact);
+    List<MavenArtifactVersion> mavenArtifactVersionMock = createMavenArtifactVersionMock(isProductArtifact);
     when(productRepository.findAll()).thenReturn(createPageProductsMock().getContent());
     when(productDependencyRepository.findAllWithDependencies()).thenReturn(List.of(mockProductDependency));
     List<Product> mockProducts = createPageProductsMock().getContent().stream()
@@ -70,18 +68,18 @@ class MavenDependencyServiceImplTest extends BaseSetup {
     assertTrue(totalSynced > 0, "Expected at least one product was synced but service returned nothing");
   }
 
-  private List<MavenArtifactModel> createMavenArtifactVersionMock(boolean isProductArtifact) {
-    List<MavenArtifactModel> mavenArtifactModelsMock = getMockMavenArtifactVersionWithData();
-    for (MavenArtifactModel mavenArtifactModel : mavenArtifactModelsMock) {
-      mavenArtifactModel.setProductId(SAMPLE_PRODUCT_ID);
+  private List<MavenArtifactVersion> createMavenArtifactVersionMock(boolean isProductArtifact) {
+    List<MavenArtifactVersion> mavenArtifactVersionsMock = getMockMavenArtifactVersionWithData();
+    for (MavenArtifactVersion mavenArtifactVersion : mavenArtifactVersionsMock) {
+      mavenArtifactVersion.setProductId(SAMPLE_PRODUCT_ID);
     }
 
     if (isProductArtifact) {
-      mavenArtifactModelsMock.add(mockMavenArtifactModel(MOCK_SNAPSHOT_VERSION,MOCK_ARTIFACT_ID));
+      mavenArtifactVersionsMock.add(mockMavenArtifactVersion(MOCK_SNAPSHOT_VERSION,MOCK_ARTIFACT_ID));
     } else {
-      mavenArtifactModelsMock.add(mockAdditionalMavenArtifactModel(MOCK_SNAPSHOT_VERSION,MOCK_ARTIFACT_ID));
+      mavenArtifactVersionsMock.add(mockAdditionalMavenArtifactVersion(MOCK_SNAPSHOT_VERSION,MOCK_ARTIFACT_ID));
     }
-    return mavenArtifactModelsMock;
+    return mavenArtifactVersionsMock;
   }
 
   @Test

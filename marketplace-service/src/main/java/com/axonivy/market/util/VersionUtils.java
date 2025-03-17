@@ -3,7 +3,7 @@ package com.axonivy.market.util;
 import com.axonivy.market.comparator.LatestVersionComparator;
 import com.axonivy.market.comparator.MavenVersionComparator;
 import com.axonivy.market.constants.CommonConstants;
-import com.axonivy.market.entity.MavenArtifactModel;
+import com.axonivy.market.entity.MavenArtifactVersion;
 import com.axonivy.market.entity.Metadata;
 import com.axonivy.market.model.MavenArtifactKey;
 import lombok.AccessLevel;
@@ -156,10 +156,10 @@ public class VersionUtils {
     return version.substring(0, version.indexOf(DOT_SEPARATOR));
   }
 
-  public static List<String> extractAllVersions(List<MavenArtifactModel> existingMavenArtifactVersion,
+  public static List<String> extractAllVersions(List<MavenArtifactVersion> existingMavenArtifactVersion,
       boolean isShowDevVersion, String designerVersion) {
     Set<String> versions = existingMavenArtifactVersion.stream()
-        .map(MavenArtifactModel::getId)
+        .map(MavenArtifactVersion::getId)
         .map(MavenArtifactKey::getProductVersion)
         .collect(Collectors.toSet());
 

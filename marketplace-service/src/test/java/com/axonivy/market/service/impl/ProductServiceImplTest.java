@@ -5,7 +5,7 @@ import com.axonivy.market.constants.GitHubConstants;
 import com.axonivy.market.constants.ProductJsonConstants;
 import com.axonivy.market.criteria.ProductSearchCriteria;
 import com.axonivy.market.entity.GitHubRepoMeta;
-import com.axonivy.market.entity.MavenArtifactModel;
+import com.axonivy.market.entity.MavenArtifactVersion;
 import com.axonivy.market.entity.Metadata;
 import com.axonivy.market.entity.Product;
 import com.axonivy.market.entity.ProductMarketplaceData;
@@ -130,7 +130,7 @@ class ProductServiceImplTest extends BaseSetup {
   @Mock
   private ArtifactRepository artifactRepo;
   @Mock
-  private MavenArtifactModelRepository mavenArtifactModelRepository;
+  private MavenArtifactVersionRepository mavenArtifactVersionRepository;
   @Spy
   @InjectMocks
   private ProductServiceImpl productService;
@@ -421,8 +421,8 @@ class ProductServiceImplTest extends BaseSetup {
 
   @Test
   void testFetchProductDetail() {
-    List<MavenArtifactModel> mockMavenArtifactVersion = getMockMavenArtifactVersionWithData();
-    when(mavenArtifactModelRepository.findByProductId(MOCK_PRODUCT_ID)).thenReturn(mockMavenArtifactVersion);
+    List<MavenArtifactVersion> mockMavenArtifactVersion = getMockMavenArtifactVersionWithData();
+    when(mavenArtifactVersionRepository.findByProductId(MOCK_PRODUCT_ID)).thenReturn(mockMavenArtifactVersion);
     when(productRepo.getProductByIdAndVersion(MOCK_PRODUCT_ID, MOCK_SNAPSHOT_VERSION)).thenReturn(null);
     Product result = productService.fetchProductDetail(MOCK_PRODUCT_ID, true);
     assertNull(result);
@@ -430,8 +430,8 @@ class ProductServiceImplTest extends BaseSetup {
 
   @Test
   void testGetCompatibilityRangeAfterFetchProductDetail() {
-    List<MavenArtifactModel> mockMavenArtifactVersion = getMockMavenArtifactVersionWithData();
-    when(mavenArtifactModelRepository.findByProductId(MOCK_PRODUCT_ID)).thenReturn(mockMavenArtifactVersion);
+    List<MavenArtifactVersion> mockMavenArtifactVersion = getMockMavenArtifactVersionWithData();
+    when(mavenArtifactVersionRepository.findByProductId(MOCK_PRODUCT_ID)).thenReturn(mockMavenArtifactVersion);
 
     when(productRepo.getProductByIdAndVersion(MOCK_PRODUCT_ID, MOCK_SNAPSHOT_VERSION))
         .thenReturn(getMockProduct());
@@ -453,13 +453,14 @@ class ProductServiceImplTest extends BaseSetup {
 
   @Test
   void testGetProductByIdWithNewestReleaseVersion() {
-    List<MavenArtifactModel> mockMavenArtifactModels = getMockMavenArtifactVersionWithData();
+    List<MavenArtifactVersion> mockMavenArtifactVersions = getMockMavenArtifactVersionWithData();
     Product mockProduct = getMockProduct();
 
     try (MockedStatic<MavenUtils> mockUtils = Mockito.mockStatic(MavenUtils.class);
         MockedStatic<VersionUtils> mockVersionUtils = Mockito.mockStatic(VersionUtils.class)) {
-      mockUtils.when(() -> mavenArtifactModelRepository.findByProductId(MOCK_PRODUCT_ID)).thenReturn( mockMavenArtifactModels);
-      when(VersionUtils.extractAllVersions(mockMavenArtifactModels, true, StringUtils.EMPTY))
+      mockUtils.when(() -> mavenArtifactVersionRepository.findByProductId(MOCK_PRODUCT_ID)).thenReturn(
+          mockMavenArtifactVersions);
+      when(VersionUtils.extractAllVersions(mockMavenArtifactVersions, true, StringUtils.EMPTY))
           .thenReturn(List.of(MOCK_SNAPSHOT_VERSION));
 
       when(productRepo.getProductByIdAndVersion(MOCK_PRODUCT_ID, MOCK_SNAPSHOT_VERSION)).thenReturn(mockProduct);
@@ -469,7 +470,7 @@ class ProductServiceImplTest extends BaseSetup {
       Product result = productService.getProductByIdWithNewestReleaseVersion(MOCK_PRODUCT_ID, true);
       assertEquals(mockProduct, result);
 
-      when(mavenArtifactModelRepository.findByProductId(MOCK_PRODUCT_ID)).thenReturn(new ArrayList<>());
+      when(mavenArtifactVersionRepository.findByProductId(MOCK_PRODUCT_ID)).thenReturn(new ArrayList<>());
       when(productRepo.getReleasedVersionsById(MOCK_PRODUCT_ID)).thenReturn(List.of(MOCK_SNAPSHOT_VERSION));
       when(productRepo.getProductByIdAndVersion(MOCK_PRODUCT_ID, MOCK_SNAPSHOT_VERSION)).thenReturn(mockProduct);
       when(VersionUtils.getVersionsToDisplay(any(),any(),any())).thenReturn(List.of(MOCK_SNAPSHOT_VERSION));
@@ -483,7 +484,7 @@ class ProductServiceImplTest extends BaseSetup {
     Product mockProduct = getMockProduct();
     when(productJsonContentRepo.findByProductIdAndVersion(MOCK_PRODUCT_ID, MOCK_SNAPSHOT_VERSION))
         .thenReturn(List.of(getMockProductJsonContentContainMavenDropins()));
-    when(mavenArtifactModelRepository.findByProductId(MOCK_PRODUCT_ID)).thenReturn(new ArrayList<>());
+    when(mavenArtifactVersionRepository.findByProductId(MOCK_PRODUCT_ID)).thenReturn(new ArrayList<>());
     when(productRepo.getReleasedVersionsById(MOCK_PRODUCT_ID)).thenReturn(List.of(MOCK_SNAPSHOT_VERSION));
     when(productRepo.getProductByIdAndVersion(MOCK_PRODUCT_ID, MOCK_SNAPSHOT_VERSION)).thenReturn(mockProduct);
 

@@ -6,7 +6,7 @@ import com.axonivy.market.comparator.MavenVersionComparator;
 import com.axonivy.market.constants.CommonConstants;
 import com.axonivy.market.constants.MavenConstants;
 import com.axonivy.market.constants.ProductJsonConstants;
-import com.axonivy.market.entity.MavenArtifactModel;
+import com.axonivy.market.entity.MavenArtifactVersion;
 import com.axonivy.market.entity.Metadata;
 import com.axonivy.market.entity.ProductJsonContent;
 import com.axonivy.market.model.MavenArtifactKey;
@@ -34,7 +34,6 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
-import java.util.stream.IntStream;
 
 import static com.axonivy.market.constants.MavenConstants.DEFAULT_IVY_MAVEN_BASE_URL;
 
@@ -247,7 +246,7 @@ public class MavenUtils {
         metadata.getProductId()).name(metadata.getName()).isProductArtifact(metadata.isProductArtifact()).build();
   }
 
-  public static MavenArtifactModel buildMavenArtifactModelFromMetadata(String version, Metadata metadata) {
+  public static MavenArtifactVersion buildMavenArtifactVersionFromMetadata(String version, Metadata metadata) {
     String downloadUrl = buildDownloadUrl(metadata.getArtifactId(), version, metadata.getType(), metadata.getRepoUrl(),
         metadata.getGroupId(), metadata.getSnapshotVersionValue());
 
@@ -257,7 +256,7 @@ public class MavenUtils {
         .isAdditionalVersion(!metadata.isProductArtifact())
         .build();
 
-    return MavenArtifactModel.builder()
+    return MavenArtifactVersion.builder()
         .id(mavenArtifactKey)
         .name(metadata.getName())
         .downloadUrl(downloadUrl)
