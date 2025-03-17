@@ -44,6 +44,7 @@ import { VersionDownload } from '../../../../shared/models/version-download.mode
 
 const showDevVersionCookieName = 'showDevVersions';
 const ARTIFACT_ZIP_URL = 'artifact/zip-file';
+const VERSION_DOWNLOAD = 'version-download';
 const TARGET_BLANK = '_blank';
 const HTTP = 'http';
 const DOC = '-doc';
@@ -258,54 +259,62 @@ export class ProductDetailVersionActionComponent implements AfterViewInit {
   }
 
   downloadArtifact(): void {
+    let downloadUrl = '';
+
     if (!this.isCheckedAppForEngine || this.selectedArtifactId?.endsWith(DOC) || this.selectedArtifact?.endsWith(ZIP)) {
-      let marketplaceServiceUrl = environment.apiUrl;
-      if (!marketplaceServiceUrl.startsWith(HTTP)) {
-        marketplaceServiceUrl = window.location.origin.concat(marketplaceServiceUrl);
-      }
-      const downloadUrl = `${marketplaceServiceUrl}/api/product-marketplace-data/version-download/${this.productId}?url=${this.selectedArtifact!}`;
-      this.httpClient.get<VersionDownload>(downloadUrl).subscribe(
-        (response) => {
-          if (!response || !response.fileData) {
-            console.error('No file data received');
-            return;
-          }
-          this.installationCount.emit(response.installationCount);
-
-          const fileName = this.selectedArtifact!.substring(this.selectedArtifact!.lastIndexOf("/") + 1);
-          const byteCharacters = atob(response.fileData);
-          const byteNumbers = new Array(byteCharacters.length);
-          for (let i = 0; i < byteCharacters.length; i++) {
-            byteNumbers[i] = byteCharacters.charCodeAt(i);
-          }
-          const byteArray = new Uint8Array(byteNumbers);
-          const blob = new Blob([byteArray], { type: "application/octet-stream" });
-
-          const blobUrl = URL.createObjectURL(blob);
-
-          const a = document.createElement("a");
-          a.href = blobUrl;
-          a.download = fileName;
-          document.body.appendChild(a);
-          a.click();
-          document.body.removeChild(a);
-
-          setTimeout(() => URL.revokeObjectURL(blobUrl), 10000);
-        });
+      const params = new HttpParams().set('url', this.selectedArtifact ?? '');
+      downloadUrl = `${this.getMarketplaceServiceUrl()}/${API_URI.PRODUCT_MARKETPLACE_DATA}/${VERSION_DOWNLOAD}/${this.productId}?${params.toString()}`;
+      this.fetchAndDownloadArtifact(downloadUrl, this.selectedArtifact!.substring(this.selectedArtifact!.lastIndexOf("/") + 1));
     } else if (this.isCheckedAppForEngine) {
-      let marketplaceServiceUrl = environment.apiUrl;
-      if (!marketplaceServiceUrl.startsWith(HTTP)) {
-        marketplaceServiceUrl = window.location.origin.concat(marketplaceServiceUrl);
-      }
       const version = this.selectedVersion().replace(VERSION.displayPrefix, '');
       const params = new HttpParams()
         .set(ROUTER.VERSION, version)
-      window.open(`${marketplaceServiceUrl}/${API_URI.PRODUCT_DETAILS}/${this.productId}/${ARTIFACT_ZIP_URL}?${params.toString()}`, TARGET_BLANK);
-      this.onUpdateInstallationCount();
+        .set(ROUTER.ARTIFACT, this.selectedArtifactId ?? '');
+        
+      downloadUrl = `${this.getMarketplaceServiceUrl()}/${API_URI.PRODUCT_DETAILS}/${this.productId}/${ARTIFACT_ZIP_URL}?${params.toString()}`;
+      this.fetchAndDownloadArtifact(downloadUrl, `${this.selectedArtifactId}-app-${version}.zip`);
     } else {
       this.onUpdateInstallationCount();
-      return;
     }
+  }
+
+  private getMarketplaceServiceUrl(): string {
+    let marketplaceServiceUrl = environment.apiUrl;
+    if (!marketplaceServiceUrl.startsWith(HTTP)) {
+      marketplaceServiceUrl = window.location.origin.concat(marketplaceServiceUrl);
+    }
+    return marketplaceServiceUrl;
+  }
+
+  private fetchAndDownloadArtifact(url: string, fileName: string): void {
+    this.httpClient.get<VersionDownload>(url).subscribe(
+      (response) => {
+        if (response.fileData) {
+        this.installationCount.emit(response.installationCount);
+        this.downloadFile(response.fileData, fileName);
+      }
+    }
+    );
+  }
+
+  private downloadFile(base64Data: string, fileName: string): void {
+    const byteCharacters = atob(base64Data);
+    const byteNumbers = new Array(byteCharacters.length);
+    for (let i = 0; i < byteCharacters.length; i++) {
+      byteNumbers[i] = byteCharacters.charCodeAt(i);
+    }
+    const byteArray = new Uint8Array(byteNumbers);
+    const blob = new Blob([byteArray], { type: "application/octet-stream" });
+
+    const blobUrl = URL.createObjectURL(blob);
+
+    const a = document.createElement("a");
+    a.href = blobUrl;
+    a.download = fileName;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(blobUrl);
   }
 
   onUpdateInstallationCount(): void {

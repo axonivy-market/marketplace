@@ -18,13 +18,7 @@ import lombok.extern.log4j.Log4j2;
 import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.core.io.ByteArrayResource;
-import org.springframework.core.io.InputStreamResource;
-import org.springframework.http.HttpMethod;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
-import org.springframework.web.client.RestTemplate;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -90,8 +84,8 @@ public class ProductMarketplaceDataServiceImpl implements ProductMarketplaceData
       if (fileData == null || fileData.length == 0) {
         return null;
       }
-      int installationCount = updateInstallationCountForProduct(productId, null);
       String base64FileData = Base64.getEncoder().encodeToString(fileData);
+      int installationCount = updateInstallationCountForProduct(productId, null);
 
       return VersionDownload.builder().fileData(base64FileData.getBytes()).installationCount(installationCount).build();
     } catch (Exception e) {

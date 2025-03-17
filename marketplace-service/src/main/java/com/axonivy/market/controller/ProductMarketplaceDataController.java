@@ -13,11 +13,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
-import org.springframework.core.io.ByteArrayResource;
-import org.springframework.http.ContentDisposition;
-import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -31,9 +27,9 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.io.IOException;
 
-import static com.axonivy.market.constants.MavenConstants.APP_ZIP_FORMAT;
 import static com.axonivy.market.constants.RequestMappingConstants.*;
-import static com.axonivy.market.constants.RequestParamConstants.*;
+import static com.axonivy.market.constants.RequestParamConstants.DESIGNER_VERSION;
+import static com.axonivy.market.constants.RequestParamConstants.ID;
 import static org.springframework.http.HttpHeaders.AUTHORIZATION;
 
 @RestController
@@ -70,19 +66,14 @@ public class ProductMarketplaceDataController {
 
   @Operation(hidden = true)
   @GetMapping(VERSION_DOWNLOAD_BY_ID)
-  public ResponseEntity<VersionDownload> extractUrlFile(
+  public ResponseEntity<VersionDownload> extractArtifactUrl(
       @PathVariable(ID) String productId,
       @RequestParam(name = "url") String artifactUrl) throws IOException {
-    VersionDownload resource = productMarketplaceDataService.downloadArtifact(artifactUrl, productId);
+    VersionDownload result = productMarketplaceDataService.downloadArtifact(artifactUrl, productId);
 
-    if (resource == null) {
-      return ResponseEntity.status(HttpStatus.NO_CONTENT).body(null);
+    if (result == null) {
+      return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
-    return ResponseEntity.ok(resource);
+    return new ResponseEntity<>(result, HttpStatus.OK);
   }
-
-  private String getFileNameFromUrl(String artifactUrl) {
-    return artifactUrl.substring(artifactUrl.lastIndexOf("/") + 1);
-  }
-
 }

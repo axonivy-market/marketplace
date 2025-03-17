@@ -1,6 +1,7 @@
 package com.axonivy.market.controller;
 
 import com.axonivy.market.BaseSetup;
+import com.axonivy.market.bo.VersionDownload;
 import com.axonivy.market.enums.ErrorCode;
 import com.axonivy.market.github.service.GitHubService;
 import com.axonivy.market.model.ProductCustomSortRequest;
@@ -12,12 +13,12 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpStatus;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -48,6 +49,15 @@ class ProductMarketplaceDataControllerTest extends BaseSetup {
     var result = productMarketplaceDataController.syncInstallationCount(MOCK_PRODUCT_ID, MOCK_RELEASED_VERSION);
 
     assertEquals(1, result.getBody());
+  }
+
+  @Test
+  void testExtractArtifactUrl() throws IOException {
+    when(productMarketplaceDataService.downloadArtifact(MOCK_DOWNLOAD_URL, MOCK_PRODUCT_ID)).thenReturn(
+        new VersionDownload());
+    var result = productMarketplaceDataController.extractArtifactUrl(MOCK_PRODUCT_ID, MOCK_DOWNLOAD_URL);
+
+    assertNotNull(result);
   }
 
   private ProductCustomSortRequest createProductCustomSortRequestMock() {
