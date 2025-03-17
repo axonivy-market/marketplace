@@ -1,17 +1,10 @@
 package com.axonivy.market.entity;
 
+import com.axonivy.market.model.MavenArtifactKey;
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import io.swagger.v3.oas.annotations.media.Schema;
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
-import jakarta.persistence.PrePersist;
-import jakarta.persistence.Table;
-import jakarta.persistence.UniqueConstraint;
+import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -30,14 +23,13 @@ import static com.axonivy.market.constants.EntityConstants.*;
 @Getter
 @Builder
 @Entity
-@Table(name = MAVEN_ARTIFACT_MODEL, uniqueConstraints = @UniqueConstraint(columnNames = {"artifactId", "productVersion", "isAdditionalVersion"}))
+@Table(name = MAVEN_ARTIFACT_MODEL)
 public class MavenArtifactModel implements Serializable {
   @Serial
   private static final long serialVersionUID = 1L;
 
-  @Id
-  @GeneratedValue(strategy = GenerationType.UUID)
-  private String id;
+  @EmbeddedId
+  private MavenArtifactKey id;  // Use composite key
 
   @Schema(description = "Display name and type of artifact", example = "Adobe Acrobat Sign Connector (.iar)")
   private String name;
@@ -50,8 +42,5 @@ public class MavenArtifactModel implements Serializable {
   @JsonIgnore
   private boolean isInvalidArtifact;
 
-  private String artifactId;
-  private String productVersion;
   private String productId;
-  private boolean isAdditionalVersion;
 }

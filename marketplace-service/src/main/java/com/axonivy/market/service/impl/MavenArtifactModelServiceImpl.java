@@ -28,11 +28,11 @@ public class MavenArtifactModelServiceImpl implements MavenArtifactModelService 
     }
 
     List<MavenArtifactModel> productArtifactModels = mavenArtifactModels.stream()
-        .filter(model -> !model.isAdditionalVersion())
+        .filter(model -> !model.getId().isAdditionalVersion())
         .toList();
 
     List<MavenArtifactModel> additionalProductArtifactModel = mavenArtifactModels.stream()
-        .filter(MavenArtifactModel::isAdditionalVersion)
+        .filter(model -> model.getId().isAdditionalVersion())
         .toList();
 
     return new MavenModel(productArtifactModels, additionalProductArtifactModel);

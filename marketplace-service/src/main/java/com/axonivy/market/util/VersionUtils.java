@@ -6,6 +6,7 @@ import com.axonivy.market.constants.CommonConstants;
 import com.axonivy.market.entity.MavenArtifactModel;
 import com.axonivy.market.entity.MavenArtifactVersion;
 import com.axonivy.market.entity.Metadata;
+import com.axonivy.market.model.MavenArtifactKey;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import lombok.extern.log4j.Log4j2;
@@ -160,14 +161,14 @@ public class VersionUtils {
       boolean isShowDevVersion, String designerVersion) {
     Set<String> existingProductsArtifactByVersion = existingMavenArtifactVersion
         .stream()
-        .filter(model -> !model.isAdditionalVersion())
-        .map(MavenArtifactModel::getProductVersion)
+        .filter(model -> !model.getId().isAdditionalVersion())
+        .map(model -> model.getId().getProductVersion())
         .collect(Collectors.toSet());
 
     Set<String> existingAdditionalArtifactByVersion = existingMavenArtifactVersion
         .stream()
-        .filter(MavenArtifactModel::isAdditionalVersion)
-        .map(MavenArtifactModel::getProductVersion)
+        .filter(model -> model.getId().isAdditionalVersion())
+        .map(model -> model.getId().getProductVersion())
         .collect(Collectors.toSet());
 
     existingProductsArtifactByVersion.addAll(existingAdditionalArtifactByVersion);
@@ -182,7 +183,12 @@ public class VersionUtils {
     List<MavenArtifactModel> allArtifactVersions = new ArrayList<>();
     allArtifactVersions.addAll(productArtifactVersion);
     allArtifactVersions.addAll(additionalArtifactVersion);
-    List<String> versions = allArtifactVersions.stream().map(MavenArtifactModel::getProductVersion).distinct().toList();
+    
+    List<String> versions = allArtifactVersions.stream()
+        .map(MavenArtifactModel::getId)
+        .map(MavenArtifactKey::getProductVersion)
+        .distinct()
+        .toList();
 
     return getVersionsToDisplay(versions, isShowDevVersion, designerVersion);
   }

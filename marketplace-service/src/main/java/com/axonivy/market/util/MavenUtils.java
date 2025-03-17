@@ -9,6 +9,7 @@ import com.axonivy.market.constants.ProductJsonConstants;
 import com.axonivy.market.entity.MavenArtifactModel;
 import com.axonivy.market.entity.Metadata;
 import com.axonivy.market.entity.ProductJsonContent;
+import com.axonivy.market.model.MavenArtifactKey;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.AccessLevel;
@@ -190,31 +191,6 @@ public class MavenUtils {
             version) >= 0).findAny().orElse(null);
   }
 
-  public static MavenArtifactModel convertMavenArtifactToModel(Artifact artifact, String version) {
-    String artifactName = artifact.getName();
-    if (StringUtils.isBlank(artifactName)) {
-      artifactName = convertArtifactIdToName(artifact.getArtifactId());
-    }
-    artifact.setType(StringUtils.defaultIfBlank(artifact.getType(), ProductJsonConstants.DEFAULT_PRODUCT_TYPE));
-    artifactName = String.format(MavenConstants.ARTIFACT_NAME_FORMAT, artifactName, artifact.getType());
-    return MavenArtifactModel.builder()
-        .name(artifactName)
-        .downloadUrl(buildDownloadUrl(artifact, version))
-        .artifactId(artifact.getArtifactId())
-        .build();
-  }
-
-  public static List<MavenArtifactModel> convertArtifactsToModels(List<Artifact> artifacts, String version) {
-    List<MavenArtifactModel> results = new ArrayList<>();
-    if (!CollectionUtils.isEmpty(artifacts)) {
-      for (Artifact artifact : artifacts) {
-        MavenArtifactModel mavenArtifactModel = convertMavenArtifactToModel(artifact, version);
-        results.add(mavenArtifactModel);
-      }
-    }
-    return results;
-  }
-
   public static String buildSnapshotMetadataUrlFromArtifactInfo(String repoUrl, String groupId, String artifactId,
       String snapshotVersion) {
     if (StringUtils.isAnyBlank(groupId, artifactId)) {
@@ -275,13 +251,17 @@ public class MavenUtils {
     String downloadUrl = buildDownloadUrl(metadata.getArtifactId(), version, metadata.getType(), metadata.getRepoUrl(),
         metadata.getGroupId(), metadata.getSnapshotVersionValue());
 
-    return MavenArtifactModel.builder()
-        .name(metadata.getName())
-        .downloadUrl(downloadUrl)
-        .isInvalidArtifact(metadata.getArtifactId().contains(metadata.getGroupId()))
+    MavenArtifactKey mavenArtifactKey = MavenArtifactKey.builder()
         .artifactId(metadata.getArtifactId())
         .productVersion(version)
         .isAdditionalVersion(!metadata.isProductArtifact())
+        .build();
+
+    return MavenArtifactModel.builder()
+        .id(mavenArtifactKey)
+        .name(metadata.getName())
+        .downloadUrl(downloadUrl)
+        .isInvalidArtifact(metadata.getArtifactId().contains(metadata.getGroupId()))
         .productId(metadata.getProductId())
         .build();
   }

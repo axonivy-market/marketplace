@@ -115,7 +115,7 @@ public class MavenDependencyServiceImpl implements MavenDependencyService {
 
     for (MavenArtifactModel mavenArtifactModel : mavenArtifactModels) {
       computeIARDependencies(productId,
-          mavenArtifactModel.getProductVersion(),
+          mavenArtifactModel.getId().getProductVersion(),
           mavenArtifactModel,
           dependenciesOfArtifact
       );
@@ -124,13 +124,13 @@ public class MavenDependencyServiceImpl implements MavenDependencyService {
 
 
   private static Predicate<MavenArtifactModel> filterNotDocArtifactOrZipArtifact() {
-    return artifact -> !StringUtils.endsWith(artifact.getArtifactId(), DOC)
+    return artifact -> !StringUtils.endsWith(artifact.getId().getArtifactId(), DOC)
         && !StringUtils.endsWith(artifact.getDownloadUrl(), DEFAULT_PRODUCT_FOLDER_TYPE);
   }
 
   private void computeIARDependencies(String productId, String version, MavenArtifactModel artifact,
       List<MavenDependency> dependenciesOfArtifact) {
-    var artifactId = artifact.getArtifactId();
+    var artifactId = artifact.getId().getArtifactId();
     List<Dependency> dependencyModels = extractMavenPOMDependencies(artifact);
     List<MavenDependency> mavenDependencies = new ArrayList<>();
     log.info("Collect IAR dependencies for requested artifact {}", artifactId);
@@ -155,7 +155,7 @@ public class MavenDependencyServiceImpl implements MavenDependencyService {
         dependency.setDownloadUrl(dependencyArtifact.getDownloadUrl());
         mavenDependencies.add(dependency);
         // Check does dependency artifact has IAR lib, e.g: portal
-        log.info("Collect nested IAR dependencies for artifact {}", dependencyArtifact.getArtifactId());
+        log.info("Collect nested IAR dependencies for artifact {}", dependencyArtifact.getId().getArtifactId());
         List<Dependency> dependenciesOfParent = extractMavenPOMDependencies(dependencyArtifact);
         collectMavenDependenciesFor(productId, version, mavenDependencies, dependenciesOfParent);
       }
@@ -238,8 +238,8 @@ public class MavenDependencyServiceImpl implements MavenDependencyService {
   private MavenArtifactModel filterMavenArtifactVersionByArtifactId(String version, String compareArtifactId,
       List<MavenArtifactModel> artifactsByVersion) {
     return artifactsByVersion.stream()
-        .filter(artifact -> artifact.getProductVersion().equals(version) &&
-            artifact.getArtifactId().equals(compareArtifactId))
+        .filter(artifact -> artifact.getId().getProductVersion().equals(version) &&
+            artifact.getId().getArtifactId().equals(compareArtifactId))
         .findAny()
         .orElse(null);
   }
@@ -263,7 +263,7 @@ public class MavenDependencyServiceImpl implements MavenDependencyService {
   private String downloadArtifactToLocal(MavenArtifactModel artifact) {
     var location = "";
     try {
-      var unzipPath = String.join(File.separator, DATA_DIR, WORK_DIR, MAVEN_DIR, artifact.getArtifactId());
+      var unzipPath = String.join(File.separator, DATA_DIR, WORK_DIR, MAVEN_DIR, artifact.getId().getArtifactId());
       location = fileDownloadService.downloadAndUnzipFile(artifact.getDownloadUrl(),
           new DownloadOption(true, unzipPath));
     } catch (Exception e) {

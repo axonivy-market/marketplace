@@ -325,7 +325,7 @@ public class ProductServiceImpl implements ProductService {
     List<String> syncedProductIds = new ArrayList<>();
     var gitHubContentMap = axonIvyMarketRepoService.fetchAllMarketItems();
     for (Map.Entry<String, List<GHContent>> ghContentEntity : gitHubContentMap.entrySet()) {
-      if (!ghContentEntity.getKey().equals("market/utils/portal")) {
+      if (!ghContentEntity.getKey().equals("market/demos/connectivity")) {
         continue;
       }
       var product = new Product();

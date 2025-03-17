@@ -41,29 +41,11 @@ public class MetadataServiceImpl implements MetadataService {
   private final MetadataRepository metadataRepo;
   private final MavenArtifactModelRepository mavenArtifactModelRepo;
 
-
   public void updateMavenArtifactVersionWithModel(List<MavenArtifactModel> artifactModelsInVersions,
       String version, Metadata metadata) {
     MavenArtifactModel model = MavenUtils.buildMavenArtifactModelFromMetadata(version, metadata);
-    int existingModelIndex = findArtifactIndex(artifactModelsInVersions, metadata.getArtifactId(), version,
-        !metadata.isProductArtifact());
-
-    if (existingModelIndex != -1) {
-      model.setId(artifactModelsInVersions.get(existingModelIndex).getId());
-      artifactModelsInVersions.set(existingModelIndex, model);
-    } else {
-      artifactModelsInVersions.add(model);
-    }
-  }
-
-  private int findArtifactIndex(List<MavenArtifactModel> artifactModels, String artifactId, String productVersion,
-      boolean isProductArtifact) {
-    return IntStream.range(0, artifactModels.size())
-        .filter(i -> artifactModels.get(i).getArtifactId().equals(artifactId) &&
-            artifactModels.get(i).getProductVersion().equals(productVersion) &&
-            artifactModels.get(i).isAdditionalVersion() == isProductArtifact)
-        .findFirst()
-        .orElse(-1);
+    artifactModelsInVersions.removeIf( artifactModel -> artifactModel.getId().equals(model.getId()));
+    artifactModelsInVersions.add(model);
   }
 
   public void updateMavenArtifactVersionData(Set<Metadata> metadataSet, String productId) {

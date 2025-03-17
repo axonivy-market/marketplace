@@ -73,8 +73,10 @@ public class VersionServiceImpl implements VersionService {
 
   private List<MavenArtifactModel> filterArtifactByVersion(List<MavenArtifactModel> mavenArtifactModels, String mavenVersion) {
     return mavenArtifactModels.stream()
-        .filter(artifact -> artifact.getProductVersion().equals(mavenVersion))
+        .filter(artifact -> artifact.getId().getProductVersion().equals(mavenVersion))
         .toList();
+
+
   }
 
   public Map<String, Object> getProductJsonContentByIdAndVersion(String productId, String version) {
@@ -158,7 +160,8 @@ public class VersionServiceImpl implements VersionService {
       String version, List<String> artifactsIds) {
     return existingData.stream()
         .filter(
-            artifact -> version.equals(artifact.getProductVersion()) && artifactsIds.contains(artifact.getArtifactId()))
+            artifact -> version.equals(artifact.getId().getProductVersion()) &&
+                artifactsIds.contains(artifact.getId().getArtifactId()))
         .findAny()
         .map(MavenArtifactModel::getDownloadUrl)
         .orElse(null);
