@@ -8,12 +8,10 @@ import com.axonivy.market.entity.Metadata;
 import com.axonivy.market.entity.ProductJsonContent;
 import com.axonivy.market.factory.VersionFactory;
 import com.axonivy.market.model.MavenArtifactVersionModel;
-import com.axonivy.market.model.MavenModel;
 import com.axonivy.market.model.VersionAndUrlModel;
 import com.axonivy.market.repository.MavenArtifactModelRepository;
 import com.axonivy.market.repository.MetadataRepository;
 import com.axonivy.market.repository.ProductJsonContentRepository;
-import com.axonivy.market.service.MavenArtifactModelService;
 import com.axonivy.market.service.VersionService;
 import com.axonivy.market.util.VersionUtils;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -47,7 +45,6 @@ public class VersionServiceImpl implements VersionService {
   private final ObjectMapper mapper = new ObjectMapper();
   private final MetadataRepository metadataRepo;
   private final MavenArtifactModelRepository mavenArtifactModelRepo;
-  private final MavenArtifactModelService mavenArtifactModelService;
 
   public List<MavenArtifactVersionModel> getArtifactsAndVersionToDisplay(String productId, Boolean isShowDevVersion,
       String designerVersion) {
