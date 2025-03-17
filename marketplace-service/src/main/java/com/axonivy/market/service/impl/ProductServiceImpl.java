@@ -455,7 +455,8 @@ public class ProductServiceImpl implements ProductService {
     for (Artifact mavenArtifact : mavenArtifacts) {
       getMetadataContent(mavenArtifact, product, nonSyncReleasedVersions);
     }
-    product.setReleasedVersions(product.getReleasedVersions().stream().distinct().collect(Collectors.toCollection(ArrayList::new)));
+    product.setReleasedVersions(
+        product.getReleasedVersions().stream().distinct().collect(Collectors.toCollection(ArrayList::new)));
     metadataService.updateArtifactAndMetadata(product.getId(), nonSyncReleasedVersions, product.getArtifacts());
     externalDocumentService.syncDocumentForProduct(product.getId(), false);
   }
