@@ -7,6 +7,7 @@ import com.axonivy.market.entity.MavenArtifactModel;
 import com.axonivy.market.entity.Product;
 import com.axonivy.market.entity.ProductDependency;
 import com.axonivy.market.model.MavenModel;
+import com.axonivy.market.repository.MavenArtifactModelRepository;
 import com.axonivy.market.repository.ProductDependencyRepository;
 import com.axonivy.market.repository.ProductRepository;
 import com.axonivy.market.service.FileDownloadService;
@@ -15,6 +16,7 @@ import com.axonivy.market.service.MavenDependencyService;
 import com.axonivy.market.util.VersionUtils;
 import lombok.AllArgsConstructor;
 import lombok.extern.log4j.Log4j2;
+import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.maven.model.Dependency;
 import org.apache.maven.model.Model;
@@ -47,6 +49,7 @@ public class MavenDependencyServiceImpl implements MavenDependencyService {
   final ProductDependencyRepository productDependencyRepository;
   final FileDownloadService fileDownloadService;
   final MavenArtifactModelService mavenArtifactModelService;
+  final MavenArtifactModelRepository mavenArtifactModelRepository;
 
   private static Model convertPomToModel(File pomFile) {
     try (var inputStream = new FileInputStream(pomFile)) {
@@ -73,22 +76,18 @@ public class MavenDependencyServiceImpl implements MavenDependencyService {
   public int syncIARDependenciesForProducts(Boolean resetSync) {
     int totalSyncedProductIds = 0;
     for (String productId : getMissingProductIds(resetSync)) {
-      MavenModel mavenArtifactVersion = mavenArtifactModelService.fetchMavenArtifactModels(productId);
+      List<MavenArtifactModel> mavenArtifactVersion = mavenArtifactModelRepository.findByProductId(productId);
+
       // If no data in MavenArtifactVersion table then skip this product
-      if (mavenArtifactVersion == null) {
+      if (ObjectUtils.isEmpty(mavenArtifactVersion)) {
         continue;
       }
+
       productDependencyRepository.deleteById(productId);
       List<MavenDependency> dependenciesOfArtifact = new ArrayList<>();
 
       // Base on version, loop the artifacts and maps its dependencies
-      // Loops in ProductArtifactsByVersion
-      collectIARDependenciesByArtifactVersion(productId, mavenArtifactVersion.getProductArtifacts(),
-          dependenciesOfArtifact);
-
-      // Loops in AdditionalArtifactsByVersion
-      collectIARDependenciesByArtifactVersion(productId, mavenArtifactVersion.getAdditionalArtifacts(),
-          dependenciesOfArtifact);
+      collectIARDependenciesByArtifactVersion(productId, mavenArtifactVersion, dependenciesOfArtifact);
 
       ProductDependency productDependency = ProductDependency.builder()
           .productId(productId)

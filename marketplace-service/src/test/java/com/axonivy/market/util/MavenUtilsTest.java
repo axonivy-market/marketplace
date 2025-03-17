@@ -28,24 +28,6 @@ import static com.axonivy.market.constants.MavenConstants.DEFAULT_IVY_MAVEN_BASE
 class MavenUtilsTest extends BaseSetup {
 
   @Test
-  void testConvertArtifactsToModels() {
-    List<MavenArtifactModel> result = MavenUtils.convertArtifactsToModels(Collections.emptyList(),
-        MOCK_RELEASED_VERSION);
-    Assertions.assertTrue(CollectionUtils.isEmpty(result));
-    result = MavenUtils.convertArtifactsToModels(null, MOCK_RELEASED_VERSION);
-    Assertions.assertTrue(CollectionUtils.isEmpty(result));
-
-    Artifact targetArtifact = new Artifact(null, null, null, MOCK_GROUP_ID,
-        MOCK_ARTIFACT_ID, MavenConstants.DEFAULT_PRODUCT_FOLDER_TYPE, null, null, null,
-        null, false, false);
-
-    result = MavenUtils.convertArtifactsToModels(List.of(targetArtifact), MOCK_RELEASED_VERSION);
-
-    Assertions.assertTrue(ObjectUtils.isNotEmpty(result));
-    Assertions.assertEquals(MOCK_DOWNLOAD_URL, result.get(0).getDownloadUrl());
-  }
-
-  @Test
   void testBuildDownloadUrlFromArtifactAndVersion() {
     Artifact targetArtifact = getMockArtifact();
     String artifactFileName = String.format(MavenConstants.ARTIFACT_FILE_NAME_FORMAT, MOCK_ARTIFACT_ID,

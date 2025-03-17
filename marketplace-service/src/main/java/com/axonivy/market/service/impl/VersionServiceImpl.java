@@ -28,6 +28,7 @@ import org.springframework.util.CollectionUtils;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -128,20 +129,15 @@ public class VersionServiceImpl implements VersionService {
       return StringUtils.EMPTY;
     }
 
-    MavenModel mavenModel = mavenArtifactModelService.fetchMavenArtifactModels(productId);
-    if (ObjectUtils.isEmpty(mavenModel)) {
+    List<MavenArtifactModel> artifactModels = mavenArtifactModelRepo.findByProductId(productId);
+    if (ObjectUtils.isEmpty(artifactModels)) {
       return StringUtils.EMPTY;
     }
 
     // Find download url first from product artifact model
     String downloadUrl = getDownloadUrlFromExistingDataByArtifactIdAndVersion(
-        mavenModel.getProductArtifacts(), targetVersion, modelArtifactIds);
+        artifactModels, targetVersion, modelArtifactIds);
 
-    // Continue to find download url from artifact in meta.json if it is not existed in artifacts of product.json
-    if (StringUtils.isBlank(downloadUrl)) {
-      downloadUrl = getDownloadUrlFromExistingDataByArtifactIdAndVersion(
-          mavenModel.getAdditionalArtifacts(), targetVersion, modelArtifactIds);
-    }
 
     if (!StringUtils.endsWith(downloadUrl, fileType)) {
       log.warn("**VersionService: the found downloadUrl {} is not match with file type {}", downloadUrl, fileType);
@@ -156,7 +152,7 @@ public class VersionServiceImpl implements VersionService {
         .filter(
             artifact -> version.equals(artifact.getId().getProductVersion()) &&
                 artifactsIds.contains(artifact.getId().getArtifactId()))
-        .findAny()
+        .min(Comparator.comparing(artifact -> artifact.getId().isAdditionalVersion()))
         .map(MavenArtifactModel::getDownloadUrl)
         .orElse(null);
   }

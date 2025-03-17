@@ -29,8 +29,7 @@ class CustomProductRepositoryImplTest extends BaseSetup {
   private Product mockProduct;
   @Mock
   private MetadataRepository metadataRepo;
-  @Mock
-  private MavenArtifactVersionRepository mavenArtifactVersionRepo;
+
   @InjectMocks
   private CustomProductRepositoryImpl repo;
 
