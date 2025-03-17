@@ -1,6 +1,6 @@
 package com.axonivy.market.repository;
 
-import com.axonivy.market.bo.Artifact;
+import com.axonivy.market.entity.Artifact;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;

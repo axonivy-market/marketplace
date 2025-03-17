@@ -1,6 +1,7 @@
 package com.axonivy.market.service.impl;
 
-import com.axonivy.market.bo.Artifact;
+import com.axonivy.market.BaseSetup;
+import com.axonivy.market.entity.Artifact;
 import com.axonivy.market.entity.ExternalDocumentMeta;
 import com.axonivy.market.entity.Product;
 import com.axonivy.market.repository.ArtifactRepository;
@@ -21,7 +22,7 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
-class ExternalDocumentServiceImplTest {
+class ExternalDocumentServiceImplTest extends BaseSetup {
 
   private static final String RELATIVE_LOCATION = "/market-cache/portal/10.0.0/doc/index.html";
 
@@ -57,6 +58,11 @@ class ExternalDocumentServiceImplTest {
     when(fileDownloadService.downloadAndUnzipFile(any(), any())).thenReturn("data" + RELATIVE_LOCATION);
     service.syncDocumentForProduct(PORTAL,  true);
     verify(externalDocumentMetaRepository, times(2)).saveAll(any());
+
+    when(artifactRepository.findAllByIdInAndFetchArchivedArtifacts(any())).thenReturn(mockPortalProduct().get().getArtifacts());
+    when(productRepository.findProductByIdAndRelatedData(PORTAL)).thenReturn(mockPortalProduct().get());
+    when(externalDocumentMetaRepository.findByProductIdAndVersionIn(any(),any())).thenReturn(List.of(createExternalDocumentMock()));
+    service.syncDocumentForProduct(PORTAL,  false);
   }
 
   @Test

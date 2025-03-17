@@ -1,13 +1,12 @@
 package com.axonivy.market.util;
 
-import com.axonivy.market.bo.ArchivedArtifact;
-import com.axonivy.market.bo.Artifact;
+import com.axonivy.market.entity.ArchivedArtifact;
+import com.axonivy.market.entity.Artifact;
 import com.axonivy.market.comparator.MavenVersionComparator;
 import com.axonivy.market.constants.CommonConstants;
 import com.axonivy.market.constants.MavenConstants;
 import com.axonivy.market.constants.ProductJsonConstants;
 import com.axonivy.market.entity.MavenArtifactModel;
-import com.axonivy.market.entity.MavenArtifactVersion;
 import com.axonivy.market.entity.Metadata;
 import com.axonivy.market.entity.ProductJsonContent;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -328,24 +327,6 @@ public class MavenUtils {
     }
     return artifactsFromMeta.stream().filter(
         artifact -> !artifact.getArtifactId().endsWith(MavenConstants.PRODUCT_ARTIFACT_POSTFIX)).toList();
-  }
-
-  public static List<String> extractAllVersions(MavenArtifactVersion existingMavenArtifactVersion,
-      boolean isShowDevVersion, String designerVersion) {
-    Set<String> existingProductsArtifactByVersion = existingMavenArtifactVersion.getProductArtifactsByVersion()
-        .stream()
-        .map(MavenArtifactModel::getProductVersion)
-        .collect(Collectors.toSet());
-
-    Set<String> existingAdditionalArtifactByVersion = existingMavenArtifactVersion.getAdditionalArtifactsByVersion()
-        .stream()
-        .map(MavenArtifactModel::getProductVersion)
-        .collect(Collectors.toSet());
-
-    existingProductsArtifactByVersion.addAll(existingAdditionalArtifactByVersion);
-
-    return VersionUtils.getVersionsToDisplay(new ArrayList<>(existingProductsArtifactByVersion), isShowDevVersion,
-        designerVersion);
   }
 
   public static boolean isProductMetadata(Metadata metadata) {

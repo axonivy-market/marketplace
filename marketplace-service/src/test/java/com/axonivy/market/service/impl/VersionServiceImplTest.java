@@ -1,7 +1,7 @@
 package com.axonivy.market.service.impl;
 
 import com.axonivy.market.BaseSetup;
-import com.axonivy.market.bo.ArchivedArtifact;
+import com.axonivy.market.entity.ArchivedArtifact;
 import com.axonivy.market.constants.MavenConstants;
 import com.axonivy.market.entity.MavenArtifactModel;
 import com.axonivy.market.entity.MavenArtifactVersion;
@@ -13,6 +13,7 @@ import com.axonivy.market.repository.MavenArtifactVersionRepository;
 import com.axonivy.market.repository.MetadataRepository;
 import com.axonivy.market.repository.ProductJsonContentRepository;
 import com.axonivy.market.util.MavenUtils;
+import com.axonivy.market.util.VersionUtils;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.junit.jupiter.api.Assertions;
@@ -144,12 +145,12 @@ class VersionServiceImplTest extends BaseSetup {
   @Test
   void testGetAllExistingVersions() {
     MavenArtifactVersion mockMavenArtifactVersion = new MavenArtifactVersion();
-    Assertions.assertTrue(CollectionUtils.isEmpty(MavenUtils.extractAllVersions(mockMavenArtifactVersion, false,
+    Assertions.assertTrue(CollectionUtils.isEmpty(VersionUtils.extractAllVersions(mockMavenArtifactVersion, false,
         StringUtils.EMPTY)));
     mockMavenArtifactVersion = getMockMavenArtifactVersionWithData();
-    Assertions.assertTrue(ObjectUtils.isNotEmpty(MavenUtils.extractAllVersions(mockMavenArtifactVersion, true,
+    Assertions.assertTrue(ObjectUtils.isNotEmpty(VersionUtils.extractAllVersions(mockMavenArtifactVersion, true,
         StringUtils.EMPTY)));
-    Assertions.assertTrue(CollectionUtils.isEmpty(MavenUtils.extractAllVersions(mockMavenArtifactVersion, false,
+    Assertions.assertTrue(CollectionUtils.isEmpty(VersionUtils.extractAllVersions(mockMavenArtifactVersion, false,
         StringUtils.EMPTY)));
   }
 
