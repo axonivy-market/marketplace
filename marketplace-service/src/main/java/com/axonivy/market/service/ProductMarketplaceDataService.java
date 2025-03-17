@@ -3,7 +3,6 @@ package com.axonivy.market.service;
 import com.axonivy.market.bo.VersionDownload;
 import com.axonivy.market.entity.ProductMarketplaceData;
 import com.axonivy.market.model.ProductCustomSortRequest;
-import org.springframework.core.io.ByteArrayResource;
 
 import java.io.IOException;
 
