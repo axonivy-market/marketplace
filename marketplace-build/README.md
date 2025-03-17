@@ -1,31 +1,21 @@
 # Get starts with Marketplace build
 
-### Create docker network
-For the marketplace-ui, marketplace-service, and marketplace MongoDB to be able to connect to each other. They must be in a same network.
-To create a docker network for the marketplace, please run:
+### Setup PostgreSQL 
+* Run ``docker pull postgres`` to pull the latest PostgreSQL image and execute ``docker volume create marketplace_service_data`` to create a named volume to persist PostgreSQL data
 
-* ``docker network create marketplace-network``
+* Then start a PostgreSQL container with the created volume 
+``docker run --name postgres_container \
+              -e POSTGRES_USER=${POSTGRES_USERNAME} \
+              -e POSTGRES_PASSWORD=${POSTGRES_PASSWORD} \
+              -e POSTGRES_DB=${MARKETPLACE_DB} \
+              -d -p 5432:5432 \
+              -v marketplace_service_data:/var/lib/postgresql/data postgres``
 
-### Set up MongoDB with authentication mode
-#### Init a admin user for MongoDb volume
-* Navigate to ``marketplace-build/config/mongodb`` and execute the ``docker-compose -f non-authen-docker-compose.yml up -d`` to start MongoDB with non-auth mode and create a root admin user.
-
-* [Optional] Execute authentication test for the created user
-  ```
-  use admin
-  db.auth('username','password')
-  ```
-This command should return the ``OK`` code
-
-* Down the non-authen instance to start the main docker compose file by run ``docker-compose down``
-
-#### Start MongoDB container
-
-* Start the authen instance by run ``docker-compose -f authen-docker-compose.yml up -d`` to start mongodb
+Remember to replace *${POSTGRES_USERNAME}*, *${POSTGRES_PASSWORD}* with the credentials specified in [`marketplace-build/docker-compose.yml`](marketplace-build/docker-compose.yml). Additionally, set *${MARKETPLACE_DB}* to the database name specified in *${POSTGRES_HOST_URL}* within the same file.
 
 ### Docker build for local environment
-#### Update the MongoDB configuration for env
-* Navigate to ``marketplace-build/dev`` and edit ``.env`` base on your mongo configuration
+#### Update the PostgreSQL configuration for env
+* Navigate to ``marketplace-build/dev`` and edit ``.env`` base on your postgreSQL configuration
 
 * Navigate to ``marketplace-build/dev``
 
