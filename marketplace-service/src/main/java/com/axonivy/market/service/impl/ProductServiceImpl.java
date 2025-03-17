@@ -62,6 +62,7 @@ import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
+import java.util.stream.Collectors;
 
 import static com.axonivy.market.constants.CommonConstants.DOT_SEPARATOR;
 import static com.axonivy.market.constants.CommonConstants.SLASH;
@@ -454,7 +455,8 @@ public class ProductServiceImpl implements ProductService {
     for (Artifact mavenArtifact : mavenArtifacts) {
       getMetadataContent(mavenArtifact, product, nonSyncReleasedVersions);
     }
-    product.setReleasedVersions(product.getReleasedVersions().stream().distinct().toList());
+    product.setReleasedVersions(
+        product.getReleasedVersions().stream().distinct().collect(Collectors.toCollection(ArrayList::new)));
     metadataService.updateArtifactAndMetadata(product.getId(), nonSyncReleasedVersions, product.getArtifacts());
     externalDocumentService.syncDocumentForProduct(product.getId(), false);
   }
