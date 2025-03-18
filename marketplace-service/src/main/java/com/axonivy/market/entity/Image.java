@@ -36,8 +36,7 @@ public class Image {
       example = "https://raw.githubusercontent.comamazon-comprehend/logo.png")
   private String imageUrl;
 
-  @Schema(description = "The image content as binary type",
-      example = "Binary(Buffer.from(\"89504e470d0a1a0a0000000d\", \"hex\"), 0)")
+  @Schema(description = "The image content as byte array", example = "256x256 PNG image 21.82 kB")
   @Column(columnDefinition = BYTEA_TYPE)
   private byte[] imageData;
 
