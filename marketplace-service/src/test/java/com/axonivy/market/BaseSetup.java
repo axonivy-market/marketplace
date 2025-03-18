@@ -1,5 +1,6 @@
 package com.axonivy.market;
 
+import com.axonivy.market.bo.MavenDependency;
 import com.axonivy.market.entity.Artifact;
 import com.axonivy.market.constants.MavenConstants;
 import com.axonivy.market.entity.*;
@@ -373,6 +374,23 @@ public class BaseSetup {
   protected ExternalDocumentMeta createExternalDocumentMock() {
     return ExternalDocumentMeta.builder()
         .relativeLink("/market-cache/portal/10.0.0/doc/index.html")
+        .build();
+  }
+
+  protected List<MavenDependency> mockMavenDependencies(){
+    MavenDependency mavenDependency = MavenDependency.builder()
+        .artifactId(MOCK_DEMO_ARTIFACT_ID)
+        .downloadUrl(MOCK_DOWNLOAD_URL)
+        .version(MOCK_RELEASED_VERSION)
+        .build();
+
+    return List.of(mavenDependency);
+  }
+
+  protected ProductDependency mockProductDependency(){
+    return ProductDependency.builder()
+        .productId(MOCK_PRODUCT_ID)
+        .dependenciesOfArtifact(mockMavenDependencies())
         .build();
   }
 }

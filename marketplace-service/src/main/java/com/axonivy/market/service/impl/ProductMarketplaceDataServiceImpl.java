@@ -84,14 +84,20 @@ public class ProductMarketplaceDataServiceImpl implements ProductMarketplaceData
       if (fileData == null || fileData.length == 0) {
         return null;
       }
-      String base64FileData = Base64.getEncoder().encodeToString(fileData);
-      int installationCount = updateInstallationCountForProduct(productId, null);
-
-      return VersionDownload.builder().fileData(base64FileData.getBytes()).installationCount(installationCount).build();
+      return getVersionDownload(productId, fileData);
     } catch (Exception e) {
       log.error("Error downloading file from URL {}: {}", artifactUrl, e.getMessage());
       return null;
     }
+  }
+
+  @Override
+  public VersionDownload getVersionDownload(String productId, byte[] fileData) {
+    int installationCount = updateInstallationCountForProduct(productId, null);
+    return VersionDownload.builder()
+        .fileData(fileData)
+        .installationCount(installationCount)
+        .build();
   }
 
   @Override

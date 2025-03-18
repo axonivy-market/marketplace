@@ -16,4 +16,6 @@ public interface ProductMarketplaceDataService {
   ProductMarketplaceData getProductMarketplaceData(String id);
 
   VersionDownload downloadArtifact(String artifactUrl, String productId) throws IOException;
+
+  VersionDownload getVersionDownload(String productId, byte[] fileData);
 }

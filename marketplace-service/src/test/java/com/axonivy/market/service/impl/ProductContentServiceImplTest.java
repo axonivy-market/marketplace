@@ -25,7 +25,6 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Stream;
 
@@ -97,17 +96,7 @@ class ProductContentServiceImplTest extends BaseSetup {
 
   @Test
   void testDownloadZipArtifactFile() {
-    List<MavenDependency> mavenDependencies = new ArrayList<>();
-    mavenDependencies.add(MavenDependency.builder()
-        .artifactId(MOCK_DEMO_ARTIFACT_ID)
-        .downloadUrl(MOCK_DOWNLOAD_URL)
-        .version(MOCK_RELEASED_VERSION)
-        .build());
-
-    ProductDependency productDependency = ProductDependency.builder()
-        .productId(MOCK_PRODUCT_ID)
-        .dependenciesOfArtifact(mavenDependencies)
-        .build();
+    ProductDependency productDependency = mockProductDependency();
 
     when(productDependencyRepository.findByIdWithDependencies(MOCK_PRODUCT_ID)).thenReturn(productDependency);
     when(fileDownloadService.downloadFile(MOCK_DOWNLOAD_URL)).thenReturn(MOCK_DOWNLOAD_URL.getBytes());

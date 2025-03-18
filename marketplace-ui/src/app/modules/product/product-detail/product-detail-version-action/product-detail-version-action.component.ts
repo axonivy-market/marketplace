@@ -49,6 +49,8 @@ const TARGET_BLANK = '_blank';
 const HTTP = 'http';
 const DOC = '-doc';
 const ZIP = '.zip';
+const APPLICATION_OCTET_STREAM = 'application/octet-stream';
+const ANCHOR_ELEMENT = 'a';
 
 @Component({
   selector: 'app-product-version-action',
@@ -298,19 +300,10 @@ export class ProductDetailVersionActionComponent implements AfterViewInit {
   }
 
   private downloadFile(base64Data: string, fileName: string): void {
-    const byteCharacters = atob(base64Data);
-    const byteNumbers = new Array(byteCharacters.length);
-    for (let i = 0; i < byteCharacters.length; i++) {
-      byteNumbers[i] = byteCharacters.charCodeAt(i);
-    }
-    const byteArray = new Uint8Array(byteNumbers);
-    const blob = new Blob([byteArray], { type: "application/octet-stream" });
+    const byteArray = Uint8Array.from(atob(base64Data), c => c.charCodeAt(0));
+    const blobUrl = URL.createObjectURL(new Blob([byteArray], { type: APPLICATION_OCTET_STREAM }));
 
-    const blobUrl = URL.createObjectURL(blob);
-
-    const a = document.createElement("a");
-    a.href = blobUrl;
-    a.download = fileName;
+    const a = Object.assign(document.createElement(ANCHOR_ELEMENT), { href: blobUrl, download: fileName });
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);

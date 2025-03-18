@@ -154,13 +154,7 @@ public class ProductContentServiceImpl implements ProductContentService {
         zipConfigurationOptions(zipOut);
         zipOut.closeEntry();
       }
-      int installationCount = productMarketplaceDataService.updateInstallationCountForProduct(productId, null);
-      String base64FileData = Base64.getEncoder().encodeToString(byteArrayOutputStream.toByteArray());
-
-      return VersionDownload.builder()
-          .fileData(base64FileData.getBytes())
-          .installationCount(installationCount)
-          .build();
+      return productMarketplaceDataService.getVersionDownload(productId, byteArrayOutputStream.toByteArray());
     } catch (IOException e) {
       log.error("Cannot create ZIP file {}", e.getMessage());
       return null;
