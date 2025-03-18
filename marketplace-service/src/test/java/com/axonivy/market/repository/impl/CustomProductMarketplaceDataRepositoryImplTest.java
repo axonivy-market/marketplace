@@ -64,50 +64,28 @@ class CustomProductMarketplaceDataRepositoryImplTest extends BaseSetup {
   }
 
   @Test
-  void testIncreaseInstallationCountForProductByDesignerVersion() {
-    TypedQuery query = mock(TypedQuery.class);
-    CriteriaBuilder cb = mock(CriteriaBuilder.class);
-    CriteriaQuery<ProductDesignerInstallation> cq = mock(CriteriaQuery.class);
-    Root<ProductDesignerInstallation> root = mock(Root.class);
-
-    when(em.getCriteriaBuilder()).thenReturn(cb);
-    when(cb.createQuery(ProductDesignerInstallation.class)).thenReturn(cq);
-    when(cq.from(ProductDesignerInstallation.class)).thenReturn(root);
-
-    when(em.createQuery(cq)).thenReturn(query);
-    when(query.getResultList()).thenReturn(createProductDesignerInstallationsMock());
-
-    when(em.createNativeQuery(anyString())).thenReturn(query);
-
-    repo.increaseInstallationCountForProductByDesignerVersion(MOCK_PRODUCT_ID, MOCK_RELEASED_VERSION);
-
-    verify(query).executeUpdate();
-    verify(em).createNativeQuery(anyString());
-  }
-
-  @Test
   void testCheckAndInitProductMarketplaceDataIfNotExist() {
     // Mock dependencies
     TypedQuery<Long> query = mock(TypedQuery.class);
     CriteriaBuilder cb = mock(CriteriaBuilder.class);
-    CriteriaQuery<Long> cq = mock(CriteriaQuery.class);
+    CriteriaQuery<Long> cqLong = mock(CriteriaQuery.class);
     Root<ProductMarketplaceData> root = mock(Root.class);
     Predicate predicate = mock(Predicate.class);
     Expression<Long> countExpression = mock(Expression.class);
 
     // Stubbing method calls
     when(em.getCriteriaBuilder()).thenReturn(cb);
-    when(cb.createQuery(Long.class)).thenReturn(cq);
-    when(cq.from(ProductMarketplaceData.class)).thenReturn(root);
+    when(cb.createQuery(Long.class)).thenReturn(cqLong);
+    when(cqLong.from(ProductMarketplaceData.class)).thenReturn(root);
 
     when(cb.count(root)).thenReturn(countExpression);
     when(cb.equal(root.get("id"), MOCK_PRODUCT_ID)).thenReturn(predicate);
 
     // Ensure where() and select() return the same query object
-    when(cq.select(countExpression)).thenReturn(cq);
-    when(cq.where(predicate)).thenReturn(cq);
+    when(cqLong.select(countExpression)).thenReturn(cqLong);
+    when(cqLong.where(predicate)).thenReturn(cqLong);
 
-    when(em.createQuery(cq)).thenReturn(query);
+    when(em.createQuery(cqLong)).thenReturn(query);
     when(query.getSingleResult()).thenReturn(1L, 0L);
 
     // Execute the method

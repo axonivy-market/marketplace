@@ -18,6 +18,7 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.domain.Page;
+import org.springframework.test.util.ReflectionTestUtils;
 
 import java.util.List;
 
@@ -41,10 +42,12 @@ class ProductSearchRepositoryImplTest extends BaseSetup {
   @InjectMocks
   CustomProductRepositoryImpl productListedRepository;
 
+
   @BeforeEach
   public void setup() {
     searchCriteria = new ProductSearchCriteria();
     mockResultReturn = createPageProductsMock();
+    ReflectionTestUtils.setField(productListedRepository, "em", em);
   }
 
   @Test

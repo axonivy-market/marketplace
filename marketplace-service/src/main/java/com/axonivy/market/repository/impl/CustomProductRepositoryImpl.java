@@ -14,7 +14,6 @@ import com.axonivy.market.enums.TypeOption;
 import com.axonivy.market.repository.CustomProductRepository;
 import com.axonivy.market.repository.ProductCustomSortRepository;
 import com.axonivy.market.repository.ProductModuleContentRepository;
-import jakarta.persistence.EntityManager;
 import jakarta.persistence.NoResultException;
 import jakarta.persistence.TypedQuery;
 import jakarta.persistence.criteria.*;
@@ -40,14 +39,11 @@ import static com.axonivy.market.constants.PostgresDBConstants.*;
 public class CustomProductRepositoryImpl extends BaseRepository<Product> implements CustomProductRepository {
   final ProductCustomSortRepository productCustomSortRepo;
   final ProductModuleContentRepository contentRepository;
-  final EntityManager em;
 
   public CustomProductRepositoryImpl(ProductCustomSortRepository productCustomSortRepo,
-      ProductModuleContentRepository contentRepository, EntityManager em) {
-    super(em);
+      ProductModuleContentRepository contentRepository) {
     this.productCustomSortRepo = productCustomSortRepo;
     this.contentRepository = contentRepository;
-    this.em = em;
   }
 
   @Override
@@ -67,7 +63,7 @@ public class CustomProductRepositoryImpl extends BaseRepository<Product> impleme
 
   @Override
   public Product findProductByIdAndRelatedData(String id) {
-    CriteriaContext<Product> context = createCriteriaContext();
+    CriteriaQueryContext<Product> context = createCriteriaQueryContext();
     context.root().fetch(PRODUCT_NAMES, JoinType.LEFT);
     context.root().fetch(PRODUCT_SHORT_DESCRIPTION, JoinType.LEFT);
     context.root().fetch(PRODUCT_ARTIFACT, JoinType.LEFT);
@@ -88,7 +84,7 @@ public class CustomProductRepositoryImpl extends BaseRepository<Product> impleme
 
   @Override
   public Page<Product> searchByCriteria(ProductSearchCriteria searchCriteria, Pageable pageable) {
-    CriteriaContext<Product> criteriaContext = createCriteriaContext();
+    CriteriaQueryContext<Product> criteriaContext = createCriteriaQueryContext();
     PageRequest pageRequest = (PageRequest) pageable;
     Language language = searchCriteria.getLanguage() != null ? searchCriteria.getLanguage() : Language.EN;
     Predicate predicate = buildCriteriaSearch(searchCriteria, criteriaContext.builder(), criteriaContext.root());
@@ -112,7 +108,7 @@ public class CustomProductRepositoryImpl extends BaseRepository<Product> impleme
     return new PageImpl<>(resultList, pageable, total);
   }
 
-  private void sortByOrders(CriteriaContext<Product> criteriaContext,
+  private void sortByOrders(CriteriaQueryContext<Product> criteriaContext,
       PageRequest pageRequest, String language) {
     List<Order> orders = new ArrayList<>();
     if (pageRequest != null) {
@@ -130,7 +126,7 @@ public class CustomProductRepositoryImpl extends BaseRepository<Product> impleme
     criteriaContext.query().orderBy(orders);
   }
 
-  private List<Order> sortByStandard(CriteriaContext<Product> criteriaContext, String language) {
+  private List<Order> sortByStandard(CriteriaQueryContext<Product> criteriaContext, String language) {
     List<ProductCustomSort> customSorts = productCustomSortRepo.findAll();
     Join<Product, ProductMarketplaceData> marketplaceJoin = criteriaContext.root().join(PRODUCT_MARKETPLACE_DATA,
         JoinType.LEFT);
@@ -150,13 +146,13 @@ public class CustomProductRepositoryImpl extends BaseRepository<Product> impleme
     return orders;
   }
 
-  private Order sortByPopularity(CriteriaContext<Product> criteriaContext) {
+  private Order sortByPopularity(CriteriaQueryContext<Product> criteriaContext) {
     Join<Product, ProductMarketplaceData> marketplaceJoin = criteriaContext.root().join(PRODUCT_MARKETPLACE_DATA,
         JoinType.LEFT);
     return criteriaContext.builder().desc(marketplaceJoin.get(INSTALLATION_COUNT));
   }
 
-  private Order sortByAlphabet(CriteriaContext<Product> criteriaContext, String language) {
+  private Order sortByAlphabet(CriteriaQueryContext<Product> criteriaContext, String language) {
     MapJoin<Product, String, String> namesJoin = criteriaContext.root().joinMap(PRODUCT_NAMES, JoinType.LEFT);
     Expression<Object> nameValue = criteriaContext.builder().coalesce(
         criteriaContext.builder().selectCase()
@@ -168,11 +164,11 @@ public class CustomProductRepositoryImpl extends BaseRepository<Product> impleme
     return criteriaContext.builder().asc(nameValue);
   }
 
-  private Order sortById(CriteriaContext<Product> criteriaContext) {
+  private Order sortById(CriteriaQueryContext<Product> criteriaContext) {
     return criteriaContext.builder().asc(criteriaContext.root().get(ID));
   }
 
-  private Order sortByRecent(CriteriaContext<Product> criteriaContext) {
+  private Order sortByRecent(CriteriaQueryContext<Product> criteriaContext) {
     return criteriaContext.builder().desc(
         criteriaContext.builder().coalesce(criteriaContext.root().get(FIRST_PUBLISHED_DATE),
             criteriaContext.builder().literal(Timestamp.valueOf(CommonConstants.DEFAULT_DATE_TIME))));
@@ -189,7 +185,7 @@ public class CustomProductRepositoryImpl extends BaseRepository<Product> impleme
 
   @Override
   public Product findByCriteria(ProductSearchCriteria criteria) {
-    CriteriaContext<Product> criteriaContext = createCriteriaContext();
+    CriteriaQueryContext<Product> criteriaContext = createCriteriaQueryContext();
 
     Predicate searchCriteria = buildCriteriaSearch(criteria, criteriaContext.builder(), criteriaContext.root());
     criteriaContext.query().where(searchCriteria);
@@ -201,7 +197,7 @@ public class CustomProductRepositoryImpl extends BaseRepository<Product> impleme
 
   @Override
   public List<Product> findAllProductsHaveDocument() {
-    CriteriaContext<Product> criteriaContext = createCriteriaContext();
+    CriteriaQueryContext<Product> criteriaContext = createCriteriaQueryContext();
     Join<Product, Artifact> artifact = criteriaContext.root().join(PRODUCT_ARTIFACT);
     criteriaContext.query().select(criteriaContext.root()).distinct(true).where(
         criteriaContext.builder().isTrue(artifact.get(DOC)));
