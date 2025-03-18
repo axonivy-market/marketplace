@@ -77,7 +77,9 @@ public class VersionServiceImpl implements VersionService {
         .toList();
   }
 
-  public Map<String, Object> getProductJsonContentByIdAndVersion(String productId, String version) {
+  //TODO
+  public Map<String, Object> getProductJsonContentByIdAndVersion(String productId, String version,
+      String designerVersion) {
     Map<String, Object> result = new HashMap<>();
     try {
       ProductJsonContent productJsonContent =
@@ -87,7 +89,7 @@ public class VersionServiceImpl implements VersionService {
       }
       result = mapper.readValue(productJsonContent.getContent(), Map.class);
       result.computeIfAbsent(NAME, k -> productJsonContent.getName());
-      productMarketplaceDataService.updateInstallationCountForProduct(productId, version);
+      productMarketplaceDataService.updateInstallationCountForProduct(productId, designerVersion);
     } catch (JsonProcessingException jsonProcessingException) {
       log.error(jsonProcessingException.getMessage());
     }
@@ -95,7 +97,7 @@ public class VersionServiceImpl implements VersionService {
   }
 
   @Override
-  public List<VersionAndUrlModel> getVersionsForDesigner(String productId) {
+  public List<VersionAndUrlModel> getVersionsForDesigner(String productId, String designerVersion) {
     List<VersionAndUrlModel> versionAndUrlList = new ArrayList<>();
     List<String> releasedVersions =
         VersionUtils.getInstallableVersionsFromMetadataList(metadataRepo.findByProductId(productId));
@@ -107,7 +109,7 @@ public class VersionServiceImpl implements VersionService {
         new LatestVersionComparator()).toList();
     for (String version : versions) {
       Link link = linkTo(
-          methodOn(ProductDetailsController.class).findProductJsonContent(productId, version)).withSelfRel();
+          methodOn(ProductDetailsController.class).findProductJsonContent(productId, version, designerVersion)).withSelfRel();
       VersionAndUrlModel versionAndUrlModel = new VersionAndUrlModel(version, link.getHref());
       versionAndUrlList.add(versionAndUrlModel);
     }

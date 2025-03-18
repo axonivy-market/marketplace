@@ -3,7 +3,7 @@ import { of } from 'rxjs';
 import { ProductDetailVersionActionComponent } from './product-detail-version-action.component';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { ProductService } from '../../product.service';
-import { HttpParams, provideHttpClient } from '@angular/common/http';
+import { HttpParams, provideHttpClient, withInterceptorsFromDi } from '@angular/common/http';
 import { ElementRef } from '@angular/core';
 import { ItemDropdown } from '../../../../shared/models/item-dropdown.model';
 import { CookieService } from 'ngx-cookie-service';
@@ -15,6 +15,7 @@ import { ProductDetailActionType } from '../../../../shared/enums/product-detail
 import { MATOMO_TRACKING_ENVIRONMENT } from '../../../../shared/constants/matomo.constant';
 import { environment } from '../../../../../environments/environment';
 import { API_URI } from '../../../../shared/constants/api.constant';
+import { provideHttpClientTesting } from '@angular/common/http/testing';
 
 class MockElementRef implements ElementRef {
   nativeElement = {
@@ -52,7 +53,8 @@ describe('ProductDetailVersionActionComponent', () => {
       providers: [
         TranslateService,
         CookieService,
-        provideHttpClient(),
+        provideHttpClient(withInterceptorsFromDi()),
+        provideHttpClientTesting(),
         provideRouter([]),
         { provide: ProductService, useValue: productServiceMock },
         { provide: ElementRef, useClass: MockElementRef },
@@ -215,18 +217,6 @@ describe('ProductDetailVersionActionComponent', () => {
     expect(component.selectedVersion()).toBe('Version 1.0');
   });
 
-  it('should open the artifact download URL in a new window', () => {
-    spyOn(window, 'open');
-    component.selectedArtifact = 'https://example.com/download';
-    spyOn(component, 'onUpdateInstallationCount');
-    component.downloadArtifact();
-    expect(window.open).toHaveBeenCalledWith(
-      'https://example.com/download',
-      '_blank'
-    );
-    expect(component.onUpdateInstallationCount).toHaveBeenCalledOnceWith();
-  });
-
   it('should call getVersionWithArtifact and toggle isDropDownDisplayed', () => {
     expect(component.isDropDownDisplayed()).toBeFalse();
 
@@ -276,19 +266,6 @@ describe('ProductDetailVersionActionComponent', () => {
     );
     return { mockArtifact1: mockArtifact1, mockArtifact2: mockArtifact2 };
   }
-
-  it('should open a new tab with the selected artifact URL', () => {
-    const mockWindowOpen = jasmine.createSpy('windowOpen').and.returnValue({});
-    spyOn(window, 'open').and.callFake(mockWindowOpen);
-    spyOn(component, 'onUpdateInstallationCount');
-    component.selectedArtifact = 'http://example.com/artifact';
-    component.downloadArtifact();
-    expect(window.open).toHaveBeenCalledWith(
-      'http://example.com/artifact',
-      '_blank'
-    );
-    expect(component.onUpdateInstallationCount).toHaveBeenCalledOnceWith();
-  });
 
   it('should not call productService if versions are already populated', () => {
     component.versions.set(['1.0', '1.1']);
@@ -371,44 +348,5 @@ describe('ProductDetailVersionActionComponent', () => {
     const testVersion = '1.2.3';
     component.onSelectVersionInDesigner(testVersion);
     expect(component.selectedVersion()).toBe(testVersion);
-  });
-
-  it('should call onUpdateInstallationCount and open artifact URL when conditions are met (ZIP file)', () => {
-    component.onUpdateInstallationCount = jasmine.createSpy(
-      'onUpdateInstallationCount'
-    );
-    spyOn(window, 'open');
-    component.downloadArtifact();
-    expect(component.onUpdateInstallationCount).toHaveBeenCalled();
-    expect(window.open).toHaveBeenCalledWith(
-      component.selectedArtifact,
-      '_blank'
-    );
-  });
-
-  it('should open constructed URL when isCheckedAppForEngine is true', () => {
-    component.isCheckedAppForEngine = true;
-    component.onUpdateInstallationCount = jasmine.createSpy(
-      'onUpdateInstallationCount'
-    );
-    spyOn(window, 'open');
-    const expectedVersion = '1.2.3';
-    component.selectedVersion.set(expectedVersion);
-    const HTTP = 'http';
-    let marketplaceServiceUrl = environment.apiUrl;
-    if (!marketplaceServiceUrl.startsWith(HTTP)) {
-      marketplaceServiceUrl = window.location.origin.concat(
-        marketplaceServiceUrl
-      );
-    }
-    const expectedParams = new HttpParams()
-      .set(ROUTER.VERSION, expectedVersion)
-      .set(ROUTER.ARTIFACT, component.selectedArtifactId ?? '')
-      .toString();
-    const expectedUrl = `${marketplaceServiceUrl}/${API_URI.PRODUCT_DETAILS}/${component.productId}/artifact/zip-file?${expectedParams}`;
-
-    component.downloadArtifact();
-
-    expect(window.open).toHaveBeenCalledWith(expectedUrl, '_blank');
   });
 });

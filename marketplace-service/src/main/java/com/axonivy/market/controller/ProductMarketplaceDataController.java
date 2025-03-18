@@ -57,16 +57,6 @@ public class ProductMarketplaceDataController {
     return new ResponseEntity<>(message, HttpStatus.OK);
   }
 
-  @Loggable
-  @Operation(hidden = true)
-  @PutMapping(INSTALLATION_COUNT_BY_ID)
-  public ResponseEntity<Integer> syncInstallationCount(
-      @PathVariable(ID) String productId,
-      @RequestParam(name = DESIGNER_VERSION, required = false) String designerVersion) {
-    int result = productMarketplaceDataService.updateInstallationCountForProduct(productId, designerVersion);
-    return new ResponseEntity<>(result, HttpStatus.OK);
-  }
-
   @Operation(hidden = true)
   @GetMapping(VERSION_DOWNLOAD_BY_ID)
   public ResponseEntity<VersionDownload> extractArtifactUrl(

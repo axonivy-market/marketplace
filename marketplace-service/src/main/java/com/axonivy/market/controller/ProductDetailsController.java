@@ -17,6 +17,7 @@ import io.swagger.v3.oas.annotations.enums.ParameterIn;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.AllArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.logging.log4j.util.Strings;
 import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
@@ -124,16 +125,17 @@ public class ProductDetailsController {
       description = "When we click install in designer, this API will send content of product json for installing in " +
           "Ivy designer")
   public ResponseEntity<Map<String, Object>> findProductJsonContent(@PathVariable(ID) String productId,
-      @PathVariable(VERSION) String version) {
-    Map<String, Object> productJsonContent = versionService.getProductJsonContentByIdAndVersion(productId, version);
+      @PathVariable(VERSION) String version, @RequestParam(name = DESIGNER_VERSION, required = false) String designerVersion) {
+    Map<String, Object> productJsonContent = versionService.getProductJsonContentByIdAndVersion(productId, version, designerVersion);
     return new ResponseEntity<>(productJsonContent, HttpStatus.OK);
   }
 
   @GetMapping(VERSIONS_IN_DESIGNER)
   @Operation(summary = "Get the list of released version in product",
       description = "Collect the released versions in product for ivy designer")
-  public ResponseEntity<List<VersionAndUrlModel>> findVersionsForDesigner(@PathVariable(ID) String id) {
-    List<VersionAndUrlModel> versionList = versionService.getVersionsForDesigner(id);
+  public ResponseEntity<List<VersionAndUrlModel>> findVersionsForDesigner(@PathVariable(ID) String id,
+      @RequestParam(name = DESIGNER_VERSION, required = false) String designerVersion) {
+    List<VersionAndUrlModel> versionList = versionService.getVersionsForDesigner(id, designerVersion);
     return new ResponseEntity<>(versionList, HttpStatus.OK);
   }
 
@@ -221,7 +223,7 @@ public class ProductDetailsController {
     if (path.equals(BEST_MATCH_BY_ID_AND_VERSION)) {
       Link link = linkTo(
               methodOn(ProductDetailsController.class).findProductJsonContent(productId,
-                      product.getBestMatchVersion())).withSelfRel();
+                      product.getBestMatchVersion(), StringUtils.EMPTY)).withSelfRel();
       model.setMetaProductJsonUrl(link.getHref());
     }
     model.add(getSelfLinkForProduct(productId, version, path));

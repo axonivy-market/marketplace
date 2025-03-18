@@ -231,8 +231,11 @@ export class ProductDetailVersionActionComponent implements AfterViewInit {
 
   getVersionInDesigner(): void {
     if (this.versions().length === 0) {
+      let designerVersion = this.routingQueryParamService.getDesignerVersionFromSessionStorage() ?? '';
       this.productService
-        .sendRequestToGetProductVersionsForDesigner(this.productId)
+        .sendRequestToGetProductVersionsForDesigner(
+          this.productId,
+          designerVersion)
         .subscribe(data => {
           const versionMap = data
             .map(dataVersionAndUrl => dataVersionAndUrl.version)
@@ -310,25 +313,13 @@ export class ProductDetailVersionActionComponent implements AfterViewInit {
     URL.revokeObjectURL(blobUrl);
   }
 
-  onUpdateInstallationCount(): void {
-    this.productService
-      .sendRequestToUpdateInstallationCount(
-        this.productId,
-        this.routingQueryParamService.getDesignerVersionFromSessionStorage()
-      )
-      .subscribe((data: number) => this.installationCount.emit(data));
-  }
-
   onUpdateInstallationCountForDesigner(): void {
-    // this.onUpdateInstallationCount();
     setTimeout(() => {
-      // this.onUpdateInstallationCount();
       this.productService.sendRequestToGetInstallationCount(this.productId)
         .subscribe((data: number) => {
-          console.log('2 ' + data);
           this.installationCount.emit(data)
         });
-    }, 1000); // Executes after installInDesigner() completes
+    }, 1000);
 
   }
 
