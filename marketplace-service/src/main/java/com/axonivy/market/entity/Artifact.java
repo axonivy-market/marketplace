@@ -16,7 +16,6 @@ import java.io.Serial;
 import java.io.Serializable;
 import java.util.List;
 import java.util.Objects;
-import java.util.UUID;
 
 import static com.axonivy.market.constants.EntityConstants.ARTIFACT;
 import static com.axonivy.market.constants.EntityConstants.PRODUCT_ID;

@@ -1,8 +1,8 @@
 package com.axonivy.market.repository.impl;
 
 import com.axonivy.market.constants.CommonConstants;
-import com.axonivy.market.entity.Artifact;
 import com.axonivy.market.criteria.ProductSearchCriteria;
+import com.axonivy.market.entity.Artifact;
 import com.axonivy.market.entity.Product;
 import com.axonivy.market.entity.ProductCustomSort;
 import com.axonivy.market.entity.ProductMarketplaceData;

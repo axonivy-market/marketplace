@@ -2,7 +2,6 @@ package com.axonivy.market.repository.impl;
 
 import com.axonivy.market.entity.ProductModuleContent;
 import com.axonivy.market.repository.CustomProductModuleContentRepository;
-import jakarta.persistence.criteria.CriteriaQuery;
 import lombok.Builder;
 
 import java.util.List;

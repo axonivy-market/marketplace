@@ -3,7 +3,9 @@ package com.axonivy.market.entity;
 import com.axonivy.market.model.MavenArtifactKey;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import io.swagger.v3.oas.annotations.media.Schema;
-import jakarta.persistence.*;
+import jakarta.persistence.EmbeddedId;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -13,7 +15,7 @@ import lombok.Setter;
 import java.io.Serial;
 import java.io.Serializable;
 
-import static com.axonivy.market.constants.EntityConstants.*;
+import static com.axonivy.market.constants.EntityConstants.MAVEN_ARTIFACT_VERSION;
 
 @AllArgsConstructor
 @NoArgsConstructor
