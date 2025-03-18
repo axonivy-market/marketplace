@@ -49,14 +49,19 @@ class ProductSearchRepositoryImplTest extends BaseSetup {
 
   @Test
   void testSearchByCriteria() {
+    // Mocking query components
     TypedQuery<Product> query = mock(TypedQuery.class);
     CriteriaBuilder cb = mock(CriteriaBuilder.class);
     CriteriaQuery<Product> criteriaQuery = mock(CriteriaQuery.class);
     Root<Product> productRoot = mock(Root.class);
 
+    // Mock count query components
     CriteriaQuery<Long> countQuery = mock(CriteriaQuery.class);
+    Subquery<String> subquery = mock(Subquery.class);
+    Root<Product> subRoot = mock(Root.class);
     Root<Product> countRoot = mock(Root.class);
 
+    // Mock entity manager behavior
     when(em.getCriteriaBuilder()).thenReturn(cb);
     when(cb.createQuery(Product.class)).thenReturn(criteriaQuery);
     when(criteriaQuery.from(Product.class)).thenReturn(productRoot);
@@ -64,22 +69,22 @@ class ProductSearchRepositoryImplTest extends BaseSetup {
     when(query.getResultList()).thenReturn(mockResultReturn.getContent()); // Mocking a result
 
     MapJoin<Product, String, String> namesJoin = mock(MapJoin.class);
-    Mockito.<MapJoin<Product, String, String>>when(productRoot.joinMap(any(),any())).thenReturn(namesJoin);
 
     Path<String> nameValue = mock(Path.class);
     when(namesJoin.value()).thenReturn(nameValue);
 
-    var caseExpression = mock(CriteriaBuilder.Case.class);
-    when(cb.selectCase()).thenReturn(caseExpression);
+    when(criteriaQuery.subquery(String.class)).thenReturn(subquery);
+    when(subquery.correlate(productRoot)).thenReturn(subRoot);
+    when(subRoot.<Product, String, String>joinMap(any(), any())).thenReturn(namesJoin);
+    when(subquery.select(any())).thenReturn(subquery);
 
-    when(caseExpression.when(any(), any())).thenReturn(caseExpression);
-    when(caseExpression.otherwise(any())).thenReturn(nameValue); // Should return a valid expression
-
+    // Mock count query for pagination
     when(cb.createQuery(Long.class)).thenReturn(countQuery);
     when(countQuery.from(Product.class)).thenReturn(countRoot);
     Expression<Long> countExpression = mock(Expression.class);
-    when(cb.count(any())).thenReturn(countExpression);
+    when(cb.countDistinct(any())).thenReturn(countExpression);
     when(countQuery.select(countExpression)).thenReturn(countQuery);
+
     TypedQuery<Long> typedCountQuery = mock(TypedQuery.class);
     when(em.createQuery(countQuery)).thenReturn(typedCountQuery);
     when(typedCountQuery.getSingleResult()).thenReturn((long) mockResultReturn.getSize());
@@ -112,7 +117,7 @@ class ProductSearchRepositoryImplTest extends BaseSetup {
     when(cb.createQuery(Long.class)).thenReturn(countQuery);
     when(countQuery.from(Product.class)).thenReturn(countRoot);
     Expression<Long> countExpression = mock(Expression.class);
-    when(cb.count(any())).thenReturn(countExpression);
+    when(cb.countDistinct(any())).thenReturn(countExpression);
     when(countQuery.select(countExpression)).thenReturn(countQuery);
     TypedQuery<Long> typedCountQuery = mock(TypedQuery.class);
     when(em.createQuery(countQuery)).thenReturn(typedCountQuery);

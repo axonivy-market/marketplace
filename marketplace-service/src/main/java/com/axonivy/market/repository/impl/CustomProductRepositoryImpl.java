@@ -182,7 +182,7 @@ public class CustomProductRepositoryImpl implements CustomProductRepository {
     Root<Product> countRoot = countQuery.from(Product.class);
     // Rebuild predicate for the count query using the new Root<Product>
     Predicate countPredicate = buildCriteriaSearch(searchCriteria, cb, countRoot);
-    countQuery.select(cb.count(countRoot)).where(countPredicate);
+    countQuery.select(cb.countDistinct(countRoot)).where(countPredicate);
     return em.createQuery(countQuery).getSingleResult();
   }
 
