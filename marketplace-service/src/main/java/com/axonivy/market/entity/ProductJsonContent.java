@@ -20,7 +20,6 @@ import static com.axonivy.market.constants.EntityConstants.TEXT_TYPE;
 @NoArgsConstructor
 @Entity
 @Table(name = PRODUCT_JSON_CONTENT)
-@JsonInclude(JsonInclude.Include.NON_NULL)
 public class ProductJsonContent extends BaseEntity {
   @Id
   @JsonIgnore

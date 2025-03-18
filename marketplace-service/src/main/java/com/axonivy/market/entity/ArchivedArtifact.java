@@ -1,8 +1,6 @@
 package com.axonivy.market.entity;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.fasterxml.jackson.annotation.JsonInclude;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -25,8 +23,6 @@ import static com.axonivy.market.constants.EntityConstants.ARTIFACT_ID_FK;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-@JsonInclude(JsonInclude.Include.NON_EMPTY)
-@JsonIgnoreProperties(ignoreUnknown = true)
 @Entity
 @Table(name = ARCHIVED_ARTIFACT)
 public class ArchivedArtifact implements Serializable {
