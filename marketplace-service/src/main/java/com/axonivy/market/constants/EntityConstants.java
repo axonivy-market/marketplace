@@ -5,7 +5,7 @@ import lombok.NoArgsConstructor;
 
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class EntityConstants {
-  public static final String USER = "users";
+  public static final String GITHUB_USER = "github_user";
   public static final String PRODUCT = "product";
   public static final String PRODUCT_DESIGNER_INSTALLATION = "product_designer_installation";
   public static final String MAVEN_METADATA_SYNC = "maven_metadata_sync";
@@ -51,7 +51,7 @@ public class EntityConstants {
   public static final String NAME = "name";
   public static final String SHORT_DESCRIPTION = "shortDescription";
 
-  public static final String PRODUCT_NAMES = "product_names";
-  public static final String PRODUCT_DESCRIPTIONS = "product_descriptions";
+  public static final String PRODUCT_NAME = "product_name";
+  public static final String PRODUCT_DESCRIPTION = "product_description";
 
 }

@@ -1,7 +1,10 @@
 package com.axonivy.market.entity;
 
+import com.axonivy.market.converter.StringListConverter;
+import com.axonivy.market.converter.StringSetConverter;
 import jakarta.persistence.CollectionTable;
 import jakarta.persistence.Column;
+import jakarta.persistence.Convert;
 import jakarta.persistence.ElementCollection;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -41,9 +44,8 @@ public class Metadata implements Serializable {
   private String latest;
   private String release;
 
-  @ElementCollection(fetch = FetchType.LAZY)
-  @CollectionTable(name = METADATA_VERSIONS, joinColumns = @JoinColumn(name = PRODUCT_URL))
-  @Column
+  @Convert(converter = StringSetConverter.class)
+  @Column(nullable = false, columnDefinition = TEXT_TYPE)
   private Set<String> versions;
 
   private String repoUrl;

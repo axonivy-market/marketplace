@@ -14,6 +14,7 @@ public class CommonConstants {
   public static final String DASH_SEPARATOR = "-";
   public static final String SPACE_SEPARATOR = " ";
   public static final String SPLIT_CHAR = ";";
+  public static final String COMMA = ",";
   public static final String BEARER = "Bearer";
   public static final String DIGIT_REGEX = "([0-9]+.*)";
   public static final String IMAGE_ID_PREFIX = "imageId-";

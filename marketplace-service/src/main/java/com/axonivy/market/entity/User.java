@@ -4,7 +4,6 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
-import jakarta.persistence.PrePersist;
 import jakarta.persistence.Table;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -14,15 +13,14 @@ import org.apache.commons.lang3.builder.HashCodeBuilder;
 
 import java.io.Serial;
 import java.io.Serializable;
-import java.util.UUID;
 
-import static com.axonivy.market.constants.EntityConstants.USER;
+import static com.axonivy.market.constants.EntityConstants.GITHUB_USER;
 
 @Getter
 @Setter
 @NoArgsConstructor
 @Entity
-@Table(name = USER)
+@Table(name = GITHUB_USER)
 public class User implements Serializable {
   @Serial
   private static final long serialVersionUID = -1244486023332931059L;

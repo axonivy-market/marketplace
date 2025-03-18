@@ -11,9 +11,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
-import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.annotation.Transient;
-import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.io.Serial;
 import java.io.Serializable;
@@ -40,14 +38,14 @@ public class Product extends BaseEntity implements Serializable {
 
   @JsonProperty
   @ElementCollection
-  @CollectionTable(name = PRODUCT_NAMES, joinColumns = @JoinColumn(name = PRODUCT_ID))
+  @CollectionTable(name = PRODUCT_NAME, joinColumns = @JoinColumn(name = PRODUCT_ID))
   @MapKeyColumn(name = LANGUAGE)
   @Column(name = NAME, columnDefinition = TEXT_TYPE)
   private Map<String, String> names;
 
   @JsonProperty
   @ElementCollection
-  @CollectionTable(name = PRODUCT_DESCRIPTIONS, joinColumns = @JoinColumn(name = PRODUCT_ID))
+  @CollectionTable(name = PRODUCT_DESCRIPTION, joinColumns = @JoinColumn(name = PRODUCT_ID))
   @MapKeyColumn(name = LANGUAGE)
   @Column(name = SHORT_DESCRIPTION, columnDefinition = TEXT_TYPE)
   private Map<String, String> shortDescriptions;
