@@ -11,8 +11,12 @@ import static com.axonivy.market.constants.PostgresDBConstants.*;
 @Builder
 public class CustomProductMarketplaceDataRepositoryImpl extends BaseRepository<ProductMarketplaceData> implements CustomProductMarketplaceDataRepository {
 
-  private static final String INCREASE_INSTALLATION_COUNT_VIA_PRODUCT_ID = "UPDATE product_marketplace_data SET " +
-      "installation_count = installation_count + 1 WHERE id = :productId RETURNING installation_count";
+  private static final String INCREASE_INSTALLATION_COUNT_VIA_PRODUCT_ID = """
+          UPDATE product_marketplace_data  
+          SET installation_count = installation_count + 1 
+          WHERE id = :productId 
+          RETURNING installation_count
+      """;
 
   @Override
   @Transactional
@@ -24,11 +28,11 @@ public class CustomProductMarketplaceDataRepositoryImpl extends BaseRepository<P
     // Where condition (filter by productId)
     criteriaUpdateContext.query().where(criteriaUpdateContext.builder().equal(criteriaUpdateContext.root().get(ID), productId));
     // Execute the update
-    int updatedRows = em.createQuery(criteriaUpdateContext.query()).executeUpdate();
-    em.clear();
+    int updatedRows = entityManager.createQuery(criteriaUpdateContext.query()).executeUpdate();
+    entityManager.clear();
     // Fetch the updated entity if needed
     if (updatedRows > 0) {
-      return em.find(ProductMarketplaceData.class, productId).getInstallationCount();
+      return entityManager.find(ProductMarketplaceData.class, productId).getInstallationCount();
     }
     return 0;
   }
@@ -36,7 +40,7 @@ public class CustomProductMarketplaceDataRepositoryImpl extends BaseRepository<P
   @Override
   @Transactional
   public int increaseInstallationCount(String productId) {
-    Query query = em.createNativeQuery(INCREASE_INSTALLATION_COUNT_VIA_PRODUCT_ID);
+    Query query = entityManager.createNativeQuery(INCREASE_INSTALLATION_COUNT_VIA_PRODUCT_ID);
     query.setParameter(PRODUCT_ID, productId);
     return ((Number) query.getSingleResult()).intValue();
   }
@@ -48,12 +52,12 @@ public class CustomProductMarketplaceDataRepositoryImpl extends BaseRepository<P
 
     criteriaNumberContext.query().select(criteriaNumberContext.builder().count(criteriaNumberContext.root()))
         .where(criteriaNumberContext.builder().equal(criteriaNumberContext.root().get(ID), productId));
-    Long count = em.createQuery(criteriaNumberContext.query()).getSingleResult();
+    Long count = entityManager.createQuery(criteriaNumberContext.query()).getSingleResult();
     boolean marketPlaceExists = count > 0;
     if (!marketPlaceExists) {
       ProductMarketplaceData productMarketplaceData = new ProductMarketplaceData();
       productMarketplaceData.setId(productId);
-      em.persist(productMarketplaceData);
+      entityManager.persist(productMarketplaceData);
     }
   }
 

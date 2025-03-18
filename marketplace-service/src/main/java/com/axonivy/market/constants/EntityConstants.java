@@ -8,7 +8,6 @@ public class EntityConstants {
   public static final String GITHUB_USER = "github_user";
   public static final String PRODUCT = "product";
   public static final String PRODUCT_DESIGNER_INSTALLATION = "product_designer_installation";
-  public static final String MAVEN_METADATA_SYNC = "maven_metadata_sync";
   public static final String METADATA = "metadata";
   public static final String GH_REPO_META = "github_repo_meta";
   public static final String FEEDBACK = "feedback";
@@ -20,14 +19,6 @@ public class EntityConstants {
   public static final String EXTERNAL_DOCUMENT_META = "external_document_meta";
   public static final String PRODUCT_MARKETPLACE_DATA = "product_marketplace_data";
   public static final String PRODUCT_DEPENDENCY = "product_dependency";
-  public static final String MAVEN_ARTIFACT_MODEL = "maven_artifact_model";
-
-  public static final String PRODUCT_VERSION_ID = "product_version_id";
-  public static final String ADDITIONAL_PRODUCT_VERSION_ID = "additional_product_version_id";
-  public static final String METADATA_VERSIONS = "metadata_versions";
-  public static final String PRODUCT_VERSION_REFERENCE = "productVersionReference";
-  public static final String ADDITIONAL_VERSION_REFERENCE = "additionalVersionReference";
-  public static final String PRODUCT_URL = "product_url";
   public static final String PRODUCT_ID_FK = "product_id_fk";
   public static final String PARENT_DEPENDENCY_ID = "parent_dependency_id";
   public static final String MAVEN_DEPENDENCY = "maven_dependency";

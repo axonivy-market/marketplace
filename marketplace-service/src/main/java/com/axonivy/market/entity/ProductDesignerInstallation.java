@@ -25,7 +25,7 @@ import static com.axonivy.market.constants.EntityConstants.PRODUCT_DESIGNER_INST
 @Builder
 @Entity
 @Table(name = PRODUCT_DESIGNER_INSTALLATION)
-public class ProductDesignerInstallation implements Serializable {
+public class ProductDesignerInstallation extends AuditableEntity implements Serializable {
   @Serial
   private static final long serialVersionUID = 1L;
 

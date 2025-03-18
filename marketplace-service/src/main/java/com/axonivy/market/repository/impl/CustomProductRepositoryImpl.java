@@ -69,7 +69,7 @@ public class CustomProductRepositoryImpl extends BaseRepository<Product> impleme
     context.root().fetch(PRODUCT_ARTIFACT, JoinType.LEFT);
     context.query().where(context.builder().equal(context.root().get(ID), id));
     try {
-      return em.createQuery(context.query()).getSingleResult();
+      return entityManager.createQuery(context.query()).getSingleResult();
     } catch (NoResultException e) {
       return null;
     }
@@ -96,7 +96,7 @@ public class CustomProductRepositoryImpl extends BaseRepository<Product> impleme
     }
 
     // Create query
-    TypedQuery<Product> query = em.createQuery(criteriaContext.query());
+    TypedQuery<Product> query = entityManager.createQuery(criteriaContext.query());
     // Apply pagination
     query.setFirstResult((int) pageable.getOffset()); // Starting row
     query.setMaxResults(pageable.getPageSize()); // Number of results
@@ -180,7 +180,7 @@ public class CustomProductRepositoryImpl extends BaseRepository<Product> impleme
     // Rebuild predicate for the count query using the new Root<Product>
     Predicate countPredicate = buildCriteriaSearch(searchCriteria, cb, countRoot);
     countQuery.select(cb.count(countRoot)).where(countPredicate);
-    return em.createQuery(countQuery).getSingleResult();
+    return entityManager.createQuery(countQuery).getSingleResult();
   }
 
   @Override
@@ -190,7 +190,7 @@ public class CustomProductRepositoryImpl extends BaseRepository<Product> impleme
     Predicate searchCriteria = buildCriteriaSearch(criteria, criteriaContext.builder(), criteriaContext.root());
     criteriaContext.query().where(searchCriteria);
 
-    List<Product> results = em.createQuery(criteriaContext.query()).getResultList();
+    List<Product> results = entityManager.createQuery(criteriaContext.query()).getResultList();
 
     return results.isEmpty() ? null : results.get(0);
   }
@@ -201,7 +201,7 @@ public class CustomProductRepositoryImpl extends BaseRepository<Product> impleme
     Join<Product, Artifact> artifact = criteriaContext.root().join(PRODUCT_ARTIFACT);
     criteriaContext.query().select(criteriaContext.root()).distinct(true).where(
         criteriaContext.builder().isTrue(artifact.get(DOC)));
-    return em.createQuery(criteriaContext.query()).getResultList();
+    return entityManager.createQuery(criteriaContext.query()).getResultList();
   }
 
   public Predicate buildCriteriaSearch(ProductSearchCriteria searchCriteria, CriteriaBuilder cb,

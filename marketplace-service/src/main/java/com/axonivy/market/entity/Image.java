@@ -33,7 +33,7 @@ public class Image {
       example = "https://raw.githubusercontent.comamazon-comprehend/logo.png")
   private String imageUrl;
 
-  @Schema(description = "The image content as byte array", example = "256x256 PNG image 21.82 kB")
+  @Schema(description = "The image content as byte array")
   @Column(columnDefinition = BYTEA_TYPE)
   private byte[] imageData;
 

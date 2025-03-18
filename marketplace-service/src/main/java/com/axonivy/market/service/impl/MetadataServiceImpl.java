@@ -34,7 +34,7 @@ public class MetadataServiceImpl implements MetadataService {
   public void updateMavenArtifactVersionWithModel(List<MavenArtifactVersion> artifactModelsInVersions,
       String version, Metadata metadata) {
     MavenArtifactVersion model = MavenUtils.buildMavenArtifactVersionFromMetadata(version, metadata);
-    artifactModelsInVersions.removeIf( artifactVersion -> artifactVersion.getId().equals(model.getId()));
+    artifactModelsInVersions.removeIf(artifactVersion -> artifactVersion.getId().equals(model.getId()));
     artifactModelsInVersions.add(model);
   }
 

@@ -26,16 +26,16 @@ public class CustomProductDesignerInstallationRepositoryImpl extends BaseReposit
         productId),
         criteriaQueryContext.builder().equal(criteriaQueryContext.root().get(DESIGNER_VERSION), designerVersion));
 
-    List<ProductDesignerInstallation> existsDesignerInstallation = em.createQuery(criteriaQueryContext.query()).getResultList();
+    List<ProductDesignerInstallation> existsDesignerInstallation = entityManager.createQuery(criteriaQueryContext.query()).getResultList();
 
     if (ObjectUtils.isEmpty(existsDesignerInstallation)) {
       ProductDesignerInstallation installation = new ProductDesignerInstallation();
       installation.setProductId(productId);
       installation.setDesignerVersion(designerVersion);
       installation.setInstallationCount(1);
-      em.persist(installation);
+      entityManager.persist(installation);
     } else {
-      Query query = em.createNativeQuery(INCREASE_INSTALLATION_COUNT_VIA_PRODUCT_ID_FOR_DESIGNER_VERSION);
+      Query query = entityManager.createNativeQuery(INCREASE_INSTALLATION_COUNT_VIA_PRODUCT_ID_FOR_DESIGNER_VERSION);
       query.setParameter(PRODUCT_ID, productId);
       query.setParameter(DESIGNER_VERSION, designerVersion);
       query.executeUpdate();

@@ -28,7 +28,7 @@ import static com.axonivy.market.constants.EntityConstants.*;
 @Builder
 @Entity
 @Table(name = PRODUCT_MODULE_CONTENT)
-public class ProductModuleContent extends BaseEntity implements Serializable {
+public class ProductModuleContent extends AuditableEntity implements Serializable {
   @Id
   private String id;
   @Serial

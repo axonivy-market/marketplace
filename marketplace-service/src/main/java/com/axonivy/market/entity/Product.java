@@ -29,7 +29,7 @@ import static com.axonivy.market.constants.PostgresDBConstants.ID;
 @Builder
 @Entity
 @Table(name = PRODUCT)
-public class Product extends BaseEntity implements Serializable {
+public class Product extends AuditableEntity implements Serializable {
   @Serial
   private static final long serialVersionUID = -8770801877877277258L;
   @Id

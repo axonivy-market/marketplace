@@ -25,7 +25,7 @@ import static com.axonivy.market.constants.EntityConstants.PRODUCT_ID_FK;
 @Builder
 @Entity
 @Table(name = PRODUCT_DEPENDENCY)
-public class ProductDependency extends BaseEntity {
+public class ProductDependency extends AuditableEntity {
   @Id
   private String productId;
 

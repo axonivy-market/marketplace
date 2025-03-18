@@ -30,7 +30,6 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 import static com.axonivy.market.constants.ProductJsonConstants.NAME;
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
@@ -54,10 +53,9 @@ public class VersionServiceImpl implements VersionService {
 
     List<MavenArtifactVersionModel> results = new ArrayList<>();
     for (String mavenVersion : mavenVersions) {
-      List<MavenArtifactVersion> artifactsByVersion =filterArtifactByVersion(mavenArtifactVersions, mavenVersion);
+      List<MavenArtifactVersion> artifactsByVersion = filterArtifactByVersion(mavenArtifactVersions, mavenVersion);
 
       if (ObjectUtils.isNotEmpty(artifactsByVersion)) {
-        artifactsByVersion = artifactsByVersion.stream().distinct().toList();
         results.add(new MavenArtifactVersionModel(mavenVersion, artifactsByVersion));
       }
     }
@@ -68,7 +66,8 @@ public class VersionServiceImpl implements VersionService {
       String mavenVersion) {
     return mavenArtifactVersions.stream()
         .filter(artifact -> artifact.getId().getProductVersion().equals(mavenVersion))
-        .collect(Collectors.toCollection(ArrayList::new));
+        .distinct()
+        .toList();
   }
 
   public Map<String, Object> getProductJsonContentByIdAndVersion(String productId, String version) {

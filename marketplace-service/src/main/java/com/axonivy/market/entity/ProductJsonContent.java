@@ -1,7 +1,6 @@
 package com.axonivy.market.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonInclude;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
@@ -20,7 +19,7 @@ import static com.axonivy.market.constants.EntityConstants.TEXT_TYPE;
 @NoArgsConstructor
 @Entity
 @Table(name = PRODUCT_JSON_CONTENT)
-public class ProductJsonContent extends BaseEntity {
+public class ProductJsonContent extends AuditableEntity {
   @Id
   @JsonIgnore
   private String id;

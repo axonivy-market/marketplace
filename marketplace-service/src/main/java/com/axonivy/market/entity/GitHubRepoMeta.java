@@ -12,7 +12,7 @@ import static com.axonivy.market.constants.EntityConstants.GH_REPO_META;
 @Setter
 @Entity
 @Table(name = GH_REPO_META)
-public class GitHubRepoMeta {
+public class GitHubRepoMeta extends AuditableEntity {
   @Id
   private String repoURL;
   private String repoName;

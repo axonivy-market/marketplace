@@ -13,24 +13,24 @@ public abstract class BaseRepository<T> {
   protected abstract Class<T> getType();
 
   @Autowired
-  EntityManager em;
+  EntityManager entityManager;
 
   protected CriteriaQueryContext<T> createCriteriaQueryContext() {
-    CriteriaBuilder builder = em.getCriteriaBuilder();
+    CriteriaBuilder builder = entityManager.getCriteriaBuilder();
     CriteriaQuery<T> query = builder.createQuery(getType());
     Root<T> root = query.from(getType());
     return new CriteriaQueryContext<>(builder, query, root);
   }
 
   protected CriteriaUpdateContext<T> createCriteriaUpdateContext() {
-    CriteriaBuilder builder = em.getCriteriaBuilder();
+    CriteriaBuilder builder = entityManager.getCriteriaBuilder();
     CriteriaUpdate<T> query = builder.createCriteriaUpdate(getType());
     Root<T> root = query.from(getType());
     return new CriteriaUpdateContext<>(builder, query, root);
   }
 
   protected <R> CriteriaByTypeContext<T, R> createCriteriaTypeContext(Class<R> resultType) {
-    CriteriaBuilder builder = em.getCriteriaBuilder();
+    CriteriaBuilder builder = entityManager.getCriteriaBuilder();
     CriteriaQuery<R> query = builder.createQuery(resultType);
     Root<T> root = query.from(getType());
     return new CriteriaByTypeContext<>(builder, query, root);

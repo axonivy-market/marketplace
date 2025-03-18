@@ -14,10 +14,10 @@ public class CustomProductModuleContentRepositoryImpl extends BaseRepository<Pro
 
   @Override
   public List<String> findVersionsByProductId(String id) {
-    CriteriaByTypeContext<ProductModuleContent,String> criteriaContext = createCriteriaTypeContext(String.class);
+    CriteriaByTypeContext<ProductModuleContent, String> criteriaContext = createCriteriaTypeContext(String.class);
     criteriaContext.query().select(criteriaContext.root().get(VERSION))
         .where(criteriaContext.builder().equal(criteriaContext.root().get(PRODUCT_ID), id));
-    return em.createQuery(criteriaContext.query()).getResultList();
+    return entityManager.createQuery(criteriaContext.query()).getResultList();
   }
 
   @Override

@@ -75,13 +75,13 @@ public class MavenDependencyServiceImpl implements MavenDependencyService {
   public int syncIARDependenciesForProducts(Boolean resetSync) {
     int totalSyncedProductIds = 0;
     for (String productId : getMissingProductIds(resetSync)) {
-      List<MavenArtifactVersion> mavenArtifactVersion = mavenArtifactVersionRepository.findByProductId(productId)
+      List<MavenArtifactVersion> mavenArtifactVersions = mavenArtifactVersionRepository.findByProductId(productId)
           .stream()
           .sorted(Comparator.comparing(artifactModel -> artifactModel.getId().isAdditionalVersion()))
-          .collect(Collectors.toCollection(ArrayList::new));
+          .toList();
 
       // If no data in MavenArtifactVersion table then skip this product
-      if (ObjectUtils.isEmpty(mavenArtifactVersion)) {
+      if (ObjectUtils.isEmpty(mavenArtifactVersions)) {
         continue;
       }
 
@@ -89,7 +89,7 @@ public class MavenDependencyServiceImpl implements MavenDependencyService {
 
       // Base on version, loop the artifacts and maps its dependencies
       List<MavenDependency> dependenciesOfArtifact = collectIARDependenciesByArtifactVersion(productId,
-          mavenArtifactVersion);
+          mavenArtifactVersions);
 
       ProductDependency productDependency = ProductDependency.builder()
           .productId(productId)
@@ -219,7 +219,7 @@ public class MavenDependencyServiceImpl implements MavenDependencyService {
     List<MavenArtifactVersion> mavenArtifactVersion = mavenArtifactVersionRepository.findByProductId(productId)
         .stream()
         .sorted(Comparator.comparing(artifactModel -> artifactModel.getId().isAdditionalVersion()))
-        .collect(Collectors.toCollection(ArrayList::new));
+        .toList();
 
     if (ObjectUtils.isEmpty(mavenArtifactVersion)) {
       return null;
