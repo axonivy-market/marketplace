@@ -1,5 +1,6 @@
 package com.axonivy.market.repository.impl;
 
+import com.axonivy.market.constants.CommonConstants;
 import com.axonivy.market.entity.Artifact;
 import com.axonivy.market.criteria.ProductSearchCriteria;
 import com.axonivy.market.entity.Product;
@@ -27,6 +28,7 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 
+import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -174,7 +176,8 @@ public class CustomProductRepositoryImpl implements CustomProductRepository {
 
   private Order sortByRecent(
       ProductCriteriaBuilder<CriteriaBuilder, CriteriaQuery<Product>, Root<Product>> jpaBuilder) {
-    return jpaBuilder.cb.desc(jpaBuilder.root().get(FIRST_PUBLISHED_DATE));
+    return jpaBuilder.cb.desc(jpaBuilder.cb.coalesce(jpaBuilder.root().get(FIRST_PUBLISHED_DATE),
+            jpaBuilder.cb.literal(Timestamp.valueOf(CommonConstants.DEFAULT_DATE_TIME))));
   }
 
   private long getTotalCount(CriteriaBuilder cb, ProductSearchCriteria searchCriteria) {
