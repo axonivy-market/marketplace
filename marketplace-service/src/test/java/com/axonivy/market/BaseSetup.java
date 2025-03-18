@@ -7,7 +7,7 @@ import com.axonivy.market.enums.FeedbackStatus;
 import com.axonivy.market.enums.Language;
 import com.axonivy.market.enums.SortOption;
 import com.axonivy.market.model.FeedbackApprovalModel;
-import com.axonivy.market.model.MavenArtifactKey;
+import com.axonivy.market.entity.key.MavenArtifactKey;
 import com.axonivy.market.model.VersionAndUrlModel;
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.lang3.StringUtils;

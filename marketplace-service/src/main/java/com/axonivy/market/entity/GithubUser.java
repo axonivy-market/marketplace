@@ -21,7 +21,7 @@ import static com.axonivy.market.constants.EntityConstants.GITHUB_USER;
 @NoArgsConstructor
 @Entity
 @Table(name = GITHUB_USER)
-public class User implements Serializable {
+public class GithubUser implements Serializable {
   @Serial
   private static final long serialVersionUID = -1244486023332931059L;
 
@@ -44,6 +44,6 @@ public class User implements Serializable {
     if (obj == null || this.getClass() != obj.getClass()) {
       return false;
     }
-    return new EqualsBuilder().append(id, ((User) obj).getId()).isEquals();
+    return new EqualsBuilder().append(id, ((GithubUser) obj).getId()).isEquals();
   }
 }

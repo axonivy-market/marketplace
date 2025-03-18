@@ -12,10 +12,12 @@ import static com.axonivy.market.constants.PostgresDBConstants.DESIGNER_VERSION;
 import static com.axonivy.market.constants.PostgresDBConstants.PRODUCT_ID;
 
 public class CustomProductDesignerInstallationRepositoryImpl extends BaseRepository<ProductDesignerInstallation> implements CustomProductDesignerInstallationRepository {
-  private static final String INCREASE_INSTALLATION_COUNT_VIA_PRODUCT_ID_FOR_DESIGNER_VERSION = "UPDATE " +
-      "product_designer_installation SET installation_count = installation_count + 1 WHERE product_id = :productId " +
-      "and" +
-      " designer_version = :designerVersion";
+  private static final String INCREASE_INSTALLATION_COUNT_VIA_PRODUCT_ID_FOR_DESIGNER_VERSION = """
+      UPDATE product_designer_installation 
+      SET installation_count = installation_count + 1 
+      WHERE product_id = :productId 
+      AND designer_version = :designerVersion
+      """;
 
   @Override
   @Transactional

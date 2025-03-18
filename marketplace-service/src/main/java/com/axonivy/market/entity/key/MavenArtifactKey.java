@@ -1,4 +1,4 @@
-package com.axonivy.market.model;
+package com.axonivy.market.entity.key;
 
 import jakarta.persistence.Embeddable;
 import lombok.AllArgsConstructor;

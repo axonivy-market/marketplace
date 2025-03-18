@@ -32,7 +32,7 @@ public class CustomProductMarketplaceDataRepositoryImpl extends BaseRepository<P
     entityManager.clear();
     // Fetch the updated entity if needed
     if (updatedRows > 0) {
-      return entityManager.find(ProductMarketplaceData.class, productId).getInstallationCount();
+      return entityManager.find(getType(), productId).getInstallationCount();
     }
     return 0;
   }

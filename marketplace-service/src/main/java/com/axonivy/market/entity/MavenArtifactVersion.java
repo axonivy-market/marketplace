@@ -1,6 +1,6 @@
 package com.axonivy.market.entity;
 
-import com.axonivy.market.model.MavenArtifactKey;
+import com.axonivy.market.entity.key.MavenArtifactKey;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.persistence.EmbeddedId;
