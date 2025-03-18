@@ -270,11 +270,11 @@ export class ProductDetailVersionActionComponent implements AfterViewInit {
       const params = new HttpParams()
         .set(ROUTER.VERSION, version)
         .set(ROUTER.ARTIFACT, this.selectedArtifactId ?? '');
-        
+
       downloadUrl = `${this.getMarketplaceServiceUrl()}/${API_URI.PRODUCT_DETAILS}/${this.productId}/${ARTIFACT_ZIP_URL}?${params.toString()}`;
       this.fetchAndDownloadArtifact(downloadUrl, `${this.selectedArtifactId}-app-${version}.zip`);
     } else {
-      this.onUpdateInstallationCount();
+      return;
     }
   }
 
@@ -327,7 +327,16 @@ export class ProductDetailVersionActionComponent implements AfterViewInit {
   }
 
   onUpdateInstallationCountForDesigner(): void {
-    this.onUpdateInstallationCount();
+    // this.onUpdateInstallationCount();
+    setTimeout(() => {
+      // this.onUpdateInstallationCount();
+      this.productService.sendRequestToGetInstallationCount(this.productId)
+        .subscribe((data: number) => {
+          console.log('2 ' + data);
+          this.installationCount.emit(data)
+        });
+    }, 1000); // Executes after installInDesigner() completes
+
   }
 
   onNavigateToContactPage(): void {

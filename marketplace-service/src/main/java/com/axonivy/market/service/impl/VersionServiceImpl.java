@@ -13,6 +13,8 @@ import com.axonivy.market.model.VersionAndUrlModel;
 import com.axonivy.market.repository.MavenArtifactVersionRepository;
 import com.axonivy.market.repository.MetadataRepository;
 import com.axonivy.market.repository.ProductJsonContentRepository;
+import com.axonivy.market.repository.ProductMarketplaceDataRepository;
+import com.axonivy.market.service.ProductMarketplaceDataService;
 import com.axonivy.market.service.VersionService;
 import com.axonivy.market.util.MavenUtils;
 import com.axonivy.market.util.VersionUtils;
@@ -43,6 +45,7 @@ public class VersionServiceImpl implements VersionService {
 
   private final MavenArtifactVersionRepository mavenArtifactVersionRepo;
   private final ProductJsonContentRepository productJsonRepo;
+  private final ProductMarketplaceDataService productMarketplaceDataService;
   private final ObjectMapper mapper = new ObjectMapper();
   private final MetadataRepository metadataRepo;
 
@@ -84,6 +87,7 @@ public class VersionServiceImpl implements VersionService {
       }
       result = mapper.readValue(productJsonContent.getContent(), Map.class);
       result.computeIfAbsent(NAME, k -> productJsonContent.getName());
+      productMarketplaceDataService.updateInstallationCountForProduct(productId, version);
     } catch (JsonProcessingException jsonProcessingException) {
       log.error(jsonProcessingException.getMessage());
     }

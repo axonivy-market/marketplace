@@ -2,11 +2,13 @@ package com.axonivy.market.controller;
 
 import com.axonivy.market.bo.VersionDownload;
 import com.axonivy.market.constants.GitHubConstants;
+import com.axonivy.market.entity.ProductMarketplaceData;
 import com.axonivy.market.enums.ErrorCode;
 import com.axonivy.market.github.service.GitHubService;
 import com.axonivy.market.logging.Loggable;
 import com.axonivy.market.model.Message;
 import com.axonivy.market.model.ProductCustomSortRequest;
+import com.axonivy.market.repository.ProductMarketplaceDataRepository;
 import com.axonivy.market.service.ProductMarketplaceDataService;
 import com.axonivy.market.util.AuthorizationUtils;
 import io.swagger.v3.oas.annotations.Operation;
@@ -39,6 +41,7 @@ import static org.springframework.http.HttpHeaders.AUTHORIZATION;
 public class ProductMarketplaceDataController {
   private final GitHubService gitHubService;
   private final ProductMarketplaceDataService productMarketplaceDataService;
+  private final ProductMarketplaceDataRepository productMarketplaceDataRepository;
 
   @PostMapping(CUSTOM_SORT)
   @Operation(hidden = true)
@@ -75,5 +78,15 @@ public class ProductMarketplaceDataController {
       return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
     return new ResponseEntity<>(result, HttpStatus.OK);
+  }
+
+  @GetMapping("hello/{id}")
+  public ResponseEntity<Integer> findInstallationCount(@PathVariable(ID)
+  String id) {
+    ProductMarketplaceData data = productMarketplaceDataRepository.findById(id).orElse(null);
+    if (data == null) {
+      return new ResponseEntity<>(0, HttpStatus.OK);
+    }
+    return new ResponseEntity<>(data.getInstallationCount(), HttpStatus.OK);
   }
 }

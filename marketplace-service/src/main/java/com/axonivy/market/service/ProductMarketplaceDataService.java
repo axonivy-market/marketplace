@@ -9,7 +9,7 @@ import java.io.IOException;
 public interface ProductMarketplaceDataService {
   void addCustomSortProduct(ProductCustomSortRequest customSort);
 
-  int updateInstallationCountForProduct(String key, String designerVersion);
+  int updateInstallationCountForProduct(String id, String designerVersion);
 
   int updateProductInstallationCount(String id);
 
