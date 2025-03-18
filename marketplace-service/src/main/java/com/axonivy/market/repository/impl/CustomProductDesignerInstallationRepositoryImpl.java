@@ -3,9 +3,6 @@ package com.axonivy.market.repository.impl;
 import com.axonivy.market.entity.ProductDesignerInstallation;
 import com.axonivy.market.repository.CustomProductDesignerInstallationRepository;
 import jakarta.persistence.Query;
-import jakarta.persistence.criteria.CriteriaBuilder;
-import jakarta.persistence.criteria.CriteriaQuery;
-import jakarta.persistence.criteria.Root;
 import jakarta.transaction.Transactional;
 import org.apache.commons.lang3.ObjectUtils;
 
