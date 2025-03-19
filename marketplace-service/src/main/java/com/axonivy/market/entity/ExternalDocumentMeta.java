@@ -20,10 +20,8 @@ import static com.axonivy.market.constants.EntityConstants.EXTERNAL_DOCUMENT_MET
 @Builder
 @Entity
 @Table(name = EXTERNAL_DOCUMENT_META)
-public class ExternalDocumentMeta extends AuditableEntity {
-  @Id
-  @GeneratedValue(strategy = GenerationType.UUID)
-  private String id;
+public class ExternalDocumentMeta extends AuditableIdEntity {
+
   private String productId;
   private String artifactId;
   private String artifactName;

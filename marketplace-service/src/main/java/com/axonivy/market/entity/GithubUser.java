@@ -21,13 +21,8 @@ import static com.axonivy.market.constants.EntityConstants.GITHUB_USER;
 @NoArgsConstructor
 @Entity
 @Table(name = GITHUB_USER)
-public class GithubUser implements Serializable {
-  @Serial
-  private static final long serialVersionUID = -1244486023332931059L;
+public class GithubUser extends GenericIdEntity {
 
-  @Id
-  @GeneratedValue(strategy = GenerationType.UUID)
-  private String id;
   private String gitHubId;
   private String provider;
   private String username;
@@ -36,7 +31,7 @@ public class GithubUser implements Serializable {
 
   @Override
   public int hashCode() {
-    return new HashCodeBuilder().append(id).hashCode();
+    return new HashCodeBuilder().append(getId()).hashCode();
   }
 
   @Override
@@ -44,6 +39,6 @@ public class GithubUser implements Serializable {
     if (obj == null || this.getClass() != obj.getClass()) {
       return false;
     }
-    return new EqualsBuilder().append(id, ((GithubUser) obj).getId()).isEquals();
+    return new EqualsBuilder().append(getId(), ((GithubUser) obj).getId()).isEquals();
   }
 }

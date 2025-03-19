@@ -32,4 +32,14 @@ public class ProductDependency extends AuditableEntity {
   @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
   @JoinColumn(name = PRODUCT_ID_FK)
   private List<MavenDependency> dependenciesOfArtifact;
+
+  @Override
+  public String getId() {
+    return productId;
+  }
+
+  @Override
+  public void setId(String productId) {
+    this.productId = productId;
+  }
 }

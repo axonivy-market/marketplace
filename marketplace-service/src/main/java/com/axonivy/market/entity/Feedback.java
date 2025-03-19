@@ -28,14 +28,8 @@ import static com.axonivy.market.constants.EntityConstants.FEEDBACK;
 @NoArgsConstructor
 @Entity
 @Table(name = FEEDBACK)
-public class Feedback extends AuditableEntity implements Serializable {
+public class Feedback extends AuditableIdEntity {
 
-  @Serial
-  private static final long serialVersionUID = 29519800556564714L;
-
-  @Id
-  @GeneratedValue(strategy = GenerationType.UUID)
-  private String id;
   private String userId;
   private String productId;
   private String content;

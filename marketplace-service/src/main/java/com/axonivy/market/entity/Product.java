@@ -30,10 +30,10 @@ import static com.axonivy.market.constants.PostgresDBConstants.ID;
 @Entity
 @Table(name = PRODUCT)
 public class Product extends AuditableEntity implements Serializable {
-  @Serial
-  private static final long serialVersionUID = -8770801877877277258L;
+
   @Id
   private String id;
+
   private String marketDirectory;
 
   @JsonProperty
@@ -117,5 +117,15 @@ public class Product extends AuditableEntity implements Serializable {
       return false;
     }
     return new EqualsBuilder().append(id, ((Product) obj).getId()).isEquals();
+  }
+
+  @Override
+  public String getId() {
+    return id;
+  }
+
+  @Override
+  public void setId(String id) {
+    this.id = id;
   }
 }

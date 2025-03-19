@@ -40,9 +40,9 @@ class MavenUtilsTest extends BaseSetup {
     Assertions.assertEquals(expectedResult, result);
 
     // Assert case with artifact not match & use custom repo
-    ArchivedArtifact adobeArchivedArtifactVersion9 = new ArchivedArtifact("df23423523", "10.0.9",
+    ArchivedArtifact adobeArchivedArtifactVersion9 = new ArchivedArtifact( "10.0.9",
         "com.axonivy.adobe.connector", "adobe-connector", targetArtifact);
-    ArchivedArtifact adobeArchivedArtifactVersion8 = new ArchivedArtifact("uhfgsedg", "10.0.8",
+    ArchivedArtifact adobeArchivedArtifactVersion8 = new ArchivedArtifact( "10.0.8",
         "com.axonivy.adobe.sign.connector", "adobe-sign-connector", targetArtifact);
     String customRepoUrl = "https://nexus.axonivy.com";
     targetArtifact.setRepoUrl(customRepoUrl);

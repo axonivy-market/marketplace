@@ -23,10 +23,8 @@ import static com.axonivy.market.constants.EntityConstants.IMAGE;
 @Builder
 @Entity
 @Table(name = IMAGE)
-public class Image {
-  @Id
-  @GeneratedValue(strategy = GenerationType.UUID)
-  private String id;
+public class Image extends GenericIdEntity{
+
   @Schema(description = "Product id", example = "jira-connector")
   private String productId;
   @Schema(description = "The download url from github",

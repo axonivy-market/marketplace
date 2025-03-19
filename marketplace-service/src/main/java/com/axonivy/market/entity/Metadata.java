@@ -28,9 +28,8 @@ import static com.axonivy.market.constants.EntityConstants.TEXT_TYPE;
 @Builder
 @Entity
 @Table(name = METADATA)
-public class Metadata implements Serializable {
-  @Serial
-  private static final long serialVersionUID = 1L;
+public class Metadata extends GenericEntity<String> {
+
   @Id
   private String url;
   private String productId;
@@ -65,5 +64,15 @@ public class Metadata implements Serializable {
   @Override
   public int hashCode() {
     return Objects.hashCode(url);
+  }
+
+  @Override
+  public String getId() {
+    return url;
+  }
+
+  @Override
+  public void setId(String url) {
+    this.url = url;
   }
 }

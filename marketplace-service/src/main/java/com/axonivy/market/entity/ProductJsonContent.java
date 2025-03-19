@@ -28,4 +28,14 @@ public class ProductJsonContent extends AuditableEntity {
   private String name;
   @Column(columnDefinition = TEXT_TYPE)
   private String content;
+
+  @Override
+  public String getId() {
+    return id;
+  }
+
+  @Override
+  public void setId(String id) {
+    this.id = id;
+  }
 }

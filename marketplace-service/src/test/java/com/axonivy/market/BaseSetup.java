@@ -343,27 +343,6 @@ public class BaseSetup {
     return versionAndUrlModels;
   }
 
-  protected Feedback mockFeedback() {
-    return Feedback.builder()
-        .id("1")
-        .userId("user1")
-        .productId("product1")
-        .feedbackStatus(FeedbackStatus.APPROVED)
-        .build();
-  }
-
-  protected List<Feedback> mockFeedbacks() {
-    Feedback updatedFeedback = Feedback.builder()
-        .id("1")
-        .userId("user1")
-        .productId("product1")
-        .feedbackStatus(FeedbackStatus.APPROVED)
-        .moderatorName("Admin")
-        .build();
-
-    return List.of(updatedFeedback);
-  }
-
   protected FeedbackApprovalModel mockFeedbackApproval() {
     return FeedbackApprovalModel.builder()
         .feedbackId("1")

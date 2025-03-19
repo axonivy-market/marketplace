@@ -1,6 +1,8 @@
 package com.axonivy.market.entity;
 
 import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 import lombok.Getter;
@@ -18,4 +20,14 @@ public class GitHubRepoMeta extends AuditableEntity {
   private String repoName;
   private Long lastChange;
   private String lastSHA1;
+
+  @Override
+  public String getId() {
+    return repoURL;
+  }
+
+  @Override
+  public void setId(String id) {
+    this.repoURL = id;
+  }
 }

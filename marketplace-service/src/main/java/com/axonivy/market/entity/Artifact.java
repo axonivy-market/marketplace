@@ -25,12 +25,8 @@ import static com.axonivy.market.constants.EntityConstants.PRODUCT_ID;
 @AllArgsConstructor
 @Entity
 @Table(name = ARTIFACT)
-public class Artifact implements Serializable {
-  @Id
-  @GeneratedValue(strategy = GenerationType.UUID)
-  private String id;
-  @Serial
-  private static final long serialVersionUID = 1L;
+public class Artifact extends GenericIdEntity {
+
   private String repoUrl;
   private String name;
   private String groupId;

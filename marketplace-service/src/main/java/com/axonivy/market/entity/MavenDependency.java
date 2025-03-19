@@ -27,10 +27,8 @@ import static com.axonivy.market.constants.EntityConstants.PARENT_DEPENDENCY_ID;
 @Setter
 @Entity
 @Table(name = MAVEN_DEPENDENCY)
-public class MavenDependency {
-  @Id
-  @GeneratedValue(strategy = GenerationType.UUID)
-  private String id;
+public class MavenDependency extends GenericIdEntity {
+
   private String mavenName;
   private String artifactId;
   private String version;

@@ -25,13 +25,8 @@ import static com.axonivy.market.constants.EntityConstants.ARTIFACT_ID_FK;
 @AllArgsConstructor
 @Entity
 @Table(name = ARCHIVED_ARTIFACT)
-public class ArchivedArtifact implements Serializable {
-  @Id
-  @GeneratedValue(strategy = GenerationType.UUID)
-  private String id;
+public class ArchivedArtifact extends GenericIdEntity {
 
-  @Serial
-  private static final long serialVersionUID = 1L;
   private String lastVersion;
   private String groupId;
   private String artifactId;
@@ -40,5 +35,5 @@ public class ArchivedArtifact implements Serializable {
   @JoinColumn(name = ARTIFACT_ID_FK, nullable = false)
   @JsonBackReference
   private Artifact artifact;
-  
+
 }
