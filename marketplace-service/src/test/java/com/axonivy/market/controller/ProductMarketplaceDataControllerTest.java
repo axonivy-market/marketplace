@@ -6,10 +6,13 @@ import com.axonivy.market.enums.ErrorCode;
 import com.axonivy.market.github.service.GitHubService;
 import com.axonivy.market.model.ProductCustomSortRequest;
 import com.axonivy.market.service.ProductMarketplaceDataService;
+import com.axonivy.market.util.AuthorizationUtils;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.MockedStatic;
+import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpStatus;
 
@@ -48,7 +51,22 @@ class ProductMarketplaceDataControllerTest extends BaseSetup {
         new VersionDownload());
     var result = productMarketplaceDataController.extractArtifactUrl(MOCK_PRODUCT_ID, MOCK_DOWNLOAD_URL);
 
+    assertEquals(HttpStatus.OK, result.getStatusCode());
     assertNotNull(result);
+  }
+
+  @Test
+  void testExtractArtifactUrl_ReturnNoContent() throws IOException {
+    String downloadUrl = "https://example.com/download";
+    try (MockedStatic<AuthorizationUtils> mockUtils = Mockito.mockStatic(AuthorizationUtils.class)) {
+      mockUtils.when(() -> AuthorizationUtils.isAllowedUrl(downloadUrl)).thenReturn(true);
+      when(productMarketplaceDataService.downloadArtifact(downloadUrl, MOCK_PRODUCT_ID)).thenReturn(null);
+
+      var result = productMarketplaceDataController.extractArtifactUrl(MOCK_PRODUCT_ID, downloadUrl);
+
+      assertEquals(HttpStatus.NO_CONTENT, result.getStatusCode());
+      assertNull(result.getBody());
+    }
   }
 
   @Test

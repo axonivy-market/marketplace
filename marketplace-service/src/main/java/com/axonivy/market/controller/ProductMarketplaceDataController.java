@@ -22,12 +22,14 @@ import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.io.IOException;
 import java.util.Objects;
 
 import static com.axonivy.market.constants.RequestMappingConstants.*;
 import static com.axonivy.market.constants.RequestParamConstants.ID;
+import static com.axonivy.market.constants.RequestParamConstants.URL;
 import static org.springframework.http.HttpHeaders.AUTHORIZATION;
 
 @RestController
@@ -56,7 +58,11 @@ public class ProductMarketplaceDataController {
   @GetMapping(VERSION_DOWNLOAD_BY_ID)
   public ResponseEntity<VersionDownload> extractArtifactUrl(
       @PathVariable(ID) String productId,
-      @RequestParam(name = "url") String artifactUrl) throws IOException {
+      @RequestParam(URL) String artifactUrl) throws IOException {
+    if (!AuthorizationUtils.isAllowedUrl(artifactUrl)) {
+      throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Invalid URL");
+    }
+
     VersionDownload result = productMarketplaceDataService.downloadArtifact(artifactUrl, productId);
 
     if (result == null) {
