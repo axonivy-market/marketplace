@@ -1,7 +1,6 @@
 package com.axonivy.market.entity;
 
 import com.axonivy.market.converter.StringListConverter;
-import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -57,8 +56,7 @@ public class Product extends AuditableEntity implements Serializable {
   @Column(nullable = false, columnDefinition = TEXT_TYPE)
   private List<String> releasedVersions;
 
-  @OneToMany(mappedBy = PRODUCT, cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
-  @JsonManagedReference
+  @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
   private List<Artifact> artifacts;
 
   private String logoUrl;

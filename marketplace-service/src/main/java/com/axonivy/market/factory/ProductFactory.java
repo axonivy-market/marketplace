@@ -78,7 +78,6 @@ public class ProductFactory {
 
     for (Artifact artifact : artifacts) {
       artifact.setInvalidArtifact(!artifact.getArtifactId().contains(meta.getId()));
-      artifact.setProduct(product);
     }
 
     product.setArtifacts(artifacts);
