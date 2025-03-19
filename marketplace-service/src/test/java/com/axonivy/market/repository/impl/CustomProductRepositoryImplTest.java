@@ -40,7 +40,7 @@ class CustomProductRepositoryImplTest extends BaseSetup {
 
   @BeforeEach
   void setup() {
-    ReflectionTestUtils.setField(repo, "em", em);
+    ReflectionTestUtils.setField(repo, "entityManager", em);
   }
 
   @Test

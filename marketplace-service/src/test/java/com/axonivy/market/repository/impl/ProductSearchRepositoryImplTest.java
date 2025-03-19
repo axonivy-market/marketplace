@@ -47,7 +47,7 @@ class ProductSearchRepositoryImplTest extends BaseSetup {
   public void setup() {
     searchCriteria = new ProductSearchCriteria();
     mockResultReturn = createPageProductsMock();
-    ReflectionTestUtils.setField(productListedRepository, "em", em);
+    ReflectionTestUtils.setField(productListedRepository, "entityManager", em);
   }
 
   @Test
