@@ -34,6 +34,7 @@ describe('ProductDetailVersionActionComponent', () => {
   beforeEach(() => {
     productServiceMock = jasmine.createSpyObj('ProductService', [
       'sendRequestToProductDetailVersionAPI',
+      'sendRequestToGetInstallationCount',
       'sendRequestToGetProductVersionsForDesigner'
     ]);
     const commonUtilsSpy = jasmine.createSpyObj('CommonUtils', [ 'getCookieValue' ]);
@@ -283,7 +284,7 @@ describe('ProductDetailVersionActionComponent', () => {
     component.getVersionInDesigner();
 
     // Assert
-    expect(productServiceMock.sendRequestToGetProductVersionsForDesigner).toHaveBeenCalledWith(productId);
+    expect(productServiceMock.sendRequestToGetProductVersionsForDesigner).toHaveBeenCalledWith(productId, '');
     expect(component.versions()).toEqual(['Version 1.0', 'Version 2.0']);
   });
 
@@ -295,7 +296,7 @@ describe('ProductDetailVersionActionComponent', () => {
     component.getVersionInDesigner();
 
     // Assert
-    expect(productServiceMock.sendRequestToGetProductVersionsForDesigner).toHaveBeenCalledWith(productId);
+    expect(productServiceMock.sendRequestToGetProductVersionsForDesigner).toHaveBeenCalledWith(productId, '');
     expect(component.versions()).toEqual([]);
   });
 

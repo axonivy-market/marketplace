@@ -1,15 +1,14 @@
 package com.axonivy.market.service.impl;
 
 import com.axonivy.market.BaseSetup;
+import com.axonivy.market.bo.VersionDownload;
 import com.axonivy.market.entity.Artifact;
-import com.axonivy.market.bo.MavenDependency;
 import com.axonivy.market.constants.ProductJsonConstants;
 import com.axonivy.market.entity.ProductDependency;
 import com.axonivy.market.entity.ProductModuleContent;
 import com.axonivy.market.repository.ProductDependencyRepository;
 import com.axonivy.market.service.FileDownloadService;
 import com.axonivy.market.service.ImageService;
-import com.axonivy.market.service.MetadataService;
 import com.axonivy.market.service.ProductJsonContentService;
 import com.axonivy.market.service.ProductMarketplaceDataService;
 import com.axonivy.market.util.MavenUtils;
@@ -40,8 +39,6 @@ class ProductContentServiceImplTest extends BaseSetup {
   private ProductJsonContentService productJsonContentService;
   @Mock
   private ImageService imageService;
-  @Mock
-  private MetadataService metadataService;
   @Mock
   private ProductDependencyRepository productDependencyRepository;
   @Mock
@@ -97,13 +94,14 @@ class ProductContentServiceImplTest extends BaseSetup {
   @Test
   void testDownloadZipArtifactFile() {
     ProductDependency productDependency = mockProductDependency();
-
     when(productDependencyRepository.findByIdWithDependencies(MOCK_PRODUCT_ID)).thenReturn(productDependency);
     when(fileDownloadService.downloadFile(MOCK_DOWNLOAD_URL)).thenReturn(MOCK_DOWNLOAD_URL.getBytes());
-    when(productMarketplaceDataService.updateInstallationCountForProduct(eq(MOCK_PRODUCT_ID), any())).thenReturn(5);
+    when(productMarketplaceDataService.getVersionDownload(any(), any())).thenReturn(mockVersionDownload());
 
-    var versionDownload = productContentService.downloadZipArtifactFile(MOCK_PRODUCT_ID, MOCK_DEMO_ARTIFACT_ID,
+    VersionDownload versionDownload = productContentService.downloadZipArtifactFile(MOCK_PRODUCT_ID,
+        MOCK_DEMO_ARTIFACT_ID,
         MOCK_RELEASED_VERSION);
+
     assertNotNull(versionDownload);
 
     assertNotNull(versionDownload.getFileData());

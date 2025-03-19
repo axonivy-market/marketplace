@@ -167,9 +167,10 @@ class ProductDetailsControllerTest extends BaseSetup {
 
   @Test
   void findProductVersionsById() {
-    when(versionService.getVersionsForDesigner("google-maps-connector")).thenReturn(mockVersionAndUrlModels());
+    when(versionService.getVersionsForDesigner("google-maps-connector", null))
+        .thenReturn(mockVersionAndUrlModels());
 
-    var result = productDetailsController.findVersionsForDesigner("google-maps-connector");
+    var result = productDetailsController.findVersionsForDesigner("google-maps-connector", null);
 
     assertEquals(2, Objects.requireNonNull(result.getBody()).size());
     assertEquals("10.0.21", Objects.requireNonNull(result.getBody()).get(0).getVersion());
@@ -184,10 +185,12 @@ class ProductDetailsControllerTest extends BaseSetup {
   void findProductJsonContentByIdAndVersion() throws IOException {
     ProductJsonContent productJsonContent = mockProductJsonContent();
     Map<String, Object> map = new ObjectMapper().readValue(productJsonContent.getContent(), Map.class);
-    when(versionService.getProductJsonContentByIdAndVersion(MOCK_PRODUCT_ID, MOCK_RELEASED_VERSION)).thenReturn(
+    when(versionService.getProductJsonContentByIdAndVersion(MOCK_PRODUCT_ID, MOCK_RELEASED_VERSION,
+        MOCK_DESIGNER_VERSION)).thenReturn(
         map);
 
-    var result = productDetailsController.findProductJsonContent(MOCK_PRODUCT_ID, MOCK_RELEASED_VERSION);
+    var result = productDetailsController.findProductJsonContent(MOCK_PRODUCT_ID, MOCK_RELEASED_VERSION,
+        MOCK_DESIGNER_VERSION);
 
     assertEquals(new ResponseEntity<>(map, HttpStatus.OK), result);
   }

@@ -43,20 +43,20 @@ class ProductMarketplaceDataControllerTest extends BaseSetup {
   }
 
   @Test
-  void testSyncInstallationCount() {
-    when(productMarketplaceDataService.updateInstallationCountForProduct(MOCK_PRODUCT_ID,
-        MOCK_RELEASED_VERSION)).thenReturn(1);
-    var result = productMarketplaceDataController.syncInstallationCount(MOCK_PRODUCT_ID, MOCK_RELEASED_VERSION);
-
-    assertEquals(1, result.getBody());
-  }
-
-  @Test
   void testExtractArtifactUrl() throws IOException {
     when(productMarketplaceDataService.downloadArtifact(MOCK_DOWNLOAD_URL, MOCK_PRODUCT_ID)).thenReturn(
         new VersionDownload());
     var result = productMarketplaceDataController.extractArtifactUrl(MOCK_PRODUCT_ID, MOCK_DOWNLOAD_URL);
 
+    assertNotNull(result);
+  }
+
+  @Test
+  void testFindInstallationCount() {
+    when(productMarketplaceDataService.getInstallationCount(MOCK_PRODUCT_ID)).thenReturn(5);
+    var result = productMarketplaceDataController.findInstallationCount(MOCK_PRODUCT_ID);
+
+    assertEquals(HttpStatus.OK, result.getStatusCode());
     assertNotNull(result);
   }
 

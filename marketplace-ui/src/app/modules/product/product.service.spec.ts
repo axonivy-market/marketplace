@@ -205,8 +205,23 @@ describe('ProductService', () => {
     });
   });
 
-  //TODO -
-  fit('sendRequestToGetProductVersionForDesigner', () => {
+  it('sendRequestToGetInstallationCount', () => {
+    const productId = 'google-maps-connector';
+
+    service.sendRequestToGetInstallationCount(productId).subscribe(response => {
+      expect(response).toBe(3);
+    });
+
+    const req = httpMock.expectOne(request => {
+      expect(request.url).toEqual(`${API_URI.PRODUCT_MARKETPLACE_DATA}/installation-count/${productId}`);
+
+      return true;
+    });
+
+    expect(req.request.method).toBe('GET');
+  });
+
+  it('sendRequestToGetProductVersionForDesigner', () => {
     const productId = 'google-maps-connector';
     const designerVersion = '12.0.3';
 
@@ -217,7 +232,12 @@ describe('ProductService', () => {
       expect(response[2].version).toBe('10.0.0');
     });
 
-    const req = httpMock.expectOne(`${API_URI.PRODUCT_DETAILS}/${productId}/designerversions`);
+    const req = httpMock.expectOne(request => {
+      return (
+        request.url === `${API_URI.PRODUCT_DETAILS}/${productId}/designerversions` &&
+        request.params.get('designerVersion') === designerVersion
+      );
+    });
     expect(req.request.method).toBe('GET');
     req.flush([{ version: '10.0.2' }, { version: '10.0.1' }, { version: '10.0.0' }]);
   });

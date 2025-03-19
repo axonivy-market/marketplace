@@ -28,6 +28,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.io.IOException;
+import java.util.Objects;
 
 import static com.axonivy.market.constants.RequestMappingConstants.*;
 import static com.axonivy.market.constants.RequestParamConstants.DESIGNER_VERSION;
@@ -73,10 +74,7 @@ public class ProductMarketplaceDataController {
   @GetMapping(INSTALLATION_COUNT_BY_ID)
   public ResponseEntity<Integer> findInstallationCount(@PathVariable(ID)
   String id) {
-    ProductMarketplaceData data = productMarketplaceDataRepository.findById(id).orElse(null);
-    if (data == null) {
-      return new ResponseEntity<>(0, HttpStatus.OK);
-    }
-    return new ResponseEntity<>(data.getInstallationCount(), HttpStatus.OK);
+    Integer result = productMarketplaceDataService.getInstallationCount(id);
+    return new ResponseEntity<>(Objects.requireNonNullElse(result, 0), HttpStatus.OK);
   }
 }

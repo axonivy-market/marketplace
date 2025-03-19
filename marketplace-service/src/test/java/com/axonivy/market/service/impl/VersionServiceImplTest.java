@@ -12,6 +12,7 @@ import com.axonivy.market.model.VersionAndUrlModel;
 import com.axonivy.market.repository.MavenArtifactVersionRepository;
 import com.axonivy.market.repository.MetadataRepository;
 import com.axonivy.market.repository.ProductJsonContentRepository;
+import com.axonivy.market.service.ProductMarketplaceDataService;
 import com.axonivy.market.util.MavenUtils;
 import com.axonivy.market.util.VersionUtils;
 import org.apache.commons.lang3.ObjectUtils;
@@ -51,6 +52,9 @@ class VersionServiceImplTest extends BaseSetup {
 
   @Mock
   private MetadataRepository metadataRepo;
+
+  @Mock
+  private ProductMarketplaceDataService productMarketplaceDataService;
 
   @Test
   void testGetArtifactsAndVersionToDisplay() {
@@ -111,15 +115,19 @@ class VersionServiceImplTest extends BaseSetup {
     mockMetadata.setArtifactId(MOCK_PRODUCT_ARTIFACT_ID);
     mockMetadata.setVersions(new HashSet<>());
     mockMetadata.getVersions().addAll(mockVersions);
-    List<VersionAndUrlModel> result = versionService.getVersionsForDesigner(MOCK_PRODUCT_ID);
+    List<VersionAndUrlModel> result = versionService.getVersionsForDesigner(MOCK_PRODUCT_ID, MOCK_DESIGNER_VERSION);
     Assertions.assertTrue(CollectionUtils.isEmpty(result));
     when(metadataRepo.findByProductId(MOCK_PRODUCT_ID)).thenReturn(List.of(mockMetadata));
-    result = versionService.getVersionsForDesigner(MOCK_PRODUCT_ID);
+    result = versionService.getVersionsForDesigner(MOCK_PRODUCT_ID, MOCK_DESIGNER_VERSION);
     Assertions.assertEquals(result.stream().map(VersionAndUrlModel::getVersion).toList(), mockVersions);
-    Assertions.assertTrue(result.get(0).getUrl().endsWith("/api/product-details/bpmn-statistic/11.3.0-SNAPSHOT/json"));
-    Assertions.assertTrue(result.get(1).getUrl().endsWith("/api/product-details/bpmn-statistic/11.1.1/json"));
-    Assertions.assertTrue(result.get(2).getUrl().endsWith("/api/product-details/bpmn-statistic/11.1.0/json"));
-    Assertions.assertTrue(result.get(3).getUrl().endsWith("/api/product-details/bpmn-statistic/10.0.2/json"));
+    Assertions.assertTrue(result.get(0).getUrl().endsWith("/api/product-details/bpmn-statistic/11.3" +
+        ".0-SNAPSHOT/json?designerVersion=12.0.4"));
+    Assertions.assertTrue(
+        result.get(1).getUrl().endsWith("/api/product-details/bpmn-statistic/11.1.1/json?designerVersion=12.0.4"));
+    Assertions.assertTrue(
+        result.get(2).getUrl().endsWith("/api/product-details/bpmn-statistic/11.1.0/json?designerVersion=12.0.4"));
+    Assertions.assertTrue(
+        result.get(3).getUrl().endsWith("/api/product-details/bpmn-statistic/10.0.2/json?designerVersion=12.0.4"));
   }
 
   @Test
@@ -129,7 +137,7 @@ class VersionServiceImplTest extends BaseSetup {
     Mockito.when(productJsonContentRepository.findByProductIdAndVersion(anyString(), anyString()))
         .thenReturn(List.of(mockProductJsonContent));
     Map<String, Object> result = versionService.getProductJsonContentByIdAndVersion(MOCK_PRODUCT_ID,
-        MOCK_RELEASED_VERSION);
+        MOCK_RELEASED_VERSION, MOCK_DESIGNER_VERSION);
     Assertions.assertEquals(MOCK_PRODUCT_NAME, result.get("name"));
   }
 
@@ -138,7 +146,7 @@ class VersionServiceImplTest extends BaseSetup {
     Mockito.when(productJsonContentRepository.findByProductIdAndVersion(anyString(), anyString())).thenReturn(
         Collections.emptyList());
     Map<String, Object> result = versionService.getProductJsonContentByIdAndVersion(MOCK_PRODUCT_ID,
-        MOCK_RELEASED_VERSION);
+        MOCK_RELEASED_VERSION, MOCK_DESIGNER_VERSION);
     Assertions.assertEquals(new HashMap<>(), result);
   }
 

@@ -231,11 +231,11 @@ export class ProductDetailVersionActionComponent implements AfterViewInit {
 
   getVersionInDesigner(): void {
     if (this.versions().length === 0) {
-      let currentDesignerVersion = this.routingQueryParamService.getDesignerVersionFromSessionStorage() ?? '';
+      let designerVersion = this.routingQueryParamService.getDesignerVersionFromSessionStorage() ?? '';
       this.productService
         .sendRequestToGetProductVersionsForDesigner(
           this.productId,
-          currentDesignerVersion)
+          designerVersion)
         .subscribe(data => {
           const versionMap = data
             .map(dataVersionAndUrl => dataVersionAndUrl.version)

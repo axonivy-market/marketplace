@@ -16,6 +16,7 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.lang3.BooleanUtils;
+import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -25,7 +26,6 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.security.SecureRandom;
 import java.util.ArrayList;
-import java.util.Base64;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -149,6 +149,13 @@ public class ProductMarketplaceDataServiceImpl implements ProductMarketplaceData
   public ProductMarketplaceData getProductMarketplaceData(String productId) {
     return productMarketplaceDataRepo.findById(productId).orElse(
         ProductMarketplaceData.builder().id(productId).build());
+  }
+
+  @Override
+  public Integer getInstallationCount(String id) {
+    return productMarketplaceDataRepo.findById(id)
+        .map(ProductMarketplaceData::getInstallationCount)
+        .orElse(null);
   }
 
   private void validateProductExists(String productId) throws NotFoundException {
