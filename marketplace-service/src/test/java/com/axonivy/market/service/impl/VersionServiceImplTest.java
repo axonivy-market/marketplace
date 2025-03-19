@@ -76,9 +76,9 @@ class VersionServiceImplTest extends BaseSetup {
         Collections.emptyList());
     Assertions.assertNull(result);
     ArchivedArtifact adobeArchivedArtifactVersion8 = new ArchivedArtifact("10.0.8", MOCK_GROUP_ID,
-        "bpmn-connector",null);
+        "bpmn-connector");
     ArchivedArtifact adobeArchivedArtifactVersion9 = new ArchivedArtifact("10.0.9", MOCK_GROUP_ID,
-        "process-mining-connector", null);
+        "process-mining-connector");
     List<ArchivedArtifact> archivedArtifacts = new ArrayList<>();
     archivedArtifacts.add(adobeArchivedArtifactVersion8);
     archivedArtifacts.add(adobeArchivedArtifactVersion9);
@@ -90,7 +90,7 @@ class VersionServiceImplTest extends BaseSetup {
     Assertions.assertEquals(adobeArchivedArtifactVersion8, result);
     ArchivedArtifact adobeArchivedArtifactVersion10 = new ArchivedArtifact(MOCK_RELEASED_VERSION,
         MOCK_GROUP_ID,
-        "adobe-sign-connector",null);
+        "adobe-sign-connector");
     archivedArtifacts.add(adobeArchivedArtifactVersion10);
     result = MavenUtils.findArchivedArtifactInfoBestMatchWithVersion(MOCK_RELEASED_VERSION,
         archivedArtifacts);
