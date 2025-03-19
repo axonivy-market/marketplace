@@ -88,35 +88,38 @@ public class CustomProductRepositoryImpl extends BaseRepository<Product> impleme
     PageRequest pageRequest = (PageRequest) pageable;
 
     List<Product> resultList = getPagedProductsByCriteria(jpaBuilder, searchCriteria, pageRequest);
-    long total = resultList.size() < pageable.getPageSize() ? resultList.size() : getTotalCount(jpaBuilder.cb(), searchCriteria);
+    long total = resultList.size() < pageable.getPageSize() ? resultList.size() : getTotalCount(jpaBuilder.cb(),
+        searchCriteria);
 
     return new PageImpl<>(resultList, pageable, total);
   }
 
-  private List<Order> sortByOrders(ProductCriteriaBuilder<CriteriaBuilder, CriteriaQuery<Product>, Root<Product>> jpaBuilder,
+  private List<Order> sortByOrders(
+      ProductCriteriaBuilder<CriteriaBuilder, CriteriaQuery<Product>, Root<Product>> jpaBuilder,
       PageRequest pageRequest, String language, MapJoin<Product, String, String> namesJoin) {
     List<Order> orders = new ArrayList<>();
     if (pageRequest != null) {
       pageRequest.getSort().stream().findFirst().ifPresent(order -> {
         SortOption sortOption = SortOption.of(order.getProperty());
         switch (sortOption) {
-          case ALPHABETICALLY -> orders.add(sortByAlphabet(jpaBuilder,language, namesJoin));
+          case ALPHABETICALLY -> orders.add(sortByAlphabet(jpaBuilder, language, namesJoin));
           case RECENT -> orders.add(sortByRecent(jpaBuilder));
           case POPULARITY -> orders.add(sortByPopularity(jpaBuilder));
           default -> orders.addAll(sortByStandard(jpaBuilder, language, namesJoin));
         }
       });
     }
-   orders.add(sortById(jpaBuilder)); // Always sort by ID as a fallback
-   return orders;
+    orders.add(sortById(jpaBuilder)); // Always sort by ID as a fallback
+    return orders;
   }
 
   private List<Order> sortByStandard(
       ProductCriteriaBuilder<CriteriaBuilder, CriteriaQuery<Product>, Root<Product>> jpaBuilder, String language
-          , MapJoin<Product, String, String> namesJoin) {
+      , MapJoin<Product, String, String> namesJoin) {
     List<ProductCustomSort> customSorts = productCustomSortRepo.findAll();
     List<Order> orders = new ArrayList<>();
-    Order order = jpaBuilder.cb.desc(jpaBuilder.cb.coalesce(jpaBuilder.root.get(PRODUCT_MARKETPLACE_DATA).get(CUSTOM_ORDER), Integer.MIN_VALUE));
+    Order order = jpaBuilder.cb.desc(
+        jpaBuilder.cb.coalesce(jpaBuilder.root.get(PRODUCT_MARKETPLACE_DATA).get(CUSTOM_ORDER), Integer.MIN_VALUE));
     orders.add(order);
     if (ObjectUtils.isNotEmpty(customSorts)) {
       SortOption sortOptionExtension = SortOption.of(customSorts.get(0).getRuleForRemainder());
@@ -136,7 +139,7 @@ public class CustomProductRepositoryImpl extends BaseRepository<Product> impleme
 
   private Order sortByAlphabet(
       ProductCriteriaBuilder<CriteriaBuilder, CriteriaQuery<Product>, Root<Product>> jpaBuilder, String language
-        , MapJoin<Product, String, String> namesJoin) {
+      , MapJoin<Product, String, String> namesJoin) {
     Expression<Object> nameValue = jpaBuilder.cb().coalesce(
         jpaBuilder.cb().selectCase()
             .when(jpaBuilder.cb().equal(namesJoin.key(), language), namesJoin.value())
@@ -166,8 +169,9 @@ public class CustomProductRepositoryImpl extends BaseRepository<Product> impleme
     return em.createQuery(countQuery).getSingleResult();
   }
 
-  private List<Product> getPagedProductsByCriteria(ProductCriteriaBuilder<CriteriaBuilder, CriteriaQuery<Product>, Root<Product>> jpaBuilder,
-                                                   ProductSearchCriteria searchCriteria, PageRequest pageRequest) {
+  private List<Product> getPagedProductsByCriteria(
+      ProductCriteriaBuilder<CriteriaBuilder, CriteriaQuery<Product>, Root<Product>> jpaBuilder,
+      ProductSearchCriteria searchCriteria, PageRequest pageRequest) {
     Language language = searchCriteria.getLanguage() != null ? searchCriteria.getLanguage() : Language.EN;
     Predicate predicate = buildCriteriaSearch(searchCriteria, jpaBuilder.cb(), jpaBuilder.root());
     jpaBuilder.root.fetch(PRODUCT_MARKETPLACE_DATA);
@@ -176,19 +180,18 @@ public class CustomProductRepositoryImpl extends BaseRepository<Product> impleme
 
     List<Order> orders = new ArrayList<>();
     if (pageRequest.getSort().isSorted()) {
-      orders = sortByOrders(jpaBuilder,pageRequest, language.getValue(), namesJoin);
+      orders = sortByOrders(jpaBuilder, pageRequest, language.getValue(), namesJoin);
     }
 
     jpaBuilder.cq().select(jpaBuilder.root).where(predicate)
-            .orderBy(orders)
-            .groupBy(jpaBuilder.root, namesJoin.key(), namesJoin.value());
+        .orderBy(orders)
+        .groupBy(jpaBuilder.root, namesJoin.key(), namesJoin.value());
 
     TypedQuery<Product> query = em.createQuery(jpaBuilder.cq());
     query.setFirstResult((int) pageRequest.getOffset());
     query.setMaxResults(pageRequest.getPageSize());
 
     return query.getResultList();
-
   }
 
   @Override
