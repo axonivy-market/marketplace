@@ -45,8 +45,7 @@ public class Artifact extends GenericIdEntity {
   @JsonBackReference
   private Product product;
 
-  @OneToMany(mappedBy = ARTIFACT, cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
-  @JsonManagedReference
+  @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
   private List<ArchivedArtifact> archivedArtifacts;
 
   private Boolean doc;

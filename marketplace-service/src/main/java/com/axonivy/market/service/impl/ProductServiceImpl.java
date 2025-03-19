@@ -442,14 +442,11 @@ public class ProductServiceImpl implements ProductService {
 
     List<Artifact> archivedArtifacts = product.getArtifacts().stream()
         .filter(artifact -> !CollectionUtils.isEmpty(artifact.getArchivedArtifacts()))
-        .flatMap(artifact -> {
-              artifact.getArchivedArtifacts().forEach(archivedArtifact -> archivedArtifact.setArtifact(artifact));
-              return artifact.getArchivedArtifacts().stream()
-                  .map(archivedArtifact -> Artifact.builder()
-                      .groupId(archivedArtifact.getGroupId())
-                      .artifactId(archivedArtifact.getArtifactId())
-                      .build());
-            }
+        .flatMap(artifact -> artifact.getArchivedArtifacts().stream()
+            .map(archivedArtifact -> Artifact.builder()
+                .groupId(archivedArtifact.getGroupId())
+                .artifactId(archivedArtifact.getArtifactId())
+                .build())
         ).toList();
 
     List<Artifact> mavenArtifacts = new ArrayList<>();
@@ -460,8 +457,6 @@ public class ProductServiceImpl implements ProductService {
     for (Artifact mavenArtifact : mavenArtifacts) {
       getMetadataContent(mavenArtifact, product, nonSyncReleasedVersions);
     }
-    product.setReleasedVersions(
-        product.getReleasedVersions().stream().distinct().collect(Collectors.toCollection(ArrayList::new)));
     metadataService.updateArtifactAndMetadata(product.getId(), nonSyncReleasedVersions, product.getArtifacts());
     externalDocumentService.syncDocumentForProduct(product.getId(), false);
   }
@@ -517,7 +512,9 @@ public class ProductServiceImpl implements ProductService {
 
     List<ProductModuleContent> productModuleContents = new ArrayList<>();
     for (String version : versionChanges) {
-      product.getReleasedVersions().add(version);
+      if (!product.getReleasedVersions().contains(version)) {
+        product.getReleasedVersions().add(version);
+      }
       ProductModuleContent productModuleContent = handleProductArtifact(version, product.getId(), mavenArtifact,
           product.getNames().get(EN_LANGUAGE));
       Optional.ofNullable(productModuleContent).ifPresent(productModuleContents::add);
