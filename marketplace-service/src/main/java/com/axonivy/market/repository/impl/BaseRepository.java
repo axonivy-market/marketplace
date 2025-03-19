@@ -8,6 +8,8 @@ import jakarta.persistence.criteria.Root;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import java.util.List;
+
 @Component
 public abstract class BaseRepository<T> {
   protected abstract Class<T> getType();
@@ -34,6 +36,22 @@ public abstract class BaseRepository<T> {
     CriteriaQuery<R> query = builder.createQuery(resultType);
     Root<T> root = query.from(getType());
     return new CriteriaByTypeContext<>(builder, query, root);
+  }
+
+  protected void save(T entity) {
+    entityManager.persist(entity);
+  }
+
+  public List<T> findByCriteria(CriteriaQueryContext<T> criteriaQueryContext) {
+    return entityManager.createQuery(criteriaQueryContext.query()).getResultList();
+  }
+
+  public int executeQuery(CriteriaUpdateContext<T> criteriaUpdateContext) {
+    return entityManager.createQuery(criteriaUpdateContext.query()).executeUpdate();
+  }
+
+  public <R> List<R> findByCriteria(CriteriaByTypeContext<T, R> criteriaByTypeContext) {
+    return entityManager.createQuery(criteriaByTypeContext.query()).getResultList();
   }
 
   public record CriteriaQueryContext<T>(CriteriaBuilder builder, CriteriaQuery<T> query, Root<T> root) {

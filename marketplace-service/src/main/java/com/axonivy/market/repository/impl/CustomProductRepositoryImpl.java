@@ -190,8 +190,7 @@ public class CustomProductRepositoryImpl extends BaseRepository<Product> impleme
     Predicate searchCriteria = buildCriteriaSearch(criteria, criteriaContext.builder(), criteriaContext.root());
     criteriaContext.query().where(searchCriteria);
 
-    List<Product> results = entityManager.createQuery(criteriaContext.query()).getResultList();
-
+    List<Product> results = findByCriteria(criteriaContext);
     return results.isEmpty() ? null : results.get(0);
   }
 
@@ -201,7 +200,8 @@ public class CustomProductRepositoryImpl extends BaseRepository<Product> impleme
     Join<Product, Artifact> artifact = criteriaContext.root().join(PRODUCT_ARTIFACT);
     criteriaContext.query().select(criteriaContext.root()).distinct(true).where(
         criteriaContext.builder().isTrue(artifact.get(DOC)));
-    return entityManager.createQuery(criteriaContext.query()).getResultList();
+
+    return findByCriteria(criteriaContext);
   }
 
   public Predicate buildCriteriaSearch(ProductSearchCriteria searchCriteria, CriteriaBuilder cb,

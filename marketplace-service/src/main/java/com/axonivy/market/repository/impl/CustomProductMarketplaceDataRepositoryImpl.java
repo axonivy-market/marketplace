@@ -28,7 +28,7 @@ public class CustomProductMarketplaceDataRepositoryImpl extends BaseRepository<P
     // Where condition (filter by productId)
     criteriaUpdateContext.query().where(criteriaUpdateContext.builder().equal(criteriaUpdateContext.root().get(ID), productId));
     // Execute the update
-    int updatedRows = entityManager.createQuery(criteriaUpdateContext.query()).executeUpdate();
+    int updatedRows = executeQuery(criteriaUpdateContext);
     entityManager.clear();
     // Fetch the updated entity if needed
     if (updatedRows > 0) {
@@ -57,7 +57,7 @@ public class CustomProductMarketplaceDataRepositoryImpl extends BaseRepository<P
     if (!marketPlaceExists) {
       ProductMarketplaceData productMarketplaceData = new ProductMarketplaceData();
       productMarketplaceData.setId(productId);
-      entityManager.persist(productMarketplaceData);
+      save(productMarketplaceData);
     }
   }
 

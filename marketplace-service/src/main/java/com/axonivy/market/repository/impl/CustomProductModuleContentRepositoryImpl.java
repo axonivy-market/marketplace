@@ -17,7 +17,7 @@ public class CustomProductModuleContentRepositoryImpl extends BaseRepository<Pro
     CriteriaByTypeContext<ProductModuleContent, String> criteriaContext = createCriteriaTypeContext(String.class);
     criteriaContext.query().select(criteriaContext.root().get(VERSION))
         .where(criteriaContext.builder().equal(criteriaContext.root().get(PRODUCT_ID), id));
-    return entityManager.createQuery(criteriaContext.query()).getResultList();
+    return findByCriteria(criteriaContext);
   }
 
   @Override
