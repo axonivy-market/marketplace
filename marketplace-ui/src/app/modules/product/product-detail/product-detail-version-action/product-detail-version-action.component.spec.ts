@@ -1,9 +1,9 @@
-import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { ComponentFixture, fakeAsync, TestBed, tick } from '@angular/core/testing';
 import { of } from 'rxjs';
 import { ProductDetailVersionActionComponent } from './product-detail-version-action.component';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { ProductService } from '../../product.service';
-import { HttpParams, provideHttpClient, withInterceptorsFromDi } from '@angular/common/http';
+import { provideHttpClient, withInterceptorsFromDi } from '@angular/common/http';
 import { ElementRef } from '@angular/core';
 import { ItemDropdown } from '../../../../shared/models/item-dropdown.model';
 import { CookieService } from 'ngx-cookie-service';
@@ -13,8 +13,6 @@ import { ROUTER } from '../../../../shared/constants/router.constant';
 import { MatomoTestingModule } from 'ngx-matomo-client/testing';
 import { ProductDetailActionType } from '../../../../shared/enums/product-detail-action-type';
 import { MATOMO_TRACKING_ENVIRONMENT } from '../../../../shared/constants/matomo.constant';
-import { environment } from '../../../../../environments/environment';
-import { API_URI } from '../../../../shared/constants/api.constant';
 import { provideHttpClientTesting } from '@angular/common/http/testing';
 
 class MockElementRef implements ElementRef {
@@ -37,7 +35,7 @@ describe('ProductDetailVersionActionComponent', () => {
       'sendRequestToGetInstallationCount',
       'sendRequestToGetProductVersionsForDesigner'
     ]);
-    const commonUtilsSpy = jasmine.createSpyObj('CommonUtils', [ 'getCookieValue' ]);
+    const commonUtilsSpy = jasmine.createSpyObj('CommonUtils', ['getCookieValue']);
     const activatedRouteSpy = jasmine.createSpyObj('ActivatedRoute', [], {
       snapshot: {
         queryParams: {}
@@ -349,4 +347,29 @@ describe('ProductDetailVersionActionComponent', () => {
     component.onSelectVersionInDesigner(testVersion);
     expect(component.selectedVersion()).toBe(testVersion);
   });
+
+  it('should properly handle file download', () => {
+    spyOn(document.body, 'appendChild');
+    spyOn(document.body, 'removeChild');
+
+    const mockClick = jasmine.createSpy();
+    spyOn(document, 'createElement').and.returnValue({ click: mockClick } as any);
+
+    component['downloadFile']('base64Data', 'test.zip');
+
+    expect(document.body.appendChild).toHaveBeenCalled();
+    expect(mockClick).toHaveBeenCalled();
+    expect(document.body.removeChild).toHaveBeenCalled();
+  });
+
+  it('should call sendRequestToGetInstallationCount and emit installation count', fakeAsync(() => {
+    productServiceMock.sendRequestToGetInstallationCount.and.returnValue(of(42));
+    spyOn(component.installationCount, 'emit');
+
+    component.onUpdateInstallationCountForDesigner();
+    tick(1000);
+
+    expect(productServiceMock.sendRequestToGetInstallationCount).toHaveBeenCalledWith(component.productId);
+    expect(component.installationCount.emit).toHaveBeenCalledWith(42);
+  }));
 });

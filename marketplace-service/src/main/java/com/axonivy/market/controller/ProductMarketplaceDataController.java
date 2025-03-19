@@ -2,13 +2,10 @@ package com.axonivy.market.controller;
 
 import com.axonivy.market.bo.VersionDownload;
 import com.axonivy.market.constants.GitHubConstants;
-import com.axonivy.market.entity.ProductMarketplaceData;
 import com.axonivy.market.enums.ErrorCode;
 import com.axonivy.market.github.service.GitHubService;
-import com.axonivy.market.logging.Loggable;
 import com.axonivy.market.model.Message;
 import com.axonivy.market.model.ProductCustomSortRequest;
-import com.axonivy.market.repository.ProductMarketplaceDataRepository;
 import com.axonivy.market.service.ProductMarketplaceDataService;
 import com.axonivy.market.util.AuthorizationUtils;
 import io.swagger.v3.oas.annotations.Operation;
@@ -20,7 +17,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -31,7 +27,6 @@ import java.io.IOException;
 import java.util.Objects;
 
 import static com.axonivy.market.constants.RequestMappingConstants.*;
-import static com.axonivy.market.constants.RequestParamConstants.DESIGNER_VERSION;
 import static com.axonivy.market.constants.RequestParamConstants.ID;
 import static org.springframework.http.HttpHeaders.AUTHORIZATION;
 
@@ -42,7 +37,6 @@ import static org.springframework.http.HttpHeaders.AUTHORIZATION;
 public class ProductMarketplaceDataController {
   private final GitHubService gitHubService;
   private final ProductMarketplaceDataService productMarketplaceDataService;
-  private final ProductMarketplaceDataRepository productMarketplaceDataRepository;
 
   @PostMapping(CUSTOM_SORT)
   @Operation(hidden = true)
