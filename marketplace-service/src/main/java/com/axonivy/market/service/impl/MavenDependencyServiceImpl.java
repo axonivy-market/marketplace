@@ -15,7 +15,6 @@ import com.axonivy.market.service.MavenDependencyService;
 import com.axonivy.market.util.VersionUtils;
 import lombok.AllArgsConstructor;
 import lombok.extern.log4j.Log4j2;
-import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.maven.model.Dependency;
 import org.apache.maven.model.Model;
@@ -262,7 +261,7 @@ public class MavenDependencyServiceImpl implements MavenDependencyService {
     try {
       var unzipPath = String.join(File.separator, DATA_DIR, WORK_DIR, MAVEN_DIR, artifact.getArtifactId());
       location = fileDownloadService.downloadAndUnzipFile(artifact.getDownloadUrl(),
-          new DownloadOption(true, unzipPath));
+          DownloadOption.builder().isForced(true).workingDirectory(unzipPath).shouldGrantPermission(false).build());
     } catch (Exception e) {
       log.error("Exception during unzip");
     }

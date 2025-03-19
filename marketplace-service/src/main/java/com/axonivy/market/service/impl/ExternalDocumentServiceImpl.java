@@ -24,11 +24,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.HttpClientErrorException;
 
-import java.util.HashSet;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import static org.apache.commons.lang3.StringUtils.EMPTY;
@@ -130,7 +126,7 @@ public class ExternalDocumentServiceImpl implements ExternalDocumentService {
   }
 
   private List<Artifact> fetchDocArtifacts(List<Artifact> artifacts) {
-    List<String> artifactIds = artifacts.stream().map(Artifact::getId).collect(Collectors.toList());
+    List<String> artifactIds = artifacts.stream().map(Artifact::getId).collect(Collectors. toCollection(ArrayList::new));
     List<Artifact> allArtifacts = artifactRepo.findAllByIdInAndFetchArchivedArtifacts(artifactIds);
     return allArtifacts.stream().filter(artifact -> BooleanUtils.isTrue(artifact.getDoc())).toList();
   }
@@ -138,7 +134,7 @@ public class ExternalDocumentServiceImpl implements ExternalDocumentService {
   private String downloadDocAndUnzipToShareFolder(String downloadDocUrl, boolean isResetSync) {
     try {
       return fileDownloadService.downloadAndUnzipFile(downloadDocUrl,
-          DownloadOption.builder().isForced(isResetSync).build());
+          DownloadOption.builder().isForced(isResetSync).shouldGrantPermission(true).build());
     } catch (HttpClientErrorException e) {
       log.error("Cannot download doc {}", e.getStatusCode());
     } catch (Exception e) {

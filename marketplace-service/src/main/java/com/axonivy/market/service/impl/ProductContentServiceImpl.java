@@ -62,7 +62,8 @@ public class ProductContentServiceImpl implements ProductContentService {
         artifact.getArtifactId());
     try {
 
-      unzippedFolderPath = fileDownloadService.downloadAndUnzipFile(url, new DownloadOption(true, unzippedFolderPath));
+      unzippedFolderPath = fileDownloadService.downloadAndUnzipFile(url, DownloadOption.builder().isForced(true)
+        .workingDirectory(unzippedFolderPath).shouldGrantPermission(false).build());
       updateDependencyContentsFromProductJson(productModuleContent, productId, unzippedFolderPath, productName);
       extractReadMeFileFromContents(productId, unzippedFolderPath, productModuleContent);
     } catch (Exception e) {
