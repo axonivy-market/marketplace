@@ -1,5 +1,7 @@
 package com.axonivy.market.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonInclude;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -22,6 +24,8 @@ import static com.axonivy.market.constants.EntityConstants.ARTIFACT;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
+@JsonInclude(JsonInclude.Include.NON_EMPTY)
+@JsonIgnoreProperties(ignoreUnknown = true)
 @Entity
 @Table(name = ARTIFACT)
 public class Artifact extends GenericIdEntity {
