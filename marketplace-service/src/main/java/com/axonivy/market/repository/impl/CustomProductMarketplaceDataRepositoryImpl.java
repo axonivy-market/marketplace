@@ -1,6 +1,7 @@
 package com.axonivy.market.repository.impl;
 
 import com.axonivy.market.entity.ProductMarketplaceData;
+import com.axonivy.market.repository.BaseRepository;
 import com.axonivy.market.repository.CustomProductMarketplaceDataRepository;
 import jakarta.persistence.Query;
 import jakarta.transaction.Transactional;

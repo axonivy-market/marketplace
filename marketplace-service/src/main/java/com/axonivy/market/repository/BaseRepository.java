@@ -1,4 +1,4 @@
-package com.axonivy.market.repository.impl;
+package com.axonivy.market.repository;
 
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.criteria.CriteriaBuilder;
@@ -15,7 +15,7 @@ public abstract class BaseRepository<T> {
   protected abstract Class<T> getType();
 
   @Autowired
-  EntityManager entityManager;
+  protected EntityManager entityManager;
 
   protected CriteriaQueryContext<T> createCriteriaQueryContext() {
     CriteriaBuilder builder = entityManager.getCriteriaBuilder();
