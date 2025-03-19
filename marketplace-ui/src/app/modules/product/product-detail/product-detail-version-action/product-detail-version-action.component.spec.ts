@@ -34,7 +34,6 @@ describe('ProductDetailVersionActionComponent', () => {
   beforeEach(() => {
     productServiceMock = jasmine.createSpyObj('ProductService', [
       'sendRequestToProductDetailVersionAPI',
-      'sendRequestToUpdateInstallationCount',
       'sendRequestToGetProductVersionsForDesigner'
     ]);
     const commonUtilsSpy = jasmine.createSpyObj('CommonUtils', [ 'getCookieValue' ]);

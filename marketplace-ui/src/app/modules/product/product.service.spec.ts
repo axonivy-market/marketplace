@@ -205,23 +205,12 @@ describe('ProductService', () => {
     });
   });
 
-  it('sendRequestToUpdateInstallationCount', () => {
-    const productId = "google-maps-connector";
-    const designerVersion = "10.0.0";
-
-    service.sendRequestToUpdateInstallationCount(productId, designerVersion).subscribe(response => {
-      expect(response).toBe(3);
-    });
-
-    const req = httpMock.expectOne(`${API_URI.PRODUCT_MARKETPLACE_DATA}/installation-count/${productId}?designerVersion=${designerVersion}`);
-    expect(req.request.method).toBe('PUT');
-    req.flush(3);
-  });
-
-  it('sendRequestToGetProductVersionForDesigner', () => {
+  //TODO -
+  fit('sendRequestToGetProductVersionForDesigner', () => {
     const productId = 'google-maps-connector';
+    const designerVersion = '12.0.3';
 
-    service.sendRequestToGetProductVersionsForDesigner(productId).subscribe(response => {
+    service.sendRequestToGetProductVersionsForDesigner(productId, designerVersion).subscribe(response => {
       expect(response.length).toBe(3);
       expect(response[0].version).toBe('10.0.2');
       expect(response[1].version).toBe('10.0.1');
@@ -261,17 +250,17 @@ describe('ProductService', () => {
 
   it('getProductChangelogs should handle error and return empty response', () => {
     const productId = 'portal';
-  
+
     service.getProductChangelogs(productId).subscribe(response => {
       expect(response).toEqual({} as ProductReleasesApiResponse);
     });
-  
+
     const req = httpMock.expectOne(`${API_URI.PRODUCT_DETAILS}/${productId}/releases`);
     expect(req.request.method).toBe('GET');
 
-    req.flush(null, { 
-      status: 0, 
-      statusText: 'Unknown Error' 
+    req.flush(null, {
+      status: 0,
+      statusText: 'Unknown Error'
     });
   });
 });

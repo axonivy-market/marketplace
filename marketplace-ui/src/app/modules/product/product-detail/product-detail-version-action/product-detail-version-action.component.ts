@@ -231,11 +231,11 @@ export class ProductDetailVersionActionComponent implements AfterViewInit {
 
   getVersionInDesigner(): void {
     if (this.versions().length === 0) {
-      let designerVersion = this.routingQueryParamService.getDesignerVersionFromSessionStorage() ?? '';
+      let currentDesignerVersion = this.routingQueryParamService.getDesignerVersionFromSessionStorage() ?? '';
       this.productService
         .sendRequestToGetProductVersionsForDesigner(
           this.productId,
-          designerVersion)
+          currentDesignerVersion)
         .subscribe(data => {
           const versionMap = data
             .map(dataVersionAndUrl => dataVersionAndUrl.version)
@@ -295,10 +295,10 @@ export class ProductDetailVersionActionComponent implements AfterViewInit {
     this.httpClient.get<VersionDownload>(url).subscribe(
       (response) => {
         if (response.fileData) {
-        this.installationCount.emit(response.installationCount);
-        this.downloadFile(response.fileData, fileName);
+          this.installationCount.emit(response.installationCount);
+          this.downloadFile(response.fileData, fileName);
+        }
       }
-    }
     );
   }
 
@@ -320,7 +320,6 @@ export class ProductDetailVersionActionComponent implements AfterViewInit {
           this.installationCount.emit(data)
         });
     }, 1000);
-
   }
 
   onNavigateToContactPage(): void {

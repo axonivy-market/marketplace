@@ -223,7 +223,7 @@ public class ProductDetailsController {
     if (path.equals(BEST_MATCH_BY_ID_AND_VERSION)) {
       Link link = linkTo(
               methodOn(ProductDetailsController.class).findProductJsonContent(productId,
-                      product.getBestMatchVersion(), StringUtils.EMPTY)).withSelfRel();
+                      product.getBestMatchVersion(),version)).withSelfRel();
       model.setMetaProductJsonUrl(link.getHref());
     }
     model.add(getSelfLinkForProduct(productId, version, path));

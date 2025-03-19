@@ -90,7 +90,7 @@ export class ProductService {
   }
 
   sendRequestToGetInstallationCount(productId: string) {
-    const url = `${API_URI.PRODUCT_MARKETPLACE_DATA}/hello/${productId}`;
+    const url = `${API_URI.PRODUCT_MARKETPLACE_DATA}/installation-count/${productId}`;
     return this.httpClient.get<number>(url);
   }
 

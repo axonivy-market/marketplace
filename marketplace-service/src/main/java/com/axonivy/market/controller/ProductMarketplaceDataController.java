@@ -70,7 +70,7 @@ public class ProductMarketplaceDataController {
     return new ResponseEntity<>(result, HttpStatus.OK);
   }
 
-  @GetMapping("hello/{id}")
+  @GetMapping(INSTALLATION_COUNT_BY_ID)
   public ResponseEntity<Integer> findInstallationCount(@PathVariable(ID)
   String id) {
     ProductMarketplaceData data = productMarketplaceDataRepository.findById(id).orElse(null);

@@ -77,7 +77,6 @@ public class VersionServiceImpl implements VersionService {
         .toList();
   }
 
-  //TODO
   public Map<String, Object> getProductJsonContentByIdAndVersion(String productId, String version,
       String designerVersion) {
     Map<String, Object> result = new HashMap<>();
@@ -109,7 +108,8 @@ public class VersionServiceImpl implements VersionService {
         new LatestVersionComparator()).toList();
     for (String version : versions) {
       Link link = linkTo(
-          methodOn(ProductDetailsController.class).findProductJsonContent(productId, version, designerVersion)).withSelfRel();
+          methodOn(ProductDetailsController.class).findProductJsonContent(productId, version,
+              designerVersion)).withSelfRel();
       VersionAndUrlModel versionAndUrlModel = new VersionAndUrlModel(version, link.getHref());
       versionAndUrlList.add(versionAndUrlModel);
     }
