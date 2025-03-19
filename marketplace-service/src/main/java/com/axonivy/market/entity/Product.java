@@ -13,7 +13,6 @@ import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.springframework.data.annotation.Transient;
 
-import java.io.Serial;
 import java.io.Serializable;
 import java.util.Date;
 import java.util.List;

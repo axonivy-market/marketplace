@@ -9,9 +9,6 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-import java.io.Serial;
-import java.io.Serializable;
-
 import static com.axonivy.market.constants.EntityConstants.PRODUCT_MARKETPLACE_DATA;
 
 @Getter
