@@ -14,3 +14,9 @@ export interface MavenArtifact {
   type?: string;
   doc?: boolean;
 }
+
+export interface MavenArtifactKey {
+  artifactId: string;
+  productVersion: string;
+  additionalVersion: boolean
+}
