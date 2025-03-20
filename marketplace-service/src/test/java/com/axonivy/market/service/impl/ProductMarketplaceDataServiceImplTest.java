@@ -45,7 +45,7 @@ class ProductMarketplaceDataServiceImplTest extends BaseSetup {
   @Mock
   private FileDownloadService fileDownloadService;
   @Mock
-  private ProductDesignerInstallationRepository productDesignerInstallationRepository;
+  private ProductDesignerInstallationRepository productDesignerInstallationRepo;
   @InjectMocks
   private ProductMarketplaceDataServiceImpl productMarketplaceDataService;
   @Captor

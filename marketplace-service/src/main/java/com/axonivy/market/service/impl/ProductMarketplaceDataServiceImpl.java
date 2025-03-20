@@ -45,9 +45,7 @@ public class ProductMarketplaceDataServiceImpl implements ProductMarketplaceData
 
   public ProductMarketplaceDataServiceImpl(ProductMarketplaceDataRepository productMarketplaceDataRepo,
       ProductCustomSortRepository productCustomSortRepo, ProductRepository productRepo,
-      FileDownloadService fileDownloadService) {
-      ProductCustomSortRepository productCustomSortRepo, ProductRepository productRepo,
-      ProductDesignerInstallationRepository productDesignerInstallationRepo) {
+      FileDownloadService fileDownloadService, ProductDesignerInstallationRepository productDesignerInstallationRepo) {
     this.productMarketplaceDataRepo = productMarketplaceDataRepo;
     this.productCustomSortRepo = productCustomSortRepo;
     this.productRepo = productRepo;

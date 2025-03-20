@@ -1,11 +1,9 @@
 package com.axonivy.market;
 
-import com.axonivy.market.bo.MavenDependency;
 import com.axonivy.market.bo.VersionDownload;
 import com.axonivy.market.entity.Artifact;
 import com.axonivy.market.constants.MavenConstants;
 import com.axonivy.market.entity.*;
-import com.axonivy.market.enums.FeedbackStatus;
 import com.axonivy.market.enums.Language;
 import com.axonivy.market.enums.SortOption;
 import com.axonivy.market.model.FeedbackApprovalModel;
