@@ -1,10 +1,10 @@
 package com.axonivy.market.service.impl;
 
-import com.axonivy.market.entity.Artifact;
 import com.axonivy.market.constants.GitHubConstants;
 import com.axonivy.market.constants.MavenConstants;
 import com.axonivy.market.constants.MetaConstants;
 import com.axonivy.market.criteria.ProductSearchCriteria;
+import com.axonivy.market.entity.Artifact;
 import com.axonivy.market.entity.GitHubRepoMeta;
 import com.axonivy.market.entity.Image;
 import com.axonivy.market.entity.MavenArtifactVersion;
@@ -22,7 +22,15 @@ import com.axonivy.market.github.service.GitHubService;
 import com.axonivy.market.github.util.GitHubUtils;
 import com.axonivy.market.model.GitHubReleaseModel;
 import com.axonivy.market.model.VersionAndUrlModel;
-import com.axonivy.market.repository.*;
+import com.axonivy.market.repository.ArtifactRepository;
+import com.axonivy.market.repository.GitHubRepoMetaRepository;
+import com.axonivy.market.repository.ImageRepository;
+import com.axonivy.market.repository.MavenArtifactVersionRepository;
+import com.axonivy.market.repository.MetadataRepository;
+import com.axonivy.market.repository.ProductJsonContentRepository;
+import com.axonivy.market.repository.ProductMarketplaceDataRepository;
+import com.axonivy.market.repository.ProductModuleContentRepository;
+import com.axonivy.market.repository.ProductRepository;
 import com.axonivy.market.service.ExternalDocumentService;
 import com.axonivy.market.service.ImageService;
 import com.axonivy.market.service.MetadataService;
@@ -64,10 +72,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.stream.Collectors;
 
-import static com.axonivy.market.constants.CommonConstants.DOT_SEPARATOR;
-import static com.axonivy.market.constants.CommonConstants.SLASH;
-import static com.axonivy.market.constants.CommonConstants.PLUS;
-import static com.axonivy.market.constants.CommonConstants.COMPATIBILITY_RANGE_FORMAT;
+import static com.axonivy.market.constants.CommonConstants.*;
 import static com.axonivy.market.constants.MavenConstants.*;
 import static com.axonivy.market.constants.ProductJsonConstants.EN_LANGUAGE;
 import static com.axonivy.market.constants.ProductJsonConstants.LOGO_FILE;
@@ -88,7 +93,6 @@ public class ProductServiceImpl implements ProductService {
   private final GHAxonIvyProductRepoService axonIvyProductRepoService;
   private final GitHubRepoMetaRepository gitHubRepoMetaRepo;
   private final GitHubService gitHubService;
-  private final MavenArtifactVersionRepository mavenArtifactVersionRepo;
   private final MetadataRepository metadataRepo;
   private final ProductJsonContentRepository productJsonContentRepo;
   private final ImageRepository imageRepo;
@@ -98,6 +102,7 @@ public class ProductServiceImpl implements ProductService {
   private final MetadataService metadataService;
   private final ProductMarketplaceDataService productMarketplaceDataService;
   private final ProductMarketplaceDataRepository productMarketplaceDataRepo;
+  private final MavenArtifactVersionRepository mavenArtifactVersionRepository;
   private final ArtifactRepository artifactRepo;
   private GHCommit lastGHCommit;
   private final VersionService versionService;
@@ -108,12 +113,12 @@ public class ProductServiceImpl implements ProductService {
   public ProductServiceImpl(ProductRepository productRepo, ProductModuleContentRepository productModuleContentRepo,
       GHAxonIvyMarketRepoService axonIvyMarketRepoService, GHAxonIvyProductRepoService axonIvyProductRepoService,
       GitHubRepoMetaRepository gitHubRepoMetaRepo, GitHubService gitHubService,
-      MavenArtifactVersionRepository mavenArtifactVersionRepo,
       ProductJsonContentRepository productJsonContentRepo, ImageRepository imageRepo,
       MetadataRepository metadataRepo, ImageService imageService,
       ProductContentService productContentService, MetadataService metadataService,
       ProductMarketplaceDataService productMarketplaceDataService, ExternalDocumentService externalDocumentService,
-      ProductMarketplaceDataRepository productMarketplaceDataRepo, ArtifactRepository artifactRepo,
+      ProductMarketplaceDataRepository productMarketplaceDataRepo,
+      MavenArtifactVersionRepository mavenArtifactVersionRepository, ArtifactRepository artifactRepo,
       VersionService versionService) {
     this.productRepo = productRepo;
     this.productModuleContentRepo = productModuleContentRepo;
@@ -121,7 +126,6 @@ public class ProductServiceImpl implements ProductService {
     this.axonIvyProductRepoService = axonIvyProductRepoService;
     this.gitHubRepoMetaRepo = gitHubRepoMetaRepo;
     this.gitHubService = gitHubService;
-    this.mavenArtifactVersionRepo = mavenArtifactVersionRepo;
     this.metadataRepo = metadataRepo;
     this.productJsonContentRepo = productJsonContentRepo;
     this.imageRepo = imageRepo;
@@ -131,6 +135,7 @@ public class ProductServiceImpl implements ProductService {
     this.productMarketplaceDataService = productMarketplaceDataService;
     this.externalDocumentService = externalDocumentService;
     this.productMarketplaceDataRepo = productMarketplaceDataRepo;
+    this.mavenArtifactVersionRepository = mavenArtifactVersionRepository;
     this.artifactRepo = artifactRepo;
     this.versionService = versionService;
   }
@@ -316,7 +321,7 @@ public class ProductServiceImpl implements ProductService {
     }
   }
 
-  private List<String> syncProductsFromGitHubRepo(Boolean resetSync) {
+  private synchronized List<String> syncProductsFromGitHubRepo(Boolean resetSync) {
     log.warn("**ProductService: synchronize products from scratch based on the Market repo");
     List<String> syncedProductIds = new ArrayList<>();
     var gitHubContentMap = axonIvyMarketRepoService.fetchAllMarketItems();
@@ -437,14 +442,11 @@ public class ProductServiceImpl implements ProductService {
 
     List<Artifact> archivedArtifacts = product.getArtifacts().stream()
         .filter(artifact -> !CollectionUtils.isEmpty(artifact.getArchivedArtifacts()))
-        .flatMap(artifact -> {
-              artifact.getArchivedArtifacts().forEach(archivedArtifact -> archivedArtifact.setArtifact(artifact));
-              return artifact.getArchivedArtifacts().stream()
-                  .map(archivedArtifact -> Artifact.builder()
-                      .groupId(archivedArtifact.getGroupId())
-                      .artifactId(archivedArtifact.getArtifactId())
-                      .build());
-            }
+        .flatMap(artifact -> artifact.getArchivedArtifacts().stream()
+            .map(archivedArtifact -> Artifact.builder()
+                .groupId(archivedArtifact.getGroupId())
+                .artifactId(archivedArtifact.getArtifactId())
+                .build())
         ).toList();
 
     List<Artifact> mavenArtifacts = new ArrayList<>();
@@ -455,8 +457,6 @@ public class ProductServiceImpl implements ProductService {
     for (Artifact mavenArtifact : mavenArtifacts) {
       getMetadataContent(mavenArtifact, product, nonSyncReleasedVersions);
     }
-    product.setReleasedVersions(
-        product.getReleasedVersions().stream().distinct().collect(Collectors.toCollection(ArrayList::new)));
     metadataService.updateArtifactAndMetadata(product.getId(), nonSyncReleasedVersions, product.getArtifacts());
     externalDocumentService.syncDocumentForProduct(product.getId(), false);
   }
@@ -512,7 +512,9 @@ public class ProductServiceImpl implements ProductService {
 
     List<ProductModuleContent> productModuleContents = new ArrayList<>();
     for (String version : versionChanges) {
-      product.getReleasedVersions().add(version);
+      if (!product.getReleasedVersions().contains(version)) {
+        product.getReleasedVersions().add(version);
+      }
       ProductModuleContent productModuleContent = handleProductArtifact(version, product.getId(), mavenArtifact,
           product.getNames().get(EN_LANGUAGE));
       Optional.ofNullable(productModuleContent).ifPresent(productModuleContents::add);
@@ -619,9 +621,10 @@ public class ProductServiceImpl implements ProductService {
     List<String> versions;
     String version = StringUtils.EMPTY;
 
-    MavenArtifactVersion mavenArtifactVersion = mavenArtifactVersionRepo.findById(id).orElse(null);
-    if (ObjectUtils.isNotEmpty(mavenArtifactVersion)) {
-      versions = VersionUtils.extractAllVersions(mavenArtifactVersion, BooleanUtils.isTrue(isShowDevVersion),
+    List<MavenArtifactVersion> mavenArtifactVersions = mavenArtifactVersionRepository.findByProductId(id);
+
+    if (ObjectUtils.isNotEmpty(mavenArtifactVersions)) {
+      versions = VersionUtils.extractAllVersions(mavenArtifactVersions, BooleanUtils.isTrue(isShowDevVersion),
           StringUtils.EMPTY);
       version = CollectionUtils.firstElement(versions);
     }
@@ -684,7 +687,7 @@ public class ProductServiceImpl implements ProductService {
           ProductFactory.transferComputedPersistedDataToProduct(foundProduct, product);
           imageRepo.deleteAllByProductId(foundProduct.getId());
           metadataRepo.deleteAllByProductId(foundProduct.getId());
-          mavenArtifactVersionRepo.deleteAllById(List.of(foundProduct.getId()));
+          mavenArtifactVersionRepository.deleteAllByProductId(foundProduct.getId());
           productModuleContentRepo.deleteAllByProductId(foundProduct.getId());
           productJsonContentRepo.deleteAllByProductId(foundProduct.getId());
           productRepo.delete(foundProduct);

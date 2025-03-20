@@ -1,58 +1,41 @@
 package com.axonivy.market.entity;
 
-import com.fasterxml.jackson.annotation.JsonManagedReference;
-import jakarta.persistence.CascadeType;
+import com.axonivy.market.entity.key.MavenArtifactKey;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import io.swagger.v3.oas.annotations.media.Schema;
+import jakarta.persistence.EmbeddedId;
 import jakarta.persistence.Entity;
-import jakarta.persistence.FetchType;
-import jakarta.persistence.Id;
-import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-import java.io.Serial;
-import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
+import static com.axonivy.market.constants.EntityConstants.MAVEN_ARTIFACT_VERSION;
 
-import static com.axonivy.market.constants.EntityConstants.*;
-
-@Setter
 @AllArgsConstructor
 @NoArgsConstructor
+@Setter
+@Getter
 @Builder
 @Entity
 @Table(name = MAVEN_ARTIFACT_VERSION)
-public class MavenArtifactVersion implements Serializable {
-  @Serial
-  private static final long serialVersionUID = -6492612804634492078L;
-  @Id
+public class MavenArtifactVersion {
+
+  @EmbeddedId
+  private MavenArtifactKey id;
+
+  @Schema(description = "Display name and type of artifact", example = "Adobe Acrobat Sign Connector (.iar)")
+  private String name;
+
+  @Schema(description = "Artifact download url",
+      example = "https://maven.axonivy.com/com/axonivy/connector/adobe/acrobat/sign/adobe-acrobat-sign-connector/10.0" +
+          ".25/adobe-acrobat-sign-connector-10.0.25.iar")
+  private String downloadUrl;
+
+  @JsonIgnore
+  private boolean isInvalidArtifact;
+
   private String productId;
-
-  @OneToMany(mappedBy = PRODUCT_VERSION_REFERENCE, cascade = CascadeType.ALL, fetch = FetchType.EAGER,
-      orphanRemoval = true)
-  @JsonManagedReference(PRODUCT_VERSION_REFERENCE)
-  private List<MavenArtifactModel> productArtifactsByVersion;
-
-  @OneToMany(mappedBy = ADDITIONAL_VERSION_REFERENCE, cascade = CascadeType.ALL, fetch = FetchType.EAGER,
-      orphanRemoval = true)
-  @JsonManagedReference(ADDITIONAL_VERSION_REFERENCE)
-  private List<MavenArtifactModel> additionalArtifactsByVersion;
-
-  public List<MavenArtifactModel> getProductArtifactsByVersion() {
-    if (Objects.isNull(productArtifactsByVersion)) {
-      productArtifactsByVersion = new ArrayList<>();
-    }
-    return productArtifactsByVersion;
-  }
-
-  public List<MavenArtifactModel> getAdditionalArtifactsByVersion() {
-    if (Objects.isNull(additionalArtifactsByVersion)) {
-      additionalArtifactsByVersion = new ArrayList<>();
-    }
-    return additionalArtifactsByVersion;
-  }
 }

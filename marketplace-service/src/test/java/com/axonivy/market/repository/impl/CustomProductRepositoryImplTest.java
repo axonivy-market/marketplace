@@ -2,7 +2,6 @@ package com.axonivy.market.repository.impl;
 
 import com.axonivy.market.BaseSetup;
 import com.axonivy.market.entity.Product;
-import com.axonivy.market.repository.MavenArtifactVersionRepository;
 import com.axonivy.market.repository.MetadataRepository;
 import com.axonivy.market.repository.ProductModuleContentRepository;
 import jakarta.persistence.EntityManager;
@@ -10,11 +9,13 @@ import jakarta.persistence.TypedQuery;
 import jakarta.persistence.criteria.CriteriaBuilder;
 import jakarta.persistence.criteria.CriteriaQuery;
 import jakarta.persistence.criteria.Root;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.test.util.ReflectionTestUtils;
 
 import java.util.List;
 
@@ -30,14 +31,17 @@ class CustomProductRepositoryImplTest extends BaseSetup {
   private Product mockProduct;
   @Mock
   private MetadataRepository metadataRepo;
-  @Mock
-  private MavenArtifactVersionRepository mavenArtifactVersionRepo;
+
   @InjectMocks
   private CustomProductRepositoryImpl repo;
 
   @Mock
   private EntityManager em;
 
+  @BeforeEach
+  void setup() {
+    ReflectionTestUtils.setField(repo, "entityManager", em);
+  }
 
   @Test
   void testGetProductByIdAndVersion() {

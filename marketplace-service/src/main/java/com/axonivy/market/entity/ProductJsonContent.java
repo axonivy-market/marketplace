@@ -1,20 +1,14 @@
 package com.axonivy.market.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonInclude;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
-import jakarta.persistence.EntityListeners;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import org.springframework.data.annotation.LastModifiedDate;
-import org.springframework.data.jpa.domain.support.AuditingEntityListener;
-
-import java.util.Date;
 
 import static com.axonivy.market.constants.EntityConstants.PRODUCT_JSON_CONTENT;
 import static com.axonivy.market.constants.EntityConstants.TEXT_TYPE;
@@ -25,9 +19,7 @@ import static com.axonivy.market.constants.EntityConstants.TEXT_TYPE;
 @NoArgsConstructor
 @Entity
 @Table(name = PRODUCT_JSON_CONTENT)
-@EntityListeners(AuditingEntityListener.class)
-@JsonInclude(JsonInclude.Include.NON_NULL)
-public class ProductJsonContent {
+public class ProductJsonContent extends AuditableEntity {
   @Id
   @JsonIgnore
   private String id;
@@ -36,6 +28,14 @@ public class ProductJsonContent {
   private String name;
   @Column(columnDefinition = TEXT_TYPE)
   private String content;
-  @LastModifiedDate
-  private Date updatedAt;
+
+  @Override
+  public String getId() {
+    return id;
+  }
+
+  @Override
+  public void setId(String id) {
+    this.id = id;
+  }
 }

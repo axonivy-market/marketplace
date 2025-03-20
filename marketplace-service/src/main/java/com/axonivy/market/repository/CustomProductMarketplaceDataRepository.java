@@ -6,7 +6,5 @@ public interface CustomProductMarketplaceDataRepository {
 
   int increaseInstallationCount(String productId);
 
-  void increaseInstallationCountForProductByDesignerVersion(String productId, String designerVersion);
-
   void checkAndInitProductMarketplaceDataIfNotExist(String productId);
 }

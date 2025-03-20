@@ -6,7 +6,7 @@ import com.axonivy.market.entity.Artifact;
 import com.axonivy.market.constants.CommonConstants;
 import com.axonivy.market.constants.MavenConstants;
 import com.axonivy.market.constants.ProductJsonConstants;
-import com.axonivy.market.entity.MavenArtifactModel;
+import com.axonivy.market.entity.MavenArtifactVersion;
 import com.axonivy.market.entity.Metadata;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.ObjectUtils;
@@ -28,24 +28,6 @@ import static com.axonivy.market.constants.MavenConstants.DEFAULT_IVY_MAVEN_BASE
 class MavenUtilsTest extends BaseSetup {
 
   @Test
-  void testConvertArtifactsToModels() {
-    List<MavenArtifactModel> result = MavenUtils.convertArtifactsToModels(Collections.emptyList(),
-        MOCK_RELEASED_VERSION);
-    Assertions.assertTrue(CollectionUtils.isEmpty(result));
-    result = MavenUtils.convertArtifactsToModels(null, MOCK_RELEASED_VERSION);
-    Assertions.assertTrue(CollectionUtils.isEmpty(result));
-
-    Artifact targetArtifact = new Artifact(null, null, null, MOCK_GROUP_ID,
-        MOCK_ARTIFACT_ID, MavenConstants.DEFAULT_PRODUCT_FOLDER_TYPE, null, null, null,
-        null, false, false);
-
-    result = MavenUtils.convertArtifactsToModels(List.of(targetArtifact), MOCK_RELEASED_VERSION);
-
-    Assertions.assertTrue(ObjectUtils.isNotEmpty(result));
-    Assertions.assertEquals(MOCK_DOWNLOAD_URL, result.get(0).getDownloadUrl());
-  }
-
-  @Test
   void testBuildDownloadUrlFromArtifactAndVersion() {
     Artifact targetArtifact = getMockArtifact();
     String artifactFileName = String.format(MavenConstants.ARTIFACT_FILE_NAME_FORMAT, MOCK_ARTIFACT_ID,
@@ -58,10 +40,10 @@ class MavenUtilsTest extends BaseSetup {
     Assertions.assertEquals(expectedResult, result);
 
     // Assert case with artifact not match & use custom repo
-    ArchivedArtifact adobeArchivedArtifactVersion9 = new ArchivedArtifact("df23423523", "10.0.9",
-        "com.axonivy.adobe.connector", "adobe-connector", targetArtifact);
-    ArchivedArtifact adobeArchivedArtifactVersion8 = new ArchivedArtifact("uhfgsedg", "10.0.8",
-        "com.axonivy.adobe.sign.connector", "adobe-sign-connector", targetArtifact);
+    ArchivedArtifact adobeArchivedArtifactVersion9 = new ArchivedArtifact("10.0.9",
+        "com.axonivy.adobe.connector", "adobe-connector");
+    ArchivedArtifact adobeArchivedArtifactVersion8 = new ArchivedArtifact("10.0.8",
+        "com.axonivy.adobe.sign.connector", "adobe-sign-connector");
     String customRepoUrl = "https://nexus.axonivy.com";
     targetArtifact.setRepoUrl(customRepoUrl);
     targetArtifact.setArchivedArtifacts(List.of(adobeArchivedArtifactVersion9, adobeArchivedArtifactVersion8));
@@ -145,11 +127,10 @@ class MavenUtilsTest extends BaseSetup {
   }
 
   @Test
-  void testBuildMavenArtifactModelFromMetadata() {
+  void testBuildMavenArtifactVersionFromMetadata() {
     Metadata mocKMetadata = buildMockMetadata();
     mocKMetadata.setSnapshotVersionValue("20241111-111111");
-    MavenArtifactModel result = MavenUtils.buildMavenArtifactModelFromMetadata(MOCK_SNAPSHOT_VERSION,
-        mocKMetadata);
+    MavenArtifactVersion result = MavenUtils.buildMavenArtifactVersionFromMetadata(MOCK_SNAPSHOT_VERSION, mocKMetadata);
     Assertions.assertEquals(
         "https://maven.axonivy.com/com/axonivy/util/bpmn-statistic/10.0.10-SNAPSHOT/bpmn-statistic-20241111-111111.zip",
         result.getDownloadUrl());

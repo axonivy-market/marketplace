@@ -1,7 +1,6 @@
 package com.axonivy.market.service.impl;
 
 import com.axonivy.market.entity.Artifact;
-import com.axonivy.market.entity.MavenArtifactModel;
 import com.axonivy.market.entity.MavenArtifactVersion;
 import com.axonivy.market.entity.Metadata;
 import com.axonivy.market.entity.ProductJsonContent;
@@ -23,45 +22,24 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+
 @Service
 @AllArgsConstructor
 @Log4j2
 public class MetadataServiceImpl implements MetadataService {
   private final ProductJsonContentRepository productJsonRepo;
-  private final MavenArtifactVersionRepository mavenArtifactVersionRepo;
   private final MetadataRepository metadataRepo;
+  private final MavenArtifactVersionRepository mavenArtifactVersionRepo;
 
-
-  public void updateMavenArtifactVersionWithModel(MavenArtifactVersion artifactVersion,
+  public void updateMavenArtifactVersionWithModel(List<MavenArtifactVersion> artifactModelsInVersions,
       String version, Metadata metadata) {
-
-    List<MavenArtifactModel> artifactModelsInVersions = metadata.isProductArtifact() ?
-        artifactVersion.getProductArtifactsByVersion() :
-        artifactVersion.getAdditionalArtifactsByVersion();
-
-    if (!VersionUtils.isMajorVersion(version)) {
-      artifactModelsInVersions.removeIf(
-          existingModel -> StringUtils.equals(existingModel.getArtifactId(),
-              metadata.getArtifactId()) && existingModel.getProductVersion().equals(version));
-    }
-
-    MavenArtifactModel model = MavenUtils.buildMavenArtifactModelFromMetadata(version, metadata);
-
-    if (metadata.isProductArtifact()) {
-      model.setProductVersionReference(artifactVersion);
-      artifactModelsInVersions.add(model);
-      artifactVersion.setProductArtifactsByVersion(artifactModelsInVersions);
-    } else {
-      model.setAdditionalVersionReference(artifactVersion);
-      artifactModelsInVersions.add(model);
-      artifactVersion.setAdditionalArtifactsByVersion(artifactModelsInVersions);
-    }
+    MavenArtifactVersion model = MavenUtils.buildMavenArtifactVersionFromMetadata(version, metadata);
+    artifactModelsInVersions.removeIf(artifactVersion -> artifactVersion.getId().equals(model.getId()));
+    artifactModelsInVersions.add(model);
   }
 
   public void updateMavenArtifactVersionData(Set<Metadata> metadataSet, String productId) {
-    MavenArtifactVersion artifactVersion = mavenArtifactVersionRepo.findById(productId)
-        .orElse(MavenArtifactVersion.builder().productId(productId).build());
-    artifactVersion.getAdditionalArtifactsByVersion().clear();
+    List<MavenArtifactVersion> artifactModelsInVersions = mavenArtifactVersionRepo.findByProductId(productId);
 
     for (Metadata metadata : metadataSet) {
       String metadataContent = MavenUtils.getMetadataContentFromUrl(metadata.getUrl());
@@ -69,9 +47,9 @@ public class MetadataServiceImpl implements MetadataService {
         continue;
       }
       Metadata metadataWithVersions = MetadataReaderUtils.updateMetadataFromMavenXML(metadataContent, metadata, false);
-      updateMavenArtifactVersionFromMetadata(artifactVersion, metadataWithVersions);
+      updateMavenArtifactVersionFromMetadata(artifactModelsInVersions, metadataWithVersions);
     }
-    mavenArtifactVersionRepo.save(artifactVersion);
+    mavenArtifactVersionRepo.saveAll(artifactModelsInVersions);
   }
 
   @Override
@@ -101,7 +79,7 @@ public class MetadataServiceImpl implements MetadataService {
     metadataRepo.saveAll(metadataSet);
   }
 
-  public void updateMavenArtifactVersionFromMetadata(MavenArtifactVersion artifactVersion,
+  public void updateMavenArtifactVersionFromMetadata(List<MavenArtifactVersion> artifactModelsInVersions,
       Metadata metadata) {
     // Skip to add new model for product artifact
     if (MavenUtils.isProductArtifactId(metadata.getArtifactId())) {
@@ -114,33 +92,18 @@ public class MetadataServiceImpl implements MetadataService {
           VersionUtils.isOfficialVersionOrUnReleasedDevVersion(metadata.getVersions(), version);
 
       if (isSnapshotVersion && isOfficialVersionOrUnReleasedDevVersion) {
-        updateMavenArtifactVersionForNonReleaseDevVersion(artifactVersion, metadata, version);
+        updateMavenArtifactVersionForNonReleaseDevVersion(artifactModelsInVersions, metadata, version);
       } else if (!isSnapshotVersion) {
-        updateMavenArtifactVersionWithModel(artifactVersion, version, metadata);
+        updateMavenArtifactVersionWithModel(artifactModelsInVersions, version, metadata);
       }
     }
   }
 
-  public void updateMavenArtifactVersionForNonReleaseDevVersion(MavenArtifactVersion artifactVersionCache,
+  public void updateMavenArtifactVersionForNonReleaseDevVersion(List<MavenArtifactVersion> artifactModelsInVersions,
       Metadata metadata, String version) {
     Metadata snapShotMetadata = MavenUtils.buildSnapShotMetadataFromVersion(metadata, version);
     String xmlDataForSnapshotMetadata = MavenUtils.getMetadataContentFromUrl(snapShotMetadata.getUrl());
     MetadataReaderUtils.updateMetadataFromMavenXML(xmlDataForSnapshotMetadata, snapShotMetadata, true);
-    updateMavenArtifactVersionWithModel(artifactVersionCache, version, snapShotMetadata);
-  }
-
-  public Set<Artifact> getArtifactsFromNonSyncedVersion(String productId, List<String> nonSyncedVersions) {
-    Set<Artifact> artifacts = new HashSet<>();
-    if (CollectionUtils.isEmpty(nonSyncedVersions)) {
-      return artifacts;
-    }
-
-    List<ProductJsonContent> productJsonContents = productJsonRepo.findByProductIdAndVersionIn(productId, nonSyncedVersions);
-    for (ProductJsonContent productJsonContent : productJsonContents) {
-      List<Artifact> artifactsInVersion = MavenUtils.getMavenArtifactsFromProductJson(productJsonContent);
-      artifacts.addAll(artifactsInVersion);
-    }
-
-    return artifacts;
+    updateMavenArtifactVersionWithModel(artifactModelsInVersions, version, snapShotMetadata);
   }
 }
