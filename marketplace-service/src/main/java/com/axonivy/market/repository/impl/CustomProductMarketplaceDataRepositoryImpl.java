@@ -31,10 +31,10 @@ public class CustomProductMarketplaceDataRepositoryImpl extends BaseRepository<P
         criteriaUpdateContext.builder().equal(criteriaUpdateContext.root().get(ID), productId));
     // Execute the update
     int updatedRows = executeQuery(criteriaUpdateContext);
-    entityManager.clear();
+    getEntityManager().clear();
     // Fetch the updated entity if needed
     if (updatedRows > 0) {
-      return entityManager.find(getType(), productId).getInstallationCount();
+      return getEntityManager().find(getType(), productId).getInstallationCount();
     }
     return 0;
   }
@@ -42,7 +42,7 @@ public class CustomProductMarketplaceDataRepositoryImpl extends BaseRepository<P
   @Override
   @Transactional
   public int increaseInstallationCount(String productId) {
-    Query query = entityManager.createNativeQuery(INCREASE_INSTALLATION_COUNT_VIA_PRODUCT_ID);
+    Query query = getEntityManager().createNativeQuery(INCREASE_INSTALLATION_COUNT_VIA_PRODUCT_ID);
     query.setParameter(PRODUCT_ID, productId);
     return ((Number) query.getSingleResult()).intValue();
   }
@@ -54,7 +54,7 @@ public class CustomProductMarketplaceDataRepositoryImpl extends BaseRepository<P
 
     criteriaNumberContext.query().select(criteriaNumberContext.builder().count(criteriaNumberContext.root()))
         .where(criteriaNumberContext.builder().equal(criteriaNumberContext.root().get(ID), productId));
-    Long count = entityManager.createQuery(criteriaNumberContext.query()).getSingleResult();
+    Long count = getEntityManager().createQuery(criteriaNumberContext.query()).getSingleResult();
     boolean marketPlaceExists = count > 0;
     if (!marketPlaceExists) {
       ProductMarketplaceData productMarketplaceData = new ProductMarketplaceData();

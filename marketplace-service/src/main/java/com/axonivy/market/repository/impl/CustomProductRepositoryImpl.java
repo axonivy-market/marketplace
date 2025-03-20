@@ -70,7 +70,7 @@ public class CustomProductRepositoryImpl extends BaseRepository<Product> impleme
     context.root().fetch(PRODUCT_ARTIFACT, JoinType.LEFT);
     context.query().where(context.builder().equal(context.root().get(ID), id));
     try {
-      return entityManager.createQuery(context.query()).getSingleResult();
+      return getEntityManager().createQuery(context.query()).getSingleResult();
     } catch (NoResultException e) {
       return null;
     }
@@ -97,7 +97,7 @@ public class CustomProductRepositoryImpl extends BaseRepository<Product> impleme
     }
 
     // Create query
-    TypedQuery<Product> query = entityManager.createQuery(criteriaContext.query());
+    TypedQuery<Product> query = getEntityManager().createQuery(criteriaContext.query());
     // Apply pagination
     query.setFirstResult((int) pageable.getOffset()); // Starting row
     query.setMaxResults(pageable.getPageSize()); // Number of results
@@ -181,7 +181,7 @@ public class CustomProductRepositoryImpl extends BaseRepository<Product> impleme
     // Rebuild predicate for the count query using the new Root<Product>
     Predicate countPredicate = buildCriteriaSearch(searchCriteria, cb, countRoot);
     countQuery.select(cb.count(countRoot)).where(countPredicate);
-    return entityManager.createQuery(countQuery).getSingleResult();
+    return getEntityManager().createQuery(countQuery).getSingleResult();
   }
 
   @Override

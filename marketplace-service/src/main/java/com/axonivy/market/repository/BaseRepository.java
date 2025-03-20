@@ -5,18 +5,24 @@ import jakarta.persistence.criteria.CriteriaBuilder;
 import jakarta.persistence.criteria.CriteriaQuery;
 import jakarta.persistence.criteria.CriteriaUpdate;
 import jakarta.persistence.criteria.Root;
+import lombok.Getter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
 
+@Getter
 @Component
 public abstract class BaseRepository<T> {
 
   protected abstract Class<T> getType();
 
+  private EntityManager entityManager;
+
   @Autowired
-  protected EntityManager entityManager;
+  public void setEntityManager(EntityManager entityManager) {
+    this.entityManager = entityManager;
+  }
 
   protected CriteriaQueryContext<T> createCriteriaQueryContext() {
     CriteriaBuilder builder = entityManager.getCriteriaBuilder();
