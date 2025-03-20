@@ -42,7 +42,6 @@ class ProductSearchRepositoryImplTest extends BaseSetup {
   @InjectMocks
   CustomProductRepositoryImpl productListedRepository;
 
-
   @BeforeEach
   public void setup() {
     searchCriteria = new ProductSearchCriteria();
