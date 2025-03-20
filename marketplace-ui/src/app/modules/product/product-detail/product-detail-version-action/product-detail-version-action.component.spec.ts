@@ -29,7 +29,6 @@ describe('ProductDetailVersionActionComponent', () => {
   let productServiceMock: any;
   let router: Router;
   let route: jasmine.SpyObj<ActivatedRoute>;
-  let httpMock: HttpTestingController;
 
   beforeEach(() => {
     productServiceMock = jasmine.createSpyObj('ProductService', [
@@ -68,7 +67,6 @@ describe('ProductDetailVersionActionComponent', () => {
     component.productId = productId;
     router = TestBed.inject(Router);
     route = TestBed.inject(ActivatedRoute) as jasmine.SpyObj<ActivatedRoute>;
-    httpMock = TestBed.inject(HttpTestingController);
     fixture.detectChanges();
   });
 
