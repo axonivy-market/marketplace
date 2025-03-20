@@ -75,9 +75,9 @@ class MavenDependencyServiceImplTest extends BaseSetup {
     }
 
     if (isProductArtifact) {
-      mavenArtifactVersionsMock.add(mockMavenArtifactVersion(MOCK_SNAPSHOT_VERSION,MOCK_ARTIFACT_ID));
+      mavenArtifactVersionsMock.add(mockMavenArtifactVersion(MOCK_SNAPSHOT_VERSION, MOCK_ARTIFACT_ID));
     } else {
-      mavenArtifactVersionsMock.add(mockAdditionalMavenArtifactVersion(MOCK_SNAPSHOT_VERSION,MOCK_ARTIFACT_ID));
+      mavenArtifactVersionsMock.add(mockAdditionalMavenArtifactVersion(MOCK_SNAPSHOT_VERSION, MOCK_ARTIFACT_ID));
     }
     return mavenArtifactVersionsMock;
   }

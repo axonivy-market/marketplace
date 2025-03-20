@@ -7,17 +7,17 @@ import jakarta.persistence.MappedSuperclass;
 
 @MappedSuperclass
 public class AuditableIdEntity extends AuditableEntity {
-    @Id
-    @GeneratedValue(strategy = GenerationType.UUID)
-    private String id;
+  @Id
+  @GeneratedValue(strategy = GenerationType.UUID)
+  private String id;
 
-    @Override
-    public String getId() {
-        return id;
-    }
+  @Override
+  public String getId() {
+    return id;
+  }
 
-    @Override
-    public void setId(String id) {
-        this.id = id;
-    }
+  @Override
+  public void setId(String id) {
+    this.id = id;
+  }
 }

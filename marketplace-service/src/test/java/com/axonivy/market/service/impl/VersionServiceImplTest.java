@@ -60,7 +60,7 @@ class VersionServiceImplTest extends BaseSetup {
 
     List<MavenArtifactVersion> proceededData = new ArrayList<>();
 
-    MavenArtifactVersion mockModel = mockAdditionalMavenArtifactVersion(MOCK_RELEASED_VERSION,null);
+    MavenArtifactVersion mockModel = mockAdditionalMavenArtifactVersion(MOCK_RELEASED_VERSION, null);
     mockModel.setName(MOCK_PRODUCT_ID);
     mockModel.setDownloadUrl(MavenConstants.DEFAULT_IVY_MAVEN_BASE_URL);
     proceededData.add(mockModel);
@@ -89,8 +89,7 @@ class VersionServiceImplTest extends BaseSetup {
         archivedArtifacts);
     Assertions.assertEquals(adobeArchivedArtifactVersion8, result);
     ArchivedArtifact adobeArchivedArtifactVersion10 = new ArchivedArtifact(MOCK_RELEASED_VERSION,
-        MOCK_GROUP_ID,
-        "adobe-sign-connector");
+        MOCK_GROUP_ID, "adobe-sign-connector");
     archivedArtifacts.add(adobeArchivedArtifactVersion10);
     result = MavenUtils.findArchivedArtifactInfoBestMatchWithVersion(MOCK_RELEASED_VERSION,
         archivedArtifacts);

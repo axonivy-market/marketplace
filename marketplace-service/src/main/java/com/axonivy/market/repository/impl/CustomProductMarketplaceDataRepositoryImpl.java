@@ -27,7 +27,8 @@ public class CustomProductMarketplaceDataRepositoryImpl extends BaseRepository<P
     criteriaUpdateContext.query().set(criteriaUpdateContext.root().get(INSTALLATION_COUNT), initialCount);
     criteriaUpdateContext.query().set(criteriaUpdateContext.root().get(SYNCHRONIZED_INSTALLATION_COUNT), true);
     // Where condition (filter by productId)
-    criteriaUpdateContext.query().where(criteriaUpdateContext.builder().equal(criteriaUpdateContext.root().get(ID), productId));
+    criteriaUpdateContext.query().where(
+        criteriaUpdateContext.builder().equal(criteriaUpdateContext.root().get(ID), productId));
     // Execute the update
     int updatedRows = executeQuery(criteriaUpdateContext);
     entityManager.clear();
@@ -49,7 +50,7 @@ public class CustomProductMarketplaceDataRepositoryImpl extends BaseRepository<P
   @Override
   @Transactional
   public void checkAndInitProductMarketplaceDataIfNotExist(String productId) {
-    CriteriaByTypeContext<ProductMarketplaceData,Long> criteriaNumberContext = createCriteriaTypeContext(Long.class);
+    CriteriaByTypeContext<ProductMarketplaceData, Long> criteriaNumberContext = createCriteriaTypeContext(Long.class);
 
     criteriaNumberContext.query().select(criteriaNumberContext.builder().count(criteriaNumberContext.root()))
         .where(criteriaNumberContext.builder().equal(criteriaNumberContext.root().get(ID), productId));

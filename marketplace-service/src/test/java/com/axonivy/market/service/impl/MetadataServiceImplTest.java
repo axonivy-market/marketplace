@@ -149,10 +149,10 @@ class MetadataServiceImplTest extends BaseSetup {
           mockMetadata);
       mockUtils.when(() -> MavenUtils.buildMavenArtifactVersionFromMetadata(anyString(), any()))
           .thenReturn(
-              mockMavenArtifactVersion(MOCK_SNAPSHOT_VERSION,null),
-              mockMavenArtifactVersion(MOCK_SNAPSHOT_VERSION,null),
-              mockAdditionalMavenArtifactVersion(MOCK_SNAPSHOT_VERSION,null),
-              mockAdditionalMavenArtifactVersion(MOCK_RELEASED_VERSION,null)
+              mockMavenArtifactVersion(MOCK_SNAPSHOT_VERSION, null),
+              mockMavenArtifactVersion(MOCK_SNAPSHOT_VERSION, null),
+              mockAdditionalMavenArtifactVersion(MOCK_SNAPSHOT_VERSION, null),
+              mockAdditionalMavenArtifactVersion(MOCK_RELEASED_VERSION, null)
           );
 
       metadataService.updateMavenArtifactVersionFromMetadata(mockMavenArtifactVersion, mockMetadata);

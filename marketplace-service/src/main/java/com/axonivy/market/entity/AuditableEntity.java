@@ -10,15 +10,14 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.util.Date;
 
-
 @Getter
 @Setter
 @MappedSuperclass
 @EntityListeners(AuditingEntityListener.class)
 public abstract class AuditableEntity extends GenericEntity<String> {
-  @CreatedDate
-  private Date createdAt;
+    @CreatedDate
+    private Date createdAt;
 
-  @LastModifiedDate
-  private Date updatedAt;
+    @LastModifiedDate
+    private Date updatedAt;
 }

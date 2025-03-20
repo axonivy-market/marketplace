@@ -40,9 +40,9 @@ class MavenUtilsTest extends BaseSetup {
     Assertions.assertEquals(expectedResult, result);
 
     // Assert case with artifact not match & use custom repo
-    ArchivedArtifact adobeArchivedArtifactVersion9 = new ArchivedArtifact( "10.0.9",
+    ArchivedArtifact adobeArchivedArtifactVersion9 = new ArchivedArtifact("10.0.9",
         "com.axonivy.adobe.connector", "adobe-connector");
-    ArchivedArtifact adobeArchivedArtifactVersion8 = new ArchivedArtifact( "10.0.8",
+    ArchivedArtifact adobeArchivedArtifactVersion8 = new ArchivedArtifact("10.0.8",
         "com.axonivy.adobe.sign.connector", "adobe-sign-connector");
     String customRepoUrl = "https://nexus.axonivy.com";
     targetArtifact.setRepoUrl(customRepoUrl);
@@ -130,8 +130,7 @@ class MavenUtilsTest extends BaseSetup {
   void testBuildMavenArtifactVersionFromMetadata() {
     Metadata mocKMetadata = buildMockMetadata();
     mocKMetadata.setSnapshotVersionValue("20241111-111111");
-    MavenArtifactVersion result = MavenUtils.buildMavenArtifactVersionFromMetadata(MOCK_SNAPSHOT_VERSION,
-        mocKMetadata);
+    MavenArtifactVersion result = MavenUtils.buildMavenArtifactVersionFromMetadata(MOCK_SNAPSHOT_VERSION, mocKMetadata);
     Assertions.assertEquals(
         "https://maven.axonivy.com/com/axonivy/util/bpmn-statistic/10.0.10-SNAPSHOT/bpmn-statistic-20241111-111111.zip",
         result.getDownloadUrl());

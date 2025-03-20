@@ -12,6 +12,7 @@ import java.util.List;
 
 @Component
 public abstract class BaseRepository<T> {
+
   protected abstract Class<T> getType();
 
   @Autowired

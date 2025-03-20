@@ -12,9 +12,6 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-import java.io.Serial;
-import java.io.Serializable;
-
 import static com.axonivy.market.constants.EntityConstants.MAVEN_ARTIFACT_VERSION;
 
 @AllArgsConstructor
@@ -24,9 +21,7 @@ import static com.axonivy.market.constants.EntityConstants.MAVEN_ARTIFACT_VERSIO
 @Builder
 @Entity
 @Table(name = MAVEN_ARTIFACT_VERSION)
-public class MavenArtifactVersion implements Serializable {
-  @Serial
-  private static final long serialVersionUID = 1L;
+public class MavenArtifactVersion {
 
   @EmbeddedId
   private MavenArtifactKey id;
@@ -36,7 +31,7 @@ public class MavenArtifactVersion implements Serializable {
 
   @Schema(description = "Artifact download url",
       example = "https://maven.axonivy.com/com/axonivy/connector/adobe/acrobat/sign/adobe-acrobat-sign-connector/10.0" +
-              ".25/adobe-acrobat-sign-connector-10.0.25.iar")
+          ".25/adobe-acrobat-sign-connector-10.0.25.iar")
   private String downloadUrl;
 
   @JsonIgnore

@@ -25,23 +25,18 @@ public class EntityConstants {
   public static final String ARCHIVED_ARTIFACT = "archived_artifact";
   public static final String ARTIFACT = "artifact";
   public static final String PRODUCT_ID = "product_id";
-
   public static final String BYTEA_TYPE = "BYTEA";
   public static final String TEXT_TYPE = "TEXT";
   public static final String PRODUCT_MODULE_CONTENT_ID = "product_module_content_id";
   public static final String PRODUCT_MODULE_CONTENT_SETUP = "product_module_content_setup";
   public static final String PRODUCT_MODULE_CONTENT_DESCRIPTION = "product_module_content_description";
   public static final String PRODUCT_MODULE_CONTENT_DEMO = "product_module_content_demo";
-
   public static final String LANGUAGE = "language";
-
   public static final String SETUP = "setup";
   public static final String DEMO = "demo";
   public static final String DESCRIPTION = "description";
   public static final String NAME = "name";
   public static final String SHORT_DESCRIPTION = "shortDescription";
-
   public static final String PRODUCT_NAME = "product_name";
   public static final String PRODUCT_DESCRIPTION = "product_description";
-
 }

@@ -24,12 +24,9 @@ import static com.axonivy.market.constants.EntityConstants.ARTIFACT;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@JsonInclude(JsonInclude.Include.NON_EMPTY)
-@JsonIgnoreProperties(ignoreUnknown = true)
 @Entity
 @Table(name = ARTIFACT)
 public class Artifact extends GenericIdEntity {
-
   private String repoUrl;
   private String name;
   private String groupId;
@@ -38,10 +35,8 @@ public class Artifact extends GenericIdEntity {
   private Boolean isDependency;
   @Transient
   private Boolean isProductArtifact;
-
   @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
   private List<ArchivedArtifact> archivedArtifacts;
-
   private Boolean doc;
   private boolean isInvalidArtifact;
 
