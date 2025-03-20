@@ -38,7 +38,7 @@ public class CustomProductDesignerInstallationRepositoryImpl extends BaseReposit
       installation.setInstallationCount(1);
       save(installation);
     } else {
-      Query query = entityManager.createNativeQuery(INCREASE_INSTALLATION_COUNT_VIA_PRODUCT_ID_FOR_DESIGNER_VERSION);
+      Query query = getEntityManager().createNativeQuery(INCREASE_INSTALLATION_COUNT_VIA_PRODUCT_ID_FOR_DESIGNER_VERSION);
       query.setParameter(PRODUCT_ID, productId);
       query.setParameter(DESIGNER_VERSION, designerVersion);
       query.executeUpdate();
