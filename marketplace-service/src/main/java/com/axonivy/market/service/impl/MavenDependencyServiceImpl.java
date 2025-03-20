@@ -14,6 +14,7 @@ import com.axonivy.market.service.MavenDependencyService;
 import com.axonivy.market.util.VersionUtils;
 import lombok.AllArgsConstructor;
 import lombok.extern.log4j.Log4j2;
+import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.maven.model.Dependency;
 import org.apache.maven.model.Model;
