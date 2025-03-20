@@ -13,7 +13,8 @@ import { ROUTER } from '../../../../shared/constants/router.constant';
 import { MatomoTestingModule } from 'ngx-matomo-client/testing';
 import { ProductDetailActionType } from '../../../../shared/enums/product-detail-action-type';
 import { MATOMO_TRACKING_ENVIRONMENT } from '../../../../shared/constants/matomo.constant';
-import { provideHttpClientTesting } from '@angular/common/http/testing';
+import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
+import { environment } from '../../../../../environments/environment';
 
 class MockElementRef implements ElementRef {
   nativeElement = {
@@ -28,6 +29,7 @@ describe('ProductDetailVersionActionComponent', () => {
   let productServiceMock: any;
   let router: Router;
   let route: jasmine.SpyObj<ActivatedRoute>;
+  let httpMock: HttpTestingController;
 
   beforeEach(() => {
     productServiceMock = jasmine.createSpyObj('ProductService', [
@@ -66,6 +68,7 @@ describe('ProductDetailVersionActionComponent', () => {
     component.productId = productId;
     router = TestBed.inject(Router);
     route = TestBed.inject(ActivatedRoute) as jasmine.SpyObj<ActivatedRoute>;
+    httpMock = TestBed.inject(HttpTestingController);
     fixture.detectChanges();
   });
 
@@ -372,4 +375,29 @@ describe('ProductDetailVersionActionComponent', () => {
     expect(productServiceMock.sendRequestToGetInstallationCount).toHaveBeenCalledWith(component.productId);
     expect(component.installationCount.emit).toHaveBeenCalledWith(42);
   }));
+
+  it('should return the correct marketplace service URL', () => {
+    environment.apiUrl = 'https://api.example.com';
+
+    expect(component.getMarketplaceServiceUrl()).toBe('https://api.example.com');
+
+    environment.apiUrl = '/marketplace';
+    expect(component.getMarketplaceServiceUrl()).toBe(window.location.origin + '/marketplace');
+  });
+
+  it('should generate correct URL and call fetchAndDownloadArtifact for DOC file', () => {
+    component.selectedArtifact = 'document.doc';
+    component.productId = '123';
+    environment.apiUrl = 'https://api.example.com';
+
+    spyOn(component, 'fetchAndDownloadArtifact');
+
+    component.downloadArtifact();
+
+    expect(component.fetchAndDownloadArtifact).toHaveBeenCalledWith(
+      `${environment.apiUrl}/api/product-marketplace-data/version-download/123?url=document.doc`,
+      'document.doc'
+    );
+  });
+
 });

@@ -231,7 +231,7 @@ export class ProductDetailVersionActionComponent implements AfterViewInit {
 
   getVersionInDesigner(): void {
     if (this.versions().length === 0) {
-      let designerVersion = this.routingQueryParamService.getDesignerVersionFromSessionStorage() ?? '';
+      const designerVersion = this.routingQueryParamService.getDesignerVersionFromSessionStorage() ?? '';
       this.productService
         .sendRequestToGetProductVersionsForDesigner(
           this.productId,
@@ -269,7 +269,9 @@ export class ProductDetailVersionActionComponent implements AfterViewInit {
     if (!this.isCheckedAppForEngine || this.selectedArtifactId?.endsWith(DOC) || this.selectedArtifact?.endsWith(ZIP)) {
       const params = new HttpParams().set('url', this.selectedArtifact ?? '');
       downloadUrl = `${this.getMarketplaceServiceUrl()}/${API_URI.PRODUCT_MARKETPLACE_DATA}/${VERSION_DOWNLOAD}/${this.productId}?${params.toString()}`;
-      this.fetchAndDownloadArtifact(downloadUrl, this.selectedArtifact!.substring(this.selectedArtifact!.lastIndexOf("/") + 1));
+      if (this.selectedArtifact) {
+        this.fetchAndDownloadArtifact(downloadUrl, this.selectedArtifact.substring(this.selectedArtifact.lastIndexOf("/") + 1));
+      }
     } else if (this.isCheckedAppForEngine) {
       const version = this.selectedVersion().replace(VERSION.displayPrefix, '');
       const params = new HttpParams()
@@ -283,7 +285,7 @@ export class ProductDetailVersionActionComponent implements AfterViewInit {
     }
   }
 
-  private getMarketplaceServiceUrl(): string {
+  getMarketplaceServiceUrl(): string {
     let marketplaceServiceUrl = environment.apiUrl;
     if (!marketplaceServiceUrl.startsWith(HTTP)) {
       marketplaceServiceUrl = window.location.origin.concat(marketplaceServiceUrl);
@@ -291,9 +293,9 @@ export class ProductDetailVersionActionComponent implements AfterViewInit {
     return marketplaceServiceUrl;
   }
 
-  private fetchAndDownloadArtifact(url: string, fileName: string): void {
+  fetchAndDownloadArtifact(url: string, fileName: string): void {
     this.httpClient.get<VersionDownload>(url).subscribe(
-      (response) => {
+      response => {
         if (response.fileData) {
           this.installationCount.emit(response.installationCount);
           this.downloadFile(response.fileData, fileName);
