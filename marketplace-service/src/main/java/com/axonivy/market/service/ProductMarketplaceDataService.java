@@ -17,7 +17,7 @@ public interface ProductMarketplaceDataService {
 
   Integer getInstallationCount(String id);
 
-  VersionDownload downloadArtifact(String artifactUrl, String productId) throws IOException;
+  VersionDownload downloadArtifact(String artifactUrl, String productId);
 
   VersionDownload getVersionDownload(String productId, byte[] fileData);
 }

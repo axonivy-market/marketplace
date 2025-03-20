@@ -304,9 +304,8 @@ export class ProductDetailVersionActionComponent implements AfterViewInit {
     );
   }
 
-  private downloadFile(base64Data: string, fileName: string): void {
-    const byteArray = Uint8Array.from(atob(base64Data), c => c.charCodeAt(0));
-    const blobUrl = URL.createObjectURL(new Blob([byteArray], { type: APPLICATION_OCTET_STREAM }));
+  private downloadFile(fileData: string, fileName: string): void {
+    const blobUrl = URL.createObjectURL(new Blob([fileData], { type: APPLICATION_OCTET_STREAM }));
 
     const a = Object.assign(document.createElement(ANCHOR_ELEMENT), { href: blobUrl, download: fileName });
     document.body.appendChild(a);
@@ -321,7 +320,7 @@ export class ProductDetailVersionActionComponent implements AfterViewInit {
         .subscribe((data: number) => {
           this.installationCount.emit(data)
         });
-    }, 1000);
+    }, 500);
   }
 
   onNavigateToContactPage(): void {

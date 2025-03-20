@@ -77,17 +77,12 @@ public class ProductMarketplaceDataServiceImpl implements ProductMarketplaceData
 
   @Override
   public VersionDownload downloadArtifact(String artifactUrl, String productId) {
-    try {
-      byte[] fileData = fileDownloadService.downloadFile(artifactUrl);
-
-      if (fileData == null || fileData.length == 0) {
-        return null;
-      }
-      return getVersionDownload(productId, fileData);
-    } catch (Exception e) {
-      log.error("Error downloading file from URL {}: {}", artifactUrl, e.getMessage());
+    byte[] fileData = fileDownloadService.downloadFile(artifactUrl);
+    if (fileData == null || fileData.length == 0) {
+      log.error("Cannot download file from URL: {}", artifactUrl);
       return null;
     }
+    return getVersionDownload(productId, fileData);
   }
 
   @Override
@@ -154,7 +149,7 @@ public class ProductMarketplaceDataServiceImpl implements ProductMarketplaceData
   public Integer getInstallationCount(String id) {
     return productMarketplaceDataRepo.findById(id)
         .map(ProductMarketplaceData::getInstallationCount)
-        .orElse(null);
+        .orElse(0);
   }
 
   private void validateProductExists(String productId) throws NotFoundException {

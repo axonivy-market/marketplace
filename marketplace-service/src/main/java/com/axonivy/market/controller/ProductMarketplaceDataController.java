@@ -1,6 +1,7 @@
 package com.axonivy.market.controller;
 
 import com.axonivy.market.bo.VersionDownload;
+import com.axonivy.market.constants.ErrorMessageConstants;
 import com.axonivy.market.constants.GitHubConstants;
 import com.axonivy.market.enums.ErrorCode;
 import com.axonivy.market.github.service.GitHubService;
@@ -24,7 +25,6 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
 
-import java.io.IOException;
 import java.util.Objects;
 
 import static com.axonivy.market.constants.RequestMappingConstants.*;
@@ -58,9 +58,9 @@ public class ProductMarketplaceDataController {
   @GetMapping(VERSION_DOWNLOAD_BY_ID)
   public ResponseEntity<VersionDownload> extractArtifactUrl(
       @PathVariable(ID) String productId,
-      @RequestParam(URL) String artifactUrl) throws IOException {
+      @RequestParam(URL) String artifactUrl) {
     if (!AuthorizationUtils.isAllowedUrl(artifactUrl)) {
-      throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Invalid URL");
+      throw new ResponseStatusException(HttpStatus.FORBIDDEN, ErrorMessageConstants.INVALID_URL_ERROR);
     }
 
     VersionDownload result = productMarketplaceDataService.downloadArtifact(artifactUrl, productId);
@@ -75,6 +75,6 @@ public class ProductMarketplaceDataController {
   public ResponseEntity<Integer> findInstallationCount(@PathVariable(ID)
   String id) {
     Integer result = productMarketplaceDataService.getInstallationCount(id);
-    return new ResponseEntity<>(Objects.requireNonNullElse(result, 0), HttpStatus.OK);
+    return new ResponseEntity<>(result, HttpStatus.OK);
   }
 }
