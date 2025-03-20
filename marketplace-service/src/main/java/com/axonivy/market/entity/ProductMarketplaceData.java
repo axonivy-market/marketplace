@@ -9,9 +9,6 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-import java.io.Serial;
-import java.io.Serializable;
-
 import static com.axonivy.market.constants.EntityConstants.PRODUCT_MARKETPLACE_DATA;
 
 @Getter
@@ -21,12 +18,21 @@ import static com.axonivy.market.constants.EntityConstants.PRODUCT_MARKETPLACE_D
 @AllArgsConstructor
 @Entity
 @Table(name = PRODUCT_MARKETPLACE_DATA)
-public class ProductMarketplaceData implements Serializable {
-  @Serial
-  private static final long serialVersionUID = -8770801879877277456L;
+public class ProductMarketplaceData extends GenericEntity<String> {
+
   @Id
   private String id;
   private int installationCount;
   private Boolean synchronizedInstallationCount;
   private Integer customOrder;
+
+  @Override
+  public String getId() {
+    return id;
+  }
+
+  @Override
+  public void setId(String id) {
+    this.id = id;
+  }
 }

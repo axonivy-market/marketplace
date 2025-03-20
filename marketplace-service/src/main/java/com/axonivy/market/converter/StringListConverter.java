@@ -1,25 +1,17 @@
 package com.axonivy.market.converter;
 
-import com.axonivy.market.constants.CommonConstants;
-import jakarta.persistence.AttributeConverter;
 import jakarta.persistence.Converter;
 
 import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
 
 @Converter
-public class StringListConverter implements AttributeConverter<List<String>, String> {
-  @Override
-  public String convertToDatabaseColumn(List<String> stringList) {
-    return (stringList != null && !stringList.isEmpty()) ? String.join(CommonConstants.SPLIT_CHAR, stringList) : "";
-  }
+public class StringListConverter extends CollectionConverter<List<String>> {
 
   @Override
-  public List<String> convertToEntityAttribute(String string) {
-    if (string == null || string.trim().isEmpty()) {
-      return new ArrayList<>();
-    }
-    return new ArrayList<>(Arrays.asList(string.split(CommonConstants.SPLIT_CHAR)));
+  protected List<String> createCollection(Collection<String> elements) {
+    return new ArrayList<>(elements);
   }
+
 }

@@ -150,7 +150,7 @@ export class ProductDetailVersionActionComponent implements AfterViewInit {
       }
     });
     if (this.artifacts().length !== 0) {
-      this.selectedArtifactId = this.artifacts()[0].artifactId ?? '';
+      this.selectedArtifactId = this.artifacts()[0].id?.artifactId ?? '';
       this.selectedArtifactName = this.artifacts()[0].name ?? '';
       this.selectedArtifact = this.artifacts()[0].downloadUrl ?? '';
     }
@@ -174,7 +174,7 @@ export class ProductDetailVersionActionComponent implements AfterViewInit {
   onSelectArtifact(artifact: ItemDropdown) {
     this.selectedArtifactName = artifact.name;
     this.selectedArtifact = artifact.downloadUrl;
-    this.selectedArtifactId = artifact.artifactId;
+    this.selectedArtifactId = artifact?.id?.artifactId;
   }
 
   onShowDevVersion(event: Event) {

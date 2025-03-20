@@ -1,8 +1,8 @@
 package com.axonivy.market.repository.impl;
 
 import com.axonivy.market.constants.CommonConstants;
-import com.axonivy.market.entity.Artifact;
 import com.axonivy.market.criteria.ProductSearchCriteria;
+import com.axonivy.market.entity.Artifact;
 import com.axonivy.market.entity.Product;
 import com.axonivy.market.entity.ProductCustomSort;
 import com.axonivy.market.entity.ProductMarketplaceData;
@@ -11,14 +11,13 @@ import com.axonivy.market.enums.DocumentField;
 import com.axonivy.market.enums.Language;
 import com.axonivy.market.enums.SortOption;
 import com.axonivy.market.enums.TypeOption;
+import com.axonivy.market.repository.BaseRepository;
 import com.axonivy.market.repository.CustomProductRepository;
 import com.axonivy.market.repository.ProductCustomSortRepository;
 import com.axonivy.market.repository.ProductModuleContentRepository;
-import jakarta.persistence.EntityManager;
 import jakarta.persistence.NoResultException;
 import jakarta.persistence.TypedQuery;
 import jakarta.persistence.criteria.*;
-import lombok.AllArgsConstructor;
 import lombok.Builder;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -38,11 +37,15 @@ import java.util.Optional;
 import static com.axonivy.market.constants.PostgresDBConstants.*;
 
 @Builder
-@AllArgsConstructor
-public class CustomProductRepositoryImpl implements CustomProductRepository {
+public class CustomProductRepositoryImpl extends BaseRepository<Product> implements CustomProductRepository {
   final ProductCustomSortRepository productCustomSortRepo;
   final ProductModuleContentRepository contentRepository;
-  EntityManager em;
+
+  public CustomProductRepositoryImpl(ProductCustomSortRepository productCustomSortRepo,
+      ProductModuleContentRepository contentRepository) {
+    this.productCustomSortRepo = productCustomSortRepo;
+    this.contentRepository = contentRepository;
+  }
 
   @Override
   public Product getProductByIdAndVersion(String id, String version) {
@@ -61,17 +64,13 @@ public class CustomProductRepositoryImpl implements CustomProductRepository {
 
   @Override
   public Product findProductByIdAndRelatedData(String id) {
-    CriteriaBuilder cb = em.getCriteriaBuilder();
-    CriteriaQuery<Product> cq = cb.createQuery(Product.class);
-    Root<Product> product = cq.from(Product.class);
-
-    product.fetch(PRODUCT_NAMES, JoinType.LEFT);
-    product.fetch(PRODUCT_SHORT_DESCRIPTION, JoinType.LEFT);
-    product.fetch(PRODUCT_ARTIFACT, JoinType.LEFT);
-
-    cq.where(cb.equal(product.get(ID), id));
+    CriteriaQueryContext<Product> context = createCriteriaQueryContext();
+    context.root().fetch(PRODUCT_NAMES, JoinType.LEFT);
+    context.root().fetch(PRODUCT_SHORT_DESCRIPTION, JoinType.LEFT);
+    context.root().fetch(PRODUCT_ARTIFACT, JoinType.LEFT);
+    context.query().where(context.builder().equal(context.root().get(ID), id));
     try {
-      return em.createQuery(cq).getSingleResult();
+      return getEntityManager().createQuery(context.query()).getSingleResult();
     } catch (NoResultException e) {
       return null;
     }
@@ -86,97 +85,94 @@ public class CustomProductRepositoryImpl implements CustomProductRepository {
 
   @Override
   public Page<Product> searchByCriteria(ProductSearchCriteria searchCriteria, Pageable pageable) {
-    ProductCriteriaBuilder<CriteriaBuilder, CriteriaQuery<Product>, Root<Product>> jpaBuilder = createCriteriaQuery();
+    CriteriaQueryContext<Product> criteriaContext = createCriteriaQueryContext();
     PageRequest pageRequest = (PageRequest) pageable;
     Language language = searchCriteria.getLanguage() != null ? searchCriteria.getLanguage() : Language.EN;
-    Predicate predicate = buildCriteriaSearch(searchCriteria, jpaBuilder.cb(), jpaBuilder.root());
+    Predicate predicate = buildCriteriaSearch(searchCriteria, criteriaContext.builder(), criteriaContext.root());
 
-    jpaBuilder.cq().where(predicate);
+    criteriaContext.query().where(predicate);
 
     if (pageRequest.getSort().isSorted()) {
-      sortByOrders(jpaBuilder,pageRequest, language.getValue());
+      sortByOrders(criteriaContext, pageRequest, language.getValue());
     }
 
     // Create query
-    TypedQuery<Product> query = em.createQuery(jpaBuilder.cq());
+    TypedQuery<Product> query = getEntityManager().createQuery(criteriaContext.query());
     // Apply pagination
     query.setFirstResult((int) pageable.getOffset()); // Starting row
     query.setMaxResults(pageable.getPageSize()); // Number of results
     // Get results
     List<Product> resultList = query.getResultList();
     // Get total count for pagination
-    long total = getTotalCount(jpaBuilder.cb(), searchCriteria);
+    long total = getTotalCount(criteriaContext.builder(), searchCriteria);
 
     return new PageImpl<>(resultList, pageable, total);
   }
 
-  private void sortByOrders(ProductCriteriaBuilder<CriteriaBuilder, CriteriaQuery<Product>, Root<Product>> jpaBuilder,
+  private void sortByOrders(CriteriaQueryContext<Product> criteriaContext,
       PageRequest pageRequest, String language) {
     List<Order> orders = new ArrayList<>();
     if (pageRequest != null) {
       pageRequest.getSort().stream().findFirst().ifPresent(order -> {
         SortOption sortOption = SortOption.of(order.getProperty());
         switch (sortOption) {
-          case ALPHABETICALLY -> orders.add(sortByAlphabet(jpaBuilder,language));
-          case RECENT -> orders.add(sortByRecent(jpaBuilder));
-          case POPULARITY -> orders.add(sortByPopularity(jpaBuilder));
-          default -> orders.addAll(sortByStandard(jpaBuilder, language));
+          case ALPHABETICALLY -> orders.add(sortByAlphabet(criteriaContext, language));
+          case RECENT -> orders.add(sortByRecent(criteriaContext));
+          case POPULARITY -> orders.add(sortByPopularity(criteriaContext));
+          default -> orders.addAll(sortByStandard(criteriaContext, language));
         }
       });
     }
-    orders.add(sortById(jpaBuilder)); // Always sort by ID as a fallback
-    jpaBuilder.cq.orderBy(orders);
+    orders.add(sortById(criteriaContext)); // Always sort by ID as a fallback
+    criteriaContext.query().orderBy(orders);
   }
 
-  private List<Order> sortByStandard(
-      ProductCriteriaBuilder<CriteriaBuilder, CriteriaQuery<Product>, Root<Product>> jpaBuilder, String language) {
+  private List<Order> sortByStandard(CriteriaQueryContext<Product> criteriaContext, String language) {
     List<ProductCustomSort> customSorts = productCustomSortRepo.findAll();
-    Join<Product, ProductMarketplaceData> marketplaceJoin = jpaBuilder.root.join(PRODUCT_MARKETPLACE_DATA,
+    Join<Product, ProductMarketplaceData> marketplaceJoin = criteriaContext.root().join(PRODUCT_MARKETPLACE_DATA,
         JoinType.LEFT);
     List<Order> orders = new ArrayList<>();
-    Order order = jpaBuilder.cb.desc(
-        jpaBuilder.cb.coalesce(marketplaceJoin.get(CUSTOM_ORDER), Integer.MIN_VALUE)
+    Order order = criteriaContext.builder().desc(
+        criteriaContext.builder().coalesce(marketplaceJoin.get(CUSTOM_ORDER), Integer.MIN_VALUE)
     );
     orders.add(order);
     if (ObjectUtils.isNotEmpty(customSorts)) {
       SortOption sortOptionExtension = SortOption.of(customSorts.get(0).getRuleForRemainder());
       switch (sortOptionExtension) {
-        case ALPHABETICALLY -> orders.add(sortByAlphabet(jpaBuilder, language));
-        case RECENT -> orders.add(sortByRecent(jpaBuilder));
-        default -> orders.add(sortByPopularity(jpaBuilder));
+        case ALPHABETICALLY -> orders.add(sortByAlphabet(criteriaContext, language));
+        case RECENT -> orders.add(sortByRecent(criteriaContext));
+        default -> orders.add(sortByPopularity(criteriaContext));
       }
     }
     return orders;
   }
 
-  private Order sortByPopularity(
-      ProductCriteriaBuilder<CriteriaBuilder, CriteriaQuery<Product>, Root<Product>> jpaBuilder) {
-    Join<Product, ProductMarketplaceData> marketplaceJoin = jpaBuilder.root.join(PRODUCT_MARKETPLACE_DATA,
+  private Order sortByPopularity(CriteriaQueryContext<Product> criteriaContext) {
+    Join<Product, ProductMarketplaceData> marketplaceJoin = criteriaContext.root().join(PRODUCT_MARKETPLACE_DATA,
         JoinType.LEFT);
-    return jpaBuilder.cb.desc(marketplaceJoin.get(INSTALLATION_COUNT));
+    return criteriaContext.builder().desc(marketplaceJoin.get(INSTALLATION_COUNT));
   }
 
-  private Order sortByAlphabet(
-      ProductCriteriaBuilder<CriteriaBuilder, CriteriaQuery<Product>, Root<Product>> jpaBuilder, String language) {
-    MapJoin<Product, String, String> namesJoin = jpaBuilder.root().joinMap(PRODUCT_NAMES, JoinType.LEFT);
-    Expression<Object> nameValue = jpaBuilder.cb().coalesce(
-        jpaBuilder.cb().selectCase()
-            .when(jpaBuilder.cb().equal(namesJoin.key(), language), namesJoin.value())
-            .otherwise(jpaBuilder.cb().literal("")), jpaBuilder.cb().literal("")
+  private Order sortByAlphabet(CriteriaQueryContext<Product> criteriaContext, String language) {
+    MapJoin<Product, String, String> namesJoin = criteriaContext.root().joinMap(PRODUCT_NAMES, JoinType.LEFT);
+    Expression<Object> nameValue = criteriaContext.builder().coalesce(
+        criteriaContext.builder().selectCase()
+            .when(criteriaContext.builder().equal(namesJoin.key(), language), namesJoin.value())
+            .otherwise(criteriaContext.builder().literal("")), criteriaContext.builder().literal("")
     );
 
     // Return sorting order (ascending)
-    return jpaBuilder.cb().asc(nameValue);
+    return criteriaContext.builder().asc(nameValue);
   }
 
-  private Order sortById(ProductCriteriaBuilder<CriteriaBuilder, CriteriaQuery<Product>, Root<Product>> jpaBuilder){
-    return jpaBuilder.cb.asc(jpaBuilder.root().get(ID));
+  private Order sortById(CriteriaQueryContext<Product> criteriaContext) {
+    return criteriaContext.builder().asc(criteriaContext.root().get(ID));
   }
 
-  private Order sortByRecent(
-      ProductCriteriaBuilder<CriteriaBuilder, CriteriaQuery<Product>, Root<Product>> jpaBuilder) {
-    return jpaBuilder.cb.desc(jpaBuilder.cb.coalesce(jpaBuilder.root().get(FIRST_PUBLISHED_DATE),
-            jpaBuilder.cb.literal(Timestamp.valueOf(CommonConstants.DEFAULT_DATE_TIME))));
+  private Order sortByRecent(CriteriaQueryContext<Product> criteriaContext) {
+    return criteriaContext.builder().desc(
+        criteriaContext.builder().coalesce(criteriaContext.root().get(FIRST_PUBLISHED_DATE),
+            criteriaContext.builder().literal(Timestamp.valueOf(CommonConstants.DEFAULT_DATE_TIME))));
   }
 
   private long getTotalCount(CriteriaBuilder cb, ProductSearchCriteria searchCriteria) {
@@ -185,27 +181,28 @@ public class CustomProductRepositoryImpl implements CustomProductRepository {
     // Rebuild predicate for the count query using the new Root<Product>
     Predicate countPredicate = buildCriteriaSearch(searchCriteria, cb, countRoot);
     countQuery.select(cb.count(countRoot)).where(countPredicate);
-    return em.createQuery(countQuery).getSingleResult();
+    return getEntityManager().createQuery(countQuery).getSingleResult();
   }
 
   @Override
   public Product findByCriteria(ProductSearchCriteria criteria) {
-    ProductCriteriaBuilder<CriteriaBuilder, CriteriaQuery<Product>, Root<Product>> jpaBuilder = createCriteriaQuery();
+    CriteriaQueryContext<Product> criteriaContext = createCriteriaQueryContext();
 
-    Predicate searchCriteria = buildCriteriaSearch(criteria, jpaBuilder.cb(), jpaBuilder.root());
-    jpaBuilder.cq().where(searchCriteria);
+    Predicate searchCriteria = buildCriteriaSearch(criteria, criteriaContext.builder(), criteriaContext.root());
+    criteriaContext.query().where(searchCriteria);
 
-    List<Product> results = em.createQuery(jpaBuilder.cq()).getResultList();
-
+    List<Product> results = findByCriteria(criteriaContext);
     return results.isEmpty() ? null : results.get(0);
   }
 
   @Override
   public List<Product> findAllProductsHaveDocument() {
-    ProductCriteriaBuilder<CriteriaBuilder, CriteriaQuery<Product>, Root<Product>> jpaBuilder = createCriteriaQuery();
-    Join<Product, Artifact> artifact = jpaBuilder.root().join(PRODUCT_ARTIFACT);
-    jpaBuilder.cq().select(jpaBuilder.root()).distinct(true).where(jpaBuilder.cb().isTrue(artifact.get(DOC)));
-    return em.createQuery(jpaBuilder.cq()).getResultList();
+    CriteriaQueryContext<Product> criteriaContext = createCriteriaQueryContext();
+    Join<Product, Artifact> artifact = criteriaContext.root().join(PRODUCT_ARTIFACT);
+    criteriaContext.query().select(criteriaContext.root()).distinct(true).where(
+        criteriaContext.builder().isTrue(artifact.get(DOC)));
+
+    return findByCriteria(criteriaContext);
   }
 
   public Predicate buildCriteriaSearch(ProductSearchCriteria searchCriteria, CriteriaBuilder cb,
@@ -269,13 +266,8 @@ public class CustomProductRepositoryImpl implements CustomProductRepository {
     return cb.or(filters.toArray(new Predicate[0])); // Return OR condition for broader match
   }
 
-  private ProductCriteriaBuilder<CriteriaBuilder, CriteriaQuery<Product>, Root<Product>> createCriteriaQuery() {
-    CriteriaBuilder cb = em.getCriteriaBuilder();
-    CriteriaQuery<Product> cq = cb.createQuery(Product.class);
-    Root<Product> productRoot = cq.from(Product.class);
-    return new ProductCriteriaBuilder<>(cb, cq, productRoot);
-  }
-
-  record ProductCriteriaBuilder<T1, T2, T3>(T1 cb, T2 cq, T3 root) {
+  @Override
+  protected Class<Product> getType() {
+    return Product.class;
   }
 }

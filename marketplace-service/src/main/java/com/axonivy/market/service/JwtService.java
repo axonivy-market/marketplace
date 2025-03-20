@@ -1,10 +1,10 @@
 package com.axonivy.market.service;
 
-import com.axonivy.market.entity.User;
+import com.axonivy.market.entity.GithubUser;
 import io.jsonwebtoken.Claims;
 
 public interface JwtService {
-  String generateToken(User user, String accessToken);
+  String generateToken(GithubUser githubUser, String accessToken);
 
   boolean validateToken(String token);
 

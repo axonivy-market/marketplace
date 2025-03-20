@@ -13,8 +13,9 @@ import { ROUTER } from '../../../../shared/constants/router.constant';
 import { MatomoTestingModule } from 'ngx-matomo-client/testing';
 import { ProductDetailActionType } from '../../../../shared/enums/product-detail-action-type';
 import { MATOMO_TRACKING_ENVIRONMENT } from '../../../../shared/constants/matomo.constant';
-import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
+import { provideHttpClientTesting } from '@angular/common/http/testing';
 import { environment } from '../../../../../environments/environment';
+import { MavenArtifactKey } from '../../../../shared/models/maven-artifact.model';
 
 class MockElementRef implements ElementRef {
   nativeElement = {
@@ -79,7 +80,8 @@ describe('ProductDetailVersionActionComponent', () => {
     const artifact = {
       name: 'Example Artifact',
       downloadUrl: 'https://example.com/download',
-      isProductArtifact: true
+      isProductArtifact: true,
+      id: { artifactId: "example-artifactId" } as MavenArtifactKey
     } as ItemDropdown;
     component.versions.set([selectedVersion]);
     component.versionMap.set(selectedVersion, [artifact]);
@@ -88,6 +90,7 @@ describe('ProductDetailVersionActionComponent', () => {
 
     expect(component.artifacts().length).toBe(1);
     expect(component.selectedArtifact).toEqual('https://example.com/download');
+    expect(component.selectedArtifactId).toBe(artifact.id!.artifactId);
   });
 
   it('should update selectedVersion, artifacts, selectedArtifactName, and selectedArtifact, and call addVersionParamToRoute', () => {
@@ -335,12 +338,15 @@ describe('ProductDetailVersionActionComponent', () => {
       name: 'Example Artifact1',
       downloadUrl: 'https://example.com/download',
       isProductArtifact: true,
-      label: 'Example Artifact1'
+      label: 'Example Artifact1',
+      id: { artifactId: "example-artifactId" } as MavenArtifactKey
     } as ItemDropdown;
+
     component.onSelectArtifact(mockArtifact1);
+
     expect(component.selectedArtifactName).toBe(mockArtifact1.name);
     expect(component.selectedArtifact).toBe(mockArtifact1.downloadUrl);
-    expect(component.selectedArtifactId).toBe(mockArtifact1.artifactId);
+    expect(component.selectedArtifactId).toBe(mockArtifact1.id!.artifactId);
   });
 
   it('should call selectedVersion.set with the correct version', () => {

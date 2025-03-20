@@ -1,7 +1,7 @@
 package com.axonivy.market.github.service;
 
 import com.axonivy.market.entity.Product;
-import com.axonivy.market.entity.User;
+import com.axonivy.market.entity.GithubUser;
 import com.axonivy.market.exceptions.model.MissingHeaderException;
 import com.axonivy.market.exceptions.model.Oauth2ExchangeCodeException;
 import com.axonivy.market.exceptions.model.UnauthorizedException;
@@ -41,7 +41,7 @@ public interface GitHubService {
   GitHubAccessTokenResponse getAccessToken(String code, GitHubProperty gitHubProperty)
       throws Oauth2ExchangeCodeException, MissingHeaderException;
 
-  User getAndUpdateUser(String accessToken);
+  GithubUser getAndUpdateUser(String accessToken);
 
   void validateUserInOrganizationAndTeam(String accessToken, String team, String org) throws UnauthorizedException;
 

@@ -11,6 +11,7 @@ import com.axonivy.market.exceptions.model.InvalidParamException;
 import com.axonivy.market.exceptions.model.NotFoundException;
 import com.axonivy.market.model.ProductCustomSortRequest;
 import com.axonivy.market.repository.ProductCustomSortRepository;
+import com.axonivy.market.repository.ProductDesignerInstallationRepository;
 import com.axonivy.market.repository.ProductMarketplaceDataRepository;
 import com.axonivy.market.repository.ProductRepository;
 import com.axonivy.market.service.FileDownloadService;
@@ -43,6 +44,8 @@ class ProductMarketplaceDataServiceImplTest extends BaseSetup {
   private ProductMarketplaceDataRepository productMarketplaceDataRepo;
   @Mock
   private FileDownloadService fileDownloadService;
+  @Mock
+  private ProductDesignerInstallationRepository productDesignerInstallationRepository;
   @InjectMocks
   private ProductMarketplaceDataServiceImpl productMarketplaceDataService;
   @Captor

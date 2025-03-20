@@ -8,6 +8,7 @@ import com.axonivy.market.enums.SortOption;
 import com.axonivy.market.exceptions.model.NotFoundException;
 import com.axonivy.market.model.ProductCustomSortRequest;
 import com.axonivy.market.repository.ProductCustomSortRepository;
+import com.axonivy.market.repository.ProductDesignerInstallationRepository;
 import com.axonivy.market.repository.ProductMarketplaceDataRepository;
 import com.axonivy.market.repository.ProductRepository;
 import com.axonivy.market.service.FileDownloadService;
@@ -36,6 +37,7 @@ public class ProductMarketplaceDataServiceImpl implements ProductMarketplaceData
   private final ProductCustomSortRepository productCustomSortRepo;
   private final ProductRepository productRepo;
   private final FileDownloadService fileDownloadService;
+  private final ProductDesignerInstallationRepository productDesignerInstallationRepo;
   private final ObjectMapper mapper = new ObjectMapper();
   private final SecureRandom random = new SecureRandom();
   @Value("${market.legacy.installation.counts.path}")
@@ -44,10 +46,13 @@ public class ProductMarketplaceDataServiceImpl implements ProductMarketplaceData
   public ProductMarketplaceDataServiceImpl(ProductMarketplaceDataRepository productMarketplaceDataRepo,
       ProductCustomSortRepository productCustomSortRepo, ProductRepository productRepo,
       FileDownloadService fileDownloadService) {
+      ProductCustomSortRepository productCustomSortRepo, ProductRepository productRepo,
+      ProductDesignerInstallationRepository productDesignerInstallationRepo) {
     this.productMarketplaceDataRepo = productMarketplaceDataRepo;
     this.productCustomSortRepo = productCustomSortRepo;
     this.productRepo = productRepo;
     this.fileDownloadService = fileDownloadService;
+    this.productDesignerInstallationRepo = productDesignerInstallationRepo;
   }
 
   @Override
@@ -101,7 +106,7 @@ public class ProductMarketplaceDataServiceImpl implements ProductMarketplaceData
 
     log.info("Increase installation count for product {} By Designer Version {}", productId, designerVersion);
     if (StringUtils.isNotBlank(designerVersion)) {
-      productMarketplaceDataRepo.increaseInstallationCountForProductByDesignerVersion(productId, designerVersion);
+      productDesignerInstallationRepo.increaseInstallationCountForProductByDesignerVersion(productId, designerVersion);
     }
 
     log.info("updating installation count for product {}", productId);

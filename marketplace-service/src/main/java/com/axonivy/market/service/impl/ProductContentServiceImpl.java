@@ -1,13 +1,14 @@
 package com.axonivy.market.service.impl;
 
-import com.axonivy.market.entity.Artifact;
 import com.axonivy.market.bo.DownloadOption;
 import com.axonivy.market.bo.MavenDependency;
 import com.axonivy.market.bo.VersionDownload;
 import com.axonivy.market.constants.CommonConstants;
 import com.axonivy.market.constants.ProductJsonConstants;
 import com.axonivy.market.constants.ReadmeConstants;
+import com.axonivy.market.entity.Artifact;
 import com.axonivy.market.entity.Image;
+import com.axonivy.market.entity.MavenDependency;
 import com.axonivy.market.entity.ProductDependency;
 import com.axonivy.market.entity.ProductModuleContent;
 import com.axonivy.market.model.ReadmeContentsModel;
