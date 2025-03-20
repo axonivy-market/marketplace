@@ -154,7 +154,7 @@ class ProductMarketplaceDataServiceImplTest extends BaseSetup {
   }
 
   @Test
-  void testDownloadArtifact1() {
+  void testDownloadArtifact() {
     ReflectionTestUtils.setField(productMarketplaceDataService, LEGACY_INSTALLATION_COUNT_PATH_FIELD_NAME,
         INSTALLATION_FILE_PATH);
     ProductMarketplaceData mockProductMarketplaceData = getMockProductMarketplaceData();

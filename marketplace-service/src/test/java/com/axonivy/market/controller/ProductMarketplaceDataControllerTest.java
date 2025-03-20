@@ -15,6 +15,7 @@ import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpStatus;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -66,6 +67,21 @@ class ProductMarketplaceDataControllerTest extends BaseSetup {
 
       assertEquals(HttpStatus.NO_CONTENT, result.getStatusCode());
       assertNull(result.getBody());
+    }
+  }
+
+  @Test
+  void testExtractArtifactUrl_InvalidUrl_ThrowException() {
+    String invalidUrl = "https://malicious-site.com/download";
+
+    try (MockedStatic<AuthorizationUtils> mockUtils = Mockito.mockStatic(AuthorizationUtils.class)) {
+      mockUtils.when(() -> AuthorizationUtils.isAllowedUrl(invalidUrl)).thenReturn(false);
+
+      ResponseStatusException exception = assertThrows(ResponseStatusException.class,
+          () -> productMarketplaceDataController.extractArtifactUrl(MOCK_PRODUCT_ID, invalidUrl));
+
+      assertEquals(HttpStatus.FORBIDDEN, exception.getStatusCode());
+      assertEquals("Invalid URL", exception.getReason());
     }
   }
 
