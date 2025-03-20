@@ -400,4 +400,25 @@ describe('ProductDetailVersionActionComponent', () => {
     );
   });
 
+  it('should correctly handle artifact download scenarios', () => {
+    environment.apiUrl = 'https://api.example.com';
+    component.productId = 'ai-assistant';
+    spyOn(component, 'fetchAndDownloadArtifact');
+
+    component.selectedArtifact = 'https://example.com/ai-assistant-12.0.1.1.iar';
+
+    component.downloadArtifact();
+    expect(component.fetchAndDownloadArtifact).toHaveBeenCalledWith(
+      `${environment.apiUrl}/api/product-marketplace-data/version-download/ai-assistant?url=https://example.com/ai-assistant-12.0.1.1.iar`, 'ai-assistant-12.0.1.1.iar'
+    );
+
+    component.isCheckedAppForEngine = true;
+    component.selectedArtifactId = 'ai-assistant';
+    component.selectedVersion.set('12.0.0');
+    component.downloadArtifact();
+    expect(component.fetchAndDownloadArtifact).toHaveBeenCalledWith(
+      `${environment.apiUrl}/api/product-details/ai-assistant/artifact/zip-file?version=12.0.0&artifact=ai-assistant`,
+      'ai-assistant-app-12.0.0.zip'
+    );
+  });
 });
