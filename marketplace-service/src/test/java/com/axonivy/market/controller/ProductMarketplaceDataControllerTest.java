@@ -47,7 +47,7 @@ class ProductMarketplaceDataControllerTest extends BaseSetup {
   }
 
   @Test
-  void testExtractArtifactUrl() throws IOException {
+  void testExtractArtifactUrl() {
     when(productMarketplaceDataService.downloadArtifact(MOCK_DOWNLOAD_URL, MOCK_PRODUCT_ID)).thenReturn(
         new VersionDownload());
     var result = productMarketplaceDataController.extractArtifactUrl(MOCK_PRODUCT_ID, MOCK_DOWNLOAD_URL);
@@ -57,7 +57,7 @@ class ProductMarketplaceDataControllerTest extends BaseSetup {
   }
 
   @Test
-  void testExtractArtifactUrl_ReturnNoContent() throws IOException {
+  void testExtractArtifactUrl_ReturnNoContent() {
     String downloadUrl = "https://example.com/download";
     try (MockedStatic<AuthorizationUtils> mockUtils = Mockito.mockStatic(AuthorizationUtils.class)) {
       mockUtils.when(() -> AuthorizationUtils.isAllowedUrl(downloadUrl)).thenReturn(true);

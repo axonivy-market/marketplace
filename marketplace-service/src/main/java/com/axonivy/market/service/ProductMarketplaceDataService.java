@@ -4,8 +4,6 @@ import com.axonivy.market.bo.VersionDownload;
 import com.axonivy.market.entity.ProductMarketplaceData;
 import com.axonivy.market.model.ProductCustomSortRequest;
 
-import java.io.IOException;
-
 public interface ProductMarketplaceDataService {
   void addCustomSortProduct(ProductCustomSortRequest customSort);
 

@@ -51,6 +51,7 @@ const DOC = '-doc';
 const ZIP = '.zip';
 const APPLICATION_OCTET_STREAM = 'application/octet-stream';
 const ANCHOR_ELEMENT = 'a';
+const DELAY_TIMEOUT = 500;
 
 @Component({
   selector: 'app-product-version-action',
@@ -320,7 +321,7 @@ export class ProductDetailVersionActionComponent implements AfterViewInit {
         .subscribe((data: number) => {
           this.installationCount.emit(data)
         });
-    }, 500);
+    }, DELAY_TIMEOUT);
   }
 
   onNavigateToContactPage(): void {
