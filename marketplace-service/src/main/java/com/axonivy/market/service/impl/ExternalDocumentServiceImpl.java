@@ -29,6 +29,8 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.ArrayList;
 
 import static org.apache.commons.lang3.StringUtils.EMPTY;
 
@@ -129,8 +131,7 @@ public class ExternalDocumentServiceImpl implements ExternalDocumentService {
   }
 
   private List<Artifact> fetchDocArtifacts(List<Artifact> artifacts) {
-    List<String> artifactIds = artifacts.stream().map(Artifact::getId).collect(Collectors. toCollection(ArrayList::new));
-    List<String> artifactIds = artifacts.stream().map(Artifact::getId).toList();
+    List<String> artifactIds = artifacts.stream().map(Artifact::getId).collect(Collectors.toCollection(ArrayList::new));
     List<Artifact> allArtifacts = artifactRepo.findAllByIdInAndFetchArchivedArtifacts(artifactIds);
     return allArtifacts.stream().filter(artifact -> BooleanUtils.isTrue(artifact.getDoc())).toList();
   }
