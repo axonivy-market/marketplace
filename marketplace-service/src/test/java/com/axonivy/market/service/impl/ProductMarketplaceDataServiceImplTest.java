@@ -10,6 +10,7 @@ import com.axonivy.market.exceptions.model.InvalidParamException;
 import com.axonivy.market.exceptions.model.NotFoundException;
 import com.axonivy.market.model.ProductCustomSortRequest;
 import com.axonivy.market.repository.ProductCustomSortRepository;
+import com.axonivy.market.repository.ProductDesignerInstallationRepository;
 import com.axonivy.market.repository.ProductMarketplaceDataRepository;
 import com.axonivy.market.repository.ProductRepository;
 import org.apache.commons.lang3.StringUtils;
@@ -39,6 +40,8 @@ class ProductMarketplaceDataServiceImplTest extends BaseSetup {
   private ProductCustomSortRepository productCustomSortRepo;
   @Mock
   private ProductMarketplaceDataRepository productMarketplaceDataRepo;
+  @Mock
+  private ProductDesignerInstallationRepository productDesignerInstallationRepository;
   @InjectMocks
   private ProductMarketplaceDataServiceImpl productMarketplaceDataService;
   @Captor

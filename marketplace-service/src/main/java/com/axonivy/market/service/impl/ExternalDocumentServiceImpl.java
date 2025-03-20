@@ -1,9 +1,9 @@
 package com.axonivy.market.service.impl;
 
-import com.axonivy.market.entity.Artifact;
 import com.axonivy.market.bo.DownloadOption;
 import com.axonivy.market.constants.CommonConstants;
 import com.axonivy.market.constants.DirectoryConstants;
+import com.axonivy.market.entity.Artifact;
 import com.axonivy.market.entity.ExternalDocumentMeta;
 import com.axonivy.market.entity.Product;
 import com.axonivy.market.factory.VersionFactory;
@@ -24,8 +24,11 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.HttpClientErrorException;
 
-import java.util.*;
-import java.util.stream.Collectors;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.Set;
 
 import static org.apache.commons.lang3.StringUtils.EMPTY;
 
@@ -127,6 +130,7 @@ public class ExternalDocumentServiceImpl implements ExternalDocumentService {
 
   private List<Artifact> fetchDocArtifacts(List<Artifact> artifacts) {
     List<String> artifactIds = artifacts.stream().map(Artifact::getId).collect(Collectors. toCollection(ArrayList::new));
+    List<String> artifactIds = artifacts.stream().map(Artifact::getId).toList();
     List<Artifact> allArtifacts = artifactRepo.findAllByIdInAndFetchArchivedArtifacts(artifactIds);
     return allArtifacts.stream().filter(artifact -> BooleanUtils.isTrue(artifact.getDoc())).toList();
   }

@@ -7,6 +7,7 @@ import com.axonivy.market.enums.FeedbackStatus;
 import com.axonivy.market.enums.Language;
 import com.axonivy.market.enums.SortOption;
 import com.axonivy.market.model.FeedbackApprovalModel;
+import com.axonivy.market.entity.key.MavenArtifactKey;
 import com.axonivy.market.model.VersionAndUrlModel;
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.lang3.StringUtils;
@@ -211,15 +212,13 @@ public class BaseSetup {
         MOCK_ARTIFACT_ID).type(MavenConstants.DEFAULT_PRODUCT_FOLDER_TYPE).productId(MOCK_PRODUCT_ID).build();
   }
 
-  protected MavenArtifactVersion getMockMavenArtifactVersion() {
-    return new MavenArtifactVersion(StringUtils.EMPTY, new ArrayList<>(), new ArrayList<>());
+  protected List<MavenArtifactVersion> getMockMavenArtifactVersion() {
+    return new ArrayList<>();
   }
 
-  protected MavenArtifactVersion getMockMavenArtifactVersionWithData() {
-    MavenArtifactVersion mockMavenArtifactVersion = getMockMavenArtifactVersion();
-    List<MavenArtifactModel> mockArtifactModelsByVersion = new ArrayList<>();
-    mockArtifactModelsByVersion.add(MavenArtifactModel.builder().productVersion(MOCK_SNAPSHOT_VERSION).build());
-    mockMavenArtifactVersion.setProductArtifactsByVersion(mockArtifactModelsByVersion);
+  protected List<MavenArtifactVersion> getMockMavenArtifactVersionWithData() {
+    List<MavenArtifactVersion> mockMavenArtifactVersion = getMockMavenArtifactVersion();
+    mockMavenArtifactVersion.add(mockMavenArtifactVersion(MOCK_SNAPSHOT_VERSION, null));
     return mockMavenArtifactVersion;
   }
 
@@ -259,9 +258,11 @@ public class BaseSetup {
     return mockMetadata;
   }
 
-  protected MavenArtifactModel getMockMavenArtifactModelWithDownloadUrl() {
-    return MavenArtifactModel.builder().name(MOCK_PRODUCT_NAME).artifactId(MOCK_ARTIFACT_ID).downloadUrl(
-        MOCK_DOWNLOAD_URL).build();
+  protected MavenArtifactVersion getMockMavenArtifactVersionWithDownloadUrl() {
+    MavenArtifactKey key = MavenArtifactKey.builder().artifactId(MOCK_ARTIFACT_ID).build();
+    return MavenArtifactVersion.builder().name(MOCK_PRODUCT_NAME)
+        .id(key)
+        .downloadUrl(MOCK_DOWNLOAD_URL).build();
   }
 
   protected static ProductJsonContent getMockProductJsonContentContainMavenDropins() {
@@ -342,27 +343,6 @@ public class BaseSetup {
     return versionAndUrlModels;
   }
 
-  protected Feedback mockFeedback() {
-    return Feedback.builder()
-        .id("1")
-        .userId("user1")
-        .productId("product1")
-        .feedbackStatus(FeedbackStatus.APPROVED)
-        .build();
-  }
-
-  protected List<Feedback> mockFeedbacks() {
-    Feedback updatedFeedback = Feedback.builder()
-        .id("1")
-        .userId("user1")
-        .productId("product1")
-        .feedbackStatus(FeedbackStatus.APPROVED)
-        .moderatorName("Admin")
-        .build();
-
-    return List.of(updatedFeedback);
-  }
-
   protected FeedbackApprovalModel mockFeedbackApproval() {
     return FeedbackApprovalModel.builder()
         .feedbackId("1")
@@ -374,5 +354,23 @@ public class BaseSetup {
     return ExternalDocumentMeta.builder()
         .relativeLink("/market-cache/portal/10.0.0/doc/index.html")
         .build();
+  }
+
+  protected MavenArtifactVersion mockMavenArtifactVersion(String version, String artifactId) {
+    MavenArtifactKey mavenArtifactKey = MavenArtifactKey.builder()
+        .productVersion(version)
+        .artifactId(artifactId)
+        .build();
+
+    return MavenArtifactVersion.builder().id(mavenArtifactKey).build();
+  }
+
+  protected MavenArtifactVersion mockAdditionalMavenArtifactVersion(String version, String artifactId) {
+    MavenArtifactKey mavenArtifactKey = MavenArtifactKey.builder()
+        .productVersion(version)
+        .artifactId(artifactId)
+        .isAdditionalVersion(true)
+        .build();
+    return MavenArtifactVersion.builder().id(mavenArtifactKey).build();
   }
 }
