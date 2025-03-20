@@ -23,7 +23,6 @@ public class EntityConstants {
   public static final String PARENT_DEPENDENCY_ID = "parent_dependency_id";
   public static final String MAVEN_DEPENDENCY = "maven_dependency";
   public static final String ARCHIVED_ARTIFACT = "archived_artifact";
-  public static final String ARTIFACT_ID_FK = "artifact_id_fk";
   public static final String ARTIFACT = "artifact";
   public static final String PRODUCT_ID = "product_id";
 

@@ -9,12 +9,12 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.stream.Collectors;
 
+import static com.axonivy.market.constants.CommonConstants.COMMA;
+
 @Converter
 public abstract class CollectionConverter<T extends Collection<String>> implements AttributeConverter<T, String> {
 
   protected abstract T createCollection(Collection<String> elements);
-
-  private static final String COMMA = ",";
 
   @Override
   public String convertToDatabaseColumn(T collection) {
