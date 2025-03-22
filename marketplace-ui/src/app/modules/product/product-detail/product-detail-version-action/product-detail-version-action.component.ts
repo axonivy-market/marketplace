@@ -41,7 +41,6 @@ import { LoadingService } from '../../../../core/services/loading/loading.servic
 import { API_URI } from '../../../../shared/constants/api.constant';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { VersionDownload } from '../../../../shared/models/version-download.model';
-import { finalize, tap } from 'rxjs';
 
 const showDevVersionCookieName = 'showDevVersions';
 const ARTIFACT_ZIP_URL = 'artifact/zip-file';
@@ -93,6 +92,7 @@ export class ProductDetailVersionActionComponent implements AfterViewInit {
 
   artifacts: WritableSignal<ItemDropdown[]> = signal([]);
   isDropDownDisplayed = signal(false);
+  isDownloading = signal(false);
 
   protected LoadingComponentId = LoadingComponentId;
   loadingContainerClasses =
@@ -267,7 +267,7 @@ export class ProductDetailVersionActionComponent implements AfterViewInit {
 
   downloadArtifact(): void {
     let downloadUrl = '';
-
+    this.isDownloading.set(true);
     if (!this.isCheckedAppForEngine || this.selectedArtifactId?.endsWith(DOC) || this.selectedArtifact?.endsWith(ZIP)) {
       const params = new HttpParams().set('url', this.selectedArtifact ?? '');
       downloadUrl = `${this.getMarketplaceServiceUrl()}/${API_URI.PRODUCT_MARKETPLACE_DATA}/${VERSION_DOWNLOAD}/${this.productId}?${params.toString()}`;
@@ -296,18 +296,16 @@ export class ProductDetailVersionActionComponent implements AfterViewInit {
   }
 
   fetchAndDownloadArtifact(url: string, fileName: string): void {
-    const downloadTab = window.open(url, TARGET_BLANK);
-    this.httpClient.get<VersionDownload>(url).pipe(
-      tap(response => {
+    this.httpClient.get<VersionDownload>(url).subscribe(
+      response => {
+
         if (response.fileData) {
           this.installationCount.emit(response.installationCount);
           this.downloadFile(response.fileData, fileName);
+          this.isDownloading.set(false);
         }
-      }),
-      finalize(() => {
-        downloadTab?.close();
-      })
-    ).subscribe();
+      }
+    );
   }
 
   private downloadFile(fileData: string, fileName: string): void {
