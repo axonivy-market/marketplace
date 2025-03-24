@@ -1,6 +1,7 @@
 package com.axonivy.market.service.impl;
 
 import com.axonivy.market.BaseSetup;
+import com.axonivy.market.bo.VersionDownload;
 import com.axonivy.market.entity.Product;
 import com.axonivy.market.entity.ProductCustomSort;
 import com.axonivy.market.entity.ProductMarketplaceData;
@@ -13,6 +14,7 @@ import com.axonivy.market.repository.ProductCustomSortRepository;
 import com.axonivy.market.repository.ProductDesignerInstallationRepository;
 import com.axonivy.market.repository.ProductMarketplaceDataRepository;
 import com.axonivy.market.repository.ProductRepository;
+import com.axonivy.market.service.FileDownloadService;
 import org.apache.commons.lang3.StringUtils;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -41,7 +43,9 @@ class ProductMarketplaceDataServiceImplTest extends BaseSetup {
   @Mock
   private ProductMarketplaceDataRepository productMarketplaceDataRepo;
   @Mock
-  private ProductDesignerInstallationRepository productDesignerInstallationRepository;
+  private FileDownloadService fileDownloadService;
+  @Mock
+  private ProductDesignerInstallationRepository productDesignerInstallationRepo;
   @InjectMocks
   private ProductMarketplaceDataServiceImpl productMarketplaceDataService;
   @Captor
@@ -150,5 +154,32 @@ class ProductMarketplaceDataServiceImplTest extends BaseSetup {
         mockProductMarketplaceData.getId());
 
     assertEquals(40, installationCount);
+  }
+
+  @Test
+  void testDownloadArtifact() {
+    ReflectionTestUtils.setField(productMarketplaceDataService, LEGACY_INSTALLATION_COUNT_PATH_FIELD_NAME,
+        INSTALLATION_FILE_PATH);
+    ProductMarketplaceData mockProductMarketplaceData = getMockProductMarketplaceData();
+    byte[] mockFileData = "dummy data".getBytes();
+    when(fileDownloadService.downloadFile(MOCK_DOWNLOAD_URL)).thenReturn(mockFileData);
+    when(productRepo.findById(anyString())).thenReturn(Optional.of(getMockProduct()));
+    when(productMarketplaceDataRepo.findById(MOCK_PRODUCT_ID)).thenReturn(Optional.of(mockProductMarketplaceData));
+    when(productMarketplaceDataService.updateInstallationCountForProduct(MOCK_PRODUCT_ID,
+        MOCK_DESIGNER_VERSION)).thenReturn(4);
+    VersionDownload result = productMarketplaceDataService.downloadArtifact(MOCK_DOWNLOAD_URL, MOCK_PRODUCT_ID);
+
+    assertNotNull(result);
+    assertEquals(4, result.getInstallationCount());
+  }
+
+  @Test
+  void testDownloadArtifact_FileNotFound() {
+    when(fileDownloadService.downloadFile(MOCK_DOWNLOAD_URL)).thenReturn(null);
+
+    VersionDownload result = productMarketplaceDataService.downloadArtifact(MOCK_DOWNLOAD_URL, MOCK_PRODUCT_ID);
+
+    assertNull(result);
+    verify(fileDownloadService).downloadFile(MOCK_DOWNLOAD_URL);
   }
 }

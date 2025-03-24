@@ -1,5 +1,6 @@
 package com.axonivy.market.service.impl;
 
+import com.axonivy.market.bo.VersionDownload;
 import com.axonivy.market.entity.ProductCustomSort;
 import com.axonivy.market.entity.ProductMarketplaceData;
 import com.axonivy.market.enums.ErrorCode;
@@ -10,6 +11,7 @@ import com.axonivy.market.repository.ProductCustomSortRepository;
 import com.axonivy.market.repository.ProductDesignerInstallationRepository;
 import com.axonivy.market.repository.ProductMarketplaceDataRepository;
 import com.axonivy.market.repository.ProductRepository;
+import com.axonivy.market.service.FileDownloadService;
 import com.axonivy.market.service.ProductMarketplaceDataService;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -34,6 +36,7 @@ public class ProductMarketplaceDataServiceImpl implements ProductMarketplaceData
   private final ProductMarketplaceDataRepository productMarketplaceDataRepo;
   private final ProductCustomSortRepository productCustomSortRepo;
   private final ProductRepository productRepo;
+  private final FileDownloadService fileDownloadService;
   private final ProductDesignerInstallationRepository productDesignerInstallationRepo;
   private final ObjectMapper mapper = new ObjectMapper();
   private final SecureRandom random = new SecureRandom();
@@ -42,10 +45,11 @@ public class ProductMarketplaceDataServiceImpl implements ProductMarketplaceData
 
   public ProductMarketplaceDataServiceImpl(ProductMarketplaceDataRepository productMarketplaceDataRepo,
       ProductCustomSortRepository productCustomSortRepo, ProductRepository productRepo,
-      ProductDesignerInstallationRepository productDesignerInstallationRepo) {
+      FileDownloadService fileDownloadService, ProductDesignerInstallationRepository productDesignerInstallationRepo) {
     this.productMarketplaceDataRepo = productMarketplaceDataRepo;
     this.productCustomSortRepo = productCustomSortRepo;
     this.productRepo = productRepo;
+    this.fileDownloadService = fileDownloadService;
     this.productDesignerInstallationRepo = productDesignerInstallationRepo;
   }
 
@@ -72,6 +76,25 @@ public class ProductMarketplaceDataServiceImpl implements ProductMarketplaceData
       productEntries.add(productMarketplaceData);
     }
     return productEntries;
+  }
+
+  @Override
+  public VersionDownload downloadArtifact(String artifactUrl, String productId) {
+    byte[] fileData = fileDownloadService.downloadFile(artifactUrl);
+    if (fileData == null || fileData.length == 0) {
+      log.error("Cannot download file from URL: {}", artifactUrl);
+      return null;
+    }
+    return getVersionDownload(productId, fileData);
+  }
+
+  @Override
+  public VersionDownload getVersionDownload(String productId, byte[] fileData) {
+    int installationCount = updateInstallationCountForProduct(productId, null);
+    return VersionDownload.builder()
+        .fileData(fileData)
+        .installationCount(installationCount)
+        .build();
   }
 
   @Override
@@ -123,6 +146,13 @@ public class ProductMarketplaceDataServiceImpl implements ProductMarketplaceData
   public ProductMarketplaceData getProductMarketplaceData(String productId) {
     return productMarketplaceDataRepo.findById(productId).orElse(
         ProductMarketplaceData.builder().id(productId).build());
+  }
+
+  @Override
+  public Integer getInstallationCount(String id) {
+    return productMarketplaceDataRepo.findById(id)
+        .map(ProductMarketplaceData::getInstallationCount)
+        .orElse(0);
   }
 
   private void validateProductExists(String productId) throws NotFoundException {

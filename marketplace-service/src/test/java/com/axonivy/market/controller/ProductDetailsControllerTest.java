@@ -3,6 +3,7 @@ package com.axonivy.market.controller;
 import com.axonivy.market.BaseSetup;
 import com.axonivy.market.assembler.GithubReleaseModelAssembler;
 import com.axonivy.market.assembler.ProductDetailModelAssembler;
+import com.axonivy.market.bo.VersionDownload;
 import com.axonivy.market.entity.Product;
 import com.axonivy.market.entity.ProductJsonContent;
 import com.axonivy.market.enums.Language;
@@ -24,18 +25,14 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PagedResourcesAssembler;
 import org.springframework.hateoas.PagedModel;
-import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.servlet.mvc.method.annotation.ResponseBodyEmitter;
 
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutionException;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
@@ -170,9 +167,10 @@ class ProductDetailsControllerTest extends BaseSetup {
 
   @Test
   void findProductVersionsById() {
-    when(versionService.getVersionsForDesigner("google-maps-connector")).thenReturn(mockVersionAndUrlModels());
+    when(versionService.getVersionsForDesigner("google-maps-connector", null))
+        .thenReturn(mockVersionAndUrlModels());
 
-    var result = productDetailsController.findVersionsForDesigner("google-maps-connector");
+    var result = productDetailsController.findVersionsForDesigner("google-maps-connector", null);
 
     assertEquals(2, Objects.requireNonNull(result.getBody()).size());
     assertEquals("10.0.21", Objects.requireNonNull(result.getBody()).get(0).getVersion());
@@ -187,10 +185,12 @@ class ProductDetailsControllerTest extends BaseSetup {
   void findProductJsonContentByIdAndVersion() throws IOException {
     ProductJsonContent productJsonContent = mockProductJsonContent();
     Map<String, Object> map = new ObjectMapper().readValue(productJsonContent.getContent(), Map.class);
-    when(versionService.getProductJsonContentByIdAndVersion(MOCK_PRODUCT_ID, MOCK_RELEASED_VERSION)).thenReturn(
+    when(versionService.getProductJsonContentByIdAndVersion(MOCK_PRODUCT_ID, MOCK_RELEASED_VERSION,
+        MOCK_DESIGNER_VERSION)).thenReturn(
         map);
 
-    var result = productDetailsController.findProductJsonContent(MOCK_PRODUCT_ID, MOCK_RELEASED_VERSION);
+    var result = productDetailsController.findProductJsonContent(MOCK_PRODUCT_ID, MOCK_RELEASED_VERSION,
+        MOCK_DESIGNER_VERSION);
 
     assertEquals(new ResponseEntity<>(map, HttpStatus.OK), result);
   }
@@ -323,33 +323,27 @@ class ProductDetailsControllerTest extends BaseSetup {
   }
 
   @Test
-  void testDownloadZipArtifact_NoContent() throws Exception {
+  void testDownloadZipArtifact_NoContent() {
     when(productContentService.downloadZipArtifactFile(anyString(), anyString(),
-        anyString())).thenReturn(CompletableFuture.completedFuture(null));
+        anyString())).thenReturn(null);
 
-    CompletableFuture<ResponseEntity<ResponseBodyEmitter>> result = productDetailsController.downloadZipArtifact(
+    var result = productDetailsController.downloadZipArtifact(
         DOCKER_CONNECTOR_ID, MOCK_RELEASED_VERSION, "artifact");
 
-    assertEquals(HttpStatus.NO_CONTENT, result.get().getStatusCode());
+    assertEquals(HttpStatus.NO_CONTENT, result.getStatusCode());
 
     verify(productContentService, times(1)).downloadZipArtifactFile(DOCKER_CONNECTOR_ID, "artifact",
         MOCK_RELEASED_VERSION);
   }
 
   @Test
-  void testDownloadZipArtifact() throws ExecutionException, InterruptedException {
-    var emitter = new ResponseBodyEmitter();
+  void testDownloadZipArtifact() {
     when(productContentService.downloadZipArtifactFile(MOCK_PRODUCT_ID, MOCK_DEMO_ARTIFACT_ID, MOCK_RELEASED_VERSION))
-        .thenReturn(CompletableFuture.completedFuture(emitter));
+        .thenReturn(new VersionDownload());
     var result = productDetailsController.downloadZipArtifact(MOCK_PRODUCT_ID, MOCK_RELEASED_VERSION,
         MOCK_DEMO_ARTIFACT_ID);
     assertNotNull(result);
-    assertNotNull(result.get());
-    assertEquals(HttpStatus.OK, result.get().getStatusCode());
-    HttpHeaders returnedHeader = result.get().getHeaders();
-    assertNotNull(returnedHeader);
-    String contentDispositions = Objects.requireNonNull(returnedHeader.get(HttpHeaders.CONTENT_DISPOSITION)).get(0);
-    assertTrue(StringUtils.contains(contentDispositions, MOCK_RELEASED_VERSION));
-    assertTrue(StringUtils.contains(contentDispositions, MOCK_DEMO_ARTIFACT_ID));
+    assertNotNull(result.getBody());
+    assertEquals(HttpStatus.OK, result.getStatusCode());
   }
 }

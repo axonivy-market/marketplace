@@ -435,7 +435,7 @@ class ProductServiceImplTest extends BaseSetup {
 
     when(productRepo.getProductByIdAndVersion(MOCK_PRODUCT_ID, MOCK_SNAPSHOT_VERSION))
         .thenReturn(getMockProduct());
-    when(versionService.getVersionsForDesigner(MOCK_PRODUCT_ID))
+    when(versionService.getVersionsForDesigner(MOCK_PRODUCT_ID, null))
         .thenReturn(mockVersionAndUrlModels(), mockVersionModels(), mockVersionModels2(), mockVersionModels3());
 
     Product result = productService.fetchProductDetail(MOCK_PRODUCT_ID, true);

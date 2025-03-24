@@ -194,7 +194,7 @@ export class ProductDetailComponent {
             linkify: true,
           })
           .enable(['smartquotes', 'replacements', 'image']);
-          
+
         const gitHubReleaseModelList = res.changelogs?._embedded?.gitHubReleaseModelList ?? [];
         if (gitHubReleaseModelList.length > 0) {
           this.productReleaseSafeHtmls = this.renderChangelogContent(gitHubReleaseModelList);

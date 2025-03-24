@@ -89,18 +89,15 @@ export class ProductService {
     });
   }
 
-  sendRequestToUpdateInstallationCount(
-    productId: string,
-    designerVersion: string
-  ) {
+  sendRequestToGetInstallationCount(productId: string) {
     const url = `${API_URI.PRODUCT_MARKETPLACE_DATA}/installation-count/${productId}`;
-    const params = new HttpParams().append('designerVersion', designerVersion);
-    return this.httpClient.put<number>(url, null, { params });
+    return this.httpClient.get<number>(url);
   }
 
-  sendRequestToGetProductVersionsForDesigner(productId: string) {
+  sendRequestToGetProductVersionsForDesigner(productId: string, designerVersion: string) {
     const url = `${API_URI.PRODUCT_DETAILS}/${productId}/designerversions`;
-    return this.httpClient.get<VersionAndUrl[]>(url);
+    const params = new HttpParams().append('designerVersion', designerVersion);
+    return this.httpClient.get<VersionAndUrl[]>(url, { params });
   }
 
   getLatestArtifactDownloadUrl(id: string, version: string, artifact: string) {

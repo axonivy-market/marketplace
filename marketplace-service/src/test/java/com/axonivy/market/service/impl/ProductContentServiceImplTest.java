@@ -1,16 +1,16 @@
 package com.axonivy.market.service.impl;
 
 import com.axonivy.market.BaseSetup;
+import com.axonivy.market.bo.VersionDownload;
 import com.axonivy.market.entity.Artifact;
-import com.axonivy.market.entity.MavenDependency;
 import com.axonivy.market.constants.ProductJsonConstants;
 import com.axonivy.market.entity.ProductDependency;
 import com.axonivy.market.entity.ProductModuleContent;
 import com.axonivy.market.repository.ProductDependencyRepository;
 import com.axonivy.market.service.FileDownloadService;
 import com.axonivy.market.service.ImageService;
-import com.axonivy.market.service.MetadataService;
 import com.axonivy.market.service.ProductJsonContentService;
+import com.axonivy.market.service.ProductMarketplaceDataService;
 import com.axonivy.market.util.MavenUtils;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -24,15 +24,10 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
 import java.util.stream.Stream;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -45,11 +40,11 @@ class ProductContentServiceImplTest extends BaseSetup {
   @Mock
   private ImageService imageService;
   @Mock
-  private MetadataService metadataService;
-  @Mock
   private ProductDependencyRepository productDependencyRepository;
   @Mock
   private FileDownloadService fileDownloadService;
+  @Mock
+  private ProductMarketplaceDataService productMarketplaceDataService;
 
   @Test
   void testUpdateDependencyContentsFromProductJson() throws IOException {
@@ -97,24 +92,20 @@ class ProductContentServiceImplTest extends BaseSetup {
   }
 
   @Test
-  void testDownloadZipArtifactFile() throws ExecutionException, InterruptedException, TimeoutException {
-    List<MavenDependency> mavenDependencies = new ArrayList<>();
-    mavenDependencies.add(MavenDependency.builder().artifactId(MOCK_DEMO_ARTIFACT_ID).downloadUrl(MOCK_DOWNLOAD_URL)
-        .version(MOCK_RELEASED_VERSION).build());
-
-    ProductDependency productDependency = ProductDependency.builder()
-        .productId(MOCK_PRODUCT_ID)
-        .dependenciesOfArtifact(mavenDependencies)
-        .build();
-
+  void testDownloadZipArtifactFile() {
+    ProductDependency productDependency = mockProductDependency();
     when(productDependencyRepository.findByIdWithDependencies(MOCK_PRODUCT_ID)).thenReturn(productDependency);
-
     when(fileDownloadService.downloadFile(MOCK_DOWNLOAD_URL)).thenReturn(MOCK_DOWNLOAD_URL.getBytes());
+    when(productMarketplaceDataService.getVersionDownload(any(), any())).thenReturn(mockVersionDownload());
 
-    var zipArtifact = productContentService.downloadZipArtifactFile(MOCK_PRODUCT_ID, MOCK_DEMO_ARTIFACT_ID,
+    VersionDownload versionDownload = productContentService.downloadZipArtifactFile(MOCK_PRODUCT_ID,
+        MOCK_DEMO_ARTIFACT_ID,
         MOCK_RELEASED_VERSION);
-    assertNotNull(zipArtifact);
-    var responseEntity = zipArtifact.get(2, TimeUnit.SECONDS);
-    assertNotNull(responseEntity);
+
+    assertNotNull(versionDownload);
+
+    assertNotNull(versionDownload.getFileData());
+    assertTrue(versionDownload.getFileData().length > 0);
+    assertEquals(5, versionDownload.getInstallationCount());
   }
 }

@@ -1,6 +1,7 @@
 package com.axonivy.market.service.impl;
 
 import com.axonivy.market.bo.DownloadOption;
+import com.axonivy.market.bo.VersionDownload;
 import com.axonivy.market.constants.CommonConstants;
 import com.axonivy.market.constants.ProductJsonConstants;
 import com.axonivy.market.constants.ReadmeConstants;
@@ -15,6 +16,7 @@ import com.axonivy.market.service.FileDownloadService;
 import com.axonivy.market.service.ImageService;
 import com.axonivy.market.service.ProductContentService;
 import com.axonivy.market.service.ProductJsonContentService;
+import com.axonivy.market.service.ProductMarketplaceDataService;
 import com.axonivy.market.util.MavenUtils;
 import com.axonivy.market.util.ProductContentUtils;
 import lombok.AllArgsConstructor;
@@ -22,9 +24,7 @@ import lombok.extern.log4j.Log4j2;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.core.io.ClassPathResource;
-import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
-import org.springframework.web.servlet.mvc.method.annotation.ResponseBodyEmitter;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -39,7 +39,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.concurrent.CompletableFuture;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
 import java.util.zip.ZipEntry;
@@ -52,6 +51,7 @@ public class ProductContentServiceImpl implements ProductContentService {
   private final FileDownloadService fileDownloadService;
   private final ProductJsonContentService productJsonContentService;
   private final ImageService imageService;
+  private final ProductMarketplaceDataService productMarketplaceDataService;
   private final ProductDependencyRepository productDependencyRepository;
 
   @Override
@@ -135,16 +135,14 @@ public class ProductContentServiceImpl implements ProductContentService {
     return readmeContents;
   }
 
-  @Async("zipExecutor")
   @Override
-  public CompletableFuture<ResponseBodyEmitter> downloadZipArtifactFile(String productId, String artifactId,
+  public VersionDownload downloadZipArtifactFile(String productId, String artifactId,
       String version) {
     List<MavenDependency> mavenDependencies = getMavenDependenciesOfProduct(productId, artifactId, version);
     if (ObjectUtils.isEmpty(mavenDependencies)) {
       return null;
     }
     // Create a ZIP file
-    var emitter = new ResponseBodyEmitter();
     try {
       var byteArrayOutputStream = new ByteArrayOutputStream();
       try (var zipOut = new ZipOutputStream(byteArrayOutputStream)) {
@@ -155,14 +153,11 @@ public class ProductContentServiceImpl implements ProductContentService {
         zipConfigurationOptions(zipOut);
         zipOut.closeEntry();
       }
-      emitter.send(byteArrayOutputStream.toByteArray());
-      emitter.complete();
+      return productMarketplaceDataService.getVersionDownload(productId, byteArrayOutputStream.toByteArray());
     } catch (IOException e) {
       log.error("Cannot create ZIP file {}", e.getMessage());
-      emitter.completeWithError(e);
+      return null;
     }
-
-    return CompletableFuture.completedFuture(emitter);
   }
 
   private void zipDependencyArtifacts(String version, MavenDependency mavenArtifact, ZipOutputStream zipOut)
