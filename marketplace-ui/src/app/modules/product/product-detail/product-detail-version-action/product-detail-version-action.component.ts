@@ -235,9 +235,7 @@ export class ProductDetailVersionActionComponent implements AfterViewInit {
     if (this.versions().length === 0) {
       const designerVersion = this.routingQueryParamService.getDesignerVersionFromSessionStorage() ?? '';
       this.productService
-        .sendRequestToGetProductVersionsForDesigner(
-          this.productId,
-          designerVersion)
+        .sendRequestToGetProductVersionsForDesigner(this.productId, designerVersion)
         .subscribe(data => {
           const versionMap = data
             .map(dataVersionAndUrl => dataVersionAndUrl.version)
