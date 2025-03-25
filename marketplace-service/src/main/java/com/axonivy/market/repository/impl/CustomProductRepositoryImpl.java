@@ -5,7 +5,6 @@ import com.axonivy.market.criteria.ProductSearchCriteria;
 import com.axonivy.market.entity.Artifact;
 import com.axonivy.market.entity.Product;
 import com.axonivy.market.entity.ProductCustomSort;
-import com.axonivy.market.entity.ProductMarketplaceData;
 import com.axonivy.market.entity.ProductModuleContent;
 import com.axonivy.market.enums.DocumentField;
 import com.axonivy.market.enums.Language;
@@ -87,59 +86,45 @@ public class CustomProductRepositoryImpl extends BaseRepository<Product> impleme
   public Page<Product> searchByCriteria(ProductSearchCriteria searchCriteria, Pageable pageable) {
     CriteriaQueryContext<Product> criteriaContext = createCriteriaQueryContext();
     PageRequest pageRequest = (PageRequest) pageable;
-    Language language = searchCriteria.getLanguage() != null ? searchCriteria.getLanguage() : Language.EN;
-    Predicate predicate = buildCriteriaSearch(searchCriteria, criteriaContext.builder(), criteriaContext.root());
 
-    criteriaContext.query().where(predicate);
-
-    if (pageRequest.getSort().isSorted()) {
-      sortByOrders(criteriaContext, pageRequest, language.getValue());
-    }
-
-    // Create query
-    TypedQuery<Product> query = getEntityManager().createQuery(criteriaContext.query());
-    // Apply pagination
-    query.setFirstResult((int) pageable.getOffset()); // Starting row
-    query.setMaxResults(pageable.getPageSize()); // Number of results
-    // Get results
-    List<Product> resultList = query.getResultList();
-    // Get total count for pagination
-    long total = getTotalCount(criteriaContext.builder(), searchCriteria);
+    List<Product> resultList = getPagedProductsByCriteria(criteriaContext, searchCriteria, pageRequest);
+    long total = resultList.size() < pageable.getPageSize() ? resultList.size() : getTotalCount(criteriaContext.builder(),
+        searchCriteria);
 
     return new PageImpl<>(resultList, pageable, total);
   }
 
-  private void sortByOrders(CriteriaQueryContext<Product> criteriaContext,
-      PageRequest pageRequest, String language) {
+  private List<Order> sortByOrders(
+          CriteriaQueryContext<Product> criteriaContext,
+      PageRequest pageRequest, String language, MapJoin<Product, String, String> namesJoin) {
     List<Order> orders = new ArrayList<>();
     if (pageRequest != null) {
       pageRequest.getSort().stream().findFirst().ifPresent(order -> {
         SortOption sortOption = SortOption.of(order.getProperty());
         switch (sortOption) {
-          case ALPHABETICALLY -> orders.add(sortByAlphabet(criteriaContext, language));
+          case ALPHABETICALLY -> orders.add(sortByAlphabet(criteriaContext, language, namesJoin));
           case RECENT -> orders.add(sortByRecent(criteriaContext));
           case POPULARITY -> orders.add(sortByPopularity(criteriaContext));
-          default -> orders.addAll(sortByStandard(criteriaContext, language));
+          default -> orders.addAll(sortByStandard(criteriaContext, language, namesJoin));
         }
       });
     }
     orders.add(sortById(criteriaContext)); // Always sort by ID as a fallback
-    criteriaContext.query().orderBy(orders);
+    return orders;
   }
 
-  private List<Order> sortByStandard(CriteriaQueryContext<Product> criteriaContext, String language) {
+  private List<Order> sortByStandard(
+          CriteriaQueryContext<Product> criteriaContext, String language
+      , MapJoin<Product, String, String> namesJoin) {
     List<ProductCustomSort> customSorts = productCustomSortRepo.findAll();
-    Join<Product, ProductMarketplaceData> marketplaceJoin = criteriaContext.root().join(PRODUCT_MARKETPLACE_DATA,
-        JoinType.LEFT);
     List<Order> orders = new ArrayList<>();
     Order order = criteriaContext.builder().desc(
-        criteriaContext.builder().coalesce(marketplaceJoin.get(CUSTOM_ORDER), Integer.MIN_VALUE)
-    );
+            criteriaContext.builder().coalesce(criteriaContext.root().get(PRODUCT_MARKETPLACE_DATA).get(CUSTOM_ORDER), Integer.MIN_VALUE));
     orders.add(order);
     if (ObjectUtils.isNotEmpty(customSorts)) {
       SortOption sortOptionExtension = SortOption.of(customSorts.get(0).getRuleForRemainder());
       switch (sortOptionExtension) {
-        case ALPHABETICALLY -> orders.add(sortByAlphabet(criteriaContext, language));
+        case ALPHABETICALLY -> orders.add(sortByAlphabet(criteriaContext, language, namesJoin));
         case RECENT -> orders.add(sortByRecent(criteriaContext));
         default -> orders.add(sortByPopularity(criteriaContext));
       }
@@ -147,16 +132,16 @@ public class CustomProductRepositoryImpl extends BaseRepository<Product> impleme
     return orders;
   }
 
-  private Order sortByPopularity(CriteriaQueryContext<Product> criteriaContext) {
-    Join<Product, ProductMarketplaceData> marketplaceJoin = criteriaContext.root().join(PRODUCT_MARKETPLACE_DATA,
-        JoinType.LEFT);
-    return criteriaContext.builder().desc(marketplaceJoin.get(INSTALLATION_COUNT));
+  private Order sortByPopularity(
+          CriteriaQueryContext<Product> criteriaContext) {
+    return criteriaContext.builder().desc(criteriaContext.root().get(PRODUCT_MARKETPLACE_DATA).get(INSTALLATION_COUNT));
   }
 
-  private Order sortByAlphabet(CriteriaQueryContext<Product> criteriaContext, String language) {
-    MapJoin<Product, String, String> namesJoin = criteriaContext.root().joinMap(PRODUCT_NAMES, JoinType.LEFT);
+  private Order sortByAlphabet(
+          CriteriaQueryContext<Product> criteriaContext, String language
+      , MapJoin<Product, String, String> namesJoin) {
     Expression<Object> nameValue = criteriaContext.builder().coalesce(
-        criteriaContext.builder().selectCase()
+            criteriaContext.builder().selectCase()
             .when(criteriaContext.builder().equal(namesJoin.key(), language), namesJoin.value())
             .otherwise(criteriaContext.builder().literal("")), criteriaContext.builder().literal("")
     );
@@ -180,8 +165,33 @@ public class CustomProductRepositoryImpl extends BaseRepository<Product> impleme
     Root<Product> countRoot = countQuery.from(Product.class);
     // Rebuild predicate for the count query using the new Root<Product>
     Predicate countPredicate = buildCriteriaSearch(searchCriteria, cb, countRoot);
-    countQuery.select(cb.count(countRoot)).where(countPredicate);
+    countQuery.select(cb.countDistinct(countRoot)).where(countPredicate);
     return getEntityManager().createQuery(countQuery).getSingleResult();
+  }
+
+  private List<Product> getPagedProductsByCriteria(
+          CriteriaQueryContext<Product> criteriaContext,
+      ProductSearchCriteria searchCriteria, PageRequest pageRequest) {
+    Language language = searchCriteria.getLanguage() != null ? searchCriteria.getLanguage() : Language.EN;
+    Predicate predicate = buildCriteriaSearch(searchCriteria, criteriaContext.builder(), criteriaContext.root());
+    criteriaContext.root().fetch(PRODUCT_MARKETPLACE_DATA);
+    criteriaContext.root().fetch(PRODUCT_NAMES, JoinType.LEFT);
+    MapJoin<Product, String, String> namesJoin = criteriaContext.root().joinMap(PRODUCT_NAMES, JoinType.LEFT);
+
+    List<Order> orders = new ArrayList<>();
+    if (pageRequest.getSort().isSorted()) {
+      orders = sortByOrders(criteriaContext, pageRequest, language.getValue(), namesJoin);
+    }
+
+    criteriaContext.query().select(criteriaContext.root()).where(predicate)
+        .orderBy(orders)
+        .groupBy(criteriaContext.root(), namesJoin.key(), namesJoin.value());
+
+    TypedQuery<Product> query = getEntityManager().createQuery(criteriaContext.query());
+    query.setFirstResult((int) pageRequest.getOffset());
+    query.setMaxResults(pageRequest.getPageSize());
+
+    return query.getResultList();
   }
 
   @Override
@@ -245,11 +255,11 @@ public class CustomProductRepositoryImpl extends BaseRepository<Product> impleme
           .anyMatch(excludeField -> excludeField.name().equals(field.name())));
     }
 
+    String keywordPattern = CommonConstants.LIKE_PATTERN.formatted(searchCriteria.getKeyword().toLowerCase());
     for (DocumentField property : filterProperties) {
       if (property.isLocalizedSupport()) {
-        String keywordPattern = "%" + searchCriteria.getKeyword().toLowerCase() + "%";
         // Correctly join the Map<String, String> names collection
-        MapJoin<Product, String, String> namesJoin = productRoot.joinMap(property.getFieldName());
+        MapJoin<Product, String, String> namesJoin = productRoot.joinMap(property.getFieldName(), JoinType.LEFT);
         // Extract key (language) and value (name)
         Path<String> languageKey = namesJoin.key();
         Path<String> nameValue = namesJoin.value();

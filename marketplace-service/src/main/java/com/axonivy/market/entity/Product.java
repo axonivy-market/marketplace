@@ -97,7 +97,7 @@ public class Product extends AuditableEntity {
   @Transient
   private String compatibilityRange;
 
-  @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+  @OneToOne
   @JoinColumn(name = ID, referencedColumnName = ID)
   private ProductMarketplaceData productMarketplaceData;
 
