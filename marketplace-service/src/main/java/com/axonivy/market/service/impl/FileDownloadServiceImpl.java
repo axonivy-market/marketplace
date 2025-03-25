@@ -68,7 +68,9 @@ public class FileDownloadServiceImpl implements FileDownloadService {
     }
     Path tempZipPath = createTempFileFromUrlAndExtractToLocation(url, location, downloadOption);
     if (tempZipPath != null) {
-      grantNecessaryPermissionsFor(location);
+      if (downloadOption != null && downloadOption.isShouldGrantPermission()) {
+        grantNecessaryPermissionsFor(location);
+      }
       Files.delete(tempZipPath);
     }
     return location;
