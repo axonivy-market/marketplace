@@ -258,7 +258,7 @@ public class MavenDependencyServiceImpl implements MavenDependencyService {
     try {
       var unzipPath = String.join(File.separator, DATA_DIR, WORK_DIR, MAVEN_DIR, artifact.getId().getArtifactId());
       location = fileDownloadService.downloadAndUnzipFile(artifact.getDownloadUrl(),
-          new DownloadOption(true, unzipPath));
+          DownloadOption.builder().isForced(true).workingDirectory(unzipPath).shouldGrantPermission(false).build());
     } catch (Exception e) {
       log.error("Exception during unzip");
     }

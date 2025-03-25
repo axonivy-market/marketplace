@@ -29,6 +29,8 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.ArrayList;
 
 import static org.apache.commons.lang3.StringUtils.EMPTY;
 
@@ -129,7 +131,7 @@ public class ExternalDocumentServiceImpl implements ExternalDocumentService {
   }
 
   private List<Artifact> fetchDocArtifacts(List<Artifact> artifacts) {
-    List<String> artifactIds = artifacts.stream().map(Artifact::getId).toList();
+    List<String> artifactIds = artifacts.stream().map(Artifact::getId).collect(Collectors.toCollection(ArrayList::new));
     List<Artifact> allArtifacts = artifactRepo.findAllByIdInAndFetchArchivedArtifacts(artifactIds);
     return allArtifacts.stream().filter(artifact -> BooleanUtils.isTrue(artifact.getDoc())).toList();
   }
@@ -137,7 +139,7 @@ public class ExternalDocumentServiceImpl implements ExternalDocumentService {
   private String downloadDocAndUnzipToShareFolder(String downloadDocUrl, boolean isResetSync) {
     try {
       return fileDownloadService.downloadAndUnzipFile(downloadDocUrl,
-          DownloadOption.builder().isForced(isResetSync).build());
+          DownloadOption.builder().isForced(isResetSync).shouldGrantPermission(true).build());
     } catch (HttpClientErrorException e) {
       log.error("Cannot download doc {}", e.getStatusCode());
     } catch (Exception e) {
