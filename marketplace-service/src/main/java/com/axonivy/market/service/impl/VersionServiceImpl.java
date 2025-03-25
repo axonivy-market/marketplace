@@ -12,6 +12,7 @@ import com.axonivy.market.model.VersionAndUrlModel;
 import com.axonivy.market.repository.MavenArtifactVersionRepository;
 import com.axonivy.market.repository.MetadataRepository;
 import com.axonivy.market.repository.ProductJsonContentRepository;
+import com.axonivy.market.service.ProductMarketplaceDataService;
 import com.axonivy.market.service.VersionService;
 import com.axonivy.market.util.VersionUtils;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -41,6 +42,7 @@ import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 public class VersionServiceImpl implements VersionService {
 
   private final ProductJsonContentRepository productJsonRepo;
+  private final ProductMarketplaceDataService productMarketplaceDataService;
   private final ObjectMapper mapper = new ObjectMapper();
   private final MetadataRepository metadataRepo;
   private final MavenArtifactVersionRepository mavenArtifactVersionRepo;
@@ -70,7 +72,8 @@ public class VersionServiceImpl implements VersionService {
         .toList();
   }
 
-  public Map<String, Object> getProductJsonContentByIdAndVersion(String productId, String version) {
+  public Map<String, Object> getProductJsonContentByIdAndVersion(String productId, String version,
+      String designerVersion) {
     Map<String, Object> result = new HashMap<>();
     try {
       ProductJsonContent productJsonContent =
@@ -80,6 +83,7 @@ public class VersionServiceImpl implements VersionService {
       }
       result = mapper.readValue(productJsonContent.getContent(), Map.class);
       result.computeIfAbsent(NAME, k -> productJsonContent.getName());
+      productMarketplaceDataService.updateInstallationCountForProduct(productId, designerVersion);
     } catch (JsonProcessingException jsonProcessingException) {
       log.error(jsonProcessingException.getMessage());
     }
@@ -87,7 +91,7 @@ public class VersionServiceImpl implements VersionService {
   }
 
   @Override
-  public List<VersionAndUrlModel> getVersionsForDesigner(String productId) {
+  public List<VersionAndUrlModel> getVersionsForDesigner(String productId, String designerVersion) {
     List<VersionAndUrlModel> versionAndUrlList = new ArrayList<>();
     List<String> releasedVersions =
         VersionUtils.getInstallableVersionsFromMetadataList(metadataRepo.findByProductId(productId));
@@ -99,7 +103,8 @@ public class VersionServiceImpl implements VersionService {
         new LatestVersionComparator()).toList();
     for (String version : versions) {
       Link link = linkTo(
-          methodOn(ProductDetailsController.class).findProductJsonContent(productId, version)).withSelfRel();
+          methodOn(ProductDetailsController.class).findProductJsonContent(productId, version,
+              designerVersion)).withSelfRel();
       VersionAndUrlModel versionAndUrlModel = new VersionAndUrlModel(version, link.getHref());
       versionAndUrlList.add(versionAndUrlModel);
     }

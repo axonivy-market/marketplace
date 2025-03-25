@@ -1,9 +1,9 @@
 package com.axonivy.market;
 
+import com.axonivy.market.bo.VersionDownload;
 import com.axonivy.market.entity.Artifact;
 import com.axonivy.market.constants.MavenConstants;
 import com.axonivy.market.entity.*;
-import com.axonivy.market.enums.FeedbackStatus;
 import com.axonivy.market.enums.Language;
 import com.axonivy.market.enums.SortOption;
 import com.axonivy.market.model.FeedbackApprovalModel;
@@ -48,6 +48,7 @@ public class BaseSetup {
   protected static final String MOCK_PRODUCT_ARTIFACT_ID = "bpmn-statistic-product";
   protected static final String MOCK_RELEASED_VERSION = "10.0.10";
   protected static final String MOCK_SNAPSHOT_VERSION = "10.0.10-SNAPSHOT";
+  protected static final String MOCK_DESIGNER_VERSION = "12.0.4";
   protected static final String MOCK_BUGFIX_VERSION = "10.0.10.1";
   protected static final String MOCK_SPRINT_RELEASED_VERSION = "10.0.10-m123";
   protected static final String MOCK_GROUP_ID = "com.axonivy.util";
@@ -372,5 +373,29 @@ public class BaseSetup {
         .isAdditionalVersion(true)
         .build();
     return MavenArtifactVersion.builder().id(mavenArtifactKey).build();
+  }
+
+  protected List<MavenDependency> mockMavenDependencies(){
+    MavenDependency mavenDependency = MavenDependency.builder()
+        .artifactId(MOCK_DEMO_ARTIFACT_ID)
+        .downloadUrl(MOCK_DOWNLOAD_URL)
+        .version(MOCK_RELEASED_VERSION)
+        .build();
+
+    return List.of(mavenDependency);
+  }
+
+  protected ProductDependency mockProductDependency(){
+    return ProductDependency.builder()
+        .productId(MOCK_PRODUCT_ID)
+        .dependenciesOfArtifact(mockMavenDependencies())
+        .build();
+  }
+
+  protected VersionDownload mockVersionDownload() {
+    return VersionDownload.builder()
+        .installationCount(5)
+        .fileData("content".getBytes())
+        .build();
   }
 }

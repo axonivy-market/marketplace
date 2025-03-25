@@ -1,9 +1,10 @@
 package com.axonivy.market.controller;
 
+import com.axonivy.market.bo.VersionDownload;
+import com.axonivy.market.constants.ErrorMessageConstants;
 import com.axonivy.market.constants.GitHubConstants;
 import com.axonivy.market.enums.ErrorCode;
 import com.axonivy.market.github.service.GitHubService;
-import com.axonivy.market.logging.Loggable;
 import com.axonivy.market.model.Message;
 import com.axonivy.market.model.ProductCustomSortRequest;
 import com.axonivy.market.service.ProductMarketplaceDataService;
@@ -14,18 +15,19 @@ import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.server.ResponseStatusException;
 
 import static com.axonivy.market.constants.RequestMappingConstants.*;
-import static com.axonivy.market.constants.RequestParamConstants.DESIGNER_VERSION;
 import static com.axonivy.market.constants.RequestParamConstants.ID;
+import static com.axonivy.market.constants.RequestParamConstants.URL;
 import static org.springframework.http.HttpHeaders.AUTHORIZATION;
 
 @RestController
@@ -50,14 +52,27 @@ public class ProductMarketplaceDataController {
     return new ResponseEntity<>(message, HttpStatus.OK);
   }
 
-  @Loggable
   @Operation(hidden = true)
-  @PutMapping(INSTALLATION_COUNT_BY_ID)
-  public ResponseEntity<Integer> syncInstallationCount(
+  @GetMapping(VERSION_DOWNLOAD_BY_ID)
+  public ResponseEntity<VersionDownload> extractArtifactUrl(
       @PathVariable(ID) String productId,
-      @RequestParam(name = DESIGNER_VERSION, required = false) String designerVersion) {
-    int result = productMarketplaceDataService.updateInstallationCountForProduct(productId, designerVersion);
+      @RequestParam(URL) String artifactUrl) {
+    if (!AuthorizationUtils.isAllowedUrl(artifactUrl)) {
+      throw new ResponseStatusException(HttpStatus.FORBIDDEN, ErrorMessageConstants.INVALID_URL_ERROR);
+    }
+
+    VersionDownload result = productMarketplaceDataService.downloadArtifact(artifactUrl, productId);
+
+    if (result == null) {
+      return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+    }
     return new ResponseEntity<>(result, HttpStatus.OK);
   }
 
+  @GetMapping(INSTALLATION_COUNT_BY_ID)
+  public ResponseEntity<Integer> findInstallationCount(@PathVariable(ID)
+  String id) {
+    Integer result = productMarketplaceDataService.getInstallationCount(id);
+    return new ResponseEntity<>(result, HttpStatus.OK);
+  }
 }

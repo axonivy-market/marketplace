@@ -134,6 +134,7 @@ common:
         buttonLabelInDesigner: Install
       download:
         buttonLabel: Download
+        downloadingButtonLabel: Downloading...
         hideDevVersions: Hide development versions
         showDevVersions: Show development versions
         versionSelector:

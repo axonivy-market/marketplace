@@ -756,7 +756,7 @@ public class ProductServiceImpl implements ProductService {
    * ex: 11.0+ , 10.0 - 12.0+ , ...
    */
   private String getCompatibilityRange(String productId) {
-    return Optional.of(versionService.getVersionsForDesigner(productId))
+    return Optional.of(versionService.getVersionsForDesigner(productId, null))
         .filter(ObjectUtils::isNotEmpty)
         .map(versions -> versions.stream().map(VersionAndUrlModel::getVersion).toList())
         .map(versions -> {

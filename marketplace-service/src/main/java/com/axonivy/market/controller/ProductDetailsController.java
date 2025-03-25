@@ -2,6 +2,7 @@ package com.axonivy.market.controller;
 
 import com.axonivy.market.assembler.GithubReleaseModelAssembler;
 import com.axonivy.market.assembler.ProductDetailModelAssembler;
+import com.axonivy.market.bo.VersionDownload;
 import com.axonivy.market.entity.Product;
 import com.axonivy.market.model.GitHubReleaseModel;
 import com.axonivy.market.model.MavenArtifactVersionModel;
@@ -25,25 +26,20 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PagedResourcesAssembler;
 import org.springframework.hateoas.Link;
 import org.springframework.hateoas.PagedModel;
-import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
-import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.servlet.mvc.method.annotation.ResponseBodyEmitter;
 
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.concurrent.CompletableFuture;
 
-import static com.axonivy.market.constants.MavenConstants.APP_ZIP_FORMAT;
 import static com.axonivy.market.constants.RequestMappingConstants.*;
 import static com.axonivy.market.constants.RequestParamConstants.*;
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
@@ -128,16 +124,17 @@ public class ProductDetailsController {
       description = "When we click install in designer, this API will send content of product json for installing in " +
           "Ivy designer")
   public ResponseEntity<Map<String, Object>> findProductJsonContent(@PathVariable(ID) String productId,
-      @PathVariable(VERSION) String version) {
-    Map<String, Object> productJsonContent = versionService.getProductJsonContentByIdAndVersion(productId, version);
+      @PathVariable(VERSION) String version, @RequestParam(name = DESIGNER_VERSION, required = false) String designerVersion) {
+    Map<String, Object> productJsonContent = versionService.getProductJsonContentByIdAndVersion(productId, version, designerVersion);
     return new ResponseEntity<>(productJsonContent, HttpStatus.OK);
   }
 
   @GetMapping(VERSIONS_IN_DESIGNER)
   @Operation(summary = "Get the list of released version in product",
       description = "Collect the released versions in product for ivy designer")
-  public ResponseEntity<List<VersionAndUrlModel>> findVersionsForDesigner(@PathVariable(ID) String id) {
-    List<VersionAndUrlModel> versionList = versionService.getVersionsForDesigner(id);
+  public ResponseEntity<List<VersionAndUrlModel>> findVersionsForDesigner(@PathVariable(ID) String id,
+      @RequestParam(name = DESIGNER_VERSION, required = false) String designerVersion) {
+    List<VersionAndUrlModel> versionList = versionService.getVersionsForDesigner(id, designerVersion);
     return new ResponseEntity<>(versionList, HttpStatus.OK);
   }
 
@@ -206,30 +203,18 @@ public class ProductDetailsController {
   @GetMapping(ARTIFACTS_AS_ZIP)
   @Operation(summary = "Get the download steam of artifact and it's dependencies by it's id and target version",
       description = "Return the download url of artifact from version and id")
-  public CompletableFuture<ResponseEntity<ResponseBodyEmitter>> downloadZipArtifact(
+  public ResponseEntity<VersionDownload> downloadZipArtifact(
       @PathVariable(value = ID) @Parameter(in = ParameterIn.PATH, example = "demos") String id,
       @RequestParam(value = VERSION) @Parameter(in = ParameterIn.QUERY, example = "10.0") String version,
       @RequestParam(value = ARTIFACT) @Parameter(in = ParameterIn.QUERY, example = "demos-app") String artifactId) {
-    // Prepare the response
-    String filename = String.format(APP_ZIP_FORMAT, artifactId, version);
-    HttpHeaders headers = new HttpHeaders();
-    headers.add(HttpHeaders.CONTENT_DISPOSITION, ATTACHMENT_HEADER.formatted(filename));
-    headers.add(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_OCTET_STREAM_VALUE);
-    // Open stream as async to save the server resources
-    return productContentService.downloadZipArtifactFile(id, artifactId, version)
-        .thenApply(emitter -> {
-          HttpStatus status = HttpStatus.OK;
-          if (emitter == null) {
-            status = HttpStatus.NO_CONTENT;
-            emitter = new ResponseBodyEmitter();
-            emitter.complete();
-          }
 
-          return ResponseEntity.status(status)
-              .headers(headers)
-              .contentType(MediaType.APPLICATION_OCTET_STREAM)
-              .body(emitter);
-        });
+    // Open stream as async to save the server resources
+    VersionDownload result = productContentService.downloadZipArtifactFile(id, artifactId, version);
+
+    if (result == null) {
+      return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+    }
+    return new ResponseEntity<>(result, HttpStatus.OK);
   }
 
   private void addModelLinks(ProductDetailModel model, Product product, String version, String path){
@@ -237,7 +222,7 @@ public class ProductDetailsController {
     if (path.equals(BEST_MATCH_BY_ID_AND_VERSION)) {
       Link link = linkTo(
               methodOn(ProductDetailsController.class).findProductJsonContent(productId,
-                      product.getBestMatchVersion())).withSelfRel();
+                      product.getBestMatchVersion(),version)).withSelfRel();
       model.setMetaProductJsonUrl(link.getHref());
     }
     model.add(getSelfLinkForProduct(productId, version, path));
