@@ -1,4 +1,4 @@
-import { ElementRef, Renderer2 } from "@angular/core";
+import { Renderer2 } from "@angular/core";
 import { environment } from "../../../environments/environment";
 
 export class GoogleSearchBarUtils {
@@ -13,10 +13,9 @@ export class GoogleSearchBarUtils {
                 this.addCustomClassToSearchBar(renderer);
             };
             renderer.appendChild(document.body, script);
-        }
-        else {
+        } else {
             // If script is already loaded, manually trigger reinitialization
-            if (window.hasOwnProperty('google') && (window as any).google.search) {
+            if (window.hasOwnProperty('google') && window.google.search) {
                 window.google.search.cse.element.render('gcse-search');
             }
         }

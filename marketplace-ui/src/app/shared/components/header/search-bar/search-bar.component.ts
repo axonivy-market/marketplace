@@ -28,7 +28,6 @@ export class SearchBarComponent {
   elementRef = inject(ElementRef);
   languageService = inject(LanguageService);
   isGoogleLoaded = false;
-  inputValue: string = '';
 
   @HostListener('document:click', ['$event'])
   handleClickOutside(event: MouseEvent) {

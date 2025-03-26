@@ -26,7 +26,7 @@ export class AppComponent {
   route = inject(ActivatedRoute);
   isMobileMenuCollapsed = true;
 
-  constructor(private readonly router: Router, private renderer: Renderer2) { }
+  constructor(private readonly router: Router, private readonly renderer: Renderer2) { }
 
   ngOnInit(): void {
     this.router.events.subscribe((event: Event) => {
