@@ -13,11 +13,10 @@ export class GoogleSearchBarUtils {
                 this.addCustomClassToSearchBar(renderer);
             };
             renderer.appendChild(document.body, script);
-        } else {
-            // If script is already loaded, manually trigger reinitialization
-            if (window.hasOwnProperty('google') && window.google.search) {
-                window.google.search.cse.element.render('gcse-search');
-            }
+        }
+        // If script is already loaded, manually trigger reinitialization
+        if (window.hasOwnProperty('google') && window.google.search) {
+            window.google.search.cse.element.render('gcse-search');
         }
     }
 
