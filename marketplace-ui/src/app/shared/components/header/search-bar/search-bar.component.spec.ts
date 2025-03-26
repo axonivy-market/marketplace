@@ -88,4 +88,16 @@ describe('SearchBarComponent', () => {
     expect(googleSearchContainer).toBeTruthy();
     expect(getComputedStyle(googleSearchContainer.nativeElement).display).toBe('block');
   });
+
+  it('should set isGoogleSearchBarDisplayed to false when onHideSearch is called', () => {
+    // Ensure the initial state is true
+    component.isGoogleSearchBarDisplayed.set(true);
+    expect(component.isGoogleSearchBarDisplayed()).toBeTrue();
+  
+    // Call the onHideSearch method
+    component.onHideSearch();
+  
+    // Verify the state is set to false
+    expect(component.isGoogleSearchBarDisplayed()).toBeFalse();
+  });
 });
