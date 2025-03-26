@@ -28,32 +28,7 @@ describe('SearchBarComponent', () => {
     expect(component).toBeTruthy();
   });
 
-  it('should toggle the search input visibility on search icon click', () => {
-    viewport.set(1920);
-    const searchIcon = fixture.debugElement.query(
-      By.css('.header__search-button')
-    );
-
-    expect(component.isSearchBarDisplayed()).toBeFalse();
-
-    // Click the search icon
-    searchIcon.triggerEventHandler('click', null);
-    fixture.detectChanges();
-
-    expect(component.isSearchBarDisplayed()).toBeTrue();
-
-    const cancelIcon = fixture.debugElement.query(
-      By.css('.input-group-prepend.search__cancel-button')
-    );
-
-    // Click the cancel icon
-    cancelIcon.triggerEventHandler('click', null);
-    fixture.detectChanges();
-
-    expect(component.isSearchBarDisplayed()).toBeFalse();
-  });
-
-  it('destop search should not display in small screen', () => {
+  it('desktop search should not display in small screen', () => {
     viewport.set(540);
 
     const desktopSearch = fixture.debugElement.query(
@@ -75,7 +50,7 @@ describe('SearchBarComponent', () => {
     );
   });
 
-  it('should set isSearchBarDisplayed to false when clicking outside', () => {
+  it('should set isGoogleSearchBarDisplayed to false when clicking outside', () => {
     // Set up the DOM
     const outsideClickEvent = new MouseEvent('click', {
       bubbles: true,
@@ -87,6 +62,30 @@ describe('SearchBarComponent', () => {
     document.dispatchEvent(outsideClickEvent);
 
     // Verify the behavior
-    expect(component.isSearchBarDisplayed()).toBeFalse();
+    expect(component.isGoogleSearchBarDisplayed()).toBeFalse();
+  });
+
+  it('should show the google search bar on search icon click', () => {
+    viewport.set(1920);
+    const searchIcon = fixture.debugElement.query(
+      By.css('.header__search-button')
+    );
+    fixture.detectChanges();
+
+    const googleSearchContainer = fixture.debugElement.query(
+      By.css('.google-search-container')
+    );
+
+    expect(component.isGoogleSearchBarDisplayed()).toBeFalse();
+    expect(googleSearchContainer).toBeTruthy();
+    expect(getComputedStyle(googleSearchContainer.nativeElement).display).toBe('none');
+
+    // Click the search icon
+    searchIcon.triggerEventHandler('click', null);
+    fixture.detectChanges();
+
+    expect(component.isGoogleSearchBarDisplayed()).toBeTrue();
+    expect(googleSearchContainer).toBeTruthy();
+    expect(getComputedStyle(googleSearchContainer.nativeElement).display).toBe('block');
   });
 });

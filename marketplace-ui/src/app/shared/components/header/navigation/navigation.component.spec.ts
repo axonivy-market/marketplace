@@ -35,21 +35,21 @@ describe('NavigationComponent', () => {
     component.isMobileMode.set(true); // Simulate mobile mode
     fixture.detectChanges();
 
-    const mobileSearch = fixture.debugElement.query(
+    const googleSearchContainer = fixture.debugElement.query(
       By.css('.google-search-container')
     );
-    expect(mobileSearch).toBeTruthy();
-    expect(getComputedStyle(mobileSearch.nativeElement).display).toBe('block');
+    expect(googleSearchContainer).toBeTruthy();
+    expect(getComputedStyle(googleSearchContainer.nativeElement).display).toBe('block');
   });
 
   it('should hide google search bar container in desktop mode', () => {
     component.isMobileMode.set(false); // Simulate desktop mode
     fixture.detectChanges();
 
-    const mobileSearch = fixture.debugElement.query(
+    const googleSearchContainer = fixture.debugElement.query(
       By.css('.google-search-container')
     );
-    expect(mobileSearch).toBeTruthy();
-    expect(getComputedStyle(mobileSearch.nativeElement).display).toBe('none');
+    expect(googleSearchContainer).toBeTruthy();
+    expect(getComputedStyle(googleSearchContainer.nativeElement).display).toBe('none');
   });
 });

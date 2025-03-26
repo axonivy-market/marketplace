@@ -22,7 +22,6 @@ import { FormsModule } from '@angular/forms';
 })
 export class SearchBarComponent {
   searchUrl = SEARCH_URL;
-  isSearchBarDisplayed = signal(false);
   isGoogleSearchBarDisplayed = signal(false);
 
   translateService = inject(TranslateService);
@@ -35,17 +34,14 @@ export class SearchBarComponent {
   handleClickOutside(event: MouseEvent) {
     if (!this.elementRef.nativeElement.contains(event.target)) {
       this.isGoogleSearchBarDisplayed.set(false);
-      this.isSearchBarDisplayed.set(false);
     }
   }
 
   onClickSearchIcon() {
     this.isGoogleSearchBarDisplayed.set(true);
-    this.isSearchBarDisplayed.set(true);
   }
 
   onHideSearch() {
     this.isGoogleSearchBarDisplayed.set(false);
-    this.isSearchBarDisplayed.set(false);
   }
 }
