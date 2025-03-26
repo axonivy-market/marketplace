@@ -1,9 +1,9 @@
-import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { ComponentFixture, fakeAsync, TestBed, tick } from '@angular/core/testing';
 import { of } from 'rxjs';
 import { ProductDetailVersionActionComponent } from './product-detail-version-action.component';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { ProductService } from '../../product.service';
-import { HttpParams, provideHttpClient } from '@angular/common/http';
+import { provideHttpClient, withInterceptorsFromDi } from '@angular/common/http';
 import { ElementRef } from '@angular/core';
 import { ItemDropdown } from '../../../../shared/models/item-dropdown.model';
 import { CookieService } from 'ngx-cookie-service';
@@ -13,8 +13,9 @@ import { ROUTER } from '../../../../shared/constants/router.constant';
 import { MatomoTestingModule } from 'ngx-matomo-client/testing';
 import { ProductDetailActionType } from '../../../../shared/enums/product-detail-action-type';
 import { MATOMO_TRACKING_ENVIRONMENT } from '../../../../shared/constants/matomo.constant';
+import { provideHttpClientTesting } from '@angular/common/http/testing';
 import { environment } from '../../../../../environments/environment';
-import { API_URI } from '../../../../shared/constants/api.constant';
+import { MavenArtifactKey } from '../../../../shared/models/maven-artifact.model';
 
 class MockElementRef implements ElementRef {
   nativeElement = {
@@ -33,10 +34,10 @@ describe('ProductDetailVersionActionComponent', () => {
   beforeEach(() => {
     productServiceMock = jasmine.createSpyObj('ProductService', [
       'sendRequestToProductDetailVersionAPI',
-      'sendRequestToUpdateInstallationCount',
+      'sendRequestToGetInstallationCount',
       'sendRequestToGetProductVersionsForDesigner'
     ]);
-    const commonUtilsSpy = jasmine.createSpyObj('CommonUtils', [ 'getCookieValue' ]);
+    const commonUtilsSpy = jasmine.createSpyObj('CommonUtils', ['getCookieValue']);
     const activatedRouteSpy = jasmine.createSpyObj('ActivatedRoute', [], {
       snapshot: {
         queryParams: {}
@@ -52,7 +53,8 @@ describe('ProductDetailVersionActionComponent', () => {
       providers: [
         TranslateService,
         CookieService,
-        provideHttpClient(),
+        provideHttpClient(withInterceptorsFromDi()),
+        provideHttpClientTesting(),
         provideRouter([]),
         { provide: ProductService, useValue: productServiceMock },
         { provide: ElementRef, useClass: MockElementRef },
@@ -78,7 +80,8 @@ describe('ProductDetailVersionActionComponent', () => {
     const artifact = {
       name: 'Example Artifact',
       downloadUrl: 'https://example.com/download',
-      isProductArtifact: true
+      isProductArtifact: true,
+      id: { artifactId: "example-artifactId" } as MavenArtifactKey
     } as ItemDropdown;
     component.versions.set([selectedVersion]);
     component.versionMap.set(selectedVersion, [artifact]);
@@ -87,6 +90,7 @@ describe('ProductDetailVersionActionComponent', () => {
 
     expect(component.artifacts().length).toBe(1);
     expect(component.selectedArtifact).toEqual('https://example.com/download');
+    expect(component.selectedArtifactId).toBe(artifact.id!.artifactId);
   });
 
   it('should update selectedVersion, artifacts, selectedArtifactName, and selectedArtifact, and call addVersionParamToRoute', () => {
@@ -215,18 +219,6 @@ describe('ProductDetailVersionActionComponent', () => {
     expect(component.selectedVersion()).toBe('Version 1.0');
   });
 
-  it('should open the artifact download URL in a new window', () => {
-    spyOn(window, 'open');
-    component.selectedArtifact = 'https://example.com/download';
-    spyOn(component, 'onUpdateInstallationCount');
-    component.downloadArtifact();
-    expect(window.open).toHaveBeenCalledWith(
-      'https://example.com/download',
-      '_blank'
-    );
-    expect(component.onUpdateInstallationCount).toHaveBeenCalledOnceWith();
-  });
-
   it('should call getVersionWithArtifact and toggle isDropDownDisplayed', () => {
     expect(component.isDropDownDisplayed()).toBeFalse();
 
@@ -277,19 +269,6 @@ describe('ProductDetailVersionActionComponent', () => {
     return { mockArtifact1: mockArtifact1, mockArtifact2: mockArtifact2 };
   }
 
-  it('should open a new tab with the selected artifact URL', () => {
-    const mockWindowOpen = jasmine.createSpy('windowOpen').and.returnValue({});
-    spyOn(window, 'open').and.callFake(mockWindowOpen);
-    spyOn(component, 'onUpdateInstallationCount');
-    component.selectedArtifact = 'http://example.com/artifact';
-    component.downloadArtifact();
-    expect(window.open).toHaveBeenCalledWith(
-      'http://example.com/artifact',
-      '_blank'
-    );
-    expect(component.onUpdateInstallationCount).toHaveBeenCalledOnceWith();
-  });
-
   it('should not call productService if versions are already populated', () => {
     component.versions.set(['1.0', '1.1']);
     fixture.detectChanges();
@@ -307,7 +286,7 @@ describe('ProductDetailVersionActionComponent', () => {
     component.getVersionInDesigner();
 
     // Assert
-    expect(productServiceMock.sendRequestToGetProductVersionsForDesigner).toHaveBeenCalledWith(productId);
+    expect(productServiceMock.sendRequestToGetProductVersionsForDesigner).toHaveBeenCalledWith(productId, '');
     expect(component.versions()).toEqual(['Version 1.0', 'Version 2.0']);
   });
 
@@ -319,7 +298,7 @@ describe('ProductDetailVersionActionComponent', () => {
     component.getVersionInDesigner();
 
     // Assert
-    expect(productServiceMock.sendRequestToGetProductVersionsForDesigner).toHaveBeenCalledWith(productId);
+    expect(productServiceMock.sendRequestToGetProductVersionsForDesigner).toHaveBeenCalledWith(productId, '');
     expect(component.versions()).toEqual([]);
   });
 
@@ -359,12 +338,15 @@ describe('ProductDetailVersionActionComponent', () => {
       name: 'Example Artifact1',
       downloadUrl: 'https://example.com/download',
       isProductArtifact: true,
-      label: 'Example Artifact1'
+      label: 'Example Artifact1',
+      id: { artifactId: "example-artifactId" } as MavenArtifactKey
     } as ItemDropdown;
+
     component.onSelectArtifact(mockArtifact1);
+
     expect(component.selectedArtifactName).toBe(mockArtifact1.name);
     expect(component.selectedArtifact).toBe(mockArtifact1.downloadUrl);
-    expect(component.selectedArtifactId).toBe(mockArtifact1.artifactId);
+    expect(component.selectedArtifactId).toBe(mockArtifact1.id!.artifactId);
   });
 
   it('should call selectedVersion.set with the correct version', () => {
@@ -373,42 +355,74 @@ describe('ProductDetailVersionActionComponent', () => {
     expect(component.selectedVersion()).toBe(testVersion);
   });
 
-  it('should call onUpdateInstallationCount and open artifact URL when conditions are met (ZIP file)', () => {
-    component.onUpdateInstallationCount = jasmine.createSpy(
-      'onUpdateInstallationCount'
-    );
-    spyOn(window, 'open');
+  it('should properly handle file download', () => {
+    spyOn(document.body, 'appendChild');
+    spyOn(document.body, 'removeChild');
+
+    const mockClick = jasmine.createSpy();
+    spyOn(document, 'createElement').and.returnValue({ click: mockClick } as any);
+
+    component['downloadFile']('base64Data', 'test.zip');
+
+    expect(document.body.appendChild).toHaveBeenCalled();
+    expect(mockClick).toHaveBeenCalled();
+    expect(document.body.removeChild).toHaveBeenCalled();
+  });
+
+  it('should call sendRequestToGetInstallationCount and emit installation count', fakeAsync(() => {
+    productServiceMock.sendRequestToGetInstallationCount.and.returnValue(of(42));
+    spyOn(component.installationCount, 'emit');
+
+    component.onUpdateInstallationCountForDesigner();
+    tick(1000);
+
+    expect(productServiceMock.sendRequestToGetInstallationCount).toHaveBeenCalledWith(component.productId);
+    expect(component.installationCount.emit).toHaveBeenCalledWith(42);
+  }));
+
+  it('should return the correct marketplace service URL', () => {
+    environment.apiUrl = 'https://api.example.com';
+
+    expect(component.getMarketplaceServiceUrl()).toBe('https://api.example.com');
+
+    environment.apiUrl = '/marketplace';
+    expect(component.getMarketplaceServiceUrl()).toBe(window.location.origin + '/marketplace');
+  });
+
+  it('should generate correct URL and call fetchAndDownloadArtifact for DOC file', () => {
+    component.selectedArtifact = 'document.doc';
+    component.productId = '123';
+    environment.apiUrl = 'https://api.example.com';
+
+    spyOn(component, 'fetchAndDownloadArtifact');
+
     component.downloadArtifact();
-    expect(component.onUpdateInstallationCount).toHaveBeenCalled();
-    expect(window.open).toHaveBeenCalledWith(
-      component.selectedArtifact,
-      '_blank'
+
+    expect(component.fetchAndDownloadArtifact).toHaveBeenCalledWith(
+      `${environment.apiUrl}/api/product-marketplace-data/version-download/123?url=document.doc`,
+      'document.doc'
     );
   });
 
-  it('should open constructed URL when isCheckedAppForEngine is true', () => {
-    component.isCheckedAppForEngine = true;
-    component.onUpdateInstallationCount = jasmine.createSpy(
-      'onUpdateInstallationCount'
-    );
-    spyOn(window, 'open');
-    const expectedVersion = '1.2.3';
-    component.selectedVersion.set(expectedVersion);
-    const HTTP = 'http';
-    let marketplaceServiceUrl = environment.apiUrl;
-    if (!marketplaceServiceUrl.startsWith(HTTP)) {
-      marketplaceServiceUrl = window.location.origin.concat(
-        marketplaceServiceUrl
-      );
-    }
-    const expectedParams = new HttpParams()
-      .set(ROUTER.VERSION, expectedVersion)
-      .set(ROUTER.ARTIFACT, component.selectedArtifactId ?? '')
-      .toString();
-    const expectedUrl = `${marketplaceServiceUrl}/${API_URI.PRODUCT_DETAILS}/${component.productId}/artifact/zip-file?${expectedParams}`;
+  it('should correctly handle artifact download scenarios', () => {
+    environment.apiUrl = 'https://api.example.com';
+    component.productId = 'ai-assistant';
+    spyOn(component, 'fetchAndDownloadArtifact');
+
+    component.selectedArtifact = 'https://example.com/ai-assistant-12.0.1.1.iar';
 
     component.downloadArtifact();
+    expect(component.fetchAndDownloadArtifact).toHaveBeenCalledWith(
+      `${environment.apiUrl}/api/product-marketplace-data/version-download/ai-assistant?url=https://example.com/ai-assistant-12.0.1.1.iar`, 'ai-assistant-12.0.1.1.iar'
+    );
 
-    expect(window.open).toHaveBeenCalledWith(expectedUrl, '_blank');
+    component.isCheckedAppForEngine = true;
+    component.selectedArtifactId = 'ai-assistant';
+    component.selectedVersion.set('12.0.0');
+    component.downloadArtifact();
+    expect(component.fetchAndDownloadArtifact).toHaveBeenCalledWith(
+      `${environment.apiUrl}/api/product-details/ai-assistant/artifact/zip-file?version=12.0.0&artifact=ai-assistant`,
+      'ai-assistant-app-12.0.0.zip'
+    );
   });
 });

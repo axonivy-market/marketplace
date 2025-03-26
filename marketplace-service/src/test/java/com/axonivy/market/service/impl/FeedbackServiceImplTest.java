@@ -2,8 +2,8 @@ package com.axonivy.market.service.impl;
 
 import com.axonivy.market.BaseSetup;
 import com.axonivy.market.entity.Feedback;
+import com.axonivy.market.entity.GithubUser;
 import com.axonivy.market.entity.Product;
-import com.axonivy.market.entity.User;
 import com.axonivy.market.enums.ErrorCode;
 import com.axonivy.market.enums.FeedbackStatus;
 import com.axonivy.market.exceptions.model.NoContentException;
@@ -14,7 +14,7 @@ import com.axonivy.market.model.FeedbackModelRequest;
 import com.axonivy.market.model.ProductRating;
 import com.axonivy.market.repository.FeedbackRepository;
 import com.axonivy.market.repository.ProductRepository;
-import com.axonivy.market.repository.UserRepository;
+import com.axonivy.market.repository.GithubUserRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -41,7 +41,7 @@ class FeedbackServiceImplTest extends BaseSetup {
   private FeedbackRepository feedbackRepository;
 
   @Mock
-  private UserRepository userRepository;
+  private GithubUserRepository githubUserRepository;
 
   @Mock
   private ProductRepository productRepository;
@@ -171,7 +171,7 @@ class FeedbackServiceImplTest extends BaseSetup {
   void testFindFeedbackByUserIdAndProductId() {
     String productId = "product1";
 
-    when(userRepository.findById(userId)).thenReturn(Optional.of(new User()));
+    when(githubUserRepository.findById(userId)).thenReturn(Optional.of(new GithubUser()));
     when(productRepository.findById(productId)).thenReturn(Optional.of(new Product()));
     when(feedbackRepository.findByProductIdAndUserIdAndFeedbackStatusNotIn(productId, userId,
         List.of(FeedbackStatus.REJECTED))).thenReturn(List.of(feedback));
@@ -180,7 +180,7 @@ class FeedbackServiceImplTest extends BaseSetup {
     assertNotNull(result);
     assertEquals(userId, result.get(0).getUserId());
     assertEquals(productId, result.get(0).getProductId());
-    verify(userRepository, times(1)).findById(userId);
+    verify(githubUserRepository, times(1)).findById(userId);
     verify(productRepository, times(1)).findById(productId);
     verify(feedbackRepository, times(1)).findByProductIdAndUserIdAndFeedbackStatusNotIn(productId, userId,
         List.of(FeedbackStatus.REJECTED));
@@ -206,11 +206,11 @@ class FeedbackServiceImplTest extends BaseSetup {
   void testFindFeedbackByUserIdAndProductId_NotFound() {
     userId = "notFoundUser";
 
-    when(userRepository.findById(userId)).thenReturn(Optional.empty());
+    when(githubUserRepository.findById(userId)).thenReturn(Optional.empty());
     NotFoundException exception = assertThrows(NotFoundException.class,
         () -> feedbackService.findFeedbackByUserIdAndProductId(userId, "product"));
     assertEquals(ErrorCode.USER_NOT_FOUND.getCode(), exception.getCode());
-    verify(userRepository, times(1)).findById(userId);
+    verify(githubUserRepository, times(1)).findById(userId);
   }
 
   @Test
@@ -286,7 +286,7 @@ class FeedbackServiceImplTest extends BaseSetup {
   void testUpsertFeedback_Insert() throws NotFoundException {
     String productId = "product1";
 
-    when(userRepository.findById(userId)).thenReturn(Optional.of(new User()));
+    when(githubUserRepository.findById(userId)).thenReturn(Optional.of(new GithubUser()));
     when(feedbackRepository.findByProductIdAndUserIdAndFeedbackStatusNotIn(productId, userId,
         List.of(FeedbackStatus.REJECTED))).thenReturn(Collections.emptyList());
     when(feedbackRepository.save(any(Feedback.class))).thenReturn(feedback);
@@ -298,7 +298,7 @@ class FeedbackServiceImplTest extends BaseSetup {
     assertEquals(feedbackModel.getProductId(), result.getProductId());
     assertEquals(feedbackModel.getRating(), result.getRating());
     assertEquals(feedbackModel.getContent(), result.getContent());
-    verify(userRepository, times(1)).findById(userId);
+    verify(githubUserRepository, times(1)).findById(userId);
     verify(feedbackRepository, times(1)).findByProductIdAndUserIdAndFeedbackStatusNotIn(productId, userId,
         List.of(FeedbackStatus.REJECTED));
     verify(feedbackRepository, times(1)).save(any(Feedback.class));
@@ -308,7 +308,7 @@ class FeedbackServiceImplTest extends BaseSetup {
   void testUpsertFeedback_Update() throws NotFoundException {
     String productId = "product1";
 
-    when(userRepository.findById(userId)).thenReturn(Optional.of(new User()));
+    when(githubUserRepository.findById(userId)).thenReturn(Optional.of(new GithubUser()));
     when(feedbackRepository.findByProductIdAndUserIdAndFeedbackStatusNotIn(productId, userId,
         List.of(FeedbackStatus.REJECTED))).thenReturn(List.of(feedback));
     when(feedbackRepository.save(any(Feedback.class))).thenReturn(feedback);
@@ -320,7 +320,7 @@ class FeedbackServiceImplTest extends BaseSetup {
     assertEquals(feedbackModel.getRating(), result.getRating());
     assertEquals(feedbackModel.getContent(), result.getContent());
     assertEquals(FeedbackStatus.PENDING, result.getFeedbackStatus());
-    verify(userRepository, times(1)).findById(userId);
+    verify(githubUserRepository, times(1)).findById(userId);
     verify(feedbackRepository, times(1)).findByProductIdAndUserIdAndFeedbackStatusNotIn(productId, userId,
         List.of(FeedbackStatus.REJECTED));
     verify(feedbackRepository, times(1)).save(any(Feedback.class));
@@ -342,7 +342,7 @@ class FeedbackServiceImplTest extends BaseSetup {
     existingPending.setId("pending1");
     existingPending.setFeedbackStatus(FeedbackStatus.PENDING);
 
-    when(userRepository.findById(userId)).thenReturn(Optional.of(new User()));
+    when(githubUserRepository.findById(userId)).thenReturn(Optional.of(new GithubUser()));
     when(feedbackRepository.findByProductIdAndUserIdAndFeedbackStatusNotIn(productId, userId,
         List.of(FeedbackStatus.REJECTED))).thenReturn(List.of(existingApproved, existingPending));
 
@@ -350,12 +350,11 @@ class FeedbackServiceImplTest extends BaseSetup {
 
     assertNotNull(result);
     assertEquals(existingApproved, result);
-    verify(userRepository, times(1)).findById(userId);
+    verify(githubUserRepository, times(1)).findById(userId);
     verify(feedbackRepository, times(1)).findByProductIdAndUserIdAndFeedbackStatusNotIn(productId, userId,
         List.of(FeedbackStatus.REJECTED));
     verify(feedbackRepository, times(1)).delete(existingPending);
     verify(feedbackRepository, never()).save(any(Feedback.class));
-    verify(feedbackRepository, never()).insert(any(Feedback.class));
   }
 
   @Test
@@ -370,7 +369,7 @@ class FeedbackServiceImplTest extends BaseSetup {
     existingApproved.setContent("Different content");
     existingApproved.setFeedbackStatus(FeedbackStatus.APPROVED);
 
-    when(userRepository.findById(userId)).thenReturn(Optional.of(new User()));
+    when(githubUserRepository.findById(userId)).thenReturn(Optional.of(new GithubUser()));
     when(feedbackRepository.findByProductIdAndUserIdAndFeedbackStatusNotIn(productId, userId,
         List.of(FeedbackStatus.REJECTED))).thenReturn(List.of(existingApproved));
     when(feedbackRepository.save(any(Feedback.class))).thenReturn(feedback);
@@ -382,7 +381,7 @@ class FeedbackServiceImplTest extends BaseSetup {
     assertEquals(feedbackModelRequest.getContent(), result.getContent());
     assertEquals(FeedbackStatus.PENDING, result.getFeedbackStatus());
 
-    verify(userRepository, times(1)).findById(userId);
+    verify(githubUserRepository, times(1)).findById(userId);
     verify(feedbackRepository, times(1)).findByProductIdAndUserIdAndFeedbackStatusNotIn(productId, userId,
         List.of(FeedbackStatus.REJECTED));
     verify(feedbackRepository, times(1)).save(any(Feedback.class));
@@ -444,19 +443,19 @@ class FeedbackServiceImplTest extends BaseSetup {
 
   @Test
   void testValidateUserExists() {
-    when(userRepository.findById(userId)).thenReturn(Optional.of(new User()));
+    when(githubUserRepository.findById(userId)).thenReturn(Optional.of(new GithubUser()));
 
     assertDoesNotThrow(() -> feedbackService.validateUserExists(userId));
-    verify(userRepository, times(1)).findById(userId);
+    verify(githubUserRepository, times(1)).findById(userId);
   }
 
   @Test
   void testValidateUserExists_NotFound() {
-    when(userRepository.findById(userId)).thenReturn(Optional.empty());
+    when(githubUserRepository.findById(userId)).thenReturn(Optional.empty());
 
     NotFoundException exception = assertThrows(NotFoundException.class,
         () -> feedbackService.validateUserExists(userId));
     assertEquals(ErrorCode.USER_NOT_FOUND.getCode(), exception.getCode());
-    verify(userRepository, times(1)).findById(userId);
+    verify(githubUserRepository, times(1)).findById(userId);
   }
 }

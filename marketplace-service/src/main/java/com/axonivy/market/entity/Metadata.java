@@ -1,31 +1,33 @@
 package com.axonivy.market.entity;
 
+import com.axonivy.market.converter.StringSetConverter;
+import jakarta.persistence.Column;
+import jakarta.persistence.Convert;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Id;
+import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import org.springframework.data.annotation.Id;
-import org.springframework.data.mongodb.core.mapping.Document;
 
-import java.io.Serial;
-import java.io.Serializable;
 import java.time.LocalDateTime;
 import java.util.Objects;
 import java.util.Set;
 
 import static com.axonivy.market.constants.EntityConstants.METADATA;
-
+import static com.axonivy.market.constants.EntityConstants.TEXT_TYPE;
 
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-@Document(METADATA)
-public class Metadata implements Serializable {
-  @Serial
-  private static final long serialVersionUID = 1L;
+@Entity
+@Table(name = METADATA)
+public class Metadata extends GenericEntity<String> {
+
   @Id
   private String url;
   private String productId;
@@ -34,7 +36,11 @@ public class Metadata implements Serializable {
   private String groupId;
   private String latest;
   private String release;
+
+  @Convert(converter = StringSetConverter.class)
+  @Column(nullable = false, columnDefinition = TEXT_TYPE)
   private Set<String> versions;
+
   private String repoUrl;
   private String type;
   private String name;
@@ -56,5 +62,15 @@ public class Metadata implements Serializable {
   @Override
   public int hashCode() {
     return Objects.hashCode(url);
+  }
+
+  @Override
+  public String getId() {
+    return url;
+  }
+
+  @Override
+  public void setId(String url) {
+    this.url = url;
   }
 }

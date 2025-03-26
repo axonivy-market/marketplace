@@ -1,11 +1,14 @@
 package com.axonivy.market.repository;
 
 import com.axonivy.market.entity.MavenArtifactVersion;
-import org.springframework.data.mongodb.repository.MongoRepository;
+import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
-@Repository
-public interface MavenArtifactVersionRepository extends MongoRepository<MavenArtifactVersion, String>,
-    CustomProductDependencyRepository {
+import java.util.List;
 
+@Repository
+public interface MavenArtifactVersionRepository extends JpaRepository<MavenArtifactVersion, String> {
+  List<MavenArtifactVersion> findByProductId(String productId);
+
+  void deleteAllByProductId(String productId);
 }

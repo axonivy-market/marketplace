@@ -1,34 +1,28 @@
 package com.axonivy.market.repository.impl;
 
-import com.axonivy.market.constants.EntityConstants;
-import com.axonivy.market.constants.MongoDBConstants;
 import com.axonivy.market.entity.ProductModuleContent;
+import com.axonivy.market.repository.BaseRepository;
 import com.axonivy.market.repository.CustomProductModuleContentRepository;
-import com.axonivy.market.repository.CustomRepository;
 import lombok.Builder;
-import org.springframework.data.mongodb.core.MongoTemplate;
-import org.springframework.data.mongodb.core.aggregation.Aggregation;
 
 import java.util.List;
 
+import static com.axonivy.market.constants.PostgresDBConstants.PRODUCT_ID;
+import static com.axonivy.market.constants.PostgresDBConstants.VERSION;
+
 @Builder
-public class CustomProductModuleContentRepositoryImpl extends CustomRepository implements CustomProductModuleContentRepository {
-
-  private final MongoTemplate mongoTemplate;
-
-  public CustomProductModuleContentRepositoryImpl(MongoTemplate mongoTemplate) {
-    this.mongoTemplate = mongoTemplate;
-  }
+public class CustomProductModuleContentRepositoryImpl extends BaseRepository<ProductModuleContent> implements CustomProductModuleContentRepository {
 
   @Override
   public List<String> findVersionsByProductId(String id) {
-    Aggregation aggregation = Aggregation.newAggregation(createFieldMatchOperation(MongoDBConstants.PRODUCT_ID, id),
-        createProjectAggregationBySingleFieldName(MongoDBConstants.VERSION));
-    return queryProductModuleContentsByAggregation(aggregation).stream().map(ProductModuleContent::getVersion).toList();
+    CriteriaByTypeContext<ProductModuleContent, String> criteriaContext = createCriteriaTypeContext(String.class);
+    criteriaContext.query().select(criteriaContext.root().get(VERSION))
+        .where(criteriaContext.builder().equal(criteriaContext.root().get(PRODUCT_ID), id));
+    return findByCriteria(criteriaContext);
   }
 
-  public List<ProductModuleContent> queryProductModuleContentsByAggregation(Aggregation aggregation) {
-    return mongoTemplate.aggregate(aggregation, EntityConstants.PRODUCT_MODULE_CONTENT, ProductModuleContent.class)
-        .getMappedResults();
+  @Override
+  protected Class<ProductModuleContent> getType() {
+    return ProductModuleContent.class;
   }
 }

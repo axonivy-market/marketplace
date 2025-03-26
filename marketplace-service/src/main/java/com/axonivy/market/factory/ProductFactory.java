@@ -1,13 +1,15 @@
 package com.axonivy.market.factory;
 
-import com.axonivy.market.bo.Artifact;
 import com.axonivy.market.constants.CommonConstants;
 import com.axonivy.market.constants.MetaConstants;
+import com.axonivy.market.entity.Artifact;
 import com.axonivy.market.entity.Product;
 import com.axonivy.market.entity.ProductJsonContent;
 import com.axonivy.market.entity.ProductModuleContent;
 import com.axonivy.market.github.model.Meta;
 import com.axonivy.market.model.DisplayValue;
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
@@ -29,7 +31,10 @@ import static org.apache.commons.lang3.StringUtils.EMPTY;
 @Log4j2
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class ProductFactory {
-  private static final ObjectMapper MAPPER = new ObjectMapper();
+
+  private static final ObjectMapper MAPPER = new ObjectMapper()
+      .setSerializationInclusion(JsonInclude.Include.NON_EMPTY)
+      .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
 
   public static Product mappingByGHContent(Product product, GHContent content) {
     if (content == null) {
@@ -75,8 +80,11 @@ public class ProductFactory {
     extractSourceUrl(product, meta);
     List<Artifact> artifacts = CollectionUtils.isEmpty(
         meta.getMavenArtifacts()) ? new ArrayList<>() : meta.getMavenArtifacts();
-    artifacts.forEach(
-        artifact -> artifact.setInvalidArtifact(!artifact.getArtifactId().contains(meta.getId())));
+
+    for (Artifact artifact : artifacts) {
+      artifact.setInvalidArtifact(!artifact.getArtifactId().contains(meta.getId()));
+    }
+
     product.setArtifacts(artifacts);
     product.setReleasedVersions(new ArrayList<>());
 

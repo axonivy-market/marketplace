@@ -111,8 +111,14 @@
               <button [lang]="languageService.selectedLanguage()" class="btn form-download__btn text-center"
                       [ngClass]="themeService.isDarkMode() ? 'btn-light' : 'btn-primary'" (click)="downloadArtifact()"
                       type="button"
-                      id="downloadButton">
-                {{ 'common.product.detail.download.buttonLabel' | translate }}
+                      id="downloadButton" [style.pointer-events]="isDownloading() ? 'none' : ''">
+                      @if (isDownloading()) {
+                        <i class="fa fa-spinner fa-spin me-2"></i>
+                        {{ 'common.product.detail.download.downloadingButtonLabel' | translate }}
+                      }
+                      @else {
+                        {{ 'common.product.detail.download.buttonLabel' | translate }}
+                      }
               </button>
             </div>
           </form>

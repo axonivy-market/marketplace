@@ -1,7 +1,8 @@
 package com.axonivy.market.entity;
 
-import com.axonivy.market.bo.Artifact;
+import com.axonivy.market.converter.StringListConverter;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -9,42 +10,59 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
-import org.springframework.data.annotation.Id;
-import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.annotation.Transient;
-import org.springframework.data.mongodb.core.mapping.Document;
 
-import java.io.Serial;
-import java.io.Serializable;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
-import static com.axonivy.market.constants.EntityConstants.PRODUCT;
+import static com.axonivy.market.constants.EntityConstants.*;
+import static com.axonivy.market.constants.PostgresDBConstants.ID;
 
 @Getter
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-@Document(PRODUCT)
-public class Product implements Serializable {
-  @Serial
-  private static final long serialVersionUID = -8770801877877277258L;
+@Entity
+@Table(name = PRODUCT)
+public class Product extends AuditableEntity {
+
   @Id
   private String id;
   private String marketDirectory;
+
   @JsonProperty
+  @ElementCollection
+  @CollectionTable(name = PRODUCT_NAME, joinColumns = @JoinColumn(name = PRODUCT_ID))
+  @MapKeyColumn(name = LANGUAGE)
+  @Column(name = NAME, columnDefinition = TEXT_TYPE)
   private Map<String, String> names;
-  private String version;
+
   @JsonProperty
+  @ElementCollection
+  @CollectionTable(name = PRODUCT_DESCRIPTION, joinColumns = @JoinColumn(name = PRODUCT_ID))
+  @MapKeyColumn(name = LANGUAGE)
+  @Column(name = SHORT_DESCRIPTION, columnDefinition = TEXT_TYPE)
   private Map<String, String> shortDescriptions;
+
+  @Convert(converter = StringListConverter.class)
+  @Column(nullable = false, columnDefinition = TEXT_TYPE)
+  private List<String> tags;
+
+  @Convert(converter = StringListConverter.class)
+  @Column(nullable = false, columnDefinition = TEXT_TYPE)
+  private List<String> releasedVersions;
+
+  @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
+  private List<Artifact> artifacts;
+
   private String logoUrl;
   private Boolean listed;
   private String type;
-  private List<String> tags;
   private String vendor;
   private String vendorUrl;
+  private String version;
   @Transient
   private String vendorImagePath;
   @Transient
@@ -68,20 +86,20 @@ public class Product implements Serializable {
   private String newestReleaseVersion;
   @Transient
   private ProductModuleContent productModuleContent;
-  private List<Artifact> artifacts;
   private Boolean synchronizedInstallationCount;
-  private List<String> releasedVersions;
   @Transient
   private String metaProductJsonUrl;
   private String logoId;
-  @LastModifiedDate
-  private Date updatedAt;
   @Transient
   private String bestMatchVersion;
   @Transient
   private boolean isMavenDropins;
   @Transient
   private String compatibilityRange;
+
+  @OneToOne
+  @JoinColumn(name = ID, referencedColumnName = ID)
+  private ProductMarketplaceData productMarketplaceData;
 
   @Override
   public int hashCode() {
@@ -96,4 +114,13 @@ public class Product implements Serializable {
     return new EqualsBuilder().append(id, ((Product) obj).getId()).isEquals();
   }
 
+  @Override
+  public String getId() {
+    return id;
+  }
+
+  @Override
+  public void setId(String id) {
+    this.id = id;
+  }
 }

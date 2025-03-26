@@ -1,5 +1,7 @@
 package com.axonivy.market.entity;
 
+import jakarta.persistence.Entity;
+import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -7,10 +9,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
-import org.springframework.data.annotation.Id;
-import org.springframework.data.mongodb.core.mapping.Document;
 
-import java.io.Serial;
 import java.io.Serializable;
 
 import static com.axonivy.market.constants.EntityConstants.PRODUCT_DESIGNER_INSTALLATION;
@@ -20,12 +19,10 @@ import static com.axonivy.market.constants.EntityConstants.PRODUCT_DESIGNER_INST
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-@Document(PRODUCT_DESIGNER_INSTALLATION)
-public class ProductDesignerInstallation implements Serializable {
-  @Serial
-  private static final long serialVersionUID = 1L;
-  @Id
-  private String id;
+@Entity
+@Table(name = PRODUCT_DESIGNER_INSTALLATION)
+public class ProductDesignerInstallation extends AuditableIdEntity implements Serializable {
+
   private String productId;
   private String designerVersion;
   private int installationCount;

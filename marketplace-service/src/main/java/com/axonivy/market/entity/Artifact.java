@@ -1,25 +1,30 @@
-package com.axonivy.market.bo;
+package com.axonivy.market.entity;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.fasterxml.jackson.annotation.JsonInclude;
-import lombok.*;
+import jakarta.persistence.CascadeType;
+import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.OneToMany;
+import jakarta.persistence.Table;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 import org.springframework.data.annotation.Transient;
 
-import java.io.Serial;
-import java.io.Serializable;
 import java.util.List;
 import java.util.Objects;
+
+import static com.axonivy.market.constants.EntityConstants.ARTIFACT;
 
 @Getter
 @Setter
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@JsonInclude(JsonInclude.Include.NON_EMPTY)
-@JsonIgnoreProperties(ignoreUnknown = true)
-public class Artifact implements Serializable {
-  @Serial
-  private static final long serialVersionUID = 1L;
+@Entity
+@Table(name = ARTIFACT)
+public class Artifact extends GenericIdEntity {
   private String repoUrl;
   private String name;
   private String groupId;
@@ -28,6 +33,7 @@ public class Artifact implements Serializable {
   private Boolean isDependency;
   @Transient
   private Boolean isProductArtifact;
+  @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
   private List<ArchivedArtifact> archivedArtifacts;
   private Boolean doc;
   private boolean isInvalidArtifact;

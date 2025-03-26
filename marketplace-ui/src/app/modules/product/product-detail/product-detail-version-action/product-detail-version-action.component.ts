@@ -39,14 +39,19 @@ import { MATOMO_DIRECTIVES } from 'ngx-matomo-client';
 import { LoadingComponentId } from '../../../../shared/enums/loading-component-id';
 import { LoadingService } from '../../../../core/services/loading/loading.service';
 import { API_URI } from '../../../../shared/constants/api.constant';
-import { HttpParams } from '@angular/common/http';
+import { HttpClient, HttpParams } from '@angular/common/http';
+import { VersionDownload } from '../../../../shared/models/version-download.model';
 
 const showDevVersionCookieName = 'showDevVersions';
 const ARTIFACT_ZIP_URL = 'artifact/zip-file';
+const VERSION_DOWNLOAD = 'version-download';
 const TARGET_BLANK = '_blank';
 const HTTP = 'http';
 const DOC = '-doc';
 const ZIP = '.zip';
+const APPLICATION_OCTET_STREAM = 'application/octet-stream';
+const ANCHOR_ELEMENT = 'a';
+const DELAY_TIMEOUT = 500;
 
 @Component({
   selector: 'app-product-version-action',
@@ -87,6 +92,7 @@ export class ProductDetailVersionActionComponent implements AfterViewInit {
 
   artifacts: WritableSignal<ItemDropdown[]> = signal([]);
   isDropDownDisplayed = signal(false);
+  isDownloading = signal(false);
 
   protected LoadingComponentId = LoadingComponentId;
   loadingContainerClasses =
@@ -107,6 +113,7 @@ export class ProductDetailVersionActionComponent implements AfterViewInit {
   cookieService = inject(CookieService);
   router = inject(Router);
   route = inject(ActivatedRoute);
+  httpClient = inject(HttpClient);
 
   isDevVersionsDisplayed: WritableSignal<boolean> = signal(
     this.getShowDevVersionFromCookie()
@@ -145,7 +152,7 @@ export class ProductDetailVersionActionComponent implements AfterViewInit {
       }
     });
     if (this.artifacts().length !== 0) {
-      this.selectedArtifactId = this.artifacts()[0].artifactId ?? '';
+      this.selectedArtifactId = this.artifacts()[0].id?.artifactId ?? '';
       this.selectedArtifactName = this.artifacts()[0].name ?? '';
       this.selectedArtifact = this.artifacts()[0].downloadUrl ?? '';
     }
@@ -169,7 +176,7 @@ export class ProductDetailVersionActionComponent implements AfterViewInit {
   onSelectArtifact(artifact: ItemDropdown) {
     this.selectedArtifactName = artifact.name;
     this.selectedArtifact = artifact.downloadUrl;
-    this.selectedArtifactId = artifact.artifactId;
+    this.selectedArtifactId = artifact?.id?.artifactId;
   }
 
   onShowDevVersion(event: Event) {
@@ -226,8 +233,9 @@ export class ProductDetailVersionActionComponent implements AfterViewInit {
 
   getVersionInDesigner(): void {
     if (this.versions().length === 0) {
+      const designerVersion = this.routingQueryParamService.getDesignerVersionFromSessionStorage() ?? '';
       this.productService
-        .sendRequestToGetProductVersionsForDesigner(this.productId)
+        .sendRequestToGetProductVersionsForDesigner(this.productId, designerVersion)
         .subscribe(data => {
           const versionMap = data
             .map(dataVersionAndUrl => dataVersionAndUrl.version)
@@ -256,36 +264,65 @@ export class ProductDetailVersionActionComponent implements AfterViewInit {
   }
 
   downloadArtifact(): void {
-    this.onUpdateInstallationCount();
+    let downloadUrl = '';
+    this.isDownloading.set(true);
     if (!this.isCheckedAppForEngine || this.selectedArtifactId?.endsWith(DOC) || this.selectedArtifact?.endsWith(ZIP)) {
-      window.open(this.selectedArtifact, TARGET_BLANK);
-    } else if (this.isCheckedAppForEngine) {
-      let marketplaceServiceUrl = environment.apiUrl;
-      if (!marketplaceServiceUrl.startsWith(HTTP)) {
-        marketplaceServiceUrl = window.location.origin.concat(marketplaceServiceUrl);
+      const params = new HttpParams().set('url', this.selectedArtifact ?? '');
+      downloadUrl = `${this.getMarketplaceServiceUrl()}/${API_URI.PRODUCT_MARKETPLACE_DATA}/${VERSION_DOWNLOAD}/${this.productId}?${params.toString()}`;
+      if (this.selectedArtifact) {
+        this.fetchAndDownloadArtifact(downloadUrl, this.selectedArtifact.substring(this.selectedArtifact.lastIndexOf("/") + 1));
       }
+    } else if (this.isCheckedAppForEngine) {
       const version = this.selectedVersion().replace(VERSION.displayPrefix, '');
       const params = new HttpParams()
         .set(ROUTER.VERSION, version)
         .set(ROUTER.ARTIFACT, this.selectedArtifactId ?? '');
 
-      window.open(`${marketplaceServiceUrl}/${API_URI.PRODUCT_DETAILS}/${this.productId}/${ARTIFACT_ZIP_URL}?${params.toString()}`, TARGET_BLANK);
+      downloadUrl = `${this.getMarketplaceServiceUrl()}/${API_URI.PRODUCT_DETAILS}/${this.productId}/${ARTIFACT_ZIP_URL}?${params.toString()}`;
+      this.fetchAndDownloadArtifact(downloadUrl, `${this.selectedArtifactId}-app-${version}.zip`);
     } else {
       return;
     }
   }
 
-  onUpdateInstallationCount(): void {
-    this.productService
-      .sendRequestToUpdateInstallationCount(
-        this.productId,
-        this.routingQueryParamService.getDesignerVersionFromSessionStorage()
-      )
-      .subscribe((data: number) => this.installationCount.emit(data));
+  getMarketplaceServiceUrl(): string {
+    let marketplaceServiceUrl = environment.apiUrl;
+    if (!marketplaceServiceUrl.startsWith(HTTP)) {
+      marketplaceServiceUrl = window.location.origin.concat(marketplaceServiceUrl);
+    }
+    return marketplaceServiceUrl;
+  }
+
+  fetchAndDownloadArtifact(url: string, fileName: string): void {
+    this.httpClient.get<VersionDownload>(url).subscribe(
+      response => {
+
+        if (response.fileData) {
+          this.installationCount.emit(response.installationCount);
+          this.downloadFile(response.fileData, fileName);
+          this.isDownloading.set(false);
+        }
+      }
+    );
+  }
+
+  private downloadFile(fileData: string, fileName: string): void {
+    const blobUrl = URL.createObjectURL(new Blob([fileData], { type: APPLICATION_OCTET_STREAM }));
+
+    const a = Object.assign(document.createElement(ANCHOR_ELEMENT), { href: blobUrl, download: fileName });
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(blobUrl);
   }
 
   onUpdateInstallationCountForDesigner(): void {
-    this.onUpdateInstallationCount();
+    setTimeout(() => {
+      this.productService.sendRequestToGetInstallationCount(this.productId)
+        .subscribe((data: number) => {
+          this.installationCount.emit(data)
+        });
+    }, DELAY_TIMEOUT);
   }
 
   onNavigateToContactPage(): void {
@@ -309,16 +346,16 @@ export class ProductDetailVersionActionComponent implements AfterViewInit {
   }
 
   @HostListener('document:click', ['$event'])
-    handleClickOutside(event: MouseEvent): void {
-      const downloadDialog = this.elementRef.nativeElement.querySelector(
-        '#download-dropdown-menu'
-      );
-      if (
-        this.isDropDownDisplayed() &&
-        downloadDialog &&
-        !downloadDialog.contains(event.target)
-      ) {
-        this.isDropDownDisplayed.set(!this.isDropDownDisplayed());
-      }
+  handleClickOutside(event: MouseEvent): void {
+    const downloadDialog = this.elementRef.nativeElement.querySelector(
+      '#download-dropdown-menu'
+    );
+    if (
+      this.isDropDownDisplayed() &&
+      downloadDialog &&
+      !downloadDialog.contains(event.target)
+    ) {
+      this.isDropDownDisplayed.set(!this.isDropDownDisplayed());
     }
+  }
 }

@@ -11,13 +11,13 @@ import java.util.List;
 @Getter
 @AllArgsConstructor
 public enum FeedbackSortOption {
-  NEWEST("newest", "updatedAt rating _id",
+  NEWEST("newest", "updatedAt rating id",
       List.of(Sort.Direction.DESC, Sort.Direction.DESC, Sort.Direction.ASC)),
-  OLDEST("oldest", "updatedAt rating _id",
+  OLDEST("oldest", "updatedAt rating id",
       List.of(Sort.Direction.ASC, Sort.Direction.DESC, Sort.Direction.ASC)),
-  HIGHEST("highest", "rating updatedAt _id",
+  HIGHEST("highest", "rating updatedAt id",
       List.of(Sort.Direction.DESC, Sort.Direction.DESC, Sort.Direction.ASC)),
-  LOWEST("lowest", "rating updatedAt _id",
+  LOWEST("lowest", "rating updatedAt id",
       List.of(Sort.Direction.ASC, Sort.Direction.DESC, Sort.Direction.ASC));
 
   private final String option;

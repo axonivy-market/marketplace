@@ -11,10 +11,9 @@ import com.axonivy.market.model.FeedbackModelRequest;
 import com.axonivy.market.model.ProductRating;
 import com.axonivy.market.repository.FeedbackRepository;
 import com.axonivy.market.repository.ProductRepository;
-import com.axonivy.market.repository.UserRepository;
+import com.axonivy.market.repository.GithubUserRepository;
 import com.axonivy.market.service.FeedbackService;
 import org.apache.commons.lang3.BooleanUtils;
-import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -34,14 +33,14 @@ import java.util.stream.IntStream;
 public class FeedbackServiceImpl implements FeedbackService {
 
   private final FeedbackRepository feedbackRepository;
-  private final UserRepository userRepository;
+  private final GithubUserRepository githubUserRepository;
   private final ProductRepository productRepository;
   private static final String ERROR_MESSAGE_FORMAT = "Not found feedback with id %s and version %s";
 
-  public FeedbackServiceImpl(FeedbackRepository feedbackRepository, UserRepository userRepository,
+  public FeedbackServiceImpl(FeedbackRepository feedbackRepository, GithubUserRepository githubUserRepository,
       ProductRepository productRepository) {
     this.feedbackRepository = feedbackRepository;
-    this.userRepository = userRepository;
+    this.githubUserRepository = githubUserRepository;
     this.productRepository = productRepository;
   }
 
@@ -51,7 +50,7 @@ public class FeedbackServiceImpl implements FeedbackService {
   }
 
   @Override
-  public Page<Feedback> findFeedbacks(String productId, Pageable pageable) throws NotFoundException {
+  public Page<Feedback> findFeedbacks(String productId, Pageable pageable)  {
     validateProductExists(productId);
     return feedbackRepository.findByProductIdAndFeedbackStatusNotIn(productId,
         List.of(FeedbackStatus.REJECTED, FeedbackStatus.PENDING), refinePagination(pageable));
@@ -186,7 +185,7 @@ public class FeedbackServiceImpl implements FeedbackService {
   }
 
   public void validateUserExists(String userId) {
-    if (userRepository.findById(userId).isEmpty()) {
+    if (githubUserRepository.findById(userId).isEmpty()) {
       throw new NotFoundException(ErrorCode.USER_NOT_FOUND, "Not found user with id: " + userId);
     }
   }

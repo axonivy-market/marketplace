@@ -3,7 +3,7 @@ package com.axonivy.market.controller;
 import com.axonivy.market.BaseSetup;
 import com.axonivy.market.assembler.FeedbackModelAssembler;
 import com.axonivy.market.entity.Feedback;
-import com.axonivy.market.entity.User;
+import com.axonivy.market.entity.GithubUser;
 import com.axonivy.market.enums.FeedbackStatus;
 import com.axonivy.market.github.service.GitHubService;
 import com.axonivy.market.model.FeedbackApprovalModel;
@@ -11,7 +11,7 @@ import com.axonivy.market.model.FeedbackModel;
 import com.axonivy.market.model.FeedbackModelRequest;
 import com.axonivy.market.service.FeedbackService;
 import com.axonivy.market.service.JwtService;
-import com.axonivy.market.service.UserService;
+import com.axonivy.market.service.GithubUserService;
 import io.jsonwebtoken.Claims;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -55,7 +55,7 @@ class FeedbackControllerTest extends BaseSetup {
   private JwtService jwtService;
 
   @Mock
-  private UserService userService;
+  private GithubUserService githubUserService;
 
   @Mock
   private GitHubService gitHubService;
@@ -71,7 +71,7 @@ class FeedbackControllerTest extends BaseSetup {
 
   @BeforeEach
   void setup() {
-    feedbackModelAssembler = new FeedbackModelAssembler(userService);
+    feedbackModelAssembler = new FeedbackModelAssembler(githubUserService);
     feedbackController = new FeedbackController(service, jwtService, gitHubService, feedbackModelAssembler,
         pagedResourcesAssembler);
   }
@@ -92,11 +92,11 @@ class FeedbackControllerTest extends BaseSetup {
   void testFindFeedbacks() {
     PageRequest pageable = PageRequest.of(0, 20);
     Feedback mockFeedback = createFeedbackMock();
-    User mockUser = createUserMock();
+    GithubUser mockGithubUser = createUserMock();
 
     Page<Feedback> mockFeedbacks = new PageImpl<>(List.of(mockFeedback), pageable, 1);
     when(service.findFeedbacks(any(), any())).thenReturn(mockFeedbacks);
-    when(userService.findUser(any())).thenReturn(mockUser);
+    when(githubUserService.findUser(any())).thenReturn(mockGithubUser);
     var mockFeedbackModel = feedbackModelAssembler.toModel(mockFeedback);
     var mockPagedModel = PagedModel.of(List.of(mockFeedbackModel), new PagedModel.PageMetadata(1, 0, 1));
     when(pagedResourcesAssembler.toModel(any(), any(FeedbackModelAssembler.class))).thenReturn(mockPagedModel);
@@ -110,9 +110,9 @@ class FeedbackControllerTest extends BaseSetup {
   @Test
   void testFindFeedback() {
     Feedback mockFeedback = createFeedbackMock();
-    User mockUser = createUserMock();
+    GithubUser mockGithubUser = createUserMock();
     when(service.findFeedback(FEEDBACK_ID_SAMPLE)).thenReturn(mockFeedback);
-    when(userService.findUser(any())).thenReturn(mockUser);
+    when(githubUserService.findUser(any())).thenReturn(mockGithubUser);
     var result = feedbackController.findFeedback(FEEDBACK_ID_SAMPLE);
     assertEquals(HttpStatus.OK, result.getStatusCode());
     assertTrue(result.hasBody());
@@ -122,9 +122,9 @@ class FeedbackControllerTest extends BaseSetup {
   @Test
   void testFindFeedbackByUserIdAndProductId() {
     Feedback mockFeedback = createFeedbackMock();
-    User mockUser = createUserMock();
+    GithubUser mockGithubUser = createUserMock();
     when(service.findFeedbackByUserIdAndProductId(any(), any())).thenReturn(List.of(mockFeedback));
-    when(userService.findUser(any())).thenReturn(mockUser);
+    when(githubUserService.findUser(any())).thenReturn(mockGithubUser);
     var result = feedbackController.findFeedbackByUserIdAndProductId(USER_ID_SAMPLE, PRODUCT_ID_SAMPLE);
     assertEquals(HttpStatus.OK, result.getStatusCode());
     assertTrue(result.hasBody());
@@ -136,11 +136,11 @@ class FeedbackControllerTest extends BaseSetup {
     PageRequest pageable = PageRequest.of(0, 20);
     Feedback mockFeedback = createFeedbackMock();
     String authHeader = "Bearer sample-token";
-    User mockUser = createUserMock();
+    GithubUser mockGithubUser = createUserMock();
 
     Page<Feedback> mockFeedbacks = new PageImpl<>(List.of(mockFeedback), pageable, 1);
     when(service.findAllFeedbacks(any())).thenReturn(mockFeedbacks);
-    when(userService.findUser(any())).thenReturn(mockUser);
+    when(githubUserService.findUser(any())).thenReturn(mockGithubUser);
     var mockFeedbackModel = feedbackModelAssembler.toModel(mockFeedback);
     var mockPagedModel = PagedModel.of(List.of(mockFeedbackModel), new PagedModel.PageMetadata(1, 0, 1));
     when(pagedResourcesAssembler.toModel(any(), any(FeedbackModelAssembler.class))).thenReturn(mockPagedModel);
@@ -176,13 +176,13 @@ class FeedbackControllerTest extends BaseSetup {
     feedbackApproval.setIsApproved(true);
 
     Feedback updatedFeedback = createFeedbackMock();
-    User mockUser = createUserMock();
+    GithubUser mockGithubUser = createUserMock();
     FeedbackModel mockFeedbackModel = new FeedbackModel();
     mockFeedbackModel.setId(FEEDBACK_ID_SAMPLE);
     mockFeedbackModel.setUsername(USER_NAME_SAMPLE);
 
     when(service.updateFeedbackWithNewStatus(feedbackApproval)).thenReturn(updatedFeedback);
-    when(userService.findUser(any())).thenReturn(mockUser);
+    when(githubUserService.findUser(any())).thenReturn(mockGithubUser);
 
     var result = feedbackController.updateFeedbackWithNewStatus(feedbackApproval);
 
@@ -229,14 +229,14 @@ class FeedbackControllerTest extends BaseSetup {
     return mockFeedback;
   }
 
-  private User createUserMock() {
-    User mockUser = new User();
-    mockUser.setId(USER_ID_SAMPLE);
-    mockUser.setUsername("testUser");
-    mockUser.setName("Test User");
-    mockUser.setAvatarUrl("http://avatar.url");
-    mockUser.setProvider("local");
-    return mockUser;
+  private GithubUser createUserMock() {
+    GithubUser mockGithubUser = new GithubUser();
+    mockGithubUser.setId(USER_ID_SAMPLE);
+    mockGithubUser.setUsername("testUser");
+    mockGithubUser.setName("Test User");
+    mockGithubUser.setAvatarUrl("http://avatar.url");
+    mockGithubUser.setProvider("local");
+    return mockGithubUser;
   }
 
   private Claims createMockClaims() {

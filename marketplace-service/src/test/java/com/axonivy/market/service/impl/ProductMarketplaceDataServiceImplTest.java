@@ -1,7 +1,7 @@
 package com.axonivy.market.service.impl;
 
 import com.axonivy.market.BaseSetup;
-import com.axonivy.market.constants.ProductJsonConstants;
+import com.axonivy.market.bo.VersionDownload;
 import com.axonivy.market.entity.Product;
 import com.axonivy.market.entity.ProductCustomSort;
 import com.axonivy.market.entity.ProductMarketplaceData;
@@ -11,58 +11,45 @@ import com.axonivy.market.exceptions.model.InvalidParamException;
 import com.axonivy.market.exceptions.model.NotFoundException;
 import com.axonivy.market.model.ProductCustomSortRequest;
 import com.axonivy.market.repository.ProductCustomSortRepository;
+import com.axonivy.market.repository.ProductDesignerInstallationRepository;
 import com.axonivy.market.repository.ProductMarketplaceDataRepository;
 import com.axonivy.market.repository.ProductRepository;
+import com.axonivy.market.service.FileDownloadService;
 import org.apache.commons.lang3.StringUtils;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
-import org.mockito.ArgumentMatchers;
 import org.mockito.Captor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.data.mongodb.core.MongoTemplate;
-import org.springframework.data.mongodb.core.query.Query;
-import org.springframework.data.mongodb.core.query.Update;
 import org.springframework.test.util.ReflectionTestUtils;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyInt;
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class ProductMarketplaceDataServiceImplTest extends BaseSetup {
   @Mock
-  private MongoTemplate mongoTemplate;
-  @Mock
   private ProductRepository productRepo;
   @Mock
   private ProductCustomSortRepository productCustomSortRepo;
   @Mock
   private ProductMarketplaceDataRepository productMarketplaceDataRepo;
+  @Mock
+  private FileDownloadService fileDownloadService;
+  @Mock
+  private ProductDesignerInstallationRepository productDesignerInstallationRepo;
   @InjectMocks
   private ProductMarketplaceDataServiceImpl productMarketplaceDataService;
   @Captor
   ArgumentCaptor<ArrayList<ProductMarketplaceData>> productListArgumentCaptor;
-
-  @Test
-  void testRemoveFieldFromAllProductDocuments() {
-    productMarketplaceDataService.removeFieldFromAllProductDocuments(ProductJsonConstants.CUSTOM_ORDER);
-
-    verify(mongoTemplate).updateMulti(ArgumentMatchers.any(Query.class), ArgumentMatchers.any(Update.class),
-        eq(ProductMarketplaceData.class));
-  }
 
   @Test
   void testAddCustomSortProduct() throws InvalidParamException {
@@ -78,7 +65,7 @@ class ProductMarketplaceDataServiceImplTest extends BaseSetup {
     productMarketplaceDataService.addCustomSortProduct(customSortRequest);
 
     verify(productCustomSortRepo).deleteAll();
-    verify(mongoTemplate).updateMulti(any(Query.class), any(Update.class), eq(ProductMarketplaceData.class));
+    verify(productMarketplaceDataRepo).resetCustomOrderForAllProducts();
     verify(productCustomSortRepo).save(any(ProductCustomSort.class));
     verify(productMarketplaceDataRepo).saveAll(productListArgumentCaptor.capture());
 
@@ -167,5 +154,32 @@ class ProductMarketplaceDataServiceImplTest extends BaseSetup {
         mockProductMarketplaceData.getId());
 
     assertEquals(40, installationCount);
+  }
+
+  @Test
+  void testDownloadArtifact() {
+    ReflectionTestUtils.setField(productMarketplaceDataService, LEGACY_INSTALLATION_COUNT_PATH_FIELD_NAME,
+        INSTALLATION_FILE_PATH);
+    ProductMarketplaceData mockProductMarketplaceData = getMockProductMarketplaceData();
+    byte[] mockFileData = "dummy data".getBytes();
+    when(fileDownloadService.downloadFile(MOCK_DOWNLOAD_URL)).thenReturn(mockFileData);
+    when(productRepo.findById(anyString())).thenReturn(Optional.of(getMockProduct()));
+    when(productMarketplaceDataRepo.findById(MOCK_PRODUCT_ID)).thenReturn(Optional.of(mockProductMarketplaceData));
+    when(productMarketplaceDataService.updateInstallationCountForProduct(MOCK_PRODUCT_ID,
+        MOCK_DESIGNER_VERSION)).thenReturn(4);
+    VersionDownload result = productMarketplaceDataService.downloadArtifact(MOCK_DOWNLOAD_URL, MOCK_PRODUCT_ID);
+
+    assertNotNull(result);
+    assertEquals(4, result.getInstallationCount());
+  }
+
+  @Test
+  void testDownloadArtifact_FileNotFound() {
+    when(fileDownloadService.downloadFile(MOCK_DOWNLOAD_URL)).thenReturn(null);
+
+    VersionDownload result = productMarketplaceDataService.downloadArtifact(MOCK_DOWNLOAD_URL, MOCK_PRODUCT_ID);
+
+    assertNull(result);
+    verify(fileDownloadService).downloadFile(MOCK_DOWNLOAD_URL);
   }
 }

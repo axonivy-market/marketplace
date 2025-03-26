@@ -2,7 +2,7 @@ package com.axonivy.market.controller;
 
 import com.axonivy.market.constants.CommonConstants;
 import com.axonivy.market.constants.GitHubConstants;
-import com.axonivy.market.entity.User;
+import com.axonivy.market.entity.GithubUser;
 import com.axonivy.market.exceptions.model.Oauth2ExchangeCodeException;
 import com.axonivy.market.github.model.GitHubAccessTokenResponse;
 import com.axonivy.market.github.model.GitHubProperty;
@@ -59,8 +59,8 @@ public class OAuth2Controller {
       GitHubAccessTokenResponse tokenResponse = gitHubService.getAccessToken(oauth2AuthorizationCode.getCode(),
           gitHubProperty);
       accessToken = tokenResponse.getAccessToken();
-      User user = gitHubService.getAndUpdateUser(accessToken);
-      String jwtToken = jwtService.generateToken(user, accessToken);
+      GithubUser githubUser = gitHubService.getAndUpdateUser(accessToken);
+      String jwtToken = jwtService.generateToken(githubUser, accessToken);
       return new ResponseEntity<>(Collections.singletonMap(GitHubConstants.Json.TOKEN, jwtToken), HttpStatus.OK);
     } catch (Oauth2ExchangeCodeException e) {
       Map<String, String> errorResponse = new HashMap<>();
