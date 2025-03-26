@@ -21,7 +21,6 @@ import { FormsModule } from '@angular/forms';
   styleUrl: './search-bar.component.scss'
 })
 export class SearchBarComponent {
-  @ViewChild('divCreateText', { static: false }) divCreateText: ElementRef;
   searchUrl = SEARCH_URL;
   isSearchBarDisplayed = signal(false);
   isGoogleSearchBarDisplayed = signal(false);
