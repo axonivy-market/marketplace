@@ -23,9 +23,8 @@ export class GoogleSearchBarUtils {
     static addCustomClassToSearchBar(renderer: Renderer2): void {
         setTimeout(() => {
             const searchBoxList = document.querySelectorAll('.gsc-control-cse'); // Google's search bar container
-            if (searchBoxList.length > 0) {
-                for (let i = 0; i < searchBoxList.length; i++) {
-                    const searchBox = searchBoxList[i];
+            if (searchBoxList.length > 0) {            
+                for (const searchBox of Array.from(searchBoxList)) {
                     renderer.addClass(searchBox, 'bg-secondary');
                 }
             }
