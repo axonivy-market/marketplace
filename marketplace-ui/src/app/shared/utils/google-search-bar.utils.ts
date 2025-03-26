@@ -1,13 +1,14 @@
 import { ElementRef, Renderer2 } from "@angular/core";
+import { environment } from "../../../environments/environment";
 
 export class GoogleSearchBarUtils {
     static renderGoogleSearchBar(renderer: Renderer2): void {
         if (!document.getElementById('googleCSEScript')) {
             const script = renderer.createElement('script');
-            script.id = 'googleCSEScript';
-            script.type = 'text/javascript';
+            script.id = environment.googleProgrammableSearchScriptId;
+            script.type = environment.googleProgrammableSearchScriptType;
             script.async = true;
-            script.src = 'https://cse.google.com/cse.js?cx=036cea36d5dbf4f2b';
+            script.src = environment.googleProgrammableSearchScriptSource;
             script.onload = () => {
                 this.addCustomClassToSearchBar(renderer);
             };
@@ -25,7 +26,7 @@ export class GoogleSearchBarUtils {
         setTimeout(() => {
             const searchBoxList = document.querySelectorAll('.gsc-control-cse'); // Google's search bar container
             if (searchBoxList.length > 0) {
-                for(let i = 0; i < searchBoxList.length; i++) {
+                for (let i = 0; i < searchBoxList.length; i++) {
                     const searchBox = searchBoxList[i];
                     renderer.addClass(searchBox, 'bg-secondary');
                 }
