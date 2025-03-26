@@ -3,7 +3,7 @@ import { HeaderComponent } from './shared/components/header/header.component';
 import { RoutingQueryParamService } from './shared/services/routing.query.param.service';
 import { CommonModule } from '@angular/common';
 import { ERROR_PAGE_PATH } from './shared/constants/common.constant';
-import { Component, inject } from '@angular/core';
+import { Component, inject, Renderer2 } from '@angular/core';
 import {
   ActivatedRoute,
   NavigationError,
@@ -12,6 +12,7 @@ import {
   Event
 } from '@angular/router';
 import { BackToTopComponent } from "./shared/components/back-to-top/back-to-top.component";
+import { GoogleSearchBarUtils } from './shared/utils/google-search-bar.utils';
 
 @Component({
   selector: 'app-root',
@@ -25,7 +26,7 @@ export class AppComponent {
   route = inject(ActivatedRoute);
   isMobileMenuCollapsed = true;
 
-  constructor(private readonly router: Router) {}
+  constructor(private readonly router: Router, private renderer: Renderer2) { }
 
   ngOnInit(): void {
     this.router.events.subscribe((event: Event) => {
@@ -42,5 +43,9 @@ export class AppComponent {
         });
       }
     });
+  }
+
+  ngAfterViewInit(): void {
+    GoogleSearchBarUtils.renderGoogleSearchBar(this.renderer);
   }
 }

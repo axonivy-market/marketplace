@@ -26,10 +26,6 @@ export class NavigationComponent {
     this.checkMediaSize();
   }
 
-  ngAfterViewInit(): void {
-    GoogleSearchBarUtils.renderGoogleSearchBar(this.renderer);
-  }
-
   @HostListener('window:resize', ['$event'])
   onResize() {
     this.checkMediaSize();
@@ -38,9 +34,5 @@ export class NavigationComponent {
   checkMediaSize() {
     const mediaQuery = window.matchMedia('(max-width: 992px)');
     this.isMobileMode.set(mediaQuery.matches);
-  }
-
-  onClickSearchInput() {
-    window.location.href = this.searchUrl;
   }
 }
