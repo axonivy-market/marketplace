@@ -3,5 +3,6 @@ export enum LoadingComponentId {
   PRODUCT_DETAIL_INFORMATION = 'product-detail-information',
   PRODUCT_VERSION = 'product-version',
   DETAIL_PAGE = 'detail-page',
-  SECURITY_MONITOR = 'security-monitor'
+  SECURITY_MONITOR = 'security-monitor',
+  FEEDBACK_APPROVAL = 'feedback-approval'
 }

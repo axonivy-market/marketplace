@@ -8,6 +8,7 @@ import com.axonivy.market.exceptions.model.NoContentException;
 import com.axonivy.market.exceptions.model.NotFoundException;
 import com.axonivy.market.model.FeedbackApprovalModel;
 import com.axonivy.market.model.FeedbackModelRequest;
+import com.axonivy.market.model.FeedbackProjection;
 import com.axonivy.market.model.ProductRating;
 import com.axonivy.market.repository.FeedbackRepository;
 import com.axonivy.market.repository.ProductRepository;
@@ -16,6 +17,7 @@ import com.axonivy.market.service.FeedbackService;
 import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -46,7 +48,28 @@ public class FeedbackServiceImpl implements FeedbackService {
 
   @Override
   public Page<Feedback> findAllFeedbacks(Pageable pageable) {
-    return feedbackRepository.findAll(pageable);
+    Page<FeedbackProjection> results = feedbackRepository.findFeedbackWithProductNames(pageable);
+    List<Feedback> feedbackList = results.getContent().stream()
+        .map(result -> {
+          Feedback feedback = Feedback.builder()
+              .userId(result.getUserId())
+              .productId(result.getProductId())
+              .content(result.getContent())
+              .rating(result.getRating())
+              .feedbackStatus(result.getFeedbackStatus())
+              .moderatorName(result.getModeratorName())
+              .reviewDate(result.getReviewDate())
+              .version(result.getVersion())
+              .productNames(result.getProductNames())  // Convert JSON to Map
+              .build();
+
+          feedback.setId(result.getId());
+          feedback.setCreatedAt(result.getCreatedAt());
+          feedback.setUpdatedAt(result.getUpdatedAt());
+
+          return feedback;
+        }).toList();
+    return new PageImpl<>(feedbackList, pageable, results.getTotalElements());
   }
 
   @Override
@@ -134,8 +157,6 @@ public class FeedbackServiceImpl implements FeedbackService {
     if (pendingFeedback == null) {
       pendingFeedback = new Feedback();
       pendingFeedback.setUserId(userId);
-//      pendingFeedback.setProductNames(
-//          productRepository.findById(feedbackModel.getProductId()).map(Product::getNames).orElse(new HashMap<>()));
       pendingFeedback.setProductId(feedbackModel.getProductId());
       pendingFeedback.setFeedbackStatus(FeedbackStatus.PENDING);
     }

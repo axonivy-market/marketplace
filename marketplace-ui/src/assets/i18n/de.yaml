@@ -203,6 +203,7 @@ common:
     reviewFeedback: Feedback überprüfen
     history: Historie
     username: Benutzername
+    product: Produktname
     content: Inhalt
     rating: Bewertung
     status: Status
@@ -218,5 +219,5 @@ common:
     enterToken: Bitte geben Sie Ihren Token ein, um auf die Feedback Genehmigung zuzugreifen.
     enterTokenPlaceholder: Geben Sie Ihren Token ein
     proceedBtnLabel: Weiter
-    noFeedbacks: No feedbacks available.
+    noFeedbacks: Keine Feedback verfügbar.
 

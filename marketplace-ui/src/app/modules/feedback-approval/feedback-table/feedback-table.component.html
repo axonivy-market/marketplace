@@ -65,31 +65,33 @@
         } @else {
         <td class="action-buttons fixed-width">
           <div id="approve-button" (click)="handleReviewAction(feedback, true)">
-            <p class="mb-0 text-center" [lang]="languageService.selectedLanguage()">{{ 'common.approval.approveBtnLabel'
-              |
-              translate }}</p>
+            <p class="mb-0 text-center" [lang]="languageService.selectedLanguage()">
+              {{ 'common.approval.approveBtnLabel' | translate }}</p>
           </div>
           <div id="reject-button" (click)="handleReviewAction(feedback, false)">
-            <p class="mb-0 text-center" [lang]="languageService.selectedLanguage()">{{ 'common.approval.rejectBtnLabel'
-              |
-              translate }}</p>
+            <p class="mb-0 text-center" [lang]="languageService.selectedLanguage()">
+              {{ 'common.approval.rejectBtnLabel' | translate }}</p>
           </div>
         </td>
         }
       </tr>
     </tbody>
     }
-    @else {
-    <tbody class="border-0">
-      <tr class="border-0">
-        <td colspan="12" class="border-0" style="border: none;">
+    @else if(feedbacks.length == 0 && !isLoading) {
+    <tbody>
+      <tr>
+        <td colspan="12" class="border-0">
           <p class="text-primary m-0 text-center" [lang]="languageService.selectedLanguage()">
             {{ 'common.approval.noFeedbacks' | translate }}
           </p>
         </td>
       </tr>
     </tbody>
-
     }
   </table>
+  @if (isLoading) {
+  <app-loading-spinner
+    containerClasses="d-flex justify-content-center position-fixed align-items-center top-0 end-0 bottom-0 start-0 rounded overlay-background z-1"
+    [key]="LoadingComponentId.FEEDBACK_APPROVAL" />
+  }
 </div>

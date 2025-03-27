@@ -45,6 +45,7 @@ export class FeedbackApprovalComponent {
   isAuthenticated = false;
   activeTab = 'review';
   moderatorName!: string | null;
+  isLoading = false;
 
   feedbacks: Signal<Feedback[] | undefined> =
     this.productFeedbackService.allFeedbacks;
@@ -80,14 +81,17 @@ export class FeedbackApprovalComponent {
   }
 
   fetchFeedbacks(): void {
+    this.isLoading = true;
     sessionStorage.setItem(FEEDBACK_APPROVAL_SESSION_TOKEN, this.token);
     this.fetchUserInfo();
     this.productFeedbackService.findProductFeedbacks().subscribe({
       next: () => {
         this.isAuthenticated = true;
+        this.isLoading = false;
       },
       error: err => {
         this.handleError(err);
+        this.isLoading = false;
       }
     });
   }

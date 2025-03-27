@@ -139,7 +139,8 @@ describe('FeedbackApprovalComponent', () => {
       rating: 5,
       productId: '123',
       feedbackStatus: FeedbackStatus.PENDING,
-      moderatorName: ''
+      moderatorName: '',
+      productNames: {}
     };
 
     const updatedFeedback: Feedback = {

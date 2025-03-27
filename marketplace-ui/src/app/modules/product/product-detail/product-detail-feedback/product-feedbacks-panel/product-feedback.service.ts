@@ -14,7 +14,7 @@ import {
 import { catchError, Observable, of, tap, throwError } from 'rxjs';
 import { CookieService } from 'ngx-cookie-service';
 import { AuthService } from '../../../../../auth/auth.service';
-import { ForwardingError } from '../../../../../core/interceptors/api.interceptor';
+import { ForwardingError, LoadingComponent } from '../../../../../core/interceptors/api.interceptor';
 import { FeedbackApiResponse } from '../../../../../shared/models/apis/feedback-response.model';
 import { Feedback } from '../../../../../shared/models/feedback.model';
 import { ProductDetailService } from '../../product-detail.service';
@@ -28,6 +28,7 @@ import {
 } from '../../../../../shared/constants/common.constant';
 import { FeedbackStatus } from '../../../../../shared/enums/feedback-status.enum';
 import { API_URI } from '../../../../../shared/constants/api.constant';
+import { LoadingComponentId } from '../../../../../shared/enums/loading-component-id';
 
 const FEEDBACK_API_URL = 'api/feedback';
 const SIZE = 8;
@@ -71,7 +72,11 @@ export class ProductFeedbackService {
     return this.http
       .get<FeedbackApiResponse>(`${API_URI.FEEDBACK_APPROVAL}`, {
         headers,
-        params: requestParams
+        params: requestParams,
+        context: new HttpContext().set(
+          LoadingComponent,
+          LoadingComponentId.FEEDBACK_APPROVAL
+        )
       })
       .pipe(
         tap(response => {
