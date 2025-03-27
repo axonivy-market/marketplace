@@ -50,10 +50,10 @@ public class FeedbackServiceImpl implements FeedbackService {
   }
 
   @Override
-  public Page<Feedback> findFeedbacks(String productId, Pageable pageable)  {
+  public Page<Feedback> findFeedbacks(String productId, Pageable pageable) {
     validateProductExists(productId);
-    return feedbackRepository.findByProductIdAndFeedbackStatusNotIn(productId,
-        List.of(FeedbackStatus.REJECTED, FeedbackStatus.PENDING), refinePagination(pageable));
+    return feedbackRepository.findLatestApprovedFeedbacks(productId, List.of(FeedbackStatus.REJECTED,
+        FeedbackStatus.PENDING), refinePagination(pageable));
   }
 
   @Override
@@ -83,14 +83,8 @@ public class FeedbackServiceImpl implements FeedbackService {
   public Feedback updateFeedbackWithNewStatus(FeedbackApprovalModel feedbackApproval) {
     return feedbackRepository.findByIdAndVersion(feedbackApproval.getFeedbackId(), feedbackApproval.getVersion()).map(
         existingFeedback -> {
-          List<Feedback> existingFeedbacks = feedbackRepository.findByProductIdAndUserIdAndFeedbackStatusNotIn(
-              existingFeedback.getProductId(), existingFeedback.getUserId(), List.of(FeedbackStatus.REJECTED));
-
           boolean isApproved = BooleanUtils.isTrue(feedbackApproval.getIsApproved());
           FeedbackStatus newFeedbackStatus = isApproved ? FeedbackStatus.APPROVED : FeedbackStatus.REJECTED;
-          existingFeedbacks.stream().filter(
-              feedback -> isFeedbackEligibleForDeletion(feedback, existingFeedback.getId(), isApproved)).findFirst().ifPresent(
-              feedbackRepository::delete);
 
           existingFeedback.setFeedbackStatus(newFeedbackStatus);
           existingFeedback.setModeratorName(feedbackApproval.getModeratorName());
@@ -98,15 +92,6 @@ public class FeedbackServiceImpl implements FeedbackService {
           return feedbackRepository.save(existingFeedback);
         }).orElseThrow(() -> new NotFoundException(ErrorCode.FEEDBACK_NOT_FOUND,
         String.format(ERROR_MESSAGE_FORMAT, feedbackApproval.getFeedbackId(), feedbackApproval.getVersion())));
-  }
-
-  private boolean isFeedbackEligibleForDeletion(Feedback feedback, String updatingFeedbackId, boolean isApproved) {
-    FeedbackStatus status = feedback.getFeedbackStatus();
-    boolean isTargetStatus = isApproved
-        ? (status == FeedbackStatus.APPROVED || status == null)
-        : status == FeedbackStatus.PENDING;
-
-    return isTargetStatus && !feedback.getId().equals(updatingFeedbackId);
   }
 
   @Override
@@ -149,6 +134,8 @@ public class FeedbackServiceImpl implements FeedbackService {
     if (pendingFeedback == null) {
       pendingFeedback = new Feedback();
       pendingFeedback.setUserId(userId);
+//      pendingFeedback.setProductNames(
+//          productRepository.findById(feedbackModel.getProductId()).map(Product::getNames).orElse(new HashMap<>()));
       pendingFeedback.setProductId(feedbackModel.getProductId());
       pendingFeedback.setFeedbackStatus(FeedbackStatus.PENDING);
     }

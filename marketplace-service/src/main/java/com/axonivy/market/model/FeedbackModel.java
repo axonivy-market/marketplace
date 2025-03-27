@@ -12,6 +12,7 @@ import org.springframework.hateoas.RepresentationModel;
 import org.springframework.hateoas.server.core.Relation;
 
 import java.util.Date;
+import java.util.Map;
 
 @Getter
 @Setter
@@ -36,6 +37,9 @@ public class FeedbackModel extends RepresentationModel<FeedbackModel> {
 
   @Schema(description = "Product id (from meta.json)", example = "portal")
   private String productId;
+
+  @Schema(description = "Product name (from meta.json)", example = "Portal")
+  private Map<String, String> productNames;
 
   @Schema(description = "User's feedback content", example = "Pretty cool connector.")
   private String content;

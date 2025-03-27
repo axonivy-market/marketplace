@@ -4,10 +4,12 @@
       <tr>
         <th class="text-primary username-column" [lang]="languageService.selectedLanguage()">{{
           'common.approval.username' | translate }}</th>
+        <th class="text-primary username-column" [lang]="languageService.selectedLanguage()">{{
+          'common.approval.product' | translate }}</th>
         <th class="text-primary content-column" [lang]="languageService.selectedLanguage()">{{ 'common.approval.content'
-          | translate }}
-        </th>
-        <th class="text-primary text-center rating-column" [lang]="languageService.selectedLanguage()">{{ 'common.approval.rating' |
+          | translate }}</th>
+        <th class="text-primary text-center rating-column" [lang]="languageService.selectedLanguage()">{{
+          'common.approval.rating' |
           translate }}</th>
         <th class="text-primary status-column" [lang]="languageService.selectedLanguage()">{{ 'common.approval.status' |
           translate }}</th>
@@ -26,12 +28,17 @@
         }
       </tr>
     </thead>
+    @if (feedbacks.length > 0) {
     <tbody>
       <tr *ngFor="let feedback of feedbacks">
         <td class="username-column">
           <img class="rounded-circle img-avatar img-fit-cover"
             [src]="feedback.userAvatarUrl ?? '/assets/images/misc/avatar-default.png'" alt="Github user avatar" />
           <span class="text-primary feedback-username"> {{ feedback.username ?? 'Github User' }}</span>
+        </td>
+        <td>
+          <p class="text-primary m-0">{{ feedback.productNames| multilingualism: languageService.selectedLanguage() }}
+          </p>
         </td>
         <td>
           <p class="text-primary m-0">{{ feedback.content }}</p>
@@ -58,16 +65,31 @@
         } @else {
         <td class="action-buttons fixed-width">
           <div id="approve-button" (click)="handleReviewAction(feedback, true)">
-            <p class="mb-0 text-center" [lang]="languageService.selectedLanguage()">{{ 'common.approval.approveBtnLabel' |
+            <p class="mb-0 text-center" [lang]="languageService.selectedLanguage()">{{ 'common.approval.approveBtnLabel'
+              |
               translate }}</p>
           </div>
           <div id="reject-button" (click)="handleReviewAction(feedback, false)">
-            <p class="mb-0 text-center" [lang]="languageService.selectedLanguage()">{{ 'common.approval.rejectBtnLabel' |
+            <p class="mb-0 text-center" [lang]="languageService.selectedLanguage()">{{ 'common.approval.rejectBtnLabel'
+              |
               translate }}</p>
           </div>
         </td>
         }
       </tr>
     </tbody>
+    }
+    @else {
+    <tbody class="border-0">
+      <tr class="border-0">
+        <td colspan="12" class="border-0" style="border: none;">
+          <p class="text-primary m-0 text-center" [lang]="languageService.selectedLanguage()">
+            {{ 'common.approval.noFeedbacks' | translate }}
+          </p>
+        </td>
+      </tr>
+    </tbody>
+
+    }
   </table>
 </div>

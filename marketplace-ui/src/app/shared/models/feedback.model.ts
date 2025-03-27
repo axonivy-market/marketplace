@@ -1,4 +1,5 @@
 import { FeedbackStatus } from "../enums/feedback-status.enum";
+import { DisplayValue } from "./display-value.model";
 
 export interface Feedback {
   id?: string;
@@ -11,6 +12,7 @@ export interface Feedback {
   content: string;
   rating: number;
   productId: string;
+  productNames: DisplayValue;
   isExpanded?: boolean;
   feedbackStatus: FeedbackStatus;
   moderatorName: string;

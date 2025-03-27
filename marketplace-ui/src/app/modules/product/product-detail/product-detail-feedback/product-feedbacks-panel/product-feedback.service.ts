@@ -61,7 +61,6 @@ export class ProductFeedbackService {
 
   findProductFeedbacks(
     page: number = this.page(),
-    sort: string = this.sort(),
     size: number = ALL_FEEDBACKS_SIZE
   ): Observable<FeedbackApiResponse> {
     const token = sessionStorage.getItem(FEEDBACK_APPROVAL_SESSION_TOKEN);
@@ -251,6 +250,7 @@ export class ProductFeedbackService {
             feedbackStatus: FeedbackStatus.PENDING,
             moderatorName: '',
             version: 0,
+            productNames: {},
             productId
           };
           this.userFeedback.set(defaultFeedback);

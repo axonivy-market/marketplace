@@ -204,6 +204,7 @@ common:
     reviewFeedback: Review Feedback
     history: History
     username: Username
+    product: Product Name
     content: Content
     rating: Rating
     status: Status
@@ -219,3 +220,4 @@ common:
     enterToken: Please enter your token to access the feedback approval page.
     enterTokenPlaceholder: Enter your token
     proceedBtnLabel: Proceed
+    noFeedbacks: No feedbacks available.

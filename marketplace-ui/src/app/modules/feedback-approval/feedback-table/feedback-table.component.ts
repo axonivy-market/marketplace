@@ -11,11 +11,12 @@ import { FormsModule } from '@angular/forms';
 import { TranslateModule } from '@ngx-translate/core';
 import { LanguageService } from '../../../core/services/language/language.service';
 import { Feedback } from '../../../shared/models/feedback.model';
+import { MultilingualismPipe } from '../../../shared/pipes/multilingualism.pipe';
 
 @Component({
   selector: 'app-feedback-table',
   standalone: true,
-  imports: [CommonModule, FormsModule, TranslateModule],
+  imports: [CommonModule, FormsModule, TranslateModule, MultilingualismPipe],
   templateUrl: './feedback-table.component.html',
   styleUrls: ['./feedback-table.component.scss'],
   encapsulation: ViewEncapsulation.Emulated

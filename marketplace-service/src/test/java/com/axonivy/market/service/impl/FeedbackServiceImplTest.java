@@ -118,14 +118,14 @@ class FeedbackServiceImplTest extends BaseSetup {
     Page<Feedback> page = new PageImpl<>(Collections.singletonList(feedback));
 
     when(productRepository.findById(productId)).thenReturn(Optional.of(new Product()));
-    when(feedbackRepository.findByProductIdAndFeedbackStatusNotIn(productId,
+    when(feedbackRepository.findLatestApprovedFeedbacks(productId,
         List.of(FeedbackStatus.REJECTED, FeedbackStatus.PENDING), pageable)).thenReturn(page);
 
     Page<Feedback> result = feedbackService.findFeedbacks(productId, pageable);
     assertNotNull(result);
     assertEquals(1, result.getTotalElements());
     verify(productRepository, times(1)).findById(productId);
-    verify(feedbackRepository, times(1)).findByProductIdAndFeedbackStatusNotIn(productId,
+    verify(feedbackRepository, times(1)).findLatestApprovedFeedbacks(productId,
         List.of(FeedbackStatus.REJECTED, FeedbackStatus.PENDING), pageable);
   }
 
@@ -140,7 +140,7 @@ class FeedbackServiceImplTest extends BaseSetup {
         () -> feedbackService.findFeedbacks(productId, pageable));
     assertEquals(ErrorCode.PRODUCT_NOT_FOUND.getCode(), exception.getCode());
     verify(productRepository, times(1)).findById(productId);
-    verify(feedbackRepository, times(0)).findByProductIdAndFeedbackStatusNotIn(productId,
+    verify(feedbackRepository, times(0)).findLatestApprovedFeedbacks(productId,
         List.of(FeedbackStatus.REJECTED, FeedbackStatus.PENDING), pageable);
   }
 
