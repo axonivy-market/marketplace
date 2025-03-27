@@ -72,7 +72,8 @@ describe('ProductFeedbackService', () => {
       feedbackStatus: FeedbackStatus.APPROVED,
       moderatorName: 'admin',
       reviewDate: new Date(),
-      version: 0
+      version: 0,
+      productNames: {}
     };
     authService.getToken.and.returnValue('mockToken');
 
@@ -97,7 +98,8 @@ describe('ProductFeedbackService', () => {
             productId: '123',
             feedbackStatus: FeedbackStatus.APPROVED,
             moderatorName: 'admin',
-            version: 0
+            version: 0,
+            productNames: {}
           }
         ]
       },
@@ -130,7 +132,8 @@ describe('ProductFeedbackService', () => {
         feedbackStatus: FeedbackStatus.APPROVED,
         moderatorName: 'admin',
         reviewDate: new Date(),
-        version: 0
+        version: 0,
+        productNames: {}
       }
     ];
     const additionalFeedback: Feedback[] = [
@@ -141,7 +144,8 @@ describe('ProductFeedbackService', () => {
         feedbackStatus: FeedbackStatus.APPROVED,
         moderatorName: 'admin',
         reviewDate: new Date(),
-        version: 0
+        version: 0,
+        productNames: {}
       }
     ];
 
@@ -179,7 +183,8 @@ describe('ProductFeedbackService', () => {
             feedbackStatus: FeedbackStatus.APPROVED,
             moderatorName: 'admin',
             reviewDate: mockDate,
-            version: 0
+            version: 0,
+            productNames: {}
           }
         ]
       },
@@ -240,7 +245,8 @@ describe('ProductFeedbackService', () => {
       feedbackStatus: FeedbackStatus.PENDING,
       productId: '',
       moderatorName: '',
-      version: 0
+      version: 0,
+      productNames: {}
     };
 
     const initialArray: Feedback[] = [initialFeedback];
@@ -253,7 +259,8 @@ describe('ProductFeedbackService', () => {
       feedbackStatus: FeedbackStatus.APPROVED,
       productId: '',
       moderatorName: 'admin',
-      version: 1
+      version: 1,
+      productNames: {}
     };
 
     service.updateFeedbackStatus('1', true, 'admin', 1).subscribe(response => {
@@ -299,7 +306,8 @@ describe('ProductFeedbackService', () => {
         productId: '',
         feedbackStatus: FeedbackStatus.APPROVED,
         moderatorName: '',
-        version: 0
+        version: 0,
+        productNames: {}
       },
       {
         id: '2',
@@ -309,7 +317,8 @@ describe('ProductFeedbackService', () => {
         productId: '',
         feedbackStatus: FeedbackStatus.APPROVED,
         moderatorName: '',
-        version: 0
+        version: 0,
+        productNames: {}
       }
     ];
 
@@ -328,7 +337,8 @@ describe('ProductFeedbackService', () => {
         feedbackStatus: FeedbackStatus.PENDING,
         moderatorName: '',
         userId: 'user1',
-        version: 1
+        version: 1,
+        productNames: {}
       }
     ];
     productDetailService.productId.and.returnValue('123');
@@ -375,7 +385,8 @@ describe('ProductFeedbackService', () => {
         feedbackStatus: FeedbackStatus.APPROVED,
         moderatorName: '',
         userId: 'user1',
-        version: 1
+        version: 1,
+        productNames: {}
       },
       {
         id: '2',
@@ -385,7 +396,8 @@ describe('ProductFeedbackService', () => {
         feedbackStatus: FeedbackStatus.PENDING,
         moderatorName: '',
         userId: 'user1',
-        version: 0
+        version: 0,
+        productNames: {}
       }
     ];
     productDetailService.productId.and.returnValue('123');
@@ -471,7 +483,8 @@ describe('ProductFeedbackService', () => {
         feedbackStatus: FeedbackStatus.PENDING,
         moderatorName: '',
         userId: 'user2',
-        version: 0
+        version: 0,
+        productNames: {}
       }
     ];
     authService.getUserId.and.returnValue('user1');
@@ -493,7 +506,8 @@ describe('ProductFeedbackService', () => {
         feedbackStatus: FeedbackStatus.APPROVED,
         moderatorName: '',
         userId: 'user1',
-        version: 1
+        version: 1,
+        productNames: {}
       }
     ];
     authService.getUserId.and.returnValue('user1');
@@ -514,7 +528,8 @@ describe('ProductFeedbackService', () => {
       feedbackStatus: FeedbackStatus.APPROVED,
       moderatorName: '',
       userId: 'user1',
-      version: 1
+      version: 1,
+      productNames: {}
     };
     const pendingFeedback: Feedback = {
       id: '2',
@@ -524,7 +539,8 @@ describe('ProductFeedbackService', () => {
       feedbackStatus: FeedbackStatus.PENDING,
       moderatorName: '',
       userId: 'user1',
-      version: 0
+      version: 0,
+      productNames: {}
     };
     service.feedbacks.set([approvedFeedback]);
     authService.getUserId.and.returnValue('user1');
@@ -537,8 +553,8 @@ describe('ProductFeedbackService', () => {
 
   it('should handle invalid dates in sortByDate', () => {
     const feedbacks: Feedback[] = [
-      { id: '1', content: 'First', reviewDate: null as any, rating: 0, productId: '', feedbackStatus: FeedbackStatus.APPROVED, moderatorName: '', version: 0 },
-      { id: '2', content: 'Second', reviewDate: new Date('2023-01-01'), rating: 0, productId: '', feedbackStatus: FeedbackStatus.APPROVED, moderatorName: '', version: 0 }
+      { id: '1', content: 'First', reviewDate: null as any, rating: 0, productId: '', feedbackStatus: FeedbackStatus.APPROVED, moderatorName: '', version: 0, productNames: {} },
+      { id: '2', content: 'Second', reviewDate: new Date('2023-01-01'), rating: 0, productId: '', feedbackStatus: FeedbackStatus.APPROVED, moderatorName: '', version: 0, productNames: {} }
     ];
 
     const sorted = service['sortByDate'](feedbacks, 'reviewDate');

@@ -103,7 +103,8 @@ describe('AddFeedbackDialogComponent', () => {
       feedbackStatus: FeedbackStatus.APPROVED,
       moderatorName: 'admin',
       reviewDate: mockDate,
-      version: 0
+      version: 0,
+      productNames: { "de" : "A-Trust", "en" : "A-Trust" }
     };
 
     productFeedbackServiceMock.userFeedback.set(mockFeedback);
@@ -121,7 +122,8 @@ describe('AddFeedbackDialogComponent', () => {
       feedbackStatus: FeedbackStatus.APPROVED,
       moderatorName: 'admin',
       reviewDate: new Date(),
-      version: 0
+      version: 0,
+      productNames: {}
     };
 
     component.feedback = mockFeedback;
