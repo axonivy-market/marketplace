@@ -6,6 +6,7 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
 import jakarta.persistence.Table;
+import jakarta.persistence.Transient;
 import jakarta.persistence.Version;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -13,12 +14,11 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-import jakarta.persistence.*;
 
 import java.util.Date;
 import java.util.Map;
 
-import static com.axonivy.market.constants.EntityConstants.*;
+import static com.axonivy.market.constants.EntityConstants.FEEDBACK;
 
 @Getter
 @Setter
