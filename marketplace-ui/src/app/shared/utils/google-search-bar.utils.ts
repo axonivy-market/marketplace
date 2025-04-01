@@ -5,13 +5,13 @@ export class GoogleSearchBarUtils {
     static renderGoogleSearchBar(renderer: Renderer2): void {
         if (!document.getElementById('googleCSEScript')) {
             const script = renderer.createElement('script');
-            script.id = environment.googleProgrammableSearchScriptId;
-            script.type = environment.googleProgrammableSearchScriptType;
-            script.async = true;
-            script.src = environment.googleProgrammableSearchScriptSource;
-            script.onload = () => {
-                this.addCustomClassToSearchBar(renderer);
-            };
+            Object.assign(script, {
+                id: environment.googleProgrammableSearchScriptId,
+                type: environment.googleProgrammableSearchScriptType,
+                async: true,
+                src: environment.googleProgrammableSearchScriptSource,
+                onload: () => this.addCustomClassToSearchBar(renderer)
+            });
             renderer.appendChild(document.body, script);
         }
         // If script is already loaded, manually trigger reinitialization
@@ -22,11 +22,9 @@ export class GoogleSearchBarUtils {
 
     static addCustomClassToSearchBar(renderer: Renderer2): void {
         setTimeout(() => {
-            const searchBoxList = document.querySelectorAll('.gsc-control-cse'); // Google's search bar container
-            if (searchBoxList.length > 0) {            
-                for (const searchBox of Array.from(searchBoxList)) {
-                    renderer.addClass(searchBox, 'bg-secondary');
-                }
+            const searchBoxList = document.querySelectorAll('.gsc-control-cse'); // Google's search bar container    
+            for (const searchBox of Array.from(searchBoxList)) {
+                renderer.addClass(searchBox, 'bg-secondary');
             }
         }, 1000); // Give Google time to load
     }
