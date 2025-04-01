@@ -6,5 +6,8 @@ export const environment = {
   dayInMiliseconds: 86400000,
   matomoSiteId: 1,
   matomoTrackerUrl: '//market.axonivy.com/matomo-web',
-  githubApiUrl: 'https://api.github.com'
+  githubApiUrl: 'https://api.github.com',
+  googleProgrammableSearchScriptId: 'googleCSEScript',
+  googleProgrammableSearchScriptType: 'text/javascript',
+  googleProgrammableSearchScriptSource: 'https://cse.google.com/cse.js?cx=1434dfc0811d84f59',
 };

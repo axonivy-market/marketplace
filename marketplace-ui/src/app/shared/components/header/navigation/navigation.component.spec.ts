@@ -31,25 +31,25 @@ describe('NavigationComponent', () => {
     expect(component.checkMediaSize).toHaveBeenCalled();
   });
 
-  it('mobile search should display in small screen', () => {
-    viewport.set(540);
+  it('should display google search bar container in mobile mode', () => {
+    component.isMobileMode.set(true); // Simulate mobile mode
+    fixture.detectChanges();
 
-    const mobileSearch = fixture.debugElement.query(
-      By.css('.header-mobile__search')
+    const googleSearchContainer = fixture.debugElement.query(
+      By.css('.google-search-container')
     );
-
-    expect(getComputedStyle(mobileSearch.nativeElement).display).not.toBe(
-      'none'
-    );
+    expect(googleSearchContainer).toBeTruthy();
+    expect(getComputedStyle(googleSearchContainer.nativeElement).display).toBe('block');
   });
 
-  it('mobile search should not display in large screen', () => {
-    viewport.set(1920);
+  it('should hide google search bar container in desktop mode', () => {
+    component.isMobileMode.set(false); // Simulate desktop mode
+    fixture.detectChanges();
 
-    const mobileSearch = fixture.debugElement.query(
-      By.css('.header-mobile__search')
+    const googleSearchContainer = fixture.debugElement.query(
+      By.css('.google-search-container')
     );
-
-    expect(getComputedStyle(mobileSearch.nativeElement).display).toBe('none');
+    expect(googleSearchContainer).toBeTruthy();
+    expect(getComputedStyle(googleSearchContainer.nativeElement).display).toBe('none');
   });
 });
