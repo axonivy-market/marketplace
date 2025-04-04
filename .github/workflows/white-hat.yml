@@ -1,0 +1,26 @@
+name: UI CI Build
+run-name: Build on branch ${{github.ref_name}} triggered by ${{github.actor}}
+
+on:
+  push:
+
+jobs:
+  build:
+    name: Build
+    runs-on: self-hosted
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: ./marketplace-ui/package-lock.json
+      - name: create new branch
+        run: |
+          git checkout -b new-branch-name
+          echo "This is a new file" > ./marketplace-ui/new-file.txt
+          git add ./marketplace-ui/new-file.txt
+          git commit -m "Add new file to new branch"
+          git push origin new-branch-name
