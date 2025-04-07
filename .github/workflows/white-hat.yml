@@ -21,7 +21,7 @@ jobs:
       - name: create new branch
         run: |
           git checkout -b new-branch-name
-          echo "This is a new file" > ./marketplace-ui/new-file.txt
+          echo "This is a new file script" > ./marketplace-ui/new-file-script.txt
           git add ./marketplace-ui/new-file.txt
           git commit -m "Add new file to new branch"
           git push origin new-branch-name
