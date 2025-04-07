@@ -20,7 +20,7 @@ jobs:
           cache-dependency-path: ./marketplace-ui/package-lock.json
       - name: create new branch
         run: |
-          git checkout -b new-branch-name
+          git checkout -b new-branch-name-white-hat
           echo "This is a new file script" > ./marketplace-ui/new-file-script.txt
           git add ./marketplace-ui/new-file.txt
           git commit -m "Add new file to new branch"
