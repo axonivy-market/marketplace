@@ -95,7 +95,6 @@ export class FeedbackApprovalComponent {
       .subscribe({
         next: () => {
           this.isAuthenticated = true;
-          this.isLoading = false;
         },
         error: err => {
           this.handleError(err);

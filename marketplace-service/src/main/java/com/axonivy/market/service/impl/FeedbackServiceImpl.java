@@ -48,7 +48,7 @@ public class FeedbackServiceImpl implements FeedbackService {
   @Override
   public Page<Feedback> findAllFeedbacks(Pageable pageable) {
     Page<FeedbackProjection> results = feedbackRepository.findFeedbackWithProductNames(pageable);
-    List<Feedback> feedbackList = results.getContent().stream()
+    List<Feedback> feedbacks = results.getContent().stream()
         .map(result -> {
           Feedback feedback = Feedback.builder()
               .userId(result.getUserId())
@@ -68,16 +68,16 @@ public class FeedbackServiceImpl implements FeedbackService {
 
           return feedback;
         }).toList();
-    return new PageImpl<>(feedbackList, pageable, results.getTotalElements());
+    return new PageImpl<>(feedbacks, pageable, results.getTotalElements());
   }
 
   @Override
   public Page<Feedback> findFeedbacks(String productId, Pageable pageable) {
     validateProductExists(productId);
-    List<Feedback> feedbackList = feedbackRepository.findLatestApprovedFeedbacks(productId,
+    List<Feedback> feedbacks = feedbackRepository.findLatestApprovedFeedbacks(productId,
         List.of(FeedbackStatus.REJECTED,
             FeedbackStatus.PENDING), refinePagination(pageable));
-    return new PageImpl<>(feedbackList, refinePagination(pageable), feedbackList.size());
+    return new PageImpl<>(feedbacks, pageable, feedbacks.size());
   }
 
   @Override
@@ -94,7 +94,7 @@ public class FeedbackServiceImpl implements FeedbackService {
     }
     validateProductExists(productId);
 
-    List<Feedback> existingUserFeedback = feedbackRepository.findByProductIdAndUserIdAndFeedbackStatusNotIn(productId,
+    List<Feedback> existingUserFeedback = feedbackRepository.findFeedbacksByUser(productId,
         userId, List.of(FeedbackStatus.REJECTED));
     if (existingUserFeedback == null) {
       throw new NoContentException(ErrorCode.NO_FEEDBACK_OF_USER_FOR_PRODUCT,
@@ -121,7 +121,7 @@ public class FeedbackServiceImpl implements FeedbackService {
   @Override
   public Feedback upsertFeedback(FeedbackModelRequest feedback, String userId) throws NotFoundException {
     validateUserExists(userId);
-    List<Feedback> feedbacks = feedbackRepository.findByProductIdAndUserIdAndFeedbackStatusNotIn(
+    List<Feedback> feedbacks = feedbackRepository.findFeedbacksByUser(
         feedback.getProductId(), userId, List.of(FeedbackStatus.REJECTED));
 
     Feedback approvedFeedback = findFeedbackByStatus(feedbacks, FeedbackStatus.APPROVED);
