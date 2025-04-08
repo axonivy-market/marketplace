@@ -22,6 +22,7 @@ import {
 import { ActivatedRoute } from '@angular/router';
 import { FeedbackTableComponent } from './feedback-table/feedback-table.component';
 import { HttpErrorResponse } from '@angular/common/http';
+import { finalize } from 'rxjs';
 
 @Component({
   selector: 'app-feedback-approval',
@@ -84,16 +85,22 @@ export class FeedbackApprovalComponent {
     this.isLoading = true;
     sessionStorage.setItem(FEEDBACK_APPROVAL_SESSION_TOKEN, this.token);
     this.fetchUserInfo();
-    this.productFeedbackService.findProductFeedbacks().subscribe({
-      next: () => {
-        this.isAuthenticated = true;
-        this.isLoading = false;
-      },
-      error: err => {
-        this.handleError(err);
-        this.isLoading = false;
-      }
-    });
+    this.productFeedbackService
+      .findProductFeedbacks()
+      .pipe(
+        finalize(() => {
+          this.isLoading = false;
+        })
+      )
+      .subscribe({
+        next: () => {
+          this.isAuthenticated = true;
+          this.isLoading = false;
+        },
+        error: err => {
+          this.handleError(err);
+        }
+      });
   }
 
   private handleError(err: HttpErrorResponse): void {

@@ -38,7 +38,8 @@ public class FeedbackModel extends RepresentationModel<FeedbackModel> {
   @Schema(description = "Product id (from meta.json)", example = "portal")
   private String productId;
 
-  @Schema(description = "Product name (from meta.json)", example = "Portal")
+  @Schema(description = "Product name (from meta.json)",
+      example = "{ \"de\": \"KI-Assistent\", \"en\": \"AI Assistant\" }")
   private Map<String, String> productNames;
 
   @Schema(description = "User's feedback content", example = "Pretty cool connector.")

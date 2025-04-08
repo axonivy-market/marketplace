@@ -11,8 +11,8 @@ import com.axonivy.market.model.FeedbackModelRequest;
 import com.axonivy.market.model.FeedbackProjection;
 import com.axonivy.market.model.ProductRating;
 import com.axonivy.market.repository.FeedbackRepository;
-import com.axonivy.market.repository.ProductRepository;
 import com.axonivy.market.repository.GithubUserRepository;
+import com.axonivy.market.repository.ProductRepository;
 import com.axonivy.market.service.FeedbackService;
 import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -24,7 +24,6 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -75,8 +74,10 @@ public class FeedbackServiceImpl implements FeedbackService {
   @Override
   public Page<Feedback> findFeedbacks(String productId, Pageable pageable) {
     validateProductExists(productId);
-    return feedbackRepository.findLatestApprovedFeedbacks(productId, List.of(FeedbackStatus.REJECTED,
-        FeedbackStatus.PENDING), refinePagination(pageable));
+    List<Feedback> feedbackList = feedbackRepository.findLatestApprovedFeedbacks(productId,
+        List.of(FeedbackStatus.REJECTED,
+            FeedbackStatus.PENDING), refinePagination(pageable));
+    return new PageImpl<>(feedbackList, refinePagination(pageable), feedbackList.size());
   }
 
   @Override
@@ -168,8 +169,8 @@ public class FeedbackServiceImpl implements FeedbackService {
 
   @Override
   public List<ProductRating> getProductRatingById(String productId) {
-    List<Feedback> feedbacks = feedbackRepository.findByProductIdAndFeedbackStatusNotIn(productId,
-        Arrays.asList(FeedbackStatus.PENDING, FeedbackStatus.REJECTED));
+    List<Feedback> feedbacks = feedbackRepository.findLatestApprovedFeedbacks(productId,
+        List.of(FeedbackStatus.PENDING, FeedbackStatus.REJECTED), Pageable.unpaged());
     int totalFeedbacks = feedbacks.size();
 
     if (totalFeedbacks == 0) {

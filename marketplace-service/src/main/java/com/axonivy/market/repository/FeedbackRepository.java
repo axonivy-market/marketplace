@@ -35,8 +35,22 @@ public interface FeedbackRepository extends JpaRepository<Feedback, String> {
             AND f2.feedbackStatus NOT IN :excludedStatuses
             AND f2.reviewDate > f.reviewDate)
       """)
-  Page<Feedback> findLatestApprovedFeedbacks(@Param("productId") String productId,
+  List<Feedback> findLatestApprovedFeedbacks(@Param("productId") String productId,
       @Param("excludedStatuses") List<FeedbackStatus> excludedStatuses, Pageable pageable);
+
+  @Query("""
+      SELECT f FROM Feedback f
+      WHERE f.productId = :productId
+        AND f.feedbackStatus NOT IN :excludedStatuses
+        AND NOT EXISTS (
+          SELECT 1 FROM Feedback f2
+          WHERE f2.productId = f.productId
+            AND f2.userId = f.userId
+            AND f2.feedbackStatus NOT IN :excludedStatuses
+            AND f2.reviewDate > f.reviewDate)
+      """)
+  List<Feedback> findLatestApprovedFeedbacksForRating(@Param("productId") String productId,
+      @Param("excludedStatuses") List<FeedbackStatus> excludedStatuses);
 
   @Query(value = """
         SELECT f.id AS id,
