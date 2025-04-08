@@ -135,24 +135,26 @@ class FeedbackServiceImplTest extends BaseSetup {
     verify(feedbackRepository, times(1)).findFeedbackWithProductNames(pageable);
   }
 
-  //TODO
-//  @Test
-//  void testFindFeedbacks() throws NotFoundException {
-//    String productId = "product1";
-//    Pageable pageable = PageRequest.of(0, 10);
-//    Page<Feedback> page = new PageImpl<>(Collections.singletonList(feedback));
-//
-//    when(productRepository.findById(productId)).thenReturn(Optional.of(new Product()));
-//    when(feedbackRepository.findLatestApprovedFeedbacks(productId,
-//        List.of(FeedbackStatus.REJECTED, FeedbackStatus.PENDING), pageable)).thenReturn(List.of());
-//
-//    Page<Feedback> result = feedbackService.findFeedbacks(productId, pageable);
-//    assertNotNull(result);
-//    assertEquals(1, result.getTotalElements());
-//    verify(productRepository, times(1)).findById(productId);
-//    verify(feedbackRepository, times(1)).findLatestApprovedFeedbacks(productId,
-//        List.of(FeedbackStatus.REJECTED, FeedbackStatus.PENDING), pageable);
-//  }
+  @Test
+  void testFindFeedbacks() throws NotFoundException {
+    String productId = "product1";
+    Pageable pageable = PageRequest.of(0, 10);
+    List<Feedback> feedbackList = Collections.singletonList(feedback);
+
+    when(productRepository.findById(productId)).thenReturn(Optional.of(new Product()));
+    when(feedbackRepository.findLatestApprovedFeedbacks(
+        productId, List.of(FeedbackStatus.REJECTED, FeedbackStatus.PENDING), pageable)
+    ).thenReturn(feedbackList);
+
+    Page<Feedback> result = feedbackService.findFeedbacks(productId, pageable);
+
+    assertNotNull(result);
+    assertEquals(1, result.getTotalElements());
+    assertEquals(feedbackList, result.getContent());
+    verify(productRepository, times(1)).findById(productId);
+    verify(feedbackRepository, times(1)).findLatestApprovedFeedbacks(
+        productId, List.of(FeedbackStatus.REJECTED, FeedbackStatus.PENDING), pageable);
+  }
 
   @Test
   void testFindFeedbacks_ProductNotFound() {
@@ -406,24 +408,23 @@ class FeedbackServiceImplTest extends BaseSetup {
         Pageable.unpaged());
   }
 
-  //TODO
-//  @Test
-//  void testGetProductRatingById_NoFeedbacks() {
-//    String productId = "product1";
-//
-//    when(feedbackRepository.findLatestApprovedFeedbacks(eq(productId), anyList(), Pageable.unpaged())).thenReturn(
-//        Collections.emptyList());
-//
-//    List<ProductRating> ratings = feedbackService.getProductRatingById(productId);
-//    assertNotNull(ratings);
-//    assertEquals(5, ratings.size());
-//    for (ProductRating rating : ratings) {
-//      assertEquals(0, rating.getCommentNumber());
-//      assertEquals(0, rating.getPercent());
-//    }
-//    verify(feedbackRepository, times(1)).findLatestApprovedFeedbacks(eq(productId), anyList(),
-//        Pageable.unpaged());
-//  }
+  @Test
+  void testGetProductRatingById_NoFeedbacks() {
+    String productId = "product1";
+
+    when(feedbackRepository.findLatestApprovedFeedbacks(anyString(), anyList(), any())).thenReturn(
+        Collections.emptyList());
+
+    List<ProductRating> ratings = feedbackService.getProductRatingById(productId);
+    assertNotNull(ratings);
+    assertEquals(5, ratings.size());
+    for (ProductRating rating : ratings) {
+      assertEquals(0, rating.getCommentNumber());
+      assertEquals(0, rating.getPercent());
+    }
+    verify(feedbackRepository, times(1)).findLatestApprovedFeedbacks(anyString(), anyList(),
+        any());
+  }
 
   @Test
   void testValidateProductExists() {

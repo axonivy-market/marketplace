@@ -74,10 +74,11 @@ public class FeedbackServiceImpl implements FeedbackService {
   @Override
   public Page<Feedback> findFeedbacks(String productId, Pageable pageable) {
     validateProductExists(productId);
+    Pageable refinedPageable = pageable != null ? refinePagination(pageable) : PageRequest.of(0, 10);
     List<Feedback> feedbacks = feedbackRepository.findLatestApprovedFeedbacks(productId,
         List.of(FeedbackStatus.REJECTED,
-            FeedbackStatus.PENDING), refinePagination(pageable));
-    return new PageImpl<>(feedbacks, pageable, feedbacks.size());
+            FeedbackStatus.PENDING), refinedPageable);
+    return new PageImpl<>(feedbacks, refinedPageable, feedbacks.size());
   }
 
   @Override
