@@ -116,7 +116,7 @@ export class FeedbackApprovalComponent {
   onClickReviewButton(feedback: Feedback, isApproved: boolean): void {
     if (this.moderatorName && feedback.id && (feedback.version === 0 || feedback.version)) {
       this.productFeedbackService
-        .updateFeedbackStatus(feedback.id, isApproved, this.moderatorName, feedback.version)
+        .updateFeedbackStatus(feedback.id, isApproved, this.moderatorName, feedback.version, feedback.productId, feedback.userId!)
         .subscribe(() => this.fetchFeedbacks());
     }
   }

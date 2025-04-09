@@ -15,6 +15,7 @@ import com.axonivy.market.repository.GithubUserRepository;
 import com.axonivy.market.repository.ProductRepository;
 import com.axonivy.market.service.FeedbackService;
 import org.apache.commons.lang3.BooleanUtils;
+import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
@@ -27,6 +28,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
@@ -75,9 +77,8 @@ public class FeedbackServiceImpl implements FeedbackService {
   public Page<Feedback> findFeedbacks(String productId, Pageable pageable) {
     validateProductExists(productId);
     Pageable refinedPageable = pageable != null ? refinePagination(pageable) : PageRequest.of(0, 10);
-    List<Feedback> feedbacks = feedbackRepository.findLatestApprovedFeedbacks(productId,
-        List.of(FeedbackStatus.REJECTED,
-            FeedbackStatus.PENDING), refinedPageable);
+    List<Feedback> feedbacks = feedbackRepository.findByProductIdAndIsLatestTrueAndFeedbackStatusNotIn(productId,
+        List.of(FeedbackStatus.REJECTED, FeedbackStatus.PENDING), refinedPageable);
     return new PageImpl<>(feedbacks, refinedPageable, feedbacks.size());
   }
 
@@ -95,8 +96,9 @@ public class FeedbackServiceImpl implements FeedbackService {
     }
     validateProductExists(productId);
 
-    List<Feedback> existingUserFeedback = feedbackRepository.findFeedbacksByUser(productId,
-        userId, List.of(FeedbackStatus.REJECTED));
+    List<Feedback> existingUserFeedback =
+        feedbackRepository.findByProductIdAndUserIdAndIsLatestTrueAndFeedbackStatusNotIn(
+            productId, userId, List.of(FeedbackStatus.REJECTED));
     if (existingUserFeedback == null) {
       throw new NoContentException(ErrorCode.NO_FEEDBACK_OF_USER_FOR_PRODUCT,
           String.format("No feedback with user id '%s' and product id '%s'", userId, productId));
@@ -106,53 +108,82 @@ public class FeedbackServiceImpl implements FeedbackService {
 
   @Override
   public Feedback updateFeedbackWithNewStatus(FeedbackApprovalModel feedbackApproval) {
-    return feedbackRepository.findByIdAndVersion(feedbackApproval.getFeedbackId(), feedbackApproval.getVersion()).map(
-        existingFeedback -> {
+    return feedbackRepository.findByIdAndVersion(feedbackApproval.getFeedbackId(), feedbackApproval.getVersion())
+        .map(existingFeedback -> {
           boolean isApproved = BooleanUtils.isTrue(feedbackApproval.getIsApproved());
-          FeedbackStatus newFeedbackStatus = isApproved ? FeedbackStatus.APPROVED : FeedbackStatus.REJECTED;
+          FeedbackStatus newStatus = isApproved ? FeedbackStatus.APPROVED : FeedbackStatus.REJECTED;
+          if (isApproved) {
+            List<Feedback> approvedLatestFeedbacks = feedbackRepository
+                .findByProductIdAndUserIdAndIsLatestTrueAndFeedbackStatusNotIn(feedbackApproval.getProductId(),
+                    feedbackApproval.getUserId(), List.of(FeedbackStatus.APPROVED));
 
-          existingFeedback.setFeedbackStatus(newFeedbackStatus);
+            if (ObjectUtils.isNotEmpty(approvedLatestFeedbacks)) {
+              Feedback currentLatest = approvedLatestFeedbacks.get(0);
+              currentLatest.setIsLatest(null);
+              feedbackRepository.save(currentLatest);
+            }
+          }
+          existingFeedback.setFeedbackStatus(newStatus);
           existingFeedback.setModeratorName(feedbackApproval.getModeratorName());
           existingFeedback.setReviewDate(new Date());
+          existingFeedback.setIsLatest(isApproved ? true : null);
+
           return feedbackRepository.save(existingFeedback);
         }).orElseThrow(() -> new NotFoundException(ErrorCode.FEEDBACK_NOT_FOUND,
-        String.format(ERROR_MESSAGE_FORMAT, feedbackApproval.getFeedbackId(), feedbackApproval.getVersion())));
+            String.format(ERROR_MESSAGE_FORMAT, feedbackApproval.getFeedbackId(), feedbackApproval.getVersion())
+        ));
   }
 
   @Override
   public Feedback upsertFeedback(FeedbackModelRequest feedback, String userId) throws NotFoundException {
     validateUserExists(userId);
-    List<Feedback> feedbacks = feedbackRepository.findFeedbacksByUser(
+    List<Feedback> feedbacks = feedbackRepository.findByProductIdAndUserIdAndFeedbackStatusNotIn(
         feedback.getProductId(), userId, List.of(FeedbackStatus.REJECTED));
 
-    Feedback approvedFeedback = findFeedbackByStatus(feedbacks, FeedbackStatus.APPROVED);
-    Feedback pendingFeedback = findFeedbackByStatus(feedbacks, FeedbackStatus.PENDING);
+    Feedback pendingFeedback = findFeedbackByStatus(feedbacks, FeedbackStatus.PENDING)
+        .stream().findFirst().orElse(null);
+    List<Feedback> approvedFeedbacks = findFeedbackByStatus(feedbacks, FeedbackStatus.APPROVED);
 
-    if (approvedFeedback != null && isMatchingWithExistingFeedback(approvedFeedback, feedback)) {
+    Feedback matchingApprovedFeedback = getMatchingApprovedFeedback(approvedFeedbacks, feedback);
+    if (matchingApprovedFeedback != null) {
       if (pendingFeedback != null) {
         feedbackRepository.delete(pendingFeedback);
       }
-      return approvedFeedback;
+
+      Feedback currentLatestApproved = feedbackRepository
+          .findByProductIdAndUserIdAndIsLatestTrueAndFeedbackStatusNotIn(
+              feedback.getProductId(), userId, List.of(FeedbackStatus.REJECTED)
+          ).stream().findFirst().orElse(null);
+
+      if (currentLatestApproved != null && !currentLatestApproved.getId().equals(matchingApprovedFeedback.getId())) {
+        currentLatestApproved.setIsLatest(null);
+      }
+      matchingApprovedFeedback.setIsLatest(true);
+      feedbackRepository.saveAll(List.of(Objects.requireNonNull(currentLatestApproved), matchingApprovedFeedback));
+
+      return matchingApprovedFeedback;
     }
 
     return saveOrUpdateFeedback(pendingFeedback, feedback, userId);
   }
 
-  private Feedback findFeedbackByStatus(List<Feedback> feedbacks, FeedbackStatus feedbackStatus) {
+  private Feedback getMatchingApprovedFeedback(List<Feedback> approvedFeedbacks, FeedbackModelRequest feedback) {
+    return approvedFeedbacks.stream()
+        .filter(existing ->
+            existing.getContent().trim().equalsIgnoreCase(feedback.getContent().trim()) &&
+                existing.getRating().equals(feedback.getRating())
+        ).findFirst()
+        .orElse(null);
+  }
+
+  private List<Feedback> findFeedbackByStatus(List<Feedback> feedbacks, FeedbackStatus feedbackStatus) {
     return feedbacks.stream()
         .filter(feedback -> {
           if (FeedbackStatus.APPROVED == feedbackStatus) {
             return feedbackStatus == feedback.getFeedbackStatus() || feedback.getFeedbackStatus() == null;
           }
           return feedbackStatus == feedback.getFeedbackStatus();
-        })
-        .findFirst()
-        .orElse(null);
-  }
-
-  private boolean isMatchingWithExistingFeedback(Feedback approvedFeedback, FeedbackModelRequest feedback) {
-    return approvedFeedback.getContent().trim().equals(feedback.getContent().trim()) &&
-        approvedFeedback.getRating().equals(feedback.getRating());
+        }).toList();
   }
 
   private Feedback saveOrUpdateFeedback(Feedback pendingFeedback, FeedbackModelRequest feedbackModel, String userId) {
@@ -161,6 +192,7 @@ public class FeedbackServiceImpl implements FeedbackService {
       pendingFeedback.setUserId(userId);
       pendingFeedback.setProductId(feedbackModel.getProductId());
       pendingFeedback.setFeedbackStatus(FeedbackStatus.PENDING);
+      pendingFeedback.setIsLatest(true);
     }
     pendingFeedback.setRating(feedbackModel.getRating());
     pendingFeedback.setContent(feedbackModel.getContent());
@@ -170,7 +202,7 @@ public class FeedbackServiceImpl implements FeedbackService {
 
   @Override
   public List<ProductRating> getProductRatingById(String productId) {
-    List<Feedback> feedbacks = feedbackRepository.findLatestApprovedFeedbacks(productId,
+    List<Feedback> feedbacks = feedbackRepository.findByProductIdAndIsLatestTrueAndFeedbackStatusNotIn(productId,
         List.of(FeedbackStatus.PENDING, FeedbackStatus.REJECTED), Pageable.unpaged());
     int totalFeedbacks = feedbacks.size();
 

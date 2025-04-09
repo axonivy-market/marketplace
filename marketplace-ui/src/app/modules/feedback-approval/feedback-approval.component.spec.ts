@@ -140,7 +140,8 @@ describe('FeedbackApprovalComponent', () => {
       productId: '123',
       feedbackStatus: FeedbackStatus.PENDING,
       moderatorName: '',
-      productNames: {}
+      productNames: {},
+      userId: '1'
     };
 
     const updatedFeedback: Feedback = {
@@ -158,7 +159,7 @@ describe('FeedbackApprovalComponent', () => {
 
     expect(
       productFeedbackServiceMock.updateFeedbackStatus
-    ).toHaveBeenCalledWith('1', true, 'TestUser', 0);
+    ).toHaveBeenCalledWith('1', true, 'TestUser', 0, '123', '1');
     expect(component.fetchFeedbacks).toHaveBeenCalled();
   }));
 

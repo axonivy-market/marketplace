@@ -263,7 +263,7 @@ describe('ProductFeedbackService', () => {
       productNames: {}
     };
 
-    service.updateFeedbackStatus('1', true, 'admin', 1).subscribe(response => {
+    service.updateFeedbackStatus('1', true, 'admin', 1, '2', '1').subscribe(response => {
       expect(response).toEqual(updatedFeedback);
       expect(service.allFeedbacks()[0].feedbackStatus).toBe(FeedbackStatus.APPROVED);
       expect(service.pendingFeedbacks().length).toBe(0);
@@ -426,7 +426,7 @@ describe('ProductFeedbackService', () => {
   it('should handle feedback approval API error', () => {
     const mockError = { status: 500, statusText: 'Server Error' };
 
-    service.updateFeedbackStatus('1', true, 'admin', 1).subscribe({
+    service.updateFeedbackStatus('1', true, 'admin', 1, '2', '1').subscribe({
       error: error => {
         expect(error.status).toBe(500);
       }

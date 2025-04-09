@@ -41,6 +41,7 @@ public class Feedback extends AuditableIdEntity {
   private Date reviewDate;
   @Version
   private Integer version;
+  private Boolean isLatest;
 
   public void setContent(String content) {
     this.content = content != null ? content.trim() : null;

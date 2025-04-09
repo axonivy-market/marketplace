@@ -66,6 +66,9 @@ public class FeedbackModel extends RepresentationModel<FeedbackModel> {
   @Schema(description = "Feedback modification version", example = "3")
   private Integer version;
 
+  @Schema(description = "Is latest approved or pending feedback", example = "true")
+  private Boolean isLatest;
+
   @Override
   public int hashCode() {
     return new HashCodeBuilder().append(id).hashCode();
