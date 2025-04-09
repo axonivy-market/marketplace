@@ -23,6 +23,7 @@ import { ActivatedRoute } from '@angular/router';
 import { FeedbackTableComponent } from './feedback-table/feedback-table.component';
 import { HttpErrorResponse } from '@angular/common/http';
 import { finalize } from 'rxjs';
+import { FeedbackApproval } from '../../shared/models/feedback-approval.model';
 
 @Component({
   selector: 'app-feedback-approval',
@@ -114,9 +115,17 @@ export class FeedbackApprovalComponent {
   }
 
   onClickReviewButton(feedback: Feedback, isApproved: boolean): void {
-    if (this.moderatorName && feedback.id && (feedback.version === 0 || feedback.version)) {
+    if (this.moderatorName && feedback.id && (feedback.version === 0 || feedback.version) && feedback.userId) {
+      const approvalRequest: FeedbackApproval = {
+        feedbackId: feedback.id,
+        isApproved,
+        moderatorName: this.moderatorName,
+        version: feedback.version,
+        productId: feedback.productId,
+        userId: feedback.userId
+      };
       this.productFeedbackService
-        .updateFeedbackStatus(feedback.id, isApproved, this.moderatorName, feedback.version, feedback.productId, feedback.userId!)
+        .updateFeedbackStatus(approvalRequest)
         .subscribe(() => this.fetchFeedbacks());
     }
   }

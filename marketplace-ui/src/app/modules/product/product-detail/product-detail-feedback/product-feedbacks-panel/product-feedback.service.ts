@@ -29,6 +29,7 @@ import {
 import { FeedbackStatus } from '../../../../../shared/enums/feedback-status.enum';
 import { API_URI } from '../../../../../shared/constants/api.constant';
 import { LoadingComponentId } from '../../../../../shared/enums/loading-component-id';
+import { FeedbackApproval } from '../../../../../shared/models/feedback-approval.model';
 
 const FEEDBACK_API_URL = 'api/feedback';
 const SIZE = 8;
@@ -107,17 +108,11 @@ export class ProductFeedbackService {
   }
 
   updateFeedbackStatus(
-    feedbackId: string,
-    isApproved: boolean,
-    moderatorName: string,
-    version: number,
-    productId: string,
-    userId: string
+    request: FeedbackApproval
   ): Observable<Feedback> {
-    const requestBody = { feedbackId, isApproved, moderatorName, version, productId, userId };
     const requestURL = `${API_URI.FEEDBACK_APPROVAL}`;
 
-    return this.http.put<Feedback>(requestURL, requestBody).pipe(
+    return this.http.put<Feedback>(requestURL, request).pipe(
       tap(updatedFeedback => {
         const updatedAllFeedbacks = this.allFeedbacks().map(feedback => {
           if (feedback.id === updatedFeedback.id) {

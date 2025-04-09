@@ -13,6 +13,7 @@ import {
 } from '../../../../../shared/constants/common.constant';
 import { of } from 'rxjs';
 import { FeedbackApiResponse } from '../../../../../shared/models/apis/feedback-response.model';
+import { MOCK_APPROVED_FEEDBACK } from '../../../../../shared/mocks/mock-data';
 
 describe('ProductFeedbackService', () => {
   let service: ProductFeedbackService;
@@ -263,7 +264,7 @@ describe('ProductFeedbackService', () => {
       productNames: {}
     };
 
-    service.updateFeedbackStatus('1', true, 'admin', 1, '2', '1').subscribe(response => {
+    service.updateFeedbackStatus(MOCK_APPROVED_FEEDBACK).subscribe(response => {
       expect(response).toEqual(updatedFeedback);
       expect(service.allFeedbacks()[0].feedbackStatus).toBe(FeedbackStatus.APPROVED);
       expect(service.pendingFeedbacks().length).toBe(0);
@@ -426,7 +427,7 @@ describe('ProductFeedbackService', () => {
   it('should handle feedback approval API error', () => {
     const mockError = { status: 500, statusText: 'Server Error' };
 
-    service.updateFeedbackStatus('1', true, 'admin', 1, '2', '1').subscribe({
+    service.updateFeedbackStatus(MOCK_APPROVED_FEEDBACK).subscribe({
       error: error => {
         expect(error.status).toBe(500);
       }

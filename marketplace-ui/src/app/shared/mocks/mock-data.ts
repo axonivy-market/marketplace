@@ -3,6 +3,7 @@ import { FeedbackApiResponse } from '../models/apis/feedback-response.model';
 import { ProductReleasesApiResponse } from '../models/apis/product-releases-response.model';
 import { ProductApiResponse } from '../models/apis/product-response.model';
 import { ExternalDocument } from '../models/external-document.model';
+import { FeedbackApproval } from '../models/feedback-approval.model';
 import { Feedback } from '../models/feedback.model';
 import { ProductDetail } from '../models/product-detail.model';
 import { ProductModuleContent } from '../models/product-module-content.model';
@@ -401,6 +402,15 @@ export const MOCK_FEEDBACKS: Feedback[] = [
   }
 ];
 
+export const MOCK_APPROVED_FEEDBACK: FeedbackApproval = {
+  feedbackId: '1',
+  isApproved: true,
+  moderatorName: 'TestUser',
+  version: 2,
+  productId: '123',
+  userId: '7c419872-4acf-48e9-b2e5-c6b268d21f53'
+};
+
 export const MOCK_PRODUCT_RELEASES: ProductReleasesApiResponse = {
   _embedded: {
     gitHubReleaseModelList: [
@@ -409,7 +419,7 @@ export const MOCK_PRODUCT_RELEASES: ProductReleasesApiResponse = {
         "body": "## Changes\r\n\r\n## 🚀 Features\r\n\r\n- [IVYPORTAL-18158](https://1ivy.atlassian.net/browse/IVYPORTAL-18158) Implement File Preview to Portal Components https://github.com/nhthinh-axonivy (https://github.com/axonivy-market/portal/pull/1443)\r\n",
         "publishedAt": "2025-01-20T10:19:19.000+00:00",
         "htmlUrl": "https://github.com/axonivy-market/portal/releases/tag/12.0.3",
-        "latestRelease" : true
+        "latestRelease": true
       }
     ]
   },
