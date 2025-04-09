@@ -115,14 +115,14 @@ export class FeedbackApprovalComponent {
   }
 
   onClickReviewButton(feedback: Feedback, isApproved: boolean): void {
-    if (this.moderatorName && feedback.id && (feedback.version === 0 || feedback.version) && feedback.userId) {
+    if (this.moderatorName && feedback.id && feedback.version >= 0 && feedback.userId) {
       const approvalRequest: FeedbackApproval = {
         feedbackId: feedback.id,
-        isApproved,
         moderatorName: this.moderatorName,
         version: feedback.version,
         productId: feedback.productId,
-        userId: feedback.userId
+        userId: feedback.userId,
+        isApproved
       };
       this.productFeedbackService
         .updateFeedbackStatus(approvalRequest)
