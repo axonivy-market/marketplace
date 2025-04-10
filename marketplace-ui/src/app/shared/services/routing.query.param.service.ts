@@ -1,7 +1,6 @@
 import { computed, Injectable, signal } from '@angular/core';
 import { DESIGNER_SESSION_STORAGE_VARIABLE } from '../constants/common.constant';
 import { Router, Params, NavigationStart } from '@angular/router';
-import { Observable } from 'rxjs';
 import { filter } from 'rxjs/operators';
 @Injectable({
   providedIn: 'root'
@@ -74,6 +73,6 @@ export class RoutingQueryParamService {
   getNavigationStartEvent() {
     return this.router.events.pipe(
       filter(event => event instanceof NavigationStart)
-    ) as Observable<NavigationStart>;
+    );
   }
 }

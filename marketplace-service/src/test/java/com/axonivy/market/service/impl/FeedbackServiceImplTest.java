@@ -11,10 +11,11 @@ import com.axonivy.market.exceptions.model.NotFoundException;
 import com.axonivy.market.model.FeedbackApprovalModel;
 import com.axonivy.market.model.FeedbackModel;
 import com.axonivy.market.model.FeedbackModelRequest;
+import com.axonivy.market.model.FeedbackProjection;
 import com.axonivy.market.model.ProductRating;
 import com.axonivy.market.repository.FeedbackRepository;
-import com.axonivy.market.repository.ProductRepository;
 import com.axonivy.market.repository.GithubUserRepository;
+import com.axonivy.market.repository.ProductRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -28,7 +29,9 @@ import org.springframework.data.domain.Pageable;
 
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.Date;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -82,25 +85,46 @@ class FeedbackServiceImplTest extends BaseSetup {
   @Test
   void testFindAllFeedbacks() {
     Pageable pageable = PageRequest.of(0, 20);
+    FeedbackProjection feedbackProjection = mock(FeedbackProjection.class);
+    when(feedbackProjection.getId()).thenReturn("1");
+    when(feedbackProjection.getUserId()).thenReturn("user1");
+    when(feedbackProjection.getProductId()).thenReturn("product1");
+    when(feedbackProjection.getContent()).thenReturn("Great product!");
+    when(feedbackProjection.getRating()).thenReturn(5);
+    when(feedbackProjection.getFeedbackStatus()).thenReturn(FeedbackStatus.APPROVED);
+    when(feedbackProjection.getModeratorName()).thenReturn("moderator");
+    when(feedbackProjection.getReviewDate()).thenReturn(new Date());
+    when(feedbackProjection.getVersion()).thenReturn(1);
+    when(feedbackProjection.getCreatedAt()).thenReturn(new Date());
+    when(feedbackProjection.getUpdatedAt()).thenReturn(new Date());
+    when(feedbackProjection.getProductNames()).thenReturn(Map.of("en", "Product Name"));
 
-    Page<Feedback> expectedPage = new PageImpl<>(List.of(feedback), pageable, 1);
-    when(feedbackRepository.findAll(pageable)).thenReturn(expectedPage);
+
+    Page<FeedbackProjection> projectionPage = new PageImpl<>(List.of(feedbackProjection), pageable, 1);
+    when(feedbackRepository.findFeedbackWithProductNames(pageable)).thenReturn(projectionPage);
 
     Page<Feedback> result = feedbackService.findAllFeedbacks(pageable);
 
     assertNotNull(result);
     assertEquals(1, result.getTotalElements());
     assertEquals(1, result.getContent().size());
-    assertEquals(feedback, result.getContent().get(0));
+    assertEquals("user1", result.getContent().get(0).getUserId());
+    assertEquals("product1", result.getContent().get(0).getProductId());
+    assertEquals("Great product!", result.getContent().get(0).getContent());
+    assertEquals(5, result.getContent().get(0).getRating());
+    assertEquals(FeedbackStatus.APPROVED, result.getContent().get(0).getFeedbackStatus());
+    assertEquals("moderator", result.getContent().get(0).getModeratorName());
+    assertEquals(1, result.getContent().get(0).getVersion());
+    assertEquals("Product Name", result.getContent().get(0).getProductNames().get("en"));
 
-    verify(feedbackRepository, times(1)).findAll(pageable);
+    verify(feedbackRepository, times(1)).findFeedbackWithProductNames(pageable);
   }
 
   @Test
   void testFindAllFeedbacks_EmptyResult() {
     Pageable pageable = PageRequest.of(0, 20);
-    Page<Feedback> emptyPage = new PageImpl<>(Collections.emptyList(), pageable, 0);
-    when(feedbackRepository.findAll(pageable)).thenReturn(emptyPage);
+    Page<FeedbackProjection> emptyPage = new PageImpl<>(Collections.emptyList(), pageable, 0);
+    when(feedbackRepository.findFeedbackWithProductNames(pageable)).thenReturn(emptyPage);
 
     Page<Feedback> result = feedbackService.findAllFeedbacks(pageable);
 
@@ -108,25 +132,28 @@ class FeedbackServiceImplTest extends BaseSetup {
     assertEquals(0, result.getTotalElements());
     assertTrue(result.getContent().isEmpty());
 
-    verify(feedbackRepository, times(1)).findAll(pageable);
+    verify(feedbackRepository, times(1)).findFeedbackWithProductNames(pageable);
   }
 
   @Test
   void testFindFeedbacks() throws NotFoundException {
     String productId = "product1";
     Pageable pageable = PageRequest.of(0, 10);
-    Page<Feedback> page = new PageImpl<>(Collections.singletonList(feedback));
+    List<Feedback> feedbackList = Collections.singletonList(feedback);
 
     when(productRepository.findById(productId)).thenReturn(Optional.of(new Product()));
-    when(feedbackRepository.findByProductIdAndFeedbackStatusNotIn(productId,
-        List.of(FeedbackStatus.REJECTED, FeedbackStatus.PENDING), pageable)).thenReturn(page);
+    when(feedbackRepository.findByProductIdAndIsLatestTrueAndFeedbackStatusNotIn(
+        productId, List.of(FeedbackStatus.REJECTED, FeedbackStatus.PENDING), pageable)
+    ).thenReturn(feedbackList);
 
     Page<Feedback> result = feedbackService.findFeedbacks(productId, pageable);
+
     assertNotNull(result);
     assertEquals(1, result.getTotalElements());
+    assertEquals(feedbackList, result.getContent());
     verify(productRepository, times(1)).findById(productId);
-    verify(feedbackRepository, times(1)).findByProductIdAndFeedbackStatusNotIn(productId,
-        List.of(FeedbackStatus.REJECTED, FeedbackStatus.PENDING), pageable);
+    verify(feedbackRepository, times(1)).findByProductIdAndIsLatestTrueAndFeedbackStatusNotIn(
+        productId, List.of(FeedbackStatus.REJECTED, FeedbackStatus.PENDING), pageable);
   }
 
   @Test
@@ -140,8 +167,8 @@ class FeedbackServiceImplTest extends BaseSetup {
         () -> feedbackService.findFeedbacks(productId, pageable));
     assertEquals(ErrorCode.PRODUCT_NOT_FOUND.getCode(), exception.getCode());
     verify(productRepository, times(1)).findById(productId);
-    verify(feedbackRepository, times(0)).findByProductIdAndFeedbackStatusNotIn(productId,
-        List.of(FeedbackStatus.REJECTED, FeedbackStatus.PENDING), pageable);
+    verify(feedbackRepository, times(0)).findByProductIdAndIsLatestTrueAndFeedbackStatusNotIn(
+        productId, List.of(FeedbackStatus.REJECTED, FeedbackStatus.PENDING), pageable);
   }
 
   @Test
@@ -173,7 +200,7 @@ class FeedbackServiceImplTest extends BaseSetup {
 
     when(githubUserRepository.findById(userId)).thenReturn(Optional.of(new GithubUser()));
     when(productRepository.findById(productId)).thenReturn(Optional.of(new Product()));
-    when(feedbackRepository.findByProductIdAndUserIdAndFeedbackStatusNotIn(productId, userId,
+    when(feedbackRepository.findByProductIdAndUserIdAndIsLatestTrueAndFeedbackStatusNotIn(productId, userId,
         List.of(FeedbackStatus.REJECTED))).thenReturn(List.of(feedback));
 
     var result = feedbackService.findFeedbackByUserIdAndProductId(userId, productId);
@@ -182,8 +209,8 @@ class FeedbackServiceImplTest extends BaseSetup {
     assertEquals(productId, result.get(0).getProductId());
     verify(githubUserRepository, times(1)).findById(userId);
     verify(productRepository, times(1)).findById(productId);
-    verify(feedbackRepository, times(1)).findByProductIdAndUserIdAndFeedbackStatusNotIn(productId, userId,
-        List.of(FeedbackStatus.REJECTED));
+    verify(feedbackRepository, times(1))
+        .findByProductIdAndUserIdAndIsLatestTrueAndFeedbackStatusNotIn(productId, userId, List.of(FeedbackStatus.REJECTED));
   }
 
   @Test
@@ -191,15 +218,15 @@ class FeedbackServiceImplTest extends BaseSetup {
     String productId = "product1";
     userId = "";
     when(productRepository.findById(productId)).thenReturn(Optional.of(new Product()));
-    when(feedbackRepository.findByProductIdAndUserIdAndFeedbackStatusNotIn(productId, userId,
+    when(feedbackRepository.findByProductIdAndUserIdAndIsLatestTrueAndFeedbackStatusNotIn(productId, userId,
         List.of(FeedbackStatus.REJECTED))).thenReturn(null);
 
     NoContentException exception = assertThrows(NoContentException.class,
         () -> feedbackService.findFeedbackByUserIdAndProductId(userId, productId));
     assertEquals(ErrorCode.NO_FEEDBACK_OF_USER_FOR_PRODUCT.getCode(), exception.getCode());
     verify(productRepository, times(1)).findById(productId);
-    verify(feedbackRepository, times(1)).findByProductIdAndUserIdAndFeedbackStatusNotIn(productId, userId,
-        List.of(FeedbackStatus.REJECTED));
+    verify(feedbackRepository, times(1))
+        .findByProductIdAndUserIdAndIsLatestTrueAndFeedbackStatusNotIn(productId, userId, List.of(FeedbackStatus.REJECTED));
   }
 
   @Test
@@ -214,23 +241,14 @@ class FeedbackServiceImplTest extends BaseSetup {
   }
 
   @Test
-  void testUpdateFeedbackWithNewStatus_ApprovedWithExisting() {
+  void testUpdateFeedbackWithNewStatus_Approved() {
     String feedbackId = "1";
     int version = 3;
     FeedbackApprovalModel approvalModel = mockFeedbackApproval();
     approvalModel.setIsApproved(true);
     approvalModel.setVersion(3);
 
-    Feedback existingApproved = new Feedback();
-    existingApproved.setId("2");
-    existingApproved.setFeedbackStatus(FeedbackStatus.APPROVED);
-    existingApproved.setProductId("product1");
-    existingApproved.setUserId("user1");
-    existingApproved.setVersion(4);
-
     when(feedbackRepository.findByIdAndVersion(feedbackId, version)).thenReturn(Optional.of(feedback));
-    when(feedbackRepository.findByProductIdAndUserIdAndFeedbackStatusNotIn("product1", "user1",
-        List.of(FeedbackStatus.REJECTED))).thenReturn(List.of(existingApproved));
     when(feedbackRepository.save(any(Feedback.class))).thenReturn(feedback);
 
     Feedback result = feedbackService.updateFeedbackWithNewStatus(approvalModel);
@@ -242,9 +260,6 @@ class FeedbackServiceImplTest extends BaseSetup {
     assertNotNull(result.getReviewDate());
 
     verify(feedbackRepository, times(1)).findByIdAndVersion(feedbackId, version);
-    verify(feedbackRepository, times(1)).findByProductIdAndUserIdAndFeedbackStatusNotIn("product1", "user1",
-        List.of(FeedbackStatus.REJECTED));
-    verify(feedbackRepository, times(1)).delete(existingApproved);
     verify(feedbackRepository, times(1)).save(any(Feedback.class));
   }
 
@@ -256,15 +271,7 @@ class FeedbackServiceImplTest extends BaseSetup {
     approvalModel.setIsApproved(false);
     approvalModel.setVersion(3);
 
-    Feedback existingPending = new Feedback();
-    existingPending.setId("2");
-    existingPending.setFeedbackStatus(FeedbackStatus.PENDING);
-    existingPending.setProductId("product1");
-    existingPending.setUserId("user1");
-
     when(feedbackRepository.findByIdAndVersion(feedbackId, version)).thenReturn(Optional.of(feedback));
-    when(feedbackRepository.findByProductIdAndUserIdAndFeedbackStatusNotIn("product1", "user1",
-        List.of(FeedbackStatus.REJECTED))).thenReturn(List.of(existingPending));
     when(feedbackRepository.save(any(Feedback.class))).thenReturn(feedback);
 
     Feedback result = feedbackService.updateFeedbackWithNewStatus(approvalModel);
@@ -276,9 +283,6 @@ class FeedbackServiceImplTest extends BaseSetup {
     assertNotNull(result.getReviewDate());
 
     verify(feedbackRepository, times(1)).findByIdAndVersion(feedbackId, version);
-    verify(feedbackRepository, times(1)).findByProductIdAndUserIdAndFeedbackStatusNotIn("product1", "user1",
-        List.of(FeedbackStatus.REJECTED));
-    verify(feedbackRepository, times(1)).delete(existingPending);
     verify(feedbackRepository, times(1)).save(any(Feedback.class));
   }
 
@@ -299,8 +303,8 @@ class FeedbackServiceImplTest extends BaseSetup {
     assertEquals(feedbackModel.getRating(), result.getRating());
     assertEquals(feedbackModel.getContent(), result.getContent());
     verify(githubUserRepository, times(1)).findById(userId);
-    verify(feedbackRepository, times(1)).findByProductIdAndUserIdAndFeedbackStatusNotIn(productId, userId,
-        List.of(FeedbackStatus.REJECTED));
+    verify(feedbackRepository, times(1)).findByProductIdAndUserIdAndFeedbackStatusNotIn(productId,
+        userId, List.of(FeedbackStatus.REJECTED));
     verify(feedbackRepository, times(1)).save(any(Feedback.class));
   }
 
@@ -321,8 +325,8 @@ class FeedbackServiceImplTest extends BaseSetup {
     assertEquals(feedbackModel.getContent(), result.getContent());
     assertEquals(FeedbackStatus.PENDING, result.getFeedbackStatus());
     verify(githubUserRepository, times(1)).findById(userId);
-    verify(feedbackRepository, times(1)).findByProductIdAndUserIdAndFeedbackStatusNotIn(productId, userId,
-        List.of(FeedbackStatus.REJECTED));
+    verify(feedbackRepository, times(1)).findByProductIdAndUserIdAndFeedbackStatusNotIn(productId,
+        userId, List.of(FeedbackStatus.REJECTED));
     verify(feedbackRepository, times(1)).save(any(Feedback.class));
   }
 
@@ -343,18 +347,24 @@ class FeedbackServiceImplTest extends BaseSetup {
     existingPending.setFeedbackStatus(FeedbackStatus.PENDING);
 
     when(githubUserRepository.findById(userId)).thenReturn(Optional.of(new GithubUser()));
-    when(feedbackRepository.findByProductIdAndUserIdAndFeedbackStatusNotIn(productId, userId,
-        List.of(FeedbackStatus.REJECTED))).thenReturn(List.of(existingApproved, existingPending));
+    when(feedbackRepository.findByProductIdAndUserIdAndFeedbackStatusNotIn(
+        productId, userId, List.of(FeedbackStatus.REJECTED)))
+        .thenReturn(List.of(existingApproved, existingPending));
+
+    when(feedbackRepository.findByProductIdAndUserIdAndIsLatestTrueAndFeedbackStatusNotIn(
+        productId, userId, List.of(FeedbackStatus.REJECTED)))
+        .thenReturn(Collections.singletonList(existingApproved));
 
     Feedback result = feedbackService.upsertFeedback(feedbackModelRequest, userId);
 
     assertNotNull(result);
     assertEquals(existingApproved, result);
+
     verify(githubUserRepository, times(1)).findById(userId);
-    verify(feedbackRepository, times(1)).findByProductIdAndUserIdAndFeedbackStatusNotIn(productId, userId,
-        List.of(FeedbackStatus.REJECTED));
+    verify(feedbackRepository, times(1))
+        .findByProductIdAndUserIdAndFeedbackStatusNotIn(productId, userId, List.of(FeedbackStatus.REJECTED));
     verify(feedbackRepository, times(1)).delete(existingPending);
-    verify(feedbackRepository, never()).save(any(Feedback.class));
+    verify(feedbackRepository, times(1)).saveAll(anyList());
   }
 
   @Test
@@ -382,8 +392,8 @@ class FeedbackServiceImplTest extends BaseSetup {
     assertEquals(FeedbackStatus.PENDING, result.getFeedbackStatus());
 
     verify(githubUserRepository, times(1)).findById(userId);
-    verify(feedbackRepository, times(1)).findByProductIdAndUserIdAndFeedbackStatusNotIn(productId, userId,
-        List.of(FeedbackStatus.REJECTED));
+    verify(feedbackRepository, times(1)).findByProductIdAndUserIdAndFeedbackStatusNotIn(productId,
+        userId, List.of(FeedbackStatus.REJECTED));
     verify(feedbackRepository, times(1)).save(any(Feedback.class));
   }
 
@@ -392,21 +402,24 @@ class FeedbackServiceImplTest extends BaseSetup {
     String productId = "product1";
     List<Feedback> feedbacks = Collections.singletonList(feedback);
     List<FeedbackStatus> feedbackStatuses = Arrays.asList(FeedbackStatus.PENDING, FeedbackStatus.REJECTED);
-    when(feedbackRepository.findByProductIdAndFeedbackStatusNotIn(productId, feedbackStatuses)).thenReturn(feedbacks);
+    when(feedbackRepository.findByProductIdAndIsLatestTrueAndFeedbackStatusNotIn(productId, feedbackStatuses,
+        Pageable.unpaged())).thenReturn(feedbacks);
 
     List<ProductRating> ratings = feedbackService.getProductRatingById(productId);
     assertNotNull(ratings);
     assertEquals(5, ratings.size());
     assertEquals(1, ratings.get(4).getCommentNumber());
     assertEquals(100, ratings.get(4).getPercent());
-    verify(feedbackRepository, times(1)).findByProductIdAndFeedbackStatusNotIn(productId, feedbackStatuses);
+    verify(feedbackRepository, times(1)).findByProductIdAndIsLatestTrueAndFeedbackStatusNotIn(
+        productId, feedbackStatuses, Pageable.unpaged());
   }
 
   @Test
   void testGetProductRatingById_NoFeedbacks() {
     String productId = "product1";
 
-    when(feedbackRepository.findByProductIdAndFeedbackStatusNotIn(eq(productId), anyList())).thenReturn(
+    when(feedbackRepository.findByProductIdAndIsLatestTrueAndFeedbackStatusNotIn(anyString(), anyList(),
+        any())).thenReturn(
         Collections.emptyList());
 
     List<ProductRating> ratings = feedbackService.getProductRatingById(productId);
@@ -416,7 +429,8 @@ class FeedbackServiceImplTest extends BaseSetup {
       assertEquals(0, rating.getCommentNumber());
       assertEquals(0, rating.getPercent());
     }
-    verify(feedbackRepository, times(1)).findByProductIdAndFeedbackStatusNotIn(eq(productId), anyList());
+    verify(feedbackRepository, times(1)).findByProductIdAndIsLatestTrueAndFeedbackStatusNotIn(
+        anyString(), anyList(), any());
   }
 
   @Test

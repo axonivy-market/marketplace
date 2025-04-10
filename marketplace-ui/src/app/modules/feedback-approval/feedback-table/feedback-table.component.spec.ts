@@ -70,8 +70,8 @@ describe('FeedbackTableComponent', () => {
     fixture.detectChanges();
 
     const headers = fixture.debugElement.queryAll(By.css('th'));
-    expect(headers.length).toBe(7);
-    expect(headers[6].nativeElement.textContent).toContain(
+    expect(headers.length).toBe(8);
+    expect(headers[7].nativeElement.textContent).toContain(
       'common.approval.action'
     );
   });
@@ -81,11 +81,11 @@ describe('FeedbackTableComponent', () => {
     fixture.detectChanges();
 
     const headers = fixture.debugElement.queryAll(By.css('th'));
-    expect(headers.length).toBe(8);
-    expect(headers[6].nativeElement.textContent).toContain(
+    expect(headers.length).toBe(9);
+    expect(headers[7].nativeElement.textContent).toContain(
       'common.approval.moderator'
     );
-    expect(headers[7].nativeElement.textContent).toContain(
+    expect(headers[8].nativeElement.textContent).toContain(
       'common.approval.reviewDate'
     );
   });
@@ -98,9 +98,9 @@ describe('FeedbackTableComponent', () => {
     expect(
       cells[0].query(By.css('.feedback-username')).nativeElement.textContent
     ).toContain('testUser');
-    expect(cells[1].nativeElement.textContent).toContain('Great product!');
-    expect(cells[2].nativeElement.textContent).toContain('5');
-    expect(cells[3].nativeElement.textContent).toContain(
+    expect(cells[2].nativeElement.textContent).toContain('Great product!');
+    expect(cells[3].nativeElement.textContent).toContain('5');
+    expect(cells[4].nativeElement.textContent).toContain(
       FeedbackStatus.PENDING
     );
   });
@@ -140,6 +140,19 @@ describe('FeedbackTableComponent', () => {
     expect(component.handleReviewAction).toHaveBeenCalledWith(
       MOCK_FEEDBACKS[0],
       false
+    );
+  });
+
+  it('should display "No Feedbacks" message when feedbacks are empty and not loading', () => {
+    component.feedbacks = [];
+    component.isLoading = false;
+    fixture.detectChanges();
+
+    const noFeedbackMessage = fixture.debugElement.query(By.css('.no-feedback'));
+
+    expect(noFeedbackMessage).toBeTruthy();
+    expect(noFeedbackMessage.nativeElement.textContent.trim()).toContain(
+      'common.approval.noFeedbacks'
     );
   });
 });

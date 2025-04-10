@@ -49,7 +49,7 @@ common:
     market: Marktplatz
   introduction:
     about: Durch die vielfältigen Angebote des Axon Ivy Marktplatzes wird die Prozessautomatisierung umfassend erweitert.
-    contribute: 
+    contribute:
       Hier findest du Konnektoren zu Standard-Softwarelösungen führender Anbieter wie Microsoft,
       Amazon oder Adobe sowie fertige Prozessmodelle, Geschäftslösungen
       und praktische Werkzeuge zur Dokumentenverarbeitung, -speicherung oder Signierung.
@@ -203,6 +203,7 @@ common:
     reviewFeedback: Feedback überprüfen
     history: Historie
     username: Benutzername
+    product: Produktname
     content: Inhalt
     rating: Bewertung
     status: Status
@@ -213,9 +214,10 @@ common:
     reviewDate: Überprüfungsdatum
     approveBtnLabel: Genehmigen
     rejectBtnLabel: Ablehnen
-    pageTitle: Mühelose Verwaltung der Feedback Genehmigung  
-    description: Stellen Sie sicher, dass nur das beste Feedback weitergeleitet wird.  
+    pageTitle: Mühelose Verwaltung der Feedback Genehmigung
+    description: Stellen Sie sicher, dass nur das beste Feedback weitergeleitet wird.
     enterToken: Bitte geben Sie Ihren Token ein, um auf die Feedback Genehmigung zuzugreifen.
     enterTokenPlaceholder: Geben Sie Ihren Token ein
-    proceedBtnLabel: Weiter  
+    proceedBtnLabel: Weiter
+    noFeedbacks: Keine Feedback verfügbar.
 

@@ -74,6 +74,7 @@
             aria-labelledby="review-tab"
             [ngClass]="{ 'show active': activeTab === 'review' }">
             <app-feedback-table
+              [isLoading]="isLoading"
               [feedbacks]="reviewingFeedbacks()"
               [isHistoryTab]="false"
               (reviewAction)="

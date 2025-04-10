@@ -22,6 +22,8 @@ import {
 import { ActivatedRoute } from '@angular/router';
 import { FeedbackTableComponent } from './feedback-table/feedback-table.component';
 import { HttpErrorResponse } from '@angular/common/http';
+import { finalize } from 'rxjs';
+import { FeedbackApproval } from '../../shared/models/feedback-approval.model';
 
 @Component({
   selector: 'app-feedback-approval',
@@ -45,6 +47,7 @@ export class FeedbackApprovalComponent {
   isAuthenticated = false;
   activeTab = 'review';
   moderatorName!: string | null;
+  isLoading = false;
 
   feedbacks: Signal<Feedback[] | undefined> =
     this.productFeedbackService.allFeedbacks;
@@ -80,16 +83,24 @@ export class FeedbackApprovalComponent {
   }
 
   fetchFeedbacks(): void {
+    this.isLoading = true;
     sessionStorage.setItem(FEEDBACK_APPROVAL_SESSION_TOKEN, this.token);
     this.fetchUserInfo();
-    this.productFeedbackService.findProductFeedbacks().subscribe({
-      next: () => {
-        this.isAuthenticated = true;
-      },
-      error: err => {
-        this.handleError(err);
-      }
-    });
+    this.productFeedbackService
+      .findProductFeedbacks()
+      .pipe(
+        finalize(() => {
+          this.isLoading = false;
+        })
+      )
+      .subscribe({
+        next: () => {
+          this.isAuthenticated = true;
+        },
+        error: err => {
+          this.handleError(err);
+        }
+      });
   }
 
   private handleError(err: HttpErrorResponse): void {
@@ -104,9 +115,17 @@ export class FeedbackApprovalComponent {
   }
 
   onClickReviewButton(feedback: Feedback, isApproved: boolean): void {
-    if (this.moderatorName && feedback.id && (feedback.version === 0 || feedback.version)) {
+    if (this.moderatorName && feedback.id && feedback.version >= 0 && feedback.userId) {
+      const approvalRequest: FeedbackApproval = {
+        feedbackId: feedback.id,
+        moderatorName: this.moderatorName,
+        version: feedback.version,
+        productId: feedback.productId,
+        userId: feedback.userId,
+        isApproved
+      };
       this.productFeedbackService
-        .updateFeedbackStatus(feedback.id, isApproved, this.moderatorName, feedback.version)
+        .updateFeedbackStatus(approvalRequest)
         .subscribe(() => this.fetchFeedbacks());
     }
   }

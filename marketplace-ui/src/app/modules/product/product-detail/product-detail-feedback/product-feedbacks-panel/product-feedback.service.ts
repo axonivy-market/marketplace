@@ -14,7 +14,7 @@ import {
 import { catchError, Observable, of, tap, throwError } from 'rxjs';
 import { CookieService } from 'ngx-cookie-service';
 import { AuthService } from '../../../../../auth/auth.service';
-import { ForwardingError } from '../../../../../core/interceptors/api.interceptor';
+import { ForwardingError, LoadingComponent } from '../../../../../core/interceptors/api.interceptor';
 import { FeedbackApiResponse } from '../../../../../shared/models/apis/feedback-response.model';
 import { Feedback } from '../../../../../shared/models/feedback.model';
 import { ProductDetailService } from '../../product-detail.service';
@@ -28,6 +28,8 @@ import {
 } from '../../../../../shared/constants/common.constant';
 import { FeedbackStatus } from '../../../../../shared/enums/feedback-status.enum';
 import { API_URI } from '../../../../../shared/constants/api.constant';
+import { LoadingComponentId } from '../../../../../shared/enums/loading-component-id';
+import { FeedbackApproval } from '../../../../../shared/models/feedback-approval.model';
 
 const FEEDBACK_API_URL = 'api/feedback';
 const SIZE = 8;
@@ -61,7 +63,6 @@ export class ProductFeedbackService {
 
   findProductFeedbacks(
     page: number = this.page(),
-    sort: string = this.sort(),
     size: number = ALL_FEEDBACKS_SIZE
   ): Observable<FeedbackApiResponse> {
     const token = sessionStorage.getItem(FEEDBACK_APPROVAL_SESSION_TOKEN);
@@ -72,7 +73,11 @@ export class ProductFeedbackService {
     return this.http
       .get<FeedbackApiResponse>(`${API_URI.FEEDBACK_APPROVAL}`, {
         headers,
-        params: requestParams
+        params: requestParams,
+        context: new HttpContext().set(
+          LoadingComponent,
+          LoadingComponentId.FEEDBACK_APPROVAL
+        )
       })
       .pipe(
         tap(response => {
@@ -103,15 +108,11 @@ export class ProductFeedbackService {
   }
 
   updateFeedbackStatus(
-    feedbackId: string,
-    isApproved: boolean,
-    moderatorName: string,
-    version: number
+    request: FeedbackApproval
   ): Observable<Feedback> {
-    const requestBody = { feedbackId, isApproved, moderatorName, version };
     const requestURL = `${API_URI.FEEDBACK_APPROVAL}`;
 
-    return this.http.put<Feedback>(requestURL, requestBody).pipe(
+    return this.http.put<Feedback>(requestURL, request).pipe(
       tap(updatedFeedback => {
         const updatedAllFeedbacks = this.allFeedbacks().map(feedback => {
           if (feedback.id === updatedFeedback.id) {
@@ -251,6 +252,7 @@ export class ProductFeedbackService {
             feedbackStatus: FeedbackStatus.PENDING,
             moderatorName: '',
             version: 0,
+            productNames: {},
             productId
           };
           this.userFeedback.set(defaultFeedback);

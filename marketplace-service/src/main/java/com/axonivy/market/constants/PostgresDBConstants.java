@@ -21,4 +21,6 @@ public class PostgresDBConstants {
   public static final String DOC = "doc";
   public static final String LISTED = "listed";
   public static final String TYPE = "type";
+  public static final String USER_ID = "userId";
+  public static final String EXCLUDED_STATUSES = "excludedStatuses";
 }

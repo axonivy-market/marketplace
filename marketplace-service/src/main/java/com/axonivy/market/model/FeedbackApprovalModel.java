@@ -12,6 +12,10 @@ import lombok.Setter;
 @NoArgsConstructor
 @Builder
 public class FeedbackApprovalModel {
+  private String productId;
+
+  private String userId;
+
   private String feedbackId;
 
   private Boolean isApproved;

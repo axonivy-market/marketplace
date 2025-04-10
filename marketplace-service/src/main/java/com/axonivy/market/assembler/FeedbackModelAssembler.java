@@ -48,6 +48,7 @@ public class FeedbackModelAssembler implements RepresentationModelAssembler<Feed
     model.setUserAvatarUrl(githubUser.getAvatarUrl());
     model.setUserProvider(githubUser.getProvider());
     model.setProductId(feedback.getProductId());
+    model.setProductNames(feedback.getProductNames());
     model.setContent(feedback.getContent());
     model.setRating(feedback.getRating());
     model.setCreatedAt(feedback.getCreatedAt());
@@ -56,6 +57,7 @@ public class FeedbackModelAssembler implements RepresentationModelAssembler<Feed
     model.setModeratorName(feedback.getModeratorName());
     model.setReviewDate(feedback.getReviewDate());
     model.setVersion(feedback.getVersion());
+    model.setIsLatest(feedback.getIsLatest());
     return model;
   }
 

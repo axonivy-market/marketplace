@@ -24,6 +24,7 @@ import {
 import { Feedback } from '../../shared/models/feedback.model';
 import { HttpErrorResponse } from '@angular/common/http';
 import { FeedbackStatus } from '../../shared/enums/feedback-status.enum';
+import { MOCK_APPROVED_FEEDBACK } from '../../shared/mocks/mock-data';
 
 describe('FeedbackApprovalComponent', () => {
   let component: FeedbackApprovalComponent;
@@ -134,18 +135,21 @@ describe('FeedbackApprovalComponent', () => {
   it('should update feedback status and refresh', fakeAsync(() => {
     const feedback: Feedback = {
       id: '1',
-      version: 0,
+      version: 2,
       content: 'Test feedback',
       rating: 5,
       productId: '123',
       feedbackStatus: FeedbackStatus.PENDING,
-      moderatorName: ''
+      moderatorName: '',
+      productNames: {},
+      userId: '7c419872-4acf-48e9-b2e5-c6b268d21f53'
     };
 
     const updatedFeedback: Feedback = {
       ...feedback,
       feedbackStatus: FeedbackStatus.APPROVED
     };
+
     productFeedbackServiceMock.updateFeedbackStatus.and.returnValue(
       of(updatedFeedback)
     );
@@ -157,7 +161,7 @@ describe('FeedbackApprovalComponent', () => {
 
     expect(
       productFeedbackServiceMock.updateFeedbackStatus
-    ).toHaveBeenCalledWith('1', true, 'TestUser', 0);
+    ).toHaveBeenCalledWith(MOCK_APPROVED_FEEDBACK);
     expect(component.fetchFeedbacks).toHaveBeenCalled();
   }));
 

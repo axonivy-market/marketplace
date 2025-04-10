@@ -12,6 +12,7 @@ import org.springframework.hateoas.RepresentationModel;
 import org.springframework.hateoas.server.core.Relation;
 
 import java.util.Date;
+import java.util.Map;
 
 @Getter
 @Setter
@@ -37,6 +38,10 @@ public class FeedbackModel extends RepresentationModel<FeedbackModel> {
   @Schema(description = "Product id (from meta.json)", example = "portal")
   private String productId;
 
+  @Schema(description = "Product name (from meta.json)",
+      example = "{ \"de\": \"KI-Assistent\", \"en\": \"AI Assistant\" }")
+  private Map<String, String> productNames;
+
   @Schema(description = "User's feedback content", example = "Pretty cool connector.")
   private String content;
 
@@ -60,6 +65,9 @@ public class FeedbackModel extends RepresentationModel<FeedbackModel> {
 
   @Schema(description = "Feedback modification version", example = "3")
   private Integer version;
+
+  @Schema(description = "Is latest approved or pending feedback", example = "true")
+  private Boolean isLatest;
 
   @Override
   public int hashCode() {
