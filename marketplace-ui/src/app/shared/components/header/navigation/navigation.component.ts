@@ -33,8 +33,4 @@ export class NavigationComponent {
     const mediaQuery = window.matchMedia('(max-width: 992px)');
     this.isMobileMode.set(mediaQuery.matches);
   }
-
-  onClickSearchInput() {
-    window.location.href = this.searchUrl;
-  }
 }

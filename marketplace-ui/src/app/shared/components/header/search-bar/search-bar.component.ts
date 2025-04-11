@@ -5,6 +5,7 @@ import { LanguageSelectionComponent } from '../language-selection/language-selec
 import { ThemeSelectionComponent } from '../theme-selection/theme-selection.component';
 import { LanguageService } from '../../../../core/services/language/language.service';
 import { SEARCH_URL } from '../../../constants/common.constant';
+import { FormsModule } from '@angular/forms';
 
 @Component({
   selector: 'app-search-bar',
@@ -13,35 +14,33 @@ import { SEARCH_URL } from '../../../constants/common.constant';
     CommonModule,
     TranslateModule,
     ThemeSelectionComponent,
-    LanguageSelectionComponent
+    FormsModule,
+    LanguageSelectionComponent,
   ],
   templateUrl: './search-bar.component.html',
   styleUrl: './search-bar.component.scss'
 })
 export class SearchBarComponent {
   searchUrl = SEARCH_URL;
-  isSearchBarDisplayed = signal(false);
+  isGoogleSearchBarDisplayed = signal(false);
 
   translateService = inject(TranslateService);
   elementRef = inject(ElementRef);
   languageService = inject(LanguageService);
+  isGoogleLoaded = false;
 
   @HostListener('document:click', ['$event'])
   handleClickOutside(event: MouseEvent) {
     if (!this.elementRef.nativeElement.contains(event.target)) {
-      this.isSearchBarDisplayed.set(false);
+      this.isGoogleSearchBarDisplayed.set(false);
     }
   }
 
   onClickSearchIcon() {
-    this.isSearchBarDisplayed.set(true);
+    this.isGoogleSearchBarDisplayed.set(true);
   }
 
   onHideSearch() {
-    this.isSearchBarDisplayed.set(false);
-  }
-
-  onClickSearchInput() {
-    window.location.href = this.searchUrl;
+    this.isGoogleSearchBarDisplayed.set(false);
   }
 }
