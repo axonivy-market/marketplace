@@ -115,7 +115,7 @@ public class FeedbackServiceImpl implements FeedbackService {
           if (isApproved) {
             List<Feedback> approvedLatestFeedbacks = feedbackRepository
                 .findByProductIdAndUserIdAndIsLatestTrueAndFeedbackStatusNotIn(feedbackApproval.getProductId(),
-                    feedbackApproval.getUserId(), List.of(FeedbackStatus.APPROVED));
+                    feedbackApproval.getUserId(), List.of(FeedbackStatus.REJECTED, FeedbackStatus.PENDING));
 
             if (ObjectUtils.isNotEmpty(approvedLatestFeedbacks)) {
               Feedback currentLatest = approvedLatestFeedbacks.get(0);
