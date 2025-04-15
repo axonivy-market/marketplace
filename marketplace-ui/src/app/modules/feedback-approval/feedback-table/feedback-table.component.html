@@ -1,0 +1,97 @@
+<div class="table-responsive">
+  <table class="table">
+    <thead>
+      <tr>
+        <th class="text-primary username-column" [lang]="languageService.selectedLanguage()">{{
+          'common.approval.username' | translate }}</th>
+        <th class="text-primary username-column" [lang]="languageService.selectedLanguage()">{{
+          'common.approval.product' | translate }}</th>
+        <th class="text-primary content-column" [lang]="languageService.selectedLanguage()">{{ 'common.approval.content'
+          | translate }}</th>
+        <th class="text-primary text-center rating-column" [lang]="languageService.selectedLanguage()">{{
+          'common.approval.rating' |
+          translate }}</th>
+        <th class="text-primary status-column" [lang]="languageService.selectedLanguage()">{{ 'common.approval.status' |
+          translate }}</th>
+        <th class="text-primary created-date-column" [lang]="languageService.selectedLanguage()">{{
+          'common.approval.createdAt' | translate }}</th>
+        <th class="text-primary updated-date-column" [lang]="languageService.selectedLanguage()">{{
+          'common.approval.updatedAt' | translate }}</th>
+        @if (isHistoryTab) {
+        <th class="text-primary moderator-column" [lang]="languageService.selectedLanguage()">{{
+          'common.approval.moderator' | translate }}</th>
+        <th class="text-primary created-date-column" [lang]="languageService.selectedLanguage()">{{
+          'common.approval.reviewDate' | translate }}</th>
+        } @else {
+        <th class="text-primary fixed-width" [lang]="languageService.selectedLanguage()">{{ 'common.approval.action' |
+          translate }}</th>
+        }
+      </tr>
+    </thead>
+    @if (feedbacks.length > 0) {
+    <tbody>
+      <tr *ngFor="let feedback of feedbacks">
+        <td class="username-column">
+          <img class="rounded-circle img-avatar img-fit-cover"
+            [src]="feedback.userAvatarUrl ?? '/assets/images/misc/avatar-default.png'" alt="Github user avatar" />
+          <span class="text-primary feedback-username"> {{ feedback.username ?? 'Github User' }}</span>
+        </td>
+        <td>
+          <p class="text-primary m-0">{{ feedback.productNames| multilingualism: languageService.selectedLanguage() }}
+          </p>
+        </td>
+        <td>
+          <p class="text-primary m-0">{{ feedback.content }}</p>
+        </td>
+        <td>
+          <p class="text-primary text-center m-0 rating-column">{{ feedback.rating }}</p>
+        </td>
+        <td>
+          <p class="text-primary m-0 status-column">{{ feedback.feedbackStatus }}</p>
+        </td>
+        <td>
+          <p class="text-primary m-0 created-date-column">{{ feedback.createdAt | date: 'short' }}</p>
+        </td>
+        <td>
+          <p class="text-primary m-0 updated-date-column">{{ feedback.updatedAt | date: 'short' }}</p>
+        </td>
+        @if (isHistoryTab) {
+        <td>
+          <p class="text-primary m-0 moderator-column">{{ feedback.moderatorName }}</p>
+        </td>
+        <td>
+          <p class="text-primary m-0 created-date-column">{{ feedback.reviewDate | date: 'short' }}</p>
+        </td>
+        } @else {
+        <td class="action-buttons fixed-width">
+          <div id="approve-button" (click)="handleReviewAction(feedback, true)">
+            <p class="mb-0 text-center" [lang]="languageService.selectedLanguage()">
+              {{ 'common.approval.approveBtnLabel' | translate }}</p>
+          </div>
+          <div id="reject-button" (click)="handleReviewAction(feedback, false)">
+            <p class="mb-0 text-center" [lang]="languageService.selectedLanguage()">
+              {{ 'common.approval.rejectBtnLabel' | translate }}</p>
+          </div>
+        </td>
+        }
+      </tr>
+    </tbody>
+    }
+    @else if(feedbacks.length == 0 && !isLoading) {
+    <tbody>
+      <tr>
+        <td colspan="12" class="border-0">
+          <p class="text-primary m-0 text-center no-feedback" [lang]="languageService.selectedLanguage()">
+            {{ 'common.approval.noFeedbacks' | translate }}
+          </p>
+        </td>
+      </tr>
+    </tbody>
+    }
+  </table>
+  @if (isLoading) {
+  <app-loading-spinner
+    containerClasses="d-flex justify-content-center position-fixed align-items-center top-0 end-0 bottom-0 start-0 rounded overlay-background z-1"
+    [key]="LoadingComponentId.FEEDBACK_APPROVAL" />
+  }
+</div>

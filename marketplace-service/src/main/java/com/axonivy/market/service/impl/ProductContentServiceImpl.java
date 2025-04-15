@@ -1,12 +1,13 @@
 package com.axonivy.market.service.impl;
 
-import com.axonivy.market.bo.Artifact;
 import com.axonivy.market.bo.DownloadOption;
-import com.axonivy.market.bo.MavenDependency;
+import com.axonivy.market.bo.VersionDownload;
 import com.axonivy.market.constants.CommonConstants;
 import com.axonivy.market.constants.ProductJsonConstants;
 import com.axonivy.market.constants.ReadmeConstants;
+import com.axonivy.market.entity.Artifact;
 import com.axonivy.market.entity.Image;
+import com.axonivy.market.entity.MavenDependency;
 import com.axonivy.market.entity.ProductDependency;
 import com.axonivy.market.entity.ProductModuleContent;
 import com.axonivy.market.model.ReadmeContentsModel;
@@ -15,6 +16,7 @@ import com.axonivy.market.service.FileDownloadService;
 import com.axonivy.market.service.ImageService;
 import com.axonivy.market.service.ProductContentService;
 import com.axonivy.market.service.ProductJsonContentService;
+import com.axonivy.market.service.ProductMarketplaceDataService;
 import com.axonivy.market.util.MavenUtils;
 import com.axonivy.market.util.ProductContentUtils;
 import lombok.AllArgsConstructor;
@@ -22,9 +24,7 @@ import lombok.extern.log4j.Log4j2;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.core.io.ClassPathResource;
-import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
-import org.springframework.web.servlet.mvc.method.annotation.ResponseBodyEmitter;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -33,12 +33,13 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.concurrent.CompletableFuture;
+import java.util.function.Predicate;
 import java.util.stream.Stream;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
@@ -50,6 +51,7 @@ public class ProductContentServiceImpl implements ProductContentService {
   private final FileDownloadService fileDownloadService;
   private final ProductJsonContentService productJsonContentService;
   private final ImageService imageService;
+  private final ProductMarketplaceDataService productMarketplaceDataService;
   private final ProductDependencyRepository productDependencyRepository;
 
   @Override
@@ -60,7 +62,8 @@ public class ProductContentServiceImpl implements ProductContentService {
         artifact.getArtifactId());
     try {
 
-      unzippedFolderPath = fileDownloadService.downloadAndUnzipFile(url, new DownloadOption(true, unzippedFolderPath));
+      unzippedFolderPath = fileDownloadService.downloadAndUnzipFile(url, DownloadOption.builder().isForced(true)
+        .workingDirectory(unzippedFolderPath).shouldGrantPermission(false).build());
       updateDependencyContentsFromProductJson(productModuleContent, productId, unzippedFolderPath, productName);
       extractReadMeFileFromContents(productId, unzippedFolderPath, productModuleContent);
     } catch (Exception e) {
@@ -133,43 +136,53 @@ public class ProductContentServiceImpl implements ProductContentService {
     return readmeContents;
   }
 
-  @Async("zipExecutor")
   @Override
-  public CompletableFuture<ResponseBodyEmitter> downloadZipArtifactFile(String productId, String artifactId,
+  public VersionDownload downloadZipArtifactFile(String productId, String artifactId,
       String version) {
-    List<ProductDependency> existingProductDependencies = productDependencyRepository.findProductDependencies(
-        productId, artifactId, version);
-    List<MavenDependency> mavenDependencies = Optional.ofNullable(existingProductDependencies).orElse(List.of())
-        .stream().map(ProductDependency::getDependenciesOfArtifact).map(Map::values)
-        .flatMap(Collection::stream).flatMap(List::stream).toList();
-    // Validate product
+    List<MavenDependency> mavenDependencies = getMavenDependenciesOfProduct(productId, artifactId, version);
     if (ObjectUtils.isEmpty(mavenDependencies)) {
       return null;
     }
-
     // Create a ZIP file
-    var emitter = new ResponseBodyEmitter();
     try {
       var byteArrayOutputStream = new ByteArrayOutputStream();
       try (var zipOut = new ZipOutputStream(byteArrayOutputStream)) {
         for (var mavenArtifact : mavenDependencies) {
           zipArtifact(version, mavenArtifact, zipOut);
-          // Zip dependencies
-          for (var dependency : Optional.ofNullable(mavenArtifact.getDependencies()).orElse(List.of())) {
-            zipArtifact(version, dependency, zipOut);
-          }
+          zipDependencyArtifacts(version, mavenArtifact, zipOut);
         }
         zipConfigurationOptions(zipOut);
         zipOut.closeEntry();
       }
-      emitter.send(byteArrayOutputStream.toByteArray());
-      emitter.complete();
+      return productMarketplaceDataService.getVersionDownload(productId, byteArrayOutputStream.toByteArray());
     } catch (IOException e) {
       log.error("Cannot create ZIP file {}", e.getMessage());
-      emitter.completeWithError(e);
+      return null;
     }
+  }
 
-    return CompletableFuture.completedFuture(emitter);
+  private void zipDependencyArtifacts(String version, MavenDependency mavenArtifact, ZipOutputStream zipOut)
+      throws IOException {
+    if (mavenArtifact == null || ObjectUtils.isEmpty(mavenArtifact.getDependencies())) {
+      return;
+    }
+    for (var dependency : Optional.ofNullable(mavenArtifact.getDependencies()).orElse(List.of())) {
+      zipArtifact(version, dependency, zipOut);
+    }
+  }
+
+  private List<MavenDependency> getMavenDependenciesOfProduct(String productId, String artifactId, String version) {
+    Predicate<MavenDependency> filterByArtifactAndVersion =
+        dependency -> dependency.getArtifactId().equals(artifactId) &&
+            dependency.getVersion().equals(version);
+
+    ProductDependency productDependency = productDependencyRepository.findByIdWithDependencies(productId);
+
+    return Optional.ofNullable(productDependency)
+        .map(ProductDependency::getDependenciesOfArtifact)
+        .map(Collection::stream)
+        .map(dependencies -> dependencies.filter(filterByArtifactAndVersion).toList())
+        .orElse(new ArrayList<>());
   }
 
   private void zipConfigurationOptions(ZipOutputStream zipOut) throws IOException {

@@ -3,8 +3,7 @@ package com.axonivy.market.github.service.impl;
 import com.axonivy.market.constants.ErrorMessageConstants;
 import com.axonivy.market.constants.GitHubConstants;
 import com.axonivy.market.entity.Product;
-import com.axonivy.market.entity.User;
-
+import com.axonivy.market.entity.GithubUser;
 import com.axonivy.market.enums.ErrorCode;
 import com.axonivy.market.exceptions.model.MissingHeaderException;
 import com.axonivy.market.exceptions.model.NotFoundException;
@@ -14,12 +13,12 @@ import com.axonivy.market.github.model.CodeScanning;
 import com.axonivy.market.github.model.Dependabot;
 import com.axonivy.market.github.model.GitHubAccessTokenResponse;
 import com.axonivy.market.github.model.GitHubProperty;
+import com.axonivy.market.github.model.ProductSecurityInfo;
 import com.axonivy.market.github.model.SecretScanning;
 import com.axonivy.market.github.service.GitHubService;
-import com.axonivy.market.github.model.ProductSecurityInfo;
 import com.axonivy.market.github.util.GitHubUtils;
 import com.axonivy.market.model.GitHubReleaseModel;
-import com.axonivy.market.repository.UserRepository;
+import com.axonivy.market.repository.GithubUserRepository;
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.lang3.ObjectUtils;
 import org.kohsuke.github.*;
@@ -27,7 +26,6 @@ import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
-
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
@@ -63,7 +61,7 @@ import static org.apache.commons.lang3.StringUtils.EMPTY;
 public class GitHubServiceImpl implements GitHubService {
 
   private final RestTemplate restTemplate;
-  private final UserRepository userRepository;
+  private final GithubUserRepository githubUserRepository;
   private final GitHubProperty gitHubProperty;
   private final ThreadPoolTaskScheduler taskScheduler;
   private static final String GITHUB_PULL_REQUEST_NUMBER_REGEX = "#(\\d+)";
@@ -72,10 +70,10 @@ public class GitHubServiceImpl implements GitHubService {
   private static final String GITHUB_MAIN_LINK = "https://github.com/";
   private static final String FIRST_REGEX_CAPTURING_GROUP="$1";
 
-  public GitHubServiceImpl(RestTemplate restTemplate, UserRepository userRepository,
+  public GitHubServiceImpl(RestTemplate restTemplate, GithubUserRepository githubUserRepository,
       GitHubProperty gitHubProperty, ThreadPoolTaskScheduler taskScheduler) {
     this.restTemplate = restTemplate;
-    this.userRepository = userRepository;
+    this.githubUserRepository = githubUserRepository;
     this.gitHubProperty = gitHubProperty;
     this.taskScheduler = taskScheduler;
   }
@@ -146,18 +144,18 @@ public class GitHubServiceImpl implements GitHubService {
   }
 
   @Override
-  public User getAndUpdateUser(String accessToken) {
+  public GithubUser getAndUpdateUser(String accessToken) {
     try {
       GHMyself myself = getGitHub(accessToken).getMyself();
-      User user = Optional.ofNullable(userRepository.searchByGitHubId(String.valueOf(myself.getId())))
-          .orElse(new User());
-      user.setGitHubId(String.valueOf(myself.getId()));
-      user.setName(myself.getName());
-      user.setUsername(myself.getLogin());
-      user.setAvatarUrl(myself.getAvatarUrl());
-      user.setProvider(GitHubConstants.GITHUB_PROVIDER_NAME);
-      userRepository.save(user);
-      return user;
+      GithubUser githubUser = Optional.ofNullable(githubUserRepository.searchByGitHubId(String.valueOf(myself.getId())))
+          .orElse(new GithubUser());
+      githubUser.setGitHubId(String.valueOf(myself.getId()));
+      githubUser.setName(myself.getName());
+      githubUser.setUsername(myself.getLogin());
+      githubUser.setAvatarUrl(myself.getAvatarUrl());
+      githubUser.setProvider(GitHubConstants.GITHUB_PROVIDER_NAME);
+      githubUserRepository.save(githubUser);
+      return githubUser;
     } catch (IOException e) {
       log.error("GitHub user fetch failed", e);
       throw new NotFoundException(ErrorCode.GITHUB_USER_NOT_FOUND, "Failed to fetch user details from GitHub");

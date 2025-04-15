@@ -1,0 +1,146 @@
+.approval {
+  line-height: 110%;
+  margin-top: 7.2rem;
+  margin-bottom: 3.2rem;
+  cursor: default;
+}
+
+.introduction-container {
+  display: flex;
+  flex-direction: row;
+  gap: 3.2rem;
+}
+
+.about {
+  line-height: 130%;
+  width: 50%;
+  flex: none;
+  order: 0;
+  flex-grow: 1;
+}
+
+.contribute-link-container {
+  line-height: 140%;
+  width: 50%;
+  flex: none;
+  order: 0;
+  align-self: stretch;
+  flex-grow: 0;
+}
+
+.feedback-container {
+  flex-direction: row;
+  margin-top: 9.6rem;
+}
+
+.nav-tabs {
+  gap: 2rem;
+}
+
+.nav-tabs a:hover {
+  cursor: pointer;
+}
+
+.nav-item {
+  gap: 10px;
+
+  a {
+    font-weight: 400;
+    font-size: 2.2rem;
+
+    color: var(--active-tab-indicator-color);
+  }
+
+  a.active {
+    font-weight: 600;
+  }
+
+  a.text-secondary.active {
+    color: #{white} !important;
+  }
+}
+
+.nav-tabs .nav-link.active::after {
+  content: '';
+  position: absolute;
+  bottom: -1px;
+  left: 0;
+  width: 100%;
+  height: 2px;
+  background-color: var(--active-tab-indicator-color);
+  z-index: 1;
+}
+
+.tab-group {
+  gap: 40px;
+
+  .tab-content {
+    .tab-pane {
+      opacity: 1;
+      transition: none;
+    }
+  }
+}
+
+.token-container {
+  margin: 20px auto;
+  padding: 0 15px;
+}
+
+.header {
+  padding: 20px 0;
+
+  h2 {
+    font-size: 4rem;
+  }
+}
+
+.token-input-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8px;
+  padding: 20px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+.token-input-container h3 {
+  font-size: 1.5rem;
+  margin-bottom: 20px;
+}
+
+.token-input-container span {
+  margin-bottom: 20px;
+  color: #777;
+}
+
+#token-input {
+  padding: 10px;
+  font-size: 1.3rem;
+  margin-bottom: 10px;
+  width: 350px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
+
+#token-input::ng-deep {
+  background-color: var(--ivy-textarea-background-color);
+}
+
+.token-input-container button {
+  padding: 10px 20px;
+  font-size: 1.5rem;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+  margin-left: 10px;
+  width: 100px;
+}
+
+.error-message {
+  color: #f44336;
+  font-size: 1.2rem;
+  width: 100%;
+}

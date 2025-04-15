@@ -20,15 +20,7 @@ import com.axonivy.market.github.service.GHAxonIvyMarketRepoService;
 import com.axonivy.market.github.service.GHAxonIvyProductRepoService;
 import com.axonivy.market.github.service.GitHubService;
 import com.axonivy.market.model.GitHubReleaseModel;
-import com.axonivy.market.repository.GitHubRepoMetaRepository;
-import com.axonivy.market.repository.ImageRepository;
-import com.axonivy.market.repository.MavenArtifactVersionRepository;
-import com.axonivy.market.repository.MetadataRepository;
-import com.axonivy.market.repository.MetadataSyncRepository;
-import com.axonivy.market.repository.ProductJsonContentRepository;
-import com.axonivy.market.repository.ProductMarketplaceDataRepository;
-import com.axonivy.market.repository.ProductModuleContentRepository;
-import com.axonivy.market.repository.ProductRepository;
+import com.axonivy.market.repository.*;
 import com.axonivy.market.service.ExternalDocumentService;
 import com.axonivy.market.service.ImageService;
 import com.axonivy.market.service.MetadataService;
@@ -126,25 +118,25 @@ class ProductServiceImplTest extends BaseSetup {
   @Mock
   private ExternalDocumentService externalDocumentService;
   @Mock
-  private MavenArtifactVersionRepository mavenArtifactVersionRepo;
-  @Mock
   private ProductContentService productContentService;
   @Mock
   private GHAxonIvyProductRepoService axonIvyProductRepoService;
-  @Mock
-  private MetadataSyncRepository metadataSyncRepo;
   @Mock
   private ProductMarketplaceDataService productMarketplaceDataService;
   @Mock
   private ProductMarketplaceDataRepository productMarketplaceDataRepo;
   @Mock
   private VersionService versionService;
+  @Mock
+  private ArtifactRepository artifactRepo;
+  @Mock
+  private MavenArtifactVersionRepository mavenArtifactVersionRepository;
   @Spy
   @InjectMocks
   private ProductServiceImpl productService;
 
   @BeforeEach
-  public void setup() {
+  void setup() {
     mockResultReturn = createPageProductsMock();
   }
 
@@ -326,26 +318,8 @@ class ProductServiceImplTest extends BaseSetup {
       Product mockProduct = getMockProduct();
       mockProduct.setProductModuleContent(mockReadmeProductContent());
       mockProduct.setRepositoryName(MOCK_PRODUCT_REPOSITORY_NAME);
-      HashMap<String, String> names = new HashMap<>();
-      names.put(ProductJsonConstants.EN_LANGUAGE, MOCK_PRODUCT_NAME);
-      mockProduct.setNames(names);
-      var gitHubRepoMeta = mock(GitHubRepoMeta.class);
-      when(gitHubRepoMeta.getLastSHA1()).thenReturn(SHA1_SAMPLE);
-      var mockCommit = mockGHCommitHasSHA1(SHA1_SAMPLE);
-      when(marketRepoService.getLastCommit(anyLong())).thenReturn(mockCommit);
-      when(repoMetaRepo.findByRepoName(anyString())).thenReturn(gitHubRepoMeta);
-
-      when(productRepo.findAll()).thenReturn(List.of(mockProduct));
-
-      ProductModuleContent mockReturnProductContent = mockReadmeProductContent();
-      mockReturnProductContent.setVersion(MOCK_RELEASED_VERSION);
-
-      when(productContentService.getReadmeAndProductContentsFromVersion(any(), anyString(), anyString(), any(),
-          anyString())).thenReturn(mockReturnProductContent);
-      when(productModuleContentRepo.saveAll(anyList()))
-          .thenReturn(List.of(mockReadmeProductContent(), mockReturnProductContent));
+      mockForSyncSecondTime(mockProduct);
       mockUtils.when(() -> MavenUtils.getMetadataContentFromUrl(any())).thenReturn(getMockMetadataContent());
-      when(MavenUtils.buildDownloadUrl(any(), any(), any(), any(), any(), any())).thenReturn(MOCK_DOWNLOAD_URL);
       // Executes
       productService.syncLatestDataFromMarketRepo(false);
 
@@ -354,6 +328,49 @@ class ProductServiceImplTest extends BaseSetup {
       assertThat(argumentCaptor.getValue().getProductModuleContent().getId())
           .isEqualTo(mockReadmeProductContent().getId());
     }
+  }
+
+  @Test
+  void testSyncProductsSecondTime_andThereIsNoDuplicatedValueInReleasedVersion() {
+    try (MockedStatic<MavenUtils> mockUtils = Mockito.mockStatic(MavenUtils.class)) {
+      List<String> mockVersions = Arrays.asList("10.0.10", "10.0.10-SNAPSHOT", "10.0.10-m123", "10.0.11-SNAPSHOT",
+          "10.0.12-SNAPSHOT", "10.0.13-SNAPSHOT");
+      Product mockProduct = getMockProduct();
+      mockProduct.getReleasedVersions().add("10.0.10-SNAPSHOT");
+      mockProduct.setProductModuleContent(mockReadmeProductContent());
+      mockProduct.setRepositoryName(MOCK_PRODUCT_REPOSITORY_NAME);
+      mockForSyncSecondTime(mockProduct);
+      mockUtils.when(() -> MavenUtils.getMetadataContentFromUrl(any())).thenReturn(getMockMetadataContent2());
+      // Executes
+      productService.syncLatestDataFromMarketRepo(false);
+
+      verify(productRepo).save(argumentCaptor.capture());
+      assertThat(argumentCaptor.getValue().getReleasedVersions()).isEqualTo(mockVersions);
+    }
+  }
+
+  private void mockForSyncSecondTime(Product mockProduct) {
+    HashMap<String, String> names = new HashMap<>();
+    names.put(ProductJsonConstants.EN_LANGUAGE, MOCK_PRODUCT_NAME);
+    mockProduct.setNames(names);
+    var gitHubRepoMeta = mock(GitHubRepoMeta.class);
+    when(gitHubRepoMeta.getLastSHA1()).thenReturn(SHA1_SAMPLE);
+    var mockCommit = mockGHCommitHasSHA1(SHA1_SAMPLE);
+    when(marketRepoService.getLastCommit(anyLong())).thenReturn(mockCommit);
+    when(repoMetaRepo.findByRepoName(anyString())).thenReturn(gitHubRepoMeta);
+
+    when(productRepo.findAllProductsWithNamesAndShortDescriptions()).thenReturn(List.of(mockProduct));
+
+    ProductModuleContent mockReturnProductContent = mockReadmeProductContent();
+    mockReturnProductContent.setVersion(MOCK_RELEASED_VERSION);
+
+    when(productContentService.getReadmeAndProductContentsFromVersion(any(), anyString(), anyString(), any(),
+        anyString())).thenReturn(mockReturnProductContent);
+    when(productModuleContentRepo.saveAll(anyList()))
+        .thenReturn(List.of(mockReadmeProductContent(), mockReturnProductContent));
+
+    when(MavenUtils.buildDownloadUrl(any(), any(), any(), any(), any(), any())).thenReturn(MOCK_DOWNLOAD_URL);
+    when(artifactRepo.findAllByIdInAndFetchArchivedArtifacts(any())).thenReturn(mockProduct.getArtifacts());
   }
 
   @Test
@@ -404,9 +421,8 @@ class ProductServiceImplTest extends BaseSetup {
 
   @Test
   void testFetchProductDetail() {
-    MavenArtifactVersion mockMavenArtifactVersion = getMockMavenArtifactVersionWithData();
-    when(mavenArtifactVersionRepo.findById(MOCK_PRODUCT_ID)).thenReturn(
-        Optional.ofNullable(mockMavenArtifactVersion));
+    List<MavenArtifactVersion> mockMavenArtifactVersion = getMockMavenArtifactVersionWithData();
+    when(mavenArtifactVersionRepository.findByProductId(MOCK_PRODUCT_ID)).thenReturn(mockMavenArtifactVersion);
     when(productRepo.getProductByIdAndVersion(MOCK_PRODUCT_ID, MOCK_SNAPSHOT_VERSION)).thenReturn(null);
     Product result = productService.fetchProductDetail(MOCK_PRODUCT_ID, true);
     assertNull(result);
@@ -414,16 +430,13 @@ class ProductServiceImplTest extends BaseSetup {
 
   @Test
   void testGetCompatibilityRangeAfterFetchProductDetail() {
-    MavenArtifactVersion mockMavenArtifactVersion = getMockMavenArtifactVersionWithData();
-    when(mavenArtifactVersionRepo.findById(MOCK_PRODUCT_ID)).thenReturn(
-        Optional.ofNullable(mockMavenArtifactVersion));
-
+    List<MavenArtifactVersion> mockMavenArtifactVersion = getMockMavenArtifactVersionWithData();
+    when(mavenArtifactVersionRepository.findByProductId(MOCK_PRODUCT_ID)).thenReturn(mockMavenArtifactVersion);
 
     when(productRepo.getProductByIdAndVersion(MOCK_PRODUCT_ID, MOCK_SNAPSHOT_VERSION))
         .thenReturn(getMockProduct());
-    when(versionService.getVersionsForDesigner(MOCK_PRODUCT_ID))
+    when(versionService.getVersionsForDesigner(MOCK_PRODUCT_ID, null))
         .thenReturn(mockVersionAndUrlModels(), mockVersionModels(), mockVersionModels2(), mockVersionModels3());
-
 
     Product result = productService.fetchProductDetail(MOCK_PRODUCT_ID, true);
     assertEquals("10.0+", result.getCompatibilityRange());
@@ -440,14 +453,14 @@ class ProductServiceImplTest extends BaseSetup {
 
   @Test
   void testGetProductByIdWithNewestReleaseVersion() {
-    MavenArtifactVersion mockMavenArtifactVersion = getMockMavenArtifactVersionWithData();
+    List<MavenArtifactVersion> mockMavenArtifactVersions = getMockMavenArtifactVersionWithData();
     Product mockProduct = getMockProduct();
 
-    try (MockedStatic<MavenUtils> mockMavenUtils = Mockito.mockStatic(MavenUtils.class);
-         MockedStatic<VersionUtils> mockVersionUtils = Mockito.mockStatic(VersionUtils.class)) {
-      mockMavenUtils.when(() -> mavenArtifactVersionRepo.findById(MOCK_PRODUCT_ID)).thenReturn(
-          Optional.of(mockMavenArtifactVersion));
-      when(VersionUtils.getAllExistingVersions(mockMavenArtifactVersion, true, StringUtils.EMPTY))
+    try (MockedStatic<MavenUtils> mockUtils = Mockito.mockStatic(MavenUtils.class);
+        MockedStatic<VersionUtils> mockVersionUtils = Mockito.mockStatic(VersionUtils.class)) {
+      mockUtils.when(() -> mavenArtifactVersionRepository.findByProductId(MOCK_PRODUCT_ID)).thenReturn(
+          mockMavenArtifactVersions);
+      when(VersionUtils.extractAllVersions(mockMavenArtifactVersions, true, StringUtils.EMPTY))
           .thenReturn(List.of(MOCK_SNAPSHOT_VERSION));
 
       when(productRepo.getProductByIdAndVersion(MOCK_PRODUCT_ID, MOCK_SNAPSHOT_VERSION)).thenReturn(mockProduct);
@@ -456,6 +469,13 @@ class ProductServiceImplTest extends BaseSetup {
 
       Product result = productService.getProductByIdWithNewestReleaseVersion(MOCK_PRODUCT_ID, true);
       assertEquals(mockProduct, result);
+
+      when(mavenArtifactVersionRepository.findByProductId(MOCK_PRODUCT_ID)).thenReturn(new ArrayList<>());
+      when(productRepo.getReleasedVersionsById(MOCK_PRODUCT_ID)).thenReturn(List.of(MOCK_SNAPSHOT_VERSION));
+      when(productRepo.getProductByIdAndVersion(MOCK_PRODUCT_ID, MOCK_SNAPSHOT_VERSION)).thenReturn(mockProduct);
+      when(VersionUtils.getVersionsToDisplay(any(),any(),any())).thenReturn(List.of(MOCK_SNAPSHOT_VERSION));
+      result  = productService.getProductByIdWithNewestReleaseVersion(MOCK_PRODUCT_ID, true);
+      assertEquals(mockProduct, result);
     }
   }
 
@@ -463,14 +483,13 @@ class ProductServiceImplTest extends BaseSetup {
   void testGetProductByIdWithNewestReleaseVersionWithEmptyArtifact() {
     Product mockProduct = getMockProduct();
     when(productJsonContentRepo.findByProductIdAndVersion(MOCK_PRODUCT_ID, MOCK_SNAPSHOT_VERSION))
-            .thenReturn(List.of(getMockProductJsonContentContainMavenDropins()));
-    when(mavenArtifactVersionRepo.findById(MOCK_PRODUCT_ID)).thenReturn(Optional.empty());
+        .thenReturn(List.of(getMockProductJsonContentContainMavenDropins()));
+    when(mavenArtifactVersionRepository.findByProductId(MOCK_PRODUCT_ID)).thenReturn(new ArrayList<>());
     when(productRepo.getReleasedVersionsById(MOCK_PRODUCT_ID)).thenReturn(List.of(MOCK_SNAPSHOT_VERSION));
     when(productRepo.getProductByIdAndVersion(MOCK_PRODUCT_ID, MOCK_SNAPSHOT_VERSION)).thenReturn(mockProduct);
-    
+
     Product result = productService.getProductByIdWithNewestReleaseVersion(MOCK_PRODUCT_ID, true);
     assertEquals(mockProduct, result);
-
   }
 
   @Test
@@ -510,14 +529,6 @@ class ProductServiceImplTest extends BaseSetup {
 
     result = productService.getCompatibilityFromOldestVersion("11.2");
     assertEquals("11.2+", result);
-  }
-
-  @Test
-  void testCreateOrder() {
-    Sort.Order order = productService.createOrder(SortOption.ALPHABETICALLY, "en");
-
-    assertEquals(Sort.Direction.ASC, order.getDirection());
-    assertEquals(SortOption.ALPHABETICALLY.getCode("en"), order.getProperty());
   }
 
   private void mockMarketRepoMetaStatus() {
@@ -775,7 +786,7 @@ class ProductServiceImplTest extends BaseSetup {
     Product mockProduct = new Product();
     mockProduct.setId(mockProductId);
     mockProduct.setRepositoryName(mockRepositoryName);
-    when(productRepo.findProductById(mockProductId)).thenReturn(mockProduct);
+    when(productRepo.findProductByIdAndRelatedData(mockProductId)).thenReturn(mockProduct);
     when(gitHubService.getGitHubReleaseModelByProductIdAndReleaseId(mockProduct, mockReleaseId))
         .thenReturn(new GitHubReleaseModel());
 
@@ -797,7 +808,7 @@ class ProductServiceImplTest extends BaseSetup {
     mockProduct.setRepositoryName(mockRepositoryName);
     mockProduct.setSourceUrl(mockProductSourceUrl);
 
-    when(productRepo.findProductById(mockProductId)).thenReturn(mockProduct);
+    when(productRepo.findProductByIdAndRelatedData(mockProductId)).thenReturn(mockProduct);
 
     PagedIterable<GHRelease> mockGhReleasePagedIterable = mock(PagedIterable.class);
 
@@ -820,13 +831,13 @@ class ProductServiceImplTest extends BaseSetup {
     mockProduct.setId(mockProductId);
     mockProduct.setRepositoryName("axonivy-market/portal");
     mockProduct.setSourceUrl("");
-    when(productRepo.findProductById(mockProductId)).thenReturn(mockProduct);
+    when(productRepo.findProductByIdAndRelatedData(mockProductId)).thenReturn(mockProduct);
 
     Page<GitHubReleaseModel> result = productService.getGitHubReleaseModels(mockProductId, mockPageable);
 
     assertNotNull(result);
     assertEquals(0, result.getTotalElements());
-    verify(productRepo).findProductById(mockProductId);
+    verify(productRepo).findProductByIdAndRelatedData(mockProductId);
     verifyNoInteractions(gitHubService);
   }
 
@@ -838,13 +849,13 @@ class ProductServiceImplTest extends BaseSetup {
     mockProduct.setId(mockProductId);
     mockProduct.setRepositoryName("");
     mockProduct.setSourceUrl("https://github.com/axonivy-market/portal");
-    when(productRepo.findProductById(mockProductId)).thenReturn(mockProduct);
+    when(productRepo.findProductByIdAndRelatedData(mockProductId)).thenReturn(mockProduct);
 
     Page<GitHubReleaseModel> result = productService.getGitHubReleaseModels(mockProductId, mockPageable);
 
     assertNotNull(result);
     assertEquals(0, result.getTotalElements());
-    verify(productRepo).findProductById(mockProductId);
+    verify(productRepo).findProductByIdAndRelatedData(mockProductId);
     verifyNoInteractions(gitHubService);
   }
 
@@ -863,7 +874,7 @@ class ProductServiceImplTest extends BaseSetup {
     mockProduct.setId("portal");
     mockProduct.setRepositoryName(SAMPLE_PRODUCT_REPOSITORY_NAME);
     mockProduct.setSourceUrl("https://github.com/axonivy-market/portal");
-    when(productRepo.findProductById(anyString())).thenReturn(mockProduct);
+    when(productRepo.findProductByIdAndRelatedData(anyString())).thenReturn(mockProduct);
     when(gitHubService.getRepository(anyString())).thenReturn(mock(GHRepository.class));
 
     productService.syncGitHubReleaseModels(SAMPLE_PRODUCT_ID, PAGEABLE);

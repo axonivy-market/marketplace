@@ -6,19 +6,22 @@ For further reference, please consider the following sections:
 
 * [Official Apache Maven documentation](https://maven.apache.org/guides/index.html)
 * [Spring Boot Maven Plugin Reference Guide](https://docs.spring.io/spring-boot/docs/3.2.5/maven-plugin/reference/html/)
-* [Spring Data MongoDB](https://docs.spring.io/spring-boot/docs/3.2.5/reference/htmlsingle/index.html#data.nosql.mongodb)
+* [Spring Data JPA](https://spring.io/projects/spring-data-jpa)
 * [Spring Web](https://docs.spring.io/spring-boot/docs/3.2.5/reference/htmlsingle/index.html#web)
 
 ### Guides
 
 The following guides illustrate how to use some features concretely:
 
-* Installing mongodb, and access it as Url mongodb://localhost:27017/, and you can create and name whatever you want
-  ,then you should put them to application.properties
-* You can change the MongoDB configuration in file `application.properties`
+* Installing postgresql, and access it as Url jdbc:postgresql://localhost:5432/marketplace-service, and you can create
+  and name whatever you want,then you should put them to application.properties
+* You can change the postgreSQL configuration in file `application.properties`
     ```
-    spring.data.mongodb.host=
-    spring.data.mongodb.database=
+    spring.datasource.url=${POSTGRES_HOST_URL}
+    spring.datasource.username=${POSTGRES_USERNAME}
+    spring.datasource.password=${POSTGRES_PASSWORD}
+    spring.jpa.show-sql=true/false
+    spring.datasource.driver-class-name=org.postgresql.Driver
     ```
 * Update GitHub token in file `github.token`
 * Run mvn clean install to build project

@@ -1,7 +1,7 @@
 package com.axonivy.market.controller;
 
 import com.axonivy.market.constants.CommonConstants;
-import com.axonivy.market.entity.User;
+import com.axonivy.market.entity.GithubUser;
 import com.axonivy.market.exceptions.model.Oauth2ExchangeCodeException;
 import com.axonivy.market.github.model.GitHubAccessTokenResponse;
 import com.axonivy.market.github.service.GitHubService;
@@ -46,12 +46,12 @@ class OAuth2ControllerTest {
   @Test
   void testGitHubLogin_Success() throws Exception {
     String accessToken = "sampleAccessToken";
-    User user = createUserMock();
+    GithubUser githubUser = createUserMock();
     String jwtToken = "sampleJwtToken";
 
     when(gitHubService.getAccessToken(any(), any())).thenReturn(createGitHubAccessTokenResponseMock());
-    when(gitHubService.getAndUpdateUser(accessToken)).thenReturn(user);
-    when(jwtService.generateToken(user)).thenReturn(jwtToken);
+    when(gitHubService.getAndUpdateUser(accessToken)).thenReturn(githubUser);
+    when(jwtService.generateToken(githubUser, accessToken)).thenReturn(jwtToken);
 
     ResponseEntity<?> response = oAuth2Controller.gitHubLogin(oauth2AuthorizationCode);
 
@@ -95,14 +95,14 @@ class OAuth2ControllerTest {
     assertTrue(body.containsKey(CommonConstants.MESSAGE));
   }
 
-  private User createUserMock() {
-    User user = new User();
-    user.setId("userId");
-    user.setUsername("username");
-    user.setName("User Name");
-    user.setAvatarUrl("http://avatar.url");
-    user.setProvider("github");
-    return user;
+  private GithubUser createUserMock() {
+    GithubUser githubUser = new GithubUser();
+    githubUser.setId("userId");
+    githubUser.setUsername("username");
+    githubUser.setName("User Name");
+    githubUser.setAvatarUrl("http://avatar.url");
+    githubUser.setProvider("github");
+    return githubUser;
   }
 
   private GitHubAccessTokenResponse createGitHubAccessTokenResponseMock() {

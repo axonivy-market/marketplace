@@ -64,7 +64,7 @@ export class ProductFilterComponent {
 
       const selectedType = this.types.find(t => t.value === this.typeValue);
       if (selectedType) {
-        this.onSelectType(selectedType);
+        this.selectedTypeLabel = CommonUtils.getLabel(selectedType.value, this.types);
       }
 
       // Update sort value, remove invalid sort from query params if any
@@ -79,7 +79,7 @@ export class ProductFilterComponent {
       } else {
         sortValue = sort;
       }
-      this.onSortChange(sortValue);
+      this.selectedSortLabel = CommonUtils.getLabel(sortValue, this.sorts);
       this.historyService.lastSortOption.set(sortValue);
 
 
@@ -104,12 +104,11 @@ export class ProductFilterComponent {
     if (searchString) {
       searchString = searchString.trim();
     }
-    this.searchChange.next(searchString);
+    this.searchChange.emit(searchString);
   }
 
   onSortChange(sort: SortOption) {
-    this.sortChange.next(sort);
+    this.sortChange.emit(sort);
     this.selectedSortLabel = CommonUtils.getLabel(sort, this.sorts);
   }
-
 }

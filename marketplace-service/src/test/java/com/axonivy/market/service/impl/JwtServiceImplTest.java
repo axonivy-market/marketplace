@@ -1,6 +1,7 @@
 package com.axonivy.market.service.impl;
 
-import com.axonivy.market.entity.User;
+import com.axonivy.market.BaseSetup;
+import com.axonivy.market.entity.GithubUser;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jws;
 import org.junit.jupiter.api.BeforeEach;
@@ -13,7 +14,7 @@ import org.springframework.test.util.ReflectionTestUtils;
 import static org.junit.jupiter.api.Assertions.*;
 
 @ExtendWith(MockitoExtension.class)
-class JwtServiceImplTest {
+class JwtServiceImplTest extends BaseSetup {
 
   private static final String SECRET = "mySecret";
   private static final long EXPIRATION = 7L; // 7 days
@@ -29,12 +30,12 @@ class JwtServiceImplTest {
 
   @Test
   void testGenerateToken() {
-    User user = new User();
-    user.setId("123");
-    user.setName("John Doe");
-    user.setUsername("johndoe");
+    GithubUser githubUser = new GithubUser();
+    githubUser.setId("123");
+    githubUser.setName("John Doe");
+    githubUser.setUsername("johndoe");
 
-    String token = jwtService.generateToken(user);
+    String token = jwtService.generateToken(githubUser, ACCESS_TOKEN);
 
     assertNotNull(token);
     assertFalse(token.isEmpty());
@@ -47,12 +48,12 @@ class JwtServiceImplTest {
 
   @Test
   void testValidateToken() {
-    User user = new User();
-    user.setId("123");
-    user.setName("John Doe");
-    user.setUsername("johndoe");
+    GithubUser githubUser = new GithubUser();
+    githubUser.setId("123");
+    githubUser.setName("John Doe");
+    githubUser.setUsername("johndoe");
 
-    String validToken = jwtService.generateToken(user);
+    String validToken = jwtService.generateToken(githubUser, ACCESS_TOKEN);
     assertTrue(jwtService.validateToken(validToken));
 
     String invalidToken = "invalid.token.here";
@@ -61,12 +62,12 @@ class JwtServiceImplTest {
 
   @Test
   void testGetClaimsFromToken() {
-    User user = new User();
-    user.setId("123");
-    user.setName("John Doe");
-    user.setUsername("johndoe");
+    GithubUser githubUser = new GithubUser();
+    githubUser.setId("123");
+    githubUser.setName("John Doe");
+    githubUser.setUsername("johndoe");
 
-    String token = jwtService.generateToken(user);
+    String token = jwtService.generateToken(githubUser, ACCESS_TOKEN);
 
     Claims claims = jwtService.getClaimsFromToken(token);
     assertNotNull(claims);
@@ -77,12 +78,12 @@ class JwtServiceImplTest {
 
   @Test
   void testGetClaimsJws() {
-    User user = new User();
-    user.setId("123");
-    user.setName("John Doe");
-    user.setUsername("johndoe");
+    GithubUser githubUser = new GithubUser();
+    githubUser.setId("123");
+    githubUser.setName("John Doe");
+    githubUser.setUsername("johndoe");
 
-    String token = jwtService.generateToken(user);
+    String token = jwtService.generateToken(githubUser, ACCESS_TOKEN);
 
     Jws<Claims> claimsJws = jwtService.getClaimsJws(token);
     assertNotNull(claimsJws);

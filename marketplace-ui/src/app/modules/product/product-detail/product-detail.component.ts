@@ -180,10 +180,10 @@ export class ProductDetailComponent {
       this.loadingService.showLoading(LoadingComponentId.DETAIL_PAGE);
       forkJoin({
         productDetail: this.getProductDetailObservable(productId),
+        userFeedback: this.productFeedbackService.findProductFeedbackOfUser(),
         productFeedBack:
           this.productFeedbackService.getInitFeedbacksObservable(),
         rating: this.productStarRatingService.getRatingObservable(productId),
-        userFeedback: this.productFeedbackService.findProductFeedbackOfUser(),
         changelogs: this.productService.getProductChangelogs(productId),
       }).subscribe(res => {
         this.md
@@ -194,7 +194,7 @@ export class ProductDetailComponent {
             linkify: true,
           })
           .enable(['smartquotes', 'replacements', 'image']);
-          
+
         const gitHubReleaseModelList = res.changelogs?._embedded?.gitHubReleaseModelList ?? [];
         if (gitHubReleaseModelList.length > 0) {
           this.productReleaseSafeHtmls = this.renderChangelogContent(gitHubReleaseModelList);
@@ -489,7 +489,7 @@ export class ProductDetailComponent {
   getProductModuleContentValue(key: ItemDropdown): DisplayValue | null {
     type tabName = 'description' | 'demo' | 'setup';
     const value = key.value as tabName;
-    return this.productModuleContent()[value];
+    return this.productModuleContent()?.[value] ?? null;
   }
 
   private setDefaultVendorImage(productDetail: ProductDetail): ProductDetail {

@@ -31,7 +31,7 @@ class FileDownloadServiceImplTest {
 
   @Test
   void testDownloadAndUnzipFileWithEmptyResult() throws IOException {
-    var result = fileDownloadService.downloadAndUnzipFile("", new DownloadOption(false, ""));
+    var result = fileDownloadService.downloadAndUnzipFile("", new DownloadOption(false, "", false));
     assertTrue(result.isEmpty());
   }
 
@@ -56,7 +56,7 @@ class FileDownloadServiceImplTest {
 
       mockFileUtils.when(() -> FileUtils.createNewFile(Mockito.anyString())).thenReturn(mockFile);
 
-      var result = fileDownloadService.downloadAndUnzipFile(DOWNLOAD_URL, new DownloadOption(false, ""));
+      var result = fileDownloadService.downloadAndUnzipFile(DOWNLOAD_URL, new DownloadOption(false, "", false));
       assertFalse(result.isEmpty());
       mockedFiles.verify(() -> Files.delete(any()), Mockito.times(0));
     }

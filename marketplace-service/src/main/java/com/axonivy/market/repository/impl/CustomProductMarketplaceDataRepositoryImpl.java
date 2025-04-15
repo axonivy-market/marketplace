@@ -1,60 +1,70 @@
 package com.axonivy.market.repository.impl;
 
-import com.axonivy.market.constants.MongoDBConstants;
-import com.axonivy.market.entity.ProductDesignerInstallation;
 import com.axonivy.market.entity.ProductMarketplaceData;
+import com.axonivy.market.repository.BaseRepository;
 import com.axonivy.market.repository.CustomProductMarketplaceDataRepository;
-import com.axonivy.market.repository.CustomRepository;
-import lombok.AllArgsConstructor;
+import jakarta.persistence.Query;
+import jakarta.transaction.Transactional;
 import lombok.Builder;
-import org.springframework.data.mongodb.core.FindAndModifyOptions;
-import org.springframework.data.mongodb.core.MongoTemplate;
-import org.springframework.data.mongodb.core.query.Criteria;
-import org.springframework.data.mongodb.core.query.Query;
-import org.springframework.data.mongodb.core.query.Update;
+
+import static com.axonivy.market.constants.PostgresDBConstants.*;
 
 @Builder
-@AllArgsConstructor
-public class CustomProductMarketplaceDataRepositoryImpl extends CustomRepository implements CustomProductMarketplaceDataRepository {
+public class CustomProductMarketplaceDataRepositoryImpl extends BaseRepository<ProductMarketplaceData> implements CustomProductMarketplaceDataRepository {
 
-  final MongoTemplate mongoTemplate;
+  private static final String INCREASE_INSTALLATION_COUNT_VIA_PRODUCT_ID = """
+          UPDATE product_marketplace_data  
+          SET installation_count = installation_count + 1 
+          WHERE id = :productId 
+          RETURNING installation_count
+      """;
 
   @Override
+  @Transactional
   public int updateInitialCount(String productId, int initialCount) {
-    Update update = new Update().inc(MongoDBConstants.INSTALLATION_COUNT, initialCount).set(
-        MongoDBConstants.SYNCHRONIZED_INSTALLATION_COUNT, true);
-    ProductMarketplaceData updatedProductMarketplaceData = mongoTemplate.findAndModify(createQueryById(productId),
-        update, FindAndModifyOptions.options().returnNew(true), ProductMarketplaceData.class);
-    return updatedProductMarketplaceData != null ? updatedProductMarketplaceData.getInstallationCount() : 0;
+    CriteriaUpdateContext<ProductMarketplaceData> criteriaUpdateContext = createCriteriaUpdateContext();
+    // Set the fields
+    criteriaUpdateContext.query().set(criteriaUpdateContext.root().get(INSTALLATION_COUNT), initialCount);
+    criteriaUpdateContext.query().set(criteriaUpdateContext.root().get(SYNCHRONIZED_INSTALLATION_COUNT), true);
+    // Where condition (filter by productId)
+    criteriaUpdateContext.query().where(
+        criteriaUpdateContext.builder().equal(criteriaUpdateContext.root().get(ID), productId));
+    // Execute the update
+    int updatedRows = executeQuery(criteriaUpdateContext);
+    getEntityManager().clear();
+    // Fetch the updated entity if needed
+    if (updatedRows > 0) {
+      return getEntityManager().find(getType(), productId).getInstallationCount();
+    }
+    return 0;
   }
 
   @Override
+  @Transactional
   public int increaseInstallationCount(String productId) {
-    Update update = new Update().inc(MongoDBConstants.INSTALLATION_COUNT, 1);
-    ProductMarketplaceData updatedProduct = mongoTemplate.findAndModify(createQueryById(productId), update,
-        FindAndModifyOptions.options().returnNew(true), ProductMarketplaceData.class);
-    return updatedProduct != null ? updatedProduct.getInstallationCount() : 0;
+    Query query = getEntityManager().createNativeQuery(INCREASE_INSTALLATION_COUNT_VIA_PRODUCT_ID);
+    query.setParameter(PRODUCT_ID, productId);
+    return ((Number) query.getSingleResult()).intValue();
   }
 
   @Override
-  public void increaseInstallationCountForProductByDesignerVersion(String productId, String designerVersion) {
-    Update update = new Update().inc(MongoDBConstants.INSTALLATION_COUNT, 1);
-    mongoTemplate.upsert(createQueryByProductIdAndDesignerVersion(productId, designerVersion),
-        update, ProductDesignerInstallation.class);
-  }
-
-  @Override
+  @Transactional
   public void checkAndInitProductMarketplaceDataIfNotExist(String productId) {
-    Query query = new Query(Criteria.where(MongoDBConstants.ID).is(productId));
-    if (!mongoTemplate.exists(query, ProductMarketplaceData.class)) {
+    CriteriaByTypeContext<ProductMarketplaceData, Long> criteriaNumberContext = createCriteriaTypeContext(Long.class);
+
+    criteriaNumberContext.query().select(criteriaNumberContext.builder().count(criteriaNumberContext.root()))
+        .where(criteriaNumberContext.builder().equal(criteriaNumberContext.root().get(ID), productId));
+    Long count = getEntityManager().createQuery(criteriaNumberContext.query()).getSingleResult();
+    boolean marketPlaceExists = count > 0;
+    if (!marketPlaceExists) {
       ProductMarketplaceData productMarketplaceData = new ProductMarketplaceData();
       productMarketplaceData.setId(productId);
-      mongoTemplate.insert(productMarketplaceData);
+      save(productMarketplaceData);
     }
   }
 
-  private Query createQueryByProductIdAndDesignerVersion(String productId, String designerVersion) {
-    return new Query(Criteria.where(MongoDBConstants.PRODUCT_ID).is(productId)
-        .andOperator(Criteria.where(MongoDBConstants.DESIGNER_VERSION).is(designerVersion)));
+  @Override
+  protected Class<ProductMarketplaceData> getType() {
+    return ProductMarketplaceData.class;
   }
 }

@@ -6,6 +6,10 @@ import { ElementRef } from '@angular/core';
 import { Feedback } from '../../../../../../shared/models/feedback.model';
 import { MissingTranslationHandler, TranslateLoader, TranslateModule, TranslateService } from '@ngx-translate/core';
 import { httpLoaderFactory } from '../../../../../../core/configs/translate.config';
+import { ProductFeedbackService } from '../product-feedback.service';
+import { provideHttpClient, withInterceptorsFromDi } from '@angular/common/http';
+import { provideHttpClientTesting } from '@angular/common/http/testing';
+import { AuthService } from '../../../../../../auth/auth.service';
 
 describe('ProductFeedbackComponent', () => {
   let component: ProductFeedbackComponent;
@@ -24,7 +28,10 @@ describe('ProductFeedbackComponent', () => {
       imports: [ProductFeedbackComponent, StarRatingComponent, CommonModule],
       providers: [
         { provide: ElementRef, useValue: mockElementRef },
-        TranslateService
+        TranslateService, ProductFeedbackService,
+        AuthService,
+        provideHttpClient(withInterceptorsFromDi()),
+        provideHttpClientTesting(),
       ]
     }).compileComponents();
 

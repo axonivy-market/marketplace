@@ -1,8 +1,10 @@
 package com.axonivy.market.service.impl;
 
-import com.axonivy.market.bo.Artifact;
+import com.axonivy.market.BaseSetup;
+import com.axonivy.market.entity.Artifact;
 import com.axonivy.market.entity.ExternalDocumentMeta;
 import com.axonivy.market.entity.Product;
+import com.axonivy.market.repository.ArtifactRepository;
 import com.axonivy.market.repository.ExternalDocumentMetaRepository;
 import com.axonivy.market.repository.ProductRepository;
 import com.axonivy.market.service.FileDownloadService;
@@ -13,7 +15,6 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -21,7 +22,7 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
-class ExternalDocumentServiceImplTest {
+class ExternalDocumentServiceImplTest extends BaseSetup {
 
   private static final String RELATIVE_LOCATION = "/market-cache/portal/10.0.0/doc/index.html";
 
@@ -36,23 +37,32 @@ class ExternalDocumentServiceImplTest {
   @Mock
   FileDownloadService fileDownloadService;
 
+  @Mock
+  ArtifactRepository artifactRepository;
+
   @InjectMocks
   ExternalDocumentServiceImpl service;
 
   @Test
   void testSyncDocumentForProduct() throws IOException {
-    when(productRepository.findById(PORTAL)).thenReturn(mockPortalProductHasNoArtifact());
-    service.syncDocumentForProduct(PORTAL, new ArrayList<>(), true);
-    verify(productRepository, times(1)).findById(any());
+    when(productRepository.findProductByIdAndRelatedData(PORTAL)).thenReturn(mockPortalProductHasNoArtifact().get());
+    service.syncDocumentForProduct(PORTAL,  true);
+    verify(productRepository, times(1)).findProductByIdAndRelatedData(any());
     verify(externalDocumentMetaRepository, times(0)).findByProductIdAndVersion(any(), any());
 
-    when(productRepository.findById(PORTAL)).thenReturn(mockPortalProduct());
-    service.syncDocumentForProduct(PORTAL, new ArrayList<>(), false);
-    verify(externalDocumentMetaRepository, times(2)).findByProductIdAndVersion(any(), any());
+    when(artifactRepository.findAllByIdInAndFetchArchivedArtifacts(any())).thenReturn(mockPortalProduct().get().getArtifacts());
+    when(productRepository.findProductByIdAndRelatedData(PORTAL)).thenReturn(mockPortalProduct().get());
+    service.syncDocumentForProduct(PORTAL,  false);
+    verify(externalDocumentMetaRepository, times(1)).findByProductIdAndVersionIn(any(), any());
 
     when(fileDownloadService.downloadAndUnzipFile(any(), any())).thenReturn("data" + RELATIVE_LOCATION);
-    service.syncDocumentForProduct(PORTAL, new ArrayList<>(), true);
-    verify(externalDocumentMetaRepository, times(2)).save(any());
+    service.syncDocumentForProduct(PORTAL,  true);
+    verify(externalDocumentMetaRepository, times(2)).saveAll(any());
+
+    when(artifactRepository.findAllByIdInAndFetchArchivedArtifacts(any())).thenReturn(mockPortalProduct().get().getArtifacts());
+    when(productRepository.findProductByIdAndRelatedData(PORTAL)).thenReturn(mockPortalProduct().get());
+    when(externalDocumentMetaRepository.findByProductIdAndVersionIn(any(),any())).thenReturn(List.of(createExternalDocumentMock()));
+    service.syncDocumentForProduct(PORTAL,  false);
   }
 
   @Test

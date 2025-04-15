@@ -1,194 +1,283 @@
 package com.axonivy.market.repository.impl;
 
-import com.axonivy.market.constants.EntityConstants;
-import com.axonivy.market.constants.MongoDBConstants;
+import com.axonivy.market.constants.CommonConstants;
 import com.axonivy.market.criteria.ProductSearchCriteria;
+import com.axonivy.market.entity.Artifact;
 import com.axonivy.market.entity.Product;
+import com.axonivy.market.entity.ProductCustomSort;
 import com.axonivy.market.entity.ProductModuleContent;
 import com.axonivy.market.enums.DocumentField;
 import com.axonivy.market.enums.Language;
+import com.axonivy.market.enums.SortOption;
 import com.axonivy.market.enums.TypeOption;
+import com.axonivy.market.repository.BaseRepository;
 import com.axonivy.market.repository.CustomProductRepository;
-import com.axonivy.market.repository.CustomRepository;
+import com.axonivy.market.repository.ProductCustomSortRepository;
 import com.axonivy.market.repository.ProductModuleContentRepository;
-import lombok.AllArgsConstructor;
+import jakarta.persistence.NoResultException;
+import jakarta.persistence.TypedQuery;
+import jakarta.persistence.criteria.*;
 import lombok.Builder;
+import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.bson.BsonRegularExpression;
+import org.hibernate.Hibernate;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.mongodb.core.MongoTemplate;
-import org.springframework.data.mongodb.core.aggregation.Aggregation;
-import org.springframework.data.mongodb.core.aggregation.AggregationResults;
-import org.springframework.data.mongodb.core.query.Criteria;
-import org.springframework.data.mongodb.core.query.Query;
-import org.springframework.util.CollectionUtils;
 
+import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 
-import static com.axonivy.market.enums.DocumentField.LISTED;
-import static com.axonivy.market.enums.DocumentField.TYPE;
+import static com.axonivy.market.constants.PostgresDBConstants.*;
 
 @Builder
-@AllArgsConstructor
-public class CustomProductRepositoryImpl extends CustomRepository implements CustomProductRepository {
-  public static final String CASE_INSENSITIVITY_OPTION = "i";
-  public static final String LOCALIZE_SEARCH_PATTERN = "%s.%s";
-
-  final MongoTemplate mongoTemplate;
+public class CustomProductRepositoryImpl extends BaseRepository<Product> implements CustomProductRepository {
+  final ProductCustomSortRepository productCustomSortRepo;
   final ProductModuleContentRepository contentRepository;
 
-  public Product queryProductByAggregation(Aggregation aggregation) {
-    return Optional.of(mongoTemplate.aggregate(aggregation, EntityConstants.PRODUCT, Product.class))
-        .map(AggregationResults::getUniqueMappedResult).orElse(null);
-  }
-
-  public List<Product> queryProductsByAggregation(Aggregation aggregation) {
-    return Optional.of(mongoTemplate.aggregate(aggregation, EntityConstants.PRODUCT, Product.class))
-        .map(AggregationResults::getMappedResults).orElse(Collections.emptyList());
+  public CustomProductRepositoryImpl(ProductCustomSortRepository productCustomSortRepo,
+      ProductModuleContentRepository contentRepository) {
+    this.productCustomSortRepo = productCustomSortRepo;
+    this.contentRepository = contentRepository;
   }
 
   @Override
   public Product getProductByIdAndVersion(String id, String version) {
-    Product result = findProductById(id);
+    Product result = findProductByIdAndRelatedData(id);
     if (!Objects.isNull(result)) {
       ProductModuleContent content = contentRepository.findByVersionAndProductId(version, id);
-      result.setProductModuleContent(content);
+      if (content != null) {
+        Hibernate.initialize(content.getDescription());
+        Hibernate.initialize(content.getSetup());
+        Hibernate.initialize(content.getDemo());
+        result.setProductModuleContent(content);
+      }
     }
     return result;
   }
 
   @Override
-  public Product findProductById(String id) {
-    Aggregation aggregation = Aggregation.newAggregation(createIdMatchOperation(id));
-    return queryProductByAggregation(aggregation);
+  public Product findProductByIdAndRelatedData(String id) {
+    CriteriaQueryContext<Product> context = createCriteriaQueryContext();
+    context.root().fetch(PRODUCT_NAMES, JoinType.LEFT);
+    context.root().fetch(PRODUCT_SHORT_DESCRIPTION, JoinType.LEFT);
+    context.root().fetch(PRODUCT_ARTIFACT, JoinType.LEFT);
+    context.query().where(context.builder().equal(context.root().get(ID), id));
+    try {
+      return getEntityManager().createQuery(context.query()).getSingleResult();
+    } catch (NoResultException e) {
+      return null;
+    }
   }
 
   @Override
   public List<String> getReleasedVersionsById(String id) {
-    Aggregation aggregation = Aggregation.newAggregation(createIdMatchOperation(id));
-    Product product = queryProductByAggregation(aggregation);
-    if (Objects.isNull(product)) {
-      return Collections.emptyList();
-    }
-    return product.getReleasedVersions();
-  }
-
-  @Override
-  public List<Product> getAllProductsWithIdAndReleaseTagAndArtifact() {
-    return queryProductsByAggregation(
-        createProjectIdAndReleasedVersionsAndArtifactsAggregation());
-  }
-
-  protected Aggregation createProjectIdAndReleasedVersionsAndArtifactsAggregation() {
-    return Aggregation.newAggregation(
-        Aggregation.project(MongoDBConstants.ID, MongoDBConstants.ARTIFACTS, MongoDBConstants.RELEASED_VERSIONS)
-    );
+    return Optional.ofNullable(findProductByIdAndRelatedData(id))
+        .map(Product::getReleasedVersions)
+        .orElse(Collections.emptyList());
   }
 
   @Override
   public Page<Product> searchByCriteria(ProductSearchCriteria searchCriteria, Pageable pageable) {
-    return getResultAsPageable(pageable, buildCriteriaSearch(searchCriteria));
+    CriteriaQueryContext<Product> criteriaContext = createCriteriaQueryContext();
+    PageRequest pageRequest = (PageRequest) pageable;
+
+    List<Product> resultList = getPagedProductsByCriteria(criteriaContext, searchCriteria, pageRequest);
+    long total = resultList.size() < pageable.getPageSize() ? resultList.size() : getTotalCount(criteriaContext.builder(),
+        searchCriteria);
+
+    return new PageImpl<>(resultList, pageable, total);
+  }
+
+  private List<Order> sortByOrders(
+          CriteriaQueryContext<Product> criteriaContext,
+      PageRequest pageRequest, String language, MapJoin<Product, String, String> namesJoin) {
+    List<Order> orders = new ArrayList<>();
+    if (pageRequest != null) {
+      pageRequest.getSort().stream().findFirst().ifPresent(order -> {
+        SortOption sortOption = SortOption.of(order.getProperty());
+        switch (sortOption) {
+          case ALPHABETICALLY -> orders.add(sortByAlphabet(criteriaContext, language, namesJoin));
+          case RECENT -> orders.add(sortByRecent(criteriaContext));
+          case POPULARITY -> orders.add(sortByPopularity(criteriaContext));
+          default -> orders.addAll(sortByStandard(criteriaContext, language, namesJoin));
+        }
+      });
+    }
+    orders.add(sortById(criteriaContext)); // Always sort by ID as a fallback
+    return orders;
+  }
+
+  private List<Order> sortByStandard(
+          CriteriaQueryContext<Product> criteriaContext, String language
+      , MapJoin<Product, String, String> namesJoin) {
+    List<ProductCustomSort> customSorts = productCustomSortRepo.findAll();
+    List<Order> orders = new ArrayList<>();
+    Order order = criteriaContext.builder().desc(
+            criteriaContext.builder().coalesce(criteriaContext.root().get(PRODUCT_MARKETPLACE_DATA).get(CUSTOM_ORDER), Integer.MIN_VALUE));
+    orders.add(order);
+    if (ObjectUtils.isNotEmpty(customSorts)) {
+      SortOption sortOptionExtension = SortOption.of(customSorts.get(0).getRuleForRemainder());
+      switch (sortOptionExtension) {
+        case ALPHABETICALLY -> orders.add(sortByAlphabet(criteriaContext, language, namesJoin));
+        case RECENT -> orders.add(sortByRecent(criteriaContext));
+        default -> orders.add(sortByPopularity(criteriaContext));
+      }
+    }
+    return orders;
+  }
+
+  private Order sortByPopularity(
+          CriteriaQueryContext<Product> criteriaContext) {
+    return criteriaContext.builder().desc(criteriaContext.root().get(PRODUCT_MARKETPLACE_DATA).get(INSTALLATION_COUNT));
+  }
+
+  private Order sortByAlphabet(
+          CriteriaQueryContext<Product> criteriaContext, String language
+      , MapJoin<Product, String, String> namesJoin) {
+    Expression<Object> nameValue = criteriaContext.builder().coalesce(
+            criteriaContext.builder().selectCase()
+            .when(criteriaContext.builder().equal(namesJoin.key(), language), namesJoin.value())
+            .otherwise(criteriaContext.builder().literal("")), criteriaContext.builder().literal("")
+    );
+
+    // Return sorting order (ascending)
+    return criteriaContext.builder().asc(nameValue);
+  }
+
+  private Order sortById(CriteriaQueryContext<Product> criteriaContext) {
+    return criteriaContext.builder().asc(criteriaContext.root().get(ID));
+  }
+
+  private Order sortByRecent(CriteriaQueryContext<Product> criteriaContext) {
+    return criteriaContext.builder().desc(
+        criteriaContext.builder().coalesce(criteriaContext.root().get(FIRST_PUBLISHED_DATE),
+            criteriaContext.builder().literal(Timestamp.valueOf(CommonConstants.DEFAULT_DATE_TIME))));
+  }
+
+  private long getTotalCount(CriteriaBuilder cb, ProductSearchCriteria searchCriteria) {
+    CriteriaQuery<Long> countQuery = cb.createQuery(Long.class);
+    Root<Product> countRoot = countQuery.from(Product.class);
+    // Rebuild predicate for the count query using the new Root<Product>
+    Predicate countPredicate = buildCriteriaSearch(searchCriteria, cb, countRoot);
+    countQuery.select(cb.countDistinct(countRoot)).where(countPredicate);
+    return getEntityManager().createQuery(countQuery).getSingleResult();
+  }
+
+  private List<Product> getPagedProductsByCriteria(
+          CriteriaQueryContext<Product> criteriaContext,
+      ProductSearchCriteria searchCriteria, PageRequest pageRequest) {
+    Language language = searchCriteria.getLanguage() != null ? searchCriteria.getLanguage() : Language.EN;
+    Predicate predicate = buildCriteriaSearch(searchCriteria, criteriaContext.builder(), criteriaContext.root());
+    criteriaContext.root().fetch(PRODUCT_MARKETPLACE_DATA);
+    criteriaContext.root().fetch(PRODUCT_NAMES, JoinType.LEFT);
+    MapJoin<Product, String, String> namesJoin = criteriaContext.root().joinMap(PRODUCT_NAMES, JoinType.LEFT);
+
+    List<Order> orders = new ArrayList<>();
+    if (pageRequest.getSort().isSorted()) {
+      orders = sortByOrders(criteriaContext, pageRequest, language.getValue(), namesJoin);
+    }
+
+    criteriaContext.query().select(criteriaContext.root()).where(predicate)
+        .orderBy(orders)
+        .groupBy(criteriaContext.root(), namesJoin.key(), namesJoin.value());
+
+    TypedQuery<Product> query = getEntityManager().createQuery(criteriaContext.query());
+    query.setFirstResult((int) pageRequest.getOffset());
+    query.setMaxResults(pageRequest.getPageSize());
+
+    return query.getResultList();
   }
 
   @Override
   public Product findByCriteria(ProductSearchCriteria criteria) {
-    Criteria searchCriteria = buildCriteriaSearch(criteria);
-    List<Product> entities = mongoTemplate.find(new Query(searchCriteria), Product.class);
-    return CollectionUtils.isEmpty(entities) ? null : entities.get(0);
+    CriteriaQueryContext<Product> criteriaContext = createCriteriaQueryContext();
+
+    Predicate searchCriteria = buildCriteriaSearch(criteria, criteriaContext.builder(), criteriaContext.root());
+    criteriaContext.query().where(searchCriteria);
+
+    List<Product> results = findByCriteria(criteriaContext);
+    return results.isEmpty() ? null : results.get(0);
   }
 
   @Override
   public List<Product> findAllProductsHaveDocument() {
-    var criteria = new Criteria();
-    criteria.andOperator(Criteria.where(MongoDBConstants.ARTIFACTS_DOC).is(true));
-    return mongoTemplate.find(new Query(criteria), Product.class);
+    CriteriaQueryContext<Product> criteriaContext = createCriteriaQueryContext();
+    Join<Product, Artifact> artifact = criteriaContext.root().join(PRODUCT_ARTIFACT);
+    criteriaContext.query().select(criteriaContext.root()).distinct(true).where(
+        criteriaContext.builder().isTrue(artifact.get(DOC)));
+
+    return findByCriteria(criteriaContext);
   }
 
-  private Page<Product> getResultAsPageable(Pageable pageable, Criteria criteria) {
-    int skip = (int) pageable.getOffset();
-    int limit = pageable.getPageSize();
-    Aggregation aggregation = Aggregation.newAggregation(
-        Aggregation.match(criteria),
-        Aggregation.lookup(MongoDBConstants.PRODUCT_MARKETPLACE_COLLECTION, MongoDBConstants.ID, MongoDBConstants.ID,
-            MongoDBConstants.MARKETPLACE_DATA),
-        Aggregation.sort(pageable.getSort()),
-        Aggregation.skip(skip),
-        Aggregation.limit(limit)
-    );
+  public Predicate buildCriteriaSearch(ProductSearchCriteria searchCriteria, CriteriaBuilder cb,
+      Root<Product> productRoot) {
+    List<Predicate> predicates = new ArrayList<>();
 
-    List<Product> entities = mongoTemplate.aggregate(aggregation, MongoDBConstants.PRODUCT_COLLECTION,
-        Product.class).getMappedResults();
-    long count = mongoTemplate.count(new Query(criteria), Product.class);
-    return new PageImpl<>(entities, pageable, count);
-  }
-
-  private Criteria buildCriteriaSearch(ProductSearchCriteria searchCriteria) {
-    var criteria = new Criteria();
-    List<Criteria> andFilters = new ArrayList<>();
-
-    // Query by Listed
+    // Query by Listed (Assuming "listed" is a boolean field)
     if (searchCriteria.isListed()) {
-      andFilters.add(Criteria.where(LISTED.getFieldName()).ne(false));
+      predicates.add(
+          cb.or(cb.notEqual(productRoot.get(LISTED), false), cb.isNull(productRoot.get(LISTED)))
+      );
     }
 
-    // Query by Type
+    // Query by Type (Assuming "type" is stored as a string or enum code)
     if (searchCriteria.getType() != null && TypeOption.ALL != searchCriteria.getType()) {
-      Criteria typeCriteria = Criteria.where(TYPE.getFieldName()).is(searchCriteria.getType().getCode());
-      andFilters.add(typeCriteria);
+      predicates.add(cb.equal(productRoot.get(TYPE), searchCriteria.getType().getCode()));
     }
 
-    // Query by Keyword regex
-    if (StringUtils.isNoneBlank(searchCriteria.getKeyword())) {
-      Criteria keywordCriteria = createQueryByKeywordRegex(searchCriteria);
-      if (keywordCriteria != null) {
-        andFilters.add(keywordCriteria);
-      }
+    // Query by Keyword (Using LIKE for partial matching)
+    if (StringUtils.isNotBlank(searchCriteria.getKeyword())) {
+      predicates.add(createQueryByKeywordRegex(searchCriteria, cb, productRoot));
     }
 
-    if (!CollectionUtils.isEmpty(andFilters)) {
-      criteria.andOperator(andFilters);
-    }
-    return criteria;
+    // Combine all conditions using AND
+    return cb.and(predicates.toArray(new Predicate[0]));
   }
 
-  private Criteria createQueryByKeywordRegex(ProductSearchCriteria searchCriteria) {
-    List<Criteria> filters = new ArrayList<>();
-    var language = searchCriteria.getLanguage();
-    if (language == null) {
-      language = Language.EN;
-    }
 
+  private static Predicate createQueryByKeywordRegex(ProductSearchCriteria searchCriteria, CriteriaBuilder cb,
+      Root<Product> productRoot) {
+    List<Predicate> filters = new ArrayList<>();
+    Language language = searchCriteria.getLanguage() != null ? searchCriteria.getLanguage() : Language.EN;
     List<DocumentField> filterProperties = new ArrayList<>(ProductSearchCriteria.DEFAULT_SEARCH_FIELDS);
-    if (!CollectionUtils.isEmpty(searchCriteria.getFields())) {
+    if (ObjectUtils.isNotEmpty(searchCriteria.getFields())) {
       filterProperties.clear();
       filterProperties.addAll(searchCriteria.getFields());
     }
-    if (!CollectionUtils.isEmpty(searchCriteria.getExcludeFields())) {
+    if (ObjectUtils.isNotEmpty(searchCriteria.getExcludeFields())) {
       filterProperties.removeIf(field -> searchCriteria.getExcludeFields().stream()
           .anyMatch(excludeField -> excludeField.name().equals(field.name())));
     }
 
-    for (var property : filterProperties) {
-      Criteria filterByKeywordCriteria;
+    String keywordPattern = CommonConstants.LIKE_PATTERN.formatted(searchCriteria.getKeyword().toLowerCase());
+    for (DocumentField property : filterProperties) {
       if (property.isLocalizedSupport()) {
-        filterByKeywordCriteria = Criteria.where(
-            LOCALIZE_SEARCH_PATTERN.formatted(property.getFieldName(), language.getValue()));
+        // Correctly join the Map<String, String> names collection
+        MapJoin<Product, String, String> namesJoin = productRoot.joinMap(property.getFieldName(), JoinType.LEFT);
+        // Extract key (language) and value (name)
+        Path<String> languageKey = namesJoin.key();
+        Path<String> nameValue = namesJoin.value();
+        // Filter by language key
+        Predicate languageFilter = cb.equal(languageKey, language.name().toLowerCase());
+        // Apply keyword search on product names (value)
+        Predicate keywordFilter = cb.like(cb.lower(nameValue), keywordPattern);
+        // Combine conditions
+        filters.add(cb.and(languageFilter, keywordFilter));
       } else {
-        filterByKeywordCriteria = Criteria.where(property.getFieldName());
+        filters.add(cb.equal(productRoot.get(property.getFieldName()), searchCriteria.getKeyword()));
       }
-      var regex = new BsonRegularExpression(searchCriteria.getKeyword(), CASE_INSENSITIVITY_OPTION);
-      filters.add(filterByKeywordCriteria.regex(regex));
     }
-    Criteria criteria = null;
-    if (!CollectionUtils.isEmpty(filters)) {
-      criteria = new Criteria().orOperator(filters);
-    }
-    return criteria;
+    return cb.or(filters.toArray(new Predicate[0])); // Return OR condition for broader match
+  }
+
+  @Override
+  protected Class<Product> getType() {
+    return Product.class;
   }
 }

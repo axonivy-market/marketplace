@@ -1,6 +1,6 @@
 package com.axonivy.market.service.impl;
 
-import com.axonivy.market.constants.ProductJsonConstants;
+import com.axonivy.market.bo.VersionDownload;
 import com.axonivy.market.entity.ProductCustomSort;
 import com.axonivy.market.entity.ProductMarketplaceData;
 import com.axonivy.market.enums.ErrorCode;
@@ -8,8 +8,10 @@ import com.axonivy.market.enums.SortOption;
 import com.axonivy.market.exceptions.model.NotFoundException;
 import com.axonivy.market.model.ProductCustomSortRequest;
 import com.axonivy.market.repository.ProductCustomSortRepository;
+import com.axonivy.market.repository.ProductDesignerInstallationRepository;
 import com.axonivy.market.repository.ProductMarketplaceDataRepository;
 import com.axonivy.market.repository.ProductRepository;
+import com.axonivy.market.service.FileDownloadService;
 import com.axonivy.market.service.ProductMarketplaceDataService;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -17,9 +19,6 @@ import lombok.extern.log4j.Log4j2;
 import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.data.mongodb.core.MongoTemplate;
-import org.springframework.data.mongodb.core.query.Query;
-import org.springframework.data.mongodb.core.query.Update;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
@@ -36,19 +35,22 @@ import java.util.Map;
 public class ProductMarketplaceDataServiceImpl implements ProductMarketplaceDataService {
   private final ProductMarketplaceDataRepository productMarketplaceDataRepo;
   private final ProductCustomSortRepository productCustomSortRepo;
-  private final MongoTemplate mongoTemplate;
   private final ProductRepository productRepo;
+  private final FileDownloadService fileDownloadService;
+  private final ProductDesignerInstallationRepository productDesignerInstallationRepo;
   private final ObjectMapper mapper = new ObjectMapper();
   private final SecureRandom random = new SecureRandom();
   @Value("${market.legacy.installation.counts.path}")
   private String legacyInstallationCountPath;
 
   public ProductMarketplaceDataServiceImpl(ProductMarketplaceDataRepository productMarketplaceDataRepo,
-      ProductCustomSortRepository productCustomSortRepo, MongoTemplate mongoTemplate, ProductRepository productRepo) {
+      ProductCustomSortRepository productCustomSortRepo, ProductRepository productRepo,
+      FileDownloadService fileDownloadService, ProductDesignerInstallationRepository productDesignerInstallationRepo) {
     this.productMarketplaceDataRepo = productMarketplaceDataRepo;
     this.productCustomSortRepo = productCustomSortRepo;
-    this.mongoTemplate = mongoTemplate;
     this.productRepo = productRepo;
+    this.fileDownloadService = fileDownloadService;
+    this.productDesignerInstallationRepo = productDesignerInstallationRepo;
   }
 
   @Override
@@ -57,7 +59,7 @@ public class ProductMarketplaceDataServiceImpl implements ProductMarketplaceData
 
     ProductCustomSort productCustomSort = new ProductCustomSort(customSort.getRuleForRemainder());
     productCustomSortRepo.deleteAll();
-    removeFieldFromAllProductDocuments(ProductJsonConstants.CUSTOM_ORDER);
+    productMarketplaceDataRepo.resetCustomOrderForAllProducts();
     productCustomSortRepo.save(productCustomSort);
     productMarketplaceDataRepo.saveAll(refineOrderedListOfProductsInCustomSort(customSort.getOrderedListOfProducts()));
   }
@@ -76,9 +78,23 @@ public class ProductMarketplaceDataServiceImpl implements ProductMarketplaceData
     return productEntries;
   }
 
-  public void removeFieldFromAllProductDocuments(String fieldName) {
-    Update update = new Update().unset(fieldName);
-    mongoTemplate.updateMulti(new Query(), update, ProductMarketplaceData.class);
+  @Override
+  public VersionDownload downloadArtifact(String artifactUrl, String productId) {
+    byte[] fileData = fileDownloadService.downloadFile(artifactUrl);
+    if (fileData == null || fileData.length == 0) {
+      log.error("Cannot download file from URL: {}", artifactUrl);
+      return null;
+    }
+    return getVersionDownload(productId, fileData);
+  }
+
+  @Override
+  public VersionDownload getVersionDownload(String productId, byte[] fileData) {
+    int installationCount = updateInstallationCountForProduct(productId, null);
+    return VersionDownload.builder()
+        .fileData(fileData)
+        .installationCount(installationCount)
+        .build();
   }
 
   @Override
@@ -88,7 +104,7 @@ public class ProductMarketplaceDataServiceImpl implements ProductMarketplaceData
 
     log.info("Increase installation count for product {} By Designer Version {}", productId, designerVersion);
     if (StringUtils.isNotBlank(designerVersion)) {
-      productMarketplaceDataRepo.increaseInstallationCountForProductByDesignerVersion(productId, designerVersion);
+      productDesignerInstallationRepo.increaseInstallationCountForProductByDesignerVersion(productId, designerVersion);
     }
 
     log.info("updating installation count for product {}", productId);
@@ -130,6 +146,13 @@ public class ProductMarketplaceDataServiceImpl implements ProductMarketplaceData
   public ProductMarketplaceData getProductMarketplaceData(String productId) {
     return productMarketplaceDataRepo.findById(productId).orElse(
         ProductMarketplaceData.builder().id(productId).build());
+  }
+
+  @Override
+  public Integer getInstallationCount(String id) {
+    return productMarketplaceDataRepo.findById(id)
+        .map(ProductMarketplaceData::getInstallationCount)
+        .orElse(0);
   }
 
   private void validateProductExists(String productId) throws NotFoundException {
