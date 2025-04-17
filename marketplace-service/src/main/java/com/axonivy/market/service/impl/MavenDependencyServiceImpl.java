@@ -119,14 +119,18 @@ public class MavenDependencyServiceImpl implements MavenDependencyService {
         .forEach(mavenArtifactVersion -> {
           var proceedVersion = mavenArtifactVersion.getId().getProductVersion();
           if (VersionUtils.isSnapshotVersion(proceedVersion)) {
-            dependenciesOfArtifact.removeIf(mavenDependency ->
-                mavenDependency.getVersion().equals(proceedVersion)
-                    && mavenDependency.getArtifactId().equals(mavenArtifactVersion.getId().getArtifactId()));
+            dependenciesOfArtifact.removeIf(filterByVersionAndArtifactId(mavenArtifactVersion, proceedVersion));
           }
           MavenDependency mavenDependency = computeIARDependencies(productId,
               mavenArtifactVersion.getId().getProductVersion(), mavenArtifactVersion);
           dependenciesOfArtifact.add(mavenDependency);
     });
+  }
+
+  private static Predicate<MavenDependency> filterByVersionAndArtifactId(MavenArtifactVersion mavenArtifactVersion,
+      String proceedVersion) {
+    return mavenDependency -> StringUtils.equals(mavenDependency.getVersion(), proceedVersion)
+        && StringUtils.equals(mavenDependency.getArtifactId(), mavenArtifactVersion.getId().getArtifactId());
   }
 
   private Predicate<? super MavenArtifactVersion> filterSnapOrNotExistedVersions(List<String> existedVersions) {
