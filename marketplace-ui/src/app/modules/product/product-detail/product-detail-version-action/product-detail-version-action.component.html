@@ -61,7 +61,7 @@
                 <app-common-dropdown
                   [items]="artifacts()"
                   [selectedItem]="selectedArtifactName"
-                  buttonClass="form-select form-select-sm artifacts-selector__dropdown border__dropdown fs-md"
+                  buttonClass="form-select form-select-sm border__dropdown fs-md"
                   ariaLabel=".form-select-sm"
                   (itemSelected)="onSelectArtifact($event)">
                 </app-common-dropdown>
@@ -163,7 +163,7 @@
     </div>
   }
   @case (ProductDetailActionType.CUSTOM_SOLUTION) {
-    <button 
+    <button
             id="contact-us-button"
             name="Contact us button"
             #contactUsButton
