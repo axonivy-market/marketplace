@@ -29,7 +29,7 @@ jobs:
         if: ${{ inputs.release_version != '' }}
         continue-on-error: true
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
           POM_FILE: './marketplace-service/pom.xml'
           PACKAGE_FILE: './marketplace-ui/package.json'
         run: |
@@ -76,7 +76,7 @@ jobs:
           exit 1
 
       - name: Log in to registry
-        run: echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
+        run: echo "${{ secrets.GH_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
 
       - name: Refine release version
         run: |
