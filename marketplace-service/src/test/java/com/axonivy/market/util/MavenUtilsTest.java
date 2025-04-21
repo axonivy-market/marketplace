@@ -166,7 +166,7 @@ class MavenUtilsTest extends BaseSetup {
     mockArtifact.setArchivedArtifacts(List.of(mockArchivedArtifact));
     results = MavenUtils.extractMetaDataFromArchivedArtifacts(MOCK_PRODUCT_ID, mockArtifact);
     Assertions.assertTrue(ObjectUtils.isNotEmpty(results));
-    Assertions.assertEquals("https://maven.axonivy.com/com/octopus/util/octopus-test/maven-metadata.xml",
+    Assertions.assertEquals("https://nexus-mirror.axonivy.com/repository/maven/com/octopus/util/octopus-test/maven-metadata.xml",
         results.iterator().next().getUrl());
   }
 
