@@ -198,7 +198,7 @@ public class MavenDependencyServiceImpl implements MavenDependencyService {
         .findAny().ifPresent(syncedProduct -> {
           var syncedVersions = syncedProduct.getDependenciesOfArtifact().stream()
               .map(MavenDependency::getVersion).collect(Collectors.toSet());
-          if (!VersionUtils.removeSyncedVersionsFromReleasedVersions(releasedVersions, syncedVersions).isEmpty()) {
+          if (VersionUtils.removeSyncedVersionsFromReleasedVersions(releasedVersions, syncedVersions).isEmpty()) {
             mismatchingVersionIds.add(syncedProduct.getProductId());
           }
         });
