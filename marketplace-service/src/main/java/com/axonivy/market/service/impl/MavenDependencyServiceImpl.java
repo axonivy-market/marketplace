@@ -77,35 +77,26 @@ public class MavenDependencyServiceImpl implements MavenDependencyService {
     int totalSyncedProductIds = 0;
     for (String productId : getMissingProductIds(resetSync)) {
       List<MavenArtifactVersion> mavenArtifactVersions = mavenArtifactVersionRepository.findByProductId(productId)
-          .stream()
-          .sorted(Comparator.comparing(artifactModel -> artifactModel.getId().isAdditionalVersion()))
-          .toList();
+          .stream().sorted(sortByAdditionalVersion()).toList();
 
       // If no data in MavenArtifactVersion table then skip this product
       if (ObjectUtils.isEmpty(mavenArtifactVersions)) {
         continue;
       }
-      ProductDependency productDependency = initProductDependencyData(resetSync, productId);
+      ProductDependency productDependency = initProductDependencyData(productId);
       // Base on version, loop the artifacts and maps its dependencies
-      collectIARDependenciesByArtifactVersion(productId, mavenArtifactVersions,
-          productDependency.getDependenciesOfArtifact());
+      collectIARDependenciesByArtifactVersion(productId, mavenArtifactVersions, productDependency.getDependenciesOfArtifact());
       productDependencyRepository.save(productDependency);
       totalSyncedProductIds++;
     }
     return totalSyncedProductIds;
   }
 
-  private ProductDependency initProductDependencyData(Boolean resetSync, String productId) {
-    ProductDependency productDependency = null;
-    if (BooleanUtils.isTrue(resetSync)) {
-      productDependencyRepository.deleteById(productId);
-    } else {
-      productDependency = productDependencyRepository.findByIdWithDependencies(productId);
-    }
-    if (productDependency == null || BooleanUtils.isTrue(resetSync)) {
-      productDependency = ProductDependency.builder()
-          .dependenciesOfArtifact(new ArrayList<>())
-          .productId(productId).build();
+  private ProductDependency initProductDependencyData(String productId) {
+    ProductDependency productDependency = productDependencyRepository.findByIdWithDependencies(productId);
+    if (productDependency == null) {
+      productDependency = ProductDependency.builder().dependenciesOfArtifact(new ArrayList<>()).productId(productId)
+          .build();
     }
     return productDependency;
   }
@@ -113,7 +104,8 @@ public class MavenDependencyServiceImpl implements MavenDependencyService {
   private void collectIARDependenciesByArtifactVersion(String productId,
       List<MavenArtifactVersion> productArtifactsByVersion, List<MavenDependency> dependenciesOfArtifact) {
     List<String> existedVersions = dependenciesOfArtifact.stream().map(MavenDependency::getVersion).toList();
-    productArtifactsByVersion.stream().filter(Objects::nonNull)
+    productArtifactsByVersion.stream()
+        .filter(Objects::nonNull)
         .filter(filterNotDocOrZipArtifact())
         .filter(filterSnapOrNotExistedVersions(existedVersions))
         .forEach(mavenArtifactVersion -> {
@@ -121,8 +113,7 @@ public class MavenDependencyServiceImpl implements MavenDependencyService {
           if (VersionUtils.isSnapshotVersion(proceedVersion)) {
             dependenciesOfArtifact.removeIf(filterByVersionAndArtifactId(mavenArtifactVersion, proceedVersion));
           }
-          MavenDependency mavenDependency = computeIARDependencies(productId,
-              mavenArtifactVersion.getId().getProductVersion(), mavenArtifactVersion);
+          MavenDependency mavenDependency = computeIARDependencies(productId, proceedVersion, mavenArtifactVersion);
           dependenciesOfArtifact.add(mavenDependency);
     });
   }
@@ -235,15 +226,16 @@ public class MavenDependencyServiceImpl implements MavenDependencyService {
   private MavenArtifactVersion findDownloadURLForDependency(String productId, String version, Dependency dependency) {
     String requestArtifactId = dependency.getArtifactId();
     List<MavenArtifactVersion> mavenArtifactVersion = mavenArtifactVersionRepository.findByProductId(productId)
-        .stream()
-        .sorted(Comparator.comparing(artifactModel -> artifactModel.getId().isAdditionalVersion()))
-        .toList();
-
+        .stream().sorted(sortByAdditionalVersion()).toList();
     if (ObjectUtils.isEmpty(mavenArtifactVersion)) {
       return null;
     }
 
     return filterMavenArtifactVersionByArtifactId(version, requestArtifactId, mavenArtifactVersion);
+  }
+
+  private static Comparator<MavenArtifactVersion> sortByAdditionalVersion() {
+    return Comparator.comparing(artifactModel -> artifactModel.getId().isAdditionalVersion());
   }
 
   private MavenArtifactVersion filterMavenArtifactVersionByArtifactId(String version, String compareArtifactId,
