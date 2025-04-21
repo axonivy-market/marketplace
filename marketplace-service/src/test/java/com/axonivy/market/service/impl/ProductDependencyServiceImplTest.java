@@ -23,7 +23,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
-class MavenDependencyServiceImplTest extends BaseSetup {
+class ProductDependencyServiceImplTest extends BaseSetup {
 
   @Mock
   FileDownloadService fileDownloadService;
@@ -34,7 +34,7 @@ class MavenDependencyServiceImplTest extends BaseSetup {
   @Mock
   MavenArtifactVersionRepository mavenArtifactVersionRepository;
   @InjectMocks
-  MavenDependencyServiceImpl mavenDependencyService;
+  ProductDependencyServiceImpl mavenDependencyService;
 
   @Test
   void testSyncIARDependencies() {
@@ -45,7 +45,7 @@ class MavenDependencyServiceImplTest extends BaseSetup {
 
   private void prepareDataForTest(boolean isProductArtifact) {
     ProductDependency mockProductDependency = ProductDependency.builder().productId(SAMPLE_PRODUCT_ID)
-        .dependenciesOfArtifact(List.of())
+        .dependencies(List.of())
         .build();
     List<MavenArtifactVersion> mavenArtifactVersionMock = createMavenArtifactVersionMock(isProductArtifact);
     when(productRepository.findAll()).thenReturn(createPageProductsMock().getContent());

@@ -34,7 +34,7 @@ class SystemTasksTest {
   ProductDetailsController productDetailsController;
 
   @Mock
-  MavenDependencyService mavenDependencyService;
+  ProductDependencyService productDependencyService;
 
   @InjectMocks
   ScheduledTasks tasks;
@@ -57,7 +57,7 @@ class SystemTasksTest {
   @Test
   void testSyncDataForProductMavenDependencies() {
     tasks.syncDataForProductMavenDependencies();
-    verify(mavenDependencyService, times(1)).syncIARDependenciesForProducts(false);
+    verify(productDependencyService, times(1)).syncIARDependenciesForProducts(false);
   }
 
   @Test

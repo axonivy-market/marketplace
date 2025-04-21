@@ -6,7 +6,7 @@ import jakarta.persistence.Id;
 import jakarta.persistence.MappedSuperclass;
 
 @MappedSuperclass
-public class AuditableIdEntity extends AuditableEntity {
+public class AuditableIdEntity extends AuditableEntity<String> {
   @Id
   @GeneratedValue(strategy = GenerationType.UUID)
   private String id;

@@ -26,7 +26,7 @@ import static com.axonivy.market.constants.PostgresDBConstants.ID;
 @Builder
 @Entity
 @Table(name = PRODUCT)
-public class Product extends AuditableEntity {
+public class Product extends AuditableEntity<String> {
 
   @Id
   private String id;

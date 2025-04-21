@@ -7,7 +7,6 @@ import com.axonivy.market.constants.ProductJsonConstants;
 import com.axonivy.market.constants.ReadmeConstants;
 import com.axonivy.market.entity.Artifact;
 import com.axonivy.market.entity.Image;
-import com.axonivy.market.entity.MavenDependency;
 import com.axonivy.market.entity.ProductDependency;
 import com.axonivy.market.entity.ProductModuleContent;
 import com.axonivy.market.model.ReadmeContentsModel;
@@ -33,13 +32,10 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.function.Predicate;
 import java.util.stream.Stream;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
@@ -54,6 +50,13 @@ public class ProductContentServiceImpl implements ProductContentService {
   private final ProductMarketplaceDataService productMarketplaceDataService;
   private final ProductDependencyRepository productDependencyRepository;
 
+  private static void addNewFileToZip(String fileName, ZipOutputStream zipOut, byte[] content) throws IOException {
+    ZipEntry entry = new ZipEntry(fileName);
+    zipOut.putNextEntry(entry);
+    zipOut.write(content);
+    zipOut.closeEntry();
+  }
+
   @Override
   public ProductModuleContent getReadmeAndProductContentsFromVersion(String productId, String version, String url,
       Artifact artifact, String productName) {
@@ -63,7 +66,7 @@ public class ProductContentServiceImpl implements ProductContentService {
     try {
 
       unzippedFolderPath = fileDownloadService.downloadAndUnzipFile(url, DownloadOption.builder().isForced(true)
-        .workingDirectory(unzippedFolderPath).shouldGrantPermission(false).build());
+          .workingDirectory(unzippedFolderPath).shouldGrantPermission(false).build());
       updateDependencyContentsFromProductJson(productModuleContent, productId, unzippedFolderPath, productName);
       extractReadMeFileFromContents(productId, unzippedFolderPath, productModuleContent);
     } catch (Exception e) {
@@ -139,7 +142,7 @@ public class ProductContentServiceImpl implements ProductContentService {
   @Override
   public VersionDownload downloadZipArtifactFile(String productId, String artifactId,
       String version) {
-    List<MavenDependency> mavenDependencies = getMavenDependenciesOfProduct(productId, artifactId, version);
+    List<ProductDependency> mavenDependencies = getMavenDependenciesOfProduct(productId, artifactId, version);
     if (ObjectUtils.isEmpty(mavenDependencies)) {
       return null;
     }
@@ -161,7 +164,7 @@ public class ProductContentServiceImpl implements ProductContentService {
     }
   }
 
-  private void zipDependencyArtifacts(String version, MavenDependency mavenArtifact, ZipOutputStream zipOut)
+  private void zipDependencyArtifacts(String version, ProductDependency mavenArtifact, ZipOutputStream zipOut)
       throws IOException {
     if (mavenArtifact == null || ObjectUtils.isEmpty(mavenArtifact.getDependencies())) {
       return;
@@ -171,18 +174,19 @@ public class ProductContentServiceImpl implements ProductContentService {
     }
   }
 
-  private List<MavenDependency> getMavenDependenciesOfProduct(String productId, String artifactId, String version) {
-    Predicate<MavenDependency> filterByArtifactAndVersion =
-        dependency -> dependency.getArtifactId().equals(artifactId) &&
-            dependency.getVersion().equals(version);
-
-    ProductDependency productDependency = productDependencyRepository.findByIdWithDependencies(productId);
-
-    return Optional.ofNullable(productDependency)
-        .map(ProductDependency::getDependenciesOfArtifact)
-        .map(Collection::stream)
-        .map(dependencies -> dependencies.filter(filterByArtifactAndVersion).toList())
-        .orElse(new ArrayList<>());
+  private List<ProductDependency> getMavenDependenciesOfProduct(String productId, String artifactId, String version) {
+//    Predicate<MavenDependency> filterByArtifactAndVersion =
+//        dependency -> dependency.getArtifactId().equals(artifactId) &&
+//            dependency.getVersion().equals(version);
+//
+//    ProductDependency productDependency = productDependencyRepository.findByIdWithDependencies(productId);
+//
+//    return Optional.ofNullable(productDependency)
+//        .map(ProductDependency::getDependenciesOfArtifact)
+//        .map(Collection::stream)
+//        .map(dependencies -> dependencies.filter(filterByArtifactAndVersion).toList())
+//        .orElse(new ArrayList<>());
+    return null;
   }
 
   private void zipConfigurationOptions(ZipOutputStream zipOut) throws IOException {
@@ -192,14 +196,7 @@ public class ProductContentServiceImpl implements ProductContentService {
     addNewFileToZip(configFile, zipOut, content.getBytes());
   }
 
-  private static void addNewFileToZip(String fileName, ZipOutputStream zipOut, byte[] content) throws IOException {
-    ZipEntry entry = new ZipEntry(fileName);
-    zipOut.putNextEntry(entry);
-    zipOut.write(content);
-    zipOut.closeEntry();
-  }
-
-  private void zipArtifact(String version, MavenDependency mavenArtifact, ZipOutputStream zipOut) throws IOException {
+  private void zipArtifact(String version, ProductDependency mavenArtifact, ZipOutputStream zipOut) throws IOException {
     if (mavenArtifact == null || StringUtils.isBlank(mavenArtifact.getDownloadUrl())) {
       return;
     }

@@ -8,7 +8,7 @@ import com.axonivy.market.github.service.GHAxonIvyMarketRepoService;
 import com.axonivy.market.github.service.GitHubService;
 import com.axonivy.market.model.Message;
 import com.axonivy.market.model.ProductModel;
-import com.axonivy.market.service.MavenDependencyService;
+import com.axonivy.market.service.ProductDependencyService;
 import com.axonivy.market.service.ProductService;
 import com.axonivy.market.util.AuthorizationUtils;
 import io.swagger.v3.oas.annotations.Operation;
@@ -53,7 +53,7 @@ public class ProductController {
   private final ProductModelAssembler assembler;
   private final PagedResourcesAssembler<Product> pagedResourcesAssembler;
   private final GHAxonIvyMarketRepoService axonIvyMarketRepoService;
-  private final MavenDependencyService mavenDependencyService;
+  private final ProductDependencyService productDependencyService;
 
   @GetMapping()
   @Operation(summary = "Retrieve a paginated list of all products, optionally filtered by type, keyword, and language",
@@ -180,7 +180,7 @@ public class ProductController {
         GitHubConstants.AXONIVY_MARKET_TEAM_NAME);
 
     var message = new Message();
-    int syncIds = mavenDependencyService.syncIARDependenciesForProducts(resetSync);
+    int syncIds = productDependencyService.syncIARDependenciesForProducts(resetSync);
     if (syncIds > 0) {
       message.setMessageDetails("Synced %d artifact(s)".formatted(syncIds));
       return ResponseEntity.status(HttpStatus.OK).body(message);
