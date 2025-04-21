@@ -235,4 +235,13 @@ class MavenUtilsTest extends BaseSetup {
     result = MavenUtils.convertArtifactIdToName(" ");
     Assertions.assertEquals(StringUtils.EMPTY, result);
   }
+
+  @Test
+  void testGetDefaultMirrorMavenRepo() {
+    String result = MavenUtils.getDefaultMirrorMavenRepo(MavenConstants.DEFAULT_IVY_MAVEN_BASE_URL);
+    Assertions.assertEquals(MavenConstants.DEFAULT_IVY_MIRROR_MAVEN_BASE_URL, result);
+    final String ivyRepoUrl = "https://oss.sonatype.org/content/repositories/releases";
+    result = MavenUtils.getDefaultMirrorMavenRepo(ivyRepoUrl);
+    Assertions.assertEquals(ivyRepoUrl, result);
+  }
 }
