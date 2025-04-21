@@ -77,7 +77,7 @@ public class BaseSetup {
       "-metadata.xml";
   protected static final String MOCK_SNAPSHOT_MAVEN_URL = DEFAULT_IVY_MIRROR_MAVEN_BASE_URL + "/com/axonivy/util/bpmn-statistic" +
       "/10.0.10-SNAPSHOT/maven-metadata.xml";
-  protected static final String MOCK_DOWNLOAD_URL = DEFAULT_IVY_MIRROR_MAVEN_BASE_URL + "/com/axonivy/util/bpmn-statistic/10.0" +
+  protected static final String MOCK_DOWNLOAD_URL = "https://maven.axonivy.com/com/axonivy/util/bpmn-statistic/10.0" +
       ".10/bpmn-statistic-10.0.10.zip";
   protected static final String MOCK_ARTIFACT_NAME = "bpmn statistic (zip)";
   protected static final String MOCK_ARTIFACT_DOWNLOAD_FILE = "bpmn-statistic.zip";
