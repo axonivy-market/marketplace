@@ -19,12 +19,14 @@ public interface ProductDependencyRepository extends JpaRepository<ProductDepend
   @Query("SELECT p FROM ProductDependency p LEFT JOIN FETCH p.dependencies")
   List<ProductDependency> findAllWithDependencies();
 
-  List<ProductDependency> findByProductIdAndArtifactIdAndVersion(String productId, String artifactId, String productVersion);
+  List<ProductDependency> findByProductIdAndArtifactIdAndVersion(String productId, String artifactId, String version);
 
   @Modifying
   @Transactional
   @Query("DELETE FROM ProductDependency p WHERE p.productId = :productId")
   void deleteAllByProductId(@Param("productId") String productId);
 
+  @Modifying
+  @Transactional
   void deleteByProductIdAndArtifactIdAndVersion(String productId, String artifactId, String version);
 }

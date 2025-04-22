@@ -24,7 +24,5 @@ public class MavenConstants {
   public static final String SNAPSHOT_LAST_UPDATED_DATE_TIME_FORMAT = "yyyyMMdd.HHmmss";
   public static final String VALUE_TAG = "value";
   public static final String DEFAULT_PRODUCT_FOLDER_TYPE = "zip";
-  public static final String APP_ZIP_FORMAT = "%s-app-%s.zip";
-  public static final String POM = "pom.xml";
-  public static final String DOC = "-doc";
+  public static final String POM = "pom";
 }
