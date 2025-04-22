@@ -363,7 +363,7 @@ public class BaseSetup {
         .artifactId(artifactId)
         .build();
 
-    return MavenArtifactVersion.builder().id(mavenArtifactKey).build();
+    return MavenArtifactVersion.builder().id(mavenArtifactKey).downloadUrl(MOCK_DOWNLOAD_URL).build();
   }
 
   protected MavenArtifactVersion mockAdditionalMavenArtifactVersion(String version, String artifactId) {
@@ -372,7 +372,7 @@ public class BaseSetup {
         .artifactId(artifactId)
         .isAdditionalVersion(true)
         .build();
-    return MavenArtifactVersion.builder().id(mavenArtifactKey).build();
+    return MavenArtifactVersion.builder().id(mavenArtifactKey).downloadUrl(MOCK_DOWNLOAD_URL).build();
   }
 
   protected List<ProductDependency> mockMavenDependencies(){

@@ -14,7 +14,6 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import java.io.IOException;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -39,31 +38,27 @@ class ProductDependencyServiceImplTest extends BaseSetup {
   @Test
   void testSyncIARDependencies() {
     prepareDataForTest(true);
+    when(fileDownloadService.downloadFile(any())).thenReturn(SAMPLE_PRODUCT_PATH.getBytes());
     int totalSynced = mavenDependencyService.syncIARDependenciesForProducts(false);
     assertTrue(totalSynced > 0, "Expected at least one product was synced but service returned nothing");
   }
 
   private void prepareDataForTest(boolean isProductArtifact) {
-    ProductDependency mockProductDependency = ProductDependency.builder().productId(SAMPLE_PRODUCT_ID)
-        .dependencies(List.of())
-        .build();
     List<MavenArtifactVersion> mavenArtifactVersionMock = createMavenArtifactVersionMock(isProductArtifact);
     when(productRepository.findAll()).thenReturn(createPageProductsMock().getContent());
-    when(productDependencyRepository.findAllWithDependencies()).thenReturn(List.of(mockProductDependency));
-    List<Product> mockProducts = createPageProductsMock().getContent().stream()
-        .filter(product -> Boolean.FALSE != product.getListed())
-        .toList();
+    List<Product> mockProducts = createPageProductsMock().getContent().stream().filter(
+        product -> Boolean.FALSE != product.getListed()).toList();
     when(productRepository.findAll()).thenReturn(mockProducts);
-    when(productDependencyRepository.findAllWithDependencies()).thenReturn(List.of());
-    when(mavenArtifactVersionRepository.findByProductId(any())).thenReturn(mavenArtifactVersionMock);
+    when(mavenArtifactVersionRepository.findByProductIdOrderByAdditionalVersion(any())).thenReturn(
+        mavenArtifactVersionMock);
     when(productDependencyRepository.save(any())).thenReturn(
         ProductDependency.builder().productId(SAMPLE_PRODUCT_ID).build());
   }
 
   @Test
-  void testSyncIARDependenciesWithAdditionArtifacts() throws IOException {
+  void testSyncIARDependenciesWithAdditionArtifacts() {
     prepareDataForTest(false);
-    when(fileDownloadService.downloadAndUnzipFile(any(), any())).thenReturn(SAMPLE_PRODUCT_PATH);
+    when(fileDownloadService.downloadFile(any())).thenReturn(SAMPLE_PRODUCT_PATH.getBytes());
     int totalSynced = mavenDependencyService.syncIARDependenciesForProducts(false);
     assertTrue(totalSynced > 0, "Expected at least one product was synced but service returned nothing");
   }

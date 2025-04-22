@@ -164,11 +164,13 @@ public class ProductDependencyServiceImpl implements ProductDependencyService {
   }
 
   private byte[] downloadPOMFileFromMaven(String downloadUrl) {
-    downloadUrl = downloadUrl.replace(DOT_SEPARATOR.concat(DEFAULT_PRODUCT_TYPE), DOT_SEPARATOR.concat(POM));
-    try {
-      return fileDownloadService.downloadFile(downloadUrl);
-    } catch (Exception e) {
-      log.error("Exception during download pom file");
+    if (StringUtils.isNotBlank(downloadUrl)) {
+      downloadUrl = downloadUrl.replace(DOT_SEPARATOR.concat(DEFAULT_PRODUCT_TYPE), DOT_SEPARATOR.concat(POM));
+      try {
+        return fileDownloadService.downloadFile(downloadUrl);
+      } catch (Exception e) {
+        log.error("Exception during download pom file");
+      }
     }
     return new byte[0];
   }
