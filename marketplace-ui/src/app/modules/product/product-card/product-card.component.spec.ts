@@ -87,4 +87,11 @@ describe('ProductCardComponent', () => {
       'common.filter.value.connector'
     );
   });
+
+  it('should apply line-clamp to show first 4 line of short description', () => {
+    const element = fixture.nativeElement.querySelector('.card__description');
+    const style = getComputedStyle(element);
+    expect(style.webkitLineClamp).toBe('4');
+    expect(style.overflow).toBe('hidden');
+  });
 });
