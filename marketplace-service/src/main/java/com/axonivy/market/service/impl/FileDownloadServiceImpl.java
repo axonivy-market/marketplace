@@ -50,9 +50,6 @@ public class FileDownloadServiceImpl implements FileDownloadService {
 
   @Override
   public byte[] downloadFile(String url) {
-    if (StringUtils.isBlank(url)) {
-      return EMPTY.getBytes();
-    }
     return new RestTemplate().getForObject(url, byte[].class);
   }
 

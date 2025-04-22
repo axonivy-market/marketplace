@@ -33,13 +33,12 @@ class ProductDependencyServiceImplTest extends BaseSetup {
   @Mock
   MavenArtifactVersionRepository mavenArtifactVersionRepository;
   @InjectMocks
-  ProductDependencyServiceImpl mavenDependencyService;
+  ProductDependencyServiceImpl productDependencyService;
 
   @Test
   void testSyncIARDependencies() {
     prepareDataForTest(true);
-    when(fileDownloadService.downloadFile(any())).thenReturn(SAMPLE_PRODUCT_PATH.getBytes());
-    int totalSynced = mavenDependencyService.syncIARDependenciesForProducts(false);
+    int totalSynced = productDependencyService.syncIARDependenciesForProducts(false);
     assertTrue(totalSynced > 0, "Expected at least one product was synced but service returned nothing");
   }
 
@@ -59,7 +58,7 @@ class ProductDependencyServiceImplTest extends BaseSetup {
   void testSyncIARDependenciesWithAdditionArtifacts() {
     prepareDataForTest(false);
     when(fileDownloadService.downloadFile(any())).thenReturn(SAMPLE_PRODUCT_PATH.getBytes());
-    int totalSynced = mavenDependencyService.syncIARDependenciesForProducts(false);
+    int totalSynced = productDependencyService.syncIARDependenciesForProducts(false);
     assertTrue(totalSynced > 0, "Expected at least one product was synced but service returned nothing");
   }
 
@@ -80,7 +79,7 @@ class ProductDependencyServiceImplTest extends BaseSetup {
   @Test
   void testNothingToSync() {
     when(productRepository.findAll()).thenReturn(List.of());
-    int totalSynced = mavenDependencyService.syncIARDependenciesForProducts(true);
+    int totalSynced = productDependencyService.syncIARDependenciesForProducts(true);
     assertEquals(0, totalSynced, "Expected no product was synced but service returned something");
   }
 
