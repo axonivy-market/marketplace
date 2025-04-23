@@ -21,6 +21,5 @@ public interface MavenArtifactVersionRepository extends JpaRepository<MavenArtif
 
   @Query(SELECT_BY_PRODUCT_ID + "AND m.id.artifactId = :artifactId AND m.id.productVersion = :version")
   List<MavenArtifactVersion> findByArtifactIdAndVersion(@Param("productId") String productId,
-      @Param("artifactId") String artifactId,
-      @Param("version") String version);
+      @Param("artifactId") String artifactId, @Param("version") String version);
 }

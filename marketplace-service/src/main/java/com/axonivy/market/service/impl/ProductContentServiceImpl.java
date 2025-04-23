@@ -50,13 +50,6 @@ public class ProductContentServiceImpl implements ProductContentService {
   private final ProductMarketplaceDataService productMarketplaceDataService;
   private final ProductDependencyRepository productDependencyRepository;
 
-  private static void addNewFileToZip(String fileName, ZipOutputStream zipOut, byte[] content) throws IOException {
-    ZipEntry entry = new ZipEntry(fileName);
-    zipOut.putNextEntry(entry);
-    zipOut.write(content);
-    zipOut.closeEntry();
-  }
-
   @Override
   public ProductModuleContent getReadmeAndProductContentsFromVersion(String productId, String version, String url,
       Artifact artifact, String productName) {
@@ -165,10 +158,8 @@ public class ProductContentServiceImpl implements ProductContentService {
 
   private void zipDependencyArtifacts(String version, ProductDependency mavenArtifact, ZipOutputStream zipOut)
       throws IOException {
-    if (mavenArtifact == null || ObjectUtils.isEmpty(mavenArtifact.getDependencies())) {
-      return;
-    }
-    for (var dependency : Optional.ofNullable(mavenArtifact.getDependencies()).orElse(List.of())) {
+    for (var dependency : Optional.ofNullable(mavenArtifact)
+        .map(ProductDependency::getDependencies).orElse(List.of())) {
       zipArtifact(version, dependency.getDownloadUrl(), zipOut);
     }
   }
@@ -180,12 +171,21 @@ public class ProductContentServiceImpl implements ProductContentService {
     addNewFileToZip(configFile, zipOut, content.getBytes());
   }
 
+  private static void addNewFileToZip(String fileName, ZipOutputStream zipOut, byte[] content) throws IOException {
+    ZipEntry entry = new ZipEntry(fileName);
+    zipOut.putNextEntry(entry);
+    zipOut.write(content);
+    zipOut.closeEntry();
+  }
+
   private void zipArtifact(String version, String downloadUrl, ZipOutputStream zipOut) throws IOException {
-    if (StringUtils.isBlank(downloadUrl)) {
-      return;
+    if (StringUtils.isNoneBlank(downloadUrl)) {
+      byte[] artifactData = fileDownloadService.downloadFile(downloadUrl);
+      if (ObjectUtils.isEmpty(artifactData)) {
+        return;
+      }
+      String filename = StringUtils.substringAfter(downloadUrl, String.format("/%s/", version));
+      addNewFileToZip(filename, zipOut, artifactData);
     }
-    byte[] artifactData = fileDownloadService.downloadFile(downloadUrl);
-    String filename = StringUtils.substringAfter(downloadUrl, String.format("/%s/", version));
-    addNewFileToZip(filename, zipOut, artifactData);
   }
 }
