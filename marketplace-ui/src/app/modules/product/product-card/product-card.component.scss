@@ -24,4 +24,8 @@ img {
   font-weight: 400;
   font-size: 16px;
   color: var(--ivy-secondary-text-dark-color);
+  display: -webkit-box;
+  -webkit-line-clamp: 4;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
 }
