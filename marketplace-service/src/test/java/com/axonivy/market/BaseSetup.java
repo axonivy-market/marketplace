@@ -29,6 +29,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import static com.axonivy.market.constants.MavenConstants.DEFAULT_IVY_MIRROR_MAVEN_BASE_URL;
+
 @Log4j2
 public class BaseSetup {
   protected static final String AUTHORIZATION_HEADER = "Bearer valid_token";
@@ -71,9 +73,9 @@ public class BaseSetup {
   protected static final String MOCK_README_FILE_NO_SETUP_PART = "src/test/resources/README_NO_SETUP_PART.md";
   protected static final String MOCK_README_FILE_SWAP_DEMO_SETUP_PARTS = "src/test/resources/README_SWAP_DEMO_SETUP.md";
   protected static final String INVALID_FILE_PATH = "test/file/path";
-  protected static final String MOCK_MAVEN_URL = "https://maven.axonivy.com/com/axonivy/util/bpmn-statistic/maven" +
+  protected static final String MOCK_MAVEN_URL = DEFAULT_IVY_MIRROR_MAVEN_BASE_URL + "/com/axonivy/util/bpmn-statistic/maven" +
       "-metadata.xml";
-  protected static final String MOCK_SNAPSHOT_MAVEN_URL = "https://maven.axonivy.com/com/axonivy/util/bpmn-statistic" +
+  protected static final String MOCK_SNAPSHOT_MAVEN_URL = DEFAULT_IVY_MIRROR_MAVEN_BASE_URL + "/com/axonivy/util/bpmn-statistic" +
       "/10.0.10-SNAPSHOT/maven-metadata.xml";
   protected static final String MOCK_DOWNLOAD_URL = "https://maven.axonivy.com/com/axonivy/util/bpmn-statistic/10.0" +
       ".10/bpmn-statistic-10.0.10.zip";
