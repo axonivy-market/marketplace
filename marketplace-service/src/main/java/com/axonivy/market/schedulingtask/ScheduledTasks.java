@@ -3,7 +3,7 @@ package com.axonivy.market.schedulingtask;
 import com.axonivy.market.controller.ProductDetailsController;
 import com.axonivy.market.repository.ProductRepository;
 import com.axonivy.market.service.ExternalDocumentService;
-import com.axonivy.market.service.MavenDependencyService;
+import com.axonivy.market.service.ProductDependencyService;
 import com.axonivy.market.service.ProductService;
 import lombok.AllArgsConstructor;
 import lombok.extern.log4j.Log4j2;
@@ -26,7 +26,7 @@ public class ScheduledTasks {
   final ProductService productService;
   final ProductDetailsController productDetailsController;
   final ExternalDocumentService externalDocumentService;
-  final MavenDependencyService mavenDependencyService;
+  final ProductDependencyService productDependencyService;
 
   @Scheduled(cron = SCHEDULING_TASK_PRODUCTS_CRON)
   public void syncDataForProductFromGitHubRepo() {
@@ -45,7 +45,7 @@ public class ScheduledTasks {
   @Scheduled(cron = SCHEDULING_TASK_PRODUCTS_CRON)
   public void syncDataForProductMavenDependencies() {
     log.warn("Started sync data for product maven dependencies");
-    mavenDependencyService.syncIARDependenciesForProducts(false);
+    productDependencyService.syncIARDependenciesForProducts(false);
   }
 
   @Scheduled(cron = SCHEDULING_TASK_PRODUCT_RELEASE_NOTES_CRON)

@@ -10,7 +10,7 @@ import com.axonivy.market.enums.TypeOption;
 import com.axonivy.market.exceptions.model.UnauthorizedException;
 import com.axonivy.market.github.service.GHAxonIvyMarketRepoService;
 import com.axonivy.market.github.service.GitHubService;
-import com.axonivy.market.service.MavenDependencyService;
+import com.axonivy.market.service.ProductDependencyService;
 import com.axonivy.market.service.MetadataService;
 import com.axonivy.market.service.ProductService;
 import com.axonivy.market.util.AuthorizationUtils;
@@ -74,7 +74,7 @@ class ProductControllerTest extends BaseSetup {
   private GHAxonIvyMarketRepoService axonIvyMarketRepoService;
 
   @Mock
-  private MavenDependencyService mavenDependencyService;
+  private ProductDependencyService productDependencyService;
 
   @BeforeEach
   void setup() {
@@ -249,7 +249,7 @@ class ProductControllerTest extends BaseSetup {
 
   @Test
   void testSyncProductArtifactsSuccess() {
-    when(mavenDependencyService.syncIARDependenciesForProducts(false)).thenReturn(5);
+    when(productDependencyService.syncIARDependenciesForProducts(false)).thenReturn(5);
 
     var response = productController.syncProductArtifacts(AUTHORIZATION_HEADER, false);
 
@@ -260,7 +260,7 @@ class ProductControllerTest extends BaseSetup {
 
   @Test
   void testSyncProductArtifactsNothingToSync() {
-    when(mavenDependencyService.syncIARDependenciesForProducts(false)).thenReturn(0);
+    when(productDependencyService.syncIARDependenciesForProducts(false)).thenReturn(0);
 
     var response = productController.syncProductArtifacts(AUTHORIZATION_HEADER, false);
 
