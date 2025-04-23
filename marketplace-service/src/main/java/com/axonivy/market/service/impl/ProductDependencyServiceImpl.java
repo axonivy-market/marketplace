@@ -27,7 +27,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static com.axonivy.market.constants.CommonConstants.DOT_SEPARATOR;
-import static com.axonivy.market.constants.MavenConstants.POM;
+import static com.axonivy.market.constants.MavenConstants.*;
 import static com.axonivy.market.constants.ProductJsonConstants.DEFAULT_PRODUCT_TYPE;
 
 @Log4j2
@@ -165,11 +165,12 @@ public class ProductDependencyServiceImpl implements ProductDependencyService {
 
   private byte[] downloadPOMFileFromMaven(String downloadUrl) {
     if (StringUtils.isNotBlank(downloadUrl)) {
+      downloadUrl = downloadUrl.replaceFirst(DEFAULT_IVY_MAVEN_BASE_URL, DEFAULT_IVY_MIRROR_MAVEN_BASE_URL);
       downloadUrl = downloadUrl.replace(DOT_SEPARATOR.concat(DEFAULT_PRODUCT_TYPE), DOT_SEPARATOR.concat(POM));
       try {
         return fileDownloadService.downloadFile(downloadUrl);
       } catch (Exception e) {
-        log.error("Exception during download pom file");
+        log.error("Exception during download pom file by URL {}", downloadUrl);
       }
     }
     return new byte[0];
