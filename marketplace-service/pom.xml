@@ -1,7 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0"
-         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
   <parent>
     <groupId>org.springframework.boot</groupId>
@@ -11,14 +9,13 @@
   </parent>
   <groupId>com.axonivy.market</groupId>
   <artifactId>marketplace-service</artifactId>
-  <version>1.0.0-SNAPSHOT</version>
+  <version>1.11.0</version>
   <packaging>war</packaging>
   <name>marketplace-service</name>
   <description>marketplace-service</description>
   <properties>
     <java.version>17</java.version>
   </properties>
-
   <dependencies>
     <dependency>
       <groupId>org.springframework.boot</groupId>
@@ -108,10 +105,10 @@
     <dependency>
       <groupId>com.h2database</groupId>
       <artifactId>h2</artifactId>
-      <scope>test</scope> <!-- Only for testing -->
+      <scope>test</scope>
+      <!-- Only for testing -->
     </dependency>
   </dependencies>
-
   <build>
     <plugins>
       <plugin>
@@ -130,11 +127,11 @@
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-compiler-plugin</artifactId>
         <version>3.8.1</version>
-          <configuration>
-              <compilerArgs>
-                  <arg>-parameters</arg>
-              </compilerArgs>
-          </configuration>
+        <configuration>
+          <compilerArgs>
+            <arg>-parameters</arg>
+          </compilerArgs>
+        </configuration>
       </plugin>
       <plugin>
         <groupId>org.sonarsource.scanner.maven</groupId>
