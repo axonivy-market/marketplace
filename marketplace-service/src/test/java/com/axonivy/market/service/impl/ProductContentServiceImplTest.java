@@ -94,7 +94,8 @@ class ProductContentServiceImplTest extends BaseSetup {
   @Test
   void testDownloadZipArtifactFile() {
     ProductDependency productDependency = mockProductDependency();
-    when(productDependencyRepository.findByIdWithDependencies(MOCK_PRODUCT_ID)).thenReturn(productDependency);
+    when(productDependencyRepository.findByProductIdAndArtifactIdAndVersion(MOCK_PRODUCT_ID, MOCK_DEMO_ARTIFACT_ID,
+        MOCK_RELEASED_VERSION)).thenReturn(List.of(productDependency));
     when(fileDownloadService.downloadFile(MOCK_DOWNLOAD_URL)).thenReturn(MOCK_DOWNLOAD_URL.getBytes());
     when(productMarketplaceDataService.getVersionDownload(any(), any())).thenReturn(mockVersionDownload());
 
