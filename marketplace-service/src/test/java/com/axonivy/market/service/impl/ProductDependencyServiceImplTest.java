@@ -2,9 +2,11 @@ package com.axonivy.market.service.impl;
 
 import com.axonivy.market.BaseSetup;
 import com.axonivy.market.entity.MavenArtifactVersion;
+import com.axonivy.market.entity.Metadata;
 import com.axonivy.market.entity.Product;
 import com.axonivy.market.entity.ProductDependency;
 import com.axonivy.market.repository.MavenArtifactVersionRepository;
+import com.axonivy.market.repository.MetadataRepository;
 import com.axonivy.market.repository.ProductDependencyRepository;
 import com.axonivy.market.repository.ProductRepository;
 import com.axonivy.market.service.FileDownloadService;
@@ -14,11 +16,15 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
 import java.util.List;
+import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -32,54 +38,52 @@ class ProductDependencyServiceImplTest extends BaseSetup {
   ProductDependencyRepository productDependencyRepository;
   @Mock
   MavenArtifactVersionRepository mavenArtifactVersionRepository;
+  @Mock
+  MetadataRepository metadataRepository;
   @InjectMocks
   ProductDependencyServiceImpl productDependencyService;
 
   @Test
-  void testSyncIARDependencies() {
+  void testSyncIARDependencies() throws IOException {
+    when(mavenArtifactVersionRepository.findByProductIdAndArtifactIdAndVersion(any(), any(), any()))
+        .thenReturn(List.of(mockMavenArtifactVersion(MOCK_SNAPSHOT_VERSION, MOCK_ARTIFACT_ID, MOCK_SNAPSHOT_MAVEN_URL)));
     prepareDataForTest(true);
-    int totalSynced = productDependencyService.syncIARDependenciesForProducts(false);
+    when(fileDownloadService.downloadFile(eq(MOCK_SNAPSHOT_MAVEN_URL))).thenReturn(Files.readAllBytes(
+        new File("src/test/resources/zip/test-empty-dependency-pom.xml").toPath()));
+    int totalSynced = productDependencyService.syncIARDependenciesForProducts(false, MOCK_PRODUCT_ID);
     assertTrue(totalSynced > 0, "Expected at least one product was synced but service returned nothing");
   }
 
-  private void prepareDataForTest(boolean isProductArtifact) {
-    List<MavenArtifactVersion> mavenArtifactVersionMock = createMavenArtifactVersionMock(isProductArtifact);
-    when(productRepository.findAll()).thenReturn(createPageProductsMock().getContent());
-    List<Product> mockProducts = createPageProductsMock().getContent().stream().filter(
-        product -> Boolean.FALSE != product.getListed()).toList();
-    when(productRepository.findAll()).thenReturn(mockProducts);
-    when(mavenArtifactVersionRepository.findByProductIdOrderByAdditionalVersion(any())).thenReturn(
-        mavenArtifactVersionMock);
-    when(productDependencyRepository.save(any())).thenReturn(
-        ProductDependency.builder().productId(SAMPLE_PRODUCT_ID).build());
+  private void prepareDataForTest(boolean isProductArtifact) throws IOException {
+    List<MavenArtifactVersion> mavenArtifactVersionsMock = getMockMavenArtifactVersion();
+    var mavenArtifactVersionMock = mockMavenArtifactVersion(MOCK_SNAPSHOT_VERSION, MOCK_ARTIFACT_ID, MOCK_DOWNLOAD_URL);
+    mavenArtifactVersionMock.setProductId(MOCK_PRODUCT_ID);
+    mavenArtifactVersionMock.getId().setAdditionalVersion(true);
+    if (isProductArtifact) {
+      mavenArtifactVersionMock.getId().setAdditionalVersion(false);
+    }
+    mavenArtifactVersionsMock.add(mavenArtifactVersionMock);
+    when(mavenArtifactVersionRepository.findByProductIdOrderByAdditionalVersion(any()))
+        .thenReturn(mavenArtifactVersionsMock);
+    var mockPomFile = new File("src/test/resources/zip/test-pom.xml");
+    when(fileDownloadService.downloadFile(any())).thenReturn(Files.readAllBytes(mockPomFile.toPath()));
+    when(metadataRepository.findByGroupIdAndArtifactId(any(), any())).thenReturn(List.of(Metadata.builder()
+        .productId(MOCK_PRODUCT_ID).artifactId(MOCK_ARTIFACT_ID).groupId(MOCK_GROUP_ID)
+        .versions(Set.of(MOCK_SNAPSHOT_VERSION)).build()));
   }
 
   @Test
-  void testSyncIARDependenciesWithAdditionArtifacts() {
+  void testSyncIARDependenciesWithAdditionArtifacts() throws IOException {
     prepareDataForTest(false);
-    when(fileDownloadService.downloadFile(any())).thenReturn(SAMPLE_PRODUCT_PATH.getBytes());
-    int totalSynced = productDependencyService.syncIARDependenciesForProducts(false);
-    assertTrue(totalSynced > 0, "Expected at least one product was synced but service returned nothing");
-  }
-
-  private List<MavenArtifactVersion> createMavenArtifactVersionMock(boolean isProductArtifact) {
-    List<MavenArtifactVersion> mavenArtifactVersionsMock = getMockMavenArtifactVersionWithData();
-    for (MavenArtifactVersion mavenArtifactVersion : mavenArtifactVersionsMock) {
-      mavenArtifactVersion.setProductId(SAMPLE_PRODUCT_ID);
-    }
-
-    if (isProductArtifact) {
-      mavenArtifactVersionsMock.add(mockMavenArtifactVersion(MOCK_SNAPSHOT_VERSION, MOCK_ARTIFACT_ID));
-    } else {
-      mavenArtifactVersionsMock.add(mockAdditionalMavenArtifactVersion(MOCK_SNAPSHOT_VERSION, MOCK_ARTIFACT_ID));
-    }
-    return mavenArtifactVersionsMock;
+    when(productRepository.findAll()).thenReturn(createPageProductsMock().getContent());
+    int totalSynced = productDependencyService.syncIARDependenciesForProducts(false, null);
+    assertTrue(totalSynced == 0, "Expected at least one product was synced but service returned nothing");
   }
 
   @Test
   void testNothingToSync() {
     when(productRepository.findAll()).thenReturn(List.of());
-    int totalSynced = productDependencyService.syncIARDependenciesForProducts(true);
+    int totalSynced = productDependencyService.syncIARDependenciesForProducts(true, null);
     assertEquals(0, totalSynced, "Expected no product was synced but service returned something");
   }
 

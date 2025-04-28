@@ -2,11 +2,13 @@ package com.axonivy.market.factory;
 
 import com.axonivy.market.comparator.LatestVersionComparator;
 import com.axonivy.market.comparator.MavenVersionComparator;
+import com.axonivy.market.constants.CommonConstants;
 import com.axonivy.market.entity.Metadata;
 import com.axonivy.market.enums.DevelopmentVersion;
 import com.axonivy.market.util.VersionUtils;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.util.CollectionUtils;
 
 import java.util.ArrayList;
@@ -18,6 +20,21 @@ import static com.axonivy.market.constants.MavenConstants.DEV_RELEASE_POSTFIX;
 import static org.apache.commons.lang3.StringUtils.EMPTY;
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class VersionFactory {
+  static final String PROJECT_VERSION = "${project.version}";
+  static final String RANGE_VERSION_PATTERN = "[\\[\\]()]";
+  static final String[] MAVEN_RANGE_VERSION_ARRAYS = new String[] {"(","]","[",")"};
+
+  public static String resolveVersion(String mavenVersion, String defaultVersion) {
+    if (StringUtils.equalsIgnoreCase(PROJECT_VERSION, mavenVersion)) {
+      return defaultVersion;
+    }
+    if (StringUtils.containsAnyIgnoreCase(mavenVersion, MAVEN_RANGE_VERSION_ARRAYS)) {
+      var plainVersions = mavenVersion.replaceAll(RANGE_VERSION_PATTERN, "");
+      String[] parts = plainVersions.split(CommonConstants.COMMA);
+      return parts.length > 1 ? parts[1].trim() : parts[0].trim();
+    }
+    return defaultVersion;
+  }
 
   public static String get(List<String> versions, String requestedVersion) {
     var sortedVersions = Optional.ofNullable(versions).orElse(new ArrayList<>()).stream()

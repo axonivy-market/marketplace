@@ -3,6 +3,7 @@ package com.axonivy.market.model;
 import com.axonivy.market.enums.FeedbackStatus;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import io.swagger.v3.oas.annotations.media.Schema;
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -19,7 +20,10 @@ import java.util.Map;
 @NoArgsConstructor
 @Relation(collectionRelation = "feedbacks", itemRelation = "feedback")
 @JsonInclude(JsonInclude.Include.NON_NULL)
+@EqualsAndHashCode(onlyExplicitlyIncluded = true, callSuper = false)
 public class FeedbackModel extends RepresentationModel<FeedbackModel> {
+
+  @EqualsAndHashCode.Include
   @Schema(description = "Id of feedback", example = "667940ecc881b1d0db072f9e")
   private String id;
 
@@ -69,16 +73,4 @@ public class FeedbackModel extends RepresentationModel<FeedbackModel> {
   @Schema(description = "Is latest approved or pending feedback", example = "true")
   private Boolean isLatest;
 
-  @Override
-  public int hashCode() {
-    return new HashCodeBuilder().append(id).hashCode();
-  }
-
-  @Override
-  public boolean equals(Object obj) {
-    if (obj == null || this.getClass() != obj.getClass()) {
-      return false;
-    }
-    return new EqualsBuilder().append(id, ((FeedbackModel) obj).getId()).isEquals();
-  }
 }

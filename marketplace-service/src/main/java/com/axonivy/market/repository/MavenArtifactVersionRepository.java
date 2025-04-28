@@ -20,6 +20,10 @@ public interface MavenArtifactVersionRepository extends JpaRepository<MavenArtif
   void deleteAllByProductId(String productId);
 
   @Query(SELECT_BY_PRODUCT_ID + "AND m.id.artifactId = :artifactId AND m.id.productVersion = :version")
-  List<MavenArtifactVersion> findByArtifactIdAndVersion(@Param("productId") String productId,
+  List<MavenArtifactVersion> findByProductIdAndArtifactIdAndVersion(@Param("productId") String productId,
       @Param("artifactId") String artifactId, @Param("version") String version);
+
+  @Query("SELECT m.id.productVersion FROM MavenArtifactVersion m WHERE m.productId = :productId AND m.id.artifactId = :artifactId")
+  List<String> findProductVersionsByProductIdAndArtifactId(@Param("productId") String productId,
+      @Param("artifactId") String artifactId);
 }
