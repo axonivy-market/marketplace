@@ -24,11 +24,11 @@ import org.apache.maven.model.Model;
 import org.apache.maven.model.io.xpp3.MavenXpp3Reader;
 import org.codehaus.plexus.util.xml.pull.XmlPullParserException;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.HttpClientErrorException;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 
@@ -47,7 +47,7 @@ public class ProductDependencyServiceImpl implements ProductDependencyService {
   final MavenArtifactVersionRepository mavenArtifactVersionRepository;
   final MetadataRepository metadataRepository;
 
-  private static Model convertPomToModel(byte[] data) throws Exception {
+  private static Model convertPomToModel(byte[] data) throws IOException, XmlPullParserException, NullPointerException {
     try (var inputStream = new ByteArrayInputStream(data)) {
       return new MavenXpp3Reader().read(inputStream);
     }
@@ -108,7 +108,8 @@ public class ProductDependencyServiceImpl implements ProductDependencyService {
   }
 
   private ProductDependency findProductDependencyByIds(String productId, String artifactId, String version) {
-    var productDependencies = productDependencyRepository.findByProductIdAndArtifactIdAndVersion(productId, artifactId, version);
+    var productDependencies = productDependencyRepository.findByProductIdAndArtifactIdAndVersion(productId, artifactId,
+        version);
     return ObjectUtils.isEmpty(productDependencies) ? null : productDependencies.get(0);
   }
 
@@ -137,7 +138,7 @@ public class ProductDependencyServiceImpl implements ProductDependencyService {
   private void collectMavenDependenciesFor(String version, List<ProductDependency> productDependencies,
       List<Dependency> dependencyModels, int totalDependencyLevels) throws Exception {
     if (totalDependencyLevels > SAFE_THRESHOLD) {
-      throw new MarketException(ErrorCode.INTERNAL_EXCEPTION);
+      throw new MarketException(ErrorCode.INTERNAL_EXCEPTION.getCode(), ErrorCode.INTERNAL_EXCEPTION.getHelpText());
     }
     for (var dependencyModel : dependencyModels) {
       String dependencyVersion = VersionFactory.resolveVersion(dependencyModel.getVersion(), version);
@@ -182,7 +183,8 @@ public class ProductDependencyServiceImpl implements ProductDependencyService {
     return dependencyArtifact;
   }
 
-  private List<Dependency> extractMavenPOMDependencies(String downloadUrl) throws Exception {
+  private List<Dependency> extractMavenPOMDependencies(String downloadUrl)
+      throws IOException, XmlPullParserException, NullPointerException, HttpClientErrorException {
     byte[] location = downloadPOMFileFromMaven(downloadUrl);
     Model mavelModel = convertPomToModel(location);
     return mavelModel.getDependencies().stream()
@@ -190,7 +192,7 @@ public class ProductDependencyServiceImpl implements ProductDependencyService {
         .toList();
   }
 
-  private byte[] downloadPOMFileFromMaven(String downloadUrl) {
+  private byte[] downloadPOMFileFromMaven(String downloadUrl) throws HttpClientErrorException {
     ObjectUtils.requireNonEmpty(downloadUrl, "Download URL must not be null");
     var changeToMirrorRepo = downloadUrl.replaceFirst(DEFAULT_IVY_MAVEN_BASE_URL, DEFAULT_IVY_MIRROR_MAVEN_BASE_URL);
     var pomURL = changeToMirrorRepo.replace(DOT_SEPARATOR.concat(DEFAULT_PRODUCT_TYPE), DOT_SEPARATOR.concat(POM));

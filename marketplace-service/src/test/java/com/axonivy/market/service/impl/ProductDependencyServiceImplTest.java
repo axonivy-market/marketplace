@@ -3,8 +3,6 @@ package com.axonivy.market.service.impl;
 import com.axonivy.market.BaseSetup;
 import com.axonivy.market.entity.MavenArtifactVersion;
 import com.axonivy.market.entity.Metadata;
-import com.axonivy.market.entity.Product;
-import com.axonivy.market.entity.ProductDependency;
 import com.axonivy.market.repository.MavenArtifactVersionRepository;
 import com.axonivy.market.repository.MetadataRepository;
 import com.axonivy.market.repository.ProductDependencyRepository;
@@ -24,7 +22,7 @@ import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -46,9 +44,10 @@ class ProductDependencyServiceImplTest extends BaseSetup {
   @Test
   void testSyncIARDependencies() throws IOException {
     when(mavenArtifactVersionRepository.findByProductIdAndArtifactIdAndVersion(any(), any(), any()))
-        .thenReturn(List.of(mockMavenArtifactVersion(MOCK_SNAPSHOT_VERSION, MOCK_ARTIFACT_ID, MOCK_SNAPSHOT_MAVEN_URL)));
+        .thenReturn(
+            List.of(mockMavenArtifactVersion(MOCK_SNAPSHOT_VERSION, MOCK_ARTIFACT_ID, MOCK_SNAPSHOT_MAVEN_URL)));
     prepareDataForTest(true);
-    when(fileDownloadService.downloadFile(eq(MOCK_SNAPSHOT_MAVEN_URL))).thenReturn(Files.readAllBytes(
+    when(fileDownloadService.downloadFile(MOCK_SNAPSHOT_MAVEN_URL)).thenReturn(Files.readAllBytes(
         new File("src/test/resources/zip/test-empty-dependency-pom.xml").toPath()));
     int totalSynced = productDependencyService.syncIARDependenciesForProducts(false, MOCK_PRODUCT_ID);
     assertTrue(totalSynced > 0, "Expected at least one product was synced but service returned nothing");
@@ -77,7 +76,7 @@ class ProductDependencyServiceImplTest extends BaseSetup {
     prepareDataForTest(false);
     when(productRepository.findAll()).thenReturn(createPageProductsMock().getContent());
     int totalSynced = productDependencyService.syncIARDependenciesForProducts(false, null);
-    assertTrue(totalSynced == 0, "Expected at least one product was synced but service returned nothing");
+    assertEquals(0, totalSynced);
   }
 
   @Test
