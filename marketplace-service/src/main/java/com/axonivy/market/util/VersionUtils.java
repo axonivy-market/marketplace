@@ -22,8 +22,9 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import static com.axonivy.market.constants.CommonConstants.DOT_SEPARATOR;
+import static com.axonivy.market.constants.CommonConstants.*;
 import static com.axonivy.market.constants.MavenConstants.*;
+import static org.apache.commons.lang3.StringUtils.EMPTY;
 
 @Log4j2
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
@@ -167,4 +168,23 @@ public class VersionUtils {
         designerVersion);
   }
 
+  public static String getCompatibilityRangeFromVersions(List<String> versions, Boolean isDeprecatedProduct) {
+    String versionRangeSuffix = PLUS;
+    if (isDeprecatedProduct) {
+      versionRangeSuffix = EMPTY;
+    }
+    if (versions.size() == 1) {
+      return splitVersion(versions.get(0)).concat(versionRangeSuffix);
+    }
+    String maxVersion = splitVersion(versions.get(0)).concat(versionRangeSuffix);
+    String minVersion = splitVersion(versions.get(versions.size() - 1));
+    return VersionUtils.getPrefixOfVersion(minVersion).equals(VersionUtils.getPrefixOfVersion(maxVersion)) ?
+        minVersion.concat(versionRangeSuffix) : String.format(COMPATIBILITY_RANGE_FORMAT, minVersion, maxVersion);
+  }
+
+  private static String splitVersion(String version) {
+    int firstDot = version.indexOf(DOT_SEPARATOR);
+    int secondDot = version.indexOf(DOT_SEPARATOR, firstDot + 1);
+    return version.substring(0, secondDot);
+  }
 }

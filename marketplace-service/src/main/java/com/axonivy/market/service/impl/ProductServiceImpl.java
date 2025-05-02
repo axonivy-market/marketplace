@@ -590,7 +590,7 @@ public class ProductServiceImpl implements ProductService {
       int installationCount = productMarketplaceDataService.updateProductInstallationCount(id);
       productItem.setInstallationCount(installationCount);
 
-      String compatibilityRange = getCompatibilityRange(id);
+      String compatibilityRange = getCompatibilityRange(id, productItem.getDeprecated());
       productItem.setCompatibilityRange(compatibilityRange);
 
       return productItem;
@@ -609,7 +609,7 @@ public class ProductServiceImpl implements ProductService {
       int installationCount = productMarketplaceDataService.updateProductInstallationCount(id);
       productItem.setInstallationCount(installationCount);
 
-      String compatibilityRange = getCompatibilityRange(id);
+      String compatibilityRange = getCompatibilityRange(id, productItem.getDeprecated());
       productItem.setCompatibilityRange(compatibilityRange);
 
       productItem.setBestMatchVersion(bestMatchVersion);
@@ -755,25 +755,11 @@ public class ProductServiceImpl implements ProductService {
    * split the versions to obtain the first prefix,then format them for compatibility range.
    * ex: 11.0+ , 10.0 - 12.0+ , ...
    */
-  private String getCompatibilityRange(String productId) {
+  private String getCompatibilityRange(String productId, Boolean isDeprecatedProduct) {
     return Optional.of(versionService.getVersionsForDesigner(productId, null))
         .filter(ObjectUtils::isNotEmpty)
         .map(versions -> versions.stream().map(VersionAndUrlModel::getVersion).toList())
-        .map(versions -> {
-          if (versions.size() == 1) {
-            return splitVersion(versions.get(0)).concat(PLUS);
-          }
-          String maxVersion = splitVersion(versions.get(0)).concat(PLUS);
-          String minVersion = splitVersion(versions.get(versions.size() - 1));
-          return VersionUtils.getPrefixOfVersion(minVersion).equals(VersionUtils.getPrefixOfVersion(maxVersion)) ?
-              minVersion.concat(PLUS) : String.format(COMPATIBILITY_RANGE_FORMAT, minVersion, maxVersion);
-        }).orElse(null);
-  }
-
-  private String splitVersion(String version) {
-    int firstDot = version.indexOf(DOT_SEPARATOR);
-    int secondDot = version.indexOf(DOT_SEPARATOR, firstDot + 1);
-    return version.substring(0, secondDot);
+        .map(versions -> VersionUtils.getCompatibilityRangeFromVersions(versions, isDeprecatedProduct)).orElse(null);
   }
 
   @Cacheable(value = "GithubPublicReleasesCache", key="{#productId}")
