@@ -170,7 +170,7 @@ public class VersionUtils {
 
   public static String getCompatibilityRangeFromVersions(List<String> versions, Boolean isDeprecatedProduct) {
     String versionRangeSuffix = PLUS;
-    if (isDeprecatedProduct) {
+    if (BooleanUtils.isTrue(isDeprecatedProduct)) {
       versionRangeSuffix = EMPTY;
     }
     if (versions.size() == 1) {
