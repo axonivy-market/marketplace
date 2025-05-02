@@ -1,7 +1,6 @@
 package com.axonivy.market;
 
 import com.axonivy.market.bo.VersionDownload;
-import com.axonivy.market.entity.Artifact;
 import com.axonivy.market.constants.MavenConstants;
 import com.axonivy.market.entity.*;
 import com.axonivy.market.enums.Language;

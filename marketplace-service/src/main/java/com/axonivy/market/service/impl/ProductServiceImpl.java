@@ -70,7 +70,6 @@ import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
-import java.util.stream.Collectors;
 
 import static com.axonivy.market.constants.CommonConstants.*;
 import static com.axonivy.market.constants.MavenConstants.*;
