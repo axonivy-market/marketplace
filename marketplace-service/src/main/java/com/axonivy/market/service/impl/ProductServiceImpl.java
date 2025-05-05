@@ -22,7 +22,6 @@ import com.axonivy.market.github.service.GitHubService;
 import com.axonivy.market.github.util.GitHubUtils;
 import com.axonivy.market.model.GitHubReleaseModel;
 import com.axonivy.market.model.VersionAndUrlModel;
-import com.axonivy.market.repository.ArtifactRepository;
 import com.axonivy.market.repository.GitHubRepoMetaRepository;
 import com.axonivy.market.repository.ImageRepository;
 import com.axonivy.market.repository.MavenArtifactVersionRepository;
@@ -70,7 +69,6 @@ import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
-import java.util.stream.Collectors;
 
 import static com.axonivy.market.constants.CommonConstants.*;
 import static com.axonivy.market.constants.MavenConstants.*;
@@ -103,7 +101,6 @@ public class ProductServiceImpl implements ProductService {
   private final ProductMarketplaceDataService productMarketplaceDataService;
   private final ProductMarketplaceDataRepository productMarketplaceDataRepo;
   private final MavenArtifactVersionRepository mavenArtifactVersionRepository;
-  private final ArtifactRepository artifactRepo;
   private GHCommit lastGHCommit;
   private final VersionService versionService;
   private GitHubRepoMeta marketRepoMeta;
@@ -118,7 +115,7 @@ public class ProductServiceImpl implements ProductService {
       ProductContentService productContentService, MetadataService metadataService,
       ProductMarketplaceDataService productMarketplaceDataService, ExternalDocumentService externalDocumentService,
       ProductMarketplaceDataRepository productMarketplaceDataRepo,
-      MavenArtifactVersionRepository mavenArtifactVersionRepository, ArtifactRepository artifactRepo,
+      MavenArtifactVersionRepository mavenArtifactVersionRepository,
       VersionService versionService) {
     this.productRepo = productRepo;
     this.productModuleContentRepo = productModuleContentRepo;
@@ -136,7 +133,6 @@ public class ProductServiceImpl implements ProductService {
     this.externalDocumentService = externalDocumentService;
     this.productMarketplaceDataRepo = productMarketplaceDataRepo;
     this.mavenArtifactVersionRepository = mavenArtifactVersionRepository;
-    this.artifactRepo = artifactRepo;
     this.versionService = versionService;
   }
 
