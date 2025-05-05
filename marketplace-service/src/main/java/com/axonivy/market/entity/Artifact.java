@@ -12,8 +12,8 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.springframework.data.annotation.Transient;
 
-import java.util.List;
 import java.util.Objects;
+import java.util.Set;
 
 import static com.axonivy.market.constants.EntityConstants.ARTIFACT;
 
@@ -34,7 +34,7 @@ public class Artifact extends GenericIdEntity {
   @Transient
   private Boolean isProductArtifact;
   @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
-  private List<ArchivedArtifact> archivedArtifacts;
+  private Set<ArchivedArtifact> archivedArtifacts;
   private Boolean doc;
   private boolean isInvalidArtifact;
 

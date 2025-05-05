@@ -314,8 +314,6 @@ public class ProductServiceImpl implements ProductService {
     }
 
     for (Product product : products) {
-      List<Artifact> allArtifacts = fetchArtifacts(product.getArtifacts());
-      product.setArtifacts(allArtifacts);
       updateProductFromReleasedVersions(product);
       productRepo.save(product);
     }

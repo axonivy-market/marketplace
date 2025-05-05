@@ -11,9 +11,7 @@ import java.util.List;
 public interface ProductRepository extends JpaRepository<Product, String>, CustomProductRepository {
   List<Product> findByMarketDirectory(String marketDirectory);
 
-  @Query("SELECT id FROM Product WHERE listed != false or listed IS NULL")
-  List<String> findAllProductIds();
-
-  @Query("SELECT p FROM Product p LEFT JOIN FETCH p.names LEFT JOIN FETCH p.shortDescriptions LEFT JOIN FETCH p.artifacts")
+  @Query("SELECT p FROM Product p LEFT JOIN FETCH p.names LEFT JOIN FETCH p.shortDescriptions LEFT JOIN FETCH p" +
+      ".artifacts a LEFT JOIN FETCH a.archivedArtifacts")
   List<Product> findAllProductsWithNamesAndShortDescriptions();
 }
