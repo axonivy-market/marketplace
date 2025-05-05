@@ -459,11 +459,6 @@ public class ProductServiceImpl implements ProductService {
     externalDocumentService.syncDocumentForProduct(product.getId(), false);
   }
 
-  private List<Artifact> fetchArtifacts(List<Artifact> artifacts) {
-    List<String> ids = artifacts.stream().map(Artifact::getId).toList();
-    return artifactRepo.findAllByIdInAndFetchArchivedArtifacts(ids);
-  }
-
   private void getMetadataContent(Artifact artifact, Product product, List<String> nonSyncReleasedVersions) {
     String metadataUrl = MavenUtils.buildMetadataUrlFromArtifactInfo(artifact.getRepoUrl(), artifact.getGroupId(),
         createProductArtifactId(artifact));
