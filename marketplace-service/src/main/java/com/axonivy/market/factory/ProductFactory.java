@@ -74,6 +74,7 @@ public class ProductFactory {
     product.setLanguage(meta.getLanguage());
     product.setIndustry(meta.getIndustry());
     product.setContactUs(BooleanUtils.isTrue(meta.getContactUs()));
+    product.setDeprecated(meta.getDeprecated());
     product.setCost(
         StringUtils.capitalize(StringUtils.defaultIfEmpty(meta.getCost(), MetaConstants.DEFAULT_COST_VALUE)));
     product.setCompatibility(meta.getCompatibility());
