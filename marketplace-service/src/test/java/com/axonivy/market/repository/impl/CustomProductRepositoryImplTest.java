@@ -22,7 +22,9 @@ import java.util.List;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.verify;
 
 @ExtendWith(MockitoExtension.class)
 class CustomProductRepositoryImplTest extends BaseSetup {
@@ -66,7 +68,7 @@ class CustomProductRepositoryImplTest extends BaseSetup {
     Product actualProduct = repo.getProductByIdAndVersion(MOCK_PRODUCT_ID, MOCK_RELEASED_VERSION);
     assertEquals(mockProduct, actualProduct);
     assertThat(actualProduct.getProductModuleContent()).usingRecursiveComparison().isEqualTo(getMockProductModuleContent());
-    verify(contentRepo, times(1)).findByVersionAndProductId(anyString(),anyString());
+    verify(contentRepo).findByVersionAndProductId(anyString(),anyString());
   }
 
   @Test

@@ -432,9 +432,8 @@ class ProductServiceImplTest extends BaseSetup {
   void testGetCompatibilityRangeAfterFetchProductDetail() {
     List<MavenArtifactVersion> mockMavenArtifactVersion = getMockMavenArtifactVersionWithData();
     when(mavenArtifactVersionRepository.findByProductId(MOCK_PRODUCT_ID)).thenReturn(mockMavenArtifactVersion);
-
-    when(productRepo.getProductByIdAndVersion(MOCK_PRODUCT_ID, MOCK_SNAPSHOT_VERSION))
-        .thenReturn(getMockProduct());
+    Product product = getMockProduct();
+    when(productRepo.getProductByIdAndVersion(MOCK_PRODUCT_ID, MOCK_SNAPSHOT_VERSION)).thenReturn(product);
     when(versionService.getVersionsForDesigner(MOCK_PRODUCT_ID, null))
         .thenReturn(mockVersionAndUrlModels(), mockVersionModels(), mockVersionModels2(), mockVersionModels3());
 
@@ -444,11 +443,17 @@ class ProductServiceImplTest extends BaseSetup {
     result = productService.fetchProductDetail(MOCK_PRODUCT_ID, true);
     assertEquals("10.0 - 11.3+", result.getCompatibilityRange());
 
+    product.setDeprecated(true);
     result = productService.fetchProductDetail(MOCK_PRODUCT_ID, true);
-    assertEquals("10.0 - 11.3+", result.getCompatibilityRange());
+    assertEquals("10.0 - 11.3", result.getCompatibilityRange());
 
+    product.setDeprecated(false);
     result = productService.fetchProductDetail(MOCK_PRODUCT_ID, true);
     assertEquals("10.0 - 12.0+", result.getCompatibilityRange());
+
+    product.setDeprecated(true);
+    result = productService.fetchProductDetail(MOCK_PRODUCT_ID, true);
+    assertEquals("10.0 - 12.0", result.getCompatibilityRange());
   }
 
   @Test

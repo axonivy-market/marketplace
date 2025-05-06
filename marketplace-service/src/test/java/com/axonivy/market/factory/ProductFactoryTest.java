@@ -37,6 +37,7 @@ class ProductFactoryTest extends BaseSetup {
     assertNotEquals(null, result);
     assertEquals("Amazon Comprehend", result.getNames().get(Language.EN.getValue()));
     assertEquals("Amazon Comprehend DE", result.getNames().get(Language.DE.getValue()));
+    Assertions.assertTrue(result.getDeprecated());
     Assertions.assertFalse(CollectionUtils.isEmpty(result.getArtifacts()));
     Assertions.assertFalse(result.getArtifacts().get(0).isInvalidArtifact());
   }

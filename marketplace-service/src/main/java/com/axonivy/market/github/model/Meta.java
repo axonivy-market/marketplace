@@ -35,4 +35,5 @@ public class Meta {
   private String compatibility;
   private Boolean contactUs;
   private String cost;
+  private Boolean deprecated;
 }

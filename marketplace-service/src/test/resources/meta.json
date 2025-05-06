@@ -26,6 +26,7 @@
   "sourceUrl": "https://github.com/axonivy-market/amazon-comprehend-connector",
   "statusBadgeUrl": "https://github.com/axonivy-market/amazon-comprehend-connector/actions/workflows/ci.yml/badge.svg",
   "language": "English",
+  "deprecated": true,
   "industry": "Cross-Industry",
   "tags": [
     "AI"
