@@ -25,6 +25,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import static com.axonivy.market.constants.GitHubConstants.MARKET_PATH;
+
 @Log4j2
 @Service
 public class GHAxonIvyMarketRepoServiceImpl implements GHAxonIvyMarketRepoService {
@@ -99,7 +101,7 @@ public class GHAxonIvyMarketRepoServiceImpl implements GHAxonIvyMarketRepoServic
         }
         GitHubUtils.mapPagedIteratorToList(listFiles).forEach(file -> {
           String fullPathName = file.getFileName();
-          if (FileType.of(fullPathName) != FileType.OTHER) {
+          if (FileType.of(fullPathName) != FileType.OTHER && fullPathName.startsWith(MARKET_PATH)) {
             var gitHubFile = new GitHubFile();
             gitHubFile.setFileName(fullPathName);
             gitHubFile.setPath(file.getRawUrl().getPath());
