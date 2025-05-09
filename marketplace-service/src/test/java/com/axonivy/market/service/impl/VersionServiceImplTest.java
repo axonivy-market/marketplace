@@ -7,6 +7,7 @@ import com.axonivy.market.entity.MavenArtifactVersion;
 import com.axonivy.market.entity.Metadata;
 import com.axonivy.market.entity.ProductJsonContent;
 import com.axonivy.market.enums.DevelopmentVersion;
+import com.axonivy.market.model.MavenArtifactVersionModel;
 import com.axonivy.market.model.VersionAndUrlModel;
 import com.axonivy.market.repository.MavenArtifactVersionRepository;
 import com.axonivy.market.repository.MetadataRepository;
@@ -72,6 +73,29 @@ class VersionServiceImplTest extends BaseSetup {
     when(mavenArtifactVersionRepository.findByProductId(Mockito.anyString())).thenReturn(proceededData);
     Assertions.assertTrue(ObjectUtils.isNotEmpty(
         versionService.getArtifactsAndVersionToDisplay(MOCK_PRODUCT_ID, false, MOCK_RELEASED_VERSION)));
+  }
+
+  @Test
+  void testGetArtifactsAndVersionToSort() {
+    List<MavenArtifactVersion> proceededData = new ArrayList<>();
+
+    MavenArtifactVersion mockModel = mockAdditionalMavenArtifactVersion(MOCK_RELEASED_VERSION, "artifact-test");
+    mockModel.setName(MOCK_PRODUCT_ID);
+    mockModel.setDownloadUrl(MavenConstants.DEFAULT_IVY_MAVEN_BASE_URL);
+
+    MavenArtifactVersion mockModel2 = mockAdditionalMavenArtifactVersion(MOCK_RELEASED_VERSION, "artifact");
+    mockModel.setName("MOCK_PRODUCT_ID");
+
+    proceededData.add(mockModel);
+    proceededData.add(mockModel2);
+    when(mavenArtifactVersionRepository.findByProductId(Mockito.anyString())).thenReturn(proceededData);
+    List<MavenArtifactVersionModel> result =
+        versionService.getArtifactsAndVersionToDisplay(MOCK_PRODUCT_ID, false, MOCK_RELEASED_VERSION);
+
+    List<MavenArtifactVersion> expectedResult = result.get(0).getArtifactsByVersion();
+    Assertions.assertEquals(2, expectedResult.size());
+    Assertions.assertEquals("artifact", expectedResult.get(0).getId().getArtifactId());
+    Assertions.assertEquals("artifact-test", expectedResult.get(1).getId().getArtifactId());
   }
 
   @Test
