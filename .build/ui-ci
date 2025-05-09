@@ -21,7 +21,7 @@ pipeline {
     UI_DIR = 'marketplace-ui'
     SONAR_PROJECT_KEY = credentials('SONAR_MARKETPLACE_UI_PROJECT_KEY')
     SONAR_PROJECT_NAME = credentials('SONAR_MARKETPLACE_UI_PROJECT_NAME')
-
+    MARKETPLACE_GIT_URL = credentials('MARKETPLACE_GIT_URL')
   }
 
   stages {
@@ -29,7 +29,7 @@ pipeline {
       steps {
         script {
           def gitBranch = params.BRANCH.replaceFirst(/^origin\//, '')
-          git branch: gitBranch, url: 'https://github.com/axonivy-market/marketplace.git'
+          git branch: gitBranch, url: env.MARKETPLACE_GIT_URL
         }
       }
     }
