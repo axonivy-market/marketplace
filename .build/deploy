@@ -1,0 +1,117 @@
+pipeline {
+    agent any // Assumes Jenkins node is equivalent to self-hosted GitHub runner with Docker, xmlstarlet, and sed installed
+
+    parameters {
+        string(name: 'BUILD_ENV', defaultValue: 'staging', description: 'Build environment (e.g., staging, production)')
+        string(name: 'RELEASE_VERSION', defaultValue: '', description: 'Release version (optional)')
+    }
+
+    environment {
+        BASE_WORKING_DIR = './'
+        // Secrets are fetched from Jenkins credentials
+        MARKET_GITHUB_MARKET_BRANCH = credentials('MARKET_GITHUB_MARKET_BRANCH')
+        GH_TOKEN = credentials('GH_TOKEN')
+        MARKET_JWT_SECRET_KEY = credentials('MARKET_JWT_SECRET_KEY')
+        MARKET_CORS_ALLOWED_ORIGIN = credentials('MARKET_CORS_ALLOWED_ORIGIN')
+        MARKET_CLICK_LIMIT = credentials('MARKET_CLICK_LIMIT')
+        MARKET_LIMITED_REQUEST_PATHS = credentials('MARKET_LIMITED_REQUEST_PATHS')
+        POSTGRES_HOST_URL = credentials('POSTGRES_HOST_URL')
+        POSTGRES_USERNAME = credentials('POSTGRES_USERNAME')
+        POSTGRES_PASSWORD = credentials('POSTGRES_PASSWORD')
+        // Conditional OAuth credentials based on BUILD_ENV
+        OAUTH_APP_CLIENT_ID = "${params.BUILD_ENV == 'production' ? credentials('MARKET_GITHUB_OAUTH_APP_CLIENT_ID') : credentials('MARKET_GITHUB_OAUTH_APP_CLIENT_ID')}"
+        OAUTH_APP_CLIENT_SECRET = "${params.BUILD_ENV == 'production' ? credentials('OAUTH_APP_CLIENT_SECRET') : credentials('OAUTH_APP_CLIENT_SECRET')}"
+    }
+
+    stages {
+        stage('Cleanup') {
+            steps {
+                dir("${env.BASE_WORKING_DIR}") {
+                    // Step: Bring down and remove containers and images
+                    script {
+                        try {
+                            sh 'docker compose -f publish/docker-compose.yml down --rmi all'
+                        } catch (Exception e) {
+                            echo "Error during docker compose down, continuing: ${e}"
+                        }
+                    }
+                    // Step: Delete old source code
+                    sh '''
+                        echo "Clean up workspaces ${BASE_WORKING_DIR}"
+                        rm -rf ./marketplace-ui/*
+                        rm -rf ./marketplace-service/*
+                        rm -rf ./publish/*
+                        rm -rf ./config/*
+                    '''
+                }
+            }
+        }
+
+        stage('Build and Deploy') {
+            steps {
+                // Step: Checkout repository
+                git branch: 'develop', url: 'https://github.com/axonivy-market/marketplace.git'
+
+                // Step: Update environment variables for .env
+                sh """
+                    ENV_FILE='${BASE_WORKING_DIR}/marketplace-build/.env'
+                    sed -i "s|^MARKET_GITHUB_MARKET_BRANCH=.*\$|MARKET_GITHUB_MARKET_BRANCH=${env.MARKET_GITHUB_MARKET_BRANCH}|" \$ENV_FILE
+                    sed -i "s|^MARKET_GITHUB_TOKEN=.*\$|MARKET_GITHUB_TOKEN=${env.GH_TOKEN}|" \$ENV_FILE
+                    sed -i "s|^MARKET_GITHUB_OAUTH_APP_CLIENT_ID=.*\$|MARKET_GITHUB_OAUTH_APP_CLIENT_ID=${env.OAUTH_APP_CLIENT_ID}|" \$ENV_FILE
+                    sed -i "s|^MARKET_GITHUB_OAUTH_APP_CLIENT_SECRET=.*\$|MARKET_GITHUB_OAUTH_APP_CLIENT_SECRET=${env.OAUTH_APP_CLIENT_SECRET}|" \$ENV_FILE
+                    sed -i "s|^MARKET_JWT_SECRET_KEY=.*\$|MARKET_JWT_SECRET_KEY=${env.MARKET_JWT_SECRET_KEY}|" \$ENV_FILE
+                    sed -i "s|^MARKET_CORS_ALLOWED_ORIGIN=.*\$|MARKET_CORS_ALLOWED_ORIGIN=${env.MARKET_CORS_ALLOWED_ORIGIN}|" \$ENV_FILE
+                    sed -i "s|^MARKET_CLICK_LIMIT=.*\$|MARKET_CLICK_LIMIT=${env.MARKET_CLICK_LIMIT}|" \$ENV_FILE
+                    sed -i "s|^MARKET_LIMITED_REQUEST_PATHS=.*\$|MARKET_LIMITED_REQUEST_PATHS=\\"${env.MARKET_LIMITED_REQUEST_PATHS}\\"|" \$ENV_FILE
+                    sed -i "s|^POSTGRES_HOST_URL=.*\$|POSTGRES_HOST_URL=${env.POSTGRES_HOST_URL}|" \$ENV_FILE
+                    sed -i "s|^POSTGRES_USERNAME=.*\$|POSTGRES_USERNAME=${env.POSTGRES_USERNAME}|" \$ENV_FILE
+                    sed -i "s|^POSTGRES_PASSWORD=.*\$|POSTGRES_PASSWORD=${env.POSTGRES_PASSWORD}|" \$ENV_FILE
+                """
+            }
+        }
+
+        stage('Update Version') {
+            when {
+                expression { params.RELEASE_VERSION != '' }
+            }
+            steps {
+                echo "Release version: ${params.RELEASE_VERSION}"
+                script {
+                    try {
+                        sh """
+                             if [ -w ${env.WORKSPACE}/marketplace-service/pom.xml ]; then
+                        echo "Writable"
+                    else
+                        echo "Not writable"
+                        exit 1
+                    fi
+                            xml ed -L -u "//_:project/_:version" -v "${params.RELEASE_VERSION}" ${env.WORKSPACE}/marketplace-service/pom.xml
+                            cat ./marketplace-service/pom.xml
+                            sed -i 's/"version": "[^"]*"/"version": "${params.RELEASE_VERSION}"/' ${env.WORKSPACE}/marketplace-ui/package.json
+                        """
+                    } catch (Exception e) {
+                        echo "Version update failed, continuing pipeline: ${e.getMessage()}"
+                    }
+                }
+            }
+        }
+        // stage('Build and Deploy Containers') {
+        //     steps {
+        //         script {
+        //             dir("${env.BASE_WORKING_DIR}/publish") {
+        //                 def buildVersion = params.RELEASE_VERSION
+        //                 if (!buildVersion) {
+        //                     sh "cat ./marketplace-service/pom.xml"
+        //                     sh "chmod +r ./marketplace-service/pom.xml"
+        //                     buildVersion = sh(script: "xml sel -t -v \"//_:project/_:version\" ./marketplace-service/pom.xml", returnStdout: true).trim()
+        //                 }
+        //                 // sh """
+        //                 //     docker compose build --build-arg BUILD_ENV=${params.BUILD_ENV} --build-arg BUILD_VERSION=${buildVersion}
+        //                 //     docker compose up --force-recreate -d
+        //                 // """
+        //             }
+        //         }
+        //     }
+        // }
+    }
+}
