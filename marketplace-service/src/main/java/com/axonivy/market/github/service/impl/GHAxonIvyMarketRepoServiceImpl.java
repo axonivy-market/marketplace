@@ -25,6 +25,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import static com.axonivy.market.constants.CommonConstants.SLASH;
+import static com.axonivy.market.constants.GitHubConstants.AXONIVY_MARKETPLACE_REPO_NAME;
+
 @Log4j2
 @Service
 public class GHAxonIvyMarketRepoServiceImpl implements GHAxonIvyMarketRepoService {
@@ -91,6 +94,7 @@ public class GHAxonIvyMarketRepoServiceImpl implements GHAxonIvyMarketRepoServic
   public List<GitHubFile> fetchMarketItemsBySHA1Range(String fromSHA1, String toSHA1) {
     Map<String, GitHubFile> gitHubFileMap = new HashMap<>();
     try {
+      final String marketRepo = AXONIVY_MARKETPLACE_REPO_NAME.concat(SLASH);
       GHCompare compareResult = getRepository().getCompare(fromSHA1, toSHA1);
       for (var commit : GitHubUtils.mapPagedIteratorToList(compareResult.listCommits())) {
         var listFiles = commit.listFiles();
@@ -99,7 +103,7 @@ public class GHAxonIvyMarketRepoServiceImpl implements GHAxonIvyMarketRepoServic
         }
         GitHubUtils.mapPagedIteratorToList(listFiles).forEach(file -> {
           String fullPathName = file.getFileName();
-          if (FileType.of(fullPathName) != FileType.OTHER) {
+          if (FileType.of(fullPathName) != FileType.OTHER && fullPathName.startsWith(marketRepo)) {
             var gitHubFile = new GitHubFile();
             gitHubFile.setFileName(fullPathName);
             gitHubFile.setPath(file.getRawUrl().getPath());

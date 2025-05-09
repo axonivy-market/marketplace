@@ -83,8 +83,8 @@ class GHAxonIvyMarketRepoServiceImplTest {
   void testFetchMarketItemsBySHA1Range() throws IOException {
     final String startSHA1 = "2f415c725b049655c6c100448b8aeed59514023b";
     final String endSHA1 = "c57259288e208feea7e18fdb2fd483081bb69fb4";
-    final String fileName = "test-meta.json";
-
+    final String fileName = "market/test-meta.json";
+    final String fileName2 = "market-test/test-meta.json";
     var mockCommit = mock(Commit.class);
     var mockGHCompare = mock(GHCompare.class);
     when(mockGHCompare.listCommits()).thenReturn(pagedCommit);
@@ -100,7 +100,10 @@ class GHAxonIvyMarketRepoServiceImplTest {
     when(mockFile.getRawUrl()).thenReturn(URI.create("http://github/test-repo-url/test-meta.json").toURL());
     when(mockFile.getStatus()).thenReturn("added");
     when(mockFile.getPreviousFilename()).thenReturn("test-prev-meta.json");
-    when(pagedFile.toList()).thenReturn(List.of(mockFile));
+
+    var mockFile2 = mock(File.class);
+    when(mockFile2.getFileName()).thenReturn(fileName2);
+    when(pagedFile.toList()).thenReturn(List.of(mockFile, mockFile2));
 
     gitHubFiles = axonIvyMarketRepoServiceImpl.fetchMarketItemsBySHA1Range(startSHA1, endSHA1);
     assertEquals(1, gitHubFiles.size());
