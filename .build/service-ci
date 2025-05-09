@@ -1,0 +1,51 @@
+pipeline {
+  agent any
+
+  environment {
+    SONAR_PROJECT_KEY = credentials('SONAR_MARKETPLACE_SERVICE_PROJECT_KEY')
+    SONAR_PROJECT_NAME = credentials('SONAR_MARKETPLACE_SERVICE_PROJECT_NAME')
+  }
+
+  stages {
+    // stage('Build and Test with Maven') {
+    //   steps {
+    //     git branch: 'develop', url: 'https://github.com/axonivy-market/marketplace.git'
+    //     sh '''
+    //       mvn clean install --file ./marketplace-service/pom.xml -Dskiptest=true
+    //     '''
+    //   }
+    // }
+
+    stage('Remove unused Docker images') {
+      steps {
+        sh 'docker image prune -af'
+      }
+    }
+
+    stage('SonarQube Analysis') {
+      steps {
+        withSonarQubeEnv('Sonar') {
+          sh '''
+            mvn -B verify sonar:sonar \
+              --file ./marketplace-service/pom.xml \
+              -Dsonar.projectKey=$SONAR_PROJECT_KEY \
+              -Dsonar.pullrequest.branch=${env.CHANGE_BRANCH} \
+              -Dsonar.projectName="${SONAR_PROJECT_NAME}" \
+          '''
+        }
+      }
+    }
+    stage('Wait for Quality Gate') {
+      steps {
+        timeout(time: 2, unit: 'MINUTES') {
+          waitForQualityGate abortPipeline: true
+        }
+      }
+    }
+  }
+  post {
+    always {
+      cleanWs(deleteDirs: true)
+    }
+  }
+}
