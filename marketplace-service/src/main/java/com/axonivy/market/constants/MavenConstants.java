@@ -26,4 +26,5 @@ public class MavenConstants {
   public static final String VALUE_TAG = "value";
   public static final String DEFAULT_PRODUCT_FOLDER_TYPE = "zip";
   public static final String POM = "pom";
+  public static final String TEST_ARTIFACTID = "-test";
 }
