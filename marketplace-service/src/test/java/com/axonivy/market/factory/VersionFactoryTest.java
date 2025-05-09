@@ -52,4 +52,19 @@ class VersionFactoryTest  extends BaseSetup {
     assertEquals(MOCK_RELEASED_VERSION, VersionFactory.getFromMetadata(List.of(getMockMetadataWithVersions()),
         "10.0"));
   }
+
+  @Test
+  void testResolvedVersion() {
+    var resolvedVersion = VersionFactory.resolveVersion("${project.version}", MOCK_RELEASED_VERSION);
+    assertEquals(MOCK_RELEASED_VERSION, resolvedVersion, "Should return default release version");
+
+    resolvedVersion = VersionFactory.resolveVersion("[10.0.10)", null);
+    assertEquals(MOCK_RELEASED_VERSION, resolvedVersion, "Should return version in range");
+
+    resolvedVersion = VersionFactory.resolveVersion("[10.0.10, 10.0.10-m123)", null);
+    assertEquals("10.0.10-m123", resolvedVersion, "Should return highest version in range");
+
+    resolvedVersion = VersionFactory.resolveVersion(MOCK_PRODUCT_ID_WITH_VERSION, MOCK_RELEASED_VERSION);
+    assertEquals(MOCK_RELEASED_VERSION, resolvedVersion, "Should return default release version");
+  }
 }
