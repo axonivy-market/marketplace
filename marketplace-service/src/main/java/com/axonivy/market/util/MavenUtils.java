@@ -182,7 +182,7 @@ public class MavenUtils {
   }
 
   public static ArchivedArtifact findArchivedArtifactInfoBestMatchWithVersion(String version,
-      List<ArchivedArtifact> archivedArtifacts) {
+      Set<ArchivedArtifact> archivedArtifacts) {
     if (CollectionUtils.isEmpty(archivedArtifacts)) {
       return null;
     }

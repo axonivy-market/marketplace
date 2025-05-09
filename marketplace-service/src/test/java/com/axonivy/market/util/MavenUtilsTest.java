@@ -46,7 +46,7 @@ class MavenUtilsTest extends BaseSetup {
         "com.axonivy.adobe.sign.connector", "adobe-sign-connector");
     String customRepoUrl = "https://nexus.axonivy.com";
     targetArtifact.setRepoUrl(customRepoUrl);
-    targetArtifact.setArchivedArtifacts(List.of(adobeArchivedArtifactVersion9, adobeArchivedArtifactVersion8));
+    targetArtifact.setArchivedArtifacts(Set.of(adobeArchivedArtifactVersion9, adobeArchivedArtifactVersion8));
     result = MavenUtils.buildDownloadUrl(targetArtifact, MOCK_RELEASED_VERSION);
     artifactFileName = String.format(MavenConstants.ARTIFACT_FILE_NAME_FORMAT, MOCK_ARTIFACT_ID, MOCK_RELEASED_VERSION
         , MavenConstants.DEFAULT_PRODUCT_FOLDER_TYPE);
@@ -55,7 +55,7 @@ class MavenUtilsTest extends BaseSetup {
     Assertions.assertEquals(expectedResult, result);
 
     // Assert case with artifact got matching archived artifact & use custom file type
-    targetArtifact.setArchivedArtifacts(List.of(adobeArchivedArtifactVersion9, adobeArchivedArtifactVersion8));
+    targetArtifact.setArchivedArtifacts(Set.of(adobeArchivedArtifactVersion9, adobeArchivedArtifactVersion8));
     result = MavenUtils.buildDownloadUrl(targetArtifact, "10.0.9");
     artifactFileName = String.format(MavenConstants.ARTIFACT_FILE_NAME_FORMAT, "adobe-connector", "10.0.9",
         MavenConstants.DEFAULT_PRODUCT_FOLDER_TYPE);
@@ -148,7 +148,7 @@ class MavenUtilsTest extends BaseSetup {
     ArchivedArtifact mockArchivedArtifact = new ArchivedArtifact();
     mockArchivedArtifact.setArtifactId("octopus-test");
     mockArchivedArtifact.setGroupId("com.octopus.util");
-    artifact.setArchivedArtifacts(List.of(mockArchivedArtifact));
+    artifact.setArchivedArtifacts(Set.of(mockArchivedArtifact));
 
     results = MavenUtils.convertArtifactsToMetadataSet(Set.of(artifact), MOCK_PRODUCT_ID);
     Assertions.assertEquals(2, results.size());
@@ -163,7 +163,7 @@ class MavenUtilsTest extends BaseSetup {
     ArchivedArtifact mockArchivedArtifact = new ArchivedArtifact();
     mockArchivedArtifact.setArtifactId("octopus-test");
     mockArchivedArtifact.setGroupId("com.octopus.util");
-    mockArtifact.setArchivedArtifacts(List.of(mockArchivedArtifact));
+    mockArtifact.setArchivedArtifacts(Set.of(mockArchivedArtifact));
     results = MavenUtils.extractMetaDataFromArchivedArtifacts(MOCK_PRODUCT_ID, mockArtifact);
     Assertions.assertTrue(ObjectUtils.isNotEmpty(results));
     Assertions.assertEquals("https://nexus-mirror.axonivy.com/repository/maven/com/octopus/util/octopus-test/maven-metadata.xml",

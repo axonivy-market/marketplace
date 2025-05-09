@@ -22,7 +22,6 @@ import com.axonivy.market.github.service.GitHubService;
 import com.axonivy.market.github.util.GitHubUtils;
 import com.axonivy.market.model.GitHubReleaseModel;
 import com.axonivy.market.model.VersionAndUrlModel;
-import com.axonivy.market.repository.ArtifactRepository;
 import com.axonivy.market.repository.GitHubRepoMetaRepository;
 import com.axonivy.market.repository.ImageRepository;
 import com.axonivy.market.repository.MavenArtifactVersionRepository;
@@ -102,7 +101,6 @@ public class ProductServiceImpl implements ProductService {
   private final ProductMarketplaceDataService productMarketplaceDataService;
   private final ProductMarketplaceDataRepository productMarketplaceDataRepo;
   private final MavenArtifactVersionRepository mavenArtifactVersionRepository;
-  private final ArtifactRepository artifactRepo;
   private GHCommit lastGHCommit;
   private final VersionService versionService;
   private GitHubRepoMeta marketRepoMeta;
@@ -117,7 +115,7 @@ public class ProductServiceImpl implements ProductService {
       ProductContentService productContentService, MetadataService metadataService,
       ProductMarketplaceDataService productMarketplaceDataService, ExternalDocumentService externalDocumentService,
       ProductMarketplaceDataRepository productMarketplaceDataRepo,
-      MavenArtifactVersionRepository mavenArtifactVersionRepository, ArtifactRepository artifactRepo,
+      MavenArtifactVersionRepository mavenArtifactVersionRepository,
       VersionService versionService) {
     this.productRepo = productRepo;
     this.productModuleContentRepo = productModuleContentRepo;
@@ -135,7 +133,6 @@ public class ProductServiceImpl implements ProductService {
     this.externalDocumentService = externalDocumentService;
     this.productMarketplaceDataRepo = productMarketplaceDataRepo;
     this.mavenArtifactVersionRepository = mavenArtifactVersionRepository;
-    this.artifactRepo = artifactRepo;
     this.versionService = versionService;
   }
 
@@ -313,8 +310,6 @@ public class ProductServiceImpl implements ProductService {
     }
 
     for (Product product : products) {
-      List<Artifact> allArtifacts = fetchArtifacts(product.getArtifacts());
-      product.setArtifacts(allArtifacts);
       updateProductFromReleasedVersions(product);
       productRepo.save(product);
     }
@@ -458,11 +453,6 @@ public class ProductServiceImpl implements ProductService {
     }
     metadataService.updateArtifactAndMetadata(product.getId(), nonSyncReleasedVersions, product.getArtifacts());
     externalDocumentService.syncDocumentForProduct(product.getId(), false);
-  }
-
-  private List<Artifact> fetchArtifacts(List<Artifact> artifacts) {
-    List<String> ids = artifacts.stream().map(Artifact::getId).toList();
-    return artifactRepo.findAllByIdInAndFetchArchivedArtifacts(ids);
   }
 
   private void getMetadataContent(Artifact artifact, Product product, List<String> nonSyncReleasedVersions) {

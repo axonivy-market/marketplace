@@ -370,7 +370,6 @@ class ProductServiceImplTest extends BaseSetup {
         .thenReturn(List.of(mockReadmeProductContent(), mockReturnProductContent));
 
     when(MavenUtils.buildDownloadUrl(any(), any(), any(), any(), any(), any())).thenReturn(MOCK_DOWNLOAD_URL);
-    when(artifactRepo.findAllByIdInAndFetchArchivedArtifacts(any())).thenReturn(mockProduct.getArtifacts());
   }
 
   @Test
