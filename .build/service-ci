@@ -29,7 +29,6 @@ pipeline {
             mvn -B verify sonar:sonar \
               --file ./marketplace-service/pom.xml \
               -Dsonar.projectKey=$SONAR_PROJECT_KEY \
-              -Dsonar.branch.name=${env.BRANCH_NAME} \
               -Dsonar.projectName="${SONAR_PROJECT_NAME}" \
           '''
         }
