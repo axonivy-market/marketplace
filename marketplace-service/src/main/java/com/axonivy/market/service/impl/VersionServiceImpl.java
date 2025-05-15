@@ -70,7 +70,9 @@ public class VersionServiceImpl implements VersionService {
     return mavenArtifactVersions.stream()
         .filter(artifact -> artifact.getId().getProductVersion().equals(mavenVersion))
         .distinct()
-        .sorted(Comparator.comparing(artifact -> artifact.getId().getArtifactId().endsWith(TEST_ARTIFACTID)))
+        .sorted(
+            Comparator.comparing((MavenArtifactVersion artifact) -> artifact.getId().getArtifactId())
+                .thenComparing(artifact -> artifact.getId().getArtifactId().endsWith(TEST_ARTIFACTID)))
         .toList();
   }
 

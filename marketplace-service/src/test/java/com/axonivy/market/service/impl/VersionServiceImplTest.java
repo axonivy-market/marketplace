@@ -84,18 +84,24 @@ class VersionServiceImplTest extends BaseSetup {
     mockModel.setDownloadUrl(MavenConstants.DEFAULT_IVY_MAVEN_BASE_URL);
 
     MavenArtifactVersion mockModel2 = mockAdditionalMavenArtifactVersion(MOCK_RELEASED_VERSION, "artifact");
-    mockModel.setName("MOCK_PRODUCT_ID");
+    mockModel2.setName("MOCK_PRODUCT_ID");
+
+    MavenArtifactVersion mockModel3 = mockAdditionalMavenArtifactVersion(MOCK_RELEASED_VERSION, "artifact-demo");
+    mockModel3.setName("MOCK_PRODUCT_ID_DEMO");
 
     proceededData.add(mockModel);
     proceededData.add(mockModel2);
+    proceededData.add(mockModel3);
+
     when(mavenArtifactVersionRepository.findByProductId(Mockito.anyString())).thenReturn(proceededData);
     List<MavenArtifactVersionModel> result =
         versionService.getArtifactsAndVersionToDisplay(MOCK_PRODUCT_ID, false, MOCK_RELEASED_VERSION);
 
     List<MavenArtifactVersion> expectedResult = result.get(0).getArtifactsByVersion();
-    Assertions.assertEquals(2, expectedResult.size());
+    Assertions.assertEquals(3, expectedResult.size());
     Assertions.assertEquals("artifact", expectedResult.get(0).getId().getArtifactId());
-    Assertions.assertEquals("artifact-test", expectedResult.get(1).getId().getArtifactId());
+    Assertions.assertEquals("artifact-demo", expectedResult.get(1).getId().getArtifactId());
+    Assertions.assertEquals("artifact-test", expectedResult.get(2).getId().getArtifactId());
   }
 
   @Test
