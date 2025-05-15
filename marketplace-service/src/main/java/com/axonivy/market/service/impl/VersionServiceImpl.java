@@ -32,6 +32,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import static com.axonivy.market.constants.MavenConstants.TEST_ARTIFACTID;
 import static com.axonivy.market.constants.ProductJsonConstants.NAME;
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
@@ -69,6 +70,9 @@ public class VersionServiceImpl implements VersionService {
     return mavenArtifactVersions.stream()
         .filter(artifact -> artifact.getId().getProductVersion().equals(mavenVersion))
         .distinct()
+        .sorted(
+            Comparator.comparing((MavenArtifactVersion artifact) -> artifact.getId().getArtifactId())
+                .thenComparing(artifact -> artifact.getId().getArtifactId().endsWith(TEST_ARTIFACTID)))
         .toList();
   }
 
