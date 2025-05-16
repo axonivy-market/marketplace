@@ -18,6 +18,7 @@ pipeline {
   agent any
 
   environment {
+    NODE_VERSION = '20'
     UI_DIR = 'marketplace-ui'
     SONAR_PROJECT_KEY = credentials('SONAR_MARKETPLACE_UI_PROJECT_KEY')
     SONAR_PROJECT_NAME = credentials('SONAR_MARKETPLACE_UI_PROJECT_NAME')

@@ -19,6 +19,7 @@ pipeline {
 
   environment {
     SONAR_PROJECT_KEY = credentials('SONAR_MARKETPLACE_SERVICE_PROJECT_KEY')
+    MARKETPLACE_GIT_URL = credentials('MARKETPLACE_GIT_URL')
     SONAR_PROJECT_NAME = credentials('SONAR_MARKETPLACE_SERVICE_PROJECT_NAME')
     MARKETPLACE_GIT_URL = credentials('MARKETPLACE_GIT_URL')
   }
@@ -28,7 +29,7 @@ pipeline {
       steps {
         script {
           def gitBranch = params.BRANCH.replaceFirst(/^origin\//, '')
-          git branch: gitBranch, url: env.MARKETPLACE_GIT_URL
+          git branch: gitBranch, url: env.MARKETPLACE_GIT_URL 
           sh '''
             mvn clean install --file ./marketplace-service/pom.xml -Dskiptest=true
           '''
@@ -49,7 +50,7 @@ pipeline {
             mvn -B verify sonar:sonar \
               --file ./marketplace-service/pom.xml \
               -Dsonar.projectKey=$SONAR_PROJECT_KEY \
-              -Dsonar.projectName="${SONAR_PROJECT_NAME}" \
+              -Dsonar.projectName="${SONAR_PROJECT_NAME}"
           '''
         }
       }

@@ -13,18 +13,12 @@ properties([
     ]
   ])
 ])
-
 pipeline {
     agent any
 
-    parameters {
-        string(name: 'BUILD_ENV', defaultValue: 'staging', description: 'Build environment (e.g., staging, production)')
-        string(name: 'RELEASE_VERSION', defaultValue: '', description: 'Release version (optional)')
-    }
-
     environment {
         BASE_WORKING_DIR = './'
-        // Secrets are fetched from Jenkins credentials
+        MARKETPLACE_GIT_URL = credentials('MARKETPLACE_GIT_URL')
         MARKET_GITHUB_MARKET_BRANCH = credentials('MARKET_GITHUB_MARKET_BRANCH')
         GH_TOKEN = credentials('GH_TOKEN')
         MARKET_JWT_SECRET_KEY = credentials('MARKET_JWT_SECRET_KEY')
@@ -34,30 +28,21 @@ pipeline {
         POSTGRES_HOST_URL = credentials('POSTGRES_HOST_URL')
         POSTGRES_USERNAME = credentials('POSTGRES_USERNAME')
         POSTGRES_PASSWORD = credentials('POSTGRES_PASSWORD')
-        // Conditional OAuth credentials based on BUILD_ENV
-        OAUTH_APP_CLIENT_ID = "${params.BUILD_ENV == 'production' ? credentials('MARKET_GITHUB_OAUTH_APP_CLIENT_ID') : credentials('MARKET_GITHUB_OAUTH_APP_CLIENT_ID')}"
-        OAUTH_APP_CLIENT_SECRET = "${params.BUILD_ENV == 'production' ? credentials('OAUTH_APP_CLIENT_SECRET') : credentials('OAUTH_APP_CLIENT_SECRET')}"
+        OAUTH_APP_CLIENT_ID = credentials('OAUTH_APP_CLIENT_ID_STAGING')
+        OAUTH_APP_CLIENT_SECRET = credentials('OAUTH_APP_CLIENT_SECRET_STAGING')
     }
 
     stages {
         stage('Cleanup') {
             steps {
                 dir("${env.BASE_WORKING_DIR}") {
-                    // Step: Bring down and remove containers and images
                     script {
                         try {
-                            sh 'docker compose -f publish/docker-compose.yml down --rmi all'
+                            sh 'docker compose -f marketplace-build/docker-compose.yml down --rmi all'
                         } catch (Exception e) {
                             echo "Error during docker compose down, continuing: ${e}"
                         }
                     }
-                    sh '''
-                        echo "Clean up workspaces ${BASE_WORKING_DIR}"
-                        rm -rf ./marketplace-ui/*
-                        rm -rf ./marketplace-service/*
-                        rm -rf ./publish/*
-                        rm -rf ./config/*
-                    '''
                 }
             }
         }
@@ -84,49 +69,17 @@ pipeline {
                 }
             }
         }
-
-        stage('Update Version') {
-            when {
-                expression { params.RELEASE_VERSION != '' }
-            }
+        stage('Build and Deploy Containers') {
             steps {
-                echo "Release version: ${params.RELEASE_VERSION}"
                 script {
-                    try {
+                    dir("${env.BASE_WORKING_DIR}/marketplace-build") {
                         sh """
-                             if [ -w ${env.WORKSPACE}/marketplace-service/pom.xml ]; then
-                        echo "Writable"
-                    else
-                        echo "Not writable"
-                        exit 1
-                    fi
-                            xml ed -L -u "//_:project/_:version" -v "${params.RELEASE_VERSION}" ${env.WORKSPACE}/marketplace-service/pom.xml
-                            cat ./marketplace-service/pom.xml
-                            sed -i 's/"version": "[^"]*"/"version": "${params.RELEASE_VERSION}"/' ${env.WORKSPACE}/marketplace-ui/package.json
+                            docker compose build --build-arg BUILD_ENV=staging
+                            docker compose up --force-recreate -d
                         """
-                    } catch (Exception e) {
-                        echo "Version update failed, continuing pipeline: ${e.getMessage()}"
                     }
                 }
             }
         }
-    // stage('Build and Deploy Containers') {
-    //     steps {
-    //         script {
-    //             dir("${env.BASE_WORKING_DIR}/publish") {
-    //                 def buildVersion = params.RELEASE_VERSION
-    //                 if (!buildVersion) {
-    //                     sh "cat ./marketplace-service/pom.xml"
-    //                     sh "chmod +r ./marketplace-service/pom.xml"
-    //                     buildVersion = sh(script: "xml sel -t -v \"//_:project/_:version\" ./marketplace-service/pom.xml", returnStdout: true).trim()
-    //                 }
-    //                 // sh """
-    //                 //     docker compose build --build-arg BUILD_ENV=${params.BUILD_ENV} --build-arg BUILD_VERSION=${buildVersion}
-    //                 //     docker compose up --force-recreate -d
-    //                 // """
-    //             }
-    //         }
-    //     }
-    // }
     }
 }
