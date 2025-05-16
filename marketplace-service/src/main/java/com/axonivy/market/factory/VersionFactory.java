@@ -21,7 +21,9 @@ import static org.apache.commons.lang3.StringUtils.EMPTY;
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class VersionFactory {
   static final String PROJECT_VERSION = "${project.version}";
+  // Maven range version pattern, for example: [1.0, 2.0] or (1.0, 2.0) or [1.0, 2.0) or (1.0, 2.0]
   static final String RANGE_VERSION_PATTERN = "[\\[\\]()]";
+  // The arrays of all operators can appear in maven range version format
   static final String[] MAVEN_RANGE_VERSION_ARRAYS = new String[] {"(","]","[",")"};
 
   public static String resolveVersion(String mavenVersion, String defaultVersion) {

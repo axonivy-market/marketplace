@@ -28,9 +28,11 @@ import org.springframework.web.client.HttpClientErrorException;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
-import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
+import java.util.Set;
 
 import static com.axonivy.market.constants.CommonConstants.DOT_SEPARATOR;
 import static com.axonivy.market.constants.MavenConstants.*;
@@ -67,7 +69,7 @@ public class ProductDependencyServiceImpl implements ProductDependencyService {
    * @return total product synced
    */
   @Override
-  public int syncIARDependenciesForProducts(Boolean resetSync, String productId) {
+  public synchronized int syncIARDependenciesForProducts(Boolean resetSync, String productId) {
     int totalSyncedProductIds = 0;
     if (StringUtils.isNotBlank(productId)) {
       totalSyncedProductIds += syncByMavenArtifactVersions(productId, resetSync);
@@ -82,27 +84,56 @@ public class ProductDependencyServiceImpl implements ProductDependencyService {
   private int syncByMavenArtifactVersions(String id, Boolean resetSync) {
     int totalSyncedProductIds = 0;
     if (BooleanUtils.isTrue(resetSync)) {
-      productDependencyRepository.deleteAllByProductId(id);
+      removeAllDataBaseOnProductId(id);
     }
     for (var artifact : mavenArtifactVersionRepository.findByProductIdOrderByAdditionalVersion(id)) {
       String productId = artifact.getProductId();
       String artifactId = artifact.getId().getArtifactId();
       String version = artifact.getId().getProductVersion();
       if (VersionUtils.isSnapshotVersion(version)) {
-        productDependencyRepository.deleteByProductIdAndArtifactIdAndVersion(productId, artifactId, version);
+        deleteAllDataByArtifactAndVersion(productId, artifactId, version);
       }
       ProductDependency productDependency = findProductDependencyByIds(productId, artifactId, version);
       if (productDependency == null) { // Is missing artifacts ?
         productDependency = initProductDependencyData(artifact);
-        try {
-          // Base on version, loop the artifacts and maps its dependencies
-          computeIARDependencies(artifact, productDependency);
-          productDependencyRepository.save(productDependency);
-          totalSyncedProductIds++;
-        } catch (Exception e) {
-          log.error("Got issue during sync data for {} - {} - {} - {}", productId, artifact, version, e.getMessage());
-        }
+        totalSyncedProductIds = createNewProductDependencyForArtifact(artifact, productDependency,
+            totalSyncedProductIds, productId,
+            version);
       }
+    }
+    return totalSyncedProductIds;
+  }
+
+  private void deleteAllDataByArtifactAndVersion(String productId, String artifactId, String version) {
+    List<ProductDependency> productDependencies =
+        productDependencyRepository.findByProductIdAndArtifactIdAndVersion(productId, artifactId, version);
+    deleteProductDependencyAndFlush(productDependencies);
+  }
+
+  private void removeAllDataBaseOnProductId(String id) {
+    List<ProductDependency> productDependencies = productDependencyRepository.findByProductId(id);
+    deleteProductDependencyAndFlush(productDependencies);
+  }
+
+  private void deleteProductDependencyAndFlush(List<ProductDependency> productDependencies) {
+    if (ObjectUtils.isEmpty(productDependencies)) {
+      return;
+    }
+    for (var productDependecy : productDependencies) {
+      productDependecy.getDependencies().clear();
+    }
+    productDependencyRepository.saveAllAndFlush(productDependencies);
+  }
+
+  private int createNewProductDependencyForArtifact(MavenArtifactVersion artifact, ProductDependency productDependency,
+      int totalSyncedProductIds, String productId, String version) {
+    try {
+      // Base on version, loop the artifacts and maps its dependencies
+      computeIARDependencies(artifact, productDependency);
+      productDependencyRepository.save(productDependency);
+      totalSyncedProductIds++;
+    } catch (Exception e) {
+      log.error("Got issue during sync data for {} - {} - {} - {}", productId, artifact, version, e.getMessage());
     }
     return totalSyncedProductIds;
   }
@@ -118,7 +149,7 @@ public class ProductDependencyServiceImpl implements ProductDependencyService {
         .artifactId(mavenArtifactVersion.getId().getArtifactId())
         .version(mavenArtifactVersion.getId().getProductVersion())
         .downloadUrl(mavenArtifactVersion.getDownloadUrl())
-        .dependencies(new ArrayList<>())
+        .dependencies(new HashSet<>())
         .build();
   }
 
@@ -131,33 +162,40 @@ public class ProductDependencyServiceImpl implements ProductDependencyService {
     }
     log.info("Collect IAR dependencies for requested artifact {}", artifact.getId().getArtifactId());
     int totalDependencyLevels = 0;
-    collectMavenDependenciesFor(artifact.getId().getProductVersion(), mavenDependency.getDependencies(),
+    collectMavenDependenciesForArtifact(artifact.getId().getProductVersion(), mavenDependency.getDependencies(),
         dependencyModels, totalDependencyLevels);
   }
 
-  private void collectMavenDependenciesFor(String version, List<ProductDependency> productDependencies,
+  private void collectMavenDependenciesForArtifact(String version, Set<ProductDependency> productDependencies,
       List<Dependency> dependencyModels, int totalDependencyLevels) throws Exception {
     if (totalDependencyLevels > SAFE_THRESHOLD) {
       throw new MarketException(ErrorCode.INTERNAL_EXCEPTION.getCode(), ErrorCode.INTERNAL_EXCEPTION.getHelpText());
     }
     for (var dependencyModel : dependencyModels) {
+      // Find best match version for dependency
       String dependencyVersion = VersionFactory.resolveVersion(dependencyModel.getVersion(), version);
+      // Find Metadata configuration of dependency
       Metadata dependencyMetadata = getMetadataByVersion(dependencyModel, dependencyVersion);
-      ProductDependency dependency = findProductDependencyByIds(dependencyMetadata.getProductId(),
-          dependencyMetadata.getArtifactId(), dependencyVersion);
-      if (dependency == null) {
-        dependency = ProductDependency.builder().productId(dependencyMetadata.getProductId()).artifactId(
-            dependencyMetadata.getArtifactId()).version(dependencyVersion).build();
-      }
-      MavenArtifactVersion dependencyArtifact = findDownloadURLForDependency(dependencyMetadata.getProductId(),
-          dependencyMetadata.getArtifactId(), dependencyVersion);
+      String dependencyProductId = dependencyMetadata.getProductId();
+      String dependencyArtifactId = dependencyMetadata.getArtifactId();
+      // Find dependency in ProductDependency table, create a new one if not exist
+      ProductDependency dependency = Optional.ofNullable(findProductDependencyByIds(dependencyProductId,
+              dependencyArtifactId,
+              dependencyVersion))
+          .orElse(ProductDependency.builder()
+              .productId(dependencyProductId)
+              .artifactId(dependencyArtifactId)
+              .version(dependencyVersion).build());
+      // Find download URL base on data from MavenArtifactVersion
+      MavenArtifactVersion dependencyArtifact = findDownloadURLForDependency(dependencyProductId, dependencyArtifactId,
+          dependencyVersion);
       dependency.setDownloadUrl(dependencyArtifact.getDownloadUrl());
       productDependencies.add(dependency);
       // Check does dependency artifact has IAR lib, e.g: portal
       log.info("Collect nested IAR dependencies for artifact {}", dependencyArtifact.getId().getArtifactId());
       totalDependencyLevels++;
       List<Dependency> dependenciesOfParent = extractMavenPOMDependencies(dependencyArtifact.getDownloadUrl());
-      collectMavenDependenciesFor(version, productDependencies, dependenciesOfParent, totalDependencyLevels);
+      collectMavenDependenciesForArtifact(version, productDependencies, dependenciesOfParent, totalDependencyLevels);
     }
   }
 
@@ -165,7 +203,9 @@ public class ProductDependencyServiceImpl implements ProductDependencyService {
     List<Metadata> existingMetadata = metadataRepository.findByGroupIdAndArtifactId(dependencyModel.getGroupId(),
         dependencyModel.getArtifactId());
     return existingMetadata.stream().filter(meta -> meta.getVersions().contains(version)).findAny()
-        .orElse(null);
+        .orElseThrow(() -> new MarketException(ErrorCode.INTERNAL_EXCEPTION.getCode(),
+            "Cannot find the metadata for %s - %s".formatted(dependencyModel.getGroupId(),
+                dependencyModel.getArtifactId())));
   }
 
   private List<String> getAllListedProductIds() {
