@@ -3,6 +3,7 @@ package com.axonivy.market.service.impl;
 import com.axonivy.market.BaseSetup;
 import com.axonivy.market.entity.MavenArtifactVersion;
 import com.axonivy.market.entity.Metadata;
+import com.axonivy.market.entity.ProductDependency;
 import com.axonivy.market.repository.MavenArtifactVersionRepository;
 import com.axonivy.market.repository.MetadataRepository;
 import com.axonivy.market.repository.ProductDependencyRepository;
@@ -17,6 +18,8 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
+import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -86,4 +89,15 @@ class ProductDependencyServiceImplTest extends BaseSetup {
     assertEquals(0, totalSynced, "Expected no product was synced but service returned something");
   }
 
+  @Test
+  void testSyncForProductId() {
+    var productDependency = mockProductDependency();
+    productDependency.setDependencies(new HashSet<>());
+    productDependency.getDependencies().add(mockProductDependency());
+    var mockProductDependencies = new ArrayList<ProductDependency>();
+    mockProductDependencies.add(productDependency);
+    when(productDependencyRepository.findByProductId("portal")).thenReturn(mockProductDependencies);
+    int totalSynced = productDependencyService.syncIARDependenciesForProducts(true, "portal");
+    assertEquals(0, totalSynced, "Expected no product was synced but service returned something");
+  }
 }
