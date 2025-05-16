@@ -21,7 +21,7 @@ import static com.axonivy.market.constants.EntityConstants.MAVEN_ARTIFACT_VERSIO
 @Builder
 @Entity
 @Table(name = MAVEN_ARTIFACT_VERSION)
-public class MavenArtifactVersion {
+public class MavenArtifactVersion extends AuditableEntity<MavenArtifactKey> {
 
   @EmbeddedId
   private MavenArtifactKey id;
@@ -37,5 +37,16 @@ public class MavenArtifactVersion {
   @JsonIgnore
   private boolean isInvalidArtifact;
 
+  private String groupId;
   private String productId;
+
+  @Override
+  public MavenArtifactKey getId() {
+    return id;
+  }
+
+  @Override
+  public void setId(MavenArtifactKey id) {
+    this.id = id;
+  }
 }

@@ -45,7 +45,7 @@ public class ScheduledTasks {
   @Scheduled(cron = SCHEDULING_TASK_PRODUCTS_CRON)
   public void syncDataForProductMavenDependencies() {
     log.warn("Started sync data for product maven dependencies");
-    productDependencyService.syncIARDependenciesForProducts(false);
+    productDependencyService.syncIARDependenciesForProducts(false, null);
   }
 
   @Scheduled(cron = SCHEDULING_TASK_PRODUCT_RELEASE_NOTES_CRON)

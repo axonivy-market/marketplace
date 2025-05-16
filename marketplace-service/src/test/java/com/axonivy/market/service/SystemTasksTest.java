@@ -57,7 +57,7 @@ class SystemTasksTest {
   @Test
   void testSyncDataForProductMavenDependencies() {
     tasks.syncDataForProductMavenDependencies();
-    verify(productDependencyService, times(1)).syncIARDependenciesForProducts(false);
+    verify(productDependencyService, times(1)).syncIARDependenciesForProducts(false, null);
   }
 
   @Test

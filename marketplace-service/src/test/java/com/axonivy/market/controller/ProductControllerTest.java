@@ -249,9 +249,9 @@ class ProductControllerTest extends BaseSetup {
 
   @Test
   void testSyncProductArtifactsSuccess() {
-    when(productDependencyService.syncIARDependenciesForProducts(false)).thenReturn(5);
+    when(productDependencyService.syncIARDependenciesForProducts(false, null)).thenReturn(5);
 
-    var response = productController.syncProductArtifacts(AUTHORIZATION_HEADER, false);
+    var response = productController.syncProductArtifacts(AUTHORIZATION_HEADER, false, null);
 
     assertEquals(HttpStatus.OK, response.getStatusCode());
     assertTrue(response.hasBody());
@@ -260,9 +260,9 @@ class ProductControllerTest extends BaseSetup {
 
   @Test
   void testSyncProductArtifactsNothingToSync() {
-    when(productDependencyService.syncIARDependenciesForProducts(false)).thenReturn(0);
+    when(productDependencyService.syncIARDependenciesForProducts(false, null)).thenReturn(0);
 
-    var response = productController.syncProductArtifacts(AUTHORIZATION_HEADER, false);
+    var response = productController.syncProductArtifacts(AUTHORIZATION_HEADER, false, null);
 
     assertEquals(HttpStatus.NO_CONTENT, response.getStatusCode());
     assertTrue(response.hasBody());
@@ -276,7 +276,7 @@ class ProductControllerTest extends BaseSetup {
         .validateUserInOrganizationAndTeam(any(String.class), any(String.class), any(String.class));
 
     UnauthorizedException exception = assertThrows(UnauthorizedException.class,
-        () -> productController.syncProductArtifacts(INVALID_AUTHORIZATION_HEADER, false));
+        () -> productController.syncProductArtifacts(INVALID_AUTHORIZATION_HEADER, false, null));
 
     assertEquals(ErrorCode.GITHUB_USER_UNAUTHORIZED.getHelpText(), exception.getMessage());
   }
