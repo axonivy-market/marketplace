@@ -3,7 +3,7 @@ name: marketplace
 
 services:
   ui:
-    container_name: marketplace-ui
+    container_name: marketplace-ui-jenkins
     build:
       context: ../marketplace-ui
       dockerfile: Dockerfile
@@ -17,7 +17,7 @@ services:
       - "4200:80"
 
   service:
-    container_name: marketplace-service
+    container_name: marketplace-service-jenkins
     restart: always
     volumes:
       - /home/axonivy/marketplace/data/market-installations.json:/app/data/market-installation.json
