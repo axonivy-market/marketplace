@@ -1,9 +1,23 @@
+properties([
+  parameters([
+    [$class: 'GitParameterDefinition',
+      name: 'BRANCH',
+      type: 'PT_BRANCH',
+      defaultValue: 'origin.master',
+      description: 'Choose your GitHub branch',
+      branchFilter: '.*',
+      tagFilter: '*',
+      sortMode: 'NONE',
+      selectedValue: 'DEFAULT',
+      quickFilterEnabled: true
+    ]
+  ])
+])
 pipeline {
-    agent any // Assumes a Jenkins agent with Git, Docker, and necessary tools installed
+    agent any
 
     parameters {
         string(name: 'RELEASE_VERSION', defaultValue: 'latest', description: 'Release version')
-        string(name: 'BUILD_ENV', defaultValue: 'production', description: 'Build environment')
     }
 
     environment {
@@ -12,16 +26,29 @@ pipeline {
         GITHUB_TOKEN = credentials('github-token') // Jenkins credential ID for GitHub token
         GITHUB_REGISTRY = 'ghcr.io'
         GITHUB_OWNER = "${env.JOB_NAME.split('/')[0]}" // Assumes job name includes repo owner
+        BASE_WORKING_DIR = './'
+        MARKETPLACE_GIT_URL = credentials('MARKETPLACE_GIT_URL')
+        MARKET_GITHUB_MARKET_BRANCH = credentials('MARKET_GITHUB_MARKET_BRANCH')
+        GH_TOKEN = credentials('GH_TOKEN')
+        MARKET_JWT_SECRET_KEY = credentials('MARKET_JWT_SECRET_KEY')
+        MARKET_CORS_ALLOWED_ORIGIN = credentials('MARKET_CORS_ALLOWED_ORIGIN')
+        MARKET_CLICK_LIMIT = credentials('MARKET_CLICK_LIMIT')
+        MARKET_LIMITED_REQUEST_PATHS = credentials('MARKET_LIMITED_REQUEST_PATHS')
+        POSTGRES_HOST_URL = credentials('POSTGRES_HOST_URL')
+        POSTGRES_USERNAME = credentials('POSTGRES_USERNAME')
+        POSTGRES_PASSWORD = credentials('POSTGRES_PASSWORD')
+        OAUTH_APP_CLIENT_ID = credentials('OAUTH_APP_CLIENT_ID_STAGING')
+        OAUTH_APP_CLIENT_SECRET = credentials('OAUTH_APP_CLIENT_SECRET_STAGING')
     }
 
     stages {
         stage('Checkout Repository') {
-          steps {
-            git branch: 'develop', url: 'https://github.com/axonivy-market/marketplace.git'
-            sh '''
-              mvn clean install --file ./marketplace-service/pom.xml
-            '''
-          }
+            steps {
+                script {
+                    def gitBranch = params.BRANCH.replaceFirst(/^origin\//, '')
+                    git branch: gitBranch, url: env.MARKETPLACE_GIT_URL
+                }
+            }
         }
 
         stage('Update Version and Tag Source') {
@@ -38,15 +65,9 @@ pipeline {
                         sed -i 's/\\"version\\": \\"[^\\"]*\\"/\\"version\\": \\"${params.RELEASE_VERSION}\\"/' marketplace-ui/package.json
                     """
 
-                    // Configure Git user for commits
-                    sh """
-                        git config user.email 'jenkins@ci.com'
-                        git config user.name 'Jenkins CI'
-                    """
-
                     // Delete existing tag if it exists
                     sh """
-                        git push origin :refs/tags/${params.RELEASE_VERSION} || true
+                        git push --delete origin ${params.RELEASE_VERSION} || true
                         git tag -d ${params.RELEASE_VERSION} || true
                     """
 
