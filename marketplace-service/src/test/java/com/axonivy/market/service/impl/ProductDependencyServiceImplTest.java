@@ -96,8 +96,8 @@ class ProductDependencyServiceImplTest extends BaseSetup {
     productDependency.getDependencies().add(mockProductDependency());
     var mockProductDependencies = new ArrayList<ProductDependency>();
     mockProductDependencies.add(productDependency);
-    when(productDependencyRepository.findByProductId("portal")).thenReturn(mockProductDependencies);
-    int totalSynced = productDependencyService.syncIARDependenciesForProducts(true, "portal");
+    when(productDependencyRepository.findByProductId(MOCK_PRODUCT_ID)).thenReturn(mockProductDependencies);
+    int totalSynced = productDependencyService.syncIARDependenciesForProducts(true, MOCK_PRODUCT_ID);
     assertEquals(0, totalSynced, "Expected no product was synced but service returned something");
   }
 }
