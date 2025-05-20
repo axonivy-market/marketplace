@@ -4,6 +4,7 @@ import com.axonivy.market.BaseSetup;
 import com.axonivy.market.entity.MavenArtifactVersion;
 import com.axonivy.market.entity.Metadata;
 import com.axonivy.market.entity.Product;
+import com.axonivy.market.entity.ProductDependency;
 import com.axonivy.market.repository.MavenArtifactVersionRepository;
 import com.axonivy.market.repository.MetadataRepository;
 import com.axonivy.market.repository.ProductDependencyRepository;
@@ -76,6 +77,14 @@ class ProductDependencyServiceImplTest extends BaseSetup {
   @Test
   void testSyncForProductId() throws IOException {
     prepareTestData(MOCK_PRODUCT_ID);
+    var mockProductDependency = ProductDependency.builder()
+        .productId(MOCK_PRODUCT_ID)
+        .version(MOCK_VERSION)
+        .artifactId(MOCK_ARTIFACT_ID)
+        .downloadUrl(MOCK_DOWNLOAD_URL)
+        .build();
+    mockProductDependency.setDependencies(Set.of(mockProductDependency));
+    when(productDependencyRepository.findByProductId(MOCK_PRODUCT_ID)).thenReturn(List.of(mockProductDependency));
 
     int totalSynced = productDependencyService.syncIARDependenciesForProducts(true, MOCK_PRODUCT_ID);
     assertEquals(1, totalSynced, "Expected 1 product was synced but service returned nothing");
