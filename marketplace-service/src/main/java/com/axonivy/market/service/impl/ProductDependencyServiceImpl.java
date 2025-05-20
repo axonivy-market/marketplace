@@ -82,16 +82,16 @@ public class ProductDependencyServiceImpl implements ProductDependencyService {
   }
 
   private int syncByMavenArtifactVersions(String id, Boolean resetSync) {
+    cleanUpProductDependencyIfNeeded(id, resetSync);
+
     int totalSyncedProductIds = 0;
-    if (BooleanUtils.isTrue(resetSync)) {
-      removeAllDataBaseOnProductId(id);
-    }
-    for (var artifact : mavenArtifactVersionRepository.findByProductIdOrderByAdditionalVersion(id)) {
+    for (var artifact : getIARMavenArtifactVersionsByProductId(id)) {
       String productId = artifact.getProductId();
       String artifactId = artifact.getId().getArtifactId();
       String version = artifact.getId().getProductVersion();
       if (VersionUtils.isSnapshotVersion(version)) {
-        deleteAllDataByArtifactAndVersion(productId, artifactId, version);
+        deleteProductDependencies(productDependencyRepository.findByProductIdAndArtifactIdAndVersion(
+            productId, artifactId, version));
       }
       ProductDependency productDependency = findProductDependencyByIds(productId, artifactId, version);
       if (productDependency == null) { // Is missing artifacts ?
@@ -104,25 +104,28 @@ public class ProductDependencyServiceImpl implements ProductDependencyService {
     return totalSyncedProductIds;
   }
 
-  private void deleteAllDataByArtifactAndVersion(String productId, String artifactId, String version) {
-    List<ProductDependency> productDependencies =
-        productDependencyRepository.findByProductIdAndArtifactIdAndVersion(productId, artifactId, version);
-    deleteProductDependencyAndFlush(productDependencies);
+  private void cleanUpProductDependencyIfNeeded(String id, Boolean resetSync) {
+    if (BooleanUtils.isTrue(resetSync)) {
+      deleteProductDependencies(productDependencyRepository.findByProductId(id));
+    }
   }
 
-  private void removeAllDataBaseOnProductId(String id) {
-    List<ProductDependency> productDependencies = productDependencyRepository.findByProductId(id);
-    deleteProductDependencyAndFlush(productDependencies);
+  private List<MavenArtifactVersion> getIARMavenArtifactVersionsByProductId(String id) {
+    final String iarExtension = DOT_SEPARATOR + DEFAULT_PRODUCT_TYPE;
+    return mavenArtifactVersionRepository.findByProductIdOrderByAdditionalVersion(id).stream()
+        .filter(mavenArtifactVersion ->
+            mavenArtifactVersion.getDownloadUrl().endsWith(iarExtension))
+        .toList();
   }
 
-  private void deleteProductDependencyAndFlush(List<ProductDependency> productDependencies) {
+  private void deleteProductDependencies(List<ProductDependency> productDependencies) {
     if (ObjectUtils.isEmpty(productDependencies)) {
       return;
     }
-    for (var productDependecy : productDependencies) {
-      productDependecy.getDependencies().clear();
+    for (var productDependency : productDependencies) {
+      productDependency.setDependencies(new HashSet<>());
     }
-    productDependencyRepository.saveAllAndFlush(productDependencies);
+    productDependencyRepository.deleteAll(productDependencies);
   }
 
   private int createNewProductDependencyForArtifact(MavenArtifactVersion artifact, ProductDependency productDependency,
@@ -192,10 +195,12 @@ public class ProductDependencyServiceImpl implements ProductDependencyService {
       dependency.setDownloadUrl(dependencyArtifact.getDownloadUrl());
       productDependencies.add(dependency);
       // Check does dependency artifact has IAR lib, e.g: portal
-      log.info("Collect nested IAR dependencies for artifact {}", dependencyArtifact.getId().getArtifactId());
-      totalDependencyLevels++;
       List<Dependency> dependenciesOfParent = extractMavenPOMDependencies(dependencyArtifact.getDownloadUrl());
-      collectMavenDependenciesForArtifact(version, productDependencies, dependenciesOfParent, totalDependencyLevels);
+      if (ObjectUtils.isNotEmpty(dependenciesOfParent)) {
+        log.info("Collect nested IAR dependencies for artifact {}", dependencyArtifact.getId().getArtifactId());
+        totalDependencyLevels++;
+        collectMavenDependenciesForArtifact(version, productDependencies, dependenciesOfParent, totalDependencyLevels);
+      }
     }
   }
 
