@@ -41,6 +41,7 @@ import { LoadingService } from '../../../../core/services/loading/loading.servic
 import { API_URI } from '../../../../shared/constants/api.constant';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { VersionDownload } from '../../../../shared/models/version-download.model';
+import { error } from 'console';
 
 const showDevVersionCookieName = 'showDevVersions';
 const ARTIFACT_ZIP_URL = 'artifact/zip-file';
@@ -294,15 +295,18 @@ export class ProductDetailVersionActionComponent implements AfterViewInit {
   }
 
   fetchAndDownloadArtifact(url: string, fileName: string): void {
-    this.httpClient.get<VersionDownload>(url).subscribe(
-      response => {
+    this.httpClient.get<VersionDownload>(url).subscribe({
+      next: response => {
         if (response.fileData) {
           this.installationCount.emit(response.installationCount);
           this.downloadFile(response.fileData, fileName);
           this.isDownloading.set(false);
         }
+      },
+      error: err => {
+        this.isDownloading.set(false);
       }
-    );
+    });
   }
 
   private downloadFile(fileData: string, fileName: string): void {
