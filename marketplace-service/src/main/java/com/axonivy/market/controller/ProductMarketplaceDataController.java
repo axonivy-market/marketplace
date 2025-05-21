@@ -64,7 +64,7 @@ public class ProductMarketplaceDataController {
     VersionDownload result = productMarketplaceDataService.downloadArtifact(artifactUrl, productId);
 
     if (result == null) {
-      return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+      return new ResponseEntity<>(HttpStatus.NOT_FOUND);
     }
     return new ResponseEntity<>(result, HttpStatus.OK);
   }

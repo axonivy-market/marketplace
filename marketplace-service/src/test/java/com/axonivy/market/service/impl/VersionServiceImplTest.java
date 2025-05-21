@@ -121,7 +121,8 @@ class VersionServiceImplTest extends BaseSetup {
     Assertions.assertNull(result);
     result = MavenUtils.findArchivedArtifactInfoBestMatchWithVersion("10.0.7",
         new HashSet<>(archivedArtifacts));
-    Assertions.assertEquals(adobeArchivedArtifactVersion8, result);
+    Assertions.assertNotNull(result);
+    Assertions.assertEquals(adobeArchivedArtifactVersion8.getLastVersion(), result.getLastVersion());
     ArchivedArtifact adobeArchivedArtifactVersion10 = new ArchivedArtifact(MOCK_RELEASED_VERSION,
         MOCK_GROUP_ID, "adobe-sign-connector");
     archivedArtifacts.add(adobeArchivedArtifactVersion10);

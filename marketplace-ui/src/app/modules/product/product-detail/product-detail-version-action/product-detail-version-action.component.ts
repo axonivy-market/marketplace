@@ -45,7 +45,6 @@ import { VersionDownload } from '../../../../shared/models/version-download.mode
 const showDevVersionCookieName = 'showDevVersions';
 const ARTIFACT_ZIP_URL = 'artifact/zip-file';
 const VERSION_DOWNLOAD = 'version-download';
-const TARGET_BLANK = '_blank';
 const HTTP = 'http';
 const DOC = '-doc';
 const ZIP = '.zip';

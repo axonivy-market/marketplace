@@ -418,19 +418,22 @@ export class ProductDetailComponent {
   onShowInfoContent(): void {
     this.isDropdownOpen.update(value => !value);
   }
+@HostListener('document:click', ['$event'])
+handleClickOutside(event: MouseEvent): void {
+  if (!this.isDropdownOpen()) return;
+  
+  const target = event.target as HTMLElement;
+  if (!target) return;
 
-  @HostListener('document:click', ['$event'])
-  handleClickOutside(event: MouseEvent): void {
-    const nativeElement = this.elementRef.nativeElement;
-    if (!(
-        nativeElement.querySelector('.info-dropdown').contains(event.target) ||
-        nativeElement.querySelector('#info-content-dropdown__icon').contains(event.target)
-      ) && this.isDropdownOpen()
-    ) {
-      this.onShowInfoContent();
-    }
+  const nativeElement = this.elementRef.nativeElement;
+  
+  const isClickInside = target.closest('.info-dropdown') || 
+                       target.closest('#info-content-dropdown__icon');
+
+  if (!isClickInside) {
+    this.onShowInfoContent();
   }
-
+}
   @HostListener('window:resize', ['$event'])
   onResize(): void {
     this.checkMediaSize();
