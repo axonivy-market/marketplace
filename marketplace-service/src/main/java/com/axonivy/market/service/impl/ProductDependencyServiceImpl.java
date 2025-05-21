@@ -97,8 +97,7 @@ public class ProductDependencyServiceImpl implements ProductDependencyService {
       if (productDependency == null) { // Is missing artifacts ?
         productDependency = initProductDependencyData(artifact);
         totalSyncedProductIds = createNewProductDependencyForArtifact(artifact, productDependency,
-            totalSyncedProductIds, productId,
-            version);
+            totalSyncedProductIds, productId, version);
       }
     }
     return totalSyncedProductIds;
@@ -182,12 +181,9 @@ public class ProductDependencyServiceImpl implements ProductDependencyService {
       String dependencyProductId = dependencyMetadata.getProductId();
       String dependencyArtifactId = dependencyMetadata.getArtifactId();
       // Find dependency in ProductDependency table, create a new one if not exist
-      ProductDependency dependency = Optional.ofNullable(findProductDependencyByIds(dependencyProductId,
-              dependencyArtifactId,
-              dependencyVersion))
-          .orElse(ProductDependency.builder()
-              .productId(dependencyProductId)
-              .artifactId(dependencyArtifactId)
+      ProductDependency dependency = Optional
+          .ofNullable(findProductDependencyByIds(dependencyProductId, dependencyArtifactId, dependencyVersion))
+          .orElse(ProductDependency.builder().productId(dependencyProductId).artifactId(dependencyArtifactId)
               .version(dependencyVersion).build());
       // Find download URL base on data from MavenArtifactVersion
       MavenArtifactVersion dependencyArtifact = findDownloadURLForDependency(dependencyProductId, dependencyArtifactId,

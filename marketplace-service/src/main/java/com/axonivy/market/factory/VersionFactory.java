@@ -18,6 +18,7 @@ import java.util.Optional;
 
 import static com.axonivy.market.constants.MavenConstants.DEV_RELEASE_POSTFIX;
 import static org.apache.commons.lang3.StringUtils.EMPTY;
+
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class VersionFactory {
   static final String PROJECT_VERSION = "${project.version}";
@@ -31,7 +32,7 @@ public class VersionFactory {
       return defaultVersion;
     }
     if (StringUtils.containsAnyIgnoreCase(mavenVersion, MAVEN_RANGE_VERSION_ARRAYS)) {
-      var plainVersions = mavenVersion.replaceAll(RANGE_VERSION_PATTERN, "");
+      var plainVersions = mavenVersion.replaceAll(RANGE_VERSION_PATTERN, EMPTY);
       String[] parts = plainVersions.split(CommonConstants.COMMA);
       return parts.length > 1 ? parts[1].trim() : parts[0].trim();
     }
