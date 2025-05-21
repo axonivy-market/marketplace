@@ -323,14 +323,14 @@ class ProductDetailsControllerTest extends BaseSetup {
   }
 
   @Test
-  void testDownloadZipArtifact_NoContent() {
+  void testDownloadZipArtifact_NotFound() {
     when(productContentService.downloadZipArtifactFile(anyString(), anyString(),
         anyString())).thenReturn(null);
 
     var result = productDetailsController.downloadZipArtifact(
         DOCKER_CONNECTOR_ID, MOCK_RELEASED_VERSION, "artifact");
 
-    assertEquals(HttpStatus.NO_CONTENT, result.getStatusCode());
+    assertEquals(HttpStatus.NOT_FOUND, result.getStatusCode());
 
     verify(productContentService, times(1)).downloadZipArtifactFile(DOCKER_CONNECTOR_ID, "artifact",
         MOCK_RELEASED_VERSION);

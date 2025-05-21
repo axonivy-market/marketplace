@@ -262,6 +262,7 @@ public class MavenUtils {
         .name(metadata.getName())
         .downloadUrl(downloadUrl)
         .isInvalidArtifact(metadata.getArtifactId().contains(metadata.getGroupId()))
+        .groupId(metadata.getGroupId())
         .productId(metadata.getProductId())
         .build();
   }
