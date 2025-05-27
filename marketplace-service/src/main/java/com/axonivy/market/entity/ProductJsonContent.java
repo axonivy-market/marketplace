@@ -19,7 +19,7 @@ import static com.axonivy.market.constants.EntityConstants.TEXT_TYPE;
 @NoArgsConstructor
 @Entity
 @Table(name = PRODUCT_JSON_CONTENT)
-public class ProductJsonContent extends AuditableEntity {
+public class ProductJsonContent extends AuditableEntity<String> {
   @Id
   @JsonIgnore
   private String id;

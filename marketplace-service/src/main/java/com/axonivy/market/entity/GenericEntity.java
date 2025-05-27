@@ -17,5 +17,5 @@ public abstract class GenericEntity<T> implements Serializable {
 
     public abstract T getId();
 
-    public abstract void setId(String id);
+    public abstract void setId(T id);
 }
