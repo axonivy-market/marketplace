@@ -166,7 +166,7 @@ class MavenUtilsTest extends BaseSetup {
     mockArtifact.setArchivedArtifacts(List.of(mockArchivedArtifact));
     results = MavenUtils.extractMetaDataFromArchivedArtifacts(MOCK_PRODUCT_ID, mockArtifact);
     Assertions.assertTrue(ObjectUtils.isNotEmpty(results));
-    Assertions.assertEquals("https://maven.axonivy.com/com/octopus/util/octopus-test/maven-metadata.xml",
+    Assertions.assertEquals("https://nexus-mirror.axonivy.com/repository/maven/com/octopus/util/octopus-test/maven-metadata.xml",
         results.iterator().next().getUrl());
   }
 
@@ -234,5 +234,14 @@ class MavenUtilsTest extends BaseSetup {
 
     result = MavenUtils.convertArtifactIdToName(" ");
     Assertions.assertEquals(StringUtils.EMPTY, result);
+  }
+
+  @Test
+  void testGetDefaultMirrorMavenRepo() {
+    String result = MavenUtils.getDefaultMirrorMavenRepo(MavenConstants.DEFAULT_IVY_MAVEN_BASE_URL);
+    Assertions.assertEquals(MavenConstants.DEFAULT_IVY_MIRROR_MAVEN_BASE_URL, result);
+    final String ivyRepoUrl = "https://oss.sonatype.org/content/repositories/releases";
+    result = MavenUtils.getDefaultMirrorMavenRepo(ivyRepoUrl);
+    Assertions.assertEquals(ivyRepoUrl, result);
   }
 }

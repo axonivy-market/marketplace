@@ -36,6 +36,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import static com.axonivy.market.constants.MavenConstants.DEFAULT_IVY_MAVEN_BASE_URL;
+import static com.axonivy.market.constants.MavenConstants.DEFAULT_IVY_MIRROR_MAVEN_BASE_URL;
 
 @Log4j2
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
@@ -195,7 +196,7 @@ public class MavenUtils {
     if (StringUtils.isAnyBlank(groupId, artifactId)) {
       return StringUtils.EMPTY;
     }
-    repoUrl = StringUtils.defaultIfEmpty(repoUrl, DEFAULT_IVY_MAVEN_BASE_URL);
+    repoUrl = getDefaultMirrorMavenRepo(repoUrl);
     groupId = groupId.replace(CommonConstants.DOT_SEPARATOR, CommonConstants.SLASH);
     return String.join(CommonConstants.SLASH, repoUrl, groupId, artifactId, snapshotVersion,
         MavenConstants.METADATA_URL_POSTFIX);
@@ -205,7 +206,7 @@ public class MavenUtils {
     if (StringUtils.isAnyBlank(groupId, artifactId)) {
       return StringUtils.EMPTY;
     }
-    repoUrl = StringUtils.defaultIfEmpty(repoUrl, DEFAULT_IVY_MAVEN_BASE_URL);
+    repoUrl = getDefaultMirrorMavenRepo(repoUrl);
     groupId = groupId.replace(CommonConstants.DOT_SEPARATOR, CommonConstants.SLASH);
     return String.join(CommonConstants.SLASH, repoUrl, groupId, artifactId, MavenConstants.METADATA_URL_POSTFIX);
   }
@@ -322,4 +323,10 @@ public class MavenUtils {
         ProductJsonConstants.MAVEN_DEPENDENCY_INSTALLER_ID);
   }
 
+  public static final String getDefaultMirrorMavenRepo(String repoUrl) {
+    if(StringUtils.isBlank(repoUrl) || StringUtils.equals(DEFAULT_IVY_MAVEN_BASE_URL, repoUrl)) {
+      return DEFAULT_IVY_MIRROR_MAVEN_BASE_URL;
+    }
+    return repoUrl;
+  }
 }

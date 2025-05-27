@@ -7,7 +7,6 @@ import com.axonivy.market.constants.ProductJsonConstants;
 import com.axonivy.market.constants.ReadmeConstants;
 import com.axonivy.market.entity.Artifact;
 import com.axonivy.market.entity.Image;
-import com.axonivy.market.entity.MavenDependency;
 import com.axonivy.market.entity.ProductDependency;
 import com.axonivy.market.entity.ProductModuleContent;
 import com.axonivy.market.model.ReadmeContentsModel;
@@ -33,13 +32,10 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.function.Predicate;
 import java.util.stream.Stream;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
@@ -63,7 +59,7 @@ public class ProductContentServiceImpl implements ProductContentService {
     try {
 
       unzippedFolderPath = fileDownloadService.downloadAndUnzipFile(url, DownloadOption.builder().isForced(true)
-        .workingDirectory(unzippedFolderPath).shouldGrantPermission(false).build());
+          .workingDirectory(unzippedFolderPath).shouldGrantPermission(false).build());
       updateDependencyContentsFromProductJson(productModuleContent, productId, unzippedFolderPath, productName);
       extractReadMeFileFromContents(productId, unzippedFolderPath, productModuleContent);
     } catch (Exception e) {
@@ -139,50 +135,33 @@ public class ProductContentServiceImpl implements ProductContentService {
   @Override
   public VersionDownload downloadZipArtifactFile(String productId, String artifactId,
       String version) {
-    List<MavenDependency> mavenDependencies = getMavenDependenciesOfProduct(productId, artifactId, version);
-    if (ObjectUtils.isEmpty(mavenDependencies)) {
+    List<ProductDependency> productDependencies =
+        productDependencyRepository.findByProductIdAndArtifactIdAndVersion(productId, artifactId, version);
+    if (ObjectUtils.isEmpty(productDependencies)) {
       return null;
     }
     // Create a ZIP file
-    try {
-      var byteArrayOutputStream = new ByteArrayOutputStream();
-      try (var zipOut = new ZipOutputStream(byteArrayOutputStream)) {
-        for (var mavenArtifact : mavenDependencies) {
-          zipArtifact(version, mavenArtifact, zipOut);
-          zipDependencyArtifacts(version, mavenArtifact, zipOut);
-        }
-        zipConfigurationOptions(zipOut);
-        zipOut.closeEntry();
+    var byteArrayOutputStream = new ByteArrayOutputStream();
+    try (var zipOut = new ZipOutputStream(byteArrayOutputStream)) {
+      for (var productDependency : productDependencies) {
+        zipArtifact(version, productDependency.getDownloadUrl(), zipOut);
+        zipDependencyArtifacts(version, productDependency, zipOut);
       }
-      return productMarketplaceDataService.getVersionDownload(productId, byteArrayOutputStream.toByteArray());
+      zipConfigurationOptions(zipOut);
+      zipOut.closeEntry();
     } catch (IOException e) {
       log.error("Cannot create ZIP file {}", e.getMessage());
       return null;
     }
+    return productMarketplaceDataService.getVersionDownload(productId, byteArrayOutputStream.toByteArray());
   }
 
-  private void zipDependencyArtifacts(String version, MavenDependency mavenArtifact, ZipOutputStream zipOut)
+  private void zipDependencyArtifacts(String version, ProductDependency mavenArtifact, ZipOutputStream zipOut)
       throws IOException {
-    if (mavenArtifact == null || ObjectUtils.isEmpty(mavenArtifact.getDependencies())) {
-      return;
+    for (var dependency : Optional.ofNullable(mavenArtifact)
+        .map(ProductDependency::getDependencies).orElse(List.of())) {
+      zipArtifact(version, dependency.getDownloadUrl(), zipOut);
     }
-    for (var dependency : Optional.ofNullable(mavenArtifact.getDependencies()).orElse(List.of())) {
-      zipArtifact(version, dependency, zipOut);
-    }
-  }
-
-  private List<MavenDependency> getMavenDependenciesOfProduct(String productId, String artifactId, String version) {
-    Predicate<MavenDependency> filterByArtifactAndVersion =
-        dependency -> dependency.getArtifactId().equals(artifactId) &&
-            dependency.getVersion().equals(version);
-
-    ProductDependency productDependency = productDependencyRepository.findByIdWithDependencies(productId);
-
-    return Optional.ofNullable(productDependency)
-        .map(ProductDependency::getDependenciesOfArtifact)
-        .map(Collection::stream)
-        .map(dependencies -> dependencies.filter(filterByArtifactAndVersion).toList())
-        .orElse(new ArrayList<>());
   }
 
   private void zipConfigurationOptions(ZipOutputStream zipOut) throws IOException {
@@ -199,12 +178,14 @@ public class ProductContentServiceImpl implements ProductContentService {
     zipOut.closeEntry();
   }
 
-  private void zipArtifact(String version, MavenDependency mavenArtifact, ZipOutputStream zipOut) throws IOException {
-    if (mavenArtifact == null || StringUtils.isBlank(mavenArtifact.getDownloadUrl())) {
-      return;
+  private void zipArtifact(String version, String downloadUrl, ZipOutputStream zipOut) throws IOException {
+    if (StringUtils.isNoneBlank(downloadUrl)) {
+      byte[] artifactData = fileDownloadService.downloadFile(downloadUrl);
+      if (ObjectUtils.isEmpty(artifactData)) {
+        return;
+      }
+      String filename = StringUtils.substringAfter(downloadUrl, String.format("/%s/", version));
+      addNewFileToZip(filename, zipOut, artifactData);
     }
-    byte[] artifactData = fileDownloadService.downloadFile(mavenArtifact.getDownloadUrl());
-    String filename = StringUtils.substringAfter(mavenArtifact.getDownloadUrl(), String.format("/%s/", version));
-    addNewFileToZip(filename, zipOut, artifactData);
   }
 }

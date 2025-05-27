@@ -26,7 +26,7 @@ import static com.axonivy.market.constants.EntityConstants.*;
 @Builder
 @Entity
 @Table(name = PRODUCT_MODULE_CONTENT)
-public class ProductModuleContent extends AuditableEntity {
+public class ProductModuleContent extends AuditableEntity<String> {
   @Id
   private String id;
   @Schema(description = "product Id (from meta.json)", example = "portal")

@@ -296,7 +296,6 @@ export class ProductDetailVersionActionComponent implements AfterViewInit {
   fetchAndDownloadArtifact(url: string, fileName: string): void {
     this.httpClient.get<VersionDownload>(url).subscribe(
       response => {
-
         if (response.fileData) {
           this.installationCount.emit(response.installationCount);
           this.downloadFile(response.fileData, fileName);
@@ -307,7 +306,10 @@ export class ProductDetailVersionActionComponent implements AfterViewInit {
   }
 
   private downloadFile(fileData: string, fileName: string): void {
-    const blobUrl = URL.createObjectURL(new Blob([fileData], { type: APPLICATION_OCTET_STREAM }));
+    const byteCharacters = atob(fileData); // decode base64
+    const byteNumbers = Array.from(byteCharacters, c => c.charCodeAt(0));
+    const byteArray = new Uint8Array(byteNumbers);
+    const blobUrl = URL.createObjectURL(new Blob([byteArray], { type: APPLICATION_OCTET_STREAM }));
 
     const a = Object.assign(document.createElement(ANCHOR_ELEMENT), { href: blobUrl, download: fileName });
     document.body.appendChild(a);

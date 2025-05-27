@@ -14,7 +14,7 @@ import java.util.Date;
 @Setter
 @MappedSuperclass
 @EntityListeners(AuditingEntityListener.class)
-public abstract class AuditableEntity extends GenericEntity<String> {
+public abstract class AuditableEntity<T> extends GenericEntity<T> {
     @CreatedDate
     private Date createdAt;
 
