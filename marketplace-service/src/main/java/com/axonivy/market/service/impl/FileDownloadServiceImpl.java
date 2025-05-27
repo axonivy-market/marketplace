@@ -3,11 +3,13 @@ package com.axonivy.market.service.impl;
 import com.axonivy.market.bo.DownloadOption;
 import com.axonivy.market.service.FileDownloadService;
 import com.axonivy.market.util.FileUtils;
+import jakarta.validation.constraints.NotNull;
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.SystemUtils;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 
 import java.io.BufferedInputStream;
@@ -50,7 +52,12 @@ public class FileDownloadServiceImpl implements FileDownloadService {
 
   @Override
   public byte[] downloadFile(String url) {
-    return new RestTemplate().getForObject(url, byte[].class);
+    try {
+      return new RestTemplate().getForObject(url, byte[].class);
+    } catch (RestClientException e) {
+      log.error("Failed to download file from URL: " + url + "\nError: " + e.getMessage());
+      return null;
+    }
   }
 
   @Override
@@ -88,6 +95,11 @@ public class FileDownloadServiceImpl implements FileDownloadService {
     }
 
     Path tempZipPath = createTempFile();
+    byte[] fileContent = downloadFile(url);
+    if (fileContent == null || fileContent.length == 0) {
+      log.warn("Downloaded file is empty or null from URL: {}", url);
+      return null;
+    }
     Files.write(tempZipPath, downloadFile(url));
     unzipFile(tempZipPath.toString(), location);
     return tempZipPath;

@@ -35,12 +35,6 @@ class FileDownloadServiceImplTest {
     assertTrue(result.isEmpty());
   }
 
-  @Test
-  void testDownloadAndUnzipFileWithIssue() {
-    DownloadOption option = DownloadOption.builder().isForced(true).build();
-    assertThrows(ResourceAccessException.class, () -> fileDownloadService.downloadAndUnzipFile(DOWNLOAD_URL,
-        option));
-  }
 
   @Test
   void testDownloadAndUnzipFileWithNullTempZipPath() throws IOException {
