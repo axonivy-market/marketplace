@@ -8,7 +8,6 @@ import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.SystemUtils;
 import org.springframework.stereotype.Service;
-import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
@@ -50,12 +49,7 @@ public class FileDownloadServiceImpl implements FileDownloadService {
 
   @Override
   public byte[] downloadFile(String url) {
-    try {
-      return new RestTemplate().getForObject(url, byte[].class);
-    } catch (RestClientException e) {
-      log.error("Failed to download file from URL: " + url + "\nError: " + e.getMessage());
-      return EMPTY.getBytes();
-    }
+    return new RestTemplate().getForObject(url, byte[].class);
   }
 
   @Override
