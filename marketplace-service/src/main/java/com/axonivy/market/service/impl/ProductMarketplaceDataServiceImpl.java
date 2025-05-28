@@ -20,6 +20,7 @@ import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.HttpClientErrorException;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -80,13 +81,19 @@ public class ProductMarketplaceDataServiceImpl implements ProductMarketplaceData
 
   @Override
   public VersionDownload downloadArtifact(String artifactUrl, String productId) {
-    byte[] fileData = fileDownloadService.downloadFile(artifactUrl);
-    if (fileData == null || fileData.length == 0) {
-      log.error("Cannot download file from URL: {}", artifactUrl);
+    try {
+      byte[] fileData = fileDownloadService.downloadFile(artifactUrl);
+      if (fileData == null || fileData.length == 0) {
+        log.warn("File data is null or empty for URL: {}", artifactUrl);
+        return null;
+      }
+      return getVersionDownload(productId, fileData);
+    } catch (HttpClientErrorException.NotFound e) {
+      log.warn("Artifact not found at URL: {}", artifactUrl, e);
       return null;
     }
-    return getVersionDownload(productId, fileData);
   }
+
 
   @Override
   public VersionDownload getVersionDownload(String productId, byte[] fileData) {
