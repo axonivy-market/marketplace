@@ -8,7 +8,6 @@ import org.mockito.InjectMocks;
 import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.web.client.ResourceAccessException;
 
 import java.io.File;
 import java.io.IOException;
