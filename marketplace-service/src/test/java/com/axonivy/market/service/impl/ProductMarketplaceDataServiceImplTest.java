@@ -23,7 +23,10 @@ import org.mockito.Captor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
 import org.springframework.test.util.ReflectionTestUtils;
+import org.springframework.web.client.HttpClientErrorException;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -182,4 +185,17 @@ class ProductMarketplaceDataServiceImplTest extends BaseSetup {
     assertNull(result);
     verify(fileDownloadService).downloadFile(MOCK_DOWNLOAD_URL);
   }
+  @Test
+  void testDownloadArtifact_HttpClientErrorExceptionNotFound() {
+    HttpClientErrorException.NotFound notFoundException =
+        (HttpClientErrorException.NotFound) HttpClientErrorException.create(HttpStatus.NOT_FOUND, "Not Found", HttpHeaders.EMPTY, null, null);
+
+    when(fileDownloadService.downloadFile(MOCK_DOWNLOAD_URL)).thenThrow(notFoundException);
+
+    VersionDownload result = productMarketplaceDataService.downloadArtifact(MOCK_DOWNLOAD_URL, MOCK_PRODUCT_ID);
+
+    assertNull(result);
+    verify(fileDownloadService).downloadFile(MOCK_DOWNLOAD_URL);
+  }
+
 }
