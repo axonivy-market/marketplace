@@ -4,7 +4,6 @@ pipeline {
     ansiColor('xterm')
   }
   environment {
-    NODE_VERSION = '20'
     UI_DIR = 'marketplace-ui'
     SONAR_PROJECT_KEY = credentials('SONAR_MARKETPLACE_UI_PROJECT_KEY')
     SONAR_PROJECT_NAME = credentials('SONAR_MARKETPLACE_UI_PROJECT_NAME')
@@ -12,15 +11,6 @@ pipeline {
   }
 
   stages {
-    stage('Checkout') {
-      steps {
-        script {
-          def gitBranch = params.BRANCH.replaceFirst(/^origin\//, '')
-          git branch: gitBranch, url: 'https://github.com/axonivy-market/marketplace.git'
-        }
-      }
-    }
-
     stage('Build And Test Project') {
       steps {
         sh 'npm i --prefix ./marketplace-ui'

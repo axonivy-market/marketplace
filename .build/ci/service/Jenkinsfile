@@ -22,7 +22,6 @@ pipeline {
 
     stage('Remove unused Docker images') {
       steps {
-        echo "Current branch is: ${env.BRANCH_NAME}"
         sh 'docker image prune -af'
       }
     }
