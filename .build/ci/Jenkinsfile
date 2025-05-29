@@ -1,0 +1,82 @@
+properties([
+  parameters([
+    [$class: 'GitParameterDefinition',
+      name: 'BRANCH',
+      type: 'PT_BRANCH',
+      defaultValue: 'develop',
+      description: 'Choose your GitHub branch',
+      branchFilter: '.*',
+      tagFilter: '*',
+      sortMode: 'NONE',
+      selectedValue: 'DEFAULT',
+      quickFilterEnabled: true
+    ]
+  ])
+])
+
+pipeline {
+  agent any
+  options {
+    ansiColor('xterm')
+  }
+  environment {
+    NODE_VERSION = '20'
+    UI_DIR = 'marketplace-ui'
+    SONAR_PROJECT_KEY = credentials('SONAR_MARKETPLACE_UI_PROJECT_KEY')
+    SONAR_PROJECT_NAME = credentials('SONAR_MARKETPLACE_UI_PROJECT_NAME')
+
+  }
+
+  stages {
+    stage('Checkout') {
+      steps {
+        script {
+          def gitBranch = params.BRANCH.replaceFirst(/^origin\//, '')
+          git branch: gitBranch, url: 'https://github.com/axonivy-market/marketplace.git'
+        }
+      }
+    }
+
+    stage('Build And Test Project') {
+      steps {
+        sh 'npm i --prefix ./marketplace-ui'
+        sh 'npm run build --prefix ./marketplace-ui'
+        sh 'npm run test --prefix ./marketplace-ui'
+      }
+    }
+
+    stage('Docker Cleanup') {
+      steps {
+        sh 'docker image prune -af'
+      }
+    }
+
+    stage('SonarQube Analysis') {
+      steps {
+        withSonarQubeEnv('Sonar') {
+          dir(UI_DIR) {
+            sh '''
+              sonar-scanner \
+                -Dsonar.projectKey=$SONAR_PROJECT_KEY \
+                -Dsonar.projectName="${SONAR_PROJECT_NAME}" \
+            '''
+          }
+        }
+      }
+    }
+
+    stage('Quality Gate') {
+      steps {
+        timeout(time: 2, unit: 'MINUTES') {
+          waitForQualityGate abortPipeline: true
+        }
+      }
+    }
+  }
+
+  post {
+    always {
+      cleanWs(deleteDirs: true)
+    }
+  }
+}

@@ -1,0 +1,108 @@
+pipeline {
+  agent any
+  environment {
+    UI_IMAGE_NAME = 'marketplace-ui'
+    SERVICE_IMAGE_NAME = 'marketplace-service'
+  }
+  parameters {
+    string(name: 'release_version', defaultValue: 'latest', description: 'Release version')
+    string(name: 'build_env', defaultValue: 'production', description: 'Build environment')
+  }
+  stages {
+    stage('Checkout Source') {
+      steps {
+        checkout scm
+      }
+    }
+
+    stage('Update Version and Tag Source') {
+      when {
+        expression { params.release_version != '' }
+      }
+      steps {
+        withEnv([
+          "POM_FILE=./marketplace-service/pom.xml",
+          "PACKAGE_FILE=./marketplace-ui/package.json"
+        ]) {
+          script {
+            sh '''
+              xml ed -L -u "//_:project/_:version" -v "$release_version" $POM_FILE
+              sed -i 's/"version": \"[^\"]*\"/"version": \"$release_version\"/' $PACKAGE_FILE
+              git push --delete origin $release_version || true
+              git tag -d $release_version || true
+              git commit -a -m "Update version to $release_version"
+              git tag $release_version
+              git push origin $release_version
+            '''
+          }
+        }
+      }
+    }
+
+    stage('Build Docker Images') {
+      steps {
+        build job: 'docker-build', parameters: [
+          string(name: 'release_version', value: params.release_version),
+          string(name: 'build_env', value: params.build_env)
+        ]
+      }
+    }
+
+    stage('Wait for Containers') {
+      steps {
+        dir('marketplace-build') {
+          sh '''
+            timeout=300
+            start_time=$(date +%s)
+            while [ $(($(date +%s) - start_time)) -lt $timeout ]; do
+              if docker compose ps | grep -q "Up"; then
+                echo "Containers are up and running."
+                exit 0
+              fi
+              echo "Waiting for containers to start..."
+              sleep 5
+            done
+            echo "Containers did not start within the timeout period."
+            exit 1
+          '''
+        }
+      }
+    }
+
+    stage('Log in to GitHub Container Registry') {
+      steps {
+        withCredentials([string(credentialsId: 'GITHUB_TOKEN', variable: 'GITHUB_TOKEN')]) {
+          sh 'echo "$GITHUB_TOKEN" | docker login ghcr.io -u $GITHUB_ACTOR --password-stdin'
+        }
+      }
+    }
+
+    stage('Refine Release Version') {
+      steps {
+        script {
+          env.VERSION = params.release_version == 'main' ? 'latest' : params.release_version
+        }
+      }
+    }
+
+    stage('Release Marketplace UI Image') {
+      steps {
+        sh '''
+          UI_IMAGE_ID=ghcr.io/$GITHUB_REPOSITORY_OWNER/$UI_IMAGE_NAME
+          docker tag $UI_IMAGE_NAME $UI_IMAGE_ID:$VERSION
+          docker push $UI_IMAGE_ID:$VERSION
+        '''
+      }
+    }
+
+    stage('Release Marketplace Service Image') {
+      steps {
+        sh '''
+          SERVICE_IMAGE_ID=ghcr.io/$GITHUB_REPOSITORY_OWNER/$SERVICE_IMAGE_NAME
+          docker tag $SERVICE_IMAGE_NAME $SERVICE_IMAGE_ID:$VERSION
+          docker push $SERVICE_IMAGE_ID:$VERSION
+        '''
+      }
+    }
+  }
+}
