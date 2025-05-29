@@ -1,3 +1,18 @@
+properties([
+  parameters([
+    [$class: 'GitParameterDefinition',
+      name: 'BRANCH',
+      type: 'PT_BRANCH',
+      defaultValue: 'develop',
+      description: 'Choose your GitHub branch',
+      branchFilter: '.*',
+      tagFilter: '*',
+      sortMode: 'NONE',
+      selectedValue: 'DEFAULT',
+      quickFilterEnabled: true
+    ]
+  ])
+])
 pipeline {
   agent any
   environment {
@@ -6,7 +21,6 @@ pipeline {
   }
   parameters {
     string(name: 'release_version', defaultValue: 'latest', description: 'Release version')
-    string(name: 'build_env', defaultValue: 'production', description: 'Build environment')
   }
   stages {
     stage('Checkout Source') {
