@@ -33,7 +33,7 @@ pipeline {
     }
 
     stages {
-        stage('Cleanup') {
+        stage('Stop running docker container for compose file') {
             steps {
                 dir("${env.BASE_WORKING_DIR}") {
                     script {
@@ -44,6 +44,7 @@ pipeline {
                         }
                     }
                 }
+                cleanWs()
             }
         }
 
