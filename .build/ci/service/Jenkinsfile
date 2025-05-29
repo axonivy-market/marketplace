@@ -6,7 +6,6 @@ pipeline {
 
   environment {
     SONAR_PROJECT_KEY = credentials('SONAR_MARKETPLACE_SERVICE_PROJECT_KEY')
-    MARKETPLACE_GIT_URL = credentials('MARKETPLACE_GIT_URL')
     SONAR_PROJECT_NAME = credentials('SONAR_MARKETPLACE_SERVICE_PROJECT_NAME')
   }
 
@@ -23,6 +22,7 @@ pipeline {
 
     stage('Remove unused Docker images') {
       steps {
+        echo "Current branch is: ${env.BRANCH_NAME}"
         sh 'docker image prune -af'
       }
     }
