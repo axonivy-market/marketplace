@@ -15,7 +15,6 @@ pipeline {
       steps {
         script {
           sh '''
-            echo "Current branch is: ${env.BRANCH_NAME}"
             mvn clean install --file ./marketplace-service/pom.xml -Dskiptest=true
           '''
         }
