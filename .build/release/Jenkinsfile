@@ -19,7 +19,7 @@ pipeline {
     UI_IMAGE_NAME = 'marketplace-ui'
     SERVICE_IMAGE_NAME = 'marketplace-service'
     BASE_WORKING_DIR = './'
-    NGINX_CONFIG_PATH= './config/nginx/release/nginx.conf'
+    NGINX_CONFIG_PATH= '../'
     MARKETPLACE_GIT_URL = credentials('MARKETPLACE_GIT_URL')
     MARKET_GITHUB_MARKET_BRANCH = credentials('MARKET_GITHUB_MARKET_BRANCH')
     GH_TOKEN = credentials('GH_TOKEN')
@@ -96,7 +96,7 @@ pipeline {
         script {
           dir("${env.BASE_WORKING_DIR}/marketplace-build") {
             sh """
-              docker compose build --build-arg BUILD_ENV=production --build-arg BUILD_VERSION=$release_version --build-arg NGINX_CONFIG_PATH=$NGINX_CONFIG_PATH
+              docker compose build --build-arg BUILD_ENV=production --build-arg BUILD_VERSION=$release_version --build-arg NGINX_CONFIG_PATH=""
               docker compose up --force-recreate -d
             """
           }
@@ -127,9 +127,9 @@ pipeline {
 
     stage('Log in to GitHub Container Registry') {
       steps {
-        
-          sh 'docker login ghcr.io -u $GITHUB_ACTOR --password-stdin'
-        
+        sh """
+          echo $GH_TOKEN | docker login ghcr.io -u $GITHUB_ACTOR --password-stdin
+        """
       }
     }
 
@@ -143,14 +143,14 @@ pipeline {
       }
     }
 
-    // stage('Release Marketplace Service Image') {
-    //   steps {
-    //     sh '''
-    //       SERVICE_IMAGE_ID=ghcr.io/$GITHUB_REPOSITORY_OWNER/$SERVICE_IMAGE_NAME
-    //       docker tag $SERVICE_IMAGE_NAME $SERVICE_IMAGE_ID:$VERSION
-    //       docker push $SERVICE_IMAGE_ID:$VERSION
-    //     '''
-    //   }
-    // }
+    stage('Release Marketplace Service Image') {
+      steps {
+        sh '''
+          SERVICE_IMAGE_ID=ghcr.io/$GITHUB_REPOSITORY_OWNER/$SERVICE_IMAGE_NAME
+          docker tag $SERVICE_IMAGE_NAME $SERVICE_IMAGE_ID:$VERSION
+          docker push $SERVICE_IMAGE_ID:$VERSION
+        '''
+      }
+    }
   }
 }
