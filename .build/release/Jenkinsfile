@@ -16,10 +16,12 @@ properties([
 pipeline {
   agent any
   environment {
+    GITHUB_ACTOR = 'Octopus-AxonIvy'
+    GITHUB_REPOSITORY_OWNER = 'axonivy-market'
+    NGINX_CONFIG_PATH = './config/nginx/release/nginx.conf'
     UI_IMAGE_NAME = 'marketplace-ui'
     SERVICE_IMAGE_NAME = 'marketplace-service'
     BASE_WORKING_DIR = './'
-    NGINX_CONFIG_PATH= '../'
     MARKETPLACE_GIT_URL = credentials('MARKETPLACE_GIT_URL')
     MARKET_GITHUB_MARKET_BRANCH = credentials('MARKET_GITHUB_MARKET_BRANCH')
     GH_TOKEN = credentials('GH_TOKEN')
@@ -39,6 +41,21 @@ pipeline {
   }
 
   stages {
+    stage('Stop running docker container for compose file') {
+      steps {
+        dir("${env.BASE_WORKING_DIR}") {
+          script {
+            try {
+              sh 'docker compose -f marketplace-build/docker-compose.yml down --rmi all'
+            } catch (Exception e) {
+              echo "Error during docker compose down, continuing: ${e}"
+            }
+          }
+        }
+        cleanWs()
+      }
+    }
+
     stage('Checkout Source') {
       steps {
         script {
@@ -60,7 +77,7 @@ pipeline {
               sed -i 's/"version": \"[^\"]*\"/"version": \"$release_version\"/' $PACKAGE_FILE
               git config --global user.email "octopus-axonivy@gmail.com"
               git config --global user.name "Octopus Team"
-              git remote set-url origin https://Octopus-AxonIvy:$GH_TOKEN@github.com/axonivy-market/marketplace.git
+              git remote set-url origin https://$GITHUB_ACTOR:$GH_TOKEN@github.com/axonivy-market/marketplace.git
               git push --delete origin $release_version || true
               git tag -d $release_version || true
               git commit -a -m "Update version to $release_version"
@@ -96,7 +113,7 @@ pipeline {
         script {
           dir("${env.BASE_WORKING_DIR}/marketplace-build") {
             sh """
-              docker compose build --build-arg BUILD_ENV=production --build-arg BUILD_VERSION=$release_version --build-arg NGINX_CONFIG_PATH=""
+              docker compose build --build-arg BUILD_ENV=production --build-arg BUILD_VERSION=$release_version --build-arg NGINX_CONFIG_PATH=$NGINX_CONFIG_PATH
               docker compose up --force-recreate -d
             """
           }
