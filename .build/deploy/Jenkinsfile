@@ -18,6 +18,7 @@ pipeline {
 
     environment {
         BASE_WORKING_DIR = './'
+        NGINX_CONFIG_PATH= './config/nginx/dev/nginx.conf'
         MARKETPLACE_GIT_URL = credentials('MARKETPLACE_GIT_URL')
         MARKET_GITHUB_MARKET_BRANCH = credentials('MARKET_GITHUB_MARKET_BRANCH')
         GH_TOKEN = credentials('GH_TOKEN')
@@ -75,7 +76,7 @@ pipeline {
                 script {
                     dir("${env.BASE_WORKING_DIR}/marketplace-build") {
                         sh """
-                            docker compose build --build-arg BUILD_ENV=staging
+                            docker compose build --build-arg BUILD_ENV=staging --build-arg NGINX_CONFIG_PATH=$NGINX_CONFIG_PATH
                             docker compose up --force-recreate -d
                         """
                     }

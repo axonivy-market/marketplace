@@ -19,7 +19,7 @@ pipeline {
     UI_IMAGE_NAME = 'marketplace-ui'
     SERVICE_IMAGE_NAME = 'marketplace-service'
     BASE_WORKING_DIR = './'
-    NGINX_CONFIG_PATH= '../nginx/release/nginx.conf'
+    NGINX_CONFIG_PATH= './config/nginx/release/nginx.conf'
     MARKETPLACE_GIT_URL = credentials('MARKETPLACE_GIT_URL')
     MARKET_GITHUB_MARKET_BRANCH = credentials('MARKET_GITHUB_MARKET_BRANCH')
     GH_TOKEN = credentials('GH_TOKEN')
