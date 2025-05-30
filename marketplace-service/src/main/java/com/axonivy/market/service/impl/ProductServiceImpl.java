@@ -171,9 +171,16 @@ public class ProductServiceImpl implements ProductService {
         syncedProductIds = updateLatestChangeToProductsFromGithubRepo();
       }
       syncRepoMetaDataStatus();
+      syncProductMarketplaceData(syncedProductIds);
     }
     updateLatestReleaseVersionContentsFromProductRepo();
     return syncedProductIds.stream().filter(StringUtils::isNotBlank).toList();
+  }
+
+  private synchronized void syncProductMarketplaceData(List<String> syncedProductIds) {
+    for (String productId : syncedProductIds) {
+      productMarketplaceDataRepo.checkAndInitProductMarketplaceDataIfNotExist(productId);
+    }
   }
 
   private void syncRepoMetaDataStatus() {
@@ -340,7 +347,6 @@ public class ProductServiceImpl implements ProductService {
       updateFirstPublishedDate(product);
       updateProductFromReleasedVersions(product);
       transferComputedDataFromDB(product);
-      productMarketplaceDataRepo.checkAndInitProductMarketplaceDataIfNotExist(product.getId());
       syncedProductIds.add(productRepo.save(product).getId());
     }
     return syncedProductIds;
