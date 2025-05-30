@@ -64,7 +64,7 @@ class ProductMarketplaceDataControllerTest extends BaseSetup {
 
       var result = productMarketplaceDataController.extractArtifactUrl(MOCK_PRODUCT_ID, downloadUrl);
 
-      assertEquals(HttpStatus.NO_CONTENT, result.getStatusCode());
+      assertEquals(HttpStatus.NOT_FOUND, result.getStatusCode());
       assertNull(result.getBody());
     }
   }

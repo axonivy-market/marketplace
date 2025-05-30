@@ -8,6 +8,8 @@ import org.mockito.InjectMocks;
 import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.http.HttpStatus;
+import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.ResourceAccessException;
 
 import java.io.File;
@@ -16,9 +18,9 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.stream.Stream;
-
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class FileDownloadServiceImplTest {
@@ -40,6 +42,30 @@ class FileDownloadServiceImplTest {
     DownloadOption option = DownloadOption.builder().isForced(true).build();
     assertThrows(ResourceAccessException.class, () -> fileDownloadService.downloadAndUnzipFile(DOWNLOAD_URL,
         option));
+  }
+
+  @Test
+  void testSafeDownloadSuccess() {
+    byte[] expectedContent = "test content".getBytes();
+
+    FileDownloadServiceImpl spyService = Mockito.spy(fileDownloadService);
+    doReturn(expectedContent).when(spyService).downloadFile(DOWNLOAD_URL);
+    byte[] result = spyService.safeDownload(DOWNLOAD_URL);
+    assertArrayEquals(expectedContent, result);
+    Mockito.verify(spyService).downloadFile(DOWNLOAD_URL);
+  }
+
+  @Test
+  void testSafeDownload_ReturnsEmptyBytes() {
+    FileDownloadServiceImpl spyService = Mockito.spy(new FileDownloadServiceImpl());
+
+    doThrow(HttpClientErrorException.create(
+        HttpStatus.UNAUTHORIZED, "Unauthorized", null, null, null))
+        .when(spyService).downloadFile(DOWNLOAD_URL);
+    byte[] result = spyService.safeDownload(DOWNLOAD_URL);
+
+    assertArrayEquals("".getBytes(), result);
+    verify(spyService).downloadFile(DOWNLOAD_URL);
   }
 
   @Test
@@ -127,5 +153,55 @@ class FileDownloadServiceImplTest {
     int result = fileDownloadService.unzipFile(ZIP_FILE_PATH, EXTRACT_DIR_LOCATION);
     assertEquals(7, result);
     fileDownloadService.deleteDirectory(Paths.get(EXTRACTED_DIR_LOCATION));
+  }
+
+  @Test
+  void testDownloadAndUnzipFileSuccessful() throws IOException {
+    FileDownloadServiceImpl spyService = Mockito.spy(fileDownloadService);
+    byte[] mockFileContent = "mock zip content".getBytes();
+    doReturn(mockFileContent).when(spyService).safeDownload(DOWNLOAD_URL);
+    doReturn(100).when(spyService).unzipFile(any(String.class), any(String.class));
+
+    DownloadOption option = DownloadOption.builder()
+        .isForced(true)
+        .workingDirectory(EXTRACT_DIR_LOCATION)
+        .build();
+
+    try (MockedStatic<Files> mockedFiles = Mockito.mockStatic(Files.class)) {
+      Path mockTempPath = Paths.get(ZIP_FILE_PATH);
+      mockedFiles.when(() -> Files.createTempFile(any(String.class), any(String.class), any()))
+          .thenReturn(mockTempPath);
+      mockedFiles.when(() -> Files.createTempFile(any(String.class), any(String.class)))
+          .thenReturn(mockTempPath);
+
+      String result = spyService.downloadAndUnzipFile(DOWNLOAD_URL, option);
+      assertEquals(EXTRACT_DIR_LOCATION, result);
+      verify(spyService).safeDownload(DOWNLOAD_URL);
+      mockedFiles.verify(() -> Files.write(mockTempPath, mockFileContent), times(1));
+      verify(spyService).unzipFile(mockTempPath.toString(), EXTRACT_DIR_LOCATION);
+      mockedFiles.verify(() -> Files.delete(mockTempPath), times(1));
+    }
+  }
+  @Test
+  void testDownloadAndUnzipFileWithNullFileContent() throws IOException {
+    FileDownloadServiceImpl spyService = Mockito.spy(fileDownloadService);
+    doReturn(null).when(spyService).safeDownload(DOWNLOAD_URL);
+    DownloadOption option = DownloadOption.builder()
+        .isForced(true)
+        .workingDirectory(EXTRACT_DIR_LOCATION)
+        .build();
+
+    try (MockedStatic<Files> mockedFiles = Mockito.mockStatic(Files.class)) {
+      Path mockTempPath = Paths.get(ZIP_FILE_PATH);
+      mockedFiles.when(() -> Files.createTempFile(any(String.class), any(String.class), any()))
+          .thenReturn(mockTempPath);
+      mockedFiles.when(() -> Files.createTempFile(any(String.class), any(String.class)))
+          .thenReturn(mockTempPath);
+
+      String result = spyService.downloadAndUnzipFile(DOWNLOAD_URL, option);
+      assertEquals(EXTRACT_DIR_LOCATION, result);
+      verify(spyService).safeDownload(DOWNLOAD_URL);
+      mockedFiles.verify(() -> Files.write(any(Path.class), any(byte[].class)), never());
+    }
   }
 }

@@ -162,7 +162,7 @@ class ProductMarketplaceDataServiceImplTest extends BaseSetup {
         INSTALLATION_FILE_PATH);
     ProductMarketplaceData mockProductMarketplaceData = getMockProductMarketplaceData();
     byte[] mockFileData = "dummy data".getBytes();
-    when(fileDownloadService.downloadFile(MOCK_DOWNLOAD_URL)).thenReturn(mockFileData);
+    when(fileDownloadService.safeDownload(MOCK_DOWNLOAD_URL)).thenReturn(mockFileData);
     when(productRepo.findById(anyString())).thenReturn(Optional.of(getMockProduct()));
     when(productMarketplaceDataRepo.findById(MOCK_PRODUCT_ID)).thenReturn(Optional.of(mockProductMarketplaceData));
     when(productMarketplaceDataService.updateInstallationCountForProduct(MOCK_PRODUCT_ID,
@@ -174,12 +174,10 @@ class ProductMarketplaceDataServiceImplTest extends BaseSetup {
   }
 
   @Test
-  void testDownloadArtifact_FileNotFound() {
-    when(fileDownloadService.downloadFile(MOCK_DOWNLOAD_URL)).thenReturn(null);
-
+  void testSafeDownload_FileNotFound() {
+    when(fileDownloadService.safeDownload(MOCK_DOWNLOAD_URL)).thenReturn(null);
     VersionDownload result = productMarketplaceDataService.downloadArtifact(MOCK_DOWNLOAD_URL, MOCK_PRODUCT_ID);
-
     assertNull(result);
-    verify(fileDownloadService).downloadFile(MOCK_DOWNLOAD_URL);
+    verify(fileDownloadService).safeDownload(MOCK_DOWNLOAD_URL);
   }
 }

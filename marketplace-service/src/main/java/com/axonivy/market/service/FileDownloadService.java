@@ -14,6 +14,8 @@ public interface FileDownloadService {
 
   byte[] downloadFile(String url);
 
+  byte[] safeDownload(String url);
+
   void deleteDirectory(Path path);
 
   String downloadAndUnzipFile(String url, DownloadOption downloadOption) throws IOException;
