@@ -164,8 +164,8 @@ pipeline {
       steps {
         sh '''
           SERVICE_IMAGE_ID=ghcr.io/$GITHUB_REPOSITORY_OWNER/$SERVICE_IMAGE_NAME
-          docker tag $SERVICE_IMAGE_NAME $SERVICE_IMAGE_ID:$VERSION
-          docker push $SERVICE_IMAGE_ID:$VERSION
+          docker tag $SERVICE_IMAGE_NAME $SERVICE_IMAGE_ID:$release_version
+          docker push $SERVICE_IMAGE_ID:$release_version
         '''
       }
     }
