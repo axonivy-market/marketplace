@@ -102,7 +102,7 @@ public class FileDownloadServiceImpl implements FileDownloadService {
       log.warn("Downloaded file is empty or null from URL: {}", url);
       return null;
     }
-    Files.write(tempZipPath,fileContent);
+    Files.write(tempZipPath, fileContent);
     unzipFile(tempZipPath.toString(), location);
     return tempZipPath;
   }

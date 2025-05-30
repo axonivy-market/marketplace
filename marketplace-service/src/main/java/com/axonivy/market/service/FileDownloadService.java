@@ -13,6 +13,7 @@ public interface FileDownloadService {
   String ROOT_STORAGE_FOR_CACHE = String.join(File.separator, DATA_DIR, CACHE_DIR);
 
   byte[] downloadFile(String url);
+
   byte[] safeDownload(String url);
 
   void deleteDirectory(Path path);
