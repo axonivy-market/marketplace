@@ -23,10 +23,7 @@ import org.mockito.Captor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpStatus;
 import org.springframework.test.util.ReflectionTestUtils;
-import org.springframework.web.client.HttpClientErrorException;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -165,7 +162,7 @@ class ProductMarketplaceDataServiceImplTest extends BaseSetup {
         INSTALLATION_FILE_PATH);
     ProductMarketplaceData mockProductMarketplaceData = getMockProductMarketplaceData();
     byte[] mockFileData = "dummy data".getBytes();
-    when(fileDownloadService.downloadFile(MOCK_DOWNLOAD_URL)).thenReturn(mockFileData);
+    when(fileDownloadService.safeDownload(MOCK_DOWNLOAD_URL)).thenReturn(mockFileData);
     when(productRepo.findById(anyString())).thenReturn(Optional.of(getMockProduct()));
     when(productMarketplaceDataRepo.findById(MOCK_PRODUCT_ID)).thenReturn(Optional.of(mockProductMarketplaceData));
     when(productMarketplaceDataService.updateInstallationCountForProduct(MOCK_PRODUCT_ID,
@@ -177,25 +174,12 @@ class ProductMarketplaceDataServiceImplTest extends BaseSetup {
   }
 
   @Test
-  void testDownloadArtifact_FileNotFound() {
-    when(fileDownloadService.downloadFile(MOCK_DOWNLOAD_URL)).thenReturn(null);
+  void testSafeDownload_FileNotFound() {
+    when(fileDownloadService.safeDownload(MOCK_DOWNLOAD_URL)).thenReturn(null);
 
     VersionDownload result = productMarketplaceDataService.downloadArtifact(MOCK_DOWNLOAD_URL, MOCK_PRODUCT_ID);
-
     assertNull(result);
-    verify(fileDownloadService).downloadFile(MOCK_DOWNLOAD_URL);
-  }
-  @Test
-  void testDownloadArtifact_HttpClientErrorExceptionNotFound() {
-    HttpClientErrorException.NotFound notFoundException =
-        (HttpClientErrorException.NotFound) HttpClientErrorException.create(HttpStatus.NOT_FOUND, "Not Found", HttpHeaders.EMPTY, null, null);
-
-    when(fileDownloadService.downloadFile(MOCK_DOWNLOAD_URL)).thenThrow(notFoundException);
-
-    VersionDownload result = productMarketplaceDataService.downloadArtifact(MOCK_DOWNLOAD_URL, MOCK_PRODUCT_ID);
-
-    assertNull(result);
-    verify(fileDownloadService).downloadFile(MOCK_DOWNLOAD_URL);
+    verify(fileDownloadService).safeDownload(MOCK_DOWNLOAD_URL);
   }
 
 }

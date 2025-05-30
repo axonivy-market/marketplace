@@ -8,6 +8,9 @@ import org.mockito.InjectMocks;
 import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.http.HttpStatus;
+import org.springframework.web.client.HttpClientErrorException;
+import org.springframework.web.client.ResourceAccessException;
 
 import java.io.File;
 import java.io.IOException;
@@ -18,6 +21,8 @@ import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class FileDownloadServiceImplTest {
@@ -25,6 +30,7 @@ class FileDownloadServiceImplTest {
   private static final String EXTRACT_DIR_LOCATION = "src/test/resources/zip/data";
   private static final String EXTRACTED_DIR_LOCATION = "src/test/resources/zip/data/text";
   private static final String DOWNLOAD_URL = "https://repo/axonivy/portal/portal-guide/10.0.0/portal-guide-10.0.0.zip";
+
   @InjectMocks
   private FileDownloadServiceImpl fileDownloadService;
 
@@ -34,9 +40,60 @@ class FileDownloadServiceImplTest {
     assertTrue(result.isEmpty());
   }
 
+  @Test
+  void testDownloadAndUnzipFileWithIssue() {
+    DownloadOption option = DownloadOption.builder().isForced(true).build();
+    assertThrows(ResourceAccessException.class, () -> fileDownloadService.downloadAndUnzipFile(DOWNLOAD_URL,
+        option));
+  }
+
+  @Test
+  void testSafeDownloadSuccess() {
+    byte[] expectedContent = "test content".getBytes();
+
+    FileDownloadServiceImpl spyService = Mockito.spy(fileDownloadService);
+    doReturn(expectedContent).when(spyService).downloadFile(DOWNLOAD_URL);
+    byte[] result = spyService.safeDownload(DOWNLOAD_URL);
+    assertArrayEquals(expectedContent, result);
+    Mockito.verify(spyService).downloadFile(DOWNLOAD_URL);
+  }
+
+  @Test
+  void testSafeDownloadWithNotFoundError() {
+    FileDownloadServiceImpl spyService = Mockito.spy(fileDownloadService);
+    Mockito.doThrow(HttpClientErrorException.create(HttpStatus.NOT_FOUND,"NotDound", null, null, null))
+        .when(spyService).downloadFile(DOWNLOAD_URL);
+    byte[] result = spyService.safeDownload(DOWNLOAD_URL);
+    assertNull(result);
+    Mockito.verify(spyService).downloadFile(DOWNLOAD_URL);
+  }
+
+  @Test
+  void testSafeDownloadWithForbiddenError() {
+    FileDownloadServiceImpl spyService = Mockito.spy(fileDownloadService);
+    Mockito.doThrow(HttpClientErrorException.create(HttpStatus.FORBIDDEN, "Forbidden", null, null, null))
+        .when(spyService).downloadFile(DOWNLOAD_URL);
+    byte[] result = spyService.safeDownload(DOWNLOAD_URL);
+
+    assertNull(result);
+    Mockito.verify(spyService).downloadFile(DOWNLOAD_URL);
+  }
+
+  @Test
+  void testSafeDownloadWithUnauthorizedError() {
+    FileDownloadServiceImpl spyService = Mockito.spy(fileDownloadService);
+    Mockito.doThrow(HttpClientErrorException.create(HttpStatus.UNAUTHORIZED, "Unauthorized", null, null, null))
+        .when(spyService).downloadFile(DOWNLOAD_URL);
+    byte[] result = spyService.safeDownload(DOWNLOAD_URL);
+    assertNull(result);
+    Mockito.verify(spyService).downloadFile(DOWNLOAD_URL);
+  }
+
+
 
   @Test
   void testDownloadAndUnzipFileWithNullTempZipPath() throws IOException {
+
     try (MockedStatic<Files> mockedFiles = Mockito.mockStatic(Files.class);
          MockedStatic<FileUtils> mockFileUtils = Mockito.mockStatic(FileUtils.class)) {
 
@@ -54,7 +111,6 @@ class FileDownloadServiceImplTest {
       mockedFiles.verify(() -> Files.delete(any()), Mockito.times(0));
     }
   }
-
   @Test
   void testSupportFunctions() throws IOException {
     var mockFile = fileDownloadService.createFolder("unzip");
@@ -100,9 +156,9 @@ class FileDownloadServiceImplTest {
   @Test
   void deleteDirectory_shouldDeleteAllFilesAndDirectories() {
     // Arrange
-    Path mockPath = Mockito.mock(Path.class);
-    Path file1 = Mockito.mock(Path.class);
-    Path file2 = Mockito.mock(Path.class);
+    Path mockPath = mock(Path.class);
+    Path file1 = mock(Path.class);
+    Path file2 = mock(Path.class);
     Stream<Path> mockStream = Stream.of(file1, file2);
 
     try (MockedStatic<Files> mockedFiles = Mockito.mockStatic(Files.class)) {
@@ -121,4 +177,5 @@ class FileDownloadServiceImplTest {
     assertEquals(7, result);
     fileDownloadService.deleteDirectory(Paths.get(EXTRACTED_DIR_LOCATION));
   }
+
 }
