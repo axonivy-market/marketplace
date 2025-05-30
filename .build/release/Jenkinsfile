@@ -3,7 +3,7 @@ properties([
     [$class: 'GitParameterDefinition',
       name: 'BRANCH',
       type: 'PT_BRANCH',
-      defaultValue: 'develop',
+      defaultValue: 'origin/master',
       description: 'Choose your GitHub branch',
       branchFilter: '.*',
       tagFilter: '*',
@@ -18,30 +18,32 @@ pipeline {
   environment {
     UI_IMAGE_NAME = 'marketplace-ui'
     SERVICE_IMAGE_NAME = 'marketplace-service'
+    BASE_WORKING_DIR = './'
+    NGINX_CONFIG_PATH= '../nginx/release/nginx.conf'
+    MARKETPLACE_GIT_URL = credentials('MARKETPLACE_GIT_URL')
+    MARKET_GITHUB_MARKET_BRANCH = credentials('MARKET_GITHUB_MARKET_BRANCH')
+    GH_TOKEN = credentials('GH_TOKEN')
+    MARKET_JWT_SECRET_KEY = credentials('MARKET_JWT_SECRET_KEY')
+    MARKET_CORS_ALLOWED_ORIGIN = credentials('MARKET_CORS_ALLOWED_ORIGIN')
+    MARKET_CLICK_LIMIT = credentials('MARKET_CLICK_LIMIT')
+    MARKET_LIMITED_REQUEST_PATHS = credentials('MARKET_LIMITED_REQUEST_PATHS')
+    POSTGRES_HOST_URL = credentials('POSTGRES_HOST_URL')
+    POSTGRES_USERNAME = credentials('POSTGRES_USERNAME')
+    POSTGRES_PASSWORD = credentials('POSTGRES_PASSWORD')
+    OAUTH_APP_CLIENT_ID = credentials('OAUTH_APP_CLIENT_ID')
+    OAUTH_APP_CLIENT_SECRET = credentials('OAUTH_APP_CLIENT_SECRET')
   }
+
   parameters {
-    string(name: 'release_version', defaultValue: 'latest', description: 'Release version')
+    string(name: 'release_version', defaultValue: '0.0.9-m123', description: 'Release version')
   }
+
   stages {
     stage('Checkout Source') {
       steps {
         script {
           def gitBranch = params.BRANCH.replaceFirst(/^origin\//, '')
           git branch: gitBranch, url: env.MARKETPLACE_GIT_URL
-          sh """
-            ENV_FILE='${BASE_WORKING_DIR}/marketplace-build/.env'
-            sed -i "s|^MARKET_GITHUB_MARKET_BRANCH=.*\$|MARKET_GITHUB_MARKET_BRANCH=${env.MARKET_GITHUB_MARKET_BRANCH}|" \$ENV_FILE
-            sed -i "s|^MARKET_GITHUB_TOKEN=.*\$|MARKET_GITHUB_TOKEN=${env.GH_TOKEN}|" \$ENV_FILE
-            sed -i "s|^MARKET_GITHUB_OAUTH_APP_CLIENT_ID=.*\$|MARKET_GITHUB_OAUTH_APP_CLIENT_ID=${env.OAUTH_APP_CLIENT_ID}|" \$ENV_FILE
-            sed -i "s|^MARKET_GITHUB_OAUTH_APP_CLIENT_SECRET=.*\$|MARKET_GITHUB_OAUTH_APP_CLIENT_SECRET=${env.OAUTH_APP_CLIENT_SECRET}|" \$ENV_FILE
-            sed -i "s|^MARKET_JWT_SECRET_KEY=.*\$|MARKET_JWT_SECRET_KEY=${env.MARKET_JWT_SECRET_KEY}|" \$ENV_FILE
-            sed -i "s|^MARKET_CORS_ALLOWED_ORIGIN=.*\$|MARKET_CORS_ALLOWED_ORIGIN=${env.MARKET_CORS_ALLOWED_ORIGIN}|" \$ENV_FILE
-            sed -i "s|^MARKET_CLICK_LIMIT=.*\$|MARKET_CLICK_LIMIT=${env.MARKET_CLICK_LIMIT}|" \$ENV_FILE
-            sed -i "s|^MARKET_LIMITED_REQUEST_PATHS=.*\$|MARKET_LIMITED_REQUEST_PATHS=\\"${env.MARKET_LIMITED_REQUEST_PATHS}\\"|" \$ENV_FILE
-            sed -i "s|^POSTGRES_HOST_URL=.*\$|POSTGRES_HOST_URL=${env.POSTGRES_HOST_URL}|" \$ENV_FILE
-            sed -i "s|^POSTGRES_USERNAME=.*\$|POSTGRES_USERNAME=${env.POSTGRES_USERNAME}|" \$ENV_FILE
-            sed -i "s|^POSTGRES_PASSWORD=.*\$|POSTGRES_PASSWORD=${env.POSTGRES_PASSWORD}|" \$ENV_FILE
-          """
         }
       }
     }
@@ -54,8 +56,11 @@ pipeline {
         ]) {
           script {
             sh '''
-              xml ed -L -u "//_:project/_:version" -v "$release_version" $POM_FILE
+              mvn versions:set -DnewVersion=$release_version -f  $POM_FILE
               sed -i 's/"version": \"[^\"]*\"/"version": \"$release_version\"/' $PACKAGE_FILE
+              git config --global user.email "octopus-axonivy@gmail.com"
+              git config --global user.name "Octopus Team"
+              git remote set-url origin https://Octopus-AxonIvy:$GH_TOKEN@github.com/axonivy-market/marketplace.git
               git push --delete origin $release_version || true
               git tag -d $release_version || true
               git commit -a -m "Update version to $release_version"
@@ -67,12 +72,31 @@ pipeline {
       }
     }
 
+    stage('Build env file') {
+      steps {
+        sh """
+          ENV_FILE='${BASE_WORKING_DIR}/marketplace-build/.env'
+          sed -i "s|^MARKET_GITHUB_MARKET_BRANCH=.*\$|MARKET_GITHUB_MARKET_BRANCH=${env.MARKET_GITHUB_MARKET_BRANCH}|" \$ENV_FILE
+          sed -i "s|^MARKET_GITHUB_TOKEN=.*\$|MARKET_GITHUB_TOKEN=${env.GH_TOKEN}|" \$ENV_FILE
+          sed -i "s|^MARKET_GITHUB_OAUTH_APP_CLIENT_ID=.*\$|MARKET_GITHUB_OAUTH_APP_CLIENT_ID=${env.OAUTH_APP_CLIENT_ID}|" \$ENV_FILE
+          sed -i "s|^MARKET_GITHUB_OAUTH_APP_CLIENT_SECRET=.*\$|MARKET_GITHUB_OAUTH_APP_CLIENT_SECRET=${env.OAUTH_APP_CLIENT_SECRET}|" \$ENV_FILE
+          sed -i "s|^MARKET_JWT_SECRET_KEY=.*\$|MARKET_JWT_SECRET_KEY=${env.MARKET_JWT_SECRET_KEY}|" \$ENV_FILE
+          sed -i "s|^MARKET_CORS_ALLOWED_ORIGIN=.*\$|MARKET_CORS_ALLOWED_ORIGIN=${env.MARKET_CORS_ALLOWED_ORIGIN}|" \$ENV_FILE
+          sed -i "s|^MARKET_CLICK_LIMIT=.*\$|MARKET_CLICK_LIMIT=${env.MARKET_CLICK_LIMIT}|" \$ENV_FILE
+          sed -i "s|^MARKET_LIMITED_REQUEST_PATHS=.*\$|MARKET_LIMITED_REQUEST_PATHS=\\"${env.MARKET_LIMITED_REQUEST_PATHS}\\"|" \$ENV_FILE
+          sed -i "s|^POSTGRES_HOST_URL=.*\$|POSTGRES_HOST_URL=${env.POSTGRES_HOST_URL}|" \$ENV_FILE
+          sed -i "s|^POSTGRES_USERNAME=.*\$|POSTGRES_USERNAME=${env.POSTGRES_USERNAME}|" \$ENV_FILE
+          sed -i "s|^POSTGRES_PASSWORD=.*\$|POSTGRES_PASSWORD=${env.POSTGRES_PASSWORD}|" \$ENV_FILE
+        """
+      }
+    }
+
     stage('Build Docker Images') {
       steps {
         script {
           dir("${env.BASE_WORKING_DIR}/marketplace-build") {
             sh """
-              docker compose build --build-arg BUILD_ENV=production
+              docker compose build --build-arg BUILD_ENV=production --build-arg BUILD_VERSION=$release_version --build-arg NGINX_CONFIG_PATH=$NGINX_CONFIG_PATH
               docker compose up --force-recreate -d
             """
           }
@@ -103,17 +127,9 @@ pipeline {
 
     stage('Log in to GitHub Container Registry') {
       steps {
-        withCredentials([string(credentialsId: 'GITHUB_TOKEN', variable: 'GITHUB_TOKEN')]) {
-          sh 'echo "$GITHUB_TOKEN" | docker login ghcr.io -u $GITHUB_ACTOR --password-stdin'
-        }
-      }
-    }
-
-    stage('Refine Release Version') {
-      steps {
-        script {
-          env.VERSION = params.release_version == 'main' ? 'latest' : params.release_version
-        }
+        
+          sh 'docker login ghcr.io -u $GITHUB_ACTOR --password-stdin'
+        
       }
     }
 
@@ -121,20 +137,20 @@ pipeline {
       steps {
         sh '''
           UI_IMAGE_ID=ghcr.io/$GITHUB_REPOSITORY_OWNER/$UI_IMAGE_NAME
-          docker tag $UI_IMAGE_NAME $UI_IMAGE_ID:$VERSION
-          docker push $UI_IMAGE_ID:$VERSION
+          docker tag $UI_IMAGE_NAME $UI_IMAGE_ID:$release_version
+          docker push $UI_IMAGE_ID:$release_version
         '''
       }
     }
 
-    stage('Release Marketplace Service Image') {
-      steps {
-        sh '''
-          SERVICE_IMAGE_ID=ghcr.io/$GITHUB_REPOSITORY_OWNER/$SERVICE_IMAGE_NAME
-          docker tag $SERVICE_IMAGE_NAME $SERVICE_IMAGE_ID:$VERSION
-          docker push $SERVICE_IMAGE_ID:$VERSION
-        '''
-      }
-    }
+    // stage('Release Marketplace Service Image') {
+    //   steps {
+    //     sh '''
+    //       SERVICE_IMAGE_ID=ghcr.io/$GITHUB_REPOSITORY_OWNER/$SERVICE_IMAGE_NAME
+    //       docker tag $SERVICE_IMAGE_NAME $SERVICE_IMAGE_ID:$VERSION
+    //       docker push $SERVICE_IMAGE_ID:$VERSION
+    //     '''
+    //   }
+    // }
   }
 }
