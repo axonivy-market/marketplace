@@ -180,5 +180,4 @@ class ProductMarketplaceDataServiceImplTest extends BaseSetup {
     assertNull(result);
     verify(fileDownloadService).safeDownload(MOCK_DOWNLOAD_URL);
   }
-
 }
