@@ -176,7 +176,6 @@ class ProductMarketplaceDataServiceImplTest extends BaseSetup {
   @Test
   void testSafeDownload_FileNotFound() {
     when(fileDownloadService.safeDownload(MOCK_DOWNLOAD_URL)).thenReturn(null);
-
     VersionDownload result = productMarketplaceDataService.downloadArtifact(MOCK_DOWNLOAD_URL, MOCK_PRODUCT_ID);
     assertNull(result);
     verify(fileDownloadService).safeDownload(MOCK_DOWNLOAD_URL);

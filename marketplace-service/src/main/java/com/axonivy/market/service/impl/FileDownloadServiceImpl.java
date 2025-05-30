@@ -59,7 +59,7 @@ public class FileDownloadServiceImpl implements FileDownloadService {
     } catch (HttpClientErrorException e) {
       log.warn("Fail to download at URL: {}", url);
     }
-    return null;
+    return EMPTY.getBytes();
   }
 
   @Override
