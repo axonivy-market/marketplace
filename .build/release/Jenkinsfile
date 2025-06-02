@@ -58,7 +58,7 @@ pipeline {
             def user = jenkins.model.Jenkins.instance.getUser(userId)
             fullName = user?.getDisplayName() ?: userId
           }
-          currentBuild.displayName = "Build #${env.BUILD_NUMBER} on branch ${BRANCH} - trigger by ${fullName}"
+          currentBuild.displayName = "Build #${env.BUILD_NUMBER} on branch ${BRANCH} with release version of ${RELEASE_VERSION} - trigger by ${fullName}"
         }
       }
     }
