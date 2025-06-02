@@ -13,15 +13,20 @@ properties([
     ]
   ])
 ])
+
 pipeline {
+
   agent any
+  options {
+    ansiColor('xterm')
+  }
+
   environment {
-    GITHUB_ACTOR = 'Octopus-AxonIvy'
+    NGINX_CONFIG_PATH = '../config/nginx/nginx.conf'
+    GITHUB_ACTOR = credentials('MARKETPLACE_GITHUB_OWNER')
     GITHUB_REPOSITORY_OWNER = 'axonivy-market'
-    NGINX_CONFIG_PATH = './config/nginx/release/nginx.conf'
     UI_IMAGE_NAME = 'marketplace-ui'
     SERVICE_IMAGE_NAME = 'marketplace-service'
-    BASE_WORKING_DIR = './'
     MARKETPLACE_GIT_URL = credentials('MARKETPLACE_GIT_URL')
     MARKET_GITHUB_MARKET_BRANCH = credentials('MARKET_GITHUB_MARKET_BRANCH')
     GH_TOKEN = credentials('GH_TOKEN')
@@ -34,22 +39,22 @@ pipeline {
     POSTGRES_PASSWORD = credentials('POSTGRES_PASSWORD')
     OAUTH_APP_CLIENT_ID = credentials('OAUTH_APP_CLIENT_ID')
     OAUTH_APP_CLIENT_SECRET = credentials('OAUTH_APP_CLIENT_SECRET')
+    OCTOPUS_MAIL = credentials('OCTOPUS_MAIL')
+    OCTOPUS_ACCOUNT_NAME = credentials('OCTOPUS_ACCOUNT_NAME')
   }
 
   parameters {
-    string(name: 'release_version', defaultValue: '0.0.9-m123', description: 'Release version')
+    string(name: 'RELEASE_VERSION', defaultValue: 'latest', description: 'Release version')
   }
 
   stages {
     stage('Stop running docker container for compose file') {
       steps {
-        dir("${env.BASE_WORKING_DIR}") {
-          script {
-            try {
-              sh 'docker compose -f marketplace-build/docker-compose.yml down --rmi all'
-            } catch (Exception e) {
-              echo "Error during docker compose down, continuing: ${e}"
-            }
+        script {
+          try {
+            sh 'docker compose -f ./marketplace-build/docker-compose.yml down --rmi all'
+          } catch (Exception e) {
+            echo "Error during docker compose down, continuing: ${e}"
           }
         }
         cleanWs()
@@ -73,16 +78,16 @@ pipeline {
         ]) {
           script {
             sh '''
-              mvn versions:set -DnewVersion=$release_version -f  $POM_FILE
-              sed -i 's/"version": \"[^\"]*\"/"version": \"$release_version\"/' $PACKAGE_FILE
-              git config --global user.email "octopus-axonivy@gmail.com"
-              git config --global user.name "Octopus Team"
+              mvn versions:set -DnewVersion=$RELEASE_VERSION -f  $POM_FILE
+              sed -i 's/"version": \"[^\"]*\"/"version": \"$RELEASE_VERSION\"/' $PACKAGE_FILE
+              git config --global user.email $OCTOPUS_MAIL
+              git config --global user.name $OCTOPUS_ACCOUNT_NAME
               git remote set-url origin https://$GITHUB_ACTOR:$GH_TOKEN@github.com/axonivy-market/marketplace.git
-              git push --delete origin $release_version || true
-              git tag -d $release_version || true
-              git commit -a -m "Update version to $release_version"
-              git tag $release_version
-              git push origin $release_version
+              git push --delete origin $RELEASE_VERSION || true
+              git tag -d $RELEASE_VERSION || true
+              git commit -a -m "Update version to $RELEASE_VERSION"
+              git tag $RELEASE_VERSION
+              git push origin $RELEASE_VERSION
             '''
           }
         }
@@ -92,7 +97,7 @@ pipeline {
     stage('Build env file') {
       steps {
         sh """
-          ENV_FILE='${BASE_WORKING_DIR}/marketplace-build/.env'
+          ENV_FILE='./marketplace-build/.env'
           sed -i "s|^MARKET_GITHUB_MARKET_BRANCH=.*\$|MARKET_GITHUB_MARKET_BRANCH=${env.MARKET_GITHUB_MARKET_BRANCH}|" \$ENV_FILE
           sed -i "s|^MARKET_GITHUB_TOKEN=.*\$|MARKET_GITHUB_TOKEN=${env.GH_TOKEN}|" \$ENV_FILE
           sed -i "s|^MARKET_GITHUB_OAUTH_APP_CLIENT_ID=.*\$|MARKET_GITHUB_OAUTH_APP_CLIENT_ID=${env.OAUTH_APP_CLIENT_ID}|" \$ENV_FILE
@@ -111,9 +116,10 @@ pipeline {
     stage('Build Docker Images') {
       steps {
         script {
-          dir("${env.BASE_WORKING_DIR}/marketplace-build") {
+          dir("./marketplace-build") {
             sh """
-              docker compose build --build-arg BUILD_ENV=production --build-arg BUILD_VERSION=$release_version --build-arg NGINX_CONFIG_PATH=$NGINX_CONFIG_PATH
+              mkdir -p ../config/nginx && cp ./config/nginx/release/nginx.conf $NGINX_CONFIG_PATH
+              docker compose build --build-arg BUILD_ENV=production --build-arg BUILD_VERSION=$RELEASE_VERSION --build-arg NGINX_CONFIG_PATH=$NGINX_CONFIG_PATH
               docker compose up --force-recreate -d
             """
           }
@@ -123,7 +129,7 @@ pipeline {
 
     stage('Wait for Containers') {
       steps {
-        dir('marketplace-build') {
+        dir('./marketplace-build') {
           sh '''
             timeout=300
             start_time=$(date +%s)
@@ -154,8 +160,8 @@ pipeline {
       steps {
         sh '''
           UI_IMAGE_ID=ghcr.io/$GITHUB_REPOSITORY_OWNER/$UI_IMAGE_NAME
-          docker tag $UI_IMAGE_NAME $UI_IMAGE_ID:$release_version
-          docker push $UI_IMAGE_ID:$release_version
+          docker tag $UI_IMAGE_NAME $UI_IMAGE_ID:$RELEASE_VERSION
+          docker push $UI_IMAGE_ID:$RELEASE_VERSION
         '''
       }
     }
@@ -164,8 +170,8 @@ pipeline {
       steps {
         sh '''
           SERVICE_IMAGE_ID=ghcr.io/$GITHUB_REPOSITORY_OWNER/$SERVICE_IMAGE_NAME
-          docker tag $SERVICE_IMAGE_NAME $SERVICE_IMAGE_ID:$release_version
-          docker push $SERVICE_IMAGE_ID:$release_version
+          docker tag $SERVICE_IMAGE_NAME $SERVICE_IMAGE_ID:$RELEASE_VERSION
+          docker push $SERVICE_IMAGE_ID:$RELEASE_VERSION
         '''
       }
     }

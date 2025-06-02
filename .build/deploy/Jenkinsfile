@@ -3,7 +3,7 @@ properties([
     [$class: 'GitParameterDefinition',
       name: 'BRANCH',
       type: 'PT_BRANCH',
-      defaultValue: 'develop',
+      defaultValue: 'origin/develop',
       description: 'Choose your GitHub branch',
       branchFilter: '.*',
       tagFilter: '*',
@@ -15,6 +15,9 @@ properties([
 ])
 pipeline {
     agent any
+    options {
+        ansiColor('xterm')
+    }
 
     environment {
         BASE_WORKING_DIR = './'
