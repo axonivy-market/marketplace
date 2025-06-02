@@ -10,6 +10,21 @@ pipeline {
   }
 
   stages {
+
+    stage('Set Display Name') {
+      steps {
+        script {
+          def userId = currentBuild.getBuildCauses('hudson.model.Cause$UserIdCause')[0]?.userId
+          def fullName = "system"
+          if (userId) {
+            def user = jenkins.model.Jenkins.instance.getUser(userId)
+            fullName = user?.getDisplayName() ?: userId
+          }
+          currentBuild.displayName = "Build #${env.BUILD_NUMBER} - trigger by ${fullName}"
+        }
+      }
+    }
+
     stage('Build and Test with Maven') {
       steps {
         script {
