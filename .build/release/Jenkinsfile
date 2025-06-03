@@ -1,0 +1,194 @@
+properties([
+  parameters([
+    [$class: 'GitParameterDefinition',
+      name: 'BRANCH',
+      type: 'PT_BRANCH',
+      defaultValue: 'origin/master',
+      description: 'Choose your GitHub branch',
+      branchFilter: '.*',
+      tagFilter: '*',
+      sortMode: 'NONE',
+      selectedValue: 'DEFAULT',
+      quickFilterEnabled: true
+    ]
+  ])
+])
+
+pipeline {
+
+  agent any
+  options {
+    ansiColor('xterm')
+  }
+
+  environment {
+    NGINX_CONFIG_PATH = '../config/nginx/nginx.conf'
+    GITHUB_ACTOR = credentials('MARKETPLACE_GITHUB_OWNER')
+    GITHUB_REPOSITORY_OWNER = 'axonivy-market'
+    UI_IMAGE_NAME = 'marketplace-ui'
+    SERVICE_IMAGE_NAME = 'marketplace-service'
+    MARKETPLACE_GIT_URL = credentials('MARKETPLACE_GIT_URL')
+    MARKET_GITHUB_MARKET_BRANCH = credentials('MARKET_GITHUB_MARKET_BRANCH')
+    GH_TOKEN = credentials('GH_TOKEN')
+    MARKET_JWT_SECRET_KEY = credentials('MARKET_JWT_SECRET_KEY')
+    MARKET_CORS_ALLOWED_ORIGIN = credentials('MARKET_CORS_ALLOWED_ORIGIN')
+    MARKET_CLICK_LIMIT = credentials('MARKET_CLICK_LIMIT')
+    MARKET_LIMITED_REQUEST_PATHS = credentials('MARKET_LIMITED_REQUEST_PATHS')
+    POSTGRES_HOST_URL = credentials('POSTGRES_HOST_URL')
+    POSTGRES_USERNAME = credentials('POSTGRES_USERNAME')
+    POSTGRES_PASSWORD = credentials('POSTGRES_PASSWORD')
+    OAUTH_APP_CLIENT_ID = credentials('OAUTH_APP_CLIENT_ID')
+    OAUTH_APP_CLIENT_SECRET = credentials('OAUTH_APP_CLIENT_SECRET')
+    OCTOPUS_MAIL = credentials('OCTOPUS_MAIL')
+    OCTOPUS_ACCOUNT_NAME = credentials('OCTOPUS_ACCOUNT_NAME')
+  }
+
+  parameters {
+    string(name: 'RELEASE_VERSION', defaultValue: 'latest', description: 'Release version')
+  }
+
+  stages {
+
+    stage('Set Display Name') {
+      steps {
+        script {
+          def userId = currentBuild.getBuildCauses('hudson.model.Cause$UserIdCause')[0]?.userId
+          def fullName = "system"
+          if (userId) {
+            def user = jenkins.model.Jenkins.instance.getUser(userId)
+            fullName = user?.getDisplayName() ?: userId
+          }
+          currentBuild.displayName = "Build #${env.BUILD_NUMBER} on branch ${BRANCH} with release version of ${RELEASE_VERSION} - trigger by ${fullName}"
+        }
+      }
+    }
+
+    stage('Stop running docker container for compose file') {
+      steps {
+        script {
+          try {
+            sh 'docker compose -f ./marketplace-build/docker-compose.yml down --rmi all'
+          } catch (Exception e) {
+            echo "Error during docker compose down, continuing: ${e}"
+          }
+        }
+        cleanWs()
+      }
+    }
+
+    stage('Checkout Source') {
+      steps {
+        script {
+          def gitBranch = params.BRANCH.replaceFirst(/^origin\//, '')
+          git branch: gitBranch, url: env.MARKETPLACE_GIT_URL
+        }
+      }
+    }
+
+    stage('Update Version and Tag Source') {
+      steps {
+        withEnv([
+          "POM_FILE=./marketplace-service/pom.xml",
+          "PACKAGE_FILE=./marketplace-ui/package.json"
+        ]) {
+          script {
+            sh '''
+              mvn versions:set -DnewVersion=$RELEASE_VERSION -f  $POM_FILE
+              sed -i 's/"version": \"[^\"]*\"/"version": \"$RELEASE_VERSION\"/' $PACKAGE_FILE
+              git config --global user.email $OCTOPUS_MAIL
+              git config --global user.name $OCTOPUS_ACCOUNT_NAME
+              git remote set-url origin https://$GITHUB_ACTOR:$GH_TOKEN@github.com/axonivy-market/marketplace.git
+              git push --delete origin $RELEASE_VERSION || true
+              git tag -d $RELEASE_VERSION || true
+              git commit -a -m "Update version to $RELEASE_VERSION"
+              git tag $RELEASE_VERSION
+              git push origin $RELEASE_VERSION
+            '''
+          }
+        }
+      }
+    }
+
+    stage('Build env file') {
+      steps {
+        sh """
+          ENV_FILE='./marketplace-build/.env'
+          sed -i "s|^MARKET_GITHUB_MARKET_BRANCH=.*\$|MARKET_GITHUB_MARKET_BRANCH=${env.MARKET_GITHUB_MARKET_BRANCH}|" \$ENV_FILE
+          sed -i "s|^MARKET_GITHUB_TOKEN=.*\$|MARKET_GITHUB_TOKEN=${env.GH_TOKEN}|" \$ENV_FILE
+          sed -i "s|^MARKET_GITHUB_OAUTH_APP_CLIENT_ID=.*\$|MARKET_GITHUB_OAUTH_APP_CLIENT_ID=${env.OAUTH_APP_CLIENT_ID}|" \$ENV_FILE
+          sed -i "s|^MARKET_GITHUB_OAUTH_APP_CLIENT_SECRET=.*\$|MARKET_GITHUB_OAUTH_APP_CLIENT_SECRET=${env.OAUTH_APP_CLIENT_SECRET}|" \$ENV_FILE
+          sed -i "s|^MARKET_JWT_SECRET_KEY=.*\$|MARKET_JWT_SECRET_KEY=${env.MARKET_JWT_SECRET_KEY}|" \$ENV_FILE
+          sed -i "s|^MARKET_CORS_ALLOWED_ORIGIN=.*\$|MARKET_CORS_ALLOWED_ORIGIN=${env.MARKET_CORS_ALLOWED_ORIGIN}|" \$ENV_FILE
+          sed -i "s|^MARKET_CLICK_LIMIT=.*\$|MARKET_CLICK_LIMIT=${env.MARKET_CLICK_LIMIT}|" \$ENV_FILE
+          sed -i "s|^MARKET_LIMITED_REQUEST_PATHS=.*\$|MARKET_LIMITED_REQUEST_PATHS=\\"${env.MARKET_LIMITED_REQUEST_PATHS}\\"|" \$ENV_FILE
+          sed -i "s|^POSTGRES_HOST_URL=.*\$|POSTGRES_HOST_URL=${env.POSTGRES_HOST_URL}|" \$ENV_FILE
+          sed -i "s|^POSTGRES_USERNAME=.*\$|POSTGRES_USERNAME=${env.POSTGRES_USERNAME}|" \$ENV_FILE
+          sed -i "s|^POSTGRES_PASSWORD=.*\$|POSTGRES_PASSWORD=${env.POSTGRES_PASSWORD}|" \$ENV_FILE
+        """
+      }
+    }
+
+    stage('Build Docker Images') {
+      steps {
+        script {
+          dir("./marketplace-build") {
+            sh """
+              mkdir -p ../config/nginx && cp ./config/nginx/release/nginx.conf $NGINX_CONFIG_PATH
+              docker compose build --build-arg BUILD_ENV=production --build-arg BUILD_VERSION=$RELEASE_VERSION --build-arg NGINX_CONFIG_PATH=$NGINX_CONFIG_PATH
+              docker compose up --force-recreate -d
+            """
+          }
+        }
+      }
+    }
+
+    stage('Wait for Containers') {
+      steps {
+        dir('./marketplace-build') {
+          sh '''
+            timeout=300
+            start_time=$(date +%s)
+            while [ $(($(date +%s) - start_time)) -lt $timeout ]; do
+              if docker compose ps | grep -q "Up"; then
+                echo "Containers are up and running."
+                exit 0
+              fi
+              echo "Waiting for containers to start..."
+              sleep 5
+            done
+            echo "Containers did not start within the timeout period."
+            exit 1
+          '''
+        }
+      }
+    }
+
+    stage('Log in to GitHub Container Registry') {
+      steps {
+        sh """
+          echo $GH_TOKEN | docker login ghcr.io -u $GITHUB_ACTOR --password-stdin
+        """
+      }
+    }
+
+    stage('Release Marketplace UI Image') {
+      steps {
+        sh '''
+          UI_IMAGE_ID=ghcr.io/$GITHUB_REPOSITORY_OWNER/$UI_IMAGE_NAME
+          docker tag $UI_IMAGE_NAME $UI_IMAGE_ID:$RELEASE_VERSION
+          docker push $UI_IMAGE_ID:$RELEASE_VERSION
+        '''
+      }
+    }
+
+    stage('Release Marketplace Service Image') {
+      steps {
+        sh '''
+          SERVICE_IMAGE_ID=ghcr.io/$GITHUB_REPOSITORY_OWNER/$SERVICE_IMAGE_NAME
+          docker tag $SERVICE_IMAGE_NAME $SERVICE_IMAGE_ID:$RELEASE_VERSION
+          docker push $SERVICE_IMAGE_ID:$RELEASE_VERSION
+        '''
+      }
+    }
+  }
+}

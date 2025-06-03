@@ -1,0 +1,69 @@
+pipeline {
+  agent any
+  options {
+    ansiColor('xterm')
+  }
+
+  environment {
+    SONAR_PROJECT_KEY = credentials('SONAR_MARKETPLACE_SERVICE_PROJECT_KEY')
+    SONAR_PROJECT_NAME = credentials('SONAR_MARKETPLACE_SERVICE_PROJECT_NAME')
+  }
+
+  stages {
+
+    stage('Set Display Name') {
+      steps {
+        script {
+          def userId = currentBuild.getBuildCauses('hudson.model.Cause$UserIdCause')[0]?.userId
+          def fullName = "system"
+          if (userId) {
+            def user = jenkins.model.Jenkins.instance.getUser(userId)
+            fullName = user?.getDisplayName() ?: userId
+          }
+          currentBuild.displayName = "Build #${env.BUILD_NUMBER} - trigger by ${fullName}"
+        }
+      }
+    }
+
+    stage('Build and Test with Maven') {
+      steps {
+        script {
+          sh '''
+            mvn clean install --file ./marketplace-service/pom.xml -Dskiptest=true
+          '''
+        }
+      }
+    }
+
+    stage('Remove unused Docker images') {
+      steps {
+        sh 'docker image prune -af'
+      }
+    }
+
+    stage('SonarQube Analysis') {
+      steps {
+        withSonarQubeEnv('Sonar') {
+          sh '''
+            mvn -B verify sonar:sonar \
+              --file ./marketplace-service/pom.xml \
+              -Dsonar.projectKey=$SONAR_PROJECT_KEY \
+              -Dsonar.projectName="${SONAR_PROJECT_NAME}"
+          '''
+        }
+      }
+    }
+    stage('Wait for Quality Gate') {
+      steps {
+        timeout(time: 2, unit: 'MINUTES') {
+          waitForQualityGate abortPipeline: true
+        }
+      }
+    }
+  }
+  post {
+    always {
+      cleanWs(deleteDirs: true)
+    }
+  }
+}
