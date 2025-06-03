@@ -133,8 +133,9 @@ public class ProductDetailsController {
   @Operation(summary = "Get the list of released version in product",
       description = "Collect the released versions in product for ivy designer")
   public ResponseEntity<List<VersionAndUrlModel>> findVersionsForDesigner(@PathVariable(ID) String id,
-      @RequestParam(name = DESIGNER_VERSION, required = false) String designerVersion) {
-    List<VersionAndUrlModel> versionList = versionService.getVersionsForDesigner(id, designerVersion);
+      @RequestParam(name = DESIGNER_VERSION, required = false) String designerVersion, @RequestParam(SHOW_DEV_VERSION) @Parameter(description = "Option to get Dev Version (Snapshot/ sprint release)",
+          in = ParameterIn.QUERY) boolean isShowDevVersion) {
+    List<VersionAndUrlModel> versionList = versionService.getVersionsForDesigner(id, isShowDevVersion, designerVersion);
     return new ResponseEntity<>(versionList, HttpStatus.OK);
   }
 

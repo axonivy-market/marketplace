@@ -13,7 +13,7 @@ public interface VersionService {
 
   Map<String, Object> getProductJsonContentByIdAndVersion(String name, String version, String designerVersion);
 
-  List<VersionAndUrlModel> getVersionsForDesigner(String productId, String designerVersion);
+  List<VersionAndUrlModel> getVersionsForDesigner(String productId, Boolean isShowDevVersion, String designerVersion);
 
   String getLatestVersionArtifactDownloadUrl(String productId, String version, String artifact);
 }

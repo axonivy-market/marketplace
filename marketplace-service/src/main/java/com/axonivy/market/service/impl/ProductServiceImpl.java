@@ -626,8 +626,7 @@ public class ProductServiceImpl implements ProductService {
 
     // Cover exception case of employee onboarding without any product.json file
     if (StringUtils.isBlank(version)) {
-      versions = VersionUtils.getVersionsToDisplay(productRepo.getReleasedVersionsById(id), isShowDevVersion,
-          StringUtils.EMPTY);
+      versions = VersionUtils.getVersionsToDisplay(productRepo.getReleasedVersionsById(id), isShowDevVersion);
       version = CollectionUtils.firstElement(versions);
     }
 
@@ -751,7 +750,7 @@ public class ProductServiceImpl implements ProductService {
    * ex: 11.0+ , 10.0 - 12.0+ , ...
    */
   private String getCompatibilityRange(String productId, Boolean isDeprecatedProduct) {
-    return Optional.of(versionService.getVersionsForDesigner(productId, null))
+    return Optional.of(versionService.getVersionsForDesigner(productId, true, null))
         .filter(ObjectUtils::isNotEmpty)
         .map(versions -> versions.stream().map(VersionAndUrlModel::getVersion).toList())
         .map(versions -> VersionUtils.getCompatibilityRangeFromVersions(versions, isDeprecatedProduct)).orElse(null);
