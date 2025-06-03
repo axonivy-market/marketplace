@@ -167,10 +167,10 @@ class ProductDetailsControllerTest extends BaseSetup {
 
   @Test
   void findProductVersionsById() {
-    when(versionService.getVersionsForDesigner("google-maps-connector", null))
+    when(versionService.getVersionsForDesigner("google-maps-connector", true, StringUtils.EMPTY))
         .thenReturn(mockVersionAndUrlModels());
 
-    var result = productDetailsController.findVersionsForDesigner("google-maps-connector", null);
+    var result = productDetailsController.findVersionsForDesigner("google-maps-connector", StringUtils.EMPTY, true);
 
     assertEquals(2, Objects.requireNonNull(result.getBody()).size());
     assertEquals("10.0.21", Objects.requireNonNull(result.getBody()).get(0).getVersion());

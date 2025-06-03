@@ -131,13 +131,23 @@
   }
   @case (ProductDetailActionType.DESIGNER_ENV) {
     <div class="designer-section d-flex justify-content-sm-between w-100 row m-sm-0">
-      <app-common-dropdown (click)="getVersionInDesigner()" [items]="versionDropdownInDesigner"
-                           [selectedItem]="selectedVersion()"
-                           buttonClass="form-select form-select-sm versions-selector__dropdown border__dropdown h-100 text-primary install-designer-dropdown fs-md"
-                           ariaLabel=".form-select-sm example" class="flex-grow-1 col-8"
-                           [metaDataJsonUrl]="metaDataJsonUrl()"
-                           (itemSelected)="onSelectVersionInDesigner($event.value)">
-      </app-common-dropdown>
+      <div class="flex-grow-1 col-8">
+        <app-common-dropdown (click)="getVersionInDesigner()" [items]="versionDropdownInDesigner"
+                [selectedItem]="selectedVersion()"
+                buttonClass="form-select form-select-sm versions-selector__dropdown border__dropdown h-100 text-primary install-designer-dropdown fs-md"
+                ariaLabel=".form-select-sm example"
+                [metaDataJsonUrl]="metaDataJsonUrl()"
+                (itemSelected)="onSelectVersionInDesigner($event.value)">
+        </app-common-dropdown>
+        <a href="#" [lang]="languageService.selectedLanguage()"
+                class="dev-versions__toggle primary-color text-decoration-none" (click)="onShowDevVersion($event)">
+                @if (isDevVersionsDisplayed()) {
+                  {{ 'common.product.detail.download.hideDevVersions' | translate }}
+                } @else {
+                  {{ 'common.product.detail.download.showDevVersions' | translate }}
+                }
+        </a>
+      </div>
       <button id="install-button"
               name="Install button"
               #installButton
