@@ -224,8 +224,9 @@ describe('ProductService', () => {
   it('sendRequestToGetProductVersionForDesigner', () => {
     const productId = 'google-maps-connector';
     const designerVersion = '12.0.3';
+    const showDevVersion = false;
 
-    service.sendRequestToGetProductVersionsForDesigner(productId, designerVersion).subscribe(response => {
+    service.sendRequestToGetProductVersionsForDesigner(productId, showDevVersion, designerVersion).subscribe(response => {
       expect(response.length).toBe(3);
       expect(response[0].version).toBe('10.0.2');
       expect(response[1].version).toBe('10.0.1');
