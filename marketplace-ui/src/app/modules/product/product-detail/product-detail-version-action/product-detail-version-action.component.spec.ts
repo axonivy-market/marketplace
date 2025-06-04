@@ -276,6 +276,7 @@ describe('ProductDetailVersionActionComponent', () => {
     productServiceMock.sendRequestToGetProductVersionsForDesigner.and.returnValue(of(mockVersions));
 
     // Act
+    component.isDevVersionsDisplayed.set(false);
     component.getVersionInDesigner();
 
     // Assert
@@ -294,7 +295,7 @@ describe('ProductDetailVersionActionComponent', () => {
     component.getVersionInDesigner();
 
     // Assert
-    expect(productServiceMock.sendRequestToGetProductVersionsForDesigner).toHaveBeenCalledWith(productId, '');
+    expect(productServiceMock.sendRequestToGetProductVersionsForDesigner).toHaveBeenCalledWith(productId, true, '');
     expect(component.versions()).toEqual([]);
   });
 
