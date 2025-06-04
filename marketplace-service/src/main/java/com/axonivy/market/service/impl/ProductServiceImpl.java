@@ -619,8 +619,7 @@ public class ProductServiceImpl implements ProductService {
     List<MavenArtifactVersion> mavenArtifactVersions = mavenArtifactVersionRepository.findByProductId(id);
 
     if (ObjectUtils.isNotEmpty(mavenArtifactVersions)) {
-      versions = VersionUtils.extractAllVersions(mavenArtifactVersions, BooleanUtils.isTrue(isShowDevVersion),
-          StringUtils.EMPTY);
+      versions = VersionUtils.extractAllVersions(mavenArtifactVersions, BooleanUtils.isTrue(isShowDevVersion));
       version = CollectionUtils.firstElement(versions);
     }
 

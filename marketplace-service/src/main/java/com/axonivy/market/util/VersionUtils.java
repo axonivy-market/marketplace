@@ -153,7 +153,7 @@ public class VersionUtils {
   }
 
   public static List<String> extractAllVersions(List<MavenArtifactVersion> existingMavenArtifactVersion,
-      boolean isShowDevVersion, String designerVersion) {
+      boolean isShowDevVersion) {
     Set<String> versions = existingMavenArtifactVersion.stream()
         .map(MavenArtifactVersion::getId)
         .map(MavenArtifactKey::getProductVersion)
