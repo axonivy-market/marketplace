@@ -52,7 +52,7 @@ public class VersionServiceImpl implements VersionService {
       String designerVersion) {
     List<MavenArtifactVersion> mavenArtifactVersions = mavenArtifactVersionRepo.findByProductId(productId);
 
-    List<String> mavenVersions = VersionUtils.extractAllVersions(mavenArtifactVersions, isShowDevVersion, designerVersion);
+    List<String> mavenVersions = VersionUtils.extractAllVersions(mavenArtifactVersions, isShowDevVersion);
 
     List<MavenArtifactVersionModel> results = new ArrayList<>();
     for (String mavenVersion : mavenVersions) {
