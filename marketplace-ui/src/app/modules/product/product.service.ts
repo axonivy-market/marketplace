@@ -94,9 +94,9 @@ export class ProductService {
     return this.httpClient.get<number>(url);
   }
 
-  sendRequestToGetProductVersionsForDesigner(productId: string, designerVersion: string) {
+  sendRequestToGetProductVersionsForDesigner(productId: string, showDevVersion: boolean, designerVersion: string) {
     const url = `${API_URI.PRODUCT_DETAILS}/${productId}/designerversions`;
-    const params = new HttpParams().append('designerVersion', designerVersion);
+    const params = new HttpParams().append('designerVersion', designerVersion).append('isShowDevVersion', showDevVersion);
     return this.httpClient.get<VersionAndUrl[]>(url, { params });
   }
 
