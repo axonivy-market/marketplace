@@ -182,13 +182,15 @@ public class MavenUtils {
   }
 
   public static ArchivedArtifact findArchivedArtifactInfoBestMatchWithVersion(String version,
-      List<ArchivedArtifact> archivedArtifacts) {
+      Set<ArchivedArtifact> archivedArtifacts) {
     if (CollectionUtils.isEmpty(archivedArtifacts)) {
       return null;
     }
-    return archivedArtifacts.stream().filter(
-        archivedArtifact -> MavenVersionComparator.compare(archivedArtifact.getLastVersion(),
-            version) >= 0).findAny().orElse(null);
+    return archivedArtifacts.stream()
+        .filter(Objects::nonNull)
+        .sorted((artifact1, artifact2) -> StringUtils.compare(artifact1.getLastVersion(), artifact2.getLastVersion()))
+        .filter(archivedArtifact -> MavenVersionComparator.compare(archivedArtifact.getLastVersion(), version) >= 0)
+        .findAny().orElse(null);
   }
 
   public static String buildSnapshotMetadataUrlFromArtifactInfo(String repoUrl, String groupId, String artifactId,
@@ -262,6 +264,7 @@ public class MavenUtils {
         .name(metadata.getName())
         .downloadUrl(downloadUrl)
         .isInvalidArtifact(metadata.getArtifactId().contains(metadata.getGroupId()))
+        .groupId(metadata.getGroupId())
         .productId(metadata.getProductId())
         .build();
   }

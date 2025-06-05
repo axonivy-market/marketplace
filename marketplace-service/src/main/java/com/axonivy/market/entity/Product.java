@@ -59,6 +59,7 @@ public class Product extends AuditableEntity<String> {
 
   private String logoUrl;
   private Boolean listed;
+  private Boolean deprecated;
   private String type;
   private String vendor;
   private String vendorUrl;

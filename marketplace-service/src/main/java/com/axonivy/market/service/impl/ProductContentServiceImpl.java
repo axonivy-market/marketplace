@@ -36,6 +36,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Stream;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
@@ -159,7 +160,7 @@ public class ProductContentServiceImpl implements ProductContentService {
   private void zipDependencyArtifacts(String version, ProductDependency mavenArtifact, ZipOutputStream zipOut)
       throws IOException {
     for (var dependency : Optional.ofNullable(mavenArtifact)
-        .map(ProductDependency::getDependencies).orElse(List.of())) {
+        .map(ProductDependency::getDependencies).orElse(Set.of())) {
       zipArtifact(version, dependency.getDownloadUrl(), zipOut);
     }
   }

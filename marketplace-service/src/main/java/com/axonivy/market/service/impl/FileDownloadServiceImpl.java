@@ -8,8 +8,8 @@ import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.SystemUtils;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
-
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.File;
@@ -53,6 +53,15 @@ public class FileDownloadServiceImpl implements FileDownloadService {
     return new RestTemplate().getForObject(url, byte[].class);
   }
 
+  public byte[] safeDownload(String url) {
+    try {
+      return downloadFile(url);
+    } catch (HttpClientErrorException e) {
+      log.warn("Fail to download at URL: {}", url);
+    }
+    return EMPTY.getBytes();
+  }
+
   @Override
   public String downloadAndUnzipFile(String url, DownloadOption downloadOption) throws IOException {
     if (StringUtils.isBlank(url) || !StringUtils.endsWithAny(url, ZIP_EXTENSION, "iar")) {
@@ -88,7 +97,12 @@ public class FileDownloadServiceImpl implements FileDownloadService {
     }
 
     Path tempZipPath = createTempFile();
-    Files.write(tempZipPath, downloadFile(url));
+    byte[] fileContent = safeDownload(url);
+    if (fileContent == null || fileContent.length == 0) {
+      log.warn("Downloaded file is empty or null from URL: {}", url);
+      return null;
+    }
+    Files.write(tempZipPath, fileContent);
     unzipFile(tempZipPath.toString(), location);
     return tempZipPath;
   }

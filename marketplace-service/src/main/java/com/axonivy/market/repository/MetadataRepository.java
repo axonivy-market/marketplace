@@ -14,4 +14,6 @@ public interface MetadataRepository extends JpaRepository<Metadata, String> {
   List<Metadata> findByProductIdAndArtifactId(String productId, String artifactId);
 
   void deleteAllByProductId(String productId);
+
+  List<Metadata> findByGroupIdAndArtifactId(String groupId, String artifactId);
 }

@@ -49,6 +49,8 @@ public class ProductDetailModel extends ProductModel {
   private String compatibility;
   @Schema(description = "Can contact us", example = "false")
   private Boolean contactUs;
+  @Schema(description = "Is deprecated product", example = "false")
+  private Boolean deprecated;
   private ProductModuleContent productModuleContent;
   @Schema(description = "Installation/download count", example = "0")
   private int installationCount;
@@ -88,6 +90,7 @@ public class ProductDetailModel extends ProductModel {
     model.setIndustry(product.getIndustry());
     model.setCompatibility(product.getCompatibility());
     model.setContactUs(product.getContactUs());
+    model.setDeprecated(product.getDeprecated());
     model.setCost(product.getCost());
     model.setInstallationCount(product.getInstallationCount());
     model.setCompatibilityRange(product.getCompatibilityRange());

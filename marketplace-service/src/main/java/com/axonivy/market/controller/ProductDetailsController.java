@@ -212,7 +212,7 @@ public class ProductDetailsController {
     VersionDownload result = productContentService.downloadZipArtifactFile(id, artifactId, version);
 
     if (result == null) {
-      return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+      return new ResponseEntity<>(HttpStatus.NOT_FOUND);
     }
     return new ResponseEntity<>(result, HttpStatus.OK);
   }

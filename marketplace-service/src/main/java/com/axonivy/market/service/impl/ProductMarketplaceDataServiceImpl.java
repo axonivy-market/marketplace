@@ -80,13 +80,14 @@ public class ProductMarketplaceDataServiceImpl implements ProductMarketplaceData
 
   @Override
   public VersionDownload downloadArtifact(String artifactUrl, String productId) {
-    byte[] fileData = fileDownloadService.downloadFile(artifactUrl);
+    byte[] fileData = fileDownloadService.safeDownload(artifactUrl);
     if (fileData == null || fileData.length == 0) {
-      log.error("Cannot download file from URL: {}", artifactUrl);
+      log.warn("Downloaded file is empty or null from URL: {}", artifactUrl);
       return null;
     }
     return getVersionDownload(productId, fileData);
   }
+
 
   @Override
   public VersionDownload getVersionDownload(String productId, byte[] fileData) {

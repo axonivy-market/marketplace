@@ -22,7 +22,6 @@ import com.axonivy.market.github.service.GitHubService;
 import com.axonivy.market.github.util.GitHubUtils;
 import com.axonivy.market.model.GitHubReleaseModel;
 import com.axonivy.market.model.VersionAndUrlModel;
-import com.axonivy.market.repository.ArtifactRepository;
 import com.axonivy.market.repository.GitHubRepoMetaRepository;
 import com.axonivy.market.repository.ImageRepository;
 import com.axonivy.market.repository.MavenArtifactVersionRepository;
@@ -70,7 +69,6 @@ import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
-import java.util.stream.Collectors;
 
 import static com.axonivy.market.constants.CommonConstants.*;
 import static com.axonivy.market.constants.MavenConstants.*;
@@ -103,7 +101,6 @@ public class ProductServiceImpl implements ProductService {
   private final ProductMarketplaceDataService productMarketplaceDataService;
   private final ProductMarketplaceDataRepository productMarketplaceDataRepo;
   private final MavenArtifactVersionRepository mavenArtifactVersionRepository;
-  private final ArtifactRepository artifactRepo;
   private GHCommit lastGHCommit;
   private final VersionService versionService;
   private GitHubRepoMeta marketRepoMeta;
@@ -118,7 +115,7 @@ public class ProductServiceImpl implements ProductService {
       ProductContentService productContentService, MetadataService metadataService,
       ProductMarketplaceDataService productMarketplaceDataService, ExternalDocumentService externalDocumentService,
       ProductMarketplaceDataRepository productMarketplaceDataRepo,
-      MavenArtifactVersionRepository mavenArtifactVersionRepository, ArtifactRepository artifactRepo,
+      MavenArtifactVersionRepository mavenArtifactVersionRepository,
       VersionService versionService) {
     this.productRepo = productRepo;
     this.productModuleContentRepo = productModuleContentRepo;
@@ -136,7 +133,6 @@ public class ProductServiceImpl implements ProductService {
     this.externalDocumentService = externalDocumentService;
     this.productMarketplaceDataRepo = productMarketplaceDataRepo;
     this.mavenArtifactVersionRepository = mavenArtifactVersionRepository;
-    this.artifactRepo = artifactRepo;
     this.versionService = versionService;
   }
 
@@ -175,9 +171,16 @@ public class ProductServiceImpl implements ProductService {
         syncedProductIds = updateLatestChangeToProductsFromGithubRepo();
       }
       syncRepoMetaDataStatus();
+      syncProductMarketplaceData(syncedProductIds);
     }
     updateLatestReleaseVersionContentsFromProductRepo();
     return syncedProductIds.stream().filter(StringUtils::isNotBlank).toList();
+  }
+
+  private synchronized void syncProductMarketplaceData(List<String> syncedProductIds) {
+    for (String productId : syncedProductIds) {
+      productMarketplaceDataRepo.checkAndInitProductMarketplaceDataIfNotExist(productId);
+    }
   }
 
   private void syncRepoMetaDataStatus() {
@@ -314,8 +317,6 @@ public class ProductServiceImpl implements ProductService {
     }
 
     for (Product product : products) {
-      List<Artifact> allArtifacts = fetchArtifacts(product.getArtifacts());
-      product.setArtifacts(allArtifacts);
       updateProductFromReleasedVersions(product);
       productRepo.save(product);
     }
@@ -346,7 +347,6 @@ public class ProductServiceImpl implements ProductService {
       updateFirstPublishedDate(product);
       updateProductFromReleasedVersions(product);
       transferComputedDataFromDB(product);
-      productMarketplaceDataRepo.checkAndInitProductMarketplaceDataIfNotExist(product.getId());
       syncedProductIds.add(productRepo.save(product).getId());
     }
     return syncedProductIds;
@@ -459,11 +459,6 @@ public class ProductServiceImpl implements ProductService {
     }
     metadataService.updateArtifactAndMetadata(product.getId(), nonSyncReleasedVersions, product.getArtifacts());
     externalDocumentService.syncDocumentForProduct(product.getId(), false);
-  }
-
-  private List<Artifact> fetchArtifacts(List<Artifact> artifacts) {
-    List<String> ids = artifacts.stream().map(Artifact::getId).toList();
-    return artifactRepo.findAllByIdInAndFetchArchivedArtifacts(ids);
   }
 
   private void getMetadataContent(Artifact artifact, Product product, List<String> nonSyncReleasedVersions) {
@@ -590,7 +585,7 @@ public class ProductServiceImpl implements ProductService {
       int installationCount = productMarketplaceDataService.updateProductInstallationCount(id);
       productItem.setInstallationCount(installationCount);
 
-      String compatibilityRange = getCompatibilityRange(id);
+      String compatibilityRange = getCompatibilityRange(id, productItem.getDeprecated());
       productItem.setCompatibilityRange(compatibilityRange);
 
       return productItem;
@@ -609,7 +604,7 @@ public class ProductServiceImpl implements ProductService {
       int installationCount = productMarketplaceDataService.updateProductInstallationCount(id);
       productItem.setInstallationCount(installationCount);
 
-      String compatibilityRange = getCompatibilityRange(id);
+      String compatibilityRange = getCompatibilityRange(id, productItem.getDeprecated());
       productItem.setCompatibilityRange(compatibilityRange);
 
       productItem.setBestMatchVersion(bestMatchVersion);
@@ -755,25 +750,11 @@ public class ProductServiceImpl implements ProductService {
    * split the versions to obtain the first prefix,then format them for compatibility range.
    * ex: 11.0+ , 10.0 - 12.0+ , ...
    */
-  private String getCompatibilityRange(String productId) {
+  private String getCompatibilityRange(String productId, Boolean isDeprecatedProduct) {
     return Optional.of(versionService.getVersionsForDesigner(productId, null))
         .filter(ObjectUtils::isNotEmpty)
         .map(versions -> versions.stream().map(VersionAndUrlModel::getVersion).toList())
-        .map(versions -> {
-          if (versions.size() == 1) {
-            return splitVersion(versions.get(0)).concat(PLUS);
-          }
-          String maxVersion = splitVersion(versions.get(0)).concat(PLUS);
-          String minVersion = splitVersion(versions.get(versions.size() - 1));
-          return VersionUtils.getPrefixOfVersion(minVersion).equals(VersionUtils.getPrefixOfVersion(maxVersion)) ?
-              minVersion.concat(PLUS) : String.format(COMPATIBILITY_RANGE_FORMAT, minVersion, maxVersion);
-        }).orElse(null);
-  }
-
-  private String splitVersion(String version) {
-    int firstDot = version.indexOf(DOT_SEPARATOR);
-    int secondDot = version.indexOf(DOT_SEPARATOR, firstDot + 1);
-    return version.substring(0, secondDot);
+        .map(versions -> VersionUtils.getCompatibilityRangeFromVersions(versions, isDeprecatedProduct)).orElse(null);
   }
 
   @Cacheable(value = "GithubPublicReleasesCache", key="{#productId}")

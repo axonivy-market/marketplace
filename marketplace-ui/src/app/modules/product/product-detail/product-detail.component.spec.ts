@@ -926,16 +926,23 @@ describe('ProductDetailComponent', () => {
     expect(component.renderGithubAlert).not.toHaveBeenCalled();
   });
 
-  it('should close the dropdown when clicking outside', () => {
-    component.isDropdownOpen.set(true);
-    fixture.detectChanges();
+it('should close the dropdown when clicking outside', fakeAsync(() => {
+  component.isDropdownOpen.set(true);
+  fixture.detectChanges();
+  tick();
 
-    const event = new MouseEvent('click');
-    document.dispatchEvent(event);
-    fixture.detectChanges();
+  const outsideElement = document.createElement('div');
+  document.body.appendChild(outsideElement);
+  outsideElement.click();
 
-    expect(component.isDropdownOpen()).toBeFalse();
-  });
+  fixture.detectChanges();
+  tick();
+
+  expect(component.isDropdownOpen()).toBeFalse();
+
+  document.body.removeChild(outsideElement);
+}));
+
 
   it('should replace GitHub URLs with appropriate links in linkifyPullRequests', () => {
     const md = new MarkdownIt();
