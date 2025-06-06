@@ -8,5 +8,4 @@ public class DirectoryConstants {
   public static final String DATA_DIR = "data";
   public static final String WORK_DIR = "work";
   public static final String CACHE_DIR = "market-cache";
-  public static final String MAVEN_DIR = "maven";
 }

@@ -10,6 +10,7 @@ import org.apache.commons.lang3.SystemUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
+
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.File;
@@ -22,15 +23,7 @@ import java.nio.file.Paths;
 import java.nio.file.attribute.FileAttribute;
 import java.nio.file.attribute.PosixFilePermission;
 import java.nio.file.attribute.PosixFilePermissions;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.EnumSet;
-import java.util.Enumeration;
-import java.util.List;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 import java.util.stream.Stream;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
@@ -44,9 +37,8 @@ public class FileDownloadServiceImpl implements FileDownloadService {
   private static final String DOC_DIR = "doc";
   private static final String ZIP_EXTENSION = ".zip";
   private static final Set<PosixFilePermission> PERMS = EnumSet.allOf(PosixFilePermission.class);
-  private static final int THRESHOLD_ENTRIES = 10000;
   private static final int THRESHOLD_SIZE = 1000000000;
-  private static final double THRESHOLD_RATIO = 10;
+  public static final String IAR = "iar";
 
   @Override
   public byte[] downloadFile(String url) {
@@ -64,17 +56,12 @@ public class FileDownloadServiceImpl implements FileDownloadService {
 
   @Override
   public String downloadAndUnzipFile(String url, DownloadOption downloadOption) throws IOException {
-    if (StringUtils.isBlank(url) || !StringUtils.endsWithAny(url, ZIP_EXTENSION, "iar")) {
-      log.warn("Request URL not a ZIP file - {}", url);
+    if (StringUtils.isBlank(url) || !StringUtils.endsWithAny(url, ZIP_EXTENSION, IAR)) {
+      log.warn("Request URL not a ZIP/iar file - {}}", url);
       return EMPTY;
     }
 
-    String location;
-    if (downloadOption != null && StringUtils.isNotBlank(downloadOption.getWorkingDirectory())) {
-      location = downloadOption.getWorkingDirectory();
-    } else {
-      location = generateCacheStorageDirectory(url);
-    }
+    String location = determineLocation(url, downloadOption);
     Path tempZipPath = createTempFileFromUrlAndExtractToLocation(url, location, downloadOption);
     if (tempZipPath != null) {
       if (downloadOption != null && downloadOption.isShouldGrantPermission()) {
@@ -85,15 +72,20 @@ public class FileDownloadServiceImpl implements FileDownloadService {
     return location;
   }
 
+  private String determineLocation(String url, DownloadOption downloadOption) {
+    String location;
+    if (downloadOption != null && StringUtils.isNotBlank(downloadOption.getWorkingDirectory())) {
+      location = downloadOption.getWorkingDirectory();
+    } else {
+      location = generateCacheStorageDirectory(url);
+    }
+    return location;
+  }
+
   private Path createTempFileFromUrlAndExtractToLocation(String url, String location,
       DownloadOption downloadOption) throws IOException {
-    File cacheFolder = FileUtils.createNewFile(location);
-    if (cacheFolder.exists() && cacheFolder.isDirectory() && ObjectUtils.isNotEmpty(
-        cacheFolder.listFiles()) && downloadOption != null && !downloadOption.isForced()) {
-      log.warn("Data is already in {}", location);
+    if (prepareDirectoryForUnzipProcess(location, downloadOption)) {
       return null;
-    } else {
-      createFolder(location);
     }
 
     Path tempZipPath = createTempFile();
@@ -105,6 +97,24 @@ public class FileDownloadServiceImpl implements FileDownloadService {
     Files.write(tempZipPath, fileContent);
     unzipFile(tempZipPath.toString(), location);
     return tempZipPath;
+  }
+
+  private boolean prepareDirectoryForUnzipProcess(String location, DownloadOption downloadOption) {
+    var isDataExistedInFolder = false;
+    var cacheFolder = FileUtils.createNewFile(location);
+    boolean isForced = Optional.ofNullable(downloadOption).map(DownloadOption::isForced).orElse(false);
+    if (cacheFolder.exists() && cacheFolder.isDirectory()) {
+      if (isForced) {
+        log.warn("Forced delete {} for re-create again due to DownloadOption::isForced is true", location);
+        deleteDirectory(cacheFolder.toPath());
+      } else if (ObjectUtils.isNotEmpty(cacheFolder.listFiles())) {
+        isDataExistedInFolder = true;
+      }
+    }
+    if (!isDataExistedInFolder) {
+      createFolder(location);
+    }
+    return isDataExistedInFolder;
   }
 
   private Path createTempFile() throws IOException {
@@ -125,7 +135,6 @@ public class FileDownloadServiceImpl implements FileDownloadService {
     Path destDirPath = Paths.get(location).toAbsolutePath().normalize();
     try (ZipFile zipFile = new ZipFile(new File(zipFilePath))) {
       Enumeration<? extends ZipEntry> entries = zipFile.entries();
-      int totalEntryArchive = 0;
 
       while (entries.hasMoreElements()) {
         ZipEntry zipEntry = entries.nextElement();
@@ -136,11 +145,10 @@ public class FileDownloadServiceImpl implements FileDownloadService {
         if (zipEntry.isDirectory()) {
           createFolder(entryPath.toString());
         } else {
-          totalEntryArchive++;
           totalSizeArchive = extractFile(zipFile, zipEntry, entryPath.toString(), totalSizeArchive);
         }
-        if (totalSizeArchive > THRESHOLD_SIZE || totalEntryArchive > THRESHOLD_ENTRIES) {
-          log.warn("Unzip is skipped due to threshold issue {} {}", totalSizeArchive, totalEntryArchive);
+        if (totalSizeArchive > THRESHOLD_SIZE) {
+          log.warn("Unzip is skipped due to threshold issue {}", totalSizeArchive);
           break;
         }
       }
@@ -152,18 +160,10 @@ public class FileDownloadServiceImpl implements FileDownloadService {
     try (BufferedOutputStream bos = new BufferedOutputStream(new FileOutputStream(filePath))) {
       InputStream stream = new BufferedInputStream(zipFile.getInputStream(zipEntry));
       byte[] bytesIn = new byte[4096];
-      int totalSizeEntry = 0;
       int read;
       while ((read = stream.read(bytesIn)) != -1) {
         bos.write(bytesIn, 0, read);
-        totalSizeEntry += read;
         totalSizeArchive += read;
-
-        var compressionRatio = totalSizeEntry / zipEntry.getCompressedSize();
-        if (compressionRatio > THRESHOLD_RATIO) {
-          log.warn("Extract file is skipped due to threshold issue {}", compressionRatio);
-          break;
-        }
       }
       stream.close();
     } catch (IOException e) {
