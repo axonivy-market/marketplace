@@ -47,7 +47,7 @@ public class ExternalDocumentServiceImpl implements ExternalDocumentService {
   public void syncDocumentForProduct(String productId, boolean isResetSync, String version) {
     var product = productRepo.findProductByIdAndRelatedData(productId);
     if (product == null) {
-      log.warn("Cannot find the product for sync document {}", productId);
+      log.warn("Cannot find the product for document sync {}", productId);
       return;
     }
     List<Artifact> docArtifacts = fetchDocArtifacts(product.getArtifacts());

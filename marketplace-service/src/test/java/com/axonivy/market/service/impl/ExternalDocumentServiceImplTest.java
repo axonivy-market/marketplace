@@ -46,22 +46,22 @@ class ExternalDocumentServiceImplTest extends BaseSetup {
   @Test
   void testSyncDocumentForProduct() throws IOException {
     when(productRepository.findProductByIdAndRelatedData(PORTAL)).thenReturn(mockPortalProductHasNoArtifact().get());
-    service.syncDocumentForProduct(PORTAL,  true, null);
+    service.syncDocumentForProduct(PORTAL, true, null);
     verify(productRepository, times(1)).findProductByIdAndRelatedData(any());
 
     when(artifactRepository.findAllByIdInAndFetchArchivedArtifacts(any())).thenReturn(mockPortalProduct().get().getArtifacts());
     when(productRepository.findProductByIdAndRelatedData(PORTAL)).thenReturn(mockPortalProduct().get());
-    service.syncDocumentForProduct(PORTAL,  false, null);
+    service.syncDocumentForProduct(PORTAL, false, null);
     verify(externalDocumentMetaRepository, times(1)).findByProductIdAndVersionIn(any(), any());
 
     when(fileDownloadService.downloadAndUnzipFile(any(), any())).thenReturn("data" + RELATIVE_LOCATION);
-    service.syncDocumentForProduct(PORTAL,  true, null);
+    service.syncDocumentForProduct(PORTAL, true, null);
     verify(externalDocumentMetaRepository, times(2)).save(any());
 
     when(artifactRepository.findAllByIdInAndFetchArchivedArtifacts(any())).thenReturn(mockPortalProduct().get().getArtifacts());
     when(productRepository.findProductByIdAndRelatedData(PORTAL)).thenReturn(mockPortalProduct().get());
     when(externalDocumentMetaRepository.findByProductIdAndVersionIn(any(),any())).thenReturn(List.of(createExternalDocumentMock()));
-    service.syncDocumentForProduct(PORTAL,  false, null);
+    service.syncDocumentForProduct(PORTAL, false, null);
     verify(externalDocumentMetaRepository, times(6)).findByProductIdAndVersionIn(any(), any());
   }
 
@@ -74,7 +74,7 @@ class ExternalDocumentServiceImplTest extends BaseSetup {
         .thenReturn(List.of(createExternalDocumentMock()));
     when(fileDownloadService.downloadAndUnzipFile(any(), any())).thenReturn("data" + RELATIVE_LOCATION);
 
-    service.syncDocumentForProduct(PORTAL,  true, MOCK_RELEASED_VERSION);
+    service.syncDocumentForProduct(PORTAL, true, MOCK_RELEASED_VERSION);
     verify(productRepository, times(1)).findProductByIdAndRelatedData(any());
     verify(externalDocumentMetaRepository, times(1)).save(any());
   }
