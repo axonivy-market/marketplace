@@ -64,18 +64,29 @@ public class ExternalDocumentController {
   @Operation(hidden = true)
   public ResponseEntity<Message> syncDocumentForProduct(
       @RequestHeader(value = AUTHORIZATION) String authorizationHeader,
-      @RequestParam(value = RESET_SYNC, required = false) Boolean resetSync) {
+      @RequestParam(value = RESET_SYNC, required = false, defaultValue = "false") Boolean resetSync,
+      @RequestParam(value = PRODUCT_ID, required = false) String productId,
+      @RequestParam(value = VERSION, required = false) String version) {
     String token = AuthorizationUtils.getBearerToken(authorizationHeader);
-    gitHubService.validateUserInOrganizationAndTeam(token, GitHubConstants.AXONIVY_MARKET_ORGANIZATION_NAME,
+    gitHubService.validateUserInOrganizationAndTeam(token,
+        GitHubConstants.AXONIVY_MARKET_ORGANIZATION_NAME,
         GitHubConstants.AXONIVY_MARKET_TEAM_NAME);
+
+    List<String> productIds;
+    if (ObjectUtils.isNotEmpty(productId)) {
+      productIds = List.of(productId);
+    } else {
+      productIds = externalDocumentService.findAllProductsHaveDocument().stream()
+          .map(Product::getId).toList();
+    }
     var message = new Message();
-    List<Product> products = externalDocumentService.findAllProductsHaveDocument();
-    if (ObjectUtils.isEmpty(products)) {
+    if (ObjectUtils.isEmpty(productIds)) {
+      message.setHelpText("Nothing to be synced");
       return new ResponseEntity<>(message, HttpStatus.NO_CONTENT);
     }
 
-    for (Product product : products) {
-      externalDocumentService.syncDocumentForProduct(product.getId(), resetSync);
+    for (String id : productIds) {
+      externalDocumentService.syncDocumentForProduct(id, resetSync, version);
     }
 
     message.setHelpCode(ErrorCode.SUCCESSFUL.getCode());

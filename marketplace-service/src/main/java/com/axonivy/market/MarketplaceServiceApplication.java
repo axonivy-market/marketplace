@@ -64,7 +64,7 @@ public class MarketplaceServiceApplication {
     if (ObjectUtils.isEmpty(productIds)) {
       log.warn("Synchronizing External Document: Nothing updated");
     }
-    productIds.forEach(id -> externalDocumentService.syncDocumentForProduct(id, false));
+    productIds.forEach(id -> externalDocumentService.syncDocumentForProduct(id, false, null));
     watch.stop();
     log.warn("Synchronizing External Document: Finished synchronizing data for Document in [{}] milliseconds",
         watch.getTime());

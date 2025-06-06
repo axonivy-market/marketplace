@@ -45,7 +45,7 @@ class SystemTasksTest {
     when(productRepo.findAllProductsHaveDocument()).thenReturn(List.of(mockProduct));
     tasks.syncDataForProductDocuments();
     verify(productRepo, times(1)).findAllProductsHaveDocument();
-    verify(externalDocumentService, times(1)).syncDocumentForProduct(PORTAL, false);
+    verify(externalDocumentService, times(1)).syncDocumentForProduct(PORTAL, false, null);
   }
 
   @Test

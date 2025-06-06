@@ -11,6 +11,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.ResourceAccessException;
+import org.springframework.web.client.RestTemplate;
 
 import java.io.File;
 import java.io.IOException;
@@ -71,7 +72,8 @@ class FileDownloadServiceImplTest {
   @Test
   void testDownloadAndUnzipFileWithNullTempZipPath() throws IOException {
     try (MockedStatic<Files> mockedFiles = Mockito.mockStatic(Files.class);
-         MockedStatic<FileUtils> mockFileUtils = Mockito.mockStatic(FileUtils.class)) {
+         MockedStatic<FileUtils> mockFileUtils = Mockito.mockStatic(FileUtils.class);
+         MockedStatic<RestTemplate> mockedRestTemplate = Mockito.mockStatic(RestTemplate.class)) {
 
       File mockChildFile = Mockito.mock(File.class);
 

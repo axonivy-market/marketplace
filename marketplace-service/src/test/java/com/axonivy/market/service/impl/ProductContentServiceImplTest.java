@@ -96,7 +96,7 @@ class ProductContentServiceImplTest extends BaseSetup {
     ProductDependency productDependency = mockProductDependency();
     when(productDependencyRepository.findByProductIdAndArtifactIdAndVersion(MOCK_PRODUCT_ID, MOCK_DEMO_ARTIFACT_ID,
         MOCK_RELEASED_VERSION)).thenReturn(List.of(productDependency));
-    when(fileDownloadService.downloadFile(MOCK_DOWNLOAD_URL)).thenReturn(MOCK_DOWNLOAD_URL.getBytes());
+    when(fileDownloadService.safeDownload(MOCK_DOWNLOAD_URL)).thenReturn(MOCK_DOWNLOAD_URL.getBytes());
     when(productMarketplaceDataService.getVersionDownload(any(), any())).thenReturn(mockVersionDownload());
 
     VersionDownload versionDownload = productContentService.downloadZipArtifactFile(MOCK_PRODUCT_ID,

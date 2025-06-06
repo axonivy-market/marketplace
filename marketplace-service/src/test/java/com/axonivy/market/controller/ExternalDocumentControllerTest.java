@@ -46,12 +46,12 @@ class ExternalDocumentControllerTest {
 
   @Test
   void testSyncDocumentForProduct() {
-    var result = externalDocumentController.syncDocumentForProduct(TOKEN, true);
+    var result = externalDocumentController.syncDocumentForProduct(TOKEN, true, null, null);
     assertEquals(HttpStatus.NO_CONTENT, result.getStatusCode(), "Should be no product found");
 
     var mockProduct = mock(Product.class);
     when(service.findAllProductsHaveDocument()).thenReturn(List.of(mockProduct));
-    result = externalDocumentController.syncDocumentForProduct(TOKEN, true);
+    result = externalDocumentController.syncDocumentForProduct(TOKEN, true, null, null);
     assertEquals(HttpStatus.OK, result.getStatusCode(), "Should return at least one product");
   }
 
