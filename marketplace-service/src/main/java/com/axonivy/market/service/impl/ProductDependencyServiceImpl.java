@@ -235,7 +235,7 @@ public class ProductDependencyServiceImpl implements ProductDependencyService {
 
   private byte[] downloadPOMFileFromMaven(String downloadUrl) throws HttpClientErrorException {
     ObjectUtils.requireNonEmpty(downloadUrl, "Download URL must not be null");
-    var changeToMirrorRepo = downloadUrl.replaceFirst(DEFAULT_IVY_MAVEN_BASE_URL, DEFAULT_IVY_MIRROR_MAVEN_BASE_URL);
+    var changeToMirrorRepo = downloadUrl.replace(DEFAULT_IVY_MAVEN_BASE_URL, DEFAULT_IVY_MIRROR_MAVEN_BASE_URL);
     var pomURL = changeToMirrorRepo.replace(DOT_SEPARATOR.concat(DEFAULT_PRODUCT_TYPE), DOT_SEPARATOR.concat(POM));
     return fileDownloadService.downloadFile(pomURL);
   }

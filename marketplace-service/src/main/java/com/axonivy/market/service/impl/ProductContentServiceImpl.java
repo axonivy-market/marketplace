@@ -181,7 +181,7 @@ public class ProductContentServiceImpl implements ProductContentService {
 
   private void zipArtifact(String version, String downloadUrl, ZipOutputStream zipOut) throws IOException {
     if (StringUtils.isNoneBlank(downloadUrl)) {
-      byte[] artifactData = fileDownloadService.downloadFile(downloadUrl);
+      byte[] artifactData = fileDownloadService.safeDownload(downloadUrl);
       if (ObjectUtils.isEmpty(artifactData)) {
         return;
       }
