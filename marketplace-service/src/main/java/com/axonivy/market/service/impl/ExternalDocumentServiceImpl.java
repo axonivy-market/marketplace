@@ -27,6 +27,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
+import static org.apache.commons.lang3.ObjectUtils.isEmpty;
 import static org.apache.commons.lang3.ObjectUtils.isNotEmpty;
 import static org.apache.commons.lang3.StringUtils.EMPTY;
 
@@ -44,7 +45,7 @@ public class ExternalDocumentServiceImpl implements ExternalDocumentService {
 
   @Override
   public void syncDocumentForProduct(String productId, boolean isResetSync, String version) {
-    Product product = productRepo.findProductByIdAndRelatedData(productId);
+    var product = productRepo.findProductByIdAndRelatedData(productId);
     if (product == null) {
       log.warn("Cannot find the product for sync document {}", productId);
       return;
@@ -57,8 +58,11 @@ public class ExternalDocumentServiceImpl implements ExternalDocumentService {
   }
 
   private static List<String> getValidReleaseVersionsFromProduct(List<String> releaseVersions, String version) {
-    return isNotEmpty(version) ? List.of(version) : Optional.ofNullable(releaseVersions).stream()
-        .flatMap(List::stream).filter(VersionUtils::isValidFormatReleasedVersion).distinct().toList();
+    if (isEmpty(version)) {
+      return Optional.ofNullable(releaseVersions).stream().flatMap(List::stream)
+          .filter(VersionUtils::isValidFormatReleasedVersion).distinct().toList();
+    }
+    return List.of(version);
   }
 
   private void downloadExternalDocumentFromMavenAndUpdateMetaData(String productId, boolean isResetSync,
@@ -125,7 +129,7 @@ public class ExternalDocumentServiceImpl implements ExternalDocumentService {
     String locationRelative = location.substring(location.indexOf(DirectoryConstants.CACHE_DIR));
     locationRelative = RegExUtils.replaceAll(String.format(DOC_URL_PATTERN, locationRelative), MS_WIN_SEPARATOR,
         CommonConstants.SLASH);
-    ExternalDocumentMeta externalDocumentMeta = new ExternalDocumentMeta();
+    var externalDocumentMeta = new ExternalDocumentMeta();
     List<ExternalDocumentMeta> existingExternalDocumentMeta = externalDocumentMetaRepo.findByProductIdAndVersionIn(
         productId, List.of(version));
     if (!existingExternalDocumentMeta.isEmpty()) {

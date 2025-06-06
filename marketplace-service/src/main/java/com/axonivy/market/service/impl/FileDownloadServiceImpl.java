@@ -10,6 +10,7 @@ import org.apache.commons.lang3.SystemUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
+
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.File;
@@ -99,8 +100,8 @@ public class FileDownloadServiceImpl implements FileDownloadService {
   }
 
   private boolean prepareDirectoryForUnzipProcess(String location, DownloadOption downloadOption) {
-    boolean isDataExistedInFolder = false;
-    File cacheFolder = FileUtils.createNewFile(location);
+    var isDataExistedInFolder = false;
+    var cacheFolder = FileUtils.createNewFile(location);
     boolean isForced = Optional.ofNullable(downloadOption).map(DownloadOption::isForced).orElse(false);
     if (cacheFolder.exists() && cacheFolder.isDirectory()) {
       if (isForced) {
