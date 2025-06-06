@@ -57,7 +57,7 @@ public class FileDownloadServiceImpl implements FileDownloadService {
   @Override
   public String downloadAndUnzipFile(String url, DownloadOption downloadOption) throws IOException {
     if (StringUtils.isBlank(url) || !StringUtils.endsWithAny(url, ZIP_EXTENSION, IAR)) {
-      log.warn("Request URL not a ZIP/iar file - {}}", url);
+      log.warn("Request URL not a ZIP/iar file - {}", url);
       return EMPTY;
     }
 
