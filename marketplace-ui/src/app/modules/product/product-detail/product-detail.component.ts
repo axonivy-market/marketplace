@@ -1,4 +1,4 @@
-import { filter, take } from 'rxjs/operators';
+import { take } from 'rxjs/operators';
 import { ProductDetail } from './../../../shared/models/product-detail.model';
 import { CommonModule, NgOptimizedImage } from '@angular/common';
 import MarkdownIt from 'markdown-it';
@@ -152,8 +152,6 @@ export class ProductDetailComponent {
 
   @HostListener('window:popstate', ['$event'])
   onPopState() {
-    console.log('Popstate event triggered');
-
     this.activeTab = window.location.hash.split('#tab-')[1];
     if (this.activeTab === undefined) {
       this.activeTab = DEFAULT_ACTIVE_TAB;
@@ -221,21 +219,6 @@ export class ProductDetailComponent {
           }
         });
         this.loadingService.hideLoading(LoadingComponentId.DETAIL_PAGE);
-        // this.route.fragment.subscribe(fragment => {
-        //   console.log('Fragment:', fragment);
-
-        //   const isValidTabFragment = PRODUCT_DETAIL_TABS.some(
-        //     tab => tab.tabId === fragment
-        //   );
-
-        //   if (fragment && isValidTabFragment) {
-        //     const tabId = fragment.split('tab-')[1];
-        //     this.setActiveTab(tabId);
-        //   } else {
-        //     const defaultTabId = PRODUCT_DETAIL_TABS[0].value;
-        //     this.setActiveTab(defaultTabId);
-        //   }
-        // });
         this.navigateToProductDetailsWithTabFragment();
       });
     }
