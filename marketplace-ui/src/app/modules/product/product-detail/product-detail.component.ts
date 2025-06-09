@@ -1,3 +1,4 @@
+import { filter, take } from 'rxjs/operators';
 import { ProductDetail } from './../../../shared/models/product-detail.model';
 import { CommonModule, NgOptimizedImage } from '@angular/common';
 import MarkdownIt from 'markdown-it';
@@ -102,7 +103,8 @@ const GITHUB_BASE_URL = 'https://github.com/';
   styleUrl: './product-detail.component.scss'
 })
 export class ProductDetailComponent {
-  githubPullRequestNumberRegex = (/pull\/(\d+)/);
+  githubPullRequestNumberRegex = /pull\/(\d+)/;
+  tabPrefix = 'tab-';
 
   themeService = inject(ThemeService);
   route = inject(ActivatedRoute);
@@ -150,6 +152,8 @@ export class ProductDetailComponent {
 
   @HostListener('window:popstate', ['$event'])
   onPopState() {
+    console.log('Popstate event triggered');
+
     this.activeTab = window.location.hash.split('#tab-')[1];
     if (this.activeTab === undefined) {
       this.activeTab = DEFAULT_ACTIVE_TAB;
@@ -159,7 +163,7 @@ export class ProductDetailComponent {
 
   constructor(
     private readonly titleService: Title,
-    private readonly sanitizer: DomSanitizer,
+    private readonly sanitizer: DomSanitizer
   ) {
     this.scrollToTop();
     this.resizeObserver = new ResizeObserver(() => {
@@ -168,12 +172,6 @@ export class ProductDetailComponent {
   }
 
   ngOnInit(): void {
-    this.router.navigate([], {
-      relativeTo: this.route,
-      queryParamsHandling: 'merge',
-      replaceUrl: true
-    });
-
     const productId = this.route.snapshot.params[ROUTER.ID];
     this.productDetailService.productId.set(productId);
     if (productId) {
@@ -184,24 +182,33 @@ export class ProductDetailComponent {
         productFeedBack:
           this.productFeedbackService.getInitFeedbacksObservable(),
         rating: this.productStarRatingService.getRatingObservable(productId),
-        changelogs: this.productService.getProductChangelogs(productId),
+        changelogs: this.productService.getProductChangelogs(productId)
       }).subscribe(res => {
         this.md
           .use(full)
-          .use(this.linkifyPullRequests, res.productDetail.sourceUrl, this.githubPullRequestNumberRegex)
+          .use(
+            this.linkifyPullRequests,
+            res.productDetail.sourceUrl,
+            this.githubPullRequestNumberRegex
+          )
           .set({
             typographer: true,
-            linkify: true,
+            linkify: true
           })
           .enable(['smartquotes', 'replacements', 'image']);
 
-        const gitHubReleaseModelList = res.changelogs?._embedded?.gitHubReleaseModelList ?? [];
+        const gitHubReleaseModelList =
+          res.changelogs?._embedded?.gitHubReleaseModelList ?? [];
         if (gitHubReleaseModelList.length > 0) {
-          this.productReleaseSafeHtmls = this.renderChangelogContent(gitHubReleaseModelList);
+          this.productReleaseSafeHtmls = this.renderChangelogContent(
+            gitHubReleaseModelList
+          );
         }
         this.handleProductDetail(res.productDetail);
         this.getReadmeContent();
-        this.productFeedbackService.handleFeedbackApiResponse(res.productFeedBack);
+        this.productFeedbackService.handleFeedbackApiResponse(
+          res.productFeedBack
+        );
         this.updateDropdownSelection();
         this.checkMediaSize();
         this.route.queryParams.subscribe(params => {
@@ -214,6 +221,22 @@ export class ProductDetailComponent {
           }
         });
         this.loadingService.hideLoading(LoadingComponentId.DETAIL_PAGE);
+        // this.route.fragment.subscribe(fragment => {
+        //   console.log('Fragment:', fragment);
+
+        //   const isValidTabFragment = PRODUCT_DETAIL_TABS.some(
+        //     tab => tab.tabId === fragment
+        //   );
+
+        //   if (fragment && isValidTabFragment) {
+        //     const tabId = fragment.split('tab-')[1];
+        //     this.setActiveTab(tabId);
+        //   } else {
+        //     const defaultTabId = PRODUCT_DETAIL_TABS[0].value;
+        //     this.setActiveTab(defaultTabId);
+        //   }
+        // });
+        this.navigateToProductDetailsWithTabFragment();
       });
     }
   }
@@ -356,7 +379,9 @@ export class ProductDetailComponent {
           this.languageService.selectedLanguage()
         ),
       dependency: content.isDependency,
-      changelog: this.productReleaseSafeHtmls != null && this.productReleaseSafeHtmls.length !== 0,
+      changelog:
+        this.productReleaseSafeHtmls != null &&
+        this.productReleaseSafeHtmls.length !== 0
     };
 
     return conditions[value] ?? false;
@@ -397,14 +422,13 @@ export class ProductDetailComponent {
   }
 
   setActiveTab(tab: string): void {
+    this.router.navigate([], {
+      fragment: this.tabPrefix + tab,
+      queryParamsHandling: 'preserve',
+      replaceUrl: true
+    });
+
     this.activeTab = tab;
-    const hash = '#tab-' + tab;
-    const path = window.location.pathname;
-    if (history.pushState) {
-      history.pushState(null, '', path + hash);
-    } else {
-      window.location.hash = hash;
-    }
     this.updateDropdownSelection();
 
     const savedTab = {
@@ -427,12 +451,13 @@ export class ProductDetailComponent {
 
     const target = event.target as HTMLElement;
     if (target) {
-       const isClickInside = target.closest('.info-dropdown') ||
-      target.closest('#info-content-dropdown__icon');
+      const isClickInside =
+        target.closest('.info-dropdown') ||
+        target.closest('#info-content-dropdown__icon');
 
-    if (!isClickInside) {
-      this.onShowInfoContent();
-    }
+      if (!isClickInside) {
+        this.onShowInfoContent();
+      }
     }
   }
 
@@ -484,7 +509,6 @@ export class ProductDetailComponent {
     for (const detailTab of this.detailTabs) {
       if (this.getContent(detailTab.value)) {
         displayedTabs.push(detailTab);
-        this.activeTab = displayedTabs[0].value;
       }
     }
 
@@ -519,7 +543,8 @@ export class ProductDetailComponent {
           this.languageService.selectedLanguage()
         );
 
-        this.loadedReadmeContent[tab.value] = this.renderGithubAlert(translatedContent);
+        this.loadedReadmeContent[tab.value] =
+          this.renderGithubAlert(translatedContent);
       }
     });
   }
@@ -546,8 +571,11 @@ export class ProductDetailComponent {
     return this.sanitizer.bypassSecurityTrustHtml(markdownContent);
   }
 
-
-  linkifyPullRequests(md: MarkdownIt, sourceUrl: string, prNumberRegex: RegExp) {
+  linkifyPullRequests(
+    md: MarkdownIt,
+    sourceUrl: string,
+    prNumberRegex: RegExp
+  ) {
     md.renderer.rules.text = (tokens, idx) => {
       const content = tokens[idx].content;
       const linkify = new LinkifyIt();
@@ -589,5 +617,24 @@ export class ProductDetailComponent {
 
       return result;
     };
+  }
+
+  navigateToProductDetailsWithTabFragment(): void {
+    this.route.fragment.pipe(take(1)).subscribe(fragment => {
+      const tabValue = this.getTabValueFromFragment(fragment);
+      this.setActiveTab(tabValue);
+    });
+  }
+
+  getTabValueFromFragment(fragment: string | null): string {
+    if (fragment) {
+      const isValidTabFragment = PRODUCT_DETAIL_TABS.find(
+        tab => tab.tabId === fragment
+      );
+      if (isValidTabFragment) {
+        return fragment.replace(this.tabPrefix, '');
+      }
+    }
+    return PRODUCT_DETAIL_TABS[0].value;
   }
 }
