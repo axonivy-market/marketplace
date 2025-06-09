@@ -1030,17 +1030,17 @@ it('should close the dropdown when clicking outside', fakeAsync(() => {
     expect(mockRouter.navigate).toHaveBeenCalledWith([API_URI.APP]);
   })
 
-  fit('should get tab value from fragment', () => {
+  it('should get tab value from fragment', () => {
     const tabValue = component.getTabValueFromFragment('tab-description');
     expect(tabValue).toBe('description');
   });
 
-  fit('should return default tab value if fragment is invalid', () => {
+  it('should return default tab value if fragment is invalid', () => {
     const tabValue = component.getTabValueFromFragment('tab-invalid');
     expect(tabValue).toBe(PRODUCT_DETAIL_TABS[0].value);
   });
 
-  fit('should call setActiveTab with correct tab value from fragment', () => {
+  it('should call setActiveTab with correct tab value from fragment', () => {
     spyOn(component, 'setActiveTab');
     component.navigateToProductDetailsWithTabFragment();
     expect(component.setActiveTab).toHaveBeenCalledWith('description');
