@@ -195,18 +195,13 @@ export class ProductDetailComponent {
           })
           .enable(['smartquotes', 'replacements', 'image']);
 
-        const gitHubReleaseModelList =
-          res.changelogs?._embedded?.gitHubReleaseModelList ?? [];
+        const gitHubReleaseModelList = res.changelogs?._embedded?.gitHubReleaseModelList ?? [];
         if (gitHubReleaseModelList.length > 0) {
-          this.productReleaseSafeHtmls = this.renderChangelogContent(
-            gitHubReleaseModelList
-          );
+          this.productReleaseSafeHtmls = this.renderChangelogContent(gitHubReleaseModelList);
         }
         this.handleProductDetail(res.productDetail);
         this.getReadmeContent();
-        this.productFeedbackService.handleFeedbackApiResponse(
-          res.productFeedBack
-        );
+        this.productFeedbackService.handleFeedbackApiResponse(res.productFeedBack);
         this.updateDropdownSelection();
         this.checkMediaSize();
         this.route.queryParams.subscribe(params => {
@@ -362,9 +357,7 @@ export class ProductDetailComponent {
           this.languageService.selectedLanguage()
         ),
       dependency: content.isDependency,
-      changelog:
-        this.productReleaseSafeHtmls != null &&
-        this.productReleaseSafeHtmls.length !== 0
+      changelog: this.productReleaseSafeHtmls != null && this.productReleaseSafeHtmls.length !== 0
     };
 
     return conditions[value] ?? false;
@@ -526,8 +519,7 @@ export class ProductDetailComponent {
           this.languageService.selectedLanguage()
         );
 
-        this.loadedReadmeContent[tab.value] =
-          this.renderGithubAlert(translatedContent);
+        this.loadedReadmeContent[tab.value] = this.renderGithubAlert(translatedContent);
       }
     });
   }
@@ -554,11 +546,7 @@ export class ProductDetailComponent {
     return this.sanitizer.bypassSecurityTrustHtml(markdownContent);
   }
 
-  linkifyPullRequests(
-    md: MarkdownIt,
-    sourceUrl: string,
-    prNumberRegex: RegExp
-  ) {
+  linkifyPullRequests(md: MarkdownIt, sourceUrl: string, prNumberRegex: RegExp) {
     md.renderer.rules.text = (tokens, idx) => {
       const content = tokens[idx].content;
       const linkify = new LinkifyIt();
