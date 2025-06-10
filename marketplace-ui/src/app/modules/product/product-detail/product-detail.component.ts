@@ -542,7 +542,7 @@ export class ProductDetailComponent {
   }
 
   private bypassSecurityTrustHtml(value: string): SafeHtml {
-    const markdownContent = this.md.render(value);
+    const markdownContent = this.md.render(value.replace(/\\([_*[\]()~`>#+=|{}.!-])/g, '$1'));
     return this.sanitizer.bypassSecurityTrustHtml(markdownContent);
   }
 
