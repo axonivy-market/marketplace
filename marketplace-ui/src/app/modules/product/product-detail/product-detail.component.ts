@@ -24,9 +24,11 @@ import {
   DEFAULT_IMAGE_URL,
   DEFAULT_VENDOR_IMAGE,
   DEFAULT_VENDOR_IMAGE_BLACK,
+  GITHUB_PULL_REQUEST_NUMBER_REGEX,
   PRODUCT_DETAIL_TABS,
   RATING_LABELS_BY_TYPE,
   SHOW_DEV_VERSION,
+  TAB_PREFIX,
   VERSION
 } from '../../../shared/constants/common.constant';
 import { ItemDropdown } from '../../../shared/models/item-dropdown.model';
@@ -103,9 +105,6 @@ const GITHUB_BASE_URL = 'https://github.com/';
   styleUrl: './product-detail.component.scss'
 })
 export class ProductDetailComponent {
-  githubPullRequestNumberRegex = /pull\/(\d+)/;
-  tabPrefix = 'tab-';
-
   themeService = inject(ThemeService);
   route = inject(ActivatedRoute);
   router = inject(Router);
@@ -184,7 +183,7 @@ export class ProductDetailComponent {
       }).subscribe(res => {
         this.md
           .use(full)
-          .use(this.linkifyPullRequests, res.productDetail.sourceUrl, this.githubPullRequestNumberRegex)
+          .use(this.linkifyPullRequests, res.productDetail.sourceUrl, GITHUB_PULL_REQUEST_NUMBER_REGEX)
           .set({
             typographer: true,
             linkify: true
@@ -395,7 +394,7 @@ export class ProductDetailComponent {
 
   setActiveTab(tab: string): void {
     this.router.navigate([], {
-      fragment: this.tabPrefix + tab,
+      fragment: TAB_PREFIX + tab,
       queryParamsHandling: 'preserve',
       replaceUrl: true
     });
@@ -595,7 +594,7 @@ export class ProductDetailComponent {
 
   getTabValueFromFragment(fragment: string | null): string {
     const isValidTab = PRODUCT_DETAIL_TABS.some(tab => tab.tabId === fragment);
-    const tabId = fragment?.replace(this.tabPrefix, '');
+    const tabId = fragment?.replace(TAB_PREFIX, '');
     return isValidTab && tabId ? tabId : PRODUCT_DETAIL_TABS[0].value;
   }
 }
