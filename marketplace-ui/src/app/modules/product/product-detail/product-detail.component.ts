@@ -596,7 +596,7 @@ export class ProductDetailComponent {
   }
 
   getTabValueFromFragment(fragment: string | null): string {
-    const isValidTab = PRODUCT_DETAIL_TABS.some(tab => tab.tabId === fragment);
+    const isValidTab = this.displayedTabsSignal().some(tab => tab.tabId === fragment);
     const tabId = fragment?.replace(TAB_PREFIX, '');
     if (isValidTab && tabId) {
       return tabId;
