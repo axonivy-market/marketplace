@@ -184,11 +184,7 @@ export class ProductDetailComponent {
       }).subscribe(res => {
         this.md
           .use(full)
-          .use(
-            this.linkifyPullRequests,
-            res.productDetail.sourceUrl,
-            this.githubPullRequestNumberRegex
-          )
+          .use(this.linkifyPullRequests, res.productDetail.sourceUrl, this.githubPullRequestNumberRegex)
           .set({
             typographer: true,
             linkify: true
@@ -598,14 +594,8 @@ export class ProductDetailComponent {
   }
 
   getTabValueFromFragment(fragment: string | null): string {
-    if (fragment) {
-      const isValidTabFragment = PRODUCT_DETAIL_TABS.find(
-        tab => tab.tabId === fragment
-      );
-      if (isValidTabFragment) {
-        return fragment.replace(this.tabPrefix, '');
-      }
-    }
-    return PRODUCT_DETAIL_TABS[0].value;
+    const isValidTab = PRODUCT_DETAIL_TABS.some(tab => tab.tabId === fragment);
+    const tabId = fragment?.replace(this.tabPrefix, '');
+    return isValidTab && tabId ? tabId : PRODUCT_DETAIL_TABS[0].value;
   }
 }
