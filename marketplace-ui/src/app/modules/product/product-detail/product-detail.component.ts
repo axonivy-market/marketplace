@@ -1,4 +1,3 @@
-import { take } from 'rxjs/operators';
 import { ProductDetail } from './../../../shared/models/product-detail.model';
 import { CommonModule, NgOptimizedImage } from '@angular/common';
 import MarkdownIt from 'markdown-it';
@@ -598,7 +597,10 @@ export class ProductDetailComponent {
   getTabValueFromFragment(fragment: string | null): string {
     const isValidTab = PRODUCT_DETAIL_TABS.some(tab => tab.tabId === fragment);
     const tabId = fragment?.replace(TAB_PREFIX, '');
-    return isValidTab && tabId ? tabId : PRODUCT_DETAIL_TABS[0].value;
+    if (isValidTab && tabId) {
+      return tabId;
+    }
+    return PRODUCT_DETAIL_TABS[0].value;
   }
 
   ngOnDestroy(): void {
