@@ -1,3 +1,4 @@
+import { take } from 'rxjs/operators';
 import { ProductDetail } from './../../../shared/models/product-detail.model';
 import { CommonModule, NgOptimizedImage } from '@angular/common';
 import MarkdownIt from 'markdown-it';
