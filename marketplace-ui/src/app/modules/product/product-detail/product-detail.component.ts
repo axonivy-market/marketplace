@@ -15,7 +15,7 @@ import {
 import { ActivatedRoute, Router } from '@angular/router';
 import { NgbAccordionModule, NgbNavModule } from '@ng-bootstrap/ng-bootstrap';
 import { TranslateModule } from '@ngx-translate/core';
-import { forkJoin, map, Observable } from 'rxjs';
+import { forkJoin, map, Observable, Subscription } from 'rxjs';
 import { AuthService } from '../../../auth/auth.service';
 import { LanguageService } from '../../../core/services/language/language.service';
 import { ThemeService } from '../../../core/services/theme/theme.service';
@@ -122,6 +122,7 @@ export class ProductDetailComponent {
   loadingService = inject(LoadingService);
   historyService = inject(HistoryService);
   markdownService = inject(MarkdownService);
+  subscriptions: Subscription[] = [];
 
   protected LoadingComponentId = LoadingComponentId;
   protected ProductDetailActionType = ProductDetailActionType;
@@ -587,15 +588,26 @@ export class ProductDetailComponent {
   }
 
   navigateToProductDetailsWithTabFragment(): void {
-    this.route.fragment.pipe(take(1)).subscribe(fragment => {
-      const tabValue = this.getTabValueFromFragment(fragment);
-      this.setActiveTab(tabValue);
-    });
+    this.subscriptions.push(
+        this.route.fragment.subscribe(fragment => {
+        const tabValue = this.getTabValueFromFragment(fragment);
+        this.setActiveTab(tabValue);
+      })
+    );
   }
 
   getTabValueFromFragment(fragment: string | null): string {
     const isValidTab = PRODUCT_DETAIL_TABS.some(tab => tab.tabId === fragment);
     const tabId = fragment?.replace(TAB_PREFIX, '');
-    return isValidTab && tabId ? tabId : PRODUCT_DETAIL_TABS[0].value;
+    if (isValidTab && tabId) {
+      return tabId;
+    }
+    return PRODUCT_DETAIL_TABS[0].value;
+  }
+
+  ngOnDestroy(): void {
+    this.subscriptions.forEach(sub => {
+      sub.unsubscribe();
+    });
   }
 }
