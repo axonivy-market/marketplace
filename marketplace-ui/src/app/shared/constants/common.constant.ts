@@ -305,3 +305,5 @@ export const HASH_SYMBOL = '#';
 export const FEEDBACK_APPROVAL_STATE = 'feedback-approval';
 
 export const FEEDBACK_APPROVAL_SESSION_TOKEN = 'feedback-approval-token';
+
+export const UNESCAPE_GITHUB_CONTENT_REGEX = /\\([_*[\]()~`>#+=|{}.!-])/g;

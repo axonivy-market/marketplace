@@ -26,6 +26,7 @@ import {
   PRODUCT_DETAIL_TABS,
   RATING_LABELS_BY_TYPE,
   SHOW_DEV_VERSION,
+  UNESCAPE_GITHUB_CONTENT_REGEX,
   VERSION
 } from '../../../shared/constants/common.constant';
 import { ItemDropdown } from '../../../shared/models/item-dropdown.model';
@@ -542,7 +543,7 @@ export class ProductDetailComponent {
   }
 
   private bypassSecurityTrustHtml(value: string): SafeHtml {
-    const markdownContent = this.md.render(value.replace(/\\([_*[\]()~`>#+=|{}.!-])/g, '$1'));
+    const markdownContent = this.md.render(value.replace(UNESCAPE_GITHUB_CONTENT_REGEX, '$1'));
     return this.sanitizer.bypassSecurityTrustHtml(markdownContent);
   }
 
