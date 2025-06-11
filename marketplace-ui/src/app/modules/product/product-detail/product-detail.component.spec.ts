@@ -39,7 +39,7 @@ import { FeedbackApiResponse } from '../../../shared/models/apis/feedback-respon
 import { StarRatingCounting } from '../../../shared/models/star-rating-counting.model';
 import { Feedback } from '../../../shared/models/feedback.model';
 import MarkdownIt from 'markdown-it';
-import { PRODUCT_DETAIL_TABS } from '../../../shared/constants/common.constant';
+import { GITHUB_PULL_REQUEST_NUMBER_REGEX, PRODUCT_DETAIL_TABS } from '../../../shared/constants/common.constant';
 import { MultilingualismPipe } from '../../../shared/pipes/multilingualism.pipe';
 import { HistoryService } from '../../../core/services/history/history.service';
 import { SortOption } from '../../../shared/enums/sort-option.enum';
@@ -947,7 +947,7 @@ it('should close the dropdown when clicking outside', fakeAsync(() => {
   it('should replace GitHub URLs with appropriate links in linkifyPullRequests', () => {
     const md = new MarkdownIt();
     const sourceUrl = 'https://github.com/source-repo';
-    component.linkifyPullRequests(md, sourceUrl, component.githubPullRequestNumberRegex);
+    component.linkifyPullRequests(md, sourceUrl, GITHUB_PULL_REQUEST_NUMBER_REGEX);
 
     const inputText = 'Check out this PR: https://github.com/source-repo/pull/123';
     const expectedOutput = 'Check out this PR: #123';
@@ -959,7 +959,7 @@ it('should close the dropdown when clicking outside', fakeAsync(() => {
   it('should keep GitHub URLs if they contain compare string in linkifyPullRequests', () => {
     const md = new MarkdownIt();
     const sourceUrl = 'https://github.com/source-repo';
-    component.linkifyPullRequests(md, sourceUrl, component.githubPullRequestNumberRegex);
+    component.linkifyPullRequests(md, sourceUrl, GITHUB_PULL_REQUEST_NUMBER_REGEX);
 
     const inputText = 'Check out this PR: https://github.com/source-repo/compare/123';
     const expectedOutput = 'Check out this PR: https://github.com/source-repo/compare/123';
@@ -1029,4 +1029,20 @@ it('should close the dropdown when clicking outside', fakeAsync(() => {
     component.onClickingBackToHomepageButton();
     expect(mockRouter.navigate).toHaveBeenCalledWith([API_URI.APP]);
   })
+
+  it('should get tab value from fragment', () => {
+    const tabValue = component.getTabValueFromFragment('tab-description');
+    expect(tabValue).toBe('description');
+  });
+
+  it('should return default tab value if fragment is invalid', () => {
+    const tabValue = component.getTabValueFromFragment('tab-invalid');
+    expect(tabValue).toBe(PRODUCT_DETAIL_TABS[0].value);
+  });
+
+  it('should call setActiveTab with correct tab value from fragment', () => {
+    spyOn(component, 'setActiveTab');
+    component.navigateToProductDetailsWithTabFragment();
+    expect(component.setActiveTab).toHaveBeenCalledWith('description');
+  });
 });
