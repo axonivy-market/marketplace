@@ -177,10 +177,13 @@ class VersionServiceImplTest extends BaseSetup {
   @Test
   void testGetAllExistingVersions() {
     List<MavenArtifactVersion> mavenArtifactVersions = new ArrayList<>();
-    Assertions.assertTrue(CollectionUtils.isEmpty(VersionUtils.extractAllVersions(mavenArtifactVersions, false)));
+    Assertions.assertTrue(CollectionUtils.isEmpty(VersionUtils.extractAllVersions(mavenArtifactVersions, false)),
+        "The extracted versions should be empty if the method param is empty list.");
     mavenArtifactVersions = getMockMavenArtifactVersionWithData();
-    Assertions.assertTrue(ObjectUtils.isNotEmpty(VersionUtils.extractAllVersions(mavenArtifactVersions, true)));
-    Assertions.assertTrue(CollectionUtils.isEmpty(VersionUtils.extractAllVersions(mavenArtifactVersions, false)));
+    Assertions.assertTrue(ObjectUtils.isNotEmpty(VersionUtils.extractAllVersions(mavenArtifactVersions, true)), "The " +
+        "extracted version should contain a snapshot.");
+    Assertions.assertTrue(CollectionUtils.isEmpty(VersionUtils.extractAllVersions(mavenArtifactVersions, false)),
+        "The extracted version should be empty if be filtered released versions.");
   }
 
   @Test

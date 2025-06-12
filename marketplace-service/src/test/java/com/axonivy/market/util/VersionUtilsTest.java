@@ -53,9 +53,11 @@ class VersionUtilsTest extends BaseSetup {
     versionFromArtifact.add("10.0.5");
     versionFromArtifact.add("10.0.4");
     versionFromArtifact.add("10.0.3-SNAPSHOT");
-    Assertions.assertEquals(versionFromArtifact, VersionUtils.getVersionsToDisplay(versionFromArtifact, true));
+    Assertions.assertEquals(versionFromArtifact, VersionUtils.getVersionsToDisplay(versionFromArtifact, true),
+        "Displayed version should show all if 'show dev versions' is selected");
     versionFromArtifact.remove(versionFromArtifact.size()-1);
-    Assertions.assertEquals(versionFromArtifact, VersionUtils.getVersionsToDisplay(versionFromArtifact, false));
+    Assertions.assertEquals(versionFromArtifact, VersionUtils.getVersionsToDisplay(versionFromArtifact, false), "Only" +
+        " released versions should be shown when snapshot is filtered");
   }
 
 
