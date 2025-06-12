@@ -27,7 +27,7 @@ describe('ProductDetailVersionActionComponent', () => {
   const productId = '123';
   let component: ProductDetailVersionActionComponent;
   let fixture: ComponentFixture<ProductDetailVersionActionComponent>;
-  let productServiceMock: any;
+  let  productServiceMock: any;
   let router: Router;
   let route: jasmine.SpyObj<ActivatedRoute>;
 
@@ -269,25 +269,21 @@ describe('ProductDetailVersionActionComponent', () => {
     return { mockArtifact1: mockArtifact1, mockArtifact2: mockArtifact2 };
   }
 
-  it('should not call productService if versions are already populated', () => {
-    component.versions.set(['1.0', '1.1']);
-    fixture.detectChanges();
-    component.getVersionInDesigner();
-    expect(productServiceMock.sendRequestToGetProductVersionsForDesigner).not.toHaveBeenCalled();
-  });
-
-  it('should call productService and update versions if versions are empty', () => {
+  it('should call productService and update versions', () => {
     const productId = '123';
     component.versions.set([]);
     const mockVersions = [{ version: '1.0' }, { version: '2.0' }];
     productServiceMock.sendRequestToGetProductVersionsForDesigner.and.returnValue(of(mockVersions));
 
-    // Act
+    component.isDevVersionsDisplayed.set(false);
     component.getVersionInDesigner();
 
-    // Assert
-    expect(productServiceMock.sendRequestToGetProductVersionsForDesigner).toHaveBeenCalledWith(productId, '');
+    expect(productServiceMock.sendRequestToGetProductVersionsForDesigner).toHaveBeenCalledWith(productId, false, '');
     expect(component.versions()).toEqual(['Version 1.0', 'Version 2.0']);
+
+    component.isDevVersionsDisplayed.set(true);
+    component.getVersionInDesigner();
+    expect(productServiceMock.sendRequestToGetProductVersionsForDesigner).toHaveBeenCalledWith(productId, true, '');
   });
 
   it('should handle empty response from productService', () => {
@@ -298,7 +294,7 @@ describe('ProductDetailVersionActionComponent', () => {
     component.getVersionInDesigner();
 
     // Assert
-    expect(productServiceMock.sendRequestToGetProductVersionsForDesigner).toHaveBeenCalledWith(productId, '');
+    expect(productServiceMock.sendRequestToGetProductVersionsForDesigner).toHaveBeenCalledWith(productId, true, '');
     expect(component.versions()).toEqual([]);
   });
 

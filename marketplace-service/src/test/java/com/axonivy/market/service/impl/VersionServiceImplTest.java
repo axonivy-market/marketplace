@@ -138,10 +138,11 @@ class VersionServiceImplTest extends BaseSetup {
     mockMetadata.setArtifactId(MOCK_PRODUCT_ARTIFACT_ID);
     mockMetadata.setVersions(new HashSet<>());
     mockMetadata.getVersions().addAll(mockVersions);
-    List<VersionAndUrlModel> result = versionService.getVersionsForDesigner(MOCK_PRODUCT_ID, MOCK_DESIGNER_VERSION);
+    List<VersionAndUrlModel> result = versionService.getVersionsForDesigner(MOCK_PRODUCT_ID, true,
+        MOCK_DESIGNER_VERSION);
     Assertions.assertTrue(CollectionUtils.isEmpty(result));
     when(metadataRepo.findByProductId(MOCK_PRODUCT_ID)).thenReturn(List.of(mockMetadata));
-    result = versionService.getVersionsForDesigner(MOCK_PRODUCT_ID, MOCK_DESIGNER_VERSION);
+    result = versionService.getVersionsForDesigner(MOCK_PRODUCT_ID, true, MOCK_DESIGNER_VERSION);
     Assertions.assertEquals(result.stream().map(VersionAndUrlModel::getVersion).toList(), mockVersions);
     Assertions.assertTrue(result.get(0).getUrl().endsWith("/api/product-details/bpmn-statistic/11.3" +
         ".0-SNAPSHOT/json?designerVersion=12.0.4"));
@@ -176,13 +177,13 @@ class VersionServiceImplTest extends BaseSetup {
   @Test
   void testGetAllExistingVersions() {
     List<MavenArtifactVersion> mavenArtifactVersions = new ArrayList<>();
-    Assertions.assertTrue(CollectionUtils.isEmpty(VersionUtils.extractAllVersions(mavenArtifactVersions, false,
-        StringUtils.EMPTY)));
+    Assertions.assertTrue(CollectionUtils.isEmpty(VersionUtils.extractAllVersions(mavenArtifactVersions, false)),
+        "The extracted versions should be empty if the method param is empty list.");
     mavenArtifactVersions = getMockMavenArtifactVersionWithData();
-    Assertions.assertTrue(ObjectUtils.isNotEmpty(VersionUtils.extractAllVersions(mavenArtifactVersions, true,
-        StringUtils.EMPTY)));
-    Assertions.assertTrue(CollectionUtils.isEmpty(VersionUtils.extractAllVersions(mavenArtifactVersions, false,
-        StringUtils.EMPTY)));
+    Assertions.assertTrue(ObjectUtils.isNotEmpty(VersionUtils.extractAllVersions(mavenArtifactVersions, true)), "The " +
+        "extracted version should contain a snapshot.");
+    Assertions.assertTrue(CollectionUtils.isEmpty(VersionUtils.extractAllVersions(mavenArtifactVersions, false)),
+        "The extracted version should be empty if be filtered released versions.");
   }
 
   @Test

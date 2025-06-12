@@ -31,13 +31,8 @@ import static org.apache.commons.lang3.StringUtils.EMPTY;
 public class VersionUtils {
   public static final String NON_NUMERIC_CHAR = "[^0-9.]";
 
-  public static List<String> getVersionsToDisplay(List<String> versions, Boolean isShowDevVersion,
-      String designerVersion) {
+  public static List<String> getVersionsToDisplay(List<String> versions, Boolean isShowDevVersion) {
     Stream<String> versionStream = versions.stream();
-    if (StringUtils.isNotBlank(designerVersion)) {
-      return versionStream.filter(version -> isMatchWithDesignerVersion(version, designerVersion)).sorted(
-          new LatestVersionComparator()).toList();
-    }
     if (BooleanUtils.isTrue(isShowDevVersion)) {
       return versionStream.filter(version -> isOfficialVersionOrUnReleasedDevVersion(versions, version))
           .sorted(new LatestVersionComparator()).toList();
@@ -158,14 +153,13 @@ public class VersionUtils {
   }
 
   public static List<String> extractAllVersions(List<MavenArtifactVersion> existingMavenArtifactVersion,
-      boolean isShowDevVersion, String designerVersion) {
+      boolean isShowDevVersion) {
     Set<String> versions = existingMavenArtifactVersion.stream()
         .map(MavenArtifactVersion::getId)
         .map(MavenArtifactKey::getProductVersion)
         .collect(Collectors.toSet());
 
-    return getVersionsToDisplay(new ArrayList<>(versions), isShowDevVersion,
-        designerVersion);
+    return getVersionsToDisplay(new ArrayList<>(versions), isShowDevVersion);
   }
 
   public static String getCompatibilityRangeFromVersions(List<String> versions, Boolean isDeprecatedProduct) {
