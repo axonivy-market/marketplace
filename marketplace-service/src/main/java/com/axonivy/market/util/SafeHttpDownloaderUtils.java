@@ -32,7 +32,6 @@ public class SafeHttpDownloaderUtils {
   @PostConstruct
   public void init() {
     allowedBaseUrls = new HashSet<>(Arrays.asList(allowedUrlsArray));
-    log.info(allowedBaseUrls.toString());
     SimpleClientHttpRequestFactory factory = new SimpleClientHttpRequestFactory();
     factory.setConnectTimeout(TIMEOUT_MILLISECONDS);
     factory.setReadTimeout(TIMEOUT_MILLISECONDS);
