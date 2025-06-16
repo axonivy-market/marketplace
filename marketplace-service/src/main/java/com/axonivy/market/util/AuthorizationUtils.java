@@ -1,19 +1,24 @@
 package com.axonivy.market.util;
 
 import com.axonivy.market.constants.CommonConstants;
-import lombok.AccessLevel;
-import lombok.NoArgsConstructor;
+import jakarta.validation.ConstraintValidator;
+import jakarta.validation.ConstraintValidatorContext;
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Component;
 
+import java.net.InetAddress;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.net.UnknownHostException;
 import java.util.List;
 
 @Log4j2
-@NoArgsConstructor(access = AccessLevel.PRIVATE)
-public class AuthorizationUtils {
-  private static final List<String> ALLOWED_DOMAINS = List.of("market.axonivy.com", "maven.axonivy.com");
+@Component
+public class AuthorizationUtils implements ConstraintValidator<ValidUrl, String> {
+  @Value("${allowed.urls}")
+  private List<String> allowedUrls;
 
   public static String getBearerToken(String authorizationHeader) {
     String token = null;
@@ -23,13 +28,20 @@ public class AuthorizationUtils {
     return token;
   }
 
-  public static boolean isAllowedUrl(String url) {
+  @Override
+  public boolean isValid(String url, ConstraintValidatorContext context) {
     try {
       URI uri = new URI(url);
       String host = uri.getHost();
-      return ALLOWED_DOMAINS.contains(host);
-    } catch (URISyntaxException e) {
-      log.error("Error URI syntax: {} {}", url, e);
+      if (host == null) return false;
+      InetAddress address = InetAddress.getByName(host);
+      if (address.isAnyLocalAddress() || address.isLoopbackAddress() || address.isSiteLocalAddress()) {
+        return false;
+      }
+
+      return allowedUrls.stream().anyMatch(url::startsWith);
+
+    } catch (URISyntaxException | UnknownHostException e) {
       return false;
     }
   }

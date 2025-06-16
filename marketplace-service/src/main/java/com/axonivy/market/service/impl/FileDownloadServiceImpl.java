@@ -3,12 +3,10 @@ package com.axonivy.market.service.impl;
 import com.axonivy.market.bo.DownloadOption;
 import com.axonivy.market.service.FileDownloadService;
 import com.axonivy.market.util.FileUtils;
-import com.axonivy.market.util.SafeHttpDownloaderUtils;
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.SystemUtils;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
@@ -19,8 +17,6 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.URI;
-import java.net.URISyntaxException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -43,8 +39,7 @@ public class FileDownloadServiceImpl implements FileDownloadService {
   private static final Set<PosixFilePermission> PERMS = EnumSet.allOf(PosixFilePermission.class);
   private static final int THRESHOLD_SIZE = 1000000000;
   public static final String IAR = "iar";
-  @Autowired
-  private SafeHttpDownloaderUtils safeHttpDownloaderUtils;
+
   @Override
   public byte[] downloadFile(String url) {
     return new RestTemplate().getForObject(url, byte[].class);
@@ -52,15 +47,9 @@ public class FileDownloadServiceImpl implements FileDownloadService {
 
   public byte[] safeDownload(String url) {
     try {
-      URI uri = new URI(url);
-      safeHttpDownloaderUtils.validateUri(uri);
       return downloadFile(url);
-    } catch (URISyntaxException | IllegalArgumentException e) {
-      log.warn("Invalid URL: {}", url, e);
     } catch (HttpClientErrorException e) {
-      log.warn("Failed to download from URL: {}", url, e);
-    } catch (Exception e) {
-      log.error("Unexpected error during download: {}", url, e);
+      log.warn("Fail to download at URL: {}", url);
     }
     return EMPTY.getBytes();
   }
