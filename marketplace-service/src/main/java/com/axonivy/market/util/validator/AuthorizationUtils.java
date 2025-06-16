@@ -4,6 +4,7 @@ import com.axonivy.market.constants.CommonConstants;
 import jakarta.validation.ConstraintValidator;
 import jakarta.validation.ConstraintValidatorContext;
 
+import lombok.NoArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Value;
@@ -17,6 +18,7 @@ import java.util.List;
 
 @Log4j2
 @Component
+@NoArgsConstructor
 public class AuthorizationUtils implements ConstraintValidator<ValidUrl, String> {
   @Value("${allowed.urls}")
   private List<String> allowedUrls;
