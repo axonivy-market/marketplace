@@ -1,4 +1,4 @@
-package com.axonivy.market.util;
+package com.axonivy.market.util.validator;
 
 import com.axonivy.market.constants.CommonConstants;
 import jakarta.validation.ConstraintValidator;

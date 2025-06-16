@@ -1,4 +1,4 @@
-package com.axonivy.market.util;
+package com.axonivy.market.util.validator;
 
 import jakarta.validation.Constraint;
 import jakarta.validation.Payload;

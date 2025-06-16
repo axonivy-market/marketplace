@@ -1,5 +1,6 @@
 package com.axonivy.market.util;
 
+import com.axonivy.market.util.validator.AuthorizationUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
