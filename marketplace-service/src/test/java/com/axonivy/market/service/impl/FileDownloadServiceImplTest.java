@@ -56,7 +56,7 @@ class FileDownloadServiceImplTest {
   }
 
   @Test
-  void testSafeDownload_ReturnsEmptyBytes() {
+  void testSafeDownloadReturnsEmptyBytes() {
     FileDownloadServiceImpl spyService = Mockito.spy(new FileDownloadServiceImpl());
 
     doThrow(HttpClientErrorException.create(

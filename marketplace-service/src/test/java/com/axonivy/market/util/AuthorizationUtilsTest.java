@@ -30,47 +30,47 @@ class AuthorizationUtilsTest {
   @Test
   void testBearerTokenInvalidFormat() {
     String token = AuthorizationUtils.getBearerToken("Basic xyz123");
-    assertNull(token);
+    assertNull(token, "Expected null for non-Bearer token format, but got: " + token);
   }
 
   @Test
   void testBearerTokenValid() {
     String token = AuthorizationUtils.getBearerToken("Bearer abc123");
-    assertEquals("abc123", token);
+    assertEquals("abc123", token, "Expected to extract 'abc123' from Bearer token");
   }
 
   @Test
   void testValidUrlAccepted() {
     String validUrl = "https://example.com/resource/file.txt";
     boolean result = validator.isValid(validUrl, context);
-    assertTrue(result);
+    assertTrue(result, "Expected valid URL to be accepted: " + validUrl);
   }
 
   @Test
   void testUrlWithInvalidHost() {
     String invalidHostUrl = "http://localhost:8080/file";
     boolean result = validator.isValid(invalidHostUrl, context);
-    assertFalse(result);
+    assertFalse(result, "Expected local URL to be rejected: " + invalidHostUrl);
   }
 
   @Test
   void testUrlNotInAllowedList() {
     String notAllowed = "https://google.com/search";
     boolean result = validator.isValid(notAllowed, context);
-    assertFalse(result);
+    assertFalse(result, "Expected URL outside allowed list to be invalid: " + notAllowed);
   }
 
   @Test
   void testMalformedUrl() {
     String malformed = "http://::invalid_url";
     boolean result = validator.isValid(malformed, context);
-    assertFalse(result);
+    assertFalse(result, "Expected malformed URL to be invalid, but was considered valid");
   }
 
   @Test
   void testUrlWithoutHost() {
     String noHostUrl = "mailto:user@example.com";
     boolean result = validator.isValid(noHostUrl, context);
-    assertFalse(result);
+    assertFalse(result, "Expected URL without host to be invalid: " + noHostUrl);
   }
 }
