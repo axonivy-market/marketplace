@@ -5,6 +5,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import jakarta.validation.ConstraintValidatorContext;
+import org.mockito.Mockito;
 
 import java.lang.reflect.Field;
 import java.util.List;
@@ -72,5 +73,19 @@ class AuthorizationUtilsTest {
     String noHostUrl = "mailto:user@example.com";
     boolean result = validator.isValid(noHostUrl, context);
     assertFalse(result, "Expected URL without host to be invalid: " + noHostUrl);
+  }
+
+  @Test
+  void testResolveTrustedUrl_Valid() {
+    String inputUrl = "https://example.com/resource";
+    String result = validator.resolveTrustedUrl(inputUrl);
+    assertEquals(inputUrl, result, "Expected valid URL to be returned unchanged: " + inputUrl);
+  }
+
+  @Test
+  void testIsValid_UnknownHost() {
+    ConstraintValidatorContext context = Mockito.mock(ConstraintValidatorContext.class);
+    boolean result = validator.isValid("http://nonexistent.unknown.domain", context);
+    assertFalse(result);
   }
 }
