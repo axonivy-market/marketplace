@@ -10,7 +10,7 @@ import com.axonivy.market.model.FeedbackModelRequest;
 import com.axonivy.market.model.ProductRating;
 import com.axonivy.market.service.FeedbackService;
 import com.axonivy.market.service.JwtService;
-import com.axonivy.market.util.AuthorizationUtils;
+import com.axonivy.market.util.validator.AuthorizationUtils;
 import io.jsonwebtoken.Claims;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;

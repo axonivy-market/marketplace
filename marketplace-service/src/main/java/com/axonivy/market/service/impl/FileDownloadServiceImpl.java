@@ -3,10 +3,13 @@ package com.axonivy.market.service.impl;
 import com.axonivy.market.bo.DownloadOption;
 import com.axonivy.market.service.FileDownloadService;
 import com.axonivy.market.util.FileUtils;
+import com.axonivy.market.util.validator.AuthorizationUtils;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.SystemUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
@@ -33,12 +36,15 @@ import static org.apache.commons.lang3.StringUtils.EMPTY;
 
 @Service
 @Log4j2
+@RequiredArgsConstructor
 public class FileDownloadServiceImpl implements FileDownloadService {
   private static final String DOC_DIR = "doc";
   private static final String ZIP_EXTENSION = ".zip";
   private static final Set<PosixFilePermission> PERMS = EnumSet.allOf(PosixFilePermission.class);
   private static final int THRESHOLD_SIZE = 1000000000;
   public static final String IAR = "iar";
+
+  private final AuthorizationUtils authorizationUtils;
 
   @Override
   public byte[] downloadFile(String url) {
@@ -47,7 +53,10 @@ public class FileDownloadServiceImpl implements FileDownloadService {
 
   public byte[] safeDownload(String url) {
     try {
-      return downloadFile(url);
+      String trustedUrl = authorizationUtils.resolveTrustedUrl(url);
+      return downloadFile(trustedUrl);
+    }catch (IllegalArgumentException e) {
+      log.warn("Unsafe or disallowed URL provided: {}", url, e);
     } catch (HttpClientErrorException e) {
       log.warn("Fail to download at URL: {}", url);
     }

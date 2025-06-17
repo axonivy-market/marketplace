@@ -13,7 +13,7 @@ import com.axonivy.market.github.service.GitHubService;
 import com.axonivy.market.service.ProductDependencyService;
 import com.axonivy.market.service.MetadataService;
 import com.axonivy.market.service.ProductService;
-import com.axonivy.market.util.AuthorizationUtils;
+import com.axonivy.market.util.validator.AuthorizationUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;

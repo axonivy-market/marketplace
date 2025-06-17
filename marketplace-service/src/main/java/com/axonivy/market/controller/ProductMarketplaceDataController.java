@@ -1,20 +1,21 @@
 package com.axonivy.market.controller;
 
 import com.axonivy.market.bo.VersionDownload;
-import com.axonivy.market.constants.ErrorMessageConstants;
 import com.axonivy.market.constants.GitHubConstants;
 import com.axonivy.market.enums.ErrorCode;
 import com.axonivy.market.github.service.GitHubService;
 import com.axonivy.market.model.Message;
 import com.axonivy.market.model.ProductCustomSortRequest;
 import com.axonivy.market.service.ProductMarketplaceDataService;
-import com.axonivy.market.util.AuthorizationUtils;
+import com.axonivy.market.util.validator.AuthorizationUtils;
+import com.axonivy.market.util.validator.ValidUrl;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -23,7 +24,6 @@ import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.server.ResponseStatusException;
 
 import static com.axonivy.market.constants.RequestMappingConstants.*;
 import static com.axonivy.market.constants.RequestParamConstants.ID;
@@ -34,6 +34,7 @@ import static org.springframework.http.HttpHeaders.AUTHORIZATION;
 @RequestMapping(PRODUCT_MARKETPLACE_DATA)
 @Tag(name = "Product Marketplace Data Controller", description = "API collection to get product marketplace data")
 @AllArgsConstructor
+@Validated
 public class ProductMarketplaceDataController {
   private final GitHubService gitHubService;
   private final ProductMarketplaceDataService productMarketplaceDataService;
@@ -56,10 +57,7 @@ public class ProductMarketplaceDataController {
   @GetMapping(VERSION_DOWNLOAD_BY_ID)
   public ResponseEntity<VersionDownload> extractArtifactUrl(
       @PathVariable(ID) String productId,
-      @RequestParam(URL) String artifactUrl) {
-    if (!AuthorizationUtils.isAllowedUrl(artifactUrl)) {
-      throw new ResponseStatusException(HttpStatus.FORBIDDEN, ErrorMessageConstants.INVALID_URL_ERROR);
-    }
+      @RequestParam(URL) @ValidUrl String artifactUrl) {
 
     VersionDownload result = productMarketplaceDataService.downloadArtifact(artifactUrl, productId);
 
