@@ -76,15 +76,14 @@ class AuthorizationUtilsTest {
   }
 
   @Test
-  void testResolveTrustedUrl_Valid() {
+  void testResolveTrustedUrlValid() {
     String inputUrl = "https://example.com/resource";
     String result = validator.resolveTrustedUrl(inputUrl);
     assertEquals(inputUrl, result, "Expected valid URL to be returned unchanged: " + inputUrl);
   }
 
   @Test
-  void testIsValid_UnknownHost() {
-    ConstraintValidatorContext context = Mockito.mock(ConstraintValidatorContext.class);
+  void testIsValidUnknownHost() {
     boolean result = validator.isValid("http://nonexistent.unknown.domain", context);
     assertFalse(result);
   }

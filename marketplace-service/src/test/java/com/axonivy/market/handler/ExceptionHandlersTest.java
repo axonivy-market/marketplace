@@ -79,9 +79,9 @@ class ExceptionHandlersTest {
     assertEquals(HttpStatus.UNAUTHORIZED, responseEntity.getStatusCode());
   }
   @Test
-  void testhandleConstraintViolation() {
+  void testHandleConstraintViolation() {
     var invalidUrlException = mock(ConstraintViolationException.class);
     var responseEntity = exceptionHandlers.handleConstraintViolation(invalidUrlException);
-    assertEquals(HttpStatus.NOT_FOUND, responseEntity.getStatusCode());
+    assertEquals(HttpStatus.NOT_FOUND, responseEntity.getStatusCode(), "Url not found or invalid");
   }
 }
