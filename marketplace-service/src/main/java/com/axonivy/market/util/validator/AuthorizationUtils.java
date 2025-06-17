@@ -61,4 +61,11 @@ public class AuthorizationUtils implements ConstraintValidator<ValidUrl, String>
     return isValid;
   }
 
+  public  String resolveTrustedUrl(String inputUrl) {
+    return allowedUrls.stream()
+        .filter(inputUrl::startsWith)
+        .findFirst()
+        .map(allowedBase -> inputUrl)
+        .orElseThrow(() -> new IllegalArgumentException("URL not from allowed sources"));
+  }
 }
