@@ -34,6 +34,7 @@ class FileDownloadServiceImplTest {
   private FileDownloadServiceImpl fileDownloadService;
   @Mock
   private AuthorizationUtils authorizationUtils;
+
   @Test
   void testDownloadAndUnzipFileWithEmptyResult() throws IOException {
     var result = fileDownloadService.downloadAndUnzipFile("", new DownloadOption(false, "", false));

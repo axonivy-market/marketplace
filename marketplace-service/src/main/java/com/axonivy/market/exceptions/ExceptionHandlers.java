@@ -94,6 +94,7 @@ public class ExceptionHandlers extends ResponseEntityExceptionHandler {
     errorMessage.setMessageDetails(unauthorizedException.getMessage());
     return new ResponseEntity<>(errorMessage, HttpStatus.UNAUTHORIZED);
   }
+
   @ExceptionHandler(ConstraintViolationException.class)
   public ResponseEntity<String> handleConstraintViolation(ConstraintViolationException ex) {
     return new ResponseEntity<>("Invalid URL", HttpStatus.NOT_FOUND);
