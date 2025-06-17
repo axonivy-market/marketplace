@@ -47,7 +47,7 @@ class FileDownloadServiceImplTest {
 
       byte[] result = fileDownloadService.safeDownload(DOWNLOAD_URL);
 
-      assertArrayEquals("".getBytes(), result);
+      assertArrayEquals("".getBytes(), result, "Expected empty byte array when URL is invalid");
       verify(authorizationUtils).resolveTrustedUrl(DOWNLOAD_URL);
     }
 

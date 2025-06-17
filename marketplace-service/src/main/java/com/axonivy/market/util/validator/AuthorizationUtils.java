@@ -34,7 +34,7 @@ public class AuthorizationUtils implements ConstraintValidator<ValidUrl, String>
 
   @Override
   public boolean isValid(String url, ConstraintValidatorContext context) {
-    boolean isValid = true;
+    var isValid = true;
 
     if (url == null || url.isBlank()) {
       return false;
