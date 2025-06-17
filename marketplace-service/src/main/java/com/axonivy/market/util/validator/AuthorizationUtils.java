@@ -37,26 +37,32 @@ public class AuthorizationUtils implements ConstraintValidator<ValidUrl, String>
     if (url == null || url.isBlank()) {
       return false;
     }
-    var isValid = true;
+
     try {
       var uri = new URI(url);
       var host = uri.getHost();
       if (host == null) {
-        isValid = false;
-      } else {
-        var address = InetAddress.getByName(host);
-        if (address.isAnyLocalAddress() || address.isLoopbackAddress() || address.isSiteLocalAddress()) {
-          isValid = false;
-        } else {
-          isValid = allowedUrls.stream().anyMatch(url::startsWith);
-        }
+        return false;
       }
+
+      var address = InetAddress.getByName(host);
+
+      if (isPrivateAddress(address)) {
+        return false;
+      }
+
+      return allowedUrls.stream().anyMatch(url::startsWith);
+
     } catch (URISyntaxException | UnknownHostException e) {
       log.warn("URL validation failed: {}", url, e);
-      isValid = false;
+      return false;
     }
+  }
 
-    return isValid;
+  private boolean isPrivateAddress(InetAddress address) {
+    return address.isAnyLocalAddress()
+        || address.isLoopbackAddress()
+        || address.isSiteLocalAddress();
   }
 
   public  String resolveTrustedUrl(String inputUrl) {
