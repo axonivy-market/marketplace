@@ -15,7 +15,7 @@ import {
 import { ActivatedRoute, Router } from '@angular/router';
 import { NgbAccordionModule, NgbNavModule } from '@ng-bootstrap/ng-bootstrap';
 import { TranslateModule } from '@ngx-translate/core';
-import { forkJoin, map, Observable, Subscription } from 'rxjs';
+import { forkJoin, map, Observable, of, Subscription } from 'rxjs';
 import { AuthService } from '../../../auth/auth.service';
 import { LanguageService } from '../../../core/services/language/language.service';
 import { ThemeService } from '../../../core/services/theme/theme.service';
@@ -29,7 +29,6 @@ import {
   RATING_LABELS_BY_TYPE,
   SHOW_DEV_VERSION,
   TAB_PREFIX,
-  UNESCAPE_GITHUB_CONTENT_REGEX,
   VERSION
 } from '../../../shared/constants/common.constant';
 import { ItemDropdown } from '../../../shared/models/item-dropdown.model';
@@ -175,44 +174,51 @@ export class ProductDetailComponent {
     this.productDetailService.productId.set(productId);
     if (productId) {
       this.loadingService.showLoading(LoadingComponentId.DETAIL_PAGE);
-      forkJoin({
-        productDetail: this.getProductDetailObservable(productId),
-        userFeedback: this.productFeedbackService.findProductFeedbackOfUser(),
-        productFeedBack:
-          this.productFeedbackService.getInitFeedbacksObservable(),
-        rating: this.productStarRatingService.getRatingObservable(productId),
-        changelogs: this.productService.getProductChangelogs(productId)
-      }).subscribe(res => {
-        this.md
-          .use(full)
-          .use(this.linkifyPullRequests, res.productDetail.sourceUrl, GITHUB_PULL_REQUEST_NUMBER_REGEX)
-          .set({
-            typographer: true,
-            linkify: true
-          })
-          .enable(['smartquotes', 'replacements', 'image']);
+      this.getProductDetailObservable(productId)
+        .pipe(take(1))
+        .subscribe(productDetail => {
+          this.handleUpdateTitle(productDetail);
+          this.updateWebBrowserTitle();
+          forkJoin({
+            userFeedback: this.productFeedbackService.findProductFeedbackOfUser(),
+            productFeedBack: this.productFeedbackService.getInitFeedbacksObservable(),
+            rating: this.productStarRatingService.getRatingObservable(productId),
+            changelogs: this.productService.getProductChangelogs(productId)
+          }).subscribe(res => {
+            this.md
+              .use(full)
+              .use(this.linkifyPullRequests, productDetail.sourceUrl, GITHUB_PULL_REQUEST_NUMBER_REGEX)
+              .set({
+                typographer: true,
+                linkify: true
+              })
+              .enable(['smartquotes', 'replacements', 'image']);
 
-        const gitHubReleaseModelList = res.changelogs?._embedded?.gitHubReleaseModelList ?? [];
-        if (gitHubReleaseModelList.length > 0) {
-          this.productReleaseSafeHtmls = this.renderChangelogContent(gitHubReleaseModelList);
-        }
-        this.handleProductDetail(res.productDetail);
-        this.getReadmeContent();
-        this.productFeedbackService.handleFeedbackApiResponse(res.productFeedBack);
-        this.updateDropdownSelection();
-        this.checkMediaSize();
-        this.route.queryParams.subscribe(params => {
-          this.showPopup = params['showPopup'] === 'true';
-          if (this.showPopup && this.authService.getToken()) {
-            this.appModalService
-              .openAddFeedbackDialog()
-              .then(() => this.removeQueryParam())
-              .catch(() => this.removeQueryParam());
-          }
+            const gitHubReleaseModelList = res.changelogs?._embedded?.gitHubReleaseModelList ?? [];
+            if (gitHubReleaseModelList.length > 0) {
+              this.productReleaseSafeHtmls = this.renderChangelogContent(gitHubReleaseModelList);
+            }
+            this.handleProductDetail(productDetail);
+
+            this.getReadmeContent();
+            this.productFeedbackService.handleFeedbackApiResponse(res.productFeedBack);
+            this.updateDropdownSelection();
+            this.checkMediaSize();
+
+            this.route.queryParams.subscribe(params => {
+              this.showPopup = params['showPopup'] === 'true';
+              if (this.showPopup && this.authService.getToken()) {
+                this.appModalService
+                  .openAddFeedbackDialog()
+                  .then(() => this.removeQueryParam())
+                  .catch(() => this.removeQueryParam());
+              }
+            });
+
+            this.loadingService.hideLoading(LoadingComponentId.DETAIL_PAGE);
+            this.navigateToProductDetailsWithTabFragment();
+          });
         });
-        this.loadingService.hideLoading(LoadingComponentId.DETAIL_PAGE);
-        this.navigateToProductDetailsWithTabFragment();
-      });
     }
   }
 
@@ -225,17 +231,21 @@ export class ProductDetailComponent {
     return this.getProductById(productId, isShowDevVersion);
   }
 
+  handleUpdateTitle(productDetail: ProductDetail): void {
+    const title = productDetail.names[this.languageService.selectedLanguage()];
+    this.titleService.setTitle(title);
+    this.metaProductJsonUrl = productDetail.metaProductJsonUrl;
+  }
+
   handleProductDetail(productDetail: ProductDetail): void {
     this.productDetail.set(productDetail);
     this.productModuleContent.set(productDetail.productModuleContent);
-    this.metaProductJsonUrl = productDetail.metaProductJsonUrl;
     this.productDetailService.productNames.set(productDetail.names);
     this.productDetailService.productLogoUrl.set(productDetail.logoUrl);
     this.installationCount = productDetail.installationCount;
     this.handleProductContentVersion();
     this.updateProductDetailActionType(productDetail);
     this.logoUrl = productDetail.logoUrl;
-    this.updateWebBrowserTitle();
     const ratingLabels = RATING_LABELS_BY_TYPE.find(
       button => button.type === productDetail.type
     );
@@ -539,7 +549,7 @@ export class ProductDetailComponent {
   }
 
   private bypassSecurityTrustHtml(value: string): SafeHtml {
-    const markdownContent = this.md.render(value.replace(UNESCAPE_GITHUB_CONTENT_REGEX, '$1'));
+    const markdownContent = this.md.render(value);
     return this.sanitizer.bypassSecurityTrustHtml(markdownContent);
   }
 
@@ -589,7 +599,7 @@ export class ProductDetailComponent {
 
   navigateToProductDetailsWithTabFragment(): void {
     this.subscriptions.push(
-        this.route.fragment.subscribe(fragment => {
+      this.route.fragment.subscribe(fragment => {
         const tabValue = this.getTabValueFromFragment(fragment);
         this.setActiveTab(tabValue);
       })
