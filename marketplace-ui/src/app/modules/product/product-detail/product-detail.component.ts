@@ -15,7 +15,7 @@ import {
 import { ActivatedRoute, Router } from '@angular/router';
 import { NgbAccordionModule, NgbNavModule } from '@ng-bootstrap/ng-bootstrap';
 import { TranslateModule } from '@ngx-translate/core';
-import { forkJoin, map, Observable, of, Subscription } from 'rxjs';
+import { forkJoin, map, Observable, Subscription } from 'rxjs';
 import { AuthService } from '../../../auth/auth.service';
 import { LanguageService } from '../../../core/services/language/language.service';
 import { ThemeService } from '../../../core/services/theme/theme.service';
@@ -178,8 +178,7 @@ export class ProductDetailComponent {
       this.getProductDetailObservable(productId)
         .pipe(take(1))
         .subscribe(productDetail => {
-          this.handleUpdateTitle(productDetail);
-          this.updateWebBrowserTitle();
+          this.updateWebBrowserTitle(productDetail.names);
           forkJoin({
             userFeedback: this.productFeedbackService.findProductFeedbackOfUser(),
             productFeedBack: this.productFeedbackService.getInitFeedbacksObservable(),
@@ -234,13 +233,14 @@ export class ProductDetailComponent {
 
   handleUpdateTitle(productDetail: ProductDetail): void {
     const title = productDetail.names[this.languageService.selectedLanguage()];
-    this.titleService.setTitle(title);
+
     this.metaProductJsonUrl = productDetail.metaProductJsonUrl;
   }
 
   handleProductDetail(productDetail: ProductDetail): void {
     this.productDetail.set(productDetail);
     this.productModuleContent.set(productDetail.productModuleContent);
+    this.metaProductJsonUrl = productDetail.metaProductJsonUrl;
     this.productDetailService.productNames.set(productDetail.names);
     this.productDetailService.productLogoUrl.set(productDetail.logoUrl);
     this.installationCount = productDetail.installationCount;
@@ -479,16 +479,15 @@ export class ProductDetailComponent {
     });
   }
 
-  updateWebBrowserTitle() {
-    if (this.productDetail().names !== undefined) {
-      const title =
-        this.productDetail().names[this.languageService.selectedLanguage()];
+  updateWebBrowserTitle(names: DisplayValue): void {
+    if (names !== undefined) {
+      const title = names[this.languageService.selectedLanguage()];
       this.titleService.setTitle(title);
     }
   }
 
   getDisplayedTabsSignal(): ItemDropdown[] {
-    this.updateWebBrowserTitle();
+    this.updateWebBrowserTitle(this.productDetail().names);
     const displayedTabs: ItemDropdown[] = [];
     for (const detailTab of this.detailTabs) {
       if (this.getContent(detailTab.value)) {
