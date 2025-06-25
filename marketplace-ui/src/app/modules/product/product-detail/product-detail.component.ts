@@ -191,26 +191,25 @@ export class ProductDetailComponent {
       productFeedBack: this.productFeedbackService.getInitFeedbacksObservable(),
       rating: this.productStarRatingService.getRatingObservable(productId),
       changelogs: this.productService.getProductChangelogs(productId)
-    }).subscribe(res => this.handleForkJoinResponse(res, productDetail));
-  }
+    }).subscribe(res => {
+      this.setupMarkdownParser(productDetail.sourceUrl);
 
-  private handleForkJoinResponse(res: any, productDetail: ProductDetail): void {
-    this.setupMarkdownParser(productDetail.sourceUrl);
+      const gitHubReleaseModelList = res.changelogs?._embedded?.gitHubReleaseModelList ?? [];
+      if (gitHubReleaseModelList.length > 0) {
+        this.productReleaseSafeHtmls = this.renderChangelogContent(gitHubReleaseModelList);
+      }
 
-    const gitHubReleaseModelList = res.changelogs?._embedded?.gitHubReleaseModelList ?? [];
-    if (gitHubReleaseModelList.length > 0) {
-      this.productReleaseSafeHtmls = this.renderChangelogContent(gitHubReleaseModelList);
+      this.handleProductDetail(productDetail);
+      this.getReadmeContent();
+      this.productFeedbackService.handleFeedbackApiResponse(res.productFeedBack);
+      this.updateDropdownSelection();
+      this.checkMediaSize();
+
+      this.handlePopupLogic();
+      this.loadingService.hideLoading(LoadingComponentId.DETAIL_PAGE);
+      this.navigateToProductDetailsWithTabFragment();
     }
-
-    this.handleProductDetail(productDetail);
-    this.getReadmeContent();
-    this.productFeedbackService.handleFeedbackApiResponse(res.productFeedBack);
-    this.updateDropdownSelection();
-    this.checkMediaSize();
-
-    this.handlePopupLogic();
-    this.loadingService.hideLoading(LoadingComponentId.DETAIL_PAGE);
-    this.navigateToProductDetailsWithTabFragment();
+    );
   }
 
   private setupMarkdownParser(sourceUrl: string): void {
