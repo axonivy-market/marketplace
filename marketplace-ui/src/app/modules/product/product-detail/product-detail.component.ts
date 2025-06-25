@@ -173,54 +173,69 @@ export class ProductDetailComponent {
   ngOnInit(): void {
     const productId = this.route.snapshot.params[ROUTER.ID];
     this.productDetailService.productId.set(productId);
+
     if (productId) {
       this.loadingService.showLoading(LoadingComponentId.DETAIL_PAGE);
+
       this.getProductDetailObservable(productId)
         .pipe(take(1))
-        .subscribe(productDetail => {
-          this.updateWebBrowserTitle(productDetail.names);
-          forkJoin({
-            userFeedback: this.productFeedbackService.findProductFeedbackOfUser(),
-            productFeedBack: this.productFeedbackService.getInitFeedbacksObservable(),
-            rating: this.productStarRatingService.getRatingObservable(productId),
-            changelogs: this.productService.getProductChangelogs(productId)
-          }).subscribe(res => {
-            this.md
-              .use(full)
-              .use(this.linkifyPullRequests, productDetail.sourceUrl, GITHUB_PULL_REQUEST_NUMBER_REGEX)
-              .set({
-                typographer: true,
-                linkify: true
-              })
-              .enable(['smartquotes', 'replacements', 'image']);
-
-            const gitHubReleaseModelList = res.changelogs?._embedded?.gitHubReleaseModelList ?? [];
-            if (gitHubReleaseModelList.length > 0) {
-              this.productReleaseSafeHtmls = this.renderChangelogContent(gitHubReleaseModelList);
-            }
-            this.handleProductDetail(productDetail);
-
-            this.getReadmeContent();
-            this.productFeedbackService.handleFeedbackApiResponse(res.productFeedBack);
-            this.updateDropdownSelection();
-            this.checkMediaSize();
-
-            this.route.queryParams.subscribe(params => {
-              this.showPopup = params['showPopup'] === 'true';
-              if (this.showPopup && this.authService.getToken()) {
-                this.appModalService
-                  .openAddFeedbackDialog()
-                  .then(() => this.removeQueryParam())
-                  .catch(() => this.removeQueryParam());
-              }
-            });
-
-            this.loadingService.hideLoading(LoadingComponentId.DETAIL_PAGE);
-            this.navigateToProductDetailsWithTabFragment();
-          });
-        });
+        .subscribe(productDetail => this.handleProductDetailLoad(productId, productDetail));
     }
   }
+
+  private handleProductDetailLoad(productId: string, productDetail: ProductDetail): void {
+    this.updateWebBrowserTitle(productDetail.names);
+
+    forkJoin({
+      userFeedback: this.productFeedbackService.findProductFeedbackOfUser(),
+      productFeedBack: this.productFeedbackService.getInitFeedbacksObservable(),
+      rating: this.productStarRatingService.getRatingObservable(productId),
+      changelogs: this.productService.getProductChangelogs(productId)
+    }).subscribe(res => this.handleForkJoinResponse(res, productDetail));
+  }
+
+  private handleForkJoinResponse(res: any, productDetail: ProductDetail): void {
+    this.setupMarkdownParser(productDetail.sourceUrl);
+
+    const gitHubReleaseModelList = res.changelogs?._embedded?.gitHubReleaseModelList ?? [];
+    if (gitHubReleaseModelList.length > 0) {
+      this.productReleaseSafeHtmls = this.renderChangelogContent(gitHubReleaseModelList);
+    }
+
+    this.handleProductDetail(productDetail);
+    this.getReadmeContent();
+    this.productFeedbackService.handleFeedbackApiResponse(res.productFeedBack);
+    this.updateDropdownSelection();
+    this.checkMediaSize();
+
+    this.handlePopupLogic();
+    this.loadingService.hideLoading(LoadingComponentId.DETAIL_PAGE);
+    this.navigateToProductDetailsWithTabFragment();
+  }
+
+  private setupMarkdownParser(sourceUrl: string): void {
+    this.md
+      .use(full)
+      .use(this.linkifyPullRequests, sourceUrl, GITHUB_PULL_REQUEST_NUMBER_REGEX)
+      .set({
+        typographer: true,
+        linkify: true
+      })
+      .enable(['smartquotes', 'replacements', 'image']);
+  }
+
+  private handlePopupLogic(): void {
+    this.route.queryParams.subscribe(params => {
+      this.showPopup = params['showPopup'] === 'true';
+      if (this.showPopup && this.authService.getToken()) {
+        this.appModalService
+          .openAddFeedbackDialog()
+          .then(() => this.removeQueryParam())
+          .catch(() => this.removeQueryParam());
+      }
+    });
+  }
+
 
   getProductDetailObservable(productId: string): Observable<ProductDetail> {
     const isShowDevVersion = CommonUtils.getCookieValue(
