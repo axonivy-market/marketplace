@@ -6,7 +6,7 @@ import com.axonivy.market.enums.ErrorCode;
 import com.axonivy.market.github.service.GitHubService;
 import com.axonivy.market.model.ProductCustomSortRequest;
 import com.axonivy.market.service.ProductMarketplaceDataService;
-import com.axonivy.market.util.AuthorizationUtils;
+import com.axonivy.market.util.validator.AuthorizationUtils;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -15,7 +15,6 @@ import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpStatus;
-import org.springframework.web.server.ResponseStatusException;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -59,28 +58,12 @@ class ProductMarketplaceDataControllerTest extends BaseSetup {
   void testExtractArtifactUrl_ReturnNoContent() {
     String downloadUrl = "https://example.com/download";
     try (MockedStatic<AuthorizationUtils> mockUtils = Mockito.mockStatic(AuthorizationUtils.class)) {
-      mockUtils.when(() -> AuthorizationUtils.isAllowedUrl(downloadUrl)).thenReturn(true);
       when(productMarketplaceDataService.downloadArtifact(downloadUrl, MOCK_PRODUCT_ID)).thenReturn(null);
 
       var result = productMarketplaceDataController.extractArtifactUrl(MOCK_PRODUCT_ID, downloadUrl);
 
       assertEquals(HttpStatus.NOT_FOUND, result.getStatusCode());
       assertNull(result.getBody());
-    }
-  }
-
-  @Test
-  void testExtractArtifactUrl_InvalidUrl_ThrowException() {
-    String invalidUrl = "https://malicious-site.com/download";
-
-    try (MockedStatic<AuthorizationUtils> mockUtils = Mockito.mockStatic(AuthorizationUtils.class)) {
-      mockUtils.when(() -> AuthorizationUtils.isAllowedUrl(invalidUrl)).thenReturn(false);
-
-      ResponseStatusException exception = assertThrows(ResponseStatusException.class,
-          () -> productMarketplaceDataController.extractArtifactUrl(MOCK_PRODUCT_ID, invalidUrl));
-
-      assertEquals(HttpStatus.FORBIDDEN, exception.getStatusCode());
-      assertEquals("Invalid URL", exception.getReason());
     }
   }
 

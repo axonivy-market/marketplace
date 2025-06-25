@@ -231,28 +231,27 @@ export class ProductDetailVersionActionComponent implements AfterViewInit {
   }
 
   getVersionInDesigner(): void {
-    if (this.versions().length === 0) {
-      const designerVersion = this.routingQueryParamService.getDesignerVersionFromSessionStorage() ?? '';
-      this.productService
-        .sendRequestToGetProductVersionsForDesigner(this.productId, designerVersion)
-        .subscribe(data => {
-          const versionMap = data
-            .map(dataVersionAndUrl => dataVersionAndUrl.version)
-            .map(version => VERSION.displayPrefix.concat(version));
-          data.forEach(dataVersionAndUrl => {
-            const currentVersion = VERSION.displayPrefix.concat(
-              dataVersionAndUrl.version
-            );
-            const versionAndUrl: ItemDropdown = {
-              value: currentVersion,
-              label: currentVersion,
-              metaDataJsonUrl: dataVersionAndUrl.url
-            };
-            this.versionDropdownInDesigner.push(versionAndUrl);
-          });
-          this.versions.set(versionMap);
+    const designerVersion = this.routingQueryParamService.getDesignerVersionFromSessionStorage() ?? '';
+    this.versionDropdownInDesigner = [];
+    this.productService
+      .sendRequestToGetProductVersionsForDesigner(this.productId, this.isDevVersionsDisplayed(), designerVersion)
+      .subscribe(data => {
+        const versionMap = data
+          .map(dataVersionAndUrl => dataVersionAndUrl.version)
+          .map(version => VERSION.displayPrefix.concat(version));
+        data.forEach(dataVersionAndUrl => {
+          const currentVersion = VERSION.displayPrefix.concat(
+            dataVersionAndUrl.version
+          );
+          const versionAndUrl: ItemDropdown = {
+            value: currentVersion,
+            label: currentVersion,
+            metaDataJsonUrl: dataVersionAndUrl.url
+          };
+          this.versionDropdownInDesigner.push(versionAndUrl);
         });
-    }
+        this.versions.set(versionMap);
+      });
   }
 
   sanitizeDataBeforeFetching(): void {

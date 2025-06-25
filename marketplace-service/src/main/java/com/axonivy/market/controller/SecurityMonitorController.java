@@ -3,7 +3,7 @@ package com.axonivy.market.controller;
 import com.axonivy.market.constants.GitHubConstants;
 import com.axonivy.market.github.model.ProductSecurityInfo;
 import com.axonivy.market.github.service.GitHubService;
-import com.axonivy.market.util.AuthorizationUtils;
+import com.axonivy.market.util.validator.AuthorizationUtils;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.AllArgsConstructor;

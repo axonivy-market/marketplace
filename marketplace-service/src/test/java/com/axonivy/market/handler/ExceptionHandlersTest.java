@@ -8,6 +8,7 @@ import com.axonivy.market.exceptions.model.NotFoundException;
 import com.axonivy.market.exceptions.model.Oauth2ExchangeCodeException;
 import com.axonivy.market.exceptions.model.UnauthorizedException;
 import com.axonivy.market.model.Message;
+import jakarta.validation.ConstraintViolationException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -76,5 +77,11 @@ class ExceptionHandlersTest {
     var unauthorizedException = mock(UnauthorizedException.class);
     var responseEntity = exceptionHandlers.handleUnauthorizedException(unauthorizedException);
     assertEquals(HttpStatus.UNAUTHORIZED, responseEntity.getStatusCode());
+  }
+  @Test
+  void testHandleConstraintViolation() {
+    var invalidUrlException = mock(ConstraintViolationException.class);
+    var responseEntity = exceptionHandlers.handleConstraintViolation(invalidUrlException);
+    assertEquals(HttpStatus.NOT_FOUND, responseEntity.getStatusCode(), "Url not found or invalid");
   }
 }

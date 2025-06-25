@@ -2,9 +2,11 @@ package com.axonivy.market.service.impl;
 
 import com.axonivy.market.bo.DownloadOption;
 import com.axonivy.market.util.FileUtils;
+import com.axonivy.market.util.validator.AuthorizationUtils;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
+import org.mockito.Mock;
 import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -30,6 +32,8 @@ class FileDownloadServiceImplTest {
   private static final String DOWNLOAD_URL = "https://repo/axonivy/portal/portal-guide/10.0.0/portal-guide-10.0.0.zip";
   @InjectMocks
   private FileDownloadServiceImpl fileDownloadService;
+  @Mock
+  private AuthorizationUtils authorizationUtils;
 
   @Test
   void testDownloadAndUnzipFileWithEmptyResult() throws IOException {
@@ -39,33 +43,44 @@ class FileDownloadServiceImplTest {
 
   @Test
   void testDownloadAndUnzipFileWithIssue() {
-    DownloadOption option = DownloadOption.builder().isForced(true).build();
-    assertThrows(ResourceAccessException.class, () -> fileDownloadService.downloadAndUnzipFile(DOWNLOAD_URL,
-        option));
-  }
+      when(authorizationUtils.resolveTrustedUrl(DOWNLOAD_URL))
+          .thenThrow(new IllegalArgumentException("Invalid URL"));
 
-  @Test
+      byte[] result = fileDownloadService.safeDownload(DOWNLOAD_URL);
+
+      assertArrayEquals("".getBytes(), result, "Expected empty byte array when URL is invalid");
+      verify(authorizationUtils).resolveTrustedUrl(DOWNLOAD_URL);
+    }
+
+    @Test
   void testSafeDownloadSuccess() {
     byte[] expectedContent = "test content".getBytes();
 
+    when(authorizationUtils.resolveTrustedUrl(DOWNLOAD_URL)).thenReturn(DOWNLOAD_URL);
+
     FileDownloadServiceImpl spyService = Mockito.spy(fileDownloadService);
     doReturn(expectedContent).when(spyService).downloadFile(DOWNLOAD_URL);
+
     byte[] result = spyService.safeDownload(DOWNLOAD_URL);
+
     assertArrayEquals(expectedContent, result);
-    Mockito.verify(spyService).downloadFile(DOWNLOAD_URL);
+    verify(spyService).downloadFile(DOWNLOAD_URL);
+    verify(authorizationUtils).resolveTrustedUrl(DOWNLOAD_URL);
   }
 
   @Test
-  void testSafeDownload_ReturnsEmptyBytes() {
-    FileDownloadServiceImpl spyService = Mockito.spy(new FileDownloadServiceImpl());
+  void testSafeDownloadReturnsEmptyBytes() {
+    when(authorizationUtils.resolveTrustedUrl(DOWNLOAD_URL)).thenReturn(DOWNLOAD_URL);
 
-    doThrow(HttpClientErrorException.create(
-        HttpStatus.UNAUTHORIZED, "Unauthorized", null, null, null))
+    FileDownloadServiceImpl spyService = Mockito.spy(fileDownloadService);
+    doThrow(HttpClientErrorException.create(HttpStatus.UNAUTHORIZED, "Unauthorized", null, null, null))
         .when(spyService).downloadFile(DOWNLOAD_URL);
+
     byte[] result = spyService.safeDownload(DOWNLOAD_URL);
 
     assertArrayEquals("".getBytes(), result);
     verify(spyService).downloadFile(DOWNLOAD_URL);
+    verify(authorizationUtils).resolveTrustedUrl(DOWNLOAD_URL);
   }
 
   @Test

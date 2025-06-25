@@ -52,7 +52,7 @@ public class VersionServiceImpl implements VersionService {
       String designerVersion) {
     List<MavenArtifactVersion> mavenArtifactVersions = mavenArtifactVersionRepo.findByProductId(productId);
 
-    List<String> mavenVersions = VersionUtils.extractAllVersions(mavenArtifactVersions, isShowDevVersion, designerVersion);
+    List<String> mavenVersions = VersionUtils.extractAllVersions(mavenArtifactVersions, isShowDevVersion);
 
     List<MavenArtifactVersionModel> results = new ArrayList<>();
     for (String mavenVersion : mavenVersions) {
@@ -95,17 +95,15 @@ public class VersionServiceImpl implements VersionService {
   }
 
   @Override
-  public List<VersionAndUrlModel> getVersionsForDesigner(String productId, String designerVersion) {
+  public List<VersionAndUrlModel> getVersionsForDesigner(String productId,
+      Boolean isShowDevVersion, String designerVersion) {
     List<VersionAndUrlModel> versionAndUrlList = new ArrayList<>();
     List<String> releasedVersions =
         VersionUtils.getInstallableVersionsFromMetadataList(metadataRepo.findByProductId(productId));
     if (CollectionUtils.isEmpty(releasedVersions)) {
       return Collections.emptyList();
     }
-    List<String> versions = releasedVersions.stream().filter(
-        version -> VersionUtils.isOfficialVersionOrUnReleasedDevVersion(releasedVersions, version)).sorted(
-        new LatestVersionComparator()).toList();
-    for (String version : versions) {
+    for (String version : VersionUtils.getVersionsToDisplay(releasedVersions, isShowDevVersion)) {
       Link link = linkTo(
           methodOn(ProductDetailsController.class).findProductJsonContent(productId, version,
               designerVersion)).withSelfRel();

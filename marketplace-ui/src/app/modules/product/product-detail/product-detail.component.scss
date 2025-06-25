@@ -82,10 +82,16 @@
     }
   }
 
-  .changelog-content h2 {
-    padding-bottom: 0.5rem;
-    margin-bottom: 2rem;
-    border-bottom: solid 1px var(--ivy-text-secondary-color);
+  .changelog-content {
+    h2  {
+      padding-bottom: 0.5rem;
+      margin-bottom: 2rem;
+      border-bottom: solid 1px var(--ivy-text-secondary-color);
+    }
+
+    ul li {
+      margin: 0.25rem 0 0 0;
+    }
   }
 
   .release-published-date {
