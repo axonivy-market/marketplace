@@ -231,12 +231,6 @@ export class ProductDetailComponent {
     return this.getProductById(productId, isShowDevVersion);
   }
 
-  handleUpdateTitle(productDetail: ProductDetail): void {
-    const title = productDetail.names[this.languageService.selectedLanguage()];
-
-    this.metaProductJsonUrl = productDetail.metaProductJsonUrl;
-  }
-
   handleProductDetail(productDetail: ProductDetail): void {
     this.productDetail.set(productDetail);
     this.productModuleContent.set(productDetail.productModuleContent);
