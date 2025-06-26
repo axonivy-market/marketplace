@@ -37,7 +37,7 @@ public class AuthorizationUtils implements ConstraintValidator<ValidUrl, String>
     if (url == null || url.isBlank()) {
       return false;
     }
-    boolean isValid = false;
+    var isValid = false;
     try {
       var uri = new URI(url);
       var host = uri.getHost();
