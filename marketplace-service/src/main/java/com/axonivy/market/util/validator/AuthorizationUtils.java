@@ -1,6 +1,7 @@
 package com.axonivy.market.util.validator;
 
 import com.axonivy.market.constants.CommonConstants;
+import jakarta.annotation.PostConstruct;
 import jakarta.validation.ConstraintValidator;
 import jakarta.validation.ConstraintValidatorContext;
 
@@ -53,6 +54,11 @@ public class AuthorizationUtils implements ConstraintValidator<ValidUrl, String>
     }
 
     return isValid;
+  }
+
+  @PostConstruct
+  public void logAllowedUrls() {
+    allowedUrls.forEach(url -> log.info("Allowed URL: {}", url));
   }
 
   private static boolean isPrivateAddress(InetAddress address) {
