@@ -37,29 +37,25 @@ public class AuthorizationUtils implements ConstraintValidator<ValidUrl, String>
     if (url == null || url.isBlank()) {
       return false;
     }
-
+    boolean isValid = false;
     try {
       var uri = new URI(url);
       var host = uri.getHost();
-      if (host == null) {
-        return false;
+
+      if (host != null) {
+        var address = InetAddress.getByName(host);
+        if (!isPrivateAddress(address)) {
+          isValid = allowedUrls.stream().anyMatch(url::startsWith);
+        }
       }
-
-      var address = InetAddress.getByName(host);
-
-      if (isPrivateAddress(address)) {
-        return false;
-      }
-
-      return allowedUrls.stream().anyMatch(url::startsWith);
-
     } catch (URISyntaxException | UnknownHostException e) {
       log.warn("URL validation failed: {}", url, e);
-      return false;
     }
+
+    return isValid;
   }
 
-  private boolean isPrivateAddress(InetAddress address) {
+  private static boolean isPrivateAddress(InetAddress address) {
     return address.isAnyLocalAddress()
         || address.isLoopbackAddress()
         || address.isSiteLocalAddress();
