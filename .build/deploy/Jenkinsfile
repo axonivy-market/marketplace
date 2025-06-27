@@ -33,7 +33,7 @@ pipeline {
         POSTGRES_PASSWORD = credentials('POSTGRES_PASSWORD')
         OAUTH_APP_CLIENT_ID = credentials('OAUTH_APP_CLIENT_ID_STAGING')
         OAUTH_APP_CLIENT_SECRET = credentials('OAUTH_APP_CLIENT_SECRET_STAGING')
-        ALLOWED_URLS = credentials("ALLOWED_URLS")
+        ALLOWED_URLS = credentials('ALLOWED_URLS')
     }
 
     stages {
