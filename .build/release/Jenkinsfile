@@ -125,6 +125,7 @@ pipeline {
           sed -i "s|^POSTGRES_HOST_URL=.*\$|POSTGRES_HOST_URL=${env.POSTGRES_HOST_URL}|" \$ENV_FILE
           sed -i "s|^POSTGRES_USERNAME=.*\$|POSTGRES_USERNAME=${env.POSTGRES_USERNAME}|" \$ENV_FILE
           sed -i "s|^POSTGRES_PASSWORD=.*\$|POSTGRES_PASSWORD=${env.POSTGRES_PASSWORD}|" \$ENV_FILE
+          sed -i "s|^ALLOWED_URLS=.*\$|ALLOWED_URLS=${env.ALLOWED_URLS}|" \$ENV_FILE
         """
       }
     }
