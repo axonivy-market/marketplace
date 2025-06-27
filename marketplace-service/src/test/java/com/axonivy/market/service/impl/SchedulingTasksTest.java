@@ -23,7 +23,8 @@ import static org.mockito.Mockito.verify;
     "spring.datasource.url=jdbc:h2:mem:testdb",
     "spring.datasource.username=sa",
     "spring.datasource.password=password",
-    "spring.datasource.driver-class-name=org.h2.Driver"},
+    "spring.datasource.driver-class-name=org.h2.Driver",
+    "ALLOWED_URLS=nexus-mirror.axonivy.com"},
     webEnvironment = SpringBootTest.WebEnvironment.MOCK)
 class SchedulingTasksTest {
 

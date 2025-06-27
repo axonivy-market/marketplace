@@ -35,6 +35,7 @@ services:
       - POSTGRES_USERNAME=${POSTGRES_USERNAME}
       - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
       - SHOW_SQL=${SHOW_SQL}
+      - ALLOWED_URLS=${ALLOWED_URLS}
 
 volumes:
   marketcache:
