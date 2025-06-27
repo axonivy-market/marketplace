@@ -41,7 +41,7 @@ pipeline {
     OAUTH_APP_CLIENT_SECRET = credentials('OAUTH_APP_CLIENT_SECRET')
     OCTOPUS_MAIL = credentials('OCTOPUS_MAIL')
     OCTOPUS_ACCOUNT_NAME = credentials('OCTOPUS_ACCOUNT_NAME')
-    ALLOW_URLS = credentials("ALLOW_URLS")
+    ALLOWED_URLS = credentials("ALLOWED_URLS")
   }
 
   parameters {
