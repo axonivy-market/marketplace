@@ -1,7 +1,6 @@
 package com.axonivy.market.util.validator;
 
 import com.axonivy.market.constants.CommonConstants;
-import jakarta.annotation.PostConstruct;
 import jakarta.validation.ConstraintValidator;
 import jakarta.validation.ConstraintValidatorContext;
 

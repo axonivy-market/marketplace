@@ -309,3 +309,4 @@ export const FEEDBACK_APPROVAL_SESSION_TOKEN = 'feedback-approval-token';
 export const GITHUB_PULL_REQUEST_NUMBER_REGEX = /pull\/(\d+)/;
 
 export const TAB_PREFIX = 'tab-';
+export const UNESCAPE_GITHUB_CONTENT_REGEX = /\\([_*[\]()~`>#+=|{}.!-])/g;

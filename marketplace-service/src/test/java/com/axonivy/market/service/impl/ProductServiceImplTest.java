@@ -433,7 +433,7 @@ class ProductServiceImplTest extends BaseSetup {
     when(mavenArtifactVersionRepository.findByProductId(MOCK_PRODUCT_ID)).thenReturn(mockMavenArtifactVersion);
     Product product = getMockProduct();
     when(productRepo.getProductByIdAndVersion(MOCK_PRODUCT_ID, MOCK_SNAPSHOT_VERSION)).thenReturn(product);
-    when(versionService.getVersionsForDesigner(MOCK_PRODUCT_ID, null))
+    when(versionService.getVersionsForDesigner(MOCK_PRODUCT_ID, true, null))
         .thenReturn(mockVersionAndUrlModels(), mockVersionModels(), mockVersionModels2(), mockVersionModels3());
 
     Product result = productService.fetchProductDetail(MOCK_PRODUCT_ID, true);
@@ -464,7 +464,7 @@ class ProductServiceImplTest extends BaseSetup {
         MockedStatic<VersionUtils> mockVersionUtils = Mockito.mockStatic(VersionUtils.class)) {
       mockUtils.when(() -> mavenArtifactVersionRepository.findByProductId(MOCK_PRODUCT_ID)).thenReturn(
           mockMavenArtifactVersions);
-      when(VersionUtils.extractAllVersions(mockMavenArtifactVersions, true, StringUtils.EMPTY))
+      when(VersionUtils.extractAllVersions(mockMavenArtifactVersions, true))
           .thenReturn(List.of(MOCK_SNAPSHOT_VERSION));
 
       when(productRepo.getProductByIdAndVersion(MOCK_PRODUCT_ID, MOCK_SNAPSHOT_VERSION)).thenReturn(mockProduct);
@@ -477,7 +477,7 @@ class ProductServiceImplTest extends BaseSetup {
       when(mavenArtifactVersionRepository.findByProductId(MOCK_PRODUCT_ID)).thenReturn(new ArrayList<>());
       when(productRepo.getReleasedVersionsById(MOCK_PRODUCT_ID)).thenReturn(List.of(MOCK_SNAPSHOT_VERSION));
       when(productRepo.getProductByIdAndVersion(MOCK_PRODUCT_ID, MOCK_SNAPSHOT_VERSION)).thenReturn(mockProduct);
-      when(VersionUtils.getVersionsToDisplay(any(),any(),any())).thenReturn(List.of(MOCK_SNAPSHOT_VERSION));
+      when(VersionUtils.getVersionsToDisplay(any(),any())).thenReturn(List.of(MOCK_SNAPSHOT_VERSION));
       result  = productService.getProductByIdWithNewestReleaseVersion(MOCK_PRODUCT_ID, true);
       assertEquals(mockProduct, result);
     }
