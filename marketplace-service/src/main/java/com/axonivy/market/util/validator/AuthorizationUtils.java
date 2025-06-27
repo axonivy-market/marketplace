@@ -24,11 +24,6 @@ public class AuthorizationUtils implements ConstraintValidator<ValidUrl, String>
   @Value("${allowed.urls}")
   private List<String> allowedUrls;
 
-  @PostConstruct
-  public void init() {
-    allowedUrls.forEach(System.out::println);
-  }
-
   public static String getBearerToken(String authorizationHeader) {
     String token = null;
     if (StringUtils.defaultIfEmpty(authorizationHeader, StringUtils.EMPTY).startsWith(CommonConstants.BEARER)) {
@@ -59,11 +54,6 @@ public class AuthorizationUtils implements ConstraintValidator<ValidUrl, String>
     }
 
     return isValid;
-  }
-
-  @PostConstruct
-  public void logAllowedUrls() {
-    allowedUrls.forEach(url -> log.info("Allowed URL: {}", url));
   }
 
   private static boolean isPrivateAddress(InetAddress address) {
