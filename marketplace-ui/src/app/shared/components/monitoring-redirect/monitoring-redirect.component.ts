@@ -5,12 +5,14 @@ import { MONITORING_REDIRECT_URL } from '../../constants/common.constant';
 @Component({
   selector: 'app-monitoring-redirect',
   standalone: true,
-  imports: [TranslateModule],  
+  imports: [TranslateModule],
   template: "<p>{{ 'common.labels.redirecting' | translate }}</p>"
 
 })
 export class MonitoringRedirectComponent implements OnInit {
-  ngOnInit() {
-    window.location.href = MONITORING_REDIRECT_URL;
+  protected window = window;
+
+  ngOnInit(): void {
+    this.window.location.href = MONITORING_REDIRECT_URL;
   }
 }
