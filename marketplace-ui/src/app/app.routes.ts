@@ -6,6 +6,7 @@ import { ERROR_PAGE } from './shared/constants/common.constant';
 import { SecurityMonitorComponent } from './modules/security-monitor/security-monitor.component';
 import { ReleasePreviewComponent } from './modules/release-preview/release-preview.component';
 import { FeedbackApprovalComponent } from './modules/feedback-approval/feedback-approval.component';
+import { MonitoringRedirectComponent } from './shared/components/monitoring-redirect/monitoring-redirect.component';
 
 export const routes: Routes = [
   {
@@ -25,6 +26,10 @@ export const routes: Routes = [
   {
     path: 'release-preview',
     component: ReleasePreviewComponent
+  },
+  {
+    path: 'monitoring',
+    component: MonitoringRedirectComponent
   },
   {
     path: 'feedback-approval',
