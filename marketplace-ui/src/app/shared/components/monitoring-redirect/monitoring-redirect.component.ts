@@ -4,7 +4,8 @@ import { MONITORING_REDIRECT_URL } from '../../constants/common.constant';
 
 @Component({
   selector: 'app-monitoring-redirect',
-  imports: [TranslateModule],
+  standalone: true,
+  imports: [TranslateModule],  
   template: "<p>{{ 'common.labels.redirecting' | translate }}</p>"
 
 })
