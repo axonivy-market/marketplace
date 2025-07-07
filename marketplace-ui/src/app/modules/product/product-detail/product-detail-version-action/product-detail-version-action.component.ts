@@ -291,17 +291,50 @@ export class ProductDetailVersionActionComponent implements AfterViewInit {
     return marketplaceServiceUrl;
   }
 
+  // fetchAndDownloadArtifact(url: string, fileName: string): void {
+  //   this.httpClient.get<VersionDownload>(url).subscribe(
+  //     response => {
+  //       if (response.fileData) {
+  //         this.installationCount.emit(response.installationCount);
+  //         this.downloadFile(response.fileData, fileName);
+  //         this.isDownloading.set(false);
+  //       }
+  //     }
+  //   );
+  // }
   fetchAndDownloadArtifact(url: string, fileName: string): void {
-    this.httpClient.get<VersionDownload>(url).subscribe(
-      response => {
-        if (response.fileData) {
-          this.installationCount.emit(response.installationCount);
-          this.downloadFile(response.fileData, fileName);
-          this.isDownloading.set(false);
-        }
+  this.isDownloading.set(true);
+
+  this.httpClient.get(url, {
+    responseType: 'blob',
+    observe: 'response'
+  }).subscribe({
+    next: response => {
+      // ✅ Get installation count from header
+      const installationCount = response.headers.get('X-Installation-Count');
+      if (installationCount) {
+        this.installationCount.emit(+installationCount);
       }
-    );
-  }
+
+      // ✅ Download file
+      const blob = response.body!;
+      const downloadUrl = window.URL.createObjectURL(blob);
+
+      const a = document.createElement('a');
+      a.href = downloadUrl;
+      a.download = fileName;
+      a.click();
+
+      window.URL.revokeObjectURL(downloadUrl);
+
+      this.isDownloading.set(false);
+    },
+    error: error => {
+      console.error('Download failed:', error);
+      this.isDownloading.set(false);
+    }
+  });
+}
 
   private downloadFile(fileData: string, fileName: string): void {
     const byteCharacters = atob(fileData); // decode base64

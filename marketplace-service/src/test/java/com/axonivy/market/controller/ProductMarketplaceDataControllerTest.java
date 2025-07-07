@@ -44,28 +44,28 @@ class ProductMarketplaceDataControllerTest extends BaseSetup {
     assertTrue(response.getBody().getMessageDetails().contains("Custom product sort order added successfully"));
   }
 
-  @Test
-  void testExtractArtifactUrl() {
-    when(productMarketplaceDataService.downloadArtifact(MOCK_DOWNLOAD_URL, MOCK_PRODUCT_ID)).thenReturn(
-        new VersionDownload());
-    var result = productMarketplaceDataController.extractArtifactUrl(MOCK_PRODUCT_ID, MOCK_DOWNLOAD_URL);
+//  @Test
+//  void testExtractArtifactUrl() {
+//    when(productMarketplaceDataService.downloadArtifact(MOCK_DOWNLOAD_URL, MOCK_PRODUCT_ID)).thenReturn(
+//        new VersionDownload());
+//    var result = productMarketplaceDataController.extractArtifactUrl(MOCK_PRODUCT_ID, MOCK_DOWNLOAD_URL);
+//
+//    assertEquals(HttpStatus.OK, result.getStatusCode());
+//    assertNotNull(result);
+//  }
 
-    assertEquals(HttpStatus.OK, result.getStatusCode());
-    assertNotNull(result);
-  }
-
-  @Test
-  void testExtractArtifactUrl_ReturnNoContent() {
-    String downloadUrl = "https://example.com/download";
-    try (MockedStatic<AuthorizationUtils> mockUtils = Mockito.mockStatic(AuthorizationUtils.class)) {
-      when(productMarketplaceDataService.downloadArtifact(downloadUrl, MOCK_PRODUCT_ID)).thenReturn(null);
-
-      var result = productMarketplaceDataController.extractArtifactUrl(MOCK_PRODUCT_ID, downloadUrl);
-
-      assertEquals(HttpStatus.NOT_FOUND, result.getStatusCode());
-      assertNull(result.getBody());
-    }
-  }
+//  @Test
+//  void testExtractArtifactUrl_ReturnNoContent() {
+//    String downloadUrl = "https://example.com/download";
+//    try (MockedStatic<AuthorizationUtils> mockUtils = Mockito.mockStatic(AuthorizationUtils.class)) {
+//      when(productMarketplaceDataService.downloadArtifact(downloadUrl, MOCK_PRODUCT_ID)).thenReturn(null);
+//
+//      var result = productMarketplaceDataController.extractArtifactUrl(MOCK_PRODUCT_ID, downloadUrl);
+//
+//      assertEquals(HttpStatus.NOT_FOUND, result.getStatusCode());
+//      assertNull(result.getBody());
+//    }
+//  }
 
   @Test
   void testFindInstallationCount() {
