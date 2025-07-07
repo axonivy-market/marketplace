@@ -26,7 +26,11 @@
             ],
             "tsConfig": "tsconfig.app.json",
             "inlineStyleLanguage": "scss",
-            "assets": ["src/favicon.ico", "src/assets", "src/assets/_market"],
+            "assets": [
+              "src/favicon.ico",
+              "src/assets",
+              "src/assets/_market"
+            ],
             "styles": [
               "node_modules/bootstrap/dist/css/bootstrap.min.css",
               "src/styles.scss",
@@ -36,9 +40,13 @@
               "node_modules/markdown-it-github-alerts/styles/github-colors-light.css"
             ],
             "scripts": [
-              "node_modules/emoji-toolkit/lib/js/joypixels.min.js",
-              "node_modules/bootstrap/dist/js/bootstrap.bundle.min.js"
-            ]
+              "node_modules/emoji-toolkit/lib/js/joypixels.min.js"
+            ],
+            "server": "src/main.server.ts",
+            "prerender": true,
+            "ssr": {
+              "entry": "server.ts"
+            }
           },
           "configurations": {
             "production": {

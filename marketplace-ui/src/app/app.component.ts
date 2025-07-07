@@ -13,6 +13,8 @@ import {
 } from '@angular/router';
 import { BackToTopComponent } from "./shared/components/back-to-top/back-to-top.component";
 import { GoogleSearchBarUtils } from './shared/utils/google-search-bar.utils';
+import { WindowRef } from './core/services/browser/window-ref.service';
+import { DocumentRef } from './core/services/browser/document-ref.service';
 
 @Component({
   selector: 'app-root',
@@ -26,7 +28,7 @@ export class AppComponent {
   route = inject(ActivatedRoute);
   isMobileMenuCollapsed = true;
 
-  constructor(private readonly router: Router, private readonly renderer: Renderer2) { }
+  constructor(private readonly router: Router, private readonly renderer: Renderer2, private readonly windowRef: WindowRef, private readonly documentRef: DocumentRef) { }
 
   ngOnInit(): void {
     this.router.events.subscribe((event: Event) => {
@@ -46,6 +48,6 @@ export class AppComponent {
   }
 
   ngAfterViewInit(): void {
-    GoogleSearchBarUtils.renderGoogleSearchBar(this.renderer);
+    GoogleSearchBarUtils.renderGoogleSearchBar(this.renderer, this.windowRef, this.documentRef);
   }
 }

@@ -1,16 +1,33 @@
-import { HttpClient, provideHttpClient, withFetch, withInterceptors } from '@angular/common/http';
-import { ApplicationConfig, importProvidersFrom, provideZoneChangeDetection } from '@angular/core';
-import { InMemoryScrollingFeature, InMemoryScrollingOptions, provideRouter, withInMemoryScrolling } from '@angular/router';
+import {
+  HttpClient,
+  provideHttpClient,
+  withFetch,
+  withInterceptors
+} from '@angular/common/http';
+import {
+  APP_INITIALIZER,
+  ApplicationConfig,
+  importProvidersFrom,
+  provideZoneChangeDetection
+} from '@angular/core';
+import {
+  InMemoryScrollingFeature,
+  InMemoryScrollingOptions,
+  provideRouter,
+  withInMemoryScrolling
+} from '@angular/router';
 import { TranslateLoader, TranslateModule } from '@ngx-translate/core';
 import { routes } from './app.routes';
 import { httpLoaderFactory } from './core/configs/translate.config';
 import { apiInterceptor } from './core/interceptors/api.interceptor';
 import { provideMatomo, withRouter } from 'ngx-matomo-client';
 import { environment } from '../environments/environment';
+import { provideClientHydration } from '@angular/platform-browser';
+import { BootstrapLoaderService } from './core/services/browser/bootstrap-loader.service';
 
 const scrollConfig: InMemoryScrollingOptions = {
   scrollPositionRestoration: 'disabled',
-  anchorScrolling: 'disabled',
+  anchorScrolling: 'disabled'
 };
 
 const inMemoryScrollingFeature: InMemoryScrollingFeature =
@@ -22,11 +39,12 @@ export const appConfig: ApplicationConfig = {
     provideRouter(routes, inMemoryScrollingFeature),
     provideHttpClient(withFetch(), withInterceptors([apiInterceptor])),
 
-    provideMatomo({
-      siteId: environment.matomoSiteId,
-      trackerUrl: environment.matomoTrackerUrl,
+    provideMatomo(
+      {
+        siteId: environment.matomoSiteId,
+        trackerUrl: environment.matomoTrackerUrl
       },
-      withRouter(),
+      withRouter()
     ),
     importProvidersFrom(
       TranslateModule.forRoot({
@@ -36,6 +54,14 @@ export const appConfig: ApplicationConfig = {
           deps: [HttpClient]
         }
       })
-    )
+    ),
+    provideClientHydration(),
+    {
+      provide: APP_INITIALIZER,
+      useFactory: (bootstrapLoader: BootstrapLoaderService) => () =>
+        bootstrapLoader.init(),
+      deps: [BootstrapLoaderService],
+      multi: true
+    }
   ]
 };

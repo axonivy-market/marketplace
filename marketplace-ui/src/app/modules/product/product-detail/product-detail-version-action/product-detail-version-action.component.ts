@@ -10,13 +10,14 @@ import {
   Input,
   model,
   Output,
+  PLATFORM_ID,
   Signal,
   signal,
   WritableSignal
 } from '@angular/core';
 import { ThemeService } from '../../../../core/services/theme/theme.service';
 import { TranslateModule } from '@ngx-translate/core';
-import { CommonModule } from '@angular/common';
+import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ProductService } from '../../product.service';
 import { Tooltip } from 'bootstrap';
@@ -114,18 +115,40 @@ export class ProductDetailVersionActionComponent implements AfterViewInit {
   route = inject(ActivatedRoute);
   httpClient = inject(HttpClient);
 
+  platformId = inject(PLATFORM_ID);
+  isBrowser = isPlatformBrowser(this.platformId);
+
   isDevVersionsDisplayed: WritableSignal<boolean> = signal(
     this.getShowDevVersionFromCookie()
   );
   isCheckedAppForEngine!: boolean;
 
   ngAfterViewInit() {
-    const tooltipTriggerList = [].slice.call(
-      document.querySelectorAll('[data-bs-toggle="tooltip"]')
-    );
-    tooltipTriggerList.forEach(
-      tooltipTriggerEl => new Tooltip(tooltipTriggerEl)
-    );
+    // const tooltipTriggerList = [].slice.call(
+    //   document.querySelectorAll('[data-bs-toggle="tooltip"]')
+    // );
+    // tooltipTriggerList.forEach(
+    //   tooltipTriggerEl => new Tooltip(tooltipTriggerEl)
+    // );
+      // if (this.isBrowser) {
+      //   console.log("IS BROWS");
+        
+      // const tooltipTriggerList = [].slice.call(
+      //   document.querySelectorAll('[data-bs-toggle="tooltip"]')
+      // );
+      // tooltipTriggerList.forEach(
+      //   tooltipTriggerEl => new Tooltip(tooltipTriggerEl)
+      // );
+      // }
+      if (isPlatformBrowser(this.platformId)) {
+    import('bootstrap').then(bs => {
+      const Tooltip = bs.Tooltip;
+      const tooltipTriggerList = [].slice.call(
+        document.querySelectorAll('[data-bs-toggle="tooltip"]')
+      );
+      tooltipTriggerList.forEach(el => new Tooltip(el));
+    });
+  }
   }
 
   onSelectVersion(version: string) {

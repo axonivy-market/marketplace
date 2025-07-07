@@ -37,7 +37,215 @@ import { ItemDropdown } from '../../shared/models/item-dropdown.model';
 import { LoadingSpinnerComponent } from '../../shared/components/loading-spinner/loading-spinner.component';
 import { LoadingService } from '../../core/services/loading/loading.service';
 import { LoadingComponentId } from '../../shared/enums/loading-component-id';
+import { WindowRef } from '../../core/services/browser/window-ref.service';
 const SEARCH_DEBOUNCE_TIME = 500;
+
+// @Component({
+//   selector: 'app-product',
+//   standalone: true,
+//   imports: [
+//     LoadingSpinnerComponent,
+//     CommonModule,
+//     FormsModule,
+//     TranslateModule,
+//     ProductCardComponent,
+//     ProductFilterComponent
+//   ],
+//   providers: [ProductService],
+//   templateUrl: './product.component.html',
+//   styleUrl: './product.component.scss'
+// })
+// export class ProductComponent implements AfterViewInit, OnDestroy {
+//   protected LoadingComponentId = LoadingComponentId;
+//   products: WritableSignal<Product[]> = signal([]);
+//   productDetail!: ProductDetail;
+//   subscriptions: Subscription[] = [];
+//   searchTextChanged = new Subject<string>();
+//   loadingService = inject(LoadingService);
+//   criteria: Criteria = {
+//     search: '',
+//     type: TypeOption.All_TYPES,
+//     isRESTClientEditor: false,
+//     sort: SortOption.STANDARD,
+//     language: Language.EN,
+//     pageable: DEFAULT_PAGEABLE
+//   };
+//   responseLink!: Link;
+//   responsePage!: Page;
+//   isRESTClient: WritableSignal<boolean> = signal(false);
+//   isDesignerEnvironment = inject(RoutingQueryParamService).isDesignerEnv();
+//   productService = inject(ProductService);
+//   themeService = inject(ThemeService);
+//   translateService = inject(TranslateService);
+//   languageService = inject(LanguageService);
+//   route = inject(ActivatedRoute);
+//   router = inject(Router);
+//   @ViewChild('observer', { static: true }) observerElement!: ElementRef;
+
+//   constructor() {
+//     this.route.queryParams.subscribe(params => {
+//       this.isRESTClient.set(
+//         DESIGNER_SESSION_STORAGE_VARIABLE.restClientParamName in params &&
+//         this.isDesignerEnvironment
+//       );
+
+//       this.criteria = {
+//         ...this.criteria,
+//         search: params[DESIGNER_SESSION_STORAGE_VARIABLE.searchParamName] ?? this.criteria.search,
+//         type: params['type'] ?? this.criteria.type,
+//         sort: params['sort'] ?? this.criteria.sort
+//       };
+//     });
+
+//     this.loadProductItems();
+//     this.subscriptions.push(
+//       this.searchTextChanged
+//         .pipe(debounceTime(SEARCH_DEBOUNCE_TIME))
+//         .subscribe(value => {
+//           this.criteria = {
+//             ...this.criteria,
+//             nextPageHref: '',
+//             search: value
+//           };
+//           this.loadProductItems(true);
+
+//           let queryParams: { search: string | null } = { search: null };
+
+//           if (value) {
+//             queryParams = { search: this.criteria.search };
+//           }
+
+//           this.router.navigate([], {
+//             relativeTo: this.route,
+//             queryParamsHandling: 'merge',
+//             queryParams
+//           });
+//         })
+//     );
+//     this.router.events?.subscribe(event => {
+//       if (!(event instanceof NavigationStart)) {
+//         return;
+//       }
+//       window.scrollTo(0, 0);
+//     });
+//   }
+
+//   ngAfterViewInit(): void {
+//     this.setupIntersectionObserver();
+//   }
+
+//   viewProductDetail(productId: string) {
+//     if (this.isRESTClient()) {
+//       window.location.href = `/${productId}`;
+//     }
+//     this.router.navigate([`/${productId}`]);
+//   }
+
+//   onFilterChange(selectedType: ItemDropdown<TypeOption>) {
+//     this.criteria = {
+//       ...this.criteria,
+//       nextPageHref: '',
+//       type: selectedType.value
+//     };
+//     this.loadProductItems(true);
+//     let queryParams: { type: TypeOption | null } = { type: null };
+
+//     if (selectedType.value !== TypeOption.All_TYPES) {
+//       queryParams = { type: this.criteria.type }
+//     }
+
+//     this.router.navigate([], {
+//       relativeTo: this.route,
+//       queryParamsHandling: 'merge',
+//       queryParams
+//     });
+//   }
+
+//   onSortChange(selectedSort: SortOption) {
+//     this.criteria = {
+//       ...this.criteria,
+//       nextPageHref: '',
+//       sort: selectedSort
+//     };
+//     this.loadProductItems(true);
+//     let queryParams = null;
+//     if (SortOption.STANDARD !== selectedSort) {
+//       queryParams = { sort: this.criteria.sort };
+//     } else {
+//       queryParams = { sort: null };
+//     }
+
+//     this.router.navigate([], {
+//       relativeTo: this.route,
+//       queryParamsHandling: 'merge',
+//       queryParams
+//     });
+//   }
+
+//   onSearchChanged(searchString: string) {
+//     this.searchTextChanged.next(searchString);
+//   }
+
+//   loadProductItems(shouldCleanData = false) {
+//     this.criteria.language = this.languageService.selectedLanguage();
+//     if (this.isRESTClient()) {
+//       this.criteria = {
+//         ...this.criteria,
+//         isRESTClientEditor: true,
+//         type: TypeOption.CONNECTORS,
+//         language: Language.EN,
+//         pageable: DEFAULT_PAGEABLE_IN_REST_CLIENT
+//       };
+//     }
+
+//     this.subscriptions.push(
+//       this.productService
+//         .findProductsByCriteria(this.criteria)
+//         .subscribe((response: ProductApiResponse) => {
+//           const newProducts = response._embedded.products;
+//           if (shouldCleanData) {
+//             this.products.set(newProducts);
+//           } else {
+//             this.products.update(existingProducts =>
+//               existingProducts.concat(newProducts)
+//             );
+//           }
+//           this.responseLink = response._links;
+//           this.responsePage = response.page;
+//         })
+//     );
+//   }
+
+//   setupIntersectionObserver() {
+//     const options = { root: null, rootMargin: '10px', threshold: 0.1 };
+//     const observer = new IntersectionObserver(entries => {
+//       entries.forEach(entry => {
+//         if (entry.isIntersecting && this.hasMore()) {
+//           this.criteria.nextPageHref = this.responseLink?.next?.href;
+//           this.loadProductItems();
+//         }
+//       });
+//     }, options);
+
+//     observer.observe(this.observerElement.nativeElement);
+//   }
+
+//   hasMore() {
+//     if (!this.responsePage || !this.responseLink) {
+//       return false;
+//     }
+//     return (
+//       this.responsePage.number < this.responsePage.totalPages &&
+//       this.responseLink?.next !== undefined
+//     );
+//   }
+
+//   ngOnDestroy(): void {
+//     this.subscriptions.forEach(sub => {
+//       sub.unsubscribe();
+//     });
+//   }
+// }
 
 @Component({
   selector: 'app-product',
@@ -79,6 +287,8 @@ export class ProductComponent implements AfterViewInit, OnDestroy {
   languageService = inject(LanguageService);
   route = inject(ActivatedRoute);
   router = inject(Router);
+  windowRef = inject(WindowRef); // ✅ injected
+
   @ViewChild('observer', { static: true }) observerElement!: ElementRef;
 
   constructor() {
@@ -97,6 +307,7 @@ export class ProductComponent implements AfterViewInit, OnDestroy {
     });
 
     this.loadProductItems();
+
     this.subscriptions.push(
       this.searchTextChanged
         .pipe(debounceTime(SEARCH_DEBOUNCE_TIME))
@@ -109,7 +320,6 @@ export class ProductComponent implements AfterViewInit, OnDestroy {
           this.loadProductItems(true);
 
           let queryParams: { search: string | null } = { search: null };
-
           if (value) {
             queryParams = { search: this.criteria.search };
           }
@@ -121,11 +331,12 @@ export class ProductComponent implements AfterViewInit, OnDestroy {
           });
         })
     );
+
     this.router.events?.subscribe(event => {
-      if (!(event instanceof NavigationStart)) {
-        return;
+      if (event instanceof NavigationStart) {
+        const win = this.windowRef.nativeWindow; // ✅ safe check
+        win?.scrollTo(0, 0);
       }
-      window.scrollTo(0, 0);
     });
   }
 
@@ -135,7 +346,11 @@ export class ProductComponent implements AfterViewInit, OnDestroy {
 
   viewProductDetail(productId: string) {
     if (this.isRESTClient()) {
-      window.location.href = `/${productId}`;
+      const win = this.windowRef.nativeWindow; // ✅ safe access
+      if (win) {
+        win.location.href = `/${productId}`;
+        return;
+      }
     }
     this.router.navigate([`/${productId}`]);
   }
@@ -147,10 +362,10 @@ export class ProductComponent implements AfterViewInit, OnDestroy {
       type: selectedType.value
     };
     this.loadProductItems(true);
-    let queryParams: { type: TypeOption | null } = { type: null };
 
+    let queryParams: { type: TypeOption | null } = { type: null };
     if (selectedType.value !== TypeOption.All_TYPES) {
-      queryParams = { type: this.criteria.type }
+      queryParams = { type: this.criteria.type };
     }
 
     this.router.navigate([], {
@@ -167,12 +382,10 @@ export class ProductComponent implements AfterViewInit, OnDestroy {
       sort: selectedSort
     };
     this.loadProductItems(true);
-    let queryParams = null;
-    if (SortOption.STANDARD !== selectedSort) {
-      queryParams = { sort: this.criteria.sort };
-    } else {
-      queryParams = { sort: null };
-    }
+
+    let queryParams = SortOption.STANDARD !== selectedSort
+      ? { sort: this.criteria.sort }
+      : { sort: null };
 
     this.router.navigate([], {
       relativeTo: this.route,
@@ -216,17 +429,33 @@ export class ProductComponent implements AfterViewInit, OnDestroy {
   }
 
   setupIntersectionObserver() {
-    const options = { root: null, rootMargin: '10px', threshold: 0.1 };
-    const observer = new IntersectionObserver(entries => {
-      entries.forEach(entry => {
-        if (entry.isIntersecting && this.hasMore()) {
-          this.criteria.nextPageHref = this.responseLink?.next?.href;
-          this.loadProductItems();
-        }
-      });
-    }, options);
+    // const win = this.windowRef.nativeWindow; // ✅ SSR-safe
+    // if (!win) return;
 
-    observer.observe(this.observerElement.nativeElement);
+    // const options = { root: null, rootMargin: '10px', threshold: 0.1 };
+    // const observer = new win.IntersectionObserver(entries => {
+    //   entries.forEach(entry => {
+    //     if (entry.isIntersecting && this.hasMore()) {
+    //       this.criteria.nextPageHref = this.responseLink?.next?.href;
+    //       this.loadProductItems();
+    //     }
+    //   });
+    // }, options);
+
+    // observer.observe(this.observerElement.nativeElement);
+      if (typeof IntersectionObserver === 'undefined') return;
+
+  const options = { root: null, rootMargin: '10px', threshold: 0.1 };
+  const observer = new IntersectionObserver(entries => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting && this.hasMore()) {
+        this.criteria.nextPageHref = this.responseLink?.next?.href;
+        this.loadProductItems();
+      }
+    });
+  }, options);
+
+  observer.observe(this.observerElement.nativeElement);
   }
 
   hasMore() {
