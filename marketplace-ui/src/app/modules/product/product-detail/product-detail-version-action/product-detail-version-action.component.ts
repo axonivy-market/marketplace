@@ -9,6 +9,7 @@ import {
   inject,
   Input,
   model,
+  NgZone,
   Output,
   PLATFORM_ID,
   Signal,
@@ -42,6 +43,7 @@ import { LoadingService } from '../../../../core/services/loading/loading.servic
 import { API_URI } from '../../../../shared/constants/api.constant';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { VersionDownload } from '../../../../shared/models/version-download.model';
+import { take } from 'rxjs';
 
 const showDevVersionCookieName = 'showDevVersions';
 const ARTIFACT_ZIP_URL = 'artifact/zip-file';
@@ -117,6 +119,7 @@ export class ProductDetailVersionActionComponent implements AfterViewInit {
 
   platformId = inject(PLATFORM_ID);
   isBrowser = isPlatformBrowser(this.platformId);
+  ngZone = inject(NgZone);
 
   isDevVersionsDisplayed: WritableSignal<boolean> = signal(
     this.getShowDevVersionFromCookie()
@@ -140,13 +143,24 @@ export class ProductDetailVersionActionComponent implements AfterViewInit {
       //   tooltipTriggerEl => new Tooltip(tooltipTriggerEl)
       // );
       // }
-      if (isPlatformBrowser(this.platformId)) {
-    import('bootstrap').then(bs => {
-      const Tooltip = bs.Tooltip;
-      const tooltipTriggerList = [].slice.call(
-        document.querySelectorAll('[data-bs-toggle="tooltip"]')
-      );
-      tooltipTriggerList.forEach(el => new Tooltip(el));
+  //     if (isPlatformBrowser(this.platformId)) {
+  //   import('bootstrap').then(bs => {
+  //     const Tooltip = bs.Tooltip;
+  //     const tooltipTriggerList = [].slice.call(
+  //       document.querySelectorAll('[data-bs-toggle="tooltip"]')
+  //     );
+  //     tooltipTriggerList.forEach(el => new Tooltip(el));
+  //   });
+  // }
+  if (isPlatformBrowser(this.platformId)) {
+    console.log("BROWSER PLATFORM");
+    
+    this.ngZone.onStable.pipe(take(1)).subscribe(() => {
+      import('bootstrap').then(bs => {
+        const Tooltip = bs.Tooltip;
+        const elements = document.querySelectorAll('[data-bs-toggle="tooltip"]');
+        elements.forEach(el => new Tooltip(el));
+      });
     });
   }
   }
