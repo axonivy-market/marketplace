@@ -24,7 +24,10 @@ import { CommonDropdownComponent } from '../../../../shared/components/common-dr
 import { LanguageService } from '../../../../core/services/language/language.service';
 import { ItemDropdown } from '../../../../shared/models/item-dropdown.model';
 import { environment } from '../../../../../environments/environment';
-import { SHOW_DEV_VERSION, VERSION } from '../../../../shared/constants/common.constant';
+import {
+  SHOW_DEV_VERSION,
+  VERSION
+} from '../../../../shared/constants/common.constant';
 import { ProductDetailActionType } from '../../../../shared/enums/product-detail-action-type';
 import { RoutingQueryParamService } from '../../../../shared/services/routing.query.param.service';
 import { ProductDetail } from '../../../../shared/models/product-detail.model';
@@ -33,13 +36,17 @@ import { CookieService } from 'ngx-cookie-service';
 import { CommonUtils } from '../../../../shared/utils/common.utils';
 import { ActivatedRoute, Router } from '@angular/router';
 import { ROUTER } from '../../../../shared/constants/router.constant';
-import { MatomoCategory, MatomoAction } from '../../../../shared/enums/matomo-tracking.enum';
+import {
+  MatomoCategory,
+  MatomoAction
+} from '../../../../shared/enums/matomo-tracking.enum';
 import { MATOMO_TRACKING_ENVIRONMENT } from '../../../../shared/constants/matomo.constant';
 import { MATOMO_DIRECTIVES } from 'ngx-matomo-client';
 import { LoadingComponentId } from '../../../../shared/enums/loading-component-id';
 import { LoadingService } from '../../../../core/services/loading/loading.service';
 import { API_URI } from '../../../../shared/constants/api.constant';
-import { HttpClient, HttpParams } from '@angular/common/http';
+import { HttpClient, HttpParams, HttpResponse } from '@angular/common/http';
+import { finalize } from 'rxjs/operators';
 
 const showDevVersionCookieName = 'showDevVersions';
 const ARTIFACT_ZIP_URL = 'artifact/zip-file';
@@ -50,6 +57,8 @@ const ZIP = '.zip';
 const APPLICATION_OCTET_STREAM = 'application/octet-stream';
 const ANCHOR_ELEMENT = 'a';
 const DELAY_TIMEOUT = 500;
+const BLOB = 'blob';
+const RESPONSE = 'response';
 
 @Component({
   selector: 'app-product-version-action',
@@ -312,39 +321,33 @@ export class ProductDetailVersionActionComponent implements AfterViewInit {
 
   fetchAndDownloadArtifact(url: string, fileName: string): void {
     this.isDownloading.set(true);
-    console.warn('start to call');
-    console.log(new Date().toString());
     this.httpClient
       .get(url, {
-        responseType: 'blob',
-        observe: 'response'
+        responseType: BLOB,
+        observe: RESPONSE
       })
+      .pipe(finalize(() => this.isDownloading.set(false)))
       .subscribe({
-        next: response => {
-          // ✅ Get installation count from header
-          this.installationCount.emit(+this.installationCount);
-          // ✅ Download file
-          const blob = response.body!;
-          const downloadUrl = window.URL.createObjectURL(blob);
-
-          const a = document.createElement('a');
-          a.href = downloadUrl;
-          a.download = fileName;
-          a.click();
-
-          window.URL.revokeObjectURL(downloadUrl);
-          this.isDownloading.set(false);
-          this.installationCount.emit(this.installationCount);
-          console.warn('end to call');
-          console.log(new Date().toString());
+        next: (response: HttpResponse<Blob>) => {
+          if (response.body) {
+            this.triggerDownload(response.body, fileName);
+          } else {
+            console.error('No data received for download.');
+          }
         },
         error: error => {
           console.error('Download failed:', error);
-          this.isDownloading.set(false);
-          console.warn('end to call');
-          console.log(new Date().toString());
         }
       });
+  }
+
+  private triggerDownload(blob: Blob, fileName: string): void {
+    const downloadUrl = URL.createObjectURL(blob);
+    const anchor = document.createElement(ANCHOR_ELEMENT);
+    anchor.href = downloadUrl;
+    anchor.download = fileName;
+    anchor.click();
+    URL.revokeObjectURL(downloadUrl);
   }
 
   private downloadFile(fileData: string, fileName: string): void {
