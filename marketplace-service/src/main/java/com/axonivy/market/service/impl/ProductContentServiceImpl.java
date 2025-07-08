@@ -167,48 +167,30 @@ public class ProductContentServiceImpl implements ProductContentService {
           if (!resourceResponse.getStatusCode().is2xxSuccessful() || resourceResponse.getBody() == null) {
             continue;
           }
-          ZipEntry zipEntry = new ZipEntry(extractFileNameFromUrl(fileUrl));
-          zipOut.putNextEntry(zipEntry);
+          String fileName = extractFileNameFromUrl(fileUrl);
           try (InputStream fileInputStream = resourceResponse.getBody().getInputStream()) {
-            FileUtils.writeBlobAsChunks(fileInputStream, zipOut);
+            addNewFileToZip(fileName, zipOut, fileInputStream);
           }
-          zipOut.closeEntry();
         }
+        zipConfigurationOptions(zipOut);
         zipOut.finish();
       }
     };
   }
 
-  private void zipDependencyArtifacts(String version, ProductDependency mavenArtifact, ZipOutputStream zipOut)
-      throws IOException {
-    for (var dependency : Optional.ofNullable(mavenArtifact)
-        .map(ProductDependency::getDependencies).orElse(Set.of())) {
-      zipArtifact(version, dependency.getDownloadUrl(), zipOut);
-    }
-  }
-
   private void zipConfigurationOptions(ZipOutputStream zipOut) throws IOException {
     final String configFile = "deploy.options.yaml";
     ClassPathResource resource = new ClassPathResource("app-zip/" + configFile);
-    String content = Files.readString(Path.of(resource.getURI()), StandardCharsets.UTF_8);
-    addNewFileToZip(configFile, zipOut, content.getBytes());
+    addNewFileToZip(configFile, zipOut, resource.getInputStream());
   }
 
-  private static void addNewFileToZip(String fileName, ZipOutputStream zipOut, byte[] content) throws IOException {
+  private static void addNewFileToZip(String fileName, ZipOutputStream zipOut, InputStream in) throws IOException {
     ZipEntry entry = new ZipEntry(fileName);
     zipOut.putNextEntry(entry);
-    zipOut.write(content);
-    zipOut.closeEntry();
-  }
-
-  private void zipArtifact(String version, String downloadUrl, ZipOutputStream zipOut) throws IOException {
-    if (StringUtils.isNoneBlank(downloadUrl)) {
-      byte[] artifactData = fileDownloadService.safeDownload(downloadUrl);
-      if (ObjectUtils.isEmpty(artifactData)) {
-        return;
-      }
-      String filename = StringUtils.substringAfter(downloadUrl, String.format("/%s/", version));
-      addNewFileToZip(filename, zipOut, artifactData);
+    try {
+      FileUtils.writeBlobAsChunks(in, zipOut);
+    } finally {
+      zipOut.closeEntry();
     }
   }
 }
