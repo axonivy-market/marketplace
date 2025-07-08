@@ -3,13 +3,16 @@ package com.axonivy.market.service.impl;
 import com.axonivy.market.bo.DownloadOption;
 import com.axonivy.market.service.FileDownloadService;
 import com.axonivy.market.util.FileUtils;
+import com.axonivy.market.util.HttpFetchingUtils;
 import com.axonivy.market.util.validator.AuthorizationUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.SystemUtils;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.Resource;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
@@ -48,7 +51,7 @@ public class FileDownloadServiceImpl implements FileDownloadService {
 
   @Override
   public byte[] downloadFile(String url) {
-    return new RestTemplate().getForObject(url, byte[].class);
+    return HttpFetchingUtils.downloadFile(url);
   }
 
   public byte[] safeDownload(String url) {

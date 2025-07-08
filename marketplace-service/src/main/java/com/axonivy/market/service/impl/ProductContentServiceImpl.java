@@ -1,7 +1,6 @@
 package com.axonivy.market.service.impl;
 
 import com.axonivy.market.bo.DownloadOption;
-import com.axonivy.market.bo.VersionDownload;
 import com.axonivy.market.constants.CommonConstants;
 import com.axonivy.market.constants.ProductJsonConstants;
 import com.axonivy.market.constants.ReadmeConstants;
@@ -16,18 +15,27 @@ import com.axonivy.market.service.ImageService;
 import com.axonivy.market.service.ProductContentService;
 import com.axonivy.market.service.ProductJsonContentService;
 import com.axonivy.market.service.ProductMarketplaceDataService;
+import com.axonivy.market.util.FileUtils;
+import com.axonivy.market.util.HttpFetchingUtils;
 import com.axonivy.market.util.MavenUtils;
 import com.axonivy.market.util.ProductContentUtils;
 import lombok.AllArgsConstructor;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.core.io.ClassPathResource;
+import org.springframework.core.io.Resource;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.web.servlet.mvc.method.annotation.StreamingResponseBody;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -43,7 +51,7 @@ import java.util.zip.ZipOutputStream;
 
 @Log4j2
 @Service
-@AllArgsConstructor
+@RequiredArgsConstructor
 public class ProductContentServiceImpl implements ProductContentService {
   private final FileDownloadService fileDownloadService;
   private final ProductJsonContentService productJsonContentService;
@@ -134,27 +142,40 @@ public class ProductContentServiceImpl implements ProductContentService {
   }
 
   @Override
-  public VersionDownload downloadZipArtifactFile(String productId, String artifactId,
+  public List<String> getDependencyUrls(String productId, String artifactId,
       String version) {
     List<ProductDependency> productDependencies =
         productDependencyRepository.findByProductIdAndArtifactIdAndVersion(productId, artifactId, version);
-    if (ObjectUtils.isEmpty(productDependencies)) {
-      return null;
+    return productDependencies.stream().map(ProductDependency::getDownloadUrl).toList();
+  }
+  private String extractFileNameFromUrl(String fileUrl) {
+    try {
+      String path = new URL(fileUrl).getPath();
+      return Paths.get(path).getFileName().toString();
+    } catch (MalformedURLException e) {
+      return "unknown_file";
     }
-    // Create a ZIP file
-    var byteArrayOutputStream = new ByteArrayOutputStream();
-    try (var zipOut = new ZipOutputStream(byteArrayOutputStream)) {
-      for (var productDependency : productDependencies) {
-        zipArtifact(version, productDependency.getDownloadUrl(), zipOut);
-        zipDependencyArtifacts(version, productDependency, zipOut);
+  }
+
+  @Override
+  public StreamingResponseBody buildArtifactStreamUrls(List<String> urls) {
+    return outputStream -> {
+      try (ZipOutputStream zipOut = new ZipOutputStream(outputStream)) {
+        for (String fileUrl : urls) {
+          ResponseEntity<Resource> resourceResponse = HttpFetchingUtils.fetchResourceUrl(fileUrl);
+          if (!resourceResponse.getStatusCode().is2xxSuccessful() || resourceResponse.getBody() == null) {
+            continue;
+          }
+          ZipEntry zipEntry = new ZipEntry(extractFileNameFromUrl(fileUrl));
+          zipOut.putNextEntry(zipEntry);
+          try (InputStream fileInputStream = resourceResponse.getBody().getInputStream()) {
+            FileUtils.writeBlobAsChunks(fileInputStream, zipOut);
+          }
+          zipOut.closeEntry();
+        }
+        zipOut.finish();
       }
-      zipConfigurationOptions(zipOut);
-      zipOut.closeEntry();
-    } catch (IOException e) {
-      log.error("Cannot create ZIP file {}", e.getMessage());
-      return null;
-    }
-    return productMarketplaceDataService.getVersionDownload(productId, byteArrayOutputStream.toByteArray());
+    };
   }
 
   private void zipDependencyArtifacts(String version, ProductDependency mavenArtifact, ZipOutputStream zipOut)
