@@ -213,7 +213,7 @@ public class ProductDetailsController {
       @PathVariable(value = ID) @Parameter(in = ParameterIn.PATH, example = "demos") String id,
       @RequestParam(value = VERSION) @Parameter(in = ParameterIn.QUERY, example = "10.0") String version,
       @RequestParam(value = ARTIFACT) @Parameter(in = ParameterIn.QUERY, example = "demos-app") String artifactId) {
-    List<String> dependencyUrls = productContentService.getDependencyUrls(id, version, artifactId);
+    List<String> dependencyUrls = productContentService.getDependencyUrls(id, artifactId, version);
     if (CollectionUtils.isEmpty(dependencyUrls)) {
       //do something
     }
