@@ -100,8 +100,8 @@ class ProductDependencyServiceImplTest extends BaseSetup {
         .thenReturn(mavenArtifactVersionMockList);
 
     // Mock for main artifact
-    when(fileDownloadService.downloadFile(MOCK_DOWNLOAD_POM_URL))
-        .thenReturn(Files.readAllBytes(new File("src/test/resources/zip/test-pom.xml").toPath()));
+//    when(fileDownloadService.downloadFile(MOCK_DOWNLOAD_POM_URL))
+//        .thenReturn(Files.readAllBytes(new File("src/test/resources/zip/test-pom.xml").toPath()));
 
     when(metadataRepository.findByGroupIdAndArtifactId(MOCK_GROUP_ID, MOCK_DEPENDENCY_ARTIFACT_ID))
         .thenReturn(List.of(Metadata.builder()
@@ -116,7 +116,7 @@ class ProductDependencyServiceImplTest extends BaseSetup {
             mockMavenArtifactVersion(MOCK_VERSION, MOCK_DEPENDENCY_ARTIFACT_ID, MOCK_DOWNLOAD_POM_DEPENDENCY_URL)));
 
     // Mock for dependency artifact
-    when(fileDownloadService.downloadFile(MOCK_DOWNLOAD_POM_DEPENDENCY_URL))
-        .thenReturn(Files.readAllBytes(new File("src/test/resources/zip/test-empty-dependency-pom.xml").toPath()));
+//    when(fileDownloadService.downloadFile(MOCK_DOWNLOAD_POM_DEPENDENCY_URL))
+//        .thenReturn(Files.readAllBytes(new File("src/test/resources/zip/test-empty-dependency-pom.xml").toPath()));
   }
 }

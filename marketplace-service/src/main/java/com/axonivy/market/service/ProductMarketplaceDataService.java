@@ -1,8 +1,10 @@
 package com.axonivy.market.service;
 
-import com.axonivy.market.bo.VersionDownload;
 import com.axonivy.market.entity.ProductMarketplaceData;
 import com.axonivy.market.model.ProductCustomSortRequest;
+import org.springframework.core.io.Resource;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.servlet.mvc.method.annotation.StreamingResponseBody;
 
 public interface ProductMarketplaceDataService {
   void addCustomSortProduct(ProductCustomSortRequest customSort);
@@ -15,7 +17,5 @@ public interface ProductMarketplaceDataService {
 
   Integer getInstallationCount(String id);
 
-  VersionDownload downloadArtifact(String artifactUrl, String productId);
-
-  VersionDownload getVersionDownload(String productId, byte[] fileData);
+  StreamingResponseBody buildArtifactStreamFromResource(String productId, Resource resource);
 }

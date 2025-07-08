@@ -1,6 +1,5 @@
 package com.axonivy.market.service.impl;
 
-import com.axonivy.market.bo.VersionDownload;
 import com.axonivy.market.entity.ProductCustomSort;
 import com.axonivy.market.entity.ProductMarketplaceData;
 import com.axonivy.market.enums.ErrorCode;
@@ -13,15 +12,21 @@ import com.axonivy.market.repository.ProductMarketplaceDataRepository;
 import com.axonivy.market.repository.ProductRepository;
 import com.axonivy.market.service.FileDownloadService;
 import com.axonivy.market.service.ProductMarketplaceDataService;
+import com.axonivy.market.util.FileUtils;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.io.Resource;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.web.servlet.mvc.method.annotation.StreamingResponseBody;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.security.SecureRandom;
@@ -32,6 +37,7 @@ import java.util.Map;
 
 @Service
 @Log4j2
+@RequiredArgsConstructor
 public class ProductMarketplaceDataServiceImpl implements ProductMarketplaceDataService {
   private final ProductMarketplaceDataRepository productMarketplaceDataRepo;
   private final ProductCustomSortRepository productCustomSortRepo;
@@ -42,16 +48,6 @@ public class ProductMarketplaceDataServiceImpl implements ProductMarketplaceData
   private final SecureRandom random = new SecureRandom();
   @Value("${market.legacy.installation.counts.path}")
   private String legacyInstallationCountPath;
-
-  public ProductMarketplaceDataServiceImpl(ProductMarketplaceDataRepository productMarketplaceDataRepo,
-      ProductCustomSortRepository productCustomSortRepo, ProductRepository productRepo,
-      FileDownloadService fileDownloadService, ProductDesignerInstallationRepository productDesignerInstallationRepo) {
-    this.productMarketplaceDataRepo = productMarketplaceDataRepo;
-    this.productCustomSortRepo = productCustomSortRepo;
-    this.productRepo = productRepo;
-    this.fileDownloadService = fileDownloadService;
-    this.productDesignerInstallationRepo = productDesignerInstallationRepo;
-  }
 
   @Override
   public void addCustomSortProduct(ProductCustomSortRequest customSort) {
@@ -76,26 +72,6 @@ public class ProductMarketplaceDataServiceImpl implements ProductMarketplaceData
       productEntries.add(productMarketplaceData);
     }
     return productEntries;
-  }
-
-  @Override
-  public VersionDownload downloadArtifact(String artifactUrl, String productId) {
-    byte[] fileData = fileDownloadService.safeDownload(artifactUrl);
-    if (fileData == null || fileData.length == 0) {
-      log.warn("Downloaded file is empty or null from URL: {}", artifactUrl);
-      return null;
-    }
-    return getVersionDownload(productId, fileData);
-  }
-
-
-  @Override
-  public VersionDownload getVersionDownload(String productId, byte[] fileData) {
-    int installationCount = updateInstallationCountForProduct(productId, null);
-    return VersionDownload.builder()
-        .fileData(fileData)
-        .installationCount(installationCount)
-        .build();
   }
 
   @Override
@@ -160,5 +136,20 @@ public class ProductMarketplaceDataServiceImpl implements ProductMarketplaceData
     if (productRepo.findById(productId).isEmpty()) {
       throw new NotFoundException(ErrorCode.PRODUCT_NOT_FOUND, "Not found product with id: " + productId);
     }
+  }
+
+  @Override
+  public StreamingResponseBody buildArtifactStreamFromResource(String productId, Resource resource) {
+    return outputStream -> {
+      try (InputStream inputStream = resource.getInputStream()) {
+        FileUtils.writeBlobAsChunks(inputStream, outputStream);
+        outputStream.flush();
+        int count = updateInstallationCountForProduct(productId, null);
+        log.debug("File {} downloaded, installation count incremented to {}", productId, count);
+      } catch (IOException e) {
+        log.error("Error streaming file for product {}: {}", productId, e.getMessage(), e);
+        throw e;
+      }
+    };
   }
 }

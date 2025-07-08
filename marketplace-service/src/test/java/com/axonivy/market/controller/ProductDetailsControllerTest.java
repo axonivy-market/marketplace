@@ -3,7 +3,6 @@ package com.axonivy.market.controller;
 import com.axonivy.market.BaseSetup;
 import com.axonivy.market.assembler.GithubReleaseModelAssembler;
 import com.axonivy.market.assembler.ProductDetailModelAssembler;
-import com.axonivy.market.bo.VersionDownload;
 import com.axonivy.market.entity.Product;
 import com.axonivy.market.entity.ProductJsonContent;
 import com.axonivy.market.enums.Language;

@@ -8,6 +8,8 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -18,6 +20,7 @@ import java.util.zip.ZipInputStream;
 
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class FileUtils {
+  public static final int DEFAULT_BUFFER_SIZE = 8192;
 
   public static File createFile(String fileName) throws IOException {
     File file = new File(fileName);
@@ -94,5 +97,13 @@ public class FileUtils {
 
   public static File createNewFile(String location) {
     return new File(location);
+  }
+
+  public static void writeBlobAsChunks(InputStream in, OutputStream out) throws IOException {
+    byte[] buffer = new byte[DEFAULT_BUFFER_SIZE];
+    int bytesRead;
+    while ((bytesRead = in.read(buffer)) != -1) {
+      out.write(buffer, 0, bytesRead);
+    }
   }
 }

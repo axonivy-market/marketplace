@@ -1,7 +1,6 @@
 package com.axonivy.market.service.impl;
 
 import com.axonivy.market.BaseSetup;
-import com.axonivy.market.bo.VersionDownload;
 import com.axonivy.market.entity.Artifact;
 import com.axonivy.market.constants.ProductJsonConstants;
 import com.axonivy.market.entity.ProductDependency;

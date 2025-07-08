@@ -1,18 +1,14 @@
 package com.axonivy.market.controller;
 
 import com.axonivy.market.BaseSetup;
-import com.axonivy.market.bo.VersionDownload;
 import com.axonivy.market.enums.ErrorCode;
 import com.axonivy.market.github.service.GitHubService;
 import com.axonivy.market.model.ProductCustomSortRequest;
 import com.axonivy.market.service.ProductMarketplaceDataService;
-import com.axonivy.market.util.validator.AuthorizationUtils;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.MockedStatic;
-import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpStatus;
 
