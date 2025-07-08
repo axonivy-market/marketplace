@@ -148,6 +148,7 @@ public class ProductContentServiceImpl implements ProductContentService {
         productDependencyRepository.findByProductIdAndArtifactIdAndVersion(productId, artifactId, version);
     return productDependencies.stream().map(ProductDependency::getDownloadUrl).toList();
   }
+
   private String extractFileNameFromUrl(String fileUrl) {
     try {
       String path = new URL(fileUrl).getPath();

@@ -40,7 +40,6 @@ import { LoadingComponentId } from '../../../../shared/enums/loading-component-i
 import { LoadingService } from '../../../../core/services/loading/loading.service';
 import { API_URI } from '../../../../shared/constants/api.constant';
 import { HttpClient, HttpParams } from '@angular/common/http';
-import { VersionDownload } from '../../../../shared/models/version-download.model';
 
 const showDevVersionCookieName = 'showDevVersions';
 const ARTIFACT_ZIP_URL = 'artifact/zip-file';
@@ -231,10 +230,16 @@ export class ProductDetailVersionActionComponent implements AfterViewInit {
   }
 
   getVersionInDesigner(): void {
-    const designerVersion = this.routingQueryParamService.getDesignerVersionFromSessionStorage() ?? '';
+    const designerVersion =
+      this.routingQueryParamService.getDesignerVersionFromSessionStorage() ??
+      '';
     this.versionDropdownInDesigner = [];
     this.productService
-      .sendRequestToGetProductVersionsForDesigner(this.productId, this.isDevVersionsDisplayed(), designerVersion)
+      .sendRequestToGetProductVersionsForDesigner(
+        this.productId,
+        this.isDevVersionsDisplayed(),
+        designerVersion
+      )
       .subscribe(data => {
         const versionMap = data
           .map(dataVersionAndUrl => dataVersionAndUrl.version)
@@ -264,11 +269,20 @@ export class ProductDetailVersionActionComponent implements AfterViewInit {
   downloadArtifact(): void {
     let downloadUrl = '';
     this.isDownloading.set(true);
-    if (!this.isCheckedAppForEngine || this.selectedArtifactId?.endsWith(DOC) || this.selectedArtifact?.endsWith(ZIP)) {
+    if (
+      !this.isCheckedAppForEngine ||
+      this.selectedArtifactId?.endsWith(DOC) ||
+      this.selectedArtifact?.endsWith(ZIP)
+    ) {
       const params = new HttpParams().set('url', this.selectedArtifact ?? '');
       downloadUrl = `${this.getMarketplaceServiceUrl()}/${API_URI.PRODUCT_MARKETPLACE_DATA}/${VERSION_DOWNLOAD}/${this.productId}?${params.toString()}`;
       if (this.selectedArtifact) {
-        this.fetchAndDownloadArtifact(downloadUrl, this.selectedArtifact.substring(this.selectedArtifact.lastIndexOf("/") + 1));
+        this.fetchAndDownloadArtifact(
+          downloadUrl,
+          this.selectedArtifact.substring(
+            this.selectedArtifact.lastIndexOf('/') + 1
+          )
+        );
       }
     } else if (this.isCheckedAppForEngine) {
       const version = this.selectedVersion().replace(VERSION.displayPrefix, '');
@@ -277,7 +291,10 @@ export class ProductDetailVersionActionComponent implements AfterViewInit {
         .set(ROUTER.ARTIFACT, this.selectedArtifactId ?? '');
 
       downloadUrl = `${this.getMarketplaceServiceUrl()}/${API_URI.PRODUCT_DETAILS}/${this.productId}/${ARTIFACT_ZIP_URL}?${params.toString()}`;
-      this.fetchAndDownloadArtifact(downloadUrl, `${this.selectedArtifactId}-app-${version}.zip`);
+      this.fetchAndDownloadArtifact(
+        downloadUrl,
+        `${this.selectedArtifactId}-app-${version}.zip`
+      );
     } else {
       return;
     }
@@ -286,63 +303,62 @@ export class ProductDetailVersionActionComponent implements AfterViewInit {
   getMarketplaceServiceUrl(): string {
     let marketplaceServiceUrl = environment.apiUrl;
     if (!marketplaceServiceUrl.startsWith(HTTP)) {
-      marketplaceServiceUrl = window.location.origin.concat(marketplaceServiceUrl);
+      marketplaceServiceUrl = window.location.origin.concat(
+        marketplaceServiceUrl
+      );
     }
     return marketplaceServiceUrl;
   }
 
-  // fetchAndDownloadArtifact(url: string, fileName: string): void {
-  //   this.httpClient.get<VersionDownload>(url).subscribe(
-  //     response => {
-  //       if (response.fileData) {
-  //         this.installationCount.emit(response.installationCount);
-  //         this.downloadFile(response.fileData, fileName);
-  //         this.isDownloading.set(false);
-  //       }
-  //     }
-  //   );
-  // }
   fetchAndDownloadArtifact(url: string, fileName: string): void {
-  this.isDownloading.set(true);
+    this.isDownloading.set(true);
+    console.warn('start to call');
+    console.log(new Date().toString());
+    this.httpClient
+      .get(url, {
+        responseType: 'blob',
+        observe: 'response'
+      })
+      .subscribe({
+        next: response => {
+          // ✅ Get installation count from header
+          this.installationCount.emit(+this.installationCount);
+          // ✅ Download file
+          const blob = response.body!;
+          const downloadUrl = window.URL.createObjectURL(blob);
 
-  this.httpClient.get(url, {
-    responseType: 'blob',
-    observe: 'response'
-  }).subscribe({
-    next: response => {
-      // ✅ Get installation count from header
-      const installationCount = response.headers.get('X-Installation-Count');
-      if (installationCount) {
-        this.installationCount.emit(+installationCount);
-      }
+          const a = document.createElement('a');
+          a.href = downloadUrl;
+          a.download = fileName;
+          a.click();
 
-      // ✅ Download file
-      const blob = response.body!;
-      const downloadUrl = window.URL.createObjectURL(blob);
-
-      const a = document.createElement('a');
-      a.href = downloadUrl;
-      a.download = fileName;
-      a.click();
-
-      window.URL.revokeObjectURL(downloadUrl);
-
-      this.isDownloading.set(false);
-    },
-    error: error => {
-      console.error('Download failed:', error);
-      this.isDownloading.set(false);
-    }
-  });
-}
+          window.URL.revokeObjectURL(downloadUrl);
+          this.isDownloading.set(false);
+          this.installationCount.emit(this.installationCount);
+          console.warn('end to call');
+          console.log(new Date().toString());
+        },
+        error: error => {
+          console.error('Download failed:', error);
+          this.isDownloading.set(false);
+          console.warn('end to call');
+          console.log(new Date().toString());
+        }
+      });
+  }
 
   private downloadFile(fileData: string, fileName: string): void {
     const byteCharacters = atob(fileData); // decode base64
     const byteNumbers = Array.from(byteCharacters, c => c.charCodeAt(0));
     const byteArray = new Uint8Array(byteNumbers);
-    const blobUrl = URL.createObjectURL(new Blob([byteArray], { type: APPLICATION_OCTET_STREAM }));
+    const blobUrl = URL.createObjectURL(
+      new Blob([byteArray], { type: APPLICATION_OCTET_STREAM })
+    );
 
-    const a = Object.assign(document.createElement(ANCHOR_ELEMENT), { href: blobUrl, download: fileName });
+    const a = Object.assign(document.createElement(ANCHOR_ELEMENT), {
+      href: blobUrl,
+      download: fileName
+    });
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
@@ -351,9 +367,10 @@ export class ProductDetailVersionActionComponent implements AfterViewInit {
 
   onUpdateInstallationCountForDesigner(): void {
     setTimeout(() => {
-      this.productService.sendRequestToGetInstallationCount(this.productId)
+      this.productService
+        .sendRequestToGetInstallationCount(this.productId)
         .subscribe((data: number) => {
-          this.installationCount.emit(data)
+          this.installationCount.emit(data);
         });
     }, DELAY_TIMEOUT);
   }
