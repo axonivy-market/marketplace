@@ -3,7 +3,6 @@ package com.axonivy.market.service;
 import com.axonivy.market.entity.ProductMarketplaceData;
 import com.axonivy.market.model.ProductCustomSortRequest;
 import org.springframework.core.io.Resource;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.servlet.mvc.method.annotation.StreamingResponseBody;
 
 public interface ProductMarketplaceDataService {
