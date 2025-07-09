@@ -24,10 +24,7 @@ import { CommonDropdownComponent } from '../../../../shared/components/common-dr
 import { LanguageService } from '../../../../core/services/language/language.service';
 import { ItemDropdown } from '../../../../shared/models/item-dropdown.model';
 import { environment } from '../../../../../environments/environment';
-import {
-  SHOW_DEV_VERSION,
-  VERSION
-} from '../../../../shared/constants/common.constant';
+import { SHOW_DEV_VERSION, VERSION } from '../../../../shared/constants/common.constant';
 import { ProductDetailActionType } from '../../../../shared/enums/product-detail-action-type';
 import { RoutingQueryParamService } from '../../../../shared/services/routing.query.param.service';
 import { ProductDetail } from '../../../../shared/models/product-detail.model';
@@ -36,10 +33,7 @@ import { CookieService } from 'ngx-cookie-service';
 import { CommonUtils } from '../../../../shared/utils/common.utils';
 import { ActivatedRoute, Router } from '@angular/router';
 import { ROUTER } from '../../../../shared/constants/router.constant';
-import {
-  MatomoCategory,
-  MatomoAction
-} from '../../../../shared/enums/matomo-tracking.enum';
+import { MatomoCategory, MatomoAction } from '../../../../shared/enums/matomo-tracking.enum';
 import { MATOMO_TRACKING_ENVIRONMENT } from '../../../../shared/constants/matomo.constant';
 import { MATOMO_DIRECTIVES } from 'ngx-matomo-client';
 import { LoadingComponentId } from '../../../../shared/enums/loading-component-id';
@@ -239,16 +233,10 @@ export class ProductDetailVersionActionComponent implements AfterViewInit {
   }
 
   getVersionInDesigner(): void {
-    const designerVersion =
-      this.routingQueryParamService.getDesignerVersionFromSessionStorage() ??
-      '';
+    const designerVersion = this.routingQueryParamService.getDesignerVersionFromSessionStorage() ?? '';
     this.versionDropdownInDesigner = [];
     this.productService
-      .sendRequestToGetProductVersionsForDesigner(
-        this.productId,
-        this.isDevVersionsDisplayed(),
-        designerVersion
-      )
+      .sendRequestToGetProductVersionsForDesigner(this.productId, this.isDevVersionsDisplayed(), designerVersion)
       .subscribe(data => {
         const versionMap = data
           .map(dataVersionAndUrl => dataVersionAndUrl.version)
@@ -278,20 +266,11 @@ export class ProductDetailVersionActionComponent implements AfterViewInit {
   downloadArtifact(): void {
     let downloadUrl = '';
     this.isDownloading.set(true);
-    if (
-      !this.isCheckedAppForEngine ||
-      this.selectedArtifactId?.endsWith(DOC) ||
-      this.selectedArtifact?.endsWith(ZIP)
-    ) {
+    if (!this.isCheckedAppForEngine || this.selectedArtifactId?.endsWith(DOC) || this.selectedArtifact?.endsWith(ZIP)) {
       const params = new HttpParams().set('url', this.selectedArtifact ?? '');
       downloadUrl = `${this.getMarketplaceServiceUrl()}/${API_URI.PRODUCT_MARKETPLACE_DATA}/${VERSION_DOWNLOAD}/${this.productId}?${params.toString()}`;
       if (this.selectedArtifact) {
-        this.fetchAndDownloadArtifact(
-          downloadUrl,
-          this.selectedArtifact.substring(
-            this.selectedArtifact.lastIndexOf('/') + 1
-          )
-        );
+        this.fetchAndDownloadArtifact(downloadUrl, this.selectedArtifact.substring(this.selectedArtifact.lastIndexOf('/') + 1));
       }
     } else if (this.isCheckedAppForEngine) {
       const version = this.selectedVersion().replace(VERSION.displayPrefix, '');
@@ -300,10 +279,7 @@ export class ProductDetailVersionActionComponent implements AfterViewInit {
         .set(ROUTER.ARTIFACT, this.selectedArtifactId ?? '');
 
       downloadUrl = `${this.getMarketplaceServiceUrl()}/${API_URI.PRODUCT_DETAILS}/${this.productId}/${ARTIFACT_ZIP_URL}?${params.toString()}`;
-      this.fetchAndDownloadArtifact(
-        downloadUrl,
-        `${this.selectedArtifactId}-app-${version}.zip`
-      );
+      this.fetchAndDownloadArtifact(downloadUrl, `${this.selectedArtifactId}-app-${version}.zip`);
     } else {
       return;
     }
@@ -312,9 +288,7 @@ export class ProductDetailVersionActionComponent implements AfterViewInit {
   getMarketplaceServiceUrl(): string {
     let marketplaceServiceUrl = environment.apiUrl;
     if (!marketplaceServiceUrl.startsWith(HTTP)) {
-      marketplaceServiceUrl = window.location.origin.concat(
-        marketplaceServiceUrl
-      );
+      marketplaceServiceUrl = window.location.origin.concat( marketplaceServiceUrl);
     }
     return marketplaceServiceUrl;
   }
@@ -322,10 +296,7 @@ export class ProductDetailVersionActionComponent implements AfterViewInit {
   fetchAndDownloadArtifact(url: string, fileName: string): void {
     this.isDownloading.set(true);
     this.httpClient
-      .get(url, {
-        responseType: BLOB,
-        observe: RESPONSE
-      })
+      .get(url, {responseType: BLOB, observe: RESPONSE})
       .pipe(finalize(() => this.isDownloading.set(false)))
       .subscribe({
         next: (response: HttpResponse<Blob>) => {
@@ -345,24 +316,6 @@ export class ProductDetailVersionActionComponent implements AfterViewInit {
     anchor.download = fileName;
     anchor.click();
     URL.revokeObjectURL(downloadUrl);
-  }
-
-  private downloadFile(fileData: string, fileName: string): void {
-    const byteCharacters = atob(fileData); // decode base64
-    const byteNumbers = Array.from(byteCharacters, c => c.charCodeAt(0));
-    const byteArray = new Uint8Array(byteNumbers);
-    const blobUrl = URL.createObjectURL(
-      new Blob([byteArray], { type: APPLICATION_OCTET_STREAM })
-    );
-
-    const a = Object.assign(document.createElement(ANCHOR_ELEMENT), {
-      href: blobUrl,
-      download: fileName
-    });
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(blobUrl);
   }
 
   onUpdateInstallationCountForDesigner(): void {
