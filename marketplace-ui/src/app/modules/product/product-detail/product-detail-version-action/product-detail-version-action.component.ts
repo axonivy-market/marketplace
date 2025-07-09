@@ -294,7 +294,6 @@ export class ProductDetailVersionActionComponent implements AfterViewInit {
   }
 
   fetchAndDownloadArtifact(url: string, fileName: string): void {
-    this.isDownloading.set(true);
     this.httpClient
       .get(url, {responseType: BLOB, observe: RESPONSE})
       .pipe(finalize(() => this.isDownloading.set(false)))
@@ -309,7 +308,7 @@ export class ProductDetailVersionActionComponent implements AfterViewInit {
       });
   }
 
-  private triggerDownload(blob: Blob, fileName: string): void {
+  triggerDownload(blob: Blob, fileName: string): void {
     const downloadUrl = URL.createObjectURL(blob);
     const anchor = document.createElement(ANCHOR_ELEMENT);
     anchor.href = downloadUrl;
@@ -320,10 +319,9 @@ export class ProductDetailVersionActionComponent implements AfterViewInit {
 
   onUpdateInstallationCountForDesigner(): void {
     setTimeout(() => {
-      this.productService
-        .sendRequestToGetInstallationCount(this.productId)
+      this.productService.sendRequestToGetInstallationCount(this.productId)
         .subscribe((data: number) => {
-          this.installationCount.emit(data);
+          this.installationCount.emit(data)
         });
     }, DELAY_TIMEOUT);
   }

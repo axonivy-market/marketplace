@@ -3,7 +3,7 @@ import { of } from 'rxjs';
 import { ProductDetailVersionActionComponent } from './product-detail-version-action.component';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { ProductService } from '../../product.service';
-import { provideHttpClient, withInterceptorsFromDi } from '@angular/common/http';
+import { HttpResponse, provideHttpClient, withInterceptorsFromDi } from '@angular/common/http';
 import { ElementRef } from '@angular/core';
 import { ItemDropdown } from '../../../../shared/models/item-dropdown.model';
 import { CookieService } from 'ngx-cookie-service';
@@ -13,7 +13,7 @@ import { ROUTER } from '../../../../shared/constants/router.constant';
 import { MatomoTestingModule } from 'ngx-matomo-client/testing';
 import { ProductDetailActionType } from '../../../../shared/enums/product-detail-action-type';
 import { MATOMO_TRACKING_ENVIRONMENT } from '../../../../shared/constants/matomo.constant';
-import { provideHttpClientTesting } from '@angular/common/http/testing';
+import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { environment } from '../../../../../environments/environment';
 import { MavenArtifactKey } from '../../../../shared/models/maven-artifact.model';
 
@@ -30,6 +30,7 @@ describe('ProductDetailVersionActionComponent', () => {
   let  productServiceMock: any;
   let router: Router;
   let route: jasmine.SpyObj<ActivatedRoute>;
+  let httpMock: HttpTestingController;
 
   beforeEach(() => {
     productServiceMock = jasmine.createSpyObj('ProductService', [
@@ -69,6 +70,7 @@ describe('ProductDetailVersionActionComponent', () => {
     router = TestBed.inject(Router);
     route = TestBed.inject(ActivatedRoute) as jasmine.SpyObj<ActivatedRoute>;
     fixture.detectChanges();
+    httpMock = TestBed.inject(HttpTestingController);
   });
 
   it('should create', () => { expect(component).toBeTruthy(); });
@@ -351,18 +353,16 @@ describe('ProductDetailVersionActionComponent', () => {
     expect(component.selectedVersion()).toBe(testVersion);
   });
 
-  it('should properly handle file download', () => {
-    spyOn(document.body, 'appendChild');
-    spyOn(document.body, 'removeChild');
-
-    const mockClick = jasmine.createSpy();
-    spyOn(document, 'createElement').and.returnValue({ click: mockClick } as any);
-
-    component['fetchAndDownloadArtifact']('http://localhost:8080', 'test.zip');
-
-    expect(document.body.appendChild).toHaveBeenCalled();
-    expect(mockClick).toHaveBeenCalled();
-    expect(document.body.removeChild).toHaveBeenCalled();
+  it('should fetch and trigger download with correct parameters', () => {
+    const url = 'https://example.com/file.pdf';
+    const fileName = 'file.pdf';
+    const blobData = new Blob(['test data'], { type: 'application/pdf' });
+    const downloadSpy = spyOn<any>(component, 'fetchAndDownloadArtifact').and.callThrough();
+    component.fetchAndDownloadArtifact(url, fileName);
+    const req = httpMock.expectOne(url);
+    expect(req.request.method).toBe('GET');
+    expect(req.request.responseType).toBe('blob');
+    expect(downloadSpy).toHaveBeenCalledOnceWith(url, fileName);
   });
 
   it('should call sendRequestToGetInstallationCount and emit installation count', fakeAsync(() => {
@@ -420,5 +420,27 @@ describe('ProductDetailVersionActionComponent', () => {
       `${environment.apiUrl}/api/product-details/ai-assistant/artifact/zip-file?version=12.0.0&artifact=ai-assistant`,
       'ai-assistant-app-12.0.0.zip'
     );
+  });
+
+  it('should create a blob URL, create anchor, trigger click, and revoke URL', () => {
+    const blob = new Blob(['test'], { type: 'text/plain' });
+    const fileName = 'file.txt';
+    const mockUrl = 'blob:http://localhost/fake-url';
+    const createObjectURLSpy = spyOn(URL, 'createObjectURL').and.returnValue(mockUrl);
+    const revokeObjectURLSpy = spyOn(URL, 'revokeObjectURL');
+    const clickSpy = jasmine.createSpy('click');
+    const anchorMock = {
+      href: '',
+      download: '',
+      click: clickSpy
+    } as unknown as HTMLAnchorElement;
+    const createElementSpy = spyOn(document, 'createElement').and.returnValue(anchorMock);
+    component.triggerDownload(blob, fileName);
+    expect(createObjectURLSpy).toHaveBeenCalledWith(blob);
+    expect(createElementSpy).toHaveBeenCalledWith('a');
+    expect(anchorMock.href).toBe(mockUrl);
+    expect(anchorMock.download).toBe(fileName);
+    expect(clickSpy).toHaveBeenCalled();
+    expect(revokeObjectURLSpy).toHaveBeenCalledWith(mockUrl);
   });
 });
