@@ -148,7 +148,7 @@ export class ProductDetailComponent {
   displayedTabsSignal: Signal<ItemDropdown[]> = computed(() => {
     this.languageService.selectedLanguage();
     this.getReadmeContent();
-    return this.getDisplayedTabsSignal("abc");
+    return this.getDisplayedTabsSignal('abc');
   });
   isDropdownOpen: WritableSignal<boolean> = signal(false);
   selectedVersion = '';
@@ -162,7 +162,6 @@ export class ProductDetailComponent {
   loadedReadmeContent: { [key: string]: SafeHtml } = {};
   isBrowser: boolean;
   meta = inject(Meta);
-  private transferState = inject(TransferState);
 
   @HostListener('window:popstate', ['$event'])
   onPopState() {
@@ -189,11 +188,9 @@ export class ProductDetailComponent {
     this.productDetailService.productId.set(productId);
     const productTitle = this.route.snapshot.data['title'] as string;
     console.log(productTitle);
-    
 
     if (productId) {
       this.loadingService.showLoading(LoadingComponentId.DETAIL_PAGE);
-      // this.transferState.set(PRODUCT_KEY, "PRODUCT TITLE");
 
       this.getProductDetailObservable(productId)
         .pipe(take(1))
@@ -203,20 +200,13 @@ export class ProductDetailComponent {
     }
   }
 
-  ngOnInit(): void { 
+  ngOnInit(): void {
     const productId = this.route.snapshot.params[ROUTER.ID];
     this.productDetailService.productId.set(productId);
-    // console.log(productTitle);
-    // this.titleService.setTitle(productTitle);
-    // this.meta.updateTag({ property: 'og:title', content: productTitle });
-     const productTitle = this.route.snapshot.data['title'] as string;
-  this.titleService.setTitle(productTitle);
-  this.meta.updateTag({ property: 'og:title', content: productTitle });
-    
+    const productTitle = this.route.snapshot.data['title'] as string;
 
     if (productId) {
       this.loadingService.showLoading(LoadingComponentId.DETAIL_PAGE);
-      // this.transferState.set(PRODUCT_KEY, "PRODUCT TITLE");
 
       this.getProductDetailObservable(productId)
         .pipe(take(1))
@@ -231,7 +221,7 @@ export class ProductDetailComponent {
     productDetail: ProductDetail,
     productTitle: string
   ): void {
-    this.updateWebBrowserTitle(productDetail.names, productTitle);
+    // this.updateWebBrowserTitle(productDetail.names, productTitle);
 
     if (this.isBrowser) {
       forkJoin({
@@ -577,29 +567,8 @@ export class ProductDetailComponent {
   updateWebBrowserTitle(names: DisplayValue, productTitle: string): void {
     if (names !== undefined) {
       const title = names[this.languageService.selectedLanguage()];
-      // this.titleService.setTitle(title);
-      // this.meta.updateTag({ property: 'og:title', content: title });
-
-      if (isPlatformServer(this.platformId)) {
-        console.log("PLATFORM SERVER");
-        
-        // this.transferState.set(this.PRODUCT_TITLE_KEY, title);
-        this.titleService.setTitle(productTitle);
-        this.meta.updateTag({ property: 'og:title', content: productTitle });
-      }
-
-      if (isPlatformBrowser(this.platformId)) {
-        console.log("PLATFORM BROWSER");
-        // Optional: get from transfer state (if SSR passed it down)
-        // const ssrTitle = this.transferState.get(this.PRODUCT_TITLE_KEY, null);
-        // if (ssrTitle) {
-        //   this.titleService.setTitle(ssrTitle);
-        //   this.meta.updateTag({ property: 'og:title', content: ssrTitle });
-        // } else {
-        this.titleService.setTitle(productTitle);
-        this.meta.updateTag({ property: 'og:title', content: productTitle });
-        // }
-      }
+      this.titleService.setTitle(title);
+      this.meta.updateTag({ property: 'og:title', content: title });
     }
   }
 
