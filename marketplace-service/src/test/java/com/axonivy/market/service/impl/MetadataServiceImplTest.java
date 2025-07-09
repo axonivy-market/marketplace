@@ -11,14 +11,13 @@ import com.axonivy.market.repository.MavenArtifactVersionRepository;
 import com.axonivy.market.repository.MetadataRepository;
 import com.axonivy.market.repository.ProductJsonContentRepository;
 import com.axonivy.market.repository.ProductRepository;
-import com.axonivy.market.util.HttpFetchingUtils;
+import com.axonivy.market.service.FileDownloadService;
 import com.axonivy.market.util.MavenUtils;
 import lombok.extern.log4j.Log4j2;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
-import org.mockito.ArgumentMatchers;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockedStatic;
@@ -35,8 +34,7 @@ import java.util.stream.Collectors;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.*;
 
 @Log4j2
 @ExtendWith(MockitoExtension.class)
@@ -49,6 +47,8 @@ class MetadataServiceImplTest extends BaseSetup {
   ProductJsonContentRepository productJsonRepo;
   @Mock
   private MetadataRepository metadataRepo;
+  @Mock
+  FileDownloadService fileDownloadService;
 
   @Mock
   private MavenArtifactVersionRepository mavenArtifactVersionRepo;
@@ -61,9 +61,7 @@ class MetadataServiceImplTest extends BaseSetup {
     Artifact mockArtifact = getMockArtifact();
     Metadata mockMetadata = buildMockMetadata();
     Product mockProduct = getMockProduct();
-    try (MockedStatic<MavenUtils> mockUtils = Mockito.mockStatic(MavenUtils.class);
-         MockedStatic<HttpFetchingUtils> mockHttpUtils = Mockito.mockStatic(HttpFetchingUtils.class)) {
-      mockHttpUtils.when(() -> HttpFetchingUtils.getFileAsString(ArgumentMatchers.anyString())).thenReturn(null);
+    try (MockedStatic<MavenUtils> mockUtils = Mockito.mockStatic(MavenUtils.class)) {
       mockUtils.when(() -> MavenUtils.convertArtifactsToMetadataSet(any(), any())).thenReturn(Set.of(mockMetadata));
 
       metadataService.updateArtifactAndMetadata(mockProduct.getId(), List.of(MOCK_RELEASED_VERSION),
@@ -177,9 +175,8 @@ class MetadataServiceImplTest extends BaseSetup {
     Assertions.assertEquals(0, getProductArtifacts(mockMavenArtifactVersion).size());
     Assertions.assertEquals(0, getAdditionalProductArtifacts(mockMavenArtifactVersion).size());
 
-    try (MockedStatic<MavenUtils> mockUtils = Mockito.mockStatic(MavenUtils.class);
-         MockedStatic<HttpFetchingUtils> mockHttpUtils = Mockito.mockStatic(HttpFetchingUtils.class)) {
-      mockHttpUtils.when(() -> HttpFetchingUtils.getFileAsString(MOCK_MAVEN_URL)).thenReturn(getMockMetadataContent());
+    try (MockedStatic<MavenUtils> mockUtils = Mockito.mockStatic(MavenUtils.class)) {
+      when(fileDownloadService.getFileAsString(MOCK_MAVEN_URL)).thenReturn(getMockMetadataContent());
       mockUtils.when(() -> MavenUtils.buildMavenArtifactVersionFromMetadata(anyString(), any()))
           .thenReturn(mockMavenArtifactVersion(MOCK_SNAPSHOT_VERSION,null),
               mockMavenArtifactVersion(MOCK_RELEASED_VERSION,null));
