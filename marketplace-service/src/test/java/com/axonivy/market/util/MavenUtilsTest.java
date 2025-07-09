@@ -172,7 +172,7 @@ class MavenUtilsTest extends BaseSetup {
 
   @Test
   void testGetMetadataContent() {
-    Assertions.assertNull(MavenUtils.getMetadataContentFromUrl("octopus.com"));
+    Assertions.assertEquals(StringUtils.EMPTY, MavenUtils.getMetadataContentFromUrl("octopus.com"));
   }
 
   @Test
