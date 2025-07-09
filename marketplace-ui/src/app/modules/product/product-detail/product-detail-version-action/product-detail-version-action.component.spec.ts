@@ -358,7 +358,7 @@ describe('ProductDetailVersionActionComponent', () => {
     const mockClick = jasmine.createSpy();
     spyOn(document, 'createElement').and.returnValue({ click: mockClick } as any);
 
-    component['downloadFile']('base64Data', 'test.zip');
+    component['fetchAndDownloadArtifact']('http://localhost:8080', 'test.zip');
 
     expect(document.body.appendChild).toHaveBeenCalled();
     expect(mockClick).toHaveBeenCalled();
