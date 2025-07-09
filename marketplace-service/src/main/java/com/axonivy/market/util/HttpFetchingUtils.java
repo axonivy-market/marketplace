@@ -8,6 +8,9 @@ import org.springframework.web.client.RestTemplate;
 public class HttpFetchingUtils {
   private static final RestTemplate restTemplate = new RestTemplate();
 
+  private HttpFetchingUtils() {
+  }
+
   public static ResponseEntity<Resource> fetchResourceUrl(String url) {
     return restTemplate.exchange(url, HttpMethod.GET, null, Resource.class);
   }

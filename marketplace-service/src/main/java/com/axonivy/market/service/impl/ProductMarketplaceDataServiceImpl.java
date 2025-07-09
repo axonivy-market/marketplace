@@ -137,7 +137,7 @@ public class ProductMarketplaceDataServiceImpl implements ProductMarketplaceData
 
   @Override
   public OutputStream buildArtifactStreamFromResource(String productId, Resource resource, OutputStream outputStream) {
-    try (InputStream inputStream = resource.getInputStream()) {
+    try (var inputStream = resource.getInputStream()) {
       FileUtils.writeBlobAsChunks(inputStream, outputStream);
       outputStream.flush();
       int count = updateInstallationCountForProduct(productId, null);

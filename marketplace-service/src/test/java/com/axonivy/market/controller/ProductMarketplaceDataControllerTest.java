@@ -54,11 +54,12 @@ class ProductMarketplaceDataControllerTest extends BaseSetup {
   }
 
   @Test
-  void testExtractArtifactUrl_ReturnNoContent() {
+  void testExtractArtifactUrl_ReturnBadGateWay() {
     try (MockedStatic<HttpFetchingUtils> mockHttpFetchingUtils = Mockito.mockStatic(HttpFetchingUtils.class)) {
       mockHttpFetchingUtils.when(() -> HttpFetchingUtils.fetchResourceUrl(MOCK_DOWNLOAD_URL)).thenReturn(null);
       var result = productMarketplaceDataController.extractArtifactUrl(MOCK_PRODUCT_ID, MOCK_DOWNLOAD_URL);
-      assertEquals(HttpStatus.BAD_GATEWAY, result.getStatusCode());
+      assertEquals(HttpStatus.BAD_GATEWAY, result.getStatusCode(),"Status code show return bad gateway when it can " +
+          "not forwarding the download stream");
       assertNull(result.getBody());
     }
   }

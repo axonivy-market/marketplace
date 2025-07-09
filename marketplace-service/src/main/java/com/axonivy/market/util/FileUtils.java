@@ -100,7 +100,7 @@ public class FileUtils {
   }
 
   public static void writeBlobAsChunks(InputStream in, OutputStream out) throws IOException {
-    byte[] buffer = new byte[DEFAULT_BUFFER_SIZE];
+    var buffer = new byte[DEFAULT_BUFFER_SIZE];
     int bytesRead;
     while ((bytesRead = in.read(buffer)) != -1) {
       out.write(buffer, 0, bytesRead);

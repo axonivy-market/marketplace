@@ -33,10 +33,7 @@ import org.springframework.web.servlet.mvc.method.annotation.StreamingResponseBo
 
 import java.util.Optional;
 
-import static com.axonivy.market.constants.RequestMappingConstants.CUSTOM_SORT;
-import static com.axonivy.market.constants.RequestMappingConstants.INSTALLATION_COUNT_BY_ID;
-import static com.axonivy.market.constants.RequestMappingConstants.PRODUCT_MARKETPLACE_DATA;
-import static com.axonivy.market.constants.RequestMappingConstants.VERSION_DOWNLOAD_BY_ID;
+import static com.axonivy.market.constants.RequestMappingConstants.*;
 import static com.axonivy.market.constants.RequestParamConstants.ID;
 import static com.axonivy.market.constants.RequestParamConstants.URL;
 import static org.springframework.http.HttpHeaders.AUTHORIZATION;

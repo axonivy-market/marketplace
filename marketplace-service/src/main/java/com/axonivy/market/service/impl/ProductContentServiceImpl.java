@@ -32,6 +32,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.MalformedURLException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -48,12 +50,12 @@ import java.util.zip.ZipOutputStream;
 @Service
 @RequiredArgsConstructor
 public class ProductContentServiceImpl implements ProductContentService {
+  private static final String DEPLOY_YAML_FILE_NAME = "deploy.options.yaml";
+  private static final String UNKNOWN_FILE_NAME = "unknown_file";
   private final FileDownloadService fileDownloadService;
   private final ProductJsonContentService productJsonContentService;
   private final ImageService imageService;
   private final ProductDependencyRepository productDependencyRepository;
-  private static final String DEPLOY_YAML_FILE_NAME = "deploy.options.yaml";
-  private static final String UNKOWN_FILE_NAME = "unknown_file";
 
   @Override
   public ProductModuleContent getReadmeAndProductContentsFromVersion(String productId, String version, String url,
@@ -148,23 +150,23 @@ public class ProductContentServiceImpl implements ProductContentService {
 
   private String extractFileNameFromUrl(String fileUrl) {
     try {
-      String path = new URL(fileUrl).getPath();
+      String path = new URI(fileUrl).getPath();
       return Paths.get(path).getFileName().toString();
-    } catch (MalformedURLException e) {
-      return UNKOWN_FILE_NAME;
+    } catch (URISyntaxException e) {
+      return UNKNOWN_FILE_NAME;
     }
   }
 
   @Override
   public OutputStream buildArtifactStreamFromArtifactUrls(List<String> urls, OutputStream outputStream) {
-      try (ZipOutputStream zipOut = new ZipOutputStream(outputStream)) {
+      try (var zipOut = new ZipOutputStream(outputStream)) {
         for (String fileUrl : urls) {
           ResponseEntity<Resource> resourceResponse = HttpFetchingUtils.fetchResourceUrl(fileUrl);
           if (!resourceResponse.getStatusCode().is2xxSuccessful() || resourceResponse.getBody() == null) {
             continue;
           }
           String fileName = extractFileNameFromUrl(fileUrl);
-          try (InputStream fileInputStream = resourceResponse.getBody().getInputStream()) {
+          try (var fileInputStream = resourceResponse.getBody().getInputStream()) {
             addNewFileToZip(fileName, zipOut, fileInputStream);
           }
         }
@@ -180,7 +182,7 @@ public class ProductContentServiceImpl implements ProductContentService {
   private void zipConfigurationOptions(ZipOutputStream zipOut) throws IOException {
     final String configFile = DEPLOY_YAML_FILE_NAME;
     ClassPathResource resource = new ClassPathResource("app-zip/" + configFile);
-    try (InputStream in = resource.getInputStream()) {
+    try (var in = resource.getInputStream()) {
       addNewFileToZip(configFile, zipOut, in);
     }
   }

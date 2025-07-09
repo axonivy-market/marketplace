@@ -100,8 +100,9 @@ class ProductContentServiceImplTest extends BaseSetup {
           getMockEntityResource());
       OutputStream result = productContentService.buildArtifactStreamFromArtifactUrls(List.of(MOCK_DOWNLOAD_URL),
           new ByteArrayOutputStream());
-      assertNotNull(result);
-      assertTrue(((ByteArrayOutputStream) result).size() > 0);
+      assertNotNull(result, "The OutputStream from valid URL should not be null");
+      assertTrue(((ByteArrayOutputStream) result).size() > 0,
+          "The content of OutputStream from valid URL should not be empty");
     }
   }
 }
