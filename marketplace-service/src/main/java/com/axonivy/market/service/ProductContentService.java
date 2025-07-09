@@ -2,8 +2,6 @@ package com.axonivy.market.service;
 
 import com.axonivy.market.entity.Artifact;
 import com.axonivy.market.entity.ProductModuleContent;
-import org.springframework.web.servlet.mvc.method.annotation.StreamingResponseBody;
-
 import java.io.OutputStream;
 import java.util.List;
 

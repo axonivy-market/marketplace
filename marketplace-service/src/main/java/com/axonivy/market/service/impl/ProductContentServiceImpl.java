@@ -51,7 +51,6 @@ import java.util.zip.ZipOutputStream;
 @RequiredArgsConstructor
 public class ProductContentServiceImpl implements ProductContentService {
   private static final String DEPLOY_YAML_FILE_NAME = "deploy.options.yaml";
-  private static final String UNKNOWN_FILE_NAME = "unknown_file";
   private final FileDownloadService fileDownloadService;
   private final ProductJsonContentService productJsonContentService;
   private final ImageService imageService;
@@ -148,15 +147,6 @@ public class ProductContentServiceImpl implements ProductContentService {
             ProductDependency::getDownloadUrl)).toList();
   }
 
-  private String extractFileNameFromUrl(String fileUrl) {
-    try {
-      String path = new URI(fileUrl).getPath();
-      return Paths.get(path).getFileName().toString();
-    } catch (URISyntaxException e) {
-      return UNKNOWN_FILE_NAME;
-    }
-  }
-
   @Override
   public OutputStream buildArtifactStreamFromArtifactUrls(List<String> urls, OutputStream outputStream) {
       try (var zipOut = new ZipOutputStream(outputStream)) {
@@ -165,7 +155,7 @@ public class ProductContentServiceImpl implements ProductContentService {
           if (!resourceResponse.getStatusCode().is2xxSuccessful() || resourceResponse.getBody() == null) {
             continue;
           }
-          String fileName = extractFileNameFromUrl(fileUrl);
+          String fileName = HttpFetchingUtils.extractFileNameFromUrl(fileUrl);
           try (var fileInputStream = resourceResponse.getBody().getInputStream()) {
             addNewFileToZip(fileName, zipOut, fileInputStream);
           }

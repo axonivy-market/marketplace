@@ -53,7 +53,7 @@ class FileDownloadServiceImplTest {
     }
 
     @Test
-    void testDownloadFile_Success() {
+    void testDownloadFileSuccess() {
       byte[] expectedContent = "test content".getBytes();
       when(authorizationUtils.resolveTrustedUrl(DOWNLOAD_URL)).thenReturn(DOWNLOAD_URL);
       try (MockedStatic<HttpFetchingUtils> mockedStatic = Mockito.mockStatic(HttpFetchingUtils.class)) {
@@ -64,22 +64,22 @@ class FileDownloadServiceImplTest {
     }
 
   @Test
-  void testDownloadFile_UnsafeUrl() {
+  void testDownloadFileUnsafeUrl() {
     when(authorizationUtils.resolveTrustedUrl(DOWNLOAD_URL))
         .thenThrow(new IllegalArgumentException("Unsafe URL"));
 
     byte[] result = fileDownloadService.downloadFile(DOWNLOAD_URL);
-    assertArrayEquals(StringUtils.EMPTY.getBytes(), result);
+    assertArrayEquals(StringUtils.EMPTY.getBytes(), result, "Output should be empty if occurring error.");
   }
 
   @Test
-  void testDownloadFile_HttpClientError() {
+  void testDownloadFileHttpClientError() {
     when(authorizationUtils.resolveTrustedUrl(DOWNLOAD_URL)).thenReturn(DOWNLOAD_URL);
     try (MockedStatic<HttpFetchingUtils> mockedStatic = Mockito.mockStatic(HttpFetchingUtils.class)) {
       mockedStatic.when(() -> HttpFetchingUtils.downloadFile(DOWNLOAD_URL))
           .thenThrow(HttpClientErrorException.class);
       byte[] result = fileDownloadService.downloadFile(DOWNLOAD_URL);
-      assertArrayEquals(StringUtils.EMPTY.getBytes(), result);
+      assertArrayEquals(StringUtils.EMPTY.getBytes(), result, "Output should be empty if occurring error.");
     }
   }
 
