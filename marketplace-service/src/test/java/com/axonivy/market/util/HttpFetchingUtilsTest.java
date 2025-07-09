@@ -29,4 +29,46 @@ class HttpFetchingUtilsTest extends BaseSetup {
     var result = HttpFetchingUtils.fetchResourceUrl(MOCK_DUMP_DOWNLOAD_URL);
     assertNull(result, "Expected null when fetching from an unreachable URL");
   }
+
+  @Test
+  void testExtractFileNameFromValidUrl() {
+    String url = "https://example.com/files/document.pdf";
+    String result = HttpFetchingUtils.extractFileNameFromUrl(url);
+    assertEquals("document.pdf", result);
+  }
+
+  @Test
+  void testExtractFileNameFromUrlWithoutFileName() {
+    String url = "https://example.com/files/";
+    String result = HttpFetchingUtils.extractFileNameFromUrl(url);
+    assertEquals("unknown_file", result);
+  }
+
+  @Test
+  void testExtractFileNameFromUrlWithComplexPath() {
+    String url = "https://example.com/folder/subfolder/file.txt";
+    String result = HttpFetchingUtils.extractFileNameFromUrl(url);
+    assertEquals("file.txt", result);
+  }
+
+  @Test
+  void testExtractFileNameFromMalformedUrl() {
+    String url = "ht!tp:/malformed-url";
+    String result = HttpFetchingUtils.extractFileNameFromUrl(url);
+    assertEquals("unknown_file", result);
+  }
+
+  @Test
+  void testExtractFileNameFromUrlWithQueryParameters() {
+    String url = "https://example.com/files/document.pdf?version=2";
+    String result = HttpFetchingUtils.extractFileNameFromUrl(url);
+    assertEquals("document.pdf", result);
+  }
+
+  @Test
+  void testExtractFileNameFromUrlWithSpaces() {
+    String url = "https://example.com/files/file%20with%20spaces.txt";
+    String result = HttpFetchingUtils.extractFileNameFromUrl(url);
+    assertEquals("file with spaces.txt", result);
+  }
 }

@@ -1,5 +1,6 @@
 package com.axonivy.market.util;
 
+import com.axonivy.market.constants.CommonConstants;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -7,12 +8,15 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.core.io.Resource;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 
+import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.net.URLDecoder;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 @Slf4j
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
@@ -48,12 +52,18 @@ public class HttpFetchingUtils {
   }
 
   public static String extractFileNameFromUrl(String fileUrl) {
+    String name = UNKNOWN_FILE_NAME;
     try {
-      String path = new URI(fileUrl).getPath();
-      return Paths.get(path).getFileName().toString();
-    } catch (URISyntaxException e) {
-      log.warn("Can not get the file the from path {}", fileUrl, e);
-      return UNKNOWN_FILE_NAME;
+      if (StringUtils.isNotBlank(fileUrl) && !fileUrl.endsWith(CommonConstants.SLASH)) {
+        String path = new URI(fileUrl).toURL().getPath();
+        Path fileName = Paths.get(path).getFileName();
+        if (fileName != null) {
+          name = URLDecoder.decode(fileName.toString(), StandardCharsets.UTF_8);
+        }
+      }
+    } catch (URISyntaxException | MalformedURLException e) {
+      log.warn("Cannot extract file name form url {}", fileUrl, e);
     }
+    return name;
   }
 }

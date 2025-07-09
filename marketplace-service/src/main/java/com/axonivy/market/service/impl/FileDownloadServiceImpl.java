@@ -48,7 +48,7 @@ public class FileDownloadServiceImpl implements FileDownloadService {
 
   @Override
   public byte[] downloadFile(String url) {
-    return fetchWithTrustedUrl(url, HttpFetchingUtils::getFileAsBytes, EMPTY.getBytes());
+    return fetchWithTrustedUrl(url, HttpFetchingUtils::getFileAsBytes, new byte[0]);
   }
 
   @Override
