@@ -27,6 +27,7 @@ import com.axonivy.market.service.MetadataService;
 import com.axonivy.market.service.ProductContentService;
 import com.axonivy.market.service.ProductMarketplaceDataService;
 import com.axonivy.market.service.VersionService;
+import com.axonivy.market.util.HttpFetchingUtils;
 import com.axonivy.market.util.MavenUtils;
 import com.axonivy.market.util.VersionUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -314,12 +315,13 @@ class ProductServiceImplTest extends BaseSetup {
 
   @Test
   void testSyncProductsSecondTime() {
-    try (MockedStatic<MavenUtils> mockUtils = Mockito.mockStatic(MavenUtils.class)) {
+    try (MockedStatic<MavenUtils> mockUtils = Mockito.mockStatic(MavenUtils.class);
+         MockedStatic<HttpFetchingUtils> mockHttpUtils = Mockito.mockStatic(HttpFetchingUtils.class)) {
       Product mockProduct = getMockProduct();
       mockProduct.setProductModuleContent(mockReadmeProductContent());
       mockProduct.setRepositoryName(MOCK_PRODUCT_REPOSITORY_NAME);
       mockForSyncSecondTime(mockProduct);
-      mockUtils.when(() -> MavenUtils.getMetadataContentFromUrl(any())).thenReturn(getMockMetadataContent());
+      mockHttpUtils.when(() -> HttpFetchingUtils.getFileAsString(any())).thenReturn(getMockMetadataContent());
       // Executes
       productService.syncLatestDataFromMarketRepo(false);
 
@@ -332,7 +334,8 @@ class ProductServiceImplTest extends BaseSetup {
 
   @Test
   void testSyncProductsSecondTime_andThereIsNoDuplicatedValueInReleasedVersion() {
-    try (MockedStatic<MavenUtils> mockUtils = Mockito.mockStatic(MavenUtils.class)) {
+    try (MockedStatic<MavenUtils> mockUtils = Mockito.mockStatic(MavenUtils.class);
+         MockedStatic<HttpFetchingUtils> mockHttpUtils = Mockito.mockStatic(HttpFetchingUtils.class)) {
       List<String> mockVersions = Arrays.asList("10.0.10", "10.0.10-SNAPSHOT", "10.0.10-m123", "10.0.11-SNAPSHOT",
           "10.0.12-SNAPSHOT", "10.0.13-SNAPSHOT");
       Product mockProduct = getMockProduct();
@@ -340,7 +343,7 @@ class ProductServiceImplTest extends BaseSetup {
       mockProduct.setProductModuleContent(mockReadmeProductContent());
       mockProduct.setRepositoryName(MOCK_PRODUCT_REPOSITORY_NAME);
       mockForSyncSecondTime(mockProduct);
-      mockUtils.when(() -> MavenUtils.getMetadataContentFromUrl(any())).thenReturn(getMockMetadataContent2());
+      mockHttpUtils.when(() -> HttpFetchingUtils.getFileAsString(any())).thenReturn(getMockMetadataContent2());
       // Executes
       productService.syncLatestDataFromMarketRepo(false);
 

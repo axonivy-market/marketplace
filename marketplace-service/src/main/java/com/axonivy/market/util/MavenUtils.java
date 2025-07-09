@@ -267,15 +267,6 @@ public class MavenUtils {
         .build();
   }
 
-  public static String getMetadataContentFromUrl(String metadataUrl) {
-    String metadataContent = HttpFetchingUtils.getFileAsString(metadataUrl);
-    if (null == metadataContent) {
-      log.error("**MetadataService: Failed to fetch metadata from url {}", metadataUrl);
-      metadataContent = StringUtils.EMPTY;
-    }
-    return metadataContent;
-  }
-
   public static boolean isProductArtifactId(String artifactId) {
     return StringUtils.endsWith(artifactId, MavenConstants.PRODUCT_ARTIFACT_POSTFIX);
   }

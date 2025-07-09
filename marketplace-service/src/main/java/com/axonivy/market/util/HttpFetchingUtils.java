@@ -3,6 +3,7 @@ package com.axonivy.market.util;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.core.io.Resource;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
@@ -31,7 +32,7 @@ public class HttpFetchingUtils {
       return restTemplate.getForObject(url, byte[].class);
     } catch (Exception e) {
        log.warn("Failed to fetch bytes from URL: {}", url, e);
-      return null;
+      return new byte[0];
     }
   }
 
@@ -40,7 +41,7 @@ public class HttpFetchingUtils {
       return restTemplate.getForObject(url, String.class);
     } catch (Exception e) {
        log.warn("Failed to fetch string from URL: {}", url, e);
-      return null;
+      return StringUtils.EMPTY;
     }
   }
 

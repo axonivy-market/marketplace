@@ -11,6 +11,7 @@ import com.axonivy.market.repository.MavenArtifactVersionRepository;
 import com.axonivy.market.repository.MetadataRepository;
 import com.axonivy.market.repository.ProductJsonContentRepository;
 import com.axonivy.market.repository.ProductRepository;
+import com.axonivy.market.util.HttpFetchingUtils;
 import com.axonivy.market.util.MavenUtils;
 import lombok.extern.log4j.Log4j2;
 import org.junit.jupiter.api.Assertions;
@@ -60,8 +61,9 @@ class MetadataServiceImplTest extends BaseSetup {
     Artifact mockArtifact = getMockArtifact();
     Metadata mockMetadata = buildMockMetadata();
     Product mockProduct = getMockProduct();
-    try (MockedStatic<MavenUtils> mockUtils = Mockito.mockStatic(MavenUtils.class)) {
-      mockUtils.when(() -> MavenUtils.getMetadataContentFromUrl(ArgumentMatchers.anyString())).thenReturn(null);
+    try (MockedStatic<MavenUtils> mockUtils = Mockito.mockStatic(MavenUtils.class);
+         MockedStatic<HttpFetchingUtils> mockHttpUtils = Mockito.mockStatic(HttpFetchingUtils.class)) {
+      mockHttpUtils.when(() -> HttpFetchingUtils.getFileAsString(ArgumentMatchers.anyString())).thenReturn(null);
       mockUtils.when(() -> MavenUtils.convertArtifactsToMetadataSet(any(), any())).thenReturn(Set.of(mockMetadata));
 
       metadataService.updateArtifactAndMetadata(mockProduct.getId(), List.of(MOCK_RELEASED_VERSION),
@@ -175,14 +177,14 @@ class MetadataServiceImplTest extends BaseSetup {
     Assertions.assertEquals(0, getProductArtifacts(mockMavenArtifactVersion).size());
     Assertions.assertEquals(0, getAdditionalProductArtifacts(mockMavenArtifactVersion).size());
 
-    try (MockedStatic<MavenUtils> mockUtils = Mockito.mockStatic(MavenUtils.class)) {
-      mockUtils.when(() -> MavenUtils.getMetadataContentFromUrl(MOCK_MAVEN_URL)).thenReturn(getMockMetadataContent());
+    try (MockedStatic<MavenUtils> mockUtils = Mockito.mockStatic(MavenUtils.class);
+         MockedStatic<HttpFetchingUtils> mockHttpUtils = Mockito.mockStatic(HttpFetchingUtils.class)) {
+      mockHttpUtils.when(() -> HttpFetchingUtils.getFileAsString(MOCK_MAVEN_URL)).thenReturn(getMockMetadataContent());
       mockUtils.when(() -> MavenUtils.buildMavenArtifactVersionFromMetadata(anyString(), any()))
           .thenReturn(mockMavenArtifactVersion(MOCK_SNAPSHOT_VERSION,null),
               mockMavenArtifactVersion(MOCK_RELEASED_VERSION,null));
 
       ArgumentCaptor<List<MavenArtifactVersion>> captor = ArgumentCaptor.forClass(List.class);
-
 
       metadataService.updateMavenArtifactVersionData(mockMetadataSet, MOCK_PRODUCT_ID);
 
