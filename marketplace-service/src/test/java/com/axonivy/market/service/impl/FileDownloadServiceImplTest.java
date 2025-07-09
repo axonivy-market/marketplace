@@ -2,7 +2,9 @@ package com.axonivy.market.service.impl;
 
 import com.axonivy.market.bo.DownloadOption;
 import com.axonivy.market.util.FileUtils;
+import com.axonivy.market.util.HttpFetchingUtils;
 import com.axonivy.market.util.validator.AuthorizationUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -51,34 +53,34 @@ class FileDownloadServiceImplTest {
     }
 
     @Test
-  void testDownloadFile_Success() {
-    byte[] expectedContent = "test content".getBytes();
+    void testDownloadFile_Success() {
+      byte[] expectedContent = "test content".getBytes();
+      when(authorizationUtils.resolveTrustedUrl(DOWNLOAD_URL)).thenReturn(DOWNLOAD_URL);
+      try (MockedStatic<HttpFetchingUtils> mockedStatic = Mockito.mockStatic(HttpFetchingUtils.class)) {
+        mockedStatic.when(() -> HttpFetchingUtils.downloadFile(DOWNLOAD_URL)).thenReturn(expectedContent);
+        byte[] result = fileDownloadService.downloadFile(DOWNLOAD_URL);
+        assertArrayEquals(expectedContent, result);
+      }
+    }
 
-    when(authorizationUtils.resolveTrustedUrl(DOWNLOAD_URL)).thenReturn(DOWNLOAD_URL);
+  @Test
+  void testDownloadFile_UnsafeUrl() {
+    when(authorizationUtils.resolveTrustedUrl(DOWNLOAD_URL))
+        .thenThrow(new IllegalArgumentException("Unsafe URL"));
 
-    FileDownloadServiceImpl spyService = Mockito.spy(fileDownloadService);
-    doReturn(expectedContent).when(spyService).downloadFile(DOWNLOAD_URL);
-
-    byte[] result = spyService.downloadFile(DOWNLOAD_URL);
-
-    assertArrayEquals(expectedContent, result);
-    verify(spyService).downloadFile(DOWNLOAD_URL);
-    verify(authorizationUtils).resolveTrustedUrl(DOWNLOAD_URL);
+    byte[] result = fileDownloadService.downloadFile(DOWNLOAD_URL);
+    assertArrayEquals(StringUtils.EMPTY.getBytes(), result);
   }
 
   @Test
-  void testDownloadFile_ReturnsEmptyBytes() {
+  void testDownloadFile_HttpClientError() {
     when(authorizationUtils.resolveTrustedUrl(DOWNLOAD_URL)).thenReturn(DOWNLOAD_URL);
-
-    FileDownloadServiceImpl spyService = Mockito.spy(fileDownloadService);
-    doThrow(HttpClientErrorException.create(HttpStatus.UNAUTHORIZED, "Unauthorized", null, null, null))
-        .when(spyService).downloadFile(DOWNLOAD_URL);
-
-    byte[] result = spyService.downloadFile(DOWNLOAD_URL);
-
-    assertArrayEquals("".getBytes(), result);
-    verify(spyService).downloadFile(DOWNLOAD_URL);
-    verify(authorizationUtils).resolveTrustedUrl(DOWNLOAD_URL);
+    try (MockedStatic<HttpFetchingUtils> mockedStatic = Mockito.mockStatic(HttpFetchingUtils.class)) {
+      mockedStatic.when(() -> HttpFetchingUtils.downloadFile(DOWNLOAD_URL))
+          .thenThrow(HttpClientErrorException.class);
+      byte[] result = fileDownloadService.downloadFile(DOWNLOAD_URL);
+      assertArrayEquals(StringUtils.EMPTY.getBytes(), result);
+    }
   }
 
   @Test

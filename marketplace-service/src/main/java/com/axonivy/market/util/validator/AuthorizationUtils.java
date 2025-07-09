@@ -61,7 +61,7 @@ public class AuthorizationUtils implements ConstraintValidator<ValidUrl, String>
         || address.isSiteLocalAddress();
   }
 
-  public  String resolveTrustedUrl(String inputUrl) {
+  public String resolveTrustedUrl(String inputUrl) {
     return allowedUrls.stream()
         .filter(inputUrl::startsWith)
         .findFirst()

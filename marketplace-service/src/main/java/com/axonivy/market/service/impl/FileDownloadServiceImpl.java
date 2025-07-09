@@ -49,7 +49,7 @@ public class FileDownloadServiceImpl implements FileDownloadService {
   public byte[] downloadFile(String url) {
     try {
       String trustedUrl = authorizationUtils.resolveTrustedUrl(url);
-      return HttpFetchingUtils.downloadFile(url);
+      return HttpFetchingUtils.downloadFile(trustedUrl);
     }catch (IllegalArgumentException e) {
       log.warn("Unsafe or disallowed URL provided: {}", url, e);
     } catch (HttpClientErrorException e) {
