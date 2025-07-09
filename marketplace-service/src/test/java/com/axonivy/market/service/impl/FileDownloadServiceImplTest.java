@@ -1,5 +1,6 @@
 package com.axonivy.market.service.impl;
 
+import com.axonivy.market.BaseSetup;
 import com.axonivy.market.bo.DownloadOption;
 import com.axonivy.market.util.FileUtils;
 import com.axonivy.market.util.HttpFetchingUtils;
@@ -12,6 +13,8 @@ import org.mockito.Mock;
 import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.core.io.Resource;
+import org.springframework.http.ResponseEntity;
 
 import java.io.File;
 import java.io.IOException;
@@ -23,7 +26,7 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
-class FileDownloadServiceImplTest {
+class FileDownloadServiceImplTest extends BaseSetup {
   private static final String ZIP_FILE_PATH = "src/test/resources/zip/text.zip";
   private static final String EXTRACT_DIR_LOCATION = "src/test/resources/zip/data";
   private static final String EXTRACTED_DIR_LOCATION = "src/test/resources/zip/data/text";
@@ -204,6 +207,51 @@ class FileDownloadServiceImplTest {
       assertEquals(EXTRACT_DIR_LOCATION, result);
       verify(spyService).downloadFile(DOWNLOAD_URL);
       mockedFiles.verify(() -> Files.write(any(Path.class), any(byte[].class)), never());
+    }
+  }
+  @Test
+  void testDownloadFile() {
+    when(authorizationUtils.resolveTrustedUrl(MOCK_DOWNLOAD_URL)).thenReturn(MOCK_DOWNLOAD_URL);
+    try (MockedStatic<HttpFetchingUtils> mockedStatic = Mockito.mockStatic(HttpFetchingUtils.class)) {
+      mockedStatic.when(() -> HttpFetchingUtils.getFileAsBytes(MOCK_DOWNLOAD_URL))
+              .thenReturn(getMockBytes());
+      byte[] result = fileDownloadService.downloadFile(MOCK_DOWNLOAD_URL);
+      assertArrayEquals(getMockBytes(), result);
+      verify(authorizationUtils).resolveTrustedUrl(MOCK_DOWNLOAD_URL);
+      mockedStatic.verify(() -> HttpFetchingUtils.getFileAsBytes(MOCK_DOWNLOAD_URL));
+    }
+  }
+
+  @Test
+  void testDownloadFileWithUnsafeUrl() {
+    when(authorizationUtils.resolveTrustedUrl(MOCK_DOWNLOAD_URL)).thenThrow(new IllegalArgumentException("unsafe"));
+    byte[] result = fileDownloadService.downloadFile(MOCK_DOWNLOAD_URL);
+    assertArrayEquals(StringUtils.EMPTY.getBytes(), result);
+    verify(authorizationUtils).resolveTrustedUrl(MOCK_DOWNLOAD_URL);
+  }
+
+  @Test
+  void testGetFileAsString() {
+    when(authorizationUtils.resolveTrustedUrl(MOCK_DOWNLOAD_URL)).thenReturn(MOCK_DOWNLOAD_URL);
+    try (MockedStatic<HttpFetchingUtils> mockedStatic = Mockito.mockStatic(HttpFetchingUtils.class)) {
+      mockedStatic.when(() -> HttpFetchingUtils.getFileAsString(MOCK_DOWNLOAD_URL)).thenReturn(MOCK_PRODUCT_NAME);
+      String result = fileDownloadService.getFileAsString(MOCK_DOWNLOAD_URL);
+      assertEquals(MOCK_PRODUCT_NAME, result);
+      verify(authorizationUtils).resolveTrustedUrl(MOCK_DOWNLOAD_URL);
+      mockedStatic.verify(() -> HttpFetchingUtils.getFileAsString(MOCK_DOWNLOAD_URL));
+    }
+  }
+
+  @Test
+  void testFetchResourceUrl_Success() {
+    when(authorizationUtils.resolveTrustedUrl(MOCK_DOWNLOAD_URL)).thenReturn(MOCK_DOWNLOAD_URL);
+    ResponseEntity<Resource> mockedResponse = ResponseEntity.ok(mock(Resource.class));
+    try (MockedStatic<HttpFetchingUtils> mockedStatic = Mockito.mockStatic(HttpFetchingUtils.class)) {
+      mockedStatic.when(() -> HttpFetchingUtils.fetchResourceUrl(MOCK_DOWNLOAD_URL)).thenReturn(mockedResponse);
+      ResponseEntity<Resource> result = fileDownloadService.fetchResourceUrl(MOCK_DOWNLOAD_URL);
+      assertEquals(mockedResponse, result);
+      verify(authorizationUtils).resolveTrustedUrl(MOCK_DOWNLOAD_URL);
+      mockedStatic.verify(() -> HttpFetchingUtils.fetchResourceUrl(MOCK_DOWNLOAD_URL));
     }
   }
 }

@@ -3,6 +3,7 @@ package com.axonivy.market.service.impl;
 import com.axonivy.market.BaseSetup;
 import com.axonivy.market.entity.Artifact;
 import com.axonivy.market.constants.ProductJsonConstants;
+import com.axonivy.market.entity.ProductDependency;
 import com.axonivy.market.entity.ProductModuleContent;
 import com.axonivy.market.repository.ProductDependencyRepository;
 import com.axonivy.market.service.FileDownloadService;
@@ -26,6 +27,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -105,5 +107,18 @@ class ProductContentServiceImplTest extends BaseSetup {
       assertTrue(((ByteArrayOutputStream) result).size() > 0,
           "The content of OutputStream from valid URL should not be empty");
     }
+  }
+  @Test
+  void testGetDependencyUrlsShouldReturnsDirectAndNestedUrls() {
+    ProductDependency dep1 = new ProductDependency();
+    ProductDependency dep2 = new ProductDependency();
+    dep1.setDownloadUrl(MOCK_DOWNLOAD_URL);
+    dep2.setDownloadUrl(MOCK_DUMP_DOWNLOAD_URL);
+    dep1.setDependencies(Set.of(dep2));
+    when(productDependencyRepository.findByProductIdAndArtifactIdAndVersion(MOCK_PRODUCT_ID, MOCK_ARTIFACT_ID, MOCK_RELEASED_VERSION)).thenReturn(List.of(dep1));
+    List<String> result = productContentService.getDependencyUrls(MOCK_PRODUCT_ID, MOCK_ARTIFACT_ID, MOCK_RELEASED_VERSION);
+    assertEquals(2, result.size(), "Size of result should equal size of download url from dependency");
+    assertTrue(result.contains(MOCK_DOWNLOAD_URL), "List of dependency url should include parent artifact");
+    verify(productDependencyRepository).findByProductIdAndArtifactIdAndVersion(MOCK_PRODUCT_ID, MOCK_ARTIFACT_ID, MOCK_RELEASED_VERSION);
   }
 }

@@ -427,4 +427,8 @@ public class BaseSetup {
       }
     };
   }
+
+  protected byte[] getMockBytes() {
+    return "test-content".getBytes();
+  }
 }
