@@ -282,12 +282,12 @@ class ProductServiceImplTest extends BaseSetup {
 
     when(imageService.mappingImageFromGHContent(any(), any())).thenReturn(getMockImage());
     when(productRepo.save(any(Product.class))).thenReturn(new Product());
+    when(fileDownloadService.getFileAsString(anyString())).thenReturn(getMockMetadataContent3());
     // Executes
     productService.syncLatestDataFromMarketRepo(false);
 
     verify(productModuleContentRepo).saveAll(argumentCaptorProductModuleContents.capture());
     verify(productRepo).save(argumentCaptor.capture());
-
     assertThat(argumentCaptorProductModuleContents.getValue().get(0).getId())
         .isEqualTo(mockReadmeProductContent().getId());
   }
