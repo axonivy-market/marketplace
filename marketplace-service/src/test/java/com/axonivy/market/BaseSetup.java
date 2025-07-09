@@ -9,11 +9,16 @@ import com.axonivy.market.entity.key.MavenArtifactKey;
 import com.axonivy.market.model.VersionAndUrlModel;
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.core.io.ByteArrayResource;
+import org.springframework.core.io.Resource;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -401,10 +406,19 @@ public class BaseSetup {
         .build();
   }
 
-  protected VersionDownload mockVersionDownload() {
-    return VersionDownload.builder()
-        .installationCount(5)
-        .fileData("content".getBytes())
-        .build();
+  protected ResponseEntity<Resource> getMockEntityResource() {
+    Resource resource = getMockResource();
+    return ResponseEntity.ok().header(HttpHeaders.CONTENT_DISPOSITION, "attachment").contentType(
+        MediaType.TEXT_PLAIN).body(resource);
+  }
+
+  protected static Resource getMockResource() {
+    byte[] data = SAMPLE_LOGO_ID.getBytes(StandardCharsets.UTF_8);
+    return new ByteArrayResource(data) {
+      @Override
+      public String getFilename() {
+        return MOCK_ARTIFACT_DOWNLOAD_FILE;
+      }
+    };
   }
 }

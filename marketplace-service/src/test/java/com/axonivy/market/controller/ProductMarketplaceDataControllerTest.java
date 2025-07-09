@@ -5,10 +5,13 @@ import com.axonivy.market.enums.ErrorCode;
 import com.axonivy.market.github.service.GitHubService;
 import com.axonivy.market.model.ProductCustomSortRequest;
 import com.axonivy.market.service.ProductMarketplaceDataService;
+import com.axonivy.market.util.HttpFetchingUtils;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.MockedStatic;
+import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpStatus;
 
@@ -40,34 +43,30 @@ class ProductMarketplaceDataControllerTest extends BaseSetup {
     assertTrue(response.getBody().getMessageDetails().contains("Custom product sort order added successfully"));
   }
 
-//  @Test
-//  void testExtractArtifactUrl() {
-//    when(productMarketplaceDataService.downloadArtifact(MOCK_DOWNLOAD_URL, MOCK_PRODUCT_ID)).thenReturn(
-//        new VersionDownload());
-//    var result = productMarketplaceDataController.extractArtifactUrl(MOCK_PRODUCT_ID, MOCK_DOWNLOAD_URL);
-//
-//    assertEquals(HttpStatus.OK, result.getStatusCode());
-//    assertNotNull(result);
-//  }
+  @Test
+  void testExtractArtifactUrl() {
+    try (MockedStatic<HttpFetchingUtils> mockHttpFetchingUtils = Mockito.mockStatic(HttpFetchingUtils.class)) {
+      mockHttpFetchingUtils.when(() -> HttpFetchingUtils.fetchResourceUrl(MOCK_DOWNLOAD_URL)).thenReturn(getMockEntityResource());
+      var result = productMarketplaceDataController.extractArtifactUrl(MOCK_PRODUCT_ID, MOCK_DOWNLOAD_URL);
+      assertEquals(HttpStatus.OK, result.getStatusCode());
+      assertNotNull(result);
+    }
+  }
 
-//  @Test
-//  void testExtractArtifactUrl_ReturnNoContent() {
-//    String downloadUrl = "https://example.com/download";
-//    try (MockedStatic<AuthorizationUtils> mockUtils = Mockito.mockStatic(AuthorizationUtils.class)) {
-//      when(productMarketplaceDataService.downloadArtifact(downloadUrl, MOCK_PRODUCT_ID)).thenReturn(null);
-//
-//      var result = productMarketplaceDataController.extractArtifactUrl(MOCK_PRODUCT_ID, downloadUrl);
-//
-//      assertEquals(HttpStatus.NOT_FOUND, result.getStatusCode());
-//      assertNull(result.getBody());
-//    }
-//  }
+  @Test
+  void testExtractArtifactUrl_ReturnNoContent() {
+    try (MockedStatic<HttpFetchingUtils> mockHttpFetchingUtils = Mockito.mockStatic(HttpFetchingUtils.class)) {
+      mockHttpFetchingUtils.when(() -> HttpFetchingUtils.fetchResourceUrl(MOCK_DOWNLOAD_URL)).thenReturn(null);
+      var result = productMarketplaceDataController.extractArtifactUrl(MOCK_PRODUCT_ID, MOCK_DOWNLOAD_URL);
+      assertEquals(HttpStatus.BAD_GATEWAY, result.getStatusCode());
+      assertNull(result.getBody());
+    }
+  }
 
   @Test
   void testFindInstallationCount() {
     when(productMarketplaceDataService.getInstallationCount(MOCK_PRODUCT_ID)).thenReturn(5);
     var result = productMarketplaceDataController.findInstallationCount(MOCK_PRODUCT_ID);
-
     assertEquals(HttpStatus.OK, result.getStatusCode());
     assertNotNull(result);
   }

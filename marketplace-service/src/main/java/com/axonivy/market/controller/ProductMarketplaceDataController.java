@@ -17,6 +17,7 @@ import lombok.extern.log4j.Log4j2;
 import org.springframework.core.io.Resource;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.HttpStatusCode;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
@@ -30,7 +31,10 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.mvc.method.annotation.StreamingResponseBody;
 
+import java.util.Optional;
+
 import static com.axonivy.market.constants.RequestMappingConstants.CUSTOM_SORT;
+import static com.axonivy.market.constants.RequestMappingConstants.INSTALLATION_COUNT_BY_ID;
 import static com.axonivy.market.constants.RequestMappingConstants.PRODUCT_MARKETPLACE_DATA;
 import static com.axonivy.market.constants.RequestMappingConstants.VERSION_DOWNLOAD_BY_ID;
 import static com.axonivy.market.constants.RequestParamConstants.ID;
@@ -66,13 +70,23 @@ public class ProductMarketplaceDataController {
   public ResponseEntity<StreamingResponseBody> extractArtifactUrl(@PathVariable(ID) String productId,
       @RequestParam(URL) @ValidUrl String artifactUrl) {
     ResponseEntity<Resource> resourceResponse = HttpFetchingUtils.fetchResourceUrl(artifactUrl);
-    if (!resourceResponse.getStatusCode().is2xxSuccessful() || resourceResponse.getBody() == null) {
-      log.warn("Failed to retrieve file from URL: {}. Status: {}", artifactUrl, resourceResponse.getStatusCode());
+    HttpStatusCode statusCode = Optional.ofNullable(resourceResponse).map(ResponseEntity::getStatusCode).orElse(
+        HttpStatus.NOT_FOUND);
+    Resource body = Optional.ofNullable(resourceResponse).map(ResponseEntity::getBody).orElse(null);
+    if (null == body || !statusCode.is2xxSuccessful()) {
+      log.warn("Failed to retrieve file from URL: {}. Status: {}", artifactUrl, statusCode);
       return ResponseEntity.status(HttpStatus.BAD_GATEWAY).build();
     }
     StreamingResponseBody streamingBody = outputStream -> productMarketplaceDataService.buildArtifactStreamFromResource(
-        productId, resourceResponse.getBody(), outputStream);
+        productId, body, outputStream);
     return ResponseEntity.ok().contentType(MediaType.APPLICATION_OCTET_STREAM).header(HttpHeaders.CONTENT_DISPOSITION,
         "attachment").body(streamingBody);
+  }
+
+  @GetMapping(INSTALLATION_COUNT_BY_ID)
+  public ResponseEntity<Integer> findInstallationCount(@PathVariable(ID)
+  String id) {
+    Integer result = productMarketplaceDataService.getInstallationCount(id);
+    return new ResponseEntity<>(result, HttpStatus.OK);
   }
 }

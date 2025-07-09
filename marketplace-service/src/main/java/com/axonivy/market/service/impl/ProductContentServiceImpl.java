@@ -171,7 +171,8 @@ public class ProductContentServiceImpl implements ProductContentService {
         zipConfigurationOptions(zipOut);
         zipOut.finish();
       } catch (IOException e) {
-        throw new RuntimeException(e);
+        log.error("Cannot create ZIP file {}", e.getMessage());
+        return null;
       }
     return outputStream;
   }
@@ -179,7 +180,9 @@ public class ProductContentServiceImpl implements ProductContentService {
   private void zipConfigurationOptions(ZipOutputStream zipOut) throws IOException {
     final String configFile = DEPLOY_YAML_FILE_NAME;
     ClassPathResource resource = new ClassPathResource("app-zip/" + configFile);
-    addNewFileToZip(configFile, zipOut, resource.getInputStream());
+    try (InputStream in = resource.getInputStream()) {
+      addNewFileToZip(configFile, zipOut, in);
+    }
   }
 
   private static void addNewFileToZip(String fileName, ZipOutputStream zipOut, InputStream in) throws IOException {

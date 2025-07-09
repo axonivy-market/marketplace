@@ -10,7 +10,6 @@ import com.axonivy.market.repository.ProductCustomSortRepository;
 import com.axonivy.market.repository.ProductDesignerInstallationRepository;
 import com.axonivy.market.repository.ProductMarketplaceDataRepository;
 import com.axonivy.market.repository.ProductRepository;
-import com.axonivy.market.service.FileDownloadService;
 import com.axonivy.market.service.ProductMarketplaceDataService;
 import com.axonivy.market.util.FileUtils;
 import com.fasterxml.jackson.core.type.TypeReference;
@@ -22,7 +21,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.Resource;
 import org.springframework.stereotype.Service;
-import org.springframework.web.servlet.mvc.method.annotation.StreamingResponseBody;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -42,7 +40,6 @@ public class ProductMarketplaceDataServiceImpl implements ProductMarketplaceData
   private final ProductMarketplaceDataRepository productMarketplaceDataRepo;
   private final ProductCustomSortRepository productCustomSortRepo;
   private final ProductRepository productRepo;
-  private final FileDownloadService fileDownloadService;
   private final ProductDesignerInstallationRepository productDesignerInstallationRepo;
   private final ObjectMapper mapper = new ObjectMapper();
   private final SecureRandom random = new SecureRandom();

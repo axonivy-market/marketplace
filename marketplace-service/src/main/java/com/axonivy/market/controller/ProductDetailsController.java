@@ -129,7 +129,7 @@ public class ProductDetailsController {
           "Ivy designer")
   public ResponseEntity<Map<String, Object>> findProductJsonContent(@PathVariable(ID) String productId,
       @PathVariable(VERSION) String version, @RequestParam(name = DESIGNER_VERSION, required = false) String designerVersion) {
-    Map<String, Object> productJsonContent = versionService.getProductJsonContentByIdAndVersion(productId, version,        designerVersion);
+    Map<String, Object> productJsonContent = versionService.getProductJsonContentByIdAndVersion(productId, version, designerVersion);
     return new ResponseEntity<>(productJsonContent, HttpStatus.OK);
   }
 
@@ -215,7 +215,7 @@ public class ProductDetailsController {
       @RequestParam(value = ARTIFACT) @Parameter(in = ParameterIn.QUERY, example = "demos-app") String artifactId) {
     List<String> dependencyUrls = productContentService.getDependencyUrls(id, artifactId, version);
     if (CollectionUtils.isEmpty(dependencyUrls)) {
-      return ResponseEntity.noContent().build();
+      return ResponseEntity.notFound().build();
     }
     StreamingResponseBody streamingBody = outputStream -> productContentService.buildArtifactStreamFromArtifactUrls(
         dependencyUrls, outputStream);

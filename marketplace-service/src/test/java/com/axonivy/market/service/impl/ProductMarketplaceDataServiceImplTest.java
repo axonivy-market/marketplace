@@ -24,6 +24,8 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.test.util.ReflectionTestUtils;
 
+import java.io.ByteArrayOutputStream;
+import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -156,27 +158,12 @@ class ProductMarketplaceDataServiceImplTest extends BaseSetup {
   }
 
   @Test
-  void testDownloadArtifact() {
+  void testBuildArtifactStreamFromResource() {
     ReflectionTestUtils.setField(productMarketplaceDataService, LEGACY_INSTALLATION_COUNT_PATH_FIELD_NAME,
         INSTALLATION_FILE_PATH);
-    ProductMarketplaceData mockProductMarketplaceData = getMockProductMarketplaceData();
-    byte[] mockFileData = "dummy data".getBytes();
-    when(fileDownloadService.safeDownload(MOCK_DOWNLOAD_URL)).thenReturn(mockFileData);
     when(productRepo.findById(anyString())).thenReturn(Optional.of(getMockProduct()));
-    when(productMarketplaceDataRepo.findById(MOCK_PRODUCT_ID)).thenReturn(Optional.of(mockProductMarketplaceData));
-    when(productMarketplaceDataService.updateInstallationCountForProduct(MOCK_PRODUCT_ID,
-        MOCK_DESIGNER_VERSION)).thenReturn(4);
-    VersionDownload result = productMarketplaceDataService.downloadArtifact(MOCK_DOWNLOAD_URL, MOCK_PRODUCT_ID);
-
+    OutputStream result = productMarketplaceDataService.buildArtifactStreamFromResource(MOCK_DOWNLOAD_URL,
+        getMockResource(), new ByteArrayOutputStream());
     assertNotNull(result);
-    assertEquals(4, result.getInstallationCount());
-  }
-
-  @Test
-  void testSafeDownload_FileNotFound() {
-    when(fileDownloadService.safeDownload(MOCK_DOWNLOAD_URL)).thenReturn(null);
-    VersionDownload result = productMarketplaceDataService.downloadArtifact(MOCK_DOWNLOAD_URL, MOCK_PRODUCT_ID);
-    assertNull(result);
-    verify(fileDownloadService).safeDownload(MOCK_DOWNLOAD_URL);
   }
 }

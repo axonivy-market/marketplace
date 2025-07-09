@@ -10,6 +10,7 @@ import com.axonivy.market.service.FileDownloadService;
 import com.axonivy.market.service.ImageService;
 import com.axonivy.market.service.ProductJsonContentService;
 import com.axonivy.market.service.ProductMarketplaceDataService;
+import com.axonivy.market.util.HttpFetchingUtils;
 import com.axonivy.market.util.MavenUtils;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -19,7 +20,9 @@ import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -91,21 +94,14 @@ class ProductContentServiceImplTest extends BaseSetup {
   }
 
   @Test
-  void testDownloadZipArtifactFile() {
-    ProductDependency productDependency = mockProductDependency();
-    when(productDependencyRepository.findByProductIdAndArtifactIdAndVersion(MOCK_PRODUCT_ID, MOCK_DEMO_ARTIFACT_ID,
-        MOCK_RELEASED_VERSION)).thenReturn(List.of(productDependency));
-    when(fileDownloadService.safeDownload(MOCK_DOWNLOAD_URL)).thenReturn(MOCK_DOWNLOAD_URL.getBytes());
-    when(productMarketplaceDataService.getVersionDownload(any(), any())).thenReturn(mockVersionDownload());
-
-    VersionDownload versionDownload = productContentService.downloadZipArtifactFile(MOCK_PRODUCT_ID,
-        MOCK_DEMO_ARTIFACT_ID,
-        MOCK_RELEASED_VERSION);
-
-    assertNotNull(versionDownload);
-
-    assertNotNull(versionDownload.getFileData());
-    assertTrue(versionDownload.getFileData().length > 0);
-    assertEquals(5, versionDownload.getInstallationCount());
+  void testBuildArtifactStreamFromArtifactUrls() {
+    try (MockedStatic<HttpFetchingUtils> mockHttpFetchingUtils = Mockito.mockStatic(HttpFetchingUtils.class)) {
+      mockHttpFetchingUtils.when(() -> HttpFetchingUtils.fetchResourceUrl(MOCK_DOWNLOAD_URL)).thenReturn(
+          getMockEntityResource());
+      OutputStream result = productContentService.buildArtifactStreamFromArtifactUrls(List.of(MOCK_DOWNLOAD_URL),
+          new ByteArrayOutputStream());
+      assertNotNull(result);
+      assertTrue(((ByteArrayOutputStream) result).size() > 0);
+    }
   }
 }
