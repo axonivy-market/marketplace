@@ -85,7 +85,7 @@ public class MetadataReaderUtils {
       Artifact mavenArtifact) {
     String snapShotMetadataUrl = MavenUtils.buildSnapshotMetadataUrlFromArtifactInfo(mavenArtifact.getRepoUrl(),
         mavenArtifact.getGroupId(), mavenArtifact.getArtifactId(), version);
-    String metadataContent = HttpFetchingUtils.getFileAsString(snapShotMetadataUrl);
+    var metadataContent = HttpFetchingUtils.getFileAsString(snapShotMetadataUrl);
     Document document = getDocumentFromXMLContent(metadataContent);
     return getElementValue(document, MavenConstants.VALUE_TAG);
   }
