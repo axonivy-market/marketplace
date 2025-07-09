@@ -57,12 +57,12 @@ class FileDownloadServiceImplTest {
     when(authorizationUtils.resolveTrustedUrl(DOWNLOAD_URL)).thenReturn(DOWNLOAD_URL);
 
     FileDownloadServiceImpl spyService = Mockito.spy(fileDownloadService);
-//    doReturn(expectedContent).when(spyService).downloadFile(DOWNLOAD_URL);
+    doReturn(expectedContent).when(spyService).downloadFile(DOWNLOAD_URL);
 
     byte[] result = spyService.safeDownload(DOWNLOAD_URL);
 
     assertArrayEquals(expectedContent, result);
-//    verify(spyService).downloadFile(DOWNLOAD_URL);
+    verify(spyService).downloadFile(DOWNLOAD_URL);
     verify(authorizationUtils).resolveTrustedUrl(DOWNLOAD_URL);
   }
 
