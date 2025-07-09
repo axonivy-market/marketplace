@@ -37,6 +37,7 @@ import com.axonivy.market.service.ProductContentService;
 import com.axonivy.market.service.ProductMarketplaceDataService;
 import com.axonivy.market.service.ProductService;
 import com.axonivy.market.service.VersionService;
+import com.axonivy.market.util.HttpFetchingUtils;
 import com.axonivy.market.util.MavenUtils;
 import com.axonivy.market.util.MetadataReaderUtils;
 import com.axonivy.market.util.VersionUtils;
@@ -336,7 +337,6 @@ public class ProductServiceImpl implements ProductService {
         mappingVendorImageFromGHContent(product, content);
         mappingLogoFromGHContent(product, content);
       }
-
       if (BooleanUtils.isTrue(resetSync)) {
         productModuleContentRepo.deleteAllByProductId(product.getId());
         productJsonContentRepo.deleteAllByProductId(product.getId());
@@ -464,7 +464,7 @@ public class ProductServiceImpl implements ProductService {
   private void getMetadataContent(Artifact artifact, Product product, List<String> nonSyncReleasedVersions) {
     String metadataUrl = MavenUtils.buildMetadataUrlFromArtifactInfo(artifact.getRepoUrl(), artifact.getGroupId(),
         createProductArtifactId(artifact));
-    String metadataContent = MavenUtils.getMetadataContentFromUrl(metadataUrl);
+    String metadataContent = HttpFetchingUtils.getFileAsString(metadataUrl);
     if (StringUtils.isNotBlank(metadataContent)) {
       updateContentsFromMavenXML(product, metadataContent, artifact, nonSyncReleasedVersions);
     }
