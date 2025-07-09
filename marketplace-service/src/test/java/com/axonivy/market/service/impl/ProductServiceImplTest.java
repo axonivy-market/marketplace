@@ -22,6 +22,7 @@ import com.axonivy.market.github.service.GitHubService;
 import com.axonivy.market.model.GitHubReleaseModel;
 import com.axonivy.market.repository.*;
 import com.axonivy.market.service.ExternalDocumentService;
+import com.axonivy.market.service.FileDownloadService;
 import com.axonivy.market.service.ImageService;
 import com.axonivy.market.service.MetadataService;
 import com.axonivy.market.service.ProductContentService;
@@ -132,6 +133,8 @@ class ProductServiceImplTest extends BaseSetup {
   private ArtifactRepository artifactRepo;
   @Mock
   private MavenArtifactVersionRepository mavenArtifactVersionRepository;
+  @Mock
+  private FileDownloadService fileDownloadService;
   @Spy
   @InjectMocks
   private ProductServiceImpl productService;
