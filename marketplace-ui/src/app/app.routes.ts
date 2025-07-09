@@ -9,16 +9,16 @@ import { FeedbackApprovalComponent } from './modules/feedback-approval/feedback-
 import { TitleResolver } from './core/services/resolver/title.resolver';
 
 export const routes: Routes = [
-  // {
-  //   path: 'error-page',
-  //   component: ErrorPageComponent,
-  //   title: ERROR_PAGE
-  // },
-  // {
-  //   path: 'error-page/:id',
-  //   component: ErrorPageComponent,
-  //   title: ERROR_PAGE
-  // },
+  {
+    path: 'error-page',
+    component: ErrorPageComponent,
+    title: ERROR_PAGE
+  },
+  {
+    path: 'error-page/:id',
+    component: ErrorPageComponent,
+    title: ERROR_PAGE
+  },
   {
     path: 'security-monitor',
     component: SecurityMonitorComponent
@@ -40,7 +40,7 @@ export const routes: Routes = [
     loadChildren: () =>
       import('./modules/product/product.routes').then(m => m.routes),
     resolve: {
-      title: TitleResolver
+      productDetail: TitleResolver
     }
   },
   {

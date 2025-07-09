@@ -3,7 +3,6 @@ import { ProductDetail } from './../../../shared/models/product-detail.model';
 import {
   CommonModule,
   isPlatformBrowser,
-  isPlatformServer,
   NgOptimizedImage
 } from '@angular/common';
 import MarkdownIt from 'markdown-it';
@@ -14,11 +13,9 @@ import {
   Inject,
   PLATFORM_ID,
   Signal,
-  TransferState,
   WritableSignal,
   computed,
   inject,
-  makeStateKey,
   signal
 } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -184,44 +181,37 @@ export class ProductDetailComponent {
         this.updateDropdownSelection();
       });
     }
-    const productId = this.route.snapshot.params[ROUTER.ID];
-    this.productDetailService.productId.set(productId);
-    const productTitle = this.route.snapshot.data['title'] as string;
-    console.log(productTitle);
-
-    if (productId) {
-      this.loadingService.showLoading(LoadingComponentId.DETAIL_PAGE);
-
-      this.getProductDetailObservable(productId)
-        .pipe(take(1))
-        .subscribe(productDetail =>
-          this.handleProductDetailLoad(productId, productDetail, productTitle)
-        );
-    }
   }
 
   ngOnInit(): void {
     const productId = this.route.snapshot.params[ROUTER.ID];
     this.productDetailService.productId.set(productId);
-    const productTitle = this.route.snapshot.data['title'] as string;
+    // const productDetailObservable = this.route.snapshot.data[
+    //   'product'
+    // ] as Observable<ProductDetail>;
+    const productDetail = this.route.snapshot.data[
+      'productDetail'
+    ] as ProductDetail;
+    console.log(productDetail);
+    
+    this.handleProductDetailLoad(productId, productDetail);
 
-    if (productId) {
-      this.loadingService.showLoading(LoadingComponentId.DETAIL_PAGE);
+    // if (productId) {
+    //   this.loadingService.showLoading(LoadingComponentId.DETAIL_PAGE);
 
-      this.getProductDetailObservable(productId)
-        .pipe(take(1))
-        .subscribe(productDetail =>
-          this.handleProductDetailLoad(productId, productDetail, productTitle)
-        );
-    }
+    // this.getProductDetailObservable(productId)
+    //   .pipe(take(1))
+    //   .subscribe(productDetail =>
+    //     this.handleProductDetailLoad(productId, productDetail)
+    //   );
+    // }
   }
 
   private handleProductDetailLoad(
     productId: string,
-    productDetail: ProductDetail,
-    productTitle: string
+    productDetail: ProductDetail
   ): void {
-    // this.updateWebBrowserTitle(productDetail.names, productTitle);
+    // this.updateWebBrowserTitle(productDetail.names);
 
     if (this.isBrowser) {
       forkJoin({
@@ -564,7 +554,7 @@ export class ProductDetailComponent {
     });
   }
 
-  updateWebBrowserTitle(names: DisplayValue, productTitle: string): void {
+  updateWebBrowserTitle(names: DisplayValue): void {
     if (names !== undefined) {
       const title = names[this.languageService.selectedLanguage()];
       this.titleService.setTitle(title);
@@ -573,7 +563,7 @@ export class ProductDetailComponent {
   }
 
   getDisplayedTabsSignal(productTitle: string): ItemDropdown[] {
-    this.updateWebBrowserTitle(this.productDetail().names, productTitle);
+    this.updateWebBrowserTitle(this.productDetail().names);
     const displayedTabs: ItemDropdown[] = [];
     for (const detailTab of this.detailTabs) {
       if (this.getContent(detailTab.value)) {
