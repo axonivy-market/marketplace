@@ -85,7 +85,7 @@ import static org.apache.commons.lang3.StringUtils.EMPTY;
 
 @Log4j2
 @Service
-//@RequiredArgsConstructor
+@RequiredArgsConstructor
 public class ProductServiceImpl implements ProductService {
   private static final String INITIAL_VERSION = "1.0";
   private final ProductRepository productRepo;
@@ -111,35 +111,6 @@ public class ProductServiceImpl implements ProductService {
   @Value("${market.github.market.branch}")
   private String marketRepoBranch;
 
-  public ProductServiceImpl(ProductRepository productRepo, ProductModuleContentRepository productModuleContentRepo,
-      GHAxonIvyMarketRepoService axonIvyMarketRepoService, GHAxonIvyProductRepoService axonIvyProductRepoService,
-      GitHubRepoMetaRepository gitHubRepoMetaRepo, GitHubService gitHubService,
-      ProductJsonContentRepository productJsonContentRepo, ImageRepository imageRepo,
-      MetadataRepository metadataRepo, ImageService imageService,
-      ProductContentService productContentService, MetadataService metadataService,
-      ProductMarketplaceDataService productMarketplaceDataService, ExternalDocumentService externalDocumentService,
-      ProductMarketplaceDataRepository productMarketplaceDataRepo,
-      MavenArtifactVersionRepository mavenArtifactVersionRepository, FileDownloadService fileDownloadService,
-      VersionService versionService) {
-    this.productRepo = productRepo;
-    this.productModuleContentRepo = productModuleContentRepo;
-    this.axonIvyMarketRepoService = axonIvyMarketRepoService;
-    this.axonIvyProductRepoService = axonIvyProductRepoService;
-    this.gitHubRepoMetaRepo = gitHubRepoMetaRepo;
-    this.gitHubService = gitHubService;
-    this.metadataRepo = metadataRepo;
-    this.productJsonContentRepo = productJsonContentRepo;
-    this.imageRepo = imageRepo;
-    this.imageService = imageService;
-    this.metadataService = metadataService;
-    this.productContentService = productContentService;
-    this.productMarketplaceDataService = productMarketplaceDataService;
-    this.externalDocumentService = externalDocumentService;
-    this.productMarketplaceDataRepo = productMarketplaceDataRepo;
-    this.mavenArtifactVersionRepository = mavenArtifactVersionRepository;
-    this.fileDownloadService = fileDownloadService;
-    this.versionService = versionService;
-  }
   @Override
   public Page<Product> findProducts(String type, String keyword, String language, Boolean isRESTClient,
       Pageable pageable) {
