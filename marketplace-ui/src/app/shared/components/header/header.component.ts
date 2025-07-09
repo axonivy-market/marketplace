@@ -1,5 +1,5 @@
-import { CommonModule } from '@angular/common';
-import { Component, inject, model } from '@angular/core';
+import { CommonModule, isPlatformBrowser } from '@angular/common';
+import { Component, Inject, inject, model, PLATFORM_ID } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { LanguageService } from '../../../core/services/language/language.service';
@@ -8,6 +8,7 @@ import { LanguageSelectionComponent } from './language-selection/language-select
 import { NavigationComponent } from './navigation/navigation.component';
 import { SearchBarComponent } from './search-bar/search-bar.component';
 import { ThemeSelectionComponent } from './theme-selection/theme-selection.component';
+import { RouterLink } from '@angular/router';
 
 @Component({
   selector: 'app-header',
@@ -19,7 +20,8 @@ import { ThemeSelectionComponent } from './theme-selection/theme-selection.compo
     NavigationComponent,
     ThemeSelectionComponent,
     LanguageSelectionComponent,
-    SearchBarComponent
+    SearchBarComponent,
+    RouterLink
   ],
   templateUrl: './header.component.html',
   styleUrls: ['./header.component.scss', '../../../app.component.scss']
@@ -32,12 +34,16 @@ export class HeaderComponent {
   themeService = inject(ThemeService);
   translateService = inject(TranslateService);
   languageService = inject(LanguageService);
+  isBrowser: boolean;
 
-  constructor() {
-    this.translateService.setDefaultLang(
-      this.languageService.selectedLanguage()
-    );
-    this.translateService.use(this.languageService.selectedLanguage());
+  constructor(@Inject(PLATFORM_ID) private platformId: Object) {
+    this.isBrowser = isPlatformBrowser(this.platformId);
+    if (this.isBrowser) {
+      this.translateService.setDefaultLang(
+        this.languageService.selectedLanguage()
+      );
+      this.translateService.use(this.languageService.selectedLanguage());
+    }
   }
 
   onCollapsedMobileMenu() {

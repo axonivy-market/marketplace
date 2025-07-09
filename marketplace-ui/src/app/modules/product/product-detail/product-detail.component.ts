@@ -1,15 +1,24 @@
 import { take } from 'rxjs/operators';
 import { ProductDetail } from './../../../shared/models/product-detail.model';
-import { CommonModule, NgOptimizedImage } from '@angular/common';
+import {
+  CommonModule,
+  isPlatformBrowser,
+  isPlatformServer,
+  NgOptimizedImage
+} from '@angular/common';
 import MarkdownIt from 'markdown-it';
 import {
   Component,
   ElementRef,
   HostListener,
+  Inject,
+  PLATFORM_ID,
   Signal,
+  TransferState,
   WritableSignal,
   computed,
   inject,
+  makeStateKey,
   signal
 } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -54,7 +63,7 @@ import { ProductStarRatingNumberComponent } from './product-star-rating-number/p
 import { DisplayValue } from '../../../shared/models/display-value.model';
 import { CookieService } from 'ngx-cookie-service';
 import { ROUTER } from '../../../shared/constants/router.constant';
-import { SafeHtml, Title, DomSanitizer } from '@angular/platform-browser';
+import { SafeHtml, Title, DomSanitizer, Meta } from '@angular/platform-browser';
 import { API_URI } from '../../../shared/constants/api.constant';
 import { EmptyProductDetailPipe } from '../../../shared/pipes/empty-product-detail.pipe';
 import { LoadingSpinnerComponent } from '../../../shared/components/loading-spinner/loading-spinner.component';
@@ -79,6 +88,7 @@ export interface DetailTab {
 const STORAGE_ITEM = 'activeTab';
 const DEFAULT_ACTIVE_TAB = 'description';
 const GITHUB_BASE_URL = 'https://github.com/';
+
 @Component({
   selector: 'app-product-detail',
   standalone: true,
@@ -138,7 +148,7 @@ export class ProductDetailComponent {
   displayedTabsSignal: Signal<ItemDropdown[]> = computed(() => {
     this.languageService.selectedLanguage();
     this.getReadmeContent();
-    return this.getDisplayedTabsSignal();
+    return this.getDisplayedTabsSignal("abc");
   });
   isDropdownOpen: WritableSignal<boolean> = signal(false);
   selectedVersion = '';
@@ -150,6 +160,9 @@ export class ProductDetailComponent {
   md: MarkdownIt = new MarkdownIt();
   productReleaseSafeHtmls: ProductReleaseSafeHtml[] = [];
   loadedReadmeContent: { [key: string]: SafeHtml } = {};
+  isBrowser: boolean;
+  meta = inject(Meta);
+  private transferState = inject(TransferState);
 
   @HostListener('window:popstate', ['$event'])
   onPopState() {
@@ -162,60 +175,133 @@ export class ProductDetailComponent {
 
   constructor(
     private readonly titleService: Title,
-    private readonly sanitizer: DomSanitizer
+    private readonly sanitizer: DomSanitizer,
+    @Inject(PLATFORM_ID) private platformId: Object
   ) {
-    this.scrollToTop();
-    this.resizeObserver = new ResizeObserver(() => {
-      this.updateDropdownSelection();
-    });
-  }
-
-  ngOnInit(): void {
+    this.isBrowser = isPlatformBrowser(this.platformId);
+    if (this.isBrowser) {
+      this.scrollToTop();
+      this.resizeObserver = new ResizeObserver(() => {
+        this.updateDropdownSelection();
+      });
+    }
     const productId = this.route.snapshot.params[ROUTER.ID];
     this.productDetailService.productId.set(productId);
+    const productTitle = this.route.snapshot.data['title'] as string;
+    console.log(productTitle);
+    
 
     if (productId) {
       this.loadingService.showLoading(LoadingComponentId.DETAIL_PAGE);
+      // this.transferState.set(PRODUCT_KEY, "PRODUCT TITLE");
 
       this.getProductDetailObservable(productId)
         .pipe(take(1))
-        .subscribe(productDetail => this.handleProductDetailLoad(productId, productDetail));
+        .subscribe(productDetail =>
+          this.handleProductDetailLoad(productId, productDetail, productTitle)
+        );
     }
   }
 
-  private handleProductDetailLoad(productId: string, productDetail: ProductDetail): void {
-    this.updateWebBrowserTitle(productDetail.names);
+  ngOnInit(): void { 
+    const productId = this.route.snapshot.params[ROUTER.ID];
+    this.productDetailService.productId.set(productId);
+    // console.log(productTitle);
+    // this.titleService.setTitle(productTitle);
+    // this.meta.updateTag({ property: 'og:title', content: productTitle });
+     const productTitle = this.route.snapshot.data['title'] as string;
+  this.titleService.setTitle(productTitle);
+  this.meta.updateTag({ property: 'og:title', content: productTitle });
+    
 
-    forkJoin({
-      userFeedback: this.productFeedbackService.findProductFeedbackOfUser(),
-      productFeedBack: this.productFeedbackService.getInitFeedbacksObservable(),
-      rating: this.productStarRatingService.getRatingObservable(productId),
-      changelogs: this.productService.getProductChangelogs(productId)
-    }).subscribe(res => {
-      this.setupMarkdownParser(productDetail.sourceUrl);
+    if (productId) {
+      this.loadingService.showLoading(LoadingComponentId.DETAIL_PAGE);
+      // this.transferState.set(PRODUCT_KEY, "PRODUCT TITLE");
 
-      const gitHubReleaseModelList = res.changelogs?._embedded?.gitHubReleaseModelList ?? [];
-      if (gitHubReleaseModelList.length > 0) {
-        this.productReleaseSafeHtmls = this.renderChangelogContent(gitHubReleaseModelList);
-      }
-
-      this.handleProductDetail(productDetail);
-      this.getReadmeContent();
-      this.productFeedbackService.handleFeedbackApiResponse(res.productFeedBack);
-      this.updateDropdownSelection();
-      this.checkMediaSize();
-
-      this.handlePopupLogic();
-      this.loadingService.hideLoading(LoadingComponentId.DETAIL_PAGE);
-      this.navigateToProductDetailsWithTabFragment();
+      this.getProductDetailObservable(productId)
+        .pipe(take(1))
+        .subscribe(productDetail =>
+          this.handleProductDetailLoad(productId, productDetail, productTitle)
+        );
     }
-    );
+  }
+
+  private handleProductDetailLoad(
+    productId: string,
+    productDetail: ProductDetail,
+    productTitle: string
+  ): void {
+    this.updateWebBrowserTitle(productDetail.names, productTitle);
+
+    if (this.isBrowser) {
+      forkJoin({
+        userFeedback: this.productFeedbackService.findProductFeedbackOfUser(),
+        productFeedBack:
+          this.productFeedbackService.getInitFeedbacksObservable(),
+        rating: this.productStarRatingService.getRatingObservable(productId),
+        changelogs: this.productService.getProductChangelogs(productId)
+      }).subscribe(res => {
+        this.setupMarkdownParser(productDetail.sourceUrl);
+
+        const gitHubReleaseModelList =
+          res.changelogs?._embedded?.gitHubReleaseModelList ?? [];
+        if (gitHubReleaseModelList.length > 0) {
+          this.productReleaseSafeHtmls = this.renderChangelogContent(
+            gitHubReleaseModelList
+          );
+        }
+
+        this.handleProductDetail(productDetail);
+        this.getReadmeContent();
+        this.productFeedbackService.handleFeedbackApiResponse(
+          res.productFeedBack
+        );
+        this.updateDropdownSelection();
+        this.checkMediaSize();
+
+        this.handlePopupLogic();
+        this.loadingService.hideLoading(LoadingComponentId.DETAIL_PAGE);
+        this.navigateToProductDetailsWithTabFragment();
+      });
+    }
+    // forkJoin({
+    //   userFeedback: this.productFeedbackService.findProductFeedbackOfUser(),
+    //   productFeedBack: this.productFeedbackService.getInitFeedbacksObservable(),
+    //   rating: this.productStarRatingService.getRatingObservable(productId),
+    //   changelogs: this.productService.getProductChangelogs(productId)
+    // }).subscribe(res => {
+    //   this.setupMarkdownParser(productDetail.sourceUrl);
+
+    //   const gitHubReleaseModelList =
+    //     res.changelogs?._embedded?.gitHubReleaseModelList ?? [];
+    //   if (gitHubReleaseModelList.length > 0) {
+    //     this.productReleaseSafeHtmls = this.renderChangelogContent(
+    //       gitHubReleaseModelList
+    //     );
+    //   }
+
+    //   this.handleProductDetail(productDetail);
+    //   this.getReadmeContent();
+    //   this.productFeedbackService.handleFeedbackApiResponse(
+    //     res.productFeedBack
+    //   );
+    //   this.updateDropdownSelection();
+    //   this.checkMediaSize();
+
+    //   this.handlePopupLogic();
+    //   this.loadingService.hideLoading(LoadingComponentId.DETAIL_PAGE);
+    //   this.navigateToProductDetailsWithTabFragment();
+    // });
   }
 
   private setupMarkdownParser(sourceUrl: string): void {
     this.md
       .use(full)
-      .use(this.linkifyPullRequests, sourceUrl, GITHUB_PULL_REQUEST_NUMBER_REGEX)
+      .use(
+        this.linkifyPullRequests,
+        sourceUrl,
+        GITHUB_PULL_REQUEST_NUMBER_REGEX
+      )
       .set({
         typographer: true,
         linkify: true
@@ -234,7 +320,6 @@ export class ProductDetailComponent {
       }
     });
   }
-
 
   getProductDetailObservable(productId: string): Observable<ProductDetail> {
     const isShowDevVersion = CommonUtils.getCookieValue(
@@ -373,7 +458,9 @@ export class ProductDetailComponent {
           this.languageService.selectedLanguage()
         ),
       dependency: content.isDependency,
-      changelog: this.productReleaseSafeHtmls != null && this.productReleaseSafeHtmls.length !== 0
+      changelog:
+        this.productReleaseSafeHtmls != null &&
+        this.productReleaseSafeHtmls.length !== 0
     };
 
     return conditions[value] ?? false;
@@ -487,15 +574,37 @@ export class ProductDetailComponent {
     });
   }
 
-  updateWebBrowserTitle(names: DisplayValue): void {
+  updateWebBrowserTitle(names: DisplayValue, productTitle: string): void {
     if (names !== undefined) {
       const title = names[this.languageService.selectedLanguage()];
-      this.titleService.setTitle(title);
+      // this.titleService.setTitle(title);
+      // this.meta.updateTag({ property: 'og:title', content: title });
+
+      if (isPlatformServer(this.platformId)) {
+        console.log("PLATFORM SERVER");
+        
+        // this.transferState.set(this.PRODUCT_TITLE_KEY, title);
+        this.titleService.setTitle(productTitle);
+        this.meta.updateTag({ property: 'og:title', content: productTitle });
+      }
+
+      if (isPlatformBrowser(this.platformId)) {
+        console.log("PLATFORM BROWSER");
+        // Optional: get from transfer state (if SSR passed it down)
+        // const ssrTitle = this.transferState.get(this.PRODUCT_TITLE_KEY, null);
+        // if (ssrTitle) {
+        //   this.titleService.setTitle(ssrTitle);
+        //   this.meta.updateTag({ property: 'og:title', content: ssrTitle });
+        // } else {
+        this.titleService.setTitle(productTitle);
+        this.meta.updateTag({ property: 'og:title', content: productTitle });
+        // }
+      }
     }
   }
 
-  getDisplayedTabsSignal(): ItemDropdown[] {
-    this.updateWebBrowserTitle(this.productDetail().names);
+  getDisplayedTabsSignal(productTitle: string): ItemDropdown[] {
+    this.updateWebBrowserTitle(this.productDetail().names, productTitle);
     const displayedTabs: ItemDropdown[] = [];
     for (const detailTab of this.detailTabs) {
       if (this.getContent(detailTab.value)) {
@@ -534,7 +643,8 @@ export class ProductDetailComponent {
           this.languageService.selectedLanguage()
         );
 
-        this.loadedReadmeContent[tab.value] = this.renderGithubAlert(translatedContent);
+        this.loadedReadmeContent[tab.value] =
+          this.renderGithubAlert(translatedContent);
       }
     });
   }
@@ -557,11 +667,17 @@ export class ProductDetailComponent {
   }
 
   private bypassSecurityTrustHtml(value: string): SafeHtml {
-    const markdownContent = this.md.render(value.replace(UNESCAPE_GITHUB_CONTENT_REGEX, '$1'));
+    const markdownContent = this.md.render(
+      value.replace(UNESCAPE_GITHUB_CONTENT_REGEX, '$1')
+    );
     return this.sanitizer.bypassSecurityTrustHtml(markdownContent);
   }
 
-  linkifyPullRequests(md: MarkdownIt, sourceUrl: string, prNumberRegex: RegExp) {
+  linkifyPullRequests(
+    md: MarkdownIt,
+    sourceUrl: string,
+    prNumberRegex: RegExp
+  ) {
     md.renderer.rules.text = (tokens, idx) => {
       const content = tokens[idx].content;
       const linkify = new LinkifyIt();
@@ -615,7 +731,9 @@ export class ProductDetailComponent {
   }
 
   getTabValueFromFragment(fragment: string | null): string {
-    const isValidTab = this.displayedTabsSignal().some(tab => tab.tabId === fragment);
+    const isValidTab = this.displayedTabsSignal().some(
+      tab => tab.tabId === fragment
+    );
     const tabId = fragment?.replace(TAB_PREFIX, '');
     if (isValidTab && tabId) {
       return tabId;

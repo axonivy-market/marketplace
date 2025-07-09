@@ -1,10 +1,12 @@
-import { CommonModule } from '@angular/common';
+import { CommonModule, isPlatformBrowser } from '@angular/common';
 import {
   AfterViewInit,
   Component,
   ElementRef,
+  Inject,
   inject,
   OnDestroy,
+  PLATFORM_ID,
   signal,
   ViewChild,
   WritableSignal
@@ -287,12 +289,15 @@ export class ProductComponent implements AfterViewInit, OnDestroy {
   languageService = inject(LanguageService);
   route = inject(ActivatedRoute);
   router = inject(Router);
-  windowRef = inject(WindowRef); // ✅ injected
+  windowRef = inject(WindowRef);
+  isBrowser: boolean;
 
   @ViewChild('observer', { static: true }) observerElement!: ElementRef;
 
-  constructor() {
-    this.route.queryParams.subscribe(params => {
+  constructor(@Inject(PLATFORM_ID) private platformId: Object) {
+    this.isBrowser = isPlatformBrowser(this.platformId);
+    if(this.isBrowser) {
+      this.route.queryParams.subscribe(params => {
       this.isRESTClient.set(
         DESIGNER_SESSION_STORAGE_VARIABLE.restClientParamName in params &&
         this.isDesignerEnvironment
@@ -338,6 +343,53 @@ export class ProductComponent implements AfterViewInit, OnDestroy {
         win?.scrollTo(0, 0);
       }
     });
+    }
+    // this.route.queryParams.subscribe(params => {
+    //   this.isRESTClient.set(
+    //     DESIGNER_SESSION_STORAGE_VARIABLE.restClientParamName in params &&
+    //     this.isDesignerEnvironment
+    //   );
+
+    //   this.criteria = {
+    //     ...this.criteria,
+    //     search: params[DESIGNER_SESSION_STORAGE_VARIABLE.searchParamName] ?? this.criteria.search,
+    //     type: params['type'] ?? this.criteria.type,
+    //     sort: params['sort'] ?? this.criteria.sort
+    //   };
+    // });
+
+    // this.loadProductItems();
+
+    // this.subscriptions.push(
+    //   this.searchTextChanged
+    //     .pipe(debounceTime(SEARCH_DEBOUNCE_TIME))
+    //     .subscribe(value => {
+    //       this.criteria = {
+    //         ...this.criteria,
+    //         nextPageHref: '',
+    //         search: value
+    //       };
+    //       this.loadProductItems(true);
+
+    //       let queryParams: { search: string | null } = { search: null };
+    //       if (value) {
+    //         queryParams = { search: this.criteria.search };
+    //       }
+
+    //       this.router.navigate([], {
+    //         relativeTo: this.route,
+    //         queryParamsHandling: 'merge',
+    //         queryParams
+    //       });
+    //     })
+    // );
+
+    // this.router.events?.subscribe(event => {
+    //   if (event instanceof NavigationStart) {
+    //     const win = this.windowRef.nativeWindow; // ✅ safe check
+    //     win?.scrollTo(0, 0);
+    //   }
+    // });
   }
 
   ngAfterViewInit(): void {

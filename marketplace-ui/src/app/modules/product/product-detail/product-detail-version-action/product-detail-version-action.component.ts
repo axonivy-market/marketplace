@@ -6,10 +6,10 @@ import {
   ElementRef,
   EventEmitter,
   HostListener,
+  Inject,
   inject,
   Input,
   model,
-  NgZone,
   Output,
   PLATFORM_ID,
   Signal,
@@ -26,7 +26,10 @@ import { CommonDropdownComponent } from '../../../../shared/components/common-dr
 import { LanguageService } from '../../../../core/services/language/language.service';
 import { ItemDropdown } from '../../../../shared/models/item-dropdown.model';
 import { environment } from '../../../../../environments/environment';
-import { SHOW_DEV_VERSION, VERSION } from '../../../../shared/constants/common.constant';
+import {
+  SHOW_DEV_VERSION,
+  VERSION
+} from '../../../../shared/constants/common.constant';
 import { ProductDetailActionType } from '../../../../shared/enums/product-detail-action-type';
 import { RoutingQueryParamService } from '../../../../shared/services/routing.query.param.service';
 import { ProductDetail } from '../../../../shared/models/product-detail.model';
@@ -35,7 +38,10 @@ import { CookieService } from 'ngx-cookie-service';
 import { CommonUtils } from '../../../../shared/utils/common.utils';
 import { ActivatedRoute, Router } from '@angular/router';
 import { ROUTER } from '../../../../shared/constants/router.constant';
-import { MatomoCategory, MatomoAction } from '../../../../shared/enums/matomo-tracking.enum';
+import {
+  MatomoCategory,
+  MatomoAction
+} from '../../../../shared/enums/matomo-tracking.enum';
 import { MATOMO_TRACKING_ENVIRONMENT } from '../../../../shared/constants/matomo.constant';
 import { MATOMO_DIRECTIVES } from 'ngx-matomo-client';
 import { LoadingComponentId } from '../../../../shared/enums/loading-component-id';
@@ -43,7 +49,6 @@ import { LoadingService } from '../../../../core/services/loading/loading.servic
 import { API_URI } from '../../../../shared/constants/api.constant';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { VersionDownload } from '../../../../shared/models/version-download.model';
-import { take } from 'rxjs';
 
 const showDevVersionCookieName = 'showDevVersions';
 const ARTIFACT_ZIP_URL = 'artifact/zip-file';
@@ -117,52 +122,33 @@ export class ProductDetailVersionActionComponent implements AfterViewInit {
   route = inject(ActivatedRoute);
   httpClient = inject(HttpClient);
 
-  platformId = inject(PLATFORM_ID);
-  isBrowser = isPlatformBrowser(this.platformId);
-  ngZone = inject(NgZone);
-
   isDevVersionsDisplayed: WritableSignal<boolean> = signal(
     this.getShowDevVersionFromCookie()
   );
   isCheckedAppForEngine!: boolean;
+  isBrowser: boolean;
+
+  constructor(@Inject(PLATFORM_ID) private platformId: Object) {
+    this.isBrowser = isPlatformBrowser(this.platformId);
+  }
 
   ngAfterViewInit() {
+    if (this.isBrowser) {
+      console.log('IS BROWS');
+
+      const tooltipTriggerList = [].slice.call(
+        document.querySelectorAll('[data-bs-toggle="tooltip"]')
+      );
+      tooltipTriggerList.forEach(
+        tooltipTriggerEl => new Tooltip(tooltipTriggerEl)
+      );
+    }
     // const tooltipTriggerList = [].slice.call(
     //   document.querySelectorAll('[data-bs-toggle="tooltip"]')
     // );
     // tooltipTriggerList.forEach(
     //   tooltipTriggerEl => new Tooltip(tooltipTriggerEl)
     // );
-      // if (this.isBrowser) {
-      //   console.log("IS BROWS");
-        
-      // const tooltipTriggerList = [].slice.call(
-      //   document.querySelectorAll('[data-bs-toggle="tooltip"]')
-      // );
-      // tooltipTriggerList.forEach(
-      //   tooltipTriggerEl => new Tooltip(tooltipTriggerEl)
-      // );
-      // }
-  //     if (isPlatformBrowser(this.platformId)) {
-  //   import('bootstrap').then(bs => {
-  //     const Tooltip = bs.Tooltip;
-  //     const tooltipTriggerList = [].slice.call(
-  //       document.querySelectorAll('[data-bs-toggle="tooltip"]')
-  //     );
-  //     tooltipTriggerList.forEach(el => new Tooltip(el));
-  //   });
-  // }
-  if (isPlatformBrowser(this.platformId)) {
-    console.log("BROWSER PLATFORM");
-    
-    this.ngZone.onStable.pipe(take(1)).subscribe(() => {
-      import('bootstrap').then(bs => {
-        const Tooltip = bs.Tooltip;
-        const elements = document.querySelectorAll('[data-bs-toggle="tooltip"]');
-        elements.forEach(el => new Tooltip(el));
-      });
-    });
-  }
   }
 
   onSelectVersion(version: string) {
@@ -268,10 +254,16 @@ export class ProductDetailVersionActionComponent implements AfterViewInit {
   }
 
   getVersionInDesigner(): void {
-    const designerVersion = this.routingQueryParamService.getDesignerVersionFromSessionStorage() ?? '';
+    const designerVersion =
+      this.routingQueryParamService.getDesignerVersionFromSessionStorage() ??
+      '';
     this.versionDropdownInDesigner = [];
     this.productService
-      .sendRequestToGetProductVersionsForDesigner(this.productId, this.isDevVersionsDisplayed(), designerVersion)
+      .sendRequestToGetProductVersionsForDesigner(
+        this.productId,
+        this.isDevVersionsDisplayed(),
+        designerVersion
+      )
       .subscribe(data => {
         const versionMap = data
           .map(dataVersionAndUrl => dataVersionAndUrl.version)
@@ -301,11 +293,20 @@ export class ProductDetailVersionActionComponent implements AfterViewInit {
   downloadArtifact(): void {
     let downloadUrl = '';
     this.isDownloading.set(true);
-    if (!this.isCheckedAppForEngine || this.selectedArtifactId?.endsWith(DOC) || this.selectedArtifact?.endsWith(ZIP)) {
+    if (
+      !this.isCheckedAppForEngine ||
+      this.selectedArtifactId?.endsWith(DOC) ||
+      this.selectedArtifact?.endsWith(ZIP)
+    ) {
       const params = new HttpParams().set('url', this.selectedArtifact ?? '');
       downloadUrl = `${this.getMarketplaceServiceUrl()}/${API_URI.PRODUCT_MARKETPLACE_DATA}/${VERSION_DOWNLOAD}/${this.productId}?${params.toString()}`;
       if (this.selectedArtifact) {
-        this.fetchAndDownloadArtifact(downloadUrl, this.selectedArtifact.substring(this.selectedArtifact.lastIndexOf("/") + 1));
+        this.fetchAndDownloadArtifact(
+          downloadUrl,
+          this.selectedArtifact.substring(
+            this.selectedArtifact.lastIndexOf('/') + 1
+          )
+        );
       }
     } else if (this.isCheckedAppForEngine) {
       const version = this.selectedVersion().replace(VERSION.displayPrefix, '');
@@ -314,7 +315,10 @@ export class ProductDetailVersionActionComponent implements AfterViewInit {
         .set(ROUTER.ARTIFACT, this.selectedArtifactId ?? '');
 
       downloadUrl = `${this.getMarketplaceServiceUrl()}/${API_URI.PRODUCT_DETAILS}/${this.productId}/${ARTIFACT_ZIP_URL}?${params.toString()}`;
-      this.fetchAndDownloadArtifact(downloadUrl, `${this.selectedArtifactId}-app-${version}.zip`);
+      this.fetchAndDownloadArtifact(
+        downloadUrl,
+        `${this.selectedArtifactId}-app-${version}.zip`
+      );
     } else {
       return;
     }
@@ -323,30 +327,35 @@ export class ProductDetailVersionActionComponent implements AfterViewInit {
   getMarketplaceServiceUrl(): string {
     let marketplaceServiceUrl = environment.apiUrl;
     if (!marketplaceServiceUrl.startsWith(HTTP)) {
-      marketplaceServiceUrl = window.location.origin.concat(marketplaceServiceUrl);
+      marketplaceServiceUrl = window.location.origin.concat(
+        marketplaceServiceUrl
+      );
     }
     return marketplaceServiceUrl;
   }
 
   fetchAndDownloadArtifact(url: string, fileName: string): void {
-    this.httpClient.get<VersionDownload>(url).subscribe(
-      response => {
-        if (response.fileData) {
-          this.installationCount.emit(response.installationCount);
-          this.downloadFile(response.fileData, fileName);
-          this.isDownloading.set(false);
-        }
+    this.httpClient.get<VersionDownload>(url).subscribe(response => {
+      if (response.fileData) {
+        this.installationCount.emit(response.installationCount);
+        this.downloadFile(response.fileData, fileName);
+        this.isDownloading.set(false);
       }
-    );
+    });
   }
 
   private downloadFile(fileData: string, fileName: string): void {
     const byteCharacters = atob(fileData); // decode base64
     const byteNumbers = Array.from(byteCharacters, c => c.charCodeAt(0));
     const byteArray = new Uint8Array(byteNumbers);
-    const blobUrl = URL.createObjectURL(new Blob([byteArray], { type: APPLICATION_OCTET_STREAM }));
+    const blobUrl = URL.createObjectURL(
+      new Blob([byteArray], { type: APPLICATION_OCTET_STREAM })
+    );
 
-    const a = Object.assign(document.createElement(ANCHOR_ELEMENT), { href: blobUrl, download: fileName });
+    const a = Object.assign(document.createElement(ANCHOR_ELEMENT), {
+      href: blobUrl,
+      download: fileName
+    });
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
@@ -355,9 +364,10 @@ export class ProductDetailVersionActionComponent implements AfterViewInit {
 
   onUpdateInstallationCountForDesigner(): void {
     setTimeout(() => {
-      this.productService.sendRequestToGetInstallationCount(this.productId)
+      this.productService
+        .sendRequestToGetInstallationCount(this.productId)
         .subscribe((data: number) => {
-          this.installationCount.emit(data)
+          this.installationCount.emit(data);
         });
     }, DELAY_TIMEOUT);
   }

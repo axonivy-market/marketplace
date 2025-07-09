@@ -1,8 +1,9 @@
-import { Component, inject, Input } from '@angular/core';
+import { Component, Inject, inject, Input, PLATFORM_ID } from '@angular/core';
 import { TranslateModule } from '@ngx-translate/core';
 import { LanguageService } from '../../../../core/services/language/language.service';
 import { Language } from '../../../../shared/enums/language.enum';
 import { ProductDetail } from '../../../../shared/models/product-detail.model';
+import { isPlatformBrowser } from '@angular/common';
 
 @Component({
   selector: 'app-product-detail-maven-content',
@@ -16,6 +17,11 @@ export class ProductDetailMavenContentComponent {
   productDetail!: ProductDetail;
   @Input()
   selectedVersion!: string;
+  isBrowser: boolean;
+  
+  constructor(@Inject(PLATFORM_ID) private platformId: Object) {
+    this.isBrowser = isPlatformBrowser(this.platformId);
+  }
 
   languageService = inject(LanguageService);
 

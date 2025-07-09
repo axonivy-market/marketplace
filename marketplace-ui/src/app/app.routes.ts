@@ -6,18 +6,19 @@ import { ERROR_PAGE } from './shared/constants/common.constant';
 import { SecurityMonitorComponent } from './modules/security-monitor/security-monitor.component';
 import { ReleasePreviewComponent } from './modules/release-preview/release-preview.component';
 import { FeedbackApprovalComponent } from './modules/feedback-approval/feedback-approval.component';
+import { TitleResolver } from './core/services/resolver/title.resolver';
 
 export const routes: Routes = [
-  {
-    path: 'error-page',
-    component: ErrorPageComponent,
-    title: ERROR_PAGE
-  },
-  {
-    path: 'error-page/:id',
-    component: ErrorPageComponent,
-    title: ERROR_PAGE
-  },
+  // {
+  //   path: 'error-page',
+  //   component: ErrorPageComponent,
+  //   title: ERROR_PAGE
+  // },
+  // {
+  //   path: 'error-page/:id',
+  //   component: ErrorPageComponent,
+  //   title: ERROR_PAGE
+  // },
   {
     path: 'security-monitor',
     component: SecurityMonitorComponent
@@ -37,7 +38,10 @@ export const routes: Routes = [
   {
     path: ':id',
     loadChildren: () =>
-      import('./modules/product/product.routes').then(m => m.routes)
+      import('./modules/product/product.routes').then(m => m.routes),
+    resolve: {
+      title: TitleResolver
+    }
   },
   {
     path: ':id/:version/doc',

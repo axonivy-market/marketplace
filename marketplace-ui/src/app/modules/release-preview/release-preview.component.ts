@@ -5,10 +5,12 @@ import {
   Signal,
   WritableSignal,
   computed,
-  signal
+  signal,
+  Inject,
+  PLATFORM_ID
 } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { CommonModule } from '@angular/common';
+import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { ReleasePreviewService } from './release-preview.service';
 import { ReleasePreviewData } from '../../shared/models/release-preview-data.model';
 import { LanguageService } from '../../core/services/language/language.service';
@@ -62,15 +64,22 @@ export class ReleasePreviewComponent {
 
   private readonly releasePreviewService = inject(ReleasePreviewService);
   private readonly markdownService = inject(MarkdownService);
+  isBrowser: boolean;
+
+  constructor(@Inject(PLATFORM_ID) private platformId: Object) {
+    this.isBrowser = isPlatformBrowser(this.platformId);
+  }
 
   ngOnInit(): void {
-    // Set the title initially
-    this.updateHomePageTitle();
-
-    // Update the title whenever the language changes
-    this.translateService.onLangChange.subscribe(() => {
+    if (this.isBrowser) {
+      // Set the title initially
       this.updateHomePageTitle();
-    });
+
+      // Update the title whenever the language changes
+      this.translateService.onLangChange.subscribe(() => {
+        this.updateHomePageTitle();
+      });
+    }
   }
 
   private updateHomePageTitle(): void {

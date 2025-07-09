@@ -1,10 +1,21 @@
-import { Component, HostListener, inject, OnInit, signal } from '@angular/core';
+import {
+  Component,
+  HostListener,
+  Inject,
+  inject,
+  OnInit,
+  PLATFORM_ID,
+  signal
+} from '@angular/core';
 import { ThemeService } from '../../../core/services/theme/theme.service';
 import { LanguageService } from '../../../core/services/language/language.service';
-import { CommonModule } from '@angular/common';
+import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { ActivatedRoute, Router } from '@angular/router';
-import { I18N_DEFAULT_ERROR_CODE, I18N_ERROR_CODE_PATH } from '../../constants/common.constant';
+import {
+  I18N_DEFAULT_ERROR_CODE,
+  I18N_ERROR_CODE_PATH
+} from '../../constants/common.constant';
 
 @Component({
   selector: 'app-error-page-component',
@@ -21,25 +32,34 @@ export class ErrorPageComponent implements OnInit {
   route = inject(ActivatedRoute);
   errorMessageKey = '';
   errorId: string | undefined;
+  isBrowser: boolean;
 
-  constructor(private readonly router: Router) {
-    this.checkMediaSize();
+  constructor(
+    private readonly router: Router,
+    @Inject(PLATFORM_ID) private platformId: Object
+  ) {
+    this.isBrowser = isPlatformBrowser(this.platformId);
+    if (this.isBrowser) {
+      this.checkMediaSize();
+    }
   }
 
   ngOnInit(): void {
-    this.errorId = this.route.snapshot.params['id'];
-    this.translateService
-      .get(I18N_ERROR_CODE_PATH)
-      .subscribe(errorTranslations => {
-        let i18nErrorKey = this.errorId;
-        if (
-          !i18nErrorKey ||
-          !Object.keys(errorTranslations).includes(i18nErrorKey)
-        ) {
-          i18nErrorKey = I18N_DEFAULT_ERROR_CODE;
-        }
-        this.errorMessageKey = this.buildI18nKey(i18nErrorKey);
-      });
+    if (this.isBrowser) {
+      this.errorId = this.route.snapshot.params['id'];
+      this.translateService
+        .get(I18N_ERROR_CODE_PATH)
+        .subscribe(errorTranslations => {
+          let i18nErrorKey = this.errorId;
+          if (
+            !i18nErrorKey ||
+            !Object.keys(errorTranslations).includes(i18nErrorKey)
+          ) {
+            i18nErrorKey = I18N_DEFAULT_ERROR_CODE;
+          }
+          this.errorMessageKey = this.buildI18nKey(i18nErrorKey);
+        });
+    }
   }
 
   private buildI18nKey(key: string | undefined) {

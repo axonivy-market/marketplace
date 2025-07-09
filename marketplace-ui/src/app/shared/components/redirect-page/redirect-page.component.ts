@@ -1,5 +1,5 @@
 import { HttpClient } from '@angular/common/http';
-import { Component, inject, OnInit } from '@angular/core';
+import { Component, Inject, inject, OnInit, PLATFORM_ID } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { ROUTER } from '../../constants/router.constant';
 import { TranslateModule } from '@ngx-translate/core';
@@ -7,6 +7,7 @@ import { ERROR_PAGE_PATH, HASH_SYMBOL } from '../../constants/common.constant';
 import { ProductService } from '../../../modules/product/product.service';
 import { API_URI } from '../../constants/api.constant';
 import { ExternalDocument } from '../../models/external-document.model';
+import { isPlatformBrowser } from '@angular/common';
 
 const INDEX_FILE = '/index.html';
 
@@ -20,35 +21,49 @@ const INDEX_FILE = '/index.html';
 export class RedirectPageComponent implements OnInit {
   httpClient = inject(HttpClient);
   productService = inject(ProductService);
+  isBrowser: boolean;
 
   constructor(
     private readonly activeRoute: ActivatedRoute,
-    private readonly router: Router
-  ) {}
+    private readonly router: Router,
+    @Inject(PLATFORM_ID) private platformId: Object
+  ) {
+    this.isBrowser = isPlatformBrowser(this.platformId);
+  }
 
   ngOnInit(): void {
-    const product = this.activeRoute.snapshot.paramMap.get(ROUTER.ID);
-    const version = this.activeRoute.snapshot.paramMap.get(ROUTER.VERSION);
-    const currentUrl = window.location.href;
-    const artifact = this.activeRoute.snapshot.paramMap.get(ROUTER.ARTIFACT);
+    if (this.isBrowser) {
+      const product = this.activeRoute.snapshot.paramMap.get(ROUTER.ID);
+      const version = this.activeRoute.snapshot.paramMap.get(ROUTER.VERSION);
+      const currentUrl = window.location.href;
+      const artifact = this.activeRoute.snapshot.paramMap.get(ROUTER.ARTIFACT);
 
-    if (product && version) {
-      if (artifact) {
-        this.fetchLatestLibVersionDownloadUrl(product, version, artifact);
-        return;
+      if (product && version) {
+        if (artifact) {
+          this.fetchLatestLibVersionDownloadUrl(product, version, artifact);
+          return;
+        }
+        this.fetchDocumentUrl(product, version, currentUrl);
       }
-      this.fetchDocumentUrl(product, version, currentUrl);
     }
   }
 
   fetchDocumentUrl(product: string, version: string, currentUrl: string): void {
-    this.httpClient.get<ExternalDocument>(`${API_URI.EXTERNAL_DOCUMENT}/${product}/${version}`)
+    this.httpClient
+      .get<ExternalDocument>(
+        `${API_URI.EXTERNAL_DOCUMENT}/${product}/${version}`
+      )
       .subscribe({
-        next: (response: ExternalDocument) => this.handleRedirection(response, currentUrl)
-    });
+        next: (response: ExternalDocument) =>
+          this.handleRedirection(response, currentUrl)
+      });
   }
 
-  fetchLatestLibVersionDownloadUrl( product: string, version: string, artifact: string): void {
+  fetchLatestLibVersionDownloadUrl(
+    product: string,
+    version: string,
+    artifact: string
+  ): void {
     this.productService
       .getLatestArtifactDownloadUrl(product, version, artifact)
       .subscribe(downloadUrl => {
@@ -57,11 +72,12 @@ export class RedirectPageComponent implements OnInit {
   }
 
   handleRedirection(response: ExternalDocument, currentUrl: string): void {
-    if (response === null || response.relativeLink === '') {
-      this.router.navigate([ERROR_PAGE_PATH]);
-    }
+    // if (response === null || response.relativeLink === '') {
+    //   this.router.navigate([ERROR_PAGE_PATH]);
+    // }
     const relativeUrl = response.relativeLink;
-    const isSameUrl = currentUrl === relativeUrl || currentUrl + INDEX_FILE === relativeUrl;
+    const isSameUrl =
+      currentUrl === relativeUrl || currentUrl + INDEX_FILE === relativeUrl;
     const currentHash = window.location.hash;
     if (!isSameUrl) {
       let link = relativeUrl;

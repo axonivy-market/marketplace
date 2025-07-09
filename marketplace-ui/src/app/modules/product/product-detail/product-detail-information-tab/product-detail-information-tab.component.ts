@@ -1,9 +1,11 @@
-import { CommonModule } from '@angular/common';
+import { CommonModule, isPlatformBrowser } from '@angular/common';
 import {
   Component,
+  Inject,
   inject,
   Input,
   OnChanges,
+  PLATFORM_ID,
   SimpleChange,
   SimpleChanges
 } from '@angular/core';
@@ -43,6 +45,11 @@ export class ProductDetailInformationTabComponent implements OnChanges {
   themeService = inject(ThemeService);
   productDetailService = inject(ProductDetailService);
   loadingService = inject(LoadingService);
+  isBrowser: boolean;
+
+  constructor(@Inject(PLATFORM_ID) private platformId: Object) {
+    this.isBrowser = isPlatformBrowser(this.platformId);
+  }
 
   ngOnChanges(changes: SimpleChanges): void {
     let version = '';

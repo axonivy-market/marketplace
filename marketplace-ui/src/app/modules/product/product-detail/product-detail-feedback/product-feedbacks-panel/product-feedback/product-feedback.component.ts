@@ -2,12 +2,14 @@ import {
   Component,
   computed,
   ElementRef,
+  Inject,
   inject,
   Input,
+  PLATFORM_ID,
   signal,
   ViewChild
 } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { StarRatingComponent } from '../../../../../../shared/components/star-rating/star-rating.component';
 import { Feedback } from '../../../../../../shared/models/feedback.model';
 import { TimeAgoPipe } from '../../../../../../shared/pipes/time-ago.pipe';
@@ -34,11 +36,17 @@ export class ProductFeedbackComponent {
   private resizeObserver!: ResizeObserver;
   private readonly scrollHeight = signal(0);
   private readonly clientHeight = signal(0);
+  isBrowser: boolean;
+
 
   showToggle = computed(
     () => this.scrollHeight() > this.clientHeight() || this.feedback.isExpanded
   );
   languageService = inject(LanguageService);
+
+  constructor(@Inject(PLATFORM_ID) private platformId: Object) {
+    this.isBrowser = isPlatformBrowser(this.platformId);
+  }
 
   isFeedbackPending(feedback: Feedback): boolean {
     return (

@@ -6,15 +6,20 @@ import {
 } from '@angular/common/http';
 import {
   computed,
+  Inject,
   inject,
   Injectable,
+  PLATFORM_ID,
   signal,
   WritableSignal
 } from '@angular/core';
 import { catchError, Observable, of, tap, throwError } from 'rxjs';
 import { CookieService } from 'ngx-cookie-service';
 import { AuthService } from '../../../../../auth/auth.service';
-import { ForwardingError, LoadingComponent } from '../../../../../core/interceptors/api.interceptor';
+import {
+  ForwardingError,
+  LoadingComponent
+} from '../../../../../core/interceptors/api.interceptor';
 import { FeedbackApiResponse } from '../../../../../shared/models/apis/feedback-response.model';
 import { Feedback } from '../../../../../shared/models/feedback.model';
 import { ProductDetailService } from '../../product-detail.service';
@@ -30,6 +35,7 @@ import { FeedbackStatus } from '../../../../../shared/enums/feedback-status.enum
 import { API_URI } from '../../../../../shared/constants/api.constant';
 import { LoadingComponentId } from '../../../../../shared/enums/loading-component-id';
 import { FeedbackApproval } from '../../../../../shared/models/feedback-approval.model';
+import { isPlatformBrowser } from '@angular/common';
 
 const FEEDBACK_API_URL = 'api/feedback';
 const SIZE = 8;
@@ -60,6 +66,11 @@ export class ProductFeedbackService {
 
   totalPages: WritableSignal<number> = signal(1);
   totalElements: WritableSignal<number> = signal(0);
+  isBrowser: boolean;
+
+  constructor(@Inject(PLATFORM_ID) private platformId: Object) {
+    this.isBrowser = isPlatformBrowser(this.platformId);
+  }
 
   findProductFeedbacks(
     page: number = this.page(),
@@ -69,7 +80,7 @@ export class ProductFeedbackService {
     const headers = new HttpHeaders().set('Authorization', `Bearer ${token}`);
     const requestParams = new HttpParams()
       .set('page', page.toString())
-      .set('size', size.toString())
+      .set('size', size.toString());
     return this.http
       .get<FeedbackApiResponse>(`${API_URI.FEEDBACK_APPROVAL}`, {
         headers,
@@ -84,16 +95,29 @@ export class ProductFeedbackService {
           const feedbacks = response._embedded?.feedbacks || [];
           const sortedFeedbacks = this.sortByDate(feedbacks, 'reviewDate');
 
-          const nonPendingFeedbacks = sortedFeedbacks.filter(f => f?.feedbackStatus && f.feedbackStatus !== FeedbackStatus.PENDING);
-          const pendingFeedbacks = sortedFeedbacks.filter(f => f.feedbackStatus === FeedbackStatus.PENDING);
+          const nonPendingFeedbacks = sortedFeedbacks.filter(
+            f =>
+              f?.feedbackStatus && f.feedbackStatus !== FeedbackStatus.PENDING
+          );
+          const pendingFeedbacks = sortedFeedbacks.filter(
+            f => f.feedbackStatus === FeedbackStatus.PENDING
+          );
           if (page === 0) {
             this.allFeedbacks.set(nonPendingFeedbacks);
             this.pendingFeedbacks.set(pendingFeedbacks);
           } else {
-            this.allFeedbacks.set([...this.allFeedbacks(), ...nonPendingFeedbacks]);
-            this.pendingFeedbacks.set([...this.pendingFeedbacks(), ...pendingFeedbacks]);
+            this.allFeedbacks.set([
+              ...this.allFeedbacks(),
+              ...nonPendingFeedbacks
+            ]);
+            this.pendingFeedbacks.set([
+              ...this.pendingFeedbacks(),
+              ...pendingFeedbacks
+            ]);
           }
-          this.pendingFeedbacks.set(this.sortByDate(this.pendingFeedbacks(), 'updatedAt'));
+          this.pendingFeedbacks.set(
+            this.sortByDate(this.pendingFeedbacks(), 'updatedAt')
+          );
         }),
         catchError(response => {
           if (
@@ -107,9 +131,7 @@ export class ProductFeedbackService {
       );
   }
 
-  updateFeedbackStatus(
-    request: FeedbackApproval
-  ): Observable<Feedback> {
+  updateFeedbackStatus(request: FeedbackApproval): Observable<Feedback> {
     const requestURL = `${API_URI.FEEDBACK_APPROVAL}`;
 
     return this.http.put<Feedback>(requestURL, request).pipe(
@@ -120,7 +142,9 @@ export class ProductFeedbackService {
           }
           return feedback;
         });
-        this.allFeedbacks.set(this.sortByDate(updatedAllFeedbacks, 'updatedAt'));
+        this.allFeedbacks.set(
+          this.sortByDate(updatedAllFeedbacks, 'updatedAt')
+        );
         const filteredPendingFeedbacks = updatedAllFeedbacks.filter(
           feedback => feedback.feedbackStatus === FeedbackStatus.PENDING
         );
@@ -174,7 +198,8 @@ export class ProductFeedbackService {
           const approvedFeedbacks = (
             response._embedded?.feedbacks || []
           ).filter(
-            f => f.feedbackStatus === FeedbackStatus.APPROVED || !f.feedbackStatus
+            f =>
+              f.feedbackStatus === FeedbackStatus.APPROVED || !f.feedbackStatus
           );
           if (page === 0) {
             this.feedbacks.set(approvedFeedbacks);
@@ -197,13 +222,17 @@ export class ProductFeedbackService {
         return;
       }
 
-      const pendingFeedbacks = userFeedbacks.filter(f => f.feedbackStatus === FeedbackStatus.PENDING);
+      const pendingFeedbacks = userFeedbacks.filter(
+        f => f.feedbackStatus === FeedbackStatus.PENDING
+      );
       if (!pendingFeedbacks.length) {
         return;
       }
 
       const hasApprovedFeedback = this.feedbacks().some(
-        f => f.userId === feedback.userId && (f.feedbackStatus === FeedbackStatus.APPROVED || !f.feedbackStatus)
+        f =>
+          f.userId === feedback.userId &&
+          (f.feedbackStatus === FeedbackStatus.APPROVED || !f.feedbackStatus)
       );
 
       if (hasApprovedFeedback && userFeedbacks.length === 2) {
@@ -215,7 +244,10 @@ export class ProductFeedbackService {
   }
 
   private updateFeedbacks(pendingFeedbacks: Feedback[], userId: string): void {
-    this.feedbacks.set([pendingFeedbacks[0], ...this.feedbacks().filter(f => f.userId !== userId)]);
+    this.feedbacks.set([
+      pendingFeedbacks[0],
+      ...this.feedbacks().filter(f => f.userId !== userId)
+    ]);
   }
 
   findProductFeedbackOfUser(
@@ -294,8 +326,12 @@ export class ProductFeedbackService {
 
   private sortByDate<T>(items: T[], dateKey: keyof T): T[] {
     return [...items].sort((a, b) => {
-      const dateA = new Date((a[dateKey] ?? 0) as string | number | Date).getTime();
-      const dateB = new Date((b[dateKey] ?? 0) as string | number | Date).getTime();
+      const dateA = new Date(
+        (a[dateKey] ?? 0) as string | number | Date
+      ).getTime();
+      const dateB = new Date(
+        (b[dateKey] ?? 0) as string | number | Date
+      ).getTime();
       return dateB - dateA;
     });
   }

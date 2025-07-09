@@ -1,10 +1,12 @@
 import {
   Component,
   EventEmitter,
+  Inject,
   inject,
   Input,
   input,
   Output,
+  PLATFORM_ID,
   Signal
 } from '@angular/core';
 import { ProductFeedbackComponent } from './product-feedback/product-feedback.component';
@@ -13,7 +15,7 @@ import { FeedbackFilterComponent } from './feedback-filter/feedback-filter.compo
 import { TranslateModule } from '@ngx-translate/core';
 import { ThemeService } from '../../../../../core/services/theme/theme.service';
 import { Feedback } from '../../../../../shared/models/feedback.model';
-import { CommonModule } from '@angular/common';
+import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { ProductDetailService } from '../../product-detail.service';
 import { LanguageService } from '../../../../../core/services/language/language.service';
 
@@ -37,6 +39,7 @@ interface CustomElement extends HTMLElement {
 })
 export class ProductFeedbacksPanelComponent {
   isMobileMode = input<boolean>();
+  isBrowser: boolean;
 
   @Input() isRenderInModalDialog = false;
   @Output() showFeedbacksLoadedBtn = new EventEmitter<void>();
@@ -45,6 +48,10 @@ export class ProductFeedbacksPanelComponent {
   productFeedbackService = inject(ProductFeedbackService);
   productDetailService = inject(ProductDetailService);
   languageService = inject(LanguageService);
+
+  constructor(@Inject(PLATFORM_ID) private platformId: Object) {
+    this.isBrowser = isPlatformBrowser(this.platformId);
+  }
 
   feedbacks: Signal<Feedback[] | undefined> =
     this.productFeedbackService.feedbacks;

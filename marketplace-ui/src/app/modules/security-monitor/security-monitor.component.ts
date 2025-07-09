@@ -1,11 +1,24 @@
-import { Component, inject, ViewEncapsulation } from '@angular/core';
+import {
+  Component,
+  Inject,
+  inject,
+  PLATFORM_ID,
+  ViewEncapsulation
+} from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { CommonModule } from '@angular/common';
+import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { HttpErrorResponse } from '@angular/common/http';
 
 import { SecurityMonitorService } from './security-monitor.service';
 import { ProductSecurityInfo } from '../../shared/models/product-security-info-model';
-import { GITHUB_MARKET_ORG_URL, REPO_PAGE_PATHS, ERROR_MESSAGES, SECURITY_MONITOR_SESSION_KEYS, TIME_UNITS, UNAUTHORIZED } from '../../shared/constants/common.constant';
+import {
+  GITHUB_MARKET_ORG_URL,
+  REPO_PAGE_PATHS,
+  ERROR_MESSAGES,
+  SECURITY_MONITOR_SESSION_KEYS,
+  TIME_UNITS,
+  UNAUTHORIZED
+} from '../../shared/constants/common.constant';
 import { LoadingComponentId } from '../../shared/enums/loading-component-id';
 import { LoadingSpinnerComponent } from '../../shared/components/loading-spinner/loading-spinner.component';
 
@@ -24,13 +37,23 @@ export class SecurityMonitorComponent {
   repos: ProductSecurityInfo[] = [];
   protected LoadingComponentId = LoadingComponentId;
   private readonly securityMonitorService = inject(SecurityMonitorService);
+  isBrowser: boolean;
+
+  constructor(@Inject(PLATFORM_ID) private platformId: Object) {
+    this.isBrowser = isPlatformBrowser(this.platformId);
+  }
 
   ngOnInit(): void {
-    this.loadSessionData();
+    if (this.isBrowser) {
+      this.loadSessionData();
+    }
   }
 
   onSubmit(): void {
-    this.token = this.token ?? sessionStorage.getItem(SECURITY_MONITOR_SESSION_KEYS.TOKEN) ?? '';
+    this.token =
+      this.token ??
+      sessionStorage.getItem(SECURITY_MONITOR_SESSION_KEYS.TOKEN) ??
+      '';
     if (!this.token) {
       this.handleMissingToken();
       return;
@@ -42,7 +65,9 @@ export class SecurityMonitorComponent {
 
   private loadSessionData(): void {
     try {
-      const sessionData = sessionStorage.getItem(SECURITY_MONITOR_SESSION_KEYS.DATA);
+      const sessionData = sessionStorage.getItem(
+        SECURITY_MONITOR_SESSION_KEYS.DATA
+      );
       if (sessionData) {
         this.repos = JSON.parse(sessionData) as ProductSecurityInfo[];
         this.isAuthenticated = true;
@@ -59,19 +84,20 @@ export class SecurityMonitorComponent {
   }
 
   private fetchSecurityDetails(): void {
-    this.securityMonitorService
-      .getSecurityDetails(this.token)
-      .subscribe({
-        next: data => this.handleSuccess(data),
-        error: (err: HttpErrorResponse) => this.handleError(err)
-      });
+    this.securityMonitorService.getSecurityDetails(this.token).subscribe({
+      next: data => this.handleSuccess(data),
+      error: (err: HttpErrorResponse) => this.handleError(err)
+    });
   }
 
   private handleSuccess(data: ProductSecurityInfo[]): void {
     this.repos = data;
     this.isAuthenticated = true;
     sessionStorage.setItem(SECURITY_MONITOR_SESSION_KEYS.TOKEN, this.token);
-    sessionStorage.setItem(SECURITY_MONITOR_SESSION_KEYS.DATA, JSON.stringify(data));
+    sessionStorage.setItem(
+      SECURITY_MONITOR_SESSION_KEYS.DATA,
+      JSON.stringify(data)
+    );
   }
 
   private handleError(err: HttpErrorResponse): void {
@@ -103,7 +129,11 @@ export class SecurityMonitorComponent {
     window.open(url, '_blank');
   }
 
-  navigateToRepoPage(repoName: string, page: keyof typeof REPO_PAGE_PATHS, lastCommitSHA?: string): void {
+  navigateToRepoPage(
+    repoName: string,
+    page: keyof typeof REPO_PAGE_PATHS,
+    lastCommitSHA?: string
+  ): void {
     const path = REPO_PAGE_PATHS[page];
     let additionalPath = '';
     if (page === 'lastCommit') {
@@ -124,7 +154,10 @@ export class SecurityMonitorComponent {
     }
 
     for (const [index, { SECONDS, SINGULAR, PLURAL }] of TIME_UNITS.entries()) {
-      if (index < TIME_UNITS.length - 1 && diffInSeconds < TIME_UNITS[index + 1].SECONDS) {
+      if (
+        index < TIME_UNITS.length - 1 &&
+        diffInSeconds < TIME_UNITS[index + 1].SECONDS
+      ) {
         const value = Math.floor(diffInSeconds / SECONDS);
         if (value === 1) {
           return `${value} ${SINGULAR} ago`;
@@ -134,7 +167,9 @@ export class SecurityMonitorComponent {
       }
     }
 
-    const years = Math.floor(diffInSeconds / TIME_UNITS[TIME_UNITS.length - 1].SECONDS);
+    const years = Math.floor(
+      diffInSeconds / TIME_UNITS[TIME_UNITS.length - 1].SECONDS
+    );
     if (years === 1) {
       return `${years} year ago`;
     } else {
