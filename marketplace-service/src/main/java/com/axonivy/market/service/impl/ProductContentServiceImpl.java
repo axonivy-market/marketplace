@@ -14,14 +14,12 @@ import com.axonivy.market.service.FileDownloadService;
 import com.axonivy.market.service.ImageService;
 import com.axonivy.market.service.ProductContentService;
 import com.axonivy.market.service.ProductJsonContentService;
-import com.axonivy.market.service.ProductMarketplaceDataService;
 import com.axonivy.market.util.FileUtils;
 import com.axonivy.market.util.HttpFetchingUtils;
 import com.axonivy.market.util.MavenUtils;
 import com.axonivy.market.util.ProductContentUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
-import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.core.io.Resource;
@@ -32,18 +30,16 @@ import org.springframework.web.servlet.mvc.method.annotation.StreamingResponseBo
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.Set;
 import java.util.stream.Stream;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
@@ -55,8 +51,9 @@ public class ProductContentServiceImpl implements ProductContentService {
   private final FileDownloadService fileDownloadService;
   private final ProductJsonContentService productJsonContentService;
   private final ImageService imageService;
-  private final ProductMarketplaceDataService productMarketplaceDataService;
   private final ProductDependencyRepository productDependencyRepository;
+  private static final String DEPLOY_YAML_FILE_NAME = "deploy.options.yaml";
+  private static final String UNKOWN_FILE_NAME = "unknown_file";
 
   @Override
   public ProductModuleContent getReadmeAndProductContentsFromVersion(String productId, String version, String url,
@@ -154,13 +151,12 @@ public class ProductContentServiceImpl implements ProductContentService {
       String path = new URL(fileUrl).getPath();
       return Paths.get(path).getFileName().toString();
     } catch (MalformedURLException e) {
-      return "unknown_file";
+      return UNKOWN_FILE_NAME;
     }
   }
 
   @Override
-  public StreamingResponseBody buildArtifactStreamUrls(List<String> urls) {
-    return outputStream -> {
+  public OutputStream buildArtifactStreamFromArtifactUrls(List<String> urls, OutputStream outputStream) {
       try (ZipOutputStream zipOut = new ZipOutputStream(outputStream)) {
         for (String fileUrl : urls) {
           ResponseEntity<Resource> resourceResponse = HttpFetchingUtils.fetchResourceUrl(fileUrl);
@@ -174,12 +170,14 @@ public class ProductContentServiceImpl implements ProductContentService {
         }
         zipConfigurationOptions(zipOut);
         zipOut.finish();
+      } catch (IOException e) {
+        throw new RuntimeException(e);
       }
-    };
+    return outputStream;
   }
 
   private void zipConfigurationOptions(ZipOutputStream zipOut) throws IOException {
-    final String configFile = "deploy.options.yaml";
+    final String configFile = DEPLOY_YAML_FILE_NAME;
     ClassPathResource resource = new ClassPathResource("app-zip/" + configFile);
     addNewFileToZip(configFile, zipOut, resource.getInputStream());
   }

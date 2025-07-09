@@ -70,8 +70,9 @@ public class ProductMarketplaceDataController {
       log.warn("Failed to retrieve file from URL: {}. Status: {}", artifactUrl, resourceResponse.getStatusCode());
       return ResponseEntity.status(HttpStatus.BAD_GATEWAY).build();
     }
+    StreamingResponseBody streamingBody = outputStream -> productMarketplaceDataService.buildArtifactStreamFromResource(
+        productId, resourceResponse.getBody(), outputStream);
     return ResponseEntity.ok().contentType(MediaType.APPLICATION_OCTET_STREAM).header(HttpHeaders.CONTENT_DISPOSITION,
-        "attachment").body(
-        productMarketplaceDataService.buildArtifactStreamFromResource(productId, resourceResponse.getBody()));
+        "attachment").body(streamingBody);
   }
 }

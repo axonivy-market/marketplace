@@ -215,10 +215,12 @@ public class ProductDetailsController {
       @RequestParam(value = ARTIFACT) @Parameter(in = ParameterIn.QUERY, example = "demos-app") String artifactId) {
     List<String> dependencyUrls = productContentService.getDependencyUrls(id, artifactId, version);
     if (CollectionUtils.isEmpty(dependencyUrls)) {
-      //do something
+      return ResponseEntity.noContent().build();
     }
-    return ResponseEntity.ok().header(HttpHeaders.CONTENT_DISPOSITION, "attachment;filename=download.zip").contentType(
-        MediaType.APPLICATION_OCTET_STREAM).body(productContentService.buildArtifactStreamUrls(dependencyUrls));
+    StreamingResponseBody streamingBody = outputStream -> productContentService.buildArtifactStreamFromArtifactUrls(
+        dependencyUrls, outputStream);
+    return ResponseEntity.ok().header(HttpHeaders.CONTENT_DISPOSITION, "attachment").contentType(
+        MediaType.APPLICATION_OCTET_STREAM).body(streamingBody);
   }
 
   private void addModelLinks(ProductDetailModel model, Product product, String version, String path) {

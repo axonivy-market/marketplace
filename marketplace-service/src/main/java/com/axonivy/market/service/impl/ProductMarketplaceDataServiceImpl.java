@@ -26,6 +26,7 @@ import org.springframework.web.servlet.mvc.method.annotation.StreamingResponseBo
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.security.SecureRandom;
@@ -138,17 +139,15 @@ public class ProductMarketplaceDataServiceImpl implements ProductMarketplaceData
   }
 
   @Override
-  public StreamingResponseBody buildArtifactStreamFromResource(String productId, Resource resource) {
-    return outputStream -> {
-      try (InputStream inputStream = resource.getInputStream()) {
-        FileUtils.writeBlobAsChunks(inputStream, outputStream);
-        outputStream.flush();
-        int count = updateInstallationCountForProduct(productId, null);
-        log.debug("File {} downloaded, installation count incremented to {}", productId, count);
-      } catch (IOException e) {
-        log.error("Error streaming file for product {}: {}", productId, e.getMessage(), e);
-        throw e;
-      }
-    };
+  public OutputStream buildArtifactStreamFromResource(String productId, Resource resource, OutputStream outputStream) {
+    try (InputStream inputStream = resource.getInputStream()) {
+      FileUtils.writeBlobAsChunks(inputStream, outputStream);
+      outputStream.flush();
+      int count = updateInstallationCountForProduct(productId, null);
+      log.debug("File {} downloaded, installation count incremented to {}", productId, count);
+    } catch (IOException e) {
+      log.error("Error streaming file for product {}: {}", productId, e.getMessage(), e);
+    }
+    return outputStream;
   }
 }

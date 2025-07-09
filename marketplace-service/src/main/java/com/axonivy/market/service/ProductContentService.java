@@ -4,6 +4,7 @@ import com.axonivy.market.entity.Artifact;
 import com.axonivy.market.entity.ProductModuleContent;
 import org.springframework.web.servlet.mvc.method.annotation.StreamingResponseBody;
 
+import java.io.OutputStream;
 import java.util.List;
 
 public interface ProductContentService {
@@ -12,5 +13,5 @@ public interface ProductContentService {
 
   List<String> getDependencyUrls(String productId, String artifactId, String version);
 
-  StreamingResponseBody buildArtifactStreamUrls(List<String> urls);
+  OutputStream buildArtifactStreamFromArtifactUrls(List<String> urls, OutputStream outputStream);
 }

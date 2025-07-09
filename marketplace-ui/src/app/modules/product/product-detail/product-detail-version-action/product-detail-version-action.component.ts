@@ -331,12 +331,9 @@ export class ProductDetailVersionActionComponent implements AfterViewInit {
         next: (response: HttpResponse<Blob>) => {
           if (response.body) {
             this.triggerDownload(response.body, fileName);
-          } else {
-            console.error('No data received for download.');
           }
         },
-        error: error => {
-          console.error('Download failed:', error);
+        error: () => {
         }
       });
   }
