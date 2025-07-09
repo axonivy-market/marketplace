@@ -325,6 +325,7 @@ class ProductServiceImplTest extends BaseSetup {
       mockProduct.setRepositoryName(MOCK_PRODUCT_REPOSITORY_NAME);
       mockForSyncSecondTime(mockProduct);
       mockHttpUtils.when(() -> HttpFetchingUtils.getFileAsString(any())).thenReturn(getMockMetadataContent());
+      when(fileDownloadService.getFileAsString(any())).thenReturn(getMockMetadataContent2());
       // Executes
       productService.syncLatestDataFromMarketRepo(false);
 
@@ -347,9 +348,9 @@ class ProductServiceImplTest extends BaseSetup {
       mockProduct.setRepositoryName(MOCK_PRODUCT_REPOSITORY_NAME);
       mockForSyncSecondTime(mockProduct);
       mockHttpUtils.when(() -> HttpFetchingUtils.getFileAsString(any())).thenReturn(getMockMetadataContent2());
+      when(fileDownloadService.getFileAsString(any())).thenReturn(getMockMetadataContent2());
       // Executes
       productService.syncLatestDataFromMarketRepo(false);
-
       verify(productRepo).save(argumentCaptor.capture());
       assertThat(argumentCaptor.getValue().getReleasedVersions()).isEqualTo(mockVersions);
     }
