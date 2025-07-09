@@ -54,7 +54,7 @@ class ProductMarketplaceDataControllerTest extends BaseSetup {
   }
 
   @Test
-  void testExtractArtifactUrl_ReturnBadGateWay() {
+  void testExtractArtifactUrlReturnBadGateWay() {
     try (MockedStatic<HttpFetchingUtils> mockHttpFetchingUtils = Mockito.mockStatic(HttpFetchingUtils.class)) {
       mockHttpFetchingUtils.when(() -> HttpFetchingUtils.fetchResourceUrl(MOCK_DOWNLOAD_URL)).thenReturn(null);
       var result = productMarketplaceDataController.extractArtifactUrl(MOCK_PRODUCT_ID, MOCK_DOWNLOAD_URL);

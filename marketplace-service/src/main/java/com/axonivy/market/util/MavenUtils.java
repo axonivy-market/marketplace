@@ -19,7 +19,6 @@ import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.util.CollectionUtils;
-import org.springframework.web.client.RestTemplate;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -42,7 +41,6 @@ import static com.axonivy.market.constants.MavenConstants.DEFAULT_IVY_MIRROR_MAV
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class MavenUtils {
   private static final ObjectMapper objectMapper = new ObjectMapper();
-  private static final RestTemplate restTemplate = new RestTemplate();
 
   public static List<Artifact> getMavenArtifactsFromProductJson(ProductJsonContent productJson) {
     if (Objects.isNull(productJson) || StringUtils.isBlank(productJson.getContent())) {
@@ -271,7 +269,7 @@ public class MavenUtils {
 
   public static String getMetadataContentFromUrl(String metadataUrl) {
     try {
-      return restTemplate.getForObject(metadataUrl, String.class);
+      return HttpFetchingUtils.getFileAsString(metadataUrl);
     } catch (Exception e) {
       log.error("**MetadataService: Failed to fetch metadata from url {}", metadataUrl);
       return StringUtils.EMPTY;

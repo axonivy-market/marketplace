@@ -82,6 +82,7 @@ public class BaseSetup {
       "/10.0.10-SNAPSHOT/maven-metadata.xml";
   protected static final String MOCK_DOWNLOAD_URL = "https://maven.axonivy.com/com/axonivy/util/bpmn-statistic/10.0" +
       ".10/bpmn-statistic-10.0.10.zip";
+  protected static final String MOCK_DUMP_DOWNLOAD_URL = "octopus.com";
   protected static final String MOCK_ARTIFACT_NAME = "bpmn statistic (zip)";
   protected static final String MOCK_ARTIFACT_DOWNLOAD_FILE = "bpmn-statistic.zip";
   protected static final String LEGACY_INSTALLATION_COUNT_PATH_FIELD_NAME = "legacyInstallationCountPath";

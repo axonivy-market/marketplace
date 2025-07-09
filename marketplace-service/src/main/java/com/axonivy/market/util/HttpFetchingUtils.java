@@ -1,5 +1,7 @@
 package com.axonivy.market.util;
 
+import lombok.AccessLevel;
+import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.io.Resource;
 import org.springframework.http.HttpMethod;
@@ -10,19 +12,36 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.file.Paths;
 @Slf4j
+@NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class HttpFetchingUtils {
   private static final RestTemplate restTemplate = new RestTemplate();
   private static final String UNKNOWN_FILE_NAME = "unknown_file";
 
-  private HttpFetchingUtils() {
-  }
-
   public static ResponseEntity<Resource> fetchResourceUrl(String url) {
-    return restTemplate.exchange(url, HttpMethod.GET, null, Resource.class);
+    try {
+      return restTemplate.exchange(url, HttpMethod.GET, null, Resource.class);
+    } catch (Exception e) {
+       log.warn("Failed to fetch resource from URL: {}", url, e);
+      return null;
+    }
   }
 
-  public static byte[] downloadFile(String url) {
-    return restTemplate.getForObject(url, byte[].class);
+  public static byte[] getFileAsBytes(String url) {
+    try {
+      return restTemplate.getForObject(url, byte[].class);
+    } catch (Exception e) {
+       log.warn("Failed to fetch bytes from URL: {}", url, e);
+      return null;
+    }
+  }
+
+  public static String getFileAsString(String url) {
+    try {
+      return restTemplate.getForObject(url, String.class);
+    } catch (Exception e) {
+       log.warn("Failed to fetch string from URL: {}", url, e);
+      return null;
+    }
   }
 
   public static String extractFileNameFromUrl(String fileUrl) {
