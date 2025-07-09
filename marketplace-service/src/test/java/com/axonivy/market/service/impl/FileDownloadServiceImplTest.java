@@ -44,14 +44,14 @@ class FileDownloadServiceImplTest {
       when(authorizationUtils.resolveTrustedUrl(DOWNLOAD_URL))
           .thenThrow(new IllegalArgumentException("Invalid URL"));
 
-      byte[] result = fileDownloadService.safeDownload(DOWNLOAD_URL);
+      byte[] result = fileDownloadService.downloadFile(DOWNLOAD_URL);
 
       assertArrayEquals("".getBytes(), result, "Expected empty byte array when URL is invalid");
       verify(authorizationUtils).resolveTrustedUrl(DOWNLOAD_URL);
     }
 
     @Test
-  void testSafeDownloadSuccess() {
+  void testDownloadFile_Success() {
     byte[] expectedContent = "test content".getBytes();
 
     when(authorizationUtils.resolveTrustedUrl(DOWNLOAD_URL)).thenReturn(DOWNLOAD_URL);
@@ -59,7 +59,7 @@ class FileDownloadServiceImplTest {
     FileDownloadServiceImpl spyService = Mockito.spy(fileDownloadService);
     doReturn(expectedContent).when(spyService).downloadFile(DOWNLOAD_URL);
 
-    byte[] result = spyService.safeDownload(DOWNLOAD_URL);
+    byte[] result = spyService.downloadFile(DOWNLOAD_URL);
 
     assertArrayEquals(expectedContent, result);
     verify(spyService).downloadFile(DOWNLOAD_URL);
@@ -67,14 +67,14 @@ class FileDownloadServiceImplTest {
   }
 
   @Test
-  void testSafeDownloadReturnsEmptyBytes() {
+  void testDownloadFile_ReturnsEmptyBytes() {
     when(authorizationUtils.resolveTrustedUrl(DOWNLOAD_URL)).thenReturn(DOWNLOAD_URL);
 
     FileDownloadServiceImpl spyService = Mockito.spy(fileDownloadService);
     doThrow(HttpClientErrorException.create(HttpStatus.UNAUTHORIZED, "Unauthorized", null, null, null))
         .when(spyService).downloadFile(DOWNLOAD_URL);
 
-    byte[] result = spyService.safeDownload(DOWNLOAD_URL);
+    byte[] result = spyService.downloadFile(DOWNLOAD_URL);
 
     assertArrayEquals("".getBytes(), result);
     verify(spyService).downloadFile(DOWNLOAD_URL);
@@ -172,7 +172,7 @@ class FileDownloadServiceImplTest {
   void testDownloadAndUnzipFileSuccessful() throws IOException {
     FileDownloadServiceImpl spyService = Mockito.spy(fileDownloadService);
     byte[] mockFileContent = "mock zip content".getBytes();
-    doReturn(mockFileContent).when(spyService).safeDownload(DOWNLOAD_URL);
+    doReturn(mockFileContent).when(spyService).downloadFile(DOWNLOAD_URL);
     doReturn(100).when(spyService).unzipFile(any(String.class), any(String.class));
 
     DownloadOption option = DownloadOption.builder()
@@ -189,7 +189,7 @@ class FileDownloadServiceImplTest {
 
       String result = spyService.downloadAndUnzipFile(DOWNLOAD_URL, option);
       assertEquals(EXTRACT_DIR_LOCATION, result);
-      verify(spyService).safeDownload(DOWNLOAD_URL);
+      verify(spyService).downloadFile(DOWNLOAD_URL);
       mockedFiles.verify(() -> Files.write(mockTempPath, mockFileContent), times(1));
       verify(spyService).unzipFile(mockTempPath.toString(), EXTRACT_DIR_LOCATION);
       mockedFiles.verify(() -> Files.delete(mockTempPath), times(1));
@@ -198,7 +198,7 @@ class FileDownloadServiceImplTest {
   @Test
   void testDownloadAndUnzipFileWithNullFileContent() throws IOException {
     FileDownloadServiceImpl spyService = Mockito.spy(fileDownloadService);
-    doReturn(null).when(spyService).safeDownload(DOWNLOAD_URL);
+    doReturn(null).when(spyService).downloadFile(DOWNLOAD_URL);
     DownloadOption option = DownloadOption.builder()
         .isForced(true)
         .workingDirectory(EXTRACT_DIR_LOCATION)
@@ -213,7 +213,7 @@ class FileDownloadServiceImplTest {
 
       String result = spyService.downloadAndUnzipFile(DOWNLOAD_URL, option);
       assertEquals(EXTRACT_DIR_LOCATION, result);
-      verify(spyService).safeDownload(DOWNLOAD_URL);
+      verify(spyService).downloadFile(DOWNLOAD_URL);
       mockedFiles.verify(() -> Files.write(any(Path.class), any(byte[].class)), never());
     }
   }

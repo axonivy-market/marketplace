@@ -47,13 +47,9 @@ public class FileDownloadServiceImpl implements FileDownloadService {
 
   @Override
   public byte[] downloadFile(String url) {
-    return HttpFetchingUtils.downloadFile(url);
-  }
-
-  public byte[] safeDownload(String url) {
     try {
       String trustedUrl = authorizationUtils.resolveTrustedUrl(url);
-      return downloadFile(trustedUrl);
+      return HttpFetchingUtils.downloadFile(url);
     }catch (IllegalArgumentException e) {
       log.warn("Unsafe or disallowed URL provided: {}", url, e);
     } catch (HttpClientErrorException e) {
@@ -97,7 +93,7 @@ public class FileDownloadServiceImpl implements FileDownloadService {
     }
 
     Path tempZipPath = createTempFile();
-    byte[] fileContent = safeDownload(url);
+    byte[] fileContent = downloadFile(url);
     if (fileContent == null || fileContent.length == 0) {
       log.warn("Downloaded file is empty or null from URL: {}", url);
       return null;

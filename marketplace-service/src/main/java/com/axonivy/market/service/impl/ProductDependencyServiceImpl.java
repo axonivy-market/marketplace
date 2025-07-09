@@ -237,6 +237,6 @@ public class ProductDependencyServiceImpl implements ProductDependencyService {
     ObjectUtils.requireNonEmpty(downloadUrl, "Download URL must not be null");
     var changeToMirrorRepo = downloadUrl.replace(DEFAULT_IVY_MAVEN_BASE_URL, DEFAULT_IVY_MIRROR_MAVEN_BASE_URL);
     var pomURL = changeToMirrorRepo.replace(DOT_SEPARATOR.concat(DEFAULT_PRODUCT_TYPE), DOT_SEPARATOR.concat(POM));
-    return fileDownloadService.safeDownload(pomURL);
+    return fileDownloadService.downloadFile(pomURL);
   }
 }
