@@ -78,12 +78,12 @@ class ImageServiceImplTest extends BaseSetup {
 
     byte[] mockResult = "content".getBytes();
     when(content.read()).thenThrow(new UnsupportedOperationException("Unrecognized encoding"));
-//    when(fileDownloadService.downloadFile(MOCK_MAVEN_URL)).thenReturn(mockResult);
+    when(fileDownloadService.downloadFile(MOCK_MAVEN_URL)).thenReturn(mockResult);
 
     imageService.mappingImageFromGHContent(GOOGLE_MAPS_CONNECTOR, content);
 
     verify(imageRepository).save(argumentCaptor.capture());
-//    verify(fileDownloadService, times(1)).downloadFile(MOCK_MAVEN_URL);
+    verify(fileDownloadService, times(1)).downloadFile(MOCK_MAVEN_URL);
     assertEquals(mockResult, argumentCaptor.getValue().getImageData());
 
   }
@@ -222,5 +222,4 @@ class ImageServiceImplTest extends BaseSetup {
       assertDoesNotThrow(() -> imageService.readPreviewImageByName(IMAGE_NAME));
     }
   }
-
 }

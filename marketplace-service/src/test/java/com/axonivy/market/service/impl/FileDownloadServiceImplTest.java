@@ -10,6 +10,8 @@ import org.mockito.Mock;
 import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.http.HttpStatus;
+import org.springframework.web.client.HttpClientErrorException;
 
 import java.io.File;
 import java.io.IOException;
@@ -69,13 +71,13 @@ class FileDownloadServiceImplTest {
     when(authorizationUtils.resolveTrustedUrl(DOWNLOAD_URL)).thenReturn(DOWNLOAD_URL);
 
     FileDownloadServiceImpl spyService = Mockito.spy(fileDownloadService);
-//    doThrow(HttpClientErrorException.create(HttpStatus.UNAUTHORIZED, "Unauthorized", null, null, null))
-//        .when(spyService).downloadFile(DOWNLOAD_URL);
+    doThrow(HttpClientErrorException.create(HttpStatus.UNAUTHORIZED, "Unauthorized", null, null, null))
+        .when(spyService).downloadFile(DOWNLOAD_URL);
 
     byte[] result = spyService.safeDownload(DOWNLOAD_URL);
 
     assertArrayEquals("".getBytes(), result);
-//    verify(spyService).downloadFile(DOWNLOAD_URL);
+    verify(spyService).downloadFile(DOWNLOAD_URL);
     verify(authorizationUtils).resolveTrustedUrl(DOWNLOAD_URL);
   }
 
