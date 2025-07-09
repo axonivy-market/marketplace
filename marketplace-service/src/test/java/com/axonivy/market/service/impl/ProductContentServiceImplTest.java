@@ -98,6 +98,8 @@ class ProductContentServiceImplTest extends BaseSetup {
     try (MockedStatic<HttpFetchingUtils> mockHttpFetchingUtils = Mockito.mockStatic(HttpFetchingUtils.class)) {
       mockHttpFetchingUtils.when(() -> HttpFetchingUtils.fetchResourceUrl(MOCK_DOWNLOAD_URL)).thenReturn(
           getMockEntityResource());
+      mockHttpFetchingUtils.when(() -> HttpFetchingUtils.extractFileNameFromUrl(MOCK_DOWNLOAD_URL)).thenReturn(
+          MOCK_ARTIFACT_DOWNLOAD_FILE);
       OutputStream result = productContentService.buildArtifactStreamFromArtifactUrls(List.of(MOCK_DOWNLOAD_URL),
           new ByteArrayOutputStream());
       assertNotNull(result, "The OutputStream from valid URL should not be null");

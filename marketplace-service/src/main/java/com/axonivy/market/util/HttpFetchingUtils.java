@@ -11,11 +11,10 @@ import java.net.URISyntaxException;
 import java.nio.file.Paths;
 @Slf4j
 public class HttpFetchingUtils {
-  private static RestTemplate restTemplate;
+  private static final RestTemplate restTemplate = new RestTemplate();
   private static final String UNKNOWN_FILE_NAME = "unknown_file";
 
   private HttpFetchingUtils() {
-    restTemplate = new RestTemplate();
   }
 
   public static ResponseEntity<Resource> fetchResourceUrl(String url) {
