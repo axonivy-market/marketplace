@@ -1,6 +1,8 @@
 package com.axonivy.market.service;
 
 import com.axonivy.market.bo.DownloadOption;
+import org.springframework.core.io.Resource;
+import org.springframework.http.ResponseEntity;
 
 import java.io.File;
 import java.io.IOException;
@@ -15,6 +17,10 @@ public interface FileDownloadService {
   byte[] downloadFile(String url);
 
   void deleteDirectory(Path path);
+
+  String getFileAsString(String url);
+
+  ResponseEntity<Resource> fetchResourceUrl(String url);
 
   String downloadAndUnzipFile(String url, DownloadOption downloadOption) throws IOException;
 }

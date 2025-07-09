@@ -10,6 +10,7 @@ import com.axonivy.market.repository.ProductCustomSortRepository;
 import com.axonivy.market.repository.ProductDesignerInstallationRepository;
 import com.axonivy.market.repository.ProductMarketplaceDataRepository;
 import com.axonivy.market.repository.ProductRepository;
+import com.axonivy.market.service.FileDownloadService;
 import com.axonivy.market.service.ProductMarketplaceDataService;
 import com.axonivy.market.util.FileUtils;
 import com.fasterxml.jackson.core.type.TypeReference;
@@ -20,10 +21,10 @@ import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.Resource;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.file.Files;
 import java.nio.file.Paths;
@@ -41,6 +42,7 @@ public class ProductMarketplaceDataServiceImpl implements ProductMarketplaceData
   private final ProductCustomSortRepository productCustomSortRepo;
   private final ProductRepository productRepo;
   private final ProductDesignerInstallationRepository productDesignerInstallationRepo;
+  private final FileDownloadService fileDownloadService;
   private final ObjectMapper mapper = new ObjectMapper();
   private final SecureRandom random = new SecureRandom();
   @Value("${market.legacy.installation.counts.path}")
@@ -146,5 +148,10 @@ public class ProductMarketplaceDataServiceImpl implements ProductMarketplaceData
       log.error("Error streaming file for product {}: {}", productId, e.getMessage(), e);
     }
     return outputStream;
+  }
+
+  @Override
+  public ResponseEntity<Resource> fetchResourceUrl(String artifactUrl) {
+    return fileDownloadService.fetchResourceUrl(artifactUrl);
   }
 }

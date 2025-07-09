@@ -10,8 +10,9 @@ import lombok.extern.log4j.Log4j2;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.SystemUtils;
+import org.springframework.core.io.Resource;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
-import org.springframework.web.client.HttpClientErrorException;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
@@ -26,6 +27,7 @@ import java.nio.file.attribute.FileAttribute;
 import java.nio.file.attribute.PosixFilePermission;
 import java.nio.file.attribute.PosixFilePermissions;
 import java.util.*;
+import java.util.function.Function;
 import java.util.stream.Stream;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
@@ -41,21 +43,32 @@ public class FileDownloadServiceImpl implements FileDownloadService {
   private static final String ZIP_EXTENSION = ".zip";
   private static final Set<PosixFilePermission> PERMS = EnumSet.allOf(PosixFilePermission.class);
   private static final int THRESHOLD_SIZE = 1000000000;
-  public static final String IAR = "iar";
-
+  private static final String IAR = "iar";
   private final AuthorizationUtils authorizationUtils;
 
   @Override
   public byte[] downloadFile(String url) {
+    return fetchWithTrustedUrl(url, HttpFetchingUtils::getFileAsBytes, EMPTY.getBytes());
+  }
+
+  @Override
+  public String getFileAsString(String url) {
+    return fetchWithTrustedUrl(url, HttpFetchingUtils::getFileAsString, EMPTY);
+  }
+
+  @Override
+  public ResponseEntity<Resource> fetchResourceUrl(String url) {
+    return fetchWithTrustedUrl(url, HttpFetchingUtils::fetchResourceUrl, null);
+  }
+
+  private <T> T fetchWithTrustedUrl(String url, Function<String, T> fetchFunction, T fallback) {
     try {
       String trustedUrl = authorizationUtils.resolveTrustedUrl(url);
-      return HttpFetchingUtils.getFileAsBytes(trustedUrl);
-    }catch (IllegalArgumentException e) {
+      return fetchFunction.apply(trustedUrl);
+    } catch (IllegalArgumentException e) {
       log.warn("Unsafe or disallowed URL provided: {}", url, e);
-    } catch (HttpClientErrorException e) {
-      log.warn("Fail to download at URL: {}", url);
     }
-    return EMPTY.getBytes();
+    return fallback;
   }
 
   @Override
@@ -64,7 +77,6 @@ public class FileDownloadServiceImpl implements FileDownloadService {
       log.warn("Request URL not a ZIP/iar file - {}", url);
       return EMPTY;
     }
-
     String location = determineLocation(url, downloadOption);
     Path tempZipPath = createTempFileFromUrlAndExtractToLocation(url, location, downloadOption);
     if (tempZipPath != null) {

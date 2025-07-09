@@ -7,8 +7,8 @@ import com.axonivy.market.entity.ProductJsonContent;
 import com.axonivy.market.repository.MavenArtifactVersionRepository;
 import com.axonivy.market.repository.MetadataRepository;
 import com.axonivy.market.repository.ProductJsonContentRepository;
+import com.axonivy.market.service.FileDownloadService;
 import com.axonivy.market.service.MetadataService;
-import com.axonivy.market.util.HttpFetchingUtils;
 import com.axonivy.market.util.MavenUtils;
 import com.axonivy.market.util.MetadataReaderUtils;
 import com.axonivy.market.util.VersionUtils;
@@ -31,6 +31,7 @@ public class MetadataServiceImpl implements MetadataService {
   private final ProductJsonContentRepository productJsonRepo;
   private final MetadataRepository metadataRepo;
   private final MavenArtifactVersionRepository mavenArtifactVersionRepo;
+  private final FileDownloadService fileDownloadService;
 
   public void updateMavenArtifactVersionWithModel(List<MavenArtifactVersion> artifactModelsInVersions,
       String version, Metadata metadata) {
@@ -43,7 +44,7 @@ public class MetadataServiceImpl implements MetadataService {
     List<MavenArtifactVersion> artifactModelsInVersions = mavenArtifactVersionRepo.findByProductId(productId);
 
     for (Metadata metadata : metadataSet) {
-      String metadataContent = HttpFetchingUtils.getFileAsString(metadata.getUrl());
+      String metadataContent = fileDownloadService.getFileAsString(metadata.getUrl());
       if (StringUtils.isBlank(metadataContent)) {
         continue;
       }
@@ -103,7 +104,7 @@ public class MetadataServiceImpl implements MetadataService {
   public void updateMavenArtifactVersionForNonReleaseDevVersion(List<MavenArtifactVersion> artifactModelsInVersions,
       Metadata metadata, String version) {
     Metadata snapShotMetadata = MavenUtils.buildSnapShotMetadataFromVersion(metadata, version);
-    String xmlDataForSnapshotMetadata = HttpFetchingUtils.getFileAsString(snapShotMetadata.getUrl());
+    String xmlDataForSnapshotMetadata = fileDownloadService.getFileAsString(snapShotMetadata.getUrl());
     MetadataReaderUtils.updateMetadataFromMavenXML(xmlDataForSnapshotMetadata, snapShotMetadata, true);
     updateMavenArtifactVersionWithModel(artifactModelsInVersions, version, snapShotMetadata);
   }

@@ -12,7 +12,6 @@ import org.mockito.Mock;
 import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.http.HttpStatus;
 import org.springframework.web.client.HttpClientErrorException;
 
 import java.io.File;
@@ -70,17 +69,6 @@ class FileDownloadServiceImplTest {
 
     byte[] result = fileDownloadService.downloadFile(DOWNLOAD_URL);
     assertArrayEquals(StringUtils.EMPTY.getBytes(), result, "Output should be empty if occurring error.");
-  }
-
-  @Test
-  void testDownloadFileHttpClientError() {
-    when(authorizationUtils.resolveTrustedUrl(DOWNLOAD_URL)).thenReturn(DOWNLOAD_URL);
-    try (MockedStatic<HttpFetchingUtils> mockedStatic = Mockito.mockStatic(HttpFetchingUtils.class)) {
-      mockedStatic.when(() -> HttpFetchingUtils.getFileAsBytes(DOWNLOAD_URL))
-          .thenThrow(HttpClientErrorException.class);
-      byte[] result = fileDownloadService.downloadFile(DOWNLOAD_URL);
-      assertArrayEquals(StringUtils.EMPTY.getBytes(), result, "Output should be empty if occurring error.");
-    }
   }
 
   @Test

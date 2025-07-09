@@ -6,7 +6,6 @@ import com.axonivy.market.github.service.GitHubService;
 import com.axonivy.market.model.Message;
 import com.axonivy.market.model.ProductCustomSortRequest;
 import com.axonivy.market.service.ProductMarketplaceDataService;
-import com.axonivy.market.util.HttpFetchingUtils;
 import com.axonivy.market.util.validator.AuthorizationUtils;
 import com.axonivy.market.util.validator.ValidUrl;
 import io.swagger.v3.oas.annotations.Operation;
@@ -66,7 +65,7 @@ public class ProductMarketplaceDataController {
   @GetMapping(VERSION_DOWNLOAD_BY_ID)
   public ResponseEntity<StreamingResponseBody> extractArtifactUrl(@PathVariable(ID) String productId,
       @RequestParam(URL) @ValidUrl String artifactUrl) {
-    ResponseEntity<Resource> resourceResponse = HttpFetchingUtils.fetchResourceUrl(artifactUrl);
+    ResponseEntity<Resource> resourceResponse = productMarketplaceDataService.fetchResourceUrl(artifactUrl);
     HttpStatusCode statusCode = Optional.ofNullable(resourceResponse).map(ResponseEntity::getStatusCode).orElse(
         HttpStatus.NOT_FOUND);
     Resource body = Optional.ofNullable(resourceResponse).map(ResponseEntity::getBody).orElse(null);

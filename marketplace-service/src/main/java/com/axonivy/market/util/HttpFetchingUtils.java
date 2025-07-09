@@ -8,8 +8,6 @@ import org.springframework.core.io.Resource;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.client.HttpClientErrorException;
-import org.springframework.web.client.HttpServerErrorException;
-import org.springframework.web.client.ResourceAccessException;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 
@@ -25,7 +23,7 @@ public class HttpFetchingUtils {
   public static ResponseEntity<Resource> fetchResourceUrl(String url) {
     try {
       return restTemplate.exchange(url, HttpMethod.GET, null, Resource.class);
-    } catch (RestClientException e) {
+    } catch (RestClientException | IllegalArgumentException e) {
        log.warn("Failed to fetch resource from URL: {}", url, e);
       return null;
     }
@@ -34,7 +32,7 @@ public class HttpFetchingUtils {
   public static byte[] getFileAsBytes(String url) {
     try {
       return restTemplate.getForObject(url, byte[].class);
-    } catch (RestClientException e) {
+    } catch (RestClientException | IllegalArgumentException e) {
        log.warn("Failed to fetch bytes from URL: {}", url, e);
       return new byte[0];
     }
@@ -43,7 +41,7 @@ public class HttpFetchingUtils {
   public static String getFileAsString(String url) {
     try {
       return restTemplate.getForObject(url, String.class);
-    } catch (RestClientException e) {
+    } catch (RestClientException | IllegalArgumentException e) {
        log.warn("Failed to fetch string from URL: {}", url, e);
       return StringUtils.EMPTY;
     }

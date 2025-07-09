@@ -3,6 +3,7 @@ package com.axonivy.market.service;
 import com.axonivy.market.entity.ProductMarketplaceData;
 import com.axonivy.market.model.ProductCustomSortRequest;
 import org.springframework.core.io.Resource;
+import org.springframework.http.ResponseEntity;
 
 import java.io.OutputStream;
 
@@ -18,4 +19,6 @@ public interface ProductMarketplaceDataService {
   Integer getInstallationCount(String id);
 
   OutputStream buildArtifactStreamFromResource(String productId, Resource resource, OutputStream outputStream);
+
+  ResponseEntity<Resource> fetchResourceUrl(String artifactUrl);
 }
