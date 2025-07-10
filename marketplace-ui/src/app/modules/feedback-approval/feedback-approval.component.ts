@@ -1,10 +1,12 @@
-import { CommonModule } from '@angular/common';
+import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import {
   Component,
   computed,
+  Inject,
   inject,
+  PLATFORM_ID,
   Signal,
   ViewEncapsulation
 } from '@angular/core';
@@ -24,6 +26,7 @@ import { FeedbackTableComponent } from './feedback-table/feedback-table.componen
 import { HttpErrorResponse } from '@angular/common/http';
 import { finalize } from 'rxjs';
 import { FeedbackApproval } from '../../shared/models/feedback-approval.model';
+import { SessionStorageRef } from '../../core/services/browser/session-storage-ref.service';
 
 @Component({
   selector: 'app-feedback-approval',
@@ -57,9 +60,18 @@ export class FeedbackApprovalComponent {
 
   allFeedbacks = computed(() => this.feedbacks() ?? []);
   reviewingFeedbacks = computed(() => this.pendingFeedbacks() ?? []);
+  isBrowser: boolean;
+
+  constructor(
+    @Inject(PLATFORM_ID) private platformId: Object,
+    private readonly storageRef: SessionStorageRef
+  ) {
+    this.isBrowser = isPlatformBrowser(this.platformId);
+  }
 
   ngOnInit() {
-    this.token = sessionStorage.getItem(FEEDBACK_APPROVAL_SESSION_TOKEN) ?? '';
+    this.token =
+      this.storageRef.session?.getItem(FEEDBACK_APPROVAL_SESSION_TOKEN) ?? '';
     if (this.token) {
       this.isAuthenticated = true;
       this.fetchFeedbacks();

@@ -10,6 +10,7 @@ import {
   inject,
   Input,
   model,
+  NgZone,
   Output,
   PLATFORM_ID,
   Signal,
@@ -49,6 +50,7 @@ import { LoadingService } from '../../../../core/services/loading/loading.servic
 import { API_URI } from '../../../../shared/constants/api.constant';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { VersionDownload } from '../../../../shared/models/version-download.model';
+import { take } from 'rxjs';
 
 const showDevVersionCookieName = 'showDevVersions';
 const ARTIFACT_ZIP_URL = 'artifact/zip-file';
@@ -127,6 +129,7 @@ export class ProductDetailVersionActionComponent implements AfterViewInit {
   );
   isCheckedAppForEngine!: boolean;
   isBrowser: boolean;
+  ngZone = inject(NgZone);
 
   constructor(@Inject(PLATFORM_ID) private platformId: Object) {
     this.isBrowser = isPlatformBrowser(this.platformId);
@@ -134,8 +137,6 @@ export class ProductDetailVersionActionComponent implements AfterViewInit {
 
   ngAfterViewInit() {
     if (this.isBrowser) {
-      console.log('IS BROWS');
-
       const tooltipTriggerList = [].slice.call(
         document.querySelectorAll('[data-bs-toggle="tooltip"]')
       );
@@ -149,6 +150,17 @@ export class ProductDetailVersionActionComponent implements AfterViewInit {
     // tooltipTriggerList.forEach(
     //   tooltipTriggerEl => new Tooltip(tooltipTriggerEl)
     // );
+    if (isPlatformBrowser(this.platformId)) {
+      this.ngZone.onStable.pipe(take(1)).subscribe(() => {
+        import('bootstrap').then(bs => {
+          const Tooltip = bs.Tooltip;
+          const elements = document.querySelectorAll(
+            '[data-bs-toggle="tooltip"]'
+          );
+          elements.forEach(el => new Tooltip(el));
+        });
+      });
+    }
   }
 
   onSelectVersion(version: string) {

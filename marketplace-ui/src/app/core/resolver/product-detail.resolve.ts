@@ -6,23 +6,19 @@ import {
 } from '@angular/router';
 import { CookieService } from 'ngx-cookie-service';
 import { map, Observable, tap } from 'rxjs';
-import { ProductDetailService } from '../../../modules/product/product-detail/product-detail.service';
-import { ProductService } from '../../../modules/product/product.service';
-import {
-  DEFAULT_VENDOR_IMAGE,
-  DEFAULT_VENDOR_IMAGE_BLACK,
-  SHOW_DEV_VERSION
-} from '../../../shared/constants/common.constant';
-import { LoadingComponentId } from '../../../shared/enums/loading-component-id';
-import { DisplayValue } from '../../../shared/models/display-value.model';
-import { ProductDetail } from '../../../shared/models/product-detail.model';
-import { RoutingQueryParamService } from '../../../shared/services/routing.query.param.service';
-import { CommonUtils } from '../../../shared/utils/common.utils';
-import { LanguageService } from '../language/language.service';
-import { LoadingService } from '../loading/loading.service';
+import { ProductDetail } from '../../shared/models/product-detail.model';
+import { ProductDetailService } from '../../modules/product/product-detail/product-detail.service';
+import { LanguageService } from '../services/language/language.service';
+import { LoadingService } from '../services/loading/loading.service';
+import { ProductService } from '../../modules/product/product.service';
+import { RoutingQueryParamService } from '../../shared/services/routing.query.param.service';
+import { LoadingComponentId } from '../../shared/enums/loading-component-id';
+import { DisplayValue } from '../../shared/models/display-value.model';
+import { CommonUtils } from '../../shared/utils/common.utils';
+import { DEFAULT_VENDOR_IMAGE, DEFAULT_VENDOR_IMAGE_BLACK, SHOW_DEV_VERSION } from '../../shared/constants/common.constant';
 
 @Injectable({ providedIn: 'root' })
-export class TitleResolver implements Resolve<ProductDetail> {
+export class ProductDetailResolver implements Resolve<ProductDetail> {
   constructor(
     private productDetailService: ProductDetailService,
     private meta: Meta,

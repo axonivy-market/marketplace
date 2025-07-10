@@ -6,7 +6,7 @@ import { ERROR_PAGE } from './shared/constants/common.constant';
 import { SecurityMonitorComponent } from './modules/security-monitor/security-monitor.component';
 import { ReleasePreviewComponent } from './modules/release-preview/release-preview.component';
 import { FeedbackApprovalComponent } from './modules/feedback-approval/feedback-approval.component';
-import { TitleResolver } from './core/services/resolver/title.resolver';
+import { ProductDetailResolver } from './core/resolver/product-detail.resolve';
 
 export const routes: Routes = [
   {
@@ -40,7 +40,7 @@ export const routes: Routes = [
     loadChildren: () =>
       import('./modules/product/product.routes').then(m => m.routes),
     resolve: {
-      productDetail: TitleResolver
+      productDetail: ProductDetailResolver
     }
   },
   {

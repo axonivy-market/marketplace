@@ -76,13 +76,13 @@ export class RoutingQueryParamService {
   //     filter(event => event instanceof NavigationStart)
   //   );
   // }
-    private readonly isDesigner = signal(false);
+  private readonly isDesigner = signal(false);
   isDesignerEnv = computed(() => this.isDesigner());
   designerVersion = signal('');
 
-  private readonly storageRef = inject(SessionStorageRef); // ✅ inject storageRef
+  // private readonly storageRef = inject(SessionStorageRef); // ✅ inject storageRef
 
-  constructor(private readonly router: Router) {
+  constructor(private readonly router: Router, private readonly storageRef: SessionStorageRef) {
     this.getNavigationStartEvent().subscribe(() => {
       if (!this.isDesigner()) {
         const value = this.storageRef.session?.getItem(

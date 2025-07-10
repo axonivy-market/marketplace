@@ -186,13 +186,9 @@ export class ProductDetailComponent {
   ngOnInit(): void {
     const productId = this.route.snapshot.params[ROUTER.ID];
     this.productDetailService.productId.set(productId);
-    // const productDetailObservable = this.route.snapshot.data[
-    //   'product'
-    // ] as Observable<ProductDetail>;
     const productDetail = this.route.snapshot.data[
       'productDetail'
     ] as ProductDetail;
-    console.log(productDetail);
     
     this.handleProductDetailLoad(productId, productDetail);
 
