@@ -4,9 +4,13 @@ import { isPlatformBrowser } from '@angular/common';
 
 @Injectable({ providedIn: 'root' })
 export class SessionStorageRef {
-  private platformId = inject(PLATFORM_ID);
+  private readonly platformId = inject(PLATFORM_ID);
 
   get session(): Storage | null {
-    return isPlatformBrowser(this.platformId) ? sessionStorage : null;
+    if (isPlatformBrowser(this.platformId)) {
+      return sessionStorage;
+    } else {
+      return null;
+    }
   }
 }

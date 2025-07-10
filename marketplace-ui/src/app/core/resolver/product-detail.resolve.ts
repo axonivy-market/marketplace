@@ -20,14 +20,14 @@ import { DEFAULT_VENDOR_IMAGE, DEFAULT_VENDOR_IMAGE_BLACK, SHOW_DEV_VERSION } fr
 @Injectable({ providedIn: 'root' })
 export class ProductDetailResolver implements Resolve<ProductDetail> {
   constructor(
-    private productDetailService: ProductDetailService,
-    private meta: Meta,
-    private titleService: Title,
-    private languageService: LanguageService,
-    private loadingService: LoadingService,
-    private productService: ProductService,
-    private cookieService: CookieService,
-    private routingQueryParamService: RoutingQueryParamService
+    private readonly productDetailService: ProductDetailService,
+    private readonly meta: Meta,
+    private readonly titleService: Title,
+    private readonly languageService: LanguageService,
+    private readonly loadingService: LoadingService,
+    private readonly productService: ProductService,
+    private readonly cookieService: CookieService,
+    private readonly routingQueryParamService: RoutingQueryParamService
   ) {}
 
   resolve(route: ActivatedRouteSnapshot): Observable<ProductDetail> {

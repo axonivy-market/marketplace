@@ -3,9 +3,13 @@ import { isPlatformBrowser } from '@angular/common';
 
 @Injectable({ providedIn: 'root' })
 export class DocumentRef {
-  private platformId = inject(PLATFORM_ID);
+  private readonly platformId = inject(PLATFORM_ID);
 
   get nativeDocument(): Document | undefined {
-    return isPlatformBrowser(this.platformId) ? document : undefined;
+    if (isPlatformBrowser(this.platformId)) {
+      return document;
+    } else {
+      return undefined;
+    }
   }
 }

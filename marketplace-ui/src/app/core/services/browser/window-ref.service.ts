@@ -3,9 +3,13 @@ import { isPlatformBrowser } from '@angular/common';
 
 @Injectable({ providedIn: 'root' })
 export class WindowRef {
-  private platformId = inject(PLATFORM_ID);
+  private readonly platformId = inject(PLATFORM_ID);
 
   get nativeWindow(): Window | undefined {
-    return isPlatformBrowser(this.platformId) ? window : undefined;
+    if (isPlatformBrowser(this.platformId)) {
+      return window;
+    } else {
+      return undefined;
+    }
   }
 }
