@@ -5,12 +5,10 @@ import {
   Signal,
   WritableSignal,
   computed,
-  signal,
-  Inject,
-  PLATFORM_ID
+  signal
 } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { CommonModule, isPlatformBrowser } from '@angular/common';
+import { CommonModule } from '@angular/common';
 import { ReleasePreviewService } from './release-preview.service';
 import { ReleasePreviewData } from '../../shared/models/release-preview-data.model';
 import { LanguageService } from '../../core/services/language/language.service';

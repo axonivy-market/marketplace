@@ -130,7 +130,7 @@ export class ProductDetailVersionActionComponent implements AfterViewInit {
   isBrowser: boolean;
   ngZone = inject(NgZone);
 
-  constructor(@Inject(PLATFORM_ID) private platformId: Object) {
+  constructor(@Inject(PLATFORM_ID) private readonly platformId: Object) {
     this.isBrowser = isPlatformBrowser(this.platformId);
   }
 

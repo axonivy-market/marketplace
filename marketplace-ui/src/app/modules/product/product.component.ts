@@ -87,7 +87,7 @@ export class ProductComponent implements AfterViewInit, OnDestroy {
 
   @ViewChild('observer', { static: true }) observerElement!: ElementRef;
 
-  constructor(@Inject(PLATFORM_ID) private platformId: Object) {
+  constructor(@Inject(PLATFORM_ID) private readonly platformId: Object) {
     this.isBrowser = isPlatformBrowser(this.platformId);
     if (this.isBrowser) {
       this.route.queryParams.subscribe(params => {
@@ -185,11 +185,12 @@ export class ProductComponent implements AfterViewInit, OnDestroy {
       sort: selectedSort
     };
     this.loadProductItems(true);
-
-    let queryParams =
-      SortOption.STANDARD !== selectedSort
-        ? { sort: this.criteria.sort }
-        : { sort: null };
+    let queryParams = null;
+    if (SortOption.STANDARD !== selectedSort) {
+      queryParams = { sort: this.criteria.sort };
+    } else {
+      queryParams = { sort: null };
+    }
 
     this.router.navigate([], {
       relativeTo: this.route,

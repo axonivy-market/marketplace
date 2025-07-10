@@ -17,12 +17,6 @@ export class ProductDetailMavenContentComponent {
   productDetail!: ProductDetail;
   @Input()
   selectedVersion!: string;
-  isBrowser: boolean;
-  
-  constructor(@Inject(PLATFORM_ID) private platformId: Object) {
-    this.isBrowser = isPlatformBrowser(this.platformId);
-  }
-
   languageService = inject(LanguageService);
 
   getProductName() {

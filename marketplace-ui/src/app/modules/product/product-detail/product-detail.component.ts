@@ -145,7 +145,7 @@ export class ProductDetailComponent {
   displayedTabsSignal: Signal<ItemDropdown[]> = computed(() => {
     this.languageService.selectedLanguage();
     this.getReadmeContent();
-    return this.getDisplayedTabsSignal('abc');
+    return this.getDisplayedTabsSignal();
   });
   isDropdownOpen: WritableSignal<boolean> = signal(false);
   selectedVersion = '';
@@ -172,7 +172,7 @@ export class ProductDetailComponent {
   constructor(
     private readonly titleService: Title,
     private readonly sanitizer: DomSanitizer,
-    @Inject(PLATFORM_ID) private platformId: Object
+    @Inject(PLATFORM_ID) private readonly platformId: Object
   ) {
     this.isBrowser = isPlatformBrowser(this.platformId);
     if (this.isBrowser) {
@@ -228,34 +228,6 @@ export class ProductDetailComponent {
         this.navigateToProductDetailsWithTabFragment();
       });
     }
-    // forkJoin({
-    //   userFeedback: this.productFeedbackService.findProductFeedbackOfUser(),
-    //   productFeedBack: this.productFeedbackService.getInitFeedbacksObservable(),
-    //   rating: this.productStarRatingService.getRatingObservable(productId),
-    //   changelogs: this.productService.getProductChangelogs(productId)
-    // }).subscribe(res => {
-    //   this.setupMarkdownParser(productDetail.sourceUrl);
-
-    //   const gitHubReleaseModelList =
-    //     res.changelogs?._embedded?.gitHubReleaseModelList ?? [];
-    //   if (gitHubReleaseModelList.length > 0) {
-    //     this.productReleaseSafeHtmls = this.renderChangelogContent(
-    //       gitHubReleaseModelList
-    //     );
-    //   }
-
-    //   this.handleProductDetail(productDetail);
-    //   this.getReadmeContent();
-    //   this.productFeedbackService.handleFeedbackApiResponse(
-    //     res.productFeedBack
-    //   );
-    //   this.updateDropdownSelection();
-    //   this.checkMediaSize();
-
-    //   this.handlePopupLogic();
-    //   this.loadingService.hideLoading(LoadingComponentId.DETAIL_PAGE);
-    //   this.navigateToProductDetailsWithTabFragment();
-    // });
   }
 
   private setupMarkdownParser(sourceUrl: string): void {
@@ -546,7 +518,7 @@ export class ProductDetailComponent {
     }
   }
 
-  getDisplayedTabsSignal(productTitle: string): ItemDropdown[] {
+  getDisplayedTabsSignal(): ItemDropdown[] {
     this.updateWebBrowserTitle(this.productDetail().names);
     const displayedTabs: ItemDropdown[] = [];
     for (const detailTab of this.detailTabs) {

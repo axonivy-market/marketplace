@@ -16,11 +16,6 @@ import { DEFAULT_IMAGE_URL } from '../../../shared/constants/common.constant';
   styleUrl: './product-card.component.scss'
 })
 export class ProductCardComponent {
-  isBrowser: boolean;
-  constructor(@Inject(PLATFORM_ID) private platformId: Object) {
-    this.isBrowser = isPlatformBrowser(this.platformId);
-  }
-
   themeService = inject(ThemeService);
   languageService = inject(LanguageService);
   isShowInRESTClientEditor = inject(ProductComponent).isRESTClient();

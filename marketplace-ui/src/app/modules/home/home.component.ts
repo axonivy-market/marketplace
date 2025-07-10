@@ -1,10 +1,9 @@
-import { Component, Inject, inject, PLATFORM_ID } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { Title } from '@angular/platform-browser';
 import { TranslateService } from '@ngx-translate/core';
 import { ProductComponent } from '../product/product.component';
 import { Router } from '@angular/router';
 import { API_URI } from '../../shared/constants/api.constant';
-import { isPlatformBrowser } from '@angular/common';
 
 @Component({
   selector: 'app-home',

@@ -36,7 +36,7 @@ export class ErrorPageComponent implements OnInit {
 
   constructor(
     private readonly router: Router,
-    @Inject(PLATFORM_ID) private platformId: Object
+    @Inject(PLATFORM_ID) private readonly platformId: Object
   ) {
     this.isBrowser = isPlatformBrowser(this.platformId);
     if (this.isBrowser) {

@@ -23,7 +23,6 @@ const MAX_ELEMENTS = 6;
   standalone: true,
   imports: [
     ProductStarRatingPanelComponent,
-    ShowFeedbacksDialogComponent,
     ProductFeedbacksPanelComponent,
     TranslateModule
   ],
@@ -42,11 +41,6 @@ export class ProductDetailFeedbackComponent {
     }
     return true;
   });
-  isBrowser: boolean;
-
-  constructor(@Inject(PLATFORM_ID) private platformId: Object) {
-    this.isBrowser = isPlatformBrowser(this.platformId);
-  }
 
   productFeedbackService = inject(ProductFeedbackService);
   appModalService = inject(AppModalService);
