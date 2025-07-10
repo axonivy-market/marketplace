@@ -22,7 +22,6 @@ import { TranslateModule } from '@ngx-translate/core';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ProductService } from '../../product.service';
-import { Tooltip } from 'bootstrap';
 import { CommonDropdownComponent } from '../../../../shared/components/common-dropdown/common-dropdown.component';
 import { LanguageService } from '../../../../core/services/language/language.service';
 import { ItemDropdown } from '../../../../shared/models/item-dropdown.model';
@@ -136,20 +135,6 @@ export class ProductDetailVersionActionComponent implements AfterViewInit {
   }
 
   ngAfterViewInit() {
-    if (this.isBrowser) {
-      const tooltipTriggerList = [].slice.call(
-        document.querySelectorAll('[data-bs-toggle="tooltip"]')
-      );
-      tooltipTriggerList.forEach(
-        tooltipTriggerEl => new Tooltip(tooltipTriggerEl)
-      );
-    }
-    // const tooltipTriggerList = [].slice.call(
-    //   document.querySelectorAll('[data-bs-toggle="tooltip"]')
-    // );
-    // tooltipTriggerList.forEach(
-    //   tooltipTriggerEl => new Tooltip(tooltipTriggerEl)
-    // );
     if (isPlatformBrowser(this.platformId)) {
       this.ngZone.onStable.pipe(take(1)).subscribe(() => {
         import('bootstrap').then(bs => {
