@@ -6,6 +6,8 @@ import { ERROR_PAGE } from './shared/constants/common.constant';
 import { SecurityMonitorComponent } from './modules/security-monitor/security-monitor.component';
 import { ReleasePreviewComponent } from './modules/release-preview/release-preview.component';
 import { FeedbackApprovalComponent } from './modules/feedback-approval/feedback-approval.component';
+import { DashboardComponent } from './modules/monitor/dashboard/dashboard.component';
+import { RepoReportComponent } from './modules/monitor/repo-report/repo-report.component';
 
 export const routes: Routes = [
   {
@@ -31,6 +33,14 @@ export const routes: Routes = [
     component: FeedbackApprovalComponent
   },
   {
+    path: 'monitoring',
+    component: DashboardComponent
+  },
+  {
+    path: 'report/:repo/:workflow',
+    loadComponent: () => import('./modules/monitor/repo-report/repo-report.component').then(m => m.RepoReportComponent)
+  },
+  {
     path: '',
     loadChildren: () => import('./modules/home/home.routes').then(m => m.routes)
   },
@@ -54,5 +64,5 @@ export const routes: Routes = [
   {
     path: 'auth/github/callback',
     component: GithubCallbackComponent
-  }
+  },
 ];

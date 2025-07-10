@@ -8,5 +8,7 @@ export const API_URI = {
   FEEDBACK: `${API}/feedback`,
   FEEDBACK_APPROVAL: `${API}/feedback/approval`,
   PRODUCT_MARKETPLACE_DATA: `${API}/product-marketplace-data`,
-  PREVIEW_RELEASE: `${API}/release-preview`
+  PREVIEW_RELEASE: `${API}/release-preview`,
+  GITHUB_REPOS: `${API}/github-repos/repos`,
+  GITHUB_REPORT: `${API}/github-repos`,
 };

@@ -1,0 +1,33 @@
+<div class="container">
+  <h2>GitHub Action Monitor</h2>
+
+  @if (loading) {
+    <div>Loading repositories...</div>
+  } @else if (errorMessage) {
+    <div class="error">{{ errorMessage }}</div>
+  } @else {
+    <ul>
+      @for (repo of repos; track repo.name) {
+        <li class="repo-item">
+          <div class="badges">
+            <img
+              [src]="repo.ciBadgeUrl"
+              (click)="loadReport(repo.name, 'ci.yml')"
+              (error)="onImageError($event)"
+              alt="CI Badge"
+              class="clickable"
+            />
+            <img
+              [src]="repo.devBadgeUrl"
+              (click)="loadReport(repo.name, 'dev.yml')"
+              (error)="onImageError($event)"
+              alt="DEV Badge"
+              class="clickable"
+            />
+          </div>
+          <h3>{{ repo.name }}</h3>
+        </li>
+      }
+    </ul>
+  }
+</div>
