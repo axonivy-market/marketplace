@@ -167,7 +167,7 @@ class ProductDetailsControllerTest extends BaseSetup {
 
   @Test
   void findProductVersionsById() {
-    when(versionService.getVersionsForDesigner("google-maps-connector", true, StringUtils.EMPTY))
+    when(versionService.getInstallableVersions("google-maps-connector", true, StringUtils.EMPTY))
         .thenReturn(mockVersionAndUrlModels());
 
     var result = productDetailsController.findVersionsForDesigner("google-maps-connector", StringUtils.EMPTY, true);
@@ -214,7 +214,6 @@ class ProductDetailsControllerTest extends BaseSetup {
     name.put(Language.DE.getValue(), PRODUCT_NAME_DE_SAMPLE);
     mockProductDetail.setNames(name);
     mockProductDetail.setType("connector");
-    mockProductDetail.setCompatibility("10.0+");
     mockProductDetail.setSourceUrl("https://github.com/axonivy-market/docker-connector");
     mockProductDetail.setStatusBadgeUrl("https://github.com/axonivy-market/docker-connector");
     mockProductDetail.setLanguage("English");

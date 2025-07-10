@@ -433,7 +433,7 @@ class ProductServiceImplTest extends BaseSetup {
     when(mavenArtifactVersionRepository.findByProductId(MOCK_PRODUCT_ID)).thenReturn(mockMavenArtifactVersion);
     Product product = getMockProduct();
     when(productRepo.getProductByIdAndVersion(MOCK_PRODUCT_ID, MOCK_SNAPSHOT_VERSION)).thenReturn(product);
-    when(versionService.getVersionsForDesigner(MOCK_PRODUCT_ID, true, null))
+    when(versionService.getInstallableVersions(MOCK_PRODUCT_ID, false, null))
         .thenReturn(mockVersionAndUrlModels(), mockVersionModels(), mockVersionModels2(), mockVersionModels3());
 
     Product result = productService.fetchProductDetail(MOCK_PRODUCT_ID, true);
@@ -453,6 +453,8 @@ class ProductServiceImplTest extends BaseSetup {
     product.setDeprecated(true);
     result = productService.fetchProductDetail(MOCK_PRODUCT_ID, true);
     assertEquals("10.0 - 12.0", result.getCompatibilityRange());
+    verify(versionService, atLeastOnce()).getInstallableVersions(MOCK_PRODUCT_ID, false, null);
+    verify(versionService, never()).getInstallableVersions(MOCK_PRODUCT_ID, true, null);
   }
 
   @Test
@@ -520,19 +522,6 @@ class ProductServiceImplTest extends BaseSetup {
         mockProductMarketplaceData.getInstallationCount());
     Product result = productService.fetchBestMatchProductDetail(MOCK_PRODUCT_ID, MOCK_RELEASED_VERSION);
     assertEquals(mockProduct, result);
-  }
-
-  @Test
-  void testGetCompatibilityFromNumericVersion() {
-
-    String result = productService.getCompatibilityFromOldestVersion("1.0.0");
-    assertEquals("1.0+", result);
-
-    result = productService.getCompatibilityFromOldestVersion("8");
-    assertEquals("8.0+", result);
-
-    result = productService.getCompatibilityFromOldestVersion("11.2");
-    assertEquals("11.2+", result);
   }
 
   private void mockMarketRepoMetaStatus() {
