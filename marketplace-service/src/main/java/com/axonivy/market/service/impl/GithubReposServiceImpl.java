@@ -9,6 +9,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.*;
+import org.springframework.stereotype.Repository;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
@@ -22,7 +23,6 @@ public class GithubReposServiceImpl implements GithubReposService {
 
   private final FileDownloadService fileDownloadService;
 
-  private static final String BASE_URL = "https://api.github.com/repos/axonivy-market";
   private static final String REPOS_URL = "https://api.github.com/orgs/axonivy-market/repos?per_page=100";
 
   private final RestTemplate restTemplate = new RestTemplate();
@@ -118,6 +118,28 @@ public class GithubReposServiceImpl implements GithubReposService {
     } catch (Exception e) {
       log.error("Failed to fetch artifacts for run {}", runId, e);
       throw new RuntimeException("Error fetching artifacts");
+    }
+  }
+  public void processWorkflow(Repository repoEntity, String workflow) {
+    JsonNode run = fetchLatestWorkflowRun(repoEntity.getName(), workflow);
+    if (run == null) return;
+
+    long runId = run.path("id").asLong();
+    JsonNode artifact = fetchExportTestJsonArtifact(repoEntity.getName(), runId);
+    if (artifact == null) return;
+
+    String downloadUrl = artifact.path("archive_download_url").asText();
+
+    try {
+      String unzipDir = fileDownloadService.downloadAndUnzipFile(downloadUrl, null);
+      File testFile = Paths.get(unzipDir, "export-test.json").toFile();
+      if (testFile.exists()) {
+        ObjectMapper mapper = new ObjectMapper();
+        JsonNode testData = mapper.readTree(testFile);
+        storeTestData(repoEntity, workflow, testData);
+      }
+    } catch (Exception e) {
+      log.error("Error processing workflow {} for repo {}", workflow, repoEntity.getName(), e);
     }
   }
 
