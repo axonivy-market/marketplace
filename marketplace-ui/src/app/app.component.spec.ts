@@ -4,11 +4,21 @@ import { FooterComponent } from './shared/components/footer/footer.component';
 import { HeaderComponent } from './shared/components/header/header.component';
 import { LoadingService } from './core/services/loading/loading.service';
 import { RoutingQueryParamService } from './shared/services/routing.query.param.service';
-import { ActivatedRoute, RouterOutlet, NavigationStart, RouterModule, Router, NavigationError, Event } from '@angular/router';
+import {
+  ActivatedRoute,
+  RouterOutlet,
+  NavigationStart,
+  RouterModule,
+  Router,
+  NavigationError,
+  Event
+} from '@angular/router';
 import { of, Subject } from 'rxjs';
 import { TranslateService, TranslateModule } from '@ngx-translate/core';
 import { By } from '@angular/platform-browser';
 import { ERROR_PAGE_PATH } from './shared/constants/common.constant';
+import { WindowRef } from './core/services/browser/window-ref.service';
+import { DocumentRef } from './core/services/browser/document-ref.service';
 
 describe('AppComponent', () => {
   let component: AppComponent;
@@ -39,7 +49,23 @@ describe('AppComponent', () => {
     const routerMock = {
       events: routerEventsSubject.asObservable(),
       navigate: jasmine.createSpy('navigate'),
+      createUrlTree: jasmine.createSpy('createUrlTree'),
+      serializeUrl: jasmine.createSpy('serializeUrl'),
+      parseUrl: jasmine.createSpy('parseUrl'),
+      url: '/',
+      routerState: {
+        root: {}
+      }
     };
+
+    // Mock WindowRef and DocumentRef
+    const windowRefMock = jasmine.createSpyObj('WindowRef', ['toString'], {
+      nativeWindow: window
+    });
+    
+    const documentRefMock = jasmine.createSpyObj('DocumentRef', ['toString'], {
+      nativeDocument: document
+    });
 
     await TestBed.configureTestingModule({
       imports: [
@@ -63,7 +89,9 @@ describe('AppComponent', () => {
           }
         },
         TranslateService,
-        { provide: Router, useValue: routerMock }
+        { provide: Router, useValue: routerMock },
+        { provide: WindowRef, useValue: windowRefMock },
+        { provide: DocumentRef, useValue: documentRefMock }
       ]
     }).compileComponents();
 
@@ -151,7 +179,11 @@ describe('AppComponent', () => {
 
   it('should redirect to "/error-page" on NavigationError', () => {
     // Simulate a NavigationError event
-    const navigationError = new NavigationError(1, '/a-trust/test-url', 'Error message');
+    const navigationError = new NavigationError(
+      1,
+      '/a-trust/test-url',
+      'Error message'
+    );
     routerEventsSubject.next(navigationError);
     expect(router.navigate).toHaveBeenCalledWith([ERROR_PAGE_PATH]);
   });

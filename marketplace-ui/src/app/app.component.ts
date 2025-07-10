@@ -31,11 +31,11 @@ export class AppComponent {
   constructor(private readonly router: Router, private readonly renderer: Renderer2, private readonly windowRef: WindowRef, private readonly documentRef: DocumentRef) { }
 
   ngOnInit(): void {
-    // this.router.events.subscribe((event: Event) => {
-    //   if (event instanceof NavigationError) {
-    //     this.router.navigate([ERROR_PAGE_PATH]);
-    //   }
-    // });
+    this.router.events.subscribe((event: Event) => {
+      if (event instanceof NavigationError) {
+        this.router.navigate([ERROR_PAGE_PATH]);
+      }
+    });
 
     this.routingQueryParamService.getNavigationStartEvent().subscribe(() => {
       if (!this.routingQueryParamService.isDesignerEnv()) {
