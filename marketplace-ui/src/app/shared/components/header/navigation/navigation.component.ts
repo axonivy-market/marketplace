@@ -14,37 +14,14 @@ import { WindowRef } from '../../../../core/services/browser/window-ref.service'
   styleUrl: './navigation.component.scss'
 })
 export class NavigationComponent {
-  // @Input() navItems: NavItem[] = NAV_ITEMS;
-
-  // translateService = inject(TranslateService);
-  // languageService = inject(LanguageService);
-  // isMobileMode = signal<boolean>(false);
-  // searchUrl = SEARCH_URL;
-
-  // constructor() {
-  //   this.checkMediaSize();
-  // }
-
-  // @HostListener('window:resize', ['$event'])
-  // onResize() {
-  //   this.checkMediaSize();
-  // }
-
-  // checkMediaSize() {
-  //   const mediaQuery = window.matchMedia('(max-width: 992px)');
-  //   this.isMobileMode.set(mediaQuery.matches);
-  // }
-
-   @Input() navItems: NavItem[] = NAV_ITEMS;
+  @Input() navItems: NavItem[] = NAV_ITEMS;
 
   translateService = inject(TranslateService);
   languageService = inject(LanguageService);
   isMobileMode = signal<boolean>(false);
   searchUrl = SEARCH_URL;
 
-  private readonly windowRef = inject(WindowRef); // <-- added
-
-  constructor() {
+  constructor(private readonly windowRef: WindowRef) {
     this.checkMediaSize();
   }
 
@@ -54,7 +31,7 @@ export class NavigationComponent {
   }
 
   checkMediaSize() {
-    const win = this.windowRef.nativeWindow; // <-- safe usage
+    const win = this.windowRef.nativeWindow;
     if (win) {
       const mediaQuery = win.matchMedia('(max-width: 992px)');
       this.isMobileMode.set(mediaQuery.matches);

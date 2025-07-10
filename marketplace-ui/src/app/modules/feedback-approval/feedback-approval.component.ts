@@ -1,12 +1,10 @@
-import { CommonModule, isPlatformBrowser } from '@angular/common';
+import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import {
   Component,
   computed,
-  Inject,
   inject,
-  PLATFORM_ID,
   Signal,
   ViewEncapsulation
 } from '@angular/core';
@@ -60,14 +58,7 @@ export class FeedbackApprovalComponent {
 
   allFeedbacks = computed(() => this.feedbacks() ?? []);
   reviewingFeedbacks = computed(() => this.pendingFeedbacks() ?? []);
-  isBrowser: boolean;
-
-  constructor(
-    @Inject(PLATFORM_ID) private platformId: Object,
-    private readonly storageRef: SessionStorageRef
-  ) {
-    this.isBrowser = isPlatformBrowser(this.platformId);
-  }
+  constructor(private readonly storageRef: SessionStorageRef) {}
 
   ngOnInit() {
     this.token =

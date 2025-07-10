@@ -26,7 +26,7 @@ export class RedirectPageComponent implements OnInit {
   constructor(
     private readonly activeRoute: ActivatedRoute,
     private readonly router: Router,
-    @Inject(PLATFORM_ID) private platformId: Object
+    @Inject(PLATFORM_ID) private readonly platformId: Object
   ) {
     this.isBrowser = isPlatformBrowser(this.platformId);
   }
@@ -72,9 +72,9 @@ export class RedirectPageComponent implements OnInit {
   }
 
   handleRedirection(response: ExternalDocument, currentUrl: string): void {
-    // if (response === null || response.relativeLink === '') {
-    //   this.router.navigate([ERROR_PAGE_PATH]);
-    // }
+    if (response === null || response.relativeLink === '') {
+      this.router.navigate([ERROR_PAGE_PATH]);
+    }
     const relativeUrl = response.relativeLink;
     const isSameUrl =
       currentUrl === relativeUrl || currentUrl + INDEX_FILE === relativeUrl;

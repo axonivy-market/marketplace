@@ -17,24 +17,17 @@ export class HomeComponent {
   router = inject(Router);
   titleService = inject(Title);
   translateService = inject(TranslateService);
-  isBrowser: boolean;
-
-  constructor(@Inject(PLATFORM_ID) private platformId: Object) {
-    this.isBrowser = isPlatformBrowser(this.platformId);
-  }
 
   ngOnInit(): void {
-    if (this.isBrowser) {
-      // Set the title initially
-      this.updateHomePageTitle();
+    // Set the title initially
+    this.updateHomePageTitle();
 
-      // Update the title whenever the language changes
-      this.translateService.onLangChange.subscribe(() => {
-        if (this.router.url === API_URI.APP) {
-          this.updateHomePageTitle();
-        }
-      });
-    }
+    // Update the title whenever the language changes
+    this.translateService.onLangChange.subscribe(() => {
+      if (this.router.url === API_URI.APP) {
+        this.updateHomePageTitle();
+      }
+    });
   }
 
   private updateHomePageTitle(): void {

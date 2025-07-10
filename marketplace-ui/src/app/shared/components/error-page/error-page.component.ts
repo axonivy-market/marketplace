@@ -45,21 +45,19 @@ export class ErrorPageComponent implements OnInit {
   }
 
   ngOnInit(): void {
-    if (this.isBrowser) {
-      this.errorId = this.route.snapshot.params['id'];
-      this.translateService
-        .get(I18N_ERROR_CODE_PATH)
-        .subscribe(errorTranslations => {
-          let i18nErrorKey = this.errorId;
-          if (
-            !i18nErrorKey ||
-            !Object.keys(errorTranslations).includes(i18nErrorKey)
-          ) {
-            i18nErrorKey = I18N_DEFAULT_ERROR_CODE;
-          }
-          this.errorMessageKey = this.buildI18nKey(i18nErrorKey);
-        });
-    }
+    this.errorId = this.route.snapshot.params['id'];
+    this.translateService
+      .get(I18N_ERROR_CODE_PATH)
+      .subscribe(errorTranslations => {
+        let i18nErrorKey = this.errorId;
+        if (
+          !i18nErrorKey ||
+          !Object.keys(errorTranslations).includes(i18nErrorKey)
+        ) {
+          i18nErrorKey = I18N_DEFAULT_ERROR_CODE;
+        }
+        this.errorMessageKey = this.buildI18nKey(i18nErrorKey);
+      });
   }
 
   private buildI18nKey(key: string | undefined) {

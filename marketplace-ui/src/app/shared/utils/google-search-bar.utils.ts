@@ -12,7 +12,9 @@ export class GoogleSearchBarUtils {
     const win = windowRef.nativeWindow;
     const doc = documentRef.nativeDocument;
 
-    if (!doc) return;
+    if (!doc) {
+      return;
+    }
 
     if (!doc.getElementById('googleCSEScript')) {
       const script = renderer.createElement('script');
@@ -36,7 +38,10 @@ export class GoogleSearchBarUtils {
     documentRef: DocumentRef
   ): void {
     const doc = documentRef.nativeDocument;
-    if (!doc) return;
+    
+    if (!doc) {
+      return;
+    }
 
     setTimeout(() => {
       const searchBoxList = doc.querySelectorAll('.gsc-control-cse');

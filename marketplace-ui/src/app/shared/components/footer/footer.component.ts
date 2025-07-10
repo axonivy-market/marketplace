@@ -26,16 +26,9 @@ export class FooterComponent implements OnInit {
   ivyFooterLinks = IVY_FOOTER_LINKS;
   downloadUrl = DOWNLOAD_URL;
   year = '';
-  isBrowser: boolean;
-
-  constructor(@Inject(PLATFORM_ID) private platformId: Object) {
-    this.isBrowser = isPlatformBrowser(this.platformId);
-  }
 
   ngOnInit(): void {
-    if (this.isBrowser) {
       this.getCurrentYear();
-    }
   }
 
   getCurrentYear() {
