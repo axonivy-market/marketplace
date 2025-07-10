@@ -1,20 +1,16 @@
 import {
   Component,
   computed,
-  Inject,
   inject,
   input,
-  PLATFORM_ID,
   Signal
 } from '@angular/core';
 import { ProductStarRatingPanelComponent } from './product-star-rating-panel/product-star-rating-panel.component';
-import { ShowFeedbacksDialogComponent } from './show-feedbacks-dialog/show-feedbacks-dialog.component';
 import { ProductFeedbacksPanelComponent } from './product-feedbacks-panel/product-feedbacks-panel.component';
 import { AppModalService } from '../../../../shared/services/app-modal.service';
 import { ProductFeedbackService } from './product-feedbacks-panel/product-feedback.service';
 import { TranslateModule } from '@ngx-translate/core';
 import { LanguageService } from '../../../../core/services/language/language.service';
-import { isPlatformBrowser } from '@angular/common';
 
 const MAX_ELEMENTS = 6;
 

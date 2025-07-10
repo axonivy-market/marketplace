@@ -1,5 +1,5 @@
-import { CommonModule, isPlatformBrowser, NgOptimizedImage } from '@angular/common';
-import { Component, Inject, inject, Input, PLATFORM_ID } from '@angular/core';
+import { CommonModule, NgOptimizedImage } from '@angular/common';
+import { Component, inject, Input } from '@angular/core';
 import { TranslateModule } from '@ngx-translate/core';
 import { LanguageService } from '../../../core/services/language/language.service';
 import { ThemeService } from '../../../core/services/theme/theme.service';
