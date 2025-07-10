@@ -133,7 +133,11 @@ describe('ProductDetailComponent', () => {
         {
           provide: ActivatedRoute,
           useValue: {
-            snapshot: { params: { id: products[0].id } },
+            // snapshot: { params: { id: products[0].id } },
+            snapshot: {
+              params: { id: products[0].id },
+              data: { productDetail: MOCK_PRODUCT_DETAIL } // ✅ add this line
+            },
             queryParams: of({ type: TypeOption.CONNECTORS }),
             fragment: of('description')
           }
@@ -836,32 +840,40 @@ describe('ProductDetailComponent', () => {
   });
 
   it('should generate right text for the rate connector', () => {
-    const rateConnector = fixture.debugElement.query(
+    let rateConnector = fixture.debugElement.query(
       By.css('.rate-connector-btn')
     );
     expect(rateConnector.childNodes[0].nativeNode.textContent).toContain(
       'common.feedback.rateFeedbackForConnectorBtnLabel'
     );
 
-    const rateConnectorEmptyText = fixture.debugElement.query(
+    let rateConnectorEmptyText = fixture.debugElement.query(
       By.css('.rate-empty-text')
     );
     expect(
       rateConnectorEmptyText.childNodes[0].nativeNode.textContent
     ).toContain('common.feedback.noFeedbackForConnectorLabel');
 
-    component.route.snapshot.params['id'] = 'cronjob';
-    spyOn(component, 'getProductById').and.returnValue(
-      of(MOCK_CRON_JOB_PRODUCT_DETAIL)
-    );
-    component.ngOnInit();
+    const activatedRoute = TestBed.inject(ActivatedRoute) as any;
+    activatedRoute.snapshot.data.productDetail = MOCK_CRON_JOB_PRODUCT_DETAIL;
+
+    // Recreate the component with new data
+    fixture = TestBed.createComponent(ProductDetailComponent);
+    component = fixture.componentInstance;
     fixture.detectChanges();
+
+    // Now assert utility labels
+    rateConnector = fixture.debugElement.query(By.css('.rate-connector-btn'));
     expect(rateConnector.childNodes[0].nativeNode.textContent).toContain(
       'common.feedback.rateFeedbackForUtilityBtnLabel'
     );
-    expect(
-      rateConnectorEmptyText.childNodes[0].nativeNode.textContent
-    ).toContain('common.feedback.noFeedbackForUtilityLabel');
+
+    rateConnectorEmptyText = fixture.debugElement.query(
+      By.css('.rate-empty-text')
+    );
+    expect(rateConnectorEmptyText.childNodes[0].nativeNode.textContent).toContain(
+      'common.feedback.noFeedbackForUtilityLabel'
+    ); 
   });
 
   it('maven tab should not display when product module content is missing', () => {

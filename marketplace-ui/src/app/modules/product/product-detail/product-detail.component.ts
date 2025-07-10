@@ -191,24 +191,12 @@ export class ProductDetailComponent {
     ] as ProductDetail;
     
     this.handleProductDetailLoad(productId, productDetail);
-
-    // if (productId) {
-    //   this.loadingService.showLoading(LoadingComponentId.DETAIL_PAGE);
-
-    // this.getProductDetailObservable(productId)
-    //   .pipe(take(1))
-    //   .subscribe(productDetail =>
-    //     this.handleProductDetailLoad(productId, productDetail)
-    //   );
-    // }
   }
 
   private handleProductDetailLoad(
     productId: string,
     productDetail: ProductDetail
   ): void {
-    // this.updateWebBrowserTitle(productDetail.names);
-
     if (this.isBrowser) {
       forkJoin({
         userFeedback: this.productFeedbackService.findProductFeedbackOfUser(),
