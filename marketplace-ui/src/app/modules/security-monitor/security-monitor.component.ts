@@ -39,7 +39,7 @@ export class SecurityMonitorComponent {
   private readonly securityMonitorService = inject(SecurityMonitorService);
   isBrowser: boolean;
 
-  constructor(@Inject(PLATFORM_ID) private platformId: Object) {
+  constructor(@Inject(PLATFORM_ID) private readonly platformId: Object) {
     this.isBrowser = isPlatformBrowser(this.platformId);
   }
 

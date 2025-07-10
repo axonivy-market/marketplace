@@ -64,22 +64,15 @@ export class ReleasePreviewComponent {
 
   private readonly releasePreviewService = inject(ReleasePreviewService);
   private readonly markdownService = inject(MarkdownService);
-  isBrowser: boolean;
-
-  constructor(@Inject(PLATFORM_ID) private platformId: Object) {
-    this.isBrowser = isPlatformBrowser(this.platformId);
-  }
 
   ngOnInit(): void {
-    if (this.isBrowser) {
-      // Set the title initially
-      this.updateHomePageTitle();
+    // Set the title initially
+    this.updateHomePageTitle();
 
-      // Update the title whenever the language changes
-      this.translateService.onLangChange.subscribe(() => {
-        this.updateHomePageTitle();
-      });
-    }
+    // Update the title whenever the language changes
+    this.translateService.onLangChange.subscribe(() => {
+      this.updateHomePageTitle();
+    });
   }
 
   private updateHomePageTitle(): void {
