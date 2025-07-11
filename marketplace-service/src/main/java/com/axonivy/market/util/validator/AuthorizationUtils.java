@@ -68,4 +68,8 @@ public class AuthorizationUtils implements ConstraintValidator<ValidUrl, String>
         .map(allowedBase -> inputUrl)
         .orElseThrow(() -> new IllegalArgumentException("URL not from allowed sources"));
   }
+
+  public boolean isAllowedUrl(String inputUrl) {
+    return allowedUrls.stream().anyMatch(inputUrl::startsWith);
+  }
 }

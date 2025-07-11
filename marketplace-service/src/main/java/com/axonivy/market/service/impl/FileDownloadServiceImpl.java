@@ -61,26 +61,26 @@ public class FileDownloadServiceImpl implements FileDownloadService {
   }
 
   private <T> T fetchFile(String url, Class<T> responseType, T fallback) {
-    try {
-      String trustedUrl = authorizationUtils.resolveTrustedUrl(url);
-      return restTemplate.getForObject(trustedUrl, responseType);
-    } catch (IllegalArgumentException e) {
-      log.warn("Unsafe or disallowed URL provided: {}", url, e);
-    } catch (RestClientException e) {
-      log.warn("Failed to fetch resource from URL: {}", url, e);
+    if (authorizationUtils.isAllowedUrl(url)) {
+      try {
+        return restTemplate.getForObject(url, responseType);
+      } catch (RestClientException e) {
+        log.warn("Unsafe or disallowed URL provided: {}", url, e);
+      }
+    } else {
+      log.warn("Failed to fetch resource from URL: {}", url);
     }
     return fallback;
   }
 
   @Override
   public ResponseEntity<Resource> fetchResourceUrl(String url) {
-    try {
-      String trustedUrl = authorizationUtils.resolveTrustedUrl(url);
-      return restTemplate.exchange(trustedUrl, HttpMethod.GET, null, Resource.class);
-    } catch (IllegalArgumentException e) {
-      log.warn("Unsafe or disallowed URL provided: {}", url, e);
-    } catch (RestClientException e) {
-      log.warn("Failed to fetch resource from URL: {}", url, e);
+    if (authorizationUtils.isAllowedUrl(url)) {
+      try {
+        return restTemplate.exchange(url, HttpMethod.GET, null, Resource.class);
+      } catch (RestClientException e) {
+        log.warn("Failed to fetch resource from URL: {}", url, e);
+      }
     }
     return null;
   }
