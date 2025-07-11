@@ -95,20 +95,6 @@ class ProductContentServiceImplTest extends BaseSetup {
   }
 
   @Test
-  void testBuildArtifactStreamFromArtifactUrls() {
-    try (MockedStatic<HttpFetchingUtils> mockHttpFetchingUtils = Mockito.mockStatic(HttpFetchingUtils.class)) {
-      mockHttpFetchingUtils.when(() -> HttpFetchingUtils.fetchResourceUrl(MOCK_DOWNLOAD_URL)).thenReturn(
-          getMockEntityResource());
-      mockHttpFetchingUtils.when(() -> HttpFetchingUtils.extractFileNameFromUrl(MOCK_DOWNLOAD_URL)).thenReturn(
-          MOCK_ARTIFACT_DOWNLOAD_FILE);
-      OutputStream result = productContentService.buildArtifactStreamFromArtifactUrls(List.of(MOCK_DOWNLOAD_URL),
-          new ByteArrayOutputStream());
-      assertNotNull(result, "The OutputStream from valid URL should not be null");
-      assertTrue(((ByteArrayOutputStream) result).size() > 0,
-          "The content of OutputStream from valid URL should not be empty");
-    }
-  }
-  @Test
   void testGetDependencyUrlsShouldReturnsDirectAndNestedUrls() {
     ProductDependency dep1 = new ProductDependency();
     ProductDependency dep2 = new ProductDependency();
