@@ -11,8 +11,11 @@ import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.SystemUtils;
 import org.springframework.core.io.Resource;
+import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestClientException;
+import org.springframework.web.client.RestTemplate;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
@@ -45,30 +48,41 @@ public class FileDownloadServiceImpl implements FileDownloadService {
   private static final int THRESHOLD_SIZE = 1000000000;
   private static final String IAR = "iar";
   private final AuthorizationUtils authorizationUtils;
+  private final RestTemplate restTemplate;
 
   @Override
   public byte[] downloadFile(String url) {
-    return fetchWithTrustedUrl(url, HttpFetchingUtils::getFileAsBytes, new byte[0]);
+    return fetchFile(url, byte[].class, new byte[0]);
   }
 
   @Override
   public String getFileAsString(String url) {
-    return fetchWithTrustedUrl(url, HttpFetchingUtils::getFileAsString, EMPTY);
+    return fetchFile(url, String.class, EMPTY);
+  }
+
+  private <T> T fetchFile(String url, Class<T> responseType, T fallback) {
+    try {
+      String trustedUrl = authorizationUtils.resolveTrustedUrl(url);
+      return restTemplate.getForObject(trustedUrl, responseType);
+    } catch (IllegalArgumentException e) {
+      log.warn("Unsafe or disallowed URL provided: {}", url, e);
+    } catch (RestClientException e) {
+      log.warn("Failed to fetch resource from URL: {}", url, e);
+    }
+    return fallback;
   }
 
   @Override
   public ResponseEntity<Resource> fetchResourceUrl(String url) {
-    return fetchWithTrustedUrl(url, HttpFetchingUtils::fetchResourceUrl, null);
-  }
-
-  private <T> T fetchWithTrustedUrl(String url, Function<String, T> fetchFunction, T fallback) {
     try {
       String trustedUrl = authorizationUtils.resolveTrustedUrl(url);
-      return fetchFunction.apply(trustedUrl);
+      return restTemplate.exchange(trustedUrl, HttpMethod.GET, null, Resource.class);
     } catch (IllegalArgumentException e) {
       log.warn("Unsafe or disallowed URL provided: {}", url, e);
+    } catch (RestClientException e) {
+      log.warn("Failed to fetch resource from URL: {}", url, e);
     }
-    return fallback;
+    return null;
   }
 
   @Override

@@ -301,6 +301,7 @@ export class ProductDetailVersionActionComponent implements AfterViewInit {
         next: (response: HttpResponse<Blob>) => {
           if (response.body) {
             this.triggerDownload(response.body, fileName);
+            this.onUpdateInstallationCount();
           }
         },
         error: () => {
@@ -317,7 +318,7 @@ export class ProductDetailVersionActionComponent implements AfterViewInit {
     URL.revokeObjectURL(downloadUrl);
   }
 
-  onUpdateInstallationCountForDesigner(): void {
+  onUpdateInstallationCount(): void {
     setTimeout(() => {
       this.productService.sendRequestToGetInstallationCount(this.productId)
         .subscribe((data: number) => {
