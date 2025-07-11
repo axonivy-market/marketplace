@@ -38,13 +38,12 @@ export class ProductFeedbackComponent {
   private readonly clientHeight = signal(0);
   isBrowser: boolean;
 
-
   showToggle = computed(
     () => this.scrollHeight() > this.clientHeight() || this.feedback.isExpanded
   );
   languageService = inject(LanguageService);
 
-  constructor(@Inject(PLATFORM_ID) private platformId: Object) {
+  constructor(@Inject(PLATFORM_ID) private readonly platformId: Object) {
     this.isBrowser = isPlatformBrowser(this.platformId);
   }
 
@@ -56,7 +55,9 @@ export class ProductFeedbackComponent {
   }
 
   ngAfterViewInit() {
-    this.initializeResizeObserver();
+    if (this.isBrowser) {
+      this.initializeResizeObserver();
+    }
   }
 
   private initializeResizeObserver() {

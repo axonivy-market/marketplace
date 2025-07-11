@@ -1,9 +1,8 @@
-import { Component, Inject, inject, Input, PLATFORM_ID } from '@angular/core';
+import { Component, inject, Input } from '@angular/core';
 import { TranslateModule } from '@ngx-translate/core';
 import { LanguageService } from '../../../../core/services/language/language.service';
 import { Language } from '../../../../shared/enums/language.enum';
 import { ProductDetail } from '../../../../shared/models/product-detail.model';
-import { isPlatformBrowser } from '@angular/common';
 
 @Component({
   selector: 'app-product-detail-maven-content',

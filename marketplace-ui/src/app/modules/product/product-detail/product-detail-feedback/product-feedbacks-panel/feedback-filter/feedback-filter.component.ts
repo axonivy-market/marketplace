@@ -2,10 +2,8 @@ import {
   Component,
   computed,
   EventEmitter,
-  Inject,
   inject,
   Output,
-  PLATFORM_ID,
   Signal
 } from '@angular/core';
 import { TranslateModule } from '@ngx-translate/core';
@@ -17,7 +15,6 @@ import { CommonDropdownComponent } from '../../../../../../shared/components/com
 import { CommonUtils } from '../../../../../../shared/utils/common.utils';
 import { ItemDropdown } from '../../../../../../shared/models/item-dropdown.model';
 import { FeedbackSortType } from '../../../../../../shared/enums/feedback-sort-type';
-import { isPlatformBrowser } from '@angular/common';
 
 @Component({
   selector: 'app-feedback-filter',
@@ -30,14 +27,9 @@ export class FeedbackFilterComponent {
   feedbackSortTypes = FEEDBACK_SORT_TYPES;
 
   @Output() sortChange = new EventEmitter<string>();
-  isBrowser: boolean;
 
   productFeedbackService = inject(ProductFeedbackService);
   languageService = inject(LanguageService);
-
-  constructor(@Inject(PLATFORM_ID) private platformId: Object) {
-    this.isBrowser = isPlatformBrowser(this.platformId);
-  }
 
   selectedSortTypeLabel: Signal<string> = computed(() =>
     CommonUtils.getLabel(

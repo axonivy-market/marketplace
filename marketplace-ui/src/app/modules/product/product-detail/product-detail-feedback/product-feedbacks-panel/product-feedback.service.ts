@@ -6,10 +6,8 @@ import {
 } from '@angular/common/http';
 import {
   computed,
-  Inject,
   inject,
   Injectable,
-  PLATFORM_ID,
   signal,
   WritableSignal
 } from '@angular/core';
@@ -35,7 +33,6 @@ import { FeedbackStatus } from '../../../../../shared/enums/feedback-status.enum
 import { API_URI } from '../../../../../shared/constants/api.constant';
 import { LoadingComponentId } from '../../../../../shared/enums/loading-component-id';
 import { FeedbackApproval } from '../../../../../shared/models/feedback-approval.model';
-import { isPlatformBrowser } from '@angular/common';
 
 const FEEDBACK_API_URL = 'api/feedback';
 const SIZE = 8;
@@ -67,10 +64,6 @@ export class ProductFeedbackService {
   totalPages: WritableSignal<number> = signal(1);
   totalElements: WritableSignal<number> = signal(0);
   isBrowser: boolean;
-
-  constructor(@Inject(PLATFORM_ID) private platformId: Object) {
-    this.isBrowser = isPlatformBrowser(this.platformId);
-  }
 
   findProductFeedbacks(
     page: number = this.page(),
