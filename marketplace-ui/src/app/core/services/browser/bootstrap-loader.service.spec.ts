@@ -6,8 +6,6 @@ describe('BootstrapLoaderService', () => {
   let service: BootstrapLoaderService;
 
   describe('in browser platform', () => {
-    let importSpy: jasmine.Spy;
-
     beforeEach(() => {
       TestBed.configureTestingModule({
         providers: [
@@ -27,7 +25,6 @@ describe('BootstrapLoaderService', () => {
   });
 
   describe('in server platform', () => {
-    let importSpy: jasmine.Spy;
 
     beforeEach(() => {
       TestBed.configureTestingModule({
@@ -40,7 +37,7 @@ describe('BootstrapLoaderService', () => {
       service = TestBed.inject(BootstrapLoaderService);
     });
 
-    fit('should NOT call loadNgbModule() on server', async () => {
+    it('should NOT call loadNgbModule() on server', async () => {
       const spy = spyOn(service as any, 'loadNgbModule');
       await service.init();
       expect(spy).not.toHaveBeenCalled();
