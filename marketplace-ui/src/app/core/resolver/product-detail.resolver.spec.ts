@@ -120,19 +120,10 @@ describe('ProductDetailResolver', () => {
     routingQueryParamService = TestBed.inject(
       RoutingQueryParamService
     ) as jasmine.SpyObj<RoutingQueryParamService>;
-
-    // Default language setup
-    // languageService.selectedLanguage.and.returnValue('en');
   });
 
   describe('resolve', () => {
-    let mockRoute: ActivatedRouteSnapshot;
-
     beforeEach(() => {
-      //   mockRoute = {
-      //     params: { id: '123' }
-      //   } as ActivatedRouteSnapshot;
-
       spyOn(resolver, 'getProductDetailObservable').and.returnValue(
         of(MOCK_PRODUCT_DETAIL)
       );
@@ -239,8 +230,8 @@ describe('ProductDetailResolver', () => {
   });
 
   describe('updateOGTag', () => {
-    languageService.selectedLanguage.and.returnValue(Language.DE);
     it('should call meta.updateTag with correct parameters', () => {
+      languageService.selectedLanguage.and.returnValue(Language.DE);
       resolver.updateOGTag(
         OG_TITLE_KEY,
         MOCK_PRODUCT_DETAIL.names[languageService.selectedLanguage()]
