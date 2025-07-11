@@ -7,7 +7,11 @@ export class BootstrapLoaderService {
 
   async init(): Promise<void> {
     if (isPlatformBrowser(this.platformId)) {
-      await import('@ng-bootstrap/ng-bootstrap');
+      await this.loadNgbModule();
     }
+  }
+
+  protected async loadNgbModule(): Promise<any> {
+    return import('@ng-bootstrap/ng-bootstrap');
   }
 }
