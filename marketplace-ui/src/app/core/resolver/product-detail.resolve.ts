@@ -10,7 +10,6 @@ import { LoadingService } from '../services/loading/loading.service';
 import { ProductService } from '../../modules/product/product.service';
 import { RoutingQueryParamService } from '../../shared/services/routing.query.param.service';
 import { LoadingComponentId } from '../../shared/enums/loading-component-id';
-import { DisplayValue } from '../../shared/models/display-value.model';
 import { CommonUtils } from '../../shared/utils/common.utils';
 import {
   DEFAULT_VENDOR_IMAGE,
@@ -52,23 +51,28 @@ export class ProductDetailResolver implements Resolve<ProductDetail> {
 
   updateWebBrowserTitle(productDetail: ProductDetail): void {
     const productName = productDetail.names;
-    const productShortDescription = productDetail.shortDescriptions;
     if (productName !== undefined) {
       const title = productName[this.languageService.selectedLanguage()];
       this.titleService.setTitle(title);
-      this.meta.updateTag({ property: this.OG_TITLE_KEY, content: title });
+      this.updateOGTag(this.OG_TITLE_KEY, title);
     }
+    this.updateOGTags(productDetail);
+  }
+
+  updateOGTags(productDetail: ProductDetail) {
+    const productShortDescription = productDetail.shortDescriptions;
+    this.updateOGTag(
+      this.OG_DESCRIPTION_KEY,
+      productShortDescription[this.languageService.selectedLanguage()]
+    );
+    this.updateOGTag(this.OG_IMAGE_KEY, productDetail.logoUrl);
+    this.updateOGTag(this.OG_IMAGE_TYPE_KEY, this.OG_IMAGE_PNG_TYPE);
+  }
+
+  updateOGTag(metaOGkey: string, metaOGContent: string) {
     this.meta.updateTag({
-      property: this.OG_DESCRIPTION_KEY,
-      content: productShortDescription[this.languageService.selectedLanguage()]
-    });
-    this.meta.updateTag({
-      property: this.OG_IMAGE_KEY,
-      content: productDetail.logoUrl
-    });
-    this.meta.updateTag({
-      property: this.OG_IMAGE_TYPE_KEY,
-      content: this.OG_IMAGE_PNG_TYPE
+      property: metaOGkey,
+      content: metaOGContent
     });
   }
 
