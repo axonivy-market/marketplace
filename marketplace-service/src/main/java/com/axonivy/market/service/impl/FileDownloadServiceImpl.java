@@ -75,14 +75,28 @@ public class FileDownloadServiceImpl implements FileDownloadService {
 
   @Override
   public ResponseEntity<Resource> fetchResourceUrl(String url) {
-    if (authorizationUtils.isAllowedUrl(url)) {
+    if (authorizationUtils.isAllowedUrl(url) && isValidDomain(url)) {
       try {
         return restTemplate.exchange(url, HttpMethod.GET, null, Resource.class);
       } catch (RestClientException e) {
         log.warn("Failed to fetch resource from URL: {}", url, e);
       }
+    } else {
+      log.warn("Invalid or disallowed URL provided: {}", url);
     }
     return null;
+  }
+
+  private boolean isValidDomain(String url) {
+    List<String> allowedDomains = List.of("example.com", "trusted.com");
+    try {
+      URI uri = new URI(url);
+      String domain = uri.getHost();
+      return allowedDomains.contains(domain);
+    } catch (URISyntaxException e) {
+      log.warn("Malformed URL: {}", url, e);
+      return false;
+    }
   }
 
   @Override
