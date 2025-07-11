@@ -23,6 +23,8 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -88,7 +90,7 @@ public class FileDownloadServiceImpl implements FileDownloadService {
   }
 
   private boolean isValidDomain(String url) {
-    List<String> allowedDomains = List.of("example.com", "trusted.com");
+    List<String> allowedDomains = List.of("maven.axonivy.com");
     try {
       URI uri = new URI(url);
       String domain = uri.getHost();

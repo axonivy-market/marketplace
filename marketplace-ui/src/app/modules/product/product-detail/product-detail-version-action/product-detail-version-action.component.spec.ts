@@ -369,7 +369,7 @@ describe('ProductDetailVersionActionComponent', () => {
     productServiceMock.sendRequestToGetInstallationCount.and.returnValue(of(42));
     spyOn(component.installationCount, 'emit');
 
-    component.onUpdateInstallationCountForDesigner();
+    component.onUpdateInstallationCount();
     tick(1000);
 
     expect(productServiceMock.sendRequestToGetInstallationCount).toHaveBeenCalledWith(component.productId);
