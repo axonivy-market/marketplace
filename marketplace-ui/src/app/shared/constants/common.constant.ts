@@ -311,3 +311,10 @@ export const GITHUB_PULL_REQUEST_NUMBER_REGEX = /pull\/(\d+)/;
 
 export const TAB_PREFIX = 'tab-';
 export const UNESCAPE_GITHUB_CONTENT_REGEX = /\\([_*[\]()~`>#+=|{}.!-])/g;
+
+// Open Graph Meta Tags
+export const OG_TITLE_KEY = 'og:title';
+export const OG_DESCRIPTION_KEY = 'og:description';
+export const OG_IMAGE_KEY = 'og:image';
+export const OG_IMAGE_TYPE_KEY = 'og:image:type';
+export const OG_IMAGE_PNG_TYPE = 'image/png';

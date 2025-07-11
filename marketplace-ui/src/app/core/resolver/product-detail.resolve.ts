@@ -14,6 +14,11 @@ import { CommonUtils } from '../../shared/utils/common.utils';
 import {
   DEFAULT_VENDOR_IMAGE,
   DEFAULT_VENDOR_IMAGE_BLACK,
+  OG_DESCRIPTION_KEY,
+  OG_IMAGE_KEY,
+  OG_IMAGE_PNG_TYPE,
+  OG_IMAGE_TYPE_KEY,
+  OG_TITLE_KEY,
   SHOW_DEV_VERSION
 } from '../../shared/constants/common.constant';
 
@@ -30,12 +35,6 @@ export class ProductDetailResolver implements Resolve<ProductDetail> {
     private readonly routingQueryParamService: RoutingQueryParamService
   ) {}
 
-  OG_TITLE_KEY = 'og:title';
-  OG_DESCRIPTION_KEY = 'og:description';
-  OG_IMAGE_KEY = 'og:image';
-  OG_IMAGE_TYPE_KEY = 'og:image';
-  OG_IMAGE_PNG_TYPE = 'image/png';
-
   resolve(route: ActivatedRouteSnapshot): Observable<ProductDetail> {
     const productId = route.params['id'];
     this.productDetailService.productId.set(productId);
@@ -44,29 +43,25 @@ export class ProductDetailResolver implements Resolve<ProductDetail> {
     return this.getProductDetailObservable(productId).pipe(
       take(1),
       tap(productDetail => {
-        this.updateWebBrowserTitle(productDetail);
+        this.updateProductMetadata(productDetail);
       })
     );
   }
 
-  updateWebBrowserTitle(productDetail: ProductDetail): void {
+  updateProductMetadata(productDetail: ProductDetail): void {
     const productName = productDetail.names;
+    const productShortDescription = productDetail.shortDescriptions;
     if (productName !== undefined) {
       const title = productName[this.languageService.selectedLanguage()];
       this.titleService.setTitle(title);
-      this.updateOGTag(this.OG_TITLE_KEY, title);
+      this.updateOGTag(OG_TITLE_KEY, title);
     }
-    this.updateOGTags(productDetail);
-  }
-
-  updateOGTags(productDetail: ProductDetail) {
-    const productShortDescription = productDetail.shortDescriptions;
     this.updateOGTag(
-      this.OG_DESCRIPTION_KEY,
+      OG_DESCRIPTION_KEY,
       productShortDescription[this.languageService.selectedLanguage()]
     );
-    this.updateOGTag(this.OG_IMAGE_KEY, productDetail.logoUrl);
-    this.updateOGTag(this.OG_IMAGE_TYPE_KEY, this.OG_IMAGE_PNG_TYPE);
+    this.updateOGTag(OG_IMAGE_KEY, productDetail.logoUrl);
+    this.updateOGTag(OG_IMAGE_TYPE_KEY, OG_IMAGE_PNG_TYPE);
   }
 
   updateOGTag(metaOGkey: string, metaOGContent: string) {
