@@ -20,36 +20,15 @@ import { Language } from '../../shared/enums/language.enum';
 import { CommonUtils } from '../../shared/utils/common.utils';
 import {
   DEFAULT_VENDOR_IMAGE,
-  DEFAULT_VENDOR_IMAGE_BLACK
+  DEFAULT_VENDOR_IMAGE_BLACK,
+  OG_DESCRIPTION_KEY,
+  OG_IMAGE_KEY,
+  OG_IMAGE_PNG_TYPE,
+  OG_IMAGE_TYPE_KEY,
+  OG_TITLE_KEY
 } from '../../shared/constants/common.constant';
 
-// Mock constants
-const SHOW_DEV_VERSION = 'showDevVersion';
-// const DEFAULT_VENDOR_IMAGE_BLACK = 'assets/default-vendor-black.png';
-// const DEFAULT_VENDOR_IMAGE = 'assets/default-vendor.png';
-const OG_TITLE_KEY = 'og:title';
-const OG_DESCRIPTION_KEY = 'og:description';
-const OG_IMAGE_KEY = 'og:image';
-const OG_IMAGE_TYPE_KEY = 'og:image:type';
-const OG_IMAGE_PNG_TYPE = 'image/png';
-
 const products = MOCK_PRODUCTS._embedded.products;
-
-// Mock ProductDetail
-// const mockProductDetail: ProductDetail = {
-//   id: '123',
-//   names: {
-//     en: 'Test Product',
-//     fr: 'Produit Test'
-//   },
-//   shortDescriptions: {
-//     en: 'Test short description',
-//     fr: 'Description courte test'
-//   },
-//   logoUrl: 'https://example.com/logo.png',
-//   vendorImage: 'https://example.com/vendor.png',
-//   vendorImageDarkMode: 'https://example.com/vendor-dark.png'
-// };
 
 describe('ProductDetailResolver', () => {
   let resolver: ProductDetailResolver;
@@ -232,18 +211,6 @@ describe('ProductDetailResolver', () => {
       );
     });
 
-    // it('should use correct language for title', () => {
-    //   languageService.selectedLanguage.and.returnValue(Language.DE);
-
-    //   resolver.updateProductMetadata(MOCK_PRODUCT_DETAIL);
-
-    //   expect(titleService.setTitle).toHaveBeenCalledWith('Produit Test');
-    //   expect(resolver.updateOGTag).toHaveBeenCalledWith(
-    //     OG_TITLE_KEY,
-    //     'Produit Test'
-    //   );
-    // });
-
     it('should update OG description', () => {
       languageService.selectedLanguage.and.returnValue(Language.DE);
 
@@ -293,16 +260,6 @@ describe('ProductDetailResolver', () => {
         of(MOCK_PRODUCT_DETAIL)
       );
     });
-
-    // it('should get cookie value for dev version', () => {
-    //   resolver.getProductDetailObservable(products[0].id);
-
-    //   expect(CommonUtils.getCookieValue).toHaveBeenCalledWith(
-    //     cookieService,
-    //     SHOW_DEV_VERSION,
-    //     false
-    //   );
-    // });
 
     it('should call getProductById with correct parameters', () => {
       (CommonUtils.getCookieValue as jasmine.Spy).and.returnValue(true);
@@ -356,20 +313,6 @@ describe('ProductDetailResolver', () => {
       ).toHaveBeenCalledWith(products[0].id, targetVersion);
       expect(productService.getProductDetails).not.toHaveBeenCalled();
     });
-
-    // fit('should apply setDefaultVendorImage transformation', () => {
-    //   const targetVersion = '1.0';
-    //   routingQueryParamService.getDesignerVersionFromSessionStorage.and.returnValue(
-    //     targetVersion
-    //   );
-    //   productService.getProductDetails.and.returnValue(of(MOCK_PRODUCT_DETAIL));
-
-    //   resolver.getProductById(products[0].id, false).subscribe();
-
-    //   expect(resolver.setDefaultVendorImage).toHaveBeenCalledWith(
-    //     MOCK_PRODUCT_DETAIL
-    //   );
-    // });
 
     it('should apply setDefaultVendorImage transformation', () => {
       const targetVersion = '1.0';
@@ -455,24 +398,5 @@ describe('ProductDetailResolver', () => {
         MOCK_PRODUCT_DETAIL.vendorImageDarkMode
       );
     });
-
-    // it('should not mutate original object', () => {
-    //   const originalProductDetail = {
-    //     ...mockProductDetail,
-    //     vendorImage: undefined,
-    //     vendorImageDarkMode: undefined
-    //   };
-    //   const originalVendorImage = originalProductDetail.vendorImage;
-    //   const originalVendorImageDarkMode =
-    //     originalProductDetail.vendorImageDarkMode;
-
-    //   resolver['setDefaultVendorImage'](originalProductDetail);
-
-    //   expect(originalProductDetail.vendorImage).toBe(originalVendorImage);
-    //   expect(originalProductDetail.vendorImageDarkMode).toBe(
-    //     originalVendorImageDarkMode
-    //   );
-    // });
-    //   });
   });
 });
