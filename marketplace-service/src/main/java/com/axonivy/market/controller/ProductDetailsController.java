@@ -212,14 +212,14 @@ public class ProductDetailsController {
       description = "Return the download url of artifact from version and id")
   public ResponseEntity<StreamingResponseBody> downloadZipArtifact(
       @PathVariable(value = ID) @Parameter(in = ParameterIn.PATH, example = "demos") String id,
-      @RequestParam(value = VERSION) @Parameter(in = ParameterIn.QUERY, example = "10.0") String version,
-      @RequestParam(value = ARTIFACT) @Parameter(in = ParameterIn.QUERY, example = "demos-app") String artifactId) {
+      @PathVariable(value = VERSION) @Parameter(in = ParameterIn.QUERY, example = "10.0") String version,
+      @PathVariable(value = ARTIFACT_ID) @Parameter(in = ParameterIn.QUERY, example = "demos-app") String artifactId) {
     List<String> dependencyUrls = productContentService.getDependencyUrls(id, artifactId, version);
     if (CollectionUtils.isEmpty(dependencyUrls)) {
       return ResponseEntity.notFound().build();
     }
-    StreamingResponseBody streamingBody = outputStream -> FileUtils.buildArtifactStreamFromArtifactUrls(dependencyUrls,
-        outputStream);
+    StreamingResponseBody streamingBody = outputStream -> productContentService.buildArtifactZipStreamFromUrls(id,
+        dependencyUrls, outputStream);
     return ResponseEntity.ok().header(HttpHeaders.CONTENT_DISPOSITION, "attachment").contentType(
         MediaType.APPLICATION_OCTET_STREAM).body(streamingBody);
   }

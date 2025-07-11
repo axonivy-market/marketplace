@@ -14,6 +14,8 @@ import com.axonivy.market.service.FileDownloadService;
 import com.axonivy.market.service.ImageService;
 import com.axonivy.market.service.ProductContentService;
 import com.axonivy.market.service.ProductJsonContentService;
+import com.axonivy.market.service.ProductMarketplaceDataService;
+import com.axonivy.market.util.FileUtils;
 import com.axonivy.market.util.MavenUtils;
 import com.axonivy.market.util.ProductContentUtils;
 import lombok.RequiredArgsConstructor;
@@ -21,8 +23,10 @@ import lombok.extern.log4j.Log4j2;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -36,11 +40,11 @@ import java.util.stream.Stream;
 @Service
 @RequiredArgsConstructor
 public class ProductContentServiceImpl implements ProductContentService {
-  private static final String DEPLOY_YAML_FILE_NAME = "deploy.options.yaml";
   private final FileDownloadService fileDownloadService;
   private final ProductJsonContentService productJsonContentService;
   private final ImageService imageService;
   private final ProductDependencyRepository productDependencyRepository;
+  private final ProductMarketplaceDataService productMarketplaceDataService;
 
   @Override
   public ProductModuleContent getReadmeAndProductContentsFromVersion(String productId, String version, String url,
@@ -131,5 +135,13 @@ public class ProductContentServiceImpl implements ProductContentService {
     return Stream.concat(productDependencies.stream().map(ProductDependency::getDownloadUrl),
         productDependencies.stream().flatMap(product -> product.getDependencies().stream()).map(
             ProductDependency::getDownloadUrl)).toList();
+  }
+
+  @Override
+  public void buildArtifactZipStreamFromUrls(String productId, List<String> urls, OutputStream out) {
+    FileUtils.buildArtifactStreamFromArtifactUrls(urls, out);
+    if (((ByteArrayOutputStream) out).size() != 0) {
+    productMarketplaceDataService.updateProductInstallationCount(productId);
+    }
   }
 }

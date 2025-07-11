@@ -43,12 +43,11 @@ import { HttpClient, HttpParams, HttpResponse } from '@angular/common/http';
 import { finalize } from 'rxjs/operators';
 
 const showDevVersionCookieName = 'showDevVersions';
-const ARTIFACT_ZIP_URL = 'artifact/zip-file';
-const VERSION_DOWNLOAD = 'version-download';
+const ARTIFACT_ZIP_DOWNLOAD = 'download/zip-file';
+const ARTIFACT_DOWNLOAD = 'download';
 const HTTP = 'http';
 const DOC = '-doc';
 const ZIP = '.zip';
-const APPLICATION_OCTET_STREAM = 'application/octet-stream';
 const ANCHOR_ELEMENT = 'a';
 const DELAY_TIMEOUT = 500;
 const BLOB = 'blob';
@@ -266,19 +265,15 @@ export class ProductDetailVersionActionComponent implements AfterViewInit {
   downloadArtifact(): void {
     let downloadUrl = '';
     this.isDownloading.set(true);
+    const version = this.selectedVersion().replace(VERSION.displayPrefix, '');
     if (!this.isCheckedAppForEngine || this.selectedArtifactId?.endsWith(DOC) || this.selectedArtifact?.endsWith(ZIP)) {
-      const params = new HttpParams().set('url', this.selectedArtifact ?? '');
-      downloadUrl = `${this.getMarketplaceServiceUrl()}/${API_URI.PRODUCT_MARKETPLACE_DATA}/${VERSION_DOWNLOAD}/${this.productId}?${params.toString()}`;
+      console.warn(this.selectedArtifactId);
+      downloadUrl = `${this.getMarketplaceServiceUrl()}/${API_URI.PRODUCT_MARKETPLACE_DATA}/${ARTIFACT_DOWNLOAD}/${this.productId}/${this.selectedArtifactId}/${version}`;
       if (this.selectedArtifact) {
         this.fetchAndDownloadArtifact(downloadUrl, this.selectedArtifact.substring(this.selectedArtifact.lastIndexOf('/') + 1));
       }
     } else if (this.isCheckedAppForEngine) {
-      const version = this.selectedVersion().replace(VERSION.displayPrefix, '');
-      const params = new HttpParams()
-        .set(ROUTER.VERSION, version)
-        .set(ROUTER.ARTIFACT, this.selectedArtifactId ?? '');
-
-      downloadUrl = `${this.getMarketplaceServiceUrl()}/${API_URI.PRODUCT_DETAILS}/${this.productId}/${ARTIFACT_ZIP_URL}?${params.toString()}`;
+      downloadUrl = `${this.getMarketplaceServiceUrl()}/${API_URI.PRODUCT_DETAILS}/${ARTIFACT_ZIP_DOWNLOAD}/${this.productId}/${this.selectedArtifactId}/${version}`;
       this.fetchAndDownloadArtifact(downloadUrl, `${this.selectedArtifactId}-app-${version}.zip`);
     } else {
       return;
@@ -294,6 +289,7 @@ export class ProductDetailVersionActionComponent implements AfterViewInit {
   }
 
   fetchAndDownloadArtifact(url: string, fileName: string): void {
+    console.warn(url);
     this.httpClient
       .get(url, {responseType: BLOB, observe: RESPONSE})
       .pipe(finalize(() => this.isDownloading.set(false)))
