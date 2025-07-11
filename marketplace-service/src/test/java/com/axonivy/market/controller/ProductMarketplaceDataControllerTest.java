@@ -52,7 +52,8 @@ class ProductMarketplaceDataControllerTest extends BaseSetup {
   void testExtractArtifactUrlReturnBadGateWay() {
     when(productMarketplaceDataService.fetchResourceUrl(MOCK_DOWNLOAD_URL)).thenReturn(null);
     var result = productMarketplaceDataController.extractArtifactUrl(MOCK_PRODUCT_ID, MOCK_DOWNLOAD_URL);
-    assertEquals(HttpStatus.BAD_GATEWAY, result.getStatusCode(), "Status code show return bad gateway when it can " + "not forwarding the download stream");
+    assertEquals(HttpStatus.NOT_FOUND, result.getStatusCode(), "Status code show return bad gateway when it can " + "not " +
+        "forwarding the download stream");
     assertNull(result.getBody());
   }
 

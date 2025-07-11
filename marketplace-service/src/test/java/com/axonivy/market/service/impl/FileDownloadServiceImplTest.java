@@ -14,7 +14,9 @@ import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.core.io.Resource;
+import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.client.RestTemplate;
 
 import java.io.File;
 import java.io.IOException;
@@ -22,6 +24,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.stream.Stream;
+
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
@@ -35,6 +38,8 @@ class FileDownloadServiceImplTest extends BaseSetup {
   private FileDownloadServiceImpl fileDownloadService;
   @Mock
   private AuthorizationUtils authorizationUtils;
+  @Mock
+  private RestTemplate restTemplate;
 
   @Test
   void testDownloadAndUnzipFileWithEmptyResult() throws IOException {
@@ -44,31 +49,15 @@ class FileDownloadServiceImplTest extends BaseSetup {
 
   @Test
   void testDownloadAndUnzipFileWithIssue() {
-      when(authorizationUtils.resolveTrustedUrl(DOWNLOAD_URL))
-          .thenThrow(new IllegalArgumentException("Invalid URL"));
 
-      byte[] result = fileDownloadService.downloadFile(DOWNLOAD_URL);
+    byte[] result = fileDownloadService.downloadFile(DOWNLOAD_URL);
 
-      assertArrayEquals("".getBytes(), result, "Expected empty byte array when URL is invalid");
-      verify(authorizationUtils).resolveTrustedUrl(DOWNLOAD_URL);
-    }
-
-    @Test
-    void testDownloadFileSuccess() {
-      byte[] expectedContent = "test content".getBytes();
-      when(authorizationUtils.resolveTrustedUrl(DOWNLOAD_URL)).thenReturn(DOWNLOAD_URL);
-      try (MockedStatic<HttpFetchingUtils> mockedStatic = Mockito.mockStatic(HttpFetchingUtils.class)) {
-        mockedStatic.when(() -> HttpFetchingUtils.getFileAsBytes(DOWNLOAD_URL)).thenReturn(expectedContent);
-        byte[] result = fileDownloadService.downloadFile(DOWNLOAD_URL);
-        assertArrayEquals(expectedContent, result);
-      }
-    }
+    assertArrayEquals("".getBytes(), result, "Expected empty byte array when URL is invalid");
+    verify(authorizationUtils).isAllowedUrl(DOWNLOAD_URL);
+  }
 
   @Test
   void testDownloadFileUnsafeUrl() {
-    when(authorizationUtils.resolveTrustedUrl(DOWNLOAD_URL))
-        .thenThrow(new IllegalArgumentException("Unsafe URL"));
-
     byte[] result = fileDownloadService.downloadFile(DOWNLOAD_URL);
     assertArrayEquals(StringUtils.EMPTY.getBytes(), result, "Output should be empty if occurring error.");
   }
@@ -187,6 +176,7 @@ class FileDownloadServiceImplTest extends BaseSetup {
       mockedFiles.verify(() -> Files.delete(mockTempPath), times(1));
     }
   }
+
   @Test
   void testDownloadAndUnzipFileWithNullFileContent() throws IOException {
     FileDownloadServiceImpl spyService = Mockito.spy(fileDownloadService);
@@ -209,49 +199,42 @@ class FileDownloadServiceImplTest extends BaseSetup {
       mockedFiles.verify(() -> Files.write(any(Path.class), any(byte[].class)), never());
     }
   }
+
   @Test
   void testDownloadFile() {
-    when(authorizationUtils.resolveTrustedUrl(MOCK_DOWNLOAD_URL)).thenReturn(MOCK_DOWNLOAD_URL);
-    try (MockedStatic<HttpFetchingUtils> mockedStatic = Mockito.mockStatic(HttpFetchingUtils.class)) {
-      mockedStatic.when(() -> HttpFetchingUtils.getFileAsBytes(MOCK_DOWNLOAD_URL))
-              .thenReturn(getMockBytes());
-      byte[] result = fileDownloadService.downloadFile(MOCK_DOWNLOAD_URL);
-      assertArrayEquals(getMockBytes(), result, "Content of file download should be the same with original file.");
-      verify(authorizationUtils).resolveTrustedUrl(MOCK_DOWNLOAD_URL);
-      mockedStatic.verify(() -> HttpFetchingUtils.getFileAsBytes(MOCK_DOWNLOAD_URL));
-    }
+    when(authorizationUtils.isAllowedUrl(MOCK_DOWNLOAD_URL)).thenReturn(true);
+    when(restTemplate.getForObject(MOCK_DOWNLOAD_URL, byte[].class)).thenReturn(getMockBytes());
+    byte[] result = fileDownloadService.downloadFile(MOCK_DOWNLOAD_URL);
+    assertArrayEquals(getMockBytes(), result, "Content of file download should be the same with original file.");
+    verify(authorizationUtils).isAllowedUrl(MOCK_DOWNLOAD_URL);
   }
 
   @Test
   void testDownloadFileWithUnsafeUrl() {
-    when(authorizationUtils.resolveTrustedUrl(MOCK_DOWNLOAD_URL)).thenThrow(new IllegalArgumentException("unsafe"));
     byte[] result = fileDownloadService.downloadFile(MOCK_DOWNLOAD_URL);
-    assertArrayEquals(StringUtils.EMPTY.getBytes(), result,"Content of file download will be empty with invalid url");
-    verify(authorizationUtils).resolveTrustedUrl(MOCK_DOWNLOAD_URL);
+    assertArrayEquals(StringUtils.EMPTY.getBytes(), result, "Content of file download will be empty with invalid url");
+    verify(authorizationUtils).isAllowedUrl(MOCK_DOWNLOAD_URL);
   }
 
   @Test
   void testGetFileAsString() {
-    when(authorizationUtils.resolveTrustedUrl(MOCK_DOWNLOAD_URL)).thenReturn(MOCK_DOWNLOAD_URL);
-    try (MockedStatic<HttpFetchingUtils> mockedStatic = Mockito.mockStatic(HttpFetchingUtils.class)) {
-      mockedStatic.when(() -> HttpFetchingUtils.getFileAsString(MOCK_DOWNLOAD_URL)).thenReturn(MOCK_PRODUCT_NAME);
-      String result = fileDownloadService.getFileAsString(MOCK_DOWNLOAD_URL);
-      assertEquals(MOCK_PRODUCT_NAME, result, "Content of file download should be the same with original file.");
-      verify(authorizationUtils).resolveTrustedUrl(MOCK_DOWNLOAD_URL);
-      mockedStatic.verify(() -> HttpFetchingUtils.getFileAsString(MOCK_DOWNLOAD_URL));
-    }
+    when(authorizationUtils.isAllowedUrl(MOCK_DOWNLOAD_URL)).thenReturn(true);
+    when(restTemplate.getForObject(MOCK_DOWNLOAD_URL, String.class)).thenReturn(MOCK_PRODUCT_NAME);
+    String result = fileDownloadService.getFileAsString(MOCK_DOWNLOAD_URL);
+    assertEquals(MOCK_PRODUCT_NAME, result, "Content of file download should be the same with original file.");
+    verify(authorizationUtils).isAllowedUrl(MOCK_DOWNLOAD_URL);
+    verify(restTemplate).getForObject(MOCK_DOWNLOAD_URL, String.class);
+
   }
 
   @Test
   void testFetchResourceUrl() {
-    when(authorizationUtils.resolveTrustedUrl(MOCK_DOWNLOAD_URL)).thenReturn(MOCK_DOWNLOAD_URL);
+    when(authorizationUtils.isAllowedUrl(MOCK_DOWNLOAD_URL)).thenReturn(true);
     ResponseEntity<Resource> mockedResponse = ResponseEntity.ok(mock(Resource.class));
-    try (MockedStatic<HttpFetchingUtils> mockedStatic = Mockito.mockStatic(HttpFetchingUtils.class)) {
-      mockedStatic.when(() -> HttpFetchingUtils.fetchResourceUrl(MOCK_DOWNLOAD_URL)).thenReturn(mockedResponse);
-      ResponseEntity<Resource> result = fileDownloadService.fetchResourceUrl(MOCK_DOWNLOAD_URL);
-      assertEquals(mockedResponse, result,"Content of stream should be the same with original stream.");
-      verify(authorizationUtils).resolveTrustedUrl(MOCK_DOWNLOAD_URL);
-      mockedStatic.verify(() -> HttpFetchingUtils.fetchResourceUrl(MOCK_DOWNLOAD_URL));
-    }
+    when(restTemplate.exchange(MOCK_DOWNLOAD_URL, HttpMethod.GET, null, Resource.class)).thenReturn(mockedResponse);
+    ResponseEntity<Resource> result = fileDownloadService.fetchResourceUrl(MOCK_DOWNLOAD_URL);
+    assertEquals(mockedResponse, result, "Content of stream should be the same with original stream.");
+    verify(authorizationUtils).isAllowedUrl(MOCK_DOWNLOAD_URL);
+    verify(restTemplate).exchange(MOCK_DOWNLOAD_URL, HttpMethod.GET, null, Resource.class);
   }
 }
