@@ -11,7 +11,7 @@ export class BootstrapLoaderService {
     }
   }
 
-  protected async loadNgbModule(): Promise<any> {
+  protected async loadNgbModule() {
     return import('@ng-bootstrap/ng-bootstrap');
   }
 }
