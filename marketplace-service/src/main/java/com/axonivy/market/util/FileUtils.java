@@ -2,6 +2,7 @@ package com.axonivy.market.util;
 
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.core.io.Resource;
 import org.springframework.http.ResponseEntity;
@@ -23,6 +24,7 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 import java.util.zip.ZipOutputStream;
 
+@Slf4j
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class FileUtils {
   public static final int DEFAULT_BUFFER_SIZE = 8192;
@@ -117,7 +119,7 @@ public class FileUtils {
     try (var zipOut = new ZipOutputStream(outputStream)) {
       for (String fileUrl : urls) {
         ResponseEntity<Resource> resourceResponse = HttpFetchingUtils.fetchResourceUrl(fileUrl);
-        if (!resourceResponse.getStatusCode().is2xxSuccessful() || resourceResponse.getBody() == null) {
+        if (null == resourceResponse || !resourceResponse.getStatusCode().is2xxSuccessful() || resourceResponse.getBody() == null) {
           continue;
         }
         String fileName = HttpFetchingUtils.extractFileNameFromUrl(fileUrl);
