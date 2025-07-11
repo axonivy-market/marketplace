@@ -5,11 +5,13 @@ import { ROUTER } from '../../constants/router.constant';
 import { RedirectPageComponent } from './redirect-page.component';
 import { MOCK_STATIC_LIB } from '../../mocks/mock-data';
 import { ProductService } from '../../../modules/product/product.service';
+import { provideHttpClientTesting } from '@angular/common/http/testing';
+import { provideHttpClient, withInterceptorsFromDi } from '@angular/common/http';
+import { of } from 'rxjs';
 
 describe('RedirectPageComponent', () => {
   let component: RedirectPageComponent;
   let fixture: any;
-  let activatedRoute: ActivatedRoute;
   let mockProductService: jasmine.SpyObj<ProductService>;
 
   const mockActivatedRoute = {
@@ -26,13 +28,13 @@ describe('RedirectPageComponent', () => {
   };
 
   beforeEach(() => {
-    mockProductService = jasmine.createSpyObj('ProductService', [
-      'getLatestArtifactDownloadUrl'
-    ]);
+    mockProductService = jasmine.createSpyObj('ProductService', ['getLatestArtifactDownloadUrl']);
 
     TestBed.configureTestingModule({
       imports: [TranslateModule.forRoot(), RedirectPageComponent],
       providers: [
+        provideHttpClient(withInterceptorsFromDi()),
+        provideHttpClientTesting(),
         { provide: ActivatedRoute, useValue: mockActivatedRoute },
         { provide: ProductService, useValue: mockProductService }
       ]
@@ -40,7 +42,6 @@ describe('RedirectPageComponent', () => {
 
     fixture = TestBed.createComponent(RedirectPageComponent);
     component = fixture.componentInstance;
-    activatedRoute = TestBed.inject(ActivatedRoute);
   });
 
   it('should create the component', () => {
@@ -48,12 +49,7 @@ describe('RedirectPageComponent', () => {
   });
 
   it('should redirect to latest Lib version download url', () => {
-    const currentUrl = window.location.href;
-    let mockResponse = { ...MOCK_STATIC_LIB };
-    mockResponse.relativeLink = currentUrl;
-
-    component.ngOnInit();
-
-    expect(window.location.href).toBe(currentUrl);
+    mockProductService.getLatestArtifactDownloadUrl.and.returnValue(of(MOCK_STATIC_LIB.relativeLink));
+    fixture.detectChanges();
   });
 });

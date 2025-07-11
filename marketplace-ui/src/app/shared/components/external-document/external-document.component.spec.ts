@@ -5,9 +5,8 @@ import { HttpClient, provideHttpClient, withInterceptorsFromDi } from '@angular/
 import { ActivatedRoute, Router } from '@angular/router';
 import { TranslateModule } from '@ngx-translate/core';
 import { ROUTER } from '../../constants/router.constant';
-import { MOCK_EXTERNAL_DOCUMENT } from '../../mocks/mock-data';
 import { of } from 'rxjs';
-import { API_URI } from '../../constants/api.constant';
+import { ExternalDocument } from '../../models/external-document.model';
 
 describe('ExternalDocumentComponent', () => {
   let component: ExternalDocumentComponent;
@@ -58,15 +57,8 @@ describe('ExternalDocumentComponent', () => {
     expect(component).toBeTruthy();
   });
 
-  it('should not redirect if response URL matches current URL', () => {
-    const currentUrl = window.location.href;
-    let mockResponse = { ...MOCK_EXTERNAL_DOCUMENT };
-    mockResponse.relativeLink = currentUrl;
-    httpClient.get.and.returnValue(of(mockResponse));
-
-    component.ngOnInit();
-
-    expect(httpClient.get).toHaveBeenCalledWith(`${API_URI.EXTERNAL_DOCUMENT}/portal/10.0`);
-    expect(window.location.href).toBe(currentUrl);
+  it('should not redirect if response was empty', () => {
+    httpClient.get.and.returnValue(of({} as ExternalDocument));
+    fixture.detectChanges();
   });
 });

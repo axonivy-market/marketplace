@@ -28,12 +28,12 @@ export class ExternalDocumentComponent implements OnInit {
   ) { }
 
   ngOnInit(): void {
-    this.translateService.get('common.labels.loading').subscribe(value => this.messageDetail = value);
+    this.translateService.get('common.labels.loading').subscribe(text => this.messageDetail = text);
     this.product = this.activedRoute.snapshot.paramMap.get(ROUTER.ID) ?? '';
     this.version = this.activedRoute.snapshot.paramMap.get(ROUTER.VERSION) ?? '';
     this.translateService.get('common.externalDocument.pageHeader',
       { product: this.product, version: this.version })
-      .subscribe(value => this.messageTitle = value);
+      .subscribe(text => this.messageTitle = text);
     const isRedirected = this.activedRoute.snapshot.queryParamMap.get(ROUTER.REDIRECTED);
     if (isRedirected === 'true') {
       return;
@@ -50,7 +50,7 @@ export class ExternalDocumentComponent implements OnInit {
 
   handleRedirection(response: ExternalDocument): void {
     if (response === null || response.relativeLink === '') {
-      this.translateService.get('common.externalDocument.helpText').subscribe(value => this.messageDetail = value);
+      this.translateService.get('common.externalDocument.helpText').subscribe(text => this.messageDetail = text);
       return;
     }
     const currentUrl = this.router.url;
