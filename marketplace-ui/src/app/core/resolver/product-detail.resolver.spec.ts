@@ -271,16 +271,20 @@ describe('ProductDetailResolver', () => {
     });
   });
 
-  //   describe('updateOGTag', () => {
-  //     it('should call meta.updateTag with correct parameters', () => {
-  //       resolver.updateOGTag('og:title', 'Test Title');
+  describe('updateOGTag', () => {
+    languageService.selectedLanguage.and.returnValue(Language.DE);
+    it('should call meta.updateTag with correct parameters', () => {
+      resolver.updateOGTag(
+        OG_TITLE_KEY,
+        MOCK_PRODUCT_DETAIL.names[languageService.selectedLanguage()]
+      );
 
-  //       expect(meta.updateTag).toHaveBeenCalledWith({
-  //         property: 'og:title',
-  //         content: 'Test Title'
-  //       });
-  //     });
-  //   });
+      expect(meta.updateTag).toHaveBeenCalledWith({
+        property: OG_TITLE_KEY,
+        content: MOCK_PRODUCT_DETAIL.names[languageService.selectedLanguage()]
+      });
+    });
+  });
 
   describe('getProductDetailObservable', () => {
     beforeEach(() => {
