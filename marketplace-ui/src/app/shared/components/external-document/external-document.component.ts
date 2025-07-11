@@ -17,10 +17,10 @@ const REDIRECTED_KEY = 'redirected';
 export class ExternalDocumentComponent implements OnInit {
   httpClient = inject(HttpClient);
   translateService = inject(TranslateService);
-  messageTitle: string = '';
-  messageDetail: string = '';
-  product: string = '';
-  version: string = '';
+  messageTitle = '';
+  messageDetail = '';
+  product = '';
+  version = '';
 
   constructor(
     private readonly activedRoute: ActivatedRoute,
