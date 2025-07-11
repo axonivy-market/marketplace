@@ -166,10 +166,4 @@ class ProductMarketplaceDataServiceImplTest extends BaseSetup {
         getMockResource(), new ByteArrayOutputStream());
     assertNotNull(result);
   }
-
-  @Test
-  void testFetchResourceUrl() {
-    productMarketplaceDataService.fetchResourceUrl(MOCK_DOWNLOAD_URL);
-    verify(fileDownloadService).fetchResourceUrl(MOCK_DOWNLOAD_URL);
-  }
 }

@@ -3,8 +3,6 @@ package com.axonivy.market.service.impl;
 import com.axonivy.market.bo.DownloadOption;
 import com.axonivy.market.service.FileDownloadService;
 import com.axonivy.market.util.FileUtils;
-import com.axonivy.market.util.HttpFetchingUtils;
-import com.axonivy.market.util.validator.AuthorizationUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.lang3.ObjectUtils;
@@ -23,8 +21,6 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.URI;
-import java.net.URISyntaxException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -32,7 +28,6 @@ import java.nio.file.attribute.FileAttribute;
 import java.nio.file.attribute.PosixFilePermission;
 import java.nio.file.attribute.PosixFilePermissions;
 import java.util.*;
-import java.util.function.Function;
 import java.util.stream.Stream;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
@@ -49,56 +44,46 @@ public class FileDownloadServiceImpl implements FileDownloadService {
   private static final Set<PosixFilePermission> PERMS = EnumSet.allOf(PosixFilePermission.class);
   private static final int THRESHOLD_SIZE = 1000000000;
   private static final String IAR = "iar";
-  private final AuthorizationUtils authorizationUtils;
   private final RestTemplate restTemplate;
 
   @Override
   public byte[] downloadFile(String url) {
-    return fetchFile(url, byte[].class, new byte[0]);
+    return fetchUrlData(url, byte[].class);
   }
 
   @Override
   public String getFileAsString(String url) {
-    return fetchFile(url, String.class, EMPTY);
+    return fetchUrlData(url, String.class);
   }
 
-  private <T> T fetchFile(String url, Class<T> responseType, T fallback) {
-    if (authorizationUtils.isAllowedUrl(url)) {
-      try {
-        return restTemplate.getForObject(url, responseType);
-      } catch (RestClientException e) {
-        log.warn("Unsafe or disallowed URL provided: {}", url, e);
-      }
-    } else {
-      log.warn("Failed to fetch resource from URL: {}", url);
+  private <T> T getDefaultValueOfClass(Class<T> responseType) {
+    if (responseType == String.class) {
+      return responseType.cast(EMPTY);
+    }
+    if (responseType == byte[].class) {
+      return responseType.cast(new byte[0]);
+    }
+    return null;
+  }
+
+  private <T> T fetchUrlData(String url, Class<T> responseType) {
+    var fallback = getDefaultValueOfClass(responseType);
+    try {
+      return restTemplate.getForObject(url, responseType);
+    } catch (RestClientException e) {
+      log.warn("Failed to fetch resource from URL: {}", url, e);
     }
     return fallback;
   }
 
   @Override
-  public ResponseEntity<Resource> fetchResourceUrl(String url) {
-    if (authorizationUtils.isAllowedUrl(url) && isValidDomain(url)) {
+  public ResponseEntity<Resource> fetchUrlResource(String url) {
       try {
         return restTemplate.exchange(url, HttpMethod.GET, null, Resource.class);
       } catch (RestClientException e) {
         log.warn("Failed to fetch resource from URL: {}", url, e);
-      }
-    } else {
-      log.warn("Invalid or disallowed URL provided: {}", url);
     }
     return null;
-  }
-
-  private boolean isValidDomain(String url) {
-    List<String> allowedDomains = List.of("maven.axonivy.com");
-    try {
-      URI uri = new URI(url);
-      String domain = uri.getHost();
-      return allowedDomains.contains(domain);
-    } catch (URISyntaxException e) {
-      log.warn("Malformed URL: {}", url, e);
-      return false;
-    }
   }
 
   @Override

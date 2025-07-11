@@ -6,6 +6,7 @@ import com.axonivy.market.enums.ErrorCode;
 import com.axonivy.market.enums.SortOption;
 import com.axonivy.market.exceptions.model.NotFoundException;
 import com.axonivy.market.model.ProductCustomSortRequest;
+import com.axonivy.market.repository.MavenArtifactVersionRepository;
 import com.axonivy.market.repository.ProductCustomSortRepository;
 import com.axonivy.market.repository.ProductDesignerInstallationRepository;
 import com.axonivy.market.repository.ProductMarketplaceDataRepository;
@@ -23,6 +24,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.Resource;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.util.CollectionUtils;
 
 import java.io.IOException;
 import java.io.OutputStream;
@@ -40,6 +42,7 @@ import java.util.Map;
 public class ProductMarketplaceDataServiceImpl implements ProductMarketplaceDataService {
   private final ProductMarketplaceDataRepository productMarketplaceDataRepo;
   private final ProductCustomSortRepository productCustomSortRepo;
+  private final MavenArtifactVersionRepository mavenArtifactVersionRepo;
   private final ProductRepository productRepo;
   private final ProductDesignerInstallationRepository productDesignerInstallationRepo;
   private final FileDownloadService fileDownloadService;
@@ -131,6 +134,16 @@ public class ProductMarketplaceDataServiceImpl implements ProductMarketplaceData
         .orElse(0);
   }
 
+  @Override
+  public ResponseEntity<Resource> getProductArtifactStream(String productId, String artifactId, String version) {
+    var mavenArtifactVersions = mavenArtifactVersionRepo.findByProductIdAndArtifactIdAndVersion(productId,artifactId,version);
+    if(CollectionUtils.isEmpty(mavenArtifactVersions)) {
+      return null;
+    }
+    String downloadUrl = mavenArtifactVersions.get(0).getDownloadUrl();
+    return fileDownloadService.fetchUrlResource(downloadUrl);
+  }
+
   private void validateProductExists(String productId) throws NotFoundException {
     if (productRepo.findById(productId).isEmpty()) {
       throw new NotFoundException(ErrorCode.PRODUCT_NOT_FOUND, "Not found product with id: " + productId);
@@ -148,10 +161,5 @@ public class ProductMarketplaceDataServiceImpl implements ProductMarketplaceData
       log.error("Error streaming file for product {}: {}", productId, e.getMessage(), e);
     }
     return outputStream;
-  }
-
-  @Override
-  public ResponseEntity<Resource> fetchResourceUrl(String artifactUrl) {
-    return fileDownloadService.fetchResourceUrl(artifactUrl);
   }
 }

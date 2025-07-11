@@ -156,7 +156,7 @@
               [matomoClickName]="installButton.name + ' - ' + getTrackingEnvironmentBasedOnActionType()"
               [lang]="languageService.selectedLanguage()"
               class="btn btn__install flex-grow-1 install-designer-button m-0 col-4" id="install-button"
-              (click)="onUpdateInstallationCountForDesigner()" onClick="function installInDesigner(event) {
+              (click)="onUpdateInstallationCount()" onClick="function installInDesigner(event) {
                   const selectedItemElement = document.querySelector('.install-designer-dropdown');
                   if (selectedItemElement) {
                   const metaDataJsonUrl = selectedItemElement.getAttribute('metaDataJsonUrl');

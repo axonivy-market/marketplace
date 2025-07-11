@@ -18,7 +18,7 @@ public interface ProductMarketplaceDataService {
 
   Integer getInstallationCount(String id);
 
-  OutputStream buildArtifactStreamFromResource(String productId, Resource resource, OutputStream outputStream);
+  ResponseEntity<Resource> getProductArtifactStream(String productId, String artifactId, String version);
 
-  ResponseEntity<Resource> fetchResourceUrl(String artifactUrl);
+  OutputStream buildArtifactStreamFromResource(String productId, Resource resource, OutputStream outputStream);
 }

@@ -3,9 +3,7 @@ package com.axonivy.market.service.impl;
 import com.axonivy.market.BaseSetup;
 import com.axonivy.market.bo.DownloadOption;
 import com.axonivy.market.util.FileUtils;
-import com.axonivy.market.util.HttpFetchingUtils;
 import com.axonivy.market.util.validator.AuthorizationUtils;
-import org.apache.commons.lang3.StringUtils;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -49,17 +47,8 @@ class FileDownloadServiceImplTest extends BaseSetup {
 
   @Test
   void testDownloadAndUnzipFileWithIssue() {
-
-    byte[] result = fileDownloadService.downloadFile(DOWNLOAD_URL);
-
-    assertArrayEquals("".getBytes(), result, "Expected empty byte array when URL is invalid");
-    verify(authorizationUtils).isAllowedUrl(DOWNLOAD_URL);
-  }
-
-  @Test
-  void testDownloadFileUnsafeUrl() {
-    byte[] result = fileDownloadService.downloadFile(DOWNLOAD_URL);
-    assertArrayEquals(StringUtils.EMPTY.getBytes(), result, "Output should be empty if occurring error.");
+    byte[] result = fileDownloadService.downloadFile(DOWNLOAD_URL);assertArrayEquals(null, result, "Expected empty " +
+        "byte array when URL is invalid");
   }
 
   @Test
@@ -202,39 +191,26 @@ class FileDownloadServiceImplTest extends BaseSetup {
 
   @Test
   void testDownloadFile() {
-    when(authorizationUtils.isAllowedUrl(MOCK_DOWNLOAD_URL)).thenReturn(true);
     when(restTemplate.getForObject(MOCK_DOWNLOAD_URL, byte[].class)).thenReturn(getMockBytes());
     byte[] result = fileDownloadService.downloadFile(MOCK_DOWNLOAD_URL);
     assertArrayEquals(getMockBytes(), result, "Content of file download should be the same with original file.");
-    verify(authorizationUtils).isAllowedUrl(MOCK_DOWNLOAD_URL);
-  }
-
-  @Test
-  void testDownloadFileWithUnsafeUrl() {
-    byte[] result = fileDownloadService.downloadFile(MOCK_DOWNLOAD_URL);
-    assertArrayEquals(StringUtils.EMPTY.getBytes(), result, "Content of file download will be empty with invalid url");
-    verify(authorizationUtils).isAllowedUrl(MOCK_DOWNLOAD_URL);
   }
 
   @Test
   void testGetFileAsString() {
-    when(authorizationUtils.isAllowedUrl(MOCK_DOWNLOAD_URL)).thenReturn(true);
     when(restTemplate.getForObject(MOCK_DOWNLOAD_URL, String.class)).thenReturn(MOCK_PRODUCT_NAME);
     String result = fileDownloadService.getFileAsString(MOCK_DOWNLOAD_URL);
     assertEquals(MOCK_PRODUCT_NAME, result, "Content of file download should be the same with original file.");
-    verify(authorizationUtils).isAllowedUrl(MOCK_DOWNLOAD_URL);
     verify(restTemplate).getForObject(MOCK_DOWNLOAD_URL, String.class);
 
   }
 
   @Test
   void testFetchResourceUrl() {
-    when(authorizationUtils.isAllowedUrl(MOCK_DOWNLOAD_URL)).thenReturn(true);
     ResponseEntity<Resource> mockedResponse = ResponseEntity.ok(mock(Resource.class));
     when(restTemplate.exchange(MOCK_DOWNLOAD_URL, HttpMethod.GET, null, Resource.class)).thenReturn(mockedResponse);
-    ResponseEntity<Resource> result = fileDownloadService.fetchResourceUrl(MOCK_DOWNLOAD_URL);
+    ResponseEntity<Resource> result = fileDownloadService.fetchUrlResource(MOCK_DOWNLOAD_URL);
     assertEquals(mockedResponse, result, "Content of stream should be the same with original stream.");
-    verify(authorizationUtils).isAllowedUrl(MOCK_DOWNLOAD_URL);
     verify(restTemplate).exchange(MOCK_DOWNLOAD_URL, HttpMethod.GET, null, Resource.class);
   }
 }

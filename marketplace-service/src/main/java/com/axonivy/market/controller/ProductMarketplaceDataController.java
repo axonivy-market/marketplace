@@ -7,7 +7,6 @@ import com.axonivy.market.model.Message;
 import com.axonivy.market.model.ProductCustomSortRequest;
 import com.axonivy.market.service.ProductMarketplaceDataService;
 import com.axonivy.market.util.validator.AuthorizationUtils;
-import com.axonivy.market.util.validator.ValidUrl;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
@@ -16,7 +15,6 @@ import lombok.extern.log4j.Log4j2;
 import org.springframework.core.io.Resource;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.HttpStatusCode;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
@@ -26,15 +24,13 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.mvc.method.annotation.StreamingResponseBody;
 
 import java.util.Optional;
 
 import static com.axonivy.market.constants.RequestMappingConstants.*;
-import static com.axonivy.market.constants.RequestParamConstants.ID;
-import static com.axonivy.market.constants.RequestParamConstants.URL;
+import static com.axonivy.market.constants.RequestParamConstants.*;
 import static org.springframework.http.HttpHeaders.AUTHORIZATION;
 
 @RestController
@@ -63,13 +59,14 @@ public class ProductMarketplaceDataController {
 
   @Operation(hidden = true)
   @GetMapping(VERSION_DOWNLOAD_BY_ID)
-  public ResponseEntity<StreamingResponseBody> extractArtifactUrl(@PathVariable(ID) String productId,
-      @RequestParam(URL) @ValidUrl String artifactUrl) {
-    ResponseEntity<Resource> resourceResponse = productMarketplaceDataService.fetchResourceUrl(artifactUrl);
+  public ResponseEntity<StreamingResponseBody> getArtifactResourceStream(@PathVariable(ID) String productId,
+      @PathVariable(ARTIFACT_ID)  String artifactId, @PathVariable(VERSION) String version) {
+    ResponseEntity<Resource> resourceResponse = productMarketplaceDataService.getProductArtifactStream(productId,
+        artifactId, version);
     var bodyOptional = Optional.ofNullable(resourceResponse).filter(
         response -> response.getStatusCode().is2xxSuccessful()).map(ResponseEntity::getBody);
     if (bodyOptional.isEmpty()) {
-      log.warn("Failed to retrieve file from URL: {}.", artifactUrl);
+      log.warn("Failed to retrieve file from artifact: {}.", artifactId);
       return ResponseEntity.notFound().build();
     }
     StreamingResponseBody streamingBody = outputStream -> productMarketplaceDataService.buildArtifactStreamFromResource(

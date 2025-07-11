@@ -20,7 +20,7 @@ public interface FileDownloadService {
 
   String getFileAsString(String url);
 
-  ResponseEntity<Resource> fetchResourceUrl(String url);
+  ResponseEntity<Resource> fetchUrlResource(String url);
 
   String downloadAndUnzipFile(String url, DownloadOption downloadOption) throws IOException;
 }
