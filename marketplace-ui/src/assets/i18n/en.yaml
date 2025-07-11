@@ -180,6 +180,7 @@ common:
     approvalPending: Approval pending
   labels:
     redirecting: Redirecting ...!
+    loading: Loading ...!
   timeAgo:
     yearAgo: 1 year ago
     yearsAgo: '{{ number }} years ago'
@@ -221,3 +222,6 @@ common:
     enterTokenPlaceholder: Enter your token
     proceedBtnLabel: Proceed
     noFeedbacks: No feedbacks available.
+  externalDocument:
+    pageHeader: The document of the {{product}} for version {{version}}
+    helpText: The document is not ready to render or has not been published. Please try again later.
