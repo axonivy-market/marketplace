@@ -13,12 +13,6 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 class HttpFetchingUtilsTest extends BaseSetup {
 
   @Test
-  void testGetFileAsBytesWithInvalidUrlReturnsNull() {
-    byte[] result = HttpFetchingUtils.getFileAsBytes(MOCK_DUMP_DOWNLOAD_URL);
-    assertEquals(0, result.length, "The byte array should be empty with invalid url");
-  }
-
-  @Test
   void testGetFileAsStringWithInvalidUrlReturnsNull() {
     String result = HttpFetchingUtils.getFileAsString(MOCK_DUMP_DOWNLOAD_URL);
     assertEquals(StringUtils.EMPTY, result, "Expected empty string when fetching from an unreachable URL");

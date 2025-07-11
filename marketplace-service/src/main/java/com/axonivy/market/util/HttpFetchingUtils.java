@@ -33,15 +33,6 @@ public class HttpFetchingUtils {
     }
   }
 
-  public static byte[] getFileAsBytes(String url) {
-    try {
-      return restTemplate.getForObject(url, byte[].class);
-    } catch (RestClientException | IllegalArgumentException e) {
-       log.warn("Failed to fetch bytes from URL: {}", url, e);
-      return new byte[0];
-    }
-  }
-
   public static String getFileAsString(String url) {
     try {
       return restTemplate.getForObject(url, String.class);
