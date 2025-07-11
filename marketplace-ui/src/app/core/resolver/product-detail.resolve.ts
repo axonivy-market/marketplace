@@ -1,11 +1,8 @@
 import { Injectable } from '@angular/core';
 import { Meta, Title } from '@angular/platform-browser';
-import {
-  ActivatedRouteSnapshot,
-  Resolve
-} from '@angular/router';
+import { ActivatedRouteSnapshot, Resolve } from '@angular/router';
 import { CookieService } from 'ngx-cookie-service';
-import { map, Observable, tap } from 'rxjs';
+import { map, Observable, take, tap } from 'rxjs';
 import { ProductDetail } from '../../shared/models/product-detail.model';
 import { ProductDetailService } from '../../modules/product/product-detail/product-detail.service';
 import { LanguageService } from '../services/language/language.service';
@@ -15,7 +12,11 @@ import { RoutingQueryParamService } from '../../shared/services/routing.query.pa
 import { LoadingComponentId } from '../../shared/enums/loading-component-id';
 import { DisplayValue } from '../../shared/models/display-value.model';
 import { CommonUtils } from '../../shared/utils/common.utils';
-import { DEFAULT_VENDOR_IMAGE, DEFAULT_VENDOR_IMAGE_BLACK, SHOW_DEV_VERSION } from '../../shared/constants/common.constant';
+import {
+  DEFAULT_VENDOR_IMAGE,
+  DEFAULT_VENDOR_IMAGE_BLACK,
+  SHOW_DEV_VERSION
+} from '../../shared/constants/common.constant';
 
 @Injectable({ providedIn: 'root' })
 export class ProductDetailResolver implements Resolve<ProductDetail> {
@@ -30,24 +31,45 @@ export class ProductDetailResolver implements Resolve<ProductDetail> {
     private readonly routingQueryParamService: RoutingQueryParamService
   ) {}
 
+  OG_TITLE_KEY = 'og:title';
+  OG_DESCRIPTION_KEY = 'og:description';
+  OG_IMAGE_KEY = 'og:image';
+  OG_IMAGE_TYPE_KEY = 'og:image';
+  OG_IMAGE_PNG_TYPE = 'image/png';
+
   resolve(route: ActivatedRouteSnapshot): Observable<ProductDetail> {
-    const productId2 = route.params['id'];
-    this.productDetailService.productId.set(productId2);
+    const productId = route.params['id'];
+    this.productDetailService.productId.set(productId);
 
     this.loadingService.showLoading(LoadingComponentId.DETAIL_PAGE);
-    return this.getProductDetailObservable(productId2).pipe(
+    return this.getProductDetailObservable(productId).pipe(
+      take(1),
       tap(productDetail => {
-        this.updateWebBrowserTitle(productDetail.names);
+        this.updateWebBrowserTitle(productDetail);
       })
     );
   }
 
-  updateWebBrowserTitle(names: DisplayValue): void {
-    if (names !== undefined) {
-      const title = names[this.languageService.selectedLanguage()];
+  updateWebBrowserTitle(productDetail: ProductDetail): void {
+    const productName = productDetail.names;
+    const productShortDescription = productDetail.shortDescriptions;
+    if (productName !== undefined) {
+      const title = productName[this.languageService.selectedLanguage()];
       this.titleService.setTitle(title);
-      this.meta.updateTag({ property: 'og:title', content: title });
+      this.meta.updateTag({ property: this.OG_TITLE_KEY, content: title });
     }
+    this.meta.updateTag({
+      property: this.OG_DESCRIPTION_KEY,
+      content: productShortDescription[this.languageService.selectedLanguage()]
+    });
+    this.meta.updateTag({
+      property: this.OG_IMAGE_KEY,
+      content: productDetail.logoUrl
+    });
+    this.meta.updateTag({
+      property: this.OG_IMAGE_TYPE_KEY,
+      content: this.OG_IMAGE_PNG_TYPE
+    });
   }
 
   getProductDetailObservable(productId: string): Observable<ProductDetail> {
