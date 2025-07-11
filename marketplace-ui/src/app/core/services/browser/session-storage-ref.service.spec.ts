@@ -1,41 +1,41 @@
 import { TestBed } from '@angular/core/testing';
-import { DocumentRef } from './document-ref.service';
 import { PLATFORM_ID } from '@angular/core';
+import { SessionStorageRef } from './session-storage-ref.service';
 
 describe('SessionStorageRef', () => {
   describe('in browser platform', () => {
-    let service: DocumentRef;
+    let service: SessionStorageRef;
 
     beforeEach(() => {
       TestBed.configureTestingModule({
         providers: [
-          DocumentRef,
+          SessionStorageRef,
           { provide: PLATFORM_ID, useValue: 'browser' } // ✅ Simulate browser
         ]
       });
-      service = TestBed.inject(DocumentRef);
+      service = TestBed.inject(SessionStorageRef);
     });
 
     it('should return the global document in browser', () => {
-      expect(service.nativeDocument).toBe(document);
+      expect(service.session).toBe(sessionStorage);
     });
   });
 
   describe('in server platform', () => {
-    let service: DocumentRef;
+    let service: SessionStorageRef;
 
     beforeEach(() => {
       TestBed.configureTestingModule({
         providers: [
-          DocumentRef,
+          SessionStorageRef,
           { provide: PLATFORM_ID, useValue: 'server' } // ❌ Simulate server
         ]
       });
-      service = TestBed.inject(DocumentRef);
+      service = TestBed.inject(SessionStorageRef);
     });
 
     it('should return undefined in server', () => {
-      expect(service.nativeDocument).toBeUndefined();
+      expect(service.session).toBeNull();
     });
   });
 });

@@ -37,7 +37,7 @@ describe('BootstrapLoaderService', () => {
       service = TestBed.inject(BootstrapLoaderService);
     });
 
-    it('should NOT call loadNgbModule() on server', async () => {
+    it('should not call loadNgbModule() on server', async () => {
       const spy = spyOn(service as any, 'loadNgbModule');
       await service.init();
       expect(spy).not.toHaveBeenCalled();
