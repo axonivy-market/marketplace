@@ -66,15 +66,14 @@ public class ProductMarketplaceDataController {
   public ResponseEntity<StreamingResponseBody> extractArtifactUrl(@PathVariable(ID) String productId,
       @RequestParam(URL) @ValidUrl String artifactUrl) {
     ResponseEntity<Resource> resourceResponse = productMarketplaceDataService.fetchResourceUrl(artifactUrl);
-    HttpStatusCode statusCode = Optional.ofNullable(resourceResponse).map(ResponseEntity::getStatusCode).orElse(
-        HttpStatus.NOT_FOUND);
-    Resource body = Optional.ofNullable(resourceResponse).map(ResponseEntity::getBody).orElse(null);
-    if (null == body || !statusCode.is2xxSuccessful()) {
-      log.warn("Failed to retrieve file from URL: {}. Status: {}", artifactUrl, statusCode);
-      return ResponseEntity.status(HttpStatus.BAD_GATEWAY).build();
+    var bodyOptional = Optional.ofNullable(resourceResponse).filter(
+        response -> response.getStatusCode().is2xxSuccessful()).map(ResponseEntity::getBody);
+    if (bodyOptional.isEmpty()) {
+      log.warn("Failed to retrieve file from URL: {}.", artifactUrl);
+      return ResponseEntity.notFound().build();
     }
     StreamingResponseBody streamingBody = outputStream -> productMarketplaceDataService.buildArtifactStreamFromResource(
-        productId, body, outputStream);
+        productId, bodyOptional.get(), outputStream);
     return ResponseEntity.ok().contentType(MediaType.APPLICATION_OCTET_STREAM).header(HttpHeaders.CONTENT_DISPOSITION,
         "attachment").body(streamingBody);
   }

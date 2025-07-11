@@ -141,44 +141,4 @@ public class ProductContentServiceImpl implements ProductContentService {
         productDependencies.stream().flatMap(product -> product.getDependencies().stream()).map(
             ProductDependency::getDownloadUrl)).toList();
   }
-
-  @Override
-  public OutputStream buildArtifactStreamFromArtifactUrls(List<String> urls, OutputStream outputStream) {
-      try (var zipOut = new ZipOutputStream(outputStream)) {
-        for (String fileUrl : urls) {
-          ResponseEntity<Resource> resourceResponse = HttpFetchingUtils.fetchResourceUrl(fileUrl);
-          if (!resourceResponse.getStatusCode().is2xxSuccessful() || resourceResponse.getBody() == null) {
-            continue;
-          }
-          String fileName = HttpFetchingUtils.extractFileNameFromUrl(fileUrl);
-          try (var fileInputStream = resourceResponse.getBody().getInputStream()) {
-            addNewFileToZip(fileName, zipOut, fileInputStream);
-          }
-        }
-        zipConfigurationOptions(zipOut);
-        zipOut.finish();
-      } catch (IOException e) {
-        log.error("Cannot create ZIP file {}", e.getMessage());
-        return null;
-      }
-    return outputStream;
-  }
-
-  private void zipConfigurationOptions(ZipOutputStream zipOut) throws IOException {
-    final String configFile = DEPLOY_YAML_FILE_NAME;
-    ClassPathResource resource = new ClassPathResource("app-zip/" + configFile);
-    try (var in = resource.getInputStream()) {
-      addNewFileToZip(configFile, zipOut, in);
-    }
-  }
-
-  private static void addNewFileToZip(String fileName, ZipOutputStream zipOut, InputStream in) throws IOException {
-    ZipEntry entry = new ZipEntry(fileName);
-    zipOut.putNextEntry(entry);
-    try {
-      FileUtils.writeBlobAsChunks(in, zipOut);
-    } finally {
-      zipOut.closeEntry();
-    }
-  }
 }

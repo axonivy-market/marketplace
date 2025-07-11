@@ -2,6 +2,9 @@ package com.axonivy.market.util;
 
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
+import org.springframework.core.io.ClassPathResource;
+import org.springframework.core.io.Resource;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.File;
@@ -14,13 +17,16 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Comparator;
+import java.util.List;
 import java.util.stream.Stream;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
+import java.util.zip.ZipOutputStream;
 
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class FileUtils {
   public static final int DEFAULT_BUFFER_SIZE = 8192;
+  private static final String DEPLOY_YAML_FILE_NAME = "deploy.options.yaml";
 
   public static File createFile(String fileName) throws IOException {
     File file = new File(fileName);
@@ -104,6 +110,45 @@ public class FileUtils {
     int bytesRead;
     while ((bytesRead = in.read(buffer)) != -1) {
       out.write(buffer, 0, bytesRead);
+    }
+  }
+
+  public static OutputStream buildArtifactStreamFromArtifactUrls(List<String> urls, OutputStream outputStream) {
+    try (var zipOut = new ZipOutputStream(outputStream)) {
+      for (String fileUrl : urls) {
+        ResponseEntity<Resource> resourceResponse = HttpFetchingUtils.fetchResourceUrl(fileUrl);
+        if (!resourceResponse.getStatusCode().is2xxSuccessful() || resourceResponse.getBody() == null) {
+          continue;
+        }
+        String fileName = HttpFetchingUtils.extractFileNameFromUrl(fileUrl);
+        try (var fileInputStream = resourceResponse.getBody().getInputStream()) {
+          addNewFileToZip(fileName, zipOut, fileInputStream);
+        }
+      }
+      zipConfigurationOptions(zipOut);
+      zipOut.finish();
+    } catch (IOException e) {
+      log.error("Cannot create ZIP file {}", e.getMessage());
+      return null;
+    }
+    return outputStream;
+  }
+
+  private static void zipConfigurationOptions(ZipOutputStream zipOut) throws IOException {
+    final String configFile = DEPLOY_YAML_FILE_NAME;
+    ClassPathResource resource = new ClassPathResource("app-zip/" + configFile);
+    try (var in = resource.getInputStream()) {
+      addNewFileToZip(configFile, zipOut, in);
+    }
+  }
+
+  private static void addNewFileToZip(String fileName, ZipOutputStream zipOut, InputStream in) throws IOException {
+    ZipEntry entry = new ZipEntry(fileName);
+    zipOut.putNextEntry(entry);
+    try {
+      FileUtils.writeBlobAsChunks(in, zipOut);
+    } finally {
+      zipOut.closeEntry();
     }
   }
 }

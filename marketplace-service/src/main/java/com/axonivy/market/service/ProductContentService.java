@@ -10,6 +10,4 @@ public interface ProductContentService {
       Artifact artifact, String productName);
 
   List<String> getDependencyUrls(String productId, String artifactId, String version);
-
-  OutputStream buildArtifactStreamFromArtifactUrls(List<String> urls, OutputStream outputStream);
 }

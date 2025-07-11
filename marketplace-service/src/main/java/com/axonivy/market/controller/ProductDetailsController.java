@@ -10,6 +10,7 @@ import com.axonivy.market.model.VersionAndUrlModel;
 import com.axonivy.market.service.ProductContentService;
 import com.axonivy.market.service.ProductService;
 import com.axonivy.market.service.VersionService;
+import com.axonivy.market.util.FileUtils;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.enums.ParameterIn;
@@ -217,8 +218,8 @@ public class ProductDetailsController {
     if (CollectionUtils.isEmpty(dependencyUrls)) {
       return ResponseEntity.notFound().build();
     }
-    StreamingResponseBody streamingBody = outputStream -> productContentService.buildArtifactStreamFromArtifactUrls(
-        dependencyUrls, outputStream);
+    StreamingResponseBody streamingBody = outputStream -> FileUtils.buildArtifactStreamFromArtifactUrls(dependencyUrls,
+        outputStream);
     return ResponseEntity.ok().header(HttpHeaders.CONTENT_DISPOSITION, "attachment").contentType(
         MediaType.APPLICATION_OCTET_STREAM).body(streamingBody);
   }

@@ -53,16 +53,16 @@ public class HttpFetchingUtils {
 
   public static String extractFileNameFromUrl(String fileUrl) {
     String name = UNKNOWN_FILE_NAME;
-    try {
-      if (StringUtils.isNotBlank(fileUrl) && !fileUrl.endsWith(CommonConstants.SLASH)) {
+    if (StringUtils.isNotBlank(fileUrl) && !fileUrl.endsWith(CommonConstants.SLASH)) {
+      try {
         String path = new URI(fileUrl).toURL().getPath();
         Path fileName = Paths.get(path).getFileName();
         if (fileName != null) {
           name = URLDecoder.decode(fileName.toString(), StandardCharsets.UTF_8);
         }
+      } catch (URISyntaxException | MalformedURLException e) {
+        log.warn("Cannot extract file name from url {}", fileUrl, e);
       }
-    } catch (URISyntaxException | MalformedURLException e) {
-      log.warn("Cannot extract file name form url {}", fileUrl, e);
     }
     return name;
   }
