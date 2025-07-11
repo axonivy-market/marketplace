@@ -133,10 +133,9 @@ describe('ProductDetailComponent', () => {
         {
           provide: ActivatedRoute,
           useValue: {
-            // snapshot: { params: { id: products[0].id } },
             snapshot: {
               params: { id: products[0].id },
-              data: { productDetail: MOCK_PRODUCT_DETAIL } // ✅ add this line
+              data: { productDetail: MOCK_PRODUCT_DETAIL }
             },
             queryParams: of({ type: TypeOption.CONNECTORS }),
             fragment: of('description')

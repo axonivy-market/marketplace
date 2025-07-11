@@ -51,11 +51,9 @@ export class ProductDetailResolver implements Resolve<ProductDetail> {
   updateProductMetadata(productDetail: ProductDetail): void {
     const productName = productDetail.names;
     const productShortDescription = productDetail.shortDescriptions;
-    if (productName !== undefined) {
-      const title = productName[this.languageService.selectedLanguage()];
-      this.titleService.setTitle(title);
-      this.updateOGTag(OG_TITLE_KEY, title);
-    }
+    const title = productName[this.languageService.selectedLanguage()];
+    this.titleService.setTitle(title);
+    this.updateOGTag(OG_TITLE_KEY, title);
     this.updateOGTag(
       OG_DESCRIPTION_KEY,
       productShortDescription[this.languageService.selectedLanguage()]
@@ -104,7 +102,7 @@ export class ProductDetailResolver implements Resolve<ProductDetail> {
     );
   }
 
-  private setDefaultVendorImage(productDetail: ProductDetail): ProductDetail {
+  setDefaultVendorImage(productDetail: ProductDetail): ProductDetail {
     const { vendorImage, vendorImageDarkMode } = productDetail;
 
     if (!(productDetail.vendorImage || productDetail.vendorImageDarkMode)) {
