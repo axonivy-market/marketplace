@@ -261,6 +261,7 @@ export const GITHUB_MARKET_ORG_URL = 'https://github.com/axonivy-market';
 export const SHOW_DEV_VERSION = "showDevVersions";
 export const DEFAULT_VENDOR_IMAGE = '/assets/images/misc/axonivy-logo.svg';
 export const DEFAULT_VENDOR_IMAGE_BLACK = '/assets/images/misc/axonivy-logo-black.svg';
+export const MONITORING_REDIRECT_URL = 'https://axonivy-market.github.io/market-monitor';
 
 export const SECONDS_IN_A_MINUTE = 60;
 export const MINUTES_IN_A_HOUR = 60;
