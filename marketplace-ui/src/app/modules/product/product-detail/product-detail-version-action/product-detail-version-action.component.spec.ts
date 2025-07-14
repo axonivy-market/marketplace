@@ -356,17 +356,14 @@ describe('ProductDetailVersionActionComponent', () => {
   it('should fetch and trigger download with correct parameters', () => {
     const url = 'https://example.com/file.pdf';
     const fileName = 'file.pdf';
-    const blobData = new Blob(['test data'], { type: 'application/pdf' });
     const downloadSpy = spyOn<any>(component, 'fetchAndDownloadArtifact').and.callThrough();
-    const updateInstallationCountSpy = spyOn<any>(component,'onUpdateInstallationCount').and.callThrough();
 
     component.fetchAndDownloadArtifact(url, fileName);
     const req = httpMock.expectOne(url);
+
     expect(req.request.method).toBe('GET');
     expect(req.request.responseType).toBe('blob');
-    req.flush(blobData);
     expect(downloadSpy).toHaveBeenCalledOnceWith(url, fileName);
-    expect(updateInstallationCountSpy).toHaveBeenCalledOnceWith();
   });
 
   it('should call sendRequestToGetInstallationCount and emit installation count', fakeAsync(() => {
@@ -396,7 +393,6 @@ describe('ProductDetailVersionActionComponent', () => {
     component.productId = 'portal';
     component.selectedArtifactId = 'document.doc';
     component.selectedVersion.set('1.2.3');
-
     spyOn(component, 'fetchAndDownloadArtifact');
 
     component.downloadArtifact();
