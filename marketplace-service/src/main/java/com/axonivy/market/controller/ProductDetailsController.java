@@ -10,7 +10,6 @@ import com.axonivy.market.model.VersionAndUrlModel;
 import com.axonivy.market.service.ProductContentService;
 import com.axonivy.market.service.ProductService;
 import com.axonivy.market.service.VersionService;
-import com.axonivy.market.util.FileUtils;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.enums.ParameterIn;

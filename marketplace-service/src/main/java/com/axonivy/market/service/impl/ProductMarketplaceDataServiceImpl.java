@@ -136,7 +136,8 @@ public class ProductMarketplaceDataServiceImpl implements ProductMarketplaceData
 
   @Override
   public ResponseEntity<Resource> getProductArtifactStream(String productId, String artifactId, String version) {
-    var mavenArtifactVersions = mavenArtifactVersionRepo.findByProductIdAndArtifactIdAndVersion(productId,artifactId,version);
+    var mavenArtifactVersions = mavenArtifactVersionRepo.findByProductIdAndArtifactIdAndVersion(productId, artifactId,
+        version);
     if(CollectionUtils.isEmpty(mavenArtifactVersions)) {
       return null;
     }

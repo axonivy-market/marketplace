@@ -47,8 +47,8 @@ class FileDownloadServiceImplTest extends BaseSetup {
 
   @Test
   void testDownloadAndUnzipFileWithIssue() {
-    byte[] result = fileDownloadService.downloadFile(DOWNLOAD_URL);assertArrayEquals(null, result, "Expected empty " +
-        "byte array when URL is invalid");
+    byte[] result = fileDownloadService.downloadFile(DOWNLOAD_URL);
+    assertNull(result, "Expected empty null when URL is valid but can not download file");
   }
 
   @Test

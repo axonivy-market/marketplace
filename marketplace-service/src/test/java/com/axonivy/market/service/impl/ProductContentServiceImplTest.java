@@ -10,6 +10,7 @@ import com.axonivy.market.service.FileDownloadService;
 import com.axonivy.market.service.ImageService;
 import com.axonivy.market.service.ProductJsonContentService;
 import com.axonivy.market.service.ProductMarketplaceDataService;
+import com.axonivy.market.util.FileUtils;
 import com.axonivy.market.util.MavenUtils;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -19,7 +20,9 @@ import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -103,5 +106,26 @@ class ProductContentServiceImplTest extends BaseSetup {
     assertEquals(2, result.size(), "Size of result should equal size of download url from dependency");
     assertTrue(result.contains(MOCK_DOWNLOAD_URL), "List of dependency url should include parent artifact");
     verify(productDependencyRepository).findByProductIdAndArtifactIdAndVersion(MOCK_PRODUCT_ID, MOCK_ARTIFACT_ID, MOCK_RELEASED_VERSION);
+  }
+
+  @Test
+  void shouldUpdateInstallationCount_whenDataWrittenToStream() throws Exception {
+    List<String> urls = List.of(MOCK_DOWNLOAD_URL);
+
+    try (MockedStatic<FileUtils> fileUtilsMock = mockStatic(FileUtils.class)) {
+      fileUtilsMock.when(() -> FileUtils.buildArtifactStreamFromArtifactUrls(eq(urls), any(OutputStream.class)))
+          .thenAnswer(invocation -> {
+            OutputStream out = invocation.getArgument(1);
+            out.write("test-data".getBytes()); // simulate writing
+            return null;
+          });
+
+      ByteArrayOutputStream out = new ByteArrayOutputStream();
+
+      productContentService.buildArtifactZipStreamFromUrls(MOCK_PRODUCT_ID, urls, out);
+
+      assertTrue(out.size() >0, "The output should not be empty byte array");
+      verify(productMarketplaceDataService).updateProductInstallationCount(MOCK_PRODUCT_ID);
+    }
   }
 }

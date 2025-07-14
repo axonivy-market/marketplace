@@ -1,6 +1,7 @@
 package com.axonivy.market.service.impl;
 
 import com.axonivy.market.BaseSetup;
+import com.axonivy.market.entity.MavenArtifactVersion;
 import com.axonivy.market.entity.Product;
 import com.axonivy.market.entity.ProductCustomSort;
 import com.axonivy.market.entity.ProductMarketplaceData;
@@ -9,6 +10,7 @@ import com.axonivy.market.enums.SortOption;
 import com.axonivy.market.exceptions.model.InvalidParamException;
 import com.axonivy.market.exceptions.model.NotFoundException;
 import com.axonivy.market.model.ProductCustomSortRequest;
+import com.axonivy.market.repository.MavenArtifactVersionRepository;
 import com.axonivy.market.repository.ProductCustomSortRepository;
 import com.axonivy.market.repository.ProductDesignerInstallationRepository;
 import com.axonivy.market.repository.ProductMarketplaceDataRepository;
@@ -22,6 +24,11 @@ import org.mockito.Captor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.core.io.ByteArrayResource;
+import org.springframework.core.io.Resource;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.HttpStatusCode;
+import org.springframework.http.ResponseEntity;
 import org.springframework.test.util.ReflectionTestUtils;
 
 import java.io.ByteArrayOutputStream;
@@ -51,6 +58,8 @@ class ProductMarketplaceDataServiceImplTest extends BaseSetup {
   private ProductMarketplaceDataServiceImpl productMarketplaceDataService;
   @Captor
   ArgumentCaptor<ArrayList<ProductMarketplaceData>> productListArgumentCaptor;
+  @Mock
+  MavenArtifactVersionRepository mavenArtifactVersionRepo;
 
   @Test
   void testAddCustomSortProduct() throws InvalidParamException {
@@ -166,4 +175,24 @@ class ProductMarketplaceDataServiceImplTest extends BaseSetup {
         getMockResource(), new ByteArrayOutputStream());
     assertNotNull(result);
   }
+
+  @Test
+  void testGetProductArtifactStreamShouldReturnResource() {
+    MavenArtifactVersion mav = new MavenArtifactVersion();
+    mav.setDownloadUrl(MOCK_DOWNLOAD_URL);
+    when(mavenArtifactVersionRepo.findByProductIdAndArtifactIdAndVersion(MOCK_PRODUCT_ID, MOCK_ARTIFACT_ID, MOCK_RELEASED_VERSION))
+        .thenReturn(List.of(mav));
+    ByteArrayResource resource = new ByteArrayResource("data".getBytes());
+    ResponseEntity<Resource> responseEntity = ResponseEntity.ok(resource);
+    when(fileDownloadService.fetchUrlResource(MOCK_DOWNLOAD_URL)).thenReturn(responseEntity);
+
+    ResponseEntity<Resource> result = productMarketplaceDataService.getProductArtifactStream(MOCK_PRODUCT_ID, MOCK_ARTIFACT_ID, MOCK_RELEASED_VERSION);
+
+    assertNotNull(result, "Result stream should not be null with existed artifact");
+    assertEquals(HttpStatusCode.valueOf(200), result.getStatusCode(), "Response entity should return code of 200");
+    assertEquals(result.getBody(), resource, "Response's body should equal to the content form received stream");
+    verify(mavenArtifactVersionRepo).findByProductIdAndArtifactIdAndVersion(MOCK_PRODUCT_ID, MOCK_ARTIFACT_ID, MOCK_RELEASED_VERSION);
+    verify(fileDownloadService).fetchUrlResource(MOCK_DOWNLOAD_URL);
+  }
+
 }

@@ -11,14 +11,12 @@ import static org.mockito.Mockito.*;
 
 class AuthorizationUtilsTest {
 
-  private AuthorizationUtils validator;
-  private ConstraintValidatorContext context;
-
-  @BeforeEach
-  void setup() throws Exception {
-    validator = new AuthorizationUtils();
-    context = mock(ConstraintValidatorContext.class);
-  }
+//  private ConstraintValidatorContext context;
+//
+//  @BeforeEach
+//  void setup() throws Exception {
+//    context = mock(ConstraintValidatorContext.class);
+//  }
 
   @Test
   void testBearerTokenInvalidFormat() {

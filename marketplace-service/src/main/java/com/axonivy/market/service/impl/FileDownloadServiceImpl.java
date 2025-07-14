@@ -56,7 +56,7 @@ public class FileDownloadServiceImpl implements FileDownloadService {
     return fetchUrlData(url, String.class);
   }
 
-  private <T> T getDefaultValueOfClass(Class<T> responseType) {
+  private static <T> T getDefaultValueOfClass(Class<T> responseType) {
     if (responseType == String.class) {
       return responseType.cast(EMPTY);
     }
@@ -67,13 +67,12 @@ public class FileDownloadServiceImpl implements FileDownloadService {
   }
 
   private <T> T fetchUrlData(String url, Class<T> responseType) {
-    var fallback = getDefaultValueOfClass(responseType);
     try {
       return restTemplate.getForObject(url, responseType);
     } catch (RestClientException e) {
       log.warn("Failed to fetch resource from URL: {}", url, e);
     }
-    return fallback;
+    return getDefaultValueOfClass(responseType);
   }
 
   @Override

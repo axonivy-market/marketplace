@@ -115,7 +115,7 @@ public class FileUtils {
     }
   }
 
-  public static OutputStream buildArtifactStreamFromArtifactUrls(List<String> urls, OutputStream outputStream) {
+  public static OutputStream buildArtifactStreamFromArtifactUrls(Iterable<String> urls, OutputStream outputStream) {
     try (var zipOut = new ZipOutputStream(outputStream)) {
       for (String fileUrl : urls) {
         ResponseEntity<Resource> resourceResponse = HttpFetchingUtils.fetchResourceUrl(fileUrl);
@@ -138,14 +138,14 @@ public class FileUtils {
 
   private static void zipConfigurationOptions(ZipOutputStream zipOut) throws IOException {
     final String configFile = DEPLOY_YAML_FILE_NAME;
-    ClassPathResource resource = new ClassPathResource("app-zip/" + configFile);
+    var resource = new ClassPathResource("app-zip/" + configFile);
     try (var in = resource.getInputStream()) {
       addNewFileToZip(configFile, zipOut, in);
     }
   }
 
   private static void addNewFileToZip(String fileName, ZipOutputStream zipOut, InputStream in) throws IOException {
-    ZipEntry entry = new ZipEntry(fileName);
+    var entry = new ZipEntry(fileName);
     zipOut.putNextEntry(entry);
     try {
       FileUtils.writeBlobAsChunks(in, zipOut);
