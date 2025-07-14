@@ -27,7 +27,6 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.stream.Stream;
 
-import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
@@ -221,13 +220,14 @@ class FileDownloadServiceImplTest extends BaseSetup {
 
   @Test
   void testGetDefaultValueOfClass() {
-    String stringResult = fileDownloadService.getDefaultValueOfClass(String.class);
+    String stringResult = FileDownloadServiceImpl.getDefaultValueOfClass(String.class);
     assertEquals(StringUtils.EMPTY, stringResult, "Result should be empty String with String class");
 
-    byte[] byteResult = fileDownloadService.getDefaultValueOfClass(byte[].class);
+    byte[] byteResult = FileDownloadServiceImpl.getDefaultValueOfClass(byte[].class);
+    assertNotNull(byteResult, "result should not be null with byte class");
     assertEquals(0, byteResult.length, "result should be empty byte with bytes class");
 
-    Integer integerResult = fileDownloadService.getDefaultValueOfClass(Integer.class);
+    Integer integerResult = FileDownloadServiceImpl.getDefaultValueOfClass(Integer.class);
     assertNull(integerResult,"Result should be null with Integer class");
   }
 
