@@ -219,37 +219,6 @@ class FileDownloadServiceImplTest extends BaseSetup {
   }
 
   @Test
-  void testGetDefaultValueOfClass() {
-    String stringResult = FileDownloadServiceImpl.getDefaultValueOfClass(String.class);
-    assertEquals(StringUtils.EMPTY, stringResult, "Result should be empty String with String class");
-
-    byte[] byteResult = FileDownloadServiceImpl.getDefaultValueOfClass(byte[].class);
-    assertNotNull(byteResult, "result should not be null with byte class");
-    assertEquals(0, byteResult.length, "result should be empty byte with bytes class");
-
-    Integer integerResult = FileDownloadServiceImpl.getDefaultValueOfClass(Integer.class);
-    assertNull(integerResult,"Result should be null with Integer class");
-  }
-
-
-  @Test
-  void testFetchUrlData() {
-    String expected = "test-data";
-    when(restTemplate.getForObject(DOWNLOAD_URL, String.class)).thenReturn(expected);
-    String result = fileDownloadService.fetchUrlData(DOWNLOAD_URL, String.class);
-
-    assertEquals(expected, result, "Fetched data should equal to original file's text.");
-
-    verify(restTemplate).getForObject(DOWNLOAD_URL, String.class);
-
-    when(restTemplate.getForObject(DOWNLOAD_URL, String.class)).thenThrow(new RestClientException("failed"));
-    result = fileDownloadService.fetchUrlData(DOWNLOAD_URL, String.class);
-
-    assertEquals(StringUtils.EMPTY, result, "Fetched data should equal default if there is exception");
-    verify(restTemplate, times(2)).getForObject(DOWNLOAD_URL, String.class);
-  }
-
-  @Test
   void testFetchUrlResource() {
     ByteArrayResource resource = new ByteArrayResource("hello".getBytes(StandardCharsets.UTF_8));
     ResponseEntity<Resource> responseEntity = ResponseEntity.ok(resource);

@@ -48,32 +48,14 @@ public class FileDownloadServiceImpl implements FileDownloadService {
 
   @Override
   public byte[] downloadFile(String url) {
-    return fetchUrlData(url, byte[].class);
+    return restTemplate.getForObject(url, byte[].class);
   }
 
   @Override
   public String getFileAsString(String url) {
-    return fetchUrlData(url, String.class);
+    return restTemplate.getForObject(url, String.class);
   }
 
-  public static <T> T getDefaultValueOfClass(Class<T> responseType) {
-    if (responseType == String.class) {
-      return responseType.cast(EMPTY);
-    }
-    if (responseType == byte[].class) {
-      return responseType.cast(new byte[0]);
-    }
-    return null;
-  }
-
-  <T> T fetchUrlData(String url, Class<T> responseType) {
-    try {
-      return restTemplate.getForObject(url, responseType);
-    } catch (RestClientException e) {
-      log.warn("Failed to fetch resource from URL: {}", url, e);
-    }
-    return getDefaultValueOfClass(responseType);
-  }
 
   @Override
   public ResponseEntity<Resource> fetchUrlResource(String url) {
