@@ -43,8 +43,6 @@ import { HttpClient, HttpParams, HttpResponse } from '@angular/common/http';
 import { finalize } from 'rxjs/operators';
 
 const showDevVersionCookieName = 'showDevVersions';
-const ARTIFACT_ZIP_DOWNLOAD = 'download/zip-file';
-const ARTIFACT_DOWNLOAD = 'download';
 const HTTP = 'http';
 const DOC = '-doc';
 const ZIP = '.zip';
@@ -267,13 +265,12 @@ export class ProductDetailVersionActionComponent implements AfterViewInit {
     this.isDownloading.set(true);
     const version = this.selectedVersion().replace(VERSION.displayPrefix, '');
     if (!this.isCheckedAppForEngine || this.selectedArtifactId?.endsWith(DOC) || this.selectedArtifact?.endsWith(ZIP)) {
-      console.warn(this.selectedArtifactId);
-      downloadUrl = `${this.getMarketplaceServiceUrl()}/${API_URI.PRODUCT_MARKETPLACE_DATA}/${ARTIFACT_DOWNLOAD}/${this.productId}/${this.selectedArtifactId}/${version}`;
+      downloadUrl = `${this.getMarketplaceServiceUrl()}/${API_URI.PRODUCT_MARKETPLACE_DATA}/${this.productId}/${this.selectedArtifactId}/${version}`;
       if (this.selectedArtifact) {
         this.fetchAndDownloadArtifact(downloadUrl, this.selectedArtifact.substring(this.selectedArtifact.lastIndexOf('/') + 1));
       }
     } else if (this.isCheckedAppForEngine) {
-      downloadUrl = `${this.getMarketplaceServiceUrl()}/${API_URI.PRODUCT_DETAILS}/${ARTIFACT_ZIP_DOWNLOAD}/${this.productId}/${this.selectedArtifactId}/${version}`;
+      downloadUrl = `${this.getMarketplaceServiceUrl()}/${API_URI.PRODUCT_DETAILS}/${this.productId}/${this.selectedArtifactId}/${version}`;
       this.fetchAndDownloadArtifact(downloadUrl, `${this.selectedArtifactId}-app-${version}.zip`);
     } else {
       return;
@@ -289,7 +286,6 @@ export class ProductDetailVersionActionComponent implements AfterViewInit {
   }
 
   fetchAndDownloadArtifact(url: string, fileName: string): void {
-    console.warn(url);
     this.httpClient
       .get(url, {responseType: BLOB, observe: RESPONSE})
       .pipe(finalize(() => this.isDownloading.set(false)))

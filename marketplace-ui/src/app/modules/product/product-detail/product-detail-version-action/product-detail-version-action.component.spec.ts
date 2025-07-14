@@ -389,13 +389,16 @@ describe('ProductDetailVersionActionComponent', () => {
     component.selectedArtifact = 'document.doc';
     component.productId = '123';
     environment.apiUrl = 'https://api.example.com';
+    component.productId = 'portal';
+    component.selectedArtifactId = 'document.doc';
+    component.selectedVersion.set('1.2.3');
 
     spyOn(component, 'fetchAndDownloadArtifact');
 
     component.downloadArtifact();
 
     expect(component.fetchAndDownloadArtifact).toHaveBeenCalledWith(
-      `${environment.apiUrl}/api/product-marketplace-data/version-download/123?url=document.doc`,
+      `${environment.apiUrl}/api/product-marketplace-data/portal/document.doc/1.2.3`,
       'document.doc'
     );
   });
@@ -403,13 +406,15 @@ describe('ProductDetailVersionActionComponent', () => {
   it('should correctly handle artifact download scenarios', () => {
     environment.apiUrl = 'https://api.example.com';
     component.productId = 'ai-assistant';
+    component.selectedArtifactId = 'document.doc';
+    component.selectedVersion.set('1.2.3');
     spyOn(component, 'fetchAndDownloadArtifact');
 
     component.selectedArtifact = 'https://example.com/ai-assistant-12.0.1.1.iar';
 
     component.downloadArtifact();
     expect(component.fetchAndDownloadArtifact).toHaveBeenCalledWith(
-      `${environment.apiUrl}/api/product-marketplace-data/version-download/ai-assistant?url=https://example.com/ai-assistant-12.0.1.1.iar`, 'ai-assistant-12.0.1.1.iar'
+      `${environment.apiUrl}/api/product-marketplace-data/ai-assistant/document.doc/1.2.3`, 'ai-assistant-12.0.1.1.iar'
     );
 
     component.isCheckedAppForEngine = true;
@@ -417,7 +422,7 @@ describe('ProductDetailVersionActionComponent', () => {
     component.selectedVersion.set('12.0.0');
     component.downloadArtifact();
     expect(component.fetchAndDownloadArtifact).toHaveBeenCalledWith(
-      `${environment.apiUrl}/api/product-details/ai-assistant/artifact/zip-file?version=12.0.0&artifact=ai-assistant`,
+      `${environment.apiUrl}/api/product-details/ai-assistant/ai-assistant/12.0.0`,
       'ai-assistant-app-12.0.0.zip'
     );
   });
