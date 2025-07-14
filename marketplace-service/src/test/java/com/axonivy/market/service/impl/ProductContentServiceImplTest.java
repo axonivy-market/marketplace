@@ -109,14 +109,14 @@ class ProductContentServiceImplTest extends BaseSetup {
   }
 
   @Test
-  void shouldUpdateInstallationCount_whenDataWrittenToStream() throws Exception {
+  void testUpdateInstallationCount() {
     List<String> urls = List.of(MOCK_DOWNLOAD_URL);
 
     try (MockedStatic<FileUtils> fileUtilsMock = mockStatic(FileUtils.class)) {
       fileUtilsMock.when(() -> FileUtils.buildArtifactStreamFromArtifactUrls(eq(urls), any(OutputStream.class)))
           .thenAnswer(invocation -> {
             OutputStream out = invocation.getArgument(1);
-            out.write("test-data".getBytes()); // simulate writing
+            out.write("test-data".getBytes());
             return null;
           });
 

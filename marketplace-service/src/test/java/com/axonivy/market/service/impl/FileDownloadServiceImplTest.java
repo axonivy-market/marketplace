@@ -2,8 +2,10 @@ package com.axonivy.market.service.impl;
 
 import com.axonivy.market.BaseSetup;
 import com.axonivy.market.bo.DownloadOption;
+import com.axonivy.market.service.FileDownloadService;
 import com.axonivy.market.util.FileUtils;
 import com.axonivy.market.util.validator.AuthorizationUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -11,18 +13,22 @@ import org.mockito.Mock;
 import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.core.io.ByteArrayResource;
 import org.springframework.core.io.Resource;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.stream.Stream;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
@@ -212,5 +218,52 @@ class FileDownloadServiceImplTest extends BaseSetup {
     ResponseEntity<Resource> result = fileDownloadService.fetchUrlResource(MOCK_DOWNLOAD_URL);
     assertEquals(mockedResponse, result, "Content of stream should be the same with original stream.");
     verify(restTemplate).exchange(MOCK_DOWNLOAD_URL, HttpMethod.GET, null, Resource.class);
+  }
+
+  @Test
+  void getDefaultValueOfClass_shouldReturnEmptyString_whenStringClass() {
+    String stringResult = fileDownloadService.getDefaultValueOfClass(String.class);
+    assertEquals(StringUtils.EMPTY, stringResult, "Result should be empty String with String class");
+
+    byte[] byteResult = fileDownloadService.getDefaultValueOfClass(byte[].class);
+    assertThat(byteResult).isNotNull().isEmpty();
+
+    Integer integerResult = fileDownloadService.getDefaultValueOfClass(Integer.class);
+    assertNull(integerResult,"Result should be null with Integer class");
+  }
+
+
+  @Test
+  void testFetchUrlData() {
+    String expected = "test-data";
+    when(restTemplate.getForObject(DOWNLOAD_URL, String.class)).thenReturn(expected);
+    String result = fileDownloadService.fetchUrlData(DOWNLOAD_URL, String.class);
+
+    assertEquals(expected, result, "Fetched data should equal to original file's text.");
+
+    verify(restTemplate).getForObject(DOWNLOAD_URL, String.class);
+
+    when(restTemplate.getForObject(DOWNLOAD_URL, String.class)).thenThrow(new RestClientException("failed"));
+    result = fileDownloadService.fetchUrlData(DOWNLOAD_URL, String.class);
+
+    assertEquals(StringUtils.EMPTY, result, "Fetched data should equal default if there is exception");
+    verify(restTemplate, times(2)).getForObject(DOWNLOAD_URL, String.class);
+  }
+
+  @Test
+  void fetchUrlResource() {
+    ByteArrayResource resource = new ByteArrayResource("hello".getBytes(StandardCharsets.UTF_8));
+    ResponseEntity<Resource> responseEntity = ResponseEntity.ok(resource);
+    when(restTemplate.exchange(DOWNLOAD_URL, HttpMethod.GET, null, Resource.class)).thenReturn(responseEntity);
+    ResponseEntity<Resource> result = fileDownloadService.fetchUrlResource(DOWNLOAD_URL);
+
+    assertEquals(result, responseEntity, "Stream resource should come from valid stream");
+    verify(restTemplate).exchange(DOWNLOAD_URL, HttpMethod.GET, null, Resource.class);
+
+    when(restTemplate.exchange(DOWNLOAD_URL, HttpMethod.GET, null, Resource.class)).thenReturn(null);
+    result = fileDownloadService.fetchUrlResource(DOWNLOAD_URL);
+
+    assertNull(result, "Result should come from the rest template");
+    verify(restTemplate, times(2)).exchange(DOWNLOAD_URL, HttpMethod.GET, null, Resource.class);
   }
 }

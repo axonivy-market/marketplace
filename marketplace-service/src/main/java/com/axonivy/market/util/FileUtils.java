@@ -96,9 +96,7 @@ public class FileUtils {
   public static void clearDirectory(Path path) throws IOException {
     if (Files.exists(path)) {
       try (Stream<Path> paths = Files.walk(path)) {
-        paths.sorted(Comparator.reverseOrder())
-            .map(Path::toFile)
-            .forEach(File::delete);
+        paths.sorted(Comparator.reverseOrder()).map(Path::toFile).forEach(File::delete);
       }
     }
   }
@@ -119,7 +117,8 @@ public class FileUtils {
     try (var zipOut = new ZipOutputStream(outputStream)) {
       for (String fileUrl : urls) {
         ResponseEntity<Resource> resourceResponse = HttpFetchingUtils.fetchResourceUrl(fileUrl);
-        if (null == resourceResponse || !resourceResponse.getStatusCode().is2xxSuccessful() || resourceResponse.getBody() == null) {
+        if (null == resourceResponse || !resourceResponse.getStatusCode().is2xxSuccessful() ||
+            resourceResponse.getBody() == null) {
           continue;
         }
         String fileName = HttpFetchingUtils.extractFileNameFromUrl(fileUrl);

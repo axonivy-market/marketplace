@@ -83,7 +83,7 @@ class FileUtilsTest {
   }
 
   @Test
-  void testPrepareUnZipDirectory_IOException() throws IOException {
+  void testPrepareUnZipDirectoryWithException() throws IOException {
     Path tempDirectory = Files.createTempDirectory(TEST_DIR);
     try (MockedStatic<Files> mockedFiles = mockStatic(Files.class)) {
       mockedFiles.when(() -> Files.exists(tempDirectory)).thenReturn(true);
@@ -93,7 +93,7 @@ class FileUtilsTest {
   }
 
   @Test
-  void testUnzip_Success() throws Exception {
+  void testUnzip() throws Exception {
     Path tempDirectory = Files.createTempDirectory(TEST_DIR);
     String mockFileName = "test.zip";
     byte[] zipContent = createMockZipContent();
@@ -121,7 +121,7 @@ class FileUtilsTest {
   }
 
   @Test
-  void testBuildArtifactStreamFromArtifactUrls_zipsFilesAndConfig() throws Exception {
+  void testBuildArtifactStreamFromArtifactUrls() throws Exception {
     // Given
     String content1 = "Content of file 1";
     String content2 = "Content of file 2";
@@ -145,7 +145,7 @@ class FileUtilsTest {
       OutputStream returnedStream = FileUtils.buildArtifactStreamFromArtifactUrls(List.of(SAMPLE_DOWNLOAD_URL_1, SAMPLE_DOWNLOAD_URL_2), baos);
 
       // Then
-      assertSame(baos, returnedStream);
+      assertSame(baos, returnedStream, "the result stream should come from the input");
 
       // Verify ZIP content
       try (ZipInputStream zis = new ZipInputStream(new ByteArrayInputStream(baos.toByteArray()))) {
@@ -158,11 +158,11 @@ class FileUtilsTest {
           if (entryName.equals("file1.txt")) {
             foundFile1 = true;
             String extracted = new String(zis.readAllBytes());
-            assertEquals(content1, extracted);
+            assertEquals(content1, extracted, "The extracted value should equal given input text's stream");
           } else if (entryName.equals("file2.txt")) {
             foundFile2 = true;
             String extracted = new String(zis.readAllBytes());
-            assertEquals(content2, extracted);
+            assertEquals(content2, extracted, "The extracted value should equal given input text's stream");
           } else if (entryName.equals(DEPLOY_OPTION_YAML_FILE_NAME)) {
             foundConfig = true;
             assertTrue(zis.readAllBytes().length > 0, "Config file should not be empty");
@@ -176,7 +176,7 @@ class FileUtilsTest {
   }
 
   @Test
-  void testBuildArtifactStreamFromArtifactUrls_handlesBadUrlsGracefully() throws Exception {
+  void testBuildArtifactStreamFromArtifactUrlsWithBadUrl() throws Exception {
     try (MockedStatic<HttpFetchingUtils> utilities = mockStatic(HttpFetchingUtils.class)) {
       utilities.when(() -> HttpFetchingUtils.fetchResourceUrl(SAMPLE_DOWNLOAD_URL_1))
           .thenReturn(ResponseEntity.status(HttpStatus.NOT_FOUND).body(null));

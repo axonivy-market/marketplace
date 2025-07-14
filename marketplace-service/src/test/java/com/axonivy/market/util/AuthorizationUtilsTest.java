@@ -11,13 +11,6 @@ import static org.mockito.Mockito.*;
 
 class AuthorizationUtilsTest {
 
-//  private ConstraintValidatorContext context;
-//
-//  @BeforeEach
-//  void setup() throws Exception {
-//    context = mock(ConstraintValidatorContext.class);
-//  }
-
   @Test
   void testBearerTokenInvalidFormat() {
     String token = AuthorizationUtils.getBearerToken("Basic xyz123");
