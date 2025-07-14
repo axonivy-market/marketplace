@@ -2,7 +2,6 @@ package com.axonivy.market.service.impl;
 
 import com.axonivy.market.BaseSetup;
 import com.axonivy.market.bo.DownloadOption;
-import com.axonivy.market.service.FileDownloadService;
 import com.axonivy.market.util.FileUtils;
 import com.axonivy.market.util.validator.AuthorizationUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -221,12 +220,12 @@ class FileDownloadServiceImplTest extends BaseSetup {
   }
 
   @Test
-  void getDefaultValueOfClass_shouldReturnEmptyString_whenStringClass() {
+  void testGetDefaultValueOfClass() {
     String stringResult = fileDownloadService.getDefaultValueOfClass(String.class);
     assertEquals(StringUtils.EMPTY, stringResult, "Result should be empty String with String class");
 
     byte[] byteResult = fileDownloadService.getDefaultValueOfClass(byte[].class);
-    assertThat(byteResult).isNotNull().isEmpty();
+    assertEquals(0, byteResult.length, "result should be empty byte with bytes class");
 
     Integer integerResult = fileDownloadService.getDefaultValueOfClass(Integer.class);
     assertNull(integerResult,"Result should be null with Integer class");
@@ -251,7 +250,7 @@ class FileDownloadServiceImplTest extends BaseSetup {
   }
 
   @Test
-  void fetchUrlResource() {
+  void testFetchUrlResource() {
     ByteArrayResource resource = new ByteArrayResource("hello".getBytes(StandardCharsets.UTF_8));
     ResponseEntity<Resource> responseEntity = ResponseEntity.ok(resource);
     when(restTemplate.exchange(DOWNLOAD_URL, HttpMethod.GET, null, Resource.class)).thenReturn(responseEntity);

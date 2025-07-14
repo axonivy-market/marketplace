@@ -182,7 +182,7 @@ class FileUtilsTest {
           .thenReturn(ResponseEntity.status(HttpStatus.NOT_FOUND).body(null));
       ByteArrayOutputStream baos = new ByteArrayOutputStream();
       OutputStream returnedStream = FileUtils.buildArtifactStreamFromArtifactUrls(List.of(SAMPLE_DOWNLOAD_URL_1), baos);
-      assertSame(baos, returnedStream);
+      assertSame(baos, returnedStream, "The returned stream should come from the param");
 
       try (ZipInputStream zis = new ZipInputStream(new ByteArrayInputStream(baos.toByteArray()))) {
         ZipEntry entry;
