@@ -136,7 +136,7 @@ public class ProductDetailsController {
       @RequestParam(name = DESIGNER_VERSION, required = false) String designerVersion,
       @RequestParam(SHOW_DEV_VERSION) @Parameter(description = "Option to get Dev Version (Snapshot/ sprint release)",
           in = ParameterIn.QUERY) boolean isShowDevVersion) {
-    List<VersionAndUrlModel> versionList = versionService.getVersionsForDesigner(id, isShowDevVersion, designerVersion);
+    List<VersionAndUrlModel> versionList = versionService.getInstallableVersions(id, isShowDevVersion, designerVersion);
     return new ResponseEntity<>(versionList, HttpStatus.OK);
   }
 

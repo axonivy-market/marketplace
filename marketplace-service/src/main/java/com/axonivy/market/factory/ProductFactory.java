@@ -77,7 +77,6 @@ public class ProductFactory {
     product.setDeprecated(meta.getDeprecated());
     product.setCost(
         StringUtils.capitalize(StringUtils.defaultIfEmpty(meta.getCost(), MetaConstants.DEFAULT_COST_VALUE)));
-    product.setCompatibility(meta.getCompatibility());
     extractSourceUrl(product, meta);
     List<Artifact> artifacts = CollectionUtils.isEmpty(
         meta.getMavenArtifacts()) ? new ArrayList<>() : meta.getMavenArtifacts();

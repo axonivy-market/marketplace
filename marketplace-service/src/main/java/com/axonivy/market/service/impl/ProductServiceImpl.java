@@ -500,8 +500,6 @@ public class ProductServiceImpl implements ProductService {
       product.setNewestPublishedDate(lastUpdated);
       product.setNewestReleaseVersion(latestVersion);
     }
-    updateProductCompatibility(product, versionChanges);
-
     Optional.ofNullable(product.getReleasedVersions()).ifPresentOrElse(releasedVersion -> {},
         () -> product.setReleasedVersions(new ArrayList<>()));
 
@@ -529,16 +527,6 @@ public class ProductServiceImpl implements ProductService {
     return Date.from(newestPublishedDate.atZone(ZoneOffset.UTC).toInstant());
   }
 
-  private void updateProductCompatibility(Product product, List<String> mavenVersions) {
-    if (StringUtils.isBlank(product.getCompatibility())) {
-      String oldestVersion = VersionUtils.getOldestVersions(mavenVersions);
-      if (oldestVersion != null) {
-        String compatibility = getCompatibilityFromOldestVersion(oldestVersion);
-        product.setCompatibility(compatibility);
-      }
-    }
-  }
-
   public ProductModuleContent handleProductArtifact(String version, String productId, Artifact mavenArtifact,
       String productName) {
     String snapshotVersionValue = Strings.EMPTY;
@@ -559,23 +547,6 @@ public class ProductServiceImpl implements ProductService {
   private String createProductArtifactId(Artifact mavenArtifact) {
     return mavenArtifact.getArtifactId().contains(PRODUCT_ARTIFACT_POSTFIX) ? mavenArtifact.getArtifactId()
         : mavenArtifact.getArtifactId().concat(PRODUCT_ARTIFACT_POSTFIX);
-  }
-
-  // Cover 3 cases after removing non-numeric characters (8, 11.1 and 10.0.2)
-  @Override
-  public String getCompatibilityFromOldestVersion(String oldestVersion) {
-    if (StringUtils.isBlank(oldestVersion)) {
-      return Strings.EMPTY;
-    }
-    if (!oldestVersion.contains(DOT_SEPARATOR)) {
-      return oldestVersion + ".0+";
-    }
-    int firstDot = oldestVersion.indexOf(DOT_SEPARATOR);
-    int secondDot = oldestVersion.indexOf(DOT_SEPARATOR, firstDot + 1);
-    if (secondDot == -1) {
-      return oldestVersion.concat(PLUS);
-    }
-    return oldestVersion.substring(0, secondDot).concat(PLUS);
   }
 
   @Override
@@ -744,12 +715,12 @@ public class ProductServiceImpl implements ProductService {
   }
 
   /**
-   * MARP-975: Retrieve the list containing all versions for the designer and
+   * Retrieve the list containing all installable released versions and
    * split the versions to obtain the first prefix,then format them for compatibility range.
    * ex: 11.0+ , 10.0 - 12.0+ , ...
    */
   private String getCompatibilityRange(String productId, Boolean isDeprecatedProduct) {
-    return Optional.of(versionService.getVersionsForDesigner(productId, true, null))
+    return Optional.of(versionService.getInstallableVersions(productId, false, null))
         .filter(ObjectUtils::isNotEmpty)
         .map(versions -> versions.stream().map(VersionAndUrlModel::getVersion).toList())
         .map(versions -> VersionUtils.getCompatibilityRangeFromVersions(versions, isDeprecatedProduct)).orElse(null);
