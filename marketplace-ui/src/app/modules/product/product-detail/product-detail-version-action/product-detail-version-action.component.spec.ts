@@ -353,18 +353,26 @@ describe('ProductDetailVersionActionComponent', () => {
     expect(component.selectedVersion()).toBe(testVersion);
   });
 
-  it('should fetch and trigger download with correct parameters', () => {
+  it('should fetch and trigger download with correct parameters', fakeAsync(() => {
     const url = 'https://example.com/file.pdf';
-    const fileName = 'file.pdf';
+    const fileName = 'artifact.zip';
+    const testBlob = new Blob(['test'], { type: 'application/zip' });
     const downloadSpy = spyOn<any>(component, 'fetchAndDownloadArtifact').and.callThrough();
+    spyOn(component, 'onUpdateInstallationCount');
+    spyOn(component, 'triggerDownload');
 
     component.fetchAndDownloadArtifact(url, fileName);
     const req = httpMock.expectOne(url);
-
+    req.flush(testBlob);
+    tick();
     expect(req.request.method).toBe('GET');
     expect(req.request.responseType).toBe('blob');
     expect(downloadSpy).toHaveBeenCalledOnceWith(url, fileName);
-  });
+    expect(component.triggerDownload).toHaveBeenCalledWith(testBlob, fileName);
+    expect(component.onUpdateInstallationCount).toHaveBeenCalled();
+    expect(component.isDownloading()).toBeFalse();
+    httpMock.verify();
+  }));
 
   it('should call sendRequestToGetInstallationCount and emit installation count', fakeAsync(() => {
     productServiceMock.sendRequestToGetInstallationCount.and.returnValue(of(42));
