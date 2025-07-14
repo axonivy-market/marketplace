@@ -20,8 +20,11 @@ import com.axonivy.market.util.MavenUtils;
 import com.axonivy.market.util.ProductContentUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
+import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.data.util.StreamUtils;
 import org.springframework.stereotype.Service;
+import org.springframework.util.CollectionUtils;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -140,8 +143,8 @@ public class ProductContentServiceImpl implements ProductContentService {
   @Override
   public void buildArtifactZipStreamFromUrls(String productId, List<String> urls, OutputStream out) {
     FileUtils.buildArtifactStreamFromArtifactUrls(urls, out);
-    if (((ByteArrayOutputStream) out).size() != 0) {
-    productMarketplaceDataService.updateProductInstallationCount(productId);
+    if (ObjectUtils.isNotEmpty(urls)) {
+    productMarketplaceDataService.updateInstallationCountForProduct(productId, null);
     }
   }
 }

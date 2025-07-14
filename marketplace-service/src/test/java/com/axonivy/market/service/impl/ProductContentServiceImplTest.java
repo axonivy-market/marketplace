@@ -119,13 +119,11 @@ class ProductContentServiceImplTest extends BaseSetup {
             out.write("test-data".getBytes());
             return null;
           });
-
       ByteArrayOutputStream out = new ByteArrayOutputStream();
-
       productContentService.buildArtifactZipStreamFromUrls(MOCK_PRODUCT_ID, urls, out);
 
       assertTrue(out.size() >0, "The output should not be empty byte array");
-      verify(productMarketplaceDataService).updateProductInstallationCount(MOCK_PRODUCT_ID);
+      verify(productMarketplaceDataService).updateInstallationCountForProduct(MOCK_PRODUCT_ID, null);
     }
   }
 }
