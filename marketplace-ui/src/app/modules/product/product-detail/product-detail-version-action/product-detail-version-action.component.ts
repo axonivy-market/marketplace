@@ -39,7 +39,7 @@ import { MATOMO_DIRECTIVES } from 'ngx-matomo-client';
 import { LoadingComponentId } from '../../../../shared/enums/loading-component-id';
 import { LoadingService } from '../../../../core/services/loading/loading.service';
 import { API_URI } from '../../../../shared/constants/api.constant';
-import { HttpClient, HttpParams, HttpResponse } from '@angular/common/http';
+import { HttpClient, HttpResponse } from '@angular/common/http';
 import { finalize } from 'rxjs/operators';
 
 const showDevVersionCookieName = 'showDevVersions';
