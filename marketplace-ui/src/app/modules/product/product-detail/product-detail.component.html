@@ -81,7 +81,7 @@
               </div>
             </div>
             <!-- installation & download section -->
-            <app-product-version-action
+            <app-product-detail-version-action
               [ngClass]="{
                 'col-xl-4':
                   productDetailActionType() ===
@@ -96,7 +96,7 @@
               [actionType]="productDetailActionType()"
               (selectedVersionChange)="
                 loadDetailTabs($event)
-              "></app-product-version-action>
+              "></app-product-detail-version-action>
           </div>
         }
       </div>

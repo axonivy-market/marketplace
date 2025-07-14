@@ -62,7 +62,7 @@ const ANCHOR_ELEMENT = 'a';
 const DELAY_TIMEOUT = 500;
 
 @Component({
-  selector: 'app-product-version-action',
+  selector: 'app-product-detail-version-action',
   standalone: true,
   imports: [
     CommonModule,
