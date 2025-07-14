@@ -76,5 +76,14 @@ describe('ProductFeedbackComponent', () => {
     component.toggleContent();
     expect(component.feedback.isExpanded).toBe(false);
   });
+
+  it('should update scrollHeight and clientHeight correctly via updateHeights()', () => {
+    component['contentElement'] = mockElementRef;
+
+    component['updateHeights']();
+
+    expect(component['scrollHeight']()).toBe(200);
+    expect(component['clientHeight']()).toBe(100);
+  });
 });
 
