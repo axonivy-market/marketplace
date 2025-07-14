@@ -134,7 +134,7 @@ export class ProductComponent implements AfterViewInit, OnDestroy {
 
       this.router.events?.subscribe(event => {
         if (event instanceof NavigationStart) {
-          const win = this.windowRef.nativeWindow; // ✅ safe check
+          const win = this.windowRef.nativeWindow;
           win?.scrollTo(0, 0);
         }
       });
@@ -149,7 +149,7 @@ export class ProductComponent implements AfterViewInit, OnDestroy {
 
   viewProductDetail(productId: string) {
     if (this.isRESTClient()) {
-      const win = this.windowRef.nativeWindow; // ✅ safe access
+      const win = this.windowRef.nativeWindow;
       if (win) {
         win.location.href = `/${productId}`;
         return;
