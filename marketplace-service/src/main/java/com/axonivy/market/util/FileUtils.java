@@ -147,7 +147,7 @@ public class FileUtils {
     var entry = new ZipEntry(fileName);
     zipOut.putNextEntry(entry);
     try {
-      FileUtils.writeBlobAsChunks(in, zipOut);
+      writeBlobAsChunks(in, zipOut);
     } finally {
       zipOut.closeEntry();
     }
