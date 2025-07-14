@@ -8,6 +8,7 @@ import { CookieService } from 'ngx-cookie-service';
 import { AuthService } from './auth.service';
 import { provideHttpClient, withInterceptorsFromDi } from '@angular/common/http';
 import { TOKEN_KEY } from '../shared/constants/common.constant';
+import { environment } from '../../environments/environment';
 
 describe('AuthService', () => {
   let service: AuthService;
@@ -131,5 +132,73 @@ describe('AuthService', () => {
     const result = service['extractNumberOfExpiredDay'](token);
 
     expect(result).toBe(1);
+  });
+
+  it('should fetch user info successfully', () => {
+    const token = 'mockToken';
+    const mockUserResponse = {
+      login: 'mockuser',
+      name: 'Mock User'
+    };
+
+    service.getUserInfo(token).subscribe(user => {
+      expect(user).toEqual(mockUserResponse);
+    });
+
+    const req = httpMock.expectOne(`${environment.githubApiUrl}/user`);
+    expect(req.request.method).toBe('GET');
+    expect(req.request.headers.get('Authorization')).toBe(`Bearer ${token}`);
+    expect(req.request.headers.get('Accept')).toBe('application/vnd.github+json');
+
+    req.flush(mockUserResponse);
+  });
+
+  it('should return fallback user when request fails', () => {
+    const token = 'mockToken';
+
+    service.getUserInfo(token).subscribe(user => {
+      expect(user).toEqual({ login: '', name: null });
+    });
+
+    const req = httpMock.expectOne(`${environment.githubApiUrl}/user`);
+    expect(req.request.method).toBe('GET');
+
+    req.error(new ErrorEvent('Network error'));
+  });
+
+  it('should return user\'s name if available', () => {
+    const token = 'mockToken';
+    const mockUser = { login: 'mockuser', name: 'Mock User' };
+
+    service.getDisplayNameFromAccessToken(token).subscribe(name => {
+      expect(name).toBe('Mock User');
+    });
+
+    const req = httpMock.expectOne(`${environment.githubApiUrl}/user`);
+    req.flush(mockUser);
+  });
+
+  it('should return login if name is null', () => {
+    const token = 'mockToken';
+    const mockUser = { login: 'mockuser', name: null };
+
+    service.getDisplayNameFromAccessToken(token).subscribe(name => {
+      expect(name).toBe('mockuser');
+    });
+
+    const req = httpMock.expectOne(`${environment.githubApiUrl}/user`);
+    req.flush(mockUser);
+  });
+
+  it('should return null if both name and login are missing', () => {
+    const token = 'mockToken';
+    const mockUser = { login: null, name: null };
+
+    service.getDisplayNameFromAccessToken(token).subscribe(name => {
+      expect(name).toBeNull();
+    });
+
+    const req = httpMock.expectOne(`${environment.githubApiUrl}/user`);
+    req.flush(mockUser);
   });
 });
