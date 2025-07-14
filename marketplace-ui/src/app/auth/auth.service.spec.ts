@@ -201,4 +201,47 @@ describe('AuthService', () => {
     const req = httpMock.expectOne(`${environment.githubApiUrl}/user`);
     req.flush(mockUser);
   });
+
+  it('should return true if token is expired', () => {
+    const token = 'expiredToken';
+    const decoded = {
+      exp: Math.floor(Date.now() / 1000) - 60 // expired 1 minute ago
+    };
+
+    spyOn(service as any, 'decodeToken').and.returnValue(decoded);
+
+    const result = (service as any)['isTokenExpired'](token);
+    expect(result).toBeTrue();
+  });
+
+  it('should return false if token is not expired', () => {
+    const token = 'validToken';
+    const decoded = {
+      exp: Math.floor(Date.now() / 1000) + 60 // expires in 1 minute
+    };
+
+    spyOn(service as any, 'decodeToken').and.returnValue(decoded);
+
+    const result = (service as any)['isTokenExpired'](token);
+    expect(result).toBeFalse();
+  });
+
+  it('should return false if decoded token has no exp', () => {
+    const token = 'noExpToken';
+    const decoded = {}; // no exp field
+
+    spyOn(service as any, 'decodeToken').and.returnValue(decoded);
+
+    const result = (service as any)['isTokenExpired'](token);
+    expect(result).toBeFalse();
+  });
+
+  it('should return true if decoding fails', () => {
+    const token = 'badToken';
+
+    spyOn(service as any, 'decodeToken').and.throwError('Invalid token');
+
+    const result = (service as any)['isTokenExpired'](token);
+    expect(result).toBeTrue();
+  });
 });
