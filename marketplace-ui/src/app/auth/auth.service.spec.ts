@@ -166,7 +166,7 @@ describe('AuthService', () => {
     req.error(new ErrorEvent('Network error'));
   });
 
-  it('should return user\'s name if available', () => {
+  it('getDisplayNameFromAccessToken should return user\'s name if available', () => {
     const token = 'mockToken';
     const mockUser = { login: 'mockuser', name: 'Mock User' };
 
@@ -178,7 +178,7 @@ describe('AuthService', () => {
     req.flush(mockUser);
   });
 
-  it('should return login if name is null', () => {
+  it('getDisplayNameFromAccessToken should return login if name is null', () => {
     const token = 'mockToken';
     const mockUser = { login: 'mockuser', name: null };
 
@@ -190,7 +190,7 @@ describe('AuthService', () => {
     req.flush(mockUser);
   });
 
-  it('should return null if both name and login are missing', () => {
+  it('getDisplayNameFromAccessToken should return null if both name and login are missing', () => {
     const token = 'mockToken';
     const mockUser = { login: null, name: null };
 
@@ -243,5 +243,54 @@ describe('AuthService', () => {
 
     const result = (service as any)['isTokenExpired'](token);
     expect(result).toBeTrue();
+  });
+
+  it('getDisplayName should return decoded name if available', () => {
+    const token = 'validToken';
+    const decoded = { name: 'Test Name', username: 'testuser' };
+
+    spyOn(service, 'getToken').and.returnValue(token);
+    spyOn(service as any, 'decodeToken').and.returnValue(decoded);
+
+    const result = service.getDisplayName();
+    expect(result).toBe('Test Name');
+  });
+
+  it('getDisplayName should return username if name is null', () => {
+    const token = 'validToken';
+    const decoded = { name: null, username: 'testuser' };
+
+    spyOn(service, 'getToken').and.returnValue(token);
+    spyOn(service as any, 'decodeToken').and.returnValue(decoded);
+
+    const result = service.getDisplayName();
+    expect(result).toBe('testuser');
+  });
+
+  it('getDisplayName should return null if getToken returns null', () => {
+    spyOn(service, 'getToken').and.returnValue(null);
+
+    const result = service.getDisplayName();
+    expect(result).toBeNull();
+  });
+
+  it('getDisplayName should return null if decodeToken returns null', () => {
+    const token = 'invalidToken';
+
+    spyOn(service, 'getToken').and.returnValue(token);
+    spyOn(service as any, 'decodeToken').and.returnValue(null);
+
+    const result = service.getDisplayName();
+    expect(result).toBeNull();
+  });
+
+  it('getUserId should return null if decodeToken returns null', () => {
+    const token = 'invalidToken';
+
+    spyOn(service, 'getToken').and.returnValue(token);
+    spyOn(service as any, 'decodeToken').and.returnValue(null);
+
+    const result = service.getUserId();
+    expect(result).toBeNull();
   });
 });
