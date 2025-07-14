@@ -422,7 +422,7 @@ describe('ProductDetailVersionActionComponent', () => {
     component.selectedVersion.set('12.0.0');
     component.downloadArtifact();
     expect(component.fetchAndDownloadArtifact).toHaveBeenCalledWith(
-      `${environment.apiUrl}/api/product-details/ai-assistant/ai-assistant/12.0.0`,
+      `${environment.apiUrl}/api/product-details/ai-assistant/ai-assistant/12.0.0/zip-file`,
       'ai-assistant-app-12.0.0.zip'
     );
   });

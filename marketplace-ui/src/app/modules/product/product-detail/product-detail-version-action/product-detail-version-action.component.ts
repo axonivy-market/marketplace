@@ -270,7 +270,7 @@ export class ProductDetailVersionActionComponent implements AfterViewInit {
         this.fetchAndDownloadArtifact(downloadUrl, this.selectedArtifact.substring(this.selectedArtifact.lastIndexOf('/') + 1));
       }
     } else if (this.isCheckedAppForEngine) {
-      downloadUrl = `${this.getMarketplaceServiceUrl()}/${API_URI.PRODUCT_DETAILS}/${this.productId}/${this.selectedArtifactId}/${version}`;
+      downloadUrl = `${this.getMarketplaceServiceUrl()}/${API_URI.PRODUCT_DETAILS}/${this.productId}/${this.selectedArtifactId}/${version}/zip-file`;
       this.fetchAndDownloadArtifact(downloadUrl, `${this.selectedArtifactId}-app-${version}.zip`);
     } else {
       return;
