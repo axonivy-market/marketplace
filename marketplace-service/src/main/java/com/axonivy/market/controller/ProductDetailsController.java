@@ -2,7 +2,6 @@ package com.axonivy.market.controller;
 
 import com.axonivy.market.assembler.GithubReleaseModelAssembler;
 import com.axonivy.market.assembler.ProductDetailModelAssembler;
-import com.axonivy.market.bo.VersionDownload;
 import com.axonivy.market.entity.Product;
 import com.axonivy.market.model.GitHubReleaseModel;
 import com.axonivy.market.model.MavenArtifactVersionModel;
@@ -26,14 +25,18 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PagedResourcesAssembler;
 import org.springframework.hateoas.Link;
 import org.springframework.hateoas.PagedModel;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.util.CollectionUtils;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.servlet.mvc.method.annotation.StreamingResponseBody;
 
 import java.io.IOException;
 import java.util.List;
@@ -91,7 +94,8 @@ public class ProductDetailsController {
     return new ResponseEntity<>(model, HttpStatus.OK);
   }
 
-  @GetMapping(BY_ID)  @Operation(summary = "get product detail by ID", description = "Return product detail by product id (from meta.json)")
+  @GetMapping(BY_ID)
+  @Operation(summary = "get product detail by ID", description = "Return product detail by product id (from meta.json)")
   public ResponseEntity<ProductDetailModel> findProductDetails(
       @PathVariable(ID) @Parameter(description = "Product id (from meta.json)", example = "approval-decision-utils",
           in = ParameterIn.PATH) String id,
@@ -205,32 +209,32 @@ public class ProductDetailsController {
   @GetMapping(ARTIFACTS_AS_ZIP)
   @Operation(summary = "Get the download steam of artifact and it's dependencies by it's id and target version",
       description = "Return the download url of artifact from version and id")
-  public ResponseEntity<VersionDownload> downloadZipArtifact(
+  public ResponseEntity<StreamingResponseBody> downloadZipArtifact(
       @PathVariable(value = ID) @Parameter(in = ParameterIn.PATH, example = "demos") String id,
-      @RequestParam(value = VERSION) @Parameter(in = ParameterIn.QUERY, example = "10.0") String version,
-      @RequestParam(value = ARTIFACT) @Parameter(in = ParameterIn.QUERY, example = "demos-app") String artifactId) {
-
-    // Open stream as async to save the server resources
-    VersionDownload result = productContentService.downloadZipArtifactFile(id, artifactId, version);
-
-    if (result == null) {
-      return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+      @PathVariable(value = VERSION) @Parameter(in = ParameterIn.QUERY, example = "10.0") String version,
+      @PathVariable(value = ARTIFACT_ID) @Parameter(in = ParameterIn.QUERY, example = "demos-app") String artifactId) {
+    List<String> dependencyUrls = productContentService.getDependencyUrls(id, artifactId, version);
+    if (CollectionUtils.isEmpty(dependencyUrls)) {
+      return ResponseEntity.notFound().build();
     }
-    return new ResponseEntity<>(result, HttpStatus.OK);
+    StreamingResponseBody streamingBody = outputStream -> productContentService.buildArtifactZipStreamFromUrls(id,
+        dependencyUrls, outputStream);
+    return ResponseEntity.ok().header(HttpHeaders.CONTENT_DISPOSITION, "attachment").contentType(
+        MediaType.APPLICATION_OCTET_STREAM).body(streamingBody);
   }
 
-  private void addModelLinks(ProductDetailModel model, Product product, String version, String path){
+  private void addModelLinks(ProductDetailModel model, Product product, String version, String path) {
     String productId = Optional.of(product).map(Product::getId).orElse(StringUtils.EMPTY);
     if (path.equals(BEST_MATCH_BY_ID_AND_VERSION)) {
       Link link = linkTo(
               methodOn(ProductDetailsController.class).findProductJsonContent(productId,
-                      product.getBestMatchVersion(),version)).withSelfRel();
+                      product.getBestMatchVersion(), version)).withSelfRel();
       model.setMetaProductJsonUrl(link.getHref());
     }
     model.add(getSelfLinkForProduct(productId, version, path));
   }
 
-  public Link getSelfLinkForProduct(String productId, String version, String path){
+  public Link getSelfLinkForProduct(String productId, String version, String path) {
     ResponseEntity<ProductDetailModel> selfLinkWithVersion;
     selfLinkWithVersion = switch (path) {
       case BEST_MATCH_BY_ID_AND_VERSION ->

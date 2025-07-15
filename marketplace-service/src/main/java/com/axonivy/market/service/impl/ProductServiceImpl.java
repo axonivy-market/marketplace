@@ -31,6 +31,7 @@ import com.axonivy.market.repository.ProductMarketplaceDataRepository;
 import com.axonivy.market.repository.ProductModuleContentRepository;
 import com.axonivy.market.repository.ProductRepository;
 import com.axonivy.market.service.ExternalDocumentService;
+import com.axonivy.market.service.FileDownloadService;
 import com.axonivy.market.service.ImageService;
 import com.axonivy.market.service.MetadataService;
 import com.axonivy.market.service.ProductContentService;
@@ -40,6 +41,7 @@ import com.axonivy.market.service.VersionService;
 import com.axonivy.market.util.MavenUtils;
 import com.axonivy.market.util.MetadataReaderUtils;
 import com.axonivy.market.util.VersionUtils;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.ObjectUtils;
@@ -83,6 +85,7 @@ import static org.apache.commons.lang3.StringUtils.EMPTY;
 
 @Log4j2
 @Service
+@RequiredArgsConstructor
 public class ProductServiceImpl implements ProductService {
   private static final String INITIAL_VERSION = "1.0";
   private final ProductRepository productRepo;
@@ -101,40 +104,12 @@ public class ProductServiceImpl implements ProductService {
   private final ProductMarketplaceDataService productMarketplaceDataService;
   private final ProductMarketplaceDataRepository productMarketplaceDataRepo;
   private final MavenArtifactVersionRepository mavenArtifactVersionRepository;
-  private GHCommit lastGHCommit;
+  private final FileDownloadService fileDownloadService;
   private final VersionService versionService;
+  private GHCommit lastGHCommit;
   private GitHubRepoMeta marketRepoMeta;
   @Value("${market.github.market.branch}")
   private String marketRepoBranch;
-
-  public ProductServiceImpl(ProductRepository productRepo, ProductModuleContentRepository productModuleContentRepo,
-      GHAxonIvyMarketRepoService axonIvyMarketRepoService, GHAxonIvyProductRepoService axonIvyProductRepoService,
-      GitHubRepoMetaRepository gitHubRepoMetaRepo, GitHubService gitHubService,
-      ProductJsonContentRepository productJsonContentRepo, ImageRepository imageRepo,
-      MetadataRepository metadataRepo, ImageService imageService,
-      ProductContentService productContentService, MetadataService metadataService,
-      ProductMarketplaceDataService productMarketplaceDataService, ExternalDocumentService externalDocumentService,
-      ProductMarketplaceDataRepository productMarketplaceDataRepo,
-      MavenArtifactVersionRepository mavenArtifactVersionRepository,
-      VersionService versionService) {
-    this.productRepo = productRepo;
-    this.productModuleContentRepo = productModuleContentRepo;
-    this.axonIvyMarketRepoService = axonIvyMarketRepoService;
-    this.axonIvyProductRepoService = axonIvyProductRepoService;
-    this.gitHubRepoMetaRepo = gitHubRepoMetaRepo;
-    this.gitHubService = gitHubService;
-    this.metadataRepo = metadataRepo;
-    this.productJsonContentRepo = productJsonContentRepo;
-    this.imageRepo = imageRepo;
-    this.imageService = imageService;
-    this.metadataService = metadataService;
-    this.productContentService = productContentService;
-    this.productMarketplaceDataService = productMarketplaceDataService;
-    this.externalDocumentService = externalDocumentService;
-    this.productMarketplaceDataRepo = productMarketplaceDataRepo;
-    this.mavenArtifactVersionRepository = mavenArtifactVersionRepository;
-    this.versionService = versionService;
-  }
 
   @Override
   public Page<Product> findProducts(String type, String keyword, String language, Boolean isRESTClient,
@@ -336,7 +311,6 @@ public class ProductServiceImpl implements ProductService {
         mappingVendorImageFromGHContent(product, content);
         mappingLogoFromGHContent(product, content);
       }
-
       if (BooleanUtils.isTrue(resetSync)) {
         productModuleContentRepo.deleteAllByProductId(product.getId());
         productJsonContentRepo.deleteAllByProductId(product.getId());
@@ -464,7 +438,7 @@ public class ProductServiceImpl implements ProductService {
   private void getMetadataContent(Artifact artifact, Product product, List<String> nonSyncReleasedVersions) {
     String metadataUrl = MavenUtils.buildMetadataUrlFromArtifactInfo(artifact.getRepoUrl(), artifact.getGroupId(),
         createProductArtifactId(artifact));
-    String metadataContent = MavenUtils.getMetadataContentFromUrl(metadataUrl);
+    var metadataContent = fileDownloadService.getFileAsString(metadataUrl);
     if (StringUtils.isNotBlank(metadataContent)) {
       updateContentsFromMavenXML(product, metadataContent, artifact, nonSyncReleasedVersions);
     }
