@@ -4,7 +4,6 @@ import com.axonivy.market.BaseSetup;
 import com.axonivy.market.bo.DownloadOption;
 import com.axonivy.market.util.FileUtils;
 import com.axonivy.market.util.validator.AuthorizationUtils;
-import org.apache.commons.lang3.StringUtils;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -16,7 +15,6 @@ import org.springframework.core.io.ByteArrayResource;
 import org.springframework.core.io.Resource;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 
 import java.io.File;
