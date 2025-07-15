@@ -77,7 +77,6 @@ public class Product extends AuditableEntity<String> {
   private String statusBadgeUrl;
   private String language;
   private String industry;
-  private String compatibility;
   private Boolean validate;
   private Boolean contactUs;
   @Transient

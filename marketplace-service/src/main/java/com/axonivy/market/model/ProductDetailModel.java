@@ -45,8 +45,6 @@ public class ProductDetailModel extends ProductModel {
   private String language;
   @Schema(description = "Product industry", example = "Cross-Industry")
   private String industry;
-  @Schema(description = "Compatibility", example = "10.0+")
-  private String compatibility;
   @Schema(description = "Can contact us", example = "false")
   private Boolean contactUs;
   @Schema(description = "Is deprecated product", example = "false")
@@ -56,6 +54,7 @@ public class ProductDetailModel extends ProductModel {
   private int installationCount;
   @Schema(description = "The api url to get metadata from product.json")
   private String metaProductJsonUrl;
+  @Schema(description = "Compatibility", example = "10.0+")
   private String compatibilityRange;
   private boolean isMavenDropins;
 
@@ -88,7 +87,6 @@ public class ProductDetailModel extends ProductModel {
     model.setStatusBadgeUrl(product.getStatusBadgeUrl());
     model.setLanguage(product.getLanguage());
     model.setIndustry(product.getIndustry());
-    model.setCompatibility(product.getCompatibility());
     model.setContactUs(product.getContactUs());
     model.setDeprecated(product.getDeprecated());
     model.setCost(product.getCost());

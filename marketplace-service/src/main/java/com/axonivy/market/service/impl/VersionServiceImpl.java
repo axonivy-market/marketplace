@@ -94,7 +94,7 @@ public class VersionServiceImpl implements VersionService {
   }
 
   @Override
-  public List<VersionAndUrlModel> getVersionsForDesigner(String productId,
+  public List<VersionAndUrlModel> getInstallableVersions(String productId,
       Boolean isShowDevVersion, String designerVersion) {
     List<VersionAndUrlModel> versionAndUrlList = new ArrayList<>();
     List<String> releasedVersions =
