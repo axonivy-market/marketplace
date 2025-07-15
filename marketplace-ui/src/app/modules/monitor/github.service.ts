@@ -6,21 +6,24 @@ import { API_URI } from '../../shared/constants/api.constant';
 export interface Repository {
   name: string;
   html_url: string;
-  archived: boolean;
-  is_template: boolean;
-  default_branch: string;
   language: string | null;
   updated_at: string;
-
-}
-export interface RepoStatus {
-  name: string;
-  actionsUrl: string;
   ciBadgeUrl: string;
   devBadgeUrl: string;
-  repoUrl: string;
-  testReport?: TestReport;
+  lastUpdated: Date;
+  workflowRepo: WorkflowStatus[];
 }
+
+export interface WorkflowStatus {
+  type: string;
+  passed: number;
+  failed: number;
+  realPassed: number;
+  realFailed: number;
+  mockPassed: number;
+  mockFailed: number;
+}
+
 export interface TestStep {
   name: string;
   status: 'passed' | 'failed' | 'skipped';
@@ -41,10 +44,13 @@ export class GithubService {
   getRepositories(): Observable<Repository[]> {
     return this.http.get<Repository[]>(API_URI.GITHUB_REPOS);
   }
-
+  syncGithubRepos(): Observable<Repository[]> {
+    return this.http.get<Repository[]>(API_URI.SYNC_GITHUB_REPOS);
+  }
   getTestReport(repo: string, workflow: string): Observable<TestReport> {
     const url = `${API_URI.GITHUB_REPORT}/${repo}/${workflow}`;
     return this.http.get<TestReport>(url);
   }
+
 }
 

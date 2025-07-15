@@ -11,7 +11,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-import java.time.LocalDateTime;
+import java.util.Date;
 import java.util.List;
 @Getter
 @Setter
@@ -19,19 +19,17 @@ import java.util.List;
 @AllArgsConstructor
 @Builder
 @Entity
-@Table(name = "repository")
-public class Repository extends AuditableIdEntity{
+@Table(name = "github_repo")
+public class GithubRepo extends AuditableIdEntity{
 
   @Id
   private String id;
   private String name;
   private String htmlUrl;
-  private boolean archived;
-  private boolean isTemplate;
-  private String defaultBranch;
   private String language;
-  private LocalDateTime lastUpdated;
-
+  private Date lastUpdated;
+  private String ciBadgeUrl;
+  private String devBadgeUrl;
   @OneToMany(mappedBy = "repository", cascade = CascadeType.ALL, orphanRemoval = true)
-  private List<WorkflowRepository> workflows;
+  private List<WorkflowRepo> workflows;
 }

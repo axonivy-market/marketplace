@@ -10,5 +10,6 @@ export const API_URI = {
   PRODUCT_MARKETPLACE_DATA: `${API}/product-marketplace-data`,
   PREVIEW_RELEASE: `${API}/release-preview`,
   GITHUB_REPOS: `${API}/github-repos/repos`,
+  SYNC_GITHUB_REPOS: `${API}/github-repos/sync-github-monitor`,
   GITHUB_REPORT: `${API}/github-repos`,
 };

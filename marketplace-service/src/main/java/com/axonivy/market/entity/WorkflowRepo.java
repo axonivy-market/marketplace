@@ -15,7 +15,7 @@ import java.util.List;
 @Builder
 @Entity
 @Table(name = "workflow")
-public class WorkflowRepository extends AuditableIdEntity{
+public class WorkflowRepo extends AuditableIdEntity{
 
   @Id
   private String id;
@@ -28,8 +28,8 @@ public class WorkflowRepository extends AuditableIdEntity{
   private int realFailed;
 
   @ManyToOne
-  @JoinColumn(name = "repository_name")
-  private Repository repository;
+  @JoinColumn(name = "github_repo")
+  private GithubRepo repository;
 
   @OneToMany(mappedBy = "workflow", cascade = CascadeType.ALL, orphanRemoval = true)
   private List<TestSteps> testSteps;

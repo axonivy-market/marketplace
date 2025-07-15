@@ -240,8 +240,6 @@ public class FileDownloadServiceImpl implements FileDownloadService {
     var urlArrays = Arrays.asList(url.split(SLASH));
     Collections.reverse(urlArrays);
     var urlIterator = urlArrays.iterator();
-
-    // Only get 3 last paths of url. e.g: artifactGroup/artifact/version
     int index = 0;
     List<String> paths = new ArrayList<>();
     do {

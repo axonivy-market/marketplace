@@ -41,7 +41,11 @@ import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.UncheckedIOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -393,5 +397,40 @@ public class GitHubServiceImpl implements GitHubService {
 
   public GHRelease getGitHubLatestReleaseByProductId(String repositoryName) throws IOException {
     return this.getRepository(repositoryName).getLatestRelease();
+  }
+
+  @Override
+  public GHWorkflowRun getLatestWorkflowRun(GHRepository repo, String workflowFileName) throws IOException {
+    try {
+      PagedIterable<GHWorkflowRun> runs = repo.getWorkflow(workflowFileName).listRuns();
+      return runs.iterator().hasNext() ? runs.iterator().next() : null;
+    } catch (GHFileNotFoundException e) {
+      log.warn("Workflow file '{}' not found in repository '{}'", workflowFileName, repo.getFullName());
+      return null;
+    }
+  }
+
+  @Override
+  public GHArtifact getExportTestArtifact(GHWorkflowRun run) throws IOException {
+    for (GHArtifact artifact : run.listArtifacts()) {
+      if ("export-test-json-file".equals(artifact.getName())) {
+        return artifact;
+      }
+    }
+    return null;
+  }
+
+  @Override
+  public InputStream downloadArtifactZip(GHArtifact artifact) throws IOException {
+    ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+    artifact.download(inputStream -> {
+      try (inputStream; outputStream) {
+        inputStream.transferTo(outputStream);
+      } catch (IOException e) {
+        throw new UncheckedIOException("Failed to download artifact zip", e);
+      }
+      return null;
+    });
+    return new ByteArrayInputStream(outputStream.toByteArray());
   }
 }

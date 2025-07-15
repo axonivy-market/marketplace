@@ -1,6 +1,12 @@
 package com.axonivy.market.service;
 
+import com.axonivy.market.entity.GithubRepo;
+import com.axonivy.market.model.GithubReposModel;
+
+import java.io.IOException;
+import java.util.List;
+
 public interface GithubReposService {
-  String fetchAllRepositories();
-  String fetchWorkflowRuns(String repo, String workflow);
+  void loadAndStoreTestReports() throws IOException;
+  List<GithubReposModel> fetchAllRepositories();
 }

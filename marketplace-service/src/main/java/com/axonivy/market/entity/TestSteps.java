@@ -32,5 +32,5 @@ public class TestSteps extends AuditableIdEntity{
 
   @ManyToOne
   @JoinColumn(name = "workflow_id")
-  private WorkflowRepository workflow;
+  private WorkflowRepo workflow;
 }

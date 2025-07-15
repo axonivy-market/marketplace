@@ -1,33 +1,70 @@
 <div class="container">
-  <h2>GitHub Action Monitor</h2>
+  <div class="header">
+    <h2>GitHub Repository Security Monitor</h2>
+    <h3>Keep track of your repositories at a glance.</h3>
+    <h3><a class="reload-link" title="Reload data" (click)="onSubmit()">Reload Data</a></h3>
+  </div>
+  
+  @if (!loading && repositories.length) {
+    <div class="repo-grid">
+      @for (repo of repositories; track $index) {
+        <div class="repo-card">
+          <div class="repo-header">
+            <h3>{{ repo.name }}</h3>
+            <span class="visibility">{{ repo.language }}</span>
+          </div>
+
+          <div class="repo-info">
+            @if (repo.ciBadgeUrl) {
+              <div class="badge-row">
+                🏷️ CI build: <img [src]="repo.ciBadgeUrl" alt="CI Badge" />
+              </div>
+            }
+
+            @for (wf of repo.workflowRepo; track $index) {
+              @if (wf.type === 'CI') {
+                <div class="workflow">
+                 <p class="passed">✅ Passed: {{ wf.passed }}</p>
+                  <p class="failed">❌ Failed: {{ wf.failed }}</p>
+                  <div class="sub-status">
+                    Mock: {{ wf.mockPassed }}✅ / {{ wf.mockFailed }}❌ |
+                    Real: {{ wf.realPassed }}✅ / {{ wf.realFailed }}❌
+                  </div>
+                </div>
+              }
+            }
+
+            @if (repo.devBadgeUrl) {
+              <div class="badge-row">
+                🛠️ DEV build: <img [src]="repo.devBadgeUrl" alt="DEV Badge" />
+              </div>
+            }
+
+            @for (wf of repo.workflowRepo; track $index) {
+              @if (wf.type === 'DEV') {
+                <div class="workflow">
+                  <p class="passed">✅ Passed: {{ wf.passed }}</p>
+                  <p class="failed">❌ Failed: {{ wf.failed }}</p>
+                  <div class="sub-status">
+                    Mock: {{ wf.mockPassed }}✅ / {{ wf.mockFailed }}❌ |
+                    Real: {{ wf.realPassed }}✅ / {{ wf.realFailed }}❌
+                  </div>
+                </div>
+              }
+            }
+            <p><span class="icon">📅</span>Last Updated: {{ repo.lastUpdated | date:'short' }}</p>
+
+          </div>
+        </div>
+      }
+    </div>
+  }
 
   @if (loading) {
-    <div>Loading repositories...</div>
-  } @else if (errorMessage) {
-    <div class="error">{{ errorMessage }}</div>
-  } @else {
-    <ul>
-      @for (repo of repos; track repo.name) {
-        <li class="repo-item">
-          <div class="badges">
-            <img
-              [src]="repo.ciBadgeUrl"
-              (click)="loadReport(repo.name, 'ci.yml')"
-              (error)="onImageError($event)"
-              alt="CI Badge"
-              class="clickable"
-            />
-            <img
-              [src]="repo.devBadgeUrl"
-              (click)="loadReport(repo.name, 'dev.yml')"
-              (error)="onImageError($event)"
-              alt="DEV Badge"
-              class="clickable"
-            />
-          </div>
-          <h3>{{ repo.name }}</h3>
-        </li>
-      }
-    </ul>
+    <div class="loading">Loading repositories...</div>
+  }
+
+  @if (error) {
+    <div class="error">{{ error }}</div>
   }
 </div>

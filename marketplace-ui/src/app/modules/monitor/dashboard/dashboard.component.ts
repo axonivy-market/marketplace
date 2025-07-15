@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { GithubService, Repository, RepoStatus } from '../github.service';
+import { GithubService, Repository } from '../github.service';
 import { GITHUB_MARKET_ORG_URL } from '../../../shared/constants/common.constant';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
@@ -12,57 +12,39 @@ import { Router } from '@angular/router';
   styleUrl: './dashboard.component.scss'
 })
 export class DashboardComponent implements OnInit {
-  repos: RepoStatus[] = [];
+  repositories: Repository[] = [];
   loading = true;
-  errorMessage = '';
-  readonly org = 'axonivy-market';
+  error = '';
 
-  private readonly ignoredRepos = [
-    'market-up2date-keeper',
-    'market.axonivy.com',
-    'market-monitor',
-    'market'
-  ];
-
-  constructor(private githubService: GithubService, private router: Router) { }
+  constructor(private githubService: GithubService) { }
 
   ngOnInit(): void {
-    this.githubService.getRepositories().subscribe({
-      next: (repositories: Repository[]) => {
-        this.repos = repositories
-          .filter(repo =>
-            !this.ignoredRepos.includes(repo.name) &&
-            !repo.archived &&
-            !repo.is_template &&
-            repo.default_branch === 'master' &&
-            repo.language !== null
-          )
-          .map(repo => this.mapToRepoStatus(repo));
-        this.loading = false;
+    this.loadRepositories();
+  }
+
+  onSubmit(): void {
+    this.githubService.syncGithubRepos().subscribe({
+      next: () => {
+        console.log('Sync successful');
+        this.loadRepositories(); 
       },
-      error: (err: Error) => {
-        this.errorMessage = err.message;
-        this.loading = false;
+      error: (err) => {
+        console.error('Sync failed', err);
       }
     });
   }
 
-  private mapToRepoStatus(repo: Repository): RepoStatus {
-    const base = GITHUB_MARKET_ORG_URL + `/${repo.name}/actions/workflows`;
-    return {
-      name: repo.name,
-      repoUrl: repo.html_url,
-      actionsUrl: GITHUB_MARKET_ORG_URL + `/${repo.name}/actions`,
-      ciBadgeUrl: `${base}/ci.yml/badge.svg`,
-      devBadgeUrl: `${base}/dev.yml/badge.svg`
-    };
-  }
-
-  onImageError(event: Event): void {
-    (event.target as HTMLImageElement).style.display = 'none';
-  }
-  
-  loadReport(repo: string, workflow: string): void {
-    this.router.navigate(['/report', repo, workflow]);
+  loadRepositories(): void {
+    this.loading = true;
+    this.githubService.getRepositories().subscribe({
+      next: (data) => {
+        this.repositories = data;
+        this.loading = false;
+      },
+      error: (err) => {
+        this.error = err.message;
+        this.loading = false;
+      }
+    });
   }
 }
