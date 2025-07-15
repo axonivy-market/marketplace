@@ -88,13 +88,8 @@ export class ProductFeedbackService {
           const feedbacks = response._embedded?.feedbacks || [];
           const sortedFeedbacks = this.sortByDate(feedbacks, 'reviewDate');
 
-          const nonPendingFeedbacks = sortedFeedbacks.filter(
-            f =>
-              f?.feedbackStatus && f.feedbackStatus !== FeedbackStatus.PENDING
-          );
-          const pendingFeedbacks = sortedFeedbacks.filter(
-            f => f.feedbackStatus === FeedbackStatus.PENDING
-          );
+          const nonPendingFeedbacks = sortedFeedbacks.filter(f => f?.feedbackStatus && f.feedbackStatus !== FeedbackStatus.PENDING);
+          const pendingFeedbacks = sortedFeedbacks.filter(f => f.feedbackStatus === FeedbackStatus.PENDING);
           if (page === 0) {
             this.allFeedbacks.set(nonPendingFeedbacks);
             this.pendingFeedbacks.set(pendingFeedbacks);
@@ -108,9 +103,7 @@ export class ProductFeedbackService {
               ...pendingFeedbacks
             ]);
           }
-          this.pendingFeedbacks.set(
-            this.sortByDate(this.pendingFeedbacks(), 'updatedAt')
-          );
+          this.pendingFeedbacks.set(this.sortByDate(this.pendingFeedbacks(), 'updatedAt'));
         }),
         catchError(response => {
           if (
@@ -190,10 +183,7 @@ export class ProductFeedbackService {
         tap(response => {
           const approvedFeedbacks = (
             response._embedded?.feedbacks || []
-          ).filter(
-            f =>
-              f.feedbackStatus === FeedbackStatus.APPROVED || !f.feedbackStatus
-          );
+          ).filter(f =>f.feedbackStatus === FeedbackStatus.APPROVED || !f.feedbackStatus);
           if (page === 0) {
             this.feedbacks.set(approvedFeedbacks);
           } else {
@@ -223,9 +213,7 @@ export class ProductFeedbackService {
       }
 
       const hasApprovedFeedback = this.feedbacks().some(
-        f =>
-          f.userId === feedback.userId &&
-          (f.feedbackStatus === FeedbackStatus.APPROVED || !f.feedbackStatus)
+        f => f.userId === feedback.userId && (f.feedbackStatus === FeedbackStatus.APPROVED || !f.feedbackStatus)
       );
 
       if (hasApprovedFeedback && userFeedbacks.length === 2) {
