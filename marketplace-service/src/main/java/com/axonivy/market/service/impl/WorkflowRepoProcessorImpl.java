@@ -2,6 +2,7 @@ package com.axonivy.market.service.impl;
 
 import com.axonivy.market.entity.GithubRepo;
 import com.axonivy.market.entity.WorkflowRepo;
+import com.axonivy.market.service.WorkflowRepoProcessor;
 import com.fasterxml.jackson.databind.JsonNode;
 import org.springframework.stereotype.Service;
 
@@ -11,7 +12,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 @Service
-public class WorkflowRepoProcessorImpl {
+public class WorkflowRepoProcessorImpl implements WorkflowRepoProcessor {
   private static final Pattern TITLE_STATS_PATTERN = Pattern.compile(
       "(\\d+)\\s+passed,\\s+(\\d+)\\s+failed\\s+and\\s+(\\d+)\\s+skipped");
 

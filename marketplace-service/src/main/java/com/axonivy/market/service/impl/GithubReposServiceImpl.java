@@ -7,6 +7,7 @@ import com.axonivy.market.model.GithubReposModel;
 import com.axonivy.market.repository.GithubRepoRepository;
 import com.axonivy.market.repository.ProductRepository;
 import com.axonivy.market.service.GithubReposService;
+import com.axonivy.market.service.WorkflowService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -22,7 +23,7 @@ public class GithubReposServiceImpl implements GithubReposService {
   private final GithubRepoRepository githubRepoRepository;
   private final ProductRepository productRepository;
   private final GithubReposModelAssembler githubReposModelAssembler;
-  private final WorkflowServiceImpl workflowService;
+  private final WorkflowService workflowService;
 
   @Override
   public void loadAndStoreTestReports() {

@@ -17,8 +17,6 @@ import java.util.List;
 @Table(name = "workflow")
 public class WorkflowRepo extends AuditableIdEntity{
 
-  @Id
-  private String id;
   private String type;
   private int passed;
   private int failed;

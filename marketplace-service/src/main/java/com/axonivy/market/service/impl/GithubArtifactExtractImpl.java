@@ -1,5 +1,6 @@
 package com.axonivy.market.service.impl;
 
+import com.axonivy.market.service.GithubArtifactExtract;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -17,7 +18,7 @@ import java.util.zip.ZipInputStream;
 @Service
 @RequiredArgsConstructor
 @Slf4j
-public class GithubArtifactExtractImpl {
+public class GithubArtifactExtractImpl implements GithubArtifactExtract {
 
   public File extractZipToTempDir(InputStream zipStream, String name) {
     try {

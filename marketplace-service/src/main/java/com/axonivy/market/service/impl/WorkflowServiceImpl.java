@@ -8,7 +8,10 @@ import com.axonivy.market.github.service.GitHubService;
 import com.axonivy.market.repository.GithubRepoRepository;
 import com.axonivy.market.repository.TestStepsRepository;
 import com.axonivy.market.repository.WorkflowRepoRepository;
+import com.axonivy.market.service.GithubArtifactExtract;
 import com.axonivy.market.service.TestStepsService;
+import com.axonivy.market.service.WorkflowRepoProcessor;
+import com.axonivy.market.service.WorkflowService;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.transaction.Transactional;
@@ -25,22 +28,20 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;
 import java.util.Optional;
-import java.util.UUID;
-
 @Service
 @Log4j2
 @RequiredArgsConstructor
-public class WorkflowServiceImpl {
+public class WorkflowServiceImpl implements WorkflowService {
 
   @Value("${ignored.repos}")
   List<String> ignoredRepos;
   private final WorkflowRepoRepository workflowRepoRepository;
-  private final WorkflowRepoProcessorImpl workflowProcessor;
+  private final WorkflowRepoProcessor workflowProcessor;
   private final GithubRepoRepository githubRepoRepository;
   private final TestStepsRepository testStepsRepository;
   private final TestStepsService testStepsService;
   private final GitHubService gitHubService;
-  private final GithubArtifactExtractImpl githubArtifactExtract;
+  private final GithubArtifactExtract githubArtifactExtract;
   private static final String BADGE_URL = "https://github.com/%s/actions/workflows/%s/badge.svg";
 
   private static final String REPORT_FILE_NAME = "test_report.json";
@@ -143,7 +144,6 @@ public class WorkflowServiceImpl {
       return workflowProcessor.createWorkflowRepo(testData, repo, workflowType);
     } else {
       return WorkflowRepo.builder()
-          .id(UUID.randomUUID().toString())
           .repository(repo)
           .type(workflowType)
           .passed(0)
@@ -167,7 +167,6 @@ public class WorkflowServiceImpl {
 
   private GithubRepo createNewGithubRepo(GHRepository repo, String ciBadgeUrl, String devBadgeUrl) throws IOException {
     return GithubRepo.builder()
-        .id(UUID.randomUUID().toString())
         .name(repo.getName())
         .htmlUrl(repo.getHtmlUrl().toString())
         .language(repo.getLanguage())
