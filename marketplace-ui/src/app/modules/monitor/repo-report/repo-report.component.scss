@@ -1,12 +1,13 @@
-$gap-large: 38px;
-$gap-small: 24px;
+$gap-large: 48px;
+$gap-small: 30px;
 $height-header: 37px;
 
 .test-report {
-    padding: 1rem;
-    border-radius: 8px;
-
-
+    max-width: 1200px;
+    margin: 20px auto;
+    padding: 0 15px;
+    cursor: default;
+    
     h2 {
         margin: $height-header 0 $gap-large;
         text-align: center;
@@ -22,14 +23,14 @@ $height-header: 37px;
         display: flex;
         justify-content: space-between;
         align-items: center;
-        padding: 1rem $gap-large;
-        margin-bottom: $gap-small / 2;
+        padding: $gap-small;
+        margin-bottom:  $gap-small;
         border-left: 5px solid gray;
         background: var(--ivy-secondary-bg);
         border-radius: 4px;
         font-size: medium;
         width: calc(100% - 2rem);
-        height: 70px;
+        height: 50px;
 
         &.passed {
             border-color: #28a745;
@@ -58,4 +59,12 @@ $height-header: 37px;
             text-align: right;
         }
     }
+}
+
+.no-report {
+    width: 100%;
+    text-align: center;
+    color: var(--ivy-text-secondary-color);
+    font-size: 5rem;
+    padding: $gap-small;
 }

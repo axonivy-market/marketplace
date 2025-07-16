@@ -4,67 +4,67 @@
     <h3>Keep track of your repositories at a glance.</h3>
     <h3><a class="reload-link" title="Reload data" (click)="onSubmit()">Reload Data</a></h3>
   </div>
-  
+
   @if (!loading && repositories.length) {
-    <div class="repo-grid">
-      @for (repo of repositories; track $index) {
-        <div class="repo-card">
-          <div class="repo-header">
-            <h3>{{ repo.name }}</h3>
-            <span class="visibility">{{ repo.language }}</span>
-          </div>
+  <div class="repo-grid">
+    @for (repo of repositories; track $index) {
+    <div class="repo-card">
+      <div class="repo-header">
+        <h3>{{ repo.name }}</h3>
+        <span class="visibility">{{ repo.language }}</span>
+      </div>
 
-          <div class="repo-info">
-            @if (repo.ciBadgeUrl) {
-              <div class="badge-row">
-                🏷️ CI build: <img [src]="repo.ciBadgeUrl" alt="CI Badge" />
-              </div>
-            }
+      <div class="repo-info">
+        @if (repo.ciBadgeUrl) {
+        <div class="badge-row" (click)="onBadgeClick(repo.name, 'ci')">
+          🏷️ CI build: <img [src]="repo.ciBadgeUrl" alt="CI Badge" style="cursor: pointer;" />
+        </div>
+        }
 
-            @for (wf of repo.workflowRepo; track $index) {
-              @if (wf.type === 'CI') {
-                <div class="workflow">
-                 <p class="passed">✅ Passed: {{ wf.passed }}</p>
-                  <p class="failed">❌ Failed: {{ wf.failed }}</p>
-                  <div class="sub-status">
-                    Mock: {{ wf.mockPassed }}✅ / {{ wf.mockFailed }}❌ |
-                    Real: {{ wf.realPassed }}✅ / {{ wf.realFailed }}❌
-                  </div>
-                </div>
-              }
-            }
-
-            @if (repo.devBadgeUrl) {
-              <div class="badge-row">
-                🛠️ DEV build: <img [src]="repo.devBadgeUrl" alt="DEV Badge" />
-              </div>
-            }
-
-            @for (wf of repo.workflowRepo; track $index) {
-              @if (wf.type === 'DEV') {
-                <div class="workflow">
-                  <p class="passed">✅ Passed: {{ wf.passed }}</p>
-                  <p class="failed">❌ Failed: {{ wf.failed }}</p>
-                  <div class="sub-status">
-                    Mock: {{ wf.mockPassed }}✅ / {{ wf.mockFailed }}❌ |
-                    Real: {{ wf.realPassed }}✅ / {{ wf.realFailed }}❌
-                  </div>
-                </div>
-              }
-            }
-            <p><span class="icon">📅</span>Last Updated: {{ repo.lastUpdated | date:'short' }}</p>
-
+        @for (wf of repo.workflowRepo; track $index) {
+        @if (wf.type === 'CI') {
+        <div class="workflow">
+          <p class="passed">✅ Passed: {{ wf.passed }}</p>
+          <p class="failed">❌ Failed: {{ wf.failed }}</p>
+          <div class="sub-status">
+            Mock: {{ wf.mockPassed }}✅ / {{ wf.mockFailed }}❌ |
+            Real: {{ wf.realPassed }}✅ / {{ wf.realFailed }}❌
           </div>
         </div>
-      }
+        }
+        }
+
+        @if (repo.devBadgeUrl) {
+        <div class="badge-row" (click)="onBadgeClick(repo.name, 'dev')">
+          🛠️ DEV build: <img [src]="repo.devBadgeUrl" alt="DEV Badge" style="cursor: pointer;" />
+        </div>
+        }
+
+        @for (wf of repo.workflowRepo; track $index) {
+        @if (wf.type === 'DEV') {
+        <div class="workflow">
+          <p class="passed">✅ Passed: {{ wf.passed }}</p>
+          <p class="failed">❌ Failed: {{ wf.failed }}</p>
+          <div class="sub-status">
+            Mock: {{ wf.mockPassed }}✅ / {{ wf.mockFailed }}❌ |
+            Real: {{ wf.realPassed }}✅ / {{ wf.realFailed }}❌
+          </div>
+        </div>
+        }
+        }
+        <p><span class="icon">📅</span>Last Updated: {{ repo.lastUpdated | date:'short' }}</p>
+
+      </div>
     </div>
+    }
+  </div>
   }
 
   @if (loading) {
-    <div class="loading">Loading repositories...</div>
+  <div class="loading">Loading repositories...</div>
   }
 
   @if (error) {
-    <div class="error">{{ error }}</div>
+  <div class="error">{{ error }}</div>
   }
 </div>

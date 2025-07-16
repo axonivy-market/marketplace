@@ -11,22 +11,29 @@ import java.util.List;
 import java.util.UUID;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
 @Service
 public class TestStepProcessorImpl {
 
   public List<TestSteps> parseTestSteps(JsonNode testData, WorkflowRepo workflow) {
     List<TestSteps> steps = new ArrayList<>();
     String summary = testData.path("output").path("summary").asText();
-    Pattern stepPattern = Pattern.compile("✅\\s+(.*?)\\(.*?\\)");
-    Matcher matcher = stepPattern.matcher(summary);
 
-    while (matcher.find()) {
-      TestSteps step = new TestSteps();
-      step.setId(UUID.randomUUID().toString());
-      step.setName(matcher.group(1).trim());
-      step.setStatus(TestStatus.PASSED);
-      step.setWorkflow(workflow);
-      steps.add(step);
+    Pattern testCasePattern = Pattern.compile("✅\\s+(.+)");
+    String[] lines = summary.split("\\n");
+
+    for (String line : lines) {
+      line = line.trim();
+      Matcher matcher = testCasePattern.matcher(line);
+
+      if (matcher.find()) {
+        TestSteps step = new TestSteps();
+        step.setId(UUID.randomUUID().toString());
+        step.setName(matcher.group(1).trim());
+        step.setStatus(TestStatus.PASSED);
+        step.setWorkflow(workflow);
+        steps.add(step);
+      }
     }
     return steps;
   }

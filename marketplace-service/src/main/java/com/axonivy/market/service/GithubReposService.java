@@ -1,6 +1,5 @@
 package com.axonivy.market.service;
 
-import com.axonivy.market.entity.GithubRepo;
 import com.axonivy.market.model.GithubReposModel;
 
 import java.io.IOException;

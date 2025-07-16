@@ -1,6 +1,6 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
-import { Observable, of } from 'rxjs';
+import { Observable } from 'rxjs';
 import { API_URI } from '../../shared/constants/api.constant';
 
 export interface Repository {
@@ -23,17 +23,11 @@ export interface WorkflowStatus {
   mockPassed: number;
   mockFailed: number;
 }
-
 export interface TestStep {
-  name: string;
-  status: 'passed' | 'failed' | 'skipped';
+    name: string;
+    status: 'PASSED' | 'FAILED' | 'SKIPPED'; 
 }
 
-export interface TestReport {
-  success: boolean;
-  summary?: string;
-  steps: TestStep[];
-}
 
 @Injectable({
   providedIn: 'root'
@@ -44,13 +38,14 @@ export class GithubService {
   getRepositories(): Observable<Repository[]> {
     return this.http.get<Repository[]>(API_URI.GITHUB_REPOS);
   }
+
   syncGithubRepos(): Observable<Repository[]> {
     return this.http.get<Repository[]>(API_URI.SYNC_GITHUB_REPOS);
   }
-  getTestReport(repo: string, workflow: string): Observable<TestReport> {
-    const url = `${API_URI.GITHUB_REPORT}/${repo}/${workflow}`;
-    return this.http.get<TestReport>(url);
-  }
 
+  getTestReport(repo: string, workflow: string): Observable<TestStep> {
+    const url = `${API_URI.GITHUB_REPORT}/${repo}/${workflow}`;
+    return this.http.get<TestStep>(url);
+  }
 }
 

@@ -1,18 +1,37 @@
-<div class="test-report" *ngIf="report && !loading && !errorMessage">
-  <h2>{{ workflow }} workflow of {{ repo }}</h2>
-  <h3>Test Results: {{ report.success ? '✅ All Passed' : '❌ Issues Found' }}</h3>
-
-  <div class="test-steps">
-    <div *ngFor="let step of report.steps" class="test-step" [ngClass]="step.status">
-      <span class="step-name">{{ step.name }}</span>
-      <span class="step-status">
-        <ng-container [ngSwitch]="step.status">
-          <span *ngSwitchCase="'passed'" class="passed">✅ Passed</span>
-          <span *ngSwitchCase="'failed'" class="failed">❌ Failed</span>
-          <span *ngSwitchCase="'skipped'" class="skipped">⏭️ Skipped</span>
-          <span *ngSwitchDefault class="unknown">❓ Unknown</span>
-        </ng-container>
-      </span>
+@if (report.length && !loading && !errorMessage) {
+  <div class="test-report">
+    <h2>{{ workflow }} workflow of {{ repo }}</h2>
+    <div class="test-steps">
+      @for (step of report; track step.name) {
+        <div class="test-step" [ngClass]="step.status.toLowerCase()">
+          <span class="step-name">{{ step.name }}</span>
+          <span class="step-status">
+            @switch (step.status.toLowerCase()) {
+              @case ('passed') {
+                <span class="passed">✅ Passed</span>
+              }
+              @case ('failed') {
+                <span class="failed">❌ Failed</span>
+              }
+              @case ('skipped') {
+                <span class="skipped">⏭️ Skipped</span>
+              }
+            }
+          </span>
+        </div>
+      }
     </div>
   </div>
-</div>
+}
+
+@if (!report.length && !loading && !errorMessage) {
+  <div class="no-report">There is no test report in this workflow.</div>
+}
+
+@if (loading) {
+  <div class="loading">Loading report...</div>
+}
+
+@if (errorMessage) {
+  <div class="error">{{ errorMessage }}</div>
+}

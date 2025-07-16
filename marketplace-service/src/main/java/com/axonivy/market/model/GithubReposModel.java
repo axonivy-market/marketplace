@@ -3,6 +3,7 @@ package com.axonivy.market.model;
 import com.axonivy.market.entity.GithubRepo;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -14,6 +15,7 @@ import java.util.stream.Collectors;
 
 @Getter
 @Setter
+@Builder
 @NoArgsConstructor
 @AllArgsConstructor
 public class GithubReposModel extends RepresentationModel<GithubReposModel> {
@@ -39,17 +41,7 @@ public class GithubReposModel extends RepresentationModel<GithubReposModel> {
   @Schema(description = "List of workflow test result summaries")
   private List<WorkflowRepoModel> workflowRepo;
 
-  public static GithubReposModel createModel(GithubRepo githubRepo) {
-    GithubReposModel model = new GithubReposModel();
-    model.setName(githubRepo.getName());
-    model.setHtmlUrl(githubRepo.getHtmlUrl());
-    model.setLanguage(githubRepo.getLanguage());
-    model.setLastUpdated(githubRepo.getLastUpdated() != null
-        ? githubRepo.getLastUpdated().toInstant().toString()
-        : null);
-    model.setCiBadgeUrl(githubRepo.getCiBadgeUrl());
-    model.setDevBadgeUrl(githubRepo.getDevBadgeUrl());
-
+ public static GithubReposModel createModel(GithubRepo githubRepo) {
     List<WorkflowRepoModel> workflows = githubRepo.getWorkflows() != null
         ? githubRepo.getWorkflows().stream()
         .map(wf -> {
@@ -66,7 +58,16 @@ public class GithubReposModel extends RepresentationModel<GithubReposModel> {
         .collect(Collectors.toList())
         : Collections.emptyList();
 
-    model.setWorkflowRepo(workflows);
-    return model;
+    return GithubReposModel.builder()
+        .name(githubRepo.getName())
+        .htmlUrl(githubRepo.getHtmlUrl())
+        .language(githubRepo.getLanguage())
+        .lastUpdated(githubRepo.getLastUpdated() != null
+            ? githubRepo.getLastUpdated().toInstant().toString()
+            : null)
+        .ciBadgeUrl(githubRepo.getCiBadgeUrl())
+        .devBadgeUrl(githubRepo.getDevBadgeUrl())
+        .workflowRepo(workflows)
+        .build();
   }
 }

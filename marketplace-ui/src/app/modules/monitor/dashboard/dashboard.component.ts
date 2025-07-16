@@ -1,13 +1,12 @@
 import { Component, OnInit } from '@angular/core';
 import { GithubService, Repository } from '../github.service';
-import { GITHUB_MARKET_ORG_URL } from '../../../shared/constants/common.constant';
 import { CommonModule } from '@angular/common';
-import { Router } from '@angular/router';
+import { Router } from '@angular/router'; // Import Router
 
 @Component({
   selector: 'app-dashboard',
   standalone: true,
-  imports: [CommonModule,],
+  imports: [CommonModule],
   templateUrl: './dashboard.component.html',
   styleUrl: './dashboard.component.scss'
 })
@@ -15,24 +14,35 @@ export class DashboardComponent implements OnInit {
   repositories: Repository[] = [];
   loading = true;
   error = '';
+  isReloading = false;
 
-  constructor(private githubService: GithubService) { }
+  constructor(
+    private githubService: GithubService,
+    private router: Router 
+  ) { }
 
   ngOnInit(): void {
     this.loadRepositories();
   }
 
   onSubmit(): void {
-    this.githubService.syncGithubRepos().subscribe({
-      next: () => {
-        console.log('Sync successful');
-        this.loadRepositories(); 
-      },
-      error: (err) => {
-        console.error('Sync failed', err);
-      }
-    });
+  if (this.isReloading) {
+    return;
   }
+
+  this.isReloading = true;
+  this.githubService.syncGithubRepos().subscribe({
+    next: () => {
+      console.log('Data reloaded');
+    },
+    error: (err) => {
+      console.error('Reload error:', err);
+    },
+    complete: () => {
+      this.isReloading = false; 
+    }
+  });
+}
 
   loadRepositories(): void {
     this.loading = true;
@@ -46,5 +56,10 @@ export class DashboardComponent implements OnInit {
         this.loading = false;
       }
     });
+  }
+
+  onBadgeClick(repo: string, workflow: string) {
+    console.log(`Navigating to report for ${repo}/${workflow}`);
+    this.router.navigate(['/report', repo, workflow]);
   }
 }

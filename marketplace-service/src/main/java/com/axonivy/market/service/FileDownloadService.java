@@ -5,8 +5,6 @@ import com.axonivy.market.bo.DownloadOption;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
-import java.util.Map;
-import java.util.function.Function;
 
 import static com.axonivy.market.constants.DirectoryConstants.*;
 
