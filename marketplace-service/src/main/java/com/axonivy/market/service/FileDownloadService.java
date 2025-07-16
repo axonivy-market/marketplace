@@ -11,7 +11,6 @@ import static com.axonivy.market.constants.DirectoryConstants.*;
 public interface FileDownloadService {
   String ROOT_STORAGE_FOR_PRODUCT_CONTENT = String.join(File.separator, DATA_DIR, WORK_DIR);
   String ROOT_STORAGE_FOR_CACHE = String.join(File.separator, DATA_DIR, CACHE_DIR);
-  String ROOT_STORAGE_FOR_REPO = String.join(File.separator, DATA_DIR, WORK_DIR);
 
   byte[] downloadFile(String url);
 
