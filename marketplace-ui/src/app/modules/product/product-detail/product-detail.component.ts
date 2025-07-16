@@ -256,15 +256,6 @@ export class ProductDetailComponent {
     });
   }
 
-  getProductDetailObservable(productId: string): Observable<ProductDetail> {
-    const isShowDevVersion = CommonUtils.getCookieValue(
-      this.cookieService,
-      SHOW_DEV_VERSION,
-      false
-    );
-    return this.getProductById(productId, isShowDevVersion);
-  }
-
   handleProductDetail(productDetail: ProductDetail): void {
     this.productDetail.set(productDetail);
     this.productModuleContent.set(productDetail.productModuleContent);
@@ -340,30 +331,6 @@ export class ProductDetailComponent {
 
   scrollToTop(): void {
     window.scrollTo({ left: 0, top: 0, behavior: 'instant' });
-  }
-
-  getProductById(
-    productId: string,
-    isShowDevVersion: boolean
-  ): Observable<ProductDetail> {
-    const targetVersion =
-      this.routingQueryParamService.getDesignerVersionFromSessionStorage();
-    let productDetail$: Observable<ProductDetail>;
-    if (!targetVersion) {
-      productDetail$ = this.productService.getProductDetails(
-        productId,
-        isShowDevVersion
-      );
-    } else {
-      productDetail$ =
-        this.productService.getBestMatchProductDetailsWithVersion(
-          productId,
-          targetVersion
-        );
-    }
-    return productDetail$.pipe(
-      map((response: ProductDetail) => this.setDefaultVendorImage(response))
-    );
   }
 
   getContent(value: string): boolean {
@@ -533,19 +500,6 @@ export class ProductDetailComponent {
     type tabName = 'description' | 'demo' | 'setup';
     const value = key.value as tabName;
     return this.productModuleContent()?.[value] ?? null;
-  }
-
-  private setDefaultVendorImage(productDetail: ProductDetail): ProductDetail {
-    const { vendorImage, vendorImageDarkMode } = productDetail;
-
-    if (!(productDetail.vendorImage || productDetail.vendorImageDarkMode)) {
-      productDetail.vendorImage = DEFAULT_VENDOR_IMAGE_BLACK;
-      productDetail.vendorImageDarkMode = DEFAULT_VENDOR_IMAGE;
-    } else {
-      productDetail.vendorImage = vendorImage || vendorImageDarkMode;
-      productDetail.vendorImageDarkMode = vendorImageDarkMode || vendorImage;
-    }
-    return productDetail;
   }
 
   getReadmeContent() {
