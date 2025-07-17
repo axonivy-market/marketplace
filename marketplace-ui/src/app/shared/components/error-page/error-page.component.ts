@@ -12,10 +12,7 @@ import { LanguageService } from '../../../core/services/language/language.servic
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { ActivatedRoute, Router } from '@angular/router';
-import {
-  I18N_DEFAULT_ERROR_CODE,
-  I18N_ERROR_CODE_PATH
-} from '../../constants/common.constant';
+import { I18N_DEFAULT_ERROR_CODE, I18N_ERROR_CODE_PATH } from '../../constants/common.constant';
 
 @Component({
   selector: 'app-error-page-component',
@@ -32,14 +29,12 @@ export class ErrorPageComponent implements OnInit {
   route = inject(ActivatedRoute);
   errorMessageKey = '';
   errorId: string | undefined;
-  isBrowser: boolean;
 
   constructor(
     private readonly router: Router,
     @Inject(PLATFORM_ID) private readonly platformId: Object
   ) {
-    this.isBrowser = isPlatformBrowser(this.platformId);
-    if (this.isBrowser) {
+    if (isPlatformBrowser(this.platformId)) {
       this.checkMediaSize();
     }
   }

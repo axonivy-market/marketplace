@@ -98,9 +98,7 @@ export class ProductComponent implements AfterViewInit, OnDestroy {
 
         this.criteria = {
           ...this.criteria,
-          search:
-            params[DESIGNER_SESSION_STORAGE_VARIABLE.searchParamName] ??
-            this.criteria.search,
+          search: params[DESIGNER_SESSION_STORAGE_VARIABLE.searchParamName] ?? this.criteria.search,
           type: params['type'] ?? this.criteria.type,
           sort: params['sort'] ?? this.criteria.sort
         };

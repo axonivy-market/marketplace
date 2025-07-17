@@ -4,15 +4,7 @@ import { FooterComponent } from './shared/components/footer/footer.component';
 import { HeaderComponent } from './shared/components/header/header.component';
 import { LoadingService } from './core/services/loading/loading.service';
 import { RoutingQueryParamService } from './shared/services/routing.query.param.service';
-import {
-  ActivatedRoute,
-  RouterOutlet,
-  NavigationStart,
-  RouterModule,
-  Router,
-  NavigationError,
-  Event
-} from '@angular/router';
+import { ActivatedRoute, RouterOutlet, NavigationStart, RouterModule, Router, NavigationError, Event } from '@angular/router';
 import { of, Subject } from 'rxjs';
 import { TranslateService, TranslateModule } from '@ngx-translate/core';
 import { By } from '@angular/platform-browser';

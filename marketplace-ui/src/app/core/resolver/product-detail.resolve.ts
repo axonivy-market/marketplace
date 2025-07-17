@@ -21,6 +21,7 @@ import {
   OG_TITLE_KEY,
   SHOW_DEV_VERSION
 } from '../../shared/constants/common.constant';
+import { ROUTER } from '../../shared/constants/router.constant';
 
 @Injectable({ providedIn: 'root' })
 export class ProductDetailResolver implements Resolve<ProductDetail> {
@@ -36,7 +37,7 @@ export class ProductDetailResolver implements Resolve<ProductDetail> {
   ) {}
 
   resolve(route: ActivatedRouteSnapshot): Observable<ProductDetail> {
-    const productId = route.params['id'];
+    const productId = route.params[ROUTER.ID];
     this.productDetailService.productId.set(productId);
 
     this.loadingService.showLoading(LoadingComponentId.DETAIL_PAGE);
@@ -78,10 +79,7 @@ export class ProductDetailResolver implements Resolve<ProductDetail> {
     return this.getProductById(productId, isShowDevVersion);
   }
 
-  getProductById(
-    productId: string,
-    isShowDevVersion: boolean
-  ): Observable<ProductDetail> {
+  getProductById(productId: string, isShowDevVersion: boolean): Observable<ProductDetail> {
     const targetVersion =
       this.routingQueryParamService.getDesignerVersionFromSessionStorage();
     let productDetail$: Observable<ProductDetail>;

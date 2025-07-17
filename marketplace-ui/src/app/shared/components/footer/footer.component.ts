@@ -2,12 +2,7 @@ import { CommonModule } from '@angular/common';
 import { Component, inject, OnInit } from '@angular/core';
 import { TranslateModule } from '@ngx-translate/core';
 import { ThemeService } from '../../../core/services/theme/theme.service';
-import {
-  DOWNLOAD_URL,
-  IVY_FOOTER_LINKS,
-  NAV_ITEMS,
-  SOCIAL_MEDIA_LINK
-} from '../../constants/common.constant';
+import { DOWNLOAD_URL, IVY_FOOTER_LINKS, NAV_ITEMS, SOCIAL_MEDIA_LINK } from '../../constants/common.constant';
 import { NavItem } from '../../models/nav-item.model';
 import { LanguageService } from '../../../core/services/language/language.service';
 
@@ -28,7 +23,7 @@ export class FooterComponent implements OnInit {
   year = '';
 
   ngOnInit(): void {
-      this.getCurrentYear();
+    this.getCurrentYear();
   }
 
   getCurrentYear() {

@@ -4,12 +4,7 @@ import { DocumentRef } from '../../core/services/browser/document-ref.service';
 import { WindowRef } from '../../core/services/browser/window-ref.service';
 
 export class GoogleSearchBarUtils {
-  static renderGoogleSearchBar(
-    renderer: Renderer2,
-    windowRef: WindowRef,
-    documentRef: DocumentRef
-  ): void {
-    const win = windowRef.nativeWindow;
+  static renderGoogleSearchBar(renderer: Renderer2, windowRef: WindowRef, documentRef: DocumentRef): void {
     const doc = documentRef.nativeDocument;
 
     if (!doc) {
@@ -28,15 +23,13 @@ export class GoogleSearchBarUtils {
       renderer.appendChild(doc.body, script);
     }
 
+    const win = windowRef.nativeWindow;
     if (win?.hasOwnProperty('google') && win.google?.search) {
       win.google.search.cse.element.render('gcse-search');
     }
   }
 
-  static addCustomClassToSearchBar(
-    renderer: Renderer2,
-    documentRef: DocumentRef
-  ): void {
+  static addCustomClassToSearchBar(renderer: Renderer2, documentRef: DocumentRef): void {
     const doc = documentRef.nativeDocument;
     
     if (!doc) {

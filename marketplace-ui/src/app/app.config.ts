@@ -1,21 +1,6 @@
-import {
-  HttpClient,
-  provideHttpClient,
-  withFetch,
-  withInterceptors
-} from '@angular/common/http';
-import {
-  APP_INITIALIZER,
-  ApplicationConfig,
-  importProvidersFrom,
-  provideZoneChangeDetection
-} from '@angular/core';
-import {
-  InMemoryScrollingFeature,
-  InMemoryScrollingOptions,
-  provideRouter,
-  withInMemoryScrolling
-} from '@angular/router';
+import { HttpClient, provideHttpClient, withFetch, withInterceptors } from '@angular/common/http';
+import { APP_INITIALIZER, ApplicationConfig, importProvidersFrom, provideZoneChangeDetection } from '@angular/core';
+import { InMemoryScrollingFeature, InMemoryScrollingOptions, provideRouter, withInMemoryScrolling } from '@angular/router';
 import { TranslateLoader, TranslateModule } from '@ngx-translate/core';
 import { routes } from './app.routes';
 import { httpLoaderFactory } from './core/configs/translate.config';

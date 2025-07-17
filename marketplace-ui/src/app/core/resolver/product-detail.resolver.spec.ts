@@ -1,8 +1,7 @@
 import { TestBed } from '@angular/core/testing';
 import { Meta, Title } from '@angular/platform-browser';
 import { ActivatedRoute, ActivatedRouteSnapshot } from '@angular/router';
-import { of, throwError } from 'rxjs';
-import { ProductDetail } from '../../shared/models/product-detail.model';
+import { of } from 'rxjs';
 import { ProductDetailResolver } from './product-detail.resolve';
 import { ProductDetailService } from '../../modules/product/product-detail/product-detail.service';
 import { LanguageService } from '../services/language/language.service';

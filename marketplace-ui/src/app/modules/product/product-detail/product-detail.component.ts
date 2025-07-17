@@ -511,8 +511,7 @@ export class ProductDetailComponent {
           this.languageService.selectedLanguage()
         );
 
-        this.loadedReadmeContent[tab.value] =
-          this.renderGithubAlert(translatedContent);
+        this.loadedReadmeContent[tab.value] = this.renderGithubAlert(translatedContent);
       }
     });
   }
@@ -535,17 +534,11 @@ export class ProductDetailComponent {
   }
 
   private bypassSecurityTrustHtml(value: string): SafeHtml {
-    const markdownContent = this.md.render(
-      value.replace(UNESCAPE_GITHUB_CONTENT_REGEX, '$1')
-    );
+    const markdownContent = this.md.render(value.replace(UNESCAPE_GITHUB_CONTENT_REGEX, '$1'));
     return this.sanitizer.bypassSecurityTrustHtml(markdownContent);
   }
 
-  linkifyPullRequests(
-    md: MarkdownIt,
-    sourceUrl: string,
-    prNumberRegex: RegExp
-  ) {
+  linkifyPullRequests(md: MarkdownIt, sourceUrl: string, prNumberRegex: RegExp) {
     md.renderer.rules.text = (tokens, idx) => {
       const content = tokens[idx].content;
       const linkify = new LinkifyIt();

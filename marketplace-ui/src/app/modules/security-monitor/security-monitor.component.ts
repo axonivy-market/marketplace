@@ -8,17 +8,9 @@ import {
 import { FormsModule } from '@angular/forms';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { HttpErrorResponse } from '@angular/common/http';
-
 import { SecurityMonitorService } from './security-monitor.service';
 import { ProductSecurityInfo } from '../../shared/models/product-security-info-model';
-import {
-  GITHUB_MARKET_ORG_URL,
-  REPO_PAGE_PATHS,
-  ERROR_MESSAGES,
-  SECURITY_MONITOR_SESSION_KEYS,
-  TIME_UNITS,
-  UNAUTHORIZED
-} from '../../shared/constants/common.constant';
+import { GITHUB_MARKET_ORG_URL, REPO_PAGE_PATHS, ERROR_MESSAGES, SECURITY_MONITOR_SESSION_KEYS, TIME_UNITS, UNAUTHORIZED } from '../../shared/constants/common.constant';
 import { LoadingComponentId } from '../../shared/enums/loading-component-id';
 import { LoadingSpinnerComponent } from '../../shared/components/loading-spinner/loading-spinner.component';
 
