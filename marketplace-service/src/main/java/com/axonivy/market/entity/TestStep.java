@@ -1,11 +1,10 @@
 package com.axonivy.market.entity;
 
 import com.axonivy.market.enums.TestStatus;
-import com.axonivy.market.enums.TestType;
+import com.axonivy.market.enums.TestEnviroment;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
-import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
@@ -14,6 +13,8 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.io.Serializable;
+
 @Getter
 @Setter
 @NoArgsConstructor
@@ -21,15 +22,14 @@ import lombok.Setter;
 @Builder
 @Entity
 @Table(name = "test_step")
-public class TestSteps extends AuditableIdEntity{
+public class TestStep extends AuditableIdEntity implements Serializable {
 
   private String name;
   @Enumerated(EnumType.STRING)
   private TestStatus status;
   private String type;
   @Enumerated(EnumType.STRING)
-  private TestType testType;
+  private TestEnviroment testType;
   @ManyToOne
-  @JoinColumn(name = "github_repo")
   private GithubRepo repository;
 }

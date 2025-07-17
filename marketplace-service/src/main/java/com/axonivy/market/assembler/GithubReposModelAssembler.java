@@ -11,6 +11,6 @@ public class GithubReposModelAssembler implements RepresentationModelAssembler<G
 
   @Override
   public GithubReposModel toModel(GithubRepo githubRepo) {
-    return GithubReposModel.createModel(githubRepo);
+    return GithubReposModel.createGihubRepoModel(githubRepo);
   }
 }

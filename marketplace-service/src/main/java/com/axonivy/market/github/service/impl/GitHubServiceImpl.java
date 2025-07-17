@@ -1,5 +1,6 @@
 package com.axonivy.market.github.service.impl;
 
+import com.axonivy.market.constants.CommonConstants;
 import com.axonivy.market.constants.ErrorMessageConstants;
 import com.axonivy.market.constants.GitHubConstants;
 import com.axonivy.market.entity.Product;
@@ -50,6 +51,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -402,10 +404,13 @@ public class GitHubServiceImpl implements GitHubService {
   @Override
   public GHWorkflowRun getLatestWorkflowRun(GHRepository repo, String workflowFileName) throws IOException {
     try {
-      PagedIterable<GHWorkflowRun> runs = repo.getWorkflow(workflowFileName).listRuns();
-      return runs.iterator().hasNext() ? runs.iterator().next() : null;
+      return repo.getWorkflow(workflowFileName)
+          .listRuns()
+          .withPageSize(1)
+          .iterator()
+          .next();
     } catch (GHFileNotFoundException e) {
-      log.warn("Workflow file '{}' not found in repository '{}'", workflowFileName, repo.getFullName());
+      log.warn("Workflow file '{}' not found in repository '{}'", workflowFileName, repo.getFullName(),e);
       return null;
     }
   }
@@ -413,7 +418,7 @@ public class GitHubServiceImpl implements GitHubService {
   @Override
   public GHArtifact getExportTestArtifact(GHWorkflowRun run) throws IOException {
     for (GHArtifact artifact : run.listArtifacts()) {
-      if ("export-test-json-file".equals(artifact.getName())) {
+      if (CommonConstants.TEST_REPORT_FILE.equals(artifact.getName())) {
         return artifact;
       }
     }
@@ -422,8 +427,8 @@ public class GitHubServiceImpl implements GitHubService {
 
   @Override
   public InputStream downloadArtifactZip(GHArtifact artifact) throws IOException {
-    ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-    artifact.download(inputStream -> {
+    var outputStream = new ByteArrayOutputStream();
+    artifact.download((InputStream inputStream) -> {
       try (inputStream; outputStream) {
         inputStream.transferTo(outputStream);
       } catch (IOException e) {

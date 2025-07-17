@@ -1,8 +1,8 @@
 package com.axonivy.market.model;
 
-import com.axonivy.market.entity.TestSteps;
+import com.axonivy.market.entity.TestStep;
 import com.axonivy.market.enums.TestStatus;
-import com.axonivy.market.enums.TestType;
+import com.axonivy.market.enums.TestEnviroment;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -27,9 +27,9 @@ public class TestStepsModel extends RepresentationModel<TestStepsModel> {
   private String type;
 
   @Schema(description = "Type of test", example = "MOCK or REAL")
-  private TestType testType;
+  private TestEnviroment testType;
 
-  public static TestStepsModel createModel(TestSteps entity) {
+  public static TestStepsModel createTestStepsModel(TestStep entity) {
     return TestStepsModel.builder()
         .name(entity.getName())
         .status(entity.getStatus())

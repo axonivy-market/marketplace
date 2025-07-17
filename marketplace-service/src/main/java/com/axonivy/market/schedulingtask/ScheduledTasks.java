@@ -29,7 +29,7 @@ public class ScheduledTasks {
   final ProductDetailsController productDetailsController;
   final ExternalDocumentService externalDocumentService;
   final ProductDependencyService productDependencyService;
-  final GithubReposService githubReposService;
+  private final GithubReposService githubReposService;
 
   @Scheduled(cron = SCHEDULING_TASK_PRODUCTS_CRON)
   public void syncDataForProductFromGitHubRepo() {

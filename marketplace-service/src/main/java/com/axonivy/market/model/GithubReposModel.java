@@ -1,6 +1,7 @@
 package com.axonivy.market.model;
 
 import com.axonivy.market.entity.GithubRepo;
+import com.axonivy.market.entity.TestStep;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -11,7 +12,6 @@ import org.springframework.hateoas.RepresentationModel;
 
 import java.util.Collections;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Getter
 @Setter
@@ -32,39 +32,46 @@ public class GithubReposModel extends RepresentationModel<GithubReposModel> {
   @Schema(description = "Last updated date of the repository", example = "2025-07-14T10:35:00Z")
   private String lastUpdated;
 
-  @Schema(description = "CI workflow badge URL", example = "https://github.com/org/repo/actions/workflows/ci.yml/badge.svg")
+  @Schema(description = "CI workflow badge URL", example = "https://github.com/actions/workflows/ci.yml/badge.svg")
   private String ciBadgeUrl;
 
-  @Schema(description = "DEV workflow badge URL", example = "https://github.com/org/repo/actions/workflows/dev.yml/badge.svg")
+  @Schema(description = "DEV workflow badge URL", example = "https://github.com/actions/workflows/dev.yml/badge.svg")
   private String devBadgeUrl;
 
   @Schema(description = "List of workflow test result summaries")
   private List<TestStepsModel> testStepsModels;
+  public static GithubReposModel createGihubRepoModel(GithubRepo githubRepo) {
+    List<TestStepsModel> testStepsModelList;
 
-  public static GithubReposModel createModel(GithubRepo githubRepo) {
-    List<TestStepsModel> testStepsModelList = githubRepo.getTestSteps() != null
-        ? githubRepo.getTestSteps().stream()
-        .map(testStep -> {
-          TestStepsModel testStepsModel = new TestStepsModel();
-          testStepsModel.setName(testStep.getName());
-          testStepsModel.setStatus(testStep.getStatus());
-          testStepsModel.setType(testStep.getType());
-          testStepsModel.setTestType(testStep.getTestType());
-          return testStepsModel;
-        })
-        .collect(Collectors.toList())
-        : Collections.emptyList();
+    if (githubRepo.getTestSteps() != null) {
+      testStepsModelList = githubRepo.getTestSteps().stream()
+          .map((TestStep testStep) -> {
+            var testStepsModel = new TestStepsModel();
+            testStepsModel.setName(testStep.getName());
+            testStepsModel.setStatus(testStep.getStatus());
+            testStepsModel.setType(testStep.getType());
+            testStepsModel.setTestType(testStep.getTestType());
+            return testStepsModel;
+          })
+          .toList();
+    } else {
+      testStepsModelList = Collections.emptyList();
+    }
+
+    String lastUpdated = null;
+    if (githubRepo.getLastUpdated() != null) {
+      lastUpdated = githubRepo.getLastUpdated().toInstant().toString();
+    }
 
     return GithubReposModel.builder()
         .name(githubRepo.getName())
         .htmlUrl(githubRepo.getHtmlUrl())
         .language(githubRepo.getLanguage())
-        .lastUpdated(githubRepo.getLastUpdated() != null
-            ? githubRepo.getLastUpdated().toInstant().toString()
-            : null)
+        .lastUpdated(lastUpdated)
         .ciBadgeUrl(githubRepo.getCiBadgeUrl())
         .devBadgeUrl(githubRepo.getDevBadgeUrl())
         .testStepsModels(testStepsModelList)
         .build();
   }
+
 }

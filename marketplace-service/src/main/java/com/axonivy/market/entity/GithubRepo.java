@@ -10,6 +10,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.io.Serializable;
 import java.util.Date;
 import java.util.List;
 @Getter
@@ -19,7 +20,7 @@ import java.util.List;
 @Builder
 @Entity
 @Table(name = "github_repo")
-public class GithubRepo extends AuditableIdEntity{
+public class GithubRepo extends AuditableIdEntity implements Serializable {
 
   private String name;
   private String htmlUrl;
@@ -28,5 +29,5 @@ public class GithubRepo extends AuditableIdEntity{
   private String ciBadgeUrl;
   private String devBadgeUrl;
   @OneToMany(mappedBy = "repository", cascade = CascadeType.ALL, orphanRemoval = true)
-  private List<TestSteps> testSteps;
+  private List<TestStep> testSteps;
 }

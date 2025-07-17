@@ -221,3 +221,42 @@ common:
     enterTokenPlaceholder: Enter your token
     proceedBtnLabel: Proceed
     noFeedbacks: No feedbacks available.
+monitor:
+  dashboard:
+    title: GitHub Repository Security Monitor
+    subtitle: Monitor your repositories at a glance and automatically update every hour.
+    reloadData: Reload Data
+    loading: Loading repositories...
+    noRepositories: No repositories found.
+    errorLoading: Error loading repositories
+    ciLabel: CI build
+    devLabel: DEV build
+    passed: Passed
+    failed: Failed
+    mock: Mock
+    real: Real
+    lastUpdated: Last Updated
+    language: Language
+    testCounts:
+      title: Test Results
+      mock: "Mock: "
+      real: "Real: "
+      total: "Total tests: "
+    repo:
+      name: Repository Name
+      language: Language
+      url: Repository URL
+    actions:
+      viewDetails: View Details
+      refresh: Refresh
+    status:
+      active: Active
+      inactive: Inactive
+    summaryCard:
+      title: Summary
+      totalRepos: Total Repositories
+      totalPassed: Total Passed Tests
+      totalFailed: Total Failed Tests
+      lastSync: Last Synchronization
+    filterLabel: Filter Repositories
+    searchPlaceholder: Search repositories...

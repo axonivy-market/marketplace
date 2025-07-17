@@ -221,3 +221,42 @@ common:
     proceedBtnLabel: Weiter
     noFeedbacks: Keine Feedback verfügbar.
 
+monitor:
+  dashboard:
+    title: GitHub Repository Sicherheitsmonitor
+    subtitle: Überwachen Sie Ihre Repositories auf einen Blick und aktualisieren Sie stündlich automatisch.
+    reloadData: Daten neu laden
+    loading: Repositories werden geladen...
+    noRepositories: Keine Repositories gefunden.
+    errorLoading: Fehler beim Laden der Repositories
+    ciLabel: CI Build
+    devLabel: DEV Build
+    passed: Bestanden
+    failed: Fehlgeschlagen
+    mock: Mock
+    real: Real
+    lastUpdated: Zuletzt aktualisiert
+    language: Sprache
+    testCounts:
+      title: Testergebnisse
+      mock: "Mock: "
+      real: "Real: "
+      total: "Gesamttests: "
+    repo:
+      name: Repository-Name
+      language: Sprache
+      url: Repository-URL
+    actions:
+      viewDetails: Details anzeigen
+      refresh: Aktualisieren
+    status:
+      active: Aktiv
+      inactive: Inaktiv
+    summaryCard:
+      title: Zusammenfassung
+      totalRepos: Gesamtzahl der Repositories
+      totalPassed: Bestandene Tests insgesamt
+      totalFailed: Fehlgeschlagene Tests insgesamt
+      lastSync: Letzte Synchronisation
+    filterLabel: Repositories filtern
+    searchPlaceholder: Repositories durchsuchen...
