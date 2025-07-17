@@ -417,12 +417,10 @@ public class GitHubServiceImpl implements GitHubService {
 
   @Override
   public GHArtifact getExportTestArtifact(GHWorkflowRun run) throws IOException {
-    for (GHArtifact artifact : run.listArtifacts()) {
-      if (CommonConstants.TEST_REPORT_FILE.equals(artifact.getName())) {
-        return artifact;
-      }
-    }
-    return null;
+    return run.listArtifacts().toList().stream()
+        .filter(artifact -> CommonConstants.TEST_REPORT_FILE.equals(artifact.getName()))
+        .findFirst()
+        .orElse(null);
   }
 
   @Override

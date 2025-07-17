@@ -1,6 +1,5 @@
 package com.axonivy.market.repository;
 
-import com.axonivy.market.entity.GithubRepo;
 import com.axonivy.market.entity.TestStep;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;

@@ -3,6 +3,7 @@ package com.axonivy.market.model;
 import com.axonivy.market.entity.TestStep;
 import com.axonivy.market.enums.TestStatus;
 import com.axonivy.market.enums.TestEnviroment;
+import com.axonivy.market.enums.WorkFlowType;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -24,7 +25,7 @@ public class TestStepsModel extends RepresentationModel<TestStepsModel> {
   private TestStatus status;
 
   @Schema(description = "Workflow type", example = "CI or DEV")
-  private String type;
+  private WorkFlowType type;
 
   @Schema(description = "Type of test", example = "MOCK or REAL")
   private TestEnviroment testType;

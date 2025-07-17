@@ -1,13 +1,16 @@
 package com.axonivy.market.service.impl;
 
 import com.axonivy.market.assembler.GithubReposModelAssembler;
+import com.axonivy.market.constants.CommonConstants;
 import com.axonivy.market.constants.GitHubConstants;
 import com.axonivy.market.entity.GithubRepo;
+import com.axonivy.market.enums.WorkFlowType;
 import com.axonivy.market.github.service.GitHubService;
 import com.axonivy.market.model.GithubReposModel;
 import com.axonivy.market.repository.GithubRepoRepository;
 import com.axonivy.market.service.GithubReposService;
 import com.axonivy.market.service.TestStepsService;
+import com.axonivy.market.util.FileUtils;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.transaction.Transactional;
@@ -25,7 +28,9 @@ import org.springframework.stereotype.Service;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.Collections;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.List;
 
 @Service
@@ -69,20 +74,21 @@ public class GithubReposServiceImpl implements GithubReposService {
 
       if (githubRepoOptional.isPresent()) {
         githubRepo = githubRepoOptional.get();
-        githubRepo.setTestSteps(Collections.emptyList());
+        githubRepo.getTestSteps().clear();
         githubRepoRepository.save(githubRepo);
       }
 
       if (githubRepo == null) {
-        githubRepo = createNewGithubRepo(ghRepo, buildBadgeUrl(ghRepo, "ci.yml"), buildBadgeUrl(ghRepo, "dev.yml"));
+        githubRepo = createNewGithubRepo(ghRepo, buildBadgeUrl(ghRepo, CommonConstants.CI_FILE), buildBadgeUrl(ghRepo
+            , CommonConstants.DEV_FILE));
       } else {
         githubRepo.setHtmlUrl(ghRepo.getHtmlUrl().toString());
         githubRepo.setLanguage(ghRepo.getLanguage());
         githubRepo.setLastUpdated(ghRepo.getUpdatedAt());
       }
 
-      processWorkflowWithFallback(ghRepo, githubRepo, "dev.yml", "DEV");
-      processWorkflowWithFallback(ghRepo, githubRepo, "ci.yml", "CI");
+      processWorkflowWithFallback(ghRepo, githubRepo, CommonConstants.DEV_FILE, WorkFlowType.DEV);
+      processWorkflowWithFallback(ghRepo, githubRepo, CommonConstants.CI_FILE, WorkFlowType.CI);
 
     } catch (GHFileNotFoundException e) {
       log.warn("Workflow file not found for repo: {}", ghRepo.getFullName(), e);
@@ -94,7 +100,7 @@ public class GithubReposServiceImpl implements GithubReposService {
   }
 
   private void processWorkflowWithFallback(GHRepository ghRepo, GithubRepo dbRepo,
-      String workflowFileName, String workflowType) {
+      String workflowFileName, WorkFlowType workflowType) {
     try {
       GHWorkflowRun run = gitHubService.getLatestWorkflowRun(ghRepo, workflowFileName);
       if (run != null) {
@@ -103,18 +109,26 @@ public class GithubReposServiceImpl implements GithubReposService {
           processArtifact(artifact, ghRepo, dbRepo, workflowType);
         }
       }
-
     } catch (IOException | GHException e) {
-      log.error("Error processing workflow {} for repo {}", workflowType, dbRepo.getName(), e);
+      log.warn("Workflow file '{}' not found or cannot be accessed for repo: {}. Skipping. Error: {}", workflowFileName,
+          ghRepo.getFullName(), e.getMessage());
     }
   }
 
   private void processArtifact(GHArtifact artifact, GHRepository ghRepo,
-      GithubRepo dbRepo, String workflowType) throws IOException {
+      GithubRepo dbRepo, WorkFlowType workflowType) throws IOException {
+
+    Path unzipDir = Paths.get(System.getProperty("java.io.tmpdir"), ghRepo.getName() + "_temp");
     try (InputStream zipStream = gitHubService.downloadArtifactZip(artifact)) {
-      File unzipDir = GithubArtifactExtractUtils.extractZipToTempDir(zipStream, ghRepo.getName());
-      JsonNode testData = findTestReportJson(unzipDir);
+      FileUtils.prepareUnZipDirectory(unzipDir);
+      FileUtils.unzipArtifact(zipStream, unzipDir.toFile());
+
+      JsonNode testData = findTestReportJson(unzipDir.toFile());
       testStepsService.createTestSteps(dbRepo, testData, workflowType);
+
+    } finally {
+      FileUtils.clearDirectory(unzipDir);
+      Files.deleteIfExists(unzipDir);
     }
   }
 
@@ -152,7 +166,6 @@ public class GithubReposServiceImpl implements GithubReposService {
 
     return notArchived && notTemplate && isMasterBranch && hasLanguage && notIgnored;
   }
-
 
   @Override
   public List<GithubReposModel> fetchAllRepositories() {

@@ -46,6 +46,33 @@ public class FileUtils {
     }
   }
 
+  public static void unzipArtifact(InputStream zipStream, File unzipDir) throws IOException {
+    try (var zis = new ZipInputStream(zipStream)) {
+      ZipEntry entry;
+      while ((entry = zis.getNextEntry()) != null) {
+        var entryPath = Paths.get(entry.getName()).normalize();
+        var resolvedPath = unzipDir.toPath().resolve(entryPath).normalize();
+        if (!resolvedPath.startsWith(unzipDir.toPath())) {
+          throw new IOException("Entry is outside the target dir: " + entry.getName());
+        }
+        File outFile = resolvedPath.toFile();
+        if (entry.isDirectory()) {
+          outFile.mkdirs();
+        } else {
+          File parentDir = outFile.getParentFile();
+          if (parentDir != null) parentDir.mkdirs();
+          try (var fos = new FileOutputStream(outFile)) {
+            byte[] buffer = new byte[4096];
+            int length;
+            while ((length = zis.read(buffer)) > 0) {
+              fos.write(buffer, 0, length);
+            }
+          }
+        }
+        zis.closeEntry();
+      }
+    }
+  }
   // Common method to extract .zip file
   public static void unzip(MultipartFile file, String location) throws IOException {
     File extractDir = new File(location);

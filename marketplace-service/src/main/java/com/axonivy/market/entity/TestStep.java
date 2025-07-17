@@ -2,6 +2,7 @@ package com.axonivy.market.entity;
 
 import com.axonivy.market.enums.TestStatus;
 import com.axonivy.market.enums.TestEnviroment;
+import com.axonivy.market.enums.WorkFlowType;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
@@ -27,7 +28,7 @@ public class TestStep extends AuditableIdEntity implements Serializable {
   private String name;
   @Enumerated(EnumType.STRING)
   private TestStatus status;
-  private String type;
+  private WorkFlowType type;
   @Enumerated(EnumType.STRING)
   private TestEnviroment testType;
   @ManyToOne

@@ -3,11 +3,12 @@ package com.axonivy.market.service.impl;
 import com.axonivy.market.assembler.TestStepsModelAssembler;
 import com.axonivy.market.entity.GithubRepo;
 import com.axonivy.market.entity.TestStep;
+import com.axonivy.market.enums.WorkFlowType;
 import com.axonivy.market.model.TestStepsModel;
 import com.axonivy.market.repository.GithubRepoRepository;
 import com.axonivy.market.repository.TestStepsRepository;
 import com.axonivy.market.service.TestStepsService;
-import com.axonivy.market.util.TestStepProcessorImpl;
+import com.axonivy.market.util.TestStepProcessorUtils;
 import com.fasterxml.jackson.databind.JsonNode;
 import jakarta.transaction.Transactional;
 import lombok.AllArgsConstructor;
@@ -36,9 +37,9 @@ public class TestStepsServiceImpl implements TestStepsService {
   }
 
   @Transactional
-  public void createTestSteps(GithubRepo repo, JsonNode testData, String workflowType) {
+  public void createTestSteps(GithubRepo repo, JsonNode testData, WorkFlowType workflowType) {
     if (testData != null) {
-      List<TestStep> steps = TestStepProcessorImpl.parseTestSteps(testData, repo, workflowType);
+      List<TestStep> steps = TestStepProcessorUtils.parseTestSteps(testData, repo, workflowType);
       if (!steps.isEmpty()) {
         githubRepoRepository.save(repo);
         githubRepoRepository.flush();
