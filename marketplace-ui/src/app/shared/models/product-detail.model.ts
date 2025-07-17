@@ -19,7 +19,6 @@ export interface ProductDetail {
   statusBadgeUrl: string;
   language: string;
   industry: string;
-  compatibility: string;
   contactUs: boolean;
   installationCount: number;
   productModuleContent: ProductModuleContent;

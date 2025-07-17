@@ -18,7 +18,6 @@ export interface Product {
   language: string;
   industry: string;
   listed: boolean;
-  compatibility: string;
   tags: string[];
   validate: boolean;
   versionDisplay: string;
