@@ -1,6 +1,6 @@
 @if (report.length && !loading && !errorMessage) {
   <div class="test-report">
-    <h2>{{ workflow }} workflow of {{ repo }}</h2>
+    <h2>{{ workflow | uppercase }} workflow of {{ repo }}</h2>
     <div class="test-steps">
       @for (step of report; track step.name) {
         <div class="test-step" [ngClass]="step.status.toLowerCase()">

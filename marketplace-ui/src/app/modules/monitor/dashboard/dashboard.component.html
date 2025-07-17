@@ -1,7 +1,7 @@
 <div class="container">
   <div class="header">
     <h2>GitHub Repository Security Monitor</h2>
-    <h3>Keep track of your repositories at a glance.</h3>
+    <h3>Monitor your repositories at a glance and automatically update every hour.</h3>
     <h3><a class="reload-link" title="Reload data" (click)="onSubmit()">Reload Data</a></h3>
   </div>
 
@@ -10,7 +10,7 @@
     @for (repo of repositories; track $index) {
     <div class="repo-card">
       <div class="repo-header">
-        <h3>{{ repo.name }}</h3>
+        <p>{{ repo.name }}</p>
         <span class="visibility">{{ repo.language }}</span>
       </div>
 
@@ -19,38 +19,32 @@
         <div class="badge-row" (click)="onBadgeClick(repo.name, 'ci')">
           🏷️ CI build: <img [src]="repo.ciBadgeUrl" alt="CI Badge" style="cursor: pointer;" />
         </div>
-        }
-
-        @for (wf of repo.workflowRepo; track $index) {
-        @if (wf.type === 'CI') {
         <div class="workflow">
-          <p class="passed">✅ Passed: {{ wf.passed }}</p>
-          <p class="failed">❌ Failed: {{ wf.failed }}</p>
+          <p class="passed">✅ Passed: {{ getTotalPassed(repo, 'CI') }}</p>
+          <p class="failed">❌ Failed: {{ getTotalFailed(repo, 'CI') }}</p>
           <div class="sub-status">
-            Mock: {{ wf.mockPassed }}✅ / {{ wf.mockFailed }}❌ |
-            Real: {{ wf.realPassed }}✅ / {{ wf.realFailed }}❌
+            Mock: {{ getTestCount(repo, 'CI', 'MOCK', 'PASSED') }}✅ /
+            {{ getTestCount(repo, 'CI', 'MOCK', 'FAILED') }}❌ |
+            Real: {{ getTestCount(repo, 'CI', 'REAL', 'PASSED') }}✅ /
+            {{ getTestCount(repo, 'CI', 'REAL', 'FAILED') }}❌
           </div>
         </div>
-        }
-        }
 
+        }
         @if (repo.devBadgeUrl) {
         <div class="badge-row" (click)="onBadgeClick(repo.name, 'dev')">
           🛠️ DEV build: <img [src]="repo.devBadgeUrl" alt="DEV Badge" style="cursor: pointer;" />
         </div>
-        }
-
-        @for (wf of repo.workflowRepo; track $index) {
-        @if (wf.type === 'DEV') {
         <div class="workflow">
-          <p class="passed">✅ Passed: {{ wf.passed }}</p>
-          <p class="failed">❌ Failed: {{ wf.failed }}</p>
+          <p class="passed">✅ Passed: {{ getTotalPassed(repo, 'DEV') }}</p>
+          <p class="failed">❌ Failed: {{ getTotalFailed(repo, 'DEV') }}</p>
           <div class="sub-status">
-            Mock: {{ wf.mockPassed }}✅ / {{ wf.mockFailed }}❌ |
-            Real: {{ wf.realPassed }}✅ / {{ wf.realFailed }}❌
+            Mock: {{ getTestCount(repo, 'DEV', 'MOCK', 'PASSED') }}✅ /
+            {{ getTestCount(repo, 'DEV', 'MOCK', 'FAILED') }}❌ |
+            Real: {{ getTestCount(repo, 'DEV', 'REAL', 'PASSED') }}✅ /
+            {{ getTestCount(repo, 'DEV', 'REAL', 'FAILED') }}❌
           </div>
         </div>
-        }
         }
         <p><span class="icon">📅</span>Last Updated: {{ repo.lastUpdated | date:'short' }}</p>
 

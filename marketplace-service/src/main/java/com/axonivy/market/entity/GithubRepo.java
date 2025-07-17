@@ -28,5 +28,5 @@ public class GithubRepo extends AuditableIdEntity{
   private String ciBadgeUrl;
   private String devBadgeUrl;
   @OneToMany(mappedBy = "repository", cascade = CascadeType.ALL, orphanRemoval = true)
-  private List<WorkflowRepo> workflows;
+  private List<TestSteps> testSteps;
 }

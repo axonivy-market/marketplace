@@ -2,6 +2,7 @@ package com.axonivy.market.model;
 
 import com.axonivy.market.entity.TestSteps;
 import com.axonivy.market.enums.TestStatus;
+import com.axonivy.market.enums.TestType;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -18,13 +19,22 @@ import org.springframework.hateoas.RepresentationModel;
 public class TestStepsModel extends RepresentationModel<TestStepsModel> {
   @Schema(description = "Test Name", example = "chatWithAssistant")
   private String name;
+
   @Schema(description = "Test Status", example = "PASSED or FAILED or SKIPPED")
   private TestStatus status;
+
+  @Schema(description = "Workflow type", example = "CI or DEV")
+  private String type;
+
+  @Schema(description = "Type of test", example = "MOCK or REAL")
+  private TestType testType;
 
   public static TestStepsModel createModel(TestSteps entity) {
     return TestStepsModel.builder()
         .name(entity.getName())
         .status(entity.getStatus())
+        .type(entity.getType())
+        .testType(entity.getTestType())
         .build();
   }
 }

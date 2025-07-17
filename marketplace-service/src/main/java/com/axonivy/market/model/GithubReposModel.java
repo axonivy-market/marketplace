@@ -39,21 +39,18 @@ public class GithubReposModel extends RepresentationModel<GithubReposModel> {
   private String devBadgeUrl;
 
   @Schema(description = "List of workflow test result summaries")
-  private List<WorkflowRepoModel> workflowRepo;
+  private List<TestStepsModel> testStepsModels;
 
- public static GithubReposModel createModel(GithubRepo githubRepo) {
-    List<WorkflowRepoModel> workflows = githubRepo.getWorkflows() != null
-        ? githubRepo.getWorkflows().stream()
-        .map(wf -> {
-          WorkflowRepoModel workflowModel = new WorkflowRepoModel();
-          workflowModel.setType(wf.getType());
-          workflowModel.setPassed(wf.getPassed());
-          workflowModel.setFailed(wf.getFailed());
-          workflowModel.setMockPassed(wf.getMockPassed());
-          workflowModel.setMockFailed(wf.getMockFailed());
-          workflowModel.setRealPassed(wf.getRealPassed());
-          workflowModel.setRealFailed(wf.getRealFailed());
-          return workflowModel;
+  public static GithubReposModel createModel(GithubRepo githubRepo) {
+    List<TestStepsModel> testStepsModelList = githubRepo.getTestSteps() != null
+        ? githubRepo.getTestSteps().stream()
+        .map(testStep -> {
+          TestStepsModel testStepsModel = new TestStepsModel();
+          testStepsModel.setName(testStep.getName());
+          testStepsModel.setStatus(testStep.getStatus());
+          testStepsModel.setType(testStep.getType());
+          testStepsModel.setTestType(testStep.getTestType());
+          return testStepsModel;
         })
         .collect(Collectors.toList())
         : Collections.emptyList();
@@ -67,7 +64,7 @@ public class GithubReposModel extends RepresentationModel<GithubReposModel> {
             : null)
         .ciBadgeUrl(githubRepo.getCiBadgeUrl())
         .devBadgeUrl(githubRepo.getDevBadgeUrl())
-        .workflowRepo(workflows)
+        .testStepsModels(testStepsModelList)
         .build();
   }
 }

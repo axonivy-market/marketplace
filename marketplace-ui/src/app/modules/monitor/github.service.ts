@@ -11,21 +11,14 @@ export interface Repository {
   ciBadgeUrl: string;
   devBadgeUrl: string;
   lastUpdated: Date;
-  workflowRepo: WorkflowStatus[];
+  testStepsModels: TestStep[];
 }
 
-export interface WorkflowStatus {
-  type: string;
-  passed: number;
-  failed: number;
-  realPassed: number;
-  realFailed: number;
-  mockPassed: number;
-  mockFailed: number;
-}
 export interface TestStep {
-    name: string;
-    status: 'PASSED' | 'FAILED' | 'SKIPPED'; 
+  name: string;
+  status: 'PASSED' | 'FAILED' | 'SKIPPED';
+  type: string;
+  testType: string;
 }
 
 

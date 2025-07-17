@@ -1,6 +1,7 @@
 package com.axonivy.market.entity;
 
 import com.axonivy.market.enums.TestStatus;
+import com.axonivy.market.enums.TestType;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
@@ -23,11 +24,12 @@ import lombok.Setter;
 public class TestSteps extends AuditableIdEntity{
 
   private String name;
-
   @Enumerated(EnumType.STRING)
   private TestStatus status;
-
+  private String type;
+  @Enumerated(EnumType.STRING)
+  private TestType testType;
   @ManyToOne
-  @JoinColumn(name = "workflow_id")
-  private WorkflowRepo workflow;
+  @JoinColumn(name = "github_repo")
+  private GithubRepo repository;
 }
