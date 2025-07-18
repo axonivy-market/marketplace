@@ -99,7 +99,76 @@ describe('ProductFeedbackComponent', () => {
     expect(component['clientHeight']()).toBe(100);
   });
 
-  it('isFeedbackPending should return false if userId is null or undefined', () => {
+  it('isFeedbackPending should return false if userId is null', () => {
+    const mockFeedbacks: Feedback[] = [
+      {
+        id: '1',
+        content: 'User feedback',
+        rating: 5,
+        productId: '123',
+        feedbackStatus: FeedbackStatus.PENDING,
+        moderatorName: '',
+        version: 1,
+        productNames: {}
+      }
+    ];
+    component.feedback = mockFeedbacks[0];
+    expect(component.isFeedbackPending(component.feedback)).toBe(false);
+  });
+
+  it('isFeedbackPending should return false if userId is undefined', () => {
+    const mockFeedbacks: Feedback[] = [
+      {
+        id: '1',
+        content: 'User feedback',
+        rating: 5,
+        productId: '123',
+        feedbackStatus: FeedbackStatus.PENDING,
+        moderatorName: '',
+        userId: undefined,
+        version: 1,
+        productNames: {}
+      }
+    ];
+    component.feedback = mockFeedbacks[0];
+    expect(component.isFeedbackPending(component.feedback)).toBe(false);
+  });
+
+  it('isFeedbackPending should return false if userId is not the same as logged in user', () => {
+    const mockFeedbacks: Feedback[] = [
+      {
+        id: '1',
+        content: 'User feedback',
+        rating: 5,
+        productId: '123',
+        feedbackStatus: FeedbackStatus.PENDING,
+        moderatorName: '',
+        userId: 'user1',
+        version: 1,
+        productNames: {}
+      }
+    ];
+    component.feedback = mockFeedbacks[0];
+    authService.getUserId.and.returnValue('user2');
+    expect(component.isFeedbackPending(component.feedback)).toBe(false);
+  });
+
+  it('isFeedbackPending should return false if feedbackStatus is not PENDING', () => {
+    const mockFeedbacks: Feedback[] = [
+      {
+        id: '1',
+        content: 'User feedback',
+        rating: 5,
+        productId: '123',
+        feedbackStatus: FeedbackStatus.APPROVED,
+        moderatorName: '',
+        userId: 'user1',
+        version: 1,
+        productNames: {}
+      }
+    ];
+    component.feedback = mockFeedbacks[0];
+    authService.getUserId.and.returnValue('user1');
     expect(component.isFeedbackPending(component.feedback)).toBe(false);
   });
 
