@@ -171,11 +171,7 @@ describe('AppComponent', () => {
 
   it('should redirect to "/error-page" on NavigationError', () => {
     // Simulate a NavigationError event
-    const navigationError = new NavigationError(
-      1,
-      '/a-trust/test-url',
-      'Error message'
-    );
+    const navigationError = new NavigationError(1, '/a-trust/test-url', 'Error message');
     routerEventsSubject.next(navigationError);
     expect(router.navigate).toHaveBeenCalledWith([ERROR_PAGE_PATH]);
   });

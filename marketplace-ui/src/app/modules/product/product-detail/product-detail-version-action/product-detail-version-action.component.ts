@@ -48,7 +48,7 @@ import { LoadingComponentId } from '../../../../shared/enums/loading-component-i
 import { LoadingService } from '../../../../core/services/loading/loading.service';
 import { API_URI } from '../../../../shared/constants/api.constant';
 import { HttpClient, HttpResponse } from '@angular/common/http';
-import { finalize } from 'rxjs/operators';
+import { finalize, take } from 'rxjs/operators';
 
 const showDevVersionCookieName = 'showDevVersions';
 const HTTP = 'http';

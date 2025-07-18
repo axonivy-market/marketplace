@@ -63,7 +63,6 @@ export class ProductFeedbackService {
 
   totalPages: WritableSignal<number> = signal(1);
   totalElements: WritableSignal<number> = signal(0);
-  isBrowser: boolean;
 
   findProductFeedbacks(
     page: number = this.page(),

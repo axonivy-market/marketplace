@@ -133,7 +133,7 @@ export class ProductDetailComponent {
   protected LoadingComponentId = LoadingComponentId;
   protected ProductDetailActionType = ProductDetailActionType;
 
-  resizeObserver: ResizeObserver;
+  resizeObserver?: ResizeObserver;
   productDetail: WritableSignal<ProductDetail> = signal({} as ProductDetail);
   productModuleContent: WritableSignal<ProductModuleContent> = signal(
     {} as ProductModuleContent
