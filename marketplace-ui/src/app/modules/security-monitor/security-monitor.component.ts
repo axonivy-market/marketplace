@@ -8,6 +8,7 @@ import { ProductSecurityInfo } from '../../shared/models/product-security-info-m
 import { GITHUB_MARKET_ORG_URL, REPO_PAGE_PATHS, ERROR_MESSAGES, SECURITY_MONITOR_SESSION_KEYS, TIME_UNITS, UNAUTHORIZED } from '../../shared/constants/common.constant';
 import { LoadingComponentId } from '../../shared/enums/loading-component-id';
 import { LoadingSpinnerComponent } from '../../shared/components/loading-spinner/loading-spinner.component';
+import { PageTitleService } from '../../shared/services/page-title.service';
 
 @Component({
   selector: 'app-security-monitor',
@@ -24,9 +25,11 @@ export class SecurityMonitorComponent {
   repos: ProductSecurityInfo[] = [];
   protected LoadingComponentId = LoadingComponentId;
   private readonly securityMonitorService = inject(SecurityMonitorService);
+  pageTitleService = inject(PageTitleService);
 
   ngOnInit(): void {
     this.loadSessionData();
+    this.pageTitleService.setTitleOnLangChange('common.security.pageTitle');
   }
 
   onSubmit(): void {
