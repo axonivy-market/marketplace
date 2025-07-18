@@ -14,10 +14,7 @@ import {
 import { catchError, Observable, of, tap, throwError } from 'rxjs';
 import { CookieService } from 'ngx-cookie-service';
 import { AuthService } from '../../../../../auth/auth.service';
-import {
-  ForwardingError,
-  LoadingComponent
-} from '../../../../../core/interceptors/api.interceptor';
+import { ForwardingError, LoadingComponent } from '../../../../../core/interceptors/api.interceptor';
 import { FeedbackApiResponse } from '../../../../../shared/models/apis/feedback-response.model';
 import { Feedback } from '../../../../../shared/models/feedback.model';
 import { ProductDetailService } from '../../product-detail.service';
@@ -93,14 +90,8 @@ export class ProductFeedbackService {
             this.allFeedbacks.set(nonPendingFeedbacks);
             this.pendingFeedbacks.set(pendingFeedbacks);
           } else {
-            this.allFeedbacks.set([
-              ...this.allFeedbacks(),
-              ...nonPendingFeedbacks
-            ]);
-            this.pendingFeedbacks.set([
-              ...this.pendingFeedbacks(),
-              ...pendingFeedbacks
-            ]);
+            this.allFeedbacks.set([...this.allFeedbacks(), ...nonPendingFeedbacks]);
+            this.pendingFeedbacks.set([...this.pendingFeedbacks(),...pendingFeedbacks]);
           }
           this.pendingFeedbacks.set(this.sortByDate(this.pendingFeedbacks(), 'updatedAt'));
         }),
@@ -127,9 +118,7 @@ export class ProductFeedbackService {
           }
           return feedback;
         });
-        this.allFeedbacks.set(
-          this.sortByDate(updatedAllFeedbacks, 'updatedAt')
-        );
+        this.allFeedbacks.set(this.sortByDate(updatedAllFeedbacks, 'updatedAt'));
         const filteredPendingFeedbacks = updatedAllFeedbacks.filter(
           feedback => feedback.feedbackStatus === FeedbackStatus.PENDING
         );
