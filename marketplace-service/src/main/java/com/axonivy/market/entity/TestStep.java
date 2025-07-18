@@ -23,6 +23,4 @@ public class TestStep extends GenericIdEntity {
     private WorkFlowType type;
     @Enumerated(EnumType.STRING)
     private TestEnviroment testType;
-    @ManyToOne
-    private GithubRepo repository;
 }

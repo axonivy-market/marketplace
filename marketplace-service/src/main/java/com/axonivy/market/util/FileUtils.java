@@ -41,15 +41,15 @@ public class FileUtils {
     }
   }
 
-  public static void unzipArtifact(InputStream zipStream, File unzipDir) {
+  public static void unzipArtifact(InputStream zipStream, File unzipDir) throws IOException {
     try (var zis = new ZipInputStream(zipStream)) {
       ZipEntry entry;
       while ((entry = zis.getNextEntry()) != null) {
         processZipEntry(zis, entry, unzipDir);
         zis.closeEntry();
       }
-    } catch (Exception e) {
-      throw new RuntimeException("Error unzipping file", e);
+    } catch (IOException e) {
+      throw new IOException("Error unzipping file", e);
     }
   }
 

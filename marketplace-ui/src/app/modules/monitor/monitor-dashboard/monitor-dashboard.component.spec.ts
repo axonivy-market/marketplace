@@ -1,18 +1,18 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { MonitoringRedirectComponent } from './monitor-dashboard.component';
+import { MonitoringDashboardComponent } from './monitor-dashboard.component';
 
-describe('MonitoringRedirectComponent', () => {
-  let component: MonitoringRedirectComponent;
-  let fixture: ComponentFixture<MonitoringRedirectComponent>;
+describe('MonitoringDashboardComponent', () => {
+  let component: MonitoringDashboardComponent;
+  let fixture: ComponentFixture<MonitoringDashboardComponent>;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [MonitoringRedirectComponent]
+      imports: [MonitoringDashboardComponent]
     })
     .compileComponents();
 
-    fixture = TestBed.createComponent(MonitoringRedirectComponent);
+    fixture = TestBed.createComponent(MonitoringDashboardComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
   });

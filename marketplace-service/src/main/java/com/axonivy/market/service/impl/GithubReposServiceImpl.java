@@ -2,13 +2,15 @@ package com.axonivy.market.service.impl;
 
 import com.axonivy.market.assembler.GithubReposModelAssembler;
 import com.axonivy.market.constants.CommonConstants;
-import com.axonivy.market.constants.GitHubConstants;
 import com.axonivy.market.constants.PreviewConstants;
 import com.axonivy.market.entity.GithubRepo;
+import com.axonivy.market.entity.Product;
+import com.axonivy.market.entity.TestStep;
 import com.axonivy.market.enums.WorkFlowType;
 import com.axonivy.market.github.service.GitHubService;
 import com.axonivy.market.model.GithubReposModel;
 import com.axonivy.market.repository.GithubRepoRepository;
+import com.axonivy.market.repository.ProductRepository;
 import com.axonivy.market.service.GithubReposService;
 import com.axonivy.market.service.TestStepsService;
 import com.axonivy.market.util.FileUtils;
@@ -27,6 +29,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 @Service
@@ -37,20 +41,21 @@ public class GithubReposServiceImpl implements GithubReposService {
     private static final String BADGE_URL = "https://github.com/%s/actions/workflows/%s/badge.svg";
     private static final String REPORT_FILE_NAME = "test_report.json";
 
-    @Value("${ignored.repos}")
-    private List<String> ignoredRepos;
     private final GithubRepoRepository githubRepoRepository;
     private final GithubReposModelAssembler githubReposModelAssembler;
     private final TestStepsService testStepsService;
     private final GitHubService gitHubService;
-
+    private final ProductRepository productRepository;
 
     @Override
     public void loadAndStoreTestReports() {
         try {
-            var ghOrganization = gitHubService.getOrganization(GitHubConstants.AXONIVY_MARKET_ORGANIZATION_NAME);
-            List<GHRepository> repositories = ghOrganization.listRepositories().toList();
-            for (GHRepository repository : repositories) {
+            List<Product> products = productRepository.findAll().stream()
+                    .filter(product -> Boolean.FALSE != product.getListed()&& product.getRepositoryName()!=null).toList();
+            log.info("Processing {} products for test reports", products.size());
+            for (Product product : products) {
+              log.info("#loadAndStoreTestReports {}", product.getRepositoryName());
+                GHRepository repository = gitHubService.getRepository(product.getRepositoryName());
                 processProduct(repository);
             }
         } catch (IOException | GHException | DataAccessException e) {
@@ -60,31 +65,28 @@ public class GithubReposServiceImpl implements GithubReposService {
 
     @Transactional
     public void processProduct(GHRepository ghRepo) {
+      log.info("#processProduct {}", ghRepo.getName());
         try {
-            if (!shouldInclude(ghRepo)) {
-                return;
-            }
-            GithubRepo githubRepo = null;
+            GithubRepo githubRepo;
             var githubRepoOptional = githubRepoRepository.findByName(ghRepo.getName());
 
             if (githubRepoOptional.isPresent()) {
                 githubRepo = githubRepoOptional.get();
                 githubRepo.getTestSteps().clear();
-                githubRepoRepository.save(githubRepo);
-            }
-
-            if (githubRepo == null) {
-                String ciBadgeUrl = buildBadgeUrl(ghRepo, CommonConstants.CI_FILE);
-                githubRepo = createNewGithubRepo(ghRepo, ciBadgeUrl, buildBadgeUrl(ghRepo
-                        , CommonConstants.DEV_FILE));
-            } else {
                 githubRepo.setHtmlUrl(ghRepo.getHtmlUrl().toString());
                 githubRepo.setLanguage(ghRepo.getLanguage());
                 githubRepo.setLastUpdated(ghRepo.getUpdatedAt());
+            } else {
+              String ciBadgeUrl = buildBadgeUrl(ghRepo, CommonConstants.CI_FILE);
+              githubRepo = createNewGithubRepo(ghRepo, ciBadgeUrl, buildBadgeUrl(ghRepo
+                  , CommonConstants.DEV_FILE));
             }
 
-            processWorkflowWithFallback(ghRepo, githubRepo, CommonConstants.DEV_FILE, WorkFlowType.DEV);
-            processWorkflowWithFallback(ghRepo, githubRepo, CommonConstants.CI_FILE, WorkFlowType.CI);
+            githubRepo.getTestSteps().addAll(processWorkflowWithFallback(ghRepo, githubRepo, CommonConstants.DEV_FILE, WorkFlowType.DEV));
+            log.info("Processed repository: {} with {} test steps", ghRepo.getName(), githubRepo.getTestSteps().size());
+            githubRepo.getTestSteps().addAll(processWorkflowWithFallback(ghRepo, githubRepo, CommonConstants.CI_FILE, WorkFlowType.CI));
+            log.info("Processed repository: {} with {} test steps", ghRepo.getName(), githubRepo.getTestSteps().size());
+            githubRepoRepository.save(githubRepo);
 
         } catch (GHFileNotFoundException e) {
             log.warn("Workflow file not found for repo: {}", ghRepo.getFullName(), e);
@@ -95,23 +97,24 @@ public class GithubReposServiceImpl implements GithubReposService {
         }
     }
 
-    private void processWorkflowWithFallback(GHRepository ghRepo, GithubRepo dbRepo,
-                                             String workflowFileName, WorkFlowType workflowType) {
+    private List<TestStep> processWorkflowWithFallback(GHRepository ghRepo, GithubRepo dbRepo,
+                                                       String workflowFileName, WorkFlowType workflowType) {
         try {
             GHWorkflowRun run = gitHubService.getLatestWorkflowRun(ghRepo, workflowFileName);
             if (run != null) {
                 GHArtifact artifact = gitHubService.getExportTestArtifact(run);
                 if (artifact != null) {
-                    processArtifact(artifact, dbRepo, workflowType);
+                    return processArtifact(artifact, dbRepo, workflowType);
                 }
             }
         } catch (IOException | GHException e) {
             log.warn("Workflow file '{}' not found for repo: {}. Skipping. Error: {}", workflowFileName,
                     ghRepo.getFullName(), e.getMessage());
         }
+        return Collections.emptyList();
     }
 
-    private void processArtifact(GHArtifact artifact, GithubRepo dbRepo, WorkFlowType workflowType) throws IOException {
+    private List<TestStep> processArtifact(GHArtifact artifact, GithubRepo dbRepo, WorkFlowType workflowType) throws IOException {
 
         var unzipDir = Paths.get(PreviewConstants.GITHUB_REPO_DIR);
         try (InputStream zipStream = gitHubService.downloadArtifactZip(artifact)) {
@@ -119,7 +122,7 @@ public class GithubReposServiceImpl implements GithubReposService {
             FileUtils.unzipArtifact(zipStream, unzipDir.toFile());
 
             JsonNode testData = findTestReportJson(unzipDir.toFile());
-            testStepsService.createTestSteps(dbRepo, testData, workflowType);
+            return testStepsService.createTestSteps(dbRepo, testData, workflowType);
 
         } finally {
             FileUtils.clearDirectory(unzipDir);
@@ -143,6 +146,7 @@ public class GithubReposServiceImpl implements GithubReposService {
                 .htmlUrl(repo.getHtmlUrl().toString())
                 .language(repo.getLanguage())
                 .lastUpdated(repo.getUpdatedAt())
+                .testSteps(new ArrayList<>())
                 .ciBadgeUrl(ciBadgeUrl)
                 .devBadgeUrl(devBadgeUrl)
                 .build();
@@ -150,13 +154,6 @@ public class GithubReposServiceImpl implements GithubReposService {
 
     private static String buildBadgeUrl(GHRepository repo, String workflowFileName) {
         return String.format(BADGE_URL, repo.getFullName(), workflowFileName);
-    }
-
-    private boolean shouldInclude(GHRepository repo) {
-        boolean isValidRepo = !repo.isArchived() && !repo.isTemplate() && "master".equals(repo.getDefaultBranch());
-        boolean isRelevant = repo.getLanguage() != null && !ignoredRepos.contains(repo.getName());
-
-        return isValidRepo && isRelevant;
     }
 
     @Override

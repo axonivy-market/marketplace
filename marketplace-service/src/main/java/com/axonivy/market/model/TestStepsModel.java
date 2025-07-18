@@ -30,7 +30,7 @@ public class TestStepsModel extends RepresentationModel<TestStepsModel> {
   @Schema(description = "Type of test", example = "MOCK or REAL")
   private TestEnviroment testType;
 
-  public static TestStepsModel createTestStepsModel(TestStep entity) {
+  public static TestStepsModel from(TestStep entity) {
     return TestStepsModel.builder()
         .name(entity.getName())
         .status(entity.getStatus())
@@ -44,7 +44,9 @@ public class TestStepsModel extends RepresentationModel<TestStepsModel> {
     if (this == o) {
       return true;
     }
-    if (o == null || getClass() != o.getClass()) return false;
+    if (o == null || getClass() != o.getClass()) {
+      return false;
+    }
 
     TestStepsModel that = (TestStepsModel) o;
 

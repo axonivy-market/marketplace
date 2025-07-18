@@ -54,6 +54,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.NoSuchElementException;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Function;
@@ -409,7 +410,7 @@ public class GitHubServiceImpl implements GitHubService {
           .withPageSize(1)
           .iterator()
           .next();
-    } catch (GHFileNotFoundException e) {
+    } catch (GHFileNotFoundException | NoSuchElementException e) {
       log.warn("Workflow file '{}' not found in repository '{}'", workflowFileName, repo.getFullName(),e);
       return null;
     }

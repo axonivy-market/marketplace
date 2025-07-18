@@ -6,7 +6,7 @@ import { ERROR_PAGE } from './shared/constants/common.constant';
 import { SecurityMonitorComponent } from './modules/security-monitor/security-monitor.component';
 import { ReleasePreviewComponent } from './modules/release-preview/release-preview.component';
 import { FeedbackApprovalComponent } from './modules/feedback-approval/feedback-approval.component';
-import { MonitoringRedirectComponent } from './modules/monitor/monitor-dashboard/monitor-dashboard.component';
+import { MonitoringDashboardComponent } from './modules/monitor/monitor-dashboard/monitor-dashboard.component';
 
 export const routes: Routes = [
   {
@@ -33,7 +33,7 @@ export const routes: Routes = [
   },
   {
     path: 'monitoring',
-    component: MonitoringRedirectComponent
+    component: MonitoringDashboardComponent
   },
   {
     path: 'report/:repo/:workflow',

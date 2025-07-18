@@ -11,11 +11,10 @@ import java.util.List;
 
 @Repository
 public interface TestStepsRepository extends JpaRepository<TestStep, String> {
-  @Query("SELECT ts FROM TestStep ts " +
-      "LEFT JOIN ts.repository repo " +
-      "WHERE repo.name = :repoName AND ts.type = :workflowType")
-  List<TestStep> findByRepoAndWorkflowAndType(
-      @Param("repoName") String repoName,
-      @Param("workflowType") WorkFlowType workflowType
-  );
+    @Query("SELECT ts FROM GithubRepo repo JOIN repo.testSteps ts\n" +
+            "WHERE repo.name = :repoName AND ts.type = :workflowType")
+    List<TestStep> findByRepoAndWorkflowAndType(
+            @Param("repoName") String repoName,
+            @Param("workflowType") WorkFlowType workflowType
+    );
 }

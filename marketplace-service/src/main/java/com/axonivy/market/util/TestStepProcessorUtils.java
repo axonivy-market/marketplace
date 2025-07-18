@@ -40,41 +40,40 @@ public class TestStepProcessorUtils {
         return environment;
     }
 
-    private static TestStep parseTestStepLine(String line, GithubRepo repo, WorkFlowType workflowType) {
+    private static TestStep parseTestStepLine(String line, WorkFlowType workflowType) {
         var matcher = TEST_CASE_PATTERN.matcher(line);
         var matcherFailed = TEST_CASE_FAILED_PATTERN.matcher(line);
         if (matcher.find()) {
             String testName = matcher.group(TEST_NAME_INDEX).trim();
             var testTypeString = matcher.group(TEST_TYPE_INDEX);
             var testType = getTestEnviroment(testTypeString);
-            return createTestStep(testName, TestStatus.PASSED, workflowType, testType, repo);
+            return createTestStep(testName, TestStatus.PASSED, workflowType, testType);
         } else if (matcherFailed.find()) {
             String testName = matcherFailed.group(TEST_NAME_INDEX).trim();
             var testTypeString = matcherFailed.group(TEST_TYPE_INDEX);
             var testType = getTestEnviroment(testTypeString);
-            return createTestStep(testName, TestStatus.FAILED, workflowType, testType, repo);
+            return createTestStep(testName, TestStatus.FAILED, workflowType, testType);
         }
         return null;
     }
 
     private static TestStep createTestStep(String name, TestStatus status, WorkFlowType workflowType,
-                                           TestEnviroment testType, GithubRepo repo) {
+                                           TestEnviroment testType) {
         return TestStep.builder()
                 .name(name)
                 .status(status)
                 .type(workflowType)
                 .testType(testType)
-                .repository(repo)
                 .build();
     }
 
-    public static List<TestStep> parseTestSteps(JsonNode testData, GithubRepo repo, WorkFlowType workflowType) {
+    public static List<TestStep> parseTestSteps(JsonNode testData, WorkFlowType workflowType) {
         List<TestStep> steps = new ArrayList<>();
         var summary = testData.path("output").path("summary").asText();
         var lines = summary.split(CommonConstants.NEW_LINE);
         for (var line : lines) {
             line = line.trim();
-            var step = parseTestStepLine(line, repo, workflowType);
+            var step = parseTestStepLine(line, workflowType);
             if (step != null) {
                 steps.add(step);
             }

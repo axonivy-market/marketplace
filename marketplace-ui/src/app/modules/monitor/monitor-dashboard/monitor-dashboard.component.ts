@@ -11,7 +11,7 @@ import { TranslateModule } from '@ngx-translate/core';
   templateUrl: './monitor-dashboard.component.html',
   styleUrl: './monitor-dashboard.component.scss'
 })
-export class MonitoringRedirectComponent implements OnInit {
+export class MonitoringDashboardComponent implements OnInit {
   repositories: Repository[] = [];
   loading = true;
   error = '';
@@ -22,25 +22,6 @@ export class MonitoringRedirectComponent implements OnInit {
 
   ngOnInit(): void {
     this.loadRepositories();
-  }
-
-  onSubmit(): void {
-    if (this.isReloading) {
-      return;
-    }
-
-    this.isReloading = true;
-    this.githubService.syncGithubRepos().subscribe({
-      next: () => {
-        console.log('Data reloaded');
-      },
-      error: (err) => {
-        console.error('Reload error:', err);
-      },
-      complete: () => {
-        this.isReloading = false;
-      }
-    });
   }
 
   loadRepositories(): void {

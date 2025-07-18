@@ -95,7 +95,7 @@ public class GithubReposModel extends RepresentationModel<GithubReposModel> {
     return testResults;
   }
 
-  public static GithubReposModel createGihubRepoModel(GithubRepo githubRepo) {
+  public static GithubReposModel from(GithubRepo githubRepo) {
     Map<WorkFlowType, Map<TestEnviroment, Map<TestStatus, Integer>>> testResults = processTestResults(githubRepo);
     String lastUpdated = determineLastUpdated(githubRepo);
     return GithubReposModel.builder()
@@ -110,10 +110,9 @@ public class GithubReposModel extends RepresentationModel<GithubReposModel> {
   }
 
   public static String determineLastUpdated(GithubRepo githubRepo) {
-    if (githubRepo.getLastUpdated() != null) {
-      return githubRepo.getLastUpdated().toInstant().toString();
-    }
-    return null;
+    return githubRepo.getLastUpdated() != null
+        ? githubRepo.getLastUpdated().toString()
+        : null;
   }
 
   @Override
@@ -146,7 +145,7 @@ public class GithubReposModel extends RepresentationModel<GithubReposModel> {
 
   @Override
   public int hashCode() {
-    int result = 0;
+    var result = 0;
 
     if (name != null) {
       result = name.hashCode();
