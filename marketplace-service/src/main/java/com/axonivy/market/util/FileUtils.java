@@ -8,17 +8,11 @@ import org.springframework.core.io.Resource;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
+import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Comparator;
-import java.util.List;
 import java.util.stream.Stream;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
@@ -28,6 +22,7 @@ import java.util.zip.ZipOutputStream;
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class FileUtils {
   public static final int DEFAULT_BUFFER_SIZE = 8192;
+  public static final int DEFAULT_BUFFER_GITHUB_SIZE = 4096;
   private static final String DEPLOY_YAML_FILE_NAME = "deploy.options.yaml";
 
   public static File createFile(String fileName) throws IOException {
@@ -46,33 +41,52 @@ public class FileUtils {
     }
   }
 
-  public static void unzipArtifact(InputStream zipStream, File unzipDir) throws IOException {
+  public static void unzipArtifact(InputStream zipStream, File unzipDir) {
     try (var zis = new ZipInputStream(zipStream)) {
       ZipEntry entry;
       while ((entry = zis.getNextEntry()) != null) {
-        var entryPath = Paths.get(entry.getName()).normalize();
-        var resolvedPath = unzipDir.toPath().resolve(entryPath).normalize();
-        if (!resolvedPath.startsWith(unzipDir.toPath())) {
-          throw new IOException("Entry is outside the target dir: " + entry.getName());
-        }
-        File outFile = resolvedPath.toFile();
-        if (entry.isDirectory()) {
-          outFile.mkdirs();
-        } else {
-          File parentDir = outFile.getParentFile();
-          if (parentDir != null) parentDir.mkdirs();
-          try (var fos = new FileOutputStream(outFile)) {
-            byte[] buffer = new byte[4096];
-            int length;
-            while ((length = zis.read(buffer)) > 0) {
-              fos.write(buffer, 0, length);
-            }
-          }
-        }
+        processZipEntry(zis, entry, unzipDir);
         zis.closeEntry();
+      }
+    } catch (Exception e) {
+      throw new RuntimeException("Error unzipping file", e);
+    }
+  }
+
+  private static void processZipEntry(ZipInputStream zis, ZipEntry entry, File unzipDir) throws IOException {
+    var entryPath = Paths.get(entry.getName()).normalize();
+    var resolvedPath = unzipDir.toPath().resolve(entryPath).normalize();
+
+    if (!resolvedPath.startsWith(unzipDir.toPath())) {
+      throw new RuntimeException("Entry is outside the target dir: " + entry.getName());
+    }
+
+    var outFile = resolvedPath.toFile();
+    if (entry.isDirectory()) {
+      outFile.mkdirs();
+    } else {
+      createParentDirectories(outFile);
+      writeFileFromZip(zis, outFile);
+    }
+  }
+
+  private static void createParentDirectories(File outFile) throws IOException {
+    var parentDir = outFile.getParentFile();
+    if (parentDir != null) {
+      parentDir.mkdirs();
+    }
+  }
+
+  private static void writeFileFromZip(ZipInputStream zis, File outFile) throws IOException {
+    try (var fos = new FileOutputStream(outFile)) {
+      var buffer = new byte[DEFAULT_BUFFER_GITHUB_SIZE];
+      int length;
+      while ((length = zis.read(buffer)) > 0) {
+        fos.write(buffer, 0, length);
       }
     }
   }
+
   // Common method to extract .zip file
   public static void unzip(MultipartFile file, String location) throws IOException {
     File extractDir = new File(location);

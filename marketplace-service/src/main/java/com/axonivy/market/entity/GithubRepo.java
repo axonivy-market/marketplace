@@ -20,8 +20,7 @@ import java.util.List;
 @Builder
 @Entity
 @Table(name = "github_repo")
-public class GithubRepo extends AuditableIdEntity implements Serializable {
-
+public class GithubRepo extends GenericIdEntity {
   private String name;
   private String htmlUrl;
   private String language;

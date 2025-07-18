@@ -3,8 +3,8 @@ package com.axonivy.market.util;
 import com.axonivy.market.constants.CommonConstants;
 import com.axonivy.market.entity.GithubRepo;
 import com.axonivy.market.entity.TestStep;
-import com.axonivy.market.enums.TestStatus;
 import com.axonivy.market.enums.TestEnviroment;
+import com.axonivy.market.enums.TestStatus;
 import com.axonivy.market.enums.WorkFlowType;
 import com.fasterxml.jackson.databind.JsonNode;
 import lombok.AccessLevel;
@@ -22,33 +22,37 @@ public class TestStepProcessorUtils {
 
   private static final String PATTERN_TEST_CASE = "^✅\\s+(.+?)(Real Server Test|Mock Server Test)?$";
   private static final String PATTERN_TEST_CASE_FAILED = "^❌\\s+(.+?)(Real Server Test|Mock Server Test)?$";
-  private static final Pattern TEST_CASE_PATTERN = Pattern.compile(PATTERN_TEST_CASE);
-  private static final Pattern TEST_CASE_FAILED_PATTERN = Pattern.compile(PATTERN_TEST_CASE_FAILED);
+  private static final int TEST_TYPE_INDEX = 2;
+  private static final int TEST_NAME_INDEX = 1;
+  private static final Pattern TEST_CASE_PATTERN = Pattern.compile(PATTERN_TEST_CASE,
+          Pattern.UNICODE_CHARACTER_CLASS);
+  private static final Pattern TEST_CASE_FAILED_PATTERN = Pattern.compile(PATTERN_TEST_CASE_FAILED,
+          Pattern.UNICODE_CHARACTER_CLASS);
 
   private static TestEnviroment getTestEnviroment(String testTypeString) {
-    if (testTypeString == null) {
-      return TestEnviroment.OTHER;
+    TestEnviroment environment = TestEnviroment.OTHER;
+    if (testTypeString != null) {
+      if (testTypeString.contains("Real")) {
+        environment = TestEnviroment.REAL;
+      } else if (testTypeString.contains("Mock")) {
+        environment = TestEnviroment.MOCK;
+      }
     }
-    if (testTypeString.contains("Real")) {
-      return TestEnviroment.REAL;
-    } else if (testTypeString.contains("Mock")) {
-      return TestEnviroment.MOCK;
-    }
-    return TestEnviroment.OTHER;
+    return environment;
   }
 
   private static TestStep parseTestStepLine(String line, GithubRepo repo, WorkFlowType workflowType) {
-    Matcher matcher = TEST_CASE_PATTERN.matcher(line);
-    Matcher matcherFailed = TEST_CASE_FAILED_PATTERN.matcher(line);
+    var matcher = TEST_CASE_PATTERN.matcher(line);
+    var matcherFailed = TEST_CASE_FAILED_PATTERN.matcher(line);
     if (matcher.find()) {
-      String testName = matcher.group(1).trim();
-      String testTypeString = matcher.group(2);
+      String testName = matcher.group(TEST_NAME_INDEX).trim();
+      String testTypeString = matcher.group(TEST_TYPE_INDEX);
       TestEnviroment testType = getTestEnviroment(testTypeString);
       return createTestStep(testName, TestStatus.PASSED, workflowType, testType, repo);
     } else if (matcherFailed.find()) {
-      String testName = matcherFailed.group(1).trim();
-      String testTypeString = matcherFailed.group(2);
-      TestEnviroment testType = getTestEnviroment(testTypeString);
+      String testName = matcherFailed.group(TEST_NAME_INDEX).trim();
+      var testTypeString = matcherFailed.group(TEST_TYPE_INDEX);
+      var testType = getTestEnviroment(testTypeString);
       return createTestStep(testName, TestStatus.FAILED, workflowType, testType, repo);
     }
     return null;
@@ -71,7 +75,7 @@ public class TestStepProcessorUtils {
     var lines = summary.split(CommonConstants.NEW_LINE);
     for (var line : lines) {
       line = line.trim();
-      TestStep step = parseTestStepLine(line, repo, workflowType);
+      var step = parseTestStepLine(line, repo, workflowType);
       if (step != null) {
         steps.add(step);
       }

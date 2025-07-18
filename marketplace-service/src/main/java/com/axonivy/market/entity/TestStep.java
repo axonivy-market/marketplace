@@ -23,7 +23,7 @@ import java.io.Serializable;
 @Builder
 @Entity
 @Table(name = "test_step")
-public class TestStep extends AuditableIdEntity implements Serializable {
+public class TestStep extends GenericIdEntity {
 
   private String name;
   @Enumerated(EnumType.STRING)

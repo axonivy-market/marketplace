@@ -26,7 +26,6 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
-import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
 
@@ -54,7 +53,7 @@ public class GithubReposServiceImpl implements GithubReposService {
             for (GHRepository repository : repositories) {
                 processProduct(repository);
             }
-        } catch (Exception e) {
+        } catch (IOException | GHException | DataAccessException e) {
             log.error("Error loading and storing test reports", e);
         }
     }
@@ -75,7 +74,8 @@ public class GithubReposServiceImpl implements GithubReposService {
             }
 
             if (githubRepo == null) {
-                githubRepo = createNewGithubRepo(ghRepo, buildBadgeUrl(ghRepo, CommonConstants.CI_FILE), buildBadgeUrl(ghRepo
+                String ciBadgeUrl = buildBadgeUrl(ghRepo, CommonConstants.CI_FILE);
+                githubRepo = createNewGithubRepo(ghRepo, ciBadgeUrl, buildBadgeUrl(ghRepo
                         , CommonConstants.DEV_FILE));
             } else {
                 githubRepo.setHtmlUrl(ghRepo.getHtmlUrl().toString());
@@ -102,19 +102,18 @@ public class GithubReposServiceImpl implements GithubReposService {
             if (run != null) {
                 GHArtifact artifact = gitHubService.getExportTestArtifact(run);
                 if (artifact != null) {
-                    processArtifact(artifact, ghRepo, dbRepo, workflowType);
+                    processArtifact(artifact, dbRepo, workflowType);
                 }
             }
         } catch (IOException | GHException e) {
-            log.warn("Workflow file '{}' not found or cannot be accessed for repo: {}. Skipping. Error: {}", workflowFileName,
+            log.warn("Workflow file '{}' not found for repo: {}. Skipping. Error: {}", workflowFileName,
                     ghRepo.getFullName(), e.getMessage());
         }
     }
 
-    private void processArtifact(GHArtifact artifact, GHRepository ghRepo,
-                                 GithubRepo dbRepo, WorkFlowType workflowType) throws IOException {
+    private void processArtifact(GHArtifact artifact, GithubRepo dbRepo, WorkFlowType workflowType) throws IOException {
 
-        Path unzipDir = Paths.get(PreviewConstants.GITHUB_REPO_DIR);
+        var unzipDir = Paths.get(PreviewConstants.GITHUB_REPO_DIR);
         try (InputStream zipStream = gitHubService.downloadArtifactZip(artifact)) {
             FileUtils.prepareUnZipDirectory(unzipDir);
             FileUtils.unzipArtifact(zipStream, unzipDir.toFile());
@@ -154,13 +153,10 @@ public class GithubReposServiceImpl implements GithubReposService {
     }
 
     private boolean shouldInclude(GHRepository repo) {
-        boolean notArchived = !repo.isArchived();
-        boolean notTemplate = !repo.isTemplate();
-        boolean isMasterBranch = "master".equals(repo.getDefaultBranch());
-        boolean hasLanguage = repo.getLanguage() != null;
-        boolean notIgnored = !ignoredRepos.contains(repo.getName());
+        boolean isValidRepo = !repo.isArchived() && !repo.isTemplate() && "master".equals(repo.getDefaultBranch());
+        boolean isRelevant = repo.getLanguage() != null && !ignoredRepos.contains(repo.getName());
 
-        return notArchived && notTemplate && isMasterBranch && hasLanguage && notIgnored;
+        return isValidRepo && isRelevant;
     }
 
     @Override

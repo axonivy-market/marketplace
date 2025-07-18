@@ -2,6 +2,8 @@ package com.axonivy.market.enums;
 
 import com.fasterxml.jackson.annotation.JsonValue;
 
+import java.util.Locale;
+
 public enum TestStatus {
   PASSED,
   FAILED,
@@ -9,6 +11,6 @@ public enum TestStatus {
 
   @JsonValue
   public String toValue() {
-    return name().toLowerCase();
+    return name().toLowerCase(Locale.ROOT);
   }
 }
