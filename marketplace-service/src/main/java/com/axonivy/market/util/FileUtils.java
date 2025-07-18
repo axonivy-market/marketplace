@@ -49,7 +49,7 @@ public class FileUtils {
         zis.closeEntry();
       }
     } catch (IOException e) {
-      throw new IOException("Error unzipping file", e);
+      log.error("Error unzipping artifact: {}", e.getMessage());
     }
   }
 
@@ -58,7 +58,7 @@ public class FileUtils {
     var resolvedPath = unzipDir.toPath().resolve(entryPath).normalize();
 
     if (!resolvedPath.startsWith(unzipDir.toPath())) {
-      throw new RuntimeException("Entry is outside the target dir: " + entry.getName());
+      throw new IOException("Entry is outside the target dir: " + entry.getName());
     }
 
     var outFile = resolvedPath.toFile();
@@ -71,7 +71,7 @@ public class FileUtils {
   }
 
   private static void createParentDirectories(File outFile) {
-    File parentDir = outFile.getParentFile();
+    var parentDir = outFile.getParentFile();
     if (parentDir != null && !parentDir.exists()) {
       boolean created = parentDir.mkdirs();
       if (!created && !parentDir.exists()) {

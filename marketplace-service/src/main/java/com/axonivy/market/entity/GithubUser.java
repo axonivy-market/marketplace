@@ -22,6 +22,7 @@ public class GithubUser extends GenericIdEntity {
   private String username;
   private String name;
   private String avatarUrl;
+  // The email is optional, so it can be null
 
   @Override
   public int hashCode() {
