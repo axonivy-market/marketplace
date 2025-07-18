@@ -110,9 +110,10 @@ public class GithubReposModel extends RepresentationModel<GithubReposModel> {
   }
 
   public static String determineLastUpdated(GithubRepo githubRepo) {
-    return githubRepo.getLastUpdated() != null
-        ? githubRepo.getLastUpdated().toString()
-        : null;
+    if(githubRepo.getLastUpdated() != null) {
+      return githubRepo.getLastUpdated().toString();
+    }
+    return null;
   }
 
   @Override

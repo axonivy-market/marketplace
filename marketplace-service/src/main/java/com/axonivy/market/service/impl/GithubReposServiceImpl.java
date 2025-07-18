@@ -20,7 +20,6 @@ import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.kohsuke.github.*;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.dao.DataAccessException;
 import org.springframework.stereotype.Service;
 
@@ -38,129 +37,133 @@ import java.util.List;
 @Slf4j
 public class GithubReposServiceImpl implements GithubReposService {
 
-    private static final String BADGE_URL = "https://github.com/%s/actions/workflows/%s/badge.svg";
-    private static final String REPORT_FILE_NAME = "test_report.json";
+  private static final String BADGE_URL = "https://github.com/%s/actions/workflows/%s/badge.svg";
+  private static final String REPORT_FILE_NAME = "test_report.json";
 
-    private final GithubRepoRepository githubRepoRepository;
-    private final GithubReposModelAssembler githubReposModelAssembler;
-    private final TestStepsService testStepsService;
-    private final GitHubService gitHubService;
-    private final ProductRepository productRepository;
+  private final GithubRepoRepository githubRepoRepository;
+  private final GithubReposModelAssembler githubReposModelAssembler;
+  private final TestStepsService testStepsService;
+  private final GitHubService gitHubService;
+  private final ProductRepository productRepository;
 
-    @Override
-    public void loadAndStoreTestReports() {
-        try {
-            List<Product> products = productRepository.findAll().stream()
-                    .filter(product -> Boolean.FALSE != product.getListed()&& product.getRepositoryName()!=null).toList();
-            log.info("Processing {} products for test reports", products.size());
-            for (Product product : products) {
-              log.info("#loadAndStoreTestReports {}", product.getRepositoryName());
-                GHRepository repository = gitHubService.getRepository(product.getRepositoryName());
-                processProduct(repository);
-            }
-        } catch (IOException | GHException | DataAccessException e) {
-            log.error("Error loading and storing test reports", e);
+  @Override
+  public void loadAndStoreTestReports() {
+    try {
+      List<Product> products = productRepository.findAll().stream()
+          .filter(product -> Boolean.FALSE != product.getListed()
+              && product.getRepositoryName() != null).toList();
+      log.info("Processing {} products for test reports", products.size());
+      for (Product product : products) {
+        log.info("#loadAndStoreTestReports {}", product.getRepositoryName());
+        GHRepository repository = gitHubService.getRepository(product.getRepositoryName());
+        processProduct(repository);
+      }
+    } catch (IOException | GHException | DataAccessException e) {
+      log.error("Error loading and storing test reports", e);
+    }
+  }
+
+  @Transactional
+  public void processProduct(GHRepository ghRepo) {
+    log.info("#processProduct {}", ghRepo.getName());
+    try {
+      GithubRepo githubRepo;
+      var githubRepoOptional = githubRepoRepository.findByName(ghRepo.getName());
+
+      if (githubRepoOptional.isPresent()) {
+        githubRepo = githubRepoOptional.get();
+        githubRepo.getTestSteps().clear();
+        githubRepo.setHtmlUrl(ghRepo.getHtmlUrl().toString());
+        githubRepo.setLanguage(ghRepo.getLanguage());
+        githubRepo.setLastUpdated(ghRepo.getUpdatedAt());
+      } else {
+        String ciBadgeUrl = buildBadgeUrl(ghRepo, CommonConstants.CI_FILE);
+        githubRepo = createNewGithubRepo(ghRepo, ciBadgeUrl, buildBadgeUrl(ghRepo
+            , CommonConstants.DEV_FILE));
+      }
+
+      githubRepo.getTestSteps().addAll(
+          processWorkflowWithFallback(ghRepo, githubRepo, CommonConstants.DEV_FILE, WorkFlowType.DEV));
+      log.info("Processed repository: {} with {} test steps", ghRepo.getName(), githubRepo.getTestSteps().size());
+      githubRepo.getTestSteps().addAll(
+          processWorkflowWithFallback(ghRepo, githubRepo, CommonConstants.CI_FILE, WorkFlowType.CI));
+      log.info("Processed repository: {} with {} test steps", ghRepo.getName(), githubRepo.getTestSteps().size());
+      githubRepoRepository.save(githubRepo);
+
+    } catch (GHFileNotFoundException e) {
+      log.warn("Workflow file not found for repo: {}", ghRepo.getFullName(), e);
+    } catch (IOException e) {
+      log.error("IO error processing GitHub repo: {}", ghRepo.getFullName(), e);
+    } catch (DataAccessException e) {
+      log.error("Database error while saving GitHub repo: {}", ghRepo.getFullName(), e);
+    }
+  }
+
+  private List<TestStep> processWorkflowWithFallback(GHRepository ghRepo, GithubRepo dbRepo,
+      String workflowFileName, WorkFlowType workflowType) {
+    try {
+      GHWorkflowRun run = gitHubService.getLatestWorkflowRun(ghRepo, workflowFileName);
+      if (run != null) {
+        GHArtifact artifact = gitHubService.getExportTestArtifact(run);
+        if (artifact != null) {
+          return processArtifact(artifact, dbRepo, workflowType);
         }
+      }
+    } catch (IOException | GHException e) {
+      log.warn("Workflow file '{}' not found for repo: {}. Skipping. Error: {}", workflowFileName,
+          ghRepo.getFullName(), e.getMessage());
     }
+    return Collections.emptyList();
+  }
 
-    @Transactional
-    public void processProduct(GHRepository ghRepo) {
-      log.info("#processProduct {}", ghRepo.getName());
-        try {
-            GithubRepo githubRepo;
-            var githubRepoOptional = githubRepoRepository.findByName(ghRepo.getName());
+  private List<TestStep> processArtifact(GHArtifact artifact, GithubRepo dbRepo,
+      WorkFlowType workflowType) throws IOException {
 
-            if (githubRepoOptional.isPresent()) {
-                githubRepo = githubRepoOptional.get();
-                githubRepo.getTestSteps().clear();
-                githubRepo.setHtmlUrl(ghRepo.getHtmlUrl().toString());
-                githubRepo.setLanguage(ghRepo.getLanguage());
-                githubRepo.setLastUpdated(ghRepo.getUpdatedAt());
-            } else {
-              String ciBadgeUrl = buildBadgeUrl(ghRepo, CommonConstants.CI_FILE);
-              githubRepo = createNewGithubRepo(ghRepo, ciBadgeUrl, buildBadgeUrl(ghRepo
-                  , CommonConstants.DEV_FILE));
-            }
+    var unzipDir = Paths.get(PreviewConstants.GITHUB_REPO_DIR);
+    try (InputStream zipStream = gitHubService.downloadArtifactZip(artifact)) {
+      FileUtils.prepareUnZipDirectory(unzipDir);
+      FileUtils.unzipArtifact(zipStream, unzipDir.toFile());
 
-            githubRepo.getTestSteps().addAll(processWorkflowWithFallback(ghRepo, githubRepo, CommonConstants.DEV_FILE, WorkFlowType.DEV));
-            log.info("Processed repository: {} with {} test steps", ghRepo.getName(), githubRepo.getTestSteps().size());
-            githubRepo.getTestSteps().addAll(processWorkflowWithFallback(ghRepo, githubRepo, CommonConstants.CI_FILE, WorkFlowType.CI));
-            log.info("Processed repository: {} with {} test steps", ghRepo.getName(), githubRepo.getTestSteps().size());
-            githubRepoRepository.save(githubRepo);
+      JsonNode testData = findTestReportJson(unzipDir.toFile());
+      return testStepsService.createTestSteps(dbRepo, testData, workflowType);
 
-        } catch (GHFileNotFoundException e) {
-            log.warn("Workflow file not found for repo: {}", ghRepo.getFullName(), e);
-        } catch (IOException e) {
-            log.error("IO error processing GitHub repo: {}", ghRepo.getFullName(), e);
-        } catch (DataAccessException e) {
-            log.error("Database error while saving GitHub repo: {}", ghRepo.getFullName(), e);
-        }
+    } finally {
+      FileUtils.clearDirectory(unzipDir);
+      Files.deleteIfExists(unzipDir);
     }
+  }
 
-    private List<TestStep> processWorkflowWithFallback(GHRepository ghRepo, GithubRepo dbRepo,
-                                                       String workflowFileName, WorkFlowType workflowType) {
-        try {
-            GHWorkflowRun run = gitHubService.getLatestWorkflowRun(ghRepo, workflowFileName);
-            if (run != null) {
-                GHArtifact artifact = gitHubService.getExportTestArtifact(run);
-                if (artifact != null) {
-                    return processArtifact(artifact, dbRepo, workflowType);
-                }
-            }
-        } catch (IOException | GHException e) {
-            log.warn("Workflow file '{}' not found for repo: {}. Skipping. Error: {}", workflowFileName,
-                    ghRepo.getFullName(), e.getMessage());
-        }
-        return Collections.emptyList();
+  public JsonNode findTestReportJson(File unzipDir) throws IOException {
+    var file = new File(unzipDir, REPORT_FILE_NAME);
+    if (file.exists()) {
+      return new ObjectMapper().readTree(file);
     }
+    log.warn("No '{}' found in directory: {}", REPORT_FILE_NAME, unzipDir);
+    return null;
+  }
 
-    private List<TestStep> processArtifact(GHArtifact artifact, GithubRepo dbRepo, WorkFlowType workflowType) throws IOException {
+  private static GithubRepo createNewGithubRepo(GHRepository repo, String ciBadgeUrl,
+      String devBadgeUrl) throws IOException {
+    return GithubRepo.builder()
+        .name(repo.getName())
+        .htmlUrl(repo.getHtmlUrl().toString())
+        .language(repo.getLanguage())
+        .lastUpdated(repo.getUpdatedAt())
+        .testSteps(new ArrayList<>())
+        .ciBadgeUrl(ciBadgeUrl)
+        .devBadgeUrl(devBadgeUrl)
+        .build();
+  }
 
-        var unzipDir = Paths.get(PreviewConstants.GITHUB_REPO_DIR);
-        try (InputStream zipStream = gitHubService.downloadArtifactZip(artifact)) {
-            FileUtils.prepareUnZipDirectory(unzipDir);
-            FileUtils.unzipArtifact(zipStream, unzipDir.toFile());
+  private static String buildBadgeUrl(GHRepository repo, String workflowFileName) {
+    return String.format(BADGE_URL, repo.getFullName(), workflowFileName);
+  }
 
-            JsonNode testData = findTestReportJson(unzipDir.toFile());
-            return testStepsService.createTestSteps(dbRepo, testData, workflowType);
-
-        } finally {
-            FileUtils.clearDirectory(unzipDir);
-            Files.deleteIfExists(unzipDir);
-        }
-    }
-
-    public JsonNode findTestReportJson(File unzipDir) throws IOException {
-        var file = new File(unzipDir, REPORT_FILE_NAME);
-        if (file.exists()) {
-            return new ObjectMapper().readTree(file);
-        }
-        log.warn("No '{}' found in directory: {}", REPORT_FILE_NAME, unzipDir);
-        return null;
-    }
-
-    private static GithubRepo createNewGithubRepo(GHRepository repo, String ciBadgeUrl,
-                                                  String devBadgeUrl) throws IOException {
-        return GithubRepo.builder()
-                .name(repo.getName())
-                .htmlUrl(repo.getHtmlUrl().toString())
-                .language(repo.getLanguage())
-                .lastUpdated(repo.getUpdatedAt())
-                .testSteps(new ArrayList<>())
-                .ciBadgeUrl(ciBadgeUrl)
-                .devBadgeUrl(devBadgeUrl)
-                .build();
-    }
-
-    private static String buildBadgeUrl(GHRepository repo, String workflowFileName) {
-        return String.format(BADGE_URL, repo.getFullName(), workflowFileName);
-    }
-
-    @Override
-    public List<GithubReposModel> fetchAllRepositories() {
-        List<GithubRepo> entities = githubRepoRepository.findAll();
-        return entities.stream()
-                .map(githubReposModelAssembler::toModel)
-                .toList();
-    }
+  @Override
+  public List<GithubReposModel> fetchAllRepositories() {
+    List<GithubRepo> entities = githubRepoRepository.findAll();
+    return entities.stream()
+        .map(githubReposModelAssembler::toModel)
+        .toList();
+  }
 }

@@ -56,9 +56,8 @@ public class FileUtils {
   private static void processZipEntry(ZipInputStream zis, ZipEntry entry, File unzipDir) throws IOException {
     var entryPath = Paths.get(entry.getName()).normalize();
     var resolvedPath = unzipDir.toPath().resolve(entryPath).normalize();
-
     if (!resolvedPath.startsWith(unzipDir.toPath())) {
-      throw new IOException("Entry is outside the target dir: " + entry.getName());
+      throw new IllegalStateException("Entry is outside the target dir: " + entry.getName());
     }
 
     var outFile = resolvedPath.toFile();
