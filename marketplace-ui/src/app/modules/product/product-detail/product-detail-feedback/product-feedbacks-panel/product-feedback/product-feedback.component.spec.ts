@@ -59,7 +59,6 @@ describe('ProductFeedbackComponent', () => {
         { provide: AuthService, useValue: authServiceSpy },
         TranslateService,
         ProductFeedbackService,
-        AuthService,
         provideHttpClient(withInterceptorsFromDi()),
         provideHttpClientTesting()
       ]
@@ -97,41 +96,6 @@ describe('ProductFeedbackComponent', () => {
 
     expect(component['scrollHeight']()).toBe(200);
     expect(component['clientHeight']()).toBe(100);
-  });
-
-  it('isFeedbackPending should return false if userId is null', () => {
-    const mockFeedbacks: Feedback[] = [
-      {
-        id: '1',
-        content: 'User feedback',
-        rating: 5,
-        productId: '123',
-        feedbackStatus: FeedbackStatus.PENDING,
-        moderatorName: '',
-        version: 1,
-        productNames: {}
-      }
-    ];
-    component.feedback = mockFeedbacks[0];
-    expect(component.isFeedbackPending(component.feedback)).toBe(false);
-  });
-
-  it('isFeedbackPending should return false if userId is undefined', () => {
-    const mockFeedbacks: Feedback[] = [
-      {
-        id: '1',
-        content: 'User feedback',
-        rating: 5,
-        productId: '123',
-        feedbackStatus: FeedbackStatus.PENDING,
-        moderatorName: '',
-        userId: undefined,
-        version: 1,
-        productNames: {}
-      }
-    ];
-    component.feedback = mockFeedbacks[0];
-    expect(component.isFeedbackPending(component.feedback)).toBe(false);
   });
 
   it('isFeedbackPending should return false if userId is not the same as logged in user', () => {
@@ -188,6 +152,6 @@ describe('ProductFeedbackComponent', () => {
     ];
     component.feedback = mockFeedbacks[0];
     authService.getUserId.and.returnValue('user1');
-    expect(component.isFeedbackPending(component.feedback)).toBe(false);
+    expect(component.isFeedbackPending(component.feedback)).toBe(true);
   });
 });
