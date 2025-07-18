@@ -101,7 +101,7 @@ describe('ProductDetailComponent', () => {
 
     mockRouter = jasmine.createSpyObj('Router', ['navigate']);
 
-    mockAuthService = jasmine.createSpyObj('AuthService', ['getToken']);
+    mockAuthService = jasmine.createSpyObj('AuthService', ['getToken', 'redirectToGitHub']);
     mockAppModalService = jasmine.createSpyObj('AppModalService', [
       'openAddFeedbackDialog'
     ]);
@@ -202,6 +202,26 @@ describe('ProductDetailComponent', () => {
     );
   });
 
+  it('should open add feedback dialog if token is present', () => {
+    languageService.selectedLanguage.and.returnValue(Language.DE);
+    mockAuthService.getToken.and.returnValue('token');
+
+    component.onClickRateBtn();
+    fixture.detectChanges();
+
+    expect(mockAppModalService.openAddFeedbackDialog).toHaveBeenCalled();
+  });
+
+  fit('should redirect to Gitub if token is null', () => {
+    languageService.selectedLanguage.and.returnValue(Language.DE);
+    mockAuthService.getToken.and.returnValue(null);
+
+    component.onClickRateBtn();
+    fixture.detectChanges();
+
+    expect(mockAuthService.redirectToGitHub).toHaveBeenCalled();
+  });
+
   it('should have title like the name DE', () => {
     languageService.selectedLanguage.and.returnValue(Language.DE);
     component.updateWebBrowserTitle(component.productDetail().names);
@@ -215,17 +235,6 @@ describe('ProductDetailComponent', () => {
   it('version should display in number', () => {
     expect(component.selectedVersion).toEqual('Version 10.0.0');
   });
-
-  // it('should get corresponding version from session strorage', () => {
-  //   const targetVersion = '1.0';
-  //   const productId = 'Portal';
-  //   routingQueryParamService.getDesignerVersionFromSessionStorage.and.returnValue(
-  //     targetVersion
-  //   );
-  //   component.getProductById(productId, false).subscribe(productDetail => {
-  //     expect(productDetail).toEqual(MOCK_CRON_JOB_PRODUCT_DETAIL);
-  //   });
-  // });
 
   it('should reset state before fetching new product details', () => {
     component.productDetail.set(MOCK_PRODUCT_DETAIL);
