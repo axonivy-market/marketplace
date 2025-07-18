@@ -5,6 +5,8 @@ import com.axonivy.market.enums.TestStatus;
 import com.axonivy.market.enums.WorkFlowType;
 import jakarta.persistence.*;
 import lombok.*;
+import static com.axonivy.market.constants.EntityConstants.TEST_STEP;
+
 
 @Getter
 @Setter
@@ -12,7 +14,7 @@ import lombok.*;
 @AllArgsConstructor
 @Builder
 @Entity
-@Table(name = "test_step")
+@Table(name = TEST_STEP)
 public class TestStep extends GenericIdEntity {
     private String name;
     @Enumerated(EnumType.STRING)

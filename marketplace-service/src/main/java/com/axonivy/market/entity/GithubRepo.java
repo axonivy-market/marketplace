@@ -9,7 +9,7 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-
+import static com.axonivy.market.constants.EntityConstants.GITHUB_REPO;
 import java.util.Date;
 import java.util.List;
 
@@ -19,7 +19,7 @@ import java.util.List;
 @AllArgsConstructor
 @Builder
 @Entity
-@Table(name = "github_repo")
+@Table(name = GITHUB_REPO)
 public class GithubRepo extends GenericIdEntity {
   private String name;
   private String htmlUrl;
