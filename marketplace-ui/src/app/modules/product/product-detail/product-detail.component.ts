@@ -466,16 +466,16 @@ export class ProductDetailComponent {
     });
   }
 
-  // updateWebBrowserTitle(names: DisplayValue): void {
-  //   if (names !== undefined) {
-  //     const title = names[this.languageService.selectedLanguage()];
-  //     this.titleService.setTitle(title);
-  //     this.meta.updateTag({ property: 'og:title', content: title });
-  //   }
-  // }
+  updateWebBrowserTitle(names: DisplayValue): void {
+    if (names !== undefined) {
+      const title = names[this.languageService.selectedLanguage()];
+      this.titleService.setTitle(title);
+      this.meta.updateTag({ property: 'og:title', content: title });
+    }
+  }
 
   getDisplayedTabsSignal(): ItemDropdown[] {
-    // this.updateWebBrowserTitle(this.productDetail().names);
+    this.updateWebBrowserTitle(this.productDetail().names);
     const displayedTabs: ItemDropdown[] = [];
     for (const detailTab of this.detailTabs) {
       if (this.getContent(detailTab.value)) {
