@@ -3,6 +3,7 @@ package com.axonivy.market.service.impl;
 import com.axonivy.market.assembler.GithubReposModelAssembler;
 import com.axonivy.market.constants.CommonConstants;
 import com.axonivy.market.constants.GitHubConstants;
+import com.axonivy.market.constants.PreviewConstants;
 import com.axonivy.market.entity.GithubRepo;
 import com.axonivy.market.enums.WorkFlowType;
 import com.axonivy.market.github.service.GitHubService;
@@ -68,7 +69,6 @@ public class GithubReposServiceImpl implements GithubReposService {
       if (!shouldInclude(ghRepo)) {
         return;
       }
-
       GithubRepo githubRepo = null;
       var githubRepoOptional = githubRepoRepository.findByName(ghRepo.getName());
 
@@ -118,7 +118,7 @@ public class GithubReposServiceImpl implements GithubReposService {
   private void processArtifact(GHArtifact artifact, GHRepository ghRepo,
       GithubRepo dbRepo, WorkFlowType workflowType) throws IOException {
 
-    Path unzipDir = Paths.get(System.getProperty("java.io.tmpdir"), ghRepo.getName() + "_temp");
+    Path unzipDir = Paths.get(PreviewConstants.GITHUB_REPO_DIR);
     try (InputStream zipStream = gitHubService.downloadArtifactZip(artifact)) {
       FileUtils.prepareUnZipDirectory(unzipDir);
       FileUtils.unzipArtifact(zipStream, unzipDir.toFile());
