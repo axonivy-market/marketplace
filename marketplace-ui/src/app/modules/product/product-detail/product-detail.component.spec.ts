@@ -212,7 +212,7 @@ describe('ProductDetailComponent', () => {
     expect(mockAppModalService.openAddFeedbackDialog).toHaveBeenCalled();
   });
 
-  fit('should redirect to Gitub if token is null', () => {
+  it('should redirect to Gitub if token is null', () => {
     languageService.selectedLanguage.and.returnValue(Language.DE);
     mockAuthService.getToken.and.returnValue(null);
 
