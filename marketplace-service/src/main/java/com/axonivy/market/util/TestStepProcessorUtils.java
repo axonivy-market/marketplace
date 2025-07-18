@@ -46,8 +46,8 @@ public class TestStepProcessorUtils {
     var matcherFailed = TEST_CASE_FAILED_PATTERN.matcher(line);
     if (matcher.find()) {
       String testName = matcher.group(TEST_NAME_INDEX).trim();
-      String testTypeString = matcher.group(TEST_TYPE_INDEX);
-      TestEnviroment testType = getTestEnviroment(testTypeString);
+      var testTypeString = matcher.group(TEST_TYPE_INDEX);
+      var testType = getTestEnviroment(testTypeString);
       return createTestStep(testName, TestStatus.PASSED, workflowType, testType, repo);
     } else if (matcherFailed.find()) {
       String testName = matcherFailed.group(TEST_NAME_INDEX).trim();

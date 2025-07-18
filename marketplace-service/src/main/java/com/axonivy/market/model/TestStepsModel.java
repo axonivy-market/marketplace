@@ -41,14 +41,22 @@ public class TestStepsModel extends RepresentationModel<TestStepsModel> {
 
   @Override
   public boolean equals(Object o) {
-    if (this == o) return true;
+    if (this == o) {
+      return true;
+    }
     if (o == null || getClass() != o.getClass()) return false;
 
     TestStepsModel that = (TestStepsModel) o;
 
-    if (!name.equals(that.name)) return false;
-    if (status != that.status) return false;
-    if (type != that.type) return false;
+    if (!name.equals(that.name)) {
+      return false;
+    }
+    if (status != that.status) {
+      return false;
+    }
+    if (type != that.type) {
+      return false;
+    }
     return testType == that.testType;
   }
 

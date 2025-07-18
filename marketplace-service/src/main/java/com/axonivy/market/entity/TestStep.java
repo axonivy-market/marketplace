@@ -24,7 +24,7 @@ import java.io.Serializable;
 @Entity
 @Table(name = "test_step")
 public class TestStep extends GenericIdEntity {
-
+  private static final long serialVersionUID = 1L;
   private String name;
   @Enumerated(EnumType.STRING)
   private TestStatus status;

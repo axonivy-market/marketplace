@@ -10,9 +10,9 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-import java.io.Serializable;
 import java.util.Date;
 import java.util.List;
+
 @Getter
 @Setter
 @NoArgsConstructor
@@ -21,6 +21,7 @@ import java.util.List;
 @Entity
 @Table(name = "github_repo")
 public class GithubRepo extends GenericIdEntity {
+  private static final long serialVersionUID = 1L;
   private String name;
   private String htmlUrl;
   private String language;

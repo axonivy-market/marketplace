@@ -70,12 +70,16 @@ public class FileUtils {
     }
   }
 
-  private static void createParentDirectories(File outFile) throws IOException {
-    var parentDir = outFile.getParentFile();
-    if (parentDir != null) {
-      parentDir.mkdirs();
+  private static void createParentDirectories(File outFile) {
+    File parentDir = outFile.getParentFile();
+    if (parentDir != null && !parentDir.exists()) {
+      boolean created = parentDir.mkdirs();
+      if (!created && !parentDir.exists()) {
+        throw new IllegalStateException("Failed to create parent directories for: " + outFile.getAbsolutePath());
+      }
     }
   }
+
 
   private static void writeFileFromZip(ZipInputStream zis, File outFile) throws IOException {
     try (var fos = new FileOutputStream(outFile)) {
