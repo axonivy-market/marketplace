@@ -25,54 +25,54 @@ public class TestStepProcessorUtils {
   private static final Pattern TEST_CASE_PATTERN = Pattern.compile(PATTERN_TEST_CASE);
   private static final Pattern TEST_CASE_FAILED_PATTERN = Pattern.compile(PATTERN_TEST_CASE_FAILED);
 
+  private static TestEnviroment getTestEnviroment(String testTypeString) {
+    if (testTypeString == null) {
+      return TestEnviroment.OTHER;
+    }
+    if (testTypeString.contains("Real")) {
+      return TestEnviroment.REAL;
+    } else if (testTypeString.contains("Mock")) {
+      return TestEnviroment.MOCK;
+    }
+    return TestEnviroment.OTHER;
+  }
+
+  private static TestStep parseTestStepLine(String line, GithubRepo repo, WorkFlowType workflowType) {
+    Matcher matcher = TEST_CASE_PATTERN.matcher(line);
+    Matcher matcherFailed = TEST_CASE_FAILED_PATTERN.matcher(line);
+    if (matcher.find()) {
+      String testName = matcher.group(1).trim();
+      String testTypeString = matcher.group(2);
+      TestEnviroment testType = getTestEnviroment(testTypeString);
+      return createTestStep(testName, TestStatus.PASSED, workflowType, testType, repo);
+    } else if (matcherFailed.find()) {
+      String testName = matcherFailed.group(1).trim();
+      String testTypeString = matcherFailed.group(2);
+      TestEnviroment testType = getTestEnviroment(testTypeString);
+      return createTestStep(testName, TestStatus.FAILED, workflowType, testType, repo);
+    }
+    return null;
+  }
+
+  private static TestStep createTestStep(String name, TestStatus status, WorkFlowType workflowType,
+                                      TestEnviroment testType, GithubRepo repo) {
+    return TestStep.builder()
+        .name(name)
+        .status(status)
+        .type(workflowType)
+        .testType(testType)
+        .repository(repo)
+        .build();
+  }
+
   public static List<TestStep> parseTestSteps(JsonNode testData, GithubRepo repo, WorkFlowType workflowType) {
     List<TestStep> steps = new ArrayList<>();
     var summary = testData.path("output").path("summary").asText();
     var lines = summary.split(CommonConstants.NEW_LINE);
-
     for (var line : lines) {
       line = line.trim();
-      Matcher matcher = TEST_CASE_PATTERN.matcher(line);
-      Matcher matcherFailed = TEST_CASE_FAILED_PATTERN.matcher(line);
-      if (matcher.find()) {
-        String testName = matcher.group(1).trim();
-        String testTypeString = matcher.group(2);
-
-        TestEnviroment testType = TestEnviroment.OTHER;
-        if (testTypeString != null) {
-          if (testTypeString.contains("Real")) {
-            testType = TestEnviroment.REAL;
-          } else if (testTypeString.contains("Mock")) {
-            testType = TestEnviroment.MOCK;
-          }
-        }
-        var step = TestStep.builder()
-            .name(testName)
-            .status(TestStatus.PASSED)
-            .type(workflowType)
-            .testType(testType)
-            .repository(repo)
-            .build();
-        steps.add(step);
-      } else if (matcherFailed.find()) {
-        String testName = matcherFailed.group(1).trim();
-        String testTypeString = matcherFailed.group(2);
-
-        TestEnviroment testType = TestEnviroment.OTHER;
-        if (testTypeString != null) {
-          if (testTypeString.contains("Real")) {
-            testType = TestEnviroment.REAL;
-          } else if (testTypeString.contains("Mock")) {
-            testType = TestEnviroment.MOCK;
-          }
-        }
-        var step = TestStep.builder()
-            .name(testName)
-            .status(TestStatus.FAILED)
-            .type(workflowType)
-            .testType(testType)
-            .repository(repo)
-            .build();
+      TestStep step = parseTestStepLine(line, repo, workflowType);
+      if (step != null) {
         steps.add(step);
       }
     }

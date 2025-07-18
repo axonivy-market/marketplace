@@ -9,5 +9,5 @@ import java.util.List;
 
 public interface TestStepsService {
   void createTestSteps(GithubRepo repo, JsonNode testData, WorkFlowType workflowType);
-  List<TestStepsModel> fetchTestReport(String repo, String type);
+  List<TestStepsModel> fetchTestReport(String repo, WorkFlowType type);
 }

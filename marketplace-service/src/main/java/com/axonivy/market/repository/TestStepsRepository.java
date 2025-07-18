@@ -1,6 +1,7 @@
 package com.axonivy.market.repository;
 
 import com.axonivy.market.entity.TestStep;
+import com.axonivy.market.enums.WorkFlowType;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -15,6 +16,6 @@ public interface TestStepsRepository extends JpaRepository<TestStep, String> {
       "WHERE repo.name = :repoName AND ts.type = :workflowType")
   List<TestStep> findByRepoAndWorkflowAndType(
       @Param("repoName") String repoName,
-      @Param("workflowType") String workflowType
+      @Param("workflowType") WorkFlowType workflowType
   );
 }

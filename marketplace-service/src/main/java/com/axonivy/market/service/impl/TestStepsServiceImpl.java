@@ -28,9 +28,8 @@ public class TestStepsServiceImpl implements TestStepsService {
   private final TestStepsModelAssembler testStepsModelAssembler;
 
   @Override
-  public List<TestStepsModel> fetchTestReport(String repo, String type) {
-    List<TestStep> testSteps = testStepsRepository.findByRepoAndWorkflowAndType(repo,
-        type.toUpperCase(Locale.ENGLISH));
+  public List<TestStepsModel> fetchTestReport(String repo, WorkFlowType type) {
+    List<TestStep> testSteps = testStepsRepository.findByRepoAndWorkflowAndType(repo, type);
     return testSteps.stream()
         .map(testStepsModelAssembler::toModel)
         .toList();

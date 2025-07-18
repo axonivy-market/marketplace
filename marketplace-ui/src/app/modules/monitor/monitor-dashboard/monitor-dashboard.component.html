@@ -15,7 +15,7 @@
 
   @if (!loading && repositories.length) {
   <div class="repo-grid">
-    @for (repo of repositories; track $index) {
+    @for (repo of repositories; track repo.name) {
     <div class="repo-card">
       <div class="repo-header">
         <p>{{ repo.name }}</p>
@@ -25,46 +25,54 @@
       <div class="repo-info">
         @if (repo.ciBadgeUrl) {
         <div class="badge-row" (click)="onBadgeClick(repo.name, 'ci')">
-          🏷️ {{ 'monitor.dashboard.ciLabel' | translate }}: 
-          <img [src]="repo.ciBadgeUrl" alt="CI Badge" style="cursor: pointer;" />
+          <span class="icon">🏷️</span> {{ 'monitor.dashboard.ciLabel' | translate }}:
+          <img [src]="repo.ciBadgeUrl" alt="ci Badge for {{ repo.name }}" style="cursor: pointer;" />
         </div>
         <div class="workflow">
-          <p class="passed">✅ {{ 'monitor.dashboard.passed' | translate }}: {{ getTotalPassed(repo, 'CI') }}</p>
-          <p class="failed">❌ {{ 'monitor.dashboard.failed' | translate }}: {{ getTotalFailed(repo, 'CI') }}</p>
+          <p class="passed">✅ {{ 'monitor.dashboard.passed' | translate }}: {{ repo.testResults?.ci?.all?.passed|| 0 }}
+          </p>
+          <p class="failed">❌ {{ 'monitor.dashboard.failed' | translate }}: {{ repo.testResults?.ci?.all?.failed|| 0
+            }}</p>
           <div class="sub-status">
             {{ 'monitor.dashboard.testCounts.mock' | translate }}
-            {{ getTestCount(repo, 'CI', 'MOCK', 'PASSED') }}✅ /
-            {{ getTestCount(repo, 'CI', 'MOCK', 'FAILED') }}❌ |
+            {{ repo.testResults?.ci?.mock?.passed|| 0 }}✅ /
+            {{ repo.testResults?.ci?.mock?.failed|| 0 }}❌ |
             {{ 'monitor.dashboard.testCounts.real' | translate }}
-            {{ getTestCount(repo, 'CI', 'REAL', 'PASSED') }}✅ /
-            {{ getTestCount(repo, 'CI', 'REAL', 'FAILED') }}❌
+            {{ repo.testResults?.ci?.real?.passed|| 0 }}✅ /
+            {{ repo.testResults?.ci?.real?.failed|| 0 }}❌
           </div>
         </div>
         }
 
         @if (repo.devBadgeUrl) {
         <div class="badge-row" (click)="onBadgeClick(repo.name, 'dev')">
-          🛠️ {{ 'monitor.dashboard.devLabel' | translate }}: 
-          <img [src]="repo.devBadgeUrl" alt="DEV Badge" style="cursor: pointer;" />
+          <span class="icon">🛠️</span> {{ 'monitor.dashboard.devLabel' | translate }}:
+          <img [src]="repo.devBadgeUrl" alt="dev Badge for {{ repo.name }}" style="cursor: pointer;" />
         </div>
         <div class="workflow">
-          <p class="passed">✅ {{ 'monitor.dashboard.passed' | translate }}: {{ getTotalPassed(repo, 'DEV') }}</p>
-          <p class="failed">❌ {{ 'monitor.dashboard.failed' | translate }}: {{ getTotalFailed(repo, 'DEV') }}</p>
+          <p class="passed">✅ {{ 'monitor.dashboard.passed' | translate }}: {{ repo.testResults?.dev?.all?.passed|| 0
+            }}</p>
+          <p class="failed">❌ {{ 'monitor.dashboard.failed' | translate }}: {{ repo.testResults?.dev?.all?.failed|| 0
+            }}</p>
           <div class="sub-status">
             {{ 'monitor.dashboard.testCounts.mock' | translate }}
-            {{ getTestCount(repo, 'DEV', 'MOCK', 'PASSED') }}✅ /
-            {{ getTestCount(repo, 'DEV', 'MOCK', 'FAILED') }}❌ |
+            {{ repo.testResults?.dev?.mock?.passed|| 0 }}✅ /
+            {{ repo.testResults?.dev?.mock?.failed|| 0 }}❌ |
             {{ 'monitor.dashboard.testCounts.real' | translate }}
-            {{ getTestCount(repo, 'DEV', 'REAL', 'PASSED') }}✅ /
-            {{ getTestCount(repo, 'DEV', 'REAL', 'FAILED') }}❌
+            {{ repo.testResults?.dev?.real?.passed|| 0 }}✅ /
+            {{ repo.testResults?.dev?.real?.failed|| 0 }}❌
           </div>
         </div>
         }
-        
-        <p><span class="icon">📅</span>{{ 'monitor.dashboard.lastUpdated' | translate }}: {{ repo.lastUpdated | date:'short' }}</p>
+
+        <p>
+          <span class="icon">📅</span>
+          {{ 'monitor.dashboard.lastUpdated' | translate }}: {{ repo.lastUpdated | date:'short' }}
+        </p>
       </div>
     </div>
     }
+
   </div>
   }
 

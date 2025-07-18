@@ -7,7 +7,7 @@ $height-header: 37px;
     margin: 20px auto;
     padding: 0 15px;
     cursor: default;
-    
+
     h2 {
         margin: $height-header 0 $gap-large;
         text-align: center;
@@ -24,7 +24,7 @@ $height-header: 37px;
         justify-content: space-between;
         align-items: center;
         padding: $gap-small;
-        margin-bottom:  $gap-small;
+        margin-bottom: $gap-small;
         border-left: 5px solid gray;
         background: var(--ivy-secondary-bg);
         border-radius: 4px;

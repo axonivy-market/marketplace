@@ -2,16 +2,28 @@ import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 import { API_URI } from '../../shared/constants/api.constant';
-
 export interface Repository {
   name: string;
-  html_url: string;
+  htmlUrl: string;
   language: string | null;
-  updated_at: string;
+  lastUpdated: string;
   ciBadgeUrl: string;
   devBadgeUrl: string;
-  lastUpdated: Date;
-  testStepsModels: TestStep[];
+  testResults?: {
+    dev?: TestTypeResults;
+    ci?: TestTypeResults;
+  };
+}
+
+export interface TestTypeResults {
+  all?: TestCounts;
+  real?: TestCounts;
+  mock?: TestCounts;
+}
+
+export interface TestCounts {
+  passed?: number;
+  failed?: number;
 }
 
 export interface TestStep {
@@ -20,7 +32,6 @@ export interface TestStep {
   type: string;
   testType: string;
 }
-
 
 @Injectable({
   providedIn: 'root'

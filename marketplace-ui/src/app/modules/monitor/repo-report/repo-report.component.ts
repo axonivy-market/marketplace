@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { GithubService, TestStep } from '../github.service';
 import { CommonModule } from '@angular/common';
-import { ActivatedRoute} from '@angular/router';
+import { ActivatedRoute } from '@angular/router';
 
 @Component({
   selector: 'app-repo-report',

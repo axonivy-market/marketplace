@@ -28,6 +28,7 @@ public class TestStep extends AuditableIdEntity implements Serializable {
   private String name;
   @Enumerated(EnumType.STRING)
   private TestStatus status;
+  @Enumerated(EnumType.STRING)
   private WorkFlowType type;
   @Enumerated(EnumType.STRING)
   private TestEnviroment testType;

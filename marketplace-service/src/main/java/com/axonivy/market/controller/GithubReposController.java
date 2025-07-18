@@ -1,5 +1,6 @@
 package com.axonivy.market.controller;
 
+import com.axonivy.market.enums.WorkFlowType;
 import com.axonivy.market.model.GithubReposModel;
 import com.axonivy.market.model.TestStepsModel;
 import com.axonivy.market.service.GithubReposService;
@@ -45,7 +46,7 @@ public class GithubReposController {
       @PathVariable(REPO) @Parameter(description = "Repository name", example = "my-repo",
           in = ParameterIn.PATH) String repo,
       @PathVariable(WORKFLOW) @Parameter(description = "Workflow name", example = "build-workflow",
-          in = ParameterIn.PATH) String workflow) {
+          in = ParameterIn.PATH) WorkFlowType workflow) {
     List<TestStepsModel> response = testStepsService.fetchTestReport(repo, workflow);
     return new ResponseEntity<>(response, HttpStatus.OK);
   }

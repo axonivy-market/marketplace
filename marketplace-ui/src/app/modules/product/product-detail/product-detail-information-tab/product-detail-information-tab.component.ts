@@ -103,7 +103,7 @@ export class ProductDetailInformationTabComponent implements OnChanges {
       changedProduct.currentValue !== changedProduct.previousValue
     );
   }
-  onBadgeClick(names: string, workflow: string) {
-    this.router.navigate(['/report', names, workflow]);
+  onBadgeClick(names: string) {
+    this.router.navigate(['/report', names, "CI"]);
   }
 }

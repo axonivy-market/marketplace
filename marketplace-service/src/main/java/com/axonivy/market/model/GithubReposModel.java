@@ -1,7 +1,10 @@
 package com.axonivy.market.model;
 
 import com.axonivy.market.entity.GithubRepo;
-import com.axonivy.market.entity.TestStep;
+import com.axonivy.market.enums.TestEnviroment;
+import com.axonivy.market.enums.TestStatus;
+import com.axonivy.market.enums.WorkFlowType;
+import com.fasterxml.jackson.annotation.JsonFormat;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -10,8 +13,9 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.springframework.hateoas.RepresentationModel;
 
-import java.util.Collections;
-import java.util.List;
+import java.util.EnumMap;
+import java.util.HashMap;
+import java.util.Map;
 
 @Getter
 @Setter
@@ -37,32 +41,69 @@ public class GithubReposModel extends RepresentationModel<GithubReposModel> {
 
   @Schema(description = "DEV workflow badge URL", example = "https://github.com/actions/workflows/dev.yml/badge.svg")
   private String devBadgeUrl;
+  @Schema(
+      description = "Test results summary by workflow type and test environment",
+      example = """
+    {
+      "CI": {
+        "all": { "passed": 5, "failed": 10 },
+        "mock": { "passed": 2, "failed": 3 },
+        "real": { "passed": 3, "failed": 7 }
+      },
+      "DEV": {
+        "all": { "passed": 8, "failed": 15 },
+        "mock": { "passed": 4, "failed": 6 },
+        "real": { "passed": 4, "failed": 9 }
+      }
+    }
+  """
+  )
+  private Map<WorkFlowType, Map<TestEnviroment, Map<TestStatus, Integer>>> testResults;
 
-  @Schema(description = "List of workflow test result summaries")
-  private List<TestStepsModel> testStepsModels;
-  public static GithubReposModel createGihubRepoModel(GithubRepo githubRepo) {
-    List<TestStepsModel> testStepsModelList;
+  public static Map<WorkFlowType, Map<TestEnviroment, Map<TestStatus, Integer>>>
+  processTestResults(GithubRepo githubRepo) {
+    Map<WorkFlowType, Map<TestEnviroment, Map<TestStatus, Integer>>> testResults = new HashMap<>();
 
     if (githubRepo.getTestSteps() != null) {
-      testStepsModelList = githubRepo.getTestSteps().stream()
-          .map((TestStep testStep) -> {
-            var testStepsModel = new TestStepsModel();
-            testStepsModel.setName(testStep.getName());
-            testStepsModel.setStatus(testStep.getStatus());
-            testStepsModel.setType(testStep.getType());
-            testStepsModel.setTestType(testStep.getTestType());
-            return testStepsModel;
-          })
-          .toList();
-    } else {
-      testStepsModelList = Collections.emptyList();
-    }
+      for (var testStep : githubRepo.getTestSteps()) {
+        WorkFlowType workflowType = testStep.getType();
+        TestEnviroment envType = testStep.getTestType();
+        TestStatus status = testStep.getStatus();
+        if (status == TestStatus.SKIPPED) {
+          continue;
+        }
 
-    String lastUpdated = null;
+        if (envType == TestEnviroment.REAL || envType == TestEnviroment.MOCK) {
+          testResults
+              .computeIfAbsent(workflowType, k -> new HashMap<>())
+              .computeIfAbsent(envType, k -> new EnumMap<>(TestStatus.class))
+              .merge(status, 1, Integer::sum);
+        } else {
+          testResults
+              .computeIfAbsent(workflowType, k -> new HashMap<>())
+              .computeIfAbsent(TestEnviroment.OTHER, k -> new EnumMap<>(TestStatus.class))
+              .merge(status, 1, Integer::sum);
+        }
+
+        testResults
+            .computeIfAbsent(workflowType, k -> new HashMap<>())
+            .computeIfAbsent(TestEnviroment.ALL, k -> new EnumMap<>(TestStatus.class))
+            .merge(status, 1, Integer::sum);
+      }
+    }
+    return testResults;
+  }
+
+  public static String determineLastUpdated(GithubRepo githubRepo) {
     if (githubRepo.getLastUpdated() != null) {
-      lastUpdated = githubRepo.getLastUpdated().toInstant().toString();
+      return githubRepo.getLastUpdated().toInstant().toString();
     }
+    return null;
+  }
 
+  public static GithubReposModel createGihubRepoModel(GithubRepo githubRepo) {
+    Map<WorkFlowType, Map<TestEnviroment, Map<TestStatus, Integer>>> testResults = processTestResults(githubRepo);
+    String lastUpdated = determineLastUpdated(githubRepo);
     return GithubReposModel.builder()
         .name(githubRepo.getName())
         .htmlUrl(githubRepo.getHtmlUrl())
@@ -70,8 +111,7 @@ public class GithubReposModel extends RepresentationModel<GithubReposModel> {
         .lastUpdated(lastUpdated)
         .ciBadgeUrl(githubRepo.getCiBadgeUrl())
         .devBadgeUrl(githubRepo.getDevBadgeUrl())
-        .testStepsModels(testStepsModelList)
+        .testResults(testResults)
         .build();
   }
-
 }
