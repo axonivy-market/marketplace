@@ -22,6 +22,7 @@ import java.util.List;
 @Entity
 @Table(name = GITHUB_REPO)
 public class GithubRepo extends GenericIdEntity {
+  private static final long serialVersionUID = 1L;
   private String name;
   private String htmlUrl;
   private String language;
