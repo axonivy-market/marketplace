@@ -462,8 +462,6 @@ describe('ProductDetailVersionActionComponent', () => {
     component.onSelectVersion(selectedVersion);
     expect(component.artifacts().length).toBe(0);
     const artifact = {
-      name: '',
-      downloadUrl: '',
       isProductArtifact: true,
       id: { artifactId: "example-artifactId-1" } as MavenArtifactKey
     } as ItemDropdown;
