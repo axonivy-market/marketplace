@@ -58,7 +58,7 @@ export class MonitoringRedirectComponent implements OnInit {
   }
 
   onBadgeClick(repo: string, workflow: string) {
-    console.log(`Navigating to report for ${repo}/${workflow}`);
-    this.router.navigate(['/report', repo, workflow]);
+    const upperWorkflow = workflow.toUpperCase();
+    this.router.navigate(['/report', repo, upperWorkflow]);
   }
 }
