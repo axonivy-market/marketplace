@@ -41,6 +41,7 @@ export class ErrorPageComponent implements OnInit {
 
   ngOnInit(): void {
     this.errorId = this.route.snapshot.params['id'];
+    
     this.translateService
       .get(I18N_ERROR_CODE_PATH)
       .subscribe(errorTranslations => {
@@ -56,10 +57,7 @@ export class ErrorPageComponent implements OnInit {
   }
 
   private buildI18nKey(key: string | undefined) {
-    if (key) {
-      return `${I18N_ERROR_CODE_PATH}.${key}`;
-    }
-    return '';
+    return `${I18N_ERROR_CODE_PATH}.${key}`;
   }
 
   backToHomePage() {
