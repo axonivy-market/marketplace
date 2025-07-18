@@ -3,6 +3,7 @@ import { WindowRef } from '../../core/services/browser/window-ref.service';
 import { DocumentRef } from '../../core/services/browser/document-ref.service';
 import { GoogleSearchBarUtils } from './google-search-bar.utils';
 import { environment } from '../../../environments/environment';
+import { GOOGLE_PROGRAMMABLE_SEARCH_SCRIPT_ID, GOOGLE_SEARCH, GOOGLE_SEARCH_BAR_BACKGROUND_CLASS_NAME, GOOGLE_SEARCH_BAR_CLASS_NAME } from '../constants/common.constant';
 
 describe('GoogleSearchBarUtils', () => {
   let mockRenderer: jasmine.SpyObj<Renderer2>;
@@ -95,7 +96,7 @@ describe('GoogleSearchBarUtils', () => {
       );
 
       // Assert
-      expect(mockDocument.getElementById).toHaveBeenCalledWith('googleCSEScript');
+      expect(mockDocument.getElementById).toHaveBeenCalledWith(GOOGLE_PROGRAMMABLE_SEARCH_SCRIPT_ID);
       expect(mockRenderer.createElement).toHaveBeenCalledWith('script');
       expect(mockRenderer.appendChild).toHaveBeenCalledWith(mockDocument.body, mockScript);
       
@@ -150,7 +151,7 @@ describe('GoogleSearchBarUtils', () => {
       );
 
       // Assert
-      expect(mockWindow.google.search.cse.element.render).toHaveBeenCalledWith('gcse-search');
+      expect(mockWindow.google.search.cse.element.render).toHaveBeenCalledWith(GOOGLE_SEARCH);
     });
 
     it('should not call google.search.cse.element.render when google search is not available', () => {
@@ -249,8 +250,8 @@ describe('GoogleSearchBarUtils', () => {
       // Assert
       expect(window.setTimeout).toHaveBeenCalledWith(jasmine.any(Function), 1000);
       expect(mockDocument.querySelectorAll).toHaveBeenCalledWith('.gsc-control-cse');
-      expect(mockRenderer.addClass).toHaveBeenCalledWith(mockSearchBox1, 'bg-secondary');
-      expect(mockRenderer.addClass).toHaveBeenCalledWith(mockSearchBox2, 'bg-secondary');
+      expect(mockRenderer.addClass).toHaveBeenCalledWith(mockSearchBox1, GOOGLE_SEARCH_BAR_BACKGROUND_CLASS_NAME);
+      expect(mockRenderer.addClass).toHaveBeenCalledWith(mockSearchBox2, GOOGLE_SEARCH_BAR_BACKGROUND_CLASS_NAME);
     });
 
     it('should handle empty search box list gracefully', () => {
@@ -265,7 +266,7 @@ describe('GoogleSearchBarUtils', () => {
       GoogleSearchBarUtils.addCustomClassToSearchBar(mockRenderer, mockDocumentRef);
 
       // Assert
-      expect(mockDocument.querySelectorAll).toHaveBeenCalledWith('.gsc-control-cse');
+      expect(mockDocument.querySelectorAll).toHaveBeenCalledWith(GOOGLE_SEARCH_BAR_CLASS_NAME);
       expect(mockRenderer.addClass).not.toHaveBeenCalled();
     });
   });

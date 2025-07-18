@@ -42,10 +42,7 @@ export class SecurityMonitorComponent {
   }
 
   onSubmit(): void {
-    this.token =
-      this.token ??
-      sessionStorage.getItem(SECURITY_MONITOR_SESSION_KEYS.TOKEN) ??
-      '';
+    this.token = this.token ??sessionStorage.getItem(SECURITY_MONITOR_SESSION_KEYS.TOKEN) ?? '';
     if (!this.token) {
       this.handleMissingToken();
       return;
@@ -57,9 +54,7 @@ export class SecurityMonitorComponent {
 
   private loadSessionData(): void {
     try {
-      const sessionData = sessionStorage.getItem(
-        SECURITY_MONITOR_SESSION_KEYS.DATA
-      );
+      const sessionData = sessionStorage.getItem(SECURITY_MONITOR_SESSION_KEYS.DATA);
       if (sessionData) {
         this.repos = JSON.parse(sessionData) as ProductSecurityInfo[];
         this.isAuthenticated = true;
@@ -121,11 +116,7 @@ export class SecurityMonitorComponent {
     window.open(url, '_blank');
   }
 
-  navigateToRepoPage(
-    repoName: string,
-    page: keyof typeof REPO_PAGE_PATHS,
-    lastCommitSHA?: string
-  ): void {
+  navigateToRepoPage(repoName: string, page: keyof typeof REPO_PAGE_PATHS, lastCommitSHA?: string): void {
     const path = REPO_PAGE_PATHS[page];
     let additionalPath = '';
     if (page === 'lastCommit') {

@@ -20,19 +20,16 @@ import {
 import { ActivatedRoute, Router } from '@angular/router';
 import { NgbAccordionModule, NgbNavModule } from '@ng-bootstrap/ng-bootstrap';
 import { TranslateModule } from '@ngx-translate/core';
-import { forkJoin, map, Observable, Subscription } from 'rxjs';
+import { forkJoin, Subscription } from 'rxjs';
 import { AuthService } from '../../../auth/auth.service';
 import { LanguageService } from '../../../core/services/language/language.service';
 import { ThemeService } from '../../../core/services/theme/theme.service';
 import { CommonDropdownComponent } from '../../../shared/components/common-dropdown/common-dropdown.component';
 import {
   DEFAULT_IMAGE_URL,
-  DEFAULT_VENDOR_IMAGE,
-  DEFAULT_VENDOR_IMAGE_BLACK,
   GITHUB_PULL_REQUEST_NUMBER_REGEX,
   PRODUCT_DETAIL_TABS,
   RATING_LABELS_BY_TYPE,
-  SHOW_DEV_VERSION,
   TAB_PREFIX,
   UNESCAPE_GITHUB_CONTENT_REGEX,
   VERSION
@@ -186,16 +183,13 @@ export class ProductDetailComponent {
     const productId = this.route.snapshot.params[ROUTER.ID];
     this.productDetailService.productId.set(productId);
     const productDetail = this.route.snapshot.data[
-      'productDetail'
+      ROUTER.PRODUCT_DETAIL
     ] as ProductDetail;
     
     this.handleProductDetailLoad(productId, productDetail);
   }
 
-  private handleProductDetailLoad(
-    productId: string,
-    productDetail: ProductDetail
-  ): void {
+  private handleProductDetailLoad(productId: string, productDetail: ProductDetail): void {
     if (this.isBrowser) {
       forkJoin({
         userFeedback: this.productFeedbackService.findProductFeedbackOfUser(),
@@ -232,11 +226,7 @@ export class ProductDetailComponent {
   private setupMarkdownParser(sourceUrl: string): void {
     this.md
       .use(full)
-      .use(
-        this.linkifyPullRequests,
-        sourceUrl,
-        GITHUB_PULL_REQUEST_NUMBER_REGEX
-      )
+      .use(this.linkifyPullRequests, sourceUrl, GITHUB_PULL_REQUEST_NUMBER_REGEX)
       .set({
         typographer: true,
         linkify: true
@@ -476,16 +466,16 @@ export class ProductDetailComponent {
     });
   }
 
-  updateWebBrowserTitle(names: DisplayValue): void {
-    if (names !== undefined) {
-      const title = names[this.languageService.selectedLanguage()];
-      this.titleService.setTitle(title);
-      this.meta.updateTag({ property: 'og:title', content: title });
-    }
-  }
+  // updateWebBrowserTitle(names: DisplayValue): void {
+  //   if (names !== undefined) {
+  //     const title = names[this.languageService.selectedLanguage()];
+  //     this.titleService.setTitle(title);
+  //     this.meta.updateTag({ property: 'og:title', content: title });
+  //   }
+  // }
 
   getDisplayedTabsSignal(): ItemDropdown[] {
-    this.updateWebBrowserTitle(this.productDetail().names);
+    // this.updateWebBrowserTitle(this.productDetail().names);
     const displayedTabs: ItemDropdown[] = [];
     for (const detailTab of this.detailTabs) {
       if (this.getContent(detailTab.value)) {

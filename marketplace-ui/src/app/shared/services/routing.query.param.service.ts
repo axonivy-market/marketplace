@@ -14,11 +14,11 @@ export class RoutingQueryParamService {
   constructor(private readonly router: Router, private readonly storageRef: SessionStorageRef) {
     this.getNavigationStartEvent().subscribe(() => {
       if (!this.isDesigner()) {
-        const value = this.storageRef.session?.getItem(
+        const savedIvyViewer = this.storageRef.session?.getItem(
           DESIGNER_SESSION_STORAGE_VARIABLE.ivyViewerParamName
         );
         this.isDesigner.set(
-          value === DESIGNER_SESSION_STORAGE_VARIABLE.defaultDesignerViewer
+          savedIvyViewer === DESIGNER_SESSION_STORAGE_VARIABLE.defaultDesignerViewer
         );
       }
     });
@@ -52,21 +52,21 @@ export class RoutingQueryParamService {
 
   getDesignerVersionFromSessionStorage(): string {
     if (this.designerVersion() === '') {
-      const stored = this.storageRef.session?.getItem(
+      const savedIvyVersion = this.storageRef.session?.getItem(
         DESIGNER_SESSION_STORAGE_VARIABLE.ivyVersionParamName
       );
-      this.designerVersion.set(stored ?? '');
+      this.designerVersion.set(savedIvyVersion ?? '');
     }
     return this.designerVersion();
   }
 
   isDesignerViewer(): boolean {
     if (!this.isDesigner()) {
-      const viewer = this.storageRef.session?.getItem(
+      const savedIvyViewer = this.storageRef.session?.getItem(
         DESIGNER_SESSION_STORAGE_VARIABLE.ivyViewerParamName
       );
       this.isDesigner.set(
-        viewer === DESIGNER_SESSION_STORAGE_VARIABLE.defaultDesignerViewer
+        savedIvyViewer === DESIGNER_SESSION_STORAGE_VARIABLE.defaultDesignerViewer
       );
     }
     return this.isDesigner();

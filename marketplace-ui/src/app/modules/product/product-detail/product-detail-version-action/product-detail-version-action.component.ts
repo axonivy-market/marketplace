@@ -26,10 +26,7 @@ import { CommonDropdownComponent } from '../../../../shared/components/common-dr
 import { LanguageService } from '../../../../core/services/language/language.service';
 import { ItemDropdown } from '../../../../shared/models/item-dropdown.model';
 import { environment } from '../../../../../environments/environment';
-import {
-  SHOW_DEV_VERSION,
-  VERSION
-} from '../../../../shared/constants/common.constant';
+import { SHOW_DEV_VERSION, VERSION } from '../../../../shared/constants/common.constant';
 import { ProductDetailActionType } from '../../../../shared/enums/product-detail-action-type';
 import { RoutingQueryParamService } from '../../../../shared/services/routing.query.param.service';
 import { ProductDetail } from '../../../../shared/models/product-detail.model';
@@ -38,10 +35,7 @@ import { CookieService } from 'ngx-cookie-service';
 import { CommonUtils } from '../../../../shared/utils/common.utils';
 import { ActivatedRoute, Router } from '@angular/router';
 import { ROUTER } from '../../../../shared/constants/router.constant';
-import {
-  MatomoCategory,
-  MatomoAction
-} from '../../../../shared/enums/matomo-tracking.enum';
+import { MatomoCategory, MatomoAction } from '../../../../shared/enums/matomo-tracking.enum';
 import { MATOMO_TRACKING_ENVIRONMENT } from '../../../../shared/constants/matomo.constant';
 import { MATOMO_DIRECTIVES } from 'ngx-matomo-client';
 import { LoadingComponentId } from '../../../../shared/enums/loading-component-id';
@@ -249,16 +243,10 @@ export class ProductDetailVersionActionComponent implements AfterViewInit {
   }
 
   getVersionInDesigner(): void {
-    const designerVersion =
-      this.routingQueryParamService.getDesignerVersionFromSessionStorage() ??
-      '';
+    const designerVersion = this.routingQueryParamService.getDesignerVersionFromSessionStorage() ?? '';
     this.versionDropdownInDesigner = [];
     this.productService
-      .sendRequestToGetProductVersionsForDesigner(
-        this.productId,
-        this.isDevVersionsDisplayed(),
-        designerVersion
-      )
+      .sendRequestToGetProductVersionsForDesigner(this.productId, this.isDevVersionsDisplayed(), designerVersion)
       .subscribe(data => {
         const versionMap = data
           .map(dataVersionAndUrl => dataVersionAndUrl.version)

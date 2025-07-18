@@ -21,18 +21,15 @@ const INDEX_FILE = '/index.html';
 export class RedirectPageComponent implements OnInit {
   httpClient = inject(HttpClient);
   productService = inject(ProductService);
-  isBrowser: boolean;
 
   constructor(
     private readonly activeRoute: ActivatedRoute,
     private readonly router: Router,
     @Inject(PLATFORM_ID) private readonly platformId: Object
-  ) {
-    this.isBrowser = isPlatformBrowser(this.platformId);
-  }
+  ) {}
 
   ngOnInit(): void {
-    if (this.isBrowser) {
+    if (isPlatformBrowser(this.platformId)) {
       const product = this.activeRoute.snapshot.paramMap.get(ROUTER.ID);
       const version = this.activeRoute.snapshot.paramMap.get(ROUTER.VERSION);
       const currentUrl = window.location.href;
@@ -51,15 +48,12 @@ export class RedirectPageComponent implements OnInit {
   fetchDocumentUrl(product: string, version: string, currentUrl: string): void {
     this.httpClient.get<ExternalDocument>(`${API_URI.EXTERNAL_DOCUMENT}/${product}/${version}`)
       .subscribe({
-        next: (response: ExternalDocument) => this.handleRedirection(response, currentUrl)
+        next: (response: ExternalDocument) =>
+          this.handleRedirection(response, currentUrl)
       });
   }
 
-  fetchLatestLibVersionDownloadUrl(
-    product: string,
-    version: string,
-    artifact: string
-  ): void {
+  fetchLatestLibVersionDownloadUrl(product: string, version: string, artifact: string): void {
     this.productService
       .getLatestArtifactDownloadUrl(product, version, artifact)
       .subscribe(downloadUrl => {
@@ -72,8 +66,7 @@ export class RedirectPageComponent implements OnInit {
       this.router.navigate([ERROR_PAGE_PATH]);
     }
     const relativeUrl = response.relativeLink;
-    const isSameUrl =
-      currentUrl === relativeUrl || currentUrl + INDEX_FILE === relativeUrl;
+    const isSameUrl = currentUrl === relativeUrl || currentUrl + INDEX_FILE === relativeUrl;
     const currentHash = window.location.hash;
     if (!isSameUrl) {
       let link = relativeUrl;
