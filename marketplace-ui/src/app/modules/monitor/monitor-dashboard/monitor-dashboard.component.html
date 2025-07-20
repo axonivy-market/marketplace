@@ -24,17 +24,15 @@
           <img [src]="repo.ciBadgeUrl" alt="ci Badge for {{ repo.name }}" style="cursor: pointer;" />
         </div>
         <div class="workflow">
-          <p class="passed">✅ {{ 'monitor.dashboard.passed' | translate }}: {{ repo.testResults?.ci?.all?.passed|| 0 }}
-          </p>
-          <p class="failed">❌ {{ 'monitor.dashboard.failed' | translate }}: {{ repo.testResults?.ci?.all?.failed|| 0
-            }}</p>
+          <p class="passed">✅ {{ 'monitor.dashboard.passed' | translate }}: {{ getTestCount(repo, 'CI', 'ALL', 'PASSED') }}</p>
+          <p class="failed">❌ {{ 'monitor.dashboard.failed' | translate }}: {{ getTestCount(repo, 'CI', 'ALL', 'FAILED') }}</p>
           <div class="sub-status">
             {{ 'monitor.dashboard.testCounts.mock' | translate }}
-            {{ repo.testResults?.ci?.mock?.passed|| 0 }}✅ /
-            {{ repo.testResults?.ci?.mock?.failed|| 0 }}❌ |
+            {{ getTestCount(repo, 'CI', 'MOCK', 'PASSED') }}✅ /
+            {{ getTestCount(repo, 'CI', 'MOCK', 'FAILED') }}❌ |
             {{ 'monitor.dashboard.testCounts.real' | translate }}
-            {{ repo.testResults?.ci?.real?.passed|| 0 }}✅ /
-            {{ repo.testResults?.ci?.real?.failed|| 0 }}❌
+            {{ getTestCount(repo, 'CI', 'REAL', 'PASSED') }}✅ /
+            {{ getTestCount(repo, 'CI', 'REAL', 'FAILED') }}❌
           </div>
         </div>
         }
@@ -45,17 +43,15 @@
           <img [src]="repo.devBadgeUrl" alt="dev Badge for {{ repo.name }}" style="cursor: pointer;" />
         </div>
         <div class="workflow">
-          <p class="passed">✅ {{ 'monitor.dashboard.passed' | translate }}: {{ repo.testResults?.dev?.all?.passed|| 0
-            }}</p>
-          <p class="failed">❌ {{ 'monitor.dashboard.failed' | translate }}: {{ repo.testResults?.dev?.all?.failed|| 0
-            }}</p>
+          <p class="passed">✅ {{ 'monitor.dashboard.passed' | translate }}: {{ getTestCount(repo, 'DEV', 'ALL', 'PASSED') }}</p>
+          <p class="failed">❌ {{ 'monitor.dashboard.failed' | translate }}: {{ getTestCount(repo, 'DEV', 'ALL', 'FAILED') }}</p>
           <div class="sub-status">
             {{ 'monitor.dashboard.testCounts.mock' | translate }}
-            {{ repo.testResults?.dev?.mock?.passed|| 0 }}✅ /
-            {{ repo.testResults?.dev?.mock?.failed|| 0 }}❌ |
+            {{ getTestCount(repo, 'DEV', 'MOCK', 'PASSED') }}✅ /
+            {{ getTestCount(repo, 'DEV', 'MOCK', 'FAILED') }}❌ |
             {{ 'monitor.dashboard.testCounts.real' | translate }}
-            {{ repo.testResults?.dev?.real?.passed|| 0 }}✅ /
-            {{ repo.testResults?.dev?.real?.failed|| 0 }}❌
+            {{ getTestCount(repo, 'DEV', 'REAL', 'PASSED') }}✅ /
+            {{ getTestCount(repo, 'DEV', 'REAL', 'FAILED') }}❌
           </div>
         </div>
         }

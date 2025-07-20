@@ -5,6 +5,9 @@ import com.axonivy.market.enums.TestStatus;
 import com.axonivy.market.enums.WorkFlowType;
 import jakarta.persistence.*;
 import lombok.*;
+
+import java.io.Serial;
+
 import static com.axonivy.market.constants.EntityConstants.TEST_STEP;
 
 @Getter
@@ -15,6 +18,7 @@ import static com.axonivy.market.constants.EntityConstants.TEST_STEP;
 @Entity
 @Table(name = TEST_STEP)
 public class TestStep extends GenericIdEntity {
+  @Serial
   private static final long serialVersionUID = 1L;
   private String name;
   @Enumerated(EnumType.STRING)

@@ -7,7 +7,6 @@ import java.util.Locale;
 @Getter
 public enum TestEnviroment {
   OTHER,
-  ALL,
   MOCK,
   REAL;
 

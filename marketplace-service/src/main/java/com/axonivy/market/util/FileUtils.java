@@ -69,7 +69,7 @@ public class FileUtils {
     }
   }
 
-  private static void createParentDirectories(File outFile) {
+  public static void createParentDirectories(File outFile) {
     var parentDir = outFile.getParentFile();
     if (parentDir != null && !parentDir.exists()) {
       boolean created = parentDir.mkdirs();
@@ -80,7 +80,7 @@ public class FileUtils {
   }
 
 
-  private static void writeFileFromZip(ZipInputStream zis, File outFile) throws IOException {
+  public static void writeFileFromZip(ZipInputStream zis, File outFile) throws IOException {
     try (var fos = new FileOutputStream(outFile)) {
       var buffer = new byte[DEFAULT_BUFFER_GITHUB_SIZE];
       int length;

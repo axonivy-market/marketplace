@@ -225,12 +225,11 @@ monitor:
   dashboard:
     title: GitHub Repository Security Monitor
     subtitle: Monitor your repositories at a glance and automatically update every hour.
-    reloadData: Reload Data
     loading: Loading repositories...
     noRepositories: No repositories found.
     errorLoading: Error loading repositories
-    ciLabel: CI build
-    devLabel: DEV build
+    ciLabel: CI Build
+    devLabel: DEV Build
     passed: Passed
     failed: Failed
     mock: Mock
@@ -259,4 +258,3 @@ monitor:
       totalFailed: Total Failed Tests
       lastSync: Last Synchronization
     filterLabel: Filter Repositories
-    searchPlaceholder: Search repositories...

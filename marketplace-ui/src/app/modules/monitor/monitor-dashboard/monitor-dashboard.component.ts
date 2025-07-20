@@ -1,5 +1,5 @@
 import { Component, inject, OnInit } from '@angular/core';
-import { GithubService, Repository } from '../github.service';
+import { GithubService, Repository, TestResult } from '../github.service';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { LanguageService } from '../../../core/services/language/language.service';
@@ -36,6 +36,18 @@ export class MonitoringDashboardComponent implements OnInit {
         this.loading = false;
       }
     });
+  }
+
+  getTestCount(repo: Repository, workflow: string, environment: string, status: string): number {
+    if (!repo.testResults) return 0;
+    
+    const result = repo.testResults.find(test => 
+      test.workflow === workflow.toUpperCase() && 
+      test.environment === environment.toUpperCase() && 
+      test.status === status.toUpperCase()
+    );
+    
+    return result ? result.count : 0;
   }
 
   onBadgeClick(repo: string, workflow: string) {

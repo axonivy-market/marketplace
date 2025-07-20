@@ -99,7 +99,7 @@ public class GithubReposServiceImpl implements GithubReposService {
     }
   }
 
-  private List<TestStep> processWorkflowWithFallback(GHRepository ghRepo, GithubRepo dbRepo,
+  public List<TestStep> processWorkflowWithFallback(GHRepository ghRepo, GithubRepo dbRepo,
       String workflowFileName, WorkFlowType workflowType) {
     try {
       GHWorkflowRun run = gitHubService.getLatestWorkflowRun(ghRepo, workflowFileName);

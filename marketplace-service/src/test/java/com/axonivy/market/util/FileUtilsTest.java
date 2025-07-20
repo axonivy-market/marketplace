@@ -14,6 +14,7 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -23,8 +24,9 @@ import java.util.zip.ZipInputStream;
 import java.util.zip.ZipOutputStream;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.mockStatic;
-import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class FileUtilsTest {
@@ -199,5 +201,65 @@ class FileUtilsTest {
         assertTrue(foundConfig, "Configuration file should be present in ZIP");
       }
     }
+  }
+  @Test
+  void testUnzipArtifactExtractsFilesAndDirs() throws IOException {
+    Path tempDir = Files.createTempDirectory("unzipTest");
+    ByteArrayOutputStream baos = new ByteArrayOutputStream();
+    try (ZipOutputStream zos = new ZipOutputStream(baos)) {
+      zos.putNextEntry(new ZipEntry("dir1/"));
+      zos.closeEntry();
+      zos.putNextEntry(new ZipEntry("dir1/file1.txt"));
+      zos.write("hello".getBytes());
+      zos.closeEntry();
+      zos.putNextEntry(new ZipEntry("file2.txt"));
+      zos.write("world".getBytes());
+      zos.closeEntry();
+    }
+    ByteArrayInputStream bais = new ByteArrayInputStream(baos.toByteArray());
+    FileUtils.unzipArtifact(bais, tempDir.toFile());
+    assertTrue(Files.exists(tempDir.resolve("dir1/file1.txt")));
+    assertTrue(Files.exists(tempDir.resolve("file2.txt")));
+    assertEquals("hello", Files.readString(tempDir.resolve("dir1/file1.txt")));
+    assertEquals("world", Files.readString(tempDir.resolve("file2.txt")));
+    // Clean up
+    Files.walk(tempDir).map(Path::toFile).sorted((a, b) -> -a.compareTo(b)).forEach(File::delete);
+  }
+
+  @Test
+  void testUnzipArtifactEntryOutsideTargetDirThrows() throws IOException {
+    Path tempDir = Files.createTempDirectory("unzipTest");
+    ByteArrayOutputStream baos = new ByteArrayOutputStream();
+    try (ZipOutputStream zos = new ZipOutputStream(baos)) {
+      zos.putNextEntry(new ZipEntry("../evil.txt"));
+      zos.write("bad".getBytes());
+      zos.closeEntry();
+    }
+    ByteArrayInputStream bais = new ByteArrayInputStream(baos.toByteArray());
+    Exception ex = assertThrows(IllegalStateException.class, () -> FileUtils.
+        unzipArtifact(bais, tempDir.toFile()));
+    assertTrue(ex.getMessage().contains("outside the target dir"));
+    Files.walk(tempDir).map(Path::toFile).sorted((a, b) -> -a.compareTo(b)).forEach(File::delete);
+  }
+
+  @Test
+  void testCreateParentDirectoriesFailure() {
+    File file = mock(File.class);
+    File parent = mock(File.class);
+    when(file.getParentFile()).thenReturn(parent);
+    when(parent.exists()).thenReturn(false);
+    when(parent.mkdirs()).thenReturn(false);
+    assertThrows(IllegalStateException.class, () -> {
+      FileUtils.createParentDirectories(file);
+    });
+  }
+
+  @Test
+  void testUnzipArtifactHandlesIOException() throws IOException {
+    Path tempDir = Files.createTempDirectory("unzipTest");
+    InputStream badStream = mock(InputStream.class);
+    when(badStream.read(any(byte[].class), anyInt(), anyInt())).thenThrow(new IOException("Simulated IO error"));
+    assertDoesNotThrow(() -> FileUtils.unzipArtifact(badStream, tempDir.toFile()));
+    Files.walk(tempDir).map(Path::toFile).sorted((a, b) -> -a.compareTo(b)).forEach(File::delete);
   }
 }

@@ -225,7 +225,6 @@ monitor:
   dashboard:
     title: GitHub Repository Sicherheitsmonitor
     subtitle: Überwachen Sie Ihre Repositories auf einen Blick und aktualisieren Sie stündlich automatisch.
-    reloadData: Daten neu laden
     loading: Repositories werden geladen...
     noRepositories: Keine Repositories gefunden.
     errorLoading: Fehler beim Laden der Repositories
@@ -233,14 +232,14 @@ monitor:
     devLabel: DEV Build
     passed: Bestanden
     failed: Fehlgeschlagen
-    mock: Mock
-    real: Real
+    mock: Simuliert
+    real: Echt
     lastUpdated: Zuletzt aktualisiert
     language: Sprache
     testCounts:
       title: Testergebnisse
-      mock: "Mock: "
-      real: "Real: "
+      mock: "Simuliert: "
+      real: "Echt: "
       total: "Gesamttests: "
     repo:
       name: Repository-Name
@@ -259,4 +258,3 @@ monitor:
       totalFailed: Fehlgeschlagene Tests insgesamt
       lastSync: Letzte Synchronisation
     filterLabel: Repositories filtern
-    searchPlaceholder: Repositories durchsuchen...

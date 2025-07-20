@@ -9,21 +9,14 @@ export interface Repository {
   lastUpdated: string;
   ciBadgeUrl: string;
   devBadgeUrl: string;
-  testResults?: {
-    dev?: TestTypeResults;
-    ci?: TestTypeResults;
-  };
+  testResults?: TestResult[];
 }
 
-export interface TestTypeResults {
-  all?: TestCounts;
-  real?: TestCounts;
-  mock?: TestCounts;
-}
-
-export interface TestCounts {
-  passed?: number;
-  failed?: number;
+export interface TestResult {
+  environment: 'ALL' | 'REAL' | 'MOCK';
+  workflow: 'CI' | 'DEV';
+  count: number;
+  status: 'PASSED' | 'FAILED';
 }
 
 export interface TestStep {

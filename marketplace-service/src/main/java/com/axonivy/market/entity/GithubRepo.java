@@ -11,6 +11,8 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import static com.axonivy.market.constants.EntityConstants.GITHUB_REPO;
+
+import java.io.Serial;
 import java.util.Date;
 import java.util.List;
 
@@ -22,7 +24,9 @@ import java.util.List;
 @Entity
 @Table(name = GITHUB_REPO)
 public class GithubRepo extends GenericIdEntity {
+  @Serial
   private static final long serialVersionUID = 1L;
+
   private String name;
   private String htmlUrl;
   private String language;

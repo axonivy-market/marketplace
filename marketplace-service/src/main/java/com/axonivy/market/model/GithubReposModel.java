@@ -1,20 +1,12 @@
 package com.axonivy.market.model;
 
 import com.axonivy.market.entity.GithubRepo;
-import com.axonivy.market.enums.TestEnviroment;
-import com.axonivy.market.enums.TestStatus;
-import com.axonivy.market.enums.WorkFlowType;
 import io.swagger.v3.oas.annotations.media.Schema;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.EqualsAndHashCode;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 import org.springframework.hateoas.RepresentationModel;
 
-import java.util.EnumMap;
-import java.util.Map;
+import static com.axonivy.market.util.TestResultsUtils.determineLastUpdated;
+import static com.axonivy.market.util.TestResultsUtils.processTestResults;
 
 @Getter
 @Setter
@@ -23,141 +15,95 @@ import java.util.Map;
 @AllArgsConstructor
 public class GithubReposModel extends RepresentationModel<GithubReposModel> {
 
-  @EqualsAndHashCode.Include
-  @Schema(description = "Repository name", example = "my-awesome-repo")
-  private String name;
+    @EqualsAndHashCode.Include
+    @Schema(description = "Repository name", example = "my-awesome-repo")
+    private String name;
 
-  @EqualsAndHashCode.Include
-  @Schema(description = "Repository HTML URL", example = "https://github.com/axonivy-market/my-awesome-repo")
-  private String htmlUrl;
+    @EqualsAndHashCode.Include
+    @Schema(description = "Repository HTML URL", example = "https://github.com/axonivy-market/my-awesome-repo")
+    private String htmlUrl;
 
-  @Schema(description = "Main programming language used", example = "Java")
-  private String language;
+    @Schema(description = "Main programming language used", example = "Java")
+    private String language;
 
-  @Schema(description = "Last updated date of the repository", example = "2025-07-14T10:35:00Z")
-  private String lastUpdated;
+    @Schema(description = "Last updated date of the repository", example = "2025-07-14T10:35:00Z")
+    private String lastUpdated;
 
-  @Schema(description = "CI workflow badge URL", example = "https://github.com/actions/workflows/ci.yml/badge.svg")
-  private String ciBadgeUrl;
+    @Schema(description = "CI workflow badge URL", example = "https://github.com/actions/workflows/ci.yml/badge.svg")
+    private String ciBadgeUrl;
 
-  @Schema(description = "DEV workflow badge URL", example = "https://github.com/actions/workflows/dev.yml/badge.svg")
-  private String devBadgeUrl;
-  @Schema(
-      description = "Test results summary by workflow type and test environment",
-      example = """
-            {
-              "CI": {
-                "all": { "passed": 5, "failed": 10 },
-                "mock": { "passed": 2, "failed": 3 },
-                "real": { "passed": 3, "failed": 7 }
-              },
-              "DEV": {
-                "all": { "passed": 8, "failed": 15 },
-                "mock": { "passed": 4, "failed": 6 },
-                "real": { "passed": 4, "failed": 9 }
-              }
-            }
-          """
-  )
-  private Map<WorkFlowType, Map<TestEnviroment, Map<TestStatus, Integer>>> testResults;
+    @Schema(description = "DEV workflow badge URL", example = "https://github.com/actions/workflows/dev.yml/badge.svg")
+    private String devBadgeUrl;
 
-  public static Map<WorkFlowType, Map<TestEnviroment, Map<TestStatus, Integer>>>
-  processTestResults(GithubRepo githubRepo) {
-    Map<WorkFlowType, Map<TestEnviroment, Map<TestStatus, Integer>>> testResults = new EnumMap<>(WorkFlowType.class);
+    @Schema(
+            description = "Test results summary by workflow type and test environment",
+            example = """
+                      {
+                        "CI": {
+                          "all": { "passed": 5, "failed": 10 },
+                          "mock": { "passed": 2, "failed": 3 },
+                          "real": { "passed": 3, "failed": 7 }
+                        },
+                        "DEV": {
+                          "all": { "passed": 8, "failed": 15 },
+                          "mock": { "passed": 4, "failed": 6 },
+                          "real": { "passed": 4, "failed": 9 }
+                        }
+                      }
+                    """
+    )
+    private Object testResults;
 
-    if (githubRepo.getTestSteps() != null) {
-      for (var testStep : githubRepo.getTestSteps()) {
-        WorkFlowType workflowType = testStep.getType();
-        TestEnviroment envType = testStep.getTestType();
-        TestStatus status = testStep.getStatus();
-        if (status == TestStatus.SKIPPED) {
-          continue;
+    public static GithubReposModel from(GithubRepo githubRepo) {
+        Object testResults = processTestResults(githubRepo);
+        String lastUpdated = determineLastUpdated(githubRepo);
+        return GithubReposModel.builder()
+                .name(githubRepo.getName())
+                .htmlUrl(githubRepo.getHtmlUrl())
+                .language(githubRepo.getLanguage())
+                .lastUpdated(lastUpdated)
+                .ciBadgeUrl(githubRepo.getCiBadgeUrl())
+                .devBadgeUrl(githubRepo.getDevBadgeUrl())
+                .testResults(testResults)
+                .build();
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
         }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+        GithubReposModel that = (GithubReposModel) o;
 
-        if (envType == TestEnviroment.REAL || envType == TestEnviroment.MOCK) {
-          testResults
-              .computeIfAbsent(workflowType, k -> new EnumMap<>(TestEnviroment.class))
-              .computeIfAbsent(envType, k -> new EnumMap<>(TestStatus.class))
-              .merge(status, 1, Integer::sum);
+        boolean isNameEqual;
+        if (name != null) {
+            isNameEqual = name.equals(that.name);
         } else {
-          testResults
-              .computeIfAbsent(workflowType, k -> new EnumMap<>(TestEnviroment.class))
-              .computeIfAbsent(TestEnviroment.OTHER, k -> new EnumMap<>(TestStatus.class))
-              .merge(status, 1, Integer::sum);
+            isNameEqual = (that.name == null);
         }
 
-        testResults
-            .computeIfAbsent(workflowType, k -> new EnumMap<>(TestEnviroment.class))
-            .computeIfAbsent(TestEnviroment.ALL, k -> new EnumMap<>(TestStatus.class))
-            .merge(status, 1, Integer::sum);
-      }
-    }
-    return testResults;
-  }
-
-  public static GithubReposModel from(GithubRepo githubRepo) {
-    Map<WorkFlowType, Map<TestEnviroment, Map<TestStatus, Integer>>> testResults = processTestResults(githubRepo);
-    String lastUpdated = determineLastUpdated(githubRepo);
-    return GithubReposModel.builder()
-        .name(githubRepo.getName())
-        .htmlUrl(githubRepo.getHtmlUrl())
-        .language(githubRepo.getLanguage())
-        .lastUpdated(lastUpdated)
-        .ciBadgeUrl(githubRepo.getCiBadgeUrl())
-        .devBadgeUrl(githubRepo.getDevBadgeUrl())
-        .testResults(testResults)
-        .build();
-  }
-
-  public static String determineLastUpdated(GithubRepo githubRepo) {
-    if(githubRepo.getLastUpdated() != null) {
-      return githubRepo.getLastUpdated().toString();
-    }
-    return null;
-  }
-
-  @Override
-  public boolean equals(Object o) {
-    if (this == o) {
-      return true;
-    }
-    if (o == null || getClass() != o.getClass()) {
-      return false;
+        boolean isHtmlUrlEqual;
+        if (htmlUrl != null) {
+            isHtmlUrlEqual = htmlUrl.equals(that.htmlUrl);
+        } else {
+            isHtmlUrlEqual = (that.htmlUrl == null);
+        }
+        return isNameEqual && isHtmlUrlEqual;
     }
 
-    GithubReposModel that = (GithubReposModel) o;
-
-    boolean isNameEqual;
-    if (name != null) {
-      isNameEqual = name.equals(that.name);
-    } else {
-      isNameEqual = (that.name == null);
+    @Override
+    public int hashCode() {
+        var result = 0;
+        if (name != null) {
+            result = name.hashCode();
+        }
+        result = 31 * result;
+        if (htmlUrl != null) {
+            result += htmlUrl.hashCode();
+        }
+        return result;
     }
-
-    boolean isHtmlUrlEqual;
-    if (htmlUrl != null) {
-      isHtmlUrlEqual = htmlUrl.equals(that.htmlUrl);
-    } else {
-      isHtmlUrlEqual = (that.htmlUrl == null);
-    }
-
-    return isNameEqual && isHtmlUrlEqual;
-  }
-
-  @Override
-  public int hashCode() {
-    var result = 0;
-
-    if (name != null) {
-      result = name.hashCode();
-    }
-
-    result = 31 * result;
-
-    if (htmlUrl != null) {
-      result += htmlUrl.hashCode();
-    }
-
-    return result;
-  }
 }
