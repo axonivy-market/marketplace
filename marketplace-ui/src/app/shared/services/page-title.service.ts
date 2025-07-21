@@ -21,7 +21,7 @@ export class PageTitleService {
 
     // Update the title whenever the language changes
     this.langSub = this.translateService.onLangChange.subscribe(
-      (event: LangChangeEvent) => {
+      () => {
         this.translateService
           .get(titleLabel)
           .subscribe((translatedTitle: string) => {
