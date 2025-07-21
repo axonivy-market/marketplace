@@ -4,18 +4,10 @@ import { CommonModule } from '@angular/common';
 import { StarRatingComponent } from '../../../../../../shared/components/star-rating/star-rating.component';
 import { ElementRef } from '@angular/core';
 import { Feedback } from '../../../../../../shared/models/feedback.model';
-import {
-  MissingTranslationHandler,
-  TranslateLoader,
-  TranslateModule,
-  TranslateService
-} from '@ngx-translate/core';
+import { MissingTranslationHandler, TranslateLoader, TranslateModule, TranslateService } from '@ngx-translate/core';
 import { httpLoaderFactory } from '../../../../../../core/configs/translate.config';
 import { ProductFeedbackService } from '../product-feedback.service';
-import {
-  provideHttpClient,
-  withInterceptorsFromDi
-} from '@angular/common/http';
+import { provideHttpClient, withInterceptorsFromDi } from '@angular/common/http';
 import { provideHttpClientTesting } from '@angular/common/http/testing';
 import { AuthService } from '../../../../../../auth/auth.service';
 import { FeedbackStatus } from '../../../../../../shared/enums/feedback-status.enum';
