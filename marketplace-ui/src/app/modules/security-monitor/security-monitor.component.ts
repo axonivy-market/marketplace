@@ -42,7 +42,7 @@ export class SecurityMonitorComponent {
   }
 
   onSubmit(): void {
-    this.token = this.token ??sessionStorage.getItem(SECURITY_MONITOR_SESSION_KEYS.TOKEN) ?? '';
+    this.token = this.token ?? sessionStorage.getItem(SECURITY_MONITOR_SESSION_KEYS.TOKEN) ?? '';
     if (!this.token) {
       this.handleMissingToken();
       return;
@@ -71,9 +71,11 @@ export class SecurityMonitorComponent {
   }
 
   private fetchSecurityDetails(): void {
-    this.securityMonitorService.getSecurityDetails(this.token).subscribe({
-      next: data => this.handleSuccess(data),
-      error: (err: HttpErrorResponse) => this.handleError(err)
+    this.securityMonitorService
+      .getSecurityDetails(this.token)
+      .subscribe({
+        next: data => this.handleSuccess(data),
+        error: (err: HttpErrorResponse) => this.handleError(err)
     });
   }
 
@@ -81,10 +83,7 @@ export class SecurityMonitorComponent {
     this.repos = data;
     this.isAuthenticated = true;
     sessionStorage.setItem(SECURITY_MONITOR_SESSION_KEYS.TOKEN, this.token);
-    sessionStorage.setItem(
-      SECURITY_MONITOR_SESSION_KEYS.DATA,
-      JSON.stringify(data)
-    );
+    sessionStorage.setItem(SECURITY_MONITOR_SESSION_KEYS.DATA, JSON.stringify(data));
   }
 
   private handleError(err: HttpErrorResponse): void {
@@ -137,10 +136,7 @@ export class SecurityMonitorComponent {
     }
 
     for (const [index, { SECONDS, SINGULAR, PLURAL }] of TIME_UNITS.entries()) {
-      if (
-        index < TIME_UNITS.length - 1 &&
-        diffInSeconds < TIME_UNITS[index + 1].SECONDS
-      ) {
+      if (index < TIME_UNITS.length - 1 && diffInSeconds < TIME_UNITS[index + 1].SECONDS) {
         const value = Math.floor(diffInSeconds / SECONDS);
         if (value === 1) {
           return `${value} ${SINGULAR} ago`;
@@ -150,9 +146,7 @@ export class SecurityMonitorComponent {
       }
     }
 
-    const years = Math.floor(
-      diffInSeconds / TIME_UNITS[TIME_UNITS.length - 1].SECONDS
-    );
+    const years = Math.floor(diffInSeconds / TIME_UNITS[TIME_UNITS.length - 1].SECONDS);
     if (years === 1) {
       return `${years} year ago`;
     } else {
