@@ -6,10 +6,11 @@
     <div class="test-step" [ngClass]="step.status.toLowerCase()">
       <span class="step-name">{{ step.name }}</span>
       <span class="test-type">
-        @if (step.testType.toLowerCase() === 'mock') {
-        <span class="mock-test">{{ 'monitor.dashboard.mock' | translate }}</span>
-        } @else if (step.testType.toLowerCase() === 'real') {
+        @if(step.testType.toLowerCase() === 'real') {
         <span class="real-test">{{ 'monitor.dashboard.real' | translate }}</span>
+        }
+        @else {
+        <span class="mock-test">{{ 'monitor.dashboard.mock' | translate }}</span>
         }
       </span>
       <span class="step-status">

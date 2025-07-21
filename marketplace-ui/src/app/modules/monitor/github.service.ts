@@ -13,7 +13,7 @@ export interface Repository {
 }
 
 export interface TestResult {
-  environment: 'ALL' | 'REAL' | 'MOCK';
+  environment: 'ALL' | 'REAL' | 'MOCK'| 'OTHER';
   workflow: 'CI' | 'DEV';
   count: number;
   status: 'PASSED' | 'FAILED';
