@@ -1,5 +1,5 @@
 import { inject, Injectable } from '@angular/core';
-import { TranslateService, LangChangeEvent } from '@ngx-translate/core';
+import { TranslateService } from '@ngx-translate/core';
 import { Title } from '@angular/platform-browser';
 import { Subscription } from 'rxjs';
 
