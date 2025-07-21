@@ -49,6 +49,32 @@ $height-header: 37px;
             width: 30px;
         }
 
+        .test-type {
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-weight: 500;
+            min-width: 70px;
+            text-align: center;
+            
+            .mock-test, .real-test {
+                padding: 4px 8px;
+                border-radius: 4px;
+                width: 80px;
+                display: inline-block;
+                text-align: center;
+            }
+            
+            .mock-test {
+                background-color: #e0f7fa;
+                color: #0097a7;
+            }
+            
+            .real-test {
+                background-color: #e8f5e9;
+                color: #388e3c;
+            }
+        }
+
         .step-name {
             flex: 1;
             padding: 0 $gap-small;

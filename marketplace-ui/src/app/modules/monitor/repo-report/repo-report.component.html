@@ -5,6 +5,13 @@
     @for (step of report; track step.name) {
     <div class="test-step" [ngClass]="step.status.toLowerCase()">
       <span class="step-name">{{ step.name }}</span>
+      <span class="test-type">
+        @if (step.testType.toLowerCase() === 'mock') {
+          <span class="mock-test">Mock</span>
+        } @else {
+          <span class="real-test">Real</span>
+        }
+      </span>
       <span class="step-status">
         @switch (step.status.toLowerCase()) {
         @case ('passed') {
