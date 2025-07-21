@@ -216,6 +216,35 @@ describe('GoogleSearchBarUtils', () => {
         mockDocument
       );
     });
+
+    fit('should NOT trigger addCustomClassToSearchBar when script loads if Document is undefined', () => {
+  // Arrange
+  Object.defineProperty(mockDocumentRef, 'nativeDocument', {
+    get: () => undefined
+  });
+  Object.defineProperty(mockWindowRef, 'nativeWindow', {
+    get: () => mockWindow
+  });
+
+  const mockScript = { onload: undefined } as any;
+  mockDocument.getElementById.and.returnValue(null);
+  mockRenderer.createElement.and.returnValue(mockScript);
+
+  spyOn(GoogleSearchBarUtils, 'addCustomClassToSearchBar');
+
+  // Act
+  GoogleSearchBarUtils.renderGoogleSearchBar(
+    mockRenderer,
+    mockWindowRef,
+    mockDocumentRef
+  );
+
+  // Trigger the script's onload handler
+  mockScript.onload();
+
+  // Assert
+  expect(GoogleSearchBarUtils.addCustomClassToSearchBar).not.toHaveBeenCalled();
+});
   });
 
   describe('addCustomClassToSearchBar', () => {
