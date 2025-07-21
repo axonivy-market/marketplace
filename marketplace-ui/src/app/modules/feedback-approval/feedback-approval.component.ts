@@ -61,8 +61,7 @@ export class FeedbackApprovalComponent {
   constructor(private readonly storageRef: SessionStorageRef) {}
 
   ngOnInit() {
-    this.token =
-      this.storageRef.session?.getItem(FEEDBACK_APPROVAL_SESSION_TOKEN) ?? '';
+    this.token = this.storageRef.session?.getItem(FEEDBACK_APPROVAL_SESSION_TOKEN) ?? '';
     if (this.token) {
       this.isAuthenticated = true;
       this.fetchFeedbacks();
