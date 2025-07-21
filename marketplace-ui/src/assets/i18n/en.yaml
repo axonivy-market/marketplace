@@ -245,6 +245,7 @@ monitor:
       name: Repository Name
       language: Language
       url: Repository URL
+      workflow: workflow of
     actions:
       viewDetails: View Details
       refresh: Refresh
@@ -258,3 +259,5 @@ monitor:
       totalFailed: Total Failed Tests
       lastSync: Last Synchronization
     filterLabel: Filter Repositories
+    noReport: There is no test report in this workflow.
+    skipped: Skipped

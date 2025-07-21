@@ -1,27 +1,27 @@
 @if (report.length && !loading && !errorMessage) {
 <div class="test-report">
-  <h2>{{ workflow | uppercase }} workflow of {{ repo }}</h2>
+  <h2>{{ workflow | uppercase }} {{ 'monitor.dashboard.repo.workflow' | translate }} {{ repo }}</h2>
   <div class="test-steps">
     @for (step of report; track step.name) {
     <div class="test-step" [ngClass]="step.status.toLowerCase()">
       <span class="step-name">{{ step.name }}</span>
       <span class="test-type">
         @if (step.testType.toLowerCase() === 'mock') {
-          <span class="mock-test">Mock</span>
+        <span class="mock-test">{{ 'monitor.dashboard.mock' | translate }}</span>
         } @else {
-          <span class="real-test">Real</span>
+        <span class="real-test">{{ 'monitor.dashboard.real' | translate }}</span>
         }
       </span>
       <span class="step-status">
         @switch (step.status.toLowerCase()) {
         @case ('passed') {
-        <span class="passed">✅ Passed</span>
+        <span class="passed">✅ {{ 'monitor.dashboard.passed' | translate }}</span>
         }
         @case ('failed') {
-        <span class="failed">❌ Failed</span>
+        <span class="failed">❌ {{ 'monitor.dashboard.failed' | translate }}</span>
         }
         @case ('skipped') {
-        <span class="skipped">⏭️ Skipped</span>
+        <span class="skipped">⏭️ {{ 'monitor.dashboard.skipped' | translate }}</span>
         }
         }
       </span>
@@ -32,11 +32,11 @@
 }
 
 @if (!report.length && !loading && !errorMessage) {
-<div class="no-report">There is no test report in this workflow.</div>
+<div class="no-report">{{ 'monitor.dashboard.noReport' | translate }}</div>
 }
 
 @if (loading) {
-<div class="loading">Loading report...</div>
+<div class="loading">{{ 'monitor.dashboard.loading' | translate }}</div>
 }
 
 @if (errorMessage) {

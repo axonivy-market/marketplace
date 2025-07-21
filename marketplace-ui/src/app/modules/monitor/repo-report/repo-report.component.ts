@@ -1,12 +1,14 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, inject, OnInit } from '@angular/core';
 import { GithubService, TestStep } from '../github.service';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute } from '@angular/router';
+import { TranslateModule } from '@ngx-translate/core';
+import { LanguageService } from '../../../core/services/language/language.service';
 
 @Component({
   selector: 'app-repo-report',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, TranslateModule],
   templateUrl: './repo-report.component.html',
   styleUrl: './repo-report.component.scss'
 })
@@ -16,11 +18,10 @@ export class RepoReportComponent implements OnInit {
   errorMessage = '';
   repo = '';
   workflow = '';
+  languageService = inject(LanguageService);
+  githubService = inject(GithubService);
+  route = inject(ActivatedRoute);
 
-  constructor(
-    private githubService: GithubService,
-    private route: ActivatedRoute,
-  ) { }
 
   ngOnInit(): void {
     this.repo = this.route.snapshot.paramMap.get('repo') ?? '';
