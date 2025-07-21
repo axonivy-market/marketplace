@@ -12,11 +12,7 @@ import {
 } from '../constants/common.constant';
 
 export class GoogleSearchBarUtils {
-  static renderGoogleSearchBar(
-    renderer: Renderer2,
-    windowRef: WindowRef,
-    documentRef: DocumentRef
-  ): void {
+  static renderGoogleSearchBar(renderer: Renderer2, windowRef: WindowRef, documentRef: DocumentRef): void {
     const doc = documentRef.nativeDocument;
 
     if (!doc) {
@@ -41,10 +37,7 @@ export class GoogleSearchBarUtils {
     }
   }
 
-  static addCustomClassToSearchBar(
-    renderer: Renderer2,
-    documentRef: DocumentRef
-  ): void {
+  static addCustomClassToSearchBar(renderer: Renderer2, documentRef: DocumentRef): void {
     const doc = documentRef.nativeDocument;
 
     if (!doc) {

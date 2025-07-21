@@ -48,8 +48,7 @@ export class RedirectPageComponent implements OnInit {
   fetchDocumentUrl(product: string, version: string, currentUrl: string): void {
     this.httpClient.get<ExternalDocument>(`${API_URI.EXTERNAL_DOCUMENT}/${product}/${version}`)
       .subscribe({
-        next: (response: ExternalDocument) =>
-          this.handleRedirection(response, currentUrl)
+        next: (response: ExternalDocument) => this.handleRedirection(response, currentUrl)
       });
   }
 
