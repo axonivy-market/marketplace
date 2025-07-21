@@ -4,6 +4,8 @@ import { DocumentRef } from '../../core/services/browser/document-ref.service';
 import { GoogleSearchBarUtils } from './google-search-bar.utils';
 import { environment } from '../../../environments/environment';
 import {
+  GOOGLE_PRGORAMMABLE_SEARCH_SCRIPT_SOURCE,
+  GOOGLE_PRGORAMMABLE_SEARCH_SCRIPT_TYPE,
   GOOGLE_PROGRAMMABLE_SEARCH_SCRIPT_ID,
   GOOGLE_SEARCH,
   GOOGLE_SEARCH_BAR_BACKGROUND_CLASS_NAME,
@@ -107,14 +109,10 @@ describe('GoogleSearchBarUtils', () => {
         mockScript
       );
 
-      expect(mockScript.id).toBe(environment.googleProgrammableSearchScriptId);
-      expect(mockScript.type).toBe(
-        environment.googleProgrammableSearchScriptType
-      );
+      expect(mockScript.id).toBe(GOOGLE_PROGRAMMABLE_SEARCH_SCRIPT_ID);
+      expect(mockScript.type).toBe(GOOGLE_PRGORAMMABLE_SEARCH_SCRIPT_TYPE);
       expect(mockScript.async).toBe(true);
-      expect(mockScript.src).toBe(
-        environment.googleProgrammableSearchScriptSource
-      );
+      expect(mockScript.src).toBe(GOOGLE_PRGORAMMABLE_SEARCH_SCRIPT_SOURCE);
     });
 
     it('should not create script element when googleCSEScript already exists', () => {
