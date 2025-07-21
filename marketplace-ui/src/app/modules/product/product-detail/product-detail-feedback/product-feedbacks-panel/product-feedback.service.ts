@@ -91,7 +91,7 @@ export class ProductFeedbackService {
             this.pendingFeedbacks.set(pendingFeedbacks);
           } else {
             this.allFeedbacks.set([...this.allFeedbacks(), ...nonPendingFeedbacks]);
-            this.pendingFeedbacks.set([...this.pendingFeedbacks(),...pendingFeedbacks]);
+            this.pendingFeedbacks.set([...this.pendingFeedbacks(), ...pendingFeedbacks]);
           }
           this.pendingFeedbacks.set(this.sortByDate(this.pendingFeedbacks(), 'updatedAt'));
         }),
@@ -172,7 +172,7 @@ export class ProductFeedbackService {
           const approvedFeedbacks = (
             response._embedded?.feedbacks || []
           ).filter(
-            f =>f.feedbackStatus === FeedbackStatus.APPROVED || !f.feedbackStatus
+            f => f.feedbackStatus === FeedbackStatus.APPROVED || !f.feedbackStatus
           );
           if (page === 0) {
             this.feedbacks.set(approvedFeedbacks);
@@ -213,7 +213,7 @@ export class ProductFeedbackService {
   }
 
   private updateFeedbacks(pendingFeedbacks: Feedback[], userId: string): void {
-    this.feedbacks.set([pendingFeedbacks[0],...this.feedbacks().filter(f => f.userId !== userId)]);
+    this.feedbacks.set([pendingFeedbacks[0], ...this.feedbacks().filter(f => f.userId !== userId)]);
   }
 
   findProductFeedbackOfUser(

@@ -30,7 +30,6 @@ export class FeedbackFilterComponent {
 
   productFeedbackService = inject(ProductFeedbackService);
   languageService = inject(LanguageService);
-
   selectedSortTypeLabel: Signal<string> = computed(() =>
     CommonUtils.getLabel(
       this.productFeedbackService.sort(),
