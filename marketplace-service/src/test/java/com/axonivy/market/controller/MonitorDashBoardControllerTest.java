@@ -36,9 +36,9 @@ class MonitorDashBoardControllerTest {
         GithubReposModel model = new GithubReposModel();
         when(githubReposService.fetchAllRepositories()).thenReturn(List.of(model));
         ResponseEntity<List<GithubReposModel>> response = controller.getGitHubRepos();
-        assertEquals(200, response.getStatusCode().value());
-        assertEquals(1, response.getBody().size());
-        assertSame(model, response.getBody().get(0));
+        assertEquals(200, response.getStatusCode().value(), "Status code should be 200 OK");
+        assertEquals(1, response.getBody().size(), "Response body should contain one element");
+        assertSame(model, response.getBody().get(0), "Returned model should match the mocked model");
     }
 
     @Test
@@ -46,17 +46,17 @@ class MonitorDashBoardControllerTest {
         TestStepsModel model = new TestStepsModel();
         when(testStepsService.fetchTestReport("repo", WorkFlowType.CI)).thenReturn(List.of(model));
         ResponseEntity<List<TestStepsModel>> response = controller.getTestReport("repo", WorkFlowType.CI);
-        assertEquals(200, response.getStatusCode().value());
-        assertEquals(1, response.getBody().size());
-        assertSame(model, response.getBody().get(0));
+        assertEquals(200, response.getStatusCode().value(), "Status code should be 200 OK");
+        assertEquals(1, response.getBody().size(), "Response body should contain one element");
+        assertSame(model, response.getBody().get(0), "Returned model should match the mocked model");
     }
 
     @Test
     void testSyncGithubMonitorReturnsOk() throws IOException {
         doNothing().when(githubReposService).loadAndStoreTestReports();
         ResponseEntity<String> response = controller.syncGithubMonitor();
-        assertEquals(200, response.getStatusCode().value());
-        assertEquals("Repositories loaded successfully.", response.getBody());
+        assertEquals(200, response.getStatusCode().value(), "Status code should be 200 OK");
+        assertEquals("Repositories loaded successfully.", response.getBody(), "Response body should match expected message");
     }
 
     @Test

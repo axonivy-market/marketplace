@@ -80,7 +80,8 @@ class GithubReposServiceImplTest {
     doReturn(List.of(new TestStep())).when(serviceSpy)
         .processWorkflowWithFallback(any(), any(), anyString(), any());
 
-    assertDoesNotThrow(() -> serviceSpy.processProduct(ghRepo));
+    assertDoesNotThrow(() -> serviceSpy.processProduct(ghRepo),
+        "Processing product should not throw an exception");
 
     verify(githubRepoRepository).save(any());
   }
@@ -99,7 +100,8 @@ class GithubReposServiceImplTest {
     doReturn(List.of(new TestStep())).when(serviceSpy)
         .processWorkflowWithFallback(any(), any(), anyString(), any());
 
-    assertDoesNotThrow(() -> serviceSpy.processProduct(ghRepo));
+    assertDoesNotThrow(() -> serviceSpy.processProduct(ghRepo),
+        "Processing product should not throw an exception");
 
     verify(githubRepoRepository).save(any());
   }
@@ -120,7 +122,8 @@ class GithubReposServiceImplTest {
       throw new GHFileNotFoundException("Not found");
     }).when(serviceSpy).processWorkflowWithFallback(any(), any(), anyString(), any());
 
-    assertDoesNotThrow(() -> serviceSpy.processProduct(ghRepo));
+    assertDoesNotThrow(() -> serviceSpy.processProduct(ghRepo),
+        "Processing product should not throw an exception ");
     verify(githubRepoRepository, never()).save(any());
   }
 
@@ -131,7 +134,8 @@ class GithubReposServiceImplTest {
     when(ghRepo.getHtmlUrl()).thenThrow(new IOException("IO Error"));
     when(githubRepoRepository.findByName("demo")).thenReturn(Optional.empty());
 
-    assertDoesNotThrow(() -> serviceSpy.processProduct(ghRepo));
+    assertDoesNotThrow(() -> serviceSpy.processProduct(ghRepo),
+        "Processing product should not throw an exception");
   }
 
   @Test
@@ -150,7 +154,8 @@ class GithubReposServiceImplTest {
 
     doThrow(new DataAccessException("DB error") {}).when(githubRepoRepository).save(any());
 
-    assertDoesNotThrow(() -> serviceSpy.processProduct(ghRepo));
+    assertDoesNotThrow(() -> serviceSpy.processProduct(ghRepo),
+        "Processing product should not throw an exception even if saving fails");
   }
 
   @Test
@@ -161,12 +166,13 @@ class GithubReposServiceImplTest {
 
     List<GithubReposModel> result = service.fetchAllRepositories();
 
-    assertEquals(1, result.size());
+    assertEquals(1, result.size(),
+        "Should return one GithubReposModel when one GithubRepo is present");
     verify(githubReposModelAssembler).toModel(repo);
   }
 
   @Test
-  void testLoadAndStoreTestReportswithIOException() throws Exception {
+  void testLoadAndStoreTestReportsWithIOException() throws Exception {
     Product product = new Product();
     product.setRepositoryName("repo1");
     product.setListed(true);
@@ -174,7 +180,8 @@ class GithubReposServiceImplTest {
     when(productRepository.findAll()).thenReturn(List.of(product));
     when(gitHubService.getRepository("repo1")).thenThrow(new IOException("Error"));
 
-    assertDoesNotThrow(() -> service.loadAndStoreTestReports());
+    assertDoesNotThrow(() -> service.loadAndStoreTestReports(),
+        "Should not throw an exception even if GitHub service fails");
   }
 
   @Test
@@ -193,7 +200,8 @@ class GithubReposServiceImplTest {
 
     List<TestStep> steps = service.processWorkflowWithFallback(ghRepo, dbRepo, "ci.yml", WorkFlowType.CI);
 
-    assertEquals(1, steps.size());
+    assertEquals(1, steps.size(),
+        "Should return one test step when workflow run and artifact are found");
   }
 
   @Test
@@ -204,7 +212,7 @@ class GithubReposServiceImplTest {
     when(gitHubService.getLatestWorkflowRun(any(), any())).thenReturn(null);
     List<TestStep> result = service.processWorkflowWithFallback(ghRepo, dbRepo, "ci.yml", WorkFlowType.CI);
 
-    assertTrue(result.isEmpty());
+    assertTrue(result.isEmpty(), "Result list should be empty when no workflow run is found");
   }
 
   @Test
@@ -214,14 +222,15 @@ class GithubReposServiceImplTest {
 
     var result = service.findTestReportJson(tempDir.toFile());
 
-    assertNotNull(result);
-    assertEquals("some result", result.get("summary").asText());
+    assertNotNull(result, "Result should not be null when test report JSON is found");
+    assertEquals("some result", result.get("summary").asText(),
+        "The summary in the JSON should match the expected value");
   }
 
   @Test
   void testFindTestReportJsonNotFound() throws IOException {
     var result = service.findTestReportJson(tempDir.toFile());
-    assertNull(result);
+    assertNull(result, "Result should be null when no test report JSON is found");
   }
 
   private InputStream getZipWithTestReport() throws IOException {

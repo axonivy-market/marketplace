@@ -8,7 +8,12 @@ import org.springframework.core.io.Resource;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.*;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -79,8 +84,7 @@ public class FileUtils {
     }
   }
 
-
-  public static void writeFileFromZip(ZipInputStream zis, File outFile) throws IOException {
+  public static void writeFileFromZip(InputStream zis, File outFile) throws IOException {
     try (var fos = new FileOutputStream(outFile)) {
       var buffer = new byte[DEFAULT_BUFFER_GITHUB_SIZE];
       int length;

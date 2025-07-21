@@ -25,8 +25,6 @@ import java.util.zip.ZipOutputStream;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class FileUtilsTest {
@@ -54,8 +52,7 @@ class FileUtilsTest {
       }
 
       IOException exception = assertThrows(IOException.class, () ->
-          FileUtils.createFile("testDirAsFile/subDir/testFile.txt")
-      );
+          FileUtils.createFile("testDirAsFile/subDir/testFile.txt"), "Expected IOException");
       assertTrue(exception.getMessage().contains("Failed to create directory"),
           "Exception message does not contain expected text");
     } catch (IOException e) {
@@ -80,7 +77,7 @@ class FileUtilsTest {
   void testPrepareUnZipDirectory() throws IOException {
     Path tempDirectory = Files.createTempDirectory(TEST_DIR);
     FileUtils.prepareUnZipDirectory(tempDirectory);
-    assertTrue(Files.exists(tempDirectory));
+    assertTrue(Files.exists(tempDirectory), "Temporary directory should exist");
     FileUtils.clearDirectory(tempDirectory);
   }
 
@@ -90,7 +87,8 @@ class FileUtilsTest {
     try (MockedStatic<Files> mockedFiles = mockStatic(Files.class)) {
       mockedFiles.when(() -> Files.exists(tempDirectory)).thenReturn(true);
     }
-    assertDoesNotThrow(() -> FileUtils.prepareUnZipDirectory(tempDirectory));
+    assertDoesNotThrow(() -> FileUtils.prepareUnZipDirectory(tempDirectory),
+        "Should not throw exception when directory already exists");
     FileUtils.clearDirectory(tempDirectory);
   }
 
@@ -236,9 +234,11 @@ class FileUtilsTest {
       zos.closeEntry();
     }
     ByteArrayInputStream bais = new ByteArrayInputStream(baos.toByteArray());
-    Exception ex = assertThrows(IllegalStateException.class, () -> FileUtils.
-        unzipArtifact(bais, tempDir.toFile()));
-    assertTrue(ex.getMessage().contains("outside the target dir"));
+    Exception ex = assertThrows(IllegalStateException.class, () -> {
+      FileUtils.unzipArtifact(bais, tempDir.toFile());
+    }, "Should throw exception for entry outside target dir");
+    assertTrue(ex.getMessage().contains("outside the target dir"),
+        "Should throw exception for entry outside target dir");
     Files.walk(tempDir).map(Path::toFile).sorted((a, b) -> -a.compareTo(b)).forEach(File::delete);
   }
 
@@ -251,7 +251,8 @@ class FileUtilsTest {
     when(parent.mkdirs()).thenReturn(false);
     assertThrows(IllegalStateException.class, () -> {
       FileUtils.createParentDirectories(file);
-    });
+    },
+        "Should throw exception when parent directories cannot be created");
   }
 
   @Test
@@ -259,7 +260,8 @@ class FileUtilsTest {
     Path tempDir = Files.createTempDirectory("unzipTest");
     InputStream badStream = mock(InputStream.class);
     when(badStream.read(any(byte[].class), anyInt(), anyInt())).thenThrow(new IOException("Simulated IO error"));
-    assertDoesNotThrow(() -> FileUtils.unzipArtifact(badStream, tempDir.toFile()));
+    assertDoesNotThrow(() -> FileUtils.unzipArtifact(badStream, tempDir.toFile()),
+        "Should not throw exception when IO error occurs during unzip");
     Files.walk(tempDir).map(Path::toFile).sorted((a, b) -> -a.compareTo(b)).forEach(File::delete);
   }
 }

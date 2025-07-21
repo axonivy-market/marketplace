@@ -43,15 +43,18 @@ class TestStepsServiceImplTest {
         when(testStepsRepository.findByRepoAndWorkflowAndType("repo1", WorkFlowType.CI)).thenReturn(testSteps);
         when(testStepsModelAssembler.toModel(testStep)).thenReturn(model);
         List<TestStepsModel> result = testStepsService.fetchTestReport("repo1", WorkFlowType.CI);
-        assertEquals(1, result.size());
-        assertEquals(model, result.get(0));
+        assertEquals(1, result.size(),
+                "Expected one TestStepsModel in the result");
+        assertEquals(model, result.get(0),
+                "Expected the TestStepsModel to match the mocked model");
     }
 
     @Test
     void testFetchTestReportEmpty() {
         when(testStepsRepository.findByRepoAndWorkflowAndType("repo1", WorkFlowType.CI)).thenReturn(Collections.emptyList());
         List<TestStepsModel> result = testStepsService.fetchTestReport("repo1", WorkFlowType.CI);
-        assertTrue(result.isEmpty());
+        assertTrue(result.isEmpty(),
+                "Expected an empty list when no test steps are found");
     }
 
     @Test
@@ -60,17 +63,22 @@ class TestStepsServiceImplTest {
         String json = "{\"output\":{\"summary\":\"✅ step1 Mock Server Test\\n❌ step2 Real Server Test\"}}";
         JsonNode testData = new ObjectMapper().readTree(json);
         List<TestStep> steps = testStepsService.createTestSteps(repo, testData, WorkFlowType.CI);
-        assertEquals(2, steps.size());
-        assertEquals("step1", steps.get(0).getName());
+        assertEquals(2, steps.size(),
+                "Expected two test steps to be created from the test data");
+        assertEquals("step1", steps.get(0).getName(),
+                "Expected first step name to be 'step1'");
         assertEquals(TestStatus.PASSED, steps.get(0).getStatus());
-        assertEquals("step2", steps.get(1).getName());
-        assertEquals(TestStatus.FAILED, steps.get(1).getStatus());
+        assertEquals("step2", steps.get(1).getName(),
+                "Expected second step name to be 'step2'");
+        assertEquals(TestStatus.FAILED, steps.get(1).getStatus(),
+                "Expected second step status to be FAILED");
     }
 
     @Test
     void testCreateTestStepsNullTestData() {
         GithubRepo repo = new GithubRepo();
         List<TestStep> steps = testStepsService.createTestSteps(repo, null, WorkFlowType.CI);
-        assertTrue(steps.isEmpty());
+        assertTrue(steps.isEmpty(),
+                "Expected an empty list when test data is null");
     }
 }

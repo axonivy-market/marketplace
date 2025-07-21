@@ -11,8 +11,8 @@ import lombok.Setter;
 @Setter
 @Builder
 public class TesResults {
-  WorkFlowType workflow;
-  TestEnviroment environment;
-  TestStatus status;
-  int count;
+  private WorkFlowType workflow;
+  private TestEnviroment environment;
+  private TestStatus status;
+  private int count;
 }
