@@ -456,4 +456,22 @@ describe('ProductDetailVersionActionComponent', () => {
     expect(clickSpy).toHaveBeenCalled();
     expect(revokeObjectURLSpy).toHaveBeenCalledWith(mockUrl);
   });
+
+  it('first artifact should be chosen when select corresponding version', () => {
+    const selectedVersion = 'Version 10.0.2';
+    component.onSelectVersion(selectedVersion);
+    expect(component.artifacts().length).toBe(0);
+    const artifact = {
+      isProductArtifact: true,
+      id: { artifactId: "example-artifactId-1" } as MavenArtifactKey
+    } as ItemDropdown;
+    component.versions.set([selectedVersion]);
+    component.versionMap.set(selectedVersion, [artifact]);
+    component.selectedVersion.set(selectedVersion);
+    component.onSelectVersion(selectedVersion);
+
+    expect(component.artifacts().length).toBe(1);
+    expect(component.selectedArtifactName).toEqual('');
+    expect(component.selectedArtifact).toEqual('');
+  });
 });

@@ -9,6 +9,8 @@ import { of, Subject } from 'rxjs';
 import { TranslateService, TranslateModule } from '@ngx-translate/core';
 import { By } from '@angular/platform-browser';
 import { ERROR_PAGE_PATH } from './shared/constants/common.constant';
+import { WindowRef } from './core/services/browser/window-ref.service';
+import { DocumentRef } from './core/services/browser/document-ref.service';
 
 describe('AppComponent', () => {
   let component: AppComponent;
@@ -39,7 +41,23 @@ describe('AppComponent', () => {
     const routerMock = {
       events: routerEventsSubject.asObservable(),
       navigate: jasmine.createSpy('navigate'),
+      createUrlTree: jasmine.createSpy('createUrlTree'),
+      serializeUrl: jasmine.createSpy('serializeUrl'),
+      parseUrl: jasmine.createSpy('parseUrl'),
+      url: '/',
+      routerState: {
+        root: {}
+      }
     };
+
+    // Mock WindowRef and DocumentRef
+    const windowRefMock = jasmine.createSpyObj('WindowRef', ['toString'], {
+      nativeWindow: window
+    });
+    
+    const documentRefMock = jasmine.createSpyObj('DocumentRef', ['toString'], {
+      nativeDocument: document
+    });
 
     await TestBed.configureTestingModule({
       imports: [
@@ -63,7 +81,9 @@ describe('AppComponent', () => {
           }
         },
         TranslateService,
-        { provide: Router, useValue: routerMock }
+        { provide: Router, useValue: routerMock },
+        { provide: WindowRef, useValue: windowRefMock },
+        { provide: DocumentRef, useValue: documentRefMock }
       ]
     }).compileComponents();
 

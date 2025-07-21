@@ -1,8 +1,13 @@
-import { Component, inject, ViewEncapsulation } from '@angular/core';
+import {
+  Component,
+  Inject,
+  inject,
+  PLATFORM_ID,
+  ViewEncapsulation
+} from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { CommonModule } from '@angular/common';
+import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { HttpErrorResponse } from '@angular/common/http';
-
 import { SecurityMonitorService } from './security-monitor.service';
 import { ProductSecurityInfo } from '../../shared/models/product-security-info-model';
 import { GITHUB_MARKET_ORG_URL, REPO_PAGE_PATHS, ERROR_MESSAGES, SECURITY_MONITOR_SESSION_KEYS, TIME_UNITS, UNAUTHORIZED } from '../../shared/constants/common.constant';
@@ -24,9 +29,16 @@ export class SecurityMonitorComponent {
   repos: ProductSecurityInfo[] = [];
   protected LoadingComponentId = LoadingComponentId;
   private readonly securityMonitorService = inject(SecurityMonitorService);
+  isBrowser: boolean;
+
+  constructor(@Inject(PLATFORM_ID) private readonly platformId: Object) {
+    this.isBrowser = isPlatformBrowser(this.platformId);
+  }
 
   ngOnInit(): void {
-    this.loadSessionData();
+    if (this.isBrowser) {
+      this.loadSessionData();
+    }
   }
 
   onSubmit(): void {
@@ -64,7 +76,7 @@ export class SecurityMonitorComponent {
       .subscribe({
         next: data => this.handleSuccess(data),
         error: (err: HttpErrorResponse) => this.handleError(err)
-      });
+    });
   }
 
   private handleSuccess(data: ProductSecurityInfo[]): void {

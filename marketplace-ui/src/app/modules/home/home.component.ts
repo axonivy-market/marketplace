@@ -16,7 +16,6 @@ export class HomeComponent {
   router = inject(Router);
   titleService = inject(Title);
   translateService = inject(TranslateService);
-  constructor() {}
 
   ngOnInit(): void {
     // Set the title initially

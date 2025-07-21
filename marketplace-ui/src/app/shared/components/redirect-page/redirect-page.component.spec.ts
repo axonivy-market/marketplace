@@ -1,13 +1,26 @@
 import { TestBed } from '@angular/core/testing';
-import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
+import {
+  HttpTestingController,
+  provideHttpClientTesting
+} from '@angular/common/http/testing';
 import { ActivatedRoute, Router } from '@angular/router';
 import { TranslateModule } from '@ngx-translate/core';
 import { ROUTER } from '../../constants/router.constant';
-import { HttpClient, provideHttpClient, withInterceptorsFromDi } from '@angular/common/http';
+import {
+  HttpClient,
+  provideHttpClient,
+  withInterceptorsFromDi
+} from '@angular/common/http';
 import { RedirectPageComponent } from './redirect-page.component';
 import { of } from 'rxjs';
 import { API_URI } from '../../constants/api.constant';
 import { MOCK_EXTERNAL_DOCUMENT } from '../../mocks/mock-data';
+import { ERROR_PAGE_PATH } from '../../constants/common.constant';
+import { ExternalDocument } from '../../models/external-document.model';
+
+const INDEX_FILE = '/index.html';
+const KARMAR_DEFAULT_URL = 'http://localhost:9876/context.html';
+
 
 describe('ExternalDocumentComponent', () => {
   let component: RedirectPageComponent;
@@ -31,13 +44,16 @@ describe('ExternalDocumentComponent', () => {
 
   beforeEach(() => {
     httpClient = jasmine.createSpyObj('HttpClient', ['get']);
+    let mockWindow = { location: { href: '' } };
+
     TestBed.configureTestingModule({
       imports: [TranslateModule.forRoot(), RedirectPageComponent],
       providers: [
         provideHttpClient(withInterceptorsFromDi()),
         provideHttpClientTesting(),
         { provide: ActivatedRoute, useValue: mockActivatedRoute },
-        { provide: HttpClient, useValue: httpClient }
+        { provide: HttpClient, useValue: httpClient },
+        { provide: 'Window', useValue: mockWindow }
       ]
     });
 
@@ -60,7 +76,53 @@ describe('ExternalDocumentComponent', () => {
 
     component.ngOnInit();
 
-    expect(httpClient.get).toHaveBeenCalledWith(`${API_URI.EXTERNAL_DOCUMENT}/portal/10.0`);
+    expect(httpClient.get).toHaveBeenCalledWith(
+      `${API_URI.EXTERNAL_DOCUMENT}/portal/10.0`
+    );
     expect(window.location.href).toBe(currentUrl);
+  });
+
+  describe('handleRedirection', () => {
+    let navigateSpy: jasmine.Spy;
+
+    beforeEach(() => {
+      navigateSpy = spyOn(TestBed.inject(Router), 'navigate');
+    });
+
+    it('should navigate to error page if response is null', () => {
+      component.handleRedirection(null as any, 'http://localhost');
+      expect(navigateSpy).toHaveBeenCalledWith([ERROR_PAGE_PATH]);
+    });
+
+    it('should navigate to error page if relativeLink is empty', () => {
+      component.handleRedirection({ relativeLink: '' } as ExternalDocument , 'http://localhost');
+      expect(navigateSpy).toHaveBeenCalledWith([ERROR_PAGE_PATH]);
+    });
+
+    it('should not redirect if currentUrl matches relativeLink', () => {
+      const currentUrl = KARMAR_DEFAULT_URL;
+
+      component.handleRedirection({ relativeLink: currentUrl } as ExternalDocument, currentUrl);
+
+      expect(window.location.href).toBe(currentUrl);
+    });
+
+    it('should not redirect if currentUrl + index.html matches relativeLink', () => {
+      const currentUrl = KARMAR_DEFAULT_URL;
+      const relativeLink = currentUrl + INDEX_FILE;
+
+      component.handleRedirection({ relativeLink } as ExternalDocument, currentUrl);
+
+      expect(window.location.href).toBe(currentUrl);
+    });
+
+    it('should not append hash if relativeLink already contains #', () => {
+      const currentUrl = KARMAR_DEFAULT_URL;
+      const relativeLink = KARMAR_DEFAULT_URL + '#section2';
+
+      component.handleRedirection({ relativeLink } as ExternalDocument, currentUrl);
+
+      expect(window.location.href).toBe(relativeLink);
+    });
   });
 });
