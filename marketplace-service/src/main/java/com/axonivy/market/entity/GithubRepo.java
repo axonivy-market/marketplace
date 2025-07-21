@@ -26,7 +26,6 @@ import java.util.List;
 public class GithubRepo extends GenericIdEntity {
   @Serial
   private static final long serialVersionUID = 1L;
-
   private String name;
   private String htmlUrl;
   private String language;

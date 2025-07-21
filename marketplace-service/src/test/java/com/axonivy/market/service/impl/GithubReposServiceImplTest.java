@@ -209,7 +209,7 @@ class GithubReposServiceImplTest {
 
   @Test
   void testFindTestReportJsonFound() throws IOException {
-    File json = tempDir.resolve("testreport.json").toFile();
+    File json = tempDir.resolve("test_report.json").toFile();
     Files.writeString(json.toPath(), "{\"summary\": \"some result\"}");
 
     var result = service.findTestReportJson(tempDir.toFile());

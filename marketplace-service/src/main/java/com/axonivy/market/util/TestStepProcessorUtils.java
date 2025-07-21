@@ -1,7 +1,6 @@
 package com.axonivy.market.util;
 
 import com.axonivy.market.constants.CommonConstants;
-import com.axonivy.market.entity.GithubRepo;
 import com.axonivy.market.entity.TestStep;
 import com.axonivy.market.enums.TestEnviroment;
 import com.axonivy.market.enums.TestStatus;
