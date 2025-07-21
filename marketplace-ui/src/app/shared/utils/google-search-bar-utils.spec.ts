@@ -3,7 +3,12 @@ import { WindowRef } from '../../core/services/browser/window-ref.service';
 import { DocumentRef } from '../../core/services/browser/document-ref.service';
 import { GoogleSearchBarUtils } from './google-search-bar.utils';
 import { environment } from '../../../environments/environment';
-import { GOOGLE_PROGRAMMABLE_SEARCH_SCRIPT_ID, GOOGLE_SEARCH, GOOGLE_SEARCH_BAR_BACKGROUND_CLASS_NAME, GOOGLE_SEARCH_BAR_CLASS_NAME } from '../constants/common.constant';
+import {
+  GOOGLE_PROGRAMMABLE_SEARCH_SCRIPT_ID,
+  GOOGLE_SEARCH,
+  GOOGLE_SEARCH_BAR_BACKGROUND_CLASS_NAME,
+  GOOGLE_SEARCH_BAR_CLASS_NAME
+} from '../constants/common.constant';
 
 describe('GoogleSearchBarUtils', () => {
   let mockRenderer: jasmine.SpyObj<Renderer2>;
@@ -13,27 +18,27 @@ describe('GoogleSearchBarUtils', () => {
   let mockWindow: jasmine.SpyObj<Window>;
 
   beforeEach(() => {
-    // Create mock objects
     mockRenderer = jasmine.createSpyObj('Renderer2', [
       'createElement',
       'appendChild',
       'addClass'
     ]);
-    
+
     mockWindowRef = jasmine.createSpyObj('WindowRef', ['toString'], {
       nativeWindow: undefined
     });
-    
+
     mockDocumentRef = jasmine.createSpyObj('DocumentRef', ['toString'], {
       nativeDocument: undefined
     });
 
-    mockDocument = jasmine.createSpyObj('Document', [
-      'getElementById',
-      'querySelectorAll'
-    ], {
-      body: jasmine.createSpyObj('HTMLElement', ['appendChild'])
-    });
+    mockDocument = jasmine.createSpyObj(
+      'Document',
+      ['getElementById', 'querySelectorAll'],
+      {
+        body: jasmine.createSpyObj('HTMLElement', ['appendChild'])
+      }
+    );
 
     mockWindow = jasmine.createSpyObj('Window', ['toString'], {
       google: {
@@ -47,33 +52,28 @@ describe('GoogleSearchBarUtils', () => {
       }
     });
 
-    // Spy on setTimeout
     spyOn(globalThis, 'setTimeout').and.callFake(((fn: Function) => {
-    fn();
-    return 1;
+      fn();
+      return 1;
     }) as any);
   });
 
   describe('renderGoogleSearchBar', () => {
     it('should return early if document is not available', () => {
-      // Arrange
       Object.defineProperty(mockDocumentRef, 'nativeDocument', {
         get: () => undefined
       });
 
-      // Act
       GoogleSearchBarUtils.renderGoogleSearchBar(
         mockRenderer,
         mockWindowRef,
         mockDocumentRef
       );
 
-      // Assert
       expect(mockRenderer.createElement).not.toHaveBeenCalled();
     });
 
     it('should create and append script element when googleCSEScript does not exist', () => {
-      // Arrange
       Object.defineProperty(mockDocumentRef, 'nativeDocument', {
         get: () => mockDocument
       });
@@ -81,34 +81,43 @@ describe('GoogleSearchBarUtils', () => {
         get: () => mockWindow
       });
 
-      const mockScript = jasmine.createSpyObj('HTMLScriptElement', ['setAttribute'], {
-        onload: undefined
-      });
-      
+      const mockScript = jasmine.createSpyObj(
+        'HTMLScriptElement',
+        ['setAttribute'],
+        {
+          onload: undefined
+        }
+      );
+
       mockDocument.getElementById.and.returnValue(null);
       mockRenderer.createElement.and.returnValue(mockScript);
 
-      // Act
       GoogleSearchBarUtils.renderGoogleSearchBar(
         mockRenderer,
         mockWindowRef,
         mockDocumentRef
       );
 
-      // Assert
-      expect(mockDocument.getElementById).toHaveBeenCalledWith(GOOGLE_PROGRAMMABLE_SEARCH_SCRIPT_ID);
+      expect(mockDocument.getElementById).toHaveBeenCalledWith(
+        GOOGLE_PROGRAMMABLE_SEARCH_SCRIPT_ID
+      );
       expect(mockRenderer.createElement).toHaveBeenCalledWith('script');
-      expect(mockRenderer.appendChild).toHaveBeenCalledWith(mockDocument.body, mockScript);
-      
-      // Verify script properties are set
+      expect(mockRenderer.appendChild).toHaveBeenCalledWith(
+        mockDocument.body,
+        mockScript
+      );
+
       expect(mockScript.id).toBe(environment.googleProgrammableSearchScriptId);
-      expect(mockScript.type).toBe(environment.googleProgrammableSearchScriptType);
+      expect(mockScript.type).toBe(
+        environment.googleProgrammableSearchScriptType
+      );
       expect(mockScript.async).toBe(true);
-      expect(mockScript.src).toBe(environment.googleProgrammableSearchScriptSource);
+      expect(mockScript.src).toBe(
+        environment.googleProgrammableSearchScriptSource
+      );
     });
 
     it('should not create script element when googleCSEScript already exists', () => {
-      // Arrange
       Object.defineProperty(mockDocumentRef, 'nativeDocument', {
         get: () => mockDocument
       });
@@ -116,23 +125,22 @@ describe('GoogleSearchBarUtils', () => {
         get: () => mockWindow
       });
 
-      const existingScript = jasmine.createSpyObj('HTMLScriptElement', ['getAttribute']);
+      const existingScript = jasmine.createSpyObj('HTMLScriptElement', [
+        'getAttribute'
+      ]);
       mockDocument.getElementById.and.returnValue(existingScript);
 
-      // Act
       GoogleSearchBarUtils.renderGoogleSearchBar(
         mockRenderer,
         mockWindowRef,
         mockDocumentRef
       );
 
-      // Assert
       expect(mockRenderer.createElement).not.toHaveBeenCalled();
       expect(mockRenderer.appendChild).not.toHaveBeenCalled();
     });
 
     it('should call google.search.cse.element.render when google search is available', () => {
-      // Arrange
       Object.defineProperty(mockDocumentRef, 'nativeDocument', {
         get: () => mockDocument
       });
@@ -141,41 +149,42 @@ describe('GoogleSearchBarUtils', () => {
       });
 
       mockDocument.getElementById.and.returnValue(null);
-      mockRenderer.createElement.and.returnValue(jasmine.createSpyObj('HTMLScriptElement', ['setAttribute']));
+      mockRenderer.createElement.and.returnValue(
+        jasmine.createSpyObj('HTMLScriptElement', ['setAttribute'])
+      );
 
-      // Act
       GoogleSearchBarUtils.renderGoogleSearchBar(
         mockRenderer,
         mockWindowRef,
         mockDocumentRef
       );
 
-      // Assert
-      expect(mockWindow.google.search.cse.element.render).toHaveBeenCalledWith(GOOGLE_SEARCH);
+      expect(mockWindow.google.search.cse.element.render).toHaveBeenCalledWith(
+        GOOGLE_SEARCH
+      );
     });
 
     it('should not call google.search.cse.element.render when google search is not available', () => {
-      // Arrange
       Object.defineProperty(mockDocumentRef, 'nativeDocument', {
         get: () => mockDocument
       });
-      
+
       const windowWithoutGoogle = jasmine.createSpyObj('Window', ['toString']);
       Object.defineProperty(mockWindowRef, 'nativeWindow', {
         get: () => windowWithoutGoogle
       });
 
       mockDocument.getElementById.and.returnValue(null);
-      mockRenderer.createElement.and.returnValue(jasmine.createSpyObj('HTMLScriptElement', ['setAttribute']));
+      mockRenderer.createElement.and.returnValue(
+        jasmine.createSpyObj('HTMLScriptElement', ['setAttribute'])
+      );
 
-      // Act
       GoogleSearchBarUtils.renderGoogleSearchBar(
         mockRenderer,
         mockWindowRef,
         mockDocumentRef
       );
 
-      // Assert - Should not throw error even when google is not available
       expect(() => {
         GoogleSearchBarUtils.renderGoogleSearchBar(
           mockRenderer,
@@ -186,7 +195,6 @@ describe('GoogleSearchBarUtils', () => {
     });
 
     it('should trigger addCustomClassToSearchBar when script loads', () => {
-      // Arrange
       Object.defineProperty(mockDocumentRef, 'nativeDocument', {
         get: () => mockDocument
       });
@@ -200,71 +208,58 @@ describe('GoogleSearchBarUtils', () => {
 
       spyOn(GoogleSearchBarUtils, 'addCustomClassToSearchBar');
 
-      // Act
       GoogleSearchBarUtils.renderGoogleSearchBar(
         mockRenderer,
         mockWindowRef,
         mockDocumentRef
       );
 
-      // Trigger the onload event
       mockScript.onload();
 
-      // Assert
-      expect(GoogleSearchBarUtils.addCustomClassToSearchBar).toHaveBeenCalledWith(
-        mockRenderer,
-        mockDocument
-      );
+      expect(
+        GoogleSearchBarUtils.addCustomClassToSearchBar
+      ).toHaveBeenCalledWith(mockRenderer, mockDocument);
     });
 
-    fit('should NOT trigger addCustomClassToSearchBar when script loads if Document is undefined', () => {
-  // Arrange
-  Object.defineProperty(mockDocumentRef, 'nativeDocument', {
-    get: () => undefined
-  });
-  Object.defineProperty(mockWindowRef, 'nativeWindow', {
-    get: () => mockWindow
-  });
+    it('should NOT trigger addCustomClassToSearchBar when script loads if Document is undefined', () => {
+      Object.defineProperty(mockDocumentRef, 'nativeDocument', {
+        get: () => undefined
+      });
+      Object.defineProperty(mockWindowRef, 'nativeWindow', {
+        get: () => mockWindow
+      });
 
-  const mockScript = { onload: undefined } as any;
-  mockDocument.getElementById.and.returnValue(null);
-  mockRenderer.createElement.and.returnValue(mockScript);
+      let onloadHandler: (() => void) | undefined;
 
-  spyOn(GoogleSearchBarUtils, 'addCustomClassToSearchBar');
+      const mockScript = {
+        set onload(fn: () => void) {
+          onloadHandler = fn;
+        }
+      } as any;
 
-  // Act
-  GoogleSearchBarUtils.renderGoogleSearchBar(
-    mockRenderer,
-    mockWindowRef,
-    mockDocumentRef
-  );
+      mockDocument.getElementById.and.returnValue(null);
+      mockRenderer.createElement.and.returnValue(mockScript);
 
-  // Trigger the script's onload handler
-  mockScript.onload();
+      spyOn(GoogleSearchBarUtils, 'addCustomClassToSearchBar');
 
-  // Assert
-  expect(GoogleSearchBarUtils.addCustomClassToSearchBar).not.toHaveBeenCalled();
-});
+      GoogleSearchBarUtils.renderGoogleSearchBar(
+        mockRenderer,
+        mockWindowRef,
+        mockDocumentRef
+      );
+
+      if (onloadHandler) {
+        onloadHandler();
+      }
+
+      expect(
+        GoogleSearchBarUtils.addCustomClassToSearchBar
+      ).not.toHaveBeenCalled();
+    });
   });
 
   describe('addCustomClassToSearchBar', () => {
-    // it('should return early if document is not available', () => {
-    //   // Arrange
-    //   // Object.defineProperty(mockDocumentRef, 'nativeDocument', {
-    //   //   get: () => undefined
-    //   // });
-
-    //   // Act
-    //   // GoogleSearchBarUtils.addCustomClassToSearchBar(mockRenderer, mockDocumentRef);
-    //   GoogleSearchBarUtils.addCustomClassToSearchBar(mockRenderer, undefined as any);
-
-    //   // Assert
-    //   // expect(window.setTimeout).not.toHaveBeenCalled();
-    //   expect(() => GoogleSearchBarUtils.addCustomClassToSearchBar(mockRenderer, undefined as any)).not.toThrow();
-    // });
-
     it('should add custom class to search bar elements after timeout', () => {
-      // Arrange
       Object.defineProperty(mockDocumentRef, 'nativeDocument', {
         get: () => mockDocument
       });
@@ -275,29 +270,43 @@ describe('GoogleSearchBarUtils', () => {
 
       mockDocument.querySelectorAll.and.returnValue(mockSearchBoxList as any);
 
-      // Act
-      GoogleSearchBarUtils.addCustomClassToSearchBar(mockRenderer, mockDocument);
+      GoogleSearchBarUtils.addCustomClassToSearchBar(
+        mockRenderer,
+        mockDocument
+      );
 
-      // Assert
-      expect(window.setTimeout).toHaveBeenCalledWith(jasmine.any(Function), 1000);
-      expect(mockDocument.querySelectorAll).toHaveBeenCalledWith('.gsc-control-cse');
-      expect(mockRenderer.addClass).toHaveBeenCalledWith(mockSearchBox1, GOOGLE_SEARCH_BAR_BACKGROUND_CLASS_NAME);
-      expect(mockRenderer.addClass).toHaveBeenCalledWith(mockSearchBox2, GOOGLE_SEARCH_BAR_BACKGROUND_CLASS_NAME);
+      expect(window.setTimeout).toHaveBeenCalledWith(
+        jasmine.any(Function),
+        1000
+      );
+      expect(mockDocument.querySelectorAll).toHaveBeenCalledWith(
+        '.gsc-control-cse'
+      );
+      expect(mockRenderer.addClass).toHaveBeenCalledWith(
+        mockSearchBox1,
+        GOOGLE_SEARCH_BAR_BACKGROUND_CLASS_NAME
+      );
+      expect(mockRenderer.addClass).toHaveBeenCalledWith(
+        mockSearchBox2,
+        GOOGLE_SEARCH_BAR_BACKGROUND_CLASS_NAME
+      );
     });
 
     it('should handle empty search box list gracefully', () => {
-      // Arrange
       Object.defineProperty(mockDocumentRef, 'nativeDocument', {
         get: () => mockDocument
       });
 
       mockDocument.querySelectorAll.and.returnValue([] as any);
 
-      // Act
-      GoogleSearchBarUtils.addCustomClassToSearchBar(mockRenderer, mockDocument);
+      GoogleSearchBarUtils.addCustomClassToSearchBar(
+        mockRenderer,
+        mockDocument
+      );
 
-      // Assert
-      expect(mockDocument.querySelectorAll).toHaveBeenCalledWith(GOOGLE_SEARCH_BAR_CLASS_NAME);
+      expect(mockDocument.querySelectorAll).toHaveBeenCalledWith(
+        GOOGLE_SEARCH_BAR_CLASS_NAME
+      );
       expect(mockRenderer.addClass).not.toHaveBeenCalled();
     });
   });
