@@ -12,13 +12,11 @@ export class PageTitleService {
   private readonly translateService = inject(TranslateService);
   private readonly titleService = inject(Title);
 
-
   setTitleOnLangChange(titleLabel: string) {
-    // Initial title set
     this.translateService
       .get(titleLabel)
-      .subscribe((translated: string) => {
-        this.titleService.setTitle(translated);
+      .subscribe((translatedTitle: string) => {
+        this.titleService.setTitle(translatedTitle);
       });
 
     // Update the title whenever the language changes
@@ -26,8 +24,8 @@ export class PageTitleService {
       (event: LangChangeEvent) => {
         this.translateService
           .get(titleLabel)
-          .subscribe((translated: string) => {
-            this.titleService.setTitle(translated);
+          .subscribe((translatedTitle: string) => {
+            this.titleService.setTitle(translatedTitle);
           });
       }
     );
