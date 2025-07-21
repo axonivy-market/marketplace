@@ -28,6 +28,7 @@ import { CommonDropdownComponent } from '../../../shared/components/common-dropd
 import {
   DEFAULT_IMAGE_URL,
   GITHUB_PULL_REQUEST_NUMBER_REGEX,
+  OG_TITLE_KEY,
   PRODUCT_DETAIL_TABS,
   RATING_LABELS_BY_TYPE,
   TAB_PREFIX,
@@ -350,9 +351,7 @@ export class ProductDetailComponent {
           this.languageService.selectedLanguage()
         ),
       dependency: content.isDependency,
-      changelog:
-        this.productReleaseSafeHtmls != null &&
-        this.productReleaseSafeHtmls.length !== 0
+      changelog: this.productReleaseSafeHtmls != null && this.productReleaseSafeHtmls.length !== 0
     };
 
     return conditions[value] ?? false;
@@ -470,7 +469,7 @@ export class ProductDetailComponent {
     if (names !== undefined) {
       const title = names[this.languageService.selectedLanguage()];
       this.titleService.setTitle(title);
-      this.meta.updateTag({ property: 'og:title', content: title });
+      this.meta.updateTag({ property: OG_TITLE_KEY, content: title });
     }
   }
 
