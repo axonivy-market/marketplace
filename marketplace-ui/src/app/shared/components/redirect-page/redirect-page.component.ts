@@ -63,7 +63,9 @@ export class RedirectPageComponent implements OnInit {
   handleRedirection(response: ExternalDocument, currentUrl: string): void {
     if (response === null || response.relativeLink === '') {
       this.router.navigate([ERROR_PAGE_PATH]);
+      return;
     }
+
     const relativeUrl = response.relativeLink;
     const isSameUrl = currentUrl === relativeUrl || currentUrl + INDEX_FILE === relativeUrl;
     const currentHash = window.location.hash;
