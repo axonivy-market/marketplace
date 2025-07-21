@@ -111,17 +111,16 @@ describe('ExternalDocumentComponent', () => {
       const currentUrl = KARMAR_DEFAULT_URL;
       const relativeLink = currentUrl + INDEX_FILE;
 
-      component.handleRedirection({ relativeLink }  as ExternalDocument, currentUrl);
+      component.handleRedirection({ relativeLink } as ExternalDocument, currentUrl);
 
       expect(window.location.href).toBe(currentUrl);
     });
-
 
     it('should not append hash if relativeLink already contains #', () => {
       const currentUrl = KARMAR_DEFAULT_URL;
       const relativeLink = KARMAR_DEFAULT_URL + '#section2';
 
-      component.handleRedirection({ relativeLink }  as ExternalDocument, currentUrl);
+      component.handleRedirection({ relativeLink } as ExternalDocument, currentUrl);
 
       expect(window.location.href).toBe(relativeLink);
     });
