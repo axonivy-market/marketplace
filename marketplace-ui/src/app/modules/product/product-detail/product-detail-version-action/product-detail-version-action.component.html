@@ -131,7 +131,7 @@
   }
   @case (ProductDetailActionType.DESIGNER_ENV) {
     <div class="designer-section d-flex justify-content-sm-between w-100 row m-sm-0">
-      <div class="flex-grow-1 col-8">
+      <div class="ps-0 flex-grow-1 col-8">
         <app-common-dropdown (click)="getVersionInDesigner()" [items]="versionDropdownInDesigner"
                 [selectedItem]="selectedVersion()"
                 buttonClass="form-select form-select-sm versions-selector__dropdown border__dropdown h-100 text-primary install-designer-dropdown fs-md"
@@ -156,7 +156,7 @@
               [matomoClickName]="installButton.name + ' - ' + getTrackingEnvironmentBasedOnActionType()"
               [lang]="languageService.selectedLanguage()"
               class="btn btn__install flex-grow-1 install-designer-button m-0 col-4" id="install-button"
-              (click)="onUpdateInstallationCountForDesigner()" onClick="function installInDesigner(event) {
+              (click)="onUpdateInstallationCount()" onClick="function installInDesigner(event) {
                   const selectedItemElement = document.querySelector('.install-designer-dropdown');
                   if (selectedItemElement) {
                   const metaDataJsonUrl = selectedItemElement.getAttribute('metaDataJsonUrl');

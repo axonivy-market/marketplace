@@ -7,6 +7,7 @@ import { SecurityMonitorComponent } from './modules/security-monitor/security-mo
 import { ReleasePreviewComponent } from './modules/release-preview/release-preview.component';
 import { FeedbackApprovalComponent } from './modules/feedback-approval/feedback-approval.component';
 import { MonitoringRedirectComponent } from './shared/components/monitoring-redirect/monitoring-redirect.component';
+import { ProductDetailResolver } from './core/resolver/product-detail.resolve';
 import { ExternalDocumentComponent } from './shared/components/external-document/external-document.component';
 
 export const routes: Routes = [
@@ -16,7 +17,7 @@ export const routes: Routes = [
     component: GithubCallbackComponent
   },
 
-  // Error handling — more specific first
+  // Error handling more specific first
   {
     path: 'error-page/:id',
     component: ErrorPageComponent,
@@ -46,7 +47,7 @@ export const routes: Routes = [
     component: FeedbackApprovalComponent
   },
 
-  // Document, lib and redirect pages — order matters
+  // Document, lib and redirect pages order matters
   {
     path: 'market-cache/:id/:artifact/:version/doc',
     component: ExternalDocumentComponent
@@ -72,7 +73,10 @@ export const routes: Routes = [
   {
     path: ':id',
     loadChildren: () =>
-      import('./modules/product/product.routes').then(m => m.routes)
+      import('./modules/product/product.routes').then(m => m.routes),
+    resolve: {
+      productDetail: ProductDetailResolver
+    }
   },
 
   // Home module (static root)
@@ -84,7 +88,7 @@ export const routes: Routes = [
 
   // Wildcard route for unmatched paths (404)
   {
-     path: '**',
-     redirectTo: 'error-page/404'
+    path: '**',
+    redirectTo: 'error-page/404'
   }
 ];

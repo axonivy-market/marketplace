@@ -245,7 +245,6 @@ export const MOCK_CRON_JOB_PRODUCT_DETAIL: ProductDetail = {
     'https://github.com/axonivy-market/cronjob/actions/workflows/ci.yml/badge.svg',
   language: 'English',
   industry: 'Cross-Industry',
-  compatibility: '10.0+',
   contactUs: false,
   vendorUrl: '',
   productModuleContent: {
@@ -302,7 +301,6 @@ export const MOCK_PRODUCT_DETAIL: ProductDetail = {
     'https://github.com/axonivy-market/jira-connector/actions/workflows/ci.yml/badge.svg',
   language: 'English',
   industry: 'Cross-Industry',
-  compatibility: '9.2+',
   contactUs: false,
   productModuleContent: {
     version: '10.0.0',
