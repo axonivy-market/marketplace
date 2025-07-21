@@ -16,7 +16,7 @@ export class ProductDetailMavenContentComponent {
   productDetail!: ProductDetail;
   @Input()
   selectedVersion!: string;
-  
+
   languageService = inject(LanguageService);
 
   getProductName() {
