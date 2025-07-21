@@ -223,7 +223,7 @@ common:
     noFeedbacks: No feedbacks available.
 monitor:
   dashboard:
-    title: GitHub Repository Security Monitor
+    title: GitHub Repository Monitor
     subtitle: Monitor your repositories at a glance and automatically update every hour.
     loading: Loading repositories...
     noRepositories: No repositories found.

@@ -223,7 +223,7 @@ common:
 
 monitor:
   dashboard:
-    title: GitHub Repository Sicherheitsmonitor
+    title: GitHub Repository Überwachung
     subtitle: Überwachen Sie Ihre Repositories auf einen Blick und aktualisieren Sie stündlich automatisch.
     loading: Repositories werden geladen...
     noRepositories: Keine Repositories gefunden.
