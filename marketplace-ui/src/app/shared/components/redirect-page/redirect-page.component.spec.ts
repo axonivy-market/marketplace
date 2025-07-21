@@ -20,7 +20,6 @@ import { ExternalDocument } from '../../models/external-document.model';
 
 const INDEX_FILE = '/index.html';
 const KARMAR_DEFAULT_URL = 'http://localhost:9876/context.html';
-let mockWindow = { location: { href: '' } };
 
 
 describe('ExternalDocumentComponent', () => {
@@ -45,6 +44,8 @@ describe('ExternalDocumentComponent', () => {
 
   beforeEach(() => {
     httpClient = jasmine.createSpyObj('HttpClient', ['get']);
+    let mockWindow = { location: { href: '' } };
+
     TestBed.configureTestingModule({
       imports: [TranslateModule.forRoot(), RedirectPageComponent],
       providers: [
@@ -96,6 +97,33 @@ describe('ExternalDocumentComponent', () => {
     it('should navigate to error page if relativeLink is empty', () => {
       component.handleRedirection({ relativeLink: '' } as ExternalDocument , 'http://localhost');
       expect(navigateSpy).toHaveBeenCalledWith([ERROR_PAGE_PATH]);
+    });
+
+    it('should not redirect if currentUrl matches relativeLink', () => {
+      const currentUrl = KARMAR_DEFAULT_URL;
+
+      component.handleRedirection({ relativeLink: currentUrl } as ExternalDocument, currentUrl);
+
+      expect(window.location.href).toBe(currentUrl);
+    });
+
+    it('should not redirect if currentUrl + index.html matches relativeLink', () => {
+      const currentUrl = KARMAR_DEFAULT_URL;
+      const relativeLink = currentUrl + INDEX_FILE;
+
+      component.handleRedirection({ relativeLink }  as ExternalDocument, currentUrl);
+
+      expect(window.location.href).toBe(currentUrl);
+    });
+
+
+    it('should not append hash if relativeLink already contains #', () => {
+      const currentUrl = KARMAR_DEFAULT_URL;
+      const relativeLink = KARMAR_DEFAULT_URL + '#section2';
+
+      component.handleRedirection({ relativeLink }  as ExternalDocument, currentUrl);
+
+      expect(window.location.href).toBe(relativeLink);
     });
   });
 });
