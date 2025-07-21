@@ -171,7 +171,9 @@ export class ProductFeedbackService {
         tap(response => {
           const approvedFeedbacks = (
             response._embedded?.feedbacks || []
-          ).filter(f =>f.feedbackStatus === FeedbackStatus.APPROVED || !f.feedbackStatus);
+          ).filter(
+            f =>f.feedbackStatus === FeedbackStatus.APPROVED || !f.feedbackStatus
+          );
           if (page === 0) {
             this.feedbacks.set(approvedFeedbacks);
           } else {
@@ -193,9 +195,7 @@ export class ProductFeedbackService {
         return;
       }
 
-      const pendingFeedbacks = userFeedbacks.filter(
-        f => f.feedbackStatus === FeedbackStatus.PENDING
-      );
+      const pendingFeedbacks = userFeedbacks.filter(f => f.feedbackStatus === FeedbackStatus.PENDING);
       if (!pendingFeedbacks.length) {
         return;
       }
@@ -213,10 +213,7 @@ export class ProductFeedbackService {
   }
 
   private updateFeedbacks(pendingFeedbacks: Feedback[], userId: string): void {
-    this.feedbacks.set([
-      pendingFeedbacks[0],
-      ...this.feedbacks().filter(f => f.userId !== userId)
-    ]);
+    this.feedbacks.set([pendingFeedbacks[0],...this.feedbacks().filter(f => f.userId !== userId)]);
   }
 
   findProductFeedbackOfUser(
@@ -295,12 +292,8 @@ export class ProductFeedbackService {
 
   private sortByDate<T>(items: T[], dateKey: keyof T): T[] {
     return [...items].sort((a, b) => {
-      const dateA = new Date(
-        (a[dateKey] ?? 0) as string | number | Date
-      ).getTime();
-      const dateB = new Date(
-        (b[dateKey] ?? 0) as string | number | Date
-      ).getTime();
+      const dateA = new Date((a[dateKey] ?? 0) as string | number | Date).getTime();
+      const dateB = new Date((b[dateKey] ?? 0) as string | number | Date).getTime();
       return dateB - dateA;
     });
   }
