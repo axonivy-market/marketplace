@@ -27,8 +27,4 @@ public class CommonConstants {
   public static final String NEW_LINE = "\\n";
   public static final String DEV_FILE = "dev.yml";
   public static final String CI_FILE = "ci.yml";
-  public static final String WORKFLOW = "workflow";
-  public static final String TEST_ENVIRONMENT = "environment";
-  public static final String STATUS = "status";
-  public static final String COUNT = "count";
 }

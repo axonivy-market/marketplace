@@ -18,13 +18,13 @@ import java.util.List;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
-class GithubReposControllerTest {
+class MonitorDashBoardControllerTest {
     @Mock
     private GithubReposService githubReposService;
     @Mock
     private TestStepsService testStepsService;
     @InjectMocks
-    private GithubReposController controller;
+    private MonitorDashBoardController controller;
 
     @BeforeEach
     void setUp() {

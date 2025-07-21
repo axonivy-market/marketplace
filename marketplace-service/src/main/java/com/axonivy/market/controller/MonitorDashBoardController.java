@@ -28,7 +28,7 @@ import static com.axonivy.market.constants.RequestMappingConstants.*;
 @RequiredArgsConstructor
 @RequestMapping(GITHUB_REPOS)
 @Tag(name = "GitHub Repos API", description = "API to fetch GitHub repositories and workflows")
-public class GithubReposController {
+public class MonitorDashBoardController {
 
   private final GithubReposService githubReposService;
   private final TestStepsService testStepsService;

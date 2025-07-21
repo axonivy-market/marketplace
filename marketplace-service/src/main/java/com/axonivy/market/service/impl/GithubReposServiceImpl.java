@@ -32,6 +32,8 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import static com.axonivy.market.constants.DirectoryConstants.GITHUB_REPO_DIR;
+
 @Service
 @RequiredArgsConstructor
 @Slf4j
@@ -119,7 +121,7 @@ public class GithubReposServiceImpl implements GithubReposService {
   private List<TestStep> processArtifact(GHArtifact artifact, GithubRepo dbRepo,
       WorkFlowType workflowType) throws IOException {
 
-    var unzipDir = Paths.get(PreviewConstants.GITHUB_REPO_DIR);
+    var unzipDir = Paths.get(GITHUB_REPO_DIR);
     try (InputStream zipStream = gitHubService.downloadArtifactZip(artifact)) {
       FileUtils.prepareUnZipDirectory(unzipDir);
       FileUtils.unzipArtifact(zipStream, unzipDir.toFile());
