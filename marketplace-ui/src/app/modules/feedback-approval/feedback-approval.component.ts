@@ -56,8 +56,8 @@ export class FeedbackApprovalComponent {
   pendingFeedbacks: Signal<Feedback[]> =
     this.productFeedbackService.pendingFeedbacks;
 
-  allFeedbacks = computed(() => this.feedbacks() ?? []);
-  reviewingFeedbacks = computed(() => this.pendingFeedbacks() ?? []);
+  allFeedbacks = computed(() => this.feedbacks());
+  reviewingFeedbacks = computed(() => this.pendingFeedbacks());
   constructor(private readonly storageRef: SessionStorageRef) {}
 
   ngOnInit() {
