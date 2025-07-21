@@ -50,10 +50,10 @@ export class FeedbackApprovalComponent {
   moderatorName!: string | null;
   isLoading = false;
 
-  feedbacks: Signal<Feedback[] | undefined> =
+  feedbacks: Signal<Feedback[]> =
     this.productFeedbackService.allFeedbacks;
 
-  pendingFeedbacks: Signal<Feedback[] | undefined> =
+  pendingFeedbacks: Signal<Feedback[]> =
     this.productFeedbackService.pendingFeedbacks;
 
   allFeedbacks = computed(() => this.feedbacks() ?? []);
