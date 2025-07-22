@@ -33,7 +33,10 @@
 }
 
 @if (!report.length && !loading && !errorMessage) {
-<div class="no-report">{{ 'monitor.dashboard.noReport' | translate }}</div>
+<div class="test-report">
+  <h2>{{ workflow | uppercase }} {{ 'monitor.dashboard.repo.workflow' | translate }} {{ repo }}</h2>
+  <h3>{{ 'monitor.dashboard.noReport' | translate }}</h3>
+</div>
 }
 
 @if (loading) {

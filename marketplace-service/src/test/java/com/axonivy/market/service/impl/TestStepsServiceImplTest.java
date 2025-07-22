@@ -67,7 +67,8 @@ class TestStepsServiceImplTest {
                 "Expected two test steps to be created from the test data");
         assertEquals("step1", steps.get(0).getName(),
                 "Expected first step name to be 'step1'");
-        assertEquals(TestStatus.PASSED, steps.get(0).getStatus());
+        assertEquals(TestStatus.PASSED, steps.get(0).getStatus(),
+                "Expected first step status to be PASSED");
         assertEquals("step2", steps.get(1).getName(),
                 "Expected second step name to be 'step2'");
         assertEquals(TestStatus.FAILED, steps.get(1).getStatus(),

@@ -62,6 +62,7 @@ class MonitorDashBoardControllerTest {
     @Test
     void testSyncGithubMonitorHandlesException() throws IOException {
         doThrow(new IOException("fail")).when(githubReposService).loadAndStoreTestReports();
-        assertThrows(IOException.class, () -> controller.syncGithubMonitor());
+        assertThrows(IOException.class, () -> controller.syncGithubMonitor(),
+                "IOException should be thrown when service fails to load and store test reports");
     }
 }

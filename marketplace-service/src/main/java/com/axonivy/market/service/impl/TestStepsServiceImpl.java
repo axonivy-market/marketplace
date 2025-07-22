@@ -7,7 +7,7 @@ import com.axonivy.market.enums.WorkFlowType;
 import com.axonivy.market.model.TestStepsModel;
 import com.axonivy.market.repository.TestStepsRepository;
 import com.axonivy.market.service.TestStepsService;
-import com.axonivy.market.util.TestStepProcessorUtils;
+import com.axonivy.market.util.TestStepUtils;
 import com.fasterxml.jackson.databind.JsonNode;
 import jakarta.transaction.Transactional;
 import lombok.AllArgsConstructor;
@@ -36,7 +36,7 @@ public class TestStepsServiceImpl implements TestStepsService {
     @Transactional
     public List<TestStep> createTestSteps(GithubRepo repo, JsonNode testData, WorkFlowType workflowType) {
         if (testData != null) {
-            return TestStepProcessorUtils.parseTestSteps(testData, workflowType);
+            return TestStepUtils.parseTestSteps(testData, workflowType);
         }
         return Collections.emptyList();
     }

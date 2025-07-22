@@ -14,9 +14,11 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Pattern;
 
+import static com.axonivy.market.entity.TestStep.createTestStep;
+
 @Log4j2
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
-public class TestStepProcessorUtils {
+public class TestStepUtils {
 
     private static final String PATTERN_TEST_CASE = "^✅\\s+([^\\s].*?)(Real Server Test|Mock Server Test)?$";
     private static final String PATTERN_TEST_CASE_FAILED = "^❌\\s+([^\\s].*?)(Real Server Test|Mock Server Test)?$";
@@ -56,15 +58,6 @@ public class TestStepProcessorUtils {
         return null;
     }
 
-    private static TestStep createTestStep(String name, TestStatus status, WorkFlowType workflowType,
-                                           TestEnviroment testType) {
-        return TestStep.builder()
-                .name(name)
-                .status(status)
-                .type(workflowType)
-                .testType(testType)
-                .build();
-    }
 
     public static List<TestStep> parseTestSteps(JsonNode testData, WorkFlowType workflowType) {
         List<TestStep> steps = new ArrayList<>();

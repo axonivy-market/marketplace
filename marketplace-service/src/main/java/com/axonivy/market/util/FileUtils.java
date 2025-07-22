@@ -46,7 +46,7 @@ public class FileUtils {
     }
   }
 
-  public static void unzipArtifact(InputStream zipStream, File unzipDir) throws IOException {
+  public static void unzipArtifact(InputStream zipStream, File unzipDir) {
     try (var zis = new ZipInputStream(zipStream)) {
       ZipEntry entry;
       while ((entry = zis.getNextEntry()) != null) {

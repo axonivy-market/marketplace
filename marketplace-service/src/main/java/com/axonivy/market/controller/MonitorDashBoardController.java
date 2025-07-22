@@ -8,6 +8,7 @@ import com.axonivy.market.service.TestStepsService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.enums.ParameterIn;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -22,8 +23,6 @@ import java.io.IOException;
 import java.util.List;
 
 import static com.axonivy.market.constants.RequestMappingConstants.*;
-
-@Slf4j
 @RestController
 @RequiredArgsConstructor
 @RequestMapping(GITHUB_REPOS)
@@ -33,6 +32,12 @@ public class MonitorDashBoardController {
   private final GithubReposService githubReposService;
   private final TestStepsService testStepsService;
 
+  @Operation(summary = "Get all GitHub repositories",
+      description = "Fetch all GitHub repositories with their details and test results")
+  @ApiResponse(
+      responseCode = "200",
+      description = "Successfully fetched GitHub repositories"
+  )
   @GetMapping(REPOS)
   public ResponseEntity<List<GithubReposModel>> getGitHubRepos() {
     List<GithubReposModel> response = githubReposService.fetchAllRepositories();
@@ -51,7 +56,7 @@ public class MonitorDashBoardController {
     return new ResponseEntity<>(response, HttpStatus.OK);
   }
 
-  @GetMapping(SYNC_GITHUB_MONITOR)
+  @GetMapping(SYNC)
   @Operation(summary = "Sync GitHub monitor",
       description = "Load and store test reports from GitHub repositories")
   public ResponseEntity<String> syncGithubMonitor() throws IOException {

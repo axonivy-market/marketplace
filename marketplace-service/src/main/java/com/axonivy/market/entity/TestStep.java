@@ -27,4 +27,14 @@ public class TestStep extends GenericIdEntity {
   private WorkFlowType type;
   @Enumerated(EnumType.STRING)
   private TestEnviroment testType;
+
+  public static TestStep createTestStep(String name, TestStatus status, WorkFlowType workflowType,
+      TestEnviroment testType) {
+    return TestStep.builder()
+        .name(name)
+        .status(status)
+        .type(workflowType)
+        .testType(testType)
+        .build();
+  }
 }

@@ -5,8 +5,6 @@ import lombok.Getter;
 @Getter
 public enum TestEnviroment {
   OTHER,
-  ALL,
   MOCK,
   REAL;
-
 }

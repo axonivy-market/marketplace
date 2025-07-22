@@ -14,6 +14,7 @@ import static com.axonivy.market.util.TestResultsUtils.processTestResults;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
+@EqualsAndHashCode(callSuper = false)
 public class GithubReposModel extends RepresentationModel<GithubReposModel> {
 
   @EqualsAndHashCode.Include
@@ -66,44 +67,5 @@ public class GithubReposModel extends RepresentationModel<GithubReposModel> {
         .devBadgeUrl(githubRepo.getDevBadgeUrl())
         .testResults(testResults)
         .build();
-  }
-
-  @Override
-  public boolean equals(Object o) {
-    if (this == o) {
-      return true;
-    }
-    if (o == null || getClass() != o.getClass()) {
-      return false;
-    }
-    GithubReposModel that = (GithubReposModel) o;
-
-    boolean isNameEqual;
-    if (name != null) {
-      isNameEqual = name.equals(that.name);
-    } else {
-      isNameEqual = (that.name == null);
-    }
-
-    boolean isHtmlUrlEqual;
-    if (htmlUrl != null) {
-      isHtmlUrlEqual = htmlUrl.equals(that.htmlUrl);
-    } else {
-      isHtmlUrlEqual = (that.htmlUrl == null);
-    }
-    return isNameEqual && isHtmlUrlEqual;
-  }
-
-  @Override
-  public int hashCode() {
-    var result = 0;
-    if (name != null) {
-      result = name.hashCode();
-    }
-    result = 31 * result;
-    if (htmlUrl != null) {
-      result += htmlUrl.hashCode();
-    }
-    return result;
   }
 }

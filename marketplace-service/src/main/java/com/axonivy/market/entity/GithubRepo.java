@@ -10,9 +10,13 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.kohsuke.github.GHRepository;
+
 import static com.axonivy.market.constants.EntityConstants.GITHUB_REPO;
 
+import java.io.IOException;
 import java.io.Serial;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
@@ -35,4 +39,17 @@ public class GithubRepo extends GenericIdEntity {
   @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
   @JoinColumn(name = "repository_id")
   private List<TestStep> testSteps;
+
+  public static GithubRepo createNewGithubRepo(GHRepository repo, String ciBadgeUrl,
+      String devBadgeUrl) throws IOException {
+    return GithubRepo.builder()
+        .name(repo.getName())
+        .htmlUrl(repo.getHtmlUrl().toString())
+        .language(repo.getLanguage())
+        .lastUpdated(repo.getUpdatedAt())
+        .testSteps(new ArrayList<>())
+        .ciBadgeUrl(ciBadgeUrl)
+        .devBadgeUrl(devBadgeUrl)
+        .build();
+  }
 }

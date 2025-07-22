@@ -3,8 +3,8 @@ package com.axonivy.market.github.service.impl;
 import com.axonivy.market.constants.CommonConstants;
 import com.axonivy.market.constants.ErrorMessageConstants;
 import com.axonivy.market.constants.GitHubConstants;
-import com.axonivy.market.entity.Product;
 import com.axonivy.market.entity.GithubUser;
+import com.axonivy.market.entity.Product;
 import com.axonivy.market.enums.ErrorCode;
 import com.axonivy.market.exceptions.model.MissingHeaderException;
 import com.axonivy.market.exceptions.model.NotFoundException;
@@ -46,12 +46,10 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.UncheckedIOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
@@ -405,13 +403,16 @@ public class GitHubServiceImpl implements GitHubService {
   @Override
   public GHWorkflowRun getLatestWorkflowRun(GHRepository repo, String workflowFileName) throws IOException {
     try {
-      return repo.getWorkflow(workflowFileName)
-          .listRuns()
-          .withPageSize(1)
-          .iterator()
-          .next();
+      PagedIterable<GHWorkflowRun> runs = repo.getWorkflow(workflowFileName).listRuns().withPageSize(10);
+      for (GHWorkflowRun run : runs) {
+        if (GHWorkflowRun.Status.COMPLETED == run.getStatus()) {
+          return run;
+        }
+      }
+      log.warn("No completed workflow runs found for '{}'", workflowFileName);
+      return null;
     } catch (GHFileNotFoundException | NoSuchElementException e) {
-      log.warn("Workflow file '{}' not found in repository '{}'", workflowFileName, repo.getFullName(),e);
+      log.warn("Workflow file '{}' not found in repository '{}'", workflowFileName, repo.getFullName(), e);
       return null;
     }
   }
@@ -431,7 +432,7 @@ public class GitHubServiceImpl implements GitHubService {
       try (inputStream; outputStream) {
         inputStream.transferTo(outputStream);
       } catch (IOException e) {
-        throw new UncheckedIOException("Failed to download artifact zip", e);
+        log.error("Failed to download artifact zip: {}", artifact.getName(), e);
       }
       return null;
     });

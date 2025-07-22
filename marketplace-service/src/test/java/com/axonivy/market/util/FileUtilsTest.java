@@ -216,10 +216,14 @@ class FileUtilsTest {
     }
     ByteArrayInputStream bais = new ByteArrayInputStream(baos.toByteArray());
     FileUtils.unzipArtifact(bais, tempDir.toFile());
-    assertTrue(Files.exists(tempDir.resolve("dir1/file1.txt")));
-    assertTrue(Files.exists(tempDir.resolve("file2.txt")));
-    assertEquals("hello", Files.readString(tempDir.resolve("dir1/file1.txt")));
-    assertEquals("world", Files.readString(tempDir.resolve("file2.txt")));
+    assertTrue(Files.exists(tempDir.resolve("dir1/file1.txt")),
+        "Extracted file dir1/file1.txt should exist");
+    assertTrue(Files.exists(tempDir.resolve("file2.txt")),
+        "Extracted file file2.txt should exist");
+    assertEquals("hello", Files.readString(tempDir.resolve("dir1/file1.txt")),
+        "Content of dir1/file1.txt should match");
+    assertEquals("world", Files.readString(tempDir.resolve("file2.txt")),
+        "Content of file2.txt should match");
     // Clean up
     Files.walk(tempDir).map(Path::toFile).sorted((a, b) -> -a.compareTo(b)).forEach(File::delete);
   }

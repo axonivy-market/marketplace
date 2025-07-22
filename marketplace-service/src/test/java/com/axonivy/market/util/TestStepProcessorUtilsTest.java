@@ -18,7 +18,7 @@ class TestStepProcessorUtilsTest {
   @Test
   void testParseTestStepLinePassedMock() {
     String line = "✅ test1 Mock Server Test";
-    TestStep step = TestStepProcessorUtils.parseTestSteps(mockJson(line), WorkFlowType.CI).get(0);
+    TestStep step = TestStepUtils.parseTestSteps(mockJson(line), WorkFlowType.CI).get(0);
     assertEquals("test1", step.getName(), "Test step name should match");
     assertEquals(TestStatus.PASSED, step.getStatus(), "Test step status should be PASSED");
     assertEquals(WorkFlowType.CI, step.getType(), "Test step type should be CI");
@@ -28,7 +28,7 @@ class TestStepProcessorUtilsTest {
   @Test
   void testParseTestStepLinePassedReal() {
     String line = "✅ test2 Real Server Test";
-    TestStep step = TestStepProcessorUtils.parseTestSteps(mockJson(line), WorkFlowType.DEV).get(0);
+    TestStep step = TestStepUtils.parseTestSteps(mockJson(line), WorkFlowType.DEV).get(0);
     assertEquals("test2", step.getName(), "Test step name should match");
     assertEquals(TestStatus.PASSED, step.getStatus(), "Test step status should be PASSED");
     assertEquals(WorkFlowType.DEV, step.getType(), "Test step type should be DEV");
@@ -38,7 +38,7 @@ class TestStepProcessorUtilsTest {
   @Test
   void testParseTestStepLineFailedMock() {
     String line = "❌ test3 Mock Server Test";
-    TestStep step = TestStepProcessorUtils.parseTestSteps(mockJson(line), WorkFlowType.CI).get(0);
+    TestStep step = TestStepUtils.parseTestSteps(mockJson(line), WorkFlowType.CI).get(0);
     assertEquals("test3", step.getName(), "Test step name should match");
     assertEquals(TestStatus.FAILED, step.getStatus(), "Test step status should be FAILED");
     assertEquals(WorkFlowType.CI, step.getType(), "Test step type should be CI");
@@ -48,7 +48,7 @@ class TestStepProcessorUtilsTest {
   @Test
   void testParseTestStepLineFailedReal() {
     String line = "❌ test4 Real Server Test";
-    TestStep step = TestStepProcessorUtils.parseTestSteps(mockJson(line), WorkFlowType.DEV).get(0);
+    TestStep step = TestStepUtils.parseTestSteps(mockJson(line), WorkFlowType.DEV).get(0);
     assertEquals("test4", step.getName(), "Test step name should match");
     assertEquals(TestStatus.FAILED, step.getStatus(), "Test step status should be FAILED");
     assertEquals(WorkFlowType.DEV, step.getType(), "Test step type should be DEV");
@@ -58,7 +58,7 @@ class TestStepProcessorUtilsTest {
   @Test
   void testParseTestStepLinePassedOther() {
     String line = "✅ test5";
-    TestStep step = TestStepProcessorUtils.parseTestSteps(mockJson(line), WorkFlowType.CI).get(0);
+    TestStep step = TestStepUtils.parseTestSteps(mockJson(line), WorkFlowType.CI).get(0);
     assertEquals("test5", step.getName(), "Test step name should match");
     assertEquals(TestStatus.PASSED, step.getStatus(), "Test step status should be PASSED");
     assertEquals(WorkFlowType.CI, step.getType(), "Test step type should be CI");
@@ -68,7 +68,7 @@ class TestStepProcessorUtilsTest {
   @Test
   void testParseTestStepLineFailedOther() {
     String line = "❌ test6";
-    TestStep step = TestStepProcessorUtils.parseTestSteps(mockJson(line), WorkFlowType.DEV).get(0);
+    TestStep step = TestStepUtils.parseTestSteps(mockJson(line), WorkFlowType.DEV).get(0);
     assertEquals("test6", step.getName(), "Test step name should match");
     assertEquals(TestStatus.FAILED, step.getStatus(), "Test step status should be FAILED");
     assertEquals(WorkFlowType.DEV, step.getType(), "Test step type should be DEV");
@@ -78,7 +78,7 @@ class TestStepProcessorUtilsTest {
   @Test
   void testParseTestStepsMultipleLines() {
     String summary = "✅ test1 Mock Server Test\n❌ test2 Real Server Test\n✅ test3\n❌ test4";
-    List<TestStep> steps = TestStepProcessorUtils.parseTestSteps(mockJson(summary), WorkFlowType.CI);
+    List<TestStep> steps = TestStepUtils.parseTestSteps(mockJson(summary), WorkFlowType.CI);
     assertEquals(4, steps.size(), "There should be 4 test steps parsed");
     assertEquals("test1", steps.get(0).getName(), "Test step 1 name should match");
     assertEquals(TestStatus.PASSED, steps.get(0).getStatus(), "Test step 1 status should be PASSED");
@@ -96,7 +96,7 @@ class TestStepProcessorUtilsTest {
 
   @Test
   void testParseTestStepsEmptySummary() {
-    List<TestStep> steps = TestStepProcessorUtils.parseTestSteps(mockJson(""), WorkFlowType.CI);
+    List<TestStep> steps = TestStepUtils.parseTestSteps(mockJson(""), WorkFlowType.CI);
     assertTrue(steps.isEmpty(), "There should be no test steps parsed for empty summary");
   }
 
