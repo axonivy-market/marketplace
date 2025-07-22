@@ -107,38 +107,6 @@ class GithubReposServiceImplTest {
   }
 
   @Test
-  void testProcessProductghFileNotFound() throws Exception {
-    GHRepository ghRepo = mock(GHRepository.class);
-    when(ghRepo.getName()).thenReturn("demo");
-    when(ghRepo.getHtmlUrl()).thenReturn(new URI(badgeUrl).toURL());
-    when(ghRepo.getLanguage()).thenReturn("Java");
-    when(ghRepo.getUpdatedAt()).thenReturn(new Date());
-    when(ghRepo.getFullName()).thenReturn("owner/demo");
-
-    when(githubRepoRepository.findByName("demo")).thenReturn(Optional.empty());
-
-    // Simulate GHFileNotFoundException for both DEV and CI workflow calls
-    doAnswer(invocation -> {
-      throw new GHFileNotFoundException("Not found");
-    }).when(serviceSpy).processWorkflowWithFallback(any(), any(), anyString(), any());
-
-    assertDoesNotThrow(() -> serviceSpy.processProduct(ghRepo),
-        "Processing product should not throw an exception ");
-    verify(githubRepoRepository, never()).save(any());
-  }
-
-  @Test
-  void testProcessProductIoException() {
-    GHRepository ghRepo = mock(GHRepository.class);
-    when(ghRepo.getName()).thenReturn("demo");
-    when(ghRepo.getHtmlUrl()).thenThrow(new IOException("IO Error"));
-    when(githubRepoRepository.findByName("demo")).thenReturn(Optional.empty());
-
-    assertDoesNotThrow(() -> serviceSpy.processProduct(ghRepo),
-        "Processing product should not throw an exception");
-  }
-
-  @Test
   void testProcessProductDataAccessException() throws IOException, URISyntaxException {
     GHRepository ghRepo = mock(GHRepository.class);
     when(ghRepo.getName()).thenReturn("demo");

@@ -141,7 +141,6 @@ public class GithubReposServiceImpl implements GithubReposService {
     return null;
   }
 
-
   private String buildBadgeUrl(GHRepository repo, String workflowFileName) {
     return String.format(BADGE_URL, repo.getFullName(), workflowFileName);
   }
