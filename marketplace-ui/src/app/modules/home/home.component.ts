@@ -17,7 +17,6 @@ export class HomeComponent {
   titleService = inject(Title);
   translateService = inject(TranslateService);
   pageTitleService = inject(PageTitleService);
-  constructor() { }
 
   ngOnInit(): void {
     this.pageTitleService.setTitleOnLangChange('common.branch');

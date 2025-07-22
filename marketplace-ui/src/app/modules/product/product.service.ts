@@ -12,7 +12,7 @@ import { API_URI } from '../../shared/constants/api.constant';
 import { LoadingComponentId } from '../../shared/enums/loading-component-id';
 import { ProductReleasesApiResponse } from '../../shared/models/apis/product-releases-response.model';
 
-@Injectable()
+@Injectable({ providedIn: 'root' })
 export class ProductService {
   httpClient = inject(HttpClient);
 

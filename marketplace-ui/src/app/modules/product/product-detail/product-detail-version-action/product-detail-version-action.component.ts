@@ -6,20 +6,22 @@ import {
   ElementRef,
   EventEmitter,
   HostListener,
+  Inject,
   inject,
   Input,
   model,
+  NgZone,
   Output,
+  PLATFORM_ID,
   Signal,
   signal,
   WritableSignal
 } from '@angular/core';
 import { ThemeService } from '../../../../core/services/theme/theme.service';
 import { TranslateModule } from '@ngx-translate/core';
-import { CommonModule } from '@angular/common';
+import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ProductService } from '../../product.service';
-import { Tooltip } from 'bootstrap';
 import { CommonDropdownComponent } from '../../../../shared/components/common-dropdown/common-dropdown.component';
 import { LanguageService } from '../../../../core/services/language/language.service';
 import { ItemDropdown } from '../../../../shared/models/item-dropdown.model';
@@ -40,7 +42,7 @@ import { LoadingComponentId } from '../../../../shared/enums/loading-component-i
 import { LoadingService } from '../../../../core/services/loading/loading.service';
 import { API_URI } from '../../../../shared/constants/api.constant';
 import { HttpClient, HttpResponse } from '@angular/common/http';
-import { finalize } from 'rxjs/operators';
+import { finalize, take } from 'rxjs/operators';
 
 const showDevVersionCookieName = 'showDevVersions';
 const HTTP = 'http';
@@ -52,7 +54,7 @@ const BLOB = 'blob';
 const RESPONSE = 'response';
 
 @Component({
-  selector: 'app-product-version-action',
+  selector: 'app-product-detail-version-action',
   standalone: true,
   imports: [
     CommonModule,
@@ -117,14 +119,25 @@ export class ProductDetailVersionActionComponent implements AfterViewInit {
     this.getShowDevVersionFromCookie()
   );
   isCheckedAppForEngine!: boolean;
+  isBrowser: boolean;
+  ngZone = inject(NgZone);
+
+  constructor(@Inject(PLATFORM_ID) private readonly platformId: Object) {
+    this.isBrowser = isPlatformBrowser(this.platformId);
+  }
 
   ngAfterViewInit() {
-    const tooltipTriggerList = [].slice.call(
-      document.querySelectorAll('[data-bs-toggle="tooltip"]')
-    );
-    tooltipTriggerList.forEach(
-      tooltipTriggerEl => new Tooltip(tooltipTriggerEl)
-    );
+    if (isPlatformBrowser(this.platformId)) {
+      this.ngZone.onStable.pipe(take(1)).subscribe(() => {
+        import('bootstrap').then(bs => {
+          const Tooltip = bs.Tooltip;
+          const elements = document.querySelectorAll(
+            '[data-bs-toggle="tooltip"]'
+          );
+          elements.forEach(el => new Tooltip(el));
+        });
+      });
+    }
   }
 
   onSelectVersion(version: string) {
@@ -312,9 +325,10 @@ export class ProductDetailVersionActionComponent implements AfterViewInit {
 
   onUpdateInstallationCount(): void {
     setTimeout(() => {
-      this.productService.sendRequestToGetInstallationCount(this.productId)
+      this.productService
+        .sendRequestToGetInstallationCount(this.productId)
         .subscribe((data: number) => {
-          this.installationCount.emit(data)
+          this.installationCount.emit(data);
         });
     }, DELAY_TIMEOUT);
   }

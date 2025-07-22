@@ -25,6 +25,7 @@ import { HttpErrorResponse } from '@angular/common/http';
 import { finalize } from 'rxjs';
 import { FeedbackApproval } from '../../shared/models/feedback-approval.model';
 import { PageTitleService } from '../../shared/services/page-title.service';
+import { SessionStorageRef } from '../../core/services/browser/session-storage-ref.service';
 
 @Component({
   selector: 'app-feedback-approval',
@@ -51,17 +52,18 @@ export class FeedbackApprovalComponent {
   moderatorName!: string | null;
   isLoading = false;
 
-  feedbacks: Signal<Feedback[] | undefined> =
+  feedbacks: Signal<Feedback[]> =
     this.productFeedbackService.allFeedbacks;
 
-  pendingFeedbacks: Signal<Feedback[] | undefined> =
+  pendingFeedbacks: Signal<Feedback[]> =
     this.productFeedbackService.pendingFeedbacks;
 
-  allFeedbacks = computed(() => this.feedbacks() ?? []);
-  reviewingFeedbacks = computed(() => this.pendingFeedbacks() ?? []);
+  allFeedbacks = computed(() => this.feedbacks());
+  reviewingFeedbacks = computed(() => this.pendingFeedbacks());
+  constructor(private readonly storageRef: SessionStorageRef) {}
 
   ngOnInit() {
-    this.token = sessionStorage.getItem(FEEDBACK_APPROVAL_SESSION_TOKEN) ?? '';
+    this.token = this.storageRef.session?.getItem(FEEDBACK_APPROVAL_SESSION_TOKEN) ?? '';
     if (this.token) {
       this.isAuthenticated = true;
       this.fetchFeedbacks();

@@ -14,7 +14,6 @@ import { LanguageService } from '../../../core/services/language/language.servic
   styleUrls: ['./footer.component.scss', '../../../app.component.scss']
 })
 export class FooterComponent implements OnInit {
-
   themeService = inject(ThemeService);
   languageService = inject(LanguageService);
   socialMediaLinks = SOCIAL_MEDIA_LINK;

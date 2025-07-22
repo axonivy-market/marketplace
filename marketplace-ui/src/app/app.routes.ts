@@ -7,6 +7,7 @@ import { SecurityMonitorComponent } from './modules/security-monitor/security-mo
 import { ReleasePreviewComponent } from './modules/release-preview/release-preview.component';
 import { FeedbackApprovalComponent } from './modules/feedback-approval/feedback-approval.component';
 import { MonitoringRedirectComponent } from './shared/components/monitoring-redirect/monitoring-redirect.component';
+import { ProductDetailResolver } from './core/resolver/product-detail.resolve';
 
 export const routes: Routes = [
   {
@@ -42,7 +43,10 @@ export const routes: Routes = [
   {
     path: ':id',
     loadChildren: () =>
-      import('./modules/product/product.routes').then(m => m.routes)
+      import('./modules/product/product.routes').then(m => m.routes),
+    resolve: {
+      productDetail: ProductDetailResolver
+    }
   },
   {
     path: ':id/:version/doc',
