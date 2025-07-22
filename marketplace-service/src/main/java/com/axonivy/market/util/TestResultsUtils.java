@@ -1,54 +1,76 @@
 package com.axonivy.market.util;
 
 import com.axonivy.market.entity.GithubRepo;
-import com.axonivy.market.entity.TesResults;
-import com.axonivy.market.enums.TestEnviroment;
+import com.axonivy.market.entity.TestResults;
+import com.axonivy.market.entity.TestStep;
 import com.axonivy.market.enums.TestStatus;
 import com.axonivy.market.enums.WorkFlowType;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
+import java.util.Map;
 
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class TestResultsUtils {
-
-
-  public static List<TesResults> processTestResults(GithubRepo githubRepo) {
+  public static List<TestResults> processTestResults(GithubRepo githubRepo) {
     if (githubRepo.getTestSteps() == null) {
       return Collections.emptyList();
     }
-    var groupedCounts = githubRepo.getTestSteps().stream()
-        .filter(step -> step.getStatus() != TestStatus.SKIPPED)
-        .map(step -> {
-          var workflowType = step.getType();
-          var envType = step.getTestType() == TestEnviroment.OTHER ? TestEnviroment.MOCK : step.getTestType();
-          var status = step.getStatus();
-          return List.of(workflowType, envType.name(), status);
-        })
-        .collect(Collectors.groupingBy(key -> key, Collectors.counting()));
+    Map<String, Integer> groupedCounts = countGroupedResults(githubRepo);
+    Map<String, Integer> allCounts = countAllResults(githubRepo);
+    List<TestResults> results = new ArrayList<>();
+    results.addAll(mapCountsToResults(groupedCounts));
+    results.addAll(mapCountsToResults(allCounts));
+    return results;
+  }
 
-    var allCounts = githubRepo.getTestSteps().stream()
-        .filter(step -> step.getStatus() != TestStatus.SKIPPED)
-        .collect(Collectors.groupingBy(
-            step -> List.of(step.getType(), "ALL", step.getStatus()),
-            Collectors.counting()
-        ));
+  private static Map<String, Integer> countGroupedResults(GithubRepo githubRepo) {
+    Map<String, Integer> groupedCounts = new HashMap<>();
+    for (TestStep step : githubRepo.getTestSteps()) {
+      if (step.getStatus() == TestStatus.SKIPPED) {
+        continue;
+      }
+      WorkFlowType workflowType = step.getType();
+      TestStatus status = step.getStatus();
+      String envType = step.getTestType().toString();
+      if ("OTHER".equals(envType)) {
+        envType = "MOCK";
+      }
+      String key = workflowType + "-" + envType + "-" + status;
+      groupedCounts.merge(key, 1, Integer::sum);
+    }
+    return groupedCounts;
+  }
 
-    return Stream.concat(groupedCounts.entrySet().stream(), allCounts.entrySet().stream())
-        .map(entry -> {
-          var keyList = entry.getKey();
-          return TesResults.builder()
-              .workflow((WorkFlowType) keyList.get(0))
-              .environment((String) keyList.get(1))
-              .status((TestStatus) keyList.get(2))
-              .count(entry.getValue().intValue())
-              .build();
-        })
-        .toList();
+  private static Map<String, Integer> countAllResults(GithubRepo githubRepo) {
+    Map<String, Integer> allCounts = new HashMap<>();
+    for (TestStep step : githubRepo.getTestSteps()) {
+      if (step.getStatus() == TestStatus.SKIPPED) {
+        continue;
+      }
+      WorkFlowType workflowType = step.getType();
+      TestStatus status = step.getStatus();
+      String allKey = workflowType + "-ALL-" + status;
+      allCounts.merge(allKey, 1, Integer::sum);
+    }
+    return allCounts;
+  }
+
+  private static List<TestResults> mapCountsToResults(Map<String, Integer> counts) {
+    List<TestResults> results = new ArrayList<>();
+    for (Map.Entry<String, Integer> entry : counts.entrySet()) {
+      String[] parts = entry.getKey().split("-");
+      results.add(TestResults.builder()
+          .workflow(WorkFlowType.valueOf(parts[0]))
+          .environment(parts[1])
+          .status(TestStatus.valueOf(parts[2]))
+          .count(entry.getValue())
+          .build());
+    }
+    return results;
   }
 }
-

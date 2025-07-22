@@ -74,6 +74,7 @@ public class GitHubServiceImpl implements GitHubService {
   private static final String GITHUB_USERNAME_REGEX = "@([a-zA-Z0-9\\-]+)";
   private static final String GITHUB_MAIN_LINK = "https://github.com/";
   private static final String FIRST_REGEX_CAPTURING_GROUP="$1";
+  private static final int PAGE_SIZE_OF_WORKFLOW = 10;
 
   public GitHubServiceImpl(RestTemplate restTemplate, GithubUserRepository githubUserRepository,
       GitHubProperty gitHubProperty, ThreadPoolTaskScheduler taskScheduler) {
@@ -403,7 +404,8 @@ public class GitHubServiceImpl implements GitHubService {
   @Override
   public GHWorkflowRun getLatestWorkflowRun(GHRepository repo, String workflowFileName) throws IOException {
     try {
-      PagedIterable<GHWorkflowRun> runs = repo.getWorkflow(workflowFileName).listRuns().withPageSize(10);
+      PagedIterable<GHWorkflowRun> runs = repo.getWorkflow(workflowFileName).listRuns().withPageSize(
+          PAGE_SIZE_OF_WORKFLOW);
       for (GHWorkflowRun run : runs) {
         if (GHWorkflowRun.Status.COMPLETED == run.getStatus()) {
           return run;

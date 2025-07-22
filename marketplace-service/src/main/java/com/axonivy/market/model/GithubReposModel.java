@@ -1,7 +1,7 @@
 package com.axonivy.market.model;
 
 import com.axonivy.market.entity.GithubRepo;
-import com.axonivy.market.entity.TesResults;
+import com.axonivy.market.entity.TestResults;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.*;
 import org.springframework.hateoas.RepresentationModel;
@@ -54,10 +54,10 @@ public class GithubReposModel extends RepresentationModel<GithubReposModel> {
             }
           """
   )
-  private List<TesResults> testResults;
+  private List<TestResults> testResults;
 
   public static GithubReposModel from(GithubRepo githubRepo) {
-    List<TesResults> testResults = processTestResults(githubRepo);
+    List<TestResults> testResults = processTestResults(githubRepo);
     return GithubReposModel.builder()
         .name(githubRepo.getName())
         .htmlUrl(githubRepo.getHtmlUrl())

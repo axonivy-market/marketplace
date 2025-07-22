@@ -35,13 +35,13 @@ import java.util.List;
 
 import static com.axonivy.market.constants.DirectoryConstants.GITHUB_REPO_DIR;
 import static com.axonivy.market.entity.GithubRepo.createNewGithubRepo;
+import static com.axonivy.market.util.TestStepUtils.buildBadgeUrl;
 
 @Service
 @RequiredArgsConstructor
 @Slf4j
 public class GithubReposServiceImpl implements GithubReposService {
 
-  private static final String BADGE_URL = "https://github.com/%s/actions/workflows/%s/badge.svg";
   private static final String REPORT_FILE_NAME = "test_report.json";
 
   private final GithubRepoRepository githubRepoRepository;
@@ -139,10 +139,6 @@ public class GithubReposServiceImpl implements GithubReposService {
     }
     log.warn("No '{}' found in directory: {}", REPORT_FILE_NAME, unzipDir);
     return null;
-  }
-
-  private String buildBadgeUrl(GHRepository repo, String workflowFileName) {
-    return String.format(BADGE_URL, repo.getFullName(), workflowFileName);
   }
 
   @Override

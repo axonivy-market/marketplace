@@ -1,6 +1,5 @@
 package com.axonivy.market.entity;
 
-import com.axonivy.market.enums.TestEnviroment;
 import com.axonivy.market.enums.TestStatus;
 import com.axonivy.market.enums.WorkFlowType;
 import lombok.Builder;
@@ -9,7 +8,7 @@ import lombok.Setter;
 @Getter
 @Setter
 @Builder
-public class TesResults {
+public class TestResults {
   private WorkFlowType workflow;
   private String environment;
   private TestStatus status;
