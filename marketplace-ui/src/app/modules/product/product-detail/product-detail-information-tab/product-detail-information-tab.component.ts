@@ -17,7 +17,6 @@ import { ThemeService } from '../../../../core/services/theme/theme.service';
 import { EmptyProductDetailPipe } from '../../../../shared/pipes/empty-product-detail.pipe';
 import { LoadingComponentId } from '../../../../shared/enums/loading-component-id';
 import { Router } from '@angular/router';
-import { DisplayValue } from '../../../../shared/models/display-value.model';
 const SELECTED_VERSION = 'selectedVersion';
 const PRODUCT_DETAIL = 'productDetail';
 @Component({

@@ -39,16 +39,19 @@ export class MonitoringDashboardComponent implements OnInit {
   }
 
   getTestCount(repo: Repository, workflow: string, environment: string, status: string): number {
-    if (!repo.testResults){
+    if (!repo.testResults) {
       return 0;
-    } 
+    }
     const result = repo.testResults.find(test =>
       test.workflow === workflow.toUpperCase() &&
       test.environment === environment.toUpperCase() &&
       test.status === status.toUpperCase()
     );
-    
-    return result ? result.count : 0;
+
+    if (result) {
+      return result.count;
+    }
+    return 0;
   }
 
   onBadgeClick(repo: string, workflow: string) {

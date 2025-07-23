@@ -1,5 +1,6 @@
 package com.axonivy.market.service.impl;
 
+import com.axonivy.market.constants.CommonConstants;
 import com.axonivy.market.constants.GitHubConstants;
 import com.axonivy.market.entity.Product;
 import com.axonivy.market.enums.AccessLevel;
@@ -36,11 +37,17 @@ import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.ArrayList;
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyInt;
+
+import java.util.*;
+import org.mockito.stubbing.Answer;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
@@ -48,9 +55,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class GitHubServiceImplTest {
@@ -669,4 +673,73 @@ class GitHubServiceImplTest {
     assertNotNull(result);
     assertTrue(result.isEmpty());
   }
+
+  @Test
+  public void testGetExportTestArtifact_Success() throws IOException {
+    // Arrange
+    GHWorkflowRun mockRun = mock(GHWorkflowRun.class);
+    GHArtifact mockArtifact1 = mock(GHArtifact.class);
+    GHArtifact mockArtifact2 = mock(GHArtifact.class);
+    PagedIterable<GHArtifact> mockPagedIterable = mock(PagedIterable.class);
+
+    when(mockRun.listArtifacts()).thenReturn(mockPagedIterable);
+    when(mockPagedIterable.toList()).thenReturn(Arrays.asList(mockArtifact1, mockArtifact2));
+
+    when(mockArtifact1.getName()).thenReturn("other-artifact");
+    when(mockArtifact2.getName()).thenReturn(CommonConstants.TEST_REPORT_FILE);
+
+    GHArtifact result = gitHubService.getExportTestArtifact(mockRun);
+
+    assertNotNull(result, "Artifact should not be null");
+    assertEquals(mockArtifact2, result);
+    verify(mockRun).listArtifacts();
+  }
+
+  @Test
+  public void testGetLatestWorkflowRun_WorkflowNotFound() throws IOException {
+    GHRepository mockRepo = mock(GHRepository.class);
+    String workflowFileName = "non-existent-workflow.yml";
+
+    when(mockRepo.getWorkflow(workflowFileName)).thenThrow(new GHFileNotFoundException("Workflow not found"));
+    when(mockRepo.getFullName()).thenReturn("owner/repo");
+
+    GHWorkflowRun result = gitHubService.getLatestWorkflowRun(mockRepo, workflowFileName);
+
+    assertNull(result, "Should return null when workflow is not found");
+    verify(mockRepo).getWorkflow(workflowFileName);
+  }
+
+  @Test
+  public void testGetLatestWorkflowRun_NoSuchElementException() throws IOException {
+    GHRepository mockRepo = mock(GHRepository.class);
+    String workflowFileName = "test-workflow.yml";
+
+    when(mockRepo.getWorkflow(workflowFileName)).thenThrow(new NoSuchElementException("No workflow found"));
+    when(mockRepo.getFullName()).thenReturn("owner/repo");
+
+    GHWorkflowRun result = gitHubService.getLatestWorkflowRun(mockRepo, workflowFileName);
+
+    assertNull(result, "Should return null when no workflow run is found");
+    verify(mockRepo).getWorkflow(workflowFileName);
+  }
+
+  @Test
+  public void testGetExportTestArtifact_NotFound() throws IOException {
+    GHWorkflowRun mockRun = mock(GHWorkflowRun.class);
+    GHArtifact mockArtifact1 = mock(GHArtifact.class);
+    GHArtifact mockArtifact2 = mock(GHArtifact.class);
+    PagedIterable<GHArtifact> mockPagedIterable = mock(PagedIterable.class);
+
+    when(mockRun.listArtifacts()).thenReturn(mockPagedIterable);
+    when(mockPagedIterable.toList()).thenReturn(Arrays.asList(mockArtifact1, mockArtifact2));
+
+    when(mockArtifact1.getName()).thenReturn("other-artifact-1");
+    when(mockArtifact2.getName()).thenReturn("other-artifact-2");
+
+    GHArtifact result = gitHubService.getExportTestArtifact(mockRun);
+
+    assertNull(result, "Should return null when no artifact with the target name is found");
+    verify(mockRun).listArtifacts();
+  }
+
 }

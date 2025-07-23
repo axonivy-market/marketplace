@@ -38,7 +38,12 @@ export class RepoReportComponent implements OnInit {
     this.errorMessage = '';
     this.githubService.getTestReport(repo, workflow).subscribe({
       next: data => {
-        this.report = Array.isArray(data) ? data : [data];
+        if (Array.isArray(data)) {
+          this.report = data;
+        } else {
+          this.report = [data];
+        }
+
         this.loading = false;
       },
       error: () => {
