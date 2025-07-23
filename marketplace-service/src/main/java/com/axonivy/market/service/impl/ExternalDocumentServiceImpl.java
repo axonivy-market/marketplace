@@ -149,7 +149,7 @@ public class ExternalDocumentServiceImpl implements ExternalDocumentService {
     }
 
     // remove prefix 'data' and replace all ms win separator to slash if present
-    String relativeLocation = location.substring(location.indexOf(DirectoryConstants.CACHE_DIR));
+    var relativeLocation = location.substring(location.indexOf(DirectoryConstants.CACHE_DIR));
     relativeLocation = RegExUtils.replaceAll(String.format(DOC_URL_PATTERN, relativeLocation), MS_WIN_SEPARATOR,
         CommonConstants.SLASH);
     var externalDocumentMeta = new ExternalDocumentMeta();
