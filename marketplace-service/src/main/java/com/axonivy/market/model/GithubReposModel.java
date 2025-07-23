@@ -6,7 +6,9 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.*;
 import org.springframework.hateoas.RepresentationModel;
 
+import java.text.SimpleDateFormat;
 import java.util.List;
+
 import static com.axonivy.market.util.TestResultsUtils.processTestResults;
 
 @Getter
@@ -58,11 +60,13 @@ public class GithubReposModel extends RepresentationModel<GithubReposModel> {
 
   public static GithubReposModel from(GithubRepo githubRepo) {
     List<TestResults> testResults = processTestResults(githubRepo);
+    SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.S");
+
     return GithubReposModel.builder()
         .name(githubRepo.getName())
         .htmlUrl(githubRepo.getHtmlUrl())
         .language(githubRepo.getLanguage())
-        .lastUpdated(githubRepo.getLastUpdated().toString())
+        .lastUpdated(dateFormat.format(githubRepo.getLastUpdated()))
         .ciBadgeUrl(githubRepo.getCiBadgeUrl())
         .devBadgeUrl(githubRepo.getDevBadgeUrl())
         .testResults(testResults)
