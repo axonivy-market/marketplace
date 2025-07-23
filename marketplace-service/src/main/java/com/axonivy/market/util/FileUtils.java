@@ -86,7 +86,7 @@ public class FileUtils {
     if (parentDir != null && !parentDir.exists()) {
       boolean created = parentDir.mkdirs();
       if (!created && !parentDir.exists()) {
-        throw new IllegalStateException("Failed to create parent directories for: " + outFile.getAbsolutePath());
+        throw new IllegalStateException("Failed to create parent directories: " + outFile.getAbsolutePath());
       }
     }
   }
