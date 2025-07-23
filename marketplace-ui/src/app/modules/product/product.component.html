@@ -1,5 +1,5 @@
 <div class="container">
-  @if (!isRESTClient()) {
+  @if (!isRESTClient() && isBrowser) {
     <div class="row col-md-12">
       <h1 [lang]="languageService.selectedLanguage()" class="text-primary branch">
         {{ translateService.get('common.branch') | async }}

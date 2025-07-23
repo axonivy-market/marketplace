@@ -6,7 +6,7 @@ import { ERROR_PAGE } from './shared/constants/common.constant';
 import { SecurityMonitorComponent } from './modules/security-monitor/security-monitor.component';
 import { ReleasePreviewComponent } from './modules/release-preview/release-preview.component';
 import { FeedbackApprovalComponent } from './modules/feedback-approval/feedback-approval.component';
-import { MonitoringDashboardComponent } from './modules/monitor/monitor-dashboard/monitor-dashboard.component';
+import { MonitoringRedirectComponent } from './shared/components/monitoring-redirect/monitoring-redirect.component';
 
 export const routes: Routes = [
   {
@@ -28,6 +28,10 @@ export const routes: Routes = [
     component: ReleasePreviewComponent
   },
   {
+    path: 'monitoring',
+    component: MonitoringRedirectComponent
+  },
+  {
     path: 'feedback-approval',
     component: FeedbackApprovalComponent
   },
@@ -46,7 +50,10 @@ export const routes: Routes = [
   {
     path: ':id',
     loadChildren: () =>
-      import('./modules/product/product.routes').then(m => m.routes)
+      import('./modules/product/product.routes').then(m => m.routes),
+    resolve: {
+      productDetail: ProductDetailResolver
+    }
   },
   {
     path: ':id/:version/doc',

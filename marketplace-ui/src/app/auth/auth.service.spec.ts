@@ -8,6 +8,7 @@ import { CookieService } from 'ngx-cookie-service';
 import { AuthService } from './auth.service';
 import { provideHttpClient, withInterceptorsFromDi } from '@angular/common/http';
 import { TOKEN_KEY } from '../shared/constants/common.constant';
+import { environment } from '../../environments/environment';
 
 describe('AuthService', () => {
   let service: AuthService;
@@ -131,5 +132,165 @@ describe('AuthService', () => {
     const result = service['extractNumberOfExpiredDay'](token);
 
     expect(result).toBe(1);
+  });
+
+  it('should fetch user info successfully', () => {
+    const token = 'mockToken';
+    const mockUserResponse = {
+      login: 'mockuser',
+      name: 'Mock User'
+    };
+
+    service.getUserInfo(token).subscribe(user => {
+      expect(user).toEqual(mockUserResponse);
+    });
+
+    const req = httpMock.expectOne(`${environment.githubApiUrl}/user`);
+    expect(req.request.method).toBe('GET');
+    expect(req.request.headers.get('Authorization')).toBe(`Bearer ${token}`);
+    expect(req.request.headers.get('Accept')).toBe('application/vnd.github+json');
+
+    req.flush(mockUserResponse);
+  });
+
+  it('should return fallback user when request fails', () => {
+    const token = 'mockToken';
+
+    service.getUserInfo(token).subscribe(user => {
+      expect(user).toEqual({ login: '', name: null });
+    });
+
+    const req = httpMock.expectOne(`${environment.githubApiUrl}/user`);
+    expect(req.request.method).toBe('GET');
+
+    req.error(new ErrorEvent('Network error'));
+  });
+
+  it('getDisplayNameFromAccessToken should return user\'s name if available', () => {
+    const token = 'mockToken';
+    const mockUser = { login: 'mockuser', name: 'Mock User' };
+
+    service.getDisplayNameFromAccessToken(token).subscribe(name => {
+      expect(name).toBe('Mock User');
+    });
+
+    const req = httpMock.expectOne(`${environment.githubApiUrl}/user`);
+    req.flush(mockUser);
+  });
+
+  it('getDisplayNameFromAccessToken should return login if name is null', () => {
+    const token = 'mockToken';
+    const mockUser = { login: 'mockuser', name: null };
+
+    service.getDisplayNameFromAccessToken(token).subscribe(name => {
+      expect(name).toBe('mockuser');
+    });
+
+    const req = httpMock.expectOne(`${environment.githubApiUrl}/user`);
+    req.flush(mockUser);
+  });
+
+  it('getDisplayNameFromAccessToken should return null if both name and login are missing', () => {
+    const token = 'mockToken';
+    const mockUser = { login: null, name: null };
+
+    service.getDisplayNameFromAccessToken(token).subscribe(name => {
+      expect(name).toBeNull();
+    });
+
+    const req = httpMock.expectOne(`${environment.githubApiUrl}/user`);
+    req.flush(mockUser);
+  });
+
+  it('should return true if token is expired', () => {
+    const token = 'expiredToken';
+    const decoded = {
+      exp: Math.floor(Date.now() / 1000) - 60 // expired 1 minute ago
+    };
+
+    spyOn(service as any, 'decodeToken').and.returnValue(decoded);
+
+    const result = (service as any)['isTokenExpired'](token);
+    expect(result).toBeTrue();
+  });
+
+  it('should return false if token is not expired', () => {
+    const token = 'validToken';
+    const decoded = {
+      exp: Math.floor(Date.now() / 1000) + 60 // expires in 1 minute
+    };
+
+    spyOn(service as any, 'decodeToken').and.returnValue(decoded);
+
+    const result = (service as any)['isTokenExpired'](token);
+    expect(result).toBeFalse();
+  });
+
+  it('should return false if decoded token has no exp', () => {
+    const token = 'noExpToken';
+    const decoded = {}; // no exp field
+
+    spyOn(service as any, 'decodeToken').and.returnValue(decoded);
+
+    const result = (service as any)['isTokenExpired'](token);
+    expect(result).toBeFalse();
+  });
+
+  it('should return true if decoding fails', () => {
+    const token = 'badToken';
+
+    spyOn(service as any, 'decodeToken').and.throwError('Invalid token');
+
+    const result = (service as any)['isTokenExpired'](token);
+    expect(result).toBeTrue();
+  });
+
+  it('getDisplayName should return decoded name if available', () => {
+    const token = 'validToken';
+    const decoded = { name: 'Test Name', username: 'testuser' };
+
+    spyOn(service, 'getToken').and.returnValue(token);
+    spyOn(service as any, 'decodeToken').and.returnValue(decoded);
+
+    const result = service.getDisplayName();
+    expect(result).toBe('Test Name');
+  });
+
+  it('getDisplayName should return username if name is null', () => {
+    const token = 'validToken';
+    const decoded = { name: null, username: 'testuser' };
+
+    spyOn(service, 'getToken').and.returnValue(token);
+    spyOn(service as any, 'decodeToken').and.returnValue(decoded);
+
+    const result = service.getDisplayName();
+    expect(result).toBe('testuser');
+  });
+
+  it('getDisplayName should return null if getToken returns null', () => {
+    spyOn(service, 'getToken').and.returnValue(null);
+
+    const result = service.getDisplayName();
+    expect(result).toBeNull();
+  });
+
+  it('getDisplayName should return null if decodeToken returns null', () => {
+    const token = 'invalidToken';
+
+    spyOn(service, 'getToken').and.returnValue(token);
+    spyOn(service as any, 'decodeToken').and.returnValue(null);
+
+    const result = service.getDisplayName();
+    expect(result).toBeNull();
+  });
+
+  it('getUserId should return null if decodeToken returns null', () => {
+    const token = 'invalidToken';
+
+    spyOn(service, 'getToken').and.returnValue(token);
+    spyOn(service as any, 'decodeToken').and.returnValue(null);
+
+    const result = service.getUserId();
+    expect(result).toBeNull();
   });
 });

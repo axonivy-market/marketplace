@@ -310,3 +310,20 @@ export const GITHUB_PULL_REQUEST_NUMBER_REGEX = /pull\/(\d+)/;
 
 export const TAB_PREFIX = 'tab-';
 export const UNESCAPE_GITHUB_CONTENT_REGEX = /\\([_*[\]()~`>#+=|{}.!-])/g;
+
+// Open Graph Meta Tags
+export const OG_TITLE_KEY = 'og:title';
+export const OG_DESCRIPTION_KEY = 'og:description';
+export const OG_IMAGE_KEY = 'og:image';
+export const OG_IMAGE_TYPE_KEY = 'og:image:type';
+export const OG_IMAGE_PNG_TYPE = 'image/png';
+
+
+// Google constants
+export const GOOGLE_PROGRAMMABLE_SEARCH_SCRIPT_ID = 'googleCSEScript';
+export const GOOGLE_PRGORAMMABLE_SEARCH_SCRIPT_TYPE = 'text/javascript';
+export const GOOGLE_PRGORAMMABLE_SEARCH_SCRIPT_SOURCE = 'https://cse.google.com/cse.js?cx=1434dfc0811d84f59';
+export const GOOGLE = 'google';
+export const GOOGLE_SEARCH = 'gcse-search';
+export const GOOGLE_SEARCH_BAR_CLASS_NAME = '.gsc-control-cse';
+export const GOOGLE_SEARCH_BAR_BACKGROUND_CLASS_NAME = 'bg-secondary';

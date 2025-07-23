@@ -69,7 +69,7 @@ export class ProductFeedbackService {
     const headers = new HttpHeaders().set('Authorization', `Bearer ${token}`);
     const requestParams = new HttpParams()
       .set('page', page.toString())
-      .set('size', size.toString())
+      .set('size', size.toString());
     return this.http
       .get<FeedbackApiResponse>(`${API_URI.FEEDBACK_APPROVAL}`, {
         headers,
@@ -107,9 +107,7 @@ export class ProductFeedbackService {
       );
   }
 
-  updateFeedbackStatus(
-    request: FeedbackApproval
-  ): Observable<Feedback> {
+  updateFeedbackStatus(request: FeedbackApproval): Observable<Feedback> {
     const requestURL = `${API_URI.FEEDBACK_APPROVAL}`;
 
     return this.http.put<Feedback>(requestURL, request).pipe(
