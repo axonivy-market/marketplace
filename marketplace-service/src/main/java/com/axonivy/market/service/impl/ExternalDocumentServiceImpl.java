@@ -40,7 +40,7 @@ public class ExternalDocumentServiceImpl implements ExternalDocumentService {
 
   private static final String DOC_URL_PATTERN = "/%s/index.html";
   private static final String MS_WIN_SEPARATOR = "\\\\";
-  @Value("${MARKET_SHOULD_DOWNLOAD_DOC_AND_UNZIP_TO_SHARE_FOLDER}")
+  @Value("${market.should-download-doc-and-unzip-to-share-folder}")
   private String shouldDownloadDocAndUnzipToShareFolder;
   final ProductRepository productRepo;
   final ExternalDocumentMetaRepository externalDocumentMetaRepo;
@@ -167,7 +167,7 @@ public class ExternalDocumentServiceImpl implements ExternalDocumentService {
     return externalDocumentMeta;
   }
 
-  private boolean doesDocExistInShareFolder(String location) {
+  public boolean doesDocExistInShareFolder(String location) {
     File shareFolder = new File(location);
     return shareFolder.exists() && ObjectUtils.isNotEmpty(shareFolder.listFiles());
   }
