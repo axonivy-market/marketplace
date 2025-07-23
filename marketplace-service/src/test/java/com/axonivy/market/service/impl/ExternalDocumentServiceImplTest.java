@@ -53,6 +53,16 @@ class ExternalDocumentServiceImplTest extends BaseSetup {
   }
 
   @Test
+  void testSkipSyncDocDueToDevelopmentMode() throws IOException {
+    prepareProductDataForSyncTest();
+    doReturn(false).when(service).shouldDownloadDocAndUnzipToShareFolder();
+
+    service.syncDocumentForProduct(PORTAL, true, MOCK_RELEASED_VERSION);
+    verify(productRepository, times(1)).findProductByIdAndRelatedData(any());
+    verify(externalDocumentMetaRepository, times(0)).save(any());
+  }
+
+  @Test
   void testSyncDocumentForProduct() throws IOException {
     when(productRepository.findProductByIdAndRelatedData(PORTAL)).thenReturn(mockPortalProductHasNoArtifact().get());
     service.syncDocumentForProduct(PORTAL, true, null);
@@ -80,13 +90,26 @@ class ExternalDocumentServiceImplTest extends BaseSetup {
   }
 
   @Test
-  void testSyncDocumentForProductIdAndVersion() throws IOException {
+  void testSyncDocumentForProductButCannotExtractToShareFolder() throws IOException {
+    prepareProductDataForSyncTest();
+
+    service.syncDocumentForProduct(PORTAL, true, MOCK_RELEASED_VERSION);
+    verify(productRepository, times(1)).findProductByIdAndRelatedData(any());
+    verify(externalDocumentMetaRepository, times(0)).save(any());
+  }
+
+  private void prepareProductDataForSyncTest() throws IOException {
     when(artifactRepository.findAllByIdInAndFetchArchivedArtifacts(any()))
         .thenReturn(mockPortalProduct().map(Product::getArtifacts).orElse(null));
     when(productRepository.findProductByIdAndRelatedData(PORTAL)).thenReturn(mockPortalProduct().orElse(null));
     when(externalDocumentMetaRepository.findByProductIdAndVersionIn(any(), any()))
         .thenReturn(List.of(createExternalDocumentMock()));
     when(fileDownloadService.downloadAndUnzipFile(any(), any())).thenReturn("data" + RELATIVE_DOC_LOCATION);
+  }
+
+  @Test
+  void testSyncDocumentForProductIdAndVersion() throws IOException {
+    prepareProductDataForSyncTest();
     doReturn(true).when(service).doesDocExistInShareFolder(anyString());
 
     service.syncDocumentForProduct(PORTAL, true, MOCK_RELEASED_VERSION);

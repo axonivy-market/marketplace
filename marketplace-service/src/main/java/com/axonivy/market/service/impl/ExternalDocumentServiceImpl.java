@@ -117,7 +117,7 @@ public class ExternalDocumentServiceImpl implements ExternalDocumentService {
     }
   }
 
-  private boolean shouldDownloadDocAndUnzipToShareFolder() {
+  public boolean shouldDownloadDocAndUnzipToShareFolder() {
     return BooleanUtils.toBoolean(this.shouldDownloadDocAndUnzipToShareFolder);
   }
 
@@ -149,8 +149,8 @@ public class ExternalDocumentServiceImpl implements ExternalDocumentService {
     }
 
     // remove prefix 'data' and replace all ms win separator to slash if present
-    String locationRelative = location.substring(location.indexOf(DirectoryConstants.CACHE_DIR));
-    locationRelative = RegExUtils.replaceAll(String.format(DOC_URL_PATTERN, locationRelative), MS_WIN_SEPARATOR,
+    String relativeLocation = location.substring(location.indexOf(DirectoryConstants.CACHE_DIR));
+    relativeLocation = RegExUtils.replaceAll(String.format(DOC_URL_PATTERN, relativeLocation), MS_WIN_SEPARATOR,
         CommonConstants.SLASH);
     var externalDocumentMeta = new ExternalDocumentMeta();
     List<ExternalDocumentMeta> existingExternalDocumentMeta = externalDocumentMetaRepo.findByProductIdAndVersionIn(
@@ -162,7 +162,7 @@ public class ExternalDocumentServiceImpl implements ExternalDocumentService {
     externalDocumentMeta.setVersion(version);
     externalDocumentMeta.setArtifactId(artifact.getArtifactId());
     externalDocumentMeta.setArtifactName(artifact.getName());
-    externalDocumentMeta.setRelativeLink(locationRelative);
+    externalDocumentMeta.setRelativeLink(relativeLocation);
     externalDocumentMeta.setStorageDirectory(location);
 
     return externalDocumentMeta;
@@ -195,7 +195,7 @@ public class ExternalDocumentServiceImpl implements ExternalDocumentService {
     try {
       return fileDownloadService.downloadAndUnzipFile(downloadDocUrl, downloadOption);
     } catch (IOException e) {
-      log.error("Exception during unzip");
+      log.error("Exception during unzip", e);
     }
     return EMPTY;
   }
