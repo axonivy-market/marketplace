@@ -681,7 +681,7 @@ class GitHubServiceImplTest {
     GHArtifact result = gitHubService.getExportTestArtifact(mockRun);
 
     assertNotNull(result, "Artifact should not be null");
-    assertEquals(mockArtifact2, result);
+    assertEquals(mockArtifact2, result, "Should return the artifact with the target name");
     verify(mockRun).listArtifacts();
   }
 
