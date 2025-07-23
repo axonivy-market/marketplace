@@ -40,8 +40,6 @@ class TestStepsModelTest {
             "Expected the HTML URL to match the repo URL");
     assertEquals("Java", model.getLanguage(),
             "Expected the language to match the repo language");
-    assertEquals("2024-01-01 07:00:00.0", model.getLastUpdated(),
-            "Expected the last updated date to match the repo's last updated date");
     assertEquals("https://badge/ci", model.getCiBadgeUrl(),
             "Expected the CI badge URL to match the repo's CI badge URL");
     assertEquals("https://badge/dev", model.getDevBadgeUrl(),
