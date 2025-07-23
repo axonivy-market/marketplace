@@ -75,6 +75,7 @@ public class GitHubServiceImpl implements GitHubService {
   private static final String GITHUB_USERNAME_REGEX = "@([a-zA-Z0-9\\-]+)";
   private static final String GITHUB_MAIN_LINK = "https://github.com/";
   private static final String FIRST_REGEX_CAPTURING_GROUP="$1";
+
   public GitHubServiceImpl(RestTemplate restTemplate, GithubUserRepository githubUserRepository,
       GitHubProperty gitHubProperty, ThreadPoolTaskScheduler taskScheduler) {
     this.restTemplate = restTemplate;

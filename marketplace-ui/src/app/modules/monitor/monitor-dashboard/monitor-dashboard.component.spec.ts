@@ -16,7 +16,6 @@ describe('MonitoringDashboardComponent', () => {
   let mockRepositories: Repository[];
 
   beforeEach(async () => {
-    // Create mock repositories
     mockRepositories = [
       {
         name: 'repo1',
@@ -46,7 +45,7 @@ describe('MonitoringDashboardComponent', () => {
         language: 'Java',
         lastUpdated: '2025-07-19T12:00:00Z',
         ciBadgeUrl: 'https://example.com/badge/ci2.svg',
-        devBadgeUrl: '', // No dev badge
+        devBadgeUrl: '', 
         testResults: [
           { environment: 'ALL', workflow: 'CI', count: 15, status: 'PASSED' },
           { environment: 'ALL', workflow: 'CI', count: 5, status: 'FAILED' },
@@ -59,13 +58,12 @@ describe('MonitoringDashboardComponent', () => {
         htmlUrl: 'https://github.com/user/repo3',
         language: 'Python',
         lastUpdated: '2025-07-18T12:00:00Z',
-        ciBadgeUrl: '', // No CI badge
-        devBadgeUrl: '', // No dev badge
-        testResults: [] // Empty test results
+        ciBadgeUrl: '', 
+        devBadgeUrl: '', 
+        testResults: [] 
       }
     ];
 
-    // Create spy objects for services
     const githubServiceSpy = jasmine.createSpyObj('GithubService', ['getRepositories']);
     const routerSpy = jasmine.createSpyObj('Router', ['navigate']);
     
@@ -86,7 +84,6 @@ describe('MonitoringDashboardComponent', () => {
     githubService = TestBed.inject(GithubService) as jasmine.SpyObj<GithubService>;
     router = TestBed.inject(Router) as jasmine.SpyObj<Router>;
 
-    // Default mock implementation
     githubService.getRepositories.and.returnValue(of(mockRepositories));
 
     fixture = TestBed.createComponent(MonitoringDashboardComponent);
@@ -126,25 +123,21 @@ describe('MonitoringDashboardComponent', () => {
   it('should get correct test count for specific criteria', () => {
     const repo = mockRepositories[0];
     
-    // Test ALL counts
     expect(component.getTestCount(repo, 'CI', 'ALL', 'PASSED')).toBe(10);
     expect(component.getTestCount(repo, 'CI', 'ALL', 'FAILED')).toBe(2);
     
-    // Test MOCK counts
     expect(component.getTestCount(repo, 'CI', 'MOCK', 'PASSED')).toBe(5);
     expect(component.getTestCount(repo, 'CI', 'MOCK', 'FAILED')).toBe(1);
     
-    // Test REAL counts
     expect(component.getTestCount(repo, 'CI', 'REAL', 'PASSED')).toBe(5);
     expect(component.getTestCount(repo, 'CI', 'REAL', 'FAILED')).toBe(1);
     
-    // Test DEV workflow counts
     expect(component.getTestCount(repo, 'DEV', 'ALL', 'PASSED')).toBe(8);
     expect(component.getTestCount(repo, 'DEV', 'ALL', 'FAILED')).toBe(0);
   });
 
   it('should return 0 for missing test results', () => {
-    const repo = mockRepositories[2]; // repo with empty test results
+    const repo = mockRepositories[2]; 
     
     expect(component.getTestCount(repo, 'CI', 'ALL', 'PASSED')).toBe(0);
     expect(component.getTestCount(repo, 'DEV', 'MOCK', 'FAILED')).toBe(0);
@@ -153,7 +146,6 @@ describe('MonitoringDashboardComponent', () => {
   it('should return 0 for non-matching test criteria', () => {
     const repo = mockRepositories[0];
     
-    // Non-existent criteria
     expect(component.getTestCount(repo, 'NONEXISTENT', 'ALL', 'PASSED')).toBe(0);
     expect(component.getTestCount(repo, 'CI', 'NONEXISTENT', 'PASSED')).toBe(0);
     expect(component.getTestCount(repo, 'CI', 'ALL', 'NONEXISTENT')).toBe(0);
@@ -173,7 +165,6 @@ describe('MonitoringDashboardComponent', () => {
     expect(component.getTestCount(repo, 'DEV', 'MOCK', 'FAILED')).toBe(0);
   });
 
-  // DOM Testing
   it('should display repository cards when data is loaded', () => {
     fixture.detectChanges();
     const repoCards = fixture.debugElement.queryAll(By.css('.repo-card'));

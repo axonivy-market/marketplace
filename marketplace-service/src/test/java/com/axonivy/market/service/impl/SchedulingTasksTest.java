@@ -29,6 +29,7 @@ class SchedulingTasksTest {
 
   @SpyBean
   ScheduledTasks tasks;
+
   @Test
   void testShouldNotTriggerAfterApplicationStarted() {
     Awaitility.await().atMost(Durations.TEN_SECONDS)
