@@ -13,7 +13,9 @@ import com.axonivy.market.service.TestStepsService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
-import org.kohsuke.github.*;
+import org.kohsuke.github.GHArtifact;
+import org.kohsuke.github.GHRepository;
+import org.kohsuke.github.GHWorkflowRun;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
@@ -26,9 +28,13 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
+import java.util.Optional;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
+
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
@@ -55,7 +61,7 @@ class GithubReposServiceImplTest {
   Path tempDir;
 
   @BeforeEach
-  void setUp()  {
+  void setUp() {
     MockitoAnnotations.openMocks(this);
     serviceSpy = spy(service);
     badgeUrl = "https://github.com/test/demo";
@@ -120,7 +126,8 @@ class GithubReposServiceImplTest {
     doReturn(List.of(new TestStep())).when(serviceSpy)
         .processWorkflowWithFallback(any(), any(), anyString(), any());
 
-    doThrow(new DataAccessException("DB error") {}).when(githubRepoRepository).save(any());
+    doThrow(new DataAccessException("DB error") {
+    }).when(githubRepoRepository).save(any());
 
     assertDoesNotThrow(() -> serviceSpy.processProduct(ghRepo),
         "Processing product should not throw an exception even if saving fails");

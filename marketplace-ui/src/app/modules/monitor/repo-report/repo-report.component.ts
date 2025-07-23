@@ -22,7 +22,6 @@ export class RepoReportComponent implements OnInit {
   githubService = inject(GithubService);
   route = inject(ActivatedRoute);
 
-
   ngOnInit(): void {
     this.repo = this.route.snapshot.paramMap.get('repo') ?? '';
     this.workflow = this.route.snapshot.paramMap.get('workflow') ?? '';
@@ -38,17 +37,14 @@ export class RepoReportComponent implements OnInit {
     this.loading = true;
     this.errorMessage = '';
     this.githubService.getTestReport(repo, workflow).subscribe({
-      next: (data) => {
-        console.log('Test report data:', data);
+      next: data => {
         this.report = Array.isArray(data) ? data : [data];
         this.loading = false;
       },
-      error: (error) => {
-        console.error('Error fetching test report:', error);
+      error: () => {
         this.errorMessage = 'Failed to load test report';
         this.loading = false;
       }
     });
   }
-
 }

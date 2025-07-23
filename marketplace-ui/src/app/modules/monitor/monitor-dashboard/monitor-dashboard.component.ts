@@ -1,5 +1,5 @@
 import { Component, inject, OnInit } from '@angular/core';
-import { GithubService, Repository, TestResult } from '../github.service';
+import { GithubService, Repository } from '../github.service';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { LanguageService } from '../../../core/services/language/language.service';
@@ -27,11 +27,11 @@ export class MonitoringDashboardComponent implements OnInit {
   loadRepositories(): void {
     this.loading = true;
     this.githubService.getRepositories().subscribe({
-      next: (data) => {
+      next: data => {
         this.repositories = data;
         this.loading = false;
       },
-      error: (err) => {
+      error: err => {
         this.error = err.message;
         this.loading = false;
       }
@@ -39,11 +39,12 @@ export class MonitoringDashboardComponent implements OnInit {
   }
 
   getTestCount(repo: Repository, workflow: string, environment: string, status: string): number {
-    if (!repo.testResults) return 0;
-    
-    const result = repo.testResults.find(test => 
-      test.workflow === workflow.toUpperCase() && 
-      test.environment === environment.toUpperCase() && 
+    if (!repo.testResults){
+      return 0;
+    } 
+    const result = repo.testResults.find(test =>
+      test.workflow === workflow.toUpperCase() &&
+      test.environment === environment.toUpperCase() &&
       test.status === status.toUpperCase()
     );
     

@@ -25,6 +25,4 @@ public class CommonConstants {
   public static final String LIKE_PATTERN = "%%%s%%";
   public static final String TEST_REPORT_FILE = "export-test-json-file";
   public static final String NEW_LINE = "\\n";
-  public static final String DEV_FILE = "dev.yml";
-  public static final String CI_FILE = "ci.yml";
 }

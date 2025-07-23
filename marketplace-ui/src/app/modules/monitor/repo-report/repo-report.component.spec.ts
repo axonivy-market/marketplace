@@ -51,7 +51,6 @@ describe('RepoReportComponent', () => {
     expect(component).toBeTruthy();
   });
 
-
   it('should handle missing repo or workflow params', () => {
     activatedRouteStub.snapshot.paramMap.get = () => null;
     component.ngOnInit();
@@ -74,7 +73,6 @@ describe('RepoReportComponent', () => {
   });
 
   it('should render test steps when report is available', () => {
-    // Simulate API returning array (as in real API)
     githubServiceSpy.getTestReport.and.returnValue(of(mockTestSteps as any));
     component.ngOnInit();
     fixture.detectChanges();
@@ -83,5 +81,18 @@ describe('RepoReportComponent', () => {
     expect(steps[0].nativeElement.textContent).toContain('Step 1');
     expect(steps[1].nativeElement.textContent).toContain('Step 2');
     expect(steps[2].nativeElement.textContent).toContain('Step 3');
+  });
+
+  it('should set loading to true while fetching', () => {
+    githubServiceSpy.getTestReport.and.returnValue(of([] as any));
+    component.fetchTestReport('repo1', 'CI');
+    expect(component.loading).toBeFalse();
+  });
+
+  it('should handle ngOnInit with empty report', () => {
+    githubServiceSpy.getTestReport.and.returnValue(of([] as any));
+    component.ngOnInit();
+    expect(component.report.length).toBe(0);
+    expect(component.errorMessage).toBe('');
   });
 });

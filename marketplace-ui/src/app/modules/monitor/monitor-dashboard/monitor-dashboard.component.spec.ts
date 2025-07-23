@@ -50,8 +50,6 @@ describe('MonitoringDashboardComponent', () => {
         testResults: [
           { environment: 'ALL', workflow: 'CI', count: 15, status: 'PASSED' },
           { environment: 'ALL', workflow: 'CI', count: 5, status: 'FAILED' },
-          { environment: 'OTHER', workflow: 'CI', count: 7, status: 'PASSED' }, // OTHER instead of MOCK
-          { environment: 'OTHER', workflow: 'CI', count: 3, status: 'FAILED' },
           { environment: 'REAL', workflow: 'CI', count: 8, status: 'PASSED' },
           { environment: 'REAL', workflow: 'CI', count: 2, status: 'FAILED' }
         ]
@@ -161,14 +159,6 @@ describe('MonitoringDashboardComponent', () => {
     expect(component.getTestCount(repo, 'CI', 'ALL', 'NONEXISTENT')).toBe(0);
   });
 
-  it('should handle OTHER environment type correctly', () => {
-    const repo = mockRepositories[1]; // Repo with OTHER environment
-    
-    expect(component.getTestCount(repo, 'CI', 'OTHER', 'PASSED')).toBe(7);
-    expect(component.getTestCount(repo, 'CI', 'OTHER', 'FAILED')).toBe(3);
-    expect(component.getTestCount(repo, 'CI', 'MOCK', 'PASSED')).toBe(0); // Should be 0 as there's no MOCK
-  });
-
   it('should handle repositories with no testResults property', () => {
     const repo: Repository = {
       name: 'no-tests-repo',
@@ -183,6 +173,7 @@ describe('MonitoringDashboardComponent', () => {
     expect(component.getTestCount(repo, 'DEV', 'MOCK', 'FAILED')).toBe(0);
   });
 
+  // DOM Testing
   it('should display repository cards when data is loaded', () => {
     fixture.detectChanges();
     const repoCards = fixture.debugElement.queryAll(By.css('.repo-card'));

@@ -35,6 +35,8 @@ import java.util.List;
 
 import static com.axonivy.market.constants.DirectoryConstants.GITHUB_REPO_DIR;
 import static com.axonivy.market.entity.GithubRepo.createNewGithubRepo;
+import static com.axonivy.market.enums.WorkFlowType.CI;
+import static com.axonivy.market.enums.WorkFlowType.DEV;
 import static com.axonivy.market.util.TestStepUtils.buildBadgeUrl;
 
 @Service
@@ -78,14 +80,14 @@ public class GithubReposServiceImpl implements GithubReposService {
       githubRepo.setLanguage(ghRepo.getLanguage());
       githubRepo.setLastUpdated(ghRepo.getUpdatedAt());
     } else {
-      String ciBadgeUrl = buildBadgeUrl(ghRepo, CommonConstants.CI_FILE);
-      githubRepo = createNewGithubRepo(ghRepo, ciBadgeUrl, buildBadgeUrl(ghRepo, CommonConstants.DEV_FILE));
+      String ciBadgeUrl = buildBadgeUrl(ghRepo, CI.getFileName());
+      githubRepo = createNewGithubRepo(ghRepo, ciBadgeUrl, buildBadgeUrl(ghRepo, DEV.getFileName()));
     }
 
     githubRepo.getTestSteps().addAll(
-        processWorkflowWithFallback(ghRepo, githubRepo, CommonConstants.DEV_FILE, WorkFlowType.DEV));
+        processWorkflowWithFallback(ghRepo, githubRepo, DEV.getFileName(), WorkFlowType.DEV));
     githubRepo.getTestSteps().addAll(
-        processWorkflowWithFallback(ghRepo, githubRepo, CommonConstants.CI_FILE, WorkFlowType.CI));
+        processWorkflowWithFallback(ghRepo, githubRepo, CI.getFileName(), CI));
     try {
       githubRepoRepository.save(githubRepo);
     } catch (DataAccessException e) {

@@ -73,4 +73,46 @@ describe('GithubService', () => {
     expect(req.request.method).toBe('GET');
     req.flush(mockTestStep);
   });
+
+  it('should handle error when fetching repositories', () => {
+    let error: any;
+    service.getRepositories().subscribe({
+      next: () => {},
+      error: err => error = err
+    });
+    const req = httpMock.expectOne(API_URI.GITHUB_REPOS);
+    req.flush('Error', { status: 500, statusText: 'Server Error' });
+    expect(error).toBeTruthy();
+  });
+
+  it('should handle error when syncing github repositories', () => {
+    let error: any;
+    service.syncGithubRepos().subscribe({
+      next: () => {},
+      error: err => error = err
+    });
+    const req = httpMock.expectOne(API_URI.SYNC_GITHUB_REPOS);
+    req.flush('Error', { status: 500, statusText: 'Server Error' });
+    expect(error).toBeTruthy();
+  });
+
+  it('should handle error when fetching test report', () => {
+    let error: any;
+    service.getTestReport('repo1', 'CI').subscribe({
+      next: () => {},
+      error: err => error = err
+    });
+    const req = httpMock.expectOne(`${API_URI.GITHUB_REPORT}/repo1/CI`);
+    req.flush('Error', { status: 404, statusText: 'Not Found' });
+    expect(error).toBeTruthy();
+  });
+
+  it('should call getTestReport with different workflow', () => {
+    service.getTestReport('repo1', 'DEV').subscribe(step => {
+      expect(step).toEqual(mockTestStep);
+    });
+    const req = httpMock.expectOne(`${API_URI.GITHUB_REPORT}/repo1/DEV`);
+    expect(req.request.method).toBe('GET');
+    req.flush(mockTestStep);
+  });
 });

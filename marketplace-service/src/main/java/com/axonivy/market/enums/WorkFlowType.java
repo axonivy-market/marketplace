@@ -4,6 +4,12 @@ import lombok.Getter;
 
 @Getter
 public enum WorkFlowType {
-    CI,
-    DEV;
+  CI("ci.yml"),
+  DEV("dev.yml");
+
+  private final String fileName;
+
+  WorkFlowType(String fileName) {
+    this.fileName = fileName;
+  }
 }
