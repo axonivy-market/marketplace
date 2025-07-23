@@ -46,6 +46,13 @@ class ExternalDocumentServiceImplTest extends BaseSetup {
   ExternalDocumentServiceImpl service;
 
   @Test
+  void testSyncDocumentForNonProduct() {
+    when(productRepository.findProductByIdAndRelatedData(null)).thenReturn(null);
+    service.syncDocumentForProduct(null, false, null);
+    verify(productRepository, times(1)).findProductByIdAndRelatedData(any());
+  }
+
+  @Test
   void testSyncDocumentForProduct() throws IOException {
     when(productRepository.findProductByIdAndRelatedData(PORTAL)).thenReturn(mockPortalProductHasNoArtifact().get());
     service.syncDocumentForProduct(PORTAL, true, null);

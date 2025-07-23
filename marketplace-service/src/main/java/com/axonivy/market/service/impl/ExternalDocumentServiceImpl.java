@@ -25,6 +25,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -168,7 +169,7 @@ public class ExternalDocumentServiceImpl implements ExternalDocumentService {
   }
 
   public boolean doesDocExistInShareFolder(String location) {
-    File shareFolder = new File(location);
+    var shareFolder = new File(location);
     return shareFolder.exists() && ObjectUtils.isNotEmpty(shareFolder.listFiles());
   }
 
@@ -193,7 +194,7 @@ public class ExternalDocumentServiceImpl implements ExternalDocumentService {
         .build();
     try {
       return fileDownloadService.downloadAndUnzipFile(downloadDocUrl, downloadOption);
-    } catch (Exception e) {
+    } catch (IOException e) {
       log.error("Exception during unzip");
     }
     return EMPTY;
