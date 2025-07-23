@@ -15,7 +15,7 @@ import static org.junit.jupiter.api.Assertions.*;
 class TestResultsUtilsTest {
 
   @Test
-  void testProcessTestResults_withValidData() {
+  void testProcessTestResultsWithValidData() {
     GithubRepo githubRepo = new GithubRepo();
     TestStep step1 = new TestStep("Example name 1", TestStatus.PASSED,WorkFlowType.CI,MOCK);
     TestStep step2 = new TestStep("Example name 2", TestStatus.FAILED,WorkFlowType.CI, REAL);
@@ -31,7 +31,7 @@ class TestResultsUtilsTest {
   }
 
   @Test
-  void testProcessTestResults_withSkippedSteps() {
+  void testProcessTestResultsWithSkippedSteps() {
     GithubRepo githubRepo = new GithubRepo();
     TestStep step1 = new TestStep("Example name 1", TestStatus.SKIPPED,WorkFlowType.CI,MOCK);
     TestStep step2 = new TestStep("Example name 2", TestStatus.PASSED,WorkFlowType.CI,REAL);
@@ -45,7 +45,7 @@ class TestResultsUtilsTest {
   }
 
   @Test
-  void testProcessTestResults_withEmptyTestSteps() {
+  void testProcessTestResultsWithEmptyTestSteps() {
     GithubRepo githubRepo = new GithubRepo();
     githubRepo.setTestSteps(List.of());
 
@@ -55,7 +55,7 @@ class TestResultsUtilsTest {
   }
 
   @Test
-  void testProcessTestResults_withNullTestSteps() {
+  void testProcessTestResultsWithNullTestSteps() {
     GithubRepo githubRepo = new GithubRepo();
     githubRepo.setTestSteps(null);
 

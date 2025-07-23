@@ -103,7 +103,7 @@ public class FileUtils {
 
   // Common method to extract .zip file
   public static void unzip(MultipartFile file, String location) throws IOException {
-    File extractDir = new File(location);
+    var extractDir = new File(location);
     prepareUnZipDirectory(extractDir.toPath());
 
     try (ZipInputStream zipInputStream = new ZipInputStream(file.getInputStream())) {
