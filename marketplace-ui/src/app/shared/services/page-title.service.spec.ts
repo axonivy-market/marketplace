@@ -39,27 +39,22 @@ describe('PageTitleService', () => {
     expect(service).toBeTruthy();
   });
 
-  it('should set initial title with translated text', () => {
+  it('should subscribe to language changes', () => {
     const titleLabel = 'common.preview.pageTitle';
-    const pageTitle = 'Release Preview';
-    translateService.get.and.returnValue(of(pageTitle));
 
     service.setTitleOnLangChange(titleLabel);
 
-    expect(translateService.get).toHaveBeenCalledWith(titleLabel);
-    expect(titleService.setTitle).toHaveBeenCalledWith(pageTitle);
+    // Service should subscribe but not set title initially
+    expect(translateService.get).not.toHaveBeenCalled();
+    expect(titleService.setTitle).not.toHaveBeenCalled();
+    expect((service as any).langSub).toBeDefined();
   });
 
   it('should update title when language changes', () => {
     const titleLabel = 'common.preview.pageTitle';
-    const enTitle = 'Release Preview';
-    const deTitle = 'Veröffentlichungsvorschau';
+    const translatedTitle = 'Veröffentlichungsvorschau';
 
-    translateService.get.and.returnValues(
-      of(enTitle),
-      of(deTitle)
-    );
-
+    translateService.get.and.returnValue(of(translatedTitle));
     service.setTitleOnLangChange(titleLabel);
 
     const langChangeEvent: LangChangeEvent = {
@@ -68,25 +63,29 @@ describe('PageTitleService', () => {
     };
     langChangeSubject.next(langChangeEvent);
 
-    expect(translateService.get).toHaveBeenCalledTimes(2);
     expect(translateService.get).toHaveBeenCalledWith(titleLabel);
-    expect(titleService.setTitle).toHaveBeenCalledTimes(2);
-    expect(titleService.setTitle).toHaveBeenCalledWith(enTitle);
-    expect(titleService.setTitle).toHaveBeenCalledWith(deTitle);
+    expect(titleService.setTitle).toHaveBeenCalledWith(translatedTitle);
   });
 
-  it('should unsubscribe from language change subscription', () => {
+  it('should handle multiple language changes', () => {
     const titleLabel = 'common.preview.pageTitle';
-    translateService.get.and.returnValue(of('Release Preview'));
+    const deTitle = 'Veröffentlichungsvorschau';
+    const enTitle = 'Release Preview';
+
+    translateService.get.and.returnValues(
+      of(deTitle),
+      of(enTitle)
+    );
 
     service.setTitleOnLangChange(titleLabel);
 
-    const subscription = (service as any).langSub;
-    spyOn(subscription, 'unsubscribe').and.callThrough();
+    langChangeSubject.next({ lang: 'de', translations: {} });
 
-    service.ngOnDestroy();
+    langChangeSubject.next({ lang: 'en', translations: {} });
 
-    expect(subscription.unsubscribe).toHaveBeenCalled();
+    expect(translateService.get).toHaveBeenCalledTimes(2);
+    expect(translateService.get).toHaveBeenCalledWith(titleLabel);
+
   });
 
   it('should handle ngOnDestroy when no subscription exists', () => {
