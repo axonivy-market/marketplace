@@ -665,7 +665,8 @@ class GitHubServiceImplTest {
   }
 
   @Test
-  void testGetExportTestArtifactSuccess() throws IOException {
+  public void testGetExportTestArtifact_Success() throws IOException {
+    // Arrange
     GHWorkflowRun mockRun = mock(GHWorkflowRun.class);
     GHArtifact mockArtifact1 = mock(GHArtifact.class);
     GHArtifact mockArtifact2 = mock(GHArtifact.class);
@@ -685,7 +686,7 @@ class GitHubServiceImplTest {
   }
 
   @Test
-  void testGetLatestWorkflowRunWorkflowNotFound() throws IOException {
+  public void testGetLatestWorkflowRun_WorkflowNotFound() throws IOException {
     GHRepository mockRepo = mock(GHRepository.class);
     String workflowFileName = "non-existent-workflow.yml";
 
@@ -699,7 +700,7 @@ class GitHubServiceImplTest {
   }
 
   @Test
-  void testGetLatestWorkflowRunNoSuchElementException() throws IOException {
+  public void testGetLatestWorkflowRun_NoSuchElementException() throws IOException {
     GHRepository mockRepo = mock(GHRepository.class);
     String workflowFileName = "test-workflow.yml";
 
@@ -713,7 +714,7 @@ class GitHubServiceImplTest {
   }
 
   @Test
-  void testGetExportTestArtifactNotFound() throws IOException {
+  public void testGetExportTestArtifact_NotFound() throws IOException {
     GHWorkflowRun mockRun = mock(GHWorkflowRun.class);
     GHArtifact mockArtifact1 = mock(GHArtifact.class);
     GHArtifact mockArtifact2 = mock(GHArtifact.class);

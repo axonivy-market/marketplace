@@ -9,7 +9,7 @@ import static org.junit.jupiter.api.Assertions.*;
 class GithubReposModelAssemblerTest {
 
   @Test
-  void testToModelWithValidGithubRepo() {
+  void testToModel_withValidGithubRepo() {
     GithubRepo githubRepo = new GithubRepo();
     githubRepo.setName("test-repo");
     githubRepo.setHtmlUrl("https://github.com/test/test-repo");

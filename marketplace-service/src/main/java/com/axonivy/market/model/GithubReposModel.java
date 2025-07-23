@@ -60,7 +60,7 @@ public class GithubReposModel extends RepresentationModel<GithubReposModel> {
 
   public static GithubReposModel from(GithubRepo githubRepo) {
     List<TestResults> testResults = processTestResults(githubRepo);
-    var dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.S");
+    SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.S");
 
     return GithubReposModel.builder()
         .name(githubRepo.getName())
