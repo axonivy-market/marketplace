@@ -65,11 +65,11 @@ import static org.apache.commons.lang3.StringUtils.EMPTY;
 @Service
 public class GitHubServiceImpl implements GitHubService {
 
+  public static final int PAGE_SIZE_OF_WORKFLOW = 10;
   private final RestTemplate restTemplate;
   private final GithubUserRepository githubUserRepository;
   private final GitHubProperty gitHubProperty;
   private final ThreadPoolTaskScheduler taskScheduler;
-  public static final int PAGE_SIZE_OF_WORKFLOW = 10;
   private static final String GITHUB_PULL_REQUEST_NUMBER_REGEX = "#(\\d+)";
   private static final String GITHUB_PULL_REQUEST_LINK = "/pull/";
   private static final String GITHUB_USERNAME_REGEX = "@([a-zA-Z0-9\\-]+)";

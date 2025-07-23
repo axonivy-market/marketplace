@@ -113,7 +113,7 @@ public class FileUtils {
         Path resolvedPath = extractDir.toPath().resolve(entryPath).normalize();
 
         if (!resolvedPath.startsWith(extractDir.toPath())) {
-          throw new IOException(ENTRY_OUTSIDE_TARGET_DIR + entry.getName());
+          throw new IllegalArgumentException(ENTRY_OUTSIDE_TARGET_DIR + entry.getName());
         }
 
         File outFile = resolvedPath.toFile();

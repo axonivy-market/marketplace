@@ -35,8 +35,7 @@ import java.util.List;
 
 import static com.axonivy.market.constants.DirectoryConstants.GITHUB_REPO_DIR;
 import static com.axonivy.market.entity.GithubRepo.createNewGithubRepo;
-import static com.axonivy.market.enums.WorkFlowType.CI;
-import static com.axonivy.market.enums.WorkFlowType.DEV;
+import static com.axonivy.market.enums.WorkFlowType.*;
 import static com.axonivy.market.util.TestStepUtils.buildBadgeUrl;
 
 @Service

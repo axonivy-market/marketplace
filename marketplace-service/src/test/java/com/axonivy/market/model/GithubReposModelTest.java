@@ -15,7 +15,7 @@ import static org.junit.jupiter.api.Assertions.*;
 class GithubReposModelTest {
 
   @Test
-  void testFrom_withValidGithubRepo() {
+  void testFromWithValidGithubRepo() {
     GithubRepo githubRepo = new GithubRepo();
     githubRepo.setName("my-awesome-repo");
     githubRepo.setHtmlUrl("https://github.com/axonivy-market/my-awesome-repo");
