@@ -16,6 +16,8 @@ import java.util.Map;
 
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class TestResultsUtils {
+
+  private static final int TEST_TYPE_INDEX = 2;
   public static List<TestResults> processTestResults(GithubRepo githubRepo) {
     if (githubRepo.getTestSteps() == null) {
       return Collections.emptyList();
@@ -34,9 +36,9 @@ public class TestResultsUtils {
       if (step.getStatus() == TestStatus.SKIPPED) {
         continue;
       }
-      WorkFlowType workflowType = step.getType();
+      var workflowType = step.getType();
       TestStatus status = step.getStatus();
-      String envType = step.getTestType().toString();
+      var envType = step.getTestType().toString();
       if ("OTHER".equals(envType)) {
         envType = "MOCK";
       }
@@ -52,7 +54,7 @@ public class TestResultsUtils {
       if (step.getStatus() == TestStatus.SKIPPED) {
         continue;
       }
-      WorkFlowType workflowType = step.getType();
+      var workflowType = step.getType();
       TestStatus status = step.getStatus();
       String allKey = workflowType + "-ALL-" + status;
       allCounts.merge(allKey, 1, Integer::sum);
@@ -67,7 +69,7 @@ public class TestResultsUtils {
       results.add(TestResults.builder()
           .workflow(WorkFlowType.valueOf(parts[0]))
           .environment(parts[1])
-          .status(TestStatus.valueOf(parts[2]))
+          .status(TestStatus.valueOf(parts[TEST_TYPE_INDEX]))
           .count(entry.getValue())
           .build());
     }

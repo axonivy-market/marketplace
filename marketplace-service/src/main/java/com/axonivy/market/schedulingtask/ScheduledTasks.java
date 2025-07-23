@@ -60,6 +60,7 @@ public class ScheduledTasks {
       log.error("Failed to sync data for product release notes: ", e);
     }
   }
+
   @Scheduled(cron = SCHEDULING_TASK_GITHUB_REPOS)
   public void syncDataForGithubRepos() throws IOException {
     log.warn("Started sync data for Github repositories");

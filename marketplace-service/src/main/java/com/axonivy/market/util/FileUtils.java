@@ -50,6 +50,12 @@ public class FileUtils {
     try (var zis = new ZipInputStream(zipStream)) {
       ZipEntry entry;
       while ((entry = zis.getNextEntry()) != null) {
+        var entryPath = Paths.get(entry.getName()).normalize();
+        var resolvedPath = unzipDir.toPath().resolve(entryPath).normalize();
+        if (!resolvedPath.startsWith(unzipDir.toPath())) {
+          log.error("Unsafe zip entry detected: {}", entry.getName());
+          throw new IllegalStateException("Entry is outside the target dir: " + entry.getName());
+        }
         processZipEntry(zis, entry, unzipDir);
         zis.closeEntry();
       }

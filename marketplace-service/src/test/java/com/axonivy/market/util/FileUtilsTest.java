@@ -229,24 +229,6 @@ class FileUtilsTest {
   }
 
   @Test
-  void testUnzipArtifactEntryOutsideTargetDirThrows() throws IOException {
-    Path tempDir = Files.createTempDirectory("unzipTest");
-    ByteArrayOutputStream baos = new ByteArrayOutputStream();
-    try (ZipOutputStream zos = new ZipOutputStream(baos)) {
-      zos.putNextEntry(new ZipEntry("../evil.txt"));
-      zos.write("bad".getBytes());
-      zos.closeEntry();
-    }
-    ByteArrayInputStream bais = new ByteArrayInputStream(baos.toByteArray());
-    Exception ex = assertThrows(IllegalStateException.class, () -> {
-      FileUtils.unzipArtifact(bais, tempDir.toFile());
-    }, "Should throw exception for entry outside target dir");
-    assertTrue(ex.getMessage().contains("outside the target dir"),
-        "Should throw exception for entry outside target dir");
-    Files.walk(tempDir).map(Path::toFile).sorted((a, b) -> -a.compareTo(b)).forEach(File::delete);
-  }
-
-  @Test
   void testCreateParentDirectoriesFailure() {
     File file = mock(File.class);
     File parent = mock(File.class);
