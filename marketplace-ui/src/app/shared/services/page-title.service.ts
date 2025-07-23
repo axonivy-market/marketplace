@@ -13,6 +13,13 @@ export class PageTitleService {
   private readonly titleService = inject(Title);
 
   setTitleOnLangChange(titleLabel: string) {
+    this.translateService
+      .get(titleLabel)
+      .subscribe((translatedTitle: string) => {
+        this.titleService.setTitle(translatedTitle);
+      });
+
+    // Update the title whenever the language changes
     this.langSub = this.translateService.onLangChange.subscribe(
       () => {
         this.translateService

@@ -39,22 +39,27 @@ describe('PageTitleService', () => {
     expect(service).toBeTruthy();
   });
 
-  it('should subscribe to language changes', () => {
+  it('should set initial title with translated text', () => {
     const titleLabel = 'common.preview.pageTitle';
+    const pageTitle = 'Release Preview';
+    translateService.get.and.returnValue(of(pageTitle));
 
     service.setTitleOnLangChange(titleLabel);
 
-    // Service should subscribe but not set title initially
-    expect(translateService.get).not.toHaveBeenCalled();
-    expect(titleService.setTitle).not.toHaveBeenCalled();
-    expect((service as any).langSub).toBeDefined();
+    expect(translateService.get).toHaveBeenCalledWith(titleLabel);
+    expect(titleService.setTitle).toHaveBeenCalledWith(pageTitle);
   });
 
   it('should update title when language changes', () => {
     const titleLabel = 'common.preview.pageTitle';
-    const translatedTitle = 'Veröffentlichungsvorschau';
+    const enTitle = 'Release Preview';
+    const deTitle = 'Veröffentlichungsvorschau';
 
-    translateService.get.and.returnValue(of(translatedTitle));
+    translateService.get.and.returnValues(
+      of(enTitle),
+      of(deTitle)
+    );
+
     service.setTitleOnLangChange(titleLabel);
 
     const langChangeEvent: LangChangeEvent = {
@@ -63,29 +68,25 @@ describe('PageTitleService', () => {
     };
     langChangeSubject.next(langChangeEvent);
 
+    expect(translateService.get).toHaveBeenCalledTimes(2);
     expect(translateService.get).toHaveBeenCalledWith(titleLabel);
-    expect(titleService.setTitle).toHaveBeenCalledWith(translatedTitle);
+    expect(titleService.setTitle).toHaveBeenCalledTimes(2);
+    expect(titleService.setTitle).toHaveBeenCalledWith(enTitle);
+    expect(titleService.setTitle).toHaveBeenCalledWith(deTitle);
   });
 
-  it('should handle multiple language changes', () => {
+  it('should unsubscribe from language change subscription', () => {
     const titleLabel = 'common.preview.pageTitle';
-    const deTitle = 'Veröffentlichungsvorschau';
-    const enTitle = 'Release Preview';
-
-    translateService.get.and.returnValues(
-      of(deTitle),
-      of(enTitle)
-    );
+    translateService.get.and.returnValue(of('Release Preview'));
 
     service.setTitleOnLangChange(titleLabel);
 
-    langChangeSubject.next({ lang: 'de', translations: {} });
+    const subscription = (service as any).langSub;
+    spyOn(subscription, 'unsubscribe').and.callThrough();
 
-    langChangeSubject.next({ lang: 'en', translations: {} });
+    service.ngOnDestroy();
 
-    expect(translateService.get).toHaveBeenCalledTimes(2);
-    expect(translateService.get).toHaveBeenCalledWith(titleLabel);
-
+    expect(subscription.unsubscribe).toHaveBeenCalled();
   });
 
   it('should handle ngOnDestroy when no subscription exists', () => {
