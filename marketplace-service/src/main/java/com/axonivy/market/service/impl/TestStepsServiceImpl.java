@@ -34,7 +34,7 @@ public class TestStepsServiceImpl implements TestStepsService {
     }
 
     @Transactional
-    public List<TestStep> createTestSteps(GithubRepo repo, JsonNode testData, WorkFlowType workflowType) {
+    public List<TestStep> createTestSteps(JsonNode testData, WorkFlowType workflowType) {
         if (testData != null) {
             return TestStepUtils.parseTestSteps(testData, workflowType);
         }

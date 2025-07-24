@@ -170,7 +170,7 @@ class GithubReposServiceImplTest {
     when(gitHubService.getExportTestArtifact(run)).thenReturn(artifact);
     when(gitHubService.downloadArtifactZip(artifact)).thenReturn(getZipWithTestReport());
 
-    when(testStepsService.createTestSteps(eq(dbRepo), any(), eq(WorkFlowType.CI)))
+    when(testStepsService.createTestSteps(any(), eq(WorkFlowType.CI)))
         .thenReturn(List.of(new TestStep()));
 
     List<TestStep> steps = service.processWorkflowWithFallback(ghRepo, dbRepo, "ci.yml", WorkFlowType.CI);
