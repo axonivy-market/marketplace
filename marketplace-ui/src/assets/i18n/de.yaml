@@ -230,13 +230,11 @@ monitor:
     loading: Repositories werden geladen...
     noRepositories: Keine Repositories gefunden.
     errorLoading: Fehler beim Laden der Repositories
-    ciLabel: CI Build
-    devLabel: DEV Build
     passed: Bestanden
     failed: Fehlgeschlagen
     mock: Simuliert
     real: Echt
-    lastUpdated: Zuletzt aktualisiert
+    lastUpdated: Zuletzt gebaut
     language: Sprache
     testCounts:
       title: Testergebnisse

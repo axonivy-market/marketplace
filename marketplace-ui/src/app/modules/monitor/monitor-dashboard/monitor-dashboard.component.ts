@@ -1,6 +1,6 @@
-import { Component, inject, OnInit } from '@angular/core';
+import { Component, inject, OnInit, PLATFORM_ID } from '@angular/core';
 import { GithubService, Repository } from '../github.service';
-import { CommonModule } from '@angular/common';
+import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { Router } from '@angular/router';
 import { LanguageService } from '../../../core/services/language/language.service';
 import { TranslateModule } from '@ngx-translate/core';
@@ -19,9 +19,14 @@ export class MonitoringDashboardComponent implements OnInit {
   languageService = inject(LanguageService);
   githubService = inject(GithubService);
   router = inject(Router);
+  platformId = inject(PLATFORM_ID);
 
   ngOnInit(): void {
-    this.loadRepositories();
+    if (isPlatformBrowser(this.platformId)) {
+      this.loadRepositories();
+    } else {
+      this.loading = false;
+    }
   }
 
   loadRepositories(): void {

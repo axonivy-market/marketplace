@@ -20,7 +20,7 @@
       <div class="repo-info">
         @if (repo.ciBadgeUrl) {
         <div class="badge-row" (click)="onBadgeClick(repo.name, 'ci')">
-          <span class="icon">🏷️</span> {{ 'monitor.dashboard.ciLabel' | translate }}:
+          <span class="icon">🏷️</span>
           <img [src]="repo.ciBadgeUrl" alt="ci Badge for {{ repo.name }}" style="cursor: pointer;" />
         </div>
         <div class="workflow">
@@ -39,7 +39,7 @@
 
         @if (repo.devBadgeUrl) {
         <div class="badge-row" (click)="onBadgeClick(repo.name, 'dev')">
-          <span class="icon">🛠️</span> {{ 'monitor.dashboard.devLabel' | translate }}:
+          <span class="icon">🛠️</span>
           <img [src]="repo.devBadgeUrl" alt="dev Badge for {{ repo.name }}" style="cursor: pointer;" />
         </div>
         <div class="workflow">

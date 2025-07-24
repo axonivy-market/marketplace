@@ -7,7 +7,8 @@
     "build": "ng build",
     "watch": "ng build --watch --configuration development",
     "test": "ng test",
-    "serve:ssr:marketplace-ui": "node dist/server/server.mjs"
+    "build:ssr": "ng build && ng run marketplace-ui:server",
+    "serve:ssr": "node dist/marketplace-ui/server/main.mjs"
   },
   "private": true,
   "dependencies": {
