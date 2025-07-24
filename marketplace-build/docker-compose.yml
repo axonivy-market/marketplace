@@ -37,7 +37,6 @@ services:
       - POSTGRES_USERNAME=${POSTGRES_USERNAME}
       - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
       - SHOW_SQL=${SHOW_SQL}
-      - ALLOWED_URLS=${ALLOWED_URLS}
       - MARKET_ENVIRONMENT=${MARKET_ENVIRONMENT}
     build:
       context: ../marketplace-service
