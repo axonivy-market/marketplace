@@ -9,20 +9,26 @@ import { ProductSecurityInfo } from '../../shared/models/product-security-info-m
 import { HttpErrorResponse } from '@angular/common/http';
 import { TranslateService } from '@ngx-translate/core';
 import { TIME_UNITS } from '../../shared/constants/common.constant';
+import { PageTitleService } from '../../shared/services/page-title.service';
 
 describe('SecurityMonitorComponent', () => {
   let component: SecurityMonitorComponent;
   let fixture: ComponentFixture<SecurityMonitorComponent>;
   let securityMonitorService: jasmine.SpyObj<SecurityMonitorService>;
+  let translateService: jasmine.SpyObj<TranslateService>;
+  let pageTitleService: jasmine.SpyObj<PageTitleService>;
 
   beforeEach(async () => {
-    const spy = jasmine.createSpyObj('SecurityMonitorService', ['getSecurityDetails']);
+    const securityMonitorSpy = jasmine.createSpyObj('SecurityMonitorService', ['getSecurityDetails']);
+    const translateSpy = jasmine.createSpyObj('TranslateService', ['get']);
+    const pageTitleSpy = jasmine.createSpyObj('TranslateService', ['setTitleOnLangChange']);
 
     await TestBed.configureTestingModule({
       imports: [CommonModule, FormsModule],
       providers: [
-        { provide: SecurityMonitorService, useValue: spy },
-        { provide: TranslateService, useValue: spy }
+        { provide: SecurityMonitorService, useValue: securityMonitorSpy },
+        { provide: TranslateService, useValue: translateSpy },
+        { provide: PageTitleService, useValue: pageTitleSpy }
       ],
     }).compileComponents();
 
