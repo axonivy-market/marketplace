@@ -220,6 +220,8 @@ common:
     enterTokenPlaceholder: Geben Sie Ihren Token ein
     proceedBtnLabel: Weiter
     noFeedbacks: Keine Feedback verfügbar.
+  security:
+    pageTitle: Sicherheitsmonitor
 
 monitor:
   dashboard:

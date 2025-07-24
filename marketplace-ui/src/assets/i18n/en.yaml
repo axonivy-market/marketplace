@@ -221,6 +221,9 @@ common:
     enterTokenPlaceholder: Enter your token
     proceedBtnLabel: Proceed
     noFeedbacks: No feedbacks available.
+  security:
+    pageTitle: Security Monitor
+
 monitor:
   dashboard:
     title: GitHub Repository Monitor
