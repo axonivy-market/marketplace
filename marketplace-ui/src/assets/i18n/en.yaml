@@ -224,7 +224,7 @@ common:
 monitor:
   dashboard:
     title: GitHub Repository Monitor
-    subtitle: Monitor your repositories at a glance and automatically update every hour.
+    subtitle: Stay informed about the axonivy-market repositories - repository data is refreshed every hour automatically.
     loading: Loading repositories...
     noRepositories: No repositories found.
     errorLoading: Error loading repositories

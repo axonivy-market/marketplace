@@ -224,7 +224,7 @@ common:
 monitor:
   dashboard:
     title: GitHub Repository Überwachung
-    subtitle: Überwachen Sie Ihre Repositories auf einen Blick und aktualisieren Sie stündlich automatisch.
+    subtitle: Bleiben Sie über die axonivy-market-Repositories informiert – die Repository-Daten werden automatisch stündlich aktualisiert.
     loading: Repositories werden geladen...
     noRepositories: Keine Repositories gefunden.
     errorLoading: Fehler beim Laden der Repositories
