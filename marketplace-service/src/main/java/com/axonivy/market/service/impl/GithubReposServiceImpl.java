@@ -58,7 +58,7 @@ public class GithubReposServiceImpl implements GithubReposService {
           .filter(product -> Boolean.FALSE != product.getListed()
               && product.getRepositoryName() != null).toList();
       for (Product product : products) {
-        log.info("#loadAndStoreTestReports {}", product.getRepositoryName());
+        log.info("Starting sync data TestReports of repo: {}", product.getRepositoryName());
         GHRepository repository = gitHubService.getRepository(product.getRepositoryName());
         processProduct(repository);
       }
