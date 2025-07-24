@@ -24,7 +24,7 @@ import java.util.List;
 import static com.axonivy.market.constants.RequestMappingConstants.*;
 @RestController
 @RequiredArgsConstructor
-@RequestMapping(GITHUB_REPOS)
+@RequestMapping(MONITOR_DASHBOARD)
 @Tag(name = "GitHub Repos API", description = "API to fetch GitHub repositories and workflows")
 public class MonitorDashBoardController {
 

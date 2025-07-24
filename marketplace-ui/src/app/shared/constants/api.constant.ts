@@ -9,7 +9,7 @@ export const API_URI = {
   FEEDBACK_APPROVAL: `${API}/feedback/approval`,
   PRODUCT_MARKETPLACE_DATA: `${API}/product-marketplace-data`,
   PREVIEW_RELEASE: `${API}/release-preview`,
-  GITHUB_REPOS: `${API}/github-repos/repos`,
-  SYNC_GITHUB_REPOS: `${API}/github-repos/sync-github-monitor`,
-  GITHUB_REPORT: `${API}/github-repos`,
+  MONITOR_DASHBOARD: `${API}/monitor-dashboard/repos`,
+  SYNC_MONITOR_DASHBOARD: `${API}/monitor-dashboard/sync-github-monitor`,
+  GITHUB_REPORT: `${API}/monitor-dashboard`,
 };

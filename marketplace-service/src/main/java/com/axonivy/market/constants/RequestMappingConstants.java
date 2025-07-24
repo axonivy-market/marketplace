@@ -44,7 +44,7 @@ public class RequestMappingConstants {
   public static final String PRODUCT_ID = "product-id";
   public static final String RELEASE_ID = "release-id";
   public static final String FEEDBACK_APPROVAL = "/approval";
-  public static final String GITHUB_REPOS = API + "/github-repos";
+  public static final String MONITOR_DASHBOARD = API + "/monitor-dashboard";
   public static final String REPOS = "repos";
   public static final String REPOS_REPORT = "/{repo}/{workflow}";
   public static final String REPO = "repo";

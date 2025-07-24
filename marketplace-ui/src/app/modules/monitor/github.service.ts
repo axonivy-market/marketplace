@@ -33,11 +33,7 @@ export class GithubService {
   constructor(private readonly http: HttpClient) { }
 
   getRepositories(): Observable<Repository[]> {
-    return this.http.get<Repository[]>(API_URI.GITHUB_REPOS);
-  }
-
-  syncGithubRepos(): Observable<Repository[]> {
-    return this.http.get<Repository[]>(API_URI.SYNC_GITHUB_REPOS);
+    return this.http.get<Repository[]>(API_URI.MONITOR_DASHBOARD);
   }
 
   getTestReport(repo: string, workflow: string): Observable<TestStep> {
