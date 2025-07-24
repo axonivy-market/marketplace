@@ -179,6 +179,7 @@ common:
     approvalPending: Freigabe ausstehend
   labels:
     redirecting: Redirecting ...!
+    loading: Laden ...!
   timeAgo:
     yearAgo: vor einem Jahr
     yearsAgo: 'vor {{ number }} Jahren'
@@ -222,7 +223,6 @@ common:
     noFeedbacks: Keine Feedback verfügbar.
   security:
     pageTitle: Sicherheitsmonitor
-
 monitor:
   dashboard:
     title: GitHub Repository Überwachung
@@ -263,3 +263,6 @@ monitor:
     filterLabel: Repositories filtern
     noReport: Es gibt keinen Testbericht in diesem Workflow.
     skipped: Übersprungen
+  externalDocument:
+    pageHeader: Das Dokument des {{product}} für die Version {{version}}
+    helpText: Das Dokument ist nicht bereit zum Rendern oder wurde noch nicht veröffentlicht. Bitte versuchen Sie es später erneut.
