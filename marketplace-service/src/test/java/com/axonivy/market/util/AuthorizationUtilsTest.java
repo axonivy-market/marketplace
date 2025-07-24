@@ -1,13 +1,9 @@
 package com.axonivy.market.util;
 
 import com.axonivy.market.util.validator.AuthorizationUtils;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import jakarta.validation.ConstraintValidatorContext;
-
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.*;
 
 class AuthorizationUtilsTest {
 
