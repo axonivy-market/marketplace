@@ -338,6 +338,14 @@ export const MOCK_EXTERNAL_DOCUMENT: ExternalDocument = {
   relativeLink: '/market-cache/portal/portal-guide/10.0.0/doc/index.html'
 };
 
+export const MOCK_STATIC_LIB: ExternalDocument = {
+  productId: 'workflow-demo',
+  version: 'dev',
+  artifactId: 'workflow-demos',
+  artifactName: 'Workflow demos',
+  relativeLink: 'https://market.axonivy.com/workflow-demo/dev/lib/workflow-demos.iar'
+};
+
 export const MOCK_RELEASE_PREVIEW_DATA: ReleasePreviewData = {
   description: {
     English: 'This is a description in English.',

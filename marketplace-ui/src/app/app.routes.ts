@@ -8,18 +8,28 @@ import { ReleasePreviewComponent } from './modules/release-preview/release-previ
 import { FeedbackApprovalComponent } from './modules/feedback-approval/feedback-approval.component';
 import { MonitoringDashboardComponent } from './modules/monitor/monitor-dashboard/monitor-dashboard.component';
 import { ProductDetailResolver } from './core/resolver/product-detail.resolve';
+import { ExternalDocumentComponent } from './shared/components/external-document/external-document.component';
 
 export const routes: Routes = [
+  // OAuth callback
   {
-    path: 'error-page',
-    component: ErrorPageComponent,
-    title: ERROR_PAGE
+    path: 'auth/github/callback',
+    component: GithubCallbackComponent
   },
+
+  // Error handling more specific first
   {
     path: 'error-page/:id',
     component: ErrorPageComponent,
     title: ERROR_PAGE
   },
+  {
+    path: 'error-page',
+    component: ErrorPageComponent,
+    title: ERROR_PAGE
+  },
+
+  // Static pages
   {
     path: 'security-monitor',
     component: SecurityMonitorComponent
@@ -40,10 +50,30 @@ export const routes: Routes = [
     path: 'report/:repo/:workflow',
     loadComponent: () => import('./modules/monitor/repo-report/repo-report.component').then(m => m.RepoReportComponent)
   },
+
+  // Document, lib and redirect pages order matters
   {
-    path: '',
-    loadChildren: () => import('./modules/home/home.routes').then(m => m.routes)
+    path: 'market-cache/:id/:artifact/:version/doc',
+    component: ExternalDocumentComponent
   },
+  {
+    path: 'market-cache/:id/:artifact/:version/doc/index.html',
+    component: ExternalDocumentComponent
+  },
+  {
+    path: ':id/:version/doc/index.html',
+    component: ExternalDocumentComponent
+  },
+  {
+    path: ':id/:version/doc',
+    component: ExternalDocumentComponent
+  },
+  {
+    path: ':id/:version/lib/:artifact',
+    component: RedirectPageComponent
+  },
+
+  // Product route (dynamic)
   {
     path: ':id',
     loadChildren: () =>
@@ -52,20 +82,17 @@ export const routes: Routes = [
       productDetail: ProductDetailResolver
     }
   },
+
+  // Home module (static root)
   {
-    path: ':id/:version/doc',
-    component: RedirectPageComponent
+    path: '',
+    loadChildren: () =>
+      import('./modules/home/home.routes').then(m => m.routes)
   },
+
+  // Wildcard route for unmatched paths (404)
   {
-    path: ':id/:version/doc/index.html',
-    component: RedirectPageComponent
-  },
-  {
-    path: ':id/:version/lib/:artifact',
-    component: RedirectPageComponent
-  },
-  {
-    path: 'auth/github/callback',
-    component: GithubCallbackComponent
+    path: '**',
+    redirectTo: 'error-page/404'
   }
 ];

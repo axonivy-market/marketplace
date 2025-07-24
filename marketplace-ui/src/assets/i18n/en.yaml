@@ -180,6 +180,7 @@ common:
     approvalPending: Approval pending
   labels:
     redirecting: Redirecting ...!
+    loading: Loading ...!
   timeAgo:
     yearAgo: 1 year ago
     yearsAgo: '{{ number }} years ago'
@@ -223,7 +224,6 @@ common:
     noFeedbacks: No feedbacks available.
   security:
     pageTitle: Security Monitor
-
 monitor:
   dashboard:
     title: GitHub Repository Monitor
@@ -264,3 +264,6 @@ monitor:
     filterLabel: Filter Repositories
     noReport: There is no test report in this workflow.
     skipped: Skipped
+  externalDocument:
+    pageHeader: The document of the {{product}} for version {{version}}
+    helpText: The document is not ready to render or has not been published. Please try again later.
