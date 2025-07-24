@@ -23,9 +23,9 @@ import org.apache.commons.lang3.RegExUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.HttpClientErrorException;
 
 import java.io.File;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -41,8 +41,8 @@ public class ExternalDocumentServiceImpl implements ExternalDocumentService {
 
   private static final String DOC_URL_PATTERN = "/%s/index.html";
   private static final String MS_WIN_SEPARATOR = "\\\\";
-  @Value("${market.should-download-doc-and-unzip-to-share-folder}")
-  private String shouldDownloadDocAndUnzipToShareFolder;
+  @Value("${market.environment}")
+  private String marketEnvironment;
   final ProductRepository productRepo;
   final ExternalDocumentMetaRepository externalDocumentMetaRepo;
   final FileDownloadService fileDownloadService;
@@ -106,7 +106,7 @@ public class ExternalDocumentServiceImpl implements ExternalDocumentService {
     // Skip download doc to share folder on develop mode
     if (!shouldDownloadDocAndUnzipToShareFolder()) {
       log.warn("Create the ExternalDocumentMeta for the {} product was skipped due to " +
-          "MARKET_SHOULD_DOWNLOAD_DOC_AND_UNZIP_TO_SHARE_FOLDER is true", productId);
+              "MARKET_ENVIRONMENT is not production - it was {}", productId, marketEnvironment);
       return;
     }
     for (String version : missingVersions) {
@@ -118,7 +118,7 @@ public class ExternalDocumentServiceImpl implements ExternalDocumentService {
   }
 
   public boolean shouldDownloadDocAndUnzipToShareFolder() {
-    return BooleanUtils.toBoolean(this.shouldDownloadDocAndUnzipToShareFolder);
+    return StringUtils.equalsIgnoreCase(CommonConstants.PROD_ENV, this.marketEnvironment);
   }
 
   private List<String> getMissingVersions(String productId, boolean isResetSync, List<String> releasedVersions,
@@ -194,7 +194,9 @@ public class ExternalDocumentServiceImpl implements ExternalDocumentService {
         .build();
     try {
       return fileDownloadService.downloadAndUnzipFile(downloadDocUrl, downloadOption);
-    } catch (IOException e) {
+    } catch (HttpClientErrorException e) {
+      log.error("Cannot download doc", e);
+    } catch (Exception e) {
       log.error("Exception during unzip", e);
     }
     return EMPTY;
