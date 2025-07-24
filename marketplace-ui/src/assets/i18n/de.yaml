@@ -221,6 +221,48 @@ common:
     enterTokenPlaceholder: Geben Sie Ihren Token ein
     proceedBtnLabel: Weiter
     noFeedbacks: Keine Feedback verfügbar.
+  security:
+    pageTitle: Sicherheitsmonitor
+monitor:
+  dashboard:
+    title: GitHub Repository Überwachung
+    subtitle: Bleiben Sie über die axonivy-market-Repositories informiert – die Repository-Daten werden automatisch stündlich aktualisiert.
+    loading: Repositories werden geladen...
+    noRepositories: Keine Repositories gefunden.
+    errorLoading: Fehler beim Laden der Repositories
+    ciLabel: CI Build
+    devLabel: DEV Build
+    passed: Bestanden
+    failed: Fehlgeschlagen
+    mock: Simuliert
+    real: Echt
+    lastUpdated: Zuletzt aktualisiert
+    language: Sprache
+    testCounts:
+      title: Testergebnisse
+      mock: "Simuliert: "
+      real: "Echt: "
+      total: "Gesamttests: "
+    repo:
+      name: Repository-Name
+      language: Sprache
+      url: Repository-URL
+      workflow: Workflow von
+    actions:
+      viewDetails: Details anzeigen
+      refresh: Aktualisieren
+    status:
+      active: Aktiv
+      inactive: Inaktiv
+    summaryCard:
+      title: Zusammenfassung
+      totalRepos: Gesamtzahl der Repositories
+      totalPassed: Bestandene Tests insgesamt
+      totalFailed: Fehlgeschlagene Tests insgesamt
+      lastSync: Letzte Synchronisation
+    filterLabel: Repositories filtern
+    noReport: Es gibt keinen Testbericht in diesem Workflow.
+    skipped: Übersprungen
   externalDocument:
     pageHeader: Das Dokument des {{product}} für die Version {{version}}
     helpText: Das Dokument ist nicht bereit zum Rendern oder wurde noch nicht veröffentlicht. Bitte versuchen Sie es später erneut.

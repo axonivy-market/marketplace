@@ -24,6 +24,7 @@ import { FeedbackTableComponent } from './feedback-table/feedback-table.componen
 import { HttpErrorResponse } from '@angular/common/http';
 import { finalize } from 'rxjs';
 import { FeedbackApproval } from '../../shared/models/feedback-approval.model';
+import { PageTitleService } from '../../shared/services/page-title.service';
 import { SessionStorageRef } from '../../core/services/browser/session-storage-ref.service';
 
 @Component({
@@ -42,6 +43,7 @@ export class FeedbackApprovalComponent {
   themeService = inject(ThemeService);
   translateService = inject(TranslateService);
   activatedRoute = inject(ActivatedRoute);
+  pageTitleService = inject(PageTitleService);
 
   token = '';
   errorMessage = '';
@@ -66,6 +68,7 @@ export class FeedbackApprovalComponent {
       this.isAuthenticated = true;
       this.fetchFeedbacks();
     }
+    this.pageTitleService.setTitleOnLangChange('common.approval.approvalTitle');
   }
 
   fetchUserInfo(): void {
