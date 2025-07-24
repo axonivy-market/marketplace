@@ -6,7 +6,7 @@ import { ERROR_PAGE } from './shared/constants/common.constant';
 import { SecurityMonitorComponent } from './modules/security-monitor/security-monitor.component';
 import { ReleasePreviewComponent } from './modules/release-preview/release-preview.component';
 import { FeedbackApprovalComponent } from './modules/feedback-approval/feedback-approval.component';
-import { MonitoringRedirectComponent } from './shared/components/monitoring-redirect/monitoring-redirect.component';
+import { MonitoringDashboardComponent } from './modules/monitor/monitor-dashboard/monitor-dashboard.component';
 import { ProductDetailResolver } from './core/resolver/product-detail.resolve';
 
 export const routes: Routes = [
@@ -29,12 +29,16 @@ export const routes: Routes = [
     component: ReleasePreviewComponent
   },
   {
-    path: 'monitoring',
-    component: MonitoringRedirectComponent
-  },
-  {
     path: 'feedback-approval',
     component: FeedbackApprovalComponent
+  },
+  {
+    path: 'monitoring',
+    component: MonitoringDashboardComponent
+  },
+  {
+    path: 'report/:repo/:workflow',
+    loadComponent: () => import('./modules/monitor/repo-report/repo-report.component').then(m => m.RepoReportComponent)
   },
   {
     path: '',

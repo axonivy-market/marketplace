@@ -36,6 +36,9 @@ class SystemTasksTest {
   @Mock
   ProductDependencyService productDependencyService;
 
+  @Mock
+  GithubReposService githubReposService;
+
   @InjectMocks
   ScheduledTasks tasks;
 
@@ -72,5 +75,11 @@ class SystemTasksTest {
     tasks.syncDataForProductReleases();
 
     assertThrows(IOException.class, () -> productDetailsController.syncLatestReleasesForProducts());
+  }
+
+  @Test
+  void testSyncDataForGithubRepos() throws IOException {
+    tasks.syncDataForGithubRepos();
+    verify(githubReposService, times(1)).loadAndStoreTestReports();
   }
 }

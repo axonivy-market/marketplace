@@ -1,0 +1,97 @@
+$gap-large: 48px;
+$gap-small: 30px;
+$height-header: 37px;
+
+.test-report {
+    max-width: 1200px;
+    margin: 20px auto;
+    padding: 0 15px;
+    cursor: default;
+
+    h2 {
+        margin: $height-header 0 $gap-large;
+        text-align: center;
+        color: var(--ivy-text-secondary-color);
+    }
+
+    h3 {
+        margin: $gap-small 0;
+        text-align: center;
+        color: var(--ivy-text-secondary-color);
+    }
+
+    .test-step {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: $gap-small;
+        margin-bottom: $gap-small;
+        border-left: 5px solid gray;
+        background: var(--ivy-secondary-bg);
+        border-radius: 4px;
+        font-size: medium;
+        width: calc(100% - 2rem);
+        height: 50px;
+
+        &.passed {
+            border-color: #28a745;
+        }
+
+        &.failed {
+            border-color: #dc3545;
+        }
+
+        &.skipped {
+            border-color: #ffc107;
+        }
+
+        .step-index {
+            font-weight: bold;
+            width: 30px;
+        }
+
+        .test-type {
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-weight: 500;
+            min-width: 70px;
+            text-align: center;
+            
+            .mock-test, .real-test {
+                padding: 4px 8px;
+                border-radius: 4px;
+                width: 80px;
+                display: inline-block;
+                text-align: center;
+            }
+            
+            .mock-test {
+                background-color: #e0f7fa;
+                color: #0097a7;
+            }
+            
+            .real-test {
+                background-color: #e8f5e9;
+                color: #388e3c;
+            }
+        }
+
+        .step-name {
+            flex: 1;
+            padding: 0 $gap-small;
+        }
+
+        .step-status {
+            min-width: 100px;
+            text-align: right;
+        }
+    }
+}
+
+.no-report {
+    width: 100%;
+    text-align: center;
+    color: var(--ivy-text-secondary-color);
+    font-size: 5rem;
+    padding: $gap-small;
+}
