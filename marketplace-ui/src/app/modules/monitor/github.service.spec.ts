@@ -1,7 +1,7 @@
 
 import { TestBed } from '@angular/core/testing';
 import { HttpClientTestingModule, HttpTestingController } from '@angular/common/http/testing';
-import { GithubService, Repository, TestResult, TestStep } from './github.service';
+import { GithubService, Repository, TestStep } from './github.service';
 import { API_URI } from '../../shared/constants/api.constant';
 
 const mockRepos: Repository[] = [
@@ -51,16 +51,7 @@ describe('GithubService', () => {
     service.getRepositories().subscribe(repos => {
       expect(repos).toEqual(mockRepos);
     });
-    const req = httpMock.expectOne(API_URI.GITHUB_REPOS);
-    expect(req.request.method).toBe('GET');
-    req.flush(mockRepos);
-  });
-
-  it('should sync github repositories', () => {
-    service.syncGithubRepos().subscribe(repos => {
-      expect(repos).toEqual(mockRepos);
-    });
-    const req = httpMock.expectOne(API_URI.SYNC_GITHUB_REPOS);
+    const req = httpMock.expectOne(API_URI.MONITOR_DASHBOARD);
     expect(req.request.method).toBe('GET');
     req.flush(mockRepos);
   });
@@ -80,21 +71,11 @@ describe('GithubService', () => {
       next: () => {},
       error: err => error = err
     });
-    const req = httpMock.expectOne(API_URI.GITHUB_REPOS);
+    const req = httpMock.expectOne(API_URI.MONITOR_DASHBOARD);
     req.flush('Error', { status: 500, statusText: 'Server Error' });
     expect(error).toBeTruthy();
   });
 
-  it('should handle error when syncing github repositories', () => {
-    let error: any;
-    service.syncGithubRepos().subscribe({
-      next: () => {},
-      error: err => error = err
-    });
-    const req = httpMock.expectOne(API_URI.SYNC_GITHUB_REPOS);
-    req.flush('Error', { status: 500, statusText: 'Server Error' });
-    expect(error).toBeTruthy();
-  });
 
   it('should handle error when fetching test report', () => {
     let error: any;
