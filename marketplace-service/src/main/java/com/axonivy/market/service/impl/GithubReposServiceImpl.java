@@ -1,7 +1,6 @@
 package com.axonivy.market.service.impl;
 
 import com.axonivy.market.assembler.GithubReposModelAssembler;
-import com.axonivy.market.constants.CommonConstants;
 import com.axonivy.market.entity.GithubRepo;
 import com.axonivy.market.entity.Product;
 import com.axonivy.market.entity.TestStep;
@@ -35,7 +34,8 @@ import java.util.List;
 
 import static com.axonivy.market.constants.DirectoryConstants.GITHUB_REPO_DIR;
 import static com.axonivy.market.entity.GithubRepo.createNewGithubRepo;
-import static com.axonivy.market.enums.WorkFlowType.*;
+import static com.axonivy.market.enums.WorkFlowType.CI;
+import static com.axonivy.market.enums.WorkFlowType.DEV;
 import static com.axonivy.market.util.TestStepUtils.buildBadgeUrl;
 
 @Service
@@ -84,7 +84,7 @@ public class GithubReposServiceImpl implements GithubReposService {
     }
 
     githubRepo.getTestSteps().addAll(
-        processWorkflowWithFallback(ghRepo, githubRepo, DEV.getFileName(), WorkFlowType.DEV));
+        processWorkflowWithFallback(ghRepo, githubRepo, DEV.getFileName(), DEV));
     githubRepo.getTestSteps().addAll(
         processWorkflowWithFallback(ghRepo, githubRepo, CI.getFileName(), CI));
     try {
