@@ -16,7 +16,7 @@ import { LoadingService } from '../../../../core/services/loading/loading.servic
 import { ThemeService } from '../../../../core/services/theme/theme.service';
 import { EmptyProductDetailPipe } from '../../../../shared/pipes/empty-product-detail.pipe';
 import { LoadingComponentId } from '../../../../shared/enums/loading-component-id';
-
+import { Router } from '@angular/router';
 const SELECTED_VERSION = 'selectedVersion';
 const PRODUCT_DETAIL = 'productDetail';
 @Component({
@@ -43,7 +43,7 @@ export class ProductDetailInformationTabComponent implements OnChanges {
   themeService = inject(ThemeService);
   productDetailService = inject(ProductDetailService);
   loadingService = inject(LoadingService);
-
+  router = inject(Router);
   ngOnChanges(changes: SimpleChanges): void {
     let version = '';
     const changedSelectedVersion = changes[SELECTED_VERSION];
@@ -101,5 +101,8 @@ export class ProductDetailInformationTabComponent implements OnChanges {
       Object.keys(changedProduct.previousValue).length > 0 &&
       changedProduct.currentValue !== changedProduct.previousValue
     );
+  }
+  onBadgeClick(names: string) {
+    this.router.navigate(['/report', names, "CI"]);
   }
 }

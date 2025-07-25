@@ -23,4 +23,6 @@ public interface FileDownloadService {
   ResponseEntity<Resource> fetchUrlResource(String url);
 
   String downloadAndUnzipFile(String url, DownloadOption downloadOption) throws IOException;
+
+  String generateCacheStorageDirectory(String url);
 }

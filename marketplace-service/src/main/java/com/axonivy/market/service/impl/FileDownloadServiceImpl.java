@@ -215,9 +215,6 @@ public class FileDownloadServiceImpl implements FileDownloadService {
       if (SystemUtils.IS_OS_UNIX) {
         log.warn("UNIX_OS detected: grant permission for {}", location);
         Files.setPosixFilePermissions(folderPath, PERMS);
-      } else {
-        log.warn("NON_UNIX_OS detected: grant permission for {}", location);
-        folderPath = grantPermissionForNonUnixSystem(folderPath.toFile());
       }
     } catch (IOException e) {
       log.error("An error occurred while granting permission the folder: ", e);
@@ -225,20 +222,7 @@ public class FileDownloadServiceImpl implements FileDownloadService {
     return folderPath;
   }
 
-  private Path grantPermissionForNonUnixSystem(File tempFile) {
-    if (tempFile.setReadable(true, false)) {
-      log.warn("Cannot grant read permission to {}", tempFile.toPath());
-    }
-    if (tempFile.setWritable(true, false)) {
-      log.warn("Cannot grant write permission to {}", tempFile.toPath());
-    }
-    if (tempFile.setExecutable(true, false)) {
-      log.warn("Cannot grant exec permission to {}", tempFile.toPath());
-    }
-    return tempFile.toPath();
-  }
-
-  private String generateCacheStorageDirectory(String url) {
+  public String generateCacheStorageDirectory(String url) {
     url = url.substring(0, url.lastIndexOf(SLASH));
     var urlArrays = Arrays.asList(url.split(SLASH));
     Collections.reverse(urlArrays);
