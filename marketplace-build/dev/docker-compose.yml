@@ -25,8 +25,8 @@ services:
       args:
         - BUILD_ENV=${BUILD_ENV}
     restart: always
-    ports:
-      - "4000:4000"
+    expose:
+      - 4000
 
   market-service:
     container_name: marketplace-service
@@ -55,8 +55,8 @@ services:
       dockerfile: Dockerfile
       args:
         - BUILD_VERSION=${BUILD_VERSION}
-    ports:
-      - "8080:8080"
+    expose:
+      - 8080
 
 volumes:
   marketcache:
