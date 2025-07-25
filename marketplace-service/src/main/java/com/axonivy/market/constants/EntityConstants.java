@@ -37,4 +37,6 @@ public class EntityConstants {
   public static final String SHORT_DESCRIPTION = "shortDescription";
   public static final String PRODUCT_NAME = "product_name";
   public static final String PRODUCT_DESCRIPTION = "product_description";
+  public static final String GITHUB_REPO = "github_repo";
+  public static final String TEST_STEP =  "test_step";
 }

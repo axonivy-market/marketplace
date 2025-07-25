@@ -101,7 +101,7 @@ describe('ProductDetailComponent', () => {
 
     mockRouter = jasmine.createSpyObj('Router', ['navigate']);
 
-    mockAuthService = jasmine.createSpyObj('AuthService', ['getToken']);
+    mockAuthService = jasmine.createSpyObj('AuthService', ['getToken', 'redirectToGitHub']);
     mockAppModalService = jasmine.createSpyObj('AppModalService', [
       'openAddFeedbackDialog'
     ]);
@@ -133,7 +133,10 @@ describe('ProductDetailComponent', () => {
         {
           provide: ActivatedRoute,
           useValue: {
-            snapshot: { params: { id: products[0].id } },
+            snapshot: {
+              params: { id: products[0].id },
+              data: { productDetail: MOCK_PRODUCT_DETAIL }
+            },
             queryParams: of({ type: TypeOption.CONNECTORS }),
             fragment: of('description')
           }
@@ -199,6 +202,26 @@ describe('ProductDetailComponent', () => {
     );
   });
 
+  it('should open add feedback dialog if token is present', () => {
+    languageService.selectedLanguage.and.returnValue(Language.DE);
+    mockAuthService.getToken.and.returnValue('token');
+
+    component.onClickRateBtn();
+    fixture.detectChanges();
+
+    expect(mockAppModalService.openAddFeedbackDialog).toHaveBeenCalled();
+  });
+
+  it('should redirect to Gitub if token is null', () => {
+    languageService.selectedLanguage.and.returnValue(Language.DE);
+    mockAuthService.getToken.and.returnValue(null);
+
+    component.onClickRateBtn();
+    fixture.detectChanges();
+
+    expect(mockAuthService.redirectToGitHub).toHaveBeenCalled();
+  });
+
   it('should have title like the name DE', () => {
     languageService.selectedLanguage.and.returnValue(Language.DE);
     component.updateWebBrowserTitle(component.productDetail().names);
@@ -211,17 +234,6 @@ describe('ProductDetailComponent', () => {
 
   it('version should display in number', () => {
     expect(component.selectedVersion).toEqual('Version 10.0.0');
-  });
-
-  it('should get corresponding version from session strorage', () => {
-    const targetVersion = '1.0';
-    const productId = 'Portal';
-    routingQueryParamService.getDesignerVersionFromSessionStorage.and.returnValue(
-      targetVersion
-    );
-    component.getProductById(productId, false).subscribe(productDetail => {
-      expect(productDetail).toEqual(MOCK_CRON_JOB_PRODUCT_DETAIL);
-    });
   });
 
   it('should reset state before fetching new product details', () => {
@@ -836,32 +848,40 @@ describe('ProductDetailComponent', () => {
   });
 
   it('should generate right text for the rate connector', () => {
-    const rateConnector = fixture.debugElement.query(
+    let rateConnector = fixture.debugElement.query(
       By.css('.rate-connector-btn')
     );
     expect(rateConnector.childNodes[0].nativeNode.textContent).toContain(
       'common.feedback.rateFeedbackForConnectorBtnLabel'
     );
 
-    const rateConnectorEmptyText = fixture.debugElement.query(
+    let rateConnectorEmptyText = fixture.debugElement.query(
       By.css('.rate-empty-text')
     );
     expect(
       rateConnectorEmptyText.childNodes[0].nativeNode.textContent
     ).toContain('common.feedback.noFeedbackForConnectorLabel');
 
-    component.route.snapshot.params['id'] = 'cronjob';
-    spyOn(component, 'getProductById').and.returnValue(
-      of(MOCK_CRON_JOB_PRODUCT_DETAIL)
-    );
-    component.ngOnInit();
+    const activatedRoute = TestBed.inject(ActivatedRoute) as any;
+    activatedRoute.snapshot.data.productDetail = MOCK_CRON_JOB_PRODUCT_DETAIL;
+
+    // Recreate the component with new data
+    fixture = TestBed.createComponent(ProductDetailComponent);
+    component = fixture.componentInstance;
     fixture.detectChanges();
+
+    // Now assert utility labels
+    rateConnector = fixture.debugElement.query(By.css('.rate-connector-btn'));
     expect(rateConnector.childNodes[0].nativeNode.textContent).toContain(
       'common.feedback.rateFeedbackForUtilityBtnLabel'
     );
-    expect(
-      rateConnectorEmptyText.childNodes[0].nativeNode.textContent
-    ).toContain('common.feedback.noFeedbackForUtilityLabel');
+
+    rateConnectorEmptyText = fixture.debugElement.query(
+      By.css('.rate-empty-text')
+    );
+    expect(rateConnectorEmptyText.childNodes[0].nativeNode.textContent).toContain(
+      'common.feedback.noFeedbackForUtilityLabel'
+    ); 
   });
 
   it('maven tab should not display when product module content is missing', () => {

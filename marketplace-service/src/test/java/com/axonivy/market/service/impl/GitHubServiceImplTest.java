@@ -1,5 +1,6 @@
 package com.axonivy.market.service.impl;
 
+import com.axonivy.market.constants.CommonConstants;
 import com.axonivy.market.constants.GitHubConstants;
 import com.axonivy.market.entity.Product;
 import com.axonivy.market.enums.AccessLevel;
@@ -17,15 +18,7 @@ import com.axonivy.market.github.util.GitHubUtils;
 import com.axonivy.market.model.GitHubReleaseModel;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.kohsuke.github.GHBranch;
-import org.kohsuke.github.GHCommit;
-import org.kohsuke.github.GHContent;
-import org.kohsuke.github.GHOrganization;
-import org.kohsuke.github.GHRelease;
-import org.kohsuke.github.GHRepository;
-import org.kohsuke.github.GHTeam;
-import org.kohsuke.github.GitHub;
-import org.kohsuke.github.PagedIterable;
+import org.kohsuke.github.*;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockedStatic;
@@ -47,14 +40,7 @@ import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
@@ -676,4 +662,73 @@ class GitHubServiceImplTest {
     assertNotNull(result);
     assertTrue(result.isEmpty());
   }
+
+  @Test
+  void testGetExportTestArtifactSuccess() throws IOException {
+    // Arrange
+    GHWorkflowRun mockRun = mock(GHWorkflowRun.class);
+    GHArtifact mockArtifact1 = mock(GHArtifact.class);
+    GHArtifact mockArtifact2 = mock(GHArtifact.class);
+    PagedIterable<GHArtifact> mockPagedIterable = mock(PagedIterable.class);
+
+    when(mockRun.listArtifacts()).thenReturn(mockPagedIterable);
+    when(mockPagedIterable.toList()).thenReturn(Arrays.asList(mockArtifact1, mockArtifact2));
+
+    when(mockArtifact1.getName()).thenReturn("other-artifact");
+    when(mockArtifact2.getName()).thenReturn(CommonConstants.TEST_REPORT_FILE);
+
+    GHArtifact result = gitHubService.getExportTestArtifact(mockRun);
+
+    assertNotNull(result, "Artifact should not be null");
+    assertEquals(mockArtifact2, result, "Should return the artifact with the target name");
+    verify(mockRun).listArtifacts();
+  }
+
+  @Test
+  void testGetLatestWorkflowRunWorkflowNotFound() throws IOException {
+    GHRepository mockRepo = mock(GHRepository.class);
+    String workflowFileName = "non-existent-workflow.yml";
+
+    when(mockRepo.getWorkflow(workflowFileName)).thenThrow(new GHFileNotFoundException("Workflow not found"));
+    when(mockRepo.getFullName()).thenReturn("owner/repo");
+
+    GHWorkflowRun result = gitHubService.getLatestWorkflowRun(mockRepo, workflowFileName);
+
+    assertNull(result, "Should return null when workflow is not found");
+    verify(mockRepo).getWorkflow(workflowFileName);
+  }
+
+  @Test
+  void testGetLatestWorkflowRunNoSuchElementException() throws IOException {
+    GHRepository mockRepo = mock(GHRepository.class);
+    String workflowFileName = "test-workflow.yml";
+
+    when(mockRepo.getWorkflow(workflowFileName)).thenThrow(new NoSuchElementException("No workflow found"));
+    when(mockRepo.getFullName()).thenReturn("owner/repo");
+
+    GHWorkflowRun result = gitHubService.getLatestWorkflowRun(mockRepo, workflowFileName);
+
+    assertNull(result, "Should return null when no workflow run is found");
+    verify(mockRepo).getWorkflow(workflowFileName);
+  }
+
+  @Test
+  void testGetExportTestArtifactNotFound() throws IOException {
+    GHWorkflowRun mockRun = mock(GHWorkflowRun.class);
+    GHArtifact mockArtifact1 = mock(GHArtifact.class);
+    GHArtifact mockArtifact2 = mock(GHArtifact.class);
+    PagedIterable<GHArtifact> mockPagedIterable = mock(PagedIterable.class);
+
+    when(mockRun.listArtifacts()).thenReturn(mockPagedIterable);
+    when(mockPagedIterable.toList()).thenReturn(Arrays.asList(mockArtifact1, mockArtifact2));
+
+    when(mockArtifact1.getName()).thenReturn("other-artifact-1");
+    when(mockArtifact2.getName()).thenReturn("other-artifact-2");
+
+    GHArtifact result = gitHubService.getExportTestArtifact(mockRun);
+
+    assertNull(result, "Should return null when no artifact with the target name is found");
+    verify(mockRun).listArtifacts();
+  }
+
 }

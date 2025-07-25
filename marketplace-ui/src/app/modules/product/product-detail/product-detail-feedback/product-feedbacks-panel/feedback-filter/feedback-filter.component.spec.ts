@@ -67,4 +67,23 @@ describe('FeedbackFilterComponent', () => {
     const dropdownComponent = fixture.debugElement.query(By.directive(CommonDropdownComponent)).componentInstance;
     expect(dropdownComponent.items).toBe(component.feedbackSortTypes);
   });
+
+  it('should update sort signal and emit sortChange when onSortChange is called', () => {
+    const testValue: FeedbackSortType = FeedbackSortType.HIGHEST;
+    const mockEvent: ItemDropdown<FeedbackSortType> = {
+      value: testValue,
+      label: 'common.sort.value.highest'
+    };
+
+    const emitSpy = spyOn(component.sortChange, 'emit');
+
+    component.productFeedbackService.sort = {
+      set: jasmine.createSpy('set')
+    } as any;
+
+    component.onSortChange(mockEvent);
+
+    expect(component.productFeedbackService.sort.set).toHaveBeenCalledWith(testValue);
+    expect(emitSpy).toHaveBeenCalledWith(testValue);
+  });
 });

@@ -10,13 +10,19 @@ import { ProductFeedbackService } from '../product-feedback.service';
 import { provideHttpClient, withInterceptorsFromDi } from '@angular/common/http';
 import { provideHttpClientTesting } from '@angular/common/http/testing';
 import { AuthService } from '../../../../../../auth/auth.service';
+import { FeedbackStatus } from '../../../../../../shared/enums/feedback-status.enum';
 
 describe('ProductFeedbackComponent', () => {
   let component: ProductFeedbackComponent;
   let fixture: ComponentFixture<ProductFeedbackComponent>;
   let mockElementRef: ElementRef;
+  let authService: jasmine.SpyObj<AuthService>;
 
   beforeEach(async () => {
+    const authServiceSpy = jasmine.createSpyObj('AuthService', [
+      'getToken',
+      'getUserId'
+    ]);
     mockElementRef = {
       nativeElement: {
         scrollHeight: 200,
@@ -25,34 +31,32 @@ describe('ProductFeedbackComponent', () => {
     } as ElementRef;
 
     await TestBed.configureTestingModule({
-      imports: [ProductFeedbackComponent, StarRatingComponent, CommonModule],
-      providers: [
-        { provide: ElementRef, useValue: mockElementRef },
-        TranslateService, ProductFeedbackService,
-        AuthService,
-        provideHttpClient(withInterceptorsFromDi()),
-        provideHttpClientTesting(),
-      ]
-    }).compileComponents();
-
-
-  });
-
-  beforeEach(() => {
-    TestBed.configureTestingModule({
       imports: [
+        ProductFeedbackComponent,
+        StarRatingComponent,
+        CommonModule,
         TranslateModule.forRoot({
           loader: {
             provide: TranslateLoader,
-            useFactory: httpLoaderFactory,
+            useFactory: httpLoaderFactory
           },
           missingTranslationHandler: {
             provide: MissingTranslationHandler,
             useValue: { handle: () => 'Translation missing' }
           }
         })
+      ],
+      providers: [
+        { provide: ElementRef, useValue: mockElementRef },
+        { provide: AuthService, useValue: authServiceSpy },
+        TranslateService,
+        ProductFeedbackService,
+        provideHttpClient(withInterceptorsFromDi()),
+        provideHttpClientTesting()
       ]
-    });
+    }).compileComponents();
+
+    authService = authServiceSpy;
 
     fixture = TestBed.createComponent(ProductFeedbackComponent);
     component = fixture.componentInstance;
@@ -76,5 +80,70 @@ describe('ProductFeedbackComponent', () => {
     component.toggleContent();
     expect(component.feedback.isExpanded).toBe(false);
   });
-});
 
+  it('should update scrollHeight and clientHeight correctly via updateHeights()', () => {
+    component['contentElement'] = mockElementRef;
+
+    component['updateHeights']();
+
+    expect(component['scrollHeight']()).toBe(200);
+    expect(component['clientHeight']()).toBe(100);
+  });
+
+  it('isFeedbackPending should return false if userId is not the same as logged in user', () => {
+    const mockFeedbacks: Feedback[] = [
+      {
+        id: '1',
+        content: 'User feedback',
+        rating: 5,
+        productId: '123',
+        feedbackStatus: FeedbackStatus.PENDING,
+        moderatorName: '',
+        userId: 'user1',
+        version: 1,
+        productNames: {}
+      }
+    ];
+    component.feedback = mockFeedbacks[0];
+    authService.getUserId.and.returnValue('user2');
+    expect(component.isFeedbackPending(component.feedback)).toBe(false);
+  });
+
+  it('isFeedbackPending should return false if feedbackStatus is not PENDING', () => {
+    const mockFeedbacks: Feedback[] = [
+      {
+        id: '1',
+        content: 'User feedback',
+        rating: 5,
+        productId: '123',
+        feedbackStatus: FeedbackStatus.APPROVED,
+        moderatorName: '',
+        userId: 'user1',
+        version: 1,
+        productNames: {}
+      }
+    ];
+    component.feedback = mockFeedbacks[0];
+    authService.getUserId.and.returnValue('user1');
+    expect(component.isFeedbackPending(component.feedback)).toBe(false);
+  });
+
+  it('isFeedbackPending should return true if userId is the same with logged in user and feedbackStatus is PENDING', () => {
+    const mockFeedbacks: Feedback[] = [
+      {
+        id: '1',
+        content: 'User feedback',
+        rating: 5,
+        productId: '123',
+        feedbackStatus: FeedbackStatus.PENDING,
+        moderatorName: '',
+        userId: 'user1',
+        version: 1,
+        productNames: {}
+      }
+    ];
+    component.feedback = mockFeedbacks[0];
+    authService.getUserId.and.returnValue('user1');
+    expect(component.isFeedbackPending(component.feedback)).toBe(true);
+  });
+});

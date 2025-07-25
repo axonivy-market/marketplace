@@ -311,4 +311,76 @@ describe('ProductComponent', () => {
     expect(newComponent.criteria.type).toEqual(TypeOption.CONNECTORS);
     expect(newComponent.criteria.sort).toEqual(SortOption.ALPHABETICALLY);
   }));
+
+  it('should return false when responsePage is not set', () => {
+    component.responsePage = undefined as any;
+    component.responseLink = { next: { href: 'next-page' } } as any;
+
+    const result = component.hasMore();
+
+    expect(result).toBe(false);
+  });
+
+  it('should return false when responseLink is not set', () => {
+    component.responsePage = { number: 0, totalPages: 2 } as any;
+    component.responseLink = undefined as any;
+
+    const result = component.hasMore();
+
+    expect(result).toBe(false);
+  });
+
+  it('should return false when both responsePage and responseLink are not set', () => {
+    component.responsePage = undefined as any;
+    component.responseLink = undefined as any;
+
+    const result = component.hasMore();
+
+    expect(result).toBe(false);
+  });
+
+  it('should return true when current page number is less than total pages and next link exists', () => {
+    component.responsePage = { number: 0, totalPages: 2 } as any;
+    component.responseLink = { next: { href: 'next-page' } } as any;
+
+    const result = component.hasMore();
+
+    expect(result).toBe(true);
+  });
+
+  it('should return false when current page equals total pages', () => {
+    component.responsePage = { number: 2, totalPages: 2 } as any;
+    component.responseLink = { next: { href: 'next-page' } } as any;
+
+    const result = component.hasMore();
+
+    expect(result).toBe(false);
+  });
+
+  it('should return false when current page is greater than total pages', () => {
+    component.responsePage = { number: 3, totalPages: 2 } as any;
+    component.responseLink = { next: { href: 'next-page' } } as any;
+
+    const result = component.hasMore();
+
+    expect(result).toBe(false);
+  });
+
+  it('should return false when next link is undefined', () => {
+    component.responsePage = { number: 0, totalPages: 2 } as any;
+    component.responseLink = { next: undefined } as any;
+
+    const result = component.hasMore();
+
+    expect(result).toBe(false);
+  });
+
+  it('should return false when next link does not exist', () => {
+    component.responsePage = { number: 0, totalPages: 2 } as any;
+    component.responseLink = {} as any;
+
+    const result = component.hasMore();
+
+    expect(result).toBe(false);
+  });
 });

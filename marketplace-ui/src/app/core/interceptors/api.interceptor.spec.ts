@@ -1,5 +1,5 @@
 import { HttpClient, HttpHeaders, provideHttpClient, withInterceptors } from '@angular/common/http';
-import { HttpTestingController } from '@angular/common/http/testing';
+import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { ActivatedRoute } from '@angular/router';
 import { TranslateModule } from '@ngx-translate/core';
@@ -24,6 +24,7 @@ describe('AuthInterceptor', () => {
       ],
       providers: [
         provideHttpClient(withInterceptors([apiInterceptor])),
+        provideHttpClientTesting(),
         HttpTestingController,
         {
           provide: ActivatedRoute,

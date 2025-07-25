@@ -1,8 +1,9 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
-import { TranslateModule, TranslateService } from '@ngx-translate/core';
+import { TranslateModule,  } from '@ngx-translate/core';
 import { HeaderComponent } from './header.component';
 import { Viewport } from 'karma-viewport/dist/adapter/viewport';
+import { RouterModule } from '@angular/router';
 
 declare const viewport: Viewport;
 
@@ -12,8 +13,7 @@ describe('HeaderComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [HeaderComponent, TranslateModule.forRoot()],
-      providers: [TranslateService]
+      imports: [HeaderComponent, TranslateModule.forRoot(), RouterModule .forRoot([])],
     }).compileComponents();
 
     fixture = TestBed.createComponent(HeaderComponent);

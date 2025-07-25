@@ -3,7 +3,7 @@ import { of } from 'rxjs';
 import { ProductDetailVersionActionComponent } from './product-detail-version-action.component';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { ProductService } from '../../product.service';
-import { provideHttpClient, withInterceptorsFromDi } from '@angular/common/http';
+import { HttpResponse, provideHttpClient, withInterceptorsFromDi } from '@angular/common/http';
 import { ElementRef } from '@angular/core';
 import { ItemDropdown } from '../../../../shared/models/item-dropdown.model';
 import { CookieService } from 'ngx-cookie-service';
@@ -13,7 +13,7 @@ import { ROUTER } from '../../../../shared/constants/router.constant';
 import { MatomoTestingModule } from 'ngx-matomo-client/testing';
 import { ProductDetailActionType } from '../../../../shared/enums/product-detail-action-type';
 import { MATOMO_TRACKING_ENVIRONMENT } from '../../../../shared/constants/matomo.constant';
-import { provideHttpClientTesting } from '@angular/common/http/testing';
+import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { environment } from '../../../../../environments/environment';
 import { MavenArtifactKey } from '../../../../shared/models/maven-artifact.model';
 
@@ -30,6 +30,7 @@ describe('ProductDetailVersionActionComponent', () => {
   let  productServiceMock: any;
   let router: Router;
   let route: jasmine.SpyObj<ActivatedRoute>;
+  let httpMock: HttpTestingController;
 
   beforeEach(() => {
     productServiceMock = jasmine.createSpyObj('ProductService', [
@@ -69,6 +70,7 @@ describe('ProductDetailVersionActionComponent', () => {
     router = TestBed.inject(Router);
     route = TestBed.inject(ActivatedRoute) as jasmine.SpyObj<ActivatedRoute>;
     fixture.detectChanges();
+    httpMock = TestBed.inject(HttpTestingController);
   });
 
   it('should create', () => { expect(component).toBeTruthy(); });
@@ -351,25 +353,32 @@ describe('ProductDetailVersionActionComponent', () => {
     expect(component.selectedVersion()).toBe(testVersion);
   });
 
-  it('should properly handle file download', () => {
-    spyOn(document.body, 'appendChild');
-    spyOn(document.body, 'removeChild');
+  it('should fetch and trigger download with correct parameters', fakeAsync(() => {
+    const url = 'https://example.com/file.pdf';
+    const fileName = 'artifact.zip';
+    const testBlob = new Blob(['test'], { type: 'application/zip' });
+    const downloadSpy = spyOn<any>(component, 'fetchAndDownloadArtifact').and.callThrough();
+    spyOn(component, 'onUpdateInstallationCount');
+    spyOn(component, 'triggerDownload');
 
-    const mockClick = jasmine.createSpy();
-    spyOn(document, 'createElement').and.returnValue({ click: mockClick } as any);
-
-    component['downloadFile']('base64Data', 'test.zip');
-
-    expect(document.body.appendChild).toHaveBeenCalled();
-    expect(mockClick).toHaveBeenCalled();
-    expect(document.body.removeChild).toHaveBeenCalled();
-  });
+    component.fetchAndDownloadArtifact(url, fileName);
+    const req = httpMock.expectOne(url);
+    req.flush(testBlob);
+    tick();
+    expect(req.request.method).toBe('GET');
+    expect(req.request.responseType).toBe('blob');
+    expect(downloadSpy).toHaveBeenCalledOnceWith(url, fileName);
+    expect(component.triggerDownload).toHaveBeenCalledWith(testBlob, fileName);
+    expect(component.onUpdateInstallationCount).toHaveBeenCalled();
+    expect(component.isDownloading()).toBeFalse();
+    httpMock.verify();
+  }));
 
   it('should call sendRequestToGetInstallationCount and emit installation count', fakeAsync(() => {
     productServiceMock.sendRequestToGetInstallationCount.and.returnValue(of(42));
     spyOn(component.installationCount, 'emit');
 
-    component.onUpdateInstallationCountForDesigner();
+    component.onUpdateInstallationCount();
     tick(1000);
 
     expect(productServiceMock.sendRequestToGetInstallationCount).toHaveBeenCalledWith(component.productId);
@@ -389,13 +398,15 @@ describe('ProductDetailVersionActionComponent', () => {
     component.selectedArtifact = 'document.doc';
     component.productId = '123';
     environment.apiUrl = 'https://api.example.com';
-
+    component.productId = 'portal';
+    component.selectedArtifactId = 'document.doc';
+    component.selectedVersion.set('1.2.3');
     spyOn(component, 'fetchAndDownloadArtifact');
 
     component.downloadArtifact();
 
     expect(component.fetchAndDownloadArtifact).toHaveBeenCalledWith(
-      `${environment.apiUrl}/api/product-marketplace-data/version-download/123?url=document.doc`,
+      `${environment.apiUrl}/api/product-marketplace-data/portal/document.doc/1.2.3`,
       'document.doc'
     );
   });
@@ -403,13 +414,15 @@ describe('ProductDetailVersionActionComponent', () => {
   it('should correctly handle artifact download scenarios', () => {
     environment.apiUrl = 'https://api.example.com';
     component.productId = 'ai-assistant';
+    component.selectedArtifactId = 'document.doc';
+    component.selectedVersion.set('1.2.3');
     spyOn(component, 'fetchAndDownloadArtifact');
 
     component.selectedArtifact = 'https://example.com/ai-assistant-12.0.1.1.iar';
 
     component.downloadArtifact();
     expect(component.fetchAndDownloadArtifact).toHaveBeenCalledWith(
-      `${environment.apiUrl}/api/product-marketplace-data/version-download/ai-assistant?url=https://example.com/ai-assistant-12.0.1.1.iar`, 'ai-assistant-12.0.1.1.iar'
+      `${environment.apiUrl}/api/product-marketplace-data/ai-assistant/document.doc/1.2.3`, 'ai-assistant-12.0.1.1.iar'
     );
 
     component.isCheckedAppForEngine = true;
@@ -417,8 +430,48 @@ describe('ProductDetailVersionActionComponent', () => {
     component.selectedVersion.set('12.0.0');
     component.downloadArtifact();
     expect(component.fetchAndDownloadArtifact).toHaveBeenCalledWith(
-      `${environment.apiUrl}/api/product-details/ai-assistant/artifact/zip-file?version=12.0.0&artifact=ai-assistant`,
+      `${environment.apiUrl}/api/product-details/ai-assistant/ai-assistant/12.0.0/zip-file`,
       'ai-assistant-app-12.0.0.zip'
     );
+  });
+
+  it('should create a blob URL, create anchor, trigger click, and revoke URL', () => {
+    const blob = new Blob(['test'], { type: 'text/plain' });
+    const fileName = 'file.txt';
+    const mockUrl = 'blob:http://localhost/fake-url';
+    const createObjectURLSpy = spyOn(URL, 'createObjectURL').and.returnValue(mockUrl);
+    const revokeObjectURLSpy = spyOn(URL, 'revokeObjectURL');
+    const clickSpy = jasmine.createSpy('click');
+    const anchorMock = {
+      href: '',
+      download: '',
+      click: clickSpy
+    } as unknown as HTMLAnchorElement;
+    const createElementSpy = spyOn(document, 'createElement').and.returnValue(anchorMock);
+    component.triggerDownload(blob, fileName);
+    expect(createObjectURLSpy).toHaveBeenCalledWith(blob);
+    expect(createElementSpy).toHaveBeenCalledWith('a');
+    expect(anchorMock.href).toBe(mockUrl);
+    expect(anchorMock.download).toBe(fileName);
+    expect(clickSpy).toHaveBeenCalled();
+    expect(revokeObjectURLSpy).toHaveBeenCalledWith(mockUrl);
+  });
+
+  it('first artifact should be chosen when select corresponding version', () => {
+    const selectedVersion = 'Version 10.0.2';
+    component.onSelectVersion(selectedVersion);
+    expect(component.artifacts().length).toBe(0);
+    const artifact = {
+      isProductArtifact: true,
+      id: { artifactId: "example-artifactId-1" } as MavenArtifactKey
+    } as ItemDropdown;
+    component.versions.set([selectedVersion]);
+    component.versionMap.set(selectedVersion, [artifact]);
+    component.selectedVersion.set(selectedVersion);
+    component.onSelectVersion(selectedVersion);
+
+    expect(component.artifacts().length).toBe(1);
+    expect(component.selectedArtifactName).toEqual('');
+    expect(component.selectedArtifact).toEqual('');
   });
 });

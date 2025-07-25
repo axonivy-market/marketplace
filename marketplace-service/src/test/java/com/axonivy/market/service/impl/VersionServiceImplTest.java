@@ -132,17 +132,17 @@ class VersionServiceImplTest extends BaseSetup {
   }
 
   @Test
-  void testGetVersionsForDesigner() {
+  void testGetInstallableVersions() {
     List<String> mockVersions = List.of("11.3.0-SNAPSHOT", "11.1.1", "11.1.0", "10.0.2");
     Metadata mockMetadata = getMockMetadata();
     mockMetadata.setArtifactId(MOCK_PRODUCT_ARTIFACT_ID);
     mockMetadata.setVersions(new HashSet<>());
     mockMetadata.getVersions().addAll(mockVersions);
-    List<VersionAndUrlModel> result = versionService.getVersionsForDesigner(MOCK_PRODUCT_ID, true,
+    List<VersionAndUrlModel> result = versionService.getInstallableVersions(MOCK_PRODUCT_ID, true,
         MOCK_DESIGNER_VERSION);
     Assertions.assertTrue(CollectionUtils.isEmpty(result));
     when(metadataRepo.findByProductId(MOCK_PRODUCT_ID)).thenReturn(List.of(mockMetadata));
-    result = versionService.getVersionsForDesigner(MOCK_PRODUCT_ID, true, MOCK_DESIGNER_VERSION);
+    result = versionService.getInstallableVersions(MOCK_PRODUCT_ID, true, MOCK_DESIGNER_VERSION);
     Assertions.assertEquals(result.stream().map(VersionAndUrlModel::getVersion).toList(), mockVersions);
     Assertions.assertTrue(result.get(0).getUrl().endsWith("/api/product-details/bpmn-statistic/11.3" +
         ".0-SNAPSHOT/json?designerVersion=12.0.4"));

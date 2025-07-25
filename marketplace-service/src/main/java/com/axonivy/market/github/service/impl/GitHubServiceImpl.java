@@ -1,9 +1,10 @@
 package com.axonivy.market.github.service.impl;
 
+import com.axonivy.market.constants.CommonConstants;
 import com.axonivy.market.constants.ErrorMessageConstants;
 import com.axonivy.market.constants.GitHubConstants;
-import com.axonivy.market.entity.Product;
 import com.axonivy.market.entity.GithubUser;
+import com.axonivy.market.entity.Product;
 import com.axonivy.market.enums.ErrorCode;
 import com.axonivy.market.exceptions.model.MissingHeaderException;
 import com.axonivy.market.exceptions.model.NotFoundException;
@@ -41,13 +42,17 @@ import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.NoSuchElementException;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Function;
@@ -60,6 +65,7 @@ import static org.apache.commons.lang3.StringUtils.EMPTY;
 @Service
 public class GitHubServiceImpl implements GitHubService {
 
+  public static final int PAGE_SIZE_OF_WORKFLOW = 10;
   private final RestTemplate restTemplate;
   private final GithubUserRepository githubUserRepository;
   private final GitHubProperty gitHubProperty;
@@ -394,13 +400,10 @@ public class GitHubServiceImpl implements GitHubService {
   public GHRelease getGitHubLatestReleaseByProductId(String repositoryName) throws IOException {
     return this.getRepository(repositoryName).getLatestRelease();
   }
-<<<<<<< Updated upstream
-=======
 
   @Override
   public GHWorkflowRun getLatestWorkflowRun(GHRepository repo, String workflowFileName) throws IOException {
     try {
-
       PagedIterable<GHWorkflowRun> runs = repo.getWorkflow(workflowFileName).listRuns().withPageSize(
           PAGE_SIZE_OF_WORKFLOW);
       for (GHWorkflowRun run : runs) {
@@ -437,5 +440,4 @@ public class GitHubServiceImpl implements GitHubService {
     });
     return new ByteArrayInputStream(outputStream.toByteArray());
   }
->>>>>>> Stashed changes
 }

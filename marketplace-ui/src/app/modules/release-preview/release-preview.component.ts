@@ -18,10 +18,11 @@ import { PRODUCT_DETAIL_TABS } from '../../shared/constants/common.constant';
 import { ItemDropdown } from '../../shared/models/item-dropdown.model';
 import { CommonDropdownComponent } from '../../shared/components/common-dropdown/common-dropdown.component';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
-import { SafeHtml, Title, DomSanitizer } from '@angular/platform-browser';
+import { SafeHtml, DomSanitizer } from '@angular/platform-browser';
 import { DisplayValue } from '../../shared/models/display-value.model';
 import { MultilingualismPipe } from '../../shared/pipes/multilingualism.pipe';
 import { MarkdownService } from '../../shared/services/markdown.service';
+import { PageTitleService } from '../../shared/services/page-title.service';
 
 const DEFAULT_ACTIVE_TAB = 'description';
 const MAX_FILE_SIZE_MB = 20;
@@ -52,7 +53,7 @@ export class ReleasePreviewComponent {
   languageService = inject(LanguageService);
   themeService = inject(ThemeService);
   translateService = inject(TranslateService);
-  private readonly titleService = inject(Title);
+  pageTitleService = inject(PageTitleService);
   detailTabs = PRODUCT_DETAIL_TABS;
   displayedTabsSignal: Signal<ItemDropdown[]> = computed(() => {
     this.languageService.selectedLanguage();
@@ -64,21 +65,7 @@ export class ReleasePreviewComponent {
   private readonly markdownService = inject(MarkdownService);
 
   ngOnInit(): void {
-    // Set the title initially
-    this.updateHomePageTitle();
-
-    // Update the title whenever the language changes
-    this.translateService.onLangChange.subscribe(() => {
-      this.updateHomePageTitle();
-    });
-  }
-
-  private updateHomePageTitle(): void {
-    this.translateService
-      .get('common.preview.pageTitle')
-      .subscribe((translatedTitle: string) => {
-        this.titleService.setTitle(translatedTitle);
-      });
+    this.pageTitleService.setTitleOnLangChange('common.preview.pageTitle');
   }
 
   onFileSelected(event: Event): void {

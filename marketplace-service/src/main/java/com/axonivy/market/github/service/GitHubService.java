@@ -9,17 +9,20 @@ import com.axonivy.market.github.model.GitHubAccessTokenResponse;
 import com.axonivy.market.github.model.GitHubProperty;
 import com.axonivy.market.github.model.ProductSecurityInfo;
 import com.axonivy.market.model.GitHubReleaseModel;
+import org.kohsuke.github.GHArtifact;
 import org.kohsuke.github.GHContent;
 import org.kohsuke.github.GHOrganization;
 import org.kohsuke.github.GHRelease;
 import org.kohsuke.github.GHRepository;
 import org.kohsuke.github.GHTag;
+import org.kohsuke.github.GHWorkflowRun;
 import org.kohsuke.github.GitHub;
 import org.kohsuke.github.PagedIterable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.List;
 
 public interface GitHubService {
@@ -52,4 +55,9 @@ public interface GitHubService {
 
   GitHubReleaseModel getGitHubReleaseModelByProductIdAndReleaseId(Product product, Long releaseId) throws IOException;
 
-}
+  GHWorkflowRun getLatestWorkflowRun(GHRepository repo, String workflowFileName) throws IOException;
+
+  GHArtifact getExportTestArtifact(GHWorkflowRun run) throws IOException;
+
+  InputStream downloadArtifactZip(GHArtifact artifact) throws IOException;
+  }

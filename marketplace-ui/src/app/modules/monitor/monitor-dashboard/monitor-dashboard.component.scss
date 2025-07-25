@@ -1,0 +1,157 @@
+.container {
+  max-width: 1200px;
+  margin: 20px auto;
+  padding: 0 15px;
+  cursor: default;
+}
+
+.header {
+  text-align: center;
+  padding: 20px 0;
+  color: #333;
+
+  h2 {
+    font-size: 4rem;
+  }
+}
+
+.repo-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 15px;
+}
+
+.repo-card {
+  background-color: #fff;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  padding: 30px;
+
+  &:hover {
+    background-color: #f5f5f5;
+    border-color: #ccc;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+    cursor: default;
+  }
+
+  a:hover {
+    color: #0056b3;
+    text-decoration: underline;
+    cursor: pointer;
+  }
+}
+
+.repo-header {
+  display: flex;
+  align-items: center;
+  margin-bottom: 10px;
+  gap: 5px;
+
+  p {
+    margin: 0;
+    font-size: 2rem;
+    color: #007acc;
+
+    &:hover {
+      cursor: pointer;
+    }
+  }
+
+  .visibility {
+    font-size: 1.1rem;
+    padding: 3px 8px;
+    border-radius: 20px;
+    border: 1px solid gray;
+    line-height: 12px;
+  }
+
+  .archived {
+    font-size: 1.1rem;
+    padding: 3px 8px;
+    border-radius: 20px;
+    border: 1px solid orange;
+    line-height: 12px;
+    color: orange;
+  }
+}
+
+.repo-info {
+  margin-top: 15px;
+  font-size: 1.5rem;
+
+  p {
+    margin: 8px 0;
+    font-size: 1.3rem;
+    color: #555;
+    min-height: 28px;
+  }
+
+  span {
+    font-weight: bold;
+  }
+
+  .passed {
+    padding: 5px 10px;
+    background-color: #c4f5cc;
+    border-radius: 5px;
+  }
+
+  .failed {
+    padding: 5px 10px;
+    background-color: #f7bcbc;
+    border-radius: 5px;
+  }
+
+  .icon {
+    display: inline-block;
+    width: 2rem;
+    text-align: center;
+    margin-right: 8px;
+    font-size: 1.5rem;
+  }
+}
+
+.badge-row {
+  font-size: 1.5rem;
+  margin: 8px 0;
+
+  img {
+    vertical-align: middle;
+    height: 20px;
+    margin-left: 8px;
+  }
+}
+
+.workflow {
+  font-size: 1.5rem;
+  margin: 10px 0;
+  line-height: 1.6;
+
+  .sub-status {
+    font-size: 1.4rem;
+    color: #444;
+    margin-top: 4px;
+    margin-left: 10px;
+  }
+}
+
+.reload-link {
+  text-decoration: none;
+  color: #007bff;
+  font-weight: 600;
+  cursor: pointer;
+  margin-left: 10px;
+  transition: color 0.3s ease, transform 0.2s ease;
+  text-align: center;
+
+  &:hover {
+    text-decoration: underline;
+    color: #0056b3;
+    transform: scale(1.05);
+  }
+
+  &:focus {
+    outline: 2px solid #0056b3;
+  }
+}

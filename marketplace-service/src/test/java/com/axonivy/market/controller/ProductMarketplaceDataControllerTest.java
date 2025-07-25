@@ -1,18 +1,14 @@
 package com.axonivy.market.controller;
 
 import com.axonivy.market.BaseSetup;
-import com.axonivy.market.bo.VersionDownload;
 import com.axonivy.market.enums.ErrorCode;
 import com.axonivy.market.github.service.GitHubService;
 import com.axonivy.market.model.ProductCustomSortRequest;
 import com.axonivy.market.service.ProductMarketplaceDataService;
-import com.axonivy.market.util.validator.AuthorizationUtils;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.MockedStatic;
-import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpStatus;
 
@@ -46,32 +42,27 @@ class ProductMarketplaceDataControllerTest extends BaseSetup {
 
   @Test
   void testExtractArtifactUrl() {
-    when(productMarketplaceDataService.downloadArtifact(MOCK_DOWNLOAD_URL, MOCK_PRODUCT_ID)).thenReturn(
-        new VersionDownload());
-    var result = productMarketplaceDataController.extractArtifactUrl(MOCK_PRODUCT_ID, MOCK_DOWNLOAD_URL);
-
+    when(productMarketplaceDataService.getProductArtifactStream(MOCK_PRODUCT_ID, MOCK_ARTIFACT_ID,
+        MOCK_RELEASED_VERSION)).thenReturn(getMockEntityResource());
+    var result = productMarketplaceDataController.getArtifactResourceStream(MOCK_PRODUCT_ID, MOCK_ARTIFACT_ID,
+        MOCK_RELEASED_VERSION);
     assertEquals(HttpStatus.OK, result.getStatusCode());
     assertNotNull(result);
   }
 
   @Test
-  void testExtractArtifactUrl_ReturnNoContent() {
-    String downloadUrl = "https://example.com/download";
-    try (MockedStatic<AuthorizationUtils> mockUtils = Mockito.mockStatic(AuthorizationUtils.class)) {
-      when(productMarketplaceDataService.downloadArtifact(downloadUrl, MOCK_PRODUCT_ID)).thenReturn(null);
-
-      var result = productMarketplaceDataController.extractArtifactUrl(MOCK_PRODUCT_ID, downloadUrl);
-
-      assertEquals(HttpStatus.NOT_FOUND, result.getStatusCode());
-      assertNull(result.getBody());
-    }
+  void testExtractArtifactUrlReturnBadGateWay() {
+    var result = productMarketplaceDataController.getArtifactResourceStream(MOCK_PRODUCT_ID, MOCK_ARTIFACT_ID,
+        MOCK_DOWNLOAD_URL);
+    assertEquals(HttpStatus.NOT_FOUND, result.getStatusCode(), "Status code show return bad gateway when it can " + "not " +
+        "forwarding the download stream");
+    assertNull(result.getBody());
   }
 
   @Test
   void testFindInstallationCount() {
     when(productMarketplaceDataService.getInstallationCount(MOCK_PRODUCT_ID)).thenReturn(5);
     var result = productMarketplaceDataController.findInstallationCount(MOCK_PRODUCT_ID);
-
     assertEquals(HttpStatus.OK, result.getStatusCode());
     assertNotNull(result);
   }

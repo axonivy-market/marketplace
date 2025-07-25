@@ -1,11 +1,16 @@
-import { take } from 'rxjs/operators';
 import { ProductDetail } from './../../../shared/models/product-detail.model';
-import { CommonModule, NgOptimizedImage } from '@angular/common';
+import {
+  CommonModule,
+  isPlatformBrowser,
+  NgOptimizedImage
+} from '@angular/common';
 import MarkdownIt from 'markdown-it';
 import {
   Component,
   ElementRef,
   HostListener,
+  Inject,
+  PLATFORM_ID,
   Signal,
   WritableSignal,
   computed,
@@ -15,19 +20,17 @@ import {
 import { ActivatedRoute, Router } from '@angular/router';
 import { NgbAccordionModule, NgbNavModule } from '@ng-bootstrap/ng-bootstrap';
 import { TranslateModule } from '@ngx-translate/core';
-import { forkJoin, map, Observable, Subscription } from 'rxjs';
+import { forkJoin, Subscription } from 'rxjs';
 import { AuthService } from '../../../auth/auth.service';
 import { LanguageService } from '../../../core/services/language/language.service';
 import { ThemeService } from '../../../core/services/theme/theme.service';
 import { CommonDropdownComponent } from '../../../shared/components/common-dropdown/common-dropdown.component';
 import {
   DEFAULT_IMAGE_URL,
-  DEFAULT_VENDOR_IMAGE,
-  DEFAULT_VENDOR_IMAGE_BLACK,
   GITHUB_PULL_REQUEST_NUMBER_REGEX,
+  OG_TITLE_KEY,
   PRODUCT_DETAIL_TABS,
   RATING_LABELS_BY_TYPE,
-  SHOW_DEV_VERSION,
   TAB_PREFIX,
   UNESCAPE_GITHUB_CONTENT_REGEX,
   VERSION
@@ -54,7 +57,7 @@ import { ProductStarRatingNumberComponent } from './product-star-rating-number/p
 import { DisplayValue } from '../../../shared/models/display-value.model';
 import { CookieService } from 'ngx-cookie-service';
 import { ROUTER } from '../../../shared/constants/router.constant';
-import { SafeHtml, Title, DomSanitizer } from '@angular/platform-browser';
+import { SafeHtml, Title, DomSanitizer, Meta } from '@angular/platform-browser';
 import { API_URI } from '../../../shared/constants/api.constant';
 import { EmptyProductDetailPipe } from '../../../shared/pipes/empty-product-detail.pipe';
 import { LoadingSpinnerComponent } from '../../../shared/components/loading-spinner/loading-spinner.component';
@@ -79,6 +82,7 @@ export interface DetailTab {
 const STORAGE_ITEM = 'activeTab';
 const DEFAULT_ACTIVE_TAB = 'description';
 const GITHUB_BASE_URL = 'https://github.com/';
+
 @Component({
   selector: 'app-product-detail',
   standalone: true,
@@ -127,7 +131,7 @@ export class ProductDetailComponent {
   protected LoadingComponentId = LoadingComponentId;
   protected ProductDetailActionType = ProductDetailActionType;
 
-  resizeObserver: ResizeObserver;
+  resizeObserver?: ResizeObserver;
   productDetail: WritableSignal<ProductDetail> = signal({} as ProductDetail);
   productModuleContent: WritableSignal<ProductModuleContent> = signal(
     {} as ProductModuleContent
@@ -150,6 +154,8 @@ export class ProductDetailComponent {
   md: MarkdownIt = new MarkdownIt();
   productReleaseSafeHtmls: ProductReleaseSafeHtml[] = [];
   loadedReadmeContent: { [key: string]: SafeHtml } = {};
+  isBrowser: boolean;
+  meta = inject(Meta);
 
   @HostListener('window:popstate', ['$event'])
   onPopState() {
@@ -162,54 +168,60 @@ export class ProductDetailComponent {
 
   constructor(
     private readonly titleService: Title,
-    private readonly sanitizer: DomSanitizer
+    private readonly sanitizer: DomSanitizer,
+    @Inject(PLATFORM_ID) private readonly platformId: Object
   ) {
-    this.scrollToTop();
-    this.resizeObserver = new ResizeObserver(() => {
-      this.updateDropdownSelection();
-    });
+    this.isBrowser = isPlatformBrowser(this.platformId);
+    if (this.isBrowser) {
+      this.scrollToTop();
+      this.resizeObserver = new ResizeObserver(() => {
+        this.updateDropdownSelection();
+      });
+    }
   }
 
   ngOnInit(): void {
     const productId = this.route.snapshot.params[ROUTER.ID];
     this.productDetailService.productId.set(productId);
-
-    if (productId) {
-      this.loadingService.showLoading(LoadingComponentId.DETAIL_PAGE);
-
-      this.getProductDetailObservable(productId)
-        .pipe(take(1))
-        .subscribe(productDetail => this.handleProductDetailLoad(productId, productDetail));
-    }
+    const productDetail = this.route.snapshot.data[
+      ROUTER.PRODUCT_DETAIL
+    ] as ProductDetail;
+    
+    this.handleProductDetailLoad(productId, productDetail);
   }
 
   private handleProductDetailLoad(productId: string, productDetail: ProductDetail): void {
-    this.updateWebBrowserTitle(productDetail.names);
+    if (this.isBrowser) {
+      forkJoin({
+        userFeedback: this.productFeedbackService.findProductFeedbackOfUser(),
+        productFeedBack:
+          this.productFeedbackService.getInitFeedbacksObservable(),
+        rating: this.productStarRatingService.getRatingObservable(productId),
+        changelogs: this.productService.getProductChangelogs(productId)
+      }).subscribe(res => {
+        this.setupMarkdownParser(productDetail.sourceUrl);
 
-    forkJoin({
-      userFeedback: this.productFeedbackService.findProductFeedbackOfUser(),
-      productFeedBack: this.productFeedbackService.getInitFeedbacksObservable(),
-      rating: this.productStarRatingService.getRatingObservable(productId),
-      changelogs: this.productService.getProductChangelogs(productId)
-    }).subscribe(res => {
-      this.setupMarkdownParser(productDetail.sourceUrl);
+        const gitHubReleaseModelList =
+          res.changelogs?._embedded?.gitHubReleaseModelList ?? [];
+        if (gitHubReleaseModelList.length > 0) {
+          this.productReleaseSafeHtmls = this.renderChangelogContent(
+            gitHubReleaseModelList
+          );
+        }
 
-      const gitHubReleaseModelList = res.changelogs?._embedded?.gitHubReleaseModelList ?? [];
-      if (gitHubReleaseModelList.length > 0) {
-        this.productReleaseSafeHtmls = this.renderChangelogContent(gitHubReleaseModelList);
-      }
+        this.handleProductDetail(productDetail);
+        this.getReadmeContent();
+        this.productFeedbackService.handleFeedbackApiResponse(
+          res.productFeedBack
+        );
+        this.updateDropdownSelection();
+        this.checkMediaSize();
 
-      this.handleProductDetail(productDetail);
-      this.getReadmeContent();
-      this.productFeedbackService.handleFeedbackApiResponse(res.productFeedBack);
-      this.updateDropdownSelection();
-      this.checkMediaSize();
-
-      this.handlePopupLogic();
-      this.loadingService.hideLoading(LoadingComponentId.DETAIL_PAGE);
-      this.navigateToProductDetailsWithTabFragment();
+        this.handlePopupLogic();
+        this.loadingService.hideLoading(LoadingComponentId.DETAIL_PAGE);
+        this.navigateToProductDetailsWithTabFragment();
+      });
     }
-    );
   }
 
   private setupMarkdownParser(sourceUrl: string): void {
@@ -233,16 +245,6 @@ export class ProductDetailComponent {
           .catch(() => this.removeQueryParam());
       }
     });
-  }
-
-
-  getProductDetailObservable(productId: string): Observable<ProductDetail> {
-    const isShowDevVersion = CommonUtils.getCookieValue(
-      this.cookieService,
-      SHOW_DEV_VERSION,
-      false
-    );
-    return this.getProductById(productId, isShowDevVersion);
   }
 
   handleProductDetail(productDetail: ProductDetail): void {
@@ -320,30 +322,6 @@ export class ProductDetailComponent {
 
   scrollToTop(): void {
     window.scrollTo({ left: 0, top: 0, behavior: 'instant' });
-  }
-
-  getProductById(
-    productId: string,
-    isShowDevVersion: boolean
-  ): Observable<ProductDetail> {
-    const targetVersion =
-      this.routingQueryParamService.getDesignerVersionFromSessionStorage();
-    let productDetail$: Observable<ProductDetail>;
-    if (!targetVersion) {
-      productDetail$ = this.productService.getProductDetails(
-        productId,
-        isShowDevVersion
-      );
-    } else {
-      productDetail$ =
-        this.productService.getBestMatchProductDetailsWithVersion(
-          productId,
-          targetVersion
-        );
-    }
-    return productDetail$.pipe(
-      map((response: ProductDetail) => this.setDefaultVendorImage(response))
-    );
   }
 
   getContent(value: string): boolean {
@@ -491,6 +469,7 @@ export class ProductDetailComponent {
     if (names !== undefined) {
       const title = names[this.languageService.selectedLanguage()];
       this.titleService.setTitle(title);
+      this.meta.updateTag({ property: OG_TITLE_KEY, content: title });
     }
   }
 
@@ -510,19 +489,6 @@ export class ProductDetailComponent {
     type tabName = 'description' | 'demo' | 'setup';
     const value = key.value as tabName;
     return this.productModuleContent()?.[value] ?? null;
-  }
-
-  private setDefaultVendorImage(productDetail: ProductDetail): ProductDetail {
-    const { vendorImage, vendorImageDarkMode } = productDetail;
-
-    if (!(productDetail.vendorImage || productDetail.vendorImageDarkMode)) {
-      productDetail.vendorImage = DEFAULT_VENDOR_IMAGE_BLACK;
-      productDetail.vendorImageDarkMode = DEFAULT_VENDOR_IMAGE;
-    } else {
-      productDetail.vendorImage = vendorImage || vendorImageDarkMode;
-      productDetail.vendorImageDarkMode = vendorImageDarkMode || vendorImage;
-    }
-    return productDetail;
   }
 
   getReadmeContent() {

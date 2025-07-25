@@ -6,6 +6,7 @@ import { catchError, map, Observable, of, throwError } from 'rxjs';
 import { CookieService } from 'ngx-cookie-service';
 import { jwtDecode } from 'jwt-decode';
 import { FEEDBACK_APPROVAL_STATE, TOKEN_KEY } from '../shared/constants/common.constant';
+import { WindowRef } from '../core/services/browser/window-ref.service';
 
 export interface TokenPayload {
   username: string;
@@ -33,23 +34,32 @@ export interface GitHubUser {
 export class AuthService {
   private readonly BASE_URL = environment.apiUrl;
   private readonly githubAuthUrl = 'https://github.com/login/oauth/authorize';
-  private readonly githubAuthCallbackUrl = window.location.origin + environment.githubAuthCallbackPath;
   private readonly userApiUrl = environment.githubApiUrl + '/user';
   private readonly httpClientWithoutInterceptor: HttpClient;
+
+  private readonly githubAuthCallbackUrl: string; // <-- moved from top to inside constructor
 
   constructor(
     private readonly http: HttpClient,
     private readonly router: Router,
     private readonly cookieService: CookieService,
-    private readonly httpBackend: HttpBackend
+    private readonly httpBackend: HttpBackend,
+    private readonly windowRef: WindowRef
   ) {
     this.httpClientWithoutInterceptor = new HttpClient(httpBackend);
+
+    const win = this.windowRef.nativeWindow;
+    this.githubAuthCallbackUrl = (win?.location?.origin ?? '') + environment.githubAuthCallbackPath;
   }
 
   redirectToGitHub(originalUrl: string): void {
     const state = encodeURIComponent(originalUrl);
     const authUrl = `${this.githubAuthUrl}?client_id=${environment.githubClientId}&redirect_uri=${this.githubAuthCallbackUrl}&state=${state}`;
-    window.location.href = authUrl;
+
+    const win = this.windowRef.nativeWindow;
+    if (win) {
+      win.location.href = authUrl;
+    }
   }
 
   handleGitHubCallback(code: string, state: string): void {

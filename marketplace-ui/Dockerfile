@@ -1,19 +1,25 @@
-# Stage 1: Build Angular app
-FROM node:20-alpine AS build-angular
+# Build Phase
+FROM node:22-alpine AS build
 ARG BUILD_ENV
 WORKDIR /app
+# Only copy files needed for npm install first (better caching)
+COPY package*.json ./
+# Install dependencies
+RUN npm ci
+# Copy the rest of the source code
 COPY . .
-RUN npm install
 RUN npm run build -- --configuration $BUILD_ENV
 
-# Stage 2: Serve Angular app using Nginx
-FROM nginx
-COPY --from=build-angular /app/dist/browser /usr/share/nginx/html
+# Run Phase
+FROM node:22-alpine
+# Create app folder
+WORKDIR /app
+# Copy built dist and minimal needed files
+COPY --from=build /app/dist /app/dist
+COPY --from=build /app/package.json /app/package.json
+COPY --from=build /app/node_modules /app/node_modules
 
-# Change ownership of the shared volume
-RUN mkdir -p /usr/share/nginx/html/market-cache
-RUN chown -R www-data:www-data /usr/share/nginx/html/market-cache
-RUN chmod -R 755 /usr/share/nginx/html/market-cache
-RUN chmod g+s /usr/share/nginx/html/market-cache
+EXPOSE 4000
 
-
+# Start the SSR server
+CMD ["node", "dist/server/server.mjs"]

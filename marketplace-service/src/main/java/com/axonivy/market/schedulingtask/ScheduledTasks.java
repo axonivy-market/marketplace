@@ -3,6 +3,7 @@ package com.axonivy.market.schedulingtask;
 import com.axonivy.market.controller.ProductDetailsController;
 import com.axonivy.market.repository.ProductRepository;
 import com.axonivy.market.service.ExternalDocumentService;
+import com.axonivy.market.service.GithubReposService;
 import com.axonivy.market.service.ProductDependencyService;
 import com.axonivy.market.service.ProductService;
 import lombok.AllArgsConstructor;
@@ -21,44 +22,15 @@ public class ScheduledTasks {
   // External documentation sync will start at 00:40 in order to prevent running at the same time with other
   private static final String SCHEDULING_TASK_DOCUMENTS_CRON = "0 40 0 * * *";
   private static final String SCHEDULING_TASK_PRODUCT_RELEASE_NOTES_CRON = "0 0 0 * * ?";
+  private static final String SCHEDULING_TASK_GITHUB_REPOS = " 0 30 * * * *";
 
   final ProductRepository productRepo;
   final ProductService productService;
   final ProductDetailsController productDetailsController;
   final ExternalDocumentService externalDocumentService;
   final ProductDependencyService productDependencyService;
+  private final GithubReposService githubReposService;
 
-<<<<<<< Updated upstream
-  @Scheduled(cron = SCHEDULING_TASK_PRODUCTS_CRON)
-  public void syncDataForProductFromGitHubRepo() {
-    log.warn("Started sync data for product from GitHub repo");
-    productService.syncLatestDataFromMarketRepo(false);
-  }
-
-  @Scheduled(cron = SCHEDULING_TASK_DOCUMENTS_CRON)
-  public void syncDataForProductDocuments() {
-    log.warn("Started sync data for product document");
-    for (var product : productRepo.findAllProductsHaveDocument()) {
-      externalDocumentService.syncDocumentForProduct(product.getId(), false, null);
-    }
-  }
-
-  @Scheduled(cron = SCHEDULING_TASK_PRODUCTS_CRON)
-  public void syncDataForProductMavenDependencies() {
-    log.warn("Started sync data for product maven dependencies");
-    productDependencyService.syncIARDependenciesForProducts(false, null);
-  }
-
-  @Scheduled(cron = SCHEDULING_TASK_PRODUCT_RELEASE_NOTES_CRON)
-  public void syncDataForProductReleases() {
-    log.warn("Started sync data for product release notes");
-    try {
-      productDetailsController.syncLatestReleasesForProducts();
-    } catch (IOException e) {
-      log.error("Failed to sync data for product release notes: ", e);
-    }
-  }
-=======
 //  @Scheduled(cron = SCHEDULING_TASK_PRODUCTS_CRON)
 //  public void syncDataForProductFromGitHubRepo() {
 //    log.warn("Started sync data for product from GitHub repo");
@@ -94,5 +66,10 @@ public class ScheduledTasks {
 //    log.warn("Started sync data for Github repositories");
 //    githubReposService.loadAndStoreTestReports();
 //  }
->>>>>>> Stashed changes
+
+  @Scheduled(cron = SCHEDULING_TASK_GITHUB_REPOS)
+  public void syncDataForGithubRepos() throws IOException {
+    log.warn("Started sync data for Github repositories");
+    githubReposService.loadAndStoreTestReports();
+  }
 }

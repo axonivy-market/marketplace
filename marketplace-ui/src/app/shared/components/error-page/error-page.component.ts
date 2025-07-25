@@ -1,7 +1,15 @@
-import { Component, HostListener, inject, OnInit, signal } from '@angular/core';
+import {
+  Component,
+  HostListener,
+  Inject,
+  inject,
+  OnInit,
+  PLATFORM_ID,
+  signal
+} from '@angular/core';
 import { ThemeService } from '../../../core/services/theme/theme.service';
 import { LanguageService } from '../../../core/services/language/language.service';
-import { CommonModule } from '@angular/common';
+import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { I18N_DEFAULT_ERROR_CODE, I18N_ERROR_CODE_PATH } from '../../constants/common.constant';
@@ -22,12 +30,18 @@ export class ErrorPageComponent implements OnInit {
   errorMessageKey = '';
   errorId: string | undefined;
 
-  constructor(private readonly router: Router) {
-    this.checkMediaSize();
+  constructor(
+    private readonly router: Router,
+    @Inject(PLATFORM_ID) private readonly platformId: Object
+  ) {
+    if (isPlatformBrowser(this.platformId)) {
+      this.checkMediaSize();
+    }
   }
 
   ngOnInit(): void {
     this.errorId = this.route.snapshot.params['id'];
+    
     this.translateService
       .get(I18N_ERROR_CODE_PATH)
       .subscribe(errorTranslations => {
@@ -43,10 +57,7 @@ export class ErrorPageComponent implements OnInit {
   }
 
   private buildI18nKey(key: string | undefined) {
-    if (key) {
-      return `${I18N_ERROR_CODE_PATH}.${key}`;
-    }
-    return '';
+    return `${I18N_ERROR_CODE_PATH}.${key}`;
   }
 
   backToHomePage() {

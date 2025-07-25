@@ -3,15 +3,16 @@ package com.axonivy.market.service.impl;
 import com.axonivy.market.bo.DownloadOption;
 import com.axonivy.market.service.FileDownloadService;
 import com.axonivy.market.util.FileUtils;
-import com.axonivy.market.util.validator.AuthorizationUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.SystemUtils;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.Resource;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
-import org.springframework.web.client.HttpClientErrorException;
+import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 
 import java.io.BufferedInputStream;
@@ -42,25 +43,28 @@ public class FileDownloadServiceImpl implements FileDownloadService {
   private static final String ZIP_EXTENSION = ".zip";
   private static final Set<PosixFilePermission> PERMS = EnumSet.allOf(PosixFilePermission.class);
   private static final int THRESHOLD_SIZE = 1000000000;
-  public static final String IAR = "iar";
-
-  private final AuthorizationUtils authorizationUtils;
+  private static final String IAR = "iar";
+  private final RestTemplate restTemplate;
 
   @Override
   public byte[] downloadFile(String url) {
-    return new RestTemplate().getForObject(url, byte[].class);
+    return restTemplate.getForObject(url, byte[].class);
   }
 
-  public byte[] safeDownload(String url) {
-    try {
-      String trustedUrl = authorizationUtils.resolveTrustedUrl(url);
-      return downloadFile(trustedUrl);
-    }catch (IllegalArgumentException e) {
-      log.warn("Unsafe or disallowed URL provided: {}", url, e);
-    } catch (HttpClientErrorException e) {
-      log.warn("Fail to download at URL: {}", url);
+  @Override
+  public String getFileAsString(String url) {
+    return restTemplate.getForObject(url, String.class);
+  }
+
+
+  @Override
+  public ResponseEntity<Resource> fetchUrlResource(String url) {
+      try {
+        return restTemplate.exchange(url, HttpMethod.GET, null, Resource.class);
+      } catch (RestClientException e) {
+        log.warn("Failed to fetch resource from URL: {}", url, e);
     }
-    return EMPTY.getBytes();
+    return null;
   }
 
   @Override
@@ -69,7 +73,6 @@ public class FileDownloadServiceImpl implements FileDownloadService {
       log.warn("Request URL not a ZIP/iar file - {}", url);
       return EMPTY;
     }
-
     String location = determineLocation(url, downloadOption);
     Path tempZipPath = createTempFileFromUrlAndExtractToLocation(url, location, downloadOption);
     if (tempZipPath != null) {
@@ -98,7 +101,7 @@ public class FileDownloadServiceImpl implements FileDownloadService {
     }
 
     Path tempZipPath = createTempFile();
-    byte[] fileContent = safeDownload(url);
+    byte[] fileContent = downloadFile(url);
     if (fileContent == null || fileContent.length == 0) {
       log.warn("Downloaded file is empty or null from URL: {}", url);
       return null;
@@ -212,9 +215,6 @@ public class FileDownloadServiceImpl implements FileDownloadService {
       if (SystemUtils.IS_OS_UNIX) {
         log.warn("UNIX_OS detected: grant permission for {}", location);
         Files.setPosixFilePermissions(folderPath, PERMS);
-      } else {
-        log.warn("NON_UNIX_OS detected: grant permission for {}", location);
-        folderPath = grantPermissionForNonUnixSystem(folderPath.toFile());
       }
     } catch (IOException e) {
       log.error("An error occurred while granting permission the folder: ", e);
@@ -222,20 +222,7 @@ public class FileDownloadServiceImpl implements FileDownloadService {
     return folderPath;
   }
 
-  private Path grantPermissionForNonUnixSystem(File tempFile) {
-    if (tempFile.setReadable(true, false)) {
-      log.warn("Cannot grant read permission to {}", tempFile.toPath());
-    }
-    if (tempFile.setWritable(true, false)) {
-      log.warn("Cannot grant write permission to {}", tempFile.toPath());
-    }
-    if (tempFile.setExecutable(true, false)) {
-      log.warn("Cannot grant exec permission to {}", tempFile.toPath());
-    }
-    return tempFile.toPath();
-  }
-
-  private String generateCacheStorageDirectory(String url) {
+  public String generateCacheStorageDirectory(String url) {
     url = url.substring(0, url.lastIndexOf(SLASH));
     var urlArrays = Arrays.asList(url.split(SLASH));
     Collections.reverse(urlArrays);

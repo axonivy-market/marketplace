@@ -1,7 +1,6 @@
 package com.axonivy.market.service.impl;
 
 import com.axonivy.market.BaseSetup;
-import com.axonivy.market.bo.VersionDownload;
 import com.axonivy.market.entity.Artifact;
 import com.axonivy.market.constants.ProductJsonConstants;
 import com.axonivy.market.entity.ProductDependency;
@@ -11,6 +10,7 @@ import com.axonivy.market.service.FileDownloadService;
 import com.axonivy.market.service.ImageService;
 import com.axonivy.market.service.ProductJsonContentService;
 import com.axonivy.market.service.ProductMarketplaceDataService;
+import com.axonivy.market.util.FileUtils;
 import com.axonivy.market.util.MavenUtils;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -20,11 +20,14 @@ import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -92,21 +95,35 @@ class ProductContentServiceImplTest extends BaseSetup {
   }
 
   @Test
-  void testDownloadZipArtifactFile() {
-    ProductDependency productDependency = mockProductDependency();
-    when(productDependencyRepository.findByProductIdAndArtifactIdAndVersion(MOCK_PRODUCT_ID, MOCK_DEMO_ARTIFACT_ID,
-        MOCK_RELEASED_VERSION)).thenReturn(List.of(productDependency));
-    when(fileDownloadService.safeDownload(MOCK_DOWNLOAD_URL)).thenReturn(MOCK_DOWNLOAD_URL.getBytes());
-    when(productMarketplaceDataService.getVersionDownload(any(), any())).thenReturn(mockVersionDownload());
+  void testGetDependencyUrlsShouldReturnsDirectAndNestedUrls() {
+    ProductDependency dep1 = new ProductDependency();
+    ProductDependency dep2 = new ProductDependency();
+    dep1.setDownloadUrl(MOCK_DOWNLOAD_URL);
+    dep2.setDownloadUrl(MOCK_DUMP_DOWNLOAD_URL);
+    dep1.setDependencies(Set.of(dep2));
+    when(productDependencyRepository.findByProductIdAndArtifactIdAndVersion(MOCK_PRODUCT_ID, MOCK_ARTIFACT_ID, MOCK_RELEASED_VERSION)).thenReturn(List.of(dep1));
+    List<String> result = productContentService.getDependencyUrls(MOCK_PRODUCT_ID, MOCK_ARTIFACT_ID, MOCK_RELEASED_VERSION);
+    assertEquals(2, result.size(), "Size of result should equal size of download url from dependency");
+    assertTrue(result.contains(MOCK_DOWNLOAD_URL), "List of dependency url should include parent artifact");
+    verify(productDependencyRepository).findByProductIdAndArtifactIdAndVersion(MOCK_PRODUCT_ID, MOCK_ARTIFACT_ID, MOCK_RELEASED_VERSION);
+  }
 
-    VersionDownload versionDownload = productContentService.downloadZipArtifactFile(MOCK_PRODUCT_ID,
-        MOCK_DEMO_ARTIFACT_ID,
-        MOCK_RELEASED_VERSION);
+  @Test
+  void testUpdateInstallationCount() {
+    List<String> urls = List.of(MOCK_DOWNLOAD_URL);
 
-    assertNotNull(versionDownload);
+    try (MockedStatic<FileUtils> fileUtilsMock = mockStatic(FileUtils.class)) {
+      fileUtilsMock.when(() -> FileUtils.buildArtifactStreamFromArtifactUrls(eq(urls), any(OutputStream.class)))
+          .thenAnswer(invocation -> {
+            OutputStream out = invocation.getArgument(1);
+            out.write("test-data".getBytes());
+            return null;
+          });
+      ByteArrayOutputStream out = new ByteArrayOutputStream();
+      productContentService.buildArtifactZipStreamFromUrls(MOCK_PRODUCT_ID, urls, out);
 
-    assertNotNull(versionDownload.getFileData());
-    assertTrue(versionDownload.getFileData().length > 0);
-    assertEquals(5, versionDownload.getInstallationCount());
+      assertTrue(out.size() >0, "The output should not be empty byte array");
+      verify(productMarketplaceDataService).updateInstallationCountForProduct(MOCK_PRODUCT_ID, null);
+    }
   }
 }

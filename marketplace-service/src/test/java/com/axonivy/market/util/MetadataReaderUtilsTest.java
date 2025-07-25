@@ -58,20 +58,19 @@ class MetadataReaderUtilsTest extends BaseSetup {
 
   @Test
   void testGetSnapshotVersionValue() {
-    try (MockedStatic<MavenUtils> mockUtils = Mockito.mockStatic(MavenUtils.class)) {
+    try (MockedStatic<MavenUtils> mockUtils = Mockito.mockStatic(MavenUtils.class);
+         MockedStatic<HttpFetchingUtils> mockHttpUtils = Mockito.mockStatic(HttpFetchingUtils.class)) {
       Artifact mockArtifact = mock(Artifact.class);
 
       // Mock Artifact properties
       when(mockArtifact.getRepoUrl()).thenReturn("http://example.com/maven");
       when(mockArtifact.getGroupId()).thenReturn(MOCK_GROUP_ID);
       when(mockArtifact.getArtifactId()).thenReturn(MOCK_ARTIFACT_ID);
-
       String mockMetadataUrl = "http://example.com/maven/metadata.xml";
-
       mockUtils.when(() -> MavenUtils.buildSnapshotMetadataUrlFromArtifactInfo("http://example.com/maven",
           MOCK_GROUP_ID, MOCK_ARTIFACT_ID, MOCK_SNAPSHOT_VERSION)).thenReturn(mockMetadataUrl);
-      when(MavenUtils.getMetadataContentFromUrl(mockMetadataUrl)).thenReturn(getMockSnapShotMetadataContent());
-
+      mockHttpUtils.when(() -> HttpFetchingUtils.getFileAsString(mockMetadataUrl)).thenReturn(
+          getMockSnapShotMetadataContent());
       String snapshotVersionValue = MetadataReaderUtils.getSnapshotVersionValue(MOCK_SNAPSHOT_VERSION, mockArtifact);
       assertEquals("8.0.5-20221011.124215-170", snapshotVersionValue);
     }

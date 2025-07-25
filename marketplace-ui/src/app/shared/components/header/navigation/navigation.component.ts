@@ -4,6 +4,7 @@ import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { NAV_ITEMS, SEARCH_URL } from '../../../constants/common.constant';
 import { NavItem } from '../../../models/nav-item.model';
 import { LanguageService } from '../../../../core/services/language/language.service';
+import { WindowRef } from '../../../../core/services/browser/window-ref.service';
 
 @Component({
   selector: 'app-navigation',
@@ -20,7 +21,7 @@ export class NavigationComponent {
   isMobileMode = signal<boolean>(false);
   searchUrl = SEARCH_URL;
 
-  constructor() {
+  constructor(private readonly windowRef: WindowRef) {
     this.checkMediaSize();
   }
 
@@ -30,7 +31,10 @@ export class NavigationComponent {
   }
 
   checkMediaSize() {
-    const mediaQuery = window.matchMedia('(max-width: 992px)');
-    this.isMobileMode.set(mediaQuery.matches);
+    const win = this.windowRef.nativeWindow;
+    if (win) {
+      const mediaQuery = win.matchMedia('(max-width: 992px)');
+      this.isMobileMode.set(mediaQuery.matches);
+    }
   }
 }

@@ -14,6 +14,7 @@ import {
 import { ActivatedRoute } from '@angular/router';
 import { of } from 'rxjs';
 import { By } from '@angular/platform-browser';
+import { DEFAULT_IMAGE_URL } from '../../../shared/constants/common.constant';
 
 const products = MOCK_PRODUCTS._embedded.products as Product[];
 const noDeNameAndNoLogoUrlProducts =
@@ -93,5 +94,15 @@ describe('ProductCardComponent', () => {
     const style = getComputedStyle(element);
     expect(style.webkitLineClamp).toBe('4');
     expect(style.overflow).toBe('hidden');
+  });
+
+  it('should load default image when logo fails to load', () => {
+    const imageElement = fixture.nativeElement.querySelector('img');
+    
+    imageElement.dispatchEvent(new Event('error'));
+
+    fixture.detectChanges();
+    expect(component.logoUrl).toBe(DEFAULT_IMAGE_URL);
+    expect(imageElement.src).toContain(DEFAULT_IMAGE_URL);
   });
 });

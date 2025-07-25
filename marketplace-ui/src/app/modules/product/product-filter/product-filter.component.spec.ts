@@ -176,4 +176,20 @@ describe('ProductFilterComponent', () => {
     expect(filterElements[2].nativeElement.classList).toContain('border-0');
     expect(filterElements[2].nativeElement.classList).not.toContain('text-dark');
   });
+
+  it('should emit sortChange event with the selected sort option', () => {
+    spyOn(component.sortChange, 'emit');
+    const selectedSort = SORT_TYPES[1].value;
+
+    component.onSortChange(selectedSort);
+
+    expect(component.sortChange.emit).toHaveBeenCalledWith(selectedSort);
+  });
+
+  it('should update selectedSortLabel with correct label when sort changes', () => {
+    const selectedSort = SORT_TYPES[1].value;
+    component.onSortChange(selectedSort);
+
+    expect(component.selectedSortLabel).toBe(SORT_TYPES[1].label);
+  });
 });

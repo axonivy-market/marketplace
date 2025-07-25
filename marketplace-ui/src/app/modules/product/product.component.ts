@@ -1,10 +1,12 @@
-import { CommonModule } from '@angular/common';
+import { CommonModule, isPlatformBrowser } from '@angular/common';
 import {
   AfterViewInit,
   Component,
   ElementRef,
+  Inject,
   inject,
   OnDestroy,
+  PLATFORM_ID,
   signal,
   ViewChild,
   WritableSignal
@@ -37,6 +39,7 @@ import { ItemDropdown } from '../../shared/models/item-dropdown.model';
 import { LoadingSpinnerComponent } from '../../shared/components/loading-spinner/loading-spinner.component';
 import { LoadingService } from '../../core/services/loading/loading.service';
 import { LoadingComponentId } from '../../shared/enums/loading-component-id';
+import { WindowRef } from '../../core/services/browser/window-ref.service';
 const SEARCH_DEBOUNCE_TIME = 500;
 
 @Component({
@@ -79,63 +82,76 @@ export class ProductComponent implements AfterViewInit, OnDestroy {
   languageService = inject(LanguageService);
   route = inject(ActivatedRoute);
   router = inject(Router);
+  windowRef = inject(WindowRef);
+  isBrowser: boolean;
+
   @ViewChild('observer', { static: true }) observerElement!: ElementRef;
 
-  constructor() {
-    this.route.queryParams.subscribe(params => {
-      this.isRESTClient.set(
-        DESIGNER_SESSION_STORAGE_VARIABLE.restClientParamName in params &&
-        this.isDesignerEnvironment
+  constructor(@Inject(PLATFORM_ID) private readonly platformId: Object) {
+    this.isBrowser = isPlatformBrowser(this.platformId);
+    if (this.isBrowser) {
+      this.route.queryParams.subscribe(params => {
+        this.isRESTClient.set(
+          DESIGNER_SESSION_STORAGE_VARIABLE.restClientParamName in params &&
+            this.isDesignerEnvironment
+        );
+
+        this.criteria = {
+          ...this.criteria,
+          search: params[DESIGNER_SESSION_STORAGE_VARIABLE.searchParamName] ?? this.criteria.search,
+          type: params['type'] ?? this.criteria.type,
+          sort: params['sort'] ?? this.criteria.sort
+        };
+      });
+
+      this.loadProductItems();
+
+      this.subscriptions.push(
+        this.searchTextChanged
+          .pipe(debounceTime(SEARCH_DEBOUNCE_TIME))
+          .subscribe(value => {
+            this.criteria = {
+              ...this.criteria,
+              nextPageHref: '',
+              search: value
+            };
+            this.loadProductItems(true);
+
+            let queryParams: { search: string | null } = { search: null };
+            if (value) {
+              queryParams = { search: this.criteria.search };
+            }
+
+            this.router.navigate([], {
+              relativeTo: this.route,
+              queryParamsHandling: 'merge',
+              queryParams
+            });
+          })
       );
 
-      this.criteria = {
-        ...this.criteria,
-        search: params[DESIGNER_SESSION_STORAGE_VARIABLE.searchParamName] ?? this.criteria.search,
-        type: params['type'] ?? this.criteria.type,
-        sort: params['sort'] ?? this.criteria.sort
-      };
-    });
-
-    this.loadProductItems();
-    this.subscriptions.push(
-      this.searchTextChanged
-        .pipe(debounceTime(SEARCH_DEBOUNCE_TIME))
-        .subscribe(value => {
-          this.criteria = {
-            ...this.criteria,
-            nextPageHref: '',
-            search: value
-          };
-          this.loadProductItems(true);
-
-          let queryParams: { search: string | null } = { search: null };
-
-          if (value) {
-            queryParams = { search: this.criteria.search };
-          }
-
-          this.router.navigate([], {
-            relativeTo: this.route,
-            queryParamsHandling: 'merge',
-            queryParams
-          });
-        })
-    );
-    this.router.events?.subscribe(event => {
-      if (!(event instanceof NavigationStart)) {
-        return;
-      }
-      window.scrollTo(0, 0);
-    });
+      this.router.events?.subscribe(event => {
+        if (event instanceof NavigationStart) {
+          const win = this.windowRef.nativeWindow;
+          win?.scrollTo(0, 0);
+        }
+      });
+    }
   }
 
   ngAfterViewInit(): void {
-    this.setupIntersectionObserver();
+    if(this.isBrowser) {
+      this.setupIntersectionObserver();
+    }
   }
 
   viewProductDetail(productId: string) {
     if (this.isRESTClient()) {
-      window.location.href = `/${productId}`;
+      const win = this.windowRef.nativeWindow;
+      if (win) {
+        win.location.href = `/${productId}`;
+        return;
+      }
     }
     this.router.navigate([`/${productId}`]);
   }
@@ -147,10 +163,10 @@ export class ProductComponent implements AfterViewInit, OnDestroy {
       type: selectedType.value
     };
     this.loadProductItems(true);
-    let queryParams: { type: TypeOption | null } = { type: null };
 
+    let queryParams: { type: TypeOption | null } = { type: null };
     if (selectedType.value !== TypeOption.All_TYPES) {
-      queryParams = { type: this.criteria.type }
+      queryParams = { type: this.criteria.type };
     }
 
     this.router.navigate([], {

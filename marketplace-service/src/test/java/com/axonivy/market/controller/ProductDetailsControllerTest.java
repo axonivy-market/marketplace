@@ -3,7 +3,6 @@ package com.axonivy.market.controller;
 import com.axonivy.market.BaseSetup;
 import com.axonivy.market.assembler.GithubReleaseModelAssembler;
 import com.axonivy.market.assembler.ProductDetailModelAssembler;
-import com.axonivy.market.bo.VersionDownload;
 import com.axonivy.market.entity.Product;
 import com.axonivy.market.entity.ProductJsonContent;
 import com.axonivy.market.enums.Language;
@@ -13,12 +12,15 @@ import com.axonivy.market.model.ProductDetailModel;
 import com.axonivy.market.service.ProductContentService;
 import com.axonivy.market.service.ProductService;
 import com.axonivy.market.service.VersionService;
+import com.axonivy.market.util.HttpFetchingUtils;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.lang3.StringUtils;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.MockedStatic;
+import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
@@ -167,7 +169,7 @@ class ProductDetailsControllerTest extends BaseSetup {
 
   @Test
   void findProductVersionsById() {
-    when(versionService.getVersionsForDesigner("google-maps-connector", true, StringUtils.EMPTY))
+    when(versionService.getInstallableVersions("google-maps-connector", true, StringUtils.EMPTY))
         .thenReturn(mockVersionAndUrlModels());
 
     var result = productDetailsController.findVersionsForDesigner("google-maps-connector", StringUtils.EMPTY, true);
@@ -214,7 +216,6 @@ class ProductDetailsControllerTest extends BaseSetup {
     name.put(Language.DE.getValue(), PRODUCT_NAME_DE_SAMPLE);
     mockProductDetail.setNames(name);
     mockProductDetail.setType("connector");
-    mockProductDetail.setCompatibility("10.0+");
     mockProductDetail.setSourceUrl("https://github.com/axonivy-market/docker-connector");
     mockProductDetail.setStatusBadgeUrl("https://github.com/axonivy-market/docker-connector");
     mockProductDetail.setLanguage("English");
@@ -324,26 +325,23 @@ class ProductDetailsControllerTest extends BaseSetup {
 
   @Test
   void testDownloadZipArtifact_NotFound() {
-    when(productContentService.downloadZipArtifactFile(anyString(), anyString(),
-        anyString())).thenReturn(null);
-
-    var result = productDetailsController.downloadZipArtifact(
-        DOCKER_CONNECTOR_ID, MOCK_RELEASED_VERSION, "artifact");
-
+    var result = productDetailsController.downloadZipArtifact(DOCKER_CONNECTOR_ID, MOCK_RELEASED_VERSION,
+        MOCK_DEMO_ARTIFACT_ID);
     assertEquals(HttpStatus.NOT_FOUND, result.getStatusCode());
-
-    verify(productContentService, times(1)).downloadZipArtifactFile(DOCKER_CONNECTOR_ID, "artifact",
-        MOCK_RELEASED_VERSION);
   }
 
   @Test
   void testDownloadZipArtifact() {
-    when(productContentService.downloadZipArtifactFile(MOCK_PRODUCT_ID, MOCK_DEMO_ARTIFACT_ID, MOCK_RELEASED_VERSION))
-        .thenReturn(new VersionDownload());
-    var result = productDetailsController.downloadZipArtifact(MOCK_PRODUCT_ID, MOCK_RELEASED_VERSION,
-        MOCK_DEMO_ARTIFACT_ID);
-    assertNotNull(result);
-    assertNotNull(result.getBody());
-    assertEquals(HttpStatus.OK, result.getStatusCode());
+    try (MockedStatic<HttpFetchingUtils> mockHttpFetchingUtils = Mockito.mockStatic(HttpFetchingUtils.class)) {
+      mockHttpFetchingUtils.when(() -> HttpFetchingUtils.fetchResourceUrl(MOCK_DOWNLOAD_URL)).thenReturn(
+          getMockEntityResource());
+      when(productContentService.getDependencyUrls(MOCK_PRODUCT_ID, MOCK_DEMO_ARTIFACT_ID,
+          MOCK_RELEASED_VERSION)).thenReturn(List.of(MOCK_DOWNLOAD_URL));
+      var result = productDetailsController.downloadZipArtifact(MOCK_PRODUCT_ID, MOCK_RELEASED_VERSION,
+          MOCK_DEMO_ARTIFACT_ID);
+      assertNotNull(result);
+      assertNotNull(result.getBody());
+      assertEquals(HttpStatus.OK, result.getStatusCode());
+    }
   }
 }

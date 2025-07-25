@@ -2,6 +2,7 @@ import { computed, Injectable, signal } from '@angular/core';
 import { DESIGNER_SESSION_STORAGE_VARIABLE } from '../constants/common.constant';
 import { Router, Params, NavigationStart } from '@angular/router';
 import { filter } from 'rxjs/operators';
+import { SessionStorageRef } from '../../core/services/browser/session-storage-ref.service';
 @Injectable({
   providedIn: 'root'
 })
@@ -10,13 +11,14 @@ export class RoutingQueryParamService {
   isDesignerEnv = computed(() => this.isDesigner());
   designerVersion = signal('');
 
-  constructor(private readonly router: Router) {
+  constructor(private readonly router: Router, private readonly storageRef: SessionStorageRef) {
     this.getNavigationStartEvent().subscribe(() => {
       if (!this.isDesigner()) {
+        const savedIvyViewer = this.storageRef.session?.getItem(
+          DESIGNER_SESSION_STORAGE_VARIABLE.ivyViewerParamName
+        );
         this.isDesigner.set(
-          sessionStorage.getItem(
-            DESIGNER_SESSION_STORAGE_VARIABLE.ivyViewerParamName
-          ) === DESIGNER_SESSION_STORAGE_VARIABLE.defaultDesignerViewer
+          savedIvyViewer === DESIGNER_SESSION_STORAGE_VARIABLE.defaultDesignerViewer
         );
       }
     });
@@ -26,7 +28,7 @@ export class RoutingQueryParamService {
     const versionParam =
       params[DESIGNER_SESSION_STORAGE_VARIABLE.ivyVersionParamName];
     if (versionParam !== undefined) {
-      sessionStorage.setItem(
+      this.storageRef.session?.setItem(
         DESIGNER_SESSION_STORAGE_VARIABLE.ivyVersionParamName,
         versionParam
       );
@@ -40,7 +42,7 @@ export class RoutingQueryParamService {
     if (
       ivyViewerParam === DESIGNER_SESSION_STORAGE_VARIABLE.defaultDesignerViewer
     ) {
-      sessionStorage.setItem(
+      this.storageRef.session?.setItem(
         DESIGNER_SESSION_STORAGE_VARIABLE.ivyViewerParamName,
         ivyViewerParam
       );
@@ -50,21 +52,21 @@ export class RoutingQueryParamService {
 
   getDesignerVersionFromSessionStorage(): string {
     if (this.designerVersion() === '') {
-      this.designerVersion.set(
-        sessionStorage.getItem(
-          DESIGNER_SESSION_STORAGE_VARIABLE.ivyVersionParamName
-        ) ?? ''
+      const savedIvyVersion = this.storageRef.session?.getItem(
+        DESIGNER_SESSION_STORAGE_VARIABLE.ivyVersionParamName
       );
+      this.designerVersion.set(savedIvyVersion ?? '');
     }
     return this.designerVersion();
   }
 
   isDesignerViewer(): boolean {
     if (!this.isDesigner()) {
+      const savedIvyViewer = this.storageRef.session?.getItem(
+        DESIGNER_SESSION_STORAGE_VARIABLE.ivyViewerParamName
+      );
       this.isDesigner.set(
-        sessionStorage.getItem(
-          DESIGNER_SESSION_STORAGE_VARIABLE.ivyViewerParamName
-        ) === DESIGNER_SESSION_STORAGE_VARIABLE.defaultDesignerViewer
+        savedIvyViewer === DESIGNER_SESSION_STORAGE_VARIABLE.defaultDesignerViewer
       );
     }
     return this.isDesigner();

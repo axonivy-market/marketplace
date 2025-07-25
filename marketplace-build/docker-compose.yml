@@ -1,8 +1,22 @@
-# Use for DEV instance built by GH Actions
 name: marketplace
 
 services:
-  ui:
+  market-nginx:
+    container_name: marketplace-nginx
+    build:
+      context: .
+      dockerfile: Dockerfile
+    restart: always
+    volumes:
+      - ${NGINX_CONFIG_PATH}:/etc/nginx/nginx.conf
+      - marketcache:/usr/share/nginx/html/market-cache
+    ports:
+      - "4500:80"
+    depends_on:
+      - market-ui
+      - market-service
+
+  market-ui:
     container_name: marketplace-ui
     build:
       context: ../marketplace-ui
@@ -10,13 +24,10 @@ services:
       args:
         - BUILD_ENV=${BUILD_ENV}
     restart: always
-    volumes:
-      - ${NGINX_CONFIG_PATH}:/etc/nginx/nginx.conf
-      - marketcache:/usr/share/nginx/html/market-cache
     ports:
-      - "4200:80"
+      - "4000:4000"
 
-  service:
+  market-service:
     container_name: marketplace-service
     restart: always
     volumes:
@@ -37,7 +48,7 @@ services:
       - POSTGRES_USERNAME=${POSTGRES_USERNAME}
       - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
       - SHOW_SQL=${SHOW_SQL}
-      - ALLOWED_URLS=${ALLOWED_URLS}
+      - MARKET_ENVIRONMENT=${MARKET_ENVIRONMENT}
     build:
       context: ../marketplace-service
       dockerfile: Dockerfile
