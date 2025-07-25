@@ -394,4 +394,48 @@ public class GitHubServiceImpl implements GitHubService {
   public GHRelease getGitHubLatestReleaseByProductId(String repositoryName) throws IOException {
     return this.getRepository(repositoryName).getLatestRelease();
   }
+<<<<<<< Updated upstream
+=======
+
+  @Override
+  public GHWorkflowRun getLatestWorkflowRun(GHRepository repo, String workflowFileName) throws IOException {
+    try {
+
+      PagedIterable<GHWorkflowRun> runs = repo.getWorkflow(workflowFileName).listRuns().withPageSize(
+          PAGE_SIZE_OF_WORKFLOW);
+      for (GHWorkflowRun run : runs) {
+        if (GHWorkflowRun.Status.COMPLETED == run.getStatus()) {
+          return run;
+        }
+      }
+      log.warn("No completed workflow runs found for '{}'", workflowFileName);
+      return null;
+    } catch (GHFileNotFoundException | NoSuchElementException e) {
+      log.warn("Workflow file '{}' not found in repository '{}'", workflowFileName, repo.getFullName(), e);
+      return null;
+    }
+  }
+
+  @Override
+  public GHArtifact getExportTestArtifact(GHWorkflowRun run) throws IOException {
+    return run.listArtifacts().toList().stream()
+        .filter(artifact -> CommonConstants.TEST_REPORT_FILE.equals(artifact.getName()))
+        .findFirst()
+        .orElse(null);
+  }
+
+  @Override
+  public InputStream downloadArtifactZip(GHArtifact artifact) throws IOException {
+    var outputStream = new ByteArrayOutputStream();
+    artifact.download((InputStream inputStream) -> {
+      try (inputStream; outputStream) {
+        inputStream.transferTo(outputStream);
+      } catch (IOException e) {
+        log.error("Failed to download artifact zip: {}", artifact.getName(), e);
+      }
+      return null;
+    });
+    return new ByteArrayInputStream(outputStream.toByteArray());
+  }
+>>>>>>> Stashed changes
 }

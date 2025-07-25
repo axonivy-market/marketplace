@@ -28,6 +28,7 @@ public class ScheduledTasks {
   final ExternalDocumentService externalDocumentService;
   final ProductDependencyService productDependencyService;
 
+<<<<<<< Updated upstream
   @Scheduled(cron = SCHEDULING_TASK_PRODUCTS_CRON)
   public void syncDataForProductFromGitHubRepo() {
     log.warn("Started sync data for product from GitHub repo");
@@ -57,4 +58,41 @@ public class ScheduledTasks {
       log.error("Failed to sync data for product release notes: ", e);
     }
   }
+=======
+//  @Scheduled(cron = SCHEDULING_TASK_PRODUCTS_CRON)
+//  public void syncDataForProductFromGitHubRepo() {
+//    log.warn("Started sync data for product from GitHub repo");
+//    productService.syncLatestDataFromMarketRepo(false);
+//  }
+//
+//  @Scheduled(cron = SCHEDULING_TASK_DOCUMENTS_CRON)
+//  public void syncDataForProductDocuments() {
+//    log.warn("Started sync data for product document");
+//    for (var product : productRepo.findAllProductsHaveDocument()) {
+//      externalDocumentService.syncDocumentForProduct(product.getId(), false, null);
+//    }
+//  }
+//
+//  @Scheduled(cron = SCHEDULING_TASK_PRODUCTS_CRON)
+//  public void syncDataForProductMavenDependencies() {
+//    log.warn("Started sync data for product maven dependencies");
+//    productDependencyService.syncIARDependenciesForProducts(false, null);
+//  }
+//
+//  @Scheduled(cron = SCHEDULING_TASK_PRODUCT_RELEASE_NOTES_CRON)
+//  public void syncDataForProductReleases() {
+//    log.warn("Started sync data for product release notes");
+//    try {
+//      productDetailsController.syncLatestReleasesForProducts();
+//    } catch (IOException e) {
+//      log.error("Failed to sync data for product release notes: ", e);
+//    }
+//  }
+//
+//  @Scheduled(cron = SCHEDULING_TASK_GITHUB_REPOS)
+//  public void syncDataForGithubRepos() throws IOException {
+//    log.warn("Started sync data for Github repositories");
+//    githubReposService.loadAndStoreTestReports();
+//  }
+>>>>>>> Stashed changes
 }
