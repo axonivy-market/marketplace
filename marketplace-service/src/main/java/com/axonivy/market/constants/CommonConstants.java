@@ -23,4 +23,7 @@ public class CommonConstants {
   public static final String COMPATIBILITY_RANGE_FORMAT = "%s - %s";
   public static final String DEFAULT_DATE_TIME = "1900-01-01 00:00:00";
   public static final String LIKE_PATTERN = "%%%s%%";
+  public static final String TEST_REPORT_FILE = "export-test-json-file";
+  public static final String NEW_LINE = "\\n";
+  public static final String PROD_ENV = "production";
 }

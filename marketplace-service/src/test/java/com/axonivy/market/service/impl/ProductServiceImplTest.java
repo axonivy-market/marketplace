@@ -22,11 +22,13 @@ import com.axonivy.market.github.service.GitHubService;
 import com.axonivy.market.model.GitHubReleaseModel;
 import com.axonivy.market.repository.*;
 import com.axonivy.market.service.ExternalDocumentService;
+import com.axonivy.market.service.FileDownloadService;
 import com.axonivy.market.service.ImageService;
 import com.axonivy.market.service.MetadataService;
 import com.axonivy.market.service.ProductContentService;
 import com.axonivy.market.service.ProductMarketplaceDataService;
 import com.axonivy.market.service.VersionService;
+import com.axonivy.market.util.HttpFetchingUtils;
 import com.axonivy.market.util.MavenUtils;
 import com.axonivy.market.util.VersionUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -131,6 +133,8 @@ class ProductServiceImplTest extends BaseSetup {
   private ArtifactRepository artifactRepo;
   @Mock
   private MavenArtifactVersionRepository mavenArtifactVersionRepository;
+  @Mock
+  private FileDownloadService fileDownloadService;
   @Spy
   @InjectMocks
   private ProductServiceImpl productService;
@@ -278,12 +282,12 @@ class ProductServiceImplTest extends BaseSetup {
 
     when(imageService.mappingImageFromGHContent(any(), any())).thenReturn(getMockImage());
     when(productRepo.save(any(Product.class))).thenReturn(new Product());
+    when(fileDownloadService.getFileAsString(anyString())).thenReturn(getMockMetadataContent3());
     // Executes
     productService.syncLatestDataFromMarketRepo(false);
 
     verify(productModuleContentRepo).saveAll(argumentCaptorProductModuleContents.capture());
     verify(productRepo).save(argumentCaptor.capture());
-
     assertThat(argumentCaptorProductModuleContents.getValue().get(0).getId())
         .isEqualTo(mockReadmeProductContent().getId());
   }
@@ -314,12 +318,14 @@ class ProductServiceImplTest extends BaseSetup {
 
   @Test
   void testSyncProductsSecondTime() {
-    try (MockedStatic<MavenUtils> mockUtils = Mockito.mockStatic(MavenUtils.class)) {
+    try (MockedStatic<MavenUtils> mockUtils = Mockito.mockStatic(MavenUtils.class);
+         MockedStatic<HttpFetchingUtils> mockHttpUtils = Mockito.mockStatic(HttpFetchingUtils.class)) {
       Product mockProduct = getMockProduct();
       mockProduct.setProductModuleContent(mockReadmeProductContent());
       mockProduct.setRepositoryName(MOCK_PRODUCT_REPOSITORY_NAME);
       mockForSyncSecondTime(mockProduct);
-      mockUtils.when(() -> MavenUtils.getMetadataContentFromUrl(any())).thenReturn(getMockMetadataContent());
+      mockHttpUtils.when(() -> HttpFetchingUtils.getFileAsString(any())).thenReturn(getMockMetadataContent());
+      when(fileDownloadService.getFileAsString(any())).thenReturn(getMockMetadataContent2());
       // Executes
       productService.syncLatestDataFromMarketRepo(false);
 
@@ -332,7 +338,8 @@ class ProductServiceImplTest extends BaseSetup {
 
   @Test
   void testSyncProductsSecondTime_andThereIsNoDuplicatedValueInReleasedVersion() {
-    try (MockedStatic<MavenUtils> mockUtils = Mockito.mockStatic(MavenUtils.class)) {
+    try (MockedStatic<MavenUtils> mockUtils = Mockito.mockStatic(MavenUtils.class);
+         MockedStatic<HttpFetchingUtils> mockHttpUtils = Mockito.mockStatic(HttpFetchingUtils.class)) {
       List<String> mockVersions = Arrays.asList("10.0.10", "10.0.10-SNAPSHOT", "10.0.10-m123", "10.0.11-SNAPSHOT",
           "10.0.12-SNAPSHOT", "10.0.13-SNAPSHOT");
       Product mockProduct = getMockProduct();
@@ -340,10 +347,10 @@ class ProductServiceImplTest extends BaseSetup {
       mockProduct.setProductModuleContent(mockReadmeProductContent());
       mockProduct.setRepositoryName(MOCK_PRODUCT_REPOSITORY_NAME);
       mockForSyncSecondTime(mockProduct);
-      mockUtils.when(() -> MavenUtils.getMetadataContentFromUrl(any())).thenReturn(getMockMetadataContent2());
+      mockHttpUtils.when(() -> HttpFetchingUtils.getFileAsString(any())).thenReturn(getMockMetadataContent2());
+      when(fileDownloadService.getFileAsString(any())).thenReturn(getMockMetadataContent2());
       // Executes
       productService.syncLatestDataFromMarketRepo(false);
-
       verify(productRepo).save(argumentCaptor.capture());
       assertThat(argumentCaptor.getValue().getReleasedVersions()).isEqualTo(mockVersions);
     }
@@ -433,7 +440,7 @@ class ProductServiceImplTest extends BaseSetup {
     when(mavenArtifactVersionRepository.findByProductId(MOCK_PRODUCT_ID)).thenReturn(mockMavenArtifactVersion);
     Product product = getMockProduct();
     when(productRepo.getProductByIdAndVersion(MOCK_PRODUCT_ID, MOCK_SNAPSHOT_VERSION)).thenReturn(product);
-    when(versionService.getVersionsForDesigner(MOCK_PRODUCT_ID, true, null))
+    when(versionService.getInstallableVersions(MOCK_PRODUCT_ID, false, null))
         .thenReturn(mockVersionAndUrlModels(), mockVersionModels(), mockVersionModels2(), mockVersionModels3());
 
     Product result = productService.fetchProductDetail(MOCK_PRODUCT_ID, true);
@@ -453,6 +460,8 @@ class ProductServiceImplTest extends BaseSetup {
     product.setDeprecated(true);
     result = productService.fetchProductDetail(MOCK_PRODUCT_ID, true);
     assertEquals("10.0 - 12.0", result.getCompatibilityRange());
+    verify(versionService, atLeastOnce()).getInstallableVersions(MOCK_PRODUCT_ID, false, null);
+    verify(versionService, never()).getInstallableVersions(MOCK_PRODUCT_ID, true, null);
   }
 
   @Test
@@ -520,19 +529,6 @@ class ProductServiceImplTest extends BaseSetup {
         mockProductMarketplaceData.getInstallationCount());
     Product result = productService.fetchBestMatchProductDetail(MOCK_PRODUCT_ID, MOCK_RELEASED_VERSION);
     assertEquals(mockProduct, result);
-  }
-
-  @Test
-  void testGetCompatibilityFromNumericVersion() {
-
-    String result = productService.getCompatibilityFromOldestVersion("1.0.0");
-    assertEquals("1.0+", result);
-
-    result = productService.getCompatibilityFromOldestVersion("8");
-    assertEquals("8.0+", result);
-
-    result = productService.getCompatibilityFromOldestVersion("11.2");
-    assertEquals("11.2+", result);
   }
 
   private void mockMarketRepoMetaStatus() {

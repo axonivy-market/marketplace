@@ -15,8 +15,6 @@ public interface ProductService {
 
   Product fetchProductDetail(String id, Boolean isShowDevVersion);
 
-  String getCompatibilityFromOldestVersion(String oldestVersion);
-
   Product fetchBestMatchProductDetail(String id, String version);
 
   Product fetchProductDetailByIdAndVersion(String id, String version);

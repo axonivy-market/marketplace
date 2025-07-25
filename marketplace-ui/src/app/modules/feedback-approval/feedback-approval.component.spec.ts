@@ -330,4 +330,22 @@ describe('FeedbackApprovalComponent', () => {
     expect(reviewTab.classes['active']).toBeTrue();
     expect(historyTab.classes['active']).toBeUndefined();
   }));
+
+  it('should call handleError when fetchUserInfo fails', fakeAsync(() => {
+    const errorResponse = new HttpErrorResponse({
+      status: 500,
+      statusText: 'Internal Server Error',
+    });
+
+    spyOn(component as any, 'handleError');
+
+    authServiceMock.getUserInfo.and.returnValue(throwError(() => errorResponse));
+
+    component.token = 'test-token';
+    component.fetchUserInfo();
+    tick();
+
+    expect((component as any).handleError).toHaveBeenCalledWith(errorResponse);
+    expect(component.moderatorName).toBeUndefined(); // ✅ Matches actual behavior
+  }));
 });

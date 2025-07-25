@@ -222,5 +222,4 @@ class ImageServiceImplTest extends BaseSetup {
       assertDoesNotThrow(() -> imageService.readPreviewImageByName(IMAGE_NAME));
     }
   }
-
 }

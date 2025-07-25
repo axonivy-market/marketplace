@@ -26,13 +26,13 @@ public class RequestMappingConstants {
   public static final String PRODUCT_BY_ID = "/product/{id}";
   public static final String PRODUCT_RATING_BY_ID = "/product/{id}/rating";
   public static final String INSTALLATION_COUNT_BY_ID = "/installation-count/{id}";
-  public static final String VERSION_DOWNLOAD_BY_ID = "/version-download/{id}";
+  public static final String VERSION_DOWNLOAD_BY_ID = "/{id}/{artifactId}/{version}";
   public static final String PRODUCT_JSON_CONTENT_BY_PRODUCT_ID_AND_VERSION = "/{id}/{version}/json";
   public static final String VERSIONS_IN_DESIGNER = "/{id}/designerversions";
   public static final String DESIGNER_INSTALLATION_BY_ID = "/installation/{id}/designer";
   public static final String CUSTOM_SORT = "custom-sort";
   public static final String LATEST_ARTIFACT_DOWNLOAD_URL_BY_ID = "/{id}/artifact";
-  public static final String ARTIFACTS_AS_ZIP = LATEST_ARTIFACT_DOWNLOAD_URL_BY_ID + "/zip-file";
+  public static final String ARTIFACTS_AS_ZIP = "/{id}/{artifactId}/{version}/zip-file";
   public static final String SYNC_ZIP_ARTIFACTS = "zip-sync";
   public static final String EXTERNAL_DOCUMENT = API + "/externaldocument";
   public static final String PRODUCT_MARKETPLACE_DATA = API + "/product-marketplace-data";
@@ -44,4 +44,9 @@ public class RequestMappingConstants {
   public static final String PRODUCT_ID = "product-id";
   public static final String RELEASE_ID = "release-id";
   public static final String FEEDBACK_APPROVAL = "/approval";
+  public static final String MONITOR_DASHBOARD = API + "/monitor-dashboard";
+  public static final String REPOS = "repos";
+  public static final String REPOS_REPORT = "/{repo}/{workflow}";
+  public static final String REPO = "repo";
+  public static final String WORKFLOW = "workflow";
 }

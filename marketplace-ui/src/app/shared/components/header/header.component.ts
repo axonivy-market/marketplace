@@ -1,13 +1,12 @@
 import { CommonModule } from '@angular/common';
 import { Component, inject, model } from '@angular/core';
 import { FormsModule } from '@angular/forms';
+import { RouterLink } from '@angular/router';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { LanguageService } from '../../../core/services/language/language.service';
 import { ThemeService } from '../../../core/services/theme/theme.service';
-import { LanguageSelectionComponent } from './language-selection/language-selection.component';
 import { NavigationComponent } from './navigation/navigation.component';
 import { SearchBarComponent } from './search-bar/search-bar.component';
-import { ThemeSelectionComponent } from './theme-selection/theme-selection.component';
 
 @Component({
   selector: 'app-header',
@@ -17,9 +16,8 @@ import { ThemeSelectionComponent } from './theme-selection/theme-selection.compo
     FormsModule,
     TranslateModule,
     NavigationComponent,
-    ThemeSelectionComponent,
-    LanguageSelectionComponent,
-    SearchBarComponent
+    SearchBarComponent,
+    RouterLink
   ],
   templateUrl: './header.component.html',
   styleUrls: ['./header.component.scss', '../../../app.component.scss']

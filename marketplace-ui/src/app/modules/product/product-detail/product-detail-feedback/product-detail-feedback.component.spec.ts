@@ -120,4 +120,47 @@ describe('ProductDetailFeedbackComponent', () => {
     button.click();
     expect(mockProductFeedbackService.loadMoreFeedbacks).toHaveBeenCalled();
   });
+
+  describe('isShowBtnMore computed signal', () => {
+    it('should return false when all feedbacks are loaded and in mobile mode', () => {
+      mockProductFeedbackService.areAllFeedbacksLoaded.and.returnValue(true);
+      mockProductFeedbackService.totalElements.and.returnValue(10);
+      
+      // IMPORTANT: Recreate component AFTER setting mock return values
+      fixture = TestBed.createComponent(ProductDetailFeedbackComponent);
+      component = fixture.componentInstance;
+      spyOn(component, 'isMobileMode').and.returnValue(true);
+
+      fixture.detectChanges();
+      expect(component.isShowBtnMore()).toBeFalse();
+    });
+
+    it('should return false when all feedbacks are loaded and totalElements <= MAX_ELEMENTS', () => {
+      mockProductFeedbackService.areAllFeedbacksLoaded.and.returnValue(true);
+      mockProductFeedbackService.totalElements.and.returnValue(3); // <= MAX_ELEMENTS
+
+      fixture = TestBed.createComponent(ProductDetailFeedbackComponent);
+      component = fixture.componentInstance;
+      spyOn(component, 'isMobileMode').and.returnValue(false);
+
+      fixture.detectChanges();
+      expect(component.isShowBtnMore()).toBeFalse();
+    });
+
+    it('should return true when not all feedbacks are loaded', () => {
+      mockProductFeedbackService.areAllFeedbacksLoaded.and.returnValue(false);
+      mockProductFeedbackService.totalElements.and.returnValue(100);
+      spyOn(component, 'isMobileMode').and.returnValue(false);
+
+      expect(component.isShowBtnMore()).toBeTrue();
+    });
+
+    it('should return true when feedbacks are loaded but not in mobile mode and totalElements > MAX_ELEMENTS', () => {
+      mockProductFeedbackService.areAllFeedbacksLoaded.and.returnValue(true);
+      mockProductFeedbackService.totalElements.and.returnValue(10); // > MAX_ELEMENTS
+      spyOn(component, 'isMobileMode').and.returnValue(false);
+
+      expect(component.isShowBtnMore()).toBeTrue();
+    });
+});
 });

@@ -245,7 +245,6 @@ export const MOCK_CRON_JOB_PRODUCT_DETAIL: ProductDetail = {
     'https://github.com/axonivy-market/cronjob/actions/workflows/ci.yml/badge.svg',
   language: 'English',
   industry: 'Cross-Industry',
-  compatibility: '10.0+',
   contactUs: false,
   vendorUrl: '',
   productModuleContent: {
@@ -302,7 +301,6 @@ export const MOCK_PRODUCT_DETAIL: ProductDetail = {
     'https://github.com/axonivy-market/jira-connector/actions/workflows/ci.yml/badge.svg',
   language: 'English',
   industry: 'Cross-Industry',
-  compatibility: '9.2+',
   contactUs: false,
   productModuleContent: {
     version: '10.0.0',
@@ -338,6 +336,14 @@ export const MOCK_EXTERNAL_DOCUMENT: ExternalDocument = {
   artifactId: 'portal-guide',
   artifactName: 'Portal Guide',
   relativeLink: '/market-cache/portal/portal-guide/10.0.0/doc/index.html'
+};
+
+export const MOCK_STATIC_LIB: ExternalDocument = {
+  productId: 'workflow-demo',
+  version: 'dev',
+  artifactId: 'workflow-demos',
+  artifactName: 'Workflow demos',
+  relativeLink: 'https://market.axonivy.com/workflow-demo/dev/lib/workflow-demos.iar'
 };
 
 export const MOCK_RELEASE_PREVIEW_DATA: ReleasePreviewData = {
