@@ -7,7 +7,6 @@ import { API_URI } from '../../shared/constants/api.constant';
 const mockRepos: Repository[] = [
   {
     name: 'repo1',
-    htmlUrl: 'https://github.com/user/repo1',
     language: 'TypeScript',
     lastUpdated: '2025-07-20T12:00:00Z',
     ciBadgeUrl: 'https://example.com/badge/ci.svg',

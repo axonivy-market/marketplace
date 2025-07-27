@@ -23,10 +23,6 @@ public class GithubReposModel extends RepresentationModel<GithubReposModel> {
   @Schema(description = "Repository name", example = "my-awesome-repo")
   private String name;
 
-  @EqualsAndHashCode.Include
-  @Schema(description = "Repository HTML URL", example = "https://github.com/axonivy-market/my-awesome-repo")
-  private String htmlUrl;
-
   @Schema(description = "Main programming language used", example = "Java")
   private String language;
 
@@ -67,7 +63,6 @@ public class GithubReposModel extends RepresentationModel<GithubReposModel> {
 
     return GithubReposModel.builder()
         .name(githubRepo.getName())
-        .htmlUrl(githubRepo.getHtmlUrl())
         .language(githubRepo.getLanguage())
         .lastUpdated(dateFormat.format(githubRepo.getLastUpdated()))
         .ciBadgeUrl(githubRepo.getCiBadgeUrl())

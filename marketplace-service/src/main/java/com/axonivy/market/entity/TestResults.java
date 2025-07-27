@@ -7,6 +7,9 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+
+import java.util.Map;
+
 @Getter
 @Setter
 @Builder
@@ -14,6 +17,5 @@ import lombok.Setter;
 @NoArgsConstructor
 public class TestResults {
   private WorkFlowType workflow;
-  private TestStatus status;
-  private int count;
+  private Map<String, Integer> results;
 }

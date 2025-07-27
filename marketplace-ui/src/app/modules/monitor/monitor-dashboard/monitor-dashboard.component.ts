@@ -38,21 +38,21 @@ export class MonitoringDashboardComponent implements OnInit {
     });
   }
 
-  getTestCount(repo: Repository, workflow: string, environment: string, status: string): number {
-    if (!repo.testResults) {
-      return 0;
-    }
-    const result = repo.testResults.find(test =>
-      test.workflow === workflow.toUpperCase() &&
-      test.environment === environment.toUpperCase() &&
-      test.status === status.toUpperCase()
-    );
+  // getTestCount(repo: Repository, workflow: string, environment: string, status: string): number {
+  //   if (!repo.testResults) {
+  //     return 0;
+  //   }
+  //   const result = repo.testResults.find(test =>
+  //     test.workflow === workflow.toUpperCase() &&
+  //     test.environment === environment.toUpperCase() &&
+  //     test.status === status.toUpperCase()
+  //   );
 
-    if (result) {
-      return result.count;
-    }
-    return 0;
-  }
+  //   if (result) {
+  //     return result.count;
+  //   }
+  //   return 0;
+  // }
 
   onBadgeClick(repo: string, workflow: string) {
     const upperWorkflow = workflow.toUpperCase();

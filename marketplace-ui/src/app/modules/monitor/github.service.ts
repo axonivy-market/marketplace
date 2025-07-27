@@ -4,7 +4,6 @@ import { Observable } from 'rxjs';
 import { API_URI } from '../../shared/constants/api.constant';
 export interface Repository {
   name: string;
-  htmlUrl: string;
   language: string | null;
   lastUpdated: string;
   ciBadgeUrl: string;
@@ -14,10 +13,8 @@ export interface Repository {
 }
 
 export interface TestResult {
-  environment: 'ALL' | 'REAL' | 'MOCK';
-  workflow: 'CI' | 'DEV';
-  count: number;
-  status: 'PASSED' | 'FAILED';
+  workflow: 'CI' | 'DEV' | 'E2E';
+  results: Record<string, Number>;
 }
 
 export interface TestStep {
