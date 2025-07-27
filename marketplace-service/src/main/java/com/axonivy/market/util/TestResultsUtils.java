@@ -38,11 +38,11 @@ public class TestResultsUtils {
       }
       var workflowType = step.getType();
       TestStatus status = step.getStatus();
-      var envType = step.getTestType().toString();
-      if ("OTHER".equals(envType)) {
-        envType = "MOCK";
-      }
-      String key = workflowType + "-" + envType + "-" + status;
+//      var envType = step.getTestType().toString();
+//      if ("OTHER".equals(envType)) {
+//        envType = "MOCK";
+//      }
+      String key = workflowType + "-" + status;
       groupedCounts.merge(key, 1, Integer::sum);
     }
     return groupedCounts;
@@ -56,7 +56,7 @@ public class TestResultsUtils {
       }
       var workflowType = step.getType();
       TestStatus status = step.getStatus();
-      String allKey = workflowType + "-ALL-" + status;
+      String allKey = workflowType + "-" + status;
       allCounts.merge(allKey, 1, Integer::sum);
     }
     return allCounts;
@@ -68,8 +68,7 @@ public class TestResultsUtils {
       String[] parts = entry.getKey().split("-");
       results.add(TestResults.builder()
           .workflow(WorkFlowType.valueOf(parts[0]))
-          .environment(parts[1])
-          .status(TestStatus.valueOf(parts[TEST_TYPE_INDEX]))
+          .status(TestStatus.valueOf(parts[1]))
           .count(entry.getValue())
           .build());
     }

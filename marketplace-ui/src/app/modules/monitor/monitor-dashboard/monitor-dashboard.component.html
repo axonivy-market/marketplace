@@ -26,14 +26,6 @@
         <div class="workflow">
           <p class="passed">✅ {{ 'monitor.dashboard.passed' | translate }}: {{ getTestCount(repo, 'CI', 'ALL', 'PASSED') }}</p>
           <p class="failed">❌ {{ 'monitor.dashboard.failed' | translate }}: {{ getTestCount(repo, 'CI', 'ALL', 'FAILED') }}</p>
-          <div class="sub-status">
-            {{ 'monitor.dashboard.testCounts.mock' | translate }}
-            {{ getTestCount(repo, 'CI', 'MOCK', 'PASSED') }}✅ /
-            {{ getTestCount(repo, 'CI', 'MOCK', 'FAILED') }}❌ |
-            {{ 'monitor.dashboard.testCounts.real' | translate }}
-            {{ getTestCount(repo, 'CI', 'REAL', 'PASSED') }}✅ /
-            {{ getTestCount(repo, 'CI', 'REAL', 'FAILED') }}❌
-          </div>
         </div>
         }
 
@@ -45,14 +37,16 @@
         <div class="workflow">
           <p class="passed">✅ {{ 'monitor.dashboard.passed' | translate }}: {{ getTestCount(repo, 'DEV', 'ALL', 'PASSED') }}</p>
           <p class="failed">❌ {{ 'monitor.dashboard.failed' | translate }}: {{ getTestCount(repo, 'DEV', 'ALL', 'FAILED') }}</p>
-          <div class="sub-status">
-            {{ 'monitor.dashboard.testCounts.mock' | translate }}
-            {{ getTestCount(repo, 'DEV', 'MOCK', 'PASSED') }}✅ /
-            {{ getTestCount(repo, 'DEV', 'MOCK', 'FAILED') }}❌ |
-            {{ 'monitor.dashboard.testCounts.real' | translate }}
-            {{ getTestCount(repo, 'DEV', 'REAL', 'PASSED') }}✅ /
-            {{ getTestCount(repo, 'DEV', 'REAL', 'FAILED') }}❌
-          </div>
+        </div>
+        }
+        @if (repo.e2eBadgeUrl) {
+        <div class="badge-row" (click)="onBadgeClick(repo.name, 'dev')">
+          <span class="icon">🛠️</span> {{ 'monitor.dashboard.devLabel' | translate }}:
+          <img [src]="repo.e2eBadgeUrl" alt="dev Badge for {{ repo.name }}" style="cursor: pointer;" />
+        </div>
+        <div class="workflow">
+          <p class="passed">✅ {{ 'monitor.dashboard.passed' | translate }}: {{ getTestCount(repo, 'E2E', 'ALL', 'PASSED') }}</p>
+          <p class="failed">❌ {{ 'monitor.dashboard.failed' | translate }}: {{ getTestCount(repo, 'E2E', 'ALL', 'FAILED') }}</p>
         </div>
         }
         <p>

@@ -9,6 +9,7 @@ export interface Repository {
   lastUpdated: string;
   ciBadgeUrl: string;
   devBadgeUrl: string;
+  e2eBadgeUrl: string;
   testResults?: TestResult[];
 }
 

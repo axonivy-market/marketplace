@@ -14,8 +14,6 @@ import lombok.Setter;
 @NoArgsConstructor
 public class TestResults {
   private WorkFlowType workflow;
-  private String environment;
   private TestStatus status;
   private int count;
-
 }

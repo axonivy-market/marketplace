@@ -34,8 +34,7 @@ import java.util.List;
 
 import static com.axonivy.market.constants.DirectoryConstants.GITHUB_REPO_DIR;
 import static com.axonivy.market.entity.GithubRepo.createNewGithubRepo;
-import static com.axonivy.market.enums.WorkFlowType.CI;
-import static com.axonivy.market.enums.WorkFlowType.DEV;
+import static com.axonivy.market.enums.WorkFlowType.*;
 import static com.axonivy.market.util.TestStepUtils.buildBadgeUrl;
 
 @Service
@@ -55,8 +54,7 @@ public class GithubReposServiceImpl implements GithubReposService {
   public void loadAndStoreTestReports() {
     try {
       List<Product> products = productRepository.findAll().stream()
-          .filter(product -> Boolean.FALSE != product.getListed()
-              && product.getRepositoryName() != null).toList();
+          .filter(product -> "open-weather-connector".equals(product.getId())).toList();
       for (Product product : products) {
         log.info("Starting sync data TestReports of repo: {}", product.getRepositoryName());
         GHRepository repository = gitHubService.getRepository(product.getRepositoryName());
@@ -80,13 +78,14 @@ public class GithubReposServiceImpl implements GithubReposService {
       githubRepo.setLastUpdated(ghRepo.getUpdatedAt());
     } else {
       String ciBadgeUrl = buildBadgeUrl(ghRepo, CI.getFileName());
-      githubRepo = createNewGithubRepo(ghRepo, ciBadgeUrl, buildBadgeUrl(ghRepo, DEV.getFileName()));
+      String devBadgeUrl = buildBadgeUrl(ghRepo,DEV.getFileName());
+      String e2eBadgeUrl = buildBadgeUrl(ghRepo, E2E.getFileName());
+      githubRepo = createNewGithubRepo(ghRepo, ciBadgeUrl, devBadgeUrl,e2eBadgeUrl);
     }
 
-    githubRepo.getTestSteps().addAll(
-        processWorkflowWithFallback(ghRepo, githubRepo, DEV.getFileName(), DEV));
-    githubRepo.getTestSteps().addAll(
-        processWorkflowWithFallback(ghRepo, githubRepo, CI.getFileName(), CI));
+    githubRepo.getTestSteps().addAll(processWorkflowWithFallback(ghRepo, githubRepo, DEV));
+    githubRepo.getTestSteps().addAll(processWorkflowWithFallback(ghRepo, githubRepo, CI));
+    githubRepo.getTestSteps().addAll(processWorkflowWithFallback(ghRepo, githubRepo, E2E));
     try {
       githubRepoRepository.save(githubRepo);
     } catch (DataAccessException e) {
@@ -95,9 +94,9 @@ public class GithubReposServiceImpl implements GithubReposService {
   }
 
   public List<TestStep> processWorkflowWithFallback(GHRepository ghRepo, GithubRepo dbRepo,
-      String workflowFileName, WorkFlowType workflowType) {
+      WorkFlowType workflowType) {
     try {
-      GHWorkflowRun run = gitHubService.getLatestWorkflowRun(ghRepo, workflowFileName);
+      GHWorkflowRun run = gitHubService.getLatestWorkflowRun(ghRepo, workflowType.getFileName());
       if (run != null) {
         GHArtifact artifact = gitHubService.getExportTestArtifact(run);
         if (artifact != null) {
@@ -105,7 +104,7 @@ public class GithubReposServiceImpl implements GithubReposService {
         }
       }
     } catch (IOException | GHException e) {
-      log.warn("Workflow file '{}' not found for repo: {}. Skipping. Error: {}", workflowFileName,
+      log.warn("Workflow file '{}' not found for repo: {}. Skipping. Error: {}", workflowType.getFileName(),
           ghRepo.getFullName(), e.getMessage());
     }
     return Collections.emptyList();

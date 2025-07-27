@@ -36,12 +36,13 @@ public class GithubRepo extends GenericIdEntity {
   private Date lastUpdated;
   private String ciBadgeUrl;
   private String devBadgeUrl;
+  private String e2eBadgeUrl;
   @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
   @JoinColumn(name = "repository_id")
   private List<TestStep> testSteps;
 
   public static GithubRepo createNewGithubRepo(GHRepository repo, String ciBadgeUrl,
-      String devBadgeUrl) throws IOException {
+      String devBadgeUrl, String e2eBadgeUrl) throws IOException {
     return GithubRepo.builder()
         .name(repo.getName())
         .htmlUrl(repo.getHtmlUrl().toString())
@@ -50,6 +51,7 @@ public class GithubRepo extends GenericIdEntity {
         .testSteps(new ArrayList<>())
         .ciBadgeUrl(ciBadgeUrl)
         .devBadgeUrl(devBadgeUrl)
+        .e2eBadgeUrl(e2eBadgeUrl)
         .build();
   }
 }
