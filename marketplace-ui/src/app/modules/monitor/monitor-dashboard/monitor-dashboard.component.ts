@@ -73,6 +73,7 @@ export class MonitoringDashboardComponent implements OnInit {
       test.environment === environment.toUpperCase() &&
       test.status === status.toUpperCase()
     );
+    
     if (result) {
       return result.count;
     } else {
