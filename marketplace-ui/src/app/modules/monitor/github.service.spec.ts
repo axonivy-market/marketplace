@@ -1,8 +1,6 @@
+
 import { TestBed } from '@angular/core/testing';
-import {
-  HttpClientTestingModule,
-  HttpTestingController
-} from '@angular/common/http/testing';
+import { HttpClientTestingModule, HttpTestingController } from '@angular/common/http/testing';
 import { GithubService, Repository, TestStep } from './github.service';
 import { API_URI } from '../../shared/constants/api.constant';
 
@@ -97,6 +95,7 @@ describe('GithubService', () => {
     req.flush('Error', { status: 500, statusText: 'Server Error' });
     expect(error).toBeTruthy();
   });
+
 
   it('should handle error when fetching test report', () => {
     let error: any;

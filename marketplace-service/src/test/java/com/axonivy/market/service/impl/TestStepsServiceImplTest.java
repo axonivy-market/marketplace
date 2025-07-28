@@ -1,6 +1,5 @@
 package com.axonivy.market.service.impl;
 
-import com.axonivy.market.entity.GithubRepo;
 import com.axonivy.market.entity.TestStep;
 import com.axonivy.market.enums.TestStatus;
 import com.axonivy.market.enums.WorkFlowType;
@@ -59,10 +58,9 @@ class TestStepsServiceImplTest {
 
     @Test
     void testCreateTestStepsWithTestData() throws JsonProcessingException {
-        GithubRepo repo = new GithubRepo();
         String json = "{\"output\":{\"summary\":\"✅ step1 Mock Server Test\\n❌ step2 Real Server Test\"}}";
         JsonNode testData = new ObjectMapper().readTree(json);
-        List<TestStep> steps = testStepsService.createTestSteps(repo, testData, WorkFlowType.CI);
+        List<TestStep> steps = testStepsService.createTestSteps(testData, WorkFlowType.CI);
         assertEquals(2, steps.size(),
                 "Expected two test steps to be created from the test data");
         assertEquals("step1", steps.get(0).getName(),
@@ -77,8 +75,7 @@ class TestStepsServiceImplTest {
 
     @Test
     void testCreateTestStepsNullTestData() {
-        GithubRepo repo = new GithubRepo();
-        List<TestStep> steps = testStepsService.createTestSteps(repo, null, WorkFlowType.CI);
+        List<TestStep> steps = testStepsService.createTestSteps(null, WorkFlowType.CI);
         assertTrue(steps.isEmpty(),
                 "Expected an empty list when test data is null");
     }

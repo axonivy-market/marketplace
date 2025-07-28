@@ -1,7 +1,6 @@
 package com.axonivy.market.service.impl;
 
 import com.axonivy.market.assembler.TestStepsModelAssembler;
-import com.axonivy.market.entity.GithubRepo;
 import com.axonivy.market.entity.TestStep;
 import com.axonivy.market.enums.WorkFlowType;
 import com.axonivy.market.model.TestStepsModel;
@@ -34,7 +33,7 @@ public class TestStepsServiceImpl implements TestStepsService {
     }
 
     @Transactional
-    public List<TestStep> createTestSteps(GithubRepo repo, JsonNode testData, WorkFlowType workflowType) {
+    public List<TestStep> createTestSteps(JsonNode testData, WorkFlowType workflowType) {
         if (testData != null) {
             return TestStepUtils.parseTestSteps(testData, workflowType);
         }

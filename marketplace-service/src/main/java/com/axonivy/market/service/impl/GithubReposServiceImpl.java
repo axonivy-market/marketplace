@@ -122,7 +122,7 @@ public class GithubReposServiceImpl implements GithubReposService {
       FileUtils.unzipArtifact(zipStream, unzipDir.toFile());
 
       JsonNode testData = findTestReportJson(unzipDir.toFile());
-      return testStepsService.createTestSteps(dbRepo, testData, workflowType);
+      return testStepsService.createTestSteps(testData, workflowType);
     } catch (IOException e) {
       log.error("IO error processing artifact for repo: {}", dbRepo.getName(), e);
     } finally {

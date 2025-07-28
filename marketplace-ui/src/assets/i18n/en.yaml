@@ -185,6 +185,7 @@ common:
     approvalPending: Approval pending
   labels:
     redirecting: Redirecting ...!
+    loading: Loading ...!
   timeAgo:
     yearAgo: 1 year ago
     yearsAgo: '{{ number }} years ago'
@@ -228,7 +229,9 @@ common:
     noFeedbacks: No feedbacks available.
   security:
     pageTitle: Security Monitor
-
+  externalDocument:
+    pageHeader: The document of the {{product}} for version {{version}}
+    helpText: The document is not ready to render or has not been published. Please try again later.
 monitor:
   dashboard:
     title: GitHub Repository Monitor
