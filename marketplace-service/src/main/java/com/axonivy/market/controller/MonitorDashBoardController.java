@@ -22,6 +22,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.io.IOException;
+
 import java.util.List;
 import static com.axonivy.market.constants.RequestMappingConstants.*;
 
@@ -86,5 +87,4 @@ public class MonitorDashBoardController {
     githubReposService.updateRepoPriority(updates);
     return ResponseEntity.ok("Repository priorities updated successfully.");
   }
-
 }
