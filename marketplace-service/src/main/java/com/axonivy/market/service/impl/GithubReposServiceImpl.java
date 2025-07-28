@@ -33,6 +33,7 @@ import java.nio.file.Paths;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Objects;
 
 import static com.axonivy.market.constants.DirectoryConstants.GITHUB_REPO_DIR;
 import static com.axonivy.market.entity.GithubRepo.createNewGithubRepo;
@@ -148,9 +149,9 @@ public class GithubReposServiceImpl implements GithubReposService {
   public List<GithubReposModel> fetchFocusRepositories() {
     List<GithubRepo> entities = githubRepoRepository.findAll()
         .stream()
-        .sorted(Comparator.comparing(repo -> {
+        .sorted(Comparator.comparing((GithubRepo repo) -> {
           Integer order = repo.getPriority();
-          return order != null ? order : Integer.MAX_VALUE;
+          return Objects.requireNonNullElse(order, Integer.MAX_VALUE);
         }))
         .toList();
 
@@ -175,7 +176,7 @@ public class GithubReposServiceImpl implements GithubReposService {
       allRepos.stream()
           .filter( (GithubRepo repo)-> update.getRepoName().equals(repo.getName()))
           .findFirst()
-          .ifPresent(repo -> {
+          .ifPresent((GithubRepo repo) -> {
             repo.setPriority(update.getPriority());
             log.info("Updated priority for repository: {} to {}", update.getRepoName(), update.getPriority());
           });

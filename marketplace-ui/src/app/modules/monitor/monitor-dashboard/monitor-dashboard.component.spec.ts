@@ -1,14 +1,13 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { MonitoringDashboardComponent } from './monitor-dashboard.component';
-import { GithubService, Repository, TestResult } from '../github.service';
-import { HttpClientTestingModule } from '@angular/common/http/testing';
+import { GithubService, Repository } from '../github.service';
 import { LanguageService } from '../../../core/services/language/language.service';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { Router } from '@angular/router';
-import { of, throwError } from 'rxjs';
+import { of,  } from 'rxjs';
 import { PLATFORM_ID } from '@angular/core';
 import { SortOptionLabel } from '../../../shared/enums/sort-option.enum';
-import * as common from '@angular/common';
+import { HttpClientTestingModule } from '@angular/common/http/testing';
 
 describe('MonitoringDashboardComponent', () => {
   let component: MonitoringDashboardComponent;

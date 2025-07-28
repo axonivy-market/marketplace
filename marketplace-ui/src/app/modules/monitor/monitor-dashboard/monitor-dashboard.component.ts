@@ -1,11 +1,10 @@
-import { Component, inject, OnInit, PLATFORM_ID } from '@angular/core';
+import { Component, inject, OnInit, PLATFORM_ID, EventEmitter,Output} from '@angular/core';
 import { GithubService, Repository } from '../github.service';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { Router } from '@angular/router';
 import { LanguageService } from '../../../core/services/language/language.service';
 import { TranslateModule } from '@ngx-translate/core';
 import { SortOptionLabel } from '../../../shared/enums/sort-option.enum';
-import { EventEmitter, Output } from '@angular/core';
 import { SORT_MONITOR_OPTION } from '../../../shared/constants/common.constant';
 import { ItemDropdown } from '../../../shared/models/item-dropdown.model';
 import { Observable } from 'rxjs';
@@ -74,7 +73,11 @@ export class MonitoringDashboardComponent implements OnInit {
       test.environment === environment.toUpperCase() &&
       test.status === status.toUpperCase()
     );
-    return result ? result.count : 0;
+    if (result) {
+      return result.count;
+    } else {
+      return 0;
+    }
   }
 
   onBadgeClick(repo: string, workflow: string) {
