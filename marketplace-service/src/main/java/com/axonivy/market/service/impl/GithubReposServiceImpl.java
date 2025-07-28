@@ -7,6 +7,7 @@ import com.axonivy.market.entity.TestStep;
 import com.axonivy.market.enums.WorkFlowType;
 import com.axonivy.market.github.service.GitHubService;
 import com.axonivy.market.model.GithubReposModel;
+import com.axonivy.market.model.RepoPriorityUpdateModel;
 import com.axonivy.market.repository.GithubRepoRepository;
 import com.axonivy.market.repository.ProductRepository;
 import com.axonivy.market.service.GithubReposService;
@@ -30,6 +31,7 @@ import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 
 import static com.axonivy.market.constants.DirectoryConstants.GITHUB_REPO_DIR;
@@ -143,10 +145,40 @@ public class GithubReposServiceImpl implements GithubReposService {
   }
 
   @Override
-  public List<GithubReposModel> fetchAllRepositories() {
+  public List<GithubReposModel> fetchFocusRepositories() {
+    List<GithubRepo> entities = githubRepoRepository.findAll()
+        .stream()
+        .sorted(Comparator.comparing(repo -> {
+          Integer order = repo.getPriority();
+          return order != null ? order : Integer.MAX_VALUE;
+        }))
+        .toList();
+
+    return entities.stream()
+        .map(githubReposModelAssembler::toModel)
+        .toList();
+  }
+
+  @Override
+  public List<GithubReposModel> fetchStandardRepositories() {
     List<GithubRepo> entities = githubRepoRepository.findAll();
     return entities.stream()
         .map(githubReposModelAssembler::toModel)
         .toList();
+  }
+
+  @Override
+  public void updateRepoPriority(List<RepoPriorityUpdateModel> updates) {
+    List<GithubRepo> allRepos = githubRepoRepository.findAll();
+    allRepos.forEach((GithubRepo repo) -> repo.setPriority(null));
+    for (RepoPriorityUpdateModel update : updates) {
+      allRepos.stream()
+          .filter( (GithubRepo repo)-> update.getRepoName().equals(repo.getName()))
+          .findFirst()
+          .ifPresent(repo -> {
+            repo.setPriority(update.getPriority());
+            log.info("Updated priority for repository: {} to {}", update.getRepoName(), update.getPriority());
+          });
+    }
   }
 }

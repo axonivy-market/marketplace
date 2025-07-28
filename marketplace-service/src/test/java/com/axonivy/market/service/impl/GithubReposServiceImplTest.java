@@ -7,6 +7,7 @@ import com.axonivy.market.entity.TestStep;
 import com.axonivy.market.enums.WorkFlowType;
 import com.axonivy.market.github.service.GitHubService;
 import com.axonivy.market.model.GithubReposModel;
+import com.axonivy.market.model.RepoPriorityUpdateModel;
 import com.axonivy.market.repository.GithubRepoRepository;
 import com.axonivy.market.repository.ProductRepository;
 import com.axonivy.market.service.TestStepsService;
@@ -29,6 +30,7 @@ import java.net.URISyntaxException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
@@ -139,7 +141,23 @@ class GithubReposServiceImplTest {
     when(githubRepoRepository.findAll()).thenReturn(List.of(repo));
     when(githubReposModelAssembler.toModel(repo)).thenReturn(new GithubReposModel());
 
-    List<GithubReposModel> result = service.fetchAllRepositories();
+    List<GithubReposModel> result = service.fetchStandardRepositories();
+    assertEquals(1, result.size(),
+        "Should return one GithubReposModel when one GithubRepo is present");
+    verify(githubReposModelAssembler).toModel(repo);
+  }
+
+  @Test
+  void testFetchFocusedRepositories() {
+    GithubRepo repo = new GithubRepo();
+    when(githubRepoRepository.findAll().stream()
+        .sorted(Comparator.comparing(githubRepo -> {
+          Integer order = githubRepo.getPriority();
+          return order != null ? order : Integer.MAX_VALUE;
+        }))
+        .toList()).thenReturn(List.of(repo));
+    when(githubReposModelAssembler.toModel(repo)).thenReturn(new GithubReposModel());
+    List<GithubReposModel> result = service.fetchFocusRepositories();
 
     assertEquals(1, result.size(),
         "Should return one GithubReposModel when one GithubRepo is present");
@@ -217,5 +235,29 @@ class GithubReposServiceImplTest {
       zipOut.closeEntry();
     }
     return Files.newInputStream(zipPath);
+  }
+
+  @Test
+  void testUpdateRepoPriority() {
+    GithubRepo repo1 = new GithubRepo();
+    repo1.setName("repo1");
+    repo1.setPriority(5);
+
+    GithubRepo repo2 = new GithubRepo();
+    repo2.setName("repo2");
+    repo2.setPriority(10);
+
+    List<GithubRepo> allRepos = List.of(repo1, repo2);
+    when(githubRepoRepository.findAll()).thenReturn(allRepos);
+
+    RepoPriorityUpdateModel update1 = new RepoPriorityUpdateModel("repo1", 1);
+    RepoPriorityUpdateModel update2 = new RepoPriorityUpdateModel("repo2", 2);
+    List<RepoPriorityUpdateModel> updates = List.of(update1, update2);
+
+    service.updateRepoPriority(updates);
+    assertEquals(1, repo1.getPriority(),
+        "Repository priorities should be updated correctly");
+    assertEquals(2, repo2.getPriority(),
+        "Repository priorities should be updated correctly");
   }
 }

@@ -4,3 +4,8 @@ export enum SortOption {
   ALPHABETICALLY = 'alphabetically',
   RECENT = 'recent'
 }
+
+export enum SortOptionLabel {
+  STANDARD = 'standard',
+  FOCUSED = 'focused'
+}

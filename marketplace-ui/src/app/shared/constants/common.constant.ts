@@ -1,7 +1,7 @@
 import { TypeOption } from '../enums/type-option.enum';
 import { FeedbackSortType } from '../enums/feedback-sort-type';
 import { Language } from '../enums/language.enum';
-import { SortOption } from '../enums/sort-option.enum';
+import { SortOption, SortOptionLabel } from '../enums/sort-option.enum';
 import { NavItem } from '../models/nav-item.model';
 import { Pageable } from '../models/apis/pageable.model';
 import { ItemDropdown } from '../models/item-dropdown.model';
@@ -203,6 +203,17 @@ export const FEEDBACK_SORT_TYPES: ItemDropdown<FeedbackSortType>[] = [
   }
 ];
 
+export const SORT_MONITOR_OPTION: ItemDropdown<SortOptionLabel>[] = [
+  {
+    value: SortOptionLabel.STANDARD,
+    label: 'common.sortMonitor.value.standard'
+  },
+  {
+    value: SortOptionLabel.FOCUSED,
+    label: 'common.sortMonitor.value.focused'
+  }
+];
+
 export const DESIGNER_SESSION_STORAGE_VARIABLE = {
   ivyViewerParamName: 'ivy-viewer',
   ivyVersionParamName: 'ivy-version',
@@ -327,3 +338,4 @@ export const GOOGLE = 'google';
 export const GOOGLE_SEARCH = 'gcse-search';
 export const GOOGLE_SEARCH_BAR_CLASS_NAME = '.gsc-control-cse';
 export const GOOGLE_SEARCH_BAR_BACKGROUND_CLASS_NAME = 'bg-secondary';
+

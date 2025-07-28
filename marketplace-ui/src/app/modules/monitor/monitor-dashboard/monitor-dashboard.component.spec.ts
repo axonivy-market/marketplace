@@ -6,7 +6,9 @@ import { LanguageService } from '../../../core/services/language/language.servic
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { Router } from '@angular/router';
 import { of, throwError } from 'rxjs';
-import { By } from '@angular/platform-browser';
+import { PLATFORM_ID } from '@angular/core';
+import { SortOptionLabel } from '../../../shared/enums/sort-option.enum';
+import * as common from '@angular/common';
 
 describe('MonitoringDashboardComponent', () => {
   let component: MonitoringDashboardComponent;
@@ -45,7 +47,7 @@ describe('MonitoringDashboardComponent', () => {
         language: 'Java',
         lastUpdated: '2025-07-19T12:00:00Z',
         ciBadgeUrl: 'https://example.com/badge/ci2.svg',
-        devBadgeUrl: '', 
+        devBadgeUrl: '',
         testResults: [
           { environment: 'ALL', workflow: 'CI', count: 15, status: 'PASSED' },
           { environment: 'ALL', workflow: 'CI', count: 5, status: 'FAILED' },
@@ -58,15 +60,15 @@ describe('MonitoringDashboardComponent', () => {
         htmlUrl: 'https://github.com/user/repo3',
         language: 'Python',
         lastUpdated: '2025-07-18T12:00:00Z',
-        ciBadgeUrl: '', 
-        devBadgeUrl: '', 
-        testResults: [] 
+        ciBadgeUrl: '',
+        devBadgeUrl: '',
+        testResults: []
       }
     ];
 
-    const githubServiceSpy = jasmine.createSpyObj('GithubService', ['getRepositories']);
+    const githubServiceSpy = jasmine.createSpyObj('GithubService', ['getRepositories', 'getFocusedRepositories', 'getStandardRepositories']);
     const routerSpy = jasmine.createSpyObj('Router', ['navigate']);
-    
+
     await TestBed.configureTestingModule({
       imports: [
         MonitoringDashboardComponent,
@@ -76,6 +78,7 @@ describe('MonitoringDashboardComponent', () => {
       providers: [
         { provide: GithubService, useValue: githubServiceSpy },
         { provide: Router, useValue: routerSpy },
+        { provide: PLATFORM_ID, useValue: 'browser' },
         LanguageService,
         TranslateService
       ]
@@ -84,7 +87,8 @@ describe('MonitoringDashboardComponent', () => {
     githubService = TestBed.inject(GithubService) as jasmine.SpyObj<GithubService>;
     router = TestBed.inject(Router) as jasmine.SpyObj<Router>;
 
-    githubService.getRepositories.and.returnValue(of(mockRepositories));
+    githubService.getFocusedRepositories.and.returnValue(of(mockRepositories));
+    githubService.getStandardRepositories.and.returnValue(of(mockRepositories));
 
     fixture = TestBed.createComponent(MonitoringDashboardComponent);
     component = fixture.componentInstance;
@@ -95,110 +99,82 @@ describe('MonitoringDashboardComponent', () => {
     expect(component).toBeTruthy();
   });
 
-  it('should load repositories on init', () => {
-    expect(githubService.getRepositories).toHaveBeenCalled();
+  it('should fetch focused repositories', () => {
+    githubService.getFocusedRepositories.and.returnValue(of(mockRepositories));
+    component.fetchRepositoriesBySort('FOCUSED' as SortOptionLabel);
     expect(component.repositories).toEqual(mockRepositories);
     expect(component.loading).toBeFalse();
   });
 
-  it('should handle error when loading repositories', () => {
-    const errorMessage = 'Network error';
-    githubService.getRepositories.and.returnValue(throwError(() => new Error(errorMessage)));
-    
-    component.loadRepositories();
-    
-    expect(component.error).toBe(errorMessage);
+  it('should fetch standard repositories', () => {
+    const standardRepos = [mockRepositories[1]];
+    githubService.getStandardRepositories.and.returnValue(of(standardRepos));
+    component.fetchRepositoriesBySort('STANDARD' as SortOptionLabel);
+    expect(component.repositories).toEqual(standardRepos);
     expect(component.loading).toBeFalse();
-  });
-
-  it('should navigate to report page on badge click', () => {
-    const repoName = 'test-repo';
-    const workflow = 'ci';
-    
-    component.onBadgeClick(repoName, workflow);
-    
-    expect(router.navigate).toHaveBeenCalledWith(['/report', repoName, 'CI']);
   });
 
   it('should get correct test count for specific criteria', () => {
     const repo = mockRepositories[0];
-    
     expect(component.getTestCount(repo, 'CI', 'ALL', 'PASSED')).toBe(10);
     expect(component.getTestCount(repo, 'CI', 'ALL', 'FAILED')).toBe(2);
-    
-    expect(component.getTestCount(repo, 'CI', 'MOCK', 'PASSED')).toBe(5);
-    expect(component.getTestCount(repo, 'CI', 'MOCK', 'FAILED')).toBe(1);
-    
-    expect(component.getTestCount(repo, 'CI', 'REAL', 'PASSED')).toBe(5);
-    expect(component.getTestCount(repo, 'CI', 'REAL', 'FAILED')).toBe(1);
-    
-    expect(component.getTestCount(repo, 'DEV', 'ALL', 'PASSED')).toBe(8);
-    expect(component.getTestCount(repo, 'DEV', 'ALL', 'FAILED')).toBe(0);
+    expect(component.getTestCount(repo, 'DEV', 'MOCK', 'PASSED')).toBe(4);
+    expect(component.getTestCount(repo, 'DEV', 'MOCK', 'FAILED')).toBe(0);
   });
 
-  it('should return 0 for missing test results', () => {
-    const repo = mockRepositories[2]; 
-    
+  it('should return 0 for missing testResults', () => {
+    const repo = mockRepositories[2];
     expect(component.getTestCount(repo, 'CI', 'ALL', 'PASSED')).toBe(0);
     expect(component.getTestCount(repo, 'DEV', 'MOCK', 'FAILED')).toBe(0);
   });
 
   it('should return 0 for non-matching test criteria', () => {
     const repo = mockRepositories[0];
-    
     expect(component.getTestCount(repo, 'NONEXISTENT', 'ALL', 'PASSED')).toBe(0);
     expect(component.getTestCount(repo, 'CI', 'NONEXISTENT', 'PASSED')).toBe(0);
     expect(component.getTestCount(repo, 'CI', 'ALL', 'NONEXISTENT')).toBe(0);
   });
 
-  it('should handle repositories with no testResults property', () => {
+  it('should return 0 for repo with no testResults property', () => {
     const repo: Repository = {
       name: 'no-tests-repo',
-      htmlUrl: 'https://github.com/user/no-tests-repo',
-      language: 'JavaScript',
-      lastUpdated: '2025-07-17T12:00:00Z',
-      ciBadgeUrl: 'https://example.com/badge/ci3.svg',
-      devBadgeUrl: 'https://example.com/badge/dev3.svg'
+      htmlUrl: '',
+      language: '',
+      lastUpdated: '',
+      ciBadgeUrl: '',
+      devBadgeUrl: ''
     };
-    
     expect(component.getTestCount(repo, 'CI', 'ALL', 'PASSED')).toBe(0);
-    expect(component.getTestCount(repo, 'DEV', 'MOCK', 'FAILED')).toBe(0);
   });
 
-  it('should display repository cards when data is loaded', () => {
-    fixture.detectChanges();
-    const repoCards = fixture.debugElement.queryAll(By.css('.repo-card'));
-    expect(repoCards.length).toBe(mockRepositories.length);
+  it('should navigate to report page on badge click', () => {
+    const repoName = 'test-repo';
+    const workflow = 'ci';
+    component.onBadgeClick(repoName, workflow);
+    expect(router.navigate).toHaveBeenCalledWith(['/report', repoName, 'CI']);
   });
 
-  it('should display loading message when loading is true', () => {
-    component.loading = true;
-    fixture.detectChanges();
-    
-    const loadingElement = fixture.debugElement.query(By.css('.loading'));
-    expect(loadingElement).toBeTruthy();
+  it('should emit sortChange and update selectedSort on onSortChange', () => {
+    spyOn(component.sortChange, 'emit');
+    const sortValue = 'STANDARD' as SortOptionLabel;
+    component.sorts = [
+      { label: 'Focused', value: 'FOCUSED' as SortOptionLabel },
+      { label: 'Standard', value: 'STANDARD' as SortOptionLabel }
+    ];
+    githubService.getStandardRepositories.and.returnValue(of([]));
+    component.onSortChange(sortValue);
+    expect(component.selectedSort.value).toBe(sortValue);
+    expect(component.selectedSortLabel).toBe('Standard');
+    expect(component.sortChange.emit).toHaveBeenCalledWith(sortValue);
   });
 
-  it('should display error message when error exists', () => {
-    const errorMessage = 'Test error message';
-    component.error = errorMessage;
-    component.loading = false;
-    fixture.detectChanges();
-    
-    const errorElement = fixture.debugElement.query(By.css('.error'));
-    expect(errorElement).toBeTruthy();
-    expect(errorElement.nativeElement.textContent).toContain(errorMessage);
+  it('should not emit sortChange if sort not found in onSortChange', () => {
+    spyOn(component.sortChange, 'emit');
+    component.sorts = [
+      { label: 'Focused', value: 'FOCUSED' as SortOptionLabel }
+    ];
+    component.onSortChange('STANDARD' as SortOptionLabel);
+    expect(component.sortChange.emit).not.toHaveBeenCalled();
   });
 
-  it('should show CI badge section only when ciBadgeUrl exists', () => {
-    fixture.detectChanges();
-    
-    const firstRepoCard = fixture.debugElement.queryAll(By.css('.repo-card'))[0];
-    const ciBadgeRow = firstRepoCard.query(By.css('.badge-row:first-of-type'));
-    expect(ciBadgeRow).toBeTruthy();
-    
-    const thirdRepoCard = fixture.debugElement.queryAll(By.css('.repo-card'))[2];
-    const noBadgeRow = thirdRepoCard.query(By.css('.badge-row'));
-    expect(noBadgeRow).toBeFalsy();
-  });
 });

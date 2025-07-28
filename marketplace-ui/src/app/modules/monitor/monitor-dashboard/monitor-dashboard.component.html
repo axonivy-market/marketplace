@@ -8,6 +8,21 @@
     </h3>
   </div>
 
+<div class="sort-container d-flex align-items-center">
+  <h4 [lang]="languageService.selectedLanguage()" class="sort-container__label mb-0 me-2">
+    {{ 'common.sortMonitor.label' | translate }}:
+  </h4>
+  <div >
+  <app-common-dropdown
+    [items]="sorts"
+    [selectedItem]="selectedSortLabel | translate"
+    buttonClass="button-container form-select border-primary filter-type--select w-auto"
+    ariaLabel="sortMonitor"
+    (itemSelected)="onSortChange($event.value)">
+  </app-common-dropdown>
+  </div>
+</div>
+
   @if (!loading && repositories.length) {
   <div class="repo-grid">
     @for (repo of repositories; track repo.name) {
@@ -24,8 +39,10 @@
           <img [src]="repo.ciBadgeUrl" alt="ci Badge for {{ repo.name }}" style="cursor: pointer;" />
         </div>
         <div class="workflow">
-          <p class="passed">✅ {{ 'monitor.dashboard.passed' | translate }}: {{ getTestCount(repo, 'CI', 'ALL', 'PASSED') }}</p>
-          <p class="failed">❌ {{ 'monitor.dashboard.failed' | translate }}: {{ getTestCount(repo, 'CI', 'ALL', 'FAILED') }}</p>
+          <p class="passed">✅ {{ 'monitor.dashboard.passed' | translate }}: {{ getTestCount(repo, 'CI', 'ALL', 'PASSED')
+            }}</p>
+          <p class="failed">❌ {{ 'monitor.dashboard.failed' | translate }}: {{ getTestCount(repo, 'CI', 'ALL', 'FAILED')
+            }}</p>
           <div class="sub-status">
             {{ 'monitor.dashboard.testCounts.mock' | translate }}
             {{ getTestCount(repo, 'CI', 'MOCK', 'PASSED') }}✅ /
@@ -43,8 +60,10 @@
           <img [src]="repo.devBadgeUrl" alt="dev Badge for {{ repo.name }}" style="cursor: pointer;" />
         </div>
         <div class="workflow">
-          <p class="passed">✅ {{ 'monitor.dashboard.passed' | translate }}: {{ getTestCount(repo, 'DEV', 'ALL', 'PASSED') }}</p>
-          <p class="failed">❌ {{ 'monitor.dashboard.failed' | translate }}: {{ getTestCount(repo, 'DEV', 'ALL', 'FAILED') }}</p>
+          <p class="passed">✅ {{ 'monitor.dashboard.passed' | translate }}: {{ getTestCount(repo, 'DEV', 'ALL',
+            'PASSED') }}</p>
+          <p class="failed">❌ {{ 'monitor.dashboard.failed' | translate }}: {{ getTestCount(repo, 'DEV', 'ALL',
+            'FAILED') }}</p>
           <div class="sub-status">
             {{ 'monitor.dashboard.testCounts.mock' | translate }}
             {{ getTestCount(repo, 'DEV', 'MOCK', 'PASSED') }}✅ /

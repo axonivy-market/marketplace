@@ -32,9 +32,13 @@ export interface TestStep {
 export class GithubService {
   constructor(private readonly http: HttpClient) { }
 
-  getRepositories(): Observable<Repository[]> {
-    return this.http.get<Repository[]>(API_URI.MONITOR_DASHBOARD);
+  getStandardRepositories(): Observable<Repository[]> {
+    return this.http.get<Repository[]>(API_URI.MONITOR_DASHBOARD_STANDARD);
   }
+  getFocusedRepositories(): Observable<Repository[]> {
+    return this.http.get<Repository[]>(API_URI.MONITOR_DASHBOARD_FOCUSED);
+  }
+  
 
   getTestReport(repo: string, workflow: string): Observable<TestStep> {
     const url = `${API_URI.GITHUB_REPORT}/${repo}/${workflow}`;

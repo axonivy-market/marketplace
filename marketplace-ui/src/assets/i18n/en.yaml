@@ -90,7 +90,12 @@ common:
       newest: Newest
       oldest: Oldest
       highest: Highest
-      lowest: Lowest
+      lowest: lowest
+  sortMonitor:
+    label: Sort by
+    value:
+      standard: Standard Market Extensions
+      focused: Focused Market Extensions
   search:
     placeholder: Search a keyword
   nothingFound: Your search did not yield any results.<br /> Please modify your search terms or browse our categories for related content.
