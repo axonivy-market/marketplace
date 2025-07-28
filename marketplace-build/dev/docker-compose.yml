@@ -2,6 +2,21 @@
 name: marketplace
 
 services:
+  nginx:
+    container_name: marketplace-nginx
+    build:
+      context: .
+      dockerfile: Dockerfile
+    restart: always
+    volumes:
+      - ../../marketplace-build/config/nginx/dev/nginx.conf:/etc/nginx/nginx.conf
+      - marketcache:/usr/share/nginx/html/market-cache
+    ports:
+      - "5000:80"
+    depends_on:
+      - ui
+      - service
+
   ui:
     container_name: marketplace-ui
     build:
@@ -10,11 +25,8 @@ services:
       args:
         - BUILD_ENV=${BUILD_ENV}
     restart: always
-    volumes:
-      - ../../marketplace-build/config/nginx/dev/nginx.conf:/etc/nginx/nginx.conf
-      - marketcache:/usr/share/nginx/html/market-cache
-    ports:
-      - "4200:80"
+    expose:
+      - 4000
 
   service:
     container_name: marketplace-service
@@ -43,8 +55,8 @@ services:
       dockerfile: Dockerfile
       args:
         - BUILD_VERSION=${BUILD_VERSION}
-    ports:
-      - "8080:8080"
+    expose:
+      - 8080
 
 volumes:
   marketcache:
