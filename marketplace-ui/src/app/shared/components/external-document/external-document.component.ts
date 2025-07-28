@@ -38,10 +38,6 @@ export class ExternalDocumentComponent implements OnInit {
         { product: this.product, version: this.version })
         .subscribe(text => this.messageTitle = text);
 
-      const isRedirected = this.activedRoute.snapshot.queryParamMap.get(ROUTER.REDIRECTED);
-      if (isRedirected === 'true') {
-        return;
-      }
       this.fetchDocumentUrl();
     }
   }
@@ -66,6 +62,10 @@ export class ExternalDocumentComponent implements OnInit {
       let link = relativeUrl;
       if (!relativeUrl.includes(HASH_SYMBOL)) {
         link += currentHash;
+      }
+      const isRedirected = this.activedRoute.snapshot.queryParamMap.get(ROUTER.REDIRECTED);
+      if (isRedirected === 'true') {
+        return;
       }
       window.location.href = `${link}?${REDIRECTED_KEY}=true`;
     }
