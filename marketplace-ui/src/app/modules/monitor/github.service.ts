@@ -14,7 +14,14 @@ export interface Repository {
 
 export interface TestResult {
   workflow: 'CI' | 'DEV' | 'E2E';
-  results: Record<string, Number>;
+  badgeUrl: string;
+  results?: TestSummary;
+}
+
+export interface TestSummary {
+  FAILED: number;
+  PASSED: number;
+  SKIPPED: number;
 }
 
 export interface TestStep {

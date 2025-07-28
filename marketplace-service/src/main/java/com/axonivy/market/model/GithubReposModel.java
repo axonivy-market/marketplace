@@ -29,15 +29,6 @@ public class GithubReposModel extends RepresentationModel<GithubReposModel> {
   @Schema(description = "Last updated date of the repository", example = "2025-07-14T10:35:00Z")
   private String lastUpdated;
 
-  @Schema(description = "CI workflow badge URL", example = "https://github.com/actions/workflows/ci.yml/badge.svg")
-  private String ciBadgeUrl;
-
-  @Schema(description = "DEV workflow badge URL", example = "https://github.com/actions/workflows/dev.yml/badge.svg")
-  private String devBadgeUrl;
-
-  @Schema(description = "DEV workflow badge URL", example = "https://github.com/actions/workflows/dev.yml/badge.svg")
-  private String e2eBadgeUrl;
-
   @Schema(
       description = "Test results summary by workflow type and test environment",
       example = """
@@ -65,9 +56,6 @@ public class GithubReposModel extends RepresentationModel<GithubReposModel> {
         .name(githubRepo.getName())
         .language(githubRepo.getLanguage())
         .lastUpdated(dateFormat.format(githubRepo.getLastUpdated()))
-        .ciBadgeUrl(githubRepo.getCiBadgeUrl())
-        .devBadgeUrl(githubRepo.getDevBadgeUrl())
-        .e2eBadgeUrl(githubRepo.getE2eBadgeUrl())
         .testResults(testResults)
         .build();
   }

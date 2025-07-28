@@ -18,35 +18,16 @@
       </div>
 
       <div class="repo-info">
-        @if (repo.ciBadgeUrl) {
+        @for (build of repo.testResults; track build.workflow) {
         <div class="badge-row" (click)="onBadgeClick(repo.name, 'ci')">
-          <span class="icon">🏷️</span> {{ 'monitor.dashboard.ciLabel' | translate }}:
-          <img [src]="repo.ciBadgeUrl" alt="ci Badge for {{ repo.name }}" style="cursor: pointer;" />
+          <!-- <span class="icon">🏷️</span> {{ 'monitor.dashboard.ciLabel' | translate }}: -->
+           <span class="icon">🏷️</span> {{ build.workflow }}:
+          <img [src]="build.badgeUrl" alt="{{ build.workflow }} Badge for {{ repo.name }}" style="cursor: pointer;" />
         </div>
         <div class="workflow">
-          <p class="passed">✅ {{ 'monitor.dashboard.passed' | translate }}: {{ getTestCount(repo, 'CI', 'ALL', 'PASSED') }}</p>
-          <p class="failed">❌ {{ 'monitor.dashboard.failed' | translate }}: {{ getTestCount(repo, 'CI', 'ALL', 'FAILED') }}</p>
-        </div>
-        }
-
-        @if (repo.devBadgeUrl) {
-        <div class="badge-row" (click)="onBadgeClick(repo.name, 'dev')">
-          <span class="icon">🛠️</span> {{ 'monitor.dashboard.devLabel' | translate }}:
-          <img [src]="repo.devBadgeUrl" alt="dev Badge for {{ repo.name }}" style="cursor: pointer;" />
-        </div>
-        <div class="workflow">
-          <p class="passed">✅ {{ 'monitor.dashboard.passed' | translate }}: {{ getTestCount(repo, 'DEV', 'ALL', 'PASSED') }}</p>
-          <p class="failed">❌ {{ 'monitor.dashboard.failed' | translate }}: {{ getTestCount(repo, 'DEV', 'ALL', 'FAILED') }}</p>
-        </div>
-        }
-        @if (repo.e2eBadgeUrl) {
-        <div class="badge-row" (click)="onBadgeClick(repo.name, 'dev')">
-          <span class="icon">🛠️</span> {{ 'monitor.dashboard.devLabel' | translate }}:
-          <img [src]="repo.e2eBadgeUrl" alt="dev Badge for {{ repo.name }}" style="cursor: pointer;" />
-        </div>
-        <div class="workflow">
-          <p class="passed">✅ {{ 'monitor.dashboard.passed' | translate }}: {{ getTestCount(repo, 'E2E', 'ALL', 'PASSED') }}</p>
-          <p class="failed">❌ {{ 'monitor.dashboard.failed' | translate }}: {{ getTestCount(repo, 'E2E', 'ALL', 'FAILED') }}</p>
+          <p class="passed">✅ {{ 'monitor.dashboard.passed' | translate }}: {{ build.results?.PASSED }}</p>
+          <p class="failed">❌ {{ 'monitor.dashboard.failed' | translate }}: {{ build.results?.FAILED }}</p>
+          <p class="skipped">❌ {{ 'monitor.dashboard.skipped' | translate }}: {{ build.results?.SKIPPED }}</p>
         </div>
         }
         <p>

@@ -23,7 +23,18 @@ public class TestResultsUtils {
       return Collections.emptyList();
     }
     Map<String, Integer> groupedCounts = countGroupedResults(githubRepo);
-    return mapCountsToResults(groupedCounts);
+    List<TestResults> testResults = mapCountsToResults(groupedCounts);
+    testResults.forEach(results -> updateBadgeUrl(results, githubRepo));
+    return testResults;
+  }
+
+  private static void updateBadgeUrl(TestResults results, GithubRepo githubRepo) {
+    String badgeUrl = switch (results.getWorkflow()) {
+      case CI -> githubRepo.getCiBadgeUrl();
+      case DEV -> githubRepo.getDevBadgeUrl();
+      case E2E -> githubRepo.getE2eBadgeUrl();
+    };
+    results.setBadgeUrl(badgeUrl);
   }
 
   private static Map<String, Integer> countGroupedResults(GithubRepo githubRepo) {
