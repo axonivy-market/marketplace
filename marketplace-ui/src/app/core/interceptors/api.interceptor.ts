@@ -5,10 +5,14 @@ import {
 } from '@angular/common/http';
 import { environment } from '../../../environments/environment';
 import { LoadingService } from '../services/loading/loading.service';
-import { inject } from '@angular/core';
+import { inject, PLATFORM_ID } from '@angular/core';
 import { catchError, EMPTY, finalize } from 'rxjs';
 import { Router } from '@angular/router';
-import { ERROR_CODES, ERROR_PAGE_PATH } from '../../shared/constants/common.constant';
+import {
+  ERROR_CODES,
+  ERROR_PAGE_PATH
+} from '../../shared/constants/common.constant';
+import { isPlatformBrowser } from '@angular/common';
 
 export const REQUEST_BY = 'X-Requested-By';
 export const IVY = 'marketplace-website';
@@ -24,6 +28,8 @@ export const ForwardingError = new HttpContextToken<boolean>(() => false);
 export const LoadingComponent = new HttpContextToken<string>(() => '');
 
 export const apiInterceptor: HttpInterceptorFn = (req, next) => {
+  const platformId = inject(PLATFORM_ID);
+
   const router = inject(Router);
   const loadingService = inject(LoadingService);
 
@@ -46,17 +52,18 @@ export const apiInterceptor: HttpInterceptorFn = (req, next) => {
     headers: addIvyHeaders(req.headers)
   });
 
-
   if (req.context.get(ForwardingError)) {
     return next(cloneReq);
   }
-  
+
   return next(cloneReq).pipe(
     catchError(error => {
-      if (ERROR_CODES.includes(error.status)) {
-        router.navigate([`${ERROR_PAGE_PATH}/${error.status}`]);
-      } else {
-        router.navigate([ERROR_PAGE_PATH]);
+      if (isPlatformBrowser(platformId)) {
+        if (ERROR_CODES.includes(error.status)) {
+          router.navigate([`${ERROR_PAGE_PATH}/${error.status}`]);
+        } else {
+          router.navigate([ERROR_PAGE_PATH]);
+        }
       }
       return EMPTY;
     }),
