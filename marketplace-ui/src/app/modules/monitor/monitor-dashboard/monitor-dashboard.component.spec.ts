@@ -4,8 +4,7 @@ import { GithubService, Repository } from '../github.service';
 import { LanguageService } from '../../../core/services/language/language.service';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { Router } from '@angular/router';
-import { of,  } from 'rxjs';
-import { PLATFORM_ID } from '@angular/core';
+import { of, } from 'rxjs';
 import { SortOptionLabel } from '../../../shared/enums/sort-option.enum';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
 
@@ -77,7 +76,6 @@ describe('MonitoringDashboardComponent', () => {
       providers: [
         { provide: GithubService, useValue: githubServiceSpy },
         { provide: Router, useValue: routerSpy },
-        { provide: PLATFORM_ID, useValue: 'browser' },
         LanguageService,
         TranslateService
       ]
@@ -101,6 +99,13 @@ describe('MonitoringDashboardComponent', () => {
   it('should fetch focused repositories', () => {
     githubService.getFocusedRepositories.and.returnValue(of(mockRepositories));
     component.fetchRepositoriesBySort('FOCUSED' as SortOptionLabel);
+    expect(component.repositories).toEqual(mockRepositories);
+    expect(component.loading).toBeFalse();
+  });
+
+  it('should do not fetch focused repositories', () => {
+    githubService.getStandardRepositories.and.returnValue(of(mockRepositories));
+    component.fetchRepositoriesBySort('AAA' as SortOptionLabel);
     expect(component.repositories).toEqual(mockRepositories);
     expect(component.loading).toBeFalse();
   });
@@ -175,5 +180,5 @@ describe('MonitoringDashboardComponent', () => {
     component.onSortChange('STANDARD' as SortOptionLabel);
     expect(component.sortChange.emit).not.toHaveBeenCalled();
   });
-
+  
 });
