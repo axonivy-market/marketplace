@@ -4,9 +4,10 @@ import { GithubService, Repository } from '../github.service';
 import { LanguageService } from '../../../core/services/language/language.service';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { Router } from '@angular/router';
-import { of, } from 'rxjs';
+import { of, throwError } from 'rxjs';
 import { SortOptionLabel } from '../../../shared/enums/sort-option.enum';
-import { HttpClientTestingModule } from '@angular/common/http/testing';
+import { HttpClientTestingModule, provideHttpClientTesting } from '@angular/common/http/testing';
+import { PLATFORM_ID } from '@angular/core';
 
 describe('MonitoringDashboardComponent', () => {
   let component: MonitoringDashboardComponent;
@@ -180,5 +181,70 @@ describe('MonitoringDashboardComponent', () => {
     component.onSortChange('STANDARD' as SortOptionLabel);
     expect(component.sortChange.emit).not.toHaveBeenCalled();
   });
-  
+
+  it('should handle error when fetching standard repositories fails', () => {
+    const errorMessage = 'Network error';
+    githubService.getStandardRepositories.and.returnValue(throwError(() => new Error(errorMessage)));
+    
+    component.fetchRepositoriesBySort('STANDARD' as SortOptionLabel);
+    
+    expect(component.error).toBe(errorMessage);
+    expect(component.loading).toBeFalse();
+  });
+});
+
+describe('Platform and Browser Detection', () => {
+  it('should set loading to false when not in browser platform', async () => {
+
+    const serverPlatformId = 'server';
+
+    await TestBed.configureTestingModule({
+      imports: [
+        MonitoringDashboardComponent,
+        HttpClientTestingModule,
+        TranslateModule.forRoot()
+      ],
+      providers: [
+        { provide: GithubService, useValue: jasmine.createSpyObj('GithubService', ['getRepositories', 'getFocusedRepositories', 'getStandardRepositories']) },
+        { provide: Router, useValue: jasmine.createSpyObj('Router', ['navigate']) },
+        { provide: PLATFORM_ID, useValue: serverPlatformId },
+        provideHttpClientTesting(),
+        LanguageService,
+        TranslateService
+      ]
+    }).compileComponents();
+
+    const serverFixture = TestBed.createComponent(MonitoringDashboardComponent);
+    const serverComponent = serverFixture.componentInstance;
+
+    spyOn(serverComponent, 'fetchRepositoriesBySort');
+
+    serverFixture.detectChanges();
+
+    expect(serverComponent.loading).toBeFalse();
+    expect(serverComponent.fetchRepositoriesBySort).not.toHaveBeenCalled();
+  });
+
+  it('should fetch repositories when in browser platform', () => {
+    TestBed.configureTestingModule({
+      imports: [
+        MonitoringDashboardComponent,
+        TranslateModule.forRoot()
+      ],
+      providers: [
+        provideHttpClientTesting(),
+        { provide: GithubService, useValue: jasmine.createSpyObj('GithubService', ['getRepositories', 'getFocusedRepositories', 'getStandardRepositories']) },
+        { provide: Router, useValue: jasmine.createSpyObj('Router', ['navigate']) },
+        { provide: PLATFORM_ID, useValue: 'browser' },
+        LanguageService,
+        TranslateService
+      ]
+    }).compileComponents();
+
+    const fixture = TestBed.createComponent(MonitoringDashboardComponent);
+    const component = fixture.componentInstance;
+    spyOn(component, 'fetchRepositoriesBySort');
+    component.ngOnInit();
+    expect(component.fetchRepositoriesBySort).toHaveBeenCalledWith(component.selectedSort.value);
+  });
 });
