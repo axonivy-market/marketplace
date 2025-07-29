@@ -54,6 +54,9 @@ public class TestResultsUtils {
 
   private static List<TestResults> mapCountsToResults(Map<String, Integer> counts) {
     List<TestResults> results = new ArrayList<>();
+    results.add(buildInitialTestResults(WorkFlowType.CI));
+    results.add(buildInitialTestResults(WorkFlowType.DEV));
+    results.add(buildInitialTestResults(WorkFlowType.E2E));
     for (Map.Entry<String, Integer> entry : counts.entrySet()) {
       String[] parts = entry.getKey().split("-");
       WorkFlowType workFlowType = WorkFlowType.valueOf(parts[0]);
@@ -69,5 +72,12 @@ public class TestResultsUtils {
       targetTestResults.getResults().put(parts[1], entry.getValue());
     }
     return results;
+  }
+
+  private static TestResults buildInitialTestResults(WorkFlowType workFlowType) {
+    return TestResults.builder()
+        .workflow(workFlowType)
+        .results(new HashMap<>())
+        .build();
   }
 }
