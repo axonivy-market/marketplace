@@ -210,9 +210,11 @@ public class ProductDetailsController {
   @Operation(summary = "Get the download steam of artifact and it's dependencies by it's id and target version",
       description = "Return the download url of artifact from version and id")
   public ResponseEntity<StreamingResponseBody> downloadZipArtifact(
-      @PathVariable(value = ID) @Parameter(in = ParameterIn.PATH, example = "demos") String id,
-      @PathVariable(value = VERSION) @Parameter(in = ParameterIn.QUERY, example = "10.0") String version,
-      @PathVariable(value = ARTIFACT_ID) @Parameter(in = ParameterIn.QUERY, example = "demos-app") String artifactId) {
+      @PathVariable(value = ID) @Parameter(in = ParameterIn.PATH, description = "Product id", example = "demos") String id,
+      @PathVariable(value = VERSION) @Parameter(in = ParameterIn.PATH, description = "Release version",
+          example = "10.0") String version,
+      @PathVariable(value = ARTIFACT_ID) @Parameter(in = ParameterIn.PATH, description = "Artifact id", example =
+          "demos-app") String artifactId) {
     List<String> dependencyUrls = productContentService.getDependencyUrls(id, artifactId, version);
     if (CollectionUtils.isEmpty(dependencyUrls)) {
       return ResponseEntity.notFound().build();
