@@ -32,9 +32,8 @@ export class MonitoringDashboardComponent implements OnInit {
           this.standardRepos = res.standardRepos || [];
           this.loading = false;
         },
-        error: err => {
+        error: () => {
           this.error = 'Failed to load repositories';
-          console.error(err);
           this.loading = false;
         }
       });
@@ -56,7 +55,10 @@ export class MonitoringDashboardComponent implements OnInit {
         test.environment === environment.toUpperCase() &&
         test.status === status.toUpperCase()
     );
-    return result ? result.count : 0;
+    if (!result) {
+      return 0;
+    }
+    return result.count;
   }
 
   onBadgeClick(repo: string, workflow: string) {
@@ -64,7 +66,7 @@ export class MonitoringDashboardComponent implements OnInit {
     this.router.navigate(['/report', repo, upperWorkflow]);
   }
 
-  trackByName(index: number, repo: Repository) {
+  trackByName(_index: number, repo: Repository) {
     return repo.name;
   }
 }

@@ -157,7 +157,7 @@ public class GithubReposServiceImpl implements GithubReposService {
         .map(githubReposModelAssembler::toModel)
         .toList();
 
-    ReposResponseModel response = new ReposResponseModel();
+    var response = new ReposResponseModel();
     response.setFocusedRepos(focusedRepos);
     response.setStandardRepos(standardRepos);
     return response;
