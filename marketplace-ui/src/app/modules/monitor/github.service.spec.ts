@@ -12,12 +12,18 @@ const mockRepos: Repository[] = [
     lastUpdated: '2025-07-20T12:00:00Z',
     ciBadgeUrl: 'https://example.com/badge/ci.svg',
     devBadgeUrl: 'https://example.com/badge/dev.svg',
+    premiumRepo: true,
     testResults: [
       { environment: 'ALL', workflow: 'CI', count: 10, status: 'PASSED' },
       { environment: 'MOCK', workflow: 'CI', count: 5, status: 'PASSED' }
     ]
   }
 ];
+
+const mockReposResponse = {
+  focusedRepos: mockRepos,
+  standardRepos: []
+};
 
 const mockTestStep: TestStep = {
   name: 'Step 1',
@@ -47,24 +53,6 @@ describe('GithubService', () => {
     expect(service).toBeTruthy();
   });
 
-  it('should fetch repositories', () => {
-    service.getFocusedRepositories().subscribe(repos => {
-      expect(repos).toEqual(mockRepos);
-    });
-    const req = httpMock.expectOne(API_URI.MONITOR_DASHBOARD_FOCUSED);
-    expect(req.request.method).toBe('GET');
-    req.flush(mockRepos);
-  });
-
-  it('should fetch repositories', () => {
-    service.getStandardRepositories().subscribe(repos => {
-      expect(repos).toEqual(mockRepos);
-    });
-    const req = httpMock.expectOne(API_URI.MONITOR_DASHBOARD_STANDARD);
-    expect(req.request.method).toBe('GET');
-    req.flush(mockRepos);
-  });
-
   it('should fetch test report', () => {
     service.getTestReport('repo1', 'CI').subscribe(step => {
       expect(step).toEqual(mockTestStep);
@@ -84,18 +72,6 @@ describe('GithubService', () => {
     req.flush('Error', { status: 500, statusText: 'Server Error' });
     expect(error).toBeTruthy();
   });
-
-  it('should handle error when fetching repositories', () => {
-    let error: any;
-    service.getStandardRepositories().subscribe({
-      next: () => {},
-      error: err => (error = err)
-    });
-    const req = httpMock.expectOne(API_URI.MONITOR_DASHBOARD_STANDARD);
-    req.flush('Error', { status: 500, statusText: 'Server Error' });
-    expect(error).toBeTruthy();
-  });
-
 
   it('should handle error when fetching test report', () => {
     let error: any;

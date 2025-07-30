@@ -91,11 +91,6 @@ common:
       oldest: Oldest
       highest: Highest
       lowest: lowest
-  sortMonitor:
-    label: Sort by
-    value:
-      standard: Standard Market Extensions
-      focused: Focused Market Extensions
   search:
     placeholder: Search a keyword
   nothingFound: Your search did not yield any results.<br /> Please modify your search terms or browse our categories for related content.
@@ -267,6 +262,5 @@ monitor:
       totalPassed: Total Passed Tests
       totalFailed: Total Failed Tests
       lastSync: Last Synchronization
-    filterLabel: Filter Repositories
     noReport: There is no test report in this workflow.
     skipped: Skipped

@@ -7,7 +7,7 @@ import com.axonivy.market.entity.TestStep;
 import com.axonivy.market.enums.WorkFlowType;
 import com.axonivy.market.github.service.GitHubService;
 import com.axonivy.market.model.GithubReposModel;
-import com.axonivy.market.model.RepoPriorityUpdateModel;
+import com.axonivy.market.model.RepoPremiumUpdateModel;
 import com.axonivy.market.repository.GithubRepoRepository;
 import com.axonivy.market.repository.ProductRepository;
 import com.axonivy.market.service.TestStepsService;
@@ -30,7 +30,6 @@ import java.net.URISyntaxException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
@@ -135,35 +134,6 @@ class GithubReposServiceImplTest {
   }
 
   @Test
-  void testFetchAllRepositories() {
-    GithubRepo repo = new GithubRepo();
-    when(githubRepoRepository.findAll()).thenReturn(List.of(repo));
-    when(githubReposModelAssembler.toModel(repo)).thenReturn(new GithubReposModel());
-
-    List<GithubReposModel> result = service.fetchStandardRepositories();
-    assertEquals(1, result.size(),
-        "Should return one GithubReposModel when one GithubRepo is present");
-    verify(githubReposModelAssembler).toModel(repo);
-  }
-
-  @Test
-  void testFetchFocusedRepositories() {
-    GithubRepo repo = new GithubRepo();
-    when(githubRepoRepository.findAll().stream()
-        .sorted(Comparator.comparing(githubRepo -> {
-          Integer order = githubRepo.getPriority();
-          return order != null ? order : Integer.MAX_VALUE;
-        }))
-        .toList()).thenReturn(List.of(repo));
-    when(githubReposModelAssembler.toModel(repo)).thenReturn(new GithubReposModel());
-    List<GithubReposModel> result = service.fetchFocusRepositories();
-
-    assertEquals(1, result.size(),
-        "Should return one GithubReposModel when one GithubRepo is present");
-    verify(githubReposModelAssembler).toModel(repo);
-  }
-
-  @Test
   void testLoadAndStoreTestReportsWithIOException() throws Exception {
     Product product = new Product();
     product.setRepositoryName("repo1");
@@ -235,28 +205,43 @@ class GithubReposServiceImplTest {
     }
     return Files.newInputStream(zipPath);
   }
+  @Test
+  void testFetchFocusedRepositories() {
+    GithubRepo repo = new GithubRepo();
+    repo.setPremiumRepo(true);
+    when(githubRepoRepository.findAll()).thenReturn(List.of(repo));
+    GithubReposModel model = new GithubReposModel();
+    when(githubReposModelAssembler.toModel(repo)).thenReturn(model);
+
+    var result = service.fetchRepositories();
+
+    assertNotNull(result, "Result should not be null");
+    assertEquals(1, result.getFocusedRepos().size(), "Should return one focused repo");
+    assertEquals(model, result.getFocusedRepos().get(0), "Focused repo should match model");
+    assertEquals(0, result.getStandardRepos().size(), "Should return zero standard repos");
+    verify(githubReposModelAssembler).toModel(repo);
+  }
 
   @Test
   void testUpdateRepoPriority() {
     GithubRepo repo1 = new GithubRepo();
     repo1.setName("repo1");
-    repo1.setPriority(5);
+    repo1.setPremiumRepo(false);
 
     GithubRepo repo2 = new GithubRepo();
     repo2.setName("repo2");
-    repo2.setPriority(10);
+    repo2.setPremiumRepo(true);
 
     List<GithubRepo> allRepos = List.of(repo1, repo2);
     when(githubRepoRepository.findAll()).thenReturn(allRepos);
 
-    RepoPriorityUpdateModel update1 = new RepoPriorityUpdateModel("repo1", 1);
-    RepoPriorityUpdateModel update2 = new RepoPriorityUpdateModel("repo2", 2);
-    List<RepoPriorityUpdateModel> updates = List.of(update1, update2);
+    RepoPremiumUpdateModel updates = new RepoPremiumUpdateModel();
+    updates.setRepoNames(List.of("repo1"));
 
-    service.updateRepoPriority(updates);
-    assertEquals(1, repo1.getPriority(),
-        "Repository priorities should be updated correctly");
-    assertEquals(2, repo2.getPriority(),
-        "Repository priorities should be updated correctly");
+    service.updateRepoPremium(updates);
+
+    assertTrue(repo1.isPremiumRepo(), "repo1 should be premium");
+    assertFalse(repo2.isPremiumRepo(), "repo2 should not be premium");
+    verify(githubRepoRepository).saveAll(allRepos);
   }
 }

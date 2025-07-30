@@ -1,17 +1,14 @@
 package com.axonivy.market.service;
 
-import com.axonivy.market.model.GithubReposModel;
-import com.axonivy.market.model.RepoPriorityUpdateModel;
+import com.axonivy.market.model.RepoPremiumUpdateModel;
+import com.axonivy.market.model.ReposResponseModel;
 
 import java.io.IOException;
-import java.util.List;
 
 public interface GithubReposService {
   void loadAndStoreTestReports() throws IOException;
 
-  List<GithubReposModel> fetchFocusRepositories();
+  ReposResponseModel fetchRepositories();
 
-  List<GithubReposModel> fetchStandardRepositories();
-
-  void updateRepoPriority(List<RepoPriorityUpdateModel> repoPriorityUpdateModels);
+  void updateRepoPremium(RepoPremiumUpdateModel repoPriorityUpdateModels);
 }

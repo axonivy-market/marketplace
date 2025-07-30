@@ -2,7 +2,8 @@ package com.axonivy.market.controller;
 
 import com.axonivy.market.enums.WorkFlowType;
 import com.axonivy.market.model.GithubReposModel;
-import com.axonivy.market.model.RepoPriorityUpdateModel;
+import com.axonivy.market.model.RepoPremiumUpdateModel;
+import com.axonivy.market.model.ReposResponseModel;
 import com.axonivy.market.model.TestStepsModel;
 import com.axonivy.market.service.GithubReposService;
 import com.axonivy.market.service.TestStepsService;
@@ -14,7 +15,6 @@ import org.mockito.MockitoAnnotations;
 import org.springframework.http.ResponseEntity;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -34,23 +34,18 @@ class MonitorDashBoardControllerTest {
   }
 
   @Test
-  void testGetStandardGitHubReposReturnsList() {
-    GithubReposModel model = new GithubReposModel();
-    when(githubReposService.fetchStandardRepositories()).thenReturn(List.of(model));
-    ResponseEntity<List<GithubReposModel>> response = controller.getStandardGitHubRepos();
-    assertEquals(200, response.getStatusCode().value(), "Status code should be 200 OK");
-    assertEquals(1, response.getBody().size(), "Response body should contain one element");
-    assertSame(model, response.getBody().get(0), "Returned model should match the mocked model");
-  }
-
-  @Test
   void testGetFocusedGitHubReposReturnsList() {
     GithubReposModel model = new GithubReposModel();
-    when(githubReposService.fetchFocusRepositories()).thenReturn(List.of(model));
-    ResponseEntity<List<GithubReposModel>> response = controller.getFocusGitHubRepos();
+    ReposResponseModel responseModel = new ReposResponseModel();
+    responseModel.setFocusedRepos(List.of(model));
+    responseModel.setStandardRepos(List.of());
+    when(githubReposService.fetchRepositories()).thenReturn(responseModel);
+
+    ResponseEntity<ReposResponseModel> response = controller.getGitHubRepos();
     assertEquals(200, response.getStatusCode().value(), "Status code should be 200 OK");
-    assertEquals(1, response.getBody().size(), "Response body should contain one element");
-    assertSame(model, response.getBody().get(0), "Returned model should match the mocked model");
+    assertNotNull(response.getBody(), "Response body should not be null");
+    assertEquals(1, response.getBody().getFocusedRepos().size(), "FocusedRepos should contain one element");
+    assertSame(model, response.getBody().getFocusedRepos().get(0), "Returned model should match the mocked model");
   }
 
   @Test
@@ -78,19 +73,17 @@ class MonitorDashBoardControllerTest {
     assertThrows(IOException.class, () -> controller.syncGithubMonitor(),
         "IOException should be thrown when service fails to load and store test reports");
   }
-
   @Test
   void testUpdateRepoPriorities() {
-    List<RepoPriorityUpdateModel> updates = new ArrayList<>();
-    updates.add(new RepoPriorityUpdateModel("repo1", 1));
-    updates.add(new RepoPriorityUpdateModel("repo2", 2));
+    RepoPremiumUpdateModel updates = new RepoPremiumUpdateModel();
+    updates.setRepoNames(List.of("repo1", "repo2"));
 
-    doNothing().when(githubReposService).updateRepoPriority(updates);
+    doNothing().when(githubReposService).updateRepoPremium(updates);
 
-    ResponseEntity<String> response = controller.updateRepoPriorities(updates);
+    ResponseEntity<String> response = controller.updateRepoPremium(updates);
 
     assertEquals(200, response.getStatusCode().value(), "Status code should be 200 OK");
-    assertEquals("Repository priorities updated successfully.", response.getBody(),
+    assertEquals("Premium repository updated successfully.", response.getBody(),
         "Response body should match expected message");
   }
 }

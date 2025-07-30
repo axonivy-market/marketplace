@@ -157,27 +157,12 @@ $rowHeight: 37px;
   }
 }
 
-.sort-container {
-  height: $rowHeight;
-  font-weight: 400;
-  font-size: 14px;
-  justify-content: end;
-  align-items: end;
+.section-title {
+  font-size: 2.5rem;
+  margin: 30px;
+  color: #333;
+  text-align: center;
+  font-weight: bold;
+  border-bottom: #949191 2px solid;
   padding-bottom: 20px;
-}
-:host ::ng-deep .button-container,
-:host ::ng-deep .dropdown-menu .dropdown-item {
-  font-size: 1.4rem;
-}
-
-.sort-container__label {
-  line-height: 25.2px;
-}
-
-.sort-order {
-  width: 60% !important;
-}
-
-.dropdown-menu .dropdown-item {
-  font-size: 2rem;
 }

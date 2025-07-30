@@ -2,6 +2,7 @@ import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 import { API_URI } from '../../shared/constants/api.constant';
+
 export interface Repository {
   name: string;
   htmlUrl: string;
@@ -9,7 +10,13 @@ export interface Repository {
   lastUpdated: string;
   ciBadgeUrl: string;
   devBadgeUrl: string;
+  premiumRepo: boolean;
   testResults?: TestResult[];
+}
+
+export interface ReposResponseModel {
+  focusedRepos: Repository[];
+  standardRepos: Repository[];
 }
 
 export interface TestResult {
@@ -32,13 +39,9 @@ export interface TestStep {
 export class GithubService {
   constructor(private readonly http: HttpClient) { }
 
-  getStandardRepositories(): Observable<Repository[]> {
-    return this.http.get<Repository[]>(API_URI.MONITOR_DASHBOARD_STANDARD);
+  getFocusedRepositories(): Observable<ReposResponseModel> {
+    return this.http.get<ReposResponseModel>(API_URI.MONITOR_DASHBOARD_FOCUSED);
   }
-  getFocusedRepositories(): Observable<Repository[]> {
-    return this.http.get<Repository[]>(API_URI.MONITOR_DASHBOARD_FOCUSED);
-  }
-  
 
   getTestReport(repo: string, workflow: string): Observable<TestStep> {
     const url = `${API_URI.GITHUB_REPORT}/${repo}/${workflow}`;

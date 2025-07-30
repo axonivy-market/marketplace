@@ -7,7 +7,8 @@ import com.axonivy.market.entity.TestStep;
 import com.axonivy.market.enums.WorkFlowType;
 import com.axonivy.market.github.service.GitHubService;
 import com.axonivy.market.model.GithubReposModel;
-import com.axonivy.market.model.RepoPriorityUpdateModel;
+import com.axonivy.market.model.RepoPremiumUpdateModel;
+import com.axonivy.market.model.ReposResponseModel;
 import com.axonivy.market.repository.GithubRepoRepository;
 import com.axonivy.market.repository.ProductRepository;
 import com.axonivy.market.service.GithubReposService;
@@ -31,9 +32,7 @@ import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.List;
-import java.util.Objects;
 
 import static com.axonivy.market.constants.DirectoryConstants.GITHUB_REPO_DIR;
 import static com.axonivy.market.entity.GithubRepo.createNewGithubRepo;
@@ -146,40 +145,36 @@ public class GithubReposServiceImpl implements GithubReposService {
   }
 
   @Override
-  public List<GithubReposModel> fetchFocusRepositories() {
-    List<GithubRepo> entities = githubRepoRepository.findAll()
-        .stream()
-        .sorted(Comparator.comparing((GithubRepo repo) -> {
-          Integer order = repo.getPriority();
-          return Objects.requireNonNullElse(order, Integer.MAX_VALUE);
-        }))
-        .toList();
-
-    return entities.stream()
-        .map(githubReposModelAssembler::toModel)
-        .toList();
-  }
-
-  @Override
-  public List<GithubReposModel> fetchStandardRepositories() {
+  public ReposResponseModel fetchRepositories() {
     List<GithubRepo> entities = githubRepoRepository.findAll();
-    return entities.stream()
+    List<GithubReposModel> focusedRepos = entities.stream()
+        .filter(GithubRepo::isPremiumRepo)
         .map(githubReposModelAssembler::toModel)
         .toList();
+
+    List<GithubReposModel> standardRepos = entities.stream()
+        .filter(repo -> !repo.isPremiumRepo())
+        .map(githubReposModelAssembler::toModel)
+        .toList();
+
+    ReposResponseModel response = new ReposResponseModel();
+    response.setFocusedRepos(focusedRepos);
+    response.setStandardRepos(standardRepos);
+    return response;
   }
 
   @Override
-  public void updateRepoPriority(List<RepoPriorityUpdateModel> updates) {
+  public void updateRepoPremium(RepoPremiumUpdateModel updates) {
     List<GithubRepo> allRepos = githubRepoRepository.findAll();
-    allRepos.forEach((GithubRepo repo) -> repo.setPriority(null));
-    for (RepoPriorityUpdateModel update : updates) {
-      allRepos.stream()
-          .filter( (GithubRepo repo)-> update.getRepoName().equals(repo.getName()))
-          .findFirst()
-          .ifPresent((GithubRepo repo) -> {
-            repo.setPriority(update.getPriority());
-            log.info("Updated priority for repository: {} to {}", update.getRepoName(), update.getPriority());
-          });
+    allRepos.forEach(repo -> repo.setPremiumRepo(false));
+    if (updates != null && updates.getRepoNames() != null) {
+      for (String update : updates.getRepoNames()) {
+        allRepos.stream()
+            .filter(repo -> update.equals(repo.getName()))
+            .findFirst()
+            .ifPresent(repo -> repo.setPremiumRepo(true));
+      }
     }
+    githubRepoRepository.saveAll(allRepos);
   }
 }

@@ -1,8 +1,8 @@
 package com.axonivy.market.controller;
 
 import com.axonivy.market.enums.WorkFlowType;
-import com.axonivy.market.model.GithubReposModel;
-import com.axonivy.market.model.RepoPriorityUpdateModel;
+import com.axonivy.market.model.RepoPremiumUpdateModel;
+import com.axonivy.market.model.ReposResponseModel;
 import com.axonivy.market.model.TestStepsModel;
 import com.axonivy.market.service.GithubReposService;
 import com.axonivy.market.service.TestStepsService;
@@ -41,21 +41,9 @@ public class MonitorDashBoardController {
       responseCode = "200",
       description = "Successfully fetched GitHub repositories"
   )
-  @GetMapping(FOCUS_REPOS)
-  public ResponseEntity<List<GithubReposModel>> getFocusGitHubRepos() {
-    List<GithubReposModel> response = githubReposService.fetchFocusRepositories();
-    return new ResponseEntity<>(response, HttpStatus.OK);
-  }
-
-  @Operation(summary = "Get all GitHub repositories",
-      description = "Fetch all GitHub repositories with their details and test results")
-  @ApiResponse(
-      responseCode = "200",
-      description = "Successfully fetched GitHub repositories"
-  )
-  @GetMapping(STANDARD_REPOS)
-  public ResponseEntity<List<GithubReposModel>> getStandardGitHubRepos() {
-    List<GithubReposModel> response = githubReposService.fetchStandardRepositories();
+  @GetMapping(value = FOCUS_REPOS)
+  public ResponseEntity<ReposResponseModel> getGitHubRepos() {
+    ReposResponseModel response = githubReposService.fetchRepositories();
     return new ResponseEntity<>(response, HttpStatus.OK);
   }
 
@@ -80,11 +68,9 @@ public class MonitorDashBoardController {
   }
 
   @PutMapping(REPO_PRIORITY)
-  @Operation(summary = "Update repository priority",
-  description ="Update the priority of a specific repository")
-  public ResponseEntity<String> updateRepoPriorities(
-      @RequestBody List<RepoPriorityUpdateModel> updates)  {
-    githubReposService.updateRepoPriority(updates);
-    return ResponseEntity.ok("Repository priorities updated successfully.");
+  public ResponseEntity<String> updateRepoPremium(
+      @RequestBody RepoPremiumUpdateModel request)  {
+    githubReposService.updateRepoPremium(request);
+    return ResponseEntity.ok("Premium repository updated successfully.");
   }
 }

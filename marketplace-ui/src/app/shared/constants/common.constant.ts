@@ -206,11 +206,11 @@ export const FEEDBACK_SORT_TYPES: ItemDropdown<FeedbackSortType>[] = [
 export const SORT_MONITOR_OPTION: ItemDropdown<SortOptionLabel>[] = [
   {
     value: SortOptionLabel.STANDARD,
-    label: 'common.sortMonitor.value.standard'
+    label: 'common.filterMonitor.value.standard'
   },
   {
     value: SortOptionLabel.FOCUSED,
-    label: 'common.sortMonitor.value.focused'
+    label: 'common.filterMonitor.value.focused'
   }
 ];
 

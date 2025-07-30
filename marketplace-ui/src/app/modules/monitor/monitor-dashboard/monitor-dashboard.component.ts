@@ -1,84 +1,62 @@
-import { Component, inject, OnInit, PLATFORM_ID, EventEmitter,Output} from '@angular/core';
+import { Component, inject, OnInit, PLATFORM_ID } from '@angular/core';
 import { GithubService, Repository } from '../github.service';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { Router } from '@angular/router';
 import { LanguageService } from '../../../core/services/language/language.service';
 import { TranslateModule } from '@ngx-translate/core';
-import { SortOptionLabel } from '../../../shared/enums/sort-option.enum';
-import { SORT_MONITOR_OPTION } from '../../../shared/constants/common.constant';
-import { ItemDropdown } from '../../../shared/models/item-dropdown.model';
-import { Observable } from 'rxjs';
-import { CommonDropdownComponent } from '../../../shared/components/common-dropdown/common-dropdown.component';
 
 @Component({
   selector: 'app-dashboard',
   standalone: true,
-  imports: [CommonModule, TranslateModule, CommonDropdownComponent],
+  imports: [CommonModule, TranslateModule],
   templateUrl: './monitor-dashboard.component.html',
   styleUrl: './monitor-dashboard.component.scss'
 })
 export class MonitoringDashboardComponent implements OnInit {
-  @Output() sortChange = new EventEmitter<SortOptionLabel>();
-
-  repositories: Repository[] = [];
   loading = true;
   error = '';
-  isReloading = false;
 
   languageService = inject(LanguageService);
   githubService = inject(GithubService);
   router = inject(Router);
   platformId = inject(PLATFORM_ID);
 
-  sorts: ItemDropdown<SortOptionLabel>[] = SORT_MONITOR_OPTION;
-  selectedSort: ItemDropdown<SortOptionLabel> = this.sorts[0];
-  selectedSortLabel: string = this.selectedSort.label;
+  focusedRepos: Repository[] = [];
+  standardRepos: Repository[] = [];
 
-  ngOnInit(): void {
+  ngOnInit() {
     if (isPlatformBrowser(this.platformId)) {
-      this.fetchRepositoriesBySort(this.selectedSort.value);
-    } else {
-      this.loading = false;
+      this.githubService.getFocusedRepositories().subscribe({
+        next: res => {
+          this.focusedRepos = res.focusedRepos || [];
+          this.standardRepos = res.standardRepos || [];
+          this.loading = false;
+        },
+        error: err => {
+          this.error = 'Failed to load repositories';
+          console.error(err);
+          this.loading = false;
+        }
+      });
     }
   }
 
-  fetchRepositoriesBySort(sortType: SortOptionLabel): void {
-    this.loading = true;
-    let fetch$: Observable<Repository[]>;
-
-    if (sortType === SortOptionLabel.FOCUSED) {
-      fetch$ = this.githubService.getFocusedRepositories();
-    } else {
-      fetch$ = this.githubService.getStandardRepositories();
-    }
-
-    fetch$.subscribe({
-      next: data => {
-        this.repositories = data;
-        this.loading = false;
-      },
-      error: err => {
-        this.error = err.message || 'Failed to load repositories.';
-        this.loading = false;
-      }
-    });
-  }
-
-  getTestCount(repo: Repository, workflow: string, environment: string, status: string): number {
+  getTestCount(
+    repo: Repository,
+    workflow: string,
+    environment: string,
+    status: string
+  ): number {
     if (!repo.testResults) {
       return 0;
     }
-    const result = repo.testResults.find(test =>
-      test.workflow === workflow.toUpperCase() &&
-      test.environment === environment.toUpperCase() &&
-      test.status === status.toUpperCase()
+    const result = repo.testResults.find(
+      test =>
+        test.workflow === workflow.toUpperCase() &&
+        test.environment === environment.toUpperCase() &&
+        test.status === status.toUpperCase()
     );
-
-    if (result) {
-      return result.count;
-    } else {
-      return 0;
-    }
+    return result ? result.count : 0;
   }
 
   onBadgeClick(repo: string, workflow: string) {
@@ -86,13 +64,7 @@ export class MonitoringDashboardComponent implements OnInit {
     this.router.navigate(['/report', repo, upperWorkflow]);
   }
 
-  onSortChange(sortValue: SortOptionLabel): void {
-    const found = this.sorts.find(s => s.value === sortValue);
-    if (found) {
-      this.selectedSort = found;
-      this.selectedSortLabel = found.label;
-      this.fetchRepositoriesBySort(sortValue);
-      this.sortChange.emit(sortValue);
-    }
+  trackByName(index: number, repo: Repository) {
+    return repo.name;
   }
 }
