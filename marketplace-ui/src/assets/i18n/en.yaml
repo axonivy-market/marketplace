@@ -264,3 +264,7 @@ monitor:
       lastSync: Last Synchronization
     noReport: There is no test report in this workflow.
     skipped: Skipped
+    focus:
+      title: Focused Market Extension
+    standard:
+      title: Standard Market Extension

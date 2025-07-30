@@ -4,4 +4,3 @@ export enum SortOption {
   ALPHABETICALLY = 'alphabetically',
   RECENT = 'recent'
 }
-

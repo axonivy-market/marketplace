@@ -18,7 +18,7 @@
   }
 
   @if (!loading && focusedRepos.length) {
-    <h4 class="section-title">Focused Market Extension</h4>
+    <h4 class="section-title">{{ 'monitor.dashboard.focus.title' | translate }}</h4>
     <div class="repo-grid">
       <ng-container *ngFor="let repo of focusedRepos; trackBy: trackByName">
         <ng-container *ngTemplateOutlet="repoCard; context: { $implicit: repo }"></ng-container>
@@ -27,7 +27,7 @@
   }
 
   @if (!loading && standardRepos.length) {
-    <h4 class="section-title">Standard Market Extension</h4>
+    <h4 class="section-title">{{ 'monitor.dashboard.standard.title' | translate }}</h4>
     <div class="repo-grid">
       <ng-container *ngFor="let repo of standardRepos; trackBy: trackByName">
         <ng-container *ngTemplateOutlet="repoCard; context: { $implicit: repo }"></ng-container>

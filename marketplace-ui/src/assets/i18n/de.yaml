@@ -263,3 +263,7 @@ monitor:
       lastSync: Letzte Synchronisation
     noReport: Es gibt keinen Testbericht in diesem Workflow.
     skipped: Übersprungen
+  focus:
+    title: Fokussierte Markterweiterung
+  standard:
+    title: Standard Markterweiterung
