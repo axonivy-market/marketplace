@@ -26,7 +26,7 @@ export class MonitoringDashboardComponent implements OnInit {
 
   ngOnInit() {
     if (isPlatformBrowser(this.platformId)) {
-      this.githubService.getFocusedRepositories().subscribe({
+      this.githubService.getRepositories().subscribe({
         next: res => {
           this.focusedRepos = res.focusedRepos || [];
           this.standardRepos = res.standardRepos || [];

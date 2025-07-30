@@ -145,7 +145,7 @@ public class GithubReposServiceImpl implements GithubReposService {
   }
 
   @Override
-  public ReposResponseModel fetchRepositories() {
+  public ReposResponseModel fetchAllRepositories() {
     List<GithubRepo> entities = githubRepoRepository.findAll();
     List<GithubReposModel> focusedRepos = entities.stream()
         .filter(GithubRepo::isPremiumRepo)

@@ -35,15 +35,15 @@ public class MonitorDashBoardController {
   private final GithubReposService githubReposService;
   private final TestStepsService testStepsService;
 
-  @Operation(summary = "Get Premium GitHub repositories",
-      description = "Fetch Premium GitHub repositories with their details and test results")
+  @Operation(summary = "Get all GitHub repositories",
+      description = "Fetch all GitHub repositories with their details and test results")
   @ApiResponse(
       responseCode = "200",
       description = "Successfully fetched GitHub repositories"
   )
-  @GetMapping(value = FOCUS_REPOS)
+  @GetMapping(value = REPOS)
   public ResponseEntity<ReposResponseModel> getGitHubRepos() {
-    ReposResponseModel response = githubReposService.fetchRepositories();
+    ReposResponseModel response = githubReposService.fetchAllRepositories();
     return new ResponseEntity<>(response, HttpStatus.OK);
   }
 
@@ -67,7 +67,7 @@ public class MonitorDashBoardController {
     return ResponseEntity.ok("Repositories loaded successfully.");
   }
 
-  @PutMapping(REPO_PRIORITY)
+  @PutMapping(REPO_PREMIUM)
   public ResponseEntity<String> updateRepoPremium(
       @RequestBody RepoPremiumUpdateModel request)  {
     githubReposService.updateRepoPremium(request);

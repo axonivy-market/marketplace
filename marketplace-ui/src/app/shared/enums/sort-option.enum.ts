@@ -5,7 +5,3 @@ export enum SortOption {
   RECENT = 'recent'
 }
 
-export enum SortOptionLabel {
-  STANDARD = 'standard',
-  FOCUSED = 'focused'
-}

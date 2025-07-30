@@ -39,7 +39,7 @@ class MonitorDashBoardControllerTest {
     ReposResponseModel responseModel = new ReposResponseModel();
     responseModel.setFocusedRepos(List.of(model));
     responseModel.setStandardRepos(List.of());
-    when(githubReposService.fetchRepositories()).thenReturn(responseModel);
+    when(githubReposService.fetchAllRepositories()).thenReturn(responseModel);
 
     ResponseEntity<ReposResponseModel> response = controller.getGitHubRepos();
     assertEquals(200, response.getStatusCode().value(), "Status code should be 200 OK");

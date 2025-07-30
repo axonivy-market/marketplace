@@ -1,7 +1,7 @@
 import { TypeOption } from '../enums/type-option.enum';
 import { FeedbackSortType } from '../enums/feedback-sort-type';
 import { Language } from '../enums/language.enum';
-import { SortOption, SortOptionLabel } from '../enums/sort-option.enum';
+import { SortOption } from '../enums/sort-option.enum';
 import { NavItem } from '../models/nav-item.model';
 import { Pageable } from '../models/apis/pageable.model';
 import { ItemDropdown } from '../models/item-dropdown.model';

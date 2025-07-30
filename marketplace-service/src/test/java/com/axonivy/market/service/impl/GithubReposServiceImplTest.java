@@ -206,14 +206,14 @@ class GithubReposServiceImplTest {
     return Files.newInputStream(zipPath);
   }
   @Test
-  void testFetchFocusedRepositories() {
+  void testFetchAllRepositories() {
     GithubRepo repo = new GithubRepo();
     repo.setPremiumRepo(true);
     when(githubRepoRepository.findAll()).thenReturn(List.of(repo));
     GithubReposModel model = new GithubReposModel();
     when(githubReposModelAssembler.toModel(repo)).thenReturn(model);
 
-    var result = service.fetchRepositories();
+    var result = service.fetchAllRepositories();
 
     assertNotNull(result, "Result should not be null");
     assertEquals(1, result.getFocusedRepos().size(), "Should return one focused repo");
@@ -223,7 +223,7 @@ class GithubReposServiceImplTest {
   }
 
   @Test
-  void testUpdateRepoPriority() {
+  void testUpdateRepoPremium() {
     GithubRepo repo1 = new GithubRepo();
     repo1.setName("repo1");
     repo1.setPremiumRepo(false);

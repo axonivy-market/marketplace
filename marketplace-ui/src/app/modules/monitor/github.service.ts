@@ -39,8 +39,8 @@ export interface TestStep {
 export class GithubService {
   constructor(private readonly http: HttpClient) { }
 
-  getFocusedRepositories(): Observable<ReposResponseModel> {
-    return this.http.get<ReposResponseModel>(API_URI.MONITOR_DASHBOARD_FOCUSED);
+  getRepositories(): Observable<ReposResponseModel> {
+    return this.http.get<ReposResponseModel>(API_URI.MONITOR_DASHBOARD);
   }
 
   getTestReport(repo: string, workflow: string): Observable<TestStep> {

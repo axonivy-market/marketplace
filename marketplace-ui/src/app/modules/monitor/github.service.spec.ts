@@ -1,6 +1,8 @@
-
 import { TestBed } from '@angular/core/testing';
-import { HttpClientTestingModule, HttpTestingController } from '@angular/common/http/testing';
+import {
+  HttpClientTestingModule,
+  HttpTestingController
+} from '@angular/common/http/testing';
 import { GithubService, Repository, TestStep } from './github.service';
 import { API_URI } from '../../shared/constants/api.constant';
 
@@ -53,6 +55,15 @@ describe('GithubService', () => {
     expect(service).toBeTruthy();
   });
 
+  it('should fetch repositories', () => {
+    service.getRepositories().subscribe(repos => {
+      expect(repos).toEqual(mockReposResponse);
+    });
+    const req = httpMock.expectOne(API_URI.MONITOR_DASHBOARD);
+    expect(req.request.method).toBe('GET');
+    req.flush(mockReposResponse);
+  });
+
   it('should fetch test report', () => {
     service.getTestReport('repo1', 'CI').subscribe(step => {
       expect(step).toEqual(mockTestStep);
@@ -64,11 +75,11 @@ describe('GithubService', () => {
 
   it('should handle error when fetching repositories', () => {
     let error: any;
-    service.getFocusedRepositories().subscribe({
+    service.getRepositories().subscribe({
       next: () => {},
       error: err => (error = err)
     });
-    const req = httpMock.expectOne(API_URI.MONITOR_DASHBOARD_FOCUSED);
+    const req = httpMock.expectOne(API_URI.MONITOR_DASHBOARD);
     req.flush('Error', { status: 500, statusText: 'Server Error' });
     expect(error).toBeTruthy();
   });

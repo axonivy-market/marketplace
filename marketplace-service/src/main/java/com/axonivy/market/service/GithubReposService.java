@@ -8,7 +8,7 @@ import java.io.IOException;
 public interface GithubReposService {
   void loadAndStoreTestReports() throws IOException;
 
-  ReposResponseModel fetchRepositories();
+  ReposResponseModel fetchAllRepositories();
 
   void updateRepoPremium(RepoPremiumUpdateModel repoPriorityUpdateModels);
 }

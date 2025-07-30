@@ -80,7 +80,7 @@ describe('MonitoringDashboardComponent', () => {
     };
 
     const githubServiceSpy = jasmine.createSpyObj('GithubService', [
-      'getFocusedRepositories'
+      'getRepositories'
     ]);
     const routerSpy = jasmine.createSpyObj('Router', ['navigate']);
 
@@ -103,7 +103,7 @@ describe('MonitoringDashboardComponent', () => {
     ) as jasmine.SpyObj<GithubService>;
     router = TestBed.inject(Router) as jasmine.SpyObj<Router>;
 
-    githubService.getFocusedRepositories.and.returnValue(of(mockReposResponse));
+    githubService.getRepositories.and.returnValue(of(mockReposResponse));
 
     fixture = TestBed.createComponent(MonitoringDashboardComponent);
     component = fixture.componentInstance;
@@ -115,7 +115,7 @@ describe('MonitoringDashboardComponent', () => {
   });
 
   it('should load focused and standard repositories on init', () => {
-    expect(githubService.getFocusedRepositories).toHaveBeenCalled();
+    expect(githubService.getRepositories).toHaveBeenCalled();
     expect(component.focusedRepos).toEqual(mockFocusedRepositories);
     expect(component.standardRepos).toEqual(mockStandardRepositories);
     expect(component.loading).toBeFalse();
@@ -123,7 +123,7 @@ describe('MonitoringDashboardComponent', () => {
 
   it('should handle error when loading repositories', () => {
     const errorMessage = 'Network error';
-    githubService.getFocusedRepositories.and.returnValue(
+    githubService.getRepositories.and.returnValue(
       throwError(() => new Error(errorMessage))
     );
     component.ngOnInit();
