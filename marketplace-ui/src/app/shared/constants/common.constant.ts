@@ -203,17 +203,6 @@ export const FEEDBACK_SORT_TYPES: ItemDropdown<FeedbackSortType>[] = [
   }
 ];
 
-export const SORT_MONITOR_OPTION: ItemDropdown<SortOptionLabel>[] = [
-  {
-    value: SortOptionLabel.STANDARD,
-    label: 'common.filterMonitor.value.standard'
-  },
-  {
-    value: SortOptionLabel.FOCUSED,
-    label: 'common.filterMonitor.value.focused'
-  }
-];
-
 export const DESIGNER_SESSION_STORAGE_VARIABLE = {
   ivyViewerParamName: 'ivy-viewer',
   ivyVersionParamName: 'ivy-version',

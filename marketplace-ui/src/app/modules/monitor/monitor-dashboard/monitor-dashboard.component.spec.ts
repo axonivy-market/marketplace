@@ -1,10 +1,6 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { MonitoringDashboardComponent } from './monitor-dashboard.component';
-import {
-  GithubService,
-  Repository,
-  ReposResponseModel
-} from '../github.service';
+import { GithubService, Repository, ReposResponseModel } from '../github.service';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { LanguageService } from '../../../core/services/language/language.service';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';

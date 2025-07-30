@@ -22,8 +22,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.io.IOException;
-
 import java.util.List;
+
 import static com.axonivy.market.constants.RequestMappingConstants.*;
 
 @RestController
@@ -41,7 +41,7 @@ public class MonitorDashBoardController {
       responseCode = "200",
       description = "Successfully fetched GitHub repositories"
   )
-  @GetMapping(value = REPOS)
+  @GetMapping(REPOS)
   public ResponseEntity<ReposResponseModel> getGitHubRepos() {
     ReposResponseModel response = githubReposService.fetchAllRepositories();
     return new ResponseEntity<>(response, HttpStatus.OK);
