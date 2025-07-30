@@ -28,7 +28,7 @@ services:
     expose:
       - 4000
 
-  market-service:
+  service:
     container_name: marketplace-service
     restart: always
     volumes:
@@ -57,6 +57,9 @@ services:
         - BUILD_VERSION=${BUILD_VERSION}
     expose:
       - 8080
+    ports:
+      - "8080:8080"
+
 
 volumes:
   marketcache:

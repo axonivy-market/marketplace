@@ -22,18 +22,26 @@ export function app(): express.Express {
   // Serve static files from /browser
   server.get('**', express.static(browserDistFolder, {
     maxAge: '1y',
-    index: 'index.html',
+    // index: 'index.html',
+    index: false,
   }));
 
   // All regular routes use the Angular engine
   server.get('**', (req, res, next) => {
+    console.log('SSR HIT:', req.url);
     const { protocol, originalUrl, baseUrl, headers } = req;
+    console.log("Protocol: ", protocol);
+    console.log("Original URL: ", originalUrl);
+    console.log("Base URL: ", baseUrl);
+    console.log("Full URL: ",`${protocol}://${headers.host}${originalUrl}`);
+    
 
     commonEngine
       .render({
         bootstrap,
         documentFilePath: indexHtml,
-        url: `${protocol}://${headers.host}${originalUrl}`,
+        // url: `${protocol}://${headers.host}${originalUrl}`,
+        url: `${protocol}://localhost:8080${originalUrl}`,
         publicPath: browserDistFolder,
         providers: [{ provide: APP_BASE_HREF, useValue: baseUrl }],
       })
