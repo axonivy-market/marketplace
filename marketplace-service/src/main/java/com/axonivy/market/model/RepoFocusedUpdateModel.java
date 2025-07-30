@@ -10,6 +10,6 @@ import java.util.List;
 @Getter
 @AllArgsConstructor
 @NoArgsConstructor
-public class RepoPremiumUpdateModel {
+public class RepoFocusedUpdateModel {
   private List<String> repoNames;
 }

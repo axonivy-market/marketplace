@@ -2,7 +2,7 @@ package com.axonivy.market.controller;
 
 import com.axonivy.market.enums.WorkFlowType;
 import com.axonivy.market.model.GithubReposModel;
-import com.axonivy.market.model.RepoPremiumUpdateModel;
+import com.axonivy.market.model.RepoFocusedUpdateModel;
 import com.axonivy.market.model.ReposResponseModel;
 import com.axonivy.market.model.TestStepsModel;
 import com.axonivy.market.service.GithubReposService;
@@ -75,15 +75,15 @@ class MonitorDashBoardControllerTest {
   }
   @Test
   void testUpdateRepoPriorities() {
-    RepoPremiumUpdateModel updates = new RepoPremiumUpdateModel();
+    RepoFocusedUpdateModel updates = new RepoFocusedUpdateModel();
     updates.setRepoNames(List.of("repo1", "repo2"));
 
-    doNothing().when(githubReposService).updateRepoPremium(updates);
+    doNothing().when(githubReposService).updateFocusedRepo(updates);
 
-    ResponseEntity<String> response = controller.updateRepoPremium(updates);
+    ResponseEntity<String> response = controller.updateFocusedRepo(updates);
 
     assertEquals(200, response.getStatusCode().value(), "Status code should be 200 OK");
-    assertEquals("Premium repository updated successfully.", response.getBody(),
+    assertEquals("Focused repository updated successfully.", response.getBody(),
         "Response body should match expected message");
   }
 }

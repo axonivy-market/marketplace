@@ -10,7 +10,7 @@ export interface Repository {
   lastUpdated: string;
   ciBadgeUrl: string;
   devBadgeUrl: string;
-  premiumRepo: boolean;
+  focusedRepo: boolean;
   testResults?: TestResult[];
 }
 

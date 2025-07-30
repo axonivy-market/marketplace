@@ -7,7 +7,7 @@ import com.axonivy.market.entity.TestStep;
 import com.axonivy.market.enums.WorkFlowType;
 import com.axonivy.market.github.service.GitHubService;
 import com.axonivy.market.model.GithubReposModel;
-import com.axonivy.market.model.RepoPremiumUpdateModel;
+import com.axonivy.market.model.RepoFocusedUpdateModel;
 import com.axonivy.market.repository.GithubRepoRepository;
 import com.axonivy.market.repository.ProductRepository;
 import com.axonivy.market.service.TestStepsService;
@@ -208,7 +208,7 @@ class GithubReposServiceImplTest {
   @Test
   void testFetchAllRepositories() {
     GithubRepo repo = new GithubRepo();
-    repo.setPremiumRepo(true);
+    repo.setFocusedRepo(true);
     when(githubRepoRepository.findAll()).thenReturn(List.of(repo));
     GithubReposModel model = new GithubReposModel();
     when(githubReposModelAssembler.toModel(repo)).thenReturn(model);
@@ -223,25 +223,25 @@ class GithubReposServiceImplTest {
   }
 
   @Test
-  void testUpdateRepoPremium() {
+  void testUpdateFocusedRepo() {
     GithubRepo repo1 = new GithubRepo();
     repo1.setName("repo1");
-    repo1.setPremiumRepo(false);
+    repo1.setFocusedRepo(false);
 
     GithubRepo repo2 = new GithubRepo();
     repo2.setName("repo2");
-    repo2.setPremiumRepo(true);
+    repo2.setFocusedRepo(true);
 
     List<GithubRepo> allRepos = List.of(repo1, repo2);
     when(githubRepoRepository.findAll()).thenReturn(allRepos);
 
-    RepoPremiumUpdateModel updates = new RepoPremiumUpdateModel();
+    RepoFocusedUpdateModel updates = new RepoFocusedUpdateModel();
     updates.setRepoNames(List.of("repo1"));
 
-    service.updateRepoPremium(updates);
+    service.updateFocusedRepo(updates);
 
-    assertTrue(repo1.isPremiumRepo(), "repo1 should be premium");
-    assertFalse(repo2.isPremiumRepo(), "repo2 should not be premium");
+    assertTrue(repo1.isFocusedRepo(), "repo1 should be focused repo");
+    assertFalse(repo2.isFocusedRepo(), "repo2 should not be focused repo");
     verify(githubRepoRepository).saveAll(allRepos);
   }
 }

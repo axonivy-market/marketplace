@@ -49,5 +49,5 @@ public class RequestMappingConstants {
   public static final String REPOS_REPORT = "/{repo}/{workflow}";
   public static final String REPO = "repo";
   public static final String WORKFLOW = "workflow";
-  public static final String REPO_PREMIUM = "repo-premium";
+  public static final String REPO_FOCUSED = "repo-focused";
 }

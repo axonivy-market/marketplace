@@ -1,6 +1,6 @@
 package com.axonivy.market.service;
 
-import com.axonivy.market.model.RepoPremiumUpdateModel;
+import com.axonivy.market.model.RepoFocusedUpdateModel;
 import com.axonivy.market.model.ReposResponseModel;
 
 import java.io.IOException;
@@ -10,5 +10,5 @@ public interface GithubReposService {
 
   ReposResponseModel fetchAllRepositories();
 
-  void updateRepoPremium(RepoPremiumUpdateModel repoPriorityUpdateModels);
+  void updateFocusedRepo(RepoFocusedUpdateModel repoPriorityUpdateModels);
 }

@@ -14,7 +14,7 @@ const mockRepos: Repository[] = [
     lastUpdated: '2025-07-20T12:00:00Z',
     ciBadgeUrl: 'https://example.com/badge/ci.svg',
     devBadgeUrl: 'https://example.com/badge/dev.svg',
-    premiumRepo: true,
+    focusedRepo: true,
     testResults: [
       { environment: 'ALL', workflow: 'CI', count: 10, status: 'PASSED' },
       { environment: 'MOCK', workflow: 'CI', count: 5, status: 'PASSED' }

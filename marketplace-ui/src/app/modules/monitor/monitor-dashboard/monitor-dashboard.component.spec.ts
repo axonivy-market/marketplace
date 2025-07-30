@@ -26,7 +26,7 @@ describe('MonitoringDashboardComponent', () => {
         lastUpdated: '2025-07-20T12:00:00Z',
         ciBadgeUrl: 'https://example.com/badge/ci.svg',
         devBadgeUrl: 'https://example.com/badge/dev.svg',
-        premiumRepo: true,
+        focusedRepo: true,
         testResults: [
           { environment: 'ALL', workflow: 'CI', count: 10, status: 'PASSED' },
           { environment: 'ALL', workflow: 'CI', count: 2, status: 'FAILED' },
@@ -51,7 +51,7 @@ describe('MonitoringDashboardComponent', () => {
         lastUpdated: '2025-07-19T12:00:00Z',
         ciBadgeUrl: 'https://example.com/badge/ci2.svg',
         devBadgeUrl: '',
-        premiumRepo: false,
+        focusedRepo: false,
         testResults: [
           { environment: 'ALL', workflow: 'CI', count: 15, status: 'PASSED' },
           { environment: 'ALL', workflow: 'CI', count: 5, status: 'FAILED' },
@@ -66,7 +66,7 @@ describe('MonitoringDashboardComponent', () => {
         lastUpdated: '2025-07-18T12:00:00Z',
         ciBadgeUrl: '',
         devBadgeUrl: '',
-        premiumRepo: false,
+        focusedRepo: false,
         testResults: []
       }
     ];
@@ -171,7 +171,7 @@ describe('MonitoringDashboardComponent', () => {
       lastUpdated: '2025-07-17T12:00:00Z',
       ciBadgeUrl: 'https://example.com/badge/ci3.svg',
       devBadgeUrl: 'https://example.com/badge/dev3.svg',
-      premiumRepo: false
+      focusedRepo: false
     };
     expect(component.getTestCount(repo, 'CI', 'ALL', 'PASSED')).toBe(0);
     expect(component.getTestCount(repo, 'DEV', 'MOCK', 'FAILED')).toBe(0);

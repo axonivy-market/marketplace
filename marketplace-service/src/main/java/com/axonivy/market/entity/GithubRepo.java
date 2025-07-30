@@ -38,7 +38,7 @@ public class GithubRepo extends GenericIdEntity {
   private String ciBadgeUrl;
   private String devBadgeUrl;
   @Column(nullable = false, columnDefinition = "BOOLEAN DEFAULT FALSE")
-  private boolean premiumRepo;
+  private boolean focusedRepo;
   @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
   @JoinColumn(name = "repository_id")
   private List<TestStep> testSteps;

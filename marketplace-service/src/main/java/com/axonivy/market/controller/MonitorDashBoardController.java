@@ -1,7 +1,7 @@
 package com.axonivy.market.controller;
 
 import com.axonivy.market.enums.WorkFlowType;
-import com.axonivy.market.model.RepoPremiumUpdateModel;
+import com.axonivy.market.model.RepoFocusedUpdateModel;
 import com.axonivy.market.model.ReposResponseModel;
 import com.axonivy.market.model.TestStepsModel;
 import com.axonivy.market.service.GithubReposService;
@@ -67,10 +67,10 @@ public class MonitorDashBoardController {
     return ResponseEntity.ok("Repositories loaded successfully.");
   }
 
-  @PutMapping(REPO_PREMIUM)
-  public ResponseEntity<String> updateRepoPremium(
-      @RequestBody RepoPremiumUpdateModel request)  {
-    githubReposService.updateRepoPremium(request);
-    return ResponseEntity.ok("Premium repository updated successfully.");
+  @PutMapping(REPO_FOCUSED)
+  public ResponseEntity<String> updateFocusedRepo(
+      @RequestBody RepoFocusedUpdateModel request)  {
+    githubReposService.updateFocusedRepo(request);
+    return ResponseEntity.ok("Focused repository updated successfully.");
   }
 }

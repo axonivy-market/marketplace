@@ -39,8 +39,8 @@ public class GithubReposModel extends RepresentationModel<GithubReposModel> {
   @Schema(description = "DEV workflow badge URL", example = "https://github.com/actions/workflows/dev.yml/badge.svg")
   private String devBadgeUrl;
 
-  @Schema(description = "Indicates if the repository is a premium repository", example = "true")
-  private boolean premiumRepo;
+  @Schema(description = "Indicates if the repository is a focused repository", example = "true")
+  private boolean focusedRepo;
   @Schema(
       description = "Test results summary by workflow type and test environment",
       example = """
@@ -71,7 +71,7 @@ public class GithubReposModel extends RepresentationModel<GithubReposModel> {
         .lastUpdated(dateFormat.format(githubRepo.getLastUpdated()))
         .ciBadgeUrl(githubRepo.getCiBadgeUrl())
         .devBadgeUrl(githubRepo.getDevBadgeUrl())
-        .premiumRepo(githubRepo.isPremiumRepo())
+        .focusedRepo(githubRepo.isFocusedRepo())
         .testResults(testResults)
         .build();
   }
