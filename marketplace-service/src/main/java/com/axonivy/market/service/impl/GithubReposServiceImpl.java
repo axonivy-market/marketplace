@@ -56,7 +56,8 @@ public class GithubReposServiceImpl implements GithubReposService {
   public void loadAndStoreTestReports() {
     try {
       List<Product> products = productRepository.findAll().stream()
-          .filter(product -> "open-weather-connector".equals(product.getId())).toList();
+          .filter(product -> Boolean.FALSE != product.getListed()
+              && product.getRepositoryName() != null).toList();
       for (Product product : products) {
         log.info("Starting sync data TestReports of repo: {}", product.getRepositoryName());
         GHRepository repository = gitHubService.getRepository(product.getRepositoryName());
