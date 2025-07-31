@@ -4,10 +4,12 @@ import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { Router } from '@angular/router';
 import { LanguageService } from '../../../core/services/language/language.service';
 import { TranslateModule } from '@ngx-translate/core';
+import { BuildStatusEntriesPipe } from "../../../shared/pipes/build-status-entries.pipe";
+import { WorkflowIconPipe } from "../../../shared/pipes/workflow-icon.pipe";
 @Component({
   selector: 'app-dashboard',
   standalone: true,
-  imports: [CommonModule, TranslateModule],
+  imports: [CommonModule, TranslateModule, BuildStatusEntriesPipe, WorkflowIconPipe],
   templateUrl: './monitor-dashboard.component.html',
   styleUrl: './monitor-dashboard.component.scss'
 })
@@ -20,7 +22,11 @@ export class MonitoringDashboardComponent implements OnInit {
   githubService = inject(GithubService);
   router = inject(Router);
   platformId = inject(PLATFORM_ID);
-
+  protected mapping = {
+    PASSED: { label: 'monitor.dashboard.passed', icon: '✅' },
+    FAILED: { label: 'monitor.dashboard.failed', icon: '❌' },
+    SKIPPED: { label: 'monitor.dashboard.skipped', icon: '⏩' }
+  };
 
   ngOnInit(): void {
     if (isPlatformBrowser(this.platformId)) {
@@ -44,21 +50,15 @@ export class MonitoringDashboardComponent implements OnInit {
     });
   }
 
-  // getTestCount(repo: Repository, workflow: string, environment: string, status: string): number {
-  //   if (!repo.testResults) {
-  //     return 0;
-  //   }
-  //   const result = repo.testResults.find(test =>
-  //     test.workflow === workflow.toUpperCase() &&
-  //     test.environment === environment.toUpperCase() &&
-  //     test.status === status.toUpperCase()
-  //   );
-
-  //   if (result) {
-  //     return result.count;
-  //   }
-  //   return 0;
-  // }
+getBuildStatuses(results: { [key: string]: number }) {
+  return Object.entries(this.mapping)
+    .filter(([key]) => results[key])
+    .map(([key, meta]) => ({
+      label: meta.label,
+      icon: meta.icon,
+      count: results[key]
+    }));
+}
 
   onBadgeClick(repo: string, workflow: string) {
     const upperWorkflow = workflow.toUpperCase();

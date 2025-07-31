@@ -20,14 +20,18 @@
       <div class="repo-info">
         @for (build of repo.testResults; track build.workflow) {
         <div class="badge-row" (click)="onBadgeClick(repo.name, 'ci')">
-          <span class="icon">🏷️</span> {{ build.workflow }}:
+          <span class="icon">{{ build.workflow | workflowIcon }}</span> {{ build.workflow }}:
           <img [src]="build.badgeUrl" alt="{{ build.workflow }} Badge for {{ repo.name }}" style="cursor: pointer;" />
         </div>
-        <div class="sub-status">
-          {{ 'monitor.dashboard.passed' | translate }}: {{ build.results?.PASSED }}✅/
-          {{ 'monitor.dashboard.failed' | translate }}: {{ build.results?.FAILED }}❌/
-          {{ 'monitor.dashboard.skipped' | translate }}: {{ build.results?.SKIPPED }}✔️
-        </div>
+          @if(build.results) {
+            <div class="sub-status">
+              @for (testStatus of build.results | buildStatusEntries; track testStatus.label) {
+                <div>
+                  {{ testStatus.label | translate }}: {{ testStatus.count }} {{ testStatus.icon }}
+                </div>
+              }
+            </div>
+          }
         }
         <p>
           <span class="icon">📅</span>

@@ -42,17 +42,13 @@ public class GithubRepo extends GenericIdEntity {
   @JoinColumn(name = "repository_id")
   private List<TestStep> testSteps;
 
-  public static GithubRepo createNewGithubRepo(GHRepository repo, String ciBadgeUrl,
-      String devBadgeUrl, String e2eBadgeUrl) throws IOException {
+  public static GithubRepo createNewGithubRepo(GHRepository repo) throws IOException {
     return GithubRepo.builder()
         .name(repo.getName())
         .htmlUrl(repo.getHtmlUrl().toString())
         .language(repo.getLanguage())
         .lastUpdated(repo.getUpdatedAt())
         .testSteps(new ArrayList<>())
-        .ciBadgeUrl(ciBadgeUrl)
-        .devBadgeUrl(devBadgeUrl)
-        .e2eBadgeUrl(e2eBadgeUrl)
         .build();
   }
 }

@@ -29,6 +29,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
@@ -77,15 +79,11 @@ public class GithubReposServiceImpl implements GithubReposService {
       githubRepo.setLanguage(ghRepo.getLanguage());
       githubRepo.setLastUpdated(ghRepo.getUpdatedAt());
     } else {
-      String ciBadgeUrl = buildBadgeUrl(ghRepo, CI.getFileName());
-      String devBadgeUrl = buildBadgeUrl(ghRepo,DEV.getFileName());
-      String e2eBadgeUrl = buildBadgeUrl(ghRepo, E2E.getFileName());
-      githubRepo = createNewGithubRepo(ghRepo, ciBadgeUrl, devBadgeUrl,e2eBadgeUrl);
+      githubRepo = createNewGithubRepo(ghRepo);
     }
-
-    githubRepo.getTestSteps().addAll(processWorkflowWithFallback(ghRepo, githubRepo, DEV));
-    githubRepo.getTestSteps().addAll(processWorkflowWithFallback(ghRepo, githubRepo, CI));
-    githubRepo.getTestSteps().addAll(processWorkflowWithFallback(ghRepo, githubRepo, E2E));
+    List<TestStep> testSteps = Arrays.stream(values()).map(workFlow -> processWorkflowWithFallback(ghRepo, githubRepo,
+        workFlow)).flatMap(Collection::stream).toList();
+    githubRepo.getTestSteps().addAll(testSteps);
     try {
       githubRepoRepository.save(githubRepo);
     } catch (DataAccessException e) {
@@ -98,6 +96,7 @@ public class GithubReposServiceImpl implements GithubReposService {
     try {
       GHWorkflowRun run = gitHubService.getLatestWorkflowRun(ghRepo, workflowType.getFileName());
       if (run != null) {
+        updateWorkflowBadgeUrl(ghRepo, dbRepo, workflowType);
         GHArtifact artifact = gitHubService.getExportTestArtifact(run);
         if (artifact != null) {
           return processArtifact(artifact, dbRepo, workflowType);
@@ -108,6 +107,23 @@ public class GithubReposServiceImpl implements GithubReposService {
           ghRepo.getFullName(), e.getMessage());
     }
     return Collections.emptyList();
+  }
+
+  private static void updateWorkflowBadgeUrl(GHRepository ghRepo, GithubRepo dbRepo, WorkFlowType workflowType) {
+    String runBadgeUrl = buildBadgeUrl(ghRepo, workflowType.getFileName());
+    switch(workflowType) {
+      case CI:
+        dbRepo.setCiBadgeUrl(runBadgeUrl);
+        break;
+        case DEV:
+        dbRepo.setDevBadgeUrl(runBadgeUrl);
+        break;
+      case E2E:
+        dbRepo.setE2eBadgeUrl(runBadgeUrl);
+        break;
+      default:
+        break;
+    }
   }
 
   private List<TestStep> processArtifact(GHArtifact artifact, GithubRepo dbRepo,
