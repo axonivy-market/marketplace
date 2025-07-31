@@ -28,7 +28,6 @@ export interface TestStep {
   name: string;
   status: 'PASSED' | 'FAILED' | 'SKIPPED';
   type: string;
-  testType: string;
 }
 
 @Injectable({
