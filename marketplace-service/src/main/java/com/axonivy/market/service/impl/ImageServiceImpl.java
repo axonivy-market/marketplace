@@ -88,7 +88,8 @@ public class ImageServiceImpl implements ImageService {
     existingImages.forEach(image -> Hibernate.initialize(image.getImageData()));
     try {
       InputStream contentStream = MavenUtils.extractedContentStream(imagePath);
-      byte[] sourceBytes = IOUtils.toByteArray(contentStream);
+        assert contentStream != null;
+        byte[] sourceBytes = IOUtils.toByteArray(contentStream);
 
       Image existedImage = existingImages.stream().filter(image -> {
         byte[] imageData = Optional.of(image).map(Image::getImageData).orElse(null);
@@ -129,7 +130,8 @@ public class ImageServiceImpl implements ImageService {
         return new byte[0];
       }
       InputStream contentStream = MavenUtils.extractedContentStream(imagePath.get());
-      return IOUtils.toByteArray(contentStream);
+        assert contentStream != null;
+        return IOUtils.toByteArray(contentStream);
     } catch (IOException e) {
       log.error("#readPreviewImageByName: Error when read preview image {}: {}", imageName, e.getMessage());
       return new byte[0];
