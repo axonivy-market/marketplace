@@ -1,17 +1,12 @@
-import {
-  HttpHeaders,
-  HttpContextToken,
-  HttpInterceptorFn
-} from '@angular/common/http';
+import { HttpHeaders, HttpContextToken, HttpInterceptorFn } from '@angular/common/http';
 import { environment } from '../../../environments/environment';
 import { LoadingService } from '../services/loading/loading.service';
 import { inject, PLATFORM_ID } from '@angular/core';
 import { catchError, EMPTY, finalize } from 'rxjs';
 import { Router } from '@angular/router';
 import { ERROR_CODES, ERROR_PAGE_PATH } from '../../shared/constants/common.constant';
-import { APP_BASE_HREF, isPlatformServer } from '@angular/common';
-import { RequestContextService } from './request-context.service';
-import { BASE_API_URL } from './base-api-url.token';
+import { isPlatformServer } from '@angular/common';
+import { API_BASE_URL } from '../../shared/constants/api.constant';
 
 export const REQUEST_BY = 'X-Requested-By';
 export const IVY = 'marketplace-website';
@@ -30,27 +25,21 @@ export const apiInterceptor: HttpInterceptorFn = (req, next) => {
   const router = inject(Router);
   const loadingService = inject(LoadingService);
   const platformId = inject(PLATFORM_ID);
-  let baseUrl: string | null = null; // Initialize as null
+  let apiURL: string | null = null;
 
   if (isPlatformServer(platformId)) {
     try {
-      baseUrl = inject(BASE_API_URL);
-      console.log('SSR Interceptor running. Injected BASE_API_URL:', baseUrl);
-      baseUrl = 'http://localhost:5000/marketplace-service';
+      apiURL = inject(API_BASE_URL);
+      console.log('SSR Interceptor running. Injected API_BASE_URL:', apiURL);
     } catch (e) {
       console.error('SSR Interceptor ERROR: Could not inject BASE_API_URL:', e);
-      // This catch block might not be hit if NullInjectorError is thrown at a higher level
-      // before the interceptor function runs completely.
-      // But it's good for seeing if it fails within the 'inject' call specifically.
+      // Fallback
+      apiURL = environment.apiUrl;
     }
   } else {
-    baseUrl = environment.apiUrl;
+    apiURL = environment.apiUrl;
   }
 
-  const apiURL = baseUrl;
-  // const apiURL = isPlatformServer(platformId)
-  //   ? baseUrl //'https://t4ctjr1d-5000.asse.devtunnels.ms/marketplace-service' // Internal Docker network
-  //   : environment.apiUrl;
   console.error("apiInterceptor handle for " + apiURL);
   if (req.url.includes('i18n')) {
     return next(req);
@@ -69,8 +58,6 @@ export const apiInterceptor: HttpInterceptorFn = (req, next) => {
     url: requestURL,
     headers: addIvyHeaders(req.headers)
   });
-
-  console.error("apiInterceptor call to " + cloneReq.url);
 
   if (req.context.get(ForwardingError)) {
     return next(cloneReq);
