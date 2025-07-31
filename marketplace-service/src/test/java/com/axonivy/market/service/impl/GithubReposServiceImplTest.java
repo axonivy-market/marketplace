@@ -179,6 +179,19 @@ class GithubReposServiceImplTest {
   }
 
   @Test
+  void testProcessWorkflowWithFallbackHandlesException() throws Exception {
+    GHRepository ghRepo = mock(GHRepository.class);
+    GithubRepo dbRepo = new GithubRepo();
+
+    when(gitHubService.getLatestWorkflowRun(any(), any()))
+        .thenThrow(new IOException("Simulated IO error"));
+
+    List<TestStep> result = service.processWorkflowWithFallback(ghRepo, dbRepo, "ci.yml", WorkFlowType.CI);
+
+    assertTrue(result.isEmpty(), "Result list should be empty when exception is thrown");
+  }
+
+  @Test
   void testProcessWorkflowWithFallbackNoRun() throws Exception {
     GHRepository ghRepo = mock(GHRepository.class);
     GithubRepo dbRepo = new GithubRepo();
@@ -225,5 +238,23 @@ class GithubReposServiceImplTest {
     service.updateFocusedRepo(updates);
 
     verify(githubRepoRepository).updateFocusedRepoByName(updates);
+  }
+
+  @Test
+  void testUpdateFocusedWithEmptyList() {
+    List<String> updates = new ArrayList<>();
+
+    service.updateFocusedRepo(updates);
+
+    verify(githubRepoRepository, never()).updateFocusedRepoByName(any());
+  }
+
+  @Test
+  void testUpdateFocusedWithNullList() {
+    List<String> updates = null;
+
+    service.updateFocusedRepo(updates);
+
+    verify(githubRepoRepository, never()).updateFocusedRepoByName(any());
   }
 }

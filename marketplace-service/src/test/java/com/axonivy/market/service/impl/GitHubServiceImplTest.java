@@ -5,6 +5,7 @@ import com.axonivy.market.constants.GitHubConstants;
 import com.axonivy.market.entity.Product;
 import com.axonivy.market.enums.AccessLevel;
 import com.axonivy.market.exceptions.model.MissingHeaderException;
+import com.axonivy.market.exceptions.model.NotFoundException;
 import com.axonivy.market.exceptions.model.Oauth2ExchangeCodeException;
 import com.axonivy.market.exceptions.model.UnauthorizedException;
 import com.axonivy.market.github.model.CodeScanning;
@@ -731,4 +732,39 @@ class GitHubServiceImplTest {
     verify(mockRun).listArtifacts();
   }
 
+  @Test
+  void testGetRepositoryRepositoryFound() throws IOException {
+    String repositoryPath = "org/repo";
+    GHRepository mockRepository = mock(GHRepository.class);
+    GitHub mockGitHub = mock(GitHub.class);
+    when(gitHubService.getGitHub()).thenReturn(mockGitHub);
+    when(mockGitHub.getRepository(repositoryPath)).thenReturn(mockRepository);
+
+    GHRepository result = gitHubService.getRepository(repositoryPath);
+
+    assertNotNull(result);
+    verify(mockGitHub).getRepository(repositoryPath);
+  }
+
+  @Test
+  void testGetRepositoryRepositoryNotFound() throws IOException {
+    String repositoryPath = "org/missing-repo";
+    GitHub mockGitHub = mock(GitHub.class);
+    when(gitHubService.getGitHub()).thenReturn(mockGitHub);
+    when(mockGitHub.getRepository(repositoryPath)).thenThrow(new GHFileNotFoundException("Not found"));
+
+    NotFoundException ex = assertThrows(NotFoundException.class, () -> gitHubService.getRepository(repositoryPath));
+    assertEquals("GITHUB_REPOSITORY_NOT_FOUND-Repository not found: org/missing-repo", ex.getMessage());
+  }
+
+  @Test
+  void testGetRepositoryIOException() throws IOException {
+    String repositoryPath = "org/error-repo";
+    GitHub mockGitHub = mock(GitHub.class);
+    when(gitHubService.getGitHub()).thenReturn(mockGitHub);
+    when(mockGitHub.getRepository(repositoryPath)).thenThrow(new IOException("IO error"));
+
+    IOException ex = assertThrows(IOException.class, () -> gitHubService.getRepository(repositoryPath));
+    assertTrue(ex.getMessage().contains("Error fetching repository: org/error-repo"));
+  }
 }

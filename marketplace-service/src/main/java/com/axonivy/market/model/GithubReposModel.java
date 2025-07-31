@@ -5,7 +5,7 @@ import com.axonivy.market.entity.TestResults;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.*;
 
-import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.List;
 
 import static com.axonivy.market.util.TestResultsUtils.processTestResults;
@@ -30,7 +30,7 @@ public class GithubReposModel {
   private String language;
 
   @Schema(description = "Last updated date of the repository", example = "2025-07-14T10:35:00Z")
-  private String lastUpdated;
+  private Date lastUpdated;
 
   @Schema(description = "CI workflow badge URL", example = "https://github.com/actions/workflows/ci.yml/badge.svg")
   private String ciBadgeUrl;
@@ -61,13 +61,11 @@ public class GithubReposModel {
 
   public static GithubReposModel from(GithubRepo githubRepo) {
     List<TestResults> testResults = processTestResults(githubRepo);
-    var dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.S");
-
     return GithubReposModel.builder()
         .name(githubRepo.getName())
         .htmlUrl(githubRepo.getHtmlUrl())
         .language(githubRepo.getLanguage())
-        .lastUpdated(dateFormat.format(githubRepo.getLastUpdated()))
+        .lastUpdated(githubRepo.getLastUpdated())
         .ciBadgeUrl(githubRepo.getCiBadgeUrl())
         .devBadgeUrl(githubRepo.getDevBadgeUrl())
         .focused(githubRepo.isFocused())
