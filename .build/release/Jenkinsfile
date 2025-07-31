@@ -30,6 +30,7 @@ pipeline {
     MARKETPLACE_GIT_URL = credentials('MARKETPLACE_GIT_URL')
     MARKET_GITHUB_MARKET_BRANCH = credentials('MARKET_GITHUB_MARKET_BRANCH')
     GH_TOKEN = credentials('GH_TOKEN')
+    VERSION_RETENTION_COUNT = credentials('VERSION_RETENTION_COUNT')
     MARKET_JWT_SECRET_KEY = credentials('MARKET_JWT_SECRET_KEY')
     MARKET_CORS_ALLOWED_ORIGIN = credentials('MARKET_CORS_ALLOWED_ORIGIN')
     MARKET_CLICK_LIMIT = credentials('MARKET_CLICK_LIMIT')
@@ -173,21 +174,31 @@ pipeline {
 
     stage('Release Marketplace UI Image') {
       steps {
-        sh '''
+        sh """
+          set -euo pipefail
           UI_IMAGE_ID=ghcr.io/$GITHUB_REPOSITORY_OWNER/$UI_IMAGE_NAME
           docker tag $UI_IMAGE_NAME $UI_IMAGE_ID:$RELEASE_VERSION
           docker push $UI_IMAGE_ID:$RELEASE_VERSION
-        '''
+
+          # Cleanup old UI image versions
+          IMAGE_NAME=$UI_IMAGE_NAME
+          bash ./scripts/ghcr-cleanup.sh
+        """
       }
     }
 
     stage('Release Marketplace Service Image') {
       steps {
-        sh '''
+        sh """
+          set -euo pipefail
           SERVICE_IMAGE_ID=ghcr.io/$GITHUB_REPOSITORY_OWNER/$SERVICE_IMAGE_NAME
           docker tag $SERVICE_IMAGE_NAME $SERVICE_IMAGE_ID:$RELEASE_VERSION
           docker push $SERVICE_IMAGE_ID:$RELEASE_VERSION
-        '''
+
+          # Cleanup old Service image versions
+          IMAGE_NAME=$SERVICE_IMAGE_NAME
+          bash ./scripts/ghcr-cleanup.sh
+        """
       }
     }
   }
