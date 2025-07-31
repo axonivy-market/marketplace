@@ -5,10 +5,13 @@ import {
 } from '@angular/common/http';
 import { environment } from '../../../environments/environment';
 import { LoadingService } from '../services/loading/loading.service';
-import { inject } from '@angular/core';
+import { inject, PLATFORM_ID } from '@angular/core';
 import { catchError, EMPTY, finalize } from 'rxjs';
 import { Router } from '@angular/router';
 import { ERROR_CODES, ERROR_PAGE_PATH } from '../../shared/constants/common.constant';
+import { APP_BASE_HREF, isPlatformServer } from '@angular/common';
+import { RequestContextService } from './request-context.service';
+import { BASE_API_URL } from './base-api-url.token';
 
 export const REQUEST_BY = 'X-Requested-By';
 export const IVY = 'marketplace-website';
@@ -26,7 +29,28 @@ export const LoadingComponent = new HttpContextToken<string>(() => '');
 export const apiInterceptor: HttpInterceptorFn = (req, next) => {
   const router = inject(Router);
   const loadingService = inject(LoadingService);
+  const platformId = inject(PLATFORM_ID);
+  let baseUrl: string | null = null; // Initialize as null
 
+  if (isPlatformServer(platformId)) {
+    try {
+      baseUrl = inject(BASE_API_URL) + '/marketplace-service';
+      console.log('SSR Interceptor running. Injected BASE_API_URL:', baseUrl);
+    } catch (e) {
+      console.error('SSR Interceptor ERROR: Could not inject BASE_API_URL:', e);
+      // This catch block might not be hit if NullInjectorError is thrown at a higher level
+      // before the interceptor function runs completely.
+      // But it's good for seeing if it fails within the 'inject' call specifically.
+    }
+  } else {
+    baseUrl = environment.apiUrl;
+  }
+
+  const apiURL = baseUrl;
+  // const apiURL = isPlatformServer(platformId)
+  //   ? baseUrl //'https://t4ctjr1d-5000.asse.devtunnels.ms/marketplace-service' // Internal Docker network
+  //   : environment.apiUrl;
+  console.error("apiInterceptor handle for " + apiURL);
   if (req.url.includes('i18n')) {
     return next(req);
   }
@@ -36,8 +60,7 @@ export const apiInterceptor: HttpInterceptorFn = (req, next) => {
   }
 
   let requestURL = req.url;
-  const apiURL = environment.apiUrl;
-  if (!requestURL.includes(apiURL)) {
+  if (!requestURL.includes(apiURL || '')) {
     requestURL = `${apiURL}/${req.url}`;
   }
 

@@ -1,14 +1,14 @@
 import { HttpClient, provideHttpClient, withFetch, withInterceptors } from '@angular/common/http';
-import { APP_INITIALIZER, ApplicationConfig, importProvidersFrom, provideZoneChangeDetection } from '@angular/core';
+import { APP_INITIALIZER, ApplicationConfig, importProvidersFrom, PLATFORM_ID, provideZoneChangeDetection, TransferState } from '@angular/core';
 import { InMemoryScrollingFeature, InMemoryScrollingOptions, provideRouter, withInMemoryScrolling } from '@angular/router';
 import { TranslateLoader, TranslateModule } from '@ngx-translate/core';
 import { routes } from './app.routes';
-import { httpLoaderFactory } from './core/configs/translate.config';
 import { apiInterceptor } from './core/interceptors/api.interceptor';
 import { provideMatomo, withRouter } from 'ngx-matomo-client';
 import { environment } from '../environments/environment';
-import { provideClientHydration } from '@angular/platform-browser';
+import { provideClientHydration, withI18nSupport } from '@angular/platform-browser';
 import { BootstrapLoaderService } from './core/services/browser/bootstrap-loader.service';
+import { translateUniversalLoaderFactory } from './core/configs/translate-loader.factory';
 
 const scrollConfig: InMemoryScrollingOptions = {
   scrollPositionRestoration: 'disabled',
@@ -35,12 +35,13 @@ export const appConfig: ApplicationConfig = {
       TranslateModule.forRoot({
         loader: {
           provide: TranslateLoader,
-          useFactory: httpLoaderFactory,
-          deps: [HttpClient]
-        }
+          useFactory: translateUniversalLoaderFactory,
+          deps: [HttpClient, TransferState, PLATFORM_ID]
+        },
+        defaultLanguage: 'en'
       })
     ),
-    provideClientHydration(),
+    provideClientHydration(withI18nSupport()),
     {
       provide: APP_INITIALIZER,
       useFactory: (bootstrapLoader: BootstrapLoaderService) => () =>
