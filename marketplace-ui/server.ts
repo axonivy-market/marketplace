@@ -33,7 +33,12 @@ export function app(): express.Express {
     const { protocol, originalUrl, baseUrl, headers } = req;
      const host = headers.host;
     const serverBaseUrl = `${req.protocol || 'http'}://${req.headers.host}`;
-    error("node express handle for " +  protocol, originalUrl, baseUrl, headers );
+    error("node express handle for reuqest: " +  req);
+    error("node express handle for protocol: " +  protocol);
+    error("node express handle for originalUrl: " +  originalUrl);
+    error("node express handle for baseUrl: " + baseUrl );
+    error("node express handle for headers: " +  headers + " headers.host: " + host + " header.referer: " + headers.referer);
+    console.error("server get serverBaseUrl: " + serverBaseUrl);
 
     commonEngine
       .render({

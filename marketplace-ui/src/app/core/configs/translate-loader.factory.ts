@@ -49,10 +49,10 @@ export class TranslateUniversalLoader implements TranslateLoader {
       
       // Try multiple possible paths based on different build outputs
     const possiblePaths = [
-      path.join('/app', 'dist', 'browser', 'assets', 'i18n', `${lang}.json`), // Angular 15+ with browser folder
-      path.join('/app', 'dist', 'assets', 'i18n', `${lang}.json`), // Older Angular versions
-      path.join(process.cwd(), 'dist', 'browser', 'assets', 'i18n', `${lang}.json`),
-      path.join(process.cwd(), 'dist', 'assets', 'i18n', `${lang}.json`)
+      path.join('/app', 'dist', 'browser', 'assets', 'i18n', `${lang}.json`), // For CSR
+      path.join('assets', 'i18n', `${lang}.json`), // For development environment
+      path.join(process.cwd(), 'src', 'assets', 'i18n', `${lang}.json`),
+      path.join(process.cwd(), 'dist', 'browser', 'assets', 'i18n', `${lang}.json`)
     ];
         
         for (const translationPath of possiblePaths) {

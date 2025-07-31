@@ -34,8 +34,9 @@ export const apiInterceptor: HttpInterceptorFn = (req, next) => {
 
   if (isPlatformServer(platformId)) {
     try {
-      baseUrl = inject(BASE_API_URL) + '/marketplace-service';
+      baseUrl = inject(BASE_API_URL);
       console.log('SSR Interceptor running. Injected BASE_API_URL:', baseUrl);
+      baseUrl = 'http://localhost:5000/marketplace-service';
     } catch (e) {
       console.error('SSR Interceptor ERROR: Could not inject BASE_API_URL:', e);
       // This catch block might not be hit if NullInjectorError is thrown at a higher level
@@ -69,6 +70,7 @@ export const apiInterceptor: HttpInterceptorFn = (req, next) => {
     headers: addIvyHeaders(req.headers)
   });
 
+  console.error("apiInterceptor call to " + cloneReq.url);
 
   if (req.context.get(ForwardingError)) {
     return next(cloneReq);
