@@ -742,7 +742,7 @@ class GitHubServiceImplTest {
 
     GHRepository result = gitHubService.getRepository(repositoryPath);
 
-    assertNotNull(result);
+    assertNotNull(result, "Expected non-null repository");
     verify(mockGitHub).getRepository(repositoryPath);
   }
 
@@ -753,8 +753,10 @@ class GitHubServiceImplTest {
     when(gitHubService.getGitHub()).thenReturn(mockGitHub);
     when(mockGitHub.getRepository(repositoryPath)).thenThrow(new GHFileNotFoundException("Not found"));
 
-    NotFoundException ex = assertThrows(NotFoundException.class, () -> gitHubService.getRepository(repositoryPath));
-    assertEquals("GITHUB_REPOSITORY_NOT_FOUND-Repository not found: org/missing-repo", ex.getMessage());
+    NotFoundException ex = assertThrows(NotFoundException.class, () -> gitHubService.getRepository(repositoryPath),
+        "Expected NotFoundException to be thrown");
+    assertEquals("GITHUB_REPOSITORY_NOT_FOUND-Repository not found: org/missing-repo", ex.getMessage(),
+        "Expected NotFoundException with specific message");
   }
 
   @Test
@@ -764,7 +766,9 @@ class GitHubServiceImplTest {
     when(gitHubService.getGitHub()).thenReturn(mockGitHub);
     when(mockGitHub.getRepository(repositoryPath)).thenThrow(new IOException("IO error"));
 
-    IOException ex = assertThrows(IOException.class, () -> gitHubService.getRepository(repositoryPath));
-    assertTrue(ex.getMessage().contains("Error fetching repository: org/error-repo"));
+    IOException ex = assertThrows(IOException.class, () -> gitHubService.getRepository(repositoryPath),
+        "Expected IOException to be thrown");
+    assertTrue(ex.getMessage().contains("Error fetching repository: org/error-repo"),
+        "Expected IOException with specific message");
   }
 }
