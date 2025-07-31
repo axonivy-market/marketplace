@@ -1,8 +1,6 @@
+
 import { TestBed } from '@angular/core/testing';
-import {
-  HttpClientTestingModule,
-  HttpTestingController
-} from '@angular/common/http/testing';
+import { HttpClientTestingModule, HttpTestingController } from '@angular/common/http/testing';
 import { GithubService, Repository, TestStep } from './github.service';
 import { API_URI } from '../../shared/constants/api.constant';
 
@@ -14,18 +12,13 @@ const mockRepos: Repository[] = [
     lastUpdated: '2025-07-20T12:00:00Z',
     ciBadgeUrl: 'https://example.com/badge/ci.svg',
     devBadgeUrl: 'https://example.com/badge/dev.svg',
-    focusedRepo: true,
+    focused: true,
     testResults: [
       { environment: 'ALL', workflow: 'CI', count: 10, status: 'PASSED' },
       { environment: 'MOCK', workflow: 'CI', count: 5, status: 'PASSED' }
     ]
   }
 ];
-
-const mockReposResponse = {
-  focusedRepos: mockRepos,
-  standardRepos: []
-};
 
 const mockTestStep: TestStep = {
   name: 'Step 1',
@@ -57,11 +50,11 @@ describe('GithubService', () => {
 
   it('should fetch repositories', () => {
     service.getRepositories().subscribe(repos => {
-      expect(repos).toEqual(mockReposResponse);
+      expect(repos).toEqual(mockRepos);
     });
     const req = httpMock.expectOne(API_URI.MONITOR_DASHBOARD);
     expect(req.request.method).toBe('GET');
-    req.flush(mockReposResponse);
+    req.flush(mockRepos);
   });
 
   it('should fetch test report', () => {
@@ -77,18 +70,19 @@ describe('GithubService', () => {
     let error: any;
     service.getRepositories().subscribe({
       next: () => {},
-      error: err => (error = err)
+      error: err => error = err
     });
     const req = httpMock.expectOne(API_URI.MONITOR_DASHBOARD);
     req.flush('Error', { status: 500, statusText: 'Server Error' });
     expect(error).toBeTruthy();
   });
 
+
   it('should handle error when fetching test report', () => {
     let error: any;
     service.getTestReport('repo1', 'CI').subscribe({
       next: () => {},
-      error: err => (error = err)
+      error: err => error = err
     });
     const req = httpMock.expectOne(`${API_URI.GITHUB_REPORT}/repo1/CI`);
     req.flush('Error', { status: 404, statusText: 'Not Found' });

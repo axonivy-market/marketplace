@@ -1,8 +1,7 @@
 package com.axonivy.market.controller;
 
 import com.axonivy.market.enums.WorkFlowType;
-import com.axonivy.market.model.RepoFocusedUpdateModel;
-import com.axonivy.market.model.ReposResponseModel;
+import com.axonivy.market.model.GithubReposModel;
 import com.axonivy.market.model.TestStepsModel;
 import com.axonivy.market.service.GithubReposService;
 import com.axonivy.market.service.TestStepsService;
@@ -17,8 +16,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.io.IOException;
@@ -42,8 +41,8 @@ public class MonitorDashBoardController {
       description = "Successfully fetched GitHub repositories"
   )
   @GetMapping(REPOS)
-  public ResponseEntity<ReposResponseModel> getGitHubRepos() {
-    ReposResponseModel response = githubReposService.fetchAllRepositories();
+  public ResponseEntity<List<GithubReposModel>> getGitHubRepos() {
+    List<GithubReposModel> response = githubReposService.fetchAllRepositories();
     return new ResponseEntity<>(response, HttpStatus.OK);
   }
 
@@ -67,10 +66,9 @@ public class MonitorDashBoardController {
     return ResponseEntity.ok("Repositories loaded successfully.");
   }
 
-  @PutMapping(REPO_FOCUSED)
-  public ResponseEntity<String> updateFocusedRepo(
-      @RequestBody RepoFocusedUpdateModel request)  {
-    githubReposService.updateFocusedRepo(request);
+  @GetMapping(FOCUSED)
+  public ResponseEntity<String> updateFocusedRepo(@RequestParam(REPOS) List<String> repos) {
+    githubReposService.updateFocusedRepo(repos);
     return ResponseEntity.ok("Focused repository updated successfully.");
   }
 }

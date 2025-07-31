@@ -7,8 +7,6 @@ import com.axonivy.market.entity.TestStep;
 import com.axonivy.market.enums.WorkFlowType;
 import com.axonivy.market.github.service.GitHubService;
 import com.axonivy.market.model.GithubReposModel;
-import com.axonivy.market.model.RepoFocusedUpdateModel;
-import com.axonivy.market.model.ReposResponseModel;
 import com.axonivy.market.repository.GithubRepoRepository;
 import com.axonivy.market.repository.ProductRepository;
 import com.axonivy.market.service.GithubReposService;
@@ -145,36 +143,18 @@ public class GithubReposServiceImpl implements GithubReposService {
   }
 
   @Override
-  public ReposResponseModel fetchAllRepositories() {
+  public List<GithubReposModel> fetchAllRepositories() {
     List<GithubRepo> entities = githubRepoRepository.findAll();
-    List<GithubReposModel> focusedRepos = entities.stream()
-        .filter(GithubRepo::isFocusedRepo)
+    return entities.stream()
         .map(githubReposModelAssembler::toModel)
         .toList();
-
-    List<GithubReposModel> standardRepos = entities.stream()
-        .filter(repo -> !repo.isFocusedRepo())
-        .map(githubReposModelAssembler::toModel)
-        .toList();
-
-    var response = new ReposResponseModel();
-    response.setFocusedRepos(focusedRepos);
-    response.setStandardRepos(standardRepos);
-    return response;
   }
 
   @Override
-  public void updateFocusedRepo(RepoFocusedUpdateModel updates) {
-    List<GithubRepo> allRepos = githubRepoRepository.findAll();
-    allRepos.forEach(repo -> repo.setFocusedRepo(false));
-    if (updates != null && updates.getRepoNames() != null) {
-      for (String update : updates.getRepoNames()) {
-        allRepos.stream()
-            .filter(repo -> update.equals(repo.getName()))
-            .findFirst()
-            .ifPresent(repo -> repo.setFocusedRepo(true));
-      }
+  public void updateFocusedRepo(List<String> updates) {
+    if (updates == null || updates.isEmpty()) {
+      return;
     }
-    githubRepoRepository.saveAll(allRepos);
+    githubRepoRepository.updateFocusedRepoByName(updates);
   }
 }

@@ -4,7 +4,6 @@ import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { Router } from '@angular/router';
 import { LanguageService } from '../../../core/services/language/language.service';
 import { TranslateModule } from '@ngx-translate/core';
-
 @Component({
   selector: 'app-dashboard',
   standalone: true,
@@ -13,52 +12,52 @@ import { TranslateModule } from '@ngx-translate/core';
   styleUrl: './monitor-dashboard.component.scss'
 })
 export class MonitoringDashboardComponent implements OnInit {
+  repositories: Repository[] = [];
   loading = true;
   error = '';
-
+  isReloading = false;
   languageService = inject(LanguageService);
   githubService = inject(GithubService);
   router = inject(Router);
   platformId = inject(PLATFORM_ID);
 
-  focusedRepos: Repository[] = [];
-  standardRepos: Repository[] = [];
 
-  ngOnInit() {
+  ngOnInit(): void {
     if (isPlatformBrowser(this.platformId)) {
-      this.githubService.getRepositories().subscribe({
-        next: res => {
-          this.focusedRepos = res.focusedRepos || [];
-          this.standardRepos = res.standardRepos || [];
-          this.loading = false;
-        },
-        error: () => {
-          this.error = 'Failed to load repositories';
-          this.loading = false;
-        }
-      });
+      this.loadRepositories();
+    } else {
+      this.loading = false;
     }
   }
 
-  getTestCount(
-    repo: Repository,
-    workflow: string,
-    environment: string,
-    status: string
-  ): number {
+  loadRepositories(): void {
+    this.loading = true;
+    this.githubService.getRepositories().subscribe({
+      next: data => {
+        this.repositories = data;
+        this.loading = false;
+      },
+      error: err => {
+        this.error = err.message;
+        this.loading = false;
+      }
+    });
+  }
+
+  getTestCount(repo: Repository, workflow: string, environment: string, status: string): number {
     if (!repo.testResults) {
       return 0;
     }
-    const result = repo.testResults.find(
-      test =>
-        test.workflow === workflow.toUpperCase() &&
-        test.environment === environment.toUpperCase() &&
-        test.status === status.toUpperCase()
+    const result = repo.testResults.find(test =>
+      test.workflow === workflow.toUpperCase() &&
+      test.environment === environment.toUpperCase() &&
+      test.status === status.toUpperCase()
     );
-    if (!result) {
-      return 0;
+
+    if (result) {
+      return result.count;
     }
-    return result.count;
+    return 0;
   }
 
   onBadgeClick(repo: string, workflow: string) {

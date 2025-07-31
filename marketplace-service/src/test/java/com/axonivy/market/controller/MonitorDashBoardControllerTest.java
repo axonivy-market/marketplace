@@ -2,8 +2,6 @@ package com.axonivy.market.controller;
 
 import com.axonivy.market.enums.WorkFlowType;
 import com.axonivy.market.model.GithubReposModel;
-import com.axonivy.market.model.RepoFocusedUpdateModel;
-import com.axonivy.market.model.ReposResponseModel;
 import com.axonivy.market.model.TestStepsModel;
 import com.axonivy.market.service.GithubReposService;
 import com.axonivy.market.service.TestStepsService;
@@ -34,18 +32,13 @@ class MonitorDashBoardControllerTest {
   }
 
   @Test
-  void testGetFocusedGitHubReposReturnsList() {
+  void testGetGitHubReposReturnsList() {
     GithubReposModel model = new GithubReposModel();
-    ReposResponseModel responseModel = new ReposResponseModel();
-    responseModel.setFocusedRepos(List.of(model));
-    responseModel.setStandardRepos(List.of());
-    when(githubReposService.fetchAllRepositories()).thenReturn(responseModel);
-
-    ResponseEntity<ReposResponseModel> response = controller.getGitHubRepos();
+    when(githubReposService.fetchAllRepositories()).thenReturn(List.of(model));
+    ResponseEntity<List<GithubReposModel>> response = controller.getGitHubRepos();
     assertEquals(200, response.getStatusCode().value(), "Status code should be 200 OK");
-    assertNotNull(response.getBody(), "Response body should not be null");
-    assertEquals(1, response.getBody().getFocusedRepos().size(), "FocusedRepos should contain one element");
-    assertSame(model, response.getBody().getFocusedRepos().get(0), "Returned model should match the mocked model");
+    assertEquals(1, response.getBody().size(), "Response body should contain one element");
+    assertSame(model, response.getBody().get(0), "Returned model should match the mocked model");
   }
 
   @Test
@@ -73,10 +66,10 @@ class MonitorDashBoardControllerTest {
     assertThrows(IOException.class, () -> controller.syncGithubMonitor(),
         "IOException should be thrown when service fails to load and store test reports");
   }
+
   @Test
   void testUpdateRepoPriorities() {
-    RepoFocusedUpdateModel updates = new RepoFocusedUpdateModel();
-    updates.setRepoNames(List.of("repo1", "repo2"));
+    List<String> updates = List.of("repo1", "repo2");
 
     doNothing().when(githubReposService).updateFocusedRepo(updates);
 

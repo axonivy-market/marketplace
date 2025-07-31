@@ -4,7 +4,6 @@ import com.axonivy.market.entity.GithubRepo;
 import com.axonivy.market.entity.TestResults;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.*;
-import org.springframework.hateoas.RepresentationModel;
 
 import java.text.SimpleDateFormat;
 import java.util.List;
@@ -17,7 +16,7 @@ import static com.axonivy.market.util.TestResultsUtils.processTestResults;
 @NoArgsConstructor
 @AllArgsConstructor
 @EqualsAndHashCode(callSuper = false)
-public class GithubReposModel extends RepresentationModel<GithubReposModel> {
+public class GithubReposModel {
 
   @EqualsAndHashCode.Include
   @Schema(description = "Repository name", example = "my-awesome-repo")
@@ -40,7 +39,7 @@ public class GithubReposModel extends RepresentationModel<GithubReposModel> {
   private String devBadgeUrl;
 
   @Schema(description = "Indicates if the repository is a focused repository", example = "true")
-  private boolean focusedRepo;
+  private boolean focused;
   @Schema(
       description = "Test results summary by workflow type and test environment",
       example = """
@@ -71,7 +70,7 @@ public class GithubReposModel extends RepresentationModel<GithubReposModel> {
         .lastUpdated(dateFormat.format(githubRepo.getLastUpdated()))
         .ciBadgeUrl(githubRepo.getCiBadgeUrl())
         .devBadgeUrl(githubRepo.getDevBadgeUrl())
-        .focusedRepo(githubRepo.isFocusedRepo())
+        .focused(githubRepo.isFocused())
         .testResults(testResults)
         .build();
   }
