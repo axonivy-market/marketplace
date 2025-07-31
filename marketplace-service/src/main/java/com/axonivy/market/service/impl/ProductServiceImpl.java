@@ -314,7 +314,7 @@ public class ProductServiceImpl implements ProductService {
       if (BooleanUtils.isTrue(resetSync)) {
         productModuleContentRepo.deleteAllByProductId(product.getId());
         productJsonContentRepo.deleteAllByProductId(product.getId());
-      } else if (productRepo.findById(product.getId()).isPresent()) {
+      } else if (product.getId() == null || productRepo.findById(product.getId()).isPresent()) {
         continue;
       }
       updateProductContentForNonStandardProduct(ghContentEntity.getValue(), product);
