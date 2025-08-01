@@ -25,14 +25,16 @@ export class RoutingQueryParamService {
   }
 
   checkSessionStorageForDesignerVersion(params: Params): void {
-    const versionParam =
-      params[DESIGNER_SESSION_STORAGE_VARIABLE.ivyVersionParamName];
-    if (versionParam !== undefined) {
+    const version =
+      params[DESIGNER_SESSION_STORAGE_VARIABLE.ivyVersionParamName] ??
+      params[DESIGNER_SESSION_STORAGE_VARIABLE.newIvyVersionParamName];
+
+    if (version !== undefined) {
       this.storageRef.session?.setItem(
         DESIGNER_SESSION_STORAGE_VARIABLE.ivyVersionParamName,
-        versionParam
+        version
       );
-      this.designerVersion.set(versionParam);
+      this.designerVersion.set(version);
     }
   }
 

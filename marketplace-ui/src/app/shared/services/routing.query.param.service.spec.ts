@@ -51,6 +51,18 @@ describe('RoutingQueryParamService', () => {
     expect(service.getDesignerVersionFromSessionStorage()).toBe('1.0');
   });
 
+  it('should get new query param pattern for version', () => {
+    const params = {
+      [DESIGNER_SESSION_STORAGE_VARIABLE.newIvyVersionParamName]: '1.0'
+    };
+    service.checkSessionStorageForDesignerVersion(params);
+    expect(sessionStorage.setItem).toHaveBeenCalledWith(
+      DESIGNER_SESSION_STORAGE_VARIABLE.ivyVersionParamName,
+      '1.0'
+    );
+    expect(service.getDesignerVersionFromSessionStorage()).toBe('1.0');
+  });
+
   it('should check session storage for designer env', () => {
     const params = {
       [DESIGNER_SESSION_STORAGE_VARIABLE.ivyViewerParamName]:

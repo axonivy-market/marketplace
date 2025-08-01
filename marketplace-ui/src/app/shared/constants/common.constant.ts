@@ -204,6 +204,7 @@ export const FEEDBACK_SORT_TYPES: ItemDropdown<FeedbackSortType>[] = [
 ];
 
 export const DESIGNER_SESSION_STORAGE_VARIABLE = {
+  newIvyVersionParamName: 'ivy.version',
   ivyViewerParamName: 'ivy-viewer',
   ivyVersionParamName: 'ivy-version',
   defaultDesignerViewer: 'designer-market',

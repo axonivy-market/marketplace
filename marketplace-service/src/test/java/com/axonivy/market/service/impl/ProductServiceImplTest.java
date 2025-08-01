@@ -403,6 +403,7 @@ class ProductServiceImplTest extends BaseSetup {
     mockGHContentMap.put(SAMPLE_PRODUCT_ID, new ArrayList<>());
     when(marketRepoService.fetchAllMarketItems()).thenReturn(mockGHContentMap);
     when(productRepo.save(any(Product.class))).thenReturn(new Product());
+    when(productRepo.findAllProductsWithNamesAndShortDescriptions()).thenReturn(List.of(getMockProduct()));
 
     // Executes
     productService.syncLatestDataFromMarketRepo(false);
