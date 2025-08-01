@@ -1,14 +1,12 @@
-import {
-  HttpHeaders,
-  HttpContextToken,
-  HttpInterceptorFn
-} from '@angular/common/http';
+import { HttpHeaders, HttpContextToken, HttpInterceptorFn } from '@angular/common/http';
 import { environment } from '../../../environments/environment';
 import { LoadingService } from '../services/loading/loading.service';
-import { inject } from '@angular/core';
+import { inject, PLATFORM_ID } from '@angular/core';
 import { catchError, EMPTY, finalize } from 'rxjs';
 import { Router } from '@angular/router';
 import { ERROR_CODES, ERROR_PAGE_PATH } from '../../shared/constants/common.constant';
+import { isPlatformServer } from '@angular/common';
+import { API_BASE_URL } from '../../shared/constants/api.constant';
 
 export const REQUEST_BY = 'X-Requested-By';
 export const IVY = 'marketplace-website';
@@ -26,6 +24,7 @@ export const LoadingComponent = new HttpContextToken<string>(() => '');
 export const apiInterceptor: HttpInterceptorFn = (req, next) => {
   const router = inject(Router);
   const loadingService = inject(LoadingService);
+  const platformId = inject(PLATFORM_ID);
 
   if (req.url.includes('i18n')) {
     return next(req);
@@ -35,8 +34,15 @@ export const apiInterceptor: HttpInterceptorFn = (req, next) => {
     loadingService.showLoading(req.context.get(LoadingComponent));
   }
 
+  let apiURL = environment.apiUrl;
+  if (isPlatformServer(platformId)) {
+    try {
+      apiURL = inject(API_BASE_URL);
+    } catch (e) {
+      console.error('SSR Interceptor ERROR: Could not inject API_BASE_URL: ', e);
+    }
+  }
   let requestURL = req.url;
-  const apiURL = environment.apiUrl;
   if (!requestURL.includes(apiURL)) {
     requestURL = `${apiURL}/${req.url}`;
   }
@@ -45,7 +51,6 @@ export const apiInterceptor: HttpInterceptorFn = (req, next) => {
     url: requestURL,
     headers: addIvyHeaders(req.headers)
   });
-
 
   if (req.context.get(ForwardingError)) {
     return next(cloneReq);

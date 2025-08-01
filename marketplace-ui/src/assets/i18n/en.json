@@ -1,0 +1,264 @@
+{
+  "common": {
+    "branch": "Axon Ivy Market",
+    "language": {
+      "english": "English",
+      "french": "Français",
+      "german": "Deutsch"
+    },
+    "preview": {
+      "pageTitle": "Release Preview",
+      "title": "Product Release Preview",
+      "description": "Preview your product's details",
+      "buttonLabel": "Upload",
+      "noTabs": "Seems like there's a problem with your Zip file.",
+      "hint": "Only .zip file is allowed and file size should be smaller than 20MB.",
+      "link": "See how to configure a valid README.",
+      "hintContent": "<p> Follow the README template strictly. Ensure the following. </p></br> <code># Your Product Name </br></br> Hello, this is our connector. </br></br>## Demo </br></br> You should show the demo content here. </br></br>## Setup </br></br> This session should show how to download, setup your product,... </br></br> ```</br> @variables.yaml@</br> ``` </code> <div> <ul> <li>In case you want to pass variables to README file, put in template as above and declare a file name <code>variables.yaml</code></li> <li><b>SETUP AND DEMO</b> These headings should always be in English, regardless of the language.</li> <li> Ensure <b>SETUP AND DEMO</b> follow the template's predefined headings and structure. </li> <li> Images should use the following format <code>![image-name](image-directory.png)</code> </li> </ul>"
+    },
+    "nav": {
+      "news": "News",
+      "doc": "Doc",
+      "tutorial": "Tutorial",
+      "community": "Community",
+      "team": "Team",
+      "market": "Market"
+    },
+    "introduction": {
+      "about": "The Axon Ivy market offers a unique experience to accelerate process automation.",
+      "contribute": "Here you will find connectors to standard software solutions from leading providers such as Microsoft, Amazon, or Adobe, as well as ready-made process models, business solutions, and practical tools for document processing, storage, or signing.",
+      "link": "Contribute to the community and <a class=\"link-opacity-100\" href=\"https://github.com/axonivy-market/market/wiki\" aria-label=\"Github - How to contribute\">build your own connector!</a>"
+    },
+    "filter": {
+      "label": "Filter",
+      "value": {
+        "allTypes": "All Types",
+        "connector": "Connectors",
+        "util": "Utilities",
+        "demos": "Demos",
+        "solution": "Solutions"
+      }
+    },
+    "error": {
+      "code": "ERROR CODE",
+      "oops": "Oops!",
+      "fullMessage": "{{ errorMessage }} You would be doing us a great favor by reporting it here: <a href='mailto:support@axonivy.com'>support@axonivy.com</a>",
+      "description": {
+        "400": "Bad Request: The server could not understand the request due to invalid syntax.",
+        "401": "Unauthorized: Authentication is required and has failed or has not been provided.",
+        "403": "Forbidden: The server understood the request but refuses to authorize it.",
+        "404": "Not Found: Our website is taking a break. It seems that we cannot find the page you requested.",
+        "408": "Request Timeout: The server timed out waiting for the request.",
+        "500": "Internal Server Error: The server encountered an unexpected condition.",
+        "502": "Bad Gateway: The server received an invalid response from an upstream server.",
+        "503": "Service Unavailable: The server is temporarily unable to handle the request.",
+        "504": "Gateway Timeout: The upstream server failed to send a request in time.",
+        "default": "Our website is taking a break."
+      },
+      "buttonLabel": "Back to homepage"
+    },
+    "sort": {
+      "label": "Sort by",
+      "value": {
+        "popularity": "Popularity",
+        "alphabetically": "Alphabetically",
+        "recent": "Recent",
+        "standard": "Standard",
+        "newest": "Newest",
+        "oldest": "Oldest",
+        "highest": "Highest",
+        "lowest": "Lowest"
+      }
+    },
+    "search": {
+      "placeholder": "Search a keyword"
+    },
+    "nothingFound": "Your search did not yield any results.<br /> Please modify your search terms or browse our categories for related content.",
+    "footer": {
+      "newVersionsInfo": "Get the latest stable <a class=\"link-opacity-100\" href=\"https://developer.axonivy.com/release-cycle\">Long Term Support</a> version of the Axon Ivy Platform - or download the <a class=\"link-opacity-100\" href=\"https://developer.axonivy.com/download/leading-edge\">Leading Edge</a> version.",
+      "download": "Download",
+      "ivyCompanyInfo": "Axon Ivy Inc.",
+      "privacyPolicy": "Privacy Policy",
+      "termsOfService": "Terms of Service"
+    },
+    "product": {
+      "detail": {
+        "backToMainPage": "Back to overview",
+        "review": "Review",
+        "installation": "Downloads",
+        "type": "Type",
+        "description": "Description",
+        "installationGuide": "Installation Guide",
+        "demo": "Demo",
+        "maven": {
+          "label": "Maven",
+          "description": "You can consume it as maven artifact in your <i>pom.xml</i>"
+        },
+        "information": {
+          "label": "Information",
+          "value": {
+            "implementedBy": "Implemented by",
+            "version": "Version",
+            "compatibility": "Compatibility",
+            "cost": "Cost",
+            "language": "Language",
+            "tag": "Tags",
+            "source": "Source",
+            "status": "Status",
+            "moreInformation": "More Information",
+            "contactUs": "Contact us",
+            "documentation": "Documentation",
+            "defaultDocName": "Doc"
+          }
+        },
+        "install": {
+          "buttonLabel": "Install Now",
+          "buttonLabelInDesigner": "Install"
+        },
+        "download": {
+          "buttonLabel": "Download",
+          "downloadingButtonLabel": "Downloading...",
+          "hideDevVersions": "Hide development versions",
+          "showDevVersions": "Show development versions",
+          "versionSelector": {
+            "label": "Choose target platform"
+          },
+          "artifactSelector": {
+            "label": "Choose artifact"
+          },
+          "appArtifactHint": "To include all necessary and usable dependencies to deploy directly to Axon Ivy Engine, please check this checkbox!",
+          "zipAppArtifactLabel": "Create a ZIP file to deploy on the Axon Ivy Engine"
+        },
+        "contactUs": {
+          "label": "Contact us"
+        },
+        "changelog": "Changelog"
+      }
+    },
+    "feedback": {
+      "label": "Feedback",
+      "successMessage": "Your feedback has been successfully submitted!",
+      "thankMessage": "Thank you for your contribution",
+      "informMessage": "Your comment will be published after approval.",
+      "addFeedbackTitle": "Give your feedback!",
+      "addFeedbackDescription": "By providing your feedback, you enable us to continuously improve our products and consistently deliver the best quality to you. Of course, our <a class=\"link-opacity-100\" href=\"https://github.com/axonivy-market/market?tab=coc-ov-file\">Code of Conduct</a> applies here as well:</br> <ul> <li>Be friendly and patient.</li> <li>Be welcoming.</li> <li>Be considerate.</li> <li>Be respectful.</li> <li>Be careful in the words that you choose.</li> <li>When we disagree, try to understand why.</li> </ul>",
+      "currentProductTitle": "Under review",
+      "commentLabel": "Please leave a comment",
+      "submitBtnLabel": "Submit review",
+      "loggedGithubAsLabel": "Logged in Github as",
+      "reviewLabel": "Review",
+      "detailedReviews": "Detailed reviews",
+      "showMoreBtnLabel": "Show more",
+      "noFeedbackForConnectorLabel": "There is no feedback for this connector yet.",
+      "noFeedbackForSolutionLabel": "There is no feedback for this solution yet.",
+      "noFeedbackForUtilityLabel": "There is no feedback for this utility yet.",
+      "noFeedbackSecondLabel": "Be the first to share your opinion.",
+      "rateFeedbackForConnectorBtnLabel": "Rate this connector",
+      "rateFeedbackForSolutionBtnLabel": "Rate this solution",
+      "rateFeedbackForUtilityBtnLabel": "Rate this utility",
+      "reviewLabelNoYet": "No reviews yet",
+      "approvalPending": "Approval pending"
+    },
+    "labels": {
+      "redirecting": "Redirecting ...!",
+      "loading": "Loading ...!"
+    },
+    "timeAgo": {
+      "yearAgo": "1 year ago",
+      "yearsAgo": "{{ number }} years ago",
+      "monthAgo": "1 month ago",
+      "monthsAgo": "{{ number }} months ago",
+      "weekAgo": "1 week ago",
+      "weeksAgo": "{{ number }} weeks ago",
+      "dayAgo": "1 day ago",
+      "daysAgo": "{{ number }} days ago",
+      "hourAgo": "1 hour ago",
+      "hoursAgo": "{{ number }} hours ago",
+      "minuteAgo": "1 minute ago",
+      "minutesAgo": "{{ number }} minutes ago",
+      "secondAgo": "1 second ago",
+      "secondsAgo": "{{ number }} seconds ago"
+    },
+    "showLess": "Show less",
+    "showMore": "Show more",
+    "approval": {
+      "approvalTitle": "Feedback Approval",
+      "about": "Please review the feedback from a user.",
+      "instruction": "The feedback given should follow our <a class=\"link-opacity-100\" href=\"https://github.com/axonivy-market/market?tab=coc-ov-file\">Code of Conduct</a> to be approved.",
+      "reviewFeedback": "Review Feedback",
+      "history": "History",
+      "username": "Username",
+      "product": "Product Name",
+      "content": "Content",
+      "rating": "Rating",
+      "status": "Status",
+      "createdAt": "Created At",
+      "updatedAt": "Updated At",
+      "action": "Action",
+      "moderator": "Moderator",
+      "reviewDate": "Review Date",
+      "approveBtnLabel": "Approve",
+      "rejectBtnLabel": "Reject",
+      "pageTitle": "Effortless Feedback Approval Management",
+      "description": "Ensure only the best feedback moves forward.",
+      "enterToken": "Please enter your token to access the feedback approval page.",
+      "enterTokenPlaceholder": "Enter your token",
+      "proceedBtnLabel": "Proceed",
+      "noFeedbacks": "No feedbacks available."
+    },
+    "security": {
+      "pageTitle": "Security Monitor"
+    },
+    "externalDocument": {
+      "pageHeader": "The document of the {{product}} for version {{version}}",
+      "helpText": "The document is not ready to render or has not been published. Please try again later."
+    }
+  },
+  "monitor": {
+    "dashboard": {
+      "title": "GitHub Repository Monitor",
+      "subtitle": "Stay informed about the axonivy-market repositories - repository data is refreshed every hour automatically.",
+      "loading": "Loading repositories...",
+      "noRepositories": "No repositories found.",
+      "errorLoading": "Error loading repositories",
+      "ciLabel": "CI Build",
+      "devLabel": "DEV Build",
+      "passed": "Passed",
+      "failed": "Failed",
+      "mock": "Mock",
+      "real": "Real",
+      "lastUpdated": "Last Updated",
+      "language": "Language",
+      "testCounts": {
+        "title": "Test Results",
+        "mock": "Mock: ",
+        "real": "Real: ",
+        "total": "Total tests: "
+      },
+      "repo": {
+        "name": "Repository Name",
+        "language": "Language",
+        "url": "Repository URL",
+        "workflow": "workflow of"
+      },
+      "actions": {
+        "viewDetails": "View Details",
+        "refresh": "Refresh"
+      },
+      "status": {
+        "active": "Active",
+        "inactive": "Inactive"
+      },
+      "summaryCard": {
+        "title": "Summary",
+        "totalRepos": "Total Repositories",
+        "totalPassed": "Total Passed Tests",
+        "totalFailed": "Total Failed Tests",
+        "lastSync": "Last Synchronization"
+      },
+      "filterLabel": "Filter Repositories",
+      "noReport": "There is no test report in this workflow.",
+      "skipped": "Skipped"
+    }
+  }
+}
