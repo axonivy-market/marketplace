@@ -4,24 +4,27 @@ import { CommonModule } from '@angular/common';
 import { StarRatingComponent } from '../../../../../../shared/components/star-rating/star-rating.component';
 import { ElementRef } from '@angular/core';
 import { Feedback } from '../../../../../../shared/models/feedback.model';
-import { MissingTranslationHandler, TranslateLoader, TranslateModule, TranslateService } from '@ngx-translate/core';
 import { ProductFeedbackService } from '../product-feedback.service';
 import { provideHttpClient, withInterceptorsFromDi } from '@angular/common/http';
 import { provideHttpClientTesting } from '@angular/common/http/testing';
 import { AuthService } from '../../../../../../auth/auth.service';
 import { FeedbackStatus } from '../../../../../../shared/enums/feedback-status.enum';
-import { translateUniversalLoaderFactory } from '../../../../../../core/configs/translate-loader.factory';
+import { TranslateService } from '@ngx-translate/core';
 
 describe('ProductFeedbackComponent', () => {
   let component: ProductFeedbackComponent;
   let fixture: ComponentFixture<ProductFeedbackComponent>;
   let mockElementRef: ElementRef;
   let authService: jasmine.SpyObj<AuthService>;
+  let translateServiceSpy: jasmine.SpyObj<TranslateService>;
 
   beforeEach(async () => {
     const authServiceSpy = jasmine.createSpyObj('AuthService', [
       'getToken',
       'getUserId'
+    ]);
+    translateServiceSpy = jasmine.createSpyObj('TranslateService', [
+      'getTranslation', 'setDefaultLang'
     ]);
     mockElementRef = {
       nativeElement: {
@@ -34,22 +37,12 @@ describe('ProductFeedbackComponent', () => {
       imports: [
         ProductFeedbackComponent,
         StarRatingComponent,
-        CommonModule,
-        TranslateModule.forRoot({
-          loader: {
-            provide: TranslateLoader,
-            useFactory: translateUniversalLoaderFactory
-          },
-          missingTranslationHandler: {
-            provide: MissingTranslationHandler,
-            useValue: { handle: () => 'Translation missing' }
-          }
-        })
+        CommonModule
       ],
       providers: [
         { provide: ElementRef, useValue: mockElementRef },
         { provide: AuthService, useValue: authServiceSpy },
-        TranslateService,
+        { provide: TranslateService, useValue: translateServiceSpy },
         ProductFeedbackService,
         provideHttpClient(withInterceptorsFromDi()),
         provideHttpClientTesting()
