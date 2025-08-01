@@ -3,6 +3,7 @@ package com.axonivy.market.util;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.server.LocalServerPort;
+import org.springframework.test.context.TestPropertySource;
 
 import java.io.IOException;
 import java.nio.file.Path;
@@ -11,6 +12,7 @@ import static com.axonivy.market.BaseSetup.DEFAULT_HOST;
 import static com.axonivy.market.BaseSetup.OPEN_API_SPEC_PATH;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+@TestPropertySource("classpath:application-test.properties")
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 class OpenApisUtilsTest {
 
